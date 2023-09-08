@@ -1,7 +1,6 @@
 """Read authors.tsv and update citation.cff."""
 
 from pathlib import Path
-from typing import Any
 
 import pandas as pd
 import ruamel.yaml
@@ -10,31 +9,7 @@ from rich import print
 yaml = ruamel.yaml.YAML()
 yaml.indent(mapping=2, sequence=4, offset=2)
 
-
-def root_dir() -> Path:
-    """Return path to root directory."""
-    return Path(__file__).parent.parent
-
-
-# read citation.cff
-def citation_file() -> Path:
-    """Return path to CITATIONS.cff file."""
-    return root_dir() / "CITATION.cff"
-
-
-def read_citation_cff() -> dict[str, Any]:
-    """Read CITATION.cff file."""
-    print(f"Reading file: {citation_file()}")
-    with open(citation_file(), encoding="utf8") as f:
-        citation = yaml.load(f)
-    return citation
-
-
-def write_citation_cff(citation: dict[str, Any]) -> None:
-    """Write CITATION.cff file."""
-    print(f"Writing file: {citation_file()}")
-    with open(citation_file(), "w", encoding="utf8") as f:
-        yaml.dump(citation, f)
+from citation_cff_maint import read_citation_cff, write_citation_cff
 
 
 def main():

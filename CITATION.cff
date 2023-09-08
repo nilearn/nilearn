@@ -57,7 +57,6 @@ authors:
   - given-names: Alexandre
     family-names: Savio
     website: https://github.com/alex-savio
-    affiliation: '@nordcloud'
   - given-names: Alexis
     family-names: Thual
     website: https://github.com/alexisthual
@@ -81,7 +80,7 @@ authors:
   - given-names: Anne-Sophie
     family-names: Kieslinger
     website: https://github.com/askieslinger
-    affiliation: Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig
+    affiliation: Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig, Germnay
   - given-names: Ariel
     family-names: Rokem
     website: http://arokem.org/
@@ -101,7 +100,7 @@ authors:
   - given-names: Ben
     family-names: Cipollini
     website: https://github.com/bcipolli
-    affiliation: Facebook, Hayward, CA
+    affiliation: Facebook, Hayward, CA, USA
   - given-names: Bertrand
     family-names: Thirion
     website: https://pages.saclay.inria.fr/bertrand.thirion/
@@ -114,7 +113,7 @@ authors:
   - given-names: Caglar
     family-names: Cakan
     website: https://github.com/caglorithm
-    affiliation: Technische Universität Berlin, Berlin
+    affiliation: Technische Universität Berlin, Berlin, Germany
   - given-names: Chris
     family-names: Gorgolewski
     website: https://github.com/chrisgorgo
@@ -136,15 +135,14 @@ authors:
   - given-names: Christian
     family-names: Gerloff
     website: https://github.com/ChristianGerloff
-    affiliation: 127.0.0.1
   - given-names: Colin
     family-names: Reininger
     website: https://github.com/reiningc
-    affiliation: Denver
+    affiliation: Denver, Colorado, USA
   - given-names: Connor
     family-names: Lane
     website: https://github.com/clane9
-    affiliation: Child Mind Institute, Baltimore, MD
+    affiliation: Child Mind Institute, Baltimore, MD, USA
   - given-names: Czarina
     family-names: Sy
     website: https://github.com/czarinasy
@@ -157,7 +155,7 @@ authors:
   - given-names: Daniel
     family-names: Gomez
     website: https://github.com/dangom
-    affiliation: Cambridge, MA
+    affiliation: Cambridge, MA, USA
   - given-names: Danilo
     family-names: Bzdok
     website: https://github.com/banilo
@@ -165,7 +163,7 @@ authors:
   - given-names: David G
     family-names: Ellis
     website: https://github.com/ellisdg
-    affiliation: University of Nebraska Medical Center
+    affiliation: University of Nebraska Medical Center, Nebraska, USA
   - given-names: Demian
     family-names: Wassermann
     website: https://github.com/demianw
@@ -212,7 +210,7 @@ authors:
     family-names: Hollander
     website: https://github.com/Gilles86
     email: gilles.de.hollander@gmail.com
-    affiliation: Vrije Universiteit, Amsterdam
+    affiliation: Vrije Universiteit, Amsterdam, The Netherlands
   - given-names: Greg
     family-names: Kiar
     website: https://gkiar.me/
@@ -249,11 +247,11 @@ authors:
     family-names: Vogel
     website: https://github.com/illdopejake
     email: jacobwvogel@gmail.com
-    affiliation: Philadelphia
+    affiliation: Philadelphia, USA
   - given-names: Jan
     family-names: Margeta
     website: https://github.com/jmargeta
-    affiliation: KardioMe, Nova Dubnica, SK
+    affiliation: KardioMe, Nova Dubnica, Slovakia
     email: jmargeta@gmail.com
     orcid: https://orcid.org/0000-0003-4882-0502
   - given-names: Jaques
@@ -305,7 +303,6 @@ authors:
   - given-names: Joshua
     family-names: Teves
     website: https://github.com/jbteves
-    affiliation: '@nimh-sfim'
   - given-names: Julia
     family-names: Huntenburg
     website: https://github.com/juhuntenburg
@@ -313,7 +310,7 @@ authors:
   - given-names: Julio A
     family-names: Peraza
     website: https://github.com/JulioAPeraza
-    affiliation: United States
+    affiliation: USA
   - given-names: Kamalakar Reddy
     family-names: Daddy
     website: https://github.com/KamalakerDadi
@@ -327,7 +324,7 @@ authors:
   - given-names: Koen
     family-names: Helwegen
     website: https://github.com/koenhelwegen
-    affiliation: Dutch Connectome Lab, VU, Amsterdam
+    affiliation: Dutch Connectome Lab, VU, Amsterdam, The Netherlands
   - given-names: Konrad
     family-names: Wagstyl
     website: https://github.com/kwagstyl
@@ -337,13 +334,13 @@ authors:
   - given-names: Kshitij
     family-names: Chawla
     website: https://github.com/kchawla-pi
-    affiliation: Duke University Health System
+    affiliation: Duke University Health System, USA
     email: kc.insight.pi@gmail.com
     orcid: https://orcid.org/0000-0002-7517-6321
   - given-names: Kun
     family-names: CHEN
     website: https://chenkun.me
-    affiliation: University of Macau
+    affiliation: University of Macau, Macau, China
     email: yc17307@um.edu.mo
     orcid: https://orcid.org/0000-0002-9138-3195
   - given-names: Leonard
@@ -401,7 +398,7 @@ authors:
     family-names: Hanke
     website: https://github.com/mih
     email: michael.hanke@gmail.com
-    affiliation: '@psychoinformatics-de'
+    affiliation: Germany
   - given-names: Michael
     family-names: Notter
     website: https://github.com/miykael
@@ -431,7 +428,7 @@ authors:
   - given-names: Natasha
     family-names: Clarke
     website: https://github.com/clarkenj
-    affiliation: '@SIMEXP, Montréal'
+    affiliation: '@SIMEXP, Montréal, Canada'
   - given-names: Neelay
     family-names: Shah
     website: https://github.com/NeelayS
@@ -444,7 +441,7 @@ authors:
   - given-names: Oliver
     family-names: Warrington
     website: https://github.com/OliverWarrington
-    affiliation: Wellcome Centre for Human Neuroimaging, UCL, London
+    affiliation: Wellcome Centre for Human Neuroimaging, UCL, London, UK
   - given-names: Oscar
     family-names: Esteban
     website: https://github.com/oesteban
@@ -453,7 +450,7 @@ authors:
     family-names: Sadil
     website: https://psadil.github.io/psadil
     affiliation: Department of Biostatistics, Johns Hopkins Bloomberg School of Public
-      Health
+      Health, USA
   - given-names: Paul
     family-names: Bogdan
     website: https://github.com/paulcbogdan
@@ -500,14 +497,14 @@ authors:
   - given-names: Robert
     family-names: Luke
     website: https://github.com/rob-luke
-    affiliation: '@agencyenterprise, Melbourne'
+    affiliation: '@agencyenterprise, Melbourne, Australia'
   - given-names: Robert
     family-names: Williamson
     website: https://github.com/RobWilliamson15
   - given-names: Roberto
     family-names: Guidotti
     website: https://github.com/robbisg
-    affiliation: University "G. D'Annunzio" Chieti-Pescara, San Benedetto del Tronto
+    affiliation: University "G. D'Annunzio" Chieti-Pescara, San Benedetto del Tronto, Italy
   - given-names: Ronald
     family-names: Phlypo
     website: https://github.com/rphlypo
@@ -539,7 +536,6 @@ authors:
     website: https://github.com/sjawhar
     email: sami@thecybermonk.com
     orcid: https://orcid.org/0000-0002-9914-2193
-    affiliation: Earth
   - given-names: Simon
     family-names: Steinkamp
     website: https://github.com/SRSteinkamp
@@ -550,7 +546,7 @@ authors:
     family-names: Meisler
     website: https://www.stevenmeisler.com
     affiliation: Harvard-MIT Division of Health Sciences and Technology, Cambridge,
-      MA, US
+      MA, USA
     email: smeisler@g.harvard.edu
     orcid: https://orcid.org/0000-0002-8888-1572
   - given-names: Sylvain
@@ -578,11 +574,11 @@ authors:
     family-names: Bazeille
     website: https://github.com/thomasbazeille
     orcid: https://orcid.org/0000-0001-5377-9108
-    affiliation: INRIA, Parietal, Paris
+    affiliation: INRIA, Parietal, Paris, France
   - given-names: Tom
     family-names: Vanasse
     website: https://github.com/tvanasse
-    affiliation: Wisconsin Institute for Sleep and Consciousness
+    affiliation: Wisconsin Institute for Sleep and Consciousness, USA
     email: thomas.j.vanasse@gmail.com
     orcid: https://orcid.org/0000-0003-4672-0049
   - given-names: Vasco
@@ -595,11 +591,11 @@ authors:
   - given-names: Virgile
     family-names: Fritsch
     website: https://github.com/VirgileFritsch
-    affiliation: Inria - Parietal team, Saclay
+    affiliation: Inria - Parietal team, Saclay, France
   - given-names: Yaroslav
     family-names: Halchenko
     website: https://github.com/yarikoptic
-    affiliation: Dartmouth College, United States of America
+    affiliation: Dartmouth College, USA
     email: debian@onerussian.com
     orcid: https://orcid.org/0000-0003-3456-2493
   - given-names: Yasmin
@@ -609,7 +605,7 @@ authors:
   - given-names: Zvi
     family-names: Baratz
     website: https://github.com/ZviBaratz
-    affiliation: Tel-Aviv University
+    affiliation: Tel-Aviv University, Israel
     email: z.baratz@gmail.com
     orcid: https://orcid.org/0000-0001-7159-1387
   - given-names: Óscar

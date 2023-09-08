@@ -1,43 +1,19 @@
 """Update citation.cff wint info from orcid and github."""
-from pathlib import Path
 from typing import Any
 
 import requests
 import ruamel.yaml
 from rich import print
 
+from citation_cff_maint import read_citation_cff, write_citation_cff
+
 yaml = ruamel.yaml.YAML()
 yaml.indent(mapping=2, sequence=4, offset=2)
+
 
 TOKEN_FILE = "/home/remi/Documents/tokens/gh_user.txt"
 with open(TOKEN_FILE) as f:
     TOKEN = f.read().strip()
-
-
-def root_dir() -> Path:
-    """Return path to root directory."""
-    return Path(__file__).parent.parent
-
-
-# read citation.cff
-def citation_file() -> Path:
-    """Return path to CITATIONS.cff file."""
-    return root_dir() / "CITATION.cff"
-
-
-def read_citation_cff() -> dict[str, Any]:
-    """Read CITATION.cff file."""
-    print(f"Reading file: {citation_file()}")
-    with open(citation_file(), encoding="utf8") as f:
-        citation = yaml.load(f)
-    return citation
-
-
-def write_citation_cff(citation: dict[str, Any]) -> None:
-    """Write CITATION.cff file."""
-    print(f"Writing file: {citation_file()}")
-    with open(citation_file(), "w", encoding="utf8") as f:
-        yaml.dump(citation, f)
 
 
 def affiliation_from_orcid(orcid_record: dict[str, Any]) -> str | None:
