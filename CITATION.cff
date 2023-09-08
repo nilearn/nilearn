@@ -80,7 +80,8 @@ authors:
   - given-names: Anne-Sophie
     family-names: Kieslinger
     website: https://github.com/askieslinger
-    affiliation: Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig, Germnay
+    affiliation: Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig,
+      Germnay
   - given-names: Ariel
     family-names: Rokem
     website: http://arokem.org/
@@ -504,7 +505,8 @@ authors:
   - given-names: Roberto
     family-names: Guidotti
     website: https://github.com/robbisg
-    affiliation: University "G. D'Annunzio" Chieti-Pescara, San Benedetto del Tronto, Italy
+    affiliation: University "G. D'Annunzio" Chieti-Pescara, San Benedetto del Tronto,
+      Italy
   - given-names: Ronald
     family-names: Phlypo
     website: https://github.com/rphlypo
