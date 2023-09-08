@@ -151,7 +151,7 @@ def test_nifti_maps_masker():
     assert_array_equal(masker._resampled_maps_img_.affine, affine2)
 
 
-def test_nifti_maps_masker_io_shapes():
+def test_nifti_maps_masker_io_shapes(rng):
     """Ensure that NiftiMapsMasker handles 1D/2D/3D/4D data appropriately.
 
     transform(4D image) --> 2D output, no warning
@@ -163,8 +163,8 @@ def test_nifti_maps_masker_io_shapes():
     n_regions, n_volumes = 9, 5
     shape_3d = (10, 11, 12)
     shape_4d = (10, 11, 12, n_volumes)
-    data_1d = np.random.random(n_regions)
-    data_2d = np.random.random((n_volumes, n_regions))
+    data_1d = rng.random(n_regions)
+    data_2d = rng.random((n_volumes, n_regions))
     affine = np.eye(4)
 
     img_4d, mask_img = generate_random_img(

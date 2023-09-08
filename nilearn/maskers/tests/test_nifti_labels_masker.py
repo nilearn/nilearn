@@ -137,7 +137,7 @@ def test_nifti_labels_masker(affine_eye, length, n_regions):
     assert_almost_equal(fmri11_img_r.affine, fmri11_img.affine)
 
 
-def test_nifti_labels_masker_io_shapes(n_regions, affine_eye):
+def test_nifti_labels_masker_io_shapes(rng, n_regions, affine_eye):
     """Ensure that NiftiLabelsMasker handles 1D/2D/3D/4D data appropriately.
 
     transform(4D image) --> 2D output, no warning
@@ -149,8 +149,8 @@ def test_nifti_labels_masker_io_shapes(n_regions, affine_eye):
     n_volumes = 5
     shape_3d = (10, 11, 12)
     shape_4d = (10, 11, 12, n_volumes)
-    data_1d = np.random.random(n_regions)
-    data_2d = np.random.random((n_volumes, n_regions))
+    data_1d = rng.random(n_regions)
+    data_2d = rng.random((n_volumes, n_regions))
     affine = affine_eye
 
     img_4d, mask_img = generate_random_img(

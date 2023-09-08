@@ -509,7 +509,7 @@ def test_standardization(rng, shape_3d_default, affine_eye):
     )
 
 
-def test_nifti_masker_io_shapes(affine_eye, shape_3d_default):
+def test_nifti_masker_io_shapes(rng, affine_eye, shape_3d_default):
     """Ensure that NiftiMasker handles 1D/2D/3D/4D data appropriately.
 
     transform(4D image) --> 2D output, no warning
@@ -527,8 +527,8 @@ def test_nifti_masker_io_shapes(affine_eye, shape_3d_default):
     )
     img_3d, _ = generate_random_img(shape_3d_default, affine=affine_eye)
     n_regions = np.sum(mask_img.get_fdata().astype(bool))
-    data_1d = np.random.random(n_regions)
-    data_2d = np.random.random((n_volumes, n_regions))
+    data_1d = rng.random(n_regions)
+    data_2d = rng.random((n_volumes, n_regions))
 
     masker = NiftiMasker(mask_img)
     masker.fit()
