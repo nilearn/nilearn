@@ -64,7 +64,7 @@ authors:
   - given-names: Alisha
     family-names: Kodibagkar
     website: https://github.com/alishakodibagkar/
-    affiliation: MIT McGovern Institute, Cambridge, MA, United States
+    affiliation: MIT McGovern Institute, Cambridge, Massachusetts, United States
     orcid: https://orcid.org/0000-0002-0951-242X
   - given-names: Amadeus
     family-names: Kanaan
@@ -101,7 +101,7 @@ authors:
   - given-names: Ben
     family-names: Cipollini
     website: https://github.com/bcipolli
-    affiliation: Facebook, Hayward, CA, USA
+    affiliation: Facebook, Hayward, California, USA
   - given-names: Bertrand
     family-names: Thirion
     website: https://pages.saclay.inria.fr/bertrand.thirion/
@@ -124,7 +124,7 @@ authors:
   - given-names: Chris
     family-names: Markiewicz
     website: https://github.com/effigies
-    affiliation: Stanford University, Stanford, CA, USA
+    affiliation: Stanford University, Stanford, California, USA
     email: markiewicz@stanford.edu
     orcid: https://orcid.org/0000-0002-6533-164X
   - given-names: Christian
@@ -156,11 +156,11 @@ authors:
   - given-names: Daniel
     family-names: Gomez
     website: https://github.com/dangom
-    affiliation: Cambridge, MA, USA
+    affiliation: Cambridge, Massachusetts, USA
   - given-names: Danilo
     family-names: Bzdok
     website: https://github.com/banilo
-    affiliation: McGill University & Mila Quebec AI Institute, Montreal, Canada
+    affiliation: McGill University & Mila Quebec AI Institute, Montréal, Canada
   - given-names: David G
     family-names: Ellis
     website: https://github.com/ellisdg
@@ -183,7 +183,7 @@ authors:
   - given-names: Elizabeth
     family-names: DuPre
     website: https://elizabeth-dupre.com/#/
-    affiliation: Stanford University, USA
+    affiliation: Stanford University, Stanford, California, USA
     orcid: https://orcid.org/0000-0003-1358-196X
   - given-names: Elvis
     family-names: Dohmatob
@@ -197,7 +197,7 @@ authors:
   - given-names: Fabian
     family-names: Pedregosa
     website: https://github.com/fabianp
-    affiliation: '@google, Geneva'
+    affiliation: '@google, Geneva, Switzerland'
   - given-names: Franz
     family-names: Liem
     website: https://github.com/fliem
@@ -232,7 +232,7 @@ authors:
   - given-names: Hao-Ting
     family-names: Wang
     website: https://wanghaoting.com/
-    affiliation: Montreal Geriatrics Institute (CRIUGM), Montreal, Canada
+    affiliation: Montréal Geriatrics Institute (CRIUGM), Montréal, Canada
     email: wang.hao-ting@criugm.qc.ca
     orcid: https://orcid.org/0000-0003-4078-2038
   - given-names: Himanshu
@@ -282,7 +282,7 @@ authors:
   - given-names: Jerome
     family-names: Dockes
     website: https://jeromedockes.github.io/
-    affiliation: Origami lab, McGill University, Montreal, Canada
+    affiliation: Origami lab, McGill University, Montréal, Canada
   - given-names: Jerome-Alexis
     family-names: Chevalier
     website: https://github.com/ja-che
@@ -296,11 +296,10 @@ authors:
     family-names: Gorrono
     website: https://github.com/jhlegarreta
     affiliation: Brigham and Women's Hospital, Mass General Brigham/Harvard Medical
-      School, Boston, MA, USA
+      School, Boston, Massachusetts, USA
   - given-names: Jona
     family-names: Sassenhagen
     website: https://github.com/jona-sassenhagen
-    affiliation: '@datarobot'
   - given-names: Joshua
     family-names: Teves
     website: https://github.com/jbteves
@@ -370,7 +369,7 @@ authors:
   - given-names: Mathias
     family-names: Goncalves
     website: https://github.com/mgxd
-    affiliation: Stanford University, Stanford, CA, USA
+    affiliation: Stanford University, Stanford, California, USA
     email: mathiasg@stanford.edu
     orcid: https://orcid.org/0000-0002-7252-7771
   - given-names: Mathieu
@@ -413,11 +412,11 @@ authors:
   - given-names: Michelle
     family-names: Wang
     website: https://github.com/michellewang
-    affiliation: Origami lab, McGill University, Montreal, Canada
+    affiliation: Origami lab, McGill University, Montréal, Canada
   - given-names: Mohammad
     family-names: Torabi
     website: https://github.com/mtorabi59
-    affiliation: Origami lab, McGill University, Montreal, Canada
+    affiliation: Origami lab, McGill University, Montréal, Canada
     email: mohammad.torabi@mail.mcgill.ca
     orcid: https://orcid.org/0000-0002-4429-8481
   - given-names: Moritz
@@ -514,11 +513,11 @@ authors:
   - given-names: Ryan
     family-names: Hammonds
     website: https://github.com/ryanhammonds
-    affiliation: UC San Diego, San Diego
+    affiliation: UC San Diego, San Diego, California, USA
   - given-names: Rémi
     family-names: Gau
     website: https://github.com/Remi-Gau
-    affiliation: Origami lab, McGill University, Montreal, Canada
+    affiliation: Origami lab, McGill University, Montréal, Canada
     orcid: https://orcid.org/0000-0002-1535-9767
     email: remi.gau2@mcgill.ca
   - given-names: Sachin
@@ -548,7 +547,7 @@ authors:
     family-names: Meisler
     website: https://www.stevenmeisler.com
     affiliation: Harvard-MIT Division of Health Sciences and Technology, Cambridge,
-      MA, USA
+      Massachusetts, USA
     email: smeisler@g.harvard.edu
     orcid: https://orcid.org/0000-0002-8888-1572
   - given-names: Sylvain

@@ -48,124 +48,124 @@ Other contributors
 
 Some other past or present contributors are:
 
-* `Ahmad Chamma`_
+* `Ahmad Chamma`_: INRIA, Saclay, France
 * `Aina Frau-Pascual`_
-* `Alex Rothberg`_
-* `Alexandre Abadie`_
+* `Alex Rothberg`_: Free Agency, New York, USA
+* `Alexandre Abadie`_: Inria, Paris
 * `Alexandre Abraham`_
-* `Alexandre Gramfort`_
+* `Alexandre Gramfort`_: Meta, France
 * `Alexandre Savio`_
-* `Alexis Thual`_
-* `Alisha Kodibagkar`_
+* `Alexis Thual`_: INRIA, Saclay, France
+* `Alisha Kodibagkar`_: MIT McGovern Institute, Cambridge, Massachusetts, United States
 * `Amadeus Kanaan`_
-* `Ana Luisa Pinho`_
-* `Andrés Hoyos Idrobo`_
-* `Anne-Sophie Kieslinger`_
-* `Ariel Rokem`_
+* `Ana Luisa Pinho`_: Western University, London, ON, Canada
+* `Andrés Hoyos Idrobo`_: Rakuten, France
+* `Anne-Sophie Kieslinger`_: Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig, Germnay
+* `Ariel Rokem`_: University of Washington, Psychology, Seattle, WA, 98107, USA
 * `Arthur Mensch`_
 * `Aswin Vijayan`_
-* `Audrey Duran`_
-* `Ben Cipollini`_
-* `Bertrand Thirion`_
+* `Audrey Duran`_: France
+* `Ben Cipollini`_: Facebook, Hayward, California, USA
+* `Bertrand Thirion`_: INRIA, Saclay, France
 * `Binh Nguyen`_
-* `Caglar Cakan`_
-* `Chris Gorgolewski`_
-* `Chris Markiewicz`_
-* `Christian Horea`_
+* `Caglar Cakan`_: Technische Universität Berlin, Berlin, Germany
+* `Chris Gorgolewski`_: Google LLC
+* `Chris Markiewicz`_: Stanford University, Stanford, California, USA
+* `Christian Horea`_: Dartmouth College, PBS, Hanover, NH, USA
 * `Christian Gerloff`_
-* `Colin Reininger`_
-* `Connor Lane`_
+* `Colin Reininger`_: Denver, Colorado, USA
+* `Connor Lane`_: Child Mind Institute, Baltimore, MD, USA
 * `Czarina Sy`_
 * `Céline Delettre`_
 * `Dan Gale`_
-* `Daniel Gomez`_
-* `Danilo Bzdok`_
-* `David G Ellis`_
-* `Demian Wassermann`_
-* `Derek Pisner`_
-* `Dimitri Papadopoulos Orfanos`_
-* `Elizabeth DuPre`_
+* `Daniel Gomez`_: Cambridge, Massachusetts, USA
+* `Danilo Bzdok`_: McGill University & Mila Quebec AI Institute, Montréal, Canada
+* `David G Ellis`_: University of Nebraska Medical Center, Nebraska, USA
+* `Demian Wassermann`_: INRIA, Saclay, France
+* `Derek Pisner`_: St. Petersburg, FL
+* `Dimitri Papadopoulos Orfanos`_: NeuroSpin, C.E.A., Université Paris-Saclay, Gif-sur-Yvette, France
+* `Elizabeth DuPre`_: Stanford University, Stanford, California, USA
 * `Elvis Dohmatob`_
 * `Eric Larson`_
 * `Evan Edmond`_
-* `Fabian Pedregosa`_
+* `Fabian Pedregosa`_: @google, Geneva, Switzerland
 * `Franz Liem`_
 * `François Paugam`_
 * `Gael Varoquaux`_
-* `Gilles de Hollander`_
-* `Greg Kiar`_
-* `Greydon Gilmore`_
-* `Guillaume Lemaitre`_
-* `Hao-Ting Wang`_
-* `Himanshu Aggarwal`_
+* `Gilles de Hollander`_: Vrije Universiteit, Amsterdam, The Netherlands
+* `Greg Kiar`_: Child Mind Institute
+* `Greydon Gilmore`_: Department of Mathematics, Western University, Canada
+* `Guillaume Lemaitre`_: INRIA, Saclay, France
+* `Hao-Ting Wang`_: Montréal Geriatrics Institute (CRIUGM), Montréal, Canada
+* `Himanshu Aggarwal`_: INRIA, Saclay, France
 * `Ian Abenes`_
-* `Jake Vogel`_
-* `Jan Margeta`_
-* `Jaques Grobler`_
+* `Jake Vogel`_: Philadelphia, USA
+* `Jan Margeta`_: KardioMe, Nova Dubnica, Slovakia
+* `Jaques Grobler`_: Anyline GmbH, Vienna, Austria
 * `Jason Gors`_
 * `Javier Rasero`_
 * `Jean Kossaifi`_
-* `Jean-Rémi King`_
-* `Jelle Roelof Dalenberg`_
+* `Jean-Rémi King`_: Meta AI, CNRS, Paris
+* `Jelle Roelof Dalenberg`_: University Medical Center Groningen, Groningen
 * `Jeremy Lefort-Besnard`_
-* `Jerome Dockes`_
-* `Jerome-Alexis Chevalier`_
-* `Johannes Wiesner`_
-* `Jon Haitz Legarreta Gorrono`_
+* `Jerome Dockes`_: Origami lab, McGill University, Montréal, Canada
+* `Jerome-Alexis Chevalier`_: Emerton Data
+* `Johannes Wiesner`_: Central Institute of Mental Health, Mannheim, Germany
+* `Jon Haitz Legarreta Gorrono`_: Brigham and Women's Hospital, Mass General Brigham/Harvard Medical School, Boston, Massachusetts, USA
 * `Jona Sassenhagen`_
 * `Joshua Teves`_
-* `Julia Huntenburg`_
-* `Julio A Peraza`_
+* `Julia Huntenburg`_: International Brain Laboratory, Berlin, Germany
+* `Julio A Peraza`_: USA
 * `Kamalakar Reddy Daddy`_
-* `Kevin Sitek`_
-* `Koen Helwegen`_
+* `Kevin Sitek`_: Northwestern University, Evanston, IL, USA
+* `Koen Helwegen`_: Dutch Connectome Lab, VU, Amsterdam, The Netherlands
 * `Konrad Wagstyl`_
 * `Konstantin Shmelkov`_
-* `Kshitij Chawla`_
-* `Kun CHEN`_
+* `Kshitij Chawla`_: Duke University Health System, USA
+* `Kun CHEN`_: University of Macau, Macau, China
 * `Leonard Sasse`_
 * `Loic Estève`_
 * `Loic Tetrel`_
 * `Luz Paz`_
 * `Manon Pietrantoni`_
-* `Martin Perez-Guevara`_
-* `Martin Wegrzyn`_
-* `Mathias Goncalves`_
+* `Martin Perez-Guevara`_: Criteo, France
+* `Martin Wegrzyn`_: Bielefeld University
+* `Mathias Goncalves`_: Stanford University, Stanford, California, USA
 * `Mathieu Dugré`_
-* `Matthias Ekman`_
-* `Matthieu Joulot`_
+* `Matthias Ekman`_: Donders Institute, Nijmegen, The Netherlands
+* `Matthieu Joulot`_: Aramis, Paris Brain Institute, Paris, France
 * `Maximilian Cosmo Sitter`_
-* `Mehdi Rahim`_
+* `Mehdi Rahim`_: Inria
 * `Michael Eickenberg`_
-* `Michael Hanke`_
-* `Michael Notter`_
-* `Michael Waskom`_
-* `Michelle Wang`_
-* `Mohammad Torabi`_
+* `Michael Hanke`_: Germany
+* `Michael Notter`_: Lausanne, Switzerland
+* `Michael Waskom`_: Flatiron health, New York, USA
+* `Michelle Wang`_: Origami lab, McGill University, Montréal, Canada
+* `Mohammad Torabi`_: Origami lab, McGill University, Montréal, Canada
 * `Moritz Boos`_
 * `Myeong Seop Song`_
-* `Natasha Clarke`_
-* `Neelay Shah`_
-* `Nicolas Gensollen`_
-* `Oliver Warrington`_
-* `Oscar Esteban`_
-* `Patrick Sadil`_
+* `Natasha Clarke`_: @SIMEXP, Montréal, Canada
+* `Neelay Shah`_: Max Planck Institute for Intelligent Systems, Germany
+* `Nicolas Gensollen`_: INRIA, Paris, France
+* `Oliver Warrington`_: Wellcome Centre for Human Neuroimaging, UCL, London, UK
+* `Oscar Esteban`_: Centre Hospitalier Universitaire Vaudoise, Lausanne, Switzerland
+* `Patrick Sadil`_: Department of Biostatistics, Johns Hopkins Bloomberg School of Public Health, USA
 * `Paul Bogdan`_
-* `Paula Sanz-Leon`_
+* `Paula Sanz-Leon`_: Australia
 * `Peer Herholz`_
-* `Philippe Gervais`_
-* `Pierre Bellec`_
+* `Philippe Gervais`_: Zurich, Switzerland
+* `Pierre Bellec`_: Psychology Department, University of Montréal, Montréal, Canada
 * `Pierre Glaser`_
-* `Pierre-Olivier Quirion`_
-* `Pradeep Reddy Raamana`_
+* `Pierre-Olivier Quirion`_: Canadian Center for Computational Genomics / Calcul, Québec, Canada
+* `Pradeep Reddy Raamana`_: University of Pittsburgh, Pittsburgh, PA, USA
 * `Rahul Brito`_
-* `Raphael Meudec`_
-* `Robert Luke`_
+* `Raphael Meudec`_: INRIA, Saclay, France
+* `Robert Luke`_: @agencyenterprise, Melbourne, Australia
 * `Robert Williamson`_
-* `Roberto Guidotti`_
-* `Ronald Phlypo`_
-* `Ryan Hammonds`_
-* `Rémi Gau`_
+* `Roberto Guidotti`_: University "G. D'Annunzio" Chieti-Pescara, San Benedetto del Tronto, Italy
+* `Ronald Phlypo`_: Lyon area, France
+* `Ryan Hammonds`_: UC San Diego, San Diego, California, USA
+* `Rémi Gau`_: Origami lab, McGill University, Montréal, Canada
 * `Sachin Patalasingh`_
 * `Sage Hahn`_
 * `Salma Bougacha`_
@@ -173,20 +173,20 @@ Some other past or present contributors are:
 * `Sami Jawhar`_
 * `Simon Steinkamp`_
 * `Sourav Singh`_
-* `Steven Meisler`_
+* `Steven Meisler`_: Harvard-MIT Division of Health Sciences and Technology, Cambridge, Massachusetts, USA
 * `Sylvain Lan`_
-* `Sylvain Takerkart`_
-* `Tarun Samanta`_
-* `Taylor Salo`_
-* `Thomas Bazeille`_
-* `Tom Vanasse`_
+* `Sylvain Takerkart`_: CNRS, Institut des Neurosciences de la Timone, Marseille, France
+* `Tarun Samanta`_: Acharya Prafulla Chandra College
+* `Taylor Salo`_: Lifespan Informatics & Neuroimaging Center, University of Pennsylvania, USA
+* `Thomas Bazeille`_: INRIA, Parietal, Paris, France
+* `Tom Vanasse`_: Wisconsin Institute for Sleep and Consciousness, USA
 * `Vasco Diogo`_
-* `Vincent Michel`_
-* `Virgile Fritsch`_
-* `Yaroslav Halchenko`_
-* `Yasmin Mzayek`_
-* `Zvi Baratz`_
-* `Óscar Nájera`_
+* `Vincent Michel`_: http://www.logilab.fr/
+* `Virgile Fritsch`_: Inria - Parietal team, Saclay, France
+* `Yaroslav Halchenko`_: Dartmouth College, USA
+* `Yasmin Mzayek`_: INRIA, Saclay, France
+* `Zvi Baratz`_: Tel-Aviv University, Israel
+* `Óscar Nájera`_: Munich, Germany
 
 .. OTHER CONTRIBUTION SECTION ENDS HERE
 
