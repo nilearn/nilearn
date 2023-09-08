@@ -48,6 +48,7 @@ authors:
   - given-names: Alexandre
     family-names: Abraham
     website: https://twinee.fr/
+    affiliation: Bazemont, Île-de-France, France
   - given-names: Alexandre
     family-names: Gramfort
     website: http://alexandre.gramfort.net/
@@ -85,7 +86,8 @@ authors:
   - given-names: Ariel
     family-names: Rokem
     website: http://arokem.org/
-    affiliation: University of Washington, Psychology, Seattle, WA, 98107, USA
+    affiliation: University of Washington, Psychology, Seattle, Washington, 98107,
+      USA
     email: arokem@uw.edu
     orcid: https://orcid.org/0000-0003-0679-1985
   - given-names: Arthur
@@ -117,7 +119,7 @@ authors:
     affiliation: Technische Universität Berlin, Berlin, Germany
   - given-names: Chris
     family-names: Gorgolewski
-    website: https://github.com/chrisgorgo
+    website: https://chrisgorgolewski.org/
     affiliation: Google LLC
     email: krzysztof.gorgolewski@gmail.com
     orcid: https://orcid.org/0000-0003-3321-7583
@@ -153,6 +155,7 @@ authors:
   - given-names: Dan
     family-names: Gale
     website: https://danjgale.github.io/
+    affiliation: Centre for Neuroscience Studie, Queen University, Kingston, ON, Canada
   - given-names: Daniel
     family-names: Gomez
     website: https://github.com/dangom
@@ -188,12 +191,16 @@ authors:
   - given-names: Elvis
     family-names: Dohmatob
     website: https://dohmatob.github.io/
+    affiliation: Facebook AI Research (FAIR)
   - given-names: Eric
     family-names: Larson
     website: https://larsoner.com/
+    affiliation: Institute for Learning and Brain Sciences, University of Washington,
+      Washington, USA
   - given-names: Evan
     family-names: Edmond
     website: https://evan.science/
+    affiliation: University of Oxford, Oxford, UK
   - given-names: Fabian
     family-names: Pedregosa
     website: https://github.com/fabianp
@@ -207,6 +214,7 @@ authors:
   - given-names: Gael
     family-names: Varoquaux
     website: http://gael-varoquaux.info/
+    affiliation: Inria, Saclay, France
   - given-names: Gilles de
     family-names: Hollander
     website: https://github.com/Gilles86
@@ -221,7 +229,7 @@ authors:
   - given-names: Greydon
     family-names: Gilmore
     website: https://www.greydongilmore.com/
-    affiliation: Department of Mathematics, Western University, Canada
+    affiliation: Department of Mathematics, Western University, Toronto, Canada
     email: greydon.gilmore@gmail.com
   - given-names: Guillaume
     family-names: Lemaitre
@@ -262,12 +270,15 @@ authors:
   - given-names: Jason
     family-names: Gors
     website: http://jgors.com/
+    affiliation: Insight Data Science, Mountain View, California, USA
   - given-names: Javier
     family-names: Rasero
     website: https://jrasero.github.io/
+    affiliation: School of Data Science, University of Virginia, Viginia, USA
   - given-names: Jean
     family-names: Kossaifi
     website: http://jeankossaifi.com/
+    affiliation: Imperial College London, London, UK
   - given-names: Jean-Rémi
     family-names: King
     website: https://github.com/kingjr
@@ -279,6 +290,7 @@ authors:
   - given-names: Jeremy
     family-names: Lefort-Besnard
     website: https://jlefortbesnard.github.io/
+    affiliation: INRIA Rennes, France
   - given-names: Jerome
     family-names: Dockes
     website: https://jeromedockes.github.io/
@@ -375,6 +387,7 @@ authors:
   - given-names: Mathieu
     family-names: Dugré
     website: https://mathdugre.me
+    affiliation: Concordia University, Montréal, Canada
   - given-names: Matthias
     family-names: Ekman
     website: https://github.com/mekman
@@ -462,6 +475,7 @@ authors:
   - given-names: Peer
     family-names: Herholz
     website: https://peerherholz.github.io/
+    affiliation: Origami lab, McGill University, Montréal, Canada
   - given-names: Philippe
     family-names: Gervais
     website: https://github.com/pgervais
@@ -475,6 +489,8 @@ authors:
   - given-names: Pierre
     family-names: Glaser
     website: https://pierreglaser.github.io/
+    affiliation: Gatsby Computational Neuroscience Unit, University College London,
+      London, UK
   - given-names: Pierre-Olivier
     family-names: Quirion
     website: https://github.com/poquirion

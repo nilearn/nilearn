@@ -46,7 +46,7 @@
 
 .. _Caglar Cakan: https://github.com/caglorithm
 
-.. _Chris Gorgolewski: https://github.com/chrisgorgo
+.. _Chris Gorgolewski: https://chrisgorgolewski.org/
 
 .. _Chris Markiewicz: https://github.com/effigies
 

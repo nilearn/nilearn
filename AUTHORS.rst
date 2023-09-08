@@ -52,7 +52,7 @@ Some other past or present contributors are:
 * `Aina Frau-Pascual`_
 * `Alex Rothberg`_: Free Agency, New York, USA
 * `Alexandre Abadie`_: Inria, Paris
-* `Alexandre Abraham`_
+* `Alexandre Abraham`_: Bazemont, Île-de-France, France
 * `Alexandre Gramfort`_: Meta, France
 * `Alexandre Savio`_
 * `Alexis Thual`_: INRIA, Saclay, France
@@ -61,7 +61,7 @@ Some other past or present contributors are:
 * `Ana Luisa Pinho`_: Western University, London, ON, Canada
 * `Andrés Hoyos Idrobo`_: Rakuten, France
 * `Anne-Sophie Kieslinger`_: Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig, Germnay
-* `Ariel Rokem`_: University of Washington, Psychology, Seattle, WA, 98107, USA
+* `Ariel Rokem`_: University of Washington, Psychology, Seattle, Washington, 98107, USA
 * `Arthur Mensch`_
 * `Aswin Vijayan`_
 * `Audrey Duran`_: France
@@ -77,7 +77,7 @@ Some other past or present contributors are:
 * `Connor Lane`_: Child Mind Institute, Baltimore, MD, USA
 * `Czarina Sy`_
 * `Céline Delettre`_
-* `Dan Gale`_
+* `Dan Gale`_: Centre for Neuroscience Studie, Queen University, Kingston, ON, Canada
 * `Daniel Gomez`_: Cambridge, Massachusetts, USA
 * `Danilo Bzdok`_: McGill University & Mila Quebec AI Institute, Montréal, Canada
 * `David G Ellis`_: University of Nebraska Medical Center, Nebraska, USA
@@ -85,16 +85,16 @@ Some other past or present contributors are:
 * `Derek Pisner`_: St. Petersburg, FL
 * `Dimitri Papadopoulos Orfanos`_: NeuroSpin, C.E.A., Université Paris-Saclay, Gif-sur-Yvette, France
 * `Elizabeth DuPre`_: Stanford University, Stanford, California, USA
-* `Elvis Dohmatob`_
-* `Eric Larson`_
-* `Evan Edmond`_
+* `Elvis Dohmatob`_: Facebook AI Research (FAIR)
+* `Eric Larson`_: Institute for Learning and Brain Sciences, University of Washington, Washington, USA
+* `Evan Edmond`_: University of Oxford, Oxford, UK
 * `Fabian Pedregosa`_: @google, Geneva, Switzerland
 * `Franz Liem`_
 * `François Paugam`_
-* `Gael Varoquaux`_
+* `Gael Varoquaux`_: Inria, Saclay, France
 * `Gilles de Hollander`_: Vrije Universiteit, Amsterdam, The Netherlands
 * `Greg Kiar`_: Child Mind Institute
-* `Greydon Gilmore`_: Department of Mathematics, Western University, Canada
+* `Greydon Gilmore`_: Department of Mathematics, Western University, Toronto, Canada
 * `Guillaume Lemaitre`_: INRIA, Saclay, France
 * `Hao-Ting Wang`_: Montréal Geriatrics Institute (CRIUGM), Montréal, Canada
 * `Himanshu Aggarwal`_: INRIA, Saclay, France
@@ -102,12 +102,12 @@ Some other past or present contributors are:
 * `Jake Vogel`_: Philadelphia, USA
 * `Jan Margeta`_: KardioMe, Nova Dubnica, Slovakia
 * `Jaques Grobler`_: Anyline GmbH, Vienna, Austria
-* `Jason Gors`_
-* `Javier Rasero`_
-* `Jean Kossaifi`_
+* `Jason Gors`_: Insight Data Science, Mountain View, California, USA
+* `Javier Rasero`_: School of Data Science, University of Virginia, Viginia, USA
+* `Jean Kossaifi`_: Imperial College London, London, UK
 * `Jean-Rémi King`_: Meta AI, CNRS, Paris
 * `Jelle Roelof Dalenberg`_: University Medical Center Groningen, Groningen
-* `Jeremy Lefort-Besnard`_
+* `Jeremy Lefort-Besnard`_: INRIA Rennes, France
 * `Jerome Dockes`_: Origami lab, McGill University, Montréal, Canada
 * `Jerome-Alexis Chevalier`_: Emerton Data
 * `Johannes Wiesner`_: Central Institute of Mental Health, Mannheim, Germany
@@ -131,7 +131,7 @@ Some other past or present contributors are:
 * `Martin Perez-Guevara`_: Criteo, France
 * `Martin Wegrzyn`_: Bielefeld University
 * `Mathias Goncalves`_: Stanford University, Stanford, California, USA
-* `Mathieu Dugré`_
+* `Mathieu Dugré`_: Concordia University, Montréal, Canada
 * `Matthias Ekman`_: Donders Institute, Nijmegen, The Netherlands
 * `Matthieu Joulot`_: Aramis, Paris Brain Institute, Paris, France
 * `Maximilian Cosmo Sitter`_
@@ -152,10 +152,10 @@ Some other past or present contributors are:
 * `Patrick Sadil`_: Department of Biostatistics, Johns Hopkins Bloomberg School of Public Health, USA
 * `Paul Bogdan`_
 * `Paula Sanz-Leon`_: Australia
-* `Peer Herholz`_
+* `Peer Herholz`_: Origami lab, McGill University, Montréal, Canada
 * `Philippe Gervais`_: Zurich, Switzerland
 * `Pierre Bellec`_: Psychology Department, University of Montréal, Montréal, Canada
-* `Pierre Glaser`_
+* `Pierre Glaser`_: Gatsby Computational Neuroscience Unit, University College London, London, UK
 * `Pierre-Olivier Quirion`_: Canadian Center for Computational Genomics / Calcul, Québec, Canada
 * `Pradeep Reddy Raamana`_: University of Pittsburgh, Pittsburgh, PA, USA
 * `Rahul Brito`_
