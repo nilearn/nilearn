@@ -20,7 +20,7 @@ Changes
 
 - :bdg-danger:`Deprecation` The function ``sym_to_vec`` is deprecated and will be removed in release ``0.4``. Use function :func:`~connectome.sym_matrix_to_vec` instead.
 
-- Added argument ``smoothing_fwhm`` to :class:`~regions.RegionExtractor` to control smoothing according to the resolution of atlas images.
+- :bdg-success:`API` Added argument ``smoothing_fwhm`` to :class:`~regions.RegionExtractor` to control smoothing according to the resolution of atlas images.
 
 Fixes
 -----
@@ -34,13 +34,13 @@ Fixes
 Enhancements
 ------------
 
-- New functions :func:`~datasets.fetch_neurovault` and :func:`~datasets.fetch_neurovault_ids` help you download statistical maps from the `Neurovault <http://neurovault.org>`_ platform.
+- :bdg-success:`API` New functions :func:`~datasets.fetch_neurovault` and :func:`~datasets.fetch_neurovault_ids` help you download statistical maps from the `Neurovault <http://neurovault.org>`_ platform.
 
-- New function :func:`~connectome.vec_to_sym_matrix` reshapes vectors to symmetric matrices. It acts as the reverse of function :func:`~connectome.sym_matrix_to_vec`.
+- :bdg-success:`API` New function :func:`~connectome.vec_to_sym_matrix` reshapes vectors to symmetric matrices. It acts as the reverse of function :func:`~connectome.sym_matrix_to_vec`.
 
-- Add an option allowing to vectorize connectivity matrices returned by the ``transform`` method of class :class:`~connectome.ConnectivityMeasure`.
+- :bdg-success:`API` Add an option allowing to vectorize connectivity matrices returned by the ``transform`` method of class :class:`~connectome.ConnectivityMeasure`.
 
-- Class :class:`~connectome.ConnectivityMeasure` now exposes an ``inverse_transform`` method, useful for going back from vectorized connectivity coefficients to connectivity matrices. Also, it allows to recover the covariance matrices for the "tangent" kind.
+- :bdg-success:`API` Class :class:`~connectome.ConnectivityMeasure` now exposes an ``inverse_transform`` method, useful for going back from vectorized connectivity coefficients to connectivity matrices. Also, it allows to recover the covariance matrices for the "tangent" kind.
 
 - Reworking and renaming of connectivity measures example. Renamed from ``plot_connectivity_measures`` to ``plot_group_level_connectivity``.
 

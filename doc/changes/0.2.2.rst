@@ -19,13 +19,13 @@ New
 Enhancements
 ------------
 
-- Flake8 is now run on pull requests.
+- :bdg-secondary:`Maint` Flake8 is now run on pull requests.
 
-- Reworking of the documentation organization.
+- :bdg-secondary:`Maint` Reworking of the documentation organization.
 
-- ``Sphinx-gallery`` updated to version ``0.1.1``.
+- :bdg-secondary:`Maint` ``Sphinx-gallery`` updated to version ``0.1.1``.
 
-- The default ``n_subjects=None`` in function :func:`~datasets.fetch_adhd` is now changed to ``n_subjects=30``.
+- :bdg-success:`API` The default ``n_subjects=None`` in function :func:`~datasets.fetch_adhd` is now changed to ``n_subjects=30``.
 
 Fixes
 -----
@@ -34,9 +34,9 @@ Fixes
 
 - Fix casting errors when providing integer data to function :func:`~image.high_variance_confounds`.
 
-- Fix matplotlib ``1.5.0`` compatibility in function :func:`~plotting.plot_prob_atlas`.
+- :bdg-secondary:`Maint` Fix matplotlib ``1.5.0`` compatibility in function :func:`~plotting.plot_prob_atlas`.
 
-- Fix matplotlib backend choice on Mac OS X.
+- :bdg-secondary:`Maint` Fix matplotlib backend choice on Mac OS X.
 
 - :bdg-info:`Plotting` Function :func:`~plotting.find_xyz_cut_coords` raises a meaningful error when 4D data is provided instead of 3D.
 
