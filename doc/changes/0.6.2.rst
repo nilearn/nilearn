@@ -12,7 +12,7 @@ ENHANCEMENTS
 ------------
 
 - :bdg-secondary:`Maint` Generated documentation now includes Binder links to launch examples interactively in the browser (:gh:`2300` by `Elizabeth DuPre`_).
-- :class:`~maskers.NiftiSpheresMasker` now has an inverse transform, projecting spheres to the corresponding ``mask_img`` (:gh:`2429` by `Simon Steinkamp`_).
+- :bdg-success:`API` :class:`~maskers.NiftiSpheresMasker` now has an inverse transform, projecting spheres to the corresponding ``mask_img`` (:gh:`2429` by `Simon Steinkamp`_).
 
 Fixes
 -----

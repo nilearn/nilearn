@@ -40,8 +40,8 @@ Enhancements
 Changes
 -------
 
-- The parameter ``n_subjects`` is deprecated and will be removed in future release. Use ``subjects`` instead in function :func:`~datasets.fetch_haxby`.
+- :bdg-danger:`Deprecation` The parameter ``n_subjects`` is deprecated and will be removed in future release. Use ``subjects`` instead in function :func:`~datasets.fetch_haxby`.
 
-- The function :func:`~datasets.fetch_haxby` will now fetch the data accepting input given in ``subjects`` as a list than integer.
+- :bdg-success:`API` The function :func:`~datasets.fetch_haxby` will now fetch the data accepting input given in ``subjects`` as a list than integer.
 
 - :bdg-danger:`Deprecation` Replace ``get_affine`` by ``affine`` with recent versions of ``nibabel``.

@@ -52,13 +52,13 @@ Enhancements
 
 - Function :func:`~datasets.load_mni152_template` resamples now the template to a preset resolution different from the resolution of the original template, i.e. 1mm. The default resolution is 2mm, which means that the new template is resampled to the resolution of the old template. Nevertheless, the shape of the template changed from ``(91, 109, 91)`` to ``(99, 117, 95)``; the affine also changed from array([[-2., 0., 0., 90.], [0., 2., 0., -126.], [0., 0., 2., -72.], [0., 0., 0., 1.]]) to array([[1., 0., 0., -98.], [0., 1., 0., -134.], [0., 0., 1., -72.], [0., 0., 0., 1.]]). Additionally, the new template has also been rescaled; whereas the old one varied between 0 and 8339, the new one varies between 0 and 255 (:gh:`2738` by `Ana Luisa Pinho`_).
 
-- Function :func:`~datasets.load_mni152_brain_mask` accepts now the parameter ``resolution``, which will set the resolution of the template used for the masking (:gh:`2738` by `Ana Luisa Pinho`_).
+- :bdg-success:`API` Function :func:`~datasets.load_mni152_brain_mask` accepts now the parameter ``resolution``, which will set the resolution of the template used for the masking (:gh:`2738` by `Ana Luisa Pinho`_).
 
 - Function :func:`~masking.compute_brain_mask` accepts now as input the whole-brain, 1mm-resolution, MNI152 T1 template instead of the averaged, whole-brain, 2mm-resolution MNI152 T1 template; it also accepts as input the grey-matter and white-matter ICBM152 1mm-resolution templates dated from 2009 (:gh:`2738` by `Ana Luisa Pinho`_).
 
 - :bdg-secondary:`Maint` Common parts of docstrings across Nilearn can now be filled automatically using the decorator `nilearn._utils.fill_doc`. This can be applied to common function parameters or common lists of options for example. The standard parts are defined in a single location (`nilearn._utils.docs.py`) which makes them easier to maintain and update (:gh:`2875` by `Nicolas Gensollen`_).
 
-- The ``data_dir`` argument can now be either a :class:`pathlib.Path` or a :obj:`str`. This extension affects datasets and atlas fetchers (:gh:`2928` by `Raphael Meudec`_).
+- :bdg-success:`API` The ``data_dir`` argument can now be either a :class:`pathlib.Path` or a :obj:`str`. This extension affects datasets and atlas fetchers (:gh:`2928` by `Raphael Meudec`_).
 
 Changes
 -------

@@ -11,7 +11,7 @@
 Highlights
 ----------
 
-- New class :class:`nilearn.maskers.NiftiSpheresMasker` which extracts signals from balls specified by their coordinates.
+- :bdg-success:`API` New class :class:`nilearn.maskers.NiftiSpheresMasker` which extracts signals from balls specified by their coordinates.
 
 - :bdg-secondary:`Maint` Obey Debian packaging rules.
 

@@ -21,9 +21,9 @@ NEW
 
 - Class :class:`~maskers.NiftiLabelsMasker` now consumes less memory when extracting the signal from a 3D/4D image. This is especially noteworthy when extracting signals from large 4D images.
 
-- New function :func:`~datasets.fetch_atlas_schaefer_2018`.
+- :bdg-success:`API` New function :func:`~datasets.fetch_atlas_schaefer_2018`.
 
-- New function :func:`~datasets.fetch_coords_seitzman_2018`.
+- :bdg-success:`API` New function :func:`~datasets.fetch_coords_seitzman_2018`.
 
 Changes
 -------

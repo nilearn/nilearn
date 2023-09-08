@@ -34,14 +34,14 @@ HIGHLIGHTS
 NEW
 ---
 - Nilearn now includes the functionality of `Nistats <https://nistats.github.io>`_.
-- New decoder object
+- :bdg-success:`API` New decoder object
   :class:`nilearn.decoding.Decoder` (for classification) and
   :class:`nilearn.decoding.DecoderRegressor` (for regression) implement a model
   selection scheme that averages the best models within a cross validation loop.
   The resulting average model is the one used as a classifier or a regressor.
   These two objects also leverage the `NiftiMaskers` to provide a direct
   interface with the Nifti files on disk.
-- New FREM object
+- :bdg-success:`API` New FREM object
   :class:`nilearn.decoding.FREMClassifier` (for classification) and
   :class:`nilearn.decoding.FREMRegressor` (for regression) extend the decoder
   object pipeline with one fast clustering step at the beginning (yielding an
@@ -77,7 +77,7 @@ NEW
   to demo how to do cortical surface-based searchlight decoding with Nilearn.
 - confounds or additional regressors for design matrix can be specified as
   numpy arrays or pandas DataFrames interchangeably
-- The decomposition estimators will now accept argument `per_component`
+- :bdg-success:`API` The decomposition estimators will now accept argument `per_component`
   with `score` method to explain the variance for each component.
 
 
@@ -108,9 +108,7 @@ Changes
 - :bdg-danger:`Deprecation` Function ``nilearn.plotting.plot_connectome_strength`` has been deprecated and will
   be removed in release 0.9 .
 
-- :class:`nilearn.connectome.ConnectivityMeasure` can now remove
-  confounds in its transform step.
+- :class:`nilearn.connectome.ConnectivityMeasure` can now remove confounds in its transform step.
 - :func:`nilearn.surface.vol_to_surf` can now sample between two nested surfaces
   (eg white matter and pial surfaces) at specific cortical depths
-- :func:`nilearn.datasets.fetch_surf_fsaverage` now also downloads white matter
-  surfaces.
+- :func:`nilearn.datasets.fetch_surf_fsaverage` now also downloads white matter surfaces.

@@ -25,7 +25,7 @@ Enhancements
 
 - :bdg-secondary:`Maint` ``Sphinx-gallery`` updated to version ``0.1.1``.
 
-- The default ``n_subjects=None`` in function :func:`~datasets.fetch_adhd` is now changed to ``n_subjects=30``.
+- :bdg-success:`API` The default ``n_subjects=None`` in function :func:`~datasets.fetch_adhd` is now changed to ``n_subjects=30``.
 
 Fixes
 -----
