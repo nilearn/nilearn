@@ -49,7 +49,7 @@ NEW
 Fixes
 -----
 
-- Convert references in ``signal.py``, ``atlas.py``, ``func.py``, ``neurovault.py``, and ``struct.py`` to use footcite / footbibliography (:gh:`2806` by `Jeremy Lefort-Besnard`_).
+- :bdg-secondary:`Maint` Convert references in ``signal.py``, ``atlas.py``, ``func.py``, ``neurovault.py``, and ``struct.py`` to use footcite / footbibliography (:gh:`2806` by `Jeremy Lefort-Besnard`_).
 
 - Fix detrending and temporal filtering order for confounders in function :func:`~signal.clean`, so that these operations are applied in the same order as for the signals, i.e., first detrending and then temporal filtering (see :gh:`2730`) (:gh:`2732` by `Javier Rasero`_).
 
@@ -72,7 +72,7 @@ Enhancements
 
 - :bdg-info:`Plotting` Function :func:`~plotting.view_connectome` now accepts an optional argument ``node_color`` to provide a single color for all nodes, or one color per node. It defaults to ``auto`` which colors markers according to the viridis colormap (:gh:`2810` by `Raphael Meudec`_).
 
-- Function :func:`~signal.clean` has been refactored to clarify the data flow (:gh:`2821` by `Hao-Ting Wang`_).
+- :bdg-secondary:`Maint` Function :func:`~signal.clean` has been refactored to clarify the data flow (:gh:`2821` by `Hao-Ting Wang`_).
 
 - Parameter ``sessions`` has been replaced with ``runs`` in :func:`~signal.clean` to match BIDS semantics. ``sessions`` has been deprecated and will be removed in ``0.9.0`` (:gh:`2821` by `Hao-Ting Wang`_).
 
@@ -82,7 +82,7 @@ Enhancements
 
 - Function :func:`~glm.first_level.run_glm` now allows auto regressive noise models of order greater than one (:gh:`2532` by `Robert Luke`_).
 
-- Moves parameter ``sample_mask`` from :class:`~maskers.NiftiMasker` to method ``transform`` in base class :class:`nilearn.maskers.BaseMasker` (:gh:`2858` by `Hao-Ting Wang`_).
+- :bdg-secondary:`Maint` Moves parameter ``sample_mask`` from :class:`~maskers.NiftiMasker` to method ``transform`` in base class :class:`nilearn.maskers.BaseMasker` (:gh:`2858` by `Hao-Ting Wang`_).
 
 - Function :func:`~datasets.fetch_surf_fsaverage` now accepts ``fsaverage3``, ``fsaverage4`` and ``fsaverage6`` as values for parameter ``mesh``, so that all resolutions of fsaverage from 3 to 7 are now available (:gh:`2815` by `Alexis Thual`_).
 

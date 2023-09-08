@@ -13,7 +13,7 @@ Highlights
 
 - New class :class:`nilearn.maskers.NiftiSpheresMasker` which extracts signals from balls specified by their coordinates.
 
-- Obey Debian packaging rules.
+- :bdg-secondary:`Maint` Obey Debian packaging rules.
 
 - Add the Destrieux 2009 and Power 2011 atlas.
 

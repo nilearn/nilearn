@@ -30,7 +30,7 @@ Fixes
 
 - ``Scipy 0.18`` introduces a bug in a corner-case of resampling. Nilearn ``0.2.5`` can give wrong results with ``scipy 0.18``, but this is fixed in ``0.2.6``.
 
-- Broken links and references fixed in docs.
+- :bdg-secondary:`Maint` Broken links and references fixed in docs.
 
 
 0.2.5

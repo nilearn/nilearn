@@ -63,7 +63,7 @@ FIXES
 
 - The argument ``version='det'`` in function :func:`~datasets.fetch_atlas_pauli_2017` now works as expected (:gh:`2235` by `Ryan Hammonds`_).
 
-- ``pip install nilearn`` now installs the necessary dependencies (:gh:`2214` by `Kshitij Chawla`_).
+- :bdg-secondary:`Maint` ``pip install nilearn`` now installs the necessary dependencies (:gh:`2214` by `Kshitij Chawla`_).
 
 **Lots of other fixes in documentation and examples.** More detailed change list follows:
 
@@ -94,7 +94,7 @@ Fixes
 
 - Function :func:`~image.smooth_img` no longer fails if ``fwhm`` is a :class:`numpy.ndarray` (:gh:`2107` by `Paula Sanz-Leon`_).
 
-- ``pip install nilearn`` now installs the necessary dependencies (:gh:`2214` by `Kshitij Chawla`_).
+- :bdg-secondary:`Maint` ``pip install nilearn`` now installs the necessary dependencies (:gh:`2214` by `Kshitij Chawla`_).
 
 - Function :func:`~image.new_img_like` no longer attempts to copy non-iterable headers (:gh:`2212` by `Kshitij Chawla`_).
 
@@ -186,7 +186,7 @@ NEW
 
 - A new method for :class:`~maskers.NiftiMasker` instances for generating reports viewable in a web browser, Jupyter Notebook, or VSCode (:gh:`2019` by `Elizabeth DuPre`_).
 
-- ``joblib`` is now a dependency (:gh:`2090` by `Jerome Dockes`_).
+- :bdg-secondary:`Maint`  ``joblib`` is now a dependency (:gh:`2090` by `Jerome Dockes`_).
 
 - New class :class:`~regions.ReNA` implementing parcellation method :term:`ReNA`: Fast agglomerative clustering based on recursive nearest neighbor grouping. Yields very fast & accurate models, without creation of giant clusters (:gh:`1336` by `Andrés Hoyos Idrobo`_).
 
@@ -198,16 +198,16 @@ NEW
 
 - New example in ``examples/05_advanced/plot_age_group_prediction_cross_val.py`` to compare methods for classifying subjects into age groups based on functional connectivity. Similar example in ``examples/03_connectivity/plot_group_level_connectivity.py`` simplified (:gh:`2063` by `Jerome Dockes`_).
 
-- Merged ``examples/03_connectivity/plot_adhd_spheres.py`` and ``examples/03_connectivity/plot_sphere_based_connectome.py`` to remove duplication across examples. The improved ``examples/03_connectivity/plot_sphere_based_connectome.py`` contains concepts previously reviewed in both examples (:gh:`2013` by `Jake Vogel`_).
+- :bdg-secondary:`Maint` Merged ``examples/03_connectivity/plot_adhd_spheres.py`` and ``examples/03_connectivity/plot_sphere_based_connectome.py`` to remove duplication across examples. The improved ``examples/03_connectivity/plot_sphere_based_connectome.py`` contains concepts previously reviewed in both examples (:gh:`2013` by `Jake Vogel`_).
 
-- Merged ``examples/03_connectivity/plot_compare_decomposition.py`` and ``examples/03_connectivity/plot_canica_analysis.py`` into an improved ``examples/03_connectivity/plot_compare_decomposition.py`` (:gh:`2013` by `Jake Vogel`_).
+- :bdg-secondary:`Maint` Merged ``examples/03_connectivity/plot_compare_decomposition.py`` and ``examples/03_connectivity/plot_canica_analysis.py`` into an improved ``examples/03_connectivity/plot_compare_decomposition.py`` (:gh:`2013` by `Jake Vogel`_).
 
-- The Localizer dataset now follows the :term:`BIDS` organization.
+- :bdg-secondary:`Maint` The Localizer dataset now follows the :term:`BIDS` organization.
 
 Changes
 -------
 
-- All the connectivity examples are changed from ADHD to brain development :term:`fMRI` dataset.
+- :bdg-secondary:`Maint` All the connectivity examples are changed from ADHD to brain development :term:`fMRI` dataset.
 
 - Examples ``plot_decoding_tutorial``, ``plot_haxby_decoder``, ``plot_haxby_different_estimators``, ``plot_haxby_full_analysis``, ``plot_oasis_vbm`` now use :class:`~decoding.Decoder` and :class:`~decoding.DecoderRegressor` instead of sklearn SVC and SVR (:gh:`2000` by `Binh Nguyen`_).
 

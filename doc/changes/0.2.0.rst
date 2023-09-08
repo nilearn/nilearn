@@ -24,7 +24,7 @@ New features
 
 - The class :class:`decomposition.DictLearning` in :mod:`nilearn.decomposition` is a decomposition method similar to :term:`ICA` that imposes sparsity on components instead of independence between them.
 
-- Integrating back references template from ``sphinx-gallery`` of ``0.0.11`` version release.
+- :bdg-secondary:`Maint` Integrating back references template from ``sphinx-gallery`` of ``0.0.11`` version release.
 
 - Globbing expressions can now be used in all nilearn functions expecting a list of files.
 
@@ -37,9 +37,9 @@ New features
 Enhancements
 ------------
 
-- Making website a bit elaborated & modernise by using ``sphinx-gallery``.
+- :bdg-secondary:`Maint` Making website a bit elaborated & modernise by using ``sphinx-gallery``.
 
-- Documentation enhancement by integrating ``sphinx-gallery`` notebook style examples.
+- :bdg-secondary:`Maint` Documentation enhancement by integrating ``sphinx-gallery`` notebook style examples.
 
 - Documentation about class :class:`maskers.NiftiSpheresMasker`.
 

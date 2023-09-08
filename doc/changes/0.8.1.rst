@@ -23,7 +23,7 @@ NEW
 
 - New atlas fetcher :func:`~datasets.fetch_atlas_juelich` to download Juelich atlas from FSL (:gh:`2723` by `Ahmad Chamma`_).
 
-- The :ref:`development_process` has been reworked. It now provides insights on nilearn organization as a project as well as more explicit :ref:`contribution_guidelines` (:gh:`2755` by `Thomas Bazeille`_).
+- :bdg-secondary:`Maint` The :ref:`development_process` has been reworked. It now provides insights on nilearn organization as a project as well as more explicit :ref:`contribution_guidelines` (:gh:`2755` by `Thomas Bazeille`_).
 
 - Function :func:`~datasets.load_mni152_gm_template` takes the skullstripped 1mm-resolution version of the grey-matter MNI152 template and re-samples it using a different resolution, if specified (:gh:`2738` by `Ana Luisa Pinho`_).
 
@@ -56,11 +56,11 @@ Enhancements
 
 - Function :func:`~masking.compute_brain_mask` accepts now as input the whole-brain, 1mm-resolution, MNI152 T1 template instead of the averaged, whole-brain, 2mm-resolution MNI152 T1 template; it also accepts as input the grey-matter and white-matter ICBM152 1mm-resolution templates dated from 2009 (:gh:`2738` by `Ana Luisa Pinho`_).
 
-- Common parts of docstrings across Nilearn can now be filled automatically using the decorator `nilearn._utils.fill_doc`. This can be applied to common function parameters or common lists of options for example. The standard parts are defined in a single location (`nilearn._utils.docs.py`) which makes them easier to maintain and update (:gh:`2875` by `Nicolas Gensollen`_).
+- :bdg-secondary:`Maint` Common parts of docstrings across Nilearn can now be filled automatically using the decorator `nilearn._utils.fill_doc`. This can be applied to common function parameters or common lists of options for example. The standard parts are defined in a single location (`nilearn._utils.docs.py`) which makes them easier to maintain and update (:gh:`2875` by `Nicolas Gensollen`_).
 
 - The ``data_dir`` argument can now be either a :class:`pathlib.Path` or a :obj:`str`. This extension affects datasets and atlas fetchers (:gh:`2928` by `Raphael Meudec`_).
 
 Changes
 -------
 
-- The version of the script `jquery.min.js` was bumped from ``3.3.1`` to ``3.6.0`` due to potential vulnerability issues with versions ``< 3.5.0`` (:gh:`2944` by `Nicolas Gensollen`_).
+- :bdg-secondary:`Maint` The version of the script `jquery.min.js` was bumped from ``3.3.1`` to ``3.6.0`` due to potential vulnerability issues with versions ``< 3.5.0`` (:gh:`2944` by `Nicolas Gensollen`_).

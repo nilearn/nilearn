@@ -24,7 +24,7 @@ Fixes
 
 - Fix bug uncompressing tar files with datasets fetcher.
 
-- Fixed bunch of CircleCI documentation build failures.
+- :bdg-secondary:`Maint` Fixed bunch of CircleCI documentation build failures.
 
 - Fixed deprecations ``set_axis_bgcolor`` related to matplotlib in plotting functions.
 
@@ -53,11 +53,11 @@ Highlights
 
 - A function to break a parcellation into its connected components.
 
-- **Dropped support for scikit-learn older than 0.14.1** Minimum supported version is now ``0.14.1``.
+- :bdg-secondary:`Maint` **Dropped support for scikit-learn older than 0.14.1** Minimum supported version is now ``0.14.1``.
 
-- **Dropped support for Python 2.6**
+- :bdg-secondary:`Maint` **Dropped support for Python 2.6**
 
-- Minimum required version of ``NiBabel`` is now ``1.2.0``, to support loading annotated data with freesurfer.
+- :bdg-secondary:`Maint` Minimum required version of ``NiBabel`` is now ``1.2.0``, to support loading annotated data with freesurfer.
 
 Changes
 -------
@@ -108,8 +108,8 @@ Enhancements
 
 - A new example to show how to extract regions on labels image in example section manipulating images.
 
-- ``coveralls`` is replaced with ``codecov``.
+- :bdg-secondary:`Maint` ``coveralls`` is replaced with ``codecov``.
 
-- Upgraded to ``Sphinx`` version ``0.1.7``.
+- :bdg-secondary:`Maint` Upgraded to ``Sphinx`` version ``0.1.7``.
 
 - Extensive plotting example shows how to use contours and filled contours on glass brain.

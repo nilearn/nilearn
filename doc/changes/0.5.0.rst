@@ -58,7 +58,7 @@ ENHANCEMENTS
 
 - :bdg-info:`Plotting` Displays by plotting functions can now add a scale bar (see :ref:`plotting`).
 
-- Lots of other fixes in documentation and examples.
+- :bdg-secondary:`Maint` Lots of other fixes in documentation and examples.
 
 - A cleaner layout and improved navigation for the website, with a better introduction.
 
@@ -68,7 +68,7 @@ ENHANCEMENTS
 
 - Anaconda link in the installation documentation updated.
 
-- ``Scipy`` is listed as a dependency for Nilearn installation.
+- :bdg-secondary:`Maint` ``Scipy`` is listed as a dependency for Nilearn installation.
 
 Changes
 -------
@@ -142,7 +142,7 @@ Enhancements
 
 Loads of fixes and quality of life improvements
 
-- A cleaner layout and improved navigation for the website, with a better introduction.
+- :bdg-secondary:`Maint` A cleaner layout and improved navigation for the website, with a better introduction.
 
 - Less warnings and verbosity while using certain functions and during dataset downloads.
 
@@ -160,7 +160,7 @@ Fixes
 
 - Brainomics dataset has been replaced in several examples.
 
-- Lots of other fixes in documentation and examples.
+- :bdg-secondary:`Maint` Lots of other fixes in documentation and examples.
 
 
 Changes

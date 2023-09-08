@@ -36,16 +36,16 @@ Enhancements
 
 - New parameter ``resampling_interpolation`` is added in most used plotting functions to have user control for faster visualizations.
 
-- Upgraded to ``Sphinx-Gallery 0.1.11``.
+- :bdg-secondary:`Maint` Upgraded to ``Sphinx-Gallery 0.1.11``.
 
 Fixes
 -----
 
 - Dimming factor applied to background image in plotting functions with ``dim`` parameter will no longer accepts as string ('-1'). An error will be raised.
 
-- Fixed issues with ``matplotlib 2.1.0``.
+- :bdg-secondary:`Maint` Fixed issues with ``matplotlib 2.1.0``.
 
-- Fixed issues with ``SciPy 1.0.0``.
+- :bdg-secondary:`Maint` Fixed issues with ``SciPy 1.0.0``.
 
 Changes
 -------
@@ -64,7 +64,7 @@ Changes
 
 - Using argument ``anat_img`` for placing background image in function :func:`~plotting.plot_prob_atlas` is deprecated. Use argument ``bg_img`` instead.
 
-- The examples now use ``pandas`` for the behavioral information.
+- :bdg-secondary:`Maint` The examples now use ``pandas`` for the behavioral information.
 
 Contributors
 ------------
