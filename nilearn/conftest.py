@@ -83,14 +83,15 @@ def close_all():
 
 
 @pytest.fixture(autouse=True)
-def warnings_as_error():
-    """Raise errors on deprecations from external libraries for prereleases."""
+def warnings_as_errors():
+    """Raise errors on deprecations from external library prereleases."""
     flag = os.environ.get("PIP_FLAGS")
     if flag == "--pre":
         with warnings.catch_warnings():
             warnings.filterwarnings(
                 "error",
-                message=".*numpy.*|.*scipy.*",
+                message=".*numpy.*|.*scipy.*|.*nibabel.*|"
+                ".*joblib.*|.*pandas.*|.*scikit-learn.*",
                 category=DeprecationWarning,
             )
             if matplotlib is not None:
