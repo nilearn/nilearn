@@ -30,7 +30,7 @@ authors:
   - given-names: Ahmad
     family-names: Chamma
     website: https://github.com/achamma723
-    affiliation: INRIA, Saclay, France
+    affiliation: Inria, Saclay, France
     email: ahmad.chamma@inria.fr
     orcid: https://orcid.org/0000-0003-0975-133X
   - given-names: Aina
@@ -61,7 +61,7 @@ authors:
   - given-names: Alexis
     family-names: Thual
     website: https://github.com/alexisthual
-    affiliation: INRIA, Saclay, France
+    affiliation: Inria, Saclay, France
   - given-names: Alisha
     family-names: Kodibagkar
     website: https://github.com/alishakodibagkar/
@@ -108,7 +108,7 @@ authors:
     family-names: Thirion
     website: https://pages.saclay.inria.fr/bertrand.thirion/
     email: bertrand.thirion@inria.fr
-    affiliation: INRIA, Saclay, France
+    affiliation: Inria, Saclay, France
     orcid: https://orcid.org/0000-0001-5018-7895
   - given-names: Binh
     family-names: Nguyen
@@ -171,7 +171,7 @@ authors:
   - given-names: Demian
     family-names: Wassermann
     website: https://github.com/demianw
-    affiliation: INRIA, Saclay, France
+    affiliation: Inria, Saclay, France
     email: demian.wassermann@inria.fr
     orcid: https://orcid.org/0000-0001-5194-6056
   - given-names: Derek
@@ -234,7 +234,7 @@ authors:
   - given-names: Guillaume
     family-names: Lemaitre
     website: https://glemaitre.github.io/
-    affiliation: INRIA, Saclay, France
+    affiliation: Inria, Saclay, France
     email: g.lemaitre58@gmail.com
     orcid: https://orcid.org/0000-0002-0897-6791
   - given-names: Hao-Ting
@@ -290,7 +290,7 @@ authors:
   - given-names: Jeremy
     family-names: Lefort-Besnard
     website: https://jlefortbesnard.github.io/
-    affiliation: INRIA Rennes, France
+    affiliation: Inria Rennes, France
   - given-names: Jerome
     family-names: Dockes
     website: https://jeromedockes.github.io/
@@ -509,7 +509,7 @@ authors:
   - given-names: Raphael
     family-names: Meudec
     website: https://github.com/RaphaelMeudec
-    affiliation: INRIA, Saclay, France
+    affiliation: Inria, Saclay, France
   - given-names: Robert
     family-names: Luke
     website: https://github.com/rob-luke
@@ -591,7 +591,7 @@ authors:
     family-names: Bazeille
     website: https://github.com/thomasbazeille
     orcid: https://orcid.org/0000-0001-5377-9108
-    affiliation: INRIA, Parietal, Paris, France
+    affiliation: Inria, Saclay, France
   - given-names: Tom
     family-names: Vanasse
     website: https://github.com/tvanasse
@@ -608,7 +608,7 @@ authors:
   - given-names: Virgile
     family-names: Fritsch
     website: https://github.com/VirgileFritsch
-    affiliation: Inria - Parietal team, Saclay, France
+    affiliation: Inria, Saclay, France
   - given-names: Yaroslav
     family-names: Halchenko
     website: https://github.com/yarikoptic
@@ -618,7 +618,7 @@ authors:
   - given-names: Yasmin
     family-names: Mzayek
     website: https://github.com/ymzayek
-    affiliation: INRIA, Saclay, France
+    affiliation: Inria, Saclay, France
   - given-names: Zvi
     family-names: Baratz
     website: https://github.com/ZviBaratz

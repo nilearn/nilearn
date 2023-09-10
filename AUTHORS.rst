@@ -48,14 +48,14 @@ Other contributors
 
 Some other past or present contributors are:
 
-* `Ahmad Chamma`_: INRIA, Saclay, France
+* `Ahmad Chamma`_: Inria, Saclay, France
 * `Aina Frau-Pascual`_
 * `Alex Rothberg`_: Free Agency, New York, USA
 * `Alexandre Abadie`_: Inria, Paris
 * `Alexandre Abraham`_: Bazemont, Île-de-France, France
 * `Alexandre Gramfort`_: Meta, France
 * `Alexandre Savio`_
-* `Alexis Thual`_: INRIA, Saclay, France
+* `Alexis Thual`_: Inria, Saclay, France
 * `Alisha Kodibagkar`_: MIT McGovern Institute, Cambridge, Massachusetts, United States
 * `Amadeus Kanaan`_
 * `Ana Luisa Pinho`_: Western University, London, ON, Canada
@@ -66,7 +66,7 @@ Some other past or present contributors are:
 * `Aswin Vijayan`_
 * `Audrey Duran`_: France
 * `Ben Cipollini`_: Facebook, Hayward, California, USA
-* `Bertrand Thirion`_: INRIA, Saclay, France
+* `Bertrand Thirion`_: Inria, Saclay, France
 * `Binh Nguyen`_
 * `Caglar Cakan`_: Technische Universität Berlin, Berlin, Germany
 * `Chris Gorgolewski`_: Google LLC
@@ -81,9 +81,9 @@ Some other past or present contributors are:
 * `Daniel Gomez`_: Cambridge, Massachusetts, USA
 * `Danilo Bzdok`_: McGill University & Mila Quebec AI Institute, Montréal, Canada
 * `David G Ellis`_: University of Nebraska Medical Center, Nebraska, USA
-* `Demian Wassermann`_: INRIA, Saclay, France
+* `Demian Wassermann`_: Inria, Saclay, France
 * `Derek Pisner`_: St. Petersburg, FL
-* `Dimitri Papadopoulos Orfanos`_: NeuroSpin, C.E.A., Université Paris-Saclay, Gif-sur-Yvette, France
+* `Dimitri Papadopoulos Orfanos`_: NeuroSpin, CEA, Université Paris-Saclay, Gif-sur-Yvette, France
 * `Elizabeth DuPre`_: Stanford University, Stanford, California, USA
 * `Elvis Dohmatob`_: Facebook AI Research (FAIR)
 * `Eric Larson`_: Institute for Learning and Brain Sciences, University of Washington, Washington, USA
@@ -95,9 +95,9 @@ Some other past or present contributors are:
 * `Gilles de Hollander`_: Vrije Universiteit, Amsterdam, The Netherlands
 * `Greg Kiar`_: Child Mind Institute
 * `Greydon Gilmore`_: Department of Mathematics, Western University, Toronto, Canada
-* `Guillaume Lemaitre`_: INRIA, Saclay, France
+* `Guillaume Lemaitre`_: Inria, Saclay, France
 * `Hao-Ting Wang`_: Montréal Geriatrics Institute (CRIUGM), Montréal, Canada
-* `Himanshu Aggarwal`_: INRIA, Saclay, France
+* `Himanshu Aggarwal`_: Inria, Saclay, France
 * `Ian Abenes`_
 * `Jake Vogel`_: Philadelphia, USA
 * `Jan Margeta`_: KardioMe, Nova Dubnica, Slovakia
@@ -107,7 +107,7 @@ Some other past or present contributors are:
 * `Jean Kossaifi`_: Imperial College London, London, UK
 * `Jean-Rémi King`_: Meta AI, CNRS, Paris
 * `Jelle Roelof Dalenberg`_: University Medical Center Groningen, Groningen
-* `Jeremy Lefort-Besnard`_: INRIA Rennes, France
+* `Jeremy Lefort-Besnard`_: Inria Rennes, France
 * `Jerome Dockes`_: Origami lab, McGill University, Montréal, Canada
 * `Jerome-Alexis Chevalier`_: Emerton Data
 * `Johannes Wiesner`_: Central Institute of Mental Health, Mannheim, Germany
@@ -146,7 +146,7 @@ Some other past or present contributors are:
 * `Myeong Seop Song`_
 * `Natasha Clarke`_: @SIMEXP, Montréal, Canada
 * `Neelay Shah`_: Max Planck Institute for Intelligent Systems, Germany
-* `Nicolas Gensollen`_: INRIA, Paris, France
+* `Nicolas Gensollen`_: Inria, Paris, France
 * `Oliver Warrington`_: Wellcome Centre for Human Neuroimaging, UCL, London, UK
 * `Oscar Esteban`_: Centre Hospitalier Universitaire Vaudoise, Lausanne, Switzerland
 * `Patrick Sadil`_: Department of Biostatistics, Johns Hopkins Bloomberg School of Public Health, USA
@@ -159,7 +159,7 @@ Some other past or present contributors are:
 * `Pierre-Olivier Quirion`_: Canadian Center for Computational Genomics / Calcul, Québec, Canada
 * `Pradeep Reddy Raamana`_: University of Pittsburgh, Pittsburgh, PA, USA
 * `Rahul Brito`_
-* `Raphael Meudec`_: INRIA, Saclay, France
+* `Raphael Meudec`_: Inria, Saclay, France
 * `Robert Luke`_: @agencyenterprise, Melbourne, Australia
 * `Robert Williamson`_
 * `Roberto Guidotti`_: University "G. D'Annunzio" Chieti-Pescara, San Benedetto del Tronto, Italy
