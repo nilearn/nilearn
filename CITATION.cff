@@ -403,10 +403,11 @@ authors:
   - given-names: Mehdi
     family-names: Rahim
     website: https://github.com/mrahim
-    affiliation: Inria
+    affiliation: Air Liquide, France
   - given-names: Michael
     family-names: Eickenberg
     website: https://github.com/eickenberg
+    affiliation: Flatiron Institute, New-York, New-York, USA
   - given-names: Michael
     family-names: Hanke
     website: https://github.com/mih

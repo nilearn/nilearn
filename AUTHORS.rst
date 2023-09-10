@@ -135,8 +135,8 @@ Some other past or present contributors are:
 * `Matthias Ekman`_: Donders Institute, Nijmegen, The Netherlands
 * `Matthieu Joulot`_: Aramis, Paris Brain Institute, Paris, France
 * `Maximilian Cosmo Sitter`_
-* `Mehdi Rahim`_: Inria
-* `Michael Eickenberg`_
+* `Mehdi Rahim`_: Air Liquide, France
+* `Michael Eickenberg`_: Flatiron Institute, New-York, New-York, USA
 * `Michael Hanke`_: Germany
 * `Michael Notter`_: Lausanne, Switzerland
 * `Michael Waskom`_: Flatiron health, New York, USA
