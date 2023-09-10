@@ -22,7 +22,7 @@ contact:
   - given-names: Bertrand
     family-names: Thirion
     email: bertrand.thirion@inria.fr
-    affiliation: INRIA, France
+    affiliation: Inria, France
 
 license: BSD-4-Clause
 
@@ -181,7 +181,7 @@ authors:
   - given-names: Dimitri Papadopoulos
     family-names: Orfanos
     website: https://github.com/DimitriPapadopoulos
-    affiliation: NeuroSpin, C.E.A., Université Paris-Saclay, Gif-sur-Yvette, France
+    affiliation: NeuroSpin, CEA, Université Paris-Saclay, Gif-sur-Yvette, France
     orcid: https://orcid.org/0000-0002-1242-8990
   - given-names: Elizabeth
     family-names: DuPre
@@ -450,7 +450,7 @@ authors:
   - given-names: Nicolas
     family-names: Gensollen
     website: https://nicolasgensollen.github.io/
-    affiliation: INRIA, Paris, France
+    affiliation: Inria, Paris, France
   - given-names: Oliver
     family-names: Warrington
     website: https://github.com/OliverWarrington

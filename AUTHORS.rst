@@ -178,13 +178,13 @@ Some other past or present contributors are:
 * `Sylvain Takerkart`_: CNRS, Institut des Neurosciences de la Timone, Marseille, France
 * `Tarun Samanta`_: Acharya Prafulla Chandra College
 * `Taylor Salo`_: Lifespan Informatics & Neuroimaging Center, University of Pennsylvania, USA
-* `Thomas Bazeille`_: INRIA, Parietal, Paris, France
+* `Thomas Bazeille`_: Inria, Saclay, France
 * `Tom Vanasse`_: Wisconsin Institute for Sleep and Consciousness, USA
 * `Vasco Diogo`_
 * `Vincent Michel`_: http://www.logilab.fr/
-* `Virgile Fritsch`_: Inria - Parietal team, Saclay, France
+* `Virgile Fritsch`_: Inria, Saclay, France
 * `Yaroslav Halchenko`_: Dartmouth College, USA
-* `Yasmin Mzayek`_: INRIA, Saclay, France
+* `Yasmin Mzayek`_: Inria, Saclay, France
 * `Zvi Baratz`_: Tel-Aviv University, Israel
 * `Óscar Nájera`_: Munich, Germany
 
