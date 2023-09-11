@@ -311,18 +311,18 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
         img = self._reporting_data["img"]
         embeded_images = []
 
-        if img is None or self._reporting_data["multi_subject"] is True:
+        if img is None:
             base_message = "Plotting only spatial maps for reporting."
-            if img is None:
-                msg = (
-                    "No image provided to fit in NiftiMapsMasker. "
-                    f"{base_message}"
-                )
-            else:
+            if self._reporting_data["multi_subject"] is True:
                 msg = (
                     "Multiple subject images were provided to fit. "
                     "Please subscript the list to view the report for "
                     "individual subjects. "
+                    f"{base_message}"
+                )
+            else:
+                msg = (
+                    "No image provided to fit in NiftiMapsMasker. "
                     f"{base_message}"
                 )
             warnings.warn(msg)
@@ -437,12 +437,13 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 imgs, list
             ):
                 self._reporting_data["multi_subject"] = True
+                self._reporting_data["img"] = None
             elif imgs is not None:
                 dim = image.load_img(imgs).shape
                 if len(dim) == 4:
                     # compute middle image from 4D series for plotting
                     imgs = image.index_img(imgs, dim[-1] // 2)
-            self._reporting_data["img"] = imgs
+                self._reporting_data["img"] = imgs
         else:
             self._reporting_data = None
 

@@ -293,7 +293,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
             # When no image or multiple are given, simply plot the ROI of the
             # label image and give a warning to the user
-            if img is None or self._reporting_data["multi_subject"] is True:
+            if img is None:
                 base_message = (
                     "Plotting ROIs of label image on the "
                     "MNI152Template for reporting."
@@ -429,12 +429,13 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 imgs, list
             ):
                 self._reporting_data["multi_subject"] = True
+                self._reporting_data["img"] = None
             elif imgs is not None:
                 dim = image.load_img(imgs).shape
                 if len(dim) == 4:
                     # compute middle image from 4D series for plotting
                     imgs = image.index_img(imgs, dim[-1] // 2)
-            self._reporting_data["img"] = imgs
+                self._reporting_data["img"] = imgs
         else:
             self._reporting_data = None
 
