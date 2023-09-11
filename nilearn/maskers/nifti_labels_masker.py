@@ -291,13 +291,25 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
             img = self._reporting_data['img']
 
-            if self._reporting_data["multi_subject"] is True:
-                msg = (
-                    "Multiple subject images were provided to fit. "
-                    "Please subscript the list to view the report. "
+            # When no image or multiple are given, simply plot the ROI of the
+            # label image and give a warning to the user
+            if img is None or self._reporting_data["multi_subject"] is True:
+                base_message = (
                     "Plotting ROIs of label image on the "
                     "MNI152Template for reporting."
                 )
+                if self._reporting_data["multi_subject"] is True:
+                    msg = (
+                        "Multiple subject images were provided to fit. "
+                        "Please subscript the list to view the report. "
+                        f"{base_message}"
+                    )
+                else:
+                    msg = (
+                        "No image provided to fit in NiftiLabelsMasker. "
+                        f"{base_message}"
+                    )
+
                 warnings.warn(msg)
                 self._report_content['warning_message'] = msg
                 display = plotting.plot_roi(labels_image)
@@ -311,19 +323,6 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 )
                 plt.close()
                 display.add_contours(labels_image, filled=False, linewidths=3)
-
-            # Otherwise, simply plot the ROI of the label image
-            # and give a warning to the user
-            else:
-                msg = (
-                    'No image provided to fit in NiftiLabelsMasker. '
-                    'Plotting ROIs of label image on the '
-                    'MNI152Template for reporting.'
-                )
-                warnings.warn(msg)
-                self._report_content['warning_message'] = msg
-                display = plotting.plot_roi(labels_image)
-                plt.close()
 
             # If we have a mask, show its contours
             if self._reporting_data['mask'] is not None:
