@@ -311,11 +311,19 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
         img = self._reporting_data["img"]
         embeded_images = []
 
-        if img is None:
-            msg = (
-                "No image provided to fit in NiftiMapsMasker. "
-                "Plotting only spatial maps for reporting."
-            )
+        if img is None or self._reporting_data["multi_subject"] is True:
+            base_message = "Plotting only spatial maps for reporting."
+            if img is None:
+                msg = (
+                    "No image provided to fit in NiftiMapsMasker. "
+                    f"{base_message}"
+                )
+            else:
+                msg = (
+                    "Multiple subject images were provided to fit. "
+                    "Please subscript the list to view the report. "
+                    f"{base_message}"
+                )
             warnings.warn(msg)
             self._report_content["warning_message"] = msg
             for component in maps_to_be_displayed:
@@ -360,6 +368,8 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
             This parameter is unused. It is solely included for scikit-learn
             compatibility.
         """
+        from nilearn.maskers import MultiNiftiMapsMasker
+
         # Load images
         repr = _utils._repr_niimgs(self.mask_img, shorten=(not self.verbose))
         msg = f"loading regions from {repr}"
@@ -417,16 +427,21 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
             )
 
         if self.reports:
-            if imgs is not None:
+            self._reporting_data = {
+                "maps_image": self.maps_img_,
+                "mask": self.mask_img_,
+                "multi_subject": False,
+            }
+            if isinstance(self, MultiNiftiMapsMasker) and isinstance(
+                imgs, list
+            ):
+                self._reporting_data["multi_subject"] = True
+            elif imgs is not None:
                 dim = image.load_img(imgs).shape
                 if len(dim) == 4:
                     # compute middle image from 4D series for plotting
                     imgs = image.index_img(imgs, dim[-1] // 2)
-            self._reporting_data = {
-                "maps_image": self.maps_img_,
-                "mask": self.mask_img_,
-                "img": imgs,
-            }
+            self._reporting_data["img"] = imgs
         else:
             self._reporting_data = None
 

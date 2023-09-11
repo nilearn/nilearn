@@ -290,8 +290,20 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             self._report_content['summary'] = regions_summary
 
             img = self._reporting_data['img']
+
+            if self._reporting_data["multi_subject"] is True:
+                msg = (
+                    "Multiple subject images were provided to fit. "
+                    "Please subscript the list to view the report. "
+                    "Plotting ROIs of label image on the "
+                    "MNI152Template for reporting."
+                )
+                warnings.warn(msg)
+                self._report_content['warning_message'] = msg
+                display = plotting.plot_roi(labels_image)
+                plt.close()
             # If we have a func image to show in the report, use it
-            if img is not None:
+            elif img is not None:
                 display = plotting.plot_img(
                     img,
                     black_bg=False,
@@ -340,6 +352,8 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             This parameter is unused. It is solely included for scikit-learn
             compatibility.
         """
+        from nilearn.maskers import MultiNiftiLabelsMasker
+
         repr = _utils._repr_niimgs(self.labels_img,
                                    shorten=(not self.verbose))
         msg = f"loading data from {repr}"
@@ -406,16 +420,21 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             self._resampled_labels_img_ = self.labels_img_
 
         if self.reports:
-            if imgs is not None:
+            self._reporting_data = {
+                "labels_image": self._resampled_labels_img_,
+                "mask": self.mask_img_,
+                "multi_subject": False,
+            }
+            if isinstance(self, MultiNiftiLabelsMasker) and isinstance(
+                imgs, list
+            ):
+                 self._reporting_data["multi_subject"] = True
+            elif imgs is not None:
                 dim = image.load_img(imgs).shape
                 if len(dim) == 4:
                     # compute middle image from 4D series for plotting
                     imgs = image.index_img(imgs, dim[-1] // 2)
-            self._reporting_data = {
-                'labels_image': self._resampled_labels_img_,
-                'mask': self.mask_img_,
-                'img': imgs,
-            }
+            self._reporting_data["img"] = imgs
         else:
             self._reporting_data = None
 
