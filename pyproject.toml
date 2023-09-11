@@ -49,6 +49,8 @@ dev = [
     "isort",
     "flynt",
     "black",
+    "flake8",
+    "flake8-docstrings",
     "flake8-use-fstring",
     "flake8-functions",
     'codespell',
@@ -58,9 +60,6 @@ dev = [
 # Requirements necessary for building the documentation
 doc = [
     "nilearn[plotly]",
-    "coverage",
-    "flake8",
-    "flake8-docstrings",
     "furo",
     "memory_profiler",  # measuring memory during docs building
     "myst-parser",
