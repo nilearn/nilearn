@@ -437,14 +437,14 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
 
         if self.reports:  # save inputs for reporting
-            self._reporting_data = {"mask": self.mask_img_}
+            self._reporting_data = {"mask": self.mask_img_, "images": imgs}
             if imgs is not None:
                 dim = image.load_img(imgs).shape
                 if len(dim) == 4:
                     # compute middle image from 4D series for plotting
                     imgs = image.index_img(imgs, dim[-1] // 2)
                 self._reporting_data["dim"] = dim
-            self._reporting_data["images"] = imgs
+                self._reporting_data["images"] = imgs
         else:
             self._reporting_data = None
 

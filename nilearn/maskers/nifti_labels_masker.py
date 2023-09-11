@@ -424,6 +424,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 "labels_image": self._resampled_labels_img_,
                 "mask": self.mask_img_,
                 "multi_subject": False,
+                "img": imgs,
             }
             if isinstance(self, MultiNiftiLabelsMasker) and isinstance(
                 imgs, list

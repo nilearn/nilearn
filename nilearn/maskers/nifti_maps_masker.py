@@ -432,6 +432,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 "maps_image": self.maps_img_,
                 "mask": self.mask_img_,
                 "multi_subject": False,
+                "img": imgs,
             }
             if isinstance(self, MultiNiftiMapsMasker) and isinstance(
                 imgs, list
