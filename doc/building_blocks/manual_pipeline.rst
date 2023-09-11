@@ -72,7 +72,7 @@ These conditions are presented as string into a CSV file. The `pandas
 
 .. literalinclude:: ../../examples/00_tutorials/plot_decoding_tutorial.py
     :start-after: # We use pandas to load them in an array.
-    :end-before: ###########################################################################
+    :end-before: # %%
 
 .. seealso::
 
@@ -84,7 +84,7 @@ This can be done as follows:
 
 .. literalinclude:: ../../examples/00_tutorials/plot_decoding_tutorial.py
     :start-after: # (i.e. :term:`fmri<fMRI>` signal is shorter):
-    :end-before: ###########################################################################
+    :end-before: # %%
 
 
 .. note::
