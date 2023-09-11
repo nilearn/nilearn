@@ -304,3 +304,23 @@ def test_multi_nifti_maps_masker_list_of_sample_mask():
     assert len(ts_list) == 2
     for ts, n_scrub in zip(ts_list, [n_scrub1, n_scrub2]):
         assert ts.shape == (length - n_scrub, n_regions)
+
+
+def test_multi_nifti_maps_masker_generate_report():
+    """Test calling generate report on multiple subjects raises warning."""
+    shape1 = (13, 11, 12)
+    affine1 = np.eye(4)
+    n_regions = 9
+    length = 3
+
+    maps11_img, _ = data_gen.generate_maps(shape1, n_regions, affine=affine1)
+    fmri11_img, _ = data_gen.generate_fake_fmri(
+        shape1, affine=affine1, length=length
+    )
+
+    masker = MultiNiftiMapsMasker(maps11_img)
+
+    with pytest.warns(
+        UserWarning, match="Multiple subject images were provided to fit. "
+    ):
+        masker.fit([fmri11_img, fmri11_img]).generate_report()
