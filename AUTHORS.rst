@@ -64,7 +64,7 @@ Some other past or present contributors are:
 * `Ariel Rokem`_: University of Washington, Psychology, Seattle, Washington, 98107, USA
 * `Arthur Mensch`_
 * `Aswin Vijayan`_
-* `Audrey Duran`_: France
+* `Audrey Duran`_: TheraPanacea, France
 * `Ben Cipollini`_: Facebook, Hayward, California, USA
 * `Bertrand Thirion`_: Inria, Saclay, France
 * `Binh Nguyen`_
@@ -115,7 +115,7 @@ Some other past or present contributors are:
 * `Jona Sassenhagen`_
 * `Joshua Teves`_
 * `Julia Huntenburg`_: International Brain Laboratory, Berlin, Germany
-* `Julio A Peraza`_: USA
+* `Julio A Peraza`_: Florida International University, Miami, Florida, USA
 * `Kamalakar Reddy Daddy`_
 * `Kevin Sitek`_: Northwestern University, Evanston, IL, USA
 * `Koen Helwegen`_: Dutch Connectome Lab, VU, Amsterdam, The Netherlands
@@ -138,7 +138,7 @@ Some other past or present contributors are:
 * `Mehdi Rahim`_: Air Liquide, France
 * `Michael Eickenberg`_: Flatiron Institute, New-York, New-York, USA
 * `Michael Hanke`_: Germany
-* `Michael Notter`_: Lausanne, Switzerland
+* `Michael Notter`_: ams OSRAM, Martigny, Lausanne, Switzerland
 * `Michael Waskom`_: Flatiron health, New York, USA
 * `Michelle Wang`_: Origami lab, McGill University, Montréal, Canada
 * `Mohammad Torabi`_: Origami lab, McGill University, Montréal, Canada
@@ -151,7 +151,7 @@ Some other past or present contributors are:
 * `Oscar Esteban`_: Centre Hospitalier Universitaire Vaudoise, Lausanne, Switzerland
 * `Patrick Sadil`_: Department of Biostatistics, Johns Hopkins Bloomberg School of Public Health, USA
 * `Paul Bogdan`_
-* `Paula Sanz-Leon`_: Australia
+* `Paula Sanz-Leon`_: Medical Research Institute, Brisbane, Australia
 * `Peer Herholz`_: Origami lab, McGill University, Montréal, Canada
 * `Philippe Gervais`_: Zurich, Switzerland
 * `Pierre Bellec`_: Psychology Department, University of Montréal, Montréal, Canada
@@ -186,7 +186,7 @@ Some other past or present contributors are:
 * `Yaroslav Halchenko`_: Dartmouth College, USA
 * `Yasmin Mzayek`_: Inria, Saclay, France
 * `Zvi Baratz`_: Tel-Aviv University, Israel
-* `Óscar Nájera`_: Munich, Germany
+* `Óscar Nájera`_: Checkmk
 
 .. OTHER CONTRIBUTION SECTION ENDS HERE
 

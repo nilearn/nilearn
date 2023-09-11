@@ -99,7 +99,7 @@ authors:
   - given-names: Audrey
     family-names: Duran
     website: https://github.com/AudreyDuran
-    affiliation: France
+    affiliation: TheraPanacea, France
   - given-names: Ben
     family-names: Cipollini
     website: https://github.com/bcipolli
@@ -322,7 +322,7 @@ authors:
   - given-names: Julio A
     family-names: Peraza
     website: https://github.com/JulioAPeraza
-    affiliation: USA
+    affiliation: Florida International University, Miami, Florida, USA
   - given-names: Kamalakar Reddy
     family-names: Daddy
     website: https://github.com/KamalakerDadi
@@ -417,7 +417,7 @@ authors:
     family-names: Notter
     website: https://github.com/miykael
     email: michaelnotter@hotmail.com
-    affiliation: Lausanne, Switzerland
+    affiliation: ams OSRAM, Martigny, Lausanne, Switzerland
   - given-names: Michael
     family-names: Waskom
     website: https://mwaskom.github.io/
@@ -472,7 +472,7 @@ authors:
     family-names: Sanz-Leon
     website: https://github.com/pausz
     orcid: https://orcid.org/0000-0002-1545-6380
-    affiliation: Australia
+    affiliation: Medical Research Institute, Brisbane, Australia
   - given-names: Peer
     family-names: Herholz
     website: https://peerherholz.github.io/
@@ -629,4 +629,4 @@ authors:
   - given-names: Óscar
     family-names: Nájera
     website: https://github.com/Titan-C
-    affiliation: Munich, Germany
+    affiliation: Checkmk
