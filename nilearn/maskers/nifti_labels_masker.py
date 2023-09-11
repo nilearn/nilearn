@@ -428,7 +428,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             if isinstance(self, MultiNiftiLabelsMasker) and isinstance(
                 imgs, list
             ):
-                 self._reporting_data["multi_subject"] = True
+                self._reporting_data["multi_subject"] = True
             elif imgs is not None:
                 dim = image.load_img(imgs).shape
                 if len(dim) == 4:
