@@ -5,7 +5,7 @@
 Here we discover how to work with 3D and 4D niimgs.
 """
 
-###############################################################################
+# %%
 # Downloading tutorial datasets from Internet
 # -------------------------------------------
 #
@@ -16,17 +16,17 @@ from nilearn import datasets
 
 print(f"Datasets are stored in: {datasets.get_data_dirs()!r}")
 
-###############################################################################
+# %%
 # Let's now retrieve a motor contrast from a Neurovault repository
 motor_images = datasets.fetch_neurovault_motor_task()
 motor_images.images
 
-###############################################################################
+# %%
 # motor_images is a list of filenames. We need to take the first one
 tmap_filename = motor_images.images[0]
 
 
-###############################################################################
+# %%
 # Visualizing a 3D file
 # ---------------------
 #
@@ -36,12 +36,12 @@ from nilearn import plotting
 
 plotting.plot_stat_map(tmap_filename)
 
-###############################################################################
+# %%
 # Visualizing works better with a threshold
 plotting.plot_stat_map(tmap_filename, threshold=3)
 
 
-###############################################################################
+# %%
 # Visualizing one volume in a 4D file
 # -----------------------------------
 #
@@ -50,26 +50,26 @@ plotting.plot_stat_map(tmap_filename, threshold=3)
 rsn = datasets.fetch_atlas_smith_2009(resting=True, dimension=10)["map"]
 rsn
 
-###############################################################################
+# %%
 # It is a 4D nifti file. We load it into the memory to print its
 # shape.
 from nilearn import image
 
 print(image.load_img(rsn).shape)
 
-###############################################################################
+# %%
 # We can retrieve the first volume (note that Python indexing starts at 0):
 first_rsn = image.index_img(rsn, 0)
 print(first_rsn.shape)
 
-###############################################################################
+# %%
 # first_rsn is a 3D image.
 #
 # We can then plot it
 plotting.plot_stat_map(first_rsn)
 
 
-###############################################################################
+# %%
 # Looping on all volumes in a 4D file
 # -----------------------------------
 #
@@ -85,7 +85,7 @@ for img in image.iter_img(rsn):
     )
 
 
-###############################################################################
+# %%
 # Looping through selected volumes in a 4D file
 # ---------------------------------------------
 #
@@ -96,7 +96,7 @@ for img in image.iter_img(rsn):
 # formula as before.
 selected_volumes = image.index_img(rsn, slice(3, 5))
 
-###############################################################################
+# %%
 # If you're new to Python, one thing to note is that the slice constructor
 # uses 0-based indexing. You can confirm this by matching these slices
 # to the previous plot above.
@@ -105,12 +105,12 @@ for img in image.iter_img(selected_volumes):
     plotting.plot_stat_map(img)
 
 
-###############################################################################
+# %%
 # plotting.show is useful to force the display of figures when running
 # outside IPython
 plotting.show()
 
-#########################################################################
+# %%
 # |
 #
 # ______
