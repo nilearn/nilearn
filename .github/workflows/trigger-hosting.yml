@@ -17,7 +17,7 @@ jobs:
         if: github.repository == 'nilearn/nilearn' && github.event.workflow_run.conclusion == 'success'
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v3
+            uses: actions/checkout@v4
 
         -   name: Trigger hosting jobs
             run: bash build_tools/github/trigger_hosting.sh
