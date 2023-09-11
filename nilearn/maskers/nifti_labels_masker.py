@@ -301,7 +301,8 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 if self._reporting_data["multi_subject"] is True:
                     msg = (
                         "Multiple subject images were provided to fit. "
-                        "Please subscript the list to view the report. "
+                        "Please subscript the list to view the report for "
+                        "individual subjects. "
                         f"{base_message}"
                     )
                 else:

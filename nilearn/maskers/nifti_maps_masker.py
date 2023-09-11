@@ -321,7 +321,8 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
             else:
                 msg = (
                     "Multiple subject images were provided to fit. "
-                    "Please subscript the list to view the report. "
+                    "Please subscript the list to view the report for "
+                    "individual subjects. "
                     f"{base_message}"
                 )
             warnings.warn(msg)
