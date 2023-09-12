@@ -127,8 +127,9 @@ def _get_colorbar_and_data_ranges(
             cbar_vmax = 0
             cbar_vmin = None
         else:
-            cbar_vmin = stat_map_min
-            cbar_vmax = stat_map_max
+            # limit colorbar to plotted values
+            cbar_vmin = vmin
+            cbar_vmax = vmax
     else:
         cbar_vmin, cbar_vmax = None, None
 
@@ -1077,16 +1078,26 @@ def plot_glass_brain(stat_map_img,
     if stat_map_img:
         stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype='auto')
         if plot_abs:
+            if vmin is not None and vmin < 0:
+                raise RuntimeError(
+                    'vmin cannot be negative if plot_abs is True'
+                )
             cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
                 _safe_get_data(stat_map_img, ensure_finite=True),
+                vmin=vmin,
                 vmax=vmax,
                 symmetric_cbar=symmetric_cbar,
-                force_min_stat_map_value=0)
+                symmetric_data_range=False, # TODO remove this arg from _get_colorbar_and_data_ranges
+                force_min_stat_map_value=0,
+            )
         else:
             cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
                 _safe_get_data(stat_map_img, ensure_finite=True),
+                vmin=vmin,
                 vmax=vmax,
-                symmetric_cbar=symmetric_cbar)
+                symmetric_cbar=symmetric_cbar,
+                symmetric_data_range=False,
+            )
     else:
         cbar_vmin, cbar_vmax = None, None
 
