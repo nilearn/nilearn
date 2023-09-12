@@ -1080,7 +1080,7 @@ def plot_glass_brain(stat_map_img,
         stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype='auto')
         if plot_abs:
             if vmin is not None and vmin < 0:
-                raise RuntimeError(
+                raise ValueError(
                     'vmin cannot be negative if plot_abs is True'
                 )
             cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
