@@ -33,7 +33,7 @@ Acquisition of one scan took 6.05s, with the scan to scan repeat time
 (:term:`TR`) set arbitrarily to 7s.
 """
 
-###############################################################################
+# %%
 # Retrieving the data
 # -------------------
 #
@@ -48,14 +48,14 @@ from nilearn.datasets import fetch_spm_auditory
 subject_data = fetch_spm_auditory()
 print(*subject_data.func[:5], sep="\n")  # print paths of first 5 func images
 
-###############################################################################
+# %%
 # We can display the first functional image and the subject's anatomy:
 from nilearn.plotting import plot_anat, plot_img, plot_stat_map
 
 plot_img(subject_data.func[0], colorbar=True, cbar_tick_format="%i")
 plot_anat(subject_data.anat, colorbar=True, cbar_tick_format="%i")
 
-###############################################################################
+# %%
 # Next, we concatenate all the 3D :term:`EPI` image into a single 4D image,
 # then we average them in order to create a background
 # image that will be used to display the activations:
@@ -65,7 +65,7 @@ from nilearn.image import concat_imgs, mean_img
 fmri_img = concat_imgs(subject_data.func)
 mean_img = mean_img(fmri_img)
 
-###############################################################################
+# %%
 # Specifying the experimental paradigm
 # ------------------------------------
 #
@@ -78,7 +78,7 @@ import pandas as pd
 events = pd.read_table(subject_data["events"])
 events
 
-###############################################################################
+# %%
 # Performing the GLM analysis
 # ---------------------------
 #
@@ -88,7 +88,7 @@ events
 
 from nilearn.glm.first_level import FirstLevelModel
 
-###############################################################################
+# %%
 # Parameters of the first-level model
 #
 # * t_r=7(s) is the time of repetition of acquisitions
@@ -110,16 +110,16 @@ fmri_glm = FirstLevelModel(
     high_pass=0.01,
 )
 
-###############################################################################
+# %%
 # Now that we have specified the model, we can run it on the :term:`fMRI` image
 fmri_glm = fmri_glm.fit(fmri_img, events)
 
-###############################################################################
+# %%
 # One can inspect the design matrix (rows represent time, and
 # columns contain the predictors).
 design_matrix = fmri_glm.design_matrices_[0]
 
-###############################################################################
+# %%
 # Formally, we have taken the first design matrix, because the model is
 # implictily meant to for multiple runs.
 import matplotlib.pyplot as plt
@@ -130,7 +130,7 @@ plot_design_matrix(design_matrix)
 
 plt.show()
 
-###############################################################################
+# %%
 # Save the design matrix image to disk
 # first create a directory where you want to write the images
 
@@ -146,7 +146,7 @@ plot_design_matrix(
     design_matrix, output_file=join(outdir, "design_matrix.png")
 )
 
-###############################################################################
+# %%
 # The first column contains the expected response profile of regions which are
 # sensitive to the auditory stimulation.
 # Let's plot this first column
@@ -156,7 +156,7 @@ plt.xlabel("scan")
 plt.title("Expected Auditory Response")
 plt.show()
 
-###############################################################################
+# %%
 # Detecting voxels with significant effects
 # -----------------------------------------
 #
@@ -175,13 +175,13 @@ conditions = {"active": np.zeros(16), "rest": np.zeros(16)}
 conditions["active"][0] = 1
 conditions["rest"][1] = 1
 
-###############################################################################
+# %%
 # We can then compare the two conditions 'active' and 'rest' by
 # defining the corresponding :term:`contrast`:
 
 active_minus_rest = conditions["active"] - conditions["rest"]
 
-###############################################################################
+# %%
 # Let's look at it: plot the coefficients of the :term:`contrast`, indexed by
 # the names of the columns of the design matrix.
 
@@ -189,7 +189,7 @@ from nilearn.plotting import plot_contrast_matrix
 
 plot_contrast_matrix(active_minus_rest, design_matrix=design_matrix)
 
-###############################################################################
+# %%
 # Below, we compute the :term:`'estimated effect'<Parameter Estimate>`.
 # It is in :term:`BOLD` signal unit, but has no statistical guarantees,
 # because it does not take into account the associated variance.
@@ -198,7 +198,7 @@ eff_map = fmri_glm.compute_contrast(
     active_minus_rest, output_type="effect_size"
 )
 
-###############################################################################
+# %%
 # In order to get statistical significance, we form a t-statistic, and
 # directly convert it into z-scale. The z-scale means that the values
 # are scaled to match a standard Gaussian distribution (mean=0,
@@ -206,7 +206,7 @@ eff_map = fmri_glm.compute_contrast(
 
 z_map = fmri_glm.compute_contrast(active_minus_rest, output_type="z_score")
 
-###############################################################################
+# %%
 # Plot thresholded z scores map
 # -----------------------------
 #
@@ -227,7 +227,7 @@ plot_stat_map(
 )
 plt.show()
 
-###############################################################################
+# %%
 # Statistical significance testing. One should worry about the
 # statistical validity of the procedure: here we used an arbitrary
 # threshold of 3.0 but the threshold should provide some guarantees on
@@ -252,7 +252,7 @@ plot_stat_map(
 )
 plt.show()
 
-###############################################################################
+# %%
 # The problem is that with this you expect 0.001 * n_voxels to show up
 # while they're not active --- tens to hundreds of voxels. A more
 # conservative solution is to control the family wise error rate,
@@ -274,7 +274,7 @@ plot_stat_map(
 )
 plt.show()
 
-###############################################################################
+# %%
 # This is quite conservative indeed!  A popular alternative is to
 # control the expected proportion of
 # false discoveries among detections. This is called the False
@@ -293,7 +293,7 @@ plot_stat_map(
 )
 plt.show()
 
-###############################################################################
+# %%
 # Finally people like to discard isolated voxels (aka "small
 # clusters") from these images. It is possible to generate a
 # thresholded map with small clusters removed by providing a
@@ -315,12 +315,12 @@ plot_stat_map(
 plt.show()
 
 
-###############################################################################
+# %%
 # We can save the effect and zscore maps to the disk.
 z_map.to_filename(join(outdir, "active_vs_rest_z_map.nii.gz"))
 eff_map.to_filename(join(outdir, "active_vs_rest_eff_map.nii.gz"))
 
-###############################################################################
+# %%
 # We can furthermore extract and report the found positions in a table.
 
 from nilearn.reporting import get_clusters_table
@@ -330,12 +330,12 @@ table = get_clusters_table(
 )
 table
 
-###############################################################################
+# %%
 # This table can be saved for future use.
 
 table.to_csv(join(outdir, "table.csv"))
 
-###############################################################################
+# %%
 # Performing an F-test
 # --------------------
 #
@@ -346,7 +346,7 @@ table.to_csv(join(outdir, "table.csv"))
 # the signal.  Here one might for instance test which voxels are well
 # explained by the combination of the active and rest condition.
 
-###############################################################################
+# %%
 # Specify the contrast and compute the corresponding map. Actually, the
 # contrast specification is done exactly the same way as for t-
 # contrasts.
@@ -357,7 +357,7 @@ plt.show()
 
 z_map = fmri_glm.compute_contrast(effects_of_interest, output_type="z_score")
 
-###############################################################################
+# %%
 # Note that the statistic has been converted to a z-variable, which
 # makes it easier to represent it.
 
@@ -375,5 +375,5 @@ plot_stat_map(
 )
 plt.show()
 
-###############################################################################
+# %%
 # Oops, there is a lot of non-neural signal in there (ventricles, arteries)...
