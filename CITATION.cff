@@ -231,6 +231,7 @@ authors:
     website: https://www.greydongilmore.com/
     affiliation: Department of Mathematics, Western University, Toronto, Canada
     email: greydon.gilmore@gmail.com
+    orcid: https://orcid.org/0000-0001-7523-5734
   - given-names: Guillaume
     family-names: Lemaitre
     website: https://glemaitre.github.io/
@@ -460,6 +461,7 @@ authors:
     family-names: Esteban
     website: https://github.com/oesteban
     affiliation: Centre Hospitalier Universitaire Vaudoise, Lausanne, Switzerland
+    orcid: https://orcid.org/0000-0001-8435-6191
   - given-names: Patrick
     family-names: Sadil
     website: https://psadil.github.io/psadil
@@ -477,6 +479,7 @@ authors:
     family-names: Herholz
     website: https://peerherholz.github.io/
     affiliation: Origami lab, McGill University, Montréal, Canada
+    orcid: https://orcid.org/0000-0002-9840-6257
   - given-names: Philippe
     family-names: Gervais
     website: https://github.com/pgervais
