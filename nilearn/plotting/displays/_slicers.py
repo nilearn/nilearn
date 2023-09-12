@@ -405,6 +405,12 @@ class BaseSlicer:
                 data = np.ma.masked_inside(
                     data, -threshold, threshold, copy=False
                 )
+                vmin = kwargs.get("vmin")
+                vmax = kwargs.get("vmax")
+                if vmin is not None and vmin >= -threshold:
+                    data = np.ma.masked_where(data < vmin, data, copy=False)
+                if vmax is not None and vmax <= threshold:
+                    data = np.ma.masked_where(data > vmax, data, copy=False)
             img = new_img_like(img, data, img.affine)
 
         affine = img.affine

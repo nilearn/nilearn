@@ -73,6 +73,7 @@ def _get_colorbar_and_data_ranges(
     depend on the symmetric_cbar argument, please refer to docstring of
     plot_stat_map.
     """
+    # TODO remove symmtric_data_range
     if symmetric_data_range and (vmin is not None):
         raise ValueError('this function does not accept a "vmin" '
                          'argument, as it uses a symmetrical range '
