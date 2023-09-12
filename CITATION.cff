@@ -592,7 +592,8 @@ authors:
     family-names: Steinkamp
     website: https://github.com/SRSteinkamp
     orcid: https://orcid.org/0000-0002-6437-0700
-    affiliation: Danish Research Centre for Magnetic Resonance, Copenhagen University Hospital Amager & Hvidovre, Copenhagen, Denmark.
+    affiliation: Danish Research Centre for Magnetic Resonance, Copenhagen University
+      Hospital Amager & Hvidovre, Copenhagen, Denmark.
   - given-names: Sourav
     family-names: Singh
     website: https://github.com/souravsingh

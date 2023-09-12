@@ -106,7 +106,7 @@ Some other past or present contributors are:
 * `Javier Rasero`_: School of Data Science, University of Virginia, Viginia, USA
 * `Jean Kossaifi`_: Imperial College London, London, UK
 * `Jean-Rémi King`_: Meta AI, CNRS, Paris
-* `Jelle Roelof Dalenberg`_: University Medical Center Groningen, Groningen
+* `Jelle Roelof Dalenberg`_: University Medical Center Groningen, Groningen, The Netherlands
 * `Jeremy Lefort-Besnard`_: Inria Rennes, France
 * `Jerome Dockes`_: Origami lab, McGill University, Montréal, Canada
 * `Jerome-Alexis Chevalier`_: Emerton Data
@@ -167,11 +167,11 @@ Some other past or present contributors are:
 * `Ryan Hammonds`_: UC San Diego, San Diego, California, USA
 * `Rémi Gau`_: Origami lab, McGill University, Montréal, Canada
 * `Sachin Patalasingh`_
-* `Sage Hahn`_
+* `Sage Hahn`_: deephealth
 * `Salma Bougacha`_
 * `Sam Buck Johnson`_
 * `Sami Jawhar`_
-* `Simon Steinkamp`_
+* `Simon Steinkamp`_: Danish Research Centre for Magnetic Resonance, Copenhagen University Hospital Amager & Hvidovre, Copenhagen, Denmark.
 * `Sourav Singh`_
 * `Steven Meisler`_: Harvard-MIT Division of Health Sciences and Technology, Cambridge, Massachusetts, USA
 * `Sylvain Lan`_
