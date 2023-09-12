@@ -58,7 +58,7 @@ Some other past or present contributors are:
 * `Alexis Thual`_: Inria, Saclay, France
 * `Alisha Kodibagkar`_: MIT McGovern Institute, Cambridge, Massachusetts, United States
 * `Amadeus Kanaan`_
-* `Ana Luisa Pinho`_: Western University, London, ON, Canada
+* `Ana Luisa Pinho`_: Western University, London, Ontario, Canada
 * `Andrés Hoyos Idrobo`_: Rakuten, France
 * `Anne-Sophie Kieslinger`_: Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig, Germnay
 * `Ariel Rokem`_: University of Washington, Psychology, Seattle, Washington, 98107, USA
@@ -71,13 +71,13 @@ Some other past or present contributors are:
 * `Caglar Cakan`_: Technische Universität Berlin, Berlin, Germany
 * `Chris Gorgolewski`_: Google LLC
 * `Chris Markiewicz`_: Stanford University, Stanford, California, USA
-* `Christian Horea`_: Dartmouth College, PBS, Hanover, NH, USA
+* `Christian Horea`_: Dartmouth College, PBS, Hanover, New Hampshire, USA
 * `Christian Gerloff`_
 * `Colin Reininger`_: Denver, Colorado, USA
 * `Connor Lane`_: Child Mind Institute, Baltimore, MD, USA
 * `Czarina Sy`_
 * `Céline Delettre`_
-* `Dan Gale`_: Centre for Neuroscience Studie, Queen University, Kingston, ON, Canada
+* `Dan Gale`_: Centre for Neuroscience Studie, Queen University, Kingston, Ontario, Canada
 * `Daniel Gomez`_: Cambridge, Massachusetts, USA
 * `Danilo Bzdok`_: McGill University & Mila Quebec AI Institute, Montréal, Canada
 * `David G Ellis`_: University of Nebraska Medical Center, Nebraska, USA
@@ -99,7 +99,7 @@ Some other past or present contributors are:
 * `Hao-Ting Wang`_: Montréal Geriatrics Institute (CRIUGM), Montréal, Canada
 * `Himanshu Aggarwal`_: Inria, Saclay, France
 * `Ian Abenes`_
-* `Jake Vogel`_: Philadelphia, USA
+* `Jake Vogel`_: Department of Clinical Sciences, SciLifeLab, Lund University, Lund, Sweden
 * `Jan Margeta`_: KardioMe, Nova Dubnica, Slovakia
 * `Jaques Grobler`_: Anyline GmbH, Vienna, Austria
 * `Jason Gors`_: Insight Data Science, Mountain View, California, USA
@@ -117,7 +117,7 @@ Some other past or present contributors are:
 * `Julia Huntenburg`_: International Brain Laboratory, Berlin, Germany
 * `Julio A Peraza`_: Florida International University, Miami, Florida, USA
 * `Kamalakar Reddy Daddy`_
-* `Kevin Sitek`_: Northwestern University, Evanston, IL, USA
+* `Kevin Sitek`_: Northwestern University, Evanston, Ilinois , USA
 * `Koen Helwegen`_: Dutch Connectome Lab, VU, Amsterdam, The Netherlands
 * `Konrad Wagstyl`_
 * `Konstantin Shmelkov`_
@@ -129,7 +129,7 @@ Some other past or present contributors are:
 * `Luz Paz`_
 * `Manon Pietrantoni`_
 * `Martin Perez-Guevara`_: Criteo, France
-* `Martin Wegrzyn`_: Bielefeld University
+* `Martin Wegrzyn`_: Bielefeld University, Bielefeld, Germany
 * `Mathias Goncalves`_: Stanford University, Stanford, California, USA
 * `Mathieu Dugré`_: Concordia University, Montréal, Canada
 * `Matthias Ekman`_: Donders Institute, Nijmegen, The Netherlands
@@ -137,7 +137,7 @@ Some other past or present contributors are:
 * `Maximilian Cosmo Sitter`_
 * `Mehdi Rahim`_: Air Liquide, France
 * `Michael Eickenberg`_: Flatiron Institute, New-York, New-York, USA
-* `Michael Hanke`_: Germany
+* `Michael Hanke`_: Psycho­informatics, Forschungszentrum Jülich GmbH, Jülich, Germany
 * `Michael Notter`_: ams OSRAM, Martigny, Lausanne, Switzerland
 * `Michael Waskom`_: Flatiron health, New York, USA
 * `Michelle Wang`_: Origami lab, McGill University, Montréal, Canada
@@ -183,7 +183,7 @@ Some other past or present contributors are:
 * `Vasco Diogo`_
 * `Vincent Michel`_: http://www.logilab.fr/
 * `Virgile Fritsch`_: Inria, Saclay, France
-* `Yaroslav Halchenko`_: Dartmouth College, USA
+* `Yaroslav Halchenko`_: Dartmouth College, PBS, Hanover, New Hampshire, USA
 * `Yasmin Mzayek`_: Inria, Saclay, France
 * `Zvi Baratz`_: Tel-Aviv University, Israel
 * `Óscar Nájera`_: Checkmk

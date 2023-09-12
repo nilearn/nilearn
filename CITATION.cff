@@ -73,7 +73,7 @@ authors:
   - given-names: Ana Luisa
     family-names: Pinho
     website: https://github.com/alpinho
-    affiliation: Western University, London, ON, Canada
+    affiliation: Western University, London, Ontario, Canada
   - given-names: Andrés Hoyos
     family-names: Idrobo
     website: https://github.com/ahoyosid
@@ -132,7 +132,7 @@ authors:
   - given-names: Christian
     family-names: Horea
     website: http://chymera.eu/
-    affiliation: Dartmouth College, PBS, Hanover, NH, USA
+    affiliation: Dartmouth College, PBS, Hanover, New Hampshire, USA
     email: chr@chymera.eu
     orcid: https://orcid.org/0000-0001-7037-2449
   - given-names: Christian
@@ -155,7 +155,8 @@ authors:
   - given-names: Dan
     family-names: Gale
     website: https://danjgale.github.io/
-    affiliation: Centre for Neuroscience Studie, Queen University, Kingston, ON, Canada
+    affiliation: Centre for Neuroscience Studie, Queen University, Kingston, Ontario,
+      Canada
   - given-names: Daniel
     family-names: Gomez
     website: https://github.com/dangom
@@ -215,11 +216,13 @@ authors:
     family-names: Varoquaux
     website: http://gael-varoquaux.info/
     affiliation: Inria, Saclay, France
+    orcid: https://orcid.org/0000-0003-1076-5122
   - given-names: Gilles de
     family-names: Hollander
     website: https://github.com/Gilles86
     email: gilles.de.hollander@gmail.com
     affiliation: Vrije Universiteit, Amsterdam, The Netherlands
+    orcid: https://orcid.org/0000-0003-1988-5091
   - given-names: Greg
     family-names: Kiar
     website: https://gkiar.me/
@@ -257,7 +260,8 @@ authors:
     family-names: Vogel
     website: https://github.com/illdopejake
     email: jacobwvogel@gmail.com
-    affiliation: Philadelphia, USA
+    affiliation: Department of Clinical Sciences, SciLifeLab, Lund University, Lund,
+      Sweden
   - given-names: Jan
     family-names: Margeta
     website: https://github.com/jmargeta
@@ -320,6 +324,7 @@ authors:
     family-names: Huntenburg
     website: https://github.com/juhuntenburg
     affiliation: International Brain Laboratory, Berlin, Germany
+    orcid: https://orcid.org/0000-0003-0579-9811
   - given-names: Julio A
     family-names: Peraza
     website: https://github.com/JulioAPeraza
@@ -331,7 +336,7 @@ authors:
   - given-names: Kevin
     family-names: Sitek
     website: https://github.com/sitek
-    affiliation: Northwestern University, Evanston, IL, USA
+    affiliation: Northwestern University, Evanston, Ilinois , USA
     email: kevin.sitek@northwestern.edu
     orcid: https://orcid.org/0000-0002-2172-5786
   - given-names: Koen
@@ -378,7 +383,7 @@ authors:
   - given-names: Martin
     family-names: Wegrzyn
     website: https://github.com/mwegrzyn
-    affiliation: Bielefeld University
+    affiliation: Bielefeld University, Bielefeld, Germany
   - given-names: Mathias
     family-names: Goncalves
     website: https://github.com/mgxd
@@ -389,6 +394,7 @@ authors:
     family-names: Dugré
     website: https://mathdugre.me
     affiliation: Concordia University, Montréal, Canada
+    orcid: https://orcid.org/0000-0003-2828-6031
   - given-names: Matthias
     family-names: Ekman
     website: https://github.com/mekman
@@ -413,7 +419,8 @@ authors:
     family-names: Hanke
     website: https://github.com/mih
     email: michael.hanke@gmail.com
-    affiliation: Germany
+    affiliation: Psycho­informatics, Forschungszentrum Jülich GmbH, Jülich, Germany
+    orcid: https://orcid.org/0000-0001-6398-6370
   - given-names: Michael
     family-names: Notter
     website: https://github.com/miykael
@@ -616,7 +623,7 @@ authors:
   - given-names: Yaroslav
     family-names: Halchenko
     website: https://github.com/yarikoptic
-    affiliation: Dartmouth College, USA
+    affiliation: Dartmouth College, PBS, Hanover, New Hampshire, USA
     email: debian@onerussian.com
     orcid: https://orcid.org/0000-0003-3456-2493
   - given-names: Yasmin
