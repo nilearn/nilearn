@@ -1132,7 +1132,6 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         vmin=vmin,
         vmax=vmax,
         symmetric_cbar=symmetric_cbar,
-        symmetric_data_range=False,
     )
 
     display = plot_surf(
@@ -1254,7 +1253,6 @@ def _colorbar_from_array(array, vmin, vmax, threshold, symmetric_cbar=True,
         vmin=vmin,
         vmax=vmax,
         symmetric_cbar=symmetric_cbar,
-        symmetric_data_range=False,
     )
     norm = Normalize(vmin=vmin, vmax=vmax)
     cmaplist = [cmap(i) for i in range(cmap.N)]
@@ -1402,7 +1400,6 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         vmin=vmin,
         vmax=vmax,
         symmetric_cbar=symmetric_cbar,
-        symmetric_data_range=False,
     )
 
     for i, (mode, hemi) in enumerate(itertools.product(modes, hemis)):
