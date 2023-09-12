@@ -137,7 +137,7 @@ Some other past or present contributors are:
 * `Maximilian Cosmo Sitter`_
 * `Mehdi Rahim`_: Air Liquide, France
 * `Michael Eickenberg`_: Flatiron Institute, New-York, New-York, USA
-* `Michael Hanke`_: Psycho­informatics, Forschungszentrum Jülich GmbH, Jülich, Germany
+* `Michael Hanke`_: Psychoinformatics, Forschungszentrum Jülich GmbH, Jülich, Germany
 * `Michael Notter`_: ams OSRAM, Martigny, Lausanne, Switzerland
 * `Michael Waskom`_: Flatiron health, New York, USA
 * `Michelle Wang`_: Origami lab, McGill University, Montréal, Canada
