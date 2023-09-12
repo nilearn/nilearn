@@ -168,12 +168,16 @@ suppress_warnings = ["image.not_readable"]
 html_theme = "furo"
 
 # Add custom css instructions from themes/custom.css
+font_awesome = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/"
 html_css_files = [
     "custom.css",
     (
         "https://cdnjs.cloudflare.com/ajax/libs/"
         "font-awesome/5.15.4/css/all.min.css"
     ),
+    f"{font_awesome}fontawesome.min.css",
+    f"{font_awesome}solid.min.css",
+    f"{font_awesome}brands.min.css",
 ]
 
 # The style sheet to use for HTML and HTML Help pages. A file of that name
@@ -197,6 +201,23 @@ html_theme_options = {
         "color-admonition-title--note": "#448aff",
         "color-admonition-title-background--note": "#448aff10",
     },
+    "source_repository": "https://github.com/nilearn/nilearn/",
+    "source_branch": "main",
+    "source_directory": "doc/",
+    "footer_icons": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/nilearn/nilearn",
+            "html": "",
+            "class": "fa-brands fa-solid fa-github fa-2x",
+        },
+        {
+            "name": "Twitter",
+            "url": "https://twitter.com/nilearn",
+            "html": "",
+            "class": "fa-brands fa-solid fa-twitter fa-2x",
+        },
+    ],
 }
 
 # Add banner in case version is not stable
