@@ -217,6 +217,18 @@ html_theme_options = {
             "html": "",
             "class": "fa-brands fa-solid fa-twitter fa-2x",
         },
+        {
+            "name": "Mastodon",
+            "url": "https://fosstodon.org/@nilearn",
+            "html": "",
+            "class": "fa-brands fa-solid fa-mastodon fa-2x",
+        },
+        {
+            "name": "Discord",
+            "url": "https://discord.gg/SsQABEJHkZ",
+            "html": "",
+            "class": "fa-brands fa-solid fa-discord fa-2x",
+        },
     ],
 }
 
