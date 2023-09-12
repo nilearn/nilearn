@@ -22,6 +22,7 @@ import matplotlib.pyplot as plt
 # delayed, so that the part module can be used without them).
 import numpy as np
 from matplotlib import gridspec as mgs
+from matplotlib.colors import LinearSegmentedColormap
 from nibabel.spatialimages import SpatialImage
 from scipy import stats
 from scipy.ndimage import binary_fill_holes
@@ -1073,6 +1074,11 @@ def plot_glass_brain(stat_map_img,
     """
     if cmap is None:
         cmap = cm.cold_hot if black_bg else cm.cold_white_hot
+        # use only positive half of colormap if plotting absolute values
+        if plot_abs:
+            cmap = LinearSegmentedColormap.from_list(
+                'cmap_pos', cmap(np.linspace(0.5, 1, 256)), 
+            )
 
     if stat_map_img:
         stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype='auto')
@@ -1081,6 +1087,7 @@ def plot_glass_brain(stat_map_img,
                 raise ValueError(
                     'vmin cannot be negative if plot_abs is True'
                 )
+            # TODO doesn't seem to be taking absolute value
             cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
                 _safe_get_data(stat_map_img, ensure_finite=True),
                 vmin=vmin,
