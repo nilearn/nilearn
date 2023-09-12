@@ -14,8 +14,8 @@
     :target: https://codecov.io/gh/nilearn/nilearn
     :alt: Coverage Status
 
-.. image:: http://img.shields.io/twitter/follow/bidsstandard.svg
-    :target: https://twitter.com/BIDSstandard
+.. image:: http://img.shields.io/twitter/follow/nilearn.svg
+    :target: https://twitter.com/nilearn
     :alt: Twitter
 
 .. image:: https://img.shields.io/mastodon/follow/109669703955432270?domain=https%3A%2F%2Ffosstodon.org%2F
