@@ -285,19 +285,22 @@ def test_multi_nifti_maps_masker_list_of_sample_mask():
 
     n_regions = 9
     length = 6
-    n_scrub = 3
+    n_scrub1 = 3
+    n_scrub2 = 2
 
     fmri11_img, mask11_img = data_gen.generate_fake_fmri(
         shape1, affine=affine1, length=length
     )
 
     maps11_img, _ = data_gen.generate_maps(shape1, n_regions, affine=affine1)
-    sample_mask = np.arange(length - n_scrub)
+    sample_mask1 = np.arange(length - n_scrub1)
+    sample_mask2 = np.arange(length - n_scrub2)
 
     masker = MultiNiftiMapsMasker(maps11_img)
     ts_list = masker.fit_transform(
-        [fmri11_img, fmri11_img], sample_mask=[sample_mask, sample_mask]
+        [fmri11_img, fmri11_img], sample_mask=[sample_mask1, sample_mask2]
     )
 
     assert len(ts_list) == 2
-    assert ts_list[0].shape == (length - n_scrub, n_regions)
+    for ts, n_scrub in zip(ts_list, [n_scrub1, n_scrub2]):
+        assert ts.shape == (length - n_scrub, n_regions)
