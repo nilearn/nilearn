@@ -423,26 +423,25 @@ def compute_fixed_effects(contrast_imgs, variance_imgs, mask=None,
     contrasts = np.array([masker.transform(contrast_img)
                           for contrast_img in contrast_imgs])
 
-    if dofs:
-        if dofs is not None:
-            if len(dofs) != n_runs:
-                raise ValueError(
-                    f"The number of degrees of freedom ({len(dofs)}) "
-                    f"differs from the number of contrast images ({n_runs})."
-                )
-        else:
-            dofs = [100] * n_runs
+    if dofs is not None:
+        if len(dofs) != n_runs:
+            raise ValueError(
+                f"The number of degrees of freedom ({len(dofs)}) "
+                f"differs from the number of contrast images ({n_runs})."
+            )
+    else:
+        dofs = [100] * n_runs
 
-        (fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat, fixed_fx_z_score)\
-            = _compute_fixed_effects_params(
-                contrasts, variances, precision_weighted, dofs)
+    (fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat, fixed_fx_z_score)\
+        = _compute_fixed_effects_params(
+            contrasts, variances, precision_weighted, dofs)
 
-        fixed_fx_contrast_img = masker.inverse_transform(fixed_fx_contrast)
-        fixed_fx_variance_img = masker.inverse_transform(fixed_fx_variance)
-        fixed_fx_stat_img = masker.inverse_transform(fixed_fx_stat)
-        fixed_fx_z_score_img = masker.inverse_transform(fixed_fx_z_score)
-        return (fixed_fx_contrast_img, fixed_fx_variance_img,
-                fixed_fx_stat_img, fixed_fx_z_score_img)
+    fixed_fx_contrast_img = masker.inverse_transform(fixed_fx_contrast)
+    fixed_fx_variance_img = masker.inverse_transform(fixed_fx_variance)
+    fixed_fx_stat_img = masker.inverse_transform(fixed_fx_stat)
+    fixed_fx_z_score_img = masker.inverse_transform(fixed_fx_z_score)
+    return (fixed_fx_contrast_img, fixed_fx_variance_img,
+            fixed_fx_stat_img, fixed_fx_z_score_img)
 
 
 def _compute_fixed_effects_params(

@@ -120,6 +120,7 @@ def test_explicit_fixed_effects(tmp_path):
         fixed_fx_contrast,
         fixed_fx_variance,
         fixed_fx_stat,
+        fixed_fx_z,
     ) = compute_fixed_effects(contrasts, variance, mask)
 
     assert_almost_equal(
@@ -178,6 +179,7 @@ def test_explicit_fixed_effects_without_mask(tmp_path):
         fixed_fx_contrast,
         fixed_fx_variance,
         fixed_fx_stat,
+        fixed_fx_z,
     ) = compute_fixed_effects(contrasts, variance)
     assert_almost_equal(
         get_data(fixed_fx_contrast),
@@ -283,7 +285,7 @@ def test_high_level_glm_different_design_matrices():
         fmri_data, design_matrices=design_matrices)
     z_joint = multi_session_model.compute_contrast(
         [np.eye(rk)[:1], np.eye(rk + 1)[:1]], output_type='effect_size')
-    assert z_joint.shape == (7, 8, 7)
+    assert z_joint.shape == (7, 8, 7, 1)
 
     # compare the estimated effects to seprarately-fitted models
     model1 = FirstLevelModel(mask_img=mask).fit(
