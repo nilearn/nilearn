@@ -928,6 +928,8 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
     if not axes.collections or not isinstance(axes.collections[0],
                                               Poly3DCollection):
         _ = plot_surf(surf_mesh, axes=axes, **kwargs)
+    if axes.collections[0].get_edgecolor().size is 0:
+        axes.collections[0].set_edgecolor(axes.collections[0]._facecolor3d)
 
     coords, faces = load_surf_mesh(surf_mesh)
     roi = load_surf_data(roi_map)
