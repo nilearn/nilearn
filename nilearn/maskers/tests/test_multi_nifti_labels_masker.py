@@ -353,3 +353,35 @@ def test_multi_nifti_labels_masker_resampling():
         np.testing.assert_array_equal(
             get_data(compressed_img), get_data(compressed_img2)
         )
+
+
+def test_multi_nifti_labels_masker_list_of_sample_mask():
+    """Tests MultiNiftiLabelsMasker.fit_transform with a list of "sample_mask".
+
+    "sample_mask" was directly sent as input to the parallel calls of
+    "transform_single_imgs" instead of sending iterations.
+    See https://github.com/nilearn/nilearn/issues/3967 for more details.
+    """
+    shape1 = (13, 11, 12)
+    affine1 = np.eye(4)
+
+    n_regions = 9
+    length = 6
+    n_scrub = 3
+
+    fmri11_img, mask11_img = data_gen.generate_fake_fmri(
+        shape1, affine=affine1, length=length
+    )
+
+    labels11_img = data_gen.generate_labeled_regions(
+        shape1, affine=affine1, n_regions=n_regions
+    )
+    sample_mask = np.arange(length - n_scrub)
+
+    masker = MultiNiftiLabelsMasker(labels11_img)
+    ts_list = masker.fit_transform(
+        [fmri11_img, fmri11_img], sample_mask=[sample_mask, sample_mask]
+    )
+
+    assert len(ts_list) == 2
+    assert ts_list[0].shape == (length - n_scrub, n_regions)
