@@ -27,6 +27,7 @@ contact:
 license: BSD-4-Clause
 
 authors:
+  - family-names: Nilearn contributors
   - given-names: Ahmad
     family-names: Chamma
     website: https://github.com/achamma723
@@ -419,7 +420,7 @@ authors:
     family-names: Hanke
     website: https://github.com/mih
     email: michael.hanke@gmail.com
-    affiliation: Psycho­informatics, Forschungszentrum Jülich GmbH, Jülich, Germany
+    affiliation: Psychoinformatics, Forschungszentrum Jülich GmbH, Jülich, Germany
     orcid: https://orcid.org/0000-0001-6398-6370
   - given-names: Michael
     family-names: Notter
