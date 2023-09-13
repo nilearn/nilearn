@@ -961,8 +961,10 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
         # matplotlib version 3.3.3
         try:
             axes.collections[0]._facecolors3d[faces_outside] = color
+            axes.collections[0]._edgecolors3d[faces_outside] = color
         except AttributeError:
             axes.collections[0]._facecolor3d[faces_outside] = color
+            axes.collections[0]._edgecolor3d[faces_outside] = color
         if label and legend:
             patch_list.append(Patch(color=color, label=label))
     # plot legend only if indicated and labels provided
