@@ -129,6 +129,12 @@ def test_multi_nifti_maps_masker():
     masker.fit_transform(fmri22_img)
     np.testing.assert_array_equal(masker._resampled_maps_img_.affine, affine2)
 
+    # Test "MultiNiftiMapsMasker.fit_transform" with multiple "sample_mask"
+    sample_mask = np.arange(length - 2)
+    masker.fit_transform(
+        [fmri11_img, fmri11_img], sample_mask=[sample_mask, sample_mask]
+    )
+
 
 def test_multi_nifti_maps_masker_resampling():
     # Test resampling in MultiNiftiMapsMasker
