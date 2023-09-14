@@ -14,7 +14,7 @@ It aims at preparing a renewal of the tutorials.
 New
 ---
 
-- :bdg-dark:`Code` Fetcher for Megatrawl Netmats dataset.
+- :bdg-success:`API` Fetcher for Megatrawl Netmats dataset.
 
 Enhancements
 ------------
