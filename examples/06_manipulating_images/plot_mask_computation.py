@@ -19,9 +19,9 @@ underlying routine that extract masks from EPI
 
 """
 
-###############################################################################
+# %%
 # Computing a mask from the background
-###############################################################################
+# ------------------------------------
 #
 # The default strategy to compute a mask, eg in NiftiMasker is to try to
 # detect the background.
@@ -44,7 +44,7 @@ print(
 miyawaki_filename = miyawaki_dataset.func[0]
 miyawaki_mean_img = image.mean_img(miyawaki_filename)
 plot_epi(miyawaki_mean_img, title="Mean EPI image")
-###############################################################################
+# %%
 # A NiftiMasker with the default strategy
 masker = NiftiMasker()
 masker.fit(miyawaki_filename)
@@ -54,15 +54,15 @@ plot_roi(
     masker.mask_img_, miyawaki_mean_img, title="Mask from already masked data"
 )
 
-###############################################################################
+# %%
 # Plot the generated mask using the .generate_report method
 report = masker.generate_report()
 report
 
 
-###############################################################################
+# %%
 # Computing a mask from raw EPI data
-###############################################################################
+# ----------------------------------
 #
 # From raw EPI data, there is no uniform background, and a different
 # strategy is necessary
@@ -80,7 +80,7 @@ epi_img = index_img(epi_filename, slice(0, 100))
 mean_img = image.mean_img(epi_img)
 plot_epi(mean_img, title="Mean EPI image")
 
-###############################################################################
+# %%
 # Simple mask extraction from EPI images
 # We need to specify an 'epi' mask_strategy, as this is raw EPI data
 masker = NiftiMasker(mask_strategy="epi")
@@ -88,7 +88,7 @@ masker.fit(epi_img)
 report = masker.generate_report()
 report
 
-###############################################################################
+# %%
 # Generate mask with strong opening
 #
 # We can fine-tune the outline of the mask by increasing the number of
@@ -102,7 +102,7 @@ masker.fit(epi_img)
 report = masker.generate_report()
 report
 
-###############################################################################
+# %%
 # Generate mask with a high lower cutoff
 #
 # The NiftiMasker calls the nilearn.masking.compute_epi_mask function to
@@ -121,9 +121,9 @@ masker.fit(epi_img)
 report = masker.generate_report()
 report
 
-###############################################################################
+# %%
 # Computing the mask from the MNI template
-###############################################################################
+# ----------------------------------------
 #
 # A mask can also be computed from the MNI template. In this case, it is
 # resampled to the target image. Three options are available:
@@ -135,9 +135,9 @@ masker.fit(epi_img)
 report = masker.generate_report()
 report
 
-###############################################################################
+# %%
 # Compute and resample a mask
-###############################################################################
+# ---------------------------
 #
 # NiftiMasker also allows passing parameters directly to `image.resample_img`.
 # We can specify a `target_affine`, a `target_shape`, or both.
@@ -154,9 +154,9 @@ masker.fit(epi_img)
 report = masker.generate_report()
 report
 
-###############################################################################
+# %%
 # After mask computation: extracting time series
-###############################################################################
+# ----------------------------------------------
 #
 # Extract time series
 

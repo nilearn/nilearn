@@ -203,6 +203,8 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
         self.keep_masked_labels = keep_masked_labels
 
+        self.cmap = kwargs.get("cmap", "CMRmap_r")
+
     def generate_report(self):
         """Generate a report."""
         from nilearn.reporting.html_report import generate_report
@@ -299,7 +301,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 display = plotting.plot_img(
                     img,
                     black_bg=False,
-                    cmap='CMRmap_r',
+                    cmap=self.cmap,
                 )
                 plt.close()
                 display.add_contours(labels_image, filled=False, linewidths=3)
@@ -334,8 +336,15 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 
-        All parameters are unused, they are for scikit-learn compatibility.
+        Parameters
+        ----------
+        imgs : :obj:`list` of Niimg-like objects
+            See :ref:`extracting_data`.
+            Image data passed to the reporter.
 
+        y : None
+            This parameter is unused. It is solely included for scikit-learn
+            compatibility.
         """
         repr = _utils._repr_niimgs(self.labels_img,
                                    shorten=(not self.verbose))
@@ -451,8 +460,9 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             shape: (number of scans, number of labels)
 
         """
-        return self.fit().transform(imgs, confounds=confounds,
-                                    sample_mask=sample_mask)
+        return self.fit(imgs).transform(
+            imgs, confounds=confounds, sample_mask=sample_mask
+        )
 
     def _check_fitted(self):
         if not hasattr(self, 'labels_img_'):

@@ -81,7 +81,10 @@ print(f"Data has {len(children)} children.")
 # estimate it using :class:`nilearn.connectome.ConnectivityMeasure`.
 from nilearn.connectome import ConnectivityMeasure
 
-correlation_measure = ConnectivityMeasure(kind="correlation")
+correlation_measure = ConnectivityMeasure(
+    kind="correlation",
+    standardize="zscore_sample",
+)
 
 ###############################################################################
 # From the list of ROIs time-series for children, the
@@ -130,7 +133,10 @@ plotting.plot_connectome(
 # -----------------------------
 # We can also study **direct connections**, revealed by partial correlation
 # coefficients. We just change the `ConnectivityMeasure` kind
-partial_correlation_measure = ConnectivityMeasure(kind="partial correlation")
+partial_correlation_measure = ConnectivityMeasure(
+    kind="partial correlation",
+    standardize="zscore_sample",
+)
 partial_correlation_matrices = partial_correlation_measure.fit_transform(
     children
 )
@@ -160,7 +166,10 @@ plotting.plot_connectome(
 # We can use **both** correlations and partial correlations to capture
 # reproducible connectivity patterns at the group-level.
 # This is done by the tangent space embedding.
-tangent_measure = ConnectivityMeasure(kind="tangent")
+tangent_measure = ConnectivityMeasure(
+    kind="tangent",
+    standardize="zscore_sample",
+)
 
 ###############################################################################
 # We fit our children group and get the group connectivity matrix stored as
@@ -214,7 +223,11 @@ for kind in kinds:
     for train, test in cv.split(pooled_subjects, classes):
         # *ConnectivityMeasure* can output the estimated subjects coefficients
         # as a 1D arrays through the parameter *vectorize*.
-        connectivity = ConnectivityMeasure(kind=kind, vectorize=True)
+        connectivity = ConnectivityMeasure(
+            kind=kind,
+            vectorize=True,
+            standardize="zscore_sample",
+        )
         # build vectorized connectomes for subjects in the train set
         connectomes = connectivity.fit_transform(pooled_subjects[train])
         # fit the classifier

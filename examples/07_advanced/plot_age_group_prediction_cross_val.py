@@ -70,7 +70,13 @@ kinds = ["correlation", "partial correlation", "tangent"]
 
 pipe = Pipeline(
     [
-        ("connectivity", ConnectivityMeasure(vectorize=True)),
+        (
+            "connectivity",
+            ConnectivityMeasure(
+                vectorize=True,
+                standardize="zscore_sample",
+            ),
+        ),
         (
             "classifier",
             GridSearchCV(LinearSVC(dual=True), {"C": [0.1, 1.0, 10.0]}, cv=5),

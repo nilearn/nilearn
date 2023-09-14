@@ -12,7 +12,11 @@ NEW
 
 Fixes
 -----
+Fix bug in method ``transform_imgs`` of :class:`~maskers.MultiNiftiMapsMasker` and :class:`~maskers.MultiNiftiLabelsMasker` that would raise an error if a list of ``sample_mask`` was specified to ``fit_transform`` (:gh:`3971` by `Alexandre Cionca`_).
+
 - Fix bug in ``nilearn.plotting.surf_plotting._plot_surf_matplotlib`` that would make vertices transparent when saving in PDF or SVG format (:gh:`3860` by `Mathieu Dugré`_).
+
+- Fix bug that would prevent using `symmetric_cmap=True` or the `avg_method` argument with :func:`~plotting.plot_surf_roi` (:gh:`3942` by `Rémi Gau`_).
 
 - Fix bug that would prevent loading the confounds of a gifti file in actual fmriprep datasets (:gh:`3819` by `Rémi Gau`_).
 
@@ -32,6 +36,9 @@ Fixes
 
 - Fix pathlib.Path not being counted as Niimg-like object in :func:`~image.new_img_like` (:gh:`3723` by `Maximilian Cosmo Sitter`_).
 
+- Fix ``fit_transform`` behavior to match when ``fit`` method is passed image data (:gh:`3897` by `Yasmin Mzayek`_)
+
+- Allow using both vmin and threshold with  "plotly" engine to be consistent with "matplotlib" behavior (:gh:`3945` by `Yasmin Mzayek`_)
 
 Enhancements
 ------------
@@ -48,9 +55,12 @@ Enhancements
 
 - Add ``vmin`` and ``symmetric_cbar`` arguments to :func:`~nilearn.plotting.plot_img_on_surf` (:gh:`3873` by `Michelle Wang`_).
 
+- Improve ``generate_report`` method of maskers by allowing users to pass a cmap argument for plotting image (:gh:`3897` by `Yasmin Mzayek`_)
+
 Changes
 -------
 
+- `nilearn.glm.first_level.experimental_paradigm.check_events` will now throw a warning if some events have a 0 second duration and will throw an error if an event has ``NaN`` onset or duration (:gh:`3943` by `Rémi Gau`_).
 - Removed old files and test code from deprecated datasets COBRE and NYU resting state (:gh:`3743` by `Michelle Wang`_).
 - :bdg-secondary:`Maint` PEP8 and isort compliance extended to the whole nilearn codebase. (:gh:`3538`, :gh:`3566`, :gh:`3548`, :gh:`3556`, :gh:`3601`, :gh:`3609`, :gh:`3646`, :gh:`3650`, :gh:`3647`, :gh:`3640`, :gh:`3615`, :gh:`3614`, :gh:`3648`,  :gh:`#3651`  by `Rémi Gau`_).
 - :bdg-secondary:`Maint` Finish applying black formatting to most of the codebase. (:gh:`3836`, :gh:`3833`, :gh:`3827`, :gh:`3810`, :gh:`3803`, :gh:`3802`, :gh:`3795`, :gh:`3790`, :gh:`3783`, :gh:`3777` by `Rémi Gau`_).
@@ -64,3 +74,5 @@ Changes
 - :bdg-secondary:`Doc` Replace skipped doctests with default code-blocks (:gh:`3681` in by `Patrick Sadil`_)
 - Move the `~nilearn.plotting.html_surface._mix_colormaps` to `cm.py` in :mod:`~nilearn.plotting` (:gh:`3919` by `Ahmad Chamma`_)
 - Remove deprecation decorator from `~nilearn.glm.regression` (:gh:`3921` by `Ahmad Chamma`_)
+- Expose `standardize` in :func:`~plotting.plot_carpet` and :class:`~connectome.ConnectivityMeasure` to handle "zscore" deprecation (:gh:`3927` by `Yasmin Mzayek`_).
+- Example :ref:`sphx_glr_auto_examples_01_plotting_plot_prob_atlas.py` is shortened to speed up build time (:gh:`3934` by `Yasmin Mzayek`_)
