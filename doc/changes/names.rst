@@ -18,6 +18,8 @@
 
 .. _Alexandre Savio: https://github.com/alex-savio
 
+.. _Alexandre Cionca: https://github.com/acionca
+
 .. _Alexis Thual: https://github.com/alexisthual
 
 .. _Alisha Kodibagkar: https://github.com/alishakodibagkar/
