@@ -271,3 +271,36 @@ def test_multi_nifti_maps_masker_resampling():
             fmri11_img_r.affine, masker.maps_img_.affine
         )
         assert fmri11_img_r.shape == (masker.maps_img_.shape[:3] + (length,))
+
+
+def test_multi_nifti_maps_masker_list_of_sample_mask():
+    """Tests MultiNiftiMapsMasker.fit_transform with a list of "sample_mask".
+
+    "sample_mask" was directly sent as input to the parallel calls of
+    "transform_single_imgs" instead of sending iterations.
+    See https://github.com/nilearn/nilearn/issues/3967 for more details.
+    """
+    shape1 = (13, 11, 12)
+    affine1 = np.eye(4)
+
+    n_regions = 9
+    length = 6
+    n_scrub1 = 3
+    n_scrub2 = 2
+
+    fmri11_img, mask11_img = data_gen.generate_fake_fmri(
+        shape1, affine=affine1, length=length
+    )
+
+    maps11_img, _ = data_gen.generate_maps(shape1, n_regions, affine=affine1)
+    sample_mask1 = np.arange(length - n_scrub1)
+    sample_mask2 = np.arange(length - n_scrub2)
+
+    masker = MultiNiftiMapsMasker(maps11_img)
+    ts_list = masker.fit_transform(
+        [fmri11_img, fmri11_img], sample_mask=[sample_mask1, sample_mask2]
+    )
+
+    assert len(ts_list) == 2
+    for ts, n_scrub in zip(ts_list, [n_scrub1, n_scrub2]):
+        assert ts.shape == (length - n_scrub, n_regions)
