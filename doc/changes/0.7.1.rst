@@ -12,7 +12,7 @@ HIGHLIGHTS
 
 - :bdg-success:`API` New atlas fetcher :func:`~datasets.fetch_atlas_difumo` to download *Dictionaries of Functional Modes*, or “DiFuMo”, that can serve as atlases to extract functional signals with different dimensionalities (64, 128, 256, 512, and 1024). These modes are optimized to represent well raw :term:`BOLD` timeseries, over a with range of experimental conditions (:gh:`2619` by `Nicolas Gensollen`_).
 
-- :class:`~decoding.Decoder` and :class:`~decoding.DecoderRegressor` are now implemented with random predictions to estimate a chance level (:gh:`2622` by `Kamalakar Reddy Daddy`_).
+- :bdg-dark:`Code` :class:`~decoding.Decoder` and :class:`~decoding.DecoderRegressor` are now implemented with random predictions to estimate a chance level (:gh:`2622` by `Kamalakar Reddy Daddy`_).
 
 - :bdg-info:`Plotting` Functions :func:`~plotting.plot_epi`, :func:`~plotting.plot_roi`, :func:`~plotting.plot_stat_map`, :func:`~plotting.plot_prob_atlas` are now implemented with new display mode ``Mosaic``. That implies plotting 3D maps in multiple columns and rows in a single axes (:gh:`2684` by `Kamalakar Reddy Daddy`_).
 
@@ -28,16 +28,16 @@ NEW
 Fixes
 -----
 
-- Fix altered, non-zero baseline in design matrices where multiple events in the same condition end at the same time (see :gh:`2674`) (:gh:`2553` by `Martin Wegrzyn`_).
+- :bdg-dark:`Code` Fix altered, non-zero baseline in design matrices where multiple events in the same condition end at the same time (see :gh:`2674`) (:gh:`2553` by `Martin Wegrzyn`_).
 
-- Fix testing issues on ARM machine (:gh:`2606` by `Kamalakar Reddy Daddy`_).
+- :bdg-dark:`Code` Fix testing issues on ARM machine (:gh:`2606` by `Kamalakar Reddy Daddy`_).
 
 Enhancements
 ------------
 
-- :class:`~decoding.Decoder` and :class:`~decoding.DecoderRegressor` are now implemented with random predictions to estimate a chance level (:gh:`2622` by `Kamalakar Reddy Daddy`_).
+- :bdg-dark:`Code` :class:`~decoding.Decoder` and :class:`~decoding.DecoderRegressor` are now implemented with random predictions to estimate a chance level (:gh:`2622` by `Kamalakar Reddy Daddy`_).
 
-- :class:`~decoding.Decoder`, :class:`~decoding.DecoderRegressor`, :class:`~decoding.FREMRegressor`, and :class:`~decoding.FREMClassifier` now override the ``score`` method to use whatever scoring strategy was defined through the ``scoring`` attribute instead of the sklearn default. If the ``scoring`` attribute of the decoder is set to ``None``, the scoring strategy will default to accuracy for classifiers and to r2 score for regressors (:gh:`2669` by `Nicolas Gensollen`_).
+- :bdg-dark:`Code` :class:`~decoding.Decoder`, :class:`~decoding.DecoderRegressor`, :class:`~decoding.FREMRegressor`, and :class:`~decoding.FREMClassifier` now override the ``score`` method to use whatever scoring strategy was defined through the ``scoring`` attribute instead of the sklearn default. If the ``scoring`` attribute of the decoder is set to ``None``, the scoring strategy will default to accuracy for classifiers and to r2 score for regressors (:gh:`2669` by `Nicolas Gensollen`_).
 
 - :bdg-info:`Plotting` Function :func:`~plotting.plot_surf` and deriving functions like :func:`~plotting.plot_surf_roi` now accept an optional argument ``cbar_tick_format`` to specify how numbers should be displayed on the colorbar of surface plots. The default format is scientific notation except for function :func:`~plotting.plot_surf_roi` for which it is set as integers (:gh:`2643` by `Nicolas Gensollen`_).
 

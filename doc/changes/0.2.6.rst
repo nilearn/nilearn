@@ -17,13 +17,13 @@ Several bugs related to masks in Searchlight and ABIDE fetching have been resolv
 Fixes
 -----
 
-- Change default ``dtype`` in function :func:`~image.concat_imgs` to be the original type of the data (see :gh:`1238`).
+- :bdg-dark:`Code` Change default ``dtype`` in function :func:`~image.concat_imgs` to be the original type of the data (see :gh:`1238`).
 
-- Fix ``SearchLight`` that did not run without ``process_mask`` or with one :term:`voxel` mask.
+- :bdg-dark:`Code` Fix ``SearchLight`` that did not run without ``process_mask`` or with one :term:`voxel` mask.
 
-- Fix flipping of left hemisphere when plotting glass brain.
+- :bdg-info:`Plotting` Fix flipping of left hemisphere when plotting glass brain.
 
-- Fix bug when downloading ABIDE timeseries.
+- :bdg-dark:`Code` Fix bug when downloading ABIDE timeseries.
 
 Enhancements
 ------------

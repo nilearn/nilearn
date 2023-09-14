@@ -14,21 +14,21 @@ The new minimum required version of ``scikit-learn`` is ``0.14.1``.
 Changes
 -------
 
-- Default option for ``dim`` argument in plotting functions which uses :term:`MNI` template as a background image is now changed to 'auto' mode. Meaning that an automatic contrast setting on background image is applied by default.
+- :bdg-dark:`Code` Default option for ``dim`` argument in plotting functions which uses :term:`MNI` template as a background image is now changed to 'auto' mode. Meaning that an automatic contrast setting on background image is applied by default.
 
-- ``Scikit-learn`` validation tools have been imported and are now used to check consistency of input data, in SpaceNet for example.
+- :bdg-dark:`Code` ``Scikit-learn`` validation tools have been imported and are now used to check consistency of input data, in SpaceNet for example.
 
 New
 ---
 
 - :bdg-success:`API` Add an option to select only off-diagonal elements in function ``sym_to_vec``. Also, the scaling of matrices is modified: we divide the diagonal by ``sqrt(2)`` instead of multiplying the off-diagonal elements.
 
-- Connectivity examples rely on :class:`~connectome.ConnectivityMeasure`.
+- :bdg-primary:`Doc` Connectivity examples rely on :class:`~connectome.ConnectivityMeasure`.
 
 Fixes
 -----
 
-- ``Scipy 0.18`` introduces a bug in a corner-case of resampling. Nilearn ``0.2.5`` can give wrong results with ``scipy 0.18``, but this is fixed in ``0.2.6``.
+- :bdg-dark:`Code` ``Scipy 0.18`` introduces a bug in a corner-case of resampling. Nilearn ``0.2.5`` can give wrong results with ``scipy 0.18``, but this is fixed in ``0.2.6``.
 
 - :bdg-secondary:`Maint` Broken links and references fixed in docs.
 
@@ -45,7 +45,7 @@ improved documentation.
 New
 ---
 
-- N:bdg-success:`API` ew display_mode options in functions :func:`~plotting.plot_glass_brain` and :func:`~plotting.plot_connectome`. It is possible to plot right and left hemisphere projections separately.
+- :bdg-success:`API` New display_mode options in functions :func:`~plotting.plot_glass_brain` and :func:`~plotting.plot_connectome`. It is possible to plot right and left hemisphere projections separately.
 
 - :bdg-success:`API` New function :func:`~datasets.load_mni152_brain_mask` to load canonical brain mask image in :term:`MNI` template space.
 
@@ -57,7 +57,7 @@ New
 
 - :bdg-success:`API` New simple data downloader :func:`~datasets.fetch_localizer_button_task` to simplify some examples.
 
-- Function :func:`~datasets.fetch_localizer_contrasts` can now download a specific list of subjects rather than a range of subjects.
+- :bdg-dark:`Code` Function :func:`~datasets.fetch_localizer_contrasts` can now download a specific list of subjects rather than a range of subjects.
 
 - :bdg-success:`API` New function :func:`~datasets.get_data_dirs` to check where nilearn downloads data.
 

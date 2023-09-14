@@ -51,7 +51,7 @@ Fixes
 
 - :bdg-secondary:`Maint` Convert references in ``signal.py``, ``atlas.py``, ``func.py``, ``neurovault.py``, and ``struct.py`` to use footcite / footbibliography (:gh:`2806` by `Jeremy Lefort-Besnard`_).
 
-- Fix detrending and temporal filtering order for confounders in function :func:`~signal.clean`, so that these operations are applied in the same order as for the signals, i.e., first detrending and then temporal filtering (see :gh:`2730`) (:gh:`2732` by `Javier Rasero`_).
+- :bdg-dark:`Code` Fix detrending and temporal filtering order for confounders in function :func:`~signal.clean`, so that these operations are applied in the same order as for the signals, i.e., first detrending and then temporal filtering (see :gh:`2730`) (:gh:`2732` by `Javier Rasero`_).
 
 - :bdg-success:`API` Fix number of attributes returned by the `nilearn.glm.first_level.FirstLevelModel._get_voxelwise_model_attribute` method in the :class:`~glm.first_level.FirstLevelModel`. It used to return only the first attribute, and now returns as many attributes as design matrices (:gh:`2792` by `Raphael Meudec`_).
 
@@ -59,7 +59,7 @@ Fixes
 
 - :bdg-info:`Plotting` Fix the axes zoom in function :func:`~plotting.plot_img_on_surf` so brain would not be cutoff, and edited function so less white space surrounds brain views and smaller colorbar using gridspec (:gh:`2798` by `Tom Vanasse`_).
 
-- Fix inconsistency in prediction values of :class:`sklearn.dummy.DummyClassifier` for :class:`~decoding.Decoder` (see :gh:`2767`) (:gh:`2826` by `Binh Nguyen`_).
+- :bdg-dark:`Code` Fix inconsistency in prediction values of :class:`sklearn.dummy.DummyClassifier` for :class:`~decoding.Decoder` (see :gh:`2767`) (:gh:`2826` by `Binh Nguyen`_).
 
 Enhancements
 ------------

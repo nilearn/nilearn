@@ -18,7 +18,7 @@ Fixes
 -----
 
 - :bdg-secondary:`Maint` More robust matplotlib backend selection (:gh:`2302` by `Gael Varoquaux`_).
-- Typo in example fixed (:gh:`2312` by `Jon Haitz Legarreta Gorrono`_).
+- :bdg-primary:`Doc` Typo in example fixed (:gh:`2312` by `Jon Haitz Legarreta Gorrono`_).
 
 Changes
 -------
