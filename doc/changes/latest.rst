@@ -38,6 +38,8 @@ Fixes
 
 - Allow using both vmin and threshold with  "plotly" engine to be consistent with "matplotlib" behavior (:gh:`3945` by `Yasmin Mzayek`_)
 
+- Set edgecolors to be the same as facecolors in :func:`~plotting.plot_surf_contours`` so that ROI contours are rendered clearly (:gh:`3973` by `Yasmin Mzayek`_)
+
 Enhancements
 ------------
 
