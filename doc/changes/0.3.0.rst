@@ -33,7 +33,7 @@ Fixes
 Enhancements
 ------------
 
-- :term:`ANOVA` :term:`SVM` example on Haxby datasets ``plot_haxby_anova_svm`` in Decoding section now uses ``SelectPercentile`` to select :term:`voxels<voxel>` rather than ``SelectKBest``.
+- :bdg-primary:`Doc` :term:`ANOVA` :term:`SVM` example on Haxby datasets ``plot_haxby_anova_svm`` in Decoding section now uses ``SelectPercentile`` to select :term:`voxels<voxel>` rather than ``SelectKBest``.
 
 - :bdg-success:`API` New function ``fast_svd`` implementation in base decomposition module to automatically switch between randomized and lapack SVD (heuristic of ``scikit-learn``).
 

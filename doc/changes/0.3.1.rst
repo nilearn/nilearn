@@ -13,7 +13,7 @@ This is a minor release for BrainHack.
 Highlights
 ----------
 
-- **Dropped support for scikit-learn older than 0.14.1** Minimum supported version is now ``0.15``.
+- :bdg-danger:`Deprecation` **Dropped support for scikit-learn older than 0.14.1** Minimum supported version is now ``0.15``.
 
 Changes
 -------
