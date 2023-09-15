@@ -15,7 +15,7 @@ parameters:
 jobs:
     host_docs:
         machine:
-            image: ubuntu-2004:202111-01
+            image: ubuntu-2004:current
         environment:
             GITHUB_ARTIFACT_URL: << pipeline.parameters.GITHUB_RUN_URL >>/doc.zip
         steps:
