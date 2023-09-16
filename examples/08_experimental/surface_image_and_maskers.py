@@ -3,6 +3,12 @@
 copied from the nilearn sandbox discussion, to be transformed into tests &
 examples
 
+NOTE this example is meant to support discussion around a tentative API for
+surface images in nilearn. This functionality is provided by the
+nilearn.experimental.surface module; it is still incomplete and subject to
+change without a deprecation cycle. Please participate in the discussion on
+GitHub!
+
 """
 from typing import Optional, Sequence
 
