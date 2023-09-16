@@ -17,8 +17,6 @@ General reference for regression models:
 
 __docformat__ = "restructuredtext en"
 
-import functools
-import warnings
 
 import numpy as np
 import scipy.linalg as spl
@@ -27,28 +25,6 @@ from numpy.linalg import matrix_rank
 
 from nilearn.glm._utils import positive_reciprocal
 from nilearn.glm.model import LikelihoodModelResults
-
-
-def _deprecation_warning(
-    old_param, new_param, start_version, end_version="future"
-):
-    def _warned_func(func):
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            warnings.warn(
-                category=FutureWarning,
-                message=(
-                    f"'{old_param}' has been deprecated "
-                    f"in version {start_version} "
-                    f"and will be removed in version {end_version}.\n"
-                    f"Please use '{new_param}' instead."
-                ),
-            )
-            return func(*args, **kwargs)
-
-        return wrapper
-
-    return _warned_func
 
 
 class OLSModel:

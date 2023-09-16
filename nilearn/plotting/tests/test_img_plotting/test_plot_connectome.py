@@ -55,7 +55,7 @@ def node_coords():
 )
 @pytest.mark.parametrize("display_mode", ["ortho", "lzry"])
 def test_plot_connectome_node_colors(
-    node_color, display_mode, node_coords, adjacency, base_params, tmpdir
+    node_color, display_mode, node_coords, adjacency, base_params
 ):
     """Smoke test for plot_connectome with different values for node_color."""
     plot_connectome(
@@ -124,7 +124,7 @@ def test_plot_connectome_with_nans(adjacency, node_coords, base_params):
 
 
 def test_plot_connectome_tuple_node_coords(
-    adjacency, node_coords, base_params, tmpdir
+    adjacency, node_coords, base_params
 ):
     """Smoke test for plot_connectome where node_coords is not provided
     as an array but as a list of tuples.
@@ -154,10 +154,12 @@ def test_plot_connectome_alpha(alpha, adjacency, node_coords):
     plt.close()
 
 
-def test_plot_connectome_to_file(adjacency, node_coords, base_params, tmpdir):
+def test_plot_connectome_to_file(
+    adjacency, node_coords, base_params, tmp_path
+):
     """Smoke test for plot_connectome and saving to file."""
     base_params["display_mode"] = "x"
-    filename = str(tmpdir.join("temp.png"))
+    filename = tmp_path / "temp.png"
     display = plot_connectome(
         adjacency, node_coords, output_file=filename, **base_params
     )

@@ -395,6 +395,14 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         If True, vectorized connectivity coefficients do not include the
         matrices diagonal elements. Used only when vectorize is set to True.
         Default=False.
+    %(standardize)s
+
+        .. note::
+
+            Added to control passing value to `standardize` of ``signal.clean``
+            to call new behavior since passing "zscore" or True (default) is
+            deprecated. This parameter will be deprecated in version 0.13 and
+            removed in version 0.15.
 
     Attributes
     ----------
@@ -423,11 +431,13 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         kind="covariance",
         vectorize=False,
         discard_diagonal=False,
+        standardize=True,
     ):
         self.cov_estimator = cov_estimator
         self.kind = kind
         self.vectorize = vectorize
         self.discard_diagonal = discard_diagonal
+        self.standardize = standardize
 
     def _check_input(self, X, confounds=None):
         if not hasattr(X, "__iter__"):
@@ -494,7 +504,11 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         if self.kind == "correlation":
             covariances_std = [
                 self.cov_estimator_.fit(
-                    signal._standardize(x, detrend=False, standardize=True)
+                    signal._standardize(
+                        x,
+                        detrend=False,
+                        standardize=self.standardize,
+                    )
                 ).covariance_
                 for x in X
             ]

@@ -138,13 +138,14 @@ different heuristics to find cutting coordinates.
    are not displayed, but still accumulate and eventually lead to slowing
    the execution and running out of memory.
 
-   To avoid this, you must close the plot as follow::
+   To avoid this, you must close the plot as follow:
 
-    >>> from nilearn import plotting
-    >>> display = plotting.plot_stat_map(img)     # doctest: +SKIP
-    >>> display.close()     # doctest: +SKIP
+   .. code-block:: default
 
-|
+     from nilearn import plotting
+     display = plotting.plot_stat_map(img)
+     display.close()
+
 
 .. seealso::
 
@@ -295,7 +296,9 @@ Adding overlays, edges, contours, contour fillings, markers, scale bar
 To add overlays, contours, or edges, use the return value of the plotting
 functions. Indeed, these return a display object, such as the
 :class:`nilearn.plotting.displays.OrthoSlicer`. This object represents the
-plot, and has methods to add overlays, contours or edge maps::
+plot, and has methods to add overlays, contours or edge maps:
+
+.. code-block:: default
 
         display = plotting.plot_epi(...)
 
@@ -376,17 +379,21 @@ Displaying or saving to an image file
 =====================================
 
 To display the figure when running a script, you need to call
-:func:`nilearn.plotting.show`: (this is just an alias to
-:func:`matplotlib.pyplot.show`)::
+:func:`nilearn.plotting.show` (this is just an alias to
+:func:`matplotlib.pyplot.show`):
 
-    >>> from nilearn import plotting
-    >>> plotting.show() # doctest: +SKIP
+.. code-block:: default
+
+     from nilearn import plotting
+     plotting.show()
 
 The simplest way to output an image file from the plotting functions is
-to specify the `output_file` argument::
+to specify the `output_file` argument:
 
-    >>> from nilearn import plotting
-    >>> plotting.plot_stat_map(img, output_file='pretty_brain.png')     # doctest: +SKIP
+.. code-block:: default
+
+     from nilearn import plotting
+     plotting.plot_stat_map(img, output_file='pretty_brain.png')
 
 In this case, the display is closed automatically and the plotting
 function returns None.
@@ -394,13 +401,15 @@ function returns None.
 |
 
 The display object returned by the plotting function has a savefig method
-that can be used to save the plot to an image file::
+that can be used to save the plot to an image file:
 
-    >>> from nilearn import plotting
-    >>> display = plotting.plot_stat_map(img)     # doctest: +SKIP
-    >>> display.savefig('pretty_brain.png')     # doctest: +SKIP
-    # Don't forget to close the display
-    >>> display.close()     # doctest: +SKIP
+.. code-block:: default
+
+     from nilearn import plotting
+     display = plotting.plot_stat_map(img)
+     display.savefig('pretty_brain.png')
+     # Remember to close the display
+     display.close()
 
 .. _surface-plotting:
 
@@ -501,11 +510,13 @@ depending on what you want to do and the packages you have installed.
 .................................................................
 
 You can use :func:`view_img_on_surf` to display a 3D statistical map projected on the
-cortical surface::
+cortical surface:
 
-    >>> from nilearn import plotting, datasets     # doctest: +SKIP
-    >>> img = datasets.fetch_localizer_button_task()['tmap']     # doctest: +SKIP
-    >>> view = plotting.view_img_on_surf(img, threshold='90%', surf_mesh='fsaverage')     # doctest: +SKIP
+.. code-block:: default
+
+     from nilearn import plotting, datasets
+     img = datasets.fetch_localizer_button_task()['tmap']
+     view = plotting.view_img_on_surf(img, threshold='90%', surf_mesh='fsaverage')
 
 If you are running a notebook, displaying ``view`` will embed an interactive
 plot (this is the case for all interactive plots produced by nilearn's "view"
@@ -513,33 +524,38 @@ functions):
 
 .. image:: ../images/plotly_surface_plot_notebook_screenshot.png
 
-If you are not using a notebook, you can open the plot in a browser like this::
+If you are not using a notebook, you can open the plot in a browser like this:
 
-    >>> view.open_in_browser()     # doctest: +SKIP
+.. code-block:: default
+
+     view.open_in_browser()
 
 This will open this 3D plot in your web browser:
 
 .. image:: ../images/plotly_surface_plot.png
 
 
-Or you can save it to an html file::
+Or you can save it to an html file:
 
-    >>> view.save_as_html("surface_plot.html")     # doctest: +SKIP
+.. code-block:: default
+
+     view.save_as_html("surface_plot.html")
 
 
 :func:`view_surf`: Surface plot using a surface map and a cortical mesh
 .......................................................................
 
 You can use :func:`view_surf` to display a 3D surface statistical map over
-a cortical mesh::
+a cortical mesh:
 
-    >>> from nilearn import plotting, datasets     # doctest: +SKIP
-    >>> destrieux = datasets.fetch_atlas_surf_destrieux()     # doctest: +SKIP
-    >>> fsaverage = datasets.fetch_surf_fsaverage()     # doctest: +SKIP
-    >>> view = plotting.view_surf(fsaverage['infl_left'], destrieux['map_left'],     # doctest: +SKIP
-    ...                           cmap='gist_ncar', symmetric_cmap=False)     # doctest: +SKIP
-    ...
-    >>> view.open_in_browser()     # doctest: +SKIP
+.. code-block:: default
+
+     from nilearn import plotting, datasets
+     destrieux = datasets.fetch_atlas_surf_destrieux()
+     fsaverage = datasets.fetch_surf_fsaverage()
+     view = plotting.view_surf(fsaverage['infl_left'], destrieux['map_left'],
+                               cmap='gist_ncar', symmetric_cmap=False)
+     view.open_in_browser()
 
 
 .. image:: ../images/plotly_surface_atlas_plot.png
@@ -550,17 +566,21 @@ a cortical mesh::
 
 If you have `plotly`_ installed, you can also use :func:`plot_surf_stat_map` with
 the ``engine`` parameter set to "plotly" to display a statistical map over a
-cortical mesh::
+cortical mesh:
 
-    >>> from nilearn import plotting, datasets, surface  # doctest: +SKIP
-    >>> fsaverage = datasets.fetch_surf_fsaverage()  # doctest: +SKIP
-    >>> motor_images = datasets.fetch_neurovault_motor_task()  # doctest: +SKIP
-    >>> mesh = surface.load_surf_mesh(fsaverage.pial_right)  # doctest: +SKIP
-    >>> map = surface.vol_to_surf(motor_images.images[0], mesh)  # doctest: +SKIP
-    >>> fig = plotting.plot_surf_stat_map(mesh, map, hemi='right',  # doctest: +SKIP
-    ...     view='lateral', colorbar=True, threshold=1.2,  # doctest: +SKIP
-    ...     bg_map=fsaverage.sulc_right, engine='plotly')  # doctest: +SKIP
-    >>> fig.show()  # doctest: +SKIP
+.. code-block:: default
+
+     from nilearn import plotting, datasets, surface
+     fsaverage = datasets.fetch_surf_fsaverage()
+     motor_images = datasets.fetch_neurovault_motor_task()
+     mesh = surface.load_surf_mesh(fsaverage.pial_right)
+     map = surface.vol_to_surf(motor_images.images[0], mesh)
+     fig = plotting.plot_surf_stat_map(mesh, map, hemi='right',
+                                       view='lateral', colorbar=True,
+                                       threshold=1.2,
+                                       bg_map=fsaverage.sulc_right,
+                                       engine='plotly')
+     fig.show()
 
 .. image:: ../images/plotly_plot_surf_stat_map.png
 
@@ -572,10 +592,12 @@ cortical mesh::
 For 3D plots of a connectome, use :func:`view_connectome`. To see only markers,
 use :func:`view_markers`.
 
-:func:`view_connectome`: 3D plot of a connectome::
+:func:`view_connectome`: 3D plot of a connectome:
 
-      >>> view = plotting.view_connectome(correlation_matrix, coords, edge_threshold='90%')    # doctest: +SKIP
-      >>> view.open_in_browser() # doctest: +SKIP
+.. code-block:: default
+
+     view = plotting.view_connectome(correlation_matrix, coords, edge_threshold='90%')
+     view.open_in_browser()
 
 
 .. image:: ../images/plotly_connectome_plot.png
@@ -586,14 +608,15 @@ use :func:`view_markers`.
 3D Plots of markers
 -------------------
 
-:func:`view_markers`: showing markers (e.g. seed locations) in 3D::
+:func:`view_markers`: showing markers (e.g. seed locations) in 3D:
 
-    >>> from nilearn import plotting  # doctest: +SKIP
-    >>> dmn_coords = [(0, -52, 18), (-46, -68, 32), (46, -68, 32), (1, 50, -5)] # doctest: +SKIP
-    >>> view = plotting.view_markers( # doctest: +SKIP
-    >>>       dmn_coords, ['red', 'cyan', 'magenta', 'orange'], marker_size=10) # doctest: +SKIP
-    >>> view.open_in_browser() # doctest: +SKIP
+.. code-block:: default
 
+     from nilearn import plotting
+     dmn_coords = [(0, -52, 18), (-46, -68, 32), (46, -68, 32), (1, 50, -5)]
+     view = plotting.view_markers(dmn_coords, ['red', 'cyan', 'magenta', 'orange'],
+                                  marker_size=10)
+     view.open_in_browser()
 
 
 .. image:: ../images/plotly_markers_plot.png
@@ -604,12 +627,15 @@ use :func:`view_markers`.
 Interactive visualization of statistical map slices
 ---------------------------------------------------
 
-:func:`view_img`: open stat map in a Brainsprite viewer (https://github.com/simexp/brainsprite.js)::
+:func:`view_img`: open stat map in a Brainsprite viewer (https://github.com/simexp/brainsprite.js):
 
-    >>> from nilearn import plotting, datasets     # doctest: +SKIP
-    >>> img = datasets.fetch_localizer_button_task()['tmap']     # doctest: +SKIP
-    >>> html_view = plotting.view_img(img, threshold=2, vmax=4, cut_coords=[-42, -16, 52],
-    ...                                     title="Motor contrast")     # doctest: +SKIP
+.. code-block:: default
+
+     from nilearn import plotting, datasets
+     img = datasets.fetch_localizer_button_task()['tmap']
+     html_view = plotting.view_img(img, threshold=2, vmax=4,
+                                   cut_coords=[-42, -16, 52],
+                                   title="Motor contrast")
 
 in a Jupyter notebook, if `html_view` is not requested, the viewer will be inserted in the notebook:
 
@@ -617,11 +643,11 @@ in a Jupyter notebook, if `html_view` is not requested, the viewer will be inser
 
 Or you can open a viewer in your web browser if you are not in a notebook::
 
-    >>> html_view.open_in_browser()   # doctest: +SKIP
+     html_view.open_in_browser()
 
 Finally, you can also save the viewer as a stand-alone html file::
 
-    >>> html_view.save_as_html('viewer.html') # doctest: +SKIP
+     html_view.save_as_html('viewer.html')
 
 .. _`kaleido`:
     https://pypi.org/project/kaleido/

@@ -7,6 +7,44 @@ from matplotlib import cm as _cm, colors as _colors, rcParams as _rcParams
 # Custom colormaps for two-tailed symmetric statistics
 
 
+def _mix_colormaps(fg, bg):
+    """Mixes foreground and background arrays of RGBA colors.
+
+    Parameters
+    ----------
+    fg : numpy.ndarray
+        Array of shape (n, 4), foreground RGBA colors
+        represented as floats in [0, 1]
+    bg : numpy.ndarray
+        Array of shape (n, 4), background RGBA colors
+        represented as floats in [0, 1]
+
+    Returns
+    -------
+    mix : numpy.ndarray
+        Array of shape (n, 4), mixed colors
+        represented as floats in [0, 1]
+    """
+    # Adapted from https://stackoverflow.com/questions/726549/algorithm-for-additive-color-mixing-for-rgb-values/727339#727339 # noqa: E501
+    if fg.shape != bg.shape:
+        raise ValueError(
+            "Trying to mix colormaps with different shapes: "
+            f"{fg.shape}, {bg.shape}"
+        )
+
+    mix = _np.empty_like(fg)
+
+    mix[:, 3] = 1 - (1 - fg[:, 3]) * (1 - bg[:, 3])
+
+    for color_index in range(0, 3):
+        mix[:, color_index] = (
+            fg[:, color_index] * fg[:, 3]
+            + bg[:, color_index] * bg[:, 3] * (1 - fg[:, 3])
+        ) / mix[:, 3]
+
+    return mix
+
+
 def _rotate_cmap(cmap, swap_order=("green", "red", "blue")):
     """Swap the colors of a colormap."""
     orig_cdict = cmap._segmentdata.copy()

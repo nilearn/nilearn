@@ -47,22 +47,28 @@ conditioned on all the others.
 To recover well the interaction structure, a **sparse inverse covariance
 estimator** is necessary. The GraphicalLasso, implemented in scikit-learn's
 estimator :class:`sklearn.covariance.GraphicalLassoCV` is a good, simple
-solution. To use it, you need to create an estimator object::
+solution. To use it, you need to create an estimator object:
 
-    >>> from sklearn.covariance import GraphicalLassoCV
-    >>> estimator = GraphicalLassoCV()
+.. code-block:: default
+
+     from sklearn.covariance import GraphicalLassoCV
+     estimator = GraphicalLassoCV()
 
 And then you can fit it on the activation time series, for instance
-extracted in :ref:`the previous section <functional_connectomes>`::
+extracted in :ref:`the previous section <functional_connectomes>`:
 
-    >>> estimator.fit(time_series)  # doctest: +SKIP
+.. code-block:: default
+
+     estimator.fit(time_series)
 
 The covariance matrix and inverse-covariance matrix (precision matrix)
 can be found respectively in the `covariance_` and `precision_` attribute
-of the estimator::
+of the estimator:
 
-    >>> estimator.covariance_  # doctest: +SKIP
-    >>> estimator.precision_  # doctest: +SKIP
+.. code-block:: default
+
+     estimator.covariance_
+     estimator.precision_
 
 
 .. |covariance| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_inverse_covariance_connectome_001.png
@@ -123,15 +129,20 @@ differing connection values across subjects.
 For this, nilearn provides the
 :class:`nilearn.connectome.GroupSparseCovarianceCV`
 estimator. Its usage is similar to the GraphicalLassoCV object, but it takes
-a list of time series::
+a list of time series:
 
-    >>> estimator.fit([time_series_1, time_series_2, ...])  # doctest: +SKIP
+.. code-block:: default
+
+     estimator.fit([time_series_1, time_series_2, ...])
 
 And it provides one estimated covariance and inverse-covariance
-(precision) matrix per time-series: for the first one::
+(precision) matrix per time-series: for the first one:
 
-    >>> estimator.covariances_[0]  # doctest: +SKIP
-    >>> estimator.precisions_[0]  # doctest: +SKIP
+.. code-block:: default
+
+     estimator.covariances_[0]
+     estimator.precisions_[0]
+
 
 |
 
@@ -233,14 +244,19 @@ Individual connectivity patterns reflect both on covariances and inverse covaria
 We can go one step further by coupling the information from total (pairwise) and direct interactions in a unique group connectome. This can be done through a geometrical framework allowing to measure interactions in a common space called **tangent space** `[Varoquaux et al, MICCAI 2010] <https://hal.inria.fr/inria-00512417/>`_.
 
 In nilearn, this is implemented in
-:class:`nilearn.connectome.ConnectivityMeasure`::
+:class:`nilearn.connectome.ConnectivityMeasure`:
 
-    >>> measure = ConnectivityMeasure(kind='tangent')  # doctest: +SKIP
+.. code-block:: default
 
-The group connectivity is computed using all the subjects timeseries.::
+     measure = ConnectivityMeasure(kind='tangent')
 
-    >>> connectivities = measure.fit([time_series_1, time_series_2, ...])  # doctest: +SKIP
-    >>> group_connectivity = measure.mean_  # doctest: +SKIP
+The group connectivity is computed using all the subjects timeseries.:
+
+
+.. code-block:: default
+
+     connectivities = measure.fit([time_series_1, time_series_2, ...])
+     group_connectivity = measure.mean_
 
 Deviations from this mean in the tangent space are provided in the connectivities array and can be used to compare different groups/sessions. In practice, the tangent measure can outperform the correlation and partial correlation measures, especially for noisy or heterogeneous data.
 

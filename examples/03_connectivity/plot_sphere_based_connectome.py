@@ -111,7 +111,10 @@ plt.tight_layout()
 
 from nilearn.connectome import ConnectivityMeasure
 
-connectivity_measure = ConnectivityMeasure(kind="partial correlation")
+connectivity_measure = ConnectivityMeasure(
+    kind="partial correlation",
+    standardize="zscore_sample",
+)
 partial_correlation_matrix = connectivity_measure.fit_transform([time_series])[
     0
 ]

@@ -853,7 +853,7 @@ def test_connectivity_measure_inverse_transform_tangent(
     )
 
     # with vectorization
-    # when diagonal has not been discarded
+    # when diagonal has not been discardedtest_connectome_measure_standardize
     tangent_measure = ConnectivityMeasure(kind="tangent", vectorize=True)
     vectorized_displacements = tangent_measure.fit_transform(signals)
 
@@ -934,3 +934,18 @@ def test_confounds_connectome_measure_errors(signals):
         ValueError, match="'confounds' are provided but vectorize=False"
     ):
         conn_measure.fit_transform(signals, None, confounds[:10])
+
+
+def test_connectivity_measure_standardize(signals):
+    """Check warning is raised and then suppressed with setting standardize."""
+    match = "default strategy for standardize"
+
+    with pytest.warns(FutureWarning, match=match):
+        ConnectivityMeasure(kind="correlation").fit_transform(signals)
+
+    with warnings.catch_warnings(record=True) as record:
+        ConnectivityMeasure(
+            kind="correlation", standardize="zscore_sample"
+        ).fit_transform(signals)
+        for m in record:
+            assert match not in m.message

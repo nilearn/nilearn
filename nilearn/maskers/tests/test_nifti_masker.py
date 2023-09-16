@@ -193,7 +193,8 @@ def test_mask_3d():
 
     with testing.write_tmp_imgs(data_img, create_files=True) as filename:
         masker = NiftiMasker(mask_img=filename)
-        pytest.raises(TypeError, masker.fit)
+        with pytest.raises(TypeError):
+            masker.fit()
 
 
 def test_mask_4d():
@@ -311,7 +312,8 @@ def test_sessions():
     data[20, 20, 20] = 1
     data_img = nibabel.Nifti1Image(data, np.eye(4))
     masker = NiftiMasker(runs=np.ones(3, dtype=int))
-    pytest.raises(ValueError, masker.fit_transform, data_img)
+    with pytest.raises(ValueError):
+        masker.fit_transform(data_img)
 
 
 def test_joblib_cache():

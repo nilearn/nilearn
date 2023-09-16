@@ -31,7 +31,7 @@ from nilearn.maskers import NiftiMasker
 from nilearn.plotting.displays import get_projector, get_slicer
 
 from .. import _utils
-from .._utils import fill_doc
+from .._utils import _compare_version, fill_doc
 from .._utils.extmath import fast_abs_percentile
 from .._utils.ndimage import get_border_data
 from .._utils.niimg import _safe_get_data
@@ -60,42 +60,63 @@ def show():
 # Core, usage-agnostic functions
 
 
-def _get_colorbar_and_data_ranges(stat_map_data, vmax, symmetric_cbar, kwargs,
-                                  force_min_stat_map_value=None):
+def _get_colorbar_and_data_ranges(
+    stat_map_data, vmin=None, vmax=None, symmetric_cbar=True,
+    force_min_stat_map_value=None, symmetric_data_range=True,
+):
     """Set colormap and colorbar limits.
 
-    Used by for plot_stat_map and plot_glass_brain.
+    Used by plot_stat_map, plot_glass_brain and plot_img_on_surf.
 
-    The limits for the colormap will always be set to range from -vmax to vmax.
-    The limits for the colorbar depend on the symmetric_cbar argument, please
-    refer to docstring of plot_stat_map.
-
+    If symmetric_data_range is True, the limits for the colormap will
+    always be set to range from -vmax to vmax. The limits for the colorbar
+    depend on the symmetric_cbar argument, please refer to docstring of
+    plot_stat_map.
     """
-    if 'vmin' in kwargs:
+    if symmetric_data_range and (vmin is not None):
         raise ValueError('this function does not accept a "vmin" '
                          'argument, as it uses a symmetrical range '
                          'defined via the vmax argument. To threshold '
                          'the plotted map, use the "threshold" argument')
 
-    # make sure that the color range is symmetrical
-    if vmax is None or symmetric_cbar in ['auto', False]:
-        # Avoid dealing with masked_array:
-        if hasattr(stat_map_data, '_mask'):
-            stat_map_data = np.asarray(
-                stat_map_data[np.logical_not(stat_map_data._mask)])
-        stat_map_max = np.nanmax(stat_map_data)
-        if force_min_stat_map_value is None:
-            stat_map_min = np.nanmin(stat_map_data)
+    # avoid dealing with masked_array:
+    if hasattr(stat_map_data, '_mask'):
+        stat_map_data = np.asarray(
+            stat_map_data[np.logical_not(stat_map_data._mask)])
+
+    if force_min_stat_map_value is None:
+        stat_map_min = np.nanmin(stat_map_data)
+    else:
+        stat_map_min = force_min_stat_map_value
+    stat_map_max = np.nanmax(stat_map_data)
+
+    if symmetric_cbar == "auto":
+        if symmetric_data_range or (vmin is None) or (vmax is None):
+            symmetric_cbar = stat_map_min < 0 and stat_map_max > 0
         else:
-            stat_map_min = force_min_stat_map_value
+            symmetric_cbar = np.isclose(vmin, -vmax)
 
-    if symmetric_cbar == 'auto':
-        symmetric_cbar = stat_map_min < 0 and stat_map_max > 0
+    # check compatibility between vmin, vmax and symmetric_cbar
+    if symmetric_cbar or symmetric_data_range:
+        if vmin is None and vmax is None:
+            vmax = max(-stat_map_min, stat_map_max)
+            vmin = -vmax
+        elif vmin is None:
+            vmin = -vmax
+        elif vmax is None:
+            vmax = -vmin
+        elif not np.isclose(vmin, -vmax):
+            raise ValueError(
+                "vmin must be equal to -vmax unless symmetric_cbar is False."
+            )
 
+    # set vmin/vmax based on data if they are not already set
+    if vmin is None:
+        vmin = stat_map_min
     if vmax is None:
-        vmax = max(-stat_map_min, stat_map_max)
-    vmin = -vmax
+        vmax = stat_map_max
 
+    # set colorbar limits
     if not symmetric_cbar:
         negative_range = stat_map_max <= 0
         positive_range = stat_map_min >= 0
@@ -110,6 +131,7 @@ def _get_colorbar_and_data_ranges(stat_map_data, vmax, symmetric_cbar, kwargs,
             cbar_vmax = stat_map_max
     else:
         cbar_vmin, cbar_vmax = None, None
+
     return cbar_vmin, cbar_vmax, vmin, vmax
 
 
@@ -126,6 +148,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
                       cbar_tick_format="%.2g",
                       brain_color=(0.5, 0.5, 0.5),
                       decimals=False,
+                      radiological=False,
                       **kwargs):
     """Refer to the docstring of plot_img for parameters not listed below.
 
@@ -193,6 +216,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         black_bg=black_bg,
         colorbar=colorbar,
         brain_color=brain_color,
+        radiological=radiological,
     )
     if bg_img is not None:
         bg_img = _utils.check_niimg_3d(bg_img)
@@ -227,7 +251,7 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
              annotate=True, draw_cross=True, black_bg=False, colorbar=False,
              cbar_tick_format="%.2g",
              resampling_interpolation='continuous',
-             bg_img=None, vmin=None, vmax=None, **kwargs):
+             bg_img=None, vmin=None, vmax=None, radiological=False, **kwargs):
     """Plot cuts of a given image.
 
     By default Frontal, Axial, and Lateral.
@@ -263,6 +287,7 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
         Default=None.
     %(vmin)s
     %(vmax)s
+    %(radiological)s
     kwargs : extra keyword arguments, optional
         Extra keyword arguments passed to matplotlib.pyplot.imshow.
 
@@ -276,7 +301,8 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
         resampling_interpolation=resampling_interpolation,
         black_bg=black_bg, colorbar=colorbar,
         cbar_tick_format=cbar_tick_format,
-        bg_img=bg_img, vmin=vmin, vmax=vmax, **kwargs)
+        bg_img=bg_img, vmin=vmin, vmax=vmax, radiological=radiological,
+        **kwargs)
 
     return display
 
@@ -289,7 +315,7 @@ class _MNI152Template(SpatialImage):
     """Constant pointing to the MNI152 Template provided by nilearn."""
 
     data = None
-    affine = None
+    _affine = None
     vmax = None
     _shape = None
     # Having a header is required by the load_niimg function
@@ -418,8 +444,8 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
               output_file=None, display_mode='ortho', figure=None,
               axes=None, title=None, annotate=True, threshold=None,
               draw_cross=True, black_bg='auto', dim='auto', cmap=plt.cm.gray,
-              colorbar=False, cbar_tick_format="%.2g", vmin=None,
-              vmax=None, **kwargs):
+              colorbar=False, cbar_tick_format="%.2g", radiological=False,
+              vmin=None, vmax=None, **kwargs):
     """Plot cuts of an anatomical image.
 
     By default 3 cuts: Frontal, Axial, and Lateral.
@@ -453,6 +479,7 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
         Default is '%%.2g' for scientific notation.
+    %(radiological)s
     %(vmin)s
     %(vmax)s
 
@@ -479,7 +506,8 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
                        threshold=threshold, annotate=annotate,
                        draw_cross=draw_cross, black_bg=black_bg,
                        colorbar=colorbar, cbar_tick_format=cbar_tick_format,
-                       vmin=vmin, vmax=vmax, cmap=cmap, **kwargs)
+                       vmin=vmin, vmax=vmax, cmap=cmap,
+                       radiological=radiological, **kwargs)
     return display
 
 
@@ -488,7 +516,8 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
              display_mode='ortho', figure=None, axes=None, title=None,
              annotate=True, draw_cross=True, black_bg=True,
              colorbar=False, cbar_tick_format="%.2g",
-             cmap=plt.cm.nipy_spectral, vmin=None, vmax=None, **kwargs):
+             cmap=plt.cm.nipy_spectral, vmin=None, vmax=None,
+             radiological=False, **kwargs):
     """Plot cuts of an EPI image.
 
     By default 3 cuts: Frontal, Axial, and Lateral.
@@ -518,6 +547,7 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
         Default=`plt.cm.nipy_spectral`.
     %(vmin)s
     %(vmax)s
+    %(radiological)s
 
     Notes
     -----
@@ -530,7 +560,8 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
                        threshold=None, annotate=annotate,
                        draw_cross=draw_cross, black_bg=black_bg,
                        colorbar=colorbar, cbar_tick_format=cbar_tick_format,
-                       cmap=cmap, vmin=vmin, vmax=vmax, **kwargs)
+                       cmap=cmap, vmin=vmin, vmax=vmax,
+                       radiological=radiological, **kwargs)
     return display
 
 
@@ -588,7 +619,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
              threshold=0.5, alpha=0.7, cmap=plt.cm.gist_ncar, dim='auto',
              colorbar=False, cbar_tick_format="%i", vmin=None, vmax=None,
              resampling_interpolation='nearest', view_type='continuous',
-             linewidths=2.5, **kwargs):
+             linewidths=2.5, radiological=False, **kwargs):
     """Plot cuts of an ROI/mask image.
 
     By default 3 cuts: Frontal, Axial, and Lateral.
@@ -642,6 +673,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         Default='continuous'.
     %(linewidths)s
         Default=2.5.
+    %(radiological)s
 
     Notes
     -----
@@ -677,7 +709,8 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         threshold=threshold, bg_vmin=bg_vmin, bg_vmax=bg_vmax,
         resampling_interpolation=resampling_interpolation,
         colorbar=colorbar, cbar_tick_format=cbar_tick_format,
-        alpha=alpha, cmap=cmap, vmin=vmin, vmax=vmax, **kwargs)
+        alpha=alpha, cmap=cmap, vmin=vmin, vmax=vmax,
+        radiological=radiological, **kwargs)
 
     if view_type == 'contours':
         display = _plot_roi_contours(display, img, cmap=cmap, alpha=alpha,
@@ -694,7 +727,7 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
                     draw_cross=True, black_bg='auto', dim='auto',
                     colorbar=False,
                     cmap=plt.cm.gist_rainbow, vmin=None, vmax=None,
-                    alpha=0.7, **kwargs):
+                    alpha=0.7, radiological=False, **kwargs):
     """Plot the probabilistic atlases onto the anatomical image \
     by default MNI template.
 
@@ -762,6 +795,7 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
     alpha : float between 0 and 1, optional
         Alpha sets the transparency of the color inside the filled contours.
         Default=0.7.
+    %(radiological)s
 
     See Also
     --------
@@ -772,7 +806,8 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
                         display_mode=display_mode,
                         figure=figure, axes=axes, title=title,
                         annotate=annotate, draw_cross=draw_cross,
-                        black_bg=black_bg, dim=dim, **kwargs)
+                        black_bg=black_bg, dim=dim, radiological=radiological,
+                        **kwargs)
 
     maps_img = _utils.check_niimg_4d(maps_img)
     n_maps = maps_img.shape[3]
@@ -870,8 +905,8 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                   cbar_tick_format="%.2g", figure=None, axes=None,
                   title=None, threshold=1e-6, annotate=True, draw_cross=True,
                   black_bg='auto', cmap=cm.cold_hot, symmetric_cbar="auto",
-                  dim='auto', vmax=None, resampling_interpolation='continuous',
-                  **kwargs):
+                  dim='auto', vmin=None, vmax=None, radiological=False,
+                  resampling_interpolation='continuous', **kwargs):
     """Plot cuts of an ROI/mask image.
 
     By default 3 cuts: Frontal, Axial, and Lateral.
@@ -913,9 +948,11 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         Default='auto'.
     %(dim)s
         Default='auto'.
+    %(vmin)s
     %(vmax)s
     %(resampling_interpolation)s
         Default='continuous'.
+    %(radiological)s
 
     Notes
     -----
@@ -939,9 +976,9 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
 
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         _safe_get_data(stat_map_img, ensure_finite=True),
-        vmax,
-        symmetric_cbar,
-        kwargs)
+        vmin=vmin,
+        vmax=vmax,
+        symmetric_cbar=symmetric_cbar)
 
     display = _plot_img_with_bg(
         img=stat_map_img, bg_img=bg_img, cut_coords=cut_coords,
@@ -951,7 +988,8 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         bg_vmin=bg_vmin, bg_vmax=bg_vmax, cmap=cmap, vmin=vmin, vmax=vmax,
         colorbar=colorbar, cbar_tick_format=cbar_tick_format,
         cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
-        resampling_interpolation=resampling_interpolation, **kwargs)
+        resampling_interpolation=resampling_interpolation,
+        radiological=radiological, **kwargs)
 
     return display
 
@@ -969,6 +1007,7 @@ def plot_glass_brain(stat_map_img,
                      plot_abs=True,
                      symmetric_cbar="auto",
                      resampling_interpolation='continuous',
+                     radiological=False,
                      **kwargs):
     """Plot 2d projections of an ROI/mask image (by default 3 projections:
     Frontal, Axial, and Lateral). The brain glass schematics
@@ -1025,7 +1064,8 @@ def plot_glass_brain(stat_map_img,
         Default='auto'.
     %(resampling_interpolation)s
         Default='continuous'.
-
+    %(radiological)s 
+        
     Notes
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
@@ -1039,16 +1079,14 @@ def plot_glass_brain(stat_map_img,
         if plot_abs:
             cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
                 _safe_get_data(stat_map_img, ensure_finite=True),
-                vmax,
-                symmetric_cbar,
-                kwargs,
-                0)
+                vmax=vmax,
+                symmetric_cbar=symmetric_cbar,
+                force_min_stat_map_value=0)
         else:
             cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
                 _safe_get_data(stat_map_img, ensure_finite=True),
-                vmax,
-                symmetric_cbar,
-                kwargs)
+                vmax=vmax,
+                symmetric_cbar=symmetric_cbar)
     else:
         cbar_vmin, cbar_vmax = None, None
 
@@ -1062,7 +1100,8 @@ def plot_glass_brain(stat_map_img,
         black_bg=black_bg, threshold=threshold, cmap=cmap, colorbar=colorbar,
         cbar_tick_format=cbar_tick_format, display_factory=display_factory,
         vmin=vmin, vmax=vmax, cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
-        resampling_interpolation=resampling_interpolation, **kwargs)
+        resampling_interpolation=resampling_interpolation,
+        radiological=radiological, **kwargs)
 
     if stat_map_img is None and 'l' in display.axes:
         display.axes['l'].ax.invert_xaxis()
@@ -1081,7 +1120,7 @@ def plot_connectome(adjacency_matrix, node_coords,
                     annotate=True, black_bg=False,
                     alpha=0.7,
                     edge_kwargs=None, node_kwargs=None,
-                    colorbar=False):
+                    colorbar=False, radiological=False):
     """Plot connectome on top of the brain glass schematics.
 
     The plotted image should be in MNI space for this function to work
@@ -1149,6 +1188,7 @@ def plot_connectome(adjacency_matrix, node_coords,
         the nodes in one go.
     %(colorbar)s
         Default=False.
+    %(radiological)s
 
     See Also
     --------
@@ -1163,7 +1203,7 @@ def plot_connectome(adjacency_matrix, node_coords,
                                figure=figure, axes=axes, title=title,
                                annotate=annotate,
                                black_bg=black_bg,
-                               alpha=alpha)
+                               alpha=alpha, radiological=radiological)
 
     display.add_graph(adjacency_matrix, node_coords,
                       node_color=node_color, node_size=node_size,
@@ -1187,7 +1227,7 @@ def plot_markers(node_values, node_coords, node_size='auto',
                  node_threshold=None, alpha=0.7, output_file=None,
                  display_mode="ortho", figure=None, axes=None, title=None,
                  annotate=True, black_bg=False, node_kwargs=None,
-                 colorbar=True):
+                 colorbar=True, radiological=False):
     """Plot network nodes (markers) on top of the brain glass schematics.
 
     Nodes are color coded according to provided nodal measure. Nodal measure
@@ -1243,6 +1283,7 @@ def plot_markers(node_values, node_coords, node_size='auto',
         the nodes in one go
     %(colorbar)s
         Default=True.
+    %(radiological)s
 
     """
     node_values = np.array(node_values).flatten()
@@ -1258,7 +1299,8 @@ def plot_markers(node_values, node_coords, node_size='auto',
 
     display = plot_glass_brain(None, display_mode=display_mode,
                                figure=figure, axes=axes, title=title,
-                               annotate=annotate, black_bg=black_bg)
+                               annotate=annotate, black_bg=black_bg,
+                               radiological=radiological)
 
     if isinstance(node_size, str) and node_size == 'auto':
         node_size = min(1e4 / len(node_coords), 100)
@@ -1317,7 +1359,8 @@ def plot_markers(node_values, node_coords, node_size='auto',
 def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
                 detrend=True, output_file=None,
                 figure=None, axes=None, vmin=None, vmax=None, title=None,
-                cmap="gray", cmap_labels=plt.cm.gist_ncar):
+                cmap="gray", cmap_labels=plt.cm.gist_ncar,
+                standardize=True):
     """Plot an image representation of voxel intensities across time.
 
     This figure is also known as a "grayplot" or "Power plot".
@@ -1367,6 +1410,14 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
         on the side of the carpet plot.
 
         Default=`plt.cm.gist_ncar`.
+    %(standardize)s
+
+        .. note::
+
+            Added to control passing value to `standardize` of ``signal.clean``
+            to call new behavior since passing "zscore" or True (default) is
+            deprecated. This parameter will be deprecated in version 0.13 and
+            removed in version 0.15.
 
     Returns
     -------
@@ -1431,7 +1482,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
 
     # Detrend and standardize data
     if detrend:
-        data = clean(data, t_r=t_r, detrend=True, standardize='zscore')
+        data = clean(data, t_r=t_r, detrend=True, standardize=standardize)
 
     if figure is None:
         if not axes:
@@ -1492,7 +1543,9 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
             ax0.set_yticks([])
 
         # Carpet plot
-        axes = plt.subplot(gs[1])  # overwrite axes
+        if _compare_version(matplotlib.__version__, ">=", "3.8.0rc1"):
+            axes.remove()  # remove axes for newer versions of mpl
+        axes = plt.subplot(gs[1])  # overwrites axes with older versions of mpl
         axes.imshow(
             data.T,
             interpolation='nearest',

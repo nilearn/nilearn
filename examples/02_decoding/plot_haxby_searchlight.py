@@ -46,7 +46,7 @@ y, session = y[condition_mask], session[condition_mask]
 # -------------
 # - mask_img is the original mask
 # - process_mask_img is a subset of mask_img, it contains the voxels that
-#   should be processed (we only keep the slice z = 26 and the back of the
+#   should be processed (we only keep the slice z = 29 and the back of the
 #   brain to speed up computation)
 import numpy as np
 

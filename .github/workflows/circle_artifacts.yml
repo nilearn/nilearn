@@ -1,3 +1,4 @@
+---
 # Display a link to the artifacts at the bottom of a PR
 # from https://github.com/marketplace/actions/run-circleci-artifacts-redirector
 on: [status]
@@ -6,9 +7,9 @@ jobs:
         runs-on: ubuntu-20.04
         name: Run CircleCI artifacts redirector
         steps:
-            - name: GitHub Action step
-              uses: larsoner/circleci-artifacts-redirector-action@master
-              with:
-                  repo-token: ${{ secrets.GITHUB_TOKEN }}
-                  artifact-path: 0/dev/index.html
-                  circleci-jobs: build_docs
+        -   name: GitHub Action step
+            uses: larsoner/circleci-artifacts-redirector-action@master
+            with:
+                repo-token: ${{ secrets.GITHUB_TOKEN }}
+                artifact-path: 0/dev/index.html
+                circleci-jobs: build_docs

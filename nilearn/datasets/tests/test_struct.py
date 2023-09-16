@@ -2,83 +2,20 @@
 
 # Authors: Alexandre Abraham, Ana Luisa Pinho
 
-import os
-import shutil
 from pathlib import Path
 
-import nibabel
 import numpy as np
 import pandas as pd
 import pytest
+from nibabel import Nifti1Image
 
-from nilearn.datasets import struct, utils
+from nilearn.datasets import struct
 from nilearn.datasets._testing import dict_to_archive, list_to_archive
-
-
-def test_get_dataset_dir(tmp_path):
-    # testing folder creation under different environments, enforcing
-    # a custom clean install
-    os.environ.pop("NILEARN_DATA", None)
-    os.environ.pop("NILEARN_SHARED_DATA", None)
-
-    expected_base_dir = os.path.expanduser("~/nilearn_data")
-    data_dir = utils._get_dataset_dir("test", verbose=0)
-    assert data_dir == os.path.join(expected_base_dir, "test")
-    assert os.path.exists(data_dir)
-    shutil.rmtree(data_dir)
-
-    expected_base_dir = str(tmp_path / "test_nilearn_data")
-    os.environ["NILEARN_DATA"] = expected_base_dir
-    data_dir = utils._get_dataset_dir("test", verbose=0)
-    assert data_dir == os.path.join(expected_base_dir, "test")
-    assert os.path.exists(data_dir)
-    shutil.rmtree(data_dir)
-
-    expected_base_dir = str(tmp_path / "nilearn_shared_data")
-    os.environ["NILEARN_SHARED_DATA"] = expected_base_dir
-    data_dir = utils._get_dataset_dir("test", verbose=0)
-    assert data_dir == os.path.join(expected_base_dir, "test")
-    assert os.path.exists(data_dir)
-    shutil.rmtree(data_dir)
-
-    expected_base_dir = str(tmp_path / "env_data")
-    expected_dataset_dir = os.path.join(expected_base_dir, "test")
-    data_dir = utils._get_dataset_dir(
-        "test", default_paths=[expected_dataset_dir], verbose=0
-    )
-    assert data_dir == os.path.join(expected_base_dir, "test")
-    assert os.path.exists(data_dir)
-    shutil.rmtree(data_dir)
-
-    no_write = str(tmp_path / "no_write")
-    os.makedirs(no_write)
-    os.chmod(no_write, 0o400)
-
-    expected_base_dir = str(tmp_path / "nilearn_shared_data")
-    os.environ["NILEARN_SHARED_DATA"] = expected_base_dir
-    data_dir = utils._get_dataset_dir(
-        "test", default_paths=[no_write], verbose=0
-    )
-    # Non writeable dir is returned because dataset may be in there.
-    assert data_dir == no_write
-    assert os.path.exists(data_dir)
-    os.chmod(no_write, 0o600)
-    shutil.rmtree(data_dir)
-
-    # Verify exception for a path which exists and is a file
-    test_file = str(tmp_path / "some_file")
-    with open(test_file, "w") as out:
-        out.write("abcfeg")
-    with pytest.raises(
-        OSError,
-        match="Nilearn tried to store the dataset "
-        "in the following directories, but",
-    ):
-        utils._get_dataset_dir("test", test_file, verbose=0)
 
 
 def test_fetch_icbm152_2009(tmp_path, request_mocker):
     dataset = struct.fetch_icbm152_2009(data_dir=str(tmp_path), verbose=0)
+
     assert isinstance(dataset.csf, str)
     assert isinstance(dataset.eye_mask, str)
     assert isinstance(dataset.face_mask, str)
@@ -120,6 +57,7 @@ def test_fetch_oasis_vbm(tmp_path, request_mocker, legacy_format):
     dataset = struct.fetch_oasis_vbm(
         data_dir=str(tmp_path), verbose=0, legacy_format=legacy_format
     )
+
     assert len(dataset.gray_matter_maps) == 403
     assert len(dataset.white_matter_maps) == 403
     assert isinstance(dataset.gray_matter_maps[0], str)
@@ -137,6 +75,7 @@ def test_fetch_oasis_vbm(tmp_path, request_mocker, legacy_format):
         verbose=0,
         legacy_format=legacy_format,
     )
+
     assert len(dataset.gray_matter_maps) == 415
     assert len(dataset.white_matter_maps) == 415
     assert isinstance(dataset.gray_matter_maps[0], str)
@@ -150,73 +89,42 @@ def test_fetch_oasis_vbm(tmp_path, request_mocker, legacy_format):
     assert dataset.description != ""
 
 
-def test_load_mni152_template():
-    # All subjects
-    template_nii_1mm = struct.load_mni152_template()
-    template_nii_2mm = struct.load_mni152_template(resolution=2)
-    assert template_nii_1mm.shape == (197, 233, 189)
-    assert template_nii_2mm.shape == (99, 117, 95)
-    assert template_nii_1mm.header.get_zooms() == (1.0, 1.0, 1.0)
-    assert template_nii_2mm.header.get_zooms() == (2.0, 2.0, 2.0)
+@pytest.mark.parametrize(
+    "func",
+    [
+        struct.load_mni152_brain_mask,
+        struct.load_mni152_gm_mask,
+        struct.load_mni152_gm_template,
+        struct.load_mni152_template,
+        struct.load_mni152_wm_mask,
+        struct.load_mni152_wm_template,
+    ],
+)
+@pytest.mark.parametrize("resolution", [None, 2])
+def test_load_mni152(func, resolution):
+    img = func(resolution=resolution)
+
+    assert isinstance(img, Nifti1Image)
+
+    if resolution is None:
+        expected_shape = (197, 233, 189)
+        expected_zooms = (1.0, 1.0, 1.0)
+    elif resolution == 2:
+        expected_shape = (99, 117, 95)
+        expected_zooms = (2.0, 2.0, 2.0)
+
+    assert img.shape == expected_shape
+    assert img.header.get_zooms() == expected_zooms
 
 
-def test_load_mni152_gm_template():
-    # All subjects
-    gm_template_nii_1mm = struct.load_mni152_gm_template()
-    gm_template_nii_2mm = struct.load_mni152_gm_template(resolution=2)
-    assert gm_template_nii_1mm.shape == (197, 233, 189)
-    assert gm_template_nii_2mm.shape == (99, 117, 95)
-    assert gm_template_nii_1mm.header.get_zooms() == (1.0, 1.0, 1.0)
-    assert gm_template_nii_2mm.header.get_zooms() == (2.0, 2.0, 2.0)
-
-
-def test_load_mni152_wm_template():
-    # All subjects
-    wm_template_nii_1mm = struct.load_mni152_wm_template()
-    wm_template_nii_2mm = struct.load_mni152_wm_template(resolution=2)
-    assert wm_template_nii_1mm.shape == (197, 233, 189)
-    assert wm_template_nii_2mm.shape == (99, 117, 95)
-    assert wm_template_nii_1mm.header.get_zooms() == (1.0, 1.0, 1.0)
-    assert wm_template_nii_2mm.header.get_zooms() == (2.0, 2.0, 2.0)
-
-
-def test_load_mni152_brain_mask():
-    brain_mask_1mm = struct.load_mni152_brain_mask()
-    brain_mask_2mm = struct.load_mni152_brain_mask(resolution=2)
-    assert isinstance(brain_mask_1mm, nibabel.Nifti1Image)
-    assert isinstance(brain_mask_2mm, nibabel.Nifti1Image)
-    # standard MNI template shape
-    assert brain_mask_1mm.shape == (197, 233, 189)
-    assert brain_mask_2mm.shape == (99, 117, 95)
-
-
-def test_load_mni152_gm_mask():
-    gm_mask_1mm = struct.load_mni152_gm_mask()
-    gm_mask_2mm = struct.load_mni152_gm_mask(resolution=2)
-    assert isinstance(gm_mask_1mm, nibabel.Nifti1Image)
-    assert isinstance(gm_mask_2mm, nibabel.Nifti1Image)
-    # standard MNI template shape
-    assert gm_mask_1mm.shape == (197, 233, 189)
-    assert gm_mask_2mm.shape == (99, 117, 95)
-
-
-def test_load_mni152_wm_mask():
-    wm_mask_1mm = struct.load_mni152_wm_mask()
-    wm_mask_2mm = struct.load_mni152_wm_mask(resolution=2)
-    assert isinstance(wm_mask_1mm, nibabel.Nifti1Image)
-    assert isinstance(wm_mask_2mm, nibabel.Nifti1Image)
-    # standard MNI template shape
-    assert wm_mask_1mm.shape == (197, 233, 189)
-    assert wm_mask_2mm.shape == (99, 117, 95)
-
-
-def test_fetch_icbm152_brain_gm_mask(tmp_path, request_mocker):
+def test_fetch_icbm152_brain_gm_mask(tmp_path):
     dataset = struct.fetch_icbm152_2009(data_dir=str(tmp_path), verbose=0)
     struct.load_mni152_template(resolution=2).to_filename(dataset.gm)
     grey_matter_img = struct.fetch_icbm152_brain_gm_mask(
         data_dir=str(tmp_path), verbose=0
     )
-    assert isinstance(grey_matter_img, nibabel.Nifti1Image)
+
+    assert isinstance(grey_matter_img, Nifti1Image)
 
 
 @pytest.mark.parametrize(
@@ -263,5 +171,6 @@ def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
         )
 
     dataset = struct.fetch_surf_fsaverage(mesh, data_dir=str(tmp_path))
+
     assert mesh_attributes.issubset(set(dataset.keys()))
     assert dataset.description != ""

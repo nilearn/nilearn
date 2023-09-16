@@ -106,9 +106,9 @@ def test_plot_markers_tuple_node_coords(coords):
     plt.close()
 
 
-def test_plot_markers_saving_to_file(coords, tmpdir):
+def test_plot_markers_saving_to_file(coords, tmp_path):
     """Smoke test for plot_markers and file saving."""
-    filename = str(tmpdir.join("test.png"))
+    filename = tmp_path / "test.png"
     display = plot_markers(
         [1, 2, 3, 4], coords, output_file=filename, display_mode="x"
     )
@@ -180,4 +180,11 @@ def test_plot_markers_threshold_errors(coords):
 def test_plot_markers_single_node_value():
     """Regression test for Issue #3253."""
     plot_markers([1], [[1, 1, 1]])
+    plt.close()
+
+
+def test_plot_markers_radiological_view():
+    """Smoke test for radiological view."""
+    result = plot_markers([1], [[1, 1, 1]], radiological=True)
+    assert result.axes.get("y").radiological is True
     plt.close()

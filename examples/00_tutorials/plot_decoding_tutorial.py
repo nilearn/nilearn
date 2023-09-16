@@ -18,7 +18,7 @@ meant to be copied to analyze new data: many of the steps are unnecessary.
 """
 
 
-###########################################################################
+# %%
 # Retrieve and load the fMRI data from the Haxby study
 # ----------------------------------------------------
 #
@@ -38,7 +38,7 @@ fmri_filename = haxby_dataset.func[0]
 # print basic information on the dataset
 print(f"First subject functional nifti images (4D) are at: {fmri_filename}")
 
-###########################################################################
+# %%
 # Visualizing the fmri volume
 # ...........................
 #
@@ -58,7 +58,7 @@ from nilearn.image import mean_img
 
 plotting.view_img(mean_img(fmri_filename), threshold=None)
 
-###########################################################################
+# %%
 # Feature extraction: from fMRI volumes to a data matrix
 # ......................................................
 #
@@ -76,7 +76,7 @@ mask_filename = haxby_dataset.mask_vt[0]
 # background
 plotting.plot_roi(mask_filename, bg_img=haxby_dataset.anat[0], cmap="Paired")
 
-###########################################################################
+# %%
 # Load the behavioral labels
 # ..........................
 #
@@ -92,14 +92,14 @@ import pandas as pd
 behavioral = pd.read_csv(haxby_dataset.session_target[0], delimiter=" ")
 print(behavioral)
 
-###########################################################################
+# %%
 # The task was a visual-recognition task, and the labels denote the
 # experimental condition: the type of object that was presented to the
 # subject. This is what we are going to try to predict.
 conditions = behavioral["labels"]
 print(conditions)
 
-###########################################################################
+# %%
 # Restrict the analysis to cats and faces
 # .......................................
 #
@@ -117,21 +117,21 @@ print(conditions)
 # (i.e. :term:`fmri<fMRI>` signal is shorter):
 condition_mask = conditions.isin(["face", "cat"])
 
-###########################################################################
+# %%
 # Because the data is in one single large 4D image, we need to use
 # index_img to do the split easily.
 from nilearn.image import index_img
 
 fmri_niimgs = index_img(fmri_filename, condition_mask)
 
-###########################################################################
+# %%
 # We apply the same mask to the targets
 conditions = conditions[condition_mask]
 # Convert to numpy array
 conditions = conditions.values
 print(conditions.shape)
 
-###########################################################################
+# %%
 # Decoding with Support Vector Machine
 # ------------------------------------
 #
@@ -143,19 +143,19 @@ decoder = Decoder(
     estimator="svc", mask=mask_filename, standardize="zscore_sample"
 )
 
-###########################################################################
+# %%
 # The decoder object is an object that can be fit (or trained) on data with
 # labels, and then predict labels on data without.
 #
 # We first fit it on the data
 decoder.fit(fmri_niimgs, conditions)
 
-###########################################################################
+# %%
 # We can then predict the labels from the data
 prediction = decoder.predict(fmri_niimgs)
 print(prediction)
 
-###########################################################################
+# %%
 # Note that for this classification task both classes contain the same number
 # of samples (the problem is balanced). Then, we can use accuracy to measure
 # the performance of the decoder. This is done by defining accuracy as the
@@ -163,10 +163,10 @@ print(prediction)
 # Let's measure the prediction accuracy:
 print((prediction == conditions).sum() / float(len(conditions)))
 
-###########################################################################
+# %%
 # This prediction accuracy score is meaningless. Why?
 
-###########################################################################
+# %%
 # Measuring prediction scores using cross-validation
 # --------------------------------------------------
 #
@@ -199,7 +199,7 @@ predicton_accuracy = (prediction == conditions_test).sum() / float(
 )
 print(f"Prediction Accuracy: {predicton_accuracy:.3f}")
 
-###########################################################################
+# %%
 # Implementing a KFold loop
 # .........................
 #
@@ -223,7 +223,7 @@ for fold, (train, test) in enumerate(cv.split(conditions), start=1):
         f"Prediction Accuracy: {predicton_accuracy:.3f}"
     )
 
-###########################################################################
+# %%
 # Cross-validation with the decoder
 # .................................
 #
@@ -241,7 +241,7 @@ decoder = Decoder(
 )
 decoder.fit(fmri_niimgs, conditions)
 
-###########################################################################
+# %%
 # Cross-validation pipeline can also be implemented manually. More details can
 # be found on `scikit-learn website
 # <https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.cross_val_score.html>`_.
@@ -249,7 +249,7 @@ decoder.fit(fmri_niimgs, conditions)
 # Then we can check the best performing parameters per fold.
 print(decoder.cv_params_["face"])
 
-###########################################################################
+# %%
 # .. note::
 # 	We can speed things up to use all the CPUs of our computer with the
 # 	n_jobs parameter.
@@ -263,7 +263,7 @@ print(decoder.cv_params_["face"])
 # and faces.
 session_label = behavioral["chunks"][condition_mask]
 
-###########################################################################
+# %%
 # The :term:`fMRI` data is acquired by sessions,
 # and the noise is autocorrelated in a
 # given session. Hence, it is better to predict across sessions when doing
@@ -280,7 +280,7 @@ decoder.fit(fmri_niimgs, conditions, groups=session_label)
 
 print(decoder.cv_scores_)
 
-###########################################################################
+# %%
 # Inspecting the model weights
 # ----------------------------
 #
@@ -293,21 +293,21 @@ print(decoder.cv_scores_)
 coef_ = decoder.coef_
 print(coef_)
 
-###########################################################################
+# %%
 # It's a numpy array with only one coefficient per voxel:
 print(coef_.shape)
 
-###########################################################################
+# %%
 # To get the Nifti image of these coefficients, we only need retrieve the
 # `coef_img_` in the decoder and select the class
 
 coef_img = decoder.coef_img_["face"]
 
-###########################################################################
+# %%
 # coef_img is now a NiftiImage.  We can save the coefficients as a nii.gz file:
 decoder.coef_img_["face"].to_filename("haxby_svc_weights.nii.gz")
 
-###########################################################################
+# %%
 # Plotting the SVM weights
 # ........................
 #
@@ -319,7 +319,7 @@ plotting.view_img(
     dim=-1,
 )
 
-###########################################################################
+# %%
 # What is the chance level accuracy?
 # ----------------------------------
 #
@@ -328,7 +328,7 @@ plotting.view_img(
 # that are implemented in the :class:`nilearn.decoding.Decoder` object. This is
 # useful to inspect the decoding performance by comparing to a score at chance.
 
-###########################################################################
+# %%
 # Let's define a object with Dummy estimator replacing 'svc' for classification
 # setting. This object initializes estimator with default dummy strategy.
 dummy_decoder = Decoder(
@@ -342,7 +342,7 @@ dummy_decoder.fit(fmri_niimgs, conditions, groups=session_label)
 # Now, we can compare these scores by simply taking a mean over folds
 print(dummy_decoder.cv_scores_)
 
-###########################################################################
+# %%
 # Further reading
 # ---------------
 #

@@ -66,6 +66,7 @@ def test_get_dataset_descr_warning():
         UserWarning, match="Could not find dataset description."
     ):
         descr = _get_dataset_descr("")
+
     assert descr == ""
 
 
@@ -73,12 +74,12 @@ def test_get_dataset_descr_warning():
 def test_get_dataset_descr(name):
     """Test function ``_get_dataset_descr()``."""
     descr = _get_dataset_descr(name)
+
     assert isinstance(descr, str)
     assert len(descr) > 0
 
 
-@pytest.mark.parametrize("should_cast_path_to_string", [False, True])
-def test_get_dataset_dir(should_cast_path_to_string, tmp_path):
+def test_get_dataset_dir(tmp_path):
     # testing folder creation under different environments, enforcing
     # a custom clean install
     os.environ.pop("NILEARN_DATA", None)
@@ -86,48 +87,28 @@ def test_get_dataset_dir(should_cast_path_to_string, tmp_path):
 
     expected_base_dir = os.path.expanduser("~/nilearn_data")
     data_dir = datasets.utils._get_dataset_dir("test", verbose=0)
+
     assert data_dir == os.path.join(expected_base_dir, "test")
     assert os.path.exists(data_dir)
+
     shutil.rmtree(data_dir)
 
     expected_base_dir = str(tmp_path / "test_nilearn_data")
     os.environ["NILEARN_DATA"] = expected_base_dir
     data_dir = datasets.utils._get_dataset_dir("test", verbose=0)
+
     assert data_dir == os.path.join(expected_base_dir, "test")
     assert os.path.exists(data_dir)
+
     shutil.rmtree(data_dir)
 
     expected_base_dir = str(tmp_path / "nilearn_shared_data")
     os.environ["NILEARN_SHARED_DATA"] = expected_base_dir
     data_dir = datasets.utils._get_dataset_dir("test", verbose=0)
+
     assert data_dir == os.path.join(expected_base_dir, "test")
     assert os.path.exists(data_dir)
-    shutil.rmtree(data_dir)
 
-    expected_base_dir = tmp_path / "env_data"
-    expected_dataset_dir = expected_base_dir / "test"
-    if should_cast_path_to_string:
-        expected_dataset_dir = str(expected_dataset_dir)
-    data_dir = datasets.utils._get_dataset_dir(
-        "test", default_paths=[expected_dataset_dir], verbose=0
-    )
-    assert data_dir == str(expected_dataset_dir)
-    assert os.path.exists(data_dir)
-    shutil.rmtree(data_dir)
-
-    no_write = str(tmp_path / "no_write")
-    os.makedirs(no_write)
-    os.chmod(no_write, 0o400)
-
-    expected_base_dir = str(tmp_path / "nilearn_shared_data")
-    os.environ["NILEARN_SHARED_DATA"] = expected_base_dir
-    data_dir = datasets.utils._get_dataset_dir(
-        "test", default_paths=[no_write], verbose=0
-    )
-    # Non writeable dir is returned because dataset may be in there.
-    assert data_dir == no_write
-    assert os.path.exists(data_dir)
-    os.chmod(no_write, 0o600)
     shutil.rmtree(data_dir)
 
     # Verify exception for a path which exists and is a file
@@ -143,14 +124,53 @@ def test_get_dataset_dir(should_cast_path_to_string, tmp_path):
         datasets.utils._get_dataset_dir("test", test_file, verbose=0)
 
 
+@pytest.mark.parametrize("should_cast_path_to_string", [False, True])
+def test_get_dataset_dir_path_as_str(should_cast_path_to_string, tmp_path):
+    expected_base_dir = tmp_path / "env_data"
+    expected_dataset_dir = expected_base_dir / "test"
+    if should_cast_path_to_string:
+        expected_dataset_dir = str(expected_dataset_dir)
+    data_dir = datasets.utils._get_dataset_dir(
+        "test", default_paths=[expected_dataset_dir], verbose=0
+    )
+
+    assert data_dir == str(expected_dataset_dir)
+    assert os.path.exists(data_dir)
+
+    shutil.rmtree(data_dir)
+
+
+def test_get_dataset_dir_write_access(tmp_path):
+    os.environ.pop("NILEARN_SHARED_DATA", None)
+
+    no_write = str(tmp_path / "no_write")
+    os.makedirs(no_write)
+    os.chmod(no_write, 0o400)
+
+    expected_base_dir = str(tmp_path / "nilearn_shared_data")
+    os.environ["NILEARN_SHARED_DATA"] = expected_base_dir
+    data_dir = datasets.utils._get_dataset_dir(
+        "test", default_paths=[no_write], verbose=0
+    )
+
+    # Non writeable dir is returned because dataset may be in there.
+    assert data_dir == no_write
+    assert os.path.exists(data_dir)
+
+    os.chmod(no_write, 0o600)
+    shutil.rmtree(data_dir)
+
+
 def test_md5_sum_file():
     # Create dummy temporary file
     out, f = mkstemp()
     os.write(out, b"abcfeg")
     os.close(out)
+
     assert (
         datasets.utils._md5_sum_file(f) == "18f32295c556b2a1a3a8e68fe1ad40f7"
     )
+
     os.remove(f)
 
 
@@ -164,10 +184,12 @@ def test_read_md5_sum_file():
     )
     os.close(out)
     h = datasets.utils._read_md5_sum_file(f)
+
     assert "/tmp/test" in h
     assert "/etc/test" not in h
     assert h["test/some_image.nii"] == "70886dcabe7bf5c5a1c24ca24e4cbd94"
     assert h["/tmp/test"] == "20861c8c3fe177da19a7e9539a5dbac"
+
     os.remove(f)
 
 
@@ -239,6 +261,7 @@ def test_movetree():
     assert not os.path.exists(os.path.join(dir1, "file12"))
     assert not os.path.exists(os.path.join(dir11, "file111"))
     assert not os.path.exists(os.path.join(dir12, "file121"))
+
     dir11 = os.path.join(dir2, "dir11")
     dir12 = os.path.join(dir2, "dir12")
 
@@ -261,9 +284,11 @@ def test_filter_columns():
     )
 
     f = datasets.utils._filter_columns(values, {"INT": (23, 46)})
+
     assert np.sum(f) == 24
 
     f = datasets.utils._filter_columns(values, {"INT": [0, 9, (12, 24)]})
+
     assert np.sum(f) == 15
 
     value1 = value1 % 2
@@ -273,20 +298,25 @@ def test_filter_columns():
 
     # No filter
     f = datasets.utils._filter_columns(values, [])
+
     assert np.sum(f) == 500
 
     f = datasets.utils._filter_columns(values, {"STR": b"b"})
+
     assert np.sum(f) == 167
 
     f = datasets.utils._filter_columns(values, {"STR": "b"})
+
     assert np.sum(f) == 167
 
     f = datasets.utils._filter_columns(values, {"INT": 1, "STR": b"b"})
+
     assert np.sum(f) == 84
 
     f = datasets.utils._filter_columns(
         values, {"INT": 1, "STR": b"b"}, combination="or"
     )
+
     assert np.sum(f) == 333
 
 
@@ -304,7 +334,9 @@ def test_uncompress():
         with contextlib.closing(zipfile.ZipFile(ztemp, "w")) as testzip:
             testzip.writestr(ftemp, " ")
         datasets.utils._uncompress_file(ztemp, verbose=0)
+
         assert os.path.exists(os.path.join(dtemp, ftemp))
+
         shutil.rmtree(dtemp)
 
         dtemp = mkdtemp()
@@ -317,16 +349,21 @@ def test_uncompress():
         with contextlib.closing(tarfile.open(ztemp, "w")) as tar:
             tar.add(temp, arcname=ftemp)
         datasets.utils._uncompress_file(ztemp, verbose=0)
+
         assert os.path.exists(os.path.join(dtemp, ftemp))
+
         shutil.rmtree(dtemp)
 
         dtemp = mkdtemp()
         ztemp = os.path.join(dtemp, "test.gz")
         gzip.open(ztemp, "wb").close()
         datasets.utils._uncompress_file(ztemp, verbose=0)
+
         # test.gz gets uncompressed into test
         assert os.path.exists(os.path.join(dtemp, "test"))
+
         shutil.rmtree(dtemp)
+
     finally:
         # all temp files are created into dtemp except temp
         if os.path.exists(dtemp):
@@ -341,6 +378,7 @@ def test_safe_extract(tmp_path):
     with contextlib.closing(tarfile.open(ztemp, "w")) as tar:
         arcname = os.path.normpath("../test.tar")
         tar.add(in_archive_file, arcname=arcname)
+
     with pytest.raises(
         Exception, match="Attempted Path Traversal in Tar File"
     ):
@@ -358,6 +396,7 @@ def test_fetch_file_overwrite(
     fil = datasets.utils._fetch_file(
         url="http://foo/", data_dir=str(tmp_path), verbose=0, overwrite=True
     )
+
     assert request_mocker.url_count == 1
     assert os.path.exists(fil)
     with open(fil) as fp:
@@ -382,6 +421,7 @@ def test_fetch_file_overwrite(
     fil = datasets.utils._fetch_file(
         url="http://foo/", data_dir=str(tmp_path), verbose=0, overwrite=True
     )
+
     assert request_mocker.url_count == 2
     assert os.path.exists(fil)
     with open(fil) as fp:
@@ -405,6 +445,7 @@ def test_fetch_files_use_session(
         data_dir=str(tmp_path),
         session=session,
     )
+
     assert session.send.call_count == 2
 
 
@@ -422,6 +463,7 @@ def test_fetch_files_overwrite(
         verbose=0,
         files=[files + (dict(overwrite=True),)],
     )
+
     assert request_mocker.url_count == 1
     assert os.path.exists(fil[0])
     with open(fil[0]) as fp:
@@ -437,6 +479,7 @@ def test_fetch_files_overwrite(
         verbose=0,
         files=[files + (dict(overwrite=False),)],
     )
+
     assert request_mocker.url_count == 1
     assert os.path.exists(fil[0])
     with open(fil[0]) as fp:
@@ -448,6 +491,7 @@ def test_fetch_files_overwrite(
         verbose=0,
         files=[files + (dict(overwrite=True),)],
     )
+
     assert request_mocker.url_count == 2
     assert os.path.exists(fil[0])
     with open(fil[0]) as fp:
@@ -470,5 +514,6 @@ def test_naive_ftp_adapter():
 
 def test_load_sample_motor_activation_image():
     path_img = utils.load_sample_motor_activation_image()
+
     assert os.path.exists(path_img)
     assert load_img(path_img)
