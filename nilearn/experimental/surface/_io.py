@@ -1,8 +1,8 @@
 import pathlib
 from typing import Dict, Union
 
-import numpy as np
 import nibabel as nib
+import numpy as np
 
 from nilearn import surface as old_surface
 

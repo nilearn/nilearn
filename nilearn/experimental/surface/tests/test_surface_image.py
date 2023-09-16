@@ -1,12 +1,7 @@
 import numpy as np
 import pytest
 
-from nilearn.experimental.surface import (
-    FileMesh,
-    InMemoryMesh,
-    FileMesh,
-    SurfaceImage,
-)
+from nilearn.experimental.surface import FileMesh, InMemoryMesh, SurfaceImage
 
 
 def test_compare_file_and_inmemory_mesh(mini_mesh, tmp_path):

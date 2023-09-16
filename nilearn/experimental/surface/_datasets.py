@@ -38,7 +38,10 @@ def fetch_nki(n_subjects=1) -> Sequence[SurfaceImage]:
         right_data = _io.read_array(right).T
         img = SurfaceImage(
             mesh=fsaverage["pial"],
-            data={"left_hemisphere": left_data, "right_hemisphere": right_data},
+            data={
+                "left_hemisphere": left_data,
+                "right_hemisphere": right_data,
+            },
         )
         images.append(img)
     return images

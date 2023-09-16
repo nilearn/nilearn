@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from nilearn.experimental.surface import SurfaceMasker, SurfaceImage
+from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
 
 
 def test_mask_img_fit_shape_mismatch(

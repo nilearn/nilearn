@@ -43,17 +43,15 @@ class SurfaceMasker:
             return
         if img is None:
             raise ValueError(
-                "Please provide either a mask_img when initializing the masker "
-                "or an img when calling fit()."
+                "Please provide either a mask_img when initializing "
+                "the masker or an img when calling fit()."
             )
         # TODO: don't store a full array of 1 to mean "no masking"; use some
         # sentinel value
         mask_data = {
             k: np.ones(v.n_vertices, dtype=bool) for (k, v) in img.mesh.items()
         }
-        self.mask_img_ = SurfaceImage(
-            mesh=img.mesh, data=mask_data
-        )  # type: ignore
+        self.mask_img_ = SurfaceImage(mesh=img.mesh, data=mask_data)
 
     def fit(
         self, img: SurfaceImage | None = None, y: Any = None
@@ -111,9 +109,7 @@ class SurfaceMasker:
             )
             start, stop = self.slices[part_name]
             data[part_name][..., mask] = masked_img[..., start:stop]
-        return SurfaceImage(
-            mesh=self.mask_img_.mesh, data=data
-        )  # type: ignore
+        return SurfaceImage(mesh=self.mask_img_.mesh, data=data)
 
 
 class SurfaceLabelsMasker:
@@ -179,6 +175,4 @@ class SurfaceLabelsMasker:
                 data[part_name][..., labels_part == label] = masked_img[
                     ..., label_idx
                 ]
-        return SurfaceImage(
-            mesh=self.labels_img.mesh, data=data
-        )  # type: ignore
+        return SurfaceImage(mesh=self.labels_img.mesh, data=data)

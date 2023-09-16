@@ -1,12 +1,13 @@
 from typing import Callable
+
 import numpy as np
 import pytest
 
 from nilearn.experimental.surface import (
     InMemoryMesh,
+    PolyMesh,
     SurfaceImage,
     load_fsaverage,
-    PolyMesh,
 )
 
 

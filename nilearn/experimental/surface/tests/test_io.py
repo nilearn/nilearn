@@ -1,5 +1,5 @@
-import numpy as np
 import nibabel as nib
+import numpy as np
 
 from nilearn.experimental.surface import _io
 

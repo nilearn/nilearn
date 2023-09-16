@@ -92,7 +92,8 @@ def _check_data_consistent_shape(data: PolyData):
         if part_data.shape[:-1] != first_shape[:-1]:
             raise ValueError(
                 f"Data arrays for keys '{first_name}' and '{part_name}' "
-                f"have incompatible shapes: {first_shape} and {part_data.shape}"
+                "have incompatible shapes: "
+                f"{first_shape} and {part_data.shape}"
             )
 
 
