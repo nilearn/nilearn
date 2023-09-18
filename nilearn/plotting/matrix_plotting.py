@@ -475,7 +475,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     model_event : :class:`pandas.DataFrame` or :obj:`list`\
     of :class:`pandas.DataFrame`
         The :class:`pandas.DataFrame` must have three columns:
-        ``event_type`` with event name, ``onset`` and ``duration``.
+        ``trial_type`` with event name, ``onset`` and ``duration``.
 
         .. note::
 
