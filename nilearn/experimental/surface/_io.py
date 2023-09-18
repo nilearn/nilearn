@@ -24,7 +24,7 @@ def mesh_to_gifti(
     gifti_file = pathlib.Path(gifti_file)
     gifti_img = nib.gifti.GiftiImage()
     coords_array = nib.gifti.GiftiDataArray(
-        coordinates, intent="NIFTI_INTENT_POINTSET"
+        coordinates, intent="NIFTI_INTENT_POINTSET", datatype="float32"
     )
     faces_array = nib.gifti.GiftiDataArray(
         faces, intent="NIFTI_INTENT_TRIANGLE"
