@@ -879,15 +879,12 @@ docdict[
     "symmetric_cbar"
 ] = """
 symmetric_cbar : :obj:`bool`, or "auto", optional
-    Specifies whether the colorbar should range from `-vmax` to `vmax`
-    or from `vmin` to `vmax`.
-    Setting to `"auto"` will select the latter
-    if the range of the whole image is either positive or negative.
-
-    .. note::
-
-        The colormap will always range from `-vmax` to `vmax`.
-
+    Specifies whether the colorbar and colormap should range from `-vmax` to
+    `vmax` (or from `vmin` to `-vmin` if `-vmin` is greater than `vmax`) or
+    from `vmin` to `vmax`.
+    Setting to `"auto"` will select the former if either 1) `vmin` or `vmax` is
+    None and the image has both positive and negative values, or 2) `vmin` is
+    equal to `-vmax`.
 """
 
 # t_r
