@@ -7,7 +7,7 @@ from nilearn.experimental.surface import _io
 def test_read_array(tmp_path):
     gifti_img = nib.gifti.GiftiImage()
     a = np.arange(5)
-    gifti_array = nib.gifti.GiftiDataArray(a)
+    gifti_array = nib.gifti.GiftiDataArray(a, datatype="float32")
     gifti_img.add_gifti_data_array(gifti_array)
     gifti_file = tmp_path / "a.gii"
     nib.save(gifti_img, gifti_file)
