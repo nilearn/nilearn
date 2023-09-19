@@ -18,6 +18,7 @@ from nilearn.plotting.edge_detect import _edge_map
 from nilearn.plotting.find_cuts import find_cut_slices, find_xyz_cut_coords
 
 
+@fill_doc
 class BaseSlicer:
     """BaseSlicer implementation which main purpose is to auto adjust \
     the axes size to the data with different layout of cuts.
@@ -97,7 +98,6 @@ class BaseSlicer:
         raise NotImplementedError
 
     @classmethod
-    @fill_doc
     def init_with_figure(
         cls,
         img,
@@ -248,7 +248,6 @@ class BaseSlicer:
         )
         ax.set_zorder(1000)
 
-    @fill_doc
     def add_overlay(
         self,
         img,
@@ -321,7 +320,6 @@ class BaseSlicer:
 
         plt.draw_if_interactive()
 
-    @fill_doc
     def add_contours(self, img, threshold=1e-6, filled=False, **kwargs):
         """Contour a 3D map in all the views.
 
@@ -470,7 +468,6 @@ class BaseSlicer:
                 ims.append(im)
         return ims
 
-    @fill_doc
     def _show_colorbar(
         self, cmap, norm, cbar_vmin=None, cbar_vmax=None, threshold=None
     ):
@@ -561,7 +558,6 @@ class BaseSlicer:
         self._colorbar_ax.yaxis.set_tick_params(width=0)
         self._cbar.outline.set_edgecolor(outline_color)
 
-    @fill_doc
     def add_edges(self, img, color="r"):
         """Plot the edges of a 3D map in all the views.
 
@@ -797,6 +793,7 @@ class BaseSlicer:
         )
 
 
+@fill_doc
 class OrthoSlicer(BaseSlicer):
     """Class to create 3 linked axes for plotting orthogonal \
     cuts of 3D maps.
@@ -844,7 +841,6 @@ class OrthoSlicer(BaseSlicer):
     _axes_class = CutAxes
     _default_figsize = [2.2, 3.5]
 
-    @fill_doc
     @classmethod
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
         """Instantiate the slicer and find cut coordinates.
