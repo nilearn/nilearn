@@ -205,7 +205,7 @@ def fetch_atlas_craddock_2012(
 
     Warns
     -----
-    FutureWarning
+    DeprecationWarning
         If an homogeneity input is provided, the current behavior
         (returning multiple maps) is deprecated.
         Starting in version 0.13, one map will be returned depending on
@@ -263,13 +263,13 @@ def fetch_atlas_craddock_2012(
         else:
             filename = [("random_all.nii.gz", url, opts)]
         data = _fetch_files(data_dir, filename, resume=resume, verbose=verbose)
-        params = dict(map=data[0], description=fdescr)
+        params = dict(maps=data[0], description=fdescr)
     else:
         params = dict([("description", fdescr)] + list(zip(keys, sub_files)))
         warnings.warn(
-            category=FutureWarning,
-            message="The default behavior of the function will "
-            "be deprecated and replaced in release 0.13 "
+            category=DeprecationWarning,
+            message="The default behavior of the function is "
+            "deprecated and will be replaced in release 0.13 "
             "to use the new parameters homogeneity "
             "and grp_mean.",
         )
@@ -992,7 +992,7 @@ def fetch_atlas_smith_2009(
 
     Warns
     -----
-    FutureWarning
+    DeprecationWarning
         If a dimension input is provided, the current behavior
         (returning multiple maps) is deprecated.
         Starting in version 0.13, one map will be returned depending on
@@ -1051,7 +1051,7 @@ def fetch_atlas_smith_2009(
 
         file = [(files[key], url[key_index] + files[key], {})]
         data = _fetch_files(data_dir, file, resume=resume, verbose=verbose)
-        params = Bunch(map=data[0], description=fdescr)
+        params = Bunch(maps=data[0], description=fdescr)
     else:
         keys = list(files.keys())
         files = [(f, u + f, {}) for f, u in zip(files.values(), url)]
@@ -1059,9 +1059,9 @@ def fetch_atlas_smith_2009(
         params = dict(zip(keys, files_))
         params["description"] = fdescr
         warnings.warn(
-            category=FutureWarning,
-            message="The default behavior of the function will "
-            "be deprecated and replaced in release 0.13 "
+            category=DeprecationWarning,
+            message="The default behavior of the function is "
+            "deprecated and will be replaced in release 0.13 "
             "to use the new parameters dimension and "
             "resting.",
         )
@@ -1382,7 +1382,7 @@ def fetch_atlas_basc_multiscale_2015(
 
     Warns
     -----
-    FutureWarning
+    DeprecationWarning
         If a resolution input is provided, the current behavior
         (returning multiple maps) is deprecated.
         Starting in version 0.13, one map will be returned depending on
@@ -1442,7 +1442,7 @@ def fetch_atlas_basc_multiscale_2015(
         filename = [(os.path.join(folder_name, basename), url, opts)]
 
         data = _fetch_files(data_dir, filename, resume=resume, verbose=verbose)
-        params = Bunch(map=data[0], description=fdescr)
+        params = Bunch(maps=data[0], description=fdescr)
     else:
         basenames = [
             "template_cambridge_basc_multiscale_"
@@ -1465,9 +1465,9 @@ def fetch_atlas_basc_multiscale_2015(
         params = dict(zip(keys, data))
         params["description"] = descr
         warnings.warn(
-            category=FutureWarning,
-            message="The default behavior of the function will "
-            "be deprecated and replaced in release 0.13 "
+            category=DeprecationWarning,
+            message="The default behavior of the function is "
+            "deprecated and will be replaced in release 0.13 "
             "to use the new parameters resolution and "
             "and version.",
         )
