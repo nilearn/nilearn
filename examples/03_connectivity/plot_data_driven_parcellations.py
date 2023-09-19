@@ -48,6 +48,7 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import patches, ticker
+
 from nilearn import datasets, plotting
 from nilearn.image import get_data, index_img, mean_img
 from nilearn.regions import Parcellations
@@ -192,7 +193,7 @@ start = time.time()
 kmeans = Parcellations(
     method="kmeans",
     n_parcels=50,
-    standardize=True,
+    standardize="zscore_sample",
     smoothing_fwhm=10.0,
     memory="nilearn_cache",
     memory_level=1,
@@ -241,7 +242,7 @@ start = time.time()
 hkmeans = Parcellations(
     method="hierarchical_kmeans",
     n_parcels=50,
-    standardize=True,
+    standardize="zscore_sample",
     smoothing_fwhm=10,
     memory="nilearn_cache",
     memory_level=1,
@@ -429,3 +430,5 @@ plotting.plot_epi(
 # However, as said in the previous section, the computation time is
 # reduced which could still make ReNA more relevant than Ward in
 # some cases.
+
+# sphinx_gallery_dummy_images=3

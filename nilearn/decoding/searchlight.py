@@ -6,7 +6,6 @@ in the neighborhood of each location of a domain."""
 #           Alexandre Gramfort (alexandre.gramfort@inria.fr)
 #           Philippe Gervais (philippe.gervais@inria.fr)
 #
-# License: simplified BSD
 
 import sys
 import time
@@ -14,11 +13,12 @@ import warnings
 
 import numpy as np
 from joblib import Parallel, cpu_count, delayed
-from nilearn.maskers.nifti_spheres_masker import _apply_mask_and_get_affinity
 from sklearn import svm
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import cross_val_score
+
+from nilearn.maskers.nifti_spheres_masker import _apply_mask_and_get_affinity
 
 from .. import masking
 from .._utils import check_niimg_4d, fill_doc
@@ -332,7 +332,9 @@ class SearchLight(BaseEstimator):
         )
 
         estimator = self.estimator
-        if isinstance(estimator, str):
+        if estimator == "svc":
+            estimator = ESTIMATOR_CATALOG[estimator](dual=True)
+        elif isinstance(estimator, str):
             estimator = ESTIMATOR_CATALOG[estimator]()
 
         scores = search_light(

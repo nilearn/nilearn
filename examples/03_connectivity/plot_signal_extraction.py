@@ -55,7 +55,8 @@ from nilearn.maskers import NiftiLabelsMasker
 
 masker = NiftiLabelsMasker(
     labels_img=atlas_filename,
-    standardize=True,
+    standardize="zscore_sample",
+    standardize_confounds="zscore_sample",
     memory="nilearn_cache",
     verbose=5,
 )
@@ -70,11 +71,15 @@ time_series = masker.fit_transform(fmri_filenames, confounds=reduced_confounds)
 # ----------------------------------------
 from nilearn.connectome import ConnectivityMeasure
 
-correlation_measure = ConnectivityMeasure(kind="correlation")
+correlation_measure = ConnectivityMeasure(
+    kind="correlation",
+    standardize="zscore_sample",
+)
 correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
 # Plot the correlation matrix
 import numpy as np
+
 from nilearn import plotting
 
 # Make a large figure
@@ -317,3 +322,5 @@ plotting.show()
 # ----------
 #
 # .. footbibliography::
+
+# sphinx_gallery_dummy_images=2

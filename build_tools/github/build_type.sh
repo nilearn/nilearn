@@ -1,12 +1,20 @@
 #!/bin/bash -exf
 
-if [ "$GITHUB_REF_NAME" == "main" ] || [[ $(cat gitlog.txt) == *"[full doc]"* ]]; then
+GITLOG=$(cat gitlog.txt)
+if [ "$GITHUB_REF_NAME" == "main" ] || [[ $GITLOG == *"[full doc]"* ]]; then
     echo "Doing a full build";
     echo html-strict > build.txt;
 else
-    FILENAMES=$(git diff --name-only $(git merge-base $COMMIT_SHA upstream/main) $COMMIT_SHA);
-    echo FILENAMES="$FILENAMES";
-    for FILENAME in $FILENAMES; do
+    if [[ $GITLOG == *"[example]"* ]]; then
+        echo "Building selected example";
+        COMMIT_MESSAGE=${GITLOG#*] };
+        EXAMPLE="examples/*/$COMMIT_MESSAGE";
+    else
+        EXAMPLE=""
+    fi;
+    git diff --name-only $(git merge-base $COMMIT_SHA upstream/main) $COMMIT_SHA | tee examples.txt;
+    echo $EXAMPLE >> examples.txt
+    for FILENAME in `cat examples.txt`; do
         if [[ `expr match $FILENAME "\(examples\)/.*plot_.*\.py"` ]]; then
             echo "Checking example $FILENAME ...";
             PATTERN=`basename $FILENAME`"\\|"$PATTERN;

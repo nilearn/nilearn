@@ -10,6 +10,7 @@ See :ref:`surface-plotting` for surface plotting details.
 
 import matplotlib.pyplot as plt
 import numpy as np
+
 from nilearn.plotting import show
 from nilearn.plotting.cm import _cmap_d as nilearn_cmaps
 
@@ -51,3 +52,5 @@ for index, cmap in enumerate(m_cmaps):
     plt.title(cmap, fontsize=10, va="bottom", rotation=90)
 
 show()
+
+# sphinx_gallery_dummy_images=2

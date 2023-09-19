@@ -20,11 +20,16 @@ matter density from the VBM data.
 We use only 100 subjects from the OASIS dataset to limit the memory usage.
 
 Note that more power would be obtained from using a larger sample of subjects.
+
+..
+    Original authors:
+
+    - Bertrand Thirion, <bertrand.thirion@inria.fr>, July 2018
+    - Elvis Dhomatob, Apr. 2014
+    - Virgile Fritsch, Apr 2014
+    - Gael Varoquaux, Apr 2014
+
 """
-# Authors: Bertrand Thirion, <bertrand.thirion@inria.fr>, July 2018
-#          Elvis Dhomatob, <elvis.dohmatob@inria.fr>, Apr. 2014
-#          Virgile Fritsch, <virgile.fritsch@inria.fr>, Apr 2014
-#          Gael Varoquaux, Apr 2014
 
 n_subjects = 100  # more subjects requires more memory
 

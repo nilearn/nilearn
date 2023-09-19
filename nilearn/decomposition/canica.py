@@ -1,24 +1,26 @@
 """Canonical Independent Component Analysis."""
 
 # Author: Alexandre Abraham, Gael Varoquaux,
-# License: BSD 3 clause
 
 import warnings as _warnings
 from operator import itemgetter
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
-from nilearn._utils import fill_doc
 from scipy.stats import scoreatpercentile
 from sklearn.decomposition import fastica
 from sklearn.utils import check_random_state
+
+from nilearn._utils import fill_doc
 
 from ._multi_pca import _MultiPCA
 
 
 @fill_doc
 class CanICA(_MultiPCA):
-    """Perform Canonical Independent Component Analysis [1]_ [2]_.
+    """Perform :term:`Canonical Independent Component Analysis<CanICA>`.
+
+    See :footcite:`Varoquaux2010c` and :footcite:`Varoquaux2010d`.
 
     Parameters
     ----------
@@ -151,11 +153,7 @@ class CanICA(_MultiPCA):
 
     References
     ----------
-    .. [1] G. Varoquaux et al. "A group model for stable multi-subject ICA on
-       fMRI datasets", NeuroImage Vol 51 (2010), p. 288-299
-
-    .. [2] G. Varoquaux et al. "ICA-based sparse features recovery from fMRI
-       datasets", IEEE ISBI 2010, p. 1177
+    .. footbibliography::
 
     """
 

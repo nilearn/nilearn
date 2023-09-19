@@ -42,14 +42,19 @@ ____
 
 .. include:: ../../../examples/masker_note.rst
 
+..
+    Original authors:
+
+    - Elvis Dhomatob, Apr. 2014
+    - Virgile Fritsch, Apr 2014
+    - Gael Varoquaux, Apr 2014
+    - Andres Hoyos-Idrobo, Apr 2017
+
 """
-# Authors: Elvis Dhomatob, <elvis.dohmatob@inria.fr>, Apr. 2014
-#          Virgile Fritsch, <virgile.fritsch@inria.fr>, Apr 2014
-#          Gael Varoquaux, Apr 2014
-#          Andres Hoyos-Idrobo, Apr 2017
 
 import matplotlib.pyplot as plt
 import numpy as np
+
 from nilearn import datasets
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMasker
@@ -122,6 +127,7 @@ decoder = DecoderRegressor(
     scoring="neg_mean_absolute_error",
     screening_percentile=1,
     n_jobs=1,
+    standardize="zscore_sample",
 )
 # Fit and predict with the decoder
 decoder.fit(gm_imgs_train, age_train)
@@ -213,9 +219,11 @@ display = plot_stat_map(
 title = (
     "Negative $\\log_{10}$ p-values" "\n(Non-parametric + max-type correction)"
 )
-display.title(title, y=1.2)
+display.title(title)
 
 n_detections = (get_data(signed_neg_log_pvals_unmasked) > threshold).sum()
 print(f"\n{int(n_detections)} detections")
 
 show()
+
+# sphinx_gallery_dummy_images=2

@@ -11,20 +11,26 @@ documentation for more details.
 
 .. include:: ../../../examples/masker_note.rst
 
+..
+    Original authors:
+
+    - Ben Cipollini
+
+    Ported from code authored by Chris Filo Gorgolewski, Gael Varoquaux
+    https://github.com/NeuroVault/neurovault_analysis
+
 """
-# Author: Ben Cipollini
-# License: BSD
-# Ported from code authored by Chris Filo Gorgolewski, Gael Varoquaux
-# https://github.com/NeuroVault/neurovault_analysis
+
 import warnings
 
 import numpy as np
+from scipy import stats
+from sklearn.decomposition import FastICA
+
 from nilearn import plotting
 from nilearn.datasets import fetch_neurovault, load_mni152_brain_mask
 from nilearn.image import smooth_img
 from nilearn.maskers import NiftiMasker
-from scipy import stats
-from sklearn.decomposition import FastICA
 
 ######################################################################
 # Get image and term data

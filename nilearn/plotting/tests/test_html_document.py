@@ -1,12 +1,13 @@
 import os
-import time
-import pytest
-import warnings
 import tempfile
+import time
+import warnings
 import webbrowser
-from nilearn.plotting import html_document
 
+import pytest
 from numpy.testing import assert_no_warnings
+
+from nilearn.plotting import html_document
 
 # Note: html output by nilearn view_* functions
 # should validate as html5 using https://validator.w3.org/nu/ with no
@@ -14,11 +15,11 @@ from numpy.testing import assert_no_warnings
 
 
 def _open_mock(f):
-    print('opened {}'.format(f))
+    print(f"opened {f}")
 
 
 def test_temp_file_removing():
-    html = html_document.HTMLDocument('hello')
+    html = html_document.HTMLDocument("hello")
     wb_open = webbrowser.open
     webbrowser.open = _open_mock
     fd, tmpfile = tempfile.mkstemp()
@@ -51,12 +52,12 @@ def test_temp_file_removing():
 
 
 def _open_views():
-    return [html_document.HTMLDocument('') for i in range(12)]
+    return [html_document.HTMLDocument("") for i in range(12)]
 
 
 def _open_one_view():
     for i in range(12):
-        v = html_document.HTMLDocument('')
+        v = html_document.HTMLDocument("")
     return v
 
 

@@ -1,11 +1,13 @@
-import os
+"""Generate HTML reports."""
+
 import copy
+import os
 import warnings
 from pathlib import Path
 from string import Template
 
-from nilearn.plotting.html_document import HTMLDocument
 from nilearn.externals import tempita
+from nilearn.plotting.html_document import HTMLDocument
 from nilearn.reporting.utils import figure_to_svg_base64
 
 ESTIMATOR_TEMPLATES = {
@@ -15,10 +17,9 @@ ESTIMATOR_TEMPLATES = {
 
 
 def _get_estimator_template(estimator):
-    """Returns the HTML template to use for a given
-    estimator if a specific template was defined in
-    ESTIMATOR_TEMPLATES. Otherwise, return the default
-    template.
+    """Return the HTML template to use for a given estimator \
+    if a specific template was defined in ESTIMATOR_TEMPLATES, \
+    otherwise return the default template.
 
     Parameters
     ----------
@@ -36,8 +37,10 @@ def _get_estimator_template(estimator):
     else:
         return ESTIMATOR_TEMPLATES['default']
 
+
 def _embed_img(display):
-    """
+    """Embed an image or just return its instance if already embedded.
+
     Parameters
     ----------
     display : obj
@@ -58,8 +61,7 @@ def _embed_img(display):
 
 
 def _str_params(params):
-    """Convert NoneType values to the string 'None'
-    for display.
+    """Convert NoneType values to the string 'None' for display.
 
     Parameters
     ----------
@@ -129,8 +131,7 @@ def _update_template(title, docstring, content, overlay,
         body_template_name = template_name
     body_template_path = resource_path.joinpath(body_template_name)
     if not os.path.exists(str(body_template_path)):
-        raise FileNotFoundError("No template {}".format(
-            body_template_name))
+        raise FileNotFoundError(f"No template {body_template_name}")
     tpl = tempita.HTMLTemplate.from_filename(str(body_template_path),
                                              encoding='utf-8')
     body = tpl.substitute(title=title, content=content,
@@ -148,10 +149,8 @@ def _update_template(title, docstring, content, overlay,
 
 
 def _define_overlay(estimator):
-    """Determine whether an overlay was provided and
-    update the report text as appropriate.
-
-    """
+    """Determine whether an overlay was provided and \
+    update the report text as appropriate."""
     displays = estimator._reporting()
 
     if len(displays) == 1:  # set overlay to None
@@ -186,49 +185,60 @@ def generate_report(estimator):
     if hasattr(estimator, '_report_content'):
         data = estimator._report_content
     else:
-        data = dict()
+        data = {}
     if not hasattr(estimator, '_reporting_data'):
         warnings.warn('This object has not been fitted yet ! '
                       'Make sure to run `fit` before inspecting reports.')
-        report = _update_template(title='Empty Report',
-                                  docstring=('This report was not '
-                                             'generated. Please `fit` the '
-                                             'object.'),
-                                  content=_embed_img(None),
-                                  overlay=None,
-                                  parameters=dict(),
-                                  data=data)
+        return _update_template(
+            title='Empty Report',
+            docstring=(
+                "This report was not generated. Please `fit` the object."
+            ),
+            content=_embed_img(None),
+            overlay=None,
+            parameters={},
+            data=data,
+        )
 
     elif estimator._reporting_data is None:
         warnings.warn('Report generation not enabled ! '
                       'No visual outputs will be created.')
-        report = _update_template(title='Empty Report',
-                                  docstring=('This report was not '
-                                             'generated. Please check '
-                                             'that reporting is enabled.'),
-                                  content=_embed_img(None),
-                                  overlay=None,
-                                  parameters=dict(),
-                                  data=data)
+        return _update_template(
+            title='Empty Report',
+            docstring=(
+                'This report was not '
+                'generated. Please check '
+                'that reporting is enabled.'
+            ),
+            content=_embed_img(None),
+            overlay=None,
+            parameters={},
+            data=data,
+        )
 
-    else:  # We can create a report
-        html_template = _get_estimator_template(estimator)
-        overlay, image = _define_overlay(estimator)
-        if isinstance(image, list):
-            embeded_images = [_embed_img(i) for i in image]
-        else:
-            embeded_images = _embed_img(image)
-        parameters = _str_params(estimator.get_params())
-        docstring = estimator.__doc__
-        snippet = docstring.partition('Parameters\n    ----------\n')[0]
-        report = _update_template(title=estimator.__class__.__name__,
-                                  docstring=snippet,
-                                  content=embeded_images,
-                                  overlay=_embed_img(overlay),
-                                  parameters=parameters,
-                                  data=data,
-                                  template_name=html_template)
-    return report
+    return _create_report(estimator, data)
+
+
+def _create_report(estimator, data):
+    html_template = _get_estimator_template(estimator)
+    overlay, image = _define_overlay(estimator)
+    embeded_images = (
+        [_embed_img(i) for i in image]
+        if isinstance(image, list)
+        else _embed_img(image)
+    )
+    parameters = _str_params(estimator.get_params())
+    docstring = estimator.__doc__
+    snippet = docstring.partition('Parameters\n    ----------\n')[0]
+    return _update_template(
+        title=estimator.__class__.__name__,
+        docstring=snippet,
+        content=embeded_images,
+        overlay=_embed_img(overlay),
+        parameters=parameters,
+        data=data,
+        template_name=html_template,
+    )
 
 
 class HTMLReport(HTMLDocument):
@@ -238,8 +248,9 @@ class HTMLReport(HTMLDocument):
     are inherited from class ``nilearn.plotting.html_document.HTMLDocument``.
 
     """
+
     def __init__(self, head_tpl, body, head_values={}):
-        """Constructor the ``HTMLReport`` class.
+        """Construct the ``HTMLReport`` class.
 
         Parameters
         ----------
@@ -272,8 +283,9 @@ class HTMLReport(HTMLDocument):
         self.body = body
 
     def _repr_html_(self):
-        """Method used by the Jupyter notebook.
+        """Return body of the report.
 
+        Method used by the Jupyter notebook.
         Users normally won't call this method explicitly.
         """
         return self.body

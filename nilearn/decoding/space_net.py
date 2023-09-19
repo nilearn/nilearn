@@ -8,7 +8,6 @@ For example: TV-L1, Graph-Net, etc
 #         GRAMFORT Alexandre,
 #         EICKENBERG Michael,
 #         THIRION Bertrand
-# License: simplified BSD
 
 import collections
 import sys
@@ -18,9 +17,6 @@ from functools import partial
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
-from nilearn.image import get_data
-from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
-from nilearn.masking import _unmask_from_to_3d_array
 from scipy import stats
 from scipy.ndimage import binary_dilation, binary_erosion, gaussian_filter
 from sklearn.feature_selection import SelectPercentile, f_classif, f_regression
@@ -31,6 +27,10 @@ from sklearn.model_selection import check_cv
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_array, check_X_y
 from sklearn.utils.extmath import safe_sparse_dot
+
+from nilearn.image import get_data
+from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
+from nilearn.masking import _unmask_from_to_3d_array
 
 from .._utils import fill_doc
 from .._utils.cache_mixin import CacheMixin

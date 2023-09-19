@@ -9,6 +9,10 @@ import warnings
 import joblib
 import nibabel as nib
 import numpy as np
+from scipy import stats
+from scipy.ndimage import generate_binary_structure, label
+from sklearn.utils import check_random_state
+
 from nilearn import image
 from nilearn.masking import apply_mask
 from nilearn.mass_univariate._utils import (
@@ -19,9 +23,6 @@ from nilearn.mass_univariate._utils import (
     _orthonormalize_matrix,
     _t_score_with_covars_and_normalized_design,
 )
-from scipy import stats
-from scipy.ndimage import generate_binary_structure, label
-from sklearn.utils import check_random_state
 
 
 def _permuted_ols_on_chunk(

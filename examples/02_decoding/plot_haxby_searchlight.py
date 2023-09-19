@@ -15,6 +15,7 @@ the :term:`fMRI` (see the generated figures).
 # Load Haxby dataset
 # ------------------
 import pandas as pd
+
 from nilearn import datasets
 from nilearn.image import get_data, load_img, new_img_like
 
@@ -45,7 +46,7 @@ y, session = y[condition_mask], session[condition_mask]
 # -------------
 # - mask_img is the original mask
 # - process_mask_img is a subset of mask_img, it contains the voxels that
-#   should be processed (we only keep the slice z = 26 and the back of the
+#   should be processed (we only keep the slice z = 29 and the back of the
 #   brain to speed up computation)
 import numpy as np
 
@@ -98,7 +99,7 @@ from nilearn.maskers import NiftiMasker
 nifti_masker = NiftiMasker(
     mask_img=mask_img,
     runs=session,
-    standardize=True,
+    standardize="zscore_sample",
     memory="nilearn_cache",
     memory_level=1,
 )
@@ -150,3 +151,5 @@ plot_stat_map(
 )
 
 show()
+
+# sphinx_gallery_dummy_images=2

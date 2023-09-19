@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+
 from nilearn._utils.data_gen import generate_group_sparse_gaussian_graphs
 from nilearn.connectome import GroupSparseCovariance, GroupSparseCovarianceCV
 from nilearn.connectome.group_sparse_cov import (

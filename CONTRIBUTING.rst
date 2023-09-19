@@ -28,11 +28,19 @@ Report bugs or discuss enhancement ideas
 
 We welcome open discussion around improvements---both to the documentation as well as to the code base---through our GitHub issue board!
 
-    * If you think you have discovered a bug, please start by searching through the existing :nilearn-gh:`issues <issues>` to make sure it has not already been reported. If the bug has not been reported yet,  create an :nilearn-gh:`new issue <issues/new/choose>` including a `minimal runnable example <https://stackoverflow.com/help/minimal-reproducible-example>`_ to showcase it (using Nilearn data) as well as your OS and Nilearn version.
+* If you think you have discovered a bug,
+  please start by searching through the existing :nilearn-gh:`issues <issues>`
+  to make sure it has not already been reported. If the bug has not been reported yet,
+  create an :nilearn-gh:`new issue <issues/new/choose>`
+  including a `minimal runnable example <https://stackoverflow.com/help/minimal-reproducible-example>`_
+  to showcase it (using Nilearn data) as well as your OS and Nilearn version.
 
-    * If you have an idea for a new feature, check if it is in the :ref:`nilearn_scope` and feel free to open a :nilearn-gh:`new issue <issues/new/choose>` to discuss it.
+* If you have an idea for a new feature, check if it is in the :ref:`nilearn_scope`
+  and feel free to open a :nilearn-gh:`new issue <issues/new/choose>` to discuss it.
 
-    * If you think the documentation can be improved, please open a :nilearn-gh:`new issue <issues/new/choose>` to discuss what you would like to change! This helps to confirm that your proposed improvements don't overlap with any ongoing work.
+* If you think the documentation can be improved, please open a :nilearn-gh:`new issue <issues/new/choose>`
+  to discuss what you would like to change! This helps to confirm
+  that your proposed improvements don't overlap with any ongoing work.
 
 Answer questions
 ----------------
@@ -57,8 +65,13 @@ Contribute code
 
 If you want to contribute code:
 
-    * For new features, please be sure to create a :nilearn-gh:`new issue <issues/new/choose>` first, to discuss whether it can be included and its specifications.
-    * To help with known :nilearn-gh:`issues <issues>`, please check :nilearn-gh:`good first issues <labels/Good%20first%20issue>` to get started, :nilearn-gh:`known bugs <labels/Bug>`, or :nilearn-gh:`proposed enhancements <labels/Enhancement>`.
+* For new features, please be sure to create a :nilearn-gh:`new issue <issues/new/choose>` first,
+  to discuss whether it can be included and its specifications.
+
+* To help with known :nilearn-gh:`issues <issues>`,
+  please check :nilearn-gh:`good first issues <labels/Good%20first%20issue>`
+  to get started, :nilearn-gh:`known bugs <labels/Bug>`,
+  or :nilearn-gh:`proposed enhancements <labels/Enhancement>`.
 
 Please see the :ref:`contributing_code` section for more detailed information, including
 instructions for  `Setting up your environment`_ and a description of the `Contribution Guidelines`_.
@@ -182,6 +195,8 @@ with the tools we use for development and deployment.
 +--------------------+---------------+-----------------------------------------------------+
 |                    |               | - Variables, functions, arguments have clear names  |
 |                    |               | - Easy to read, PEP8_ compliant                     |
+|                    |               | - Code formatted with black_                        |
+|                    |               | - Imports sorted with isort_                        |
 |                    |               | - Public functions have docstring (numpydoc_ format)|
 |                    |               | - Low redundancy                                    |
 |   `Coding Style`_  |    Any        | - No new dependency                                 |
@@ -211,6 +226,8 @@ with the tools we use for development and deployment.
 
 .. _PEP8: https://www.python.org/dev/peps/pep-0008/
 .. _numpydoc: https://numpydoc.readthedocs.io/en/latest/format.html
+.. _black: https://black.readthedocs.io/en/stable/getting_started.html#basic-usage
+.. _isort: https://pycqa.github.io/isort/index.html#using-isort
 
 PR Structure
 ------------
@@ -241,13 +258,26 @@ Changelog entries in ``doc/changes/latest.rst`` should adhere to the following c
 - Entry in the appropriate category
 - Single line per entry
 - Finish with a link to the PR and the author's profile
-- New contributors to add their profile to doc/changes/names.rst
+- New contributors to add their details to the ``authors`` section of the ``CITATION.cff``
 
-Example entry:
+Example entry in ``doc/changes/latest.rst``:
 
 .. code-block:: rst
 
     - Fix off-by-one error when setting ticks in :func:`~plotting.plot_surf` (:gh:`3105` by `Dimitri Papadopoulos Orfanos`_).
+
+Associated entry in ``CITATION.cff``:
+
+.. code-block:: yaml
+
+      authors:
+
+        - given-names: Dimitri Papadopoulos
+          family-names: Orfanos
+          website: https://github.com/DimitriPapadopoulos
+          affiliation: NeuroSpin, C.E.A., Université Paris-Saclay, Gif-sur-Yvette, France
+          orcid: https://orcid.org/0000-0002-1242-8990
+
 
 Coding Style
 ------------
@@ -260,33 +290,59 @@ The main conventions we enforce are :
 - meaningful variable names
 - function names are underscore separated (e.g., ``a_nice_function``) and as short as possible
 - public functions exposed in their parent module's init file
-- private function names preceded with a "_" and very explicit
+- private function names preceded with a "_" and very explicit, see also :ref:`private_functions`
 - classes in CamelCase
 - 2 empty lines between functions or classes
 
 You can check that any code you may have edited follows these conventions
 by running `flake8 <https://flake8.pycqa.org/en/latest/user/invocation.html#invoking-flake8>`__.
 
-Additionally, we recommend using:
+Additionally, we use:
 
-- `black <https://black.readthedocs.io/en/stable/getting_started.html#basic-usage>`_
-  to format your code,
-- `isort <https://pycqa.github.io/isort/index.html#using-isort>`_
-  to organize the import statements.
-
-.. warning::
-
-      We are gradually transitioning to use `isort` and `black`
-      to format the codebase.
-      Only certain modules have been formatted so far,
-      and running `black` or `isort` may not affect the files you are working on,
-      because of how those formatter are currently configured.
-      See `issue #2528 <https://github.com/nilearn/nilearn/issues/2528>`_
-      for more details.
+- black_ to format our code,
+- isort_  to organize the import statements.
 
 Each function and class must come with a “docstring” at the top of the function code,
 using numpydoc_ formatting.
 The docstring must summarize what the function does and document every parameter.
+
+If an argument takes in a default value, it should be described
+with the type definition of that argument.
+
+See the examples below:
+
+.. code-block:: python
+
+      def good(x, y=1, z=None):
+      """Show how parameters are documented.
+
+      Parameters
+      ----------
+      x : :obj:`int`
+            X
+
+      y : :obj:`int`, default=1
+            Note that "default=1" is preferred to "Defaults to 1".
+
+      z : :obj:`str`, default=None
+
+      """
+
+      def bad(x, y=1, z=None):
+      """Show how parameters should not be documented.
+
+      Parameters
+      ----------
+      x :
+            The type of X is not described
+
+      y : :obj:`int`
+            The default value of y is not described.
+
+      z : :obj:`str`
+            Defaults=None.
+            The default value should be described after the type.
+      """
 
 Additionally, we consider it best practice to write modular functions;
 i.e., functions should preferably be relatively short and do *one* thing.
@@ -294,6 +350,87 @@ This is also useful for writing unit tests.
 
 Writing small functions is not always possible, and we do not recommend trying to reorganize larger,
 but well-tested, older functions in the codebase, unless there is a strong reason to do so (e.g., when adding a new feature).
+
+.. _private_functions:
+
+Guidelines for Private Functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+We start a name with a leading underscore to indicate that it is an internal implementation detail,
+not to be accessed directly from outside, of the enclosing context:
+
+- the parent module (for a submodule name),
+- or the module (for the name of a top-level function, class or global variable),
+- or the class (for a method or attribute name).
+
+Moreover, modules explicitly declare their interface through the ``__all__`` attribute,
+and any name not listed in ``__all__`` should not be accessed from outside the module
+
+In some cases when private functions are in a private module (filename beginning with an underscore),
+but are used outside of that file, we do not name them with a leading underscore.
+
+Example:
+
+.. code-block:: rst
+
+      nilearn
+      ├── image.py             # part of public API
+      ├── __init__.py
+      ├── maskers              # part of public API
+      │   ├── __init__.py
+      │   ├── nifti_masker.py  # part of public API
+      │   └── _validation.py   # private to the maskers module
+      └── _utils.py            # private to the nilearn module
+
+Code inside ``maskers._validation.py``:
+
+.. code-block:: python
+
+      import numpy as np # not part of the public API
+
+      __all__ = ["check_mask_img", "ValidationError"] # all symbols in the public API
+
+
+      def check_mask_img(mask_img):
+      """Public API of _validation module
+
+      can be used in nifti_masker module
+      but not the image module (which cannot import maskers._validation),
+      unless maskers/__init__.py imports it and lists it in __all__
+      to make it part of the maskers module's public API
+      """
+      return _check_mask_shape(mask_img) and _check_mask_values(mask_img)
+
+
+      def _check_mask_shape(mask_img):
+      """Private internal of _validation, cannot be used in nifti_masker"""
+
+
+      def _check_mask_values(mask_img):
+      """Private internal of _validation, cannot be used in nifti_masker"""
+
+
+      class ValidationError(Exception):
+      """Public API of _validation module"""
+
+
+      class _Validator:
+      """Private internal of the _validation module"""
+
+      def validate(self, img):
+            """Public API of _Validator"""
+
+      def _validate_shape(self, img):
+            """Private internal of the _Validator class.
+
+            As we don't use the double leading underscore in nilearn we cannot
+            infer from the name alone if it is considered to be exposed to
+            subclasses or not.
+
+            """
+
+..
+      Source: Jerome Dockes https://github.com/nilearn/nilearn/issues/3628#issuecomment-1515211711
 
 Pre-commit
 ----------
@@ -317,7 +454,7 @@ Pre-commit will then run all those hooks on the files you have staged for commit
 Note that if some of those hooks fail you may have to edit some files and stage them again.
 
 Tests
-------
+-----
 
 When fixing a bug, the first step is to write a minimal test that fails because
 of it, and then write the bugfix to make this test pass.
@@ -332,24 +469,70 @@ They should run on small mocked data, cover a representative range of parameters
       For more information about this coding approach,
       see `test-driven development <https://en.wikipedia.org/wiki/Test-driven_development>`_.
 
-Tests must be seeded to avoid random failures.
-For objects using random seeds (e.g. scikit-learn estimators), pass either
-a  `np.random.RandomState` or an `int` as the seed.
-When your test use random numbers,  those must be generated through:
+We use `pytest <https://docs.pytest.org/en/6.2.x/contents.html>`_ to run our tests.
+
+If you are not familiar with pytest,
+have a look at this `introductory video <https://www.youtube.com/watch?v=mzlH8lp4ISA>`_
+by one of the pytest core developer.
+
+In general tests for a specific module (say `nilearn/image/image.py`)
+are kept in a `tests` folder in a separate module
+with a name that matches the module being tested
+(so in this case `nilearn/image/tests/test_image.py`).
+
+When you have added a test you can check that your changes worked
+and didn't break anything by running `pytest nilearn`.
+To do quicker checks it's possible to run only a subset of tests:
+
+.. code-block:: bash
+
+      pytest -v nilearn/module/tests/test_module.py
+
+Fixtures
+^^^^^^^^
+
+If you need to do some special "set up" for your tests
+(for example you need to generate some data, or a NiftiImage object or a file...)
+you can use `pytest fixtures <https://docs.pytest.org/en/6.2.x/fixture.html>`_
+to help you mock this data
+(more information on pytest fixtures in `this video <https://www.youtube.com/watch?v=ScEQRKwUePI>`_).
+
+Fixture are recognizable because they have a `@pytest.fixture` decorator.
+Fixtures that are shared by many tests modules can be found in `nilearn/conftest.py`
+but some fixures specific to certain modules can also be kept in that testing module.
+
+Before adding new fixtures, first check those that exist
+in the test modules you are working in or in `nilearn/conftest.py`.
+
+Seeding
+^^^^^^^
+
+Many tests must be seeded to avoid random failures.
+When your test use random numbers,
+you can seed a random number generator with `numpy.random.default_rng`
+like in the following examples:
 
 .. code-block:: python
 
-    rng = np.random.RandomState(0)
-    my_number = rng.normal()
+      def test_something():
+            # set up
+            rng = np.random.default_rng(0)
+            my_number = rng.normal()
 
-To check your changes worked and didn't break anything run `pytest nilearn`.
-To do quicker checks it's possible to run only a subset of tests::
+            # the rest of the test
 
-      pytest -v test_module.py
+You can also use the `rng` fixture.
 
+.. code-block:: python
+
+      def test_something(rng):
+            # set up
+            my_number = rng.normal()
+
+            # the rest of the test
 
 Documentation
----------------
+-------------
 
 Documentation must be understandable by people from different backgrounds.
 The “narrative” documentation should be an introduction to the concepts of
@@ -382,34 +565,82 @@ Installing
 
 Here are the key steps you need to go through to copy the repo before contributing:
 
-1. fork the repo from github (fork button in the top right corner of our :nilearn-gh:`main github page <>`) and clone your fork locally::
+1. fork the repo from github (fork button in the top right corner of our :nilearn-gh:`main github page <>`)
+   and clone your fork locally:
+
+.. code-block:: bash
 
       git clone git@github.com:<your_username>/nilearn.git
 
-2. (optional but highly recommended) set up a virtual environment to work in using whichever environment management tool you're used to and activate it. For example::
+2. (optional but highly recommended) set up a virtual environment to wor
+   in using whichever environment management tool you're used to and activate it.
+   For example:
+
+.. code-block:: bash
 
       python3 -m venv nilearn
       source nilearn/bin/activate
 
-   or::
+or:
+
+.. code-block:: bash
 
       conda create -n nilearn
       conda activate nilearn
 
-3. install the forked version of `nilearn`::
+3. install the forked version of `nilearn`
+
+.. admonition:: Recommendation
+
+      When you install nilearn, it will use the version stored in the version control system
+      (in this case git)
+      to get the version number you would see if you typed in your terminal:
+
+      .. code-block:: bash
+
+            pip show nilearn
+
+      or:
+
+      .. code-block:: bash
+
+            python -c "import nilearn; print(nilearn.__version__)"
+
+      To make sure that you get the correct version number, you must fetch
+      all the git tags from the nilearn github repository,
+      by running the following commands:
+
+      .. code-block:: bash
+
+            # add the nilearn repo as an "upstream" remote
+            git remote add upstream https://github.com/nilearn/nilearn.git
+            # fetch all the tags
+            git fetch --all
+            # check that you got all the tags
+            git tag --list
+
+You can then install nilearn in editable mode:
+
+.. code-block:: bash
 
       pip install -e '.[dev]'
 
-This installs your local version of Nilearn, along with all dependencies necessary for developers (hence the ``[dev]`` tag).
-For more information about the dependency installation options, see ``setup.cfg``.
+This installs your local version of Nilearn,
+along with all dependencies necessary for developers (hence the ``[dev]`` tag).
+For more information about the dependency installation options, see ``pyproject.toml``.
 The installed version will also reflect any changes you make to your code.
 
-4. check that all tests pass with (this can take a while)::
+
+4. check that all tests pass with (this can take a while):
+
+.. code-block:: bash
 
       pytest nilearn
 
 5. (optional) install `pre-commit <https://pre-commit.com/#usage>`__ hooks
-   to run the linter and other checks before each commit::
+   to run the linter and other checks before each commit:
+
+.. code-block:: bash
 
       pre-commit install
 
@@ -421,7 +652,9 @@ Here are the key steps you need to go through to contribute code to `nilearn`:
 
 1. open or join an already existing issue explaining what you want to work on
 
-2. on your fork, create a new branch from main::
+2. on your fork, create a new branch from main:
+
+.. code-block:: bash
 
       git checkout -b your_branch
 
@@ -451,11 +684,15 @@ Here are the key steps you need to go through to contribute code to `nilearn`:
 4. commit your changes on this branch (don't forget to write tests!)
 
 5. run the tests locally (to go faster, only run tests which are relevant to what
-   you work on with, for example)::
+   you work on with, for example):
+
+.. code-block:: bash
 
       pytest -v nilearn/plotting/tests/test_surf_plotting.py
 
-6. push your changes to your online fork::
+6. push your changes to your online fork:
+
+.. code-block:: bash
 
       git push
 
@@ -473,22 +710,30 @@ Building documentation
 If you wish to build documentation:
 
 1. First, ensure that you have installed sphinx and sphinx-gallery. When in your
-   fork top folder, you can install the required packages using::
+   fork top folder, you can install the required packages using:
+
+.. code-block:: bash
 
       pip install '.[doc]'
 
 2. Then go to ``nilearn/examples`` or ``nilearn/doc`` and make needed changes
    using `reStructuredText files <https://www.sphinx-doc.org/en/2.0/usage/restructuredtext/basics.html>`_
 
-3. You can now go to `nilearn/doc` and build the examples locally::
+3. You can now go to `nilearn/doc` and build the examples locally:
+
+.. code-block:: bash
 
       make html-strict
 
-   or, if you do not have make install (for instance under Windows)::
+or, if you do not have make install (for instance under Windows):
+
+.. code-block:: bash
 
       python3 -m sphinx -b html -d _build/doctrees . _build/html
 
-   if you don't need the plots, a quicker option is::
+if you don't need the plots, a quicker option is:
+
+.. code-block:: bash
 
       make html-noplot
 
@@ -497,16 +742,20 @@ If you wish to build documentation:
 
 5. You can now open a Pull Request from Nilearn's Pull Request page.
 
-6. Request the CI builds the full documentation from your branch::
+6. Request the CI builds the full documentation from your branch:
+
+.. code-block:: bash
 
       git commit --allow-empty -m "[full doc] request full build"
 
 .. tip::
     When generating documentation locally, you can build only specific files
-    to reduce building time. To do so, use the ``filename_pattern``::
+    to reduce building time. To do so, use the ``filename_pattern``:
 
-       python3 -m sphinx -D sphinx_gallery_conf.filename_pattern=\\
-       plot_decoding_tutorial.py -b html -d _build/doctrees . _build/html
+.. code-block:: bash
+
+      python3 -m sphinx -D sphinx_gallery_conf.filename_pattern=\\
+      plot_decoding_tutorial.py -b html -d _build/doctrees . _build/html
 
 
 Additional cases

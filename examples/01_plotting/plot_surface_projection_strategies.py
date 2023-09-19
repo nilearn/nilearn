@@ -25,6 +25,7 @@ passing both to `vol_to_surf`.
 import matplotlib
 import numpy as np
 from matplotlib import pyplot as plt
+
 from nilearn.plotting import show
 from nilearn.surface import surface
 

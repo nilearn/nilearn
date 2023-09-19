@@ -1,4 +1,4 @@
-""" Misc utilities for function nilearn.interfaces.fmriprep.load_confounds.
+"""Misc utilities for function nilearn.interfaces.fmriprep.load_confounds.
 
 Author: Hao-Ting Wang
 """
@@ -13,16 +13,16 @@ def _flag_single_gifti(img_files):
     flag_single_gifti = []  # gifti in pairs
     for img in img_files:
         ext = ".".join(img.split(".")[-2:])
-        flag_single_gifti.append((ext == "func.gii"))
+        flag_single_gifti.append(ext == "func.gii")
     return all(flag_single_gifti)
 
 
 def _is_camel_case(s):
-    "Check if the given string is in camel case."
+    """Check if the given string is in camel case."""
     return s != s.lower() and s != s.upper() and "_" not in s
 
 
 def _to_camel_case(snake_str):
     """Convert camel to snake case."""
-    components = snake_str.split('_')
-    return components[0] + ''.join(x.title() for x in components)
+    components = snake_str.split("_")
+    return components[0] + "".join(x.title() for x in components)

@@ -1,12 +1,12 @@
 #!/bin/bash -e
 
-python setup.py build
+python -m build
 if [ ! -z "$MIN_REQUIREMENTS" ]; then
     # Install the oldest supported versions of all required dependencies
-    # See setup.cfg for dependency group options
+    # See pyproject.toml for dependency group options
     if [ ! -z "$MATPLOTLIB" ]; then
         # Include plotting dependencies too
-        pip install --progress-bar off --upgrade -e .[min,plotting,test]
+        pip install --progress-bar off --upgrade -e .[min,plotting_min,test]
     else
         pip install --progress-bar off --upgrade -e .[min,test]
     fi

@@ -51,6 +51,7 @@ dict_learn = DictLearning(
     memory="nilearn_cache",
     memory_level=2,
     random_state=0,
+    standardize="zscore_sample",
 )
 # Fit to the data
 dict_learn.fit(func_filenames)
@@ -83,7 +84,8 @@ extractor = RegionExtractor(
     threshold=0.5,
     thresholding_strategy="ratio_n_voxels",
     extractor="local_regions",
-    standardize=True,
+    standardize="zscore_sample",
+    standardize_confounds="zscore_sample",
     min_region_size=1350,
 )
 # Just call fit() to process for regions extraction
@@ -119,7 +121,10 @@ from nilearn.connectome import ConnectivityMeasure
 
 correlations = []
 # Initializing ConnectivityMeasure object with kind='correlation'
-connectome_measure = ConnectivityMeasure(kind="correlation")
+connectome_measure = ConnectivityMeasure(
+    kind="correlation",
+    standardize="zscore_sample",
+)
 for filename, confound in zip(func_filenames, confounds):
     # call transform from RegionExtractor object to extract timeseries signals
     timeseries_each_subject = extractor.transform(filename, confounds=confound)
@@ -198,3 +203,5 @@ for each_index_of_map3, color in zip(regions_indices_of_map3[0], colors):
     )
 
 plotting.show()
+
+# sphinx_gallery_dummy_images=6

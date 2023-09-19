@@ -1,10 +1,12 @@
+"""Handle HTML plotting."""
+
 import os
-import sys
-import weakref
-import warnings
-import tempfile
-import webbrowser
 import subprocess
+import sys
+import tempfile
+import warnings
+import weakref
+import webbrowser
 from html import escape
 
 MAX_IMG_VIEWS_BEFORE_WARNING = 10
@@ -20,9 +22,10 @@ def set_max_img_views_before_warning(new_value):
 
 
 def _remove_after_n_seconds(file_name, n_seconds):
-    script = os.path.join(os.path.dirname(__file__), 'rm_file.py')
-    proc = subprocess.Popen([sys.executable, script, file_name,
-                             str(n_seconds)])
+    script = os.path.join(os.path.dirname(__file__), "rm_file.py")
+    proc = subprocess.Popen(
+        [sys.executable, script, file_name, str(n_seconds)]
+    )
     return proc
 
 
@@ -38,6 +41,7 @@ class HTMLDocument:
     web page, and ``document.get_iframe()`` to have it wrapped in an iframe.
 
     """
+
     _all_open_html_repr = weakref.WeakSet()
 
     def __init__(self, html, width=600, height=400):
@@ -54,13 +58,17 @@ class HTMLDocument:
             return
         if MAX_IMG_VIEWS_BEFORE_WARNING < 0:
             return
-        if len(HTMLDocument._all_open_html_repr
-               ) > MAX_IMG_VIEWS_BEFORE_WARNING - 1:
-            warnings.warn('It seems you have created more than {} '
-                          'nilearn views. As each view uses dozens '
-                          'of megabytes of RAM, you might want to '
-                          'delete some of them.'.format(
-                              MAX_IMG_VIEWS_BEFORE_WARNING))
+        if (
+            len(HTMLDocument._all_open_html_repr)
+            > MAX_IMG_VIEWS_BEFORE_WARNING - 1
+        ):
+            warnings.warn(
+                "It seems you have created "
+                f"more than {MAX_IMG_VIEWS_BEFORE_WARNING} "
+                "nilearn views. As each view uses dozens "
+                "of megabytes of RAM, you might want to "
+                "delete some of them."
+            )
 
     def resize(self, width, height):
         """Resize the plot displayed in a Jupyter notebook.
@@ -102,16 +110,21 @@ class HTMLDocument:
         if height is None:
             height = self.height
         escaped = escape(self.html, quote=True)
-        wrapped = ('<iframe srcdoc="{}" width="{}" height="{}" '
-                   'frameBorder="0"></iframe>').format(escaped, width, height)
+        wrapped = (
+            f'<iframe srcdoc="{escaped}" '
+            f'width="{width}" height="{height}" '
+            'frameBorder="0"></iframe>'
+        )
         return wrapped
 
     def get_standalone(self):
-        """Returns the plot in an HTML page."""
+        """Return the plot in an HTML page."""
         return self.html
 
     def _repr_html_(self):
-        """Used by the Jupyter notebook.
+        """Return html representation of the plot.
+
+        Used by the Jupyter notebook.
 
         Users normally won't call this method explicitly.
         """
@@ -121,7 +134,7 @@ class HTMLDocument:
         return self.html
 
     def save_as_html(self, file_name):
-        """Save the plot in an HTML file, that can later be opened
+        """Save the plot in an HTML file, that can later be opened \
         in a browser.
 
         Parameters
@@ -130,8 +143,8 @@ class HTMLDocument:
             Path to the HTML file used for saving.
 
         """
-        with open(file_name, 'wb') as f:
-            f.write(self.get_standalone().encode('utf-8'))
+        with open(file_name, "wb") as f:
+            f.write(self.get_standalone().encode("utf-8"))
 
     def open_in_browser(self, file_name=None, temp_file_lifetime=30):
         """Save the plot to a temporary HTML file and open it in a browser.
@@ -148,7 +161,7 @@ class HTMLDocument:
 
         """
         if file_name is None:
-            fd, file_name = tempfile.mkstemp('.html', 'nilearn_plot_')
+            fd, file_name = tempfile.mkstemp(".html", "nilearn_plot_")
             os.close(fd)
             named_file = False
         else:
@@ -159,24 +172,24 @@ class HTMLDocument:
         if temp_file_lifetime is None:
             if not named_file:
                 warnings.warn(
-                    ("Saved HTML in temporary file: {}\n"
-                     "file size is {:.1f}M, delete it when you're done, "
-                     "for example by calling this.remove_temp_file").format(
-                         file_name, file_size))
+                    f"Saved HTML in temporary file: {file_name}\n"
+                    f"file size is {file_size:.1f}M, "
+                    "delete it when you're done, "
+                    "for example by calling this.remove_temp_file"
+                )
         else:
             self._temp_file_removing_proc = _remove_after_n_seconds(
-                self._temp_file, temp_file_lifetime)
-        webbrowser.open('file://{}'.format(file_name))
+                self._temp_file, temp_file_lifetime
+            )
+        webbrowser.open(f"file://{file_name}")
 
     def remove_temp_file(self):
-        """Remove the temporary file created by
-        ``open_in_browser``, if necessary.
-
-        """
+        """Remove the temporary file created by \
+        ``open_in_browser``, if necessary."""
         if self._temp_file is None:
             return
         if not os.path.isfile(self._temp_file):
             return
         os.remove(self._temp_file)
-        print('removed {}'.format(self._temp_file))
+        print(f"removed {self._temp_file}")
         self._temp_file = None

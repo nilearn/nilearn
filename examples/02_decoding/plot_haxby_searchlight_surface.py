@@ -13,6 +13,7 @@ searchlight decoding. NeuroImage 56, 582–592.
 # Load Haxby dataset
 # ------------------
 import pandas as pd
+
 from nilearn import datasets
 
 # We fetch 2nd subject from haxby datasets (which is default)
@@ -36,8 +37,9 @@ y, session = y[condition_mask], session[condition_mask]
 #########################################################################
 # Surface bold response
 # ---------------------
-from nilearn import datasets, surface
 from sklearn import neighbors
+
+from nilearn import datasets, surface
 
 # Fetch a coarse surface of the left hemisphere only for speed
 fsaverage = datasets.fetch_surf_fsaverage(mesh="fsaverage5")
@@ -62,11 +64,12 @@ adjacency = nn.fit(coords).radius_neighbors_graph(coords).tolil()
 #########################################################################
 # Searchlight computation
 # -----------------------
-from nilearn.decoding.searchlight import search_light
 from sklearn.linear_model import RidgeClassifier
 from sklearn.model_selection import KFold
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
+
+from nilearn.decoding.searchlight import search_light
 
 # Simple linear estimator preceded by a normalization step
 estimator = make_pipeline(StandardScaler(), RidgeClassifier(alpha=10.0))

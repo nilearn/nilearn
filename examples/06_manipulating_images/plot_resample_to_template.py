@@ -80,3 +80,5 @@ plotting.plot_stat_map(
     title="Resampled t-map",
 )
 plotting.show()
+
+# sphinx_gallery_dummy_images=2

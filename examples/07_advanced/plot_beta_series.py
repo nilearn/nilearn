@@ -59,6 +59,7 @@ LSS beta series.
 """
 # sphinx_gallery_thumbnail_number = -2
 import matplotlib.pyplot as plt
+
 from nilearn import image, plotting
 
 ##############################################################################
@@ -292,6 +293,7 @@ fig.show()
 # which goes into more detail about seed-to-voxel functional connectivity
 # analyses.
 import numpy as np
+
 from nilearn.maskers import NiftiMasker, NiftiSpheresMasker
 
 # Coordinate taken from Neurosynth's 'language' meta-analysis
@@ -302,7 +304,7 @@ seed_masker = NiftiSpheresMasker(
     coords,
     radius=8,
     detrend=True,
-    standardize=True,
+    standardize="zscore_sample",
     low_pass=None,
     high_pass=None,
     t_r=None,
@@ -314,7 +316,7 @@ seed_masker = NiftiSpheresMasker(
 brain_masker = NiftiMasker(
     smoothing_fwhm=6,
     detrend=True,
-    standardize=True,
+    standardize="zscore_sample",
     low_pass=None,
     high_pass=None,
     t_r=None,

@@ -47,7 +47,8 @@ from nilearn.maskers import NiftiMapsMasker
 
 masker = NiftiMapsMasker(
     maps_img=atlas_filename,
-    standardize=True,
+    standardize="zscore_sample",
+    standardize_confounds="zscore_sample",
     memory="nilearn_cache",
     verbose=5,
 )
@@ -73,11 +74,15 @@ print(time_series.shape)
 # --------------------------------------
 from nilearn.connectome import ConnectivityMeasure
 
-correlation_measure = ConnectivityMeasure(kind="correlation")
+correlation_measure = ConnectivityMeasure(
+    kind="correlation",
+    standardize="zscore_sample",
+)
 correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
 # Display the correlation matrix
 import numpy as np
+
 from nilearn import plotting
 
 # Mask out the major diagonal
@@ -121,3 +126,5 @@ view
 
 # uncomment this to open the plot in a web browser:
 # view.open_in_browser()
+
+# sphinx_gallery_dummy_images=2

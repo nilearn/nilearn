@@ -1,6 +1,5 @@
 """Utilities to compute and operate on brain masks."""
 # Authors: Gael Varoquaux, Alexandre Abraham, Philippe Gervais, Ana Luisa Pinho
-# License: simplified BSD
 import numbers
 import warnings
 

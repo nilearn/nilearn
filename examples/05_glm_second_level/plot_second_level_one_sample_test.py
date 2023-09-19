@@ -42,6 +42,7 @@ data = fetch_localizer_contrasts(
 # visualization purposes. The button press effect is visible among all
 # subjects.
 import matplotlib.pyplot as plt
+
 from nilearn import plotting
 
 subjects = data["ext_vars"]["participant_id"].tolist()
@@ -106,6 +107,7 @@ display = plotting.plot_glass_brain(
     display_mode="z",
     plot_abs=False,
     title="group left-right button press (unc p<0.001)",
+    figure=plt.figure(figsize=(5, 5)),
 )
 plotting.show()
 
@@ -116,6 +118,7 @@ plotting.show()
 # Next, we compute the (corrected) p-values with a parametric test to compare
 # them with the results from a nonparametric test.
 import numpy as np
+
 from nilearn.image import get_data, math_img
 
 p_val = second_level_model.compute_contrast(output_type="p_value")

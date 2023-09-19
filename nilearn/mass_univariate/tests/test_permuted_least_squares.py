@@ -5,8 +5,6 @@
 import nibabel as nib
 import numpy as np
 import pytest
-from nilearn.maskers import NiftiMasker
-from nilearn.mass_univariate import permuted_ols
 from numpy.testing import (
     assert_array_almost_equal,
     assert_array_less,
@@ -14,6 +12,9 @@ from numpy.testing import (
 )
 from scipy import stats
 from sklearn.utils import check_random_state
+
+from nilearn.maskers import NiftiMasker
+from nilearn.mass_univariate import permuted_ols
 
 N_COVARS = 2
 

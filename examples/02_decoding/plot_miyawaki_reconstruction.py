@@ -53,6 +53,7 @@ sys.stderr.write(f" Done ({time.time() - t0:.2f}s).\n")
 # Then we prepare and mask the data
 # ---------------------------------
 import numpy as np
+
 from nilearn.maskers import MultiNiftiMasker
 
 sys.stderr.write("Preprocessing data...")
@@ -159,7 +160,7 @@ for i in range(y_train.shape[1]):
         [
             ("selection", SelectKBest(f_classif, k=500)),
             ("scl", StandardScaler()),
-            ("clf", OMP(normalize=False, n_nonzero_coefs=10)),
+            ("clf", OMP(n_nonzero_coefs=10)),
         ]
     )
     clf.fit(X_train, y_train[:, i])
@@ -295,6 +296,7 @@ print(
 # ground truth
 
 from matplotlib import pyplot as plt
+
 from nilearn.plotting import show
 
 for i in range(6):

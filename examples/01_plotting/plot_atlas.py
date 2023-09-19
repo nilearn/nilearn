@@ -51,3 +51,5 @@ plotting.plot_roi(
     atlas_ju_filename, view_type="contours", title="Juelich atlas in contours"
 )
 plotting.show()
+
+# sphinx_gallery_dummy_images=1

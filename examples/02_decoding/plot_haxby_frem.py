@@ -55,7 +55,7 @@ background_img = mean_img(func_filenames)
 # --------
 from nilearn.decoding import FREMClassifier
 
-decoder = FREMClassifier(cv=10)
+decoder = FREMClassifier(cv=10, standardize="zscore_sample")
 # Fit model on train data and predict on test data
 decoder.fit(X_train, y_train)
 y_pred = decoder.predict(X_test)
@@ -67,8 +67,9 @@ print(f"FREM classification accuracy : {accuracy:g}%")
 # ------------------------------------
 
 import numpy as np
-from nilearn import plotting
 from sklearn.metrics import confusion_matrix
+
+from nilearn import plotting
 
 # Calculate the confusion matrix
 matrix = confusion_matrix(
@@ -115,3 +116,5 @@ plotting.show()
 # even on heavier examples. Here we ensembled several instances of l2-SVC,
 # but FREMClassifier also works with ridge or logistic.
 # FREMRegressor object is also available to solve regression problems.
+
+# sphinx_gallery_dummy_images=1

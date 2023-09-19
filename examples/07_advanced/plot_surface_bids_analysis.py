@@ -82,6 +82,7 @@ fsaverage = fetch_surf_fsaverage(mesh='fsaverage5')
 # The projection function simply takes the fMRI data and the mesh.
 # Note that those correspond spatially, as they are both in MNI space.
 import numpy as np
+
 from nilearn import surface
 from nilearn.glm.contrasts import compute_contrast
 from nilearn.glm.first_level import make_first_level_design_matrix, run_glm

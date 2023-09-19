@@ -178,8 +178,8 @@ from nilearn import plotting
 from nilearn.glm.contrasts import compute_contrast
 
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
-    print('  Contrast % i out of %i: %s, right hemisphere' %
-          (index + 1, len(contrasts), contrast_id))
+    print(f"  Contrast {index + 1:1} out of {len(contrasts)}: "
+          f"{contrast_id}, right hemisphere")
     # compute contrast-related statistics
     contrast = compute_contrast(labels, estimates, contrast_val,
                                 contrast_type='t')
@@ -211,8 +211,8 @@ labels, estimates = run_glm(texture.T, design_matrix.values)
 ###############################################################################
 # Finally, we create contrast-specific maps and plot them.
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
-    print('  Contrast % i out of %i: %s, left hemisphere' %
-          (index + 1, len(contrasts), contrast_id))
+    print(f"  Contrast {index + 1:1} out of {len(contrasts)}: "
+          f"{contrast_id}, left hemisphere")
     # compute contrasts
     contrast = compute_contrast(labels, estimates, contrast_val,
                                 contrast_type='t')

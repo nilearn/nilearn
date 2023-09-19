@@ -5,12 +5,9 @@ See http://nilearn.github.io/stable/manipulating_images/input_output.html
 import numbers
 
 # Author: Gael Varoquaux, Alexandre Abraham, Michael Eickenberg
-# License: simplified BSD
 import warnings
 
 import numpy as np
-import scipy
-from nilearn.version import _compare_version
 from scipy import linalg
 from scipy.ndimage import affine_transform, find_objects
 
@@ -300,8 +297,9 @@ def _resample_one_img(
 
     # Suppresses warnings in https://github.com/nilearn/nilearn/issues/1363
     with warnings.catch_warnings():
-        if _compare_version(scipy.__version__, ">=", "0.18"):
-            warnings.simplefilter("ignore", UserWarning)
+        warnings.filterwarnings(
+            "ignore", message=".*has changed in SciPy 0.18.*"
+        )
         # The resampling itself
         affine_transform(
             data,
@@ -316,8 +314,9 @@ def _resample_one_img(
     if has_not_finite:
         # Suppresses warnings in https://github.com/nilearn/nilearn/issues/1363
         with warnings.catch_warnings():
-            if _compare_version(scipy.__version__, ">=", "0.18"):
-                warnings.simplefilter("ignore", UserWarning)
+            warnings.filterwarnings(
+                "ignore", message=".*has changed in SciPy 0.18.*"
+            )
             # We need to resample the mask of not_finite values
             not_finite = affine_transform(
                 not_finite,
@@ -583,11 +582,6 @@ def resample_img(
         target_shape = target_shape.tolist()
     target_shape = tuple(target_shape)
 
-    if _compare_version(scipy.__version__, "<", "0.20"):
-        # Before scipy 0.20, force native data types due to endian issues
-        # that caused instability.
-        data = data.astype(data.dtype.newbyteorder("N"))
-
     if interpolation == "continuous" and data.dtype.kind == "i":
         # cast unsupported data types to closest support dtype
         aux = data.dtype.name.replace("int", "float")
@@ -661,10 +655,6 @@ def resample_img(
         # If A is diagonal, ndimage.affine_transform is clever enough to use a
         # better algorithm.
         if np.all(np.diag(np.diag(A)) == A):
-            if _compare_version(scipy.__version__, "<", "0.18"):
-                # Before scipy 0.18, ndimage.affine_transform was applying a
-                # different logic to the offset for diagonal affine
-                b = np.dot(linalg.inv(A), b)
             A = np.diag(A)
         # Iterate over a set of 3D volumes, as the interpolation problem is
         # separable in the extra dimensions. This reduces the
@@ -686,8 +676,8 @@ def resample_img(
         # preventing ringing artefact
         # We need to add zero as a value considered for clipping, as it
         # appears in padding images.
-        vmin = min(data.min(), 0)
-        vmax = max(data.max(), 0)
+        vmin = min(np.nanmin(data), 0)
+        vmax = max(np.nanmax(data), 0)
         resampled_data.clip(vmin, vmax, out=resampled_data)
 
     return new_img_like(img, resampled_data, target_affine)

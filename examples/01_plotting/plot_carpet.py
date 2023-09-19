@@ -37,9 +37,15 @@ mask_img = masking.compute_epi_mask(adhd_dataset.func[0])
 # Visualizing global patterns over time
 # -------------------------------------
 import matplotlib.pyplot as plt
+
 from nilearn.plotting import plot_carpet
 
-display = plot_carpet(adhd_dataset.func[0], mask_img, t_r=t_r)
+display = plot_carpet(
+    adhd_dataset.func[0],
+    mask_img,
+    t_r=t_r,
+    standardize="zscore_sample",
+)
 
 display.show()
 
@@ -49,6 +55,7 @@ display.show()
 # Create a gray matter/white matter/cerebrospinal fluid mask from
 # ICBM152 tissue probability maps.
 import numpy as np
+
 from nilearn import image
 
 atlas = datasets.fetch_icbm152_2009()
@@ -75,6 +82,9 @@ display = plot_carpet(
     mask_labels=map_labels,
     axes=ax,
     cmap="gray",
+    standardize="zscore_sample",
 )
 
 fig.show()
+
+# sphinx_gallery_dummy_images=1

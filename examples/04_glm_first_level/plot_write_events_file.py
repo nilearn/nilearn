@@ -19,11 +19,10 @@ BMC Neurosci 8, 91 (2007). https://doi.org/10.1186/1471-2202-8-91
 
 print(__doc__)
 
-#########################################################################
+# %%
 # Define the onset times in seconds. These are typically extracted from
 # the stimulation software used, but we will use hardcoded values in this
 # example.
-import numpy as np
 
 # fmt: off
 onsets = [
@@ -37,9 +36,8 @@ onsets = [
     264.0, 266.7, 269.7, 275.4, 278.4, 284.4, 288.0, 291.0, 293.4, 296.7,
 ]
 # fmt: on
-onsets = np.array(onsets)
 
-#########################################################################
+# %%
 # Associated trial types: these are numbered between 0 and 9, hence
 # corresponding to 10 different conditions.
 
@@ -51,9 +49,8 @@ trial_type_idx = [
     7, 1, 0, 0, 4, 1, 9, 8, 4, 9, 9
 ]
 # fmt: on
-trial_type_idx = np.array(trial_type_idx)
 
-#########################################################################
+# %%
 # We may want to map these indices to explicit condition names.
 # For that, we define a list of 10 strings.
 condition_ids = [
@@ -71,13 +68,21 @@ condition_ids = [
 
 trial_types = [condition_ids[i] for i in trial_type_idx]
 
-#########################################################################
+# %%
 # We must also define a duration (required by :term:`BIDS` conventions).
-# In this case, all trials lasted one second.
+# In this case, all trials lasted one second,
+# except for button response
+# that are modeled as events with instantaneous duration (0 second).
 
-durations = np.ones_like(onsets)
+null_duration_trials = [2, 3, 4, 5]
+durations = []
+for i in trial_type_idx:
+    if i in null_duration_trials:
+        durations.append(0)
+    else:
+        durations.append(1)
 
-#########################################################################
+# %%
 # Form a pandas DataFrame from this information.
 import pandas as pd
 
@@ -89,11 +94,11 @@ events = pd.DataFrame(
     }
 )
 
-#########################################################################
+# %%
 # Take a look at the new DataFrame
 events
 
-#########################################################################
+# %%
 # Export them to a tsv file.
 from pathlib import Path
 
@@ -104,10 +109,11 @@ tsvfile = outdir / "localizer_events.tsv"
 events.to_csv(tsvfile, sep="\t", index=False)
 print(f"The event information has been saved to {tsvfile}")
 
-#########################################################################
+# %%
 # Optionally, the events can be visualized using the
 # :func:`~nilearn.plotting.plot_event` function.
 import matplotlib.pyplot as plt
+
 from nilearn.plotting import plot_event
 
 plot_event(events, figsize=(15, 5))

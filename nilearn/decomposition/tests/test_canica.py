@@ -5,14 +5,14 @@ import warnings
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
+from numpy.testing import assert_array_almost_equal
+
 from nilearn._utils.testing import write_tmp_imgs
+from nilearn.conftest import _affine_eye
 from nilearn.decomposition.canica import CanICA
 from nilearn.decomposition.tests.test_multi_pca import _tmp_dir
 from nilearn.image import get_data, iter_img
 from nilearn.maskers import MultiNiftiMasker
-from numpy.testing import assert_array_almost_equal
-
-AFFINE_EYE = np.eye(4)
 
 SHAPE = (30, 30, 5)
 
@@ -21,7 +21,7 @@ N_SUBJECTS = 2
 
 def _make_data_from_components(
     components,
-    affine=AFFINE_EYE,
+    affine=_affine_eye(),
     shape=SHAPE,
     rng=None,
     n_subjects=N_SUBJECTS,
@@ -86,7 +86,7 @@ def _make_canica_test_data(rng=None, n_subjects=N_SUBJECTS, noisy=True):
 
     # Create a "multi-subject" dataset
     data = _make_data_from_components(
-        components, AFFINE_EYE, SHAPE, rng=rng, n_subjects=n_subjects
+        components, _affine_eye(), SHAPE, rng=rng, n_subjects=n_subjects
     )
 
     return data, components, rng
@@ -101,7 +101,7 @@ def mask_img():
     mask[:, -5:] = 0
     mask[..., -2:] = 0
     mask[..., :2] = 0
-    return Nifti1Image(mask, AFFINE_EYE)
+    return Nifti1Image(mask, _affine_eye())
 
 
 @pytest.fixture(scope="module")

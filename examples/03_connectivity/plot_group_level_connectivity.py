@@ -30,9 +30,8 @@ msdl_data = datasets.fetch_atlas_msdl()
 msdl_coords = msdl_data.region_coords
 n_regions = len(msdl_coords)
 print(
-    "MSDL has {0} ROIs, part of the following networks :\n{1}.".format(
-        n_regions, msdl_data.networks
-    )
+    f"MSDL has {n_regions} ROIs, "
+    f"part of the following networks:\n{msdl_data.networks}."
 )
 
 ###############################################################################
@@ -52,6 +51,8 @@ masker = NiftiMapsMasker(
     high_pass=0.01,
     memory="nilearn_cache",
     memory_level=1,
+    standardize="zscore_sample",
+    standardize_confounds="zscore_sample",
 ).fit()
 
 ###############################################################################
@@ -80,7 +81,10 @@ print(f"Data has {len(children)} children.")
 # estimate it using :class:`nilearn.connectome.ConnectivityMeasure`.
 from nilearn.connectome import ConnectivityMeasure
 
-correlation_measure = ConnectivityMeasure(kind="correlation")
+correlation_measure = ConnectivityMeasure(
+    kind="correlation",
+    standardize="zscore_sample",
+)
 
 ###############################################################################
 # From the list of ROIs time-series for children, the
@@ -89,9 +93,8 @@ correlation_matrices = correlation_measure.fit_transform(children)
 
 # All individual coefficients are stacked in a unique 2D matrix.
 print(
-    "Correlations of children are stacked in an array of shape {0}".format(
-        correlation_matrices.shape
-    )
+    "Correlations of children are stacked "
+    f"in an array of shape {correlation_matrices.shape}"
 )
 
 ###############################################################################
@@ -130,7 +133,10 @@ plotting.plot_connectome(
 # -----------------------------
 # We can also study **direct connections**, revealed by partial correlation
 # coefficients. We just change the `ConnectivityMeasure` kind
-partial_correlation_measure = ConnectivityMeasure(kind="partial correlation")
+partial_correlation_measure = ConnectivityMeasure(
+    kind="partial correlation",
+    standardize="zscore_sample",
+)
 partial_correlation_matrices = partial_correlation_measure.fit_transform(
     children
 )
@@ -160,7 +166,10 @@ plotting.plot_connectome(
 # We can use **both** correlations and partial correlations to capture
 # reproducible connectivity patterns at the group-level.
 # This is done by the tangent space embedding.
-tangent_measure = ConnectivityMeasure(kind="tangent")
+tangent_measure = ConnectivityMeasure(
+    kind="tangent",
+    standardize="zscore_sample",
+)
 
 ###############################################################################
 # We fit our children group and get the group connectivity matrix stored as
@@ -214,11 +223,15 @@ for kind in kinds:
     for train, test in cv.split(pooled_subjects, classes):
         # *ConnectivityMeasure* can output the estimated subjects coefficients
         # as a 1D arrays through the parameter *vectorize*.
-        connectivity = ConnectivityMeasure(kind=kind, vectorize=True)
+        connectivity = ConnectivityMeasure(
+            kind=kind,
+            vectorize=True,
+            standardize="zscore_sample",
+        )
         # build vectorized connectomes for subjects in the train set
         connectomes = connectivity.fit_transform(pooled_subjects[train])
         # fit the classifier
-        classifier = LinearSVC().fit(connectomes, classes[train])
+        classifier = LinearSVC(dual=True).fit(connectomes, classes[train])
         # make predictions for the left-out test subjects
         predictions = classifier.predict(
             connectivity.transform(pooled_subjects[test])

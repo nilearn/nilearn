@@ -128,6 +128,7 @@ rf_models = [
 # ----------------------------------
 
 import matplotlib.pyplot as plt
+
 from nilearn.glm.first_level import compute_regressor
 
 oversampling = 16

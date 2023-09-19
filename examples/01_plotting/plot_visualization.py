@@ -68,3 +68,5 @@ plt.xlim(0, 150)
 plt.subplots_adjust(bottom=0.12, top=0.95, right=0.95, left=0.12)
 
 show()
+
+# sphinx_gallery_dummy_images=3

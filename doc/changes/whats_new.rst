@@ -7,6 +7,8 @@ What's new
 
 .. _latest:
 .. include:: latest.rst
+.. _v0.10.1:
+.. include:: 0.10.1.rst
 .. _v0.10.0:
 .. include:: 0.10.0.rst
 .. _v0.9.2:

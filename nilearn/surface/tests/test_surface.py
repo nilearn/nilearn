@@ -7,25 +7,26 @@ import warnings
 import nibabel as nb
 import numpy as np
 import pytest
-
-from numpy.testing import assert_array_equal, assert_array_almost_equal
+from nibabel import gifti
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 from scipy.spatial import Delaunay
 from scipy.stats import pearsonr
 
-from nibabel import gifti
-
-from nilearn import datasets
-from nilearn import image
-from nilearn.image import resampling
-from nilearn.image.tests.test_resampling import rotation
-from nilearn.surface import Mesh, Surface
-from nilearn.surface import surface
-from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
-from nilearn.surface.surface import (_gifti_img_to_mesh,
-                                     _load_surf_files_gifti_gzip)
-from nilearn.surface.testing_utils import (generate_surf, flat_mesh,
-                                           z_const_img)
+from nilearn import datasets, image
 from nilearn._utils import data_gen
+from nilearn.image import resampling
+from nilearn.surface import (
+    Mesh,
+    Surface,
+    load_surf_data,
+    load_surf_mesh,
+    surface,
+)
+from nilearn.surface.surface import (
+    _gifti_img_to_mesh,
+    _load_surf_files_gifti_gzip,
+)
+from nilearn.surface.testing_utils import flat_mesh, generate_surf, z_const_img
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
@@ -35,12 +36,15 @@ class MeshLikeObject:
     """Class with attributes coordinates and
     faces to be used for testing purposes.
     """
+
     def __init__(self, coordinates, faces):
         self._coordinates = coordinates
         self._faces = faces
+
     @property
     def coordinates(self):
         return self._coordinates
+
     @property
     def faces(self):
         return self._faces
@@ -50,15 +54,19 @@ class SurfaceLikeObject:
     """Class with attributes mesh and
     data to be used for testing purposes.
     """
+
     def __init__(self, mesh, data):
         self._mesh = mesh
         self._data = data
+
     @classmethod
     def fromarrays(cls, coordinates, faces, data):
         return cls(MeshLikeObject(coordinates, faces), data)
+
     @property
     def mesh(self):
         return self._mesh
+
     @property
     def data(self):
         return self._data
@@ -237,7 +245,7 @@ def test_load_surf_mesh():
 def test_load_surface():
     coords, faces = generate_surf()
     mesh = Mesh(coords, faces)
-    data = mesh[0][:,0]
+    data = mesh[0][:, 0]
     surf = Surface(mesh, data)
     surf_like_obj = SurfaceLikeObject(mesh, data)
     # Load the surface from:
@@ -283,7 +291,7 @@ def test_load_surf_mesh_list():
     with pytest.raises(ValueError, match='input type is not recognized'):
         load_surf_mesh(mesh[0])
     with pytest.raises(ValueError, match='input type is not recognized'):
-        load_surf_mesh(dict())
+        load_surf_mesh({})
     del mesh
 
 
@@ -344,8 +352,9 @@ def test_load_surf_mesh_file_gii(tmp_path):
     fd_no, filename_gii_mesh_no_point = tempfile.mkstemp(suffix='.gii',
                                                          dir=str(tmp_path))
     os.close(fd_no)
-    nb.save(gifti.GiftiImage(darrays=[face_array, face_array]),
-                filename_gii_mesh_no_point)
+    nb.save(gifti.GiftiImage(
+            darrays=[face_array, face_array]),
+            filename_gii_mesh_no_point)
     with pytest.raises(ValueError, match='NIFTI_INTENT_POINTSET'):
         load_surf_mesh(filename_gii_mesh_no_point)
     os.remove(filename_gii_mesh_no_point)
@@ -353,8 +362,9 @@ def test_load_surf_mesh_file_gii(tmp_path):
     fd_face, filename_gii_mesh_no_face = tempfile.mkstemp(suffix='.gii',
                                                           dir=str(tmp_path))
     os.close(fd_face)
-    nb.save(gifti.GiftiImage(darrays=[coord_array, coord_array]),
-                filename_gii_mesh_no_face)
+    nb.save(gifti.GiftiImage(
+        darrays=[coord_array, coord_array]),
+        filename_gii_mesh_no_face)
     with pytest.raises(ValueError, match='NIFTI_INTENT_TRIANGLE'):
         load_surf_mesh(filename_gii_mesh_no_face)
     os.remove(filename_gii_mesh_no_face)
@@ -420,7 +430,7 @@ def test_load_surf_data_file_glob(tmp_path):
     data2D = np.ones((20, 3))
     fnames = []
     for f in range(3):
-        fd, filename = tempfile.mkstemp(prefix='glob_%s_' % f,
+        fd, filename = tempfile.mkstemp(prefix=f'glob_{f}_',
                                         suffix='.gii',
                                         dir=str(tmp_path))
         os.close(fd)
@@ -492,11 +502,6 @@ def test_flat_mesh(xy):
     assert np.allclose(n, [0., 0., 1.])
 
 
-def _z_const_img(x_s, y_s, z_s):
-    hslice = np.arange(x_s * y_s).reshape((x_s, y_s))
-    return np.ones((x_s, y_s, z_s)) * hslice[:, :, np.newaxis]
-
-
 def test_vertex_outer_normals():
     # compute normals for a flat horizontal mesh, they should all be (0, 0, 1)
     mesh = flat_mesh(5, 7)
@@ -552,8 +557,8 @@ def test_sample_locations():
         true_locations = np.asarray([vertex + offsets for vertex in mesh[0]])
         assert_array_equal(locations.shape, true_locations.shape)
         assert_array_almost_equal(true_locations, locations)
-    pytest.raises(ValueError, surface._sample_locations,
-                  mesh, affine, 1., kind='bad_kind')
+    with pytest.raises(ValueError):
+        surface._sample_locations(mesh, affine, 1., kind='bad_kind')
 
 
 @pytest.mark.parametrize("depth", [(0.,), (-1.,), (1.,), (-1., 0., .5)])
@@ -570,24 +575,30 @@ def test_sample_locations_depth(depth, n_points):
 
 @pytest.mark.parametrize(
     "depth,n_points",
-    [(None, 1), (None, 7), ([0.], 8), ([-1.], 8),
-     ([1.], 8), ([-1., 0., .5], 8)])
+    [(None, 1),
+     (None, 7),
+     ([0.], 8),
+     ([-1.], 8),
+     ([1.], 8),
+     ([-1., 0., .5], 8)])
 def test_sample_locations_between_surfaces(depth, n_points):
     inner = flat_mesh(5, 7)
     outer = inner[0] + [0., 0., 1.], inner[1]
+
     locations = surface._sample_locations_between_surfaces(
         outer, inner, np.eye(4), n_points=n_points, depth=depth)
+
     if depth is None:
-        # can be simplified when we drop support for np 1.15
-        # (broadcasting linspace)
         expected = np.asarray(
             [np.linspace(b, a, n_points)
              for (a, b) in zip(inner[0].ravel(), outer[0].ravel())])
         expected = np.rollaxis(
             expected.reshape((*outer[0].shape, n_points)), 2, 1)
+
     else:
         offsets = ([[0., 0., - z] for z in depth])
         expected = np.asarray([vertex + offsets for vertex in outer[0]])
+
     assert np.allclose(locations, expected)
 
 
@@ -657,8 +668,10 @@ def test_projection_matrix():
     assert_array_almost_equal(proj.sum(axis=1)[:7], np.zeros(7))
     assert_array_almost_equal(proj.sum(axis=1)[7:], np.ones(proj.shape[0] - 7))
     # mask and img should have the same shape
-    pytest.raises(ValueError, surface._projection_matrix,
-                  mesh, np.eye(4), img.shape, mask=np.ones((3, 3, 2)))
+    with pytest.raises(ValueError):
+        surface._projection_matrix(
+            mesh, np.eye(4), img.shape, mask=np.ones((3, 3, 2))
+        )
 
 
 def test_sampling_affine():
@@ -751,9 +764,11 @@ def test_check_mesh_and_data():
     rng = np.random.RandomState(42)
     wrong_faces = rng.randint(coords.shape[0] + 1, size=(30, 3))
     wrong_mesh = Mesh(coords, wrong_faces)
-    # Check that check_mesh_and_data raises an error with the resulting wrong mesh
-    with pytest.raises(ValueError,
-                       match="Mismatch between the indices of faces and the number of nodes."):
+    # Check that check_mesh_and_data raises an error
+    # with the resulting wrong mesh
+    with pytest.raises(
+            ValueError,
+            match="Mismatch between .* indices of faces .* number of nodes."):
         surface.check_mesh_and_data(wrong_mesh, data)
     # Alter the data and check that an error is raised
     data = mesh[0][::2, 0]
@@ -765,7 +780,7 @@ def test_check_mesh_and_data():
 def test_check_surface():
     coords, faces = generate_surf()
     mesh = Mesh(coords, faces)
-    data = mesh[0][:,0]
+    data = mesh[0][:, 0]
     surf = Surface(mesh, data)
     s = surface.check_surface(surf)
     assert_array_equal(s.data, data)
@@ -780,9 +795,11 @@ def test_check_surface():
     wrong_faces = rng.randint(coords.shape[0] + 1, size=(30, 3))
     wrong_mesh = Mesh(coords, wrong_faces)
     wrong_surface = Surface(wrong_mesh, data)
-    # Check that check_mesh_and_data raises an error with the resulting wrong mesh
-    with pytest.raises(ValueError,
-                       match="Mismatch between the indices of faces and the number of nodes."):
+    # Check that check_mesh_and_data raises an error
+    # with the resulting wrong mesh
+    with pytest.raises(
+            ValueError,
+            match="Mismatch between .* indices of faces .* number of nodes."):
         surface.check_surface(wrong_surface)
     # Alter the data and check that an error is raised
     wrong_data = mesh[0][::2, 0]

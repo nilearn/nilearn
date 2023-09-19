@@ -3,13 +3,14 @@ import math
 
 import numpy as np
 import pytest
+from numpy.testing import assert_array_almost_equal
+from scipy.ndimage import generate_binary_structure
+from sklearn.utils import check_random_state
+
 from nilearn.mass_univariate import _utils
 from nilearn.mass_univariate.tests.utils import (
     get_tvalue_with_alternative_library,
 )
-from numpy.testing import assert_array_almost_equal
-from scipy.ndimage import generate_binary_structure
-from sklearn.utils import check_random_state
 
 
 @pytest.fixture

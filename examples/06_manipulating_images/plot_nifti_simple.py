@@ -28,7 +28,7 @@ from nilearn.maskers import NiftiMasker
 # cannot rely on the 'background' masking strategy. We need to use the 'epi'
 # one
 nifti_masker = NiftiMasker(
-    standardize=True,
+    standardize="zscore_sample",
     mask_strategy="epi",
     memory="nilearn_cache",
     memory_level=2,

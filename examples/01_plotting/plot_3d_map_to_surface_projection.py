@@ -34,6 +34,7 @@ fsaverage = datasets.fetch_surf_fsaverage()
 # 1 if the curvature is positive, -1 if the curvature is negative.
 
 import numpy as np
+
 from nilearn import surface
 
 curv_right = surface.load_surf_data(fsaverage.curv_right)
@@ -235,3 +236,5 @@ view = plotting.view_img_on_surf(
 
 # view.open_in_browser()
 view
+
+# sphinx_gallery_dummy_images=1

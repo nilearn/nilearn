@@ -11,13 +11,13 @@
 Highlights
 ----------
 
-- New class :class:`nilearn.maskers.NiftiSpheresMasker` which extracts signals from balls specified by their coordinates.
+- :bdg-success:`API` New class :class:`nilearn.maskers.NiftiSpheresMasker` which extracts signals from balls specified by their coordinates.
 
-- Obey Debian packaging rules.
+- :bdg-secondary:`Maint` Obey Debian packaging rules.
 
-- Add the Destrieux 2009 and Power 2011 atlas.
+- :bdg-dark:`Code` Add the Destrieux 2009 and Power 2011 atlas.
 
-- Better caching in maskers.
+- :bdg-dark:`Code` Better caching in maskers.
 
 
 Contributors (from ``git shortlog -ns 0.1.3..0.1.4``):

@@ -5,19 +5,18 @@ All functions in this module should take X matrices with samples x
 features
 """
 # Authors: Alexandre Abraham, Gael Varoquaux, Philippe Gervais
-# License: simplified BSD
 
 import warnings
 
 import numpy as np
 import pandas as pd
-from nilearn._utils.glm import _check_run_sample_masks
 from scipy import linalg, signal as sp_signal
 from scipy.interpolate import CubicSpline
 from sklearn.utils import as_float_array, gen_even_slices
 
-from ._utils import fill_doc, stringify_path
-from ._utils.numpy_conversions import as_ndarray, csv_to_array
+from nilearn._utils import fill_doc, stringify_path
+from nilearn._utils.numpy_conversions import as_ndarray, csv_to_array
+from nilearn._utils.param_validation import _check_run_sample_masks
 
 availiable_filters = ["butterworth", "cosine"]
 
@@ -663,8 +662,10 @@ def clean(
 
         Default="zscore".
     %(standardize_confounds)s
-    %(ensure_finite)s
-        Default=False.
+
+    ensure_finite : :obj:`bool`, default=False
+        If `True`, the non-finite values (NANs and infs) found in the data
+        will be replaced by zeros.
 
     kwargs : dict
         Keyword arguments to be passed to functions called within ``clean``.
