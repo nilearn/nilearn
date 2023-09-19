@@ -24,9 +24,6 @@ def check_events(events):
     It is valid if the events data has ``'onset'`` and ``'duration'`` keys
     with numeric non NaN values.
 
-    This function also handles duplicate events
-    by summing their modulation if they have one.
-
     Parameters
     ----------
     events : pandas DataFrame
@@ -34,6 +31,11 @@ def check_events(events):
 
     Returns
     -------
+    events : pandas DataFrame
+        Events data that describes a functional experimental paradigm.
+
+    The dataframe has the following columns:
+
     trial_type : array of shape (n_events,), dtype='s'
         Per-event experimental conditions identifier.
         Defaults to np.repeat('dummy', len(onsets)).
@@ -95,15 +97,7 @@ def check_events(events):
 
     _check_unexpected_columns(events_copy)
 
-    events_copy = _handle_modulation(events_copy)
-
-    cleaned_events = _handle_duplicate_events(events_copy)
-
-    trial_type = cleaned_events["trial_type"].values
-    onset = cleaned_events["onset"].values
-    duration = cleaned_events["duration"].values
-    modulation = cleaned_events["modulation"].values
-    return trial_type, onset, duration, modulation
+    return _handle_modulation(events_copy)
 
 
 def _check_columns(events):
@@ -185,7 +179,8 @@ COLUMN_DEFINING_EVENT_IDENTITY = ["trial_type", "onset", "duration"]
 STRATEGY = {"modulation": "sum"}
 
 
-def _handle_duplicate_events(events):
+def sum_modulation_of_duplicate_events(events):
+    """Sum modulation of duplicate events if they have one."""
     cleaned_events = (
         events.groupby(COLUMN_DEFINING_EVENT_IDENTITY, sort=False)
         .agg(STRATEGY)

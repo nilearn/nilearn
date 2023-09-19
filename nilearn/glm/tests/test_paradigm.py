@@ -14,6 +14,9 @@ from numpy.testing import assert_array_equal
 
 from nilearn._utils.data_gen import basic_paradigm
 from nilearn.glm.first_level import check_events
+from nilearn.glm.first_level.experimental_paradigm import (
+    sum_modulation_of_duplicate_events,
+)
 
 from ._utils import (
     block_paradigm,
@@ -28,20 +31,21 @@ from ._utils import (
 
 def test_check_events():
     events = basic_paradigm()
-    trial_type, _, _, modulation = check_events(events)
+    events_copy = check_events(events)
 
     # Check that given trial type is right
     assert_array_equal(
-        trial_type, ["c0", "c0", "c0", "c1", "c1", "c1", "c2", "c2", "c2"]
+        events_copy["trial_type"],
+        ["c0", "c0", "c0", "c1", "c1", "c1", "c2", "c2", "c2"],
     )
 
     # Check that missing modulation yields an array one ones
-    assert_array_equal(modulation, np.ones(len(events)))
+    assert_array_equal(events_copy["modulation"], np.ones(len(events)))
 
     # Modulation is provided
     events["modulation"] = np.ones(len(events))
-    _, _, _, mod = check_events(events)
-    assert_array_equal(mod, events["modulation"])
+    events_copy = check_events(events)
+    assert_array_equal(events_copy["modulation"], events["modulation"])
 
 
 def test_check_events_errors():
@@ -86,11 +90,11 @@ def test_check_events_warnings():
     # Missing trial type
     events = events.drop(columns=["trial_type"])
     with pytest.warns(UserWarning, match="'trial_type' column not found"):
-        trial_type, onset, duration, modulation = check_events(events)
+        events_copy = check_events(events)
 
     # Check that missing trial type yields a 'dummy' array
-    assert len(np.unique(trial_type)) == 1
-    assert trial_type[0] == "dummy"
+    assert len(np.unique(events_copy["trial_type"])) == 1
+    assert events_copy["trial_type"][0] == "dummy"
 
     # An unexpected field is provided
     events["foo"] = np.zeros(len(events))
@@ -101,29 +105,12 @@ def test_check_events_warnings():
             "in events data will be ignored: foo"
         ),
     ):
-        trial_type2, onset2, duration2, modulation2 = check_events(events)
+        events_copy2 = check_events(events)
 
-    assert_array_equal(trial_type, trial_type2)
-    assert_array_equal(onset, onset2)
-    assert_array_equal(duration, duration2)
-    assert_array_equal(modulation, modulation2)
-
-
-def test_duplicate_events():
-    """Test the function check_events when the paradigm contains
-    duplicate events.
-
-    """
-    events = duplicate_events_paradigm()
-
-    # Check that a warning is given to the user
-    with pytest.warns(UserWarning, match="Duplicated events were detected."):
-        trial_type, onset, duration, modulation = check_events(events)
-    assert_array_equal(trial_type, ["c0", "c0", "c0", "c1", "c1"])
-    assert_array_equal(onset, [10, 30, 70, 10, 30])
-    assert_array_equal(duration, [1.0, 1.0, 1.0, 1.0, 1.0])
-    # Modulation was updated
-    assert_array_equal(modulation, [1, 1, 2, 1, 1])
+    assert_array_equal(events_copy["trial_type"], events_copy2["trial_type"])
+    assert_array_equal(events_copy["onset"], events_copy2["onset"])
+    assert_array_equal(events_copy["duration"], events_copy2["duration"])
+    assert_array_equal(events_copy["modulation"], events_copy2["modulation"])
 
 
 def write_events(events, tmpdir):
@@ -174,3 +161,22 @@ def test_check_events_nan_designs(design):
         ValueError, match=("The following column must not contain nan values:")
     ):
         check_events(design())
+
+
+def test_sum_modulation_of_duplicate_events():
+    """Test the function check_events when the paradigm contains
+    duplicate events.
+
+    """
+    events = duplicate_events_paradigm()
+
+    # Check that a warning is given to the user
+    with pytest.warns(UserWarning, match="Duplicated events were detected."):
+        events_copy = sum_modulation_of_duplicate_events(events)
+    assert_array_equal(
+        events_copy["trial_type"], ["c0", "c0", "c0", "c1", "c1"]
+    )
+    assert_array_equal(events_copy["onset"], [10, 30, 70, 10, 30])
+    assert_array_equal(events_copy["duration"], [1.0, 1.0, 1.0, 1.0, 1.0])
+    # Modulation was updated
+    assert_array_equal(events_copy["modulation"], [1, 1, 2, 1, 1])
