@@ -208,8 +208,8 @@ def fetch_atlas_craddock_2012(
     DeprecationWarning
         If an homogeneity input is provided, the current behavior
         (returning multiple maps) is deprecated.
-        Starting in version 0.13, one map will be returned depending on
-        the homogeneity value.
+        Starting in version 0.13, one map will be returned in a 'maps' dict key
+        depending on the homogeneity and grp_mean value.
 
     References
     ----------
@@ -268,10 +268,9 @@ def fetch_atlas_craddock_2012(
         params = dict([("description", fdescr)] + list(zip(keys, sub_files)))
         warnings.warn(
             category=DeprecationWarning,
-            message="The default behavior of the function is "
-            "deprecated and will be replaced in release 0.13 "
-            "to use the new parameters homogeneity "
-            "and grp_mean.",
+            message="In release 0.13, this fetcher will return a dictionary "
+            "with one map accessed through a 'maps' key. Please use the new "
+            "parameters homogeneity and grp_mean.",
         )
 
     return Bunch(**params)
@@ -995,8 +994,8 @@ def fetch_atlas_smith_2009(
     DeprecationWarning
         If a dimension input is provided, the current behavior
         (returning multiple maps) is deprecated.
-        Starting in version 0.13, one map will be returned depending on
-        the dimension value.
+        Starting in version 0.13, one map will be returned in a 'maps' dict key
+        depending on the dimension and resting value.
 
     References
     ----------
@@ -1060,10 +1059,9 @@ def fetch_atlas_smith_2009(
         params["description"] = fdescr
         warnings.warn(
             category=DeprecationWarning,
-            message="The default behavior of the function is "
-            "deprecated and will be replaced in release 0.13 "
-            "to use the new parameters dimension and "
-            "resting.",
+            message="In release 0.13, this fetcher will return a dictionary "
+            "with one map accessed through a 'maps' key. Please use the new "
+            "parameters dimension and resting.",
         )
 
     return Bunch(**params)
@@ -1385,8 +1383,8 @@ def fetch_atlas_basc_multiscale_2015(
     DeprecationWarning
         If a resolution input is provided, the current behavior
         (returning multiple maps) is deprecated.
-        Starting in version 0.13, one map will be returned depending on
-        the resolution value.
+        Starting in version 0.13, one map will be returned in a 'maps' dict key
+        depending on the resolution and version value.
 
     References
     ----------
@@ -1466,10 +1464,9 @@ def fetch_atlas_basc_multiscale_2015(
         params["description"] = descr
         warnings.warn(
             category=DeprecationWarning,
-            message="The default behavior of the function is "
-            "deprecated and will be replaced in release 0.13 "
-            "to use the new parameters resolution and "
-            "and version.",
+            message="In release 0.13, this fetcher will return a dictionary "
+            "with one map accessed through a 'maps' key. Please use the new "
+            "parameters resolution and version.",
         )
     return Bunch(**params)
 
