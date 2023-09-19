@@ -366,7 +366,7 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
         If it is a number only values of amplitude greater
         than threshold will be shown.
         If it is a string it must finish with a percent sign,
-        e.g. "25.3%", and only values of amplitude above the
+        e.g. "25.3%%", and only values of amplitude above the
         given percentile will be shown.
 
     cmap : str or matplotlib colormap, optional
