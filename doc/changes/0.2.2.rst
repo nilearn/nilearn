@@ -14,48 +14,48 @@ It aims at preparing a renewal of the tutorials.
 New
 ---
 
-- Fetcher for Megatrawl Netmats dataset.
+- :bdg-success:`API` Fetcher for Megatrawl Netmats dataset.
 
 Enhancements
 ------------
 
-- Flake8 is now run on pull requests.
+- :bdg-secondary:`Maint` Flake8 is now run on pull requests.
 
-- Reworking of the documentation organization.
+- :bdg-secondary:`Maint` Reworking of the documentation organization.
 
-- ``Sphinx-gallery`` updated to version ``0.1.1``.
+- :bdg-secondary:`Maint` ``Sphinx-gallery`` updated to version ``0.1.1``.
 
-- The default ``n_subjects=None`` in function :func:`~datasets.fetch_adhd` is now changed to ``n_subjects=30``.
+- :bdg-success:`API` The default ``n_subjects=None`` in function :func:`~datasets.fetch_adhd` is now changed to ``n_subjects=30``.
 
 Fixes
 -----
 
-- Fix ``symmetric_split`` behavior in function :func:`~datasets.fetch_atlas_harvard_oxford`.
+- :bdg-dark:`Code` Fix ``symmetric_split`` behavior in function :func:`~datasets.fetch_atlas_harvard_oxford`.
 
-- Fix casting errors when providing integer data to function :func:`~image.high_variance_confounds`.
+- :bdg-dark:`Code` Fix casting errors when providing integer data to function :func:`~image.high_variance_confounds`.
 
-- Fix matplotlib ``1.5.0`` compatibility in function :func:`~plotting.plot_prob_atlas`.
+- :bdg-secondary:`Maint` Fix matplotlib ``1.5.0`` compatibility in function :func:`~plotting.plot_prob_atlas`.
 
-- Fix matplotlib backend choice on Mac OS X.
+- :bdg-secondary:`Maint` Fix matplotlib backend choice on Mac OS X.
 
 - :bdg-info:`Plotting` Function :func:`~plotting.find_xyz_cut_coords` raises a meaningful error when 4D data is provided instead of 3D.
 
-- Class :class:`~maskers.NiftiSpheresMasker` handles radius smaller than the size of a :term:`voxel`.
+- :bdg-dark:`Code` Class :class:`~maskers.NiftiSpheresMasker` handles radius smaller than the size of a :term:`voxel`.
 
-- Class :class:`~regions.RegionExtractor` handles data containing ``Nans``.
+- :bdg-dark:`Code` Class :class:`~regions.RegionExtractor` handles data containing ``Nans``.
 
-- Confound regression does not force systematically the normalization of the confounds.
+- :bdg-dark:`Code` Confound regression does not force systematically the normalization of the confounds.
 
-- Force time series normalization in :class:`~connectome.ConnectivityMeasure` and check dimensionality of the input.
+- :bdg-dark:`Code` Force time series normalization in :class:`~connectome.ConnectivityMeasure` and check dimensionality of the input.
 
-- Function ``nilearn._utils.numpy_conversions.csv_to_array`` could consider valid CSV files as invalid.
+- :bdg-dark:`Code` Function ``nilearn._utils.numpy_conversions.csv_to_array`` could consider valid CSV files as invalid.
 
 Changes
 -------
 
-- Deprecated dataset downloading function have been removed.
+- :bdg-danger:`Deprecation` Deprecated dataset downloading function have been removed.
 
-- Download progression message refreshing rate has been lowered to sparsify CircleCI logs.
+- :bdg-dark:`Code` Download progression message refreshing rate has been lowered to sparsify CircleCI logs.
 
 Contributors
 ------------

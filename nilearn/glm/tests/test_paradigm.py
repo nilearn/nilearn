@@ -15,71 +15,36 @@ from numpy.testing import assert_array_equal
 from nilearn._utils.data_gen import basic_paradigm
 from nilearn.glm.first_level import check_events
 
-
-def duplicate_events_paradigm():
-    conditions = ["c0", "c0", "c0", "c0", "c1", "c1"]
-    onsets = [10, 30, 70, 70, 10, 30]
-    durations = [1.0, 1.0, 1.0, 1.0, 1.0, 1]
-    events = pd.DataFrame(
-        {"trial_type": conditions, "onset": onsets, "duration": durations}
-    )
-    return events
-
-
-def modulated_block_paradigm():
-    rng = np.random.RandomState(42)
-    conditions = ["c0", "c0", "c0", "c1", "c1", "c1", "c2", "c2", "c2"]
-    onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    durations = 5 + 5 * rng.uniform(size=len(onsets))
-    values = rng.uniform(size=len(onsets))
-    events = pd.DataFrame(
-        {
-            "trial_type": conditions,
-            "onset": onsets,
-            "duration": durations,
-            "modulation": values,
-        }
-    )
-    return events
-
-
-def modulated_event_paradigm():
-    rng = np.random.RandomState(42)
-    conditions = ["c0", "c0", "c0", "c1", "c1", "c1", "c2", "c2", "c2"]
-    onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    durations = 1 * np.ones(9)
-    values = rng.uniform(size=len(onsets))
-    events = pd.DataFrame(
-        {
-            "trial_type": conditions,
-            "onset": onsets,
-            "durations": durations,
-            "amplitude": values,
-        }
-    )
-    return events
-
-
-def block_paradigm():
-    conditions = ["c0", "c0", "c0", "c1", "c1", "c1", "c2", "c2", "c2"]
-    onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    durations = 5 * np.ones(9)
-    events = pd.DataFrame(
-        {"trial_type": conditions, "onset": onsets, "duration": durations}
-    )
-    return events
-
-
-def write_events(events, tmpdir):
-    """Function to write events of an experimental paradigm
-    to a file and return the address.
-    """
-    tsvfile = os.path.join(tmpdir, "events.tsv")
-    events.to_csv(tsvfile, sep="\t")
-    return tsvfile
+from ._utils import (
+    block_paradigm,
+    design_with_nan_durations,
+    design_with_nan_onsets,
+    design_with_null_durations,
+    duplicate_events_paradigm,
+    modulated_block_paradigm,
+    modulated_event_paradigm,
+)
 
 
 def test_check_events():
+    events = basic_paradigm()
+    trial_type, _, _, modulation = check_events(events)
+
+    # Check that given trial type is right
+    assert_array_equal(
+        trial_type, ["c0", "c0", "c0", "c1", "c1", "c1", "c2", "c2", "c2"]
+    )
+
+    # Check that missing modulation yields an array one ones
+    assert_array_equal(modulation, np.ones(len(events)))
+
+    # Modulation is provided
+    events["modulation"] = np.ones(len(events))
+    _, _, _, mod = check_events(events)
+    assert_array_equal(mod, events["modulation"])
+
+
+def test_check_events_errors():
     """Test the function which tests that the events
     data describes a valid experimental paradigm.
     """
@@ -90,6 +55,7 @@ def test_check_events():
         TypeError, match="Events should be a Pandas DataFrame."
     ):
         check_events([])
+
     # Missing onset
     missing_onset = events.drop(columns=["onset"])
     with pytest.raises(
@@ -110,39 +76,34 @@ def test_check_events():
     with pytest.raises(ValueError, match="Could not cast duration to float"):
         check_events(wrong_duration)
 
+
+def test_check_events_warnings():
+    """Test the function which tests that the events
+    data describes a valid experimental paradigm.
+    """
+    events = basic_paradigm()
     # Warnings checkins
     # Missing trial type
-    missing_ttype = events.drop(columns=["trial_type"])
+    events = events.drop(columns=["trial_type"])
     with pytest.warns(UserWarning, match="'trial_type' column not found"):
-        ttype, onset, duration, modulation = check_events(missing_ttype)
+        trial_type, onset, duration, modulation = check_events(events)
 
     # Check that missing trial type yields a 'dummy' array
-    assert len(np.unique(ttype)) == 1
-    assert ttype[0] == "dummy"
-
-    ttype, onset, duration, modulation = check_events(events)
-
-    # Check that given trial type is right
-    assert_array_equal(
-        ttype, ["c0", "c0", "c0", "c1", "c1", "c1", "c2", "c2", "c2"]
-    )
-
-    # Check that missing modulation yields an array one ones
-    assert_array_equal(modulation, np.ones(len(events)))
-
-    # Modulation is provided
-    events["modulation"] = np.ones(len(events))
-    _, _, _, mod = check_events(events)
-    assert_array_equal(mod, events["modulation"])
+    assert len(np.unique(trial_type)) == 1
+    assert trial_type[0] == "dummy"
 
     # An unexpected field is provided
-    events = events.drop(columns=["modulation"])
     events["foo"] = np.zeros(len(events))
     with pytest.warns(
-        UserWarning, match="Unexpected column 'foo' in events data."
+        UserWarning,
+        match=(
+            "The following unexpected columns "
+            "in events data will be ignored: foo"
+        ),
     ):
-        ttype2, onset2, duration2, modulation2 = check_events(events)
-    assert_array_equal(ttype, ttype2)
+        trial_type2, onset2, duration2, modulation2 = check_events(events)
+
+    assert_array_equal(trial_type, trial_type2)
     assert_array_equal(onset, onset2)
     assert_array_equal(duration, duration2)
     assert_array_equal(modulation, modulation2)
@@ -154,27 +115,62 @@ def test_duplicate_events():
 
     """
     events = duplicate_events_paradigm()
+
     # Check that a warning is given to the user
     with pytest.warns(UserWarning, match="Duplicated events were detected."):
-        ttype, onset, duration, modulation = check_events(events)
-    assert_array_equal(ttype, ["c0", "c0", "c0", "c1", "c1"])
+        trial_type, onset, duration, modulation = check_events(events)
+    assert_array_equal(trial_type, ["c0", "c0", "c0", "c1", "c1"])
     assert_array_equal(onset, [10, 30, 70, 10, 30])
     assert_array_equal(duration, [1.0, 1.0, 1.0, 1.0, 1.0])
     # Modulation was updated
     assert_array_equal(modulation, [1, 1, 2, 1, 1])
 
 
-def test_read_events():
-    """Test that a events for an experimental paradigm are correctly read."""
-    import tempfile
+def write_events(events, tmpdir):
+    """Function to write events of an experimental paradigm
+    to a file and return the address.
+    """
+    tsvfile = os.path.join(tmpdir, "events.tsv")
+    events.to_csv(tsvfile, sep="\t")
+    return tsvfile
 
-    tmpdir = tempfile.mkdtemp()
-    for events in (
+
+@pytest.mark.parametrize(
+    "events",
+    [
         block_paradigm(),
         modulated_event_paradigm(),
         modulated_block_paradigm(),
         basic_paradigm(),
+    ],
+)
+def test_read_events(events, tmp_path):
+    """Test that a events for an experimental paradigm are correctly read."""
+    csvfile = write_events(events, tmp_path)
+    read_paradigm = pd.read_table(csvfile)
+
+    assert (read_paradigm["onset"] == events["onset"]).all()
+
+
+def test_check_events_warnings_null_duration():
+    """Test that events with null duration throw a warning."""
+    with pytest.warns(
+        UserWarning,
+        match="The following conditions contain events with null duration",
     ):
-        csvfile = write_events(events, tmpdir)
-        read_paradigm = pd.read_table(csvfile)
-        assert (read_paradigm["onset"] == events["onset"]).all()
+        check_events(design_with_null_durations())
+
+
+@pytest.mark.parametrize(
+    "design",
+    [
+        design_with_nan_durations,
+        design_with_nan_onsets,
+    ],
+)
+def test_check_events_nan_designs(design):
+    """Test that events with nan values."""
+    with pytest.raises(
+        ValueError, match=("The following column must not contain nan values:")
+    ):
+        check_events(design())

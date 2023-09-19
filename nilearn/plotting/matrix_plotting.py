@@ -475,7 +475,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     model_event : :class:`pandas.DataFrame` or :obj:`list`\
     of :class:`pandas.DataFrame`
         The :class:`pandas.DataFrame` must have three columns:
-        ``event_type`` with event name, ``onset`` and ``duration``.
+        ``trial_type`` with event name, ``onset`` and ``duration``.
 
         .. note::
 
@@ -520,17 +520,29 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
 
     for idx_run, event_df in enumerate(model_event):
         for _, event in event_df.iterrows():
+            ymin = (idx_run + 0.25) / n_runs
+            ymax = (idx_run + 0.75) / n_runs
             event_onset = event["onset"]
             event_end = event["onset"] + event["duration"]
             color = cmap.colors[cmap_dictionary[event["trial_type"]]]
 
-            ax.axvspan(
-                event_onset,
-                event_end,
-                ymin=(idx_run + 0.25) / n_runs,
-                ymax=(idx_run + 0.75) / n_runs,
-                facecolor=color,
-            )
+            if event["duration"] != 0:
+                ax.axvspan(
+                    event_onset,
+                    event_end,
+                    ymin=ymin,
+                    ymax=ymax,
+                    facecolor=color,
+                )
+
+            # events will 0 duration are plotted as lines
+            else:
+                ax.axvline(
+                    event_onset,
+                    ymin=ymin,
+                    ymax=ymax,
+                    color=color,
+                )
 
     handles = []
     for label, idx in cmap_dictionary.items():

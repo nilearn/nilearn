@@ -23,9 +23,9 @@ def test_plot_glass_brain(img_3d_mni):
     )
 
 
-def test_plot_glass_brain_file_output(img_3d_mni, tmpdir):
+def test_plot_glass_brain_file_output(img_3d_mni, tmp_path):
     """Smoke-test for hemispheric glass brain with file output."""
-    filename = str(tmpdir.join("test.png"))
+    filename = tmp_path / "test.png"
     plot_glass_brain(
         img_3d_mni,
         output_file=filename,

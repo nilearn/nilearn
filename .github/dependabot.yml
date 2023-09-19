@@ -8,5 +8,5 @@ updates:
     schedule:
         interval: weekly
     labels:
-    -   dependencies
+    -   Dependencies
     -   Infrastructure

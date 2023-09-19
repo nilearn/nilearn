@@ -10,14 +10,14 @@ on:
 
 jobs:
     push:
-        runs-on: ubuntu-20.04
+        runs-on: ubuntu-latest
     # Run the job only if the "Documentation builder" workflow succeeded
     # Prevents this workflow from running on a fork.
     # To test this workflow on a fork remove the `github.repository == nilearn/nilearn` condition
         if: github.repository == 'nilearn/nilearn' && github.event.workflow_run.conclusion == 'success'
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v3
+            uses: actions/checkout@v4
 
         -   name: Trigger hosting jobs
             run: bash build_tools/github/trigger_hosting.sh

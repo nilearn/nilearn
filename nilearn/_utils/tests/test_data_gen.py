@@ -94,11 +94,11 @@ def _bids_path_template(
     [(["main"], [1]), (["main"], [2]), (["main", "localizer"], [2, 1])],
 )
 def test_fake_bids_raw_with_session_and_runs(
-    tmpdir, n_sub, n_ses, tasks, n_runs
+    tmp_path, n_sub, n_ses, tasks, n_runs
 ):
     """Check number of each file 'type' created in raw."""
     bids_path = create_fake_bids_dataset(
-        base_dir=tmpdir, n_sub=n_sub, n_ses=n_ses, tasks=tasks, n_runs=n_runs
+        base_dir=tmp_path, n_sub=n_sub, n_ses=n_ses, tasks=tasks, n_runs=n_runs
     )
 
     # raw
@@ -193,11 +193,11 @@ def _check_nb_files_derivatives_for_task(
     [(["main"], [1]), (["main"], [2]), (["main", "localizer"], [2, 1])],
 )
 def test_fake_bids_derivatives_with_session_and_runs(
-    tmpdir, n_sub, n_ses, tasks, n_runs
+    tmp_path, n_sub, n_ses, tasks, n_runs
 ):
     """Check number of each file 'type' created in derivatives."""
     bids_path = create_fake_bids_dataset(
-        base_dir=tmpdir, n_sub=n_sub, n_ses=n_ses, tasks=tasks, n_runs=n_runs
+        base_dir=tmp_path, n_sub=n_sub, n_ses=n_ses, tasks=tasks, n_runs=n_runs
     )
 
     # derivatives
@@ -216,10 +216,10 @@ def test_fake_bids_derivatives_with_session_and_runs(
     assert len(all_files) == n_derivatives_files_expected
 
 
-def test_bids_dataset_no_run_entity(tmpdir):
+def test_bids_dataset_no_run_entity(tmp_path):
     """n_runs = 0 produces files without the run entity."""
     bids_path = create_fake_bids_dataset(
-        base_dir=tmpdir,
+        base_dir=tmp_path,
         n_sub=1,
         n_ses=1,
         tasks=["main"],
@@ -240,10 +240,10 @@ def test_bids_dataset_no_run_entity(tmpdir):
         assert len(files) == 1
 
 
-def test_bids_dataset_no_session(tmpdir):
+def test_bids_dataset_no_session(tmp_path):
     """n_ses = 0 prevent creation of a session folder."""
     bids_path = create_fake_bids_dataset(
-        base_dir=tmpdir,
+        base_dir=tmp_path,
         n_sub=1,
         n_ses=0,
         tasks=["main"],
@@ -264,10 +264,10 @@ def test_bids_dataset_no_session(tmpdir):
         assert len(files) == 1
 
 
-def test_create_fake_bids_dataset_no_derivatives(tmpdir):
+def test_create_fake_bids_dataset_no_derivatives(tmp_path):
     """Check no file is created in derivatives."""
     bids_path = create_fake_bids_dataset(
-        base_dir=tmpdir,
+        base_dir=tmp_path,
         n_sub=1,
         n_ses=1,
         tasks=["main"],
@@ -282,11 +282,11 @@ def test_create_fake_bids_dataset_no_derivatives(tmpdir):
     "confounds_tag,with_confounds", [(None, True), ("_timeseries", False)]
 )
 def test_create_fake_bids_dataset_no_confounds(
-    tmpdir, confounds_tag, with_confounds
+    tmp_path, confounds_tag, with_confounds
 ):
     """Check that files are created in the derivatives but no confounds."""
     bids_path = create_fake_bids_dataset(
-        base_dir=tmpdir,
+        base_dir=tmp_path,
         n_sub=1,
         n_ses=1,
         tasks=["main"],
@@ -299,15 +299,15 @@ def test_create_fake_bids_dataset_no_confounds(
     assert not files
 
 
-def test_fake_bids_errors(tmpdir):
+def test_fake_bids_errors(tmp_path):
     with pytest.raises(ValueError, match="labels.*alphanumeric"):
         create_fake_bids_dataset(
-            base_dir=tmpdir, n_sub=1, n_ses=1, tasks=["foo_bar"], n_runs=[1]
+            base_dir=tmp_path, n_sub=1, n_ses=1, tasks=["foo_bar"], n_runs=[1]
         )
 
     with pytest.raises(ValueError, match="labels.*alphanumeric"):
         create_fake_bids_dataset(
-            base_dir=tmpdir,
+            base_dir=tmp_path,
             n_sub=1,
             n_ses=1,
             tasks=["main"],
@@ -317,7 +317,7 @@ def test_fake_bids_errors(tmpdir):
 
     with pytest.raises(ValueError, match="number.*tasks.*runs.*same"):
         create_fake_bids_dataset(
-            base_dir=tmpdir,
+            base_dir=tmp_path,
             n_sub=1,
             n_ses=1,
             tasks=["main"],
@@ -325,7 +325,7 @@ def test_fake_bids_errors(tmpdir):
         )
 
 
-def test_fake_bids_extra_raw_entity(tmpdir):
+def test_fake_bids_extra_raw_entity(tmp_path):
     """Check files with extra entity are created appropriately."""
     n_sub = 2
     n_ses = 2
@@ -333,7 +333,7 @@ def test_fake_bids_extra_raw_entity(tmpdir):
     n_runs = [2]
     entities = {"acq": ["foo", "bar"]}
     bids_path = create_fake_bids_dataset(
-        base_dir=tmpdir,
+        base_dir=tmp_path,
         n_sub=n_sub,
         n_ses=n_ses,
         tasks=tasks,
@@ -383,7 +383,7 @@ def test_fake_bids_extra_raw_entity(tmpdir):
     assert len(all_files) == n_derivatives_files_expected
 
 
-def test_fake_bids_extra_derivative_entity(tmpdir):
+def test_fake_bids_extra_derivative_entity(tmp_path):
     """Check files with extra entity are created appropriately."""
     n_sub = 2
     n_ses = 2
@@ -391,7 +391,7 @@ def test_fake_bids_extra_derivative_entity(tmpdir):
     n_runs = [2]
     entities = {"res": ["foo", "bar"]}
     bids_path = create_fake_bids_dataset(
-        base_dir=tmpdir,
+        base_dir=tmp_path,
         n_sub=n_sub,
         n_ses=n_ses,
         tasks=tasks,
@@ -426,11 +426,11 @@ def test_fake_bids_extra_derivative_entity(tmpdir):
     assert len(all_files) == n_derivatives_files_expected
 
 
-def test_fake_bids_extra_entity_not_bids_entity(tmpdir):
+def test_fake_bids_extra_entity_not_bids_entity(tmp_path):
     """Check files with extra entity are created appropriately."""
     with pytest.raises(ValueError, match="Invalid entity"):
         create_fake_bids_dataset(
-            base_dir=tmpdir,
+            base_dir=tmp_path,
             entities={"egg": ["spam"]},
         )
 

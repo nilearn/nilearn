@@ -37,7 +37,6 @@ description = "Statistical learning for neuroimaging in Python"
 # Version from setuptools_scm
 dynamic = ["version"]
 license = {text = "new BSD"}
-long_description = {file = "README.rst"}
 maintainers = [{name = "Bertrand Thirion", email = "bertrand.thirion@inria.fr"}]
 name = "nilearn"
 readme = "README.rst"
@@ -50,7 +49,10 @@ dev = [
     "isort",
     "flynt",
     "black",
+    "flake8",
+    "flake8-docstrings",
     "flake8-use-fstring",
+    "flake8-functions",
     'codespell',
     'tomli',
     'pre-commit'
@@ -58,9 +60,6 @@ dev = [
 # Requirements necessary for building the documentation
 doc = [
     "nilearn[plotly]",
-    "coverage",
-    "flake8",
-    "flake8-docstrings",
     "furo",
     "memory_profiler",  # measuring memory during docs building
     "myst-parser",
@@ -86,6 +85,7 @@ min = [
 plotly = ["kaleido", "plotly"]
 # Necessary req to use nilearn's plotting module
 plotting = ["matplotlib>=3.3.0"]
+plotting_min = ["matplotlib==3.3.0"]
 # For running unit and docstring tests
 test = [
     "coverage",

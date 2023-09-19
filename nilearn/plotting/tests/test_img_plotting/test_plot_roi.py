@@ -63,9 +63,9 @@ def test_plot_roi_view_type_error():
         demo_plot_roi(view_type="flled")
 
 
-def test_demo_plot_roi_output_file(tmpdir):
+def test_demo_plot_roi_output_file(tmp_path):
     """Tests plot_roi file saving capabilities."""
-    filename = str(tmpdir.join("test.png"))
+    filename = tmp_path / "test.png"
     with open(filename, "wb") as fp:
         out = demo_plot_roi(output_file=fp)
     assert out is None

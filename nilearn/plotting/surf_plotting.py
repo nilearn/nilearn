@@ -15,7 +15,7 @@ from matplotlib.patches import Patch
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from nilearn import image, surface
-from nilearn._utils import check_niimg_3d, fill_doc
+from nilearn._utils import _compare_version, check_niimg_3d, fill_doc
 from nilearn.plotting.cm import _mix_colormaps, cold_hot
 from nilearn.plotting.displays._slicers import _get_cbar_ticks
 from nilearn.plotting.html_surface import _get_vertexcolor
@@ -966,10 +966,20 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
         # Fix: Matplotlib version 3.3.2 to 3.3.3
         # Attribute _facecolors3d changed to _facecolor3d in
         # matplotlib version 3.3.3
-        try:
+        if _compare_version(mpl.__version__, "<", "3.3.3"):
             axes.collections[0]._facecolors3d[faces_outside] = color
-        except AttributeError:
+            if axes.collections[0]._edgecolors3d.size == 0:
+                axes.collections[0].set_edgecolor(
+                    axes.collections[0]._facecolors3d
+                )
+            axes.collections[0]._edgecolors3d[faces_outside] = color
+        else:
             axes.collections[0]._facecolor3d[faces_outside] = color
+            if axes.collections[0]._edgecolor3d.size == 0:
+                axes.collections[0].set_edgecolor(
+                    axes.collections[0]._facecolor3d
+                )
+            axes.collections[0]._edgecolor3d[faces_outside] = color
         if label and legend:
             patch_list.append(Patch(color=color, label=label))
     # plot legend only if indicated and labels provided
@@ -1476,14 +1486,27 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
 
 
 @fill_doc
-def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
-                  hemi='left', view='lateral', engine='matplotlib',
-                  threshold=1e-14, alpha='auto', vmin=None, vmax=None,
-                  cmap='gist_ncar', cbar_tick_format="auto",
-                  bg_on_data=False, darkness=.7,
-                  title=None, title_font_size=18,
-                  output_file=None, axes=None,
-                  figure=None, **kwargs):
+def plot_surf_roi(surf_mesh,
+                  roi_map,
+                  bg_map=None,
+                  hemi='left',
+                  view='lateral',
+                  engine='matplotlib',
+                  avg_method='median',
+                  threshold=1e-14,
+                  alpha='auto',
+                  vmin=None,
+                  vmax=None,
+                  cmap='gist_ncar',
+                  cbar_tick_format="auto",
+                  bg_on_data=False,
+                  darkness=0.7,
+                  title=None,
+                  title_font_size=18,
+                  output_file=None,
+                  axes=None,
+                  figure=None,
+                  **kwargs):
     """Plot ROI on a surface mesh with optional background.
 
     .. versionadded:: 0.3
@@ -1537,6 +1560,14 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
             Please report bugs that you may encounter.
 
         Default='matplotlib'.
+
+    %(avg_method)s
+
+        .. note::
+            This option is currently only implemented for the
+            ``matplotlib`` engine.
+
+        Default='median'.
 
     threshold : a number or None, optional
         Threshold regions that are labelled 0.
@@ -1630,15 +1661,27 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
 
     if cbar_tick_format == "auto":
         cbar_tick_format = "." if engine == "plotly" else "%i"
-    display = plot_surf(mesh, surf_map=roi, bg_map=bg_map,
-                        hemi=hemi, view=view, engine=engine,
-                        avg_method='median', threshold=threshold,
-                        cmap=cmap, symmetric_cmap=False,
+
+    display = plot_surf(mesh,
+                        surf_map=roi,
+                        bg_map=bg_map,
+                        hemi=hemi,
+                        view=view,
+                        engine=engine,
+                        avg_method=avg_method,
+                        threshold=threshold,
+                        cmap=cmap,
                         cbar_tick_format=cbar_tick_format,
-                        alpha=alpha, bg_on_data=bg_on_data,
-                        darkness=darkness, vmin=vmin, vmax=vmax,
-                        title=title, title_font_size=title_font_size,
-                        output_file=output_file, axes=axes,
-                        figure=figure, **kwargs)
+                        alpha=alpha,
+                        bg_on_data=bg_on_data,
+                        darkness=darkness,
+                        vmin=vmin,
+                        vmax=vmax,
+                        title=title,
+                        title_font_size=title_font_size,
+                        output_file=output_file,
+                        axes=axes,
+                        figure=figure,
+                        **kwargs)
 
     return display
