@@ -72,6 +72,11 @@ def _get_colorbar_and_data_ranges(
     The limits for the colorbar depend on the symmetric_cbar argument. Please 
     refer to docstring of plot_stat_map.
     """
+    # handle invalid vmin/vmax inputs
+    if (vmin is not None) and (not np.isfinite(vmin)):
+        vmin = None
+    if (vmax is not None) and (not np.isfinite(vmax)):
+        vmax = None
 
     # avoid dealing with masked_array:
     if hasattr(stat_map_data, '_mask'):
@@ -150,6 +155,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
                       brain_color=(0.5, 0.5, 0.5),
                       decimals=False,
                       radiological=False,
+                      plot_abs=False,
                       **kwargs):
     """Refer to the docstring of plot_img for parameters not listed below.
 
@@ -226,6 +232,8 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
                             cmap=plt.cm.gray, interpolation=interpolation)
 
     if img is not None and img is not False:
+        if plot_abs:
+            data = np.abs(data)
         display.add_overlay(new_img_like(img, data, affine),
                             threshold=threshold, interpolation=interpolation,
                             colorbar=colorbar, vmin=vmin, vmax=vmax,
@@ -1116,7 +1124,7 @@ def plot_glass_brain(stat_map_img,
         cbar_tick_format=cbar_tick_format, display_factory=display_factory,
         vmin=vmin, vmax=vmax, cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
         resampling_interpolation=resampling_interpolation,
-        radiological=radiological, **kwargs)
+        radiological=radiological, plot_abs=plot_abs, **kwargs)
 
     if stat_map_img is None and 'l' in display.axes:
         display.axes['l'].ax.invert_xaxis()
