@@ -323,6 +323,7 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
     return _fill_html_template(info, embed_js=True)
 
 
+@fill_doc
 def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
               cmap=cm.cold_hot, black_bg=False, vmax=None, vmin=None,
               bg_on_data=False, darkness=.7, symmetric_cmap=True,
