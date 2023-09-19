@@ -238,13 +238,13 @@ def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):
     )
 
     assert request_mocker.url_count == 1
-    assert bunch["map"] == str(
+    assert bunch["maps"] == str(
         tmp_path / "craddock_2012" / "scorr05_mean_all.nii.gz"
     )
-    assert bunch_rand["map"] == str(
+    assert bunch_rand["maps"] == str(
         tmp_path / "craddock_2012" / "random_all.nii.gz"
     )
-    assert bunch_no_mean["map"] == str(
+    assert bunch_no_mean["maps"] == str(
         tmp_path / "craddock_2012" / "scorr05_2level_all.nii.gz"
     )
     assert bunch.description != ""
@@ -277,7 +277,7 @@ def test_fetch_atlas_smith_2009(tmp_path, request_mocker):
     bunch = atlas.fetch_atlas_smith_2009(
         data_dir=tmp_path, verbose=0, dimension=20
     )
-    assert bunch["map"] == str(tmp_path / "smith_2009" / "rsn20.nii.gz")
+    assert bunch["maps"] == str(tmp_path / "smith_2009" / "rsn20.nii.gz")
     assert len(bunch.keys()) == 2
     assert bunch.description != ""
 
@@ -526,14 +526,14 @@ def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
     name_sym = "template_cambridge_basc_multiscale_nii_sym"
     basename_sym = "template_cambridge_basc_multiscale_sym_scale007.nii.gz"
 
-    assert data_sym["map"] == str(
+    assert data_sym["maps"] == str(
         tmp_path / dataset_name / name_sym / basename_sym
     )
 
     name_asym = "template_cambridge_basc_multiscale_nii_asym"
     basename_asym = "template_cambridge_basc_multiscale_asym_scale007.nii.gz"
 
-    assert data_asym["map"] == str(
+    assert data_asym["maps"] == str(
         tmp_path / dataset_name / name_asym / basename_asym
     )
     assert len(data_sym) == 2
