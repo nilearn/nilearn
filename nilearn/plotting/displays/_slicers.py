@@ -97,6 +97,7 @@ class BaseSlicer:
         # subclassing
         raise NotImplementedError
 
+    @fill_doc
     @classmethod
     def init_with_figure(
         cls,
@@ -248,6 +249,7 @@ class BaseSlicer:
         )
         ax.set_zorder(1000)
 
+    @fill_doc
     def add_overlay(
         self,
         img,
@@ -320,6 +322,7 @@ class BaseSlicer:
 
         plt.draw_if_interactive()
 
+    @fill_doc
     def add_contours(self, img, threshold=1e-6, filled=False, **kwargs):
         """Contour a 3D map in all the views.
 
@@ -558,6 +561,7 @@ class BaseSlicer:
         self._colorbar_ax.yaxis.set_tick_params(width=0)
         self._cbar.outline.set_edgecolor(outline_color)
 
+    @fill_doc
     def add_edges(self, img, color="r"):
         """Plot the edges of a 3D map in all the views.
 
@@ -841,6 +845,7 @@ class OrthoSlicer(BaseSlicer):
     _axes_class = CutAxes
     _default_figsize = [2.2, 3.5]
 
+    @fill_doc
     @classmethod
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
         """Instantiate the slicer and find cut coordinates.
