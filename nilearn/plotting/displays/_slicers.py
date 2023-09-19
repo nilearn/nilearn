@@ -399,18 +399,16 @@ class BaseSlicer:
 
         if threshold is not None:
             data = _safe_get_data(img, ensure_finite=True)
-            if threshold == 0:
-                data = np.ma.masked_equal(data, 0, copy=False)
-            else:
-                data = np.ma.masked_inside(
-                    data, -threshold, threshold, copy=False
-                )
-                vmin = kwargs.get("vmin")
-                vmax = kwargs.get("vmax")
-                if vmin is not None and vmin >= -threshold:
-                    data = np.ma.masked_where(data < vmin, data, copy=False)
-                if vmax is not None and vmax <= threshold:
-                    data = np.ma.masked_where(data > vmax, data, copy=False)
+            vmin = kwargs.get("vmin")
+            vmax = kwargs.get("vmax")
+
+            data = np.ma.masked_where(
+                np.abs(data) <= threshold, data, copy=False
+            )
+            if vmin is not None and vmin >= -threshold:
+                data = np.ma.masked_where(data < vmin, data, copy=False)
+            if vmax is not None and vmax <= threshold:
+                data = np.ma.masked_where(data > vmax, data, copy=False)
             img = new_img_like(img, data, img.affine)
 
         affine = img.affine
