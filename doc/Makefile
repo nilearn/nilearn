@@ -144,6 +144,9 @@ doctest:
 	@echo "Testing of doctests in the sources finished, look at the " \
 	      "results in $(BUILDDIR)/doctest/output.txt."
 
+fill_doc_check:
+	grep --include '*.html' -rn _build/html/ -e '%('
+
 download-data:
 
 zip: html pdf
