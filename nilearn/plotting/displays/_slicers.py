@@ -97,8 +97,8 @@ class BaseSlicer:
         # subclassing
         raise NotImplementedError
 
-    @fill_doc
     @classmethod
+    @fill_doc  # the fill_doc decorator must be last applied
     def init_with_figure(
         cls,
         img,
@@ -471,6 +471,7 @@ class BaseSlicer:
                 ims.append(im)
         return ims
 
+    @fill_doc
     def _show_colorbar(
         self, cmap, norm, cbar_vmin=None, cbar_vmax=None, threshold=None
     ):
@@ -845,8 +846,8 @@ class OrthoSlicer(BaseSlicer):
     _axes_class = CutAxes
     _default_figsize = [2.2, 3.5]
 
-    @fill_doc
     @classmethod
+    @fill_doc  # the fill_doc decorator must be last applied
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
         """Instantiate the slicer and find cut coordinates.
 
