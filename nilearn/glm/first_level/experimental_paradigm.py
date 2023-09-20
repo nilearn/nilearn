@@ -182,7 +182,7 @@ STRATEGY = {"modulation": "sum"}
 
 
 def handle_modulation_of_duplicate_events(events):
-    """Deal modulation of duplicate events if they have one.
+    """Deal with modulation of duplicate events if they have one.
 
     Currently the strategy is to sum the modulation values of duplicate events.
     """
