@@ -44,6 +44,8 @@ Fix bug in method ``transform_imgs`` of :class:`~maskers.MultiNiftiMapsMasker` a
 
 - Set edgecolors to be the same as facecolors in :func:`~plotting.plot_surf_contours` so that ROI contours are rendered clearly (:gh:`3973` by `Yasmin Mzayek`_)
 
+- Refactor deprecation of behavior of :func:`~datasets.fetch_atlas_craddock_2012`, :func:`~datasets.fetch_atlas_smith_2009` and :func:`~datasets.fetch_atlas_basc_multiscale_2015` fetchers including using API consistent ``maps`` key (:gh:`3987` by `Yasmin Mzayek`_)
+
 Enhancements
 ------------
 
