@@ -146,7 +146,7 @@ doctest:
 
 fill_doc_check:
 	mkdir -p tmp
-	grep --include "*.html" -rn "_build/html/" -e "%(" > tmp/doc_check.txt
+	grep --include "*.html" -rn "_build/html/" -e "\%(" > tmp/doc_check.txt
 
 download-data:
 
