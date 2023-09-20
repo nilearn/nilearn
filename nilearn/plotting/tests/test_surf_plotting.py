@@ -1066,7 +1066,7 @@ def test_plot_surf_contours_error():
     (0, np.nextafter(0, 1), "%.1f", [0.e+000, 5.e-324]),
 ])
 def test_get_ticks_matplotlib(vmin, vmax, cbar_tick_format, expected):
-    ticks = _get_ticks_matplotlib(vmin, vmax, cbar_tick_format)
+    ticks = _get_ticks_matplotlib(vmin, vmax, cbar_tick_format, threshold=None)
     assert 1 <= len(ticks) <= 5
     assert ticks[0] == vmin and ticks[-1] == vmax
     assert len(ticks) == len(expected) and (ticks == expected).all()
