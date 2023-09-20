@@ -304,6 +304,7 @@ jobs:
                 set -o pipefail;
                 PATTERN=$(cat ../pattern.txt) make $(cat ../build.txt) 2>&1 | tee log.txt;
         -   name: Check for unreplaced argument in docstrings
+            if: always()
             run: |
                 bash build_tools/github/fill_doc_check.sh
                 cat doc/tmp/doc_check.txt
