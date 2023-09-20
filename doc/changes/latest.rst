@@ -18,6 +18,8 @@ Fix bug in method ``transform_imgs`` of :class:`~maskers.MultiNiftiMapsMasker` a
 
 - Fix bug that would prevent using `symmetric_cmap=True` or the `avg_method` argument with :func:`~plotting.plot_surf_roi` (:gh:`3942` by `Rémi Gau`_).
 
+- Fixes a bug that would lead to an error when loading a fsaverage surface while relying on numpy >= 1.24.x (:gh:`3644` by `Rémi Gau`_).
+
 - Fix bug that would prevent loading the confounds of a gifti file in actual fmriprep datasets (:gh:`3819` by `Rémi Gau`_).
 
 - Fix bug that prevented using dataframes as input for second level GLM when computing contrasts (:gh:`3879` by `Rémi Gau`_).
