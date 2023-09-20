@@ -397,20 +397,6 @@ class BaseSlicer:
             img = reorder_img(img, resample=resampling_interpolation)
         threshold = float(threshold) if threshold is not None else None
 
-        if threshold is not None:
-            data = _safe_get_data(img, ensure_finite=True)
-            vmin = kwargs.get("vmin")
-            vmax = kwargs.get("vmax")
-
-            data = np.ma.masked_where(
-                np.abs(data) <= threshold, data, copy=False
-            )
-            if vmin is not None and vmin >= -threshold:
-                data = np.ma.masked_where(data < vmin, data, copy=False)
-            if vmax is not None and vmax <= threshold:
-                data = np.ma.masked_where(data > vmax, data, copy=False)
-            img = new_img_like(img, data, img.affine)
-
         affine = img.affine
         data = _safe_get_data(img, ensure_finite=True)
         data_bounds = get_bounds(data.shape, affine)
@@ -465,14 +451,35 @@ class BaseSlicer:
         ims = []
         to_iterate_over = zip(self.axes.values(), data_2d_list)
         for display_ax, data_2d in to_iterate_over:
+            # If data_2d is completely masked, then there is nothing to
+            # plot. Hence, no point to do imshow().
             if data_2d is not None:
-                # If data_2d is completely masked, then there is nothing to
-                # plot. Hence, no point to do imshow().
+                data_2d = self._threshold(
+                    data_2d,
+                    threshold,
+                    vmin=kwargs.get("vmin"),
+                    vmax=kwargs.get("vmax"),
+                )
+
                 im = display_ax.draw_2d(
                     data_2d, data_bounds, bounding_box, type=type, **kwargs
                 )
                 ims.append(im)
         return ims
+
+    def _threshold(self, data, threshold=None, vmin=None, vmax=None):
+        """Threshold the data."""
+        if threshold is not None:
+            data = np.ma.masked_where(
+                np.abs(data) <= threshold,
+                data,
+                copy=False,
+            )
+            if vmin is not None and vmin >= -threshold:
+                data = np.ma.masked_where(data < vmin, data, copy=False)
+            if vmax is not None and vmax <= threshold:
+                data = np.ma.masked_where(data > vmax, data, copy=False)
+        return data
 
     @fill_doc
     def _show_colorbar(

@@ -431,6 +431,10 @@ class GlassBrainAxes(BaseAxes):
         else:
             data_selection = data
 
+        # take absolute value if needed
+        if self._plot_abs:
+            data_selection = np.abs(data_selection)
+
         # We need to make sure data_selection is not empty in the x axis
         # This should be the case since we expect images in MNI space
         if data_selection.shape[0] == 0:
