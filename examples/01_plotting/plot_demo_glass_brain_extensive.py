@@ -105,7 +105,9 @@ plotting.plot_glass_brain(
     cmap="viridis",
 )
 
-# set vmin to the threshold to use the full color range
+###############################################################################
+# Here we set ``vmin`` to the threshold to use the full color range instead of
+# losing colours due to the thresholding.
 plotting.plot_glass_brain(
     stat_img,
     colorbar=True,
