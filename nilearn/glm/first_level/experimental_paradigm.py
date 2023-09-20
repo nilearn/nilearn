@@ -24,9 +24,6 @@ def check_events(events):
     It is valid if the events data has ``'onset'`` and ``'duration'`` keys
     with numeric non NaN values.
 
-    This function also handles duplicate events
-    by summing their modulation if they have one.
-
     Parameters
     ----------
     events : pandas DataFrame
@@ -34,6 +31,11 @@ def check_events(events):
 
     Returns
     -------
+    events : pandas DataFrame
+        Events data that describes a functional experimental paradigm.
+
+    The dataframe has the following columns:
+
     trial_type : array of shape (n_events,), dtype='s'
         Per-event experimental conditions identifier.
         Defaults to np.repeat('dummy', len(onsets)).
@@ -95,19 +97,11 @@ def check_events(events):
 
     _check_unexpected_columns(events_copy)
 
-    events_copy = _handle_modulation(events_copy)
-
-    cleaned_events = _handle_duplicate_events(events_copy)
-
-    trial_type = cleaned_events["trial_type"].values
-    onset = cleaned_events["onset"].values
-    duration = cleaned_events["duration"].values
-    modulation = cleaned_events["modulation"].values
-    return trial_type, onset, duration, modulation
+    return _handle_modulation(events_copy)
 
 
 def _check_columns(events):
-    # Column checks
+    """Check events has onset and duration numeric columns with no NaN."""
     for col_name in ["onset", "duration"]:
         if col_name not in events.columns:
             raise ValueError(
@@ -129,6 +123,7 @@ def _check_columns(events):
 
 
 def _handle_missing_trial_types(events):
+    """Create 'dummy' events trial_type if the column is not present."""
     if "trial_type" not in events.columns:
         warnings.warn(
             "'trial_type' column not found in the given events data."
@@ -138,6 +133,7 @@ def _handle_missing_trial_types(events):
 
 
 def _check_null_duration(events):
+    """Warn if there are events with null duration."""
     conditions_with_null_duration = events["trial_type"][
         events["duration"] == 0
     ].unique()
@@ -149,6 +145,7 @@ def _check_null_duration(events):
 
 
 def _handle_modulation(events):
+    """Set the modulation column to 1 if it is not present."""
     if "modulation" in events.columns:
         print(
             "A 'modulation' column was found in "
@@ -163,8 +160,7 @@ VALID_FIELDS = {"onset", "duration", "trial_type", "modulation"}
 
 
 def _check_unexpected_columns(events):
-    # Warn for each unexpected column that will
-    # not be used afterwards
+    """Warn for each unexpected column that will not be used afterwards."""
     unexpected_columns = list(set(events.columns).difference(VALID_FIELDS))
     if unexpected_columns:
         warnings.warn(
@@ -185,7 +181,11 @@ COLUMN_DEFINING_EVENT_IDENTITY = ["trial_type", "onset", "duration"]
 STRATEGY = {"modulation": "sum"}
 
 
-def _handle_duplicate_events(events):
+def handle_modulation_of_duplicate_events(events):
+    """Deal with modulation of duplicate events if they have one.
+
+    Currently the strategy is to sum the modulation values of duplicate events.
+    """
     cleaned_events = (
         events.groupby(COLUMN_DEFINING_EVENT_IDENTITY, sort=False)
         .agg(STRATEGY)
