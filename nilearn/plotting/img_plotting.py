@@ -73,9 +73,9 @@ def _get_colorbar_and_data_ranges(
     refer to docstring of plot_stat_map.
     """
     # handle invalid vmin/vmax inputs
-    if (vmin is not None) and (not np.isfinite(vmin)):
+    if (not isinstance(vmin, numbers.Number)) or (not np.isfinite(vmin)):
         vmin = None
-    if (vmax is not None) and (not np.isfinite(vmax)):
+    if (not isinstance(vmax, numbers.Number)) or (not np.isfinite(vmax)):
         vmax = None
 
     # avoid dealing with masked_array:
