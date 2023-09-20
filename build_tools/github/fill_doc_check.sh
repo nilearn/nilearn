@@ -13,8 +13,7 @@
 #
 # See nilearn/_utils/docs.py.
 
-
-set -e -x -u -o pipefail
+set -x
 
 mkdir -p doc/tmp
 grep --include "*.html" -rn "doc/_build/html/" -e "%(" > doc/tmp/doc_check.txt
