@@ -303,6 +303,11 @@ jobs:
                 cd doc;
                 set -o pipefail;
                 PATTERN=$(cat ../pattern.txt) make $(cat ../build.txt) 2>&1 | tee log.txt;
+        -   name: Check for unreplaced argument in docstrings
+            run: |
+                cd doc
+                bash fill_doc_check.sh
+                cat tmp/doc_check.txt
         -   name: Upload documentation
             uses: actions/upload-artifact@v3
             with:
