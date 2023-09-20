@@ -12,6 +12,8 @@ NEW
 
 Fixes
 -----
+Fix bug in method ``transform_imgs`` of :class:`~maskers.MultiNiftiMapsMasker` and :class:`~maskers.MultiNiftiLabelsMasker` that would raise an error if a list of ``sample_mask`` was specified to ``fit_transform`` (:gh:`3971` by `Alexandre Cionca`_).
+
 - Fix bug in ``nilearn.plotting.surf_plotting._plot_surf_matplotlib`` that would make vertices transparent when saving in PDF or SVG format (:gh:`3860` by `Mathieu Dugré`_).
 
 - Fix bug that would prevent using `symmetric_cmap=True` or the `avg_method` argument with :func:`~plotting.plot_surf_roi` (:gh:`3942` by `Rémi Gau`_).
@@ -37,6 +39,8 @@ Fixes
 - Fix ``fit_transform`` behavior to match when ``fit`` method is passed image data (:gh:`3897` by `Yasmin Mzayek`_)
 
 - Allow using both vmin and threshold with  "plotly" engine to be consistent with "matplotlib" behavior (:gh:`3945` by `Yasmin Mzayek`_)
+
+- Set edgecolors to be the same as facecolors in :func:`~plotting.plot_surf_contours` so that ROI contours are rendered clearly (:gh:`3973` by `Yasmin Mzayek`_)
 
 Enhancements
 ------------

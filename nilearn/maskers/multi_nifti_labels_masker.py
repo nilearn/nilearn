@@ -188,11 +188,14 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         if confounds is None:
             confounds = itertools.repeat(None, len(imgs_list))
 
+        if sample_mask is None:
+            sample_mask = itertools.repeat(None, len(imgs_list))
+
         func = self._cache(self.transform_single_imgs)
 
         region_signals = Parallel(n_jobs=n_jobs)(
-            delayed(func)(imgs=imgs, confounds=cfs, sample_mask=sample_mask)
-            for imgs, cfs in zip(niimg_iter, confounds)
+            delayed(func)(imgs=imgs, confounds=cfs, sample_mask=sms)
+            for imgs, cfs, sms in zip(niimg_iter, confounds, sample_mask)
         )
         return region_signals
 

@@ -12,7 +12,7 @@ on:
 jobs:
     min_requirements:
         if: github.repository == 'nilearn/nilearn'
-        runs-on: ubuntu-20.04
+        runs-on: ubuntu-latest
         name: Python 3.7, minimal requirements without Matplotlib
         defaults:
             run:
@@ -43,7 +43,7 @@ jobs:
 
     min_requirements_matplotlib:
         if: github.repository == 'nilearn/nilearn'
-        runs-on: ubuntu-20.04
+        runs-on: ubuntu-latest
         name: Python 3.7, minimal requirements with Matplotlib
         defaults:
             run:

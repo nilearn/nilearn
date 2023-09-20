@@ -1559,7 +1559,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
             ax0.set_yticks([])
 
         # Carpet plot
-        if _compare_version(matplotlib.__version__, ">", "3.7.2"):
+        if _compare_version(matplotlib.__version__, ">=", "3.8.0rc1"):
             axes.remove()  # remove axes for newer versions of mpl
         axes = plt.subplot(gs[1])  # overwrites axes with older versions of mpl
         axes.imshow(
