@@ -42,7 +42,7 @@ from nilearn._utils import fill_doc
 from nilearn.glm._utils import full_rank
 from nilearn.glm.first_level.experimental_paradigm import (
     check_events,
-    sum_modulation_of_duplicate_events,
+    handle_modulation_of_duplicate_events,
 )
 from nilearn.glm.first_level.hemodynamic_models import (
     _orthogonalize,
@@ -238,7 +238,7 @@ def _convolve_regressors(
     regressor_matrix = None
 
     events_copy = check_events(events)
-    cleaned_events = sum_modulation_of_duplicate_events(events_copy)
+    cleaned_events = handle_modulation_of_duplicate_events(events_copy)
 
     trial_type = cleaned_events["trial_type"].values
     onset = cleaned_events["onset"].values

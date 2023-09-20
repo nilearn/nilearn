@@ -101,7 +101,7 @@ def check_events(events):
 
 
 def _check_columns(events):
-    # Column checks
+    """Check events has onset and duration numeric columns with no NaN."""
     for col_name in ["onset", "duration"]:
         if col_name not in events.columns:
             raise ValueError(
@@ -123,6 +123,7 @@ def _check_columns(events):
 
 
 def _handle_missing_trial_types(events):
+    """Create 'dummy' events trial_type if the column is not present."""
     if "trial_type" not in events.columns:
         warnings.warn(
             "'trial_type' column not found in the given events data."
@@ -132,6 +133,7 @@ def _handle_missing_trial_types(events):
 
 
 def _check_null_duration(events):
+    """Warn if there are events with null duration."""
     conditions_with_null_duration = events["trial_type"][
         events["duration"] == 0
     ].unique()
@@ -143,6 +145,7 @@ def _check_null_duration(events):
 
 
 def _handle_modulation(events):
+    """Set the modulation column to 1 if it is not present."""
     if "modulation" in events.columns:
         print(
             "A 'modulation' column was found in "
@@ -157,8 +160,7 @@ VALID_FIELDS = {"onset", "duration", "trial_type", "modulation"}
 
 
 def _check_unexpected_columns(events):
-    # Warn for each unexpected column that will
-    # not be used afterwards
+    """Warn for each unexpected column that will not be used afterwards."""
     unexpected_columns = list(set(events.columns).difference(VALID_FIELDS))
     if unexpected_columns:
         warnings.warn(
@@ -179,8 +181,11 @@ COLUMN_DEFINING_EVENT_IDENTITY = ["trial_type", "onset", "duration"]
 STRATEGY = {"modulation": "sum"}
 
 
-def sum_modulation_of_duplicate_events(events):
-    """Sum modulation of duplicate events if they have one."""
+def handle_modulation_of_duplicate_events(events):
+    """Deal modulation of duplicate events if they have one.
+
+    Currently the strategy is to sum the modulation values of duplicate events.
+    """
     cleaned_events = (
         events.groupby(COLUMN_DEFINING_EVENT_IDENTITY, sort=False)
         .agg(STRATEGY)

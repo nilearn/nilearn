@@ -15,7 +15,7 @@ from numpy.testing import assert_array_equal
 from nilearn._utils.data_gen import basic_paradigm
 from nilearn.glm.first_level import check_events
 from nilearn.glm.first_level.experimental_paradigm import (
-    sum_modulation_of_duplicate_events,
+    handle_modulation_of_duplicate_events,
 )
 
 from ._utils import (
@@ -172,7 +172,7 @@ def test_sum_modulation_of_duplicate_events():
 
     # Check that a warning is given to the user
     with pytest.warns(UserWarning, match="Duplicated events were detected."):
-        events_copy = sum_modulation_of_duplicate_events(events)
+        events_copy = handle_modulation_of_duplicate_events(events)
     assert_array_equal(
         events_copy["trial_type"], ["c0", "c0", "c0", "c1", "c1"]
     )
