@@ -120,7 +120,7 @@ def test_explicit_fixed_effects(tmp_path):
         fixed_fx_contrast,
         fixed_fx_variance,
         fixed_fx_stat,
-        fixed_fx_z,
+        # fixed_fx_z,
     ) = compute_fixed_effects(contrasts, variance, mask)
 
     assert_almost_equal(
@@ -179,7 +179,7 @@ def test_explicit_fixed_effects_without_mask(tmp_path):
         fixed_fx_variance,
         fixed_fx_stat,
         fixed_fx_z,
-    ) = compute_fixed_effects(contrasts, variance)
+    ) = compute_fixed_effects(contrasts, variance, return_z_score=True)
     assert_almost_equal(
         get_data(fixed_fx_contrast),
         get_data(fixed_fx_dic['effect_size']))

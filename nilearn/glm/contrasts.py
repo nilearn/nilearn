@@ -367,8 +367,13 @@ class Contrast:
         return self.__rmul__(1 / float(scalar))
 
 
-def compute_fixed_effects(contrast_imgs, variance_imgs, mask=None,
-                          precision_weighted=False, dofs=None):
+def compute_fixed_effects(
+        contrast_imgs,
+        variance_imgs,
+        mask=None,
+        precision_weighted=False,
+        dofs=None,
+        return_z_score=False):
     """Compute the fixed effects, given images of effects and variance.
 
     Parameters
@@ -390,6 +395,9 @@ def compute_fixed_effects(contrast_imgs, variance_imgs, mask=None,
         the degrees of freedom of the models
         when None, it is assumed that the degrees of freedom are 100 per input.
 
+    return_z_score: Bool, optional,
+        Whether fixed_fx_z_score_img should be ouptut or not.  default=False
+
     Returns
     -------
     fixed_fx_contrast_img : Nifti1Image
@@ -401,8 +409,13 @@ def compute_fixed_effects(contrast_imgs, variance_imgs, mask=None,
     fixed_fx_stat_img : Nifti1Image
         The fixed effects stat computed within the mask.
 
-    fixed_fx_z_score_img : Nifti1Image
+    fixed_fx_z_score_img : Nifti1Image, optional
         The fixed effects corresponding z-transform
+
+    Warns
+    -----
+    FutureWarning
+        Starting in version 0.13, return_z_score will default to True
 
     """
     n_runs = len(contrast_imgs)
@@ -440,8 +453,17 @@ def compute_fixed_effects(contrast_imgs, variance_imgs, mask=None,
     fixed_fx_variance_img = masker.inverse_transform(fixed_fx_variance)
     fixed_fx_stat_img = masker.inverse_transform(fixed_fx_stat)
     fixed_fx_z_score_img = masker.inverse_transform(fixed_fx_z_score)
-    return (fixed_fx_contrast_img, fixed_fx_variance_img,
-            fixed_fx_stat_img, fixed_fx_z_score_img)
+    warn(
+        category=FutureWarning,
+        message="The default behavior of the function will "
+        "be changed and replaced in release 0.13 "
+        "to return fixed_fz_z_score argument bt default",
+    )
+    if return_z_score:
+        return (fixed_fx_contrast_img, fixed_fx_variance_img,
+                fixed_fx_stat_img, fixed_fx_z_score_img)
+    else:
+        return fixed_fx_contrast_img, fixed_fx_variance_img, fixed_fx_stat_img
 
 
 def _compute_fixed_effects_params(
