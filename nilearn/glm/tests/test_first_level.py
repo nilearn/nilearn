@@ -141,7 +141,6 @@ def test_explicit_fixed_effects(tmp_path):
     with pytest.raises(ValueError,
                        match='degrees of freedom .* differs .* contrast images'):
         compute_fixed_effects(contrasts, variance, mask, dofs=[100])
-        compute_fixed_effects(contrasts, variance, mask, dofs=[100])
 
     del mask, multi_session_model
 

@@ -3,7 +3,7 @@ import pytest
 from numpy.testing import assert_almost_equal
 from sklearn.datasets import make_regression
 from sklearn.linear_model import LinearRegression
-
+import scipy.stats as st
 
 from nilearn.glm.contrasts import (
     Contrast,
@@ -170,8 +170,9 @@ def test_low_level_fixed_effects():
     assert_almost_equal(Xf, 1.5 * X1)
     assert_almost_equal(Vf, 1.25 * V1)
     assert_almost_equal(tf, (Xf / np.sqrt(Vf)).ravel())
+    assert_almost_equal(zf, st.norm.isf(st.t.sf(tf, 200))) 
 
-    # Same thing, but now there is no precision weighting
+    # Same thing, but now there is precision weighting
     Xw, Vw, _, _ = _compute_fixed_effects_params(
         [X1, X2], [V1, V2], dofs=[200, 200],
         precision_weighted=True)
