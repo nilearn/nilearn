@@ -32,7 +32,7 @@ icbm = datasets.fetch_icbm152_2009()
 
 # Smith ICA BrainMap 2009
 smith_bm20 = datasets.fetch_atlas_smith_2009(resting=False, dimension=20)[
-    "map"
+    "maps"
 ]
 
 #########################################################################
@@ -71,19 +71,19 @@ plotting.show()
 #     # Smith ICA Atlas and Brain Maps 2009
 #     smith_rsn10 = datasets.fetch_atlas_smith_2009(
 #         resting=True, dimension=10
-#     )["map"]
+#     )["maps"]
 #     smith_rsn20 = datasets.fetch_atlas_smith_2009(
 #         resting=True, dimension=20
-#     )["map"]
+#     )["maps"]
 #     smith_rsn70 = datasets.fetch_atlas_smith_2009(
 #         resting=True, dimension=70
-#     )["map"]
+#     )["maps"]
 #     smith_bm10 = datasets.fetch_atlas_smith_2009(
 #         resting=False, dimension=10
-#     )["map"]
+#     )["maps"]
 #     smith_bm70 = datasets.fetch_atlas_smith_2009(
 #         resting=False, dimension=70
-#     )["map"]
+#     )["maps"]
 #
 #     # Multi Subject Dictionary Learning Atlas
 #     msdl = datasets.fetch_atlas_msdl()
