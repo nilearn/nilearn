@@ -305,7 +305,7 @@ jobs:
                 PATTERN=$(cat ../pattern.txt) make $(cat ../build.txt) 2>&1 | tee log.txt;
         -   name: Check for unreplaced argument in docstrings
             run: |
-                make -C doc fill_doc_check
+                bash build_tools/github/fill_doc_check.sh
                 cat doc/tmp/doc_check.txt
         -   name: Upload documentation
             uses: actions/upload-artifact@v3

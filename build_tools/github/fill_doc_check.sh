@@ -16,5 +16,5 @@
 
 set -e -x -u -o pipefail
 
-mkdir -p tmp
-grep --include "*.html" -rn "_build/html/" -e "%(" > tmp/doc_check.txt
+mkdir -p doc/tmp
+grep --include "*.html" -rn "doc/_build/html/" -e "%(" > doc/tmp/doc_check.txt
