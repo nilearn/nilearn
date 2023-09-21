@@ -517,7 +517,7 @@ def compute_fixed_effects(
 def _compute_fixed_effects_params(
     contrasts, variances, precision_weighted, dofs
 ):
-    """Compute the fixed effects t-statistic, contrast, variance, \
+    """Compute the fixed effects t/F-statistic, contrast, variance, \
     given arrays of effects and variance."""
     tiny = 1.0e-16
     contrasts, variances = np.asarray(contrasts), np.asarray(variances)
