@@ -16,4 +16,4 @@
 set -x
 
 mkdir -p doc/tmp
-grep --include "*.html" -rn "doc/_build/html/" -e "%(" > doc/tmp/doc_check.txt
+grep --include "*.html" -rn "doc/_build/html/" -e "%(" > doc/tmp/doc_check.txt || true
