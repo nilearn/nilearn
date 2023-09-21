@@ -31,17 +31,17 @@ def expression_to_contrast_vector(expression, design_columns):
     """
     if expression in design_columns:
         contrast_vector = np.zeros(len(design_columns))
-        contrast_vector[list(design_columns).index(expression)] = 1.
+        contrast_vector[list(design_columns).index(expression)] = 1.0
         return contrast_vector
     df = pd.DataFrame(np.eye(len(design_columns)), columns=design_columns)
     try:
         contrast_vector = df.eval(expression, engine="python").values
     except Exception:
         raise ValueError(
-            f'The expression ({expression}) is not valid. '
-            'This could be due to '
-            'defining the contrasts using design matrix columns that are '
-            'invalid python identifiers.'
+            f"The expression ({expression}) is not valid. "
+            "This could be due to "
+            "defining the contrasts using design matrix columns that are "
+            "invalid python identifiers."
         )
     return contrast_vector
 
@@ -78,15 +78,16 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
         dim = con_val.shape[0]
 
     if contrast_type is None:
-        contrast_type = 't' if dim == 1 else 'F'
+        contrast_type = "t" if dim == 1 else "F"
 
-    acceptable_contrast_types = ['t', 'F']
+    acceptable_contrast_types = ["t", "F"]
     if contrast_type not in acceptable_contrast_types:
         raise ValueError(
             f"'{contrast_type}' is not a known contrast type. "
-            f"Allowed types are {acceptable_contrast_types}.")
+            f"Allowed types are {acceptable_contrast_types}."
+        )
 
-    if contrast_type == 't':
+    if contrast_type == "t":
         effect_ = np.zeros((1, labels.size))
         var_ = np.zeros(labels.size)
         for label_ in regression_result:
@@ -94,28 +95,36 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
             resl = regression_result[label_].Tcontrast(con_val)
             effect_[:, label_mask] = resl.effect.T
             var_[label_mask] = (resl.sd ** 2).T
-    elif contrast_type == 'F':
+    elif contrast_type == "F":
         from scipy.linalg import sqrtm
+
         effect_ = np.zeros((dim, labels.size))
         var_ = np.zeros(labels.size)
         for label_ in regression_result:
             label_mask = labels == label_
             reg = regression_result[label_]
             cbeta = np.atleast_2d(np.dot(con_val, reg.theta))
-            invcov = np.linalg.inv(np.atleast_2d(
-                reg.vcov(matrix=con_val, dispersion=1.0)))
+            invcov = np.linalg.inv(
+                np.atleast_2d(reg.vcov(matrix=con_val, dispersion=1.0))
+            )
             wcbeta = np.dot(sqrtm(invcov), cbeta)
             rss = reg.dispersion
             effect_[:, label_mask] = wcbeta
             var_[label_mask] = rss
 
     dof_ = regression_result[label_].df_residuals
-    return Contrast(effect=effect_, variance=var_, dim=dim, dof=dof_,
-                    contrast_type=contrast_type)
+    return Contrast(
+        effect=effect_,
+        variance=var_,
+        dim=dim,
+        dof=dof_,
+        contrast_type=contrast_type,
+    )
 
 
-def _compute_fixed_effect_contrast(labels, results, con_vals,
-                                   contrast_type=None):
+def _compute_fixed_effect_contrast(
+    labels, results, con_vals, contrast_type=None
+):
     """Compute the summary contrast assuming fixed effects.
 
     Adds the same contrast applied to all labels and results lists.
@@ -125,7 +134,7 @@ def _compute_fixed_effect_contrast(labels, results, con_vals,
     n_contrasts = 0
     for i, (lab, res, con_val) in enumerate(zip(labels, results, con_vals)):
         if np.all(con_val == 0):
-            warn(f'Contrast for session {int(i)} is null')
+            warn(f"Contrast for session {int(i)} is null")
             continue
         contrast_ = compute_contrast(lab, res, con_val, contrast_type)
         if contrast is None:
@@ -134,8 +143,8 @@ def _compute_fixed_effect_contrast(labels, results, con_vals,
             contrast = contrast + contrast_
         n_contrasts += 1
     if contrast is None:
-        raise ValueError('all contrasts provided were null contrasts')
-    return contrast * (1. / n_contrasts)
+        raise ValueError("all contrasts provided were null contrasts")
+    return contrast * (1.0 / n_contrasts)
 
 
 class Contrast:
@@ -150,8 +159,16 @@ class Contrast:
     (high-dimensional F contrasts may lead to memory breakage).
     """
 
-    def __init__(self, effect, variance, dim=None, dof=DEF_DOFMAX,
-                 contrast_type='t', tiny=DEF_TINY, dofmax=DEF_DOFMAX):
+    def __init__(
+        self,
+        effect,
+        variance,
+        dim=None,
+        dof=DEF_DOFMAX,
+        contrast_type="t",
+        tiny=DEF_TINY,
+        dofmax=DEF_DOFMAX,
+    ):
         """Construct instance.
 
         Parameters
@@ -183,9 +200,9 @@ class Contrast:
 
         """
         if variance.ndim != 1:
-            raise ValueError('Variance array should have 1 dimension')
+            raise ValueError("Variance array should have 1 dimension")
         if effect.ndim != 2:
-            raise ValueError('Effect array should have 2 dimensions')
+            raise ValueError("Effect array should have 2 dimensions")
 
         self.effect = effect
         self.variance = variance
@@ -194,9 +211,9 @@ class Contrast:
             self.dim = effect.shape[0]
         else:
             self.dim = dim
-        if self.dim > 1 and contrast_type == 't':
-            print('Automatically converted multi-dimensional t to F contrast')
-            contrast_type = 'F'
+        if self.dim > 1 and contrast_type == "t":
+            print("Automatically converted multi-dimensional t to F contrast")
+            contrast_type = "F"
         self.contrast_type = contrast_type
         self.stat_ = None
         self.p_value_ = None
@@ -234,15 +251,19 @@ class Contrast:
         self.baseline = baseline
 
         # Case: one-dimensional contrast ==> t or t**2
-        if self.contrast_type == 'F':
-            stat = np.sum((self.effect - baseline) ** 2, 0) / \
-                self.dim / np.maximum(self.variance, self.tiny)
-        elif self.contrast_type == 't':
+        if self.contrast_type == "F":
+            stat = (
+                np.sum((self.effect - baseline) ** 2, 0)
+                / self.dim
+                / np.maximum(self.variance, self.tiny)
+            )
+        elif self.contrast_type == "t":
             # avoids division by zero
             stat = (self.effect - baseline) / np.sqrt(
-                np.maximum(self.variance, self.tiny))
+                np.maximum(self.variance, self.tiny)
+            )
         else:
-            raise ValueError('Unknown statistic type')
+            raise ValueError("Unknown statistic type")
         self.stat_ = stat.ravel()
         return self.stat_
 
@@ -266,13 +287,14 @@ class Contrast:
         if self.stat_ is None or not self.baseline == baseline:
             self.stat_ = self.stat(baseline)
         # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
-        if self.contrast_type == 't':
+        if self.contrast_type == "t":
             p_values = sps.t.sf(self.stat_, np.minimum(self.dof, self.dofmax))
-        elif self.contrast_type == 'F':
-            p_values = sps.f.sf(self.stat_, self.dim, np.minimum(
-                self.dof, self.dofmax))
+        elif self.contrast_type == "F":
+            p_values = sps.f.sf(
+                self.stat_, self.dim, np.minimum(self.dof, self.dofmax)
+            )
         else:
-            raise ValueError('Unknown statistic type')
+            raise ValueError("Unknown statistic type")
         self.p_value_ = p_values
         return p_values
 
@@ -297,13 +319,15 @@ class Contrast:
         if self.stat_ is None or not self.baseline == baseline:
             self.stat_ = self.stat(baseline)
         # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
-        if self.contrast_type == 't':
-            one_minus_pvalues = sps.t.cdf(self.stat_,
-                                          np.minimum(self.dof, self.dofmax))
+        if self.contrast_type == "t":
+            one_minus_pvalues = sps.t.cdf(
+                self.stat_, np.minimum(self.dof, self.dofmax)
+            )
         else:
-            assert self.contrast_type == 'F'
-            one_minus_pvalues = sps.f.cdf(self.stat_, self.dim,
-                                          np.minimum(self.dof, self.dofmax))
+            assert self.contrast_type == "F"
+            one_minus_pvalues = sps.f.cdf(
+                self.stat_, self.dim, np.minimum(self.dof, self.dofmax)
+            )
         self.one_minus_pvalue_ = one_minus_pvalues
         return one_minus_pvalues
 
@@ -329,8 +353,9 @@ class Contrast:
             self.one_minus_pvalue_ = self.one_minus_pvalue(baseline)
 
         # Avoid inf values kindly supplied by scipy.
-        self.z_score_ = z_score(self.p_value_,
-                                one_minus_pvalue=self.one_minus_pvalue_)
+        self.z_score_ = z_score(
+            self.p_value_, one_minus_pvalue=self.one_minus_pvalue_
+        )
         return self.z_score_
 
     def __add__(self, other):
@@ -340,17 +365,24 @@ class Contrast:
         """
         if self.contrast_type != other.contrast_type:
             raise ValueError(
-                'The two contrasts do not have consistent type dimensions')
+                "The two contrasts do not have consistent type dimensions"
+            )
         if self.dim != other.dim:
             raise ValueError(
-                'The two contrasts do not have compatible dimensions')
+                "The two contrasts do not have compatible dimensions"
+            )
         dof_ = self.dof + other.dof
-        if self.contrast_type == 'F':
-            warn('Running approximate fixed effects on F statistics.')
+        if self.contrast_type == "F":
+            warn("Running approximate fixed effects on F statistics.")
         effect_ = self.effect + other.effect
         variance_ = self.variance + other.variance
-        return Contrast(effect=effect_, variance=variance_, dim=self.dim,
-                        dof=dof_, contrast_type=self.contrast_type)
+        return Contrast(
+            effect=effect_,
+            variance=variance_,
+            dim=self.dim,
+            dof=dof_,
+            contrast_type=self.contrast_type,
+        )
 
     def __rmul__(self, scalar):
         """Multiply a contrast by a scalar."""
@@ -358,8 +390,12 @@ class Contrast:
         effect_ = self.effect * scalar
         variance_ = self.variance * scalar ** 2
         dof_ = self.dof
-        return Contrast(effect=effect_, variance=variance_, dof=dof_,
-                        contrast_type=self.contrast_type)
+        return Contrast(
+            effect=effect_,
+            variance=variance_,
+            dof=dof_,
+            contrast_type=self.contrast_type,
+        )
 
     __mul__ = __rmul__
 
@@ -368,12 +404,13 @@ class Contrast:
 
 
 def compute_fixed_effects(
-        contrast_imgs,
-        variance_imgs,
-        mask=None,
-        precision_weighted=False,
-        dofs=None,
-        return_z_score=False):
+    contrast_imgs,
+    variance_imgs,
+    mask=None,
+    precision_weighted=False,
+    dofs=None,
+    return_z_score=False,
+):
     """Compute the fixed effects, given images of effects and variance.
 
     Parameters
@@ -421,8 +458,8 @@ def compute_fixed_effects(
     n_runs = len(contrast_imgs)
     if n_runs != len(variance_imgs):
         raise ValueError(
-            f'The number of contrast images ({len(contrast_imgs)}) differs '
-            f'from the number of variance images ({len(variance_imgs)}). '
+            f"The number of contrast images ({len(contrast_imgs)}) differs "
+            f"from the number of variance images ({len(variance_imgs)}). "
         )
 
     if isinstance(mask, NiftiMasker):
@@ -433,8 +470,9 @@ def compute_fixed_effects(
         masker = NiftiMasker(mask_img=mask).fit()
 
     variances = masker.transform(variance_imgs)
-    contrasts = np.array([masker.transform(contrast_img)
-                          for contrast_img in contrast_imgs])
+    contrasts = np.array(
+        [masker.transform(contrast_img) for contrast_img in contrast_imgs]
+    )
 
     if dofs is not None:
         if len(dofs) != n_runs:
@@ -445,9 +483,14 @@ def compute_fixed_effects(
     else:
         dofs = [100] * n_runs
 
-    (fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat, fixed_fx_z_score)\
-        = _compute_fixed_effects_params(
-            contrasts, variances, precision_weighted, dofs)
+    (
+        fixed_fx_contrast,
+        fixed_fx_variance,
+        fixed_fx_stat,
+        fixed_fx_z_score,
+    ) = _compute_fixed_effects_params(
+        contrasts, variances, precision_weighted, dofs
+    )
 
     fixed_fx_contrast_img = masker.inverse_transform(fixed_fx_contrast)
     fixed_fx_variance_img = masker.inverse_transform(fixed_fx_variance)
@@ -460,40 +503,54 @@ def compute_fixed_effects(
         "to return fixed_fz_z_score argument bt default",
     )
     if return_z_score:
-        return (fixed_fx_contrast_img, fixed_fx_variance_img,
-                fixed_fx_stat_img, fixed_fx_z_score_img)
+        return (
+            fixed_fx_contrast_img,
+            fixed_fx_variance_img,
+            fixed_fx_stat_img,
+            fixed_fx_z_score_img,
+        )
     else:
         return fixed_fx_contrast_img, fixed_fx_variance_img, fixed_fx_stat_img
 
 
 def _compute_fixed_effects_params(
-        contrasts, variances, precision_weighted,  dofs):
+    contrasts, variances, precision_weighted, dofs
+):
     """Compute the fixed effects t-statistic, contrast, variance, \
     given arrays of effects and variance."""
-    tiny = 1.e-16
+    tiny = 1.0e-16
     contrasts, variances = np.asarray(contrasts), np.asarray(variances)
     variances = np.maximum(variances, tiny)
 
     if precision_weighted:
-        weights = 1. / variances
-        fixed_fx_variance = 1. / np.sum(weights, 0)
+        weights = 1.0 / variances
+        fixed_fx_variance = 1.0 / np.sum(weights, 0)
         fixed_fx_contrasts = np.sum(contrasts * weights, 0) * fixed_fx_variance
     else:
         fixed_fx_variance = np.mean(variances, 0) / len(variances)
         fixed_fx_contrasts = np.mean(contrasts, 0)
     dim = 1
-    contrast_type = 't'
+    contrast_type = "t"
     fixed_fx_contrasts_ = fixed_fx_contrasts
     if len(fixed_fx_contrasts.shape) == 2:
         dim = fixed_fx_contrasts.shape[0]
         if dim > 1:
-            contrast_type = 'F'
+            contrast_type = "F"
     else:
         fixed_fx_contrasts_ = fixed_fx_contrasts[np.newaxis]
-    con = Contrast(effect=fixed_fx_contrasts_, variance=fixed_fx_variance,
-                   dim=dim, dof=np.sum(dofs), contrast_type=contrast_type)
+    con = Contrast(
+        effect=fixed_fx_contrasts_,
+        variance=fixed_fx_variance,
+        dim=dim,
+        dof=np.sum(dofs),
+        contrast_type=contrast_type,
+    )
     fixed_fx_z_score = con.z_score()
     fixed_fx_stat = con.stat_
 
-    return (fixed_fx_contrasts, fixed_fx_variance, fixed_fx_stat,
-            fixed_fx_z_score)
+    return (
+        fixed_fx_contrasts,
+        fixed_fx_variance,
+        fixed_fx_stat,
+        fixed_fx_z_score,
+    )
