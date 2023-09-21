@@ -10,7 +10,6 @@ from nilearn.glm.contrasts import (
     _compute_fixed_effect_contrast,
     _compute_fixed_effects_params,
     compute_contrast,
-    compute_fixed_effects,
     expression_to_contrast_vector,
 )
 from nilearn.glm.first_level import run_glm
