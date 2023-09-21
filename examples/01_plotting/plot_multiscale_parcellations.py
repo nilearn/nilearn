@@ -12,7 +12,7 @@ details about different versions and different networks, please refer to its
 documentation.
 """
 
-###############################################################################
+# %%
 # Retrieving multiscale group brain parcellations
 # -----------------------------------------------
 
@@ -30,7 +30,7 @@ networks_64 = parcellations[0]["maps"]
 networks_197 = parcellations[1]["maps"]
 networks_444 = parcellations[2]["maps"]
 
-###############################################################################
+# %%
 # Visualizing brain parcellations
 # -------------------------------
 

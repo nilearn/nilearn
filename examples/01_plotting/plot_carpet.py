@@ -9,7 +9,7 @@ The :func:`nilearn.plotting.plot_carpet()` function generates a carpet plot
 from a 4D functional image.
 """
 
-###############################################################################
+# %%
 # Fetching data from ADHD dataset
 # -------------------------------
 from nilearn import datasets
@@ -25,7 +25,7 @@ print(
     f"First subject functional nifti image (4D) is at: {adhd_dataset.func[0]}"
 )
 
-###############################################################################
+# %%
 # Deriving a mask
 # ---------------
 from nilearn import masking
@@ -33,7 +33,7 @@ from nilearn import masking
 # Build an EPI-based mask because we have no anatomical data
 mask_img = masking.compute_epi_mask(adhd_dataset.func[0])
 
-###############################################################################
+# %%
 # Visualizing global patterns over time
 # -------------------------------------
 import matplotlib.pyplot as plt
@@ -49,7 +49,7 @@ display = plot_carpet(
 
 display.show()
 
-###############################################################################
+# %%
 # Deriving a label-based mask
 # ---------------------------
 # Create a gray matter/white matter/cerebrospinal fluid mask from
@@ -68,7 +68,7 @@ discrete_version[np.max(atlas_data, axis=3) == 0] = 0
 discrete_atlas_img = image.new_img_like(atlas_img, discrete_version)
 
 
-###############################################################################
+# %%
 # Visualizing global patterns, separated by tissue type
 # -----------------------------------------------------
 from nilearn.plotting import plot_carpet

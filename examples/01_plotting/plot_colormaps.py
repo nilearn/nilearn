@@ -8,13 +8,14 @@ which can be used for plotting brain images on surface.
 See :ref:`surface-plotting` for surface plotting details.
 """
 
+# %%
 import matplotlib.pyplot as plt
 import numpy as np
 
 from nilearn.plotting import show
 from nilearn.plotting.cm import _cmap_d as nilearn_cmaps
 
-###########################################################################
+# %%
 # Plot color maps
 # ---------------
 
@@ -31,7 +32,7 @@ for index, cmap in enumerate(nilearn_cmaps):
     plt.axis("off")
     plt.title(cmap, fontsize=10, va="bottom", rotation=90)
 
-###########################################################################
+# %%
 # Plot matplotlib color maps
 # --------------------------
 

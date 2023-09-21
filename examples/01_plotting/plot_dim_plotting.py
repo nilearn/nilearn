@@ -13,7 +13,7 @@ display ROIs on top of a background image.
 
 """
 
-#########################################################################
+# %%
 # Retrieve the data: the localizer dataset with contrast maps
 # -----------------------------------------------------------
 
@@ -25,7 +25,7 @@ localizer_tmap_filename = localizer_dataset.tmap
 # Subject specific anatomical image
 localizer_anat_filename = localizer_dataset.anat
 
-###########################################################################
+# %%
 # Plotting with enhancement of background image with dim=-.5
 # ----------------------------------------------------------
 
@@ -40,7 +40,7 @@ plotting.plot_stat_map(
     dim=-0.5,
 )
 
-########################################################################
+# %%
 # Plotting with no change of contrast in background image with dim=0
 # ------------------------------------------------------------------
 plotting.plot_stat_map(
@@ -52,7 +52,7 @@ plotting.plot_stat_map(
     dim=0,
 )
 
-########################################################################
+# %%
 # Plotting with decrease of contrast in background image with dim=.5
 # ------------------------------------------------------------------
 plotting.plot_stat_map(
@@ -64,7 +64,7 @@ plotting.plot_stat_map(
     dim=0.5,
 )
 
-########################################################################
+# %%
 # Plotting with more decrease in contrast with dim=1
 # --------------------------------------------------
 plotting.plot_stat_map(
