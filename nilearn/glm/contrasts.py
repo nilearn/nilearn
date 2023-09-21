@@ -428,8 +428,8 @@ def compute_fixed_effects(
         Whether fixed effects estimates should be weighted by inverse
         variance or not. Default=False.
 
-    dofs : array-like, with len = len(variance_imgs) False or None, default=None
-        the degrees of freedom of the models
+    dofs : array-like, False or None, default=None
+        the degrees of freedom of the models with len = len(variance_imgs)
         when None, it is assumed that the degrees of freedom are 100 per input.
 
     return_z_score: Bool, default=False
