@@ -432,8 +432,8 @@ def compute_fixed_effects(
         the degrees of freedom of the models
         when None, it is assumed that the degrees of freedom are 100 per input.
 
-    return_z_score: Bool, optional,
-        Whether fixed_fx_z_score_img should be ouptut or not.  default=False
+    return_z_score: Bool, default=False
+        Whether fixed_fx_z_score_img should be output or not.
 
     Returns
     -------
