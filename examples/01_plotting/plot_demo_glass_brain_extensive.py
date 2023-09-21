@@ -84,7 +84,7 @@ plot_glass_brain(
 # :class:`~nilearn.plotting.displays.YXProjector`).
 
 plot_glass_brain(
-    stat_img, threshold=3, colorbar=True, plot_abs=False, display_mode="yx"
+    stat_img, threshold=3, colorbar=True, plot_abs=True, display_mode="yx"
 )
 
 
