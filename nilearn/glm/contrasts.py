@@ -500,7 +500,8 @@ def compute_fixed_effects(
         category=FutureWarning,
         message="The default behavior of the function will "
         "be changed and replaced in release 0.13 "
-        "to return fixed_fz_z_score argument bt default",
+        "to have an additional return value 'fixed_fz_z_score_img'  "
+        "by default",
     )
     if return_z_score:
         return (
