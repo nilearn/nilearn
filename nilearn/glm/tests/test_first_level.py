@@ -349,7 +349,7 @@ def test_high_level_glm_different_design_matrices_formulas():
     formula = f"{cols_formula[0]}-{cols_formula[1]}"
 
     with pytest.warns(
-        UserWarning, match="One contrast given, " "assuming it for all 2 runs"
+        UserWarning, match="One contrast given, assuming it for all 2 runs"
     ):
         multi_session_model.compute_contrast(
             formula, output_type="effect_size"
@@ -374,7 +374,7 @@ def test_compute_contrast_num_contrasts():
     multi_session_model.compute_contrast([np.eye(rk)[1]] * 3)
 
     with pytest.warns(
-        UserWarning, match="One contrast given, " "assuming it for all 3 runs"
+        UserWarning, match="One contrast given, assuming it for all 3 runs"
     ):
         multi_session_model.compute_contrast([np.eye(rk)[1]])
 
@@ -576,7 +576,7 @@ def test_fmri_inputs_errors(tmp_path):
 
             # test with confounds
             with pytest.warns(
-                UserWarning, match="If design matrices " "are supplied"
+                UserWarning, match="If design matrices are supplied"
             ):
                 FirstLevelModel(mask_img=mask).fit(
                     [fi], design_matrices=[d], confounds=conf
