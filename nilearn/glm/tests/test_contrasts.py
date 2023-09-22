@@ -209,10 +209,17 @@ def test_one_minus_pvalue():
     assert np.allclose(contrast.stat_, 1.0, 1)
 
 
-@pytest.mark.parametrize("effect, variance, match",
-    [(np.ones(3), np.ones(1), "Effect array should have 2 dimensions"),
-     (np.ones((1, 3)), np.ones((1, 1)), "Variance array should have 1 dimension"),
-    ])
+@pytest.mark.parametrize(
+    "effect, variance, match",
+    [
+        (np.ones(3), np.ones(1), "Effect array should have 2 dimensions"),
+        (
+            np.ones((1, 3)),
+            np.ones((1, 1)),
+            "Variance array should have 1 dimension",
+        ),
+    ],
+)
 def test_improper_Contrast_inputs(effect, variance, match):
     with pytest.raises(ValueError, match=match):
         contrast = Contrast(effect, variance, contrast_type="t")
