@@ -148,32 +148,31 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
         verbose=0,
         **kwargs,
     ):
-        # Mask is provided or computed
-        self.mask_img = mask_img
-
-        self.smoothing_fwhm = smoothing_fwhm
-        self.standardize = standardize
-        self.standardize_confounds = standardize_confounds
-        self.high_variance_confounds = high_variance_confounds
-        self.detrend = detrend
-        self.low_pass = low_pass
-        self.high_pass = high_pass
-        self.t_r = t_r
-        self.target_affine = target_affine
-        self.target_shape = target_shape
-        self.mask_strategy = mask_strategy
-        self.mask_args = mask_args
-        self.dtype = dtype
-        self.clean_kwargs = {
-            k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
-        }
-
-        self.memory = memory
-        self.memory_level = memory_level
+        super().__init__(
+            # Mask is provided or computed
+            mask_img=mask_img,
+            smoothing_fwhm=smoothing_fwhm,
+            standardize=standardize,
+            standardize_confounds=standardize_confounds,
+            high_variance_confounds=high_variance_confounds,
+            detrend=detrend,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            t_r=t_r,
+            target_affine=target_affine,
+            target_shape=target_shape,
+            mask_strategy=mask_strategy,
+            mask_args=mask_args,
+            dtype=dtype,
+            clean_kwargs={
+                k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
+            },
+            memory=memory,
+            memory_level=memory_level,
+            verbose=verbose,
+            **kwargs,
+        )
         self.n_jobs = n_jobs
-
-        self.verbose = verbose
-
         self._shelving = False
 
     def fit(self, imgs=None, y=None):
@@ -239,6 +238,12 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
 
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
 
+        if self.reports:  # save inputs for reporting
+            imgs = imgs[0] if isinstance(imgs, list) else imgs
+            self._reporting_data = {"images": imgs, "mask": self.mask_img_}
+        else:
+            self._reporting_data = None
+
         # If resampling is requested, resample the mask as well.
         # Resampling: allows the user to change the affine, the shape or both.
         if self.verbose > 0:
@@ -262,6 +267,23 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
 
         # Infer the number of elements (voxels) in the mask
         self.n_elements_ = int(data.sum())
+
+        if (
+            (self.target_shape is not None)
+            or (self.target_affine is not None)
+            and self.reports
+        ):
+            if imgs is not None:
+                resampl_imgs = self._cache(image.resample_img)(
+                    imgs,
+                    target_affine=self.affine_,
+                    copy=False,
+                    interpolation="nearest",
+                )
+            else:  # imgs not provided to fit
+                resampl_imgs = None
+
+            self._reporting_data["transform"] = [resampl_imgs, self.mask_img_]
 
         return self
 
