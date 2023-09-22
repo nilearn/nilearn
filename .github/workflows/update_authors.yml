@@ -1,6 +1,6 @@
 ---
 # github action to update AUTHORS.rst file if CITATION.cff is updated
-name: update authors
+name: Update authors
 
 on:
     push:
