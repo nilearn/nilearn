@@ -214,6 +214,10 @@ class Contrast:
         if self.dim > 1 and contrast_type == "t":
             print("Automatically converted multi-dimensional t to F contrast")
             contrast_type = "F"
+        if contrast_type not in ["t", "F"]:
+            raise ValueError(
+                f"{contrast_type} is not a valid contrast_type. "
+                "Should be t or F")
         self.contrast_type = contrast_type
         self.stat_ = None
         self.p_value_ = None

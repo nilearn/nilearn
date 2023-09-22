@@ -207,3 +207,26 @@ def test_one_minus_pvalue():
     contrast = Contrast(effect, variance, contrast_type="t")
     assert np.allclose(contrast.one_minus_pvalue(), 0.84, 1)
     assert np.allclose(contrast.stat_, 1.0, 1)
+
+
+@pytest.mark.parametrize("effect, variance, match",
+    [(np.ones(3), np.ones(1), "Effect array should have 2 dimensions"),
+     (np.ones((1, 3)), np.ones((1, 1)), "Variance array should have 1 dimension"),
+    ])
+def test_improper_Contrast_inputs(effect, variance, match):
+    with pytest.raises(ValueError, match=match):
+        contrast = Contrast(effect, variance, contrast_type="t")
+
+
+def test_automatic_t2F_conversion():
+    effect = np.ones((5, 3))
+    variance = np.ones(5)
+    contrast = Contrast(effect, variance, contrast_type="t")
+    assert contrast.contrast_type == "F"
+
+
+def test_invalid_contarst_type():
+    effect = np.ones((1, 3))
+    variance = np.ones(1)
+    with pytest.raises(ValueError, match="is not a valid contrast_type."):
+        contrast = Contrast(effect, variance, contrast_type="foo")
