@@ -222,7 +222,7 @@ def test_one_minus_pvalue():
 )
 def test_improper_Contrast_inputs(effect, variance, match):
     with pytest.raises(ValueError, match=match):
-        contrast = Contrast(effect, variance, contrast_type="t")
+        Contrast(effect, variance, contrast_type="t")
 
 
 def test_automatic_t2F_conversion():
@@ -236,4 +236,4 @@ def test_invalid_contarst_type():
     effect = np.ones((1, 3))
     variance = np.ones(1)
     with pytest.raises(ValueError, match="is not a valid contrast_type."):
-        contrast = Contrast(effect, variance, contrast_type="foo")
+        Contrast(effect, variance, contrast_type="foo")
