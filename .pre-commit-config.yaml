@@ -48,10 +48,11 @@ repos:
     -   id: check-case-conflict
     -   id: check-json
     -   id: check-merge-conflict
+    -   id: check-toml
     -   id: check-yaml
     -   id: end-of-file-fixer
+    -   id: mixed-line-ending
     -   id: trailing-whitespace
-    -   id: check-toml
 
 -   repo: https://github.com/pycqa/isort
     rev: 5.12.0
@@ -70,11 +71,24 @@ repos:
     -   id: pyupgrade
         args: [--py36-plus]
 
--   repo: https://github.com/psf/black
+-   repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.10.0
+    hooks:
+    -   id: rst-directive-colons
+    -   id: rst-inline-touching-normal
+
+-   repo: https://github.com/psf/black-pre-commit-mirror
     rev: 23.9.1
     hooks:
     -   id: black
         args: [--config, pyproject.toml]
+
+-   repo: https://github.com/adamchainz/blacken-docs
+    rev: 1.16.0
+    hooks:
+    -   id: blacken-docs
+        additional_dependencies:
+        -   black==23.9.1
 
 -   repo: https://github.com/codespell-project/codespell
     rev: v2.2.5

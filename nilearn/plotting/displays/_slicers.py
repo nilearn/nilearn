@@ -812,9 +812,10 @@ class OrthoSlicer(BaseSlicer):
 
          from nilearn.datasets import load_mni152_template
          from nilearn.plotting import plot_img
+
          img = load_mni152_template()
          # display is an instance of the OrthoSlicer class
-         display = plot_img(img, display_mode='ortho')
+         display = plot_img(img, display_mode="ortho")
 
 
     Attributes
@@ -1040,9 +1041,10 @@ class TiledSlicer(BaseSlicer):
 
         from nilearn.datasets import load_mni152_template
         from nilearn.plotting import plot_img
+
         img = load_mni152_template()
         # display is an instance of the TiledSlicer class
-        display = plot_img(img, display_mode='tiled')
+        display = plot_img(img, display_mode="tiled")
 
     Attributes
     ----------
@@ -1552,9 +1554,10 @@ class XSlicer(BaseStackedSlicer):
 
         from nilearn.datasets import load_mni152_template
         from nilearn.plotting import plot_img
+
         img = load_mni152_template()
         # display is an instance of the XSlicer class
-        display = plot_img(img, display_mode='x')
+        display = plot_img(img, display_mode="x")
 
     Attributes
     ----------
@@ -1590,9 +1593,10 @@ class YSlicer(BaseStackedSlicer):
 
         from nilearn.datasets import load_mni152_template
         from nilearn.plotting import plot_img
+
         img = load_mni152_template()
         # display is an instance of the YSlicer class
-        display = plot_img(img, display_mode='y')
+        display = plot_img(img, display_mode="y")
 
     Attributes
     ----------
@@ -1628,9 +1632,10 @@ class ZSlicer(BaseStackedSlicer):
 
         from nilearn.datasets import load_mni152_template
         from nilearn.plotting import plot_img
+
         img = load_mni152_template()
         # display is an instance of the ZSlicer class
-        display = plot_img(img, display_mode='z')
+        display = plot_img(img, display_mode="z")
 
     Attributes
     ----------
@@ -1666,9 +1671,10 @@ class XZSlicer(OrthoSlicer):
 
         from nilearn.datasets import load_mni152_template
         from nilearn.plotting import plot_img
+
         img = load_mni152_template()
         # display is an instance of the XZSlicer class
-        display = plot_img(img, display_mode='xz')
+        display = plot_img(img, display_mode="xz")
 
     Attributes
     ----------
@@ -1703,9 +1709,10 @@ class YXSlicer(OrthoSlicer):
 
         from nilearn.datasets import load_mni152_template
         from nilearn.plotting import plot_img
+
         img = load_mni152_template()
         # display is an instance of the YXSlicer class
-        display = plot_img(img, display_mode='yx')
+        display = plot_img(img, display_mode="yx")
 
     Attributes
     ----------
@@ -1740,9 +1747,10 @@ class YZSlicer(OrthoSlicer):
 
         from nilearn.datasets import load_mni152_template
         from nilearn.plotting import plot_img
+
         img = load_mni152_template()
         # display is an instance of the YZSlicer class
-        display = plot_img(img, display_mode='yz')
+        display = plot_img(img, display_mode="yz")
 
     Attributes
     ----------
@@ -1778,9 +1786,10 @@ class MosaicSlicer(BaseSlicer):
 
         from nilearn.datasets import load_mni152_template
         from nilearn.plotting import plot_img
+
         img = load_mni152_template()
         # display is an instance of the MosaicSlicer class
-        display = plot_img(img, display_mode='mosaic')
+        display = plot_img(img, display_mode="mosaic")
 
     Attributes
     ----------

@@ -314,35 +314,36 @@ See the examples below:
 .. code-block:: python
 
       def good(x, y=1, z=None):
-      """Show how parameters are documented.
+          """Show how parameters are documented.
 
-      Parameters
-      ----------
-      x : :obj:`int`
-            X
+          Parameters
+          ----------
+          x : :obj:`int`
+                X
 
-      y : :obj:`int`, default=1
-            Note that "default=1" is preferred to "Defaults to 1".
+          y : :obj:`int`, default=1
+                Note that "default=1" is preferred to "Defaults to 1".
 
-      z : :obj:`str`, default=None
+          z : :obj:`str`, default=None
 
-      """
+          """
+
 
       def bad(x, y=1, z=None):
-      """Show how parameters should not be documented.
+          """Show how parameters should not be documented.
 
-      Parameters
-      ----------
-      x :
-            The type of X is not described
+          Parameters
+          ----------
+          x :
+                The type of X is not described
 
-      y : :obj:`int`
-            The default value of y is not described.
+          y : :obj:`int`
+                The default value of y is not described.
 
-      z : :obj:`str`
-            Defaults=None.
-            The default value should be described after the type.
-      """
+          z : :obj:`str`
+                Defaults=None.
+                The default value should be described after the type.
+          """
 
 Additionally, we consider it best practice to write modular functions;
 i.e., functions should preferably be relatively short and do *one* thing.
@@ -386,48 +387,52 @@ Code inside ``maskers._validation.py``:
 
 .. code-block:: python
 
-      import numpy as np # not part of the public API
+      import numpy as np  # not part of the public API
 
-      __all__ = ["check_mask_img", "ValidationError"] # all symbols in the public API
+      __all__ = ["check_mask_img", "ValidationError"]  # all symbols in the public API
 
 
       def check_mask_img(mask_img):
-      """Public API of _validation module
+          """Public API of _validation module
 
-      can be used in nifti_masker module
-      but not the image module (which cannot import maskers._validation),
-      unless maskers/__init__.py imports it and lists it in __all__
-      to make it part of the maskers module's public API
-      """
+          can be used in nifti_masker module
+          but not the image module (which cannot import maskers._validation),
+          unless maskers/__init__.py imports it and lists it in __all__
+          to make it part of the maskers module's public API
+          """
+
+
       return _check_mask_shape(mask_img) and _check_mask_values(mask_img)
 
 
       def _check_mask_shape(mask_img):
-      """Private internal of _validation, cannot be used in nifti_masker"""
+          """Private internal of _validation, cannot be used in nifti_masker"""
 
 
       def _check_mask_values(mask_img):
-      """Private internal of _validation, cannot be used in nifti_masker"""
+          """Private internal of _validation, cannot be used in nifti_masker"""
 
 
       class ValidationError(Exception):
-      """Public API of _validation module"""
+          """Public API of _validation module"""
 
 
       class _Validator:
-      """Private internal of the _validation module"""
+          """Private internal of the _validation module"""
+
 
       def validate(self, img):
-            """Public API of _Validator"""
+          """Public API of _Validator"""
+
 
       def _validate_shape(self, img):
-            """Private internal of the _Validator class.
+          """Private internal of the _Validator class.
 
-            As we don't use the double leading underscore in nilearn we cannot
-            infer from the name alone if it is considered to be exposed to
-            subclasses or not.
+          As we don't use the double leading underscore in nilearn we cannot
+          infer from the name alone if it is considered to be exposed to
+          subclasses or not.
 
-            """
+          """
 
 ..
       Source: Jerome Dockes https://github.com/nilearn/nilearn/issues/3628#issuecomment-1515211711
@@ -515,21 +520,21 @@ like in the following examples:
 .. code-block:: python
 
       def test_something():
-            # set up
-            rng = np.random.default_rng(0)
-            my_number = rng.normal()
+          # set up
+          rng = np.random.default_rng(0)
+          my_number = rng.normal()
 
-            # the rest of the test
+          # the rest of the test
 
 You can also use the `rng` fixture.
 
 .. code-block:: python
 
       def test_something(rng):
-            # set up
-            my_number = rng.normal()
+          # set up
+          my_number = rng.normal()
 
-            # the rest of the test
+          # the rest of the test
 
 Documentation
 -------------

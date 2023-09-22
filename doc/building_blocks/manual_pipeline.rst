@@ -149,6 +149,7 @@ order to learn simple parameters from it, such as its shape:
     # about. Here we use standardizing of the data, as it is often important
     # for decoding
     from nilearn.maskers import NiftiMasker
+
     masker = NiftiMasker(mask_img=mask_filename, standardize=True)
 
     # We give the masker a filename and retrieve a 2D array ready
@@ -223,8 +224,9 @@ discriminating weight.
 
     from nilearn.plotting import plot_stat_map, show
 
-    plot_stat_map(coef_img, bg_img=haxby_dataset.anat[0],
-                  title="SVM weights", display_mode="yx")
+    plot_stat_map(
+        coef_img, bg_img=haxby_dataset.anat[0], title="SVM weights", display_mode="yx"
+    )
 
     show()
 

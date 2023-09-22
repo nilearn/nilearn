@@ -49,6 +49,7 @@ dev = [
     "isort",
     "flynt",
     "black",
+    "blacken-docs",
     "flake8",
     "flake8-docstrings",
     "flake8-use-fstring",
