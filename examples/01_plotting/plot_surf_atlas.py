@@ -17,7 +17,7 @@ sulci using standard anatomical nomenclature. NeuroImage, 53, 1.
 URL http://dx.doi.org/10.1016/j.neuroimage.2010.06.010.
 """
 
-###############################################################################
+# %%
 # Data fetcher
 # ------------
 
@@ -42,7 +42,7 @@ print("Fsaverage5 inflated surface of left hemisphere is at: "
 print("Fsaverage5 sulcal depth map of left hemisphere is at: "
       f"{fsaverage['sulc_left']}")
 
-###############################################################################
+# %%
 # Visualization
 # -------------
 
@@ -54,21 +54,21 @@ plotting.plot_surf_roi(fsaverage['pial_left'], roi_map=parcellation,
                        bg_map=fsaverage['sulc_left'], bg_on_data=True,
                        darkness=.5)
 
-###############################################################################
+# %%
 # Display Destrieux parcellation on inflated fsaverage5 surface
 plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
                        hemi='left', view='lateral',
                        bg_map=fsaverage['sulc_left'], bg_on_data=True,
                        darkness=.5)
 
-###############################################################################
+# %%
 # Display Destrieux parcellation with different views: posterior
 plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
                        hemi='left', view='posterior',
                        bg_map=fsaverage['sulc_left'], bg_on_data=True,
                        darkness=.5)
 
-###############################################################################
+# %%
 # Display Destrieux parcellation with different views: ventral
 plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
                        hemi='left', view='ventral',
@@ -76,7 +76,7 @@ plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
                        darkness=.5)
 plotting.show()
 
-###############################################################################
+# %%
 # Display Destrieux parcellation with custom view: explicitly set angle
 elev, azim = 210.0, 90.0  # appropriate for visualizing, e.g., the OTS
 plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
@@ -84,7 +84,7 @@ plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
                        bg_map=fsaverage['sulc_left'], bg_on_data=True,
                        darkness=.5)
 
-###############################################################################
+# %%
 # Display connectome from surface parcellation
 #
 # The following code extracts 3D coordinates of surface parcels (a.k.a. labels
@@ -122,7 +122,7 @@ plotting.plot_connectome(corr, coordinates,
                          title='fsaverage Destrieux atlas')
 plotting.show()
 
-##############################################################################
+# %%
 # 3D visualization in a web browser
 # ---------------------------------
 # An alternative to :func:`nilearn.plotting.plot_surf_roi` is to use
@@ -136,12 +136,12 @@ view = plotting.view_surf(fsaverage.infl_left, parcellation,
 # be displayed below the cell
 
 view
-##############################################################################
+# %%
 
 # uncomment this to open the plot in a web browser:
 # view.open_in_browser()
 
-##############################################################################
+# %%
 # you can also use :func:`nilearn.plotting.view_connectome` to open an
 # interactive view of the connectome.
 
