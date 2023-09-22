@@ -257,3 +257,10 @@ def test_standardization():
         np.testing.assert_almost_equal(
             ts, (s / s.mean(1)[:, np.newaxis] * 100 - 100).T
         )
+
+
+def test_generate_report():
+    """Smoke test for generate_report method."""
+    imgs = _get_random_imgs((9, 9, 5), 2)
+    masker = MultiNiftiMasker()
+    masker.fit(imgs).generate_report()
