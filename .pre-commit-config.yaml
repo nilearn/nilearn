@@ -20,9 +20,6 @@ exclude: |
         | nilearn/_utils/data_gen.py
         | nilearn/reporting/html_report.py
         | nilearn/reporting/tests/test_html_report.py
-        | nilearn/glm/contrasts.py
-        | nilearn/glm/tests/test_contrasts.py
-        | nilearn/glm/tests/test_first_level.py
         | nilearn/interfaces/fmriprep/load_confounds_compcor.py
         | nilearn/interfaces/fmriprep/tests/test_load_confounds_utils.py
         | nilearn/interfaces/fmriprep/tests/test_load_confounds_strategy.py
