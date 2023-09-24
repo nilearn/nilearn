@@ -94,7 +94,7 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
             label_mask = labels == label_
             resl = regression_result[label_].Tcontrast(con_val)
             effect_[:, label_mask] = resl.effect.T
-            var_[label_mask] = (resl.sd ** 2).T
+            var_[label_mask] = (resl.sd**2).T
     elif contrast_type == "F":
         from scipy.linalg import sqrtm
 
@@ -217,7 +217,8 @@ class Contrast:
         if contrast_type not in ["t", "F"]:
             raise ValueError(
                 f"{contrast_type} is not a valid contrast_type. "
-                "Should be t or F")
+                "Should be t or F"
+            )
         self.contrast_type = contrast_type
         self.stat_ = None
         self.p_value_ = None
@@ -392,7 +393,7 @@ class Contrast:
         """Multiply a contrast by a scalar."""
         scalar = float(scalar)
         effect_ = self.effect * scalar
-        variance_ = self.variance * scalar ** 2
+        variance_ = self.variance * scalar**2
         dof_ = self.dof
         return Contrast(
             effect=effect_,

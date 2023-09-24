@@ -524,7 +524,6 @@ def test_fmri_inputs(tmp_path):
 
     for fi in func_img, FUNCFILE:
         for d in des, des_fname:
-
             FirstLevelModel().fit(fi, design_matrices=d)
 
             FirstLevelModel(mask_img=None).fit([fi], design_matrices=d)
@@ -573,7 +572,6 @@ def test_fmri_inputs_errors(tmp_path):
 
     for fi in func_img, FUNCFILE:
         for d in des, des_fname:
-
             # test with confounds
             with pytest.warns(
                 UserWarning, match="If design matrices are supplied"
@@ -1752,7 +1750,6 @@ def test_first_level_from_bids_deprecated_slice_time_default(bids_dataset):
 
 
 def test_slice_time_ref_warning_only_when_not_provided(bids_dataset):
-
     # catch all warnings
     with pytest.warns() as record:
         models, m_imgs, m_events, m_confounds = first_level_from_bids(
