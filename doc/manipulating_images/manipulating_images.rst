@@ -67,10 +67,10 @@ Resampling to a specific target affine, shape, or resolution
 -------------------------------------------------------------
 
 :func:`nilearn.image.resample_img` specifies the resampling in terms of
-the `target_affine` to match the spatial configuration defined by the new
+the ``target_affine`` to match the spatial configuration defined by the new
 affine.
 
-Additionally, a `target_shape` can be used to resize images
+Additionally, a ``target_shape`` can be used to resize images
 (i.e., cropping or padding with zeros) to match an expected data
 image dimensions (shape composed of x, y, and z).
 
@@ -189,7 +189,7 @@ dimensions and one time dimension. In practice, we are usually
 interested in working on the voxel time-series in the
 brain. It is thus convenient to apply a brain mask in order to convert the
 4D brain images representation into a restructured 2D data representation,
-`voxel` **x** `time`, as depicted below:
+``voxel`` **x** ``time``, as depicted below:
 
 .. image:: ../images/masking.jpg
     :align: center
