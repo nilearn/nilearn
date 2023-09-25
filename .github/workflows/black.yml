@@ -24,9 +24,7 @@ jobs:
                 python-version: '3.11'
 
         -   name: Install black
-            shell: bash {0}
-            run: |
-                python -m pip install --upgrade pip black
+            run: python -m pip install --upgrade pip black
 
         -   name: Run Black
-            run: black --check .
+            run: black --check --diff --color .
