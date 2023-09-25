@@ -457,7 +457,7 @@ def compute_fixed_effects(
     Warns
     -----
     FutureWarning
-        Starting in version 0.13, return_z_score will default to True
+        Starting in version 0.13, fixed_fx_z_score_img will always be returned
 
     """
     n_runs = len(contrast_imgs)
