@@ -170,9 +170,10 @@ src_paths = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "--doctest-modules -s -vv --durations=0"
+addopts = "-ra --strict-config --strict-markers --doctest-modules -s -vv --durations=0"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 # TODO: Remove filter in release 0.13
 filterwarnings = "ignore:.*Please use 'zscore_sample' instead.:FutureWarning"
 junit_family = "xunit2"
 minversion = "6.0"
+xfail_strict = true
