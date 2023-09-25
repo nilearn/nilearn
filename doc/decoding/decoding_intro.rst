@@ -358,7 +358,7 @@ If we do not start from a mask of the relevant regions, there is a very
 large number of voxels and not all are useful for
 face vs cat prediction. We thus add a `feature selection
 <http://scikit-learn.org/stable/modules/feature_selection.html>`_
-procedure. The idea is to select the ``k``% voxels most correlated to the
+procedure. The idea is to select the ``k`` voxels most correlated to the
 task through a simple F-score based feature selection (a.k.a.
 `Anova <https://en.wikipedia.org/wiki/Analysis_of_variance#The_F-test>`_)
 
