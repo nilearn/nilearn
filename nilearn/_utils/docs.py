@@ -878,7 +878,7 @@ standardize_confounds : :obj:`bool`, default=True
 docdict[
     "symmetric_cbar"
 ] = """
-symmetric_cbar : :obj:`bool`, or "auto", optional
+symmetric_cbar : :obj:`bool`, or "auto", default="auto"
     Specifies whether the colorbar and colormap should range from `-vmax` to
     `vmax` (or from `vmin` to `-vmin` if `-vmin` is greater than `vmax`) or
     from `vmin` to `vmax`.

@@ -951,7 +951,6 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
 
         Default=`plt.cm.cold_hot`.
     %(symmetric_cbar)s
-        Default='auto'.
     %(dim)s
         Default='auto'.
     %(vmin)s
@@ -1067,7 +1066,6 @@ def plot_glass_brain(stat_map_img,
         :ref:`sphx_glr_auto_examples_01_plotting_plot_demo_glass_brain_extensive.py` # noqa
         for examples. Default=True.
     %(symmetric_cbar)s
-        Default='auto'.
     %(resampling_interpolation)s
         Default='continuous'.
     %(radiological)s 

@@ -1086,7 +1086,6 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     %(vmin)s
     %(vmax)s
     %(symmetric_cbar)s
-        Default='auto'.
     %(bg_on_data)s
 
     %(darkness)s
@@ -1349,7 +1348,6 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
     %(vmax)s
     %(threshold)s
     %(symmetric_cbar)s
-        Default='auto'.
     %(cmap)s
         Default='cold_hot'.
     kwargs : dict, optional
