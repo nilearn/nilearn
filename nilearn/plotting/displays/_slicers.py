@@ -476,9 +476,9 @@ class BaseSlicer:
                 data,
                 copy=False,
             )
-            if vmin is not None and vmin >= -threshold:
+            if (vmin is not None) and (vmin >= -threshold):
                 data = np.ma.masked_where(data < vmin, data, copy=False)
-            if vmax is not None and vmax <= threshold:
+            if (vmax is not None) and (vmax <= threshold):
                 data = np.ma.masked_where(data > vmax, data, copy=False)
         return data
 
