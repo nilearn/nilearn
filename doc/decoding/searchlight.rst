@@ -26,8 +26,8 @@ Currently, only :term:`classification` and :term:`regression` are supported in n
 Preparing the data
 ==================
 
-:class:`SearchLight` requires a series of brain volumes as input, `X`, each with
-a corresponding label, `y`. The number of brain volumes therefore correspond to
+:class:`SearchLight` requires a series of brain volumes as input, ``X``, each with
+a corresponding label, ``y``. The number of brain volumes therefore correspond to
 the number of samples used for decoding.
 
 Masking
@@ -116,7 +116,7 @@ Visualization
 Searchlight
 -----------
 
-The results of the searchlight can be found in the `scores_` attribute of the
+The results of the searchlight can be found in the ``scores_`` attribute of the
 :class:`SearchLight` object after fitting it to the data. Below is a
 visualization of the results from :ref:`Searchlight analysis of face
 vs house recognition <sphx_glr_auto_examples_02_decoding_plot_haxby_searchlight.py>`.
@@ -208,7 +208,7 @@ permute a parametric t-test. Unlike F-test, a t-test can be signed
 effect are considered. Thus, only positive effects
 can be focused on.  It is still possible to perform a two-sided test
 equivalent to a permuted F-test by setting the argument
-`two_sided_test` to `True`. In the example above, we do perform a two-sided
+``two_sided_test`` to ``True``. In the example above, we do perform a two-sided
 test but add back the sign of the effect at the end using the t-scores obtained
 on the original (non-permuted) data. Thus, we can perform two one-sided tests
 (a given contrast and its opposite) for the price of one single run.
