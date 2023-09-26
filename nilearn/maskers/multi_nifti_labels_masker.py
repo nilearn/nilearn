@@ -153,6 +153,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
             **kwargs,
         )
 
+    @fill_doc
     def transform_imgs(
         self, imgs_list, confounds=None, n_jobs=1, sample_mask=None
     ):
@@ -199,6 +200,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         )
         return region_signals
 
+    @fill_doc
     def transform(self, imgs, confounds=None, sample_mask=None):
         """Apply mask, spatial and temporal preprocessing.
 

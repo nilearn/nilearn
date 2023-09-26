@@ -13,8 +13,9 @@ using :class:`nilearn.regions.RegionExtractor` from regions module
 # Fetching the smith ICA 10 RSN by importing datasets utilities
 from nilearn import datasets
 
-smith_atlas = datasets.fetch_atlas_smith_2009()
-atlas_networks = smith_atlas.rsn10
+atlas_networks = datasets.fetch_atlas_smith_2009(resting=True, dimension=10)[
+    "maps"
+]
 
 ##############################################################################
 # Import region extractor to extract atlas networks

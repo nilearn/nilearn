@@ -8,6 +8,8 @@ import pandas as pd
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.cluster.hierarchy import leaves_list, linkage, optimal_leaf_ordering
 
+from nilearn.glm.first_level.experimental_paradigm import check_events
+
 from .._utils import fill_doc
 
 with warnings.catch_warnings():
@@ -495,6 +497,10 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     """
     if isinstance(model_event, pd.DataFrame):
         model_event = [model_event]
+
+    for i, event in enumerate(model_event):
+        event_copy = check_events(event)
+        model_event[i] = event_copy
 
     n_runs = len(model_event)
     figure, ax = plt.subplots(1, 1, **fig_kwargs)

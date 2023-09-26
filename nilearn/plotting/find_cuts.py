@@ -288,7 +288,7 @@ def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
     axis = "xyz".index(direction)
     img = check_niimg_3d(img)
     affine = img.affine
-    if not np.alltrue(np.diag(affine)[:3]):
+    if not np.all(np.diag(affine)[:3]):
         warnings.warn(
             "A non-diagonal affine is found in the given "
             "image. Reordering the image to get diagonal affine "

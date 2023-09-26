@@ -10,7 +10,7 @@ region specific mask images.
 See :ref:`plotting` for more details.
 """
 
-###############################################################################
+# %%
 # Retrieve data from nilearn provided (general-purpose) datasets
 # --------------------------------------------------------------
 
@@ -37,7 +37,7 @@ haxby_func_filename = haxby_dataset.func[0]
 stat_img = datasets.load_sample_motor_activation_image()
 
 
-###############################################################################
+# %%
 # Plotting statistical maps with function `plot_stat_map`
 # -------------------------------------------------------
 
@@ -49,8 +49,18 @@ plotting.plot_stat_map(
     stat_img, threshold=3, title="plot_stat_map", cut_coords=[36, -27, 66]
 )
 
+# It's also possible to visualize volumes in a LR-flipped "radiological" view
+# Just set radiological=True
+plotting.plot_stat_map(
+    stat_img,
+    threshold=3,
+    title="plot_stat_map",
+    cut_coords=[36, -27, 66],
+    radiological=True,
+)
 
-###############################################################################
+
+# %%
 # Making interactive visualizations with function `view_img`
 # ----------------------------------------------------------
 # An alternative to :func:`nilearn.plotting.plot_stat_map` is to use
@@ -63,13 +73,13 @@ view = plotting.view_img(stat_img, threshold=3)
 # be displayed below the cell
 view
 
-##############################################################################
+# %%
 
 # uncomment this to open the plot in a web browser:
 # view.open_in_browser()
 
 
-###############################################################################
+# %%
 # Plotting statistical maps in a glass brain with function `plot_glass_brain`
 # ---------------------------------------------------------------------------
 #
@@ -77,14 +87,14 @@ view
 # brain is always a fixed background template
 plotting.plot_glass_brain(stat_img, title="plot_glass_brain", threshold=3)
 
-###############################################################################
+# %%
 # Plotting anatomical images with function `plot_anat`
 # ----------------------------------------------------
 #
 # Visualizing anatomical image of haxby dataset
 plotting.plot_anat(haxby_anat_filename, title="plot_anat")
 
-###############################################################################
+# %%
 # Plotting ROIs (here the mask) with function `plot_roi`
 # ------------------------------------------------------
 #
@@ -95,7 +105,7 @@ plotting.plot_roi(
     haxby_mask_filename, bg_img=haxby_anat_filename, title="plot_roi"
 )
 
-###############################################################################
+# %%
 # Plotting EPI image with function `plot_epi`
 # -------------------------------------------
 
@@ -109,17 +119,7 @@ mean_haxby_img = image.mean_img(haxby_func_filename)
 # Visualizing mean image (3D)
 plotting.plot_epi(mean_haxby_img, title="plot_epi")
 
-# It's also possible to visualize volumes in a LR-flipped "radiological" view
-# Just set radiological=True
-plotting.plot_stat_map(
-    stat_img,
-    threshold=3,
-    title="plot_stat_map",
-    cut_coords=[36, -27, 66],
-    radiological=True,
-)
-
-###############################################################################
+# %%
 # A call to plotting.show is needed to display the plots when running
 # in script mode (ie outside IPython)
 plotting.show()

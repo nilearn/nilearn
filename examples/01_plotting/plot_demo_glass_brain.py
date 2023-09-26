@@ -5,8 +5,7 @@ Glass brain plotting in nilearn
 See :ref:`plotting` for more plotting functionalities.
 """
 
-
-###############################################################################
+# %%
 # Load data
 # ---------------------------
 
@@ -14,7 +13,7 @@ from nilearn import datasets
 
 stat_img = datasets.load_sample_motor_activation_image()
 
-###############################################################################
+# %%
 # Glass brain plotting: whole brain sagittal cuts
 # -----------------------------------------------
 
@@ -22,7 +21,7 @@ from nilearn import plotting
 
 plotting.plot_glass_brain(stat_img, threshold=3)
 
-###############################################################################
+# %%
 # Glass brain plotting: black background
 # --------------------------------------
 # On a black background (option "black_bg"), and with only the x and
@@ -35,7 +34,7 @@ plotting.plot_glass_brain(
     threshold=3,
 )
 
-###############################################################################
+# %%
 # Glass brain plotting: Hemispheric sagittal cuts
 # -----------------------------------------------
 plotting.plot_glass_brain(

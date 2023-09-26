@@ -136,9 +136,9 @@ Extracting predicted time series and residuals
 ==============================================
 
 One way to assess the quality of the fit is to compare the observed and predicted time series of voxels.
-Nilearn makes the predicted time series easily accessible via a parameter called `predicted` that is part
+Nilearn makes the predicted time series easily accessible via a parameter called ``predicted`` that is part
 of the :class:`nilearn.glm.first_level.FirstLevelModel`. This parameter is populated when
-FistLevelModel is initialized with the `minimize_memory` flag set to `False`. ::
+FistLevelModel is initialized with the ``minimize_memory`` flag set to ``False``. ::
 
   observed_timeseries = masker.fit_transform(fmri_img)
   predicted_timeseries = masker.fit_transform(fmri_glm.predicted[0])
