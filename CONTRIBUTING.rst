@@ -261,12 +261,6 @@ Changelog entries in ``doc/changes/latest.rst`` should adhere to the following c
 - Finish with a link to the PR and the author's profile
 - New contributors to add their details to the ``authors`` section of the ``CITATION.cff`` (see below)
 
-Example entry in ``doc/changes/latest.rst``:
-
-.. code-block:: rst
-
-    - :bdg-dark:`Code` Fix off-by-one error when setting ticks in :func:`~plotting.plot_surf` (:gh:`3105` by `Dimitri Papadopoulos Orfanos`_).
-
 List of badges:
 
 .. codeblock:: rst
@@ -278,6 +272,12 @@ List of badges:
       :bdg-warning:`Test`
       :bdg-danger:`Deprecation`
       :bdg-dark:`Code`
+
+Example entry in ``doc/changes/latest.rst``:
+
+.. code-block:: rst
+
+    - :bdg-dark:`Code` Fix off-by-one error when setting ticks in :func:`~plotting.plot_surf` (:gh:`3105` by `Dimitri Papadopoulos Orfanos`_).
 
 Associated entry in ``CITATION.cff``:
 
