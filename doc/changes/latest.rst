@@ -2,8 +2,22 @@
 
 .. include:: names.rst
 
-0.10.2.dev
-==========
+0.10.2
+======
+
+**Released September 2023**
+
+HIGHLIGHTS
+----------
+
+- :bdg-info:`Plotting` Volume plotting functions like :func:`~plotting.plot_img` now have an optional ``radiological`` parameter, defaulting to ``False``. If ``True``, this will invert the x-axis and ``L`` and ``R`` annotations to confirm to radiological conventional view. (:gh:`3172` by `Konrad Wagstyl`_ and `Yasmin Mzayek`_).
+
+- :bdg-dark:`Code` Update Decoder objects to use the more efficient ``LogisticRegressionCV`` (:gh:`3736` by `Michelle Wang`_).
+
+- :bdg-success:`API` Add ``LassoCV`` as a new estimator option for Decoder objects (:gh: `3781` by `Michelle Wang`_)
+
+- :bdg-success:`API` Add ``vmin`` and ``symmetric_cbar`` arguments to :func:`~nilearn.plotting.plot_img_on_surf` (:gh:`3873` by `Michelle Wang`_).
+
 
 NEW
 ---
