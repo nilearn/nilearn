@@ -172,7 +172,7 @@ specifying the important parameters, in particular the atlas::
     from nilearn.maskers import NiftiMapsMasker
     masker = NiftiMapsMasker(maps_img=atlas_filename, standardize=True)
 
-The `fit_transform` method turns filenames or `NiftiImage objects
+The ``fit_transform`` method turns filenames or `NiftiImage objects
 <http://nipy.org/nibabel/nibabel_images.html>`_ to time series::
 
     time_series = masker.fit_transform(frmi_files, confounds=csv_file)

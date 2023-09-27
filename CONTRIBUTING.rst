@@ -257,14 +257,27 @@ Changelog entries in ``doc/changes/latest.rst`` should adhere to the following c
 
 - Entry in the appropriate category
 - Single line per entry
+- Add a "badge" corresping to the change type (see below)
 - Finish with a link to the PR and the author's profile
-- New contributors to add their details to the ``authors`` section of the ``CITATION.cff``
+- New contributors to add their details to the ``authors`` section of the ``CITATION.cff`` (see below)
 
 Example entry in ``doc/changes/latest.rst``:
 
 .. code-block:: rst
 
-    - Fix off-by-one error when setting ticks in :func:`~plotting.plot_surf` (:gh:`3105` by `Dimitri Papadopoulos Orfanos`_).
+    - :bdg-dark:`Code` Fix off-by-one error when setting ticks in :func:`~plotting.plot_surf` (:gh:`3105` by `Dimitri Papadopoulos Orfanos`_).
+
+List of badges:
+
+.. codeblock:: rst
+
+      :bdg-primary:`Doc`
+      :bdg-secondary:`Maint`
+      :bdg-success:`API`
+      :bdg-info:`Plotting`
+      :bdg-warning:`Test`
+      :bdg-danger:`Deprecation`
+      :bdg-dark:`Code`
 
 Associated entry in ``CITATION.cff``:
 
@@ -475,13 +488,13 @@ If you are not familiar with pytest,
 have a look at this `introductory video <https://www.youtube.com/watch?v=mzlH8lp4ISA>`_
 by one of the pytest core developer.
 
-In general tests for a specific module (say `nilearn/image/image.py`)
-are kept in a `tests` folder in a separate module
+In general tests for a specific module (say ``nilearn/image/image.py``)
+are kept in a ``tests`` folder in a separate module
 with a name that matches the module being tested
-(so in this case `nilearn/image/tests/test_image.py`).
+(so in this case ``nilearn/image/tests/test_image.py``).
 
 When you have added a test you can check that your changes worked
-and didn't break anything by running `pytest nilearn`.
+and didn't break anything by running ``pytest nilearn``.
 To do quicker checks it's possible to run only a subset of tests:
 
 .. code-block:: bash
@@ -497,19 +510,19 @@ you can use `pytest fixtures <https://docs.pytest.org/en/6.2.x/fixture.html>`_
 to help you mock this data
 (more information on pytest fixtures in `this video <https://www.youtube.com/watch?v=ScEQRKwUePI>`_).
 
-Fixture are recognizable because they have a `@pytest.fixture` decorator.
-Fixtures that are shared by many tests modules can be found in `nilearn/conftest.py`
+Fixture are recognizable because they have a ``@pytest.fixture`` decorator.
+Fixtures that are shared by many tests modules can be found in ``nilearn/conftest.py``
 but some fixures specific to certain modules can also be kept in that testing module.
 
 Before adding new fixtures, first check those that exist
-in the test modules you are working in or in `nilearn/conftest.py`.
+in the test modules you are working in or in ``nilearn/conftest.py``.
 
 Seeding
 ^^^^^^^
 
 Many tests must be seeded to avoid random failures.
 When your test use random numbers,
-you can seed a random number generator with `numpy.random.default_rng`
+you can seed a random number generator with ``numpy.random.default_rng``
 like in the following examples:
 
 .. code-block:: python
@@ -521,7 +534,7 @@ like in the following examples:
 
             # the rest of the test
 
-You can also use the `rng` fixture.
+You can also use the ``rng`` fixture.
 
 .. code-block:: python
 
@@ -588,7 +601,7 @@ or:
       conda create -n nilearn
       conda activate nilearn
 
-3. install the forked version of `nilearn`
+3. install the forked version of ``nilearn``
 
 .. admonition:: Recommendation
 
@@ -637,7 +650,7 @@ The installed version will also reflect any changes you make to your code.
 
       pytest nilearn
 
-5. (optional) install `pre-commit <https://pre-commit.com/#usage>`__ hooks
+5. (optional) install `pre-commit <https://pre-commit.com/#usage>`_ hooks
    to run the linter and other checks before each commit:
 
 .. code-block:: bash
@@ -648,7 +661,7 @@ The installed version will also reflect any changes you make to your code.
 Contributing
 ------------
 
-Here are the key steps you need to go through to contribute code to `nilearn`:
+Here are the key steps you need to go through to contribute code to ``nilearn``:
 
 1. open or join an already existing issue explaining what you want to work on
 
@@ -697,7 +710,7 @@ Here are the key steps you need to go through to contribute code to `nilearn`:
       git push
 
 7. in github, open a pull request from your online fork to the main repo
-   (most likely from `your_fork:your_branch` to `nilearn:main`).
+   (most likely from ``your_fork:your_branch`` to ``nilearn:main``).
 
 8. check that all continuous integration tests pass
 
@@ -719,7 +732,7 @@ If you wish to build documentation:
 2. Then go to ``nilearn/examples`` or ``nilearn/doc`` and make needed changes
    using `reStructuredText files <https://www.sphinx-doc.org/en/2.0/usage/restructuredtext/basics.html>`_
 
-3. You can now go to `nilearn/doc` and build the examples locally:
+3. You can now go to ``nilearn/doc`` and build the examples locally:
 
 .. code-block:: bash
 
