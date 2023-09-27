@@ -263,7 +263,7 @@ Changelog entries in ``doc/changes/latest.rst`` should adhere to the following c
 
 List of badges:
 
-.. codeblock:: rst
+.. code-block:: rst
 
       :bdg-primary:`Doc`
       :bdg-secondary:`Maint`
