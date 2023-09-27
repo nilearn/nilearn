@@ -506,7 +506,7 @@ def compute_fixed_effects(
         message="The default behavior of the function will "
         "be changed and replaced in release 0.13 "
         "to have an additional return value 'fixed_fz_z_score_img'  "
-        "by default",
+        "by default.",
     )
     if return_z_score:
         return (
