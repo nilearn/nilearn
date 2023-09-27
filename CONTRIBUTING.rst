@@ -257,7 +257,7 @@ Changelog entries in ``doc/changes/latest.rst`` should adhere to the following c
 
 - Entry in the appropriate category
 - Single line per entry
-- Add a "badge" corresping to the change type (see below)
+- Add a "badge" corresponding to the change type (see below)
 - Finish with a link to the PR and the author's profile
 - New contributors to add their details to the ``authors`` section of the ``CITATION.cff`` (see below)
 
