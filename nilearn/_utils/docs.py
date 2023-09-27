@@ -573,7 +573,7 @@ keep_masked_labels : :obj:`bool`, default=True
     zeros only. If False, the empty labels will be removed from the
     output, ensuring no empty time series are present.
 
-    .. deprecated:: 0.10.2.dev
+    .. deprecated:: 0.10.2
 
         The 'True' option for ``keep_masked_labels`` is deprecated.
         The default value will change to 'False' in 0.13,
@@ -592,7 +592,7 @@ keep_masked_maps : :obj:`bool`, optional
     invalid maps will be removed from the trimmed atlas, resulting in
     no empty time series in the output.
 
-    .. deprecated:: 0.10.2.dev
+    .. deprecated:: 0.10.2
 
         The 'True' option for ``keep_masked_maps`` is deprecated.
         The default value will change to 'False' in 0.13,
