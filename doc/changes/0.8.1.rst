@@ -43,7 +43,7 @@ Fixes
 
 - :bdg-success:`API` Function :func:`~masking.compute_multi_brain_mask` has replaced ``nilearn.masking.compute_multi_grey_matter_mask``. A ``mask`` parameter has been added; it accepts three types of masks---i.e. ``whole-brain``, ``grey-matter``, and ``white-matter``---following the enhancements made in the function :func:`nilearn.masking.compute_brain_mask` in this release (:gh:`2738` by `Ana Luisa Pinho`_).
 
-- :bdg-info:`Plotting` Fix colorbar of function :func:`~plotting.view_img` which was not visible for some combinations of `black_bg` and `bg_img` parameters (:gh:`2876` by `Nicolas Gensollen`_).
+- :bdg-info:`Plotting` Fix colorbar of function :func:`~plotting.view_img` which was not visible for some combinations of ``black_bg`` and ``bg_img`` parameters (:gh:`2876` by `Nicolas Gensollen`_).
 
 - :bdg-info:`Plotting` Fix missing title with function :func:`~plotting.plot_surf` and deriving functions (:gh:`2941` by `Nicolas Gensollen`_).
 
@@ -56,11 +56,11 @@ Enhancements
 
 - :bdg-dark:`Code` Function :func:`~masking.compute_brain_mask` accepts now as input the whole-brain, 1mm-resolution, MNI152 T1 template instead of the averaged, whole-brain, 2mm-resolution MNI152 T1 template; it also accepts as input the grey-matter and white-matter ICBM152 1mm-resolution templates dated from 2009 (:gh:`2738` by `Ana Luisa Pinho`_).
 
-- :bdg-secondary:`Maint` Common parts of docstrings across Nilearn can now be filled automatically using the decorator `nilearn._utils.fill_doc`. This can be applied to common function parameters or common lists of options for example. The standard parts are defined in a single location (`nilearn._utils.docs.py`) which makes them easier to maintain and update (:gh:`2875` by `Nicolas Gensollen`_).
+- :bdg-secondary:`Maint` Common parts of docstrings across Nilearn can now be filled automatically using the decorator ``nilearn._utils.fill_doc``. This can be applied to common function parameters or common lists of options for example. The standard parts are defined in a single location (`nilearn._utils.docs.py`) which makes them easier to maintain and update (:gh:`2875` by `Nicolas Gensollen`_).
 
 - :bdg-success:`API` The ``data_dir`` argument can now be either a :class:`pathlib.Path` or a :obj:`str`. This extension affects datasets and atlas fetchers (:gh:`2928` by `Raphael Meudec`_).
 
 Changes
 -------
 
-- :bdg-secondary:`Maint` The version of the script `jquery.min.js` was bumped from ``3.3.1`` to ``3.6.0`` due to potential vulnerability issues with versions ``< 3.5.0`` (:gh:`2944` by `Nicolas Gensollen`_).
+- :bdg-secondary:`Maint` The version of the script ``jquery.min.js`` was bumped from ``3.3.1`` to ``3.6.0`` due to potential vulnerability issues with versions ``< 3.5.0`` (:gh:`2944` by `Nicolas Gensollen`_).

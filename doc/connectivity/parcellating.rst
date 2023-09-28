@@ -117,7 +117,7 @@ Using and visualizing the resulting parcellation
 Visualizing the parcellation
 -----------------------------
 
-The labels of the parcellation are found in the `labels_img_` attribute of
+The labels of the parcellation are found in the ``labels_img_`` attribute of
 the :class:`nilearn.regions.Parcellations` object after fitting it to the data
 using *ward.fit*. We directly use the result for visualization.
 

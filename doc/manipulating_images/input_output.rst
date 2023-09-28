@@ -268,8 +268,8 @@ Text files: phenotype or behavior
 
 Phenotypic or behavioral data are often provided as text or CSV
 (Comma Separated Values) file. They
-can be loaded with `pd.read_csv` but you may have to specify some options
-(typically `sep` if fields aren't delimited with a comma).
+can be loaded with ``pd.read_csv`` but you may have to specify some options
+(typically ``sep`` if fields aren't delimited with a comma).
 
 For the Haxby datasets, we can load the categories of the images
 presented to the subject:

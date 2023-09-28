@@ -853,7 +853,7 @@ def test_connectivity_measure_inverse_transform_tangent(
     )
 
     # with vectorization
-    # when diagonal has not been discardedtest_connectome_measure_standardize
+    # when diagonal has not been discarded
     tangent_measure = ConnectivityMeasure(kind="tangent", vectorize=True)
     vectorized_displacements = tangent_measure.fit_transform(signals)
 

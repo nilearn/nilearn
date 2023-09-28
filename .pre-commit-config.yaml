@@ -65,7 +65,7 @@ repos:
     -   id: flynt
 
 -   repo: https://github.com/asottile/pyupgrade
-    rev: v3.10.1
+    rev: v3.13.0
     hooks:
     -   id: pyupgrade
         args: [--py36-plus]
@@ -94,6 +94,11 @@ repos:
     hooks:
     -   id: pretty-format-toml
         args: [--autofix, --indent, '4']
+
+-   repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.10.0
+    hooks:
+    -   id: rst-backticks
 
 -   repo: https://github.com/pyCQA/flake8
     rev: 6.1.0

@@ -29,3 +29,4 @@ jobs:
                 COMMIT_SHA: ${{ github.event.workflow_run.head_sha }}
                 REPO_NAME: ${{ github.event.workflow_run.head_repository.full_name }}
                 GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                STATUS: ${{ github.event.workflow_run.conclusion }}

@@ -303,12 +303,19 @@ jobs:
                 cd doc;
                 set -o pipefail;
                 PATTERN=$(cat ../pattern.txt) make $(cat ../build.txt) 2>&1 | tee log.txt;
+        -   name: Check for unreplaced argument in docstrings
+            if: always()
+            run: |
+                bash build_tools/github/fill_doc_check.sh
+                cat doc/tmp/doc_check.txt
         -   name: Upload documentation
+            if: always()
             uses: actions/upload-artifact@v3
             with:
                 name: doc
                 path: doc/_build/html
         -   name: Note about build
+            if: always()
             run: |
                 if [[ "$(cat build.txt)" != "html-strict" ]]; then
                     echo "Partial build : No data is downloaded or cached";

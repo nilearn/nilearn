@@ -40,7 +40,10 @@ import pandas as pd
 
 from nilearn._utils import fill_doc
 from nilearn.glm._utils import full_rank
-from nilearn.glm.first_level.experimental_paradigm import check_events
+from nilearn.glm.first_level.experimental_paradigm import (
+    check_events,
+    handle_modulation_of_duplicate_events,
+)
 from nilearn.glm.first_level.hemodynamic_models import (
     _orthogonalize,
     compute_regressor,
@@ -233,7 +236,15 @@ def _convolve_regressors(
     """
     regressor_names = []
     regressor_matrix = None
-    trial_type, onset, duration, modulation = check_events(events)
+
+    events_copy = check_events(events)
+    cleaned_events = handle_modulation_of_duplicate_events(events_copy)
+
+    trial_type = cleaned_events["trial_type"].values
+    onset = cleaned_events["onset"].values
+    duration = cleaned_events["duration"].values
+    modulation = cleaned_events["modulation"].values
+
     for condition in np.unique(trial_type):
         condition_mask = trial_type == condition
         exp_condition = (

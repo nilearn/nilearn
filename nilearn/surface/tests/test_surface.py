@@ -72,6 +72,19 @@ class SurfaceLikeObject:
         return self._data
 
 
+def test_load_surf_data_numpy_gt_1pt23():
+    """Test loading fsaverage surface
+
+    Threw an error with numpy >=1.24.x
+    but only a deprecaton warning with numpy <1.24.x.
+
+    Regression test for
+    https://github.com/nilearn/nilearn/issues/3638
+    """
+    fsaverage = datasets.fetch_surf_fsaverage()
+    surface.load_surf_data(fsaverage['pial_left'])
+
+
 def test_load_surf_data_array():
     # test loading and squeezing data from numpy array
     data_flat = np.zeros((20, ))

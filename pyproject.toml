@@ -84,6 +84,7 @@ min = [
 # For surface plotting mostly
 plotly = ["kaleido", "plotly"]
 # Necessary req to use nilearn's plotting module
+plotmin = ["matplotlib==3.3.0"]
 plotting = ["matplotlib>=3.3.0"]
 # For running unit and docstring tests
 test = [

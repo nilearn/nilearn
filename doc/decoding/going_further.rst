@@ -19,8 +19,10 @@ Performing decoding with scikit-learn
 Using scikit-learn estimators
 --------------------------------
 
-You can easily import estimators from the `scikit-learn <http://scikit-learn.org>`_ machine-learning library, those available in the `Decoder` object and many others.
-They all have the `fit` and `predict` functions. For example you can directly import the versatile `Support Vector Classifier <http://scikit-learn.org/stable/modules/svm.html>`_ (or SVC).
+You can easily import estimators from the `scikit-learn <http://scikit-learn.org>`_ machine-learning library,
+those available in the ``Decoder`` object and many others.
+They all have the ``fit`` and ``predict`` functions.
+For example you can directly import the versatile `Support Vector Classifier <http://scikit-learn.org/stable/modules/svm.html>`_ (or SVC).
 
 To learn more about the variety of classifiers available in scikit-learn, see the `scikit-learn documentation on supervised learning <http://scikit-learn.org/stable/supervised_learning.html>`_.
 
@@ -46,9 +48,9 @@ You can change many parameters of the cross_validation here, for example:
 
 * use a different cross-validation scheme, for example :class:`sklearn.model_selection.LeaveOneGroupOut`.
 
-* speed up the computation by using `n_jobs=-1`, which will spread the computation equally across all processors.
+* speed up the computation by using ``n_jobs=-1``, which will spread the computation equally across all processors.
 
-* use a different scoring function, as a keyword or imported from scikit-learn such as `scoring='roc_auc'`.
+* use a different scoring function, as a keyword or imported from scikit-learn such as ``scoring="roc_auc"``.
 
 .. seealso::
 

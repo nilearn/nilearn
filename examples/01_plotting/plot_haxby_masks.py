@@ -5,7 +5,7 @@ Plot Haxby masks
 Small script to plot the masks of the Haxby dataset.
 """
 
-#########################################################################
+# %%
 # Load Haxby dataset
 # ------------------
 
@@ -29,7 +29,7 @@ mean_img = image.mean_img(func_filename)
 
 z_slice = -14
 
-#########################################################################
+# %%
 # Plot the masks
 # --------------
 
