@@ -1,4 +1,6 @@
-"""A short demo of the surface images & maskers
+"""
+A short demo of the surface images & maskers
+============================================
 
 copied from the nilearn sandbox discussion, to be transformed into tests &
 examples

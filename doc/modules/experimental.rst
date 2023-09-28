@@ -20,13 +20,13 @@
    :toctree: generated/
    :template: class.rst
 
-    FileMesh
-    InMemoryMesh
-    Mesh
-    PolyMesh
-    SurfaceImage
-    SurfaceLabelsMasker
-    SurfaceMasker
+   FileMesh
+   InMemoryMesh
+   Mesh
+   PolyMesh
+   SurfaceImage
+   SurfaceLabelsMasker
+   SurfaceMasker
 
 **Functions**:
 
@@ -36,6 +36,6 @@
    :toctree: generated/
    :template: function.rst
 
-    fetch_destrieux
-    fetch_nki
-    load_fsaverage
+   fetch_destrieux
+   fetch_nki
+   load_fsaverage
