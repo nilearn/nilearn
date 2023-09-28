@@ -178,9 +178,9 @@ class SurfaceLabelsMasker:
     labels_img: SurfaceImage
     label_names: dict[Any, str] | None
 
-    labels_data_: np.ndarray
-    labels_: np.ndarray
-    label_names_: np.ndarray
+    labels_data_: type[np.ndarray]
+    labels_: type[np.ndarray]
+    label_names_: type[np.ndarray]
 
     def __init__(
         self,
