@@ -64,6 +64,8 @@ Enhancements
 
 - Improve ``generate_report`` method of maskers by allowing users to pass a cmap argument for plotting image (:gh:`3897` by `Yasmin Mzayek`_)
 
+  - Improve ``contrasts`` allowing fixed effects on F contrasts (:gh:`3203` by `Bertrand Thirion`_)
+
 Changes
 -------
 

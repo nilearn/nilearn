@@ -175,7 +175,7 @@ def test_process_second_level_input_as_firstlevelmodels():
     ) = _process_second_level_input_as_firstlevelmodels(list_of_flm)
     assert subjects_label == [f"sub-{i}" for i in range(3)]
     assert isinstance(sample_map, Nifti1Image)
-    assert sample_map.shape == (7, 8, 9)
+    assert sample_map.shape == (7, 8, 9, 1)
 
 
 def test_check_affine_first_level_models():
