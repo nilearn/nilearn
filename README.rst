@@ -14,6 +14,9 @@
     :target: https://codecov.io/gh/nilearn/nilearn
     :alt: Coverage Status
 
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :target: https://github.com/psf/black
+
 .. image:: http://img.shields.io/twitter/follow/nilearn.svg
     :target: https://twitter.com/nilearn
     :alt: Twitter
@@ -25,7 +28,6 @@
 .. image:: https://img.shields.io/discord/711993354929569843
     :target: https://discord.gg/SsQABEJHkZ
     :alt: Discord
-
 
 
 
