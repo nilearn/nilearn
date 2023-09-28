@@ -10,8 +10,6 @@
 :mod:`nilearn.experimental.surface`
 -----------------------------------
 
-.. automodule:: nilearn.experimental.surface
-
 **Classes**:
 
 .. currentmodule:: nilearn.experimental.surface
