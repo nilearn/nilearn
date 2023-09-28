@@ -18,6 +18,7 @@ HIGHLIGHTS
 
 - :bdg-success:`API` Add ``vmin`` and ``symmetric_cbar`` arguments to :func:`~nilearn.plotting.plot_img_on_surf` (:gh:`3873` by `Michelle Wang`_).
 
+- :bdg-success:`API` Improve ``contrasts`` allowing fixed effects on F contrasts (:gh:`3203` by `Bertrand Thirion`_)
 
 NEW
 ---
@@ -78,7 +79,7 @@ Enhancements
 
 - :bdg-success:`API` Improve ``generate_report`` method of maskers by allowing users to pass a cmap argument for plotting image (:gh:`3897` by `Yasmin Mzayek`_)
 
-  - Improve ``contrasts`` allowing fixed effects on F contrasts (:gh:`3203` by `Bertrand Thirion`_)
+- :bdg-success:`API` Improve ``contrasts`` allowing fixed effects on F contrasts (:gh:`3203` by `Bertrand Thirion`_)
 
 Changes
 -------
