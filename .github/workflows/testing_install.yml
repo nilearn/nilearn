@@ -27,7 +27,8 @@ jobs:
             run:
                 shell: bash
         steps:
-        -   uses: actions/checkout@v4
+        -   name: Checkout nilearn
+            uses: actions/checkout@v4
         -   name: Setup python
             uses: actions/setup-python@v4
             with:
