@@ -7,8 +7,8 @@
    :no-members:
    :no-inherited-members:
 
-:mod:`nilearn.experimental.surface`
------------------------------------
+nilearn.experimental.surface
+----------------------------
 
 **Classes**:
 
