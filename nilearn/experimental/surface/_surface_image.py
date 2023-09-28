@@ -3,7 +3,7 @@ from __future__ import annotations
 import abc
 import dataclasses
 import pathlib
-from typing import Dict, Union
+from typing import Dict
 
 import numpy as np
 
@@ -30,7 +30,14 @@ class Mesh(abc.ABC):
             f"with {getattr(self, 'n_vertices', '??')} vertices>"
         )
 
-    def to_gifti(self, gifti_file: Union[pathlib.Path, str]):
+    def to_gifti(self, gifti_file: pathlib.Path | str):
+        """Write surface mesh to a Gifti file on disk.
+
+        Parameters
+        ----------
+        gifti_file : path-like or str
+            filename to save the mesh.
+        """
         _io.mesh_to_gifti(self.coordinates, self.faces, gifti_file)
 
 
@@ -61,13 +68,16 @@ class FileMesh(Mesh):
 
     @property
     def coordinates(self) -> np.ndarray:
+        """Get x, y, z, values for each mesh vertex."""
         return _io.read_mesh(self.file_path)["coordinates"]
 
     @property
     def faces(self) -> np.ndarray:
+        """Get array of adjacent vertices."""
         return _io.read_mesh(self.file_path)["faces"]
 
     def loaded(self) -> InMemoryMesh:
+        """Load surface mesh into memory."""
         loaded_arrays = _io.read_mesh(self.file_path)
         return InMemoryMesh(
             loaded_arrays["coordinates"], loaded_arrays["faces"]

@@ -56,6 +56,21 @@ class SurfaceMasker:
     def fit(
         self, img: SurfaceImage | None = None, y: Any = None
     ) -> SurfaceMasker:
+        """Prepare signal extraction from regions.
+
+        Parameters
+        ----------
+        img : SurfaceImage object
+            Mesh and data for both hemispheres.
+
+        y : None
+            This parameter is unused. It is solely included for scikit-learn
+            compatibility.
+
+        Returns
+        -------
+        SurfaceMasker object
+        """
         del y
         self._fit_mask_img(img)
         assert self.mask_img_ is not None
@@ -77,6 +92,19 @@ class SurfaceMasker:
             )
 
     def transform(self, img: SurfaceImage) -> np.ndarray:
+        """Extract signals from fitted surface object.
+
+        Parameters
+        ----------
+        img : SurfaceImage object
+            Mesh and data for both hemispheres.
+
+        Returns
+        -------
+        output : numpy.ndarray
+            Signal for each element.
+            shape: (img data shape, total number of vertices)
+        """
         self._check_fitted()
         assert self.mask_img_ is not None
         assert self.output_dimension_ is not None
@@ -89,10 +117,39 @@ class SurfaceMasker:
         return output
 
     def fit_transform(self, img: SurfaceImage, y: Any = None) -> np.ndarray:
+        """Prepare and perform signal extraction from regions.
+
+        Parameters
+        ----------
+        img : SurfaceImage object
+            Mesh and data for both hemispheres.
+
+        y : None
+            This parameter is unused. It is solely included for scikit-learn
+            compatibility.
+
+        Returns
+        -------
+        numpy.ndarray
+            Signal for each element.
+            shape: (img data shape, total number of vertices)
+        """
         del y
         return self.fit(img).transform(img)
 
     def inverse_transform(self, masked_img: np.ndarray) -> SurfaceImage:
+        """Transform extracted signal back to surface object.
+
+        Parameters
+        ----------
+        masked_img : numpy.ndarray
+            Extracted signal.
+
+        Returns
+        -------
+        SurfaceImage object
+            Mesh and data for both hemispheres.
+        """
         self._check_fitted()
         assert self.mask_img_ is not None
         if masked_img.shape[-1] != self.output_dimension_:
@@ -147,10 +204,38 @@ class SurfaceLabelsMasker:
     def fit(
         self, img: SurfaceImage | None = None, y: Any = None
     ) -> SurfaceLabelsMasker:
+        """Prepare signal extraction from regions.
+
+        Parameters
+        ----------
+        img : SurfaceImage object
+            Mesh and data for both hemispheres.
+
+        y : None
+            This parameter is unused. It is solely included for scikit-learn
+            compatibility.
+
+        Returns
+        -------
+        SurfaceLabelsMasker object
+        """
         del img, y
         return self
 
     def transform(self, img: SurfaceImage) -> np.ndarray:
+        """Extract signals from fitted surface object.
+
+        Parameters
+        ----------
+        img : SurfaceImage object
+            Mesh and data for both hemispheres.
+
+        Returns
+        -------
+        output : numpy.ndarray
+            Signal for each element.
+            shape: (img data shape, total number of vertices)
+        """
         check_same_n_vertices(self.labels_img.mesh, img.mesh)
         img_data = np.concatenate(list(img.data.values()), axis=-1)
         output = np.empty((*img_data.shape[:-1], len(self.labels_)))
@@ -161,10 +246,39 @@ class SurfaceLabelsMasker:
         return output
 
     def fit_transform(self, img: SurfaceImage, y: Any = None) -> np.ndarray:
+        """Prepare and perform signal extraction from regions.
+
+        Parameters
+        ----------
+        img : SurfaceImage object
+            Mesh and data for both hemispheres.
+
+        y : None
+            This parameter is unused. It is solely included for scikit-learn
+            compatibility.
+
+        Returns
+        -------
+        numpy.ndarray
+            Signal for each element.
+            shape: (img data shape, total number of vertices)
+        """
         del y
         return self.fit(img).transform(img)
 
     def inverse_transform(self, masked_img: np.ndarray) -> SurfaceImage:
+        """Transform extracted signal back to surface object.
+
+        Parameters
+        ----------
+        masked_img : numpy.ndarray
+            Extracted signal.
+
+        Returns
+        -------
+        SurfaceImage object
+            Mesh and data for both hemispheres.
+        """
         data = {}
         for part_name, labels_part in self.labels_img.data.items():
             data[part_name] = np.zeros(

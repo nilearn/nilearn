@@ -15,6 +15,7 @@ from nilearn.experimental.surface._surface_image import (
 
 
 def load_fsaverage(mesh_name: str = "fsaverage5") -> Dict[str, PolyMesh]:
+    """Load several fsaverage mesh types for both hemispheres."""
     fsaverage = datasets.fetch_surf_fsaverage(mesh_name)
     meshes: Dict[str, Dict[str, Mesh]] = {}
     renaming = {"pial": "pial", "white": "white_matter", "infl": "inflated"}
@@ -28,6 +29,7 @@ def load_fsaverage(mesh_name: str = "fsaverage5") -> Dict[str, PolyMesh]:
 
 
 def fetch_nki(n_subjects=1) -> Sequence[SurfaceImage]:
+    """Load NKI enhanced surface data into a surface object."""
     fsaverage = load_fsaverage("fsaverage5")
     nki_dataset = datasets.fetch_surf_nki_enhanced(n_subjects=n_subjects)
     images = []
@@ -48,6 +50,7 @@ def fetch_nki(n_subjects=1) -> Sequence[SurfaceImage]:
 
 
 def fetch_destrieux() -> Tuple[SurfaceImage, Dict[int, str]]:
+    """Load Destrieux surface atlas into a surface object."""
     fsaverage = load_fsaverage("fsaverage5")
     destrieux = datasets.fetch_atlas_surf_destrieux()
     label_names = {
