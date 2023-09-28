@@ -257,14 +257,27 @@ Changelog entries in ``doc/changes/latest.rst`` should adhere to the following c
 
 - Entry in the appropriate category
 - Single line per entry
+- Add a "badge" corresponding to the change type (see below)
 - Finish with a link to the PR and the author's profile
-- New contributors to add their details to the ``authors`` section of the ``CITATION.cff``
+- New contributors to add their details to the ``authors`` section of the ``CITATION.cff`` (see below)
+
+List of badges:
+
+.. code-block:: rst
+
+      :bdg-primary:`Doc`
+      :bdg-secondary:`Maint`
+      :bdg-success:`API`
+      :bdg-info:`Plotting`
+      :bdg-warning:`Test`
+      :bdg-danger:`Deprecation`
+      :bdg-dark:`Code`
 
 Example entry in ``doc/changes/latest.rst``:
 
 .. code-block:: rst
 
-    - Fix off-by-one error when setting ticks in :func:`~plotting.plot_surf` (:gh:`3105` by `Dimitri Papadopoulos Orfanos`_).
+    - :bdg-dark:`Code` Fix off-by-one error when setting ticks in :func:`~plotting.plot_surf` (:gh:`3105` by `Dimitri Papadopoulos Orfanos`_).
 
 Associated entry in ``CITATION.cff``:
 
