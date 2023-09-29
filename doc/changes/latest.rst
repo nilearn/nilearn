@@ -24,8 +24,7 @@ NEW
 
 - :bdg-info:`Plotting` Volume plotting functions like :func:`~plotting.plot_img` now have an optional ``radiological`` parameter, defaulting to ``False``. If ``True``, this will invert the x-axis and ``L`` and ``R`` annotations to confirm to radiological conventional view. (:gh:`3172` by `Konrad Wagstyl`_ and `Yasmin Mzayek`_).
 
-- New experimental surface API to facilitate working with surface data in downstream surface-based analyses. We provide this API as a nilearn.experimental.surface module as it is still incomplete and subject to
-change without a deprecation cycle. (:gh:`3856` by `Jerome Dockes`_).
+- New experimental surface API to facilitate working with surface data in downstream surface-based analyses. We provide this API as a nilearn.experimental.surface module as it is still incomplete and subject to change without a deprecation cycle. (:gh:`3856` by `Jerome Dockes`_).
 
 Fixes
 -----

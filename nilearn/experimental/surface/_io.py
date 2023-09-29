@@ -1,3 +1,4 @@
+"""Input/output for surface data and meshes."""
 import pathlib
 from typing import Dict, Union
 
