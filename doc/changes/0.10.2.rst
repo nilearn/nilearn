@@ -18,13 +18,16 @@ HIGHLIGHTS
 
 - :bdg-success:`API` Add ``vmin`` and ``symmetric_cbar`` arguments to :func:`~nilearn.plotting.plot_img_on_surf` (:gh:`3873` by `Michelle Wang`_).
 
+- :bdg-success:`API` Improve ``contrasts`` allowing fixed effects on F contrasts (:gh:`3203` by `Bertrand Thirion`_)
+
+- :bdg-success:`API` New experimental surface API to facilitate working with surface data in downstream surface-based analyses. We provide this API as a nilearn.experimental.surface module as it is still incomplete and subject to change without a deprecation cycle. (:gh:`3856` by `Jerome Dockes`_).
 
 NEW
 ---
 
 - :bdg-info:`Plotting` Volume plotting functions like :func:`~plotting.plot_img` now have an optional ``radiological`` parameter, defaulting to ``False``. If ``True``, this will invert the x-axis and ``L`` and ``R`` annotations to confirm to radiological conventional view. (:gh:`3172` by `Konrad Wagstyl`_ and `Yasmin Mzayek`_).
 
-- New experimental surface API to facilitate working with surface data in downstream surface-based analyses. We provide this API as a nilearn.experimental.surface module as it is still incomplete and subject to change without a deprecation cycle. (:gh:`3856` by `Jerome Dockes`_).
+- :bdg-success:`API` New experimental surface API to facilitate working with surface data in downstream surface-based analyses. We provide this API as a nilearn.experimental.surface module as it is still incomplete and subject to change without a deprecation cycle. (:gh:`3856` by `Jerome Dockes`_).
 
 Fixes
 -----
@@ -80,7 +83,7 @@ Enhancements
 
 - :bdg-success:`API` Improve ``generate_report`` method of maskers by allowing users to pass a cmap argument for plotting image (:gh:`3897` by `Yasmin Mzayek`_)
 
-  - Improve ``contrasts`` allowing fixed effects on F contrasts (:gh:`3203` by `Bertrand Thirion`_)
+- :bdg-success:`API` Improve ``contrasts`` allowing fixed effects on F contrasts (:gh:`3203` by `Bertrand Thirion`_)
 
 Changes
 -------
@@ -88,7 +91,7 @@ Changes
 - :bdg-dark:`Code` Validate the content of events files before plotting them (:gh:`3994` by `Rémi Gau`_).
 - :bdg-dark:`Code` ``nilearn.glm.first_level.experimental_paradigm.check_events`` will now throw a warning if some events have a 0 second duration and will throw an error if an event has ``NaN`` onset or duration (:gh:`3943` by `Rémi Gau`_).
 - :bdg-secondary:`Maint` Removed old files and test code from deprecated datasets COBRE and NYU resting state (:gh:`3743` by `Michelle Wang`_).
-- :bdg-secondary:`Maint` PEP8 and isort compliance extended to the whole nilearn codebase. (:gh:`3538`, :gh:`3566`, :gh:`3548`, :gh:`3556`, :gh:`3601`, :gh:`3609`, :gh:`3646`, :gh:`3650`, :gh:`3647`, :gh:`3640`, :gh:`3615`, :gh:`3614`, :gh:`3648`,  :gh:`#3651`  by `Rémi Gau`_).
+- :bdg-secondary:`Maint` PEP8 and isort compliance extended to the whole nilearn codebase. (:gh:`3538`, :gh:`3566`, :gh:`3548`, :gh:`3556`, :gh:`3601`, :gh:`3609`, :gh:`3646`, :gh:`3650`, :gh:`3647`, :gh:`3640`, :gh:`3615`, :gh:`3614`, :gh:`3648`,  :gh:`3651`  by `Rémi Gau`_).
 - :bdg-secondary:`Maint` Finish applying black formatting to most of the codebase. (:gh:`3836`, :gh:`3833`, :gh:`3827`, :gh:`3810`, :gh:`3803`, :gh:`3802`, :gh:`3795`, :gh:`3790`, :gh:`3783`, :gh:`3777` by `Rémi Gau`_).
 - :bdg-danger:`Deprecation` Empty region signals resulting from applying ``mask_img`` in :class:`~maskers.NiftiLabelsMasker` will no longer be kept in release 0.15. Meanwhile, use ``keep_masked_labels`` parameter when initializing the :class:`~maskers.NiftiLabelsMasker` object to enable/disable this behavior. (:gh:`3722` by `Mohammad Torabi`_).
 - :bdg-danger:`Deprecation` Empty region signals resulting from applying ``mask_img`` in :class:`~maskers.NiftiMapsMasker` will no longer be kept in release 0.15. Meanwhile, use ``keep_masked_maps`` parameter when initializing the :class:`~maskers.NiftiMapsMasker` object to enable/disable this behavior. (:gh:`3732` by `Mohammad Torabi`_).
