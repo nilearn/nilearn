@@ -54,6 +54,8 @@ extensions = [
 
 autosummary_generate = True
 
+autodoc_typehints = "none"
+
 autodoc_default_options = {
     "imported-members": True,
     "inherited-members": True,

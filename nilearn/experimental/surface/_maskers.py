@@ -175,7 +175,7 @@ class SurfaceLabelsMasker:
 
     Parameters
     ----------
-    labels_img : Niimg-like object
+    labels_img : SurfaceImage object
         Region definitions, as one image of labels.
 
     label_names : :obj:`list` of :obj:`str`, default=None
