@@ -171,7 +171,24 @@ class SurfaceMasker:
 
 
 class SurfaceLabelsMasker:
-    """Extract data from a SurfaceImage, averaging over atlas regions."""
+    """Extract data from a SurfaceImage, averaging over atlas regions.
+
+    Parameters
+    ----------
+    labels_img : Niimg-like object
+        Region definitions, as one image of labels.
+
+    label_names : :obj:`list` of :obj:`str`, default=None
+        Full labels corresponding to the labels image.
+
+    Attributes
+    ----------
+    labels_data_ : :obj:`numpy.ndarray`
+
+    labels_ : :obj:`numpy.ndarray`
+
+    label_names_ : :obj:`numpy.ndarray`
+    """
 
     # TODO check attribute names after PR 3761 and harmonize with volume labels
     # masker if necessary.
