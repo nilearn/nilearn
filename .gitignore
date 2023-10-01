@@ -65,3 +65,4 @@ results/
 examples/*.nii
 examples/*.nii.gz
 examples/*.png
+examples/04_glm_first_level/derivatives
