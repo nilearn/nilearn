@@ -85,8 +85,8 @@ def close_all():
 @pytest.fixture(autouse=True)
 def warnings_as_errors():
     """Raise errors on deprecations from external library prereleases."""
-    flag = os.environ.get("PIP_FLAGS")
-    if flag == "--pre":
+    flag = os.environ.get("WARN_DEPRECATION_ERRORS")
+    if flag == "true":
         with warnings.catch_warnings():
             warnings.filterwarnings(
                 "error",

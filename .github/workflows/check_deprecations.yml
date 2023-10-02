@@ -32,8 +32,9 @@ jobs:
         if: github.repository == 'nilearn/nilearn'
         runs-on: ubuntu-latest
         env:
-            # TODO: Add another env variable that will be used in conftest.py
             PIP_FLAGS: --pre
+            WARN_DEPRECATION_ERRORS: true
+
         defaults:
             run:
                 shell: bash
