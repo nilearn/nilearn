@@ -15,6 +15,13 @@ from nilearn._utils.testing import write_tmp_imgs
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiMasker
 
+try:
+    import matplotlib  # noqa: F401
+except ImportError:
+    not_have_mpl = True
+else:
+    not_have_mpl = False
+
 
 def test_auto_mask():
     # This mostly a smoke test
@@ -259,6 +266,9 @@ def test_standardization():
         )
 
 
+@pytest.mark.skipif(
+    not_have_mpl, reason="Matplotlib not installed; required for this test"
+)
 def test_generate_report():
     """Smoke test for generate_report method."""
     imgs = _get_random_imgs((9, 9, 5), 2)
