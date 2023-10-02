@@ -27,9 +27,10 @@ class OrthoProjector(OrthoSlicer):
 
           from nilearn.datasets import load_mni152_template
           from nilearn.plotting import plot_glass_brain
+
           img = load_mni152_template()
           # display is an instance of the OrthoProjector class
-          display = plot_glass_brain(img, display_mode='ortho')
+          display = plot_glass_brain(img, display_mode="ortho")
 
     Attributes
     ----------
@@ -277,9 +278,10 @@ class XProjector(OrthoProjector):
 
         from nilearn.datasets import load_mni152_template
         from nilearn.plotting import plot_glass_brain
+
         img = load_mni152_template()
         # display is an instance of the XProjector class
-        display = plot_glass_brain(img, display_mode='x')
+        display = plot_glass_brain(img, display_mode="x")
 
     Attributes
     ----------
@@ -310,9 +312,10 @@ class YProjector(OrthoProjector):
 
         from nilearn.datasets import load_mni152_template
         from nilearn.plotting import plot_glass_brain
+
         img = load_mni152_template()
         # display is an instance of the YProjector class
-        display = plot_glass_brain(img, display_mode='y')
+        display = plot_glass_brain(img, display_mode="y")
 
     Attributes
     ----------
@@ -343,9 +346,10 @@ class ZProjector(OrthoProjector):
 
         from nilearn.datasets import load_mni152_template
         from nilearn.plotting import plot_glass_brain
+
         img = load_mni152_template()
         # display is an instance of the ZProjector class
-        display = plot_glass_brain(img, display_mode='z')
+        display = plot_glass_brain(img, display_mode="z")
 
     Attributes
     ----------
@@ -379,9 +383,10 @@ class XZProjector(OrthoProjector):
 
         from nilearn.datasets import load_mni152_template
         from nilearn.plotting import plot_glass_brain
+
         img = load_mni152_template()
         # display is an instance of the XZProjector class
-        display = plot_glass_brain(img, display_mode='xz')
+        display = plot_glass_brain(img, display_mode="xz")
 
     Attributes
     ----------
@@ -414,9 +419,10 @@ class YXProjector(OrthoProjector):
 
         from nilearn.datasets import load_mni152_template
         from nilearn.plotting import plot_glass_brain
+
         img = load_mni152_template()
         # display is an instance of the YXProjector class
-        display = plot_glass_brain(img, display_mode='yx')
+        display = plot_glass_brain(img, display_mode="yx")
 
     Attributes
     ----------
@@ -448,9 +454,10 @@ class YZProjector(OrthoProjector):
 
         from nilearn.datasets import load_mni152_template
         from nilearn.plotting import plot_glass_brain
+
         img = load_mni152_template()
         # display is an instance of the YZProjector class
-        display = plot_glass_brain(img, display_mode='yz')
+        display = plot_glass_brain(img, display_mode="yz")
 
     Attributes
     ----------
@@ -483,9 +490,10 @@ class LYRZProjector(OrthoProjector):
 
         from nilearn.datasets import load_mni152_template
         from nilearn.plotting import plot_glass_brain
+
         img = load_mni152_template()
         # display is an instance of the LYRZProjector class
-        display = plot_glass_brain(img, display_mode='lyrz')
+        display = plot_glass_brain(img, display_mode="lyrz")
 
     Attributes
     ----------
@@ -517,9 +525,10 @@ class LZRYProjector(OrthoProjector):
 
         from nilearn.datasets import load_mni152_template
         from nilearn.plotting import plot_glass_brain
+
         img = load_mni152_template()
         # display is an instance of the LZRYProjector class
-        display = plot_glass_brain(img, display_mode='lzry')
+        display = plot_glass_brain(img, display_mode="lzry")
 
     Attributes
     ----------
@@ -551,9 +560,10 @@ class LZRProjector(OrthoProjector):
 
         from nilearn.datasets import load_mni152_template
         from nilearn.plotting import plot_glass_brain
+
         img = load_mni152_template()
         # display is an instance of the LZRProjector class
-        display = plot_glass_brain(img, display_mode='lzr')
+        display = plot_glass_brain(img, display_mode="lzr")
 
     Attributes
     ----------
@@ -584,9 +594,10 @@ class LYRProjector(OrthoProjector):
 
         from nilearn.datasets import load_mni152_template
         from nilearn.plotting import plot_glass_brain
+
         img = load_mni152_template()
         # display is an instance of the LYRProjector class
-        display = plot_glass_brain(img, display_mode='lyr')
+        display = plot_glass_brain(img, display_mode="lyr")
 
     Attributes
     ----------
@@ -617,9 +628,10 @@ class LRProjector(OrthoProjector):
 
         from nilearn.datasets import load_mni152_template
         from nilearn.plotting import plot_glass_brain
+
         img = load_mni152_template()
         # display is an instance of the LRProjector class
-        display = plot_glass_brain(img, display_mode='lr')
+        display = plot_glass_brain(img, display_mode="lr")
 
     Attributes
     ----------
@@ -645,9 +657,10 @@ class LProjector(OrthoProjector):
 
         from nilearn.datasets import load_mni152_template
         from nilearn.plotting import plot_glass_brain
+
         img = load_mni152_template()
         # display is an instance of the LProjector class
-        display = plot_glass_brain(img, display_mode='l')
+        display = plot_glass_brain(img, display_mode="l")
 
     Attributes
     ----------
@@ -677,9 +690,10 @@ class RProjector(OrthoProjector):
 
         from nilearn.datasets import load_mni152_template
         from nilearn.plotting import plot_glass_brain
+
         img = load_mni152_template()
         # display is an instance of the RProjector class
-        display = plot_glass_brain(img, display_mode='r')
+        display = plot_glass_brain(img, display_mode="r")
 
     Attributes
     ----------

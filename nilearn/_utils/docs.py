@@ -138,8 +138,7 @@ docdict[
         - `svc`: :class:`{svc} <sklearn.svm.LinearSVC>` with L2 penalty.
             .. code-block:: python
 
-                svc = LinearSVC(penalty="l2",
-                                max_iter=1e4)
+                svc = LinearSVC(penalty="l2", max_iter=1e4)
 
         - `svc_l2`: :class:`{svc} <sklearn.svm.LinearSVC>` with L2 penalty.
             .. note::
@@ -148,25 +147,21 @@ docdict[
         - `svc_l1`: :class:`{svc} <sklearn.svm.LinearSVC>` with L1 penalty.
             .. code-block:: python
 
-                svc_l1 = LinearSVC(penalty="l1",
-                                   dual=False,
-                                   max_iter=1e4)
+                svc_l1 = LinearSVC(penalty="l1", dual=False, max_iter=1e4)
 
         - `logistic`: \
             :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
             with L2 penalty.
             .. code-block:: python
 
-                logistic = LogisticRegression(penalty="l2",
-                                              solver="liblinear")
+                logistic = LogisticRegression(penalty="l2", solver="liblinear")
 
         - `logistic_l1`: \
             :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
             with L1 penalty.
             .. code-block:: python
 
-                logistic_l1 = LogisticRegression(penalty="l1",
-                                                 solver="liblinear")
+                logistic_l1 = LogisticRegression(penalty="l1", solver="liblinear")  # noqa
 
         - `logistic_l2`: \
             :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
@@ -183,8 +178,7 @@ docdict[
         - `dummy_classifier`: :class:`{dc} <sklearn.dummy.DummyClassifier>`.
             .. code-block:: python
 
-                dummy = DummyClassifier(strategy="stratified",
-                                        random_state=0)
+                dummy = DummyClassifier(strategy="stratified", random_state=0)
 
 """
 
@@ -573,7 +567,7 @@ keep_masked_labels : :obj:`bool`, default=True
     zeros only. If False, the empty labels will be removed from the
     output, ensuring no empty time series are present.
 
-    .. deprecated:: 0.10.2.dev
+    .. deprecated:: 0.10.2
 
         The 'True' option for ``keep_masked_labels`` is deprecated.
         The default value will change to 'False' in 0.13,
@@ -592,7 +586,7 @@ keep_masked_maps : :obj:`bool`, optional
     invalid maps will be removed from the trimmed atlas, resulting in
     no empty time series in the output.
 
-    .. deprecated:: 0.10.2.dev
+    .. deprecated:: 0.10.2
 
         The 'True' option for ``keep_masked_maps`` is deprecated.
         The default value will change to 'False' in 0.13,
@@ -721,8 +715,7 @@ docdict[
         - `svr`: :class:`{Support vector regression} <sklearn.svm.SVR>`.
             .. code-block:: python
 
-                svr = SVR(kernel="linear",
-                          max_iter=1e4)
+                svr = SVR(kernel="linear", max_iter=1e4)
 
         - `lasso`: \
             :class:`{Lasso regression} <sklearn.linear_model.LassoCV>`.
@@ -739,7 +732,7 @@ docdict[
             :class:`{Dummy regressor} <sklearn.dummy.DummyRegressor>`.
             .. code-block:: python
 
-                dummy = DummyRegressor(strategy='mean')
+                dummy = DummyRegressor(strategy="mean")
 
 """
 

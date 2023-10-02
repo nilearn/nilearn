@@ -20,9 +20,6 @@ exclude: |
         | nilearn/_utils/data_gen.py
         | nilearn/reporting/html_report.py
         | nilearn/reporting/tests/test_html_report.py
-        | nilearn/glm/contrasts.py
-        | nilearn/glm/tests/test_contrasts.py
-        | nilearn/glm/tests/test_first_level.py
         | nilearn/interfaces/fmriprep/load_confounds_compcor.py
         | nilearn/interfaces/fmriprep/tests/test_load_confounds_utils.py
         | nilearn/interfaces/fmriprep/tests/test_load_confounds_strategy.py
@@ -48,10 +45,11 @@ repos:
     -   id: check-case-conflict
     -   id: check-json
     -   id: check-merge-conflict
+    -   id: check-toml
     -   id: check-yaml
     -   id: end-of-file-fixer
+    -   id: mixed-line-ending
     -   id: trailing-whitespace
-    -   id: check-toml
 
 -   repo: https://github.com/pycqa/isort
     rev: 5.12.0
@@ -70,11 +68,24 @@ repos:
     -   id: pyupgrade
         args: [--py36-plus]
 
--   repo: https://github.com/psf/black
+-   repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.10.0
+    hooks:
+    -   id: rst-directive-colons
+    -   id: rst-inline-touching-normal
+
+-   repo: https://github.com/psf/black-pre-commit-mirror
     rev: 23.9.1
     hooks:
     -   id: black
         args: [--config, pyproject.toml]
+
+-   repo: https://github.com/adamchainz/blacken-docs
+    rev: 1.16.0
+    hooks:
+    -   id: blacken-docs
+        additional_dependencies:
+        -   black==23.9.1
 
 -   repo: https://github.com/codespell-project/codespell
     rev: v2.2.5

@@ -1205,7 +1205,7 @@ def fetch_atlas_aal(
     .. code-block:: python
 
         # This should print 'Lingual_L'
-        data.labels[data.indices.index('5021')]
+        data.labels[data.indices.index("5021")]
 
     Conversely, to get the region ID corresponding to the label
     "Precentral_L", you should do:
@@ -1213,7 +1213,7 @@ def fetch_atlas_aal(
     .. code-block:: python
 
         # This should print '2001'
-        data.indices[data.labels.index('Precentral_L')]
+        data.indices[data.labels.index("Precentral_L")]
 
     Parameters
     ----------
@@ -1966,7 +1966,7 @@ def fetch_atlas_pauli_2017(version="prob", data_dir=None, verbose=1):
                     .. code-block:: python
 
                         # Prepend background label
-                        data.labels.insert(0, 'Background')
+                        data.labels.insert(0, "Background")
 
                     Or be careful that the indexing should be offset by one:
 
@@ -1975,7 +1975,7 @@ def fetch_atlas_pauli_2017(version="prob", data_dir=None, verbose=1):
                         # Get region ID of label 'NAC' when 'background' was
                         # not added to the list of labels:
                         # idx_nac should be equal to 3:
-                        idx_nac = data.labels.index('NAC') + 1
+                        idx_nac = data.labels.index("NAC") + 1
 
             - 'description': :obj:`str`, short description of the atlas and
               some references.
@@ -2077,7 +2077,7 @@ def fetch_atlas_schaefer_2018(
                     .. code-block:: python
 
                         # Prepend background label
-                        data.labels = np.insert(data.labels, 0, 'Background')
+                        data.labels = np.insert(data.labels, 0, "Background")
 
                     Or be careful that the indexing should be offset by one:
 
@@ -2086,9 +2086,7 @@ def fetch_atlas_schaefer_2018(
                         # Get region ID of label '7Networks_LH_Vis_3' when
                         # 'Background' was not added to the list of labels:
                         # idx should be equal to 3:
-                        idx = np.where(
-                            data.labels == b'7Networks_LH_Vis_3'
-                        )[0] + 1
+                        idx = np.where(data.labels == b"7Networks_LH_Vis_3")[0] + 1
 
 
 
