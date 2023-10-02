@@ -133,7 +133,7 @@ Alternatively, the mask computation parameters can still be modified.
 See the :class:`NiftiMasker` documentation for a complete list of
 mask computation parameters.
 
-The mask can be retrieved and visualized from the `mask_img_` attribute
+The mask can be retrieved and visualized from the ``mask_img_`` attribute
 of the masker:
 
 .. literalinclude:: ../../examples/06_manipulating_images/plot_mask_computation.py
@@ -145,10 +145,10 @@ of the masker:
     :align: center
     :scale: 40
 
-Alternatively, the mask can be visualized using the `generate_report`
+Alternatively, the mask can be visualized using the ``generate_report``
 method of the masker. The generated report can be viewed in a Jupyter notebook,
-opened in a new browser tab using `report.open_in_browser()`,
-or saved as a portable HTML file `report.save_as_html(output_filepath)`.
+opened in a new browser tab using ``report.open_in_browser()``,
+or saved as a portable HTML file ``report.save_as_html(output_filepath)``.
 
 .. literalinclude:: ../../examples/06_manipulating_images/plot_mask_computation.py
     :start-after: # We need to specify an 'epi' mask_strategy, as this is raw EPI data
@@ -161,19 +161,19 @@ or saved as a portable HTML file `report.save_as_html(output_filepath)`.
 Different masking strategies
 .............................
 
-The `mask_strategy` argument controls how the mask is computed:
+The ``mask_strategy`` argument controls how the mask is computed:
 
-* `background`: detects a continuous background
-* `epi`: suitable for EPI images
-* `whole-brain-template`: uses an MNI whole-brain template
-* `gm-template`: uses an MNI grey-matter template
-* `wm-template`: uses an MNI white-matter template
+* ``background``: detects a continuous background
+* ``epi``: suitable for EPI images
+* ``whole-brain-template``: uses an MNI whole-brain template
+* ``gm-template``: uses an MNI grey-matter template
+* ``wm-template``: uses an MNI white-matter template
 
 Extra mask parameters: opening, cutoff...
 ..........................................
 
 The underlying function is :func:`nilearn.masking.compute_epi_mask`
-called using the `mask_args` argument of the :class:`NiftiMasker`.
+called using the ``mask_args`` argument of the :class:`NiftiMasker`.
 Controlling these arguments set the fine aspects of the mask. See the
 functions documentation, or :doc:`the NiftiMasker example
 <../auto_examples/06_manipulating_images/plot_mask_computation>`.
@@ -208,9 +208,9 @@ comment on the most important.
 
 .. topic:: **`dtype` argument**
 
-    Forcing your data to have a `dtype` of **float32** can help
+    Forcing your data to have a ``dtype`` of **float32** can help
     save memory and is often a good-enough numerical precision.
-    You can force this cast by choosing `dtype` to be 'auto'.
+    You can force this cast by choosing ``dtype`` to be 'auto'.
     In the future this cast will be the default behaviour.
 
 
@@ -228,7 +228,7 @@ Smoothing
 neuroimaging data, useful to fight noise or for inter-individual
 differences in neuroanatomy. It is achieved by specifying the
 :term:`full-width half maximum<FWHM>` (:term:`FWHM`; in millimeter
-scale) with the `smoothing_fwhm` parameter. Anisotropic filtering
+scale) with the ``smoothing_fwhm`` parameter. Anisotropic filtering
 is also possible by passing 3 scalars ``(x, y, z)``, the
 :term:`FWHM` along the x, y, and z direction.
 
@@ -259,7 +259,7 @@ properties, before conversion to voxel signals.
   detrending or using prespecified confounds, such as behavioral or movement
   information.
 
-  * Linear trends can be removed by activating the `detrend` parameter.
+  * Linear trends can be removed by activating the ``detrend`` parameter.
     This accounts for slow (as opposed to abrupt or transient) changes
     in voxel values along a series of brain images that are unrelated to the
     signal of interest (e.g., the neural correlates of cognitive tasks).
@@ -305,11 +305,11 @@ Resampling: resizing and changing resolutions of images
 (recasting of images into different resolutions and transformations of
 brain voxel data). Two parameters control resampling:
 
-* `target_affine` to resample (resize, rotate...) images in order to match
+* ``target_affine`` to resample (resize, rotate...) images in order to match
   the spatial configuration defined by the new affine (i.e., matrix
   transforming from voxel space into world space).
 
-* Additionally, a `target_shape` can be used to resize images
+* Additionally, a ``target_shape`` can be used to resize images
   (i.e., cropping or padding with zeros) to match an expected data
   image dimensions (shape composed of x, y, and z).
 
@@ -405,14 +405,14 @@ Usage of :class:`NiftiLabelsMasker` is similar to that of
 :class:`NiftiMapsMasker`. The main difference is that it requires a labels image
 instead of a set of maps as input.
 
-The `background_label` keyword of :class:`NiftiLabelsMasker` deserves
+The ``background_label`` keyword of :class:`NiftiLabelsMasker` deserves
 some explanation. The voxels that correspond to the brain or a region
 of interest in an fMRI image do not fill the entire image.
 Consequently, in the labels image, there must be a label value that corresponds
 to "outside" the brain (for which no signal should be extracted).
 By default, this label is set to zero in nilearn (referred to as "background").
 Should some non-zero value encoding be necessary, it is possible
-to change the background value with the `background_label` keyword.
+to change the background value with the ``background_label`` keyword.
 
 .. topic:: **Examples**
 
@@ -422,13 +422,13 @@ to change the background value with the `background_label` keyword.
 ------------------------------
 
 This atlas defines its regions using maps. The path to the corresponding
-file is given in the `maps_img` argument.
+file is given in the ``maps_img`` argument.
 
 One important thing that happens transparently during the execution of
 :meth:`NiftiMasker.fit_transform` is resampling. Initially, the images
 and the atlas do typically not have the same shape nor the same affine.
 Casting them into the same format is required for successful signal extraction
-The keyword argument `resampling_target` specifies which format
+The keyword argument ``resampling_target`` specifies which format
 (i.e., dimensions and affine) the data should be resampled to.
 See the reference documentation for :class:`NiftiMapsMasker` for every
 possible option.
@@ -491,7 +491,7 @@ A single seed is a sphere defined by the radius (in millimeters) and the
 coordinates (typically MNI or TAL) of its center.
 
 Using :class:`NiftiSpheresMasker` needs to define a list of coordinates.
-`seeds` argument takes a list of 3D coordinates (tuples) of the spheres centers,
+``seeds`` argument takes a list of 3D coordinates (tuples) of the spheres centers,
 they should be in the same space as the images.
 Seeds can overlap spatially and are represented in a binary present/nonpresent
 coding (no weighting).
@@ -499,8 +499,8 @@ Below is an example of a coordinates list of four seeds from the default mode ne
 
   >>> dmn_coords = [(0, -52, 18), (-46, -68, 32), (46, -68, 32), (0, 50, -5)]
 
-`radius` is an optional argument that takes a real value in millimeters.
-If no value is given for the `radius` argument, the single voxel at the given
+``radius`` is an optional argument that takes a real value in millimeters.
+If no value is given for the ``radius`` argument, the single voxel at the given
 seed position is used.
 
 .. topic:: **Examples**

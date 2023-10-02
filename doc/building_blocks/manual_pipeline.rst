@@ -39,7 +39,7 @@ example, we can download the data from the
      from nilearn import datasets
      dataset = datasets.fetch_haxby()
 
-`dataset.func` contains filenames referring to dataset files on the disk:
+``dataset.func`` contains filenames referring to dataset files on the disk:
 
 .. code-block:: default
 
@@ -68,7 +68,7 @@ to the subjects from the brain activation.
 
 These conditions are presented as string into a CSV file. The `pandas
 <http://pandas.pydata.org/>`__ function
-`read_csv` is very useful to load this kind of data.
+``read_csv`` is very useful to load this kind of data.
 
 .. literalinclude:: ../../examples/00_tutorials/plot_decoding_tutorial.py
     :start-after: # We use pandas to load them in an array.
@@ -149,6 +149,7 @@ order to learn simple parameters from it, such as its shape:
     # about. Here we use standardizing of the data, as it is often important
     # for decoding
     from nilearn.maskers import NiftiMasker
+
     masker = NiftiMasker(mask_img=mask_filename, standardize=True)
 
     # We give the masker a filename and retrieve a 2D array ready
@@ -156,7 +157,7 @@ order to learn simple parameters from it, such as its shape:
     fmri_masked = masker.fit_transform(fmri_filename)
 
 
-Note that you can call `nifti_masker.transform(dataset.func[1])` on new
+Note that you can call ``nifti_masker.transform(dataset.func[1])`` on new
 data to mask it in a similar way as the data that was used during the
 fit.
 
@@ -164,8 +165,8 @@ Automatically computing a mask
 ...............................
 
 If your dataset does not provide a mask, the Nifti masker will compute
-one for you in the `fit` step. The generated mask can be accessed via the
-`mask_img_` attribute.
+one for you in the ``fit`` step. The generated mask can be accessed via the
+``mask_img_`` attribute.
 
 Detailed information on automatic mask computation can be found in:
 :ref:`extracting_data`.
@@ -174,7 +175,7 @@ Applying a scikit-learn machine learning method
 ================================================
 
 Now that we have a 2D array, we can apply any estimator from the
-scikit-learn, using its `fit`, `predict` or `transform` methods.
+scikit-learn, using its ``fit``, ``predict`` or ``transform`` methods.
 
 Here, we use scikit-learn Support Vector Classification to learn how to
 predict the category of picture seen by the subject:
@@ -198,7 +199,7 @@ Unmasking (inverse_transform)
 =============================
 
 Unmasking data is as easy as masking it! This can be done by using
-method `inverse_transform` on your processed data. As you may want to
+method ``inverse_transform`` on your processed data. As you may want to
 unmask several kinds of data (not only the data that you previously
 masked but also the results of an algorithm), the masker is clever and
 can take data of dimension 1D (resp. 2D) to convert it back to 3D
@@ -223,8 +224,9 @@ discriminating weight.
 
     from nilearn.plotting import plot_stat_map, show
 
-    plot_stat_map(coef_img, bg_img=haxby_dataset.anat[0],
-                  title="SVM weights", display_mode="yx")
+    plot_stat_map(
+        coef_img, bg_img=haxby_dataset.anat[0], title="SVM weights", display_mode="yx"
+    )
 
     show()
 

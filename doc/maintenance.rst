@@ -145,9 +145,12 @@ Prepare code for the release
 
 The repository should be checked and updated in preparation for the release.
 
-One thing that **must** be done before the release is made is to update all versionchanged and versionadded directives from the current ``[x.y.z].dev`` tag to the new version number.
+One thing that **must** be done before the release is made is
+to update ``deprecated``, ``versionchanged`` and ``versionadded`` directives
+from the current ``[x.y.z].dev`` tag to the new version number.
 
 Additionally, make sure all deprecations that are supposed to be removed with this new version have been addressed.
+
 If this new release comes with dependency version bumps (Python, Numpy...), make sure to implement and test these changes beforehand.
 Ideally, these would have been done before such as to update the code base if necessary.
 Finally, make sure the documentation can be built correctly.
@@ -162,9 +165,11 @@ Switch to a new branch locally:
     git checkout -b REL-x.y.z
 
 
-First we need to prepare the release by updating the file ``nilearn/doc/changes/latest.rst`` to make sure all the new features, enhancements, and bug fixes are included in their respective sections.
+First we need to prepare the release by updating the file ``nilearn/doc/changes/latest.rst``
+to make sure all the new features, enhancements, and bug fixes are included in their respective sections.
 
-We also need to write a "Highlights" section promoting the most important additions that come with this new release. Finally, we need to change the title from ``x.y.z.dev`` to ``x.y.z``:
+We also need to write a "Highlights" section promoting the most important additions that come with this new release.
+Finally, we need to change the title from ``x.y.z.dev`` to ``x.y.z``:
 
 .. code-block:: RST
 
@@ -204,7 +209,7 @@ Add these changes and submit a PR:
 
 .. code:: bash
 
-    git add doc/whats_new.rst
+    git add doc/changes/
     git commit -m "REL x.y.z"
     git push origin REL-x.y.z
 
@@ -220,7 +225,8 @@ Once the PR has been reviewed and merged, pull from master and tag the merge com
 
 .. note::
 
-    When building the distribution as described below, ``hatch-vcs``, defined in ``pyproject.toml``, extracts the version number using this tag and writes it to a ``_version.py`` file.
+    When building the distribution as described below, ``hatch-vcs``, defined in ``pyproject.toml``,
+    extracts the version number using this tag and writes it to a ``_version.py`` file.
 
 
 Build the distributions and upload them to Pypi
@@ -233,7 +239,7 @@ First of all we should make sure we don't include files that shouldn't be presen
     git checkout x.y.z
 
 
-If the workspace contains a `dist` folder, make sure to clean it:
+If the workspace contains a ``dist`` folder, make sure to clean it:
 
 .. code-block:: bash
 
@@ -247,7 +253,7 @@ In order to build the binary wheel files, we need to install `build <https://pyp
     pip install build
 
 
-And, in order to upload to `Pypi`, we will use `twine <https://pypi.org/project/twine/>`_ that you can also install with `pip`:
+And, in order to upload to ``Pypi``, we will use `twine <https://pypi.org/project/twine/>`_ that you can also install with ``pip``:
 
 .. code-block:: bash
 
@@ -261,30 +267,34 @@ Build the source and binary distributions:
     python -m build
 
 
-This should add two files to the `dist` subfolder:
+This should add two files to the ``dist`` subfolder:
 
-- one for the source distribution that should look like `PACKAGENAME-VERSION.tar.gz`
-- one for the built distribution that should look like `PACKAGENAME-PACKAGEVERSION-PYTHONVERSION-PYTHONCVERSION-PLATFORM.whl`
+- one for the source distribution that should look like ``PACKAGENAME-VERSION.tar.gz``
+- one for the built distribution that should look like ``PACKAGENAME-PACKAGEVERSION-PYTHONVERSION-PYTHONCVERSION-PLATFORM.whl``
 
 This will also update ``_version.py``.
 
-Optionally, we can run some basic checks with `twine`:
+Optionally, we can run some basic checks with ``twine``:
 
 .. code-block:: bash
 
     twine check dist/*
 
 
-We are now ready to upload to `Pypi`. Note that you will need to have an `account on Pypi <https://pypi.org/account/register/>`_, and be added to the maintainers of `Nilearn <https://pypi.org/project/nilearn/>`_. If you satisfy these conditions, you should be able to run:
+We are now ready to upload to ``Pypi``. Note that you will need to have an `account on Pypi <https://pypi.org/account/register/>`_, and be added to the maintainers of `Nilearn <https://pypi.org/project/nilearn/>`_. If you satisfy these conditions, you should be able to run:
 
 .. code-block:: bash
 
     twine upload dist/*
 
 
-Once the upload is completed, make sure everything looks good on `Pypi <https://pypi.org/project/nilearn/>`_. Otherwise you will probably have to fix the issue and start over a new release with the patch number incremented.
+Once the upload is completed, make sure everything looks good on `Pypi <https://pypi.org/project/nilearn/>`_.
+Otherwise you will probably have to fix the issue and start over a new release with the patch number incremented.
 
-At this point, we need to upload the binaries to GitHub and link them to the tag. To do so, go to the :nilearn-gh:`Nilearn GitHub page <tags>` under the "Releases" tab, and edit the `x.y.z` tag by providing a description, and upload the distributions we just created (you can just drag and drop the files).
+At this point, we need to upload the binaries to GitHub and link them to the tag.
+To do so, go to the :nilearn-gh:`Nilearn GitHub page <tags>` under the "Releases" tab,
+and edit the ``x.y.z`` tag by providing a description,
+and upload the distributions we just created (you can just drag and drop the files).
 
 
 Build and deploy the documentation
@@ -330,14 +340,16 @@ We now need to update the documentation:
     make install
 
 
-This will build the documentation (beware, this is time consuming...) and push it to the `GitHub pages repo <https://github.com/nilearn/nilearn.github.io>`_.
+This will build the documentation (beware, this is time consuming...)
+and push it to the `GitHub pages repo <https://github.com/nilearn/nilearn.github.io>`_.
 
 Post-release
 ------------
 
 At this point, the release has been made.
 
-We also need to create a new file ``doc/changes/latest.rst`` with a title and the usual ``New``, ``Enhancements``, ``Bug Fixes``, and ``Changes`` sections for the version currently under development:
+We also need to create a new file ``doc/changes/latest.rst`` with a title
+and the usual ``New``, ``Enhancements``, ``Bug Fixes``, and ``Changes`` sections for the version currently under development:
 
 .. code-block:: RST
 

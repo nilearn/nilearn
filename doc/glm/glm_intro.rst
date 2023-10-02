@@ -74,26 +74,55 @@ In brief, the analysis of fMRI images involves:
 fMRI statistical analysis
 -------------------------
 
-As explained in the previous section, the basic statistical analysis of fMRI is conceptually a correlation analysis, where one identifies whether a certain combination (contrast) of columns of the design matrix fits a significant proportion of the fMRI signal at a given location.
+As explained in the previous section, the basic statistical analysis of fMRI is conceptually a correlation analysis,
+where one identifies whether a certain combination (contrast) of columns of the design matrix
+fits a significant proportion of the fMRI signal at a given location.
 
-It can be shown that this is equivalent to studying whether the estimated contrast effect is large with respect to the uncertainty about its exact value. Concretely, we compute the effect size estimate and the uncertainty about its value and divide the two. The resulting number has no physical dimension, it is a statistic -- a Student or t-statistic, which we denote by `t`. Next, based on `t`, we want to decide whether the true effect was indeed greater than zero or not.
+It can be shown that this is equivalent to studying
+whether the estimated contrast effect is large with respect
+to the uncertainty about its exact value.
+Concretely, we compute the effect size estimate and the uncertainty
+about its value and divide the two.
+The resulting number has no physical dimension,
+it is a statistic -- a Student or t-statistic, which we denote by ``t``.
+Next, based on ``t``, we want to decide whether the true effect was indeed greater than zero or not.
 
-`t` would not necessarily be 0 if the true effect were zero: by chance, noise in the data may be partly explained by the contrast of interest. However, if we assume that the noise is Gaussian and that the model is correctly specified, then we know that `t` should follow a Student distribution with `dof` degrees of freedom, where `dof` is the number of free parameters in the model: in practice, the number of observations (i.e. the number of time points), `n_scans` minus the number of effects modelled (i.e. the number of columns `n_columns`) of the design matrix:
+``t`` would not necessarily be 0 if the true effect were zero:
+by chance,noise in the data may be partly explained by the contrast of interest.
+However, if we assume that the noise is Gaussian and that the model is correctly specified,
+then we know that ``t`` should follow a Student distribution with ``dof`` degrees of freedom,
+where ``dof`` is the number of free parameters in the model:
+in practice, the number of observations (i.e. the number of time points), ``n_scans``
+minus the number of effects modelled (i.e. the number of columns ``n_columns``) of the design matrix:
 
  :math:`dof = n\_scans - n\_columns`
 
-With this we can do statistical inference. Given a pre-defined error rate :math:`\alpha`, we compare the observed `t` to the :math:`(1-\alpha)` quantile of the Student distribution with `dof` degrees of freedom. If `t` is greater than this number we can reject the null hypothesis with a *p-value* :math:`\alpha`; meaning, if there were no effect, the probability of observing an effect as large as `t` would be less than :math:`\alpha`.
+With this we can do statistical inference. Given a pre-defined error rate :math:`\alpha`,
+we compare the observed ``t`` to the :math:`(1-\alpha)` quantile of the Student distribution with ``dof`` degrees of freedom.
+If ``t`` is greater than this number we can reject the null hypothesis with a *p-value* :math:`\alpha`;
+meaning, if there were no effect, the probability of observing an effect as large as ``t`` would be less than :math:`\alpha`.
 
 .. figure:: ../images/student.png
 
 .. note::
 
-  A frequent misconception consists in interpreting :math:`1- \alpha` as the probability that there is indeed an effect: this is not true! Here we rely on a frequentist approach, that does not support Bayesian interpretation. See e.g. https://en.wikipedia.org/wiki/Frequentist_inference
+  A frequent misconception consists in interpreting :math:`1- \alpha` as the probability that there is indeed an effect:
+  this is not true!
+  Here we rely on a frequentist approach, that does not support Bayesian interpretation.
+  See e.g. https://en.wikipedia.org/wiki/Frequentist_inference
 
 
 .. note::
 
-  It is cumbersome to work with Student distributions, since these always require to specify the degrees of freedom. To avoid this, we can transform `t` to another variable `z` such that comparing `t` to the Student distribution with `dof` degrees of freedom is equivalent to comparing `z` to a standard normal distribution. We call this the z-transform of `t`. We call the :math:`(1-\alpha)` quantile of the normal distribution the *threshold*, since we use this value to declare voxels active or not.
+  It is cumbersome to work with Student distributions,
+  since these always require to specify the degrees of freedom.
+  To avoid this, we can transform ``t`` to another variable ``z``
+  such that comparing ``t`` to the Student distribution with ``dof`` degrees of freedom
+  is equivalent to comparing ``z`` to a standard normal distribution.
+  We call this the z-transform of ``t``.
+  We call the :math:`(1-\alpha)`
+  quantile of the normal distribution the *threshold*,
+  since we use this value to declare voxels active or not.
 
 
 .. _Multiple comparisons:
@@ -102,15 +131,39 @@ Multiple Comparisons
 --------------------
 
 A well-known issue that arises here is that of multiple comparisons:
- when a statistical tests is repeated a large number times, say one for each voxel, i.e. `n_voxels` times, then one can expect that, in the absence of any effect, the number of detections -- false detections since there is no effect -- will be roughly :math:`n\_voxels*\alpha`. If :math:`\alpha=.001` and :math:`n=10^5`, the number of false detections will be about 100. The danger is that one may no longer trust the detections, i.e. values of `z` larger than the :math:`(1-\alpha)`-quantile of the standard normal distribution.
+when a statistical tests is repeated a large number times, say one for each voxel,
+i.e. ``n_voxels`` times, then one can expect that, in the absence of any effect, the number of detections --
+false detections since there is no effect -- will be roughly :math:`n\_voxels*\alpha`.
+If :math:`\alpha=.001` and :math:`n=10^5`, the number of false detections will be about 100.
+The danger is that one may no longer trust the detections,
+i.e. values of ``z`` larger than the :math:`(1-\alpha)`-quantile of the standard normal distribution.
 
-The first idea that one might think of is to take a much smaller :math:`\alpha`: for instance, if we take, :math:`\alpha=\frac{0.05}{n\_voxels}` then the expected number of false discoveries is only about 0.05, meaning that there is a 5% chance that a truly inactive voxel is declared active. This correction on the significance is known as Bonferroni procedure. It is fairly accurate when the different tests are independent or close to independent, but becomes conservative if not. The problem with this approach is that a truly activate voxel may not surpass the corresponding threshold, which is typically very high because `n_voxels` is large.
+The first idea that one might think of is to take a much smaller :math:`\alpha`:
+for instance, if we take, :math:`\alpha=\frac{0.05}{n\_voxels}`
+then the expected number of false discoveries is only about 0.05, meaning
+that there is a 5% chance that a truly inactive voxel is declared active.
+This correction on the significance is known as Bonferroni procedure.
+It is fairly accurate when the different tests are independent or close to independent,
+but becomes conservative if not. The problem with this approach is that a truly activate voxel
+may not surpass the corresponding threshold, which is typically very high because ``n_voxels`` is large.
 
-A second possibility is to choose a threshold so that the proportion of true discoveries among the discoveries reaches a certain proportion `0<q<1`; typically `q=0.05`. This means that after statistical inference, one can trust the proportionate `1-q` of the discoveries made. The number `q` is the expected proportion of false discoveries and is known as the *false discovery rate*. Controlling the false discovery rate is a reasonable compromise in practice. The thresholding that yields this level of control is typically obtained using the so-called `Benjamini-Hochberg <http://www.math.tau.ac.il/~ybenja/MyPapers/benjamini_hochberg1995.pdf>`_ procedure.
+A second possibility is to choose a threshold so that the proportion of true discoveries among the discoveries
+reaches a certain proportion ``0<q<1``; typically ``q=0.05``.
+This means that after statistical inference, one can trust the proportionate ``1-q`` of the discoveries made.
+The number ``q`` is the expected proportion of false discoveries and is known as the *false discovery rate*.
+Controlling the false discovery rate is a reasonable compromise in practice.
+The thresholding that yields this level of control is typically obtained
+using the so-called `Benjamini-Hochberg <http://www.math.tau.ac.il/~ybenja/MyPapers/benjamini_hochberg1995.pdf>`_ procedure.
 
 .. note::
 
-  Note that `q` (as well as `\alpha`) are *arbitrary*. It is recommended to not rely on low values, otherwise the inference is meaningless. Ideally one should use :math:`\alpha=\frac{0.05}{n\_voxels}`, or `q=0.05`.
+  Note that ``q`` (as well as :math:`\alpha`) are *arbitrary*.
+  It is recommended to not rely on low values, otherwise the inference is meaningless.
+  Ideally one should use :math:`\alpha=\frac{0.05}{n\_voxels}`, or ``q=0.05``.
 
 
-Note also that supra-threshold sets of voxels are often gathered into connected components (aka *clusters*), so that only large connected components are retained and isolated supra-threshold voxels are discarded. The rationale is that isolated voxels are unlikely to represent extended brain areas, and are most likely noise. Hence, discarding them most often improves the quality and the reliability of the results.
+Note also that supra-threshold sets of voxels are often gathered into connected components (aka *clusters*),
+so that only large connected components are retained and isolated supra-threshold voxels are discarded.
+The rationale is that isolated voxels are unlikely to represent extended brain areas,
+and are most likely noise.
+Hence, discarding them most often improves the quality and the reliability of the results.

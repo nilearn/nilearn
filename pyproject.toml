@@ -49,6 +49,7 @@ dev = [
     "isort",
     "flynt",
     "black",
+    "blacken-docs",
     "flake8",
     "flake8-docstrings",
     "flake8-use-fstring",
@@ -108,9 +109,6 @@ extend-exclude = """
   | nilearn/_utils/helpers.py
   | nilearn/reporting/html_report.py
   | nilearn/reporting/tests/test_html_report.py
-  | nilearn/glm/contrasts.py
-  | nilearn/glm/tests/test_contrasts.py
-  | nilearn/glm/tests/test_first_level.py
   | examples/01_plotting/plot_3d_map_to_surface_projection.py
   | examples/01_plotting/plot_surf_atlas.py
   | examples/01_plotting/plot_surf_stat_map.py
@@ -170,9 +168,10 @@ src_paths = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "--doctest-modules -s -vv --durations=0"
+addopts = "-ra --strict-config --strict-markers --doctest-modules -s -vv --durations=0"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 # TODO: Remove filter in release 0.13
 filterwarnings = "ignore:.*Please use 'zscore_sample' instead.:FutureWarning"
 junit_family = "xunit2"
 minversion = "6.0"
+xfail_strict = true

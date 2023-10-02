@@ -19,7 +19,7 @@ NEW
 Fixes
 -----
 
-- :bdg-danger:`Deprecation` Improve how :func:`~.glm.first_level.first_level_from_bids` handles fetching slice timing metadata and add additional input validation. In release ``0.12`` the default `slice_time_ref` will be `None` instead of `0` (:gh:`3605` by `Rémi Gau`_).
+- :bdg-danger:`Deprecation` Improve how :func:`~.glm.first_level.first_level_from_bids` handles fetching slice timing metadata and add additional input validation. In release ``0.12`` the default ``slice_time_ref`` will be ``None`` instead of ``0`` (:gh:`3605` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Fixes several bugs in :func:`~glm.first_level.first_level_from_bids`. Refactors :func:`~glm.first_level.first_level_from_bids` and ``nilearn._utils.data_gen.create_fake_bids_dataset``. (:gh:`3525` by `Rémi Gau`_).
 
@@ -40,7 +40,7 @@ Enhancements
 
 - :bdg-info:`Plotting` Surface plotting methods no longer automatically rescale background maps, which, among other things, allows to use curvature sign as a background map (:gh:`3173` by `Alexis Thual`_).
 
-- :func:`~glm.first_level.first_level_from_bids` now takes an optional ``sub_labels`` argument and warns users of given subject labels that are not present in the dataset (:gh:`3351` by `Kevin Sitek`_).
+- :bdg-success:`API` :func:`~glm.first_level.first_level_from_bids` now takes an optional ``sub_labels`` argument and warns users of given subject labels that are not present in the dataset (:gh:`3351` by `Kevin Sitek`_).
 
 - :bdg-success:`API` Added special handling of ``param_grid`` and ``cv_params_`` for Decoder objects using models with built-in cross-validation (e.g., ``RidgeCV``, ``RidgeClassifierCV``) (:gh:`3626` by `Michelle Wang`_).
 
