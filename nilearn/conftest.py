@@ -90,7 +90,6 @@ def warnings_as_errors():
         with warnings.catch_warnings():
             warnings.filterwarnings(
                 "error",
-                # TODO: try with module argument in prerelease local env
                 message=".*numpy.*|.*scipy.*|.*nibabel.*|"
                 ".*joblib.*|.*pandas.*|.*scikit-learn.*",
                 category=DeprecationWarning,

@@ -51,7 +51,7 @@ def get_tvalue_with_alternative_library(tested_vars, target_vars, covars=None):
                 current_tested_mask[j] = True
                 current_design_matrix = design_matrix[:, current_tested_mask]
                 ols_fit = OLS(current_target, current_design_matrix).fit()
-                t_values[i, j] = np.ravel(ols_fit.t_test(test_matrix).tvalue)
+                t_values[i, j] = np.squeeze(ols_fit.t_test(test_matrix).tvalue)
 
     except ImportError:  # use linalg if statsmodels is not available
         from numpy import linalg
@@ -83,7 +83,7 @@ def get_tvalue_with_alternative_library(tested_vars, target_vars, covars=None):
                     / float(n_samples - lost_dof)
                     * t_val_denom_aux
                 )
-                t_values[j, i] = np.ravel(t_val_num / t_val_denom)
+                t_values[j, i] = np.squeeze(t_val_num / t_val_denom)
 
     t_values = t_values.T
     assert t_values.shape == (n_regressors, n_descriptors)
