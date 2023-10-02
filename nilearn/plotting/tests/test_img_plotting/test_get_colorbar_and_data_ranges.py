@@ -65,6 +65,7 @@ def test_get_colorbar_and_data_ranges_error():
     [
         (None, None, (-3, 3, -3, 3)),
         (np.nan, None, (-3, 3, -3, 3)),
+        (None, np.nan, (-3, 3, -3, 3)),
         (None, "-5", (-3, 3, -3, 3)),
         (-1, None, (-1, 1, -1, 1)),
         (None, 2, (-2, 2, -2, 2)),
@@ -195,4 +196,13 @@ def test_get_colorbar_and_data_ranges_masked(
     )
 
 
-# TODO add test for force_min_stat_map_value
+def test_get_colorbar_and_data_ranges_force_min_stat_map_value(data_pos_neg):
+    """Test for _get_colorbar_and_data_ranges with force_min_stat_map_value."""
+    expected_results = (0, None, 0, 3)
+    assert expected_results == _get_colorbar_and_data_ranges(
+        data_pos_neg,
+        vmin=None,
+        vmax=None,
+        symmetric_cbar="auto",
+        force_min_stat_map_value=0,
+    )

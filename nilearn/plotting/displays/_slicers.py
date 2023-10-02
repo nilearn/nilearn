@@ -468,7 +468,8 @@ class BaseSlicer:
                 ims.append(im)
         return ims
 
-    def _threshold(self, data, threshold=None, vmin=None, vmax=None):
+    @classmethod
+    def _threshold(cls, data, threshold=None, vmin=None, vmax=None):
         """Threshold the data."""
         if threshold is not None:
             data = np.ma.masked_where(

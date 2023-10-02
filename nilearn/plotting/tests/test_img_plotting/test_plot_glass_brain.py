@@ -21,6 +21,14 @@ def test_plot_glass_brain(img_3d_mni):
         plot_abs=False,
         resampling_interpolation="nearest",
     )
+    # test plot_glass_brain with vmin/vmax defined
+    plot_glass_brain(
+        img_3d_mni,
+        colorbar=True,
+        plot_abs=False,
+        vmin=-2,
+        vmax=5,
+    )
 
 
 def test_plot_glass_brain_file_output(img_3d_mni, tmp_path):
