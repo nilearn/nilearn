@@ -269,8 +269,34 @@ def test_standardization():
 @pytest.mark.skipif(
     not_have_mpl, reason="Matplotlib not installed; required for this test"
 )
-def test_generate_report():
-    """Smoke test for generate_report method."""
-    imgs = _get_random_imgs((9, 9, 5), 2)
+def test_generate_report_imgs():
+    """Smoke test for generate_report method with image data."""
+    data_shape = (9, 9, 5)
+    imgs = _get_random_imgs(data_shape, 2)
     masker = MultiNiftiMasker()
+    masker.fit(imgs).generate_report()
+
+
+def test_generate_report_mask():
+    """Smoke test for generate_report method with only mask."""
+    data_shape = (9, 9, 5)
+    mask = Nifti1Image(np.ones(data_shape), np.eye(4))
+    masker = MultiNiftiMasker(
+        mask_img=mask,
+        target_affine=np.eye(4),  # to test resampling lines
+        target_shape=data_shape,  # to test resampling lines
+    )
+    masker.fit().generate_report()
+
+
+def test_generate_report_imgs_and_mask():
+    """Smoke test for generate_report method with images and mask."""
+    data_shape = (9, 9, 5)
+    imgs = _get_random_imgs(data_shape, 2)
+    mask = Nifti1Image(np.ones(data_shape), np.eye(4))
+    masker = MultiNiftiMasker(
+        mask_img=mask,
+        target_affine=np.eye(4),  # to test resampling lines
+        target_shape=data_shape,  # to test resampling lines
+    )
     masker.fit(imgs).generate_report()
