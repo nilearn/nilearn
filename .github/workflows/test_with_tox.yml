@@ -41,7 +41,7 @@ jobs:
 
     test_doc:
         if: github.repository == 'nilearn/nilearn'
-        name: test with ${{ matrix.py }} on ${{ matrix.os }}
+        name: test doc with ${{ matrix.py }} on ${{ matrix.os }}
         runs-on: ${{ matrix.os }}
         strategy:
             fail-fast: false

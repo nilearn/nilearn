@@ -96,6 +96,16 @@ jobs:
                 python -m pip install --user --upgrade pip setuptools
                 python -m pip install .[plotting,doc]
 
+        # Check if we are doing a full or partial build
+        -   name: Find build type
+            run: ./build_tools/github/build_type.sh
+            env:
+                COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
+        -   name: Verify build type
+            run: |
+                echo "PATTERN = $(cat pattern.txt)"
+                echo "BUILD = $(cat build.txt)"
+
         # Restore data from cache, or set up caching if data not found or
         # [force download] is defined in commit message
         -   name: Determine restore data
@@ -266,22 +276,15 @@ jobs:
         -   name: update AUTHORS.rst and doc/changes/names.rst
             run: python maint_tools/citation_cff_maint.py
 
-        # Run the doc build. If no data is restored in previous steps, the data
-        # will be downloaded during the build (this only applies for full builds;
-        # no data is downloaded for partial builds).
-        -   name: Find build type
-            run: ./build_tools/github/build_type.sh
-            env:
-                COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
-        -   name: Verify build type
-            run: |
-                echo "PATTERN = $(cat pattern.txt)"
-                echo "BUILD = $(cat build.txt)"
         # Set up and launch a virtual browser needed for one example to run
         # without stalling the job. The example launches an html in the browser.
         -   name: Set up display server for virtual browser
             run: |
                 Xvfb -ac :99 -screen 0 1280x1024x16 > /dev/null 2>&1 &
+
+        # Run the doc build. If no data is restored in previous steps, the data
+        # will be downloaded during the build (this only applies for full builds;
+        # no data is downloaded for partial builds).
         -   name: Build docs
             run: |
                 cd doc;
