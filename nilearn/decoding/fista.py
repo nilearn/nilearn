@@ -152,7 +152,7 @@ def mfista(
     penalized problems emerged in the paper: Elvis Dohmatob,
     Alexandre Gramfort, Bertrand Thirion, Gael Varoquaux,
     "Benchmarking solvers for TV-L1 least-squares and logistic regression
-    in brain imaging". Pattern Recoginition in Neuroimaging (PRNI),
+    in brain imaging". Pattern Recognition in Neuroimaging (PRNI),
     Jun 2014, Tubingen, Germany. IEEE
 
     """

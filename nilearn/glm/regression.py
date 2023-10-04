@@ -321,7 +321,7 @@ class RegressionResults(LikelihoodModelResults):
 
         Notes
         -----
-        Is this supposed to return "stanardized residuals,"
+        Is this supposed to return "standardized residuals,"
         residuals standardized
         to have mean zero and approximately unit variance?
 
@@ -405,7 +405,7 @@ class SimpleRegressionResults(LikelihoodModelResults):
 
         Notes
         -----
-        Is this supposed to return "stanardized residuals,"
+        Is this supposed to return "standardized residuals,"
         residuals standardized
         to have mean zero and approximately unit variance?
 
