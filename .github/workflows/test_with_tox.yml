@@ -56,7 +56,7 @@ jobs:
 
     min_requirements:
         if: github.repository == 'nilearn/nilearn'
-        name: Test with oldest supported Python minimal dependencies requirements and no plotting
+        name: Test with oldest supported Python, minimal dependencies requirements and no plotting
         runs-on: ubuntu-latest
         steps:
         -   uses: actions/checkout@v4
