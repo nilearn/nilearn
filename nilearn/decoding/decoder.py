@@ -251,7 +251,7 @@ def _wrap_param_grid(param_grid, param_name):
         ):
             warnings.warn(
                 f"parameter '{param_name}' should be a sequence of iterables"
-                f" (e.g., { {param_name:[[1, 10, 100]]} }) to benefit from"
+                f" (e.g., { { param_name: [[1, 10, 100]] } }) to benefit from"
                 " the built-in cross-validation of the estimator."
                 f" Wrapping {param_grid_item[param_name]} in an outer list."
             )
