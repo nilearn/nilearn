@@ -41,7 +41,7 @@ jobs:
 
     prerelease:
         if: github.repository == 'nilearn/nilearn'
-        name: Test pre release versions of dependencies
+        name: Test pre release versions of all dependencies
         runs-on: ubuntu-latest
         steps:
         -   uses: actions/checkout@v4
@@ -56,14 +56,14 @@ jobs:
 
     min_requirements:
         if: github.repository == 'nilearn/nilearn'
-        name: Test with oldest supported Python, minimal dependencies requirements and no plotting
+        name: Test with minimal Python and of all dependencies (no plotting)
         runs-on: ubuntu-latest
         steps:
         -   uses: actions/checkout@v4
         -   name: Setup python
             uses: actions/setup-python@v4
             with:
-                python-version: '3.7'
+                python-version: '3.8'
         -   name: Install tox
             run: python -m pip install tox
         -   name: Run test suite
@@ -71,14 +71,14 @@ jobs:
 
     min_requirements_matplotlib:
         if: github.repository == 'nilearn/nilearn'
-        name: Test with oldest supported Python and minimal requirements with Matplotlib
+        name: Test with minimal Python and of all dependencies (no plotly)
         runs-on: ubuntu-latest
         steps:
         -   uses: actions/checkout@v4
         -   name: Setup python
             uses: actions/setup-python@v4
             with:
-                python-version: '3.7'
+                python-version: '3.8'
         -   name: Install tox
             run: python -m pip install tox
         -   name: Run test suite
