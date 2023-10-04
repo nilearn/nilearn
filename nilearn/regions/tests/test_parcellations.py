@@ -45,7 +45,7 @@ def test_error_parcellation_method_none(test_image):
         Parcellations(method=None, verbose=0).fit(test_image)
 
 
-@pytest.mark.parametrize("method", ["kmens", "avg", "complte"])
+@pytest.mark.parametrize("method", ["kmens", "avg", "complete"])
 def test_errors_raised_in_check_parameters_fit(method, test_image):
     """Test whether an error is raised or not given
     a false method type.

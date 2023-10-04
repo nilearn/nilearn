@@ -35,7 +35,7 @@ fmri_img = data.epi_img
 # This task, described in Pinel et al., BMC neuroscience 2007 probes basic
 # functions, such as button presses with the left or right hand, viewing
 # horizontal and vertical checkerboards, reading and listening to short
-# sentences, and mental computations (subractions).
+# sentences, and mental computations (subtractions).
 #
 # Visual stimuli were displayed in four 250-ms epochs, separated by 100ms
 # intervals (i.e., 1.3s in total). Auditory stimuli were drawn from a recorded
