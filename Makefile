@@ -6,7 +6,7 @@ PYTHON ?= python
 CYTHON ?= cython
 CTAGS ?= ctags
 
-all: clean test doc-noplot
+all: clean doc-noplot
 
 clean-pyc:
 	find . -name "*.pyc" | xargs rm -f
@@ -23,19 +23,6 @@ clean-ctags:
 	rm -f tags
 
 clean: clean-build clean-pyc clean-so clean-ctags
-
-test-code:
-	python -m pytest --pyargs nilearn --cov=nilearn
-
-test-doc:
-	pytest --doctest-glob='*.rst' doc/**/*.rst
-	pytest doc/_additional_doctests.txt
-
-test-coverage:
-	rm -rf coverage .coverage
-	pytest --pyargs nilearn --showlocals --cov=nilearn --cov-report=html:coverage
-
-test: test-code test-doc
 
 trailing-spaces:
 	find . -name "*.py" | xargs perl -pi -e 's/[ \t]*$$//'

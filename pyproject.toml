@@ -45,7 +45,7 @@ requires-python = ">=3.7"
 [project.optional-dependencies]
 # A combination of dependencies useful for developers
 dev = [
-    "nilearn[plotting,plotly,doc,test]",
+    "nilearn[plotting,doc,test]",
     "black",
     "blacken-docs",
     'codespell',
@@ -61,7 +61,7 @@ dev = [
 ]
 # Requirements necessary for building the documentation
 doc = [
-    "nilearn[plotly]",
+    "nilearn[plotting]",
     "furo",
     "memory_profiler",  # measuring memory during docs building
     "myst-parser",
@@ -74,20 +74,8 @@ doc = [
     "sphinxext-opengraph",
     "ruamel.yaml"
 ]
-# For testing of oldest usable versions of dependencies.
-min = [
-    "joblib==1.0.0",
-    "nibabel==3.2.0",
-    "numpy==1.19.0",
-    "pandas==1.1.5",
-    "scikit-learn==1.0.0",
-    "scipy==1.6.0"
-]
-# For surface plotting mostly
-plotly = ["kaleido", "plotly"]
 # Necessary req to use nilearn's plotting module
-plotmin = ["matplotlib==3.3.0"]
-plotting = ["matplotlib>=3.3.0"]
+plotting = ["matplotlib>=3.3.0", "kaleido", "plotly"]
 # For running unit and docstring tests
 test = [
     "coverage",
