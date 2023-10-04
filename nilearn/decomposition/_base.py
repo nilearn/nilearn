@@ -46,10 +46,10 @@ def _fast_svd(X, n_components, random_state=None):
         The first matrix of the truncated svd
 
     S : array, shape (n_components)
-        The second matric of the truncated svd
+        The second matrix of the truncated svd
 
     V : array, shape (n_components, n_features)
-        The last matric of the truncated svd
+        The last matrix of the truncated svd
 
     """
     random_state = check_random_state(random_state)
