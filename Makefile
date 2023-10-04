@@ -24,17 +24,12 @@ clean-ctags:
 
 clean: clean-build clean-pyc clean-so clean-ctags
 
-in: inplace # just a shortcut
-inplace:
-	$(PYTHON) setup.py build_ext -i
-
 test-code:
 	python -m pytest --pyargs nilearn --cov=nilearn
 
 test-doc:
 	pytest --doctest-glob='*.rst' `find doc/ -name '*.rst'`
 	pytest doc/_additional_doctests.txt
-
 
 test-coverage:
 	rm -rf coverage .coverage
@@ -64,11 +59,3 @@ doc:
 .PHONY : pdf
 pdf:
 	make -C doc pdf
-
-.PHONY : lint
-lint:
-	isort --profile black --settings-path pyproject.toml nilearn examples maint_tools
-	flynt .
-	black --config pyproject.toml nilearn examples maint_tools
-	codespell --toml pyproject.toml
-	flake8 --config .flake8 --black-config pyproject.toml nilearn examples maint_tools

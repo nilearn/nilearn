@@ -1,0 +1,44 @@
+---
+name: check
+
+on:
+    push:
+        branches:
+        -   main
+    pull_request:
+        branches:
+        -   '*'
+
+concurrency:
+    group: check-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    test:
+        name: test with ${{ matrix.py }} on ${{ matrix.os }}
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                py:
+                -   '3.12'
+                -   '3.11'
+                -   '3.10'
+                -   '3.9'
+                -   '3.8'
+                os:
+                -   ubuntu-latest
+                -   macos-latest
+                -   windows-latest
+        steps:
+        -   uses: actions/checkout@v4
+        -   name: Setup python for test ${{ matrix.py }}
+            uses: actions/setup-python@v4
+            with:
+                python-version: ${{ matrix.py }}
+        -   name: Install tox
+            run: python -m pip install tox-gh>=1.2
+        -   name: Setup test suite
+            run: tox -vv --notest
+        -   name: Run test suite
+            run: tox --skip-pkg-install

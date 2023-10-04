@@ -46,17 +46,18 @@ requires-python = ">=3.7"
 # A combination of dependencies useful for developers
 dev = [
     "nilearn[plotting,plotly,doc,test]",
-    "isort",
-    "flynt",
     "black",
     "blacken-docs",
+    'codespell',
+    "isort",
     "flake8",
     "flake8-docstrings",
     "flake8-use-fstring",
     "flake8-functions",
-    'codespell',
+    "flynt",
+    'pre-commit',
     'tomli',
-    'pre-commit'
+    'tox'
 ]
 # Requirements necessary for building the documentation
 doc = [
@@ -65,13 +66,13 @@ doc = [
     "memory_profiler",  # measuring memory during docs building
     "myst-parser",
     "numpydoc",
-    "ruamel.yaml",
     "sphinx<7.2.0",
     "sphinx-copybutton",
     "sphinx-design",
     "sphinx-gallery",
     "sphinxcontrib-bibtex",
-    "sphinxext-opengraph"
+    "sphinxext-opengraph",
+    "ruamel.yaml"
 ]
 # For testing of oldest usable versions of dependencies.
 min = [
