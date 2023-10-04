@@ -83,7 +83,7 @@ jobs:
             run: |
                 sudo -E apt-get -yq update
                 sudo -E apt-get -yq --no-install-suggests --no-install-recommends install \
-                    dvipng texlive-latex-base texlive-latex-extra python-setuptools
+                    dvipng texlive-latex-base texlive-latex-extra
         -   name: Setup python
             uses: actions/setup-python@v4
             with:
@@ -93,7 +93,7 @@ jobs:
         # See pyproject.toml for dependency group options
         -   name: Install packages
             run: |
-                python -m pip install --user --upgrade --progress-bar off pip
+                python -m pip install --user --upgrade pip setuptools
                 python -m pip install .[plotting,doc]
 
         # Restore data from cache, or set up caching if data not found or
