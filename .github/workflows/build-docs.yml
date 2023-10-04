@@ -52,8 +52,7 @@ jobs:
             with:
                 path: .git
                 key: source-cache-${{ runner.os }}-${{ github.run_id }}
-                restore-keys: |
-                    source-cache-${{ runner.os }}
+                restore-keys: source-cache-${{ runner.os }}
 
         -   name: Checkout nilearn
             uses: actions/checkout@v4
@@ -84,7 +83,7 @@ jobs:
             run: |
                 sudo -E apt-get -yq update
                 sudo -E apt-get -yq --no-install-suggests --no-install-recommends install \
-                    dvipng texlive-latex-base texlive-latex-extra
+                    dvipng texlive-latex-base texlive-latex-extra python-setuptools
         -   name: Setup python
             uses: actions/setup-python@v4
             with:
