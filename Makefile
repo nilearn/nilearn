@@ -28,7 +28,7 @@ test-code:
 	python -m pytest --pyargs nilearn --cov=nilearn
 
 test-doc:
-	pytest --doctest-glob='*.rst' `find doc/ -name '*.rst'`
+	pytest --doctest-glob='*.rst' doc/**/*.rst
 	pytest doc/_additional_doctests.txt
 
 test-coverage:
