@@ -37,6 +37,8 @@ jobs:
             run: tox run -e test_plotting
         -   name: Upload coverage to CodeCov
             uses: codecov/codecov-action@v3
+            with:
+                flags: ${{ matrix.os }}_${{ matrix.py }}
             if: success()
 
     prerelease:
@@ -56,7 +58,7 @@ jobs:
 
     min_requirements:
         if: github.repository == 'nilearn/nilearn'
-        name: Test with minimal Python and of all dependencies (no plotting)
+        name: Test with minimal version of Python and of all dependencies (no plotting)
         runs-on: ubuntu-latest
         steps:
         -   uses: actions/checkout@v4
@@ -71,7 +73,7 @@ jobs:
 
     min_requirements_matplotlib:
         if: github.repository == 'nilearn/nilearn'
-        name: Test with minimal Python and of all dependencies (no plotly)
+        name: Test with minimal version of Python and of all dependencies (no plotly)
         runs-on: ubuntu-latest
         steps:
         -   uses: actions/checkout@v4
