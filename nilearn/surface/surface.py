@@ -958,7 +958,7 @@ def load_surface(surface):
         if len(surface) != 2:
             raise ValueError("`load_surface` accepts iterables "
                              "of length 2 to define a surface. "
-                             f"You provided a { type(surface)} "
+                             f"You provided a {type(surface)} "
                              f"of length {len(surface)}.")
         mesh = load_surf_mesh(surface[0])
         data = load_surf_data(surface[1])
