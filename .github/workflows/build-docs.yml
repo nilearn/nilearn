@@ -119,6 +119,12 @@ jobs:
                   echo "Data cache will be used if available.";
                   echo "true" | tee restore.txt;
                 fi
+
+                if [[ "$(cat build.txt)" == "html-noplot" ]]; then
+                  echo "Data cache will not be used for partial builds.";
+                  echo "false" | tee restore.txt;
+                fi
+
         -   name: Get cache key
             id: cache-key
             run: |
