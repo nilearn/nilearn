@@ -99,6 +99,13 @@ def warnings_as_errors():
                     "error",
                     category=matplotlib.MatplotlibDeprecationWarning,
                 )
+            # Ignore internal DeprecationWarnings that reference a dependency
+            pattern = '.*The "C" parameter.*'
+            warnings.filterwarnings(
+                "ignore",
+                message=pattern,
+                category=DeprecationWarning,
+            )
             yield
     else:
         yield

@@ -22,7 +22,7 @@ on:
 #            │ │ │ │ │
 #            * * * * *
     schedule:
-    -   cron: 0 0 25 * * # on the 25th of every monday
+    -   cron: 0 0 25 * * # on the 25th of every month
 
   # Allows you to run this workflow manually from the Actions tab
     workflow_dispatch:
@@ -44,7 +44,7 @@ jobs:
         -   name: Setup python
             uses: actions/setup-python@v4
             with:
-                python-version: 3.11
+                python-version: 3.12
 
         -   name: Display Python version
             run: python -c "import sys; print(sys.version)"
