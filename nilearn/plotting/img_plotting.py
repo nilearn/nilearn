@@ -1087,9 +1087,12 @@ def plot_glass_brain(stat_map_img,
         stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype='auto')
         if plot_abs:
             if vmin is not None and vmin < 0:
-                raise ValueError(
-                    'vmin cannot be negative if plot_abs is True'
+                warnings.warn(
+                    'vmin is negative but plot_abs is True'
+                    '. Setting vmin to 0 instead.',
+                    category=UserWarning,
                 )
+                vmin = 0
             force_min_stat_map_value = 0
         else:
             force_min_stat_map_value = None

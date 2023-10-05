@@ -132,5 +132,6 @@ def test_plot_glass_brain_vmin_vmax(img_3d_mni):
 
 def test_plot_glass_brain_negative_vmin_with_plot_abs(img_3d_mni):
     """Test that error is thrown when plot_abs is True and vmin is negative."""
-    with pytest.raises(ValueError, match="vmin cannot be negative"):
+    warning_message = "vmin is negative but plot_abs is True"
+    with pytest.warns(UserWarning, match=warning_message):
         plot_glass_brain(img_3d_mni, vmin=-2, plot_abs=True)
