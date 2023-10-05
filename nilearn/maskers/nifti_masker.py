@@ -370,12 +370,11 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         self._report_content["description"] += self._overlay_text
 
         # create display of resampled NiftiImage and mask
-        # assuming that resampl_img has same dim as img
         resampl_img, resampl_mask = self._reporting_data["transform"]
-        dim = self._reporting_data["dim"]
         if resampl_img is None:  # images were not provided to fit
             resampl_img = resampl_mask
-        elif len(dim) == 4:
+        dim = image.load_img(resampl_img).shape
+        if len(dim) == 4:
             # compute middle image from 4D series for plotting
             resampl_img = image.index_img(resampl_img, dim[-1] // 2)
 
