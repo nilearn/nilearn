@@ -279,7 +279,7 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
                     target_affine=self.affine_,
                     copy=False,
                     interpolation="nearest",
-                )       
+                )
 
             self._reporting_data["transform"] = [resampl_imgs, self.mask_img_]
 
