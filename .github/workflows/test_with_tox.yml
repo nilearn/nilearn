@@ -14,7 +14,8 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    test_latest:
+    test_and_coverage:
+        # test on latest version of all dependencies
         if: github.repository == 'nilearn/nilearn'
         name: test with ${{ matrix.py }} on ${{ matrix.os }}
         runs-on: ${{ matrix.os }}
@@ -31,8 +32,6 @@ jobs:
                 python-version: ${{ matrix.py }}
         -   name: Install tox
             run: python -m pip install tox
-        -   name: Test doc
-            run: tox run -e test_doc
         -   name: Run test suite
             run: tox run -e test_plotting
         -   name: Upload coverage to CodeCov
@@ -58,8 +57,14 @@ jobs:
 
     min_requirements:
         if: github.repository == 'nilearn/nilearn'
-        name: Test with minimal version of Python and of all dependencies (no plotting)
+        name: Test with minimal version of Python and of all dependencies
         runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                env:
+                -   test_min   # no plotting
+                -   test_plot_min   # no plotly
         steps:
         -   uses: actions/checkout@v4
         -   name: Setup python
@@ -69,19 +74,4 @@ jobs:
         -   name: Install tox
             run: python -m pip install tox
         -   name: Run test suite
-            run: tox run -e test_min
-
-    min_requirements_matplotlib:
-        if: github.repository == 'nilearn/nilearn'
-        name: Test with minimal version of Python and of all dependencies (no plotly)
-        runs-on: ubuntu-latest
-        steps:
-        -   uses: actions/checkout@v4
-        -   name: Setup python
-            uses: actions/setup-python@v4
-            with:
-                python-version: '3.8'
-        -   name: Install tox
-            run: python -m pip install tox
-        -   name: Run test suite
-            run: tox run -e test_plot_min
+            run: tox run -e ${{ matrix.env }}

@@ -297,5 +297,11 @@ def set_username():
         username = None
 
     os.environ["USER"] = "nilearn"
+
     yield
+
     os.environ["USER"] = username
+    if username is None:
+        del os.environ["USER"]
+    else:
+        os.environ["USER"] = username
