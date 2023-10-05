@@ -54,6 +54,8 @@ extensions = [
 
 autosummary_generate = True
 
+autodoc_typehints = "none"
+
 autodoc_default_options = {
     "imported-members": True,
     "inherited-members": True,
@@ -407,11 +409,9 @@ extlinks = {
 
 # Check intersphinx reference targets exist
 nitpicky = True
-# Temporary solution to nilearn/nilearn#3800
-# See also scikit-learn/scikit-learn#26761
+# Temporary solution to nilearn/nilearn#3997
 nitpick_ignore = [
-    ("py:class", "pipeline.Pipeline"),
-    ("py:class", "utils.metadata_routing.MetadataRequest"),
+    ("py:class", "sklearn.utils.metadata_routing.MetadataRequest"),
 ]
 
 binder_branch = "main" if "dev" in current_version else current_version

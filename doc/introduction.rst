@@ -199,7 +199,7 @@ For new-comers, we recommend going through the following examples in the suggest
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example shows manual steps to create and further modify an ROI spatial mask. They represen...">
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows manual steps to create and further modify an ROI spatial mask. They represent...">
 
 .. only:: html
 

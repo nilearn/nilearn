@@ -31,12 +31,13 @@ jobs:
 
         runs-on: ubuntu-latest
         steps:
-        -   name: Checkout repo
+        -   name: Checkout nilearn
             uses: actions/checkout@v4
         -   name: Set up Python
             uses: actions/setup-python@v4
             with:
-                python-version: '3.11'
+                python-version: '3.12'
+                allow-prereleases: false
         -   name: Install pre-commit
             run: pip install pre-commit
         -   name: Update pre-commit hooks

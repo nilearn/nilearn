@@ -21,6 +21,8 @@ which is already defined.
 
 See :ref:`plotting` for more information to know how to tune the parameters.
 """
+
+# %%
 # Load 4D probabilistic atlases
 from nilearn import datasets, plotting
 
@@ -35,7 +37,7 @@ smith_bm20 = datasets.fetch_atlas_smith_2009(resting=False, dimension=20)[
     "maps"
 ]
 
-#########################################################################
+# %%
 # Visualization
 
 # "contours" example
@@ -55,7 +57,7 @@ plotting.plot_prob_atlas(
 
 plotting.show()
 
-#########################################################################
+# %%
 # Other probabilistic atlases accessible with nilearn
 # ---------------------------------------------------
 #

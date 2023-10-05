@@ -733,7 +733,7 @@ def movetree(src, dst):
                 os.rmdir(srcname)
             else:
                 shutil.move(srcname, dstname)
-        except (OSError, os.error) as why:
+        except OSError as why:
             errors.append((srcname, dstname, str(why)))
         # catch the Error from the recursive movetree so that we can
         # continue with other files

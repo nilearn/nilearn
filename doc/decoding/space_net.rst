@@ -30,7 +30,7 @@ Under the hood, a few heuristics are used to make things a bit faster. These inc
   mask in a principled way.
 - Continuation is used along the regularization path, where the
   solution of the optimization problem for a given value of the
-  regularization parameter `alpha` is used as initialization
+  regularization parameter ``alpha`` is used as initialization
   for the next regularization (smaller) value on the regularization
   grid.
 
