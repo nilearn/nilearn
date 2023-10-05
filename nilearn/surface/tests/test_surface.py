@@ -370,35 +370,32 @@ def test_load_surf_mesh_file_gii(tmp_path):
     os.remove(filename_gii_mesh_no_face)
 
 
-def test_load_surf_mesh_file_freesurfer(tmp_path):
+@pytest.mark.parametrize("suffix", ['.pial',
+                                    '.inflated',
+                                    '.white',
+                                    '.orig',
+                                    'sphere'])
+def test_load_surf_mesh_file_freesurfer(suffix, tmp_path):
     mesh = generate_surf()
-    for suff in ['.pial', '.inflated', '.white', '.orig', 'sphere']:
-        fd, filename_fs_mesh = tempfile.mkstemp(suffix=suff,
-                                                dir=str(tmp_path))
-        os.close(fd)
-        nb.freesurfer.write_geometry(filename_fs_mesh, mesh[0], mesh[1])
-        assert len(load_surf_mesh(filename_fs_mesh)) == 2
-        assert_array_almost_equal(load_surf_mesh(filename_fs_mesh)[0],
-                                  mesh[0])
-        assert_array_almost_equal(load_surf_mesh(filename_fs_mesh)[1],
-                                  mesh[1])
-        os.remove(filename_fs_mesh)
+
+    _, filename_fs_mesh = tempfile.mkstemp(suffix=suffix,
+                                           dir=str(tmp_path))
+    nb.freesurfer.write_geometry(filename_fs_mesh, mesh[0], mesh[1])
+
+    assert len(load_surf_mesh(filename_fs_mesh)) == 2
+    assert_array_almost_equal(load_surf_mesh(filename_fs_mesh)[0], mesh[0])
+    assert_array_almost_equal(load_surf_mesh(filename_fs_mesh)[1], mesh[1])
 
 
-def test_load_surf_mesh_file_error(tmp_path):
+@pytest.mark.parametrize("suffix", ['.vtk', '.obj', '.mnc', '.txt'])
+def test_load_surf_mesh_file_error(suffix, tmp_path):
     # test if files with unexpected suffixes raise errors
     mesh = generate_surf()
-    wrong_suff = ['.vtk', '.obj', '.mnc', '.txt']
-    for suff in wrong_suff:
-        fd, filename_wrong = tempfile.mkstemp(suffix=suff,
-                                              dir=str(tmp_path))
-        os.close(fd)
-        nb.freesurfer.write_geometry(filename_wrong, mesh[0], mesh[1])
-        with pytest.raises(ValueError,
-                           match='input type is not recognized'
-                           ):
-            load_surf_mesh(filename_wrong)
-        os.remove(filename_wrong)
+    _, filename_wrong = tempfile.mkstemp(suffix=suffix, dir=str(tmp_path))
+    nb.freesurfer.write_geometry(filename_wrong, mesh[0], mesh[1])
+
+    with pytest.raises(ValueError, match='input type is not recognized'):
+        load_surf_mesh(filename_wrong)
 
 
 def test_load_surf_mesh_file_glob(tmp_path):
