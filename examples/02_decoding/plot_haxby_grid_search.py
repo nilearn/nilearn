@@ -124,7 +124,7 @@ for i, (best_C, best_penalty, best_dual, cv_score) in enumerate(
     )
 ):
     print(
-        f"Fold {i+1} | Best SVM parameters: C={best_C}"
+        f"Fold {i + 1} | Best SVM parameters: C={best_C}"
         f", penalty={best_penalty}, dual={best_dual} with score: {cv_score}"
     )
 

@@ -15,6 +15,13 @@ from nilearn._utils.testing import write_tmp_imgs
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiMasker
 
+try:
+    import matplotlib  # noqa: F401
+except ImportError:
+    not_have_mpl = True
+else:
+    not_have_mpl = False
+
 
 def test_auto_mask():
     # This mostly a smoke test
@@ -257,3 +264,52 @@ def test_standardization():
         np.testing.assert_almost_equal(
             ts, (s / s.mean(1)[:, np.newaxis] * 100 - 100).T
         )
+
+
+@pytest.mark.skipif(
+    not_have_mpl, reason="Matplotlib not installed; required for this test"
+)
+@pytest.mark.parametrize(
+    "reports,expected", [(True, dict), (False, type(None))]
+)
+def test_generate_report_imgs(reports, expected):
+    """Smoke test for generate_report method with image data."""
+    data_shape = (9, 9, 5)
+    imgs = _get_random_imgs(data_shape, 2)
+    masker = MultiNiftiMasker(reports=reports)
+    masker.fit(imgs)
+    assert isinstance(masker._reporting_data, expected)
+    masker.generate_report()
+
+
+@pytest.mark.skipif(
+    not_have_mpl, reason="Matplotlib not installed; required for this test"
+)
+def test_generate_report_mask():
+    """Smoke test for generate_report method with only mask."""
+    data_shape = (9, 9, 5)
+    mask = Nifti1Image(np.ones(data_shape), np.eye(4))
+    masker = MultiNiftiMasker(
+        mask_img=mask,
+        # to test resampling lines without imgs
+        target_affine=np.eye(4),
+        target_shape=data_shape,
+    )
+    masker.fit().generate_report()
+
+
+@pytest.mark.skipif(
+    not_have_mpl, reason="Matplotlib not installed; required for this test"
+)
+def test_generate_report_imgs_and_mask():
+    """Smoke test for generate_report method with images and mask."""
+    data_shape = (9, 9, 5)
+    imgs = _get_random_imgs(data_shape, 2)
+    mask = Nifti1Image(np.ones(data_shape), np.eye(4))
+    masker = MultiNiftiMasker(
+        mask_img=mask,
+        # to test resampling lines with imgs
+        target_affine=np.eye(4),
+        target_shape=data_shape,
+    )
+    masker.fit(imgs).generate_report()

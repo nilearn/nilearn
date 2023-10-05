@@ -31,7 +31,7 @@ from nilearn.datasets import fetch_spm_multimodal_fmri
 subject_data = fetch_spm_multimodal_fmri()
 
 #########################################################################
-# Specfiy timing and design matrix parameters.
+# Specify timing and design matrix parameters.
 
 # repetition time, in seconds
 tr = 2.0
