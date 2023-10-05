@@ -399,7 +399,6 @@ def test_load_surf_mesh_file_error(suffix, tmp_path):
 
 
 def test_load_surf_mesh_file_glob(tmp_path):
-    
     mesh = generate_surf()
     fd1, fname1 = tempfile.mkstemp(suffix='.pial', dir=str(tmp_path))
     os.close(fd1)
