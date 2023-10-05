@@ -580,7 +580,7 @@ def test_inputs(tmp_path, image_type):
     for i in range(2):  # gifti edge case
         nii, _ = create_tmp_filepath(
             tmp_path,
-            bids_fields={"entities": {"sub": f"test{i+1}",
+            bids_fields={"entities": {"sub": f"test{i + 1}",
                                       "ses": "test",
                                       "task": "testimg",
                                       "run": "01"}},
