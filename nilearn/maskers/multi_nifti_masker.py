@@ -238,11 +238,10 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
 
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
 
+        self._reporting_data = None
         if self.reports:  # save inputs for reporting
             imgs = imgs[0] if isinstance(imgs, list) else imgs
             self._reporting_data = {"images": imgs, "mask": self.mask_img_}
-        else:
-            self._reporting_data = None
 
         # If resampling is requested, resample the mask as well.
         # Resampling: allows the user to change the affine, the shape or both.
