@@ -273,15 +273,14 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
             or (self.target_affine is not None)
             and self.reports
         ):
+            resampl_imgs = None
             if imgs is not None:
                 resampl_imgs = self._cache(image.resample_img)(
                     imgs,
                     target_affine=self.affine_,
                     copy=False,
                     interpolation="nearest",
-                )
-            else:  # imgs not provided to fit
-                resampl_imgs = None
+                )       
 
             self._reporting_data["transform"] = [resampl_imgs, self.mask_img_]
 
