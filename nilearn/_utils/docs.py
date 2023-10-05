@@ -875,9 +875,9 @@ symmetric_cbar : :obj:`bool`, or "auto", default="auto"
     Specifies whether the colorbar and colormap should range from `-vmax` to
     `vmax` (or from `vmin` to `-vmin` if `-vmin` is greater than `vmax`) or
     from `vmin` to `vmax`.
-    Setting to `"auto"` will select the former if either 1) `vmin` or `vmax` is
-    None and the image has both positive and negative values, or 2) `vmin` is
-    equal to `-vmax`.
+    Setting to `"auto"` (the default) will select the former if either
+    `vmin` or `vmax` is `None` and the image has both positive and negative
+    values.
 """
 
 # t_r
