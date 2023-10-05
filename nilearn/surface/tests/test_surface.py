@@ -375,7 +375,7 @@ def test_load_surf_mesh_file_gii(tmp_path):
                                     '.white',
                                     '.orig',
                                     'sphere'])
-def test_load_surf_mesh_file_freesurfer(suffix, tmp_path):
+def test_load_surf_mesh_file_freesurfer(suffix, tmp_path, set_username):
     mesh = generate_surf()
 
     _, filename_fs_mesh = tempfile.mkstemp(suffix=suffix,
@@ -388,7 +388,7 @@ def test_load_surf_mesh_file_freesurfer(suffix, tmp_path):
 
 
 @pytest.mark.parametrize("suffix", ['.vtk', '.obj', '.mnc', '.txt'])
-def test_load_surf_mesh_file_error(suffix, tmp_path):
+def test_load_surf_mesh_file_error(suffix, tmp_path, set_username):
     # test if files with unexpected suffixes raise errors
     mesh = generate_surf()
     _, filename_wrong = tempfile.mkstemp(suffix=suffix, dir=str(tmp_path))
@@ -398,14 +398,12 @@ def test_load_surf_mesh_file_error(suffix, tmp_path):
         load_surf_mesh(filename_wrong)
 
 
-def test_load_surf_mesh_file_glob(tmp_path):
+def test_load_surf_mesh_file_glob(tmp_path, set_username):
     mesh = generate_surf()
-    fd1, fname1 = tempfile.mkstemp(suffix='.pial', dir=str(tmp_path))
-    os.close(fd1)
+    _, fname1 = tempfile.mkstemp(suffix='.pial', dir=str(tmp_path))
 
     nb.freesurfer.write_geometry(fname1, mesh[0], mesh[1])
-    fd2, fname2 = tempfile.mkstemp(suffix='.pial', dir=str(tmp_path))
-    os.close(fd2)
+    _, fname2 = tempfile.mkstemp(suffix='.pial', dir=str(tmp_path))
 
     nb.freesurfer.write_geometry(fname2, mesh[0], mesh[1])
 
