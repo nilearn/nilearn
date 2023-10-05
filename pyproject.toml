@@ -46,18 +46,8 @@ requires-python = ">=3.7"
 [project.optional-dependencies]
 # A combination of dependencies useful for developers
 dev = [
-    "nilearn[plotting,doc,test]",
-    "black",
-    "blacken-docs",
-    'codespell',
-    "isort",
-    "flake8",
-    "flake8-docstrings",
-    "flake8-use-fstring",
-    "flake8-functions",
-    "flynt",
+    "nilearn[plotting,doc,style,test]",
     'pre-commit',
-    'tomli',
     'tox'
 ]
 # Requirements necessary for building the documentation
@@ -77,6 +67,18 @@ doc = [
 ]
 # Necessary req to use nilearn's plotting module
 plotting = ["matplotlib>=3.3.0", "kaleido", "plotly"]
+style = [
+    "black",
+    "blacken-docs",
+    'codespell',
+    "isort",
+    "flake8",
+    "flake8-docstrings",
+    "flake8-use-fstring",
+    "flake8-functions",
+    "flynt",
+    'tomli'
+]
 # For running unit and docstring tests
 test = [
     "coverage",

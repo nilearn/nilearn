@@ -399,14 +399,15 @@ def test_load_surf_mesh_file_error(suffix, tmp_path):
 
 
 def test_load_surf_mesh_file_glob(tmp_path):
+    
     mesh = generate_surf()
-    fd1, fname1 = tempfile.mkstemp(suffix='.pial',
-                                   dir=str(tmp_path))
+    fd1, fname1 = tempfile.mkstemp(suffix='.pial', dir=str(tmp_path))
     os.close(fd1)
+
     nb.freesurfer.write_geometry(fname1, mesh[0], mesh[1])
-    fd2, fname2 = tempfile.mkstemp(suffix='.pial',
-                                   dir=str(tmp_path))
+    fd2, fname2 = tempfile.mkstemp(suffix='.pial', dir=str(tmp_path))
     os.close(fd2)
+
     nb.freesurfer.write_geometry(fname2, mesh[0], mesh[1])
 
     with pytest.raises(ValueError, match='More than one file matching path'):
@@ -418,8 +419,6 @@ def test_load_surf_mesh_file_glob(tmp_path):
     assert len(load_surf_mesh(fname1)) == 2
     assert_array_almost_equal(load_surf_mesh(fname1)[0], mesh[0])
     assert_array_almost_equal(load_surf_mesh(fname1)[1], mesh[1])
-    os.remove(fname1)
-    os.remove(fname2)
 
 
 def test_load_surf_data_file_glob(tmp_path):
