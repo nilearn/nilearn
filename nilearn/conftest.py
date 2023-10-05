@@ -1,4 +1,7 @@
 """Configuration and extra fixtures for pytest."""
+import os
+import warnings
+
 import nibabel
 import numpy as np
 import pytest
@@ -77,6 +80,35 @@ def close_all():
         import matplotlib.pyplot as plt
 
         plt.close("all")  # takes < 1 us so just always do it
+
+
+@pytest.fixture(autouse=True)
+def warnings_as_errors():
+    """Raise errors on deprecations from external library prereleases."""
+    flag = os.environ.get("WARN_DEPRECATION_ERRORS")
+    if flag == "true":
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "error",
+                message=".*numpy.*|.*scipy.*|.*nibabel.*|"
+                ".*joblib.*|.*pandas.*|.*scikit-learn.*",
+                category=DeprecationWarning,
+            )
+            if matplotlib is not None:
+                warnings.filterwarnings(
+                    "error",
+                    category=matplotlib.MatplotlibDeprecationWarning,
+                )
+            # Ignore internal DeprecationWarnings that reference a dependency
+            pattern = '.*The "C" parameter.*'
+            warnings.filterwarnings(
+                "ignore",
+                message=pattern,
+                category=DeprecationWarning,
+            )
+            yield
+    else:
+        yield
 
 
 # ------------------------   RNG   ------------------------#
