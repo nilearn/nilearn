@@ -9,7 +9,7 @@ from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
 from nilearn.glm.second_level import SecondLevelModel
-from nilearn.maskers import NiftiMasker
+from nilearn.maskers import MultiNiftiMasker
 from nilearn.reporting import glm_reporter as glmr
 
 try:
@@ -271,7 +271,7 @@ def test_masking_first_level_model(tmp_path):
     mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(
         shapes, rk, file_path=tmp_path
     )
-    masker = NiftiMasker(mask_img=mask)
+    masker = MultiNiftiMasker(mask_img=mask)
     masker.fit(fmri_data)
     flm = FirstLevelModel(mask_img=masker).fit(
         fmri_data, design_matrices=design_matrices
