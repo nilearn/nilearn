@@ -1,5 +1,4 @@
 """Configuration and extra fixtures for pytest."""
-import getpass
 import os
 import warnings
 
@@ -316,21 +315,3 @@ def testdata_4d_for_plotting():
         "img_atlas": img_atlas,
         "atlas_labels": atlas_labels,
     }
-
-
-@pytest.fixture
-def set_username():
-    """Set the username for the duration of the test."""
-    try:
-        username = getpass.getuser()
-    except ModuleNotFoundError:
-        username = None
-
-    os.environ["USER"] = "nilearn"
-
-    yield
-
-    if username is None:
-        del os.environ["USER"]
-    else:
-        os.environ["USER"] = username
