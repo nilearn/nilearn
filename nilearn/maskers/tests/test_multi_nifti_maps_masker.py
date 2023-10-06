@@ -8,6 +8,13 @@ from nilearn._utils import data_gen, testing
 from nilearn._utils.exceptions import DimensionError
 from nilearn.maskers import MultiNiftiMapsMasker, NiftiMapsMasker
 
+try:
+    import matplotlib  # noqa: F401
+except ImportError:
+    not_have_mpl = True
+else:
+    not_have_mpl = False
+
 
 def test_multi_nifti_maps_masker():
     # Check working of shape/affine checks
@@ -306,6 +313,9 @@ def test_multi_nifti_maps_masker_list_of_sample_mask():
         assert ts.shape == (length - n_scrub, n_regions)
 
 
+@pytest.mark.skipif(
+    not_have_mpl, reason="Matplotlib not installed; required for this test"
+)
 def test_multi_nifti_maps_masker_generate_report():
     """Test calling generate report on multiple subjects raises warning."""
     shape1 = (13, 11, 12)
