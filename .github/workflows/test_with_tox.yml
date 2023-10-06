@@ -16,26 +16,26 @@ concurrency:
 jobs:
     test_and_coverage:
         if: github.repository == 'nilearn/nilearn'
-        name: Test with ${{ matrix.py }} on ${{ matrix.os }}
+        name: 'Test with ${{ matrix.py }} on ${{ matrix.os }}: ${{ matrix.description }}'
         runs-on: ${{ matrix.os }}
         strategy:
             fail-fast: false
             matrix:
-                # Test on latest version of all dependencies
+                description: [latest version of all dependencies]
                 py: ['3.12', '3.11', '3.10', '3.9', '3.8']
                 os: [ubuntu-latest, macos-latest, windows-latest]
                 env: [test_plotting]
                 include:
-                # Test pre release versions of all dependencies
-                -   py: '3.12'
+                -   description: [pre-release version of all dependencies]
+                    py: '3.12'
                     os: ubuntu-latest
                     env: test_pre
-                # Test with minimal version of Python and of all dependencies - no plotting
-                -   py: '3.8'
+                -   description: [minimal version of all dependencies - no plotting]
+                    py: '3.8'
                     os: ubuntu-latest
                     env: test_min
-                # Test with minimal version of Python and of all dependencies - no plotly
-                -   py: '3.8'
+                -   description: [minimal version of all dependencies - no plotly]
+                    py: '3.8'
                     os: ubuntu-latest
                     env: test_plot_min
         steps:
