@@ -145,9 +145,30 @@ Install it with:
 
 You can tell set up certain environment or run certain command by calling ``tox``.
 
-Calling ``tox`` with no extra argument will simply run all the default commands
-defined in the tox configuration (``tox.ini``).
+Calling ``tox`` with no extra argument will simply run
+all the default commands defined in the tox configuration (``tox.ini``).
 
+Use ``tox list`` to view all environment descriptions.
+
+Use ``tox run`` to run a specific environment.
+
+Example
+
+.. code-block:: bash
+
+    tox run -e lint
+
+Some environements allow passing extra argument:
+
+.. code-block:: bash
+
+    tox run -e lint -- black
+
+You can also run any arbitrary command in a given environment with ``tox exec``:
+
+.. code-block:: bash
+
+    tox exec -e test_latest -- python -m pytest nilearn/_utils/tests/test_data_gen.py
 
 
 How to make a release?
