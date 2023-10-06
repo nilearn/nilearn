@@ -143,7 +143,7 @@ Install it with:
 
     pip install tox
 
-You can tell set up certain environment or run certain command by calling ``tox``.
+You can set up certain environment or run certain command by calling ``tox``.
 
 Calling ``tox`` with no extra argument will simply run
 all the default commands defined in the tox configuration (``tox.ini``).
