@@ -158,7 +158,7 @@ Example
 
     tox run -e lint
 
-Some environements allow passing extra argument:
+Some environments allow passing extra argument:
 
 .. code-block:: bash
 
