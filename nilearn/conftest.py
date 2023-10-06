@@ -330,7 +330,6 @@ def set_username():
 
     yield
 
-    os.environ["USER"] = username
     if username is None:
         del os.environ["USER"]
     else:
