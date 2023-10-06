@@ -7,14 +7,15 @@ The goal of this example is to illustrate the use of the function
 We compute a negative image by multiplying its voxel values with -1.
 """
 
+# %%
 from nilearn import datasets, image, plotting
 
-###############################################################################
+# %%
 # Retrieve the data: a motor contrast map.
 
 stat_img = datasets.load_sample_motor_activation_image()
 
-###############################################################################
+# %%
 # Multiply voxel values by -1.
 negative_stat_img = image.math_img("-img", img=stat_img)
 

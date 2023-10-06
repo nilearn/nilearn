@@ -20,17 +20,17 @@ This example takes a lot of time because the input are lists of 3D images
 sampled in different positions (encoded by different affine functions).
 
 """
-
+# %%
 print(__doc__)
 
 
-#########################################################################
+# %%
 # Fetch the SPM multimodal_faces data.
 from nilearn.datasets import fetch_spm_multimodal_fmri
 
 subject_data = fetch_spm_multimodal_fmri()
 
-#########################################################################
+# %%
 # Specify timing and design matrix parameters.
 
 # repetition time, in seconds
@@ -44,7 +44,7 @@ high_pass = 0.01
 # The hemodynamic response function
 hrf_model = "spm + derivative"
 
-#########################################################################
+# %%
 # Resample the images.
 #
 # This is achieved by the concat_imgs function of Nilearn.
@@ -63,11 +63,11 @@ affine, shape = fmri_img[0].affine, fmri_img[0].shape
 print("Resampling the second image (this takes time)...")
 fmri_img[1] = resample_img(fmri_img[1], affine, shape[:3])
 
-#########################################################################
+# %%
 # Let's create mean image for display purposes.
 mean_image = mean_img(fmri_img)
 
-#########################################################################
+# %%
 # Make the design matrices.
 import numpy as np
 import pandas as pd
@@ -76,7 +76,7 @@ from nilearn.glm.first_level import make_first_level_design_matrix
 
 design_matrices = []
 
-#########################################################################
+# %%
 # Loop over the two sessions.
 for idx, img in enumerate(fmri_img, start=1):
     # Build experimental paradigm
@@ -96,7 +96,7 @@ for idx, img in enumerate(fmri_img, start=1):
     # put the design matrices in a list
     design_matrices.append(design_matrix)
 
-#########################################################################
+# %%
 # We can specify basic contrasts (to get :term:`beta<Parameter Estimate>`
 # maps).
 # We start by specifying canonical contrast that isolate design matrix columns.
@@ -106,7 +106,7 @@ basic_contrasts = {
     for i, column in enumerate(design_matrix.columns)
 }
 
-#########################################################################
+# %%
 # We actually want more interesting contrasts. The simplest contrast
 # just makes the difference between the two main conditions.  We
 # define the two opposite versions to run one-tailed t-tests.  We also
@@ -122,7 +122,7 @@ contrasts = {
     ),
 }
 
-#########################################################################
+# %%
 # Fit the GLM for the 2 sessions by specifying a FirstLevelModel and then
 # fitting it.
 from nilearn.glm.first_level import FirstLevelModel
@@ -131,7 +131,7 @@ print("Fitting a GLM")
 fmri_glm = FirstLevelModel()
 fmri_glm = fmri_glm.fit(fmri_img, design_matrices=design_matrices)
 
-#########################################################################
+# %%
 # Now we can compute contrast-related statistical maps (in z-scale), and plot
 # them.
 from nilearn import plotting
@@ -157,7 +157,7 @@ for contrast_id, contrast_val in contrasts.items():
     )
     plotting.show()
 
-#########################################################################
+# %%
 # Based on the resulting maps we observe that the analysis results in
 # wide activity for the 'effects of interest' contrast, showing the
 # implications of large portions of the visual cortex in the

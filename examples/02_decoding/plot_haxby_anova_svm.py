@@ -7,7 +7,7 @@ using a feature selection, followed by an SVM.
 
 """
 
-#############################################################################
+# %%
 # Retrieve the files of the Haxby dataset
 # ---------------------------------------
 from nilearn import datasets
@@ -19,7 +19,7 @@ func_img = haxby_dataset.func[0]
 print(f"Mask nifti image (3D) is located at: {haxby_dataset.mask}")
 print(f"Functional nifti image (4D) is located at: {func_img}")
 
-#############################################################################
+# %%
 # Load the behavioral data
 # ------------------------
 import pandas as pd
@@ -42,7 +42,7 @@ print(conditions.unique())
 # data. We have to apply our session mask, to select only faces and houses.
 session_label = behavioral["chunks"][condition_mask]
 
-#############################################################################
+# %%
 # ANOVA pipeline with :class:`nilearn.decoding.Decoder` object
 # ------------------------------------------------------------
 #
@@ -65,13 +65,13 @@ decoder = Decoder(
     scoring="accuracy",
 )
 
-#############################################################################
+# %%
 # Fit the decoder and predict
 # ---------------------------
 decoder.fit(func_img, conditions)
 y_pred = decoder.predict(func_img)
 
-#############################################################################
+# %%
 # Obtain prediction scores via cross validation
 # ---------------------------------------------
 # Define the cross-validation scheme used for validation. Here we use a
@@ -99,7 +99,7 @@ decoder.fit(func_img, conditions, groups=session_label)
 # Print the CV scores
 print(decoder.cv_scores_["face"])
 
-#############################################################################
+# %%
 # Visualize the results
 # ---------------------
 # Look at the SVC's discriminating weights using
@@ -110,13 +110,13 @@ from nilearn.plotting import plot_stat_map, show
 plot_stat_map(weight_img, bg_img=haxby_dataset.anat[0], title="SVM weights")
 
 show()
-#############################################################################
+# %%
 # Or we can plot the weights using :class:`nilearn.plotting.view_img` as a
 # dynamic html viewer
 from nilearn.plotting import view_img
 
 view_img(weight_img, bg_img=haxby_dataset.anat[0], title="SVM weights", dim=-1)
-#############################################################################
+# %%
 # Saving the results as a Nifti file may also be important
 weight_img.to_filename("haxby_face_vs_house.nii")
 

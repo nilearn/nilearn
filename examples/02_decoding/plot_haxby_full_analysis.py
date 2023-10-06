@@ -15,7 +15,7 @@ that have been defined via a standard GLM-based analysis.
 
 """
 
-##########################################################################
+# %%
 # Load and prepare the data
 # -------------------------
 
@@ -58,7 +58,7 @@ from nilearn.image import index_img
 
 task_data = index_img(func_filename, task_mask)
 
-##########################################################################
+# %%
 # Decoding on the different masks
 # -------------------------------
 #
@@ -73,7 +73,7 @@ from nilearn.decoding import Decoder
 
 cv = LeaveOneGroupOut()
 
-##############################################################
+# %%
 # We use :class:`nilearn.decoding.Decoder` to estimate a baseline.
 
 mask_names = ["mask_vt", "mask_face", "mask_house"]
@@ -123,7 +123,7 @@ for mask_name in mask_names:
         ]
 
 
-##########################################################################
+# %%
 # We make a simple bar plot to summarize the results
 # --------------------------------------------------
 import matplotlib.pyplot as plt
