@@ -130,6 +130,25 @@ We welcome pull requests from all community members, if they follow the
 details on their process are available
 :sklearn:`here <developers/contributing.html#contributing-code>`).
 
+Using tox
+=========
+
+`Tox <See https://tox.wiki/en>`_ is set
+to facilitate testing and managing environments during development
+and ensure that the same commands can easily be run locally and in CI.
+
+Install it with:
+
+.. code-block:: bash
+
+    pip install tox
+
+You can tell set up certain environment or run certain command by calling ``tox``.
+
+Calling ``tox`` with no extra argument will simply run all the default commands
+defined in the tox configuration (``tox.ini``).
+
+
 
 How to make a release?
 ======================
