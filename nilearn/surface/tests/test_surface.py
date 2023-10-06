@@ -375,7 +375,7 @@ def test_load_surf_mesh_file_gii(tmp_path):
                                     '.white',
                                     '.orig',
                                     'sphere'])
-def test_load_surf_mesh_file_freesurfer(suffix, tmp_path, set_username):
+def test_load_surf_mesh_file_freesurfer(suffix, tmp_path):
     mesh = generate_surf()
 
     _, filename_fs_mesh = tempfile.mkstemp(suffix=suffix,
@@ -388,7 +388,7 @@ def test_load_surf_mesh_file_freesurfer(suffix, tmp_path, set_username):
 
 
 @pytest.mark.parametrize("suffix", ['.vtk', '.obj', '.mnc', '.txt'])
-def test_load_surf_mesh_file_error(suffix, tmp_path, set_username):
+def test_load_surf_mesh_file_error(suffix, tmp_path):
     # test if files with unexpected suffixes raise errors
     mesh = generate_surf()
     _, filename_wrong = tempfile.mkstemp(suffix=suffix, dir=str(tmp_path))
@@ -398,7 +398,7 @@ def test_load_surf_mesh_file_error(suffix, tmp_path, set_username):
         load_surf_mesh(filename_wrong)
 
 
-def test_load_surf_mesh_file_glob(tmp_path, set_username):
+def test_load_surf_mesh_file_glob(tmp_path):
     mesh = generate_surf()
     _, fname1 = tempfile.mkstemp(suffix='.pial', dir=str(tmp_path))
 
