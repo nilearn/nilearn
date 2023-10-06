@@ -26,15 +26,15 @@ jobs:
                 os: [ubuntu-latest, macos-latest, windows-latest]
                 env: [test_plotting]
                 include:
-                -   description: [pre-release version of all dependencies]
+                -   description: pre-release version of all dependencies
                     py: '3.12'
                     os: ubuntu-latest
                     env: test_pre
-                -   description: [minimal version of all dependencies - no plotting]
+                -   description: minimal version of all dependencies - no plotting
                     py: '3.8'
                     os: ubuntu-latest
                     env: test_min
-                -   description: [minimal version of all dependencies - no plotly]
+                -   description: minimal version of all dependencies - no plotly
                     py: '3.8'
                     os: ubuntu-latest
                     env: test_plot_min
