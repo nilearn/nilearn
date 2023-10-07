@@ -111,7 +111,7 @@ mask = nifti_masker.inverse_transform(variance_threshold.get_support())
 # :class:`nilearn.decoding.DecoderRegressor` Object
 
 # In nilearn we can benefit from the built-in DecoderRegressor object to
-# do ANOVA with SVR instead of manually defining the whole pipeline.
+# do :term:`ANOVA` with SVR instead of manually defining the whole pipeline.
 # This estimator also uses Cross Validation to select best models and ensemble
 # them. Furthermore, you can pass n_jobs=<some_high_value> to the
 # DecoderRegressor class to take advantage of a multi-core system.
