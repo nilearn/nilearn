@@ -162,7 +162,11 @@ Some environments allow passing extra argument:
 
 .. code-block:: bash
 
+    # only run black
     tox run -e lint -- black
+
+    # only run some tests
+    tox -e test_plotting -- nilearn/glm/tests/test_contrasts.py
 
 You can also run any arbitrary command in a given environment with ``tox exec``:
 
