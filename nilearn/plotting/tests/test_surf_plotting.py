@@ -27,19 +27,7 @@ from nilearn.plotting.surf_plotting import (
 from nilearn.surface import load_surf_data, load_surf_mesh
 from nilearn.surface.testing_utils import generate_surf
 
-try:
-    import plotly.graph_objects as go
-except ImportError:
-    PLOTLY_INSTALLED = False
-else:
-    PLOTLY_INSTALLED = True
-
-try:
-    import kaleido  # noqa:F401
-except ImportError:
-    KALEIDO_INSTALLED = False
-else:
-    KALEIDO_INSTALLED = True
+from nilearn.plotting.surf_plotting import _is_plotly_installed, _is_kaleido_installed
 
 try:
     import IPython.display  # noqa:F401
@@ -257,7 +245,7 @@ def test_surface_figure():
     assert s.output_file == "bar.png"
 
 
-@pytest.mark.skipif(PLOTLY_INSTALLED,
+@pytest.mark.skipif(_is_plotly_installed(),
                     reason='Plotly is installed.')
 def test_plotly_surface_figure_import_error():
     """Test that an ImportError is raised when instantiating a
@@ -267,7 +255,7 @@ def test_plotly_surface_figure_import_error():
         PlotlySurfaceFigure()
 
 
-@pytest.mark.skipif(not PLOTLY_INSTALLED or KALEIDO_INSTALLED,
+@pytest.mark.skipif(not _is_plotly_installed() or _is_kaleido_installed(),
                     reason=("This test only runs if Plotly is "
                             "installed, but not kaleido."))
 def test_plotly_surface_figure_savefig_error():
@@ -278,7 +266,7 @@ def test_plotly_surface_figure_savefig_error():
         PlotlySurfaceFigure().savefig()
 
 
-@pytest.mark.skipif(not PLOTLY_INSTALLED or not KALEIDO_INSTALLED,
+@pytest.mark.skipif(not _is_plotly_installed() or not _is_kaleido_installed(),
                     reason=("Plotly and/or kaleido not installed; "
                             "required for this test."))
 def test_plotly_surface_figure():
@@ -291,11 +279,12 @@ def test_plotly_surface_figure():
     ps.savefig('foo.png')
 
 
-@pytest.mark.skipif(not PLOTLY_INSTALLED or not IPYTHON_INSTALLED,
+@pytest.mark.skipif(not _is_plotly_installed() or not IPYTHON_INSTALLED,
                     reason=("Plotly and/or Ipython is not installed; "
                             "required for this test."))
 @pytest.mark.parametrize("renderer", ['png', 'jpeg', 'svg'])
 def test_plotly_show(renderer):
+    import plotly.graph_objects as go
     ps = PlotlySurfaceFigure(go.Figure())
     assert ps.output_file is None
     assert ps.figure is not None
@@ -306,10 +295,11 @@ def test_plotly_show(renderer):
     assert f'image/{key}' in mock_display.call_args.args[0]
 
 
-@pytest.mark.skipif(not PLOTLY_INSTALLED or not KALEIDO_INSTALLED,
+@pytest.mark.skipif(not _is_plotly_installed() or not _is_kaleido_installed(),
                     reason=("Plotly and/or kaleido not installed; "
                             "required for this test."))
 def test_plotly_savefig(tmp_path):
+    import plotly.graph_objects as go
     ps = PlotlySurfaceFigure(go.Figure(), output_file=tmp_path / "foo.png")
     assert ps.output_file == tmp_path / "foo.png"
     assert ps.figure is not None
@@ -317,7 +307,7 @@ def test_plotly_savefig(tmp_path):
     assert (tmp_path / "foo.png").exists()
 
 
-@pytest.mark.skipif(not PLOTLY_INSTALLED,
+@pytest.mark.skipif(not _is_plotly_installed(),
                     reason='Plotly is not installed; required for this test.')
 @pytest.mark.parametrize("input_obj", ["foo", Figure(), ["foo", "bar"]])
 def test_instantiation_error_plotly_surface_figure(input_obj):
@@ -416,7 +406,7 @@ def test_plot_surf_engine_error():
 
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 def test_plot_surf(engine, tmp_path):
-    if not PLOTLY_INSTALLED and engine == "plotly":
+    if not _is_plotly_installed() and engine == "plotly":
         pytest.skip('Plotly is not installed; required for this test.')
     mesh = generate_surf()
     rng = np.random.RandomState(42)
@@ -497,7 +487,7 @@ def test_plot_surf_avg_method():
 
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 def test_plot_surf_error(engine):
-    if not PLOTLY_INSTALLED and engine == "plotly":
+    if not _is_plotly_installed() and engine == "plotly":
         pytest.skip('Plotly is not installed; required for this test.')
     mesh = generate_surf()
     rng = np.random.RandomState(42)
@@ -603,7 +593,7 @@ def test_plot_surf_avg_method_errors():
 
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 def test_plot_surf_stat_map(engine):
-    if not PLOTLY_INSTALLED and engine == "plotly":
+    if not _is_plotly_installed() and engine == "plotly":
         pytest.skip('Plotly is not installed; required for this test.')
     mesh = generate_surf()
     rng = np.random.RandomState(42)
@@ -731,7 +721,7 @@ def _generate_data_test_surf_roi():
 
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 def test_plot_surf_roi(engine):
-    if not PLOTLY_INSTALLED and engine == "plotly":
+    if not _is_plotly_installed() and engine == "plotly":
         pytest.skip('Plotly is not installed; required for this test.')
     mesh, roi_map, parcellation = _generate_data_test_surf_roi()
     # plot roi
@@ -800,7 +790,7 @@ def test_plot_surf_roi_matplotlib_specific():
 
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 def test_plot_surf_roi_error(engine):
-    if not PLOTLY_INSTALLED and engine == "plotly":
+    if not _is_plotly_installed() and engine == "plotly":
         pytest.skip('Plotly is not installed; required for this test.')
     mesh = generate_surf()
     rng = np.random.RandomState(42)
@@ -810,14 +800,13 @@ def test_plot_surf_roi_error(engine):
             match='roi_map does not have the same number of vertices'):
         plot_surf_roi(mesh, roi_map=roi_idx, engine=engine)
 
-
+@pytest.mark.skipif(not _is_plotly_installed(),
+                    reason=("This test only runs if Plotly is installed."))
 @pytest.mark.parametrize(
     "kwargs", [{"vmin": 2}, {"vmin": 2, "threshold": 5}, {"threshold": 5}]
 )
 def test_plot_surf_roi_colorbar_vmin_equal_across_engines(kwargs):
     """See issue https://github.com/nilearn/nilearn/issues/3944"""
-    if not PLOTLY_INSTALLED:
-        pytest.skip("Plotly is not installed; required for this test.")
     mesh = generate_surf()
     roi_map = np.arange(0, len(mesh[0]))
 
@@ -1137,14 +1126,13 @@ def test_compute_facecolors_matplotlib():
             alpha,
         )
 
-
+@pytest.mark.skipif(not _is_plotly_installed(),
+                    reason=("This test only runs if Plotly is installed."))
 @pytest.mark.parametrize("avg_method", ["mean", "median"])
 @pytest.mark.parametrize("symmetric_cmap", [True, False, None])
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 def test_plot_surf_roi_default_arguments(engine, symmetric_cmap, avg_method):
     """Regression test for https://github.com/nilearn/nilearn/issues/3941"""
-    if not PLOTLY_INSTALLED:
-        pytest.skip('Plotly is not installed; required for this test.')
     mesh, roi_map, _ = _generate_data_test_surf_roi()
     plot_surf_roi(mesh, roi_map=roi_map,
                   engine=engine,

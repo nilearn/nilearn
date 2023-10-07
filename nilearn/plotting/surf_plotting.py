@@ -224,6 +224,21 @@ def _get_cbar_plotly(colorscale, vmin, vmax, cbar_tick_format,
     }
     return dummy
 
+def _is_plotly_installed():
+    """Check if plotly is installed."""
+    try:
+        import plotly.graph_objects as go  # noqa: F401
+    except ImportError:
+        return False
+    return True
+
+def _is_kaleido_installed():
+    """Check if kaleido is installed."""
+    try:
+        import kaleido  # noqa: F401
+    except ImportError:
+        return False
+    return True    
 
 def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
                       hemi='left', view='lateral', cmap=None,
@@ -249,13 +264,13 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
         bugs that you may encounter.
 
     """
-    try:
+    if _is_plotly_installed():
         import plotly.graph_objects as go
-
+    try:
         from nilearn.plotting.displays import PlotlySurfaceFigure
-    except ImportError:
+    except ImportError as e:
         msg = "Using engine='plotly' requires that ``plotly`` is installed."
-        raise ImportError(msg)
+        raise ImportError(msg) from e
 
     x, y, z = coords.T
     i, j, k = faces.T
@@ -309,14 +324,11 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
 
     # save figure
     if output_file is not None:
-        try:
-            import kaleido  # noqa: F401
-        except ImportError:
+        if not _is_kaleido_installed():
             msg = ("Saving figures to file with engine='plotly' requires "
-                   "that ``kaleido`` is installed.")
+                    "that ``kaleido`` is installed.")
             raise ImportError(msg)
-    plotly_figure = PlotlySurfaceFigure(figure=fig, output_file=output_file)
-    if output_file is not None:
+        plotly_figure = PlotlySurfaceFigure(figure=fig, output_file=output_file)
         plotly_figure.savefig()
 
     return plotly_figure
