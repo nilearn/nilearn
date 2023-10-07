@@ -224,6 +224,7 @@ def _get_cbar_plotly(colorscale, vmin, vmax, cbar_tick_format,
     }
     return dummy
 
+
 def _is_plotly_installed():
     """Check if plotly is installed."""
     try:
@@ -232,13 +233,15 @@ def _is_plotly_installed():
         return False
     return True
 
+
 def _is_kaleido_installed():
     """Check if kaleido is installed."""
     try:
         import kaleido  # noqa: F401
     except ImportError:
         return False
-    return True    
+    return True
+
 
 def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
                       hemi='left', view='lateral', cmap=None,
@@ -326,9 +329,10 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
     if output_file is not None:
         if not _is_kaleido_installed():
             msg = ("Saving figures to file with engine='plotly' requires "
-                    "that ``kaleido`` is installed.")
+                   "that ``kaleido`` is installed.")
             raise ImportError(msg)
-        plotly_figure = PlotlySurfaceFigure(figure=fig, output_file=output_file)
+        plotly_figure = PlotlySurfaceFigure(figure=fig,
+                                            output_file=output_file)
         plotly_figure.savefig()
 
     return plotly_figure

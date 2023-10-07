@@ -18,6 +18,8 @@ from nilearn.plotting.surf_plotting import (
     _get_ticks_matplotlib,
     _get_view_plot_surf_matplotlib,
     _get_view_plot_surf_plotly,
+    _is_kaleido_installed,
+    _is_plotly_installed,
     plot_img_on_surf,
     plot_surf,
     plot_surf_contours,
@@ -26,8 +28,6 @@ from nilearn.plotting.surf_plotting import (
 )
 from nilearn.surface import load_surf_data, load_surf_mesh
 from nilearn.surface.testing_utils import generate_surf
-
-from nilearn.plotting.surf_plotting import _is_plotly_installed, _is_kaleido_installed
 
 try:
     import IPython.display  # noqa:F401
@@ -800,6 +800,7 @@ def test_plot_surf_roi_error(engine):
             match='roi_map does not have the same number of vertices'):
         plot_surf_roi(mesh, roi_map=roi_idx, engine=engine)
 
+
 @pytest.mark.skipif(not _is_plotly_installed(),
                     reason=("This test only runs if Plotly is installed."))
 @pytest.mark.parametrize(
@@ -1125,6 +1126,7 @@ def test_compute_facecolors_matplotlib():
             0.5,
             alpha,
         )
+
 
 @pytest.mark.skipif(not _is_plotly_installed(),
                     reason=("This test only runs if Plotly is installed."))
