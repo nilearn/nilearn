@@ -59,54 +59,9 @@ new contributors. We label these issues with the |Good first issue| label
 which can be seen as an equivalent to a "very low effort" label. Because of
 this, good first issues do not require a separate effort label.
 
-Other labels can be used to describe further the topic of the issue:
+For a complete list of all issue labels that can be used to describe and their description,
+see `this page <https://github.com/nilearn/nilearn/labels>`_
 
-	- |API| This issue is related to the Nilearn's API.
-	- |code quality| This issue tackles code quality (code refactoring, PEP8...).
-	- |Datasets| This issue is related to datasets or the :mod:`nilearn.datasets` module.
-	- |Discussion| This issue is used to hold a general discussion on a specific topic where community feedback is desired (no need to specify effort, priority, or impact here).
-	- |GLM| This issue is related to the :mod:`nilearn.glm` module.
-	- |Infrastructure| This issue describes a problem with the project's infrastructure (CI/CD...).
-	- |Installation| The issue describes a problem with the installation of Nilearn.
-	- |Maintenance| This issue is related to maintenance work.
-	- |Plotting| The issue is related to plotting functionalities.
-	- |Testing| The issue is related to testing.
-	- |Usage| This issue is a usage question and should have been posted on :neurostars:`neurostars <>`.
-
-Finally, we use the following labels to indicate how the work on the issue
-is going:
-
-	- |in progress| Can be used to indicate that this issue is currently being investigated.
-	- |next-release| Commonly used for tagging PRs, this can be used to indicate that this issue should be solved before the next release.
-	- |stalled| This issue is currently stalled and has no recent activity. Use this label before closing due to inactivity.
-
-.. |API| image:: https://img.shields.io/badge/-API-fef2c0.svg
-.. |Bug| image:: https://img.shields.io/badge/-Bug-fc2929.svg
-.. |code quality| image:: https://img.shields.io/badge/-code%20quality-09ef5a.svg
-.. |Datasets| image:: https://img.shields.io/badge/-Datasets-fad8c7.svg
-.. |Discussion| image:: https://img.shields.io/badge/-Discussion-bfe5bf.svg
-.. |Documentation| image:: https://img.shields.io/badge/-Documentation-5319e7.svg
-.. |effort: high| image:: https://img.shields.io/badge/-effort:%20high-e26051.svg
-.. |effort: medium| image:: https://img.shields.io/badge/-effort:%20medium-ddad1a.svg
-.. |effort: low| image:: https://img.shields.io/badge/-effort:%20low-77c940.svg
-.. |Enhancement| image:: https://img.shields.io/badge/-Enhancement-fbca04.svg
-.. |GLM| image:: https://img.shields.io/badge/-GLM-fce1c4.svg
-.. |Good first issue| image:: https://img.shields.io/badge/-Good%20first%20issue-c7def8.svg
-.. |impact: high| image:: https://img.shields.io/badge/-impact:%20high-1f1dc1.svg
-.. |impact: medium| image:: https://img.shields.io/badge/-impact:%20medium-bac1fc.svg
-.. |impact: low| image:: https://img.shields.io/badge/-impact:%20low-75eae6.svg
-.. |in progress| image:: https://img.shields.io/badge/-in%20progress-ededed.svg
-.. |Infrastructure| image:: https://img.shields.io/badge/-Infrastructure-0052cc.svg
-.. |Installation| image:: https://img.shields.io/badge/-Installation-ba7030.svg
-.. |Maintenance| image:: https://img.shields.io/badge/-Maintenance-fc918f.svg
-.. |next-release| image:: https://img.shields.io/badge/-next--release-55c11f.svg
-.. |Plotting| image:: https://img.shields.io/badge/-Plotting-5319e7.svg
-.. |priority: high| image:: https://img.shields.io/badge/-priority:%20high-9e2409.svg
-.. |priority: medium| image:: https://img.shields.io/badge/-priority:%20medium-FBCA04.svg
-.. |priority: low| image:: https://img.shields.io/badge/-priority:%20low-c5def5.svg
-.. |stalled| image:: https://img.shields.io/badge/-stalled-c2e0c6.svg
-.. |Testing| image:: https://img.shields.io/badge/-Testing-50bac4.svg
-.. |Usage| image:: https://img.shields.io/badge/-Usage-e99695.svg
 
 .. _closing_policy:
 
