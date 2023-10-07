@@ -56,8 +56,8 @@ _, models_run_imgs, models_events, models_confounds = \
         img_filters=[('desc', 'preproc')])
 
 #############################################################################
-# We also need to get the :term:`TR` information. For that we use the json sidecar file
-# of the dataset's functional images.
+# We also need to get the :term:`TR` information.
+# For that we use the json sidecar file of the dataset's functional images.
 import json
 import os
 
