@@ -1,7 +1,4 @@
-from nilearn.plotting.surf_plotting import (
-    _is_kaleido_installed,
-    _is_plotly_installed,
-)
+from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 
 
 class SurfaceFigure:
@@ -67,7 +64,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
     """
 
     def __init__(self, figure=None, output_file=None):
-        if not _is_plotly_installed():
+        if not is_plotly_installed():
             raise ImportError(
                 "Plotly is required to use `PlotlySurfaceFigure`."
             )
@@ -100,7 +97,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
         output_file : :obj:`str` or ``None``, optional
             Path to output file.
         """
-        if not _is_kaleido_installed():
+        if not is_kaleido_installed():
             raise ImportError(
                 "`kaleido` is required to save plotly figures to disk."
             )

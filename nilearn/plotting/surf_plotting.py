@@ -16,6 +16,7 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from nilearn import image, surface
 from nilearn._utils import _compare_version, check_niimg_3d, fill_doc
+from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn.plotting.cm import _mix_colormaps, cold_hot
 from nilearn.plotting.html_surface import _get_vertexcolor
 from nilearn.plotting.img_plotting import _get_colorbar_and_data_ranges
@@ -225,22 +226,7 @@ def _get_cbar_plotly(colorscale, vmin, vmax, cbar_tick_format,
     return dummy
 
 
-def _is_plotly_installed():
-    """Check if plotly is installed."""
-    try:
-        import plotly.graph_objects as go  # noqa: F401
-    except ImportError:
-        return False
-    return True
 
-
-def _is_kaleido_installed():
-    """Check if kaleido is installed."""
-    try:
-        import kaleido  # noqa: F401
-    except ImportError:
-        return False
-    return True
 
 
 def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
@@ -267,7 +253,7 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
         bugs that you may encounter.
 
     """
-    if _is_plotly_installed():
+    if is_plotly_installed():
         import plotly.graph_objects as go
     try:
         from nilearn.plotting.displays import PlotlySurfaceFigure
@@ -327,7 +313,7 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
 
     # save figure
     if output_file is not None:
-        if not _is_kaleido_installed():
+        if not is_kaleido_installed():
             msg = ("Saving figures to file with engine='plotly' requires "
                    "that ``kaleido`` is installed.")
             raise ImportError(msg)
