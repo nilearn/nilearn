@@ -278,6 +278,8 @@ def _get_dataset_dir(
                 [(d, True) for d in str(default_path).split(os.pathsep)]
             )
 
+    _add_readme_to_default_data_locations(verbose=verbose)
+
     paths.extend([(d, False) for d in get_data_dirs(data_dir=data_dir)])
 
     if verbose > 2:
@@ -314,6 +316,23 @@ def _get_dataset_dir(
         "Nilearn tried to store the dataset in the following "
         f"directories, but: {''.join(errors)}"
     )
+
+
+def _add_readme_to_default_data_locations(verbose):
+    print("foo")
+    for d in get_data_dirs():
+        if not (Path(d) / "README.md").exists():
+            with open(Path(d) / "README.md", "w") as f:
+                f.write(
+                    """# Nilearn data folder
+
+This directory is used by nilearn to store datasets
+and atlases downloaded from the internet.
+It can be safely deleted.
+If you delete it, previously downloaded data will be downloaded again."""
+                )
+            if verbose > 0:
+                print(f"\nAdded README.md to {d}\n")
 
 
 # The functions _is_within_directory and _safe_extract were implemented in
