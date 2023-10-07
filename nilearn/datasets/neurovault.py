@@ -2177,7 +2177,7 @@ def basic_image_terms():
     More precisely, an image is excluded if one of the following is
     true:
 
-        - It is not in MNI space.
+        - It is not in :term:`MNI` space.
         - It is thresholded.
         - Its map type is one of "ROI/mask", "anatomical", or "parcellation".
         - Its image type is "atlas"

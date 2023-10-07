@@ -518,14 +518,14 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
              colorbar=False, cbar_tick_format="%.2g",
              cmap=plt.cm.nipy_spectral, vmin=None, vmax=None,
              radiological=False, **kwargs):
-    """Plot cuts of an EPI image.
+    """Plot cuts of an :term:`EPI` image.
 
     By default 3 cuts: Frontal, Axial, and Lateral.
 
     Parameters
     ----------
     epi_img : a nifti-image like object or a filename, optional
-        The EPI (T2*) image.
+        The :term:`EPI` (T2*) image.
     %(cut_coords)s
     %(output_file)s
     %(display_mode)s
@@ -729,7 +729,7 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
                     cmap=plt.cm.gist_rainbow, vmin=None, vmax=None,
                     alpha=0.7, radiological=False, **kwargs):
     """Plot the probabilistic atlases onto the anatomical image \
-    by default MNI template.
+    by default :term:`MNI` template.
 
     Parameters
     ----------
@@ -1013,7 +1013,7 @@ def plot_glass_brain(stat_map_img,
     Frontal, Axial, and Lateral). The brain glass schematics
     are added on top of the image.
 
-    The plotted image should be in MNI space for this function to work
+    The plotted image should be in :term:`MNI` space for this function to work
     properly.
 
     Only glass brain can be plotted by switching stat_map_img to None.
@@ -1123,7 +1123,7 @@ def plot_connectome(adjacency_matrix, node_coords,
                     colorbar=False, radiological=False):
     """Plot connectome on top of the brain glass schematics.
 
-    The plotted image should be in MNI space for this function to work
+    The plotted image should be in :term:`MNI` space for this function to work
     properly.
 
     In the case of 'l' and 'r' directions (for hemispheric projections),
@@ -1361,7 +1361,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
                 figure=None, axes=None, vmin=None, vmax=None, title=None,
                 cmap="gray", cmap_labels=plt.cm.gist_ncar,
                 standardize=True):
-    """Plot an image representation of voxel intensities across time.
+    """Plot an image representation of :term:`voxel` intensities across time.
 
     This figure is also known as a "grayplot" or "Power plot".
 
@@ -1611,7 +1611,7 @@ def plot_img_comparison(ref_imgs, src_imgs, masker, plot_hist=True, log=True,
                         output_dir=None, axes=None):
     """Create plots to compare two lists of images and measure correlation.
 
-    The first plot displays linear correlation between voxel values.
+    The first plot displays linear correlation between :term:`voxel` values.
     The second plot superimposes histograms to compare values distribution.
 
     Parameters

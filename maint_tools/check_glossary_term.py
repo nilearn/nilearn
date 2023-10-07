@@ -2,7 +2,12 @@
    are not linked to the glossary."""
 from __future__ import annotations
 
+import ast
 from pathlib import Path
+
+from docstring_parser import parse
+from docstring_parser.common import DocstringStyle
+from rich import print
 
 
 def root_dir() -> Path:
@@ -67,57 +72,163 @@ def check_file_content(file, term):
         for i, line in enumerate(f.readlines()):
             if any(line.strip().startswith(s) for s in skip_if):
                 continue
-            # if file is a python file only check doc strings and comments
+
+            # if file is a python file and only comments
+            # TODO: check docstrings
             if file.suffix == ".py":
                 if not line.startswith("#"):
                     continue
-            if f" {term} " in line and f":term:`{term}`" not in line:
+            if check_string(line, term):
                 print(f"'{term}' in {file} at line {i+1}")
                 count += 1
     return count
 
 
-terms = get_terms_in_glossary()
-print(terms)
-
-print("\n\nCheck rst files in doc\n")
-
-folders_to_skip = [
-    "_build",
-    "binder",
-    "changes",
-    "images",
-    "includes",
-    "logos",
-    "modules",
-    "sphinxext",
-    "templates",
-    "themes",
-]
-
-files_to_skip = ["conf.py", "index.rst", "glossary.rst"]
-
-doc_folder = root_dir() / "doc"
-
-files = list(doc_folder.glob("*.rst"))
-for folder in doc_folder.glob("*"):
-    if folder.is_dir() and folder.name not in folders_to_skip:
-        files.extend(f for f in folder.glob("*.rst") if f is not None)
-
-count = check_files(files, terms, files_to_skip)
-
-print(f"\n\nTotal: {count} terms not linked to glossary\n")
+def check_string(string, term):
+    """Check a string for a term."""
+    if string is None:
+        return False
+    return f" {term} " in string and f":term:`{term}`" not in string
 
 
-print("\n\nCheck py files in examples\n")
+def check_docstring(docstring, terms):
+    """Check docstring content."""
+    docstring = parse(docstring, style=DocstringStyle.NUMPYDOC)
 
-example_folder = root_dir() / "examples"
+    text = check_description(docstring, terms)
 
-files = []
-for folder in example_folder.glob("*"):
-    if folder.is_dir():
-        files.extend(f for f in folder.glob("*.py") if f is not None)
+    for param in docstring.params:
+        if tmp := [
+            term for term in terms if check_string(param.description, term)
+        ]:
+            text += f" terms: '{', '.join(tmp)}' in param '{param.arg_name}'\n"
 
-count = check_files(files, terms, files_to_skip)
+    return text
 
-print(f"\n\nTotal: {count} terms not linked to glossary\n")
+
+def check_description(docstring, terms):
+    """Check docstring description."""
+    text = ""
+    if docstring.short_description is not None:
+        if tmp := [
+            term
+            for term in terms
+            if check_string(docstring.short_description, term)
+        ]:
+            text += f" terms: '{', '.join(tmp)}' in short description\n"
+
+    if docstring.long_description is not None:
+        if tmp := [
+            term
+            for term in terms
+            if check_string(docstring.long_description, term)
+        ]:
+            text += f" terms: '{', '.join(tmp)}' in short description\n"
+
+    return text
+
+
+def check_functions(body, terms):
+    """Check functions of a module or methods of a class."""
+    function_definitions = [
+        node for node in body if isinstance(node, ast.FunctionDef)
+    ]
+    for f in function_definitions:
+        if f.name.startswith("_"):
+            continue
+
+        docstring = ast.get_docstring(f)
+        if text := check_docstring(docstring, terms):
+            print(f"function '{f.name}' at line {f.lineno}")
+            print(text)
+
+
+def check_doc(terms):
+    """Check doc content."""
+    folders_to_skip = [
+        "_build",
+        "binder",
+        "changes",
+        "images",
+        "includes",
+        "logos",
+        "modules",
+        "sphinxext",
+        "templates",
+        "themes",
+    ]
+
+    print("\n\nCheck rst files in doc\n")
+
+    files_to_skip = ["conf.py", "index.rst", "glossary.rst"]
+
+    doc_folder = root_dir() / "doc"
+
+    files = list(doc_folder.glob("*.rst"))
+    for folder in doc_folder.glob("*"):
+        if folder.is_dir() and folder.name not in folders_to_skip:
+            files.extend(f for f in folder.glob("*.rst") if f is not None)
+
+    count = check_files(files, terms, files_to_skip)
+
+    print(f"\n\nTotal: {count} terms not linked to glossary\n")
+
+
+def check_examples(terms):
+    """Check examples content."""
+    files_to_skip = []
+
+    print("\n\nCheck py files in examples\n")
+
+    example_folder = root_dir() / "examples"
+
+    files = []
+    for folder in example_folder.glob("*"):
+        if folder.is_dir():
+            files.extend(f for f in folder.glob("*.py") if f is not None)
+
+    count = check_files(files, terms, files_to_skip)
+
+    print(f"\n\nTotal: {count} terms not linked to glossary\n")
+
+
+def main():
+    """Check code and doc for terms not linked to glossary."""
+    terms = get_terms_in_glossary()
+    print(terms)
+
+    check_doc(terms)
+
+    check_examples(terms)
+
+    modules = (root_dir() / "nilearn").glob("**/*.py")
+
+    files_to_skip = ["test_", "conftest.py", "_"]
+
+    for file in modules:
+        if any(file.name.startswith(s) for s in files_to_skip):
+            continue
+
+        with open(file) as f:
+            module = ast.parse(f.read())
+
+        print(f"{file}")
+
+        check_functions(module.body, terms)
+
+        class_definitions = [
+            node for node in module.body if isinstance(node, ast.ClassDef)
+        ]
+
+        for class_def in class_definitions:
+            docstring = ast.get_docstring(class_def)
+            docstring = parse(docstring, style=DocstringStyle.NUMPYDOC)
+
+            if text := check_description(docstring, terms):
+                print(f"class '{class_def.name}' at line {class_def.lineno}")
+                print(text)
+            check_functions(class_def.body, terms)
+
+
+if __name__ == "__main__":
+    main()

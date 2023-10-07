@@ -505,7 +505,7 @@ def view_img(
         Default='MNI152'.
 
     cut_coords : None, or a tuple of floats
-        The MNI coordinates of the point where the cut is performed
+        The :term:`MNI` coordinates of the point where the cut is performed
         as a 3-tuple: (x, y, z). If None is given, the cuts are calculated
         automatically.
 

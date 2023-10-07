@@ -173,9 +173,9 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 def load_mni152_template(resolution=None):
     """Load the MNI152 skullstripped T1 template.
 
-    This function takes the skullstripped, re-scaled 1mm-resolution version of
-    the MNI ICBM152 T1 template and re-samples it using a different resolution,
-    if specified.
+    This function takes the skullstripped,
+    re-scaled 1mm-resolution version of the :term:`MNI` ICBM152 T1 template
+    and re-samples it using a different resolution, if specified.
 
     For more information, see :footcite:`Fonov2011`,
     and :footcite:`Fonov2009`.
@@ -284,7 +284,8 @@ def load_mni152_wm_template(resolution=None):
     """Load the MNI152 white-matter template.
 
     This function takes the re-scaled 1mm-resolution version of the
-    white-matter MNI ICBM152 template and re-samples it using a different
+    white-matter :term:`MNI` ICBM152 template
+    and re-samples it using a different
     resolution, if specified.
 
     .. versionadded:: 0.8.1

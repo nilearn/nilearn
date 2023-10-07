@@ -324,7 +324,7 @@ def permuted_ols(
     :footcite:p:`Anderson2001`, :footcite:p:`Winkler2014`.
     A max-type procedure is used to obtain family-wise corrected p-values
     based on t-statistics (voxel-level FWE), cluster sizes, cluster masses,
-    and TFCE values.
+    and :term:`TFCE` values.
 
     The specific permutation scheme implemented here is the one of
     :footcite:t:`Freedman1983`.
