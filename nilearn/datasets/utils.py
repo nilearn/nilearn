@@ -278,8 +278,6 @@ def _get_dataset_dir(
                 [(d, True) for d in str(default_path).split(os.pathsep)]
             )
 
-    _add_readme_to_default_data_locations(verbose=verbose)
-
     paths.extend([(d, False) for d in get_data_dirs(data_dir=data_dir)])
 
     if verbose > 2:
@@ -305,6 +303,7 @@ def _get_dataset_dir(
         if not os.path.exists(path):
             try:
                 os.makedirs(path)
+                _add_readme_to_default_data_locations(verbose=verbose)
                 if verbose > 0:
                     print(f"\nDataset created in {path}\n")
                 return path
@@ -319,10 +318,10 @@ def _get_dataset_dir(
 
 
 def _add_readme_to_default_data_locations(verbose):
-    print("foo")
     for d in get_data_dirs():
-        if not (Path(d) / "README.md").exists():
-            with open(Path(d) / "README.md", "w") as f:
+        file = Path(d) / "README.md"
+        if file.parent.exists() and not file.exists():
+            with open(file, "w") as f:
                 f.write(
                     """# Nilearn data folder
 
