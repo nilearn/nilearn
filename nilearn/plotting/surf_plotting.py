@@ -226,9 +226,6 @@ def _get_cbar_plotly(colorscale, vmin, vmax, cbar_tick_format,
     return dummy
 
 
-
-
-
 def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
                       hemi='left', view='lateral', cmap=None,
                       symmetric_cmap=True, colorbar=False,
