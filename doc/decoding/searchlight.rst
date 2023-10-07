@@ -211,7 +211,7 @@ equivalent to a permuted F-test by setting the argument
 ``two_sided_test`` to ``True``. In the example above, we do perform a two-sided
 test but add back the sign of the effect at the end using the t-scores obtained
 on the original (non-permuted) data. Thus, we can perform two one-sided tests
-(a given contrast and its opposite) for the price of one single run.
+(a given :term:`contrast` and its opposite) for the price of one single run.
 The example results can be interpreted as follows: viewing faces significantly
 activates the Fusiform Face Area as compared to viewing houses, while viewing
 houses does not reveal significant supplementary activations as compared to
@@ -224,7 +224,7 @@ viewing faces.
     assuming that nothing happens (i.e. under the null hypothesis).
     Therefore, a small *p-value* indicates that there is a small chance
     of getting this data if no real difference existed, so the observed
-    voxel must be significant.
+    :term:`voxel` must be significant.
 
 .. [2]
 

@@ -6,9 +6,9 @@ Second level models
 
 .. topic:: **Page summary**
 
-   Second level models in Nilearn are used to perform group-level analyses on fMRI data. Once individual
+   Second level models in Nilearn are used to perform group-level analyses on :term:`fMRI` data. Once individual
    subjects have been processed in a common space (e.g. MNI, Talairach, or subject average), the data can
-   be grouped and statistical tests  performed to make broader inferences on fMRI activity. Some common
+   be grouped and statistical tests  performed to make broader inferences on :term:`fMRI` activity. Some common
    second level models are one-sample (unpaired or paired) and two-sample t-tests.
 
 
@@ -48,7 +48,7 @@ Multiple comparisons correction
 ===============================
 
 As discussed in the :ref:`Multiple comparisons` section of the introduction, the issue of multiple comparisons is
-important to address with statistical analysis of fMRI data. Nilearn provides parametric and non-parametric tools
+important to address with statistical analysis of :term:`fMRI` data. Nilearn provides parametric and non-parametric tools
 to address this issue.
 
 Refer to the example :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_thresholding.py` for a guide

@@ -188,7 +188,7 @@ research. Three main components are:
     raw scans in form of a numpy array: ``data = nilearn.image.get_data(img)``
 :affine:
     returns the transformation matrix that maps
-    from voxel indices of the numpy array to actual real-world
+    from :term:`voxel` indices of the numpy array to actual real-world
     locations of the brain:
     ``affine = img.affine``
 :header:
