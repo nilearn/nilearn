@@ -252,11 +252,10 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
     """
     if is_plotly_installed():
         import plotly.graph_objects as go
-    try:
         from nilearn.plotting.displays import PlotlySurfaceFigure
-    except ImportError as e:
+    else:
         msg = "Using engine='plotly' requires that ``plotly`` is installed."
-        raise ImportError(msg) from e
+        raise ImportError(msg)
 
     x, y, z = coords.T
     i, j, k = faces.T
@@ -309,13 +308,13 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
                       **LAYOUT)
 
     # save figure
+    plotly_figure = PlotlySurfaceFigure(figure=fig, output_file=output_file)
+
     if output_file is not None:
         if not is_kaleido_installed():
             msg = ("Saving figures to file with engine='plotly' requires "
                    "that ``kaleido`` is installed.")
             raise ImportError(msg)
-        plotly_figure = PlotlySurfaceFigure(figure=fig,
-                                            output_file=output_file)
         plotly_figure.savefig()
 
     return plotly_figure
