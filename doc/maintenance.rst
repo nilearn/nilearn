@@ -111,7 +111,7 @@ possible reasons for a community member to close an issue:
 
 	- The issue has been solved: kindly asked the author whether the issue can be closed. In the absence of reply, close the issue after two weeks.
 	- The issue is a usage question: label the issue with |Usage| and kindly redirect the author to :neurostars:`neurostars <>`. Close the issue afterwards.
-	- The issue has no recent activity (no messages in the last three months): ping the author to see if the issue is still relevant. In the absence of reply, label the issue with |stalled| and close it after 2 weeks.
+	- The issue has no recent activity (no messages in the last three months): ping the author to see if the issue is still relevant. In the absence of reply, label the issue with ``stalled`` and close it after 2 weeks.
 
 .. _pull request:
 
