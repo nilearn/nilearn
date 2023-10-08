@@ -430,8 +430,8 @@ def concat_niimgs(
         See :ref:`extracting_data`.
         Niimgs to concatenate.
 
-    dtype : numpy dtype, default=np
-        The dtype of the returned image. Default=np.float32.
+    dtype : numpy dtype, default=np.float32
+        The dtype of the returned image.
 
     ensure_ndim : integer, optional
         Indicate the dimensionality of the expected niimg. An

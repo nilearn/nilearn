@@ -109,7 +109,6 @@ def _peak_local_max(
     num_peaks : int, default=np.inf
         Maximum number of peaks. When the number of peaks exceeds `num_peaks`,
         return `num_peaks` peaks based on highest peak intensity.
-        Default=np.inf.
 
     Returns
     -------

@@ -173,9 +173,8 @@ def generate_maps(shape,
         Random number generator, or seed.
         Default=0.
 
-    affine : :obj:`numpy.ndarray`, default=np
+    affine : :obj:`numpy.ndarray`, default=np.eye(4)
         Affine transformation to use.
-        Default=np.eye(4).
 
     border : :obj:`int`, default=1
         Number of background voxels on each side of the 3D volumes.
@@ -225,9 +224,8 @@ def generate_labeled_regions(shape,
     labels : iterable, optional
         Labels to use for each zone. If provided, n_regions is unused.
 
-    affine : :obj:`numpy.ndarray`, default=np
+    affine : :obj:`numpy.ndarray`, default=np.eye(4)
         Affine of returned image.
-        Default=np.eye(4).
 
     dtype : :obj:`type`, default='int32'
         Data type of image.
@@ -285,9 +283,8 @@ def generate_fake_fmri(shape=(10, 11, 12),
         "noise": uniformly sampled values in [0..255]
         "step": 0.5 for the first half then 1.
 
-    affine : :obj:`numpy.ndarray`, default=np
+    affine : :obj:`numpy.ndarray`, default=np.eye(4)
         Affine of returned images.
-        Default=np.eye(4).
 
     n_blocks : :obj:`int` or None, default=None
         Number of condition blocks.
@@ -397,9 +394,8 @@ def generate_fake_fmri_data_and_design(shapes,
         Number of columns in the design matrix to be generated.
         Default=3.
 
-    affine : :obj:`numpy.ndarray`, default=np
+    affine : :obj:`numpy.ndarray`, default=np.eye(4)
         Affine of returned images. Must be a 4x4 array.
-        Default=np.eye(4).
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
                    optional
