@@ -273,7 +273,7 @@ class HTMLReport(HTMLDocument):
 
             .. note::
                 This can be used to provide additional values
-                with custom templates
+                with custom templates.
 
         """
         html = head_tpl.safe_substitute(body=body, **head_values)
