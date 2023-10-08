@@ -86,7 +86,7 @@ def check_file_content(file, term):
                 if not line.startswith("#"):
                     continue
             if check_string(line, term):
-                print(f"'{term}' in {file}:{i+1}")
+                print(f"'{term}' in {file}:{i + 1}")
                 count += 1
     return count
 

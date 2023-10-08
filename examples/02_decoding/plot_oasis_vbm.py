@@ -109,11 +109,11 @@ mask = nifti_masker.inverse_transform(variance_threshold.get_support())
 ############################################################################
 # Prediction pipeline with :term:`ANOVA` and SVR using
 # :class:`nilearn.decoding.DecoderRegressor` Object
-
+#
 # In nilearn we can benefit from the built-in DecoderRegressor object to
 # do :term:`ANOVA` with SVR instead of manually defining the whole pipeline.
 # This estimator also uses Cross Validation to select best models and ensemble
-# them. Furthermore, you can pass n_jobs=<some_high_value> to the
+# them. Furthermore, you can pass ``n_jobs=<some_high_value>`` to the
 # DecoderRegressor class to take advantage of a multi-core system.
 # To save time (because these are anat images with many voxels), we include
 # only the 1-percent voxels most correlated with the age variable to fit. We

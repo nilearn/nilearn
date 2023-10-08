@@ -31,7 +31,7 @@ def _gamma_difference_hrf(
     Parameters
     ----------
     tr : float
-        Scan repeat time, in seconds.
+        Scan :term:`TR`, in seconds.
 
     oversampling : int, optional
         Temporal oversampling factor.
@@ -95,7 +95,7 @@ def spm_hrf(tr, oversampling=50, time_length=32.0, onset=0.0):
     Parameters
     ----------
     tr : float
-        Scan repeat time, in seconds.
+        Scan :term:`TR`, in seconds.
 
     oversampling : int, optional
         Temporal oversampling factor. Default=50.
@@ -109,7 +109,7 @@ def spm_hrf(tr, oversampling=50, time_length=32.0, onset=0.0):
     Returns
     -------
     hrf : array of shape(length / tr * oversampling, dtype=float)
-         hrf sampling on the oversampled time grid
+         :term:`HRF` sampling on the oversampled time grid
 
     """
     return _gamma_difference_hrf(tr, oversampling, time_length, onset)
@@ -121,7 +121,7 @@ def glover_hrf(tr, oversampling=50, time_length=32.0, onset=0.0):
     Parameters
     ----------
     tr : float
-        Scan repeat time, in seconds.
+        Scan :term:`TR`, in seconds.
 
     oversampling : int, optional
         Temporal oversampling factor. Default=50.
@@ -135,7 +135,7 @@ def glover_hrf(tr, oversampling=50, time_length=32.0, onset=0.0):
     Returns
     -------
     hrf : array of shape(length / tr * oversampling, dtype=float)
-         hrf sampling on the oversampled time grid.
+         :term:`HRF` sampling on the oversampled time grid.
 
     """
     return _gamma_difference_hrf(
@@ -167,7 +167,7 @@ def _generic_time_derivative(
         spm_hrf or glover_hrf
 
     tr : float
-        Scan repeat time, in seconds.
+        Scan :term:`TR`, in seconds.
 
     oversampling : int, optional
         Temporal oversampling factor. Default=50.
@@ -194,7 +194,7 @@ def spm_time_derivative(tr, oversampling=50, time_length=32.0, onset=0.0):
     Parameters
     ----------
     tr : float
-        Scan repeat time, in seconds.
+        Scan :term:`TR`, in seconds.
 
     oversampling : int, optional
         Temporal oversampling factor. Default=50.
@@ -226,7 +226,7 @@ def glover_time_derivative(tr, oversampling=50, time_length=32.0, onset=0.0):
     Parameters
     ----------
     tr : float
-        Scan repeat time, in seconds.
+        Scan :term:`TR`, in seconds.
 
     oversampling : int, optional
         Temporal oversampling factor. Default=50.
@@ -302,7 +302,7 @@ def spm_dispersion_derivative(
     Parameters
     ----------
     tr : float
-        Scan repeat time, in seconds.
+        Scan :term:`TR`, in seconds.
 
     oversampling : int, optional
         Temporal oversampling factor in seconds. Default=50.
@@ -332,7 +332,7 @@ def glover_dispersion_derivative(
     Parameters
     ----------
     tr : float
-        Scan :term:`repetition time`, in seconds.
+        Scan :term:`TR`, in seconds.
 
     oversampling : int, optional
         Temporal oversampling factor in seconds. Default=50.

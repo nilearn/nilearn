@@ -221,7 +221,7 @@ class LikelihoodModelResults:
         )
 
     def Fcontrast(self, matrix, dispersion=None, invcov=None):
-        """Compute an F contrast for a :term:`<contrast>` matrix ``matrix``.
+        """Compute an F contrast for a :term:`contrast` matrix ``matrix``.
 
         Here, ``matrix`` M is assumed to be non-singular. More precisely
 
@@ -234,7 +234,7 @@ class LikelihoodModelResults:
         There can be problems in non-OLS models where
         the rank of the covariance of the noise is not full.
 
-        See the :mod:`contrasts` module to see how to specify contrasts.
+        See the contrasts module to see how to specify contrasts.
         In particular, the matrices from these contrasts will always be
         non-singular in the sense above.
 
@@ -386,7 +386,7 @@ class TContrastResults:
 
 
 class FContrastResults:
-    """Results from an F :term:`contrasts` of coefficients \
+    """Results from an F :term:`contrast` of coefficients \
        in a parametric model.
 
     The class does nothing.
