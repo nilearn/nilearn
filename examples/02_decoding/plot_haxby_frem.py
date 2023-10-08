@@ -110,7 +110,8 @@ plotting.plot_stat_map(
 )
 plotting.show()
 #############################################################################
-# FREM ensembling procedure yields an important improvement of decoding
+# :term:`FREM`` ensembling procedure
+# yields an important improvement of decoding
 # accuracy on this simple example compared to fitting only one model per
 # fold and the clustering mechanism keeps its computational cost reasonable
 # even on heavier examples. Here we ensembled several instances of l2-SVC,

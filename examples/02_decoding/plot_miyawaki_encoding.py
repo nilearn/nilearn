@@ -96,7 +96,7 @@ plt.title(f"Run {3}, Stimulus {102}")
 plt.subplots_adjust(wspace=0.5)
 
 ##############################################################################
-# We now stack the fmri and stimulus data and remove an offset in the
+# We now stack the :term:`fMRI` and stimulus data and remove an offset in the
 # beginning/end.
 
 fmri_data = np.vstack([fmri_run[2:] for fmri_run in fmri_data])

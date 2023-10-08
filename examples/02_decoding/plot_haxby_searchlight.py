@@ -115,7 +115,7 @@ p_unmasked = get_data(nifti_masker.inverse_transform(p_values))
 #########################################################################
 # Visualization
 # -------------
-# Use the fmri mean image as a surrogate of anatomical data
+# Use the :term:`fMRI` mean image as a surrogate of anatomical data
 from nilearn import image
 
 mean_fmri = image.mean_img(fmri_img)

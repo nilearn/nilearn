@@ -24,7 +24,8 @@ Author: Franz Liem
 # Getting the data
 # ----------------
 #
-# We will work with the first subject of the brain development fmri data set.
+# We will work with the first subject
+# of the brain development :term:`fMRI` data set.
 # dataset.func is a list of filenames. We select the 1st (0-based)
 # subject by indexing with [0]).
 from nilearn import datasets

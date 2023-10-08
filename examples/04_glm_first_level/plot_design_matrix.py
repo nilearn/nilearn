@@ -87,7 +87,7 @@ X2 = make_first_level_design_matrix(
 )
 
 #########################################################################
-# Finally we compute a FIR model
+# Finally we compute a :term:`FIR` model
 
 events = pd.DataFrame(
     {"trial_type": conditions, "onset": onsets, "duration": duration}

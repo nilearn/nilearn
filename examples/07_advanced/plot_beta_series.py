@@ -274,10 +274,11 @@ fig.show()
 ##############################################################################
 # Applications of beta series
 # ---------------------------
-# Beta series can be used much like resting-state data, though generally with
-# vastly reduced degrees of freedom than a typical resting-state run, given
-# that the number of trials should always be less than the number of volumes
-# in a functional MRI run.
+# Beta series can be used much like :term:`resting-state` data,
+# though generally with vastly reduced degrees of freedom
+# than a typical :term:`resting-state` run,
+# given that the number of trials should always be less
+# than the number of volumes in a functional MRI run.
 #
 # Two common applications of beta series are
 # to :term:`functional connectivity`` and decoding analyses.

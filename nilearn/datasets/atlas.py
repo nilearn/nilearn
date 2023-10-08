@@ -1099,27 +1099,29 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
         Dictionary-like object, keys are:
 
             - 'thin_7': :obj:`str`, path to nifti file containing the
-              7 regions parcellation fitted to thin template cortex
+              7 regions :term:`parcellation` fitted to thin template cortex
               segmentations. The image contains integer values which can be
               interpreted as the indices in ``colors_7``.
             - 'thick_7': :obj:`str`, path to nifti file containing the
-              7 region parcellation fitted to thick template cortex
+              7 region :term:`parcellation` fitted to thick template cortex
               segmentations. The image contains integer values which can be
               interpreted as the indices in ``colors_7``.
             - 'thin_17': :obj:`str`, path to nifti file containing the
-              17 region parcellation fitted to thin template cortex
+              17 region :term:`parcellation` fitted to thin template cortex
               segmentations. The image contains integer values which can be
               interpreted as the indices in ``colors_17``.
             - 'thick_17': :obj:`str`, path to nifti file containing the
-              17 region parcellation fitted to thick template cortex
+              17 region :term:`parcellation` fitted to thick template cortex
               segmentations. The image contains integer values which can be
               interpreted as the indices in ``colors_17``.
             - 'colors_7': :obj:`str`, path to colormaps text file for
-              7 region parcellation. This file maps :term:`voxel` integer
+              7 region :term:`parcellation`.
+              This file maps :term:`voxel` integer
               values from ``data.thin_7`` and ``data.tick_7`` to network
               names.
             - 'colors_17': :obj:`str`, path to colormaps text file for
-              17 region parcellation. This file maps :term:`voxel` integer
+              17 region :term:`parcellation`.
+              This file maps :term:`voxel` integer
               values from ``data.thin_17`` and ``data.tick_17`` to network
               names.
             - 'anat': :obj:`str`, path to nifti file containing the anatomy

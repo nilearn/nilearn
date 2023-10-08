@@ -86,7 +86,7 @@ def check_file_content(file, term):
                 if not line.startswith("#"):
                     continue
             if check_string(line, term):
-                print(f"'{term}' in {file} at line {i+1}")
+                print(f"'{term}' in {file}:{i+1}")
                 count += 1
     return count
 
@@ -146,7 +146,7 @@ def check_description(docstring, terms):
     return text
 
 
-def check_functions(body, terms):
+def check_functions(body, terms, file):
     """Check functions of a module or methods of a class."""
     function_definitions = [
         node for node in body if isinstance(node, ast.FunctionDef)
@@ -157,7 +157,7 @@ def check_functions(body, terms):
 
         docstring = ast.get_docstring(f)
         if text := check_docstring(docstring, terms):
-            print(f"function '{f.name}' at line {f.lineno}")
+            print(f"function '{f.name}' in {file}:{f.lineno}")
             print(text)
 
 
@@ -230,9 +230,7 @@ def main():
         with open(file) as f:
             module = ast.parse(f.read())
 
-        print(f"Checking: {file}")
-
-        check_functions(module.body, terms)
+        check_functions(module.body, terms, file)
 
         class_definitions = [
             node for node in module.body if isinstance(node, ast.ClassDef)
@@ -243,9 +241,9 @@ def main():
             docstring = parse(docstring, style=DocstringStyle.NUMPYDOC)
 
             if text := check_description(docstring, terms):
-                print(f"class '{class_def.name}' at line {class_def.lineno}")
+                print(f"class '{class_def.name}' in {file}:{class_def.lineno}")
                 print(text)
-            check_functions(class_def.body, terms)
+            check_functions(class_def.body, terms, file)
 
 
 if __name__ == "__main__":

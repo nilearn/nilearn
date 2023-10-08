@@ -26,7 +26,7 @@ an explicit model of the signal. The reference paper is:
 
 """
 ###############################################################################
-# Load brain development fmri dataset
+# Load brain development fMRI dataset
 # -----------------------------------
 from nilearn import datasets
 
