@@ -306,13 +306,13 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
 
                 .. versionadded:: 0.8.0
 
-        copy : :obj:`bool`, optional
+        copy : :obj:`bool`, default=True
             If True, guarantees that output array has no memory in common with
-            input array. Default=True.
+            input array.
 
-        n_jobs : :obj:`int`, optional
+        n_jobs : :obj:`int`, default=1
             The number of cpus to use to do the computation. -1 means
-            'all cpus'. Default=1.
+            'all cpus'.
 
         Returns
         -------

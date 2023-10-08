@@ -182,21 +182,17 @@ class Contrast:
         dim : int or None, optional
             The dimension of the contrast.
 
-        dof : scalar, optional
+        dof : scalar, default=DEF_DOFMAX
             The degrees of freedom of the residuals.
-            Default=DEF_DOFMAX
 
-        contrast_type : {'t', 'F'}, optional
+        contrast_type : {'t', 'F'}, default='t'
             Specification of the contrast type.
-            Default='t'.
 
-        tiny : float, optional
+        tiny : float, default=DEF_TINY
             Small quantity used to avoid numerical underflows.
-            Default=DEF_TINY
 
-        dofmax : scalar, optional
+        dofmax : scalar, default=DEF_DOFMAX
             The maximum degrees of freedom of the residuals.
-            Default=DEF_DOFMAX.
 
         """
         if variance.ndim != 1:
@@ -243,9 +239,8 @@ class Contrast:
 
         Parameters
         ----------
-        baseline : float, optional
+        baseline : float, default=0.0
             Baseline value for the test statistic.
-            Default=0.0.
 
         Returns
         -------
@@ -279,9 +274,9 @@ class Contrast:
 
         Parameters
         ----------
-        baseline : float, optional
+        baseline : float, default=0.0
             Baseline value for the test statistic.
-            Default=0.0.
+
 
         Returns
         -------
@@ -311,9 +306,9 @@ class Contrast:
 
         Parameters
         ----------
-        baseline : float, optional
+        baseline : float, default=0.0
             Baseline value for the test statistic.
-            Default=0.0.
+
 
         Returns
         -------
@@ -342,9 +337,9 @@ class Contrast:
 
         Parameters
         ----------
-        baseline : float, optional,
+        baseline : float, optional, default=0.0
             Baseline value for the test statistic.
-            Default=0.0.
+
 
         Returns
         -------

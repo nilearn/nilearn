@@ -512,12 +512,13 @@ class FirstLevelModel(BaseGLM):
             respective run_img. Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
 
-        sample_masks : array_like, or list of array_like, optional
-            shape of array: (number of scans - number of volumes removed, )
+        sample_masks : array_like, or list of array_like, default=None
+
+        shape of array: (number of scans - number of volumes removed, ), \
+                        default=None
             Indices of retained volumes. Masks the niimgs along time/fourth
             dimension to perform scrubbing (remove volumes with high motion)
             and/or remove non-steady-state volumes.
-            Default=None.
 
             .. versionadded:: 0.9.2
 
@@ -526,12 +527,12 @@ class FirstLevelModel(BaseGLM):
             Design matrices that will be used to fit the GLM. If given it
             takes precedence over events and confounds.
 
-        bins : int, optional
+        bins : int, default=100
             Maximum number of discrete bins for the AR coef histogram.
             If an autoregressive model with order greater than one is specified
             then adaptive quantification is performed and the coefficients
             will be clustered via K-means with `bins` number of clusters.
-            Default=100.
+
 
         """
         # Initialize masker_ to None such that attribute exists
@@ -764,11 +765,11 @@ class FirstLevelModel(BaseGLM):
         stat_type : {'t', 'F'}, optional
             Type of the contrast.
 
-        output_type : str, optional
+        output_type : str, default='z_score'
             Type of the output map. Can be 'z_score', 'stat', 'p_value',
             :term:`'effect_size'<Parameter Estimate>`, 'effect_variance' or
             'all'.
-            Default='z_score'.
+
 
         Returns
         -------

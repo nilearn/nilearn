@@ -199,8 +199,8 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
 
         Parameters
         ----------
-        displayed_maps : :obj:`int`, or :obj:`list`,\
-        or :class:`~numpy.ndarray`, or "all", optional
+        displayed_maps : :obj:`int`, or :obj:`list`, \
+                         or :class:`~numpy.ndarray`, or "all", default=10
             Indicates which maps will be displayed in the HTML report.
 
                 - If "all": All maps will be displayed in the report.
@@ -231,8 +231,6 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 .. code-block:: python
 
                     masker.generate_report(16)
-
-            Default=10.
 
         Returns
         -------

@@ -569,13 +569,13 @@ class SecondLevelModel(BaseGLM):
               :class:`~pandas.DataFrame` ``map_name`` column. It has to be
               a 't' contrast.
 
-        second_level_stat_type : {'t', 'F'} or None, optional
-            Type of the second level contrast. Default=None.
+        second_level_stat_type : {'t', 'F'} or None, default=None
+            Type of the second level contrast.
 
         output_type : {'z_score', 'stat', 'p_value', \
-                :term:`'effect_size'<Parameter Estimate>`, 'effect_variance', \
-                'all'}, optional
-            Type of the output map. Default='z-score'.
+                      :term:`'effect_size'<Parameter Estimate>`, \
+                      'effect_variance', 'all'}, default='z-score'
+            Type of the output map.
 
         Returns
         -------

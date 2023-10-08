@@ -78,9 +78,9 @@ class PlotlySurfaceFigure(SurfaceFigure):
 
         Parameters
         ----------
-        renderer : :obj:`str`, optional
+        renderer : :obj:`str`, default='browser'
             Plotly renderer to be used.
-            Default='browser'.
+
         """
         if self.figure is not None:
             self.figure.show(renderer=renderer)

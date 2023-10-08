@@ -124,33 +124,30 @@ class BaseGLM(BaseEstimator, TransformerMixin, CacheMixin):
             The background image for mask and stat maps to be plotted on upon.
             To turn off background image, just pass "bg_img=None".
 
-        threshold : :obj:`float`, optional
+        threshold : :obj:`float`, default=3.09
             Cluster forming threshold in same scale as ``stat_img`` (either a
             t-scale or z-scale value). Used only if ``height_control`` is
-            ``None``. Default=3.09
+            ``None``.
 
-        alpha : :obj:`float`, optional
+        alpha : :obj:`float`, default=0.001
             Number controlling the thresholding (either a p-value or q-value).
             Its actual meaning depends on the ``height_control`` parameter.
             This function translates alpha to a z-scale threshold.
-            Default=0.001
 
-        cluster_threshold : :obj:`int`, optional
+        cluster_threshold : :obj:`int`, default=0
             Cluster size threshold, in :term:`voxels<voxel>`.
-            Default=0
 
-        height_control : :obj:`str` or None, optional
+        height_control : :obj:`str` or None, default='fpr'
             :term:`False positive control<FPR correction>` meaning of cluster
             forming threshold: 'fpr', 'fdr', 'bonferroni' or
-            ``None``. Default='fpr'.
+            ``None``.
 
-        min_distance : :obj:`float`, optional
+        min_distance : :obj:`float`, default=8.0
             For display purposes only.
-            Minimum distance between subpeaks in mm. Default=8mm.
+            Minimum distance between subpeaks in mm.
 
-        plot_type : {'slice', 'glass'}, optional
+        plot_type : {'slice', 'glass'}, default='slice'
             Specifies the type of plot to be drawn for the statistical maps.
-            Default='slice'.
 
         display_mode : {'ortho', 'x', 'y', 'z', 'xz', 'yx', 'yz', 'l', 'r',\
         'lr', 'lzr', 'lyr', 'lzry', 'lyrz'}, optional
@@ -166,12 +163,12 @@ class BaseGLM(BaseEstimator, TransformerMixin, CacheMixin):
             Default is 'z' if ``plot_type`` is 'slice'; 'ortho' if
             ``plot_type`` is 'glass'.
 
-        report_dims : Sequence[ :obj:`int`, :obj:`int` ], optional
+        report_dims : Sequence[ :obj:`int`, :obj:`int` ], default=(1600, 800)
             Specifies width, height (in pixels) of report window
             within a notebook.
             Only applicable when inserting the report into a Jupyter notebook.
             Can be set after report creation using ``report.width``,
-            ``report.height``. Default=(1600, 800).
+            ``report.height``.
 
         Returns
         -------

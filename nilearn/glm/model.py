@@ -48,9 +48,9 @@ class LikelihoodModelResults:
         cov : None or ndarray, optional
             Covariance of thetas.
 
-        dispersion : scalar, optional
+        dispersion : scalar, default=1
             Multiplicative factor in front of `cov`.
-            Default=1.
+
 
         nuisance : None of ndarray, optional
             Parameter estimates needed to compute logL.
@@ -294,10 +294,10 @@ class LikelihoodModelResults:
 
         Parameters
         ----------
-        alpha : float, optional
+        alpha : float, default=0.05
             The `alpha` level for the confidence interval.
             ie., `alpha` = .05 returns a 95% confidence interval.
-            Default=0.05.
+
 
         cols : tuple, optional
             `cols` specifies which confidence intervals to return.

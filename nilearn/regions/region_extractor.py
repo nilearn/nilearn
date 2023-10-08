@@ -295,8 +295,9 @@ class RegionExtractor(NiftiMapsMasker):
         A value used either in ratio_n_voxels or img_value or percentile
         `thresholding_strategy` based upon the choice of selection.
 
-    thresholding_strategy : :obj:`str` {'ratio_n_voxels', 'img_value',\
- 'percentile'}, optional
+    thresholding_strategy : :obj:`str` \
+                            {'ratio_n_voxels', 'img_value', 'percentile'}, \
+                            default='ratio_n_voxels'
         If default 'ratio_n_voxels', we apply thresholding that will keep
         the more intense nonzero brain voxels (denoted as n_voxels)
         across all maps (n_voxels being the number of voxels in the brain
@@ -310,10 +311,10 @@ class RegionExtractor(NiftiMapsMasker):
         intensities across all maps. A value given in `threshold`
         parameter indicates that we keep only those voxels which have
         intensities more than this value.
-        Default='ratio_n_voxels'.
     %(extractor)s
     %(smoothing_fwhm)s
-        Use this parameter to smooth an image to extract most sparser regions.
+        Use this parameter to smooth an image
+        to extract most sparser regions.
 
         .. note::
 

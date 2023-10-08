@@ -520,8 +520,8 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             (remove volumes with high motion) and/or non-steady-state volumes.
             This parameter is passed to signal.clean.
 
-        copy : :obj:`bool`, optional
-            Indicates whether a copy is returned or not. Default=True.
+        copy : :obj:`bool`, default=True
+            Indicates whether a copy is returned or not.
 
         Returns
         -------

@@ -31,9 +31,8 @@ def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
         Desired resolution, in mm, of output images.
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   optional
+                   default=0
         Random number generator, or seed.
-        Default=0.
 
     mask_dilation : :obj:`int`, default=2
         The number of times the binary :term:`dilation<Dilation>` is repeated
@@ -74,9 +73,8 @@ def generate_timeseries(n_timepoints, n_features, random_state=0):
         Number of features
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   optional
+                   default=0
         Random number generator, or seed.
-        Default=0.
 
     Returns
     -------
@@ -107,9 +105,8 @@ def generate_regions_ts(n_features,
         Number of overlapping voxels between two regions (more or less).
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   optional
+                   default=0
         Random number generator, or seed.
-        Default=0.
 
     window : :obj:`str`, default='boxcar'
         Name of a window in scipy.signal. e.g. "hamming".
@@ -168,10 +165,9 @@ def generate_maps(shape,
     window : :obj:`str`, default='boxcar'
         Name of a window in scipy.signal. Used to get non-uniform regions.
 
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
+    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance,                    optional, default=0
                    optional
         Random number generator, or seed.
-        Default=0.
 
     affine : :obj:`numpy.ndarray`, default=np.eye(4)
         Affine transformation to use.
@@ -217,9 +213,8 @@ def generate_labeled_regions(shape,
         add a background with value zero.
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   optional
+                   default=0
         Random number generator, or seed.
-        Default=0.
 
     labels : iterable, optional
         Labels to use for each zone. If provided, n_regions is unused.
@@ -298,9 +293,8 @@ def generate_fake_fmri(shape=(10, 11, 12),
         'classification' or 'regression'.
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   optional
+                   default=0
         Random number generator, or seed.
-        Default=0.
 
     Returns
     -------
@@ -397,9 +391,8 @@ def generate_fake_fmri_data_and_design(shapes,
         Affine of returned images. Must be a 4x4 array.
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   optional
+                   default=0
         Random number generator, or seed.
-        Default=0.
 
     Returns
     -------
@@ -534,9 +527,8 @@ def write_fake_bold_img(file_path,
         Affine of returned images.
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   optional
+                   default=0
         Random number generator, or seed.
-        Default=0.
 
     Returns
     -------
@@ -571,9 +563,8 @@ def generate_signals_from_precisions(precisions,
         between these two numbers. Defaults are 50 and 100.
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   optional
+                   default=0
         Random number generator, or seed.
-        Default=0.
 
     Returns
     -------

@@ -555,9 +555,9 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details
 
-        per_component : bool, optional
+        per_component : bool, default=False
             Specify whether the explained variance ratio is desired for each
-            map or for the global set of components. Default=False.
+            map or for the global set of components.
 
         Returns
         -------

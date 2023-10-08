@@ -70,8 +70,16 @@ def update_docstring(param, target_str, file, lineno):
                     update_def = True
                     update_desc = False
 
-                if update_def and line.startswith(f"    {param.arg_name}:"):
+                if update_def and line.startswith(f"    {param.arg_name} :"):
                     f.write(f"    {param.arg_name} : {type_name}\n")
+                    print(" updating type name")
+                    update_def = False
+                    update_desc = True
+
+                elif update_def and line.startswith(
+                    f"        {param.arg_name} :"
+                ):
+                    f.write(f"        {param.arg_name} : {type_name}\n")
                     print(" updating type name")
                     update_def = False
                     update_desc = True
