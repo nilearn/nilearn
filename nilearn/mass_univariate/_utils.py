@@ -349,8 +349,8 @@ def _orthonormalize_matrix(m, tol=1.0e-12):
     m : numpy array,
         The matrix to orthonormalize.
 
-    tol: float, optional
-        Tolerance parameter for nullity. Default=1e-12.
+    tol : float, default=1e-12
+        Tolerance parameter for nullity.
 
     Returns
     -------

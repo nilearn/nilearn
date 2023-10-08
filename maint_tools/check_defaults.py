@@ -50,10 +50,17 @@ def update_docstring(param, target_str, file, lineno):
 
         type_name = f"{param.type_name}, default={default}"
 
+        print(
+            f"updating '{param.arg_name}' in {file.resolve()}:{lineno}",
+            f"with '{default}'",
+        )
+
         with open(file) as f:
             content = f.readlines()
 
         with open(file, "w") as f:
+            update_def = False
+            update_desc = False
             # skip the line from beginning of file to lineno
             for i, line in enumerate(content):
                 if i < lineno:
@@ -63,21 +70,21 @@ def update_docstring(param, target_str, file, lineno):
                     update_def = True
                     update_desc = False
 
-                if update_def and line.startswith(
-                    f"    {param.arg_name} : {param.type_name}"
-                ):
+                if update_def and line.startswith(f"    {param.arg_name}:"):
                     f.write(f"    {param.arg_name} : {type_name}\n")
+                    print(" updating type name")
                     update_def = False
                     update_desc = True
 
                 elif update_desc:
                     if line == f"        {target_str}{default}.\n":
                         f.write("")
+                        print(" updating description")
                         update_desc = False
-                        continue
                     elif line.endswith(f" {target_str}{default}.\n"):
                         f.write(line.replace(f" {target_str}{default}.", ""))
                         update_desc = False
+                        print(" updating description")
                     else:
                         f.write(line)
 
@@ -91,7 +98,8 @@ def check_functions(body, file):
         if isinstance(node, ast.FunctionDef):
             if SKIP_PRIVATE and node.name.startswith("_"):
                 continue
-            print(f"function: '{node.name}' in {file.resolve()}:{node.lineno}")
+            # print(f"function: '{node.name}' in "
+            # "{file.resolve()}:{node.lineno}")
             docstring = ast.get_docstring(node)
             docstring = check_docstring(docstring, file, node.lineno)
 
@@ -124,10 +132,10 @@ def main():
         ]
 
         for class_def in class_definitions:
-            print(
-                f"class: '{class_def.name}' "
-                f"in {file.resolve()}:{class_def.lineno}"
-            )
+            # print(
+            #     f"class: '{class_def.name}' "
+            #     f"in {file.resolve()}:{class_def.lineno}"
+            # )
 
             docstring = ast.get_docstring(class_def)
             check_docstring(docstring, file, class_def.lineno)

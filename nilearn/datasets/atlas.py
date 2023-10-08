@@ -181,9 +181,8 @@ def fetch_atlas_craddock_2012(
     %(verbose)s
     homogeneity: :obj:`str`, optional
         The choice of the homogeneity ('spatial' or 'temporal' or 'random')
-    grp_mean: :obj:`bool`, optional
+    grp_mean : :obj:`bool`, default=True
         The choice of the parcellation (with group_mean or without)
-        Default=True.
 
     Returns
     -------
@@ -955,9 +954,8 @@ def fetch_atlas_smith_2009(
     dimension: :obj:`int`, optional
         Number of dimensions in the dictionary. Valid resolutions
         available are {10, 20, 70}.
-    resting: :obj:`bool`, optional
+    resting : :obj:`bool`, default=True
         Either to fetch the resting-:term:`fMRI` or BrainMap components
-        Default=True.
 
     Returns
     -------
