@@ -170,7 +170,7 @@ def make_glm_report(
     Returns
     -------
     report_text : HTMLReport Object
-        Contains the HTML code for the GLM Report.
+        Contains the HTML code for the :term:`GLM` Report.
 
     """
     if bg_img == "MNI152TEMPLATE":

@@ -876,7 +876,7 @@ def create_fake_bids_dataset(
     random_state=0,
     entities=None,
 ):
-    """Create a fake :term:`bids<BIDS>` dataset directory with dummy files.
+    """Create a fake :term:`BIDS` dataset directory with dummy files.
 
     Returns fake dataset directory name.
 
@@ -929,7 +929,7 @@ def create_fake_bids_dataset(
         Random number generator, or seed.
 
     entities : :obj:`dict`, optional
-        Extra entity to add to the BIDS filename with a list of values.
+        Extra entity to add to the :term:`BIDS` filename with a list of values.
         For example, if you want to add an 'echo' entity
         with values '1' for some files and '1' for others,
         you would pass: ``entities={"echo": ['1', '2']}``.

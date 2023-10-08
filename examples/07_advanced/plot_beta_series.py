@@ -279,8 +279,8 @@ fig.show()
 # that the number of trials should always be less than the number of volumes
 # in a functional MRI run.
 #
-# Two common applications of beta series are to functional connectivity and
-# decoding analyses.
+# Two common applications of beta series are
+# to :term:`functional connectivity`` and decoding analyses.
 # For an example of a beta series applied to decoding, see
 # :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_glm_decoding.py`.
 # Here, we show how the beta series can be applied to functional connectivity

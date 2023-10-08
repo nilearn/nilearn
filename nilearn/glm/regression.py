@@ -100,13 +100,14 @@ class OLSModel:
         r"""Return the value of the loglikelihood function at beta.
 
         Given the whitened design matrix, the loglikelihood is evaluated
-        at the parameter vector, beta, for the dependent variable, Y
+        at the parameter vector, :term:`beta<Beta>`,
+        for the dependent variable, Y
         and the nuisance parameter, sigma :footcite:`Greene2003`.
 
         Parameters
         ----------
         beta : ndarray
-            The parameter estimates.  Must be of length df_model.
+            The parameter estimates.  Must be of length ``df_model``.
 
         Y : ndarray
             The dependent variable
@@ -368,7 +369,7 @@ class RegressionResults(LikelihoodModelResults):
 
 class SimpleRegressionResults(LikelihoodModelResults):
     """Contain only information of the model fit necessary \
-    for contrast computation.
+    for :term:`contrast` computation.
 
     Its intended to save memory when details of the model are unnecessary.
 

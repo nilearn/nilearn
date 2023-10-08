@@ -32,7 +32,7 @@ allen = datasets.fetch_atlas_allen_2011()
 # ICBM tissue probability
 icbm = datasets.fetch_icbm152_2009()
 
-# Smith ICA BrainMap 2009
+# Smith :term:`ICA` BrainMap 2009
 smith_bm20 = datasets.fetch_atlas_smith_2009(resting=False, dimension=20)[
     "maps"
 ]
@@ -70,7 +70,7 @@ plotting.show()
 #     harvard_oxford = datasets.fetch_atlas_harvard_oxford("cort-prob-2mm")
 #     harvard_oxford_sub = datasets.fetch_atlas_harvard_oxford("sub-prob-2mm")
 #
-#     # Smith ICA Atlas and Brain Maps 2009
+#     # Smith :term:`ICA` Atlas and Brain Maps 2009
 #     smith_rsn10 = datasets.fetch_atlas_smith_2009(
 #         resting=True, dimension=10
 #     )["maps"]

@@ -25,7 +25,7 @@ print(__doc__)
 
 
 #########################################################################
-# Fetch the SPM multimodal_faces data.
+# Fetch the :term:`SPM` multimodal_faces data.
 from nilearn.datasets import fetch_spm_multimodal_fmri
 
 subject_data = fetch_spm_multimodal_fmri()
@@ -123,8 +123,8 @@ contrasts = {
 }
 
 #########################################################################
-# Fit the GLM for the 2 sessions by specifying a FirstLevelModel and then
-# fitting it.
+# Fit the :term:`GLM` for the 2 sessions
+# by specifying a FirstLevelModel and then fitting it.
 from nilearn.glm.first_level import FirstLevelModel
 
 print("Fitting a GLM")

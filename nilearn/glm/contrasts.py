@@ -18,7 +18,8 @@ DEF_DOFMAX = 1e10
 
 
 def expression_to_contrast_vector(expression, design_columns):
-    """Convert a string describing a contrast to a contrast vector.
+    """Convert a string describing a :term:`contrast` \
+       to a :term:`contrast` vector.
 
     Parameters
     ----------
@@ -47,7 +48,7 @@ def expression_to_contrast_vector(expression, design_columns):
 
 
 def compute_contrast(labels, regression_result, con_val, contrast_type=None):
-    """Compute the specified contrast given an estimated glm.
+    """Compute the specified :term:`contrast` given an estimated glm.
 
     Parameters
     ----------
@@ -59,16 +60,18 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
         values are RegressionResults instances corresponding to the voxels.
 
     con_val : numpy.ndarray of shape (p) or (q, p)
-        Where q = number of contrast vectors and p = number of regressors.
+        Where q = number of :term:`contrast` vectors
+        and p = number of regressors.
 
     contrast_type : {None, 't', 'F'}, optional
-        Type of the contrast.  If None, then defaults to 't' for 1D
-        `con_val` and 'F' for 2D `con_val`
+        Type of the :term:`contrast`.
+        If None, then defaults to 't' for 1D `con_val`
+        and 'F' for 2D `con_val`.
 
     Returns
     -------
     con : Contrast instance,
-        Yields the statistics of the contrast
+        Yields the statistics of the :term:`contrast`
         (:term:`effects<Parameter Estimate>`, variance, p-values).
 
     """
@@ -148,7 +151,8 @@ def _compute_fixed_effect_contrast(
 
 
 class Contrast:
-    """The contrast class handles the estimation of statistical contrasts \
+    """The contrast class handles the estimation \
+    of statistical :term:`contrasts<contrast>` \
     on a given model: student (t) or Fisher (F).
 
     The important feature is that it supports addition,
@@ -156,7 +160,8 @@ class Contrast:
 
     The current implementation is meant to be simple,
     and could be enhanced in the future on the computational side
-    (high-dimensional F contrasts may lead to memory breakage).
+    (high-dimensional F :term:`contrasts<contrast>`
+    may lead to memory breakage).
     """
 
     def __init__(
@@ -174,20 +179,20 @@ class Contrast:
         Parameters
         ----------
         effect : array of shape (contrast_dim, n_voxels)
-            The effects related to the contrast.
+            The effects related to the :term:`contrast`.
 
         variance : array of shape (n_voxels)
             The associated variance estimate.
 
         dim : int or None, optional
-            The dimension of the contrast.
+            The dimension of the :term:`contrast`.
 
         dof : scalar, optional
             The degrees of freedom of the residuals.
             Default=DEF_DOFMAX
 
         contrast_type : {'t', 'F'}, optional
-            Specification of the contrast type.
+            Specification of the :term:`contrast` type.
             Default='t'.
 
         tiny : float, optional
@@ -427,18 +432,19 @@ def compute_fixed_effects(
         The input variance images.
 
     mask : Nifti1Image or NiftiMasker instance or None, optional
-        Mask image. If None, it is recomputed from contrast_imgs.
+        Mask image. If ``None``, it is recomputed from ``contrast_imgs``.
 
     precision_weighted : Bool, optional
         Whether fixed effects estimates should be weighted by inverse
         variance or not. Default=False.
 
     dofs : array-like or None, default=None
-        the degrees of freedom of the models with len = len(variance_imgs)
-        when None, it is assumed that the degrees of freedom are 100 per input.
+        the degrees of freedom of the models with ``len = len(variance_imgs)``
+        when ``None``,
+        it is assumed that the degrees of freedom are 100 per input.
 
     return_z_score: Bool, default=False
-        Whether fixed_fx_z_score_img should be output or not.
+        Whether ``fixed_fx_z_score_img`` should be output or not.
 
     Returns
     -------

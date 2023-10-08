@@ -1,5 +1,8 @@
-"""Small script to check if some words in the documentation \
-   are not linked to the glossary."""
+"""Check if some words are not linked to the glossary.
+
+Check rst files in doc, py files in examples and py files in nilearn.
+
+"""
 from __future__ import annotations
 
 import ast
@@ -39,6 +42,10 @@ def get_terms_in_glossary() -> list[str]:
 
             if track and line.startswith(".."):
                 break
+
+    # Also take the lower case version of terms
+    terms.extend([term.lower() for term in terms])
+    terms = list(set(terms))
 
     return terms
 
@@ -103,6 +110,17 @@ def check_docstring(docstring, terms):
         ]:
             text += f" terms: '{', '.join(tmp)}' in param '{param.arg_name}'\n"
 
+    for return_arg in docstring.many_returns:
+        if tmp := [
+            term
+            for term in terms
+            if check_string(return_arg.description, term)
+        ]:
+            text += (
+                f" terms: '{', '.join(tmp)}' "
+                "in return arg param '{return_arg.return_name}'\n"
+            )
+
     return text
 
 
@@ -123,7 +141,7 @@ def check_description(docstring, terms):
             for term in terms
             if check_string(docstring.long_description, term)
         ]:
-            text += f" terms: '{', '.join(tmp)}' in short description\n"
+            text += f" terms: '{', '.join(tmp)}' in long description\n"
 
     return text
 
@@ -212,7 +230,7 @@ def main():
         with open(file) as f:
             module = ast.parse(f.read())
 
-        print(f"{file}")
+        print(f"Checking: {file}")
 
         check_functions(module.body, terms)
 

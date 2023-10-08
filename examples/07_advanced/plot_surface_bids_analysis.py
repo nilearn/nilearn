@@ -79,8 +79,8 @@ from nilearn.datasets import fetch_surf_fsaverage
 fsaverage = fetch_surf_fsaverage(mesh='fsaverage5')
 
 #########################################################################
-# The projection function simply takes the fMRI data and the mesh.
-# Note that those correspond spatially, as they are both in MNI space.
+# The projection function simply takes the :term:`fMRI`` data and the mesh.
+# Note that those correspond spatially, as they are both in :term:`MNI` space.
 import numpy as np
 
 from nilearn import surface

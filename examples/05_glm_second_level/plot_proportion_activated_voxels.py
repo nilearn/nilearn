@@ -18,7 +18,8 @@ Inference for brain imaging. Neuroimage. 2018 Nov 1;181:786-796. doi:
 # --------------
 # We download a list of left vs right button press contrasts from a
 # localizer dataset. Note that we fetch individual t-maps that represent the
-# BOLD activity estimate divided by the uncertainty about this estimate.
+# :term:`BOLD` activity estimate divided
+# by the uncertainty about this estimate.
 from nilearn.datasets import fetch_localizer_contrasts
 
 n_subjects = 16

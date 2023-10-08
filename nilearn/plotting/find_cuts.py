@@ -512,7 +512,8 @@ def find_parcellation_cut_coords(
 
 
 def find_probabilistic_atlas_cut_coords(maps_img):
-    """Return coordinates of center probabilistic atlas 4D image.
+    """Return coordinates of center \
+       :term:`probabilistic atlas<Probabilistic atlas>` 4D image.
 
     Parameters
     ----------

@@ -286,7 +286,7 @@ plt.show()
 # ---------------------------------------
 #
 # This is the filter used to convert the event sequence into a
-# reference BOLD signal for the design matrix.
+# reference :term:`BOLD` signal for the design matrix.
 #
 # The first thing that we can do is to change the default model (the
 # so-called Glover hrf) for the so-called canonical model of SPM
@@ -392,9 +392,9 @@ plt.show()
 # to use an autoregressive model with a higher order,
 # for example a third order autoregressive model---aka ar(3).
 #
-# First we recompute using the `spm + derivative` hrf model, the
-# slice_time_ref parameter chosen above, and explicitly set
-# the noise model to be ar(1).
+# First we recompute using the `spm + derivative` :term:`HRF` model,
+# the slice_time_ref parameter chosen above,
+# and explicitly set the noise model to be ar(1).
 
 first_level_model = FirstLevelModel(
     t_r, slice_time_ref=0.5, hrf_model="spm + derivative", noise_model="ar1"
@@ -531,14 +531,13 @@ plt.show()
 # Masking consists in selecting the region of the image on which the
 # model is run: it is useless to run it outside of the brain.
 #
-# The approach taken by FirstLeveModel is to estimate it from the fMRI
+# The approach taken by FirstLeveModel is to estimate it from the :term:`fMRI`
 # data itself when no mask is explicitly provided.  Since the data
-# have been resampled into MNI space, we can use instead a mask of the
-# grey matter in MNI space. The benefit is that it makes voxel-level
+# have been resampled into :term:`MNI` space, we can use instead a mask of the
+# grey matter in :term:`MNI` space. The benefit is that it makes voxel-level
 # comparisons easier across subjects and datasets, and removes
-# non-grey matter regions, in which no BOLD signal is expected.  The
-# downside is that the mask may not fit very well this particular
-# data.
+# non-grey matter regions, in which no :term:`BOLD` signal is expected.
+# The downside is that the mask may not fit very well this particular data.
 from nilearn.datasets import fetch_icbm152_brain_gm_mask
 from nilearn.plotting import plot_roi
 

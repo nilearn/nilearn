@@ -39,19 +39,20 @@ fmri_filename = haxby_dataset.func[0]
 print(f"First subject functional nifti images (4D) are at: {fmri_filename}")
 
 # %%
-# Visualizing the fmri volume
-# ...........................
+# Visualizing the :term:`fMRI` volume
+# ...................................
 #
-# One way to visualize a :term:`fmri<fMRI>` volume is
+# One way to visualize a :term:`fMRI` volume is
 # using :func:`nilearn.plotting.plot_epi`.
-# We will visualize the previously fetched :term:`fmri<fMRI>`
+# We will visualize the previously fetched :term:`fMRI`
 # data from Haxby dataset.
 #
-# Because :term:`fmri<fMRI>` data are 4D (they consist of many 3D EPI images),
+# Because :term:`fMRI` data are 4D
+# (they consist of many 3D :term:`EPI` images),
 # we cannot plot them directly using :func:`nilearn.plotting.plot_epi`
 # (which accepts just 3D input).
 # Here we are using :func:`nilearn.image.mean_img` to
-# extract a single 3D EPI image from the :term:`fmri<fMRI>` data.
+# extract a single 3D :term:`EPI` image from the :term:`fMRI` data.
 #
 from nilearn import plotting
 from nilearn.image import mean_img
@@ -106,15 +107,15 @@ print(conditions)
 # As we can see from the targets above, the experiment contains many
 # conditions. As a consequence, the data is quite big. Not all of this data
 # has an interest to us for decoding,
-# so we will keep only :term:`fmri<fMRI>` signals
+# so we will keep only :term:`fMRI` signals
 # corresponding to faces or cats.
 # We create a mask of the samples belonging to
 # the condition; this mask is then applied
-# to the :term:`fmri<fMRI>` data to restrict the
+# to the :term:`fMRI` data to restrict the
 # classification to the face vs cat discrimination.
 #
 # The input data will become much smaller
-# (i.e. :term:`fmri<fMRI>` signal is shorter):
+# (i.e. :term:`fMRI` signal is shorter):
 condition_mask = conditions.isin(["face", "cat"])
 
 # %%

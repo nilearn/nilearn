@@ -42,7 +42,7 @@ labels = dataset.labels
 
 print(f"Atlas ROIs are located in nifti image (4D) at: {atlas_filename}")
 
-# One subject of brain development fmri data
+# One subject of brain development :term:`fMRI` data
 data = datasets.fetch_development_fmri(n_subjects=1, reduce_confounds=True)
 fmri_filenames = data.func[0]
 reduced_confounds = data.confounds[0]  # This is a preselected set of confounds

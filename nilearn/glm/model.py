@@ -110,23 +110,25 @@ class LikelihoodModelResults:
         return _t
 
     def vcov(self, matrix=None, column=None, dispersion=None, other=None):
-        """Return Variance/covariance matrix of linear contrast.
+        """Return Variance/covariance matrix of linear :term:`contrast`.
 
         Parameters
         ----------
         matrix : (dim, self.theta.shape[0]) array, optional
-            Numerical contrast specification, where ``dim`` refers to the
-            'dimension' of the contrast i.e. 1 for t contrasts, 1 or more
-            for F contrasts.
+            Numerical :term:`contrast` specification,
+            where ``dim`` refers to the 'dimension' of the contrast
+            i.e. 1 for t contrasts, 1
+            or more for F :term:`contrasts<contrast>`.
 
         column : int, optional
-            Alternative way of specifying contrasts (column index).
+            Alternative way of specifying :term:`contrasts<contrast>`
+            (column index).
 
         dispersion : float or (n_voxels,) array, optional
             Value(s) for the dispersion parameters.
 
         other : (dim, self.theta.shape[0]) array, optional
-            Alternative contrast specification (?).
+            Alternative :term:`contrast` specification (?).
 
         Returns
         -------
@@ -219,9 +221,9 @@ class LikelihoodModelResults:
         )
 
     def Fcontrast(self, matrix, dispersion=None, invcov=None):
-        """Compute an Fcontrast for a contrast matrix `matrix`.
+        """Compute an F contrast for a :term:`<contrast>` matrix ``matrix``.
 
-        Here, `matrix` M is assumed to be non-singular. More precisely
+        Here, ``matrix`` M is assumed to be non-singular. More precisely
 
         .. math::
 
@@ -232,7 +234,7 @@ class LikelihoodModelResults:
         There can be problems in non-OLS models where
         the rank of the covariance of the noise is not full.
 
-        See the contrast module to see how to specify contrasts.
+        See the :mod:`contrasts` module to see how to specify contrasts.
         In particular, the matrices from these contrasts will always be
         non-singular in the sense above.
 
@@ -354,10 +356,10 @@ class LikelihoodModelResults:
 
 
 class TContrastResults:
-    """Results from a t contrast of coefficients in a parametric model.
+    """Results from a t :term:`contrast` of coefficients in a parametric model.
 
     The class does nothing.
-    It is a container for the results from T contrasts,
+    It is a container for the results from T :term:`contrasts<contrast>`,
     and returns the T-statistics when np.asarray is called.
 
     """
@@ -384,10 +386,11 @@ class TContrastResults:
 
 
 class FContrastResults:
-    """Results from an F contrast of coefficients in a parametric model.
+    """Results from an F :term:`contrasts` of coefficients \
+       in a parametric model.
 
     The class does nothing.
-    It is a container for the results from F contrasts,
+    It is a container for the results from F :term:`contrasts<contrast>`,
     and returns the F-statistics when np.asarray is called.
     """
 

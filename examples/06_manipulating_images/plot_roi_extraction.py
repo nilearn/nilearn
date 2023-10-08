@@ -214,8 +214,9 @@ plot_stat_map(
 )
 
 ##############################################################################
-# We can post-process the results obtained with simple operations such as mask
-# intersection and dilation to regularize the mask definition.
+# We can post-process the results obtained with simple operations
+# such as mask intersection and :term:`dilation<Dilation>`
+# to regularize the mask definition.
 # The idea of using these operations are to have more compact or sparser blobs.
 
 ##############################################################################

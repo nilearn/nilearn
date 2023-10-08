@@ -149,7 +149,7 @@ import matplotlib.pyplot as plt
 from nilearn.image import get_data
 from nilearn.plotting import plot_stat_map, show
 
-# Use the fmri mean image as a surrogate of anatomical data
+# Use the :term:`fMRI` mean image as a surrogate of anatomical data
 mean_fmri_img = image.mean_img(func_filename)
 
 threshold = -np.log10(0.1)  # 10% corrected

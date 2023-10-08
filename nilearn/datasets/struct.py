@@ -395,7 +395,8 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
         included. Default=0.2
 
     n_iter: int, optional, Default = 2
-        Number of repetitions of dilation and erosion steps performed in
+        Number of repetitions of :term:`dilation<Dilation>`
+        and :term:`erosion<Erosion>` steps performed in
         scipy.ndimage.binary_closing function.
 
     Returns
@@ -447,7 +448,8 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
         included. Default=0.2
 
     n_iter: int, optional, Default = 2
-        Number of repetitions of dilation and erosion steps performed in
+        Number of repetitions of :term:`dilation<Dilation>`
+        and :term:`erosion<Erosion>` steps performed in
         scipy.ndimage.binary_closing function.
 
     Returns
@@ -499,7 +501,8 @@ def fetch_icbm152_brain_gm_mask(
 
     %(resume)s
     n_iter: int, optional, Default = 2
-        Number of repetitions of dilation and erosion steps performed in
+        Number of repetitions of :term:`dilation<Dilation>`
+        and :term:`erosion<Erosion>` steps performed in
         scipy.ndimage.binary_closing function.
 
         .. versionadded:: 0.8.1

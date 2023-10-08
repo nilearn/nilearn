@@ -728,13 +728,13 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
                     colorbar=False,
                     cmap=plt.cm.gist_rainbow, vmin=None, vmax=None,
                     alpha=0.7, radiological=False, **kwargs):
-    """Plot the probabilistic atlases onto the anatomical image \
+    """Plot a :term:`Probabilistic atlas` onto the anatomical image \
     by default :term:`MNI` template.
 
     Parameters
     ----------
     maps_img : Niimg-like object or the filename
-        4D image of the probabilistic atlas maps.
+        4D image of the :term:`Probabilistic atlas` maps.
     %(bg_img)s
         If nothing is specified, the MNI152 template will be used.
         To turn off background image, just pass "bg_img=False".
@@ -1022,7 +1022,8 @@ def plot_glass_brain(stat_map_img,
     ----------
     stat_map_img : Niimg-like object
         See :ref:`extracting_data`.
-        The statistical map image. It needs to be in MNI space
+        The statistical map image. 
+        It needs to be in :term:`MNI` space
         in order to align with the brain schematics.
     %(output_file)s
     display_mode : string, optional

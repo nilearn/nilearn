@@ -163,7 +163,8 @@ def fetch_atlas_craddock_2012(
     homogeneity=None,
     grp_mean=True,
 ):
-    """Download and return file names for the Craddock 2012 parcellation.
+    """Download and return file names \
+       for the Craddock 2012 :term:`parcellation`.
 
     This function returns a :term:`probabilistic atlas<Probabilistic atlas>`.
     The provided images are in MNI152 space. All images are 4D with
@@ -172,7 +173,7 @@ def fetch_atlas_craddock_2012(
     See :footcite:`CreativeCommons` for the licence.
 
     See :footcite:`Craddock2012` and :footcite:`nitrcClusterROI`
-    for more information on this parcellation.
+    for more information on this :term:`parcellation`.
 
     Parameters
     ----------
@@ -183,7 +184,7 @@ def fetch_atlas_craddock_2012(
     homogeneity: :obj:`str`, optional
         The choice of the homogeneity ('spatial' or 'temporal' or 'random')
     grp_mean: :obj:`bool`, optional
-        The choice of the parcellation (with group_mean or without)
+        The choice of the :term:`parcellation` (with group_mean or without)
         Default=True.
 
     Returns
@@ -192,15 +193,18 @@ def fetch_atlas_craddock_2012(
         Dictionary-like object, keys are:
 
             - 'scorr_mean': obj:`str`, path to nifti file containing the
-              group-mean parcellation when emphasizing spatial homogeneity.
+              group-mean :term:`parcellation`
+              when emphasizing spatial homogeneity.
             - 'tcorr_mean': obj:`str`, path to nifti file containing the
               group-mean parcellation when emphasizing temporal homogeneity.
             - 'scorr_2level': obj:`str`, path to nifti file containing the
-              parcellation obtained when emphasizing spatial homogeneity.
+              :term:`parcellation` obtained
+              when emphasizing spatial homogeneity.
             - 'tcorr_2level': obj:`str`, path to nifti file containing the
-              parcellation obtained when emphasizing temporal homogeneity.
+              :term:`parcellation` obtained
+              when emphasizing temporal homogeneity.
             - 'random': obj:`str`, path to nifti file containing the
-              parcellation obtained with random clustering.
+              :term:`parcellation` obtained with random clustering.
             - 'description': :obj:`str`, general description of the dataset.
 
     Warns
@@ -413,7 +417,8 @@ def fetch_atlas_harvard_oxford(
         number of regions.
 
         .. note::
-            Not implemented for full probabilistic atlas (*-prob-* atlases).
+            Not implemented
+            for full :term:`Probabilistic atlas` (*-prob-* atlases).
 
         Default=False.
     %(resume)s
@@ -1069,7 +1074,7 @@ def fetch_atlas_smith_2009(
 
 @fill_doc
 def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
-    """Download and return file names for the Yeo 2011 parcellation.
+    """Download and return file names for the Yeo 2011 :term:`parcellation`.
 
     This function retrieves the so-called yeo
     :term:`deterministic atlases<Deterministic atlas>`. The provided images
@@ -1179,7 +1184,7 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
 def fetch_atlas_aal(
     version="SPM12", data_dir=None, url=None, resume=True, verbose=1
 ):
-    """Download and returns the AAL template for SPM 12.
+    """Download and returns the AAL template for :term:`SPM` 12.
 
     This :term:`Deterministic atlas` is the result of an automated anatomical
     parcellation of the spatially normalized single-subject high-resolution

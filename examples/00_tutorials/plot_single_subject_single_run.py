@@ -95,7 +95,8 @@ from nilearn.glm.first_level import FirstLevelModel
 # * noise_model='ar1' specifies the noise covariance model: a lag-1 dependence
 # * standardize=False means that we do not want
 #   to rescale the time series to mean 0, variance 1
-# * hrf_model='spm' means that we rely on the SPM "canonical hrf" model
+# * hrf_model='spm' means that we rely
+#   on the :term:`SPM`` "canonical hrf" model
 #   (without time or dispersion derivatives)
 # * drift_model='cosine' means that we model the signal drifts
 #   as slow oscillating time functions

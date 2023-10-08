@@ -64,10 +64,10 @@ report
 # Computing a mask from raw EPI data
 # ----------------------------------
 #
-# From raw EPI data, there is no uniform background, and a different
+# From raw :term:`EPI` data, there is no uniform background, and a different
 # strategy is necessary
 
-# Load movie watching based brain development fmri dataset
+# Load movie watching based brain development :term:`fMRI` dataset
 dataset = datasets.fetch_development_fmri(n_subjects=1)
 epi_filename = dataset.func[0]
 
@@ -81,8 +81,8 @@ mean_img = image.mean_img(epi_img)
 plot_epi(mean_img, title="Mean EPI image")
 
 # %%
-# Simple mask extraction from EPI images
-# We need to specify an 'epi' mask_strategy, as this is raw EPI data
+# Simple mask extraction from :term:`EPI` images
+# We need to specify an 'epi' mask_strategy, as this is raw :term:`EPI` data
 masker = NiftiMasker(mask_strategy="epi")
 masker.fit(epi_img)
 report = masker.generate_report()
@@ -93,10 +93,11 @@ report
 #
 # We can fine-tune the outline of the mask by increasing the number of
 # opening steps (`opening=10`) using the `mask_args` argument of the
-# NiftiMasker. This effectively performs erosion and dilation
-# operations on the outer voxel layers of the mask, which can for example
-# remove remaining
-# skull parts in the image.
+# NiftiMasker.
+# This effectively performs :term:`erosion<Erosion>`
+# and :term:`dilation<Dilation>` operations
+# on the outer voxel layers of the mask,
+# which can for example remove remaining skull parts in the image.
 masker = NiftiMasker(mask_strategy="epi", mask_args=dict(opening=10))
 masker.fit(epi_img)
 report = masker.generate_report()
@@ -111,7 +112,7 @@ report
 # the masking algorithm will search for its threshold (0 being the
 # minimum of the image and 1 the maximum). We will here increase the
 # lower cutoff to enforce selection of those voxels that appear as bright
-# in the EPI image.
+# in the :term:`EPI` image.
 
 masker = NiftiMasker(
     mask_strategy="epi",
@@ -125,8 +126,9 @@ report
 # Computing the mask from the MNI template
 # ----------------------------------------
 #
-# A mask can also be computed from the MNI template. In this case, it is
-# resampled to the target image. Three options are available:
+# A mask can also be computed from the :term:`MNI` template.
+# In this case, it is resampled to the target image.
+# Three options are available:
 # 'whole-brain-template', 'gm-template', and 'wm-template' depending on whether
 # the whole-brain, gray matter, or white matter template should be used.
 

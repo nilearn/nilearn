@@ -67,7 +67,7 @@ fsaverage = nilearn.datasets.fetch_surf_fsaverage()
 
 ###############################################################################
 # The projection function simply takes the fMRI data and the mesh.
-# Note that those correspond spatially, are they are both in MNI space.
+# Note that those correspond spatially, are they are both in :term:`MNI` space.
 from nilearn import surface
 
 texture = surface.vol_to_surf(fmri_img, fsaverage.pial_right)
@@ -86,7 +86,8 @@ frame_times = t_r * (np.arange(n_scans) + .5)
 ###############################################################################
 # Create the design matrix.
 #
-# We specify an hrf model containing the Glover model and its time derivative
+# We specify an :term:`HRF` model
+# containing the Glover model and its time derivative
 # The drift model is implicitly a cosine basis with a period cutoff at 128s.
 from nilearn.glm.first_level import make_first_level_design_matrix
 
