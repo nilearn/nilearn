@@ -591,13 +591,13 @@ def clean(
         Timeseries. Must have shape (instant number, features number).
         This array is not modified.
 
-    runs : :class:`numpy.ndarray`, optional
+    runs : :class:`numpy.ndarray`, default=None
         Add a run level to the cleaning process. Each run will be
         cleaned independently. Must be a 1D array of n_samples elements.
-        Default is None.
 
-    confounds : :class:`numpy.ndarray`, :obj:`str`, :class:`pathlib.Path`,\
-    :class:`pandas.DataFrame` or :obj:`list` of confounds timeseries.
+    confounds : :class:`numpy.ndarray`, :obj:`str`, :class:`pathlib.Path`, \
+                :class:`pandas.DataFrame` \
+                or :obj:`list` of confounds timeseries, default=None
         Shape must be (instant number, confound number), or just
         (instant number,).
         The number of time instants in ``signals`` and ``confounds`` must be
@@ -606,12 +606,12 @@ def clean(
         containing signals as columns, with an optional one-line header.
         If a list is provided, all confounds are removed from the input
         signal, as if all were in the same array.
-        Default is None.
 
     sample_mask : None, Any type compatible with numpy-array indexing, \
-        or :obj:`list` of
-        shape: (number of scans - number of volumes removed, ) for explicit \
-            index, or (number of scans, ) for binary mask
+                  or :obj:`list` of
+                  shape: (number of scans - number of volumes removed, ) \
+                  for explicit index, or (number of scans, ) for binary mask, \
+                  default=None
         Masks the niimgs along time/fourth dimension to perform scrubbing
         (remove volumes with high motion) and/or non-steady-state volumes.
         When passing binary mask with boolean values, ``True`` refers to
@@ -622,7 +622,6 @@ def clean(
 
             .. versionadded:: 0.8.0
 
-        Default is None.
     %(t_r)s
         Default=2.5.
     filter : {'butterworth', 'cosine', False}, default='butterworth'

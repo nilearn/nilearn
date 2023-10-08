@@ -155,11 +155,10 @@ def make_glm_report(
         'ortho', 'x', 'y', 'z', 'xz', 'yx', 'yz',
         'l', 'r', 'lr', 'lzr', 'lyr', 'lzry', 'lyrz'.
 
-    report_dims : Sequence[int, int], optional
+    report_dims : Sequence[int, int], default=(1600, 800)
         Specifies width, height (in pixels) of report window within a notebook.
         Only applicable when inserting the report into a Jupyter notebook.
         Can be set after report creation using report.width, report.height.
-        Default is (1600, 800) pixels.
 
     Returns
     -------
@@ -518,9 +517,8 @@ def _make_stat_maps(model, contrasts, output_type="z_score"):
         & second_level_contrast for a SecondLevelModel
         (nilearn.glm.second_level.SecondLevelModel.compute_contrast)
 
-    output_type : :obj:`str`, optional
+    output_type : :obj:`str`, default='z_score'
         The type of statistical map to retain from the contrast.
-        Default is 'z_score'.
 
         .. versionadded:: 0.9.2
 
@@ -719,9 +717,9 @@ def _make_stat_maps_contrast_clusters(
         Whether to employ two-sided thresholding or to evaluate positive values
         only.
 
-    min_distance : float
+    min_distance : float, default=8
         For display purposes only.
-        Minimum distance between subpeaks in mm. Default is 8 mm.
+        Minimum distance between subpeaks in mm.
 
     bg_img : Niimg-like object
         Only used when plot_type is 'slice'.
@@ -835,9 +833,9 @@ def _clustering_params_to_dataframe(
     cluster_threshold : int or None
         Cluster size threshold, in voxels.
 
-    min_distance : float
+    min_distance : float, default=8
         For display purposes only.
-        Minimum distance between subpeaks in mm. Default is 8 mm.
+        Minimum distance between subpeaks in mm.
 
     height_control : string or None
         False positive control meaning of cluster forming

@@ -1138,7 +1138,7 @@ class Decoder(_BaseDecoder):
             :func:`nilearn.masking.compute_epi_mask`, or
             :func:`nilearn.masking.compute_brain_mask`.
 
-        Default is 'background'.
+        Default='background'.
     %(memory)s
     %(memory_level)s
     %(n_jobs)s
@@ -1273,7 +1273,7 @@ class DecoderRegressor(_BaseDecoder):
             :func:`nilearn.masking.compute_epi_mask`, or
             :func:`nilearn.masking.compute_brain_mask`.
 
-        Default is 'background'.
+        Default='background'.
     %(memory)s
     %(memory_level)s
     %(n_jobs)s
@@ -1418,7 +1418,7 @@ class FREMRegressor(_BaseDecoder):
             :func:`nilearn.masking.compute_epi_mask`, or
             :func:`nilearn.masking.compute_brain_mask`.
 
-        Default is 'background'.
+        Default='background'.
     %(memory)s
     %(memory_level)s
     %(n_jobs)s
@@ -1571,7 +1571,7 @@ class FREMClassifier(_BaseDecoder):
             :func:`nilearn.masking.compute_epi_mask`, or
             :func:`nilearn.masking.compute_brain_mask`.
 
-        Default is 'background'.
+        Default='background'.
     %(memory)s
     %(memory_level)s
     %(n_jobs)s

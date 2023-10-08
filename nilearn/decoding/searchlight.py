@@ -175,8 +175,8 @@ def _group_iter_search_light(
     total : int
         Total number of voxels, used for display
 
-    verbose : int, optional
-        The verbosity level. Default is 0
+    verbose : int, default=0
+        The verbosity level.
 
     Returns
     -------

@@ -275,10 +275,9 @@ class BaseSlicer:
 
 
 
-        cbar_tick_format: str, optional
+        cbar_tick_format: str, default="%%.2g" (scientific notation)
             Controls how to format the tick labels of the colorbar.
             Ex: use "%%i" to display as integers.
-            Default is '%%.2g' for scientific notation.
 
         colorbar : :obj:`bool`, default=False
             If ``True``, display a colorbar on the right of the plots.

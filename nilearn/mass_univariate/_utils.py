@@ -25,19 +25,17 @@ def _calculate_tfce(
         R = regressor.
     bin_struct : :obj:`numpy.ndarray` of shape (3, 3, 3)
         Connectivity matrix for defining clusters.
-    E : :obj:`float`, optional
-        Extent weight. Default is 0.5.
-    H : :obj:`float`, optional
-        Height weight. Default is 2.
-    dh : 'auto' or :obj:`float`, optional
+    E : :obj:`float`, default=0.5
+        Extent weight.
+    H : :obj:`float`, default=2
+        Height weight.
+    dh : 'auto' or :obj:`float`, default='auto'
         Step size for TFCE calculation.
         If set to 'auto', use 100 steps, as is done in fslmaths.
         A good alternative is 0.1 for z and t maps, as in [1]_.
-        Default is 'auto'.
-    two_sided_test : :obj:`bool`, optional
+    two_sided_test : :obj:`bool`, default=False
         Whether to assess both positive and negative clusters (True) or just
         positive ones (False).
-        Default is False.
 
     Returns
     -------
@@ -152,12 +150,11 @@ def _null_to_p(test_values, null_array, alternative="two-sided"):
         Value(s) for which to determine p-value.
     null_array : array_like of shape (n_iters,)
         Null distribution against which test_values is compared.
-    alternative : {'two-sided', 'larger', 'smaller'}, optional
+    alternative : {'two-sided', 'larger', 'smaller'}, default='two-sided'
         Whether to compare value against null distribution in a two-sided
         or one-sided ('larger' or 'smaller') manner. If 'larger', then higher
         values for the test_values are more significant. If 'smaller', then
         lower values for the test_values are more significant.
-        Default is 'two-sided'.
 
     Returns
     -------
@@ -234,10 +231,9 @@ def _calculate_cluster_measures(
         Uncorrected t-statistic threshold for defining clusters.
     bin_struct : :obj:`numpy.ndarray` of shape (3, 3, 3)
         Connectivity matrix for defining clusters.
-    two_sided_test : :obj:`bool`, optional
+    two_sided_test : :obj:`bool`, default=False
         Whether to assess both positive and negative clusters (True) or just
         positive ones (False).
-        Default is False.
 
     Returns
     -------

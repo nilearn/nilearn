@@ -274,10 +274,9 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
         Default=False.
     %(colorbar)s
         Default=False.
-    cbar_tick_format: str, optional
+    cbar_tick_format: str, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
-        Default is '%%.2g' for scientific notation.
     %(resampling_interpolation)s
         Default='continuous'.
     %(bg_img)s
@@ -471,10 +470,9 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
         Default=`plt.cm.gray`.
     colorbar : boolean, default=False
         If True, display a colorbar on the right of the plots.
-    cbar_tick_format: str, optional
+    cbar_tick_format: str, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
-        Default is '%%.2g' for scientific notation.
     %(radiological)s
     %(vmin)s
     %(vmax)s
@@ -534,10 +532,9 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
         Default=True.
     colorbar : boolean, default=False
         If True, display a colorbar on the right of the plots.
-    cbar_tick_format: str, optional
+    cbar_tick_format: str, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
-        Default is '%%.2g' for scientific notation.
     %(cmap)s
         Default=`plt.cm.nipy_spectral`.
     %(vmin)s
@@ -650,10 +647,9 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         Default='auto'.
     colorbar : boolean, default=False
         If True, display a colorbar on the right of the plots.
-    cbar_tick_format: str, optional
+    cbar_tick_format: str, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%.2g" to use scientific notation.
-        Default is '%%i' to display as integers.
     %(vmin)s
     %(vmax)s
     %(resampling_interpolation)s
@@ -918,10 +914,9 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     %(display_mode)s
     %(colorbar)s
         Default=True.
-    cbar_tick_format: str, optional
+    cbar_tick_format: str, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
-        Default is '%%.2g' for scientific notation.
     %(figure)s
     %(axes)s
     %(title)s
@@ -1027,10 +1022,9 @@ def plot_glass_brain(stat_map_img,
         'lzry', 'lyrz'.
     %(colorbar)s
         Default=False.
-    cbar_tick_format: str, optional
+    cbar_tick_format: str, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
-        Default is '%%.2g' for scientific notation.
     %(figure)s
     %(axes)s
     %(title)s

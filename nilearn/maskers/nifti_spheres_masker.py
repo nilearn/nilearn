@@ -224,7 +224,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         Seed definitions. List of coordinates of the seeds in the same space
         as the images (typically MNI or TAL).
 
-    radius : :obj:`float`, optional
+    radius : :obj:`float`, default=None
         Indicates, in millimeters, the radius for the sphere around the seed.
         Default is None (signal is extracted on a single voxel).
 
