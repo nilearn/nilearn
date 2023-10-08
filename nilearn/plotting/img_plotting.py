@@ -641,9 +641,9 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         Default='auto'.
     %(threshold)s
         Default=0.5.
-    alpha : float between 0 and 1, default=0
+    alpha : float between 0 and 1, default=0.7
         Alpha sets the transparency of the color inside the filled
-        contours. Default=0.7.
+        contours.
     %(cmap)s
         Default=`plt.cm.gist_ncar`.
     %(dim)s
@@ -786,9 +786,8 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
         Default=False.
     %(vmin)s
     %(vmax)s
-    alpha : float between 0 and 1, default=0
+    alpha : float between 0 and 1, default=0.7
         Alpha sets the transparency of the color inside the filled contours.
-        Default=0.7.
     %(radiological)s
 
     See Also
@@ -1042,8 +1041,8 @@ def plot_glass_brain(stat_map_img,
         Default=False.
     %(cmap)s
         Default=None.
-    alpha : float between 0 and 1, default=0
-        Alpha transparency for the brain schematics. Default=0.7.
+    alpha : float between 0 and 1, default=0.7
+        Alpha transparency for the brain schematics.
     %(vmin)s
     %(vmax)s
     plot_abs : boolean, default=True
@@ -1240,8 +1239,8 @@ def plot_markers(node_values, node_coords, node_size='auto',
         Size(s) of the nodes in points^2. By default the size of the node is
         inversely proportional to the number of nodes.
 
-    node_cmap : str or colormap, default=plt
-        Colormap used to represent the node measure. Default=plt.cm.viridis_r.
+    node_cmap : str or colormap, default=plt.cm.viridis_r.
+        Colormap used to represent the node measure.
 
     node_vmin : float, optional
         Lower bound of the colormap. If `None`, the min of the node_values is
@@ -1255,8 +1254,8 @@ def plot_markers(node_values, node_coords, node_size='auto',
         If provided only the nodes with a value greater than node_threshold
         will be shown.
 
-    alpha : float between 0 and 1, default=0
-        Alpha transparency for markers. Default=0.7.
+    alpha : float between 0 and 1, default=0.7
+        Alpha transparency for markers.
     %(output_file)s
 
     display_mode : string, default='ortho'
