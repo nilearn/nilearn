@@ -252,6 +252,7 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
     """
     if is_plotly_installed():
         import plotly.graph_objects as go
+
         from nilearn.plotting.displays import PlotlySurfaceFigure
     else:
         msg = "Using engine='plotly' requires that ``plotly`` is installed."
