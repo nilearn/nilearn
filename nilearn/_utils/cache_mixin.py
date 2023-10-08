@@ -207,13 +207,13 @@ class CacheMixin:
         func : function
             The function the output of which is to be cached.
 
-        func_memory_level : int, optional
+        func_memory_level : int, default=1
             The memory_level from which caching must be enabled for the wrapped
-            function. Default=1.
+            function.
 
-        shelve : bool, optional
+        shelve : bool, default=False
             Whether to return a joblib MemorizedResult, callable by a .get()
-            method, instead of the return value of func. Default=False.
+            method, instead of the return value of func.
 
         Returns
         -------

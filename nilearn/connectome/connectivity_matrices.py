@@ -384,19 +384,17 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         towards zero compared to a maximum-likelihood estimate
 
     kind : {"covariance", "correlation", "partial correlation",\
-            "tangent", "precision"}, optional
+            "tangent", "precision"}, default='covariance'
         The matrix kind.
         For the use of "tangent" see :footcite:`Varoquaux2010b`.
-        Default='covariance'.
 
-    vectorize : bool, optional
+    vectorize : bool, default=False
         If True, connectivity matrices are reshaped into 1D arrays and only
-        their flattened lower triangular parts are returned. Default=False.
+        their flattened lower triangular parts are returned.
 
-    discard_diagonal : bool, optional
+    discard_diagonal : bool, default=False
         If True, vectorized connectivity coefficients do not include the
         matrices diagonal elements. Used only when vectorize is set to True.
-        Default=False.
 
     %(standardize)s
 
