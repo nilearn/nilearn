@@ -73,21 +73,44 @@ def check_file_content(file, term):
         ":start-after:",
         ":end-before:",
         ":ref:",
+        "#    ",
     ]
+    separator_rendered_block = ["# %%", "#############"]
     count = 0
     with open(file, encoding="utf-8") as f:
+        if file.suffix == ".py":
+            is_rendered_section = False
         for i, line in enumerate(f.readlines()):
+            # if any(line.startswith(s) for s in "  "):
+            #     continue
             if any(line.strip().startswith(s) for s in skip_if):
                 continue
 
             # if file is a python file and only comments
             # TODO: check docstrings
             if file.suffix == ".py":
+                if is_rendered_section:
+                    if not line.strip().startswith("#"):
+                        is_rendered_section = False
+                        continue
+
+                elif any(
+                    line.strip().startswith(s)
+                    for s in separator_rendered_block
+                ):
+                    is_rendered_section = True
+
                 if not line.startswith("#"):
                     continue
-            if check_string(line, term):
+
+                if is_rendered_section and check_string(line, term):
+                    print(f"'{term}' in {file}:{i + 1}")
+                    count += 1
+
+            if file.suffix != ".py" and check_string(line, term):
                 print(f"'{term}' in {file}:{i + 1}")
                 count += 1
+
     return count
 
 
@@ -176,7 +199,7 @@ def check_doc(terms):
         "themes",
     ]
 
-    print("\n\nCheck rst files in doc\n")
+    print("\n\nCheck .rst files in doc\n")
 
     files_to_skip = ["conf.py", "index.rst", "glossary.rst"]
 
@@ -196,7 +219,7 @@ def check_examples(terms):
     """Check examples content."""
     files_to_skip = []
 
-    print("\n\nCheck py files in examples\n")
+    print("\n\nCheck .py files in examples\n")
 
     example_folder = root_dir() / "examples"
 
@@ -218,6 +241,8 @@ def main():
     check_doc(terms)
 
     check_examples(terms)
+
+    print("\n\nCheck .py files in nilearn\n")
 
     modules = (root_dir() / "nilearn").glob("**/*.py")
 

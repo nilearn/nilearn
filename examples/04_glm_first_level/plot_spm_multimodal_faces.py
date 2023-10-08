@@ -99,7 +99,8 @@ for idx, img in enumerate(fmri_img, start=1):
 #########################################################################
 # We can specify basic contrasts (to get :term:`beta<Parameter Estimate>`
 # maps).
-# We start by specifying canonical contrast that isolate design matrix columns.
+# We start by specifying canonical :term:`contrast`
+# that isolate design matrix columns.
 contrast_matrix = np.eye(design_matrix.shape[1])
 basic_contrasts = {
     column: contrast_matrix[i]

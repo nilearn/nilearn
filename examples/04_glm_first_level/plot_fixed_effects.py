@@ -48,8 +48,8 @@ import pandas as pd
 design_matrices = [pd.DataFrame(np.load(df)['X']) for df in design_files]
 
 #########################################################################
-# GLM estimation
-# --------------
+# :term:`GLM` estimation
+# ----------------------
 # :term:`GLM` specification. Note that the mask was provided in the dataset.
 # So we use it.
 

@@ -27,12 +27,12 @@ Brain parcellations
 .. currentmodule:: nilearn.datasets
 
 Regions used to extract the signal can be defined by a "hard"
-parcellation. For instance, the :mod:`nilearn.datasets` has functions to
-download atlases forming reference parcellation, e.g.,
+:term:`parcellation`. For instance, the :mod:`nilearn.datasets` has functions to
+download atlases forming reference :term:`parcellation`, e.g.,
 :func:`fetch_atlas_craddock_2012`, :func:`fetch_atlas_harvard_oxford`,
 :func:`fetch_atlas_yeo_2011`.
 
-For instance to retrieve the Harvard-Oxford cortical parcellation, sampled
+For instance to retrieve the Harvard-Oxford cortical :term:`parcellation`, sampled
 at 2mm, and with a threshold of a probability of 0.25::
 
   from nilearn import datasets
@@ -60,7 +60,7 @@ Extracting signals on a parcellation
 
 .. currentmodule:: nilearn.maskers
 
-To extract signal on the parcellation, the easiest option is to use the
+To extract signal on the :term:`parcellation`, the easiest option is to use the
 :class:`NiftiLabelsMasker`. As any "maskers" in
 nilearn, it is a processing object that is created by specifying all
 the important parameters, but not the data::
@@ -164,7 +164,7 @@ Extracting signals from a probabilistic atlas
 
 .. currentmodule:: nilearn.maskers
 
-As with extraction of signals on a parcellation, extracting signals from
+As with extraction of signals on a :term:`parcellation`, extracting signals from
 a probabilistic atlas can be done with a "masker" object:  the
 :class:`NiftiMapsMasker`. It is created by
 specifying the important parameters, in particular the atlas::
@@ -232,9 +232,9 @@ direct connections only.
 A functional connectome: extracting coordinates of regions
 ==========================================================
 For atlases without readily available label coordinates, center coordinates
-can be computed for each region on hard parcellation or probabilistic atlases.
+can be computed for each region on hard :term:`parcellation` or probabilistic atlases.
 
- * For hard parcellation atlases (eg. :func:`nilearn.datasets.fetch_atlas_destrieux_2009`),
+ * For hard :term:`parcellation` atlases (eg. :func:`nilearn.datasets.fetch_atlas_destrieux_2009`),
    use the :func:`nilearn.plotting.find_parcellation_cut_coords`
    function. See example:
    :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`

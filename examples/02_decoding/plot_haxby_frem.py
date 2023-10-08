@@ -97,8 +97,8 @@ ax.get_figure().tight_layout()
 plotting.show()
 
 #############################################################################
-# Visualization of FREM weights
-# -----------------------------
+# Visualization of :term:`FREM` weights
+# -------------------------------------
 from nilearn import plotting
 
 plotting.plot_stat_map(
@@ -110,7 +110,7 @@ plotting.plot_stat_map(
 )
 plotting.show()
 #############################################################################
-# :term:`FREM`` ensembling procedure
+# :term:`FREM` ensembling procedure
 # yields an important improvement of decoding
 # accuracy on this simple example compared to fitting only one model per
 # fold and the clustering mechanism keeps its computational cost reasonable

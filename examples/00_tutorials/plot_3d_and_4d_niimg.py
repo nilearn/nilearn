@@ -17,7 +17,8 @@ from nilearn import datasets
 print(f"Datasets are stored in: {datasets.get_data_dirs()!r}")
 
 # %%
-# Let's now retrieve a motor contrast from a Neurovault repository
+# Let's now retrieve a motor :term:`contrast`
+# from a :term:`Neurovault` repository
 motor_images = datasets.fetch_neurovault_motor_task()
 motor_images.images
 

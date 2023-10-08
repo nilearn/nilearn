@@ -50,7 +50,7 @@ plot_stat_map(
 
 #############################################################################
 # We can observe that the coefficients map learnt
-# by :term:`FREM`` is structured,
+# by : is structured,
 # due to the spatial regularity imposed by working on clusters and model
 # ensembling. Although these maps have been thresholded for display, they are
 # not sparse (i.e. almost all voxels have non-zero coefficients). See also this

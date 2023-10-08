@@ -21,7 +21,7 @@ about the plotting data and associated meta-data.
 # Load the data
 # ------------------
 #
-# We will use a motor activation contrast map distributed with Nilearn.
+# We will use a motor activation :term:`contrast` map distributed with Nilearn.
 from nilearn import datasets
 
 stat_img = datasets.load_sample_motor_activation_image()

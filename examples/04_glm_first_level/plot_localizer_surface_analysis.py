@@ -41,7 +41,7 @@ slice_time_ref = 0.5
 
 ###############################################################################
 # Prepare the data.
-# First, the volume-based fMRI data.
+# First, the volume-based :term:`fMRI` data.
 from nilearn.datasets import fetch_localizer_first_level
 
 data = fetch_localizer_first_level()
@@ -55,8 +55,8 @@ events_file = data.events
 events = pd.read_table(events_file)
 
 ###############################################################################
-# Project the fMRI image to the surface
-# -------------------------------------
+# Project the :term:`fMRI` image to the surface
+# ---------------------------------------------
 #
 # For this we need to get a mesh representing the geometry of the surface. We
 # could use an individual mesh, but we first resort to a standard mesh, the
@@ -66,7 +66,7 @@ import nilearn
 fsaverage = nilearn.datasets.fetch_surf_fsaverage()
 
 ###############################################################################
-# The projection function simply takes the fMRI data and the mesh.
+# The projection function simply takes the :term:`fMRI` data and the mesh.
 # Note that those correspond spatially, are they are both in :term:`MNI` space.
 from nilearn import surface
 
@@ -77,7 +77,7 @@ texture = surface.vol_to_surf(fmri_img, fsaverage.pial_right)
 # ----------------------------
 #
 # This involves computing the design matrix and fitting the model.
-# We start by specifying the timing of fMRI frames.
+# We start by specifying the timing of :term:`fMRI` frames.
 import numpy as np
 
 n_scans = texture.shape[1]
@@ -102,7 +102,7 @@ design_matrix = make_first_level_design_matrix(frame_times,
 # Note that the output consists in 2 variables: `labels` and `fit`.
 # `labels` tags voxels according to noise autocorrelation.
 # `estimates` contains the parameter estimates.
-# We keep them for later contrast computation.
+# We keep them for later :term:`contrast` computation.
 from nilearn.glm.first_level import run_glm
 
 labels, estimates = run_glm(texture.T, design_matrix.values)
@@ -123,7 +123,7 @@ basic_contrasts = dict([(column, contrast_matrix[i])
 
 ###############################################################################
 # Next, we add some intermediate contrasts and
-# one contrast adding all conditions with some auditory parts.
+# one :term:`contrast` adding all conditions with some auditory parts.
 basic_contrasts['audio'] = (
     basic_contrasts['audio_left_hand_button_press']
     + basic_contrasts['audio_right_hand_button_press']
@@ -202,7 +202,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
 # little additional code!
 
 ###############################################################################
-# We project the fMRI data to the mesh.
+# We project the :term:`fMRI` data to the mesh.
 texture = surface.vol_to_surf(fmri_img, fsaverage.pial_left)
 
 ###############################################################################

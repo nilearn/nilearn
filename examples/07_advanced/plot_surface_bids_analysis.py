@@ -19,8 +19,8 @@ images were already normalized to the same :term:`MNI` space.
 """
 
 ##############################################################################
-# Fetch example BIDS dataset
-# --------------------------
+# Fetch example :term:`BIDS` dataset
+# ----------------------------------
 # We download a simplified :term:`BIDS` dataset made available for illustrative
 # purposes. It contains only the necessary
 # information to run a statistical analysis using Nilearn. The raw data
@@ -73,13 +73,13 @@ with open(json_file, 'r') as f:
     t_r = json.load(f)['RepetitionTime']
 
 #############################################################################
-# Project fMRI data to the surface: First get fsaverage5.
+# Project :term:`fMRI` data to the surface: First get fsaverage5.
 from nilearn.datasets import fetch_surf_fsaverage
 
 fsaverage = fetch_surf_fsaverage(mesh='fsaverage5')
 
 #########################################################################
-# The projection function simply takes the :term:`fMRI`` data and the mesh.
+# The projection function simply takes the :term:`fMRI` data and the mesh.
 # Note that those correspond spatially, as they are both in :term:`MNI` space.
 import numpy as np
 

@@ -63,8 +63,8 @@ y = y[condition_mask]
 session = labels["chunks"][condition_mask]
 
 ###########################################################################
-# ANOVA pipeline with :class:`nilearn.decoding.Decoder` object
-# ------------------------------------------------------------
+# :term:`ANOVA` pipeline with :class:`nilearn.decoding.Decoder` object
+# --------------------------------------------------------------------
 #
 # Nilearn Decoder object aims to provide smooth user experience by acting as a
 # pipeline of several tasks: preprocessing with NiftiMasker, reducing dimension

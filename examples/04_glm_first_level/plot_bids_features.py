@@ -24,8 +24,8 @@ More specifically:
 
 
 ##############################################################################
-# Fetch openneuro BIDS dataset
-# ----------------------------
+# Fetch openneuro :term:`BIDS` dataset
+# ------------------------------------
 # We download one subject from the stopsignal task
 # in the ds000030 V4 :term:`BIDS` dataset available in openneuro.
 # This dataset contains the necessary information to run a statistical analysis
@@ -186,7 +186,7 @@ plt.show()
 #############################################################################
 # Simple statistical report of thresholded contrast
 # -------------------------------------------------
-# We display the contrast plot and table with cluster information
+# We display the :term:`contrast` plot and table with cluster information.
 from nilearn.plotting import plot_contrast_matrix
 
 plot_contrast_matrix("StopSuccess - Go", design_matrix)
@@ -211,7 +211,7 @@ print(table.to_latex())
 #########################################################################
 # Generating a report
 # -------------------
-# Using the computed FirstLevelModel and contrast information,
+# Using the computed FirstLevelModel and :term:`contrast` information,
 # we can quickly create a summary report.
 from nilearn.reporting import make_glm_report
 

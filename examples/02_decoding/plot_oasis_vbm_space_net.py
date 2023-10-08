@@ -11,8 +11,8 @@ See also the documentation: :ref:`space_net`.
 """
 
 ###########################################################################
-# Load the Oasis VBM dataset
-# --------------------------
+# Load the Oasis :term:`VBM` dataset
+# ----------------------------------
 import numpy as np
 
 from nilearn import datasets

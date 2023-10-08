@@ -48,8 +48,8 @@ fmri_filenames = data.func[0]
 reduced_confounds = data.confounds[0]  # This is a preselected set of confounds
 
 ##############################################################################
-# Extract signals on a parcellation defined by labels
-# ---------------------------------------------------
+# Extract signals on a :term:`parcellation` defined by labels
+# -----------------------------------------------------------
 # Using the NiftiLabelsMasker
 from nilearn.maskers import NiftiLabelsMasker
 

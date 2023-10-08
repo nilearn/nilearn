@@ -107,7 +107,7 @@ second_level_model_paired = SecondLevelModel().fit(
 )
 
 ##########################################################################
-# Estimating the contrast is simple. To do so, we provide the column
+# Estimating the :term:`contrast` is simple. To do so, we provide the column
 # name of the design matrix. The argument 'output_type' is set to return all
 # available outputs so that we can compare differences in the effect size,
 # variance, and z-score.
@@ -151,7 +151,7 @@ plotting.show()
 
 ##########################################################################
 # Together, this makes the z_scores from the paired test larger.
-# We threshold the second level contrast and plot it.
+# We threshold the second level :term:`contrast` and plot it.
 threshold = 3.1  # corresponds to  p < .001, uncorrected
 display = plotting.plot_glass_brain(
     stat_maps_unpaired["z_score"],

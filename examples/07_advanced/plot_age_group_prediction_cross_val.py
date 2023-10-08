@@ -17,8 +17,8 @@ for a careful study.
 """
 
 ###############################################################################
-# Load brain development fMRI dataset and MSDL atlas
-# --------------------------------------------------
+# Load brain development :term:`fMRI` dataset and MSDL atlas
+# ----------------------------------------------------------
 # We study only 60 subjects from the dataset, to save computation time.
 from nilearn import datasets
 

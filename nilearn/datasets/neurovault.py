@@ -2827,7 +2827,8 @@ def fetch_neurovault_motor_task(data_dir=None, verbose=1):
               dictionaries.
             - 'collections_meta', the metadata for the
               collections.
-            - 'description', a short description of the Neurovault dataset.
+            - 'description', a short description
+              of the :term:`Neurovault` dataset.
 
     Notes
     -----

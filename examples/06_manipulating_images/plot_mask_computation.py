@@ -61,8 +61,8 @@ report
 
 
 # %%
-# Computing a mask from raw EPI data
-# ----------------------------------
+# Computing a mask from raw :term:`EPI` data
+# ------------------------------------------
 #
 # From raw :term:`EPI` data, there is no uniform background, and a different
 # strategy is necessary
@@ -123,8 +123,8 @@ report = masker.generate_report()
 report
 
 # %%
-# Computing the mask from the MNI template
-# ----------------------------------------
+# Computing the mask from the :term:`MNI` template
+# ------------------------------------------------
 #
 # A mask can also be computed from the :term:`MNI` template.
 # In this case, it is resampled to the target image.

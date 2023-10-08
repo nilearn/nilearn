@@ -27,8 +27,8 @@ computing a connectome from them.
 """
 
 ##########################################################################
-# Retrieve the brain development fMRI dataset
-# -------------------------------------------
+# Retrieve the brain development :term:`fMRI` dataset
+# ---------------------------------------------------
 #
 # We are going to use a subject from the development functional
 # connectivity dataset.

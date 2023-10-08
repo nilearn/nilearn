@@ -438,7 +438,7 @@ plt.show()
 # Removing confounds
 # ------------------
 #
-# A problematic feature of fMRI is the presence of uncontrolled
+# A problematic feature of :term:`fMRI` is the presence of uncontrolled
 # confounds in the data, due to scanner instabilities (spikes) or
 # physiological phenomena, such as motion, heart and
 # respiration-related blood oxygenation fluctuations.  Side

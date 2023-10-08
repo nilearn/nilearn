@@ -55,21 +55,21 @@ plotting.plot_surf_roi(fsaverage['pial_left'], roi_map=parcellation,
                        darkness=.5)
 
 # %%
-# Display Destrieux parcellation on inflated fsaverage5 surface
+# Display Destrieux :term:`parcellation` on inflated fsaverage5 surface
 plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
                        hemi='left', view='lateral',
                        bg_map=fsaverage['sulc_left'], bg_on_data=True,
                        darkness=.5)
 
 # %%
-# Display Destrieux parcellation with different views: posterior
+# Display Destrieux :term:`parcellation` with different views: posterior
 plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
                        hemi='left', view='posterior',
                        bg_map=fsaverage['sulc_left'], bg_on_data=True,
                        darkness=.5)
 
 # %%
-# Display Destrieux parcellation with different views: ventral
+# Display Destrieux :term:`parcellation` with different views: ventral
 plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
                        hemi='left', view='ventral',
                        bg_map=fsaverage['sulc_left'], bg_on_data=True,
@@ -77,7 +77,7 @@ plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
 plotting.show()
 
 # %%
-# Display Destrieux parcellation with custom view: explicitly set angle
+# Display Destrieux :term:`parcellation` with custom view: explicitly set angle
 elev, azim = 210.0, 90.0  # appropriate for visualizing, e.g., the OTS
 plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
                        hemi='left', view=(elev, azim),

@@ -20,7 +20,7 @@ from nilearn.interfaces.bids._utils import _bids_entities, _check_bids_label
 
 
 def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
-    """Generate mni space img.
+    """Generate MNI space img.
 
     Parameters
     ----------
@@ -45,10 +45,10 @@ def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
     Returns
     -------
     inverse_img : Niimg-like object
-        Image transformed back to mni space.
+        Image transformed back to MNI space.
 
     mask_img : Niimg-like object
-        Generated mask in mni space.
+        Generated mask in MNI space.
 
     """
     rand_gen = check_random_state(random_state)

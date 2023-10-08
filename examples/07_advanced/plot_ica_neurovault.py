@@ -104,8 +104,8 @@ X = np.vstack(X)
 term_weights = term_weights[is_usable, :]
 
 ######################################################################
-# Run ICA and map components to terms
-# -----------------------------------
+# Run :term:`ICA` and map components to terms
+# -------------------------------------------
 
 print("Running ICA; may take time...")
 # We use a very small number of components as we have downloaded only 80

@@ -330,8 +330,8 @@ fig.legend(handles, labels, loc=(0.5, 0.8))
 #
 
 ###########################################################################
-# Brain parcellations with ReNA Clustering
-# ----------------------------------------
+# Brain parcellations with :term:`ReNA` Clustering
+# ------------------------------------------------
 #
 # One interesting algorithmic property of :term:`ReNA` (see References)
 # is that it is very fast
@@ -384,8 +384,8 @@ plotting.plot_roi(
 )
 
 ###########################################################################
-# Compressed representation of ReNA clustering
-# ............................................
+# Compressed representation of :term:`ReNA` clustering
+# ....................................................
 #
 # We illustrate the effect that the clustering has on the signal.
 # We show the original data, and the approximation provided by
@@ -429,7 +429,7 @@ plotting.plot_epi(
 # to the original signal, we can notice that Ward Clustering
 # gives a slightly more accurate compressed representation.
 # However, as said in the previous section, the computation time is
-# reduced which could still make ReNA more relevant than Ward in
+# reduced which could still make :term:`ReNA` more relevant than Ward in
 # some cases.
 
 # sphinx_gallery_dummy_images=3

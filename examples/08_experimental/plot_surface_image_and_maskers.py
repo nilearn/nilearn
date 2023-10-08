@@ -5,11 +5,13 @@ A short demo of the surface images & maskers
 copied from the nilearn sandbox discussion, to be transformed into tests &
 examples
 
-NOTE this example is meant to support discussion around a tentative API for
-surface images in nilearn. This functionality is provided by the
-nilearn.experimental.surface module; it is still incomplete and subject to
-change without a deprecation cycle. Please participate in the discussion on
-GitHub!
+.. note:
+
+    this example is meant to support discussion around a tentative API for
+    surface images in nilearn. This functionality is provided by the
+    nilearn.experimental.surface module; it is still incomplete and subject to
+    change without a deprecation cycle. Please participate in the discussion on
+    GitHub!
 
 """
 from typing import Optional, Sequence
@@ -63,8 +65,8 @@ plot_surf_img(mean_img)
 plotting.show()
 
 ###############################################################################
-# ### Connectivity with a surface atlas and `SurfaceLabelsMasker`
-
+# Connectivity with a surface atlas and `SurfaceLabelsMasker`
+# ----------------------------------------------------------
 from nilearn import connectome, plotting
 
 img = surface.fetch_nki()[0]
@@ -87,8 +89,8 @@ plotting.show()
 
 
 ###############################################################################
-# ### Using the `Decoder`
-
+# Using the `Decoder`
+# -------------------
 import numpy as np
 
 from nilearn import decoding, plotting
@@ -133,8 +135,8 @@ plot_surf_img(decoder.coef_img_[0], threshold=1e-6)
 plotting.show()
 
 ###############################################################################
-# ### Decoding with a scikit-learn `Pipeline`
-
+# Decoding with a scikit-learn `Pipeline`
+# --------------------------------------
 import numpy as np
 from sklearn import feature_selection, linear_model, pipeline, preprocessing
 

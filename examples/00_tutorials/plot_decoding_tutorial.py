@@ -19,8 +19,8 @@ meant to be copied to analyze new data: many of the steps are unnecessary.
 
 
 # %%
-# Retrieve and load the fMRI data from the Haxby study
-# ----------------------------------------------------
+# Retrieve and load the :term:`fMRI` data from the Haxby study
+# ------------------------------------------------------------
 #
 # First download the data
 # .......................
@@ -60,8 +60,8 @@ from nilearn.image import mean_img
 plotting.view_img(mean_img(fmri_filename), threshold=None)
 
 # %%
-# Feature extraction: from fMRI volumes to a data matrix
-# ......................................................
+# Feature extraction: from :term:`fMRI` volumes to a data matrix
+# ..............................................................
 #
 # These are some really lovely images, but for machine learning
 # we need matrices to work with the actual data. Fortunately, the
@@ -309,8 +309,8 @@ coef_img = decoder.coef_img_["face"]
 decoder.coef_img_["face"].to_filename("haxby_svc_weights.nii.gz")
 
 # %%
-# Plotting the SVM weights
-# ........................
+# Plotting the :term:`SVM` weights
+# ................................
 #
 # We can plot the weights, using the subject's anatomical as a background
 plotting.view_img(

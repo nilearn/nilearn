@@ -23,8 +23,8 @@ with less control over the plot (see below)
 
 """
 # %%
-# Fetching probabilistic atlas - MSDL atlas
-# -----------------------------------------
+# Fetching :term:`Probabilistic atlas` - MSDL atlas
+# -------------------------------------------------
 from nilearn import datasets
 
 atlas_data = datasets.fetch_atlas_msdl()
@@ -56,8 +56,8 @@ plotting.show()
 
 
 # %%
-# Visualizing a probabilistic atlas with plot_prob_atlas
-# ------------------------------------------------------
+# Visualizing a :term:`probabilistic atlas` with ``plot_prob_atlas``
+# ------------------------------------------------------------------
 #
 # Alternatively, we can create a new 4D-image by selecting
 # the 3rd, 4th, 5th and 6th (zero-based) probabilistic map from atlas

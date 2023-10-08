@@ -93,8 +93,8 @@ glm = FirstLevelModel(
 )
 
 ##############################################################################
-# Run the GLM on data from each session
-# -------------------------------------
+# Run the :term:`GLM` on data from each session
+# ---------------------------------------------
 events[session].trial_type.unique()
 from nilearn.image import index_img
 

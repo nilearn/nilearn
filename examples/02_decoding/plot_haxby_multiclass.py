@@ -43,8 +43,8 @@ unique_conditions, order = np.unique(y, return_index=True)
 unique_conditions = unique_conditions[np.argsort(order)]
 
 ##############################################################################
-# Prepare the fMRI data
-# ---------------------
+# Prepare the :term:`fMRI` data
+# -----------------------------
 from nilearn.maskers import NiftiMasker
 
 # For decoding, standardizing is often very important
