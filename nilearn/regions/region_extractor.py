@@ -154,8 +154,7 @@ def connected_regions(
         An image of brain activation or atlas maps to be extracted into set of
         separate brain regions.
 
-    min_region_size : :obj:`float`, default=1350mm^3, which means
-we take minimum size of 1350 / 27 = 50 voxels
+    min_region_size : :obj:`float`, default=1350
         Minimum volume in mm3 for a region to be kept.
         For example, if the voxel size is 3x3x3 mm
         then the volume of the voxel is 27mm^3.
@@ -194,7 +193,6 @@ we take minimum size of 1350 / 27 = 50 voxels
     nilearn.regions.RegionExtractor : A class can be used for both
         region extraction on continuous type atlas images and
         also time series signals extraction from regions extracted.
-
     """
     all_regions_imgs = []
     index_of_each_map = []

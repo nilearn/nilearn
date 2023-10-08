@@ -1398,8 +1398,9 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
 
         Default=`gray`.
 
-    cmap_labels : :class:`matplotlib.colors.Colormap`, or :obj:`str`,, default=`plt
-        optional If ``mask_img`` corresponds to an atlas, then cmap_labels
+    cmap_labels : :class:`matplotlib.colors.Colormap`, or :obj:`str`, \
+                  default=`plt
+        If ``mask_img`` corresponds to an atlas, then cmap_labels
         can be used to define the colormap for coloring the labels placed
         on the side of the carpet plot.
 

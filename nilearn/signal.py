@@ -32,7 +32,8 @@ def _standardize(signals, detrend=False, standardize="zscore"):
     detrend : :obj:`bool`, default=False
         If detrending of timeseries is requested.
 
-    standardize : {'zscore_sample', 'zscore', 'psc', True, False}, default='zscore'
+    standardize : {'zscore_sample', 'zscore', 'psc', True, False}, \
+        default='zscore'
         Strategy to standardize the signal:
 
             - 'zscore_sample': The signal is z-scored. Timeseries are shifted
@@ -638,7 +639,8 @@ def clean(
 
     %(high_pass)s
     %(detrend)s
-    standardize : {'zscore_sample', 'zscore', 'psc', True, False}, default="zscore"
+    standardize : {'zscore_sample', 'zscore', 'psc', True, False}, \
+        default="zscore"
         Strategy to standardize the signal:
 
             - 'zscore_sample': The signal is z-scored. Timeseries are shifted
