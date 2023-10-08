@@ -42,10 +42,10 @@ def _gamma_difference_hrf(
     onset : float, default=0
         Onset time of the hrf.
 
-    delay : float, default=6s
+    delay : float, default=6
         Delay parameter of the hrf (in s.).
 
-    undershoot : float, default=16s
+    undershoot : float, default=16
         Undershoot parameter of the hrf (in s.).
 
     dispersion : float, default=1
@@ -54,7 +54,7 @@ def _gamma_difference_hrf(
     u_dispersion : float, default=1
         Dispersion parameter for the second gamma function.
 
-    ratio : float, default=0
+    ratio : float, default=0.167
         Ratio of the two gamma components. Default=0.167.
 
     Returns
@@ -172,8 +172,8 @@ def _generic_time_derivative(
     onset : float, default=0
         Onset of the response.
 
-    dt : float, default=0
-        Time step for the derivative. Default=0.1.
+    dt : float, default=0.1
+        Time step for the derivative.
     """
     return _compute_derivative_from_values(
         func(tr, oversampling, time_length, onset),

@@ -123,12 +123,12 @@ def cluster_level_inference(
     mask_img : Niimg-like object, optional,
         mask image
 
-    threshold : list of floats, default=3
-       Cluster-forming threshold in z-scale. Default=3.0.
+    threshold : list of floats, default=3.0
+       Cluster-forming threshold in z-scale.
 
-    alpha : float or list, default=0
-        Level of control on the true positive rate, aka true dsicovery
-        proportion. Default=0.05.
+    alpha : float or list, default=0.05
+        Level of control on the true positive rate, aka true discovery
+        proportion.
 
     verbose : bool, default=False
         Verbosity mode.
@@ -201,15 +201,14 @@ def threshold_stats_img(
     mask_img : Niimg-like object, optional,
         Mask image
 
-    alpha : float or list, default=0
+    alpha : float or list, default=0.001
         Number controlling the thresholding (either a p-value or q-value).
         Its actual meaning depends on the height_control parameter.
         This function translates alpha to a z-scale threshold.
-        Default=0.001.
 
-    threshold : float, default=3
+    threshold : float, default=3.0
        Desired threshold in z-scale.
-       This is used only if height_control is None. Default=3.0.
+       This is used only if height_control is None.
 
     height_control : string, or None optional, default='fpr'
         False positive control meaning of cluster forming

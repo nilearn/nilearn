@@ -103,11 +103,10 @@ def _peak_local_max(
     threshold_abs : float, default=0
         Minimum intensity of peaks.
 
-    threshold_rel : float, default=0
+    threshold_rel : float, default=0.1
         Minimum intensity of peaks calculated as `max(image) * threshold_rel`.
-        Default=0.1.
 
-    num_peaks : int, default=np
+    num_peaks : int, default=np.inf
         Maximum number of peaks. When the number of peaks exceeds `num_peaks`,
         return `num_peaks` peaks based on highest peak intensity.
         Default=np.inf.

@@ -346,9 +346,8 @@ def load_mni152_brain_mask(resolution=None, threshold=0.2):
 
         .. versionadded:: 0.8.1
 
-    threshold : float, default=0
+    threshold : float, default=0.2
         Values of the MNI152 T1 template above this threshold will be included.
-        Default=0.2
 
     Returns
     -------
@@ -389,9 +388,8 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
         If resolution is different from 1, the template loaded is first
         re-sampled with the specified resolution.
 
-    threshold : float, default=0
+    threshold : float, default=0.2
         Values of the grey-matter MNI152 template above this threshold will be
-        included. Default=0.2
 
     n_iter: int, optional, Default = 2
         Number of repetitions of dilation and erosion steps performed in
@@ -441,9 +439,9 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
         If resolution is different from 1, the template loaded is first
         re-sampled with the specified resolution.
 
-    threshold : float, default=0
+    threshold : float, default=0.2
         Values of the white-matter MNI152 template above this threshold will be
-        included. Default=0.2
+        included.
 
     n_iter: int, optional, Default = 2
         Number of repetitions of dilation and erosion steps performed in
@@ -492,9 +490,9 @@ def fetch_icbm152_brain_gm_mask(
     Parameters
     ----------
     %(data_dir)s
-    threshold : float, default=0
+    threshold : float, default=0.2
         Values of the ICBM152 grey-matter template above this threshold will be
-        included. Default=0.2
+        included.
 
     %(resume)s
     n_iter: int, optional, Default = 2
