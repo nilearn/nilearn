@@ -75,50 +75,58 @@ def check_file_content(file, term):
         ":ref:",
         "#    ",
     ]
+
     separator_rendered_block = ["# %%", "#############"]
+
     count = 0
+
     with open(file, encoding="utf-8") as f:
         if file.suffix == ".py":
             is_rendered_section = False
+            is_docstring = False
+
         for i, line in enumerate(f.readlines()):
-            # if any(line.startswith(s) for s in "  "):
-            #     continue
             if any(line.strip().startswith(s) for s in skip_if):
                 continue
 
-            # if file is a python file and only comments
-            # TODO: check docstrings
+            # Python files
             if file.suffix == ".py":
-                if is_rendered_section:
-                    if not line.strip().startswith("#"):
-                        is_rendered_section = False
-                        continue
-
-                elif any(
+                if any(
                     line.strip().startswith(s)
                     for s in separator_rendered_block
                 ):
                     is_rendered_section = True
 
-                if not line.startswith("#"):
+                if is_rendered_section and not line.strip().startswith("#"):
+                    is_rendered_section = False
                     continue
 
-                if is_rendered_section and check_string(line, term):
+                if line.strip().startswith('"""'):
+                    is_docstring = not is_docstring
+
+                if not is_docstring and not is_rendered_section:
+                    continue
+
+                elif check_string(line, term):
                     print(f"'{term}' in {file}:{i + 1}")
                     count += 1
 
-            if file.suffix != ".py" and check_string(line, term):
+            elif check_string(line, term):
                 print(f"'{term}' in {file}:{i + 1}")
                 count += 1
 
     return count
 
 
-def check_string(string, term):
+def check_string(string: str, term: str) -> bool:
     """Check a string for a term."""
     if string is None:
         return False
-    return f" {term} " in string and f":term:`{term}`" not in string
+    return (
+        f" {term} " in string
+        or string.startswith(f"{term} ")
+        or string.endswith(f" {term}")
+    ) and f":term:`{term}`" not in string
 
 
 def check_docstring(docstring, terms):
@@ -250,6 +258,8 @@ def main():
 
     for file in modules:
         if any(file.name.startswith(s) for s in files_to_skip):
+            continue
+        if file.parent.name.startswith("_"):
             continue
 
         with open(file) as f:

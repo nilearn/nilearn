@@ -6,8 +6,8 @@ This example is meant to demonstrate nilearn as a low-level tools used to
 combine feature extraction with a multivariate decomposition algorithm
 for movie-watching.
 
-This example is a toy. To apply ICA to fmri timeseries data, it is advised
-to look at the example
+This example is a toy. To apply ICA to :term:`fMRI` timeseries data,
+it is advised to look at the example
 :ref:`sphx_glr_auto_examples_03_connectivity_plot_compare_decomposition.py`.
 
 The example here applies the scikit-learn :term:`ICA` to movie watching

@@ -9,14 +9,16 @@ The data come from the `OASIS <http://www.oasis-brains.org/>`_ project.
 If you use it, you need to agree with the data usage agreement available
 on the website.
 
-It has been run through a standard VBM pipeline (using SPM8 and NewSegment)
+It has been run through a standard :term:`VBM` pipeline
+(using SPM8 and NewSegment)
 to create :term:`VBM` maps, which we study here.
 
 VBM analysis of aging
 ---------------------
 
-We run a standard GLM analysis to study the association between age and gray
-matter density from the VBM data.
+We run a standard :term:`GLM` analysis
+to study the association between age and gray matter density
+from the :term:`VBM` data.
 We use only 100 subjects from the OASIS dataset to limit the memory usage.
 
 Note that more power would be obtained from using a larger sample of subjects.

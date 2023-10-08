@@ -3,8 +3,9 @@ First level analysis of a complete BIDS dataset from openneuro
 ==============================================================
 
 
-Full step-by-step example of fitting a GLM to perform a first level analysis
-in an openneuro :term:`BIDS` dataset. We demonstrate how :term:`BIDS`
+Full step-by-step example of fitting a :term:`GLM`
+to perform a first level analysis in an openneuro :term:`BIDS` dataset.
+We demonstrate how :term:`BIDS`
 derivatives can be exploited to perform a simple one subject analysis with
 minimal code. Details about the :term:`BIDS` standard are available at
 `http://bids.neuroimaging.io/ <http://bids.neuroimaging.io/>`_.

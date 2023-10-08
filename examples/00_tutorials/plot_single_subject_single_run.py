@@ -16,9 +16,9 @@ The data
 
 The dataset comes from an experiment conducted at the FIL by Geraint Rees
 under the direction of Karl Friston. It is provided by FIL methods
-group which develops the SPM software.
+group which develops the :term:`SPM` software.
 
-According to SPM documentation, 96 scans were acquired (repetition time
+According to :term:`SPM` documentation, 96 scans were acquired (repetition time
 :term:`TR` = 7s) in one session. The paradigm consisted of alternating periods
 of stimulation and rest, lasting 42s each (that is, for 6 scans). The session
 started with a rest block.  Auditory stimulation consisted of bi-syllabic words

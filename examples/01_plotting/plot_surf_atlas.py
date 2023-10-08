@@ -2,11 +2,11 @@
 Loading and plotting of a cortical surface atlas
 ================================================
 
-The Destrieux parcellation (Destrieux et al, 2010) in fsaverage5 space as
-distributed with Freesurfer is used as the chosen atlas.
+The Destrieux :term:`parcellation` (Destrieux et al, 2010)
+in fsaverage5 space as distributed with Freesurfer is used as the chosen atlas.
 
 The :func:`nilearn.plotting.plot_surf_roi` function is used
-to plot the parcellation on the pial surface.
+to plot the :term:`parcellation` on the pial surface.
 
 See :ref:`plotting` for more details.
 

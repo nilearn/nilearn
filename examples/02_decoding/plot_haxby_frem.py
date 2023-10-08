@@ -4,7 +4,7 @@ Decoding with FREM: face vs house vs chair object recognition
 
 This example uses fast ensembling of regularized models (FREM) to decode
 a face vs house vs chair discrimination task from Haxby 2001 study.
-FREM uses an implicit spatial regularization
+:term:`FREM` uses an implicit spatial regularization
 through fast clustering and aggregates a high number of estimators
 trained on various splits of the training set,
 thus returning a very robust decoder

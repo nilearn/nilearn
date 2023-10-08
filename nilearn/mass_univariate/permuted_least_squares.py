@@ -347,8 +347,8 @@ def permuted_ols(
         Explanatory variates, fitted and tested independently from each others.
 
     target_vars : array-like, shape=(n_samples, n_descriptors)
-        fMRI data to analyze according to the explanatory and confounding
-        variates.
+        :term:`fMRI` data to analyze according
+        to the explanatory and confounding variates.
 
         In a group-level analysis, the samples will typically be voxels
         (for volumetric data) or vertices (for surface data), while the

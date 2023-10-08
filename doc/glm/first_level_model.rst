@@ -158,7 +158,7 @@ useful to calculate the F and R-squared statistic. For more information refer to
 Surface-based analysis
 ======================
 
-fMRI analyses can also be performed on the cortical surface instead of a volumetric brain. Nilearn
+:term:`fMRI` analyses can also be performed on the cortical surface instead of a volumetric brain. Nilearn
 provides functions to map subject brains on to a cortical mesh, which can be either a standard surface as
 provided by, for e.g. Freesurfer, or a user-defined one. Freesurfer meshes can be accessed using
 :func:`nilearn.datasets.fetch_surf_fsaverage`, while the function :func:`nilearn.surface.vol_to_surf`

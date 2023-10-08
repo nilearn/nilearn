@@ -10,7 +10,8 @@ We use an exploratory approach, in which we incrementally include some new
 features in the analysis and inspect the outcome, i.e. the resulting brain
 maps.
 
-Readers without prior experience in fMRI data analysis should first run the
+Readers without prior experience in :term: `fMRI` data analysis
+should first run the
 :ref:`sphx_glr_auto_examples_00_tutorials_plot_single_subject_single_run.py`
 tutorial to get a bit more familiar with the base concepts,
 and only then run this tutorial example.

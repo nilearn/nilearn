@@ -121,7 +121,7 @@ Computing functional connectivity matrices
 ==========================================
 
 Here, we use the object called :class:`ConnectivityMeasure` to compute
-functional connectivity measured between each extracted brain regions. Many different
+:term:`functional connectivity` measured between each extracted brain regions. Many different
 kinds of measures exists in nilearn such as "correlation", "partial correlation", "tangent",
 "covariance", "precision". But, here we show how to compute only correlations by
 selecting parameter as ``kind='correlation'`` as initialized in the object.

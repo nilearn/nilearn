@@ -2,7 +2,8 @@
 Second-level fMRI model: two-sample test, unpaired and paired
 =============================================================
 
-Full step-by-step example of fitting a GLM to perform a second level analysis
+Full step-by-step example of fitting a :term:`GLM`
+to perform a second level analysis
 in experimental data and visualizing the results
 
 More specifically:

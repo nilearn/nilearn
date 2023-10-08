@@ -165,7 +165,7 @@ Extracting signals from a probabilistic atlas
 .. currentmodule:: nilearn.maskers
 
 As with extraction of signals on a :term:`parcellation`, extracting signals from
-a probabilistic atlas can be done with a "masker" object:  the
+a :term:`probabilistic atlas` can be done with a "masker" object:  the
 :class:`NiftiMapsMasker`. It is created by
 specifying the important parameters, in particular the atlas::
 

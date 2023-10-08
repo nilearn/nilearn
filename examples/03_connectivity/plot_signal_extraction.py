@@ -2,8 +2,8 @@
 Extracting signals from a brain parcellation
 ============================================
 
-Here we show how to extract signals from a brain parcellation and compute
-a correlation matrix.
+Here we show how to extract signals from a brain :term:`parcellation`
+and compute a correlation matrix.
 
 We also show the importance of defining good confounds signals: the
 first correlation matrix is computed after regressing out simple

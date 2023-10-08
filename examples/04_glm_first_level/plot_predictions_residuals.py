@@ -2,8 +2,8 @@
 Predicted time series and residuals
 ===================================
 
-Here we fit a First Level GLM with the `minimize_memory`-argument set to
-`False`.
+Here we fit a First Level :term:`GLM` with the `minimize_memory`-argument
+set to `False`.
 By doing so, the `FirstLevelModel`-object stores the residuals, which we can
 then inspect.
 Also, the predicted time series can be extracted, which is useful to assess the

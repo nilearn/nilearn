@@ -18,7 +18,7 @@ Please see
 :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_fiac_analysis.py`
 for details.  The main difference is that
 the fixed-effects model is run explicitly here,
-after GLM fitting on two sessions.
+after :term:`GLM` fitting on two sessions.
 """
 
 #########################################################################

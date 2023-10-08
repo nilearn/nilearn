@@ -184,7 +184,7 @@ can be computed from the data:
 Masking data: from 4D Nifti images to 2D data arrays
 ---------------------------------------------------------------
 
-fMRI data is usually represented as a 4D block of data: 3 spatial
+:term:`fMRI` data is usually represented as a 4D block of data: 3 spatial
 dimensions and one time dimension. In practice, we are usually
 interested in working on the :term:`voxel` time-series in the
 brain. It is thus convenient to apply a brain mask in order to convert the
@@ -254,7 +254,7 @@ ROI mask:
    For extracting connected components:
 
    * A function :func:`nilearn.regions.connected_regions` can be used readily
-     on probabilistic atlas Nifti-like images whereas
+     on :term:`probabilistic atlas` Nifti-like images whereas
 
    * A function :func:`nilearn.regions.connected_label_regions` can be used on
      atlases denoted as labels. For instance, atlases labelled using KMeans.

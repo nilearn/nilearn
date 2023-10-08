@@ -2,7 +2,8 @@
 Decoding of a dataset after GLM fit for signal extraction
 =========================================================
 
-Full step-by-step example of fitting a GLM to perform a decoding experiment.
+Full step-by-step example of fitting a :term:`GLM`
+to perform a decoding experiment.
 We use the data from one subject of the Haxby dataset.
 
 More specifically:

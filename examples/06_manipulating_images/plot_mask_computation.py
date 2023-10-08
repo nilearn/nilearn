@@ -8,8 +8,8 @@ In this example, the Nifti masker is used to automatically compute a mask.
 
 * Another option is to use a template.
 
-* For raw EPI, as in resting-state or movie watching time series, we need to
-  use the 'epi' strategy of the NiftiMasker.
+* For raw EPI, as in :term:`resting-state` or movie watching time series,
+  we need to use the 'epi' strategy of the NiftiMasker.
 
 In addition, we show here how to tweak the different parameters of the
 underlying routine that extract masks from EPI

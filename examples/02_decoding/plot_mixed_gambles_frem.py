@@ -4,8 +4,9 @@ FREM on Jimura et al "mixed gambles" dataset
 
 In this example, we use fast ensembling of regularized models (FREM) to
 solve a regression problem, predicting the gain level corresponding to each
-beta maps regressed from mixed gambles experiment. FREM uses an implicit
-spatial regularization through fast clustering and aggregates a high number
+:term:`beta<Beta>` maps regressed from mixed gambles experiment.
+:term:`FREM` uses an implicit spatial regularization through fast clustering
+and aggregates a high number
 of  estimators trained on various splits of the training set, thus returning
 a very robust decoder at a lower computational cost than other spatially
 regularized methods.

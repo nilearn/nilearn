@@ -7,7 +7,7 @@ and Recursive Neighbor Agglomeration (ReNA) to create a set of parcels.
 
 In a high dimensional regime, these methods can be interesting
 to create a 'compressed' representation of the data, replacing the data
-in the fMRI images by mean signals on the parcellation, which can
+in the :term:`fMRI` images by mean signals on the parcellation, which can
 subsequently be used for statistical analysis or machine learning.
 
 Also, these methods can be used to learn functional connectomes
@@ -24,8 +24,8 @@ Bertrand Thirion, Gael Varoquaux, Elvis Dohmatob, Jean-Baptiste Poline.
   <https://doi.org/10.3389/fnins.2014.00167>`_ Frontiers in Neuroscience,
   2014.
 
-This parcellation may be useful in a supervised learning, see for
-instance:
+This :term:`parcellation` may be useful in a supervised learning,
+see for instance:
 
 Vincent Michel, Alexandre Gramfort, Gael Varoquaux, Evelyn Eger,
   Christine Keribin, Bertrand Thirion. `A supervised clustering approach

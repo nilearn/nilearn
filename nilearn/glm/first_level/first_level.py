@@ -120,7 +120,7 @@ def _yule_walker(x, order):
 def run_glm(
     Y, X, noise_model="ar1", bins=100, n_jobs=1, verbose=0, random_state=None
 ):
-    """GLM fit for an :term:`fMRI` data matrix.
+    """:term:`GLM` fit for an :term:`fMRI` data matrix.
 
     Parameters
     ----------
@@ -505,8 +505,9 @@ class FirstLevelModel(BaseGLM):
 
         events : pandas Dataframe or string or list of pandas DataFrames \
                  or strings, optional
-            fMRI events used to build design matrices. One events object
-            expected per run_img. Ignored in case designs is not None.
+            :term:`fMRI` events used to build design matrices.
+            One events object expected per run_img.
+            Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
 
         confounds : pandas Dataframe, numpy array or string or
