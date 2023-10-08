@@ -975,7 +975,7 @@ docdict["verbose0"] = verbose.format(0)
 docdict[
     "view"
 ] = """
-view : :obj:`str` or a pair of :obj:`float`, Default="lateral"
+view : :obj:`str` or a pair of :obj:`float`, default="lateral"
     If a string, must be in {"lateral", "medial", "dorsal", "ventral",\
 "anterior", "posterior"}.
     If a sequence, must be a pair (elev, azim) of float

@@ -516,9 +516,9 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
         The tolerance to declare convergence: if the dual gap goes below
         this value, iterations are stopped.
 
-    max_iter : int, optional
+    max_iter : int, default=10
         maximum number of iterations. The default value is rather
-        conservative. Default=10.
+        conservative.
 
     verbose : int, default=0
         verbosity level. Zero means "no message".

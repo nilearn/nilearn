@@ -2191,9 +2191,8 @@ def fetch_openneuro_dataset_index(
     Parameters
     ----------
     %(data_dir)s
-    dataset_version : :obj:`str`, optional
+    dataset_version : :obj:`str`, default='ds000030_R1.0.4'
         Dataset version name. Assumes it is of the form [name]_[version].
-        Default='ds000030_R1.0.4'.
 
         .. warning:: Any value other than the default will be ignored.
 

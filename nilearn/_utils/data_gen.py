@@ -846,7 +846,7 @@ def create_fake_bids_dataset(
     Parameters
     ----------
     base_dir : :obj:`str` or :obj:`pathlib.Path` (Absolute path). \
-        Default=pathlib.Path()
+        default=pathlib.Path()
         Absolute directory path in which to create the fake :term:`BIDS`
         dataset dir.
 

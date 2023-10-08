@@ -2474,27 +2474,25 @@ def fetch_neurovault(
     max_images : int, default=100
         Maximum number of images to fetch.
 
-    collection_terms : dict, optional
+    collection_terms : dict, default=basic_collection_terms()
         Key, value pairs used to filter collection
         metadata. Collections for which
         ``collection_metadata['key'] == value`` is not ``True`` for
         every key, value pair will be discarded.
         See documentation for ``basic_collection_terms`` for a
         description of the default selection criteria.
-        Default=basic_collection_terms().
 
     collection_filter : Callable, default=empty_filter
         Collections for which `collection_filter(collection_metadata)`
         is ``False`` will be discarded.
 
-    image_terms : dict, optional
+    image_terms : dict, default=basic_image_terms()
         Key, value pairs used to filter image metadata. Images for
         which ``image_metadata['key'] == value`` is not ``True`` for
         if image_filter != _empty_filter and image_terms =
         every key, value pair will be discarded.
         See documentation for ``basic_image_terms`` for a
         description of the default selection criteria.
-        Default=basic_image_terms().
 
     image_filter : Callable, default=empty_filter
         Images for which `image_filter(image_metadata)` is ``False``
