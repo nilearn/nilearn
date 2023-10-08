@@ -67,7 +67,7 @@ report
 # From raw :term:`EPI` data, there is no uniform background, and a different
 # strategy is necessary
 
-# Load movie watching based brain development :term:`fMRI` dataset
+# Load movie watching based brain development fMRI dataset
 dataset = datasets.fetch_development_fmri(n_subjects=1)
 epi_filename = dataset.func[0]
 

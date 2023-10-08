@@ -30,7 +30,7 @@ face and cat images.
 #
 
 # The :func:`nilearn.datasets.fetch_haxby` function will download the
-# Haxby dataset composed of :term:`fMRI` images in a Niimg,
+# Haxby dataset composed of fMRI images in a Niimg,
 # a spatial mask and a text document with label of each image
 from nilearn import datasets
 

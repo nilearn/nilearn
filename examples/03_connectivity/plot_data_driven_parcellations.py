@@ -89,7 +89,7 @@ ward = Parcellations(
 ward.fit(dataset.func)
 print(f"Ward agglomeration 1000 clusters: {time.time() - start:.2f}s")
 
-# We compute now :term:`Ward clustering` with 2000 clusters and compare
+# We compute now ward clustering with 2000 clusters and compare
 # time with 1000 clusters. To see the benefits of caching for second time.
 
 # We initialize class again with n_parcels=2000 this time.
@@ -162,7 +162,7 @@ plotting.plot_epi(
 fmri_reduced = ward.transform(dataset.func)
 
 # Display the corresponding data compressed
-# using the :term:`parcellation` using parcels=2000.
+# using the parcellation using parcels=2000.
 fmri_compressed = ward.inverse_transform(fmri_reduced)
 
 plotting.plot_epi(

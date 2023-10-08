@@ -16,7 +16,7 @@ See :ref:`plotting` for more details.
 
 from nilearn import datasets
 
-# haxby dataset to have :term:`EPI` images and masks
+# haxby dataset to have EPI images and masks
 haxby_dataset = datasets.fetch_haxby()
 
 # print basic information on the dataset
@@ -43,7 +43,7 @@ stat_img = datasets.load_sample_motor_activation_image()
 
 from nilearn import plotting
 
-# Visualizing t-map image on :term:`EPI` template with manual
+# Visualizing t-map image on EPI template with manual
 # positioning of coordinates using cut_coords given as a list
 plotting.plot_stat_map(
     stat_img, threshold=3, title="plot_stat_map", cut_coords=[36, -27, 66]

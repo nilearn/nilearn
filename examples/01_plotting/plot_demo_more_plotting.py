@@ -45,7 +45,7 @@ See :ref:`plotting` for more details.
 
 from nilearn import datasets
 
-# haxby dataset to have anatomical image, :term:`EPI` images and masks
+# haxby dataset to have anatomical image, EPI images and masks
 haxby_dataset = datasets.fetch_haxby()
 haxby_anat_filename = haxby_dataset.anat[0]
 haxby_mask_filename = haxby_dataset.mask_vt[0]

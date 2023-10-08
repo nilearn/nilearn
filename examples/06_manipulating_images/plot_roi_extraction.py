@@ -51,7 +51,7 @@ cut_coords = [sagittal, coronal, axial]
 from nilearn import datasets
 
 # First, we fetch single subject specific data with haxby datasets: to have
-# anatomical image, :term:`EPI` images and masks images
+# anatomical image, EPI images and masks images
 haxby_dataset = datasets.fetch_haxby()
 
 # print basic information on the dataset
@@ -103,11 +103,11 @@ fmri_filename = haxby_dataset.func[0]
 # (integer) in second argument. Output returns in Nifti image.
 fmri_img = image.smooth_img(fmri_filename, fwhm=6)
 
-# Visualize the mean of the smoothed :term:`EPI` image using plotting function
+# Visualize the mean of the smoothed EPI image using plotting function
 # `plot_epi`
 from nilearn.plotting import plot_epi
 
-# First, compute the voxel-wise mean of smooth :term:`EPI` image
+# First, compute the voxel-wise mean of smooth EPI image
 # (first argument) using image processing module `image`
 mean_img = image.mean_img(fmri_img)
 # Second, we visualize the mean image with coordinates positioned manually
@@ -147,7 +147,7 @@ from scipy import stats
 
 # This test returns p-values that represent probabilities that the two
 # time-series were not drawn from the same distribution. The lower the
-# p-value, the more discriminative is the :term:`voxel` in distinguishing
+# p-value, the more discriminative is the voxel in distinguishing
 # the two conditions (faces and houses).
 _, p_values = stats.ttest_ind(
     fmri_data[..., haxby_labels == "face"],

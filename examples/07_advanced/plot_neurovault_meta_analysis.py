@@ -29,7 +29,7 @@ from nilearn.image import get_data, load_img, math_img, new_img_like
 # in order to save time we specify their ids explicitly.
 stop_go_image_ids = (151, 3041, 3042, 2676, 2675, 2818, 2834)
 
-# These ids were determined by querying :term:`Neurovault` like this:
+# These ids were determined by querying Neurovault like this:
 
 # from nilearn.datasets import fetch_neurovault, neurovault
 #
