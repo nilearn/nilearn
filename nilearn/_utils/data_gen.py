@@ -165,8 +165,8 @@ def generate_maps(shape,
     window : :obj:`str`, default='boxcar'
         Name of a window in scipy.signal. Used to get non-uniform regions.
 
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance,                    optional, default=0
-                   optional
+    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
+                   default=0
         Random number generator, or seed.
 
     affine : :obj:`numpy.ndarray`, default=np.eye(4)
@@ -850,19 +850,19 @@ def create_fake_bids_dataset(
         Absolute directory path in which to create the fake :term:`BIDS`
         dataset dir.
 
-    n_sub : :obj:`int`, Defaults=10
+    n_sub : :obj:`int`, default=10
         Number of subjects to be simulated in the dataset.
 
-    n_ses : :obj:`int`, Defaults=2
+    n_ses : :obj:`int`, default=2
         Number of sessions to be simulated in the dataset.
 
         Specifying n_ses=0 will only produce runs and files without the
         optional session field.
 
-    tasks : :obj:`list` of :obj:`str`, Defaults=["localizer", "main"]
+    tasks : :obj:`list` of :obj:`str`, default=["localizer", "main"]
         List of tasks to be simulated in the dataset.
 
-    n_runs : :obj:`list` of :obj:`int`, Defaults=[1, 3]
+    n_runs : :obj:`list` of :obj:`int`, default=[1, 3]
         Number of runs to create, where each element indicates the
         number of runs for the corresponding task.
         The length of this list must match the number of items in ``tasks``.
@@ -870,17 +870,17 @@ def create_fake_bids_dataset(
         Files will be generated without run entity
         if a value is equal to 0 or less.
 
-    with_derivatives : :obj:`bool`, Defaults=True
+    with_derivatives : :obj:`bool`, default=True
         In the case derivatives are included, they come with two spaces and
         descriptions.
         Spaces are 'MNI' and 'T1w'.
         Descriptions are 'preproc' and :term:`fMRIPrep`.
         Only space 'T1w' include both descriptions.
 
-    with_confounds : :obj:`bool`, Defaults=True
+    with_confounds : :obj:`bool`, default=True
         Whether to generate associated confounds files or not.
 
-    confounds_tag : :obj:`str`, Defaults="desc-confounds_timeseries"
+    confounds_tag : :obj:`str`, default="desc-confounds_timeseries"
         Filename "suffix":
         If generating confounds, what path should they have?
         Defaults to `desc-confounds_timeseries` as in :term:`fMRIPrep` >= 20.2
@@ -888,7 +888,7 @@ def create_fake_bids_dataset(
         in :term:`fMRIPrep` < 20.2).
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance. \
-                    Defaults=0
+                    default=0
         Random number generator, or seed.
 
     entities : :obj:`dict`, optional

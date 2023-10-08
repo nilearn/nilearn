@@ -1069,11 +1069,10 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
         Default=True.
 
-    alpha : float or 'auto', optional
+    alpha : float or 'auto', default='auto'
         Alpha level of the mesh (not the stat_map).
         If 'auto' is chosen, alpha will default to .5 when no bg_map is
         passed and to 1 if a bg_map is passed.
-        Default='auto'.
 
         .. note::
             This option is currently only implemented for the
@@ -1249,9 +1248,8 @@ def _colorbar_from_array(array, vmin, vmax, threshold, symmetric_cbar=True,
     kwargs : dict
         Extra arguments passed to _get_colorbar_and_data_ranges.
 
-    cmap : str, optional
+    cmap : str, default='cold_hot'
         The name of a matplotlib or nilearn colormap.
-        Default='cold_hot'.
 
     """
     _, _, vmin, vmax = _get_colorbar_and_data_ranges(
@@ -1565,11 +1563,10 @@ def plot_surf_roi(surf_mesh,
 
         .. versionadded:: 0.7.1
 
-    alpha : float or 'auto', optional
+    alpha : float or 'auto', default='auto'
         Alpha level of the mesh (not the stat_map). If default,
         alpha will default to .5 when no bg_map is passed
         and to 1 if a bg_map is passed.
-        Default='auto'.
 
         .. note::
             This option is currently only implemented for the

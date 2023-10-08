@@ -189,9 +189,9 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         If True, replace every non-finite values (like NaNs) by zero before
         filtering.
 
-    copy : :obj:`bool`, optional
+    copy : :obj:`bool`, default=True
         If True, input array is not modified. True by default: the filtering
-        is not performed in-place. Default=True.
+        is not performed in-place.
 
     Returns
     -------
@@ -908,9 +908,9 @@ def threshold_img(
         Mask image applied to mask the input data.
         If None, no masking will be applied.
 
-    copy : :obj:`bool`, optional
+    copy : :obj:`bool`, default=True
         If True, input array is not modified. True by default: the filtering
-        is not performed in-place. Default=True.
+        is not performed in-place.
 
     Returns
     -------

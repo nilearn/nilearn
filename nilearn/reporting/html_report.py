@@ -270,16 +270,11 @@ class HTMLReport(HTMLDocument):
 
         head_values : :obj:`dict`, default={}.
 
-.. note::
-    This can be used to provide additional values
-    with custom templates
-            Additional substitutions in ``head_tpl``.
-            Default={}.
+        .. note::
+            This can be used to provide additional values
+            with custom templates
 
-            .. note::
-                This can be used to provide additional values
-                with custom templates.
-
+        Additional substitutions in ``head_tpl``.
         """
         html = head_tpl.safe_substitute(body=body, **head_values)
         super(HTMLReport, self).__init__(html)

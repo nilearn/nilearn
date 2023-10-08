@@ -268,11 +268,10 @@ def plot_matrix(
         If not False, a grid is plotted to separate rows and columns
         using the given color.
 
-    reorder : :obj:`bool` or {'single', 'complete', 'average'}, optional
+    reorder : :obj:`bool` or {'single', 'complete', 'average'}, default=False
         If not False, reorders the matrix into blocks of clusters.
         Accepted linkage options for the clustering are 'single',
         'complete', and 'average'. True defaults to average linkage.
-        Default=False.
 
         .. note::
             This option is only available with SciPy >= 1.0.0.

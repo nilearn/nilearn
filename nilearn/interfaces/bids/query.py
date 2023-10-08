@@ -206,13 +206,12 @@ def get_bids_files(
         Filter examples would be ('ses', '01'), ('dir', 'ap') and
         ('task', 'localizer').
 
-    sub_folder : :obj:`bool`, optional
+    sub_folder : :obj:`bool`, default=True
         Determines if the files searched are at the level of
         subject/session folders or just below the dataset main folder.
         Setting this option to False with other default values would return
         all the files below the main directory, ignoring files in subject
         or derivatives folders.
-        Default=True.
 
     Returns
     -------

@@ -1149,8 +1149,8 @@ class SpaceNetClassifier(BaseSpaceNet):
     max_iter : int (default 200)
         Defines the iterations for the solver.
 
-    tol : float
-        Defines the tolerance for convergence. Defaults to 1e-4.
+    tol : float, default=1e-4.
+        Defines the tolerance for convergence.
     %(verbose)s
     %(n_jobs)s
     %(memory)s
@@ -1396,13 +1396,13 @@ class SpaceNetRegressor(BaseSpaceNet):
     max_iter : int (default 200)
         Defines the iterations for the solver.
 
-    tol : float
-        Defines the tolerance for convergence. Defaults to 1e-4.
+    tol : float, default=1e-4
+        Defines the tolerance for convergence.
     %(verbose)s
     %(n_jobs)s
     %(memory)s
     %(memory_level1)s
-    cv : int, a cv generator instance, or None (default 8)
+    cv : int, a cv generator instance, or None, default=8
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
         KFold, None, in which case 3 fold is used, or another object, that

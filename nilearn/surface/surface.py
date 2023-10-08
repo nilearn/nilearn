@@ -499,9 +499,8 @@ def vol_to_surf(img, surf_mesh,
         more time. For many images, 'nearest' scales much better, up to x20
         faster.
 
-    kind : {'auto', 'depth', 'line', 'ball'}, optional
+    kind : {'auto', 'depth', 'line', 'ball'}, default='auto'
         The strategy used to sample image intensities around each vertex.
-        Default='auto'.
 
         - 'auto':
             Chooses 'depth' if `inner_mesh` is provided and 'line' otherwise.

@@ -178,9 +178,8 @@ class LikelihoodModelResults:
         matrix : 1D array-like
             Contrast matrix.
 
-        store : sequence, optional
+        store : sequence, default=('t', 'effect', 'sd')
             Components of t to store in results output object.
-            Defaults to all components ('t', 'effect', 'sd').
 
         dispersion : None or float, optional
 

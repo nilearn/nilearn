@@ -182,7 +182,7 @@ def load_mni152_template(resolution=None):
 
     Parameters
     ----------
-    resolution: int, optional, Default = 1
+    resolution: int, default=1
         If resolution is different from 1, the template is re-sampled with the
         specified resolution.
 
@@ -241,7 +241,7 @@ def load_mni152_gm_template(resolution=None):
 
     Parameters
     ----------
-    resolution: int, optional, Default = 1
+    resolution: int, default=1
         If resolution is different from 1, the template is re-sampled with the
         specified resolution.
 
@@ -291,7 +291,7 @@ def load_mni152_wm_template(resolution=None):
 
     Parameters
     ----------
-    resolution: int, optional, Default = 1
+    resolution: int, default=1
         If resolution is different from 1, the template is re-sampled with the
         specified resolution.
 
@@ -340,7 +340,7 @@ def load_mni152_brain_mask(resolution=None, threshold=0.2):
 
     Parameters
     ----------
-    resolution: int, optional, Default = 1
+    resolution: int, default=1
         If resolution is different from 1, the template loaded is first
         re-sampled with the specified resolution.
 
@@ -384,14 +384,14 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     Parameters
     ----------
-    resolution: int, optional, Default = 1
+    resolution: int, default=1
         If resolution is different from 1, the template loaded is first
         re-sampled with the specified resolution.
 
     threshold : float, default=0.2
         Values of the grey-matter MNI152 template above this threshold will be
 
-    n_iter: int, optional, Default = 2
+    n_iter: int, default=2
         Number of repetitions of dilation and erosion steps performed in
         scipy.ndimage.binary_closing function.
 
@@ -435,7 +435,7 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     Parameters
     ----------
-    resolution: int, optional, Default = 1
+    resolution: int, default=1
         If resolution is different from 1, the template loaded is first
         re-sampled with the specified resolution.
 
@@ -443,7 +443,7 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
         Values of the white-matter MNI152 template above this threshold will be
         included.
 
-    n_iter: int, optional, Default = 2
+    n_iter: int, default=2
         Number of repetitions of dilation and erosion steps performed in
         scipy.ndimage.binary_closing function.
 
@@ -495,7 +495,7 @@ def fetch_icbm152_brain_gm_mask(
         included.
 
     %(resume)s
-    n_iter: int, optional, Default = 2
+    n_iter: int, default=2
         Number of repetitions of dilation and erosion steps performed in
         scipy.ndimage.binary_closing function.
 

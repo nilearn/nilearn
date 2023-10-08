@@ -27,6 +27,7 @@ def check_docstring(docstring: str, file: Path, lineno: int) -> str:
         "Default = ",
         "default=",
         "Default is ",
+        "Defaults to ",
     ]
     targets += [target.lower() for target in targets]
 

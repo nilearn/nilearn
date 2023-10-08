@@ -1355,10 +1355,9 @@ def fetch_atlas_basc_multiscale_2015(
     resolution: :ob:`int`, optional
         Number of networks in the dictionary. Valid resolutions
         available are {7, 12, 20, 36, 64, 122, 197, 325, 444}
-    version : {'sym', 'asym'}, optional
+    version : {'sym', 'asym'}, default='sym'
         Available versions are 'sym' or 'asym'. By default all scales of
         brain parcellations of version 'sym' will be returned.
-        Default='sym'.
 
     Returns
     -------

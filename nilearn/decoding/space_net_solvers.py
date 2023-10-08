@@ -503,26 +503,25 @@ def tvl1_solver(
     y : ndarray, shape (n_samples,)
         Target / response vector.
 
-    alpha : float
-        Constant that scales the overall regularization term. Defaults to 1.0.
+    alpha : float, default=1.0
+        Constant that scales the overall regularization term.
 
-    l1_ratio : float in the interval [0, 1]; optional (default 0.5)
+    l1_ratio : float in the interval [0, 1]; default=0.5
         Constant that mixes L1 and TV penalization.
         l1_ratio == 0 : just smooth. l1_ratio == 1 : just lasso.
-        Defaults to 0.5.
 
     mask : ndarray, shape (nx, ny, nz)
         The support of this mask defines the ROIs being considered in
         the problem.
 
-    max_iter : int
-        Defines the iterations for the solver. Defaults to 100
+    max_iter : int, default=100
+        Defines the iterations for the solver.
 
-    prox_max_iter : int, optional (default 5000)
+    prox_max_iter : int, default=5000
         Maximum number of iterations for inner FISTA loop in which
         the prox of TV is approximated.
 
-    tol : float, optional (default 1e-4)
+    tol : float, ,default=1e-4
         Defines the tolerance for convergence.
 
     loss : string
