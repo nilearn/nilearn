@@ -51,7 +51,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
 
-    resampling_target : {"data", "mask", "maps", None}, optional., default="data"
+    resampling_target : {"data", "mask", "maps", None}, default="data"
         Gives which image gives the final shape/size:
 
             - "data" means the atlas is resampled to the shape of the data if

@@ -375,11 +375,12 @@ class FirstLevelModel(BaseGLM):
 
     random_state : int or numpy.random.RandomState, default=None.
 
-.. versionadded:: 0.9
-        Random state seed to sklearn.cluster.KMeans for autoregressive models
-        of order at least 2 ('ar(N)' with n >= 2). Default=None.
+    .. versionadded:: 0.9
+            Random state seed to sklearn.cluster.KMeans
+            for autoregressive models
+            of order at least 2 ('ar(N)' with n >= 2).
 
-        .. versionadded:: 0.9.1
+            .. versionadded:: 0.9.1
 
     Attributes
     ----------
