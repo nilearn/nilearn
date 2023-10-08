@@ -284,17 +284,17 @@ class RegionExtractor(NiftiMapsMasker):
         Mask to be applied to input data, passed to NiftiMapsMasker.
         If None, no masking is applied.
 
-    min_region_size : :obj:`float`, optional
+    min_region_size : :obj:`float`, default=1350mm^3, which means
+we take minimum size of 1350 / 27 = 50 voxels
         Minimum volume in mm3 for a region to be kept.
         For example, if the voxel size is 3x3x3 mm
         then the volume of the voxel is 27mm^3.
         Default=1350mm^3, which means
         we take minimum size of 1350 / 27 = 50 voxels.
 
-    threshold : number, optional
+    threshold : number, default=1.0
         A value used either in ratio_n_voxels or img_value or percentile
         `thresholding_strategy` based upon the choice of selection.
-        Default=1.0.
 
     thresholding_strategy : :obj:`str` {'ratio_n_voxels', 'img_value',\
  'percentile'}, optional

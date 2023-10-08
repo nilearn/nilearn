@@ -284,35 +284,33 @@ class FirstLevelModel(BaseGLM):
         matrix. This parameter is also passed to :func:`nilearn.signal.clean`.
         Please see the related documentation for details.
 
-    slice_time_ref : float, optional
+    slice_time_ref : float, default=0
         This parameter indicates the time of the reference slice used in the
         slice timing preprocessing step of the experimental runs. It is
         expressed as a fraction of the t_r (time repetition), so it can have
-        values between 0. and 1. Default=0.
+        values between 0. and 1.
     %(hrf_model)s
         Default='glover'.
-    drift_model : string, optional
+    drift_model : string, default='cosine'
         This parameter specifies the desired drift model for the design
         matrices. It can be 'polynomial', 'cosine' or None.
-        Default='cosine'.
 
-    high_pass : float, optional
+    high_pass : float, default=0.01
         This parameter specifies the cut frequency of the high-pass filter in
         Hz for the design matrices. Used only if drift_model is 'cosine'.
-        Default=0.01.
 
-    drift_order : int, optional
+    drift_order : int, default=1
         This parameter specifies the order of the drift model (in case it is
-        polynomial) for the design matrices. Default=1.
+        polynomial) for the design matrices.
 
-    fir_delays : array of shape(n_onsets) or list, optional
+    fir_delays : array of shape(n_onsets) or list, default=[0]
         In case of FIR design, yields the array of delays used in the FIR
-        model, in scans. Default=[0].
+        model, in scans.
 
-    min_onset : float, optional
+    min_onset : float, default=-24
         This parameter specifies the minimal onset relative to the design
         (in seconds). Events that start before (slice_time_ref * t_r +
-        min_onset) are not considered. Default=-24.
+        min_onset) are not considered.
 
     mask_img : Niimg-like, NiftiMasker object or False, optional
         Mask to be used on data. If an instance of masker is passed,
@@ -337,11 +335,11 @@ class FirstLevelModel(BaseGLM):
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
-    standardize : boolean, optional
+    standardize : boolean, default=False
         If standardize is True, the time-series are centered and normed:
-        their variance is put to 1 in the time dimension. Default=False.
+        their variance is put to 1 in the time dimension.
 
-    signal_scaling : False, int or (int, int), optional
+    signal_scaling : False, int or (int, int), default=0
         If not False, fMRI signals are
         scaled to the mean value of scaling_axis given,
         which can be 0, 1 or (0, 1).
@@ -351,33 +349,33 @@ class FirstLevelModel(BaseGLM):
         which is known as grand mean scaling.
         Incompatible with standardize (standardize=False is enforced when
         signal_scaling is not False).
-        Default=0.
 
-    noise_model : {'ar1', 'ols'}, optional
-        The temporal variance model. Default='ar1'.
+    noise_model : {'ar1', 'ols'}, default='ar1'
+        The temporal variance model.
 
-    verbose : integer, optional
+    verbose : integer, default=0
         Indicate the level of verbosity. By default, nothing is printed.
         If 0 prints nothing. If 1 prints progress by computation of
         each run. If 2 prints timing details of masker and GLM. If 3
-        prints masker computation details. Default=0.
+        prints masker computation details.
 
-    n_jobs : integer, optional
+    n_jobs : integer, default=1
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
-        Default=1.
 
-    minimize_memory : boolean, optional
+    minimize_memory : boolean, default=True
         Gets rid of some variables on the model fit results that are not
         necessary for contrast computation and would only be useful for
         further inspection of model details. This has an important impact
-        on memory consumption. Default=True.
+        on memory consumption.
 
     subject_label : string, optional
         This id will be used to identify a `FirstLevelModel` when passed to
         a `SecondLevelModel` object.
 
-    random_state : int or numpy.random.RandomState, optional
+    random_state : int or numpy.random.RandomState, default=None.
+
+.. versionadded:: 0.9
         Random state seed to sklearn.cluster.KMeans for autoregressive models
         of order at least 2 ('ar(N)' with n >= 2). Default=None.
 

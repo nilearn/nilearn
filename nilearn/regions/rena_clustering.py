@@ -441,20 +441,18 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
     mask_img : Niimg-like object
         Object used for masking the data.
 
-    n_clusters : :obj:`int`, optional
-        The number of clusters to find. Default=2.
+    n_clusters : :obj:`int`, default=2
+        The number of clusters to find.
 
-    scaling : :obj:`bool`, optional
+    scaling : :obj:`bool`, default=False
         If scaling is True, each cluster is scaled by the square root of its
-        size, preserving the l2-norm of the image. Default=False.
+        size, preserving the l2-norm of the image.
 
-    n_iter : :obj:`int`, optional
+    n_iter : :obj:`int`, default=10
         Number of iterations of the recursive neighbor agglomeration.
-        Default=10.
 
-    threshold : :obj:`float` in the open interval (0., 1.), optional
+    threshold : :obj:`float` in the open interval (0., 1.), default=1e-7
         Threshold used to handle eccentricities.
-        Default=1e-7.
     %(memory)s
     %(memory_level1)s
     %(verbose0)s

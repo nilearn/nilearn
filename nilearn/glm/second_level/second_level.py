@@ -411,11 +411,11 @@ class SecondLevelModel(BaseGLM):
         If 0 prints nothing. If 1 prints final computation time.
         If 2 prints masker computation details.
     %(n_jobs)s
-    minimize_memory : :obj:`bool`, optional
+    minimize_memory : :obj:`bool`, default=True
         Gets rid of some variables on the model fit results that are not
         necessary for contrast computation and would only be useful for
         further inspection of model details. This has an important impact
-        on memory consumption. Default=True.
+        on memory consumption.
 
     """
 

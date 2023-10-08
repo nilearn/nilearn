@@ -217,14 +217,14 @@ class Parcellations(_MultiPCA):
         to fine-tune mask computation. Please see the related documentation
         for details.
 
-    scaling : :obj:`bool`, optional
+    scaling : :obj:`bool`, default=False
         Used only when the method selected is 'rena'. If scaling is True, each
         cluster is scaled by the square root of its size, preserving the
-        l2-norm of the image. Default=False.
+        l2-norm of the image.
 
-    n_iter : :obj:`int`, optional
+    n_iter : :obj:`int`, default=10
         Used only when the method selected is 'rena'. Number of iterations of
-        the recursive neighbor agglomeration. Default=10.
+        the recursive neighbor agglomeration.
     %(memory)s
     %(memory_level)s
     %(n_jobs)s

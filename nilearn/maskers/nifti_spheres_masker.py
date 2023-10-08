@@ -232,9 +232,9 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
 
-    allow_overlap : :obj:`bool`, optional
+    allow_overlap : :obj:`bool`, default=False
         If False, an error is raised if the maps overlaps (ie at least two
-        maps have a non-zero value for the same voxel). Default=False.
+        maps have a non-zero value for the same voxel).
     %(smoothing_fwhm)s
     %(standardize_maskers)s
     %(standardize_confounds)s

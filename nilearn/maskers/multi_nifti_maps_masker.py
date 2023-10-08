@@ -32,9 +32,9 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
 
-    allow_overlap : :obj:`bool`, optional
+    allow_overlap : :obj:`bool`, default=True
         If False, an error is raised if the maps overlaps (ie at least two
-        maps have a non-zero value for the same voxel). Default=True.
+        maps have a non-zero value for the same voxel).
     %(smoothing_fwhm)s
     %(standardize_maskers)s
     %(standardize_confounds)s
@@ -51,7 +51,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
 
-    resampling_target : {"data", "mask", "maps", None}, optional.
+    resampling_target : {"data", "mask", "maps", None}, optional., default="data"
         Gives which image gives the final shape/size:
 
             - "data" means the atlas is resampled to the shape of the data if
@@ -63,15 +63,13 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
             - None means no resampling: if shapes and affines do not match,
               a ValueError is raised.
 
-        Default="data".
 
     %(memory)s
     %(memory_level)s
     %(n_jobs)s
     %(verbose0)s
-    reports : :obj:`bool`, optional
+    reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
-        Default=True.
     %(masker_kwargs)s
 
     Attributes

@@ -384,9 +384,8 @@ class GlassBrainAxes(BaseAxes):
     coord : :obj:`float`
         The coordinate along the direction of the cut.
 
-    plot_abs : :obj:`bool`, optional
+    plot_abs : :obj:`bool`, default=True
         If set to ``True`` the absolute value of the data will be considered.
-        Default=True.
 
     """
 

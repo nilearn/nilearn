@@ -204,9 +204,8 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
     %(memory)s
     %(memory_level1)s
     %(verbose0)s
-    reports : :obj:`bool`, optional
+    reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
-        Default=True.
 
     %(masker_kwargs)s
 

@@ -248,9 +248,8 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
 
     Parameters
     ----------
-    n_components : int, optional
+    n_components : int, default=20
         Number of components to extract, for each 4D-Niimage
-        Default=20.
 
     random_state : int or RandomState, optional
         Pseudo number generator state used for random sampling.
@@ -260,19 +259,17 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         then its mask will be used. If no mask is given, it will be computed
         automatically by a MultiNiftiMasker with default parameters.
     %(smoothing_fwhm)s
-    standardize : boolean, optional
+    standardize : boolean, default=True
         If standardize is True, the time-series are centered and normed:
         their mean is put to 0 and their variance to 1 in the time dimension.
-        Default=True.
 
-    standardize_confounds : boolean, optional
+    standardize_confounds : boolean, default=True
         If standardize_confounds is True, the confounds are z-scored:
         their mean is put to 0 and their variance to 1 in the time dimension.
-        Default=True.
 
-    detrend : boolean, optional
+    detrend : boolean, default=True
         This parameter is passed to signal.clean. Please see the related
-        documentation for details. Default=True.
+        documentation for details.
 
     low_pass : None or float, optional
         This parameter is passed to signal.clean. Please see the related
@@ -315,17 +312,16 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
 
-    memory_level : integer, optional
+    memory_level : integer, default=0
         Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching. Default=0.
+        means more memory for caching.
 
-    n_jobs : integer, optional
+    n_jobs : integer, default=1
         The number of CPUs to use to do the computation. -1 means
-        'all CPUs', -2 'all CPUs but one', and so on. Default=1.
+        'all CPUs', -2 'all CPUs but one', and so on.
 
-    verbose : integer, optional
+    verbose : integer, default=0
         Indicate the level of verbosity. By default, nothing is printed.
-        Default=0.
 
     Attributes
     ----------

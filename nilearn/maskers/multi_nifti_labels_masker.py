@@ -31,11 +31,10 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
             The labels must be consistent with the label
             values provided through `labels_img`.
 
-    background_label : :obj:`int` or :obj:`float`, optional
+    background_label : :obj:`int` or :obj:`float`, default=0
         Label used in labels_img to represent background.
         Warning: This value must be consistent with label values and
         image provided.
-        Default=0.
 
     mask_img : Niimg-like object, optional
         See :ref:`extracting_data`.
@@ -56,7 +55,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
 
-    resampling_target : {"data", "labels", None}, optional.
+    resampling_target : {"data", "labels", None}, optional., default="data"
         Gives which image gives the final shape/size:
 
             - "data" means the atlas is resampled to the
@@ -66,20 +65,18 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
             - None means no resampling: if shapes and affines do not match, a
               ValueError is raised
 
-        Default="data".
 
     %(memory)s
     %(memory_level1)s
     %(n_jobs)s
     %(verbose0)s
-    strategy : :obj:`str`, optional
+    strategy : :obj:`str`, default='mean'
         The name of a valid function to reduce the region with.
         Must be one of: sum, mean, median, minimum, maximum, variance,
-        standard_deviation. Default='mean'.
+        standard_deviation.
 
-    reports : :obj:`bool`, optional
+    reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
-        Default=True.
 
     %(masker_kwargs)s
 
