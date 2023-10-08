@@ -129,11 +129,11 @@ def alpha_cmap(color, name="", alpha_min=0.5, alpha_max=1.0):
     name : string, default=''
         Name of the colormap.
 
-    alpha_min : Float, default=0
-        Minimum value for alpha. Default=0.5.
+    alpha_min : Float, default=0.5
+        Minimum value for alpha.
 
-    alpha_max : Float, default=1
-        Maximum value for alpha. Default=1.0.
+    alpha_max : Float, default=1.0
+        Maximum value for alpha.
 
     """
     red, green, blue = _colors.colorConverter.to_rgb(color)

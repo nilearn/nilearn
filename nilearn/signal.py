@@ -466,11 +466,11 @@ def high_variance_confounds(
     n_confounds : :obj:`int`, default=5
         Number of confounds to return.
 
-    percentile : :obj:`float`, default=2
+    percentile : :obj:`float`, default=2.0
         Highest-variance series percentile to keep before computing the
         singular value decomposition, 0. <= `percentile` <= 100.
         ``series.shape[0] * percentile / 100`` must be greater
-        than ``n_confounds``. Default=2.0.
+        than ``n_confounds``.
     %(detrend)s
         Default=True.
 

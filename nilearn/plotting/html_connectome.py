@@ -134,8 +134,8 @@ def _prepare_lines_metadata(
         e.g. "25.3%", and only connections of amplitude above the
         given percentile will be shown.
 
-    cmap : str or matplotlib colormap, default=cm
-        Colormap to use. Default=cm.bwr.
+    cmap : str or matplotlib colormap, default=cm.bwr
+        Colormap to use.
 
     symmetric_cmap : bool, default=True
         Make colormap symmetric (ranging from -vmax to vmax).
@@ -282,25 +282,23 @@ def view_connectome(
         e.g. "25.3%", and only connections of amplitude above the
         given percentile will be shown.
 
-    edge_cmap : str or matplotlib colormap, default=cm
-        Colormap to use. Default=cm.bwr.
+    edge_cmap : str or matplotlib colormap, default=cm.bwr
+        Colormap to use.
 
     symmetric_cmap : bool, default=True
         Make colormap symmetric (ranging from -vmax to vmax).
 
-    linewidth : float, default=6
-        Width of the lines that show connections. Default=6.0.
+    linewidth : float, default=6.0
+        Width of the lines that show connections.
 
-    node_size : float, default=3
+    node_size : float, default=3.0
         Size of the markers showing the seeds in pixels.
-        Default=3.0.
 
     colorbar : bool, default=True
         Add a colorbar.
 
-    colorbar_height : float, default=0
+    colorbar_height : float, default=0.5
         Height of the colorbar, relative to the figure height.
-        Default=0.5.
 
     colorbar_fontsize : int, default=25
         Fontsize of the colorbar tick labels.
@@ -374,8 +372,8 @@ def view_markers(
         triplets, or rgba triplets (i.e. formats accepted by matplotlib, see
         https://matplotlib.org/users/colors.html#specifying-colors)
 
-    marker_size : float or array-like, default=5
-        Size of the markers showing the seeds in pixels. Default=5.0.
+    marker_size : float or array-like, default=5.0
+        Size of the markers showing the seeds in pixels.
 
     marker_labels : list of str, shape=(n_nodes), optional
         Labels for the markers: list of strings

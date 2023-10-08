@@ -55,7 +55,7 @@ def _gamma_difference_hrf(
         Dispersion parameter for the second gamma function.
 
     ratio : float, default=0.167
-        Ratio of the two gamma components. Default=0.167.
+        Ratio of the two gamma components.
 
     Returns
     -------
@@ -260,8 +260,8 @@ def _generic_dispersion_derivative(
 
     Parameters
     ----------
-    dt : float, default=0
-        Dispersion step for the derivative. Default=0.01.
+    dt : float, default=0.01
+        Dispersion step for the derivative.
 
     See _gamma_difference_hrf for the other parameters description.
     """

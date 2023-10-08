@@ -390,9 +390,8 @@ def generate_fake_fmri_data_and_design(shapes,
     shapes : :obj:`list` of length-4 :obj:`tuple`s of :obj:`int`
         Shapes of the fmri data to be generated.
 
-    rk : :obj:`int`, optional
+    rk : :obj:`int`, default=3
         Number of columns in the design matrix to be generated.
-        Default=3.
 
     affine : :obj:`numpy.ndarray`, default=np.eye(4)
         Affine of returned images. Must be a 4x4 array.
@@ -531,9 +530,8 @@ def write_fake_bold_img(file_path,
     shape : :obj:`tuple` of :obj:`int`
         Shape of output array. Should be at least 3D.
 
-    affine : :obj:`numpy.ndarray`, optional
+    affine : :obj:`numpy.ndarray`, default=np.eye(4)
         Affine of returned images.
-        Default=np.eye(4).
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
                    optional
@@ -609,25 +607,22 @@ def generate_group_sparse_gaussian_graphs(n_subjects=5,
 
     Parameters
     ----------
-    n_subjects : :obj:`int`, optional
+    n_subjects : :obj:`int`, default=5
         Number of subjects.
-        Default=5.
 
-    n_features : :obj:`int`, optional
+    n_features : :obj:`int`, default=30
         Number of signals per subject to generate.
-        Default=30.
 
     min_n_samples, max_n_samples : :obj:`int`, optional
         Each subject have a different number of samples, between these two
         numbers. All signals for a given subject have the same number of
         samples. Defaults are 30 and 50.
 
-    density : :obj:`float`, default=0
+    density : :obj:`float`, default=0.1
         Density of edges in graph topology.
-        Default=0.1.
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   optional
+                   default=0
         Random number generator, or seed.
 
     verbose : :obj:`int`, default=0
@@ -701,9 +696,8 @@ def basic_paradigm(condition_names_have_spaces=False):
 
     Parameters
     ----------
-    condition_names_have_spaces : :obj:`bool`, optional
+    condition_names_have_spaces : :obj:`bool`, default=False
         Check for spaces in condition names.
-        Default=False.
 
     Returns
     -------
@@ -735,9 +729,8 @@ def basic_confounds(length, random_state=0):
         Length of basic confounds.
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   optional
+                   dafult=0
         Random number generator, or seed.
-        Default=0.
 
     Returns
     -------

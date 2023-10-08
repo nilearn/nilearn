@@ -1911,7 +1911,7 @@ def fetch_development_fmri(
     %(resume)s
     %(verbose)s
     age_group : str, default='both'
-        Default='both'. Which age group to fetch
+        Which age group to fetch
 
         - 'adults' = fetch adults only (n=33, ages 18-39)
         - 'child' = fetch children only (n=122, ages 3-12)

@@ -320,9 +320,8 @@ def make_first_level_design_matrix(
     drift_model : {'cosine', 'polynomial', None}, default='cosine'
         Specifies the desired drift model.
 
-    high_pass : float, default=0
+    high_pass : float, default=0.01
         High-pass frequency in case of a cosine model (in Hz).
-        Default=0.01.
 
     drift_order : int, default=1
         Order of the drift model (in case it is polynomial).

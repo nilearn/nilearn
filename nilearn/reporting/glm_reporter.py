@@ -112,16 +112,14 @@ def make_glm_report(
         The background image for mask and stat maps to be plotted on upon.
         To turn off background image, just pass "bg_img=None".
 
-    threshold : float, default=3
+    threshold : float, default=3, default=3.09
         Cluster forming threshold in same scale as `stat_img` (either a
         t-scale or z-scale value). Used only if height_control is None.
-        Default=3.09.
 
-    alpha : float, default=0
+    alpha : float, default=0.001
         Number controlling the thresholding (either a p-value or q-value).
         Its actual meaning depends on the height_control parameter.
         This function translates alpha to a z-scale threshold.
-        Default=0.001.
 
     cluster_threshold : int, default=0
         Cluster size threshold, in voxels.

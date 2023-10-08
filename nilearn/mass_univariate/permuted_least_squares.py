@@ -97,7 +97,6 @@ def _permuted_ols_on_chunk(
         effects are considered; the null hypothesis is that the effect is zero.
         If False, only positive effects are considered as relevant. The null
         hypothesis is that the effect is zero or negative.
-        Default=True
 
     tfce : :obj:`bool`, default=False
         Whether to perform :term:`TFCE`-based multiple comparisons correction

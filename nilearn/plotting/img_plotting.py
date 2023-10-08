@@ -1139,9 +1139,8 @@ def plot_connectome(adjacency_matrix, node_coords,
     node_size : scalar or array_like, default=50
         Size(s) of the nodes in points^2.
 
-    edge_cmap : colormap, default=cm
+    edge_cmap : colormap, default=cm.bwr
         Colormap used for representing the strength of the edges.
-        Default=cm.bwr.
 
     edge_vmin, edge_vmax : float, optional
         If not None, either or both of these values will be used to
@@ -1170,8 +1169,8 @@ def plot_connectome(adjacency_matrix, node_coords,
     %(annotate)s
     %(black_bg)s
         Default=False.
-    alpha : float between 0 and 1, default=0
-        Alpha transparency for the brain schematics. Default=0.7.
+    alpha : float between 0 and 1, default=0.7
+        Alpha transparency for the brain schematics.
 
     edge_kwargs : dict, optional
         Will be passed as kwargs for each edge matlotlib Line2D.

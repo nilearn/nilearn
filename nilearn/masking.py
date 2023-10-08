@@ -132,11 +132,10 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
         See :ref:`extracting_data`.
         3D individual masks with same shape and affine.
 
-    threshold : :obj:`float`, default=0
+    threshold : :obj:`float`, default=0.5
         Gives the level of the intersection, must be within [0, 1].
         threshold=1 corresponds to keeping the intersection of all
         masks, whereas threshold=0 is the union of all masks.
-        Default=0.5.
     %(connected)s
         Default=True.
 
@@ -605,9 +604,8 @@ def compute_brain_mask(
         Images used to compute the mask. 3D and 4D images are accepted.
         Only the shape and affine of ``target_img`` will be used here.
 
-    threshold : :obj:`float`, default=0
+    threshold : :obj:`float`, default=0.5
         The value under which the :term:`MNI` template is cut off.
-        Default=0.5
     %(connected)s
         Default=True.
     %(opening)s
@@ -693,9 +691,8 @@ def compute_multi_brain_mask(
             for only the shape/affine of the image is used for this
             masking strategy.
 
-    threshold : :obj:`float`, default=0
+    threshold : :obj:`float`, default=0.5
         The value under which the :term:`MNI` template is cut off.
-        Default=0.5.
     %(connected)s
         Default=True.
     %(opening)s

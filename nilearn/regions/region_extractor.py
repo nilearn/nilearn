@@ -158,7 +158,7 @@ def connected_regions(
         Minimum volume in mm3 for a region to be kept.
         For example, if the voxel size is 3x3x3 mm
         then the volume of the voxel is 27mm^3.
-        Default=1350mm^3, which means
+        The default of 1350mm^3 means
         we take minimum size of 1350 / 27 = 50 voxels.
     %(extract_type)s
     %(smoothing_fwhm)s

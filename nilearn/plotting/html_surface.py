@@ -272,8 +272,8 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
     colorbar : bool, default=True
         Add a colorbar or not.
 
-    colorbar_height : float, default=0
-        Height of the colorbar, relative to the figure height. Default=0.5.
+    colorbar_height : float, default=0.5
+        Height of the colorbar, relative to the figure height
 
     colorbar_fontsize : int, default=25
         Fontsize of the colorbar tick labels.
@@ -392,8 +392,8 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
     colorbar : bool, default=True
         Add a colorbar or not.
 
-    colorbar_height : float, default=0
-        Height of the colorbar, relative to the figure height. Default=0.5.
+    colorbar_height : float, default=0.5
+        Height of the colorbar, relative to the figure height.
 
     colorbar_fontsize : int, default=25
         Fontsize of the colorbar tick labels.

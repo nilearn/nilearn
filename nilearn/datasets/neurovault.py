@@ -2797,8 +2797,8 @@ def fetch_neurovault_motor_task(data_dir=None, verbose=1):
         Path of the data directory. Used to force data storage in a specified
         location.
 
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    verbose : int, default=1
+        Verbosity level (0 means no message).
 
     Returns
     -------
