@@ -39,7 +39,7 @@ class BaseSlicer:
         you will need to pass ``facecolor='k', edgecolor='k'``
         to :func:`~matplotlib.pyplot.savefig`.
 
-    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0)
+    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
         The brain color to use as the background color (e.g., for
         transparent colorbars).
     """
