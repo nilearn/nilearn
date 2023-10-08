@@ -51,7 +51,7 @@ plot_design_matrix(design_matrix)
 
 
 #########################################################################
-# We have to adapt :term:`contrast`` specification.
+# We have to adapt :term:`contrast` specification.
 # We characterize the :term:`BOLD` response by the sum
 # across the three time lags.
 # It's a bit hairy, sorry, but this is the price to pay for flexibility...
