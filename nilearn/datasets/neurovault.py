@@ -714,10 +714,9 @@ class ResultFilter:
         ``key``, ``value`` pairs in `query_terms`. If ``None``, the
         empty dictionary is used.
 
-    callable_filter : callable, optional
+    callable_filter : callable, default=empty_filter
         A ``metadata`` dictionary will be blocked by the filter if
         `callable_filter` does not return ``True`` for ``metadata``.
-        Default=empty_filter
 
     As an alternative to the `query_terms` dictionary parameter,
     key, value pairs can be passed as keyword arguments.

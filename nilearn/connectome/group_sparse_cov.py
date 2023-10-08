@@ -507,31 +507,29 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
 
     Parameters
     ----------
-    alpha : float, optional
+    alpha : float, default=0.1
         regularization parameter. With normalized covariances matrices and
         number of samples, sensible values lie in the [0, 1] range(zero is
         no regularization: output is not sparse).
-        Default=0.1.
 
-    tol : positive float, optional
+    tol : positive float, default=1e-3
         The tolerance to declare convergence: if the dual gap goes below
-        this value, iterations are stopped. Default=1e-3.
+        this value, iterations are stopped.
 
     max_iter : int, optional
         maximum number of iterations. The default value is rather
         conservative. Default=10.
 
-    verbose : int, optional
-        verbosity level. Zero means "no message". Default=0.
+    verbose : int, default=0
+        verbosity level. Zero means "no message".
 
     memory : instance of joblib.Memory or string, optional
         Used to cache the masking process.
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
 
-    memory_level : int, optional
+    memory_level : int, default=0
         Caching aggressiveness. Higher values mean more caching.
-        Default=0.
 
     Attributes
     ----------
@@ -926,51 +924,49 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
 
     Parameters
     ----------
-    alphas : integer, optional
+    alphas : integer, default=4
         initial number of points in the grid of regularization parameter
         values. Each step of grid refinement adds that many points as well.
-        Default=4.
 
-    n_refinements : integer, optional
-        number of times the initial grid should be refined. Default=4.
+    n_refinements : integer, default=4
+        number of times the initial grid should be refined.
 
     cv : integer, optional
         number of folds in a K-fold cross-validation scheme. If None is passed,
         defaults to 3.
 
-    tol_cv : float, optional
+    tol_cv : float, default=1e-2
         tolerance used to get the optimal alpha value. It has the same meaning
         as the `tol` parameter in :func:`group_sparse_covariance`.
-        Default=1e-2.
 
-    max_iter_cv : integer, optional
+    max_iter_cv : integer, default=50
         maximum number of iterations for each optimization, during the alpha-
-        selection phase. Default=50.
+        selection phase.
 
-    tol : float, optional
+    tol : float, default=1e-3
         tolerance used during the final optimization for determining precision
-        matrices value. Default=1e-3.
+        matrices value.
 
-    max_iter : integer, optional
-        maximum number of iterations in the final optimization. Default=100.
+    max_iter : integer, default=100
+        maximum number of iterations in the final optimization.
 
-    verbose : integer, optional
-        verbosity level. 0 means nothing is printed to the user. Default=0.
+    verbose : integer, default=0
+        verbosity level. 0 means nothing is printed to the user.
 
-    n_jobs : integer, optional
+    n_jobs : integer, default=1
         maximum number of cpu cores to use. The number of cores actually used
         at the same time cannot exceed the number of folds in folding strategy
-        (that is, the value of cv). Default=1.
+        (that is, the value of cv).
 
-    debug : bool, optional
+    debug : bool, default=False
         if True, activates some internal checks for consistency. Only useful
-        for nilearn developers, not users. Default=False.
+        for nilearn developers, not users.
 
-    early_stopping : bool, optional
+    early_stopping : bool, default=True
         if True, reduce computation time by using a heuristic to reduce the
         number of iterations required to get the optimal value for alpha. Be
         aware that this can lead to slightly different values for the optimal
-        alpha compared to early_stopping=False. Default=True.
+        alpha compared to early_stopping=False.
 
     Attributes
     ----------

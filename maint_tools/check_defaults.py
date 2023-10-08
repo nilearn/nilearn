@@ -31,54 +31,58 @@ def check_docstring(docstring: str, file: Path, lineno: int) -> str:
     targets += [target.lower() for target in targets]
 
     for target_str, param in itertools.product(targets, docstring.params):
-        if param.arg_name.startswith("%("):
-            continue
+        update_docstring(param, target_str, file, lineno)
 
-        if (
-            param.description is not None
-            and target_str in param.description
-            and param.default is None
-        ):
-            # extract default value from description
-            default = param.description.split(target_str)[1].split(".")[0]
 
-            type_name = f"{param.type_name}, default={default}"
+def update_docstring(param, target_str, file, lineno):
+    """Update parameters default in docstring."""
+    if param.arg_name.startswith("%("):
+        return
 
-            with open(file) as f:
-                content = f.readlines()
+    if (
+        param.description is not None
+        and target_str in param.description
+        and param.default is None
+    ):
+        # extract default value from description
+        default = param.description.split(target_str)[1].split(".")
+        default = ".".join(default[:-1])
 
-            with open(file, "w") as f:
-                # skip the line from beginning of file to lineno
-                for i, line in enumerate(content):
-                    if i < lineno:
-                        update_def = False
+        type_name = f"{param.type_name}, default={default}"
+
+        with open(file) as f:
+            content = f.readlines()
+
+        with open(file, "w") as f:
+            # skip the line from beginning of file to lineno
+            for i, line in enumerate(content):
+                if i < lineno:
+                    update_def = False
+                    update_desc = False
+                elif i == lineno:
+                    update_def = True
+                    update_desc = False
+
+                if update_def and line.startswith(
+                    f"    {param.arg_name} : {param.type_name}"
+                ):
+                    f.write(f"    {param.arg_name} : {type_name}\n")
+                    update_def = False
+                    update_desc = True
+
+                elif update_desc:
+                    if line == f"        {target_str}{default}.\n":
+                        f.write("")
                         update_desc = False
-                    elif i == lineno:
-                        update_def = True
+                        continue
+                    elif line.endswith(f" {target_str}{default}.\n"):
+                        f.write(line.replace(f" {target_str}{default}.", ""))
                         update_desc = False
-
-                    if update_def and line.startswith(
-                        f"    {param.arg_name} : {param.type_name}"
-                    ):
-                        f.write(f"    {param.arg_name} : {type_name}\n")
-                        update_def = False
-                        update_desc = True
-
-                    elif update_desc:
-                        if line == f"        {target_str}{default}.\n":
-                            f.write("")
-                            update_desc = False
-                            continue
-                        elif line.endswith(f" {target_str}{default}.\n"):
-                            f.write(
-                                line.replace(f" {target_str}{default}.", "")
-                            )
-                            update_desc = False
-                        else:
-                            f.write(line)
-
                     else:
                         f.write(line)
+
+                else:
+                    f.write(line)
 
 
 def check_functions(body, file):
@@ -120,7 +124,14 @@ def main():
         ]
 
         for class_def in class_definitions:
-            print(f"class: '{class_def.name}'")
+            print(
+                f"class: '{class_def.name}' "
+                f"in {file.resolve()}:{class_def.lineno}"
+            )
+
+            docstring = ast.get_docstring(class_def)
+            check_docstring(docstring, file, class_def.lineno)
+
             check_functions(class_def.body, file)
 
 
