@@ -66,7 +66,7 @@ plotting.show()
 
 ###############################################################################
 # Connectivity with a surface atlas and `SurfaceLabelsMasker`
-# ----------------------------------------------------------
+# -----------------------------------------------------------
 from nilearn import connectome, plotting
 
 img = surface.fetch_nki()[0]
@@ -136,7 +136,7 @@ plotting.show()
 
 ###############################################################################
 # Decoding with a scikit-learn `Pipeline`
-# --------------------------------------
+# ---------------------------------------
 import numpy as np
 from sklearn import feature_selection, linear_model, pipeline, preprocessing
 

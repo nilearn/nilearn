@@ -83,7 +83,7 @@ For example, we will now consider only the conditions *cat* and *face* from our 
 This can be done as follows:
 
 .. literalinclude:: ../../examples/00_tutorials/plot_decoding_tutorial.py
-    :start-after: # (i.e. :term:`fmri<fMRI>` signal is shorter):
+    :start-after: # (i.e. :term:`fMRI` signal is shorter):
     :end-before: # %%
 
 

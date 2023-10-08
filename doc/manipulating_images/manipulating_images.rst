@@ -171,7 +171,7 @@ can be computed from the data:
 
 
 .. literalinclude:: ../../examples/01_plotting/plot_visualization.py
-     :start-after: # Simple computation of a mask from the fMRI data
+     :start-after: # Simple computation of a mask from the :term:`fMRI` data
      :end-before: # Applying the mask to extract the corresponding time series
 
 .. figure:: ../auto_examples/01_plotting/images/sphx_glr_plot_visualization_002.png

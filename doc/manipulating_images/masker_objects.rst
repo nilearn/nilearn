@@ -101,7 +101,7 @@ slice and create a :ref:`Niimg <niimg>` in memory:
 
 
 .. literalinclude:: ../../examples/06_manipulating_images/plot_mask_computation.py
-    :start-after: Load movie watching based brain development fmri dataset
+    :start-after: Load movie watching based brain development fMRI dataset
     :end-before: # To display the background
 
 Controlling how the mask is computed from the data
@@ -151,7 +151,7 @@ opened in a new browser tab using ``report.open_in_browser()``,
 or saved as a portable HTML file ``report.save_as_html(output_filepath)``.
 
 .. literalinclude:: ../../examples/06_manipulating_images/plot_mask_computation.py
-    :start-after: # We need to specify an 'epi' mask_strategy, as this is raw EPI data
+    :start-after: # We need to specify an 'epi' mask_strategy, as this is raw :term:`EPI` data
     :end-before: # Generate mask with strong opening
 
 .. figure:: /images/niftimasker_report.png
