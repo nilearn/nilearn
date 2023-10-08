@@ -116,12 +116,11 @@ def _mask_and_reduce(
         This parameter is passed to signal.clean. Please see the
         corresponding documentation for details.
 
-    reduction_ratio : 'auto' or float between 0. and 1., optional
+    reduction_ratio : 'auto' or float between 0. and 1., default='auto'
         - Between 0. or 1. : controls data reduction in the temporal domain
         , 1. means no reduction, < 1. calls for an SVD based reduction.
         - if set to 'auto', estimator will set the number of components per
           reduced session to be n_components.
-        Default='auto'.
 
     n_components : integer, optional
         Number of components per subject to be extracted by dimension reduction
@@ -129,16 +128,16 @@ def _mask_and_reduce(
     random_state : int or RandomState, optional
         Pseudo number generator state used for random sampling.
 
-    memory_level : integer, optional
+    memory_level : integer, default=0
         Integer indicating the level of memorization. The higher, the more
-        function calls are cached. Default=0.
+        function calls are cached.
 
     memory : joblib.Memory, optional
         Used to cache the function calls.
 
-    n_jobs : integer, optional
+    n_jobs : integer, default=1
         The number of CPUs to use to do the computation. -1 means
-        'all CPUs', -2 'all CPUs but one', and so on. Default=1.
+        'all CPUs', -2 'all CPUs but one', and so on.
 
     Returns
     -------
@@ -594,10 +593,9 @@ def _explained_variance(X, components, per_component=True):
     components : array-like
         Represents the components estimated by the decomposition algorithm.
 
-    per_component : boolean, optional
+    per_component : bool, default=False
         Specify whether the explained variance ratio is desired for each
         map or for the global set of components_.
-        Default=True.
 
     Returns
     -------

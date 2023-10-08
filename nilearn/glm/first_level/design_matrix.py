@@ -205,17 +205,16 @@ def _convolve_regressors(
     frame_times : array of shape (n_scans,)
         The targeted timing for the design matrix.
 
-    fir_delays : array-like of shape (n_onsets,), optional
+    fir_delays : array-like of shape (n_onsets,), default=[0]
         In case of FIR design, yields the array of delays
-        used in the FIR model (in scans). Default=[0].
+        used in the FIR model (in scans).
 
-    min_onset : float, optional
+    min_onset : float, default=-24
         Minimal onset relative to frame_times[0] (in seconds) events
         that start before frame_times[0] + min_onset are not considered.
-        Default=-24.
 
-    oversampling : int, optional
-        Oversampling factor used in temporal convolutions. Default=50.
+    oversampling : int, default=50
+        Oversampling factor used in temporal convolutions.
 
     Returns
     -------
@@ -318,20 +317,19 @@ def make_first_level_design_matrix(
         Particular attention should be given to the 'trial_type' key
         which defines the different conditions in the experimental paradigm.
     %(hrf_model)s
-    drift_model : {'cosine', 'polynomial', None}, optional
-        Specifies the desired drift model. Default='cosine'.
+    drift_model : {'cosine', 'polynomial', None}, default='cosine'
+        Specifies the desired drift model.
 
-    high_pass : float, optional
+    high_pass : float, default=0
         High-pass frequency in case of a cosine model (in Hz).
         Default=0.01.
 
-    drift_order : int, optional
+    drift_order : int, default=1
         Order of the drift model (in case it is polynomial).
-        Default=1.
 
-    fir_delays : array of shape(n_onsets) or list, optional
+    fir_delays : array of shape(n_onsets) or list, default=[0]
         In case of FIR design, yields the array of delays used in the FIR
-        model (in scans). Default=[0].
+        model (in scans).
 
     add_regs : array of shape(n_frames, n_add_reg) or \
             pandas DataFrame, optional
@@ -344,13 +342,12 @@ def make_first_level_design_matrix(
         If add_regs is a DataFrame, the corresponding column names are used
         and add_reg_names is ignored.
 
-    min_onset : float, optional
+    min_onset : float, default=-24
         Minimal onset relative to frame_times[0] (in seconds)
         events that start before frame_times[0] + min_onset are not considered.
-        Default=-24.
 
-    oversampling : int, optional
-        Oversampling factor used in temporal convolutions. Default=50.
+    oversampling : int, default=50
+        Oversampling factor used in temporal convolutions.
 
     Returns
     -------
@@ -462,12 +459,11 @@ def make_second_level_design_matrix(subjects_label, confounds=None):
         Contain subject labels to extract confounders in the right order,
         corresponding with the images, to create the design matrix.
 
-    confounds : :class:`pandas.DataFrame` or ``None``, optional
+    confounds : :class:`pandas.DataFrame` or ``None``, default=None
         If given, contains at least two columns, ``subject_label`` and one
         confound. The subjects list determines the rows to extract from
         confounds thanks to its ``subject_label`` column. All subjects must
         have confounds specified. There should be only one row per subject.
-        Default=None.
 
     Returns
     -------

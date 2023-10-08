@@ -29,11 +29,10 @@ def _standardize(signals, detrend=False, standardize="zscore"):
     signals : :class:`numpy.ndarray`
         Timeseries to standardize.
 
-    detrend : :obj:`bool`, optional
+    detrend : :obj:`bool`, default=False
         If detrending of timeseries is requested.
-        Default=False.
 
-    standardize : {'zscore_sample', 'zscore', 'psc', True, False}, optional
+    standardize : {'zscore_sample', 'zscore', 'psc', True, False}, default='zscore'
         Strategy to standardize the signal:
 
             - 'zscore_sample': The signal is z-scored. Timeseries are shifted
@@ -47,7 +46,6 @@ def _standardize(signals, detrend=False, standardize="zscore"):
               Timeseries are shifted to zero mean and scaled to unit variance.
             - False: Do not standardize the data.
 
-        Default='zscore'.
 
     Returns
     -------
@@ -138,7 +136,7 @@ def _mean_of_squares(signals, n_batches=20):
     signals : :class:`numpy.ndarray`, shape (n_samples, n_features)
         Signal whose mean of squares must be computed.
 
-    n_batches : :obj:`int`, optional
+    n_batches : :obj:`int`, default=20
         Number of batches to use in the computation.
 
         .. note::
@@ -146,7 +144,6 @@ def _mean_of_squares(signals, n_batches=20):
             and computation time. The higher the value, the lower the
             memory consumption.
 
-        Default=20.
 
     Returns
     -------
@@ -184,7 +181,7 @@ def _row_sum_of_squares(signals, n_batches=20):
     signals : :class:`numpy.ndarray`, shape (n_samples, n_features)
         Signal whose sum of squares must be computed.
 
-    n_batches : :obj:`int`, optional
+    n_batches : :obj:`int`, default=20
         Number of batches to use in the computation.
 
         .. note::
@@ -192,7 +189,6 @@ def _row_sum_of_squares(signals, n_batches=20):
             and computation time. The higher the value, the lower the
             memory consumption.
 
-        Default=20.
 
     Returns
     -------
@@ -224,14 +220,12 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
         This parameter must be two-dimensional.
         Signals to detrend. A signal is a column.
 
-    inplace : :obj:`bool`, optional
+    inplace : :obj:`bool`, default=False
         Tells if the computation must be made inplace or not.
-        Default=False.
 
-    type : {"linear", "constant"}, optional
+    type : {"linear", "constant"}, default="linear"
         Detrending type, either "linear" or "constant".
         See also :func:`scipy.signal.detrend`.
-        Default="linear".
 
     n_batches : :obj:`int`, optional
         Number of batches to use in the computation.
@@ -341,13 +335,12 @@ def butterworth(
         Number of samples per second (sample frequency, in Hertz).
     %(low_pass)s
     %(high_pass)s
-    order : :obj:`int`, optional
+    order : :obj:`int`, default=5
         Order of the `Butterworth filter
         <https://en.wikipedia.org/wiki/Butterworth_filter>`_.
         When filtering signals, the filter has a decay to avoid ringing.
         Increasing the order sharpens this decay. Be aware that very high
         orders can lead to numerical instability.
-        Default=5.
 
     padtype : {"odd", "even", "constant", None}, optional
         Type of padding to use for the Butterworth filter.
@@ -469,10 +462,10 @@ def high_variance_confounds(
         Timeseries. A timeseries is a column in the "series" array.
         shape (sample number, feature number)
 
-    n_confounds : :obj:`int`, optional
-        Number of confounds to return. Default=5.
+    n_confounds : :obj:`int`, default=5
+        Number of confounds to return.
 
-    percentile : :obj:`float`, optional
+    percentile : :obj:`float`, default=2
         Highest-variance series percentile to keep before computing the
         singular value decomposition, 0. <= `percentile` <= 100.
         ``series.shape[0] * percentile / 100`` must be greater
@@ -631,14 +624,13 @@ def clean(
         Default is None.
     %(t_r)s
         Default=2.5.
-    filter : {'butterworth', 'cosine', False}, optional
+    filter : {'butterworth', 'cosine', False}, default='butterworth'
         Filtering methods:
 
             - 'butterworth': perform butterworth filtering.
             - 'cosine': generate discrete cosine transformation drift terms.
             - False: Do not perform filtering.
 
-        Default='butterworth'.
     %(low_pass)s
 
         .. note::
@@ -646,7 +638,7 @@ def clean(
 
     %(high_pass)s
     %(detrend)s
-    standardize : {'zscore_sample', 'zscore', 'psc', True, False}, optional
+    standardize : {'zscore_sample', 'zscore', 'psc', True, False}, default="zscore"
         Strategy to standardize the signal:
 
             - 'zscore_sample': The signal is z-scored. Timeseries are shifted
@@ -660,7 +652,6 @@ def clean(
               Timeseries are shifted to zero mean and scaled to unit variance.
             - False: Do not standardize the data.
 
-        Default="zscore".
     %(standardize_confounds)s
 
     ensure_finite : :obj:`bool`, default=False

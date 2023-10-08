@@ -59,8 +59,8 @@ def mean_scaling(Y, axis=0):
     Y : array of shape (n_time_points, n_voxels)
        The input data.
 
-    axis : int, optional
-        Axis along which the scaling mean should be calculated. Default=0.
+    axis : int, default=0
+        Axis along which the scaling mean should be calculated.
 
     Returns
     -------
@@ -130,30 +130,28 @@ def run_glm(
     X : array of shape (n_time_points, n_regressors)
         The design matrix.
 
-    noise_model : {'ar(N)', 'ols'}, optional
+    noise_model : {'ar(N)', 'ols'}, default='ar1'
         The temporal variance model.
         To specify the order of an autoregressive model place the
         order after the characters `ar`, for example to specify a third order
         model use `ar3`.
-        Default='ar1'.
 
-    bins : int, optional
+    bins : int, default=100
         Maximum number of discrete bins for the AR coef histogram.
         If an autoregressive model with order greater than one is specified
         then adaptive quantification is performed and the coefficients
         will be clustered via K-means with `bins` number of clusters.
-        Default=100.
 
-    n_jobs : int, optional
+    n_jobs : int, default=1
         The number of CPUs to use to do the computation. -1 means
-        'all CPUs'. Default=1.
+        'all CPUs'.
 
-    verbose : int, optional
-        The verbosity level. Default=0.
+    verbose : int, default=0
+        The verbosity level.
 
-    random_state : int or numpy.random.RandomState, optional
+    random_state : int or numpy.random.RandomState, default=None
         Random state seed to sklearn.cluster.KMeans for autoregressive models
-        of order at least 2 ('ar(N)' with n >= 2). Default=None.
+        of order at least 2 ('ar(N)' with n >= 2).
 
         .. versionadded:: 0.9.1
 

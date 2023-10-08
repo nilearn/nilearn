@@ -154,7 +154,8 @@ def connected_regions(
         An image of brain activation or atlas maps to be extracted into set of
         separate brain regions.
 
-    min_region_size : :obj:`float`, optional
+    min_region_size : :obj:`float`, default=1350mm^3, which means
+we take minimum size of 1350 / 27 = 50 voxels
         Minimum volume in mm3 for a region to be kept.
         For example, if the voxel size is 3x3x3 mm
         then the volume of the voxel is 27mm^3.
@@ -493,11 +494,11 @@ def connected_label_regions(
         to keep after extraction.
         Removes small or spurious regions.
 
-    connect_diag : :obj:`bool`, optional
+    connect_diag : :obj:`bool`, default=True
         If 'connect_diag' is True, two voxels are considered in the same region
         if they are connected along the diagonal (26-connectivity). If it is
         False, two voxels are considered connected only if they are within the
-        same x, y, or z direction. Default=True.
+        same x, y, or z direction.
 
     labels : 1D :class:`numpy.ndarray` or :obj:`list` of :obj:`str`, optional
         Each string in a list or array denote the name of the brain atlas

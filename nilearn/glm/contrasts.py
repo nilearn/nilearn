@@ -429,9 +429,9 @@ def compute_fixed_effects(
     mask : Nifti1Image or NiftiMasker instance or None, optional
         Mask image. If None, it is recomputed from contrast_imgs.
 
-    precision_weighted : Bool, optional
+    precision_weighted : Bool, default=False
         Whether fixed effects estimates should be weighted by inverse
-        variance or not. Default=False.
+        variance or not.
 
     dofs : array-like or None, default=None
         the degrees of freedom of the models with len = len(variance_imgs)

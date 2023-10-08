@@ -346,7 +346,7 @@ def load_mni152_brain_mask(resolution=None, threshold=0.2):
 
         .. versionadded:: 0.8.1
 
-    threshold : float, optional
+    threshold : float, default=0
         Values of the MNI152 T1 template above this threshold will be included.
         Default=0.2
 
@@ -389,7 +389,7 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
         If resolution is different from 1, the template loaded is first
         re-sampled with the specified resolution.
 
-    threshold : float, optional
+    threshold : float, default=0
         Values of the grey-matter MNI152 template above this threshold will be
         included. Default=0.2
 
@@ -441,7 +441,7 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
         If resolution is different from 1, the template loaded is first
         re-sampled with the specified resolution.
 
-    threshold : float, optional
+    threshold : float, default=0
         Values of the white-matter MNI152 template above this threshold will be
         included. Default=0.2
 
@@ -492,7 +492,7 @@ def fetch_icbm152_brain_gm_mask(
     Parameters
     ----------
     %(data_dir)s
-    threshold : float, optional
+    threshold : float, default=0
         Values of the ICBM152 grey-matter template above this threshold will be
         included. Default=0.2
 
@@ -614,9 +614,9 @@ def fetch_oasis_vbm(
         The number of subjects to load. If None is given, all the
         subjects are used.
 
-    dartel_version : boolean, optional
+    dartel_version : boolean, default=True
         Whether or not to use data normalized with DARTEL instead of standard
-        SPM8 normalization. Default=True.
+        SPM8 normalization.
     %(data_dir)s
     %(url)s
     %(resume)s
@@ -871,10 +871,9 @@ def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
 
     Parameters
     ----------
-    mesh : str, optional
+    mesh : str, default='fsaverage5'
         Which mesh to fetch. Should be one of the following values:
         %(fsaverage_options)s
-        Default='fsaverage5'.
     %(data_dir)s
 
     Returns

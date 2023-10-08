@@ -81,33 +81,31 @@ def _permuted_ols_on_chunk(
 
         .. versionadded:: 0.9.2
 
-    n_perm : int, optional
+    n_perm : int, default=10000
         Total number of permutations to perform, only used for
-        display in this function. Default=10000.
+        display in this function.
 
-    n_perm_chunk : int, optional
-        Number of permutations to be performed. Default=10000.
+    n_perm_chunk : int, default=10000
+        Number of permutations to be performed.
 
-    intercept_test : boolean, optional
+    intercept_test : boolean, default=True
         Change the permutation scheme (swap signs for intercept,
         switch labels otherwise). See :footcite:`Fisher1935`.
-        Default=True.
 
-    two_sided_test : boolean, optional
+    two_sided_test : boolean, default=True
         If True, performs an unsigned t-test. Both positive and negative
         effects are considered; the null hypothesis is that the effect is zero.
         If False, only positive effects are considered as relevant. The null
         hypothesis is that the effect is zero or negative.
         Default=True
 
-    tfce : :obj:`bool`, optional
+    tfce : :obj:`bool`, default=False
         Whether to perform :term:`TFCE`-based multiple comparisons correction
         or not.
         Calculating TFCE values in each permutation can be time-consuming, so
         this option is disabled by default.
         The TFCE calculation is implemented as described in
         :footcite:t:`Smith2009a`.
-        Default=False.
 
         .. versionadded:: 0.9.2
 
@@ -121,8 +119,8 @@ def _permuted_ols_on_chunk(
         Seed for random number generator, to have the same permutations
         in each computing units.
 
-    verbose : int, optional
-        Defines the verbosity level. Default=0.
+    verbose : int, default=0
+        Defines the verbosity level.
 
     Returns
     -------
@@ -361,37 +359,35 @@ def permuted_ols(
         (except maybe a constant column according to the value of
         ``model_intercept``).
 
-    model_intercept : :obj:`bool`, optional
+    model_intercept : :obj:`bool`, default=True
         If True, a constant column is added to the confounding variates
         unless the tested variate is already the intercept or when
         confounding variates already contain an intercept.
-        Default=True.
 
-    n_perm : :obj:`int`, optional
+    n_perm : :obj:`int`, default=10000
         Number of permutations to perform.
         Permutations are costly but the more are performed, the more precision
         one gets in the p-values estimation.
         If ``n_perm`` is set to 0, then no p-values will be estimated.
-        Default=10000.
 
-    two_sided_test : :obj:`bool`, optional
+    two_sided_test : :obj:`bool`, default=True
         If True, performs an unsigned t-test. Both positive and negative
         effects are considered; the null hypothesis is that the effect is zero.
         If False, only positive effects are considered as relevant. The null
-        hypothesis is that the effect is zero or negative. Default=True.
+        hypothesis is that the effect is zero or negative.
 
     random_state : :obj:`int` or None, optional
         Seed for random number generator, to have the same permutations
         in each computing units.
 
-    n_jobs : :obj:`int`, optional
+    n_jobs : :obj:`int`, default=1
         Number of parallel workers.
         If -1 is provided, all CPUs are used.
         A negative number indicates that all the CPUs except (abs(n_jobs) - 1)
-        ones will be used. Default=1.
+        ones will be used.
 
-    verbose : :obj:`int`, optional
-        verbosity level (0 means no message). Default=0.
+    verbose : :obj:`int`, default=0
+        verbosity level (0 means no message).
 
     masker : None or :class:`~nilearn.maskers.NiftiMasker` or \
             :class:`~nilearn.maskers.MultiNiftiMasker`, optional
@@ -401,11 +397,10 @@ def permuted_ols(
 
         .. versionadded:: 0.9.2
 
-    threshold : None or :obj:`float`, optional
+    threshold : None or :obj:`float`, default=None
         Cluster-forming threshold in p-scale.
         This is only used for cluster-level inference.
         If None, cluster-level inference will not be performed.
-        Default=None.
 
         .. warning::
 
@@ -414,12 +409,11 @@ def permuted_ols(
 
         .. versionadded:: 0.9.2
 
-    tfce : :obj:`bool`, optional
+    tfce : :obj:`bool`, default=False
         Whether to calculate :term:`TFCE` as part of the permutation procedure
         or not.
         The TFCE calculation is implemented as described in
         :footcite:t:`Smith2009a`.
-        Default=False.
 
         .. warning::
 

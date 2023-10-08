@@ -163,16 +163,15 @@ def group_sparse_covariance(
         number of samples, sensible values lie in the [0, 1] range(zero is
         no regularization: output is not sparse)
 
-    max_iter : int, optional
-        maximum number of iterations. Default=50.
+    max_iter : int, default=50
+        maximum number of iterations.
 
-    tol : positive float or None, optional
+    tol : positive float or None, default=1e-3
         The tolerance to declare convergence: if the duality gap goes below
         this value, optimization is stopped. If None, no check is performed.
-        Default=1e-3.
 
-    verbose : int, optional
-        verbosity level. Zero means "no message". Default=0.
+    verbose : int, default=0
+        verbosity level. Zero means "no message".
 
     probe_function : callable or None, optional
         This value is called before the first iteration and after each
@@ -193,10 +192,9 @@ def group_sparse_covariance(
         initial value of the precision matrices. If not provided, a diagonal
         matrix with the variances of each input signal is used.
 
-    debug : bool, optional
+    debug : bool, default=False
         if True, perform checks during computation. It can help find
         numerical problems, but increases computation time a lot.
-        Default=False.
 
     Returns
     -------
@@ -613,15 +611,13 @@ def empirical_covariances(subjects, assume_centered=False, standardize=False):
         signals. Sample number can vary from subject to subject, but all
         subjects must have the same number of features (i.e. of columns).
 
-    assume_centered : bool, optional
+    assume_centered : bool, default=False
         if True, assume that all input signals are centered. This slightly
         decreases computation time by avoiding useless computation.
-        Default=False.
 
-    standardize : bool, optional
+    standardize : bool, default=False
         if True, set every signal variance to one before computing their
         covariance matrix (i.e. compute a correlation matrix).
-        Default=False.
 
     Returns
     -------
@@ -689,12 +685,12 @@ def group_sparse_scores(
     alpha : float
         regularization parameter
 
-    duality_gap : bool, optional
-        if True, also returns a duality gap upper bound. Default=False.
+    duality_gap : bool, default=False
+        if True, also returns a duality gap upper bound.
 
-    debug : bool, optional
+    debug : bool, default=False
         if True, some consistency checks are performed to help solving
-        numerical problems. Default=False.
+        numerical problems.
 
     Returns
     -------
@@ -809,8 +805,8 @@ def group_sparse_covariance_path(
         list of signals, independent from those in train_subjs, on which to
         compute a score. If None, no score is computed.
 
-    verbose : int, optional
-        verbosity level. Default=0.
+    verbose : int, default=0
+        verbosity level.
 
     tol, max_iter, debug, precisions_init :
         Passed to group_sparse_covariance(). See the corresponding docstring

@@ -60,15 +60,15 @@ def fetch_haxby(
     Parameters
     ----------
     %(data_dir)s
-    subjects : list or int, optional
+    subjects : list or int, default=(2,)
         Either a list of subjects or the number of subjects to load,
         from 1 to 6.
         By default, 2nd subject will be loaded.
-        Empty list returns no subject data. Default=(2,).
+        Empty list returns no subject data.
 
-    fetch_stimuli : boolean, optional
+    fetch_stimuli : boolean, default=False
         Indicate if stimuli images must be downloaded.
-        They will be presented as a dictionary of categories. Default=False.
+        They will be presented as a dictionary of categories.
     %(url)s
     %(resume)s
     %(verbose)s
@@ -271,10 +271,10 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
 
     Parameters
     ----------
-    n_subjects : int, optional
+    n_subjects : int, default=30
         The number of subjects to load from maximum of 40 subjects.
         By default, 30 subjects will be loaded. If None is given,
-        all 40 subjects will be loaded. Default=30.
+        all 40 subjects will be loaded.
     %(data_dir)s
     %(url)s
     %(resume)s
@@ -641,16 +641,14 @@ def fetch_localizer_contrasts(
         The number or list of subjects to load. If None is given,
         all 94 subjects are used.
 
-    get_tmaps : boolean, optional
-        Whether t maps should be fetched or not. Default=False.
+    get_tmaps : boolean, default=False
+        Whether t maps should be fetched or not.
 
-    get_masks : boolean, optional
+    get_masks : boolean, default=False
         Whether individual masks should be fetched or not.
-        Default=False.
 
-    get_anats : boolean, optional
+    get_anats : boolean, default=False
         Whether individual structural images should be fetched or not.
-        Default=False.
     %(data_dir)s
     %(url)s
     %(resume)s
@@ -914,9 +912,9 @@ def fetch_localizer_calculation_task(
 
     Parameters
     ----------
-    n_subjects : int, optional
+    n_subjects : int, default=1
         The number of subjects to load. If None is given,
-        all 94 subjects are used. Default=1.
+        all 94 subjects are used.
     %(data_dir)s
     %(url)s
     %(verbose)s
@@ -1036,30 +1034,28 @@ def fetch_abide_pcp(
         all available subjects are used (this number depends on the
         preprocessing pipeline used).
 
-    pipeline : string {'cpac', 'css', 'dparsf', 'niak'}, optional
+    pipeline : string {'cpac', 'css', 'dparsf', 'niak'}, default='cpac'
         Possible pipelines are "ccs", "cpac", "dparsf" and "niak".
-        Default='cpac'.
 
-    band_pass_filtering : boolean, optional
+    band_pass_filtering : boolean, default=False
         Due to controversies in the literature, band pass filtering is
         optional. If true, signal is band filtered between 0.01Hz and 0.1Hz.
-        Default=False.
 
-    global_signal_regression : boolean optional
+    global_signal_regression : boolean optional, default=False
         Indicates if global signal regression should be applied on the
-        signals. Default=False.
+        signals.
 
-    derivatives : string list, optional
+    derivatives : string list, default=['func_preproc']
         Types of downloaded files. Possible values are: alff, degree_binarize,
         degree_weighted, dual_regression, eigenvector_binarize,
         eigenvector_weighted, falff, func_mask, func_mean, func_preproc, lfcd,
         reho, rois_aal, rois_cc200, rois_cc400, rois_dosenbach160, rois_ez,
         rois_ho, rois_tt, and vmhc. Please refer to the PCP site for more
-        details. Default=['func_preproc'].
+        details.
 
-    quality_checked : boolean, optional
+    quality_checked : boolean, default=True
         If true (default), restrict the list of the subjects to the one that
-        passed quality assessment for all raters. Default=True.
+        passed quality assessment for all raters.
     %(url)s
     %(verbose)s
     %(legacy_format)s
@@ -1285,20 +1281,19 @@ def fetch_mixed_gambles(
 
     Parameters
     ----------
-    n_subjects : :obj:`int`, optional
+    n_subjects : :obj:`int`, default=1
         The number of subjects to load. If ``None`` is given, all the
-        subjects are used. Default=1.
+        subjects are used.
     %(data_dir)s
     %(url)s
     %(resume)s
     %(verbose)s
-    return_raw_data : :obj:`bool`, optional
+    return_raw_data : :obj:`bool`, default=False
         If ``False``, then the data will transformed into an ``(X, y)``
         pair, suitable for machine learning routines. ``X`` is a list
         of ``n_subjects * 48`` :class:`~nibabel.nifti1.Nifti1Image`
         objects (where 48 is the number of trials), and ``y`` is an
         array of shape ``(n_subjects * 48,)``.
-        Default=False.
 
     Returns
     -------
@@ -1373,12 +1368,12 @@ def fetch_megatrawls_netmats(
 
     Parameters
     ----------
-    dimensionality : int, optional
+    dimensionality : int, default=100
         Valid inputs are 25, 50, 100, 200, 300. By default, network matrices
         estimated using Group ICA brain parcellations
-        of 100 components/dimensions will be returned. Default=100.
+        of 100 components/dimensions will be returned.
 
-    timeseries : str, optional
+    timeseries : str, default='eigen_regression'
         Valid inputs are 'multiple_spatial_regression' or 'eigen_regression'.
         By default 'eigen_regression', matrices estimated using first principal
         eigen component timeseries signals extracted from each subject data
@@ -1386,13 +1381,11 @@ def fetch_megatrawls_netmats(
         Otherwise, 'multiple_spatial_regression'
         matrices estimated using spatial regressor based timeseries signals
         extracted from each subject data parcellations will be returned.
-        Default='eigen_regression'.
 
-    matrices : str, optional
+    matrices : str, default='partial_correlation'
         Valid inputs are 'full_correlation' or 'partial_correlation'.
         By default, partial correlation matrices will be returned
         otherwise if selected full correlation matrices will be returned.
-        Default='partial_correlation'.
     %(data_dir)s
     %(resume)s
     %(verbose)s
@@ -1610,10 +1603,10 @@ def fetch_surf_nki_enhanced(
 
     Parameters
     ----------
-    n_subjects : int, optional
+    n_subjects : int, default=10
         The number of subjects to load from maximum of 102 subjects.
         By default, 10 subjects will be loaded. If None is given,
-        all 102 subjects will be loaded. Default=10.
+        all 102 subjects will be loaded.
     %(data_dir)s
     %(url)s
     %(resume)s
@@ -1907,18 +1900,17 @@ def fetch_development_fmri(
         The number of subjects to load. If None, all the subjects are
         loaded. Total 155 subjects.
 
-    reduce_confounds : bool, optional
+    reduce_confounds : bool, default=True
         If True, the returned confounds only include 6 motion parameters,
         mean framewise displacement, signal from white matter, csf, and
         6 anatomical compcor parameters. This selection only serves the
         purpose of having realistic examples. Depending on your research
         question, other confounds might be more appropriate.
         If False, returns all :term:`fMRIPrep` confounds.
-        Default=True.
     %(data_dir)s
     %(resume)s
     %(verbose)s
-    age_group : str, optional
+    age_group : str, default='both'
         Default='both'. Which age group to fetch
 
         - 'adults' = fetch adults only (n=33, ages 18-39)
@@ -2711,12 +2703,11 @@ def fetch_spm_auditory(
     Parameters
     ----------
     %(data_dir)s
-    data_name : string, optional
-        Name of the dataset. Default='spm_auditory'.
+    data_name : string, default='spm_auditory'
+        Name of the dataset.
 
-    subject_id : string, optional
+    subject_id : string, default='sub001'
         Indicates which subject to retrieve.
-        Default='sub001'.
     %(verbose)s
 
     Returns
@@ -2901,11 +2892,11 @@ def fetch_spm_multimodal_fmri(
     Parameters
     ----------
     %(data_dir)s
-    data_name : string, optional
-        Name of the dataset. Default='spm_multimodal_fmri'.
+    data_name : string, default='spm_multimodal_fmri'
+        Name of the dataset.
 
-    subject_id : string, optional
-        Indicates which subject to retrieve. Default='sub001'.
+    subject_id : string, default='sub001'
+        Indicates which subject to retrieve.
     %(verbose)s
 
     Returns

@@ -147,26 +147,22 @@ def _space_net_alpha_grid(
     y : ndarray, shape (n_samples,)
         Target / response vector.
 
-    l1_ratio : float, optional
+    l1_ratio : float, default=1
         The ElasticNet mixing parameter, with ``0 <= l1_ratio <= 1``.
         For ``l1_ratio = 0`` the penalty is purely a spatial prior
         (Graph-Net, TV, etc.). ``For l1_ratio = 1`` it is an L1 penalty.
         For ``0 < l1_ratio < 1``, the penalty is a combination of L1
         and a spatial prior.
-        Default=1.
 
-    eps : float, optional
+    eps : float, default=1e-3
         Length of the path. ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``.
-        Default=1e-3.
 
-    n_alphas : int, optional
+    n_alphas : int, default=10
         Number of alphas along the regularization path.
-        Default=10.
 
-    logistic : bool, optional
+    logistic : bool, default=False
         Indicates where the underlying loss function is logistic.
-        Default=False.
 
     """
     if logistic:
@@ -357,17 +353,16 @@ def path_scores(
     solver_params : dict
        Dictionary of param-value pairs to be passed to solver.
 
-    is_classif : bool, optional
+    is_classif : bool, default=False
         Indicates whether the loss is a classification loss or a
-        regression loss. Default=False.
+        regression loss.
 
     Xmean: ??? TODO: Add description.
 
     key: ??? TODO: Add description.
 
-    debias : bool, optional
+    debias : bool, default=False
         If set, then the estimated weights maps will be debiased.
-        Default=False.
 
     screening_percentile : float in the interval [0, 100], optional\
         (default 20)

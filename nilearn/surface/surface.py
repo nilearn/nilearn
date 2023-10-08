@@ -140,12 +140,12 @@ def _ball_sample_locations(
         Affine transformation from image voxels to the vertices' coordinate
         space.
 
-    ball_radius : :obj:`float`, optional
+    ball_radius : :obj:`float`, default=3
         Size in mm of the neighbourhood around each vertex in which to draw
         samples. Default=3.0.
 
-    n_points : :obj:`int`, optional
-        Number of samples to draw for each vertex. Default=20.
+    n_points : :obj:`int`, default=20
+        Number of samples to draw for each vertex.
 
     depth : `None`
         Raises a `ValueError` if not `None` because incompatible with this
@@ -200,12 +200,12 @@ def _line_sample_locations(
         Affine transformation from image voxels to the vertices' coordinate
         space.
 
-    segment_half_width : :obj:`float`, optional
+    segment_half_width : :obj:`float`, default=3
         Size in mm of the neighbourhood around each vertex in which to draw
         samples. Default=3.0.
 
-    n_points : :obj:`int`, optional
-        Number of samples to draw for each vertex. Default=10.
+    n_points : :obj:`int`, default=10
+        Number of samples to draw for each vertex.
 
     depth : sequence of :obj:`float` or None, optional
         Cortical depth, expressed as a fraction of segment_half_width.
@@ -322,9 +322,9 @@ def _projection_matrix(mesh, affine, img_shape, kind='auto', radius=3.,
     img_shape : 3-tuple of :obj:`int`
         The shape of the image to be projected.
 
-    kind : {'auto', 'depth', 'line', 'ball'}, optional
+    kind : {'auto', 'depth', 'line', 'ball'}, default='auto'
         The strategy used to sample image intensities around each vertex.
-        Ignored if `inner_mesh` is not None. Default='auto'.
+        Ignored if `inner_mesh` is not None.
 
         - 'auto':
             'depth' if `inner_mesh` is not `None`, otherwise 'line.
@@ -337,7 +337,7 @@ def _projection_matrix(mesh, affine, img_shape, kind='auto', radius=3.,
             Samples are regularly spaced inside a ball centered at the mesh
             vertex.
 
-    radius : :obj:`float`, optional
+    radius : :obj:`float`, default=3
         The size (in mm) of the neighbourhood from which samples are drawn
         around each node. Ignored if `inner_mesh` is not `None`.
         Default=3.0.
@@ -484,14 +484,13 @@ def vol_to_surf(img, surf_mesh,
         tuple or a namedtuple with the fields "coordinates" and "faces", or
         a Mesh object with "coordinates" and "faces" attributes.
 
-    radius : :obj:`float`, optional
+    radius : :obj:`float`, default=3
         The size (in mm) of the neighbourhood from which samples are drawn
         around each node. Ignored if `inner_mesh` is provided.
         Default=3.0.
 
-    interpolation : {'linear', 'nearest'}, optional
+    interpolation : {'linear', 'nearest'}, default='linear'
         How the image intensity is measured at a sample point.
-        Default='linear'.
 
         - 'linear':
             Use a trilinear interpolation of neighboring voxels.

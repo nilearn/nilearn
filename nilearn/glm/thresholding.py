@@ -123,15 +123,15 @@ def cluster_level_inference(
     mask_img : Niimg-like object, optional,
         mask image
 
-    threshold : list of floats, optional
+    threshold : list of floats, default=3
        Cluster-forming threshold in z-scale. Default=3.0.
 
-    alpha : float or list, optional
+    alpha : float or list, default=0
         Level of control on the true positive rate, aka true dsicovery
         proportion. Default=0.05.
 
-    verbose : bool, optional
-        Verbosity mode. Default=False.
+    verbose : bool, default=False
+        Verbosity mode.
 
     Returns
     -------
@@ -201,31 +201,29 @@ def threshold_stats_img(
     mask_img : Niimg-like object, optional,
         Mask image
 
-    alpha : float or list, optional
+    alpha : float or list, default=0
         Number controlling the thresholding (either a p-value or q-value).
         Its actual meaning depends on the height_control parameter.
         This function translates alpha to a z-scale threshold.
         Default=0.001.
 
-    threshold : float, optional
+    threshold : float, default=3
        Desired threshold in z-scale.
        This is used only if height_control is None. Default=3.0.
 
-    height_control : string, or None optional
+    height_control : string, or None optional, default='fpr'
         False positive control meaning of cluster forming
         threshold: None|'fpr'|'fdr'|'bonferroni'
-        Default='fpr'.
 
-    cluster_threshold : float, optional
+    cluster_threshold : float, default=0
         cluster size threshold. In the returned thresholded map,
         sets of connected voxels (`clusters`) with size smaller
-        than this number will be removed. Default=0.
+        than this number will be removed.
 
-    two_sided : Bool, optional
+    two_sided : Bool, default=True
         Whether the thresholding should yield both positive and negative
         part of the maps.
         In that case, alpha is corrected by a factor of 2.
-        Default=True.
 
     Returns
     -------

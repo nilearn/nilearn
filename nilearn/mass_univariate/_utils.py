@@ -300,9 +300,8 @@ def _normalize_matrix_on_axis(m, axis=0):
     m : numpy 2D array,
         The matrix to normalize.
 
-    axis : integer in {0, 1}, optional
+    axis : integer in {0, 1}, default=0
         A valid axis to normalize across.
-        Default=0.
 
     Returns
     -------

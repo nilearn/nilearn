@@ -667,7 +667,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
     %(hemi)s
     %(view)s
-    engine : {'matplotlib', 'plotly'}, optional
+    engine : {'matplotlib', 'plotly'}, default='matplotlib'
 
         .. versionadded:: 0.9.0
 
@@ -687,10 +687,9 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             The ``plotly`` engine is new and experimental.
             Please report bugs that you may encounter.
 
-        Default='matplotlib'.
     %(cmap)s
         If None, matplotlib default will be chosen.
-    symmetric_cmap : :obj:`bool`, optional
+    symmetric_cmap : :obj:`bool`, default=False
         Whether to use a symmetric colormap or not.
 
         .. note::
@@ -699,7 +698,6 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
         .. versionadded:: 0.9.0
 
-        Default=False.
     %(colorbar)s
         Default=False.
     %(avg_method)s
@@ -750,12 +748,11 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         .. versionadded:: 0.7.1
 
     %(title)s
-    title_font_size : :obj:`int`, optional
+    title_font_size : :obj:`int`, default=18
         Size of the title font.
 
         .. versionadded:: 0.9.0
 
-        Default=18.
     %(output_file)s
     axes : instance of matplotlib axes, None, optional
         The axes instance to plot to. The projection must be '3d' (e.g.,
@@ -897,8 +894,8 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
     colors : list of matplotlib color names or RGBA values, or None, optional
         Colors to be used.
 
-    legend : boolean,  optional
-        Whether to plot a legend of region's labels. Default=False.
+    legend : boolean,  optional, default=False
+        Whether to plot a legend of region's labels.
     %(cmap)s
         Default='tab20'.
     %(title)s
@@ -1031,7 +1028,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
     %(hemi)s
     %(view)s
-    engine : {'matplotlib', 'plotly'}, optional
+    engine : {'matplotlib', 'plotly'}, default='matplotlib'
 
         .. versionadded:: 0.9.0
 
@@ -1050,7 +1047,6 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
             The ``plotly`` engine is new and experimental.
             Please report bugs that you may encounter.
 
-        Default='matplotlib'.
 
     threshold : a number or None, optional
         If None is given, the image is not thresholded.
@@ -1097,12 +1093,11 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
             ``matplotlib`` engine.
 
     %(title)s
-    title_font_size : :obj:`int`, optional
+    title_font_size : :obj:`int`, default=18
         Size of the title font.
 
         .. versionadded:: 0.9.0
 
-        Default=18.
     %(output_file)s
     axes : instance of matplotlib axes, None, optional
         The axes instance to plot to. The projection must be '3d' (e.g.,
@@ -1308,14 +1303,13 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
     stat_map : str or 3D Niimg-like object
         See :ref:`extracting_data`.
 
-    surf_mesh : str, dict, or None, optional
+    surf_mesh : str, dict, or None, default='fsaverage5'
         If str, either one of the two:
         'fsaverage5': the low-resolution fsaverage5 mesh (10242 nodes)
         'fsaverage': the high-resolution fsaverage mesh (163842 nodes)
         If dict, a dictionary with keys: ['infl_left', 'infl_right',
         'pial_left', 'pial_right', 'sulc_left', 'sulc_right'], where
         values are surface mesh geometries as accepted by plot_surf_stat_map.
-        Default='fsaverage5'.
 
     mask_img : Niimg-like object or None, optional
         The mask is passed to vol_to_surf.
@@ -1328,17 +1322,15 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
     hemispheres : :obj:`list` of :obj:`str`, default=["left", "right"]
         Hemispheres to display.
 
-    inflate : bool, optional
+    inflate : bool, default=False
         If True, display images in inflated brain.
         If False, display images in pial surface.
-        Default=False.
 
-    views : list of strings, optional
+    views : list of strings, default=['lateral', 'medial']
         A list containing all views to display.
         The montage will contain as many rows as views specified by
         display mode. Order is preserved, and left and right hemispheres
         are shown on the left and right sides of the figure.
-        Default=['lateral', 'medial'].
     %(output_file)s
     %(title)s
     %(colorbar)s
@@ -1350,11 +1342,10 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
     %(vmin)s
     %(vmax)s
     %(threshold)s
-    symmetric_cbar : :obj:`bool`, or "auto", optional
+    symmetric_cbar : :obj:`bool`, or "auto", default=True
         Specifies whether the colorbar should range from `-vmax` to `vmax`
         (or from `vmin` to `-vmin` if `-vmin` is greater than `vmax`) or
         from `vmin` to `vmax`.
-        Default=True.
     %(cmap)s
         Default='cold_hot'.
     kwargs : dict, optional
@@ -1533,7 +1524,7 @@ def plot_surf_roi(surf_mesh,
 
     %(hemi)s
     %(view)s
-    engine : {'matplotlib', 'plotly'}, optional
+    engine : {'matplotlib', 'plotly'}, default='matplotlib'
 
         .. versionadded:: 0.9.0
 
@@ -1552,7 +1543,6 @@ def plot_surf_roi(surf_mesh,
             The ``plotly`` engine is new and experimental.
             Please report bugs that you may encounter.
 
-        Default='matplotlib'.
 
     %(avg_method)s
 
@@ -1562,10 +1552,9 @@ def plot_surf_roi(surf_mesh,
 
         Default='median'.
 
-    threshold : a number or None, optional
+    threshold : a number or None, default=1e-14
         Threshold regions that are labelled 0.
         If you want to use 0 as a label, set threshold to None.
-        Default=1e-14.
     %(cmap)s
         Default='gist_ncar'.
     %(cbar_tick_format)s
@@ -1596,12 +1585,11 @@ def plot_surf_roi(surf_mesh,
             ``matplotlib`` engine.
 
     %(title)s
-    title_font_size : :obj:`int`, optional
+    title_font_size : :obj:`int`, default=18
         Size of the title font.
 
         .. versionadded:: 0.9.0
 
-        Default=18.
     %(output_file)s
     axes : Axes instance or None, optional
         The axes instance to plot to. The projection must be '3d' (e.g.,

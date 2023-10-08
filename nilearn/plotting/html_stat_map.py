@@ -134,11 +134,11 @@ def _save_sprite(
     mask : Numpy array, optional
         Mask to use.
 
-    cmap : String or colormap, optional
-        Colormap to use. Default='Greys'.
+    cmap : String or colormap, default='Greys'
+        Colormap to use.
 
-    format : String, optional
-        Format to use for output image. Default='png'.
+    format : String, default='png'
+        Format to use for output image.
 
     Returns
     -------
@@ -509,35 +509,33 @@ def view_img(
         as a 3-tuple: (x, y, z). If None is given, the cuts are calculated
         automatically.
 
-    colorbar : boolean, optional
-        If True, display a colorbar on top of the plots. Default=True.
+    colorbar : boolean, default=True
+        If True, display a colorbar on top of the plots.
     %(title)s
-    threshold : string, number or None, optional
+    threshold : string, number or None, default=1e-6
         If None is given, the image is not thresholded.
         If a string of the form "90%%" is given, use the 90-th percentile of
         the absolute value in the image.
         If a number is given, it is used to threshold the image:
         values below the threshold (in absolute value) are plotted
         as transparent. If auto is given, the threshold is determined
-        automatically. Default=1e-6.
+        automatically.
 
-    annotate : boolean, optional
+    annotate : boolean, default=True
         If annotate is True, current cuts are added to the viewer.
-        Default=True.
     %(draw_cross)s
-    black_bg : boolean or 'auto', optional
+    black_bg : boolean or 'auto', default='auto'
         If True, the background of the image is set to be black.
         Otherwise, a white background is used.
         If set to auto, an educated guess is made to find if the background
         is white or black.
-        Default='auto'.
     %(cmap)s
         Default=`plt.cm.cold_hot`.
-    symmetric_cmap : bool, optional
+    symmetric_cmap : bool, default=True
         True: make colormap symmetric (ranging from -vmax to vmax).
         False: the colormap will go from the minimum of the volume to vmax.
         Set it to False if you are plotting a positive volume, e.g. an atlas
-        or an anatomical image. Default=True.
+        or an anatomical image.
     %(dim)s
         Default='auto'.
     vmax : float, or None, optional
@@ -555,9 +553,8 @@ def view_img(
         image, or 0 when a threshold is used.
     %(resampling_interpolation)s
         Default='continuous'.
-    opacity : float in [0,1], optional
+    opacity : float in [0,1], default=1
         The level of opacity of the overlay (0: transparent, 1: opaque).
-        Default=1.
 
     Returns
     -------

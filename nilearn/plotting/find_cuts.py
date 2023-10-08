@@ -249,17 +249,15 @@ def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
         See :ref:`extracting_data`.
         The brain map.
 
-    direction : string, optional
+    direction : string, default='z'
         Sectional direction; possible values are "x", "y", or "z".
-        Default='z'.
 
-    n_cuts : int, optional
-        Number of cuts in the plot. Default=7.
+    n_cuts : int, default=7
+        Number of cuts in the plot.
 
-    spacing : 'auto' or int, optional
+    spacing : 'auto' or int, default='auto'
         Minimum spacing between cuts (in voxels, not millimeters)
         if 'auto', the spacing is .5 / n_cuts * img_length.
-        Default='auto'.
 
     Returns
     -------
@@ -421,17 +419,16 @@ def find_parcellation_cut_coords(
         A brain parcellation atlas with specific mask labels for each
         parcellated region.
 
-    background_label : int, optional
+    background_label : int, default=0
         Label value used in labels_img to represent background.
-        Default=0.
 
-    return_label_names : bool, optional
-        Returns list of labels. Default=False.
+    return_label_names : bool, default=False
+        Returns list of labels.
 
-    label_hemisphere : 'left' or 'right', optional
+    label_hemisphere : 'left' or 'right', default='left'
         Choice of hemisphere to compute label center coords for.
         Applies only in cases where atlas labels are lateralized.
-        Eg. Yeo or Harvard Oxford atlas. Default='left'.
+        Eg. Yeo or Harvard Oxford atlas.
 
     Returns
     -------

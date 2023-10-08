@@ -129,13 +129,13 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
         Raise an error if the matrix is not symmetric positive definite of the
         same shape as the elements of matrices.
 
-    max_iter : int, optional
-        Maximal number of iterations. Default=10.
+    max_iter : int, default=10
+        Maximal number of iterations.
 
-    tol : positive float or None, optional
+    tol : positive float or None, default=1e-7
         The tolerance to declare convergence: if the gradient norm goes below
         this value, the gradient descent is stopped. If None, no  check is
-        performed. Default=1e-7.
+        performed.
 
     Returns
     -------
@@ -224,9 +224,8 @@ def sym_matrix_to_vec(symmetric, discard_diagonal=False):
         (..., n_features, n_features)
         Input array.
 
-    discard_diagonal : boolean, optional
+    discard_diagonal : boolean, default=False
         If True, the values of the diagonal are not returned.
-        Default=False.
 
     Returns
     -------
