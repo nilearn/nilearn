@@ -620,7 +620,7 @@ def clean(
         information, sample_mask must be a list containing sets of indexes for
         each run.
 
-            .. versionadded:: 0.8.0
+        .. versionadded:: 0.8.0
 
     %(t_r)s
         Default=2.5.
