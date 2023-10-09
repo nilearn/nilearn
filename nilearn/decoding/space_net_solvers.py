@@ -521,7 +521,7 @@ def tvl1_solver(
         Maximum number of iterations for inner FISTA loop in which
         the prox of TV is approximated.
 
-    tol : float, ,default=1e-4
+    tol : float, default=1e-4
         Defines the tolerance for convergence.
 
     loss : string

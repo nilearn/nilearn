@@ -678,7 +678,7 @@ def compute_regressor(
     frame_times : array of shape (n_scans)
         the desired sampling times
 
-    con_id : string, optional, default is 'cond'.
+    con_id : string, default='cond'
         Identifier of the condition
 
     oversampling : int, default=50

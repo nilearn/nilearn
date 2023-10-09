@@ -708,7 +708,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
         Default='mean'.
 
-    threshold : a number or None, default is None.
+    threshold : a number or None, default=None.
         If None is given, the image is not thresholded.
         If a number is given, it is used to threshold the image, values
         below the threshold (in absolute value) are plotted as transparent.

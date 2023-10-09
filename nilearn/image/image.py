@@ -903,7 +903,7 @@ def threshold_img(
 
         .. versionadded:: 0.9.0
 
-    mask_img : Niimg-like object, default None, optional
+    mask_img : Niimg-like object, default=None
         Mask image applied to mask the input data.
         If None, no masking will be applied.
 
@@ -1083,7 +1083,7 @@ def binarize_img(img, threshold=0, mask_img=None):
         this score will be kept. The given string should be
         within the range of "0%" to "100%".
 
-    mask_img : Niimg-like object, default None, optional
+    mask_img : Niimg-like object, default=None
         Mask image applied to mask the input data.
         If None, no masking will be applied.
 

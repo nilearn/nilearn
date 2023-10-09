@@ -39,7 +39,7 @@ def _safe_get_data(img, ensure_finite=False, copy_data=False):
         If True, non-finite values such as (NaNs and infs) found in the
         image will be replaced by zeros.
 
-    copy_data: bool, default is False
+    copy_data: bool, default=False
         If true, the returned data is a copy of the img data.
 
     Returns
@@ -206,7 +206,7 @@ def _repr_niimgs(niimgs, shorten=True):
     niimgs: image or collection of images
         nibabel SpatialImage to repr.
 
-    shorten: boolean, optional, default is True
+    shorten: boolean, default=True
         If True, filenames with more than 20 characters will be
         truncated, and lists of more than 3 file names will be
         printed with only first and last element.
