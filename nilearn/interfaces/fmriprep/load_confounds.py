@@ -244,7 +244,7 @@ def load_confounds(
           `~desc-smoothAROMAnonaggr_bold.nii.gz`.
         - "basic": use noise independent components only.
 
-    demean : :obj:`bool`=True
+    demean : :obj:`bool`, default=True
         If True, the confounds are standardized to a zero mean (over time).
         When using :class:`nilearn.maskers.NiftiMasker` with default
         parameters, the recommended option is True.

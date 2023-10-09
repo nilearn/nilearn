@@ -1564,7 +1564,7 @@ def plot_surf_roi(surf_mesh,
 
     alpha : float or 'auto', default='auto'
         Alpha level of the mesh (not the stat_map). If default,
-        alpha will default to .5 when no bg_map is passed
+        alpha will default to 0.5 when no bg_map is passed
         and to 1 if a bg_map is passed.
 
         .. note::

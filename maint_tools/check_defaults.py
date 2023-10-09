@@ -33,6 +33,15 @@ def check_docstring(docstring: str, file: Path, lineno: int) -> str:
     ]
     targets += [target.lower() for target in targets]
 
+    # for param in docstring.params:
+    #     if param.description is not None and (
+    #         "default " in param.description or
+    #         "Default " in param.description):
+    #         print(
+    #             f" default found '{param.arg_name}' "
+    #             f"in {file.resolve()}:{lineno}"
+    #         )
+
     for target_str, param in itertools.product(targets, docstring.params):
         update_docstring(param, target_str, file, lineno)
 
@@ -41,12 +50,6 @@ def update_docstring(param, target_str, file, lineno):
     """Update parameters default in docstring."""
     if param.arg_name.startswith("%("):
         return
-
-    if param.description is not None and target_str in param.description:
-        print(
-            f" {target_str} found '{param.arg_name}' "
-            f"in {file.resolve()}:{lineno}"
-        )
 
     if (
         param.description is not None

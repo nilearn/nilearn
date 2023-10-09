@@ -32,7 +32,7 @@ def _standardize(signals, detrend=False, standardize="zscore"):
     detrend : :obj:`bool`, default=False
         If detrending of timeseries is requested.
 
-    standardize : {'zscore_sample', 'zscore', 'psc', True, False},
+    standardize : {'zscore_sample', 'zscore', 'psc', True, False}, \
                   default='zscore'
         Strategy to standardize the signal:
 
@@ -40,7 +40,7 @@ def _standardize(signals, detrend=False, standardize="zscore"):
               to zero mean and scaled to unit variance. Uses sample std.
             - 'zscore': The signal is z-scored. Timeseries are shifted
               to zero mean and scaled to unit variance. Uses population std
-              by calling default :obj:`numpy.std` with N - ``ddof=0``.
+              by calling :obj:`numpy.std` with N - ``ddof=0``.
             - 'psc':  Timeseries are shifted to zero mean value and scaled
               to percent signal change (as compared to original mean signal).
             - True: The signal is z-scored (same as option `zscore`).
@@ -639,14 +639,14 @@ def clean(
     %(high_pass)s
     %(detrend)s
     standardize : {'zscore_sample', 'zscore', 'psc', True, False}, \
-        default="zscore"
+                  default="zscore"
         Strategy to standardize the signal:
 
             - 'zscore_sample': The signal is z-scored. Timeseries are shifted
               to zero mean and scaled to unit variance. Uses sample std.
             - 'zscore': The signal is z-scored. Timeseries are shifted
               to zero mean and scaled to unit variance. Uses population std
-              by calling default :obj:`numpy.std` with N - ``ddof=0``.
+              by calling :obj:`numpy.std` with N - ``ddof=0``.
             - 'psc':  Timeseries are shifted to zero mean value and scaled
               to percent signal change (as compared to original mean signal).
             - True: The signal is z-scored (same as option `zscore`).

@@ -149,7 +149,7 @@ class Parcellations(_MultiPCA):
         Default=0.
 
     mask : Niimg-like object or :class:`nilearn.maskers.NiftiMasker`,\
- :class:`nilearn.maskers.MultiNiftiMasker`, optional
+           :class:`nilearn.maskers.MultiNiftiMasker`, optional
         Mask/Masker used for masking the data.
         If mask image if provided, it will be used in the MultiNiftiMasker.
         If an instance of MultiNiftiMasker is provided, then this instance
@@ -235,8 +235,8 @@ class Parcellations(_MultiPCA):
     `labels_img_` : :class:`nibabel.nifti1.Nifti1Image`
         Labels image to each parcellation learned on fmri images.
 
-    `masker_` : :class:`nilearn.maskers.NiftiMasker` or\
- :class:`nilearn.maskers.MultiNiftiMasker`
+    `masker_` : :class:`nilearn.maskers.NiftiMasker` or \
+                :class:`nilearn.maskers.MultiNiftiMasker`
         The masker used to mask the data.
 
     `connectivity_` : :class:`numpy.ndarray`

@@ -262,7 +262,7 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
         min value for mapping colors.
         If `symmetric_cmap` is `True`, `vmin` is always equal to `-vmax` and
         cannot be chosen.
-        If `symmetric_cmap` is `False`, `vmin` defaults to the min of the
+        If `symmetric_cmap` is `False`, `vmin` is equal to the min of the
         image, or 0 when a threshold is used.
 
     symmetric_cmap : bool, default=True

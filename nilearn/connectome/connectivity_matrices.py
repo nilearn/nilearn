@@ -378,9 +378,10 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
     Parameters
     ----------
-    cov_estimator : estimator object, optional.
-        The covariance estimator. By default the LedoitWolf estimator
-        is used. This implies that correlations are slightly shrunk
+    cov_estimator : estimator object, \
+                    default=LedoitWolf(store_precision=False)
+        The covariance estimator.
+        This implies that correlations are slightly shrunk
         towards zero compared to a maximum-likelihood estimate
 
     kind : {"covariance", "correlation", "partial correlation",\

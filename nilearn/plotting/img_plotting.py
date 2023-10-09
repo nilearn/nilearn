@@ -249,7 +249,8 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
              annotate=True, draw_cross=True, black_bg=False, colorbar=False,
              cbar_tick_format="%.2g",
              resampling_interpolation='continuous',
-             bg_img=None, vmin=None, vmax=None, radiological=False, **kwargs):
+             bg_img=None, vmin=None, vmax=None, radiological=False, 
+             decimals=False, **kwargs):
     """Plot cuts of a given image.
 
     By default Frontal, Axial, and Lateral.
@@ -265,7 +266,7 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
     %(title)s
     %(threshold)s
     %(annotate)s
-    decimals : integer, optional
+    decimals : :obj:`int` or bool, default=False
         Number of decimal places on slice position annotation.
         If False (default),
         the slice position is integer without decimal point.
@@ -299,7 +300,7 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
         black_bg=black_bg, colorbar=colorbar,
         cbar_tick_format=cbar_tick_format,
         bg_img=bg_img, vmin=vmin, vmax=vmax, radiological=radiological,
-        **kwargs)
+        decimals=decimals, **kwargs)
 
     return display
 
@@ -654,13 +655,12 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     %(vmax)s
     %(resampling_interpolation)s
         Default='nearest'.
-    view_type : {'continuous', 'contours'}, optional
+    view_type : {'continuous', 'contours'}, default='continuous'
         By default view_type == 'continuous',
         rois are shown as continuous colors.
         If view_type == 'contours', maps are shown as contours.
         For this type, label
         denoted as 0 is considered as background and not shown.
-        Default='continuous'.
     %(linewidths)s
         Default=2.5.
     %(radiological)s
@@ -734,7 +734,7 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
 
     view_type : {'auto', 'contours', 'filled_contours', 'continuous'}, \
                 default='auto'
-        By default view_type == 'auto', means maps will be displayed
+        If view_type == 'auto', it means maps will be displayed
         automatically using any one of the three view types. The automatic
         selection of view type depends on the total number of maps.
         If view_type == 'contours', maps are overlaid as contours
@@ -743,7 +743,7 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
         If view_type == 'continuous', maps are overlaid as continuous
         colors irrespective of the number maps.
 
-    threshold : a str or a number, list of str or numbers, optional
+    threshold : a str or a number, list of str or numbers, default='auto'
         This parameter is optional and is used to threshold the maps image
         using the given value or automatically selected value. The values
         in the image above the threshold level will be visualized.
@@ -1040,7 +1040,7 @@ def plot_glass_brain(stat_map_img,
     %(vmin)s
     %(vmax)s
     plot_abs : boolean, default=True
-        If set to True (default) maximum intensity projection of the
+        If set to True maximum intensity projection of the
         absolute value will be used (rendering positive and negative
         values in the same manner). If set to false the sign of the
         maximum intensity will be represented with different colors.
@@ -1356,9 +1356,9 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
     %(img)s
         4D image.
 
-    mask_img : Niimg-like object or None, optional
-        Limit plotted voxels to those inside the provided mask (default is
-        None). If a 3D atlas is provided, voxels will be grouped by atlas
+    mask_img : Niimg-like object or None, default=None
+        Limit plotted voxels to those inside the provided mask.
+        If a 3D atlas is provided, voxels will be grouped by atlas
         value and a colorbar will be added to the left side of the figure
         with atlas labels.
         If not specified, a new mask will be derived from data.

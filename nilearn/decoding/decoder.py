@@ -1075,10 +1075,9 @@ class Decoder(_BaseDecoder):
 
     Parameters
     ----------
-    estimator: str, optional
+    estimator: str, default='svc'
         The estimator to choose among:
         %(classifier_options)s
-        Default 'svc'.
 
     mask: filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
@@ -1087,7 +1086,7 @@ class Decoder(_BaseDecoder):
         masker with default parameters. Refer to NiftiMasker or
         MultiNiftiMasker to check for default parameters. Default None
 
-    cv: cross-validation generator or int, optional (default 10)
+    cv: cross-validation generator or int, default=10
         A cross-validation generator.
         See: https://scikit-learn.org/stable/modules/cross_validation.html
 
@@ -1106,13 +1105,13 @@ class Decoder(_BaseDecoder):
         predictions are estimated using default strategy.
 
     screening_percentile: int, float, optional, \
-        in the closed interval [0, 100]
+                          in the closed interval [0, 100]
         The percentage of brain volume that will be kept with respect to a full
         MNI template. In particular, if it is lower than 100, a univariate
         feature selection based on the Anova F-value for the input data will be
         performed. A float according to a percentile of the highest scores.
 
-    scoring: str, callable or None, optional. Default: 'roc_auc'
+    scoring: str, callable or None, default='roc_auc'
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
         If callable, takes as arguments the fitted estimator, the
@@ -1121,7 +1120,7 @@ class Decoder(_BaseDecoder):
         e.g. scorer(estimator, X_test, y_test)
 
         For classification, valid entries are: 'accuracy', 'f1', 'precision',
-        'recall' or 'roc_auc'. Default: 'roc_auc'.
+        'recall' or 'roc_auc'.
     %(smoothing_fwhm)s
     %(standardize)s
     %(target_affine)s
@@ -1394,7 +1393,7 @@ class FREMRegressor(_BaseDecoder):
         performed. A float according to a percentile of the highest
         scores.
 
-    scoring : str, callable or None, default='r2'
+    scoring : str, callable or None, default= 'roc_auc'
 
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules

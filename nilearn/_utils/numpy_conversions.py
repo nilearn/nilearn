@@ -80,10 +80,10 @@ def as_ndarray(arr, copy=False, dtype=None, order="K"):
         dtype of the returned array. Performing copy and type conversion at the
         same time can in some cases avoid an additional copy.
 
-    order: string
+    order: :obj:`str`, default='K'
         gives the order of the returned array.
         Valid values are: "C", "F", "A", "K", None.
-        default is "K". See ndarray.copy() for more information.
+        See ndarray.copy() for more information.
 
     Returns
     -------
