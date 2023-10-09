@@ -2807,7 +2807,7 @@ def fetch_neurovault_ids(
 
 def fetch_neurovault_motor_task(data_dir=None, verbose=1):
     """Fetch left vs right button press \
-       group :term:`contrast` map from NeuroVault.
+       group :term:`contrast` map from :term:`Neurovault`.
 
     Parameters
     ----------

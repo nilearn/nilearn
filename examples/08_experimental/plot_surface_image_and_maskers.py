@@ -5,7 +5,7 @@ A short demo of the surface images & maskers
 copied from the nilearn sandbox discussion, to be transformed into tests &
 examples
 
-.. note:
+.. note::
 
     this example is meant to support discussion around a tentative API for
     surface images in nilearn. This functionality is provided by the
