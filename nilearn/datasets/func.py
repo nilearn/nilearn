@@ -959,7 +959,7 @@ def fetch_localizer_calculation_task(
 def fetch_localizer_button_task(
     data_dir=None, url=None, verbose=1, legacy_format=True
 ):
-    """Fetch left vs right button press :term: `contrast` maps \
+    """Fetch left vs right button press :term:`contrast` maps \
        from the localizer.
 
     Parameters
