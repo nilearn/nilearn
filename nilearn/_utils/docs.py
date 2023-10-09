@@ -262,7 +262,9 @@ docdict[
 ] = """
 data_dir : :obj:`pathlib.Path` or :obj:`str`, optional
     Path where data should be downloaded.
-    By default, files are downloaded in home directory.
+    By default, files are downloaded in a ``nilearn_data`` folder
+    in the home directory of the user.
+    See also :func:`~datasets.get_data_dirs`.
 """
 
 # detrend
