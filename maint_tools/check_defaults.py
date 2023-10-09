@@ -24,6 +24,8 @@ def check_docstring(docstring: str, file: Path, lineno: int) -> str:
     targets = [
         "Default=",
         "Default =",
+        "Default :",
+        "Default:",
         "Default = ",
         "default=",
         "Default is ",
@@ -39,6 +41,12 @@ def update_docstring(param, target_str, file, lineno):
     """Update parameters default in docstring."""
     if param.arg_name.startswith("%("):
         return
+
+    if param.description is not None and target_str in param.description:
+        print(
+            f" {target_str} found '{param.arg_name}' "
+            f"in {file.resolve()}:{lineno}"
+        )
 
     if (
         param.description is not None

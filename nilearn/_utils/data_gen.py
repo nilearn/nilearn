@@ -284,9 +284,10 @@ def generate_fake_fmri(shape=(10, 11, 12),
     n_blocks : :obj:`int` or None, default=None
         Number of condition blocks.
 
-    block_size : :obj:`int` or None, optional
-        Number of timepoints in a block. Used only if n_blocks is not
-        None. Defaults to 3 if n_blocks is not None.
+    block_size : :obj:`int` or None, default=None
+        Number of timepoints in a block. 
+        Used only if n_blocks is not None.
+        Defaults to 3 if n_blocks is None.
 
     block_type : :obj:`str`, default='classification'
         Defines if the returned target should be used for

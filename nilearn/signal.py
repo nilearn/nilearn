@@ -32,8 +32,8 @@ def _standardize(signals, detrend=False, standardize="zscore"):
     detrend : :obj:`bool`, default=False
         If detrending of timeseries is requested.
 
-    standardize : {'zscore_sample', 'zscore', 'psc', True, False}, \
-        default='zscore'
+    standardize : {'zscore_sample', 'zscore', 'psc', True, False},
+                  default='zscore'
         Strategy to standardize the signal:
 
             - 'zscore_sample': The signal is z-scored. Timeseries are shifted
@@ -608,7 +608,7 @@ def clean(
         signal, as if all were in the same array.
 
     sample_mask : None, Any type compatible with numpy-array indexing, \
-                  or :obj:`list` of
+                  or :obj:`list` of \
                   shape: (number of scans - number of volumes removed, ) \
                   for explicit index, or (number of scans, ) for binary mask, \
                   default=None

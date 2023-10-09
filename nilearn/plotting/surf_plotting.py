@@ -713,11 +713,10 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         If a number is given, it is used to threshold the image, values
         below the threshold (in absolute value) are plotted as transparent.
 
-    alpha : float or 'auto', optional
+    alpha : float or 'auto', default='auto'
         Alpha level of the mesh (not surf_data).
-        If 'auto' is chosen, alpha will default to .5 when no bg_map
+        If 'auto' is chosen, alpha will default to 0.5 when no bg_map
         is passed and to 1 if a bg_map is passed.
-        Default='auto'.
 
         .. note::
             This option is currently only implemented for the
