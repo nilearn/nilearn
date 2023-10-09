@@ -974,8 +974,8 @@ def fetch_localizer_button_task(
     data : Bunch
         Dictionary-like object, the interest attributes are :
 
-        - 'cmaps': string list, giving paths to nifti :term: `contrast` maps
-        - 'tmap': string, giving paths to nifti :term: `contrast` maps
+        - 'cmaps': string list, giving paths to nifti :term:`contrast` maps
+        - 'tmap': string, giving paths to nifti :term:`contrast` maps
         - 'anat': string, giving paths to normalized anatomical image
 
     Notes
