@@ -37,7 +37,7 @@ The big picture discussion corresponding to this example can be found
 in the documentation section :ref:`parcellating_brain`.
 """
 
-########################################################################
+# %%
 # Download a brain development fmri dataset and turn it to a data matrix
 # ----------------------------------------------------------------------
 #
@@ -59,7 +59,7 @@ dataset = datasets.fetch_development_fmri(n_subjects=1)
 print(f"First subject functional nifti image (4D) is at: {dataset.func[0]}")
 
 
-#########################################################################
+# %%
 # Brain parcellations with Ward Clustering
 # ----------------------------------------
 #
@@ -106,7 +106,7 @@ ward = Parcellations(
 ward.fit(dataset.func)
 print(f"Ward agglomeration 2000 clusters: {time.time() - start:.2f}s")
 
-###########################################################################
+# %%
 # Visualize: Brain parcellations (Ward)
 # .....................................
 #
@@ -126,7 +126,7 @@ first_plot = plotting.plot_roi(
 # Grab cut coordinates from this plot to use as a common for all plots
 cut_coords = first_plot.cut_coords
 
-###########################################################################
+# %%
 # Compressed representation of Ward clustering
 # ............................................
 #
@@ -176,7 +176,7 @@ plotting.plot_epi(
 # As you can see below, this approximation is almost good, although there
 # are only 2000 parcels, instead of the original 60000 voxels
 
-#########################################################################
+# %%
 # Brain parcellations with KMeans Clustering
 # ------------------------------------------
 #
@@ -203,7 +203,7 @@ kmeans = Parcellations(
 kmeans.fit(dataset.func)
 print(f"KMeans clusters: {time.time() - start:.2f}s")
 
-###########################################################################
+# %%
 # Visualize: Brain parcellations (KMeans)
 # .......................................
 #
@@ -221,7 +221,7 @@ display = plotting.plot_roi(
 # the following code:
 kmeans_labels_img.to_filename("kmeans_parcellation.nii.gz")
 
-#########################################################################
+# %%
 # Brain parcellations with Hierarchical KMeans Clustering
 # -------------------------------------------------------
 #
@@ -251,7 +251,7 @@ hkmeans = Parcellations(
 # Call fit on functional dataset: single subject (less samples)
 hkmeans.fit(dataset.func)
 
-###########################################################################
+# %%
 # Visualize: Brain parcellations (Hierarchical KMeans)
 # ....................................................
 #
@@ -270,7 +270,7 @@ plotting.plot_roi(
 # saved to file with the following code:
 hkmeans_labels_img.to_filename("hierarchical_kmeans_parcellation.nii.gz")
 
-###########################################################################
+# %%
 # Compare Hierarchical Kmeans clusters with those from Kmeans
 # ...........................................................
 # To compare those, we'll first count how many voxels are contained in
@@ -291,7 +291,7 @@ voxel_ratio = np.round(np.sum(kmeans_counts[1:]) / 50)
 
 print(f"... each cluster should contain {voxel_ratio} voxels")
 
-###########################################################################
+# %%
 # Let's plot clusters sizes distributions for both algorithms
 #
 # You can just skip the plotting code, the important part is the figure
@@ -322,14 +322,14 @@ handles = [
 ]
 labels = ["Kmeans", "Hierarchical Kmeans"]
 fig.legend(handles, labels, loc=(0.5, 0.8))
-###########################################################################
+# %%
 # As we can see, half of the 50 KMeans clusters contain less than
 # 100 voxels whereas three contain several thousands voxels
 # Hierarchical KMeans yield better balanced clusters, with a significant
 # proportion of them containing hundreds to thousands of voxels.
 #
 
-###########################################################################
+# %%
 # Brain parcellations with ReNA Clustering
 # ----------------------------------------
 #
@@ -363,7 +363,7 @@ rena = Parcellations(
 rena.fit_transform(dataset.func)
 print(f"ReNA 5000 clusters: {time.time() - start:.2f}s")
 
-###########################################################################
+# %%
 # Visualize: Brain parcellations (ReNA)
 # .....................................
 #
@@ -382,7 +382,7 @@ plotting.plot_roi(
     cut_coords=cut_coords,
 )
 
-###########################################################################
+# %%
 # Compressed representation of ReNA clustering
 # ............................................
 #
@@ -423,7 +423,7 @@ plotting.plot_epi(
     display_mode="xz",
 )
 
-###########################################################################
+# %%
 # Even if the compressed signal is relatively close
 # to the original signal, we can notice that Ward Clustering
 # gives a slightly more accurate compressed representation.

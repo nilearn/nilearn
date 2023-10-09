@@ -25,7 +25,7 @@ an explicit model of the signal. The reference paper is:
       `preprint <https://hal.inria.fr/hal-00489507/>`_
 
 """
-###############################################################################
+# %%
 # Load brain development fmri dataset
 # -----------------------------------
 from nilearn import datasets
@@ -37,7 +37,7 @@ func_filenames = rest_dataset.func  # list of 4D nifti files for each subject
 print(f"First functional nifti image (4D) is at: {rest_dataset.func[0]}")
 
 
-####################################################################
+# %%
 # Apply CanICA on the data
 # ------------------------
 # We use "whole-brain-template" as a strategy to compute the mask,
@@ -65,7 +65,7 @@ canica_components_img = canica.components_img_
 canica_components_img.to_filename("canica_resting_state.nii.gz")
 
 
-####################################################################
+# %%
 # To visualize we plot the outline of all components on one figure
 from nilearn.plotting import plot_prob_atlas
 
@@ -73,7 +73,7 @@ from nilearn.plotting import plot_prob_atlas
 plot_prob_atlas(canica_components_img, title="All ICA components")
 
 
-####################################################################
+# %%
 # Finally, we plot the map for each :term:`ICA` component separately
 from nilearn.image import iter_img
 from nilearn.plotting import plot_stat_map, show
@@ -88,7 +88,7 @@ for i, cur_img in enumerate(iter_img(canica_components_img)):
     )
 
 
-####################################################################
+# %%
 # Compare CanICA to dictionary learning
 # -------------------------------------
 # :term:`Dictionary learning` is a sparsity based decomposition method
@@ -103,7 +103,7 @@ for i, cur_img in enumerate(iter_img(canica_components_img)):
 #
 
 
-###############################################################################
+# %%
 # Create a dictionary learning estimator
 from nilearn.decomposition import DictLearning
 
@@ -130,7 +130,7 @@ dictlearning_components_img.to_filename(
 )
 
 
-###############################################################################
+# %%
 # Visualize the results
 #
 # First plot all DictLearning components together
@@ -139,7 +139,7 @@ plot_prob_atlas(
 )
 
 
-###############################################################################
+# %%
 # One plot of each component
 
 for i, cur_img in enumerate(iter_img(dictlearning_components_img)):
@@ -151,7 +151,7 @@ for i, cur_img in enumerate(iter_img(dictlearning_components_img)):
         colorbar=False,
     )
 
-###############################################################################
+# %%
 # Estimate explained variance per component and plot using matplotlib
 #
 # The fitted object `dict_learning` can be used
@@ -173,7 +173,8 @@ plt.gca().xaxis.set_major_formatter(FormatStrFormatter("%.3f"))
 plt.tight_layout()
 
 show()
-##############################################################################
+
+# %%
 # .. note::
 #
 #     To see how to extract subject-level timeseries' from regions

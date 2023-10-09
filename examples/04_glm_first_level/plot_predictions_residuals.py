@@ -13,7 +13,7 @@ quality of the model fit.
 
 """
 
-#########################################################################
+# %%
 # Import modules
 # --------------
 import pandas as pd
@@ -37,7 +37,7 @@ fmri_img = image.smooth_img(fmri_img, 5.0)
 events = pd.read_table(subject_data["events"])
 
 
-#########################################################################
+# %%
 # Fit model
 # ---------
 # Note that `minimize_memory` is set to `False` so that `FirstLevelModel`
@@ -57,7 +57,7 @@ fmri_glm = FirstLevelModel(
 fmri_glm = fmri_glm.fit(fmri_img, events)
 
 
-#########################################################################
+# %%
 # Calculate and plot contrast
 # ---------------------------
 from nilearn import plotting
@@ -67,7 +67,7 @@ z_map = fmri_glm.compute_contrast("active - rest")
 plotting.plot_stat_map(z_map, bg_img=mean_img, threshold=3.1)
 
 
-#########################################################################
+# %%
 # Extract the largest clusters
 # ----------------------------
 from nilearn.maskers import NiftiSpheresMasker
@@ -86,7 +86,7 @@ real_timeseries = masker.fit_transform(fmri_img)
 predicted_timeseries = masker.fit_transform(fmri_glm.predicted[0])
 
 
-#########################################################################
+# %%
 # Plot predicted and actual time series for 6 most significant clusters
 # ---------------------------------------------------------------------
 import matplotlib.pyplot as plt
@@ -117,14 +117,14 @@ for i in range(6):
 fig1.set_size_inches(24, 14)
 
 
-#########################################################################
+# %%
 # Get residuals
 # -------------
 
 resid = masker.fit_transform(fmri_glm.residuals[0])
 
 
-#########################################################################
+# %%
 # Plot distribution of residuals
 # ------------------------------
 # Note that residuals are not really distributed normally.
@@ -140,7 +140,7 @@ fig2.set_size_inches(12, 7)
 fig2.tight_layout()
 
 
-#########################################################################
+# %%
 # Plot R-squared
 # --------------
 # Because we stored the residuals, we can plot the R-squared: the proportion of
@@ -164,7 +164,7 @@ plotting.plot_stat_map(
     cut_coords=7,
 )
 
-#########################################################################
+# %%
 # Calculate and Plot F-test
 # -------------------------
 # The F-test tells you how well the GLM fits effects of interest such as the

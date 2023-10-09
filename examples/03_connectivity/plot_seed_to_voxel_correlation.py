@@ -20,7 +20,7 @@ Author: Franz Liem
 
 """
 
-##########################################################################
+# %%
 # Getting the data
 # ----------------
 #
@@ -33,13 +33,13 @@ dataset = datasets.fetch_development_fmri(n_subjects=1)
 func_filename = dataset.func[0]
 confound_filename = dataset.confounds[0]
 
-##########################################################################
+# %%
 # Note that func_filename and confound_filename are strings pointing to
 # files on your hard drive.
 print(func_filename)
 print(confound_filename)
 
-##########################################################################
+# %%
 # Time series extraction
 # ----------------------
 #
@@ -52,7 +52,7 @@ print(confound_filename)
 # (PCC), considered part of the Default Mode Network.
 pcc_coords = [(0, -52, 18)]
 
-##########################################################################
+# %%
 # We use :class:`nilearn.maskers.NiftiSpheresMasker` to extract the
 # **time series from the functional imaging within the sphere**. The
 # sphere is centered at pcc_coords and will have the radius we pass the
@@ -76,7 +76,7 @@ seed_masker = NiftiSpheresMasker(
     verbose=0,
 )
 
-##########################################################################
+# %%
 # Then we extract the mean time series within the seed region while
 # regressing out the confounds that
 # can be found in the dataset's csv file
@@ -84,7 +84,7 @@ seed_time_series = seed_masker.fit_transform(
     func_filename, confounds=[confound_filename]
 )
 
-##########################################################################
+# %%
 # Next, we can proceed similarly for the **brain-wide voxel-wise time
 # series**, using :class:`nilearn.maskers.NiftiMasker` with the same input
 # arguments as in the seed_masker in addition to smoothing with a 6 mm kernel
@@ -103,14 +103,14 @@ brain_masker = NiftiMasker(
     verbose=0,
 )
 
-##########################################################################
+# %%
 # Then we extract the brain-wide voxel-wise time series while regressing
 # out the confounds as before
 brain_time_series = brain_masker.fit_transform(
     func_filename, confounds=[confound_filename]
 )
 
-##########################################################################
+# %%
 # We can now inspect the extracted time series. Note that the **seed time
 # series** is an array with shape n_volumes, 1), while the
 # **brain time series** is an array with shape (n_volumes, n_voxels).
@@ -118,7 +118,7 @@ brain_time_series = brain_masker.fit_transform(
 print(f"Seed time series shape: ({seed_time_series.shape})")
 print(f"Brain time series shape: ({brain_time_series.shape})")
 
-##########################################################################
+# %%
 # We can plot the **seed time series**.
 
 import matplotlib.pyplot as plt
@@ -129,7 +129,7 @@ plt.xlabel("Scan number")
 plt.ylabel("Normalized signal")
 plt.tight_layout()
 
-##########################################################################
+# %%
 # Exemplarily, we can also select 5 random voxels from the **brain-wide
 # data** and plot the time series from.
 
@@ -139,7 +139,7 @@ plt.xlabel("Scan number")
 plt.ylabel("Normalized signal")
 plt.tight_layout()
 
-##########################################################################
+# %%
 # Performing the seed-to-voxel correlation analysis
 # -------------------------------------------------
 #
@@ -156,7 +156,7 @@ seed_to_voxel_correlations = (
     np.dot(brain_time_series.T, seed_time_series) / seed_time_series.shape[0]
 )
 
-################################################
+# %%
 # The resulting array will contain a value representing the correlation
 # values between the signal in the **seed region** of interest and **each
 # voxel's signal**, and will be of shape (n_voxels, 1). The correlation
@@ -170,7 +170,7 @@ print(
     % (seed_to_voxel_correlations.min(), seed_to_voxel_correlations.max())
 )
 
-##########################################################################
+# %%
 # Plotting the seed-to-voxel correlation map
 # ------------------------------------------
 # We can now plot the seed-to-voxel correlation map and perform thresholding
@@ -196,7 +196,7 @@ display.add_markers(
 # At last, we save the plot as pdf.
 display.savefig("pcc_seed_correlation.pdf")
 
-##########################################################################
+# %%
 # Fisher-z transformation and save nifti
 # --------------------------------------
 # Finally, we can Fisher-z transform the data to achieve a normal distribution.
@@ -208,7 +208,7 @@ print(
     f"max = {seed_to_voxel_correlations_fisher_z.max():.3f}f"
 )
 
-##########################################################################
+# %%
 # Eventually, we can transform the correlation array back to a Nifti image
 # object, that we can save.
 seed_to_voxel_correlations_fisher_z_img = brain_masker.inverse_transform(
