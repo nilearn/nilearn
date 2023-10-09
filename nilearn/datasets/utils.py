@@ -325,7 +325,7 @@ def _add_readme_to_default_data_locations(verbose):
                 f.write(
                     """# Nilearn data folder
 
-This directory is used by nilearn to store datasets
+This directory is used by Nilearn to store datasets
 and atlases downloaded from the internet.
 It can be safely deleted.
 If you delete it, previously downloaded data will be downloaded again."""
