@@ -6,7 +6,7 @@ Here we compare different classifiers on a visual object recognition
 decoding task.
 """
 
-#############################################################################
+# %%
 # Loading the data
 # ----------------
 
@@ -60,7 +60,7 @@ from nilearn.image import index_img
 fmri_niimgs = index_img(func_filename, task_mask)
 classification_target = stimuli[task_mask]
 
-#############################################################################
+# %%
 # Training the decoder
 # --------------------
 
@@ -109,7 +109,7 @@ for classifier_name in sorted(classifiers):
     scores["AVERAGE"] = np.mean(list(scores.values()), axis=0)
     classifiers_data[classifier_name]["score"] = scores
 
-###############################################################################
+# %%
 # Visualization
 # -------------
 
@@ -147,13 +147,13 @@ plt.title(
 )
 plt.tight_layout()
 
-###############################################################################
+# %%
 # We can see that for a fixed penalty the results are similar between the svc
 # and the logistic regression. The main difference relies on the penalty
 # ($\ell_1$ and $\ell_2$). The sparse penalty works better because we are in
 # an intra-subject setting.
 
-###############################################################################
+# %%
 # Visualizing the face vs house map
 # ---------------------------------
 #
@@ -179,7 +179,7 @@ for classifier_name in sorted(classifiers):
     classifiers_data[classifier_name]["score"] = decoder.cv_scores_
     classifiers_data[classifier_name]["map"] = decoder.coef_img_["face"]
 
-###############################################################################
+# %%
 # Finally, we plot the face vs house map for the different classifiers
 # Use the average EPI as a background
 

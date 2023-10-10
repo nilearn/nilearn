@@ -21,7 +21,7 @@ only the 20% edges with the highest values.
 .. include:: ../../../examples/masker_note.rst
 
 """
-############################################################################
+# %%
 # Retrieve the atlas and the data
 # -------------------------------
 from nilearn import datasets
@@ -40,7 +40,7 @@ print(
     f"at: {data.func[0]}"
 )
 
-############################################################################
+# %%
 # Extract the time series
 # -----------------------
 from nilearn.maskers import NiftiMapsMasker
@@ -55,7 +55,7 @@ masker = NiftiMapsMasker(
 masker.fit(data.func[0])
 time_series = masker.transform(data.func[0], confounds=data.confounds)
 
-############################################################################
+# %%
 # We can generate an HTML report and visualize the components of the
 # :class:`~nilearn.maskers.NiftiMapsMasker`.
 # You can pass the indices of the spatial maps you want to include in the
@@ -64,12 +64,12 @@ time_series = masker.transform(data.func[0], confounds=data.confounds)
 report = masker.generate_report(displayed_maps=[2, 6, 7, 16, 21])
 report
 
-############################################################################
+# %%
 # `time_series` is now a 2D matrix, of shape (number of time points x
 # number of regions)
 print(time_series.shape)
 
-############################################################################
+# %%
 # Build and display a correlation matrix
 # --------------------------------------
 from nilearn.connectome import ConnectivityMeasure
@@ -90,7 +90,7 @@ np.fill_diagonal(correlation_matrix, 0)
 plotting.plot_matrix(
     correlation_matrix, labels=labels, colorbar=True, vmax=0.8, vmin=-0.8
 )
-############################################################################
+# %%
 # And now display the corresponding graph
 # ---------------------------------------
 from nilearn import plotting
@@ -105,7 +105,7 @@ plotting.plot_connectome(
 
 plotting.show()
 
-##############################################################################
+# %%
 # 3D visualization in a web browser
 # ---------------------------------
 # An alternative to :func:`nilearn.plotting.plot_connectome` is to use
@@ -122,7 +122,7 @@ view = plotting.view_connectome(
 # be displayed below the cell
 view
 
-##############################################################################
+# %%
 
 # uncomment this to open the plot in a web browser:
 # view.open_in_browser()

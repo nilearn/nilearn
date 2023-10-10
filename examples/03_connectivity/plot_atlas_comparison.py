@@ -27,7 +27,7 @@ Mean correlation matrix is displayed on glass brain on extracted coordinates.
 
 """
 
-####################################################################
+# %%
 # Load atlases
 # ------------
 from nilearn import datasets
@@ -38,7 +38,7 @@ print(
     f" is located at: {yeo['thick_17']}"
 )
 
-#########################################################################
+# %%
 # Load functional data
 # --------------------
 data = datasets.fetch_development_fmri(n_subjects=10)
@@ -53,7 +53,7 @@ print(
 )
 
 
-##########################################################################
+# %%
 # Extract coordinates on Yeo atlas - parcellations
 # ------------------------------------------------
 from nilearn.connectome import ConnectivityMeasure
@@ -101,7 +101,7 @@ plotting.plot_connectome(
     title="Yeo Atlas 17 thick (func)",
 )
 
-##########################################################################
+# %%
 # Plot a directed connectome - asymmetric connectivity measure
 # ------------------------------------------------------------
 # In this section, we use the lag-1 correlation as the connectivity
@@ -140,7 +140,7 @@ for lag in [0, 1]:
         title=f"Lag-{lag} correlation",
     )
 
-##########################################################################
+# %%
 # Load probabilistic atlases - extracting coordinates on brain maps
 # -----------------------------------------------------------------
 
@@ -149,7 +149,7 @@ difumo = datasets.fetch_atlas_difumo(
     dimension=dim, resolution_mm=2, legacy_format=False
 )
 
-##########################################################################
+# %%
 # Iterate over fetched atlases to extract coordinates - probabilistic
 # -------------------------------------------------------------------
 from nilearn.maskers import MultiNiftiMapsMasker

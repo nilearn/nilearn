@@ -19,7 +19,7 @@ More specifically:
    images were already normalized to the same :term:`MNI` space.
 """
 
-##############################################################################
+# %%
 # Fetch example BIDS dataset
 # --------------------------
 # We download a simplified :term:`BIDS` dataset made available for illustrative
@@ -32,11 +32,11 @@ from nilearn.datasets import fetch_language_localizer_demo_dataset
 
 data_dir, _ = fetch_language_localizer_demo_dataset()
 
-##############################################################################
+# %%
 # Here is the location of the dataset on disk.
 print(data_dir)
 
-##############################################################################
+# %%
 # Obtain automatically FirstLevelModel objects and fit arguments
 # --------------------------------------------------------------
 # From the dataset directory we automatically obtain
@@ -60,31 +60,31 @@ task_label = "languagelocalizer"
     data_dir, task_label, img_filters=[("desc", "preproc")]
 )
 
-#############################################################################
+# %%
 # Quick sanity check on fit arguments
 # -----------------------------------
 # Additional checks or information extraction from pre-processed data can
 # be made here.
 
-############################################################################
+# %%
 # We just expect one run_img per subject.
 import os
 
 print([os.path.basename(run) for run in models_run_imgs[0]])
 
-###############################################################################
+# %%
 # The only confounds stored are regressors obtained from motion correction. As
 # we can verify from the column headers of the confounds table corresponding
 # to the only run_img present.
 print(models_confounds[0][0].columns)
 
-############################################################################
+# %%
 # During this acquisition the subject read blocks of sentences and
 # consonant strings. So these are our only two conditions in events.
 # We verify there are 12 blocks for each condition.
 print(models_events[0][0]["trial_type"].value_counts())
 
-############################################################################
+# %%
 # First level model estimation
 # ----------------------------
 # Now we simply fit each first level model and plot for each subject the
@@ -93,13 +93,13 @@ print(models_events[0][0]["trial_type"].value_counts())
 # specified in the events dataframe.
 # Sum, subtraction and scalar multiplication are allowed.
 
-############################################################################
+# %%
 # Set the threshold as the z-variate with an uncorrected p-value of 0.001.
 from scipy.stats import norm
 
 p001_unc = norm.isf(0.001)
 
-############################################################################
+# %%
 # Prepare figure for concurrent plot of individual maps.
 import matplotlib.pyplot as plt
 
@@ -124,7 +124,7 @@ for midx, (model, imgs, events, confounds) in enumerate(model_and_args):
 fig.suptitle("subjects z_map language network (unc p<0.001)")
 plotting.show()
 
-#########################################################################
+# %%
 # Second level model estimation
 # -----------------------------
 # We just have to provide the list of fitted FirstLevelModel objects
@@ -135,12 +135,12 @@ from nilearn.glm.second_level import SecondLevelModel
 
 second_level_input = models
 
-#########################################################################
+# %%
 # Note that we apply a smoothing of 8mm.
 second_level_model = SecondLevelModel(smoothing_fwhm=8.0)
 second_level_model = second_level_model.fit(second_level_input)
 
-#########################################################################
+# %%
 # Computing contrasts at the second level is as simple as at the first level.
 # Since we are not providing confounders we are performing a one-sample test
 # at the second level with the images determined by the specified first level
@@ -149,7 +149,7 @@ zmap = second_level_model.compute_contrast(
     first_level_contrast="language-string"
 )
 
-#########################################################################
+# %%
 # The group level contrast reveals a left lateralized fronto-temporal
 # language network.
 plotting.plot_glass_brain(

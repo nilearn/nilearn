@@ -22,10 +22,12 @@ For an encoding approach for the same dataset, see also
 .. include:: ../../../examples/masker_note.rst
 
 """
+
+# %%
 import sys
 import time
 
-############################################################################
+# %%
 # First we load the Miyawaki dataset
 # ----------------------------------
 from nilearn import datasets
@@ -49,7 +51,7 @@ y_shape = (10, 10)
 
 sys.stderr.write(f" Done ({time.time() - t0:.2f}s).\n")
 
-############################################################################
+# %%
 # Then we prepare and mask the data
 # ---------------------------------
 import numpy as np
@@ -137,7 +139,7 @@ y_test = y_test[y_test[:, 0] != -1]
 
 sys.stderr.write(f" Done ({time.time() - t0:.2f}s).\n")
 
-############################################################################
+# %%
 # We define our prediction function
 # ---------------------------------
 sys.stderr.write("Training classifiers... \r")
@@ -171,7 +173,7 @@ sys.stderr.write(
     f"Done ({(time.time() - t0):.2f}s).\n"
 )
 
-############################################################################
+# %%
 # Here we run the prediction: the decoding itself
 # -----------------------------------------------
 sys.stderr.write("Calculating scores and outputs...")
@@ -252,7 +254,7 @@ y_pred = (
 
 sys.stderr.write(f" Done ({time.time() - t0:.2f}s).\n")
 
-############################################################################
+# %%
 # Let us quantify our prediction error
 # ------------------------------------
 from sklearn.metrics import (
@@ -291,7 +293,7 @@ print(
 )
 
 
-############################################################################
+# %%
 # And finally, we plot six reconstructed images, to compare with
 # ground truth
 
