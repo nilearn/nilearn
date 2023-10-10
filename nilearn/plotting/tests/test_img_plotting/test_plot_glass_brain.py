@@ -126,12 +126,11 @@ def test_plot_glass_brain_with_completely_masked_img(display_mode):
 
 def test_plot_glass_brain_vmin_vmax(img_3d_mni):
     """Smoke tests for plot_glass_brain being passed vmin and vmax."""
-    # set plot_abs=False because otherwise negative vmin is not allowed
-    plot_glass_brain(img_3d_mni, vmin=-2, vmax=2, plot_abs=False)
+    plot_glass_brain(img_3d_mni, vmin=-2, vmax=2)
 
 
 def test_plot_glass_brain_negative_vmin_with_plot_abs(img_3d_mni):
-    """Test that error is thrown when plot_abs is True and vmin is negative."""
+    """Test that warning is thrown if plot_abs is True and vmin is negative."""
     warning_message = "vmin is negative but plot_abs is True"
     with pytest.warns(UserWarning, match=warning_message):
         plot_glass_brain(img_3d_mni, vmin=-2, plot_abs=True)

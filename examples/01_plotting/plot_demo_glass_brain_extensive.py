@@ -87,7 +87,7 @@ plot_glass_brain(
     stat_img, threshold=3, colorbar=True, plot_abs=True, display_mode="yx"
 )
 
-###############################################################################
+# %%
 # We can control the limits of the colormap and colorbar by setting ``vmin``
 # and ``vmax``. Note that we use a non-diverging colormap here since the
 # colorbar will not be centered around zero.
@@ -104,7 +104,7 @@ plotting.plot_glass_brain(
     cmap="viridis",
 )
 
-###############################################################################
+# %%
 # Here we set ``vmin`` to the threshold to use the full color range instead of
 # losing colours due to the thresholding.
 plotting.plot_glass_brain(
