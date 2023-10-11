@@ -116,7 +116,11 @@ def warnings_as_errors():
 def suppress_specific_warning():
     """Ignore internal deprecation warnings."""
     with warnings.catch_warnings():
-        messages = "The `darkness` parameter will be deprecated.*"
+        messages = (
+            "The `darkness` parameter will be deprecated.*|"
+            "`legacy_format` will default to `False`.*|"
+            "In release 0.13, this fetcher will return a dictionary.*|"
+        )
         warnings.filterwarnings(
             "ignore",
             message=messages,
