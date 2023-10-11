@@ -62,7 +62,7 @@ doc:
 	make -C doc html-noplot
 
 .PHONY : ci-doc
-doc:
+ci-doc:
 	make -C doc ci-html-noplot
 
 .PHONY : pdf
