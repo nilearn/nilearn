@@ -26,7 +26,7 @@ from nilearn.surface.surface import (
     _gifti_img_to_mesh,
     _load_surf_files_gifti_gzip,
 )
-from nilearn.surface.testing_utils import flat_mesh, generate_surf, z_const_img
+from nilearn.surface.tests._testing import flat_mesh, generate_surf, z_const_img
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
