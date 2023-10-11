@@ -547,6 +547,7 @@ def clean(
     high_pass=None,
     t_r=2.5,
     ensure_finite=False,
+    extrapolate=True,
     **kwargs,
 ):
     """Improve :term:`SNR` on masked :term:`fMRI` signals.
@@ -667,6 +668,11 @@ def clean(
         If `True`, the non-finite values (NANs and infs) found in the data
         will be replaced by zeros.
 
+    extrapolate : :obj:`bool`, default=True
+        If `True` and filter='butterworth', censored volumes in both ends of
+        the signal data will be interpolated before filtering. Otherwise, they
+        will be discarded from the band-pass filtering process.
+
     kwargs : dict
         Keyword arguments to be passed to functions called within ``clean``.
         Kwargs prefixed with ``'butterworth__'`` will be passed to
@@ -732,7 +738,7 @@ def clean(
 
     # Interpolation / censoring
     signals, confounds = _handle_scrubbed_volumes(
-        signals, confounds, sample_mask, filter_type, t_r
+        signals, confounds, sample_mask, filter_type, t_r, extrapolate
     )
 
     # Detrend
@@ -810,16 +816,18 @@ def clean(
 
 
 def _handle_scrubbed_volumes(
-    signals, confounds, sample_mask, filter_type, t_r
+    signals, confounds, sample_mask, filter_type, t_r, extrapolate
 ):
     """Interpolate or censor scrubbed volumes."""
     if sample_mask is None:
         return signals, confounds
 
     if filter_type == "butterworth":
-        signals = _interpolate_volumes(signals, sample_mask, t_r)
+        signals = _interpolate_volumes(signals, sample_mask, t_r, extrapolate)
         if confounds is not None:
-            confounds = _interpolate_volumes(confounds, sample_mask, t_r)
+            confounds = _interpolate_volumes(
+                confounds, sample_mask, t_r, extrapolate
+            )
     else:  # Or censor when no filtering, or cosine filter
         signals, confounds = _censor_signals(signals, confounds, sample_mask)
     return signals, confounds
@@ -833,14 +841,29 @@ def _censor_signals(signals, confounds, sample_mask):
     return signals, confounds
 
 
-def _interpolate_volumes(volumes, sample_mask, t_r):
+def _interpolate_volumes(volumes, sample_mask, t_r, extrapolate):
     """Interpolate censored volumes in signals/confounds."""
+    if extrapolate == True:
+        extrapolate_default = (
+            "By default the cubic spline interpolator extrapolates "
+            "the out-of-bounds censored volumes in the data run. This "
+            "can lead to undesired filtered signal results. In future "
+            "releases, the default strategy will be not to extrapolate "
+            "and discard those volumes at filtering."
+        )
+        warnings.warn(
+            category=FutureWarning,
+            message=extrapolate_default,
+        )
     frame_times = np.arange(volumes.shape[0]) * t_r
     remained_vol = frame_times[sample_mask]
     remained_x = volumes[sample_mask, :]
-    cubic_spline_fitter = CubicSpline(remained_vol, remained_x)
+    cubic_spline_fitter = CubicSpline(
+        remained_vol, remained_x, extrapolate=extrapolate
+    )
     volumes_interpolated = cubic_spline_fitter(frame_times)
     volumes[~sample_mask, :] = volumes_interpolated[~sample_mask, :]
+    #volumes = volumes[~np.isnan(volumes).all(axis=1), :]
     return volumes
 
 
