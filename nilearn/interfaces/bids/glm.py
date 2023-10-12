@@ -17,7 +17,7 @@ def save_glm_to_bids(
     out_dir=".",
     prefix=None,
 ):
-    """Save :term:`GLM` results to BIDS-like files.
+    """Save :term:`GLM` results to :term:`BIDS`-like files.
 
     .. versionadded:: 0.9.2
 

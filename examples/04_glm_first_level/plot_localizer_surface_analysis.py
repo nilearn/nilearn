@@ -24,7 +24,7 @@ that both are initially defined in the same space.
   was obtained.
 
 * Another possibility, used here, is to project
-  the normalized :term:`fMRI` data to an MNI-coregistered mesh,
+  the normalized :term:`fMRI` data to an :term:`MNI`-coregistered mesh,
   such as fsaverage.
 
 The advantage of this second approach is that it makes it easy to run
