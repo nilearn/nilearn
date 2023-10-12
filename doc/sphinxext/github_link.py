@@ -40,9 +40,12 @@ def _linkcode_resolve(domain, info, package, url_fmt, revision):
 
     class_name = info["fullname"].split(".")[0]
     module = __import__(info["module"], fromlist=[class_name])
-    if info["module"] == "nilearn.experimental.surface":
+    # For typed parameters, this will try to get uninitialized parameters
+    # and fail
+    try:
+        obj = attrgetter(info["fullname"])(module)
+    except AttributeError:
         return
-    obj = attrgetter(info["fullname"])(module)
 
     # Unwrap the object to get the correct source
     # file in case that is wrapped by a decorator
