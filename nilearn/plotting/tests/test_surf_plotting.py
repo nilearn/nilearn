@@ -25,7 +25,7 @@ from nilearn.plotting.surf_plotting import (
     plot_surf_stat_map,
 )
 from nilearn.surface import load_surf_data, load_surf_mesh
-from nilearn.surface.testing_utils import generate_surf
+from nilearn.surface.tests._testing import generate_surf
 
 try:
     import plotly.graph_objects as go

@@ -7,7 +7,7 @@ import pytest
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
-from nilearn.glm.tests._utils import design_with_null_durations
+from nilearn.glm.tests._testing import design_with_null_durations
 from nilearn.plotting.matrix_plotting import (
     plot_contrast_matrix,
     plot_design_matrix,
