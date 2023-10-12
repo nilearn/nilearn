@@ -740,6 +740,10 @@ def clean(
     signals, confounds = _handle_scrubbed_volumes(
         signals, confounds, sample_mask, filter_type, t_r, extrapolate
     )
+    if sample_mask is not None and not extrapolate:
+        # reset the indexing of the sample_mask excluding non-interpolated
+        # volumes at the head of the data
+        sample_mask -= sample_mask[0]
 
     # Detrend
     # Detrend and filtering should apply to confounds, if confound presents
@@ -843,7 +847,7 @@ def _censor_signals(signals, confounds, sample_mask):
 
 def _interpolate_volumes(volumes, sample_mask, t_r, extrapolate):
     """Interpolate censored volumes in signals/confounds."""
-    if extrapolate == True:
+    if extrapolate:
         extrapolate_default = (
             "By default the cubic spline interpolator extrapolates "
             "the out-of-bounds censored volumes in the data run. This "
@@ -863,7 +867,8 @@ def _interpolate_volumes(volumes, sample_mask, t_r, extrapolate):
     )
     volumes_interpolated = cubic_spline_fitter(frame_times)
     volumes[~sample_mask, :] = volumes_interpolated[~sample_mask, :]
-    #volumes = volumes[~np.isnan(volumes).all(axis=1), :]
+    # discard non-interpolated out-of-bounds volumes
+    volumes = volumes[~np.isnan(volumes).all(axis=1), :]
     return volumes
 
 

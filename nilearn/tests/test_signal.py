@@ -1101,11 +1101,6 @@ def test_handle_scrubbed_volumes_extrapolation():
     ) = nisignal._handle_scrubbed_volumes(
         signals, confounds, sample_mask, "butterworth", 2.5, True
     )
-    extrapolated_signals = \
-        extrapolated_signals[~np.isnan(extrapolated_signals).all(axis=1), :]
-    extrapolated_confounds = \
-        extrapolated_confounds[~np.isnan(extrapolated_confounds).all(axis=1), :]
-
     np.testing.assert_equal(
         signals.shape[0], extrapolated_signals.shape[0]
     )
@@ -1122,11 +1117,6 @@ def test_handle_scrubbed_volumes_extrapolation():
     ) = nisignal._handle_scrubbed_volumes(
         signals, confounds, sample_mask, "butterworth", 2.5, False
     )
-    interpolated_signals = \
-        interpolated_signals[~np.isnan(interpolated_signals).all(axis=1), :]
-    interpolated_confounds = \
-        interpolated_confounds[~np.isnan(interpolated_confounds).all(axis=1), :]
-
     np.testing.assert_equal(
         signals.shape[0], interpolated_signals.shape[0] + censored_samples
     )
