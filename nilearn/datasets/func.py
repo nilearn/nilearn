@@ -104,7 +104,7 @@ def fetch_haxby(
     http://dev.pymvpa.org/datadb/haxby2001.html
 
     See `additional information
-    <http://www.sciencemag.org/content/293/5539/2425>`
+    <https://www.science.org/doi/10.1126/science.1063736>`
 
     Run 8 in subject 5 does not contain any task labels.
     The anatomical image for subject 6 is unavailable.

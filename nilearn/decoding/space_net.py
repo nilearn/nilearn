@@ -175,7 +175,7 @@ def _space_net_alpha_grid(
         # Large-Scale l1-Regularized Logistic Regression", by Koh, Kim,
         # Boyd, in Journal of Machine Learning Research, 8:1519-1555,
         # July 2007.
-        # url: http://www.stanford.edu/~boyd/papers/pdf/l1_logistic_reg.pdf
+        # url: https://web.stanford.edu/~boyd/papers/pdf/l1_logistic_reg.pdf
         m = float(y.size)
         m_plus = float(y[y == 1].size)
         m_minus = float(y[y == -1].size)

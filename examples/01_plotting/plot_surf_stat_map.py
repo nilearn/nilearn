@@ -3,7 +3,7 @@ Seed-based connectivity on the surface
 ======================================
 
 The dataset that is a subset of the enhanced NKI Rockland sample
-(http://fcon_1000.projects.nitrc.org/indi/enhanced/, Nooner et al, 2012)
+(https://fcon_1000.projects.nitrc.org/indi/enhanced/, Nooner et al, 2012)
 
 Resting state fMRI scans (TR=645ms) of 102 subjects were preprocessed
 (https://github.com/fliem/nki_nilearn) and projected onto the Freesurfer
@@ -30,19 +30,19 @@ References
 ----------
 Nooner et al, (2012). The NKI-Rockland Sample: A model for accelerating the
 pace of discovery science in psychiatry. Frontiers in neuroscience 6, 152.
-URL http://dx.doi.org/10.3389/fnins.2012.00152
+URL https://doi.org/10.3389/fnins.2012.00152
 
 Dale et al, (1999). Cortical surface-based analysis.I. Segmentation and
 surface reconstruction. Neuroimage 9.
-URL http://dx.doi.org/10.1006/nimg.1998.0395
+URL https://doi.org/10.1006/nimg.1998.0395
 
 Fischl et al, (1999). Cortical surface-based analysis. II: Inflation,
 flattening, and a surface-based coordinate system. Neuroimage 9.
-http://dx.doi.org/10.1006/nimg.1998.0396
+https://doi.org/10.1006/nimg.1998.0396
 
 Destrieux et al, (2010). Automatic parcellation of human cortical gyri and
 sulci using standard anatomical nomenclature. NeuroImage, 53, 1.
-URL http://dx.doi.org/10.1016/j.neuroimage.2010.06.010.
+URL https://doi.org/10.1016/j.neuroimage.2010.06.010.
 
 """
 

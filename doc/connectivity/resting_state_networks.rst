@@ -22,7 +22,7 @@ Multi-subject ICA: CanICA
 
     * G. Varoquaux et al. "A group model for stable multi-subject ICA on
       fMRI datasets", `NeuroImage Vol 51 (2010)
-      <http://www.sciencedirect.com/science/article/pii/S1053811910001618>`_, p. 288-299
+      <https://www.sciencedirect.com/science/article/pii/S1053811910001618>`_, p. 288-299
 
 Objective
 ----------

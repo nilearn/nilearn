@@ -7,7 +7,7 @@ Full step-by-step example of fitting a GLM to perform a first level analysis
 in an openneuro :term:`BIDS` dataset. We demonstrate how :term:`BIDS`
 derivatives can be exploited to perform a simple one subject analysis with
 minimal code. Details about the :term:`BIDS` standard are available at
-`http://bids.neuroimaging.io/ <http://bids.neuroimaging.io/>`_.
+`https://bids.neuroimaging.io/ <https://bids.neuroimaging.io/>`_.
 We also demonstrate how to download individual groups of files from the
 Openneuro s3 bucket.
 

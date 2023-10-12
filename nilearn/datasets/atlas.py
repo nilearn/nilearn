@@ -218,7 +218,7 @@ def fetch_atlas_craddock_2012(
     """
     if url is None:
         url = (
-            "http://cluster_roi.projects.nitrc.org"
+            "https://cluster_roi.projects.nitrc.org"
             "/Parcellations/craddock_2011_parcellations.tar.gz"
         )
     opts = {"uncompress": True}
@@ -1004,7 +1004,7 @@ def fetch_atlas_smith_2009(
     Notes
     -----
     For more information about this dataset's structure:
-    http://www.fmrib.ox.ac.uk/datasets/brainmap+rsns/
+    https://www.fmrib.ox.ac.uk/datasets/brainmap+rsns/
 
     """
     if url is None:
@@ -1856,7 +1856,7 @@ def _separate_talairach_levels(atlas_img, labels, output_dir, verbose):
 
 def _download_talairach(talairach_dir, verbose):
     """Download the Talairach atlas and separate the different levels."""
-    atlas_url = "http://www.talairach.org/talairach.nii"
+    atlas_url = "https://www.talairach.org/talairach.nii"
     temp_dir = mkdtemp()
     try:
         temp_file = _fetch_files(

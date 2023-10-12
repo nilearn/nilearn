@@ -16,7 +16,7 @@ into homogeneous regions from functional imaging data.
 
     Thirion, et al. `"Which fMRI clustering gives good brain
     parcellations?."
-    <http://journal.frontiersin.org/article/10.3389/fnins.2014.00167/full>`_
+    <https://www.frontiersin.org/articles/10.3389/fnins.2014.00167/full>`_
     Frontiers in neuroscience 8.167 (2014): 13.
 
 Data loading: movie-watching data
@@ -40,7 +40,7 @@ Applying clustering
     to debate. There are many clustering methods; their computational
     cost will vary, as well as their results. A `well-cited empirical
     comparison paper, Thirion et al. 2014
-    <http://journal.frontiersin.org/article/10.3389/fnins.2014.00167/full>`_
+    <https://www.frontiersin.org/articles/10.3389/fnins.2014.00167/full>`_
     suggests that:
 
     * For a large number of clusters, it is preferable to use Ward
@@ -68,7 +68,7 @@ Applying clustering
 Before applying Ward's method, we compute a spatial neighborhood matrix,
 aka connectivity matrix. This is useful to constrain clusters to form
 contiguous parcels (see `the scikit-learn documentation
-<http://scikit-learn.org/stable/modules/clustering.html#adding-connectivity-constraints>`_)
+<https://scikit-learn.org/stable/modules/clustering.html#adding-connectivity-constraints>`_)
 
 This is done from the mask computed by the masker: a niimg from which we
 extract a numpy array and then the connectivity matrix.

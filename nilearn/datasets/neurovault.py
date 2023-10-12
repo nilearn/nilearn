@@ -1,5 +1,5 @@
 """Download statistical maps available \
-on Neurovault (http://neurovault.org)."""
+on Neurovault (https://neurovault.org)."""
 
 # Author: Jerome Dockes
 
@@ -936,7 +936,7 @@ def _append_filters_to_query(query, filters):
     -----
     If one of the `filters` keys is 'id', we get the url that points
     directly to that id,
-    e.g. 'http://neurovault.org/api/collections/40', and the other
+    e.g. 'https://neurovault.org/api/collections/40', and the other
     filters are ignored.
 
     """

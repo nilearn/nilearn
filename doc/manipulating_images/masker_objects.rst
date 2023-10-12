@@ -56,7 +56,7 @@ have to call :ref:`specific functions <preprocessing_functions>`
 .. topic:: **Advanced: Design philosophy of "Maskers"**
 
     The design of these classes is similar to `scikit-learn
-    <http://scikit-learn.org>`_\ 's transformers. First, objects are
+    <https://scikit-learn.org>`_\ 's transformers. First, objects are
     initialized with some parameters guiding the transformation
     (unrelated to the data). Then the `fit()` method should be called,
     possibly specifying some data-related information (such as number of
@@ -83,9 +83,9 @@ of the preprocessings and validate them.
 .. topic:: **Advanced: scikit-learn Pipelines**
 
     :class:`NiftiMasker` is a `scikit-learn
-    <http://scikit-learn.org>`_ compliant
+    <https://scikit-learn.org>`_ compliant
     transformer so that you can directly plug it into a `scikit-learn
-    pipeline <http://scikit-learn.org/stable/modules/pipeline.html>`_.
+    pipeline <https://scikit-learn.org/stable/modules/pipeline.html>`_.
 
 
 Custom data loading: loading only the first 100 time points

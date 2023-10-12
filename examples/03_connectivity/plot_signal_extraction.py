@@ -18,7 +18,7 @@ guideline of :term:`fMRIPrep` confounds documentation
 One reference that discusses the importance of confounds is `Varoquaux and
 Craddock, Learning and comparing functional connectomes across subjects,
 NeuroImage 2013
-<http://www.sciencedirect.com/science/article/pii/S1053811913003340>`_.
+<https://doi.org/10.1016/j.neuroimage.2013.04.007>`_.
 
 This is just a code example, see the :ref:`corresponding section in the
 documentation <parcellation_time_series>` for more.
