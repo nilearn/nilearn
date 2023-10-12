@@ -336,10 +336,9 @@ def test_apply_mask():
         masking.apply_mask(Nifti1Image(data, affine), mask_img)
 
 
-def test_unmask():
+def test_unmask(rng):
     # A delta in 3D
     shape = (10, 20, 30, 40)
-    rng = np.random.RandomState(42)
     data4D = rng.uniform(size=shape)
     data3D = data4D[..., 0]
     mask = rng.randint(2, size=shape[:3], dtype="int32")
@@ -591,10 +590,8 @@ def test_compute_multi_brain_mask():
     assert_array_equal(get_data(mask1), get_data(mask2))
 
 
-def test_error_shape(random_state=42, shape=(3, 5, 7, 11)):
+def test_error_shape(rng, shape=(3, 5, 7, 11)):
     # open-ended `if .. elif` in masking.unmask
-
-    rng = np.random.RandomState(random_state)
 
     # setup
     X = rng.standard_normal()
@@ -624,8 +621,7 @@ def test_nifti_masker_empty_mask_warning():
         NiftiMasker(mask_strategy="epi").fit_transform(X)
 
 
-def test_unmask_list(random_state=42):
-    rng = np.random.RandomState(random_state)
+def test_unmask_list(rng):
     shape = (3, 4, 5)
     affine = np.eye(4)
     mask_data = rng.uniform(size=shape) < 0.5
@@ -734,8 +730,7 @@ def test__extrapolate_out_mask():
     assert_array_equal(extrapolated_mask, target_mask)
 
 
-def test_unmask_from_to_3d_array(size=5):
-    rng = np.random.RandomState(42)
+def test_unmask_from_to_3d_array(rng, size=5):
     for ndim in range(1, 4):
         shape = [size] * ndim
         mask = np.zeros(shape).astype(bool)
