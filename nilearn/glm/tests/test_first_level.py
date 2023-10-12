@@ -379,9 +379,8 @@ def test_compute_contrast_num_contrasts():
         multi_session_model.compute_contrast([np.eye(rk)[1]])
 
 
-def test_run_glm():
+def test_run_glm(rng):
     # TODO split into multiple tests
-    rng = np.random.RandomState(42)
     n, p, q = 33, 80, 10
     X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
 
@@ -428,11 +427,11 @@ def test_run_glm():
         run_glm(Y, X, "3ar")
 
 
-def test_glm_AR_estimates():
+def test_glm_AR_estimates(rng):
     """Test that Yule-Walker AR fits are correct."""
     n, p, q = 1, 500, 2
-    X_orig = np.random.RandomState(2).randn(p, q)
-    Y_orig = np.random.RandomState(2).randn(p, n)
+    X_orig = rng.randn(p, q)
+    Y_orig = rng.randn(p, n)
 
     for ar_vals in [[-0.2], [-0.2, -0.5], [-0.2, -0.5, -0.7, -0.3]]:
         ar_order = len(ar_vals)
@@ -491,9 +490,8 @@ def test_glm_random_state(random_state):
         )
 
 
-def test_scaling():
+def test_scaling(rng):
     """Test the scaling function."""
-    rng = np.random.RandomState(42)
     shape = (400, 10)
     u = rng.standard_normal(size=shape)
     mean = 100 * rng.uniform(size=shape[1]) + 1

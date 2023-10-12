@@ -463,10 +463,10 @@ def test_sym_matrix_to_vec():
     )
 
 
-def test_sym_matrix_to_vec_is_the_inverse_of_vec_to_sym_matrix():
+def test_sym_matrix_to_vec_is_the_inverse_of_vec_to_sym_matrix(rng):
     n = 5
     p = n * (n + 1) // 2
-    rand_gen = np.random.RandomState(0)
+    rand_gen = rng
 
     # when diagonal is included
     vec = rand_gen.rand(p)

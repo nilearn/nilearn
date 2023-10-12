@@ -82,9 +82,8 @@ def test_resample_regressor_nl():
     assert_almost_equal(z, np.cos(y), decimal=2)
 
 
-def test_orthogonalize():
+def test_orthogonalize(rng):
     """Test that the orthogonalization is OK."""
-    rng = np.random.RandomState(42)
     X = rng.standard_normal(size=(100, 5))
     X = _orthogonalize(X)
     K = np.dot(X.T, X)
@@ -92,9 +91,8 @@ def test_orthogonalize():
     assert_almost_equal((K**2).sum(), 0, 15)
 
 
-def test_orthogonalize_trivial():
+def test_orthogonalize_trivial(rng):
     """Test that the orthogonalization is OK."""
-    rng = np.random.RandomState(42)
     X = rng.standard_normal(size=100)
     Y = X.copy()
     X = _orthogonalize(X)

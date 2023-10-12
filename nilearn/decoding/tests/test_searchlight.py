@@ -5,14 +5,14 @@ import numpy as np
 from nibabel import Nifti1Image
 from sklearn.model_selection import KFold
 
+from nilearn.conftest import _rng
 from nilearn.decoding import searchlight
 
 
 def _make_searchlight_test_data(frames):
     # Initialize with 4x4x4 scans of random values on 30 frames
-    rand = np.random.RandomState(0)
     frames = frames
-    data = rand.rand(5, 5, 5, frames)
+    data = _rng().rand(5, 5, 5, frames)
     mask = np.ones((5, 5, 5), dtype=bool)
     mask_img = Nifti1Image(mask.astype("uint8"), np.eye(4))
     # Create a condition array, with balanced classes
@@ -131,15 +131,13 @@ def group_cross_validation(cv):
     return gcv
 
 
-def test_searchlight_group_cross_validation():
+def test_searchlight_group_cross_validation(rng):
     frames = 30
     data_img, cond, mask_img = _make_searchlight_test_data(frames)
     cv, n_jobs = define_cross_validation()
     gcv = group_cross_validation(cv)
 
-    groups = np.random.RandomState(42).permutation(
-        np.arange(frames, dtype=int) > (frames // 2)
-    )
+    groups = rng.permutation(np.arange(frames, dtype=int) > (frames // 2))
 
     sl = searchlight.SearchLight(
         mask_img,
@@ -155,14 +153,12 @@ def test_searchlight_group_cross_validation():
     assert sl.scores_[2, 2, 2] == 1.0
 
 
-def test_searchlight_group_cross_validation_with_extra_group_variable():
+def test_searchlight_group_cross_validation_with_extra_group_variable(rng):
     frames = 30
     data_img, cond, mask_img = _make_searchlight_test_data(frames)
     cv, n_jobs = define_cross_validation()
 
-    groups = np.random.RandomState(42).permutation(
-        np.arange(frames, dtype=int) > (frames // 2)
-    )
+    groups = rng.permutation(np.arange(frames, dtype=int) > (frames // 2))
 
     sl = searchlight.SearchLight(
         mask_img,
@@ -178,8 +174,7 @@ def test_searchlight_group_cross_validation_with_extra_group_variable():
     assert sl.scores_[2, 2, 2] == 1.0
 
     # Check whether searchlight works on list of 3D images
-    rand = np.random.RandomState(0)
-    data = rand.rand(5, 5, 5)
+    data = rng.rand(5, 5, 5)
     data_img = Nifti1Image(data, affine=np.eye(4))
     imgs = [data_img] * 12
 

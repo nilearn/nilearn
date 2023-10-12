@@ -11,10 +11,7 @@ from nilearn.decoding.space_net_solvers import (
 
 @pytest.mark.parametrize("alpha", [0.0, 1e-1, 1e-3])
 @pytest.mark.parametrize("l1_ratio", [0.0, 0.5, 1.0])
-def test_tvl1_from_gradient(
-    alpha, l1_ratio, size=5, n_samples=10, random_state=42
-):
-    rng = np.random.RandomState(random_state)
+def test_tvl1_from_gradient(rng, alpha, l1_ratio, size=5, n_samples=10):
     shape = [size] * 3
     n_voxels = np.prod(shape)
     X = rng.randn(n_samples, n_voxels)
