@@ -120,7 +120,7 @@ jobs:
                   echo "true" | tee restore.txt;
                 fi
 
-                if [[ "$(cat build.txt)" == "html-noplot" ]]; then
+                if [[ "$(cat build.txt)" == "ci-html-noplot" ]]; then
                   echo "Data cache will not be used for partial builds.";
                   echo "false" | tee restore.txt;
                 fi
