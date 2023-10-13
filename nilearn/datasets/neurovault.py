@@ -2163,12 +2163,12 @@ def basic_collection_terms():
 
 
 def basic_image_terms():
-    """Filter that selects unthresholded F, T and Z maps in mni space.
+    """Filter that selects unthresholded F, T and Z maps in :term:`MNI` space.
 
     More precisely, an image is excluded if one of the following is
     true:
 
-        - It is not in MNI space.
+        - It is not in :term:`MNI` space.
         - It is thresholded.
         - Its map type is one of "ROI/mask", "anatomical", or "parcellation".
         - Its image type is "atlas"
@@ -2461,7 +2461,7 @@ def fetch_neurovault(
     calls to this function will first look for the data locally before
     querying the server for more if necessary.
 
-    We explore the metadata for Neurovault collections and images,
+    We explore the metadata for :term:`Neurovault` collections and images,
     keeping those that match a certain set of criteria, until we have
     skimmed through the whole database or until an (optional) maximum
     number of images to fetch has been reached.
@@ -2509,7 +2509,7 @@ def fetch_neurovault(
 
     data_dir : str, optional
         The directory we want to use for nilearn data. A subdirectory
-        named "neurovault" will contain neurovault data.
+        named "neurovault" will contain :term:`Neurovault` data.
 
     fetch_neurosynth_words : bool, default=False
         whether to collect words from Neurosynth.
@@ -2547,7 +2547,8 @@ def fetch_neurovault(
               dictionaries.
             - 'collections_meta', the metadata for the
               collections.
-            - 'description', a short description of the Neurovault dataset.
+            - 'description', a short description
+              of the :term:`Neurovault` dataset.
 
         If `fetch_neurosynth_words` and `vectorize_words` were set, it
         also contains:
@@ -2714,7 +2715,7 @@ def fetch_neurovault_ids(
 
     data_dir : str, optional
         The directory we want to use for nilearn data. A subdirectory
-        named "neurovault" will contain neurovault data.
+        named "neurovault" will contain :term:`Neurovault` data.
 
     fetch_neurosynth_words : bool, default=False
         Whether to collect words from Neurosynth.
@@ -2741,7 +2742,8 @@ def fetch_neurovault_ids(
               dictionaries.
             - 'collections_meta', the metadata for the
               collections.
-            - 'description', a short description of the Neurovault dataset.
+            - 'description', a short description
+              of the :term:`Neurovault` dataset.
 
         If `fetch_neurosynth_words` and `vectorize_words` were set, it
         also contains:
@@ -2786,7 +2788,8 @@ def fetch_neurovault_ids(
 
 
 def fetch_neurovault_motor_task(data_dir=None, verbose=1):
-    """Fetch left vs right button press group contrast map from NeuroVault.
+    """Fetch left vs right button press \
+       group :term:`contrast` map from :term:`Neurovault`.
 
     Parameters
     ----------
@@ -2806,7 +2809,8 @@ def fetch_neurovault_motor_task(data_dir=None, verbose=1):
               dictionaries.
             - 'collections_meta', the metadata for the
               collections.
-            - 'description', a short description of the Neurovault dataset.
+            - 'description', a short description
+              of the :term:`Neurovault` dataset.
 
     Notes
     -----
@@ -2827,7 +2831,7 @@ def fetch_neurovault_motor_task(data_dir=None, verbose=1):
 
 
 def fetch_neurovault_auditory_computation_task(data_dir=None, verbose=1):
-    """Fetch a contrast map from NeuroVault showing \
+    """Fetch a :term:`contrast` map from :term:`Neurovault` showing \
     the effect of mental subtraction upon auditory instructions.
 
     Parameters
@@ -2848,7 +2852,8 @@ def fetch_neurovault_auditory_computation_task(data_dir=None, verbose=1):
               dictionaries.
             - 'collections_meta', the metadata for the
               collections.
-            - 'description', a short description of the Neurovault dataset.
+            - 'description', a short description
+              of the :term:`Neurovault` dataset.
 
     Notes
     -----

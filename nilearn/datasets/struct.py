@@ -173,9 +173,9 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 def load_mni152_template(resolution=None):
     """Load the MNI152 skullstripped T1 template.
 
-    This function takes the skullstripped, re-scaled 1mm-resolution version of
-    the MNI ICBM152 T1 template and re-samples it using a different resolution,
-    if specified.
+    This function takes the skullstripped,
+    re-scaled 1mm-resolution version of the :term:`MNI` ICBM152 T1 template
+    and re-samples it using a different resolution, if specified.
 
     For more information, see :footcite:`Fonov2011`,
     and :footcite:`Fonov2009`.
@@ -284,7 +284,8 @@ def load_mni152_wm_template(resolution=None):
     """Load the MNI152 white-matter template.
 
     This function takes the re-scaled 1mm-resolution version of the
-    white-matter MNI ICBM152 template and re-samples it using a different
+    white-matter :term:`MNI` ICBM152 template
+    and re-samples it using a different
     resolution, if specified.
 
     .. versionadded:: 0.8.1
@@ -390,9 +391,11 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     threshold : float, default=0.2
         Values of the grey-matter MNI152 template above this threshold will be
+        included.
 
     n_iter: int, default=2
-        Number of repetitions of dilation and erosion steps performed in
+        Number of repetitions of :term:`dilation<Dilation>`
+        and :term:`erosion<Erosion>` steps performed in
         scipy.ndimage.binary_closing function.
 
     Returns
@@ -444,7 +447,8 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
         included.
 
     n_iter: int, default=2
-        Number of repetitions of dilation and erosion steps performed in
+        Number of repetitions of :term:`dilation<Dilation>`
+        and :term:`erosion<Erosion>` steps performed in
         scipy.ndimage.binary_closing function.
 
     Returns
@@ -496,7 +500,8 @@ def fetch_icbm152_brain_gm_mask(
 
     %(resume)s
     n_iter: int, default=2
-        Number of repetitions of dilation and erosion steps performed in
+        Number of repetitions of :term:`dilation<Dilation>`
+        and :term:`erosion<Erosion>` steps performed in
         scipy.ndimage.binary_closing function.
 
         .. versionadded:: 0.8.1

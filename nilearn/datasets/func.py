@@ -79,7 +79,7 @@ def fetch_haxby(
         Dictionary-like object, the interest attributes are :
 
         - 'anat': string list. Paths to anatomic images.
-        - 'func': string list. Paths to nifti file with bold data.
+        - 'func': string list. Paths to nifti file with :term:`BOLD` data.
         - 'session_target': string list.
           Paths to text file containing session and target data.
         - 'mask': string. Path to fullbrain mask file.
@@ -265,7 +265,7 @@ def adhd_ids():
 
 @fill_doc
 def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
-    """Download and load the ADHD resting-state dataset.
+    """Download and load the ADHD :term:`resting-state` dataset.
 
     See :footcite:`ADHDdataset`.
 
@@ -285,7 +285,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     data : sklearn.datasets.base.Bunch
         Dictionary-like object, the interest attributes are :
 
-         - 'func': Paths to functional resting-state images
+         - 'func': Paths to functional :term:`resting-state` images
          - 'phenotypic': Explanations of preprocessing steps
          - 'confounds': CSV files containing the nuisance variables
 
@@ -436,7 +436,7 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
         Dictionary-like object, the interest attributes are :
 
         - 'func': string list
-            Paths to nifti file with bold data
+            Paths to nifti file with :term:`BOLD` data
         - 'label': string list
             Paths to text file containing session and target data
         - 'mask': string
@@ -957,7 +957,8 @@ def fetch_localizer_calculation_task(
 def fetch_localizer_button_task(
     data_dir=None, url=None, verbose=1, legacy_format=True
 ):
-    """Fetch left vs right button press contrast maps from the localizer.
+    """Fetch left vs right button press :term:`contrast` maps \
+       from the localizer.
 
     Parameters
     ----------
@@ -971,8 +972,8 @@ def fetch_localizer_button_task(
     data : Bunch
         Dictionary-like object, the interest attributes are :
 
-        - 'cmaps': string list, giving paths to nifti contrast maps
-        - 'tmap': string, giving paths to nifti contrast maps
+        - 'cmaps': string list, giving paths to nifti :term:`contrast` maps
+        - 'tmap': string, giving paths to nifti :term:`contrast` maps
         - 'anat': string, giving paths to normalized anatomical image
 
     Notes
@@ -1370,7 +1371,7 @@ def fetch_megatrawls_netmats(
     ----------
     dimensionality : int, default=100
         Valid inputs are 25, 50, 100, 200, 300. By default, network matrices
-        estimated using Group ICA brain parcellations
+        estimated using Group :term:`ICA` brain :term:`parcellation`
         of 100 components/dimensions will be returned.
 
     timeseries : str, default='eigen_regression'
@@ -1592,7 +1593,7 @@ def nki_ids():
 def fetch_surf_nki_enhanced(
     n_subjects=10, data_dir=None, url=None, resume=True, verbose=1
 ):
-    """Download and load the NKI enhanced resting-state dataset, \
+    """Download and load the NKI enhanced :term:`resting-state` dataset, \
     preprocessed and projected to the fsaverage5 space surface.
 
     See :footcite:`Nooner2012`.
@@ -2526,7 +2527,7 @@ def fetch_openneuro_dataset(
 
 @fill_doc
 def fetch_localizer_first_level(data_dir=None, verbose=1):
-    """Download a first-level localizer fMRI dataset.
+    """Download a first-level localizer :term:`fMRI` dataset.
 
     Parameters
     ----------
@@ -2694,7 +2695,7 @@ def _make_events_file_spm_auditory_data(events_filepath):
 def fetch_spm_auditory(
     data_dir=None, data_name="spm_auditory", subject_id="sub001", verbose=1
 ):
-    """Fetch SPM auditory single-subject data.
+    """Fetch :term:`SPM` auditory single-subject data.
 
     See :footcite:`spm_auditory`.
 
@@ -2926,7 +2927,7 @@ def fetch_spm_multimodal_fmri(
 
 @fill_doc
 def fetch_fiac_first_level(data_dir=None, verbose=1):
-    """Download a first-level fiac fMRI dataset (2 sessions).
+    """Download a first-level fiac :term:`fMRI` dataset (2 sessions).
 
     Parameters
     ----------

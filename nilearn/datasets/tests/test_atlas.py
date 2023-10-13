@@ -221,6 +221,11 @@ def test_fetch_atlas_fsl(
         is_symm=is_symm or split,
     )
 
+    # check for typo in label names
+    for label in atlas_instance.labels:
+        # no extra whitespace
+        assert label.strip() == label
+
 
 def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):
     local_archive = (

@@ -269,7 +269,7 @@ def view_connectome(
         The weights of the edges.
 
     node_coords : ndarray, shape=(n_nodes, 3)
-        The coordinates of the nodes in MNI space.
+        The coordinates of the nodes in :term:`MNI` space.
 
     node_color : color or sequence of colors, default='auto'
         Color(s) of the nodes.
@@ -365,7 +365,7 @@ def view_markers(
     Parameters
     ----------
     marker_coords : ndarray, shape=(n_nodes, 3)
-        The coordinates of the nodes in MNI space.
+        The coordinates of the nodes in :term:`MNI` space.
 
     marker_color : ndarray, shape=(n_nodes,), optional
         colors of the markers: list of strings, hex rgb or rgba strings, rgb

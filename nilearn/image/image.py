@@ -334,9 +334,10 @@ def crop_img(img, rtol=1e-8, copy=True, pad=True, return_offset=False):
     """Crops an image as much as possible.
 
     Will crop `img`, removing as many zero entries as possible without
-    touching non-zero entries. Will leave one voxel of zero padding
-    around the obtained non-zero area in order to avoid sampling issues
-    later on.
+    touching non-zero entries.
+    Will leave one :term:`voxel` of zero padding
+    around the obtained non-zero area in order
+    to avoid sampling issues later on.
 
     Parameters
     ----------
@@ -1129,7 +1130,7 @@ def clean_img(
     mask_img=None,
     **kwargs,
 ):
-    """Improve SNR on masked fMRI signals.
+    """Improve :term:`SNR` on masked :term:`fMRI` signals.
 
     This function can do several things on the input signals, in
     the following order:

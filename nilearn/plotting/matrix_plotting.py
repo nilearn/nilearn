@@ -334,7 +334,7 @@ def plot_matrix(
 def plot_contrast_matrix(
     contrast_def, design_matrix, colorbar=False, ax=None, output_file=None
 ):
-    """Create plot for contrast definition.
+    """Create plot for :term:`contrast` definition.
 
     Parameters
     ----------
@@ -342,9 +342,10 @@ def plot_contrast_matrix(
     or :obj:`list` of :obj:`str`, or :class:`numpy.ndarray` of shape (n_col)
 
         where ``n_col`` is the number of columns of the design matrix, (one
-        array per run). If only one array is provided when there are several
-        runs, it will be assumed that the same contrast is desired for all
-        runs. The string can be a formula compatible with
+        array per run).
+        If only one array is provided when there are several runs,
+        it will be assumed that the same :term:`contrast` is desired
+        for all runs. The string can be a formula compatible with
         :meth:`pandas.DataFrame.eval`. Basically one can use the name of the
         conditions as they appear in the design matrix of the fitted model
         combined with operators +- and combined with numbers with operators

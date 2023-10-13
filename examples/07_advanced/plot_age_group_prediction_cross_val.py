@@ -2,9 +2,9 @@
 Functional connectivity predicts age group
 ==========================================
 
-This example compares different kinds of functional connectivity between
-regions of interest : correlation, partial correlation, and tangent space
-embedding.
+This example compares different kinds of :term:`functional connectivity`
+between regions of interest : correlation, partial correlation,
+and tangent space embedding.
 
 The resulting connectivity coefficients can be used to
 discriminate children from adults. In general, the tangent space embedding
@@ -16,9 +16,9 @@ for a careful study.
 
 """
 
-# %%
-# Load brain development fMRI dataset and MSDL atlas
-# --------------------------------------------------
+# %%##
+# Load brain development :term:`fMRI` dataset and MSDL atlas
+# ----------------------------------------------------------
 # We study only 60 subjects from the dataset, to save computation time.
 from nilearn import datasets
 

@@ -327,7 +327,8 @@ def make_first_level_design_matrix(
         Order of the drift model (in case it is polynomial).
 
     fir_delays : array of shape(n_onsets) or list, default=[0]
-        In case of FIR design, yields the array of delays used in the FIR
+        In case of :term:`FIR` design,
+        yields the array of delays used in the :term:`FIR`
         model (in scans).
 
     add_regs : array of shape(n_frames, n_add_reg) or \

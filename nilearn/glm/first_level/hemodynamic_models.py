@@ -31,7 +31,7 @@ def _gamma_difference_hrf(
     Parameters
     ----------
     tr : float
-        Scan repeat time, in seconds.
+        :term:`Repetition time<TR>`, in seconds (sampling period).
 
     oversampling : int, default=50
         Temporal oversampling factor.
@@ -84,44 +84,44 @@ def _gamma_difference_hrf(
 
 
 def spm_hrf(tr, oversampling=50, time_length=32.0, onset=0.0):
-    """Implement the SPM hrf model.
+    """Implement the :term:`SPM` :term:`HRF` model.
 
     Parameters
     ----------
     tr : float
-        Scan repeat time, in seconds.
+        :term:`Repetition time<TR>`, in seconds (sampling period).
 
     oversampling : int, default=50
         Temporal oversampling factor.
 
     time_length : float, default=32
-        hrf kernel length, in seconds.
+        :term:`HRF` kernel length, in seconds.
 
     onset : float, default=0
-        hrf onset time, in seconds.
+        :term:`HRF` onset time, in seconds.
 
     Returns
     -------
     hrf : array of shape(length / tr * oversampling, dtype=float)
-         hrf sampling on the oversampled time grid
+         :term:`HRF` sampling on the oversampled time grid
 
     """
     return _gamma_difference_hrf(tr, oversampling, time_length, onset)
 
 
 def glover_hrf(tr, oversampling=50, time_length=32.0, onset=0.0):
-    """Implement the Glover hrf model.
+    """Implement the Glover :term:`HRF` model.
 
     Parameters
     ----------
     tr : float
-        Scan repeat time, in seconds.
+        :term:`Repetition time<TR>`, in seconds (sampling period).
 
     oversampling : int, default=50
         Temporal oversampling factor.
 
     time_length : float, default=32
-        hrf kernel length, in seconds.
+        :term:`HRF` kernel length, in seconds.
 
     onset : float, default=0
         Onset of the response.
@@ -129,7 +129,7 @@ def glover_hrf(tr, oversampling=50, time_length=32.0, onset=0.0):
     Returns
     -------
     hrf : array of shape(length / tr * oversampling, dtype=float)
-         hrf sampling on the oversampled time grid.
+         :term:`HRF` sampling on the oversampled time grid.
 
     """
     return _gamma_difference_hrf(
@@ -161,7 +161,7 @@ def _generic_time_derivative(
         spm_hrf or glover_hrf
 
     tr : float
-        Scan repeat time, in seconds.
+        :term:`Repetition time<TR>`, in seconds (sampling period).
 
     oversampling : int, default=50
         Temporal oversampling factor.
@@ -183,18 +183,18 @@ def _generic_time_derivative(
 
 
 def spm_time_derivative(tr, oversampling=50, time_length=32.0, onset=0.0):
-    """Implement the SPM time derivative hrf (dhrf) model.
+    """Implement the :term:`SPM` time derivative :term:`HRF` (dhrf) model.
 
     Parameters
     ----------
     tr : float
-        Scan repeat time, in seconds.
+        :term:`Repetition time<TR>`, in seconds (sampling period).
 
     oversampling : int, default=50
         Temporal oversampling factor.
 
     time_length : float, default=32
-        hrf kernel length, in seconds.
+        :term:`HRF` kernel length, in seconds.
 
     onset : float, default=0
         Onset of the response in seconds.
@@ -215,18 +215,18 @@ def spm_time_derivative(tr, oversampling=50, time_length=32.0, onset=0.0):
 
 
 def glover_time_derivative(tr, oversampling=50, time_length=32.0, onset=0.0):
-    """Implement the Glover time derivative hrf (dhrf) model.
+    """Implement the Glover time derivative :term:`HRF` (dhrf) model.
 
     Parameters
     ----------
     tr : float
-        Scan repeat time, in seconds.
+        :term:`Repetition time<TR>`, in seconds (sampling period).
 
     oversampling : int, default=50
         Temporal oversampling factor.
 
     time_length : float, default=32
-        hrf kernel length, in seconds.
+        :term:`HRF` kernel length, in seconds.
 
     onset : float, default=0
         Onset of the response.
@@ -291,18 +291,18 @@ def _generic_dispersion_derivative(
 def spm_dispersion_derivative(
     tr, oversampling=50, time_length=32.0, onset=0.0
 ):
-    """Implement the SPM dispersion derivative hrf model.
+    """Implement the :term:`SPM` dispersion derivative :term:`HRF` model.
 
     Parameters
     ----------
     tr : float
-        Scan repeat time, in seconds.
+        :term:`Repetition time<TR>`, in seconds (sampling period).
 
     oversampling : int, default=50
         Temporal oversampling factor in seconds.
 
     time_length : float, default=32
-        hrf kernel length, in seconds.
+        :term:`HRF` kernel length, in seconds.
 
     onset : float, default=0
         Onset of the response in seconds.
@@ -321,18 +321,18 @@ def spm_dispersion_derivative(
 def glover_dispersion_derivative(
     tr, oversampling=50, time_length=32.0, onset=0.0
 ):
-    """Implement the Glover dispersion derivative hrf model.
+    """Implement the Glover dispersion derivative :term:`HRF` model.
 
     Parameters
     ----------
     tr : float
-        Scan repeat time, in seconds.
+        :term:`Repetition time<TR>`, in seconds (sampling period).
 
     oversampling : int, default=50
         Temporal oversampling factor in seconds.
 
     time_length : float, default=32
-        hrf kernel length, in seconds.
+        :term:`HRF` kernel length, in seconds.
 
     onset : float, default=0
         Onset of the response in seconds.
@@ -667,7 +667,7 @@ def compute_regressor(
     fir_delays=None,
     min_onset=-24,
 ):
-    """Convolve regressors with hrf model.
+    """Convolve regressors with :term:`HRF` model.
 
     Parameters
     ----------

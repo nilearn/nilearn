@@ -94,8 +94,9 @@ z_map = second_level_model.compute_contrast(
     output_type="z_score",
 )
 
-# %%
-# We threshold the second level contrast at uncorrected p < 0.001 and plot it.
+# %%##
+# We threshold the second level :term:`contrast`
+# at uncorrected p < 0.001 and plot it.
 from scipy.stats import norm
 
 p_val = 0.001

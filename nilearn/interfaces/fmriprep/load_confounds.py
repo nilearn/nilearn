@@ -217,7 +217,7 @@ def load_confounds(
     compcor : :obj:`str`, default="anat_combined"
 
         .. warning::
-            Require fmriprep >= v:1.4.0.
+            Require :term:`fMRIPrep` >= v:1.4.0.
 
         Type of confounds extracted from a component based noise correction
         method :footcite:`Behzadi2007`.

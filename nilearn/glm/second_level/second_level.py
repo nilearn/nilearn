@@ -561,7 +561,8 @@ class SecondLevelModel(BaseGLM):
 
             - In case a :obj:`list` of
               :class:`~nilearn.glm.first_level.FirstLevelModel` was provided
-              as ``second_level_input``, we have to provide a contrast to
+              as ``second_level_input``,
+              we have to provide a :term:`contrast` to
               apply to the first level models to get the corresponding list
               of images desired, that would be tested at the second level.
             - In case a :class:`~pandas.DataFrame` was provided as
@@ -879,7 +880,7 @@ def non_parametric_inference(
                         test of the n_regressors explanatory variates against
                         the n_descriptors target variates.
 
-                        Returned only if ``threshold`` is not None.
+                        Returned only if ``threshold`` is not ``None``.
         logp_max_size   Negative log10 family-wise error rate-corrected
                         p-values corrected based on the distribution of maximum
                         cluster sizes from permutations.
@@ -887,12 +888,12 @@ def non_parametric_inference(
                         the values in the map describe the significance of
                         clusters, rather than individual voxels.
 
-                        Returned only if ``threshold`` is not None.
+                        Returned only if ``threshold`` is not ``None``.
         mass            Cluster mass values associated with the significance
                         test of the n_regressors explanatory variates against
                         the n_descriptors target variates.
 
-                        Returned only if ``threshold`` is not None.
+                        Returned only if ``threshold`` is not ``None``.
         logp_max_mass   Negative log10 family-wise error rate-corrected
                         p-values corrected based on the distribution of maximum
                         cluster masses from permutations.
@@ -900,17 +901,18 @@ def non_parametric_inference(
                         the values in the map describe the significance of
                         clusters, rather than individual voxels.
 
-                        Returned only if ``threshold`` is not None.
-        tfce            TFCE values associated with the significance test of
+                        Returned only if ``threshold`` is not ``None``.
+        tfce            :term:`TFCE` values associated
+                        with the significance test of
                         the n_regressors explanatory variates against the
                         n_descriptors target variates.
 
-                        Returned only if ``tfce`` is True.
+                        Returned only if ``tfce`` is ``True``.
         logp_max_tfce   Negative log10 family-wise error rate-corrected
                         p-values corrected based on the distribution of maximum
                         TFCE values from permutations.
 
-                        Returned only if ``tfce`` is True.
+                        Returned only if ``tfce`` is ``True``.
         =============== =======================================================
 
     See Also

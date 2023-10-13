@@ -18,9 +18,9 @@ Notice that in this case the preprocessed :term:`bold<BOLD>`
 images were already normalized to the same :term:`MNI` space.
 """
 
-# %%
-# Fetch example BIDS dataset
-# --------------------------
+# %%#
+# Fetch example :term:`BIDS` dataset
+# ----------------------------------
 # We download a simplified :term:`BIDS` dataset made available for illustrative
 # purposes. It contains only the necessary
 # information to run a statistical analysis using Nilearn. The raw data
@@ -56,8 +56,8 @@ _, models_run_imgs, models_events, models_confounds = \
         img_filters=[('desc', 'preproc')])
 
 # %%
-# We also need to get the TR information. For that we use the json sidecar file
-# of the dataset's functional images.
+# We also need to get the :term:`TR` information.
+# For that we use the json sidecar file of the dataset's functional images.
 import json
 import os
 
@@ -73,14 +73,14 @@ with open(json_file, 'r') as f:
     t_r = json.load(f)['RepetitionTime']
 
 # %%
-# Project fMRI data to the surface: First get fsaverage5.
+# Project :term:`fMRI` data to the surface: First get fsaverage5.
 from nilearn.datasets import fetch_surf_fsaverage
 
 fsaverage = fetch_surf_fsaverage(mesh='fsaverage5')
 
 # %%
-# The projection function simply takes the fMRI data and the mesh.
-# Note that those correspond spatially, as they are both in MNI space.
+# The projection function simply takes the :term:`fMRI` data and the mesh.
+# Note that those correspond spatially, as they are both in :term:`MNI` space.
 import numpy as np
 
 from nilearn import surface

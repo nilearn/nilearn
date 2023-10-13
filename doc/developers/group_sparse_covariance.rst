@@ -255,7 +255,7 @@ stopped.
 This technique it is only a way to stop iterating based on the
 estimate value instead of the criterion value. It does *not* ensure a
 given uncertainty on the estimate. This has been tested on synthetic
-and real fMRI data: using two different starting points leads to two
+and real :term:`fMRI` data: using two different starting points leads to two
 estimates that can differ (in max norm) by more than the threshold
 (see next paragraph). However, it has the same property as the duality
 gap criterion: quickly converging cases use fewer iterations than

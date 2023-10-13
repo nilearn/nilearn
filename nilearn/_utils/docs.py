@@ -887,7 +887,7 @@ docdict[
     "t_r"
 ] = """
 t_r : :obj:`float` or None, default=None
-    Repetition time, in seconds (sampling period).
+    :term:`Repetition time<TR>`, in seconds (sampling period).
     Set to `None` if not provided.
 """
 
