@@ -78,18 +78,19 @@ def test_cbar_tick_format(plot_func, img_3d_mni, cbar_tick_format, tmp_path):
     plt.close()
 
 
-@pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_4D)
-def test_plot_functions_4d_default_params(
-    plot_func, img_3d_mni, testdata_4d_for_plotting, tmp_path
-):
-    """Smoke-test for 4D plotting functions with default arguments."""
-    filename = tmp_path / "temp.png"
-    kwargs = {"output_file": filename}
-    if plot_func == plot_carpet:
-        kwargs["mask_img"] = testdata_4d_for_plotting["img_mask"]
-    else:
-        kwargs["bg_img"] = img_3d_mni
-    plot_func(testdata_4d_for_plotting["img_4d"], **kwargs)
+def test_plot_carpet_default_params(img_4D_mni, img_3d_ones_mni, tmp_path):
+    """Smoke-test for 4D plot_carpet with default arguments."""
+    plot_carpet(
+        img_4D_mni, mask_img=img_3d_ones_mni, output_file=tmp_path / "temp.png"
+    )
+    plt.close()
+
+
+def test_plot_prob_atlas_default_params(img_3d_mni, img_4D_mni, tmp_path):
+    """Smoke-test for plot_prob_atlas with default arguments."""
+    plot_prob_atlas(
+        img_4D_mni, bg_img=img_3d_mni, output_file=tmp_path / "temp.png"
+    )
     plt.close()
 
 
