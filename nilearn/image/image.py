@@ -1267,7 +1267,7 @@ def clean_img(
 
     # Clean signal
     clean_kwargs = {
-        k[7:]: v for k, v in kwargs['kwargs'].items() if k.startswith("clean__")
+        k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
     }
     data = signal.clean(
         signals,
