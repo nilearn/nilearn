@@ -225,7 +225,7 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
     stat_map_img : Niimg-like object, 3D
         See :ref:`extracting_data`.
 
-    surf_mesh : str or dict, optional., default='fsaverage5'
+    surf_mesh : str or dict, default='fsaverage5'
         If a string, it should be one of the following values:
         %(fsaverage_options)s
         If a dictionary, it should have the same structure as those returned by
