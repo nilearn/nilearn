@@ -163,11 +163,11 @@ def test_confounds_standardization():
     )
 
 
-def test_compute_epi_mask():
+def test_compute_epi_mask(affine_eye):
     mean_image = np.ones((9, 9, 3))
     mean_image[3:-2, 3:-2, :] = 10
     mean_image[5, 5, :] = 11
-    mean_image = Nifti1Image(mean_image, np.eye(4))
+    mean_image = Nifti1Image(mean_image, affine_eye)
     mask1 = compute_epi_mask(mean_image, opening=False)
     mask2 = compute_epi_mask(mean_image, exclude_zeros=True, opening=False)
     # With an array with no zeros, exclude_zeros should not make
@@ -176,7 +176,7 @@ def test_compute_epi_mask():
     # Check that padding with zeros does not change the extracted mask
     mean_image2 = np.zeros((30, 30, 3))
     mean_image2[3:12, 3:12, :] = get_data(mean_image)
-    mean_image2 = Nifti1Image(mean_image2, np.eye(4))
+    mean_image2 = Nifti1Image(mean_image2, affine_eye)
     mask3 = compute_epi_mask(mean_image2, exclude_zeros=True, opening=False)
     np.testing.assert_array_equal(get_data(mask1), get_data(mask3)[3:12, 3:12])
     # However, without exclude_zeros, it does
@@ -187,7 +187,7 @@ def test_compute_epi_mask():
     mean_image = np.ones((9, 9))
     mean_image[3:-3, 3:-3] = 10
     mean_image[5, 5] = 100
-    mean_image = Nifti1Image(mean_image, np.eye(4))
+    mean_image = Nifti1Image(mean_image, affine_eye)
     with pytest.raises(ValueError):
         compute_epi_mask(mean_image)
 
@@ -196,17 +196,17 @@ def test_compute_epi_mask():
     mean_image[0, 0, 1] = -1
     mean_image[0, 0, 0] = 1.2
     mean_image[0, 0, 2] = 1.1
-    mean_image = Nifti1Image(mean_image, np.eye(4))
+    mean_image = Nifti1Image(mean_image, affine_eye)
     with pytest.warns(MaskWarning, match="Computed an empty mask"):
         compute_epi_mask(mean_image, exclude_zeros=True)
 
 
-def test_compute_background_mask():
+def test_compute_background_mask(affine_eye):
     for value in (0, np.nan):
         mean_image = value * np.ones((9, 9, 9))
         mean_image[3:-3, 3:-3, 3:-3] = 1
         mask = mean_image == 1
-        mean_image = Nifti1Image(mean_image, np.eye(4))
+        mean_image = Nifti1Image(mean_image, affine_eye)
         mask1 = compute_background_mask(mean_image, opening=False)
         np.testing.assert_array_equal(get_data(mask1), mask.astype(np.int8))
 
@@ -214,13 +214,13 @@ def test_compute_background_mask():
     mean_image = np.ones((9, 9))
     mean_image[3:-3, 3:-3] = 10
     mean_image[5, 5] = 100
-    mean_image = Nifti1Image(mean_image, np.eye(4))
+    mean_image = Nifti1Image(mean_image, affine_eye)
     with pytest.raises(ValueError):
         compute_background_mask(mean_image)
 
     # Check that we get a useful warning for empty masks
     mean_image = np.zeros((9, 9, 9))
-    mean_image = Nifti1Image(mean_image, np.eye(4))
+    mean_image = Nifti1Image(mean_image, affine_eye)
     with warnings.catch_warnings(record=True) as w:
         compute_background_mask(mean_image)
     assert len(w) == 1
@@ -258,7 +258,7 @@ def test_compute_brain_mask():
         compute_brain_mask(img, verbose=1, mask_type="foo")
 
 
-def test_apply_mask():
+def test_apply_mask(affine_eye):
     """Test smoothing of timeseries extraction."""
     # A delta in 3D
     # Standard masking
@@ -268,7 +268,7 @@ def test_apply_mask():
     full_mask = np.zeros((40, 40, 40))
     for create_files in (False, True):
         for affine in (
-            np.eye(4),
+            affine_eye,
             np.diag((1, 1, -1, 1)),
             np.diag((0.5, 1, 0.5, 1)),
         ):
@@ -304,19 +304,21 @@ def test_apply_mask():
     assert np.all(np.isfinite(series))
 
     # veriy that 4D masks are rejected
-    mask_img_4d = Nifti1Image(np.ones((40, 40, 40, 2)), np.eye(4))
+    mask_img_4d = Nifti1Image(np.ones((40, 40, 40, 2)), affine_eye)
     with pytest.raises(DimensionError, match=_TEST_DIM_ERROR_MSG % "4D"):
         masking.apply_mask(data_img, mask_img_4d)
 
     # Check that 3D data is accepted
     data_3d = Nifti1Image(
-        np.arange(27, dtype="int32").reshape((3, 3, 3)), np.eye(4)
+        np.arange(27, dtype="int32").reshape((3, 3, 3)), affine_eye
     )
     mask_data_3d = np.zeros((3, 3, 3))
     mask_data_3d[1, 1, 0] = True
     mask_data_3d[0, 1, 0] = True
     mask_data_3d[0, 1, 1] = True
-    data_3d = masking.apply_mask(data_3d, Nifti1Image(mask_data_3d, np.eye(4)))
+    data_3d = masking.apply_mask(
+        data_3d, Nifti1Image(mask_data_3d, affine_eye)
+    )
     assert sorted(data_3d.tolist()) == [3.0, 4.0, 12.0]
 
     # Check data shape and affine
@@ -336,14 +338,14 @@ def test_apply_mask():
         masking.apply_mask(Nifti1Image(data, affine), mask_img)
 
 
-def test_unmask():
+def test_unmask(affine_eye):
     # A delta in 3D
     shape = (10, 20, 30, 40)
     rng = np.random.RandomState(42)
     data4D = rng.uniform(size=shape)
     data3D = data4D[..., 0]
     mask = rng.randint(2, size=shape[:3], dtype="int32")
-    mask_img = Nifti1Image(mask, np.eye(4))
+    mask_img = Nifti1Image(mask, affine_eye)
     mask = mask.astype(bool)
 
     masked4D = data4D[mask, :].T
@@ -408,11 +410,11 @@ def test_unmask():
         unmask(transposed_vector, mask_img)
 
 
-def test_intersect_masks_filename():
+def test_intersect_masks_filename(affine_eye):
     # Create dummy masks
     mask_a = np.zeros((4, 4, 1), dtype=bool)
     mask_a[2:4, 2:4] = 1
-    mask_a_img = Nifti1Image(mask_a.astype("int32"), np.eye(4))
+    mask_a_img = Nifti1Image(mask_a.astype("int32"), affine_eye)
 
     # +---+---+---+---+
     # |   |   |   |   |
@@ -426,7 +428,7 @@ def test_intersect_masks_filename():
 
     mask_b = np.zeros((4, 4, 1), dtype=bool)
     mask_b[1:3, 1:3] = 1
-    mask_b_img = Nifti1Image(mask_b.astype("int32"), np.eye(4))
+    mask_b_img = Nifti1Image(mask_b.astype("int32"), affine_eye)
 
     # +---+---+---+---+
     # |   |   |   |   |
@@ -447,12 +449,12 @@ def test_intersect_masks_filename():
         assert_array_equal(mask_ab, get_data(mask_ab_))
 
 
-def test_intersect_masks():
+def test_intersect_masks(affine_eye):
     """Test the intersect_masks function."""
     # Create dummy masks
     mask_a = np.zeros((4, 4, 1), dtype=bool)
     mask_a[2:4, 2:4] = 1
-    mask_a_img = Nifti1Image(mask_a.astype("int32"), np.eye(4))
+    mask_a_img = Nifti1Image(mask_a.astype("int32"), affine_eye)
 
     # +---+---+---+---+
     # |   |   |   |   |
@@ -466,7 +468,7 @@ def test_intersect_masks():
 
     mask_b = np.zeros((4, 4, 1), dtype=bool)
     mask_b[1:3, 1:3] = 1
-    mask_b_img = Nifti1Image(mask_b.astype("int32"), np.eye(4))
+    mask_b_img = Nifti1Image(mask_b.astype("int32"), affine_eye)
 
     # +---+---+---+---+
     # |   |   |   |   |
@@ -481,7 +483,7 @@ def test_intersect_masks():
     mask_c = np.zeros((4, 4, 1), dtype=bool)
     mask_c[:, 2] = 1
     mask_c[0, 0] = 1
-    mask_c_img = Nifti1Image(mask_c.astype("int32"), np.eye(4))
+    mask_c_img = Nifti1Image(mask_c.astype("int32"), affine_eye)
 
     # +---+---+---+---+
     # | X |   | X |   |
@@ -535,7 +537,7 @@ def test_intersect_masks():
     assert_array_equal(mask_abc, get_data(mask_abc_))
 
 
-def test_compute_multi_epi_mask():
+def test_compute_multi_epi_mask(affine_eye):
     # Check that an empty list of images creates a meaningful error
     with pytest.raises(TypeError):
         compute_multi_epi_mask([])
@@ -543,11 +545,11 @@ def test_compute_multi_epi_mask():
     # Same masks as test_intersect_masks
     mask_a = np.zeros((4, 4, 1), dtype=bool)
     mask_a[2:4, 2:4] = 1
-    mask_a_img = Nifti1Image(mask_a.astype("uint8"), np.eye(4))
+    mask_a_img = Nifti1Image(mask_a.astype("uint8"), affine_eye)
 
     mask_b = np.zeros((8, 8, 1), dtype=bool)
     mask_b[2:6, 2:6] = 1
-    mask_b_img = Nifti1Image(mask_b.astype("uint8"), np.eye(4) / 2.0)
+    mask_b_img = Nifti1Image(mask_b.astype("uint8"), affine_eye / 2.0)
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", MaskWarning)
@@ -559,7 +561,7 @@ def test_compute_multi_epi_mask():
         [mask_a_img, mask_b_img],
         threshold=1.0,
         opening=0,
-        target_affine=np.eye(4),
+        target_affine=affine_eye,
         target_shape=(4, 4, 1),
     )
     assert_array_equal(mask_ab, get_data(mask_ab_))
@@ -591,7 +593,7 @@ def test_compute_multi_brain_mask():
     assert_array_equal(get_data(mask1), get_data(mask2))
 
 
-def test_error_shape(random_state=42, shape=(3, 5, 7, 11)):
+def test_error_shape(affine_eye, random_state=42, shape=(3, 5, 7, 11)):
     # open-ended `if .. elif` in masking.unmask
 
     rng = np.random.RandomState(random_state)
@@ -601,7 +603,7 @@ def test_error_shape(random_state=42, shape=(3, 5, 7, 11)):
     mask_img = np.zeros(shape, dtype=np.uint8)
     mask_img[rng.standard_normal(size=shape) > 0.4] = 1
     n_features = (mask_img > 0).sum()
-    mask_img = Nifti1Image(mask_img, np.eye(4))
+    mask_img = Nifti1Image(mask_img, affine_eye)
     n_samples = shape[0]
 
     X = rng.standard_normal(size=(n_samples, n_features, 2))
@@ -615,8 +617,8 @@ def test_error_shape(random_state=42, shape=(3, 5, 7, 11)):
         unmask(X, mask_img)
 
 
-def test_nifti_masker_empty_mask_warning():
-    X = Nifti1Image(np.ones((2, 2, 2, 5)), np.eye(4))
+def test_nifti_masker_empty_mask_warning(affine_eye):
+    X = Nifti1Image(np.ones((2, 2, 2, 5)), affine_eye)
     with pytest.raises(
         ValueError,
         match="The mask is invalid as it is empty: it masks all data",
@@ -624,12 +626,11 @@ def test_nifti_masker_empty_mask_warning():
         NiftiMasker(mask_strategy="epi").fit_transform(X)
 
 
-def test_unmask_list(random_state=42):
+def test_unmask_list(affine_eye, random_state=42):
     rng = np.random.RandomState(random_state)
     shape = (3, 4, 5)
-    affine = np.eye(4)
     mask_data = rng.uniform(size=shape) < 0.5
-    mask_img = Nifti1Image(mask_data.astype(np.uint8), affine)
+    mask_img = Nifti1Image(mask_data.astype(np.uint8), affine_eye)
     a = unmask(mask_data[mask_data], mask_img)
     b = unmask(mask_data[mask_data].tolist(), mask_img)  # shouldn't crash
     assert_array_equal(get_data(a), get_data(b))

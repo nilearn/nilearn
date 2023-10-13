@@ -109,7 +109,7 @@ def test_plot_functions_mosaic_mode(plot_func, cut_coords, img_3d_mni):
 
 
 @pytest.mark.parametrize("plot_func", [plot_stat_map, plot_glass_brain])
-def test_plot_threshold_for_uint8(plot_func):
+def test_plot_threshold_for_uint8(affine_eye, plot_func):
     """Mask was applied in [-threshold, threshold] which is problematic
     for uint8 data. See https://github.com/nilearn/nilearn/issues/611
     for more details.
@@ -121,8 +121,7 @@ def test_plot_threshold_for_uint8(plot_func):
         data[0, 0, 0] = 0
     else:
         data[0, 0] = 0
-    affine = np.eye(4)
-    img = Nifti1Image(data, affine)
+    img = Nifti1Image(data, affine_eye)
     threshold = np.array(5, dtype="uint8")
     kwargs = {"threshold": threshold, "display_mode": "z"}
     if plot_func == plot_stat_map:

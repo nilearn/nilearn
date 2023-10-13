@@ -18,7 +18,7 @@ from nilearn.plotting import plot_prob_atlas
         {"threshold": None},
     ],
 )
-def test_plot_prob_atlas(params):
+def test_plot_prob_atlas(affine_eye, params):
     """Smoke tests for plot_prob_atlas.
 
     Tests different combinations of parameters `view_type`, `threshold`,
@@ -26,16 +26,12 @@ def test_plot_prob_atlas(params):
     """
     rng = np.random.RandomState(42)
     data_rng = rng.normal(size=(6, 8, 10, 5))
-    plot_prob_atlas(Nifti1Image(data_rng, np.eye(4)), **params)
+    plot_prob_atlas(Nifti1Image(data_rng, affine_eye), **params)
     plt.close()
 
 
-def test_plot_prob_atlas_radiological_view():
+def test_plot_prob_atlas_radiological_view(img_3d_mni):
     """Smoke test for radiological view."""
-    rng = np.random.RandomState(42)
-    data_rng = rng.normal(size=(6, 8, 10, 5))
-    result = plot_prob_atlas(
-        Nifti1Image(data_rng, np.eye(4)), radiological=True
-    )
+    result = plot_prob_atlas(img_3d_mni, radiological=True)
     assert result.axes.get("y").radiological is True
     plt.close()

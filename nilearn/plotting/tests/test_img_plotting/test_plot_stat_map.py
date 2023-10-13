@@ -76,9 +76,9 @@ def test_plot_stat_map_with_masked_image(img_3d_mni, affine_mni):
         np.random.RandomState(42).standard_normal(size=(91, 109, 91)),
     ],
 )
-def test_plot_stat_map_threshold(data):
+def test_plot_stat_map_threshold(data, affine_eye):
     """Tests plot_stat_map with threshold (see #510)."""
-    plot_stat_map(Nifti1Image(data, np.eye(4)), threshold=1000, colorbar=True)
+    plot_stat_map(Nifti1Image(data, affine_eye), threshold=1000, colorbar=True)
     plt.close()
 
 
@@ -141,10 +141,10 @@ def test_plot_stat_map_colorbar_variations(params, img_3d_mni, affine_mni):
 @pytest.mark.parametrize(
     "shape,direction", [((1, 6, 7), "x"), ((5, 1, 7), "y"), ((5, 6, 1), "z")]
 )
-def test_plot_stat_map_singleton_ax_dim(shape, direction):
+def test_plot_stat_map_singleton_ax_dim(shape, direction, affine_eye):
     """Tests for plot_stat_map and singleton display mode."""
     plot_stat_map(
-        Nifti1Image(np.ones(shape), np.eye(4)), None, display_mode=direction
+        Nifti1Image(np.ones(shape), affine_eye), None, display_mode=direction
     )
     plt.close()
 
