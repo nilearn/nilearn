@@ -375,7 +375,6 @@ class FirstLevelModel(BaseGLM):
 
     random_state : int or numpy.random.RandomState, default=None.
 
-    .. versionadded:: 0.9
             Random state seed to sklearn.cluster.KMeans
             for autoregressive models
             of order at least 2 ('ar(N)' with n >= 2).
@@ -513,9 +512,8 @@ class FirstLevelModel(BaseGLM):
             If string, then a path to a csv file is expected.
 
         sample_masks : array_like, or list of array_like, default=None
-
-        shape of array: (number of scans - number of volumes removed, ), \
-                        default=None
+                       shape of array:
+                       (number of scans - number of volumes remove) 
             Indices of retained volumes. Masks the niimgs along time/fourth
             dimension to perform scrubbing (remove volumes with high motion)
             and/or remove non-steady-state volumes.
