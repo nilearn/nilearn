@@ -33,13 +33,11 @@ def test_AR(X, Y):
 
 
 def test_residuals(X, Y):
-    Xintercept = X.copy()
-
     # If design matrix contains an intercept, the
     # mean of the residuals should be 0 (short of
     # some numerical rounding errors)
-    Xintercept[:, 0] = 1
-    model = OLSModel(design=Xintercept)
+    X[:, 0] = 1
+    model = OLSModel(design=X)
     results = model.fit(Y)
     assert_almost_equal(results.residuals.mean(), 0)
     assert len(results.whitened_residuals) == 40
@@ -60,16 +58,14 @@ def test_predicted_r_square(X, Y):
 
 
 def test_OLS_degenerate(X, Y):
-    Xd = X.copy()
-    Xd[:, 0] = Xd[:, 1] + Xd[:, 2]
-    model = OLSModel(design=Xd)
+    X[:, 0] = X[:, 1] + X[:, 2]
+    model = OLSModel(design=X)
     results = model.fit(Y)
     assert results.df_residuals == 31
 
 
 def test_AR_degenerate(X, Y):
-    Xd = X.copy()
-    Xd[:, 0] = Xd[:, 1] + Xd[:, 2]
-    model = ARModel(design=Xd, rho=0.9)
+    X[:, 0] = X[:, 1] + X[:, 2]
+    model = ARModel(design=X, rho=0.9)
     results = model.fit(Y)
     assert results.df_residuals == 31

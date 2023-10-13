@@ -560,7 +560,6 @@ def test_high_level_non_parametric_inference_with_paths_warning(tmp_path):
 def test_fmri_inputs(tmp_path, rng):
     # Test processing of FMRI inputs
     # prepare fake data
-    rng = rng.RandomState(42)
     p, q = 80, 10
     X = rng.standard_normal(size=(p, q))
     shapes = ((7, 8, 9, 10),)

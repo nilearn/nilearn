@@ -46,7 +46,6 @@ from sklearn.svm import SVR, LinearSVC
 
 from nilearn._utils import _compare_version
 from nilearn._utils.param_validation import check_feature_screening
-from nilearn.conftest import _rng
 from nilearn.decoding.decoder import (
     Decoder,
     DecoderRegressor,
@@ -79,9 +78,9 @@ def _make_binary_classification_test_data(n_samples=N_SAMPLES):
     return X, y, mask
 
 
-@pytest.fixture(scope="session")
-def rand_X_Y():
-    X = _rng().rand(N_SAMPLES, 10)
+@pytest.fixture()
+def rand_X_Y(rng):
+    X = rng.rand(N_SAMPLES, 10)
     Y = np.hstack([[-1] * 50, [1] * 50])
     return X, Y
 
