@@ -680,7 +680,13 @@ def _gifti_img_to_data(gifti_img):
     """
     if not gifti_img.darrays:
         raise ValueError('Gifti must contain at least one data array')
-    return np.asarray([arr.data for arr in gifti_img.darrays]).T.squeeze()
+
+    if len(gifti_img.darrays) == 1:
+        return np.asarray([gifti_img.darrays[0].data]).T.squeeze()
+
+    return np.asarray(
+        [arr.data for arr in gifti_img.darrays],
+        dtype=object).T.squeeze()
 
 
 FREESURFER_MESH_EXTENSIONS = ("orig",
@@ -952,7 +958,7 @@ def load_surface(surface):
         if len(surface) != 2:
             raise ValueError("`load_surface` accepts iterables "
                              "of length 2 to define a surface. "
-                             f"You provided a { type(surface)} "
+                             f"You provided a {type(surface)} "
                              f"of length {len(surface)}.")
         mesh = load_surf_mesh(surface[0])
         data = load_surf_data(surface[1])

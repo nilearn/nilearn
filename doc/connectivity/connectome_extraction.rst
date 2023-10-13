@@ -26,7 +26,7 @@ Sparse inverse covariance for functional connectomes
 
 Functional connectivity can be obtained by estimating a covariance
 (or correlation) matrix for signals from different brain
-regions decomposed, for example on resting-state or naturalistic-stimuli datasets.
+regions decomposed, for example on :term:`resting-state` or naturalistic-stimuli datasets.
 The same information can be represented as a weighted graph,
 vertices being brain regions, weights on edges being covariances
 (gaussian graphical model). However, coefficients in a covariance matrix
@@ -62,7 +62,7 @@ extracted in :ref:`the previous section <functional_connectomes>`:
      estimator.fit(time_series)
 
 The covariance matrix and inverse-covariance matrix (precision matrix)
-can be found respectively in the `covariance_` and `precision_` attribute
+can be found respectively in the ``covariance_`` and ``precision_`` attribute
 of the estimator:
 
 .. code-block:: default
@@ -156,7 +156,7 @@ a result correcting for multiple comparisons takes a heavy toll on
 statistical power.
 
 In such a situation, you can use the :class:`GroupSparseCovariance` and
-set an `alpha` value a bit higher than the alpha value selected by
+set an ``alpha`` value a bit higher than the alpha value selected by
 cross-validation in the :class:`GroupSparseCovarianceCV`. Such a choice
 will enforce a stronger sparsity on the precision matrices for each
 subject. As the sparsity is common to each subject, you can then do the

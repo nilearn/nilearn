@@ -30,7 +30,7 @@ Under the hood, a few heuristics are used to make things a bit faster. These inc
   mask in a principled way.
 - Continuation is used along the regularization path, where the
   solution of the optimization problem for a given value of the
-  regularization parameter `alpha` is used as initialization
+  regularization parameter ``alpha`` is used as initialization
   for the next regularization (smaller) value on the regularization
   grid.
 
@@ -47,7 +47,7 @@ Related example
 
     Empirical comparisons using this method have been removed from
     documentation in version 0.7 to keep its computational cost low. You can
-    easily try SpaceNet instead of FREM in :ref:`mixed gambles study <sphx_glr_auto_examples_02_decoding_plot_mixed_gambles_frem.py>` or :ref:`Haxby study <sphx_glr_auto_examples_02_decoding_plot_haxby_frem.py>`.
+    easily try SpaceNet instead of :term:`FREM` in :ref:`mixed gambles study <sphx_glr_auto_examples_02_decoding_plot_mixed_gambles_frem.py>` or :ref:`Haxby study <sphx_glr_auto_examples_02_decoding_plot_haxby_frem.py>`.
 
 .. seealso::
 

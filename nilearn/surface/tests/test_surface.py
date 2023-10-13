@@ -26,7 +26,11 @@ from nilearn.surface.surface import (
     _gifti_img_to_mesh,
     _load_surf_files_gifti_gzip,
 )
-from nilearn.surface.testing_utils import flat_mesh, generate_surf, z_const_img
+from nilearn.surface.tests._testing import (
+    flat_mesh,
+    generate_surf,
+    z_const_img,
+)
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
@@ -70,6 +74,19 @@ class SurfaceLikeObject:
     @property
     def data(self):
         return self._data
+
+
+def test_load_surf_data_numpy_gt_1pt23():
+    """Test loading fsaverage surface
+
+    Threw an error with numpy >=1.24.x
+    but only a deprecaton warning with numpy <1.24.x.
+
+    Regression test for
+    https://github.com/nilearn/nilearn/issues/3638
+    """
+    fsaverage = datasets.fetch_surf_fsaverage()
+    surface.load_surf_data(fsaverage['pial_left'])
 
 
 def test_load_surf_data_array():

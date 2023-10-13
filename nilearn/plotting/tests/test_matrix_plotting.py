@@ -7,6 +7,7 @@ import pytest
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
+from nilearn.glm.tests._testing import design_with_null_durations
 from nilearn.plotting.matrix_plotting import (
     plot_contrast_matrix,
     plot_design_matrix,
@@ -258,3 +259,7 @@ def test_show_contrast_matrix(tmp_path):
     assert ax is None
     plot_contrast_matrix(contrast, dmtx, output_file=tmp_path / "contrast.pdf")
     assert (tmp_path / "contrast.pdf").exists()
+
+
+def test_show_event_plot_duration_0():
+    plot_event(design_with_null_durations())

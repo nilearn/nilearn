@@ -18,6 +18,7 @@ from nilearn.plotting.edge_detect import _edge_map
 from nilearn.plotting.find_cuts import find_cut_slices, find_xyz_cut_coords
 
 
+@fill_doc
 class BaseSlicer:
     """BaseSlicer implementation which main purpose is to auto adjust \
     the axes size to the data with different layout of cuts.
@@ -97,7 +98,7 @@ class BaseSlicer:
         raise NotImplementedError
 
     @classmethod
-    @fill_doc
+    @fill_doc  # the fill_doc decorator must be last applied
     def init_with_figure(
         cls,
         img,
@@ -397,16 +398,6 @@ class BaseSlicer:
             img = reorder_img(img, resample=resampling_interpolation)
         threshold = float(threshold) if threshold is not None else None
 
-        if threshold is not None:
-            data = _safe_get_data(img, ensure_finite=True)
-            if threshold == 0:
-                data = np.ma.masked_equal(data, 0, copy=False)
-            else:
-                data = np.ma.masked_inside(
-                    data, -threshold, threshold, copy=False
-                )
-            img = new_img_like(img, data, img.affine)
-
         affine = img.affine
         data = _safe_get_data(img, ensure_finite=True)
         data_bounds = get_bounds(data.shape, affine)
@@ -461,14 +452,36 @@ class BaseSlicer:
         ims = []
         to_iterate_over = zip(self.axes.values(), data_2d_list)
         for display_ax, data_2d in to_iterate_over:
+            # If data_2d is completely masked, then there is nothing to
+            # plot. Hence, no point to do imshow().
             if data_2d is not None:
-                # If data_2d is completely masked, then there is nothing to
-                # plot. Hence, no point to do imshow().
+                data_2d = self._threshold(
+                    data_2d,
+                    threshold,
+                    vmin=kwargs.get("vmin"),
+                    vmax=kwargs.get("vmax"),
+                )
+
                 im = display_ax.draw_2d(
                     data_2d, data_bounds, bounding_box, type=type, **kwargs
                 )
                 ims.append(im)
         return ims
+
+    @classmethod
+    def _threshold(cls, data, threshold=None, vmin=None, vmax=None):
+        """Threshold the data."""
+        if threshold is not None:
+            data = np.ma.masked_where(
+                np.abs(data) <= threshold,
+                data,
+                copy=False,
+            )
+            if (vmin is not None) and (vmin >= -threshold):
+                data = np.ma.masked_where(data < vmin, data, copy=False)
+            if (vmax is not None) and (vmax <= threshold):
+                data = np.ma.masked_where(data > vmax, data, copy=False)
+        return data
 
     @fill_doc
     def _show_colorbar(
@@ -797,6 +810,7 @@ class BaseSlicer:
         )
 
 
+@fill_doc
 class OrthoSlicer(BaseSlicer):
     """Class to create 3 linked axes for plotting orthogonal \
     cuts of 3D maps.
@@ -810,9 +824,10 @@ class OrthoSlicer(BaseSlicer):
 
          from nilearn.datasets import load_mni152_template
          from nilearn.plotting import plot_img
+
          img = load_mni152_template()
          # display is an instance of the OrthoSlicer class
-         display = plot_img(img, display_mode='ortho')
+         display = plot_img(img, display_mode="ortho")
 
 
     Attributes
@@ -844,8 +859,8 @@ class OrthoSlicer(BaseSlicer):
     _axes_class = CutAxes
     _default_figsize = [2.2, 3.5]
 
-    @fill_doc
     @classmethod
+    @fill_doc  # the fill_doc decorator must be last applied
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
         """Instantiate the slicer and find cut coordinates.
 
@@ -1038,9 +1053,10 @@ class TiledSlicer(BaseSlicer):
 
         from nilearn.datasets import load_mni152_template
         from nilearn.plotting import plot_img
+
         img = load_mni152_template()
         # display is an instance of the TiledSlicer class
-        display = plot_img(img, display_mode='tiled')
+        display = plot_img(img, display_mode="tiled")
 
     Attributes
     ----------
@@ -1550,9 +1566,10 @@ class XSlicer(BaseStackedSlicer):
 
         from nilearn.datasets import load_mni152_template
         from nilearn.plotting import plot_img
+
         img = load_mni152_template()
         # display is an instance of the XSlicer class
-        display = plot_img(img, display_mode='x')
+        display = plot_img(img, display_mode="x")
 
     Attributes
     ----------
@@ -1588,9 +1605,10 @@ class YSlicer(BaseStackedSlicer):
 
         from nilearn.datasets import load_mni152_template
         from nilearn.plotting import plot_img
+
         img = load_mni152_template()
         # display is an instance of the YSlicer class
-        display = plot_img(img, display_mode='y')
+        display = plot_img(img, display_mode="y")
 
     Attributes
     ----------
@@ -1626,9 +1644,10 @@ class ZSlicer(BaseStackedSlicer):
 
         from nilearn.datasets import load_mni152_template
         from nilearn.plotting import plot_img
+
         img = load_mni152_template()
         # display is an instance of the ZSlicer class
-        display = plot_img(img, display_mode='z')
+        display = plot_img(img, display_mode="z")
 
     Attributes
     ----------
@@ -1664,9 +1683,10 @@ class XZSlicer(OrthoSlicer):
 
         from nilearn.datasets import load_mni152_template
         from nilearn.plotting import plot_img
+
         img = load_mni152_template()
         # display is an instance of the XZSlicer class
-        display = plot_img(img, display_mode='xz')
+        display = plot_img(img, display_mode="xz")
 
     Attributes
     ----------
@@ -1701,9 +1721,10 @@ class YXSlicer(OrthoSlicer):
 
         from nilearn.datasets import load_mni152_template
         from nilearn.plotting import plot_img
+
         img = load_mni152_template()
         # display is an instance of the YXSlicer class
-        display = plot_img(img, display_mode='yx')
+        display = plot_img(img, display_mode="yx")
 
     Attributes
     ----------
@@ -1738,9 +1759,10 @@ class YZSlicer(OrthoSlicer):
 
         from nilearn.datasets import load_mni152_template
         from nilearn.plotting import plot_img
+
         img = load_mni152_template()
         # display is an instance of the YZSlicer class
-        display = plot_img(img, display_mode='yz')
+        display = plot_img(img, display_mode="yz")
 
     Attributes
     ----------
@@ -1776,9 +1798,10 @@ class MosaicSlicer(BaseSlicer):
 
         from nilearn.datasets import load_mni152_template
         from nilearn.plotting import plot_img
+
         img = load_mni152_template()
         # display is an instance of the MosaicSlicer class
-        display = plot_img(img, display_mode='mosaic')
+        display = plot_img(img, display_mode="mosaic")
 
     Attributes
     ----------

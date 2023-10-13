@@ -16,7 +16,7 @@ from nilearn.interfaces.fmriprep.load_confounds import (
     _check_strategy,
     _load_single_confounds_file,
 )
-from nilearn.interfaces.fmriprep.tests.utils import (
+from nilearn.interfaces.fmriprep.tests._testing import (
     create_tmp_filepath,
     get_legal_confound,
 )
@@ -580,7 +580,7 @@ def test_inputs(tmp_path, image_type):
     for i in range(2):  # gifti edge case
         nii, _ = create_tmp_filepath(
             tmp_path,
-            bids_fields={"entities": {"sub": f"test{i+1}",
+            bids_fields={"entities": {"sub": f"test{i + 1}",
                                       "ses": "test",
                                       "task": "testimg",
                                       "run": "01"}},

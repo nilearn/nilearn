@@ -74,7 +74,7 @@ have to call :ref:`specific functions <preprocessing_functions>`
 ==========================================================
 
 :class:`NiftiMasker` is a powerful tool to load images and
-extract voxel signals in the area defined by the mask.
+extract :term:`voxel` signals in the area defined by the mask.
 It applies some basic preprocessing
 steps with commonly used parameters as defaults.
 But it is *very important* to look at your data to see the effects
@@ -101,7 +101,7 @@ slice and create a :ref:`Niimg <niimg>` in memory:
 
 
 .. literalinclude:: ../../examples/06_manipulating_images/plot_mask_computation.py
-    :start-after: Load movie watching based brain development fmri dataset
+    :start-after: Load movie watching based brain development fMRI dataset
     :end-before: # To display the background
 
 Controlling how the mask is computed from the data
@@ -133,7 +133,7 @@ Alternatively, the mask computation parameters can still be modified.
 See the :class:`NiftiMasker` documentation for a complete list of
 mask computation parameters.
 
-The mask can be retrieved and visualized from the `mask_img_` attribute
+The mask can be retrieved and visualized from the ``mask_img_`` attribute
 of the masker:
 
 .. literalinclude:: ../../examples/06_manipulating_images/plot_mask_computation.py
@@ -145,13 +145,13 @@ of the masker:
     :align: center
     :scale: 40
 
-Alternatively, the mask can be visualized using the `generate_report`
+Alternatively, the mask can be visualized using the ``generate_report``
 method of the masker. The generated report can be viewed in a Jupyter notebook,
-opened in a new browser tab using `report.open_in_browser()`,
-or saved as a portable HTML file `report.save_as_html(output_filepath)`.
+opened in a new browser tab using ``report.open_in_browser()``,
+or saved as a portable HTML file ``report.save_as_html(output_filepath)``.
 
 .. literalinclude:: ../../examples/06_manipulating_images/plot_mask_computation.py
-    :start-after: # We need to specify an 'epi' mask_strategy, as this is raw EPI data
+    :start-after: # We need to specify an 'epi' mask_strategy, as this is raw :term:`EPI` data
     :end-before: # Generate mask with strong opening
 
 .. figure:: /images/niftimasker_report.png
@@ -161,19 +161,19 @@ or saved as a portable HTML file `report.save_as_html(output_filepath)`.
 Different masking strategies
 .............................
 
-The `mask_strategy` argument controls how the mask is computed:
+The ``mask_strategy`` argument controls how the mask is computed:
 
-* `background`: detects a continuous background
-* `epi`: suitable for EPI images
-* `whole-brain-template`: uses an MNI whole-brain template
-* `gm-template`: uses an MNI grey-matter template
-* `wm-template`: uses an MNI white-matter template
+* ``background``: detects a continuous background
+* ``epi``: suitable for :term:`EPI` images
+* ``whole-brain-template``: uses an :term:`MNI` whole-brain template
+* ``gm-template``: uses an :term:`MNI` grey-matter template
+* ``wm-template``: uses an :term:`MNI` white-matter template
 
 Extra mask parameters: opening, cutoff...
 ..........................................
 
 The underlying function is :func:`nilearn.masking.compute_epi_mask`
-called using the `mask_args` argument of the :class:`NiftiMasker`.
+called using the ``mask_args`` argument of the :class:`NiftiMasker`.
 Controlling these arguments set the fine aspects of the mask. See the
 functions documentation, or :doc:`the NiftiMasker example
 <../auto_examples/06_manipulating_images/plot_mask_computation>`.
@@ -208,9 +208,9 @@ comment on the most important.
 
 .. topic:: **`dtype` argument**
 
-    Forcing your data to have a `dtype` of **float32** can help
+    Forcing your data to have a ``dtype`` of **float32** can help
     save memory and is often a good-enough numerical precision.
-    You can force this cast by choosing `dtype` to be 'auto'.
+    You can force this cast by choosing ``dtype`` to be 'auto'.
     In the future this cast will be the default behaviour.
 
 
@@ -228,7 +228,7 @@ Smoothing
 neuroimaging data, useful to fight noise or for inter-individual
 differences in neuroanatomy. It is achieved by specifying the
 :term:`full-width half maximum<FWHM>` (:term:`FWHM`; in millimeter
-scale) with the `smoothing_fwhm` parameter. Anisotropic filtering
+scale) with the ``smoothing_fwhm`` parameter. Anisotropic filtering
 is also possible by passing 3 scalars ``(x, y, z)``, the
 :term:`FWHM` along the x, y, and z direction.
 
@@ -245,7 +245,7 @@ Temporal Filtering and confound removal
 ........................................
 
 :class:`NiftiMasker` can also improve aspects of temporal data
-properties, before conversion to voxel signals.
+properties, before conversion to :term:`voxel` signals.
 
 - **Standardization**. Parameter ``standardize``: Signals can be
   standardized (scaled to unit variance).
@@ -259,9 +259,9 @@ properties, before conversion to voxel signals.
   detrending or using prespecified confounds, such as behavioral or movement
   information.
 
-  * Linear trends can be removed by activating the `detrend` parameter.
+  * Linear trends can be removed by activating the ``detrend`` parameter.
     This accounts for slow (as opposed to abrupt or transient) changes
-    in voxel values along a series of brain images that are unrelated to the
+    in :term:`voxel` values along a series of brain images that are unrelated to the
     signal of interest (e.g., the neural correlates of cognitive tasks).
     It is not activated by default in :class:`NiftiMasker` but is recommended
     in almost all scenarios.
@@ -303,13 +303,13 @@ Resampling: resizing and changing resolutions of images
 
 :class:`NiftiMasker` and many similar classes enable resampling
 (recasting of images into different resolutions and transformations of
-brain voxel data). Two parameters control resampling:
+brain :term:`voxel` data). Two parameters control resampling:
 
-* `target_affine` to resample (resize, rotate...) images in order to match
+* ``target_affine`` to resample (resize, rotate...) images in order to match
   the spatial configuration defined by the new affine (i.e., matrix
-  transforming from voxel space into world space).
+  transforming from :term:`voxel` space into world space).
 
-* Additionally, a `target_shape` can be used to resize images
+* Additionally, a ``target_shape`` can be used to resize images
   (i.e., cropping or padding with zeros) to match an expected data
   image dimensions (shape composed of x, y, and z).
 
@@ -331,7 +331,7 @@ Inverse transform: unmasking data
   The data is only brought back into either a 3D or 4D represenetation,
   without inverting any signal processing performed by ``transform``.
 
-Once voxel signals have been processed, the result can be visualized as
+Once :term:`voxel` signals have been processed, the result can be visualized as
 images after unmasking (masked-reduced data transformed back into
 the original whole-brain space). This step is present in many
 :ref:`examples <examples-index>` provided in nilearn. Below you will find
@@ -364,7 +364,7 @@ Extraction of signals from regions:\  :class:`NiftiLabelsMasker`, :class:`NiftiM
 
 The purpose of :class:`NiftiLabelsMasker` and :class:`NiftiMapsMasker` is to
 compute signals from regions containing many voxels. They make it easy to get
-these signals once you have an atlas or a parcellation into brain regions.
+these signals once you have an atlas or a :term:`parcellation` into brain regions.
 
 Regions definition
 ------------------
@@ -378,7 +378,7 @@ labels and maps, handled by :class:`NiftiLabelsMasker` and
   in the region definition array. The set of
   regions is defined by a single 3D array, containing a voxel-wise
   dictionary of label numbers that denote what
-  region a given voxel belongs to. This technique has a big advantage: the
+  region a given :term:`voxel` belongs to. This technique has a big advantage: the
   required memory load is independent of the number of regions, allowing
   for a large number of regions. On the other hand, there are
   several disadvantages: regions cannot spatially overlap
@@ -392,7 +392,7 @@ labels and maps, handled by :class:`NiftiLabelsMasker` and
   overlap (as opposed to labels), storage cost scales linearly with the
   number of regions. Handling a large number (e.g., thousands)
   of regions will prove difficult with this data transformation of
-  whole-brain voxel data into weighted region-wise data.
+  whole-brain :term:`voxel` data into weighted region-wise data.
 
 .. note::
 
@@ -405,14 +405,14 @@ Usage of :class:`NiftiLabelsMasker` is similar to that of
 :class:`NiftiMapsMasker`. The main difference is that it requires a labels image
 instead of a set of maps as input.
 
-The `background_label` keyword of :class:`NiftiLabelsMasker` deserves
+The ``background_label`` keyword of :class:`NiftiLabelsMasker` deserves
 some explanation. The voxels that correspond to the brain or a region
-of interest in an fMRI image do not fill the entire image.
+of interest in an :term:`fMRI` image do not fill the entire image.
 Consequently, in the labels image, there must be a label value that corresponds
 to "outside" the brain (for which no signal should be extracted).
 By default, this label is set to zero in nilearn (referred to as "background").
 Should some non-zero value encoding be necessary, it is possible
-to change the background value with the `background_label` keyword.
+to change the background value with the ``background_label`` keyword.
 
 .. topic:: **Examples**
 
@@ -422,13 +422,13 @@ to change the background value with the `background_label` keyword.
 ------------------------------
 
 This atlas defines its regions using maps. The path to the corresponding
-file is given in the `maps_img` argument.
+file is given in the ``maps_img`` argument.
 
 One important thing that happens transparently during the execution of
 :meth:`NiftiMasker.fit_transform` is resampling. Initially, the images
 and the atlas do typically not have the same shape nor the same affine.
 Casting them into the same format is required for successful signal extraction
-The keyword argument `resampling_target` specifies which format
+The keyword argument ``resampling_target`` specifies which format
 (i.e., dimensions and affine) the data should be resampled to.
 See the reference documentation for :class:`NiftiMapsMasker` for every
 possible option.
@@ -443,7 +443,7 @@ Extraction of signals from regions for multiple subjects:\  :class:`MultiNiftiMa
 The purpose of :class:`MultiNiftiMasker`, :class:`MultiNiftiLabelsMasker` and
 :class:`MultiNiftiMapsMasker` is to extend the capabilities of
 :class:`NiftiMasker`, :class:`NiftiLabelsMasker` and :class:`NiftiMapsMasker`
-as to facilitate the computation of voxel signals in multi-subjects settings.
+as to facilitate the computation of :term:`voxel` signals in multi-subjects settings.
 While :class:`NiftiMasker`, :class:`NiftiLabelsMasker` and
 :class:`NiftiMapsMasker` work with 3D inputs (single brain volume) or 4D inputs
 (sequence of brain volumes in time for one subject), :class:`MultiNiftiMasker`,
@@ -453,7 +453,7 @@ inputs (list of sequences of brain volumes).
 :class:`MultiNiftiMasker` Usage
 -------------------------------
 
-:class:`MultiNiftiMasker` extracts voxel signals for each subject in the areas defined by the
+:class:`MultiNiftiMasker` extracts :term:`voxel` signals for each subject in the areas defined by the
 masks.
 
 .. topic:: **Examples**
@@ -488,10 +488,10 @@ The purpose of :class:`NiftiSpheresMasker` is to compute signals from
 seeds containing voxels in spheres. It makes it easy to get these signals once
 you have a list of coordinates.
 A single seed is a sphere defined by the radius (in millimeters) and the
-coordinates (typically MNI or TAL) of its center.
+coordinates (typically :term:`MNI` or TAL) of its center.
 
 Using :class:`NiftiSpheresMasker` needs to define a list of coordinates.
-`seeds` argument takes a list of 3D coordinates (tuples) of the spheres centers,
+``seeds`` argument takes a list of 3D coordinates (tuples) of the spheres centers,
 they should be in the same space as the images.
 Seeds can overlap spatially and are represented in a binary present/nonpresent
 coding (no weighting).
@@ -499,8 +499,8 @@ Below is an example of a coordinates list of four seeds from the default mode ne
 
   >>> dmn_coords = [(0, -52, 18), (-46, -68, 32), (46, -68, 32), (0, 50, -5)]
 
-`radius` is an optional argument that takes a real value in millimeters.
-If no value is given for the `radius` argument, the single voxel at the given
+``radius`` is an optional argument that takes a real value in millimeters.
+If no value is given for the ``radius`` argument, the single :term:`voxel` at the given
 seed position is used.
 
 .. topic:: **Examples**

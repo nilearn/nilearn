@@ -666,7 +666,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         return region_signals
 
     def inverse_transform(self, signals):
-        """Compute voxel signals from region signals.
+        """Compute :term:`voxel` signals from region signals.
 
         Any mask given at initialization is taken into account.
 

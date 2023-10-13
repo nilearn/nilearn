@@ -199,7 +199,7 @@ For new-comers, we recommend going through the following examples in the suggest
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example shows manual steps to create and further modify an ROI spatial mask. They represen...">
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows manual steps to create and further modify an ROI spatial mask. They represent...">
 
 .. only:: html
 
@@ -322,7 +322,7 @@ usage of machine learning requires some understanding of the models.
 **Data mining / exploration**
 
 Data-driven exploration of brain images. This includes the extraction of
-the major brain networks from resting-state data ("resting-state networks")
+the major brain networks from :term:`resting-state` data ("resting-state networks")
 or movie-watching data as well as the discovery of connectionally coherent
 functional modules ("connectivity-based parcellation").
 For example,

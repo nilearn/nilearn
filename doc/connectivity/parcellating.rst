@@ -24,9 +24,9 @@ Data loading: movie-watching data
 
 .. currentmodule:: nilearn.datasets
 
-Clustering is commonly applied to resting-state data, but any brain
+Clustering is commonly applied to :term:`resting-state` data, but any brain
 functional data will give rise of a functional parcellation, capturing
-intrinsic brain architecture in the case of resting-state data.
+intrinsic brain architecture in the case of :term:`resting-state` data.
 In the examples, we use naturalistic stimuli-based movie watching
 brain development data downloaded with the function
 :func:`fetch_development_fmri` (see :ref:`loading_data`).
@@ -79,7 +79,7 @@ Ward's algorithm is a hierarchical clustering algorithm: it
 recursively merges voxels, then clusters that have similar signal
 (parameters, measurements or time courses).
 
-**Caching** In practice the implementation of Ward clustering first
+**Caching** In practice the implementation of :term:`Ward clustering` first
 computes a tree of possible merges, and then, given a requested number of
 clusters, breaks apart the tree at the right level.
 
@@ -92,7 +92,7 @@ used for caching.
 
 .. note::
 
-    The Ward clustering computing 1000 parcels runs typically in about 10
+    The :term:`Ward clustering` computing 1000 parcels runs typically in about 10
     seconds. Admittedly, this is very fast.
 
 .. note::
@@ -105,7 +105,7 @@ used for caching.
 
    * A function :func:`nilearn.regions.connected_label_regions` which can be useful to
      break down connected components into regions. For instance, clusters defined using
-     KMeans whereas it is not necessary for Ward clustering due to its
+     KMeans whereas it is not necessary for :term:`Ward clustering` due to its
      spatial connectivity.
 
 
@@ -117,7 +117,7 @@ Using and visualizing the resulting parcellation
 Visualizing the parcellation
 -----------------------------
 
-The labels of the parcellation are found in the `labels_img_` attribute of
+The labels of the :term:`parcellation` are found in the ``labels_img_`` attribute of
 the :class:`nilearn.regions.Parcellations` object after fitting it to the data
 using *ward.fit*. We directly use the result for visualization.
 

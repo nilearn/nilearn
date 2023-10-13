@@ -161,7 +161,8 @@ def get_bounds(shape, affine):
         shape of the array. Must have 3 integer values.
 
     affine : numpy.ndarray
-        affine giving the linear transformation between voxel coordinates
+        affine giving the linear transformation
+        between :term:`voxel` coordinates
         and world-space coordinates.
 
     Returns

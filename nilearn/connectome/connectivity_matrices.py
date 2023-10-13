@@ -8,6 +8,8 @@ from scipy import linalg
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.covariance import LedoitWolf
 
+from nilearn._utils.docs import fill_doc
+
 from .. import signal
 from .._utils.extmath import is_spd
 
@@ -368,9 +370,10 @@ def prec_to_partial(precision):
     return partial_correlation
 
 
+@fill_doc
 class ConnectivityMeasure(BaseEstimator, TransformerMixin):
-    """A class that computes different kinds of functional connectivity \
-    matrices.
+    """A class that computes different kinds of \
+       :term:`functional connectivity` matrices.
 
     .. versionadded:: 0.2
 
@@ -395,6 +398,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         If True, vectorized connectivity coefficients do not include the
         matrices diagonal elements. Used only when vectorize is set to True.
         Default=False.
+
     %(standardize)s
 
         .. note::

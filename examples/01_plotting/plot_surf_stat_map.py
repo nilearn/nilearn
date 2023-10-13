@@ -5,7 +5,7 @@ Seed-based connectivity on the surface
 The dataset that is a subset of the enhanced NKI Rockland sample
 (http://fcon_1000.projects.nitrc.org/indi/enhanced/, Nooner et al, 2012)
 
-Resting state fMRI scans (TR=645ms) of 102 subjects were preprocessed
+Resting state :term:`fMRI` scans (TR=645ms) of 102 subjects were preprocessed
 (https://github.com/fliem/nki_nilearn) and projected onto the Freesurfer
 fsaverage5 template (Dale et al, 1999, Fischl et al, 1999). For this example
 we use the time series of a single subject's left hemisphere.
@@ -46,7 +46,7 @@ URL http://dx.doi.org/10.1016/j.neuroimage.2010.06.010.
 
 """
 
-###############################################################################
+# %%
 # Retrieving the data
 # -------------------
 
@@ -82,7 +82,7 @@ print('Fsaverage5 sulcal depth map of left hemisphere is at: '
 print('Fsaverage5 curvature map of left hemisphere is at: '
       f"{fsaverage['curv_left']}")
 
-###############################################################################
+# %%
 # Extracting the seed time series
 # -------------------------------
 
@@ -101,7 +101,7 @@ pcc_labels = np.where(parcellation == labels.index(pcc_region))[0]
 # Extract time series from seed region
 seed_timeseries = np.mean(timeseries[pcc_labels], axis=0)
 
-###############################################################################
+# %%
 # Calculating seed-based functional connectivity
 # ----------------------------------------------
 
@@ -116,7 +116,7 @@ for i in range(timeseries.shape[0]):
 # Re-mask previously masked nodes (medial wall)
 stat_map[np.where(np.mean(timeseries, axis=1) == 0)] = 0
 
-###############################################################################
+# %%
 # Display ROI on surface
 
 # Transform ROI indices in ROI map
@@ -135,7 +135,7 @@ plotting.plot_surf_roi(
     title='PCC Seed'
 )
 
-###############################################################################
+# %%
 # Using a flat mesh can be useful in order to easily locate the area
 # of interest on the cortex. To make this plot easier to read,
 # we use the mesh curvature as a background map.
@@ -155,14 +155,14 @@ plotting.plot_surf_roi(
     title='PCC Seed'
 )
 
-###############################################################################
+# %%
 # Display unthresholded stat map with a slightly dimmed background
 plotting.plot_surf_stat_map(fsaverage['pial_left'], stat_map=stat_map,
                             hemi='left', view='medial', colorbar=True,
                             bg_map=fsaverage['sulc_left'], bg_on_data=True,
                             darkness=.3, title='Correlation map')
 
-###############################################################################
+# %%
 # Many different options are available for plotting, for example thresholding,
 # or using custom colormaps
 plotting.plot_surf_stat_map(fsaverage['pial_left'], stat_map=stat_map,
@@ -171,7 +171,7 @@ plotting.plot_surf_stat_map(fsaverage['pial_left'], stat_map=stat_map,
                             cmap='Spectral', threshold=.5,
                             title='Threshold and colormap')
 
-###############################################################################
+# %%
 # Here the surface is plotted in a lateral view without a background map.
 # To capture 3D structure without depth information, the default is to plot a
 # half transparent surface.
@@ -182,7 +182,7 @@ plotting.plot_surf_stat_map(fsaverage['pial_left'], stat_map=stat_map,
                             cmap='Spectral', threshold=.5,
                             title='Plotting without background')
 
-###############################################################################
+# %%
 # The plots can be saved to file, in which case the display is closed after
 # creating the figure
 plotting.plot_surf_stat_map(fsaverage['infl_left'], stat_map=stat_map,

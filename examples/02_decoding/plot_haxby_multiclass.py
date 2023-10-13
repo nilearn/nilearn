@@ -9,7 +9,7 @@ cross-validated accuracy and the confusion matrix.
 
 """
 
-##############################################################################
+# %%
 # Load the Haxby data dataset
 # ---------------------------
 
@@ -42,9 +42,9 @@ unique_conditions, order = np.unique(y, return_index=True)
 # Sort the conditions by the order of appearance
 unique_conditions = unique_conditions[np.argsort(order)]
 
-##############################################################################
-# Prepare the fMRI data
-# ---------------------
+# %%#
+# Prepare the :term:`fMRI` data
+# -----------------------------
 from nilearn.maskers import NiftiMasker
 
 # For decoding, standardizing is often very important
@@ -62,7 +62,7 @@ X = nifti_masker.fit_transform(func_filename)
 X = X[non_rest]
 session = session[non_rest]
 
-##############################################################################
+# %%
 # Build the decoders, using scikit-learn
 # --------------------------------------
 # Here we use a Support Vector Classification, with a linear kernel,
@@ -91,7 +91,7 @@ svc_ova = OneVsRestClassifier(
     )
 )
 
-##############################################################################
+# %%
 # Now we compute cross-validation scores
 # --------------------------------------
 from sklearn.model_selection import cross_val_score
@@ -103,7 +103,7 @@ cv_scores_ova = cross_val_score(svc_ova, X, y, cv=5, verbose=1)
 print("OvO:", cv_scores_ovo.mean())
 print("OvA:", cv_scores_ova.mean())
 
-##############################################################################
+# %%
 # Plot barplots of the prediction scores
 # --------------------------------------
 from matplotlib import pyplot as plt
@@ -113,7 +113,7 @@ plt.boxplot([cv_scores_ova, cv_scores_ovo])
 plt.xticks([1, 2], ["One vs All", "One vs One"])
 plt.title("Prediction: accuracy score")
 
-##############################################################################
+# %%
 # Plot a confusion matrix
 # -----------------------
 # We fit on the first 10 sessions and plot a confusion matrix on the

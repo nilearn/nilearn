@@ -34,7 +34,7 @@ References
     - Virgile Fritsch, Feb. 2014
 """
 
-##############################################################################
+# %%
 # Load Haxby dataset
 from nilearn import datasets, image
 
@@ -44,7 +44,7 @@ haxby_dataset = datasets.fetch_haxby(subjects=[2])
 print(f"Mask nifti image (3D) is located at: {haxby_dataset.mask}")
 print(f"Functional nifti image (4D) is located at: {haxby_dataset.func[0]}")
 
-##############################################################################
+# %%
 # Restrict to faces and houses
 import numpy as np
 import pandas as pd
@@ -59,7 +59,7 @@ sessions = labels["chunks"]
 condition_mask = conditions.isin(["face", "house"])
 conditions_encoded = conditions_encoded[condition_mask]
 
-##############################################################################
+# %%
 # Mask data
 from nilearn.image import index_img
 from nilearn.maskers import NiftiMasker
@@ -103,7 +103,7 @@ for s in range(n_sessions):
         session_face_mask
     ][0]
 
-##############################################################################
+# %%
 # Perform massively univariate analysis with permuted OLS
 #
 # We use a two-sided t-test to compute p-values, but we keep trace of the
@@ -124,7 +124,7 @@ signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
     signed_neg_log_pvals
 )
 
-##############################################################################
+# %%
 # scikit-learn F-scores for comparison
 #
 # F-test does not allow to observe the effect sign (pure two-sided test)
@@ -142,14 +142,14 @@ neg_log_pvals_bonferroni_unmasked = nifti_masker.inverse_transform(
     neg_log_pvals_bonferroni
 )
 
-##############################################################################
+# %%
 # Visualization
 import matplotlib.pyplot as plt
 
 from nilearn.image import get_data
 from nilearn.plotting import plot_stat_map, show
 
-# Use the fmri mean image as a surrogate of anatomical data
+# Use the fMRI mean image as a surrogate of anatomical data
 mean_fmri_img = image.mean_img(func_filename)
 
 threshold = -np.log10(0.1)  # 10% corrected

@@ -251,7 +251,7 @@ def _wrap_param_grid(param_grid, param_name):
         ):
             warnings.warn(
                 f"parameter '{param_name}' should be a sequence of iterables"
-                f" (e.g., { {param_name:[[1, 10, 100]]} }) to benefit from"
+                f" (e.g., {{param_name: [[1, 10, 100]]}}) to benefit from"
                 " the built-in cross-validation of the estimator."
                 f" Wrapping {param_grid_item[param_name]} in an outer list."
             )
@@ -1335,7 +1335,8 @@ class DecoderRegressor(_BaseDecoder):
 
 @fill_doc
 class FREMRegressor(_BaseDecoder):
-    """State of the art decoding scheme applied to usual regression estimators.
+    """State of the art :term:`decoding` scheme applied \
+       to usual regression estimators.
 
     FREM uses an implicit spatial regularization through fast clustering and
     aggregates a high number of estimators trained on various splits of the
@@ -1488,7 +1489,7 @@ class FREMRegressor(_BaseDecoder):
 
 @fill_doc
 class FREMClassifier(_BaseDecoder):
-    """State of the art decoding scheme applied to usual classifiers.
+    """State of the art :term:`decoding` scheme applied to usual classifiers.
 
     FREM uses an implicit spatial regularization through fast clustering and
     aggregates a high number of estimators trained on various splits of the

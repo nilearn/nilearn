@@ -188,7 +188,7 @@ research. Three main components are:
     raw scans in form of a numpy array: ``data = nilearn.image.get_data(img)``
 :affine:
     returns the transformation matrix that maps
-    from voxel indices of the numpy array to actual real-world
+    from :term:`voxel` indices of the numpy array to actual real-world
     locations of the brain:
     ``affine = img.affine``
 :header:
@@ -268,8 +268,8 @@ Text files: phenotype or behavior
 
 Phenotypic or behavioral data are often provided as text or CSV
 (Comma Separated Values) file. They
-can be loaded with `pd.read_csv` but you may have to specify some options
-(typically `sep` if fields aren't delimited with a comma).
+can be loaded with ``pd.read_csv`` but you may have to specify some options
+(typically ``sep`` if fields aren't delimited with a comma).
 
 For the Haxby datasets, we can load the categories of the images
 presented to the subject:
