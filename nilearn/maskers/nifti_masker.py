@@ -8,6 +8,7 @@ from functools import partial
 from joblib import Memory
 
 from nilearn import _utils, image, masking
+from nilearn.maskers import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 
 
@@ -373,10 +374,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         resampl_img, resampl_mask = self._reporting_data["transform"]
         if resampl_img is None:  # images were not provided to fit
             resampl_img = resampl_mask
-        dim = image.load_img(resampl_img).shape
-        if len(dim) == 4:
-            # compute middle image from 4D series for plotting
-            resampl_img = image.index_img(resampl_img, dim[-1] // 2)
+        resampl_img, _ = compute_middle_image(resampl_img)
 
         final_display = plotting.plot_img(
             resampl_img,
@@ -438,10 +436,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         if self.reports:  # save inputs for reporting
             self._reporting_data = {"mask": self.mask_img_, "images": imgs}
             if imgs is not None:
-                dim = image.load_img(imgs).shape
-                if len(dim) == 4:
-                    # compute middle image from 4D series for plotting
-                    imgs = image.index_img(imgs, dim[-1] // 2)
+                imgs, dim = compute_middle_image(imgs)
                 self._reporting_data["dim"] = dim
                 self._reporting_data["images"] = imgs
         else:

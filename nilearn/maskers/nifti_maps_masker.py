@@ -5,6 +5,7 @@ import numpy as np
 from joblib import Memory
 
 from nilearn import _utils, image
+from nilearn.maskers import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 
 
@@ -440,10 +441,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 self._reporting_data["multi_subject"] = True
                 self._reporting_data["img"] = None
             elif imgs is not None:
-                dim = image.load_img(imgs).shape
-                if len(dim) == 4:
-                    # compute middle image from 4D series for plotting
-                    imgs = image.index_img(imgs, dim[-1] // 2)
+                imgs, _ = compute_middle_image(imgs)
                 self._reporting_data["img"] = imgs
         else:
             self._reporting_data = None

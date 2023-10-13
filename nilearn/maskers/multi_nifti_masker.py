@@ -10,6 +10,7 @@ from functools import partial
 from joblib import Memory, Parallel, delayed
 
 from nilearn import _utils, image, masking
+from nilearn.maskers import compute_middle_image
 from nilearn.maskers.nifti_masker import NiftiMasker, _filter_and_mask
 
 
@@ -243,10 +244,7 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
             self._reporting_data = {"mask": self.mask_img_, "images": imgs}
             if imgs is not None:
                 imgs = imgs[0] if isinstance(imgs, list) else imgs
-                dim = image.load_img(imgs).shape
-                if len(dim) == 4:
-                    # compute middle image from 4D series for plotting
-                    imgs = image.index_img(imgs, dim[-1] // 2)
+                imgs, dim = compute_middle_image(imgs)
                 self._reporting_data["dim"] = dim
                 self._reporting_data["images"] = imgs
 
