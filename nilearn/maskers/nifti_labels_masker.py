@@ -292,32 +292,13 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
             img = self._reporting_data['img']
 
-            # When no image or multiple are given, simply plot the ROI of the
-            # label image and give a warning to the user
-            if img is None:
-                base_message = (
-                    "Plotting ROIs of label image on the "
-                    "MNI152Template for reporting."
-                )
-                if self._reporting_data["multi_subject"] is True:
-                    msg = (
-                        "Multiple subject images were provided to fit. "
-                        "Please subscript the list to view the report for "
-                        "individual subjects. "
-                        f"{base_message}"
-                    )
-                else:
-                    msg = (
-                        "No image provided to fit in NiftiLabelsMasker. "
-                        f"{base_message}"
-                    )
-
-                warnings.warn(msg)
-                self._report_content['warning_message'] = msg
-                display = plotting.plot_roi(labels_image)
-                plt.close()
             # If we have a func image to show in the report, use it
-            elif img is not None:
+            if img is not None:
+                if self._reporting_data["multi_subject"] is True:
+                    warnings.warn(
+                        "A list of subject images were provided to fit. "
+                        "Only first subject is shown in the report. "
+                    )
                 display = plotting.plot_img(
                     img,
                     black_bg=False,
@@ -325,6 +306,19 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 )
                 plt.close()
                 display.add_contours(labels_image, filled=False, linewidths=3)
+
+            # Otherwise, simply plot the ROI of the label image
+            # and give a warning to the user
+            else:
+                msg = (
+                    'No image provided to fit in NiftiLabelsMasker. '
+                    'Plotting ROIs of label image on the '
+                    'MNI152Template for reporting.'
+                )
+                warnings.warn(msg)
+                self._report_content['warning_message'] = msg
+                display = plotting.plot_roi(labels_image)
+                plt.close()
 
             # If we have a mask, show its contours
             if self._reporting_data['mask'] is not None:
@@ -427,14 +421,12 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 "multi_subject": False,
                 "img": imgs,
             }
-            if isinstance(self, MultiNiftiLabelsMasker) and isinstance(
-                imgs, list
-            ):
-                self._reporting_data["multi_subject"] = True
-                self._reporting_data["img"] = None
-            elif imgs is not None:
+            if imgs is not None:
+                imgs = imgs[0] if isinstance(imgs, list) else imgs
                 imgs, _ = compute_middle_image(imgs)
                 self._reporting_data["img"] = imgs
+            if isinstance(self, MultiNiftiLabelsMasker):
+                self._reporting_data["multi_subject"] = True
         else:
             self._reporting_data = None
 

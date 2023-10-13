@@ -313,19 +313,10 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
         embeded_images = []
 
         if img is None:
-            base_message = "Plotting only spatial maps for reporting."
-            if self._reporting_data["multi_subject"] is True:
-                msg = (
-                    "Multiple subject images were provided to fit. "
-                    "Please subscript the list to view the report for "
-                    "individual subjects. "
-                    f"{base_message}"
-                )
-            else:
-                msg = (
-                    "No image provided to fit in NiftiMapsMasker. "
-                    f"{base_message}"
-                )
+            msg = (
+                "No image provided to fit in NiftiMapsMasker. "
+                "Plotting only spatial maps for reporting."
+            )
             warnings.warn(msg)
             self._report_content["warning_message"] = msg
             for component in maps_to_be_displayed:
@@ -336,6 +327,11 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 display.close()
             return embeded_images
 
+        if self._reporting_data["multi_subject"] is True:
+            warnings.warn(
+                "A list of subject images were provided to fit. "
+                "Only first subject is shown in the report. "
+            )
         # Find the cut coordinates
         cut_coords = [
             plotting.find_xyz_cut_coords(image.index_img(maps_image, i))
@@ -435,14 +431,12 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 "multi_subject": False,
                 "img": imgs,
             }
-            if isinstance(self, MultiNiftiMapsMasker) and isinstance(
-                imgs, list
-            ):
-                self._reporting_data["multi_subject"] = True
-                self._reporting_data["img"] = None
-            elif imgs is not None:
+            if imgs is not None:
+                imgs = imgs[0] if isinstance(imgs, list) else imgs
                 imgs, _ = compute_middle_image(imgs)
                 self._reporting_data["img"] = imgs
+            if isinstance(self, MultiNiftiMapsMasker):
+                self._reporting_data["multi_subject"] = True
         else:
             self._reporting_data = None
 
