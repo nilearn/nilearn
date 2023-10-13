@@ -347,7 +347,13 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             warnings.warn(msg)
             self._report_content["warning_message"] = msg
             img = mask
-
+        if self._reporting_data["dim"] == 5:
+            msg = (
+                "A list of 4D subject images were provided to fit. "
+                "Only first subject is shown in the report."
+            )
+            warnings.warn(msg)
+            self._report_content["warning_message"] = msg
         # create display of retained input mask, image
         # for visual comparison
         init_display = plotting.plot_img(
@@ -433,11 +439,15 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
 
         if self.reports:  # save inputs for reporting
-            self._reporting_data = {"mask": self.mask_img_, "images": imgs}
+            self._reporting_data = {
+                "mask": self.mask_img_,
+                "dim": None,
+                "images": imgs,
+            }
             if imgs is not None:
                 imgs, dims = compute_middle_image(imgs)
-                self._reporting_data["dim"] = dims
                 self._reporting_data["images"] = imgs
+                self._reporting_data["dim"] = dims
         else:
             self._reporting_data = None
 
@@ -480,7 +490,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
                     copy=False,
                     interpolation="nearest",
                 )
-                resampl_imgs, dims = compute_middle_image(resampl_imgs)
+                resampl_imgs, _ = compute_middle_image(resampl_imgs)
             else:  # imgs not provided to fit
                 resampl_imgs = None
 

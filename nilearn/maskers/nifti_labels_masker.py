@@ -294,11 +294,13 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
             # If we have a func image to show in the report, use it
             if img is not None:
-                if self._reporting_data["multi_subject"] is True:
-                    warnings.warn(
-                        "A list of subject images were provided to fit. "
-                        "Only first subject is shown in the report. "
+                if self._reporting_data["dim"] == 5:
+                    msg = (
+                        "A list of 4D subject images were provided to fit. "
+                        "Only first subject is shown in the report."
                     )
+                    warnings.warn(msg)
+                    self._report_content['warning_message'] = msg
                 display = plotting.plot_img(
                     img,
                     black_bg=False,
@@ -416,14 +418,13 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             self._reporting_data = {
                 "labels_image": self._resampled_labels_img_,
                 "mask": self.mask_img_,
-                "multi_subject": False,
+                "dim": None,
                 "img": imgs,
             }
             if imgs is not None:
                 imgs, dims = compute_middle_image(imgs)
                 self._reporting_data["img"] = imgs
-                if dims == 5:
-                    self._reporting_data["multi_subject"] = True
+                self._reporting_data["dim"] = dims
         else:
             self._reporting_data = None
 

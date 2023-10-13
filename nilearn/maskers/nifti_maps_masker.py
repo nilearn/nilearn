@@ -327,11 +327,13 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 display.close()
             return embeded_images
 
-        if self._reporting_data["multi_subject"] is True:
-            warnings.warn(
-                "A list of subject images were provided to fit. "
-                "Only first subject is shown in the report. "
+        if self._reporting_data["dim"] == 5:
+            msg = (
+                "A list of 4D subject images were provided to fit. "
+                "Only first subject is shown in the report."
             )
+            warnings.warn(msg)
+            self._report_content["warning_message"] = msg
         # Find the cut coordinates
         cut_coords = [
             plotting.find_xyz_cut_coords(image.index_img(maps_image, i))
@@ -426,14 +428,13 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
             self._reporting_data = {
                 "maps_image": self.maps_img_,
                 "mask": self.mask_img_,
-                "multi_subject": False,
+                "dim": None,
                 "img": imgs,
             }
             if imgs is not None:
                 imgs, dims = compute_middle_image(imgs)
                 self._reporting_data["img"] = imgs
-                if dims == 5:
-                    self._reporting_data["multi_subject"] = True
+                self._reporting_data["dim"] = dims
         else:
             self._reporting_data = None
 

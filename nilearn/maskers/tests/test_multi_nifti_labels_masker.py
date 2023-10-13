@@ -417,6 +417,6 @@ def test_multi_nifti_labels_masker_generate_report():
     masker = MultiNiftiLabelsMasker(labels11_img)
 
     with pytest.warns(
-        UserWarning, match="A list of subject images were provided to fit. "
+        UserWarning, match="A list of 4D subject images were provided to fit. "
     ):
         masker.fit([fmri11_img, fmri11_img]).generate_report()
