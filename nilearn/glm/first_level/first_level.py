@@ -513,7 +513,7 @@ class FirstLevelModel(BaseGLM):
 
         sample_masks : array_like, or list of array_like, default=None
                        shape of array:
-                       (number of scans - number of volumes remove) 
+                       (number of scans - number of volumes remove)
             Indices of retained volumes. Masks the niimgs along time/fourth
             dimension to perform scrubbing (remove volumes with high motion)
             and/or remove non-steady-state volumes.

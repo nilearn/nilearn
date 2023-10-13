@@ -255,7 +255,7 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
              annotate=True, draw_cross=True, black_bg=False, colorbar=False,
              cbar_tick_format="%.2g",
              resampling_interpolation='continuous',
-             bg_img=None, vmin=None, vmax=None, radiological=False, 
+             bg_img=None, vmin=None, vmax=None, radiological=False,
              decimals=False, **kwargs):
     """Plot cuts of a given image.
 
