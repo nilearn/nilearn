@@ -680,7 +680,7 @@ def test_sampling_affine(affine_eye):
     img[1, :, :] = 2
     nodes = [[1, 1, 2], [10, 10, 20], [30, 30, 30]]
     mesh = [np.asarray(nodes), None]
-    affine = 10 *affine_eye
+    affine = 10 * affine_eye
     affine[-1, -1] = 1
     texture = surface._nearest_voxel_sampling(
         [img], mesh, affine=affine, radius=1, kind='ball')

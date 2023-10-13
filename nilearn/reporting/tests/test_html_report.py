@@ -218,7 +218,8 @@ def test_nifti_maps_masker_report_integer_and_all_displayed_maps(
     assert html.body.count("<img") == expected_n_maps
 
 
-def test_nifti_maps_masker_report_image_in_fit(niftimapsmasker_inputs, affine_eye):
+def test_nifti_maps_masker_report_image_in_fit(niftimapsmasker_inputs,
+                                               affine_eye):
     """Tests NiftiMapsMasker reporting with image provided to fit."""
     masker = NiftiMapsMasker(**niftimapsmasker_inputs)
     image, _ = generate_random_img((13, 11, 12), affine=affine_eye, length=3)
