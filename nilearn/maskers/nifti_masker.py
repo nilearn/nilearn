@@ -374,7 +374,6 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         resampl_img, resampl_mask = self._reporting_data["transform"]
         if resampl_img is None:  # images were not provided to fit
             resampl_img = resampl_mask
-        resampl_img, _ = compute_middle_image(resampl_img)
 
         final_display = plotting.plot_img(
             resampl_img,
@@ -436,9 +435,8 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         if self.reports:  # save inputs for reporting
             self._reporting_data = {"mask": self.mask_img_, "images": imgs}
             if imgs is not None:
-                imgs = imgs[0] if isinstance(imgs, list) else imgs
-                imgs, dim = compute_middle_image(imgs)
-                self._reporting_data["dim"] = dim
+                imgs, dims = compute_middle_image(imgs)
+                self._reporting_data["dim"] = dims
                 self._reporting_data["images"] = imgs
         else:
             self._reporting_data = None
@@ -482,6 +480,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
                     copy=False,
                     interpolation="nearest",
                 )
+                resampl_imgs, dims = compute_middle_image(resampl_imgs)
             else:  # imgs not provided to fit
                 resampl_imgs = None
 

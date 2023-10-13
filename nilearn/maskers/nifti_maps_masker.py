@@ -366,8 +366,6 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
             This parameter is unused. It is solely included for scikit-learn
             compatibility.
         """
-        from nilearn.maskers import MultiNiftiMapsMasker
-
         # Load images
         repr = _utils._repr_niimgs(self.mask_img, shorten=(not self.verbose))
         msg = f"loading regions from {repr}"
@@ -432,11 +430,10 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 "img": imgs,
             }
             if imgs is not None:
-                imgs = imgs[0] if isinstance(imgs, list) else imgs
-                imgs, _ = compute_middle_image(imgs)
+                imgs, dims = compute_middle_image(imgs)
                 self._reporting_data["img"] = imgs
-            if isinstance(self, MultiNiftiMapsMasker):
-                self._reporting_data["multi_subject"] = True
+                if dims == 5:
+                    self._reporting_data["multi_subject"] = True
         else:
             self._reporting_data = None
 
