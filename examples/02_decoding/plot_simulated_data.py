@@ -27,6 +27,7 @@ model with a random design matrix **X**:
 
 """
 
+# %%
 print(__doc__)
 
 from time import time
@@ -48,9 +49,9 @@ from nilearn import decoding
 from nilearn.plotting import show
 
 
-##############################################################################
+# %%
 # A function to generate data
-##############################################################################
+# ---------------------------
 def create_simulation_data(snr=0, n_samples=2 * 100, size=12, random_state=1):
     generator = check_random_state(random_state)
     roi_size = 2  # size / 3
@@ -95,9 +96,9 @@ def create_simulation_data(snr=0, n_samples=2 * 100, size=12, random_state=1):
     return X_train, X_test, y, y_test, snr, w, size
 
 
-##############################################################################
+# %%
 # A simple function to plot slices
-##############################################################################
+# --------------------------------
 def plot_slices(data, title=None):
     plt.figure(figsize=(5.5, 2.2))
     vmax = np.abs(data).max()
@@ -119,9 +120,9 @@ def plot_slices(data, title=None):
         plt.suptitle(title)
 
 
-###############################################################################
+# %%
 # Create data
-###############################################################################
+# -----------
 X_train, X_test, y_train, y_test, snr, coefs, size = create_simulation_data(
     snr=-10, n_samples=100, size=12
 )
@@ -140,9 +141,9 @@ process_mask_img = nibabel.Nifti1Image(process_mask.astype("uint8"), np.eye(4))
 coefs = np.reshape(coefs, [size, size, size])
 plot_slices(coefs, title="Ground truth")
 
-###############################################################################
+# %%
 # Run different estimators
-###############################################################################
+# ------------------------
 #
 # We can now run different estimators and look at their prediction score,
 # as well as the feature maps that they recover. Namely, we will use
@@ -187,8 +188,9 @@ estimators = [
     ),
 ]
 
-###############################################################################
+# %%
 # Run the estimators
+# ------------------
 #
 # As the estimators expose a fairly consistent API, we can all fit them in
 # a for loop: they all have a `fit` method for fitting the data, a `score`
@@ -239,9 +241,9 @@ plot_slices(p_values, title="f_regress")
 
 show()
 
-###############################################################################
+# %%
 # An exercise to go further
-###############################################################################
+# -------------------------
 #
 # As an exercice, you can use recursive feature elimination (RFE) with
 # the SVM

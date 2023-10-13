@@ -21,7 +21,7 @@ be given by a call to fit_transform).
 
 """
 
-#####################################################################
+# %%
 # Load movie watching dataset
 from nilearn import datasets
 
@@ -32,7 +32,7 @@ func_filename = dataset.func[0]
 # print basic information on the dataset
 print(f"First subject functional nifti image (4D) is at: {dataset.func[0]}")
 
-#####################################################################
+# %%
 # Preprocess
 from nilearn.maskers import NiftiMasker
 
@@ -48,7 +48,7 @@ masker = NiftiMasker(
 )
 data_masked = masker.fit_transform(func_filename)
 
-#####################################################################
+# %%
 # Apply ICA
 from sklearn.decomposition import FastICA
 
@@ -69,7 +69,7 @@ components_masked[np.abs(components_masked) < 0.8] = 0
 # representation
 component_img = masker.inverse_transform(components_masked)
 
-#####################################################################
+# %%
 # Visualize the results
 from nilearn import image
 from nilearn.plotting import plot_stat_map, show

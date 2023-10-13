@@ -16,7 +16,7 @@ from nilearn.interfaces.fmriprep.load_confounds import (
     _check_strategy,
     _load_single_confounds_file,
 )
-from nilearn.interfaces.fmriprep.tests.utils import (
+from nilearn.interfaces.fmriprep.tests._testing import (
     create_tmp_filepath,
     get_legal_confound,
 )

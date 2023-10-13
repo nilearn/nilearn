@@ -15,13 +15,14 @@ documentation for more details.
 
 """
 
+# %%
 import scipy
 
 from nilearn import plotting
 from nilearn.datasets import fetch_neurovault_ids
 from nilearn.image import get_data, load_img, math_img, new_img_like
 
-######################################################################
+# %%
 # Fetch images for "successful stop minus go"-like protocols.
 # -----------------------------------------------------------
 
@@ -45,7 +46,7 @@ nv_data = fetch_neurovault_ids(image_ids=stop_go_image_ids)
 
 images_meta = nv_data["images_meta"]
 
-######################################################################
+# %%
 # Visualize the data
 # ------------------
 
@@ -57,7 +58,7 @@ for im in images_meta:
         title=f"image {im['id']}: {im['contrast_definition']}",
     )
 
-######################################################################
+# %%
 # Compute statistics
 # ------------------
 
@@ -95,7 +96,7 @@ for this_meta in images_meta:
 
     z_imgs.append(z_img)
 
-######################################################################
+# %%
 # Plot the combined z maps
 # ------------------------
 

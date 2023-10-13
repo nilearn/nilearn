@@ -200,3 +200,21 @@ def _compare_version(version_a, operator, version_b):
         error_msg = "'_compare_version' received an unexpected operator "
         raise ValueError(error_msg + operator + ".")
     return VERSION_OPERATORS[operator](parse(version_a), parse(version_b))
+
+
+def is_plotly_installed():
+    """Check if plotly is installed."""
+    try:
+        import plotly.graph_objects as go  # noqa: F401
+    except ImportError:
+        return False
+    return True
+
+
+def is_kaleido_installed():
+    """Check if kaleido is installed."""
+    try:
+        import kaleido  # noqa: F401
+    except ImportError:
+        return False
+    return True

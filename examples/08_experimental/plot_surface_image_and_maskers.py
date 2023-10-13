@@ -12,6 +12,9 @@ change without a deprecation cycle. Please participate in the discussion on
 GitHub!
 
 """
+
+# %%
+
 from typing import Optional, Sequence
 
 from matplotlib import pyplot as plt
@@ -62,7 +65,7 @@ print(f"Image mean: {mean_img}")
 plot_surf_img(mean_img)
 plotting.show()
 
-###############################################################################
+# %%
 # ### Connectivity with a surface atlas and `SurfaceLabelsMasker`
 
 from nilearn import connectome, plotting
@@ -86,7 +89,7 @@ plotting.plot_matrix(connectome, labels=labels_masker.label_names_)
 plotting.show()
 
 
-###############################################################################
+# %%
 # ### Using the `Decoder`
 
 import numpy as np
@@ -94,7 +97,7 @@ import numpy as np
 from nilearn import decoding, plotting
 from nilearn._utils import param_validation
 
-###############################################################################
+# %%
 # The following is just disabling a couple of checks performed by the decoder
 # that would force us to use a `NiftiMasker`.
 
@@ -113,7 +116,7 @@ def monkeypatch_masker_checks():
 
 monkeypatch_masker_checks()
 
-###############################################################################
+# %%
 # Now using the appropriate masker we can use a `Decoder` on surface data just
 # as we do for volume images.
 
@@ -132,7 +135,7 @@ print("CV scores:", decoder.cv_scores_)
 plot_surf_img(decoder.coef_img_[0], threshold=1e-6)
 plotting.show()
 
-###############################################################################
+# %%
 # ### Decoding with a scikit-learn `Pipeline`
 
 import numpy as np

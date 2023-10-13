@@ -21,6 +21,14 @@ def test_plot_glass_brain(img_3d_mni):
         plot_abs=False,
         resampling_interpolation="nearest",
     )
+    # test plot_glass_brain with vmin/vmax defined
+    plot_glass_brain(
+        img_3d_mni,
+        colorbar=True,
+        plot_abs=False,
+        vmin=-2,
+        vmax=5,
+    )
 
 
 def test_plot_glass_brain_file_output(img_3d_mni, tmp_path):
@@ -119,3 +127,10 @@ def test_plot_glass_brain_with_completely_masked_img(display_mode):
 def test_plot_glass_brain_vmin_vmax(img_3d_mni):
     """Smoke tests for plot_glass_brain being passed vmin and vmax."""
     plot_glass_brain(img_3d_mni, vmin=-2, vmax=2)
+
+
+def test_plot_glass_brain_negative_vmin_with_plot_abs(img_3d_mni):
+    """Test that warning is thrown if plot_abs is True and vmin is negative."""
+    warning_message = "vmin is negative but plot_abs is True"
+    with pytest.warns(UserWarning, match=warning_message):
+        plot_glass_brain(img_3d_mni, vmin=-2, plot_abs=True)
