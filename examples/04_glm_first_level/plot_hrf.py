@@ -48,7 +48,7 @@ stim[(frame_times > onset) * (frame_times <= onset + duration)] = amplitude
 
 # %%
 # Define custom response functions for MION. Custom response
-# functions should at least take tr and oversampling as arguments:
+# functions should at least take :term:`TR` and oversampling as arguments:
 from scipy.stats import gamma
 
 

@@ -5,7 +5,7 @@ Seed-based connectivity on the surface
 The dataset that is a subset of the enhanced NKI Rockland sample
 (https://fcon_1000.projects.nitrc.org/indi/enhanced/, Nooner et al, 2012)
 
-Resting state fMRI scans (TR=645ms) of 102 subjects were preprocessed
+Resting state :term:`fMRI` scans (TR=645ms) of 102 subjects were preprocessed
 (https://github.com/fliem/nki_nilearn) and projected onto the Freesurfer
 fsaverage5 template (Dale et al, 1999, Fischl et al, 1999). For this example
 we use the time series of a single subject's left hemisphere.

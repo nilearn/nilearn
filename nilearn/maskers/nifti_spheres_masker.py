@@ -474,10 +474,10 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         return signals
 
     def inverse_transform(self, region_signals):
-        """Compute voxel signals from spheres signals.
+        """Compute :term:`voxel` signals from spheres signals.
 
         Any mask given at initialization is taken into account. Throws an error
-        if mask_img==None
+        if ``mask_img==None``
 
         Parameters
         ----------

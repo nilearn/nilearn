@@ -2,17 +2,18 @@
 Default Mode Network extraction of ADHD dataset
 ===============================================
 
-This example shows a full step-by-step workflow of fitting a GLM to signal
-extracted from a seed on the Posterior Cingulate Cortex and saving the results.
+This example shows a full step-by-step workflow of fitting a :term:`GLM`
+to signal extracted from a seed on the Posterior Cingulate Cortex
+and saving the results.
 More precisely, this example shows how to use a signal extracted from a
-seed region as the regressor in a GLM to determine the correlation
+seed region as the regressor in a :term:`GLM` to determine the correlation
 of each region in the dataset with the seed region.
 
 More specifically:
 
-1. A sequence of fMRI volumes are loaded.
+1. A sequence of :term:`fMRI` volumes are loaded.
 2. A design matrix with the Posterior Cingulate Cortex seed is defined.
-3. A GLM is applied to the dataset (effect/covariance,
+3. A :term:`GLM` is applied to the dataset (effect/covariance,
    then contrast estimation).
 4. The Default Mode Network is displayed.
 

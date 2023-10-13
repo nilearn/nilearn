@@ -61,7 +61,7 @@ Loading non image data: experiment description
 -----------------------------------------------
 
 An experiment may need additional information about subjects, sessions or
-experiments. In the Haxby experiment, fMRI data are acquired while
+experiments. In the Haxby experiment, :term:`fMRI` data are acquired while
 presenting different category of pictures to the subject (face, cat, ...)
 and the goal of this experiment is to predict which category is presented
 to the subjects from the brain activation.
@@ -83,7 +83,7 @@ For example, we will now consider only the conditions *cat* and *face* from our 
 This can be done as follows:
 
 .. literalinclude:: ../../examples/00_tutorials/plot_decoding_tutorial.py
-    :start-after: # (i.e. :term:`fmri<fMRI>` signal is shorter):
+    :start-after: # (i.e. :term:`fMRI` signal is shorter):
     :end-before: # %%
 
 
@@ -216,7 +216,7 @@ Here we want to see the discriminating weights of some voxels.
 Visualizing results
 ===================
 
-Again the visualization code is simple. We can use an fMRI slice as a
+Again the visualization code is simple. We can use an :term:`fMRI` slice as a
 background and plot the weights. Brighter points have a higher
 discriminating weight.
 

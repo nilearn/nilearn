@@ -16,6 +16,7 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from nilearn import image, surface
 from nilearn._utils import _compare_version, check_niimg_3d, fill_doc
+from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn.plotting.cm import _mix_colormaps, cold_hot
 from nilearn.plotting.html_surface import _get_vertexcolor
 from nilearn.plotting.img_plotting import _get_colorbar_and_data_ranges
@@ -249,11 +250,11 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
         bugs that you may encounter.
 
     """
-    try:
+    if is_plotly_installed():
         import plotly.graph_objects as go
 
         from nilearn.plotting.displays import PlotlySurfaceFigure
-    except ImportError:
+    else:
         msg = "Using engine='plotly' requires that ``plotly`` is installed."
         raise ImportError(msg)
 
@@ -308,15 +309,13 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
                       **LAYOUT)
 
     # save figure
+    plotly_figure = PlotlySurfaceFigure(figure=fig, output_file=output_file)
+
     if output_file is not None:
-        try:
-            import kaleido  # noqa: F401
-        except ImportError:
+        if not is_kaleido_installed():
             msg = ("Saving figures to file with engine='plotly' requires "
                    "that ``kaleido`` is installed.")
             raise ImportError(msg)
-    plotly_figure = PlotlySurfaceFigure(figure=fig, output_file=output_file)
-    if output_file is not None:
         plotly_figure.savefig()
 
     return plotly_figure

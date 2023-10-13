@@ -9,8 +9,8 @@ In particular, we show how Default Mode Network regions are extracted
 using :class:`nilearn.regions.RegionExtractor` from regions module
 """
 
-# %%
-# Fetching the smith ICA 10 RSN by importing datasets utilities
+# %%#
+# Fetching the smith :term:`ICA` 10 RSN by importing datasets utilities
 from nilearn import datasets
 
 atlas_networks = datasets.fetch_atlas_smith_2009(resting=True, dimension=10)[

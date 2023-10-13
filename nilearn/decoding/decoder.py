@@ -1335,7 +1335,8 @@ class DecoderRegressor(_BaseDecoder):
 
 @fill_doc
 class FREMRegressor(_BaseDecoder):
-    """State of the art decoding scheme applied to usual regression estimators.
+    """State of the art :term:`decoding` scheme applied \
+       to usual regression estimators.
 
     FREM uses an implicit spatial regularization through fast clustering and
     aggregates a high number of estimators trained on various splits of the
@@ -1488,7 +1489,7 @@ class FREMRegressor(_BaseDecoder):
 
 @fill_doc
 class FREMClassifier(_BaseDecoder):
-    """State of the art decoding scheme applied to usual classifiers.
+    """State of the art :term:`decoding` scheme applied to usual classifiers.
 
     FREM uses an implicit spatial regularization through fast clustering and
     aggregates a high number of estimators trained on various splits of the

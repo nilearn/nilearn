@@ -18,7 +18,7 @@ Please see
 :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_fiac_analysis.py`
 for details.  The main difference is that
 the fixed-effects model is run explicitly here,
-after GLM fitting on two sessions.
+after :term:`GLM` fitting on two sessions.
 """
 
 # %%
@@ -48,9 +48,9 @@ import pandas as pd
 design_matrices = [pd.DataFrame(np.load(df)['X']) for df in design_files]
 
 # %%
-# GLM estimation
-# --------------
-# GLM specification. Note that the mask was provided in the dataset.
+# :term:`GLM` estimation
+# ----------------------
+# :term:`GLM` specification. Note that the mask was provided in the dataset.
 # So we use it.
 
 from nilearn.glm.first_level import FirstLevelModel

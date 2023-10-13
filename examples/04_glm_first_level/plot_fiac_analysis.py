@@ -2,9 +2,9 @@
 Simple example of two-session fMRI model fitting
 ================================================
 
-Here, we will go through a full step-by-step example of fitting a GLM to
-experimental data and visualizing the results. This is done on two runs of one
-subject of the FIAC dataset.
+Here, we will go through a full step-by-step example of fitting a :term:`GLM`
+to experimental data and visualizing the results.
+This is done on two runs of one subject of the FIAC dataset.
 
 For details on the data, please see:
 
@@ -16,10 +16,10 @@ https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6871319/
 
 More specifically:
 
-1. A sequence of fMRI volumes is loaded.
+1. A sequence of :term:`fMRI` volumes is loaded.
 2. A design matrix describing all the effects related to the data is computed.
 3. A mask of the useful brain volume is computed.
-4. A GLM is applied to the dataset (effect/covariance,
+4. A :term:`GLM` is applied to the dataset (effect/covariance,
    then contrast estimation).
 
 Technically, this example shows how to handle two sessions that contain the
@@ -63,9 +63,9 @@ design_files = [data['design_matrix1'], data['design_matrix2']]
 design_matrices = [pd.DataFrame(np.load(df)['X']) for df in design_files]
 
 # %%
-# GLM estimation
-# --------------
-# GLM specification. Note that the mask was provided in the dataset.
+# :term:`GLM` estimation
+# ----------------------
+# :term:`GLM` specification. Note that the mask was provided in the dataset.
 # So we use it.
 from nilearn.glm.first_level import FirstLevelModel
 

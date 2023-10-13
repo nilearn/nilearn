@@ -20,7 +20,7 @@ from nilearn.interfaces.bids._utils import _bids_entities, _check_bids_label
 
 
 def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
-    """Generate mni space img.
+    """Generate MNI space img.
 
     Parameters
     ----------
@@ -45,10 +45,10 @@ def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
     Returns
     -------
     inverse_img : Niimg-like object
-        Image transformed back to mni space.
+        Image transformed back to MNI space.
 
     mask_img : Niimg-like object
-        Generated mask in mni space.
+        Generated mask in MNI space.
 
     """
     rand_gen = check_random_state(random_state)
@@ -876,7 +876,7 @@ def create_fake_bids_dataset(
     random_state=0,
     entities=None,
 ):
-    """Create a fake :term:`bids<BIDS>` dataset directory with dummy files.
+    """Create a fake :term:`BIDS` dataset directory with dummy files.
 
     Returns fake dataset directory name.
 
@@ -929,7 +929,7 @@ def create_fake_bids_dataset(
         Random number generator, or seed.
 
     entities : :obj:`dict`, optional
-        Extra entity to add to the BIDS filename with a list of values.
+        Extra entity to add to the :term:`BIDS` filename with a list of values.
         For example, if you want to add an 'echo' entity
         with values '1' for some files and '1' for others,
         you would pass: ``entities={"echo": ['1', '2']}``.
