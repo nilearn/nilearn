@@ -11,6 +11,7 @@ from pandas import read_csv
 # Use nisignal here to avoid name collisions (using nilearn.signal is
 # not possible)
 from nilearn import signal as nisignal
+from nilearn.conftest import _rng
 from nilearn.signal import clean
 
 
@@ -50,7 +51,7 @@ def generate_signals(
     confounds : numpy.ndarray, shape (length, n_confounds)
         random signals used as confounds.
     """
-    rng = np.random.RandomState(42)
+    rng = _rng()
 
     # Generate random confounds
     confounds_shape = (length, n_confounds)
@@ -92,7 +93,7 @@ def generate_trends(n_features=17, length=41):
     trends : numpy.ndarray, shape (length, n_features)
         output signals, one per column.
     """
-    rng = np.random.RandomState(42)
+    rng = _rng()
     trends = scipy.signal.detrend(np.linspace(0, 1.0, length), type="constant")
     trends = np.repeat(np.atleast_2d(trends).T, n_features, axis=1)
     factors = rng.standard_normal(size=n_features)

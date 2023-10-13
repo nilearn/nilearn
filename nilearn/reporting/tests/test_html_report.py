@@ -9,6 +9,7 @@ from nilearn._utils import as_ndarray
 from nilearn._utils.data_gen import generate_labeled_regions, generate_maps
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiLabelsMasker, NiftiMapsMasker, NiftiMasker
+from nilearn.conftest import _rng
 
 # Note: html output by nilearn view_* functions
 # should validate as html5 using https://validator.w3.org/nu/ with no
@@ -50,7 +51,7 @@ def niftimapsmasker_inputs():
 
 
 def generate_random_img(shape, length=1, affine=np.eye(4),
-                        rand_gen=np.random.RandomState(0)):
+                        rand_gen=_rng()):
     data = rand_gen.standard_normal(size=(shape + (length,)))
     return Nifti1Image(data, affine), Nifti1Image(
         as_ndarray(data[..., 0] > 0.2, dtype=np.int8), affine)

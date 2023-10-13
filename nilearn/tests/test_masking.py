@@ -13,6 +13,7 @@ from nilearn import masking
 from nilearn._utils import data_gen
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import write_tmp_imgs
+from nilearn.conftest import _rng
 from nilearn.image import get_data, high_variance_confounds
 from nilearn.maskers import NiftiMasker
 from nilearn.masking import (
@@ -45,9 +46,10 @@ _TEST_DIM_ERROR_MSG = (
 
 def _simu_img():
     # Random confounds
-    conf = 2 + np.random.randn(100, 6)
+    rng = _rng()
+    conf = 2 + rng.randn(100, 6)
     # Random 4D volume
-    vol = 100 + 10 * np.random.randn(5, 5, 2, 100)
+    vol = 100 + 10 * rng.randn(5, 5, 2, 100)
     img = Nifti1Image(vol, np.eye(4))
     # Create an nifti image with the data, and corresponding mask
     mask = Nifti1Image(np.ones([5, 5, 2]), np.eye(4))
