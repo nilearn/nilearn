@@ -2412,7 +2412,7 @@ def fetch_openneuro_dataset(
         If not specified, all files from the default dataset
         (``ds000030_R1.0.4``) will be downloaded.
     %(data_dir)s
-    dataset_version : string, default=``ds000030_R1.0.4``
+    dataset_version : string, default='ds000030_R1.0.4'
         Dataset version name. Assumes it is of the form [name]_[version].
     %(verbose)s
 
