@@ -181,6 +181,11 @@ def _shape_4d_default():
     return (10, 10, 10, 10)
 
 
+def _shape_4d_long():
+    """Return default shape for a long 4D image."""
+    return (10, 10, 10, 1500)
+
+
 @pytest.fixture()
 def shape_3d_default():
     """Return default shape for a 3D image."""
@@ -191,6 +196,12 @@ def shape_3d_default():
 def shape_4d_default():
     """Return default shape for a 4D image."""
     return _shape_4d_default()
+
+
+@pytest.fixture()
+def shape_4d_long():
+    """Return long shape for a 4D image."""
+    return _shape_4d_long()
 
 
 def _img_zeros(shape, affine):
@@ -278,6 +289,10 @@ def _img_4d_zeros(shape=_shape_4d_default(), affine=_affine_eye()):
     return _img_zeros(shape, affine)
 
 
+def _img_4d_mni(shape=_shape_4d_default(), affine=_affine_mni()):
+    return Nifti1Image(_rng().uniform(size=shape), affine=affine)
+
+
 @pytest.fixture
 def img_4d_zeros_eye():
     """Return a default zeros filled 4D Nifti1Image (identity affine)."""
@@ -297,37 +312,29 @@ def img_4D_eye():
     return Nifti1Image(data, _affine_eye())
 
 
-def _img_4d_mni(shape=_shape_4d_default(), affine=_affine_mni()):
-    return Nifti1Image(_rng().uniform(size=shape), affine=affine)
-
-
 @pytest.fixture
 def img_4D_mni():
     """Return a default random filled 4D Nifti1Image."""
     return _img_4d_mni()
 
 
+@pytest.fixture
+def img_4D_long_mni(rng, shape_4d_long, affine_mni):
+    """Return a default random filled long 4D Nifti1Image."""
+    return Nifti1Image(rng.uniform(size=shape_4d_long), affine=affine_mni)
+
+
 @pytest.fixture()
-def testdata_4d_for_plotting():
-    """Random 4D images for testing figures for multivolume data."""
-    rng = _rng()
-    img_4d = Nifti1Image(rng.uniform(size=(7, 7, 3, 10)), _affine_mni())
-    img_4d_long = Nifti1Image(rng.uniform(size=(7, 7, 3, 1777)), _affine_mni())
-    img_mask = Nifti1Image(np.ones((7, 7, 3), dtype="uint8"), _affine_mni())
-    atlas = np.ones((7, 7, 3), dtype="int32")
+def img_atlas(shape_3d_default, affine_mni):
+    """Return an atlas and its labels."""
+    atlas = np.ones(shape_3d_default, dtype="int32")
     atlas[2:5, :, :] = 2
     atlas[5:8, :, :] = 3
-    img_atlas = Nifti1Image(atlas, _affine_mni())
-    atlas_labels = {
-        "gm": 1,
-        "wm": 2,
-        "csf": 3,
-    }
-    # TODO: split into several fixtures
     return {
-        "img_4d": img_4d,
-        "img_4d_long": img_4d_long,
-        "img_mask": img_mask,
-        "img_atlas": img_atlas,
-        "atlas_labels": atlas_labels,
+        "img": Nifti1Image(atlas, affine_mni),
+        "labels": {
+            "gm": 1,
+            "wm": 2,
+            "csf": 3,
+        },
     }
