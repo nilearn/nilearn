@@ -19,9 +19,9 @@ model with a random design matrix **X**:
   brain regions. Here, in the simulations, they form a 3D image with 5, four
   of which in opposite corners and one in the middle, as plotted below.
 
-* **X**: the design matrix corresponds to the observed fMRI data. Here
-  we simulate random normal variables and smooth them as in Gaussian
-  fields.
+* **X**: the design matrix corresponds to the observed :term:`fMRI` data.
+  Here we simulate random normal variables
+  and smooth them as in Gaussian fields.
 
 * **e** is random normal noise.
 

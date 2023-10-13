@@ -372,8 +372,8 @@ def prec_to_partial(precision):
 
 @fill_doc
 class ConnectivityMeasure(BaseEstimator, TransformerMixin):
-    """A class that computes different kinds of functional connectivity \
-    matrices.
+    """A class that computes different kinds of \
+       :term:`functional connectivity` matrices.
 
     .. versionadded:: 0.2
 

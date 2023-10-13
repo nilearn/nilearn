@@ -43,14 +43,15 @@ print(conditions.unique())
 session_label = behavioral["chunks"][condition_mask]
 
 # %%
-# ANOVA pipeline with :class:`nilearn.decoding.Decoder` object
-# ------------------------------------------------------------
+# :term:`ANOVA` pipeline with :class:`nilearn.decoding.Decoder` object
+# --------------------------------------------------------------------
 #
 # Nilearn Decoder object aims to provide smooth user experience by acting as a
 # pipeline of several tasks: preprocessing with NiftiMasker, reducing dimension
-# by selecting only relevant features with ANOVA -- a classical univariate
-# feature selection based on F-test, and then decoding with different types of
-# estimators (in this example is Support Vector Machine with a linear kernel)
+# by selecting only relevant features with :term:`ANOVA`
+# -- a classical univariate feature selection based on F-test,
+# and then decoding with different types of estimators
+# (in this example is Support Vector Machine with a linear kernel)
 # on nested cross-validation.
 from nilearn.decoding import Decoder
 

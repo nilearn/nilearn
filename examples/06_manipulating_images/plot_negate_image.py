@@ -10,8 +10,8 @@ We compute a negative image by multiplying its voxel values with -1.
 # %%
 from nilearn import datasets, image, plotting
 
-# %%
-# Retrieve the data: a motor contrast map.
+# %%##
+# Retrieve the data: a motor :term:`contrast` map.
 
 stat_img = datasets.load_sample_motor_activation_image()
 

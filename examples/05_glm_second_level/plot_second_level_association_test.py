@@ -71,19 +71,19 @@ from nilearn.glm.second_level import SecondLevelModel
 model = SecondLevelModel(smoothing_fwhm=5.0)
 model.fit(contrast_map_filenames, design_matrix=design_matrix)
 
-# %%
-# To estimate the contrast is very simple. We can just provide the column
-# name of the design matrix.
+# %%#
+# To estimate the :term:`contrast` is very simple.
+# We can just provide the column name of the design matrix.
 z_map = model.compute_contrast("fluency", output_type="z_score")
 
 # %%
-# We compute the fdr-corrected p = 0.05 threshold for these data
+# We compute the fdr-corrected p = 0.05 threshold for these data.
 from nilearn.glm import threshold_stats_img
 
 _, threshold = threshold_stats_img(z_map, alpha=0.05, height_control="fdr")
 
 # %%
-# Let us plot the second level contrast at the computed thresholds
+# Let us plot the second level :term:`contrast` at the computed thresholds.
 from nilearn import plotting
 
 plotting.plot_stat_map(

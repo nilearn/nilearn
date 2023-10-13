@@ -322,7 +322,7 @@ usage of machine learning requires some understanding of the models.
 **Data mining / exploration**
 
 Data-driven exploration of brain images. This includes the extraction of
-the major brain networks from resting-state data ("resting-state networks")
+the major brain networks from :term:`resting-state` data ("resting-state networks")
 or movie-watching data as well as the discovery of connectionally coherent
 functional modules ("connectivity-based parcellation").
 For example,

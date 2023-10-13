@@ -2,7 +2,8 @@
 Decoding of a dataset after GLM fit for signal extraction
 =========================================================
 
-Full step-by-step example of fitting a GLM to perform a decoding experiment.
+Full step-by-step example of fitting a :term:`GLM`
+to perform a decoding experiment.
 We use the data from one subject of the Haxby dataset.
 
 More specifically:
@@ -92,9 +93,9 @@ glm = FirstLevelModel(
     memory="nilearn_cache",
 )
 
-# %%
-# Run the glm on data from each session
-# -------------------------------------
+# %%#
+# Run the :term:`GLM` on data from each session
+# ---------------------------------------------
 events[session].trial_type.unique()
 from nilearn.image import index_img
 
@@ -102,7 +103,7 @@ for session in unique_sessions:
     # grab the fmri data for that particular session
     fmri_session = index_img(func_filename, sessions == session)
 
-    # fit the glm
+    # fit the GLM
     glm.fit(fmri_session, events=events[session])
 
     # set up contrasts: one per condition
@@ -116,7 +117,7 @@ for session in unique_sessions:
 # Generating a report
 # -------------------
 # Since we have already computed the FirstLevelModel
-# and have the contrast, we can quickly create a summary report.
+# and have the :term:`contrast`, we can quickly create a summary report.
 
 from nilearn.image import mean_img
 from nilearn.reporting import make_glm_report

@@ -22,7 +22,7 @@ except ImportError:
 # %%
 # Create a simple experimental paradigm
 # -------------------------------------
-# We want to get the group result of a contrast for 20 subjects.
+# We want to get the group result of a :term:`contrast` for 20 subjects.
 n_subjects = 20
 subjects_label = [f"sub-{int(i):02}" for i in range(1, n_subjects + 1)]
 

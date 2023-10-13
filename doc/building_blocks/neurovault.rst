@@ -77,7 +77,7 @@ The default values for the ``collection_terms`` and ``image_terms`` parameters
 filter out empty collections, and exclude an image if one of the following is
 true:
 
-   - it is not in MNI space.
+   - it is not in :term:`MNI` space.
    - its metadata field "is_valid" is cleared.
    - it is thresholded.
    - its map type is one of "ROI/mask", "anatomical", or "parcellation".
@@ -146,7 +146,7 @@ Using a filter rather than a dictionary, the first example becomes:
   Even if you specify a filter as a function, the default filters for
   ``image_terms`` and ``collection_terms`` still apply; pass an empty
   dictionary if you want to disable them. Without ``image_terms={}`` in the
-  call above, parcellations, images not in MNI space, etc. would be still be
+  call above, parcellations, images not in :term:`MNI` space, etc. would be still be
   filtered out.
 
 
@@ -186,7 +186,7 @@ Neurosynth annotations
 
 It is also possible to ask Neurosynth to annotate the maps found on
 Neurovault. Neurosynth is a platform for large-scale, automated
-synthesis of fMRI data. It can be used to perform decoding.  You can
+synthesis of :term:`fMRI` data. It can be used to perform decoding.  You can
 learn more about Neurosynth at http://www.neurosynth.org.
 
 Neurosynth was introduced in [2]_.

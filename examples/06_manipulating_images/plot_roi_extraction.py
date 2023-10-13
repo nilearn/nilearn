@@ -107,8 +107,8 @@ fmri_img = image.smooth_img(fmri_filename, fwhm=6)
 # `plot_epi`
 from nilearn.plotting import plot_epi
 
-# First, compute the voxel-wise mean of smooth EPI image (first argument) using
-# image processing module `image`
+# First, compute the voxel-wise mean of smooth EPI image
+# (first argument) using image processing module `image`
 mean_img = image.mean_img(fmri_img)
 # Second, we visualize the mean image with coordinates positioned manually
 plot_epi(mean_img, title="Smoothed mean EPI", cut_coords=cut_coords)
@@ -139,16 +139,16 @@ fmri_data.shape
 # It can be used to compare voxel
 # time-series from two different experimental conditions (e.g., when houses or
 # faces are shown to individuals during brain scanning). If the time-series
-# distribution is similar in the two conditions, then the voxel is not very
-# interesting to discriminate the condition.
+# distribution is similar in the two conditions,
+# then the :term:`voxel` is not very interesting to discriminate the condition.
 
 import numpy as np
 from scipy import stats
 
 # This test returns p-values that represent probabilities that the two
 # time-series were not drawn from the same distribution. The lower the
-# p-value, the more discriminative is the voxel in distinguishing the two
-# conditions (faces and houses).
+# p-value, the more discriminative is the voxel in distinguishing
+# the two conditions (faces and houses).
 _, p_values = stats.ttest_ind(
     fmri_data[..., haxby_labels == "face"],
     fmri_data[..., haxby_labels == "house"],
@@ -213,9 +213,10 @@ plot_stat_map(
     cut_coords=cut_coords,
 )
 
-# %%
-# We can post-process the results obtained with simple operations such as mask
-# intersection and dilation to regularize the mask definition.
+# %%#
+# We can post-process the results obtained with simple operations
+# such as mask intersection and :term:`dilation<Dilation>`
+# to regularize the mask definition.
 # The idea of using these operations are to have more compact or sparser blobs.
 
 # %%
@@ -265,7 +266,7 @@ plot_roi(
 # more compact shapes, we use a `morphological dilation
 # <http://en.wikipedia.org/wiki/Dilation_(morphology)>`_. This is a common step
 # to be sure not to forget voxels located on the edge of a ROI. In other words,
-# such operations can fill "holes" in masked voxel representations.
+# such operations can fill "holes" in masked :term:`voxel` representations.
 
 # We use ndimage function from scipy Python library for mask dilation
 from scipy.ndimage import binary_dilation

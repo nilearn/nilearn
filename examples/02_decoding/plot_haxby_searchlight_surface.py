@@ -35,8 +35,8 @@ fmri_img = index_img(fmri_filename, condition_mask)
 y, session = y[condition_mask], session[condition_mask]
 
 # %%
-# Surface bold response
-# ---------------------
+# Surface :term:`BOLD` response
+# -----------------------------
 from sklearn import neighbors
 
 from nilearn import datasets, surface

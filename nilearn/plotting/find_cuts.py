@@ -413,12 +413,12 @@ def find_parcellation_cut_coords(
     return_label_names=False,
     label_hemisphere="left",
 ):
-    """Return coordinates of center of mass of 3D parcellation atlas.
+    """Return coordinates of center of mass of 3D :term:`parcellation` atlas.
 
     Parameters
     ----------
     labels_img : 3D Nifti1Image
-        A brain parcellation atlas with specific mask labels for each
+        A brain :term:`parcellation` atlas with specific mask labels for each
         parcellated region.
 
     background_label : int, optional
@@ -512,7 +512,8 @@ def find_parcellation_cut_coords(
 
 
 def find_probabilistic_atlas_cut_coords(maps_img):
-    """Return coordinates of center probabilistic atlas 4D image.
+    """Return coordinates of center \
+       :term:`probabilistic atlas<Probabilistic atlas>` 4D image.
 
     Parameters
     ----------
