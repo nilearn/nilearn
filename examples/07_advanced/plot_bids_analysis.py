@@ -6,7 +6,7 @@ Full step-by-step example of fitting a :term:`GLM`
 to perform a first and second level
 analysis in a :term:`BIDS` dataset and visualizing the results.
 Details about the :term:`BIDS` standard can be consulted at
-`http://bids.neuroimaging.io/ <http://bids.neuroimaging.io/>`_.
+`https://bids.neuroimaging.io/ <https://bids.neuroimaging.io/>`_.
 
 More specifically:
 

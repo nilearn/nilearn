@@ -107,10 +107,10 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     Notes
     -----
     For more information about this dataset's structure:
-    http://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009
+    https://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009
 
     The original download URL is
-    http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/mni_icbm152_nlin_sym_09a_nifti.zip
+    https://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/mni_icbm152_nlin_sym_09a_nifti.zip
 
     TemplateFlow repository for ICBM152 2009
 
@@ -681,7 +681,7 @@ def fetch_oasis_vbm(
     dedicated to making brain imaging data openly available to the public.
     Using data available through the OASIS project requires agreeing with
     the Data Usage Agreement that can be found at
-    http://www.oasis-brains.org/app/template/UsageAgreement.vm
+    https://www.oasis-brains.org/#access
 
     """
     # check number of subjects

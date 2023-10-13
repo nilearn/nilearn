@@ -30,7 +30,7 @@ see for instance:
 Vincent Michel, Alexandre Gramfort, Gael Varoquaux, Evelyn Eger,
   Christine Keribin, Bertrand Thirion. `A supervised clustering approach
   for fMRI-based inference of brain states.
-  <http://dx.doi.org/10.1016/j.patcog.2011.04.006>`_.
+  <https://doi.org/10.1016/j.patcog.2011.04.006>`_.
   Pattern Recognition, Elsevier, 2011.
 
 The big picture discussion corresponding to this example can be found

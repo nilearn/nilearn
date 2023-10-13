@@ -26,7 +26,7 @@ References
 [2] Anderson, M. J. & Robinson, J. (2001).
     Permutation tests for linear models.
     Australian & New Zealand Journal of Statistics, 43(1), 75-88.
-    (http://avesbiodiv.mncn.csic.es/estadistica/permut2.pdf)
+    (https://www.uvm.edu/~statdhtx/fundamentals9/Supplements/RandomizationTestsWithR/permut2.pdf)
 
 ..
     Original authors:
