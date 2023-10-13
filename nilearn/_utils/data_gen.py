@@ -721,7 +721,7 @@ def basic_confounds(length, random_state=0):
         Length of basic confounds.
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   dafult=0
+                   default=0
         Random number generator, or seed.
 
     Returns
