@@ -716,7 +716,14 @@ def _get_atlas_data_and_labels(
                 f"Duplicate index {new_idx} for labels "
                 f"'{names[new_idx]}', and '{label.text}'"
             )
-        names[new_idx] = label.text
+
+        # fix typos in Harvard Oxford labels
+        if atlas_source == "HarvardOxford":
+            label.text = label.text.replace("Ventrical", "Ventricle")
+            label.text = label.text.replace("Operculum", "Opercular")
+
+        names[new_idx] = label.text.strip()
+
     # The label indices should range from 0 to nlabel + 1
     assert list(names.keys()) == list(range(n + 2))
     names = [item[1] for item in sorted(names.items())]
