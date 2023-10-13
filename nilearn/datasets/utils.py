@@ -303,7 +303,10 @@ def _get_dataset_dir(
         if not os.path.exists(path):
             try:
                 os.makedirs(path)
-                _add_readme_to_default_data_locations(verbose=verbose)
+                _add_readme_to_default_data_locations(
+                    data_dir=data_dir,
+                    verbose=verbose,
+                )
                 if verbose > 0:
                     print(f"\nDataset created in {path}\n")
                 return path
@@ -317,8 +320,8 @@ def _get_dataset_dir(
     )
 
 
-def _add_readme_to_default_data_locations(verbose):
-    for d in get_data_dirs():
+def _add_readme_to_default_data_locations(data_dir=None, verbose=1):
+    for d in get_data_dirs(data_dir=data_dir):
         file = Path(d) / "README.md"
         if file.parent.exists() and not file.exists():
             with open(file, "w") as f:
