@@ -25,7 +25,7 @@ an explicit model of the signal. The reference paper is:
       `preprint <https://hal.inria.fr/hal-00489507/>`_
 
 """
-###############################################################################
+# %%##
 # Load brain development :term:`fMRI` dataset
 # -------------------------------------------
 from nilearn import datasets
@@ -37,7 +37,7 @@ func_filenames = rest_dataset.func  # list of 4D nifti files for each subject
 print(f"First functional nifti image (4D) is at: {rest_dataset.func[0]}")
 
 
-####################################################################
+# %%
 # Apply :term:`CanICA` on the data
 # --------------------------------
 # We use "whole-brain-template" as a strategy to compute the mask,
@@ -88,7 +88,7 @@ for i, cur_img in enumerate(iter_img(canica_components_img)):
     )
 
 
-####################################################################
+# %%
 # Compare :term:`CanICA` to dictionary learning
 # ---------------------------------------------
 # :term:`Dictionary learning` is a sparsity based decomposition method

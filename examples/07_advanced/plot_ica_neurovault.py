@@ -104,7 +104,7 @@ with warnings.catch_warnings():
 X = np.vstack(X)
 term_weights = term_weights[is_usable, :]
 
-######################################################################
+# %%##
 # Run :term:`ICA` and map components to terms
 # -------------------------------------------
 

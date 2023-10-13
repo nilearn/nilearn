@@ -19,7 +19,7 @@ More specifically:
    images were already normalized to the same :term:`MNI` space.
 """
 
-##############################################################################
+# %%#
 # Fetch example :term:`BIDS` dataset
 # ----------------------------------
 # We download a simplified :term:`BIDS` dataset made available for illustrative
@@ -149,7 +149,7 @@ zmap = second_level_model.compute_contrast(
     first_level_contrast="language-string"
 )
 
-#########################################################################
+# %%
 # The group level :term:`contrast` reveals a left lateralized fronto-temporal
 # language network.
 plotting.plot_glass_brain(

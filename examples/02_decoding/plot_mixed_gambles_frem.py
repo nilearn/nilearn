@@ -49,7 +49,7 @@ plot_stat_map(
     threshold=0.2,
 )
 
-#############################################################################
+# %%
 # We can observe that the coefficients map learnt
 # by :term:`FREM` is structured,
 # due to the spatial regularity imposed by working on clusters and model

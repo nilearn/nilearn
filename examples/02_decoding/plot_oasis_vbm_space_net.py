@@ -10,7 +10,7 @@ See also the documentation: :ref:`space_net`.
 
 """
 
-###########################################################################
+# %%
 # Load the Oasis :term:`VBM` dataset
 # ----------------------------------
 import numpy as np

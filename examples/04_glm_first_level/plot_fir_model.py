@@ -50,7 +50,7 @@ design_matrix = first_level_model.design_matrices_[0]
 plot_design_matrix(design_matrix)
 
 
-#########################################################################
+# %%
 # We have to adapt :term:`contrast` specification.
 # We characterize the :term:`BOLD` response by the sum
 # across the three time lags.

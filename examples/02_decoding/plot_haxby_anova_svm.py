@@ -42,7 +42,7 @@ print(conditions.unique())
 # data. We have to apply our session mask, to select only faces and houses.
 session_label = behavioral["chunks"][condition_mask]
 
-#############################################################################
+# %%
 # :term:`ANOVA` pipeline with :class:`nilearn.decoding.Decoder` object
 # --------------------------------------------------------------------
 #

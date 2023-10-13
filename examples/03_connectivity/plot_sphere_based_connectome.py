@@ -26,7 +26,7 @@ computing a connectome from them.
 
 """
 
-##########################################################################
+# %%#
 # Retrieve the brain development :term:`fMRI` dataset
 # ---------------------------------------------------
 #

@@ -37,7 +37,7 @@ The big picture discussion corresponding to this example can be found
 in the documentation section :ref:`parcellating_brain`.
 """
 
-########################################################################
+# %%####
 # Download a brain development fMRI dataset and turn it to a data matrix
 # ----------------------------------------------------------------------
 #
@@ -329,7 +329,7 @@ fig.legend(handles, labels, loc=(0.5, 0.8))
 # proportion of them containing hundreds to thousands of voxels.
 #
 
-###########################################################################
+# %%
 # Brain parcellations with :term:`ReNA` Clustering
 # ------------------------------------------------
 #
@@ -383,7 +383,7 @@ plotting.plot_roi(
     cut_coords=cut_coords,
 )
 
-###########################################################################
+# %%
 # Compressed representation of :term:`ReNA` clustering
 # ....................................................
 #

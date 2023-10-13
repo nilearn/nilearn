@@ -88,7 +88,7 @@ X2 = make_first_level_design_matrix(
     hrf_model=hrf_model,
 )
 
-#########################################################################
+# %%
 # Finally we compute a :term:`FIR` model
 
 events = pd.DataFrame(

@@ -108,7 +108,7 @@ second_level_model_paired = SecondLevelModel().fit(
     second_level_input, design_matrix=paired_design_matrix
 )
 
-##########################################################################
+# %%#
 # Estimating the :term:`contrast` is simple. To do so, we provide the column
 # name of the design matrix. The argument 'output_type' is set to return all
 # available outputs so that we can compare differences in the effect size,

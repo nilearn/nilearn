@@ -55,7 +55,7 @@ import pandas as pd
 events_file = data.events
 events = pd.read_table(events_file)
 
-###############################################################################
+# %%##
 # Project the :term:`fMRI` image to the surface
 # ---------------------------------------------
 #
@@ -66,7 +66,7 @@ import nilearn
 
 fsaverage = nilearn.datasets.fetch_surf_fsaverage()
 
-###############################################################################
+# %%##
 # The projection function simply takes the :term:`fMRI` data and the mesh.
 # Note that those correspond spatially, are they are both in :term:`MNI` space.
 from nilearn import surface
@@ -202,7 +202,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
 # Note that re-creating the above analysis for the left hemisphere requires
 # little additional code!
 
-###############################################################################
+# %%##
 # We project the :term:`fMRI` data to the mesh.
 texture = surface.vol_to_surf(fmri_img, fsaverage.pial_left)
 

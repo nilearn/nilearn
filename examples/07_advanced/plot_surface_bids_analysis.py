@@ -18,7 +18,7 @@ Notice that in this case the preprocessed :term:`bold<BOLD>`
 images were already normalized to the same :term:`MNI` space.
 """
 
-##############################################################################
+# %%#
 # Fetch example :term:`BIDS` dataset
 # ----------------------------------
 # We download a simplified :term:`BIDS` dataset made available for illustrative
@@ -55,7 +55,7 @@ _, models_run_imgs, models_events, models_confounds = \
         data_dir, task_label,
         img_filters=[('desc', 'preproc')])
 
-#############################################################################
+# %%
 # We also need to get the :term:`TR` information.
 # For that we use the json sidecar file of the dataset's functional images.
 import json
@@ -72,13 +72,13 @@ json_file = os.path.join(
 with open(json_file, 'r') as f:
     t_r = json.load(f)['RepetitionTime']
 
-#############################################################################
+# %%
 # Project :term:`fMRI` data to the surface: First get fsaverage5.
 from nilearn.datasets import fetch_surf_fsaverage
 
 fsaverage = fetch_surf_fsaverage(mesh='fsaverage5')
 
-#########################################################################
+# %%
 # The projection function simply takes the :term:`fMRI` data and the mesh.
 # Note that those correspond spatially, as they are both in :term:`MNI` space.
 import numpy as np

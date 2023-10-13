@@ -26,7 +26,7 @@ sampled in different positions (encoded by different affine functions).
 print(__doc__)
 
 
-#########################################################################
+# %%
 # Fetch the :term:`SPM` multimodal_faces data.
 from nilearn.datasets import fetch_spm_multimodal_fmri
 
@@ -125,7 +125,7 @@ contrasts = {
     ),
 }
 
-#########################################################################
+# %%
 # Fit the :term:`GLM` for the 2 sessions
 # by specifying a FirstLevelModel and then fitting it.
 from nilearn.glm.first_level import FirstLevelModel

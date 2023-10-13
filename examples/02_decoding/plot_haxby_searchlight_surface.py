@@ -34,7 +34,7 @@ condition_mask = y.isin(["face", "house"])
 fmri_img = index_img(fmri_filename, condition_mask)
 y, session = y[condition_mask], session[condition_mask]
 
-#########################################################################
+# %%
 # Surface :term:`BOLD` response
 # -----------------------------
 from sklearn import neighbors

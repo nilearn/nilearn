@@ -62,7 +62,7 @@ fmri_niimgs = index_img(fmri_img, condition_mask)
 y = y[condition_mask]
 session = labels["chunks"][condition_mask]
 
-###########################################################################
+# %%
 # :term:`ANOVA` pipeline with :class:`nilearn.decoding.Decoder` object
 # --------------------------------------------------------------------
 #

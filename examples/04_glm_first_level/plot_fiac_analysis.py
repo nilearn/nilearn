@@ -62,7 +62,7 @@ import pandas as pd
 design_files = [data['design_matrix1'], data['design_matrix2']]
 design_matrices = [pd.DataFrame(np.load(df)['X']) for df in design_files]
 
-#########################################################################
+# %%
 # :term:`GLM` estimation
 # ----------------------
 # :term:`GLM` specification. Note that the mask was provided in the dataset.

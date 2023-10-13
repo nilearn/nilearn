@@ -93,7 +93,7 @@ glm = FirstLevelModel(
     memory="nilearn_cache",
 )
 
-##############################################################################
+# %%#
 # Run the :term:`GLM` on data from each session
 # ---------------------------------------------
 events[session].trial_type.unique()

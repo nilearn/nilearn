@@ -109,7 +109,7 @@ second_level_model.fit(
     design_matrix=design_matrix,
 )
 
-###############################################################################
+# %%##
 # Estimating the :term:`contrast` is very simple.
 # We can just provide the column name of the design matrix.
 z_map = second_level_model.compute_contrast(
@@ -117,7 +117,7 @@ z_map = second_level_model.compute_contrast(
     output_type="z_score",
 )
 
-###############################################################################
+# %%##
 # We threshold the second level :term:`contrast`
 # at FDR-corrected p < 0.05 and plot it.
 from nilearn.glm import threshold_stats_img

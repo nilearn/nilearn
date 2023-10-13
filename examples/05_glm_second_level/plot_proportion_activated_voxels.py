@@ -50,12 +50,12 @@ second_level_model = second_level_model.fit(
     second_level_input, design_matrix=design_matrix
 )
 
-##########################################################################
+# %%#
 # To estimate the :term:`contrast` is very simple.
 # We can just provide the column name of the design matrix.
 z_map = second_level_model.compute_contrast(output_type="z_score")
 
-###########################################################################
+# %%
 # We threshold the second level :term:`contrast`
 # at uncorrected p < 0.001 and plot
 from scipy.stats import norm

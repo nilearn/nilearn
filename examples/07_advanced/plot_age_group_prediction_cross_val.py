@@ -16,7 +16,7 @@ for a careful study.
 
 """
 
-###############################################################################
+# %%##
 # Load brain development :term:`fMRI` dataset and MSDL atlas
 # ----------------------------------------------------------
 # We study only 60 subjects from the dataset, to save computation time.

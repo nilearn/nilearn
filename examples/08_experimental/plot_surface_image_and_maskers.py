@@ -67,7 +67,7 @@ print(f"Image mean: {mean_img}")
 plot_surf_img(mean_img)
 plotting.show()
 
-###############################################################################
+# %%##
 # Connectivity with a surface atlas and `SurfaceLabelsMasker`
 # -----------------------------------------------------------
 from nilearn import connectome, plotting
@@ -91,7 +91,7 @@ plotting.plot_matrix(connectome, labels=labels_masker.label_names_)
 plotting.show()
 
 
-###############################################################################
+# %%##
 # Using the `Decoder`
 # -------------------
 import numpy as np
@@ -137,7 +137,7 @@ print("CV scores:", decoder.cv_scores_)
 plot_surf_img(decoder.coef_img_[0], threshold=1e-6)
 plotting.show()
 
-###############################################################################
+# %%##
 # Decoding with a scikit-learn `Pipeline`
 # ---------------------------------------
 import numpy as np

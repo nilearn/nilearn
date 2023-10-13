@@ -21,7 +21,7 @@ face and cat images.
 
 """
 
-###########################################################################
+# %%
 # Retrieve and load the :term:`fMRI` data from the Haxby study
 # ------------------------------------------------------------
 #
@@ -193,7 +193,7 @@ fitted_pipeline = cross_validate(
 )
 print(f"ANOVA+SVC test score: {fitted_pipeline['test_score'].mean():.3f}")
 
-###########################################################################
+# %%
 # Visualize the :term:`ANOVA` + SVC's discriminating weights
 # ..........................................................
 
