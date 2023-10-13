@@ -221,24 +221,9 @@ def test_fetch_atlas_fsl(
         is_symm=is_symm or split,
     )
 
-
-@pytest.mark.parametrize("symmetric_split", [True, False])
-@pytest.mark.parametrize(
-    "fname",
-    ["cort-maxprob-thr0-1mm", "sub-maxprob-thr0-1mm"],
-)
-def test_typo_harvard_oxford(
-    fname,
-    symmetric_split,
-    tmp_path,
-):
-    # check that labels have not trailing whitespaces
-    atlas_instance = atlas.fetch_atlas_harvard_oxford(
-        atlas_name=fname,
-        data_dir=tmp_path,
-        symmetric_split=symmetric_split,
-    )
+    # check for typo in label names
     for label in atlas_instance.labels:
+        # no extra whitespace
         assert label.strip() == label
 
 
