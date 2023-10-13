@@ -8,7 +8,7 @@ We use the MNI152 template as the reference for resampling a t-map image.
 Function :func:`nilearn.image.resample_img` could also be used to achieve this.
 """
 
-###############################################################################
+# %%
 # First we load the required datasets using the nilearn datasets module.
 from nilearn.datasets import (
     load_mni152_template,
@@ -26,7 +26,7 @@ from nilearn.image import resample_to_img
 
 resampled_stat_img = resample_to_img(stat_img, template)
 
-###############################################################################
+# %%
 # Let's check the shape and affine have been correctly updated.
 
 # First load the original t-map in memory:
@@ -62,7 +62,7 @@ print(
 """
 )
 
-###############################################################################
+# %%
 # Finally, result images are displayed using nilearn plotting module.
 from nilearn import plotting
 

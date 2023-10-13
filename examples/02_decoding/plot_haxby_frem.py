@@ -13,7 +13,7 @@ at a lower computational cost than other spatially regularized methods.
 To have more details, see: :ref:`frem`.
 """
 
-##############################################################################
+# %%
 # Load the Haxby dataset
 # ----------------------
 from nilearn.datasets import fetch_haxby
@@ -50,7 +50,7 @@ from nilearn.image import mean_img
 
 background_img = mean_img(func_filenames)
 
-##############################################################################
+# %%
 # Fit FREM
 # --------
 from nilearn.decoding import FREMClassifier
@@ -62,7 +62,7 @@ y_pred = decoder.predict(X_test)
 accuracy = (y_pred == y_test).mean() * 100.0
 print(f"FREM classification accuracy : {accuracy:g}%")
 
-#############################################################################
+# %%
 # Plot confusion matrix
 # ------------------------------------
 

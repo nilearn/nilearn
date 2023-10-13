@@ -61,7 +61,7 @@ urls = select_from_index(
 
 data_dir, _ = fetch_openneuro_dataset(urls=urls)
 
-##############################################################################
+# %%
 # Obtain FirstLevelModel objects automatically and fit arguments
 # --------------------------------------------------------------
 # From the dataset directory we automatically obtain FirstLevelModel objects
@@ -92,7 +92,7 @@ derivatives_folder = "derivatives/fmriprep"
     derivatives_folder=derivatives_folder,
 )
 
-#############################################################################
+# %%
 # Access the model and model arguments of the subject and process events.
 
 model, imgs, events, confounds = (
@@ -115,7 +115,7 @@ design_matrix = get_design_from_fslmat(
     fsl_design_matrix_path, column_names=None
 )
 
-#############################################################################
+# %%
 # We identify the columns of the Go and StopSuccess conditions of the
 # design matrix inferred from the FSL file, to use them later for contrast
 # definition.
@@ -126,18 +126,18 @@ design_columns[0] = "Go"
 design_columns[4] = "StopSuccess"
 design_matrix.columns = design_columns
 
-############################################################################
+# %%
 # First level model estimation (one subject)
 # ------------------------------------------
 # We fit the first level model for one subject.
 model.fit(imgs, design_matrices=[design_matrix])
 
-#############################################################################
+# %%
 # Then we compute the StopSuccess - Go contrast. We can use the column names
 # of the design matrix.
 z_map = model.compute_contrast("StopSuccess - Go")
 
-#############################################################################
+# %%
 # We show the agreement between the Nilearn estimation and the FSL estimation
 # available in the dataset.
 import nibabel as nib
@@ -184,7 +184,7 @@ plot_img_comparison(
 )
 plt.show()
 
-#############################################################################
+# %%
 # Simple statistical report of thresholded contrast
 # -------------------------------------------------
 # We display the :term:`contrast` plot and table with cluster information.
@@ -201,7 +201,7 @@ plotting.plot_glass_brain(
 )
 plt.show()
 
-###############################################################################
+# %%
 # We can get a latex table from a Pandas Dataframe for display and publication
 # purposes
 from nilearn.reporting import get_clusters_table
@@ -209,7 +209,7 @@ from nilearn.reporting import get_clusters_table
 table = get_clusters_table(z_map, norm.isf(0.001), 10)
 print(table.to_latex())
 
-#########################################################################
+# %%
 # Generating a report
 # -------------------
 # Using the computed FirstLevelModel and :term:`contrast` information,
@@ -221,14 +221,14 @@ report = make_glm_report(
     contrasts="StopSuccess - Go",
 )
 
-#########################################################################
+# %%
 # We have several ways to access the report:
 
 # report  # This report can be viewed in a notebook
 # report.save_as_html('report.html')
 # report.open_in_browser()
 
-#########################################################################
+# %%
 # Saving model outputs to disk
 # ----------------------------
 from nilearn.interfaces.bids import save_glm_to_bids
@@ -241,7 +241,7 @@ save_glm_to_bids(
     prefix=f"{subject}_task-stopsignal",
 )
 
-#########################################################################
+# %%
 # View the generated files
 from glob import glob
 

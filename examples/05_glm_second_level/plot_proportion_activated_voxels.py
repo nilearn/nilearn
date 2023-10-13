@@ -13,7 +13,7 @@ Inference for brain imaging. Neuroimage. 2018 Nov 1;181:786-796. doi:
 
 """
 
-#########################################################################
+# %%
 # Fetch dataset
 # --------------
 # We download a list of left vs right button press contrasts from a
@@ -29,7 +29,7 @@ data = fetch_localizer_contrasts(
     get_tmaps=True,
     legacy_format=False,
 )
-############################################################################
+# %%
 # Estimate second level model
 # ---------------------------
 # We define the input maps and the design matrix for the second level model
@@ -41,7 +41,7 @@ design_matrix = pd.DataFrame(
     [1] * len(second_level_input), columns=["intercept"]
 )
 
-############################################################################
+# %%
 # Model specification and fit
 from nilearn.glm.second_level import SecondLevelModel
 

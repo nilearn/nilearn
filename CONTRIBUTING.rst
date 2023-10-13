@@ -839,9 +839,9 @@ functions that return fake data.
 
 Exactly what fake data is returned can be configured through the object
 returned by the ``request_mocker`` pytest fixture, defined in
-``nilearn.datasets._testing``. The docstrings of this module and the ``Sender``
-class it contains provide information on how to write a test using this fixture.
-Existing tests can also serve as examples.
+``nilearn.datasets.tests._testing``. The docstrings of this module and the
+``Sender`` class it contains provide information on how to write a test using
+this fixture. Existing tests can also serve as examples.
 
 Maintenance
 =================

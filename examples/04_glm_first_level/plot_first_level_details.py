@@ -17,7 +17,7 @@ tutorial to get a bit more familiar with the base concepts,
 and only then run this tutorial example.
 """
 
-###############################################################################
+# %%
 # Retrieving the data
 # -------------------
 #
@@ -29,7 +29,7 @@ from nilearn.datasets import func
 data = func.fetch_localizer_first_level()
 fmri_img = data.epi_img
 
-###############################################################################
+# %%
 # Define the paradigm that will be used. Here, we just need to get the provided
 # file.
 #
@@ -70,7 +70,7 @@ events_file = data["events"]
 events = pd.read_table(events_file)
 events
 
-###############################################################################
+# %%
 # Running a basic model
 # ---------------------
 #
@@ -84,7 +84,7 @@ first_level_model = FirstLevelModel(t_r)
 first_level_model = first_level_model.fit(fmri_img, events=events)
 design_matrix = first_level_model.design_matrices_[0]
 
-#########################################################################
+# %%
 # Let us take a look at the design matrix: it has 10 main columns corresponding
 # to 10 experimental conditions, followed by 3 columns describing low-frequency
 # signals (drifts) and a constant regressor.
@@ -95,7 +95,7 @@ import matplotlib.pyplot as plt
 
 plt.show()
 
-#########################################################################
+# %%
 # Specification of the contrasts.
 #
 # For this, let's create a function that, given the design matrix, generates
@@ -158,7 +158,7 @@ def make_localizer_contrasts(design_matrix):
     return contrasts
 
 
-#########################################################################
+# %%
 # Let's look at these computed contrasts:
 #
 # * 'left - right button press': probes motor activity
@@ -182,7 +182,7 @@ for key, values in contrasts.items():
 
 plt.show()
 
-#########################################################################
+# %%
 # A first contrast estimation and plotting
 # ----------------------------------------
 #
@@ -215,13 +215,13 @@ def plot_contrast(first_level_model):
         )
 
 
-#########################################################################
+# %%
 # Let's run the model and look at the outcome.
 
 plot_contrast(first_level_model)
 plt.show()
 
-#########################################################################
+# %%
 # Changing the drift model
 # ------------------------
 #
@@ -242,13 +242,13 @@ first_level_model = first_level_model.fit(fmri_img, events=events)
 design_matrix = first_level_model.design_matrices_[0]
 plot_design_matrix(design_matrix)
 
-#########################################################################
+# %%
 # Does the model perform worse or better ?
 
 plot_contrast(first_level_model)
 plt.show()
 
-#########################################################################
+# %%
 # We notice however that this model performs rather poorly.
 #
 # Another solution is to remove these drift terms. Maybe they're simply
@@ -261,7 +261,7 @@ plot_design_matrix(design_matrix)
 plot_contrast(first_level_model)
 plt.show()
 
-#########################################################################
+# %%
 # Is it better than the original? No!
 #
 # Note that the design matrix has changed with no drift columns.
@@ -279,10 +279,10 @@ plot_design_matrix(design_matrix)
 plot_contrast(first_level_model)
 plt.show()
 
-#########################################################################
+# %%
 # Is it good? No better, no worse. Let's turn to another parameter.
 
-#########################################################################
+# %%
 # Changing the hemodynamic response model
 # ---------------------------------------
 #
@@ -300,10 +300,10 @@ plot_design_matrix(design_matrix)
 plot_contrast(first_level_model)
 plt.show()
 
-#########################################################################
+# %%
 # No strong --positive or negative-- effect.
 
-#########################################################################
+# %%
 # Adding a time derivative to the design
 # ......................................
 #
@@ -323,7 +323,7 @@ plot_design_matrix(design_matrix)
 plot_contrast(first_level_model)
 plt.show()
 
-#########################################################################
+# %%
 # Not a huge effect, but rather positive overall. We could keep that one.
 #
 # Note that a benefit of this approach is that we can test which voxels are
@@ -340,7 +340,7 @@ plotting.plot_stat_map(
 )
 plt.show()
 
-#########################################################################
+# %%
 # There seems to be something here. Maybe we could adjust the
 # timing, by increasing the slice_time_ref parameter from 0 to 0.5. Now the
 # reference for model sampling is not the beginning of the volume
@@ -359,10 +359,10 @@ plotting.plot_stat_map(
 )
 plt.show()
 
-#########################################################################
+# %%
 # The time derivatives regressors capture less signal: it's better like that.
 
-#########################################################################
+# %%
 # We can also consider adding the so-called dispersion derivative to
 # capture some mis-specification in the shape of the hrf.
 #
@@ -378,11 +378,11 @@ plot_design_matrix(design_matrix)
 plot_contrast(first_level_model)
 plt.show()
 
-#########################################################################
+# %%
 # Not a huge effect. For the sake of simplicity and readability, we
 # can drop that one.
 
-#########################################################################
+# %%
 # The noise model: ar(1), ols, or higher order ar?
 # ------------------------------------------------
 #
@@ -405,7 +405,7 @@ plot_contrast(first_level_model)
 plt.show()
 
 
-#########################################################################
+# %%
 # Next we change the noise model to ols and observe the difference
 # relative to the ar(1) model.
 
@@ -416,7 +416,7 @@ first_level_model = first_level_model.fit(fmri_img, events=events)
 plot_contrast(first_level_model)
 plt.show()
 
-#########################################################################
+# %%
 # While the difference is not obvious you should rather stick to the
 # ar(1) model, which is arguably more accurate.
 #
@@ -430,12 +430,12 @@ first_level_model = first_level_model.fit(fmri_img, events=events)
 plot_contrast(first_level_model)
 plt.show()
 
-#########################################################################
+# %%
 # This noise model arguably reduces the amount of spurious activity.
 # However, as the difference is not obvious you may wish to stick to the
 # ar(1) model, which is computationally more efficient.
 
-#########################################################################
+# %%
 # Removing confounds
 # ------------------
 #
@@ -464,7 +464,7 @@ plot_design_matrix(design_matrix)
 plot_contrast(first_level_model)
 plt.show()
 
-#########################################################################
+# %%
 #  Note the five additional columns in the design matrix.
 #
 # The effect on the activation maps is complex: auditory/visual effects are
@@ -472,7 +472,7 @@ plt.show()
 # other hand, some of the maps become cleaner (horizontal-vertical,
 # computation) after this addition.
 
-#########################################################################
+# %%
 # Volume censoring
 # ----------------
 #
@@ -498,11 +498,11 @@ design_matrix = first_level_model.design_matrices_[0]
 plot_design_matrix(design_matrix)
 plt.show()
 
-#########################################################################
+# %%
 # Note the significantly shorter design matrix compared to the previous
 # examples.
 
-#########################################################################
+# %%
 # Smoothing
 # ---------
 #
@@ -521,11 +521,11 @@ plot_design_matrix(design_matrix)
 plot_contrast(first_level_model)
 plt.show()
 
-#########################################################################
+# %%
 # The design is unchanged but the maps are smoother and more contrasted.
 #
 
-#########################################################################
+# %%
 # Masking
 # -------
 #
@@ -553,7 +553,7 @@ ax = plt.subplot(122)
 plot_roi(data_mask, title="Data-driven mask", axes=ax)
 plt.show()
 
-#########################################################################
+# %%
 # For the sake of time saving, we resample icbm_mask to our data.
 # For this we call the resample_to_img routine of Nilearn.
 # We use interpolation = 'nearest' to keep the mask as a binary image.
@@ -563,7 +563,7 @@ resampled_icbm_mask = resample_to_img(
     icbm_mask, data_mask, interpolation="nearest"
 )
 
-#########################################################################
+# %%
 #  Impact on the first-level model.
 first_level_model = FirstLevelModel(
     t_r,
@@ -577,10 +577,10 @@ plot_design_matrix(design_matrix)
 plot_contrast(first_level_model)
 plt.show()
 
-#########################################################################
+# %%
 # Note that it removed spurious spots in the white matter.
 
-#########################################################################
+# %%
 # Conclusion
 # ----------
 #

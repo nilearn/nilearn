@@ -59,11 +59,13 @@ to build the LSS beta series.
 
 """
 # sphinx_gallery_thumbnail_number = -2
+
+# %%
 import matplotlib.pyplot as plt
 
 from nilearn import image, plotting
 
-##############################################################################
+# %%
 # Prepare data and analysis parameters
 # ------------------------------------
 # Download data in :term:`BIDS` format and event information for one subject,
@@ -91,7 +93,7 @@ glm_parameters = standard_glm.get_params()
 # with the value of scaling_axis
 glm_parameters["signal_scaling"] = standard_glm.scaling_axis
 
-##############################################################################
+# %%
 # Define the standard model
 # -------------------------
 # Here, we create a basic :term:`GLM` for this run, which we can use to
@@ -108,7 +110,7 @@ fig, ax = plt.subplots(figsize=(5, 10))
 plotting.plot_design_matrix(standard_glm.design_matrices_[0], ax=ax)
 fig.show()
 
-##############################################################################
+# %%
 # Define the LSA model
 # --------------------
 # We will now create a least squares- all (LSA) model.
@@ -137,7 +139,7 @@ fig, ax = plt.subplots(figsize=(10, 10))
 plotting.plot_design_matrix(lsa_glm.design_matrices_[0], ax=ax)
 fig.show()
 
-##############################################################################
+# %%
 # Aggregate beta maps from the LSA model based on condition
 # `````````````````````````````````````````````````````````
 # Collect the :term:`Parameter Estimate` maps
@@ -156,7 +158,7 @@ lsa_beta_maps = {
     name: image.concat_imgs(maps) for name, maps in lsa_beta_maps.items()
 }
 
-##############################################################################
+# %%
 # Define the LSS models
 # ---------------------
 # We will now create a separate LSS model for each trial of interest.
@@ -236,7 +238,7 @@ lss_beta_maps = {
     name: image.concat_imgs(maps) for name, maps in lss_beta_maps.items()
 }
 
-##############################################################################
+# %%
 # Show the design matrices for the first few trials
 # `````````````````````````````````````````````````
 fig, axes = plt.subplots(ncols=3, figsize=(20, 10))
@@ -249,7 +251,7 @@ for i_trial in range(3):
 
 fig.show()
 
-##############################################################################
+# %%
 # Compare the three modeling approaches
 # -------------------------------------
 
@@ -272,7 +274,7 @@ for i_ax, ax in enumerate(axes):
 
 fig.show()
 
-##############################################################################
+# %%
 # Applications of beta series
 # ---------------------------
 # Beta series can be used much like :term:`resting-state` data,
@@ -387,7 +389,7 @@ fig.suptitle("LSS Beta Series Functional Connectivity")
 
 fig.show()
 
-##############################################################################
+# %%
 # References
 # ----------
 #

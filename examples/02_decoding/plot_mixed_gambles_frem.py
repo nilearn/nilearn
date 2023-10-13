@@ -14,7 +14,7 @@ regularized methods.
 To have more details, see: :ref:`frem`.
 """
 
-#############################################################################
+# %%
 # Load the data from the Jimura mixed-gamble experiment
 # -----------------------------------------------------
 from nilearn.datasets import fetch_mixed_gambles
@@ -25,7 +25,7 @@ zmap_filenames = data.zmaps
 behavioral_target = data.gain
 mask_filename = data.mask_img
 
-#############################################################################
+# %%
 # Fit FREM
 # --------
 # We compare both of these models to a pipeline ensembling many models
@@ -59,7 +59,7 @@ plot_stat_map(
 # using FREM, and related :ref:`section of user guide <frem>`.
 #
 
-#############################################################################
+# %%
 # Example use of TV-L1 SpaceNet
 # -----------------------------
 # :ref:`SpaceNet<space_net>` is another method available in Nilearn to decode

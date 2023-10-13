@@ -14,6 +14,9 @@ examples
     GitHub!
 
 """
+
+# %%
+
 from typing import Optional, Sequence
 
 from matplotlib import pyplot as plt
@@ -96,7 +99,7 @@ import numpy as np
 from nilearn import decoding, plotting
 from nilearn._utils import param_validation
 
-###############################################################################
+# %%
 # The following is just disabling a couple of checks performed by the decoder
 # that would force us to use a `NiftiMasker`.
 
@@ -115,7 +118,7 @@ def monkeypatch_masker_checks():
 
 monkeypatch_masker_checks()
 
-###############################################################################
+# %%
 # Now using the appropriate masker we can use a `Decoder` on surface data just
 # as we do for volume images.
 

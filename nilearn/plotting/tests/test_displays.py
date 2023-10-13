@@ -375,3 +375,22 @@ def test_add_graph_with_node_color_as_string(node_color):
     node_coords = [[-53.60, -62.80, 36.64], [23.87, 0.31, 69.42]]
     lzry_projector.add_graph(matrix, node_coords, node_color=node_color)
     lzry_projector.close()
+
+
+@pytest.mark.parametrize(
+    "threshold,vmin,vmax,expected_results",
+    [
+        (None, None, None, [[-2, -1, 0], [0, 1, 2]]),
+        (0.5, None, None, [[-2, -1, np.nan], [np.nan, 1, 2]]),
+        (1, 0, None, [[np.nan, np.nan, np.nan], [np.nan, np.nan, 2]]),
+        (1, None, 1, [[-2, np.nan, np.nan], [np.nan, np.nan, np.nan]]),
+        (0, 0, 0, [[np.nan, np.nan, np.nan], [np.nan, np.nan, np.nan]]),
+    ],
+)
+def test_threshold(threshold, vmin, vmax, expected_results):
+    """Tests for ``OrthoSlicer._threshold``."""
+    data = np.array([[-2, -1, 0], [0, 1, 2]], dtype=float)
+    assert np.ma.allequal(
+        OrthoSlicer._threshold(data, threshold, vmin, vmax),
+        np.ma.masked_invalid(expected_results),
+    )

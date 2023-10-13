@@ -16,13 +16,13 @@ from nilearn import datasets
 dataset = datasets.fetch_development_fmri(n_subjects=2)
 
 
-###############################################################################
+# %%
 # Print basic information on the adhd subjects resting state datasets.
 print(f"Subject 1 resting state dataset at: {dataset.func[0]}")
 print(f"Subject 2 resting state dataset at: {dataset.func[1]}")
 
 
-###############################################################################
+# %%
 # Comparing the means of the 2 movie watching datasets.
 from nilearn import image, plotting
 

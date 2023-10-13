@@ -16,7 +16,7 @@ functional cognitive networks.
 BMC Neurosci 8, 91 (2007). https://doi.org/10.1186/1471-2202-8-91
 """
 
-
+# %%
 print(__doc__)
 
 # %%

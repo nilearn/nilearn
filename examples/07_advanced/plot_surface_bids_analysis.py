@@ -31,11 +31,11 @@ from nilearn.datasets import fetch_language_localizer_demo_dataset
 
 data_dir, _ = fetch_language_localizer_demo_dataset()
 
-##############################################################################
+# %%
 # Here is the location of the dataset on disk.
 print(data_dir)
 
-##############################################################################
+# %%
 # Obtain automatically FirstLevelModel objects and fit arguments
 # --------------------------------------------------------------
 # From the dataset directory we automatically obtain
@@ -87,7 +87,7 @@ from nilearn import surface
 from nilearn.glm.contrasts import compute_contrast
 from nilearn.glm.first_level import make_first_level_design_matrix, run_glm
 
-#########################################################################
+# %%
 # Empty lists in which we are going to store activation values.
 z_scores_right = []
 z_scores_left = []
@@ -128,12 +128,12 @@ for (fmri_img, confound, events) in zip(
                                 contrast_type='t')
     z_scores_left.append(contrast.z_score())
 
-############################################################################
+# %%
 # Individual activation maps have been accumulated in the z_score_left
 # and az_scores_right lists respectively. We can now use them in a
 # group study (one-sample study).
 
-############################################################################
+# %%
 # Group study
 # -----------
 #
@@ -145,12 +145,12 @@ from scipy.stats import norm, ttest_1samp
 _, pval_left = ttest_1samp(np.array(z_scores_left), 0)
 _, pval_right = ttest_1samp(np.array(z_scores_right), 0)
 
-############################################################################
+# %%
 # What we have so far are p-values: we convert them to z-values for plotting.
 z_val_left = norm.isf(pval_left)
 z_val_right = norm.isf(pval_right)
 
-############################################################################
+# %%
 # Plot the resulting maps, at first on the left hemisphere.
 from nilearn import plotting
 
@@ -158,7 +158,7 @@ plotting.plot_surf_stat_map(
     fsaverage.infl_left, z_val_left, hemi='left',
     title="language-string, left hemisphere", colorbar=True,
     threshold=3., bg_map=fsaverage.sulc_left)
-############################################################################
+# %%
 # Next, on the right hemisphere.
 plotting.plot_surf_stat_map(
     fsaverage.infl_right, z_val_right, hemi='right',

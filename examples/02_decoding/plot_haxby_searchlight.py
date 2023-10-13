@@ -11,7 +11,7 @@ the :term:`fMRI` (see the generated figures).
 
 """
 
-#########################################################################
+# %%
 # Load Haxby dataset
 # ------------------
 import pandas as pd
@@ -31,7 +31,7 @@ labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
 y = labels["labels"]
 session = labels["chunks"]
 
-#########################################################################
+# %%
 # Restrict to faces and houses
 # ----------------------------
 from nilearn.image import index_img
@@ -41,7 +41,7 @@ condition_mask = y.isin(["face", "house"])
 fmri_img = index_img(fmri_filename, condition_mask)
 y, session = y[condition_mask], session[condition_mask]
 
-#########################################################################
+# %%
 # Prepare masks
 # -------------
 # - mask_img is the original mask
@@ -60,7 +60,7 @@ process_mask[..., :picked_slice] = 0
 process_mask[:, 30:] = 0
 process_mask_img = new_img_like(mask_img, process_mask)
 
-#########################################################################
+# %%
 # Searchlight computation
 # -----------------------
 
@@ -90,7 +90,7 @@ searchlight = nilearn.decoding.SearchLight(
 )
 searchlight.fit(fmri_img, y)
 
-#########################################################################
+# %%
 # F-scores computation
 # --------------------
 from nilearn.maskers import NiftiMasker
@@ -112,7 +112,7 @@ p_values = -np.log10(p_values)
 p_values[p_values > 10] = 10
 p_unmasked = get_data(nifti_masker.inverse_transform(p_values))
 
-#########################################################################
+# %%
 # Visualization
 # -------------
 # Use the :term:`fMRI` mean image as a surrogate of anatomical data

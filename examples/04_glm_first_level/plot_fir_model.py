@@ -18,7 +18,7 @@ presented : ['audio_computation', 'audio_left_hand_button_press',
 'visual_right_hand_button_press']
 """
 
-#########################################################################
+# %%
 # At first, we grab the localizer data.
 import pandas as pd
 
@@ -31,7 +31,7 @@ events_file = data["events"]
 events = pd.read_table(events_file)
 
 
-#########################################################################
+# %%
 # Next solution is to try Finite Impulse Response (:term:`FIR`) models: we just
 # say that the :term:`hrf<HRF>` is an arbitrary function that lags behind the
 # stimulus onset.  In the present case, given that the numbers of
@@ -123,12 +123,12 @@ contrasts = {
 }
 
 
-#########################################################################
+# %%
 # Take a look at the contrasts.
 
 plot_contrast_matrix(contrasts["left-right"], design_matrix)
 
-#########################################################################
+# %%
 # Take a breath.
 #
 # We can now  proceed by estimating the contrasts and displaying them.
@@ -153,7 +153,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
 plt.show()
 
 
-#########################################################################
+# %%
 # The result is acceptable. Note that we're asking a lot of questions
 # to a small dataset, yet with a relatively large number of experimental
 # conditions.

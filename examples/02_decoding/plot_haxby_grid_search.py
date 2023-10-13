@@ -32,7 +32,7 @@ manually.
 
 """
 
-###########################################################################
+# %%
 # Load the Haxby dataset
 # ----------------------
 from nilearn import datasets
@@ -103,7 +103,7 @@ decoder = Decoder(
     param_grid=param_grid,
 )
 
-###########################################################################
+# %%
 # Fit the Decoder and predict the responses
 # -----------------------------------------
 # As a complete pipeline by itself, decoder will perform cross-validation
@@ -132,7 +132,7 @@ for i, (best_C, best_penalty, best_dual, cv_score) in enumerate(
 # Output the prediction with Decoder
 y_pred = decoder.predict(fmri_niimgs)
 
-###########################################################################
+# %%
 # Compute prediction scores with different values of screening percentile
 # -----------------------------------------------------------------------
 import numpy as np
@@ -160,7 +160,7 @@ for sp in screening_percentile_range:
     val_scores.append(np.mean(y_pred == y[session == 10]))
     print(f"Validation score: {val_scores[-1]:.4f}")
 
-###########################################################################
+# %%
 # Nested cross-validation
 # -----------------------
 # We are going to tune the parameter 'screening_percentile' in the
@@ -193,7 +193,7 @@ for train, test in cv.split(session):
 
 print(f"Nested CV score: {np.mean(nested_cv_scores):.4f}")
 
-###########################################################################
+# %%
 # Plot the prediction scores using matplotlib
 # -------------------------------------------
 from matplotlib import pyplot as plt

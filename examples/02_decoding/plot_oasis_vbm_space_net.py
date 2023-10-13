@@ -41,7 +41,7 @@ age_test = age_test[perm]
 gm_imgs_test = gm_imgs_test[perm]
 
 
-###########################################################################
+# %%
 # Fit the SpaceNet and predict with it
 # ------------------------------------
 # To save time (because these are anat images with many voxels), we include
@@ -68,7 +68,7 @@ mse = np.mean(np.abs(age_test - y_pred))
 print(f"Mean square error (MSE) on the predicted age: {mse:.2f}")
 
 
-###########################################################################
+# %%
 # Visualize the decoding maps and quality of predictions
 # ------------------------------------------------------
 # Visualize the resulting maps

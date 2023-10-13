@@ -20,6 +20,8 @@ More specifically:
 .. include:: ../../../examples/masker_note.rst
 
 """
+
+# %%
 import numpy as np
 
 from nilearn import datasets, plotting
@@ -29,7 +31,7 @@ from nilearn.glm.first_level import (
 )
 from nilearn.maskers import NiftiSpheresMasker
 
-#########################################################################
+# %%
 # Prepare data and analysis parameters
 # ------------------------------------
 # Prepare the data.
@@ -43,7 +45,7 @@ n_scans = 176
 # Prepare seed
 pcc_coords = (0, -53, 26)
 
-#########################################################################
+# %%
 # Extract the seed region's time course
 # -------------------------------------
 # Extract the time course of the seed region.
@@ -62,7 +64,7 @@ seed_masker = NiftiSpheresMasker(
 seed_time_series = seed_masker.fit_transform(adhd_dataset.func[0])
 frametimes = np.linspace(0, (n_scans - 1) * t_r, n_scans)
 
-#########################################################################
+# %%
 # Plot the time course of the seed region.
 import matplotlib.pyplot as plt
 
@@ -73,7 +75,7 @@ ax.legend(loc=2)
 ax.set_title("Time course of the seed region")
 plt.show()
 
-#########################################################################
+# %%
 # Estimate contrasts
 # ------------------
 # Specify the contrasts.
@@ -86,7 +88,7 @@ design_matrix = make_first_level_design_matrix(
 dmn_contrast = np.array([1] + [0] * (design_matrix.shape[1] - 1))
 contrasts = {"seed_based_glm": dmn_contrast}
 
-#########################################################################
+# %%
 # Perform first level analysis
 # ----------------------------
 # Setup and fit GLM.
@@ -95,7 +97,7 @@ first_level_model = first_level_model.fit(
     run_imgs=adhd_dataset.func[0], design_matrices=design_matrix
 )
 
-#########################################################################
+# %%
 # Estimate the contrast.
 print("Contrast seed_based_glm computed.")
 z_map = first_level_model.compute_contrast(
@@ -113,7 +115,7 @@ display.add_markers(
 display.savefig(filename)
 print(f"Save z-map in '{filename}'.")
 
-###########################################################################
+# %%
 # Generating a report
 # -------------------
 # It can be useful to quickly generate a
@@ -131,7 +133,7 @@ report = make_glm_report(
     plot_type="glass",
 )
 
-#########################################################################
+# %%
 # We have several ways to access the report:
 
 # report  # This report can be viewed in a notebook

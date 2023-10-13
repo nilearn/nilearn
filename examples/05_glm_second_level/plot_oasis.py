@@ -33,12 +33,12 @@ Note that more power would be obtained from using a larger sample of subjects.
 
 """
 
-n_subjects = 100  # more subjects requires more memory
-
-###############################################################################
+# %%
 # Load Oasis dataset
 # ------------------
 from nilearn import datasets
+
+n_subjects = 100  # more subjects requires more memory
 
 oasis_dataset = datasets.fetch_oasis_vbm(
     n_subjects=n_subjects,
@@ -47,11 +47,11 @@ oasis_dataset = datasets.fetch_oasis_vbm(
 gray_matter_map_filenames = oasis_dataset.gray_matter_maps
 age = oasis_dataset.ext_vars["age"].astype(float)
 
-###############################################################################
+# %%
 # Sex is encoded as 'M' or 'F'. Hence, we make it a binary variable.
 sex = oasis_dataset.ext_vars["mf"] == "F"
 
-###############################################################################
+# %%
 # Print basic information on the dataset.
 print(
     "First gray-matter anatomy image (3D) is located at: "
@@ -62,11 +62,11 @@ print(
     f"{oasis_dataset.white_matter_maps[0]}"
 )
 
-###############################################################################
+# %%
 # Get a mask image: A mask of the cortex of the ICBM template.
 gm_mask = datasets.fetch_icbm152_brain_gm_mask()
 
-###############################################################################
+# %%
 # Resample the mask, since this mask has a different resolution.
 from nilearn.image import resample_to_img
 
@@ -76,7 +76,7 @@ mask_img = resample_to_img(
     interpolation="nearest",
 )
 
-###############################################################################
+# %%
 # Analyse data
 # ------------
 # First, we create an adequate design matrix with three columns: 'age', 'sex',
@@ -90,7 +90,7 @@ design_matrix = pd.DataFrame(
     columns=["age", "sex", "intercept"],
 )
 
-###############################################################################
+# %%
 # Let's plot the design matrix.
 from nilearn import plotting
 
@@ -98,7 +98,7 @@ ax = plotting.plot_design_matrix(design_matrix)
 ax.set_title("Second level design matrix", fontsize=12)
 ax.set_ylabel("maps")
 
-###############################################################################
+# %%
 # Next, we specify and fit the second-level model when loading the data and
 # also smooth a little bit to improve statistical behavior.
 from nilearn.glm.second_level import SecondLevelModel
@@ -135,7 +135,7 @@ display = plotting.plot_stat_map(
 )
 plotting.show()
 
-###############################################################################
+# %%
 # We can also study the effect of sex by computing the contrast, thresholding
 # it and plot the resulting map.
 z_map = second_level_model.compute_contrast(
@@ -150,11 +150,11 @@ plotting.plot_stat_map(
     title="sex effect on gray matter density (FDR = .05)",
 )
 
-###############################################################################
+# %%
 # Note that there does not seem to be any significant effect of sex on
 # gray matter density on that dataset.
 
-###############################################################################
+# %%
 # Generating a report
 # -------------------
 # It can be useful to quickly generate a portable, ready-to-view report with
@@ -170,7 +170,7 @@ report = make_glm_report(
     bg_img=icbm152_2009["t1"],
 )
 
-###############################################################################
+# %%
 # We have several ways to access the report:
 
 # report  # This report can be viewed in a notebook

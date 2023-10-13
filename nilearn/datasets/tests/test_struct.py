@@ -10,7 +10,7 @@ import pytest
 from nibabel import Nifti1Image
 
 from nilearn.datasets import struct
-from nilearn.datasets._testing import dict_to_archive, list_to_archive
+from nilearn.datasets.tests._testing import dict_to_archive, list_to_archive
 
 
 def test_fetch_icbm152_2009(tmp_path, request_mocker):

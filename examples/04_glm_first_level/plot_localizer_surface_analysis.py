@@ -33,14 +33,14 @@ accurate than using a subject-tailored mesh.
 
 """
 
-###############################################################################
+# %%
 # Prepare data and analysis parameters
 # ------------------------------------
 # Prepare the timing parameters.
 t_r = 2.4
 slice_time_ref = 0.5
 
-###############################################################################
+# %%
 # Prepare the data.
 # First, the volume-based :term:`fMRI` data.
 from nilearn.datasets import fetch_localizer_first_level
@@ -48,7 +48,7 @@ from nilearn.datasets import fetch_localizer_first_level
 data = fetch_localizer_first_level()
 fmri_img = data.epi_img
 
-###############################################################################
+# %%
 # Second, the experimental paradigm.
 import pandas as pd
 
@@ -73,7 +73,7 @@ from nilearn import surface
 
 texture = surface.vol_to_surf(fmri_img, fsaverage.pial_right)
 
-###############################################################################
+# %%
 # Perform first level analysis
 # ----------------------------
 #
@@ -84,7 +84,7 @@ import numpy as np
 n_scans = texture.shape[1]
 frame_times = t_r * (np.arange(n_scans) + .5)
 
-###############################################################################
+# %%
 # Create the design matrix.
 #
 # We specify an :term:`HRF` model
@@ -97,7 +97,7 @@ design_matrix = make_first_level_design_matrix(frame_times,
                                                hrf_model='glover + derivative'
                                                )
 
-###############################################################################
+# %%
 # Setup and fit GLM.
 #
 # Note that the output consists in 2 variables: `labels` and `fit`.
@@ -108,7 +108,7 @@ from nilearn.glm.first_level import run_glm
 
 labels, estimates = run_glm(texture.T, design_matrix.values)
 
-###############################################################################
+# %%
 # Estimate contrasts
 # ------------------
 # Specify the contrasts.
@@ -117,12 +117,12 @@ labels, estimates = run_glm(texture.T, design_matrix.values)
 # the number of columns of the design matrix.
 contrast_matrix = np.eye(design_matrix.shape[1])
 
-###############################################################################
+# %%
 # At first, we create basic contrasts.
 basic_contrasts = dict([(column, contrast_matrix[i])
                         for i, column in enumerate(design_matrix.columns)])
 
-###############################################################################
+# %%
 # Next, we add some intermediate contrasts and
 # one :term:`contrast` adding all conditions with some auditory parts.
 basic_contrasts['audio'] = (
@@ -146,7 +146,7 @@ basic_contrasts['computation'] = (basic_contrasts['visual_computation']
 basic_contrasts['sentences'] = (basic_contrasts['sentence_listening']
                                 + basic_contrasts['sentence_reading'])
 
-###############################################################################
+# %%
 # Finally, we create a dictionary of more relevant contrasts
 #
 # * 'left - right button press': probes motor activity
@@ -174,7 +174,7 @@ contrasts = {
     )
 }
 
-###############################################################################
+# %%
 # Let's estimate the contrasts by iterating over them.
 from nilearn import plotting
 from nilearn.glm.contrasts import compute_contrast
@@ -195,7 +195,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
         title=contrast_id, colorbar=True,
         threshold=3., bg_map=fsaverage.sulc_right)
 
-###############################################################################
+# %%
 # Analysing the left hemisphere
 # -----------------------------
 #
@@ -206,11 +206,11 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
 # We project the :term:`fMRI` data to the mesh.
 texture = surface.vol_to_surf(fmri_img, fsaverage.pial_left)
 
-###############################################################################
+# %%
 # Then we estimate the General Linear Model.
 labels, estimates = run_glm(texture.T, design_matrix.values)
 
-###############################################################################
+# %%
 # Finally, we create contrast-specific maps and plot them.
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     print(f"  Contrast {index + 1:1} out of {len(contrasts)}: "

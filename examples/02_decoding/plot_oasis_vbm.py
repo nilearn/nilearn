@@ -53,6 +53,7 @@ ____
 
 """
 
+# %%
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -62,7 +63,7 @@ from nilearn.maskers import NiftiMasker
 
 n_subjects = 100  # more subjects requires more memory
 
-############################################################################
+# %%
 # Load Oasis dataset
 # ------------------
 oasis_dataset = datasets.fetch_oasis_vbm(
@@ -88,7 +89,7 @@ print(
     f"{oasis_dataset.white_matter_maps[0]}"
 )
 
-#############################################################################
+# %%
 # Preprocess data
 # ---------------
 nifti_masker = NiftiMasker(
@@ -145,7 +146,7 @@ print("=== DECODER ===")
 print(f"explained variance for the cross-validation: {prediction_score:f}")
 print()
 
-###############################################################################
+# %%
 # Visualization
 # -------------
 weight_img = decoder.coef_img_["beta"]
@@ -161,7 +162,7 @@ display = plot_stat_map(
 display.title("SVM weights")
 show()
 
-###############################################################################
+# %%
 # Visualize the quality of predictions
 # ------------------------------------
 plt.figure(figsize=(6, 4.5))
@@ -179,7 +180,7 @@ plt.plot(
 plt.xlabel("subject")
 plt.legend(loc="best")
 
-###############################################################################
+# %%
 # Inference with massively univariate model
 # -----------------------------------------
 print("Massively univariate model")
