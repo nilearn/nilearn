@@ -436,6 +436,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         if self.reports:  # save inputs for reporting
             self._reporting_data = {"mask": self.mask_img_, "images": imgs}
             if imgs is not None:
+                imgs = imgs[0] if isinstance(imgs, list) else imgs
                 imgs, dim = compute_middle_image(imgs)
                 self._reporting_data["dim"] = dim
                 self._reporting_data["images"] = imgs

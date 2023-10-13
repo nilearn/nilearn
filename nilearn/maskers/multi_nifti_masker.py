@@ -241,12 +241,18 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
 
         self._reporting_data = None
         if self.reports:  # save inputs for reporting
-            self._reporting_data = {"mask": self.mask_img_, "images": imgs}
+            self._reporting_data = {
+                "mask": self.mask_img_,
+                "images": imgs,
+                "multi_subject": False,
+            }
             if imgs is not None:
                 imgs = imgs[0] if isinstance(imgs, list) else imgs
                 imgs, dim = compute_middle_image(imgs)
                 self._reporting_data["dim"] = dim
                 self._reporting_data["images"] = imgs
+            if dim == 5:
+                self._reporting_data["multi_subject"] = True
 
         # If resampling is requested, resample the mask as well.
         # Resampling: allows the user to change the affine, the shape or both.
