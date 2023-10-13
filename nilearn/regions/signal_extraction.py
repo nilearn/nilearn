@@ -239,7 +239,7 @@ def _check_reduction_strategy(strategy: str):
 
 # FIXME: naming scheme is not really satisfying. Any better idea appreciated.
 @_utils.fill_doc
-def img_to_signals_labels(
+def _img_to_signals_labels_with_masked_atlas(
     imgs,
     labels_img,
     mask_img=None,
@@ -247,9 +247,8 @@ def img_to_signals_labels(
     order="F",
     strategy="mean",
     keep_masked_labels=True,
-    return_masked_atlas=False
 ):
-    """Extract region signals from image.
+    """Extract region signals from image. Also returns masked atlas.
 
     This function is applicable to regions defined by labels.
 
@@ -283,9 +282,6 @@ def img_to_signals_labels(
         Must be one of: sum, mean, median, minimum, maximum, variance,
         standard_deviation. Default="mean".
     %(keep_masked_labels)s
-
-    return_masked_atlas : :obj:`bool`, optional
-        If True, the masked atlas is returned as well. Default=False.
 
     Returns
     -------
@@ -343,12 +339,89 @@ def img_to_signals_labels(
         for this_label in missing_labels:
             signals[:, labels_index[this_label]] = 0
 
-    if return_masked_atlas:
-        # finding the new labels image
-        masked_atlas = Nifti1Image(
-            labels_data.astype(np.int8), labels_img.affine
-        )
-        return signals, labels, masked_atlas
+    # finding the new labels image
+    masked_atlas = Nifti1Image(
+        labels_data.astype(np.int8), labels_img.affine
+    )
+    return signals, labels, masked_atlas
+
+
+# FIXME: naming scheme is not really satisfying. Any better idea appreciated.
+@_utils.fill_doc
+def img_to_signals_labels(
+    imgs,
+    labels_img,
+    mask_img=None,
+    background_label=0,
+    order="F",
+    strategy="mean",
+    keep_masked_labels=True,
+    return_masked_atlas=False
+):
+    """Extract region signals from image.
+
+    This function is applicable to regions defined by labels.
+
+    labels, imgs and mask shapes and affines must fit. This function
+    performs no resampling.
+
+    Parameters
+    ----------
+    %(imgs)s
+        Input images.
+
+    labels_img : Niimg-like object
+        See :ref:`extracting_data`.
+        Regions definition as labels. By default, the label zero is used to
+        denote an absence of region. Use background_label to change it.
+
+    mask_img : Niimg-like object, optional
+        See :ref:`extracting_data`.
+        Mask to apply to labels before extracting signals.
+        Every point outside the mask is considered
+        as background (i.e. no region).
+
+    background_label : number, optional
+        Number representing background in labels_img. Default=0.
+
+    order : :obj:`str`, optional
+        Ordering of output array ("C" or "F"). Default="F".
+
+    strategy : :obj:`str`, optional
+        The name of a valid function to reduce the region with.
+        Must be one of: sum, mean, median, minimum, maximum, variance,
+        standard_deviation. Default="mean".
+    %(keep_masked_labels)s
+
+    Returns
+    -------
+    signals : :class:`numpy.ndarray`
+        Signals extracted from each region. One output signal is the mean
+        of all input signals in a given region. If some regions are entirely
+        outside the mask, the corresponding signal is zero.
+        Shape is: (scan number, number of regions)
+
+    labels : :obj:`list` or :obj:`tuple`
+        Corresponding labels for each signal. signal[:, n] was extracted from
+        the region with label labels[n].
+
+    See Also
+    --------
+    nilearn.regions.signals_to_img_labels
+    nilearn.regions.img_to_signals_maps
+    nilearn.maskers.NiftiLabelsMasker : Signal extraction on labels images
+        e.g. clusters
+
+    """
+    signals, labels, _ = _img_to_signals_labels_with_masked_atlas(
+        imgs,
+        labels_img,
+        mask_img,
+        background_label,
+        order,
+        strategy,
+        keep_masked_labels,
+    )
     return signals, labels
 
 
