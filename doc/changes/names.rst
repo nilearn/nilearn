@@ -92,7 +92,7 @@
 
 .. _François Paugam: https://github.com/FrancoisPgm
 
-.. _Gael Varoquaux: http://gael-varoquaux.info/
+.. _Gael Varoquaux: https://gael-varoquaux.info/
 
 .. _Gilles de Hollander: https://github.com/Gilles86
 
