@@ -1,5 +1,4 @@
 import re
-import sys
 
 import numpy as np
 import pandas as pd
@@ -10,6 +9,7 @@ from sklearn.preprocessing import scale
 
 from nilearn._utils.data_gen import create_fake_bids_dataset
 from nilearn._utils.fmriprep_confounds import _to_camel_case
+from nilearn.conftest import _rng
 from nilearn.interfaces.bids import get_bids_files
 from nilearn.interfaces.fmriprep import load_confounds
 from nilearn.interfaces.fmriprep.load_confounds import (
@@ -21,7 +21,6 @@ from nilearn.interfaces.fmriprep.tests._testing import (
     get_legal_confound,
 )
 from nilearn.maskers import NiftiMasker
-from nilearn.conftest import _rng
 
 
 def _simu_img(tmp_path, demean):

@@ -10,6 +10,7 @@ from matplotlib.figure import Figure
 from numpy.testing import assert_array_equal
 
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
+from nilearn.conftest import _rng
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting.displays import PlotlySurfaceFigure
 from nilearn.plotting.surf_plotting import (
@@ -701,12 +702,12 @@ def test_plot_surf_stat_map_error(rng):
         plot_surf_stat_map(mesh, stat_map=np.vstack((data, data)).T)
 
 
-def _generate_data_test_surf_roi(rng):
+def _generate_data_test_surf_roi():
     mesh = generate_surf()
-    roi_idx = rng.randint(0, mesh[0].shape[0], size=10)
+    roi_idx = _rng().randint(0, mesh[0].shape[0], size=10)
     roi_map = np.zeros(mesh[0].shape[0])
     roi_map[roi_idx] = 1
-    parcellation = rng.uniform(size=mesh[0].shape[0])
+    parcellation = _rng().uniform(size=mesh[0].shape[0])
     return mesh, roi_map, parcellation
 
 

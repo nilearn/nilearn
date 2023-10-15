@@ -7,9 +7,9 @@ from numpy.testing import assert_almost_equal
 
 from nilearn._utils import as_ndarray
 from nilearn._utils.data_gen import generate_labeled_regions, generate_maps
+from nilearn.conftest import _rng
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiLabelsMasker, NiftiMapsMasker, NiftiMasker
-from nilearn.conftest import _rng
 
 # Note: html output by nilearn view_* functions
 # should validate as html5 using https://validator.w3.org/nu/ with no
