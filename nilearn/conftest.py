@@ -306,20 +306,20 @@ def img_4d_ones_eye():
 
 
 @pytest.fixture
-def img_4D_eye():
+def img_4d_rand_eye():
     """Return a default random filled 4D Nifti1Image (identity affine)."""
     data = _rng().rand(*_shape_4d_default())
     return Nifti1Image(data, _affine_eye())
 
 
 @pytest.fixture
-def img_4D_mni():
+def img_4d_mni():
     """Return a default random filled 4D Nifti1Image."""
     return _img_4d_mni()
 
 
 @pytest.fixture
-def img_4D_long_mni(rng, shape_4d_long, affine_mni):
+def img_4d_long_mni(rng, shape_4d_long, affine_mni):
     """Return a default random filled long 4D Nifti1Image."""
     return Nifti1Image(rng.uniform(size=shape_4d_long), affine=affine_mni)
 
