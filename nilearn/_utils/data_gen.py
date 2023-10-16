@@ -515,7 +515,7 @@ def write_fake_fmri_data_and_design(shapes,
     return mask_file, fmri_files, design_files
 
 
-def write_fake_bold_gifti(file_path):
+def _write_fake_bold_gifti(file_path):
     """Generate a gifti image and write it to disk.
 
     Note this only generates an empty file for now.
@@ -572,7 +572,7 @@ def write_fake_bold_img(file_path,
     return file_path
 
 
-def generate_signals_from_precisions(precisions,
+def _generate_signals_from_precisions(precisions,
                                      min_n_samples=50,
                                      max_n_samples=100,
                                      random_state=0):
@@ -710,7 +710,7 @@ def generate_group_sparse_gaussian_graphs(n_subjects=5,
         verbose=verbose)
 
     # Generate temporal signals
-    signals = generate_signals_from_precisions(precisions,
+    signals = _generate_signals_from_precisions(precisions,
                                                min_n_samples=min_n_samples,
                                                max_n_samples=max_n_samples,
                                                random_state=rand_gen)
@@ -746,7 +746,7 @@ def basic_paradigm(condition_names_have_spaces=False):
     return events
 
 
-def basic_confounds(length, random_state=0):
+def _basic_confounds(length, random_state=0):
     """Generate random motion parameters \
     (3 translation directions, 3 rotation directions).
 
@@ -779,7 +779,7 @@ def basic_confounds(length, random_state=0):
     return confounds
 
 
-def _add_metadata_to_bids_dataset(bids_path,
+def add_metadata_to_bids_dataset(bids_path,
                                   metadata,
                                   json_file=None):
     """Add JSON file with specific metadata to BIDS dataset.
@@ -1429,7 +1429,7 @@ def _write_bids_derivative_func(
         confounds_path = func_path / _create_bids_filename(
             fields=fields, entities_to_include=_bids_entities()["raw"]
         )
-        basic_confounds(length=n_time_points, random_state=rand_gen).to_csv(
+        _basic_confounds(length=n_time_points, random_state=rand_gen).to_csv(
             confounds_path, sep="\t", index=None
         )
 
@@ -1466,4 +1466,4 @@ def _write_bids_derivative_func(
             fields=fields,
             entities_to_include=entities_to_include
         )
-        write_fake_bold_gifti(gifti_path)
+        _write_fake_bold_gifti(gifti_path)

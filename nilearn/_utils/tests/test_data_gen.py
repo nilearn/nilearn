@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 
 from nilearn._utils.data_gen import (
-    _add_metadata_to_bids_dataset,
+    add_metadata_to_bids_dataset,
     create_fake_bids_dataset,
     generate_fake_fmri,
     generate_labeled_regions,
@@ -19,10 +19,10 @@ from nilearn.image import get_data
 
 def test_add_metadata_to_bids_derivatives_default_path(tmp_path):
     """Check the filename created is the default value \
-    of _add_metadata_to_bids_dataset."""
+    of add_metadata_to_bids_dataset."""
     target_dir = tmp_path / "derivatives" / "sub-01" / "ses-01" / "func"
     target_dir.mkdir(parents=True)
-    json_file = _add_metadata_to_bids_dataset(
+    json_file = add_metadata_to_bids_dataset(
         bids_path=tmp_path, metadata={"foo": "bar"}
     )
     assert json_file.exists()
@@ -40,7 +40,7 @@ def test_add_metadata_to_bids_derivatives_with_json_path(tmp_path):
     target_dir = tmp_path / "derivatives" / "sub-02"
     target_dir.mkdir(parents=True)
     json_file = "derivatives/sub-02/sub-02_task-main_bold.json"
-    json_file = _add_metadata_to_bids_dataset(
+    json_file = add_metadata_to_bids_dataset(
         bids_path=tmp_path, metadata={"foo": "bar"}, json_file=json_file
     )
     assert json_file.exists()
