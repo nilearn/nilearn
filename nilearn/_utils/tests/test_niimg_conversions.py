@@ -369,7 +369,7 @@ def test_check_niimg_wildcards_no_expand_wildcards(
     ni.EXPAND_PATH_WILDCARDS = True
 
 
-def testiter_check_niimgs_error():
+def test_iter_check_niimgs_error():
     no_file_matching = "No files matching path: %s"
 
     for empty in ((), [], (i for i in ()), [i for i in ()]):
@@ -413,7 +413,7 @@ def _check_memory(list_img_3d):
 
 
 @with_memory_profiler
-def testiter_check_niimgs_memory(affine_eye):
+def test_iter_check_niimgs_memory(affine_eye):
     # Verify that iterating over a list of images doesn't consume extra
     # memory.
     assert_memory_less_than(
