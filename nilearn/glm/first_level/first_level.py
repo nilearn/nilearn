@@ -499,14 +499,15 @@ class FirstLevelModel(BaseGLM):
             the affine is considered the same for all.
 
         events : pandas Dataframe or string or list of pandas DataFrames \
-                 or strings, optional
+                 or strings, default=None
             :term:`fMRI` events used to build design matrices.
             One events object expected per run_img.
             Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
 
-        confounds : pandas Dataframe, numpy array or string or
-            list of pandas DataFrames, numpy arrays or strings, optional
+        confounds : pandas Dataframe, numpy array or string or \
+                    list of pandas DataFrames, numpy arrays or strings, \
+                    default=None
             Each column in a DataFrame corresponds to a confound variable
             to be included in the regression model of the respective run_img.
             The number of rows must match the number of volumes in the
@@ -514,8 +515,7 @@ class FirstLevelModel(BaseGLM):
             If string, then a path to a csv file is expected.
 
         sample_masks : array_like, or list of array_like, default=None
-                       shape of array:
-                       (number of scans - number of volumes remove)
+            shape of array: (number of scans - number of volumes remove)
             Indices of retained volumes. Masks the niimgs along time/fourth
             dimension to perform scrubbing (remove volumes with high motion)
             and/or remove non-steady-state volumes.
@@ -523,7 +523,7 @@ class FirstLevelModel(BaseGLM):
             .. versionadded:: 0.9.2
 
         design_matrices : pandas DataFrame or \
-                          list of pandas DataFrames, optional
+                          list of pandas DataFrames, default=None
             Design matrices that will be used to fit the GLM. If given it
             takes precedence over events and confounds.
 
@@ -532,7 +532,6 @@ class FirstLevelModel(BaseGLM):
             If an autoregressive model with order greater than one is specified
             then adaptive quantification is performed and the coefficients
             will be clustered via K-means with `bins` number of clusters.
-
 
         """
         # Initialize masker_ to None such that attribute exists
