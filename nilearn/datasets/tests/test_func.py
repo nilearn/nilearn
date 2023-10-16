@@ -18,7 +18,7 @@ import pandas as pd
 import pytest
 
 from nilearn.datasets import func
-from nilearn.datasets._testing import dict_to_archive, list_to_archive
+from nilearn.datasets.tests._testing import dict_to_archive, list_to_archive
 from nilearn.datasets.utils import _get_dataset_dir
 
 

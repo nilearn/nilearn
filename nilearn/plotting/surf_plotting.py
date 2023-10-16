@@ -16,6 +16,7 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from nilearn import image, surface
 from nilearn._utils import _compare_version, check_niimg_3d, fill_doc
+from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn.plotting.cm import _mix_colormaps, cold_hot
 from nilearn.plotting.html_surface import _get_vertexcolor
 from nilearn.plotting.img_plotting import _get_colorbar_and_data_ranges
@@ -249,11 +250,11 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
         bugs that you may encounter.
 
     """
-    try:
+    if is_plotly_installed():
         import plotly.graph_objects as go
 
         from nilearn.plotting.displays import PlotlySurfaceFigure
-    except ImportError:
+    else:
         msg = "Using engine='plotly' requires that ``plotly`` is installed."
         raise ImportError(msg)
 
@@ -308,15 +309,13 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
                       **LAYOUT)
 
     # save figure
+    plotly_figure = PlotlySurfaceFigure(figure=fig, output_file=output_file)
+
     if output_file is not None:
-        try:
-            import kaleido  # noqa: F401
-        except ImportError:
+        if not is_kaleido_installed():
             msg = ("Saving figures to file with engine='plotly' requires "
                    "that ``kaleido`` is installed.")
             raise ImportError(msg)
-    plotly_figure = PlotlySurfaceFigure(figure=fig, output_file=output_file)
-    if output_file is not None:
         plotly_figure.savefig()
 
     return plotly_figure
@@ -1086,7 +1085,6 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     %(vmin)s
     %(vmax)s
     %(symmetric_cbar)s
-        Default='auto'.
     %(bg_on_data)s
 
     %(darkness)s
@@ -1142,7 +1140,6 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         vmin=vmin,
         vmax=vmax,
         symmetric_cbar=symmetric_cbar,
-        symmetric_data_range=False,
     )
 
     display = plot_surf(
@@ -1264,7 +1261,6 @@ def _colorbar_from_array(array, vmin, vmax, threshold, symmetric_cbar=True,
         vmin=vmin,
         vmax=vmax,
         symmetric_cbar=symmetric_cbar,
-        symmetric_data_range=False,
     )
     norm = Normalize(vmin=vmin, vmax=vmax)
     cmaplist = [cmap(i) for i in range(cmap.N)]
@@ -1350,11 +1346,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
     %(vmin)s
     %(vmax)s
     %(threshold)s
-    symmetric_cbar : :obj:`bool`, or "auto", optional
-        Specifies whether the colorbar should range from `-vmax` to `vmax`
-        (or from `vmin` to `-vmin` if `-vmin` is greater than `vmax`) or
-        from `vmin` to `vmax`.
-        Default=True.
+    %(symmetric_cbar)s
     %(cmap)s
         Default='cold_hot'.
     kwargs : dict, optional
@@ -1412,7 +1404,6 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         vmin=vmin,
         vmax=vmax,
         symmetric_cbar=symmetric_cbar,
-        symmetric_data_range=False,
     )
 
     for i, (mode, hemi) in enumerate(itertools.product(modes, hemis)):

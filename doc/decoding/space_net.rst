@@ -47,7 +47,7 @@ Related example
 
     Empirical comparisons using this method have been removed from
     documentation in version 0.7 to keep its computational cost low. You can
-    easily try SpaceNet instead of FREM in :ref:`mixed gambles study <sphx_glr_auto_examples_02_decoding_plot_mixed_gambles_frem.py>` or :ref:`Haxby study <sphx_glr_auto_examples_02_decoding_plot_haxby_frem.py>`.
+    easily try SpaceNet instead of :term:`FREM` in :ref:`mixed gambles study <sphx_glr_auto_examples_02_decoding_plot_mixed_gambles_frem.py>` or :ref:`Haxby study <sphx_glr_auto_examples_02_decoding_plot_haxby_frem.py>`.
 
 .. seealso::
 

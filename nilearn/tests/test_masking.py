@@ -13,6 +13,7 @@ from nilearn import masking
 from nilearn._utils import data_gen
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import write_tmp_imgs
+from nilearn.conftest import _rng
 from nilearn.image import get_data, high_variance_confounds
 from nilearn.maskers import NiftiMasker
 from nilearn.masking import (
@@ -45,9 +46,10 @@ _TEST_DIM_ERROR_MSG = (
 
 def _simu_img():
     # Random confounds
-    conf = 2 + np.random.randn(100, 6)
+    rng = _rng()
+    conf = 2 + rng.randn(100, 6)
     # Random 4D volume
-    vol = 100 + 10 * np.random.randn(5, 5, 2, 100)
+    vol = 100 + 10 * rng.randn(5, 5, 2, 100)
     img = Nifti1Image(vol, np.eye(4))
     # Create an nifti image with the data, and corresponding mask
     mask = Nifti1Image(np.ones([5, 5, 2]), np.eye(4))
@@ -338,10 +340,9 @@ def test_apply_mask(affine_eye):
         masking.apply_mask(Nifti1Image(data, affine), mask_img)
 
 
-def test_unmask(affine_eye):
+def test_unmask(rng, affine_eye):
     # A delta in 3D
     shape = (10, 20, 30, 40)
-    rng = np.random.RandomState(42)
     data4D = rng.uniform(size=shape)
     data3D = data4D[..., 0]
     mask = rng.randint(2, size=shape[:3], dtype="int32")
@@ -593,10 +594,8 @@ def test_compute_multi_brain_mask():
     assert_array_equal(get_data(mask1), get_data(mask2))
 
 
-def test_error_shape(affine_eye, random_state=42, shape=(3, 5, 7, 11)):
+def test_error_shape(rng, affine_eye, shape=(3, 5, 7, 11)):
     # open-ended `if .. elif` in masking.unmask
-
-    rng = np.random.RandomState(random_state)
 
     # setup
     X = rng.standard_normal()
@@ -626,8 +625,7 @@ def test_nifti_masker_empty_mask_warning(affine_eye):
         NiftiMasker(mask_strategy="epi").fit_transform(X)
 
 
-def test_unmask_list(affine_eye, random_state=42):
-    rng = np.random.RandomState(random_state)
+def test_unmask_list(rng, affine_eye):
     shape = (3, 4, 5)
     mask_data = rng.uniform(size=shape) < 0.5
     mask_img = Nifti1Image(mask_data.astype(np.uint8), affine_eye)
@@ -735,8 +733,7 @@ def test__extrapolate_out_mask():
     assert_array_equal(extrapolated_mask, target_mask)
 
 
-def test_unmask_from_to_3d_array(size=5):
-    rng = np.random.RandomState(42)
+def test_unmask_from_to_3d_array(rng, size=5):
     for ndim in range(1, 4):
         shape = [size] * ndim
         mask = np.zeros(shape).astype(bool)

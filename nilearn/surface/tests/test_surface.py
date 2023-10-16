@@ -26,7 +26,11 @@ from nilearn.surface.surface import (
     _gifti_img_to_mesh,
     _load_surf_files_gifti_gzip,
 )
-from nilearn.surface.testing_utils import flat_mesh, generate_surf, z_const_img
+from nilearn.surface.tests._testing import (
+    flat_mesh,
+    generate_surf,
+    z_const_img,
+)
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
@@ -751,7 +755,7 @@ def test_check_mesh():
         surface._check_mesh(surface.load_surf_mesh(mesh['pial_right']))
 
 
-def test_check_mesh_and_data():
+def test_check_mesh_and_data(rng):
     coords, faces = generate_surf()
     mesh = Mesh(coords, faces)
     data = mesh[0][:, 0]
@@ -761,7 +765,6 @@ def test_check_mesh_and_data():
     assert (d == data).all()
     # Generate faces such that max index is larger than
     # the length of coordinates array.
-    rng = np.random.RandomState(42)
     wrong_faces = rng.randint(coords.shape[0] + 1, size=(30, 3))
     wrong_mesh = Mesh(coords, wrong_faces)
     # Check that check_mesh_and_data raises an error
@@ -777,7 +780,7 @@ def test_check_mesh_and_data():
         surface.check_mesh_and_data(mesh, data)
 
 
-def test_check_surface():
+def test_check_surface(rng):
     coords, faces = generate_surf()
     mesh = Mesh(coords, faces)
     data = mesh[0][:, 0]
@@ -791,7 +794,6 @@ def test_check_surface():
     assert_array_equal(s.mesh.faces, mesh.faces)
     # Generate faces such that max index is larger than
     # the length of coordinates array.
-    rng = np.random.RandomState(42)
     wrong_faces = rng.randint(coords.shape[0] + 1, size=(30, 3))
     wrong_mesh = Mesh(coords, wrong_faces)
     wrong_surface = Surface(wrong_mesh, data)

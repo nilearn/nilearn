@@ -330,7 +330,7 @@ def _get_format_and_pattern(file_path):
 
 def _index_archive_contents():
     archive_contents_dir = (
-        Path(__file__).parent / "tests" / "data" / "archive_contents"
+        Path(__file__).parent.parent / "tests" / "data" / "archive_contents"
     )
     index = {}
     for file_path in sorted(archive_contents_dir.glob("**/*")):

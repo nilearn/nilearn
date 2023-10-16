@@ -107,10 +107,10 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     Notes
     -----
     For more information about this dataset's structure:
-    http://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009
+    https://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009
 
     The original download URL is
-    http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/mni_icbm152_nlin_sym_09a_nifti.zip
+    https://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/mni_icbm152_nlin_sym_09a_nifti.zip
 
     TemplateFlow repository for ICBM152 2009
 
@@ -173,9 +173,9 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 def load_mni152_template(resolution=None):
     """Load the MNI152 skullstripped T1 template.
 
-    This function takes the skullstripped, re-scaled 1mm-resolution version of
-    the MNI ICBM152 T1 template and re-samples it using a different resolution,
-    if specified.
+    This function takes the skullstripped,
+    re-scaled 1mm-resolution version of the :term:`MNI` ICBM152 T1 template
+    and re-samples it using a different resolution, if specified.
 
     For more information, see :footcite:`Fonov2011`,
     and :footcite:`Fonov2009`.
@@ -284,7 +284,8 @@ def load_mni152_wm_template(resolution=None):
     """Load the MNI152 white-matter template.
 
     This function takes the re-scaled 1mm-resolution version of the
-    white-matter MNI ICBM152 template and re-samples it using a different
+    white-matter :term:`MNI` ICBM152 template
+    and re-samples it using a different
     resolution, if specified.
 
     .. versionadded:: 0.8.1
@@ -394,7 +395,8 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
         included. Default=0.2
 
     n_iter: int, optional, Default = 2
-        Number of repetitions of dilation and erosion steps performed in
+        Number of repetitions of :term:`dilation<Dilation>`
+        and :term:`erosion<Erosion>` steps performed in
         scipy.ndimage.binary_closing function.
 
     Returns
@@ -446,7 +448,8 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
         included. Default=0.2
 
     n_iter: int, optional, Default = 2
-        Number of repetitions of dilation and erosion steps performed in
+        Number of repetitions of :term:`dilation<Dilation>`
+        and :term:`erosion<Erosion>` steps performed in
         scipy.ndimage.binary_closing function.
 
     Returns
@@ -498,7 +501,8 @@ def fetch_icbm152_brain_gm_mask(
 
     %(resume)s
     n_iter: int, optional, Default = 2
-        Number of repetitions of dilation and erosion steps performed in
+        Number of repetitions of :term:`dilation<Dilation>`
+        and :term:`erosion<Erosion>` steps performed in
         scipy.ndimage.binary_closing function.
 
         .. versionadded:: 0.8.1
@@ -677,7 +681,7 @@ def fetch_oasis_vbm(
     dedicated to making brain imaging data openly available to the public.
     Using data available through the OASIS project requires agreeing with
     the Data Usage Agreement that can be found at
-    http://www.oasis-brains.org/app/template/UsageAgreement.vm
+    https://www.oasis-brains.org/#access
 
     """
     # check number of subjects

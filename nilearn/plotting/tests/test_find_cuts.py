@@ -12,7 +12,7 @@ from nilearn.plotting.find_cuts import (
 )
 
 
-def test_find_cut_coords(affine_eye):
+def test_find_cut_coords(affine_eye, rng):
     data = np.zeros((100, 100, 100))
     x_map, y_map, z_map = 50, 10, 40
     data[
@@ -93,7 +93,6 @@ def test_find_cut_coords(affine_eye):
     # regression test (cf. #922)
     # pseudo-4D images as input (i.e., X, Y, Z, 1)
     # previously raised "ValueError: too many values to unpack"
-    rng = np.random.RandomState(42)
     data_3d = rng.standard_normal(size=(10, 10, 10))
     data_4d = data_3d[..., np.newaxis]
     img_3d = nibabel.Nifti1Image(data_3d, affine_eye)
