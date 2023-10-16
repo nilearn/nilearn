@@ -10,7 +10,7 @@ from sklearn.feature_extraction import image
 from nilearn.maskers import NiftiLabelsMasker
 
 from .._utils import fill_doc, stringify_path
-from .._utils.niimg import _safe_get_data
+from .._utils.niimg import safe_get_data
 from .._utils.niimg_conversions import iter_check_niimg
 from ..decomposition._multi_pca import _MultiPCA
 from .hierarchical_kmeans_clustering import HierarchicalKMeans
@@ -404,7 +404,7 @@ class Parcellations(_MultiPCA):
             )
 
         else:
-            mask_ = _safe_get_data(mask_img_).astype(bool)
+            mask_ = safe_get_data(mask_img_).astype(bool)
             shape = mask_.shape
             connectivity = image.grid_to_graph(
                 n_x=shape[0], n_y=shape[1], n_z=shape[2], mask=mask_

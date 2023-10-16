@@ -18,7 +18,7 @@ from scipy.ndimage import (
 )
 
 from nilearn._utils import check_niimg_3d
-from nilearn._utils.niimg import _safe_get_data
+from nilearn._utils.niimg import safe_get_data
 from nilearn.image import new_img_like, threshold_img
 from nilearn.image.resampling import coord_transform
 
@@ -311,7 +311,7 @@ def get_clusters_table(
 
     # If cluster threshold is used, there is chance that stat_map will be
     # modified, therefore copy is needed
-    stat_map = _safe_get_data(
+    stat_map = safe_get_data(
         stat_img,
         ensure_finite=True,
         copy_data=(cluster_threshold is not None),

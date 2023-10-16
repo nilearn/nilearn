@@ -530,7 +530,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                     print("Resampling labels")
                 labels_before_resampling = set(
                     np.unique(
-                        _utils.niimg._safe_get_data(
+                        _utils.niimg.safe_get_data(
                             self._resampled_labels_img_,
                         )
                     )
@@ -542,7 +542,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                         target_affine=imgs_.affine)
                 labels_after_resampling = set(
                     np.unique(
-                        _utils.niimg._safe_get_data(
+                        _utils.niimg.safe_get_data(
                             self._resampled_labels_img_,
                         )
                     )

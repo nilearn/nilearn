@@ -35,7 +35,7 @@ from .. import _utils
 from .._utils import compare_version, fill_doc
 from .._utils.extmath import fast_abs_percentile
 from .._utils.ndimage import get_border_data
-from .._utils.niimg import _safe_get_data
+from .._utils.niimg import safe_get_data
 from .._utils.numpy_conversions import as_ndarray
 from .._utils.param_validation import check_threshold
 from ..datasets import load_mni152_template
@@ -200,7 +200,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
 
     if img is not False and img is not None:
         img = _utils.check_niimg_3d(img, dtype='auto')
-        data = _safe_get_data(img, ensure_finite=True)
+        data = safe_get_data(img, ensure_finite=True)
         affine = img.affine
 
         if np.isnan(np.sum(data)):
@@ -409,7 +409,7 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim='auto', black_bg='auto'):
         anat_img = _utils.check_niimg_3d(anat_img)
         # Clean anat_img for non-finite values to avoid computing unnecessary
         # border data values.
-        data = _safe_get_data(anat_img, ensure_finite=True)
+        data = safe_get_data(anat_img, ensure_finite=True)
         anat_img = new_img_like(anat_img, data, affine=anat_img.affine)
         if dim or black_bg == 'auto':
             # We need to inspect the values of the image
@@ -980,7 +980,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype='auto')
 
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        _safe_get_data(stat_map_img, ensure_finite=True),
+        safe_get_data(stat_map_img, ensure_finite=True),
         vmin=vmin,
         vmax=vmax,
         symmetric_cbar=symmetric_cbar)
@@ -1097,7 +1097,7 @@ def plot_glass_brain(stat_map_img,
             force_min_stat_map_value = None
 
         cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-            _safe_get_data(stat_map_img, ensure_finite=True),
+            safe_get_data(stat_map_img, ensure_finite=True),
             vmin=vmin,
             vmax=vmax,
             symmetric_cbar=symmetric_cbar,

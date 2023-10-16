@@ -26,7 +26,7 @@ def _get_data(img):
     return data
 
 
-def _safe_get_data(img, ensure_finite=False, copy_data=False):
+def safe_get_data(img, ensure_finite=False, copy_data=False):
     """Get the data in the image without having a side effect \
     on the Nifti1Image object.
 
@@ -166,7 +166,7 @@ def is_binary_niimg(niimg):
 
     """
     niimg = load_niimg(niimg)
-    data = _safe_get_data(niimg, ensure_finite=True)
+    data = safe_get_data(niimg, ensure_finite=True)
     unique_values = np.unique(data)
     if len(unique_values) != 2:
         return False
@@ -192,7 +192,7 @@ def copy_img(img):
         raise ValueError("Input value is not an image")
     return new_img_like(
         img,
-        _safe_get_data(img, copy_data=True),
+        safe_get_data(img, copy_data=True),
         img.affine.copy(),
         copy_header=True,
     )

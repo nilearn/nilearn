@@ -14,7 +14,7 @@ import nilearn as ni
 from .cache_mixin import cache
 from .exceptions import DimensionError
 from .helpers import stringify_path
-from .niimg import _get_data, _safe_get_data, load_niimg
+from .niimg import _get_data, load_niimg, safe_get_data
 from .path_finding import resolve_globbing
 
 
@@ -320,7 +320,7 @@ def check_niimg(
 
     if ensure_ndim == 3 and len(niimg.shape) == 4 and niimg.shape[3] == 1:
         # "squeeze" the image.
-        data = _safe_get_data(niimg)
+        data = safe_get_data(niimg)
         affine = niimg.affine
         niimg = new_img_like(niimg, data[:, :, :, 0], affine)
     if atleast_4d and len(niimg.shape) == 3:

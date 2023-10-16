@@ -9,7 +9,7 @@ from matplotlib.transforms import Bbox
 
 from nilearn._utils import check_niimg_3d
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.niimg import _safe_get_data, is_binary_niimg
+from nilearn._utils.niimg import is_binary_niimg, safe_get_data
 from nilearn.image import get_data, new_img_like, reorder_img
 from nilearn.image.resampling import get_bounds, get_mask_bounds
 from nilearn.plotting.displays import CutAxes
@@ -399,7 +399,7 @@ class BaseSlicer:
         threshold = float(threshold) if threshold is not None else None
 
         affine = img.affine
-        data = _safe_get_data(img, ensure_finite=True)
+        data = safe_get_data(img, ensure_finite=True)
         data_bounds = get_bounds(data.shape, affine)
         (xmin, xmax), (ymin, ymax), (zmin, zmax) = data_bounds
 

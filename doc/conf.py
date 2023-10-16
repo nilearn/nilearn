@@ -16,7 +16,7 @@ import sys
 
 import sphinx
 
-from nilearn._utils import _compare_version
+from nilearn._utils import compare_version
 
 # ----------------------------------------------------------------------------
 
@@ -356,7 +356,7 @@ latex_elements = {
     "printindex": "",
 }
 
-if _compare_version(sphinx.__version__, "<", "1.5"):
+if compare_version(sphinx.__version__, "<", "1.5"):
     latex_preamble = r"""
     \usepackage{amsmath}\usepackage{amsfonts}\usepackage{bm}\usepackage{morefloats}
     \let\oldfootnote\footnote

@@ -14,7 +14,7 @@ from nilearn._utils import CacheMixin, fill_doc, logger
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.niimg import img_data_dtype
 from nilearn._utils.niimg_conversions import (
-    _safe_get_data,
+    safe_get_data,
     check_niimg_3d,
     check_niimg_4d,
 )
@@ -87,14 +87,14 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
 
     elif niimg is not None:
         affine = niimg.affine
-        if np.isnan(np.sum(_safe_get_data(niimg))):
+        if np.isnan(np.sum(safe_get_data(niimg))):
             warnings.warn(
                 'The imgs you have fed into fit_transform() contains NaN '
                 'values which will be converted to zeroes.'
             )
-            X = _safe_get_data(niimg, True).reshape([-1, niimg.shape[3]]).T
+            X = safe_get_data(niimg, True).reshape([-1, niimg.shape[3]]).T
         else:
-            X = _safe_get_data(niimg).reshape([-1, niimg.shape[3]]).T
+            X = safe_get_data(niimg).reshape([-1, niimg.shape[3]]).T
 
         mask_coords = list(np.ndindex(niimg.shape[:3]))
 
