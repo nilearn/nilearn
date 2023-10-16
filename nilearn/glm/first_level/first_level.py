@@ -376,12 +376,11 @@ class FirstLevelModel(BaseGLM):
         a `SecondLevelModel` object.
 
     random_state : int or numpy.random.RandomState, default=None.
+        Random state seed to sklearn.cluster.KMeans
+        for autoregressive models
+        of order at least 2 ('ar(N)' with n >= 2).
 
-            Random state seed to sklearn.cluster.KMeans
-            for autoregressive models
-            of order at least 2 ('ar(N)' with n >= 2).
-
-            .. versionadded:: 0.9.1
+        .. versionadded:: 0.9.1
 
     Attributes
     ----------

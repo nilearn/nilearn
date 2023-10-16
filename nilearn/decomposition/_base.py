@@ -589,7 +589,7 @@ def _explained_variance(X, components, per_component=True):
     components : array-like
         Represents the components estimated by the decomposition algorithm.
 
-    per_component : bool, default=False
+    per_component : bool, default=True
         Specify whether the explained variance ratio is desired for each
         map or for the global set of components_.
 
