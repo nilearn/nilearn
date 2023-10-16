@@ -88,7 +88,7 @@ def confounding_vars():
     return rng.randn(N_SAMPLES, N_COVARS)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def masker(affine_eye):
     mask_img = nib.Nifti1Image(np.ones((5, 5, 5)), affine_eye)
     masker = NiftiMasker(mask_img)

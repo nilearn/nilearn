@@ -30,8 +30,8 @@ def test_plot_prob_atlas(affine_eye, params):
     plt.close()
 
 
-def test_plot_prob_atlas_radiological_view(img_3d_mni):
+def test_plot_prob_atlas_radiological_view(img_4D_rand_eye):
     """Smoke test for radiological view."""
-    result = plot_prob_atlas(img_3d_mni, radiological=True)
+    result = plot_prob_atlas(img_4D_rand_eye, radiological=True)
     assert result.axes.get("y").radiological is True
     plt.close()
