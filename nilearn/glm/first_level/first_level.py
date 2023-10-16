@@ -120,12 +120,12 @@ def _yule_walker(x, order):
 def run_glm(
     Y, X, noise_model="ar1", bins=100, n_jobs=1, verbose=0, random_state=None
 ):
-    """GLM fit for an fMRI data matrix.
+    """:term:`GLM` fit for an :term:`fMRI` data matrix.
 
     Parameters
     ----------
     Y : array of shape (n_time_points, n_voxels)
-        The fMRI data.
+        The :term:`fMRI` data.
 
     X : array of shape (n_time_points, n_regressors)
         The design matrix.
@@ -276,21 +276,22 @@ def _check_trial_type(events):
 
 @fill_doc
 class FirstLevelModel(BaseGLM):
-    """Implement the General Linear Model for single session fMRI data.
+    """Implement the General Linear Model for single session :term:`fMRI` data.
 
     Parameters
     ----------
     t_r : float
-        This parameter indicates repetition times of the experimental runs.
+        This parameter indicates :term:`repetition times<TR>`
+        of the experimental runs.
         In seconds. It is necessary to correctly consider times in the design
         matrix. This parameter is also passed to :func:`nilearn.signal.clean`.
         Please see the related documentation for details.
 
     slice_time_ref : float, optional
         This parameter indicates the time of the reference slice used in the
-        slice timing preprocessing step of the experimental runs. It is
-        expressed as a fraction of the t_r (time repetition), so it can have
-        values between 0. and 1. Default=0.
+        slice timing preprocessing step of the experimental runs.
+        It is expressed as a fraction of the ``t_r`` (repetition time),
+        so it can have values between 0. and 1. Default=0.
     %(hrf_model)s
         Default='glover'.
     drift_model : string, optional
@@ -308,8 +309,9 @@ class FirstLevelModel(BaseGLM):
         polynomial) for the design matrices. Default=1.
 
     fir_delays : array of shape(n_onsets) or list, optional
-        In case of FIR design, yields the array of delays used in the FIR
-        model, in scans. Default=[0].
+        In case of :term:`FIR` design,
+        yields the array of delays used in the :term:`FIR` model,
+        in scans. Default=[0].
 
     min_onset : float, optional
         This parameter specifies the minimal onset relative to the design
@@ -488,7 +490,7 @@ class FirstLevelModel(BaseGLM):
         design_matrices=None,
         bins=100,
     ):
-        """Fit the GLM.
+        """Fit the :term:`GLM`.
 
         For each run:
         1. create design matrix X
@@ -498,13 +500,14 @@ class FirstLevelModel(BaseGLM):
         Parameters
         ----------
         run_imgs : Niimg-like object or list of Niimg-like objects,
-            Data on which the GLM will be fitted. If this is a list,
+            Data on which the :term:`GLM` will be fitted. If this is a list,
             the affine is considered the same for all.
 
         events : pandas Dataframe or string or list of pandas DataFrames \
                  or strings, optional
-            fMRI events used to build design matrices. One events object
-            expected per run_img. Ignored in case designs is not None.
+            :term:`fMRI` events used to build design matrices.
+            One events object expected per run_img.
+            Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
 
         confounds : pandas Dataframe, numpy array or string or
@@ -757,7 +760,8 @@ class FirstLevelModel(BaseGLM):
 
             where ``n_col`` is the number of columns of the design matrix,
             (one array per run). If only one array is provided when there
-            are several runs, it will be assumed that the same contrast is
+            are several runs, it will be assumed that
+            the same :term:`contrast` is
             desired for all runs. One can use the name of the conditions as
             they appear in the design matrix of the fitted model combined with
             operators +- and combined with numbers with operators +-`*`/. In
@@ -963,18 +967,20 @@ def first_level_from_bids(
     minimize_memory=True,
     derivatives_folder="derivatives",
 ):
-    """Create FirstLevelModel objects and fit arguments from a BIDS dataset.
+    """Create FirstLevelModel objects and fit arguments \
+       from a :term:`BIDS` dataset.
 
-    If t_r is `None` this function will attempt to load it from a bold.json.
-    If `slice_time_ref` is  `None` this function will attempt
+    If ``t_r`` is ``None`` this function will attempt
+    to load it from a bold.json.
+    If ``slice_time_ref`` is  `None` this function will attempt
     to infer it from a bold.json.
-    Otherwise t_r and slice_time_ref are taken as given,
+    Otherwise ``t_r`` and ``slice_time_ref`` are taken as given,
     but a warning may be raised if they are not consistent with the bold.json.
 
     Parameters
     ----------
     dataset_path : :obj:`str` or :obj:`pathlib.Path`
-        Directory of the highest level folder of the BIDS dataset.
+        Directory of the highest level folder of the :term:`BIDS` dataset.
         Should contain subject folders and a derivatives folder.
 
     task_label : :obj:`str`
@@ -1016,7 +1022,7 @@ def first_level_from_bids(
     All other parameters correspond to a `FirstLevelModel` object, which
     contains their documentation.
     The subject label of the model will be determined directly
-    from the BIDS dataset.
+    from the :term:`BIDS` dataset.
 
     Returns
     -------

@@ -163,8 +163,7 @@ def test_parcellations_transform_multi_nifti_images(
     assert len(signals) == len(fmri_imgs)
 
 
-def test_check_parameters_transform(test_image_2):
-    rng = np.random.RandomState(42)
+def test_check_parameters_transform(test_image_2, rng):
     # single confound
     confounds = rng.standard_normal(size=(10, 3))
     # Tests to check whether imgs, confounds returned are
@@ -206,9 +205,8 @@ def test_check_parameters_transform(test_image_2):
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
 def test_parcellations_transform_with_multi_confounds_multi_images(
-    method, n_parcel, test_image_2
+    method, n_parcel, test_image_2, rng
 ):
-    rng = np.random.RandomState(42)
     fmri_imgs = [test_image_2] * 3
     confounds = rng.standard_normal(size=(10, 3))
     confounds_list = [confounds] * 3
@@ -239,8 +237,7 @@ def test_fit_transform(method, n_parcel, test_image_2):
 
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
-def test_fit_transform_with_condounds(method, n_parcel, test_image_2):
-    rng = np.random.RandomState(42)
+def test_fit_transform_with_condounds(method, n_parcel, test_image_2, rng):
     fmri_imgs = [test_image_2] * 3
     confounds = rng.standard_normal(size=(10, 3))
     confounds_list = [confounds] * 3

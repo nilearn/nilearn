@@ -25,7 +25,7 @@ from nilearn.decoding.space_net_solvers import (
     _graph_net_logistic,
     _graph_net_squared_loss,
 )
-from nilearn.decoding.tests._utils import create_graph_net_simulation_data
+from nilearn.decoding.tests._testing import create_graph_net_simulation_data
 from nilearn.image import get_data
 
 logistic_path_scores = partial(path_scores, is_classif=True)

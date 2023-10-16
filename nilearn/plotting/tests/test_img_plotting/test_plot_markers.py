@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 
+from nilearn.conftest import _rng
 from nilearn.plotting import plot_markers
 
 
@@ -137,7 +138,7 @@ def test_plot_markers_node_kwargs(coords):
     [
         [1, 2, 3, 4, 5],
         [1, 2, 3],
-        np.random.RandomState(42).random_sample((4, 4)),
+        _rng().random_sample((4, 4)),
     ],
 )
 def test_plot_markers_dimension_mismatch(matrix, coords):

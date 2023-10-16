@@ -177,14 +177,15 @@ def check_feature_screening(
     Parameters
     ----------
     screening_percentile : float in the interval [0, 100]
-        Percentile value for ANOVA univariate feature selection. A value of
-        100 means 'keep all features'. This percentile is expressed
+        Percentile value for :term:`ANOVA` univariate feature selection.
+        A value of 100 means 'keep all features'.
+        This percentile is expressed
         w.r.t the volume of a standard (MNI152) brain, and so is corrected
         at runtime by premultiplying it with the ratio of the volume of the
         mask of the data and volume of a standard brain.
 
     mask_img : nibabel image object
-        Input image whose voxel dimensions are to be computed.
+        Input image whose :term:`voxel` dimensions are to be computed.
 
     is_classification : bool
         If is_classification is True, it indicates that a classification task
@@ -196,7 +197,7 @@ def check_feature_screening(
     Returns
     -------
     selector : SelectPercentile instance
-       Used to perform the ANOVA univariate feature selection.
+       Used to perform the :term:`ANOVA` univariate feature selection.
 
     """
     f_test = f_classif if is_classification else f_regression

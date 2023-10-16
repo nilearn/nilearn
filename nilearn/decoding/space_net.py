@@ -175,7 +175,7 @@ def _space_net_alpha_grid(
         # Large-Scale l1-Regularized Logistic Regression", by Koh, Kim,
         # Boyd, in Journal of Machine Learning Research, 8:1519-1555,
         # July 2007.
-        # url: http://www.stanford.edu/~boyd/papers/pdf/l1_logistic_reg.pdf
+        # url: https://web.stanford.edu/~boyd/papers/pdf/l1_logistic_reg.pdf
         m = float(y.size)
         m_plus = float(y[y == 1].size)
         m_minus = float(y[y == -1].size)
@@ -371,8 +371,9 @@ def path_scores(
 
     screening_percentile : float in the interval [0, 100], optional\
         (default 20)
-        Percentile value for ANOVA univariate feature selection. A value of
-        100 means 'keep all features'. This percentile is expressed
+        Percentile value for :term:`ANOVA` univariate feature selection.
+        A value of 100 means 'keep all features'.
+        This percentile is expressed
         w.r.t the volume of a standard (MNI152) brain, and so is corrected
         at runtime to correspond to the volume of the user-supplied mask
         (which is typically smaller). If '100' is given, all the features

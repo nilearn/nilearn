@@ -871,16 +871,13 @@ standardize_confounds : :obj:`bool`, default=True
 docdict[
     "symmetric_cbar"
 ] = """
-symmetric_cbar : :obj:`bool`, or "auto", optional
-    Specifies whether the colorbar should range from `-vmax` to `vmax`
-    or from `vmin` to `vmax`.
-    Setting to `"auto"` will select the latter
-    if the range of the whole image is either positive or negative.
-
-    .. note::
-
-        The colormap will always range from `-vmax` to `vmax`.
-
+symmetric_cbar : :obj:`bool`, or "auto", default="auto"
+    Specifies whether the colorbar and colormap should range from `-vmax` to
+    `vmax` (or from `vmin` to `-vmin` if `-vmin` is greater than `vmax`) or
+    from `vmin` to `vmax`.
+    Setting to `"auto"` (the default) will select the former if either
+    `vmin` or `vmax` is `None` and the image has both positive and negative
+    values.
 """
 
 # t_r
@@ -888,7 +885,7 @@ docdict[
     "t_r"
 ] = """
 t_r : :obj:`float` or None, default=None
-    Repetition time, in seconds (sampling period).
+    :term:`Repetition time<TR>`, in seconds (sampling period).
     Set to `None` if not provided.
 """
 
