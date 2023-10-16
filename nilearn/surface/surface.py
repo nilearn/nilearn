@@ -15,7 +15,7 @@ from scipy import interpolate, sparse
 
 from nilearn import _utils, datasets
 from nilearn._utils import stringify_path
-from nilearn._utils.path_finding import _resolve_globbing
+from nilearn._utils.path_finding import resolve_globbing
 from nilearn.image import get_data, load_img, resampling
 
 try:
@@ -747,8 +747,8 @@ def load_surf_data(surf_data):
     if isinstance(surf_data, str):
 
         # resolve globbing
-        file_list = _resolve_globbing(surf_data)
-        # _resolve_globbing handles empty lists
+        file_list = resolve_globbing(surf_data)
+        # resolve_globbing handles empty lists
 
         for f in range(len(file_list)):
             surf_data = file_list[f]
@@ -858,11 +858,11 @@ def load_surf_mesh(surf_mesh):
     surf_mesh = stringify_path(surf_mesh)
     if isinstance(surf_mesh, str):
         # resolve globbing
-        file_list = _resolve_globbing(surf_mesh)
+        file_list = resolve_globbing(surf_mesh)
         if len(file_list) == 1:
             surf_mesh = file_list[0]
         elif len(file_list) > 1:
-            # empty list is handled inside _resolve_globbing function
+            # empty list is handled inside resolve_globbing function
             raise ValueError(
                 f"More than one file matching path: {surf_mesh} \n"
                 "load_surf_mesh can only load one file at a time.")

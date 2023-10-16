@@ -15,7 +15,7 @@ from .cache_mixin import cache
 from .exceptions import DimensionError
 from .helpers import stringify_path
 from .niimg import _get_data, _safe_get_data, load_niimg
-from .path_finding import _resolve_globbing
+from .path_finding import resolve_globbing
 
 
 def _check_fov(img, affine, shape):
@@ -25,7 +25,7 @@ def _check_fov(img, affine, shape):
     return img.shape[:3] == shape and np.allclose(img.affine, affine)
 
 
-def _check_same_fov(*args, **kwargs):
+def check_same_fov(*args, **kwargs):
     """Return True if provided images have the same field of view (shape and \
     affine) and return False or raise an error elsewhere, depending on the \
     `raise_error` argument.
@@ -134,7 +134,7 @@ def _iter_check_niimg(
 
     """
     # If niimgs is a string, use glob to expand it to the matching filenames.
-    niimgs = _resolve_globbing(niimgs)
+    niimgs = resolve_globbing(niimgs)
 
     ref_fov = None
     resample_to_first_img = False
@@ -483,7 +483,7 @@ def concat_niimgs(
         ndim = ensure_ndim - 1
 
     # If niimgs is a string, use glob to expand it to the matching filenames.
-    niimgs = _resolve_globbing(niimgs)
+    niimgs = resolve_globbing(niimgs)
 
     # First niimg is extracted to get information and for new_img_like
     first_niimg = None

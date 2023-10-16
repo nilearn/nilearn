@@ -76,7 +76,7 @@ def get_border_data(data, border_size):
     )
 
 
-def _peak_local_max(
+def peak_local_max(
     image,
     min_distance=10,
     threshold_abs=0,

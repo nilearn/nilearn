@@ -141,12 +141,12 @@ def test_future_warn_deprecated_params():
     ],
 )
 def test_compare_version(version_a, operator, version_b):
-    assert helpers._compare_version(version_a, operator, version_b)
+    assert helpers.compare_version(version_a, operator, version_b)
 
 
 def test_compare_version_error():
     with pytest.raises(
         ValueError,
-        match="'_compare_version' received an unexpected operator <>.",
+        match="'compare_version' received an unexpected operator <>.",
     ):
-        helpers._compare_version("0.1.0", "<>", "1.1.0")
+        helpers.compare_version("0.1.0", "<>", "1.1.0")

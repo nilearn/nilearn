@@ -150,7 +150,7 @@ def load_niimg(niimg, dtype=None):
     return niimg
 
 
-def _is_binary_niimg(niimg):
+def is_binary_niimg(niimg):
     """Return whether a given niimg is binary or not.
 
     Parameters

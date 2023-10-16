@@ -156,9 +156,7 @@ def _build_laplacian(data, spacing, mask=None, beta=50):
     return lap
 
 
-def _random_walker(
-    data, labels, beta=130, tol=1.0e-3, copy=True, spacing=None
-):
+def random_walker(data, labels, beta=130, tol=1.0e-3, copy=True, spacing=None):
     """Random walker algorithm for segmentation from markers.
 
     Parameters

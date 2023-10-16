@@ -26,7 +26,7 @@ from .._utils import (
 )
 from .._utils.helpers import rename_parameters, stringify_path
 from .._utils.niimg import _get_data, _safe_get_data
-from .._utils.niimg_conversions import _check_same_fov, _index_img
+from .._utils.niimg_conversions import _index_img, check_same_fov
 from .._utils.param_validation import check_threshold
 
 
@@ -936,7 +936,7 @@ def threshold_img(
 
     if mask_img is not None:
         mask_img = check_niimg_3d(mask_img)
-        if not _check_same_fov(img, mask_img):
+        if not check_same_fov(img, mask_img):
             mask_img = resampling.resample_img(
                 mask_img,
                 target_affine=affine,
@@ -1036,7 +1036,7 @@ def math_img(formula, **imgs):
     """
     try:
         niimgs = [check_niimg(image) for image in imgs.values()]
-        _check_same_fov(*niimgs, raise_error=True)
+        check_same_fov(*niimgs, raise_error=True)
     except Exception as exc:
         exc.args = (
             "Input images cannot be compared, "

@@ -44,7 +44,7 @@ from sklearn.model_selection import KFold, LeaveOneGroupOut, ParameterGrid
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR, LinearSVC
 
-from nilearn._utils import _compare_version
+from nilearn._utils import compare_version
 from nilearn._utils.param_validation import check_feature_screening
 from nilearn.decoding.decoder import (
     Decoder,
@@ -691,7 +691,7 @@ def test_decoder_error_unknown_scoring_metrics(
 
     model = Decoder(estimator=dummy_classifier, mask=mask, scoring="foo")
 
-    if _compare_version(sklearn.__version__, ">", "1.2.2"):
+    if compare_version(sklearn.__version__, ">", "1.2.2"):
         with pytest.raises(
             ValueError,
             match="The 'scoring' parameter of check_scoring "

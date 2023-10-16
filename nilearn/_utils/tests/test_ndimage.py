@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 
 from nilearn._utils import data_gen
-from nilearn._utils.ndimage import _peak_local_max, largest_connected_component
+from nilearn._utils.ndimage import largest_connected_component, peak_local_max
 
 
 def test_largest_cc():
@@ -40,14 +40,14 @@ def test_largest_cc():
 
 def test_empty_peak_local_max():
     image = np.zeros((10, 20))
-    result = _peak_local_max(image, min_distance=1, threshold_rel=0)
+    result = peak_local_max(image, min_distance=1, threshold_rel=0)
     assert np.all(~result)
 
 
 def test_flat_peak_local_max():
     image = np.zeros((5, 5))
     image[1:3, 1:3] = 10
-    peaks = _peak_local_max(image, min_distance=1)
+    peaks = peak_local_max(image, min_distance=1)
     np.testing.assert_equal(len(peaks[peaks == 1]), 4)
 
 
@@ -55,19 +55,19 @@ def test_relative_and_absolute_thresholds_in_peak_local_max():
     image = np.zeros((5, 5))
     image[1, 1] = 10
     image[3, 3] = 20
-    peaks_rel = _peak_local_max(image, min_distance=1, threshold_rel=0.5)
+    peaks_rel = peak_local_max(image, min_distance=1, threshold_rel=0.5)
     np.testing.assert_equal(len(peaks_rel[peaks_rel == 1]), 1)
-    peaks_abs = _peak_local_max(image, min_distance=1, threshold_abs=10)
+    peaks_abs = peak_local_max(image, min_distance=1, threshold_abs=10)
     np.testing.assert_equal(len(peaks_abs[peaks_abs == 1]), 1)
 
 
 def test_constant_image_in_peak_local_max():
     image = 128 * np.ones((20, 20))
-    peaks = _peak_local_max(image, min_distance=1)
+    peaks = peak_local_max(image, min_distance=1)
     np.testing.assert_equal(len(peaks[peaks == 1]), 0)
 
 
 def test_trivial_cases_in_peak_local_max():
     trivial = np.zeros((25, 25))
-    peaks = _peak_local_max(trivial, min_distance=1)
+    peaks = peak_local_max(trivial, min_distance=1)
     assert (peaks.astype(bool) == trivial).all()

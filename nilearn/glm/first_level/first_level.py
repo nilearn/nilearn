@@ -22,7 +22,7 @@ from sklearn.cluster import KMeans
 
 from nilearn._utils import fill_doc, stringify_path
 from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils.param_validation import _check_run_sample_masks
+from nilearn._utils.param_validation import check_run_sample_masks
 from nilearn.glm._base import BaseGLM
 from nilearn.glm._utils import (
     _check_events_file_uses_tab_separators,
@@ -577,7 +577,7 @@ class FirstLevelModel(BaseGLM):
             confounds = _check_run_tables(run_imgs, confounds, "confounds")
 
         if sample_masks is not None:
-            sample_masks = _check_run_sample_masks(len(run_imgs), sample_masks)
+            sample_masks = check_run_sample_masks(len(run_imgs), sample_masks)
 
         # Learn the mask
         if self.mask_img is False:

@@ -217,7 +217,7 @@ def check_feature_screening(
         return SelectPercentile(f_test, percentile=int(screening_percentile_))
 
 
-def _check_run_sample_masks(n_runs, sample_masks):
+def check_run_sample_masks(n_runs, sample_masks):
     """Check that number of sample_mask matches number of runs."""
     if not isinstance(sample_masks, (list, tuple, np.ndarray)):
         raise TypeError(

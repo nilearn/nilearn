@@ -67,14 +67,14 @@ def test_check_same_fov(affine_eye):
     shape_b_affine_a = Nifti1Image(np.empty(shape_b), affine_eye)
     shape_b_affine_b = Nifti1Image(np.empty(shape_b), affine_b)
 
-    niimg_conversions._check_same_fov(
+    niimg_conversions.check_same_fov(
         a=shape_a_affine_a, b=shape_a_affine_a_2, raise_error=True
     )
 
     with pytest.raises(
         ValueError, match="[ac] and [ac] do not have the same affine"
     ):
-        niimg_conversions._check_same_fov(
+        niimg_conversions.check_same_fov(
             a=shape_a_affine_a,
             b=shape_a_affine_a_2,
             c=shape_a_affine_b,
@@ -83,20 +83,20 @@ def test_check_same_fov(affine_eye):
     with pytest.raises(
         ValueError, match="[ab] and [ab] do not have the same shape"
     ):
-        niimg_conversions._check_same_fov(
+        niimg_conversions.check_same_fov(
             a=shape_a_affine_a, b=shape_b_affine_a, raise_error=True
         )
     with pytest.raises(
         ValueError, match="[ab] and [ab] do not have the same affine"
     ):
-        niimg_conversions._check_same_fov(
+        niimg_conversions.check_same_fov(
             a=shape_b_affine_b, b=shape_a_affine_a, raise_error=True
         )
 
     with pytest.raises(
         ValueError, match="[ab] and [ab] do not have the same shape"
     ):
-        niimg_conversions._check_same_fov(
+        niimg_conversions.check_same_fov(
             a=shape_b_affine_b, b=shape_a_affine_a, raise_error=True
         )
 
