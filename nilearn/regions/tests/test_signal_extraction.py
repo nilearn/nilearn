@@ -411,9 +411,8 @@ def test_signals_extraction_with_labels_with_mask(
     assert labels_r == list(range(1, 9))
 
 
-def test_signal_extraction_with_maps(affine_eye, shape_3d_default):
+def test_signal_extraction_with_maps(affine_eye, shape_3d_default, rng):
     # Generate signal imgs
-    rng = np.random.RandomState(42)
     maps_img, mask_img = generate_maps(shape_3d_default, N_REGIONS)
     maps_data = get_data(maps_img)
     data = np.zeros(shape_3d_default + (N_TIMEPOINTS,))
@@ -684,9 +683,7 @@ def test_trim_maps(shape_3d_default):
     "target_dtype",
     (float, np.float32, np.float64, int, np.uint),
 )
-def test_img_to_signals_labels_non_float_type(target_dtype):
-    rng = np.random.RandomState(42)
-
+def test_img_to_signals_labels_non_float_type(target_dtype, rng):
     fake_fmri_data = rng.uniform(size=(10, 10, 10, N_TIMEPOINTS)) > 0.5
     fake_affine = np.eye(4, 4).astype(np.float64)
     fake_fmri_img_orig = Nifti1Image(

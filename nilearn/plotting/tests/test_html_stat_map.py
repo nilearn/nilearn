@@ -104,10 +104,10 @@ def test_threshold_data():
     assert (mask == gtruth).all()
 
 
-def test_save_sprite():
+def test_save_sprite(rng):
     """Test covers _save_sprite as well as _bytesIO_to_base64."""
     # Generate a simulated volume with a square inside
-    data = np.random.RandomState(42).uniform(size=140).reshape(7, 5, 4)
+    data = rng.uniform(size=140).reshape(7, 5, 4)
     mask = np.zeros((7, 5, 4), dtype=int)
     mask[1:-1, 1:-1, 1:-1] = 1
     # Save the sprite using BytesIO

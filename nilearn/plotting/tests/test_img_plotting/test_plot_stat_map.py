@@ -5,6 +5,7 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
+from nilearn.conftest import _rng
 from nilearn.datasets import load_mni152_template
 from nilearn.image import get_data
 from nilearn.image.resampling import coord_transform
@@ -73,7 +74,7 @@ def test_plot_stat_map_with_masked_image(img_3d_mni, affine_mni):
     "data",
     [
         np.zeros((91, 109, 91)),
-        np.random.RandomState(42).standard_normal(size=(91, 109, 91)),
+        _rng().standard_normal(size=(91, 109, 91)),
     ],
 )
 def test_plot_stat_map_threshold(data):
@@ -82,13 +83,12 @@ def test_plot_stat_map_threshold(data):
     plt.close()
 
 
-def test_plot_stat_map_threshold_for_affine_with_rotation():
+def test_plot_stat_map_threshold_for_affine_with_rotation(rng):
     """Tests for plot_stat_map with thresholding and resampling.
 
     Threshold was not being applied when affine has a rotation.
     See https://github.com/nilearn/nilearn/issues/599 for more details.
     """
-    rng = np.random.RandomState(42)
     data = rng.standard_normal(size=(10, 10, 10))
     # matrix with rotation
     affine = np.array(
@@ -123,10 +123,11 @@ def test_plot_stat_map_threshold_for_affine_with_rotation():
         {"colorbar": False},
     ],
 )
-def test_plot_stat_map_colorbar_variations(params, img_3d_mni, affine_mni):
+def test_plot_stat_map_colorbar_variations(
+    params, img_3d_mni, affine_mni, rng
+):
     """Smoke test for plot_stat_map with different colorbar configurations."""
     data_positive = get_data(img_3d_mni)
-    rng = np.random.RandomState(42)
     data_negative = -data_positive
     data_heterogeneous = data_positive * rng.standard_normal(
         size=data_positive.shape

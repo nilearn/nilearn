@@ -7,6 +7,7 @@ from numpy.testing import assert_almost_equal
 
 from nilearn._utils import as_ndarray
 from nilearn._utils.data_gen import generate_labeled_regions, generate_maps
+from nilearn.conftest import _rng
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiLabelsMasker, NiftiMapsMasker, NiftiMasker
 
@@ -50,7 +51,7 @@ def niftimapsmasker_inputs():
 
 
 def generate_random_img(shape, length=1, affine=np.eye(4),
-                        rand_gen=np.random.RandomState(0)):
+                        rand_gen=_rng()):
     data = rand_gen.standard_normal(size=(shape + (length,)))
     return Nifti1Image(data, affine), Nifti1Image(
         as_ndarray(data[..., 0] > 0.2, dtype=np.int8), affine)
