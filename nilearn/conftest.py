@@ -124,6 +124,7 @@ def suppress_specific_warning():
         warnings.filterwarnings(
             "ignore",
             message=messages,
+            category=DeprecationWarning,
         )
         yield
 

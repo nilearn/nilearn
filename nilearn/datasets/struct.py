@@ -849,7 +849,7 @@ def fetch_oasis_vbm(
     fdescr = _get_dataset_descr(dataset_name)
 
     if legacy_format:
-        warnings.warn(_LEGACY_FORMAT_MSG)
+        warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
         csv_data = csv_data.to_records(index=False)
 
     return Bunch(

@@ -265,20 +265,23 @@ def test_wrap_param_grid(param_grid):
     ],
 )
 def test_wrap_param_grid_warning(param_grid, need_wrap):
-    param_name = "alphas"
     expected_warning_substring = "should be a sequence of iterables"
 
-    with warnings.catch_warnings(record=True) as raised_warnings:
-        _wrap_param_grid(param_grid, param_name)
-    warning_messages = [str(warning.message) for warning in raised_warnings]
-
-    found_warning = any(
-        expected_warning_substring in x for x in warning_messages
-    )
-
     if need_wrap:
-        assert found_warning
+        with pytest.warns(UserWarning, match=expected_warning_substring):
+            _wrap_param_grid(param_grid, param_name="alphas")
+
     else:
+        with warnings.catch_warnings(record=True) as raised_warnings:
+            _wrap_param_grid(param_grid, param_name="alphas")
+        warning_messages = [
+            str(warning.message) for warning in raised_warnings
+        ]
+
+        found_warning = any(
+            expected_warning_substring in x for x in warning_messages
+        )
+
         assert not found_warning
 
 

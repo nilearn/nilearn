@@ -901,7 +901,7 @@ def fetch_localizer_contrasts(
         subjects_indices.append(subject_names.index(name))
     csv_data = csv_data.iloc[subjects_indices]
     if legacy_format:
-        warnings.warn(_LEGACY_FORMAT_MSG)
+        warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
         csv_data = csv_data.to_records(index=False)
     return Bunch(ext_vars=csv_data, description=fdescr, **files)
 
@@ -1198,7 +1198,7 @@ def fetch_abide_pcp(
         pheno = pheno[:n_subjects]
 
     if legacy_format:
-        warnings.warn(_LEGACY_FORMAT_MSG)
+        warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
         pheno = pheno.to_records(index=False)
 
     results = {
