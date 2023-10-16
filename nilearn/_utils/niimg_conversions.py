@@ -81,7 +81,7 @@ def _index_img(img, index):
     )
 
 
-def _iter_check_niimg(
+def iter_check_niimg(
     niimgs,
     ensure_ndim=None,
     atleast_4d=False,
@@ -273,7 +273,7 @@ def check_niimg(
 
     See Also
     --------
-        _iter_check_niimg, check_niimg_3d, check_niimg_4d
+        iter_check_niimg, check_niimg_3d, check_niimg_4d
 
     """
     from ..image import new_img_like  # avoid circular imports
@@ -310,7 +310,7 @@ def check_niimg(
     # in case of an iterable
     if hasattr(niimg, "__iter__") and not isinstance(niimg, str):
         if return_iterator:
-            return _iter_check_niimg(
+            return iter_check_niimg(
                 niimg, ensure_ndim=ensure_ndim, dtype=dtype
             )
         return concat_niimgs(niimg, ensure_ndim=ensure_ndim, dtype=dtype)
@@ -528,7 +528,7 @@ def concat_niimgs(
     for index, (size, niimg) in enumerate(
         zip(
             lengths,
-            _iter_check_niimg(
+            iter_check_niimg(
                 iterator,
                 atleast_4d=True,
                 target_fov=target_fov,

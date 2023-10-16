@@ -11,7 +11,7 @@ from nilearn.maskers import NiftiLabelsMasker
 
 from .._utils import fill_doc, stringify_path
 from .._utils.niimg import _safe_get_data
-from .._utils.niimg_conversions import _iter_check_niimg
+from .._utils.niimg_conversions import iter_check_niimg
 from ..decomposition._multi_pca import _MultiPCA
 from .hierarchical_kmeans_clustering import HierarchicalKMeans
 from .rena_clustering import ReNA
@@ -483,7 +483,7 @@ class Parcellations(_MultiPCA):
         )
         # Requires for special cases like extracting signals on list of
         # 3D images
-        imgs_list = _iter_check_niimg(imgs, atleast_4d=True)
+        imgs_list = iter_check_niimg(imgs, atleast_4d=True)
 
         masker = NiftiLabelsMasker(
             self.labels_img_,

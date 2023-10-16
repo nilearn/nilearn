@@ -10,7 +10,7 @@ from sklearn.linear_model._coordinate_descent import _alpha_grid
 from sklearn.metrics import accuracy_score
 from sklearn.utils import check_random_state
 
-from nilearn._utils.param_validation import _adjust_screening_percentile
+from nilearn._utils.param_validation import adjust_screening_percentile
 from nilearn.decoding.space_net import (
     BaseSpaceNet,
     SpaceNetClassifier,
@@ -157,11 +157,11 @@ def test_screening_space_net():
 
     for verbose in [0, 2]:
         with pytest.warns(UserWarning):
-            screening_percentile = _adjust_screening_percentile(
+            screening_percentile = adjust_screening_percentile(
                 10, mask, verbose
             )
     with pytest.warns(UserWarning):
-        screening_percentile = _adjust_screening_percentile(10, mask)
+        screening_percentile = adjust_screening_percentile(10, mask)
     # We gave here a very small mask, judging by standards of brain size
     # thus the screening_percentile_ corrected for brain size should
     # be 100%

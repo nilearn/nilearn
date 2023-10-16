@@ -81,7 +81,7 @@ def check_threshold(threshold, data, percentile_func, name="threshold"):
     return threshold
 
 
-def _get_mask_volume(mask_img):
+def get_mask_volume(mask_img):
     """Compute the volume of a brain mask in mm^3.
 
     Parameters
@@ -100,7 +100,7 @@ def _get_mask_volume(mask_img):
     return prod_vox_dims * _get_data(mask_img).astype(bool).sum()
 
 
-def _adjust_screening_percentile(screening_percentile, mask_img, verbose=0):
+def adjust_screening_percentile(screening_percentile, mask_img, verbose=0):
     """Adjust the screening percentile according to the MNI152 template.
 
     Parameters
@@ -126,7 +126,7 @@ def _adjust_screening_percentile(screening_percentile, mask_img, verbose=0):
     """
     original_screening_percentile = screening_percentile
     # correct screening_percentile according to the volume of the data mask
-    mask_volume = _get_mask_volume(mask_img)
+    mask_volume = get_mask_volume(mask_img)
     if mask_volume > 1.1 * MNI152_BRAIN_VOLUME:
         warnings.warn(
             "Brain mask is bigger than the volume of a standard "
@@ -211,7 +211,7 @@ def check_feature_screening(
         )
     else:
         # correct screening_percentile according to the volume of the data mask
-        screening_percentile_ = _adjust_screening_percentile(
+        screening_percentile_ = adjust_screening_percentile(
             screening_percentile, mask_img, verbose=verbose
         )
 
