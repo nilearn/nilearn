@@ -51,7 +51,7 @@ def dummy_deprecation(start_version, end_version):
     warnings.warn(
         f"Deprecated in {start_version}."
         f"and will be removed in version {end_version}.",
-        FutureWarning,
+        DeprecationWarning,
     )
 
 

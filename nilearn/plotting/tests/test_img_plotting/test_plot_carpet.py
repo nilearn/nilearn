@@ -110,7 +110,7 @@ def test_plot_carpet_standardize(testdata_4d_for_plotting):
     mask_img = testdata_4d_for_plotting["img_mask"]
     match = "default strategy for standardize"
 
-    with pytest.warns(FutureWarning, match=match):
+    with pytest.warns(DeprecationWarning, match=match):
         plot_carpet(img_4d, mask_img)
 
     with warnings.catch_warnings(record=True) as record:

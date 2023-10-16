@@ -456,7 +456,7 @@ def compute_fixed_effects(
 
     Warns
     -----
-    FutureWarning
+    DeprecationWarning
         Starting in version 0.13, fixed_fx_z_score_img will always be returned
 
     """
@@ -502,7 +502,7 @@ def compute_fixed_effects(
     fixed_fx_stat_img = masker.inverse_transform(fixed_fx_stat)
     fixed_fx_z_score_img = masker.inverse_transform(fixed_fx_z_score)
     warn(
-        category=FutureWarning,
+        category=DeprecationWarning,
         message="The behavior of this function will be "
         "changed in release 0.13 to have an additional"
         "return value 'fixed_fx_z_score_img'  by default. "

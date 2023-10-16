@@ -88,7 +88,7 @@ def _standardize(signals, detrend=False, standardize="zscore"):
                 "'zscore_sample' instead."
             )
             warnings.warn(
-                category=FutureWarning,
+                category=DeprecationWarning,
                 message=std_strategy_default,
                 stacklevel=3,
             )
