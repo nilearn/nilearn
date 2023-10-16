@@ -15,7 +15,7 @@ from matplotlib.patches import Patch
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from nilearn import image, surface
-from nilearn._utils import compare_version, check_niimg_3d, fill_doc
+from nilearn._utils import check_niimg_3d, compare_version, fill_doc
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn.plotting.cm import _mix_colormaps, cold_hot
 from nilearn.plotting.html_surface import _get_vertexcolor

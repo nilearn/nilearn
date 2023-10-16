@@ -573,9 +573,9 @@ def write_fake_bold_img(file_path,
 
 
 def _generate_signals_from_precisions(precisions,
-                                     min_n_samples=50,
-                                     max_n_samples=100,
-                                     random_state=0):
+                                      min_n_samples=50,
+                                      max_n_samples=100,
+                                      random_state=0):
     """Generate timeseries according to some given precision matrices.
 
     Signals all have zero mean.
@@ -711,9 +711,9 @@ def generate_group_sparse_gaussian_graphs(n_subjects=5,
 
     # Generate temporal signals
     signals = _generate_signals_from_precisions(precisions,
-                                               min_n_samples=min_n_samples,
-                                               max_n_samples=max_n_samples,
-                                               random_state=rand_gen)
+                                                min_n_samples=min_n_samples,
+                                                max_n_samples=max_n_samples,
+                                                random_state=rand_gen)
     return signals, precisions, topology
 
 
@@ -780,8 +780,8 @@ def _basic_confounds(length, random_state=0):
 
 
 def add_metadata_to_bids_dataset(bids_path,
-                                  metadata,
-                                  json_file=None):
+                                 metadata,
+                                 json_file=None):
     """Add JSON file with specific metadata to BIDS dataset.
 
     Note no "BIDS validation" are performed on the metadata,
