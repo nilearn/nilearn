@@ -63,8 +63,7 @@ def test_3D__gradient_id(l1_ratio):
     assert_array_equal(gid.shape, [img.ndim + 1] + list(img.shape))
 
 
-def test_logistic_loss_derivative(n_samples=4, n_features=10, decimal=5):
-    rng = np.random.RandomState(42)
+def test_logistic_loss_derivative(rng, n_samples=4, n_features=10, decimal=5):
     X = rng.randn(n_samples, n_features)
     y = rng.randn(n_samples)
     n_features = X.shape[1]

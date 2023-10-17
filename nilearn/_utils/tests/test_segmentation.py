@@ -10,10 +10,8 @@ import pytest
 from nilearn._utils.segmentation import random_walker
 
 
-def test_modes_in_random_walker():
-    img = np.zeros((30, 30, 30)) + 0.1 * np.random.RandomState(
-        42
-    ).standard_normal(size=(30, 30, 30))
+def test_modes_in_random_walker(rng):
+    img = np.zeros((30, 30, 30)) + 0.1 * rng.standard_normal(size=(30, 30, 30))
     img[9:21, 9:21, 9:21] = 1
     img[10:20, 10:20, 10:20] = 0
     labels = np.zeros_like(img)
@@ -28,8 +26,8 @@ def test_modes_in_random_walker():
     random_walker(img, labels, beta=30)
 
 
-def test_isolated_pixel():
-    data = np.random.random((3, 3))
+def test_isolated_pixel(rng):
+    data = rng.random((3, 3))
 
     # Build the following labels with an isolated seed
     # in the bottom-right corner:
@@ -51,8 +49,8 @@ def test_isolated_pixel():
     np.testing.assert_array_equal(expected, random_walker(data, labels))
 
 
-def test_isolated_seed():
-    data = np.random.random((3, 3))
+def test_isolated_seed(rng):
+    data = rng.random((3, 3))
 
     # Build the following labels with an isolated seed
     # in the bottom-right corner:
@@ -97,7 +95,7 @@ def test_trivial_cases():
     np.testing.assert_array_equal(random_walker(img, labels), labels)
 
 
-def test_bad_inputs():
+def test_bad_inputs(rng):
     # Too few dimensions
     img = np.ones(10)
     labels = np.arange(10)
@@ -105,7 +103,6 @@ def test_bad_inputs():
         random_walker(img, labels)
 
     # Too many dimensions
-    rng = np.random.RandomState(42)
     img = rng.normal(size=(3, 3, 3, 3, 3))
     labels = np.arange(3**5).reshape(img.shape)
     with pytest.raises(ValueError):
@@ -120,7 +117,7 @@ def test_bad_inputs():
         random_walker(img, labels, spacing=(1,))
 
 
-def test_reorder_labels():
+def test_reorder_labels(rng):
     """When labels have non-consecutive integers, make them consecutive by \
     reordering them to make no gaps/differences between integers.
 
@@ -128,9 +125,7 @@ def test_reorder_labels():
 
     Issue #938, comment #14.
     """
-    data = np.zeros((5, 5)) + 0.1 * np.random.RandomState(42).standard_normal(
-        size=(5, 5)
-    )
+    data = np.zeros((5, 5)) + 0.1 * rng.standard_normal(size=(5, 5))
     data[1:5, 1:5] = 1
 
     labels = np.zeros_like(data)

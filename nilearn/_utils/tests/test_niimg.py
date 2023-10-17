@@ -59,7 +59,7 @@ def test_get_target_dtype(affine_eye):
 
 
 @pytest.mark.parametrize("no_int64_nifti", ["allow for this test"])
-def test_img_data_dtype(affine_eye, tmp_path):
+def test_img_data_dtype(rng, affine_eye, tmp_path):
     # Ignoring complex, binary, 128+ bit, RGBA
     nifti1_dtypes = (
         np.uint8,
@@ -76,7 +76,6 @@ def test_img_data_dtype(affine_eye, tmp_path):
     # Passing dtype or header is required when using int64
     # https://nipy.org/nibabel/changelog.html#api-changes-and-deprecations
     hdr = Nifti1Header()
-    rng = np.random.RandomState(42)
     for logical_dtype in nifti1_dtypes:
         dataobj = rng.uniform(0, 255, (2, 2, 2)).astype(logical_dtype)
         for on_disk_dtype in nifti1_dtypes:
