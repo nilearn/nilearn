@@ -59,7 +59,7 @@ def test_get_target_dtype(affine_eye):
 
 
 @pytest.mark.parametrize("no_int64_nifti", ["allow for this test"])
-def test_img_data_dtype(affine_eye, tmp_path):
+def test_img_data_dtype(rng, affine_eye, tmp_path):
     # Ignoring complex, binary, 128+ bit, RGBA
     nifti1_dtypes = (
         np.uint8,
