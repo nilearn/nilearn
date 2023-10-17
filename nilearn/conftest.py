@@ -112,6 +112,23 @@ def warnings_as_errors():
         yield
 
 
+@pytest.fixture(autouse=True)
+def suppress_specific_warning():
+    """Ignore internal deprecation warnings."""
+    with warnings.catch_warnings():
+        messages = (
+            "The `darkness` parameter will be deprecated.*|"
+            "`legacy_format` will default to `False`.*|"
+            "In release 0.13, this fetcher will return a dictionary.*|"
+        )
+        warnings.filterwarnings(
+            "ignore",
+            message=messages,
+            category=DeprecationWarning,
+        )
+        yield
+
+
 # ------------------------   RNG   ------------------------#
 
 

@@ -223,10 +223,8 @@ def test_compute_background_mask(affine_eye):
     # Check that we get a useful warning for empty masks
     mean_image = np.zeros((9, 9, 9))
     mean_image = Nifti1Image(mean_image, affine_eye)
-    with warnings.catch_warnings(record=True) as w:
+    with pytest.warns(MaskWarning, match="Computed an empty mask"):
         compute_background_mask(mean_image)
-    assert len(w) == 1
-    assert isinstance(w[0].message, masking.MaskWarning)
 
 
 def test_compute_brain_mask():

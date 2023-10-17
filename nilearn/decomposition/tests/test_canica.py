@@ -1,7 +1,5 @@
 """Test CanICA."""
 
-import warnings
-
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
@@ -150,17 +148,8 @@ def test_percentile_range(canica_data):
     # stess thresholding via edge case
     canica = CanICA(n_components=edge_case, threshold=float(edge_case))
 
-    with warnings.catch_warnings(record=True) as warning:
+    with pytest.warns(UserWarning, match="obtained a critical threshold"):
         canica.fit(canica_data)
-
-        # ensure a single warning is raised
-        # filter out deprecation warnings
-        warning_messages = [
-            "obtained a critical threshold" in str(w.message)
-            for w in warning
-            if not issubclass(w.category, (DeprecationWarning, FutureWarning))
-        ]
-        assert sum(warning_messages) == 1
 
 
 def test_canica_square_img(mask_img):

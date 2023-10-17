@@ -1,5 +1,3 @@
-import warnings
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -92,13 +90,9 @@ def test_check_report_dims():
     expected_warning_text = (
         "Report size has invalid values. Using default 1600x800"
     )
-    with warnings.catch_warnings(record=True) as raised_warnings:
+    with pytest.warns(UserWarning, match=expected_warning_text):
         actual_output = glmr._check_report_dims(test_input)
-    raised_warnings_texts = [
-        str(warning_.message) for warning_ in raised_warnings
-    ]
     assert actual_output == expected_output
-    assert expected_warning_text in raised_warnings_texts
 
 
 def test_coerce_to_dict_with_string():
