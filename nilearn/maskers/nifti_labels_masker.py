@@ -22,8 +22,9 @@ class _ExtractionFunctor:
         self.mask_img = mask_img
 
     def __call__(self, imgs):
-        from ..regions.signal_extraction import\
-            _img_to_signals_labels_with_masked_atlas
+        from ..regions.signal_extraction import (
+            _img_to_signals_labels_with_masked_atlas,
+        )
 
         signals, labels, masked_labels_img =\
             _img_to_signals_labels_with_masked_atlas(
@@ -543,7 +544,6 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             inputs.
 
         """
-
         # We handle the resampling of labels separately because the affine of
         # the labels image should not impact the extraction of the signal.
 

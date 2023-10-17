@@ -464,7 +464,7 @@ def test_signals_extraction_with_labels_with_mask_return_masked_atlas(
     assert list(np.unique(labels_data_r)) == [0, 1, 2, 5]
 
 
-def test_signal_extraction_with_maps(affine_eye, shape_3d_default):
+def test_signal_extraction_with_maps(affine_eye, shape_3d_default, rng):
     # Generate signal imgs
     rng = np.random.RandomState(42)
     maps_img, mask_img = generate_maps(shape_3d_default, N_REGIONS)
