@@ -332,7 +332,7 @@ latex_documents = [
         "nilearn.tex",
         "NeuroImaging with scikit-learn",
         "Gaël Varoquaux and Alexandre Abraham"
-        + r"\\\relax ~\\\relax http://nilearn.github.io",
+        + r"\\\relax ~\\\relax https://nilearn.github.io",
         "manual",
     ),
 ]

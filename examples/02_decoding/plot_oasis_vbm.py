@@ -2,15 +2,15 @@
 Voxel-Based Morphometry on Oasis dataset
 ========================================
 
-This example uses Voxel-Based Morphometry (VBM) to study the relationship
-between aging and gray matter density.
+This example uses Voxel-Based Morphometry (:term:`VBM`)
+to study the relationship between aging and gray matter density.
 
-The data come from the `OASIS <http://www.oasis-brains.org/>`_ project.
+The data come from the `OASIS <https://www.oasis-brains.org/>`_ project.
 If you use it, you need to agree with the data usage agreement available
 on the website.
 
-It has been run through a standard VBM pipeline (using SPM8 and
-NewSegment) to create VBM maps, which we study here.
+It has been run through a standard :term:`VBM` pipeline (using SPM8 and
+NewSegment) to create :term:`VBM` maps, which we study here.
 
 Predictive modeling analysis: VBM bio-markers of aging?
 -------------------------------------------------------
@@ -22,19 +22,20 @@ usage.
 Note that for an actual predictive modeling study of aging, the study
 should be ran on the full set of subjects. Also, all parameters should be set
 by cross-validation. This includes the smoothing applied to the data and the
-number of features selected by the ANOVA step. Indeed, even these
+number of features selected by the :term:`ANOVA` step. Indeed, even these
 data-preparation parameter impact significantly the prediction score.
 
 
 Also, parameters such as the smoothing should be applied to the data and the
-number of features selected by the ANOVA step should be set by nested
+number of features selected by the :term:`ANOVA` step should be set by nested
 cross-validation, as they impact significantly the prediction score.
 
 Brain mapping with mass univariate
 ----------------------------------
 
-SVM weights are very noisy, partly because heavy smoothing is detrimental
-for the prediction here. A standard analysis using mass-univariate GLM
+:term:`SVM` weights are very noisy,
+partly because heavy smoothing is detrimental for the prediction here.
+A standard analysis using mass-univariate :term:`GLM`
 (here permuted to have exact correction for multiple comparisons) gives a
 much clearer view of the important regions.
 
@@ -107,14 +108,14 @@ variance_threshold.fit_transform(gm_maps_masked)
 # decoding process
 mask = nifti_masker.inverse_transform(variance_threshold.get_support())
 
-# %%
-# Prediction pipeline with ANOVA and SVR using
+# %%#
+# Prediction pipeline with :term:`ANOVA` and SVR using
 # :class:`nilearn.decoding.DecoderRegressor` Object
-
+#
 # In nilearn we can benefit from the built-in DecoderRegressor object to
-# do ANOVA with SVR instead of manually defining the whole pipeline.
+# do :term:`ANOVA` with SVR instead of manually defining the whole pipeline.
 # This estimator also uses Cross Validation to select best models and ensemble
-# them. Furthermore, you can pass n_jobs=<some_high_value> to the
+# them. Furthermore, you can pass ``n_jobs=<some_high_value>`` to the
 # DecoderRegressor class to take advantage of a multi-core system.
 # To save time (because these are anat images with many voxels), we include
 # only the 1-percent voxels most correlated with the age variable to fit. We

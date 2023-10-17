@@ -22,7 +22,7 @@ Multi-subject ICA: CanICA
 
     * G. Varoquaux et al. "A group model for stable multi-subject ICA on
       fMRI datasets", `NeuroImage Vol 51 (2010)
-      <http://www.sciencedirect.com/science/article/pii/S1053811910001618>`_, p. 288-299
+      <https://www.sciencedirect.com/science/article/pii/S1053811910001618>`_, p. 288-299
 
 Objective
 ----------
@@ -34,9 +34,9 @@ to arrive at consensus components.
 
 .. topic:: **Nilearn data for examples**
 
-   Nilearn provides easy-to-analyze data to explore functional connectivity and resting: the
-   `brain development dataset <https://osf.io/5hju4/files/>`_, which
-   has been preprocessed using `FMRIPrep and Nilearn <https://osf.io/wjtyq/>`_
+   Nilearn provides easy-to-analyze data to explore :term:`functional connectivity`
+   and resting: the `brain development dataset <https://osf.io/5hju4/files/>`_,
+   which has been preprocessed using `FMRIPrep and Nilearn <https://osf.io/wjtyq/>`_
    We use nilearn functions to fetch data from Internet and get the
    filenames (:ref:`more on data loading <loading_data>`).
 

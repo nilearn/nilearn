@@ -2,8 +2,8 @@
 Extracting signals from a brain parcellation
 ============================================
 
-Here we show how to extract signals from a brain parcellation and compute
-a correlation matrix.
+Here we show how to extract signals from a brain :term:`parcellation`
+and compute a correlation matrix.
 
 We also show the importance of defining good confounds signals: the
 first correlation matrix is computed after regressing out simple
@@ -18,7 +18,7 @@ guideline of :term:`fMRIPrep` confounds documentation
 One reference that discusses the importance of confounds is `Varoquaux and
 Craddock, Learning and comparing functional connectomes across subjects,
 NeuroImage 2013
-<http://www.sciencedirect.com/science/article/pii/S1053811913003340>`_.
+<https://doi.org/10.1016/j.neuroimage.2013.04.007>`_.
 
 This is just a code example, see the :ref:`corresponding section in the
 documentation <parcellation_time_series>` for more.
@@ -41,14 +41,14 @@ labels = dataset.labels
 
 print(f"Atlas ROIs are located in nifti image (4D) at: {atlas_filename}")
 
-# One subject of brain development fmri data
+# One subject of brain development fMRI data
 data = datasets.fetch_development_fmri(n_subjects=1, reduce_confounds=True)
 fmri_filenames = data.func[0]
 reduced_confounds = data.confounds[0]  # This is a preselected set of confounds
 
-# %%
-# Extract signals on a parcellation defined by labels
-# ---------------------------------------------------
+# %%#
+# Extract signals on a :term:`parcellation` defined by labels
+# -----------------------------------------------------------
 # Using the NiftiLabelsMasker
 from nilearn.maskers import NiftiLabelsMasker
 

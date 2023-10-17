@@ -126,7 +126,7 @@ def test_sort_input_dataframe(input_df):
     ]
 
 
-def test_second_level_input_as_3D_images(rng):
+def test_second_level_input_as_3D_images(rng, affine_eye):
     """Test second level model with a list 3D image filenames as input.
 
     Should act as a regression test for:
@@ -136,10 +136,9 @@ def test_second_level_input_as_3D_images(rng):
     shape = (7, 8, 9)
     images = []
     nb_subjects = 10
-    affine = np.eye(4)
     for _ in range(nb_subjects):
         data = rng.rand(*shape)
-        images.append(Nifti1Image(data, affine))
+        images.append(Nifti1Image(data, affine_eye))
 
     with testing.write_tmp_imgs(*images, create_files=True) as filenames:
         second_level_input = filenames
@@ -178,7 +177,7 @@ def test_process_second_level_input_as_firstlevelmodels():
     assert sample_map.shape == (7, 8, 9, 1)
 
 
-def test_check_affine_first_level_models():
+def test_check_affine_first_level_models(affine_eye):
     shapes, rk = [(7, 8, 9, 15)], 3
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk
@@ -197,7 +196,7 @@ def test_check_affine_first_level_models():
     # add a model with a different affine
     # should raise an error
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
-        shapes, rk, affine=np.eye(4) * 2
+        shapes, rk, affine=affine_eye * 2
     )
     list_of_flm.append(
         FirstLevelModel(mask_img=mask, subject_label="sub-4").fit(
@@ -445,7 +444,7 @@ def test_infer_effect_maps_error(tmp_path):
         _infer_effect_maps(second_level_input, "b")
 
 
-def test_high_level_glm_with_paths(tmp_path):
+def test_high_level_glm_with_paths(affine_eye, tmp_path):
     func_img, mask = fake_fmri_data(file_path=tmp_path)
 
     model = SecondLevelModel(mask_img=mask)
@@ -462,7 +461,7 @@ def test_high_level_glm_with_paths(tmp_path):
 
     # try with target_shape
     target_shape = (10, 10, 10)
-    target_affine = np.eye(4)
+    target_affine = affine_eye
     target_affine[0, 3] = 1
     model = SecondLevelModel(
         mask_img=mask,

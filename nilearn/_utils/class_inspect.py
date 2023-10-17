@@ -57,13 +57,12 @@ def enclosing_scope_name(ensure_estimator=True, stack_level=2):
 
     Parameters
     ----------
-    ensure_estimator : boolean, optional
+    ensure_estimator : boolean, default=True
         If true, find the enclosing object deriving from 'BaseEstimator'.
-        Default=True.
 
-    stack_level : integer, optional
+    stack_level : integer, default=2
         If ensure_estimator is not True, stack_level quantifies the
-        number of frame we will go up. Default=2.
+        number of frame we will go up.
 
     """
     try:

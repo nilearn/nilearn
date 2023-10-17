@@ -6,7 +6,7 @@ Full step-by-step example of fitting a :term:`GLM`
 to perform a first and second level
 analysis in a :term:`BIDS` dataset and visualizing the results.
 Details about the :term:`BIDS` standard can be consulted at
-`http://bids.neuroimaging.io/ <http://bids.neuroimaging.io/>`_.
+`https://bids.neuroimaging.io/ <https://bids.neuroimaging.io/>`_.
 
 More specifically:
 
@@ -19,9 +19,9 @@ More specifically:
    images were already normalized to the same :term:`MNI` space.
 """
 
-# %%
-# Fetch example BIDS dataset
-# --------------------------
+# %%#
+# Fetch example :term:`BIDS` dataset
+# ----------------------------------
 # We download a simplified :term:`BIDS` dataset made available for illustrative
 # purposes. It contains only the necessary
 # information to run a statistical analysis using Nilearn. The raw data
@@ -89,8 +89,8 @@ print(models_events[0][0]["trial_type"].value_counts())
 # ----------------------------
 # Now we simply fit each first level model and plot for each subject the
 # :term:`contrast` that reveals the language network (language - string).
-# Notice that we can define a contrast using the names of the conditions
-# specified in the events dataframe.
+# Notice that we can define a :term:`contrast`
+# using the names of the conditions specified in the events dataframe.
 # Sum, subtraction and scalar multiplication are allowed.
 
 # %%
@@ -150,7 +150,7 @@ zmap = second_level_model.compute_contrast(
 )
 
 # %%
-# The group level contrast reveals a left lateralized fronto-temporal
+# The group level :term:`contrast` reveals a left lateralized fronto-temporal
 # language network.
 plotting.plot_glass_brain(
     zmap,

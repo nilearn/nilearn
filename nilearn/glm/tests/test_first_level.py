@@ -975,10 +975,10 @@ def test_first_level_contrast_computation_errors(tmp_path):
         model.compute_contrast(c1, "", [])
 
 
-def test_first_level_with_scaling():
+def test_first_level_with_scaling(affine_eye):
     shapes, rk = [(3, 1, 1, 2)], 1
     fmri_data = list()
-    fmri_data.append(Nifti1Image(np.zeros((1, 1, 1, 2)) + 6, np.eye(4)))
+    fmri_data.append(Nifti1Image(np.zeros((1, 1, 1, 2)) + 6, affine_eye))
     design_matrices = list()
     design_matrices.append(
         pd.DataFrame(
@@ -1005,7 +1005,7 @@ def test_first_level_with_scaling():
     assert glm_parameters["signal_scaling"] == 0
 
 
-def test_first_level_with_no_signal_scaling():
+def test_first_level_with_no_signal_scaling(affine_eye):
     """Test to ensure that the FirstLevelModel works correctly
     with a signal_scaling==False.
 
@@ -1030,7 +1030,7 @@ def test_first_level_with_no_signal_scaling():
     first_level = FirstLevelModel(
         mask_img=False, noise_model="ols", signal_scaling=False
     )
-    fmri_data.append(Nifti1Image(np.zeros((1, 1, 1, 2)) + 6, np.eye(4)))
+    fmri_data.append(Nifti1Image(np.zeros((1, 1, 1, 2)) + 6, affine_eye))
 
     first_level.fit(fmri_data, design_matrices=design_matrices)
     # trivial test of signal_scaling value

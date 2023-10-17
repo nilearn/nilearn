@@ -2,17 +2,17 @@
 Comparing connectomes on different reference atlases
 ====================================================
 
-This examples shows how to turn a parcellation into connectome for
+This examples shows how to turn a :term:`parcellation` into connectome for
 visualization. This requires choosing centers for each parcel
 or network, via :func:`nilearn.plotting.find_parcellation_cut_coords` for
-parcellation based on labels and
+:term:`parcellation` based on labels and
 :func:`nilearn.plotting.find_probabilistic_atlas_cut_coords` for
-parcellation based on probabilistic values.
+:term:`parcellation` based on probabilistic values.
 
 In the intermediary steps, we make use of
 :class:`nilearn.maskers.MultiNiftiLabelsMasker` and
 :class:`nilearn.maskers.MultiNiftiMapsMasker` to extract time series from nifti
-objects from multiple subjects using different parcellation atlases.
+objects from multiple subjects using different :term:`parcellation` atlases.
 
 The time series of all subjects of the brain development dataset are
 concatenated and given directly to

@@ -15,8 +15,8 @@ def _optimize_scrub(motion_outliers_index, n_scans, scrub):
     n_scans : int
         Number of volumes in the functional image.
 
-    scrub : int
-        Minimal segment length. Default to 5 volumes,
+    scrub : int, default=5
+        Minimal segment length.
 
     Returns
     -------

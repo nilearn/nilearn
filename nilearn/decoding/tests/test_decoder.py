@@ -922,7 +922,7 @@ def test_decoder_multiclass_classification_apply_mask_shape():
     assert X_masked.shape == X_init.shape
 
 
-def test_decoder_multiclass_classification_apply_mask_attributes():
+def test_decoder_multiclass_classification_apply_mask_attributes(affine_eye):
     """Test whether model.masker_ have some desire attributes \
     manually set after calling _apply_mask.
 
@@ -938,7 +938,7 @@ def test_decoder_multiclass_classification_apply_mask_attributes():
     )
     X, _ = to_niimgs(X_init, [5, 5, 5])
 
-    target_affine = 2 * np.eye(4)
+    target_affine = 2 * affine_eye
     target_shape = (1, 1, 1)
     t_r = 1
     high_pass = 1

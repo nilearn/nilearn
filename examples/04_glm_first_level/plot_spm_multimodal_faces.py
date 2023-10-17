@@ -2,9 +2,11 @@
 Single-subject data (two sessions) in native space
 ==================================================
 
-The example shows the analysis of an SPM dataset studying face perception.  The
-analysis is performed in native space. Realignment parameters are provided with
-the input images, but those have not been resampled to a common space.
+The example shows the analysis of an :term:`SPM` dataset
+studying face perception.
+The analysis is performed in native space.
+Realignment parameters are provided with the input images,
+but those have not been resampled to a common space.
 
 The experimental paradigm is simple, with two conditions; viewing a face image
 or a scrambled face image, supposedly with the same low-level statistical
@@ -14,7 +16,7 @@ For details on the data, please see:
 Henson, R.N., Goshen-Gottstein, Y., Ganel, T., Otten, L.J., Quayle, A.,
 Rugg, M.D. Electrophysiological and haemodynamic correlates of face
 perception, recognition and priming. Cereb Cortex. 2003 Jul;13(7):793-805.
-http://www.dx.doi.org/10.1093/cercor/13.7.793
+https://doi.org/10.1093/cercor/13.7.793
 
 This example takes a lot of time because the input are lists of 3D images
 sampled in different positions (encoded by different affine functions).
@@ -25,7 +27,7 @@ print(__doc__)
 
 
 # %%
-# Fetch the SPM multimodal_faces data.
+# Fetch the :term:`SPM` multimodal_faces data.
 from nilearn.datasets import fetch_spm_multimodal_fmri
 
 subject_data = fetch_spm_multimodal_fmri()
@@ -99,7 +101,8 @@ for idx, img in enumerate(fmri_img, start=1):
 # %%
 # We can specify basic contrasts (to get :term:`beta<Parameter Estimate>`
 # maps).
-# We start by specifying canonical contrast that isolate design matrix columns.
+# We start by specifying canonical :term:`contrast`
+# that isolate design matrix columns.
 contrast_matrix = np.eye(design_matrix.shape[1])
 basic_contrasts = {
     column: contrast_matrix[i]
@@ -123,8 +126,8 @@ contrasts = {
 }
 
 # %%
-# Fit the GLM for the 2 sessions by specifying a FirstLevelModel and then
-# fitting it.
+# Fit the :term:`GLM` for the 2 sessions
+# by specifying a FirstLevelModel and then fitting it.
 from nilearn.glm.first_level import FirstLevelModel
 
 print("Fitting a GLM")

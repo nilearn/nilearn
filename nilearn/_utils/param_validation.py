@@ -35,10 +35,10 @@ def check_threshold(threshold, data, percentile_func, name="threshold"):
         Percentile function for example scipy.stats.scoreatpercentile
         to calculate the score on the data.
 
-    name : str, optional
+    name : str, default='threshold'
         A string just used for representing
         the name of the threshold for a precise
-        error message. Default='threshold'.
+        error message.
 
     Returns
     -------
@@ -115,8 +115,8 @@ def _adjust_screening_percentile(screening_percentile, mask_img, verbose=0):
     mask_img : nibabel image object
         Input image whose voxel dimensions are to be computed.
 
-    verbose : int, optional
-        Verbosity level. Default=0.
+    verbose : int, default=0
+        Verbosity level.
 
     Returns
     -------
@@ -177,26 +177,27 @@ def check_feature_screening(
     Parameters
     ----------
     screening_percentile : float in the interval [0, 100]
-        Percentile value for ANOVA univariate feature selection. A value of
-        100 means 'keep all features'. This percentile is expressed
+        Percentile value for :term:`ANOVA` univariate feature selection.
+        A value of 100 means 'keep all features'.
+        This percentile is expressed
         w.r.t the volume of a standard (MNI152) brain, and so is corrected
         at runtime by premultiplying it with the ratio of the volume of the
         mask of the data and volume of a standard brain.
 
     mask_img : nibabel image object
-        Input image whose voxel dimensions are to be computed.
+        Input image whose :term:`voxel` dimensions are to be computed.
 
     is_classification : bool
         If is_classification is True, it indicates that a classification task
         is performed. Otherwise, a regression task is performed.
 
-    verbose : int, optional
-        Verbosity level. Default=0.
+    verbose : int, default=0
+        Verbosity level.
 
     Returns
     -------
     selector : SelectPercentile instance
-       Used to perform the ANOVA univariate feature selection.
+       Used to perform the :term:`ANOVA` univariate feature selection.
 
     """
     f_test = f_classif if is_classification else f_regression

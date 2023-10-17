@@ -2,8 +2,8 @@
 Predicted time series and residuals
 ===================================
 
-Here we fit a First Level GLM with the `minimize_memory`-argument set to
-`False`.
+Here we fit a First Level :term:`GLM` with the `minimize_memory`-argument
+set to `False`.
 By doing so, the `FirstLevelModel`-object stores the residuals, which we can
 then inspect.
 Also, the predicted time series can be extracted, which is useful to assess the
@@ -144,7 +144,8 @@ fig2.tight_layout()
 # Plot R-squared
 # --------------
 # Because we stored the residuals, we can plot the R-squared: the proportion of
-# explained variance of the GLM as a whole. Note that the R-squared is markedly
+# explained variance of the :term:`GLM` as a whole.
+# Note that the R-squared is markedly
 # lower deep down the brain, where there is more physiological noise and we are
 # further away from the receive coils. However, R-Squared should be interpreted
 # with a grain of salt. The R-squared value will necessarily increase with the
@@ -153,7 +154,8 @@ fig2.tight_layout()
 # unable to say whether a voxel/region has a large R-squared value because the
 # voxel/region is responsive to the experiment (such as active or rest) or
 # because the voxel/region fits the noise factors (such as drift or motion)
-# that could be present in the GLM. To isolate the influence of the experiment,
+# that could be present in the :term:`GLM`.
+# To isolate the influence of the experiment,
 # we can use an F-test as shown in the next section.
 
 plotting.plot_stat_map(
@@ -167,10 +169,12 @@ plotting.plot_stat_map(
 # %%
 # Calculate and Plot F-test
 # -------------------------
-# The F-test tells you how well the GLM fits effects of interest such as the
-# active and rest conditions together. This is different from R-squared, which
-# tells you how well the overall GLM fits the data, including active, rest and
-# all the other columns in the design matrix such as drift and motion.
+# The F-test tells you how well the :term:`GLM` fits effects of interest
+# such as the active and rest conditions together.
+# This is different from R-squared, which
+# tells you how well the overall :term:`GLM` fits the data,
+# including active, rest and all the other columns
+# in the design matrix such as drift and motion.
 import numpy as np
 
 design_matrix = fmri_glm.design_matrices_[0]

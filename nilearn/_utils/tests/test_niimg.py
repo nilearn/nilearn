@@ -11,9 +11,9 @@ from nilearn.image import get_data, new_img_like
 
 
 @pytest.fixture
-def img1():
+def img1(affine_eye):
     data = np.ones((2, 2, 2, 2))
-    return Nifti1Image(data, affine=np.eye(4))
+    return Nifti1Image(data, affine=affine_eye)
 
 
 def test_copy_img():
@@ -38,8 +38,8 @@ def test_new_img_like_side_effect(img1):
 
 
 @pytest.mark.parametrize("no_int64_nifti", ["allow for this test"])
-def test_get_target_dtype():
-    img = Nifti1Image(np.ones((2, 2, 2), dtype=np.float64), affine=np.eye(4))
+def test_get_target_dtype(affine_eye):
+    img = Nifti1Image(np.ones((2, 2, 2), dtype=np.float64), affine=affine_eye)
     assert get_data(img).dtype.kind == "f"
     dtype_kind_float = niimg._get_target_dtype(
         get_data(img).dtype, target_dtype="auto"
@@ -50,7 +50,7 @@ def test_get_target_dtype():
     hdr = Nifti1Header()
     hdr.set_data_dtype(np.int64)
     data = np.ones((2, 2, 2), dtype=np.int64)
-    img2 = Nifti1Image(data, affine=np.eye(4), header=hdr)
+    img2 = Nifti1Image(data, affine=affine_eye, header=hdr)
     assert get_data(img2).dtype.kind == img2.get_data_dtype().kind == "i"
     dtype_kind_int = niimg._get_target_dtype(
         get_data(img2).dtype, target_dtype="auto"
@@ -59,7 +59,7 @@ def test_get_target_dtype():
 
 
 @pytest.mark.parametrize("no_int64_nifti", ["allow for this test"])
-def test_img_data_dtype(tmp_path, rng):
+def test_img_data_dtype(affine_eye, tmp_path):
     # Ignoring complex, binary, 128+ bit, RGBA
     nifti1_dtypes = (
         np.uint8,
@@ -80,7 +80,7 @@ def test_img_data_dtype(tmp_path, rng):
         dataobj = rng.uniform(0, 255, (2, 2, 2)).astype(logical_dtype)
         for on_disk_dtype in nifti1_dtypes:
             hdr.set_data_dtype(on_disk_dtype)
-            img = Nifti1Image(dataobj, np.eye(4), header=hdr)
+            img = Nifti1Image(dataobj, affine_eye, header=hdr)
             img.to_filename(tmp_path / "test.nii")
             loaded = nb.load(tmp_path / "test.nii")
             # To verify later that sometimes these differ meaningfully

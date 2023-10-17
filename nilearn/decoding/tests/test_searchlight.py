@@ -54,14 +54,14 @@ def test_searchlight_small_radius():
     assert sl.scores_[2, 2, 2] == 1.0
 
 
-def test_searchlight_mask_far_from_signal():
+def test_searchlight_mask_far_from_signal(affine_eye):
     frames = 30
     data_img, cond, mask_img = _make_searchlight_test_data(frames)
     cv, n_jobs = define_cross_validation()
 
     process_mask = np.zeros((5, 5, 5), dtype=bool)
     process_mask[0, 0, 0] = True
-    process_mask_img = Nifti1Image(process_mask.astype("uint8"), np.eye(4))
+    process_mask_img = Nifti1Image(process_mask.astype("uint8"), affine_eye)
     sl = searchlight.SearchLight(
         mask_img,
         process_mask_img=process_mask_img,
@@ -153,7 +153,10 @@ def test_searchlight_group_cross_validation(rng):
     assert sl.scores_[2, 2, 2] == 1.0
 
 
-def test_searchlight_group_cross_validation_with_extra_group_variable(rng):
+def test_searchlight_group_cross_validation_with_extra_group_variable(
+    rng,
+    affine_eye,
+):
     frames = 30
     data_img, cond, mask_img = _make_searchlight_test_data(frames)
     cv, n_jobs = define_cross_validation()
@@ -175,7 +178,7 @@ def test_searchlight_group_cross_validation_with_extra_group_variable(rng):
 
     # Check whether searchlight works on list of 3D images
     data = rng.rand(5, 5, 5)
-    data_img = Nifti1Image(data, affine=np.eye(4))
+    data_img = Nifti1Image(data, affine=affine_eye)
     imgs = [data_img] * 12
 
     # labels

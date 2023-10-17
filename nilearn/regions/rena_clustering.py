@@ -193,9 +193,8 @@ def _nn_connectivity(connectivity, threshold=1e-7):
     connectivity : a sparse matrix in COOrdinate format.
         Sparse matrix representation of the weighted adjacency graph.
 
-    threshold : float in the close interval [0, 1], optional
+    threshold : float in the close interval [0, 1], default=1e-7
         The threshold is set to handle eccentricities.
-        Default=1e-7.
 
     Returns
     -------
@@ -255,9 +254,8 @@ def _reduce_data_and_connectivity(
     connectivity : a sparse matrix in COOrdinate format.
         Sparse matrix representation of the weighted adjacency graph.
 
-    threshold : float in the close interval [0, 1], optional
+    threshold : float in the close interval [0, 1], default=1e-7
         The threshold is set to handle eccentricities.
-        Default=1e-7.
 
     Returns
     -------
@@ -316,9 +314,8 @@ def _nearest_neighbor_grouping(X, connectivity, n_clusters, threshold=1e-7):
     n_clusters : :obj:`int`
         The number of clusters to find.
 
-    threshold : :obj:`float` in the close interval [0, 1], optional
+    threshold : :obj:`float` in the close interval [0, 1], default=1e-7
         The threshold is set to handle eccentricities.
-        Default=1e-7.
 
     Returns
     -------
@@ -383,15 +380,14 @@ def recursive_neighbor_agglomeration(
     n_clusters : :obj:`int`
         The number of clusters to find.
 
-    n_iter : :obj:`int`, optional
-        Number of iterations. Default=10.
+    n_iter : :obj:`int`, default=10
+        Number of iterations.
 
-    threshold : :obj:`float` in the close interval [0, 1], optional
+    threshold : :obj:`float` in the close interval [0, 1], default=1e-7
         The threshold is set to handle eccentricities.
-        Default=1e-7.
 
-    verbose : :obj:`int`, optional
-        Verbosity level. Default=0.
+    verbose : :obj:`int`, default=0
+        Verbosity level.
 
     Returns
     -------
@@ -445,20 +441,18 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
     mask_img : Niimg-like object
         Object used for masking the data.
 
-    n_clusters : :obj:`int`, optional
-        The number of clusters to find. Default=2.
+    n_clusters : :obj:`int`, default=2
+        The number of clusters to find.
 
-    scaling : :obj:`bool`, optional
+    scaling : :obj:`bool`, default=False
         If scaling is True, each cluster is scaled by the square root of its
-        size, preserving the l2-norm of the image. Default=False.
+        size, preserving the l2-norm of the image.
 
-    n_iter : :obj:`int`, optional
+    n_iter : :obj:`int`, default=10
         Number of iterations of the recursive neighbor agglomeration.
-        Default=10.
 
-    threshold : :obj:`float` in the open interval (0., 1.), optional
+    threshold : :obj:`float` in the open interval (0., 1.), default=1e-7
         Threshold used to handle eccentricities.
-        Default=1e-7.
     %(memory)s
     %(memory_level1)s
     %(verbose0)s

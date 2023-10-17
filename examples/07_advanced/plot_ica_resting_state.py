@@ -6,8 +6,8 @@ This example is meant to demonstrate nilearn as a low-level tools used to
 combine feature extraction with a multivariate decomposition algorithm
 for movie-watching.
 
-This example is a toy. To apply ICA to fmri timeseries data, it is advised
-to look at the example
+This example is a toy. To apply ICA to :term:`fMRI` timeseries data,
+it is advised to look at the example
 :ref:`sphx_glr_auto_examples_03_connectivity_plot_compare_decomposition.py`.
 
 The example here applies the scikit-learn :term:`ICA` to movie watching
@@ -36,7 +36,8 @@ print(f"First subject functional nifti image (4D) is at: {dataset.func[0]}")
 # Preprocess
 from nilearn.maskers import NiftiMasker
 
-# This is fmri timeseries data: the background has not been removed yet,
+# This is fMRI timeseries data:
+# the background has not been removed yet,
 # thus we need to use mask_strategy='epi' to compute the mask from the
 # EPI images
 masker = NiftiMasker(

@@ -115,7 +115,7 @@ Loading the data into nilearn
 
 * **Loading the behavioral labels**: Behavioral information is often stored
   in a text file such as a CSV, and must be load with
-  **numpy.recfromcsv** or `pandas <http://pandas.pydata.org/>`_
+  **numpy.recfromcsv** or `pandas <https://pandas.pydata.org/>`_
 
 * **Sample mask**: Masking some of the time points
   may be useful to
@@ -168,14 +168,14 @@ A first estimator
 To perform decoding, we need a model that can learn some relations
 between **X** (the imaging data) and **y** the condition label. As a default,
 Nilearn uses `Support Vector Classifier
-<http://scikit-learn.org/stable/modules/svm.html>`_ (or SVC) with a
+<https://scikit-learn.org/stable/modules/svm.html>`_ (or SVC) with a
 linear kernel. This is a simple yet performant choice that works in a wide
 variety of problems.
 
 .. seealso::
 
    `The scikit-learn documentation on SVMs
-   <http://scikit-learn.org/stable/modules/svm.html>`_
+   <https://scikit-learn.org/stable/modules/svm.html>`_
 
 Decoding made easy
 -------------------
@@ -286,7 +286,7 @@ Other metrics, such as the :term:`AUC` (Area Under the Curve, for the
 
 .. seealso::
   the `list of scoring options
-  <http://scikit-learn.org/stable/modules/model_evaluation.html#common-cases-predefined-values>`_
+  <https://scikit-learn.org/stable/modules/model_evaluation.html#common-cases-predefined-values>`_
 
 Prediction accuracy at chance using simple strategies
 .....................................................
@@ -357,7 +357,7 @@ Dimension reduction with feature selection
 If we do not start from a mask of the relevant regions, there is a very
 large number of voxels and not all are useful for
 face vs cat prediction. We thus add a `feature selection
-<http://scikit-learn.org/stable/modules/feature_selection.html>`_
+<https://scikit-learn.org/stable/modules/feature_selection.html>`_
 procedure. The idea is to select the ``k`` voxels most correlated to the
 task through a simple F-score based feature selection (a.k.a.
 `Anova <https://en.wikipedia.org/wiki/Analysis_of_variance#The_F-test>`_)
