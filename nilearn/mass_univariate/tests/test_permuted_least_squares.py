@@ -83,8 +83,7 @@ def dummy_design():
 
 
 @pytest.fixture
-def confounding_vars():
-    rng = check_random_state(RANDOM_STATE)
+def confounding_vars(rng):
     return rng.randn(N_SAMPLES, N_COVARS)
 
 
@@ -97,9 +96,7 @@ def masker(affine_eye):
 
 
 @pytest.fixture(scope="module")
-def cluster_level_design(random_state=RANDOM_STATE):
-    rng = check_random_state(random_state)
-
+def cluster_level_design(rng):
     # create design
     target_var1 = np.arange(0, 10).reshape((-1, 1))  # positive effect
     voxel_vars = np.hstack(
@@ -215,10 +212,9 @@ def check_ktest_p_values_distribution_and_mse(all_kstest_pvals, all_mse):
 
 @pytest.mark.parametrize("model_intercept", [True, False])
 def test_permuted_ols_check_h0_noeffect_labelswap_centered(
-    model_intercept, random_state=RANDOM_STATE
+    rng, model_intercept
 ):
     # create dummy design with no effect
-    rng = check_random_state(random_state)
     target_var = rng.randn(N_SAMPLES, 1)
 
     centered_var = np.arange(N_SAMPLES, dtype="f8").reshape((-1, 1))
@@ -232,10 +228,9 @@ def test_permuted_ols_check_h0_noeffect_labelswap_centered(
 
 
 def test_permuted_ols_check_h0_noeffect_labelswap_uncentered_var_and_intercept(
-    random_state=RANDOM_STATE,
+    rng,
 ):
     # create dummy design with no effect
-    rng = check_random_state(random_state)
     target_var = rng.randn(N_SAMPLES, 1)
 
     uncentered_var = np.arange(N_SAMPLES, dtype="f8").reshape((-1, 1))
@@ -247,15 +242,13 @@ def test_permuted_ols_check_h0_noeffect_labelswap_uncentered_var_and_intercept(
     check_ktest_p_values_distribution_and_mse(all_kstest_pvals, all_mse)
 
 
-def test_permuted_ols_check_h0_noeffect_signswap(random_state=RANDOM_STATE):
+def test_permuted_ols_check_h0_noeffect_signswap(rng):
     """Check that h0 is close to the theoretical distribution \
     for permuted OLS with sign swap.
 
     Theoretical distribution is known for this simple design \
         (= t(n_samples - dof)).
     """
-    rng = check_random_state(random_state)
-
     # create dummy design with no effect
     target_var = rng.randn(N_SAMPLES, 1)
     n_regressors = 1
@@ -443,12 +436,11 @@ def test_permuted_ols_with_covar_with_intercept_in_confonding_vars(
 
 
 def test_permuted_ols_with_multiple_constants_and_covars(
-    design, random_state=RANDOM_STATE
+    design, rng, random_state=RANDOM_STATE
 ):
     target_var, tested_var, n_descriptors, n_regressors = design
 
     n_covars = 2
-    rng = check_random_state(random_state)
 
     confounding_vars = np.hstack(
         (rng.randn(N_SAMPLES, n_covars), np.ones([N_SAMPLES, 2]))
@@ -543,9 +535,7 @@ def test_permuted_ols_nocovar_multivariate(random_state=RANDOM_STATE):
 # Tests for sign swapping permutation scheme
 
 
-def test_permuted_ols_intercept_nocovar(random_state=RANDOM_STATE):
-    rng = check_random_state(random_state)
-
+def test_permuted_ols_intercept_nocovar(rng, random_state=RANDOM_STATE):
     n_descriptors = 10
     n_regressors = 1
     tested_var = np.ones((N_SAMPLES, n_regressors))
@@ -583,10 +573,8 @@ def test_permuted_ols_intercept_nocovar(random_state=RANDOM_STATE):
 
 
 def test_permuted_ols_intercept_statsmodels_withcovar(
-    random_state=RANDOM_STATE,
+    rng, random_state=RANDOM_STATE
 ):
-    rng = check_random_state(random_state)
-
     n_descriptors = 10
     n_regressors = 1
     n_covars = 2
@@ -624,11 +612,9 @@ def test_permuted_ols_intercept_statsmodels_withcovar(
     assert output_intercept["t"].shape == (n_regressors, n_descriptors)
 
 
-def test_one_sided_versus_two_test(random_state=RANDOM_STATE):
+def test_one_sided_versus_two_test(rng, random_state=RANDOM_STATE):
     """Check that a positive effect is always better \
     recovered with one-sided."""
-    rng = check_random_state(random_state)
-
     n_descriptors = 100
     n_regressors = 1
     target_var = rng.randn(N_SAMPLES, n_descriptors)

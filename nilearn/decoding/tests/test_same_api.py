@@ -78,8 +78,7 @@ def to_niimgs(X, dim):
     return Nifti1Image(X, affine), Nifti1Image(mask.astype(np.float64), affine)
 
 
-def test_same_energy_calculus_pure_lasso():
-    rng = check_random_state(42)
+def test_same_energy_calculus_pure_lasso(rng):
     X, y, w, mask = _make_data(rng=rng, masked=True)
 
     # check funcvals
@@ -95,8 +94,7 @@ def test_same_energy_calculus_pure_lasso():
     assert_array_equal(g1, g2)
 
 
-def test_lipschitz_constant_loss_mse():
-    rng = check_random_state(42)
+def test_lipschitz_constant_loss_mse(rng):
     X, _, _, mask = _make_data(rng=rng, masked=True)
     l1_ratio = 1.0
     alpha = 0.1
@@ -109,8 +107,7 @@ def test_lipschitz_constant_loss_mse():
     assert_almost_equal(a, b)
 
 
-def test_lipschitz_constant_loss_logreg():
-    rng = check_random_state(42)
+def test_lipschitz_constant_loss_logreg(rng):
     X, _, _, mask = _make_data(rng=rng, masked=True)
     l1_ratio = 1.0
     alpha = 0.1
