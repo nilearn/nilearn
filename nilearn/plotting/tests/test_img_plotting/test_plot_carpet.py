@@ -108,7 +108,7 @@ def test_plot_carpet_with_atlas(img_4d_mni, img_atlas):
 def test_plot_carpet_standardize(img_4d_mni, img_3d_ones_mni):
     """Check warning is raised and then suppressed with setting standardize."""
     match = "default strategy for standardize"
-    
+
     with pytest.warns(FutureWarning, match=match):
         plot_carpet(img_4d_mni, mask_img=img_3d_ones_mni)
 
