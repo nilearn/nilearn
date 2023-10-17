@@ -95,7 +95,7 @@ def masker(affine_eye):
     return masker
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def cluster_level_design(rng):
     # create design
     target_var1 = np.arange(0, 10).reshape((-1, 1))  # positive effect
