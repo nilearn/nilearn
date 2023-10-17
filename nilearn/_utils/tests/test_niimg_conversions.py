@@ -381,7 +381,7 @@ def test_iter_check_niimgs_error():
         list(iter_check_niimg(nofile_path))
 
 
-def testiter_check_niimgs(tmp_path, img_4d_zeros_eye):
+def test_iter_check_niimgs(tmp_path, img_4d_zeros_eye):
     img_2_4d = [[img_4d_zeros_eye, img_4d_zeros_eye]]
 
     # Create a test file
