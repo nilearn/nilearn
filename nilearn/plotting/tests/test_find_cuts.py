@@ -12,7 +12,7 @@ from nilearn.plotting.find_cuts import (
 )
 
 
-def test_find_cut_coords(rng):
+def test_find_cut_coords(affine_eye, rng):
     data = np.zeros((100, 100, 100))
     x_map, y_map, z_map = 50, 10, 40
     data[
@@ -20,8 +20,7 @@ def test_find_cut_coords(rng):
     ] = 1
 
     # identity affine
-    affine = np.eye(4)
-    img = nibabel.Nifti1Image(data, affine)
+    img = nibabel.Nifti1Image(data, affine_eye)
     mask_img = compute_epi_mask(img)
     x, y, z = find_xyz_cut_coords(img, mask_img=mask_img)
 
@@ -51,24 +50,23 @@ def test_find_cut_coords(rng):
     # Cut coords should be the center of mass rather than
     # the center of the image (10, 10, 10).
     data = np.ones((36, 43, 36))
-    affine = np.eye(4)
-    img = nibabel.Nifti1Image(data, affine)
+    img = nibabel.Nifti1Image(data, affine_eye)
     x, y, z = find_xyz_cut_coords(img, activation_threshold=1.1)
     np.testing.assert_array_equal([x, y, z], [17.5, 21.0, 17.5])
 
     data = np.zeros((20, 20, 20))
     data[4:6, 4:6, 4:6] = 1000
-    img = nibabel.Nifti1Image(data, 2 * np.eye(4))
+    img = nibabel.Nifti1Image(data, 2 * affine_eye)
     mask_data = np.ones((20, 20, 20), dtype="uint8")
-    mask_img = nibabel.Nifti1Image(mask_data, 2 * np.eye(4))
+    mask_img = nibabel.Nifti1Image(mask_data, 2 * affine_eye)
     cut_coords = find_xyz_cut_coords(img, mask_img=mask_img)
     np.testing.assert_array_equal(cut_coords, [9.0, 9.0, 9.0])
 
     # Check that a warning is given when all values are masked
     # and that the center of mass is returned
-    img = nibabel.Nifti1Image(data, np.eye(4))
+    img = nibabel.Nifti1Image(data, affine_eye)
     mask_data[np.argwhere(data == 1000)] = 0
-    mask_img = nibabel.Nifti1Image(mask_data, np.eye(4))
+    mask_img = nibabel.Nifti1Image(mask_data, affine_eye)
     with pytest.warns(
         UserWarning,
         match=("Could not determine cut coords: All values were masked."),
@@ -79,7 +77,7 @@ def test_find_cut_coords(rng):
     # Check that a warning is given when all values are masked
     # due to thresholding and that the center of mass is returned
     mask_data = np.ones((20, 20, 20), dtype="uint8")
-    mask_img = nibabel.Nifti1Image(mask_data, np.eye(4))
+    mask_img = nibabel.Nifti1Image(mask_data, affine_eye)
     with pytest.warns(
         UserWarning,
         match=(
@@ -97,28 +95,26 @@ def test_find_cut_coords(rng):
     # previously raised "ValueError: too many values to unpack"
     data_3d = rng.standard_normal(size=(10, 10, 10))
     data_4d = data_3d[..., np.newaxis]
-    affine = np.eye(4)
-    img_3d = nibabel.Nifti1Image(data_3d, affine)
-    img_4d = nibabel.Nifti1Image(data_4d, affine)
+    img_3d = nibabel.Nifti1Image(data_3d, affine_eye)
+    img_4d = nibabel.Nifti1Image(data_4d, affine_eye)
     assert find_xyz_cut_coords(img_3d) == find_xyz_cut_coords(img_4d)
 
     # test passing empty image returns coordinates pointing to AC-PC line
     data = np.zeros((20, 30, 40))
-    affine = np.eye(4)
-    img = nibabel.Nifti1Image(data, affine)
+    img = nibabel.Nifti1Image(data, affine_eye)
     cut_coords = find_xyz_cut_coords(img)
     assert cut_coords == [0.0, 0.0, 0.0]
     with pytest.warns(UserWarning):
         cut_coords = find_xyz_cut_coords(img)
 
 
-def test_find_cut_slices():
+def test_find_cut_slices(affine_eye):
     data = np.zeros((50, 50, 50))
     x_map, y_map, z_map = 25, 5, 20
     data[
         x_map - 15 : x_map + 15, y_map - 3 : y_map + 3, z_map - 10 : z_map + 10
     ] = 1
-    img = nibabel.Nifti1Image(data, np.eye(4))
+    img = nibabel.Nifti1Image(data, affine_eye)
     for n_cuts in (2, 4):
         for direction in "xz":
             cuts = find_cut_slices(
@@ -180,14 +176,13 @@ def test_find_cut_slices():
     assert np.diff(cuts).min() != 0.0
 
 
-def test_validity_of_ncuts_error_in_find_cut_slices():
+def test_validity_of_ncuts_error_in_find_cut_slices(affine_eye):
     data = np.zeros((50, 50, 50))
-    affine = np.eye(4)
     x_map, y_map, z_map = 25, 5, 20
     data[
         x_map - 15 : x_map + 15, y_map - 3 : y_map + 3, z_map - 10 : z_map + 10
     ] = 1
-    img = nibabel.Nifti1Image(data, affine)
+    img = nibabel.Nifti1Image(data, affine_eye)
     direction = "z"
     for n_cuts in (0, -2, -10.00034, 0.999999, 0.4, 0.11111111):
         message = (
@@ -200,14 +195,13 @@ def test_validity_of_ncuts_error_in_find_cut_slices():
             find_cut_slices(img, n_cuts=n_cuts)
 
 
-def test_passing_of_ncuts_in_find_cut_slices():
+def test_passing_of_ncuts_in_find_cut_slices(affine_eye):
     data = np.zeros((50, 50, 50))
-    affine = np.eye(4)
     x_map, y_map, z_map = 25, 5, 20
     data[
         x_map - 15 : x_map + 15, y_map - 3 : y_map + 3, z_map - 10 : z_map + 10
     ] = 1
-    img = nibabel.Nifti1Image(data, affine)
+    img = nibabel.Nifti1Image(data, affine_eye)
     # smoke test to check if it rounds the floating point inputs
     for n_cuts in (1, 5.0, 0.9999999, 2.000000004):
         cut1 = find_cut_slices(img, direction="x", n_cuts=n_cuts)
@@ -215,21 +209,19 @@ def test_passing_of_ncuts_in_find_cut_slices():
         np.testing.assert_array_equal(cut1, cut2)
 
 
-def test_singleton_ax_dim():
+def test_singleton_ax_dim(affine_eye):
     for axis, direction in enumerate("xyz"):
         shape = [5, 6, 7]
         shape[axis] = 1
-        img = nibabel.Nifti1Image(np.ones(shape), np.eye(4))
+        img = nibabel.Nifti1Image(np.ones(shape), affine_eye)
         find_cut_slices(img, direction=direction)
 
 
-def test_tranform_cut_coords():
-    affine = np.eye(4)
-
+def test_tranform_cut_coords(affine_eye):
     # test that when n_cuts is 1 we do get an iterable
     for direction in "xyz":
         assert hasattr(
-            _transform_cut_coords([4], direction, affine), "__iter__"
+            _transform_cut_coords([4], direction, affine_eye), "__iter__"
         )
 
     # test that n_cuts after as before function call
@@ -237,26 +229,27 @@ def test_tranform_cut_coords():
     cut_coords = np.arange(n_cuts)
     for direction in "xyz":
         assert (
-            len(_transform_cut_coords(cut_coords, direction, affine)) == n_cuts
+            len(_transform_cut_coords(cut_coords, direction, affine_eye))
+            == n_cuts
         )
 
 
-def test_find_cuts_empty_mask_no_crash():
-    img = nibabel.Nifti1Image(np.ones((2, 2, 2)), np.eye(4))
+def test_find_cuts_empty_mask_no_crash(affine_eye):
+    img = nibabel.Nifti1Image(np.ones((2, 2, 2)), affine_eye)
     mask_img = compute_epi_mask(img)
     with pytest.warns(UserWarning):
         cut_coords = find_xyz_cut_coords(img, mask_img=mask_img)
     np.testing.assert_array_equal(cut_coords, [0.5, 0.5, 0.5])
 
 
-def test_fast_abs_percentile_no_index_error_find_cuts():
+def test_fast_abs_percentile_no_index_error_find_cuts(affine_eye):
     # check that find_cuts functions are safe
     data = np.array([[[1.0, 2.0], [3.0, 4.0]], [[0.0, 0.0], [0.0, 0.0]]])
-    img = nibabel.Nifti1Image(data, np.eye(4))
+    img = nibabel.Nifti1Image(data, affine_eye)
     assert len(find_xyz_cut_coords(img)) == 3
 
 
-def test_find_parcellation_cut_coords():
+def test_find_parcellation_cut_coords(affine_eye):
     data = np.zeros((100, 100, 100))
     x_map_a, y_map_a, z_map_a = (10, 10, 10)
     x_map_b, y_map_b, z_map_b = (30, 30, 30)
@@ -284,8 +277,7 @@ def test_find_parcellation_cut_coords():
     n_labels = len(labels)
 
     # identity affine
-    affine = np.eye(4)
-    img = nibabel.Nifti1Image(data, affine)
+    img = nibabel.Nifti1Image(data, affine_eye)
     # find coordinates with return label names is True
     coords, labels_list = find_parcellation_cut_coords(
         img, return_label_names=True
@@ -343,7 +335,7 @@ def test_find_parcellation_cut_coords():
         find_parcellation_cut_coords(labels_img=img, label_hemisphere="lft")
 
 
-def test_find_probabilistic_atlas_cut_coords():
+def test_find_probabilistic_atlas_cut_coords(affine_eye):
     # make data
     arr1 = np.zeros((100, 100, 100))
     x_map_a, y_map_a, z_map_a = 30, 40, 50
@@ -374,8 +366,7 @@ def test_find_probabilistic_atlas_cut_coords():
     n_maps = data.shape[-1]
 
     # run test on img with identity affine
-    affine = np.eye(4)
-    img = nibabel.Nifti1Image(data, affine)
+    img = nibabel.Nifti1Image(data, affine_eye)
     coords = find_probabilistic_atlas_cut_coords(img)
 
     # Check outputs

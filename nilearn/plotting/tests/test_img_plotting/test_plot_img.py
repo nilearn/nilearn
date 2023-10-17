@@ -58,11 +58,11 @@ def test_plot_empty_slice(affine_mni):
 
 
 @pytest.mark.parametrize("display_mode", ["x", "y", "z"])
-def test_plot_img_with_auto_cut_coords(display_mode):
+def test_plot_img_with_auto_cut_coords(affine_eye, display_mode):
     """Smoke test for plot_img with cut_coords set in auto mode."""
     data = np.zeros((20, 20, 20))
     data[3:-3, 3:-3, 3:-3] = 1
-    img = Nifti1Image(data, np.eye(4))
+    img = Nifti1Image(data, affine_eye)
     plot_img(img, cut_coords=None, display_mode=display_mode, black_bg=True)
     plt.close()
 

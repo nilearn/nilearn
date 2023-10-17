@@ -195,6 +195,7 @@ def test_fetch_atlas_fsl(
     atlas_data,
     fsl_fetcher,
     tmp_path,
+    affine_eye,
 ):
     # Create directory which will contain fake atlas data
     atlas_dir = tmp_path / "fsl" / "data" / "atlases"
@@ -207,7 +208,7 @@ def test_fetch_atlas_fsl(
         is_symm=is_symm,
     )
     target_atlas_nii = nifti_dir / f"{name}-{fname}.nii.gz"
-    nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
+    nibabel.Nifti1Image(atlas_data, affine_eye * 3).to_filename(
         target_atlas_nii
     )
     # Check that the fetch lead to consistent results

@@ -567,11 +567,11 @@ def test_sample_locations():
 
 @pytest.mark.parametrize("depth", [(0.,), (-1.,), (1.,), (-1., 0., .5)])
 @pytest.mark.parametrize("n_points", [None, 10])
-def test_sample_locations_depth(depth, n_points):
+def test_sample_locations_depth(depth, n_points, affine_eye):
     mesh = flat_mesh(5, 7)
     radius = 8.
     locations = surface._sample_locations(
-        mesh, np.eye(4), radius, n_points=n_points, depth=depth)
+        mesh, affine_eye, radius, n_points=n_points, depth=depth)
     offsets = np.asarray([[0., 0., - z * radius] for z in depth])
     expected = np.asarray([vertex + offsets for vertex in mesh[0]])
     assert np.allclose(locations, expected)
@@ -585,12 +585,12 @@ def test_sample_locations_depth(depth, n_points):
      ([-1.], 8),
      ([1.], 8),
      ([-1., 0., .5], 8)])
-def test_sample_locations_between_surfaces(depth, n_points):
+def test_sample_locations_between_surfaces(depth, n_points, affine_eye):
     inner = flat_mesh(5, 7)
     outer = inner[0] + [0., 0., 1.], inner[1]
 
     locations = surface._sample_locations_between_surfaces(
-        outer, inner, np.eye(4), n_points=n_points, depth=depth)
+        outer, inner, affine_eye, n_points=n_points, depth=depth)
 
     if depth is None:
         expected = np.asarray(
@@ -649,11 +649,11 @@ def test_masked_indices():
     assert (1 - masked).sum() == 48
 
 
-def test_projection_matrix():
+def test_projection_matrix(affine_eye):
     mesh = flat_mesh(5, 7, 4)
     img = z_const_img(5, 7, 13)
     proj = surface._projection_matrix(
-        mesh, np.eye(4), img.shape, radius=2., n_points=10)
+        mesh, affine_eye, img.shape, radius=2., n_points=10)
     # proj matrix has shape (n_vertices, img_size)
     assert proj.shape == (5 * 7, 5 * 7 * 13)
     # proj.dot(img) should give the values of img at the vertices' locations
@@ -661,12 +661,12 @@ def test_projection_matrix():
     assert_array_almost_equal(values, img[:, :, 0])
     mesh = flat_mesh(5, 7)
     proj = surface._projection_matrix(
-        mesh, np.eye(4), (5, 7, 1), radius=.1, n_points=10)
+        mesh, affine_eye, (5, 7, 1), radius=.1, n_points=10)
     assert_array_almost_equal(proj.toarray(), np.eye(proj.shape[0]))
     mask = np.ones(img.shape, dtype=int)
     mask[0] = 0
     proj = surface._projection_matrix(
-        mesh, np.eye(4), img.shape, radius=2., n_points=10, mask=mask)
+        mesh, affine_eye, img.shape, radius=2., n_points=10, mask=mask)
     proj = proj.toarray()
     # first row of the mesh is masked
     assert_array_almost_equal(proj.sum(axis=1)[:7], np.zeros(7))
@@ -674,17 +674,17 @@ def test_projection_matrix():
     # mask and img should have the same shape
     with pytest.raises(ValueError):
         surface._projection_matrix(
-            mesh, np.eye(4), img.shape, mask=np.ones((3, 3, 2))
+            mesh, affine_eye, img.shape, mask=np.ones((3, 3, 2))
         )
 
 
-def test_sampling_affine():
+def test_sampling_affine(affine_eye):
     # check sampled (projected) values on a toy image
     img = np.ones((4, 4, 4))
     img[1, :, :] = 2
     nodes = [[1, 1, 2], [10, 10, 20], [30, 30, 30]]
     mesh = [np.asarray(nodes), None]
-    affine = 10 * np.eye(4)
+    affine = 10 * affine_eye
     affine[-1, -1] = 1
     texture = surface._nearest_voxel_sampling(
         [img], mesh, affine=affine, radius=1, kind='ball')
@@ -697,7 +697,7 @@ def test_sampling_affine():
 @pytest.mark.parametrize("kind", ["auto", "line", "ball"])
 @pytest.mark.parametrize("use_inner_mesh", [True, False])
 @pytest.mark.parametrize("projection", ["linear", "nearest"])
-def test_sampling(kind, use_inner_mesh, projection):
+def test_sampling(kind, use_inner_mesh, projection, affine_eye):
     mesh = flat_mesh(5, 7, 4)
     img = z_const_img(5, 7, 13)
     mask = np.ones(img.shape, dtype=int)
@@ -705,10 +705,10 @@ def test_sampling(kind, use_inner_mesh, projection):
     projector = {"nearest": surface._nearest_voxel_sampling,
                  "linear": surface._interpolation_sampling}[projection]
     inner_mesh = mesh if use_inner_mesh else None
-    projection = projector([img], mesh, np.eye(4),
+    projection = projector([img], mesh, affine_eye,
                            kind=kind, radius=0., inner_mesh=inner_mesh)
     assert_array_almost_equal(projection.ravel(), img[:, :, 0].ravel())
-    projection = projector([img], mesh, np.eye(4),
+    projection = projector([img], mesh, affine_eye,
                            kind=kind, radius=0., mask=mask,
                            inner_mesh=inner_mesh)
     assert_array_almost_equal(projection.ravel()[7:],
@@ -717,14 +717,14 @@ def test_sampling(kind, use_inner_mesh, projection):
 
 
 @pytest.mark.parametrize("projection", ["linear", "nearest"])
-def test_sampling_between_surfaces(projection):
+def test_sampling_between_surfaces(projection, affine_eye):
     projector = {"nearest": surface._nearest_voxel_sampling,
                  "linear": surface._interpolation_sampling}[projection]
     mesh = flat_mesh(13, 7, 3.)
     inner_mesh = flat_mesh(13, 7, 1)
     img = z_const_img(5, 7, 13).T
     projection = projector(
-        [img], mesh, np.eye(4),
+        [img], mesh, affine_eye,
         kind="auto", n_points=100, inner_mesh=inner_mesh)
     assert_array_almost_equal(
         projection.ravel(), img[:, :, 1:4].mean(axis=-1).ravel())
