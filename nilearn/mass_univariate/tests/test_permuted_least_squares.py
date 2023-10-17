@@ -55,7 +55,7 @@ def compare_to_ref_score(own_score, tested_var, target_var, covars=None):
 
 def ref_score(tested_var, target_var, covars=None):
     """Compute t-scores with linalg or statsmodels."""
-    from nilearn.mass_univariate.tests.utils import (
+    from nilearn.mass_univariate.tests._testing import (
         get_tvalue_with_alternative_library,
     )
 
@@ -88,9 +88,9 @@ def confounding_vars():
     return rng.randn(N_SAMPLES, N_COVARS)
 
 
-@pytest.fixture(scope="module")
-def masker():
-    mask_img = nib.Nifti1Image(np.ones((5, 5, 5)), np.eye(4))
+@pytest.fixture()
+def masker(affine_eye):
+    mask_img = nib.Nifti1Image(np.ones((5, 5, 5)), affine_eye)
     masker = NiftiMasker(mask_img)
     masker.fit(mask_img)
     return masker

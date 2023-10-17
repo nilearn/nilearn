@@ -4,7 +4,7 @@ Decoding with FREM: face vs house vs chair object recognition
 
 This example uses fast ensembling of regularized models (FREM) to decode
 a face vs house vs chair discrimination task from Haxby 2001 study.
-FREM uses an implicit spatial regularization
+:term:`FREM` uses an implicit spatial regularization
 through fast clustering and aggregates a high number of estimators
 trained on various splits of the training set,
 thus returning a very robust decoder
@@ -45,7 +45,7 @@ y_train = conditions[condition_mask_train].values
 y_test = conditions[condition_mask_test].values
 
 
-# Compute the mean epi to be used for the background of the plotting
+# Compute the mean EPI to be used for the background of the plotting
 from nilearn.image import mean_img
 
 background_img = mean_img(func_filenames)
@@ -97,8 +97,8 @@ ax.get_figure().tight_layout()
 plotting.show()
 
 # %%
-# Visualization of FREM weights
-# -----------------------------
+# Visualization of :term:`FREM` weights
+# -------------------------------------
 from nilearn import plotting
 
 plotting.plot_stat_map(
@@ -110,7 +110,8 @@ plotting.plot_stat_map(
 )
 plotting.show()
 # %%
-# FREM ensembling procedure yields an important improvement of decoding
+# :term:`FREM` ensembling procedure
+# yields an important improvement of decoding
 # accuracy on this simple example compared to fitting only one model per
 # fold and the clustering mechanism keeps its computational cost reasonable
 # even on heavier examples. Here we ensembled several instances of l2-SVC,

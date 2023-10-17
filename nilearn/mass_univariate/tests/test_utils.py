@@ -8,7 +8,7 @@ from scipy.ndimage import generate_binary_structure
 from sklearn.utils import check_random_state
 
 from nilearn.mass_univariate import _utils
-from nilearn.mass_univariate.tests.utils import (
+from nilearn.mass_univariate.tests._testing import (
     get_tvalue_with_alternative_library,
 )
 

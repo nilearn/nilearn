@@ -25,9 +25,9 @@ an explicit model of the signal. The reference paper is:
       `preprint <https://hal.inria.fr/hal-00489507/>`_
 
 """
-# %%
-# Load brain development fmri dataset
-# -----------------------------------
+# %%##
+# Load brain development :term:`fMRI` dataset
+# -------------------------------------------
 from nilearn import datasets
 
 rest_dataset = datasets.fetch_development_fmri(n_subjects=30)
@@ -38,8 +38,8 @@ print(f"First functional nifti image (4D) is at: {rest_dataset.func[0]}")
 
 
 # %%
-# Apply CanICA on the data
-# ------------------------
+# Apply :term:`CanICA` on the data
+# --------------------------------
 # We use "whole-brain-template" as a strategy to compute the mask,
 # as this leads to slightly faster and more reproducible results.
 # However, the images need to be in :term:`MNI` template space.
@@ -89,8 +89,8 @@ for i, cur_img in enumerate(iter_img(canica_components_img)):
 
 
 # %%
-# Compare CanICA to dictionary learning
-# -------------------------------------
+# Compare :term:`CanICA` to dictionary learning
+# ---------------------------------------------
 # :term:`Dictionary learning` is a sparsity based decomposition method
 # for extracting spatial maps. It extracts maps that are naturally sparse
 # and usually cleaner than :term:`ICA`. Here, we will compare networks built

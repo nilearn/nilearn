@@ -26,7 +26,7 @@ References
 [2] Anderson, M. J. & Robinson, J. (2001).
     Permutation tests for linear models.
     Australian & New Zealand Journal of Statistics, 43(1), 75-88.
-    (http://avesbiodiv.mncn.csic.es/estadistica/permut2.pdf)
+    (https://www.uvm.edu/~statdhtx/fundamentals9/Supplements/RandomizationTestsWithR/permut2.pdf)
 
 ..
     Original authors:
@@ -149,7 +149,7 @@ import matplotlib.pyplot as plt
 from nilearn.image import get_data
 from nilearn.plotting import plot_stat_map, show
 
-# Use the fmri mean image as a surrogate of anatomical data
+# Use the fMRI mean image as a surrogate of anatomical data
 mean_fmri_img = image.mean_img(func_filename)
 
 threshold = -np.log10(0.1)  # 10% corrected

@@ -7,7 +7,7 @@ from nilearn.interfaces.fmriprep import load_confounds_strategy
 from nilearn.interfaces.fmriprep.load_confounds_strategy import (
     preset_strategies,
 )
-from nilearn.interfaces.fmriprep.tests.utils import create_tmp_filepath
+from nilearn.interfaces.fmriprep.tests._testing import create_tmp_filepath
 
 
 @pytest.mark.parametrize("denoise_strategy,image_type",

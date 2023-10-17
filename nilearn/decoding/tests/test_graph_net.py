@@ -20,7 +20,7 @@ from nilearn.decoding.space_net_solvers import (
     _squared_loss_derivative_lipschitz_constant,
     mfista,
 )
-from nilearn.decoding.tests._utils import create_graph_net_simulation_data
+from nilearn.decoding.tests._testing import create_graph_net_simulation_data
 
 from .test_same_api import to_niimgs
 

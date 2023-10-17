@@ -490,10 +490,8 @@ class MissingConfound(Exception):
 
     Parameters
     ----------
-    params : list of missing params
-        Default values are empty lists.
-    keywords: list of missing keywords
-        Default values are empty lists.
+    params : list of missing params, default=[]
+    keywords: list of missing keywords, default=[]
     """
 
     def __init__(self, params=None, keywords=None):

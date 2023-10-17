@@ -52,8 +52,7 @@ def maps_and_mask():
 
 
 @pytest.fixture
-def map_img_3D():
-    rng = np.random.RandomState(42)
+def map_img_3D(rng):
     map_img = np.zeros(MAP_SHAPE) + 0.1 * rng.standard_normal(size=MAP_SHAPE)
     return Nifti1Image(map_img, affine=_affine_eye())
 

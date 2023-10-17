@@ -6,7 +6,7 @@ Encoding models for visual stimuli from Miyawaki et al. 2008
 This example partly reproduces the encoding model presented in
     `Visual image reconstruction from human brain activity
     using a combination of multiscale local image decoders
-    <http://www.cell.com/neuron/abstract/S0896-6273%2808%2900958-6>`_,
+    <https://doi.org/10.1016/j.neuron.2008.11.004>`_,
     Miyawaki, Y., Uchida, H., Yamashita, O., Sato, M. A.,
     Morito, Y., Tanabe, H. C., ... & Kamitani, Y. (2008).
     Neuron, 60(5), 915-929.
@@ -18,7 +18,7 @@ brain data to real-world stimulus, encoding goes the other direction.
 We demonstrate how to build such an **encoding model** in nilearn, predicting
 **fMRI data** from **visual stimuli**, using the dataset from
 `Miyawaki et al., 2008
-<http://www.cell.com/neuron/abstract/S0896-6273%2808%2900958-6>`_.
+<https://doi.org/10.1016/j.neuron.2008.11.004>`_.
 
 Participants were shown images, which consisted of random 10x10 binary
 (either black or white) pixels, and the corresponding :term:`fMRI` activity
@@ -95,8 +95,8 @@ plt.axis("off")
 plt.title(f"Run {3}, Stimulus {102}")
 plt.subplots_adjust(wspace=0.5)
 
-# %%
-# We now stack the fmri and stimulus data and remove an offset in the
+# %%#
+# We now stack the :term:`fMRI` and stimulus data and remove an offset in the
 # beginning/end.
 
 fmri_data = np.vstack([fmri_run[2:] for fmri_run in fmri_data])
@@ -122,7 +122,7 @@ print(stimuli.shape)
 # Building the encoding models
 # ----------------------------
 # We can now proceed to build a simple **voxel-wise encoding model** using
-# `Ridge regression <http://en.wikipedia.org/wiki/Tikhonov_regularization>`_.
+# `Ridge regression <https://en.wikipedia.org/wiki/Tikhonov_regularization>`_.
 # For each voxel we fit an independent regression model,
 # using the pixel-values of the visual stimuli to predict the neuronal
 # activity in this voxel.
@@ -217,14 +217,14 @@ fig.set_size_inches(12, 12)
 # Estimating receptive fields
 # ---------------------------
 # Now we take a closer look at the receptive fields of the four marked voxels.
-# A voxel's `receptive field <http://en.wikipedia.org/wiki/Receptive_field>`_
+# A voxel's `receptive field <https://en.wikipedia.org/wiki/Receptive_field>`_
 # is the region of a stimulus (like an image) where the presence of an object,
 # like a white instead of a black pixel, results in a change in activity
 # in the voxel. In our case the receptive field is just the vector of 100
 # regression  coefficients (one for each pixel) reshaped into the 10x10
 # form of the original images. Some voxels are receptive to only very few
 # pixels, so we use `Lasso regression
-# <http://en.wikipedia.org/wiki/Lasso_(statistics)>`_ to estimate a sparse
+# <https://en.wikipedia.org/wiki/Lasso_(statistics)>`_ to estimate a sparse
 # set of regression coefficients.
 
 from sklearn.linear_model import LassoLarsCV

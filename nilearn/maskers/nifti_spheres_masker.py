@@ -224,7 +224,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         Seed definitions. List of coordinates of the seeds in the same space
         as the images (typically MNI or TAL).
 
-    radius : :obj:`float`, optional
+    radius : :obj:`float`, default=None
         Indicates, in millimeters, the radius for the sphere around the seed.
         Default is None (signal is extracted on a single voxel).
 
@@ -232,16 +232,16 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
 
-    allow_overlap : :obj:`bool`, optional
+    allow_overlap : :obj:`bool`, default=False
         If False, an error is raised if the maps overlaps (ie at least two
-        maps have a non-zero value for the same voxel). Default=False.
+        maps have a non-zero value for the same voxel).
     %(smoothing_fwhm)s
     %(standardize_maskers)s
     %(standardize_confounds)s
-    high_variance_confounds : :obj:`bool`, optional
+    high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
-        and regressed out. Default=False.
+        and regressed out.
     %(detrend)s
     %(low_pass)s
     %(high_pass)s
@@ -474,10 +474,10 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         return signals
 
     def inverse_transform(self, region_signals):
-        """Compute voxel signals from spheres signals.
+        """Compute :term:`voxel` signals from spheres signals.
 
         Any mask given at initialization is taken into account. Throws an error
-        if mask_img==None
+        if ``mask_img==None``
 
         Parameters
         ----------

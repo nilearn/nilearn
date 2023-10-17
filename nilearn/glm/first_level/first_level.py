@@ -59,8 +59,8 @@ def mean_scaling(Y, axis=0):
     Y : array of shape (n_time_points, n_voxels)
        The input data.
 
-    axis : int, optional
-        Axis along which the scaling mean should be calculated. Default=0.
+    axis : int, default=0
+        Axis along which the scaling mean should be calculated.
 
     Returns
     -------
@@ -120,40 +120,38 @@ def _yule_walker(x, order):
 def run_glm(
     Y, X, noise_model="ar1", bins=100, n_jobs=1, verbose=0, random_state=None
 ):
-    """GLM fit for an fMRI data matrix.
+    """:term:`GLM` fit for an :term:`fMRI` data matrix.
 
     Parameters
     ----------
     Y : array of shape (n_time_points, n_voxels)
-        The fMRI data.
+        The :term:`fMRI` data.
 
     X : array of shape (n_time_points, n_regressors)
         The design matrix.
 
-    noise_model : {'ar(N)', 'ols'}, optional
+    noise_model : {'ar(N)', 'ols'}, default='ar1'
         The temporal variance model.
         To specify the order of an autoregressive model place the
         order after the characters `ar`, for example to specify a third order
         model use `ar3`.
-        Default='ar1'.
 
-    bins : int, optional
+    bins : int, default=100
         Maximum number of discrete bins for the AR coef histogram.
         If an autoregressive model with order greater than one is specified
         then adaptive quantification is performed and the coefficients
         will be clustered via K-means with `bins` number of clusters.
-        Default=100.
 
-    n_jobs : int, optional
+    n_jobs : int, default=1
         The number of CPUs to use to do the computation. -1 means
-        'all CPUs'. Default=1.
+        'all CPUs'.
 
-    verbose : int, optional
-        The verbosity level. Default=0.
+    verbose : int, default=0
+        The verbosity level.
 
-    random_state : int or numpy.random.RandomState, optional
+    random_state : int or numpy.random.RandomState, default=None
         Random state seed to sklearn.cluster.KMeans for autoregressive models
-        of order at least 2 ('ar(N)' with n >= 2). Default=None.
+        of order at least 2 ('ar(N)' with n >= 2).
 
         .. versionadded:: 0.9.1
 
@@ -276,45 +274,45 @@ def _check_trial_type(events):
 
 @fill_doc
 class FirstLevelModel(BaseGLM):
-    """Implement the General Linear Model for single session fMRI data.
+    """Implement the General Linear Model for single session :term:`fMRI` data.
 
     Parameters
     ----------
     t_r : float
-        This parameter indicates repetition times of the experimental runs.
+        This parameter indicates :term:`repetition times<TR>`
+        of the experimental runs.
         In seconds. It is necessary to correctly consider times in the design
         matrix. This parameter is also passed to :func:`nilearn.signal.clean`.
         Please see the related documentation for details.
 
-    slice_time_ref : float, optional
+    slice_time_ref : float, default=0
         This parameter indicates the time of the reference slice used in the
-        slice timing preprocessing step of the experimental runs. It is
-        expressed as a fraction of the t_r (time repetition), so it can have
-        values between 0. and 1. Default=0.
+        slice timing preprocessing step of the experimental runs.
+        It is expressed as a fraction of the ``t_r`` (repetition time),
+        so it can have values between 0. and 1.
     %(hrf_model)s
         Default='glover'.
-    drift_model : string, optional
+    drift_model : string, default='cosine'
         This parameter specifies the desired drift model for the design
         matrices. It can be 'polynomial', 'cosine' or None.
-        Default='cosine'.
 
-    high_pass : float, optional
+    high_pass : float, default=0.01
         This parameter specifies the cut frequency of the high-pass filter in
         Hz for the design matrices. Used only if drift_model is 'cosine'.
-        Default=0.01.
 
-    drift_order : int, optional
+    drift_order : int, default=1
         This parameter specifies the order of the drift model (in case it is
-        polynomial) for the design matrices. Default=1.
+        polynomial) for the design matrices.
 
-    fir_delays : array of shape(n_onsets) or list, optional
-        In case of FIR design, yields the array of delays used in the FIR
-        model, in scans. Default=[0].
+    fir_delays : array of shape(n_onsets) or list, default=[0]
+        In case of :term:`FIR` design,
+        yields the array of delays used in the :term:`FIR` model,
+        in scans.
 
-    min_onset : float, optional
+    min_onset : float, default=-24
         This parameter specifies the minimal onset relative to the design
         (in seconds). Events that start before (slice_time_ref * t_r +
-        min_onset) are not considered. Default=-24.
+        min_onset) are not considered.
 
     mask_img : Niimg-like, NiftiMasker object or False, optional
         Mask to be used on data. If an instance of masker is passed,
@@ -339,11 +337,11 @@ class FirstLevelModel(BaseGLM):
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
-    standardize : boolean, optional
+    standardize : boolean, default=False
         If standardize is True, the time-series are centered and normed:
-        their variance is put to 1 in the time dimension. Default=False.
+        their variance is put to 1 in the time dimension.
 
-    signal_scaling : False, int or (int, int), optional
+    signal_scaling : False, int or (int, int), default=0
         If not False, fMRI signals are
         scaled to the mean value of scaling_axis given,
         which can be 0, 1 or (0, 1).
@@ -353,35 +351,34 @@ class FirstLevelModel(BaseGLM):
         which is known as grand mean scaling.
         Incompatible with standardize (standardize=False is enforced when
         signal_scaling is not False).
-        Default=0.
 
-    noise_model : {'ar1', 'ols'}, optional
-        The temporal variance model. Default='ar1'.
+    noise_model : {'ar1', 'ols'}, default='ar1'
+        The temporal variance model.
 
-    verbose : integer, optional
+    verbose : integer, default=0
         Indicate the level of verbosity. By default, nothing is printed.
         If 0 prints nothing. If 1 prints progress by computation of
         each run. If 2 prints timing details of masker and GLM. If 3
-        prints masker computation details. Default=0.
+        prints masker computation details.
 
-    n_jobs : integer, optional
+    n_jobs : integer, default=1
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
-        Default=1.
 
-    minimize_memory : boolean, optional
+    minimize_memory : boolean, default=True
         Gets rid of some variables on the model fit results that are not
         necessary for contrast computation and would only be useful for
         further inspection of model details. This has an important impact
-        on memory consumption. Default=True.
+        on memory consumption.
 
     subject_label : string, optional
         This id will be used to identify a `FirstLevelModel` when passed to
         a `SecondLevelModel` object.
 
-    random_state : int or numpy.random.RandomState, optional
-        Random state seed to sklearn.cluster.KMeans for autoregressive models
-        of order at least 2 ('ar(N)' with n >= 2). Default=None.
+    random_state : int or numpy.random.RandomState, default=None.
+        Random state seed to sklearn.cluster.KMeans
+        for autoregressive models
+        of order at least 2 ('ar(N)' with n >= 2).
 
         .. versionadded:: 0.9.1
 
@@ -488,7 +485,7 @@ class FirstLevelModel(BaseGLM):
         design_matrices=None,
         bins=100,
     ):
-        """Fit the GLM.
+        """Fit the :term:`GLM`.
 
         For each run:
         1. create design matrix X
@@ -498,43 +495,43 @@ class FirstLevelModel(BaseGLM):
         Parameters
         ----------
         run_imgs : Niimg-like object or list of Niimg-like objects,
-            Data on which the GLM will be fitted. If this is a list,
+            Data on which the :term:`GLM` will be fitted. If this is a list,
             the affine is considered the same for all.
 
         events : pandas Dataframe or string or list of pandas DataFrames \
-                 or strings, optional
-            fMRI events used to build design matrices. One events object
-            expected per run_img. Ignored in case designs is not None.
+                 or strings, default=None
+            :term:`fMRI` events used to build design matrices.
+            One events object expected per run_img.
+            Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
 
-        confounds : pandas Dataframe, numpy array or string or
-            list of pandas DataFrames, numpy arrays or strings, optional
+        confounds : pandas Dataframe, numpy array or string or \
+                    list of pandas DataFrames, numpy arrays or strings, \
+                    default=None
             Each column in a DataFrame corresponds to a confound variable
             to be included in the regression model of the respective run_img.
             The number of rows must match the number of volumes in the
             respective run_img. Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
 
-        sample_masks : array_like, or list of array_like, optional
-            shape of array: (number of scans - number of volumes removed, )
+        sample_masks : array_like, or list of array_like, default=None
+            shape of array: (number of scans - number of volumes remove)
             Indices of retained volumes. Masks the niimgs along time/fourth
             dimension to perform scrubbing (remove volumes with high motion)
             and/or remove non-steady-state volumes.
-            Default=None.
 
             .. versionadded:: 0.9.2
 
         design_matrices : pandas DataFrame or \
-                          list of pandas DataFrames, optional
+                          list of pandas DataFrames, default=None
             Design matrices that will be used to fit the GLM. If given it
             takes precedence over events and confounds.
 
-        bins : int, optional
+        bins : int, default=100
             Maximum number of discrete bins for the AR coef histogram.
             If an autoregressive model with order greater than one is specified
             then adaptive quantification is performed and the coefficients
             will be clustered via K-means with `bins` number of clusters.
-            Default=100.
 
         """
         # Initialize masker_ to None such that attribute exists
@@ -757,7 +754,8 @@ class FirstLevelModel(BaseGLM):
 
             where ``n_col`` is the number of columns of the design matrix,
             (one array per run). If only one array is provided when there
-            are several runs, it will be assumed that the same contrast is
+            are several runs, it will be assumed that
+            the same :term:`contrast` is
             desired for all runs. One can use the name of the conditions as
             they appear in the design matrix of the fitted model combined with
             operators +- and combined with numbers with operators +-`*`/. In
@@ -767,11 +765,11 @@ class FirstLevelModel(BaseGLM):
         stat_type : {'t', 'F'}, optional
             Type of the contrast.
 
-        output_type : str, optional
+        output_type : str, default='z_score'
             Type of the output map. Can be 'z_score', 'stat', 'p_value',
             :term:`'effect_size'<Parameter Estimate>`, 'effect_variance' or
             'all'.
-            Default='z_score'.
+
 
         Returns
         -------
@@ -963,18 +961,20 @@ def first_level_from_bids(
     minimize_memory=True,
     derivatives_folder="derivatives",
 ):
-    """Create FirstLevelModel objects and fit arguments from a BIDS dataset.
+    """Create FirstLevelModel objects and fit arguments \
+       from a :term:`BIDS` dataset.
 
-    If t_r is `None` this function will attempt to load it from a bold.json.
-    If `slice_time_ref` is  `None` this function will attempt
+    If ``t_r`` is ``None`` this function will attempt
+    to load it from a bold.json.
+    If ``slice_time_ref`` is  `None` this function will attempt
     to infer it from a bold.json.
-    Otherwise t_r and slice_time_ref are taken as given,
+    Otherwise ``t_r`` and ``slice_time_ref`` are taken as given,
     but a warning may be raised if they are not consistent with the bold.json.
 
     Parameters
     ----------
     dataset_path : :obj:`str` or :obj:`pathlib.Path`
-        Directory of the highest level folder of the BIDS dataset.
+        Directory of the highest level folder of the :term:`BIDS` dataset.
         Should contain subject folders and a derivatives folder.
 
     task_label : :obj:`str`
@@ -998,25 +998,25 @@ def first_level_from_bids(
         Filter examples would be ('desc', 'preproc'), ('dir', 'pa')
         and ('run', '10').
 
-    slice_time_ref : :obj:`float` between 0.0 and 1.0, optional
+    slice_time_ref : :obj:`float` between 0.0 and 1.0, default=0.0
         This parameter indicates the time of the reference slice used in the
         slice timing preprocessing step of the experimental runs. It is
         expressed as a fraction of the t_r (time repetition), so it can have
-        values between 0. and 1. Default=0.0
+        values between 0. and 1.
 
         .. deprecated:: 0.10.1
 
             The default=0 for ``slice_time_ref`` will be deprecated.
             The default value will change to 'None' in 0.12.
 
-    derivatives_folder : :obj:`str`, Defaults="derivatives".
+    derivatives_folder : :obj:`str`, default="derivatives".
         derivatives and app folder path containing preprocessed files.
         Like "derivatives/FMRIPREP".
 
     All other parameters correspond to a `FirstLevelModel` object, which
     contains their documentation.
     The subject label of the model will be determined directly
-    from the BIDS dataset.
+    from the :term:`BIDS` dataset.
 
     Returns
     -------

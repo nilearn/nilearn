@@ -23,23 +23,20 @@ def log(
     msg : str
         Message to display.
 
-    verbose : int, optional
+    verbose : int, default=1
         Current verbosity level. Message is displayed if this value is greater
-        or equal to msg_level. Default=1.
+        or equal to msg_level.
 
-    object_classes : tuple of type, optional
+    object_classes : tuple of type, default=(BaseEstimator, )
         Classes that should appear to emit the message.
-        Default=(BaseEstimator, ).
 
-    stack_level : int, optional
+    stack_level : int, default=1
         If no object in the call stack matches object_classes, go back that
         amount in the call stack and display class/function name thereof.
-        Default=1.
 
-    msg_level : int, optional
+    msg_level : int, default=1
         Verbosity level at and above which message should be displayed to the
         user. Most of the time this parameter can be left unchanged.
-        Default=1.
 
     Notes
     -----

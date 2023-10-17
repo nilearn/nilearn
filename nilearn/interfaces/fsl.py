@@ -10,9 +10,8 @@ def get_design_from_fslmat(fsl_design_matrix_path, column_names=None):
     ----------
     fsl_design_matrix_path : :obj:`str`
         Path to the FSL design matrix file.
-    column_names : None or :obj:`list` of :obj:`str`, optional
+    column_names : None or :obj:`list` of :obj:`str`, default=None
         The names of the columns in the design matrix.
-        Default=None.
 
     Returns
     -------

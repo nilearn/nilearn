@@ -18,7 +18,7 @@ from nilearn.glm.first_level.experimental_paradigm import (
     handle_modulation_of_duplicate_events,
 )
 
-from ._utils import (
+from ._testing import (
     block_paradigm,
     design_with_nan_durations,
     design_with_nan_onsets,

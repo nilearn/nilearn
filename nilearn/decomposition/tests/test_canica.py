@@ -231,10 +231,12 @@ def test_masker_attributes_with_fit(canica_data, mask_img):
     assert canica.mask_img_ == canica.masker_.mask_img_
 
 
-def test_masker_attributes_passing_masker_arguments_to_estimator(canica_data):
+def test_masker_attributes_passing_masker_arguments_to_estimator(
+    affine_eye, canica_data
+):
     canica = CanICA(
         n_components=3,
-        target_affine=np.eye(4),
+        target_affine=affine_eye,
         target_shape=(6, 8, 10),
         mask_strategy="background",
     )
