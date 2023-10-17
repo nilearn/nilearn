@@ -714,10 +714,9 @@ class ResultFilter:
         ``key``, ``value`` pairs in `query_terms`. If ``None``, the
         empty dictionary is used.
 
-    callable_filter : callable, optional
+    callable_filter : callable, default=empty_filter
         A ``metadata`` dictionary will be blocked by the filter if
         `callable_filter` does not return ``True`` for ``metadata``.
-        Default=empty_filter
 
     As an alternative to the `query_terms` dictionary parameter,
     key, value pairs can be passed as keyword arguments.
@@ -904,9 +903,8 @@ def _print_if(message, level, threshold_level, with_traceback=False):
         the message is printed if `level` is strictly above
         `threshold_level`.
 
-    with_traceback : bool, optional
+    with_traceback : bool, default=False
         if `message` is printed, also print the last traceback.
-        Default=False.
 
     """
     if level > threshold_level:
@@ -959,16 +957,14 @@ def _get_batch(query, prefix_msg="", timeout=10.0, verbose=3):
     query : str
         The URL from which to get data.
 
-    prefix_msg : str, optional
+    prefix_msg : str, default=''
         Prefix for all log messages.
-        Default=''.
 
-    timeout : float, optional
-        Timeout in seconds. Default=10.
+    timeout : float, default=10
+        Timeout in seconds.
 
-    verbose : int, optional
+    verbose : int, default=3
         An integer in [0, 1, 2, 3] to control the verbosity level.
-        Default=3.
 
     Returns
     -------
@@ -1033,11 +1029,10 @@ def _scroll_server_results(
     url : str
         The base url (without the filters) from which to get data.
 
-    local_filter : callable, optional
+    local_filter : callable, default=_empty_filter
         Used to filter the results based on their metadata:
         must return True if the result is to be kept and False otherwise.
         Is called with the dict containing the metadata as sole argument.
-        Default=_empty_filter.
 
     query_terms : dict, sequence of pairs or None, optional
         Key-value pairs to add to the base url in order to form query.
@@ -1052,8 +1047,8 @@ def _scroll_server_results(
         in batches. batch_size is used to choose the (maximum) number of
         elements in a batch. If None, ``_DEFAULT_BATCH_SIZE`` is used.
 
-    prefix_msg : str, optional
-        Prefix for all log messages. Default=''.
+    prefix_msg : str, default=''
+        Prefix for all log messages.
 
     verbose : int, optional (default=3)
         An integer in [0, 1, 2, 3] to control the verbosity level.
@@ -1110,9 +1105,8 @@ def _yield_from_url_list(url_list, verbose=3):
     url_list : Container of str
         URLs from which to get data
 
-    verbose : int, optional
+    verbose : int, default=3
         An integer in [0, 1, 2, 3] to control the verbosity level.
-        Default=3.
 
     Yields
     ------
@@ -1149,9 +1143,8 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
     temp_dir : str
         Location of sandbox directory used by ``_fetch_file``.
 
-    verbose : int, optional
+    verbose : int, default=3
         An integer in [0, 1, 2, 3] to control the verbosity level.
-        Default=3.
 
     Returns
     -------
@@ -1197,9 +1190,8 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
         is supposed to contain the Neurosynth response for a
         particular image).
 
-    verbose : int, optional
+    verbose : int, default=3
         An integer in [0, 1, 2, 3] to control the verbosity level.
-        Default=3.
 
     Keyword arguments are passed on to
     ``sklearn.feature_extraction.DictVectorizer``.
@@ -1326,11 +1318,10 @@ def _add_absolute_paths(root_dir, metadata, force=True):
         relative path and the corresponding absolute path is added to
         the dictionary.
 
-    force : bool, optional
+    force : bool, default=True
         If ``True``, if an absolute path is already present in the
         metadata, it is replaced with the recomputed value. If
         ``False``, already specified absolute paths have priority.
-        Default=True.
 
     Returns
     -------
@@ -2480,35 +2471,32 @@ def fetch_neurovault(
 
     Parameters
     ----------
-    max_images : int, optional
-        Maximum number of images to fetch. Default=100.
+    max_images : int, default=100
+        Maximum number of images to fetch.
 
-    collection_terms : dict, optional
+    collection_terms : dict, default=basic_collection_terms()
         Key, value pairs used to filter collection
         metadata. Collections for which
         ``collection_metadata['key'] == value`` is not ``True`` for
         every key, value pair will be discarded.
         See documentation for ``basic_collection_terms`` for a
         description of the default selection criteria.
-        Default=basic_collection_terms().
 
-    collection_filter : Callable, optional
+    collection_filter : Callable, default=empty_filter
         Collections for which `collection_filter(collection_metadata)`
         is ``False`` will be discarded.
-        Default=empty_filter.
 
-    image_terms : dict, optional
+    image_terms : dict, default=basic_image_terms()
         Key, value pairs used to filter image metadata. Images for
         which ``image_metadata['key'] == value`` is not ``True`` for
         if image_filter != _empty_filter and image_terms =
         every key, value pair will be discarded.
         See documentation for ``basic_image_terms`` for a
         description of the default selection criteria.
-        Default=basic_image_terms().
 
-    image_filter : Callable, optional
+    image_filter : Callable, default=empty_filter
         Images for which `image_filter(image_metadata)` is ``False``
-        will be discarded. Default=empty_filter.
+        will be discarded.
 
     mode : {'download_new', 'overwrite', 'offline'}
         When to fetch an image from the server rather than the local
@@ -2523,27 +2511,25 @@ def fetch_neurovault(
         The directory we want to use for nilearn data. A subdirectory
         named "neurovault" will contain :term:`Neurovault` data.
 
-    fetch_neurosynth_words : bool, optional
-        whether to collect words from Neurosynth. Default=False.
+    fetch_neurosynth_words : bool, default=False
+        whether to collect words from Neurosynth.
 
-    vectorize_words : bool, optional
+    vectorize_words : bool, default=True
         If neurosynth words are downloaded, create a matrix of word
         counts and add it to the result. Also add to the result a
         vocabulary list. See ``sklearn.CountVectorizer`` for more info.
-        Default=True.
 
     resample : bool, optional (default=False)
         Resamples downloaded images to a 3x3x3 grid before saving them,
         to save disk space.
 
-    interpolation : str, optional
+    interpolation : str, default='continuous'
         Can be 'continuous', 'linear', or 'nearest'. Indicates the resample
-        method. Default='continuous'.
+        method.
         Argument passed to nilearn.image.resample_img.
 
-    verbose : int, optional
+    verbose : int, default=3
         An integer in [0, 1, 2, 3] to control the verbosity level.
-        Default=3.
 
     kwarg_image_filters
         Keyword arguments are understood to be filter terms for
@@ -2711,18 +2697,16 @@ def fetch_neurovault_ids(
 
     Parameters
     ----------
-    collection_ids : Container, optional
+    collection_ids : Container, default=()
         The ids of whole collections to be downloaded.
-        Default=().
 
-    image_ids : Container, optional
+    image_ids : Container, default=()
         The ids of particular images to be downloaded. The metadata for the
         corresponding collections is also downloaded.
-        Default=().
 
-    mode : {'download_new', 'overwrite', 'offline'}, optional
+    mode : {'download_new', 'overwrite', 'offline'}, default='download_new'
         When to fetch an image from the server rather than the local
-        disk. Default='download_new'.
+        disk.
 
         - 'download_new' (the default) means download only files that
           are not already on disk (regardless of modify date).
@@ -2733,22 +2717,20 @@ def fetch_neurovault_ids(
         The directory we want to use for nilearn data. A subdirectory
         named "neurovault" will contain :term:`Neurovault` data.
 
-    fetch_neurosynth_words : bool, optional
-        Whether to collect words from Neurosynth. Default=False.
+    fetch_neurosynth_words : bool, default=False
+        Whether to collect words from Neurosynth.
 
     resample : bool, optional (default=False)
         Resamples downloaded images to a 3x3x3 grid before saving them,
         to save disk space.
 
-    vectorize_words : bool, optional
+    vectorize_words : bool, default=True
         If neurosynth words are downloaded, create a matrix of word
         counts and add it to the result. Also add to the result a
         vocabulary list. See ``sklearn.CountVectorizer`` for more info.
-        Default=True.
 
-    verbose : int, optional
+    verbose : int, default=3
         An integer in [0, 1, 2, 3] to control the verbosity level.
-        Default=3.
 
     Returns
     -------
@@ -2815,8 +2797,8 @@ def fetch_neurovault_motor_task(data_dir=None, verbose=1):
         Path of the data directory. Used to force data storage in a specified
         location.
 
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    verbose : int, default=1
+        Verbosity level (0 means no message).
 
     Returns
     -------
@@ -2858,8 +2840,8 @@ def fetch_neurovault_auditory_computation_task(data_dir=None, verbose=1):
         Path of the data directory. Used to force data storage in a specified
         location.
 
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    verbose : int, default=1
+        Verbosity level (0 means no message).
 
     Returns
     -------

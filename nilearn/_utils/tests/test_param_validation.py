@@ -74,12 +74,11 @@ def test_get_mask_volume():
         warnings.warn(f"Couldn't find {mni152_brain_mask} (for testing)")
 
 
-def test_feature_screening():
+def test_feature_screening(affine_eye):
     # dummy
     mask_img_data = np.zeros((182, 218, 182))
     mask_img_data[30:-30, 30:-30, 30:-30] = 1
-    affine = np.eye(4)
-    mask_img = nibabel.Nifti1Image(mask_img_data, affine=affine)
+    mask_img = nibabel.Nifti1Image(mask_img_data, affine=affine_eye)
 
     for is_classif in [True, False]:
         for screening_percentile in [100, None, 20, 101, -1, 10]:

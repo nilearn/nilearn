@@ -175,8 +175,8 @@ def _group_iter_search_light(
     total : int
         Total number of voxels, used for display
 
-    verbose : int, optional
-        The verbosity level. Default is 0
+    verbose : int, default=0
+        The verbosity level.
 
     Returns
     -------
@@ -226,8 +226,8 @@ class SearchLight(BaseEstimator):
         Boolean image giving voxels on which searchlight should be
         computed.
 
-    radius : float, optional
-        radius of the searchlight ball, in millimeters. Defaults to 2.
+    radius : float, default=2.
+        radius of the searchlight ball, in millimeters.
 
     estimator : 'svr', 'svc', or an estimator object implementing 'fit'
         The object to use to fit the data

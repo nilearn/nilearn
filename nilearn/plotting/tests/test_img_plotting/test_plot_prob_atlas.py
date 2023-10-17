@@ -1,7 +1,6 @@
 """Tests for :func:`nilearn.plotting.plot_prob_atlas`."""
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
@@ -18,22 +17,19 @@ from nilearn.plotting import plot_prob_atlas
         {"threshold": None},
     ],
 )
-def test_plot_prob_atlas(params, rng):
+def test_plot_prob_atlas(params, affine_eye, rng):
     """Smoke tests for plot_prob_atlas.
 
     Tests different combinations of parameters `view_type`, `threshold`,
     and `colorbar`.
     """
     data_rng = rng.normal(size=(6, 8, 10, 5))
-    plot_prob_atlas(Nifti1Image(data_rng, np.eye(4)), **params)
+    plot_prob_atlas(Nifti1Image(data_rng, affine_eye), **params)
     plt.close()
 
 
-def test_plot_prob_atlas_radiological_view(rng):
+def test_plot_prob_atlas_radiological_view(img_4d_rand_eye):
     """Smoke test for radiological view."""
-    data_rng = rng.normal(size=(6, 8, 10, 5))
-    result = plot_prob_atlas(
-        Nifti1Image(data_rng, np.eye(4)), radiological=True
-    )
+    result = plot_prob_atlas(img_4d_rand_eye, radiological=True)
     assert result.axes.get("y").radiological is True
     plt.close()

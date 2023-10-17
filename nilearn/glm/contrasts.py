@@ -187,21 +187,17 @@ class Contrast:
         dim : int or None, optional
             The dimension of the :term:`contrast`.
 
-        dof : scalar, optional
+        dof : scalar, default=DEF_DOFMAX
             The degrees of freedom of the residuals.
-            Default=DEF_DOFMAX
 
-        contrast_type : {'t', 'F'}, optional
+        contrast_type : {'t', 'F'}, default='t'
             Specification of the :term:`contrast` type.
-            Default='t'.
 
-        tiny : float, optional
+        tiny : float, default=DEF_TINY
             Small quantity used to avoid numerical underflows.
-            Default=DEF_TINY
 
-        dofmax : scalar, optional
+        dofmax : scalar, default=DEF_DOFMAX
             The maximum degrees of freedom of the residuals.
-            Default=DEF_DOFMAX.
 
         """
         if variance.ndim != 1:
@@ -248,9 +244,8 @@ class Contrast:
 
         Parameters
         ----------
-        baseline : float, optional
+        baseline : float, default=0.0
             Baseline value for the test statistic.
-            Default=0.0.
 
         Returns
         -------
@@ -284,9 +279,9 @@ class Contrast:
 
         Parameters
         ----------
-        baseline : float, optional
+        baseline : float, default=0.0
             Baseline value for the test statistic.
-            Default=0.0.
+
 
         Returns
         -------
@@ -316,9 +311,9 @@ class Contrast:
 
         Parameters
         ----------
-        baseline : float, optional
+        baseline : float, default=0.0
             Baseline value for the test statistic.
-            Default=0.0.
+
 
         Returns
         -------
@@ -347,9 +342,9 @@ class Contrast:
 
         Parameters
         ----------
-        baseline : float, optional,
+        baseline : float, optional, default=0.0
             Baseline value for the test statistic.
-            Default=0.0.
+
 
         Returns
         -------
@@ -434,9 +429,9 @@ def compute_fixed_effects(
     mask : Nifti1Image or NiftiMasker instance or None, optional
         Mask image. If ``None``, it is recomputed from ``contrast_imgs``.
 
-    precision_weighted : Bool, optional
+    precision_weighted : Bool, default=False
         Whether fixed effects estimates should be weighted by inverse
-        variance or not. Default=False.
+        variance or not.
 
     dofs : array-like or None, default=None
         the degrees of freedom of the models with ``len = len(variance_imgs)``

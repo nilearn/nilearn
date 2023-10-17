@@ -39,7 +39,7 @@ def save_glm_to_bids(
               Arrays may be 1D or 2D, with 1D arrays typically being
               t-contrasts and 2D arrays typically being F-contrasts.
 
-    contrast_types : None or :obj:`dict` of :obj:`str`, optional
+    contrast_types : None or :obj:`dict` of :obj:`str`, default=None
         An optional dictionary mapping some
         or all of the :term:`contrast` names to
         specific contrast types ('t' or 'F').
@@ -50,15 +50,13 @@ def save_glm_to_bids(
         dictionary, but only those contrasts
         for which :term:`contrast` type must be
         explicitly set need to be included.
-        Default is None.
 
     out_dir : :obj:`str`, optional
         Output directory for files. Default is current working directory.
 
-    prefix : :obj:`str` or None, optional
+    prefix : :obj:`str` or None, default=None
         String to prepend to generated filenames.
         If a string is provided, '_' will be added to the end.
-        Default is None.
 
     Warnings
     --------

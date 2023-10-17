@@ -129,13 +129,13 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
         Raise an error if the matrix is not symmetric positive definite of the
         same shape as the elements of matrices.
 
-    max_iter : int, optional
-        Maximal number of iterations. Default=10.
+    max_iter : int, default=10
+        Maximal number of iterations.
 
-    tol : positive float or None, optional
+    tol : positive float or None, default=1e-7
         The tolerance to declare convergence: if the gradient norm goes below
         this value, the gradient descent is stopped. If None, no  check is
-        performed. Default=1e-7.
+        performed.
 
     Returns
     -------
@@ -224,9 +224,8 @@ def sym_matrix_to_vec(symmetric, discard_diagonal=False):
         (..., n_features, n_features)
         Input array.
 
-    discard_diagonal : boolean, optional
+    discard_diagonal : boolean, default=False
         If True, the values of the diagonal are not returned.
-        Default=False.
 
     Returns
     -------
@@ -379,25 +378,24 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
     Parameters
     ----------
-    cov_estimator : estimator object, optional.
-        The covariance estimator. By default the LedoitWolf estimator
-        is used. This implies that correlations are slightly shrunk
+    cov_estimator : estimator object, \
+                    default=LedoitWolf(store_precision=False)
+        The covariance estimator.
+        This implies that correlations are slightly shrunk
         towards zero compared to a maximum-likelihood estimate
 
     kind : {"covariance", "correlation", "partial correlation",\
-            "tangent", "precision"}, optional
+            "tangent", "precision"}, default='covariance'
         The matrix kind.
         For the use of "tangent" see :footcite:`Varoquaux2010b`.
-        Default='covariance'.
 
-    vectorize : bool, optional
+    vectorize : bool, default=False
         If True, connectivity matrices are reshaped into 1D arrays and only
-        their flattened lower triangular parts are returned. Default=False.
+        their flattened lower triangular parts are returned.
 
-    discard_diagonal : bool, optional
+    discard_diagonal : bool, default=False
         If True, vectorized connectivity coefficients do not include the
         matrices diagonal elements. Used only when vectorize is set to True.
-        Default=False.
 
     %(standardize)s
 

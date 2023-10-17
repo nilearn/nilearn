@@ -626,13 +626,13 @@ def test_new_img_like():
     assert_array_equal(get_data(img_nifti2), get_data(img2_nifti2))
 
 
-def test_new_img_like_accepts_paths(tmp_path, rng):
+def test_new_img_like_accepts_paths(affine_eye, tmp_path, rng):
     """Check that new_img_like can accept instances of pathlib.Path."""
     nifti_path = tmp_path / "sample.nii"
     assert isinstance(nifti_path, Path)
 
     data = rng.rand(10, 10, 10)
-    img = Nifti1Image(data, np.eye(4))
+    img = Nifti1Image(data, affine_eye)
     nibabel.save(img, nifti_path)
 
     new_data = rng.rand(10, 10, 10)
@@ -838,22 +838,20 @@ def test_math_img(
             assert result.shape == expected_result.shape
 
 
-def test_binarize_img(img_4D_rand_eye):
-    img = img_4D_rand_eye
-
+def test_binarize_img(img_4d_rand_eye):
     # Test that all output values are 1.
-    img1 = binarize_img(img)
+    img1 = binarize_img(img_4d_rand_eye)
 
     assert_array_equal(np.unique(img1.dataobj), np.array([1]))
 
     # Test that it works with threshold
-    img2 = binarize_img(img, threshold=0.5)
+    img2 = binarize_img(img_4d_rand_eye, threshold=0.5)
 
     assert_array_equal(np.unique(img2.dataobj), np.array([0, 1]))
     # Test that manual binarization equals binarize_img results.
-    img3 = img_4D_rand_eye
-    img3.dataobj[img.dataobj < 0.5] = 0
-    img3.dataobj[img.dataobj >= 0.5] = 1
+    img3 = img_4d_rand_eye
+    img3.dataobj[img_4d_rand_eye.dataobj < 0.5] = 0
+    img3.dataobj[img_4d_rand_eye.dataobj >= 0.5] = 1
 
     assert_array_equal(img2.dataobj, img3.dataobj)
 
