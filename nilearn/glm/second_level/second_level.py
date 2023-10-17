@@ -387,7 +387,7 @@ class SecondLevelModel(BaseGLM):
     Parameters
     ----------
     mask_img : Niimg-like, :class:`~nilearn.maskers.NiftiMasker` or\
-    :class:`~nilearn.maskers.MultiNiftiMasker`, optional
+             :class:`~nilearn.maskers.MultiNiftiMasker`, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given,
         it will be computed automatically by a
@@ -411,11 +411,11 @@ class SecondLevelModel(BaseGLM):
         If 0 prints nothing. If 1 prints final computation time.
         If 2 prints masker computation details.
     %(n_jobs)s
-    minimize_memory : :obj:`bool`, optional
+    minimize_memory : :obj:`bool`, default=True
         Gets rid of some variables on the model fit results that are not
         necessary for contrast computation and would only be useful for
         further inspection of model details. This has an important impact
-        on memory consumption. Default=True.
+        on memory consumption.
 
     """
 
@@ -570,13 +570,13 @@ class SecondLevelModel(BaseGLM):
               :class:`~pandas.DataFrame` ``map_name`` column. It has to be
               a 't' contrast.
 
-        second_level_stat_type : {'t', 'F'} or None, optional
-            Type of the second level contrast. Default=None.
+        second_level_stat_type : {'t', 'F'} or None, default=None
+            Type of the second level contrast.
 
         output_type : {'z_score', 'stat', 'p_value', \
-                :term:`'effect_size'<Parameter Estimate>`, 'effect_variance', \
-                'all'}, optional
-            Type of the output map. Default='z-score'.
+                      :term:`'effect_size'<Parameter Estimate>`, \
+                      'effect_variance', 'all'}, default='z-score'
+            Type of the output map.
 
         Returns
         -------
@@ -792,17 +792,16 @@ def non_parametric_inference(
 
     %(smoothing_fwhm)s
 
-    model_intercept : :obj:`bool`, optional
+    model_intercept : :obj:`bool`, default=True
         If ``True``, a constant column is added to the confounding variates
         unless the tested variate is already the intercept.
-        Default=True.
 
-    n_perm : :obj:`int`, optional
+    n_perm : :obj:`int`, default=10000
         Number of permutations to perform.
         Permutations are costly but the more are performed, the more precision
-        one gets in the p-values estimation. Default=10000.
+        one gets in the p-values estimation.
 
-    two_sided_test : :obj:`bool`, optional
+    two_sided_test : :obj:`bool`, default=False
 
         - If ``True``, performs an unsigned t-test.
           Both positive and negative effects are considered; the null
@@ -810,7 +809,6 @@ def non_parametric_inference(
         - If ``False``, only positive effects are considered as relevant.
           The null hypothesis is that the effect is zero or negative.
 
-        Default=False.
 
     %(random_state)s
         Use this parameter to have the same permutations in each
@@ -820,11 +818,10 @@ def non_parametric_inference(
 
     %(verbose0)s
 
-    threshold : None or :obj:`float`, optional
+    threshold : None or :obj:`float`, default=None
         Cluster-forming threshold in p-scale.
         This is only used for cluster-level inference.
         If None, no cluster-level inference will be performed.
-        Default=None.
 
         .. warning::
 
@@ -833,12 +830,11 @@ def non_parametric_inference(
 
         .. versionadded:: 0.9.2
 
-    tfce : :obj:`bool`, optional
+    tfce : :obj:`bool`, default=False
         Whether to calculate :term:`TFCE` as part of the permutation procedure
         or not.
         The TFCE calculation is implemented as described in
         :footcite:t:`Smith2009a`.
-        Default=False.
 
         .. warning::
 

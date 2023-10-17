@@ -22,7 +22,7 @@ in this article:
 
     Jean Honorio and Dimitris Samaras.
     "Simultaneous and Group-Sparse Multi-Task Learning of Gaussian Graphical
-    Models". arXiv:1207.4255 (17 July 2012). http://arxiv.org/abs/1207.4255.
+    Models". arXiv:1207.4255 (17 July 2012). https://arxiv.org/abs/1207.4255.
 
 The goal of the algorithm is to take a set of K covariance matrices as
 input, and estimate a set of K sparse precision matrices, using a
@@ -84,7 +84,7 @@ can be useful to track down numerical instability problems.
 Execution time
 ==============
 
-The `line profiler <http://pythonhosted.org/line_profiler/>`_ from
+The `line profiler <https://github.com/pyutils/line_profiler>`_ from
 Robert Kern was used to locate execution time bottlenecks. Its
 overhead proved not to be negligible (around 50% more execution time
 when activated), and not evenly distributed in code lines. Global

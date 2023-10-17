@@ -6,7 +6,7 @@ Downloading statistical maps from the Neurovault repository
 
 Neurovault is a public repository of unthresholded statistical maps,
 parcellations, and atlases of the human brain. You can read about it
-and browse the images it contains at http://www.neurovault.org. You
+and browse the images it contains at https://www.neurovault.org. You
 can download maps from Neurovault with Nilearn.
 
 Neurovault was introduced in [1]_.
@@ -25,7 +25,7 @@ Specific images or collections
 
 In the simplest case, you already know the "id" of the collections or
 images you want. Maybe you liked a paper and went to
-http://www.neurovault.org looking for the data. Once on the relevant
+https://www.neurovault.org looking for the data. Once on the relevant
 collection's webpage, you can click 'Details' to see its id
 (and more). You can then download it using
 :func:`nilearn.datasets.fetch_neurovault_ids` :
@@ -187,7 +187,7 @@ Neurosynth annotations
 It is also possible to ask Neurosynth to annotate the maps found on
 Neurovault. Neurosynth is a platform for large-scale, automated
 synthesis of :term:`fMRI` data. It can be used to perform decoding.  You can
-learn more about Neurosynth at http://www.neurosynth.org.
+learn more about Neurosynth at https://www.neurosynth.org.
 
 Neurosynth was introduced in [2]_.
 

@@ -7,8 +7,7 @@ from numpy.testing import assert_almost_equal
 from nilearn.decoding.proximal_operators import _prox_l1, _prox_tvl1
 
 
-def test_prox_l1_nonexpansiveness(n_features=10):
-    rng = np.random.RandomState(42)
+def test_prox_l1_nonexpansiveness(rng, n_features=10):
     x = rng.randn(n_features, 1)
     tau = 0.3
     s = _prox_l1(x.copy(), tau)
@@ -25,10 +24,8 @@ def test_prox_l1_nonexpansiveness(n_features=10):
 @pytest.mark.parametrize("ndim", range(3, 4))
 @pytest.mark.parametrize("weight", np.logspace(-10, 10, num=10))
 def test_prox_tvl1_approximates_prox_l1_for_lasso(
-    ndim, weight, size=15, random_state=42, decimal=4, dgap_tol=1e-7
+    rng, ndim, weight, size=15, random_state=42, decimal=4, dgap_tol=1e-7
 ):
-    rng = np.random.RandomState(random_state)
-
     l1_ratio = 1.0  # pure LASSO
 
     shape = [size] * ndim

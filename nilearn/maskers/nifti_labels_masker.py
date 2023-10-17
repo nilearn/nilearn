@@ -57,11 +57,10 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         Warning: The labels must be consistent with the label
         values provided through `labels_img`.
 
-    background_label : :obj:`int` or :obj:`float`, optional
+    background_label : :obj:`int` or :obj:`float`, default=0
         Label used in labels_img to represent background.
         Warning: This value must be consistent with label values and
         image provided.
-        Default=0.
 
     mask_img : Niimg-like object, optional
         See :ref:`extracting_data`.
@@ -69,10 +68,10 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
     %(smoothing_fwhm)s
     %(standardize_maskers)s
     %(standardize_confounds)s
-    high_variance_confounds : :obj:`bool`, optional
+    high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
-        and regressed out. Default=False.
+        and regressed out.
     %(detrend)s
     %(low_pass)s
     %(high_pass)s
@@ -82,24 +81,23 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
 
-    resampling_target : {"data", "labels", None}, optional
+    resampling_target : {"data", "labels", None}, default="data"
         Gives which image gives the final shape/size. For example, if
         `resampling_target` is "data", the atlas is resampled to the
         shape of the data if needed. If it is "labels" then mask_img
         and images provided to fit() are resampled to the shape and
         affine of maps_img. "None" means no resampling: if shapes and
-        affines do not match, a ValueError is raised. Default="data".
+        affines do not match, a ValueError is raised.
     %(memory)s
     %(memory_level1)s
     %(verbose0)s
-    strategy : :obj:`str`, optional
+    strategy : :obj:`str`, default='mean'
         The name of a valid function to reduce the region with.
         Must be one of: sum, mean, median, minimum, maximum, variance,
-        standard_deviation. Default='mean'.
+        standard_deviation.
     %(keep_masked_labels)s
-    reports : :obj:`bool`, optional
+    reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
-        Default=True.
 
     %(masker_kwargs)s
 
@@ -403,7 +401,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             elif self.resampling_target is None:
                 if self.mask_img_.shape != self.labels_img_.shape[:3]:
                     raise ValueError(
-                        _utils._compose_err_msg(
+                        _utils.compose_err_msg(
                             'Regions and mask do not have the same shape',
                             mask_img=self.mask_img,
                             labels_img=self.labels_img,
@@ -415,7 +413,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                     self.labels_img_.affine,
                 ):
                     raise ValueError(
-                        _utils._compose_err_msg(
+                        _utils.compose_err_msg(
                             'Regions and mask do not have the same affine.',
                             mask_img=self.mask_img,
                             labels_img=self.labels_img,
@@ -555,7 +553,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
         if self.resampling_target == "data":
             imgs_ = _utils.check_niimg(imgs, atleast_4d=True)
-            if not _utils.niimg_conversions._check_same_fov(
+            if not _utils.niimg_conversions.check_same_fov(
                 imgs_,
                 self._resampled_labels_img_,
             ):
@@ -563,7 +561,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                     print("Resampling labels")
                 labels_before_resampling = set(
                     np.unique(
-                        _utils.niimg._safe_get_data(
+                        _utils.niimg.safe_get_data(
                             self._resampled_labels_img_,
                         )
                     )
@@ -575,7 +573,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                         target_affine=imgs_.affine)
                 labels_after_resampling = set(
                     np.unique(
-                        _utils.niimg._safe_get_data(
+                        _utils.niimg.safe_get_data(
                             self._resampled_labels_img_,
                         )
                     )
@@ -592,7 +590,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                                   "(including background).")
 
             if (self.mask_img is not None) and (
-                not _utils.niimg_conversions._check_same_fov(
+                not _utils.niimg_conversions.check_same_fov(
                     imgs_,
                     self._resampled_mask_img,
                 )

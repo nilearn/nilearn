@@ -14,7 +14,7 @@ Extracting times series to build a functional connectome
 
    * `Varoquaux and Craddock, "Learning and comparing functional
      connectomes across subjects", NeuroImage 2013
-     <http://www.sciencedirect.com/science/article/pii/S1053811913003340>`_.
+     <https://www.sciencedirect.com/science/article/pii/S1053811913003340>`_.
 
 .. _parcellation_time_series:
 
@@ -71,7 +71,7 @@ the important parameters, but not the data::
 The Nifti data can then be turned to time-series by calling the
 :meth:`NiftiLabelsMasker.fit_transform` method, that takes either
 filenames or `NiftiImage objects
-<http://nipy.org/nibabel/nibabel_images.html>`_::
+<https://nipy.org/nibabel/nibabel_images.html>`_::
 
     time_series = masker.fit_transform(frmi_files,
                                        confounds=confounds_dataframe)
@@ -173,7 +173,7 @@ specifying the important parameters, in particular the atlas::
     masker = NiftiMapsMasker(maps_img=atlas_filename, standardize=True)
 
 The ``fit_transform`` method turns filenames or `NiftiImage objects
-<http://nipy.org/nibabel/nibabel_images.html>`_ to time series::
+<https://nipy.org/nibabel/nibabel_images.html>`_ to time series::
 
     time_series = masker.fit_transform(frmi_files, confounds=csv_file)
 
@@ -253,7 +253,7 @@ can be computed for each region on hard :term:`parcellation` or probabilistic at
 .. topic:: **References**
 
   * `Zalesky et al., NeuroImage 2012, "On the use of correlation as a measure of
-    network connectivity" <http://www.sciencedirect.com/science/article/pii/S1053811912001784>`_.
+    network connectivity" <https://www.sciencedirect.com/science/article/pii/S1053811912001784>`_.
 
   * `Varoquaux et al., NeuroImage 2013, "Learning and comparing functional
-    connectomes across subjects" <http://www.sciencedirect.com/science/article/pii/S1053811913003340>`_.
+    connectomes across subjects" <https://www.sciencedirect.com/science/article/pii/S1053811913003340>`_.

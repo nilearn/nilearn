@@ -15,11 +15,11 @@ Connectome extraction: inverse covariance for direct connections
 .. topic:: **References**
 
    * `Smith et al, Network modelling methods for FMRI,
-     NeuroImage 2011 <http://www.sciencedirect.com/science/article/pii/S1053811910011602>`_
+     NeuroImage 2011 <https://www.sciencedirect.com/science/article/pii/S1053811910011602>`_
 
    * `Varoquaux and Craddock, Learning and comparing functional
      connectomes across subjects, NeuroImage 2013
-     <http://www.sciencedirect.com/science/article/pii/S1053811913003340>`_
+     <https://www.sciencedirect.com/science/article/pii/S1053811913003340>`_
 
 Sparse inverse covariance for functional connectomes
 =====================================================
@@ -36,7 +36,7 @@ them only the direct connections between two regions.
 
 
 As shown in `[Smith 2011]
-<http://www.sciencedirect.com/science/article/pii/S1053811910011602>`_,
+<https://www.sciencedirect.com/science/article/pii/S1053811910011602>`_,
 `[Varoquaux 2010] <https://hal.inria.fr/inria-00512451>`_, it is more
 interesting to use the inverse covariance matrix, ie the *precision
 matrix*. It gives **only direct connections between regions**, as it
@@ -95,7 +95,7 @@ of the estimator:
 .. topic:: **Parameter selection**
 
     The parameter controlling the sparsity is set by `cross-validation
-    <http://scikit-learn.org/stable/modules/cross_validation.html>`_
+    <https://scikit-learn.org/stable/modules/cross_validation.html>`_
     scheme. If you want to specify it manually, use the estimator
     :class:`sklearn.covariance.GraphicalLasso`.
 
@@ -114,7 +114,7 @@ of the estimator:
 
 .. topic:: **Reference**
 
- * The `graph lasso [Friedman et al, Biostatistics 2007] <http://biostatistics.oxfordjournals.org/content/9/3/432.short>`_ is useful to estimate one
+ * The `graph lasso [Friedman et al, Biostatistics 2007] <https://academic.oup.com/biostatistics/article/9/3/432/224260>`_ is useful to estimate one
    inverse covariance, ie to work on single-subject data or concatenate
    multi-subject data.
 
@@ -234,7 +234,7 @@ information.
 
 .. topic:: **Reference**
 
- * The `Brain covariance selection using population prior [Varoquaux et al, NIPS 2010] <http://papers.nips.cc/paper/4080-brain-covariance-selection-better-individual-functional-connectivity-models-using-population-prior>`_
+ * The `Brain covariance selection using population prior [Varoquaux et al, NIPS 2010] <https://papers.nips.cc/paper/4080-brain-covariance-selection-better-individual-functional-connectivity-models-using-population-prior>`_
 
 Linking total and direct interactions at the group level
 ========================================================
@@ -277,4 +277,4 @@ Deviations from this mean in the tangent space are provided in the connectivitie
 
 .. topic:: **Reference**
 
- * The `tangent space for connectivity [Varoquaux et al, MICCAI 2010] <http://link.springer.com/chapter/10.1007%2F978-3-642-15705-9_25>`_
+ * The `tangent space for connectivity [Varoquaux et al, MICCAI 2010] <https://link.springer.com/chapter/10.1007/978-3-642-15705-9_25>`_

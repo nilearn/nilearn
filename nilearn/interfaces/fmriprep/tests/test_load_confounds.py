@@ -1,5 +1,4 @@
 import re
-import sys
 
 import numpy as np
 import pandas as pd
@@ -9,7 +8,8 @@ from scipy.stats import pearsonr
 from sklearn.preprocessing import scale
 
 from nilearn._utils.data_gen import create_fake_bids_dataset
-from nilearn._utils.fmriprep_confounds import _to_camel_case
+from nilearn._utils.fmriprep_confounds import to_camel_case
+from nilearn.conftest import _rng
 from nilearn.interfaces.bids import get_bids_files
 from nilearn.interfaces.fmriprep import load_confounds
 from nilearn.interfaces.fmriprep.load_confounds import (
@@ -51,14 +51,9 @@ def _simu_img(tmp_path, demean):
 
     # create random noise and a random mixture of confounds standardized
     # to zero mean and unit variance
-    if sys.version_info < (3, 7):  # fall back to random state for 3.6
-        np.random.RandomState(42)
-        beta = np.random.rand(nx * ny * nz, X.shape[1])
-        tseries_rand = scale(np.random.rand(nx * ny * nz, nt), axis=1)
-    else:
-        randome_state = np.random.default_rng(0)
-        beta = randome_state.random((nx * ny * nz, X.shape[1]))
-        tseries_rand = scale(randome_state.random((nx * ny * nz, nt)), axis=1)
+    rng = _rng()
+    beta = rng.random((nx * ny * nz, X.shape[1]))
+    tseries_rand = scale(rng.random((nx * ny * nz, nt)), axis=1)
     # create the confound mixture
     tseries_conf = scale(np.matmul(beta, X.transpose()), axis=1)
 
@@ -454,7 +449,7 @@ def test_load_non_nifti(tmp_path):
     assert conf.size != 0
 
 
-def test_invalid_filetype(tmp_path):
+def test_invalid_filetype(tmp_path, rng):
     """Invalid file types/associated files for load method."""
     bad_nii, bad_conf = create_tmp_filepath(tmp_path,
                                             copy_confounds=True,
@@ -471,7 +466,7 @@ def test_invalid_filetype(tmp_path):
     (tmp_path / add_conf).unlink()  # Remove for the rest of the tests to run
 
     # invalid fmriprep version: confound file with no header (<1.0)
-    fake_confounds = np.random.rand(30, 20)
+    fake_confounds = rng.rand(30, 20)
     np.savetxt(bad_conf, fake_confounds, delimiter="\t")
     with pytest.raises(ValueError) as error_log:
         load_confounds(bad_nii)
@@ -481,7 +476,7 @@ def test_invalid_filetype(tmp_path):
     leagal_confounds, _ = get_legal_confound()
     camel_confounds = leagal_confounds.copy()
     camel_confounds.columns = [
-        _to_camel_case(col_name) for col_name in leagal_confounds.columns
+        to_camel_case(col_name) for col_name in leagal_confounds.columns
     ]
     camel_confounds.to_csv(bad_conf, sep="\t", index=False)
     with pytest.raises(ValueError) as error_log:

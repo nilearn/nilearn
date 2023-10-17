@@ -264,7 +264,8 @@ plot_roi(
 # **Dilation** - Thresholded functional brain images often contain scattered
 # voxels across the brain. To consolidate such brain images towards
 # more compact shapes, we use a `morphological dilation
-# <http://en.wikipedia.org/wiki/Dilation_(morphology)>`_. This is a common step
+# <https://en.wikipedia.org/wiki/Dilation_(morphology)>`_.
+# This is a common step
 # to be sure not to forget voxels located on the edge of a ROI. In other words,
 # such operations can fill "holes" in masked :term:`voxel` representations.
 

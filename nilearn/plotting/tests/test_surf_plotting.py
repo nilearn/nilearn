@@ -10,6 +10,7 @@ from matplotlib.figure import Figure
 from numpy.testing import assert_array_equal
 
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
+from nilearn.conftest import _rng
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting.displays import PlotlySurfaceFigure
 from nilearn.plotting.surf_plotting import (
@@ -404,11 +405,10 @@ def test_plot_surf_engine_error():
 
 
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
-def test_plot_surf(engine, tmp_path):
+def test_plot_surf(engine, tmp_path, rng):
     if not is_plotly_installed() and engine == "plotly":
         pytest.skip('Plotly is not installed; required for this test.')
     mesh = generate_surf()
-    rng = np.random.RandomState(42)
     bg = rng.standard_normal(size=mesh[0].shape[0])
 
     # Plot mesh only
@@ -440,9 +440,8 @@ def test_plot_surf(engine, tmp_path):
         assert display.axes[0].title._text == 'Test title'
 
 
-def test_plot_surf_avg_method():
+def test_plot_surf_avg_method(rng):
     mesh = generate_surf()
-    rng = np.random.RandomState(42)
     # Plot with avg_method
     # Test all built-in methods and check
     mapp = rng.standard_normal(size=mesh[0].shape[0])
@@ -485,11 +484,10 @@ def test_plot_surf_avg_method():
 
 
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
-def test_plot_surf_error(engine):
+def test_plot_surf_error(engine, rng):
     if not is_plotly_installed() and engine == "plotly":
         pytest.skip('Plotly is not installed; required for this test.')
     mesh = generate_surf()
-    rng = np.random.RandomState(42)
 
     # Wrong inputs for view or hemi
     with pytest.raises(ValueError, match='Invalid view definition'):
@@ -526,9 +524,8 @@ def test_plot_surf_error(engine):
         )
 
 
-def test_plot_surf_avg_method_errors():
+def test_plot_surf_avg_method_errors(rng):
     mesh = generate_surf()
-    rng = np.random.RandomState(42)
     with pytest.raises(
         ValueError,
         match=(
@@ -591,11 +588,10 @@ def test_plot_surf_avg_method_errors():
 
 
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
-def test_plot_surf_stat_map(engine):
+def test_plot_surf_stat_map(engine, rng):
     if not is_plotly_installed() and engine == "plotly":
         pytest.skip('Plotly is not installed; required for this test.')
     mesh = generate_surf()
-    rng = np.random.RandomState(42)
     bg = rng.standard_normal(size=mesh[0].shape[0])
     data = 10 * rng.standard_normal(size=mesh[0].shape[0])
 
@@ -643,9 +639,8 @@ def test_plot_surf_stat_map(engine):
     plt.close()
 
 
-def test_plot_surf_stat_map_matplotlib_specific():
+def test_plot_surf_stat_map_matplotlib_specific(rng):
     mesh = generate_surf()
-    rng = np.random.RandomState(42)
     data = 10 * rng.standard_normal(size=mesh[0].shape[0])
     # Plot to axes
     axes = plt.subplots(ncols=2, subplot_kw={'projection': '3d'})[1]
@@ -691,9 +686,8 @@ def test_plot_surf_stat_map_matplotlib_specific():
     plt.close()
 
 
-def test_plot_surf_stat_map_error():
+def test_plot_surf_stat_map_error(rng):
     mesh = generate_surf()
-    rng = np.random.RandomState(42)
     data = 10 * rng.standard_normal(size=mesh[0].shape[0])
 
     # Wrong size of stat map data
@@ -710,11 +704,10 @@ def test_plot_surf_stat_map_error():
 
 def _generate_data_test_surf_roi():
     mesh = generate_surf()
-    rng = np.random.RandomState(42)
-    roi_idx = rng.randint(0, mesh[0].shape[0], size=10)
+    roi_idx = _rng().randint(0, mesh[0].shape[0], size=10)
     roi_map = np.zeros(mesh[0].shape[0])
     roi_map[roi_idx] = 1
-    parcellation = rng.uniform(size=mesh[0].shape[0])
+    parcellation = _rng().uniform(size=mesh[0].shape[0])
     return mesh, roi_map, parcellation
 
 
@@ -788,11 +781,10 @@ def test_plot_surf_roi_matplotlib_specific():
 
 
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
-def test_plot_surf_roi_error(engine):
+def test_plot_surf_roi_error(engine, rng):
     if not is_plotly_installed() and engine == "plotly":
         pytest.skip('Plotly is not installed; required for this test.')
     mesh = generate_surf()
-    rng = np.random.RandomState(42)
     roi_idx = rng.randint(0, mesh[0].shape[0], size=5)
     with pytest.raises(
             ValueError,
@@ -1003,10 +995,9 @@ def test_plot_surf_contours():
     plt.close()
 
 
-def test_plot_surf_contours_error():
+def test_plot_surf_contours_error(rng):
     mesh = generate_surf()
     # we need an invalid parcellation for testing
-    rng = np.random.RandomState(42)
     invalid_parcellation = rng.uniform(size=(mesh[0].shape[0]))
     parcellation = np.zeros((mesh[0].shape[0],))
     parcellation[mesh[1][3]] = 1

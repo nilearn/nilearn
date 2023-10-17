@@ -10,7 +10,7 @@ from sklearn.linear_model._coordinate_descent import _alpha_grid
 from sklearn.metrics import accuracy_score
 from sklearn.utils import check_random_state
 
-from nilearn._utils.param_validation import _adjust_screening_percentile
+from nilearn._utils.param_validation import adjust_screening_percentile
 from nilearn.decoding.space_net import (
     BaseSpaceNet,
     SpaceNetClassifier,
@@ -157,11 +157,11 @@ def test_screening_space_net():
 
     for verbose in [0, 2]:
         with pytest.warns(UserWarning):
-            screening_percentile = _adjust_screening_percentile(
+            screening_percentile = adjust_screening_percentile(
                 10, mask, verbose
             )
     with pytest.warns(UserWarning):
-        screening_percentile = _adjust_screening_percentile(10, mask)
+        screening_percentile = adjust_screening_percentile(10, mask)
     # We gave here a very small mask, judging by standards of brain size
     # thus the screening_percentile_ corrected for brain size should
     # be 100%
@@ -362,8 +362,7 @@ def test_lasso_vs_graph_net():
     assert_almost_equal(graph_net_perf, lasso_perf, decimal=3)
 
 
-def test_crop_mask():
-    rng = np.random.RandomState(42)
+def test_crop_mask(rng):
     mask = np.zeros((3, 4, 5), dtype=bool)
     box = mask[:2, :3, :4]
     box[rng.rand(*box.shape) < 3.0] = 1  # mask covers 30% of brain
@@ -377,9 +376,8 @@ def test_crop_mask():
 
 @pytest.mark.parametrize("is_classif", IS_CLASSIF)
 def test_univariate_feature_screening(
-    is_classif, dim=(11, 12, 13), n_samples=10
+    rng, is_classif, dim=(11, 12, 13), n_samples=10
 ):
-    rng = np.random.RandomState(42)
     mask = rng.rand(*dim) > 100.0 / np.prod(dim)
 
     assert mask.sum() >= 100.0

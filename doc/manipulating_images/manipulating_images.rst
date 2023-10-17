@@ -236,7 +236,7 @@ ROI mask:
      only the voxels which are common in both masks.
 
    * we can do `morphological dilation
-     <http://en.wikipedia.org/wiki/Dilation_(morphology)>`_ to achieve
+     <https://en.wikipedia.org/wiki/Dilation_(morphology)>`_ to achieve
      more compact blobs with more regular boundaries. The function is
      used from :func:`scipy.ndimage.binary_dilation`.
 
@@ -259,7 +259,7 @@ ROI mask:
    * A function :func:`nilearn.regions.connected_label_regions` can be used on
      atlases denoted as labels. For instance, atlases labelled using KMeans.
 
-.. _nibabel: http://nipy.sourceforge.net/nibabel/
+.. _nibabel: https://nipy.org/nibabel/
 
 .. topic:: **Code**
 

@@ -33,35 +33,29 @@ def _gamma_difference_hrf(
     tr : float
         :term:`Repetition time<TR>`, in seconds (sampling period).
 
-    oversampling : int, optional
+    oversampling : int, default=50
         Temporal oversampling factor.
-        Default=50.
 
-    time_length : float, optional
+    time_length : float, default=32
         hrf kernel length, in seconds.
-        Default=32.
 
-    onset : float, optional
-        Onset time of the hrf. Default=0.
+    onset : float, default=0
+        Onset time of the hrf.
 
-    delay : float, optional
+    delay : float, default=6
         Delay parameter of the hrf (in s.).
-        Default=6s.
 
-    undershoot : float, optional
+    undershoot : float, default=16
         Undershoot parameter of the hrf (in s.).
-        Default=16s.
 
-    dispersion : float, optional
+    dispersion : float, default=1
         Dispersion parameter for the first gamma function.
-        Default=1.
 
-    u_dispersion : float, optional
+    u_dispersion : float, default=1
         Dispersion parameter for the second gamma function.
-        Default=1.
 
-    ratio : float, optional
-        Ratio of the two gamma components. Default=0.167.
+    ratio : float, default=0.167
+        Ratio of the two gamma components.
 
     Returns
     -------
@@ -97,14 +91,14 @@ def spm_hrf(tr, oversampling=50, time_length=32.0, onset=0.0):
     tr : float
         :term:`Repetition time<TR>`, in seconds (sampling period).
 
-    oversampling : int, optional
-        Temporal oversampling factor. Default=50.
+    oversampling : int, default=50
+        Temporal oversampling factor.
 
-    time_length : float, optional
-        :term:`HRF` kernel length, in seconds. Default=32.
+    time_length : float, default=32
+        :term:`HRF` kernel length, in seconds.
 
-    onset : float, optional
-        :term:`HRF` onset time, in seconds. Default=0.
+    onset : float, default=0
+        :term:`HRF` onset time, in seconds.
 
     Returns
     -------
@@ -123,14 +117,14 @@ def glover_hrf(tr, oversampling=50, time_length=32.0, onset=0.0):
     tr : float
         :term:`Repetition time<TR>`, in seconds (sampling period).
 
-    oversampling : int, optional
-        Temporal oversampling factor. Default=50.
+    oversampling : int, default=50
+        Temporal oversampling factor.
 
-    time_length : float, optional
-        :term:`HRF` kernel length, in seconds. Default=32.
+    time_length : float, default=32
+        :term:`HRF` kernel length, in seconds.
 
-    onset : float, optional
-        Onset of the response. Default=0.
+    onset : float, default=0
+        Onset of the response.
 
     Returns
     -------
@@ -169,17 +163,17 @@ def _generic_time_derivative(
     tr : float
         :term:`Repetition time<TR>`, in seconds (sampling period).
 
-    oversampling : int, optional
-        Temporal oversampling factor. Default=50.
+    oversampling : int, default=50
+        Temporal oversampling factor.
 
-    time_length : float, optional
-        hrf kernel length, in seconds. Default=32.
+    time_length : float, default=32
+        hrf kernel length, in seconds.
 
-    onset : float, optional
-        Onset of the response. Default=0.
+    onset : float, default=0
+        Onset of the response.
 
-    dt : float, optional
-        Time step for the derivative. Default=0.1.
+    dt : float, default=0.1
+        Time step for the derivative.
     """
     return _compute_derivative_from_values(
         func(tr, oversampling, time_length, onset),
@@ -196,14 +190,14 @@ def spm_time_derivative(tr, oversampling=50, time_length=32.0, onset=0.0):
     tr : float
         :term:`Repetition time<TR>`, in seconds (sampling period).
 
-    oversampling : int, optional
-        Temporal oversampling factor. Default=50.
+    oversampling : int, default=50
+        Temporal oversampling factor.
 
-    time_length : float, optional
-        :term:`HRF` kernel length, in seconds. Default=32.
+    time_length : float, default=32
+        :term:`HRF` kernel length, in seconds.
 
-    onset : float, optional
-        Onset of the response in seconds. Default=0.
+    onset : float, default=0
+        Onset of the response in seconds.
 
     Returns
     -------
@@ -228,14 +222,14 @@ def glover_time_derivative(tr, oversampling=50, time_length=32.0, onset=0.0):
     tr : float
         :term:`Repetition time<TR>`, in seconds (sampling period).
 
-    oversampling : int, optional
-        Temporal oversampling factor. Default=50.
+    oversampling : int, default=50
+        Temporal oversampling factor.
 
-    time_length : float, optional
-        :term:`HRF` kernel length, in seconds. Default=32.
+    time_length : float, default=32
+        :term:`HRF` kernel length, in seconds.
 
-    onset : float, optional
-        Onset of the response. Default=0.
+    onset : float, default=0
+        Onset of the response.
 
     Returns
     -------
@@ -266,8 +260,8 @@ def _generic_dispersion_derivative(
 
     Parameters
     ----------
-    dt : float, optional
-        Dispersion step for the derivative. Default=0.01.
+    dt : float, default=0.01
+        Dispersion step for the derivative.
 
     See _gamma_difference_hrf for the other parameters description.
     """
@@ -304,14 +298,14 @@ def spm_dispersion_derivative(
     tr : float
         :term:`Repetition time<TR>`, in seconds (sampling period).
 
-    oversampling : int, optional
-        Temporal oversampling factor in seconds. Default=50.
+    oversampling : int, default=50
+        Temporal oversampling factor in seconds.
 
-    time_length : float, optional
-        :term:`HRF` kernel length, in seconds. Default=32.
+    time_length : float, default=32
+        :term:`HRF` kernel length, in seconds.
 
-    onset : float, optional
-        Onset of the response in seconds. Default=0.
+    onset : float, default=0
+        Onset of the response in seconds.
 
     Returns
     -------
@@ -334,14 +328,14 @@ def glover_dispersion_derivative(
     tr : float
         :term:`Repetition time<TR>`, in seconds (sampling period).
 
-    oversampling : int, optional
-        Temporal oversampling factor in seconds. Default=50.
+    oversampling : int, default=50
+        Temporal oversampling factor in seconds.
 
-    time_length : float, optional
-        :term:`HRF` kernel length, in seconds. Default=32.
+    time_length : float, default=32
+        :term:`HRF` kernel length, in seconds.
 
-    onset : float, optional
-        Onset of the response in seconds. Default=0.
+    onset : float, default=0
+        Onset of the response in seconds.
 
     Returns
     -------
@@ -374,13 +368,12 @@ def _sample_condition(
     frame_times : array of shape(n_scans)
         Sample time points.
 
-    oversampling : int, optional
-        Factor for oversampling event regressor. Default=50.
+    oversampling : int, default=50
+        Factor for oversampling event regressor.
 
-    min_onset : float, optional
+    min_onset : float, default=-24
         Minimal onset relative to frame_times[0] (in seconds)
         events that start before frame_times[0] + min_onset are not considered.
-        Default=-24.
 
     Returns
     -------
@@ -579,9 +572,8 @@ def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
     tr : float
         the repetition time in seconds
 
-    oversampling : int, optional
+    oversampling : int, default=50
         Temporal oversampling factor to have a smooth hrf.
-        Default=50.
 
     fir_delays : 1D-array-like, optional
         List of delays (in scans) for finite impulse response models.
@@ -686,19 +678,18 @@ def compute_regressor(
     frame_times : array of shape (n_scans)
         the desired sampling times
 
-    con_id : string, optional, default is 'cond'.
+    con_id : string, default='cond'
         Identifier of the condition
 
-    oversampling : int, optional
-        Oversampling factor to perform the convolution. Default=50.
+    oversampling : int, default=50
+        Oversampling factor to perform the convolution.
 
     fir_delays : [int] 1D-array-like, optional
         Delays (in scans) used in case of a finite impulse response model.
 
-    min_onset : float, optional
+    min_onset : float, default=-24
         Minimal onset relative to frame_times[0] (in seconds)
         events that start before frame_times[0] + min_onset are not considered.
-        Default=-24.
 
     Returns
     -------

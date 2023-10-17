@@ -59,14 +59,13 @@ def fetch_atlas_difumo(
 
     Parameters
     ----------
-    dimension : :obj:`int`, optional
+    dimension : :obj:`int`, default=64
         Number of dimensions in the dictionary. Valid resolutions
         available are {64, 128, 256, 512, 1024}.
-        Default=64.
 
-    resolution_mm : :obj:`int`, optional
+    resolution_mm : :obj:`int`, default=2mm
         The resolution in mm of the atlas to fetch. Valid options
-        available are {2, 3}. Default=2mm.
+        available are {2, 3}.
     %(data_dir)s
     %(resume)s
     %(verbose)s
@@ -139,7 +138,7 @@ def fetch_atlas_difumo(
     labels = pd.read_csv(files_[0])
     labels = labels.rename(columns={c: c.lower() for c in labels.columns})
     if legacy_format:
-        warnings.warn(_LEGACY_FORMAT_MSG)
+        warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
         labels = labels.to_records(index=False)
 
     # README
@@ -183,9 +182,10 @@ def fetch_atlas_craddock_2012(
     %(verbose)s
     homogeneity: :obj:`str`, optional
         The choice of the homogeneity ('spatial' or 'temporal' or 'random')
-    grp_mean: :obj:`bool`, optional
+    grp_mean: :obj:`bool`, default=True
         The choice of the :term:`parcellation` (with group_mean or without)
         Default=True.
+
 
     Returns
     -------
@@ -222,7 +222,7 @@ def fetch_atlas_craddock_2012(
     """
     if url is None:
         url = (
-            "http://cluster_roi.projects.nitrc.org"
+            "https://cluster_roi.projects.nitrc.org"
             "/Parcellations/craddock_2011_parcellations.tar.gz"
         )
     opts = {"uncompress": True}
@@ -303,9 +303,9 @@ def fetch_atlas_destrieux_2009(
 
     Parameters
     ----------
-    lateralized : :obj:`bool`, optional
+    lateralized : :obj:`bool`, default=True
         If True, returns an atlas with distinct regions for right and left
-        hemispheres. Default=True.
+        hemispheres.
     %(data_dir)s
     %(url)s
     %(resume)s
@@ -355,7 +355,7 @@ def fetch_atlas_destrieux_2009(
     params = dict(maps=files_[1], labels=pd.read_csv(files_[0], index_col=0))
 
     if legacy_format:
-        warnings.warn(_LEGACY_FORMAT_MSG)
+        warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
         params["labels"] = params["labels"].to_records()
 
     params["description"] = Path(files_[2]).read_text()
@@ -410,7 +410,7 @@ def fetch_atlas_harvard_oxford(
         from your installed directory. Since we mimic the same root directory
         as FSL to load it easily from your installation.
 
-    symmetric_split : :obj:`bool`, optional
+    symmetric_split : :obj:`bool`, default=False
         If ``True``, lateralized atlases of cort or sub with maxprob will be
         returned. For subcortical types (``sub-maxprob``), we split every
         symmetric region in left and right parts. Effectively doubles the
@@ -420,7 +420,6 @@ def fetch_atlas_harvard_oxford(
             Not implemented
             for full :term:`Probabilistic atlas` (*-prob-* atlases).
 
-        Default=False.
     %(resume)s
     %(verbose)s
 
@@ -562,7 +561,7 @@ def fetch_atlas_juelich(
         from your installed directory. Since we mimic same root directory
         as FSL to load it easily from your installation.
 
-    symmetric_split : :obj:`bool`, optional
+    symmetric_split : :obj:`bool`, default=False
         If ``True``, lateralized atlases of cort or sub with maxprob will be
         returned. For subcortical types (``sub-maxprob``), we split every
         symmetric region in left and right parts. Effectively doubles the
@@ -572,7 +571,6 @@ def fetch_atlas_juelich(
             Not implemented for full :term:`Probabilistic atlas`
             (``*-prob-*`` atlases).
 
-        Default=False.
     %(resume)s
     %(verbose)s
 
@@ -937,7 +935,7 @@ def fetch_coords_power_2011(legacy_format=True):
         columns={c: c.lower() for c in params["rois"].columns}
     )
     if legacy_format:
-        warnings.warn(_LEGACY_FORMAT_MSG)
+        warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
         params["rois"] = params["rois"].to_records(index=False)
     return Bunch(**params)
 
@@ -963,16 +961,15 @@ def fetch_atlas_smith_2009(
     %(url)s
     %(resume)s
     %(verbose)s
-    mirror : :obj:`str`, optional
+    mirror : :obj:`str`, default='origin'
         By default, the dataset is downloaded from the original website of the
         atlas. Specifying "nitrc" will force download from a mirror, with
-        potentially higher bandwidth. Default='origin'.
+        potentially higher bandwidth.
     dimension: :obj:`int`, optional
         Number of dimensions in the dictionary. Valid resolutions
         available are {10, 20, 70}.
-    resting: :obj:`bool`, optional
+    resting : :obj:`bool`, default=True
         Either to fetch the resting-:term:`fMRI` or BrainMap components
-        Default=True.
 
     Returns
     -------
@@ -1016,7 +1013,7 @@ def fetch_atlas_smith_2009(
     Notes
     -----
     For more information about this dataset's structure:
-    http://www.fmrib.ox.ac.uk/datasets/brainmap+rsns/
+    https://www.fmrib.ox.ac.uk/datasets/brainmap+rsns/
 
     """
     if url is None:
@@ -1231,9 +1228,8 @@ def fetch_atlas_aal(
 
     Parameters
     ----------
-    version : {'SPM12', 'SPM5', 'SPM8'}, optional
+    version : {'SPM12', 'SPM5', 'SPM8'}, default='SPM12'
         The version of the AAL atlas. Must be 'SPM5', 'SPM8', or 'SPM12'.
-        Default='SPM12'.
     %(data_dir)s
     %(url)s
     %(resume)s
@@ -1375,10 +1371,9 @@ def fetch_atlas_basc_multiscale_2015(
     resolution: :ob:`int`, optional
         Number of networks in the dictionary. Valid resolutions
         available are {7, 12, 20, 36, 64, 122, 197, 325, 444}
-    version : {'sym', 'asym'}, optional
+    version : {'sym', 'asym'}, default='sym'
         Available versions are 'sym' or 'asym'. By default all scales of
         brain parcellations of version 'sym' will be returned.
-        Default='sym'.
 
     Returns
     -------
@@ -1496,10 +1491,9 @@ def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=True):
 
     Parameters
     ----------
-    ordered_regions : :obj:`bool`, optional
+    ordered_regions : :obj:`bool`, default=True
         ROIs from same networks are grouped together and ordered with respect
         to their names and their locations (anterior to posterior).
-        Default=True.
     %(legacy_format)s
 
     Returns
@@ -1545,7 +1539,7 @@ def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=True):
     )
 
     if legacy_format:
-        warnings.warn(_LEGACY_FORMAT_MSG)
+        warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
         params["rois"] = params["rois"].to_records(index=False)
 
     return Bunch(**params)
@@ -1568,9 +1562,9 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
 
     Parameters
     ----------
-    ordered_regions : :obj:`bool`, optional
+    ordered_regions : :obj:`bool`, default=True
         ROIs from same networks are grouped together and ordered with respect
-        to their locations (anterior to posterior). Default=True.
+        to their locations (anterior to posterior).
     %(legacy_format)s
 
     Returns
@@ -1629,7 +1623,7 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
         rois = rois.sort_values(by=["network", "y"])
 
     if legacy_format:
-        warnings.warn(_LEGACY_FORMAT_MSG)
+        warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
         rois = rois.to_records()
 
     params = dict(
@@ -1870,7 +1864,7 @@ def _separate_talairach_levels(atlas_img, labels, output_dir, verbose):
 
 def _download_talairach(talairach_dir, verbose):
     """Download the Talairach atlas and separate the different levels."""
-    atlas_url = "http://www.talairach.org/talairach.nii"
+    atlas_url = "https://www.talairach.org/talairach.nii"
     temp_dir = mkdtemp()
     try:
         temp_file = _fetch_files(
@@ -1949,10 +1943,10 @@ def fetch_atlas_pauli_2017(version="prob", data_dir=None, verbose=1):
 
     Parameters
     ----------
-    version : {'prob', 'det'}, optional
+    version : {'prob', 'det'}, default='prob'
         Which version of the atlas should be download. This can be
         'prob' for the :term:`Probabilistic atlas`, or 'det' for the
-        :term:`Deterministic atlas`. Default='prob'.
+        :term:`Deterministic atlas`.
     %(data_dir)s
     %(verbose)s
 
@@ -2053,16 +2047,14 @@ def fetch_atlas_schaefer_2018(
 
     Parameters
     ----------
-    n_rois : {100, 200, 300, 400, 500, 600, 700, 800, 900, 1000}, optional
-        Number of regions of interest. Default=400.
+    n_rois : {100, 200, 300, 400, 500, 600, 700, 800, 900, 1000}, default=400
+        Number of regions of interest.
 
-    yeo_networks : {7, 17}, optional
+    yeo_networks : {7, 17}, default=7
         ROI annotation according to yeo networks.
-        Default=7.
 
-    resolution_mm : {1, 2}, optional
+    resolution_mm : {1, 2}, default=1mm
         Spatial resolution of atlas image in mm.
-        Default=1mm.
     %(data_dir)s
     base_url : :obj:`str`, optional
         Base URL of files to download (``None`` results in

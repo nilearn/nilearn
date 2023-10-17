@@ -32,7 +32,7 @@ which downloads a dataset and returns a bunch of paths to the dataset
 files (more details in :ref:`loading_data`). We can then proceed
 loading them as if they were just any other files on our disk. For
 example, we can download the data from the
-`Haxby 2001 paper <http://dx.doi.org/10.1126/science.1063736>`_ :
+`Haxby 2001 paper <https://doi.org/10.1126/science.1063736>`_ :
 
 .. code-block:: default
 
@@ -67,7 +67,7 @@ and the goal of this experiment is to predict which category is presented
 to the subjects from the brain activation.
 
 These conditions are presented as string into a CSV file. The `pandas
-<http://pandas.pydata.org/>`__ function
+<https://pandas.pydata.org/>`__ function
 ``read_csv`` is very useful to load this kind of data.
 
 .. literalinclude:: ../../examples/00_tutorials/plot_decoding_tutorial.py
@@ -76,7 +76,7 @@ These conditions are presented as string into a CSV file. The `pandas
 
 .. seealso::
 
-   * `pandas <http://pandas.pydata.org/>`_ is a very useful Python
+   * `pandas <https://pandas.pydata.org/>`_ is a very useful Python
      library to load CSV files and process their data
 
 For example, we will now consider only the conditions *cat* and *face* from our dataset.
@@ -193,7 +193,7 @@ predict the category of picture seen by the subject:
 
 
 We will not detail it here since there is a very good documentation about it in the
-`scikit-learn documentation <http://scikit-learn.org/stable/modules/svm.html#classification>`__
+`scikit-learn documentation <https://scikit-learn.org/stable/modules/svm.html#classification>`__
 
 Unmasking (inverse_transform)
 =============================

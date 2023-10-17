@@ -8,7 +8,7 @@ imaging data and applies machine learning techniques to predict output
 values.
 
 We use a very simple generating function to simulate data, as in `Michel
-et al. 2012 <http://dx.doi.org/10.1109/TMI.2011.2113378>`_ , a linear
+et al. 2012 <https://doi.org/10.1109/TMI.2011.2113378>`_ , a linear
 model with a random design matrix **X**:
 
 .. math::
@@ -149,10 +149,10 @@ plot_slices(coefs, title="Ground truth")
 # as well as the feature maps that they recover. Namely, we will use
 #
 # * A support vector regression (`SVM
-#   <http://scikit-learn.org/stable/modules/svm.html>`_)
+#   <https://scikit-learn.org/stable/modules/svm.html>`_)
 #
 # * An `elastic-net
-#   <http://scikit-learn.org/stable/modules/linear_model.html#elastic-net>`_
+#   <https://scikit-learn.org/stable/modules/linear_model.html#elastic-net>`_
 #
 # * A *Bayesian* ridge estimator, i.e. a ridge estimator that sets its
 #   parameter according to a metaprior
