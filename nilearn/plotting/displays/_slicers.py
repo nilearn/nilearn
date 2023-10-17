@@ -9,7 +9,7 @@ from matplotlib.transforms import Bbox
 
 from nilearn._utils import check_niimg_3d
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.niimg import _is_binary_niimg, _safe_get_data
+from nilearn._utils.niimg import is_binary_niimg, safe_get_data
 from nilearn.image import get_data, new_img_like, reorder_img
 from nilearn.image.resampling import get_bounds, get_mask_bounds
 from nilearn.plotting.displays import CutAxes
@@ -389,14 +389,14 @@ class BaseSlicer:
         # case where this image is binary, such as when this function
         # is called from `add_contours`, continuous interpolation
         # does not make sense and we turn to nearest interpolation instead.
-        if _is_binary_niimg(img):
+        if is_binary_niimg(img):
             img = reorder_img(img, resample="nearest")
         else:
             img = reorder_img(img, resample=resampling_interpolation)
         threshold = float(threshold) if threshold is not None else None
 
         affine = img.affine
-        data = _safe_get_data(img, ensure_finite=True)
+        data = safe_get_data(img, ensure_finite=True)
         data_bounds = get_bounds(data.shape, affine)
         (xmin, xmax), (ymin, ymax), (zmin, zmax) = data_bounds
 

@@ -8,7 +8,7 @@ from scipy.stats import pearsonr
 from sklearn.preprocessing import scale
 
 from nilearn._utils.data_gen import create_fake_bids_dataset
-from nilearn._utils.fmriprep_confounds import _to_camel_case
+from nilearn._utils.fmriprep_confounds import to_camel_case
 from nilearn.conftest import _rng
 from nilearn.interfaces.bids import get_bids_files
 from nilearn.interfaces.fmriprep import load_confounds
@@ -476,7 +476,7 @@ def test_invalid_filetype(tmp_path, rng):
     leagal_confounds, _ = get_legal_confound()
     camel_confounds = leagal_confounds.copy()
     camel_confounds.columns = [
-        _to_camel_case(col_name) for col_name in leagal_confounds.columns
+        to_camel_case(col_name) for col_name in leagal_confounds.columns
     ]
     camel_confounds.to_csv(bad_conf, sep="\t", index=False)
     with pytest.raises(ValueError) as error_log:

@@ -5,7 +5,7 @@ import itertools
 from joblib import Memory, Parallel, delayed
 
 from .._utils import fill_doc
-from .._utils.niimg_conversions import _iter_check_niimg
+from .._utils.niimg_conversions import iter_check_niimg
 from .nifti_labels_masker import NiftiLabelsMasker
 
 
@@ -174,7 +174,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         # the labels image should not impact the extraction of the signal.
 
         self._check_fitted()
-        niimg_iter = _iter_check_niimg(
+        niimg_iter = iter_check_niimg(
             imgs_list,
             ensure_ndim=None,
             atleast_4d=False,

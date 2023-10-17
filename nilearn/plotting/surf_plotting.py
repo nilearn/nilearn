@@ -15,7 +15,7 @@ from matplotlib.patches import Patch
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from nilearn import image, surface
-from nilearn._utils import _compare_version, check_niimg_3d, fill_doc
+from nilearn._utils import check_niimg_3d, compare_version, fill_doc
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn.plotting.cm import _mix_colormaps, cold_hot
 from nilearn.plotting.html_surface import _get_vertexcolor
@@ -954,7 +954,7 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
         # Fix: Matplotlib version 3.3.2 to 3.3.3
         # Attribute _facecolors3d changed to _facecolor3d in
         # matplotlib version 3.3.3
-        if _compare_version(mpl.__version__, "<", "3.3.3"):
+        if compare_version(mpl.__version__, "<", "3.3.3"):
             axes.collections[0]._facecolors3d[faces_outside] = color
             if axes.collections[0]._edgecolors3d.size == 0:
                 axes.collections[0].set_edgecolor(

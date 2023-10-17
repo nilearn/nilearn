@@ -368,7 +368,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             elif self.resampling_target is None:
                 if self.mask_img_.shape != self.labels_img_.shape[:3]:
                     raise ValueError(
-                        _utils._compose_err_msg(
+                        _utils.compose_err_msg(
                             'Regions and mask do not have the same shape',
                             mask_img=self.mask_img,
                             labels_img=self.labels_img,
@@ -380,7 +380,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                     self.labels_img_.affine,
                 ):
                     raise ValueError(
-                        _utils._compose_err_msg(
+                        _utils.compose_err_msg(
                             'Regions and mask do not have the same affine.',
                             mask_img=self.mask_img,
                             labels_img=self.labels_img,
@@ -520,7 +520,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
         if self.resampling_target == "data":
             imgs_ = _utils.check_niimg(imgs, atleast_4d=True)
-            if not _utils.niimg_conversions._check_same_fov(
+            if not _utils.niimg_conversions.check_same_fov(
                 imgs_,
                 self._resampled_labels_img_,
             ):
@@ -528,7 +528,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                     print("Resampling labels")
                 labels_before_resampling = set(
                     np.unique(
-                        _utils.niimg._safe_get_data(
+                        _utils.niimg.safe_get_data(
                             self._resampled_labels_img_,
                         )
                     )
@@ -540,7 +540,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                         target_affine=imgs_.affine)
                 labels_after_resampling = set(
                     np.unique(
-                        _utils.niimg._safe_get_data(
+                        _utils.niimg.safe_get_data(
                             self._resampled_labels_img_,
                         )
                     )
@@ -557,7 +557,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                                   "(including background).")
 
             if (self.mask_img is not None) and (
-                not _utils.niimg_conversions._check_same_fov(
+                not _utils.niimg_conversions.check_same_fov(
                     imgs_,
                     self._resampled_mask_img,
                 )

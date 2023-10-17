@@ -341,7 +341,7 @@ def test_resampling_warning_binary_image(affine_eye, rng):
     rot = rotation(0, np.pi / 4)
     img_binary = Nifti1Image(data_binary, affine_eye)
 
-    assert _utils.niimg._is_binary_niimg(img_binary)
+    assert _utils.niimg.is_binary_niimg(img_binary)
 
     with pytest.warns(Warning, match="Resampling binary images with"):
         resample_img(img_binary, target_affine=rot, interpolation="continuous")

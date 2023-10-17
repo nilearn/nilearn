@@ -13,7 +13,7 @@ from nilearn.image import get_data
 from .._utils import check_niimg_3d, check_niimg_4d
 from .._utils.extmath import fast_abs_percentile
 from .._utils.ndimage import largest_connected_component
-from .._utils.niimg import _safe_get_data
+from .._utils.niimg import safe_get_data
 from .._utils.numpy_conversions import as_ndarray
 
 # Local imports
@@ -59,7 +59,7 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     # if a pseudo-4D image or several images were passed (cf. #922),
     # we reduce to a single 3D image to find the coordinates
     img = check_niimg_3d(img)
-    data = _safe_get_data(img)
+    data = safe_get_data(img)
 
     # when given image is empty, return (0., 0., 0.)
     if np.all(data == 0.0):
@@ -75,7 +75,7 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     # Retrieve optional mask
     if mask_img is not None:
         mask_img = check_niimg_3d(mask_img)
-        mask = _safe_get_data(mask_img)
+        mask = safe_get_data(mask_img)
         if not np.allclose(mask_img.affine, img.affine):
             raise ValueError(
                 f"Mask affine: \n{mask_img.affine}\n "
@@ -180,7 +180,7 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
 
 def _get_auto_mask_bounds(img):
     """Compute the bounds of the data with an automatically computed mask."""
-    data = _safe_get_data(img)
+    data = safe_get_data(img)
     affine = img.affine
     if hasattr(data, "mask"):
         # Masked array
@@ -298,7 +298,7 @@ def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
         img = reorder_img(img, resample="nearest")
         affine = img.affine
     # note: orig_data is a copy of img._data_cache thanks to np.abs
-    orig_data = np.abs(_safe_get_data(img))
+    orig_data = np.abs(safe_get_data(img))
     this_shape = orig_data.shape[axis]
 
     if not isinstance(n_cuts, numbers.Number):

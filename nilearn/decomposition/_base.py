@@ -20,8 +20,8 @@ from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
 
 from .._utils import fill_doc
 from .._utils.cache_mixin import CacheMixin, cache
-from .._utils.niimg import _safe_get_data
-from .._utils.niimg_conversions import _resolve_globbing
+from .._utils.niimg import safe_get_data
+from .._utils.niimg_conversions import resolve_globbing
 from ..signal import _row_sum_of_squares
 
 
@@ -191,7 +191,7 @@ def _mask_and_reduce(
     subject_n_samples = [subject_data.shape[0] for subject_data in data_list]
 
     n_samples = np.sum(subject_n_samples)
-    n_voxels = int(np.sum(_safe_get_data(masker.mask_img_)))
+    n_voxels = int(np.sum(safe_get_data(masker.mask_img_)))
     dtype = np.float64 if data_list[0].dtype.type is np.float64 else np.float32
     data = np.empty((n_samples, n_voxels), order="F", dtype=dtype)
 
@@ -403,7 +403,7 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             and nilearn.EXPAND_PATH_WILDCARDS
             and glob.has_magic(imgs)
         ):
-            imgs = _resolve_globbing(imgs)
+            imgs = resolve_globbing(imgs)
 
         if isinstance(imgs, str) or not hasattr(imgs, "__iter__"):
             # these classes are meant for list of 4D images

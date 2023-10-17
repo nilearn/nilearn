@@ -8,10 +8,7 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import scale
 
-from nilearn._utils.fmriprep_confounds import (
-    _flag_single_gifti,
-    _is_camel_case,
-)
+from nilearn._utils.fmriprep_confounds import flag_single_gifti, is_camel_case
 from nilearn.interfaces.bids import parse_bids_filename
 
 from .load_confounds_scrub import _extract_outlier_regressors
@@ -114,7 +111,7 @@ def _sanitize_confounds(img_files):
         return img_files, True
     # gifti has to be passed as pair
     if isinstance(img_files, list) and len(img_files) == 2:
-        flag_single = _flag_single_gifti(img_files)
+        flag_single = flag_single_gifti(img_files)
     else:  # single file
         flag_single = isinstance(img_files, str)
     if flag_single:
@@ -335,7 +332,7 @@ def _load_confounds_file_as_dataframe(confounds_raw_path):
 
     # check if the version of fMRIprep (>=1.2.0) is supported based on
     # header format. 1.0.x and 1.1.x series uses camel case
-    if any(_is_camel_case(col_name) for col_name in confounds_raw.columns):
+    if any(is_camel_case(col_name) for col_name in confounds_raw.columns):
         raise ValueError(
             "The confound file contains header in camel case."
             "This is likely the output from 1.0.x and 1.1.x "

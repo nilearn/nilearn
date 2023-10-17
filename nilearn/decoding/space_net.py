@@ -34,7 +34,7 @@ from nilearn.masking import _unmask_from_to_3d_array
 
 from .._utils import fill_doc
 from .._utils.cache_mixin import CacheMixin
-from .._utils.param_validation import _adjust_screening_percentile
+from .._utils.param_validation import adjust_screening_percentile
 from .space_net_solvers import (
     _graph_net_logistic,
     _graph_net_squared_loss,
@@ -934,7 +934,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         w = np.zeros((n_problems, X.shape[1] + 1))
         self.all_coef_ = np.ndarray((n_problems, n_folds, X.shape[1]))
 
-        self.screening_percentile_ = _adjust_screening_percentile(
+        self.screening_percentile_ = adjust_screening_percentile(
             self.screening_percentile, self.mask_img_, verbose=self.verbose
         )
 

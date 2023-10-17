@@ -251,7 +251,7 @@ def test_nifti_maps_masker_with_nans_and_infs():
     maps_img = nibabel.Nifti1Image(maps_data, np.eye(4))
 
     # No warning, because maps_img is run through clean_img
-    # *before* _safe_get_data.
+    # *before* safe_get_data.
     masker = NiftiMapsMasker(maps_img, mask_img=mask_img)
 
     sig = masker.fit_transform(fmri_img)

@@ -391,7 +391,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
 
         # Check shapes and affines or resample.
         if self.resampling_target is None and self.mask_img_ is not None:
-            _utils.niimg_conversions._check_same_fov(
+            _utils.niimg_conversions.check_same_fov(
                 mask=self.mask_img_,
                 maps=self.maps_img_,
                 raise_error=True,
@@ -502,7 +502,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
             images = dict(maps=self.maps_img_, data=imgs_)
             if self.mask_img_ is not None:
                 images["mask"] = self.mask_img_
-            _utils.niimg_conversions._check_same_fov(
+            _utils.niimg_conversions.check_same_fov(
                 raise_error=True,
                 **images,
             )
@@ -517,7 +517,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 self._resampled_maps_img_ = self.maps_img_
                 ref_img = self.maps_img_
 
-            if not _utils.niimg_conversions._check_same_fov(
+            if not _utils.niimg_conversions.check_same_fov(
                 ref_img,
                 self._resampled_maps_img_,
             ):
@@ -532,7 +532,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
 
             if (
                 self.mask_img_ is not None
-                and not _utils.niimg_conversions._check_same_fov(
+                and not _utils.niimg_conversions.check_same_fov(
                     ref_img,
                     self.mask_img_,
                 )

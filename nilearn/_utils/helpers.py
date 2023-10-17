@@ -170,7 +170,7 @@ VERSION_OPERATORS = {
 }
 
 
-def _compare_version(version_a, operator, version_b):
+def compare_version(version_a, operator, version_b):
     """Compare two version strings via a user-specified operator.
 
     Note: This function is inspired from MNE-Python.
@@ -197,7 +197,7 @@ def _compare_version(version_a, operator, version_b):
     from packaging.version import parse
 
     if operator not in VERSION_OPERATORS:
-        error_msg = "'_compare_version' received an unexpected operator "
+        error_msg = "'compare_version' received an unexpected operator "
         raise ValueError(error_msg + operator + ".")
     return VERSION_OPERATORS[operator](parse(version_a), parse(version_b))
 

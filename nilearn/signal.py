@@ -16,7 +16,7 @@ from sklearn.utils import as_float_array, gen_even_slices
 
 from nilearn._utils import fill_doc, stringify_path
 from nilearn._utils.numpy_conversions import as_ndarray, csv_to_array
-from nilearn._utils.param_validation import _check_run_sample_masks
+from nilearn._utils.param_validation import check_run_sample_masks
 
 availiable_filters = ["butterworth", "cosine"]
 
@@ -960,7 +960,7 @@ def _sanitize_sample_mask(n_time, n_runs, runs, sample_mask):
     if sample_mask is None:
         return sample_mask
 
-    sample_mask = _check_run_sample_masks(n_runs, sample_mask)
+    sample_mask = check_run_sample_masks(n_runs, sample_mask)
 
     if runs is None:
         runs = np.zeros(n_time)

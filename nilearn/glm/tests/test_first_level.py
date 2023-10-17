@@ -16,7 +16,7 @@ from numpy.testing import (
 from sklearn.cluster import KMeans
 
 from nilearn._utils.data_gen import (
-    _add_metadata_to_bids_dataset,
+    add_metadata_to_bids_dataset,
     basic_paradigm,
     create_fake_bids_dataset,
     generate_fake_fmri_data_and_design,
@@ -807,7 +807,7 @@ def test_first_level_from_bids_get_metadata_from_derivatives(tmp_path):
 
     RepetitionTime = 6.0
     StartTime = 2.0
-    _add_metadata_to_bids_dataset(
+    add_metadata_to_bids_dataset(
         bids_path=tmp_path / bids_path,
         metadata={"RepetitionTime": RepetitionTime, "StartTime": StartTime},
     )
@@ -834,7 +834,7 @@ def test_first_level_from_bids_get_RepetitionTime_from_derivatives(tmp_path):
         base_dir=tmp_path, n_sub=10, n_ses=1, tasks=["main"], n_runs=[1]
     )
     RepetitionTime = 6.0
-    _add_metadata_to_bids_dataset(
+    add_metadata_to_bids_dataset(
         bids_path=tmp_path / bids_path,
         metadata={"RepetitionTime": RepetitionTime},
     )
@@ -861,7 +861,7 @@ def test_first_level_from_bids_get_StartTime_from_derivatives(tmp_path):
         base_dir=tmp_path, n_sub=10, n_ses=1, tasks=["main"], n_runs=[1]
     )
     StartTime = 1.0
-    _add_metadata_to_bids_dataset(
+    add_metadata_to_bids_dataset(
         bids_path=tmp_path / bids_path, metadata={"StartTime": StartTime}
     )
 

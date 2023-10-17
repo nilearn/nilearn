@@ -11,7 +11,7 @@ from . import _utils
 from ._utils import fill_doc
 from ._utils.cache_mixin import cache
 from ._utils.ndimage import get_border_data, largest_connected_component
-from ._utils.niimg import _safe_get_data
+from ._utils.niimg import safe_get_data
 from .datasets import (
     load_mni152_gm_template,
     load_mni152_template,
@@ -48,7 +48,7 @@ def _load_mask_img(mask_img, allow_empty=False):
         Affine of the mask.
     """
     mask_img = _utils.check_niimg_3d(mask_img)
-    mask = _safe_get_data(mask_img, ensure_finite=True)
+    mask = safe_get_data(mask_img, ensure_finite=True)
     values = np.unique(mask)
 
     if len(values) == 1:
@@ -836,7 +836,7 @@ def _apply_mask_fmri(
     # All the following has been optimized for C order.
     # Time that may be lost in conversion here is regained multiple times
     # afterward, especially if smoothing is applied.
-    series = _safe_get_data(imgs_img)
+    series = safe_get_data(imgs_img)
 
     if dtype == "f":
         dtype = series.dtype if series.dtype.kind == "f" else np.float32

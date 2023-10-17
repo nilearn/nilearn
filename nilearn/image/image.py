@@ -25,8 +25,8 @@ from .._utils import (
     fill_doc,
 )
 from .._utils.helpers import rename_parameters, stringify_path
-from .._utils.niimg import _get_data, _safe_get_data
-from .._utils.niimg_conversions import _check_same_fov, _index_img
+from .._utils.niimg import _get_data, safe_get_data
+from .._utils.niimg_conversions import _index_img, check_same_fov
 from .._utils.param_validation import check_threshold
 
 
@@ -453,7 +453,7 @@ def _compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
     input_repr = _repr_niimgs(imgs, shorten=True)
 
     imgs = check_niimg(imgs)
-    mean_data = _safe_get_data(imgs)
+    mean_data = safe_get_data(imgs)
     affine = imgs.affine
     # Free memory ASAP
     del imgs
@@ -928,12 +928,12 @@ def threshold_img(
     from . import resampling
 
     img = check_niimg(img)
-    img_data = _safe_get_data(img, ensure_finite=True, copy_data=copy)
+    img_data = safe_get_data(img, ensure_finite=True, copy_data=copy)
     affine = img.affine
 
     if mask_img is not None:
         mask_img = check_niimg_3d(mask_img)
-        if not _check_same_fov(img, mask_img):
+        if not check_same_fov(img, mask_img):
             mask_img = resampling.resample_img(
                 mask_img,
                 target_affine=affine,
@@ -1033,7 +1033,7 @@ def math_img(formula, **imgs):
     """
     try:
         niimgs = [check_niimg(image) for image in imgs.values()]
-        _check_same_fov(*niimgs, raise_error=True)
+        check_same_fov(*niimgs, raise_error=True)
     except Exception as exc:
         exc.args = (
             "Input images cannot be compared, "
@@ -1047,7 +1047,7 @@ def math_img(formula, **imgs):
     data_dict = {}
     for key, img in imgs.items():
         niimg = check_niimg(img)
-        data_dict[key] = _safe_get_data(niimg)
+        data_dict[key] = safe_get_data(niimg)
 
     # Add a reference to numpy in the kwargs of eval so that numpy functions
     # can be called from there.
@@ -1366,7 +1366,7 @@ def largest_connected_component_img(imgs):
     for img in imgs:
         img = check_niimg_3d(img)
         affine = img.affine
-        largest_component = largest_connected_component(_safe_get_data(img))
+        largest_component = largest_connected_component(safe_get_data(img))
         ret.append(
             new_img_like(img, largest_component, affine, copy_header=True)
         )

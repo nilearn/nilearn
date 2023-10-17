@@ -14,8 +14,8 @@ import nilearn as ni
 from .cache_mixin import cache
 from .exceptions import DimensionError
 from .helpers import stringify_path
-from .niimg import _get_data, _safe_get_data, load_niimg
-from .path_finding import _resolve_globbing
+from .niimg import _get_data, load_niimg, safe_get_data
+from .path_finding import resolve_globbing
 
 
 def _check_fov(img, affine, shape):
@@ -25,7 +25,7 @@ def _check_fov(img, affine, shape):
     return img.shape[:3] == shape and np.allclose(img.affine, affine)
 
 
-def _check_same_fov(*args, **kwargs):
+def check_same_fov(*args, **kwargs):
     """Return True if provided images have the same field of view (shape and \
     affine) and return False or raise an error elsewhere, depending on the \
     `raise_error` argument.
@@ -81,7 +81,7 @@ def _index_img(img, index):
     )
 
 
-def _iter_check_niimg(
+def iter_check_niimg(
     niimgs,
     ensure_ndim=None,
     atleast_4d=False,
@@ -131,7 +131,7 @@ def _iter_check_niimg(
 
     """
     # If niimgs is a string, use glob to expand it to the matching filenames.
-    niimgs = _resolve_globbing(niimgs)
+    niimgs = resolve_globbing(niimgs)
 
     ref_fov = None
     resample_to_first_img = False
@@ -266,7 +266,7 @@ def check_niimg(
 
     See Also
     --------
-        _iter_check_niimg, check_niimg_3d, check_niimg_4d
+        iter_check_niimg, check_niimg_3d, check_niimg_4d
 
     """
     from ..image import new_img_like  # avoid circular imports
@@ -303,7 +303,7 @@ def check_niimg(
     # in case of an iterable
     if hasattr(niimg, "__iter__") and not isinstance(niimg, str):
         if return_iterator:
-            return _iter_check_niimg(
+            return iter_check_niimg(
                 niimg, ensure_ndim=ensure_ndim, dtype=dtype
             )
         return concat_niimgs(niimg, ensure_ndim=ensure_ndim, dtype=dtype)
@@ -313,7 +313,7 @@ def check_niimg(
 
     if ensure_ndim == 3 and len(niimg.shape) == 4 and niimg.shape[3] == 1:
         # "squeeze" the image.
-        data = _safe_get_data(niimg)
+        data = safe_get_data(niimg)
         affine = niimg.affine
         niimg = new_img_like(niimg, data[:, :, :, 0], affine)
     if atleast_4d and len(niimg.shape) == 3:
@@ -472,7 +472,7 @@ def concat_niimgs(
         ndim = ensure_ndim - 1
 
     # If niimgs is a string, use glob to expand it to the matching filenames.
-    niimgs = _resolve_globbing(niimgs)
+    niimgs = resolve_globbing(niimgs)
 
     # First niimg is extracted to get information and for new_img_like
     first_niimg = None
@@ -517,7 +517,7 @@ def concat_niimgs(
     for index, (size, niimg) in enumerate(
         zip(
             lengths,
-            _iter_check_niimg(
+            iter_check_niimg(
                 iterator,
                 atleast_4d=True,
                 target_fov=target_fov,

@@ -340,7 +340,7 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
             # Force resampling on first image
             target_fov = "first"
 
-        niimg_iter = _utils.niimg_conversions._iter_check_niimg(
+        niimg_iter = _utils.niimg_conversions.iter_check_niimg(
             imgs_list,
             ensure_ndim=None,
             atleast_4d=False,

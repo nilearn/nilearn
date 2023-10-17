@@ -11,9 +11,9 @@ from sklearn.base import BaseEstimator
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.param_validation import (
     MNI152_BRAIN_VOLUME,
-    _get_mask_volume,
     check_feature_screening,
     check_threshold,
+    get_mask_volume,
 )
 
 mni152_brain_mask = (
@@ -67,7 +67,7 @@ def test_check_threshold():
 def test_get_mask_volume():
     # Test that hard-coded standard mask volume can be corrected computed
     if os.path.isfile(mni152_brain_mask):
-        assert MNI152_BRAIN_VOLUME == _get_mask_volume(
+        assert MNI152_BRAIN_VOLUME == get_mask_volume(
             nibabel.load(mni152_brain_mask)
         )
     else:

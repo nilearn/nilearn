@@ -12,10 +12,10 @@ from nilearn.maskers import NiftiMapsMasker
 
 from .. import masking
 from .._utils import check_niimg, check_niimg_3d, check_niimg_4d, fill_doc
-from .._utils.ndimage import _peak_local_max
-from .._utils.niimg import _safe_get_data
-from .._utils.niimg_conversions import _check_same_fov, concat_niimgs
-from .._utils.segmentation import _random_walker
+from .._utils.ndimage import peak_local_max
+from .._utils.niimg import safe_get_data
+from .._utils.niimg_conversions import check_same_fov, concat_niimgs
+from .._utils.segmentation import random_walker
 from ..image import new_img_like, resample_img
 from ..image.image import _smooth_array, threshold_img
 
@@ -62,7 +62,7 @@ def _threshold_maps_ratio(maps_img, threshold):
         ratio = threshold
 
     # Get a copy of the data
-    maps_data = _safe_get_data(maps, ensure_finite=True, copy_data=True)
+    maps_data = safe_get_data(maps, ensure_finite=True, copy_data=True)
 
     abs_maps = np.abs(maps_data)
     # thresholding
@@ -197,7 +197,7 @@ def connected_regions(
     all_regions_imgs = []
     index_of_each_map = []
     maps_img = check_niimg(maps_img, atleast_4d=True)
-    maps = _safe_get_data(maps_img, copy_data=True)
+    maps = safe_get_data(maps_img, copy_data=True)
     affine = maps_img.affine
     min_region_size = min_region_size / np.abs(np.linalg.det(affine[:3, :3]))
 
@@ -211,7 +211,7 @@ def connected_regions(
         raise ValueError(message)
 
     if mask_img is not None:
-        if not _check_same_fov(maps_img, mask_img):
+        if not check_same_fov(maps_img, mask_img):
             mask_img = resample_img(
                 mask_img,
                 target_affine=maps_img.affine,
@@ -230,11 +230,11 @@ def connected_regions(
             smooth_map = _smooth_array(
                 map_3d, affine=affine, fwhm=smoothing_fwhm
             )
-            seeds = _peak_local_max(smooth_map)
+            seeds = peak_local_max(smooth_map)
             seeds_label, _ = label(seeds)
             # Assign -1 to values which are 0. to indicate to ignore
             seeds_label[map_3d == 0.0] = -1
-            rw_maps = _random_walker(map_3d, seeds_label)
+            rw_maps = random_walker(map_3d, seeds_label)
             # Now simply replace "-1" with "0" for regions separation
             rw_maps[rw_maps == -1] = 0.0
             label_maps = rw_maps
@@ -533,7 +533,7 @@ def connected_label_regions(
 
     """
     labels_img = check_niimg_3d(labels_img)
-    labels_data = _safe_get_data(labels_img, ensure_finite=True)
+    labels_data = safe_get_data(labels_img, ensure_finite=True)
     affine = labels_img.affine
 
     check_unique_labels = np.unique(labels_data)

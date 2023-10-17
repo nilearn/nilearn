@@ -15,7 +15,7 @@ from nilearn.plotting.html_document import HTMLDocument
 
 from .._utils import fill_doc
 from .._utils.extmath import fast_abs_percentile
-from .._utils.niimg import _safe_get_data
+from .._utils.niimg import safe_get_data
 from .._utils.niimg_conversions import check_niimg_3d
 from .._utils.param_validation import check_threshold
 from ..datasets import load_mni152_template
@@ -194,7 +194,7 @@ def _mask_stat_map(stat_map_img, threshold=None):
     """
     # Load stat map
     stat_map_img = check_niimg_3d(stat_map_img, dtype="auto")
-    data = _safe_get_data(stat_map_img, ensure_finite=True)
+    data = safe_get_data(stat_map_img, ensure_finite=True)
 
     # threshold the stat_map
     if threshold is not None:
@@ -227,7 +227,7 @@ def _load_bg_img(stat_map_img, bg_img="MNI152", black_bg="auto", dim="auto"):
         else:
             bg_img = check_niimg_3d(bg_img)
         masked_data = np.ma.masked_inside(
-            _safe_get_data(bg_img, ensure_finite=True), -1e-6, 1e-6, copy=False
+            safe_get_data(bg_img, ensure_finite=True), -1e-6, 1e-6, copy=False
         )
         bg_img = new_img_like(bg_img, masked_data)
         bg_img, black_bg, bg_min, bg_max = _load_anat(
@@ -380,15 +380,15 @@ def _json_view_data(
 
     # Create a base64 sprite for the background
     bg_sprite = BytesIO()
-    bg_data = _safe_get_data(bg_img, ensure_finite=True).astype(float)
+    bg_data = safe_get_data(bg_img, ensure_finite=True).astype(float)
     bg_mask, bg_cmap = _get_bg_mask_and_cmap(bg_img, black_bg)
     _save_sprite(bg_data, bg_sprite, bg_max, bg_min, bg_mask, bg_cmap, "png")
     json_view["bg_base64"] = _bytesIO_to_base64(bg_sprite)
 
     # Create a base64 sprite for the stat map
     stat_map_sprite = BytesIO()
-    data = _safe_get_data(stat_map_img, ensure_finite=True)
-    mask = _safe_get_data(mask_img, ensure_finite=True)
+    data = safe_get_data(stat_map_img, ensure_finite=True)
+    mask = safe_get_data(mask_img, ensure_finite=True)
     _save_sprite(
         data,
         stat_map_sprite,
