@@ -33,17 +33,15 @@ class BaseSlicer:
     frame_axes : :class:`matplotlib.axes.Axes`, optional
         The matplotlib axes that will be subdivided in 3.
 
-    black_bg : :obj:`bool`, optional
+    black_bg : :obj:`bool`, default=False
         If ``True``, the background of the figure will be put to
         black. If you wish to save figures with a black background,
         you will need to pass ``facecolor='k', edgecolor='k'``
         to :func:`~matplotlib.pyplot.savefig`.
-        Default=False.
 
-    brain_color : :obj:`tuple`, optional
+    brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
         The brain color to use as the background color (e.g., for
         transparent colorbars).
-        Default=(0.5, 0.5, 0.5)
     """
 
     # This actually encodes the figsize for only one axe
@@ -123,17 +121,17 @@ class BaseSlicer:
         axes : :class:`matplotlib.axes.Axes`, optional
             The axes that will be subdivided in 3.
 
-        black_bg : :obj:`bool`, optional
+        black_bg : :obj:`bool`, default=False
             If ``True``, the background of the figure will be put to
             black. If you wish to save figures with a black background,
             you will need to pass ``facecolor='k', edgecolor='k'``
             to :func:`matplotlib.pyplot.savefig`.
-            Default=False.
 
-        brain_color : :obj:`tuple`, optional
+
+        brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
             The brain color to use as the background color (e.g., for
             transparent colorbars).
-            Default=(0.5, 0.5, 0.5).
+
         """
         # deal with "fake" 4D images
         if img is not None and img is not False:
@@ -194,16 +192,16 @@ class BaseSlicer:
         text : :obj:`str`
             The text of the title.
 
-        x : :obj:`float`, optional
+        x : :obj:`float`, default=0.01
             The horizontal position of the title on the frame in
-            fraction of the frame width. Default=0.01.
+            fraction of the frame width.
 
-        y : :obj:`float`, optional
+        y : :obj:`float`, default=0.99
             The vertical position of the title on the frame in
-            fraction of the frame height. Default=0.99.
+            fraction of the frame height.
 
-        size : :obj:`int`, optional
-            The size of the title text. Default=15.
+        size : :obj:`int`, default=15
+            The size of the title text.
 
         color : matplotlib color specifier, optional
             The color of the font of the title.
@@ -211,8 +209,8 @@ class BaseSlicer:
         bgcolor : matplotlib color specifier, optional
             The color of the background of the title.
 
-        alpha : :obj:`float`, optional
-            The alpha value for the background. Default=1.
+        alpha : :obj:`float`, default=1
+            The alpha value for the background.
 
         kwargs :
             Extra keyword arguments are passed to matplotlib's text
@@ -267,7 +265,7 @@ class BaseSlicer:
         %(img)s
             If it is a masked array, only the non-masked part will be plotted.
 
-        threshold : :obj:`int` or :obj:`float` or ``None``, optional
+        threshold : :obj:`int` or :obj:`float` or ``None``, default=1e-6
             Threshold to apply:
 
                 - If ``None`` is given, the maps are not thresholded.
@@ -275,16 +273,15 @@ class BaseSlicer:
                   values below the threshold (in absolute value) are
                   plotted as transparent.
 
-            Default=1e-6.
 
-        cbar_tick_format: str, optional
+
+        cbar_tick_format: str, default="%%.2g" (scientific notation)
             Controls how to format the tick labels of the colorbar.
             Ex: use "%%i" to display as integers.
-            Default is '%%.2g' for scientific notation.
 
-        colorbar : :obj:`bool`, optional
+        colorbar : :obj:`bool`, default=False
             If ``True``, display a colorbar on the right of the plots.
-            Default=False.
+
 
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to function
@@ -331,7 +328,7 @@ class BaseSlicer:
         %(img)s
             Provides image to plot.
 
-        threshold : :obj:`int` or :obj:`float` or ``None``, optional
+        threshold : :obj:`int` or :obj:`float` or ``None``, default=1e-6
             Threshold to apply:
 
                 - If ``None`` is given, the maps are not thresholded.
@@ -339,11 +336,11 @@ class BaseSlicer:
                   values below the threshold (in absolute value) are plotted
                   as transparent.
 
-            Default=1e-6.
 
-        filled : :obj:`bool`, optional
+
+        filled : :obj:`bool`, default=False
             If ``filled=True``, contours are displayed with color fillings.
-            Default=False.
+
 
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to function
@@ -397,16 +394,6 @@ class BaseSlicer:
         else:
             img = reorder_img(img, resample=resampling_interpolation)
         threshold = float(threshold) if threshold is not None else None
-
-        if threshold is not None:
-            data = _safe_get_data(img, ensure_finite=True)
-            if threshold == 0:
-                data = np.ma.masked_equal(data, 0, copy=False)
-            else:
-                data = np.ma.masked_inside(
-                    data, -threshold, threshold, copy=False
-                )
-            img = new_img_like(img, data, img.affine)
 
         affine = img.affine
         data = _safe_get_data(img, ensure_finite=True)
@@ -462,14 +449,36 @@ class BaseSlicer:
         ims = []
         to_iterate_over = zip(self.axes.values(), data_2d_list)
         for display_ax, data_2d in to_iterate_over:
+            # If data_2d is completely masked, then there is nothing to
+            # plot. Hence, no point to do imshow().
             if data_2d is not None:
-                # If data_2d is completely masked, then there is nothing to
-                # plot. Hence, no point to do imshow().
+                data_2d = self._threshold(
+                    data_2d,
+                    threshold,
+                    vmin=kwargs.get("vmin"),
+                    vmax=kwargs.get("vmax"),
+                )
+
                 im = display_ax.draw_2d(
                     data_2d, data_bounds, bounding_box, type=type, **kwargs
                 )
                 ims.append(im)
         return ims
+
+    @classmethod
+    def _threshold(cls, data, threshold=None, vmin=None, vmax=None):
+        """Threshold the data."""
+        if threshold is not None:
+            data = np.ma.masked_where(
+                np.abs(data) <= threshold,
+                data,
+                copy=False,
+            )
+            if (vmin is not None) and (vmin >= -threshold):
+                data = np.ma.masked_where(data < vmin, data, copy=False)
+            if (vmax is not None) and (vmax <= threshold):
+                data = np.ma.masked_where(data > vmax, data, copy=False)
+        return data
 
     @fill_doc
     def _show_colorbar(
@@ -572,9 +581,9 @@ class BaseSlicer:
             The 3D map to be plotted.
             If it is a masked array, only the non-masked part will be plotted.
 
-        color : matplotlib color: :obj:`str` or (r, g, b) value
+        color : matplotlib color: :obj:`str` or (r, g, b) value, default='r'
             The color used to display the edge map.
-            Default='r'.
+
         """
         img = reorder_img(img, resample="continuous")
         data = get_data(img)
@@ -611,15 +620,16 @@ class BaseSlicer:
             Coordinates of the markers to plot. For each slice, only markers
             that are 2 millimeters away from the slice are plotted.
 
-        marker_color : pyplot compatible color or :obj:`list` of\
-        shape ``(n_markers,)``, optional
+        marker_color : pyplot compatible color or \
+                     :obj:`list` of shape ``(n_markers,)``, default='r'
             List of colors for each marker
             that can be string or matplotlib colors.
-            Default='r'.
 
-        marker_size : :obj:`float` or :obj:`list` of :obj:`float` of\
-        shape ``(n_markers,)``, optional
-            Size in pixel for each marker. Default=30.
+
+        marker_size : :obj:`float` or \
+                    :obj:`list` of :obj:`float` of shape ``(n_markers,)``, \
+                    default=30
+            Size in pixel for each marker.
         """
         defaults = {"marker": "o", "zorder": 1000}
         marker_coords = np.asanyarray(marker_coords)
@@ -688,35 +698,35 @@ class BaseSlicer:
 
         Parameters
         ----------
-        left_right : :obj:`bool`, optional
+        left_right : :obj:`bool`, default=True
             If ``True``, annotations indicating which side
             is left and which side is right are drawn.
-            Default=True.
 
-        positions : :obj:`bool`, optional
+
+        positions : :obj:`bool`, default=True
             If ``True``, annotations indicating the
             positions of the cuts are drawn.
-            Default=True.
 
-        scalebar : :obj:`bool`, optional
+
+        scalebar : :obj:`bool`, default=False
             If ``True``, cuts are annotated with a reference scale bar.
             For finer control of the scale bar, please check out
             the ``draw_scale_bar`` method on the axes in "axes" attribute
             of this object.
-            Default=False.
 
-        size : :obj:`int`, optional
-            The size of the text used. Default=12.
 
-        scale_size : :obj:`int` or :obj:`float`, optional
+        size : :obj:`int`, default=12
+            The size of the text used.
+
+        scale_size : :obj:`int` or :obj:`float`, default=5.0
             The length of the scalebar, in units of ``scale_units``.
-            Default=5.0.
 
-        scale_units : {'cm', 'mm'}, optional
-            The units for the ``scalebar``. Default='cm'.
 
-        scale_loc : :obj:`int`, optional
-            The positioning for the scalebar. Default=4.
+        scale_units : {'cm', 'mm'}, default='cm'
+            The units for the ``scalebar``.
+
+        scale_loc : :obj:`int`, default=4
+            The positioning for the scalebar.
             Valid location codes are:
 
                 - 1: "upper right"
@@ -730,10 +740,10 @@ class BaseSlicer:
                 - 9: "upper center"
                 - 10: "center"
 
-        decimals : :obj:`int`, optional
+        decimals : :obj:`int`, default=0
             Number of decimal places on slice position annotation. If zero,
             the slice position is integer without decimal point.
-            Default=0.
+
 
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to matplotlib's text
@@ -788,9 +798,9 @@ class BaseSlicer:
             The file name to save to. Its extension determines the
             file type, typically '.png', '.svg' or '.pdf'.
 
-        dpi : ``None`` or scalar, optional
+        dpi : ``None`` or scalar, default=None
             The resolution in dots per inch.
-            Default=None.
+
         """
         facecolor = edgecolor = "k" if self._black_bg else "w"
         self.frame_axes.figure.savefig(
@@ -855,7 +865,7 @@ class OrthoSlicer(BaseSlicer):
         Parameters
         ----------
         %(img)s
-        threshold : :obj:`int` or :obj:`float` or ``None``, optional
+        threshold : :obj:`int` or :obj:`float` or ``None``, default=None
             Threshold to apply:
 
                 - If ``None`` is given, the maps are not thresholded.
@@ -863,7 +873,7 @@ class OrthoSlicer(BaseSlicer):
                   values below the threshold (in absolute value) are plotted
                   as transparent.
 
-            Default=None.
+
 
         cut_coords : 3 :obj:`tuple` of :obj:`int`
             The cut position, in world space.

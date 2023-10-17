@@ -242,24 +242,23 @@ def get_clusters_table(
         Cluster forming threshold. This value must be in the same scale as
         ``stat_img``.
 
-    cluster_threshold : :obj:`int` or None, optional
+    cluster_threshold : :obj:`int` or None, default=None
         Cluster size threshold, in :term:`voxels<voxel>`.
-        If None, then no cluster size threshold will be applied. Default=None.
+        If None, then no cluster size threshold will be applied.
 
-    two_sided : :obj:`bool`, optional
+    two_sided : :obj:`bool`, default=False
         Whether to employ two-sided thresholding or to evaluate positive values
-        only. Default=False.
+        only.
 
-    min_distance : :obj:`float`, optional
-        Minimum distance between subpeaks, in millimeters. Default=8.
+    min_distance : :obj:`float`, default=8
+        Minimum distance between subpeaks, in millimeters.
 
         .. note::
             If two different clusters are closer than ``min_distance``, it can
             result in peaks closer than ``min_distance``.
 
-    return_label_maps : :obj:`bool`, optional
+    return_label_maps : :obj:`bool`, default=False
         Whether or not to additionally output cluster label map images.
-        Default=False.
 
         .. versionadded:: 0.10.1
 

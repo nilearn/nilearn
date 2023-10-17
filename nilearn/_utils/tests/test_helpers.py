@@ -150,3 +150,11 @@ def test_compare_version_error():
         match="'_compare_version' received an unexpected operator <>.",
     ):
         helpers._compare_version("0.1.0", "<>", "1.1.0")
+
+
+def test_is_plotly_installed():
+    helpers.is_plotly_installed()
+
+
+def test_is_kaleido_installed():
+    helpers.is_kaleido_installed()

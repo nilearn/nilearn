@@ -16,7 +16,7 @@ from numpy.testing import assert_array_equal
 from nilearn._utils import data_gen
 from nilearn._utils.testing import serialize_niimg
 from nilearn.datasets import atlas
-from nilearn.datasets._testing import dict_to_archive
+from nilearn.datasets.tests._testing import dict_to_archive
 from nilearn.datasets.utils import _fetch_files
 from nilearn.image import get_data
 
@@ -195,6 +195,7 @@ def test_fetch_atlas_fsl(
     atlas_data,
     fsl_fetcher,
     tmp_path,
+    affine_eye,
 ):
     # Create directory which will contain fake atlas data
     atlas_dir = tmp_path / "fsl" / "data" / "atlases"
@@ -207,7 +208,7 @@ def test_fetch_atlas_fsl(
         is_symm=is_symm,
     )
     target_atlas_nii = nifti_dir / f"{name}-{fname}.nii.gz"
-    nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
+    nibabel.Nifti1Image(atlas_data, affine_eye * 3).to_filename(
         target_atlas_nii
     )
     # Check that the fetch lead to consistent results
@@ -220,6 +221,11 @@ def test_fetch_atlas_fsl(
         atlas_instance,
         is_symm=is_symm or split,
     )
+
+    # check for typo in label names
+    for label in atlas_instance.labels:
+        # no extra whitespace
+        assert label.strip() == label
 
 
 def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):

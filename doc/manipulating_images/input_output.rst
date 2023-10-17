@@ -24,14 +24,14 @@ All Nilearn functions accept file names as arguments:
      smoothed_img = image.smooth_img('/home/user/t_map001.nii')
 
 Nilearn can operate on either file names or `NiftiImage objects
-<http://nipy.org/nibabel/nibabel_images.html>`_. The later represent the
+<https://nipy.org/nibabel/nibabel_images.html>`_. The later represent the
 data loaded in memory. In the example above, the
 function :func:`smooth_img` returns a Nifti1Image object, which can then
 be readily passed to other nilearn functions.
 
 In nilearn, we often use the term *"niimg"* as abbreviation that denotes
 either a file name or a `NiftiImage object
-<http://nipy.org/nibabel/nibabel_images.html>`_.
+<https://nipy.org/nibabel/nibabel_images.html>`_.
 
 Niimgs can be 3D or 4D. A 4D niimg may for instance represent a time
 series of 3D images. It can be **a list of file names**, if these contain
@@ -180,7 +180,7 @@ Nifti and Analyze data
 For volumetric data, nilearn works with data stored as in the Nifti
 structure (via the nibabel_ package).
 
-The `NifTi <http://nifti.nimh.nih.gov/>`_ data structure (also used in
+The `NifTi <https://nifti.nimh.nih.gov/>`_ data structure (also used in
 Analyze files) is the standard way of sharing data in neuroimaging
 research. Three main components are:
 
@@ -188,7 +188,7 @@ research. Three main components are:
     raw scans in form of a numpy array: ``data = nilearn.image.get_data(img)``
 :affine:
     returns the transformation matrix that maps
-    from voxel indices of the numpy array to actual real-world
+    from :term:`voxel` indices of the numpy array to actual real-world
     locations of the brain:
     ``affine = img.affine``
 :header:
@@ -219,11 +219,11 @@ with ``get_affine()`` and ``get_header()``.
 
     - a big 4D matrix representing (3D MRI + 1D for time), stored in a single
       Nifti file.
-      `FSL <http://www.fmrib.ox.ac.uk/fsl/>`_ users tend to
+      `FSL <https://fsl.fmrib.ox.ac.uk/fsl/>`_ users tend to
       prefer this format.
     - several 3D matrices representing each time point (single 3D volume) of the
       session, stored in set of 3D Nifti or analyse files.
-      `SPM <http://www.fil.ion.ucl.ac.uk/spm/>`_ users tend
+      `SPM <https://www.fil.ion.ucl.ac.uk/spm/>`_ users tend
       to prefer this format.
 
 .. _niimg:
@@ -286,9 +286,9 @@ presented to the subject:
 
 .. topic:: **Reading CSV with pandas**
 
-    `Pandas <http://pandas.pydata.org/>`_ is a powerful package to read
+    `Pandas <https://pandas.pydata.org/>`_ is a powerful package to read
     data from CSV files and manipulate them.
 
 |
 
-.. _nibabel: http://nipy.sourceforge.net/nibabel/
+.. _nibabel: https://nipy.org/nibabel/

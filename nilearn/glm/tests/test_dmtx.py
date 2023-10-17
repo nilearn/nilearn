@@ -24,7 +24,7 @@ from nilearn.glm.first_level.design_matrix import (
     make_second_level_design_matrix,
 )
 
-from ._utils import (
+from ._testing import (
     block_paradigm,
     design_with_negative_onsets,
     modulated_block_paradigm,

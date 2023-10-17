@@ -7,6 +7,7 @@ from numpy.testing import assert_almost_equal
 
 from nilearn._utils import as_ndarray
 from nilearn._utils.data_gen import generate_labeled_regions, generate_maps
+from nilearn.conftest import _rng
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiLabelsMasker, NiftiMapsMasker, NiftiMasker
 
@@ -23,19 +24,19 @@ def _check_html(html_view):
 
 
 @pytest.fixture
-def data_img_3d():
+def data_img_3d(affine_eye):
     """Dummy 3D data for testing."""
     data = np.zeros((9, 9, 9))
     data[3:-3, 3:-3, 3:-3] = 10
-    return Nifti1Image(data, np.eye(4))
+    return Nifti1Image(data, affine_eye)
 
 
 @pytest.fixture
-def mask():
+def mask(affine_eye):
     """Dummy mask for testing."""
     data = np.zeros((10, 10, 10), dtype="uint8")
     data[3:7, 3:7, 3:7] = 1
-    return Nifti1Image(data, np.eye(4))
+    return Nifti1Image(data, affine_eye)
 
 
 @pytest.fixture
@@ -50,7 +51,7 @@ def niftimapsmasker_inputs():
 
 
 def generate_random_img(shape, length=1, affine=np.eye(4),
-                        rand_gen=np.random.RandomState(0)):
+                        rand_gen=_rng()):
     data = rand_gen.standard_normal(size=(shape + (length,)))
     return Nifti1Image(data, affine), Nifti1Image(
         as_ndarray(data[..., 0] > 0.2, dtype=np.int8), affine)
@@ -218,10 +219,11 @@ def test_nifti_maps_masker_report_integer_and_all_displayed_maps(
     assert html.body.count("<img") == expected_n_maps
 
 
-def test_nifti_maps_masker_report_image_in_fit(niftimapsmasker_inputs):
+def test_nifti_maps_masker_report_image_in_fit(niftimapsmasker_inputs,
+                                               affine_eye):
     """Tests NiftiMapsMasker reporting with image provided to fit."""
     masker = NiftiMapsMasker(**niftimapsmasker_inputs)
-    image, _ = generate_random_img((13, 11, 12), affine=np.eye(4), length=3)
+    image, _ = generate_random_img((13, 11, 12), affine=affine_eye, length=3)
     masker.fit(image)
     html = masker.generate_report(2)
     assert masker._report_content['report_id'] == 0
@@ -324,13 +326,13 @@ def test_nifti_labels_masker_report(data_img_3d, mask):
             assert len(masker._report_content['summary'][col]) == n_regions
 
 
-def test_4d_reports(mask):
+def test_4d_reports(mask, affine_eye):
     # Dummy 4D data
     data = np.zeros((10, 10, 10, 3), dtype="int32")
     data[..., 0] = 1
     data[..., 1] = 2
     data[..., 2] = 3
-    data_img_4d = Nifti1Image(data, np.eye(4))
+    data_img_4d = Nifti1Image(data, affine_eye)
 
     # test .fit method
     masker = NiftiMasker(mask_strategy='epi')

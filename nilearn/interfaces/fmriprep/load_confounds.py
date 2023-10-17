@@ -134,8 +134,8 @@ def load_confounds(
         - `func.gii`: list of a pair of paths to files, optionally as a list
           of lists.
 
-    strategy : :obj:`tuple` or :obj:`list` of :obj:`str`.
-        Default ("motion", "high_pass", "wm_csf")
+    strategy : :obj:`tuple` or :obj:`list` of :obj:`str`, \
+               default=("motion", "high_pass", "wm_csf")
         The type of noise components to include.
 
         - "motion":  head motion estimates. Associated parameter: `motion`
@@ -197,27 +197,27 @@ def load_confounds(
         - "full" global signal + derivatives + quadratic terms + power2d
           derivatives (4 parameters)
 
-    scrub : :obj:`int`, default 5
+    scrub : :obj:`int`, default=5
         After accounting for time frames with excessive motion, further remove
         segments shorter than the given number. The default value is referred
         as full scrubbing in :footcite:`Power2014`. When the value is 0,
         remove time frames based on excessive framewise displacement and
         DVARS only.
 
-    fd_threshold : :obj:`float`, default 0.2
+    fd_threshold : :obj:`float`, default=0.2
         Framewise displacement threshold for scrub in mm.
 
-    std_dvars_threshold : :obj:`float`, default 3
+    std_dvars_threshold : :obj:`float`, default=3
         Standardized DVARS threshold for scrub.
         DVARs is defined as root mean squared intensity difference of volume N
         to volume N+1 :footcite:`Power2012`. D referring to temporal derivative
         of timecourses, VARS referring to root mean squared variance over
         voxels.
 
-    compcor : :obj:`str`, default "anat_combined"
+    compcor : :obj:`str`, default="anat_combined"
 
         .. warning::
-            Require fmriprep >= v:1.4.0.
+            Require :term:`fMRIPrep` >= v:1.4.0.
 
         Type of confounds extracted from a component based noise correction
         method :footcite:`Behzadi2007`.
@@ -231,20 +231,20 @@ def load_confounds(
         - "temporal_anat_separated" components of "temporal" and
           "anat_separated"
 
-    n_compcor : :obj:`str` or :obj:`int`, default "all"
+    n_compcor : :obj:`str` or :obj:`int`, default="all"
         The number of noise components to be extracted.
         For acompcor_combined=False, and/or compcor="full", this is the number
         of components per mask.
         "all": select all components (50% variance explained by
         :term:`fMRIPrep` defaults)
 
-    ica_aroma : :obj:`str`, default "full"
+    ica_aroma : :obj:`str`, default="full"
 
         - "full": use :term:`fMRIPrep` output
           `~desc-smoothAROMAnonaggr_bold.nii.gz`.
         - "basic": use noise independent components only.
 
-    demean : :obj:`bool`, default True
+    demean : :obj:`bool`, default=True
         If True, the confounds are standardized to a zero mean (over time).
         When using :class:`nilearn.maskers.NiftiMasker` with default
         parameters, the recommended option is True.
@@ -337,7 +337,7 @@ def _load_confounds_for_single_image_file(
     strategy : :obj:`tuple` or :obj:`list` of :obj:`str`.
         See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
 
-    demean : :obj:`bool`, default True
+    demean : :obj:`bool`, default=True
         See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
 
     kwargs : :obj:`dict`
@@ -386,10 +386,10 @@ def _load_single_confounds_file(
     strategy : :obj:`tuple` or :obj:`list` of :obj:`str`.
         See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
 
-    demean : :obj:`bool`, default True
+    demean : :obj:`bool`, default=True
         See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
 
-    confounds_json_file : :obj:`str`, default None
+    confounds_json_file : :obj:`str`, default=None
         Path to confounds json file.
 
     kwargs : :obj:`dict`

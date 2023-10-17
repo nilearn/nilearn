@@ -11,9 +11,9 @@ from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiSpheresMasker
 
 
-def test_seed_extraction():
+def test_seed_extraction(rng):
     """Test seed extraction."""
-    data = np.random.RandomState(42).random_sample((3, 3, 3, 5))
+    data = rng.random_sample((3, 3, 3, 5))
     img = nibabel.Nifti1Image(data, np.eye(4))
     masker = NiftiSpheresMasker([(1, 1, 1)])
     # Test the fit
@@ -23,9 +23,9 @@ def test_seed_extraction():
     assert_array_equal(s[:, 0], data[1, 1, 1])
 
 
-def test_sphere_extraction():
+def test_sphere_extraction(rng):
     """Test sphere extraction."""
-    data = np.random.RandomState(42).random_sample((3, 3, 3, 5))
+    data = rng.random_sample((3, 3, 3, 5))
     img = nibabel.Nifti1Image(data, np.eye(4))
     masker = NiftiSpheresMasker([(1, 1, 1)], radius=1)
 
@@ -64,8 +64,8 @@ def test_sphere_extraction():
     )
 
 
-def test_anisotropic_sphere_extraction():
-    data = np.random.RandomState(42).random_sample((3, 3, 3, 5))
+def test_anisotropic_sphere_extraction(rng):
+    data = rng.random_sample((3, 3, 3, 5))
     affine = np.eye(4)
     affine[0, 0] = 2
     affine[2, 2] = 2
@@ -97,12 +97,12 @@ def test_errors():
         masker.fit()
 
 
-def test_nifti_spheres_masker_overlap():
+def test_nifti_spheres_masker_overlap(rng):
     # Test resampling in NiftiMapsMasker
     affine = np.eye(4)
     shape = (5, 5, 5)
 
-    data = np.random.RandomState(42).random_sample(shape + (5,))
+    data = rng.random_sample(shape + (5,))
     fmri_img = nibabel.Nifti1Image(data, affine)
 
     seeds = [(0, 0, 0), (2, 2, 2)]
@@ -127,11 +127,11 @@ def test_nifti_spheres_masker_overlap():
         noverlapping_masker.fit_transform(fmri_img)
 
 
-def test_small_radius():
+def test_small_radius(rng):
     affine = np.eye(4)
     shape = (3, 3, 3)
 
-    data = np.random.RandomState(42).random_sample(shape)
+    data = rng.random_sample(shape)
     mask = np.zeros(shape)
     mask[1, 1, 1] = 1
     mask[2, 2, 2] = 1
@@ -159,13 +159,13 @@ def test_small_radius():
     masker.fit_transform(nibabel.Nifti1Image(data, affine))
 
 
-def test_is_nifti_spheres_masker_give_nans():
+def test_is_nifti_spheres_masker_give_nans(rng):
     affine = np.eye(4)
 
     data_with_nans = np.zeros((10, 10, 10), dtype=np.float32)
     data_with_nans[:, :, :] = np.nan
 
-    data_without_nans = np.random.RandomState(42).random_sample((9, 9, 9))
+    data_without_nans = rng.random_sample((9, 9, 9))
     indices = np.nonzero(data_without_nans)
 
     # Leaving nans outside of some data
@@ -184,8 +184,8 @@ def test_is_nifti_spheres_masker_give_nans():
     assert not np.isnan(np.sum(masker.fit_transform(img)))
 
 
-def test_standardization():
-    data = np.random.RandomState(42).random_sample((3, 3, 3, 5))
+def test_standardization(rng):
+    data = rng.random_sample((3, 3, 3, 5))
     img = nibabel.Nifti1Image(data, np.eye(4))
 
     # test zscore
@@ -208,9 +208,9 @@ def test_standardization():
     )
 
 
-def test_nifti_spheres_masker_inverse_transform():
+def test_nifti_spheres_masker_inverse_transform(rng):
     # Applying the sphere_extraction example from above backwards
-    data = np.random.RandomState(42).random_sample((3, 3, 3, 5))
+    data = rng.random_sample((3, 3, 3, 5))
     img = nibabel.Nifti1Image(data, np.eye(4))
     masker = NiftiSpheresMasker([(1, 1, 1)], radius=1)
     # Test the fit
@@ -248,9 +248,7 @@ def test_nifti_spheres_masker_inverse_transform():
     assert_array_equal(inverse_map.shape[:3], mask_img.shape)
 
 
-def test_nifti_spheres_masker_inverse_overlap():
-    rng = np.random.RandomState(42)
-
+def test_nifti_spheres_masker_inverse_overlap(rng):
     # Test overlapping data in inverse_transform
     affine = np.eye(4)
     shape = (5, 5, 5)
@@ -291,11 +289,11 @@ def test_nifti_spheres_masker_inverse_overlap():
         noverlapping_masker.inverse_transform(inv_data)
 
 
-def test_small_radius_inverse():
+def test_small_radius_inverse(rng):
     affine = np.eye(4)
     shape = (3, 3, 3)
 
-    data = np.random.RandomState(42).random_sample(shape)
+    data = rng.random_sample(shape)
     mask = np.zeros(shape)
     mask[1, 1, 1] = 1
     mask[2, 2, 2] = 1
@@ -326,7 +324,7 @@ def test_small_radius_inverse():
     masker.inverse_transform(spheres_data)
 
 
-def test_nifti_spheres_masker_io_shapes():
+def test_nifti_spheres_masker_io_shapes(rng):
     """Ensure that NiftiSpheresMasker handles 1D/2D/3D/4D data appropriately.
 
     transform(4D image) --> 2D output, no warning
@@ -338,8 +336,8 @@ def test_nifti_spheres_masker_io_shapes():
     n_regions, n_volumes = 2, 5
     shape_3d = (10, 11, 12)
     shape_4d = (10, 11, 12, n_volumes)
-    data_1d = np.random.random(n_regions)
-    data_2d = np.random.random((n_volumes, n_regions))
+    data_1d = rng.random(n_regions)
+    data_2d = rng.random((n_volumes, n_regions))
     affine = np.eye(4)
 
     img_4d, mask_img = data_gen.generate_random_img(

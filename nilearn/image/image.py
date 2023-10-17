@@ -67,17 +67,16 @@ def high_variance_confounds(
         If provided, confounds are extracted from voxels inside the mask.
         See :ref:`extracting_data`.
 
-    n_confounds : :obj:`int`, optional
-        Number of confounds to return. Default=5.
+    n_confounds : :obj:`int`, default=5
+        Number of confounds to return.
 
-    percentile : :obj:`float`, optional
+    percentile : :obj:`float`, default=2
         Highest-variance signals percentile to keep before computing the
         singular value decomposition, 0. <= `percentile` <= 100.
         `mask_img.sum() * percentile / 100` must be greater than `n_confounds`.
-        Default=2.
 
-    detrend : :obj:`bool`, optional
-        If True, detrend signals before processing. Default=True.
+    detrend : :obj:`bool`, default=True
+        If True, detrend signals before processing.
 
     Returns
     -------
@@ -186,13 +185,13 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         are also accepted (only these coefficients are used).
         If `fwhm='fast'`, the affine is not used and can be None.
     %(fwhm)s
-    ensure_finite : :obj:`bool`, optional
+    ensure_finite : :obj:`bool`, default=True
         If True, replace every non-finite values (like NaNs) by zero before
-        filtering. Default=True.
+        filtering.
 
-    copy : :obj:`bool`, optional
+    copy : :obj:`bool`, default=True
         If True, input array is not modified. True by default: the filtering
-        is not performed in-place. Default=True.
+        is not performed in-place.
 
     Returns
     -------
@@ -296,8 +295,8 @@ def _crop_img_to(img, slices, copy=True):
         Defines the range of the crop.
         E.g. [slice(20, 200), slice(40, 150), slice(0, 100)] defines a cube.
 
-    copy : :obj:`bool`, optional
-        Specifies whether cropped data is to be copied or not. Default=True.
+    copy : :obj:`bool`, default=True
+        Specifies whether cropped data is to be copied or not.
 
     Returns
     -------
@@ -335,9 +334,10 @@ def crop_img(img, rtol=1e-8, copy=True, pad=True, return_offset=False):
     """Crops an image as much as possible.
 
     Will crop `img`, removing as many zero entries as possible without
-    touching non-zero entries. Will leave one voxel of zero padding
-    around the obtained non-zero area in order to avoid sampling issues
-    later on.
+    touching non-zero entries.
+    Will leave one :term:`voxel` of zero padding
+    around the obtained non-zero area in order
+    to avoid sampling issues later on.
 
     Parameters
     ----------
@@ -345,20 +345,19 @@ def crop_img(img, rtol=1e-8, copy=True, pad=True, return_offset=False):
         Image to be cropped (see :ref:`extracting_data` for a detailed
         description of the valid input types).
 
-    rtol : :obj:`float`, optional
+    rtol : :obj:`float`, default=1e-8
         relative tolerance (with respect to maximal absolute value of the
         image), under which values are considered negligeable and thus
-        croppable. Default=1e-8.
+        croppable.
 
-    copy : :obj:`bool`, optional
-        Specifies whether cropped data is copied or not. Default=True.
+    copy : :obj:`bool`, default=True
+        Specifies whether cropped data is copied or not.
 
-    pad : :obj:`bool`, optional
-        Toggles adding 1-voxel of 0s around the border. Default=True.
+    pad : :obj:`bool`, default=True
+        Toggles adding 1-voxel of 0s around the border.
 
-    return_offset : :obj:`bool`, optional
+    return_offset : :obj:`bool`, default=False
         Specifies whether to return a tuple of the removed padding.
-        Default=False.
 
     Returns
     -------
@@ -511,13 +510,13 @@ def mean_img(imgs, target_affine=None, target_shape=None, verbose=0, n_jobs=1):
         len(target_shape) must be equal to 3.
         A target_affine has to be specified jointly with target_shape.
 
-    verbose : :obj:`int`, optional
+    verbose : :obj:`int`, default=0
         Controls the amount of verbosity: higher numbers give more messages
-        (0 means no messages). Default=0.
+        (0 means no messages).
 
-    n_jobs : :obj:`int`, optional
+    n_jobs : :obj:`int`, default=1
         The number of CPUs to use to do the computation (-1 means
-        'all CPUs'). Default=1.
+        'all CPUs').
 
     Returns
     -------
@@ -738,9 +737,9 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     affine : 4x4 :class:`numpy.ndarray`, optional
         Transformation matrix.
 
-    copy_header : :obj:`bool`, optional
+    copy_header : :obj:`bool`, default=False
         Indicated if the header of the reference image should be used to
-        create the new image. Default=False.
+        create the new image.
 
     Returns
     -------
@@ -815,9 +814,8 @@ def _apply_cluster_size_threshold(arr, cluster_threshold, copy=True):
         3D array that has been thresholded at the voxel level.
     cluster_threshold : :obj:`float`
         Cluster-size threshold, in voxels, to apply to ``arr``.
-    copy : :obj:`bool`, optional
+    copy : :obj:`bool`, default=True
         Whether to copy the array before modifying it or not.
-        Default is True.
 
     Returns
     -------
@@ -893,27 +891,26 @@ def threshold_img(
         The percentile rank is computed using
         :func:`scipy.stats.scoreatpercentile`.
 
-    cluster_threshold : :obj:`float`, optional
+    cluster_threshold : :obj:`float`, default=0
         Cluster size threshold, in voxels. In the returned thresholded map,
         sets of connected voxels (``clusters``) with size smaller
-        than this number will be removed. Default=0.
+        than this number will be removed.
 
         .. versionadded:: 0.9.0
 
-    two_sided : :obj:`bool`, optional
+    two_sided : :obj:`bool`, default=True
         Whether the thresholding should yield both positive and negative
         part of the maps.
-        Default=True.
 
         .. versionadded:: 0.9.0
 
-    mask_img : Niimg-like object, default None, optional
+    mask_img : Niimg-like object, default=None
         Mask image applied to mask the input data.
         If None, no masking will be applied.
 
-    copy : :obj:`bool`, optional
+    copy : :obj:`bool`, default=True
         If True, input array is not modified. True by default: the filtering
-        is not performed in-place. Default=True.
+        is not performed in-place.
 
     Returns
     -------
@@ -1087,7 +1084,7 @@ def binarize_img(img, threshold=0, mask_img=None):
         this score will be kept. The given string should be
         within the range of "0%" to "100%".
 
-    mask_img : Niimg-like object, default None, optional
+    mask_img : Niimg-like object, default=None
         Mask image applied to mask the input data.
         If None, no masking will be applied.
 
@@ -1133,7 +1130,7 @@ def clean_img(
     mask_img=None,
     **kwargs,
 ):
-    """Improve SNR on masked fMRI signals.
+    """Improve :term:`SNR` on masked :term:`fMRI` signals.
 
     This function can do several things on the input signals, in
     the following order:
@@ -1162,7 +1159,7 @@ def clean_img(
         :ref:`extracting_data` for a detailed description of the valid input
         types).
 
-    runs : :class:`numpy.ndarray`, optional
+    runs : :class:`numpy.ndarray`, default=``None``
         Add a run level to the cleaning process. Each run will be
         cleaned independently. Must be a 1D array of n_samples elements.
 
@@ -1171,15 +1168,13 @@ def clean_img(
             'runs' replaces 'sessions' after release 0.10.0.
             Using 'session' will result in an error after release 0.10.0.
 
-        Default=``None``.
 
-    detrend : :obj:`bool`, optional
+    detrend : :obj:`bool`, default=True
         If detrending should be applied on timeseries
         (before confound removal).
-        Default=True.
 
-    standardize : :obj:`bool`, optional
-        If True, returned signals are set to unit variance. Default=True.
+    standardize : :obj:`bool`, default=True
+        If True, returned signals are set to unit variance.
 
     confounds : :class:`numpy.ndarray`, :obj:`str` or :obj:`list` of
         Confounds timeseries. optional
@@ -1202,9 +1197,9 @@ def clean_img(
         Repetition time, in second (sampling period). Set to None if not
         specified. Mandatory if used together with `low_pass` or `high_pass`.
 
-    ensure_finite : :obj:`bool`, optional
+    ensure_finite : :obj:`bool`, default=False
         If True, the non-finite values (NaNs and infs) found in the images
-        will be replaced by zeros. Default=False.
+        will be replaced by zeros.
 
     mask_img : Niimg-like object, optional
         If provided, signal is only cleaned from voxels inside the mask. If
@@ -1308,14 +1303,13 @@ def load_img(img, wildcards=True, dtype=None):
         `TypeError` otherwise.
         See :ref:`extracting_data`.
 
-    wildcards : :obj:`bool`, optional
+    wildcards : :obj:`bool`, default=True
         Use `img` as a regular expression to get a list of matching input
         filenames.
         If multiple files match, the returned list is sorted using an ascending
         order.
         If no file matches the regular expression, a `ValueError` exception is
         raised.
-        Default=True.
 
     dtype : {dtype, "auto"}, optional
         Data type toward which the data should be converted. If "auto", the

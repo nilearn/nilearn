@@ -17,8 +17,8 @@ Content
 
 References
 ----------
-:Download: http://fcon_1000.projects.nitrc.org/indi/enhanced/
+:Download: https://fcon_1000.projects.nitrc.org/indi/enhanced/
 
 Nooner et al, (2012). The NKI-Rockland Sample: A model for accelerating the
 pace of discovery science in psychiatry. Frontiers in neuroscience 6, 152.
-URL http://dx.doi.org/10.3389/fnins.2012.00152
+URL https://doi.org/10.3389/fnins.2012.00152

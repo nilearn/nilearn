@@ -62,10 +62,10 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
     %(smoothing_fwhm)s
     %(standardize_maskers)s
     %(standardize_confounds)s
-    high_variance_confounds : :obj:`bool`, optional
+    high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
-        and regressed out. Default=False.
+        and regressed out.
     %(detrend)s
     %(low_pass)s
     %(high_pass)s
@@ -86,7 +86,7 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
             :func:`nilearn.masking.compute_multi_epi_mask`, or
             :func:`nilearn.masking.compute_multi_brain_mask`.
 
-        Default is 'background'.
+        Default='background'.
 
     mask_args : :obj:`dict`, optional
         If mask is None, these are additional parameters passed to
@@ -306,13 +306,13 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
 
                 .. versionadded:: 0.8.0
 
-        copy : :obj:`bool`, optional
+        copy : :obj:`bool`, default=True
             If True, guarantees that output array has no memory in common with
-            input array. Default=True.
+            input array.
 
-        n_jobs : :obj:`int`, optional
+        n_jobs : :obj:`int`, default=1
             The number of cpus to use to do the computation. -1 means
-            'all cpus'. Default=1.
+            'all cpus'.
 
         Returns
         -------

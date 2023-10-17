@@ -16,6 +16,7 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from nilearn import image, surface
 from nilearn._utils import _compare_version, check_niimg_3d, fill_doc
+from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn.plotting.cm import _mix_colormaps, cold_hot
 from nilearn.plotting.html_surface import _get_vertexcolor
 from nilearn.plotting.img_plotting import _get_colorbar_and_data_ranges
@@ -249,11 +250,11 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
         bugs that you may encounter.
 
     """
-    try:
+    if is_plotly_installed():
         import plotly.graph_objects as go
 
         from nilearn.plotting.displays import PlotlySurfaceFigure
-    except ImportError:
+    else:
         msg = "Using engine='plotly' requires that ``plotly`` is installed."
         raise ImportError(msg)
 
@@ -308,15 +309,13 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
                       **LAYOUT)
 
     # save figure
+    plotly_figure = PlotlySurfaceFigure(figure=fig, output_file=output_file)
+
     if output_file is not None:
-        try:
-            import kaleido  # noqa: F401
-        except ImportError:
+        if not is_kaleido_installed():
             msg = ("Saving figures to file with engine='plotly' requires "
                    "that ``kaleido`` is installed.")
             raise ImportError(msg)
-    plotly_figure = PlotlySurfaceFigure(figure=fig, output_file=output_file)
-    if output_file is not None:
         plotly_figure.savefig()
 
     return plotly_figure
@@ -667,7 +666,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
     %(hemi)s
     %(view)s
-    engine : {'matplotlib', 'plotly'}, optional
+    engine : {'matplotlib', 'plotly'}, default='matplotlib'
 
         .. versionadded:: 0.9.0
 
@@ -687,10 +686,9 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             The ``plotly`` engine is new and experimental.
             Please report bugs that you may encounter.
 
-        Default='matplotlib'.
     %(cmap)s
         If None, matplotlib default will be chosen.
-    symmetric_cmap : :obj:`bool`, optional
+    symmetric_cmap : :obj:`bool`, default=False
         Whether to use a symmetric colormap or not.
 
         .. note::
@@ -699,7 +697,6 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
         .. versionadded:: 0.9.0
 
-        Default=False.
     %(colorbar)s
         Default=False.
     %(avg_method)s
@@ -710,16 +707,15 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
         Default='mean'.
 
-    threshold : a number or None, default is None.
+    threshold : a number or None, default=None.
         If None is given, the image is not thresholded.
         If a number is given, it is used to threshold the image, values
         below the threshold (in absolute value) are plotted as transparent.
 
-    alpha : float or 'auto', optional
+    alpha : float or 'auto', default='auto'
         Alpha level of the mesh (not surf_data).
-        If 'auto' is chosen, alpha will default to .5 when no bg_map
+        If 'auto' is chosen, alpha will default to 0.5 when no bg_map
         is passed and to 1 if a bg_map is passed.
-        Default='auto'.
 
         .. note::
             This option is currently only implemented for the
@@ -750,12 +746,11 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         .. versionadded:: 0.7.1
 
     %(title)s
-    title_font_size : :obj:`int`, optional
+    title_font_size : :obj:`int`, default=18
         Size of the title font.
 
         .. versionadded:: 0.9.0
 
-        Default=18.
     %(output_file)s
     axes : instance of matplotlib axes, None, optional
         The axes instance to plot to. The projection must be '3d' (e.g.,
@@ -897,8 +892,8 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
     colors : list of matplotlib color names or RGBA values, or None, optional
         Colors to be used.
 
-    legend : boolean,  optional
-        Whether to plot a legend of region's labels. Default=False.
+    legend : boolean,  optional, default=False
+        Whether to plot a legend of region's labels.
     %(cmap)s
         Default='tab20'.
     %(title)s
@@ -1031,7 +1026,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
     %(hemi)s
     %(view)s
-    engine : {'matplotlib', 'plotly'}, optional
+    engine : {'matplotlib', 'plotly'}, default='matplotlib'
 
         .. versionadded:: 0.9.0
 
@@ -1050,7 +1045,6 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
             The ``plotly`` engine is new and experimental.
             Please report bugs that you may encounter.
 
-        Default='matplotlib'.
 
     threshold : a number or None, optional
         If None is given, the image is not thresholded.
@@ -1073,11 +1067,10 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
         Default=True.
 
-    alpha : float or 'auto', optional
+    alpha : float or 'auto', default='auto'
         Alpha level of the mesh (not the stat_map).
         If 'auto' is chosen, alpha will default to .5 when no bg_map is
         passed and to 1 if a bg_map is passed.
-        Default='auto'.
 
         .. note::
             This option is currently only implemented for the
@@ -1086,7 +1079,6 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     %(vmin)s
     %(vmax)s
     %(symmetric_cbar)s
-        Default='auto'.
     %(bg_on_data)s
 
     %(darkness)s
@@ -1097,12 +1089,11 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
             ``matplotlib`` engine.
 
     %(title)s
-    title_font_size : :obj:`int`, optional
+    title_font_size : :obj:`int`, default=18
         Size of the title font.
 
         .. versionadded:: 0.9.0
 
-        Default=18.
     %(output_file)s
     axes : instance of matplotlib axes, None, optional
         The axes instance to plot to. The projection must be '3d' (e.g.,
@@ -1142,7 +1133,6 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         vmin=vmin,
         vmax=vmax,
         symmetric_cbar=symmetric_cbar,
-        symmetric_data_range=False,
     )
 
     display = plot_surf(
@@ -1254,9 +1244,8 @@ def _colorbar_from_array(array, vmin, vmax, threshold, symmetric_cbar=True,
     kwargs : dict
         Extra arguments passed to _get_colorbar_and_data_ranges.
 
-    cmap : str, optional
+    cmap : str, default='cold_hot'
         The name of a matplotlib or nilearn colormap.
-        Default='cold_hot'.
 
     """
     _, _, vmin, vmax = _get_colorbar_and_data_ranges(
@@ -1264,7 +1253,6 @@ def _colorbar_from_array(array, vmin, vmax, threshold, symmetric_cbar=True,
         vmin=vmin,
         vmax=vmax,
         symmetric_cbar=symmetric_cbar,
-        symmetric_data_range=False,
     )
     norm = Normalize(vmin=vmin, vmax=vmax)
     cmaplist = [cmap(i) for i in range(cmap.N)]
@@ -1308,14 +1296,13 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
     stat_map : str or 3D Niimg-like object
         See :ref:`extracting_data`.
 
-    surf_mesh : str, dict, or None, optional
+    surf_mesh : str, dict, or None, default='fsaverage5'
         If str, either one of the two:
         'fsaverage5': the low-resolution fsaverage5 mesh (10242 nodes)
         'fsaverage': the high-resolution fsaverage mesh (163842 nodes)
         If dict, a dictionary with keys: ['infl_left', 'infl_right',
         'pial_left', 'pial_right', 'sulc_left', 'sulc_right'], where
         values are surface mesh geometries as accepted by plot_surf_stat_map.
-        Default='fsaverage5'.
 
     mask_img : Niimg-like object or None, optional
         The mask is passed to vol_to_surf.
@@ -1328,17 +1315,15 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
     hemispheres : :obj:`list` of :obj:`str`, default=["left", "right"]
         Hemispheres to display.
 
-    inflate : bool, optional
+    inflate : bool, default=False
         If True, display images in inflated brain.
         If False, display images in pial surface.
-        Default=False.
 
-    views : list of strings, optional
+    views : list of strings, default=['lateral', 'medial']
         A list containing all views to display.
         The montage will contain as many rows as views specified by
         display mode. Order is preserved, and left and right hemispheres
         are shown on the left and right sides of the figure.
-        Default=['lateral', 'medial'].
     %(output_file)s
     %(title)s
     %(colorbar)s
@@ -1350,11 +1335,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
     %(vmin)s
     %(vmax)s
     %(threshold)s
-    symmetric_cbar : :obj:`bool`, or "auto", optional
-        Specifies whether the colorbar should range from `-vmax` to `vmax`
-        (or from `vmin` to `-vmin` if `-vmin` is greater than `vmax`) or
-        from `vmin` to `vmax`.
-        Default=True.
+    %(symmetric_cbar)s
     %(cmap)s
         Default='cold_hot'.
     kwargs : dict, optional
@@ -1412,7 +1393,6 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         vmin=vmin,
         vmax=vmax,
         symmetric_cbar=symmetric_cbar,
-        symmetric_data_range=False,
     )
 
     for i, (mode, hemi) in enumerate(itertools.product(modes, hemis)):
@@ -1533,7 +1513,7 @@ def plot_surf_roi(surf_mesh,
 
     %(hemi)s
     %(view)s
-    engine : {'matplotlib', 'plotly'}, optional
+    engine : {'matplotlib', 'plotly'}, default='matplotlib'
 
         .. versionadded:: 0.9.0
 
@@ -1552,7 +1532,6 @@ def plot_surf_roi(surf_mesh,
             The ``plotly`` engine is new and experimental.
             Please report bugs that you may encounter.
 
-        Default='matplotlib'.
 
     %(avg_method)s
 
@@ -1562,10 +1541,9 @@ def plot_surf_roi(surf_mesh,
 
         Default='median'.
 
-    threshold : a number or None, optional
+    threshold : a number or None, default=1e-14
         Threshold regions that are labelled 0.
         If you want to use 0 as a label, set threshold to None.
-        Default=1e-14.
     %(cmap)s
         Default='gist_ncar'.
     %(cbar_tick_format)s
@@ -1576,11 +1554,10 @@ def plot_surf_roi(surf_mesh,
 
         .. versionadded:: 0.7.1
 
-    alpha : float or 'auto', optional
+    alpha : float or 'auto', default='auto'
         Alpha level of the mesh (not the stat_map). If default,
-        alpha will default to .5 when no bg_map is passed
+        alpha will default to 0.5 when no bg_map is passed
         and to 1 if a bg_map is passed.
-        Default='auto'.
 
         .. note::
             This option is currently only implemented for the
@@ -1596,12 +1573,11 @@ def plot_surf_roi(surf_mesh,
             ``matplotlib`` engine.
 
     %(title)s
-    title_font_size : :obj:`int`, optional
+    title_font_size : :obj:`int`, default=18
         Size of the title font.
 
         .. versionadded:: 0.9.0
 
-        Default=18.
     %(output_file)s
     axes : Axes instance or None, optional
         The axes instance to plot to. The projection must be '3d' (e.g.,

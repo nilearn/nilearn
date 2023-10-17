@@ -93,11 +93,11 @@ class HTMLDocument:
 
         Parameters
         ----------
-        width : :obj:`int` or ``None``, optional
-            Width of the inline frame. Default=None.
+        width : :obj:`int` or ``None``, default=None
+            Width of the inline frame.
 
-        height : :obj:`int` or ``None``, optional
-            Height of the inline frame. Default=None.
+        height : :obj:`int` or ``None``, default=None
+            Height of the inline frame.
 
         Returns
         -------
@@ -151,13 +151,13 @@ class HTMLDocument:
 
         Parameters
         ----------
-        file_name : :obj:`str` or ``None``, optional
-            HTML file to use as a temporary file. Default=None.
+        file_name : :obj:`str` or ``None``, default=None
+            HTML file to use as a temporary file.
 
-        temp_file_lifetime : :obj:`float`, optional
+        temp_file_lifetime : :obj:`float`, default=30
             Time, in seconds, after which the temporary file is removed.
             If None, it is never removed.
-            Default=30.
+
 
         """
         if file_name is None:

@@ -19,15 +19,13 @@ def rename_parameters(replacement_params,
         and their corresponding new parameters.
         Example: {old_param1: new_param1, old_param2: new_param2,...}
 
-    end_version : str {'future' | 'next' | <version>}, optional
+    end_version : str {'future' | 'next' | <version>}, default='future'
         Version when using the deprecated parameters will raise an error.
         For informational purpose in the warning text.
-        Default='future'.
 
-    lib_name : str, optional
+    lib_name : str, default='Nilearn'
         Name of the library to which the decoratee belongs.
         For informational purpose in the warning text.
-        Default='Nilearn'.
 
     """
     def _replace_params(func):
@@ -123,10 +121,9 @@ def remove_parameters(removed_params,
     reason : str
         Detailed reason of deprecated parameter and alternative solutions.
 
-    end_version : str {'future' | 'next' | <version>}, optional
+    end_version : str {'future' | 'next' | <version>}, default='future'
         Version when using the deprecated parameters will raise an error.
         For informational purpose in the warning text.
-        Default='future'.
 
     """
     def _remove_params(func):
@@ -203,3 +200,21 @@ def _compare_version(version_a, operator, version_b):
         error_msg = "'_compare_version' received an unexpected operator "
         raise ValueError(error_msg + operator + ".")
     return VERSION_OPERATORS[operator](parse(version_a), parse(version_b))
+
+
+def is_plotly_installed():
+    """Check if plotly is installed."""
+    try:
+        import plotly.graph_objects as go  # noqa: F401
+    except ImportError:
+        return False
+    return True
+
+
+def is_kaleido_installed():
+    """Check if kaleido is installed."""
+    try:
+        import kaleido  # noqa: F401
+    except ImportError:
+        return False
+    return True
