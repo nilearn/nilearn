@@ -179,30 +179,26 @@ def get_bids_files(
     main_path : :obj:`str`
         Directory of the :term:`BIDS` dataset.
 
-    file_tag : :obj:`str` accepted by glob, optional
+    file_tag : :obj:`str` accepted by glob, default='*'
         The final tag of the desired files. For example 'bold' if one is
         interested in the files related to the neuroimages.
-        Default='*'.
 
-    file_type : :obj:`str` accepted by glob, optional
+    file_type : :obj:`str` accepted by glob, default='*'
         The type of the desired files. For example to be able to request only
         'nii' or 'json' files for the 'bold' tag.
-        Default='*'.
 
-    sub_label : :obj:`str` accepted by glob, optional
+    sub_label : :obj:`str` accepted by glob, default='*'
         Such a common filter is given as a direct option since it applies also
         at the level of directories. the label is what follows the 'sub' field
         in the :term:`BIDS` convention as 'sub-label'.
-        Default='*'.
 
-    modality_folder : :obj:`str` accepted by glob, optional
+    modality_folder : :obj:`str` accepted by glob, default='*'
         Inside the subject and optional session folders a final level of
         folders is expected in the :term:`BIDS` convention that groups files
         according to different neuroimaging modalities and any other additions
         of the dataset provider. For example the 'func' and 'anat' standard
         folders. If given as the empty string '', files will be searched
         inside the sub-label/ses-label directories.
-        Default='*'.
 
     filters : :obj:`list` of :obj:`tuple` (:obj:`str`, :obj:`str`), optional
         Filters are of the form (field, label). Only one filter per field
@@ -210,13 +206,12 @@ def get_bids_files(
         Filter examples would be ('ses', '01'), ('dir', 'ap') and
         ('task', 'localizer').
 
-    sub_folder : :obj:`bool`, optional
+    sub_folder : :obj:`bool`, default=True
         Determines if the files searched are at the level of
         subject/session folders or just below the dataset main folder.
         Setting this option to False with other default values would return
         all the files below the main directory, ignoring files in subject
         or derivatives folders.
-        Default=True.
 
     Returns
     -------

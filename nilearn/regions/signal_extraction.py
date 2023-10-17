@@ -132,8 +132,8 @@ def _get_labels_data(
         Every point outside the mask is considered as background
         (i.e. no region).
 
-    background_label : number, optional
-        Number representing background in labels_img. Default=0.
+    background_label : number, default=0
+        Number representing background in labels_img.
 
     dim : :obj:`int`, optional
         Integer slices mask for a specific dimension.
@@ -270,16 +270,16 @@ def img_to_signals_labels(
         Every point outside the mask is considered
         as background (i.e. no region).
 
-    background_label : number, optional
-        Number representing background in labels_img. Default=0.
+    background_label : number, default=0
+        Number representing background in labels_img.
 
-    order : :obj:`str`, optional
-        Ordering of output array ("C" or "F"). Default="F".
+    order : :obj:`str`, default="F"
+        Ordering of output array ("C" or "F").
 
-    strategy : :obj:`str`, optional
+    strategy : :obj:`str`, default="mean"
         The name of a valid function to reduce the region with.
         Must be one of: sum, mean, median, minimum, maximum, variance,
-        standard_deviation. Default="mean".
+        standard_deviation.
     %(keep_masked_labels)s
 
     Returns
@@ -368,11 +368,11 @@ def signals_to_img_labels(
         Boolean array giving voxels to process. integer arrays also accepted,
         In this array, zero means False, non-zero means True.
 
-    background_label : number, optional
-        Label to use for "no region". Default=0.
+    background_label : number, default=0
+        Label to use for "no region".
 
-    order : :obj:`str`, optional
-        Ordering of output array ("C" or "F"). Default="F".
+    order : :obj:`str`, default="F"
+        Ordering of output array ("C" or "F").
 
     Returns
     -------
@@ -589,15 +589,13 @@ def _trim_maps(maps, mask, keep_empty=False, order="F"):
     mask : :class:`numpy.ndarray`
         Definition of a mask. The shape must match that of a single map.
 
-    keep_empty : :obj:`bool`, optional
+    keep_empty : :obj:`bool`, default=False
         If False, maps that lie completely outside the mask are dropped from
         the output. If True, they are kept, meaning that maps that are
         completely zero can occur in the output.
-        Default=False.
 
-    order : "F" or "C", optional
+    order : "F" or "C", default="F"
         Ordering of the output maps array (trimmed_maps).
-        Default="F".
 
     Returns
     -------

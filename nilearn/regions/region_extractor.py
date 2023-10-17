@@ -154,7 +154,7 @@ def connected_regions(
         An image of brain activation or atlas maps to be extracted into set of
         separate brain regions.
 
-    min_region_size : :obj:`float`, optional
+    min_region_size : :obj:`float`, default=1350
         Minimum volume in mm3 for a region to be kept.
         For example, if the :term:`voxel` size is 3x3x3 mm
         then the volume of the :term:`voxel` is 27mm^3.
@@ -193,7 +193,6 @@ def connected_regions(
     nilearn.regions.RegionExtractor : A class can be used for both
         region extraction on continuous type atlas images and
         also time series signals extraction from regions extracted.
-
     """
     all_regions_imgs = []
     index_of_each_map = []
@@ -285,20 +284,20 @@ class RegionExtractor(NiftiMapsMasker):
         Mask to be applied to input data, passed to NiftiMapsMasker.
         If None, no masking is applied.
 
-    min_region_size : :obj:`float`, optional
+    min_region_size : :obj:`float`, default=1350
         Minimum volume in mm3 for a region to be kept.
         For example, if the voxel size is 3x3x3 mm
         then the volume of the voxel is 27mm^3.
-        Default=1350mm^3, which means
+        The default of 1350mm^3 means
         we take minimum size of 1350 / 27 = 50 voxels.
 
-    threshold : number, optional
+    threshold : number, default=1.0
         A value used either in ratio_n_voxels or img_value or percentile
         `thresholding_strategy` based upon the choice of selection.
-        Default=1.0.
 
-    thresholding_strategy : :obj:`str` {'ratio_n_voxels', 'img_value',\
- 'percentile'}, optional
+    thresholding_strategy : :obj:`str` \
+                            {'ratio_n_voxels', 'img_value', 'percentile'}, \
+                            default='ratio_n_voxels'
         If default 'ratio_n_voxels', we apply thresholding that will keep
         the more intense nonzero brain voxels (denoted as n_voxels)
         across all maps (n_voxels being the number of voxels in the brain
@@ -312,10 +311,10 @@ class RegionExtractor(NiftiMapsMasker):
         intensities across all maps. A value given in `threshold`
         parameter indicates that we keep only those voxels which have
         intensities more than this value.
-        Default='ratio_n_voxels'.
     %(extractor)s
     %(smoothing_fwhm)s
-        Use this parameter to smooth an image to extract most sparser regions.
+        Use this parameter to smooth an image
+        to extract most sparser regions.
 
         .. note::
 
@@ -493,11 +492,11 @@ def connected_label_regions(
         to keep after extraction.
         Removes small or spurious regions.
 
-    connect_diag : :obj:`bool`, optional
+    connect_diag : :obj:`bool`, default=True
         If 'connect_diag' is True, two voxels are considered in the same region
         if they are connected along the diagonal (26-connectivity). If it is
         False, two voxels are considered connected only if they are within the
-        same x, y, or z direction. Default=True.
+        same x, y, or z direction.
 
     labels : 1D :class:`numpy.ndarray` or :obj:`list` of :obj:`str`, optional
         Each string in a list or array denote the name of the brain atlas

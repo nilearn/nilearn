@@ -251,30 +251,27 @@ def plot_matrix(
         Default=True.
     %(cmap)s
         Default=`plt.cm.RdBu_r`.
-    tri : {'full', 'lower', 'diag'}, optional
+    tri : {'full', 'lower', 'diag'}, default='full'
         Which triangular part of the matrix to plot:
 
             - 'lower': Plot the lower part
             - 'diag': Plot the lower part with the diagonal
             - 'full': Plot the full matrix
 
-        Default='full'.
 
-    auto_fit : :obj:`bool`, optional
+    auto_fit : :obj:`bool`, default=True
         If auto_fit is True, the axes are dimensioned to give room
         for the labels. This assumes that the labels are resting
         against the bottom and left edges of the figure.
-        Default=True.
 
-    grid : color or False, optional
+    grid : color or False, default=False
         If not False, a grid is plotted to separate rows and columns
-        using the given color. Default=False.
+        using the given color.
 
-    reorder : :obj:`bool` or {'single', 'complete', 'average'}, optional
+    reorder : :obj:`bool` or {'single', 'complete', 'average'}, default=False
         If not False, reorders the matrix into blocks of clusters.
         Accepted linkage options for the clustering are 'single',
         'complete', and 'average'. True defaults to average linkage.
-        Default=False.
 
         .. note::
             This option is only available with SciPy >= 1.0.0.
@@ -421,9 +418,8 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
     design matrix : :class:`pandas.DataFrame`
         Describes a design matrix.
 
-    rescale : :obj:`bool`, optional
+    rescale : :obj:`bool`, default=True
         Rescale columns magnitude for visualization or not.
-        Default=True.
 
     ax : :class:`matplotlib.axes.Axes`, optional
         Handle to axes onto which we will draw the design matrix.

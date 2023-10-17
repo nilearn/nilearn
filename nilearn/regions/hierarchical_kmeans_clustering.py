@@ -68,8 +68,8 @@ def hierarchical_k_means(
     n_clusters: int,
         The number of clusters to find.
 
-    init : {'k-means++', 'random' or an ndarray}
-        Method for initialization, defaults to 'k-means++':
+    init : {'k-means++', 'random' or an ndarray}, default='k-means++'
+        Method for initialization.
         'k-means++' : selects initial cluster centers for k-means
         clustering in a smart way to speed up convergence. See section
         Notes in k_init for more details.
@@ -150,8 +150,8 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
     n_clusters: int
         The number of clusters to find.
 
-    init : {'k-means++', 'random' or an ndarray}
-        Method for initialization, defaults to 'k-means++':
+    init : {'k-means++', 'random' or an ndarray}, default='k-means++'
+        Method for initialization.
 
         * 'k-means++' : selects initial cluster centers for k-means
           clustering in a smart way to speed up convergence. See section

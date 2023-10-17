@@ -21,12 +21,12 @@ class _MultiPCA(_BaseDecomposition):
 
     Parameters
     ----------
-    n_components : int, optional
-        Number of components to extract. Default=20.
+    n_components : int, default=20
+        Number of components to extract.
 
-    do_cca : boolean, optional
+    do_cca : boolean, default=True
         Indicate if a Canonical Correlation Analysis must be run after the
-        PCA. Default=True.
+        PCA.
 
     random_state : int or RandomState, optional
         Pseudo number generator state used for random sampling.
@@ -53,19 +53,17 @@ class _MultiPCA(_BaseDecomposition):
         to fine-tune mask computation. Please see the related documentation
         for details.
 
-    standardize : boolean, optional
+    standardize : boolean, default=False
         If standardize is True, the time-series are centered and normed:
         their mean is put to 0 and their variance to 1 in the time dimension.
-        Default=False.
 
-    standardize_confounds : boolean, optional
+    standardize_confounds : boolean, default=True
         If standardize_confounds is True, the confounds are z-scored:
         their mean is put to 0 and their variance to 1 in the time dimension.
-        Default=True.
 
-    detrend : boolean, optional
+    detrend : boolean, default=False
         If detrend is True, the time-series will be detrended before
-        components extraction. Default=False.
+        components extraction.
 
     target_affine : 3x3 or 4x4 matrix, optional
         This parameter is passed to image.resample_img. Please see the
@@ -92,17 +90,16 @@ class _MultiPCA(_BaseDecomposition):
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
 
-    memory_level : integer, optional
+    memory_level : integer, default=0
         Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching. Default=0.
+        means more memory for caching.
 
-    n_jobs : integer, optional
+    n_jobs : integer, default=1
         The number of CPUs to use to do the computation. -1 means
-        'all CPUs', -2 'all CPUs but one', and so on. Default=1.
+        'all CPUs', -2 'all CPUs but one', and so on.
 
-    verbose : integer, optional
+    verbose : integer, default=0
         Indicate the level of verbosity. By default, nothing is printed.
-        Default=0.
 
     Attributes
     ----------
