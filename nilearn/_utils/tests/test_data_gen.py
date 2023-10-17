@@ -504,10 +504,8 @@ def test_generate_maps():
 @pytest.mark.parametrize("block_size", [None, 4])
 @pytest.mark.parametrize("block_type", ["classification", "regression"])
 def test_generate_fake_fmri(
-    shape, length, kind, n_block, block_size, block_type
+    rng, shape, length, kind, n_block, block_size, block_type
 ):
-    rand_gen = np.random.RandomState(3)
-
     fake_fmri = generate_fake_fmri(
         shape=shape,
         length=length,
@@ -515,7 +513,7 @@ def test_generate_fake_fmri(
         n_blocks=n_block,
         block_size=block_size,
         block_type=block_type,
-        random_state=rand_gen,
+        random_state=rng,
     )
 
     assert fake_fmri[0].shape[:-1] == shape
@@ -524,11 +522,11 @@ def test_generate_fake_fmri(
         assert fake_fmri[2].size == length
 
 
-def test_generate_fake_fmri_error():
+def test_generate_fake_fmri_error(rng):
     with pytest.raises(ValueError, match="10 is too small"):
         generate_fake_fmri(
             length=10,
             n_blocks=10,
             block_size=None,
-            random_state=np.random.RandomState(3),
+            random_state=rng,
         )

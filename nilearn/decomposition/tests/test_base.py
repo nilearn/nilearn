@@ -10,10 +10,9 @@ from nilearn.maskers import MultiNiftiMasker
 
 
 @pytest.fixture
-def data_for_mask_and_reduce():
+def data_for_mask_and_reduce(rng):
     """Create "multi-subject" dataset with fake activation."""
     shape = (6, 8, 10, 5)
-    rng = np.random.RandomState(0)
 
     imgs = []
     for _ in range(8):
@@ -34,11 +33,9 @@ def masker():
 
 # We need to use n_features > 500 to trigger the randomized_svd
 @pytest.mark.parametrize("n_features", [30, 100, 550])
-def test_fast_svd(n_features):
+def test_fast_svd(rng, n_features):
     n_samples = 100
     k = 10
-
-    rng = np.random.RandomState(42)
 
     # generate a matrix X of approximate effective rank `rank` and no noise
     # component (very structured signal):

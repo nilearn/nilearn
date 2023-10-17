@@ -26,11 +26,10 @@ def img_4D():
     return Nifti1Image(data_4d, affine=np.eye(4))
 
 
-def _make_multi_pca_test_data(with_activation=True):
+def _make_multi_pca_test_data(rng, with_activation=True):
     """Create a multi-subject dataset with or without activation."""
     shape = (6, 8, 10, 5)
     affine = _affine_eye()
-    rng = np.random.RandomState(0)
     n_sub = 4
 
     data = []

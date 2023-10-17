@@ -14,10 +14,8 @@ from nilearn.decoding.proximal_operators import _prox_l1
 
 @pytest.mark.parametrize("scaling", list(np.logspace(-3, 3, num=7)))
 def test_logistic_lipschitz(
-    scaling, n_samples=4, n_features=2, random_state=42
+    rng, scaling, n_samples=4, n_features=2, random_state=42
 ):
-    rng = np.random.RandomState(random_state)
-
     X = rng.randn(n_samples, n_features) * scaling
     y = rng.randn(n_samples)
     n_features = X.shape[1]
@@ -30,10 +28,11 @@ def test_logistic_lipschitz(
 
 @pytest.mark.parametrize("scaling", list(np.logspace(-3, 3, num=7)))
 def test_squared_loss_lipschitz(
-    scaling, n_samples=4, n_features=2, random_state=42
+    rng,
+    scaling,
+    n_samples=4,
+    n_features=2,
 ):
-    rng = np.random.RandomState(random_state)
-
     X = rng.randn(n_samples, n_features) * scaling
     y = rng.randn(n_samples)
     n_features = X.shape[1]
@@ -47,8 +46,7 @@ def test_squared_loss_lipschitz(
 @pytest.mark.parametrize("cb_retval", [0, 1])
 @pytest.mark.parametrize("verbose", [0, 1])
 @pytest.mark.parametrize("dgap_factor", [1.0, None])
-def test_input_args_and_kwargs(cb_retval, verbose, dgap_factor):
-    rng = np.random.RandomState(42)
+def test_input_args_and_kwargs(rng, cb_retval, verbose, dgap_factor):
     p = 125
     noise_std = 1e-1
     sig = np.zeros(p)

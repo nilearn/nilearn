@@ -556,10 +556,9 @@ def test_high_level_non_parametric_inference_with_paths_warning(tmp_path):
         )
 
 
-def test_fmri_inputs(tmp_path):
+def test_fmri_inputs(rng, tmp_path):
     # Test processing of FMRI inputs
     # prepare fake data
-    rng = np.random.RandomState(42)
     p, q = 80, 10
     X = rng.standard_normal(size=(p, q))
     shapes = ((7, 8, 9, 10),)
@@ -694,11 +693,10 @@ def test_fmri_inputs_errors(tmp_path):
         SecondLevelModel().fit(flms, None, [])
 
 
-def test_fmri_inputs_for_non_parametric_inference_errors(tmp_path):
+def test_fmri_inputs_for_non_parametric_inference_errors(rng, tmp_path):
     # Test processing of FMRI inputs
 
     # prepare fake data
-    rng = np.random.RandomState(42)
     p, q = 80, 10
     X = rng.standard_normal(size=(p, q))
     shapes = ((7, 8, 9, 10),)
@@ -912,13 +910,12 @@ def test_non_parametric_inference_cluster_level(tmp_path):
     not have_mpl, reason="Matplotlib not installed; required for this test"
 )
 def test_non_parametric_inference_cluster_level_with_covariates(
+    rng,
     tmp_path,
     random_state=0,
 ):
     """Test non-parametric inference with cluster-level inference in \
     the context of covariates."""
-    rng = np.random.RandomState(random_state)
-
     shapes = ((7, 8, 9, 1),)
     mask, FUNCFILE, _ = write_fake_fmri_data_and_design(
         shapes, file_path=tmp_path
@@ -981,7 +978,7 @@ def test_non_parametric_inference_cluster_level_with_covariates(
     )
 
 
-def test_second_level_contrast_computation(tmp_path):
+def test_second_level_contrast_computation(rng, tmp_path):
     func_img, mask = fake_fmri_data(file_path=tmp_path)
 
     model = SecondLevelModel(mask_img=mask)
@@ -1032,13 +1029,12 @@ def test_second_level_contrast_computation(tmp_path):
     model.compute_contrast()
 
     # formula as contrasts
-    rng = np.random.RandomState(42)
     X = pd.DataFrame(rng.uniform(size=(4, 2)), columns=["r1", "r2"])
     model = model.fit(Y, design_matrix=X)
     model.compute_contrast(second_level_contrast="r1 - r2")
 
 
-def test_second_level_contrast_computation_errors(tmp_path):
+def test_second_level_contrast_computation_errors(rng, tmp_path):
     func_img, mask = fake_fmri_data(file_path=tmp_path)
 
     model = SecondLevelModel(mask_img=mask)
@@ -1082,7 +1078,6 @@ def test_second_level_contrast_computation_errors(tmp_path):
 
     # check that passing no explicit contrast when the design
     # matrix has more than one columns raises an error
-    rng = np.random.RandomState(42)
     X = pd.DataFrame(rng.uniform(size=(4, 2)), columns=["r1", "r2"])
     model = model.fit(Y, design_matrix=X)
     with pytest.raises(
@@ -1131,11 +1126,10 @@ def test_non_parametric_inference_contrast_computation(tmp_path):
 
 @pytest.mark.parametrize("second_level_contrast", [[1, 0], "r1"])
 def test_non_parametric_inference_contrast_formula(
-    tmp_path, second_level_contrast
+    rng, tmp_path, second_level_contrast
 ):
     func_img, _ = fake_fmri_data(file_path=tmp_path)
     Y = [func_img] * 4
-    rng = np.random.RandomState(42)
     X = pd.DataFrame(rng.uniform(size=(4, 2)), columns=["r1", "r2"])
 
     non_parametric_inference(
@@ -1145,7 +1139,7 @@ def test_non_parametric_inference_contrast_formula(
     )
 
 
-def test_non_parametric_inference_contrast_computation_errors(tmp_path):
+def test_non_parametric_inference_contrast_computation_errors(rng, tmp_path):
     func_img, mask = fake_fmri_data(file_path=tmp_path)
 
     # asking for contrast before model fit gives error
@@ -1187,7 +1181,6 @@ def test_non_parametric_inference_contrast_computation_errors(tmp_path):
 
     # check that passing no explicit contrast when the design
     # matrix has more than one columns raises an error
-    rng = np.random.RandomState(42)
     X = pd.DataFrame(rng.uniform(size=(4, 2)), columns=["r1", "r2"])
     with pytest.raises(
         ValueError, match="No second-level contrast is specified."

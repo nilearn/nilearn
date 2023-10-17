@@ -140,9 +140,8 @@ def test_transform_and_fit_errors(canica_data, mask_img):
         canica.fit()
 
 
-def test_percentile_range(canica_data):
+def test_percentile_range(rng, canica_data):
     """Test that a warning is given when thresholds are stressed."""
-    rng = np.random.RandomState(0)
     edge_case = rng.randint(low=1, high=10)
 
     # stess thresholding via edge case

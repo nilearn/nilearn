@@ -362,8 +362,7 @@ def test_lasso_vs_graph_net():
     assert_almost_equal(graph_net_perf, lasso_perf, decimal=3)
 
 
-def test_crop_mask():
-    rng = np.random.RandomState(42)
+def test_crop_mask(rng):
     mask = np.zeros((3, 4, 5), dtype=bool)
     box = mask[:2, :3, :4]
     box[rng.rand(*box.shape) < 3.0] = 1  # mask covers 30% of brain
@@ -377,9 +376,8 @@ def test_crop_mask():
 
 @pytest.mark.parametrize("is_classif", IS_CLASSIF)
 def test_univariate_feature_screening(
-    is_classif, dim=(11, 12, 13), n_samples=10
+    rng, is_classif, dim=(11, 12, 13), n_samples=10
 ):
-    rng = np.random.RandomState(42)
     mask = rng.rand(*dim) > 100.0 / np.prod(dim)
 
     assert mask.sum() >= 100.0

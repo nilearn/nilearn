@@ -78,9 +78,7 @@ def _make_binary_classification_test_data(n_samples=N_SAMPLES):
     return X, y, mask
 
 
-@pytest.fixture(scope="session")
-def rand_X_Y():
-    rng = np.random.RandomState(0)
+def rand_X_Y(rng):
     X = rng.rand(N_SAMPLES, 10)
     Y = np.hstack([[-1] * 50, [1] * 50])
     return X, Y
@@ -148,12 +146,11 @@ def multiclass_data():
         (LassoCV(), ["n_alphas"]),
     ],
 )
-def test_check_param_grid_regression(regressor, param):
+def test_check_param_grid_regression(rng, regressor, param):
     """Test several estimators.
 
     Each one with its specific regularization parameter.
     """
-    rng = np.random.RandomState(0)
     X = rng.rand(N_SAMPLES, 10)
     Y = rng.rand(N_SAMPLES)
 
@@ -568,19 +565,17 @@ def test_decoder_binary_classification_clustering(
 
 @pytest.mark.parametrize("cv", [KFold(n_splits=5), LeaveOneGroupOut()])
 def test_decoder_binary_classification_cross_validation(
-    binary_classification_data, cv
+    rng, binary_classification_data, cv
 ):
     X, y, mask = binary_classification_data
 
     # check cross-validation scheme and fit attribute with groups enabled
-    rand_local = np.random.RandomState(42)
-
     model = Decoder(
         estimator="svc", mask=mask, standardize="zscore_sample", cv=cv
     )
     groups = None
     if isinstance(cv, LeaveOneGroupOut):
-        groups = rand_local.binomial(2, 0.3, size=len(y))
+        groups = rng.binomial(2, 0.3, size=len(y))
     model.fit(X, y, groups=groups)
     y_pred = model.predict(X)
 
@@ -892,19 +887,17 @@ def test_decoder_multiclass_classification_clustering(
 
 @pytest.mark.parametrize("cv", [KFold(n_splits=5), LeaveOneGroupOut()])
 def test_decoder_multiclass_classification_cross_validation(
-    multiclass_data, cv
+    rng, multiclass_data, cv
 ):
     X, y, mask = multiclass_data
 
     # check cross-validation scheme and fit attribute with groups enabled
-    rand_local = np.random.RandomState(42)
-
     model = Decoder(
         estimator="svc", mask=mask, standardize="zscore_sample", cv=cv
     )
     groups = None
     if isinstance(cv, LeaveOneGroupOut):
-        groups = rand_local.binomial(2, 0.3, size=len(y))
+        groups = rng.binomial(2, 0.3, size=len(y))
     model.fit(X, y, groups=groups)
     y_pred = model.predict(X)
 
@@ -983,10 +976,9 @@ def test_decoder_multiclass_error_incorrect_cv(multiclass_data):
             model.fit(X, y)
 
 
-def test_decoder_multiclass_warnings(multiclass_data):
+def test_decoder_multiclass_warnings(rng, multiclass_data):
     X, y, _ = multiclass_data
-    rand_local = np.random.RandomState(42)
-    groups = rand_local.binomial(2, 0.3, size=len(y))
+    groups = rng.binomial(2, 0.3, size=len(y))
 
     # Check whether decoder raised warning when groups is set to specific
     # value but CV Splitter is not set
