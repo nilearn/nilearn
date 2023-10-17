@@ -246,7 +246,9 @@ def test_standardize(rng):
         nisignal._standardize(a, standardize="foo")
 
     # test warning for strategy that will be removed
-    with pytest.warns(FutureWarning, match="default strategy for standardize"):
+    with pytest.warns(
+        DeprecationWarning, match="default strategy for standardize"
+    ):
         nisignal._standardize(a, standardize="zscore")
 
     # transpose array to fit _standardize input.

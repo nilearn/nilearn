@@ -71,7 +71,7 @@ def _warn_deprecated_params(replacement_params, end_version, lib_name, kwargs):
             f'The parameter "{deprecated_param_}" '
             f'will be removed in {end_version} release of {lib_name}. '
             f'Please use the parameter "{replacement_param}" instead.')
-        warnings.warn(category=FutureWarning,
+        warnings.warn(category=DeprecationWarning,
                       message=param_deprecation_msg,
                       stacklevel=3)
 
