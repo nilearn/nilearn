@@ -250,29 +250,32 @@ def test_check_shape_first_level_models():
 
 
 def test_check_second_level_input():
+    with pytest.raises(TypeError, match="second_level_input must be"):
+        _check_second_level_input(1, None)
+
     with pytest.raises(
         TypeError,
         match="A second level model requires a list with at "
         "least two first level models or niimgs",
     ):
         _check_second_level_input([FirstLevelModel()], pd.DataFrame())
+
     with pytest.raises(
-        ValueError, match="Model sub_1 at index 0 has not been fit yet"
+        TypeError, match="Got object type <class 'int'> at idx 1"
     ):
-        _check_second_level_input(
-            [FirstLevelModel(subject_label=f"sub_{i}") for i in range(1, 3)],
-            pd.DataFrame(),
-        )
+        _check_second_level_input(["foo", 1], pd.DataFrame())
 
     shapes, rk = [(7, 8, 9, 15)], 3
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk
     )
+
     input_models = [
         FirstLevelModel(mask_img=mask).fit(
             fmri_data[0], design_matrices=design_matrices[0]
         )
     ]
+
     obj = lambda: None  # noqa : E731
     obj.results_ = "foo"
     obj.labels_ = "bar"
@@ -281,27 +284,19 @@ def test_check_second_level_input():
         TypeError, match="Got object type <class 'function'> at idx 1"
     ):
         _check_second_level_input(input_models + [obj], pd.DataFrame())
+
+
+def test_check_second_level_input_unfit_model():
     with pytest.raises(
-        ValueError,
-        match="In case confounds are provided, first level "
-        "objects need to provide the attribute 'subject_label'",
+        ValueError, match="Model sub_1 at index 0 has not been fit yet"
     ):
         _check_second_level_input(
-            input_models * 2, pd.DataFrame(), confounds=pd.DataFrame()
+            [FirstLevelModel(subject_label=f"sub_{i}") for i in range(1, 3)],
+            pd.DataFrame(),
         )
-    with pytest.raises(
-        ValueError,
-        match="List of niimgs as second_level_input "
-        "require a design matrix to be provided",
-    ):
-        _check_second_level_input(fmri_data * 2, None)
 
-    _check_second_level_input(fmri_data[0], pd.DataFrame())
 
-    with pytest.raises(
-        TypeError, match="Got object type <class 'int'> at idx 1"
-    ):
-        _check_second_level_input(["foo", 1], pd.DataFrame())
+def test_check_second_level_input_dataframe():
     with pytest.raises(
         ValueError,
         match="second_level_input DataFrame must have columns "
@@ -310,6 +305,7 @@ def test_check_second_level_input():
         _check_second_level_input(
             pd.DataFrame(columns=["foo", "bar"]), pd.DataFrame()
         )
+
     with pytest.raises(
         ValueError, match="subject_label column must contain only strings"
     ):
@@ -323,16 +319,48 @@ def test_check_second_level_input():
             ),
             pd.DataFrame(),
         )
+
+
+def test_check_second_level_input_confounds():
+    shapes, rk = [(7, 8, 9, 15)], 3
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes, rk
+    )
+
+    input_models = [
+        FirstLevelModel(mask_img=mask).fit(
+            fmri_data[0], design_matrices=design_matrices[0]
+        )
+    ]
+
+    with pytest.raises(
+        ValueError,
+        match="In case confounds are provided, first level "
+        "objects need to provide the attribute 'subject_label'",
+    ):
+        _check_second_level_input(
+            input_models * 2, pd.DataFrame(), confounds=pd.DataFrame()
+        )
+
+
+def test_check_second_level_input_design_matrix():
+    shapes, rk = [(7, 8, 9, 15)], 3
+    _, fmri_data, _ = generate_fake_fmri_data_and_design(shapes, rk)
+
+    _check_second_level_input(fmri_data[0], pd.DataFrame())
+
+    with pytest.raises(
+        ValueError,
+        match="List of niimgs as second_level_input "
+        "require a design matrix to be provided",
+    ):
+        _check_second_level_input(fmri_data * 2, None)
     with pytest.raises(
         ValueError,
         match="List of niimgs as second_level_input "
         "require a design matrix to be provided",
     ):
         _check_second_level_input(fmri_data[0], None)
-    with pytest.raises(TypeError, match="second_level_input must be"):
-        _check_second_level_input(1, None)
-    with pytest.raises(TypeError, match="second_level_input must be"):
-        _check_second_level_input(1, None)
 
 
 def test_check_output_type():
