@@ -2,6 +2,8 @@
 
 Author: Bertrand Thirion, 2011--2015
 """
+from warnings import warn
+
 import numpy as np
 from nibabel.onetime import auto_attr
 from scipy.linalg import inv
@@ -196,11 +198,20 @@ class LikelihoodModelResults:
             matrix = matrix[None]
         if matrix.shape[0] != 1:
             raise ValueError("t contrasts should have only one row")
-        if matrix.shape[1] != self.theta.shape[0]:
+        if matrix.shape[1] > self.theta.shape[0]:
             raise ValueError(
-                f"t contrasts should be length P={self.theta.shape[0]}, "
-                f"but this is length {matrix.shape[1]}"
+                f"t contrasts should be of length P={self.theta.shape[0]}, "
+                f"but it has length {matrix.shape[1]}."
             )
+        elif matrix.shape[1] < self.theta.shape[0]:
+            warn(
+                f"t contrasts should be of length P={self.theta.shape[0]}, "
+                f"but it has length {matrix.shape[1]}. "
+                "The rest of the contrast was padded with zeros."
+            )
+            padding = np.zeros((1, self.theta.shape[0] - matrix.shape[1]))
+            matrix = np.hstack((matrix, padding))
+
         store = set(store)
         if not store.issubset(("t", "effect", "sd")):
             raise ValueError(f"Unexpected store request in {store}")

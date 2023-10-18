@@ -98,6 +98,7 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
             resl = regression_result[label_].Tcontrast(con_val)
             effect_[:, label_mask] = resl.effect.T
             var_[label_mask] = (resl.sd**2).T
+
     elif contrast_type == "F":
         from scipy.linalg import sqrtm
 
@@ -106,6 +107,21 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
         for label_ in regression_result:
             label_mask = labels == label_
             reg = regression_result[label_]
+            if con_val.shape[1] > reg.theta.shape[0]:
+                raise ValueError(
+                    f"F contrasts should have {reg.theta.shape[0]} columns, "
+                    f"but it has {con_val.shape[1]}."
+                )
+            elif con_val.shape[1] < reg.theta.shape[0]:
+                warn(
+                    f"F contrasts should have {reg.theta.shape[0]} colmuns, "
+                    f"but it has only {con_val.shape[1]}. "
+                    "The rest of the contrast was padded with zeros."
+                )
+                padding = np.zeros(
+                    (con_val.shape[0], reg.theta.shape[0] - con_val.shape[1])
+                )
+                con_val = np.hstack((con_val, padding))
             cbeta = np.atleast_2d(np.dot(con_val, reg.theta))
             invcov = np.linalg.inv(
                 np.atleast_2d(reg.vcov(matrix=con_val, dispersion=1.0))
