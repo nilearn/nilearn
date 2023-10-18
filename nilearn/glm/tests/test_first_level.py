@@ -479,13 +479,7 @@ def test_glm_AR_estimates(rng, ar_vals):
 
 def test_glm_AR_estimates_errors(rng):
     """Test Yule-Walker errors."""
-    (
-        n,
-        p,
-    ) = (
-        1,
-        500,
-    )
+    (n, p) = (1, 500)
     Y_orig = rng.randn(p, n)
 
     with pytest.raises(TypeError, match="AR order must be an integer"):
