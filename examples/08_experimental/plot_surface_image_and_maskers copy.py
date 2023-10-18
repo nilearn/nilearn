@@ -108,7 +108,7 @@ def monkeypatch_masker_checks():
     def adjust_screening_percentile(screening_percentile, *args, **kwargs):
         return screening_percentile
 
-    param_validation.adjust_screening_percentile = adjust_screening_percentile
+    param_validation._adjust_screening_percentile = adjust_screening_percentile
 
     def check_embedded_nifti_masker(estimator, *args, **kwargs):
         return estimator.mask
@@ -135,38 +135,4 @@ decoder.fit(img, y)
 print("CV scores:", decoder.cv_scores_)
 
 plot_surf_img(decoder.coef_img_[0], threshold=1e-6)
-plotting.show()
-
-# %%##
-# Decoding with a scikit-learn `Pipeline`
-# ---------------------------------------
-import numpy as np
-from sklearn import feature_selection, linear_model, pipeline, preprocessing
-
-from nilearn import plotting
-
-img = surface.fetch_nki()[0]
-y = np.random.RandomState(0).normal(size=img.shape[0])
-
-decoder = pipeline.make_pipeline(
-    surface.SurfaceMasker(),
-    preprocessing.StandardScaler(),
-    feature_selection.SelectKBest(
-        score_func=feature_selection.f_regression, k=500
-    ),
-    linear_model.Ridge(),
-)
-decoder.fit(img, y)
-
-coef_img = decoder[:-1].inverse_transform(np.atleast_2d(decoder[-1].coef_))
-
-
-vmax = max([np.absolute(dp).max() for dp in coef_img.data.values()])
-plot_surf_img(
-    coef_img,
-    cmap="cold_hot",
-    vmin=-vmax,
-    vmax=vmax,
-    threshold=1e-6,
-)
 plotting.show()
