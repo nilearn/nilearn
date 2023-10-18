@@ -19,5 +19,7 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-primary:`Doc` Add backslash to homogenize nilearn.regions.Parcellations.html documentation (:gh:`4042` by `Nikhil Krish`_).
+
 Changes
 -------

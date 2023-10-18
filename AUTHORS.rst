@@ -148,6 +148,7 @@ Some other past or present contributors are:
 * `Natasha Clarke`_: @SIMEXP, Montréal, Canada
 * `Neelay Shah`_: Max Planck Institute for Intelligent Systems, Germany
 * `Nicolas Gensollen`_: Inria, Paris, France
+* `Nikhil Krish`_: University of Texas, Austin
 * `Oliver Warrington`_: Wellcome Centre for Human Neuroimaging, UCL, London, UK
 * `Oscar Esteban`_: Centre Hospitalier Universitaire Vaudoise, Lausanne, Switzerland
 * `Patrick Sadil`_: Department of Biostatistics, Johns Hopkins Bloomberg School of Public Health, USA
