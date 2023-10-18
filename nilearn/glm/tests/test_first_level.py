@@ -1,3 +1,4 @@
+import itertools
 import os
 import unittest.mock
 import warnings
@@ -126,7 +127,6 @@ def test_explicit_fixed_effects(tmp_path):
         fixed_fx_contrast,
         fixed_fx_variance,
         fixed_fx_stat,
-        # fixed_fx_z,
     ) = compute_fixed_effects(contrasts, variance, mask)
 
     assert_almost_equal(
@@ -149,8 +149,6 @@ def test_explicit_fixed_effects(tmp_path):
         ValueError, match="degrees of freedom .* differs .* contrast images"
     ):
         compute_fixed_effects(contrasts, variance, mask, dofs=[100])
-
-    del mask, multi_session_model
 
 
 def test_explicit_fixed_effects_without_mask(tmp_path):
@@ -185,7 +183,7 @@ def test_explicit_fixed_effects_without_mask(tmp_path):
         fixed_fx_contrast,
         fixed_fx_variance,
         fixed_fx_stat,
-        fixed_fx_z,
+        _,
     ) = compute_fixed_effects(contrasts, variance, return_z_score=True)
     assert_almost_equal(
         get_data(fixed_fx_contrast), get_data(fixed_fx_dic["effect_size"])
@@ -379,13 +377,13 @@ def test_compute_contrast_num_contrasts():
         multi_session_model.compute_contrast([np.eye(rk)[1]])
 
 
-def test_run_glm(rng):
-    # TODO split into multiple tests
+def test_run_glm_ols(rng):
+    # Ordinary Least Squares case
     n, p, q = 33, 80, 10
     X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
 
-    # Ordinary Least Squares case
     labels, results = run_glm(Y, X, "ols")
+
     assert_array_equal(labels, np.zeros(n))
     assert list(results.keys()) == [0.0]
     assert results[0.0].theta.shape == (q, n)
@@ -393,26 +391,43 @@ def test_run_glm(rng):
     assert_almost_equal(results[0.0].theta.var(), 1.0 / p, 1)
     assert isinstance(results[labels[0]].model, OLSModel)
 
+
+def test_run_glm_ar1(rng):
     # ar(1) case
+    n, p, q = 33, 80, 10
+    X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
+
     labels, results = run_glm(Y, X, "ar1")
+
     assert len(labels) == n
     assert len(results.keys()) > 1
-    tmp = sum([val.theta.shape[1] for val in results.values()])
+    tmp = sum(val.theta.shape[1] for val in results.values())
     assert tmp == n
     assert results[labels[0]].model.order == 1
     assert isinstance(results[labels[0]].model, ARModel)
 
+
+def test_run_glm_ar3(rng):
     # ar(3) case
+    n, p, q = 33, 80, 10
+    X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
+
     labels_ar3, results_ar3 = run_glm(Y, X, "ar3", bins=10)
+
     assert len(labels_ar3) == n
     assert len(results_ar3.keys()) > 1
-    tmp = sum([val.theta.shape[1] for val in results_ar3.values()])
+    tmp = sum(val.theta.shape[1] for val in results_ar3.values())
     assert tmp == n
     assert isinstance(results_ar3[labels_ar3[0]].model, ARModel)
     assert results_ar3[labels_ar3[0]].model.order == 3
     assert len(results_ar3[labels_ar3[0]].model.rho) == 3
 
-    # Check correct errors are thrown for nonsense noise model requests
+
+def test_run_glm_errors(rng):
+    """Check correct errors are thrown for nonsense noise model requests."""
+    n, p, q = 33, 80, 10
+    X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
+
     with pytest.raises(ValueError):
         run_glm(Y, X, "ar0")
     with pytest.raises(ValueError):
@@ -427,43 +442,57 @@ def test_run_glm(rng):
         run_glm(Y, X, "3ar")
 
 
-def test_glm_AR_estimates(rng):
+@pytest.mark.parametrize(
+    "ar_vals", [[-0.2], [-0.2, -0.5], [-0.2, -0.5, -0.7, -0.3]]
+)
+def test_glm_AR_estimates(rng, ar_vals):
     """Test that Yule-Walker AR fits are correct."""
     n, p, q = 1, 500, 2
     X_orig = rng.randn(p, q)
     Y_orig = rng.randn(p, n)
 
-    for ar_vals in [[-0.2], [-0.2, -0.5], [-0.2, -0.5, -0.7, -0.3]]:
-        ar_order = len(ar_vals)
-        ar_arg = "ar" + str(ar_order)
+    ar_order = len(ar_vals)
+    ar_arg = f"ar{ar_order}"
 
-        X = X_orig.copy()
-        Y = Y_orig.copy()
+    X = X_orig.copy()
+    Y = Y_orig.copy()
 
-        for idx in range(1, len(Y)):
-            for lag in range(ar_order):
-                Y[idx] += ar_vals[lag] * Y[idx - 1 - lag]
+    for idx, lag in itertools.product(range(1, len(Y)), range(ar_order)):
+        Y[idx] += ar_vals[lag] * Y[idx - 1 - lag]
 
-        # Test using run_glm
-        labels, results = run_glm(Y, X, ar_arg, bins=100)
-        assert len(labels) == n
-        for lab in results.keys():
-            ar_estimate = lab.split("_")
-            for lag in range(ar_order):
-                assert_almost_equal(
-                    float(ar_estimate[lag]), ar_vals[lag], decimal=1
-                )
+    # Test using run_glm
+    labels, results = run_glm(Y, X, ar_arg, bins=100)
 
-        # Test using _yule_walker
-        yw = _yule_walker(Y.T, ar_order)
-        assert_almost_equal(yw[0], ar_vals, decimal=1)
+    assert len(labels) == n
 
-    # TODO extract into separate test
-    with pytest.raises(TypeError):
+    for lab in results.keys():
+        ar_estimate = lab.split("_")
+        for lag in range(ar_order):
+            assert_almost_equal(
+                float(ar_estimate[lag]), ar_vals[lag], decimal=1
+            )
+
+    # Test using _yule_walker
+    yw = _yule_walker(Y.T, ar_order)
+    assert_almost_equal(yw[0], ar_vals, decimal=1)
+
+
+def test_glm_AR_estimates_errors(rng):
+    """Test Yule-Walker errors."""
+    (
+        n,
+        p,
+    ) = (
+        1,
+        500,
+    )
+    Y_orig = rng.randn(p, n)
+
+    with pytest.raises(TypeError, match="AR order must be an integer"):
         _yule_walker(Y_orig, 1.2)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="AR order must be positive"):
         _yule_walker(Y_orig, 0)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="AR order must be positive"):
         _yule_walker(Y_orig, -2)
     with pytest.raises(TypeError, match="at least 1 dim"):
         _yule_walker(np.array(0.0), 2)
@@ -1750,7 +1779,7 @@ def test_first_level_from_bids_deprecated_slice_time_default(bids_dataset):
 def test_slice_time_ref_warning_only_when_not_provided(bids_dataset):
     # catch all warnings
     with pytest.warns() as record:
-        models, m_imgs, m_events, m_confounds = first_level_from_bids(
+        first_level_from_bids(
             dataset_path=bids_dataset,
             task_label="main",
             space_label="MNI",

@@ -172,6 +172,7 @@ def test_process_second_level_input_as_firstlevelmodels():
         sample_map,
         subjects_label,
     ) = _process_second_level_input_as_firstlevelmodels(list_of_flm)
+
     assert subjects_label == [f"sub-{i}" for i in range(3)]
     assert isinstance(sample_map, Nifti1Image)
     assert sample_map.shape == (7, 8, 9, 1)
@@ -203,6 +204,7 @@ def test_check_affine_first_level_models(affine_eye):
             fmri_data[0], design_matrices=design_matrices[0]
         )
     )
+
     with pytest.raises(
         ValueError, match="All first level models must have the same affine"
     ):
@@ -238,6 +240,7 @@ def test_check_shape_first_level_models():
             fmri_data[0], design_matrices=design_matrices[0]
         )
     )
+
     with pytest.raises(
         ValueError, match="All first level models must have the same shape"
     ):
@@ -292,6 +295,7 @@ def test_check_second_level_input():
         "require a design matrix to be provided",
     ):
         _check_second_level_input(fmri_data * 2, None)
+
     _check_second_level_input(fmri_data[0], pd.DataFrame())
 
     with pytest.raises(
@@ -666,6 +670,7 @@ def test_fmri_inputs_errors(tmp_path):
         ["03", "a", FUNCFILE],
     ]
     niidf = pd.DataFrame(dfrows, columns=dfcols)
+
     with pytest.raises(TypeError, match="second_level_input must be"):
         SecondLevelModel().fit(niidf["subject_label"])
 
