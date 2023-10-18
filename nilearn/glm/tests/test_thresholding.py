@@ -24,10 +24,6 @@ def test_fdr(rng):
 
     assert_almost_equal(fdr_threshold(x, 0.1), norm.isf(0.0005))
     assert fdr_threshold(x, 0.001) == np.infty
-    with pytest.raises(ValueError):
-        fdr_threshold(x, -0.1)
-    with pytest.raises(ValueError):
-        fdr_threshold(x, 1.5)
 
     # addresses #2879
     n = 10
@@ -35,6 +31,19 @@ def test_fdr(rng):
     pvals[0] = 0.007
 
     assert np.isfinite(fdr_threshold(norm.isf(pvals), 0.1))
+
+
+def test_fdr_error(rng):
+    n = 100
+    x = np.linspace(0.5 / n, 1.0 - 0.5 / n, n)
+    x[:10] = 0.0005
+    x = norm.isf(x)
+    rng.shuffle(x)
+
+    with pytest.raises(ValueError):
+        fdr_threshold(x, -0.1)
+    with pytest.raises(ValueError):
+        fdr_threshold(x, 1.5)
 
 
 @pytest.fixture

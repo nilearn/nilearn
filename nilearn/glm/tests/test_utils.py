@@ -29,50 +29,55 @@ def test_full_rank(rng):
     n, p = 10, 5
     X = rng.standard_normal(size=(n, p))
     X_, _ = full_rank(X)
+
     assert_array_almost_equal(X, X_)
+
     X[:, -1] = X[:, :-1].sum(1)
     X_, cond = full_rank(X)
+
     assert cond > 1.0e10
     assert_array_almost_equal(X, X_)
 
 
 def test_z_score_t_values(rng):
     # Randomly draw samples from the standard Student’s t distribution
-    tval = rng.standard_t(10, size=10)
+    t_val = rng.standard_t(10, size=10)
     # Estimate the p-values using the Survival Function (SF)
-    pval = sps.t.sf(tval, 1e10)
+    p_val = sps.t.sf(t_val, 1e10)
     # Estimate the p-values using the Cumulative Distribution Function (CDF)
-    cdfval = sps.t.cdf(tval, 1e10)
+    cdf_val = sps.t.cdf(t_val, 1e10)
     # Set a minimum threshold for p-values to avoid infinite z-scores
-    pval = np.array(np.minimum(np.maximum(pval, 1.0e-300), 1.0 - 1.0e-16))
-    cdfval = np.array(np.minimum(np.maximum(cdfval, 1.0e-300), 1.0 - 1.0e-16))
+    p_val = np.array(np.minimum(np.maximum(p_val, 1.0e-300), 1.0 - 1.0e-16))
+    cdf_val = np.array(
+        np.minimum(np.maximum(cdf_val, 1.0e-300), 1.0 - 1.0e-16)
+    )
     # Compute z-score from the p-value estimated with the SF
-    zval_sf = norm.isf(pval)
+    z_val_sf = norm.isf(p_val)
     # Compute z-score from the p-value estimated with the CDF
-    zval_cdf = norm.ppf(cdfval)
+    z_val_cdf = norm.ppf(cdf_val)
     # Create the final array of z-scores, ...
-    zval = np.zeros(pval.size)
+    z_val = np.zeros(p_val.size)
     # ... in which z-scores < 0 estimated w/ SF are replaced by z-scores < 0
     # estimated w/ CDF
-    zval[np.atleast_1d(zval_sf < 0)] = zval_cdf[zval_sf < 0]
+    z_val[np.atleast_1d(z_val_sf < 0)] = z_val_cdf[z_val_sf < 0]
     # ... and z-scores >=0 estimated from SF are kept.
-    zval[np.atleast_1d(zval_sf >= 0)] = zval_sf[zval_sf >= 0]
+    z_val[np.atleast_1d(z_val_sf >= 0)] = z_val_sf[z_val_sf >= 0]
 
     # Test 'z_score' function in 'nilearn/glm/contrasts.py'
-    assert_array_almost_equal(z_score(pval, one_minus_pvalue=cdfval), zval)
+    assert_array_almost_equal(z_score(p_val, one_minus_pvalue=cdf_val), z_val)
 
     # Test 'z_score' function in 'nilearn/glm/contrasts.py',
     # when one_minus_pvalue is None
-    assert_array_almost_equal(norm.sf(z_score(pval)), pval)
+    assert_array_almost_equal(norm.sf(z_score(p_val)), p_val)
 
 
 def test_z_score_f_values(rng):
     # Randomly draw samples from the F distribution
-    fval = rng.f(1, 48, size=10)
+    f_val = rng.f(1, 48, size=10)
     # Estimate the p-values using the Survival Function (SF)
-    p_val = sps.f.sf(fval, 42, 1e10)
+    p_val = sps.f.sf(f_val, 42, 1e10)
     # Estimate the p-values using the Cumulative Distribution Function (CDF)
-    cdf_val = sps.f.cdf(fval, 42, 1e10)
+    cdf_val = sps.f.cdf(f_val, 42, 1e10)
     # Set a minimum threshold for p-values to avoid infinite z-scores
     p_val = np.array(np.minimum(np.maximum(p_val, 1.0e-300), 1.0 - 1.0e-16))
     cdf_val = np.array(
@@ -141,6 +146,7 @@ def test_z_score_opposite_contrast(rng):
         z_map_seed2_vs_seed1 = fmri_glm.compute_contrast(
             contrasts["seed2 - seed1"], output_type="z_score"
         )
+
         assert_almost_equal(
             z_map_seed1_vs_seed2.get_fdata(dtype="float32").min(),
             -z_map_seed2_vs_seed1.get_fdata(dtype="float32").max(),
@@ -233,7 +239,7 @@ def test_pos_recipr():
     # check that lists have arrived
     XL = [0, 1, -1]
 
-    assert_array_almost_equal, positive_reciprocal(XL), [0, 1, 0]
+    assert_array_almost_equal(positive_reciprocal(XL), [0, 1, 0])
     # scalars
     assert positive_reciprocal(-1) == 0
     assert positive_reciprocal(0) == 0
