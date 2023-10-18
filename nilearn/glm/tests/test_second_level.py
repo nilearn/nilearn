@@ -623,7 +623,6 @@ def test_fmri_inputs(tmp_path, rng):
     sdes = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
 
     # smoke tests with correct input
-
     flms = [flm, flm, flm]
 
     # First level models as input
@@ -632,6 +631,35 @@ def test_fmri_inputs(tmp_path, rng):
     # Note : the following one creates a singular design matrix
     SecondLevelModel().fit(flms, confounds)
     SecondLevelModel().fit(flms, None, sdes)
+
+    # niimgs as input
+    niimgs = [FUNCFILE, FUNCFILE, FUNCFILE]
+    SecondLevelModel().fit(niimgs, None, sdes)
+
+    # 4d niimg as input
+    niimg_4d = concat_imgs(niimgs)
+    SecondLevelModel().fit(niimg_4d, None, sdes)
+
+
+def test_fmri_inputs_dataframes_as_input(tmp_path, rng):
+    # Test processing of FMRI inputs
+    # prepare fake data
+    p, q = 80, 10
+    X = rng.standard_normal(size=(p, q))
+    shapes = ((7, 8, 9, 10),)
+
+    # prepare correct input dataframe and lists
+    shapes = (SHAPE,)
+    _, FUNCFILE, _ = write_fake_fmri_data_and_design(
+        shapes, file_path=tmp_path
+    )
+    FUNCFILE = FUNCFILE[0]
+
+    confounds = pd.DataFrame(
+        [["01", 1], ["02", 2], ["03", 3]],
+        columns=["subject_label", "conf1"],
+    )
+    sdes = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
 
     # dataframes as input
     dfcols = ["subject_label", "map_name", "effects_map_path"]
@@ -646,14 +674,6 @@ def test_fmri_inputs(tmp_path, rng):
     SecondLevelModel().fit(niidf, confounds)
     SecondLevelModel().fit(niidf, confounds, sdes)
     SecondLevelModel().fit(niidf, None, sdes)
-
-    # niimgs as input
-    niimgs = [FUNCFILE, FUNCFILE, FUNCFILE]
-    SecondLevelModel().fit(niimgs, None, sdes)
-
-    # 4d niimg as input
-    niimg_4d = concat_imgs(niimgs)
-    SecondLevelModel().fit(niimg_4d, None, sdes)
 
 
 def test_fmri_inputs_errors(tmp_path):
