@@ -414,8 +414,7 @@ Code inside ``maskers._validation.py``:
           to make it part of the maskers module's public API
           """
 
-
-      return _check_mask_shape(mask_img) and _check_mask_values(mask_img)
+          return _check_mask_shape(mask_img) and _check_mask_values(mask_img)
 
 
       def _check_mask_shape(mask_img):
@@ -433,19 +432,17 @@ Code inside ``maskers._validation.py``:
       class _Validator:
           """Private internal of the _validation module"""
 
+          def validate(self, img):
+              """Public API of _Validator"""
 
-      def validate(self, img):
-          """Public API of _Validator"""
+          def _validate_shape(self, img):
+              """Private internal of the _Validator class.
 
+              As we don't use the double leading underscore in nilearn we
+              cannot infer from the name alone if it is considered to be
+              exposed to subclasses or not.
 
-      def _validate_shape(self, img):
-          """Private internal of the _Validator class.
-
-          As we don't use the double leading underscore in nilearn we cannot
-          infer from the name alone if it is considered to be exposed to
-          subclasses or not.
-
-          """
+              """
 
 ..
       Source: Jerome Dockes https://github.com/nilearn/nilearn/issues/3628#issuecomment-1515211711
@@ -839,9 +836,9 @@ functions that return fake data.
 
 Exactly what fake data is returned can be configured through the object
 returned by the ``request_mocker`` pytest fixture, defined in
-``nilearn.datasets._testing``. The docstrings of this module and the ``Sender``
-class it contains provide information on how to write a test using this fixture.
-Existing tests can also serve as examples.
+``nilearn.datasets.tests._testing``. The docstrings of this module and the
+``Sender`` class it contains provide information on how to write a test using
+this fixture. Existing tests can also serve as examples.
 
 Maintenance
 =================

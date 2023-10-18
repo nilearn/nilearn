@@ -78,18 +78,19 @@ def test_cbar_tick_format(plot_func, img_3d_mni, cbar_tick_format, tmp_path):
     plt.close()
 
 
-@pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_4D)
-def test_plot_functions_4d_default_params(
-    plot_func, img_3d_mni, testdata_4d_for_plotting, tmp_path
-):
-    """Smoke-test for 4D plotting functions with default arguments."""
-    filename = tmp_path / "temp.png"
-    kwargs = {"output_file": filename}
-    if plot_func == plot_carpet:
-        kwargs["mask_img"] = testdata_4d_for_plotting["img_mask"]
-    else:
-        kwargs["bg_img"] = img_3d_mni
-    plot_func(testdata_4d_for_plotting["img_4d"], **kwargs)
+def test_plot_carpet_default_params(img_4d_mni, img_3d_ones_mni, tmp_path):
+    """Smoke-test for 4D plot_carpet with default arguments."""
+    plot_carpet(
+        img_4d_mni, mask_img=img_3d_ones_mni, output_file=tmp_path / "temp.png"
+    )
+    plt.close()
+
+
+def test_plot_prob_atlas_default_params(img_3d_mni, img_4d_mni, tmp_path):
+    """Smoke-test for plot_prob_atlas with default arguments."""
+    plot_prob_atlas(
+        img_4d_mni, bg_img=img_3d_mni, output_file=tmp_path / "temp.png"
+    )
     plt.close()
 
 
@@ -109,7 +110,7 @@ def test_plot_functions_mosaic_mode(plot_func, cut_coords, img_3d_mni):
 
 
 @pytest.mark.parametrize("plot_func", [plot_stat_map, plot_glass_brain])
-def test_plot_threshold_for_uint8(plot_func):
+def test_plot_threshold_for_uint8(affine_eye, plot_func):
     """Mask was applied in [-threshold, threshold] which is problematic
     for uint8 data. See https://github.com/nilearn/nilearn/issues/611
     for more details.
@@ -121,8 +122,7 @@ def test_plot_threshold_for_uint8(plot_func):
         data[0, 0, 0] = 0
     else:
         data[0, 0] = 0
-    affine = np.eye(4)
-    img = Nifti1Image(data, affine)
+    img = Nifti1Image(data, affine_eye)
     threshold = np.array(5, dtype="uint8")
     kwargs = {"threshold": threshold, "display_mode": "z"}
     if plot_func == plot_stat_map:

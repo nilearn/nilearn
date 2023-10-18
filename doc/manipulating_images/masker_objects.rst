@@ -56,7 +56,7 @@ have to call :ref:`specific functions <preprocessing_functions>`
 .. topic:: **Advanced: Design philosophy of "Maskers"**
 
     The design of these classes is similar to `scikit-learn
-    <http://scikit-learn.org>`_\ 's transformers. First, objects are
+    <https://scikit-learn.org>`_\ 's transformers. First, objects are
     initialized with some parameters guiding the transformation
     (unrelated to the data). Then the `fit()` method should be called,
     possibly specifying some data-related information (such as number of
@@ -74,7 +74,7 @@ have to call :ref:`specific functions <preprocessing_functions>`
 ==========================================================
 
 :class:`NiftiMasker` is a powerful tool to load images and
-extract voxel signals in the area defined by the mask.
+extract :term:`voxel` signals in the area defined by the mask.
 It applies some basic preprocessing
 steps with commonly used parameters as defaults.
 But it is *very important* to look at your data to see the effects
@@ -83,9 +83,9 @@ of the preprocessings and validate them.
 .. topic:: **Advanced: scikit-learn Pipelines**
 
     :class:`NiftiMasker` is a `scikit-learn
-    <http://scikit-learn.org>`_ compliant
+    <https://scikit-learn.org>`_ compliant
     transformer so that you can directly plug it into a `scikit-learn
-    pipeline <http://scikit-learn.org/stable/modules/pipeline.html>`_.
+    pipeline <https://scikit-learn.org/stable/modules/pipeline.html>`_.
 
 
 Custom data loading: loading only the first 100 time points
@@ -101,7 +101,7 @@ slice and create a :ref:`Niimg <niimg>` in memory:
 
 
 .. literalinclude:: ../../examples/06_manipulating_images/plot_mask_computation.py
-    :start-after: Load movie watching based brain development fmri dataset
+    :start-after: Load movie watching based brain development fMRI dataset
     :end-before: # To display the background
 
 Controlling how the mask is computed from the data
@@ -151,7 +151,7 @@ opened in a new browser tab using ``report.open_in_browser()``,
 or saved as a portable HTML file ``report.save_as_html(output_filepath)``.
 
 .. literalinclude:: ../../examples/06_manipulating_images/plot_mask_computation.py
-    :start-after: # We need to specify an 'epi' mask_strategy, as this is raw EPI data
+    :start-after: # We need to specify an 'epi' mask_strategy, as this is raw :term:`EPI` data
     :end-before: # Generate mask with strong opening
 
 .. figure:: /images/niftimasker_report.png
@@ -164,10 +164,10 @@ Different masking strategies
 The ``mask_strategy`` argument controls how the mask is computed:
 
 * ``background``: detects a continuous background
-* ``epi``: suitable for EPI images
-* ``whole-brain-template``: uses an MNI whole-brain template
-* ``gm-template``: uses an MNI grey-matter template
-* ``wm-template``: uses an MNI white-matter template
+* ``epi``: suitable for :term:`EPI` images
+* ``whole-brain-template``: uses an :term:`MNI` whole-brain template
+* ``gm-template``: uses an :term:`MNI` grey-matter template
+* ``wm-template``: uses an :term:`MNI` white-matter template
 
 Extra mask parameters: opening, cutoff...
 ..........................................
@@ -245,7 +245,7 @@ Temporal Filtering and confound removal
 ........................................
 
 :class:`NiftiMasker` can also improve aspects of temporal data
-properties, before conversion to voxel signals.
+properties, before conversion to :term:`voxel` signals.
 
 - **Standardization**. Parameter ``standardize``: Signals can be
   standardized (scaled to unit variance).
@@ -261,7 +261,7 @@ properties, before conversion to voxel signals.
 
   * Linear trends can be removed by activating the ``detrend`` parameter.
     This accounts for slow (as opposed to abrupt or transient) changes
-    in voxel values along a series of brain images that are unrelated to the
+    in :term:`voxel` values along a series of brain images that are unrelated to the
     signal of interest (e.g., the neural correlates of cognitive tasks).
     It is not activated by default in :class:`NiftiMasker` but is recommended
     in almost all scenarios.
@@ -303,11 +303,11 @@ Resampling: resizing and changing resolutions of images
 
 :class:`NiftiMasker` and many similar classes enable resampling
 (recasting of images into different resolutions and transformations of
-brain voxel data). Two parameters control resampling:
+brain :term:`voxel` data). Two parameters control resampling:
 
 * ``target_affine`` to resample (resize, rotate...) images in order to match
   the spatial configuration defined by the new affine (i.e., matrix
-  transforming from voxel space into world space).
+  transforming from :term:`voxel` space into world space).
 
 * Additionally, a ``target_shape`` can be used to resize images
   (i.e., cropping or padding with zeros) to match an expected data
@@ -331,7 +331,7 @@ Inverse transform: unmasking data
   The data is only brought back into either a 3D or 4D represenetation,
   without inverting any signal processing performed by ``transform``.
 
-Once voxel signals have been processed, the result can be visualized as
+Once :term:`voxel` signals have been processed, the result can be visualized as
 images after unmasking (masked-reduced data transformed back into
 the original whole-brain space). This step is present in many
 :ref:`examples <examples-index>` provided in nilearn. Below you will find
@@ -364,7 +364,7 @@ Extraction of signals from regions:\  :class:`NiftiLabelsMasker`, :class:`NiftiM
 
 The purpose of :class:`NiftiLabelsMasker` and :class:`NiftiMapsMasker` is to
 compute signals from regions containing many voxels. They make it easy to get
-these signals once you have an atlas or a parcellation into brain regions.
+these signals once you have an atlas or a :term:`parcellation` into brain regions.
 
 Regions definition
 ------------------
@@ -378,7 +378,7 @@ labels and maps, handled by :class:`NiftiLabelsMasker` and
   in the region definition array. The set of
   regions is defined by a single 3D array, containing a voxel-wise
   dictionary of label numbers that denote what
-  region a given voxel belongs to. This technique has a big advantage: the
+  region a given :term:`voxel` belongs to. This technique has a big advantage: the
   required memory load is independent of the number of regions, allowing
   for a large number of regions. On the other hand, there are
   several disadvantages: regions cannot spatially overlap
@@ -392,7 +392,7 @@ labels and maps, handled by :class:`NiftiLabelsMasker` and
   overlap (as opposed to labels), storage cost scales linearly with the
   number of regions. Handling a large number (e.g., thousands)
   of regions will prove difficult with this data transformation of
-  whole-brain voxel data into weighted region-wise data.
+  whole-brain :term:`voxel` data into weighted region-wise data.
 
 .. note::
 
@@ -407,7 +407,7 @@ instead of a set of maps as input.
 
 The ``background_label`` keyword of :class:`NiftiLabelsMasker` deserves
 some explanation. The voxels that correspond to the brain or a region
-of interest in an fMRI image do not fill the entire image.
+of interest in an :term:`fMRI` image do not fill the entire image.
 Consequently, in the labels image, there must be a label value that corresponds
 to "outside" the brain (for which no signal should be extracted).
 By default, this label is set to zero in nilearn (referred to as "background").
@@ -443,7 +443,7 @@ Extraction of signals from regions for multiple subjects:\  :class:`MultiNiftiMa
 The purpose of :class:`MultiNiftiMasker`, :class:`MultiNiftiLabelsMasker` and
 :class:`MultiNiftiMapsMasker` is to extend the capabilities of
 :class:`NiftiMasker`, :class:`NiftiLabelsMasker` and :class:`NiftiMapsMasker`
-as to facilitate the computation of voxel signals in multi-subjects settings.
+as to facilitate the computation of :term:`voxel` signals in multi-subjects settings.
 While :class:`NiftiMasker`, :class:`NiftiLabelsMasker` and
 :class:`NiftiMapsMasker` work with 3D inputs (single brain volume) or 4D inputs
 (sequence of brain volumes in time for one subject), :class:`MultiNiftiMasker`,
@@ -453,7 +453,7 @@ inputs (list of sequences of brain volumes).
 :class:`MultiNiftiMasker` Usage
 -------------------------------
 
-:class:`MultiNiftiMasker` extracts voxel signals for each subject in the areas defined by the
+:class:`MultiNiftiMasker` extracts :term:`voxel` signals for each subject in the areas defined by the
 masks.
 
 .. topic:: **Examples**
@@ -488,7 +488,7 @@ The purpose of :class:`NiftiSpheresMasker` is to compute signals from
 seeds containing voxels in spheres. It makes it easy to get these signals once
 you have a list of coordinates.
 A single seed is a sphere defined by the radius (in millimeters) and the
-coordinates (typically MNI or TAL) of its center.
+coordinates (typically :term:`MNI` or TAL) of its center.
 
 Using :class:`NiftiSpheresMasker` needs to define a list of coordinates.
 ``seeds`` argument takes a list of 3D coordinates (tuples) of the spheres centers,
@@ -500,7 +500,7 @@ Below is an example of a coordinates list of four seeds from the default mode ne
   >>> dmn_coords = [(0, -52, 18), (-46, -68, 32), (46, -68, 32), (0, 50, -5)]
 
 ``radius`` is an optional argument that takes a real value in millimeters.
-If no value is given for the ``radius`` argument, the single voxel at the given
+If no value is given for the ``radius`` argument, the single :term:`voxel` at the given
 seed position is used.
 
 .. topic:: **Examples**

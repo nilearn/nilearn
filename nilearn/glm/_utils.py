@@ -299,9 +299,8 @@ def full_rank(X, cmax=1e15):
     X : array of shape (nrows, ncols)
         Input array.
 
-    cmax : float, optional
+    cmax : float, default=1e15
         Tolerance for condition number.
-        Default=1e15.
 
     Returns
     -------

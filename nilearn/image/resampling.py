@@ -161,7 +161,8 @@ def get_bounds(shape, affine):
         shape of the array. Must have 3 integer values.
 
     affine : numpy.ndarray
-        affine giving the linear transformation between voxel coordinates
+        affine giving the linear transformation
+        between :term:`voxel` coordinates
         and world-space coordinates.
 
     Returns
@@ -358,34 +359,31 @@ def resample_img(
         If target_shape is specified, a target_affine of shape (4, 4)
         must also be given. (See notes)
 
-    interpolation : str, optional
+    interpolation : str, default='continuous'
         Can be 'continuous', 'linear', or 'nearest'. Indicates the resample
-        method. Default='continuous'.
+        method.
 
-    copy : bool, optional
+    copy : bool, default=True
         If True, guarantees that output array has no memory in common with
         input array.
         In all cases, input images are never modified by this function.
-        Default=True.
 
-    order : "F" or "C", optional
+    order : "F" or "C", default='F'
         Data ordering in output array. This function is slightly faster with
-        Fortran ordering. Default='F'.
+        Fortran ordering.
 
-    clip : bool, optional
+    clip : bool, default=True
         If True (default) all resampled image values above max(img) and
         under min(img) are clipped to min(img) and max(img). Note that
         0 is added as an image value for clipping, and it is the padding
         value when extrapolating out of field of view.
         If False no clip is performed.
-        Default=True.
 
-    fill_value : float, optional
-        Use a fill value for points outside of input volume. Default=0.
+    fill_value : float, default=0
+        Use a fill value for points outside of input volume.
 
-    force_resample : bool, optional
+    force_resample : bool, default=False
         Intended for testing, this prevents the use of a padding optimization.
-        Default=False.
 
     Returns
     -------
@@ -709,32 +707,29 @@ def resample_to_img(
         See :ref:`extracting_data`.
         Reference image taken for resampling.
 
-    interpolation : str, optional
+    interpolation : str, default='continuous'
         Can be 'continuous', 'linear', or 'nearest'. Indicates the resample
-        method. Default='continuous'.
+        method.
 
-    copy : bool, optional
+    copy : bool, default=True
         If True, guarantees that output array has no memory in common with
         input array.
         In all cases, input images are never modified by this function.
-        Default=True.
 
-    order : "F" or "C", optional
+    order : "F" or "C", default="F"
         Data ordering in output array. This function is slightly faster with
-        Fortran ordering. Default="F".
+        Fortran ordering.
 
-    clip : bool, optional
+    clip : bool, default=False
         If False (default) no clip is performed.
         If True all resampled image values above max(img)
         and under min(img) are cllipped to min(img) and max(img).
-        Default=False.
 
-    fill_value : float, optional
-        Use a fill value for points outside of input volume. Default=0.
+    fill_value : float, default=0
+        Use a fill value for points outside of input volume.
 
-    force_resample : bool, optional
+    force_resample : bool, default=False
         Intended for testing, this prevents the use of a padding optimization.
-        Default=False.
 
     Returns
     -------

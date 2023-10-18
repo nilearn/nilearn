@@ -22,7 +22,7 @@ import nilearn as ni
 from nilearn import _utils, image
 from nilearn._utils import niimg_conversions, testing
 from nilearn._utils.exceptions import DimensionError
-from nilearn._utils.niimg_conversions import _iter_check_niimg
+from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn._utils.testing import (
     assert_memory_less_than,
     with_memory_profiler,
@@ -67,14 +67,14 @@ def test_check_same_fov(affine_eye):
     shape_b_affine_a = Nifti1Image(np.empty(shape_b), affine_eye)
     shape_b_affine_b = Nifti1Image(np.empty(shape_b), affine_b)
 
-    niimg_conversions._check_same_fov(
+    niimg_conversions.check_same_fov(
         a=shape_a_affine_a, b=shape_a_affine_a_2, raise_error=True
     )
 
     with pytest.raises(
         ValueError, match="[ac] and [ac] do not have the same affine"
     ):
-        niimg_conversions._check_same_fov(
+        niimg_conversions.check_same_fov(
             a=shape_a_affine_a,
             b=shape_a_affine_a_2,
             c=shape_a_affine_b,
@@ -83,20 +83,20 @@ def test_check_same_fov(affine_eye):
     with pytest.raises(
         ValueError, match="[ab] and [ab] do not have the same shape"
     ):
-        niimg_conversions._check_same_fov(
+        niimg_conversions.check_same_fov(
             a=shape_a_affine_a, b=shape_b_affine_a, raise_error=True
         )
     with pytest.raises(
         ValueError, match="[ab] and [ab] do not have the same affine"
     ):
-        niimg_conversions._check_same_fov(
+        niimg_conversions.check_same_fov(
             a=shape_b_affine_b, b=shape_a_affine_a, raise_error=True
         )
 
     with pytest.raises(
         ValueError, match="[ab] and [ab] do not have the same shape"
     ):
-        niimg_conversions._check_same_fov(
+        niimg_conversions.check_same_fov(
             a=shape_b_affine_b, b=shape_a_affine_a, raise_error=True
         )
 
@@ -374,11 +374,11 @@ def test_iter_check_niimgs_error():
 
     for empty in ((), [], (i for i in ()), [i for i in ()]):
         with pytest.raises(ValueError, match="Input niimgs list is empty."):
-            list(_iter_check_niimg(empty))
+            list(iter_check_niimg(empty))
 
     nofile_path = "/tmp/nofile"
     with pytest.raises(ValueError, match=no_file_matching % nofile_path):
-        list(_iter_check_niimg(nofile_path))
+        list(iter_check_niimg(nofile_path))
 
 
 def test_iter_check_niimgs(tmp_path, img_4d_zeros_eye):
@@ -390,7 +390,7 @@ def test_iter_check_niimgs(tmp_path, img_4d_zeros_eye):
     )
     os.close(fd)
     img_4d_zeros_eye.to_filename(filename)
-    niimgs = list(_iter_check_niimg([filename]))
+    niimgs = list(iter_check_niimg([filename]))
     assert_array_equal(
         get_data(niimgs[0]), get_data(_utils.check_niimg(img_4d_zeros_eye))
     )
@@ -398,7 +398,7 @@ def test_iter_check_niimgs(tmp_path, img_4d_zeros_eye):
     os.remove(filename)
 
     # Regular case
-    niimgs = list(_iter_check_niimg(img_2_4d))
+    niimgs = list(iter_check_niimg(img_2_4d))
     assert_array_equal(
         get_data(niimgs[0]), get_data(_utils.check_niimg(img_2_4d))
     )
@@ -408,7 +408,7 @@ def _check_memory(list_img_3d):
     # We intentionally add an offset of memory usage to avoid non trustable
     # measures with memory_profiler.
     mem_offset = b"a" * 100 * 1024**2
-    list(_iter_check_niimg(list_img_3d))
+    list(iter_check_niimg(list_img_3d))
     return mem_offset
 
 

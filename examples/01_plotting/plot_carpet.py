@@ -16,8 +16,9 @@ from nilearn import datasets
 
 adhd_dataset = datasets.fetch_adhd(n_subjects=1)
 
-# plot_carpet can infer TR from the image header, but preprocessing can often
-# overwrite that particular header field, so we will be explicit.
+# plot_carpet can infer TR from the image header,
+# but preprocessing can often overwrite that particular header field,
+# so we will be explicit.
 t_r = 2.0
 
 # Print basic information on the dataset

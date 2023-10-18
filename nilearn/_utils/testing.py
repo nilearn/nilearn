@@ -53,7 +53,7 @@ def check_deprecation(func, match=None):
 
     @functools.wraps(func)
     def wrapped(*args, **kwargs):
-        with pytest.warns(FutureWarning, match=match):
+        with pytest.warns(DeprecationWarning, match=match):
             result = func(*args, **kwargs)
         return result
 

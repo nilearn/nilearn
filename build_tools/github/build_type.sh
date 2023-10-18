@@ -26,7 +26,7 @@ else
         PATTERN="\(${PATTERN::-2}\)";
         echo html-modified-examples-only > build.txt;
     else
-        echo html-noplot > build.txt;
+        echo ci-html-noplot > build.txt;
     fi;
 fi;
 echo "$PATTERN" > pattern.txt;

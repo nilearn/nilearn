@@ -21,6 +21,7 @@ documentation for more details.
 
 """
 
+# %%
 import warnings
 
 import numpy as np
@@ -32,7 +33,7 @@ from nilearn.datasets import fetch_neurovault, load_mni152_brain_mask
 from nilearn.image import smooth_img
 from nilearn.maskers import NiftiMasker
 
-######################################################################
+# %%
 # Get image and term data
 # -----------------------
 
@@ -62,7 +63,7 @@ print("\nTop 10 neurosynth terms from downloaded images:\n")
 for term_idx in np.argsort(total_scores)[-10:][::-1]:
     print(vocabulary[term_idx])
 
-######################################################################
+# %%
 # Reshape and mask images
 # -----------------------
 
@@ -103,9 +104,9 @@ with warnings.catch_warnings():
 X = np.vstack(X)
 term_weights = term_weights[is_usable, :]
 
-######################################################################
-# Run ICA and map components to terms
-# -----------------------------------
+# %%##
+# Run :term:`ICA` and map components to terms
+# -------------------------------------------
 
 print("Running ICA; may take time...")
 # We use a very small number of components as we have downloaded only 80
@@ -118,7 +119,7 @@ ica_maps = fast_ica.fit_transform(X.T).T
 term_weights_for_components = np.dot(fast_ica.components_, term_weights)
 print("Done, plotting results.")
 
-######################################################################
+# %%
 # Generate figures
 # ----------------
 
@@ -142,7 +143,7 @@ with warnings.catch_warnings():
             ic_img, threshold=ic_threshold, colorbar=False, title=title
         )
 
-######################################################################
+# %%
 # As we can see, some of the components capture cognitive or neurological
 # maps, while other capture noise in the database. More data, better
 # filtering, and better cognitive labels would give better maps

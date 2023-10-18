@@ -7,6 +7,7 @@ estimation of connectivity structure for a synthetic dataset.
 
 """
 
+# %%
 import matplotlib.pyplot as plt
 
 # Generate synthetic data
@@ -23,7 +24,7 @@ subjects, precisions, _ = generate_group_sparse_gaussian_graphs(
     density=0.1,
 )
 
-#########################################################################
+# %%
 # Run connectome estimations and plot the results
 from nilearn import plotting
 

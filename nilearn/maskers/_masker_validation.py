@@ -29,9 +29,8 @@ def _check_embedded_nifti_masker(estimator, multi_subject=True):
     instance : object, instance of BaseEstimator
         The object that gives us the values of the parameters
 
-    multi_subject : boolean, optional
+    multi_subject : boolean, default=True
         Indicates whether to return a MultiNiftiMasker or a NiftiMasker
-        Default=True.
 
     Returns
     -------

@@ -34,7 +34,7 @@ from nilearn.masking import _unmask_from_to_3d_array
 
 from .._utils import fill_doc
 from .._utils.cache_mixin import CacheMixin
-from .._utils.param_validation import _adjust_screening_percentile
+from .._utils.param_validation import adjust_screening_percentile
 from .space_net_solvers import (
     _graph_net_logistic,
     _graph_net_squared_loss,
@@ -147,26 +147,22 @@ def _space_net_alpha_grid(
     y : ndarray, shape (n_samples,)
         Target / response vector.
 
-    l1_ratio : float, optional
+    l1_ratio : float, default=1
         The ElasticNet mixing parameter, with ``0 <= l1_ratio <= 1``.
         For ``l1_ratio = 0`` the penalty is purely a spatial prior
         (Graph-Net, TV, etc.). ``For l1_ratio = 1`` it is an L1 penalty.
         For ``0 < l1_ratio < 1``, the penalty is a combination of L1
         and a spatial prior.
-        Default=1.
 
-    eps : float, optional
+    eps : float, default=1e-3
         Length of the path. ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``.
-        Default=1e-3.
 
-    n_alphas : int, optional
+    n_alphas : int, default=10
         Number of alphas along the regularization path.
-        Default=10.
 
-    logistic : bool, optional
+    logistic : bool, default=False
         Indicates where the underlying loss function is logistic.
-        Default=False.
 
     """
     if logistic:
@@ -175,7 +171,7 @@ def _space_net_alpha_grid(
         # Large-Scale l1-Regularized Logistic Regression", by Koh, Kim,
         # Boyd, in Journal of Machine Learning Research, 8:1519-1555,
         # July 2007.
-        # url: http://www.stanford.edu/~boyd/papers/pdf/l1_logistic_reg.pdf
+        # url: https://web.stanford.edu/~boyd/papers/pdf/l1_logistic_reg.pdf
         m = float(y.size)
         m_plus = float(y[y == 1].size)
         m_minus = float(y[y == -1].size)
@@ -357,22 +353,22 @@ def path_scores(
     solver_params : dict
        Dictionary of param-value pairs to be passed to solver.
 
-    is_classif : bool, optional
+    is_classif : bool, default=False
         Indicates whether the loss is a classification loss or a
-        regression loss. Default=False.
+        regression loss.
 
     Xmean: ??? TODO: Add description.
 
     key: ??? TODO: Add description.
 
-    debias : bool, optional
+    debias : bool, default=False
         If set, then the estimated weights maps will be debiased.
-        Default=False.
 
     screening_percentile : float in the interval [0, 100], optional\
         (default 20)
-        Percentile value for ANOVA univariate feature selection. A value of
-        100 means 'keep all features'. This percentile is expressed
+        Percentile value for :term:`ANOVA` univariate feature selection.
+        A value of 100 means 'keep all features'.
+        This percentile is expressed
         w.r.t the volume of a standard (MNI152) brain, and so is corrected
         at runtime to correspond to the volume of the user-supplied mask
         (which is typically smaller). If '100' is given, all the features
@@ -938,7 +934,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         w = np.zeros((n_problems, X.shape[1] + 1))
         self.all_coef_ = np.ndarray((n_problems, n_folds, X.shape[1]))
 
-        self.screening_percentile_ = _adjust_screening_percentile(
+        self.screening_percentile_ = adjust_screening_percentile(
             self.screening_percentile, self.mask_img_, verbose=self.verbose
         )
 
@@ -1154,8 +1150,8 @@ class SpaceNetClassifier(BaseSpaceNet):
     max_iter : int (default 200)
         Defines the iterations for the solver.
 
-    tol : float
-        Defines the tolerance for convergence. Defaults to 1e-4.
+    tol : float, default=1e-4.
+        Defines the tolerance for convergence.
     %(verbose)s
     %(n_jobs)s
     %(memory)s
@@ -1401,13 +1397,13 @@ class SpaceNetRegressor(BaseSpaceNet):
     max_iter : int (default 200)
         Defines the iterations for the solver.
 
-    tol : float
-        Defines the tolerance for convergence. Defaults to 1e-4.
+    tol : float, default=1e-4
+        Defines the tolerance for convergence.
     %(verbose)s
     %(n_jobs)s
     %(memory)s
     %(memory_level1)s
-    cv : int, a cv generator instance, or None (default 8)
+    cv : int, a cv generator instance, or None, default=8
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
         KFold, None, in which case 3 fold is used, or another object, that

@@ -9,7 +9,7 @@ phenotypic variables from brain image. It can be useful for diagnostic of
 prognosis, or to probe the information content of brain activity images.
 
 These are `Supervised learning
-<http://en.wikipedia.org/wiki/Supervised_learning>`_ tasks, focused on
+<https://en.wikipedia.org/wiki/Supervised_learning>`_ tasks, focused on
 predicting an output value.
 
 |
