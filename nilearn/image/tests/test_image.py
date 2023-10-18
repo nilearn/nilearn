@@ -16,7 +16,8 @@ from numpy.testing import (
     assert_array_equal,
     assert_equal,
 )
-
+from nilearn import dataset
+from nilearn.interfaces.fmriprep import load_confounds
 from nilearn import signal
 from nilearn._utils import niimg_conversions, testing
 from nilearn._utils.data_gen import (
@@ -989,3 +990,34 @@ def test_new_img_like_boolean_data(affine_eye, image, shape_3d_default, rng):
     out_img = new_img_like(in_img, data=in_img.get_fdata() > 0.5)
 
     assert get_data(out_img).dtype == "uint8"
+
+def test_clean_img_kwargs() :
+    # load fMRI data
+    data = datasets.fetch_development_fmri(n_subjects=1, reduce_confounds=True)
+    fmri_filenames = data.func[0]
+    
+    confounds_out, sample_mask = load_confounds(
+        fmri_filenames,
+        strategy=["motion", "wm_csf", "scrub"],
+        motion="basic",
+        wm_csf="basic",
+        scrub=5,
+        fd_threshold=0.3,
+        std_dvars_threshold=3,
+        compcor="anat_combined",
+        n_compcor=5,
+        demean=True,
+    )
+    
+    clean_nifti = image.clean_img(
+        fmri_filenames,
+        detrend=True,
+        standardize="zscore_sample",
+        confounds=confounds_out,
+        standardize_confounds="zscore_sample",
+        filter="butterworth",
+        low_pass=0.1,
+        high_pass=0.01,
+        t_r=0.8,
+        **{"clean__sample_mask": sample_mask},
+    )
