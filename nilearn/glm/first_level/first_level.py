@@ -439,10 +439,7 @@ class FirstLevelModel(BaseGLM):
         self.target_shape = target_shape
         self.smoothing_fwhm = smoothing_fwhm
         memory = stringify_path(memory)
-        if isinstance(memory, str):
-            self.memory = Memory(memory)
-        else:
-            self.memory = memory
+        self.memory = Memory(memory) if isinstance(memory, str) else memory
         self.memory_level = memory_level
         self.standardize = standardize
         if signal_scaling is False:
@@ -794,7 +791,7 @@ class FirstLevelModel(BaseGLM):
         n_runs = len(self.labels_)
         n_contrasts = len(con_vals)
         if n_contrasts == 1 and n_runs > 1:
-            warn(f"One contrast given, assuming it for all {int(n_runs)} runs")
+            warn(f"One contrast given, assuming it for all {n_runs} runs")
             con_vals = con_vals * n_runs
         elif n_contrasts != n_runs:
             raise ValueError(

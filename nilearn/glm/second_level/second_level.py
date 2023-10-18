@@ -218,7 +218,7 @@ def _check_confounds(confounds):
             )
         # Make sure subject_label contain strings
         if not all(
-            [isinstance(_, str) for _ in confounds["subject_label"].tolist()]
+            isinstance(_, str) for _ in confounds["subject_label"].tolist()
         ):
             raise ValueError("subject_label column must contain only strings")
 
@@ -244,9 +244,10 @@ def _check_output_type(output_type, valid_types):
 
 def _check_design_matrix(design_matrix):
     """Check design_matrix type."""
-    if design_matrix is not None:
-        if not isinstance(design_matrix, pd.DataFrame):
-            raise ValueError("design matrix must be a pandas DataFrame")
+    if design_matrix is not None and not isinstance(
+        design_matrix, pd.DataFrame
+    ):
+        raise ValueError("design matrix must be a pandas DataFrame")
 
 
 def _check_effect_maps(effect_maps, design_matrix):
@@ -436,10 +437,7 @@ class SecondLevelModel(BaseGLM):
         self.target_shape = target_shape
         self.smoothing_fwhm = smoothing_fwhm
         memory = stringify_path(memory)
-        if isinstance(memory, str):
-            self.memory = Memory(memory)
-        else:
-            self.memory = memory
+        self.memory = Memory(memory) if isinstance(memory, str) else memory
         self.memory_level = memory_level
         self.verbose = verbose
         self.n_jobs = n_jobs
@@ -949,10 +947,12 @@ def non_parametric_inference(
 
     else:
         masker = clone(mask)
-        if smoothing_fwhm is not None:
-            if getattr(masker, "smoothing_fwhm") is not None:
-                warn("Parameter smoothing_fwhm of the masker overridden")
-                setattr(masker, "smoothing_fwhm", smoothing_fwhm)
+        if (
+            smoothing_fwhm is not None
+            and getattr(masker, "smoothing_fwhm") is not None
+        ):
+            warn("Parameter smoothing_fwhm of the masker overridden")
+            setattr(masker, "smoothing_fwhm", smoothing_fwhm)
 
     masker.fit(sample_map)
 

@@ -442,7 +442,7 @@ def check_design_matrix(design_matrix):
         Per-event onset time (in seconds)
 
     """
-    names = [name for name in design_matrix.keys()]
+    names = list(design_matrix.keys())
     frame_times = design_matrix.index
     matrix = design_matrix.values
     return frame_times, matrix, names

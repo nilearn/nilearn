@@ -1006,15 +1006,13 @@ def test_first_level_contrast_computation_errors(tmp_path):
 
 def test_first_level_with_scaling(affine_eye):
     shapes, rk = [(3, 1, 1, 2)], 1
-    fmri_data = list()
-    fmri_data.append(Nifti1Image(np.zeros((1, 1, 1, 2)) + 6, affine_eye))
-    design_matrices = list()
-    design_matrices.append(
+    fmri_data = [Nifti1Image(np.zeros((1, 1, 1, 2)) + 6, affine_eye)]
+    design_matrices = [
         pd.DataFrame(
             np.ones((shapes[0][-1], rk)),
             columns=list("abcdefghijklmnopqrstuvwxyz")[:rk],
         )
-    )
+    ]
     fmri_glm = FirstLevelModel(
         mask_img=False,
         noise_model="ols",
@@ -1041,25 +1039,23 @@ def test_first_level_with_no_signal_scaling(affine_eye):
     In particular, that derived theta are correct for a
     constant design matrix with a single valued fmri image
     """
-    shapes, rk = [(3, 1, 1, 2)], 1
-    fmri_data = list()
-    design_matrices = list()
-    design_matrices.append(
-        pd.DataFrame(
-            np.ones((shapes[0][-1], rk)),
-            columns=list("abcdefghijklmnopqrstuvwxyz")[:rk],
-        )
-    )
     # Check error with invalid signal_scaling values
     with pytest.raises(ValueError, match="signal_scaling must be"):
         FirstLevelModel(
             mask_img=False, noise_model="ols", signal_scaling="foo"
         )
 
+    shapes, rk = [(3, 1, 1, 2)], 1
+    design_matrices = [
+        pd.DataFrame(
+            np.ones((shapes[0][-1], rk)),
+            columns=list("abcdefghijklmnopqrstuvwxyz")[:rk],
+        )
+    ]
+    fmri_data = [Nifti1Image(np.zeros((1, 1, 1, 2)) + 6, affine_eye)]
     first_level = FirstLevelModel(
         mask_img=False, noise_model="ols", signal_scaling=False
     )
-    fmri_data.append(Nifti1Image(np.zeros((1, 1, 1, 2)) + 6, affine_eye))
 
     first_level.fit(fmri_data, design_matrices=design_matrices)
     # trivial test of signal_scaling value
