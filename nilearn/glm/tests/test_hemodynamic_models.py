@@ -286,7 +286,6 @@ def test_names():
         ("spm + derivative", 2),
         ("glover + derivative", 2),
         ("spm + derivative + dispersion", 3),
-        ("spm + derivative + dispersion", 3),
         ("glover + derivative + dispersion", 3),
     ],
 )
