@@ -5,7 +5,6 @@ import scipy as sp
 from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal
 from scipy import linalg
-from sklearn.utils import check_random_state
 
 from nilearn.decoding.objective_functions import _div, _gradient
 from nilearn.decoding.space_net import BaseSpaceNet
@@ -60,10 +59,9 @@ def get_gradient_matrix(w_size, mask):
     return grad_matrix
 
 
-def test_grad_matrix():
+def test_grad_matrix(rng):
     """Test for matricial form of gradient."""
     _, _, w, mask, *_ = _make_data()
-    rng = check_random_state(42)
 
     G = get_gradient_matrix(w.size, mask)
 
@@ -75,9 +73,8 @@ def test_grad_matrix():
         assert_almost_equal(_gradient(image_buffer)[grad_mask], np.dot(G, v))
 
 
-def test_adjointness(size=4):
+def test_adjointness(rng, size=4):
     """Test for adjointness between gradient and div operators."""
-    rng = check_random_state(42)
     for _ in range(3):
         image_1 = rng.rand(size, size, size)
         image_2 = rng.rand(3, size, size, size)
@@ -88,11 +85,9 @@ def test_adjointness(size=4):
         assert_almost_equal(Axdoty, -xdotAty)
 
 
-def test_identity_adjointness(size=4):
+def test_identity_adjointness(rng, size=4):
     """Test adjointess between _graph_net_data_function and \
     _graph_net_adjoint_data_function, with identity design matrix."""
-    rng = check_random_state(42)
-
     # A mask full of ones
     mask = np.ones((size, size, size), dtype=bool)
 
@@ -113,10 +108,8 @@ def test_identity_adjointness(size=4):
         assert_almost_equal(Axdoty, xdotAty)
 
 
-def test_operators_adjointness(size=4):
+def test_operators_adjointness(rng, size=4):
     """Perform same as test_identity_adjointness with generic design matrix."""
-    rng = check_random_state(42)
-
     # A mask full of ones
     mask = np.ones((size, size, size), dtype=bool)
 
@@ -189,11 +182,10 @@ def test_logistic_gradient_at_simple_points():
         )
 
 
-def test_squared_loss_derivative_lipschitz_constant():
+def test_squared_loss_derivative_lipschitz_constant(rng):
     """Test Lipschitz-continuity of the derivative of _squared_loss loss \
     function."""
     X, y, w, mask, *_ = _make_data()
-    rng = check_random_state(42)
     grad_weight = 2.08e-1
 
     lipschitz_constant = _squared_loss_derivative_lipschitz_constant(
@@ -216,10 +208,9 @@ def test_squared_loss_derivative_lipschitz_constant():
         assert gradient_difference <= lipschitz_constant * point_difference
 
 
-def test_logistic_derivative_lipschitz_constant():
+def test_logistic_derivative_lipschitz_constant(rng):
     """Test Lipschitz-continuity of the derivative of logistic loss."""
     X, y, w, mask, *_ = _make_data()
-    rng = check_random_state(42)
     grad_weight = 2.08e-1
 
     lipschitz_constant = _logistic_derivative_lipschitz_constant(

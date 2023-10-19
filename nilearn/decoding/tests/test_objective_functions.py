@@ -4,7 +4,6 @@ import numpy as np
 import pytest
 from numpy.testing import assert_almost_equal, assert_array_equal
 from scipy.optimize import check_grad
-from sklearn.utils import check_random_state
 
 from nilearn.decoding.objective_functions import (
     _div_id,
@@ -20,10 +19,8 @@ L1_RATIO = [0.0, 0.1, 0.3, 0.5, 0.7, 0.9, 1.0]
 @pytest.mark.parametrize("ndim", range(1, 5))
 @pytest.mark.parametrize("l1_ratio", L1_RATIO)
 @pytest.mark.parametrize("size", [3, 4, 5])
-def test_grad_div_adjoint_arbitrary_ndim(ndim, l1_ratio, size):
+def test_grad_div_adjoint_arbitrary_ndim(rng, ndim, l1_ratio, size):
     # We need to check that <D x, y> = <x, DT y> for x and y random vectors
-    rng = check_random_state(42)
-
     shape = tuple([size] * ndim)
     x = rng.normal(size=shape)
     y = rng.normal(size=[ndim + 1] + list(shape))
