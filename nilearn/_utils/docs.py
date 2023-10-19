@@ -156,9 +156,9 @@ docdict[
             :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
             with L2 penalty.
 
-            .. code-block:: python
+        .. code-block:: python
 
-                logistic = LogisticRegression(penalty="l2", solver="liblinear")
+            logistic = LogisticRegression(penalty="l2", solver="liblinear")
 
         - `logistic_l1`: \
             :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
