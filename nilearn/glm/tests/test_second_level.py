@@ -624,6 +624,26 @@ def test_fmri_inputs(tmp_path, rng):
     SecondLevelModel().fit(niimg_4d, None, sdes)
 
 
+def test_fmri_pand_series_as_inputs(tmp_path, rng):
+    # prepare correct input dataframe and lists
+    p, q = 80, 10
+    X = rng.standard_normal(size=(p, q))
+    shapes = (SHAPE,)
+    _, FUNCFILE, _ = write_fake_fmri_data_and_design(
+        shapes, file_path=tmp_path
+    )
+    FUNCFILE = FUNCFILE[0]
+
+    # dataframes as input
+    sdes = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
+    niidf = pd.DataFrame({"filepaths": [FUNCFILE, FUNCFILE, FUNCFILE]})
+    SecondLevelModel().fit(
+        second_level_input=niidf["filepaths"],
+        confounds=None,
+        design_matrix=sdes,
+    )
+
+
 def test_fmri_inputs_errors(tmp_path):
     # Test processing of FMRI inputs
     # prepare fake data
