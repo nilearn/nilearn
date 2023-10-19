@@ -512,7 +512,7 @@ def test_high_level_glm_with_paths_errors(tmp_path):
     model = SecondLevelModel(mask_img=mask)
 
     # asking for contrast before model fit gives error
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="The model has not been fit yet"):
         model.compute_contrast([])
 
     # fit model
@@ -713,18 +713,29 @@ def test_fmri_inputs_errors(tmp_path, confounds):
     niimgs = [FUNCFILE, FUNCFILE, FUNCFILE]
     with pytest.raises(ValueError, match="require a design matrix"):
         SecondLevelModel().fit(niimgs)
-    with pytest.raises(TypeError):
+    with pytest.raises(
+        TypeError,
+        match=("Elements of second_level_input " "must be of the same type."),
+    ):
         SecondLevelModel().fit(niimgs + [[]], confounds)
 
     # test first_level_conditions, confounds, and design
     flms = [flm, flm, flm]
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="confounds must be a pandas DataFrame"
+    ):
         SecondLevelModel().fit(flms, ["", []])
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="confounds must be a pandas DataFrame"
+    ):
         SecondLevelModel().fit(flms, [])
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="confounds must be a pandas DataFrame"
+    ):
         SecondLevelModel().fit(flms, confounds["conf1"])
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="design matrix must be a pandas DataFrame"
+    ):
         SecondLevelModel().fit(flms, None, [])
 
 
@@ -788,15 +799,14 @@ def test_fmri_inputs_for_non_parametric_inference_errors(
     sdes = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
 
     # test missing second-level contrast
-
+    match = "No second-level contrast is specified."
     # niimgs as input
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=match):
         non_parametric_inference(niimgs, None, sdes)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=match):
         non_parametric_inference(niimgs, confounds, sdes)
-
     # 4d niimg as input
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=match):
         non_parametric_inference(niimg_4d, None, sdes)
 
     # test wrong input errors
@@ -815,7 +825,7 @@ def test_fmri_inputs_for_non_parametric_inference_errors(
         non_parametric_inference(niimgs + [[]], confounds)
 
     # test other objects
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="File not found: .*"):
         non_parametric_inference("random string object")
 
 
@@ -1111,7 +1121,7 @@ def test_second_level_contrast_computation_errors(tmp_path, rng):
     model.compute_contrast()
 
     # passing null contrast should give back a value error
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Contrast is null"):
         model.compute_contrast(cnull)
 
     # passing wrong parameters

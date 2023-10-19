@@ -168,7 +168,7 @@ def run_glm(
     acceptable_noise_models = ["ols", "arN"]
     if (noise_model[:2] != "ar") and (noise_model != "ols"):
         raise ValueError(
-            f"Acceptable noise models are {acceptable_noise_models}."
+            f"Acceptable noise models are {acceptable_noise_models}. "
             f"You provided 'noise_model={noise_model}'."
         )
     if Y.shape[0] != X.shape[0]:
@@ -649,7 +649,7 @@ class FirstLevelModel(BaseGLM):
                     confounds_matrix = confounds[run_idx].values
                     if confounds_matrix.shape[0] != n_scans:
                         raise ValueError(
-                            "Rows in confounds does not match"
+                            "Rows in confounds does not match "
                             "n_scans in run_img "
                             f"at index {run_idx}."
                         )
@@ -776,7 +776,7 @@ class FirstLevelModel(BaseGLM):
 
         """
         if self.labels_ is None or self.results_ is None:
-            raise ValueError("The model has not been fit yet")
+            raise ValueError("The model has not been fit yet.")
 
         if isinstance(contrast_def, (np.ndarray, str)):
             con_vals = [contrast_def]
@@ -785,7 +785,7 @@ class FirstLevelModel(BaseGLM):
         else:
             raise ValueError(
                 "contrast_def must be an array or str or list of"
-                " (array or str)"
+                " (array or str)."
             )
 
         n_runs = len(self.labels_)
@@ -881,7 +881,7 @@ class FirstLevelModel(BaseGLM):
             )
 
         if self.labels_ is None or self.results_ is None:
-            raise ValueError("The model has not been fit yet")
+            raise ValueError("The model has not been fit yet.")
 
         output = []
 

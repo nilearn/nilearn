@@ -30,7 +30,12 @@ def _create_test_file(temp_csv, test_data, delimiter):
 
 def _run_test_for_invalid_separator(filepath, delimiter_name):
     if delimiter_name not in ("tab", "comma"):
-        with pytest.raises(ValueError):
+        with pytest.raises(
+            ValueError,
+            match=(
+                "The values in the events file " "are not separated by tabs"
+            ),
+        ):
             _check_events_file_uses_tab_separators(events_files=filepath)
     else:
         result = _check_events_file_uses_tab_separators(events_files=filepath)
@@ -94,7 +99,10 @@ def test_binary_opening_an_image_error(tmp_path):
     temp_img_file = tmp_path / "temp_img.gif"
     with open(temp_img_file, "wb") as temp_img_obj:
         temp_img_obj.write(img_data)
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=("The file does not seem to be " "a valid unicode text file."),
+    ):
         _check_events_file_uses_tab_separators(events_files=temp_img_file)
 
 
@@ -103,5 +111,8 @@ def test_binary_bytearray_of_ints_data_error(tmp_path):
     temp_bin_file = tmp_path / "temp_bin.bin"
     with open(temp_bin_file, "wb") as temp_bin_obj:
         temp_bin_obj.write(temp_data_bytearray_from_ints)
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=("The values in the events file " "are not separated by tabs"),
+    ):
         _check_events_file_uses_tab_separators(events_files=temp_bin_file)

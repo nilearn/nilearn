@@ -137,13 +137,13 @@ def _compute_fixed_effect_contrast(
     n_contrasts = 0
     for i, (lab, res, con_val) in enumerate(zip(labels, results, con_vals)):
         if np.all(con_val == 0):
-            warn(f"Contrast for session {int(i)} is null")
+            warn(f"Contrast for session {int(i)} is null.")
             continue
         contrast_ = compute_contrast(lab, res, con_val, contrast_type)
         contrast = contrast_ if contrast is None else contrast + contrast_
         n_contrasts += 1
     if contrast is None:
-        raise ValueError("all contrasts provided were null contrasts")
+        raise ValueError("All contrasts provided were null contrasts.")
     return contrast * (1.0 / n_contrasts)
 
 
@@ -459,7 +459,7 @@ def compute_fixed_effects(
     if n_runs != len(variance_imgs):
         raise ValueError(
             f"The number of contrast images ({len(contrast_imgs)}) differs "
-            f"from the number of variance images ({len(variance_imgs)}). "
+            f"from the number of variance images ({len(variance_imgs)})."
         )
 
     if isinstance(mask, NiftiMasker):

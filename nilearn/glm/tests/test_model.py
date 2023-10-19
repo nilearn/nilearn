@@ -68,12 +68,15 @@ def test_t_contrast():
 
 
 def test_t_contrast_errors():
-    with pytest.raises(ValueError):
+    match = "t contrasts should be length P=.*, but this is length .*"
+    with pytest.raises(ValueError, match=match):
         RESULTS.Tcontrast([1])
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=match):
         RESULTS.Tcontrast([1, 0, 0])
     # And shape
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="t contrasts should have only one row"
+    ):
         RESULTS.Tcontrast(np.array([1, 0])[:, None])
 
 
@@ -134,12 +137,15 @@ def test_f_output():
 
 def test_f_output_errors():
     # Input matrix checked for size
-    with pytest.raises(ValueError):
+    match = (
+        r"F contrasts should have shape\[1\]=.*, but this has shape\[1\]=.*"
+    )
+    with pytest.raises(ValueError, match=match):
         RESULTS.Fcontrast([1])
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=match):
         RESULTS.Fcontrast([1, 0, 0])
     # And shape
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=match):
         RESULTS.Fcontrast(np.array([1, 0])[:, None])
 
 

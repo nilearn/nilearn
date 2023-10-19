@@ -584,7 +584,7 @@ class SecondLevelModel(BaseGLM):
 
         """
         if self.second_level_input_ is None:
-            raise ValueError("The model has not been fit yet")
+            raise ValueError("The model has not been fit yet.")
 
         # check first_level_contrast
         _check_first_level_contrast(

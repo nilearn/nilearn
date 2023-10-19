@@ -40,9 +40,10 @@ def test_fdr_error(rng):
     x = norm.isf(x)
     rng.shuffle(x)
 
-    with pytest.raises(ValueError):
+    match = "alpha should be between 0 and 1"
+    with pytest.raises(ValueError, match=match):
         fdr_threshold(x, -0.1)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=match):
         fdr_threshold(x, 1.5)
 
 

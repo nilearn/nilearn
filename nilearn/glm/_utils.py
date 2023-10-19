@@ -67,9 +67,8 @@ def _check_and_load_tables(tables_, var_name):
             pass
         else:
             raise TypeError(
-                "%s can only be a pandas DataFrames or a"
-                "string. A %s was provided at idx %d"
-                % (var_name, type(table), table_idx)
+                f"{var_name} can only be a pandas DataFrames or a string. "
+                f"A {type(table)} was provided at idx {table_idx}"
             )
     return tables
 

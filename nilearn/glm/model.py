@@ -265,8 +265,8 @@ class LikelihoodModelResults:
             matrix = matrix[None]
         if matrix.shape[1] != self.theta.shape[0]:
             raise ValueError(
-                f"F contrasts should have shape[1] P={self.theta.shape[0]}, "
-                f"but this has shape[1] {matrix.shape[1]}"
+                f"F contrasts should have shape[1]={self.theta.shape[0]}, "
+                f"but this has shape[1]={matrix.shape[1]}"
             )
         ctheta = np.dot(matrix, self.theta)
         if matrix.ndim == 1:

@@ -141,7 +141,13 @@ def test_explicit_fixed_effects(tmp_path):
 
     # ensure that using unbalanced effects size and variance images
     # raises an error
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=(
+            "The number of contrast images .* differs "
+            "from the number of variance images"
+        ),
+    ):
         compute_fixed_effects(contrasts * 2, variance, mask)
 
     # ensure that not providing the right number of dofs
@@ -366,7 +372,9 @@ def test_compute_contrast_num_contrasts():
     )
 
     # raise when n_contrast != n_runs | 1
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="2 contrasts given, while there are 3 runs."
+    ):
         multi_session_model.compute_contrast([np.eye(rk)[1]] * 2)
 
     multi_session_model.compute_contrast([np.eye(rk)[1]] * 3)
@@ -428,17 +436,21 @@ def test_run_glm_errors(rng):
     n, p, q = 33, 80, 10
     X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="AR order must be positive"):
         run_glm(Y, X, "ar0")
-    with pytest.raises(ValueError):
+    match = (
+        "AR order must be a positive integer specified as arN, "
+        "where N is an integer."
+    )
+    with pytest.raises(ValueError, match=match):
         run_glm(Y, X, "arfoo")
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=match):
         run_glm(Y, X, "arr3")
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=match):
         run_glm(Y, X, "ar1.2")
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=match):
         run_glm(Y, X, "ar")
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Acceptable noise models are "):
         run_glm(Y, X, "3ar")
 
 
@@ -610,27 +622,45 @@ def test_fmri_inputs_errors(tmp_path):
                     fi, confounds=conf, events=events
                 )
 
-            # test with confounds as numpy array
-            with pytest.raises(ValueError):
-                FirstLevelModel(mask_img=None).fit([fi, fi], d)
-            with pytest.raises(ValueError):
-                FirstLevelModel(mask_img=None).fit(fi, [d, d])
+            # test mismatch nupmber of image and events file
+            match = r"len\(run_imgs\) .* does not match len\(events\) .*"
+            with pytest.raises(ValueError, match=match):
+                FirstLevelModel(mask_img=None, t_r=2.0).fit([fi, fi], d)
+            with pytest.raises(ValueError, match=match):
+                FirstLevelModel(mask_img=None, t_r=2.0).fit(fi, [d, d])
 
             # At least paradigms or design have to be given
-            with pytest.raises(ValueError):
+            with pytest.raises(
+                ValueError,
+                match=("events or design matrices " "must be provided"),
+            ):
                 FirstLevelModel(mask_img=None).fit(fi)
 
             # If paradigms are given then both tr and slice time ref were
             # required
-            with pytest.raises(ValueError):
+            match = (
+                "t_r not given to FirstLevelModel object "
+                "to compute design from events"
+            )
+            with pytest.raises(ValueError, match=match):
                 FirstLevelModel(mask_img=None).fit(fi, d)
-            with pytest.raises(ValueError):
-                FirstLevelModel(mask_img=None, t_r=1.0).fit(fi, d)
-            with pytest.raises(ValueError):
+            with pytest.raises(ValueError, match=match):
                 FirstLevelModel(mask_img=None, slice_time_ref=0.0).fit(fi, d)
+            with pytest.raises(
+                ValueError,
+                match=("The provided events data " "has no onset column."),
+            ):
+                FirstLevelModel(mask_img=None, t_r=1.0).fit(fi, d)
+
         # confounds rows do not match n_scans
-        with pytest.raises(ValueError):
-            FirstLevelModel(mask_img=None).fit(fi, d, conf)
+        with pytest.raises(
+            ValueError,
+            match=(
+                "Rows in confounds does not match "
+                "n_scans in run_img at index 0."
+            ),
+        ):
+            FirstLevelModel(mask_img=None, t_r=2.0).fit(fi, d, conf)
 
 
 def test_first_level_design_creation(tmp_path):
@@ -966,7 +996,7 @@ def test_first_level_contrast_computation_errors(tmp_path):
     c1, cnull = np.eye(7)[0], np.zeros(7)
 
     # asking for contrast before model fit gives error
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="The model has not been fit yet"):
         model.compute_contrast(c1)
 
     # fit model
@@ -982,19 +1012,28 @@ def test_first_level_contrast_computation_errors(tmp_path):
         model.compute_contrast(37)
 
     # only passing null contrasts should give back a value error
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="All contrasts provided were null contrasts."
+    ):
         model.compute_contrast(cnull)
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="All contrasts provided were null contrasts."
+    ):
         model.compute_contrast([cnull, cnull])
 
     # passing wrong parameters
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match=".* contrasts given, while there are .* runs."
+    ):
         model.compute_contrast([])
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=("t contrasts should be length P=.*, " "but this is length .*"),
+    ):
         model.compute_contrast([c1, []])
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="output_type must be one of "):
         model.compute_contrast(c1, "", "")
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="output_type must be one of "):
         model.compute_contrast(c1, "", [])
 
 

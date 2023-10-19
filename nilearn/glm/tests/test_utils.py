@@ -188,12 +188,14 @@ def test_mahalanobis_errors():
     effect = np.zeros((1, 2, 3))
     cov = np.zeros((3, 3, 3))
 
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="Inconsistent shape for effect and covariance"
+    ):
         multiple_mahalanobis(effect, cov)
 
     cov = np.zeros((1, 2, 3))
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Inconsistent shape for covariance"):
         multiple_mahalanobis(effect, cov)
 
 
@@ -213,13 +215,13 @@ def test_multiple_fast_inverse_errors():
     shape = (2, 2, 2)
     X = np.zeros(shape)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Matrix LU decomposition failed"):
         multiple_fast_inverse(X)
 
     shape = (10, 20, 20)
     X = np.zeros(shape)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Matrix LU decomposition failed"):
         multiple_fast_inverse(X)
 
 
@@ -248,23 +250,27 @@ def test_pos_recipr():
 
 def test_img_table_checks():
     # check matching lengths
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="len.* does not match len.*"):
         _check_list_length_match([""] * 2, [""], "", "")
 
     # check tables type and that can be loaded
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="table path .* could not be loaded"):
         _check_and_load_tables([".csv", ".csv"], "")
-    with pytest.raises(TypeError):
-        _check_and_load_tables([[], pd.DataFrame()], "")  # np.array([0]),
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        TypeError, match="can only be a pandas DataFrames or a string"
+    ):
+        _check_and_load_tables([[], pd.DataFrame()], "")
+    with pytest.raises(ValueError, match="table path .* could not be loaded"):
         _check_and_load_tables([".csv", pd.DataFrame()], "")
 
     # check high level wrapper keeps behavior
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="len.* does not match len.*"):
         _check_run_tables([""] * 2, [""], "")
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="table path .* could not be loaded"):
         _check_run_tables([""] * 2, [".csv", ".csv"], "")
-    with pytest.raises(TypeError):
+    with pytest.raises(
+        TypeError, match="can only be a pandas DataFrames or a string"
+    ):
         _check_run_tables([""] * 2, [[0], pd.DataFrame()], "")
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="table path .* could not be loaded"):
         _check_run_tables([""] * 2, [".csv", pd.DataFrame()], "")
