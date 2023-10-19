@@ -994,7 +994,7 @@ def test_new_img_like_boolean_data(affine_eye, image, shape_3d_default, rng):
 
 def test_clean_img_kwargs():
     # load fMRI data
-    data = dataset.fetch_development_fmri(n_subjects=1, reduce_confounds=True)
+    data = datasets.fetch_development_fmri(n_subjects=1, reduce_confounds=True)
     fmri_filenames = data.func[0]
 
     confounds_out, sample_mask = load_confounds(
