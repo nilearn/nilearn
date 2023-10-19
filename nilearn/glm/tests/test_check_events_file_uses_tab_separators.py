@@ -95,7 +95,7 @@ def test_binary_opening_an_image_error(tmp_path):
         b"\x07\x08\x08\x08\x0b\x0b\x0b\x0c\x0c\x0c\r;"
     )
     temp_img_file = tmp_path / "temp_img.gif"
-    with open(temp_img_file, "wb") as temp_img_obj:
+    with open(temp_img_file, "wb", encoding="utf-8") as temp_img_obj:
         temp_img_obj.write(img_data)
     with pytest.raises(
         ValueError,
