@@ -737,14 +737,9 @@ def clean(
         )
 
     # Interpolation / censoring
-    signals, confounds = _handle_scrubbed_volumes(
+    signals, confounds, sample_mask = _handle_scrubbed_volumes(
         signals, confounds, sample_mask, filter_type, t_r, extrapolate
     )
-    if sample_mask is not None and not extrapolate:
-        # reset the indexing of the sample_mask excluding non-interpolated
-        # volumes at the head of the data
-        sample_mask -= sample_mask[0]
-
     # Detrend
     # Detrend and filtering should apply to confounds, if confound presents
     # keep filters orthogonal (according to Lindquist et al. (2018))
@@ -824,17 +819,25 @@ def _handle_scrubbed_volumes(
 ):
     """Interpolate or censor scrubbed volumes."""
     if sample_mask is None:
-        return signals, confounds
+        return signals, confounds, sample_mask
 
     if filter_type == "butterworth":
         signals = _interpolate_volumes(signals, sample_mask, t_r, extrapolate)
+        # discard non-interpolated out-of-bounds volumes
+        signals = signals[~np.isnan(signals).all(axis=1), :]
         if confounds is not None:
             confounds = _interpolate_volumes(
                 confounds, sample_mask, t_r, extrapolate
             )
+            # discard non-interpolated out-of-bounds volumes
+            confounds = confounds[~np.isnan(confounds).all(axis=1), :]
+        if sample_mask is not None and not extrapolate:
+            # reset the indexing of the sample_mask excluding non-interpolated
+            # volumes at the head of the data
+            sample_mask -= sample_mask[0]
     else:  # Or censor when no filtering, or cosine filter
         signals, confounds = _censor_signals(signals, confounds, sample_mask)
-    return signals, confounds
+    return signals, confounds, sample_mask
 
 
 def _censor_signals(signals, confounds, sample_mask):
@@ -867,8 +870,6 @@ def _interpolate_volumes(volumes, sample_mask, t_r, extrapolate):
     )
     volumes_interpolated = cubic_spline_fitter(frame_times)
     volumes[~sample_mask, :] = volumes_interpolated[~sample_mask, :]
-    # discard non-interpolated out-of-bounds volumes
-    volumes = volumes[~np.isnan(volumes).all(axis=1), :]
     return volumes
 
 

@@ -1065,6 +1065,7 @@ def test_handle_scrubbed_volumes():
     (
         interpolated_signals,
         interpolated_confounds,
+        sample_mask,
     ) = nisignal._handle_scrubbed_volumes(
         signals, confounds, sample_mask, "butterworth", 2.5, True
     )
@@ -1075,7 +1076,11 @@ def test_handle_scrubbed_volumes():
         interpolated_confounds[sample_mask, :], confounds[sample_mask, :]
     )
 
-    scrubbed_signals, scrubbed_confounds = nisignal._handle_scrubbed_volumes(
+    (
+        scrubbed_signals,
+        scrubbed_confounds,
+        sample_mask,
+    ) = nisignal._handle_scrubbed_volumes(
         signals, confounds, sample_mask, "cosine", 2.5, True
     )
     np.testing.assert_equal(scrubbed_signals, signals[sample_mask, :])
@@ -1098,6 +1103,7 @@ def test_handle_scrubbed_volumes_extrapolation():
     (
         extrapolated_signals,
         extrapolated_confounds,
+        sample_mask,
     ) = nisignal._handle_scrubbed_volumes(
         signals, confounds, sample_mask, "butterworth", 2.5, True
     )
@@ -1114,6 +1120,7 @@ def test_handle_scrubbed_volumes_extrapolation():
     (
         interpolated_signals,
         interpolated_confounds,
+        sample_mask,
     ) = nisignal._handle_scrubbed_volumes(
         signals, confounds, sample_mask, "butterworth", 2.5, False
     )
