@@ -20,7 +20,6 @@ __docformat__ = "restructuredtext en"
 
 import numpy as np
 import scipy.linalg as spl
-from nibabel.onetime import auto_attr
 from numpy.linalg import matrix_rank
 
 from nilearn.glm._utils import positive_reciprocal
@@ -309,12 +308,12 @@ class RegressionResults(LikelihoodModelResults):
         self.whitened_residuals = whitened_residuals
         self.whitened_design = model.whitened_design
 
-    @auto_attr
+    @property
     def residuals(self):
         """Residuals from the fit."""
         return self.Y - self.predicted
 
-    @auto_attr
+    @property
     def normalized_residuals(self):
         """Residuals, normalized to have unit length.
 
@@ -337,7 +336,7 @@ class RegressionResults(LikelihoodModelResults):
         """
         return self.residuals * positive_reciprocal(np.sqrt(self.dispersion))
 
-    @auto_attr
+    @property
     def predicted(self):
         """Return linear predictor values from a design matrix."""
         beta = self.theta
@@ -345,7 +344,7 @@ class RegressionResults(LikelihoodModelResults):
         X = self.whitened_design
         return np.dot(X, beta)
 
-    @auto_attr
+    @property
     def SSE(self):
         """Error sum of squares.
 
@@ -353,7 +352,7 @@ class RegressionResults(LikelihoodModelResults):
         """
         return (self.whitened_residuals**2).sum(0)
 
-    @auto_attr
+    @property
     def r_square(self):
         """Proportion of explained variance.
 
@@ -361,7 +360,7 @@ class RegressionResults(LikelihoodModelResults):
         """
         return np.var(self.predicted, 0) / np.var(self.whitened_Y, 0)
 
-    @auto_attr
+    @property
     def MSE(self):
         """Return Mean square (error)."""
         return self.SSE / self.df_residuals
@@ -391,15 +390,19 @@ class SimpleRegressionResults(LikelihoodModelResults):
         # put this as a parameter of LikelihoodModel
         self.df_residuals = self.df_total - self.df_model
 
-    def logL(self, Y):
+    def logL(self):
         """Return the maximized log-likelihood."""
-        raise ValueError("can not use this method for simple results")
+        raise NotImplementedError(
+            "logL not implemented for "
+            "SimpleRegressionsResults. "
+            "Use RegressionResults"
+        )
 
-    def residuals(self, Y):
+    def residuals(self, Y, X):
         """Residuals from the fit."""
-        return Y - self.predicted
+        return Y - self.predicted(X)
 
-    def normalized_residuals(self, Y):
+    def normalized_residuals(self, Y, X):
         """Residuals, normalized to have unit length.
 
         See :footcite:`Montgomery2006` and :footcite:`Davidson2004`.
@@ -419,14 +422,11 @@ class SimpleRegressionResults(LikelihoodModelResults):
         .. footbibliography::
 
         """
-        return self.residuals(Y) * positive_reciprocal(
+        return self.residuals(Y, X) * positive_reciprocal(
             np.sqrt(self.dispersion)
         )
 
-    @auto_attr
-    def predicted(self):
+    def predicted(self, X):
         """Return linear predictor values from a design matrix."""
         beta = self.theta
-        # the LikelihoodModelResults has parameters named 'theta'
-        X = self.model.design
         return np.dot(X, beta)

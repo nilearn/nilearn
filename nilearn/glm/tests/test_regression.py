@@ -1,9 +1,13 @@
 """Test functions for models.regression"""
 
 import pytest
-from numpy.testing import assert_almost_equal, assert_array_almost_equal
+from numpy.testing import (
+    assert_almost_equal,
+    assert_array_almost_equal,
+    assert_array_equal,
+)
 
-from nilearn.glm import ARModel, OLSModel
+from nilearn.glm import ARModel, OLSModel, SimpleRegressionResults
 
 
 @pytest.fixture()
@@ -69,3 +73,12 @@ def test_AR_degenerate(X, Y):
     model = ARModel(design=X, rho=0.9)
     results = model.fit(Y)
     assert results.df_residuals == 31
+
+
+def test_simple_results(X, Y):
+    model = OLSModel(X)
+    results = model.fit(Y)
+
+    simple_results = SimpleRegressionResults(results)
+    assert_array_equal(results.predicted, simple_results.predicted(X))
+    assert_array_equal(results.residuals, simple_results.residuals(Y, X))
