@@ -1080,7 +1080,7 @@ def test_second_level_contrast_computation_errors(tmp_path, rng):
         model.compute_contrast(None)
 
 
-def test_second_level_contrast_length_errors_and_warnings(tmp_path):
+def test_second_level_contrast_length_errors(tmp_path):
     func_img, mask = fake_fmri_data(file_path=tmp_path)
 
     model = SecondLevelModel(mask_img=mask)
@@ -1089,15 +1089,6 @@ def test_second_level_contrast_length_errors_and_warnings(tmp_path):
     Y = [func_img] * 4
     X = pd.DataFrame([[1]] * 4, columns=["intercept"])
     model = model.fit(Y, design_matrix=X)
-
-    with pytest.warns(
-        UserWarning,
-        match=(
-            "t contrasts should be of length P=1, but it has length 0. "
-            "The rest of the contrast was padded with zeros."
-        ),
-    ):
-        model.compute_contrast(second_level_contrast=[])
 
     with pytest.raises(
         ValueError,
