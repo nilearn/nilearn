@@ -150,7 +150,7 @@ class DictLearning(_BaseDecomposition):
 
     Attributes
     ----------
-    `components_` : 2D numpy array (n_components x n-voxels)
+    components_ : 2D numpy array (n_components x n-voxels)
         Masked dictionary components extracted from the input images.
 
         .. note::
@@ -158,18 +158,18 @@ class DictLearning(_BaseDecomposition):
             Use attribute `components_img_` rather than manually unmasking
             `components_` with `masker_` attribute.
 
-    `components_img_` : 4D Nifti image
+    components_img_ : 4D Nifti image
         4D image giving the extracted components. Each 3D image is a component.
 
         .. versionadded:: 0.4.1
 
-    `masker_` : instance of MultiNiftiMasker
+    masker_ : instance of MultiNiftiMasker
         Masker used to filter and mask data as first step. If an instance of
         MultiNiftiMasker is given in `mask` parameter,
         this is a copy of it. Otherwise, a masker is created using the value
         of `mask` and other NiftiMasker related parameters as initialization.
 
-    `mask_img_` : Niimg-like object
+    mask_img_ : Niimg-like object
         See :ref:`extracting_data`.
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.

@@ -533,10 +533,10 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
 
     Attributes
     ----------
-    `covariances_` : numpy.ndarray, shape (n_features, n_features, n_subjects)
+    covariances_ : numpy.ndarray, shape (n_features, n_features, n_subjects)
         empirical covariance matrices.
 
-    `precisions_` : numpy.ndarraye, shape (n_features, n_features, n_subjects)
+    precisions_ : numpy.ndarraye, shape (n_features, n_features, n_subjects)
         precisions matrices estimated using the group-sparse algorithm.
 
     References
@@ -969,21 +969,21 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
 
     Attributes
     ----------
-    `covariances_` : numpy.ndarray, shape (n_features, n_features, n_subjects)
+    covariances_ : numpy.ndarray, shape (n_features, n_features, n_subjects)
         covariance matrices, one per subject.
 
-    `precisions_` : numpy.ndarray, shape (n_features, n_features, n_subjects)
+    precisions_ : numpy.ndarray, shape (n_features, n_features, n_subjects)
         precision matrices, one per subject. All matrices have the same
         sparsity pattern (if a coefficient is zero for a given matrix, it
         is also zero for every other.)
 
-    `alpha_` : float
+    alpha_ : float
         penalization parameter value selected.
 
-    `cv_alphas_` : list of floats
+    cv_alphas_ : list of floats
         all values of the penalization parameter explored.
 
-    `cv_scores_` : numpy.ndarray, shape (n_alphas, n_folds)
+    cv_scores_ : numpy.ndarray, shape (n_alphas, n_folds)
         scores obtained on test set for each value of the penalization
         parameter explored.
 

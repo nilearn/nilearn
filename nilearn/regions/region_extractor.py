@@ -364,11 +364,11 @@ class RegionExtractor(NiftiMapsMasker):
 
     Attributes
     ----------
-    `index_` : :class:`numpy.ndarray`
+    index_ : :class:`numpy.ndarray`
         Array of list of indices where each index value is assigned to
         each separate region of its corresponding family of brain maps.
 
-    `regions_img_` : :class:`nibabel.nifti1.Nifti1Image`
+    regions_img_ : :class:`nibabel.nifti1.Nifti1Image`
         List of separated regions with each region lying on an
         original volume concatenated into a 4D image.
 
