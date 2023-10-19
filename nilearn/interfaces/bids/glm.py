@@ -17,7 +17,7 @@ def save_glm_to_bids(
     out_dir=".",
     prefix=None,
 ):
-    """Save GLM results to BIDS-like files.
+    """Save :term:`GLM` results to :term:`BIDS`-like files.
 
     .. versionadded:: 0.9.2
 
@@ -33,28 +33,30 @@ def save_glm_to_bids(
 
             - A string
             - A list of strings
-            - A dictionary of contrast name: contrast weight key-value pairs.
+            - A dictionary of :term:`contrast` name: :term:`contrast`
+              weight key-value pairs.
               The contrast weights may be strings, lists, or arrays.
               Arrays may be 1D or 2D, with 1D arrays typically being
               t-contrasts and 2D arrays typically being F-contrasts.
 
-    contrast_types : None or :obj:`dict` of :obj:`str`, optional
-        An optional dictionary mapping some or all of the contrast names to
-        specific contrast types ('t' or 'F'). If None, all contrast types will
-        be automatically inferred based on the contrast arrays
+    contrast_types : None or :obj:`dict` of :obj:`str`, default=None
+        An optional dictionary mapping some
+        or all of the :term:`contrast` names to
+        specific contrast types ('t' or 'F').
+        If None, all :term:`contrast` types will
+        be automatically inferred based on the :term:`contrast` arrays
         (1D arrays are t-contrasts, 2D arrays are F-contrasts).
         Keys in this dictionary must match the keys in the ``contrasts``
-        dictionary, but only those contrasts for which contrast type must be
+        dictionary, but only those contrasts
+        for which :term:`contrast` type must be
         explicitly set need to be included.
-        Default is None.
 
     out_dir : :obj:`str`, optional
         Output directory for files. Default is current working directory.
 
-    prefix : :obj:`str` or None, optional
+    prefix : :obj:`str` or None, default=None
         String to prepend to generated filenames.
         If a string is provided, '_' will be added to the end.
-        Default is None.
 
     Warnings
     --------

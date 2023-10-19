@@ -42,9 +42,8 @@ def test_plot_glass_brain_file_output(img_3d_mni, tmp_path):
     plt.close()
 
 
-def test_plot_noncurrent_axes():
+def test_plot_noncurrent_axes(affine_eye, rng):
     """Regression test for Issue #450."""
-    rng = np.random.RandomState(42)
     maps_img = Nifti1Image(rng.random_sample((10, 10, 10)), np.eye(4))
     fh1 = plt.figure()
     fh2 = plt.figure()
@@ -101,11 +100,11 @@ def test_add_markers_using_plot_glass_brain():
         )
 
 
-def test_plot_glass_brain_colorbar_having_nans(img_3d_mni):
+def test_plot_glass_brain_colorbar_having_nans(affine_eye, img_3d_mni):
     """Smoke-test for plot_glass_brain and nans in the data image."""
     data = get_data(img_3d_mni)
     data[6, 5, 2] = np.inf
-    plot_glass_brain(Nifti1Image(data, np.eye(4)), colorbar=True)
+    plot_glass_brain(Nifti1Image(data, affine_eye), colorbar=True)
     plt.close()
 
 
@@ -117,10 +116,9 @@ def test_plot_glass_brain_display_modes_without_img(display_mode):
 
 
 @pytest.mark.parametrize("display_mode", ["lr", "lzry"])
-def test_plot_glass_brain_with_completely_masked_img(display_mode):
+def test_plot_glass_brain_with_completely_masked_img(img_3d_mni, display_mode):
     """Smoke test for PR #1888 with display modes having 'l'."""
-    img = Nifti1Image(np.zeros((10, 20, 30)), np.eye(4))
-    plot_glass_brain(img, display_mode=display_mode)
+    plot_glass_brain(img_3d_mni, display_mode=display_mode)
     plt.close()
 
 

@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 
 from nilearn._utils.data_gen import (
-    _add_metadata_to_bids_dataset,
+    add_metadata_to_bids_dataset,
     create_fake_bids_dataset,
     generate_fake_fmri_data_and_design,
 )
@@ -62,7 +62,7 @@ def test_infer_repetition_time_from_dataset(tmp_path):
 
     When using create_fake_bids_dataset the value is 1.5 secs by default
     in the raw dataset.
-    When using _add_metadata_to_bids_dataset the value is 2.0 secs.
+    When using add_metadata_to_bids_dataset the value is 2.0 secs.
     """
     bids_path = create_fake_bids_dataset(
         base_dir=tmp_path, n_sub=1, n_ses=1, tasks=["main"], n_runs=[1]
@@ -76,7 +76,7 @@ def test_infer_repetition_time_from_dataset(tmp_path):
     assert t_r == expected_t_r
 
     expected_t_r = 2.0
-    _add_metadata_to_bids_dataset(
+    add_metadata_to_bids_dataset(
         bids_path=tmp_path / bids_path,
         metadata={"RepetitionTime": expected_t_r},
     )
@@ -111,7 +111,7 @@ def test_infer_slice_timing_start_time_from_dataset(tmp_path):
     assert StartTime is expected_StartTime
 
     expected_StartTime = 1.0
-    _add_metadata_to_bids_dataset(
+    add_metadata_to_bids_dataset(
         bids_path=tmp_path / bids_path,
         metadata={"StartTime": expected_StartTime},
     )
@@ -146,7 +146,7 @@ def test_get_bids_files_inheritance_principle_root_folder(tmp_path):
 
     # add json file to root of dataset
     json_file = "task-main_bold.json"
-    json_file = _add_metadata_to_bids_dataset(
+    json_file = add_metadata_to_bids_dataset(
         bids_path=bids_path,
         metadata={"RepetitionTime": 1.5},
         json_file=json_file,
@@ -199,7 +199,7 @@ def test_get_bids_files_inheritance_principle_sub_folder(tmp_path, json_file):
 
     _rm_all_json_files_from_bids_dataset(bids_path)
 
-    new_json_file = _add_metadata_to_bids_dataset(
+    new_json_file = add_metadata_to_bids_dataset(
         bids_path=bids_path,
         metadata={"RepetitionTime": 1.5},
         json_file=json_file,

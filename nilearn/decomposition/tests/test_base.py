@@ -4,7 +4,7 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal
 from scipy import linalg
 
-from nilearn.conftest import _affine_eye, _img_3d_ones
+from nilearn.conftest import _affine_eye, _img_3d_ones, _rng
 from nilearn.decomposition._base import _fast_svd, _mask_and_reduce
 from nilearn.maskers import MultiNiftiMasker
 
@@ -13,11 +13,10 @@ from nilearn.maskers import MultiNiftiMasker
 def data_for_mask_and_reduce():
     """Create "multi-subject" dataset with fake activation."""
     shape = (6, 8, 10, 5)
-    rng = np.random.RandomState(0)
 
     imgs = []
     for _ in range(8):
-        this_img = rng.normal(size=shape)
+        this_img = _rng().normal(size=shape)
 
         # Add activation
         this_img[2:4, 2:4, 2:4, :] += 10
@@ -34,11 +33,9 @@ def masker():
 
 # We need to use n_features > 500 to trigger the randomized_svd
 @pytest.mark.parametrize("n_features", [30, 100, 550])
-def test_fast_svd(n_features):
+def test_fast_svd(n_features, rng):
     n_samples = 100
     k = 10
-
-    rng = np.random.RandomState(42)
 
     # generate a matrix X of approximate effective rank `rank` and no noise
     # component (very structured signal):

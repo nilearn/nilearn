@@ -463,19 +463,18 @@ def test_sym_matrix_to_vec():
     )
 
 
-def test_sym_matrix_to_vec_is_the_inverse_of_vec_to_sym_matrix():
+def test_sym_matrix_to_vec_is_the_inverse_of_vec_to_sym_matrix(rng):
     n = 5
     p = n * (n + 1) // 2
-    rand_gen = np.random.RandomState(0)
 
     # when diagonal is included
-    vec = rand_gen.rand(p)
+    vec = rng.rand(p)
     sym = vec_to_sym_matrix(vec)
 
     assert_array_almost_equal(sym_matrix_to_vec(sym), vec)
 
     # when diagonal given separately
-    diagonal = rand_gen.rand(n + 1)
+    diagonal = rng.rand(n + 1)
     sym = vec_to_sym_matrix(vec, diagonal=diagonal)
 
     assert_array_almost_equal(
@@ -940,7 +939,7 @@ def test_connectivity_measure_standardize(signals):
     """Check warning is raised and then suppressed with setting standardize."""
     match = "default strategy for standardize"
 
-    with pytest.warns(FutureWarning, match=match):
+    with pytest.warns(DeprecationWarning, match=match):
         ConnectivityMeasure(kind="correlation").fit_transform(signals)
 
     with warnings.catch_warnings(record=True) as record:

@@ -187,8 +187,8 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
                 .. versionadded:: 0.8.0
 
-        copy : Boolean, optional
-            Indicates whether a copy is returned or not. Default=True.
+        copy : Boolean, default=True
+            Indicates whether a copy is returned or not.
 
         Returns
         -------

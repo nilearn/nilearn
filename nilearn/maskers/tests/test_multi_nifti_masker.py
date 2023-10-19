@@ -12,6 +12,7 @@ from numpy.testing import assert_array_equal
 
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import write_tmp_imgs
+from nilearn.conftest import _rng
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiMasker
 
@@ -179,7 +180,7 @@ def test_shelving():
 
 
 def _get_random_imgs(shape, length):
-    rng = np.random.RandomState(42)
+    rng = _rng()
     return [Nifti1Image(rng.uniform(size=shape), np.eye(4))] * length
 
 
@@ -229,8 +230,7 @@ def test_dtype():
     assert masked_img[0].dtype == np.float32
 
 
-def test_standardization():
-    rng = np.random.RandomState(42)
+def test_standardization(rng):
     data_shape = (9, 9, 5)
     n_samples = 500
 

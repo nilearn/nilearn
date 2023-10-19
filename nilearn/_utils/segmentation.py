@@ -156,9 +156,7 @@ def _build_laplacian(data, spacing, mask=None, beta=50):
     return lap
 
 
-def _random_walker(
-    data, labels, beta=130, tol=1.0e-3, copy=True, spacing=None
-):
+def random_walker(data, labels, beta=130, tol=1.0e-3, copy=True, spacing=None):
     """Random walker algorithm for segmentation from markers.
 
     Parameters
@@ -176,19 +174,18 @@ def _random_walker(
         consecutive integers, the labels array will be transformed so that
         labels are consecutive.
 
-    beta : float, optional
+    beta : float, default=130
         Penalization coefficient for the random walker motion
         (the greater `beta`, the more difficult the diffusion).
-        Default=130.
 
-    tol : float, optional
+    tol : float, default=1e-3
         Tolerance to achieve when solving the linear system, in
-        cg' mode. Default=1e-3.
+        cg' mode.
 
-    copy : bool, optional
+    copy : bool, default=True
         If copy is False, the `labels` array will be overwritten with
         the result of the segmentation. Use copy=False if you want to
-        save on memory. Default=True.
+        save on memory.
 
     spacing : iterable of floats, optional
         Spacing between voxels in each spatial dimension. If `None`, then

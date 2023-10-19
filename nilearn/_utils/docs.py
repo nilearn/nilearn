@@ -262,7 +262,9 @@ docdict[
 ] = """
 data_dir : :obj:`pathlib.Path` or :obj:`str`, optional
     Path where data should be downloaded.
-    By default, files are downloaded in home directory.
+    By default, files are downloaded in a ``nilearn_data`` folder
+    in the home directory of the user.
+    See also ``nilearn.datasets.utils.get_data_dirs``.
 """
 
 # detrend
@@ -885,7 +887,7 @@ docdict[
     "t_r"
 ] = """
 t_r : :obj:`float` or None, default=None
-    Repetition time, in seconds (sampling period).
+    :term:`Repetition time<TR>`, in seconds (sampling period).
     Set to `None` if not provided.
 """
 
@@ -972,7 +974,7 @@ docdict["verbose0"] = verbose.format(0)
 docdict[
     "view"
 ] = """
-view : :obj:`str` or a pair of :obj:`float`, Default="lateral"
+view : :obj:`str` or a pair of :obj:`float`, default="lateral"
     If a string, must be in {"lateral", "medial", "dorsal", "ventral",\
 "anterior", "posterior"}.
     If a sequence, must be a pair (elev, azim) of float

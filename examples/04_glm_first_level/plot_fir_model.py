@@ -51,9 +51,10 @@ plot_design_matrix(design_matrix)
 
 
 # %%
-# We have to adapt contrast specification. We characterize the :term:`BOLD`
-# response by the sum across the three time lags. It's a bit hairy,
-# sorry, but this is the price to pay for flexibility...
+# We have to adapt :term:`contrast` specification.
+# We characterize the :term:`BOLD` response by the sum
+# across the three time lags.
+# It's a bit hairy, sorry, but this is the price to pay for flexibility...
 import numpy as np
 
 contrast_matrix = np.eye(design_matrix.shape[1])

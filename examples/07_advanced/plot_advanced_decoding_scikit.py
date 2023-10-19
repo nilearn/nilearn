@@ -22,16 +22,16 @@ face and cat images.
 """
 
 # %%
-# Retrieve and load the fMRI data from the Haxby study
-# ----------------------------------------------------
+# Retrieve and load the :term:`fMRI` data from the Haxby study
+# ------------------------------------------------------------
 #
 # First download the data
 # .......................
 #
 
 # The :func:`nilearn.datasets.fetch_haxby` function will download the
-# Haxby dataset composed of fmri images in a Niimg, a spatial mask and a text
-# document with label of each image
+# Haxby dataset composed of fMRI images in a Niimg,
+# a spatial mask and a text document with label of each image
 from nilearn import datasets
 
 haxby_dataset = datasets.fetch_haxby()
@@ -66,7 +66,7 @@ session_label = behavioral["chunks"][condition_mask]
 # decoding pipelines. They are all used with the same `fit()` and `predict()`
 # functions.
 # Let's define a Support Vector Classifier
-# (or `SVC <http://scikit-learn.org/stable/modules/svm.html >`_).
+# (or `SVC <https://scikit-learn.org/stable/modules/svm.html >`_).
 
 from sklearn.svm import SVC
 
@@ -77,8 +77,9 @@ svc = SVC()
 # ................
 # To use a scikit-learn estimator on brain images, you should first mask the
 # data using a :class:`nilearn.maskers.NiftiMasker` to extract only the
-# voxels inside the mask of interest, and transform 4D input fMRI data to
-# 2D arrays(`shape=(n_timepoints, n_voxels)`) that estimators can work on.
+# voxels inside the mask of interest,
+# and transform 4D input :term:`fMRI` data to 2D arrays
+# (`shape=(n_timepoints, n_voxels)`) that estimators can work on.
 from nilearn.maskers import NiftiMasker
 
 masker = NiftiMasker(
@@ -193,8 +194,8 @@ fitted_pipeline = cross_validate(
 print(f"ANOVA+SVC test score: {fitted_pipeline['test_score'].mean():.3f}")
 
 # %%
-# Visualize the ANOVA + SVC's discriminating weights
-# ..................................................
+# Visualize the :term:`ANOVA` + SVC's discriminating weights
+# ..........................................................
 
 # retrieve the pipeline fitted on the first cross-validation fold and its SVC
 # coefficients
@@ -229,7 +230,7 @@ plot_stat_map(weight_img, title="Anova+SVC weights")
 # To change the prediction engine, we just need to import it and use in our
 # pipeline instead of the SVC.
 # We can try Fisher's
-# `Linear Discriminant Analysis (LDA) <http://scikit-learn.org/stable/auto_examples/decomposition/plot_pca_vs_lda.html>`_ # noqa
+# `Linear Discriminant Analysis (LDA) <https://scikit-learn.org/stable/auto_examples/decomposition/plot_pca_vs_lda.html>`_ # noqa
 
 # Construct the new estimator object and use it in a new pipeline after anova
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis

@@ -161,7 +161,10 @@ def test_graph_net_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
 
 @pytest.mark.parametrize("standardize", [True, False])
 def test_graph_net_and_tvl1_same_for_pure_l1_BaseSpaceNet(
-    standardize, max_iter=100, decimal=2
+    affine_eye,
+    standardize,
+    max_iter=100,
+    decimal=2,
 ):
     """Check that graph_net_solver and tvl1_solver give same results \
     when l1_ratio = 1.
@@ -176,8 +179,8 @@ def test_graph_net_and_tvl1_same_for_pure_l1_BaseSpaceNet(
     unmasked_X = np.rollaxis(X, -1, start=0)
     unmasked_X = np.array([x[mask] for x in unmasked_X])
 
-    mask = Nifti1Image(mask.astype(np.float64), np.eye(4))
-    X = Nifti1Image(X.astype(np.float64), np.eye(4))
+    mask = Nifti1Image(mask.astype(np.float64), affine_eye)
+    X = Nifti1Image(X.astype(np.float64), affine_eye)
 
     sl = BaseSpaceNet(
         alphas=alpha,

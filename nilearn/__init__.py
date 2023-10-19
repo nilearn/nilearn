@@ -56,7 +56,9 @@ def _py37_deprecation_warning():
         "Python 3.9 or 3.10."
     )
     warnings.filterwarnings("once", message=py37_warning)
-    warnings.warn(message=py37_warning, category=FutureWarning, stacklevel=3)
+    warnings.warn(
+        message=py37_warning, category=DeprecationWarning, stacklevel=3
+    )
 
 
 def _python_deprecation_warnings():

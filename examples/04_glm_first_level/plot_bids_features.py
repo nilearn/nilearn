@@ -3,11 +3,12 @@ First level analysis of a complete BIDS dataset from openneuro
 ==============================================================
 
 
-Full step-by-step example of fitting a GLM to perform a first level analysis
-in an openneuro :term:`BIDS` dataset. We demonstrate how :term:`BIDS`
+Full step-by-step example of fitting a :term:`GLM`
+to perform a first level analysis in an openneuro :term:`BIDS` dataset.
+We demonstrate how :term:`BIDS`
 derivatives can be exploited to perform a simple one subject analysis with
 minimal code. Details about the :term:`BIDS` standard are available at
-`http://bids.neuroimaging.io/ <http://bids.neuroimaging.io/>`_.
+`https://bids.neuroimaging.io/ <https://bids.neuroimaging.io/>`_.
 We also demonstrate how to download individual groups of files from the
 Openneuro s3 bucket.
 
@@ -22,9 +23,10 @@ More specifically:
 4. Display contrast plot and uncorrected first level statistics table report.
 """
 
-# %%
-# Fetch openneuro BIDS dataset
-# ----------------------------
+
+# %%#
+# Fetch openneuro :term:`BIDS` dataset
+# ------------------------------------
 # We download one subject from the stopsignal task
 # in the ds000030 V4 :term:`BIDS` dataset available in openneuro.
 # This dataset contains the necessary information to run a statistical analysis
@@ -185,7 +187,7 @@ plt.show()
 # %%
 # Simple statistical report of thresholded contrast
 # -------------------------------------------------
-# We display the contrast plot and table with cluster information
+# We display the :term:`contrast` plot and table with cluster information.
 from nilearn.plotting import plot_contrast_matrix
 
 plot_contrast_matrix("StopSuccess - Go", design_matrix)
@@ -210,7 +212,7 @@ print(table.to_latex())
 # %%
 # Generating a report
 # -------------------
-# Using the computed FirstLevelModel and contrast information,
+# Using the computed FirstLevelModel and :term:`contrast` information,
 # we can quickly create a summary report.
 from nilearn.reporting import make_glm_report
 

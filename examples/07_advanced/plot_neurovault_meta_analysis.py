@@ -3,7 +3,7 @@ NeuroVault meta-analysis of stop-go paradigm studies
 ====================================================
 
 This example shows how to download statistical maps from
-NeuroVault
+:term:`Neurovault`
 
 See :func:`nilearn.datasets.fetch_neurovault_ids`
 documentation for more details.
@@ -30,7 +30,7 @@ from nilearn.image import get_data, load_img, math_img, new_img_like
 # in order to save time we specify their ids explicitly.
 stop_go_image_ids = (151, 3041, 3042, 2676, 2675, 2818, 2834)
 
-# These ids were determined by querying neurovault like this:
+# These ids were determined by querying Neurovault like this:
 
 # from nilearn.datasets import fetch_neurovault, neurovault
 #

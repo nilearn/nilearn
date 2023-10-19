@@ -9,8 +9,8 @@ could have been computed with nilearn :func:`nilearn.image.mean_img` function.
 """
 
 
-# %%
-# Fetching 2 subject movie watching brain development fmri datasets.
+# %%##
+# Fetching 2 subject movie watching brain development :term:`fMRI` datasets.
 from nilearn import datasets
 
 dataset = datasets.fetch_development_fmri(n_subjects=2)

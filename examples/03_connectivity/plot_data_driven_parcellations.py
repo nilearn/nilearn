@@ -7,7 +7,7 @@ and Recursive Neighbor Agglomeration (ReNA) to create a set of parcels.
 
 In a high dimensional regime, these methods can be interesting
 to create a 'compressed' representation of the data, replacing the data
-in the fMRI images by mean signals on the parcellation, which can
+in the :term:`fMRI` images by mean signals on the parcellation, which can
 subsequently be used for statistical analysis or machine learning.
 
 Also, these methods can be used to learn functional connectomes
@@ -24,21 +24,21 @@ Bertrand Thirion, Gael Varoquaux, Elvis Dohmatob, Jean-Baptiste Poline.
   <https://doi.org/10.3389/fnins.2014.00167>`_ Frontiers in Neuroscience,
   2014.
 
-This parcellation may be useful in a supervised learning, see for
-instance:
+This :term:`parcellation` may be useful in a supervised learning,
+see for instance:
 
 Vincent Michel, Alexandre Gramfort, Gael Varoquaux, Evelyn Eger,
   Christine Keribin, Bertrand Thirion. `A supervised clustering approach
   for fMRI-based inference of brain states.
-  <http://dx.doi.org/10.1016/j.patcog.2011.04.006>`_.
+  <https://doi.org/10.1016/j.patcog.2011.04.006>`_.
   Pattern Recognition, Elsevier, 2011.
 
 The big picture discussion corresponding to this example can be found
 in the documentation section :ref:`parcellating_brain`.
 """
 
-# %%
-# Download a brain development fmri dataset and turn it to a data matrix
+# %%####
+# Download a brain development fMRI dataset and turn it to a data matrix
 # ----------------------------------------------------------------------
 #
 # We download one subject of the movie watching dataset from Internet
@@ -161,8 +161,8 @@ plotting.plot_epi(
 # signals can be created on the brain parcellations with fit call.
 fmri_reduced = ward.transform(dataset.func)
 
-# Display the corresponding data compressed using the parcellation using
-# parcels=2000.
+# Display the corresponding data compressed
+# using the parcellation using parcels=2000.
 fmri_compressed = ward.inverse_transform(fmri_reduced)
 
 plotting.plot_epi(
@@ -330,18 +330,19 @@ fig.legend(handles, labels, loc=(0.5, 0.8))
 #
 
 # %%
-# Brain parcellations with ReNA Clustering
-# ----------------------------------------
+# Brain parcellations with :term:`ReNA` Clustering
+# ------------------------------------------------
 #
-# One interesting algorithmic property of ReNA (see References) is that
-# it is very fast for a large number of parcels (notably faster than Ward).
-# As before, the parcellation is done with a Parcellations object.
-# The spatial constraints are implemented inside the Parcellations object.
+# One interesting algorithmic property of :term:`ReNA` (see References)
+# is that it is very fast
+# for a large number of parcels (notably faster than Ward).
+# As before, the :term:`parcellation` is done with a ``Parcellations`` object.
+# The spatial constraints are implemented inside the ``Parcellations`` object.
 #
 # References
 # ..........
 #
-# More about ReNA clustering algorithm in the original paper
+# More about :term:`ReNA` clustering algorithm in the original paper
 #
 #     * A. Hoyos-Idrobo, G. Varoquaux, J. Kahn and B. Thirion, "Recursive
 #       Nearest Agglomeration (ReNA): Fast Clustering for Approximation of
@@ -383,8 +384,8 @@ plotting.plot_roi(
 )
 
 # %%
-# Compressed representation of ReNA clustering
-# ............................................
+# Compressed representation of :term:`ReNA` clustering
+# ....................................................
 #
 # We illustrate the effect that the clustering has on the signal.
 # We show the original data, and the approximation provided by
@@ -404,7 +405,7 @@ plotting.plot_epi(
 )
 
 # A reduced data can be created by taking the parcel-level average:
-# Note that, as many scikit-learn objects, the ReNA object exposes
+# Note that, as many scikit-learn objects, the ``rena`` object exposes
 # a transform method that modifies input features. Here it reduces their
 # dimension.
 # However, the data are in one single large 4D image, we need to use
@@ -428,7 +429,7 @@ plotting.plot_epi(
 # to the original signal, we can notice that Ward Clustering
 # gives a slightly more accurate compressed representation.
 # However, as said in the previous section, the computation time is
-# reduced which could still make ReNA more relevant than Ward in
+# reduced which could still make :term:`ReNA` more relevant than Ward in
 # some cases.
 
 # sphinx_gallery_dummy_images=3
