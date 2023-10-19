@@ -17,7 +17,7 @@ from numpy.testing import (
     assert_equal,
 )
 
-from nilearn import dataset, signal
+from nilearn import datasets, signal
 from nilearn._utils import niimg_conversions, testing
 from nilearn._utils.data_gen import (
     generate_fake_fmri,
@@ -1010,7 +1010,7 @@ def test_clean_img_kwargs():
         demean=True,
     )
 
-    clean_nifti = image.clean_img(
+    image.clean_img(
         fmri_filenames,
         detrend=True,
         standardize="zscore_sample",
