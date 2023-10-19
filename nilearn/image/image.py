@@ -1284,11 +1284,11 @@ def clean_img(
         imgs_ = new_img_like(
             imgs_, data.T.reshape(imgs_.shape), copy_header=True
         )
-    if 'sample_mask' in clean_kwargs:
-        sample_shape = imgs_.shape[:3] + clean_kwargs['sample_mask'].shape
+    if "sample_mask" in clean_kwargs:
+        sample_shape = imgs_.shape[:3] + clean_kwargs["sample_mask"].shape
         imgs_ = new_img_like(
             imgs_, data.T.reshape(sample_shape), copy_header=True
-    )
+        )
 
     return imgs_
 

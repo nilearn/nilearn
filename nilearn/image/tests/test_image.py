@@ -16,9 +16,7 @@ from numpy.testing import (
     assert_array_equal,
     assert_equal,
 )
-from nilearn.dataset import fetch_development_fmri
-from nilearn.interfaces.fmriprep import load_confounds
-from nilearn import signal
+from nilearn import dataset, signal
 from nilearn._utils import niimg_conversions, testing
 from nilearn._utils.data_gen import (
     generate_fake_fmri,
@@ -45,6 +43,7 @@ from nilearn.image import (
     swap_img_hemispheres,
     threshold_img,
 )
+from nilearn.interfaces.fmriprep import load_confounds
 
 X64 = platform.architecture()[0] == "64bit"
 
@@ -991,11 +990,12 @@ def test_new_img_like_boolean_data(affine_eye, image, shape_3d_default, rng):
 
     assert get_data(out_img).dtype == "uint8"
 
-def test_clean_img_kwargs() :
+
+def test_clean_img_kwargs():
     # load fMRI data
     data = dataset.fetch_development_fmri(n_subjects=1, reduce_confounds=True)
     fmri_filenames = data.func[0]
-    
+
     confounds_out, sample_mask = load_confounds(
         fmri_filenames,
         strategy=["motion", "wm_csf", "scrub"],
@@ -1008,7 +1008,7 @@ def test_clean_img_kwargs() :
         n_compcor=5,
         demean=True,
     )
-    
+
     image.clean_img(
         fmri_filenames,
         detrend=True,
