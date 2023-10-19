@@ -715,7 +715,7 @@ def test_fmri_inputs_errors(tmp_path, confounds):
         SecondLevelModel().fit(niimgs)
     with pytest.raises(
         TypeError,
-        match=("Elements of second_level_input " "must be of the same type."),
+        match="Elements of second_level_input must be of the same type.",
     ):
         SecondLevelModel().fit(niimgs + [[]], confounds)
 

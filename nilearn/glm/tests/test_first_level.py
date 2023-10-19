@@ -632,7 +632,7 @@ def test_fmri_inputs_errors(tmp_path):
             # At least paradigms or design have to be given
             with pytest.raises(
                 ValueError,
-                match=("events or design matrices " "must be provided"),
+                match="events or design matrices must be provided",
             ):
                 FirstLevelModel(mask_img=None).fit(fi)
 
@@ -648,7 +648,7 @@ def test_fmri_inputs_errors(tmp_path):
                 FirstLevelModel(mask_img=None, slice_time_ref=0.0).fit(fi, d)
             with pytest.raises(
                 ValueError,
-                match=("The provided events data " "has no onset column."),
+                match="The provided events data has no onset column.",
             ):
                 FirstLevelModel(mask_img=None, t_r=1.0).fit(fi, d)
 
@@ -1028,7 +1028,7 @@ def test_first_level_contrast_computation_errors(tmp_path):
         model.compute_contrast([])
     with pytest.raises(
         ValueError,
-        match=("t contrasts should be length P=.*, " "but this is length .*"),
+        match="t contrasts should be length P=.*, but this is length .*",
     ):
         model.compute_contrast([c1, []])
     with pytest.raises(ValueError, match="output_type must be one of "):
