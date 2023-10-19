@@ -2,14 +2,12 @@
 
 Author: Bertrand Thirion, 2011--2015
 """
-from warnings import warn
-
 import numpy as np
 from nibabel.onetime import auto_attr
 from scipy.linalg import inv
 from scipy.stats import t as t_distribution
 
-from nilearn.glm._utils import positive_reciprocal
+from nilearn.glm._utils import pad_contrast, positive_reciprocal
 
 # Inverse t cumulative distribution
 inv_t_cdf = t_distribution.ppf
@@ -198,20 +196,9 @@ class LikelihoodModelResults:
             matrix = matrix[None]
         if matrix.shape[0] != 1:
             raise ValueError("t contrasts should have only one row")
-        if matrix.shape[1] > self.theta.shape[0]:
-            raise ValueError(
-                f"t contrasts should be of length P={self.theta.shape[0]}, "
-                f"but it has length {matrix.shape[1]}."
-            )
-        elif matrix.shape[1] < self.theta.shape[0]:
-            warn(
-                f"t contrasts should be of length P={self.theta.shape[0]}, "
-                f"but it has length {matrix.shape[1]}. "
-                "The rest of the contrast was padded with zeros."
-            )
-            padding = np.zeros((1, self.theta.shape[0] - matrix.shape[1]))
-            matrix = np.hstack((matrix, padding))
-
+        matrix = pad_contrast(
+            con_val=matrix, theta=self.theta, contrast_type="t"
+        )
         store = set(store)
         if not store.issubset(("t", "effect", "sd")):
             raise ValueError(f"Unexpected store request in {store}")
@@ -279,6 +266,9 @@ class LikelihoodModelResults:
                 f"F contrasts should have shape[1] P={self.theta.shape[0]}, "
                 f"but this has shape[1] {matrix.shape[1]}"
             )
+        matrix = pad_contrast(
+            con_val=matrix, theta=self.theta, contrast_type="F"
+        )
         ctheta = np.dot(matrix, self.theta)
         if matrix.ndim == 1:
             matrix = matrix.reshape((1, matrix.shape[0]))

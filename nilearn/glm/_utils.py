@@ -343,3 +343,59 @@ def positive_reciprocal(X):
     """
     X = np.asarray(X)
     return np.where(X <= 0, 0, 1.0 / X)
+
+
+def pad_contrast(con_val, theta, contrast_type):
+    """Pad contrast with zeros if necessary.
+
+    If the contrast is shorter than the number of parameters,
+    it is padded with zeros.
+
+    If the contrast is longer than the number of parameters,
+    a ValueError is raised.
+
+    Parameters
+    ----------
+    con_val : numpy.ndarray of shape (p) or (q, p)
+        Where q = number of :term:`contrast` vectors
+        and p = number of regressors.
+
+    theta theta of RegressionResults instances
+
+    contrast_type : {'t', 'F'}, optional
+        Type of the :term:`contrast`.
+    """
+    nb_cols = con_val.shape[0] if con_val.ndim == 1 else con_val.shape[1]
+    if nb_cols > theta.shape[0]:
+        if contrast_type == "t":
+            raise ValueError(
+                f"t contrasts should be of length P={theta.shape[0]}, "
+                f"but it has length {nb_cols}."
+            )
+        if contrast_type == "F":
+            raise ValueError(
+                f"F contrasts should have {theta.shape[0]} columns, "
+                f"but it has {nb_cols}."
+            )
+
+    pad = False
+    if nb_cols < theta.shape[0]:
+        pad = True
+        if contrast_type == "t":
+            warn(
+                f"t contrasts should be of length P={theta.shape[0]}, "
+                f"but it has length {nb_cols}. "
+                "The rest of the contrast was padded with zeros."
+            )
+        if contrast_type == "F":
+            warn(
+                f"F contrasts should have {theta.shape[0]} colmuns, "
+                f"but it has only {nb_cols}. "
+                "The rest of the contrast was padded with zeros."
+            )
+
+    if pad:
+        padding = np.zeros((nb_cols, theta.shape[0] - nb_cols))
+        con_val = np.hstack((con_val, padding))
+
+    return con_val
