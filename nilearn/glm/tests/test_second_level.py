@@ -624,7 +624,7 @@ def test_fmri_inputs(tmp_path, rng):
     SecondLevelModel().fit(niimg_4d, None, sdes)
 
 
-def test_fmri_pand_series_as_inputs(tmp_path, rng):
+def test_fmri_pandas_series_as_input(tmp_path, rng):
     # prepare correct input dataframe and lists
     p, q = 80, 10
     X = rng.standard_normal(size=(p, q))
