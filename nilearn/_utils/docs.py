@@ -136,49 +136,57 @@ docdict[
 ] = f"""
 
         - `svc`: :class:`{svc} <sklearn.svm.LinearSVC>` with L2 penalty.
-            .. code-block:: python
 
-                svc = LinearSVC(penalty="l2", max_iter=1e4)
+        .. code-block:: python
+
+            svc = LinearSVC(penalty="l2", max_iter=1e4)
 
         - `svc_l2`: :class:`{svc} <sklearn.svm.LinearSVC>` with L2 penalty.
-            .. note::
-                Same as option `svc`.
+
+        .. note::
+            Same as option `svc`.
 
         - `svc_l1`: :class:`{svc} <sklearn.svm.LinearSVC>` with L1 penalty.
-            .. code-block:: python
 
-                svc_l1 = LinearSVC(penalty="l1", dual=False, max_iter=1e4)
+        .. code-block:: python
+
+            svc_l1 = LinearSVC(penalty="l1", dual=False, max_iter=1e4)
 
         - `logistic`: \
             :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
             with L2 penalty.
-            .. code-block:: python
 
-                logistic = LogisticRegression(penalty="l2", solver="liblinear")
+        .. code-block:: python
+
+            logistic = LogisticRegression(penalty="l2", solver="liblinear")
 
         - `logistic_l1`: \
             :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
             with L1 penalty.
-            .. code-block:: python
 
-                logistic_l1 = LogisticRegression(penalty="l1", solver="liblinear")  # noqa
+        .. code-block:: python
+
+            logistic_l1 = LogisticRegression(penalty="l1", solver="liblinear")
 
         - `logistic_l2`: \
             :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
             with L2 penalty
-            .. note::
-                Same as option `logistic`.
+
+        .. note::
+            Same as option `logistic`.
 
         - `ridge_classifier`: \
             :class:`{rc} <sklearn.linear_model.RidgeClassifierCV>`.
-            .. code-block:: python
 
-                ridge_classifier = RidgeClassifierCV()
+        .. code-block:: python
+
+            ridge_classifier = RidgeClassifierCV()
 
         - `dummy_classifier`: :class:`{dc} <sklearn.dummy.DummyClassifier>`.
-            .. code-block:: python
 
-                dummy = DummyClassifier(strategy="stratified", random_state=0)
+        .. code-block:: python
+
+            dummy = DummyClassifier(strategy="stratified", random_state=0)
 
 """
 
@@ -525,9 +533,9 @@ mask_strategy : {"background", "epi", "whole-brain-template",\
           part of your data by resampling the MNI152 brain mask for
           your data's field of view.
 
-            .. note::
-                This option is equivalent to the previous 'template' option
-                which is now deprecated.
+        .. note::
+            This option is equivalent to the previous 'template' option
+            which is now deprecated.
 
         - `"gm-template"`: This will extract the gray matter part of your
           data by resampling the corresponding MNI152 template for your
@@ -705,36 +713,42 @@ docdict[
 
         - `ridge`: \
             :class:`{Ridge regression} <sklearn.linear_model.RidgeCV>`.
-            .. code-block:: python
 
-                ridge = RidgeCV()
+        .. code-block:: python
+
+            ridge = RidgeCV()
 
         - `ridge_regressor`: \
             :class:`{Ridge regression} <sklearn.linear_model.RidgeCV>`.
-            .. note::
-                Same option as `ridge`.
+
+        .. note::
+            Same option as `ridge`.
 
         - `svr`: :class:`{Support vector regression} <sklearn.svm.SVR>`.
-            .. code-block:: python
 
-                svr = SVR(kernel="linear", max_iter=1e4)
+        .. code-block:: python
+
+            svr = SVR(kernel="linear", max_iter=1e4)
 
         - `lasso`: \
             :class:`{Lasso regression} <sklearn.linear_model.LassoCV>`.
-            .. code-block:: python
 
-                lasso = LassoCV()
+        .. code-block:: python
+
+            lasso = LassoCV()
 
         - `lasso_regressor`: \
             :class:`{Lasso regression} <sklearn.linear_model.LassoCV>`.
-            .. note::
-                Same option as `lasso`.
+
+        .. note::
+            Same option as `lasso`.
 
         - `dummy_regressor`: \
             :class:`{Dummy regressor} <sklearn.dummy.DummyRegressor>`.
-            .. code-block:: python
 
-                dummy = DummyRegressor(strategy="mean")
+        .. code-block:: python
+
+            dummy = DummyRegressor(strategy="mean")
 
 """
 

@@ -103,32 +103,32 @@ class _MultiPCA(_BaseDecomposition):
 
     Attributes
     ----------
-    `masker_` : instance of MultiNiftiMasker
+    masker_ : instance of MultiNiftiMasker
         Masker used to filter and mask data as first step. If an instance of
-        MultiNiftiMasker is given in `mask` parameter,
+        MultiNiftiMasker is given in ``mask`` parameter,
         this is a copy of it. Otherwise, a masker is created using the value
-        of `mask` and other NiftiMasker related parameters as initialization.
+        of ``mask`` and other NiftiMasker related parameters as initialization.
 
-    `mask_img_` : Niimg-like object
+    mask_img_ : Niimg-like object
         See :ref:`extracting_data`.
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.
 
-    `components_` : 2D numpy array (n_components x n-voxels)
+    components_ : 2D numpy array (n_components x n-voxels)
         Array of masked extracted components.
 
         .. note::
 
-            Use attribute `components_img_` rather than manually unmasking
-            `components_` with `masker_` attribute.
+            Use attribute ``components_img_`` rather than manually unmasking
+            ``components_`` with ``masker_`` attribute.
 
-    `components_img_` : 4D Nifti image
+    components_img_ : 4D Nifti image
         4D image giving the extracted PCA components. Each 3D image is a
         component.
 
         .. versionadded:: 0.4.1
 
-    `variance_` : numpy array (n_components,)
+    variance_ : numpy array (n_components,)
         The amount of variance explained by each of the selected components.
 
     """

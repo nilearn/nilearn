@@ -192,10 +192,10 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
 
     Attributes
     ----------
-    `labels_ `: ndarray, shape = [n_features]
+    labels_ : ndarray, shape = [n_features]
         cluster labels for each feature.
 
-    `sizes_`: ndarray, shape = [n_features]
+    sizes_ : ndarray, shape = [n_features]
         It contains the size of each cluster.
 
     """
