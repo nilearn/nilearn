@@ -1107,9 +1107,7 @@ def test_handle_scrubbed_volumes_extrapolation():
     ) = nisignal._handle_scrubbed_volumes(
         signals, confounds, sample_mask, "butterworth", 2.5, True
     )
-    np.testing.assert_equal(
-        signals.shape[0], extrapolated_signals.shape[0]
-    )
+    np.testing.assert_equal(signals.shape[0], extrapolated_signals.shape[0])
     np.testing.assert_equal(
         confounds.shape[0], extrapolated_confounds.shape[0]
     )
