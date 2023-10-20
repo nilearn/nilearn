@@ -408,17 +408,17 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-    `cov_estimator_` : estimator object
+    cov_estimator_ : estimator object
         A new covariance estimator with the same parameters as cov_estimator.
 
-    `mean_` : numpy.ndarray
+    mean_ : numpy.ndarray
         The mean connectivity matrix across subjects. For 'tangent' kind,
         it is the geometric mean of covariances (a group covariance
         matrix that captures information from both correlation and partial
         correlation matrices). For other values for "kind", it is the
         mean of the corresponding matrices
 
-    `whitening_` : numpy.ndarray
+    whitening_ : numpy.ndarray
         The inverted square-rooted geometric mean of the covariance matrices.
 
     References

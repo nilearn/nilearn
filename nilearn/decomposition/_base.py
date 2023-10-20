@@ -325,7 +325,7 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
 
     Attributes
     ----------
-    `mask_img_` : Niimg-like object
+    mask_img_ : Niimg-like object
         See :ref:`extracting_data`.
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.

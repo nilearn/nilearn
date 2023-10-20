@@ -459,13 +459,13 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
     Attributes
     ----------
-    `labels_ ` : :class:`numpy.ndarray`, shape = [n_features]
+    labels_ : :class:`numpy.ndarray`, shape = [n_features]
         Cluster labels for each feature.
 
-    `n_clusters_` : :obj:`int`
+    n_clusters_ : :obj:`int`
         Number of clusters.
 
-    `sizes_` : :class:`numpy.ndarray`, shape = [n_features]
+    sizes_ : :class:`numpy.ndarray`, shape = [n_features]
         It contains the size of each cluster.
 
     References

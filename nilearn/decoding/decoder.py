@@ -626,51 +626,51 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
         Attributes
         ----------
-        `masker_` : instance of NiftiMasker or MultiNiftiMasker
+        masker_ : instance of NiftiMasker or MultiNiftiMasker
             The NiftiMasker used to mask the data.
 
-        `mask_img_` : Nifti1Image
+        mask_img_ : Nifti1Image
             Mask computed by the masker object.
 
-        `classes_` : numpy.ndarray
+        classes_ : numpy.ndarray
             Classes to predict. For classification only.
 
-        `screening_percentile_` : float
+        screening_percentile_ : float
             Screening percentile corrected according to volume of mask,
             relative to the volume of standard brain.
 
-        `coef_` : numpy.ndarray, shape=(n_classes, n_features)
+        coef_ : numpy.ndarray, shape=(n_classes, n_features)
             Contains the mean of the models weight vector across
             fold for each class. Returns None for Dummy estimators.
 
-        `coef_img_` : dict of Nifti1Image
+        coef_img_ : dict of Nifti1Image
             Dictionary containing `coef_` with class names as keys,
             and `coef_` transformed in Nifti1Images as values. In the case of
             a regression, it contains a single Nifti1Image at the key 'beta'.
             Ignored if Dummy estimators are provided.
 
-        `intercept_` : ndarray, shape (nclasses,)
+        intercept_ : ndarray, shape (nclasses,)
             Intercept (a.k.a. bias) added to the decision function.
             Ignored if Dummy estimators are provided.
 
-        `cv_` : list of pairs of lists
+        cv_ : list of pairs of lists
             List of the (n_folds,) folds. For the corresponding fold,
             each pair is composed of two lists of indices,
             one for the train samples and one for the test samples.
 
-        `std_coef_` : numpy.ndarray, shape=(n_classes, n_features)
+        std_coef_ : numpy.ndarray, shape=(n_classes, n_features)
             Contains the standard deviation of the models weight vector across
             fold for each class. Note that folds are not independent, see
             https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation-iterators-for-grouped-data
             Ignored if Dummy estimators are provided.
 
-        `std_coef_img_` : dict of Nifti1Image
+        std_coef_img_ : dict of Nifti1Image
             Dictionary containing `std_coef_` with class names as keys,
             and `coef_` transformed in Nifti1Image as values. In the case of
             a regression, it contains a single Nifti1Image at the key 'beta'.
             Ignored if Dummy estimators are provided.
 
-        `cv_params_` : dict of lists
+        cv_params_ : dict of lists
             Best point in the parameter grid for each tested fold
             in the inner cross validation loop. The grid is empty
             when Dummy estimators are provided. Note: if the estimator used its
@@ -680,17 +680,17 @@ class _BaseDecoder(LinearRegression, CacheMixin):
             RidgeCV/RidgeClassifierCV/LassoCV), in addition to the input list
             of values.
 
-        'scorer_' : function
+        scorer_ : function
             Scorer function used on the held out data to choose the best
             parameters for the model.
 
-        `cv_scores_` : dict, (classes, n_folds)
+        cv_scores_ : dict, (classes, n_folds)
             Scores (misclassification) for each parameter, and on each fold
 
-        `n_outputs_` : int
+        n_outputs_ : int
             Number of outputs (column-wise)
 
-        `dummy_output_`: ndarray, shape=(n_classes, 2)
+        dummy_output_: ndarray, shape=(n_classes, 2)
             or shape=(1, 1) for regression
             Contains dummy estimator attributes after class predictions
             using strategies of DummyClassifier (class_prior)

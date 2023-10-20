@@ -375,7 +375,7 @@ def permuted_ols(
         If False, only positive effects are considered as relevant. The null
         hypothesis is that the effect is zero or negative.
 
-    random_state : :obj:`int` or None, optional
+    random_state : :obj:`int` or np.random.RandomState or None, optional
         Seed for random number generator, to have the same permutations
         in each computing units.
 

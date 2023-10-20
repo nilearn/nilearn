@@ -1,12 +1,10 @@
 """Test the _utils.extmath module."""
 import numpy as np
-from sklearn.utils import check_random_state
 
 from nilearn._utils.extmath import fast_abs_percentile, is_spd
 
 
-def test_fast_abs_percentile():
-    rng = check_random_state(1)
+def test_fast_abs_percentile(rng):
     data = np.arange(100)
     rng.shuffle(data)
     for p in data:
