@@ -108,6 +108,8 @@ def _check_events_file_uses_tab_separators(events_files):
     if not isinstance(events_files, (list, tuple)):
         events_files = [events_files]
     for events_file_ in events_files:
+        if isinstance(events_file_, (pd.DataFrame)):
+            continue
         try:
             with open(events_file_) as events_file_obj:
                 events_file_sample = events_file_obj.readline()
@@ -117,12 +119,6 @@ def _check_events_file_uses_tab_separators(events_files):
             Handling them here will beak the calling code,
             and refactoring that is not straightforward.
             """
-        except TypeError:  # events is Pandas dataframe.
-            pass
-        except UnicodeDecodeError:  # py3:if binary file
-            raise ValueError(
-                "The file does not seem to be a valid unicode text file."
-            )
         except OSError:  # if invalid filepath.
             pass
         else:
@@ -131,13 +127,13 @@ def _check_events_file_uses_tab_separators(events_files):
                     sample=events_file_sample,
                     delimiters=valid_separators,
                 )
-            except csv.Error:
+            except csv.Error as e:
                 raise ValueError(
                     "The values in the events file "
                     "are not separated by tabs; "
                     "please enforce BIDS conventions",
                     events_file_,
-                )
+                ) from e
 
 
 def _check_run_tables(run_imgs, tables_, tables_name):
