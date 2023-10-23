@@ -854,9 +854,9 @@ def _interpolate_volumes(volumes, sample_mask, t_r, extrapolate):
         extrapolate_default = (
             "By default the cubic spline interpolator extrapolates "
             "the out-of-bounds censored volumes in the data run. This "
-            "can lead to undesired filtered signal results. In future "
-            "releases, the default strategy will be not to extrapolate "
-            "and discard those volumes at filtering."
+            "can lead to undesired filtered signal results. Starting in "
+            "version 0.13, the default strategy will be not to extrapolate "
+            "but discard those volumes at filtering."
         )
         warnings.warn(
             category=FutureWarning,
