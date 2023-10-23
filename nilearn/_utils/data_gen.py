@@ -908,7 +908,7 @@ def create_fake_bids_dataset(
         Creates a directory with dummy files.
 
     """
-    n_voxels = 4
+    n_voxels = 10
 
     rand_gen = check_random_state(random_state)
 

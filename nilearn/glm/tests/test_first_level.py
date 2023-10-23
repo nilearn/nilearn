@@ -1798,3 +1798,29 @@ def test_missing_trial_type_column_warning(tmp_path_factory):
             "No column named 'trial_type' found" in r.message.args[0]
             for r in record
         )
+
+
+def test_first_level_from_bids_with_one_condition_missing(tmp_path_factory):
+    """One condition is missing in one events.tsv file."""
+    bids_dataset = _new_bids_dataset(
+        tmp_path_factory.mktemp("one_coindition_missing")
+    )
+    events_files = get_bids_files(main_path=bids_dataset, file_tag="events")
+
+    # remove rows with "c0" from "trial_type" columns in one events.tsv file
+    events = pd.read_csv(events_files[0], sep="\t")
+    events = events[events["trial_type"] != "c0"]
+    events.to_csv(events_files[0], sep="\t", index=False)
+
+    models, models_run_imgs, models_events, _ = first_level_from_bids(
+        dataset_path=bids_dataset,
+        task_label="main",
+        space_label="MNI",
+        slice_time_ref=None,
+    )
+
+    # print(models_events)
+
+    # design_matrix = models[0].design_matrices_[0]
+
+    models[0].fit(models_run_imgs[0], models_events[0])
