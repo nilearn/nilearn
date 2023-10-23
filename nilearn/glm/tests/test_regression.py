@@ -82,3 +82,6 @@ def test_simple_results(X, Y):
     simple_results = SimpleRegressionResults(results)
     assert_array_equal(results.predicted, simple_results.predicted(X))
     assert_array_equal(results.residuals, simple_results.residuals(Y, X))
+    assert_array_equal(
+        results.normalized_residuals, simple_results.normalized_residuals(Y, X)
+    )
