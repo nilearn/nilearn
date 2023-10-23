@@ -104,6 +104,10 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
 
         effect_ = np.zeros((dim, labels.size))
         var_ = np.zeros(labels.size)
+        # TODO
+        # explain why we cannot simply do
+        # reg = regression_result[label_].Tcontrast(con_val)
+        #  like above or refactor the code so it can be done
         for label_ in regression_result:
             label_mask = labels == label_
             reg = regression_result[label_]
