@@ -356,11 +356,15 @@ def pad_contrast(con_val, theta, contrast_type):
 
     Parameters
     ----------
-    con_val : numpy.ndarray of shape (p) or (q, p)
-        Where q = number of :term:`contrast` vectors
-        and p = number of regressors.
+    con_val : numpy.ndarray of shape (p) or (n, p)
+        Where p = number of regressors
+        with a value explicitly passed by the user.
+        p must be <= P,
+        where P is the total number of regressors in the design matrix.
 
-    theta theta of RegressionResults instances
+    theta : numpy.ndarray with shape (P,m)
+        theta of RegressionResults instances
+        where P is the total number of regressors in the design matrix.
 
     contrast_type : {'t', 'F'}, optional
         Type of the :term:`contrast`.
