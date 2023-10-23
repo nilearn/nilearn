@@ -23,6 +23,7 @@ from nilearn._utils.data_gen import (
     generate_fake_fmri,
     generate_labeled_regions,
     generate_maps,
+    _basic_confounds,
 )
 from nilearn._utils.exceptions import DimensionError
 from nilearn.conftest import _affine_eye, _rng, _shape_4d_default
@@ -992,33 +993,20 @@ def test_new_img_like_boolean_data(affine_eye, image, shape_3d_default, rng):
     assert get_data(out_img).dtype == "uint8"
 
 
-def test_clean_img_kwargs():
-    # load fMRI data
-    data = datasets.fetch_development_fmri(n_subjects=1, reduce_confounds=True)
-    fmri_filenames = data.func[0]
+def test_clean_img_sample_mask(img_4d_rand_eye):
+    """Check sample mask can be passed as a kwarg and used correctly."""
+    length = img_4d_rand_eye.shape[3]
+    confounds = _basic_confounds(length)
+    # exclude last time point
+    sample_mask =  np.arange(length - 1)
 
-    confounds_out, sample_mask = load_confounds(
-        fmri_filenames,
-        strategy=["motion", "wm_csf", "scrub"],
-        motion="basic",
-        wm_csf="basic",
-        scrub=5,
-        fd_threshold=0.3,
-        std_dvars_threshold=3,
-        compcor="anat_combined",
-        n_compcor=5,
-        demean=True,
-    )
-
-    image.clean_img(
-        fmri_filenames,
+    img = image.clean_img(
+        img_4d_rand_eye,
         detrend=True,
         standardize="zscore_sample",
-        confounds=confounds_out,
+        confounds=confounds,
         standardize_confounds="zscore_sample",
-        filter="butterworth",
-        low_pass=0.1,
-        high_pass=0.01,
-        t_r=0.8,
         **{"clean__sample_mask": sample_mask},
     )
+    # original shape is (10, 10, 10, 10)
+    assert img.shape == (10, 10, 10, 9)
