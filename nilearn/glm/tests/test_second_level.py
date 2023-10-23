@@ -678,17 +678,6 @@ def test_fmri_inputs_errors(tmp_path):
     with pytest.raises(TypeError, match="at least two"):
         SecondLevelModel().fit([flm])
 
-    # test dataframe requirements
-    dfcols = ["subject_label", "map_name", "effects_map_path"]
-    dfrows = [
-        ["01", "a", FUNCFILE],
-        ["02", "a", FUNCFILE],
-        ["03", "a", FUNCFILE],
-    ]
-    niidf = pd.DataFrame(dfrows, columns=dfcols)
-    with pytest.raises(TypeError, match="second_level_input must be"):
-        SecondLevelModel().fit(niidf["subject_label"])
-
     confounds = pd.DataFrame(
         [["01", 1], ["02", 2], ["03", 3]],
         columns=["subject_label", "conf1"],
@@ -711,6 +700,36 @@ def test_fmri_inputs_errors(tmp_path):
         SecondLevelModel().fit(flms, confounds["conf1"])
     with pytest.raises(ValueError):
         SecondLevelModel().fit(flms, None, [])
+
+
+def test_fmri_inputs_pandas_errors():
+    # test wrong input for list and pandas requirements
+    nii_img = ["01", "02", "03"]
+    with pytest.raises(ValueError, match="File not found: "):
+        SecondLevelModel().fit(nii_img)
+
+    nii_series = pd.Series(nii_img)
+    with pytest.raises(ValueError, match="File not found: "):
+        SecondLevelModel().fit(nii_series)
+
+    # test dataframe requirements
+    dfcols = [
+        "not_the_right_column_name",
+    ]
+    dfrows = [
+        ["01"],
+        ["02"],
+        ["03"],
+    ]
+    niidf = pd.DataFrame(dfrows, columns=dfcols)
+    with pytest.raises(
+        ValueError,
+        match=(
+            "second_level_input DataFrame must have "
+            "columns subject_label, map_name and effects_map_path."
+        ),
+    ):
+        SecondLevelModel().fit(niidf)
 
 
 def test_fmri_inputs_for_non_parametric_inference_errors(tmp_path, rng):

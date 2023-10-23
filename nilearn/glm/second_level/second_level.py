@@ -186,7 +186,7 @@ def _check_input_as_dataframe(second_level_input):
             raise ValueError(
                 "second_level_input DataFrame must have"
                 " columns subject_label, map_name and"
-                " effects_map_path"
+                " effects_map_path."
             )
     if not all(
         isinstance(_, str)
