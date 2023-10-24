@@ -78,7 +78,7 @@ doc = [
 min = [
     "joblib==1.0.0",
     "nibabel==4.0.0",
-    "numpy==1.24.0",
+    "numpy==1.26.0",
     "pandas==1.1.5",
     "scikit-learn==1.0.0",
     "scipy==1.6.0"
