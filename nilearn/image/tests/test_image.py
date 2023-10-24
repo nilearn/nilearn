@@ -17,13 +17,13 @@ from numpy.testing import (
     assert_equal,
 )
 
-from nilearn import datasets, signal
+from nilearn import signal
 from nilearn._utils import niimg_conversions, testing
 from nilearn._utils.data_gen import (
+    _basic_confounds,
     generate_fake_fmri,
     generate_labeled_regions,
     generate_maps,
-    _basic_confounds,
 )
 from nilearn._utils.exceptions import DimensionError
 from nilearn.conftest import _affine_eye, _rng, _shape_4d_default
@@ -45,7 +45,6 @@ from nilearn.image import (
     swap_img_hemispheres,
     threshold_img,
 )
-from nilearn.interfaces.fmriprep import load_confounds
 
 X64 = platform.architecture()[0] == "64bit"
 
@@ -998,7 +997,7 @@ def test_clean_img_sample_mask(img_4d_rand_eye):
     length = img_4d_rand_eye.shape[3]
     confounds = _basic_confounds(length)
     # exclude last time point
-    sample_mask =  np.arange(length - 1)
+    sample_mask = np.arange(length - 1)
 
     img = image.clean_img(
         img_4d_rand_eye,

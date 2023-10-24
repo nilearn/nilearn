@@ -1289,7 +1289,7 @@ def clean_img(
         imgs_ = new_img_like(
             imgs_, data.T.reshape(imgs_.shape), copy_header=True
         )
-    
+
     return imgs_
 
 
