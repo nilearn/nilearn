@@ -15,67 +15,96 @@ from nilearn.glm.contrasts import (
 from nilearn.glm.first_level import run_glm
 
 
-def test_expression_to_contrast_vector():
-    cols = "a face xy_z house window".split()
+@pytest.mark.parametrize(
+    "expression, design_columns, expected",
+    [
+        (
+            "face / 10 + (window - face) * 2 - house",
+            "a face xy_z house window".split(),
+            [0.0, -1.9, 0.0, -1.0, 2.0],
+        ),
+        (
+            "xy_z",
+            "a face xy_z house window".split(),
+            [0.0, 0.0, 1.0, 0.0, 0.0],
+        ),
+        ("a - b", ["a", "b", "a - b"], [0.0, 0.0, 1.0]),
+        ("column_1", ["column_1"], [1.0]),
+    ],
+)
+def test_expression_to_contrast_vector(expression, design_columns, expected):
     contrast = expression_to_contrast_vector(
-        "face / 10 + (window - face) * 2 - house", cols
+        expression=expression, design_columns=design_columns
     )
-    assert np.allclose(contrast, [0.0, -1.9, 0.0, -1.0, 2.0])
-    contrast = expression_to_contrast_vector("xy_z", cols)
-    assert np.allclose(contrast, [0.0, 0.0, 1.0, 0.0, 0.0])
-    cols = ["a", "b", "a - b"]
-    contrast = expression_to_contrast_vector("a - b", cols)
-    assert np.allclose(contrast, [0.0, 0.0, 1.0])
-    cols = ["column_1"]
-    contrast = expression_to_contrast_vector("column_1", cols)
-    assert np.allclose(contrast, [1.0])
-    cols = ["0", "1"]
-    exp = "0-1"
+    assert np.allclose(contrast, expected)
+
+
+def test_expression_to_contrast_vector_error():
     with pytest.raises(ValueError, match="invalid python identifiers"):
-        expression_to_contrast_vector(exp, cols)
+        expression_to_contrast_vector(
+            expression="0-1", design_columns=["0", "1"]
+        )
 
 
-def test_Tcontrast(rng):
-    n, p, q = 100, 80, 10
-    X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
-    labels, results = run_glm(Y, X, "ar1")
+@pytest.fixture
+def set_up_glm():
+    def _set_up_glm(rng, noise_model, bins=100):
+        n, p, q = 100, 80, 10
+        X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(
+            size=(p, n)
+        )
+        labels, results = run_glm(Y, X, noise_model, bins=bins)
+        return labels, results, q
+
+    return _set_up_glm
+
+
+def test_Tcontrast(rng, set_up_glm):
+    labels, results, q = set_up_glm(rng, "ar1")
     con_val = np.eye(q)[0]
+
     z_vals = compute_contrast(labels, results, con_val).z_score()
+
     assert_almost_equal(z_vals.mean(), 0, 0)
     assert_almost_equal(z_vals.std(), 1, 0)
 
 
-def test_Fcontrast(rng):
-    n, p, q = 100, 80, 10
-    X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
-    for model in ["ols", "ar1"]:
-        labels, results = run_glm(Y, X, model)
-        for con_val in [np.eye(q)[0], np.eye(q)[:3]]:
-            z_vals = compute_contrast(
-                labels, results, con_val, contrast_type="F"
-            ).z_score()
-            assert_almost_equal(z_vals.mean(), 0, 0)
-            assert_almost_equal(z_vals.std(), 1, 0)
+@pytest.mark.parametrize("model", ["ols", "ar1"])
+def test_Fcontrast(rng, set_up_glm, model):
+    labels, results, q = set_up_glm(rng, model)
+    for con_val in [np.eye(q)[0], np.eye(q)[:3]]:
+        z_vals = compute_contrast(
+            labels, results, con_val, contrast_type="F"
+        ).z_score()
+
+        assert_almost_equal(z_vals.mean(), 0, 0)
+        assert_almost_equal(z_vals.std(), 1, 0)
 
 
-def test_t_contrast_add(rng):
-    n, p, q = 100, 80, 10
-    X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
-    lab, res = run_glm(Y, X, "ols")
+def test_t_contrast_add(set_up_glm, rng):
+    labels, results, q = set_up_glm(rng, "ols")
     c1, c2 = np.eye(q)[0], np.eye(q)[1]
-    con = compute_contrast(lab, res, c1) + compute_contrast(lab, res, c2)
+
+    con = compute_contrast(labels, results, c1) + compute_contrast(
+        labels, results, c2
+    )
+
     z_vals = con.z_score()
+
     assert_almost_equal(z_vals.mean(), 0, 0)
     assert_almost_equal(z_vals.std(), 1, 0)
 
 
-def test_fixed_effect_contrast(rng):
-    n, p, q = 100, 80, 10
-    X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
-    lab, res = run_glm(Y, X, "ols")
+def test_fixed_effect_contrast(set_up_glm, rng):
+    labels, results, q = set_up_glm(rng, "ols")
     c1, c2 = np.eye(q)[0], np.eye(q)[1]
-    con = _compute_fixed_effect_contrast([lab, lab], [res, res], [c1, c2])
+
+    con = _compute_fixed_effect_contrast(
+        [labels, labels], [results, results], [c1, c2]
+    )
+
     z_vals = con.z_score()
+
     assert_almost_equal(z_vals.mean(), 0, 0)
     assert_almost_equal(z_vals.std(), 1, 0)
 
@@ -93,56 +122,65 @@ def test_fixed_effect_contrast_nonzero_effect():
             [results],
             [contrast],
         )
+
         assert_almost_equal(fixed_effect.effect_size(), coef.ravel()[i])
+
         fixed_effect = _compute_fixed_effect_contrast(
             [labels] * 3, [results] * 3, [contrast] * 3
         )
+
         assert_almost_equal(fixed_effect.effect_size(), coef.ravel()[i])
 
 
-def test_F_contrast_add(rng):
-    n, p, q = 100, 80, 10
-    X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
-    lab, res = run_glm(Y, X, "ar1")
+def test_F_contrast_add(set_up_glm, rng):
+    labels, results, q = set_up_glm(rng, "ar1")
     c1, c2 = np.eye(q)[:2], np.eye(q)[2:4]
-    con = compute_contrast(lab, res, c1) + compute_contrast(lab, res, c2)
+
+    con = compute_contrast(labels, results, c1) + compute_contrast(
+        labels, results, c2
+    )
+
     z_vals = con.z_score()
+
     assert_almost_equal(z_vals.mean(), 0, 0)
     assert_almost_equal(z_vals.std(), 1, 0)
 
     # first test with dependent contrast
-    con1 = compute_contrast(lab, res, c1)
-    con2 = compute_contrast(lab, res, c1) + compute_contrast(lab, res, c1)
+    con1 = compute_contrast(labels, results, c1)
+    con2 = compute_contrast(labels, results, c1) + compute_contrast(
+        labels, results, c1
+    )
+
     assert_almost_equal(con1.effect * 2, con2.effect)
     assert_almost_equal(con1.variance * 2, con2.variance)
     assert_almost_equal(con1.stat() * 2, con2.stat())
 
 
-def test_contrast_mul(rng):
-    n, p, q = 100, 80, 10
-    X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
-    lab, res = run_glm(Y, X, "ar1")
+def test_contrast_mul(set_up_glm, rng):
+    labels, results, q = set_up_glm(rng, "ar1")
     for c1 in [np.eye(q)[0], np.eye(q)[:3]]:
-        con1 = compute_contrast(lab, res, c1)
+        con1 = compute_contrast(labels, results, c1)
         con2 = con1 * 2
         assert_almost_equal(con1.effect * 2, con2.effect)
         assert_almost_equal(con1.z_score(), con2.z_score())
 
 
-def test_contrast_values(rng):
+def test_contrast_values(set_up_glm, rng):
     # but this test is circular and should be removed
-    n, p, q = 100, 80, 10
-    X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
-    lab, res = run_glm(Y, X, "ar1", bins=1)
+    labels, results, q = set_up_glm(rng, "ar1", bins=1)
+
     # t test
     cval = np.eye(q)[0]
-    con = compute_contrast(lab, res, cval)
-    t_ref = list(res.values())[0].Tcontrast(cval).t
+    con = compute_contrast(labels, results, cval)
+    t_ref = list(results.values())[0].Tcontrast(cval).t
+
     assert_almost_equal(np.ravel(con.stat()), t_ref)
+
     # F test
     cval = np.eye(q)[:3]
-    con = compute_contrast(lab, res, cval)
-    F_ref = list(res.values())[0].Fcontrast(cval).F
+    con = compute_contrast(labels, results, cval)
+    F_ref = list(results.values())[0].Fcontrast(cval).F
+
     # Note that the values are not strictly equal,
     # this seems to be related to a bug in Mahalanobis
     assert_almost_equal(np.ravel(con.stat()), F_ref, 3)
@@ -176,14 +214,14 @@ def test_low_level_fixed_effects(rng):
     XX1 = np.vstack((X1, X1))
     XX2 = np.vstack((X2, X2))
 
-    Xw, Vw, tw, zw = _compute_fixed_effects_params(
+    Xw, Vw, *_ = _compute_fixed_effects_params(
         [XX1, XX2], [V1, V2], dofs=[200, 200], precision_weighted=False
     )
     assert_almost_equal(Xw, 1.5 * XX1)
     assert_almost_equal(Vw, 1.25 * V1)
 
     # check with 2D image
-    Xw, Vw, tw, zw = _compute_fixed_effects_params(
+    Xw, Vw, *_ = _compute_fixed_effects_params(
         [X1[:, np.newaxis], X2[:, np.newaxis]],
         [V1, V2],
         dofs=[200, 200],
@@ -196,7 +234,9 @@ def test_low_level_fixed_effects(rng):
 def test_one_minus_pvalue():
     effect = np.ones((1, 3))
     variance = effect[0]
+
     contrast = Contrast(effect, variance, contrast_type="t")
+
     assert np.allclose(contrast.one_minus_pvalue(), 0.84, 1)
     assert np.allclose(contrast.stat_, 1.0, 1)
 

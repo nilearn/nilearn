@@ -172,6 +172,7 @@ def test_process_second_level_input_as_firstlevelmodels():
         sample_map,
         subjects_label,
     ) = _process_second_level_input_as_firstlevelmodels(list_of_flm)
+
     assert subjects_label == [f"sub-{i}" for i in range(3)]
     assert isinstance(sample_map, Nifti1Image)
     assert sample_map.shape == (7, 8, 9, 1)
@@ -203,6 +204,7 @@ def test_check_affine_first_level_models(affine_eye):
             fmri_data[0], design_matrices=design_matrices[0]
         )
     )
+
     with pytest.raises(
         ValueError, match="All first level models must have the same affine"
     ):
@@ -238,6 +240,7 @@ def test_check_shape_first_level_models():
             fmri_data[0], design_matrices=design_matrices[0]
         )
     )
+
     with pytest.raises(
         ValueError, match="All first level models must have the same shape"
     ):
@@ -247,29 +250,32 @@ def test_check_shape_first_level_models():
 
 
 def test_check_second_level_input():
+    with pytest.raises(TypeError, match="second_level_input must be"):
+        _check_second_level_input(1, None)
+
     with pytest.raises(
         TypeError,
         match="A second level model requires a list with at "
         "least two first level models or niimgs",
     ):
         _check_second_level_input([FirstLevelModel()], pd.DataFrame())
+
     with pytest.raises(
-        ValueError, match="Model sub_1 at index 0 has not been fit yet"
+        TypeError, match="Got object type <class 'int'> at idx 1"
     ):
-        _check_second_level_input(
-            [FirstLevelModel(subject_label=f"sub_{i}") for i in range(1, 3)],
-            pd.DataFrame(),
-        )
+        _check_second_level_input(["foo", 1], pd.DataFrame())
 
     shapes, rk = [(7, 8, 9, 15)], 3
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk
     )
+
     input_models = [
         FirstLevelModel(mask_img=mask).fit(
             fmri_data[0], design_matrices=design_matrices[0]
         )
     ]
+
     obj = lambda: None  # noqa : E731
     obj.results_ = "foo"
     obj.labels_ = "bar"
@@ -278,26 +284,19 @@ def test_check_second_level_input():
         TypeError, match="Got object type <class 'function'> at idx 1"
     ):
         _check_second_level_input(input_models + [obj], pd.DataFrame())
+
+
+def test_check_second_level_input_unfit_model():
     with pytest.raises(
-        ValueError,
-        match="In case confounds are provided, first level "
-        "objects need to provide the attribute 'subject_label'",
+        ValueError, match="Model sub_1 at index 0 has not been fit yet"
     ):
         _check_second_level_input(
-            input_models * 2, pd.DataFrame(), confounds=pd.DataFrame()
+            [FirstLevelModel(subject_label=f"sub_{i}") for i in range(1, 3)],
+            pd.DataFrame(),
         )
-    with pytest.raises(
-        ValueError,
-        match="List of niimgs as second_level_input "
-        "require a design matrix to be provided",
-    ):
-        _check_second_level_input(fmri_data * 2, None)
-    _check_second_level_input(fmri_data[0], pd.DataFrame())
 
-    with pytest.raises(
-        TypeError, match="Got object type <class 'int'> at idx 1"
-    ):
-        _check_second_level_input(["foo", 1], pd.DataFrame())
+
+def test_check_second_level_input_dataframe():
     with pytest.raises(
         ValueError,
         match="second_level_input DataFrame must have columns "
@@ -306,6 +305,7 @@ def test_check_second_level_input():
         _check_second_level_input(
             pd.DataFrame(columns=["foo", "bar"]), pd.DataFrame()
         )
+
     with pytest.raises(
         ValueError, match="subject_label column must contain only strings"
     ):
@@ -319,16 +319,48 @@ def test_check_second_level_input():
             ),
             pd.DataFrame(),
         )
+
+
+def test_check_second_level_input_confounds():
+    shapes, rk = [(7, 8, 9, 15)], 3
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes, rk
+    )
+
+    input_models = [
+        FirstLevelModel(mask_img=mask).fit(
+            fmri_data[0], design_matrices=design_matrices[0]
+        )
+    ]
+
+    with pytest.raises(
+        ValueError,
+        match="In case confounds are provided, first level "
+        "objects need to provide the attribute 'subject_label'",
+    ):
+        _check_second_level_input(
+            input_models * 2, pd.DataFrame(), confounds=pd.DataFrame()
+        )
+
+
+def test_check_second_level_input_design_matrix():
+    shapes, rk = [(7, 8, 9, 15)], 3
+    _, fmri_data, _ = generate_fake_fmri_data_and_design(shapes, rk)
+
+    _check_second_level_input(fmri_data[0], pd.DataFrame())
+
+    with pytest.raises(
+        ValueError,
+        match="List of niimgs as second_level_input "
+        "require a design matrix to be provided",
+    ):
+        _check_second_level_input(fmri_data * 2, None)
     with pytest.raises(
         ValueError,
         match="List of niimgs as second_level_input "
         "require a design matrix to be provided",
     ):
         _check_second_level_input(fmri_data[0], None)
-    with pytest.raises(TypeError, match="second_level_input must be"):
-        _check_second_level_input(1, None)
-    with pytest.raises(TypeError, match="second_level_input must be"):
-        _check_second_level_input(1, None)
 
 
 def test_check_output_type():
@@ -480,7 +512,7 @@ def test_high_level_glm_with_paths_errors(tmp_path):
     model = SecondLevelModel(mask_img=mask)
 
     # asking for contrast before model fit gives error
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="The model has not been fit yet"):
         model.compute_contrast([])
 
     # fit model
@@ -532,7 +564,7 @@ def test_high_level_non_parametric_inference_with_paths(tmp_path):
     neg_log_pvals_list = [get_data(i) for i in neg_log_pvals_imgs]
     for neg_log_pvals in neg_log_pvals_list:
         assert np.all(neg_log_pvals <= -np.log10(1.0 / (N_PERM + 1)))
-        assert np.all(0 <= neg_log_pvals)
+        assert np.all(neg_log_pvals >= 0)
 
 
 def test_high_level_non_parametric_inference_with_paths_warning(tmp_path):
@@ -556,7 +588,15 @@ def test_high_level_non_parametric_inference_with_paths_warning(tmp_path):
         )
 
 
-def test_fmri_inputs(tmp_path, rng):
+@pytest.fixture
+def confounds():
+    return pd.DataFrame(
+        [["01", 1], ["02", 2], ["03", 3]],
+        columns=["subject_label", "conf1"],
+    )
+
+
+def test_fmri_inputs(tmp_path, rng, confounds):
     # Test processing of FMRI inputs
     # prepare fake data
     p, q = 80, 10
@@ -584,14 +624,9 @@ def test_fmri_inputs(tmp_path, rng):
     )
     FUNCFILE = FUNCFILE[0]
 
-    confounds = pd.DataFrame(
-        [["01", 1], ["02", 2], ["03", 3]],
-        columns=["subject_label", "conf1"],
-    )
     sdes = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
 
     # smoke tests with correct input
-
     flms = [flm, flm, flm]
 
     # First level models as input
@@ -600,6 +635,30 @@ def test_fmri_inputs(tmp_path, rng):
     # Note : the following one creates a singular design matrix
     SecondLevelModel().fit(flms, confounds)
     SecondLevelModel().fit(flms, None, sdes)
+
+    # niimgs as input
+    niimgs = [FUNCFILE, FUNCFILE, FUNCFILE]
+    SecondLevelModel().fit(niimgs, None, sdes)
+
+    # 4d niimg as input
+    niimg_4d = concat_imgs(niimgs)
+    SecondLevelModel().fit(niimg_4d, None, sdes)
+
+
+def test_fmri_inputs_dataframes_as_input(tmp_path, rng, confounds):
+    # Test processing of FMRI inputs
+    # prepare fake data
+    p, q = 80, 10
+    X = rng.standard_normal(size=(p, q))
+
+    # prepare correct input dataframe and lists
+    shapes = (SHAPE,)
+    _, FUNCFILE, _ = write_fake_fmri_data_and_design(
+        shapes, file_path=tmp_path
+    )
+    FUNCFILE = FUNCFILE[0]
+
+    sdes = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
 
     # dataframes as input
     dfcols = ["subject_label", "map_name", "effects_map_path"]
@@ -614,14 +673,6 @@ def test_fmri_inputs(tmp_path, rng):
     SecondLevelModel().fit(niidf, confounds)
     SecondLevelModel().fit(niidf, confounds, sdes)
     SecondLevelModel().fit(niidf, None, sdes)
-
-    # niimgs as input
-    niimgs = [FUNCFILE, FUNCFILE, FUNCFILE]
-    SecondLevelModel().fit(niimgs, None, sdes)
-
-    # 4d niimg as input
-    niimg_4d = concat_imgs(niimgs)
-    SecondLevelModel().fit(niimg_4d, None, sdes)
 
 
 def test_fmri_pandas_series_as_input(tmp_path, rng):
@@ -644,8 +695,33 @@ def test_fmri_pandas_series_as_input(tmp_path, rng):
     )
 
 
-def test_fmri_inputs_errors(tmp_path):
-    # Test processing of FMRI inputs
+def test_fmri_inputs_pandas_errors():
+    # test wrong input for list and pandas requirements
+    nii_img = ["01", "02", "03"]
+    with pytest.raises(ValueError, match="File not found: "):
+        SecondLevelModel().fit(nii_img)
+
+    nii_series = pd.Series(nii_img)
+    with pytest.raises(ValueError, match="File not found: "):
+        SecondLevelModel().fit(nii_series)
+
+    # test dataframe requirements
+    dfcols = [
+        "not_the_right_column_name",
+    ]
+    dfrows = [["01"], ["02"], ["03"]]
+    niidf = pd.DataFrame(dfrows, columns=dfcols)
+    with pytest.raises(
+        ValueError,
+        match=(
+            "second_level_input DataFrame must have "
+            "columns subject_label, map_name and effects_map_path."
+        ),
+    ):
+        SecondLevelModel().fit(niidf)
+
+
+def test_fmri_inputs_errors(tmp_path, confounds):
     # prepare fake data
     shapes = ((7, 8, 9, 10),)
     _, FUNCFILE, _ = write_fake_fmri_data_and_design(
@@ -663,6 +739,33 @@ def test_fmri_inputs_errors(tmp_path):
         FUNCFILE, design_matrices=des
     )
 
+    # test first level model requirements
+    with pytest.raises(TypeError, match="second_level_input must be"):
+        SecondLevelModel().fit(flm)
+    with pytest.raises(TypeError, match="at least two"):
+        SecondLevelModel().fit([flm])
+
+    # test first_level_conditions, confounds, and design
+    flms = [flm, flm, flm]
+    with pytest.raises(
+        ValueError, match="confounds must be a pandas DataFrame"
+    ):
+        SecondLevelModel().fit(flms, ["", []])
+    with pytest.raises(
+        ValueError, match="confounds must be a pandas DataFrame"
+    ):
+        SecondLevelModel().fit(flms, [])
+    with pytest.raises(
+        ValueError, match="confounds must be a pandas DataFrame"
+    ):
+        SecondLevelModel().fit(flms, confounds["conf1"])
+    with pytest.raises(
+        ValueError, match="design matrix must be a pandas DataFrame"
+    ):
+        SecondLevelModel().fit(flms, None, [])
+
+
+def test_fmri_img_inputs_errors(tmp_path, confounds):
     # prepare correct input
     shapes = (SHAPE,)
     _, FUNCFILE, _ = write_fake_fmri_data_and_design(
@@ -670,69 +773,20 @@ def test_fmri_inputs_errors(tmp_path):
     )
     FUNCFILE = FUNCFILE[0]
 
-    # test wrong input errors
-
-    # test first level model requirements
-    with pytest.raises(TypeError, match="second_level_input must be"):
-        SecondLevelModel().fit(flm)
-    with pytest.raises(TypeError, match="at least two"):
-        SecondLevelModel().fit([flm])
-
-    confounds = pd.DataFrame(
-        [["01", 1], ["02", 2], ["03", 3]],
-        columns=["subject_label", "conf1"],
-    )
-
     # test niimgs requirements
     niimgs = [FUNCFILE, FUNCFILE, FUNCFILE]
     with pytest.raises(ValueError, match="require a design matrix"):
         SecondLevelModel().fit(niimgs)
-    with pytest.raises(TypeError):
+    with pytest.raises(
+        TypeError,
+        match="Elements of second_level_input must be of the same type.",
+    ):
         SecondLevelModel().fit(niimgs + [[]], confounds)
 
-    # test first_level_conditions, confounds, and design
-    flms = [flm, flm, flm]
-    with pytest.raises(ValueError):
-        SecondLevelModel().fit(flms, ["", []])
-    with pytest.raises(ValueError):
-        SecondLevelModel().fit(flms, [])
-    with pytest.raises(ValueError):
-        SecondLevelModel().fit(flms, confounds["conf1"])
-    with pytest.raises(ValueError):
-        SecondLevelModel().fit(flms, None, [])
 
-
-def test_fmri_inputs_pandas_errors():
-    # test wrong input for list and pandas requirements
-    nii_img = ["01", "02", "03"]
-    with pytest.raises(ValueError, match="File not found: "):
-        SecondLevelModel().fit(nii_img)
-
-    nii_series = pd.Series(nii_img)
-    with pytest.raises(ValueError, match="File not found: "):
-        SecondLevelModel().fit(nii_series)
-
-    # test dataframe requirements
-    dfcols = [
-        "not_the_right_column_name",
-    ]
-    dfrows = [
-        ["01"],
-        ["02"],
-        ["03"],
-    ]
-    niidf = pd.DataFrame(dfrows, columns=dfcols)
-    with pytest.raises(
-        ValueError,
-        match=(
-            "second_level_input DataFrame must have "
-            "columns subject_label, map_name and effects_map_path."
-        ),
-    ):
-        SecondLevelModel().fit(niidf)
-
-
-def test_fmri_inputs_for_non_parametric_inference_errors(tmp_path, rng):
+def test_fmri_inputs_for_non_parametric_inference_errors(
+    tmp_path, rng, confounds
+):
     # Test processing of FMRI inputs
 
     # prepare fake data
@@ -764,22 +818,17 @@ def test_fmri_inputs_for_non_parametric_inference_errors(tmp_path, rng):
 
     niimgs = [func_file, func_file, func_file]
     niimg_4d = concat_imgs(niimgs)
-    confounds = pd.DataFrame(
-        [["01", 1], ["02", 2], ["03", 3]],
-        columns=["subject_label", "conf1"],
-    )
     sdes = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
 
     # test missing second-level contrast
-
+    match = "No second-level contrast is specified."
     # niimgs as input
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=match):
         non_parametric_inference(niimgs, None, sdes)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=match):
         non_parametric_inference(niimgs, confounds, sdes)
-
     # 4d niimg as input
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=match):
         non_parametric_inference(niimg_4d, None, sdes)
 
     # test wrong input errors
@@ -798,7 +847,7 @@ def test_fmri_inputs_for_non_parametric_inference_errors(tmp_path, rng):
         non_parametric_inference(niimgs + [[]], confounds)
 
     # test other objects
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="File not found: .*"):
         non_parametric_inference("random string object")
 
 
@@ -1094,7 +1143,7 @@ def test_second_level_contrast_computation_errors(tmp_path, rng):
     model.compute_contrast()
 
     # passing null contrast should give back a value error
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Contrast is null"):
         model.compute_contrast(cnull)
 
     # passing wrong parameters

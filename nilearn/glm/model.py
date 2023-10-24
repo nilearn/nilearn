@@ -194,8 +194,12 @@ class LikelihoodModelResults:
         # 1D vectors assumed to be row vector
         if matrix.ndim == 1:
             matrix = matrix[None]
+        if matrix.size == 0:
+            raise ValueError("t contrasts cannot be empty: " f"got {matrix}")
         if matrix.shape[0] != 1:
-            raise ValueError("t contrasts should have only one row")
+            raise ValueError(
+                "t contrasts should have only one row: " f"got {matrix}."
+            )
         matrix = pad_contrast(
             con_val=matrix, theta=self.theta, contrast_type="t"
         )
@@ -263,8 +267,8 @@ class LikelihoodModelResults:
             matrix = matrix[None]
         if matrix.shape[1] != self.theta.shape[0]:
             raise ValueError(
-                f"F contrasts should have shape[1] P={self.theta.shape[0]}, "
-                f"but this has shape[1] {matrix.shape[1]}"
+                f"F contrasts should have shape[1]={self.theta.shape[0]}, "
+                f"but this has shape[1]={matrix.shape[1]}"
             )
         matrix = pad_contrast(
             con_val=matrix, theta=self.theta, contrast_type="F"
