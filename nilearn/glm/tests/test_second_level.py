@@ -675,8 +675,53 @@ def test_fmri_inputs_dataframes_as_input(tmp_path, rng, confounds):
     SecondLevelModel().fit(niidf, None, sdes)
 
 
+def test_fmri_pandas_series_as_input(tmp_path, rng):
+    # prepare correct input dataframe and lists
+    p, q = 80, 10
+    X = rng.standard_normal(size=(p, q))
+    shapes = (SHAPE,)
+    _, FUNCFILE, _ = write_fake_fmri_data_and_design(
+        shapes, file_path=tmp_path
+    )
+    FUNCFILE = FUNCFILE[0]
+
+    # dataframes as input
+    sdes = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
+    niidf = pd.DataFrame({"filepaths": [FUNCFILE, FUNCFILE, FUNCFILE]})
+    SecondLevelModel().fit(
+        second_level_input=niidf["filepaths"],
+        confounds=None,
+        design_matrix=sdes,
+    )
+
+
+def test_fmri_inputs_pandas_errors():
+    # test wrong input for list and pandas requirements
+    nii_img = ["01", "02", "03"]
+    with pytest.raises(ValueError, match="File not found: "):
+        SecondLevelModel().fit(nii_img)
+
+    nii_series = pd.Series(nii_img)
+    with pytest.raises(ValueError, match="File not found: "):
+        SecondLevelModel().fit(nii_series)
+
+    # test dataframe requirements
+    dfcols = [
+        "not_the_right_column_name",
+    ]
+    dfrows = [["01"], ["02"], ["03"]]
+    niidf = pd.DataFrame(dfrows, columns=dfcols)
+    with pytest.raises(
+        ValueError,
+        match=(
+            "second_level_input DataFrame must have "
+            "columns subject_label, map_name and effects_map_path."
+        ),
+    ):
+        SecondLevelModel().fit(niidf)
+
+
 def test_fmri_inputs_errors(tmp_path, confounds):
-    # Test processing of FMRI inputs
     # prepare fake data
     shapes = ((7, 8, 9, 10),)
     _, FUNCFILE, _ = write_fake_fmri_data_and_design(
@@ -694,30 +739,11 @@ def test_fmri_inputs_errors(tmp_path, confounds):
         FUNCFILE, design_matrices=des
     )
 
-    # prepare correct input
-    shapes = (SHAPE,)
-    _, FUNCFILE, _ = write_fake_fmri_data_and_design(
-        shapes, file_path=tmp_path
-    )
-    FUNCFILE = FUNCFILE[0]
-
-    # test wrong input errors
-
     # test first level model requirements
     with pytest.raises(TypeError, match="second_level_input must be"):
         SecondLevelModel().fit(flm)
     with pytest.raises(TypeError, match="at least two"):
         SecondLevelModel().fit([flm])
-
-    # test niimgs requirements
-    niimgs = [FUNCFILE, FUNCFILE, FUNCFILE]
-    with pytest.raises(ValueError, match="require a design matrix"):
-        SecondLevelModel().fit(niimgs)
-    with pytest.raises(
-        TypeError,
-        match="Elements of second_level_input must be of the same type.",
-    ):
-        SecondLevelModel().fit(niimgs + [[]], confounds)
 
     # test first_level_conditions, confounds, and design
     flms = [flm, flm, flm]
@@ -739,9 +765,7 @@ def test_fmri_inputs_errors(tmp_path, confounds):
         SecondLevelModel().fit(flms, None, [])
 
 
-def test_fmri_inputs_errors_dataframes_as_input(tmp_path):
-    # Test processing of FMRI inputs
-    # prepare fake data
+def test_fmri_img_inputs_errors(tmp_path, confounds):
     # prepare correct input
     shapes = (SHAPE,)
     _, FUNCFILE, _ = write_fake_fmri_data_and_design(
@@ -749,17 +773,15 @@ def test_fmri_inputs_errors_dataframes_as_input(tmp_path):
     )
     FUNCFILE = FUNCFILE[0]
 
-    # test dataframe requirements
-    dfcols = ["subject_label", "map_name", "effects_map_path"]
-    dfrows = [
-        ["01", "a", FUNCFILE],
-        ["02", "a", FUNCFILE],
-        ["03", "a", FUNCFILE],
-    ]
-    niidf = pd.DataFrame(dfrows, columns=dfcols)
-
-    with pytest.raises(TypeError, match="second_level_input must be"):
-        SecondLevelModel().fit(niidf["subject_label"])
+    # test niimgs requirements
+    niimgs = [FUNCFILE, FUNCFILE, FUNCFILE]
+    with pytest.raises(ValueError, match="require a design matrix"):
+        SecondLevelModel().fit(niimgs)
+    with pytest.raises(
+        TypeError,
+        match="Elements of second_level_input must be of the same type.",
+    ):
+        SecondLevelModel().fit(niimgs + [[]], confounds)
 
 
 def test_fmri_inputs_for_non_parametric_inference_errors(
@@ -1125,11 +1147,6 @@ def test_second_level_contrast_computation_errors(tmp_path, rng):
         model.compute_contrast(cnull)
 
     # passing wrong parameters
-    with pytest.raises(
-        ValueError,
-        match=("t contrasts should be length P=1, but this is length 0"),
-    ):
-        model.compute_contrast(second_level_contrast=[])
     with pytest.raises(ValueError, match="Allowed types are .*'t', 'F'"):
         model.compute_contrast(
             second_level_contrast=c1, second_level_stat_type=""
@@ -1149,11 +1166,40 @@ def test_second_level_contrast_computation_errors(tmp_path, rng):
         ValueError, match="No second-level contrast is specified"
     ):
         model.compute_contrast(None)
+
+
+def test_second_level_t_contrast_length_errors(tmp_path):
+    func_img, mask = fake_fmri_data(file_path=tmp_path)
+
+    model = SecondLevelModel(mask_img=mask)
+
+    func_img, mask = fake_fmri_data(file_path=tmp_path)
+    Y = [func_img] * 4
+    X = pd.DataFrame([[1]] * 4, columns=["intercept"])
+    model = model.fit(Y, design_matrix=X)
+
     with pytest.raises(
         ValueError,
-        match=("t contrasts should be length P=2, but this is length 1"),
+        match=("t contrasts should be of length P=1, but it has length 2."),
     ):
-        model.compute_contrast([1])
+        model.compute_contrast(second_level_contrast=[1, 2])
+
+
+def test_second_level_F_contrast_length_errors(tmp_path):
+    func_img, mask = fake_fmri_data(file_path=tmp_path)
+
+    model = SecondLevelModel(mask_img=mask)
+
+    func_img, mask = fake_fmri_data(file_path=tmp_path)
+    Y = [func_img] * 4
+    X = pd.DataFrame([[1]] * 4, columns=["intercept"])
+    model = model.fit(Y, design_matrix=X)
+
+    with pytest.raises(
+        ValueError,
+        match=("F contrasts should have .* columns, but it has .*"),
+    ):
+        model.compute_contrast(second_level_contrast=np.eye(2))
 
 
 def test_non_parametric_inference_contrast_computation(tmp_path):

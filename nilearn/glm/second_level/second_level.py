@@ -48,6 +48,8 @@ def _check_input_type(second_level_input):
     """Determine the type of input provided."""
     if isinstance(second_level_input, pd.DataFrame):
         return "df_object"
+    if isinstance(second_level_input, pd.Series):
+        return "pd_series"
     if isinstance(second_level_input, (str, Nifti1Image)):
         return "nii_object"
     if isinstance(second_level_input, list):
@@ -56,6 +58,7 @@ def _check_input_type(second_level_input):
         "second_level_input must be "
         "either a pandas DataFrame, "
         "a Niimg-like object, "
+        "a pandas Series of Niimg-like object, "
         "a list of Niimg-like object or "
         "a list of FirstLevelModel objects. "
         f"Got {_return_type(second_level_input)} instead"
@@ -105,6 +108,9 @@ def _check_input_as_type(
 ):
     if input_type == "flm_object":
         _check_input_as_first_level_model(second_level_input, none_confounds)
+    elif input_type == "pd_series":
+        second_level_input = second_level_input.to_list()
+        _check_input_as_nifti_images(second_level_input, none_design_matrix)
     elif input_type == "nii_object":
         _check_input_as_nifti_images(second_level_input, none_design_matrix)
     else:
@@ -180,7 +186,7 @@ def _check_input_as_dataframe(second_level_input):
             raise ValueError(
                 "second_level_input DataFrame must have"
                 " columns subject_label, map_name and"
-                " effects_map_path"
+                " effects_map_path."
             )
     if not all(
         isinstance(_, str)

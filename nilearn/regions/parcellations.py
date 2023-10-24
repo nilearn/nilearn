@@ -133,7 +133,7 @@ class Parcellations(_MultiPCA):
 
     Parameters
     ----------
-    method: :obj:`str`, {'kmeans', 'ward', 'complete', 'average', 'rena',
+    method : {'kmeans', 'ward', 'complete', 'average', 'rena', \
         'hierarchical_kmeans'}
         A method to choose between for brain parcellations.
         For a small number of parcels, kmeans is usually advisable.
@@ -232,14 +232,14 @@ class Parcellations(_MultiPCA):
 
     Attributes
     ----------
-    `labels_img_` : :class:`nibabel.nifti1.Nifti1Image`
+    labels_img_ : :class:`nibabel.nifti1.Nifti1Image`
         Labels image to each parcellation learned on fmri images.
 
-    `masker_` : :class:`nilearn.maskers.NiftiMasker` or \
+    masker_ : :class:`nilearn.maskers.NiftiMasker` or \
                 :class:`nilearn.maskers.MultiNiftiMasker`
         The masker used to mask the data.
 
-    `connectivity_` : :class:`numpy.ndarray`
+    connectivity_ : :class:`numpy.ndarray`
         Voxel-to-voxel connectivity matrix computed from a mask.
         Note that this attribute is only seen if selected methods are
         Agglomerative Clustering type, 'ward', 'complete', 'average'.

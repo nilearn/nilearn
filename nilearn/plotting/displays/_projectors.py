@@ -35,10 +35,10 @@ class OrthoProjector(OrthoSlicer):
     Attributes
     ----------
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
-     The 3 axes used to plot each view ('x', 'y', and 'z').
+        The 3 axes used to plot each view ('x', 'y', and 'z').
 
     frame_axes : :class:`~matplotlib.axes.Axes`
-     The axes framing the whole set of views.
+        The axes framing the whole set of views.
 
     """
 
@@ -286,10 +286,10 @@ class XProjector(OrthoProjector):
     Attributes
     ----------
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
-        The axes used for plotting.
+           The axes used for plotting.
 
     frame_axes : :class:`~matplotlib.axes.Axes`
-     The axes framing the whole set of views.
+                 The axes framing the whole set of views.
 
     See Also
     --------
@@ -354,10 +354,10 @@ class ZProjector(OrthoProjector):
     Attributes
     ----------
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
-     The axes used for plotting.
+        The axes used for plotting.
 
     frame_axes : :class:`~matplotlib.axes.Axes`
-     The axes framing the whole set of views.
+        The axes framing the whole set of views.
 
     See Also
     --------
@@ -391,10 +391,10 @@ class XZProjector(OrthoProjector):
     Attributes
     ----------
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
-            The axes used for plotting in each direction ('x' and 'z' here).
+        The axes used for plotting in each direction ('x' and 'z' here).
 
     frame_axes : :class:`~matplotlib.axes.Axes`
-                 The axes framing the whole set of views.
+        The axes framing the whole set of views.
 
     See Also
     --------
@@ -427,10 +427,10 @@ class YXProjector(OrthoProjector):
     Attributes
     ----------
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
-     The axes used for plotting in each direction ('x' and 'y' here).
+        The axes used for plotting in each direction ('x' and 'y' here).
 
     frame_axes : :class:`~matplotlib.axes.Axes`
-     The axes framing the whole set of views.
+        The axes framing the whole set of views.
 
     See Also
     --------
@@ -462,10 +462,10 @@ class YZProjector(OrthoProjector):
     Attributes
     ----------
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
-           The axes used for plotting in each direction ('y' and 'z' here).
+        The axes used for plotting in each direction ('y' and 'z' here).
 
     frame_axes : :class:`~matplotlib.axes.Axes`
-                 The axes framing the whole set of views.
+        The axes framing the whole set of views.
 
     See Also
     --------
@@ -498,7 +498,7 @@ class LYRZProjector(OrthoProjector):
     Attributes
     ----------
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
-     The axes used for plotting in each direction ('l', 'y', 'r',
+        The axes used for plotting in each direction ('l', 'y', 'r',
         and 'z' here).
 
     frame_axes : :class:`~matplotlib.axes.Axes`

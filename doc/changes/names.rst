@@ -204,6 +204,8 @@
 
 .. _Nicolas Gensollen: https://nicolasgensollen.github.io/
 
+.. _Nikhil Krish: https://github.com/NIkhilgKrish
+
 .. _Oliver Warrington: https://github.com/OliverWarrington
 
 .. _Oscar Esteban: https://github.com/oesteban

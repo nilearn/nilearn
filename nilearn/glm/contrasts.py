@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 import scipy.stats as sps
 
-from nilearn.glm._utils import z_score
+from nilearn.glm._utils import pad_contrast, z_score
 from nilearn.maskers import NiftiMasker
 
 DEF_TINY = 1e-50
@@ -95,17 +95,25 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
         var_ = np.zeros(labels.size)
         for label_ in regression_result:
             label_mask = labels == label_
-            resl = regression_result[label_].Tcontrast(con_val)
-            effect_[:, label_mask] = resl.effect.T
-            var_[label_mask] = (resl.sd**2).T
+            reg = regression_result[label_].Tcontrast(con_val)
+            effect_[:, label_mask] = reg.effect.T
+            var_[label_mask] = (reg.sd**2).T
+
     elif contrast_type == "F":
         from scipy.linalg import sqrtm
 
         effect_ = np.zeros((dim, labels.size))
         var_ = np.zeros(labels.size)
+        # TODO
+        # explain why we cannot simply do
+        # reg = regression_result[label_].Tcontrast(con_val)
+        # like above or refactor the code so it can be done
         for label_ in regression_result:
             label_mask = labels == label_
             reg = regression_result[label_]
+            con_val = pad_contrast(
+                con_val=con_val, theta=reg.theta, contrast_type=contrast_type
+            )
             cbeta = np.atleast_2d(np.dot(con_val, reg.theta))
             invcov = np.linalg.inv(
                 np.atleast_2d(reg.vcov(matrix=con_val, dispersion=1.0))

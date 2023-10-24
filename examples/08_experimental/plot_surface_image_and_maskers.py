@@ -108,7 +108,7 @@ def monkeypatch_masker_checks():
     def adjust_screening_percentile(screening_percentile, *args, **kwargs):
         return screening_percentile
 
-    param_validation._adjust_screening_percentile = adjust_screening_percentile
+    param_validation.adjust_screening_percentile = adjust_screening_percentile
 
     def check_embedded_nifti_masker(estimator, *args, **kwargs):
         return estimator.mask

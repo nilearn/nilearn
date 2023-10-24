@@ -68,8 +68,8 @@ def test_t_contrast():
 
 
 def test_t_contrast_errors():
-    match = "t contrasts should be length P=.*, but this is length .*"
-    with pytest.raises(ValueError, match=match):
+    match = "t contrasts should be of length P=.*, but it has length .*"
+    with pytest.warns(UserWarning, match=match):
         RESULTS.Tcontrast([1])
     with pytest.raises(ValueError, match=match):
         RESULTS.Tcontrast([1, 0, 0])

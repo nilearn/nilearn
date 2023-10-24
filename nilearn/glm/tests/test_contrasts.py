@@ -269,3 +269,19 @@ def test_invalid_contarst_type():
     variance = np.ones(1)
     with pytest.raises(ValueError, match="is not a valid contrast_type."):
         Contrast(effect, variance, contrast_type="foo")
+
+
+def test_contrast_padding(rng):
+    n, p, q = 100, 80, 10
+    X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
+    labels, results = run_glm(Y, X, "ar1")
+
+    con_val = [1]
+
+    with pytest.warns(
+        UserWarning, match="The rest of the contrast was padded with zeros."
+    ):
+        compute_contrast(labels, results, con_val).z_score()
+
+    con_val = np.eye(q)[:3, :3]
+    compute_contrast(labels, results, con_val, contrast_type="F").z_score()
