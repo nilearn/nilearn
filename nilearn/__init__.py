@@ -40,31 +40,11 @@ signal                  --- Set of preprocessing functions for time series
 """
 
 import gzip
-import sys
-import warnings
 
 try:
     from ._version import __version__  # noqa: F401
 except ImportError:
     __version__ = "0+unknown"
-
-
-def _py_deprecation_warning():
-    py_warning = (
-        "Python 3.8 support is deprecated "
-        "and will be removed in release 0.12.0 of Nilearn."
-        "Consider switching to a more recent Python version."
-    )
-    warnings.filterwarnings("once", message=py_warning)
-    warnings.warn(message=py_warning, category=FutureWarning, stacklevel=3)
-
-
-def _python_deprecation_warnings():
-    if sys.version_info.major == 3 and sys.version_info.minor == 8:
-        _py_deprecation_warning()
-
-
-_python_deprecation_warnings()
 
 
 # Monkey-patch gzip to have faster reads on large gzip files
