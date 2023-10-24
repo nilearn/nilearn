@@ -4,7 +4,7 @@ from nilearn.interfaces.fmriprep.load_confounds_utils import (
     _get_file_name,
     _sanitize_confounds,
 )
-from nilearn.interfaces.fmriprep.tests.utils import create_tmp_filepath
+from nilearn.interfaces.fmriprep.tests._testing import create_tmp_filepath
 
 
 @pytest.mark.parametrize(

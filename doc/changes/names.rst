@@ -92,7 +92,7 @@
 
 .. _François Paugam: https://github.com/FrancoisPgm
 
-.. _Gael Varoquaux: http://gael-varoquaux.info/
+.. _Gael Varoquaux: https://gael-varoquaux.info/
 
 .. _Gilles de Hollander: https://github.com/Gilles86
 
@@ -203,6 +203,8 @@
 .. _Neelay Shah: https://github.com/NeelayS
 
 .. _Nicolas Gensollen: https://nicolasgensollen.github.io/
+
+.. _Nikhil Krish: https://github.com/NIkhilgKrish
 
 .. _Oliver Warrington: https://github.com/OliverWarrington
 

@@ -1,14 +1,12 @@
 """Test CanICA."""
 
-import warnings
-
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal
 
 from nilearn._utils.testing import write_tmp_imgs
-from nilearn.conftest import _affine_eye
+from nilearn.conftest import _affine_eye, _rng
 from nilearn.decomposition.canica import CanICA
 from nilearn.decomposition.tests.test_multi_pca import _tmp_dir
 from nilearn.image import get_data, iter_img
@@ -28,7 +26,7 @@ def _make_data_from_components(
 ):
     data = []
     if rng is None:
-        rng = np.random.RandomState(0)
+        rng = _rng()
     background = -0.01 * rng.normal(size=shape) - 2
     background = background[..., np.newaxis]
     for _ in range(n_subjects):
@@ -76,7 +74,7 @@ def _make_canica_components(shape):
 
 def _make_canica_test_data(rng=None, n_subjects=N_SUBJECTS, noisy=True):
     if rng is None:
-        rng = np.random.RandomState(0)
+        rng = _rng()
     components = _make_canica_components(SHAPE)
     if noisy:  # Creating noisy non positive data
         components[rng.randn(*components.shape) > 0.8] *= -2.0
@@ -142,25 +140,15 @@ def test_transform_and_fit_errors(canica_data, mask_img):
         canica.fit()
 
 
-def test_percentile_range(canica_data):
+def test_percentile_range(rng, canica_data):
     """Test that a warning is given when thresholds are stressed."""
-    rng = np.random.RandomState(0)
     edge_case = rng.randint(low=1, high=10)
 
     # stess thresholding via edge case
     canica = CanICA(n_components=edge_case, threshold=float(edge_case))
 
-    with warnings.catch_warnings(record=True) as warning:
+    with pytest.warns(UserWarning, match="obtained a critical threshold"):
         canica.fit(canica_data)
-
-        # ensure a single warning is raised
-        # filter out deprecation warnings
-        warning_messages = [
-            "obtained a critical threshold" in str(w.message)
-            for w in warning
-            if not issubclass(w.category, (DeprecationWarning, FutureWarning))
-        ]
-        assert sum(warning_messages) == 1
 
 
 def test_canica_square_img(mask_img):
@@ -242,10 +230,12 @@ def test_masker_attributes_with_fit(canica_data, mask_img):
     assert canica.mask_img_ == canica.masker_.mask_img_
 
 
-def test_masker_attributes_passing_masker_arguments_to_estimator(canica_data):
+def test_masker_attributes_passing_masker_arguments_to_estimator(
+    affine_eye, canica_data
+):
     canica = CanICA(
         n_components=3,
-        target_affine=np.eye(4),
+        target_affine=affine_eye,
         target_shape=(6, 8, 10),
         mask_strategy="background",
     )

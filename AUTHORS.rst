@@ -148,6 +148,7 @@ Some other past or present contributors are:
 * `Natasha Clarke`_: @SIMEXP, Montréal, Canada
 * `Neelay Shah`_: Max Planck Institute for Intelligent Systems, Germany
 * `Nicolas Gensollen`_: Inria, Paris, France
+* `Nikhil Krish`_: University of Texas, Austin
 * `Oliver Warrington`_: Wellcome Centre for Human Neuroimaging, UCL, London, UK
 * `Oscar Esteban`_: Centre Hospitalier Universitaire Vaudoise, Lausanne, Switzerland
 * `Patrick Sadil`_: Department of Biostatistics, Johns Hopkins Bloomberg School of Public Health, USA
@@ -182,7 +183,7 @@ Some other past or present contributors are:
 * `Thomas Bazeille`_: Inria, Saclay, France
 * `Tom Vanasse`_: Wisconsin Institute for Sleep and Consciousness, USA
 * `Vasco Diogo`_
-* `Vincent Michel`_: http://www.logilab.fr/
+* `Vincent Michel`_: https://www.logilab.fr/
 * `Virgile Fritsch`_: Inria, Saclay, France
 * `Yaroslav Halchenko`_: Dartmouth College, PBS, Hanover, New Hampshire, USA
 * `Yasmin Mzayek`_: Inria, Saclay, France
@@ -201,7 +202,7 @@ Funding
 `Mehdi Rahim`_, `Philippe Gervais`_ were paid by the
 :inria:`NiConnect <parietal/research/spatial_patterns/niconnect/>`.
 project, funded by the French `Investissement d'Avenir
-<http://www.gouvernement.fr/investissements-d-avenir-cgi>`_.
+<https://www.gouvernement.fr/investissements-d-avenir-cgi>`_.
 
 `Kshitij Chawla`_ was paid by `INRIA <https://www.inria.fr/en>`_.
 
@@ -220,7 +221,7 @@ There is no paper published yet about nilearn. We are waiting for the
 package to mature a bit. However, the patterns underlying the package
 have been described in: `Machine learning for neuroimaging with
 scikit-learn
-<http://journal.frontiersin.org/article/10.3389/fninf.2014.00014/abstract>`_.
+<https://doi.org/10.3389/fninf.2014.00014>`_.
 
 We suggest that you read and cite the paper. Thank you.
 

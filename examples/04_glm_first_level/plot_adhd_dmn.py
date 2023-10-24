@@ -2,23 +2,26 @@
 Default Mode Network extraction of ADHD dataset
 ===============================================
 
-This example shows a full step-by-step workflow of fitting a GLM to signal
-extracted from a seed on the Posterior Cingulate Cortex and saving the results.
+This example shows a full step-by-step workflow of fitting a :term:`GLM`
+to signal extracted from a seed on the Posterior Cingulate Cortex
+and saving the results.
 More precisely, this example shows how to use a signal extracted from a
-seed region as the regressor in a GLM to determine the correlation
+seed region as the regressor in a :term:`GLM` to determine the correlation
 of each region in the dataset with the seed region.
 
 More specifically:
 
-1. A sequence of fMRI volumes are loaded.
+1. A sequence of :term:`fMRI` volumes are loaded.
 2. A design matrix with the Posterior Cingulate Cortex seed is defined.
-3. A GLM is applied to the dataset (effect/covariance,
+3. A :term:`GLM` is applied to the dataset (effect/covariance,
    then contrast estimation).
 4. The Default Mode Network is displayed.
 
 .. include:: ../../../examples/masker_note.rst
 
 """
+
+# %%
 import numpy as np
 
 from nilearn import datasets, plotting
@@ -28,7 +31,7 @@ from nilearn.glm.first_level import (
 )
 from nilearn.maskers import NiftiSpheresMasker
 
-#########################################################################
+# %%
 # Prepare data and analysis parameters
 # ------------------------------------
 # Prepare the data.
@@ -42,7 +45,7 @@ n_scans = 176
 # Prepare seed
 pcc_coords = (0, -53, 26)
 
-#########################################################################
+# %%
 # Extract the seed region's time course
 # -------------------------------------
 # Extract the time course of the seed region.
@@ -61,7 +64,7 @@ seed_masker = NiftiSpheresMasker(
 seed_time_series = seed_masker.fit_transform(adhd_dataset.func[0])
 frametimes = np.linspace(0, (n_scans - 1) * t_r, n_scans)
 
-#########################################################################
+# %%
 # Plot the time course of the seed region.
 import matplotlib.pyplot as plt
 
@@ -72,7 +75,7 @@ ax.legend(loc=2)
 ax.set_title("Time course of the seed region")
 plt.show()
 
-#########################################################################
+# %%
 # Estimate contrasts
 # ------------------
 # Specify the contrasts.
@@ -85,7 +88,7 @@ design_matrix = make_first_level_design_matrix(
 dmn_contrast = np.array([1] + [0] * (design_matrix.shape[1] - 1))
 contrasts = {"seed_based_glm": dmn_contrast}
 
-#########################################################################
+# %%
 # Perform first level analysis
 # ----------------------------
 # Setup and fit GLM.
@@ -94,7 +97,7 @@ first_level_model = first_level_model.fit(
     run_imgs=adhd_dataset.func[0], design_matrices=design_matrix
 )
 
-#########################################################################
+# %%
 # Estimate the contrast.
 print("Contrast seed_based_glm computed.")
 z_map = first_level_model.compute_contrast(
@@ -112,7 +115,7 @@ display.add_markers(
 display.savefig(filename)
 print(f"Save z-map in '{filename}'.")
 
-###########################################################################
+# %%
 # Generating a report
 # -------------------
 # It can be useful to quickly generate a
@@ -130,7 +133,7 @@ report = make_glm_report(
     plot_type="glass",
 )
 
-#########################################################################
+# %%
 # We have several ways to access the report:
 
 # report  # This report can be viewed in a notebook

@@ -18,7 +18,7 @@ We use the Yeo atlas as an example for labeling regions,
 
 """
 
-##############################################################################
+# %%
 # The original Yeo atlas
 # -----------------------
 
@@ -39,14 +39,14 @@ plotting.plot_roi(
     cmap="Paired",
 )
 
-##############################################################################
+# %%
 # The original Yeo atlas has 7 labels, that is indicated in the colorbar.
 # The colorbar also shows the correspondence between the color and the label
 #
 # Note that these 7 labels correspond actually to networks that comprise
 # several regions. We are going to split them up.
 
-##############################################################################
+# %%
 # Relabeling the atlas into separated regions
 # -------------------------------------------
 #
@@ -56,7 +56,7 @@ from nilearn.regions import connected_label_regions
 
 region_labels = connected_label_regions(atlas_yeo)
 
-##############################################################################
+# %%
 # Plotting the new regions
 plotting.plot_roi(
     region_labels,
@@ -66,7 +66,7 @@ plotting.plot_roi(
     cmap="Paired",
 )
 
-##############################################################################
+# %%
 # Note that the same cluster in original and labeled atlas could have
 # different color, so, you cannot directly compare colors.
 #
@@ -89,7 +89,7 @@ region_labels.to_filename("relabeled_yeo_atlas.nii.gz")
 #                                        'relabeled_yeo_atlas.nii.gz'))
 
 
-##############################################################################
+# %%
 # Different connectivity modes
 # ----------------------------
 #
@@ -107,13 +107,13 @@ plotting.plot_roi(
 )
 
 
-##############################################################################
+# %%
 # A consequence of using connect_diag=False is that we can get a lot of
 # small regions, around 110 judging from the colorbar.
 #
 # Hence we suggest use connect_diag=True
 
-##############################################################################
+# %%
 # Parameter min_size
 # ------------------
 #

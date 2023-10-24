@@ -16,7 +16,7 @@ from numpy.testing import (
 from sklearn.cluster import KMeans
 
 from nilearn._utils.data_gen import (
-    _add_metadata_to_bids_dataset,
+    add_metadata_to_bids_dataset,
     basic_paradigm,
     create_fake_bids_dataset,
     generate_fake_fmri_data_and_design,
@@ -379,9 +379,8 @@ def test_compute_contrast_num_contrasts():
         multi_session_model.compute_contrast([np.eye(rk)[1]])
 
 
-def test_run_glm():
+def test_run_glm(rng):
     # TODO split into multiple tests
-    rng = np.random.RandomState(42)
     n, p, q = 33, 80, 10
     X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
 
@@ -428,11 +427,11 @@ def test_run_glm():
         run_glm(Y, X, "3ar")
 
 
-def test_glm_AR_estimates():
+def test_glm_AR_estimates(rng):
     """Test that Yule-Walker AR fits are correct."""
     n, p, q = 1, 500, 2
-    X_orig = np.random.RandomState(2).randn(p, q)
-    Y_orig = np.random.RandomState(2).randn(p, n)
+    X_orig = rng.randn(p, q)
+    Y_orig = rng.randn(p, n)
 
     for ar_vals in [[-0.2], [-0.2, -0.5], [-0.2, -0.5, -0.7, -0.3]]:
         ar_order = len(ar_vals)
@@ -491,9 +490,8 @@ def test_glm_random_state(random_state):
         )
 
 
-def test_scaling():
+def test_scaling(rng):
     """Test the scaling function."""
-    rng = np.random.RandomState(42)
     shape = (400, 10)
     u = rng.standard_normal(size=shape)
     mean = 100 * rng.uniform(size=shape[1]) + 1
@@ -807,7 +805,7 @@ def test_first_level_from_bids_get_metadata_from_derivatives(tmp_path):
 
     RepetitionTime = 6.0
     StartTime = 2.0
-    _add_metadata_to_bids_dataset(
+    add_metadata_to_bids_dataset(
         bids_path=tmp_path / bids_path,
         metadata={"RepetitionTime": RepetitionTime, "StartTime": StartTime},
     )
@@ -834,7 +832,7 @@ def test_first_level_from_bids_get_RepetitionTime_from_derivatives(tmp_path):
         base_dir=tmp_path, n_sub=10, n_ses=1, tasks=["main"], n_runs=[1]
     )
     RepetitionTime = 6.0
-    _add_metadata_to_bids_dataset(
+    add_metadata_to_bids_dataset(
         bids_path=tmp_path / bids_path,
         metadata={"RepetitionTime": RepetitionTime},
     )
@@ -861,7 +859,7 @@ def test_first_level_from_bids_get_StartTime_from_derivatives(tmp_path):
         base_dir=tmp_path, n_sub=10, n_ses=1, tasks=["main"], n_runs=[1]
     )
     StartTime = 1.0
-    _add_metadata_to_bids_dataset(
+    add_metadata_to_bids_dataset(
         bids_path=tmp_path / bids_path, metadata={"StartTime": StartTime}
     )
 
@@ -977,10 +975,10 @@ def test_first_level_contrast_computation_errors(tmp_path):
         model.compute_contrast(c1, "", [])
 
 
-def test_first_level_with_scaling():
+def test_first_level_with_scaling(affine_eye):
     shapes, rk = [(3, 1, 1, 2)], 1
     fmri_data = list()
-    fmri_data.append(Nifti1Image(np.zeros((1, 1, 1, 2)) + 6, np.eye(4)))
+    fmri_data.append(Nifti1Image(np.zeros((1, 1, 1, 2)) + 6, affine_eye))
     design_matrices = list()
     design_matrices.append(
         pd.DataFrame(
@@ -1007,7 +1005,7 @@ def test_first_level_with_scaling():
     assert glm_parameters["signal_scaling"] == 0
 
 
-def test_first_level_with_no_signal_scaling():
+def test_first_level_with_no_signal_scaling(affine_eye):
     """Test to ensure that the FirstLevelModel works correctly
     with a signal_scaling==False.
 
@@ -1032,7 +1030,7 @@ def test_first_level_with_no_signal_scaling():
     first_level = FirstLevelModel(
         mask_img=False, noise_model="ols", signal_scaling=False
     )
-    fmri_data.append(Nifti1Image(np.zeros((1, 1, 1, 2)) + 6, np.eye(4)))
+    fmri_data.append(Nifti1Image(np.zeros((1, 1, 1, 2)) + 6, affine_eye))
 
     first_level.fit(fmri_data, design_matrices=design_matrices)
     # trivial test of signal_scaling value

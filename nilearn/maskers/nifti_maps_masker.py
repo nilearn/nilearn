@@ -52,16 +52,16 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
 
-    allow_overlap : :obj:`bool`, optional
+    allow_overlap : :obj:`bool`, default=True
         If False, an error is raised if the maps overlaps (ie at least two
-        maps have a non-zero value for the same voxel). Default=True.
+        maps have a non-zero value for the same voxel).
     %(smoothing_fwhm)s
     %(standardize_maskers)s
     %(standardize_confounds)s
-    high_variance_confounds : :obj:`bool`, optional
+    high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
-        and regressed out. Default=False.
+        and regressed out.
     %(detrend)s
     %(low_pass)s
     %(high_pass)s
@@ -71,20 +71,19 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
 
-    resampling_target : {"data", "mask", "maps", None}, optional.
+    resampling_target : {"data", "mask", "maps", None}, default="data"
         Gives which image gives the final shape/size. For example, if
         `resampling_target` is "mask" then maps_img and images provided to
         fit() are resampled to the shape and affine of mask_img. "None" means
         no resampling: if shapes and affines do not match, a ValueError is
-        raised. Default="data".
+        raised.
     %(memory)s
     %(memory_level)s
     %(verbose0)s
     %(keep_masked_maps)s
 
-    reports : :obj:`bool`, optional
+    reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
-        Default=True.
 
     %(masker_kwargs)s
 
@@ -200,8 +199,8 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
 
         Parameters
         ----------
-        displayed_maps : :obj:`int`, or :obj:`list`,\
-        or :class:`~numpy.ndarray`, or "all", optional
+        displayed_maps : :obj:`int`, or :obj:`list`, \
+                         or :class:`~numpy.ndarray`, or "all", default=10
             Indicates which maps will be displayed in the HTML report.
 
                 - If "all": All maps will be displayed in the report.
@@ -232,8 +231,6 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 .. code-block:: python
 
                     masker.generate_report(16)
-
-            Default=10.
 
         Returns
         -------
@@ -394,7 +391,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
 
         # Check shapes and affines or resample.
         if self.resampling_target is None and self.mask_img_ is not None:
-            _utils.niimg_conversions._check_same_fov(
+            _utils.niimg_conversions.check_same_fov(
                 mask=self.mask_img_,
                 maps=self.maps_img_,
                 raise_error=True,
@@ -505,7 +502,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
             images = dict(maps=self.maps_img_, data=imgs_)
             if self.mask_img_ is not None:
                 images["mask"] = self.mask_img_
-            _utils.niimg_conversions._check_same_fov(
+            _utils.niimg_conversions.check_same_fov(
                 raise_error=True,
                 **images,
             )
@@ -520,7 +517,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 self._resampled_maps_img_ = self.maps_img_
                 ref_img = self.maps_img_
 
-            if not _utils.niimg_conversions._check_same_fov(
+            if not _utils.niimg_conversions.check_same_fov(
                 ref_img,
                 self._resampled_maps_img_,
             ):
@@ -535,7 +532,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
 
             if (
                 self.mask_img_ is not None
-                and not _utils.niimg_conversions._check_same_fov(
+                and not _utils.niimg_conversions.check_same_fov(
                     ref_img,
                     self.mask_img_,
                 )
@@ -607,7 +604,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
         return region_signals
 
     def inverse_transform(self, region_signals):
-        """Compute voxel signals from region signals.
+        """Compute :term:`voxel` signals from region signals.
 
         Any mask given at initialization is taken into account.
 

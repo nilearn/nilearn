@@ -28,7 +28,7 @@ else:
 @pytest.mark.skipif(
     not have_mpl, reason="Matplotlib not installed; required for this test"
 )
-def test_local_max():
+def test_local_max(affine_eye):
     """Basic test of nilearn.reporting._get_clusters_table._local_max()"""
     shape = (9, 10, 11)
     # Two maxima (one global, one local), 10 voxels apart.
@@ -36,13 +36,12 @@ def test_local_max():
     data[4, 5, :] = [4, 3, 2, 1, 1, 1, 1, 1, 2, 3, 4]
     data[5, 5, :] = [5, 4, 3, 2, 1, 1, 1, 2, 3, 4, 6]
     data[6, 5, :] = [4, 3, 2, 1, 1, 1, 1, 1, 2, 3, 4]
-    affine = np.eye(4)
 
-    ijk, vals = _local_max(data, affine, min_distance=9)
+    ijk, vals = _local_max(data, affine_eye, min_distance=9)
     assert np.array_equal(ijk, np.array([[5.0, 5.0, 10.0], [5.0, 5.0, 0.0]]))
     assert np.array_equal(vals, np.array([6, 5]))
 
-    ijk, vals = _local_max(data, affine, min_distance=11)
+    ijk, vals = _local_max(data, affine_eye, min_distance=11)
     assert np.array_equal(ijk, np.array([[5.0, 5.0, 10.0]]))
     assert np.array_equal(vals, np.array([6]))
 
@@ -51,13 +50,12 @@ def test_local_max():
     data[4, 5, :] = [4, 3, 2, 1, 1, 1, 1, 1, 2, 3, 4]
     data[5, 5, :] = [5, 4, 3, 2, 1, 1, 1, 2, 3, 4, 5]
     data[6, 5, :] = [4, 3, 2, 1, 1, 1, 1, 1, 2, 3, 4]
-    affine = np.eye(4)
 
-    ijk, vals = _local_max(data, affine, min_distance=9)
+    ijk, vals = _local_max(data, affine_eye, min_distance=9)
     assert np.array_equal(ijk, np.array([[5.0, 5.0, 0.0], [5.0, 5.0, 10.0]]))
     assert np.array_equal(vals, np.array([5, 5]))
 
-    ijk, vals = _local_max(data, affine, min_distance=11)
+    ijk, vals = _local_max(data, affine_eye, min_distance=11)
     assert np.array_equal(ijk, np.array([[5.0, 5.0, 0.0]]))
     assert np.array_equal(vals, np.array([5]))
 
@@ -66,9 +64,8 @@ def test_local_max():
     data[4, 5, :] = [0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0]
     data[5, 5, :] = [0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0]
     data[6, 5, :] = [0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0]
-    affine = np.eye(4)
 
-    ijk, vals = _local_max(data, affine, min_distance=9)
+    ijk, vals = _local_max(data, affine_eye, min_distance=9)
     assert np.array_equal(ijk, np.array([[4.0, 5.0, 5.0]]))
     assert np.array_equal(vals, np.array([1]))
 
@@ -95,12 +92,12 @@ def test_cluster_nearest_neighbor():
     assert np.array_equal(nbrs, np.array([[4, 7, 5], [4, 5, 5], [4, 2, 6]]))
 
 
-def test_get_clusters_table(tmp_path):
+def test_get_clusters_table(affine_eye, tmp_path):
     shape = (9, 10, 11)
     data = np.zeros(shape)
     data[2:4, 5:7, 6:8] = 5.0
     data[4:6, 7:9, 8:10] = -5.0
-    stat_img = nib.Nifti1Image(data, np.eye(4))
+    stat_img = nib.Nifti1Image(data, affine_eye)
 
     # test one cluster extracted
     cluster_table = get_clusters_table(stat_img, 4, 0, two_sided=False)
@@ -148,7 +145,7 @@ def test_get_clusters_table(tmp_path):
 
     # test with extra dimension
     data_extra_dim = data[..., np.newaxis]
-    stat_img_extra_dim = nib.Nifti1Image(data_extra_dim, np.eye(4))
+    stat_img_extra_dim = nib.Nifti1Image(data_extra_dim, affine_eye)
     cluster_table = get_clusters_table(
         stat_img_extra_dim,
         4,
@@ -159,7 +156,7 @@ def test_get_clusters_table(tmp_path):
 
     # Test that nans are handled correctly (No numpy axis errors are raised)
     data[data == 0] = np.nan
-    stat_img_nans = nib.Nifti1Image(data, affine=np.eye(4))
+    stat_img_nans = nib.Nifti1Image(data, affine=affine_eye)
     cluster_table = get_clusters_table(stat_img_nans, 1e-2, 0, two_sided=False)
     assert len(cluster_table) == 1
 
@@ -169,7 +166,7 @@ def test_get_clusters_table(tmp_path):
     data[4, 5, :] = [4, 3, 2, 1, 1, 1, 1, 1, 2, 3, 4]
     data[5, 5, :] = [5, 4, 3, 2, 1, 1, 1, 2, 3, 4, 6]
     data[6, 5, :] = [4, 3, 2, 1, 1, 1, 1, 1, 2, 3, 4]
-    stat_img = nib.Nifti1Image(data, np.eye(4))
+    stat_img = nib.Nifti1Image(data, affine_eye)
 
     cluster_table = get_clusters_table(stat_img, 0, 0, min_distance=9)
     assert len(cluster_table) == 2
@@ -177,7 +174,7 @@ def test_get_clusters_table(tmp_path):
     assert "1a" in cluster_table["Cluster ID"].values
 
 
-def test_get_clusters_table_relabel_label_maps():
+def test_get_clusters_table_relabel_label_maps(affine_eye):
     """Check that the cluster's labels in label_maps match their corresponding
     cluster IDs in the clusters table.
     """
@@ -186,7 +183,7 @@ def test_get_clusters_table_relabel_label_maps():
     data[2:4, 5:7, 6:8] = 6.0
     data[5:7, 7:9, 7:9] = 5.5
     data[0:3, 0:3, 0:3] = 5.0
-    stat_img = nib.Nifti1Image(data, np.eye(4))
+    stat_img = nib.Nifti1Image(data, affine_eye)
 
     cluster_table, label_maps = get_clusters_table(
         stat_img,
@@ -205,13 +202,13 @@ def test_get_clusters_table_relabel_label_maps():
     assert np.array_equal(cluster_ids, lb_cluster_ids)
 
 
-def test_get_clusters_table_not_modifying_stat_image():
+def test_get_clusters_table_not_modifying_stat_image(affine_eye):
     shape = (9, 10, 11)
     data = np.zeros(shape)
     data[2:4, 5:7, 6:8] = 5.0
     data[0:3, 0:3, 0:3] = 6.0
 
-    stat_img = nib.Nifti1Image(data, np.eye(4))
+    stat_img = nib.Nifti1Image(data, affine_eye)
     data_orig = get_data(stat_img).copy()
 
     # test one cluster should be removed
@@ -225,7 +222,7 @@ def test_get_clusters_table_not_modifying_stat_image():
     assert len(clusters_table) == 1
 
     # test no clusters should be removed
-    stat_img = nib.Nifti1Image(data, np.eye(4))
+    stat_img = nib.Nifti1Image(data, affine_eye)
     clusters_table = get_clusters_table(
         stat_img,
         4,
@@ -236,7 +233,7 @@ def test_get_clusters_table_not_modifying_stat_image():
     assert len(clusters_table) == 2
 
     # test cluster threshold is None
-    stat_img = nib.Nifti1Image(data, np.eye(4))
+    stat_img = nib.Nifti1Image(data, affine_eye)
     clusters_table = get_clusters_table(
         stat_img,
         4,

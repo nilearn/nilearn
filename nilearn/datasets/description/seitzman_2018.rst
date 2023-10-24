@@ -32,7 +32,7 @@ https://wustl.box.com/s/twpyb1pflj6vrlxgh3rohyqanxbdpelw
 Paper:
 Seitzman, B. A., Gratton, C., Marek, S., Raut, R. V., Dosenbach, N. U. F., Schlaggar, B. L., et al. (2020).
 A set of functionally-defined brain regions with improved representation of the subcortex and cerebellum.
-NeuroImage, 206, 116290. http://doi.org/10.1016/j.neuroimage.2019.116290
+NeuroImage, 206, 116290. https://doi.org/10.1016/j.neuroimage.2019.116290
 
 Preprint:
-Seitzman et al. (2018). http://doi.org/10.1101/450452
+Seitzman et al. (2018). https://doi.org/10.1101/450452

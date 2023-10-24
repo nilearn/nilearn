@@ -17,7 +17,8 @@ from nilearn import datasets
 print(f"Datasets are stored in: {datasets.get_data_dirs()!r}")
 
 # %%
-# Let's now retrieve a motor contrast from a Neurovault repository
+# Let's now retrieve a motor :term:`contrast`
+# from a :term:`Neurovault` repository
 motor_images = datasets.fetch_neurovault_motor_task()
 motor_images.images
 
@@ -45,7 +46,7 @@ plotting.plot_stat_map(tmap_filename, threshold=3)
 # Visualizing one volume in a 4D file
 # -----------------------------------
 #
-# We can download resting-state networks from the Smith 2009 study on
+# We can download :term:`resting-state` networks from the Smith 2009 study on
 # correspondence between rest and task
 rsn = datasets.fetch_atlas_smith_2009(resting=True, dimension=10)["maps"]
 rsn

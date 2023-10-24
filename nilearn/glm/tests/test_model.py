@@ -67,8 +67,6 @@ def test_t_contrast():
     assert_array_almost_equal(RESULTS.Tcontrast([0, 1]).t, 7.181, 3)
     # Input matrix checked for size
     with pytest.raises(ValueError):
-        RESULTS.Tcontrast([1])
-    with pytest.raises(ValueError):
         RESULTS.Tcontrast([1, 0, 0])
     # And shape
     with pytest.raises(ValueError):

@@ -213,9 +213,9 @@ def _load_scrub(confounds_raw, scrub, fd_threshold, std_dvars_threshold):
     confounds_raw : pandas.DataFrame
         DataFrame of confounds.
 
-    scrub : int
-        Minimal segment length. Default to 5 volumes. Segment smaller
-        than the given value will be removed.
+    scrub : int, default=5
+        Minimal segment length.
+        Segment smaller than the given value will be removed.
 
     fd_threshold : float
         Threshold for the framewise displacement. Volumes with FD larger

@@ -11,6 +11,7 @@ from pandas import read_csv
 # Use nisignal here to avoid name collisions (using nilearn.signal is
 # not possible)
 from nilearn import signal as nisignal
+from nilearn.conftest import _rng
 from nilearn.signal import clean
 
 
@@ -50,7 +51,7 @@ def generate_signals(
     confounds : numpy.ndarray, shape (length, n_confounds)
         random signals used as confounds.
     """
-    rng = np.random.RandomState(42)
+    rng = _rng()
 
     # Generate random confounds
     confounds_shape = (length, n_confounds)
@@ -92,7 +93,7 @@ def generate_trends(n_features=17, length=41):
     trends : numpy.ndarray, shape (length, n_features)
         output signals, one per column.
     """
-    rng = np.random.RandomState(42)
+    rng = _rng()
     trends = scipy.signal.detrend(np.linspace(0, 1.0, length), type="constant")
     trends = np.repeat(np.atleast_2d(trends).T, n_features, axis=1)
     factors = rng.standard_normal(size=n_features)
@@ -105,8 +106,7 @@ def generate_signals_plus_trends(n_features=17, n_samples=41):
     return signals + trends
 
 
-def test_butterworth():
-    rng = np.random.RandomState(42)
+def test_butterworth(rng):
     n_features = 20000
     n_samples = 100
 
@@ -233,8 +233,7 @@ def test_butterworth():
         )
 
 
-def test_standardize():
-    rng = np.random.RandomState(42)
+def test_standardize(rng):
     n_features = 10
     n_samples = 17
 
@@ -247,7 +246,9 @@ def test_standardize():
         nisignal._standardize(a, standardize="foo")
 
     # test warning for strategy that will be removed
-    with pytest.warns(FutureWarning, match="default strategy for standardize"):
+    with pytest.warns(
+        DeprecationWarning, match="default strategy for standardize"
+    ):
         nisignal._standardize(a, standardize="zscore")
 
     # transpose array to fit _standardize input.
@@ -396,9 +397,8 @@ def test_clean_detrending():
     assert np.array_equal(x_orig, x)
 
 
-def test_clean_t_r():
+def test_clean_t_r(rng):
     """Different TRs produce different results after butterworth filtering"""
-    rng = np.random.RandomState(42)
     n_samples = 34
     # n_features  Must be higher than 500
     n_features = 501
@@ -865,8 +865,7 @@ def test_high_variance_confounds():
     np.testing.assert_almost_equal(out1, out2, decimal=13)
 
 
-def test_clean_psc():
-    rng = np.random.RandomState(0)
+def test_clean_psc(rng):
     n_samples = 500
     n_features = 5
 
@@ -903,8 +902,7 @@ def test_clean_psc():
     np.testing.assert_equal(cleaned_w_zero[:, -3:].mean(0), 0)
 
 
-def test_clean_zscore():
-    rng = np.random.RandomState(42)
+def test_clean_zscore(rng):
     n_samples = 500
     n_features = 5
 

@@ -32,7 +32,7 @@ which downloads a dataset and returns a bunch of paths to the dataset
 files (more details in :ref:`loading_data`). We can then proceed
 loading them as if they were just any other files on our disk. For
 example, we can download the data from the
-`Haxby 2001 paper <http://dx.doi.org/10.1126/science.1063736>`_ :
+`Haxby 2001 paper <https://doi.org/10.1126/science.1063736>`_ :
 
 .. code-block:: default
 
@@ -61,13 +61,13 @@ Loading non image data: experiment description
 -----------------------------------------------
 
 An experiment may need additional information about subjects, sessions or
-experiments. In the Haxby experiment, fMRI data are acquired while
+experiments. In the Haxby experiment, :term:`fMRI` data are acquired while
 presenting different category of pictures to the subject (face, cat, ...)
 and the goal of this experiment is to predict which category is presented
 to the subjects from the brain activation.
 
 These conditions are presented as string into a CSV file. The `pandas
-<http://pandas.pydata.org/>`__ function
+<https://pandas.pydata.org/>`__ function
 ``read_csv`` is very useful to load this kind of data.
 
 .. literalinclude:: ../../examples/00_tutorials/plot_decoding_tutorial.py
@@ -76,14 +76,14 @@ These conditions are presented as string into a CSV file. The `pandas
 
 .. seealso::
 
-   * `pandas <http://pandas.pydata.org/>`_ is a very useful Python
+   * `pandas <https://pandas.pydata.org/>`_ is a very useful Python
      library to load CSV files and process their data
 
 For example, we will now consider only the conditions *cat* and *face* from our dataset.
 This can be done as follows:
 
 .. literalinclude:: ../../examples/00_tutorials/plot_decoding_tutorial.py
-    :start-after: # (i.e. :term:`fmri<fMRI>` signal is shorter):
+    :start-after: # (i.e. :term:`fMRI` signal is shorter):
     :end-before: # %%
 
 
@@ -193,7 +193,7 @@ predict the category of picture seen by the subject:
 
 
 We will not detail it here since there is a very good documentation about it in the
-`scikit-learn documentation <http://scikit-learn.org/stable/modules/svm.html#classification>`__
+`scikit-learn documentation <https://scikit-learn.org/stable/modules/svm.html#classification>`__
 
 Unmasking (inverse_transform)
 =============================
@@ -216,7 +216,7 @@ Here we want to see the discriminating weights of some voxels.
 Visualizing results
 ===================
 
-Again the visualization code is simple. We can use an fMRI slice as a
+Again the visualization code is simple. We can use an :term:`fMRI` slice as a
 background and plot the weights. Brighter points have a higher
 discriminating weight.
 

@@ -35,8 +35,7 @@ def test_expression_to_contrast_vector():
         expression_to_contrast_vector(exp, cols)
 
 
-def test_Tcontrast():
-    rng = np.random.RandomState(42)
+def test_Tcontrast(rng):
     n, p, q = 100, 80, 10
     X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
     labels, results = run_glm(Y, X, "ar1")
@@ -46,8 +45,7 @@ def test_Tcontrast():
     assert_almost_equal(z_vals.std(), 1, 0)
 
 
-def test_Fcontrast():
-    rng = np.random.RandomState(42)
+def test_Fcontrast(rng):
     n, p, q = 100, 80, 10
     X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
     for model in ["ols", "ar1"]:
@@ -60,8 +58,7 @@ def test_Fcontrast():
             assert_almost_equal(z_vals.std(), 1, 0)
 
 
-def test_t_contrast_add():
-    rng = np.random.RandomState(42)
+def test_t_contrast_add(rng):
     n, p, q = 100, 80, 10
     X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
     lab, res = run_glm(Y, X, "ols")
@@ -72,8 +69,7 @@ def test_t_contrast_add():
     assert_almost_equal(z_vals.std(), 1, 0)
 
 
-def test_fixed_effect_contrast():
-    rng = np.random.RandomState(42)
+def test_fixed_effect_contrast(rng):
     n, p, q = 100, 80, 10
     X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
     lab, res = run_glm(Y, X, "ols")
@@ -104,8 +100,7 @@ def test_fixed_effect_contrast_nonzero_effect():
         assert_almost_equal(fixed_effect.effect_size(), coef.ravel()[i])
 
 
-def test_F_contrast_add():
-    rng = np.random.RandomState(42)
+def test_F_contrast_add(rng):
     n, p, q = 100, 80, 10
     X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
     lab, res = run_glm(Y, X, "ar1")
@@ -123,8 +118,7 @@ def test_F_contrast_add():
     assert_almost_equal(con1.stat() * 2, con2.stat())
 
 
-def test_contrast_mul():
-    rng = np.random.RandomState(42)
+def test_contrast_mul(rng):
     n, p, q = 100, 80, 10
     X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
     lab, res = run_glm(Y, X, "ar1")
@@ -135,9 +129,8 @@ def test_contrast_mul():
         assert_almost_equal(con1.z_score(), con2.z_score())
 
 
-def test_contrast_values():
+def test_contrast_values(rng):
     # but this test is circular and should be removed
-    rng = np.random.RandomState(42)
     n, p, q = 100, 80, 10
     X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
     lab, res = run_glm(Y, X, "ar1", bins=1)
@@ -155,8 +148,7 @@ def test_contrast_values():
     assert_almost_equal(np.ravel(con.stat()), F_ref, 3)
 
 
-def test_low_level_fixed_effects():
-    rng = np.random.RandomState(42)
+def test_low_level_fixed_effects(rng):
     p = 100
     # X1 is some effects estimate, V1 their variance for "session 1"
     X1, V1 = rng.standard_normal(p), np.ones(p)
@@ -237,3 +229,19 @@ def test_invalid_contarst_type():
     variance = np.ones(1)
     with pytest.raises(ValueError, match="is not a valid contrast_type."):
         Contrast(effect, variance, contrast_type="foo")
+
+
+def test_contrast_padding(rng):
+    n, p, q = 100, 80, 10
+    X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
+    labels, results = run_glm(Y, X, "ar1")
+
+    con_val = [1]
+
+    with pytest.warns(
+        UserWarning, match="The rest of the contrast was padded with zeros."
+    ):
+        compute_contrast(labels, results, con_val).z_score()
+
+    con_val = np.eye(q)[:3, :3]
+    compute_contrast(labels, results, con_val, contrast_type="F").z_score()

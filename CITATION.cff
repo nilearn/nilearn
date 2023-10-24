@@ -228,7 +228,7 @@ authors:
     orcid: https://orcid.org/0000-0002-8161-7699
   - given-names: Gael
     family-names: Varoquaux
-    website: http://gael-varoquaux.info/
+    website: https://gael-varoquaux.info/
     affiliation: Inria, Saclay, France
     orcid: https://orcid.org/0000-0003-1076-5122
   - given-names: Gilles de
@@ -485,6 +485,10 @@ authors:
     website: https://nicolasgensollen.github.io/
     affiliation: Inria, Paris, France
     orcid: https://orcid.org/0000-0001-7199-9753
+  - given-names: Nikhil
+    family-names: Krish
+    website: https://github.com/NIkhilgKrish
+    affiliation: University of Texas, Austin
   - given-names: Oliver
     family-names: Warrington
     website: https://github.com/OliverWarrington
@@ -648,7 +652,7 @@ authors:
   - given-names: Vincent
     family-names: Michel
     website: https://github.com/vmichel
-    affiliation: http://www.logilab.fr/
+    affiliation: https://www.logilab.fr/
   - given-names: Virgile
     family-names: Fritsch
     website: https://github.com/VirgileFritsch
