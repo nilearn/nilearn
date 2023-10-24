@@ -839,6 +839,7 @@ def create_fake_bids_dataset(
     confounds_tag="desc-confounds_timeseries",
     random_state=0,
     entities=None,
+    n_voxels=4,
 ):
     """Create a fake :term:`BIDS` dataset directory with dummy files.
 
@@ -898,6 +899,9 @@ def create_fake_bids_dataset(
         with values '1' for some files and '1' for others,
         you would pass: ``entities={"echo": ['1', '2']}``.
 
+    n_voxels : :obj:`int`, default=4
+        number of voxels along a given axis in the generated image.
+
     Returns
     -------
     dataset directory name : :obj:`pathlib.Path`
@@ -908,8 +912,6 @@ def create_fake_bids_dataset(
         Creates a directory with dummy files.
 
     """
-    n_voxels = 10
-
     rand_gen = check_random_state(random_state)
 
     bids_dataset_dir = "bids_dataset"

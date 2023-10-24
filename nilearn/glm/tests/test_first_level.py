@@ -1802,8 +1802,14 @@ def test_missing_trial_type_column_warning(tmp_path_factory):
 
 def test_first_level_from_bids_with_one_condition_missing(tmp_path_factory):
     """One condition is missing in one events.tsv file."""
-    bids_dataset = _new_bids_dataset(
-        tmp_path_factory.mktemp("one_coindition_missing")
+    n_sub, n_ses, tasks, n_runs = _inputs_for_new_bids_dataset()
+    bids_dataset = create_fake_bids_dataset(
+        base_dir=tmp_path_factory.mktemp("one_condition_missing"),
+        n_sub=n_sub,
+        n_ses=n_ses,
+        tasks=tasks,
+        n_runs=n_runs,
+        n_voxels=10,
     )
     events_files = get_bids_files(main_path=bids_dataset, file_tag="events")
 
@@ -1819,8 +1825,6 @@ def test_first_level_from_bids_with_one_condition_missing(tmp_path_factory):
         slice_time_ref=None,
     )
 
-    # print(models_events)
-
-    # design_matrix = models[0].design_matrices_[0]
-
     models[0].fit(models_run_imgs[0], models_events[0])
+    models[0].compute_contrast("c1", output_type="z_score")
+    models[0].compute_contrast("c0", output_type="z_score")
