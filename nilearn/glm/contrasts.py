@@ -9,6 +9,7 @@ from warnings import warn
 import numpy as np
 import pandas as pd
 import scipy.stats as sps
+from pandas.errors import UndefinedVariableError
 
 from nilearn.glm._utils import pad_contrast, z_score
 from nilearn.maskers import NiftiMasker
@@ -34,9 +35,19 @@ def expression_to_contrast_vector(expression, design_columns):
         contrast_vector = np.zeros(len(design_columns))
         contrast_vector[list(design_columns).index(expression)] = 1.0
         return contrast_vector
+
     df = pd.DataFrame(np.eye(len(design_columns)), columns=design_columns)
+    # contrast_vector = df.eval(expression, engine="python").values
     try:
         contrast_vector = df.eval(expression, engine="python").values
+    except UndefinedVariableError as e:
+        msg = e.args[0]
+        warn(
+            f"The expression ({expression}) is not valid: "
+            f"{msg}; columns available are {design_columns}.",
+            UserWarning,
+        )
+        return None
     except Exception:
         raise ValueError(
             f"The expression ({expression}) is not valid. "
