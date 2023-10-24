@@ -1098,11 +1098,6 @@ def test_second_level_contrast_computation_errors(tmp_path, rng):
         model.compute_contrast(cnull)
 
     # passing wrong parameters
-    with pytest.raises(
-        ValueError,
-        match=("t contrasts should be length P=1, but this is length 0"),
-    ):
-        model.compute_contrast(second_level_contrast=[])
     with pytest.raises(ValueError, match="Allowed types are .*'t', 'F'"):
         model.compute_contrast(
             second_level_contrast=c1, second_level_stat_type=""
@@ -1122,11 +1117,40 @@ def test_second_level_contrast_computation_errors(tmp_path, rng):
         ValueError, match="No second-level contrast is specified"
     ):
         model.compute_contrast(None)
+
+
+def test_second_level_t_contrast_length_errors(tmp_path):
+    func_img, mask = fake_fmri_data(file_path=tmp_path)
+
+    model = SecondLevelModel(mask_img=mask)
+
+    func_img, mask = fake_fmri_data(file_path=tmp_path)
+    Y = [func_img] * 4
+    X = pd.DataFrame([[1]] * 4, columns=["intercept"])
+    model = model.fit(Y, design_matrix=X)
+
     with pytest.raises(
         ValueError,
-        match=("t contrasts should be length P=2, but this is length 1"),
+        match=("t contrasts should be of length P=1, but it has length 2."),
     ):
-        model.compute_contrast([1])
+        model.compute_contrast(second_level_contrast=[1, 2])
+
+
+def test_second_level_F_contrast_length_errors(tmp_path):
+    func_img, mask = fake_fmri_data(file_path=tmp_path)
+
+    model = SecondLevelModel(mask_img=mask)
+
+    func_img, mask = fake_fmri_data(file_path=tmp_path)
+    Y = [func_img] * 4
+    X = pd.DataFrame([[1]] * 4, columns=["intercept"])
+    model = model.fit(Y, design_matrix=X)
+
+    with pytest.raises(
+        ValueError,
+        match=("F contrasts should have .* columns, but it has .*"),
+    ):
+        model.compute_contrast(second_level_contrast=np.eye(2))
 
 
 def test_non_parametric_inference_contrast_computation(tmp_path):
