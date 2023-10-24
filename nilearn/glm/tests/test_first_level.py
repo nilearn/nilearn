@@ -1803,9 +1803,15 @@ def test_missing_trial_type_column_warning(tmp_path_factory):
         )
 
 
-@pytest.mark.parametrize("condition", ["c0", "c1"])
+@pytest.mark.parametrize(
+    "condition, vector_run_2",
+    [
+        ("c0", np.array([1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])),
+        ("c1", np.array([0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0])),
+    ],
+)
 def test_first_level_from_bids_with_one_condition_missing(
-    condition, tmp_path_factory
+    condition, vector_run_2, tmp_path_factory
 ):
     """One condition is missing in one events.tsv file.
 
@@ -1837,48 +1843,8 @@ def test_first_level_from_bids_with_one_condition_missing(
 
     models[0].fit(models_run_imgs[0], models_events[0])
 
+    # smoke integration test
     models[0].compute_contrast(condition)
-
-
-@pytest.mark.parametrize(
-    "condition, vector_run_2",
-    [
-        ("c0", np.array([1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])),
-        ("c1", np.array([0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0])),
-    ],
-)
-def test_expression_to_contrast_vector_with_one_condition_missing(
-    condition, vector_run_2, tmp_path_factory
-):
-    """One condition is missing in one events.tsv file.
-
-    Check that the contrast vectors are correct.
-    """
-    n_runs = 3
-    n_ses = 2
-    bids_dataset = create_fake_bids_dataset(
-        base_dir=tmp_path_factory.mktemp("one_condition_missing"),
-        n_sub=1,
-        n_ses=n_ses,
-        tasks=["main"],
-        n_runs=[n_runs],
-        n_voxels=10,
-    )
-
-    # remove rows with "c0" from "trial_type" columns in one events.tsv file
-    events_files = get_bids_files(main_path=bids_dataset, file_tag="events")
-    events = pd.read_csv(events_files[0], sep="\t")
-    events = events[events["trial_type"] != "c0"]
-    events.to_csv(events_files[0], sep="\t", index=False)
-
-    models, models_run_imgs, models_events, _ = first_level_from_bids(
-        dataset_path=bids_dataset,
-        task_label="main",
-        space_label="MNI",
-        slice_time_ref=0,
-    )
-
-    models[0].fit(models_run_imgs[0], models_events[0])
 
     n_runs = len(models[0].labels_)
     con_vals = [condition] * n_runs
