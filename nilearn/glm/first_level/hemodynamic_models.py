@@ -542,14 +542,12 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
         names = [con_name, f"{con_name}_derivative", f"{con_name}_dispersion"]
     elif hrf_model == "fir":
         names = [f"{con_name}_delay_{int(i)}" for i in fir_delays]
-    # Handle callables
     elif callable(hrf_model):
         names = [f"{con_name}_{hrf_model.__name__}"]
     elif isinstance(hrf_model, Iterable) and all(
-        [callable(_) for _ in hrf_model]
+        callable(_) for _ in hrf_model
     ):
         names = [f"{con_name}_{model.__name__}" for model in hrf_model]
-    # Handle some default cases
     elif isinstance(hrf_model, Iterable) and not isinstance(hrf_model, str):
         names = [f"{con_name}_{i}" for i in range(len(hrf_model))]
 
@@ -640,7 +638,7 @@ def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
         except TypeError:
             raise ValueError(error_msg)
     elif isinstance(hrf_model, Iterable) and all(
-        [callable(_) for _ in hrf_model]
+        callable(_) for _ in hrf_model
     ):
         try:
             hkernel = [model(tr, oversampling) for model in hrf_model]
