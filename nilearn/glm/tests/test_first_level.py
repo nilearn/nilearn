@@ -1022,19 +1022,23 @@ def test_first_level_contrast_computation_errors(tmp_path):
         model.compute_contrast([cnull, cnull])
 
     # passing wrong parameters
-    with pytest.raises(
-        ValueError, match=".* contrasts given, while there are .* runs."
-    ):
+    match = ".* contrasts given, while there are .* runs."
+    with pytest.raises(ValueError, match=match):
+        model.compute_contrast([c1, c1, c1])
+    with pytest.raises(ValueError, match=match):
         model.compute_contrast([])
+
+    match = "output_type must be one of "
+    with pytest.raises(ValueError, match=match):
+        model.compute_contrast(c1, "", "")
+    with pytest.raises(ValueError, match=match):
+        model.compute_contrast(c1, "", [])
+
     with pytest.raises(
         ValueError,
-        match="t contrasts should be length P=.*, but this is length .*",
+        match="t contrasts cannot be empty",
     ):
         model.compute_contrast([c1, []])
-    with pytest.raises(ValueError, match="output_type must be one of "):
-        model.compute_contrast(c1, "", "")
-    with pytest.raises(ValueError, match="output_type must be one of "):
-        model.compute_contrast(c1, "", [])
 
 
 def test_first_level_with_scaling(affine_eye):
