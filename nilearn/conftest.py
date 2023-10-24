@@ -133,7 +133,7 @@ def suppress_specific_warning():
 
 
 def _rng():
-    return np.random.RandomState(42)
+    return np.random.default_rng(42)
 
 
 @pytest.fixture()
