@@ -37,7 +37,6 @@ def expression_to_contrast_vector(expression, design_columns):
         return contrast_vector
 
     df = pd.DataFrame(np.eye(len(design_columns)), columns=design_columns)
-    # contrast_vector = df.eval(expression, engine="python").values
     try:
         contrast_vector = df.eval(expression, engine="python").values
     except UndefinedVariableError as e:
