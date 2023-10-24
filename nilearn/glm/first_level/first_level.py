@@ -29,7 +29,7 @@ from nilearn.glm._utils import (
     _check_run_tables,
 )
 from nilearn.glm.contrasts import (
-    _compute_fixed_effect_contrast,
+    compute_fixed_effect_contrast,
     expression_to_contrast_vector,
 )
 from nilearn.glm.first_level.design_matrix import (
@@ -822,7 +822,7 @@ class FirstLevelModel(BaseGLM):
         valid_types.append("all")  # ensuring 'all' is the final entry.
         if output_type not in valid_types:
             raise ValueError(f"output_type must be one of {valid_types}")
-        contrast = _compute_fixed_effect_contrast(
+        contrast = compute_fixed_effect_contrast(
             self.labels_, self.results_, con_vals, stat_type
         )
         output_types = (

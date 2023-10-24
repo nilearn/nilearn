@@ -24,10 +24,10 @@ def expression_to_contrast_vector(expression, design_columns):
 
     Parameters
     ----------
-    expression : string
+    expression : :obj:`str`
         The expression to convert to a vector.
 
-    design_columns : list or array of strings
+    design_columns : :obj:`list` or array of strings
         The column names of the design matrix.
 
     """
@@ -86,6 +86,8 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
         (:term:`effects<Parameter Estimate>`, variance, p-values).
 
     """
+    if con_val is None:
+        return None
     con_val = np.asarray(con_val)
     dim = 1
     if con_val.ndim > 1:
@@ -144,7 +146,7 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
     )
 
 
-def _compute_fixed_effect_contrast(
+def compute_fixed_effect_contrast(
     labels, results, con_vals, contrast_type=None
 ):
     """Compute the summary contrast assuming fixed effects.
@@ -159,6 +161,8 @@ def _compute_fixed_effect_contrast(
             warn(f"Contrast for session {int(i)} is null")
             continue
         contrast_ = compute_contrast(lab, res, con_val, contrast_type)
+        if contrast_ is None:
+            continue
         if contrast is None:
             contrast = contrast_
         else:

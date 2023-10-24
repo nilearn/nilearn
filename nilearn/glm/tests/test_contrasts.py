@@ -7,9 +7,9 @@ from sklearn.linear_model import LinearRegression
 
 from nilearn.glm.contrasts import (
     Contrast,
-    _compute_fixed_effect_contrast,
     _compute_fixed_effects_params,
     compute_contrast,
+    compute_fixed_effect_contrast,
     expression_to_contrast_vector,
 )
 from nilearn.glm.first_level import run_glm
@@ -74,7 +74,18 @@ def test_fixed_effect_contrast(rng):
     X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
     lab, res = run_glm(Y, X, "ols")
     c1, c2 = np.eye(q)[0], np.eye(q)[1]
-    con = _compute_fixed_effect_contrast([lab, lab], [res, res], [c1, c2])
+    con = compute_fixed_effect_contrast([lab, lab], [res, res], [c1, c2])
+    z_vals = con.z_score()
+    assert_almost_equal(z_vals.mean(), 0, 0)
+    assert_almost_equal(z_vals.std(), 1, 0)
+
+
+def test_fixed_effect_contrast_run_missing(rng):
+    n, p, q = 100, 80, 10
+    X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
+    lab, res = run_glm(Y, X, "ols")
+    c1, c2 = np.eye(q)[0], np.eye(q)[1]
+    con = compute_fixed_effect_contrast([lab, lab], [res, res], [c1, c2])
     z_vals = con.z_score()
     assert_almost_equal(z_vals.mean(), 0, 0)
     assert_almost_equal(z_vals.std(), 1, 0)
@@ -88,13 +99,13 @@ def test_fixed_effect_contrast_nonzero_effect():
     for i in range(X.shape[1]):
         contrast = np.zeros(X.shape[1])
         contrast[i] = 1.0
-        fixed_effect = _compute_fixed_effect_contrast(
+        fixed_effect = compute_fixed_effect_contrast(
             [labels],
             [results],
             [contrast],
         )
         assert_almost_equal(fixed_effect.effect_size(), coef.ravel()[i])
-        fixed_effect = _compute_fixed_effect_contrast(
+        fixed_effect = compute_fixed_effect_contrast(
             [labels] * 3, [results] * 3, [contrast] * 3
         )
         assert_almost_equal(fixed_effect.effect_size(), coef.ravel()[i])
