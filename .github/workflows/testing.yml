@@ -13,7 +13,7 @@ jobs:
     min_requirements:
         if: github.repository == 'nilearn/nilearn'
         runs-on: ubuntu-latest
-        name: Python 3.7, minimal requirements without Matplotlib
+        name: minimal requirements without Matplotlib
         defaults:
             run:
                 shell: bash
@@ -22,10 +22,10 @@ jobs:
         steps:
         -   name: Checkout nilearn
             uses: actions/checkout@v4
-        -   name: Setup python '3.7'
+        -   name: Setup python '3.8'
             uses: actions/setup-python@v4
             with:
-                python-version: '3.7'
+                python-version: '3.8'
         -   name: Display Python version
             shell: bash -l {0}
             run: python -c "import sys; print(sys.version)"
@@ -45,7 +45,7 @@ jobs:
     min_requirements_matplotlib:
         if: github.repository == 'nilearn/nilearn'
         runs-on: ubuntu-latest
-        name: Python 3.7, minimal requirements with Matplotlib
+        name: minimal requirements with Matplotlib
         defaults:
             run:
                 shell: bash
@@ -58,7 +58,7 @@ jobs:
         -   name: Setup python
             uses: actions/setup-python@v4
             with:
-                python-version: '3.7'
+                python-version: '3.8'
         -   name: Display Python version
             shell: bash -l {0}
             run: python -c "import sys; print(sys.version)"
@@ -79,7 +79,7 @@ jobs:
             fail-fast: false
             matrix:
                 os: [ubuntu-latest, macos-latest, windows-latest]
-                python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+                python-version: ['3.9', '3.10', '3.11', '3.12']
         name: ${{ matrix.os }} with Python ${{ matrix.python-version }} and latest package versions
         defaults:
             run:
