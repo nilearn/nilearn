@@ -58,5 +58,4 @@ jobs:
         -   name: Install nilearn
             run: pip install .[plotting,plotly,test]
         -   name: Run tests
-            shell: bash -l {0}
-            run: ./build_tools/github/test.sh
+            run: pytest --pyargs nilearn --cov=nilearn
