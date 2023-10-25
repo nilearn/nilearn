@@ -313,3 +313,22 @@ def test_generate_report_imgs_and_mask():
         target_shape=data_shape,
     )
     masker.fit(imgs).generate_report()
+
+
+@pytest.mark.skipif(
+    not_have_mpl, reason="Matplotlib not installed; required for this test"
+)
+def test_generate_report_warning():
+    """Test calling generate report on multiple subjects raises warning."""
+    data_shape = (9, 9, 9, 5)
+    mask_shape = (9, 9, 9)
+    imgs = _get_random_imgs(data_shape, 2)
+    mask = Nifti1Image(np.ones(mask_shape), np.eye(4))
+    masker = MultiNiftiMasker(
+        mask_img=mask,
+    )
+
+    with pytest.warns(
+        UserWarning, match="A list of 4D subject images were provided to fit. "
+    ):
+        masker.fit(imgs).generate_report()
