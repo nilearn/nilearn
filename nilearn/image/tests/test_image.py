@@ -994,17 +994,36 @@ def test_new_img_like_boolean_data(affine_eye, image, shape_3d_default, rng):
 
 def test_clean_img_sample_mask(img_4d_rand_eye):
     """Check sample mask can be passed as a kwarg and used correctly."""
-    length = img_4d_rand_eye.shape[3]
+    length = 10
     confounds = _basic_confounds(length)
     # exclude last time point
     sample_mask = np.arange(length - 1)
 
     img = image.clean_img(
         img_4d_rand_eye,
-        detrend=True,
-        standardize="zscore_sample",
         confounds=confounds,
-        standardize_confounds="zscore_sample",
+        **{"clean__sample_mask": sample_mask},
+    )
+    # original shape is (10, 10, 10, 10)
+    assert img.shape == (10, 10, 10, 9)
+
+
+def test_clean_img_sample_mask_mask_img(shape_3d_default):
+    """Check sample_mask and mask_img can be correctly used together."""
+    length = 10
+    confounds = _basic_confounds(length)
+    img_4d, mask_img = generate_fake_fmri(
+        shape=shape_3d_default, length=length
+    )
+
+    # exclude last time point
+    sample_mask = np.arange(length - 1)
+
+    # test with sample mask
+    img = image.clean_img(
+        img_4d,
+        confounds=confounds,
+        mask_img=mask_img,
         **{"clean__sample_mask": sample_mask},
     )
     # original shape is (10, 10, 10, 10)
