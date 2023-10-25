@@ -123,23 +123,29 @@ As a rule of thumb:
 
 * Features introducing new dependencies will generally not be accepted.
 
-* Downloaders for new atlases datasets are usually discouraged.
-  We will consider adding fetchers only for atlases and light datasets
-  which are needed to demo and teach features.
-
 Adding atlases and datasets
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Downloaders for new atlases datasets are usually discouraged.
+
+There is no intention to provide a comprehensive collection of downloaders
+for the most widely used atlases and datasets.
+**This would be outside the scope of this project.**
+We will consider adding fetchers only for atlases and light datasets
+which are needed to demo and teach features.
+
 .. warning::
 
-      There is no intention to provide a comprehensive collection of downloaders
-      for the most widely used atalases and datasets.
-      **This would be outside the scope of this project.**
-      Rather, Nilearn provides data downloading utilities
-      that are required to showcase nilearn features in the example gallery.
       Issues requesting to add a new atlas or dataset that are not linked
       to the development of a new feature or example
-      will be closed as being **Out of scope**.
+      will be closed as being **out of scope**.
+
+The following projects are dedicated to host atlases and accept contributions:
+
+* `templateflow <https://www.templateflow.org>`_
+* `neuromaps <https://netneurolab.github.io/neuromaps>`_
+* `neuroparc <https://github.com/neurodata/neuroparc>`_
+
 
 .. _nilearn_governance:
 
@@ -790,17 +796,6 @@ if you don't need the plots, a quicker option is:
 
 Additional cases
 ================
-
-.. warning::
-
-      There is no intention to provide a comprehensive collection of downloaders
-      for the most widely used atalases and datasets.
-      **This would be outside the scope of this project.**
-      Rather, Nilearn provides data downloading utilities
-      that are required to showcase nilearn features in the example gallery.
-      Issues requesting to add a new atlas or dataset that are not linked
-      to the development of a new feature or example
-      will be closed as being **Out of scope**.
 
 How to contribute an atlas
 --------------------------
