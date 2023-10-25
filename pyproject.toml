@@ -28,9 +28,9 @@ dependencies = [
     "lxml",
     "nibabel>=4.0.0",
     "numpy>=1.24.0",
-    "pandas>=1.1.5",
+    "pandas>=1.2.0",
     "requests>=2.25.0",
-    "scikit-learn>=1.0.0",
+    "scikit-learn>=1.2.0",
     "scipy>=1.6.0",
     "packaging"
 ]
@@ -79,8 +79,8 @@ min = [
     "joblib==1.0.0",
     "nibabel==4.0.0",
     "numpy==1.26.0",
-    "pandas==1.1.5",
-    "scikit-learn==1.0.0",
+    "pandas==1.2.0",
+    "scikit-learn==1.2.0",
     "scipy==1.6.0"
 ]
 # For surface plotting mostly
