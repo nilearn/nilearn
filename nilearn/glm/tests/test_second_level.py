@@ -137,7 +137,7 @@ def test_second_level_input_as_3D_images(rng, affine_eye):
     images = []
     nb_subjects = 10
     for _ in range(nb_subjects):
-        data = rng.rand(*shape)
+        data = rng.random(shape)
         images.append(Nifti1Image(data, affine_eye))
 
     with testing.write_tmp_imgs(*images, create_files=True) as filenames:

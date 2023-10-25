@@ -14,8 +14,8 @@ from nilearn.decoding.proximal_operators import _prox_l1
 
 @pytest.mark.parametrize("scaling", list(np.logspace(-3, 3, num=7)))
 def test_logistic_lipschitz(rng, scaling, n_samples=4, n_features=2):
-    X = rng.randn(n_samples, n_features) * scaling
-    y = rng.randn(n_samples)
+    X = rng.standard_normal((n_samples, n_features)) * scaling
+    y = rng.standard_normal(n_samples)
     n_features = X.shape[1]
 
     L = _logistic_loss_lipschitz_constant(X)
@@ -26,8 +26,8 @@ def test_logistic_lipschitz(rng, scaling, n_samples=4, n_features=2):
 
 @pytest.mark.parametrize("scaling", list(np.logspace(-3, 3, num=7)))
 def test_squared_loss_lipschitz(rng, scaling, n_samples=4, n_features=2):
-    X = rng.randn(n_samples, n_features) * scaling
-    y = rng.randn(n_samples)
+    X = rng.standard_normal((n_samples, n_features)) * scaling
+    y = rng.standard_normal(n_samples)
     n_features = X.shape[1]
 
     L = spectral_norm_squared(X)
@@ -47,7 +47,7 @@ def test_input_args_and_kwargs(cb_retval, verbose, dgap_factor, rng):
     sig[:6] = 2
     sig[-7:] = 2
     sig[60:75] = 1
-    y = sig + noise_std * rng.randn(*sig.shape)
+    y = sig + noise_std * rng.standard_normal(sig.shape)
     X = np.eye(p)
     mask = np.ones((p,)).astype(bool)
     alpha = 0.01

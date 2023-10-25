@@ -631,11 +631,11 @@ def test_new_img_like_accepts_paths(affine_eye, tmp_path, rng):
     nifti_path = tmp_path / "sample.nii"
     assert isinstance(nifti_path, Path)
 
-    data = rng.rand(10, 10, 10)
+    data = rng.random((10, 10, 10))
     img = Nifti1Image(data, affine_eye)
     nibabel.save(img, nifti_path)
 
-    new_data = rng.rand(10, 10, 10)
+    new_data = rng.random((10, 10, 10))
     new_img = new_img_like(nifti_path, new_data)
     assert new_img.shape == (10, 10, 10)
 
@@ -983,7 +983,7 @@ def test_new_img_like_boolean_data(affine_eye, image, shape_3d_default, rng):
     """Check defaulting boolean input data to np.uint8 dtype is valid for
     encoding with nibabel image classes MGHImage and AnalyzeImage.
     """
-    data = rng.randn(*shape_3d_default).astype("uint8")
+    data = rng.standard_normal(shape_3d_default).astype("uint8")
     in_img = image(dataobj=data, affine=affine_eye)
 
     out_img = new_img_like(in_img, data=in_img.get_fdata() > 0.5)

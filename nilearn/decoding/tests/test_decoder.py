@@ -80,7 +80,7 @@ def _make_binary_classification_test_data(n_samples=N_SAMPLES):
 
 @pytest.fixture()
 def rand_X_Y(rng):
-    X = rng.rand(N_SAMPLES, 10)
+    X = rng.random((N_SAMPLES, 10))
     Y = np.hstack([[-1] * 50, [1] * 50])
     return X, Y
 
@@ -152,8 +152,8 @@ def test_check_param_grid_regression(regressor, param, rng):
 
     Each one with its specific regularization parameter.
     """
-    X = rng.rand(N_SAMPLES, 10)
-    Y = rng.rand(N_SAMPLES)
+    X = rng.random((N_SAMPLES, 10))
+    Y = rng.random(N_SAMPLES)
 
     param_grid = _check_param_grid(regressor, X, Y, None)
 

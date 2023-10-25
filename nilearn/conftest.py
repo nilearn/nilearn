@@ -133,7 +133,7 @@ def suppress_specific_warning():
 
 
 def _rng():
-    return np.random.RandomState(42)
+    return np.random.default_rng(42)
 
 
 @pytest.fixture()
@@ -238,7 +238,7 @@ def _img_3d_rand(affine=_affine_eye()):
 
     Mostly used for set up in other fixtures in other testing modules.
     """
-    data = _rng().rand(*_shape_3d_default())
+    data = _rng().random(_shape_3d_default())
     return Nifti1Image(data, affine)
 
 
@@ -251,7 +251,7 @@ def img_3d_rand_eye():
 def _img_3d_mni(affine=_affine_mni()):
     data_positive = np.zeros((7, 7, 3))
     rng = _rng()
-    data_rng = rng.rand(7, 7, 3)
+    data_rng = rng.random((7, 7, 3))
     data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
     return Nifti1Image(data_positive, affine)
 
@@ -326,7 +326,7 @@ def img_4d_ones_eye():
 @pytest.fixture
 def img_4d_rand_eye():
     """Return a default random filled 4D Nifti1Image (identity affine)."""
-    data = _rng().rand(*_shape_4d_default())
+    data = _rng().random(_shape_4d_default())
     return Nifti1Image(data, _affine_eye())
 
 

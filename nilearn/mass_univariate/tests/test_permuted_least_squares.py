@@ -60,8 +60,8 @@ def ref_score(tested_var, target_var, covars=None):
 
 
 def _create_design(rng, n_samples, n_descriptors, n_regressors):
-    target_var = rng.randn(n_samples, n_descriptors)
-    tested_var = rng.randn(n_samples, n_regressors)
+    target_var = rng.standard_normal((n_samples, n_descriptors))
+    tested_var = rng.standard_normal((n_samples, n_regressors))
 
     return target_var, tested_var, n_descriptors, n_regressors
 
@@ -81,7 +81,7 @@ def dummy_design(rng):
 
 @pytest.fixture
 def confounding_vars(rng):
-    return rng.randn(N_SAMPLES, N_COVARS)
+    return rng.standard_normal((N_SAMPLES, N_COVARS))
 
 
 @pytest.fixture()
@@ -212,7 +212,7 @@ def test_permuted_ols_check_h0_noeffect_labelswap_centered(
     rng, model_intercept
 ):
     # create dummy design with no effect
-    target_var = rng.randn(N_SAMPLES, 1)
+    target_var = rng.standard_normal((N_SAMPLES, 1))
 
     centered_var = np.arange(N_SAMPLES, dtype="f8").reshape((-1, 1))
     centered_var -= centered_var.mean(0)
@@ -228,7 +228,7 @@ def test_permuted_ols_check_h0_noeffect_labelswap_uncentered_var_and_intercept(
     rng,
 ):
     # create dummy design with no effect
-    target_var = rng.randn(N_SAMPLES, 1)
+    target_var = rng.standard_normal((N_SAMPLES, 1))
 
     uncentered_var = np.arange(N_SAMPLES, dtype="f8").reshape((-1, 1))
 
@@ -247,7 +247,7 @@ def test_permuted_ols_check_h0_noeffect_signswap(rng):
         (= t(n_samples - dof)).
     """
     # create dummy design with no effect
-    target_var = rng.randn(N_SAMPLES, 1)
+    target_var = rng.standard_normal((N_SAMPLES, 1))
     n_regressors = 1
     tested_var = np.ones((N_SAMPLES, n_regressors))
 
@@ -430,7 +430,7 @@ def test_permuted_ols_with_multiple_constants_and_covars(design, rng):
     n_covars = 2
 
     confounding_vars = np.hstack(
-        (rng.randn(N_SAMPLES, n_covars), np.ones([N_SAMPLES, 2]))
+        (rng.standard_normal((N_SAMPLES, n_covars)), np.ones([N_SAMPLES, 2]))
     )
     output = permuted_ols(
         tested_var,
@@ -525,7 +525,7 @@ def test_permuted_ols_intercept_nocovar(rng):
     n_descriptors = 10
     n_regressors = 1
     tested_var = np.ones((N_SAMPLES, n_regressors))
-    target_var = rng.randn(N_SAMPLES, n_descriptors)
+    target_var = rng.standard_normal((N_SAMPLES, n_descriptors))
 
     output = permuted_ols(
         tested_var,
@@ -565,8 +565,8 @@ def test_permuted_ols_intercept_statsmodels_withcovar(
     n_regressors = 1
     n_covars = 2
     tested_var = np.ones((N_SAMPLES, n_regressors))
-    target_var = rng.randn(N_SAMPLES, n_descriptors)
-    confounding_vars = rng.randn(N_SAMPLES, n_covars)
+    target_var = rng.standard_normal((N_SAMPLES, n_descriptors))
+    confounding_vars = rng.standard_normal((N_SAMPLES, n_covars))
 
     output = permuted_ols(
         tested_var,
@@ -603,8 +603,8 @@ def test_one_sided_versus_two_test(rng):
     recovered with one-sided."""
     n_descriptors = 100
     n_regressors = 1
-    target_var = rng.randn(N_SAMPLES, n_descriptors)
-    tested_var = rng.randn(N_SAMPLES, n_regressors)
+    target_var = rng.standard_normal((N_SAMPLES, n_descriptors))
+    tested_var = rng.standard_normal((N_SAMPLES, n_regressors))
 
     # one-sided
     output_1_sided = permuted_ols(

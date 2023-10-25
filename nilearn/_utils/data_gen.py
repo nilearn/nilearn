@@ -12,7 +12,6 @@ import scipy.linalg
 import scipy.signal
 from nibabel import Nifti1Image
 from scipy.ndimage import binary_dilation
-from sklearn.utils import check_random_state
 
 from nilearn import datasets, image, maskers, masking
 from nilearn._utils import as_ndarray, logger
@@ -47,11 +46,11 @@ def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
         Generated mask in MNI space.
 
     """
-    rand_gen = check_random_state(random_state)
+    rand_gen = np.random.default_rng(random_state)
     mask_img = datasets.load_mni152_brain_mask(resolution=res)
     masker = maskers.NiftiMasker(mask_img).fit()
     n_voxels = image.get_data(mask_img).sum()
-    data = rand_gen.randn(n_scans, n_voxels)
+    data = rand_gen.standard_normal((n_scans, n_voxels))
     if mask_dilation is not None and mask_dilation > 0:
         mask_img = image.new_img_like(
             mask_img,
@@ -82,8 +81,8 @@ def generate_timeseries(n_timepoints, n_features, random_state=0):
         Generated time series.
 
     """
-    rand_gen = check_random_state(random_state)
-    return rand_gen.randn(n_timepoints, n_features)
+    rand_gen = np.random.default_rng(random_state)
+    return rand_gen.standard_normal((n_timepoints, n_features))
 
 
 def generate_regions_ts(n_features,
@@ -118,7 +117,7 @@ def generate_regions_ts(n_features,
         shape (n_features, n_regions)
 
     """
-    rand_gen = check_random_state(random_state)
+    rand_gen = np.random.default_rng(random_state)
     if window is None:
         window = "boxcar"
 
@@ -318,9 +317,9 @@ def generate_fake_fmri(shape=(10, 11, 12),
     width = [s // 2 for s in shape]
     shift = [s // 4 for s in shape]
 
-    rand_gen = check_random_state(random_state)
+    rand_gen = np.random.default_rng(random_state)
     if kind == "noise":
-        signals = rand_gen.randint(256, size=(width + [length]))
+        signals = rand_gen.integers(256, size=(width + [length]))
     elif kind == "step":
         signals = np.ones(width + [length])
         signals[..., :length // 2] = 0.5
@@ -348,20 +347,20 @@ def generate_fake_fmri(shape=(10, 11, 12),
                          f'to put {n_blocks} blocks of size {block_size}')
     t_start = 0
     if rest_max_size > 0:
-        t_start = rand_gen.randint(0, rest_max_size, 1)[0]
+        t_start = rand_gen.integers(0, rest_max_size, 1)[0]
     for block in range(n_blocks):
         if block_type == 'classification':
             # Select a random voxel and add some signal to the background
-            voxel_idx = rand_gen.randint(0, flat_fmri.shape[0], 1)[0]
-            trials_effect = (rand_gen.random_sample(block_size) + 1) * 3.
+            voxel_idx = rand_gen.integers(0, flat_fmri.shape[0], 1)[0]
+            trials_effect = (rand_gen.random(block_size) + 1) * 3.
         else:
             # Select the voxel in the image center and add some signal
             # that increases with each block
             voxel_idx = flat_fmri.shape[0] // 2
-            trials_effect = (rand_gen.random_sample(block_size) + 1) * block
+            trials_effect = (rand_gen.random(block_size) + 1) * block
         t_rest = 0
         if rest_max_size > 0:
-            t_rest = rand_gen.randint(0, rest_max_size, 1)[0]
+            t_rest = rand_gen.integers(0, rest_max_size, 1)[0]
         flat_fmri[voxel_idx, t_start:t_start + block_size] += trials_effect
         target[t_start:t_start + block_size] = block + 1
         t_start += t_rest + block_size
@@ -409,17 +408,17 @@ def generate_fake_fmri_data_and_design(shapes,
     """
     fmri_data = []
     design_matrices = []
-    rand_gen = check_random_state(random_state)
+    rand_gen = np.random.default_rng(random_state)
     for i, shape in enumerate(shapes):
-        data = rand_gen.randn(*shape)
+        data = rand_gen.standard_normal(shape)
         data[1:-1, 1:-1, 1:-1] += 100
         fmri_data.append(Nifti1Image(data, affine))
         columns = rand_gen.choice(list(string.ascii_lowercase),
                                   size=rk,
                                   replace=False)
         design_matrices.append(
-            pd.DataFrame(rand_gen.randn(shape[3], rk), columns=columns))
-    mask = Nifti1Image((rand_gen.rand(*shape[:3]) > .5).astype(np.int8),
+            pd.DataFrame(rand_gen.standard_normal((shape[3], rk)), columns=columns))
+    mask = Nifti1Image((rand_gen.random(shape[:3]) > .5).astype(np.int8),
                        affine)
     return mask, fmri_data, design_matrices
 
@@ -471,19 +470,19 @@ def write_fake_fmri_data_and_design(shapes,
 
     mask_file, fmri_files, design_files = file_path / 'mask.nii', [], []
 
-    rand_gen = check_random_state(random_state)
+    rand_gen = np.random.default_rng(random_state)
     for i, shape in enumerate(shapes):
 
-        data = rand_gen.randn(*shape)
+        data = rand_gen.standard_normal(shape)
         data[1:-1, 1:-1, 1:-1] += 100
         fmri_files.append(str(file_path / f'fmri_run{i:d}.nii'))
         Nifti1Image(data, affine).to_filename(fmri_files[-1])
 
         design_files.append(str(file_path / f'dmtx_{i:d}.csv'))
-        pd.DataFrame(rand_gen.randn(shape[3], rk),
+        pd.DataFrame(rand_gen.standard_normal(shape[3], rk),
                      columns=['', '', '']).to_csv(design_files[-1])
 
-    Nifti1Image((rand_gen.rand(*shape[:3]) > .5).astype(np.int8),
+    Nifti1Image((rand_gen.random(shape[:3]) > .5).astype(np.int8),
                 affine).to_filename(mask_file)
 
     return mask_file, fmri_files, design_files
@@ -537,8 +536,8 @@ def write_fake_bold_img(file_path,
         Output file path.
 
     """
-    rand_gen = check_random_state(random_state)
-    data = rand_gen.randn(*shape)
+    rand_gen = np.random.default_rng(random_state)
+    data = rand_gen.standard_normal(shape)
     data[1:-1, 1:-1, 1:-1] += 100
     Nifti1Image(data, affine).to_filename(file_path)
     return file_path
@@ -574,10 +573,10 @@ def _generate_signals_from_precisions(precisions,
         (sample number, precisions[n].shape[0]).
 
     """
-    rand_gen = check_random_state(random_state)
+    rand_gen = np.random.default_rng(random_state)
 
     signals = []
-    n_samples = rand_gen.randint(min_n_samples,
+    n_samples = rand_gen.integers(min_n_samples,
                                  high=max_n_samples,
                                  size=len(precisions))
 
@@ -635,12 +634,12 @@ def generate_group_sparse_gaussian_graphs(n_subjects=5,
         and signals.
 
     """
-    rand_gen = check_random_state(random_state)
+    rand_gen = np.random.default_rng(random_state)
     # Generate topology (upper triangular binary matrix, with zeros on the
     # diagonal)
     topology = np.empty((n_features, n_features))
     topology[:, :] = np.triu(
-        (rand_gen.randint(0,
+        (rand_gen.integers(0,
                           high=int(1. / density),
                           size=n_features * n_features)).reshape(
                               n_features, n_features) == 0,
@@ -734,11 +733,11 @@ def _basic_confounds(length, random_state=0):
         'trans_x', 'trans_y', 'trans_z'.
 
     """
-    rand_gen = check_random_state(random_state)
+    rand_gen = np.random.default_rng(random_state)
     columns = ['csf', 'white_matter', 'global_signal',
                'rot_x', 'rot_y', 'rot_z',
                'trans_x', 'trans_y', 'trans_z']
-    data = rand_gen.rand(length, len(columns))
+    data = rand_gen.random((length, len(columns)))
     confounds = pd.DataFrame(data, columns=columns)
     return confounds
 
@@ -792,7 +791,7 @@ def add_metadata_to_bids_dataset(bids_path,
 def generate_random_img(
     shape,
     affine=np.eye(4),
-    random_state=np.random.RandomState(0),
+    random_state=np.random.default_rng(0),
 ):
     """Create a random 3D or 4D image with a given shape and affine.
 
@@ -910,8 +909,6 @@ def create_fake_bids_dataset(
     """
     n_voxels = 4
 
-    rand_gen = check_random_state(random_state)
-
     bids_dataset_dir = "bids_dataset"
     bids_path = Path(base_dir) / bids_dataset_dir
 
@@ -941,7 +938,7 @@ def create_fake_bids_dataset(
         n_runs=n_runs,
         entities=entities,
         n_voxels=n_voxels,
-        rand_gen=rand_gen,
+        random_state=random_state,
     )
 
     if with_derivatives:
@@ -957,7 +954,7 @@ def create_fake_bids_dataset(
             confounds_tag=confounds_tag,
             entities=entities,
             n_voxels=n_voxels,
-            rand_gen=rand_gen,
+            random_state=random_state,
         )
 
     return bids_path
@@ -1000,7 +997,7 @@ def _mock_bids_dataset(
     n_runs,
     entities,
     n_voxels,
-    rand_gen,
+    random_state,
 ):
     """Create a fake raw :term:`bids<BIDS>` dataset directory with dummy files.
 
@@ -1030,7 +1027,7 @@ def _mock_bids_dataset(
     n_voxels : :obj:`int`
         Number of voxels along a given axis in the functional image.
 
-    rand_gen : :obj:`numpy.random.RandomState` instance
+    random_state : :obj:`numpy.random.RandomState` instance
         Random number generator.
 
     """
@@ -1069,7 +1066,7 @@ def _mock_bids_dataset(
                                 func_path=func_path,
                                 fields=fields,
                                 n_voxels=n_voxels,
-                                rand_gen=rand_gen,
+                                random_state=random_state,
                             )
 
                 else:
@@ -1080,7 +1077,7 @@ def _mock_bids_dataset(
                         func_path=func_path,
                         fields=fields,
                         n_voxels=n_voxels,
-                        rand_gen=rand_gen,
+                        random_state=random_state,
                     )
 
 
@@ -1093,7 +1090,7 @@ def _mock_bids_derivatives(
     confounds_tag,
     entities,
     n_voxels,
-    rand_gen,
+    random_state,
 ):
     """Create a fake derivatives :term:`bids<BIDS>` dataset directory \
        with dummy files.
@@ -1129,7 +1126,7 @@ def _mock_bids_derivatives(
     n_voxels : :obj:`int`
         Number of voxels along a given axis in the functional image.
 
-    rand_gen : :obj:`numpy.random.RandomState` instance
+    random_state : :obj:`numpy.random.RandomState` instance
         Random number generator.
 
     """
@@ -1163,7 +1160,7 @@ def _mock_bids_derivatives(
                                 func_path=func_path,
                                 fields=fields,
                                 n_voxels=n_voxels,
-                                rand_gen=rand_gen,
+                                random_state=random_state,
                                 confounds_tag=confounds_tag,
                             )
 
@@ -1175,7 +1172,7 @@ def _mock_bids_derivatives(
                         func_path=func_path,
                         fields=fields,
                         n_voxels=n_voxels,
-                        rand_gen=rand_gen,
+                        random_state=random_state,
                         confounds_tag=confounds_tag,
                     )
 
@@ -1309,7 +1306,7 @@ def _write_bids_raw_func(
     func_path,
     fields,
     n_voxels,
-    rand_gen,
+    random_state,
 ):
     """Create BIDS functional raw nifti, json sidecar and events files.
 
@@ -1325,7 +1322,7 @@ def _write_bids_raw_func(
     n_voxels : :obj:`int`
         Number of voxels along a given axis in the functional image.
 
-    rand_gen : :obj:`numpy.random.RandomState` instance
+    random_state : :obj:`numpy.random.RandomState` instance
         Random number generator.
 
     """
@@ -1334,7 +1331,7 @@ def _write_bids_raw_func(
     write_fake_bold_img(
         bold_path,
         [n_voxels, n_voxels, n_voxels, n_time_points],
-        random_state=rand_gen,
+        random_state=random_state,
     )
 
     repetition_time = 1.5
@@ -1352,7 +1349,7 @@ def _write_bids_derivative_func(
     func_path,
     fields,
     n_voxels,
-    rand_gen,
+    random_state,
     confounds_tag,
 ):
     """Create BIDS functional derivative and confounds files.
@@ -1376,7 +1373,7 @@ def _write_bids_derivative_func(
     n_voxels : :obj:`int`
         Number of voxels along a given axis in the functional image.
 
-    rand_gen : :obj:`numpy.random.RandomState` instance
+    random_state : :obj:`numpy.random.RandomState` instance
         Random number generator.
 
     confounds_tag : :obj:`str`, optional.
@@ -1393,7 +1390,7 @@ def _write_bids_derivative_func(
         confounds_path = func_path / _create_bids_filename(
             fields=fields, entities_to_include=_bids_entities()["raw"]
         )
-        _basic_confounds(length=n_time_points, random_state=rand_gen).to_csv(
+        _basic_confounds(length=n_time_points, random_state=random_state).to_csv(
             confounds_path, sep="\t", index=None
         )
 
@@ -1419,7 +1416,7 @@ def _write_bids_derivative_func(
             bold_path = func_path / _create_bids_filename(
                 fields=fields, entities_to_include=entities_to_include
             )
-            write_fake_bold_img(bold_path, shape=shape, random_state=rand_gen)
+            write_fake_bold_img(bold_path, shape=shape, random_state=random_state)
 
     fields["entities"]["space"] = "fsaverage5"
     fields["extension"] = "func.gii"

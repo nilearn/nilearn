@@ -765,7 +765,7 @@ def test_check_mesh_and_data(rng):
     assert (d == data).all()
     # Generate faces such that max index is larger than
     # the length of coordinates array.
-    wrong_faces = rng.randint(coords.shape[0] + 1, size=(30, 3))
+    wrong_faces = rng.integers(coords.shape[0] + 1, size=(30, 3))
     wrong_mesh = Mesh(coords, wrong_faces)
     # Check that check_mesh_and_data raises an error
     # with the resulting wrong mesh
@@ -794,7 +794,7 @@ def test_check_surface(rng):
     assert_array_equal(s.mesh.faces, mesh.faces)
     # Generate faces such that max index is larger than
     # the length of coordinates array.
-    wrong_faces = rng.randint(coords.shape[0] + 1, size=(30, 3))
+    wrong_faces = rng.integers(coords.shape[0] + 1, size=(30, 3))
     wrong_mesh = Mesh(coords, wrong_faces)
     wrong_surface = Surface(wrong_mesh, data)
     # Check that check_mesh_and_data raises an error
