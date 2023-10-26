@@ -182,6 +182,8 @@
 
 .. _Mehdi Rahim: https://github.com/mrahim
 
+.. _Mia Zwally: https://github.com/MIZwally
+
 .. _Michael Eickenberg: https://github.com/eickenberg
 
 .. _Michael Hanke: https://github.com/mih
