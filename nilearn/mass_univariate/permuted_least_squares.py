@@ -11,6 +11,7 @@ import nibabel as nib
 import numpy as np
 from scipy import stats
 from scipy.ndimage import generate_binary_structure, label
+from sklearn.utils import check_random_state
 
 from nilearn import image
 from nilearn.masking import apply_mask
@@ -162,7 +163,7 @@ def _permuted_ols_on_chunk(
 
     """
     # initialize the seed of the random generator
-    rng = np.random.default_rng(random_state)
+    rng = check_random_state(random_state)
 
     n_samples, n_regressors = tested_vars.shape
     n_descriptors = target_vars.shape[1]
@@ -190,7 +191,7 @@ def _permuted_ols_on_chunk(
         if intercept_test:
             # sign swap (random multiplication by 1 or -1)
             target_vars = target_vars * (
-                rng.integers(2, size=(n_samples, 1)) * 2 - 1
+                rng.randint(2, size=(n_samples, 1)) * 2 - 1
             )
 
         else:
@@ -605,7 +606,7 @@ def permuted_ols(
 
     """
     # initialize the seed of the random generator
-    rng = np.random.default_rng(random_state)
+    rng = check_random_state(random_state)
 
     # check n_jobs (number of CPUs)
     if n_jobs == 0:  # invalid according to joblib's conventions
@@ -871,7 +872,7 @@ def permuted_ols(
             two_sided_test=two_sided_test,
             tfce=tfce,
             tfce_original_data=tfce_original_data,
-            random_state=rng.integers(1, np.iinfo(np.int32).max - 1),
+            random_state=rng.randint(1, np.iinfo(np.int32).max - 1),
             verbose=verbose,
         )
         for thread_id, n_perm_chunk in enumerate(n_perm_chunks)

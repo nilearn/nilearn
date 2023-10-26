@@ -14,6 +14,7 @@ from math import sqrt
 
 import numpy as np
 from scipy import linalg
+from sklearn.utils import check_random_state
 
 
 def _check_lipschitz_continuous(
@@ -52,9 +53,9 @@ def _check_lipschitz_continuous(
     ------
     RuntimeError
     """
-    rng = np.random.default_rng(random_state)
-    for x in rng.standard_normal((n_trials, ndim)):
-        for y in rng.standard_normal((n_trials, ndim)):
+    rng = check_random_state(random_state)
+    for x in rng.randn(n_trials, ndim):
+        for y in rng.randn(n_trials, ndim):
             a = linalg.norm(f(x).ravel() - f(y).ravel(), 2)
             b = lipschitz_constant * linalg.norm(x - y, 2)
             if a > b:

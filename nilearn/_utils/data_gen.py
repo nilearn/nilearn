@@ -909,6 +909,8 @@ def create_fake_bids_dataset(
     """
     n_voxels = 4
 
+    rand_gen = np.random.default_rng(random_state)
+
     bids_dataset_dir = "bids_dataset"
     bids_path = Path(base_dir) / bids_dataset_dir
 
@@ -938,7 +940,7 @@ def create_fake_bids_dataset(
         n_runs=n_runs,
         entities=entities,
         n_voxels=n_voxels,
-        random_state=random_state,
+        rand_gen=rand_gen,
     )
 
     if with_derivatives:
@@ -954,7 +956,7 @@ def create_fake_bids_dataset(
             confounds_tag=confounds_tag,
             entities=entities,
             n_voxels=n_voxels,
-            random_state=random_state,
+            rand_gen=rand_gen,
         )
 
     return bids_path
@@ -997,7 +999,7 @@ def _mock_bids_dataset(
     n_runs,
     entities,
     n_voxels,
-    random_state,
+    rand_gen,
 ):
     """Create a fake raw :term:`bids<BIDS>` dataset directory with dummy files.
 
@@ -1027,7 +1029,7 @@ def _mock_bids_dataset(
     n_voxels : :obj:`int`
         Number of voxels along a given axis in the functional image.
 
-    random_state : :obj:`numpy.random.RandomState` instance
+    rand_gen : :obj:`numpy.random.RandomState` instance
         Random number generator.
 
     """
@@ -1066,7 +1068,7 @@ def _mock_bids_dataset(
                                 func_path=func_path,
                                 fields=fields,
                                 n_voxels=n_voxels,
-                                random_state=random_state,
+                                rand_gen=rand_gen,
                             )
 
                 else:
@@ -1077,7 +1079,7 @@ def _mock_bids_dataset(
                         func_path=func_path,
                         fields=fields,
                         n_voxels=n_voxels,
-                        random_state=random_state,
+                        rand_gen=rand_gen,
                     )
 
 
@@ -1090,7 +1092,7 @@ def _mock_bids_derivatives(
     confounds_tag,
     entities,
     n_voxels,
-    random_state,
+    rand_gen,
 ):
     """Create a fake derivatives :term:`bids<BIDS>` dataset directory \
        with dummy files.
@@ -1126,7 +1128,7 @@ def _mock_bids_derivatives(
     n_voxels : :obj:`int`
         Number of voxels along a given axis in the functional image.
 
-    random_state : :obj:`numpy.random.RandomState` instance
+    rand_gen : :obj:`numpy.random.RandomState` instance
         Random number generator.
 
     """
@@ -1160,7 +1162,7 @@ def _mock_bids_derivatives(
                                 func_path=func_path,
                                 fields=fields,
                                 n_voxels=n_voxels,
-                                random_state=random_state,
+                                rand_gen=rand_gen,
                                 confounds_tag=confounds_tag,
                             )
 
@@ -1172,7 +1174,7 @@ def _mock_bids_derivatives(
                         func_path=func_path,
                         fields=fields,
                         n_voxels=n_voxels,
-                        random_state=random_state,
+                        rand_gen=rand_gen,
                         confounds_tag=confounds_tag,
                     )
 
@@ -1306,7 +1308,7 @@ def _write_bids_raw_func(
     func_path,
     fields,
     n_voxels,
-    random_state,
+    rand_gen,
 ):
     """Create BIDS functional raw nifti, json sidecar and events files.
 
@@ -1322,7 +1324,7 @@ def _write_bids_raw_func(
     n_voxels : :obj:`int`
         Number of voxels along a given axis in the functional image.
 
-    random_state : :obj:`numpy.random.RandomState` instance
+    rand_gen : :obj:`numpy.random.RandomState` instance
         Random number generator.
 
     """
@@ -1331,7 +1333,7 @@ def _write_bids_raw_func(
     write_fake_bold_img(
         bold_path,
         [n_voxels, n_voxels, n_voxels, n_time_points],
-        random_state=random_state,
+        random_state=rand_gen,
     )
 
     repetition_time = 1.5
@@ -1349,7 +1351,7 @@ def _write_bids_derivative_func(
     func_path,
     fields,
     n_voxels,
-    random_state,
+    rand_gen,
     confounds_tag,
 ):
     """Create BIDS functional derivative and confounds files.
@@ -1373,7 +1375,7 @@ def _write_bids_derivative_func(
     n_voxels : :obj:`int`
         Number of voxels along a given axis in the functional image.
 
-    random_state : :obj:`numpy.random.RandomState` instance
+    rand_gen : :obj:`numpy.random.RandomState` instance
         Random number generator.
 
     confounds_tag : :obj:`str`, optional.
@@ -1390,7 +1392,7 @@ def _write_bids_derivative_func(
         confounds_path = func_path / _create_bids_filename(
             fields=fields, entities_to_include=_bids_entities()["raw"]
         )
-        _basic_confounds(length=n_time_points, random_state=random_state).to_csv(
+        _basic_confounds(length=n_time_points, random_state=rand_gen).to_csv(
             confounds_path, sep="\t", index=None
         )
 
@@ -1416,7 +1418,7 @@ def _write_bids_derivative_func(
             bold_path = func_path / _create_bids_filename(
                 fields=fields, entities_to_include=entities_to_include
             )
-            write_fake_bold_img(bold_path, shape=shape, random_state=random_state)
+            write_fake_bold_img(bold_path, shape=shape, random_state=rand_gen)
 
     fields["entities"]["space"] = "fsaverage5"
     fields["extension"] = "func.gii"
