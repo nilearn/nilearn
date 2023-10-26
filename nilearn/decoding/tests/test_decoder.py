@@ -46,6 +46,7 @@ from sklearn.svm import SVR, LinearSVC
 
 from nilearn._utils import compare_version
 from nilearn._utils.param_validation import check_feature_screening
+from nilearn.conftest import _rng
 from nilearn.decoding.decoder import (
     Decoder,
     DecoderRegressor,
@@ -898,7 +899,7 @@ def test_decoder_multiclass_classification_cross_validation(
     )
     groups = None
     if isinstance(cv, LeaveOneGroupOut):
-        groups = rng.binomial(2, 0.3, size=len(y))
+        groups = _rng(0).binomial(2, 0.3, size=len(y))
     model.fit(X, y, groups=groups)
     y_pred = model.predict(X)
 
@@ -979,7 +980,7 @@ def test_decoder_multiclass_error_incorrect_cv(multiclass_data):
 
 def test_decoder_multiclass_warnings(multiclass_data, rng):
     X, y, _ = multiclass_data
-    groups = rng.binomial(2, 0.3, size=len(y))
+    groups = _rng(0).binomial(2, 0.3, size=len(y))
 
     # Check whether decoder raised warning when groups is set to specific
     # value but CV Splitter is not set

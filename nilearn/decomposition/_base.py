@@ -11,6 +11,7 @@ from joblib import Memory, Parallel, delayed
 from scipy import linalg
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.linear_model import LinearRegression
+from sklearn.utils import check_random_state
 from sklearn.utils.extmath import randomized_svd, svd_flip
 
 import nilearn
@@ -51,7 +52,7 @@ def _fast_svd(X, n_components, random_state=None):
         The last matrix of the truncated svd
 
     """
-    random_state = np.random.default_rng(random_state)
+    random_state = check_random_state(random_state)
     # Small problem, just call full PCA
     if max(X.shape) <= 500:
         svd_solver = "full"
@@ -220,7 +221,7 @@ def _mask_and_reduce_single(
     # reference count on it, and possibly free the corresponding
     # data
     del img
-    random_state = np.random.default_rng(random_state)
+    random_state = check_random_state(random_state)
 
     data_n_samples = this_data.shape[0]
     if reduction_ratio is None:

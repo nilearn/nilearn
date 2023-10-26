@@ -74,7 +74,8 @@ def _make_canica_components(shape):
 
 def _make_canica_test_data(rng=None, n_subjects=N_SUBJECTS, noisy=True):
     if rng is None:
-        rng = _rng()
+        # Use legacy generator for sklearn compatibility
+        rng = np.random.RandomState(42)
     components = _make_canica_components(SHAPE)
     if noisy:  # Creating noisy non positive data
         components[rng.standard_normal(components.shape) > 0.8] *= -2.0

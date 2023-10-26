@@ -9,6 +9,7 @@ import numpy as np
 from joblib import Memory, Parallel, delayed
 from scipy.stats import scoreatpercentile
 from sklearn.decomposition import fastica
+from sklearn.utils import check_random_state
 
 from nilearn._utils import fill_doc
 
@@ -209,9 +210,9 @@ class CanICA(_MultiPCA):
     def _unmix_components(self, components):
         """Core function of CanICA than rotate components_ to maximize \
         independence."""
-        random_state = np.random.default_rng(self.random_state)
+        random_state = check_random_state(self.random_state)
 
-        seeds = random_state.integers(np.iinfo(np.int32).max, size=self.n_init)
+        seeds = random_state.randint(np.iinfo(np.int32).max, size=self.n_init)
         # Note: fastICA is very unstable, hence we use 64bit on it
         results = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
             delayed(self._cache(fastica, func_memory_level=2))(

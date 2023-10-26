@@ -132,8 +132,8 @@ def suppress_specific_warning():
 # ------------------------   RNG   ------------------------#
 
 
-def _rng():
-    return np.random.default_rng(42)
+def _rng(seed=42):
+    return np.random.default_rng(seed)
 
 
 @pytest.fixture()
