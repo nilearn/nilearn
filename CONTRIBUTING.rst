@@ -84,7 +84,7 @@ The following sections explain the :ref:`nilearn_scope` and :ref:`nilearn_govern
 .. _nilearn_scope:
 
 Scope of the project
----------------------
+--------------------
 
 Nilearn is an Open-source Python package for visualizing and analyzing human
 brain MRI data.
@@ -103,7 +103,13 @@ To assess new features, our main concern is their usefulness to a number of
 our users.
 To make Nilearn high-quality and sustainable we also weigh their benefits
 (i.e., new features, ease of use) with their cost (i.e., complexity of the code,
-runtime of the examples). As a rule of thumb:
+runtime of the examples).
+
+Exhaustive criteria used in the review process
+are detailed in the **contribution guide below**.
+Be sure to read and follow them so that your code can be accepted quickly.
+
+As a rule of thumb:
 
 * To be accepted, new features must be **in the scope of the project** and
   correspond to an **established practice** (typically as used in scientific
@@ -117,19 +123,34 @@ runtime of the examples). As a rule of thumb:
 
 * Features introducing new dependencies will generally not be accepted.
 
-* Downloaders for new atlases are welcome if they comes with an example.
+Adding atlases and datasets
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* Downloaders for new datasets are usually discouraged. We will consider adding
-  fetchers only for light datasets which are needed to demo and teach features.
+Downloaders for new atlases datasets are usually discouraged.
 
-Exhaustive criteria used in the review process are detailed in the **contribution
-guide below**.
-Be sure to read and follow them so that your code can be accepted quickly.
+There is no intention to provide a comprehensive collection of downloaders
+for the most widely used atlases and datasets.
+**This would be outside the scope of this project.**
+We will consider adding fetchers only for atlases and light datasets
+which are needed to demo and teach features.
+
+.. warning::
+
+      Issues requesting to add a new atlas or dataset that are not linked
+      to the development of a new feature or example
+      will be closed as being **out of scope**.
+
+The following projects are dedicated to host atlases and accept contributions:
+
+* `templateflow <https://www.templateflow.org>`_
+* `neuromaps <https://netneurolab.github.io/neuromaps>`_
+* `neuroparc <https://github.com/neurodata/neuroparc>`_
+
 
 .. _nilearn_governance:
 
 Who makes decisions
---------------------
+-------------------
 
 We strongly aim to be a community oriented project where decisions are
 made based on consensus according to the criteria described above.
@@ -169,7 +190,7 @@ you first open a :nilearn-gh:`new issue <issues/new/choose>` before sending a
 .. _contribution_guidelines:
 
 Contribution Guidelines
-------------------------
+-----------------------
 
 When modifying the codebase, we ask every contributor to respect common
 guidelines.
@@ -573,7 +594,7 @@ learn how to use those tools to build documentation.
 .. _git_repo:
 
 Setting up your environment
-============================
+===========================
 
 Installing
 ----------
@@ -774,10 +795,10 @@ if you don't need the plots, a quicker option is:
 
 
 Additional cases
-=================
+================
 
 How to contribute an atlas
----------------------------
+--------------------------
 
 We want atlases in nilearn to be internally consistent. Specifically,
 your atlas object should have three attributes (as with the existing
@@ -798,14 +819,11 @@ Examples can be found :nilearn-gh:`here <blob/main/nilearn/datasets/tests/test_a
 
 
 How to contribute a dataset fetcher
-------------------------------------
+-----------------------------------
 
 The :mod:`nilearn.datasets` module provides functions to download some
 neuroimaging datasets, such as :func:`nilearn.datasets.fetch_haxby` or
-:func:`nilearn.datasets.fetch_atlas_harvard_oxford`. The goal is not to provide a comprehensive
-collection of downloaders for the most widely used datasets, and this would be
-outside the scope of this project. Rather, this module provides data downloading utilities that are
-required to showcase nilearn features in the example gallery.
+:func:`nilearn.datasets.fetch_atlas_harvard_oxford`.
 
 Downloading data takes time and large datasets slow down the build of the
 example gallery. Moreover, downloads can fail for reasons we do not control,
@@ -818,7 +836,6 @@ downloader needs to be adapted.
 As for any contributed feature, before starting working on a new downloader,
 we recommend opening a :nilearn-gh:`new issue <issues/new/choose>` to discuss
 whether it is necessary or if existing downloaders could be used instead.
-
 
 To add a new fetcher, ``nilearn.datasets.utils`` provides some helper functions,
 such as ``_get_dataset_dir`` to find a directory where the dataset is or will be
@@ -841,7 +858,7 @@ returned by the ``request_mocker`` pytest fixture, defined in
 this fixture. Existing tests can also serve as examples.
 
 Maintenance
-=================
+===========
 
 More information about the project organization, conventions, and maintenance
 process can be found there : :ref:`maintenance_process`.
