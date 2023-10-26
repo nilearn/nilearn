@@ -20,6 +20,7 @@ from numpy.testing import (
 from nilearn import signal
 from nilearn._utils import niimg_conversions, testing
 from nilearn._utils.data_gen import (
+    _basic_confounds,
     generate_fake_fmri,
     generate_labeled_regions,
     generate_maps,
@@ -989,3 +990,41 @@ def test_new_img_like_boolean_data(affine_eye, image, shape_3d_default, rng):
     out_img = new_img_like(in_img, data=in_img.get_fdata() > 0.5)
 
     assert get_data(out_img).dtype == "uint8"
+
+
+def test_clean_img_sample_mask(img_4d_rand_eye):
+    """Check sample mask can be passed as a kwarg and used correctly."""
+    length = 10
+    confounds = _basic_confounds(length)
+    # exclude last time point
+    sample_mask = np.arange(length - 1)
+
+    img = image.clean_img(
+        img_4d_rand_eye,
+        confounds=confounds,
+        **{"clean__sample_mask": sample_mask},
+    )
+    # original shape is (10, 10, 10, 10)
+    assert img.shape == (10, 10, 10, 9)
+
+
+def test_clean_img_sample_mask_mask_img(shape_3d_default):
+    """Check sample_mask and mask_img can be correctly used together."""
+    length = 10
+    confounds = _basic_confounds(length)
+    img_4d, mask_img = generate_fake_fmri(
+        shape=shape_3d_default, length=length
+    )
+
+    # exclude last time point
+    sample_mask = np.arange(length - 1)
+
+    # test with sample mask
+    img = image.clean_img(
+        img_4d,
+        confounds=confounds,
+        mask_img=mask_img,
+        **{"clean__sample_mask": sample_mask},
+    )
+    # original shape is (10, 10, 10, 10)
+    assert img.shape == (10, 10, 10, 9)

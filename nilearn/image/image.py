@@ -1280,6 +1280,11 @@ def clean_img(
     # Put results back into Niimg-like object
     if mask_img is not None:
         imgs_ = masking.unmask(data, mask_img)
+    elif "sample_mask" in clean_kwargs:
+        sample_shape = imgs_.shape[:3] + clean_kwargs["sample_mask"].shape
+        imgs_ = new_img_like(
+            imgs_, data.T.reshape(sample_shape), copy_header=True
+        )
     else:
         imgs_ = new_img_like(
             imgs_, data.T.reshape(imgs_.shape), copy_header=True
