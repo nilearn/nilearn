@@ -16,11 +16,11 @@ from sklearn.utils import check_random_state
 from nilearn import image
 from nilearn.masking import apply_mask
 from nilearn.mass_univariate._utils import (
-    _normalize_matrix_on_axis,
-    _orthonormalize_matrix,
     calculate_cluster_measures,
     calculate_tfce,
+    normalize_matrix_on_axis,
     null_to_p,
+    orthonormalize_matrix,
     t_score_with_covars_and_normalized_design,
 )
 
@@ -728,7 +728,7 @@ def permuted_ols(
     # OLS regression on original data
     if confounding_vars is not None:
         # step 1: extract effect of covars from target vars
-        covars_orthonormalized = _orthonormalize_matrix(confounding_vars)
+        covars_orthonormalized = orthonormalize_matrix(confounding_vars)
         if not covars_orthonormalized.flags["C_CONTIGUOUS"]:
             # useful to developer
             warnings.warn("Confounding variates not C_CONTIGUOUS.")
@@ -736,7 +736,7 @@ def permuted_ols(
                 covars_orthonormalized
             )
 
-        targetvars_normalized = _normalize_matrix_on_axis(
+        targetvars_normalized = normalize_matrix_on_axis(
             target_vars
         ).T  # faster with F-ordered target_vars_chunk
         if not targetvars_normalized.flags["C_CONTIGUOUS"]:
@@ -750,29 +750,27 @@ def permuted_ols(
         targetvars_resid_covars = targetvars_normalized - np.dot(
             beta_targetvars_covars, covars_orthonormalized.T
         )
-        targetvars_resid_covars = _normalize_matrix_on_axis(
+        targetvars_resid_covars = normalize_matrix_on_axis(
             targetvars_resid_covars, axis=1
         )
 
         # step 2: extract effect of covars from tested vars
-        testedvars_normalized = _normalize_matrix_on_axis(
-            tested_vars.T, axis=1
-        )
+        testedvars_normalized = normalize_matrix_on_axis(tested_vars.T, axis=1)
         beta_testedvars_covars = np.dot(
             testedvars_normalized, covars_orthonormalized
         )
         testedvars_resid_covars = testedvars_normalized - np.dot(
             beta_testedvars_covars, covars_orthonormalized.T
         )
-        testedvars_resid_covars = _normalize_matrix_on_axis(
+        testedvars_resid_covars = normalize_matrix_on_axis(
             testedvars_resid_covars, axis=1
         ).T.copy()
 
         n_covars = confounding_vars.shape[1]
 
     else:
-        targetvars_resid_covars = _normalize_matrix_on_axis(target_vars).T
-        testedvars_resid_covars = _normalize_matrix_on_axis(tested_vars).copy()
+        targetvars_resid_covars = normalize_matrix_on_axis(target_vars).T
+        testedvars_resid_covars = normalize_matrix_on_axis(tested_vars).copy()
         covars_orthonormalized = None
         n_covars = 0
 

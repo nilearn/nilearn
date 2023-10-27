@@ -22,7 +22,7 @@ from sklearn.feature_extraction import DictVectorizer
 from sklearn.utils import Bunch
 
 from ..image import resample_img
-from .utils import _fetch_file, get_dataset_descr, get_dataset_dir
+from .utils import fetch_file, get_dataset_descr, get_dataset_dir
 
 _NEUROVAULT_BASE_URL = "https://neurovault.org/api/"
 _NEUROVAULT_COLLECTIONS_URL = urljoin(_NEUROVAULT_BASE_URL, "collections/")
@@ -1128,7 +1128,7 @@ def _yield_from_url_list(url_list, verbose=3):
 
 
 def _simple_download(url, target_file, temp_dir, verbose=3):
-    """Wrap around ``utils._fetch_file``.
+    """Wrap around ``utils.fetch_file``.
 
     This allows specifying the target file name.
 
@@ -1141,7 +1141,7 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
         Location of the downloaded file on filesystem.
 
     temp_dir : str
-        Location of sandbox directory used by ``_fetch_file``.
+        Location of sandbox directory used by ``fetch_file``.
 
     verbose : int, default=3
         An integer in [0, 1, 2, 3] to control the verbosity level.
@@ -1158,12 +1158,12 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
 
     See Also
     --------
-    nilearn.datasets._utils._fetch_file
+    nilearn.datasets._utils.fetch_file
 
     """
     _print_if(f"Downloading file: {url}", _DEBUG, verbose)
     try:
-        downloaded = _fetch_file(
+        downloaded = fetch_file(
             url, temp_dir, resume=False, overwrite=True, verbose=0
         )
     except Exception:

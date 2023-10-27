@@ -234,7 +234,7 @@ def test_smooth_array_fwhm_is_odd_with_copy(smooth_array_data, affine):
     data = smooth_array_data
     fwhm = 9
 
-    filtered = image._smooth_array(data, affine, fwhm=fwhm, copy=True)
+    filtered = image.smooth_array(data, affine, fwhm=fwhm, copy=True)
 
     assert not np.may_share_memory(filtered, data)
 
@@ -251,7 +251,7 @@ def test_smooth_array_fwhm_is_odd_no_copy(affine):
     data = _new_data_for_smooth_array()
     fwhm = 9
 
-    image._smooth_array(data, affine, fwhm=fwhm, copy=False)
+    image.smooth_array(data, affine, fwhm=fwhm, copy=False)
 
     _check_fwhm(data, affine, fwhm)
 
@@ -262,7 +262,7 @@ def test_smooth_array_nan_do_not_propagate():
     fwhm = 9
     affine = AFFINE_TO_TEST[2]
 
-    filtered = image._smooth_array(
+    filtered = image.smooth_array(
         data, affine, fwhm=fwhm, ensure_finite=True, copy=True
     )
 
@@ -274,8 +274,8 @@ def test_smooth_array_same_result_with_fwhm_none_or_zero(
 ):
     affine = AFFINE_TO_TEST[2]
 
-    out_fwhm_none = image._smooth_array(smooth_array_data, affine, fwhm=None)
-    out_fwhm_zero = image._smooth_array(smooth_array_data, affine, fwhm=0.0)
+    out_fwhm_none = image.smooth_array(smooth_array_data, affine, fwhm=None)
+    out_fwhm_zero = image.smooth_array(smooth_array_data, affine, fwhm=0.0)
 
     assert_array_equal(out_fwhm_none, out_fwhm_zero)
 
@@ -285,7 +285,7 @@ def test_fast_smooth_array_give_same_result_as_smooth_array(
     smooth_array_data, affine
 ):
     assert_equal(
-        image._smooth_array(smooth_array_data, affine, fwhm="fast"),
+        image.smooth_array(smooth_array_data, affine, fwhm="fast"),
         image._fast_smooth_array(smooth_array_data),
     )
 
@@ -294,11 +294,11 @@ def test_smooth_array_raise_warning_if_fwhm_is_zero(smooth_array_data):
     """See https://github.com/nilearn/nilearn/issues/1537"""
     affine = AFFINE_TO_TEST[2]
     with pytest.warns(UserWarning):
-        image._smooth_array(smooth_array_data, affine, fwhm=0.0)
+        image.smooth_array(smooth_array_data, affine, fwhm=0.0)
 
 
 def test_smooth_img(affine_eye):
-    """Checks added functionalities compared to image._smooth_array()"""
+    """Checks added functionalities compared to image.smooth_array()"""
     shapes = ((10, 11, 12), (13, 14, 15))
     lengths = (17, 18)
     fwhm = (1.0, 2.0, 3.0)

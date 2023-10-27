@@ -358,7 +358,7 @@ def _safe_extract(tar, path=".", members=None, *, numeric_owner=False):
 
 
 @fill_doc
-def _uncompress_file(file_, delete_archive=True, verbose=1):
+def uncompress_file(file_, delete_archive=True, verbose=1):
     """Uncompress files contained in a data_set.
 
     Parameters
@@ -533,7 +533,7 @@ class _NaiveFTPAdapter(requests.adapters.BaseAdapter):
 
 
 @fill_doc
-def _fetch_file(
+def fetch_file(
     url,
     data_dir,
     resume=True,
@@ -580,7 +580,7 @@ def _fetch_file(
     if session is None:
         with requests.Session() as session:
             session.mount("ftp:", _NaiveFTPAdapter())
-            return _fetch_file(
+            return fetch_file(
                 url,
                 data_dir,
                 resume=resume,
@@ -661,7 +661,7 @@ def _fetch_file(
             except Exception:
                 if verbose > 0:
                     print("Resuming failed, try to download the whole file.")
-                return _fetch_file(
+                return fetch_file(
                     url,
                     data_dir,
                     resume=False,
@@ -764,7 +764,7 @@ def movetree(src, dst):
 
 
 @fill_doc
-def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
+def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
     """Load requested dataset, downloading it if needed or requested.
 
     This function retrieves files from the hard drive or download them from
@@ -801,7 +801,7 @@ def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
     if session is None:
         with requests.Session() as session:
             session.mount("ftp:", _NaiveFTPAdapter())
-            return _fetch_files(
+            return fetch_files(
                 data_dir,
                 files,
                 resume=resume,
@@ -860,7 +860,7 @@ def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
                 os.mkdir(temp_dir)
             md5sum = opts.get("md5sum", None)
 
-            dl_file = _fetch_file(
+            dl_file = fetch_file(
                 url,
                 temp_dir,
                 resume=resume,
@@ -881,7 +881,7 @@ def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
                 dl_file = move
             if "uncompress" in opts:
                 try:
-                    _uncompress_file(dl_file, verbose=verbose)
+                    uncompress_file(dl_file, verbose=verbose)
                 except Exception as e:
                     abort = str(e)
 
@@ -910,7 +910,7 @@ def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
     return files_
 
 
-def _tree(path, pattern=None, dictionary=False):
+def tree(path, pattern=None, dictionary=False):
     """Return a directory tree under the form of a dictionary or list.
 
     Parameters
@@ -931,9 +931,9 @@ def _tree(path, pattern=None, dictionary=False):
         file_path = os.path.join(path, file_)
         if os.path.isdir(file_path):
             if dictionary:
-                dirs[file_] = _tree(file_path, pattern)
+                dirs[file_] = tree(file_path, pattern)
             else:
-                dirs.append((file_, _tree(file_path, pattern)))
+                dirs.append((file_, tree(file_path, pattern)))
         elif pattern is None or fnmatch.fnmatch(file_, pattern):
             files.append(file_path)
     files = sorted(files)

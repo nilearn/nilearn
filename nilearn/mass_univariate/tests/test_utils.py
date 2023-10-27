@@ -251,7 +251,7 @@ def test_t_score_with_covars_and_normalized_design_withcovar(rng):
     var2 = var2 / np.sqrt(np.sum(var2**2, 0))  # normalize
     covars = np.eye(n_samples, 3)  # covars is orthogonal
     covars[3] = -1  # covars is orthogonal to var1
-    covars = _utils._orthonormalize_matrix(covars)
+    covars = _utils.orthonormalize_matrix(covars)
 
     # nilearn t-score
     own_score = _utils.t_score_with_covars_and_normalized_design(

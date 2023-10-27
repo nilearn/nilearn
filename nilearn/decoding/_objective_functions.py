@@ -49,7 +49,7 @@ def logistic_loss_lipschitz_constant(X):
     return spectral_norm_squared(X)
 
 
-def _squared_loss(X, y, w, compute_energy=True, compute_grad=False):
+def squared_loss(X, y, w, compute_energy=True, compute_grad=False):
     """Compute the MSE error, and optionally, its gradient too.
 
     The cost / energy function is
@@ -122,7 +122,7 @@ def tv_l1_from_gradient(spatial_grad):
     return l1_term + tv_term
 
 
-def _div_id(grad, l1_ratio=0.5):
+def div_id(grad, l1_ratio=0.5):
     """Compute divergence + id of image gradient + id.
 
     Parameters
@@ -168,7 +168,7 @@ def _div_id(grad, l1_ratio=0.5):
     return res
 
 
-def _gradient_id(img, l1_ratio=0.5):
+def gradient_id(img, l1_ratio=0.5):
     """Compute gradient + id of an image.
 
     Parameters
@@ -268,15 +268,15 @@ def logistic_loss_grad(X, y, w):
 
 # gradient of squared loss function
 _squared_loss_grad = partial(
-    _squared_loss, compute_energy=False, compute_grad=True
+    squared_loss, compute_energy=False, compute_grad=True
 )
 
 
-def _gradient(w):
+def gradient(w):
     """Pure spatial gradient."""
-    return _gradient_id(w, l1_ratio=0.0)[:-1]  # pure nabla
+    return gradient_id(w, l1_ratio=0.0)[:-1]  # pure nabla
 
 
-def _div(v):
+def div(v):
     """Pure spatial divergence."""
-    return _div_id(np.vstack((v, [np.zeros_like(v[0])])), l1_ratio=0.0)
+    return div_id(np.vstack((v, [np.zeros_like(v[0])])), l1_ratio=0.0)

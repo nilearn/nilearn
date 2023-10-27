@@ -3,13 +3,13 @@ import pytest
 
 from nilearn.decoding._objective_functions import (
     _logistic,
-    _squared_loss,
     _squared_loss_grad,
     logistic_loss_lipschitz_constant,
     spectral_norm_squared,
+    squared_loss,
 )
 from nilearn.decoding.fista import _check_lipschitz_continuous, mfista
-from nilearn.decoding.proximal_operators import _prox_l1
+from nilearn.decoding.proximal_operators import prox_l1
 
 
 @pytest.mark.parametrize("scaling", list(np.logspace(-3, 3, num=7)))
@@ -56,13 +56,13 @@ def test_input_args_and_kwargs(cb_retval, verbose, dgap_factor, rng):
     l1_weight = alpha_ * l1_ratio
 
     def f1(w):
-        return _squared_loss(X, y, w, compute_grad=False)
+        return squared_loss(X, y, w, compute_grad=False)
 
     def f1_grad(w):
-        return _squared_loss(X, y, w, compute_grad=True, compute_energy=False)
+        return squared_loss(X, y, w, compute_grad=True, compute_energy=False)
 
     def f2_prox(w, step_size, *args, **kwargs):
-        return _prox_l1(w, step_size * l1_weight), dict(converged=True)
+        return prox_l1(w, step_size * l1_weight), dict(converged=True)
 
     def total_energy(w):
         return f1(w) + l1_weight * np.sum(np.abs(w))

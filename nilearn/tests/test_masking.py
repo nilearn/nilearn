@@ -18,7 +18,6 @@ from nilearn.image import get_data, high_variance_confounds
 from nilearn.maskers import NiftiMasker
 from nilearn.masking import (
     MaskWarning,
-    _extrapolate_out_mask,
     _unmask_3d,
     _unmask_4d,
     compute_background_mask,
@@ -26,6 +25,7 @@ from nilearn.masking import (
     compute_epi_mask,
     compute_multi_brain_mask,
     compute_multi_epi_mask,
+    extrapolate_out_mask,
     intersect_masks,
     unmask,
     unmask_from_to_3d_array,
@@ -724,7 +724,7 @@ def test__extrapolate_out_mask():
     )
 
     # Test:
-    extrapolated_data, extrapolated_mask = _extrapolate_out_mask(
+    extrapolated_data, extrapolated_mask = extrapolate_out_mask(
         initial_data, initial_mask, iterations=1
     )
     assert_array_equal(extrapolated_data, target_data)

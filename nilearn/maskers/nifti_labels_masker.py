@@ -146,7 +146,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         self.background_label = background_label
         self.mask_img = mask_img
 
-        # Parameters for _smooth_array
+        # Parameters for smooth_array
         self.smoothing_fwhm = smoothing_fwhm
 
         # Parameters for clean()
@@ -403,7 +403,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 )
 
             # Just check that the mask is valid
-            masking._load_mask_img(self.mask_img_)
+            masking.load_mask_img(self.mask_img_)
 
         if not hasattr(self, '_resampled_labels_img_'):
             # obviates need to run .transform() before .inverse_transform()

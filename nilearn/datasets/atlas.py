@@ -15,7 +15,7 @@ from sklearn.utils import Bunch
 
 from .._utils import check_niimg, fill_doc
 from ..image import get_data, new_img_like, reorder_img
-from .utils import _fetch_files, get_dataset_descr, get_dataset_dir
+from .utils import fetch_files, get_dataset_descr, get_dataset_dir
 
 _TALAIRACH_LEVELS = ["hemisphere", "lobe", "gyrus", "tissue", "ba"]
 
@@ -134,7 +134,7 @@ def fetch_atlas_difumo(
     )
 
     # Download the zip file, first
-    files_ = _fetch_files(data_dir, files, verbose=verbose)
+    files_ = fetch_files(data_dir, files, verbose=verbose)
     labels = pd.read_csv(files_[0])
     labels = labels.rename(columns={c: c.lower() for c in labels.columns})
     if legacy_format:
@@ -146,7 +146,7 @@ def fetch_atlas_difumo(
         ("README.md", "https://osf.io/4k9bf/download", {"move": "README.md"})
     ]
     if not os.path.exists(os.path.join(data_dir, "README.md")):
-        _fetch_files(data_dir, readme_files, verbose=verbose)
+        fetch_files(data_dir, readme_files, verbose=verbose)
 
     fdescr = get_dataset_descr(dataset_name)
 
@@ -248,7 +248,7 @@ def fetch_atlas_craddock_2012(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
 
-    sub_files = _fetch_files(
+    sub_files = fetch_files(
         data_dir, filenames, resume=resume, verbose=verbose
     )
 
@@ -266,7 +266,7 @@ def fetch_atlas_craddock_2012(
                 ]
         else:
             filename = [("random_all.nii.gz", url, opts)]
-        data = _fetch_files(data_dir, filename, resume=resume, verbose=verbose)
+        data = fetch_files(data_dir, filename, resume=resume, verbose=verbose)
         params = dict(maps=data[0], description=fdescr)
     else:
         params = dict([("description", fdescr)] + list(zip(keys, sub_files)))
@@ -350,7 +350,7 @@ def fetch_atlas_destrieux_2009(
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
-    files_ = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
+    files_ = fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
     params = dict(maps=files_[1], labels=pd.read_csv(files_[0], index_col=0))
 
@@ -698,7 +698,7 @@ def _get_atlas_data_and_labels(
     atlas_file = os.path.join(
         root, atlas_source, f"{atlas_source}-{atlas_name}.nii.gz"
     )
-    atlas_file, label_file = _fetch_files(
+    atlas_file, label_file = fetch_files(
         data_dir,
         [(atlas_file, url, opts), (label_file, url, opts)],
         resume=resume,
@@ -876,7 +876,7 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
-    files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
+    files = fetch_files(data_dir, files, resume=resume, verbose=verbose)
     csv_data = pd.read_csv(files[0])
     labels = [name.strip() for name in csv_data["name"].tolist()]
 
@@ -1058,12 +1058,12 @@ def fetch_atlas_smith_2009(
         key_index = list(files).index(key)
 
         file = [(files[key], url[key_index] + files[key], {})]
-        data = _fetch_files(data_dir, file, resume=resume, verbose=verbose)
+        data = fetch_files(data_dir, file, resume=resume, verbose=verbose)
         params = Bunch(maps=data[0], description=fdescr)
     else:
         keys = list(files.keys())
         files = [(f, u + f, {}) for f, u in zip(files.values(), url)]
-        files_ = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
+        files_ = fetch_files(data_dir, files, resume=resume, verbose=verbose)
         params = dict(zip(keys, files_))
         params["description"] = fdescr
         warnings.warn(
@@ -1176,7 +1176,7 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
-    sub_files = _fetch_files(
+    sub_files = fetch_files(
         data_dir, filenames, resume=resume, verbose=verbose
     )
 
@@ -1297,7 +1297,7 @@ def fetch_atlas_aal(
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
-    atlas_img, labels_file = _fetch_files(
+    atlas_img, labels_file = fetch_files(
         data_dir, filenames, resume=resume, verbose=verbose
     )
     fdescr = get_dataset_descr("aal_SPM12")
@@ -1448,7 +1448,7 @@ def fetch_atlas_basc_multiscale_2015(
 
         filename = [(os.path.join(folder_name, basename), url, opts)]
 
-        data = _fetch_files(data_dir, filename, resume=resume, verbose=verbose)
+        data = fetch_files(data_dir, filename, resume=resume, verbose=verbose)
         params = Bunch(maps=data[0], description=fdescr)
     else:
         basenames = [
@@ -1463,9 +1463,7 @@ def fetch_atlas_basc_multiscale_2015(
             (os.path.join(folder_name, basename), url, opts)
             for basename in basenames
         ]
-        data = _fetch_files(
-            data_dir, filenames, resume=resume, verbose=verbose
-        )
+        data = fetch_files(data_dir, filenames, resume=resume, verbose=verbose)
 
         descr = get_dataset_descr(dataset_name)
 
@@ -1722,7 +1720,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
-    sub_files = _fetch_files(
+    sub_files = fetch_files(
         data_dir, filenames, resume=resume, verbose=verbose
     )
 
@@ -1798,7 +1796,7 @@ def fetch_atlas_surf_destrieux(
 
     annots = []
     for hemi in [("lh", "left"), ("rh", "right")]:
-        annot = _fetch_files(
+        annot = fetch_files(
             data_dir,
             [
                 (
@@ -1867,7 +1865,7 @@ def _download_talairach(talairach_dir, verbose):
     atlas_url = "https://www.talairach.org/talairach.nii"
     temp_dir = mkdtemp()
     try:
-        temp_file = _fetch_files(
+        temp_file = fetch_files(
             temp_dir, [("talairach.nii", atlas_url, {})], verbose=verbose
         )[0]
         atlas_img = nb.load(temp_file, mmap=False)
@@ -2015,7 +2013,7 @@ def fetch_atlas_pauli_2017(version="prob", data_dir=None, verbose=1):
         (filename, url_maps, {"move": filename}),
         ("labels.txt", url_labels, {"move": "labels.txt"}),
     ]
-    atlas_file, labels = _fetch_files(data_dir, files)
+    atlas_file, labels = fetch_files(data_dir, files)
 
     labels = np.loadtxt(labels, dtype=str)[:, 1].tolist()
 
@@ -2156,7 +2154,7 @@ def fetch_atlas_schaefer_2018(
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
-    labels_file, atlas_file = _fetch_files(
+    labels_file, atlas_file = fetch_files(
         data_dir, files, resume=resume, verbose=verbose
     )
 

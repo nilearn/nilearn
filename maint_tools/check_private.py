@@ -5,6 +5,7 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
+import pandas as pd
 from rich import print
 
 
@@ -51,13 +52,21 @@ def main():
                 private_functions["count_in"].append(0)
                 private_functions["count_out"].append(0)
 
+    # check if functions have the same name
+    tmp = pd.Series(private_functions["name"]).value_counts()
+    if not all(tmp == 1):
+        print("Some private functions have the same name.")
+        print(tmp[tmp > 1])
+
     # count how many times each private function is mentioned
 
     # in its own module
     for i, func in enumerate(private_functions["name"]):
         with open(private_functions["module"][i]) as file:
             lines = file.readlines()
-        private_functions["count_in"][i] = sum(func in line for line in lines)
+        private_functions["count_in"][i] = sum(
+            f"{func}" in line for line in lines
+        )
         assert private_functions["count_in"][i] >= 1
 
     # out of its own module
@@ -71,7 +80,7 @@ def main():
             for i, func in enumerate(private_functions["name"]):
                 if str(private_functions["module"][i]) == str(file):
                     continue
-                if func in line:
+                if f" {func}(" in line:
                     private_functions["count_out"][i] += 1
 
     # report

@@ -27,14 +27,14 @@ from nilearn.image import get_data
 from .._utils import check_niimg, fill_doc
 from .._utils.numpy_conversions import csv_to_array
 from .utils import (
-    _fetch_file,
-    _fetch_files,
-    _tree,
-    _uncompress_file,
+    fetch_file,
+    fetch_files,
     filter_columns,
     get_dataset_descr,
     get_dataset_dir,
     read_md5_sum_file,
+    tree,
+    uncompress_file,
 )
 
 _LEGACY_FORMAT_MSG = (
@@ -129,14 +129,14 @@ def fetch_haxby(
 
     # Get the mask
     url_mask = "https://www.nitrc.org/frs/download.php/7868/mask.nii.gz"
-    mask = _fetch_files(
+    mask = fetch_files(
         data_dir, [("mask.nii.gz", url_mask, {})], verbose=verbose
     )[0]
 
     # Dataset files
     if url is None:
         url = "http://data.pymvpa.org/datasets/haxby2001/"
-    md5sums = _fetch_files(
+    md5sums = fetch_files(
         data_dir, [("MD5SUMS", url + "MD5SUMS", {})], verbose=verbose
     )[0]
     md5sums = read_md5_sum_file(md5sums)
@@ -176,7 +176,7 @@ def fetch_haxby(
         if sub_file != "anat.nii.gz" or i != 6
     ]
 
-    files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
+    files = fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
     if (isinstance(subjects, numbers.Number) and subjects == 6) or np.any(
         subject_mask == 6
@@ -192,10 +192,10 @@ def fetch_haxby(
                 {"uncompress": True},
             )
         ]
-        readme = _fetch_files(
+        readme = fetch_files(
             data_dir, stimuli_files, resume=resume, verbose=verbose
         )[0]
-        kwargs["stimuli"] = _tree(
+        kwargs["stimuli"] = tree(
             os.path.dirname(readme), pattern="*.jpg", dictionary=True
         )
 
@@ -325,7 +325,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
         opts,
     )
 
-    phenotypic = _fetch_files(
+    phenotypic = fetch_files(
         data_dir, [phenotypic], resume=resume, verbose=verbose
     )[0]
 
@@ -350,14 +350,14 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     ]
     confounds = [f"data/{i}/{i}_regressors.csv" for i in ids]
 
-    functionals = _fetch_files(
+    functionals = fetch_files(
         data_dir,
         zip(functionals, archives, (opts,) * n_subjects),
         resume=resume,
         verbose=verbose,
     )
 
-    confounds = _fetch_files(
+    confounds = fetch_files(
         data_dir,
         zip(confounds, archives, (opts,) * n_subjects),
         resume=resume,
@@ -510,10 +510,10 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
-    files = _fetch_files(data_dir, file_names, resume=resume, verbose=verbose)
+    files = fetch_files(data_dir, file_names, resume=resume, verbose=verbose)
 
     # Fetch the background image
-    bg_img = _fetch_files(
+    bg_img = fetch_files(
         data_dir, [("bg.nii.gz", url, opts)], resume=resume, verbose=verbose
     )[0]
 
@@ -763,7 +763,7 @@ def fetch_localizer_contrasts(
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
-    index_file = _fetch_file(index_url, data_dir, verbose=verbose)
+    index_file = fetch_file(index_url, data_dir, verbose=verbose)
     with open(index_file) as of:
         index = json.load(of)
 
@@ -881,7 +881,7 @@ def fetch_localizer_contrasts(
 
     # Actual data fetching
     fdescr = get_dataset_descr(dataset_name)
-    _fetch_files(data_dir, filenames, verbose=verbose)
+    fetch_files(data_dir, filenames, verbose=verbose)
     for key, value in files.items():
         files[key] = [os.path.join(data_dir, val) for val in value]
 
@@ -1156,7 +1156,7 @@ def fetch_abide_pcp(
 
     # Fetch the phenotypic file and load it
     csv = "Phenotypic_V1_0b_preprocessed1.csv"
-    path_csv = _fetch_files(
+    path_csv = fetch_files(
         data_dir, [(csv, f"{url}/{csv}", {})], verbose=verbose
     )[0]
 
@@ -1215,7 +1215,7 @@ def fetch_abide_pcp(
                     {},
                 )
             ]
-            files.append(_fetch_files(data_dir, file_, verbose=verbose)[0])
+            files.append(fetch_files(data_dir, file_, verbose=verbose)[0])
         # Load derivatives if needed
         if ext == ".1D":
             files = [np.loadtxt(f) for f in files]
@@ -1333,7 +1333,7 @@ def fetch_mixed_gambles(
         for j in range(n_subjects)
     ]
     data_dir = get_dataset_dir("jimura_poldrack_2012_zmaps", data_dir=data_dir)
-    zmap_fnames = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
+    zmap_fnames = fetch_files(data_dir, files, resume=resume, verbose=verbose)
     subject_id = np.repeat(np.arange(n_subjects), 6 * 8)
     data = Bunch(zmaps=zmap_fnames, subject_id=subject_id)
     if not return_raw_data:
@@ -1465,7 +1465,7 @@ def fetch_megatrawls_netmats(
     ]
 
     # Fetch all the files
-    files = _fetch_files(data_dir, filepath, resume=resume, verbose=verbose)
+    files = fetch_files(data_dir, filepath, resume=resume, verbose=verbose)
 
     # Load the files into arrays
     correlation_matrices = csv_to_array(files[0])
@@ -1659,7 +1659,7 @@ def fetch_surf_nki_enhanced(
         {"move": phenotypic_file},
     )
 
-    phenotypic = _fetch_files(
+    phenotypic = fetch_files(
         data_dir, [phenotypic], resume=resume, verbose=verbose
     )[0]
 
@@ -1685,7 +1685,7 @@ def fetch_surf_nki_enhanced(
     for i in range(len(ids)):
         archive = url + "%i/%s_%s_preprocessed_fsaverage5_fwhm6.gii"
         func = os.path.join("%s", "%s_%s_preprocessed_fwhm6.gii")
-        rh = _fetch_files(
+        rh = fetch_files(
             data_dir,
             [
                 (
@@ -1697,7 +1697,7 @@ def fetch_surf_nki_enhanced(
             resume=resume,
             verbose=verbose,
         )
-        lh = _fetch_files(
+        lh = fetch_files(
             data_dir,
             [
                 (
@@ -1753,7 +1753,7 @@ def _fetch_development_fmri_participants(data_dir, url, verbose):
         url = "https://osf.io/yr3av/download"
 
     files = [("participants.tsv", url, {"move": "participants.tsv"})]
-    path_to_participants = _fetch_files(data_dir, files, verbose=verbose)[0]
+    path_to_participants = fetch_files(data_dir, files, verbose=verbose)[0]
 
     # Load path to participants
     dtype = [
@@ -1853,7 +1853,7 @@ def _fetch_development_fmri_functional(
                 {"move": confounds.format(participant_id)},
             )
         ]
-        path_to_regressor = _fetch_files(
+        path_to_regressor = fetch_files(
             data_dir, regressor_file, verbose=verbose
         )[0]
         regressors.append(path_to_regressor)
@@ -1866,7 +1866,7 @@ def _fetch_development_fmri_functional(
                 {"move": func.format(participant_id)},
             )
         ]
-        path_to_func = _fetch_files(
+        path_to_func = fetch_files(
             data_dir, func_file, resume=resume, verbose=verbose
         )[0]
         funcs.append(path_to_func)
@@ -2113,15 +2113,15 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
     main_folder = "fMRI-language-localizer-demo-dataset"
 
     data_dir = get_dataset_dir(main_folder, data_dir=data_dir, verbose=verbose)
-    # The files_spec needed for _fetch_files
+    # The files_spec needed for fetch_files
     files_spec = [(f"{main_folder}.zip", url, {"move": f"{main_folder}.zip"})]
     # Only download if directory is empty
     # Directory will have been created by the call to get_dataset_dir above
     if not os.listdir(data_dir):
-        downloaded_files = _fetch_files(
+        downloaded_files = fetch_files(
             data_dir, files_spec, resume=True, verbose=verbose
         )
-        _uncompress_file(downloaded_files[0])
+        uncompress_file(downloaded_files[0])
 
     file_list = [
         os.path.join(path, f)
@@ -2155,13 +2155,13 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
-    # The files_spec needed for _fetch_files
+    # The files_spec needed for fetch_files
     files_spec = [(f"{main_folder}.zip", url, {"move": f"{main_folder}.zip"})]
     if not os.path.exists(os.path.join(data_dir, main_folder)):
-        downloaded_files = _fetch_files(
+        downloaded_files = fetch_files(
             data_dir, files_spec, resume=True, verbose=verbose
         )
-        _uncompress_file(downloaded_files[0])
+        uncompress_file(downloaded_files[0])
     main_path = os.path.join(data_dir, main_folder)
     file_list = [
         os.path.join(path, f)
@@ -2266,7 +2266,7 @@ def fetch_ds000030_urls(data_dir=None, verbose=1):
     )
 
     final_download_path = os.path.join(data_dir, "urls.json")
-    downloaded_file_path = _fetch_files(
+    downloaded_file_path = fetch_files(
         data_dir=data_dir,
         files=[
             (
@@ -2473,7 +2473,7 @@ def fetch_openneuro_dataset(
             verbose=verbose,
         )
 
-    # The files_spec needed for _fetch_files
+    # The files_spec needed for fetch_files
     files_spec = []
     files_dir = []
 
@@ -2502,7 +2502,7 @@ def fetch_openneuro_dataset(
         download_attempts = 4
         while download_attempts > 0 and not success:
             try:
-                downloaded_files = _fetch_files(
+                downloaded_files = fetch_files(
                     file_dir,
                     [file_spec],
                     resume=True,
@@ -2552,7 +2552,7 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
-    files = _fetch_files(data_dir, filenames, verbose=verbose)
+    files = fetch_files(data_dir, filenames, verbose=verbose)
 
     params = dict(list(zip(options, files)))
     return Bunch(**params)
@@ -2565,9 +2565,9 @@ def _download_spm_auditory_data(data_dir, subject_dir, subject_id):
         "MoAEpilot.zip"
     )
     archive_path = os.path.join(subject_dir, os.path.basename(url))
-    _fetch_file(url, subject_dir)
+    fetch_file(url, subject_dir)
     try:
-        _uncompress_file(archive_path)
+        uncompress_file(archive_path)
     except Exception:
         print("Archive corrupted, trying to download it again.")
         return fetch_spm_auditory(
@@ -2832,9 +2832,9 @@ def _download_data_spm_multimodal(data_dir, subject_dir, subject_id):
 
     for url in urls:
         archive_path = os.path.join(subject_dir, os.path.basename(url))
-        _fetch_file(url, subject_dir)
+        fetch_file(url, subject_dir)
         try:
-            _uncompress_file(archive_path)
+            uncompress_file(archive_path)
         except Exception:
             print("Archive corrupted, trying to download it again.")
             return fetch_spm_multimodal_fmri(
@@ -2979,9 +2979,9 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     url = "https://nipy.org/data-packages/nipy-data-0.2.tar.gz"
 
     archive_path = os.path.join(data_dir, os.path.basename(url))
-    _fetch_file(url, data_dir)
+    fetch_file(url, data_dir)
     try:
-        _uncompress_file(archive_path)
+        uncompress_file(archive_path)
     except Exception:
         print("Archive corrupted, trying to download it again.")
         return fetch_fiac_first_level(data_dir=data_dir)

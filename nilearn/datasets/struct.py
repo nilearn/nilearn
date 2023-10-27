@@ -12,7 +12,7 @@ from sklearn.utils import Bunch
 
 from .._utils import check_niimg, fill_doc
 from ..image import get_data, new_img_like, resampling
-from .utils import _fetch_files, get_dataset_descr, get_dataset_dir
+from .utils import fetch_files, get_dataset_descr, get_dataset_dir
 
 _package_directory = os.path.dirname(os.path.abspath(__file__))
 MNI152_FILE_PATH = os.path.join(
@@ -159,7 +159,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
-    sub_files = _fetch_files(
+    sub_files = fetch_files(
         data_dir, filenames, resume=resume, verbose=verbose
     )
 
@@ -827,7 +827,7 @@ def fetch_oasis_vbm(
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
-    files = _fetch_files(data_dir, file_names, resume=resume, verbose=verbose)
+    files = fetch_files(data_dir, file_names, resume=resume, verbose=verbose)
 
     # Build Bunch
     gm_maps = files[:n_subjects]
@@ -1007,7 +1007,7 @@ def _fetch_surf_fsaverage(dataset_name, data_dir=None):
     ]
 
     # Note that the file names match the attribute's
-    _fetch_files(
+    fetch_files(
         dataset_dir,
         [
             (f"{attribute}.gii.gz", url, opts)

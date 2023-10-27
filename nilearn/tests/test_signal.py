@@ -243,33 +243,33 @@ def test_standardize(rng):
 
     # Test raise error when strategy is not valid option
     with pytest.raises(ValueError, match="no valid standardize strategy"):
-        nisignal._standardize(a, standardize="foo")
+        nisignal.standardize(a, standardize="foo")
 
     # test warning for strategy that will be removed
     with pytest.warns(
         DeprecationWarning, match="default strategy for standardize"
     ):
-        nisignal._standardize(a, standardize="zscore")
+        nisignal.standardize(a, standardize="zscore")
 
-    # transpose array to fit _standardize input.
+    # transpose array to fit standardize input.
     # Without trend removal
-    b = nisignal._standardize(a, standardize="zscore_sample")
+    b = nisignal.standardize(a, standardize="zscore_sample")
     stds = np.std(b)
     np.testing.assert_almost_equal(stds, np.ones(n_features), decimal=1)
     np.testing.assert_almost_equal(b.sum(axis=0), np.zeros(n_features))
 
     # With trend removal
     a = np.atleast_2d(np.linspace(0, 2.0, n_features)).T
-    b = nisignal._standardize(a, detrend=True, standardize=False)
+    b = nisignal.standardize(a, detrend=True, standardize=False)
     np.testing.assert_almost_equal(b, np.zeros(b.shape))
 
-    b = nisignal._standardize(a, detrend=True, standardize="zscore_sample")
+    b = nisignal.standardize(a, detrend=True, standardize="zscore_sample")
     np.testing.assert_almost_equal(b, np.zeros(b.shape))
 
     length_1_signal = np.atleast_2d(np.linspace(0, 2.0, n_features))
     np.testing.assert_array_equal(
         length_1_signal,
-        nisignal._standardize(length_1_signal, standardize="zscore_sample"),
+        nisignal.standardize(length_1_signal, standardize="zscore_sample"),
     )
 
 

@@ -169,7 +169,7 @@ def _fast_smooth_array(arr):
 
 
 @fill_doc
-def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
+def smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     """Smooth images by applying a Gaussian filter.
 
     Apply a Gaussian filter along the three first dimensions of `arr`.
@@ -270,7 +270,7 @@ def smooth_img(imgs, fwhm):
     for img in imgs:
         img = check_niimg(img)
         affine = img.affine
-        filtered = _smooth_array(
+        filtered = smooth_array(
             get_data(img), affine, fwhm=fwhm, ensure_finite=True, copy=True
         )
         ret.append(new_img_like(img, filtered, affine, copy_header=True))
@@ -477,7 +477,7 @@ def _compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
 
     if smooth:
         nan_mask = np.isnan(mean_data)
-        mean_data = _smooth_array(
+        mean_data = smooth_array(
             mean_data,
             affine=np.eye(4),
             fwhm=smooth,
@@ -941,7 +941,7 @@ def threshold_img(
                 interpolation="nearest",
             )
 
-        mask_data, _ = masking._load_mask_img(mask_img)
+        mask_data, _ = masking.load_mask_img(mask_img)
         # Set as 0 for the values which are outside of the mask
         img_data[mask_data == 0.0] = 0.0
 

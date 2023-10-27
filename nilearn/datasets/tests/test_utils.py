@@ -214,7 +214,7 @@ def test_tree():
     open(os.path.join(dir11, "file111"), "w").close()
     open(os.path.join(dir2, "file21"), "w").close()
 
-    tree_ = utils._tree(parent)
+    tree_ = utils.tree(parent)
 
     # Check the tree
     # assert_equal(tree_[0]['dir1'][0]['dir11'][0], 'file111')
@@ -333,7 +333,7 @@ def test_uncompress():
     try:
         with contextlib.closing(zipfile.ZipFile(ztemp, "w")) as testzip:
             testzip.writestr(ftemp, " ")
-        utils._uncompress_file(ztemp, verbose=0)
+        utils.uncompress_file(ztemp, verbose=0)
 
         assert os.path.exists(os.path.join(dtemp, ftemp))
 
@@ -348,7 +348,7 @@ def test_uncompress():
         os.close(fd)
         with contextlib.closing(tarfile.open(ztemp, "w")) as tar:
             tar.add(temp, arcname=ftemp)
-        utils._uncompress_file(ztemp, verbose=0)
+        utils.uncompress_file(ztemp, verbose=0)
 
         assert os.path.exists(os.path.join(dtemp, ftemp))
 
@@ -357,7 +357,7 @@ def test_uncompress():
         dtemp = mkdtemp()
         ztemp = os.path.join(dtemp, "test.gz")
         gzip.open(ztemp, "wb").close()
-        utils._uncompress_file(ztemp, verbose=0)
+        utils.uncompress_file(ztemp, verbose=0)
 
         # test.gz gets uncompressed into test
         assert os.path.exists(os.path.join(dtemp, "test"))
@@ -382,7 +382,7 @@ def test_safe_extract(tmp_path):
     with pytest.raises(
         Exception, match="Attempted Path Traversal in Tar File"
     ):
-        utils._uncompress_file(ztemp, verbose=0)
+        utils.uncompress_file(ztemp, verbose=0)
 
 
 @pytest.mark.parametrize("should_cast_path_to_string", [False, True])
@@ -393,7 +393,7 @@ def test_fetch_file_overwrite(
         tmp_path = str(tmp_path)
 
     # overwrite non-exiting file.
-    fil = utils._fetch_file(
+    fil = utils.fetch_file(
         url="http://foo/", data_dir=str(tmp_path), verbose=0, overwrite=True
     )
 
@@ -407,7 +407,7 @@ def test_fetch_file_overwrite(
         fp.write("some content")
 
     # Don't overwrite existing file.
-    fil = utils._fetch_file(
+    fil = utils.fetch_file(
         url="http://foo/", data_dir=str(tmp_path), verbose=0, overwrite=False
     )
 
@@ -417,7 +417,7 @@ def test_fetch_file_overwrite(
         assert fp.read() == "some content"
 
     # Overwrite existing file.
-    fil = utils._fetch_file(
+    fil = utils.fetch_file(
         url="http://foo/", data_dir=str(tmp_path), verbose=0, overwrite=True
     )
 
@@ -436,7 +436,7 @@ def test_fetch_files_use_session(
 
     # regression test for https://github.com/nilearn/nilearn/issues/2863
     session = MagicMock()
-    utils._fetch_files(
+    utils.fetch_files(
         files=[
             ("example1", "https://example.org/example1", {"overwrite": True}),
             ("example2", "https://example.org/example2", {"overwrite": True}),
@@ -457,7 +457,7 @@ def test_fetch_files_overwrite(
 
     # overwrite non-exiting file.
     files = ("1.txt", "http://foo/1.txt")
-    fil = utils._fetch_files(
+    fil = utils.fetch_files(
         data_dir=str(tmp_path),
         verbose=0,
         files=[files + (dict(overwrite=True),)],
@@ -473,7 +473,7 @@ def test_fetch_files_overwrite(
         fp.write("some content")
 
     # Don't overwrite existing file.
-    fil = utils._fetch_files(
+    fil = utils.fetch_files(
         data_dir=str(tmp_path),
         verbose=0,
         files=[files + (dict(overwrite=False),)],
@@ -485,7 +485,7 @@ def test_fetch_files_overwrite(
         assert fp.read() == "some content"
 
     # Overwrite existing file.
-    fil = utils._fetch_files(
+    fil = utils.fetch_files(
         data_dir=str(tmp_path),
         verbose=0,
         files=[files + (dict(overwrite=True),)],
