@@ -5,7 +5,7 @@ import pytest
 from numpy.testing import assert_almost_equal, assert_array_equal
 from scipy.optimize import check_grad
 
-from nilearn.decoding.objective_functions import (
+from nilearn.decoding._objective_functions import (
     _div_id,
     _gradient_id,
     _logistic,

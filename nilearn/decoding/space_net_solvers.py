@@ -13,8 +13,7 @@ import numpy as np
 
 from nilearn.masking import unmask_from_to_3d_array
 
-from .fista import mfista
-from .objective_functions import (
+from ._objective_functions import (
     _div,
     _gradient,
     _gradient_id,
@@ -25,6 +24,7 @@ from .objective_functions import (
     logistic_loss_lipschitz_constant,
     spectral_norm_squared,
 )
+from .fista import mfista
 from .proximal_operators import (
     _prox_l1,
     _prox_tvl1,

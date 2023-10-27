@@ -14,7 +14,7 @@ from numpy.testing import (
 from sklearn.datasets import load_iris
 from sklearn.utils import check_random_state
 
-from nilearn.decoding.objective_functions import (
+from nilearn.decoding._objective_functions import (
     _squared_loss,
     _squared_loss_grad,
     logistic_loss_lipschitz_constant,

@@ -6,7 +6,7 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal
 from scipy import linalg
 
-from nilearn.decoding.objective_functions import _div, _gradient
+from nilearn.decoding._objective_functions import _div, _gradient
 from nilearn.decoding.space_net import BaseSpaceNet
 from nilearn.decoding.space_net_solvers import (
     _graph_net_adjoint_data_function,
