@@ -1,6 +1,5 @@
 """Helper functions to download NeuroImaging datasets."""
 
-from ._utils import get_data_dirs, load_sample_motor_activation_image
 from .atlas import (
     fetch_atlas_aal,
     fetch_atlas_allen_2011,
@@ -66,6 +65,7 @@ from .struct import (
     load_mni152_wm_mask,
     load_mni152_wm_template,
 )
+from .utils import get_data_dirs, load_sample_motor_activation_image
 
 __all__ = [
     "MNI152_FILE_PATH",
