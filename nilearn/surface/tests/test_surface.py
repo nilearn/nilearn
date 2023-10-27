@@ -744,15 +744,15 @@ def test_choose_kind():
 
 
 def test_check_mesh():
-    mesh = surface._check_mesh('fsaverage5')
-    assert mesh is surface._check_mesh(mesh)
+    mesh = surface.check_mesh('fsaverage5')
+    assert mesh is surface.check_mesh(mesh)
     with pytest.raises(ValueError):
-        surface._check_mesh('fsaverage2')
+        surface.check_mesh('fsaverage2')
     mesh.pop('pial_left')
     with pytest.raises(ValueError):
-        surface._check_mesh(mesh)
+        surface.check_mesh(mesh)
     with pytest.raises(TypeError):
-        surface._check_mesh(surface.load_surf_mesh(mesh['pial_right']))
+        surface.check_mesh(surface.load_surf_mesh(mesh['pial_right']))
 
 
 def test_check_mesh_and_data(rng):

@@ -4,9 +4,9 @@ import pytest
 from nilearn.decoding.fista import _check_lipschitz_continuous, mfista
 from nilearn.decoding.objective_functions import (
     _logistic,
-    _logistic_loss_lipschitz_constant,
     _squared_loss,
     _squared_loss_grad,
+    logistic_loss_lipschitz_constant,
     spectral_norm_squared,
 )
 from nilearn.decoding.proximal_operators import _prox_l1
@@ -18,7 +18,7 @@ def test_logistic_lipschitz(rng, scaling, n_samples=4, n_features=2):
     y = rng.randn(n_samples)
     n_features = X.shape[1]
 
-    L = _logistic_loss_lipschitz_constant(X)
+    L = logistic_loss_lipschitz_constant(X)
     _check_lipschitz_continuous(
         lambda w: _logistic(X, y, w), n_features + 1, L
     )

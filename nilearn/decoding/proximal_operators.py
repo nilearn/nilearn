@@ -7,7 +7,7 @@ from math import sqrt
 
 import numpy as np
 
-from .objective_functions import _div_id, _gradient_id, _tv_l1_from_gradient
+from .objective_functions import _div_id, _gradient_id, tv_l1_from_gradient
 
 
 def _prox_l1(y, alpha, copy=True):
@@ -21,7 +21,7 @@ def _prox_l1(y, alpha, copy=True):
     return y
 
 
-def _prox_l1_with_intercept(x, tau):
+def prox_l1_with_intercept(x, tau):
     """Return the same as prox_l1, but just for the n-1 components."""
     x[:-1] = _prox_l1(x[:-1], tau)
     return x
@@ -58,7 +58,7 @@ def _dual_gap_prox_tvl1(input_img_norm, new, gap, weight, l1_ratio=1.0):
     See "Total variation regularization for fMRI-based prediction of behavior",
     by Michel et al. (2011) for a derivation of the dual gap
     """
-    tv_new = _tv_l1_from_gradient(_gradient_id(new, l1_ratio=l1_ratio))
+    tv_new = tv_l1_from_gradient(_gradient_id(new, l1_ratio=l1_ratio))
     gap = gap.ravel()
     d_gap = (
         np.dot(gap, gap)
@@ -71,7 +71,7 @@ def _dual_gap_prox_tvl1(input_img_norm, new, gap, weight, l1_ratio=1.0):
 
 def _objective_function_prox_tvl1(input_img, output_img, gradient, weight):
     diff = (input_img - output_img).ravel()
-    return 0.5 * (diff * diff).sum() + weight * _tv_l1_from_gradient(gradient)
+    return 0.5 * (diff * diff).sum() + weight * tv_l1_from_gradient(gradient)
 
 
 def _prox_tvl1(
@@ -280,7 +280,7 @@ def _prox_tvl1(
     return output, dict(converged=(i < max_iter))
 
 
-def _prox_tvl1_with_intercept(
+def prox_tvl1_with_intercept(
     w,
     shape,
     l1_ratio,

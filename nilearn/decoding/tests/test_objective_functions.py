@@ -9,7 +9,7 @@ from nilearn.decoding.objective_functions import (
     _div_id,
     _gradient_id,
     _logistic,
-    _logistic_loss_grad,
+    logistic_loss_grad,
 )
 from nilearn.decoding.space_net import BaseSpaceNet
 
@@ -68,7 +68,7 @@ def test_logistic_loss_derivative(rng, n_samples=4, n_features=10, decimal=5):
     assert_almost_equal(
         check_grad(
             lambda w: _logistic(X, y, w),
-            lambda w: _logistic_loss_grad(X, y, w),
+            lambda w: logistic_loss_grad(X, y, w),
             w,
         ),
         0.0,

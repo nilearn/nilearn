@@ -35,7 +35,7 @@ def spectral_norm_squared(X):
     return linalg.svdvals(X)[0] ** 2
 
 
-def _logistic_loss_lipschitz_constant(X):
+def logistic_loss_lipschitz_constant(X):
     """Compute the Lipschitz constant (upper bound) for the gradient of the \
     logistic sum.
 
@@ -102,7 +102,7 @@ def _squared_loss(X, y, w, compute_energy=True, compute_grad=False):
     return (energy, grad) if compute_energy else grad
 
 
-def _tv_l1_from_gradient(spatial_grad):
+def tv_l1_from_gradient(spatial_grad):
     """Compute energy contribution due to penalized gradient, in TV-L1 model.
 
     Parameters
@@ -254,7 +254,7 @@ def _logistic(X, y, w):
     return out
 
 
-def _logistic_loss_grad(X, y, w):
+def logistic_loss_grad(X, y, w):
     """Compute the derivative of logistic."""
     z = np.dot(X, w[:-1]) + w[-1]
     yz = y * z

@@ -19,17 +19,17 @@ from .objective_functions import (
     _gradient,
     _gradient_id,
     _logistic as _logistic_loss,
-    _logistic_loss_grad,
-    _logistic_loss_lipschitz_constant,
     _squared_loss,
     _squared_loss_grad,
+    logistic_loss_grad,
+    logistic_loss_lipschitz_constant,
     spectral_norm_squared,
 )
 from .proximal_operators import (
     _prox_l1,
-    _prox_l1_with_intercept,
     _prox_tvl1,
-    _prox_tvl1_with_intercept,
+    prox_l1_with_intercept,
+    prox_tvl1_with_intercept,
 )
 
 
@@ -217,7 +217,7 @@ def _logistic_derivative_lipschitz_constant(
     power method on the smooth part."""
     # L. constant for the data term (logistic)
     # data_constant = sp.linalg.norm(X, 2) ** 2
-    data_constant = _logistic_loss_lipschitz_constant(X)
+    data_constant = logistic_loss_lipschitz_constant(X)
 
     rng = np.random.RandomState(42)
     a = rng.randn(X.shape[1])
@@ -253,14 +253,14 @@ def _logistic_data_loss_and_spatial_grad_derivative(
     """Compute the derivative of _logistic_loss_and_spatial_grad."""
     image_buffer = np.zeros(mask.shape)
     image_buffer[mask] = w[:-1]
-    data_section = _logistic_loss_grad(X, y, w)
+    data_section = logistic_loss_grad(X, y, w)
     data_section[:-1] = (
         data_section[:-1] - grad_weight * _div(_gradient(image_buffer))[mask]
     )
     return data_section
 
 
-def _graph_net_squared_loss(
+def graph_net_squared_loss(
     X,
     y,
     alpha,
@@ -340,7 +340,7 @@ def _graph_net_squared_loss(
     )
 
 
-def _graph_net_logistic(
+def graph_net_logistic(
     X,
     y,
     alpha,
@@ -402,7 +402,7 @@ def _graph_net_logistic(
         return np.sum(np.abs(w[:-1])) * l1_weight
 
     def f2_prox(w, step_size, *args, **kwargs):
-        return _prox_l1_with_intercept(w, step_size * l1_weight), dict(
+        return prox_l1_with_intercept(w, step_size * l1_weight), dict(
             converged=True
         )
 
@@ -576,7 +576,7 @@ def tvl1_solver(
     # function to compute derivative of f1
     def f1_grad(w):
         if loss == "logistic":
-            return _logistic_loss_grad(X, y, w)
+            return logistic_loss_grad(X, y, w)
         else:
             return _squared_loss_grad(X, y, w)
 
@@ -589,7 +589,7 @@ def tvl1_solver(
         if loss == "mse":
             lipschitz_constant = 1.05 * spectral_norm_squared(X)
         else:
-            lipschitz_constant = 1.1 * _logistic_loss_lipschitz_constant(X)
+            lipschitz_constant = 1.1 * logistic_loss_lipschitz_constant(X)
 
     # proximal operator of nonsmooth proximable part of energy (f2)
     if loss == "mse":
@@ -609,7 +609,7 @@ def tvl1_solver(
     else:
 
         def f2_prox(w, stepsize, dgap_tol, init=None):
-            out, info = _prox_tvl1_with_intercept(
+            out, info = prox_tvl1_with_intercept(
                 unmaskvec(w),
                 volume_shape,
                 l1_ratio,
