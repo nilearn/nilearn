@@ -30,7 +30,7 @@ from sklearn.utils.extmath import safe_sparse_dot
 
 from nilearn.image import get_data
 from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
-from nilearn.masking import _unmask_from_to_3d_array
+from nilearn.masking import unmask_from_to_3d_array
 
 from .._utils import fill_doc
 from .._utils.cache_mixin import CacheMixin
@@ -107,7 +107,7 @@ def _univariate_feature_screening(
         sX = np.empty(X.shape)
         for sample in range(sX.shape[0]):
             sX[sample] = gaussian_filter(
-                _unmask_from_to_3d_array(
+                unmask_from_to_3d_array(
                     X[sample].copy(), mask  # avoid modifying X
                 ),
                 (smoothing_fwhm, smoothing_fwhm, smoothing_fwhm),

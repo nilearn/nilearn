@@ -4,7 +4,7 @@ from scipy import linalg
 from scipy.ndimage import label
 
 
-def _calculate_tfce(
+def calculate_tfce(
     arr4d,
     bin_struct,
     E=0.5,
@@ -141,7 +141,7 @@ def _calculate_tfce(
     return tfce_4d
 
 
-def _null_to_p(test_values, null_array, alternative="two-sided"):
+def null_to_p(test_values, null_array, alternative="two-sided"):
     """Return p-value for test value(s) against null array.
 
     Parameters
@@ -214,7 +214,7 @@ def _null_to_p(test_values, null_array, alternative="two-sided"):
     return result[0] if return_first else result
 
 
-def _calculate_cluster_measures(
+def calculate_cluster_measures(
     arr4d,
     threshold,
     bin_struct,
@@ -374,7 +374,7 @@ def _orthonormalize_matrix(m, tol=1.0e-12):
     return np.ascontiguousarray(U[:, :n_eig])
 
 
-def _t_score_with_covars_and_normalized_design(
+def t_score_with_covars_and_normalized_design(
     tested_vars, target_vars, covars_orthonormalized=None
 ):
     """t-score in the regression of tested variates against target variates.

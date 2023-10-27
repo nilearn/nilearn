@@ -35,7 +35,7 @@ from nilearn.decoding.space_net_solvers import (
     tvl1_solver,
 )
 from nilearn.image import get_data
-from nilearn.masking import _unmask_from_to_3d_array
+from nilearn.masking import unmask_from_to_3d_array
 
 
 def _make_data(rng=None, masked=False, dim=(2, 2, 2)):
@@ -71,7 +71,7 @@ def to_niimgs(X, dim):
 
     mask = mask.reshape(dim)
     X = np.rollaxis(
-        np.array([_unmask_from_to_3d_array(x, mask) for x in X]), 0, start=4
+        np.array([unmask_from_to_3d_array(x, mask) for x in X]), 0, start=4
     )
     affine = np.eye(4)
 

@@ -337,7 +337,7 @@ def test_mean_of_squares():
 
 
 def test_row_sum_of_squares():
-    """Test _row_sum_of_squares."""
+    """Test row_sum_of_squares."""
     n_samples = 11
     n_features = 501  # Higher than 500 required
     signals, _, _ = generate_signals(
@@ -347,7 +347,7 @@ def test_row_sum_of_squares():
     var1 = signals**2
     var1 = var1.sum(axis=0)
 
-    var2 = nisignal._row_sum_of_squares(signals)
+    var2 = nisignal.row_sum_of_squares(signals)
 
     np.testing.assert_almost_equal(var1, var2)
 

@@ -966,7 +966,7 @@ def unmask(X, mask_img, order="F"):
     return new_img_like(mask_img, unmasked, affine)
 
 
-def _unmask_from_to_3d_array(w, mask):
+def unmask_from_to_3d_array(w, mask):
     """Unmask an image into whole brain, \
     with off-mask :term:`voxels<voxel>` set to 0.
 

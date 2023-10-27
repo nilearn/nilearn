@@ -16,12 +16,12 @@ from sklearn.utils import check_random_state
 from nilearn import image
 from nilearn.masking import apply_mask
 from nilearn.mass_univariate._utils import (
-    _calculate_cluster_measures,
-    _calculate_tfce,
     _normalize_matrix_on_axis,
-    _null_to_p,
     _orthonormalize_matrix,
-    _t_score_with_covars_and_normalized_design,
+    calculate_cluster_measures,
+    calculate_tfce,
+    null_to_p,
+    t_score_with_covars_and_normalized_design,
 )
 
 
@@ -207,7 +207,7 @@ def _permuted_ols_on_chunk(
 
         # OLS regression on randomized data
         perm_scores = np.asfortranarray(
-            _t_score_with_covars_and_normalized_design(
+            t_score_with_covars_and_normalized_design(
                 tested_vars, target_vars, confounding_vars
             )
         )
@@ -244,7 +244,7 @@ def _permuted_ols_on_chunk(
             # In either case, the maximum absolute value is the one we want.
             h0_tfce_part[:, i_perm] = np.nanmax(
                 np.fabs(
-                    _calculate_tfce(
+                    calculate_tfce(
                         arr4d,
                         bin_struct=bin_struct,
                         two_sided_test=two_sided_test,
@@ -260,7 +260,7 @@ def _permuted_ols_on_chunk(
             (
                 h0_csfwe_part[:, i_perm],
                 h0_cmfwe_part[:, i_perm],
-            ) = _calculate_cluster_measures(
+            ) = calculate_cluster_measures(
                 arr4d,
                 threshold,
                 bin_struct,
@@ -790,7 +790,7 @@ def permuted_ols(
     # step 3: original regression (= regression on residuals + adjust t-score)
     # compute t score map of each tested var for original data
     # scores_original_data is in samples-by-regressors shape
-    scores_original_data = _t_score_with_covars_and_normalized_design(
+    scores_original_data = t_score_with_covars_and_normalized_design(
         testedvars_resid_covars,
         targetvars_resid_covars.T,
         covars_orthonormalized,
@@ -803,7 +803,7 @@ def permuted_ols(
         scores_4d = masker.inverse_transform(
             scores_original_data.T
         ).get_fdata()
-        tfce_original_data = _calculate_tfce(
+        tfce_original_data = calculate_tfce(
             scores_4d,
             bin_struct=bin_struct,
             two_sided_test=two_sided_test,
@@ -963,7 +963,7 @@ def permuted_ols(
 
             # Calculate p-values from size/mass values and associated h0s
             for metric in ["mass", "size"]:
-                p_vals = _null_to_p(
+                p_vals = null_to_p(
                     cluster_dict[f"{metric}_regressor"],
                     cluster_dict[f"{metric}_h0"][i_regressor, :],
                     "larger",

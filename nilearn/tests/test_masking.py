@@ -21,7 +21,6 @@ from nilearn.masking import (
     _extrapolate_out_mask,
     _unmask_3d,
     _unmask_4d,
-    _unmask_from_to_3d_array,
     compute_background_mask,
     compute_brain_mask,
     compute_epi_mask,
@@ -29,6 +28,7 @@ from nilearn.masking import (
     compute_multi_epi_mask,
     intersect_masks,
     unmask,
+    unmask_from_to_3d_array,
 )
 
 np_version = (
@@ -737,6 +737,6 @@ def test_unmask_from_to_3d_array(rng, size=5):
         mask = np.zeros(shape).astype(bool)
         mask[rng.uniform(size=shape) > 0.8] = 1
         support = rng.standard_normal(size=mask.sum())
-        full = _unmask_from_to_3d_array(support, mask)
+        full = unmask_from_to_3d_array(support, mask)
         np.testing.assert_array_equal(full.shape, shape)
         np.testing.assert_array_equal(full[mask], support)
