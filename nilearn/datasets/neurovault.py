@@ -22,7 +22,7 @@ from sklearn.feature_extraction import DictVectorizer
 from sklearn.utils import Bunch
 
 from ..image import resample_img
-from .utils import _fetch_file, _get_dataset_descr, _get_dataset_dir
+from .utils import _fetch_file, get_dataset_descr, get_dataset_dir
 
 _NEUROVAULT_BASE_URL = "https://neurovault.org/api/"
 _NEUROVAULT_COLLECTIONS_URL = urljoin(_NEUROVAULT_BASE_URL, "collections/")
@@ -2365,7 +2365,7 @@ def _result_list_to_bunch(result_list, download_params):
         images=images,
         images_meta=images_meta,
         collections_meta=collections_meta,
-        description=_get_dataset_descr("neurovault"),
+        description=get_dataset_descr("neurovault"),
     )
     if (
         download_params["fetch_neurosynth_words"]
@@ -2407,7 +2407,7 @@ def _fetch_neurovault_implementation(
 ):
     """Download data from neurovault.org and neurosynth.org."""
     image_terms = dict(image_terms, **kwarg_image_filters)
-    neurovault_data_dir = _get_dataset_dir("neurovault", data_dir)
+    neurovault_data_dir = get_dataset_dir("neurovault", data_dir)
     if mode != "offline" and not os.access(neurovault_data_dir, os.W_OK):
         warnings.warn(
             "You don't have write access to neurovault dir: "

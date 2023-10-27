@@ -57,21 +57,21 @@ DATASET_NAMES = {
 
 
 def test_get_dataset_descr_warning():
-    """Tests that function ``_get_dataset_descr()`` gives a warning
+    """Tests that function ``get_dataset_descr()`` gives a warning
     when no description is available.
     """
     with pytest.warns(
         UserWarning, match="Could not find dataset description."
     ):
-        descr = utils._get_dataset_descr("")
+        descr = utils.get_dataset_descr("")
 
     assert descr == ""
 
 
 @pytest.mark.parametrize("name", DATASET_NAMES)
 def test_get_dataset_descr(name):
-    """Test function ``_get_dataset_descr()``."""
-    descr = utils._get_dataset_descr(name)
+    """Test function ``get_dataset_descr()``."""
+    descr = utils.get_dataset_descr(name)
 
     assert isinstance(descr, str)
     assert len(descr) > 0
@@ -84,7 +84,7 @@ def test_get_dataset_dir(tmp_path):
     os.environ.pop("NILEARN_SHARED_DATA", None)
 
     expected_base_dir = os.path.expanduser("~/nilearn_data")
-    data_dir = utils._get_dataset_dir("test", verbose=0)
+    data_dir = utils.get_dataset_dir("test", verbose=0)
 
     assert data_dir == os.path.join(expected_base_dir, "test")
     assert os.path.exists(data_dir)
@@ -93,7 +93,7 @@ def test_get_dataset_dir(tmp_path):
 
     expected_base_dir = str(tmp_path / "test_nilearn_data")
     os.environ["NILEARN_DATA"] = expected_base_dir
-    data_dir = utils._get_dataset_dir("test", verbose=0)
+    data_dir = utils.get_dataset_dir("test", verbose=0)
 
     assert data_dir == os.path.join(expected_base_dir, "test")
     assert os.path.exists(data_dir)
@@ -102,7 +102,7 @@ def test_get_dataset_dir(tmp_path):
 
     expected_base_dir = str(tmp_path / "nilearn_shared_data")
     os.environ["NILEARN_SHARED_DATA"] = expected_base_dir
-    data_dir = utils._get_dataset_dir("test", verbose=0)
+    data_dir = utils.get_dataset_dir("test", verbose=0)
 
     assert data_dir == os.path.join(expected_base_dir, "test")
     assert os.path.exists(data_dir)
@@ -119,12 +119,12 @@ def test_get_dataset_dir(tmp_path):
         match="Nilearn tried to store the dataset in the following "
         "directories, but",
     ):
-        utils._get_dataset_dir("test", test_file, verbose=0)
+        utils.get_dataset_dir("test", test_file, verbose=0)
 
 
 def test_add_readme_to_default_data_locations(tmp_path):
     assert not (tmp_path / "README.md").exists()
-    utils._get_dataset_dir(dataset_name="test", verbose=0, data_dir=tmp_path)
+    utils.get_dataset_dir(dataset_name="test", verbose=0, data_dir=tmp_path)
     assert (tmp_path / "README.md").exists()
 
 
@@ -134,7 +134,7 @@ def test_get_dataset_dir_path_as_str(should_cast_path_to_string, tmp_path):
     expected_dataset_dir = expected_base_dir / "test"
     if should_cast_path_to_string:
         expected_dataset_dir = str(expected_dataset_dir)
-    data_dir = utils._get_dataset_dir(
+    data_dir = utils.get_dataset_dir(
         "test", default_paths=[expected_dataset_dir], verbose=0
     )
 
@@ -153,7 +153,7 @@ def test_get_dataset_dir_write_access(tmp_path):
 
     expected_base_dir = str(tmp_path / "nilearn_shared_data")
     os.environ["NILEARN_SHARED_DATA"] = expected_base_dir
-    data_dir = utils._get_dataset_dir(
+    data_dir = utils.get_dataset_dir(
         "test", default_paths=[no_write], verbose=0
     )
 
@@ -185,7 +185,7 @@ def test_read_md5_sum_file():
         b"70886dcabe7bf5c5a1c24ca24e4cbd94  test/some_image.nii",
     )
     os.close(out)
-    h = utils._read_md5_sum_file(f)
+    h = utils.read_md5_sum_file(f)
 
     assert "/tmp/test" in h
     assert "/etc/test" not in h
@@ -285,11 +285,11 @@ def test_filter_columns():
         list(zip(value1, value2)), dtype=[("INT", int), ("STR", "S1")]
     )
 
-    f = utils._filter_columns(values, {"INT": (23, 46)})
+    f = utils.filter_columns(values, {"INT": (23, 46)})
 
     assert np.sum(f) == 24
 
-    f = utils._filter_columns(values, {"INT": [0, 9, (12, 24)]})
+    f = utils.filter_columns(values, {"INT": [0, 9, (12, 24)]})
 
     assert np.sum(f) == 15
 
@@ -299,25 +299,23 @@ def test_filter_columns():
     )
 
     # No filter
-    f = utils._filter_columns(values, [])
+    f = utils.filter_columns(values, [])
 
     assert np.sum(f) == 500
 
-    f = utils._filter_columns(values, {"STR": b"b"})
+    f = utils.filter_columns(values, {"STR": b"b"})
 
     assert np.sum(f) == 167
 
-    f = utils._filter_columns(values, {"STR": "b"})
+    f = utils.filter_columns(values, {"STR": "b"})
 
     assert np.sum(f) == 167
 
-    f = utils._filter_columns(values, {"INT": 1, "STR": b"b"})
+    f = utils.filter_columns(values, {"INT": 1, "STR": b"b"})
 
     assert np.sum(f) == 84
 
-    f = utils._filter_columns(
-        values, {"INT": 1, "STR": b"b"}, combination="or"
-    )
+    f = utils.filter_columns(values, {"INT": 1, "STR": b"b"}, combination="or")
 
     assert np.sum(f) == 333
 

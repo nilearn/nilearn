@@ -47,7 +47,7 @@ def _md5_sum_file(path):
     return m.hexdigest()
 
 
-def _read_md5_sum_file(path):
+def read_md5_sum_file(path):
     """Read a MD5 checksum file and returns hashes as a dictionary."""
     with open(path) as f:
         hashes = {}
@@ -237,7 +237,7 @@ def get_data_dirs(data_dir=None):
 
 
 @fill_doc
-def _get_dataset_dir(
+def get_dataset_dir(
     dataset_name, data_dir=None, default_paths=None, verbose=1
 ):
     """Create if necessary and return data directory of given dataset.
@@ -480,7 +480,7 @@ def _filter_column(array, col, criteria):
     return array[col] == criteria
 
 
-def _filter_columns(array, filters, combination="and"):
+def filter_columns(array, filters, combination="and"):
     """Return indices of recarray entries that match criteria.
 
     Parameters
@@ -709,7 +709,8 @@ def _fetch_file(
     return full_name
 
 
-def _get_dataset_descr(ds_name):
+def get_dataset_descr(ds_name):
+    """Return the description of a dataset."""
     module_path = os.path.dirname(os.path.abspath(__file__))
 
     fname = ds_name

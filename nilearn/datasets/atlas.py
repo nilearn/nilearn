@@ -15,7 +15,7 @@ from sklearn.utils import Bunch
 
 from .._utils import check_niimg, fill_doc
 from ..image import get_data, new_img_like, reorder_img
-from .utils import _fetch_files, _get_dataset_descr, _get_dataset_dir
+from .utils import _fetch_files, get_dataset_descr, get_dataset_dir
 
 _TALAIRACH_LEVELS = ["hemisphere", "lobe", "gyrus", "tissue", "ba"]
 
@@ -129,7 +129,7 @@ def fetch_atlas_difumo(
 
     dataset_name = "difumo_atlases"
 
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name=dataset_name, data_dir=data_dir, verbose=verbose
     )
 
@@ -148,7 +148,7 @@ def fetch_atlas_difumo(
     if not os.path.exists(os.path.join(data_dir, "README.md")):
         _fetch_files(data_dir, readme_files, verbose=verbose)
 
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     return Bunch(description=fdescr, maps=files_[1], labels=labels)
 
@@ -244,7 +244,7 @@ def fetch_atlas_craddock_2012(
         ("random_all.nii.gz", url, opts),
     ]
 
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
 
@@ -252,7 +252,7 @@ def fetch_atlas_craddock_2012(
         data_dir, filenames, resume=resume, verbose=verbose
     )
 
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     if homogeneity:
         if homogeneity in ["spatial", "temporal"]:
@@ -347,7 +347,7 @@ def fetch_atlas_destrieux_2009(
     ]
 
     dataset_name = "destrieux_2009"
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
     files_ = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
@@ -674,7 +674,7 @@ def _get_atlas_data_and_labels(
     else:
         raise ValueError(f"Atlas source {atlas_source} is not valid.")
     # For practical reasons, we mimic the FSL data directory here.
-    data_dir = _get_dataset_dir("fsl", data_dir=data_dir, verbose=verbose)
+    data_dir = get_dataset_dir("fsl", data_dir=data_dir, verbose=verbose)
     opts = {"uncompress": True}
     root = os.path.join("data", "atlases")
 
@@ -873,7 +873,7 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
         (os.path.join("MSDL_rois", "msdl_rois.nii"), url, opts),
     ]
 
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
     files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
@@ -888,7 +888,7 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     net_names = [
         net_name.strip() for net_name in csv_data["net name"].tolist()
     ]
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     return Bunch(
         maps=files[1],
@@ -927,7 +927,7 @@ def fetch_coords_power_2011(legacy_format=True):
 
     """
     dataset_name = "power_2011"
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
     package_directory = os.path.dirname(os.path.abspath(__file__))
     csv = os.path.join(package_directory, "data", "power_2011.csv")
     params = dict(rois=pd.read_csv(csv), description=fdescr)
@@ -1047,11 +1047,11 @@ def fetch_atlas_smith_2009(
         url = [url] * len(files)
 
     dataset_name = "smith_2009"
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
 
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     if dimension:
         key = f"{'rsn' if resting else 'bm'}{dimension}"
@@ -1173,14 +1173,14 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
         for f in basenames
     ]
 
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
     sub_files = _fetch_files(
         data_dir, filenames, resume=resume, verbose=verbose
     )
 
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     params = dict([("description", fdescr)] + list(zip(keys, sub_files)))
     return Bunch(**params)
@@ -1294,13 +1294,13 @@ def fetch_atlas_aal(
                 for f in basenames
             ]
 
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
     atlas_img, labels_file = _fetch_files(
         data_dir, filenames, resume=resume, verbose=verbose
     )
-    fdescr = _get_dataset_descr("aal_SPM12")
+    fdescr = get_dataset_descr("aal_SPM12")
     labels = []
     indices = []
     if version == "SPM12":
@@ -1431,12 +1431,12 @@ def fetch_atlas_basc_multiscale_2015(
     ]
 
     dataset_name = "basc_multiscale_2015"
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
 
     folder_name = f"template_cambridge_basc_multiscale_nii_{version}"
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     if resolution:
         basename = (
@@ -1467,7 +1467,7 @@ def fetch_atlas_basc_multiscale_2015(
             data_dir, filenames, resume=resume, verbose=verbose
         )
 
-        descr = _get_dataset_descr(dataset_name)
+        descr = get_dataset_descr(dataset_name)
 
         params = dict(zip(keys, data))
         params["description"] = descr
@@ -1517,7 +1517,7 @@ def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=True):
 
     """
     dataset_name = "dosenbach_2010"
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
     package_directory = os.path.dirname(os.path.abspath(__file__))
     csv = os.path.join(package_directory, "data", "dosenbach_2010.csv")
     out_csv = pd.read_csv(csv)
@@ -1590,7 +1590,7 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
 
     """
     dataset_name = "seitzman_2018"
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
     package_directory = os.path.dirname(os.path.abspath(__file__))
     roi_file = os.path.join(
         package_directory,
@@ -1719,14 +1719,14 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     filenames = [(os.path.join("allen_rsn_2011", f), url, opts) for f in files]
 
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
     sub_files = _fetch_files(
         data_dir, filenames, resume=resume, verbose=verbose
     )
 
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     params = [
         ("description", fdescr),
@@ -1786,8 +1786,8 @@ def fetch_atlas_surf_destrieux(
         url = "https://www.nitrc.org/frs/download.php/"
 
     dataset_name = "destrieux_surface"
-    fdescr = _get_dataset_descr(dataset_name)
-    data_dir = _get_dataset_dir(
+    fdescr = get_dataset_descr(dataset_name)
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
 
@@ -1922,7 +1922,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     if level_name not in _TALAIRACH_LEVELS:
         raise ValueError(f'"level_name" should be one of {_TALAIRACH_LEVELS}')
     talairach_dir = Path(
-        _get_dataset_dir("talairach_atlas", data_dir=data_dir, verbose=verbose)
+        get_dataset_dir("talairach_atlas", data_dir=data_dir, verbose=verbose)
     )
     img_file = talairach_dir.joinpath(f"{level_name}.nii.gz")
     labels_file = talairach_dir.joinpath(f"{level_name}-labels.json")
@@ -1930,7 +1930,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
         _download_talairach(talairach_dir, verbose=verbose)
     atlas_img = check_niimg(str(img_file))
     labels = json.loads(labels_file.read_text("utf-8"))
-    description = _get_dataset_descr("talairach_atlas").format(level_name)
+    description = get_dataset_descr("talairach_atlas").format(level_name)
     return Bunch(maps=atlas_img, labels=labels, description=description)
 
 
@@ -2007,7 +2007,7 @@ def fetch_atlas_pauli_2017(version="prob", data_dir=None, verbose=1):
     url_labels = "https://osf.io/6qrcb/download"
     dataset_name = "pauli_2017"
 
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
 
@@ -2019,7 +2019,7 @@ def fetch_atlas_pauli_2017(version="prob", data_dir=None, verbose=1):
 
     labels = np.loadtxt(labels, dtype=str)[:, 1].tolist()
 
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     return Bunch(maps=atlas_file, labels=labels, description=fdescr)
 
@@ -2153,7 +2153,7 @@ def fetch_atlas_schaefer_2018(
         files.append((f, base_url + f, {}))
 
     dataset_name = "schaefer_2018"
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
     labels_file, atlas_file = _fetch_files(
@@ -2163,6 +2163,6 @@ def fetch_atlas_schaefer_2018(
     labels = np.genfromtxt(
         labels_file, usecols=1, dtype="S", delimiter="\t", encoding=None
     )
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     return Bunch(maps=atlas_file, labels=labels, description=fdescr)

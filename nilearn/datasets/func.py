@@ -29,12 +29,12 @@ from .._utils.numpy_conversions import csv_to_array
 from .utils import (
     _fetch_file,
     _fetch_files,
-    _filter_columns,
-    _get_dataset_descr,
-    _get_dataset_dir,
-    _read_md5_sum_file,
     _tree,
     _uncompress_file,
+    filter_columns,
+    get_dataset_descr,
+    get_dataset_dir,
+    read_md5_sum_file,
 )
 
 _LEGACY_FORMAT_MSG = (
@@ -123,7 +123,7 @@ def fetch_haxby(
                 )
 
     dataset_name = "haxby2001"
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
 
@@ -139,7 +139,7 @@ def fetch_haxby(
     md5sums = _fetch_files(
         data_dir, [("MD5SUMS", url + "MD5SUMS", {})], verbose=verbose
     )[0]
-    md5sums = _read_md5_sum_file(md5sums)
+    md5sums = read_md5_sum_file(md5sums)
 
     # definition of dataset files
     sub_files = [
@@ -199,7 +199,7 @@ def fetch_haxby(
             os.path.dirname(readme), pattern="*.jpg", dictionary=True
         )
 
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     # return the data
     return Bunch(
@@ -299,7 +299,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
 
     # Preliminary checks and declarations
     dataset_name = "adhd"
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
     ids = adhd_ids()
@@ -316,7 +316,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     opts = dict(uncompress=True)
 
     # Dataset description
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     # First, get the metadata
     phenotypic = (
@@ -507,7 +507,7 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     )
 
     dataset_name = "miyawaki2008"
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
     files = _fetch_files(data_dir, file_names, resume=resume, verbose=verbose)
@@ -517,7 +517,7 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
         data_dir, [("bg.nii.gz", url, opts)], resume=resume, verbose=verbose
     )[0]
 
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     # Return the data
     return Bunch(
@@ -760,7 +760,7 @@ def fetch_localizer_contrasts(
     # Get the dataset OSF index
     dataset_name = "brainomics_localizer"
     index_url = "https://osf.io/hwbm2/download"
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
     index_file = _fetch_file(index_url, data_dir, verbose=verbose)
@@ -880,7 +880,7 @@ def fetch_localizer_contrasts(
         filenames.append((behavioural_file, file_url, opts))
 
     # Actual data fetching
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
     _fetch_files(data_dir, filenames, verbose=verbose)
     for key, value in files.items():
         files[key] = [os.path.join(data_dir, val) for val in value]
@@ -1138,7 +1138,7 @@ def fetch_abide_pcp(
 
     # General file: phenotypic information
     dataset_name = "ABIDE_pcp"
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
     if url is None:
@@ -1181,7 +1181,7 @@ def fetch_abide_pcp(
     # First, filter subjects with no filename
     pheno = pheno[pheno["FILE_ID"] != "no_filename"]
     # Apply user defined filters
-    user_filter = _filter_columns(pheno, kwargs)
+    user_filter = filter_columns(pheno, kwargs)
     pheno = pheno[user_filter]
 
     # Go into specific data folder and url
@@ -1199,7 +1199,7 @@ def fetch_abide_pcp(
         pheno = pheno.to_records(index=False)
 
     results = {
-        "description": _get_dataset_descr(dataset_name),
+        "description": get_dataset_descr(dataset_name),
         "phenotypic": pheno,
     }
     for derivative in derivatives:
@@ -1332,9 +1332,7 @@ def fetch_mixed_gambles(
         (f"zmaps{os.sep}sub{int(j + 1):03}_zmaps.nii.gz", url, opts)
         for j in range(n_subjects)
     ]
-    data_dir = _get_dataset_dir(
-        "jimura_poldrack_2012_zmaps", data_dir=data_dir
-    )
+    data_dir = get_dataset_dir("jimura_poldrack_2012_zmaps", data_dir=data_dir)
     zmap_fnames = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
     subject_id = np.repeat(np.arange(n_subjects), 6 * 8)
     data = Bunch(zmaps=zmap_fnames, subject_id=subject_id)
@@ -1443,10 +1441,10 @@ def fetch_megatrawls_netmats(
         )
 
     dataset_name = "Megatrawls"
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
-    description = _get_dataset_descr(dataset_name)
+    description = get_dataset_descr(dataset_name)
 
     timeseries_map = dict(
         multiple_spatial_regression="ts2", eigen_regression="ts3"
@@ -1636,7 +1634,7 @@ def fetch_surf_nki_enhanced(
 
     # Preliminary checks and declarations
     dataset_name = "nki_enhanced_surface"
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
 
@@ -1651,7 +1649,7 @@ def fetch_surf_nki_enhanced(
     ids = ids[:n_subjects]
 
     # Dataset description
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     # First, get the metadata
     phenotypic_file = "NKI_enhanced_surface_phenotypics.csv"
@@ -1747,7 +1745,7 @@ def _fetch_development_fmri_participants(data_dir, url, verbose):
 
     """
     dataset_name = "development_fmri"
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
 
@@ -1811,7 +1809,7 @@ def _fetch_development_fmri_functional(
 
     """
     dataset_name = "development_fmri"
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
 
@@ -1953,7 +1951,7 @@ def fetch_development_fmri(
 
     """
     dataset_name = "development_fmri"
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir, verbose=1)
+    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir, verbose=1)
     keep_confounds = [
         "trans_x",
         "trans_y",
@@ -1973,7 +1971,7 @@ def fetch_development_fmri(
     ]
 
     # Dataset description
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     # Participants data: ids, demographics, etc
     participants = _fetch_development_fmri_participants(
@@ -2114,13 +2112,11 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
     # url = 'https://osf.io/nh987/download'
     main_folder = "fMRI-language-localizer-demo-dataset"
 
-    data_dir = _get_dataset_dir(
-        main_folder, data_dir=data_dir, verbose=verbose
-    )
+    data_dir = get_dataset_dir(main_folder, data_dir=data_dir, verbose=verbose)
     # The files_spec needed for _fetch_files
     files_spec = [(f"{main_folder}.zip", url, {"move": f"{main_folder}.zip"})]
     # Only download if directory is empty
-    # Directory will have been created by the call to _get_dataset_dir above
+    # Directory will have been created by the call to get_dataset_dir above
     if not os.listdir(data_dir):
         downloaded_files = _fetch_files(
             data_dir, files_spec, resume=True, verbose=verbose
@@ -2156,7 +2152,7 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
     url = "https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/5888d9a76c613b01fc6acc4e"  # noqa: E501
     dataset_name = "bids_langloc_example"
     main_folder = "bids_langloc_dataset"
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
     # The files_spec needed for _fetch_files
@@ -2263,7 +2259,7 @@ def fetch_ds000030_urls(data_dir=None, verbose=1):
     DATA_PREFIX = "ds000030/ds000030_R1.0.4/uncompressed"
     FILE_URL = "https://osf.io/86xj7/download"
 
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         DATA_PREFIX,
         data_dir=data_dir,
         verbose=verbose,
@@ -2457,7 +2453,7 @@ def fetch_openneuro_dataset(
             f"{DATASET_VERSION.split('_')[0]}/{DATASET_VERSION}/uncompressed"
         )
         orig_data_dir = data_dir
-        data_dir = _get_dataset_dir(
+        data_dir = get_dataset_dir(
             data_prefix,
             data_dir=data_dir,
             verbose=verbose,
@@ -2471,7 +2467,7 @@ def fetch_openneuro_dataset(
         data_prefix = (
             f"{dataset_version.split('_')[0]}/{dataset_version}/uncompressed"
         )
-        data_dir = _get_dataset_dir(
+        data_dir = get_dataset_dir(
             data_prefix,
             data_dir=data_dir,
             verbose=verbose,
@@ -2553,7 +2549,7 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
     ]
 
     dataset_name = "localizer_first_level"
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
     files = _fetch_files(data_dir, filenames, verbose=verbose)
@@ -2721,7 +2717,7 @@ def fetch_spm_auditory(
     .. footbibliography::
 
     """
-    data_dir = _get_dataset_dir(data_name, data_dir=data_dir, verbose=verbose)
+    data_dir = get_dataset_dir(data_name, data_dir=data_dir, verbose=verbose)
     subject_dir = os.path.join(data_dir, subject_id)
     if not os.path.exists(subject_dir):
         _download_spm_auditory_data(data_dir, subject_dir, subject_id)
@@ -2913,7 +2909,7 @@ def fetch_spm_multimodal_fmri(
     .. footbibliography::
 
     """
-    data_dir = _get_dataset_dir(data_name, data_dir=data_dir, verbose=verbose)
+    data_dir = get_dataset_dir(data_name, data_dir=data_dir, verbose=verbose)
     subject_dir = os.path.join(data_dir, subject_id)
 
     # maybe data_dir already contains the data ?
@@ -2935,7 +2931,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     %(verbose)s
 
     """
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         "fiac_nilearn.glm", data_dir=data_dir, verbose=verbose
     )
 
