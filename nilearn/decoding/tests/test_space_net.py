@@ -333,7 +333,7 @@ def test_lasso_vs_graph_net():
     """
     size = 4
     X_, y, _, mask = create_graph_net_simulation_data(
-        snr=1.0, n_samples=10, size=size, n_points=5, random_state=42
+        snr=1.0, n_samples=10, size=size, n_points=5, random_state=0
     )
     X, mask = to_niimgs(X_, [size] * 3)
 

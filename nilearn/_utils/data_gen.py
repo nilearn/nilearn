@@ -417,7 +417,10 @@ def generate_fake_fmri_data_and_design(shapes,
                                   size=rk,
                                   replace=False)
         design_matrices.append(
-            pd.DataFrame(rand_gen.standard_normal((shape[3], rk)), columns=columns))
+            pd.DataFrame(
+                rand_gen.standard_normal((shape[3], rk)), columns=columns
+            )
+        )
     mask = Nifti1Image((rand_gen.random(shape[:3]) > .5).astype(np.int8),
                        affine)
     return mask, fmri_data, design_matrices
@@ -577,8 +580,8 @@ def _generate_signals_from_precisions(precisions,
 
     signals = []
     n_samples = rand_gen.integers(min_n_samples,
-                                 high=max_n_samples,
-                                 size=len(precisions))
+                                  high=max_n_samples,
+                                  size=len(precisions))
 
     mean = np.zeros(precisions[0].shape[0])
     for n, prec in zip(n_samples, precisions):
@@ -640,10 +643,9 @@ def generate_group_sparse_gaussian_graphs(n_subjects=5,
     topology = np.empty((n_features, n_features))
     topology[:, :] = np.triu(
         (rand_gen.integers(0,
-                          high=int(1. / density),
-                          size=n_features * n_features)).reshape(
-                              n_features, n_features) == 0,
-        k=1)
+                           high=int(1. / density),
+                           size=n_features * n_features)).reshape(
+                               n_features, n_features) == 0, k=1)
 
     # Generate edges weights on topology
     precisions = []
