@@ -181,6 +181,9 @@ Finally, we need to change the title from ``x.y.z.dev`` to ``x.y.z``:
    - Nilearn now includes functionality A
    - ...
 
+We must also ensure that every entry in ``nilearn/doc/changes/latest.rst``
+starts with a "badge" (see the :ref:`changelog` section).
+
 Once we have made all the necessary changes to ``nilearn/doc/changes/latest.rst``, we should rename it into ``nilearn/doc/changes/x.y.z.rst``, where ``x.y.z`` is the corresponding version number.
 
 We then need to update ``nilearn/doc/changes/whats_new.rst`` and replace:
