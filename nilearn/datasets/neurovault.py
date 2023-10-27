@@ -22,7 +22,7 @@ from sklearn.feature_extraction import DictVectorizer
 from sklearn.utils import Bunch
 
 from ..image import resample_img
-from .utils import fetch_file, get_dataset_descr, get_dataset_dir
+from ._utils import fetch_file, get_dataset_descr, get_dataset_dir
 
 _NEUROVAULT_BASE_URL = "https://neurovault.org/api/"
 _NEUROVAULT_COLLECTIONS_URL = urljoin(_NEUROVAULT_BASE_URL, "collections/")

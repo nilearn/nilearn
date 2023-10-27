@@ -17,8 +17,8 @@ from nilearn._utils import data_gen
 from nilearn._utils.testing import serialize_niimg
 from nilearn.conftest import _rng
 from nilearn.datasets import atlas
+from nilearn.datasets._utils import fetch_files
 from nilearn.datasets.tests._testing import dict_to_archive
-from nilearn.datasets.utils import fetch_files
 from nilearn.image import get_data
 
 

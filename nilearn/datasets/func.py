@@ -26,7 +26,7 @@ from nilearn.image import get_data
 
 from .._utils import check_niimg, fill_doc
 from .._utils.numpy_conversions import csv_to_array
-from .utils import (
+from ._utils import (
     fetch_file,
     fetch_files,
     filter_columns,

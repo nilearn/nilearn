@@ -18,8 +18,8 @@ import pandas as pd
 import pytest
 
 from nilearn.datasets import func
+from nilearn.datasets._utils import get_dataset_dir
 from nilearn.datasets.tests._testing import dict_to_archive, list_to_archive
-from nilearn.datasets.utils import get_dataset_dir
 
 
 def _load_localizer_index():

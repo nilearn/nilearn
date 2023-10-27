@@ -12,7 +12,7 @@ from sklearn.utils import Bunch
 
 from .._utils import check_niimg, fill_doc
 from ..image import get_data, new_img_like, resampling
-from .utils import fetch_files, get_dataset_descr, get_dataset_dir
+from ._utils import fetch_files, get_dataset_descr, get_dataset_dir
 
 _package_directory = os.path.dirname(os.path.abspath(__file__))
 MNI152_FILE_PATH = os.path.join(
