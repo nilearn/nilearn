@@ -33,6 +33,7 @@ def main():
         "module": [],
         "name": [],
         "count_in": [],
+        "count_out": [],
     }
 
     for file in modules:
@@ -48,17 +49,45 @@ def main():
                 private_functions["module"].append(file)
                 private_functions["name"].append(f)
                 private_functions["count_in"].append(0)
+                private_functions["count_out"].append(0)
 
+    # count how many times each private function is mentioned
+
+    # in its own module
     for i, func in enumerate(private_functions["name"]):
-        # check that each private function is mentioned twice in its own module
         with open(private_functions["module"][i]) as file:
             lines = file.readlines()
-
         private_functions["count_in"][i] = sum(func in line for line in lines)
+        assert private_functions["count_in"][i] >= 1
+
+    # out of its own module
+    modules = (root_dir() / "nilearn").glob("**/*.py")
+    for file in modules:
+        if any(file.name.startswith(s) for s in files_to_skip):
+            continue
+        with open(file) as f:
+            lines = f.readlines()
+        for line in lines:
+            for i, func in enumerate(private_functions["name"]):
+                if str(private_functions["module"][i]) == str(file):
+                    continue
+                if func in line:
+                    private_functions["count_out"][i] += 1
+
+    # report
+    for i, func in enumerate(private_functions["name"]):
         if private_functions["count_in"][i] < 2:
             print(
                 f"'{func}' mentioned only {private_functions['count_in'][i]} "
-                f"time in {private_functions['module'][i]}"
+                f"time in {private_functions['module'][i]}."
+            )
+    print()
+    for i, func in enumerate(private_functions["name"]):
+        if private_functions["count_out"][i] > 0:
+            print(
+                f"'{func}' mentioned "
+                f"{private_functions['count_out'][i]} times "
+                f"outside of {private_functions['module'][i]}."
             )
 
 
