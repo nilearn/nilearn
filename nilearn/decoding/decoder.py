@@ -24,6 +24,7 @@ from joblib import Parallel, delayed
 from sklearn import clone
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.linear_model import (
+    LassoCV,
     LinearRegression,
     LogisticRegressionCV,
     RidgeClassifierCV,
@@ -59,6 +60,8 @@ SUPPORTED_ESTIMATORS = dict(
     ridge_classifier=RidgeClassifierCV(),
     ridge_regressor=RidgeCV(),
     ridge=RidgeCV(),
+    lasso=LassoCV(),
+    lasso_regressor=LassoCV(),
     svr=SVR(kernel="linear", max_iter=10000),
     dummy_classifier=DummyClassifier(strategy="stratified", random_state=0),
     dummy_regressor=DummyRegressor(strategy="mean"),
@@ -114,6 +117,8 @@ def _check_param_grid(estimator, X, y, param_grid=None):
         elif isinstance(estimator, LogisticRegressionCV):
             param_grid = _replace_param_grid_key(param_grid, "C", "Cs")
             param_grid = _wrap_param_grid(param_grid, "Cs")
+        elif isinstance(estimator, LassoCV):
+            param_grid = _wrap_param_grid(param_grid, "alphas")
 
     return param_grid
 
@@ -155,7 +160,14 @@ def _default_param_grid(estimator, X, y):
             raise NotImplementedError(message)
     elif not isinstance(
         estimator,
-        (LogisticRegressionCV, LinearSVC, RidgeCV, RidgeClassifierCV, SVR),
+        (
+            LogisticRegressionCV,
+            LinearSVC,
+            RidgeCV,
+            RidgeClassifierCV,
+            SVR,
+            LassoCV,
+        ),
     ):
         raise ValueError(
             "Invalid estimator. The supported estimators are:"
@@ -185,6 +197,11 @@ def _default_param_grid(estimator, X, y):
         # so for L2 penalty, param_grid["Cs"] is either 1e-3, ..., 1e4, and
         # for L1 penalty the values are obtained in a more data-driven way
         param_grid["Cs"] = [np.geomspace(2e-3, 2e4, 8) * min_c]
+    elif isinstance(estimator, LassoCV):
+        # the default is to generate 30 alphas based on the data
+        # (alpha values can also be set with the 'alphas' parameter, in which
+        # case 'n_alphas' is ignored)
+        param_grid["n_alphas"] = [30]
     elif isinstance(estimator, (LinearSVC, SVR)):
         # similar logic as above:
         # - for L2 penalty this is [1, 10, 100]
@@ -234,7 +251,7 @@ def _wrap_param_grid(param_grid, param_name):
         ):
             warnings.warn(
                 f"parameter '{param_name}' should be a sequence of iterables"
-                f" (e.g., { {param_name:[[1, 10, 100]]} }) to benefit from"
+                f" (e.g., {{param_name: [[1, 10, 100]]}}) to benefit from"
                 " the built-in cross-validation of the estimator."
                 f" Wrapping {param_grid_item[param_name]} in an outer list."
             )
@@ -398,7 +415,7 @@ def _parallel_fit(
                 elif isinstance(estimator, DummyRegressor):
                     dummy_output = estimator.constant_
 
-            if isinstance(estimator, (RidgeCV, RidgeClassifierCV)):
+            if isinstance(estimator, (RidgeCV, RidgeClassifierCV, LassoCV)):
                 params["best_alpha"] = estimator.alpha_
             elif isinstance(estimator, LogisticRegressionCV):
                 params["best_C"] = estimator.C_.item()
@@ -440,26 +457,25 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
     Parameters
     ----------
-    estimator: str, optional
+    estimator: str, default='svc'
         The estimator to use. For classification, choose among:
         %(classifier_options)s
         For regression, choose among:
         %(regressor_options)s
-        Default 'svc'.
 
-    mask: filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional,\
-        (Default None)
+    mask: filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, \
+          default=None
         Mask to be used on data. If an instance of masker is passed,
         then its mask and parameters will be used. If no mask is given, mask
         will be computed automatically from provided images by an inbuilt
         masker with default parameters. Refer to NiftiMasker or
         MultiNiftiMasker to check for default parameters.
 
-    cv: cross-validation generator or int, optional, (default 10)
+    cv: cross-validation generator or int, default=10
         A cross-validation generator.
         See: https://scikit-learn.org/stable/modules/cross_validation.html
 
-    param_grid: dict of str to sequence, or sequence of such, (Default None)
+    param_grid: dict of str to sequence, or sequence of such, default=None
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
@@ -472,20 +488,23 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
         For Dummy estimators, parameter grid defaults to empty dictionary.
 
-    clustering_percentile: int, float, optional, in the [0, 100] Default: 10.
+    clustering_percentile: int, float, in the [0, 100], default=10
         Percentile of features to keep after clustering. If it is lower
         than 100, a ReNA clustering is performed as a first step of fit
         to agglomerate similar features together. ReNA is typically efficient
         for clustering_percentile equal to 10.
 
-    screening_percentile: int, float, optional, in the closed interval [0, 100]
+    screening_percentile: int, float, \
+                          in the closed interval [0, 100], \
+                          default=20
         The percentage of brain volume that will be kept with respect to a full
         MNI template. In particular, if it is lower than 100, a univariate
         feature selection based on the Anova F-value for the input data will be
         performed. A float according to a percentile of the highest
-        scores. Default: 20.
+        scores.
 
-    scoring: str, callable or None, optional. Default None
+    scoring: str, callable or None,
+             default=None
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
         If callable, takes as arguments the fitted estimator, the
@@ -494,10 +513,10 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         e.g. scorer(estimator, X_test, y_test)
 
         For regression, valid entries are: 'r2', 'neg_mean_absolute_error', or
-        'neg_mean_squared_error'. Default: 'r2'.
+        'neg_mean_squared_error'. Defaults to 'r2'.
 
         For classification, valid entries are: 'accuracy', 'f1', 'precision',
-        'recall' or 'roc_auc'. Default: 'roc_auc'.
+        'recall' or 'roc_auc'. Defaults to 'roc_auc'.
     %(smoothing_fwhm)s
     %(standardize)s
     %(target_affine)s
@@ -607,71 +626,71 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
         Attributes
         ----------
-        `masker_` : instance of NiftiMasker or MultiNiftiMasker
+        masker_ : instance of NiftiMasker or MultiNiftiMasker
             The NiftiMasker used to mask the data.
 
-        `mask_img_` : Nifti1Image
+        mask_img_ : Nifti1Image
             Mask computed by the masker object.
 
-        `classes_` : numpy.ndarray
+        classes_ : numpy.ndarray
             Classes to predict. For classification only.
 
-        `screening_percentile_` : float
+        screening_percentile_ : float
             Screening percentile corrected according to volume of mask,
             relative to the volume of standard brain.
 
-        `coef_` : numpy.ndarray, shape=(n_classes, n_features)
+        coef_ : numpy.ndarray, shape=(n_classes, n_features)
             Contains the mean of the models weight vector across
             fold for each class. Returns None for Dummy estimators.
 
-        `coef_img_` : dict of Nifti1Image
+        coef_img_ : dict of Nifti1Image
             Dictionary containing `coef_` with class names as keys,
             and `coef_` transformed in Nifti1Images as values. In the case of
             a regression, it contains a single Nifti1Image at the key 'beta'.
             Ignored if Dummy estimators are provided.
 
-        `intercept_` : ndarray, shape (nclasses,)
+        intercept_ : ndarray, shape (nclasses,)
             Intercept (a.k.a. bias) added to the decision function.
             Ignored if Dummy estimators are provided.
 
-        `cv_` : list of pairs of lists
+        cv_ : list of pairs of lists
             List of the (n_folds,) folds. For the corresponding fold,
             each pair is composed of two lists of indices,
             one for the train samples and one for the test samples.
 
-        `std_coef_` : numpy.ndarray, shape=(n_classes, n_features)
+        std_coef_ : numpy.ndarray, shape=(n_classes, n_features)
             Contains the standard deviation of the models weight vector across
             fold for each class. Note that folds are not independent, see
             https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation-iterators-for-grouped-data
             Ignored if Dummy estimators are provided.
 
-        `std_coef_img_` : dict of Nifti1Image
+        std_coef_img_ : dict of Nifti1Image
             Dictionary containing `std_coef_` with class names as keys,
             and `coef_` transformed in Nifti1Image as values. In the case of
             a regression, it contains a single Nifti1Image at the key 'beta'.
             Ignored if Dummy estimators are provided.
 
-        `cv_params_` : dict of lists
+        cv_params_ : dict of lists
             Best point in the parameter grid for each tested fold
             in the inner cross validation loop. The grid is empty
             when Dummy estimators are provided. Note: if the estimator used its
             built-in cross-validation, this will include an additional key for
             the single best value estimated by the built-in cross-validation
             ('best_C' for LogisticRegressionCV and 'best_alpha' for
-            RidgeCV/RidgeClassifierCV), in addition to the input list of
-            values.
+            RidgeCV/RidgeClassifierCV/LassoCV), in addition to the input list
+            of values.
 
-        'scorer_' : function
+        scorer_ : function
             Scorer function used on the held out data to choose the best
             parameters for the model.
 
-        `cv_scores_` : dict, (classes, n_folds)
+        cv_scores_ : dict, (classes, n_folds)
             Scores (misclassification) for each parameter, and on each fold
 
-        `n_outputs_` : int
+        n_outputs_ : int
             Number of outputs (column-wise)
 
-        `dummy_output_`: ndarray, shape=(n_classes, 2)
+        dummy_output_: ndarray, shape=(n_classes, 2)
             or shape=(1, 1) for regression
             Contains dummy estimator attributes after class predictions
             using strategies of DummyClassifier (class_prior)
@@ -1056,10 +1075,9 @@ class Decoder(_BaseDecoder):
 
     Parameters
     ----------
-    estimator: str, optional
+    estimator: str, default='svc'
         The estimator to choose among:
         %(classifier_options)s
-        Default 'svc'.
 
     mask: filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
@@ -1068,7 +1086,7 @@ class Decoder(_BaseDecoder):
         masker with default parameters. Refer to NiftiMasker or
         MultiNiftiMasker to check for default parameters. Default None
 
-    cv: cross-validation generator or int, optional (default 10)
+    cv: cross-validation generator or int, default=10
         A cross-validation generator.
         See: https://scikit-learn.org/stable/modules/cross_validation.html
 
@@ -1087,13 +1105,13 @@ class Decoder(_BaseDecoder):
         predictions are estimated using default strategy.
 
     screening_percentile: int, float, optional, \
-        in the closed interval [0, 100]
+                          in the closed interval [0, 100], default=20
         The percentage of brain volume that will be kept with respect to a full
         MNI template. In particular, if it is lower than 100, a univariate
         feature selection based on the Anova F-value for the input data will be
         performed. A float according to a percentile of the highest scores.
 
-    scoring: str, callable or None, optional. Default: 'roc_auc'
+    scoring: str, callable or None, default='roc_auc'
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
         If callable, takes as arguments the fitted estimator, the
@@ -1102,7 +1120,7 @@ class Decoder(_BaseDecoder):
         e.g. scorer(estimator, X_test, y_test)
 
         For classification, valid entries are: 'accuracy', 'f1', 'precision',
-        'recall' or 'roc_auc'. Default: 'roc_auc'.
+        'recall' or 'roc_auc'.
     %(smoothing_fwhm)s
     %(standardize)s
     %(target_affine)s
@@ -1121,7 +1139,7 @@ class Decoder(_BaseDecoder):
             :func:`nilearn.masking.compute_epi_mask`, or
             :func:`nilearn.masking.compute_brain_mask`.
 
-        Default is 'background'.
+        Default='background'.
     %(memory)s
     %(memory_level)s
     %(n_jobs)s
@@ -1207,7 +1225,7 @@ class DecoderRegressor(_BaseDecoder):
         A cross-validation generator.
         See: https://scikit-learn.org/stable/modules/cross_validation.html
 
-    param_grid: dict of str to sequence, or sequence of such. Default None
+    param_grid: dict of str to sequence, or sequence of such, default=None
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
@@ -1221,14 +1239,16 @@ class DecoderRegressor(_BaseDecoder):
         For DummyRegressor, parameter grid defaults to empty dictionary, class
         predictions are estimated using default strategy.
 
-    screening_percentile: int, float, optional, in the closed interval [0, 100]
+    screening_percentile: int, float, \
+                          in the closed interval [0, 100], \
+                          default=20
         The percentage of brain volume that will be kept with respect to a full
         MNI template. In particular, if it is lower than 100, a univariate
         feature selection based on the Anova F-value for the input data will be
         performed. A float according to a percentile of the highest
-        scores. Default: 20.
+        scores.
 
-    scoring: str, callable or None, optional. Default: 'r2'
+    scoring: str, callable or None, optional. default='r2'
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
         If callable, takes as arguments the fitted estimator, the
@@ -1237,7 +1257,7 @@ class DecoderRegressor(_BaseDecoder):
         e.g. scorer(estimator, X_test, y_test)
 
         For regression, valid entries are: 'r2', 'neg_mean_absolute_error',
-        or 'neg_mean_squared_error'. Default: 'r2'.
+        or 'neg_mean_squared_error'.
     %(smoothing_fwhm)s
     %(standardize)s
     %(target_affine)s
@@ -1256,7 +1276,7 @@ class DecoderRegressor(_BaseDecoder):
             :func:`nilearn.masking.compute_epi_mask`, or
             :func:`nilearn.masking.compute_brain_mask`.
 
-        Default is 'background'.
+        Default='background'.
     %(memory)s
     %(memory_level)s
     %(n_jobs)s
@@ -1318,7 +1338,8 @@ class DecoderRegressor(_BaseDecoder):
 
 @fill_doc
 class FREMRegressor(_BaseDecoder):
-    """State of the art decoding scheme applied to usual regression estimators.
+    """State of the art :term:`decoding` scheme applied \
+       to usual regression estimators.
 
     FREM uses an implicit spatial regularization through fast clustering and
     aggregates a high number of estimators trained on various splits of the
@@ -1373,7 +1394,8 @@ class FREMRegressor(_BaseDecoder):
         performed. A float according to a percentile of the highest
         scores.
 
-    scoring : str, callable or None, optional. (default 'r2')
+    scoring : str, callable or None, default= 'r2'
+
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
         If callable, takes as arguments the fitted estimator, the
@@ -1382,7 +1404,7 @@ class FREMRegressor(_BaseDecoder):
         e.g. scorer(estimator, X_test, y_test)
 
         For regression, valid entries are: 'r2', 'neg_mean_absolute_error',
-        or 'neg_mean_squared_error' (default 'r2').
+        or 'neg_mean_squared_error'.
     %(smoothing_fwhm)s
     %(standardize)s
     %(target_affine)s
@@ -1401,7 +1423,7 @@ class FREMRegressor(_BaseDecoder):
             :func:`nilearn.masking.compute_epi_mask`, or
             :func:`nilearn.masking.compute_brain_mask`.
 
-        Default is 'background'.
+        Default='background'.
     %(memory)s
     %(memory_level)s
     %(n_jobs)s
@@ -1471,7 +1493,7 @@ class FREMRegressor(_BaseDecoder):
 
 @fill_doc
 class FREMClassifier(_BaseDecoder):
-    """State of the art decoding scheme applied to usual classifiers.
+    """State of the art :term:`decoding` scheme applied to usual classifiers.
 
     FREM uses an implicit spatial regularization through fast clustering and
     aggregates a high number of estimators trained on various splits of the
@@ -1554,7 +1576,7 @@ class FREMClassifier(_BaseDecoder):
             :func:`nilearn.masking.compute_epi_mask`, or
             :func:`nilearn.masking.compute_brain_mask`.
 
-        Default is 'background'.
+        Default='background'.
     %(memory)s
     %(memory_level)s
     %(n_jobs)s

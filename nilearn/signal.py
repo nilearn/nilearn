@@ -16,7 +16,7 @@ from sklearn.utils import as_float_array, gen_even_slices
 
 from nilearn._utils import fill_doc, stringify_path
 from nilearn._utils.numpy_conversions import as_ndarray, csv_to_array
-from nilearn._utils.param_validation import _check_run_sample_masks
+from nilearn._utils.param_validation import check_run_sample_masks
 
 availiable_filters = ["butterworth", "cosine"]
 
@@ -29,25 +29,24 @@ def _standardize(signals, detrend=False, standardize="zscore"):
     signals : :class:`numpy.ndarray`
         Timeseries to standardize.
 
-    detrend : :obj:`bool`, optional
+    detrend : :obj:`bool`, default=False
         If detrending of timeseries is requested.
-        Default=False.
 
-    standardize : {'zscore_sample', 'zscore', 'psc', True, False}, optional
+    standardize : {'zscore_sample', 'zscore', 'psc', True, False}, \
+                  default='zscore'
         Strategy to standardize the signal:
 
             - 'zscore_sample': The signal is z-scored. Timeseries are shifted
               to zero mean and scaled to unit variance. Uses sample std.
             - 'zscore': The signal is z-scored. Timeseries are shifted
               to zero mean and scaled to unit variance. Uses population std
-              by calling default :obj:`numpy.std` with N - ``ddof=0``.
+              by calling :obj:`numpy.std` with N - ``ddof=0``.
             - 'psc':  Timeseries are shifted to zero mean value and scaled
               to percent signal change (as compared to original mean signal).
             - True: The signal is z-scored (same as option `zscore`).
               Timeseries are shifted to zero mean and scaled to unit variance.
             - False: Do not standardize the data.
 
-        Default='zscore'.
 
     Returns
     -------
@@ -88,7 +87,7 @@ def _standardize(signals, detrend=False, standardize="zscore"):
                 "'zscore_sample' instead."
             )
             warnings.warn(
-                category=FutureWarning,
+                category=DeprecationWarning,
                 message=std_strategy_default,
                 stacklevel=3,
             )
@@ -138,7 +137,7 @@ def _mean_of_squares(signals, n_batches=20):
     signals : :class:`numpy.ndarray`, shape (n_samples, n_features)
         Signal whose mean of squares must be computed.
 
-    n_batches : :obj:`int`, optional
+    n_batches : :obj:`int`, default=20
         Number of batches to use in the computation.
 
         .. note::
@@ -146,7 +145,6 @@ def _mean_of_squares(signals, n_batches=20):
             and computation time. The higher the value, the lower the
             memory consumption.
 
-        Default=20.
 
     Returns
     -------
@@ -184,7 +182,7 @@ def _row_sum_of_squares(signals, n_batches=20):
     signals : :class:`numpy.ndarray`, shape (n_samples, n_features)
         Signal whose sum of squares must be computed.
 
-    n_batches : :obj:`int`, optional
+    n_batches : :obj:`int`, default=20
         Number of batches to use in the computation.
 
         .. note::
@@ -192,7 +190,6 @@ def _row_sum_of_squares(signals, n_batches=20):
             and computation time. The higher the value, the lower the
             memory consumption.
 
-        Default=20.
 
     Returns
     -------
@@ -224,14 +221,12 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
         This parameter must be two-dimensional.
         Signals to detrend. A signal is a column.
 
-    inplace : :obj:`bool`, optional
+    inplace : :obj:`bool`, default=False
         Tells if the computation must be made inplace or not.
-        Default=False.
 
-    type : {"linear", "constant"}, optional
+    type : {"linear", "constant"}, default="linear"
         Detrending type, either "linear" or "constant".
         See also :func:`scipy.signal.detrend`.
-        Default="linear".
 
     n_batches : :obj:`int`, optional
         Number of batches to use in the computation.
@@ -341,13 +336,12 @@ def butterworth(
         Number of samples per second (sample frequency, in Hertz).
     %(low_pass)s
     %(high_pass)s
-    order : :obj:`int`, optional
+    order : :obj:`int`, default=5
         Order of the `Butterworth filter
         <https://en.wikipedia.org/wiki/Butterworth_filter>`_.
         When filtering signals, the filter has a decay to avoid ringing.
         Increasing the order sharpens this decay. Be aware that very high
         orders can lead to numerical instability.
-        Default=5.
 
     padtype : {"odd", "even", "constant", None}, optional
         Type of padding to use for the Butterworth filter.
@@ -469,14 +463,14 @@ def high_variance_confounds(
         Timeseries. A timeseries is a column in the "series" array.
         shape (sample number, feature number)
 
-    n_confounds : :obj:`int`, optional
-        Number of confounds to return. Default=5.
+    n_confounds : :obj:`int`, default=5
+        Number of confounds to return.
 
-    percentile : :obj:`float`, optional
+    percentile : :obj:`float`, default=2.0
         Highest-variance series percentile to keep before computing the
         singular value decomposition, 0. <= `percentile` <= 100.
         ``series.shape[0] * percentile / 100`` must be greater
-        than ``n_confounds``. Default=2.0.
+        than ``n_confounds``.
     %(detrend)s
         Default=True.
 
@@ -597,13 +591,13 @@ def clean(
         Timeseries. Must have shape (instant number, features number).
         This array is not modified.
 
-    runs : :class:`numpy.ndarray`, optional
+    runs : :class:`numpy.ndarray`, default=None
         Add a run level to the cleaning process. Each run will be
         cleaned independently. Must be a 1D array of n_samples elements.
-        Default is None.
 
-    confounds : :class:`numpy.ndarray`, :obj:`str`, :class:`pathlib.Path`,\
-    :class:`pandas.DataFrame` or :obj:`list` of confounds timeseries.
+    confounds : :class:`numpy.ndarray`, :obj:`str`, :class:`pathlib.Path`, \
+                :class:`pandas.DataFrame` \
+                or :obj:`list` of confounds timeseries, default=None
         Shape must be (instant number, confound number), or just
         (instant number,).
         The number of time instants in ``signals`` and ``confounds`` must be
@@ -612,12 +606,12 @@ def clean(
         containing signals as columns, with an optional one-line header.
         If a list is provided, all confounds are removed from the input
         signal, as if all were in the same array.
-        Default is None.
 
     sample_mask : None, Any type compatible with numpy-array indexing, \
-        or :obj:`list` of
-        shape: (number of scans - number of volumes removed, ) for explicit \
-            index, or (number of scans, ) for binary mask
+                  or :obj:`list` of \
+                  shape: (number of scans - number of volumes removed, ) \
+                  for explicit index, or (number of scans, ) for binary mask, \
+                  default=None
         Masks the niimgs along time/fourth dimension to perform scrubbing
         (remove volumes with high motion) and/or non-steady-state volumes.
         When passing binary mask with boolean values, ``True`` refers to
@@ -626,19 +620,17 @@ def clean(
         information, sample_mask must be a list containing sets of indexes for
         each run.
 
-            .. versionadded:: 0.8.0
+        .. versionadded:: 0.8.0
 
-        Default is None.
     %(t_r)s
         Default=2.5.
-    filter : {'butterworth', 'cosine', False}, optional
+    filter : {'butterworth', 'cosine', False}, default='butterworth'
         Filtering methods:
 
             - 'butterworth': perform butterworth filtering.
             - 'cosine': generate discrete cosine transformation drift terms.
             - False: Do not perform filtering.
 
-        Default='butterworth'.
     %(low_pass)s
 
         .. note::
@@ -646,21 +638,21 @@ def clean(
 
     %(high_pass)s
     %(detrend)s
-    standardize : {'zscore_sample', 'zscore', 'psc', True, False}, optional
+    standardize : {'zscore_sample', 'zscore', 'psc', True, False}, \
+                  default="zscore"
         Strategy to standardize the signal:
 
             - 'zscore_sample': The signal is z-scored. Timeseries are shifted
               to zero mean and scaled to unit variance. Uses sample std.
             - 'zscore': The signal is z-scored. Timeseries are shifted
               to zero mean and scaled to unit variance. Uses population std
-              by calling default :obj:`numpy.std` with N - ``ddof=0``.
+              by calling :obj:`numpy.std` with N - ``ddof=0``.
             - 'psc':  Timeseries are shifted to zero mean value and scaled
               to percent signal change (as compared to original mean signal).
             - True: The signal is z-scored (same as option `zscore`).
               Timeseries are shifted to zero mean and scaled to unit variance.
             - False: Do not standardize the data.
 
-        Default="zscore".
     %(standardize_confounds)s
 
     ensure_finite : :obj:`bool`, default=False
@@ -968,7 +960,7 @@ def _sanitize_sample_mask(n_time, n_runs, runs, sample_mask):
     if sample_mask is None:
         return sample_mask
 
-    sample_mask = _check_run_sample_masks(n_runs, sample_mask)
+    sample_mask = check_run_sample_masks(n_runs, sample_mask)
 
     if runs is None:
         runs = np.zeros(n_time)

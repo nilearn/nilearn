@@ -2,9 +2,9 @@
 Functional connectivity predicts age group
 ==========================================
 
-This example compares different kinds of functional connectivity between
-regions of interest : correlation, partial correlation, and tangent space
-embedding.
+This example compares different kinds of :term:`functional connectivity`
+between regions of interest : correlation, partial correlation,
+and tangent space embedding.
 
 The resulting connectivity coefficients can be used to
 discriminate children from adults. In general, the tangent space embedding
@@ -16,15 +16,15 @@ for a careful study.
 
 """
 
-###############################################################################
-# Load brain development fMRI dataset and MSDL atlas
-# --------------------------------------------------
+# %%##
+# Load brain development :term:`fMRI` dataset and MSDL atlas
+# ----------------------------------------------------------
 # We study only 60 subjects from the dataset, to save computation time.
 from nilearn import datasets
 
 development_dataset = datasets.fetch_development_fmri(n_subjects=60)
 
-###############################################################################
+# %%
 # We use probabilistic regions of interest (ROIs) from the MSDL atlas.
 from nilearn.maskers import NiftiMapsMasker
 
@@ -51,7 +51,7 @@ masked_data = [
     )
 ]
 
-###############################################################################
+# %%
 # What kind of connectivity is most powerful for classification?
 # --------------------------------------------------------------
 # we will use connectivity matrices as features to distinguish children from
@@ -70,7 +70,13 @@ kinds = ["correlation", "partial correlation", "tangent"]
 
 pipe = Pipeline(
     [
-        ("connectivity", ConnectivityMeasure(vectorize=True)),
+        (
+            "connectivity",
+            ConnectivityMeasure(
+                vectorize=True,
+                standardize="zscore_sample",
+            ),
+        ),
         (
             "classifier",
             GridSearchCV(LinearSVC(dual=True), {"C": [0.1, 1.0, 10.0]}, cv=5),
@@ -83,7 +89,7 @@ param_grid = [
     {"connectivity__kind": kinds},
 ]
 
-######################################################################
+# %%
 # We use random splits of the subjects into training/testing sets.
 # StratifiedShuffleSplit allows preserving the proportion of children in the
 # test set.
@@ -107,7 +113,7 @@ gs.fit(masked_data, classes)
 mean_scores = gs.cv_results_["mean_test_score"]
 scores_std = gs.cv_results_["std_test_score"]
 
-######################################################################
+# %%
 # display the results
 from matplotlib import pyplot as plt
 
@@ -122,7 +128,7 @@ plt.gca().grid(True)
 plt.gca().set_axisbelow(True)
 plt.tight_layout()
 
-###############################################################################
+# %%
 # This is a small example to showcase nilearn features. In practice such
 # comparisons need to be performed on much larger cohorts and several
 # datasets.

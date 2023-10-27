@@ -6,7 +6,7 @@ if [ ! -z "$MIN_REQUIREMENTS" ]; then
     # See pyproject.toml for dependency group options
     if [ ! -z "$MATPLOTLIB" ]; then
         # Include plotting dependencies too
-        pip install --progress-bar off --upgrade -e .[min,plotting,test]
+        pip install --progress-bar off --upgrade -e .[min,plotmin,test]
     else
         pip install --progress-bar off --upgrade -e .[min,test]
     fi

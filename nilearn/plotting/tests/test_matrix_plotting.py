@@ -7,6 +7,7 @@ import pytest
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
+from nilearn.glm.tests._testing import design_with_null_durations
 from nilearn.plotting.matrix_plotting import (
     plot_contrast_matrix,
     plot_design_matrix,
@@ -156,10 +157,10 @@ def test_matrix_plotting_labels(mat, lab):
 @pytest.mark.parametrize("title", ["foo", "foo bar", " ", None])
 def test_matrix_plotting_set_title(mat, labels, title):
     ax = plot_matrix(mat, labels=labels, title=title)
-    nb_txt = 0 if title is None else 1
-    assert len(ax._axes.texts) == nb_txt
+    nb_txt = 0 if title is None else len(title)
+    assert len(ax._axes.title.get_text()) == nb_txt
     if title is not None:
-        assert ax._axes.texts[0].get_text() == title
+        assert ax._axes.title.get_text() == title
     plt.close()
 
 
@@ -258,3 +259,7 @@ def test_show_contrast_matrix(tmp_path):
     assert ax is None
     plot_contrast_matrix(contrast, dmtx, output_file=tmp_path / "contrast.pdf")
     assert (tmp_path / "contrast.pdf").exists()
+
+
+def test_show_event_plot_duration_0():
+    plot_event(design_with_null_durations())

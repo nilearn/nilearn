@@ -92,8 +92,8 @@ def _prepare_colors_for_markers(marker_color, number_of_nodes):
 
     Parameters
     ----------
-    marker_color : color or sequence of colors, optional
-        Color(s) of the nodes. Default='auto'.
+    marker_color : color or sequence of colors, default='auto'
+        Color(s) of the nodes.
 
     number_of_nodes : int
         Number of nodes in the view
@@ -134,12 +134,11 @@ def _prepare_lines_metadata(
         e.g. "25.3%", and only connections of amplitude above the
         given percentile will be shown.
 
-    cmap : str or matplotlib colormap, optional
-        Colormap to use. Default=cm.bwr.
+    cmap : str or matplotlib colormap, default=cm.bwr
+        Colormap to use.
 
-    symmetric_cmap : bool, optional
+    symmetric_cmap : bool, default=True
         Make colormap symmetric (ranging from -vmax to vmax).
-        Default=True.
 
     Returns
     -------
@@ -270,10 +269,10 @@ def view_connectome(
         The weights of the edges.
 
     node_coords : ndarray, shape=(n_nodes, 3)
-        The coordinates of the nodes in MNI space.
+        The coordinates of the nodes in :term:`MNI` space.
 
-    node_color : color or sequence of colors, optional
-        Color(s) of the nodes. Default='auto'.
+    node_color : color or sequence of colors, default='auto'
+        Color(s) of the nodes.
 
     edge_threshold : str, number or None, optional
         If None, no thresholding.
@@ -283,35 +282,32 @@ def view_connectome(
         e.g. "25.3%", and only connections of amplitude above the
         given percentile will be shown.
 
-    edge_cmap : str or matplotlib colormap, optional
-        Colormap to use. Default=cm.bwr.
+    edge_cmap : str or matplotlib colormap, default=cm.bwr
+        Colormap to use.
 
-    symmetric_cmap : bool, optional
+    symmetric_cmap : bool, default=True
         Make colormap symmetric (ranging from -vmax to vmax).
-        Default=True.
 
-    linewidth : float, optional
-        Width of the lines that show connections. Default=6.0.
+    linewidth : float, default=6.0
+        Width of the lines that show connections.
 
-    node_size : float, optional
+    node_size : float, default=3.0
         Size of the markers showing the seeds in pixels.
-        Default=3.0.
 
-    colorbar : bool, optional
-        Add a colorbar. Default=True.
+    colorbar : bool, default=True
+        Add a colorbar.
 
-    colorbar_height : float, optional
+    colorbar_height : float, default=0.5
         Height of the colorbar, relative to the figure height.
-        Default=0.5.
 
-    colorbar_fontsize : int, optional
-        Fontsize of the colorbar tick labels. Default=25.
+    colorbar_fontsize : int, default=25
+        Fontsize of the colorbar tick labels.
 
     title : str, optional
         Title for the plot.
 
-    title_fontsize : int, optional
-        Fontsize of the title. Default=25.
+    title_fontsize : int, default=25
+        Fontsize of the title.
 
     Returns
     -------
@@ -369,15 +365,15 @@ def view_markers(
     Parameters
     ----------
     marker_coords : ndarray, shape=(n_nodes, 3)
-        The coordinates of the nodes in MNI space.
+        The coordinates of the nodes in :term:`MNI` space.
 
     marker_color : ndarray, shape=(n_nodes,), optional
         colors of the markers: list of strings, hex rgb or rgba strings, rgb
         triplets, or rgba triplets (i.e. formats accepted by matplotlib, see
         https://matplotlib.org/users/colors.html#specifying-colors)
 
-    marker_size : float or array-like, optional
-        Size of the markers showing the seeds in pixels. Default=5.0.
+    marker_size : float or array-like, default=5.0
+        Size of the markers showing the seeds in pixels.
 
     marker_labels : list of str, shape=(n_nodes), optional
         Labels for the markers: list of strings
@@ -385,8 +381,8 @@ def view_markers(
     title : str, optional
         Title for the plot.
 
-    title_fontsize : int, optional
-        Fontsize of the title. Default=25.
+    title_fontsize : int, default=25
+        Fontsize of the title.
 
     Returns
     -------

@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 
+from nilearn.conftest import _rng
 from nilearn.plotting import plot_markers
 
 
@@ -106,9 +107,9 @@ def test_plot_markers_tuple_node_coords(coords):
     plt.close()
 
 
-def test_plot_markers_saving_to_file(coords, tmpdir):
+def test_plot_markers_saving_to_file(coords, tmp_path):
     """Smoke test for plot_markers and file saving."""
-    filename = str(tmpdir.join("test.png"))
+    filename = tmp_path / "test.png"
     display = plot_markers(
         [1, 2, 3, 4], coords, output_file=filename, display_mode="x"
     )
@@ -137,7 +138,7 @@ def test_plot_markers_node_kwargs(coords):
     [
         [1, 2, 3, 4, 5],
         [1, 2, 3],
-        np.random.RandomState(42).random_sample((4, 4)),
+        _rng().random_sample((4, 4)),
     ],
 )
 def test_plot_markers_dimension_mismatch(matrix, coords):

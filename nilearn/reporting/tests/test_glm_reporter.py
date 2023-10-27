@@ -1,5 +1,3 @@
-import warnings
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -92,13 +90,9 @@ def test_check_report_dims():
     expected_warning_text = (
         "Report size has invalid values. Using default 1600x800"
     )
-    with warnings.catch_warnings(record=True) as raised_warnings:
+    with pytest.warns(UserWarning, match=expected_warning_text):
         actual_output = glmr._check_report_dims(test_input)
-    raised_warnings_texts = [
-        str(warning_.message) for warning_ in raised_warnings
-    ]
     assert actual_output == expected_output
-    assert expected_warning_text in raised_warnings_texts
 
 
 def test_coerce_to_dict_with_string():
@@ -206,10 +200,10 @@ def test_make_headings_with_contrasts_none_title_custom():
 
 
 @pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
-def test_stat_map_to_svg_slice_z(mni_3d_img, cut_coords):
+def test_stat_map_to_svg_slice_z(img_3d_mni, cut_coords):
     table_details = pd.DataFrame.from_dict({"junk": 0}, orient="index")
     glmr._stat_map_to_svg(
-        stat_img=mni_3d_img,
+        stat_img=img_3d_mni,
         bg_img=None,
         cut_coords=cut_coords,
         display_mode="ortho",
@@ -219,10 +213,10 @@ def test_stat_map_to_svg_slice_z(mni_3d_img, cut_coords):
 
 
 @pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
-def test_stat_map_to_svg_glass_z(mni_3d_img, cut_coords):
+def test_stat_map_to_svg_glass_z(img_3d_mni, cut_coords):
     table_details = pd.DataFrame.from_dict({"junk": 0}, orient="index")
     glmr._stat_map_to_svg(
-        stat_img=mni_3d_img,
+        stat_img=img_3d_mni,
         bg_img=None,
         cut_coords=cut_coords,
         display_mode="z",
@@ -232,14 +226,14 @@ def test_stat_map_to_svg_glass_z(mni_3d_img, cut_coords):
 
 
 @pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
-def test_stat_map_to_svg_invalid_plot_type(mni_3d_img, cut_coords):
+def test_stat_map_to_svg_invalid_plot_type(img_3d_mni, cut_coords):
     expected_error = (
         "Invalid plot type provided. "
         "Acceptable options are 'slice' or 'glass'."
     )
     with pytest.raises(ValueError, match=expected_error):
         glmr._stat_map_to_svg(
-            stat_img=mni_3d_img,
+            stat_img=img_3d_mni,
             bg_img=None,
             cut_coords=cut_coords,
             display_mode="z",

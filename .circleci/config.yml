@@ -11,11 +11,14 @@ parameters:
     GITHUB_RUN_URL:
         type: string
         default: none
+    STATUS:
+        type: string
+        default: failure
 
 jobs:
     host_docs:
         machine:
-            image: ubuntu-2004:202111-01
+            image: ubuntu-2204:current
         environment:
             GITHUB_ARTIFACT_URL: << pipeline.parameters.GITHUB_RUN_URL >>/doc.zip
         steps:
@@ -34,12 +37,24 @@ jobs:
     deploy:
         docker:
         -   image: circleci/python:3.9
+        environment:
+            STATUS: << pipeline.parameters.STATUS >>
         steps:
         -   add_ssh_keys:
                 fingerprints:
                 -   19:56:86:2d:c6:df:02:f2:87:0e:59:a1:eb:b7:65:77
         -   attach_workspace:
                 at: /tmp/_build
+        -   run:
+                name: Check status
+                command: |
+                    echo $STATUS
+                    if [[ "$STATUS" == "success" ]]; then
+                        echo "Doc build is successful. Deploying docs..."
+                    else
+                        echo "Failed to deploy because doc build status is 'failure'"
+                        exit 1
+                    fi
         -   run:
                 name: Fetch docs
                 command: |

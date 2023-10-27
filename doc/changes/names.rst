@@ -18,6 +18,8 @@
 
 .. _Alexandre Savio: https://github.com/alex-savio
 
+.. _Alexandre Cionca: https://github.com/acionca
+
 .. _Alexis Thual: https://github.com/alexisthual
 
 .. _Alisha Kodibagkar: https://github.com/alishakodibagkar/
@@ -46,7 +48,7 @@
 
 .. _Caglar Cakan: https://github.com/caglorithm
 
-.. _Chris Gorgolewski: https://github.com/chrisgorgo
+.. _Chris Gorgolewski: https://chrisgorgolewski.org/
 
 .. _Chris Markiewicz: https://github.com/effigies
 
@@ -90,7 +92,7 @@
 
 .. _François Paugam: https://github.com/FrancoisPgm
 
-.. _Gael Varoquaux: http://gael-varoquaux.info/
+.. _Gael Varoquaux: https://gael-varoquaux.info/
 
 .. _Gilles de Hollander: https://github.com/Gilles86
 
@@ -180,6 +182,8 @@
 
 .. _Mehdi Rahim: https://github.com/mrahim
 
+.. _Mia Zwally: https://github.com/MIZwally
+
 .. _Michael Eickenberg: https://github.com/eickenberg
 
 .. _Michael Hanke: https://github.com/mih
@@ -201,6 +205,8 @@
 .. _Neelay Shah: https://github.com/NeelayS
 
 .. _Nicolas Gensollen: https://nicolasgensollen.github.io/
+
+.. _Nikhil Krish: https://github.com/NIkhilgKrish
 
 .. _Oliver Warrington: https://github.com/OliverWarrington
 

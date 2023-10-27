@@ -17,8 +17,6 @@ General reference for regression models:
 
 __docformat__ = "restructuredtext en"
 
-import functools
-import warnings
 
 import numpy as np
 import scipy.linalg as spl
@@ -27,28 +25,6 @@ from numpy.linalg import matrix_rank
 
 from nilearn.glm._utils import positive_reciprocal
 from nilearn.glm.model import LikelihoodModelResults
-
-
-def _deprecation_warning(
-    old_param, new_param, start_version, end_version="future"
-):
-    def _warned_func(func):
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            warnings.warn(
-                category=FutureWarning,
-                message=(
-                    f"'{old_param}' has been deprecated "
-                    f"in version {start_version} "
-                    f"and will be removed in version {end_version}.\n"
-                    f"Please use '{new_param}' instead."
-                ),
-            )
-            return func(*args, **kwargs)
-
-        return wrapper
-
-    return _warned_func
 
 
 class OLSModel:
@@ -124,13 +100,14 @@ class OLSModel:
         r"""Return the value of the loglikelihood function at beta.
 
         Given the whitened design matrix, the loglikelihood is evaluated
-        at the parameter vector, beta, for the dependent variable, Y
+        at the parameter vector, :term:`beta<Beta>`,
+        for the dependent variable, Y
         and the nuisance parameter, sigma :footcite:`Greene2003`.
 
         Parameters
         ----------
         beta : ndarray
-            The parameter estimates.  Must be of length df_model.
+            The parameter estimates.  Must be of length ``df_model``.
 
         Y : ndarray
             The dependent variable
@@ -345,7 +322,7 @@ class RegressionResults(LikelihoodModelResults):
 
         Notes
         -----
-        Is this supposed to return "stanardized residuals,"
+        Is this supposed to return "standardized residuals,"
         residuals standardized
         to have mean zero and approximately unit variance?
 
@@ -392,7 +369,7 @@ class RegressionResults(LikelihoodModelResults):
 
 class SimpleRegressionResults(LikelihoodModelResults):
     """Contain only information of the model fit necessary \
-    for contrast computation.
+    for :term:`contrast` computation.
 
     Its intended to save memory when details of the model are unnecessary.
 
@@ -429,7 +406,7 @@ class SimpleRegressionResults(LikelihoodModelResults):
 
         Notes
         -----
-        Is this supposed to return "stanardized residuals,"
+        Is this supposed to return "standardized residuals,"
         residuals standardized
         to have mean zero and approximately unit variance?
 

@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 
 from nilearn._utils.data_gen import (
-    _add_metadata_to_bids_dataset,
+    add_metadata_to_bids_dataset,
     create_fake_bids_dataset,
     generate_fake_fmri,
     generate_labeled_regions,
@@ -19,31 +19,33 @@ from nilearn.image import get_data
 
 def test_add_metadata_to_bids_derivatives_default_path(tmp_path):
     """Check the filename created is the default value \
-    of _add_metadata_to_bids_dataset."""
-    target_dir = tmp_path / 'derivatives' / 'sub-01' / 'ses-01' / 'func'
+    of add_metadata_to_bids_dataset."""
+    target_dir = tmp_path / "derivatives" / "sub-01" / "ses-01" / "func"
     target_dir.mkdir(parents=True)
-    json_file = _add_metadata_to_bids_dataset(bids_path=tmp_path,
-                                              metadata={"foo": "bar"})
+    json_file = add_metadata_to_bids_dataset(
+        bids_path=tmp_path, metadata={"foo": "bar"}
+    )
     assert json_file.exists()
-    assert (json_file.name ==
-            'sub-01_ses-01_task-main_run-01_space-MNI_desc-preproc_bold.json')
-    with open(json_file, 'r') as f:
+    assert (
+        json_file.name
+        == "sub-01_ses-01_task-main_run-01_space-MNI_desc-preproc_bold.json"
+    )
+    with open(json_file) as f:
         metadata = json.load(f)
         assert metadata == {"foo": "bar"}
 
 
 def test_add_metadata_to_bids_derivatives_with_json_path(tmp_path):
     # bare bone smoke test
-    target_dir = tmp_path / 'derivatives' / 'sub-02'
+    target_dir = tmp_path / "derivatives" / "sub-02"
     target_dir.mkdir(parents=True)
-    json_file = 'derivatives/sub-02/sub-02_task-main_bold.json'
-    json_file = _add_metadata_to_bids_dataset(bids_path=tmp_path,
-                                              metadata={"foo": "bar"},
-                                              json_file=json_file)
+    json_file = "derivatives/sub-02/sub-02_task-main_bold.json"
+    json_file = add_metadata_to_bids_dataset(
+        bids_path=tmp_path, metadata={"foo": "bar"}, json_file=json_file
+    )
     assert json_file.exists()
-    assert (json_file.name ==
-            'sub-02_task-main_bold.json')
-    with open(json_file, 'r') as f:
+    assert json_file.name == "sub-02_task-main_bold.json"
+    with open(json_file) as f:
         metadata = json.load(f)
         assert metadata == {"foo": "bar"}
 
@@ -92,11 +94,11 @@ def _bids_path_template(
     [(["main"], [1]), (["main"], [2]), (["main", "localizer"], [2, 1])],
 )
 def test_fake_bids_raw_with_session_and_runs(
-    tmpdir, n_sub, n_ses, tasks, n_runs
+    tmp_path, n_sub, n_ses, tasks, n_runs
 ):
     """Check number of each file 'type' created in raw."""
     bids_path = create_fake_bids_dataset(
-        base_dir=tmpdir, n_sub=n_sub, n_ses=n_ses, tasks=tasks, n_runs=n_runs
+        base_dir=tmp_path, n_sub=n_sub, n_ses=n_ses, tasks=tasks, n_runs=n_runs
     )
 
     # raw
@@ -191,11 +193,11 @@ def _check_nb_files_derivatives_for_task(
     [(["main"], [1]), (["main"], [2]), (["main", "localizer"], [2, 1])],
 )
 def test_fake_bids_derivatives_with_session_and_runs(
-    tmpdir, n_sub, n_ses, tasks, n_runs
+    tmp_path, n_sub, n_ses, tasks, n_runs
 ):
     """Check number of each file 'type' created in derivatives."""
     bids_path = create_fake_bids_dataset(
-        base_dir=tmpdir, n_sub=n_sub, n_ses=n_ses, tasks=tasks, n_runs=n_runs
+        base_dir=tmp_path, n_sub=n_sub, n_ses=n_ses, tasks=tasks, n_runs=n_runs
     )
 
     # derivatives
@@ -214,10 +216,10 @@ def test_fake_bids_derivatives_with_session_and_runs(
     assert len(all_files) == n_derivatives_files_expected
 
 
-def test_bids_dataset_no_run_entity(tmpdir):
+def test_bids_dataset_no_run_entity(tmp_path):
     """n_runs = 0 produces files without the run entity."""
     bids_path = create_fake_bids_dataset(
-        base_dir=tmpdir,
+        base_dir=tmp_path,
         n_sub=1,
         n_ses=1,
         tasks=["main"],
@@ -238,10 +240,10 @@ def test_bids_dataset_no_run_entity(tmpdir):
         assert len(files) == 1
 
 
-def test_bids_dataset_no_session(tmpdir):
+def test_bids_dataset_no_session(tmp_path):
     """n_ses = 0 prevent creation of a session folder."""
     bids_path = create_fake_bids_dataset(
-        base_dir=tmpdir,
+        base_dir=tmp_path,
         n_sub=1,
         n_ses=0,
         tasks=["main"],
@@ -262,10 +264,10 @@ def test_bids_dataset_no_session(tmpdir):
         assert len(files) == 1
 
 
-def test_create_fake_bids_dataset_no_derivatives(tmpdir):
+def test_create_fake_bids_dataset_no_derivatives(tmp_path):
     """Check no file is created in derivatives."""
     bids_path = create_fake_bids_dataset(
-        base_dir=tmpdir,
+        base_dir=tmp_path,
         n_sub=1,
         n_ses=1,
         tasks=["main"],
@@ -280,11 +282,11 @@ def test_create_fake_bids_dataset_no_derivatives(tmpdir):
     "confounds_tag,with_confounds", [(None, True), ("_timeseries", False)]
 )
 def test_create_fake_bids_dataset_no_confounds(
-    tmpdir, confounds_tag, with_confounds
+    tmp_path, confounds_tag, with_confounds
 ):
     """Check that files are created in the derivatives but no confounds."""
     bids_path = create_fake_bids_dataset(
-        base_dir=tmpdir,
+        base_dir=tmp_path,
         n_sub=1,
         n_ses=1,
         tasks=["main"],
@@ -297,15 +299,15 @@ def test_create_fake_bids_dataset_no_confounds(
     assert not files
 
 
-def test_fake_bids_errors(tmpdir):
+def test_fake_bids_errors(tmp_path):
     with pytest.raises(ValueError, match="labels.*alphanumeric"):
         create_fake_bids_dataset(
-            base_dir=tmpdir, n_sub=1, n_ses=1, tasks=["foo_bar"], n_runs=[1]
+            base_dir=tmp_path, n_sub=1, n_ses=1, tasks=["foo_bar"], n_runs=[1]
         )
 
     with pytest.raises(ValueError, match="labels.*alphanumeric"):
         create_fake_bids_dataset(
-            base_dir=tmpdir,
+            base_dir=tmp_path,
             n_sub=1,
             n_ses=1,
             tasks=["main"],
@@ -315,7 +317,7 @@ def test_fake_bids_errors(tmpdir):
 
     with pytest.raises(ValueError, match="number.*tasks.*runs.*same"):
         create_fake_bids_dataset(
-            base_dir=tmpdir,
+            base_dir=tmp_path,
             n_sub=1,
             n_ses=1,
             tasks=["main"],
@@ -323,7 +325,7 @@ def test_fake_bids_errors(tmpdir):
         )
 
 
-def test_fake_bids_extra_raw_entity(tmpdir):
+def test_fake_bids_extra_raw_entity(tmp_path):
     """Check files with extra entity are created appropriately."""
     n_sub = 2
     n_ses = 2
@@ -331,7 +333,7 @@ def test_fake_bids_extra_raw_entity(tmpdir):
     n_runs = [2]
     entities = {"acq": ["foo", "bar"]}
     bids_path = create_fake_bids_dataset(
-        base_dir=tmpdir,
+        base_dir=tmp_path,
         n_sub=n_sub,
         n_ses=n_ses,
         tasks=tasks,
@@ -381,7 +383,7 @@ def test_fake_bids_extra_raw_entity(tmpdir):
     assert len(all_files) == n_derivatives_files_expected
 
 
-def test_fake_bids_extra_derivative_entity(tmpdir):
+def test_fake_bids_extra_derivative_entity(tmp_path):
     """Check files with extra entity are created appropriately."""
     n_sub = 2
     n_ses = 2
@@ -389,7 +391,7 @@ def test_fake_bids_extra_derivative_entity(tmpdir):
     n_runs = [2]
     entities = {"res": ["foo", "bar"]}
     bids_path = create_fake_bids_dataset(
-        base_dir=tmpdir,
+        base_dir=tmp_path,
         n_sub=n_sub,
         n_ses=n_ses,
         tasks=tasks,
@@ -424,12 +426,13 @@ def test_fake_bids_extra_derivative_entity(tmpdir):
     assert len(all_files) == n_derivatives_files_expected
 
 
-def test_fake_bids_extra_entity_not_bids_entity(tmpdir):
+def test_fake_bids_extra_entity_not_bids_entity(tmp_path):
     """Check files with extra entity are created appropriately."""
     with pytest.raises(ValueError, match="Invalid entity"):
         create_fake_bids_dataset(
-            base_dir=tmpdir,
-            entities={"egg": ["spam"]},)
+            base_dir=tmp_path,
+            entities={"egg": ["spam"]},
+        )
 
 
 @pytest.mark.parametrize("window", ["boxcar", "hamming"])
@@ -501,10 +504,8 @@ def test_generate_maps():
 @pytest.mark.parametrize("block_size", [None, 4])
 @pytest.mark.parametrize("block_type", ["classification", "regression"])
 def test_generate_fake_fmri(
-    shape, length, kind, n_block, block_size, block_type
+    shape, length, kind, n_block, block_size, block_type, rng
 ):
-    rand_gen = np.random.RandomState(3)
-
     fake_fmri = generate_fake_fmri(
         shape=shape,
         length=length,
@@ -512,7 +513,7 @@ def test_generate_fake_fmri(
         n_blocks=n_block,
         block_size=block_size,
         block_type=block_type,
-        random_state=rand_gen,
+        random_state=rng,
     )
 
     assert fake_fmri[0].shape[:-1] == shape
@@ -521,11 +522,11 @@ def test_generate_fake_fmri(
         assert fake_fmri[2].size == length
 
 
-def test_generate_fake_fmri_error():
+def test_generate_fake_fmri_error(rng):
     with pytest.raises(ValueError, match="10 is too small"):
         generate_fake_fmri(
             length=10,
             n_blocks=10,
             block_size=None,
-            random_state=np.random.RandomState(3),
+            random_state=rng,
         )

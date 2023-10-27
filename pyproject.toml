@@ -16,11 +16,11 @@ classifiers = [
     "Operating System :: POSIX",
     "Operating System :: Unix",
     "Operating System :: MacOS",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11"
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12"
 ]
 dependencies = [
     "joblib>=1.0.0",
@@ -37,11 +37,10 @@ description = "Statistical learning for neuroimaging in Python"
 # Version from setuptools_scm
 dynamic = ["version"]
 license = {text = "new BSD"}
-long_description = {file = "README.rst"}
 maintainers = [{name = "Bertrand Thirion", email = "bertrand.thirion@inria.fr"}]
 name = "nilearn"
 readme = "README.rst"
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 
 [project.optional-dependencies]
 # A combination of dependencies useful for developers
@@ -50,7 +49,11 @@ dev = [
     "isort",
     "flynt",
     "black",
+    "blacken-docs",
+    "flake8",
+    "flake8-docstrings",
     "flake8-use-fstring",
+    "flake8-functions",
     'codespell',
     'tomli',
     'pre-commit'
@@ -58,12 +61,8 @@ dev = [
 # Requirements necessary for building the documentation
 doc = [
     "nilearn[plotly]",
-    "coverage",
-    "flake8",
-    "flake8-docstrings",
     "furo",
     "memory_profiler",  # measuring memory during docs building
-    "mkl",
     "myst-parser",
     "numpydoc",
     "ruamel.yaml",
@@ -86,6 +85,7 @@ min = [
 # For surface plotting mostly
 plotly = ["kaleido", "plotly"]
 # Necessary req to use nilearn's plotting module
+plotmin = ["matplotlib==3.3.0"]
 plotting = ["matplotlib>=3.3.0"]
 # For running unit and docstring tests
 test = [
@@ -106,18 +106,10 @@ extend-exclude = """
 (
   nilearn/externals
   | nilearn/_utils/data_gen.py
-  | nilearn/_utils/docs.py
   | nilearn/_utils/helpers.py
-  | nilearn/_utils/tests/test_data_gen.py
   | nilearn/reporting/html_report.py
   | nilearn/reporting/tests/test_html_report.py
-  | nilearn/glm/contrasts.py
-  | nilearn/glm/first_level/first_level.py
-  | nilearn/glm/tests/test_contrasts.py
-  | nilearn/glm/tests/test_first_level.py
   | examples/01_plotting/plot_3d_map_to_surface_projection.py
-  | examples/01_plotting/plot_demo_more_plotting.py
-  | examples/01_plotting/plot_demo_plotting.py
   | examples/01_plotting/plot_surf_atlas.py
   | examples/01_plotting/plot_surf_stat_map.py
   | examples/01_plotting/plot_surface_projection_strategies.py
@@ -128,23 +120,18 @@ extend-exclude = """
   | nilearn/interfaces/fmriprep/load_confounds_compcor.py
   | nilearn/interfaces/fmriprep/tests/test_load_confounds_utils.py
   | nilearn/interfaces/fmriprep/tests/test_load_confounds_strategy.py
-  | nilearn/interfaces/fmriprep/tests/utils.py
+  | nilearn/interfaces/fmriprep/tests/_testing.py
   | nilearn/interfaces/fmriprep/tests/test_load_confounds.py
   | nilearn/maskers/nifti_spheres_masker.py
   | nilearn/maskers/nifti_labels_masker.py
-  | nilearn/plotting/displays/_axes.py
-  | nilearn/plotting/glass_brain.py
   | nilearn/plotting/html_surface.py
   | nilearn/plotting/img_plotting.py
   | nilearn/plotting/js_plotting_utils.py
   | nilearn/plotting/surf_plotting.py
-  | nilearn/plotting/tests/test_html_stat_map.py
   | nilearn/plotting/tests/test_html_surface.py
   | nilearn/plotting/tests/test_surf_plotting.py
   | nilearn/surface/surface.py
   | nilearn/surface/tests/test_surface.py
-  | nilearn/tests/test_masking.py
-  | nilearn/tests/test_signal.py
 )
 """
 line-length = 79
@@ -181,9 +168,10 @@ src_paths = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "--doctest-modules -s -vv --durations=0"
+addopts = "-ra --strict-config --strict-markers --doctest-modules -s -vv --durations=0"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 # TODO: Remove filter in release 0.13
 filterwarnings = "ignore:.*Please use 'zscore_sample' instead.:FutureWarning"
 junit_family = "xunit2"
 minversion = "6.0"
+xfail_strict = true

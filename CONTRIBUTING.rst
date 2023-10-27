@@ -84,7 +84,7 @@ The following sections explain the :ref:`nilearn_scope` and :ref:`nilearn_govern
 .. _nilearn_scope:
 
 Scope of the project
----------------------
+--------------------
 
 Nilearn is an Open-source Python package for visualizing and analyzing human
 brain MRI data.
@@ -103,7 +103,13 @@ To assess new features, our main concern is their usefulness to a number of
 our users.
 To make Nilearn high-quality and sustainable we also weigh their benefits
 (i.e., new features, ease of use) with their cost (i.e., complexity of the code,
-runtime of the examples). As a rule of thumb:
+runtime of the examples).
+
+Exhaustive criteria used in the review process
+are detailed in the **contribution guide below**.
+Be sure to read and follow them so that your code can be accepted quickly.
+
+As a rule of thumb:
 
 * To be accepted, new features must be **in the scope of the project** and
   correspond to an **established practice** (typically as used in scientific
@@ -117,19 +123,34 @@ runtime of the examples). As a rule of thumb:
 
 * Features introducing new dependencies will generally not be accepted.
 
-* Downloaders for new atlases are welcome if they comes with an example.
+Adding atlases and datasets
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* Downloaders for new datasets are usually discouraged. We will consider adding
-  fetchers only for light datasets which are needed to demo and teach features.
+Downloaders for new atlases datasets are usually discouraged.
 
-Exhaustive criteria used in the review process are detailed in the **contribution
-guide below**.
-Be sure to read and follow them so that your code can be accepted quickly.
+There is no intention to provide a comprehensive collection of downloaders
+for the most widely used atlases and datasets.
+**This would be outside the scope of this project.**
+We will consider adding fetchers only for atlases and light datasets
+which are needed to demo and teach features.
+
+.. warning::
+
+      Issues requesting to add a new atlas or dataset that are not linked
+      to the development of a new feature or example
+      will be closed as being **out of scope**.
+
+The following projects are dedicated to host atlases and accept contributions:
+
+* `templateflow <https://www.templateflow.org>`_
+* `neuromaps <https://netneurolab.github.io/neuromaps>`_
+* `neuroparc <https://github.com/neurodata/neuroparc>`_
+
 
 .. _nilearn_governance:
 
 Who makes decisions
---------------------
+-------------------
 
 We strongly aim to be a community oriented project where decisions are
 made based on consensus according to the criteria described above.
@@ -169,7 +190,7 @@ you first open a :nilearn-gh:`new issue <issues/new/choose>` before sending a
 .. _contribution_guidelines:
 
 Contribution Guidelines
-------------------------
+-----------------------
 
 When modifying the codebase, we ask every contributor to respect common
 guidelines.
@@ -257,14 +278,27 @@ Changelog entries in ``doc/changes/latest.rst`` should adhere to the following c
 
 - Entry in the appropriate category
 - Single line per entry
+- Add a "badge" corresponding to the change type (see below)
 - Finish with a link to the PR and the author's profile
-- New contributors to add their details to the ``authors`` section of the ``CITATION.cff``
+- New contributors to add their details to the ``authors`` section of the ``CITATION.cff`` (see below)
+
+List of badges:
+
+.. code-block:: rst
+
+      :bdg-primary:`Doc`
+      :bdg-secondary:`Maint`
+      :bdg-success:`API`
+      :bdg-info:`Plotting`
+      :bdg-warning:`Test`
+      :bdg-danger:`Deprecation`
+      :bdg-dark:`Code`
 
 Example entry in ``doc/changes/latest.rst``:
 
 .. code-block:: rst
 
-    - Fix off-by-one error when setting ticks in :func:`~plotting.plot_surf` (:gh:`3105` by `Dimitri Papadopoulos Orfanos`_).
+    - :bdg-dark:`Code` Fix off-by-one error when setting ticks in :func:`~plotting.plot_surf` (:gh:`3105` by `Dimitri Papadopoulos Orfanos`_).
 
 Associated entry in ``CITATION.cff``:
 
@@ -290,7 +324,7 @@ The main conventions we enforce are :
 - meaningful variable names
 - function names are underscore separated (e.g., ``a_nice_function``) and as short as possible
 - public functions exposed in their parent module's init file
-- private function names preceded with a "_" and very explicit
+- private function names preceded with a "_" and very explicit, see also :ref:`private_functions`
 - classes in CamelCase
 - 2 empty lines between functions or classes
 
@@ -314,35 +348,36 @@ See the examples below:
 .. code-block:: python
 
       def good(x, y=1, z=None):
-      """Show how parameters are documented.
+          """Show how parameters are documented.
 
-      Parameters
-      ----------
-      x : :obj:`int`
-            X
+          Parameters
+          ----------
+          x : :obj:`int`
+                X
 
-      y : :obj:`int`, default=1
-            Note that "default=1" is preferred to "Defaults to 1".
+          y : :obj:`int`, default=1
+                Note that "default=1" is preferred to "Defaults to 1".
 
-      z : :obj:`str`, default=None
+          z : :obj:`str`, default=None
 
-      """
+          """
+
 
       def bad(x, y=1, z=None):
-      """Show how parameters should not be documented.
+          """Show how parameters should not be documented.
 
-      Parameters
-      ----------
-      x :
-            The type of X is not described
+          Parameters
+          ----------
+          x :
+                The type of X is not described
 
-      y : :obj:`int`
-            The default value of y is not described.
+          y : :obj:`int`
+                The default value of y is not described.
 
-      z : :obj:`str`
-            Defaults=None.
-            The default value should be described after the type.
-      """
+          z : :obj:`str`
+                Defaults=None.
+                The default value should be described after the type.
+          """
 
 Additionally, we consider it best practice to write modular functions;
 i.e., functions should preferably be relatively short and do *one* thing.
@@ -350,6 +385,88 @@ This is also useful for writing unit tests.
 
 Writing small functions is not always possible, and we do not recommend trying to reorganize larger,
 but well-tested, older functions in the codebase, unless there is a strong reason to do so (e.g., when adding a new feature).
+
+.. _private_functions:
+
+Guidelines for Private Functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+We start a name with a leading underscore to indicate that it is an internal implementation detail,
+not to be accessed directly from outside, of the enclosing context:
+
+- the parent module (for a submodule name),
+- or the module (for the name of a top-level function, class or global variable),
+- or the class (for a method or attribute name).
+
+Moreover, modules explicitly declare their interface through the ``__all__`` attribute,
+and any name not listed in ``__all__`` should not be accessed from outside the module
+
+In some cases when private functions are in a private module (filename beginning with an underscore),
+but are used outside of that file, we do not name them with a leading underscore.
+
+Example:
+
+.. code-block:: rst
+
+      nilearn
+      ├── image.py             # part of public API
+      ├── __init__.py
+      ├── maskers              # part of public API
+      │   ├── __init__.py
+      │   ├── nifti_masker.py  # part of public API
+      │   └── _validation.py   # private to the maskers module
+      └── _utils.py            # private to the nilearn module
+
+Code inside ``maskers._validation.py``:
+
+.. code-block:: python
+
+      import numpy as np  # not part of the public API
+
+      __all__ = ["check_mask_img", "ValidationError"]  # all symbols in the public API
+
+
+      def check_mask_img(mask_img):
+          """Public API of _validation module
+
+          can be used in nifti_masker module
+          but not the image module (which cannot import maskers._validation),
+          unless maskers/__init__.py imports it and lists it in __all__
+          to make it part of the maskers module's public API
+          """
+
+          return _check_mask_shape(mask_img) and _check_mask_values(mask_img)
+
+
+      def _check_mask_shape(mask_img):
+          """Private internal of _validation, cannot be used in nifti_masker"""
+
+
+      def _check_mask_values(mask_img):
+          """Private internal of _validation, cannot be used in nifti_masker"""
+
+
+      class ValidationError(Exception):
+          """Public API of _validation module"""
+
+
+      class _Validator:
+          """Private internal of the _validation module"""
+
+          def validate(self, img):
+              """Public API of _Validator"""
+
+          def _validate_shape(self, img):
+              """Private internal of the _Validator class.
+
+              As we don't use the double leading underscore in nilearn we
+              cannot infer from the name alone if it is considered to be
+              exposed to subclasses or not.
+
+              """
+
+..
+      Source: Jerome Dockes https://github.com/nilearn/nilearn/issues/3628#issuecomment-1515211711
 
 Pre-commit
 ----------
@@ -373,7 +490,7 @@ Pre-commit will then run all those hooks on the files you have staged for commit
 Note that if some of those hooks fail you may have to edit some files and stage them again.
 
 Tests
-------
+-----
 
 When fixing a bug, the first step is to write a minimal test that fails because
 of it, and then write the bugfix to make this test pass.
@@ -388,26 +505,70 @@ They should run on small mocked data, cover a representative range of parameters
       For more information about this coding approach,
       see `test-driven development <https://en.wikipedia.org/wiki/Test-driven_development>`_.
 
-Tests must be seeded to avoid random failures.
-For objects using random seeds (e.g. scikit-learn estimators), pass either
-a  `np.random.RandomState` or an `int` as the seed.
-When your test use random numbers,  those must be generated through:
+We use `pytest <https://docs.pytest.org/en/6.2.x/contents.html>`_ to run our tests.
 
-.. code-block:: python
+If you are not familiar with pytest,
+have a look at this `introductory video <https://www.youtube.com/watch?v=mzlH8lp4ISA>`_
+by one of the pytest core developer.
 
-    rng = np.random.RandomState(0)
-    my_number = rng.normal()
+In general tests for a specific module (say ``nilearn/image/image.py``)
+are kept in a ``tests`` folder in a separate module
+with a name that matches the module being tested
+(so in this case ``nilearn/image/tests/test_image.py``).
 
-To check your changes worked and didn't break anything run `pytest nilearn`.
+When you have added a test you can check that your changes worked
+and didn't break anything by running ``pytest nilearn``.
 To do quicker checks it's possible to run only a subset of tests:
 
 .. code-block:: bash
 
-      pytest -v test_module.py
+      pytest -v nilearn/module/tests/test_module.py
 
+Fixtures
+^^^^^^^^
+
+If you need to do some special "set up" for your tests
+(for example you need to generate some data, or a NiftiImage object or a file...)
+you can use `pytest fixtures <https://docs.pytest.org/en/6.2.x/fixture.html>`_
+to help you mock this data
+(more information on pytest fixtures in `this video <https://www.youtube.com/watch?v=ScEQRKwUePI>`_).
+
+Fixture are recognizable because they have a ``@pytest.fixture`` decorator.
+Fixtures that are shared by many tests modules can be found in ``nilearn/conftest.py``
+but some fixures specific to certain modules can also be kept in that testing module.
+
+Before adding new fixtures, first check those that exist
+in the test modules you are working in or in ``nilearn/conftest.py``.
+
+Seeding
+^^^^^^^
+
+Many tests must be seeded to avoid random failures.
+When your test use random numbers,
+you can seed a random number generator with ``numpy.random.default_rng``
+like in the following examples:
+
+.. code-block:: python
+
+      def test_something():
+          # set up
+          rng = np.random.default_rng(0)
+          my_number = rng.normal()
+
+          # the rest of the test
+
+You can also use the ``rng`` fixture.
+
+.. code-block:: python
+
+      def test_something(rng):
+          # set up
+          my_number = rng.normal()
+
+          # the rest of the test
 
 Documentation
----------------
+-------------
 
 Documentation must be understandable by people from different backgrounds.
 The “narrative” documentation should be an introduction to the concepts of
@@ -433,7 +594,7 @@ learn how to use those tools to build documentation.
 .. _git_repo:
 
 Setting up your environment
-============================
+===========================
 
 Installing
 ----------
@@ -463,7 +624,7 @@ or:
       conda create -n nilearn
       conda activate nilearn
 
-3. install the forked version of `nilearn`
+3. install the forked version of ``nilearn``
 
 .. admonition:: Recommendation
 
@@ -512,7 +673,7 @@ The installed version will also reflect any changes you make to your code.
 
       pytest nilearn
 
-5. (optional) install `pre-commit <https://pre-commit.com/#usage>`__ hooks
+5. (optional) install `pre-commit <https://pre-commit.com/#usage>`_ hooks
    to run the linter and other checks before each commit:
 
 .. code-block:: bash
@@ -523,7 +684,7 @@ The installed version will also reflect any changes you make to your code.
 Contributing
 ------------
 
-Here are the key steps you need to go through to contribute code to `nilearn`:
+Here are the key steps you need to go through to contribute code to ``nilearn``:
 
 1. open or join an already existing issue explaining what you want to work on
 
@@ -572,7 +733,7 @@ Here are the key steps you need to go through to contribute code to `nilearn`:
       git push
 
 7. in github, open a pull request from your online fork to the main repo
-   (most likely from `your_fork:your_branch` to `nilearn:main`).
+   (most likely from ``your_fork:your_branch`` to ``nilearn:main``).
 
 8. check that all continuous integration tests pass
 
@@ -594,7 +755,7 @@ If you wish to build documentation:
 2. Then go to ``nilearn/examples`` or ``nilearn/doc`` and make needed changes
    using `reStructuredText files <https://www.sphinx-doc.org/en/2.0/usage/restructuredtext/basics.html>`_
 
-3. You can now go to `nilearn/doc` and build the examples locally:
+3. You can now go to ``nilearn/doc`` and build the examples locally:
 
 .. code-block:: bash
 
@@ -634,10 +795,10 @@ if you don't need the plots, a quicker option is:
 
 
 Additional cases
-=================
+================
 
 How to contribute an atlas
----------------------------
+--------------------------
 
 We want atlases in nilearn to be internally consistent. Specifically,
 your atlas object should have three attributes (as with the existing
@@ -658,14 +819,11 @@ Examples can be found :nilearn-gh:`here <blob/main/nilearn/datasets/tests/test_a
 
 
 How to contribute a dataset fetcher
-------------------------------------
+-----------------------------------
 
 The :mod:`nilearn.datasets` module provides functions to download some
 neuroimaging datasets, such as :func:`nilearn.datasets.fetch_haxby` or
-:func:`nilearn.datasets.fetch_atlas_harvard_oxford`. The goal is not to provide a comprehensive
-collection of downloaders for the most widely used datasets, and this would be
-outside the scope of this project. Rather, this module provides data downloading utilities that are
-required to showcase nilearn features in the example gallery.
+:func:`nilearn.datasets.fetch_atlas_harvard_oxford`.
 
 Downloading data takes time and large datasets slow down the build of the
 example gallery. Moreover, downloads can fail for reasons we do not control,
@@ -678,7 +836,6 @@ downloader needs to be adapted.
 As for any contributed feature, before starting working on a new downloader,
 we recommend opening a :nilearn-gh:`new issue <issues/new/choose>` to discuss
 whether it is necessary or if existing downloaders could be used instead.
-
 
 To add a new fetcher, ``nilearn.datasets.utils`` provides some helper functions,
 such as ``_get_dataset_dir`` to find a directory where the dataset is or will be
@@ -696,12 +853,12 @@ functions that return fake data.
 
 Exactly what fake data is returned can be configured through the object
 returned by the ``request_mocker`` pytest fixture, defined in
-``nilearn.datasets._testing``. The docstrings of this module and the ``Sender``
-class it contains provide information on how to write a test using this fixture.
-Existing tests can also serve as examples.
+``nilearn.datasets.tests._testing``. The docstrings of this module and the
+``Sender`` class it contains provide information on how to write a test using
+this fixture. Existing tests can also serve as examples.
 
 Maintenance
-=================
+===========
 
 More information about the project organization, conventions, and maintenance
 process can be found there : :ref:`maintenance_process`.

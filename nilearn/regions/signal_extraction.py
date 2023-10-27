@@ -11,7 +11,7 @@ import numpy as np
 from scipy import linalg, ndimage
 
 from .. import _utils, masking
-from .._utils.niimg import _safe_get_data
+from .._utils.niimg import safe_get_data
 from ..image import new_img_like
 
 INF = 1000 * np.finfo(np.float32).eps
@@ -132,8 +132,8 @@ def _get_labels_data(
         Every point outside the mask is considered as background
         (i.e. no region).
 
-    background_label : number, optional
-        Number representing background in labels_img. Default=0.
+    background_label : number, default=0
+        Number representing background in labels_img.
 
     dim : :obj:`int`, optional
         Integer slices mask for a specific dimension.
@@ -158,7 +158,7 @@ def _get_labels_data(
     """
     _check_shape_and_affine_compatibility(target_img, labels_img)
 
-    labels_data = _safe_get_data(labels_img, ensure_finite=True)
+    labels_data = safe_get_data(labels_img, ensure_finite=True)
 
     if keep_masked_labels:
         labels = list(np.unique(labels_data))
@@ -179,7 +179,7 @@ def _get_labels_data(
     use_mask = _check_shape_and_affine_compatibility(target_img, mask_img, dim)
     if use_mask:
         mask_img = _utils.check_niimg_3d(mask_img)
-        mask_data = _safe_get_data(mask_img, ensure_finite=True)
+        mask_data = safe_get_data(mask_img, ensure_finite=True)
         labels_data = labels_data.copy()
         labels_before_mask = set(np.unique(labels_data))
         # Applying mask on labels_data
@@ -270,16 +270,16 @@ def img_to_signals_labels(
         Every point outside the mask is considered
         as background (i.e. no region).
 
-    background_label : number, optional
-        Number representing background in labels_img. Default=0.
+    background_label : number, default=0
+        Number representing background in labels_img.
 
-    order : :obj:`str`, optional
-        Ordering of output array ("C" or "F"). Default="F".
+    order : :obj:`str`, default="F"
+        Ordering of output array ("C" or "F").
 
-    strategy : :obj:`str`, optional
+    strategy : :obj:`str`, default="mean"
         The name of a valid function to reduce the region with.
         Must be one of: sum, mean, median, minimum, maximum, variance,
-        standard_deviation. Default="mean".
+        standard_deviation.
     %(keep_masked_labels)s
 
     Returns
@@ -317,7 +317,7 @@ def img_to_signals_labels(
         keep_masked_labels=keep_masked_labels,
     )
 
-    data = _safe_get_data(imgs, ensure_finite=True)
+    data = safe_get_data(imgs, ensure_finite=True)
     target_datatype = np.float32 if data.dtype == np.float32 else np.float64
     # Nilearn issue: 2135, PR: 2195 for why this is necessary.
     signals = np.ndarray(
@@ -368,11 +368,11 @@ def signals_to_img_labels(
         Boolean array giving voxels to process. integer arrays also accepted,
         In this array, zero means False, non-zero means True.
 
-    background_label : number, optional
-        Label to use for "no region". Default=0.
+    background_label : number, default=0
+        Label to use for "no region".
 
-    order : :obj:`str`, optional
-        Ordering of output array ("C" or "F"). Default="F".
+    order : :obj:`str`, default="F"
+        Ordering of output array ("C" or "F").
 
     Returns
     -------
@@ -467,7 +467,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
 
     _check_shape_and_affine_compatibility(imgs, maps_img, 3)
 
-    maps_data = _safe_get_data(maps_img, ensure_finite=True)
+    maps_data = safe_get_data(maps_img, ensure_finite=True)
     maps_mask = np.ones(maps_data.shape[:3], dtype=bool)
     labels = np.arange(maps_data.shape[-1], dtype=int)
 
@@ -477,7 +477,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
         labels_before_mask = set(labels)
         maps_data, maps_mask, labels = _trim_maps(
             maps_data,
-            _safe_get_data(mask_img, ensure_finite=True),
+            safe_get_data(mask_img, ensure_finite=True),
             keep_empty=keep_masked_maps,
         )
         maps_mask = _utils.as_ndarray(maps_mask, dtype=bool)
@@ -509,7 +509,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
                     stacklevel=2,
                 )
 
-    data = _safe_get_data(imgs, ensure_finite=True)
+    data = safe_get_data(imgs, ensure_finite=True)
     region_signals = linalg.lstsq(maps_data[maps_mask, :], data[maps_mask, :])[
         0
     ].T
@@ -554,7 +554,7 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
 
     """
     maps_img = _utils.check_niimg_4d(maps_img)
-    maps_data = _safe_get_data(maps_img, ensure_finite=True)
+    maps_data = safe_get_data(maps_img, ensure_finite=True)
 
     maps_mask = np.ones(maps_data.shape[:3], dtype=bool)
 
@@ -563,7 +563,7 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
         mask_img = _utils.check_niimg_3d(mask_img)
         maps_data, maps_mask, _ = _trim_maps(
             maps_data,
-            _safe_get_data(mask_img, ensure_finite=True),
+            safe_get_data(mask_img, ensure_finite=True),
             keep_empty=True,
         )
         maps_mask = _utils.as_ndarray(maps_mask, dtype=bool)
@@ -589,15 +589,13 @@ def _trim_maps(maps, mask, keep_empty=False, order="F"):
     mask : :class:`numpy.ndarray`
         Definition of a mask. The shape must match that of a single map.
 
-    keep_empty : :obj:`bool`, optional
+    keep_empty : :obj:`bool`, default=False
         If False, maps that lie completely outside the mask are dropped from
         the output. If True, they are kept, meaning that maps that are
         completely zero can occur in the output.
-        Default=False.
 
-    order : "F" or "C", optional
+    order : "F" or "C", default="F"
         Ordering of the output maps array (trimmed_maps).
-        Default="F".
 
     Returns
     -------

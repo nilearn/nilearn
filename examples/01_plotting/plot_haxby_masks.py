@@ -5,7 +5,7 @@ Plot Haxby masks
 Small script to plot the masks of the Haxby dataset.
 """
 
-#########################################################################
+# %%
 # Load Haxby dataset
 # ------------------
 
@@ -29,7 +29,7 @@ mean_img = image.mean_img(func_filename)
 
 z_slice = -14
 
-#########################################################################
+# %%
 # Plot the masks
 # --------------
 
@@ -58,7 +58,7 @@ for mask, color in zip(masks, colors):
     )
 
 # We generate a legend using the trick described on
-# http://matplotlib.sourceforge.net/users/legend_guide.httpml#using-proxy-artist
+# https://matplotlib.org/2.0.2/users/legend_guide.html
 from matplotlib.patches import Rectangle
 
 p_v = Rectangle((0, 0), 1, 1, fc="red")

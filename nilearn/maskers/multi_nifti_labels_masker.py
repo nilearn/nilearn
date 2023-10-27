@@ -5,7 +5,7 @@ import itertools
 from joblib import Memory, Parallel, delayed
 
 from .._utils import fill_doc
-from .._utils.niimg_conversions import _iter_check_niimg
+from .._utils.niimg_conversions import iter_check_niimg
 from .nifti_labels_masker import NiftiLabelsMasker
 
 
@@ -31,11 +31,10 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
             The labels must be consistent with the label
             values provided through `labels_img`.
 
-    background_label : :obj:`int` or :obj:`float`, optional
+    background_label : :obj:`int` or :obj:`float`, default=0
         Label used in labels_img to represent background.
         Warning: This value must be consistent with label values and
         image provided.
-        Default=0.
 
     mask_img : Niimg-like object, optional
         See :ref:`extracting_data`.
@@ -43,10 +42,10 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
     %(smoothing_fwhm)s
     %(standardize_maskers)s
     %(standardize_confounds)s
-    high_variance_confounds : :obj:`bool`, optional
+    high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
-        and regressed out. Default=False.
+        and regressed out.
     %(detrend)s
     %(low_pass)s
     %(high_pass)s
@@ -56,7 +55,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
 
-    resampling_target : {"data", "labels", None}, optional.
+    resampling_target : {"data", "labels", None}, default="data"
         Gives which image gives the final shape/size:
 
             - "data" means the atlas is resampled to the
@@ -66,20 +65,18 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
             - None means no resampling: if shapes and affines do not match, a
               ValueError is raised
 
-        Default="data".
 
     %(memory)s
     %(memory_level1)s
     %(n_jobs)s
     %(verbose0)s
-    strategy : :obj:`str`, optional
+    strategy : :obj:`str`, default='mean'
         The name of a valid function to reduce the region with.
         Must be one of: sum, mean, median, minimum, maximum, variance,
-        standard_deviation. Default='mean'.
+        standard_deviation.
 
-    reports : :obj:`bool`, optional
+    reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
-        Default=True.
 
     %(masker_kwargs)s
 
@@ -153,6 +150,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
             **kwargs,
         )
 
+    @fill_doc
     def transform_imgs(
         self, imgs_list, confounds=None, n_jobs=1, sample_mask=None
     ):
@@ -176,7 +174,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         # the labels image should not impact the extraction of the signal.
 
         self._check_fitted()
-        niimg_iter = _iter_check_niimg(
+        niimg_iter = iter_check_niimg(
             imgs_list,
             ensure_ndim=None,
             atleast_4d=False,
@@ -188,14 +186,18 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         if confounds is None:
             confounds = itertools.repeat(None, len(imgs_list))
 
+        if sample_mask is None:
+            sample_mask = itertools.repeat(None, len(imgs_list))
+
         func = self._cache(self.transform_single_imgs)
 
         region_signals = Parallel(n_jobs=n_jobs)(
-            delayed(func)(imgs=imgs, confounds=cfs, sample_mask=sample_mask)
-            for imgs, cfs in zip(niimg_iter, confounds)
+            delayed(func)(imgs=imgs, confounds=cfs, sample_mask=sms)
+            for imgs, cfs, sms in zip(niimg_iter, confounds, sample_mask)
         )
         return region_signals
 
+    @fill_doc
     def transform(self, imgs, confounds=None, sample_mask=None):
         """Apply mask, spatial and temporal preprocessing.
 

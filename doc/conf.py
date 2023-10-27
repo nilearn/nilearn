@@ -16,7 +16,7 @@ import sys
 
 import sphinx
 
-from nilearn._utils import _compare_version
+from nilearn._utils import compare_version
 
 # ----------------------------------------------------------------------------
 
@@ -53,6 +53,8 @@ extensions = [
 ]
 
 autosummary_generate = True
+
+autodoc_typehints = "none"
 
 autodoc_default_options = {
     "imported-members": True,
@@ -94,7 +96,7 @@ bibtex_footbibliography_header = ""
 
 # General information about the project.
 project = "Nilearn"
-copyright = "The nilearn developers 2010-2022"
+copyright = "The nilearn developers 2010-2023"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -168,12 +170,16 @@ suppress_warnings = ["image.not_readable"]
 html_theme = "furo"
 
 # Add custom css instructions from themes/custom.css
+font_awesome = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/"
 html_css_files = [
     "custom.css",
     (
         "https://cdnjs.cloudflare.com/ajax/libs/"
         "font-awesome/5.15.4/css/all.min.css"
     ),
+    f"{font_awesome}fontawesome.min.css",
+    f"{font_awesome}solid.min.css",
+    f"{font_awesome}brands.min.css",
 ]
 
 # The style sheet to use for HTML and HTML Help pages. A file of that name
@@ -197,6 +203,35 @@ html_theme_options = {
         "color-admonition-title--note": "#448aff",
         "color-admonition-title-background--note": "#448aff10",
     },
+    "source_repository": "https://github.com/nilearn/nilearn/",
+    "source_branch": "main",
+    "source_directory": "doc/",
+    "footer_icons": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/nilearn/nilearn",
+            "html": "",
+            "class": "fa-brands fa-solid fa-github fa-2x",
+        },
+        {
+            "name": "Twitter",
+            "url": "https://twitter.com/nilearn",
+            "html": "",
+            "class": "fa-brands fa-solid fa-twitter fa-2x",
+        },
+        {
+            "name": "Mastodon",
+            "url": "https://fosstodon.org/@nilearn",
+            "html": "",
+            "class": "fa-brands fa-solid fa-mastodon fa-2x",
+        },
+        {
+            "name": "Discord",
+            "url": "https://discord.gg/SsQABEJHkZ",
+            "html": "",
+            "class": "fa-brands fa-solid fa-discord fa-2x",
+        },
+    ],
 }
 
 # Add banner in case version is not stable
@@ -297,7 +332,7 @@ latex_documents = [
         "nilearn.tex",
         "NeuroImaging with scikit-learn",
         "Gaël Varoquaux and Alexandre Abraham"
-        + r"\\\relax ~\\\relax http://nilearn.github.io",
+        + r"\\\relax ~\\\relax https://nilearn.github.io",
         "manual",
     ),
 ]
@@ -321,7 +356,7 @@ latex_elements = {
     "printindex": "",
 }
 
-if _compare_version(sphinx.__version__, "<", "1.5"):
+if compare_version(sphinx.__version__, "<", "1.5"):
     latex_preamble = r"""
     \usepackage{amsmath}\usepackage{amsfonts}\usepackage{bm}\usepackage{morefloats}
     \let\oldfootnote\footnote
@@ -374,11 +409,9 @@ extlinks = {
 
 # Check intersphinx reference targets exist
 nitpicky = True
-# Temporary solution to nilearn/nilearn#3800
-# See also scikit-learn/scikit-learn#26761
+# Temporary solution to nilearn/nilearn#3997
 nitpick_ignore = [
-    ("py:class", "pipeline.Pipeline"),
-    ("py:class", "utils.metadata_routing.MetadataRequest"),
+    ("py:class", "sklearn.utils.metadata_routing.MetadataRequest"),
 ]
 
 binder_branch = "main" if "dev" in current_version else current_version

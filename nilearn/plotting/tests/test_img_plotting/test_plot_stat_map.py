@@ -5,6 +5,7 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
+from nilearn.conftest import _rng
 from nilearn.datasets import load_mni152_template
 from nilearn.image import get_data
 from nilearn.image.resampling import coord_transform
@@ -12,12 +13,12 @@ from nilearn.plotting import plot_stat_map
 from nilearn.plotting.find_cuts import find_cut_slices
 
 
-def test_plot_stat_map_bad_input(mni_3d_img, tmpdir):
+def test_plot_stat_map_bad_input(img_3d_mni, tmp_path):
     """Test for bad input arguments (cf. #510)."""
-    filename = str(tmpdir.join("temp.png"))
+    filename = tmp_path / "temp.png"
     ax = plt.subplot(111, rasterized=True)
     plot_stat_map(
-        mni_3d_img,
+        img_3d_mni,
         symmetric_cbar=True,
         output_file=filename,
         axes=ax,
@@ -29,12 +30,12 @@ def test_plot_stat_map_bad_input(mni_3d_img, tmpdir):
 @pytest.mark.parametrize(
     "params", [{}, {"display_mode": "x", "cut_coords": 3}]
 )
-def test_save_plot_stat_map(params, mni_3d_img, tmpdir):
+def test_save_plot_stat_map(params, img_3d_mni, tmp_path):
     """Test saving figure to file in different ways."""
-    filename = str(tmpdir.join("test.png"))
-    display = plot_stat_map(mni_3d_img, output_file=filename, **params)
+    filename = tmp_path / "test.png"
+    display = plot_stat_map(img_3d_mni, output_file=filename, **params)
     assert display is None
-    display = plot_stat_map(mni_3d_img, **params)
+    display = plot_stat_map(img_3d_mni, **params)
     display.savefig(filename)
     plt.close()
 
@@ -44,7 +45,7 @@ def test_save_plot_stat_map(params, mni_3d_img, tmpdir):
     [("ortho", (80, -120, -60)), ("y", 2), ("yx", None)],
 )
 def test_plot_stat_map_cut_coords_and_display_mode(
-    display_mode, cut_coords, mni_3d_img
+    display_mode, cut_coords, img_3d_mni
 ):
     """Smoke-tests for plot_stat_map.
 
@@ -52,18 +53,18 @@ def test_plot_stat_map_cut_coords_and_display_mode(
     and `display_mode`.
     """
     plot_stat_map(
-        mni_3d_img,
+        img_3d_mni,
         display_mode=display_mode,
         cut_coords=cut_coords,
     )
     plt.close()
 
 
-def test_plot_stat_map_with_masked_image(mni_3d_img, mni_affine):
+def test_plot_stat_map_with_masked_image(img_3d_mni, affine_mni):
     """Smoke test coordinate finder with mask."""
     masked_img = Nifti1Image(
-        np.ma.masked_equal(get_data(mni_3d_img), 0),
-        mni_affine,
+        np.ma.masked_equal(get_data(img_3d_mni), 0),
+        affine_mni,
     )
     plot_stat_map(masked_img, display_mode="x")
     plt.close()
@@ -73,22 +74,21 @@ def test_plot_stat_map_with_masked_image(mni_3d_img, mni_affine):
     "data",
     [
         np.zeros((91, 109, 91)),
-        np.random.RandomState(42).standard_normal(size=(91, 109, 91)),
+        _rng().standard_normal(size=(91, 109, 91)),
     ],
 )
-def test_plot_stat_map_threshold(data):
+def test_plot_stat_map_threshold(data, affine_eye):
     """Tests plot_stat_map with threshold (see #510)."""
-    plot_stat_map(Nifti1Image(data, np.eye(4)), threshold=1000, colorbar=True)
+    plot_stat_map(Nifti1Image(data, affine_eye), threshold=1000, colorbar=True)
     plt.close()
 
 
-def test_plot_stat_map_threshold_for_affine_with_rotation():
+def test_plot_stat_map_threshold_for_affine_with_rotation(rng):
     """Tests for plot_stat_map with thresholding and resampling.
 
     Threshold was not being applied when affine has a rotation.
     See https://github.com/nilearn/nilearn/issues/599 for more details.
     """
-    rng = np.random.RandomState(42)
     data = rng.standard_normal(size=(10, 10, 10))
     # matrix with rotation
     affine = np.array(
@@ -123,17 +123,18 @@ def test_plot_stat_map_threshold_for_affine_with_rotation():
         {"colorbar": False},
     ],
 )
-def test_plot_stat_map_colorbar_variations(params, mni_3d_img, mni_affine):
+def test_plot_stat_map_colorbar_variations(
+    params, img_3d_mni, affine_mni, rng
+):
     """Smoke test for plot_stat_map with different colorbar configurations."""
-    data_positive = get_data(mni_3d_img)
-    rng = np.random.RandomState(42)
+    data_positive = get_data(img_3d_mni)
     data_negative = -data_positive
     data_heterogeneous = data_positive * rng.standard_normal(
         size=data_positive.shape
     )
-    img_negative = Nifti1Image(data_negative, mni_affine)
-    img_heterogeneous = Nifti1Image(data_heterogeneous, mni_affine)
-    for img in [mni_3d_img, img_negative, img_heterogeneous]:
+    img_negative = Nifti1Image(data_negative, affine_mni)
+    img_heterogeneous = Nifti1Image(data_heterogeneous, affine_mni)
+    for img in [img_3d_mni, img_negative, img_heterogeneous]:
         plot_stat_map(img, cut_coords=(80, -120, -60), **params)
         plt.close()
 
@@ -141,10 +142,10 @@ def test_plot_stat_map_colorbar_variations(params, mni_3d_img, mni_affine):
 @pytest.mark.parametrize(
     "shape,direction", [((1, 6, 7), "x"), ((5, 1, 7), "y"), ((5, 6, 1), "z")]
 )
-def test_plot_stat_map_singleton_ax_dim(shape, direction):
+def test_plot_stat_map_singleton_ax_dim(shape, direction, affine_eye):
     """Tests for plot_stat_map and singleton display mode."""
     plot_stat_map(
-        Nifti1Image(np.ones(shape), np.eye(4)), None, display_mode=direction
+        Nifti1Image(np.ones(shape), affine_eye), None, display_mode=direction
     )
     plt.close()
 
@@ -174,7 +175,7 @@ def test_outlier_cut_coords():
     plot_stat_map(img, display_mode="z", cut_coords=cuts[-4:], bg_img=bg_img)
 
 
-def test_plotting_functions_with_dim_invalid_input(mni_3d_img):
+def test_plotting_functions_with_dim_invalid_input(img_3d_mni):
     """Test whether error raises with bad error to input."""
     with pytest.raises(ValueError):
-        plot_stat_map(mni_3d_img, dim="-10")
+        plot_stat_map(img_3d_mni, dim="-10")

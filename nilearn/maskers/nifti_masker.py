@@ -104,7 +104,7 @@ def _filter_and_mask(
     # Check whether resampling is truly necessary. If so, crop mask
     # as small as possible in order to speed up the process
 
-    if not _utils.niimg_conversions._check_same_fov(imgs, mask_img_):
+    if not _utils.niimg_conversions.check_same_fov(imgs, mask_img_):
         warnings.warn(
             "imgs are being resampled to the mask_img resolution. "
             "This process is memory intensive. You might want to provide "
@@ -145,7 +145,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
 
     NiftiMasker is useful when preprocessing (detrending, standardization,
     resampling, etc.) of in-mask :term:`voxels<voxel>` is necessary.
-    Use case: working with time series of resting-state or task maps.
+    Use case: working with time series of :term:`resting-state` or task maps.
 
     Parameters
     ----------
@@ -166,10 +166,10 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
     %(smoothing_fwhm)s
     %(standardize_maskers)s
     %(standardize_confounds)s
-    high_variance_confounds : :obj:`bool`, optional
+    high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
-        and regressed out. Default=False.
+        and regressed out.
     %(detrend)s
     %(low_pass)s
     %(high_pass)s
@@ -189,7 +189,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
                 :func:`nilearn.masking.compute_epi_mask`, or
                 :func:`nilearn.masking.compute_brain_mask`.
 
-        Default is 'background'.
+        Default='background'.
 
     mask_args : :obj:`dict`, optional
         If mask is None, these are additional parameters passed to
@@ -204,9 +204,8 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
     %(memory)s
     %(memory_level1)s
     %(verbose0)s
-    reports : :obj:`bool`, optional
+    reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
-        Default=True.
 
     %(masker_kwargs)s
 
@@ -296,6 +295,8 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
         }
 
+        self.cmap = kwargs.get("cmap", "CMRmap_r")
+
     def generate_report(self):
         """Generate a report of the masker."""
         from nilearn.reporting.html_report import generate_report
@@ -357,7 +358,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         init_display = plotting.plot_img(
             img,
             black_bg=False,
-            cmap="CMRmap_r",
+            cmap=self.cmap,
         )
         plt.close()
         if mask is not None:
@@ -386,7 +387,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         final_display = plotting.plot_img(
             resampl_img,
             black_bg=False,
-            cmap="CMRmap_r",
+            cmap=self.cmap,
         )
         plt.close()
         final_display.add_contours(
@@ -519,13 +520,13 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             (remove volumes with high motion) and/or non-steady-state volumes.
             This parameter is passed to signal.clean.
 
-        copy : :obj:`bool`, optional
-            Indicates whether a copy is returned or not. Default=True.
+        copy : :obj:`bool`, default=True
+            Indicates whether a copy is returned or not.
 
         Returns
         -------
         region_signals : 2D :obj:`numpy.ndarray`
-            Signal for each voxel inside the mask.
+            Signal for each :term:`voxel` inside the mask.
             shape: (number of scans, number of voxels)
 
         Warns

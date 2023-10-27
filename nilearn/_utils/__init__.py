@@ -7,7 +7,7 @@ from importlib import import_module
 from pathlib import Path
 
 from nilearn._utils.helpers import (
-    _compare_version,
+    compare_version,
     remove_parameters,
     rename_parameters,
     stringify_path,
@@ -15,7 +15,7 @@ from nilearn._utils.helpers import (
 
 from .cache_mixin import CacheMixin
 from .docs import fill_doc
-from .logger import _compose_err_msg
+from .logger import compose_err_msg
 from .niimg import _repr_niimgs, copy_img, load_niimg
 from .niimg_conversions import (
     check_niimg,
@@ -217,12 +217,12 @@ __all__ = [
     "load_niimg",
     "as_ndarray",
     "CacheMixin",
-    "_compose_err_msg",
+    "compose_err_msg",
     "rename_parameters",
     "remove_parameters",
     "fill_doc",
     "stringify_path",
-    "_compare_version",
     "all_functions",
     "all_classes",
+    "compare_version",
 ]

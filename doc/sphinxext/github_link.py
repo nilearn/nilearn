@@ -40,6 +40,8 @@ def _linkcode_resolve(domain, info, package, url_fmt, revision):
 
     class_name = info["fullname"].split(".")[0]
     module = __import__(info["module"], fromlist=[class_name])
+    if info["module"] == "nilearn.experimental.surface":
+        return
     obj = attrgetter(info["fullname"])(module)
 
     # Unwrap the object to get the correct source

@@ -2,17 +2,17 @@
 Comparing connectomes on different reference atlases
 ====================================================
 
-This examples shows how to turn a parcellation into connectome for
+This examples shows how to turn a :term:`parcellation` into connectome for
 visualization. This requires choosing centers for each parcel
 or network, via :func:`nilearn.plotting.find_parcellation_cut_coords` for
-parcellation based on labels and
+:term:`parcellation` based on labels and
 :func:`nilearn.plotting.find_probabilistic_atlas_cut_coords` for
-parcellation based on probabilistic values.
+:term:`parcellation` based on probabilistic values.
 
 In the intermediary steps, we make use of
 :class:`nilearn.maskers.MultiNiftiLabelsMasker` and
 :class:`nilearn.maskers.MultiNiftiMapsMasker` to extract time series from nifti
-objects from multiple subjects using different parcellation atlases.
+objects from multiple subjects using different :term:`parcellation` atlases.
 
 The time series of all subjects of the brain development dataset are
 concatenated and given directly to
@@ -27,7 +27,7 @@ Mean correlation matrix is displayed on glass brain on extracted coordinates.
 
 """
 
-####################################################################
+# %%
 # Load atlases
 # ------------
 from nilearn import datasets
@@ -38,7 +38,7 @@ print(
     f" is located at: {yeo['thick_17']}"
 )
 
-#########################################################################
+# %%
 # Load functional data
 # --------------------
 data = datasets.fetch_development_fmri(n_subjects=10)
@@ -53,7 +53,7 @@ print(
 )
 
 
-##########################################################################
+# %%
 # Extract coordinates on Yeo atlas - parcellations
 # ------------------------------------------------
 from nilearn.connectome import ConnectivityMeasure
@@ -61,7 +61,10 @@ from nilearn.maskers import MultiNiftiLabelsMasker
 
 # ConenctivityMeasure from Nilearn uses simple 'correlation' to compute
 # connectivity matrices for all subjects in a list
-connectome_measure = ConnectivityMeasure(kind="correlation")
+connectome_measure = ConnectivityMeasure(
+    kind="correlation",
+    standardize="zscore_sample",
+)
 
 # useful for plotting connectivity interactions on glass brain
 from nilearn import plotting
@@ -98,7 +101,7 @@ plotting.plot_connectome(
     title="Yeo Atlas 17 thick (func)",
 )
 
-##########################################################################
+# %%
 # Plot a directed connectome - asymmetric connectivity measure
 # ------------------------------------------------------------
 # In this section, we use the lag-1 correlation as the connectivity
@@ -137,7 +140,7 @@ for lag in [0, 1]:
         title=f"Lag-{lag} correlation",
     )
 
-##########################################################################
+# %%
 # Load probabilistic atlases - extracting coordinates on brain maps
 # -----------------------------------------------------------------
 
@@ -146,7 +149,7 @@ difumo = datasets.fetch_atlas_difumo(
     dimension=dim, resolution_mm=2, legacy_format=False
 )
 
-##########################################################################
+# %%
 # Iterate over fetched atlases to extract coordinates - probabilistic
 # -------------------------------------------------------------------
 from nilearn.maskers import MultiNiftiMapsMasker

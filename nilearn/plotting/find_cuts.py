@@ -13,7 +13,7 @@ from nilearn.image import get_data
 from .._utils import check_niimg_3d, check_niimg_4d
 from .._utils.extmath import fast_abs_percentile
 from .._utils.ndimage import largest_connected_component
-from .._utils.niimg import _safe_get_data
+from .._utils.niimg import safe_get_data
 from .._utils.numpy_conversions import as_ndarray
 
 # Local imports
@@ -59,7 +59,7 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     # if a pseudo-4D image or several images were passed (cf. #922),
     # we reduce to a single 3D image to find the coordinates
     img = check_niimg_3d(img)
-    data = _safe_get_data(img)
+    data = safe_get_data(img)
 
     # when given image is empty, return (0., 0., 0.)
     if np.all(data == 0.0):
@@ -75,7 +75,7 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     # Retrieve optional mask
     if mask_img is not None:
         mask_img = check_niimg_3d(mask_img)
-        mask = _safe_get_data(mask_img)
+        mask = safe_get_data(mask_img)
         if not np.allclose(mask_img.affine, img.affine):
             raise ValueError(
                 f"Mask affine: \n{mask_img.affine}\n "
@@ -180,7 +180,7 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
 
 def _get_auto_mask_bounds(img):
     """Compute the bounds of the data with an automatically computed mask."""
-    data = _safe_get_data(img)
+    data = safe_get_data(img)
     affine = img.affine
     if hasattr(data, "mask"):
         # Masked array
@@ -249,17 +249,15 @@ def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
         See :ref:`extracting_data`.
         The brain map.
 
-    direction : string, optional
+    direction : string, default='z'
         Sectional direction; possible values are "x", "y", or "z".
-        Default='z'.
 
-    n_cuts : int, optional
-        Number of cuts in the plot. Default=7.
+    n_cuts : int, default=7
+        Number of cuts in the plot.
 
-    spacing : 'auto' or int, optional
+    spacing : 'auto' or int, default='auto'
         Minimum spacing between cuts (in voxels, not millimeters)
         if 'auto', the spacing is .5 / n_cuts * img_length.
-        Default='auto'.
 
     Returns
     -------
@@ -288,7 +286,7 @@ def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
     axis = "xyz".index(direction)
     img = check_niimg_3d(img)
     affine = img.affine
-    if not np.alltrue(np.diag(affine)[:3]):
+    if not np.all(np.diag(affine)[:3]):
         warnings.warn(
             "A non-diagonal affine is found in the given "
             "image. Reordering the image to get diagonal affine "
@@ -300,7 +298,7 @@ def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
         img = reorder_img(img, resample="nearest")
         affine = img.affine
     # note: orig_data is a copy of img._data_cache thanks to np.abs
-    orig_data = np.abs(_safe_get_data(img))
+    orig_data = np.abs(safe_get_data(img))
     this_shape = orig_data.shape[axis]
 
     if not isinstance(n_cuts, numbers.Number):
@@ -413,25 +411,24 @@ def find_parcellation_cut_coords(
     return_label_names=False,
     label_hemisphere="left",
 ):
-    """Return coordinates of center of mass of 3D parcellation atlas.
+    """Return coordinates of center of mass of 3D :term:`parcellation` atlas.
 
     Parameters
     ----------
     labels_img : 3D Nifti1Image
-        A brain parcellation atlas with specific mask labels for each
+        A brain :term:`parcellation` atlas with specific mask labels for each
         parcellated region.
 
-    background_label : int, optional
+    background_label : int, default=0
         Label value used in labels_img to represent background.
-        Default=0.
 
-    return_label_names : bool, optional
-        Returns list of labels. Default=False.
+    return_label_names : bool, default=False
+        Returns list of labels.
 
-    label_hemisphere : 'left' or 'right', optional
+    label_hemisphere : 'left' or 'right', default='left'
         Choice of hemisphere to compute label center coords for.
         Applies only in cases where atlas labels are lateralized.
-        Eg. Yeo or Harvard Oxford atlas. Default='left'.
+        Eg. Yeo or Harvard Oxford atlas.
 
     Returns
     -------
@@ -512,7 +509,8 @@ def find_parcellation_cut_coords(
 
 
 def find_probabilistic_atlas_cut_coords(maps_img):
-    """Return coordinates of center probabilistic atlas 4D image.
+    """Return coordinates of center \
+       :term:`probabilistic atlas<Probabilistic atlas>` 4D image.
 
     Parameters
     ----------

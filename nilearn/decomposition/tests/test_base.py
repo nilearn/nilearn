@@ -4,45 +4,38 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal
 from scipy import linalg
 
+from nilearn.conftest import _affine_eye, _img_3d_ones, _rng
 from nilearn.decomposition._base import _fast_svd, _mask_and_reduce
 from nilearn.maskers import MultiNiftiMasker
-
-AFFINE_EYE = np.eye(4)
-
-SHAPE = (6, 8, 10)
 
 
 @pytest.fixture
 def data_for_mask_and_reduce():
     """Create "multi-subject" dataset with fake activation."""
     shape = (6, 8, 10, 5)
-    rng = np.random.RandomState(0)
 
     imgs = []
     for _ in range(8):
-        this_img = rng.normal(size=shape)
+        this_img = _rng().normal(size=shape)
 
         # Add activation
         this_img[2:4, 2:4, 2:4, :] += 10
 
-        imgs.append(Nifti1Image(this_img, AFFINE_EYE))
+        imgs.append(Nifti1Image(this_img, _affine_eye()))
 
     return imgs
 
 
 @pytest.fixture
 def masker():
-    mask_img = Nifti1Image(np.ones(SHAPE, dtype=np.int8), AFFINE_EYE)
-    return MultiNiftiMasker(mask_img=mask_img).fit()
+    return MultiNiftiMasker(mask_img=_img_3d_ones()).fit()
 
 
 # We need to use n_features > 500 to trigger the randomized_svd
 @pytest.mark.parametrize("n_features", [30, 100, 550])
-def test_fast_svd(n_features):
+def test_fast_svd(n_features, rng):
     n_samples = 100
     k = 10
-
-    rng = np.random.RandomState(42)
 
     # generate a matrix X of approximate effective rank `rank` and no noise
     # component (very structured signal):
@@ -79,6 +72,7 @@ def test_mask_reducer_multiple_image(
     n_components,
     reduction_ratio,
     expected_shape_0,
+    shape_3d_default,
 ):
     """Mask and reduce 4D images with several values of input arguments."""
     data = _mask_and_reduce(
@@ -88,13 +82,13 @@ def test_mask_reducer_multiple_image(
         reduction_ratio=reduction_ratio,
     )
 
-    expected_shape = (expected_shape_0, 6 * 8 * 10)
+    expected_shape = (expected_shape_0, np.prod(shape_3d_default))
 
     assert data.shape == expected_shape
 
 
 def test_mask_reducer_single_image_same_with_multiple_jobs(
-    data_for_mask_and_reduce, masker
+    data_for_mask_and_reduce, masker, shape_3d_default
 ):
     """Mask and reduce a 3D image and check results is the same \
     when split over several CPUs."""
@@ -102,7 +96,7 @@ def test_mask_reducer_single_image_same_with_multiple_jobs(
         masker, data_for_mask_and_reduce[0], n_components=3
     )
 
-    assert data_single.shape == (3, 6 * 8 * 10)
+    assert data_single.shape == (3, np.prod(shape_3d_default))
 
     # Test n_jobs > 1
     data = _mask_and_reduce(
@@ -113,19 +107,19 @@ def test_mask_reducer_single_image_same_with_multiple_jobs(
         random_state=0,
     )
 
-    assert data.shape == (3, 6 * 8 * 10)
+    assert data.shape == (3, np.prod(shape_3d_default))
     assert_array_almost_equal(data_single, data)
 
 
 def test_mask_reducer_reduced_data_is_orthogonal(
-    data_for_mask_and_reduce, masker
+    data_for_mask_and_reduce, masker, shape_3d_default
 ):
     """Test that the reduced data is orthogonal."""
     data = _mask_and_reduce(
         masker, data_for_mask_and_reduce[0], n_components=3, random_state=0
     )
 
-    assert data.shape == (3, 6 * 8 * 10)
+    assert data.shape == (3, np.prod(shape_3d_default))
 
     cov = data.dot(data.T)
     cov_diag = np.zeros((3, 3))

@@ -25,7 +25,7 @@ class DimensionError(TypeError):
     Parameters
     ----------
     file_dimension : integer
-        Indicates the dimensonality of the bottom-level nifti file.
+        Indicates the dimensionality of the bottom-level nifti file.
 
     required_dimension : integer
         The dimension the nifti file should have.
