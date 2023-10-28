@@ -122,7 +122,7 @@ def one_mesh_info(
 
 
 def check_mesh(mesh):
-    "Validate type and content of a mesh."
+    """Validate type and content of a mesh."""
     if isinstance(mesh, str):
         return datasets.fetch_surf_fsaverage(mesh)
     if not isinstance(mesh, collections.abc.Mapping):
