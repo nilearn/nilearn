@@ -17,9 +17,8 @@
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
 
-.. TODO adapt whenwe have chosen the main DOI to point to
-.. image:: https://zenodo.org/badge/DOI/10.3389/fninf.2014.00014.svg
-    :target: https://doi.org/10.3389/fninf.2014.00014
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.8397156
+    :target: https://doi.org/10.5281/zenodo.8397156
 
 .. image:: http://img.shields.io/twitter/follow/nilearn.svg
     :target: https://twitter.com/nilearn

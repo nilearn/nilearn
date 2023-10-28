@@ -14,17 +14,11 @@ message: If you use this software, please cite it as below.
 repository-code: https://github.com/nilearn/nilearn
 
 preferred-citation:
-# TODO adapt whenwe have chosen the main DOI to point to
   authors:
-    - family-names: Abraham
-      given-names: Alexandre
-    # Pedregosa Fabian, Eickenberg Michael, Gervais Philippe, Mueller Andreas, Kossaifi Jean, Gramfort Alexandre, Thirion Bertrand
-    - family-names: Varoquaux
-      given-names: Gael
-  title: Machine learning for neuroimaging with scikit-learn
-  year: 2014
-  journal: Frontiers in Neuroinformatics
-  type: article
+    - family-names: Nilearn contributors
+  title: Nilearn
+  url: https://doi.org/10.5281/zenodo.8397156
+  type: software
 
 identifiers:
   - description: 2014, Frontiers in Neuroinformatics
