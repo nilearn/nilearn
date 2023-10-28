@@ -1,14 +1,14 @@
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
+
 from nilearn._utils.testing import write_tmp_imgs
+from nilearn.conftest import _affine_eye
 from nilearn.decomposition.dict_learning import DictLearning
 from nilearn.decomposition.tests.test_canica import _make_canica_test_data
 from nilearn.decomposition.tests.test_multi_pca import _tmp_dir
 from nilearn.image import get_data, iter_img
 from nilearn.maskers import NiftiMasker
-
-AFFINE_EYE = np.eye(4)
 
 SHAPE = (30, 30, 5)
 
@@ -22,7 +22,7 @@ def mask_img():
     mask[:, -5:] = 0
     mask[..., -2:] = 0
     mask[..., :2] = 0
-    return Nifti1Image(mask, AFFINE_EYE)
+    return Nifti1Image(mask, _affine_eye())
 
 
 @pytest.fixture(scope="module")
@@ -168,10 +168,10 @@ def test_empty_data_to_fit_error(mask_img):
         dict_learning.fit([])
 
 
-def test_passing_masker_arguments_to_estimator(canica_data):
+def test_passing_masker_arguments_to_estimator(affine_eye, canica_data):
     dict_learning = DictLearning(
         n_components=3,
-        target_affine=np.eye(4),
+        target_affine=affine_eye,
         target_shape=(6, 8, 10),
         mask_strategy="background",
     )

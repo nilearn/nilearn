@@ -6,9 +6,9 @@ Second level models
 
 .. topic:: **Page summary**
 
-   Second level models in Nilearn are used to perform group-level analyses on fMRI data. Once individual
-   subjects have been processed in a common space (e.g. MNI, Talairach, or subject average), the data can
-   be grouped and statistical tests  performed to make broader inferences on fMRI activity. Some common
+   Second level models in Nilearn are used to perform group-level analyses on :term:`fMRI` data. Once individual
+   subjects have been processed in a common space (e.g. :term:`MNI`, Talairach, or subject average), the data can
+   be grouped and statistical tests  performed to make broader inferences on :term:`fMRI` activity. Some common
    second level models are one-sample (unpaired or paired) and two-sample t-tests.
 
 
@@ -38,7 +38,7 @@ Thresholding statistical maps
 
 Nilearn's statistical plotting functions provide simple thresholding functionality. For instance, functions
 like :func:`nilearn.plotting.plot_stat_map` or :func:`nilearn.plotting.plot_glass_brain` have an argument
-called `threshold` that, when set, will only show voxels with a value that is over the threshold provided.
+called ``threshold`` that, when set, will only show voxels with a value that is over the threshold provided.
 
 Thresholding examples are available here: :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_second_level_one_sample_test.py`
 and :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_thresholding.py`.
@@ -48,7 +48,7 @@ Multiple comparisons correction
 ===============================
 
 As discussed in the :ref:`Multiple comparisons` section of the introduction, the issue of multiple comparisons is
-important to address with statistical analysis of fMRI data. Nilearn provides parametric and non-parametric tools
+important to address with statistical analysis of :term:`fMRI` data. Nilearn provides parametric and non-parametric tools
 to address this issue.
 
 Refer to the example :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_thresholding.py` for a guide
@@ -69,6 +69,6 @@ Voxel based morphometry
 =======================
 
 The :class:`nilearn.glm.second_level.SecondLevelModel` and its associated functions can also be used
-to perform voxel based morphometry. An example using the `OASIS <http://www.oasis-brains.org/>`_ dataset to
+to perform voxel based morphometry. An example using the `OASIS <https://www.oasis-brains.org/>`_ dataset to
 identify the relationship between aging, sex and gray matter density is available here
 :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_oasis.py`.

@@ -9,7 +9,7 @@ The mask is computed and visualized.
 
 """
 
-###########################################################################
+# %%
 # Retrieve the brain development functional dataset
 
 from nilearn import datasets
@@ -20,7 +20,7 @@ func_filename = dataset.func[0]
 # print basic information on the dataset
 print(f"First functional nifti image (4D) is at: {func_filename}")
 
-###########################################################################
+# %%
 # Compute the mask
 from nilearn.maskers import NiftiMasker
 
@@ -28,7 +28,7 @@ from nilearn.maskers import NiftiMasker
 # cannot rely on the 'background' masking strategy. We need to use the 'epi'
 # one
 nifti_masker = NiftiMasker(
-    standardize=True,
+    standardize="zscore_sample",
     mask_strategy="epi",
     memory="nilearn_cache",
     memory_level=2,
@@ -37,7 +37,7 @@ nifti_masker = NiftiMasker(
 nifti_masker.fit(func_filename)
 mask_img = nifti_masker.mask_img_
 
-###########################################################################
+# %%
 # Visualize the mask using the plot_roi method
 from nilearn.image.image import mean_img
 from nilearn.plotting import plot_roi
@@ -47,7 +47,7 @@ mean_func_img = mean_img(func_filename)
 
 plot_roi(mask_img, mean_func_img, display_mode="y", cut_coords=4, title="Mask")
 
-###########################################################################
+# %%
 # Visualize the mask using the 'generate_report' method
 # This report can be displayed in a Jupyter Notebook,
 # opened in-browser using the .open_in_browser() method,
@@ -55,13 +55,13 @@ plot_roi(mask_img, mean_func_img, display_mode="y", cut_coords=4, title="Mask")
 report = nifti_masker.generate_report()
 report
 
-###########################################################################
+# %%
 # Preprocess data with the NiftiMasker
 nifti_masker.fit(func_filename)
 fmri_masked = nifti_masker.transform(func_filename)
 # fmri_masked is now a 2D matrix, (n_voxels x n_time_points)
 
-###########################################################################
+# %%
 # Run an algorithm
 from sklearn.decomposition import FastICA
 
@@ -69,7 +69,7 @@ n_components = 10
 ica = FastICA(n_components=n_components, random_state=42)
 components_masked = ica.fit_transform(fmri_masked.T).T
 
-###########################################################################
+# %%
 # Reverse masking, and display the corresponding map
 components = nifti_masker.inverse_transform(components_masked)
 

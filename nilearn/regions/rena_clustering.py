@@ -3,20 +3,20 @@
 Fastclustering for approximation of structured signals
 """
 # Author: Andres Hoyos idrobo, Gael Varoquaux, Jonas Kahn and  Bertrand Thirion
-# License: simplified BSD
 
 import warnings
 
 import numpy as np
 from joblib import Memory
 from nibabel import Nifti1Image
-from nilearn._utils import fill_doc
-from nilearn.image import get_data
-from nilearn.masking import _unmask_from_to_3d_array
 from scipy.sparse import coo_matrix, csgraph, dia_matrix
 from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
+
+from nilearn._utils import fill_doc
+from nilearn.image import get_data
+from nilearn.masking import _unmask_from_to_3d_array
 
 
 def _compute_weights(X, mask_img):
@@ -193,9 +193,8 @@ def _nn_connectivity(connectivity, threshold=1e-7):
     connectivity : a sparse matrix in COOrdinate format.
         Sparse matrix representation of the weighted adjacency graph.
 
-    threshold : float in the close interval [0, 1], optional
+    threshold : float in the close interval [0, 1], default=1e-7
         The threshold is set to handle eccentricities.
-        Default=1e-7.
 
     Returns
     -------
@@ -255,9 +254,8 @@ def _reduce_data_and_connectivity(
     connectivity : a sparse matrix in COOrdinate format.
         Sparse matrix representation of the weighted adjacency graph.
 
-    threshold : float in the close interval [0, 1], optional
+    threshold : float in the close interval [0, 1], default=1e-7
         The threshold is set to handle eccentricities.
-        Default=1e-7.
 
     Returns
     -------
@@ -316,9 +314,8 @@ def _nearest_neighbor_grouping(X, connectivity, n_clusters, threshold=1e-7):
     n_clusters : :obj:`int`
         The number of clusters to find.
 
-    threshold : :obj:`float` in the close interval [0, 1], optional
+    threshold : :obj:`float` in the close interval [0, 1], default=1e-7
         The threshold is set to handle eccentricities.
-        Default=1e-7.
 
     Returns
     -------
@@ -383,15 +380,14 @@ def recursive_neighbor_agglomeration(
     n_clusters : :obj:`int`
         The number of clusters to find.
 
-    n_iter : :obj:`int`, optional
-        Number of iterations. Default=10.
+    n_iter : :obj:`int`, default=10
+        Number of iterations.
 
-    threshold : :obj:`float` in the close interval [0, 1], optional
+    threshold : :obj:`float` in the close interval [0, 1], default=1e-7
         The threshold is set to handle eccentricities.
-        Default=1e-7.
 
-    verbose : :obj:`int`, optional
-        Verbosity level. Default=0.
+    verbose : :obj:`int`, default=0
+        Verbosity level.
 
     Returns
     -------
@@ -442,34 +438,34 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
     Parameters
     ----------
-    %(mask_img)s
-    n_clusters : :obj:`int`, optional
-        The number of clusters to find. Default=2.
+    mask_img : Niimg-like object
+        Object used for masking the data.
 
-    scaling : :obj:`bool`, optional
+    n_clusters : :obj:`int`, default=2
+        The number of clusters to find.
+
+    scaling : :obj:`bool`, default=False
         If scaling is True, each cluster is scaled by the square root of its
-        size, preserving the l2-norm of the image. Default=False.
+        size, preserving the l2-norm of the image.
 
-    n_iter : :obj:`int`, optional
+    n_iter : :obj:`int`, default=10
         Number of iterations of the recursive neighbor agglomeration.
-        Default=10.
 
-    threshold : :obj:`float` in the open interval (0., 1.), optional
+    threshold : :obj:`float` in the open interval (0., 1.), default=1e-7
         Threshold used to handle eccentricities.
-        Default=1e-7.
     %(memory)s
     %(memory_level1)s
     %(verbose0)s
 
     Attributes
     ----------
-    `labels_ ` : :class:`numpy.ndarray`, shape = [n_features]
+    labels_ : :class:`numpy.ndarray`, shape = [n_features]
         Cluster labels for each feature.
 
-    `n_clusters_` : :obj:`int`
+    n_clusters_ : :obj:`int`
         Number of clusters.
 
-    `sizes_` : :class:`numpy.ndarray`, shape = [n_features]
+    sizes_ : :class:`numpy.ndarray`, shape = [n_features]
         It contains the size of each cluster.
 
     References

@@ -38,6 +38,15 @@ You can request a full build from a Pull Request at any time by including the ta
 $ git commit -m "[full doc] request full build"
 ```
 
+Though partial build will build modified examples, sometimes code changes on the module side could affect the plots in unmodified examples.
+For this, you can request for the CI to build a specific example by using the tag "[example]" and the name of the example. This is useful when wanting to get quick feedback from reviewers.
+
+```bash
+$ git commit -m "[example] plot_nilearn_101.py"
+```
+
+However for quick checks to do yourself you should always opt for local builds following the instructions here: [building-documentation](https://nilearn.github.io/stable/development.html#building-documentation).
+
 #### Dataset caching
 
 We also implemented a dataset caching strategy within this Actions workflow such that datasets are only downloaded once every week. Once these datasets are cached, they will be used by all jobs running on Actions without requiring any download. This saves a lot of time and avoids potential network errors that can happen when downloading datasets from remote servers.
@@ -71,17 +80,34 @@ Artifacts hosting and deployment of development docs use CircleCI. See [.circlec
 On a pull request, only the "host" job is run. Then the artifacts can be accessed from the `host_and_deploy_doc` workflow seen under the checks list. Click on "Details" and then on the "host_docs" link on the page that opens. From there you can click on the artifacts tab to see all the html files. If you click on any of them you can then normally navigate the pages from there.
 With a merge on main, both "host" and "deploy" jobs are run.
 
+## DeprecationWarnings as errors
+
+### check_deprecations.yml
+
+Checks external core dependencies for deprecation warnings so they can be caught and resolved before causing a failure.
+Runs once a month and can be run manually from Github Actions.
+It works by calling pytest with an environment variable that will trigger a pytest fixture (``warnings_as_errors``) defined in [nilearn/conftest.py](/nilearn/conftest.py).
+
 ## Check spelling errors
 
 ### codespell.yml
 
-Checks for spelling errors. Configured in [setup.cfg](/setup.cfg). More information here: https://github.com/codespell-project/actions-codespell
+Checks for spelling errors. Configured in [pyproject.toml](/pyproject.toml). More information here: https://github.com/codespell-project/actions-codespell
 
 ## PEP8 check
 
 ### flake8.yml
 
-Uses flake8 tool to verify code is PEP8 compliant. Configured in [setup.cfg](/setup.cfg)
+Uses flake8 tool to verify code is PEP8 compliant. Configured in [.flake8](/.flake8)
+
+## f strings
+
+### f_strings.yml
+
+Checks for f strings in the codebase with [flynt](https://pypi.org/project/flynt/).
+Configured in [pyproject.toml](/pyproject.toml)
+Flynt will check if it automatically convert "format" or "%" strings to "f strings".
+This workflow will fail if it finds any potential target to be converted.
 
 ## Sort imports automatically
 
@@ -95,8 +121,28 @@ Sorts Python imports alphabetically and by section. Configured in [pyproject.tom
 
 Runs pytest in several environments including several Python and dependencies versions as well as on different systems.
 
+## Test installation
+
+### testing_install.yml
+
+Tries to install Nilearn from wheel & check installation on all operating systems.
+
+### detect_test_pollution.yml
+
+Runs once a month.
+Use pytest with the pytest-random-order plugin to run all tests in a random order.
+This aims to detect tests that are not properly isolated from each other (test pollution).
+
 ## Update precommit hooks
 
 ### update_precommit_hooks.yml
 
 Runs weekly to check for updates in versions of precommit hooks and creates a pull request automatically to apply updates.
+
+## Update authors
+
+### update_authors.yml
+
+If the CITATION.CFF file is modified,
+this workflow will run to update the AUTHORS file
+and the and doc/changes/names.rst file.

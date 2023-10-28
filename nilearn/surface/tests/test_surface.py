@@ -4,30 +4,33 @@ import os
 import tempfile
 import warnings
 
-from collections import namedtuple
-
 import nibabel as nb
 import numpy as np
 import pytest
-
-from numpy.testing import assert_array_equal, assert_array_almost_equal
+from nibabel import gifti
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 from scipy.spatial import Delaunay
 from scipy.stats import pearsonr
 
-from nibabel import gifti
-
-from nilearn import datasets
-from nilearn import image
-from nilearn.image import resampling
-from nilearn.image.tests.test_resampling import rotation
-from nilearn.surface import Mesh, Surface
-from nilearn.surface import surface
-from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
-from nilearn.surface.surface import (_gifti_img_to_mesh,
-                                     _load_surf_files_gifti_gzip)
-from nilearn.surface.testing_utils import (generate_surf, flat_mesh,
-                                           z_const_img)
+from nilearn import datasets, image
 from nilearn._utils import data_gen
+from nilearn.image import resampling
+from nilearn.surface import (
+    Mesh,
+    Surface,
+    load_surf_data,
+    load_surf_mesh,
+    surface,
+)
+from nilearn.surface.surface import (
+    _gifti_img_to_mesh,
+    _load_surf_files_gifti_gzip,
+)
+from nilearn.surface.tests._testing import (
+    flat_mesh,
+    generate_surf,
+    z_const_img,
+)
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
@@ -37,12 +40,15 @@ class MeshLikeObject:
     """Class with attributes coordinates and
     faces to be used for testing purposes.
     """
+
     def __init__(self, coordinates, faces):
         self._coordinates = coordinates
         self._faces = faces
+
     @property
     def coordinates(self):
         return self._coordinates
+
     @property
     def faces(self):
         return self._faces
@@ -52,18 +58,35 @@ class SurfaceLikeObject:
     """Class with attributes mesh and
     data to be used for testing purposes.
     """
+
     def __init__(self, mesh, data):
         self._mesh = mesh
         self._data = data
+
     @classmethod
     def fromarrays(cls, coordinates, faces, data):
         return cls(MeshLikeObject(coordinates, faces), data)
+
     @property
     def mesh(self):
         return self._mesh
+
     @property
     def data(self):
         return self._data
+
+
+def test_load_surf_data_numpy_gt_1pt23():
+    """Test loading fsaverage surface
+
+    Threw an error with numpy >=1.24.x
+    but only a deprecaton warning with numpy <1.24.x.
+
+    Regression test for
+    https://github.com/nilearn/nilearn/issues/3638
+    """
+    fsaverage = datasets.fetch_surf_fsaverage()
+    surface.load_surf_data(fsaverage['pial_left'])
 
 
 def test_load_surf_data_array():
@@ -79,7 +102,9 @@ def test_load_surf_data_file_nii_gii(tmp_path):
     fd_gii, filename_gii = tempfile.mkstemp(suffix='.gii',
                                             dir=str(tmp_path))
     os.close(fd_gii)
-    darray = gifti.GiftiDataArray(data=np.zeros((20, )))
+    darray = gifti.GiftiDataArray(
+        data=np.zeros((20, )), datatype='NIFTI_TYPE_FLOAT32'
+    )
     gii = gifti.GiftiImage(darrays=[darray])
     nb.save(gii, filename_gii)
     assert_array_equal(load_surf_data(filename_gii), np.zeros((20, )))
@@ -224,7 +249,7 @@ def test_load_surf_mesh():
 def test_load_surface():
     coords, faces = generate_surf()
     mesh = Mesh(coords, faces)
-    data = mesh[0][:,0]
+    data = mesh[0][:, 0]
     surf = Surface(mesh, data)
     surf_like_obj = SurfaceLikeObject(mesh, data)
     # Load the surface from:
@@ -270,17 +295,21 @@ def test_load_surf_mesh_list():
     with pytest.raises(ValueError, match='input type is not recognized'):
         load_surf_mesh(mesh[0])
     with pytest.raises(ValueError, match='input type is not recognized'):
-        load_surf_mesh(dict())
+        load_surf_mesh({})
     del mesh
 
 
 def test_gifti_img_to_mesh():
     mesh = generate_surf()
 
-    coord_array = gifti.GiftiDataArray(data=mesh[0])
+    coord_array = gifti.GiftiDataArray(
+        data=mesh[0], datatype='NIFTI_TYPE_FLOAT32'
+    )
     coord_array.intent = nb.nifti1.intent_codes['NIFTI_INTENT_POINTSET']
 
-    face_array = gifti.GiftiDataArray(data=mesh[1])
+    face_array = gifti.GiftiDataArray(
+        data=mesh[1], datatype='NIFTI_TYPE_FLOAT32'
+    )
     face_array.intent = nb.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE']
 
     gii = gifti.GiftiImage(darrays=[coord_array, face_array])
@@ -306,25 +335,30 @@ def test_load_surf_mesh_file_gii(tmp_path):
     fd_mesh, filename_gii_mesh = tempfile.mkstemp(suffix='.gii',
                                                   dir=str(tmp_path))
     os.close(fd_mesh)
-    coord_array = gifti.GiftiDataArray(data=mesh[0],
-                                       intent=nb.nifti1.intent_codes[
-                                           'NIFTI_INTENT_POINTSET'])
-    face_array = gifti.GiftiDataArray(data=mesh[1],
-                                      intent=nb.nifti1.intent_codes[
-                                          'NIFTI_INTENT_TRIANGLE'])
+    coord_array = gifti.GiftiDataArray(
+        data=mesh[0],
+        intent=nb.nifti1.intent_codes['NIFTI_INTENT_POINTSET'],
+        datatype='NIFTI_TYPE_FLOAT32'
+    )
+    face_array = gifti.GiftiDataArray(
+        data=mesh[1],
+        intent=nb.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'],
+        datatype='NIFTI_TYPE_FLOAT32'
+    )
 
     gii = gifti.GiftiImage(darrays=[coord_array, face_array])
     nb.save(gii, filename_gii_mesh)
-    assert_array_equal(load_surf_mesh(filename_gii_mesh)[0], mesh[0])
-    assert_array_equal(load_surf_mesh(filename_gii_mesh)[1], mesh[1])
+    assert_array_almost_equal(load_surf_mesh(filename_gii_mesh)[0], mesh[0])
+    assert_array_almost_equal(load_surf_mesh(filename_gii_mesh)[1], mesh[1])
     os.remove(filename_gii_mesh)
 
     # test if incorrect gii raises error
     fd_no, filename_gii_mesh_no_point = tempfile.mkstemp(suffix='.gii',
                                                          dir=str(tmp_path))
     os.close(fd_no)
-    nb.save(gifti.GiftiImage(darrays=[face_array, face_array]),
-                filename_gii_mesh_no_point)
+    nb.save(gifti.GiftiImage(
+            darrays=[face_array, face_array]),
+            filename_gii_mesh_no_point)
     with pytest.raises(ValueError, match='NIFTI_INTENT_POINTSET'):
         load_surf_mesh(filename_gii_mesh_no_point)
     os.remove(filename_gii_mesh_no_point)
@@ -332,8 +366,9 @@ def test_load_surf_mesh_file_gii(tmp_path):
     fd_face, filename_gii_mesh_no_face = tempfile.mkstemp(suffix='.gii',
                                                           dir=str(tmp_path))
     os.close(fd_face)
-    nb.save(gifti.GiftiImage(darrays=[coord_array, coord_array]),
-                filename_gii_mesh_no_face)
+    nb.save(gifti.GiftiImage(
+        darrays=[coord_array, coord_array]),
+        filename_gii_mesh_no_face)
     with pytest.raises(ValueError, match='NIFTI_INTENT_TRIANGLE'):
         load_surf_mesh(filename_gii_mesh_no_face)
     os.remove(filename_gii_mesh_no_face)
@@ -399,13 +434,15 @@ def test_load_surf_data_file_glob(tmp_path):
     data2D = np.ones((20, 3))
     fnames = []
     for f in range(3):
-        fd, filename = tempfile.mkstemp(prefix='glob_%s_' % f,
+        fd, filename = tempfile.mkstemp(prefix=f'glob_{f}_',
                                         suffix='.gii',
                                         dir=str(tmp_path))
         os.close(fd)
         fnames.append(filename)
         data2D[:, f] *= f
-        darray = gifti.GiftiDataArray(data=data2D[:, f])
+        darray = gifti.GiftiDataArray(
+            data=data2D[:, f], datatype='NIFTI_TYPE_FLOAT32'
+        )
         gii = gifti.GiftiImage(darrays=[darray])
         nb.save(gii, fnames[f])
 
@@ -420,10 +457,10 @@ def test_load_surf_data_file_glob(tmp_path):
                                     dir=str(tmp_path))
     os.close(fd)
     fnames.append(filename)
-    darray1 = gifti.GiftiDataArray(data=np.ones((20, )))
-    darray2 = gifti.GiftiDataArray(data=np.ones((20, )))
-    darray3 = gifti.GiftiDataArray(data=np.ones((20, )))
-    gii = gifti.GiftiImage(darrays=[darray1, darray2, darray3])
+    darray1 = gifti.GiftiDataArray(
+        data=np.ones((20, )), datatype='NIFTI_TYPE_FLOAT32'
+    )
+    gii = gifti.GiftiImage(darrays=[darray1, darray1, darray1])
     nb.save(gii, fnames[-1])
 
     data2D = np.concatenate((data2D, np.ones((20, 3))), axis=1)
@@ -436,7 +473,9 @@ def test_load_surf_data_file_glob(tmp_path):
                                     dir=str(tmp_path))
     os.close(fd)
     fnames.append(filename)
-    darray = gifti.GiftiDataArray(data=np.ones((15, 1)))
+    darray = gifti.GiftiDataArray(
+        data=np.ones((15, 1)), datatype='NIFTI_TYPE_FLOAT32'
+    )
     gii = gifti.GiftiImage(darrays=[darray])
     nb.save(gii, fnames[-1])
 
@@ -465,11 +504,6 @@ def test_flat_mesh(xy):
     a, b, c = points[triangles[0]]
     n = np.cross(b - a, c - a)
     assert np.allclose(n, [0., 0., 1.])
-
-
-def _z_const_img(x_s, y_s, z_s):
-    hslice = np.arange(x_s * y_s).reshape((x_s, y_s))
-    return np.ones((x_s, y_s, z_s)) * hslice[:, :, np.newaxis]
 
 
 def test_vertex_outer_normals():
@@ -527,17 +561,17 @@ def test_sample_locations():
         true_locations = np.asarray([vertex + offsets for vertex in mesh[0]])
         assert_array_equal(locations.shape, true_locations.shape)
         assert_array_almost_equal(true_locations, locations)
-    pytest.raises(ValueError, surface._sample_locations,
-                  mesh, affine, 1., kind='bad_kind')
+    with pytest.raises(ValueError):
+        surface._sample_locations(mesh, affine, 1., kind='bad_kind')
 
 
 @pytest.mark.parametrize("depth", [(0.,), (-1.,), (1.,), (-1., 0., .5)])
 @pytest.mark.parametrize("n_points", [None, 10])
-def test_sample_locations_depth(depth, n_points):
+def test_sample_locations_depth(depth, n_points, affine_eye):
     mesh = flat_mesh(5, 7)
     radius = 8.
     locations = surface._sample_locations(
-        mesh, np.eye(4), radius, n_points=n_points, depth=depth)
+        mesh, affine_eye, radius, n_points=n_points, depth=depth)
     offsets = np.asarray([[0., 0., - z * radius] for z in depth])
     expected = np.asarray([vertex + offsets for vertex in mesh[0]])
     assert np.allclose(locations, expected)
@@ -545,24 +579,30 @@ def test_sample_locations_depth(depth, n_points):
 
 @pytest.mark.parametrize(
     "depth,n_points",
-    [(None, 1), (None, 7), ([0.], 8), ([-1.], 8),
-     ([1.], 8), ([-1., 0., .5], 8)])
-def test_sample_locations_between_surfaces(depth, n_points):
+    [(None, 1),
+     (None, 7),
+     ([0.], 8),
+     ([-1.], 8),
+     ([1.], 8),
+     ([-1., 0., .5], 8)])
+def test_sample_locations_between_surfaces(depth, n_points, affine_eye):
     inner = flat_mesh(5, 7)
     outer = inner[0] + [0., 0., 1.], inner[1]
+
     locations = surface._sample_locations_between_surfaces(
-        outer, inner, np.eye(4), n_points=n_points, depth=depth)
+        outer, inner, affine_eye, n_points=n_points, depth=depth)
+
     if depth is None:
-        # can be simplified when we drop support for np 1.15
-        # (broadcasting linspace)
         expected = np.asarray(
             [np.linspace(b, a, n_points)
              for (a, b) in zip(inner[0].ravel(), outer[0].ravel())])
         expected = np.rollaxis(
             expected.reshape((*outer[0].shape, n_points)), 2, 1)
+
     else:
         offsets = ([[0., 0., - z] for z in depth])
         expected = np.asarray([vertex + offsets for vertex in outer[0]])
+
     assert np.allclose(locations, expected)
 
 
@@ -609,11 +649,11 @@ def test_masked_indices():
     assert (1 - masked).sum() == 48
 
 
-def test_projection_matrix():
+def test_projection_matrix(affine_eye):
     mesh = flat_mesh(5, 7, 4)
     img = z_const_img(5, 7, 13)
     proj = surface._projection_matrix(
-        mesh, np.eye(4), img.shape, radius=2., n_points=10)
+        mesh, affine_eye, img.shape, radius=2., n_points=10)
     # proj matrix has shape (n_vertices, img_size)
     assert proj.shape == (5 * 7, 5 * 7 * 13)
     # proj.dot(img) should give the values of img at the vertices' locations
@@ -621,28 +661,30 @@ def test_projection_matrix():
     assert_array_almost_equal(values, img[:, :, 0])
     mesh = flat_mesh(5, 7)
     proj = surface._projection_matrix(
-        mesh, np.eye(4), (5, 7, 1), radius=.1, n_points=10)
+        mesh, affine_eye, (5, 7, 1), radius=.1, n_points=10)
     assert_array_almost_equal(proj.toarray(), np.eye(proj.shape[0]))
     mask = np.ones(img.shape, dtype=int)
     mask[0] = 0
     proj = surface._projection_matrix(
-        mesh, np.eye(4), img.shape, radius=2., n_points=10, mask=mask)
+        mesh, affine_eye, img.shape, radius=2., n_points=10, mask=mask)
     proj = proj.toarray()
     # first row of the mesh is masked
     assert_array_almost_equal(proj.sum(axis=1)[:7], np.zeros(7))
     assert_array_almost_equal(proj.sum(axis=1)[7:], np.ones(proj.shape[0] - 7))
     # mask and img should have the same shape
-    pytest.raises(ValueError, surface._projection_matrix,
-                  mesh, np.eye(4), img.shape, mask=np.ones((3, 3, 2)))
+    with pytest.raises(ValueError):
+        surface._projection_matrix(
+            mesh, affine_eye, img.shape, mask=np.ones((3, 3, 2))
+        )
 
 
-def test_sampling_affine():
+def test_sampling_affine(affine_eye):
     # check sampled (projected) values on a toy image
     img = np.ones((4, 4, 4))
     img[1, :, :] = 2
     nodes = [[1, 1, 2], [10, 10, 20], [30, 30, 30]]
     mesh = [np.asarray(nodes), None]
-    affine = 10 * np.eye(4)
+    affine = 10 * affine_eye
     affine[-1, -1] = 1
     texture = surface._nearest_voxel_sampling(
         [img], mesh, affine=affine, radius=1, kind='ball')
@@ -655,7 +697,7 @@ def test_sampling_affine():
 @pytest.mark.parametrize("kind", ["auto", "line", "ball"])
 @pytest.mark.parametrize("use_inner_mesh", [True, False])
 @pytest.mark.parametrize("projection", ["linear", "nearest"])
-def test_sampling(kind, use_inner_mesh, projection):
+def test_sampling(kind, use_inner_mesh, projection, affine_eye):
     mesh = flat_mesh(5, 7, 4)
     img = z_const_img(5, 7, 13)
     mask = np.ones(img.shape, dtype=int)
@@ -663,10 +705,10 @@ def test_sampling(kind, use_inner_mesh, projection):
     projector = {"nearest": surface._nearest_voxel_sampling,
                  "linear": surface._interpolation_sampling}[projection]
     inner_mesh = mesh if use_inner_mesh else None
-    projection = projector([img], mesh, np.eye(4),
+    projection = projector([img], mesh, affine_eye,
                            kind=kind, radius=0., inner_mesh=inner_mesh)
     assert_array_almost_equal(projection.ravel(), img[:, :, 0].ravel())
-    projection = projector([img], mesh, np.eye(4),
+    projection = projector([img], mesh, affine_eye,
                            kind=kind, radius=0., mask=mask,
                            inner_mesh=inner_mesh)
     assert_array_almost_equal(projection.ravel()[7:],
@@ -675,14 +717,14 @@ def test_sampling(kind, use_inner_mesh, projection):
 
 
 @pytest.mark.parametrize("projection", ["linear", "nearest"])
-def test_sampling_between_surfaces(projection):
+def test_sampling_between_surfaces(projection, affine_eye):
     projector = {"nearest": surface._nearest_voxel_sampling,
                  "linear": surface._interpolation_sampling}[projection]
     mesh = flat_mesh(13, 7, 3.)
     inner_mesh = flat_mesh(13, 7, 1)
     img = z_const_img(5, 7, 13).T
     projection = projector(
-        [img], mesh, np.eye(4),
+        [img], mesh, affine_eye,
         kind="auto", n_points=100, inner_mesh=inner_mesh)
     assert_array_almost_equal(
         projection.ravel(), img[:, :, 1:4].mean(axis=-1).ravel())
@@ -713,7 +755,7 @@ def test_check_mesh():
         surface._check_mesh(surface.load_surf_mesh(mesh['pial_right']))
 
 
-def test_check_mesh_and_data():
+def test_check_mesh_and_data(rng):
     coords, faces = generate_surf()
     mesh = Mesh(coords, faces)
     data = mesh[0][:, 0]
@@ -723,12 +765,13 @@ def test_check_mesh_and_data():
     assert (d == data).all()
     # Generate faces such that max index is larger than
     # the length of coordinates array.
-    rng = np.random.RandomState(42)
     wrong_faces = rng.randint(coords.shape[0] + 1, size=(30, 3))
     wrong_mesh = Mesh(coords, wrong_faces)
-    # Check that check_mesh_and_data raises an error with the resulting wrong mesh
-    with pytest.raises(ValueError,
-                       match="Mismatch between the indices of faces and the number of nodes."):
+    # Check that check_mesh_and_data raises an error
+    # with the resulting wrong mesh
+    with pytest.raises(
+            ValueError,
+            match="Mismatch between .* indices of faces .* number of nodes."):
         surface.check_mesh_and_data(wrong_mesh, data)
     # Alter the data and check that an error is raised
     data = mesh[0][::2, 0]
@@ -737,10 +780,10 @@ def test_check_mesh_and_data():
         surface.check_mesh_and_data(mesh, data)
 
 
-def test_check_surface():
+def test_check_surface(rng):
     coords, faces = generate_surf()
     mesh = Mesh(coords, faces)
-    data = mesh[0][:,0]
+    data = mesh[0][:, 0]
     surf = Surface(mesh, data)
     s = surface.check_surface(surf)
     assert_array_equal(s.data, data)
@@ -751,13 +794,14 @@ def test_check_surface():
     assert_array_equal(s.mesh.faces, mesh.faces)
     # Generate faces such that max index is larger than
     # the length of coordinates array.
-    rng = np.random.RandomState(42)
     wrong_faces = rng.randint(coords.shape[0] + 1, size=(30, 3))
     wrong_mesh = Mesh(coords, wrong_faces)
     wrong_surface = Surface(wrong_mesh, data)
-    # Check that check_mesh_and_data raises an error with the resulting wrong mesh
-    with pytest.raises(ValueError,
-                       match="Mismatch between the indices of faces and the number of nodes."):
+    # Check that check_mesh_and_data raises an error
+    # with the resulting wrong mesh
+    with pytest.raises(
+            ValueError,
+            match="Mismatch between .* indices of faces .* number of nodes."):
         surface.check_surface(wrong_surface)
     # Alter the data and check that an error is raised
     wrong_data = mesh[0][::2, 0]

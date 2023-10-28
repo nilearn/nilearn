@@ -4,35 +4,36 @@ The main assumption is that the SVG only contains Bezier curves and
 segments. The output JSON is used for plotting glass brain schematics.
 """
 
+import json
 import re
 import sys
-import json
 
 
 class SVGToJSONConverter:
-    """Reads an svg file and exports paths to a JSON format
+    """Reads an svg file and exports paths to a JSON format.
 
     Only segments and Bezier curves are supported
     """
+
     def __init__(self, filename):
         self.filename = filename
         self.svg = svg.parse(filename)
         self.paths = self.svg.flatten()
 
     def _get_style_attr(self, style, attr):
-        pat = r'{}:([^;]+)'.format(attr)
+        pat = f"{attr}:([^;]+)"
         match = re.search(pat, style)
         return match.group(1) if match is not None else None
 
     def _type_and_pts(self, obj):
         if isinstance(obj, svg.Bezier):
-            my_type = 'bezier'
+            my_type = "bezier"
             pts = [p.coord() for p in obj.pts]
         elif isinstance(obj, svg.Segment):
-            my_type = 'segment'
+            my_type = "segment"
             pts = [p.coord() for p in (obj.start, obj.end)]
         else:
-            msg = '{0} is not a supported class'.format(obj.__class__)
+            msg = f"{obj.__class__} is not a supported class"
             raise TypeError(msg)
 
         # svg has its origin in the top left whereas
@@ -43,34 +44,41 @@ class SVGToJSONConverter:
 
         pts = [(x, y_range - y) for x, y in pts]
 
-        return {'type': my_type, 'pts': pts}
+        return {"type": my_type, "pts": pts}
 
     def _get_paths(self):
         result = []
         for path in self.paths:
             style = path.style
-            edgecolor = self._get_style_attr(style, 'stroke')
-            linewidth = float(self._get_style_attr(style, 'stroke-width'))
+            edgecolor = self._get_style_attr(style, "stroke")
+            linewidth = float(self._get_style_attr(style, "stroke-width"))
             path_id = path.id
-            path_dict = {'edgecolor': edgecolor,
-                         'linewidth': linewidth,
-                         'id': path_id,
-                         'items': []}
+            path_dict = {
+                "edgecolor": edgecolor,
+                "linewidth": linewidth,
+                "id": path_id,
+                "items": [],
+            }
 
             # svg.MoveTo instances do not hold any information since they
             # just contain the first point of the next item
-            filtered_items = [i for i in path.items
-                              if not isinstance(i, svg.MoveTo)]
+            filtered_items = [
+                i for i in path.items if not isinstance(i, svg.MoveTo)
+            ]
             for geom in filtered_items:
-                path_dict['items'].append(self._type_and_pts(geom))
+                path_dict["items"].append(self._type_and_pts(geom))
 
             result.append(path_dict)
 
         return result
 
     def _get_bounds(self, paths):
-        points = [pt for path in paths for item in path['items']
-                  for pt in item['pts']]
+        points = [
+            pt
+            for path in paths
+            for item in path["items"]
+            for pt in item["pts"]
+        ]
         x_coords = [pt[0] for pt in points]
         y_coords = [pt[1] for pt in points]
 
@@ -80,7 +88,7 @@ class SVGToJSONConverter:
         return xmin, xmax, ymin, ymax
 
     def to_json(self):
-        """Exports the svg paths into json.
+        """Export the svg paths into json.
 
         The json format looks like this:
         {
@@ -125,29 +133,33 @@ class SVGToJSONConverter:
         """
         paths = self._get_paths()
         bounds = self._get_bounds(paths)
-        metadata = {'bounds': bounds}
-        result = {'metadata': metadata,
-                  'paths': paths}
+        metadata = {"bounds": bounds}
+        result = {"metadata": metadata, "paths": paths}
 
-        return json.dumps(result, indent=2, separators=(',', ': '))
+        return json.dumps(result, indent=2, separators=(",", ": "))
 
     def save_json(self, filename):
+        """Save to JSON."""
         json_content = self.to_json()
 
-        with open(filename, 'w') as f:
+        with open(filename, "w") as f:
             f.write(json_content)
 
 
 def _import_svg():
     try:
         import svg
+
         return svg
     except ImportError as exc:
-        exc.args += ('Could not import svg (https://github.com/cjlano/svg)'
-                     ' which is required to parse the svg file', )
+        exc.args += (
+            "Could not import svg (https://github.com/cjlano/svg)"
+            " which is required to parse the svg file",
+        )
         raise
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     svg = _import_svg()
 
     svg_filename = sys.argv[1]

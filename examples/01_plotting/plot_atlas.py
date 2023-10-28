@@ -5,7 +5,7 @@ Basic Atlas plotting
 Plot the regions of a reference atlas (Harvard-Oxford and Juelich atlases).
 """
 
-##########################################################################
+# %%
 # Retrieving the atlas data
 # -------------------------
 
@@ -20,7 +20,7 @@ atlas_ju_filename = dataset_ju.filename
 print(f"Atlas ROIs are located at: {atlas_ho_filename}")
 print(f"Atlas ROIs are located at: {atlas_ju_filename}")
 
-###########################################################################
+# %%
 # Visualizing the Harvard-Oxford atlas
 # ------------------------------------
 
@@ -28,13 +28,13 @@ from nilearn import plotting
 
 plotting.plot_roi(atlas_ho_filename, title="Harvard Oxford atlas")
 
-###########################################################################
+# %%
 # Visualizing the Juelich atlas
 # -----------------------------
 
 plotting.plot_roi(atlas_ju_filename, title="Juelich atlas")
 
-###########################################################################
+# %%
 # Visualizing the Harvard-Oxford atlas with contours
 # --------------------------------------------------
 plotting.plot_roi(
@@ -44,10 +44,12 @@ plotting.plot_roi(
 )
 plotting.show()
 
-###########################################################################
+# %%
 # Visualizing the Juelich atlas with contours
 # -------------------------------------------
 plotting.plot_roi(
     atlas_ju_filename, view_type="contours", title="Juelich atlas in contours"
 )
 plotting.show()
+
+# sphinx_gallery_dummy_images=1

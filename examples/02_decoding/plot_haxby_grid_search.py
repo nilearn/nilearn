@@ -12,7 +12,7 @@ and choosing the parameter k to maximize the cross-validation score,
 might not maximize the score on left-out data.
 
 Thus using data to maximize a cross-validation score computed on that
-same data is likely to optimistic and lead to an overfit.
+same data is likely to be too optimistic and lead to an overfit.
 
 The proper approach is known as a "nested cross-validation". It consists
 in doing cross-validation loops to set the model parameters inside the
@@ -20,8 +20,8 @@ cross-validation loop used to judge the prediction performance: the
 parameters are set separately on each fold, never using the data used to
 measure performance.
 
-For decoding task, in nilearn, this can be done using the
-:class:`nilearn.decoding.Decoder` object, that will automatically select
+For decoding tasks, in nilearn, this can be done using the
+:class:`nilearn.decoding.Decoder` object, which will automatically select
 the best parameters of an estimator from a grid of parameter values.
 
 One difficulty is that the Decoder object is a composite estimator: a
@@ -32,7 +32,7 @@ manually.
 
 """
 
-###########################################################################
+# %%
 # Load the Haxby dataset
 # ----------------------
 from nilearn import datasets
@@ -62,17 +62,34 @@ fmri_niimgs = index_img(fmri_img, condition_mask)
 y = y[condition_mask]
 session = labels["chunks"][condition_mask]
 
-###########################################################################
-# ANOVA pipeline with :class:`nilearn.decoding.Decoder` object
-# ------------------------------------------------------------
+# %%
+# :term:`ANOVA` pipeline with :class:`nilearn.decoding.Decoder` object
+# --------------------------------------------------------------------
 #
 # Nilearn Decoder object aims to provide smooth user experience by acting as a
 # pipeline of several tasks: preprocessing with NiftiMasker, reducing dimension
-# by selecting only relevant features with ANOVA -- a classical univariate
-# feature selection based on F-test, and then decoding with different types of
-# estimators (in this example is Support Vector Machine with a linear kernel)
+# by selecting only relevant features with :term:`ANOVA`
+# -- a classical univariate feature selection based on F-test,
+# and then decoding with different types of estimators
+# (in this example is Support Vector Machine with a linear kernel)
 # on nested cross-validation.
 from nilearn.decoding import Decoder
+
+# We provide a grid of hyperparameter values to the Decoder's internal
+# cross-validation. If no param_grid is provided, the Decoder will use a
+# default grid with sensible values for the chosen estimator
+param_grid = [
+    {
+        "penalty": ["l2"],
+        "dual": [True],
+        "C": [100, 1000],
+    },
+    {
+        "penalty": ["l1"],
+        "dual": [False],
+        "C": [100, 1000],
+    },
+]
 
 # Here screening_percentile is set to 2 percent, meaning around 800
 # features will be selected with ANOVA.
@@ -81,11 +98,12 @@ decoder = Decoder(
     cv=5,
     mask=mask_img,
     smoothing_fwhm=4,
-    standardize=True,
+    standardize="zscore_sample",
     screening_percentile=2,
+    param_grid=param_grid,
 )
 
-###########################################################################
+# %%
 # Fit the Decoder and predict the responses
 # -----------------------------------------
 # As a complete pipeline by itself, decoder will perform cross-validation
@@ -93,20 +111,28 @@ decoder = Decoder(
 # best parameters selected for each cross-validation fold. See
 # https://scikit-learn.org/stable/modules/cross_validation.html for an
 # excellent explanation of how cross-validation works.
-#
-# First we fit the Decoder
+
+# Fit the Decoder
 decoder.fit(fmri_niimgs, y)
-for i, (param, cv_score) in enumerate(
-    zip(decoder.cv_params_["shoe"]["C"], decoder.cv_scores_["shoe"])
+
+# Print the best parameters for each fold
+for i, (best_C, best_penalty, best_dual, cv_score) in enumerate(
+    zip(
+        decoder.cv_params_["shoe"]["C"],
+        decoder.cv_params_["shoe"]["penalty"],
+        decoder.cv_params_["shoe"]["dual"],
+        decoder.cv_scores_["shoe"],
+    )
 ):
     print(
-        "Fold %d | Best SVM parameter: %.1f with score: %.3f"
-        % (i + 1, param, cv_score)
+        f"Fold {i + 1} | Best SVM parameters: C={best_C}"
+        f", penalty={best_penalty}, dual={best_dual} with score: {cv_score}"
     )
+
 # Output the prediction with Decoder
 y_pred = decoder.predict(fmri_niimgs)
 
-###########################################################################
+# %%
 # Compute prediction scores with different values of screening percentile
 # -----------------------------------------------------------------------
 import numpy as np
@@ -121,8 +147,9 @@ for sp in screening_percentile_range:
         mask=mask_img,
         smoothing_fwhm=4,
         cv=3,
-        standardize=True,
+        standardize="zscore_sample",
         screening_percentile=sp,
+        param_grid=param_grid,
     )
     decoder.fit(index_img(fmri_niimgs, session < 10), y[session < 10])
     cv_scores.append(np.mean(decoder.cv_scores_["bottle"]))
@@ -133,7 +160,7 @@ for sp in screening_percentile_range:
     val_scores.append(np.mean(y_pred == y[session == 10]))
     print(f"Validation score: {val_scores[-1]:.4f}")
 
-###########################################################################
+# %%
 # Nested cross-validation
 # -----------------------
 # We are going to tune the parameter 'screening_percentile' in the
@@ -154,8 +181,9 @@ for train, test in cv.split(session):
             mask=mask_img,
             smoothing_fwhm=4,
             cv=3,
-            standardize=True,
+            standardize="zscore_sample",
             screening_percentile=sp,
+            param_grid=param_grid,
         )
         decoder.fit(index_img(fmri_niimgs, train), y_train)
         y_pred = decoder.predict(index_img(fmri_niimgs, test))
@@ -165,10 +193,11 @@ for train, test in cv.split(session):
 
 print(f"Nested CV score: {np.mean(nested_cv_scores):.4f}")
 
-###########################################################################
+# %%
 # Plot the prediction scores using matplotlib
 # -------------------------------------------
 from matplotlib import pyplot as plt
+
 from nilearn.plotting import show
 
 plt.figure(figsize=(6, 4))
@@ -186,3 +215,5 @@ plt.axhline(
 
 plt.legend(loc="best", frameon=False)
 show()
+
+# sphinx_gallery_dummy_images=1

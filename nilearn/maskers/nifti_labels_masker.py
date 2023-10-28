@@ -1,14 +1,12 @@
-"""
-Transformer for computing ROI signals.
-"""
+"""Transformer for computing ROI signals."""
 
-import numpy as np
 import warnings
 
+import numpy as np
 from joblib import Memory
 
 from nilearn import _utils, image, masking
-from nilearn.maskers.base_masker import _filter_and_extract, BaseMasker
+from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 
 
 class _ExtractionFunctor:
@@ -16,10 +14,11 @@ class _ExtractionFunctor:
     func_name = 'nifti_labels_masker_extractor'
 
     def __init__(self, _resampled_labels_img_, background_label, strategy,
-                 mask_img):
+                 keep_masked_labels, mask_img):
         self._resampled_labels_img_ = _resampled_labels_img_
         self.background_label = background_label
         self.strategy = strategy
+        self.keep_masked_labels = keep_masked_labels
         self.mask_img = mask_img
 
     def __call__(self, imgs):
@@ -28,7 +27,7 @@ class _ExtractionFunctor:
         return signal_extraction.img_to_signals_labels(
             imgs, self._resampled_labels_img_,
             background_label=self.background_label, strategy=self.strategy,
-            mask_img=self.mask_img)
+            keep_masked_labels=self.keep_masked_labels, mask_img=self.mask_img)
 
 
 @_utils.fill_doc
@@ -52,88 +51,47 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         Warning: The labels must be consistent with the label
         values provided through `labels_img`.
 
-    background_label : :obj:`int` or :obj:`float`, optional
+    background_label : :obj:`int` or :obj:`float`, default=0
         Label used in labels_img to represent background.
         Warning: This value must be consistent with label values and
         image provided.
-        Default=0.
 
     mask_img : Niimg-like object, optional
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
     %(smoothing_fwhm)s
-    standardize : {False, True, 'zscore', 'psc'}, optional
-        Strategy to standardize the signal.
-        'zscore': the signal is z-scored. Timeseries are shifted
-        to zero mean and scaled to unit variance.
-        'psc':  Timeseries are shifted to zero mean value and scaled
-        to percent signal change (as compared to original mean signal).
-        True : the signal is z-scored. Timeseries are shifted
-        to zero mean and scaled to unit variance.
-        False : Do not standardize the data.
-        Default=False.
-
-    standardize_confounds : :obj:`bool`, optional
-        If standardize_confounds is True, the confounds are z-scored:
-        their mean is put to 0 and their variance to 1 in the time dimension.
-        Default=True.
-
-    high_variance_confounds : :obj:`bool`, optional
+    %(standardize_maskers)s
+    %(standardize_confounds)s
+    high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
-        and regressed out. Default=False.
-
-    detrend : :obj:`bool`, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details. Default=False.
-
-    low_pass : None or :obj:`float`, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    high_pass : None or :obj:`float`, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    t_r : :obj:`float`, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
+        and regressed out.
+    %(detrend)s
+    %(low_pass)s
+    %(high_pass)s
+    %(t_r)s
     dtype : {dtype, "auto"}, optional
         Data type toward which the data should be converted. If "auto", the
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
 
-    resampling_target : {"data", "labels", None}, optional
+    resampling_target : {"data", "labels", None}, default="data"
         Gives which image gives the final shape/size. For example, if
         `resampling_target` is "data", the atlas is resampled to the
         shape of the data if needed. If it is "labels" then mask_img
         and images provided to fit() are resampled to the shape and
         affine of maps_img. "None" means no resampling: if shapes and
-        affines do not match, a ValueError is raised. Default="data".
-
-    memory : :obj:`joblib.Memory` or :obj:`str`, optional
-        Used to cache the region extraction process.
-        By default, no caching is done. If a string is given, it is the
-        path to the caching directory.
-
-    memory_level : :obj:`int`, optional
-        Aggressiveness of memory caching. The higher the number, the higher
-        the number of functions that will be cached. Zero means no caching.
-        Default=1.
-
-    verbose : :obj:`int`, optional
-        Indicate the level of verbosity. By default, nothing is printed
-        Default=0.
-
-    strategy : :obj:`str`, optional
+        affines do not match, a ValueError is raised.
+    %(memory)s
+    %(memory_level1)s
+    %(verbose0)s
+    strategy : :obj:`str`, default='mean'
         The name of a valid function to reduce the region with.
         Must be one of: sum, mean, median, minimum, maximum, variance,
-        standard_deviation. Default='mean'.
-
-    reports : :obj:`bool`, optional
+        standard_deviation.
+    %(keep_masked_labels)s
+    reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
-        Default=True.
 
     %(masker_kwargs)s
 
@@ -152,11 +110,12 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
         .. versionadded:: 0.9.2
 
-    See also
+    See Also
     --------
     nilearn.maskers.NiftiMasker
 
     """
+
     # memory and memory_level are used by _utils.CacheMixin.
 
     def __init__(
@@ -178,6 +137,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         memory_level=1,
         verbose=0,
         strategy='mean',
+        keep_masked_labels=True,
         reports=True,
         **kwargs,
     ):
@@ -210,11 +170,10 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         self.memory_level = memory_level
         self.verbose = verbose
         self.reports = reports
-        self._report_content = dict()
-        self._report_content['description'] = (
-            'This reports shows the regions defined by the labels of the mask.'
-        )
-        self._report_content['warning_message'] = None
+        self._report_content = {
+            'description': ('This reports shows the regions '
+                            'defined by the labels of the mask.'),
+            'warning_message': None}
 
         available_reduction_strategies = {
             'mean',
@@ -240,12 +199,18 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 f"parameter: {resampling_target}"
             )
 
+        self.keep_masked_labels = keep_masked_labels
+
+        self.cmap = kwargs.get("cmap", "CMRmap_r")
+
     def generate_report(self):
+        """Generate a report."""
         from nilearn.reporting.html_report import generate_report
         return generate_report(self)
 
     def _reporting(self):
-        """
+        """Return a list of all displays to be rendered.
+
         Returns
         -------
         displays : list
@@ -254,6 +219,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         """
         try:
             import matplotlib.pyplot as plt
+
             from nilearn import plotting
         except ImportError:
             with warnings.catch_warnings():
@@ -283,7 +249,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                                        != self.background_label)
             # Basic safety check to ensure we have as many labels as we
             # have regions (plus background).
-            if(self.labels is not None
+            if (self.labels is not None
                and len(self.labels) != number_of_regions + 1):
                 raise ValueError(
                     'Mismatch between the number of provided labels '
@@ -333,7 +299,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 display = plotting.plot_img(
                     img,
                     black_bg=False,
-                    cmap='CMRmap_r',
+                    cmap=self.cmap,
                 )
                 plt.close()
                 display.add_contours(labels_image, filled=False, linewidths=3)
@@ -368,25 +334,26 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 
-        All parameters are unused, they are for scikit-learn compatibility.
+        Parameters
+        ----------
+        imgs : :obj:`list` of Niimg-like objects
+            See :ref:`extracting_data`.
+            Image data passed to the reporter.
 
+        y : None
+            This parameter is unused. It is solely included for scikit-learn
+            compatibility.
         """
-        _utils.logger.log(
-            'loading data from %s' % _utils._repr_niimgs(
-                self.labels_img,
-                shorten=(not self.verbose),
-            ),
-            verbose=self.verbose,
-        )
+        repr = _utils._repr_niimgs(self.labels_img,
+                                   shorten=(not self.verbose))
+        msg = f"loading data from {repr}"
+        _utils.logger.log(msg=msg, verbose=self.verbose)
         self.labels_img_ = _utils.check_niimg_3d(self.labels_img)
         if self.mask_img is not None:
-            _utils.logger.log(
-                'loading data from %s' % _utils._repr_niimgs(
-                    self.mask_img,
-                    shorten=(not self.verbose),
-                ),
-                verbose=self.verbose,
-            )
+            repr = _utils._repr_niimgs(self.mask_img,
+                                       shorten=(not self.verbose))
+            msg = f"loading data from {repr}"
+            _utils.logger.log(msg=msg, verbose=self.verbose)
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
 
         else:
@@ -401,7 +368,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             elif self.resampling_target is None:
                 if self.mask_img_.shape != self.labels_img_.shape[:3]:
                     raise ValueError(
-                        _utils._compose_err_msg(
+                        _utils.compose_err_msg(
                             'Regions and mask do not have the same shape',
                             mask_img=self.mask_img,
                             labels_img=self.labels_img,
@@ -413,7 +380,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                     self.labels_img_.affine,
                 ):
                     raise ValueError(
-                        _utils._compose_err_msg(
+                        _utils.compose_err_msg(
                             'Regions and mask do not have the same affine.',
                             mask_img=self.mask_img,
                             labels_img=self.labels_img,
@@ -491,8 +458,9 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             shape: (number of scans, number of labels)
 
         """
-        return self.fit().transform(imgs, confounds=confounds,
-                                    sample_mask=sample_mask)
+        return self.fit(imgs).transform(
+            imgs, confounds=confounds, sample_mask=sample_mask
+        )
 
     def _check_fitted(self):
         if not hasattr(self, 'labels_img_'):
@@ -552,7 +520,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
         if self.resampling_target == "data":
             imgs_ = _utils.check_niimg(imgs, atleast_4d=True)
-            if not _utils.niimg_conversions._check_same_fov(
+            if not _utils.niimg_conversions.check_same_fov(
                 imgs_,
                 self._resampled_labels_img_,
             ):
@@ -560,7 +528,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                     print("Resampling labels")
                 labels_before_resampling = set(
                     np.unique(
-                        _utils.niimg._safe_get_data(
+                        _utils.niimg.safe_get_data(
                             self._resampled_labels_img_,
                         )
                     )
@@ -572,7 +540,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                         target_affine=imgs_.affine)
                 labels_after_resampling = set(
                     np.unique(
-                        _utils.niimg._safe_get_data(
+                        _utils.niimg.safe_get_data(
                             self._resampled_labels_img_,
                         )
                     )
@@ -589,7 +557,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                                   "(including background).")
 
             if (self.mask_img is not None) and (
-                not _utils.niimg_conversions._check_same_fov(
+                not _utils.niimg_conversions.check_same_fov(
                     imgs_,
                     self._resampled_mask_img,
                 )
@@ -630,6 +598,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 self._resampled_labels_img_,
                 self.background_label,
                 self.strategy,
+                self.keep_masked_labels,
                 self._resampled_mask_img,
             ),
             # Pre-processing
@@ -648,7 +617,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         return region_signals
 
     def inverse_transform(self, signals):
-        """Compute voxel signals from region signals
+        """Compute :term:`voxel` signals from region signals.
 
         Any mask given at initialization is taken into account.
 

@@ -5,13 +5,13 @@ Two ways of defining regions are supported: as labels in a single 3D image,
 or as weights in one image per region (maps).
 """
 # Author: Philippe Gervais
-# License: simplified BSD
+import warnings
 
 import numpy as np
 from scipy import linalg, ndimage
 
 from .. import _utils, masking
-from .._utils.niimg import _safe_get_data
+from .._utils.niimg import safe_get_data
 from ..image import new_img_like
 
 INF = 1000 * np.finfo(np.float32).eps
@@ -102,7 +102,12 @@ def _check_shape_and_affine_compatibility(img1, img2=None, dim=None):
 
 
 def _get_labels_data(
-    target_img, labels_img, mask_img=None, background_label=0, dim=None
+    target_img,
+    labels_img,
+    mask_img=None,
+    background_label=0,
+    dim=None,
+    keep_masked_labels=True,
 ):
     """Get the label data.
 
@@ -127,11 +132,12 @@ def _get_labels_data(
         Every point outside the mask is considered as background
         (i.e. no region).
 
-    background_label : number, optional
-        Number representing background in labels_img. Default=0.
+    background_label : number, default=0
+        Number representing background in labels_img.
 
     dim : :obj:`int`, optional
         Integer slices mask for a specific dimension.
+    %(keep_masked_labels)s
 
     Returns
     -------
@@ -152,19 +158,52 @@ def _get_labels_data(
     """
     _check_shape_and_affine_compatibility(target_img, labels_img)
 
-    labels_data = _safe_get_data(labels_img, ensure_finite=True)
+    labels_data = safe_get_data(labels_img, ensure_finite=True)
 
-    labels = list(np.unique(labels_data))
-    if background_label in labels:
-        labels.remove(background_label)
+    if keep_masked_labels:
+        labels = list(np.unique(labels_data))
+        warnings.warn(
+            'Applying "mask_img" before '
+            "signal extraction may result in empty region signals in the "
+            "output. These are currently kept. "
+            "Starting from version 0.13, the default behavior will be "
+            "changed to remove them by setting "
+            '"keep_masked_labels=False". '
+            '"keep_masked_labels" parameter will be removed '
+            "in version 0.15.",
+            DeprecationWarning,
+            stacklevel=3,
+        )
 
     # Consider only data within the mask
     use_mask = _check_shape_and_affine_compatibility(target_img, mask_img, dim)
     if use_mask:
         mask_img = _utils.check_niimg_3d(mask_img)
-        mask_data = _safe_get_data(mask_img, ensure_finite=True)
+        mask_data = safe_get_data(mask_img, ensure_finite=True)
         labels_data = labels_data.copy()
+        labels_before_mask = set(np.unique(labels_data))
+        # Applying mask on labels_data
         labels_data[np.logical_not(mask_data)] = background_label
+        labels_after_mask = set(np.unique(labels_data))
+        labels_diff = labels_before_mask.difference(labels_after_mask)
+        # Raising a warning if any label is removed due to the mask
+        if len(labels_diff) > 0 and (not keep_masked_labels):
+            warnings.warn(
+                "After applying mask to the labels image, "
+                "the following labels were "
+                f"removed: {labels_diff}. "
+                f"Out of {len(labels_before_mask)} labels, the "
+                "masked labels image only contains "
+                f"{len(labels_after_mask)} labels "
+                "(including background).",
+                stacklevel=3,
+            )
+
+    if not keep_masked_labels:
+        labels = list(np.unique(labels_data))
+
+    if background_label in labels:
+        labels.remove(background_label)
 
     return labels, labels_data
 
@@ -206,6 +245,7 @@ def img_to_signals_labels(
     background_label=0,
     order="F",
     strategy="mean",
+    keep_masked_labels=True,
 ):
     """Extract region signals from image.
 
@@ -230,16 +270,17 @@ def img_to_signals_labels(
         Every point outside the mask is considered
         as background (i.e. no region).
 
-    background_label : number, optional
-        Number representing background in labels_img. Default=0.
+    background_label : number, default=0
+        Number representing background in labels_img.
 
-    order : :obj:`str`, optional
-        Ordering of output array ("C" or "F"). Default="F".
+    order : :obj:`str`, default="F"
+        Ordering of output array ("C" or "F").
 
-    strategy : :obj:`str`, optional
+    strategy : :obj:`str`, default="mean"
         The name of a valid function to reduce the region with.
         Must be one of: sum, mean, median, minimum, maximum, variance,
-        standard_deviation. Default="mean".
+        standard_deviation.
+    %(keep_masked_labels)s
 
     Returns
     -------
@@ -269,10 +310,14 @@ def img_to_signals_labels(
     # (load one image at a time).
     imgs = _utils.check_niimg_4d(imgs)
     labels, labels_data = _get_labels_data(
-        imgs, labels_img, mask_img, background_label
+        imgs,
+        labels_img,
+        mask_img,
+        background_label,
+        keep_masked_labels=keep_masked_labels,
     )
 
-    data = _safe_get_data(imgs, ensure_finite=True)
+    data = safe_get_data(imgs, ensure_finite=True)
     target_datatype = np.float32 if data.dtype == np.float32 else np.float64
     # Nilearn issue: 2135, PR: 2195 for why this is necessary.
     signals = np.ndarray(
@@ -284,10 +329,11 @@ def img_to_signals_labels(
             reduction_function(img, labels=labels_data, index=labels)
         )
     # Set to zero signals for missing labels. Workaround for Scipy behaviour
-    missing_labels = set(labels) - set(np.unique(labels_data))
-    labels_index = {l: n for n, l in enumerate(labels)}
-    for this_label in missing_labels:
-        signals[:, labels_index[this_label]] = 0
+    if keep_masked_labels:
+        missing_labels = set(labels) - set(np.unique(labels_data))
+        labels_index = {l: n for n, l in enumerate(labels)}
+        for this_label in missing_labels:
+            signals[:, labels_index[this_label]] = 0
     return signals, labels
 
 
@@ -322,11 +368,11 @@ def signals_to_img_labels(
         Boolean array giving voxels to process. integer arrays also accepted,
         In this array, zero means False, non-zero means True.
 
-    background_label : number, optional
-        Label to use for "no region". Default=0.
+    background_label : number, default=0
+        Label to use for "no region".
 
-    order : :obj:`str`, optional
-        Ordering of output array ("C" or "F"). Default="F".
+    order : :obj:`str`, default="F"
+        Ordering of output array ("C" or "F").
 
     Returns
     -------
@@ -376,7 +422,7 @@ def signals_to_img_labels(
 
 
 @_utils.fill_doc
-def img_to_signals_maps(imgs, maps_img, mask_img=None):
+def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
     """Extract region signals from image.
 
     This function is applicable to regions defined by maps.
@@ -396,6 +442,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
         Mask to apply to regions before extracting signals.
         Every point outside the mask is considered
         as background (i.e. outside of any region).
+    %(keep_masked_maps)s
 
     Returns
     -------
@@ -420,21 +467,49 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
 
     _check_shape_and_affine_compatibility(imgs, maps_img, 3)
 
-    maps_data = _safe_get_data(maps_img, ensure_finite=True)
+    maps_data = safe_get_data(maps_img, ensure_finite=True)
     maps_mask = np.ones(maps_data.shape[:3], dtype=bool)
     labels = np.arange(maps_data.shape[-1], dtype=int)
 
     use_mask = _check_shape_and_affine_compatibility(imgs, mask_img)
     if use_mask:
         mask_img = _utils.check_niimg_3d(mask_img)
+        labels_before_mask = set(labels)
         maps_data, maps_mask, labels = _trim_maps(
             maps_data,
-            _safe_get_data(mask_img, ensure_finite=True),
-            keep_empty=True,
+            safe_get_data(mask_img, ensure_finite=True),
+            keep_empty=keep_masked_maps,
         )
         maps_mask = _utils.as_ndarray(maps_mask, dtype=bool)
+        if keep_masked_maps:
+            warnings.warn(
+                'Applying "mask_img" before '
+                "signal extraction may result in empty region signals in the "
+                "output. These are currently kept. "
+                "Starting from version 0.13, the default behavior will be "
+                "changed to remove them by setting "
+                '"keep_masked_maps=False". '
+                '"keep_masked_maps" parameter will be removed '
+                "in version 0.15.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+        else:
+            labels_after_mask = set(labels)
+            labels_diff = labels_before_mask.difference(labels_after_mask)
+            # Raising a warning if any map is removed due to the mask
+            if len(labels_diff) > 0:
+                warnings.warn(
+                    "After applying mask to the maps image, "
+                    "maps with the following indices were "
+                    f"removed: {labels_diff}. "
+                    f"Out of {len(labels_before_mask)} maps, the "
+                    "masked map image only contains "
+                    f"{len(labels_after_mask)} maps.",
+                    stacklevel=2,
+                )
 
-    data = _safe_get_data(imgs, ensure_finite=True)
+    data = safe_get_data(imgs, ensure_finite=True)
     region_signals = linalg.lstsq(maps_data[maps_mask, :], data[maps_mask, :])[
         0
     ].T
@@ -479,7 +554,7 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
 
     """
     maps_img = _utils.check_niimg_4d(maps_img)
-    maps_data = _safe_get_data(maps_img, ensure_finite=True)
+    maps_data = safe_get_data(maps_img, ensure_finite=True)
 
     maps_mask = np.ones(maps_data.shape[:3], dtype=bool)
 
@@ -488,7 +563,7 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
         mask_img = _utils.check_niimg_3d(mask_img)
         maps_data, maps_mask, _ = _trim_maps(
             maps_data,
-            _safe_get_data(mask_img, ensure_finite=True),
+            safe_get_data(mask_img, ensure_finite=True),
             keep_empty=True,
         )
         maps_mask = _utils.as_ndarray(maps_mask, dtype=bool)
@@ -514,15 +589,13 @@ def _trim_maps(maps, mask, keep_empty=False, order="F"):
     mask : :class:`numpy.ndarray`
         Definition of a mask. The shape must match that of a single map.
 
-    keep_empty : :obj:`bool`, optional
+    keep_empty : :obj:`bool`, default=False
         If False, maps that lie completely outside the mask are dropped from
         the output. If True, they are kept, meaning that maps that are
         completely zero can occur in the output.
-        Default=False.
 
-    order : "F" or "C", optional
+    order : "F" or "C", default="F"
         Ordering of the output maps array (trimmed_maps).
-        Default="F".
 
     Returns
     -------

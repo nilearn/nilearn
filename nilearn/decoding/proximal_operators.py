@@ -2,7 +2,6 @@
 # Author: DOHMATOB Elvis Dopgima,
 #         VAROQUAUX Gael,
 #         GRAMFORT Alexandre,
-# License: simplified BSD
 
 from math import sqrt
 
@@ -150,7 +149,7 @@ def _prox_tvl1(
     Notes
     -----
     The principle of total variation denoising is explained in
-    http://en.wikipedia.org/wiki/Total_variation_denoising
+    https://en.wikipedia.org/wiki/Total_variation_denoising
 
     The principle of total variation denoising is to minimize the
     total variation of the image, which can be roughly described as

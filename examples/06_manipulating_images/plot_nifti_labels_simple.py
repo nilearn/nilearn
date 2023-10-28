@@ -12,7 +12,7 @@ operation in just a few lines of code.
 
 """
 
-###########################################################################
+# %%
 # Retrieve the brain development functional dataset
 #
 # We start by fetching the brain development functional dataset
@@ -26,7 +26,7 @@ func_filename = dataset.func[0]
 # print basic information on the dataset
 print(f"First functional nifti image (4D) is at: {func_filename}")
 
-###########################################################################
+# %%
 # Load an atlas
 #
 # We then load the Harvard-Oxford atlas to define the brain regions
@@ -35,13 +35,17 @@ atlas = datasets.fetch_atlas_harvard_oxford("cort-maxprob-thr25-2mm")
 # The first label correspond to the background
 print(f"The atlas contains {len(atlas.labels) - 1} non-overlapping regions")
 
-###########################################################################
+# %%
 # Instantiate the mask and visualize atlas
 #
 from nilearn.maskers import NiftiLabelsMasker
 
 # Instantiate the masker with label image and label values
-masker = NiftiLabelsMasker(atlas.maps, labels=atlas.labels, standardize=True)
+masker = NiftiLabelsMasker(
+    atlas.maps,
+    labels=atlas.labels,
+    standardize="zscore_sample",
+)
 
 # Visualize the atlas
 # Note that we need to call fit prior to generating the mask
@@ -54,7 +58,7 @@ masker.fit()
 report = masker.generate_report()
 report
 
-##########################################################################
+# %%
 # Fitting the mask and generating a report
 masker.fit(func_filename)
 
@@ -64,7 +68,7 @@ masker.fit(func_filename)
 report = masker.generate_report()
 report
 
-###########################################################################
+# %%
 # Process the data with the NiftiLablesMasker
 #
 # In order to extract the signals, we need to call transform on the
@@ -73,7 +77,7 @@ signals = masker.transform(func_filename)
 # signals is a 2D matrix, (n_time_points x n_regions)
 signals.shape
 
-###########################################################################
+# %%
 # Plot the signals
 import matplotlib.pyplot as plt
 

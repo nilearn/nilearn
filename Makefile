@@ -61,6 +61,18 @@ doc-plot:
 doc:
 	make -C doc html-noplot
 
+.PHONY : ci-doc
+ci-doc:
+	make -C doc ci-html-noplot
+
 .PHONY : pdf
 pdf:
 	make -C doc pdf
+
+.PHONY : lint
+lint:
+	isort --profile black --settings-path pyproject.toml nilearn examples maint_tools
+	flynt .
+	black --config pyproject.toml nilearn examples maint_tools
+	codespell --toml pyproject.toml
+	flake8 --config .flake8 --black-config pyproject.toml nilearn examples maint_tools

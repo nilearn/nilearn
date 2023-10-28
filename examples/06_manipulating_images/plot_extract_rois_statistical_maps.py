@@ -15,7 +15,7 @@ extract objects using a function
 :func:`nilearn.regions.connected_regions`.
 """
 
-##############################################################################
+# %%
 # Fetching t-statistic image of localizer contrasts by loading from datasets
 # utilities
 from nilearn import datasets
@@ -23,7 +23,7 @@ from nilearn import datasets
 localizer = datasets.fetch_neurovault_auditory_computation_task()
 tmap_filename = localizer.images[0]
 
-##############################################################################
+# %%
 # Threshold the t-statistic image by importing threshold function
 from nilearn.image import threshold_img
 
@@ -38,7 +38,7 @@ threshold_percentile_img = threshold_img(
 # Here, threshold value should be within the limits i.e. less than max value.
 threshold_value_img = threshold_img(tmap_filename, threshold=3.0, copy=False)
 
-##############################################################################
+# %%
 # Visualization
 # Showing thresholding results by importing plotting modules and its utilities
 from nilearn import plotting
@@ -61,7 +61,7 @@ plotting.plot_stat_map(
     colorbar=False,
 )
 
-##############################################################################
+# %%
 # Extracting the regions by importing connected regions function
 from nilearn.regions import connected_regions
 
@@ -73,13 +73,13 @@ regions_value_img, index = connected_regions(
     threshold_value_img, min_region_size=1500
 )
 
-##############################################################################
+# %%
 # Visualizing region extraction results
 images = [regions_percentile_img, regions_value_img]
 for image, strategy in zip(images, ["percentile", "image intensity"]):
     title = (
         f"ROIs using {strategy} thresholding. "
-        "\n Each ROI in same color is an extracted region"
+        "Each ROI in same color is an extracted region"
     )
     plotting.plot_prob_atlas(
         image,
