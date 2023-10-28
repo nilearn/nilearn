@@ -56,7 +56,12 @@ dev = [
     "flake8-functions",
     'codespell',
     'tomli',
-    'pre-commit'
+    'pre-commit',
+    'types-all',
+    'types-tqdm',
+    'pandas-stubs',
+    'lxml-stubs',
+    'nilearn._version'
 ]
 # Requirements necessary for building the documentation
 doc = [
@@ -184,15 +189,13 @@ module = [
     "joblib",
     "joblib.memory",
     "kaleido",
-    # "lxml.*",
     "matplotlib.*",
     "memory_profiler",
     "mpl_toolkits.*",
     "nibabel.*",
-    "numpy.*",
+    "sklearn.*",
     "plotly.*",
     "scipy.*",
-    "sklearn.*",
     "sphinx_gallery.notebook",
     "statsmodels",
     "svg"
