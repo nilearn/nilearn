@@ -1,11 +1,10 @@
 ---
-name: detect test pollution
+name: check deprecations
 
 # Runs once a month.
-# Use pytest with the pytest-random-order plugin to run all tests
-# in a random order.
-# This aims to detect tests that are not properly isolated
-# from each other (test pollution).
+# Checks for deprecations of core dependencies of nilearn
+# Turns deprecation warnings into errors so we can handle
+# them before an actual failure happens.
 
 on:
 
@@ -23,28 +22,29 @@ on:
 #            │ │ │ │ │
 #            * * * * *
     schedule:
-    -   cron: 0 0 25 * * # on the 25th of every monday
+    -   cron: 0 0 25 * * # on the 25th of every month
 
   # Allows you to run this workflow manually from the Actions tab
     workflow_dispatch:
 
 jobs:
-
-    latest:
-
+    deprecations:
         if: github.repository == 'nilearn/nilearn'
-
         runs-on: ubuntu-latest
+        env:
+            PIP_FLAGS: --pre
+            WARN_DEPRECATION_ERRORS: true
 
+        defaults:
+            run:
+                shell: bash
         steps:
-        -   name: Checkout nilearn
-            uses: actions/checkout@v4
+        -   uses: actions/checkout@v4
 
         -   name: Setup python
             uses: actions/setup-python@v4
             with:
-                python-version: '3.12'
-                allow-prereleases: false
+                python-version: 3.12
 
         -   name: Display Python version
             run: python -c "import sys; print(sys.version)"
@@ -55,8 +55,5 @@ jobs:
         -   name: Install nilearn
             run: ./build_tools/github/install.sh
 
-        -   name: Install extra dependencies
-            run: pip install pytest-random-order
-
         -   name: Run tests
-            run: python -m pytest --pyargs nilearn --cov=nilearn --random-order
+            run: python -m pytest --pyargs nilearn

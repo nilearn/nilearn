@@ -18,7 +18,7 @@ from scipy.ndimage import (
 )
 
 from nilearn._utils import check_niimg_3d
-from nilearn._utils.niimg import _safe_get_data
+from nilearn._utils.niimg import safe_get_data
 from nilearn.image import new_img_like, threshold_img
 from nilearn.image.resampling import coord_transform
 
@@ -242,24 +242,23 @@ def get_clusters_table(
         Cluster forming threshold. This value must be in the same scale as
         ``stat_img``.
 
-    cluster_threshold : :obj:`int` or None, optional
+    cluster_threshold : :obj:`int` or None, default=None
         Cluster size threshold, in :term:`voxels<voxel>`.
-        If None, then no cluster size threshold will be applied. Default=None.
+        If None, then no cluster size threshold will be applied.
 
-    two_sided : :obj:`bool`, optional
+    two_sided : :obj:`bool`, default=False
         Whether to employ two-sided thresholding or to evaluate positive values
-        only. Default=False.
+        only.
 
-    min_distance : :obj:`float`, optional
-        Minimum distance between subpeaks, in millimeters. Default=8.
+    min_distance : :obj:`float`, default=8
+        Minimum distance between subpeaks, in millimeters.
 
         .. note::
             If two different clusters are closer than ``min_distance``, it can
             result in peaks closer than ``min_distance``.
 
-    return_label_maps : :obj:`bool`, optional
+    return_label_maps : :obj:`bool`, default=False
         Whether or not to additionally output cluster label map images.
-        Default=False.
 
         .. versionadded:: 0.10.1
 
@@ -311,7 +310,7 @@ def get_clusters_table(
 
     # If cluster threshold is used, there is chance that stat_map will be
     # modified, therefore copy is needed
-    stat_map = _safe_get_data(
+    stat_map = safe_get_data(
         stat_img,
         ensure_finite=True,
         copy_data=(cluster_threshold is not None),

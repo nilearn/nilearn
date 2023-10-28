@@ -48,6 +48,8 @@ def _check_input_type(second_level_input):
     """Determine the type of input provided."""
     if isinstance(second_level_input, pd.DataFrame):
         return "df_object"
+    if isinstance(second_level_input, pd.Series):
+        return "pd_series"
     if isinstance(second_level_input, (str, Nifti1Image)):
         return "nii_object"
     if isinstance(second_level_input, list):
@@ -56,6 +58,7 @@ def _check_input_type(second_level_input):
         "second_level_input must be "
         "either a pandas DataFrame, "
         "a Niimg-like object, "
+        "a pandas Series of Niimg-like object, "
         "a list of Niimg-like object or "
         "a list of FirstLevelModel objects. "
         f"Got {_return_type(second_level_input)} instead"
@@ -105,6 +108,9 @@ def _check_input_as_type(
 ):
     if input_type == "flm_object":
         _check_input_as_first_level_model(second_level_input, none_confounds)
+    elif input_type == "pd_series":
+        second_level_input = second_level_input.to_list()
+        _check_input_as_nifti_images(second_level_input, none_design_matrix)
     elif input_type == "nii_object":
         _check_input_as_nifti_images(second_level_input, none_design_matrix)
     else:
@@ -180,7 +186,7 @@ def _check_input_as_dataframe(second_level_input):
             raise ValueError(
                 "second_level_input DataFrame must have"
                 " columns subject_label, map_name and"
-                " effects_map_path"
+                " effects_map_path."
             )
     if not all(
         isinstance(_, str)
@@ -218,7 +224,7 @@ def _check_confounds(confounds):
             )
         # Make sure subject_label contain strings
         if not all(
-            [isinstance(_, str) for _ in confounds["subject_label"].tolist()]
+            isinstance(_, str) for _ in confounds["subject_label"].tolist()
         ):
             raise ValueError("subject_label column must contain only strings")
 
@@ -244,9 +250,10 @@ def _check_output_type(output_type, valid_types):
 
 def _check_design_matrix(design_matrix):
     """Check design_matrix type."""
-    if design_matrix is not None:
-        if not isinstance(design_matrix, pd.DataFrame):
-            raise ValueError("design matrix must be a pandas DataFrame")
+    if design_matrix is not None and not isinstance(
+        design_matrix, pd.DataFrame
+    ):
+        raise ValueError("design matrix must be a pandas DataFrame")
 
 
 def _check_effect_maps(effect_maps, design_matrix):
@@ -387,7 +394,7 @@ class SecondLevelModel(BaseGLM):
     Parameters
     ----------
     mask_img : Niimg-like, :class:`~nilearn.maskers.NiftiMasker` or\
-    :class:`~nilearn.maskers.MultiNiftiMasker`, optional
+             :class:`~nilearn.maskers.MultiNiftiMasker`, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given,
         it will be computed automatically by a
@@ -411,11 +418,11 @@ class SecondLevelModel(BaseGLM):
         If 0 prints nothing. If 1 prints final computation time.
         If 2 prints masker computation details.
     %(n_jobs)s
-    minimize_memory : :obj:`bool`, optional
+    minimize_memory : :obj:`bool`, default=True
         Gets rid of some variables on the model fit results that are not
         necessary for contrast computation and would only be useful for
         further inspection of model details. This has an important impact
-        on memory consumption. Default=True.
+        on memory consumption.
 
     """
 
@@ -436,10 +443,7 @@ class SecondLevelModel(BaseGLM):
         self.target_shape = target_shape
         self.smoothing_fwhm = smoothing_fwhm
         memory = stringify_path(memory)
-        if isinstance(memory, str):
-            self.memory = Memory(memory)
-        else:
-            self.memory = memory
+        self.memory = Memory(memory) if isinstance(memory, str) else memory
         self.memory_level = memory_level
         self.verbose = verbose
         self.n_jobs = n_jobs
@@ -561,7 +565,8 @@ class SecondLevelModel(BaseGLM):
 
             - In case a :obj:`list` of
               :class:`~nilearn.glm.first_level.FirstLevelModel` was provided
-              as ``second_level_input``, we have to provide a contrast to
+              as ``second_level_input``,
+              we have to provide a :term:`contrast` to
               apply to the first level models to get the corresponding list
               of images desired, that would be tested at the second level.
             - In case a :class:`~pandas.DataFrame` was provided as
@@ -569,13 +574,13 @@ class SecondLevelModel(BaseGLM):
               :class:`~pandas.DataFrame` ``map_name`` column. It has to be
               a 't' contrast.
 
-        second_level_stat_type : {'t', 'F'} or None, optional
-            Type of the second level contrast. Default=None.
+        second_level_stat_type : {'t', 'F'} or None, default=None
+            Type of the second level contrast.
 
         output_type : {'z_score', 'stat', 'p_value', \
-                :term:`'effect_size'<Parameter Estimate>`, 'effect_variance', \
-                'all'}, optional
-            Type of the output map. Default='z-score'.
+                      :term:`'effect_size'<Parameter Estimate>`, \
+                      'effect_variance', 'all'}, default='z-score'
+            Type of the output map.
 
         Returns
         -------
@@ -585,7 +590,7 @@ class SecondLevelModel(BaseGLM):
 
         """
         if self.second_level_input_ is None:
-            raise ValueError("The model has not been fit yet")
+            raise ValueError("The model has not been fit yet.")
 
         # check first_level_contrast
         _check_first_level_contrast(
@@ -791,17 +796,16 @@ def non_parametric_inference(
 
     %(smoothing_fwhm)s
 
-    model_intercept : :obj:`bool`, optional
+    model_intercept : :obj:`bool`, default=True
         If ``True``, a constant column is added to the confounding variates
         unless the tested variate is already the intercept.
-        Default=True.
 
-    n_perm : :obj:`int`, optional
+    n_perm : :obj:`int`, default=10000
         Number of permutations to perform.
         Permutations are costly but the more are performed, the more precision
-        one gets in the p-values estimation. Default=10000.
+        one gets in the p-values estimation.
 
-    two_sided_test : :obj:`bool`, optional
+    two_sided_test : :obj:`bool`, default=False
 
         - If ``True``, performs an unsigned t-test.
           Both positive and negative effects are considered; the null
@@ -809,7 +813,6 @@ def non_parametric_inference(
         - If ``False``, only positive effects are considered as relevant.
           The null hypothesis is that the effect is zero or negative.
 
-        Default=False.
 
     %(random_state)s
         Use this parameter to have the same permutations in each
@@ -819,11 +822,10 @@ def non_parametric_inference(
 
     %(verbose0)s
 
-    threshold : None or :obj:`float`, optional
+    threshold : None or :obj:`float`, default=None
         Cluster-forming threshold in p-scale.
         This is only used for cluster-level inference.
         If None, no cluster-level inference will be performed.
-        Default=None.
 
         .. warning::
 
@@ -832,12 +834,11 @@ def non_parametric_inference(
 
         .. versionadded:: 0.9.2
 
-    tfce : :obj:`bool`, optional
+    tfce : :obj:`bool`, default=False
         Whether to calculate :term:`TFCE` as part of the permutation procedure
         or not.
         The TFCE calculation is implemented as described in
         :footcite:t:`Smith2009a`.
-        Default=False.
 
         .. warning::
 
@@ -883,7 +884,7 @@ def non_parametric_inference(
                         test of the n_regressors explanatory variates against
                         the n_descriptors target variates.
 
-                        Returned only if ``threshold`` is not None.
+                        Returned only if ``threshold`` is not ``None``.
         logp_max_size   Negative log10 family-wise error rate-corrected
                         p-values corrected based on the distribution of maximum
                         cluster sizes from permutations.
@@ -891,12 +892,12 @@ def non_parametric_inference(
                         the values in the map describe the significance of
                         clusters, rather than individual voxels.
 
-                        Returned only if ``threshold`` is not None.
+                        Returned only if ``threshold`` is not ``None``.
         mass            Cluster mass values associated with the significance
                         test of the n_regressors explanatory variates against
                         the n_descriptors target variates.
 
-                        Returned only if ``threshold`` is not None.
+                        Returned only if ``threshold`` is not ``None``.
         logp_max_mass   Negative log10 family-wise error rate-corrected
                         p-values corrected based on the distribution of maximum
                         cluster masses from permutations.
@@ -904,17 +905,18 @@ def non_parametric_inference(
                         the values in the map describe the significance of
                         clusters, rather than individual voxels.
 
-                        Returned only if ``threshold`` is not None.
-        tfce            TFCE values associated with the significance test of
+                        Returned only if ``threshold`` is not ``None``.
+        tfce            :term:`TFCE` values associated
+                        with the significance test of
                         the n_regressors explanatory variates against the
                         n_descriptors target variates.
 
-                        Returned only if ``tfce`` is True.
+                        Returned only if ``tfce`` is ``True``.
         logp_max_tfce   Negative log10 family-wise error rate-corrected
                         p-values corrected based on the distribution of maximum
                         TFCE values from permutations.
 
-                        Returned only if ``tfce`` is True.
+                        Returned only if ``tfce`` is ``True``.
         =============== =======================================================
 
     See Also
@@ -951,10 +953,12 @@ def non_parametric_inference(
 
     else:
         masker = clone(mask)
-        if smoothing_fwhm is not None:
-            if getattr(masker, "smoothing_fwhm") is not None:
-                warn("Parameter smoothing_fwhm of the masker overridden")
-                setattr(masker, "smoothing_fwhm", smoothing_fwhm)
+        if (
+            smoothing_fwhm is not None
+            and getattr(masker, "smoothing_fwhm") is not None
+        ):
+            warn("Parameter smoothing_fwhm of the masker overridden")
+            setattr(masker, "smoothing_fwhm", smoothing_fwhm)
 
     masker.fit(sample_map)
 

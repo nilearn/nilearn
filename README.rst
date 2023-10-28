@@ -132,4 +132,4 @@ Development
 ===========
 
 Detailed instructions on how to contribute are available at
-http://nilearn.github.io/stable/development.html
+https://nilearn.github.io/stable/development.html

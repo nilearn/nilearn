@@ -26,7 +26,7 @@ def _get_data(img):
     return data
 
 
-def _safe_get_data(img, ensure_finite=False, copy_data=False):
+def safe_get_data(img, ensure_finite=False, copy_data=False):
     """Get the data in the image without having a side effect \
     on the Nifti1Image object.
 
@@ -39,7 +39,7 @@ def _safe_get_data(img, ensure_finite=False, copy_data=False):
         If True, non-finite values such as (NaNs and infs) found in the
         image will be replaced by zeros.
 
-    copy_data: bool, default is False
+    copy_data: bool, default=False
         If true, the returned data is a copy of the img data.
 
     Returns
@@ -150,7 +150,7 @@ def load_niimg(niimg, dtype=None):
     return niimg
 
 
-def _is_binary_niimg(niimg):
+def is_binary_niimg(niimg):
     """Return whether a given niimg is binary or not.
 
     Parameters
@@ -166,7 +166,7 @@ def _is_binary_niimg(niimg):
 
     """
     niimg = load_niimg(niimg)
-    data = _safe_get_data(niimg, ensure_finite=True)
+    data = safe_get_data(niimg, ensure_finite=True)
     unique_values = np.unique(data)
     if len(unique_values) != 2:
         return False
@@ -192,7 +192,7 @@ def copy_img(img):
         raise ValueError("Input value is not an image")
     return new_img_like(
         img,
-        _safe_get_data(img, copy_data=True),
+        safe_get_data(img, copy_data=True),
         img.affine.copy(),
         copy_header=True,
     )
@@ -206,7 +206,7 @@ def _repr_niimgs(niimgs, shorten=True):
     niimgs: image or collection of images
         nibabel SpatialImage to repr.
 
-    shorten: boolean, optional, default is True
+    shorten: boolean, default=True
         If True, filenames with more than 20 characters will be
         truncated, and lists of more than 3 file names will be
         printed with only first and last element.

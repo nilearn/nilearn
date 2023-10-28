@@ -6,7 +6,7 @@ Downloading statistical maps from the Neurovault repository
 
 Neurovault is a public repository of unthresholded statistical maps,
 parcellations, and atlases of the human brain. You can read about it
-and browse the images it contains at http://www.neurovault.org. You
+and browse the images it contains at https://www.neurovault.org. You
 can download maps from Neurovault with Nilearn.
 
 Neurovault was introduced in [1]_.
@@ -25,7 +25,7 @@ Specific images or collections
 
 In the simplest case, you already know the "id" of the collections or
 images you want. Maybe you liked a paper and went to
-http://www.neurovault.org looking for the data. Once on the relevant
+https://www.neurovault.org looking for the data. Once on the relevant
 collection's webpage, you can click 'Details' to see its id
 (and more). You can then download it using
 :func:`nilearn.datasets.fetch_neurovault_ids` :
@@ -77,7 +77,7 @@ The default values for the ``collection_terms`` and ``image_terms`` parameters
 filter out empty collections, and exclude an image if one of the following is
 true:
 
-   - it is not in MNI space.
+   - it is not in :term:`MNI` space.
    - its metadata field "is_valid" is cleared.
    - it is thresholded.
    - its map type is one of "ROI/mask", "anatomical", or "parcellation".
@@ -146,7 +146,7 @@ Using a filter rather than a dictionary, the first example becomes:
   Even if you specify a filter as a function, the default filters for
   ``image_terms`` and ``collection_terms`` still apply; pass an empty
   dictionary if you want to disable them. Without ``image_terms={}`` in the
-  call above, parcellations, images not in MNI space, etc. would be still be
+  call above, parcellations, images not in :term:`MNI` space, etc. would be still be
   filtered out.
 
 
@@ -186,8 +186,8 @@ Neurosynth annotations
 
 It is also possible to ask Neurosynth to annotate the maps found on
 Neurovault. Neurosynth is a platform for large-scale, automated
-synthesis of fMRI data. It can be used to perform decoding.  You can
-learn more about Neurosynth at http://www.neurosynth.org.
+synthesis of :term:`fMRI` data. It can be used to perform decoding.  You can
+learn more about Neurosynth at https://www.neurosynth.org.
 
 Neurosynth was introduced in [2]_.
 

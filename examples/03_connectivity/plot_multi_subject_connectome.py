@@ -8,6 +8,8 @@ using the group sparse inverse covariance estimate.
 .. include:: ../../../examples/masker_note.rst
 
 """
+
+# %%
 import numpy as np
 
 from nilearn import plotting
@@ -44,7 +46,7 @@ def plot_matrices(cov, prec, title, labels):
     )
 
 
-##############################################################################
+# %%
 # Fetching datasets
 # ------------------
 from nilearn import datasets
@@ -58,7 +60,7 @@ print(
 )
 
 
-##############################################################################
+# %%
 # Extracting region signals
 # -------------------------
 from nilearn.maskers import NiftiMapsMasker
@@ -91,7 +93,7 @@ for func_filename, confound_filename in zip(
     subject_time_series.append(region_ts)
 
 
-##############################################################################
+# %%
 # Computing group-sparse precision matrices
 # -----------------------------------------
 from nilearn.connectome import GroupSparseCovarianceCV
@@ -109,7 +111,7 @@ gl = GraphicalLassoCV(verbose=2)
 gl.fit(np.concatenate(subject_time_series))
 
 
-##############################################################################
+# %%
 # Displaying results
 # ------------------
 atlas_img = msdl_atlas_dataset.maps

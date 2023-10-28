@@ -8,9 +8,8 @@ from sklearn.datasets import load_iris
 from sklearn.linear_model import Lasso, LogisticRegression
 from sklearn.linear_model._coordinate_descent import _alpha_grid
 from sklearn.metrics import accuracy_score
-from sklearn.utils import check_random_state
 
-from nilearn._utils.param_validation import _adjust_screening_percentile
+from nilearn._utils.param_validation import adjust_screening_percentile
 from nilearn.decoding.space_net import (
     BaseSpaceNet,
     SpaceNetClassifier,
@@ -25,7 +24,7 @@ from nilearn.decoding.space_net_solvers import (
     _graph_net_logistic,
     _graph_net_squared_loss,
 )
-from nilearn.decoding.tests._utils import create_graph_net_simulation_data
+from nilearn.decoding.tests._testing import create_graph_net_simulation_data
 from nilearn.image import get_data
 
 logistic_path_scores = partial(path_scores, is_classif=True)
@@ -42,9 +41,8 @@ PENALTY = ["graph-net", "tv-l1"]
 @pytest.mark.parametrize("l1_ratio", [0.5, 1.0])
 @pytest.mark.parametrize("n_alphas", range(1, 10))
 def test_space_net_alpha_grid(
-    is_classif, l1_ratio, n_alphas, n_samples=4, n_features=3
+    rng, is_classif, l1_ratio, n_alphas, n_samples=4, n_features=3
 ):
-    rng = check_random_state(42)
     X = rng.randn(n_samples, n_features)
     y = np.arange(n_samples)
 
@@ -77,10 +75,9 @@ def test_space_net_alpha_grid_same_as_sk():
     )
 
 
-def test_early_stopping_callback_object(n_samples=10, n_features=30):
+def test_early_stopping_callback_object(rng, n_samples=10, n_features=30):
     # This test evolves w so that every line of th _EarlyStoppingCallback
     # code is executed a some point. This a kind of code fuzzing.
-    rng = check_random_state(42)
     X_test = rng.randn(n_samples, n_features)
     y_test = np.dot(X_test, np.ones(n_features))
     w = np.zeros(n_features)
@@ -157,11 +154,11 @@ def test_screening_space_net():
 
     for verbose in [0, 2]:
         with pytest.warns(UserWarning):
-            screening_percentile = _adjust_screening_percentile(
+            screening_percentile = adjust_screening_percentile(
                 10, mask, verbose
             )
     with pytest.warns(UserWarning):
-        screening_percentile = _adjust_screening_percentile(10, mask)
+        screening_percentile = adjust_screening_percentile(10, mask)
     # We gave here a very small mask, judging by standards of brain size
     # thus the screening_percentile_ corrected for brain size should
     # be 100%
@@ -218,8 +215,7 @@ def test_squared_loss_path_scores():
 
 @pytest.mark.parametrize("l1_ratio", [1])
 @pytest.mark.parametrize("debias", [True])
-def test_tv_regression_simple(l1_ratio, debias):
-    rng = check_random_state(42)
+def test_tv_regression_simple(rng, l1_ratio, debias):
     dim = (4, 4, 4)
     W_init = np.zeros(dim)
     W_init[2:3, 1:2, -2:] = 1
@@ -245,8 +241,7 @@ def test_tv_regression_simple(l1_ratio, debias):
 
 
 @pytest.mark.parametrize("l1_ratio", [0.0, 0.5, 1.0])
-def test_tv_regression_3D_image_doesnt_crash(l1_ratio):
-    rng = check_random_state(42)
+def test_tv_regression_3D_image_doesnt_crash(rng, l1_ratio):
     dim = (3, 4, 5)
     W_init = np.zeros(dim)
     W_init[2:3, 3:, 1:3] = 1
@@ -362,8 +357,7 @@ def test_lasso_vs_graph_net():
     assert_almost_equal(graph_net_perf, lasso_perf, decimal=3)
 
 
-def test_crop_mask():
-    rng = np.random.RandomState(42)
+def test_crop_mask(rng):
     mask = np.zeros((3, 4, 5), dtype=bool)
     box = mask[:2, :3, :4]
     box[rng.rand(*box.shape) < 3.0] = 1  # mask covers 30% of brain
@@ -377,9 +371,8 @@ def test_crop_mask():
 
 @pytest.mark.parametrize("is_classif", IS_CLASSIF)
 def test_univariate_feature_screening(
-    is_classif, dim=(11, 12, 13), n_samples=10
+    rng, is_classif, dim=(11, 12, 13), n_samples=10
 ):
-    rng = np.random.RandomState(42)
     mask = rng.rand(*dim) > 100.0 / np.prod(dim)
 
     assert mask.sum() >= 100.0
@@ -438,8 +431,7 @@ def test_space_net_regressor_subclass(penalty, alpha, l1_ratio, verbose):
 
 
 @pytest.mark.parametrize("is_classif", IS_CLASSIF)
-def test_space_net_alpha_grid_pure_spatial(is_classif):
-    rng = check_random_state(42)
+def test_space_net_alpha_grid_pure_spatial(rng, is_classif):
     X = rng.randn(10, 100)
     y = np.arange(X.shape[0])
 

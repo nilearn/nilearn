@@ -20,12 +20,13 @@ from numpy.testing import (
 from nilearn import signal
 from nilearn._utils import niimg_conversions, testing
 from nilearn._utils.data_gen import (
+    _basic_confounds,
     generate_fake_fmri,
     generate_labeled_regions,
     generate_maps,
 )
 from nilearn._utils.exceptions import DimensionError
-from nilearn.conftest import _affine_eye, _shape_4d_default
+from nilearn.conftest import _affine_eye, _rng, _shape_4d_default
 from nilearn.image import (
     binarize_img,
     clean_img,
@@ -82,7 +83,7 @@ def _make_largest_cc_img_test_data():
 
 def _images_to_mean():
     """Return a mixture of 4D and 3D images"""
-    rng = np.random.RandomState(42)
+    rng = _rng()
 
     data1 = np.zeros((5, 6, 7))
     data2 = rng.uniform(size=(5, 6, 7))
@@ -437,9 +438,8 @@ def test_mean_img(images_to_mean):
             )
 
 
-def test_mean_img_resample():
+def test_mean_img_resample(rng):
     # Test resampling in mean_img with a permutation of the axes
-    rng = np.random.RandomState(42)
     data = rng.uniform(size=(5, 6, 7, 40))
     affine = np.diag((4, 3, 2, 1))
     img = Nifti1Image(data, affine=affine)
@@ -462,9 +462,7 @@ def test_mean_img_resample():
     assert_array_equal(mean_img_with_resampling.affine, target_affine)
 
 
-def test_swap_img_hemispheres(affine_eye, shape_3d_default):
-    rng = np.random.RandomState(42)
-
+def test_swap_img_hemispheres(affine_eye, shape_3d_default, rng):
     # make sure input image data is not overwritten inside function
     data = rng.standard_normal(size=shape_3d_default)
     data_img = Nifti1Image(data, affine_eye)
@@ -531,7 +529,7 @@ def test_index_img_error_4D(affine_eye):
             index_img(img_4d, i)
 
 
-def test_pd_index_img():
+def test_pd_index_img(rng):
     # confirm indices from pandas dataframes are handled correctly
     if "pandas" not in sys.modules:
         raise pytest.skip(msg="Pandas not available")
@@ -540,7 +538,6 @@ def test_pd_index_img():
 
     fourth_dim_size = img_4d.shape[3]
 
-    rng = np.random.RandomState(42)
     arr = rng.uniform(size=fourth_dim_size) > 0.5
     df = pd.DataFrame({"arr": arr})
 
@@ -630,16 +627,16 @@ def test_new_img_like():
     assert_array_equal(get_data(img_nifti2), get_data(img2_nifti2))
 
 
-def test_new_img_like_accepts_paths(tmp_path):
+def test_new_img_like_accepts_paths(affine_eye, tmp_path, rng):
     """Check that new_img_like can accept instances of pathlib.Path."""
     nifti_path = tmp_path / "sample.nii"
     assert isinstance(nifti_path, Path)
 
-    data = np.random.rand(10, 10, 10)
-    img = Nifti1Image(data, np.eye(4))
+    data = rng.rand(10, 10, 10)
+    img = Nifti1Image(data, affine_eye)
     nibabel.save(img, nifti_path)
 
-    new_data = np.random.rand(10, 10, 10)
+    new_data = rng.rand(10, 10, 10)
     new_img = new_img_like(nifti_path, new_data)
     assert new_img.shape == (10, 10, 10)
 
@@ -648,12 +645,11 @@ def test_new_img_like_accepts_paths(tmp_path):
     assert new_img.shape == (10, 10, 10)
 
 
-def test_new_img_like_non_iterable_header():
+def test_new_img_like_non_iterable_header(rng):
     """
     Tests that when an niimg's header is not iterable
     & it is set to be copied, an error is not raised.
     """
-    rng = np.random.RandomState(42)
     fake_fmri_data = rng.uniform(size=_shape_4d_default())
     fake_affine = rng.uniform(size=(4, 4))
     fake_spatial_image = nibabel.spatialimages.SpatialImage(
@@ -843,28 +839,25 @@ def test_math_img(
             assert result.shape == expected_result.shape
 
 
-def test_binarize_img(img_4D_rand_eye):
-    img = img_4D_rand_eye
-
+def test_binarize_img(img_4d_rand_eye):
     # Test that all output values are 1.
-    img1 = binarize_img(img)
+    img1 = binarize_img(img_4d_rand_eye)
 
     assert_array_equal(np.unique(img1.dataobj), np.array([1]))
 
     # Test that it works with threshold
-    img2 = binarize_img(img, threshold=0.5)
+    img2 = binarize_img(img_4d_rand_eye, threshold=0.5)
 
     assert_array_equal(np.unique(img2.dataobj), np.array([0, 1]))
     # Test that manual binarization equals binarize_img results.
-    img3 = img_4D_rand_eye
-    img3.dataobj[img.dataobj < 0.5] = 0
-    img3.dataobj[img.dataobj >= 0.5] = 1
+    img3 = img_4d_rand_eye
+    img3.dataobj[img_4d_rand_eye.dataobj < 0.5] = 0
+    img3.dataobj[img_4d_rand_eye.dataobj >= 0.5] = 1
 
     assert_array_equal(img2.dataobj, img3.dataobj)
 
 
-def test_clean_img(affine_eye, shape_3d_default):
-    rng = np.random.RandomState(42)
+def test_clean_img(affine_eye, shape_3d_default, rng):
     data = rng.standard_normal(size=(10, 10, 10, 100)) + 0.5
     data_flat = data.T.reshape(100, -1)
     data_img = Nifti1Image(data, affine_eye)
@@ -987,13 +980,51 @@ def test_new_img_like_mgh_image(affine_eye, shape_3d_default):
 
 
 @pytest.mark.parametrize("image", [MGHImage, AnalyzeImage])
-def test_new_img_like_boolean_data(affine_eye, image, shape_3d_default):
+def test_new_img_like_boolean_data(affine_eye, image, shape_3d_default, rng):
     """Check defaulting boolean input data to np.uint8 dtype is valid for
     encoding with nibabel image classes MGHImage and AnalyzeImage.
     """
-    data = np.random.randn(*shape_3d_default).astype("uint8")
+    data = rng.randn(*shape_3d_default).astype("uint8")
     in_img = image(dataobj=data, affine=affine_eye)
 
     out_img = new_img_like(in_img, data=in_img.get_fdata() > 0.5)
 
     assert get_data(out_img).dtype == "uint8"
+
+
+def test_clean_img_sample_mask(img_4d_rand_eye):
+    """Check sample mask can be passed as a kwarg and used correctly."""
+    length = 10
+    confounds = _basic_confounds(length)
+    # exclude last time point
+    sample_mask = np.arange(length - 1)
+
+    img = image.clean_img(
+        img_4d_rand_eye,
+        confounds=confounds,
+        **{"clean__sample_mask": sample_mask},
+    )
+    # original shape is (10, 10, 10, 10)
+    assert img.shape == (10, 10, 10, 9)
+
+
+def test_clean_img_sample_mask_mask_img(shape_3d_default):
+    """Check sample_mask and mask_img can be correctly used together."""
+    length = 10
+    confounds = _basic_confounds(length)
+    img_4d, mask_img = generate_fake_fmri(
+        shape=shape_3d_default, length=length
+    )
+
+    # exclude last time point
+    sample_mask = np.arange(length - 1)
+
+    # test with sample mask
+    img = image.clean_img(
+        img_4d,
+        confounds=confounds,
+        mask_img=mask_img,
+        **{"clean__sample_mask": sample_mask},
+    )
+    # original shape is (10, 10, 10, 10)
+    assert img.shape == (10, 10, 10, 9)

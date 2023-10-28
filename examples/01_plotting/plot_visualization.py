@@ -37,7 +37,7 @@ plot_epi(mean_haxby, colorbar=True, cbar_tick_format="%i")
 # %%
 # Extracting a brain mask
 # -----------------------
-# Simple computation of a mask from the fMRI data
+# Simple computation of a mask from the :term:`fMRI` data
 from nilearn.masking import compute_epi_mask
 
 mask_img = compute_epi_mask(func_filename)

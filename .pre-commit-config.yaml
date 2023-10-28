@@ -39,7 +39,7 @@ exclude: |
 
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.5.0
     hooks:
     -   id: check-ast
     -   id: check-case-conflict
@@ -63,10 +63,10 @@ repos:
     -   id: flynt
 
 -   repo: https://github.com/asottile/pyupgrade
-    rev: v3.13.0
+    rev: v3.15.0
     hooks:
     -   id: pyupgrade
-        args: [--py36-plus]
+        args: [--py38-plus]
 
 -   repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
@@ -75,7 +75,7 @@ repos:
     -   id: rst-inline-touching-normal
 
 -   repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 23.9.1
+    rev: 23.10.0
     hooks:
     -   id: black
         args: [--config, pyproject.toml]
@@ -88,7 +88,7 @@ repos:
         -   black==23.9.1
 
 -   repo: https://github.com/codespell-project/codespell
-    rev: v2.2.5
+    rev: v2.2.6
     hooks:
     -   id: codespell
         args: [--toml, pyproject.toml]
@@ -101,7 +101,7 @@ repos:
         args: [--mapping, '4', --sequence, '4', --offset, '0']
 
 -   repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-    rev: v2.10.0
+    rev: v2.11.0
     hooks:
     -   id: pretty-format-toml
         args: [--autofix, --indent, '4']

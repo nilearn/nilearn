@@ -10,13 +10,14 @@ representational similarity analysis.
 
 Beta series models fit trial-wise conditions, which allow users to create
 "time series" of these trial-wise maps, which can be substituted for the
-typical time series used in resting-state functional connectivity analyses.
+typical time series used in :term:`resting-state`
+:term:`functional connectivity` analyses.
 Generally, these models are most useful for event-related task designs,
 while other modeling approaches, such as psychophysiological interactions
 (PPIs), tend to perform better in block designs, depending on the type of
 analysis.
 See :footcite:t:`Cisler2014` for more information about this,
-in the context of functional connectivity analyses.
+in the context of :term:`functional connectivity` analyses.
 
 Two of the most well-known beta series modeling methods are
 Least Squares- All (LSA) :footcite:p:`Rissman2004` and
@@ -28,8 +29,8 @@ In LSS, each trial of each condition of interest has its own :term:`GLM`,
 in which the targeted trial receives its own column within the design matrix,
 but everything else remains the same as the standard model.
 Trials are then looped across, and many GLMs are fitted,
-with the :term:`Parameter Estimate` map extracted from each GLM to build the
-LSS beta series.
+with the :term:`Parameter Estimate` map extracted from each :term:`GLM`
+to build the LSS beta series.
 
 .. topic:: Choosing the right model for your analysis
 
@@ -58,11 +59,13 @@ LSS beta series.
 
 """
 # sphinx_gallery_thumbnail_number = -2
+
+# %%
 import matplotlib.pyplot as plt
 
 from nilearn import image, plotting
 
-##############################################################################
+# %%
 # Prepare data and analysis parameters
 # ------------------------------------
 # Download data in :term:`BIDS` format and event information for one subject,
@@ -90,7 +93,7 @@ glm_parameters = standard_glm.get_params()
 # with the value of scaling_axis
 glm_parameters["signal_scaling"] = standard_glm.scaling_axis
 
-##############################################################################
+# %%
 # Define the standard model
 # -------------------------
 # Here, we create a basic :term:`GLM` for this run, which we can use to
@@ -107,7 +110,7 @@ fig, ax = plt.subplots(figsize=(5, 10))
 plotting.plot_design_matrix(standard_glm.design_matrices_[0], ax=ax)
 fig.show()
 
-##############################################################################
+# %%
 # Define the LSA model
 # --------------------
 # We will now create a least squares- all (LSA) model.
@@ -136,7 +139,7 @@ fig, ax = plt.subplots(figsize=(10, 10))
 plotting.plot_design_matrix(lsa_glm.design_matrices_[0], ax=ax)
 fig.show()
 
-##############################################################################
+# %%
 # Aggregate beta maps from the LSA model based on condition
 # `````````````````````````````````````````````````````````
 # Collect the :term:`Parameter Estimate` maps
@@ -155,7 +158,7 @@ lsa_beta_maps = {
     name: image.concat_imgs(maps) for name, maps in lsa_beta_maps.items()
 }
 
-##############################################################################
+# %%
 # Define the LSS models
 # ---------------------
 # We will now create a separate LSS model for each trial of interest.
@@ -235,7 +238,7 @@ lss_beta_maps = {
     name: image.concat_imgs(maps) for name, maps in lss_beta_maps.items()
 }
 
-##############################################################################
+# %%
 # Show the design matrices for the first few trials
 # `````````````````````````````````````````````````
 fig, axes = plt.subplots(ncols=3, figsize=(20, 10))
@@ -248,7 +251,7 @@ for i_trial in range(3):
 
 fig.show()
 
-##############################################################################
+# %%
 # Compare the three modeling approaches
 # -------------------------------------
 
@@ -271,16 +274,17 @@ for i_ax, ax in enumerate(axes):
 
 fig.show()
 
-##############################################################################
+# %%
 # Applications of beta series
 # ---------------------------
-# Beta series can be used much like resting-state data, though generally with
-# vastly reduced degrees of freedom than a typical resting-state run, given
-# that the number of trials should always be less than the number of volumes
-# in a functional MRI run.
+# Beta series can be used much like :term:`resting-state` data,
+# though generally with vastly reduced degrees of freedom
+# than a typical :term:`resting-state` run,
+# given that the number of trials should always be less
+# than the number of volumes in a functional MRI run.
 #
-# Two common applications of beta series are to functional connectivity and
-# decoding analyses.
+# Two common applications of beta series are
+# to :term:`functional connectivity` and decoding analyses.
 # For an example of a beta series applied to decoding, see
 # :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_glm_decoding.py`.
 # Here, we show how the beta series can be applied to functional connectivity
@@ -385,7 +389,7 @@ fig.suptitle("LSS Beta Series Functional Connectivity")
 
 fig.show()
 
-##############################################################################
+# %%
 # References
 # ----------
 #

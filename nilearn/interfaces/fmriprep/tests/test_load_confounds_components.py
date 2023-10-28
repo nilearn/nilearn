@@ -6,7 +6,7 @@ from nilearn.interfaces.fmriprep.load_confounds import _load_noise_component
 from nilearn.interfaces.fmriprep.load_confounds_utils import (
     _load_confounds_json,
 )
-from nilearn.interfaces.fmriprep.tests.utils import create_tmp_filepath
+from nilearn.interfaces.fmriprep.tests._testing import create_tmp_filepath
 
 
 @pytest.fixture

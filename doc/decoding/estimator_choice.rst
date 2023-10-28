@@ -80,7 +80,7 @@ whereas the latter is linear with the number of classes.
     :ref:`userguide <frem>`, yielding state-of-the art decoding performance.
 
 **Confusion matrix** `The confusion matrix
-<http://en.wikipedia.org/wiki/Confusion_matrix>`_,
+<https://en.wikipedia.org/wiki/Confusion_matrix>`_,
 :func:`sklearn.metrics.confusion_matrix` is a useful tool to
 understand the classifier's errors in a multiclass problem.
 
@@ -153,7 +153,7 @@ In :class:`nilearn.decoding.DecoderRegressor` you can use some of these objects 
 
    * Many more estimators are available in scikit-learn (see the
      `scikit-learn documentation on supervised learning
-     <http://scikit-learn.org/stable/supervised_learning.html>`_). To learn to
+     <https://scikit-learn.org/stable/supervised_learning.html>`_). To learn to
      do decoding with any of these, see : :ref:`going_further`
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_001.png
@@ -215,7 +215,7 @@ due to this noise.
 .. seealso::
 
    `The scikit-learn documentation on parameter selection
-   <http://scikit-learn.org/stable/modules/grid_search.html>`_
+   <https://scikit-learn.org/stable/modules/grid_search.html>`_
 
 Bagging several models
 ============================
@@ -234,7 +234,7 @@ models is then used to make predictions.
 
 .. seealso::
 
-  * The `scikit-learn documentation <http://scikit-learn.org>`_
+  * The `scikit-learn documentation <https://scikit-learn.org>`_
     has very detailed explanations on a large variety of estimators and
     machine learning techniques. To become better at decoding, you need
     to study it.
