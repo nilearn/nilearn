@@ -7,7 +7,11 @@ from math import sqrt
 
 import numpy as np
 
-from ._objective_functions import div_id, gradient_id, tv_l1_from_gradient
+from ._objective_functions import (
+    divergence_id,
+    gradient_id,
+    tv_l1_from_gradient,
+)
 
 
 def prox_l1(y, alpha, copy=True):
@@ -219,7 +223,7 @@ def prox_tvl1(
             grad_aux = grad_tmp
         grad_im = grad_tmp
         t = t_new
-        gap = weight * div_id(grad_aux, l1_ratio=l1_ratio)
+        gap = weight * divergence_id(grad_aux, l1_ratio=l1_ratio)
 
         # Compute the primal variable
         negated_output = gap - input_img
@@ -274,7 +278,7 @@ def prox_tvl1(
 
     # Compute the primal variable, however, here we must use the ista
     # value, not the fista one
-    output = input_img - weight * div_id(grad_im, l1_ratio=l1_ratio)
+    output = input_img - weight * divergence_id(grad_im, l1_ratio=l1_ratio)
     if val_min is not None or val_max is not None:
         output = output.clip(val_min, val_max, out=output)
     return output, dict(converged=(i < max_iter))

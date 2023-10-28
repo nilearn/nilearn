@@ -6,7 +6,7 @@ from numpy.testing import assert_almost_equal, assert_array_equal
 from scipy.optimize import check_grad
 
 from nilearn.decoding._objective_functions import (
-    div_id,
+    divergence_id,
     gradient_id,
     logistic_loss,
     logistic_loss_grad,
@@ -27,7 +27,7 @@ def test_grad_div_adjoint_arbitrary_ndim(rng, ndim, l1_ratio, size):
 
     assert_almost_equal(
         np.sum(gradient_id(x, l1_ratio=l1_ratio) * y),
-        -np.sum(x * div_id(y, l1_ratio=l1_ratio)),
+        -np.sum(x * divergence_id(y, l1_ratio=l1_ratio)),
     )
 
 

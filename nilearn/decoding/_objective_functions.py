@@ -122,7 +122,7 @@ def tv_l1_from_gradient(spatial_grad):
     return l1_term + tv_term
 
 
-def div_id(grad, l1_ratio=0.5):
+def divergence_id(grad, l1_ratio=0.5):
     """Compute divergence + id of image gradient + id.
 
     Parameters
@@ -279,4 +279,4 @@ def gradient(w):
 
 def divergence(v):
     """Pure spatial divergence."""
-    return div_id(np.vstack((v, [np.zeros_like(v[0])])), l1_ratio=0.0)
+    return divergence_id(np.vstack((v, [np.zeros_like(v[0])])), l1_ratio=0.0)
