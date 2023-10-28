@@ -14,15 +14,15 @@ import numpy as np
 from nilearn.masking import unmask_from_to_3d_array
 
 from ._objective_functions import (
-    _logistic as _logistic_loss,
-    _squared_loss_grad,
-    div,
+    divergence,
     gradient,
     gradient_id,
+    logistic_loss,
     logistic_loss_grad,
     logistic_loss_lipschitz_constant,
     spectral_norm_squared,
     squared_loss,
+    squared_loss_grad,
 )
 from .fista import mfista
 from .proximal_operators import (
@@ -94,7 +94,7 @@ def _squared_loss_and_spatial_grad_derivative(X, y, w, mask, grad_weight):
     image_buffer[mask] = w
     return (
         np.dot(X.T, data_section)
-        - grad_weight * div(gradient(image_buffer))[mask]
+        - grad_weight * divergence(gradient(image_buffer))[mask]
     )
 
 
@@ -167,7 +167,7 @@ def _graph_net_adjoint_data_function(X, w, adjoint_mask, grad_weight):
     out = X.T.dot(w[:n_samples])
     div_buffer = np.zeros(adjoint_mask.shape)
     div_buffer[adjoint_mask] = w[n_samples:]
-    out -= grad_weight * div(div_buffer)[adjoint_mask[0]]
+    out -= grad_weight * divergence(div_buffer)[adjoint_mask[0]]
     return out
 
 
@@ -225,10 +225,12 @@ def _logistic_derivative_lipschitz_constant(
     grad_buffer = np.zeros(mask.shape)
     for _ in range(n_iterations):
         grad_buffer[mask] = a
-        a = -div(gradient(grad_buffer))[mask] / sqrt(np.dot(a, a))
+        a = -divergence(gradient(grad_buffer))[mask] / sqrt(np.dot(a, a))
 
     grad_buffer[mask] = a
-    grad_constant = -np.dot(div(gradient(grad_buffer))[mask], a) / np.dot(a, a)
+    grad_constant = -np.dot(
+        divergence(gradient(grad_buffer))[mask], a
+    ) / np.dot(a, a)
 
     return data_constant + grad_weight * grad_constant
 
@@ -240,7 +242,7 @@ def _logistic_data_loss_and_spatial_grad(X, y, w, mask, grad_weight):
     grad_buffer[mask] = w[:-1]
     grad_mask = np.array([mask for _ in range(mask.ndim)])
     grad_section = gradient(grad_buffer)[grad_mask]
-    return _logistic_loss(X, y, w) + 0.5 * grad_weight * np.dot(
+    return logistic_loss(X, y, w) + 0.5 * grad_weight * np.dot(
         grad_section, grad_section
     )
 
@@ -253,7 +255,8 @@ def _logistic_data_loss_and_spatial_grad_derivative(
     image_buffer[mask] = w[:-1]
     data_section = logistic_loss_grad(X, y, w)
     data_section[:-1] = (
-        data_section[:-1] - grad_weight * div(gradient(image_buffer))[mask]
+        data_section[:-1]
+        - grad_weight * divergence(gradient(image_buffer))[mask]
     )
     return data_section
 
@@ -459,7 +462,7 @@ def _tvl1_objective(X, y, w, alpha, l1_ratio, mask, loss="mse"):
     if loss == "mse":
         out = squared_loss(X, y, w)
     else:
-        out = _logistic_loss(X, y, w)
+        out = logistic_loss(X, y, w)
         w = w[:-1]
 
     grad_id = gradient_id(unmask_from_to_3d_array(w, mask), l1_ratio=l1_ratio)
@@ -576,7 +579,7 @@ def tvl1_solver(
         if loss == "logistic":
             return logistic_loss_grad(X, y, w)
         else:
-            return _squared_loss_grad(X, y, w)
+            return squared_loss_grad(X, y, w)
 
     # function to compute total energy (i.e smooth (f1) + nonsmooth (f2) parts)
     def total_energy(w):

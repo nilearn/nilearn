@@ -6,7 +6,7 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal
 from scipy import linalg
 
-from nilearn.decoding._objective_functions import div, gradient
+from nilearn.decoding._objective_functions import divergence, gradient
 from nilearn.decoding.space_net import BaseSpaceNet
 from nilearn.decoding.space_net_solvers import (
     _graph_net_adjoint_data_function,
@@ -74,13 +74,13 @@ def test_grad_matrix(rng):
 
 
 def test_adjointness(rng, size=4):
-    """Test for adjointness between gradient and div operators."""
+    """Test for adjointness between gradient and divergence operators."""
     for _ in range(3):
         image_1 = rng.rand(size, size, size)
         image_2 = rng.rand(3, size, size, size)
         Axdoty = np.dot((gradient(image_1).ravel()), image_2.ravel())
 
-        xdotAty = np.dot((div(image_2).ravel()), image_1.ravel())
+        xdotAty = np.dot((divergence(image_2).ravel()), image_1.ravel())
 
         assert_almost_equal(Axdoty, -xdotAty)
 

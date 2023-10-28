@@ -6,9 +6,9 @@ from numpy.testing import assert_almost_equal, assert_array_equal
 from scipy.optimize import check_grad
 
 from nilearn.decoding._objective_functions import (
-    _logistic,
     div_id,
     gradient_id,
+    logistic_loss,
     logistic_loss_grad,
 )
 from nilearn.decoding.space_net import BaseSpaceNet
@@ -67,7 +67,7 @@ def test_logistic_loss_derivative(rng, n_samples=4, n_features=10, decimal=5):
     w = rng.randn(n_features + 1)
     assert_almost_equal(
         check_grad(
-            lambda w: _logistic(X, y, w),
+            lambda w: logistic_loss(X, y, w),
             lambda w: logistic_loss_grad(X, y, w),
             w,
         ),

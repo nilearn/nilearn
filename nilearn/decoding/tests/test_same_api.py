@@ -15,10 +15,10 @@ from sklearn.datasets import load_iris
 from sklearn.utils import check_random_state
 
 from nilearn.decoding._objective_functions import (
-    _squared_loss_grad,
     logistic_loss_lipschitz_constant,
     spectral_norm_squared,
     squared_loss,
+    squared_loss_grad,
 )
 from nilearn.decoding.space_net import (
     BaseSpaceNet,
@@ -88,7 +88,7 @@ def test_same_energy_calculus_pure_lasso(rng):
     assert f1 == f2
 
     # check derivatives
-    g1 = _squared_loss_grad(X, y, w)
+    g1 = squared_loss_grad(X, y, w)
     g2 = _squared_loss_and_spatial_grad_derivative(X, y, w.ravel(), mask, 0.0)
 
     assert_array_equal(g1, g2)

@@ -225,7 +225,7 @@ def _sigmoid(t, copy=True):
     return t
 
 
-def _logistic(X, y, w):
+def logistic_loss(X, y, w):
     """Compute the logistic function of the data: sum(sigmoid(yXw)).
 
     Parameters
@@ -267,7 +267,7 @@ def logistic_loss_grad(X, y, w):
 
 
 # gradient of squared loss function
-_squared_loss_grad = partial(
+squared_loss_grad = partial(
     squared_loss, compute_energy=False, compute_grad=True
 )
 
@@ -277,6 +277,6 @@ def gradient(w):
     return gradient_id(w, l1_ratio=0.0)[:-1]  # pure nabla
 
 
-def div(v):
+def divergence(v):
     """Pure spatial divergence."""
     return div_id(np.vstack((v, [np.zeros_like(v[0])])), l1_ratio=0.0)

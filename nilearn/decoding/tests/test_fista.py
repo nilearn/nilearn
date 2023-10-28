@@ -2,11 +2,11 @@ import numpy as np
 import pytest
 
 from nilearn.decoding._objective_functions import (
-    _logistic,
-    _squared_loss_grad,
+    logistic_loss,
     logistic_loss_lipschitz_constant,
     spectral_norm_squared,
     squared_loss,
+    squared_loss_grad,
 )
 from nilearn.decoding.fista import _check_lipschitz_continuous, mfista
 from nilearn.decoding.proximal_operators import prox_l1
@@ -20,7 +20,7 @@ def test_logistic_lipschitz(rng, scaling, n_samples=4, n_features=2):
 
     L = logistic_loss_lipschitz_constant(X)
     _check_lipschitz_continuous(
-        lambda w: _logistic(X, y, w), n_features + 1, L
+        lambda w: logistic_loss(X, y, w), n_features + 1, L
     )
 
 
@@ -32,7 +32,7 @@ def test_squared_loss_lipschitz(rng, scaling, n_samples=4, n_features=2):
 
     L = spectral_norm_squared(X)
     _check_lipschitz_continuous(
-        lambda w: _squared_loss_grad(X, y, w), n_features, L
+        lambda w: squared_loss_grad(X, y, w), n_features, L
     )
 
 
