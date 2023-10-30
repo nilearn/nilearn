@@ -616,6 +616,7 @@ def test_fmri_inputs(tmp_path, rng, confounds):
     flm = FirstLevelModel(subject_label="01").fit(
         FUNCFILE, design_matrices=des
     )
+    del FUNCFILE, func_img
 
     # prepare correct input dataframe and lists
     shapes = (SHAPE,)
