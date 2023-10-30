@@ -6,7 +6,6 @@ from nilearn._utils.testing import write_tmp_imgs
 from nilearn.conftest import _affine_eye
 from nilearn.decomposition.dict_learning import DictLearning
 from nilearn.decomposition.tests.test_canica import _make_canica_test_data
-from nilearn.decomposition.tests.test_multi_pca import _tmp_dir
 from nilearn.image import get_data, iter_img
 from nilearn.maskers import NiftiMasker
 
@@ -193,7 +192,7 @@ def test_components_img(canica_data, mask_img):
 
 
 @pytest.mark.parametrize("n_subjects", [1, 3])
-def test_with_globbing_patterns(mask_img, n_subjects):
+def test_with_globbing_patterns(mask_img, n_subjects, tmp_path):
     data, *_ = _make_canica_test_data(n_subjects=n_subjects)
 
     n_components = 3
@@ -205,17 +204,18 @@ def test_with_globbing_patterns(mask_img, n_subjects):
     elif n_subjects == 3:
         data = [data[0], data[1], data[2]]
 
-    with write_tmp_imgs(*data, create_files=True, use_wildcards=True) as img:
-        input_image = _tmp_dir() + img
+    img = write_tmp_imgs(
+        *data, file_path=tmp_path, create_files=True, use_wildcards=True
+    )
 
-        dict_learning.fit(input_image)
-        components_img = dict_learning.components_img_
+    dict_learning.fit(img)
+    components_img = dict_learning.components_img_
 
-        assert isinstance(components_img, Nifti1Image)
+    assert isinstance(components_img, Nifti1Image)
 
-        check_shape = data[0].shape[:3] + (n_components,)
+    check_shape = data[0].shape[:3] + (n_components,)
 
-        assert components_img.shape, check_shape
+    assert components_img.shape, check_shape
 
 
 def test_dictlearning_score(canica_data, mask_img):

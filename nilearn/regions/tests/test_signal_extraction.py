@@ -332,7 +332,7 @@ def test_img_to_signals_maps_bad_masks(
 
 
 def test_signals_extraction_with_labels_without_mask(
-    signals, labels_data, labels_img, shape_3d_default
+    signals, labels_data, labels_img, shape_3d_default, tmp_path
 ):
     """Test conversion between signals and images \
     using regions defined by labels."""
@@ -356,17 +356,17 @@ def test_signals_extraction_with_labels_without_mask(
     assert_almost_equal(signals_r, signals)
     assert labels_r == list(range(1, 9))
 
-    with write_tmp_imgs(data_img) as filenames:
-        signals_r, labels_r = img_to_signals_labels(
-            imgs=filenames, labels_img=labels_img
-        )
+    filenames = write_tmp_imgs(data_img, file_path=tmp_path)
+    signals_r, labels_r = img_to_signals_labels(
+        imgs=filenames, labels_img=labels_img
+    )
 
-        assert_almost_equal(signals_r, signals)
-        assert labels_r == list(range(1, 9))
+    assert_almost_equal(signals_r, signals)
+    assert labels_r == list(range(1, 9))
 
 
 def test_signals_extraction_with_labels_with_mask(
-    signals, labels_img, labels_data, mask_img, shape_3d_default
+    signals, labels_img, labels_data, mask_img, shape_3d_default, tmp_path
 ):
     """Test conversion between signals and images \
     using regions defined by labels with a mask."""
@@ -382,18 +382,16 @@ def test_signals_extraction_with_labels_with_mask(
     # Zero outside of the mask
     assert np.all(data[np.logical_not(get_data(mask_img))].std(axis=-1) < EPS)
 
-    with write_tmp_imgs(labels_img, mask_img) as filenames:
-        data_img = signals_to_img_labels(
-            signals=signals, labels_img=filenames[0], mask_img=filenames[1]
-        )
+    filenames = write_tmp_imgs(labels_img, mask_img, file_path=tmp_path)
+    data_img = signals_to_img_labels(
+        signals=signals, labels_img=filenames[0], mask_img=filenames[1]
+    )
 
-        assert data_img.shape == (shape_3d_default + (N_TIMEPOINTS,))
-        data = get_data(data_img)
-        assert abs(data).max() > 1e-9
-        # Zero outside of the mask
-        assert np.all(
-            data[np.logical_not(get_data(mask_img))].std(axis=-1) < EPS
-        )
+    assert data_img.shape == (shape_3d_default + (N_TIMEPOINTS,))
+    data = get_data(data_img)
+    assert abs(data).max() > 1e-9
+    # Zero outside of the mask
+    assert np.all(data[np.logical_not(get_data(mask_img))].std(axis=-1) < EPS)
 
     # mask labels before checking
     masked_labels_data = labels_data.copy()

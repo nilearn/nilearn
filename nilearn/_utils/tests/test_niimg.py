@@ -95,7 +95,9 @@ def test_img_data_dtype(rng, affine_eye, tmp_path):
     assert not all(dtype_matches)
 
 
-def test_load_niimg(img1):
-    with testing.write_tmp_imgs(img1, create_files=True) as filename:
-        filename = Path(filename)
-        load_niimg(filename)
+def test_load_niimg(img1, tmp_path):
+    filename = testing.write_tmp_imgs(
+        img1, file_path=tmp_path, create_files=True
+    )
+    filename = Path(filename)
+    load_niimg(filename)

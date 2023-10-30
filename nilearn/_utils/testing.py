@@ -178,6 +178,8 @@ def write_tmp_imgs(*imgs, file_path=None, **kwargs):
                 return filenames
 
     else:  # No-op
+        if len(imgs) == 1:
+            return imgs[0]
         return imgs
 
 

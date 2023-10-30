@@ -1,7 +1,4 @@
 """Test the multi-PCA module."""
-import os
-import tempfile
-
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
@@ -13,11 +10,6 @@ from nilearn.decomposition._multi_pca import _MultiPCA
 from nilearn.maskers import MultiNiftiMasker, NiftiMasker
 
 SHAPE = (6, 8, 10)
-
-
-def _tmp_dir():
-    """Test globbing patterns in input images."""
-    return tempfile.tempdir + os.sep
 
 
 def img_4D():
