@@ -218,13 +218,24 @@ NiLearn is also supported by `DigiCosme <https://digicosme.lri.fr>`_
 Citing nilearn
 --------------
 
-There is no paper published yet about nilearn. We are waiting for the
-package to mature a bit. However, the patterns underlying the package
-have been described in: `Machine learning for neuroimaging with
-scikit-learn
-<https://doi.org/10.3389/fninf.2014.00014>`_.
+If you want to cite Nilearn, we suggest you do it using our Zenodo DOI:
 
-We suggest that you read and cite the paper. Thank you.
+.. code-block:: bibtex
+
+    @software{Nilearn,
+        author = {Nilearn contributors},
+        license = {BSD-4-Clause},
+        title = {{nilearn}},
+        url = {https://github.com/nilearn/nilearn},
+        doi = {https://doi.org/10.5281/zenodo.8397156}
+    }
+
+Nilearn's Research Resource Identifier (RRID) is:
+`RRID:SCR_001362 <https://scicrunch.org/resources/data/record/nlx_144509-1/SCR_001362/resolver?q=nilearn&l=nilearn&i=rrid:scr_001362>`_
+
+There is no paper published about nilearn.
+However, the patterns underlying the package have been described in:
+`Machine learning for neuroimaging with scikit-learn <https://doi.org/10.3389/fninf.2014.00014>`_.
 
 
 Citing scikit-learn
