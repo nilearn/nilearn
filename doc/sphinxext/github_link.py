@@ -40,7 +40,7 @@ def _linkcode_resolve(domain, info, package, url_fmt, revision):
 
     class_name = info["fullname"].split(".")[0]
     module = __import__(info["module"], fromlist=[class_name])
-    # For typed parameters, this will try to get uninitialized parameters
+    # For typed parameters, this will try to get uninitialized attributes
     # and fail
     try:
         obj = attrgetter(info["fullname"])(module)
