@@ -324,7 +324,7 @@ def test_small_radius_inverse(rng):
     masker.inverse_transform(spheres_data)
 
 
-def test_nifti_spheres_masker_io_shapes(rng):
+def test_nifti_spheres_masker_io_shapes(rng, shape_3d_default, affine_eye):
     """Ensure that NiftiSpheresMasker handles 1D/2D/3D/4D data appropriately.
 
     transform(4D image) --> 2D output, no warning
@@ -334,17 +334,15 @@ def test_nifti_spheres_masker_io_shapes(rng):
     inverse_transform(2D array with wrong shape) --> ValueError
     """
     n_regions, n_volumes = 2, 5
-    shape_3d = (10, 11, 12)
-    shape_4d = (10, 11, 12, n_volumes)
-    data_1d = rng.random(n_regions)
-    data_2d = rng.random((n_volumes, n_regions))
-    affine = np.eye(4)
+    shape_4d = shape_3d_default + (n_volumes,)
 
     img_4d, mask_img = data_gen.generate_random_img(
         shape_4d,
-        affine=affine,
+        affine=affine_eye,
     )
-    img_3d, _ = data_gen.generate_random_img(shape_3d, affine=affine)
+    img_3d, _ = data_gen.generate_random_img(
+        shape_3d_default, affine=affine_eye
+    )
 
     masker = NiftiSpheresMasker(
         [(1, 1, 1), (4, 4, 4)],  # number of tuples equal to n_regions
@@ -368,6 +366,8 @@ def test_nifti_spheres_masker_io_shapes(rng):
         test_data = masker.transform(img_4d)
         assert test_data.shape == (n_volumes, n_regions)
 
+    data_1d = rng.random(n_regions)
+    data_2d = rng.random((n_volumes, n_regions))
     # DeprecationWarning should *not* be raised for 1D inputs
     with warnings.catch_warnings():
         warnings.filterwarnings(
@@ -376,7 +376,7 @@ def test_nifti_spheres_masker_io_shapes(rng):
             category=DeprecationWarning,
         )
         test_img = masker.inverse_transform(data_1d)
-        assert test_img.shape == shape_3d
+        assert test_img.shape == shape_3d_default
 
     # DeprecationWarning should *not* be raised for 2D inputs
     with warnings.catch_warnings():

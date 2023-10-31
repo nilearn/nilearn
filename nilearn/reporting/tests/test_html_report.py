@@ -5,9 +5,11 @@ import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal
 
-from nilearn._utils import as_ndarray
-from nilearn._utils.data_gen import generate_labeled_regions, generate_maps
-from nilearn.conftest import _rng
+from nilearn._utils.data_gen import (
+    generate_labeled_regions,
+    generate_maps,
+    generate_random_img,
+)
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiLabelsMasker, NiftiMapsMasker, NiftiMasker
 
@@ -48,13 +50,6 @@ def niftimapsmasker_inputs():
         shape, n_regions=n_regions, affine=affine
     )
     return {"maps_img": label_img}
-
-
-def generate_random_img(shape, length=1, affine=np.eye(4),
-                        rand_gen=_rng()):
-    data = rand_gen.standard_normal(size=(shape + (length,)))
-    return Nifti1Image(data, affine), Nifti1Image(
-        as_ndarray(data[..., 0] > 0.2, dtype=np.int8), affine)
 
 
 @pytest.fixture
@@ -223,7 +218,7 @@ def test_nifti_maps_masker_report_image_in_fit(niftimapsmasker_inputs,
                                                affine_eye):
     """Tests NiftiMapsMasker reporting with image provided to fit."""
     masker = NiftiMapsMasker(**niftimapsmasker_inputs)
-    image, _ = generate_random_img((13, 11, 12), affine=affine_eye, length=3)
+    image, _ = generate_random_img((13, 11, 12, 3), affine=affine_eye)
     masker.fit(image)
     html = masker.generate_report(2)
     assert masker._report_content['report_id'] == 0

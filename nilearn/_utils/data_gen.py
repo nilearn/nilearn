@@ -793,7 +793,7 @@ def add_metadata_to_bids_dataset(bids_path,
 def generate_random_img(
     shape,
     affine=np.eye(4),
-    random_state=np.random.default_rng(0),
+    random_state=0,
 ):
     """Create a random 3D or 4D image with a given shape and affine.
 
@@ -806,8 +806,8 @@ def generate_random_img(
     affine : 4x4 numpy.ndarray
         The affine of the image
 
-    random_state : numpy.random.RandomState instance, optional
-        random number generator.
+    random_state : int, optional
+        Seed for random number generator.
 
     Returns
     -------
@@ -817,7 +817,8 @@ def generate_random_img(
     mask_img : 3D niimg
         The mask image.
     """
-    data = random_state.standard_normal(size=shape)
+    rng = np.random.default_rng(random_state)
+    data = rng.standard_normal(size=shape)
     data_img = Nifti1Image(data, affine)
     if len(shape) == 4:
         mask_data = as_ndarray(data[..., 0] > 0.2, dtype=np.int8)
