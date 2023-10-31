@@ -23,3 +23,5 @@ Enhancements
 
 Changes
 -------
+
+- :bdg-danger:`Deprecation` ``img_to_signals_labels`` in :class:`~regions.signal_extraction` will also return ``masked_atlas`` in release 0.15. Meanwhile, use ``return_masked_atlas`` parameter to enable/disable this behavior. (:gh:`3761` by `Mohammad Torabi`_).

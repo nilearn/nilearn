@@ -598,6 +598,22 @@ def test_img_to_signals_labels_warnings(labeled_regions, fmri_img):
     assert labels_signals.shape == (N_TIMEPOINTS, 8)
     assert len(labels_labels) == 8
 
+    # test return_masked_atlas deprecation warning
+    with pytest.warns(
+        DeprecationWarning,
+        match='After version 0.13. "img_to_signals_labels" will also return '
+        'the "masked_atlas". Meanwhile "return_masked_atlas" parameter can be '
+        "used to toggle this behavior. In version 0.15, "
+        '"return_masked_atlas" parameter will be removed.',
+    ):
+        labels_signals, labels_labels = img_to_signals_labels(
+            imgs=fmri_img,
+            labels_img=labeled_regions,
+            mask_img=mask_img,
+            keep_masked_labels=False,
+            return_masked_atlas=False,
+        )
+
 
 def test_img_to_signals_maps_warnings(
     labeled_regions, fmri_img, shape_3d_default

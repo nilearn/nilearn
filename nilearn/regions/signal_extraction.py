@@ -393,6 +393,11 @@ def img_to_signals_labels(
         standard_deviation. Default="mean".
     %(keep_masked_labels)s
 
+    return_masked_atlas : :obj:`bool`, optional
+        If True, the masked atlas is returned. Default=False.
+        deprecated in version 0.13, to be removed in 0.15.
+        after 0.13, the masked atlas will always be returned.
+
     Returns
     -------
     signals : :class:`numpy.ndarray`
@@ -413,7 +418,7 @@ def img_to_signals_labels(
         e.g. clusters
 
     """
-    signals, labels, _ = _img_to_signals_labels_with_masked_atlas(
+    signals, labels, masked_atlas = _img_to_signals_labels_with_masked_atlas(
         imgs,
         labels_img,
         mask_img,
@@ -422,7 +427,18 @@ def img_to_signals_labels(
         strategy,
         keep_masked_labels,
     )
-    return signals, labels
+    if return_masked_atlas:
+        return signals, labels, masked_atlas
+    else:
+        warnings.warn(
+            'After version 0.13. "img_to_signals_labels" will also return the '
+            '"masked_atlas". Meanwhile "return_masked_atlas" parameter can be '
+            "used to toggle this behavior. In version 0.15, "
+            '"return_masked_atlas" parameter will be removed.',
+            DeprecationWarning,
+            stacklevel=1,
+        )
+        return signals, labels
 
 
 def signals_to_img_labels(
