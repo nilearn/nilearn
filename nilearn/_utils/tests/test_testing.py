@@ -8,6 +8,7 @@ from nilearn._utils.testing import (
     assert_memory_less_than,
     check_deprecation,
     with_memory_profiler,
+    write_tmp_imgs,
 )
 
 
@@ -56,3 +57,32 @@ def dummy_deprecation(start_version, end_version):
 
 def test_check_deprecation():
     check_deprecation(dummy_deprecation, "Deprecated")("0.0.1", "0.0.2")
+
+
+@pytest.mark.parametrize("create_files", [True, False])
+@pytest.mark.parametrize("use_wildcards", [True, False])
+def test_write_tmp_imgs_default(
+    monkeypatch, tmp_path, img_3d_mni, create_files, use_wildcards
+):
+    """Write imgs to default location."""
+    monkeypatch.chdir(tmp_path)
+
+    write_tmp_imgs(
+        img_3d_mni,
+        create_files=create_files,
+        use_wildcards=use_wildcards,
+    )
+
+
+@pytest.mark.parametrize("create_files", [True, False])
+@pytest.mark.parametrize("use_wildcards", [True, False])
+def test_write_tmp_imgs_set_path(
+    tmp_path, img_3d_mni, create_files, use_wildcards
+):
+    """Write imgs to a specified location."""
+    write_tmp_imgs(
+        img_3d_mni,
+        file_path=tmp_path,
+        create_files=create_files,
+        use_wildcards=use_wildcards,
+    )

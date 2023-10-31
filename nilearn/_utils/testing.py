@@ -6,7 +6,6 @@ import os
 import sys
 import tempfile
 import warnings
-from collections.abc import Iterable
 from pathlib import Path
 
 import pytest
@@ -163,7 +162,6 @@ def write_tmp_imgs(*imgs, file_path=None, **kwargs):
         filenames = []
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", RuntimeWarning)
-            imgs = [imgs] if not isinstance(imgs, Iterable) else imgs
             for i, img in enumerate(imgs):
                 filename = file_path / (prefix + str(i) + suffix)
                 filenames.append(str(filename))
