@@ -163,7 +163,7 @@ def _permuted_ols_on_chunk(
 
     """
     # initialize the seed of the random generator
-    rng = np.random.default_rng(random_state)
+    rng = check_random_state(random_state)
 
     n_samples, n_regressors = tested_vars.shape
     n_descriptors = target_vars.shape[1]
@@ -191,7 +191,7 @@ def _permuted_ols_on_chunk(
         if intercept_test:
             # sign swap (random multiplication by 1 or -1)
             target_vars = target_vars * (
-                rng.integers(2, size=(n_samples, 1)) * 2 - 1
+                rng.randint(2, size=(n_samples, 1)) * 2 - 1
             )
 
         else:
