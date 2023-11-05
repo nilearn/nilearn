@@ -1095,7 +1095,7 @@ def test_handle_scrubbed_volumes_extrapolation():
 
     censored_samples = 5
     sample_mask = np.arange(signals.shape[0])
-    scrub_index = np.arange(censored_samples)
+    scrub_index = np.concatenate((np.arange(censored_samples), [10, 20, 30]))
     sample_mask = np.delete(sample_mask, scrub_index)
 
     # Test cubic spline interpolation (enabled extrapolation) in the
@@ -1111,7 +1111,7 @@ def test_handle_scrubbed_volumes_extrapolation():
         (
             extrapolated_signals,
             extrapolated_confounds,
-            sample_mask,
+            extrapolated_sample_mask,
         ) = nisignal._handle_scrubbed_volumes(
             signals, confounds, sample_mask, "butterworth", 2.5, True
         )
@@ -1119,6 +1119,7 @@ def test_handle_scrubbed_volumes_extrapolation():
     np.testing.assert_equal(
         confounds.shape[0], extrapolated_confounds.shape[0]
     )
+    np.testing.assert_equal(sample_mask, extrapolated_sample_mask)
 
     # Test cubic spline interpolation without predicting values outside
     # the range of the signal available (disabled extrapolation), discarding
@@ -1126,7 +1127,7 @@ def test_handle_scrubbed_volumes_extrapolation():
     (
         interpolated_signals,
         interpolated_confounds,
-        sample_mask,
+        interpolated_sample_mask,
     ) = nisignal._handle_scrubbed_volumes(
         signals, confounds, sample_mask, "butterworth", 2.5, False
     )
@@ -1136,3 +1137,4 @@ def test_handle_scrubbed_volumes_extrapolation():
     np.testing.assert_equal(
         confounds.shape[0], interpolated_confounds.shape[0] + censored_samples
     )
+    np.testing.assert_equal(sample_mask - sample_mask[0], interpolated_sample_mask)
