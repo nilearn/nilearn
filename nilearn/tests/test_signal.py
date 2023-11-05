@@ -1094,6 +1094,7 @@ def test_handle_scrubbed_volumes_extrapolation():
     )
 
     censored_samples = 5
+    total_samples = censored_samples + 3
     sample_mask = np.arange(signals.shape[0])
     scrub_index = np.concatenate((np.arange(censored_samples), [10, 20, 30]))
     sample_mask = np.delete(sample_mask, scrub_index)
@@ -1138,3 +1139,16 @@ def test_handle_scrubbed_volumes_extrapolation():
         confounds.shape[0], interpolated_confounds.shape[0] + censored_samples
     )
     np.testing.assert_equal(sample_mask - sample_mask[0], interpolated_sample_mask)
+
+    # Assert that the modified sample mask (interpolated_sample_mask)
+    # can be applied to the interpolated signals and confounds
+    (
+        censored_signals,
+        censored_confounds,
+    ) = nisignal._censor_signals(interpolated_signals,
+                                 interpolated_confounds,
+                                 interpolated_sample_mask)
+    np.testing.assert_equal(
+        signals.shape[0], censored_signals.shape[0] + total_samples)
+    np.testing.assert_equal(
+        confounds.shape[0], censored_confounds.shape[0] + total_samples)
