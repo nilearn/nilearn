@@ -1100,13 +1100,21 @@ def test_handle_scrubbed_volumes_extrapolation():
 
     # Test cubic spline interpolation (enabled extrapolation) in the
     # very first n=5 samples of generated signal
-    (
-        extrapolated_signals,
-        extrapolated_confounds,
-        sample_mask,
-    ) = nisignal._handle_scrubbed_volumes(
-        signals, confounds, sample_mask, "butterworth", 2.5, True
+    extrapolate_warning = (
+        "By default the cubic spline interpolator extrapolates "
+        "the out-of-bounds censored volumes in the data run. This "
+        "can lead to undesired filtered signal results. Starting in "
+        "version 0.13, the default strategy will be not to extrapolate "
+        "but to discard those volumes at filtering."
     )
+    with pytest.warns(FutureWarning, match=extrapolate_warning):
+        (
+            extrapolated_signals,
+            extrapolated_confounds,
+            sample_mask,
+        ) = nisignal._handle_scrubbed_volumes(
+            signals, confounds, sample_mask, "butterworth", 2.5, True
+        )
     np.testing.assert_equal(signals.shape[0], extrapolated_signals.shape[0])
     np.testing.assert_equal(
         confounds.shape[0], extrapolated_confounds.shape[0]

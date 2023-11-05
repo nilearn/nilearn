@@ -856,7 +856,7 @@ def _interpolate_volumes(volumes, sample_mask, t_r, extrapolate):
             "the out-of-bounds censored volumes in the data run. This "
             "can lead to undesired filtered signal results. Starting in "
             "version 0.13, the default strategy will be not to extrapolate "
-            "but discard those volumes at filtering."
+            "but to discard those volumes at filtering."
         )
         warnings.warn(
             category=FutureWarning,
