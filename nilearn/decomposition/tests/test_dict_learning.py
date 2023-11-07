@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
-from nilearn._utils.testing import write_tmp_imgs
+from nilearn._utils.testing import write_fake_imgs
 from nilearn.conftest import _affine_eye
 from nilearn.decomposition.dict_learning import DictLearning
 from nilearn.decomposition.tests.test_canica import _make_canica_test_data
@@ -204,7 +204,7 @@ def test_with_globbing_patterns(mask_img, n_subjects, tmp_path):
     elif n_subjects == 3:
         data = [data[0], data[1], data[2]]
 
-    img = write_tmp_imgs(
+    img = write_fake_imgs(
         *data, file_path=tmp_path, create_files=True, use_wildcards=True
     )
 

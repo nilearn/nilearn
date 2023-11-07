@@ -133,7 +133,7 @@ def test_with_files(tmp_path):
     data[20, 20, 20] = 1
     data_img = nibabel.Nifti1Image(data, np.eye(4))
 
-    filename = testing.write_tmp_imgs(data_img, file_path=tmp_path)
+    filename = testing.write_fake_imgs(data_img, file_path=tmp_path)
     masker = NiftiMasker()
     masker.fit(filename)
     masker.transform(filename)
@@ -191,7 +191,7 @@ def test_mask_3d(tmp_path):
     data[20, 20, 20] = 1
     data_img = nibabel.Nifti1Image(data, np.eye(4))
 
-    filename = testing.write_tmp_imgs(
+    filename = testing.write_fake_imgs(
         data_img,
         file_path=tmp_path,
         create_files=True,
@@ -326,7 +326,7 @@ def test_joblib_cache(tmp_path):
     mask[20, 20, 20] = 1
     mask_img = nibabel.Nifti1Image(mask, np.eye(4))
 
-    filename = testing.write_tmp_imgs(
+    filename = testing.write_fake_imgs(
         mask_img,
         file_path=tmp_path,
         create_files=True,

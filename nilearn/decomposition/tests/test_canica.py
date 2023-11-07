@@ -5,7 +5,7 @@ import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal
 
-from nilearn._utils.testing import write_tmp_imgs
+from nilearn._utils.testing import write_fake_imgs
 from nilearn.conftest import _affine_eye, _rng
 from nilearn.decomposition.canica import CanICA
 from nilearn.image import get_data, iter_img
@@ -262,7 +262,7 @@ def test_with_globbing_patterns_with_single_subject(mask_img, tmp_path):
 
     canica = CanICA(n_components=n_components, mask=mask_img)
 
-    img = write_tmp_imgs(
+    img = write_fake_imgs(
         data[0], file_path=tmp_path, create_files=True, use_wildcards=True
     )
     canica.fit(img)
@@ -283,7 +283,7 @@ def test_with_globbing_patterns_with_multi_subjects(
     n_components = 3
     canica = CanICA(n_components=n_components, mask=mask_img)
 
-    img = write_tmp_imgs(
+    img = write_fake_imgs(
         *canica_data, file_path=tmp_path, create_files=True, use_wildcards=True
     )
     canica.fit(img)

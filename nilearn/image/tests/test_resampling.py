@@ -275,7 +275,7 @@ def test_resampling_error_checks(tmp_path):
     resample_img(img, target_shape=target_shape, target_affine=affine)
     resample_img(img, target_affine=affine)
 
-    filename = testing.write_tmp_imgs(img, file_path=tmp_path)
+    filename = testing.write_fake_imgs(img, file_path=tmp_path)
     resample_img(filename, target_shape=target_shape, target_affine=affine)
 
     # Missing parameter
@@ -946,7 +946,7 @@ def test_resample_input(affine_eye, shape, rng, tmp_path):
     affine[:3, -1] = 0.5 * np.array(shape[:3])
     img = Nifti1Image(data, affine)
 
-    filename = testing.write_tmp_imgs(
+    filename = testing.write_fake_imgs(
         img, file_path=tmp_path, create_files=True
     )
     filename = Path(filename)

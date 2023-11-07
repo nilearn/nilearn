@@ -47,7 +47,7 @@ def test_nifti_maps_masker(tmp_path):
 
     # No exception raised here
     for create_files in (True, False):
-        labels11 = testing.write_tmp_imgs(
+        labels11 = testing.write_fake_imgs(
             labels11_img, file_path=tmp_path, create_files=create_files
         )
         masker11 = NiftiMapsMasker(labels11, resampling_target=None)
@@ -69,7 +69,7 @@ def test_nifti_maps_masker(tmp_path):
 
     # Test all kinds of mismatches between shapes and between affines
     for create_files in (True, False):
-        images = testing.write_tmp_imgs(
+        images = testing.write_fake_imgs(
             labels11_img,
             mask12_img,
             file_path=tmp_path,

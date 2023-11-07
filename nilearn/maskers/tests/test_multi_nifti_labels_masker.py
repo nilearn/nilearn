@@ -309,7 +309,7 @@ def test_multi_nifti_labels_masker_resampling(tmp_path):
     )
 
     # Test with filenames
-    filename = testing.write_tmp_imgs(fmri22_img, file_path=tmp_path)
+    filename = testing.write_fake_imgs(fmri22_img, file_path=tmp_path)
     masker = MultiNiftiLabelsMasker(labels33_img, resampling_target="data")
     masker.fit_transform(filename)
 

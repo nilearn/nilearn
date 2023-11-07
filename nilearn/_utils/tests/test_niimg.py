@@ -96,7 +96,7 @@ def test_img_data_dtype(rng, affine_eye, tmp_path):
 
 
 def test_load_niimg(img1, tmp_path):
-    filename = testing.write_tmp_imgs(
+    filename = testing.write_fake_imgs(
         img1, file_path=tmp_path, create_files=True
     )
     filename = Path(filename)

@@ -112,7 +112,7 @@ def serialize_niimg(img, gzipped=True):
             return f.read()
 
 
-def write_tmp_imgs(*imgs, file_path=None, **kwargs):
+def write_fake_imgs(*imgs, file_path=None, **kwargs):
     """Write Nifti images on disk.
 
     Write nifti images in a specified location.

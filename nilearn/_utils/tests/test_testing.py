@@ -8,7 +8,7 @@ from nilearn._utils.testing import (
     assert_memory_less_than,
     check_deprecation,
     with_memory_profiler,
-    write_tmp_imgs,
+    write_fake_imgs,
 )
 
 
@@ -67,7 +67,7 @@ def test_write_tmp_imgs_default(
     """Write imgs to default location."""
     monkeypatch.chdir(tmp_path)
 
-    write_tmp_imgs(
+    write_fake_imgs(
         img_3d_mni,
         create_files=create_files,
         use_wildcards=use_wildcards,
@@ -80,7 +80,7 @@ def test_write_tmp_imgs_set_path(
     tmp_path, img_3d_mni, create_files, use_wildcards
 ):
     """Write imgs to a specified location."""
-    write_tmp_imgs(
+    write_fake_imgs(
         img_3d_mni,
         file_path=tmp_path,
         create_files=create_files,

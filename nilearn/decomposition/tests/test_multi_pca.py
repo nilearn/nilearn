@@ -4,7 +4,7 @@ import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal
 
-from nilearn._utils.testing import write_tmp_imgs
+from nilearn._utils.testing import write_fake_imgs
 from nilearn.conftest import _affine_eye, _rng
 from nilearn.decomposition._multi_pca import _MultiPCA
 from nilearn.maskers import MultiNiftiMasker, NiftiMasker
@@ -229,7 +229,7 @@ def test_components_img(multi_pca_data, mask_img):
 def test_with_globbing_patterns_on_one_or_several_images(imgs, tmp_path):
     multi_pca = _MultiPCA(n_components=3)
 
-    filenames = write_tmp_imgs(
+    filenames = write_fake_imgs(
         *imgs, file_path=tmp_path, create_files=True, use_wildcards=True
     )
 

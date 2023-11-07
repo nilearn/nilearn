@@ -11,7 +11,7 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
 
 from nilearn._utils.exceptions import DimensionError
-from nilearn._utils.testing import write_tmp_imgs
+from nilearn._utils.testing import write_fake_imgs
 from nilearn.conftest import _rng
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiMasker
@@ -139,7 +139,7 @@ def test_joblib_cache(tmp_path):
     mask[20, 20, 20] = 1
     mask_img = Nifti1Image(mask, np.eye(4))
 
-    filename = write_tmp_imgs(mask_img, file_path=tmp_path, create_files=True)
+    filename = write_fake_imgs(mask_img, file_path=tmp_path, create_files=True)
     masker = MultiNiftiMasker(mask_img=filename)
     masker.fit()
     mask_hash = hash(masker.mask_img_)
