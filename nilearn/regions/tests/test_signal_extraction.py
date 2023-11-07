@@ -456,7 +456,7 @@ def test_signals_extraction_with_labels_with_mask_return_masked_atlas(
     mask_img = _create_mask_with_3_regions_from_labels_data(
         get_data(labels_img), labels_img.affine
     )
-    
+
     (
         signals_r,
         labels_r,
