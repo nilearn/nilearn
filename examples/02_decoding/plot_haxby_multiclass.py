@@ -42,7 +42,7 @@ unique_conditions, order = np.unique(y, return_index=True)
 # Sort the conditions by the order of appearance
 unique_conditions = unique_conditions[np.argsort(order)]
 
-# %%#
+# %%
 # Prepare the :term:`fMRI` data
 # -----------------------------
 from nilearn.maskers import NiftiMasker

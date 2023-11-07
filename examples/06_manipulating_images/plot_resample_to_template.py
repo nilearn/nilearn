@@ -19,7 +19,7 @@ template = load_mni152_template(resolution=2)
 
 stat_img = load_sample_motor_activation_image()
 
-# %%##
+# %%
 # Now, the motor :term:`contrast` map image can be resampled
 # to the :term:`MNI` template image.
 from nilearn.image import resample_to_img

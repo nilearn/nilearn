@@ -71,7 +71,7 @@ from nilearn.glm.second_level import SecondLevelModel
 model = SecondLevelModel(smoothing_fwhm=5.0)
 model.fit(contrast_map_filenames, design_matrix=design_matrix)
 
-# %%#
+# %%
 # To estimate the :term:`contrast` is very simple.
 # We can just provide the column name of the design matrix.
 z_map = model.compute_contrast("fluency", output_type="z_score")

@@ -213,7 +213,7 @@ plot_stat_map(
     cut_coords=cut_coords,
 )
 
-# %%#
+# %%
 # We can post-process the results obtained with simple operations
 # such as mask intersection and :term:`dilation<Dilation>`
 # to regularize the mask definition.
