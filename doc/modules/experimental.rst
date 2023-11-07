@@ -7,8 +7,12 @@
    :no-members:
    :no-inherited-members:
 
-nilearn.experimental.surface
-----------------------------
+:mod:`nilearn.experimental.surface`
+-----------------------------------
+
+.. automodule:: nilearn.experimental.surface
+   :no-members:
+   :no-inherited-members:
 
 **Classes**:
 
