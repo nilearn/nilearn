@@ -779,7 +779,7 @@ def clean(
         )
         if not standardize_confounds:
             # Improve numerical stability by controlling the range of
-            # confounds. We don't rely on standardize as it removes any
+            # confounds. We don't rely on standardize_signal as it removes any
             # constant contribution to confounds.
             confound_max = np.max(np.abs(confounds), axis=0)
             confound_max[confound_max == 0] = 1
