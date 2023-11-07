@@ -608,7 +608,7 @@ def test_region_names():
     )
 
     # define region_names
-    region_names = ['background'] + ["region_" + str(i + 1) for i in range(7)]
+    region_names = ["background"] + ["region_" + str(i + 1) for i in range(7)]
 
     masker = NiftiLabelsMasker(
         labels_img,
@@ -617,11 +617,12 @@ def test_region_names():
     )
     _ = masker.fit().transform(fmri_img)
 
-    region_names_after_fit =\
-        [masker.region_names_[i] for i in masker.region_names_]
+    region_names_after_fit = [
+        masker.region_names_[i] for i in masker.region_names_
+    ]
     region_names_after_fit.sort()
     region_names.sort()
-    region_names.pop(region_names.index('background'))
+    region_names.pop(region_names.index("background"))
     assert region_names_after_fit == region_names
 
 

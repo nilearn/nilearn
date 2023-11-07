@@ -375,10 +375,14 @@ def test_signals_extraction_with_labels_without_mask_return_masked_atlas(
     data_img = signals_to_img_labels(signals=signals, labels_img=labels_img)
 
     # test return_masked_atlas
-    signals_r, labels_r, masked_atlas_r =\
-        _img_to_signals_labels_with_masked_atlas(
-            imgs=data_img, labels_img=labels_img,
-        )
+    (
+        signals_r,
+        labels_r,
+        masked_atlas_r,
+    ) = _img_to_signals_labels_with_masked_atlas(
+        imgs=data_img,
+        labels_img=labels_img,
+    )
 
     labels_data = get_data(labels_img)
     labels_data_r = get_data(masked_atlas_r)
@@ -450,12 +454,18 @@ def test_signals_extraction_with_labels_with_mask_return_masked_atlas(
     # test return_masked_atlas
     # create a mask_img with only 3 regions
     mask_img = _create_mask_with_3_regions_from_labels_data(
-        get_data(labels_img), labels_img.affine)
-
-    signals_r, labels_r, masked_atlas_r =\
-        _img_to_signals_labels_with_masked_atlas(
-            imgs=data_img, labels_img=labels_img, mask_img=mask_img,
-        )
+        get_data(labels_img), labels_img.affine
+    )
+    
+    (
+        signals_r,
+        labels_r,
+        masked_atlas_r,
+    ) = _img_to_signals_labels_with_masked_atlas(
+        imgs=data_img,
+        labels_img=labels_img,
+        mask_img=mask_img,
+    )
 
     labels_data_r = get_data(masked_atlas_r)
 

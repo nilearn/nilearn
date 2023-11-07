@@ -340,9 +340,7 @@ def _img_to_signals_labels_with_masked_atlas(
             signals[:, labels_index[this_label]] = 0
 
     # finding the new labels image
-    masked_atlas = Nifti1Image(
-        labels_data.astype(np.int8), labels_img.affine
-    )
+    masked_atlas = Nifti1Image(labels_data.astype(np.int8), labels_img.affine)
     return signals, labels, masked_atlas
 
 
@@ -356,7 +354,7 @@ def img_to_signals_labels(
     order="F",
     strategy="mean",
     keep_masked_labels=True,
-    return_masked_atlas=False
+    return_masked_atlas=False,
 ):
     """Extract region signals from image.
 
