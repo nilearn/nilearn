@@ -6,6 +6,7 @@ SPHINXOPTS    = -v
 SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = _build
+VERSIONTAG    = x.y.z
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
@@ -189,4 +190,5 @@ install:
 	git add -A && \
 	git add .nojekyll && \
 	git commit -a -m 'Make install' && \
-	git push
+	git tag $(VERSIONTAG)
+	git push --tags
