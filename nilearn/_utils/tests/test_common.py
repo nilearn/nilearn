@@ -27,25 +27,9 @@ def test_private_vs_public(func):
     )
 
 
-def test_all_functions():
-    assert {
-        _[0] for _ in all_functions(modules_to_consider=["connectome"])
-    } == {
-        "prec_to_partial",
-        "vec_to_sym_matrix",
-        "group_sparse_covariance_path",
-        "empirical_covariances",
-        "group_sparse_scores",
-        "group_sparse_covariance",
-        "cov_to_corr",
-        "compute_alpha_max",
-        "sym_matrix_to_vec",
-    }
+def test_number_public_functions():
+    assert len({_[0] for _ in all_functions()}) == 213
 
 
-def test_all_classes():
-    from nilearn import maskers
-
-    assert (
-        {_[0] for _ in all_classes(modules_to_consider=["maskers"])}
-    ) == set(maskers.__all__)
+def test_number_public_classes():
+    assert len({_[0] for _ in all_classes()}) == 61
