@@ -28,8 +28,20 @@ def test_private_vs_public(func):
 
 
 def test_number_public_functions():
+    """Check that number of public functions is stable.
+
+    If it changes, it means that we have added or removed a public function.
+    If this is intentional, then the number should be updated in the test.
+    Otherwise it means that the public API of nilearn has changed by mistake.
+    """
     assert len({_[0] for _ in all_functions()}) == 213
 
 
 def test_number_public_classes():
+    """Check that number of public classes is stable.
+
+    If it changes, it means that we have added or removed a public function.
+    If this is intentional, then the number should be updated in the test.
+    Otherwise it means that the public API of nilearn has changed by mistake.
+    """
     assert len({_[0] for _ in all_classes()}) == 61
