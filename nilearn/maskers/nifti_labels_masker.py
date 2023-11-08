@@ -22,9 +22,7 @@ class _ExtractionFunctor:
         self.mask_img = mask_img
 
     def __call__(self, imgs):
-        from ..regions.signal_extraction import (
-            img_to_signals_labels,
-        )
+        from ..regions.signal_extraction import img_to_signals_labels
 
         signals, labels, masked_labels_img =\
             img_to_signals_labels(
