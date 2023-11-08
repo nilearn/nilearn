@@ -328,12 +328,13 @@ See available linux distributions of texlive-latex-base and texlive-latex-extra:
 - https://pkgs.org/search/?q=texlive-latex-base
 - https://pkgs.org/search/?q=texlive-latex-extra
 
-We now need to update the documentation:
+We now need to update the documentation. Make sure to change ``x.y.z`` to the
+current release version:
 
 .. code-block:: bash
 
     cd doc
-    make install
+    make install VERSIONTAG=x.y.z
 
 
 This will build the documentation (beware, this is time consuming...)
