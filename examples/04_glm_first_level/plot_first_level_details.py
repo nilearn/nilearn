@@ -480,7 +480,7 @@ plt.show()
 # high-motion volumes in scrubbing based noise removal strategies. In this
 # scenario, we can apply a sample mask along the time dimension to exclude
 # unwanted volumes. When using :term:`fMRIPrep` outputs from 1.4.x series or
-# above, wecan use the :func:`~nilearn.interfaces.fmriprep.load_confounds`
+# above, we can use the :func:`~nilearn.interfaces.fmriprep.load_confounds`
 # function of Nilearn to retrieve sample masks based on the given scrubbing
 # threshold and the non-steady state columns.
 # For non-fMRIPrep output, we can still define a sample mask. Here we apply a

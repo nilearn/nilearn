@@ -13,10 +13,23 @@ message: If you use this software, please cite it as below.
 
 repository-code: https://github.com/nilearn/nilearn
 
+preferred-citation:
+  authors:
+    - family-names: Nilearn contributors
+  title: Nilearn
+  url: https://doi.org/10.5281/zenodo.8397156
+  type: software
+
 identifiers:
-  - description: Machine learning for neuroimaging with scikit-learn
+  - description: 2014, Frontiers in Neuroinformatics
     type: doi
     value: 10.3389/fninf.2014.00014
+  - description: Zenodo collection for all releases
+    type: doi
+    value: 10.5281/zenodo.8397156
+  - description: 2023, OHBM poster
+    type: doi
+    value: 10.5281/zenodo.8383514
 
 contact:
   - given-names: Bertrand

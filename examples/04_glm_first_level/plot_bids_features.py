@@ -24,7 +24,7 @@ More specifically:
 """
 
 
-# %%#
+# %%
 # Fetch openneuro :term:`BIDS` dataset
 # ------------------------------------
 # We download one subject from the stopsignal task

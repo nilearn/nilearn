@@ -271,10 +271,12 @@ Other tags can describe the PR content : [FIX] for a bugfix, [DOC] for a
 change in documentation or examples, [ENH] for a new feature and [MAINT] for
 maintenance changes.
 
+.. _changelog:
+
 Changelog
 ---------
 
-Changelog entries in ``doc/changes/latest.rst`` should adhere to the following conventions:
+Changelog entries in ``nilearn/doc/changes/latest.rst`` should adhere to the following conventions:
 
 - Entry in the appropriate category
 - Single line per entry
@@ -294,7 +296,7 @@ List of badges:
       :bdg-danger:`Deprecation`
       :bdg-dark:`Code`
 
-Example entry in ``doc/changes/latest.rst``:
+Example entry in ``nilearn/doc/changes/latest.rst``:
 
 .. code-block:: rst
 

@@ -108,7 +108,7 @@ variance_threshold.fit_transform(gm_maps_masked)
 # decoding process
 mask = nifti_masker.inverse_transform(variance_threshold.get_support())
 
-# %%#
+# %%
 # Prediction pipeline with :term:`ANOVA` and SVR using
 # :class:`nilearn.decoding.DecoderRegressor` Object
 #
