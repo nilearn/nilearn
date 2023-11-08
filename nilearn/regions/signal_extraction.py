@@ -239,113 +239,6 @@ def _check_reduction_strategy(strategy: str):
 
 # FIXME: naming scheme is not really satisfying. Any better idea appreciated.
 @_utils.fill_doc
-def _img_to_signals_labels_with_masked_atlas(
-    imgs,
-    labels_img,
-    mask_img=None,
-    background_label=0,
-    order="F",
-    strategy="mean",
-    keep_masked_labels=True,
-):
-    """Extract region signals from image. Also returns masked atlas.
-
-    This function is applicable to regions defined by labels.
-
-    labels, imgs and mask shapes and affines must fit. This function
-    performs no resampling.
-
-    Parameters
-    ----------
-    %(imgs)s
-        Input images.
-
-    labels_img : Niimg-like object
-        See :ref:`extracting_data`.
-        Regions definition as labels. By default, the label zero is used to
-        denote an absence of region. Use background_label to change it.
-
-    mask_img : Niimg-like object, optional
-        See :ref:`extracting_data`.
-        Mask to apply to labels before extracting signals.
-        Every point outside the mask is considered
-        as background (i.e. no region).
-
-    background_label : number, default=0
-        Number representing background in labels_img.
-
-    order : :obj:`str`, default="F"
-        Ordering of output array ("C" or "F").
-
-    strategy : :obj:`str`, default="mean"
-        The name of a valid function to reduce the region with.
-        Must be one of: sum, mean, median, minimum, maximum, variance,
-        standard_deviation.
-    %(keep_masked_labels)s
-
-    Returns
-    -------
-    signals : :class:`numpy.ndarray`
-        Signals extracted from each region. One output signal is the mean
-        of all input signals in a given region. If some regions are entirely
-        outside the mask, the corresponding signal is zero.
-        Shape is: (scan number, number of regions)
-
-    labels : :obj:`list` or :obj:`tuple`
-        Corresponding labels for each signal. signal[:, n] was extracted from
-        the region with label labels[n].
-
-    masked_atlas : Niimg-like object
-        Regions definition as labels after applying the mask.
-
-    See Also
-    --------
-    nilearn.regions.signals_to_img_labels
-    nilearn.regions.img_to_signals_maps
-    nilearn.maskers.NiftiLabelsMasker : Signal extraction on labels images
-        e.g. clusters
-
-    """
-    labels_img = _utils.check_niimg_3d(labels_img)
-
-    _check_reduction_strategy(strategy)
-
-    # TODO: Make a special case for list of strings
-    # (load one image at a time).
-    imgs = _utils.check_niimg_4d(imgs)
-    labels, labels_data = _get_labels_data(
-        imgs,
-        labels_img,
-        mask_img,
-        background_label,
-        keep_masked_labels=keep_masked_labels,
-    )
-
-    data = safe_get_data(imgs, ensure_finite=True)
-    target_datatype = np.float32 if data.dtype == np.float32 else np.float64
-    # Nilearn issue: 2135, PR: 2195 for why this is necessary.
-    signals = np.ndarray(
-        (data.shape[-1], len(labels)), order=order, dtype=target_datatype
-    )
-    reduction_function = getattr(ndimage, strategy)
-    for n, img in enumerate(np.rollaxis(data, -1)):
-        signals[n] = np.asarray(
-            reduction_function(img, labels=labels_data, index=labels)
-        )
-    # Set to zero signals for missing labels. Workaround for Scipy behaviour
-    if keep_masked_labels:
-        missing_labels = set(labels) - set(np.unique(labels_data))
-        labels_index = {l: n for n, l in enumerate(labels)}
-        for this_label in missing_labels:
-            signals[:, labels_index[this_label]] = 0
-
-    # finding the new labels image
-    masked_atlas = Nifti1Image(labels_data.astype(np.int8), labels_img.affine)
-    return signals, labels, masked_atlas
-
-
-# FIXME: naming scheme is not really satisfying. Any better idea appreciated.
-@_utils.fill_doc
 def img_to_signals_labels(
     imgs,
     labels_img,
@@ -408,6 +301,10 @@ def img_to_signals_labels(
         Corresponding labels for each signal. signal[:, n] was extracted from
         the region with label labels[n].
 
+    masked_atlas : Niimg-like object
+        Regions definition as labels after applying the mask.
+        returned if `return_masked_atlas` is True.
+
     See Also
     --------
     nilearn.regions.signals_to_img_labels
@@ -416,16 +313,44 @@ def img_to_signals_labels(
         e.g. clusters
 
     """
-    signals, labels, masked_atlas = _img_to_signals_labels_with_masked_atlas(
+    labels_img = _utils.check_niimg_3d(labels_img)
+
+    _check_reduction_strategy(strategy)
+
+    # TODO: Make a special case for list of strings
+    # (load one image at a time).
+    imgs = _utils.check_niimg_4d(imgs)
+    labels, labels_data = _get_labels_data(
         imgs,
         labels_img,
         mask_img,
         background_label,
-        order,
-        strategy,
-        keep_masked_labels,
+        keep_masked_labels=keep_masked_labels,
     )
+
+    data = safe_get_data(imgs, ensure_finite=True)
+    target_datatype = np.float32 if data.dtype == np.float32 else np.float64
+    # Nilearn issue: 2135, PR: 2195 for why this is necessary.
+    signals = np.ndarray(
+        (data.shape[-1], len(labels)), order=order, dtype=target_datatype
+    )
+    reduction_function = getattr(ndimage, strategy)
+    for n, img in enumerate(np.rollaxis(data, -1)):
+        signals[n] = np.asarray(
+            reduction_function(img, labels=labels_data, index=labels)
+        )
+    # Set to zero signals for missing labels. Workaround for Scipy behaviour
+    if keep_masked_labels:
+        missing_labels = set(labels) - set(np.unique(labels_data))
+        labels_index = {l: n for n, l in enumerate(labels)}
+        for this_label in missing_labels:
+            signals[:, labels_index[this_label]] = 0
+
     if return_masked_atlas:
+        # finding the new labels image
+        masked_atlas = Nifti1Image(
+            labels_data.astype(np.int8), labels_img.affine
+        )
         return signals, labels, masked_atlas
     else:
         warnings.warn(

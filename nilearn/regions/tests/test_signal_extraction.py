@@ -21,7 +21,6 @@ from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiLabelsMasker
 from nilearn.regions.signal_extraction import (
     _check_shape_and_affine_compatibility,
-    _img_to_signals_labels_with_masked_atlas,
     _trim_maps,
     img_to_signals_labels,
     img_to_signals_maps,
@@ -379,9 +378,10 @@ def test_signals_extraction_with_labels_without_mask_return_masked_atlas(
         signals_r,
         labels_r,
         masked_atlas_r,
-    ) = _img_to_signals_labels_with_masked_atlas(
+    ) = img_to_signals_labels(
         imgs=data_img,
         labels_img=labels_img,
+        return_masked_atlas=True,
     )
 
     labels_data = get_data(labels_img)
@@ -461,10 +461,11 @@ def test_signals_extraction_with_labels_with_mask_return_masked_atlas(
         signals_r,
         labels_r,
         masked_atlas_r,
-    ) = _img_to_signals_labels_with_masked_atlas(
+    ) = img_to_signals_labels(
         imgs=data_img,
         labels_img=labels_img,
         mask_img=mask_img,
+        return_masked_atlas=True,
     )
 
     labels_data_r = get_data(masked_atlas_r)

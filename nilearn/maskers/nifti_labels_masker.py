@@ -23,15 +23,16 @@ class _ExtractionFunctor:
 
     def __call__(self, imgs):
         from ..regions.signal_extraction import (
-            _img_to_signals_labels_with_masked_atlas,
+            img_to_signals_labels,
         )
 
         signals, labels, masked_labels_img =\
-            _img_to_signals_labels_with_masked_atlas(
+            img_to_signals_labels(
                 imgs, self._resampled_labels_img_,
                 background_label=self.background_label, strategy=self.strategy,
                 keep_masked_labels=self.keep_masked_labels,
                 mask_img=self.mask_img,
+                return_masked_atlas=True,
             )
         return signals, (labels, masked_labels_img)
 
