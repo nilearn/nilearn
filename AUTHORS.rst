@@ -114,6 +114,7 @@ Some other past or present contributors are:
 * `Johannes Wiesner`_: Central Institute of Mental Health, Mannheim, Germany
 * `Jon Haitz Legarreta Gorrono`_: Brigham and Women's Hospital, Mass General Brigham/Harvard Medical School, Boston, Massachusetts, USA
 * `Jona Sassenhagen`_
+* `Jordi Huguet`_: BarcelonaBeta Brain Research Center
 * `Joshua Teves`_
 * `Julia Huntenburg`_: International Brain Laboratory, Berlin, Germany
 * `Julio A Peraza`_: Florida International University, Miami, Florida, USA
