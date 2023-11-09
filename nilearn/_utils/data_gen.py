@@ -20,6 +20,7 @@ from nilearn._utils.bids import create_bids_filename
 from nilearn.interfaces.bids._utils import _bids_entities, _check_bids_label
 from nilearn.interfaces.fmriprep.tests._testing import get_legal_confound
 
+
 def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
     """Generate MNI space img.
 

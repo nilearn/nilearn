@@ -1493,15 +1493,16 @@ def _get_confounds(
         )
     _check_confounds_list(confounds=confounds, imgs=imgs)
 
-    if kwargs_load_confounds is None and confounds:
-        confounds = [
-            pd.read_csv(c, sep="\t", index_col=None) for c in confounds
-        ]
-        return confounds or None
+    if confounds:
+        if kwargs_load_confounds is None:
+            confounds = [
+                pd.read_csv(c, sep="\t", index_col=None) for c in confounds
+            ]
+            return confounds or None
 
-    confounds, _ = load_confounds(img_files=imgs, **kwargs_load_confounds)
+        confounds, _ = load_confounds(img_files=imgs, **kwargs_load_confounds)
 
-    return confounds
+        return confounds
 
 
 def _check_confounds_list(confounds, imgs):
