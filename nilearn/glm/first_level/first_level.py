@@ -48,6 +48,7 @@ from nilearn.interfaces.bids.query import (
     _infer_repetition_time_from_dataset,
     _infer_slice_timing_start_time_from_dataset,
 )
+from nilearn.interfaces.fmriprep.load_confounds import load_confounds
 
 
 def mean_scaling(Y, axis=0):
@@ -1053,6 +1054,9 @@ def first_level_from_bids(
 
     kwargs_load_confounds = _check_kwargs_load_confounds(**kwargs)
 
+    # TODO check compatibility of kwargs with FirstLevelModel
+    # for example high_pass and strategy high_pass
+
     derivatives_path = Path(dataset_path) / derivatives_folder
 
     # Get metadata for models.
@@ -1212,20 +1216,16 @@ def first_level_from_bids(
         ]
         models_events.append(events)
 
-        if kwargs_load_confounds is None:
-            confounds = _get_confounds(
-                derivatives_path=derivatives_path,
-                sub_label=sub_label_,
-                task_label=task_label,
-                img_filters=img_filters,
-                imgs=imgs,
-                verbose=verbose,
-            )
-            if confounds:
-                confounds = [
-                    pd.read_csv(c, sep="\t", index_col=None) for c in confounds
-                ]
-            models_confounds.append(confounds)
+        confounds = _get_confounds(
+            derivatives_path=derivatives_path,
+            sub_label=sub_label_,
+            task_label=task_label,
+            img_filters=img_filters,
+            imgs=imgs,
+            verbose=verbose,
+            kwargs_load_confounds=kwargs_load_confounds,
+        )
+        models_confounds.append(confounds)
 
     return models, models_run_imgs, models_events, models_confounds
 
@@ -1437,6 +1437,7 @@ def _get_confounds(
     img_filters,
     imgs,
     verbose,
+    kwargs_load_confounds,
 ):
     """Get confounds.tsv files for a given subject, task and filters.
 
@@ -1466,8 +1467,7 @@ def _get_confounds(
 
     Returns
     -------
-    confounds : :obj:`list` of :obj:`str` or None
-        List of fullpath to the confounds.tsv files
+    confounds : :obj:`list` of :class:`pandas.DataFrame`
 
     """
     filters = _make_bids_files_filter(
@@ -1492,7 +1492,16 @@ def _get_confounds(
             filters=filters,
         )
     _check_confounds_list(confounds=confounds, imgs=imgs)
-    return confounds or None
+
+    if kwargs_load_confounds is None and confounds:
+        confounds = [
+            pd.read_csv(c, sep="\t", index_col=None) for c in confounds
+        ]
+        return confounds or None
+
+    confounds, _ = load_confounds(img_files=imgs, **kwargs_load_confounds)
+
+    return confounds
 
 
 def _check_confounds_list(confounds, imgs):
