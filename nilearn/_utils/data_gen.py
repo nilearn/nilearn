@@ -736,9 +736,15 @@ def _basic_confounds(length, random_state=0):
 
     """
     rand_gen = check_random_state(random_state)
-    columns = ['csf', 'white_matter', 'global_signal',
-               'rot_x', 'rot_y', 'rot_z',
-               'trans_x', 'trans_y', 'trans_z']
+    columns = ['csf',
+               'white_matter',
+               'global_signal',
+               'rot_x',
+               'rot_y',
+               'rot_z',
+               'trans_x',
+               'trans_y',
+               'trans_z']
     data = rand_gen.rand(length, len(columns))
     confounds = pd.DataFrame(data, columns=columns)
     return confounds
