@@ -78,7 +78,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                os: [windows-latest, windows-latest, windows-2019, windows-2019]
+                os: [ubuntu-latest, macos-latest, windows-latest]
                 python-version: ['3.9', '3.10', '3.11', '3.12']
         name: ${{ matrix.os }} with Python ${{ matrix.python-version }} and latest package versions
         defaults:
@@ -106,7 +106,7 @@ jobs:
             run: ./build_tools/github/test_docs.sh
         -   name: Run tests
             shell: bash {0}
-            run: python -m pytest nilearn/plotting/tests/test_surf_plotting.py -k test_plotly_savefig
+            run: ./build_tools/github/test.sh
         -   name: Upload coverage to CodeCov
             uses: codecov/codecov-action@v3
             with:
