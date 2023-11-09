@@ -298,7 +298,8 @@ def test_plotly_show(renderer):
 @pytest.mark.skipif(not is_plotly_installed() or not is_kaleido_installed(),
                     reason=("Plotly and/or kaleido not installed; "
                             "required for this test."))
-def test_plotly_savefig(tmp_path):
+@pytest.mark.parametrize('execution_number', range(100))
+def test_plotly_savefig(tmp_path, execution_number):
     import plotly.graph_objects as go
     ps = PlotlySurfaceFigure(go.Figure(), output_file=tmp_path / "foo.png")
     assert ps.output_file == tmp_path / "foo.png"

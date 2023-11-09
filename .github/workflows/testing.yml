@@ -106,7 +106,7 @@ jobs:
             run: ./build_tools/github/test_docs.sh
         -   name: Run tests
             shell: bash {0}
-            run: ./build_tools/github/test.sh
+            run: python -m pytest nilearn/plotting/tests/test_surf_plotting.py -k test_plotly_savefig
         -   name: Upload coverage to CodeCov
             uses: codecov/codecov-action@v3
             with:
