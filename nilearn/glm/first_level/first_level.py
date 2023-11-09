@@ -957,6 +957,7 @@ def first_level_from_bids(
     n_jobs=1,
     minimize_memory=True,
     derivatives_folder="derivatives",
+    **kwargs,
 ):
     """Create FirstLevelModel objects and fit arguments \
        from a :term:`BIDS` dataset.
@@ -1049,6 +1050,8 @@ def first_level_from_bids(
         img_filters=img_filters,
         derivatives_folder=derivatives_folder,
     )
+
+    kwargs_load_confounds = _check_kwargs_load_confounds(**kwargs)
 
     derivatives_path = Path(dataset_path) / derivatives_folder
 
@@ -1209,19 +1212,20 @@ def first_level_from_bids(
         ]
         models_events.append(events)
 
-        confounds = _get_confounds(
-            derivatives_path=derivatives_path,
-            sub_label=sub_label_,
-            task_label=task_label,
-            img_filters=img_filters,
-            imgs=imgs,
-            verbose=verbose,
-        )
-        if confounds:
-            confounds = [
-                pd.read_csv(c, sep="\t", index_col=None) for c in confounds
-            ]
-        models_confounds.append(confounds)
+        if kwargs_load_confounds is None:
+            confounds = _get_confounds(
+                derivatives_path=derivatives_path,
+                sub_label=sub_label_,
+                task_label=task_label,
+                img_filters=img_filters,
+                imgs=imgs,
+                verbose=verbose,
+            )
+            if confounds:
+                confounds = [
+                    pd.read_csv(c, sep="\t", index_col=None) for c in confounds
+                ]
+            models_confounds.append(confounds)
 
     return models, models_run_imgs, models_events, models_confounds
 
@@ -1611,6 +1615,36 @@ def _check_args_first_level_from_bids(
                 f"Only {supported_filters} are allowed."
             )
         _check_bids_label(filter_[1])
+
+
+def _check_kwargs_load_confounds(**kwargs):
+    # reuse the default from nilearn.interface.fmriprep.load_confounds
+    defaults = {
+        "motion": "full",
+        "scrub": 5,
+        "fd_threshold": 0.2,
+        "std_dvars_threshold": 3,
+        "wm_csf": "basic",
+        "global_signal": "basic",
+        "compcor": "anat_combined",
+        "n_compcor": "all",
+        "ica_aroma": "full",
+        "demean": True,
+    }
+
+    if "confounds_strategy" not in kwargs:
+        return None
+    if kwargs["confounds_strategy"] is None:
+        return None
+
+    kwargs_load_confounds = {
+        key: defaults[key]
+        if f"confounds_{key}" not in kwargs
+        else kwargs[f"confounds_{key}"]
+        for key in defaults
+    }
+
+    return kwargs_load_confounds
 
 
 def _make_bids_files_filter(

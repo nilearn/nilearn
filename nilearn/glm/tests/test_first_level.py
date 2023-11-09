@@ -1860,3 +1860,30 @@ def test_missing_trial_type_column_warning(tmp_path_factory):
             "No column named 'trial_type' found" in r.message.args[0]
             for r in record
         )
+
+
+def test_first_level_from_bids_load_confounds(tmp_path):
+    """Test several BIDS structure."""
+    n_sub = 2
+
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path, n_sub=n_sub, n_ses=2, tasks=["main"], n_runs=[2]
+    )
+
+    models, m_imgs, m_events, m_confounds = first_level_from_bids(
+        dataset_path=bids_path,
+        task_label="main",
+        space_label="MNI",
+        img_filters=[("desc", "preproc")],
+        slice_time_ref=None,
+        confounds_strategy=("motion", "wm_csf", "scrub"),
+        confounds_motion="full",
+        confounds_wm_csf="basic",
+        confounds_scrub=1,
+        confounds_fd_threshold=0.2,
+        confounds_std_dvars_threshold=3,
+    )
+
+    _check_output_first_level_from_bids(
+        n_sub, models, m_imgs, m_events, m_confounds
+    )
