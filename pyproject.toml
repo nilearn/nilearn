@@ -83,6 +83,8 @@ min = [
     "scipy==1.6.0"
 ]
 # For surface plotting mostly
+# Kaleido version is pinned for windows due to bug
+# See https://github.com/plotly/Kaleido/issues/134 for more detail
 plotly = [
     "plotly",
     "kaleido ; platform_system != 'Windows'",
