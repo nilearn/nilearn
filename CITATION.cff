@@ -348,6 +348,12 @@ authors:
   - given-names: Jona
     family-names: Sassenhagen
     website: https://github.com/jona-sassenhagen
+  - given-names: Jordi
+    family-names: Huguet
+    website: https://github.com/jhuguetn
+    affiliation: BarcelonaBeta Brain Research Center
+    email: jhuguetn@gmail.com
+    orcid: https://orcid.org/0000-0001-8420-4833
   - given-names: Joshua
     family-names: Teves
     website: https://github.com/jbteves
@@ -695,9 +701,3 @@ authors:
     family-names: Nájera
     website: https://github.com/Titan-C
     affiliation: Checkmk
-  - given-names: Jordi
-    family-names: Huguet
-    website: https://github.com/jhuguetn
-    affiliation: BarcelonaBeta Brain Research Center
-    email: jhuguetn@gmail.com
-    orcid: https://orcid.org/0000-0001-8420-4833

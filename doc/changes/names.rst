@@ -136,6 +136,8 @@
 
 .. _Jona Sassenhagen: https://github.com/jona-sassenhagen
 
+.. _Jordi Huguet: https://github.com/jhuguetn
+
 .. _Joshua Teves: https://github.com/jbteves
 
 .. _Julia Huntenburg: https://github.com/juhuntenburg
