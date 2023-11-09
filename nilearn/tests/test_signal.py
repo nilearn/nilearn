@@ -1067,8 +1067,9 @@ def test_handle_scrubbed_volumes():
     (
         interpolated_signals,
         interpolated_confounds,
+        sample_mask,
     ) = nisignal._handle_scrubbed_volumes(
-        signals, confounds, sample_mask, "butterworth", 2.5
+        signals, confounds, sample_mask, "butterworth", 2.5, True
     )
     np.testing.assert_equal(
         interpolated_signals[sample_mask, :], signals[sample_mask, :]
@@ -1077,8 +1078,96 @@ def test_handle_scrubbed_volumes():
         interpolated_confounds[sample_mask, :], confounds[sample_mask, :]
     )
 
-    scrubbed_signals, scrubbed_confounds = nisignal._handle_scrubbed_volumes(
-        signals, confounds, sample_mask, "cosine", 2.5
+    (
+        scrubbed_signals,
+        scrubbed_confounds,
+        sample_mask,
+    ) = nisignal._handle_scrubbed_volumes(
+        signals, confounds, sample_mask, "cosine", 2.5, True
     )
     np.testing.assert_equal(scrubbed_signals, signals[sample_mask, :])
     np.testing.assert_equal(scrubbed_confounds, confounds[sample_mask, :])
+
+
+def test_handle_scrubbed_volumes_with_extrapolation():
+    """Check interpolation of signals with extrapolation."""
+    signals, _, confounds = generate_signals(
+        n_features=11, n_confounds=5, length=40
+    )
+
+    sample_mask = np.arange(signals.shape[0])
+    scrub_index = np.concatenate((np.arange(5), [10, 20, 30]))
+    sample_mask = np.delete(sample_mask, scrub_index)
+
+    # Test cubic spline interpolation (enabled extrapolation) in the
+    # very first n=5 samples of generated signal
+    extrapolate_warning = (
+        "By default the cubic spline interpolator extrapolates "
+        "the out-of-bounds censored volumes in the data run. This "
+        "can lead to undesired filtered signal results. Starting in "
+        "version 0.13, the default strategy will be not to extrapolate "
+        "but to discard those volumes at filtering."
+    )
+    with pytest.warns(FutureWarning, match=extrapolate_warning):
+        (
+            extrapolated_signals,
+            extrapolated_confounds,
+            extrapolated_sample_mask,
+        ) = nisignal._handle_scrubbed_volumes(
+            signals, confounds, sample_mask, "butterworth", 2.5, True
+        )
+    np.testing.assert_equal(signals.shape[0], extrapolated_signals.shape[0])
+    np.testing.assert_equal(
+        confounds.shape[0], extrapolated_confounds.shape[0]
+    )
+    np.testing.assert_equal(sample_mask, extrapolated_sample_mask)
+
+
+def test_handle_scrubbed_volumes_without_extrapolation():
+    """Check interpolation of signals disabling extrapolation."""
+    signals, _, confounds = generate_signals(
+        n_features=11, n_confounds=5, length=40
+    )
+
+    outer_samples = [0, 1, 2, 3, 4]
+    inner_samples = [10, 20, 30]
+    total_samples = len(outer_samples) + len(inner_samples)
+    sample_mask = np.arange(signals.shape[0])
+    scrub_index = np.concatenate((outer_samples, inner_samples))
+    sample_mask = np.delete(sample_mask, scrub_index)
+
+    # Test cubic spline interpolation without predicting values outside
+    # the range of the signal available (disabled extrapolation), discarding
+    # the first n censored samples of generated signal
+    (
+        interpolated_signals,
+        interpolated_confounds,
+        interpolated_sample_mask,
+    ) = nisignal._handle_scrubbed_volumes(
+        signals, confounds, sample_mask, "butterworth", 2.5, False
+    )
+    np.testing.assert_equal(
+        signals.shape[0], interpolated_signals.shape[0] + len(outer_samples)
+    )
+    np.testing.assert_equal(
+        confounds.shape[0],
+        interpolated_confounds.shape[0] + len(outer_samples),
+    )
+    np.testing.assert_equal(
+        sample_mask - sample_mask[0], interpolated_sample_mask
+    )
+
+    # Assert that the modified sample mask (interpolated_sample_mask)
+    # can be applied to the interpolated signals and confounds
+    (
+        censored_signals,
+        censored_confounds,
+    ) = nisignal._censor_signals(
+        interpolated_signals, interpolated_confounds, interpolated_sample_mask
+    )
+    np.testing.assert_equal(
+        signals.shape[0], censored_signals.shape[0] + total_samples
+    )
+    np.testing.assert_equal(
+        confounds.shape[0], censored_confounds.shape[0] + total_samples
+    )
