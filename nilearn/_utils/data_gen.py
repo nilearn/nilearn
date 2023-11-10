@@ -1297,8 +1297,13 @@ def _write_bids_raw_func(
         Random number generator.
 
     """
+<<<<<<< Updated upstream
     n_time_points = 100
     bold_path = func_path / create_bids_filename(fields)
+=======
+    n_time_points = 30
+    bold_path = func_path / _create_bids_filename(fields)
+>>>>>>> Stashed changes
     write_fake_bold_img(
         bold_path,
         [n_voxels, n_voxels, n_voxels, n_time_points],
@@ -1353,7 +1358,7 @@ def _write_bids_derivative_func(
         or "desc-confounds_regressors".
 
     """
-    n_time_points = 100
+    n_time_points = 30
 
     if confounds_tag is not None:
         fields["suffix"] = confounds_tag
