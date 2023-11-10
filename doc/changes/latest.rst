@@ -29,3 +29,4 @@ Changes
 -------
 
 - :bdg-success:`API` Expose scipy CubicSpline ``extrapolate`` parameter in :func:`~signal.clean` to control the interpolation of censored volumes in both ends of the BOLD signal data (:gh:`4028` by `Jordi Huguet`_).
+- :bdg-dark:`Code` Private utility context manager ``write_tmp_imgs`` is refactored into function ``write_fake_imgs`` (:gh:`4094` by `Yasmin Mzayek`_).
