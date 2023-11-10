@@ -1297,13 +1297,9 @@ def _write_bids_raw_func(
         Random number generator.
 
     """
-<<<<<<< Updated upstream
-    n_time_points = 100
-    bold_path = func_path / create_bids_filename(fields)
-=======
     n_time_points = 30
-    bold_path = func_path / _create_bids_filename(fields)
->>>>>>> Stashed changes
+    bold_path = func_path / create_bids_filename(fields)
+
     write_fake_bold_img(
         bold_path,
         [n_voxels, n_voxels, n_voxels, n_time_points],
