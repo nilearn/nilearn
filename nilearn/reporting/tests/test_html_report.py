@@ -323,6 +323,19 @@ def test_nifti_labels_masker_report(data_img_3d, mask, affine_eye):
             assert len(masker._report_content['summary'][col]) == n_regions
 
 
+@pytest.mark.parametrize("masker_class", [NiftiLabelsMasker])
+def test_nifti_labels_masker_report_cut_coords(masker_class, input_parameters, data_img_3d):
+    """Test cut coordinate are equal with and without passing data to fit."""
+    masker = masker_class(**input_parameters, reports=True)
+    # Get display without data
+    masker.fit()
+    display = masker._reporting()
+    # Get display with data
+    masker.fit(data_img_3d)
+    display_data = masker._reporting()
+    assert display[0].cut_coords == display_data[0].cut_coords
+
+
 def test_4d_reports(mask, affine_eye):
     # Dummy 4D data
     data = np.zeros((10, 10, 10, 3), dtype="int32")
