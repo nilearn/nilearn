@@ -1017,6 +1017,86 @@ def first_level_from_bids(
     The subject label of the model will be determined directly
     from the :term:`BIDS` dataset.
 
+    kwargs: :obj:`dict`
+
+        .. added:: 0.11.0
+
+    Keyword arguments to be passed to functions called within this function.
+
+    Kwargs prefixed with ``confound_``
+    will be passed to :func:`~nilearn.interfaces.fmriprep.load_confounds`.
+    This allows to ``first_level_from_bids`` to return
+    a specific set of confounds by relying confound loading strategies
+    defined in :func:`~nilearn.interfaces.fmriprep.load_confounds`.
+    If no kwargs are passed, ``first_level_from_bids`` will return
+    all the confounds available in the confounds TSV files.
+
+    Examples
+    --------
+    If you want to only load
+    the rotation and translation motion parameters confounds:
+
+    .. code_block:: python
+
+        models, m_imgs, m_events, m_confounds = first_level_from_bids(
+            dataset_path=path_to_a_bids_dataset,
+            task_label="TaskName",
+            space_label="MNI",
+            img_filters=[("desc", "preproc")],
+            confounds_strategy=("motion"),
+            confounds_motion="basic",
+    )
+
+    If you want to load the motion parameters confounds
+    with their derivatives:
+
+    .. code_block:: python
+
+        models, m_imgs, m_events, m_confounds = first_level_from_bids(
+            dataset_path=path_to_a_bids_dataset,
+            task_label="TaskName",
+            space_label="MNI",
+            img_filters=[("desc", "preproc")],
+            confounds_strategy=("motion"),
+            confounds_motion="derivatives",
+    )
+
+    If you additionally want to load
+    the confounds with CSF and white matter signal:
+
+    .. code_block:: python
+
+        models, m_imgs, m_events, m_confounds = first_level_from_bids(
+            dataset_path=path_to_a_bids_dataset,
+            task_label="TaskName",
+            space_label="MNI",
+            img_filters=[("desc", "preproc")],
+            confounds_strategy=("motion", "wm_csf"),
+            confounds_motion="derivatives",
+            confounds_wm_csf="basic",
+    )
+
+    If you also want to scrub high-motion timepoints:
+
+    .. code_block:: python
+
+        models, m_imgs, m_events, m_confounds = first_level_from_bids(
+            dataset_path=path_to_a_bids_dataset,
+            task_label="TaskName",
+            space_label="MNI",
+            img_filters=[("desc", "preproc")],
+            confounds_strategy=("motion", "wm_csf", "scrub"),
+            confounds_motion="derivatives",
+            confounds_wm_csf="basic",
+            confounds_scrub=1,
+            confounds_fd_threshold=0.2,
+            confounds_std_dvars_threshold=0,
+    )
+
+    Please refer to the documentation
+    of :func:`~nilearn.interfaces.fmriprep.load_confounds`
+    for more details on the confounds loading strategies.
+
     Returns
     -------
     models : list of `FirstLevelModel` objects

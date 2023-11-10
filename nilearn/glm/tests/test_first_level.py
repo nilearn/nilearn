@@ -1875,7 +1875,6 @@ def test_first_level_from_bids_load_confounds(tmp_path):
         task_label="main",
         space_label="MNI",
         img_filters=[("desc", "preproc")],
-        slice_time_ref=None,
         confounds_strategy=("motion", "wm_csf", "scrub"),
         confounds_motion="full",
         confounds_wm_csf="basic",
