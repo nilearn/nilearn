@@ -324,7 +324,9 @@ def test_nifti_labels_masker_report(data_img_3d, mask, affine_eye):
 
 
 @pytest.mark.parametrize("masker_class", [NiftiLabelsMasker])
-def test_nifti_labels_masker_report_cut_coords(masker_class, input_parameters, data_img_3d):
+def test_nifti_labels_masker_report_cut_coords(
+    masker_class, input_parameters, data_img_3d
+):
     """Test cut coordinate are equal with and without passing data to fit."""
     masker = masker_class(**input_parameters, reports=True)
     # Get display without data
