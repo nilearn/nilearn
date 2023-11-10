@@ -22,6 +22,7 @@ Enhancements
 
 - :bdg-primary:`Doc` Add backslash to homogenize :class:`~nilearn.regions.Parcellations` documentation (:gh:`4042` by `Nikhil Krish`_).
 - :bdg-success:`API` Allow passing Pandas Series of image filenames to :class:`~nilearn.glm.second_level.SecondLevelModel` (:gh:`4070` by `Rémi Gau`_).
+- :bdg-success:`API` Allow passing arguments to :func:`~nilearn.glm.firt_level.first_level_from_bids` to build first level models that include specific set of confounds by relying on the strategies from :func:`~nilearn.interfaces.fmriprep.load_confounds` (:gh:`4103` by `Rémi Gau`_).
 - :bdg-info:`Plotting` Allow setting ``vmin`` in :func:`~nilearn.plotting.plot_glass_brain` and :func:`~nilearn.plotting.plot_stat_map` (:gh:`3993` by `Michelle Wang`_).
 - :bdg-success:`API` Support passing t and F contrasts to :func:`~nilearn.glm.compute_contrast` that that have fewer columns than the number of estimated parameters. Remaining columns are padded with zero (:gh:`4067` by `Rémi Gau`_).
 
