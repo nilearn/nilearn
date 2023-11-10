@@ -9,6 +9,7 @@ from warnings import warn
 import numpy as np
 import pandas as pd
 import scipy.stats as sps
+from pandas.errors import UndefinedVariableError
 
 from nilearn.glm._utils import pad_contrast, z_score
 from nilearn.maskers import NiftiMasker
@@ -23,10 +24,10 @@ def expression_to_contrast_vector(expression, design_columns):
 
     Parameters
     ----------
-    expression : string
+    expression : :obj:`str`
         The expression to convert to a vector.
 
-    design_columns : list or array of strings
+    design_columns : :obj:`list` or array of strings
         The column names of the design matrix.
 
     """
@@ -34,9 +35,18 @@ def expression_to_contrast_vector(expression, design_columns):
         contrast_vector = np.zeros(len(design_columns))
         contrast_vector[list(design_columns).index(expression)] = 1.0
         return contrast_vector
+
     df = pd.DataFrame(np.eye(len(design_columns)), columns=design_columns)
     try:
         contrast_vector = df.eval(expression, engine="python").values
+    except UndefinedVariableError as e:
+        msg = e.args[0]
+        warn(
+            f"The expression ({expression}) is not valid: "
+            f"{msg}; columns available are {design_columns}.",
+            UserWarning,
+        )
+        return None
     except Exception:
         raise ValueError(
             f"The expression ({expression}) is not valid. "
@@ -75,6 +85,8 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
         (:term:`effects<Parameter Estimate>`, variance, p-values).
 
     """
+    if con_val is None:
+        return None
     con_val = np.asarray(con_val)
     dim = 1
     if con_val.ndim > 1:
@@ -133,7 +145,7 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
     )
 
 
-def _compute_fixed_effect_contrast(
+def compute_fixed_effect_contrast(
     labels, results, con_vals, contrast_type=None
 ):
     """Compute the summary contrast assuming fixed effects.
@@ -148,6 +160,8 @@ def _compute_fixed_effect_contrast(
             warn(f"Contrast for session {int(i)} is null.")
             continue
         contrast_ = compute_contrast(lab, res, con_val, contrast_type)
+        if contrast_ is None:
+            continue
         contrast = contrast_ if contrast is None else contrast + contrast_
         n_contrasts += 1
     if contrast is None:
