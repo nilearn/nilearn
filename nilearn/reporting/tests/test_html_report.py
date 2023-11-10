@@ -6,12 +6,12 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal
 
 from nilearn._utils import as_ndarray
-from nilearn.conftest import _rng
 from nilearn._utils.data_gen import (
     generate_fake_fmri,
     generate_labeled_regions,
     generate_maps,
 )
+from nilearn.conftest import _rng
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import (
     MultiNiftiLabelsMasker,
