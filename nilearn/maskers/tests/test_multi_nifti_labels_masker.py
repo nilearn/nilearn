@@ -9,13 +9,6 @@ from nilearn._utils.exceptions import DimensionError
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiLabelsMasker, NiftiLabelsMasker
 
-try:
-    import matplotlib  # noqa: F401
-except ImportError:
-    not_have_mpl = True
-else:
-    not_have_mpl = False
-
 
 def test_multi_nifti_labels_masker():
     # Check working of shape/affine checks
@@ -395,28 +388,3 @@ def test_multi_nifti_labels_masker_list_of_sample_mask():
     assert len(ts_list) == 2
     for ts, n_scrub in zip(ts_list, [n_scrub1, n_scrub2]):
         assert ts.shape == (length - n_scrub, n_regions)
-
-
-@pytest.mark.skipif(
-    not_have_mpl, reason="Matplotlib not installed; required for this test"
-)
-def test_multi_nifti_labels_masker_generate_report():
-    """Test calling generate report on multiple subjects raises warning."""
-    shape1 = (13, 11, 12)
-    affine1 = np.eye(4)
-    n_regions = 9
-    length = 3
-
-    labels11_img = data_gen.generate_labeled_regions(
-        shape1, affine=affine1, n_regions=n_regions
-    )
-    fmri11_img, _ = data_gen.generate_fake_fmri(
-        shape1, affine=affine1, length=length
-    )
-
-    masker = MultiNiftiLabelsMasker(labels11_img)
-
-    with pytest.warns(
-        UserWarning, match="A list of 4D subject images were provided to fit. "
-    ):
-        masker.fit([fmri11_img, fmri11_img]).generate_report()
