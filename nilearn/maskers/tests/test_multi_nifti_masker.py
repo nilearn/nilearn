@@ -11,7 +11,7 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
 
 from nilearn._utils.exceptions import DimensionError
-from nilearn._utils.testing import write_tmp_imgs
+from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _rng
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiMasker
@@ -124,7 +124,7 @@ def test_3d_images():
         masker2.fit()
 
 
-def test_joblib_cache():
+def test_joblib_cache(tmp_path):
     from joblib import hash
 
     # Dummy mask
@@ -132,14 +132,16 @@ def test_joblib_cache():
     mask[20, 20, 20] = 1
     mask_img = Nifti1Image(mask, np.eye(4))
 
-    with write_tmp_imgs(mask_img, create_files=True) as filename:
-        masker = MultiNiftiMasker(mask_img=filename)
-        masker.fit()
-        mask_hash = hash(masker.mask_img_)
-        get_data(masker.mask_img_)
-        assert mask_hash == hash(masker.mask_img_)
-        # enables to delete "filename" on windows
-        del masker
+    filename = write_imgs_to_path(
+        mask_img, file_path=tmp_path, create_files=True
+    )
+    masker = MultiNiftiMasker(mask_img=filename)
+    masker.fit()
+    mask_hash = hash(masker.mask_img_)
+    get_data(masker.mask_img_)
+    assert mask_hash == hash(masker.mask_img_)
+    # enables to delete "filename" on windows
+    del masker
 
 
 def test_shelving():
