@@ -107,6 +107,13 @@ This workflow will fail if it finds any potential target to be converted.
 
 Sorts Python imports alphabetically and by section. Configured in [pyproject.toml](../../pyproject.toml)
 
+## Building the stable release documentation
+
+### release-docs.yml
+
+Should be triggered after merging and tagging a release PR to build the stable
+docs with a GitHub runner and push to nilearn.github.io.
+
 ## Running unit tests
 
 ### test_with_tox.yml
