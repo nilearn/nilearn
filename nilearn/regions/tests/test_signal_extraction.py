@@ -15,7 +15,7 @@ from nilearn._utils.data_gen import (
     generate_timeseries,
 )
 from nilearn._utils.exceptions import DimensionError
-from nilearn._utils.testing import write_fake_imgs
+from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _affine_eye, _shape_3d_default
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiLabelsMasker
@@ -356,7 +356,7 @@ def test_signals_extraction_with_labels_without_mask(
     assert_almost_equal(signals_r, signals)
     assert labels_r == list(range(1, 9))
 
-    filenames = write_fake_imgs(data_img, file_path=tmp_path)
+    filenames = write_imgs_to_path(data_img, file_path=tmp_path)
     signals_r, labels_r = img_to_signals_labels(
         imgs=filenames, labels_img=labels_img
     )
@@ -382,7 +382,7 @@ def test_signals_extraction_with_labels_with_mask(
     # Zero outside of the mask
     assert np.all(data[np.logical_not(get_data(mask_img))].std(axis=-1) < EPS)
 
-    filenames = write_fake_imgs(labels_img, mask_img, file_path=tmp_path)
+    filenames = write_imgs_to_path(labels_img, mask_img, file_path=tmp_path)
     data_img = signals_to_img_labels(
         signals=signals, labels_img=filenames[0], mask_img=filenames[1]
     )

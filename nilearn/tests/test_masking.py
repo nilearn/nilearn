@@ -12,7 +12,7 @@ from nilearn import masking
 # Authors: Ana Luisa Pinho, Jerome Dockes, NicolasGensollen
 from nilearn._utils import data_gen
 from nilearn._utils.exceptions import DimensionError
-from nilearn._utils.testing import write_fake_imgs
+from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _rng
 from nilearn.image import get_data, high_variance_confounds
 from nilearn.maskers import NiftiMasker
@@ -274,7 +274,7 @@ def test_apply_mask(affine_eye, tmp_path):
         ):
             data_img = Nifti1Image(data, affine)
             mask_img = Nifti1Image(mask, affine)
-            filenames = write_fake_imgs(
+            filenames = write_imgs_to_path(
                 data_img,
                 mask_img,
                 file_path=tmp_path,
@@ -373,7 +373,7 @@ def test_unmask(rng, affine_eye, tmp_path):
 
     # 3D Test - check both with Nifti1Image and file
     for create_files in (False, True):
-        filename = write_fake_imgs(
+        filename = write_imgs_to_path(
             mask_img,
             file_path=tmp_path,
             create_files=create_files,
@@ -446,7 +446,7 @@ def test_intersect_masks_filename(affine_eye, tmp_path):
     # |   |   |   |   |
     # +---+---+---+---+
 
-    filenames = write_fake_imgs(
+    filenames = write_imgs_to_path(
         mask_a_img, mask_b_img, file_path=tmp_path, create_files=True
     )
     mask_ab = np.zeros((4, 4, 1), dtype=bool)

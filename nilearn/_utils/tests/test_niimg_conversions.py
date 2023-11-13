@@ -124,7 +124,7 @@ def test_check_niimg_3d(affine_eye, img_3d_zeros_eye, tmp_path):
     data[20, 20, 20] = 1
     data_img = Nifti1Image(data, affine_eye)
 
-    filename = testing.write_fake_imgs(
+    filename = testing.write_imgs_to_path(
         data_img, file_path=tmp_path, create_files=True
     )
     _utils.check_niimg_3d(filename)
@@ -245,7 +245,7 @@ def test_check_niimg(img_3d_zeros_eye, img_4d_zeros_eye):
 
 
 def test_check_niimg_pathlike(img_3d_zeros_eye, tmp_path):
-    filename = testing.write_fake_imgs(
+    filename = testing.write_imgs_to_path(
         img_3d_zeros_eye, file_path=tmp_path, create_files=True
     )
     filename = Path(filename)
@@ -284,7 +284,7 @@ def test_check_niimg_wildcards(affine_eye, shape, wildcards, tmp_path):
     # First create some testing data
     img = Nifti1Image(np.zeros(shape), affine_eye)
 
-    filename = testing.write_fake_imgs(
+    filename = testing.write_imgs_to_path(
         img, file_path=tmp_path, create_files=True
     )
     assert_array_equal(
@@ -299,7 +299,7 @@ def test_check_niimg_wildcards_one_file_name(img_3d_zeros_eye, tmp_path):
     # Testing with a glob matching exactly one filename
     # Using a glob matching one file containing a 3d image returns a 4d image
     # with 1 as last dimension.
-    globs = testing.write_fake_imgs(
+    globs = testing.write_imgs_to_path(
         img_3d_zeros_eye,
         file_path=tmp_path,
         create_files=True,
@@ -317,7 +317,7 @@ def test_check_niimg_wildcards_one_file_name(img_3d_zeros_eye, tmp_path):
 
     # Testing with a glob matching multiple filenames
     img_4d = _utils.check_niimg_4d((img_3d_zeros_eye, img_3d_zeros_eye))
-    globs = testing.write_fake_imgs(
+    globs = testing.write_imgs_to_path(
         img_3d_zeros_eye,
         img_3d_zeros_eye,
         file_path=tmp_path,
@@ -349,7 +349,7 @@ def test_check_niimg_wildcards_no_expand_wildcards(
         _utils.check_niimg(nofile_path, wildcards=False)
 
     # Testing with an exact filename matching (3d case)
-    filename = testing.write_fake_imgs(
+    filename = testing.write_imgs_to_path(
         img_3d_zeros_eye, file_path=tmp_path, create_files=True
     )
     assert_array_equal(
@@ -357,7 +357,7 @@ def test_check_niimg_wildcards_no_expand_wildcards(
     )
 
     # Testing with an exact filename matching (4d case)
-    filename = testing.write_fake_imgs(
+    filename = testing.write_imgs_to_path(
         img_4d_zeros_eye, file_path=tmp_path, create_files=True
     )
     assert_array_equal(

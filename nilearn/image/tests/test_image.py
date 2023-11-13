@@ -307,7 +307,7 @@ def test_smooth_img(affine_eye, tmp_path):
     img2, _ = generate_fake_fmri(shape=shapes[1], length=lengths[1])
 
     for create_files in (False, True):
-        imgs = testing.write_fake_imgs(
+        imgs = testing.write_imgs_to_path(
             img1, img2, file_path=tmp_path, create_files=create_files
         )
         # List of images as input
@@ -419,7 +419,7 @@ def test_mean_img(images_to_mean, tmp_path):
     assert_array_equal(get_data(mean_img), truth)
 
     # Test with files
-    imgs = testing.write_fake_imgs(*images_to_mean, file_path=tmp_path)
+    imgs = testing.write_imgs_to_path(*images_to_mean, file_path=tmp_path)
     mean_img = image.mean_img(imgs)
 
     assert_array_equal(mean_img.affine, affine)
@@ -567,7 +567,7 @@ def test_iter_img(tmp_path):
         assert_array_equal(get_data(img), expected_data_3d)
         assert_array_equal(img.affine, img_4d.affine)
 
-    img_4d_filename = testing.write_fake_imgs(img_4d, file_path=tmp_path)
+    img_4d_filename = testing.write_imgs_to_path(img_4d, file_path=tmp_path)
     for i, img in enumerate(iter_img(img_4d_filename)):
         expected_data_3d = get_data(img_4d)[..., i]
 
@@ -584,7 +584,7 @@ def test_iter_img(tmp_path):
         assert_array_equal(get_data(img), expected_data_3d)
         assert_array_equal(img.affine, img_4d.affine)
 
-    img_3d_filenames = testing.write_fake_imgs(
+    img_3d_filenames = testing.write_imgs_to_path(
         *img_3d_list, file_path=tmp_path
     )
     for i, img in enumerate(iter_img(img_3d_filenames)):
@@ -832,7 +832,7 @@ def test_math_img(
 
     formula = "np.mean(img1, axis=-1) - np.mean(img2, axis=-1)"
     for create_files in (True, False):
-        imgs = testing.write_fake_imgs(
+        imgs = testing.write_imgs_to_path(
             img1, img2, file_path=tmp_path, create_files=create_files
         )
         result = math_img(formula, img1=imgs[0], img2=imgs[1])
@@ -913,7 +913,7 @@ def test_largest_cc_img(create_files, tmp_path):
     # Test whether dimension of 3Dimg and list of 3Dimgs are kept.
     img1, img2, shapes = _make_largest_cc_img_test_data()
 
-    imgs = testing.write_fake_imgs(
+    imgs = testing.write_imgs_to_path(
         img1, img2, file_path=tmp_path, create_files=create_files
     )
     # List of images as input
@@ -944,7 +944,7 @@ def test_largest_cc_img_non_native_endian_type(create_files, tmp_path):
         get_data(img2).astype(">f8"), affine=img2.affine
     )
 
-    imgs = testing.write_fake_imgs(
+    imgs = testing.write_imgs_to_path(
         img1_change_dtype,
         img2_change_dtype,
         file_path=tmp_path,
