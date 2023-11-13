@@ -6,7 +6,6 @@ SPHINXOPTS    = -v
 SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = _build
-VERSIONTAG    = x.y.z
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
@@ -173,6 +172,7 @@ check:
 	BUILD_DEV_HTML=1 $(SPHINXBUILD) -W --keep-going -T -n -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 
 install:
+	echo "VERSIONTAG=$(git describe --tags --abbrev=0)"
 	rm -rf _build/doctrees _build/nilearn.github.io
 	# first clone the nilearn.github.io repo because it may ask
 	# for password and we don't want to delay this long build in

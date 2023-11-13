@@ -1,0 +1,49 @@
+---
+name: Build release docs
+
+on:
+    # Allows you to run this workflow manually from the Actions tab
+    # It should be run right after tagging the release commit on main
+    workflow_dispatch:
+
+jobs:
+    release-docs:
+        if: github.repository == 'nilearn/nilearn'
+        runs-on: ubuntu-latest
+        timeout-minutes: 360
+        env:
+            BROWSER: /usr/bin/firefox
+            DISPLAY: :99.0
+            NILEARN_DATA: /home/runner/work/nilearn/nilearn/nilearn_data
+        defaults:
+            run:
+                shell: bash -el {0}
+
+        steps:
+        -   name: Checkout nilearn
+            uses: actions/checkout@v4
+        -   name: Install apt packages
+            run: ./build_tools/github/build_docs_apt_dependencies.sh
+        -   name: Setup conda
+            uses: conda-incubator/setup-miniconda@v2
+            with:
+                auto-activate-base: true
+                activate-environment: ''
+                miniconda-version: latest
+                channels: conda-forge
+        -   name: Install packages in conda env
+            run: ./build_tools/github/build_docs_dependencies.sh
+        # Update the authors file and the names file
+        # in case a contributor has been added to citation.cff
+        # but did not run the maint_tools/citation_cff_maint.py script.
+        -   name: update AUTHORS.rst and doc/changes/names.rst
+            run: python maint_tools/citation_cff_maint.py
+        -   name: Set up display server for virtual browser
+            run: Xvfb -ac :99 -screen 0 1280x1024x16 > /dev/null 2>&1 &
+        -   name: Build docs
+            run: |
+                source activate testenv
+                echo "Conda active env = $CONDA_DEFAULT_ENV";
+                cd doc;
+                set -o pipefail;
+                make install
