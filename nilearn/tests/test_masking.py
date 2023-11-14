@@ -47,9 +47,9 @@ _TEST_DIM_ERROR_MSG = (
 def _simu_img():
     # Random confounds
     rng = _rng()
-    conf = 2 + rng.randn(100, 6)
+    conf = 2 + rng.standard_normal((100, 6))
     # Random 4D volume
-    vol = 100 + 10 * rng.randn(5, 5, 2, 100)
+    vol = 100 + 10 * rng.standard_normal((5, 5, 2, 100))
     img = Nifti1Image(vol, np.eye(4))
     # Create an nifti image with the data, and corresponding mask
     mask = Nifti1Image(np.ones([5, 5, 2]), np.eye(4))
@@ -346,7 +346,7 @@ def test_unmask(rng, affine_eye, tmp_path):
     shape = (10, 20, 30, 40)
     data4D = rng.uniform(size=shape)
     data3D = data4D[..., 0]
-    mask = rng.randint(2, size=shape[:3], dtype="int32")
+    mask = rng.integers(2, size=shape[:3], dtype="int32")
     mask_img = Nifti1Image(mask, affine_eye)
     mask = mask.astype(bool)
 

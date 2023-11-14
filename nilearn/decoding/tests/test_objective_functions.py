@@ -61,10 +61,10 @@ def test_3D__gradient_id(l1_ratio):
 
 
 def test_logistic_loss_derivative(rng, n_samples=4, n_features=10, decimal=5):
-    X = rng.randn(n_samples, n_features)
-    y = rng.randn(n_samples)
+    X = rng.standard_normal((n_samples, n_features))
+    y = rng.standard_normal(n_samples)
     n_features = X.shape[1]
-    w = rng.randn(n_features + 1)
+    w = rng.standard_normal(n_features + 1)
     assert_almost_equal(
         check_grad(
             lambda w: _logistic(X, y, w),

@@ -177,7 +177,7 @@ def test_mahalanobis2(rng):
         A = rng.standard_normal(size=(120, n))
         A = np.dot(A.T, A)
         Aa[:, :, i] = A
-    i = rng.randint(3)
+    i = rng.integers(3)
     mah = np.dot(x[:, i], np.dot(spl.inv(Aa[:, :, i]), x[:, i]))
     f_mah = (multiple_mahalanobis(x, Aa))[i]
 

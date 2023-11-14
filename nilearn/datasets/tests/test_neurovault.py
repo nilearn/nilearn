@@ -53,7 +53,7 @@ def _get_neurovault_data():
     ).values
     collections["number_of_images"] = collections[
         "true_number_of_images"
-    ] + rng.binomial(1, 0.1, n_collections) * rng.randint(
+    ] + rng.binomial(1, 0.1, n_collections) * rng.integers(
         0, 100, n_collections
     )
     images["not_mni"] = rng.binomial(1, 0.1, size=n_images).astype(bool)
@@ -77,7 +77,7 @@ def _get_neurovault_data():
         p=[0.4, 0.4, 0.2],
     )
     images["some_key"] = "some_value"
-    images[13] = rng.randn(n_images)
+    images[13] = rng.standard_normal(n_images)
     url = "https://neurovault.org/media/images/{}/{}.nii.gz"
     image_names = [
         hashlib.sha1(bytes(img_id)).hexdigest()[:4] for img_id in image_ids
