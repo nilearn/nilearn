@@ -254,7 +254,7 @@ def test_4d_single_scan(rng):
     mask[3:7, 3:7, 3:7] = 1
     mask_img = nibabel.Nifti1Image(mask, np.eye(4))
 
-    data_5d = [rng.random_sample(shape_4d) for _ in range(5)]
+    data_5d = [rng.random(shape_4d) for _ in range(5)]
     data_4d = [d[..., 0] for d in data_5d]
     data_5d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_5d]
     data_4d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_4d]
@@ -286,7 +286,7 @@ def test_5d(rng):
     mask[3:7, 3:7, 3:7] = 1
     mask_img = nibabel.Nifti1Image(mask, np.eye(4))
 
-    data_5d = [rng.random_sample(shape_4d) for _ in range(5)]
+    data_5d = [rng.random(shape_4d) for _ in range(5)]
     data_5d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_5d]
 
     masker = NiftiMasker(mask_img=mask_img)

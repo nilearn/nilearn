@@ -40,7 +40,6 @@ from sklearn.model_selection import (
 )
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.svm import SVR, LinearSVC, l1_min_c
-from sklearn.utils import check_random_state
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import check_is_fitted, check_X_y
 
@@ -1051,7 +1050,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
             if strategy in ["most_frequent", "prior"]:
                 scores = np.tile(dummy_output, reps=(n_samples, 1))
             elif strategy == "stratified":
-                rs = check_random_state(0)
+                rs = np.random.default_rng(0)
                 scores = rs.multinomial(1, dummy_output, size=n_samples)
 
         elif isinstance(self.estimator, DummyRegressor):

@@ -390,7 +390,9 @@ def test__load_mixed_gambles(rng, affine_eye):
     n_trials = 48
     for n_subjects in [1, 5, 16]:
         zmaps = [
-            nibabel.Nifti1Image(rng.randn(3, 4, 5, n_trials), affine_eye)
+            nibabel.Nifti1Image(
+                rng.standard_normal((3, 4, 5, n_trials)), affine_eye
+            )
             for _ in range(n_subjects)
         ]
         zmaps, gain, _ = func._load_mixed_gambles(zmaps)

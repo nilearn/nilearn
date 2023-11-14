@@ -73,10 +73,11 @@ def _make_canica_components(shape):
 
 def _make_canica_test_data(rng=None, n_subjects=N_SUBJECTS, noisy=True):
     if rng is None:
-        rng = _rng()
+        # Use legacy generator for sklearn compatibility
+        rng = np.random.RandomState(42)
     components = _make_canica_components(SHAPE)
     if noisy:  # Creating noisy non positive data
-        components[rng.randn(*components.shape) > 0.8] *= -2.0
+        components[rng.standard_normal(components.shape) > 0.8] *= -2.0
 
     for mp in components:
         assert mp.max() <= -mp.min()  # Goal met ?
@@ -141,7 +142,7 @@ def test_transform_and_fit_errors(canica_data, mask_img):
 
 def test_percentile_range(rng, canica_data):
     """Test that a warning is given when thresholds are stressed."""
-    edge_case = rng.randint(low=1, high=10)
+    edge_case = rng.integers(low=1, high=10)
 
     # stess thresholding via edge case
     canica = CanICA(n_components=edge_case, threshold=float(edge_case))
