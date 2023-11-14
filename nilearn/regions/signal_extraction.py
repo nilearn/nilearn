@@ -284,8 +284,8 @@ def img_to_signals_labels(
         standard_deviation. Default="mean".
     %(keep_masked_labels)s
 
-    return_masked_atlas : :obj:`bool`, optional
-        If True, the masked atlas is returned. Default=False.
+    return_masked_atlas : :obj:`bool`, default=False
+        If True, the masked atlas is returned.
         deprecated in version 0.13, to be removed in 0.15.
         after 0.13, the masked atlas will always be returned.
 

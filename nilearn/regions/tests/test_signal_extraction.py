@@ -366,17 +366,16 @@ def test_signals_extraction_with_labels_without_mask(
 
 
 def test_signals_extraction_with_labels_without_mask_return_masked_atlas(
-    signals, labels_data, labels_img
+    signals, labels_img
 ):
-    """Test if the returned masked_atlas is correct in \
-    conversion between signals and images \
+    """Test masked_atlas is correct in conversion between signals and images \
     using regions defined by labels."""
     data_img = signals_to_img_labels(signals=signals, labels_img=labels_img)
 
     # test return_masked_atlas
     (
-        signals_r,
-        labels_r,
+        _,
+        _,
         masked_atlas_r,
     ) = img_to_signals_labels(
         imgs=data_img,
@@ -388,7 +387,7 @@ def test_signals_extraction_with_labels_without_mask_return_masked_atlas(
     labels_data_r = get_data(masked_atlas_r)
 
     # masked_atlas_r should be the same as labels_img
-    assert_almost_equal(labels_data_r, labels_data)
+    assert_equal(labels_data_r, labels_data)
 
     # labels should be the same as before
     # the labels_img does not contain background
@@ -440,11 +439,10 @@ def test_signals_extraction_with_labels_with_mask(
 
 
 def test_signals_extraction_with_labels_with_mask_return_masked_atlas(
-    signals, labels_img, labels_data, mask_img
+    signals, labels_img, mask_img
 ):
-    """Test if the returned masked_atlas is correct in \
-    conversion between signals and images \
-    using regions defined by labels."""
+    """Test masked_atlas is correct in conversion between signals and images \
+    using regions defined by labels and a mask."""
     data_img = signals_to_img_labels(
         signals=signals, labels_img=labels_img, mask_img=mask_img
     )
@@ -456,8 +454,8 @@ def test_signals_extraction_with_labels_with_mask_return_masked_atlas(
     )
 
     (
-        signals_r,
-        labels_r,
+        _,
+        _,
         masked_atlas_r,
     ) = img_to_signals_labels(
         imgs=data_img,
@@ -615,7 +613,7 @@ def test_img_to_signals_labels_warnings(labeled_regions, fmri_img):
         "used to toggle this behavior. In version 0.15, "
         '"return_masked_atlas" parameter will be removed.',
     ):
-        labels_signals, labels_labels = img_to_signals_labels(
+        img_to_signals_labels(
             imgs=fmri_img,
             labels_img=labeled_regions,
             mask_img=mask_img,
