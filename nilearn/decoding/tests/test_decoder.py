@@ -889,7 +889,7 @@ def test_decoder_multiclass_classification_clustering(
 
 @pytest.mark.parametrize("cv", [KFold(n_splits=5), LeaveOneGroupOut()])
 def test_decoder_multiclass_classification_cross_validation(
-    multiclass_data, cv, rng
+    multiclass_data, cv
 ):
     X, y, mask = multiclass_data
 
@@ -978,7 +978,7 @@ def test_decoder_multiclass_error_incorrect_cv(multiclass_data):
             model.fit(X, y)
 
 
-def test_decoder_multiclass_warnings(multiclass_data, rng):
+def test_decoder_multiclass_warnings(multiclass_data):
     X, y, _ = multiclass_data
     groups = _rng(0).binomial(2, 0.3, size=len(y))
 
