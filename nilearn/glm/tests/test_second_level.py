@@ -598,33 +598,33 @@ def confounds():
     )
 
 
-def test_fmri_inputs(tmp_path, rng, confounds):
+def test_fmri_inputs(
+    tmp_path, rng, confounds, shape_3d_default, shape_4d_default
+):
     # Test processing of FMRI inputs
     # prepare fake data
-    p, q = 80, 3
-    X = rng.standard_normal(size=(p, q))
-    shapes = (SHAPE,)
-    mask, FUNCFILE, _ = write_fake_fmri_data_and_design(
-        shapes, file_path=tmp_path
+    mask, niimg, des = generate_fake_fmri_data_and_design(
+        [shape_4d_default], 1
     )
-    FUNCFILE = FUNCFILE[0]
-    niimgs = [FUNCFILE, FUNCFILE, FUNCFILE]
-    niimg_4d = concat_imgs(niimgs)
-    T = niimg_4d.shape[-1]
-    des = pd.DataFrame(np.ones((T, 1)), columns=["a"])
-    des_fname = str(tmp_path / "design.csv")
-    des.to_csv(des_fname)
 
     # prepare correct input first level models
-    flm = FirstLevelModel(subject_label="01").fit(
-        niimg_4d, design_matrices=des
-    )
+    flm = FirstLevelModel(subject_label="01").fit(niimg, design_matrices=des)
 
     # prepare correct input dataframe and lists
+    p, q = 80, 10
+    X = rng.standard_normal(size=(p, q))
     sdes = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
 
     # smoke tests with correct input
     flms = [flm, flm, flm]
+
+    shape_3d = [shape_3d_default + (1,)]
+    _, FUNCFILE, _ = write_fake_fmri_data_and_design(
+        shape_3d, file_path=tmp_path
+    )
+    FUNCFILE = FUNCFILE[0]
+    niimgs = [FUNCFILE, FUNCFILE, FUNCFILE]
+    niimg_4d = concat_imgs(niimgs)
 
     # First level models as input
     SecondLevelModel(mask_img=mask).fit(flms)
@@ -780,31 +780,27 @@ def test_fmri_img_inputs_errors(tmp_path, confounds):
 
 
 def test_fmri_inputs_for_non_parametric_inference_errors(
-    tmp_path, rng, confounds
+    tmp_path, rng, confounds, shape_3d_default, shape_4d_default
 ):
     # Test processing of FMRI inputs
-
     # prepare fake data
-    p, q = 80, 3
+    _, niimg, des = generate_fake_fmri_data_and_design([shape_4d_default], 1)
+
+    # prepare correct input first level models
+    flm = FirstLevelModel(subject_label="01").fit(niimg, design_matrices=des)
+
+    # prepare correct input dataframe and lists
+    p, q = 80, 10
     X = rng.standard_normal(size=(p, q))
-    shapes = (SHAPE,)
+    sdes = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
+
+    shape_3d = [shape_3d_default + (1,)]
     _, FUNCFILE, _ = write_fake_fmri_data_and_design(
-        shapes, file_path=tmp_path
+        shape_3d, file_path=tmp_path
     )
     FUNCFILE = FUNCFILE[0]
     niimgs = [FUNCFILE, FUNCFILE, FUNCFILE]
     niimg_4d = concat_imgs(niimgs)
-    T = niimg_4d.shape[-1]
-    des = pd.DataFrame(np.ones((T, 1)), columns=["a"])
-    des_fname = str(tmp_path / "design.csv")
-    des.to_csv(des_fname)
-
-    # prepare correct input first level models
-    flm = FirstLevelModel(subject_label="01").fit(
-        niimg_4d, design_matrices=des
-    )
-    # prepare correct input dataframe and lists
-    sdes = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
 
     # test missing second-level contrast
     match = "No second-level contrast is specified."
