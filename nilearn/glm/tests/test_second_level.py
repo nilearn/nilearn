@@ -126,7 +126,7 @@ def test_sort_input_dataframe(input_df):
     ]
 
 
-def test_second_level_input_as_3D_images(rng, affine_eye):
+def test_second_level_input_as_3D_images(rng, affine_eye, tmp_path):
     """Test second level model with a list 3D image filenames as input.
 
     Should act as a regression test for:
@@ -140,18 +140,20 @@ def test_second_level_input_as_3D_images(rng, affine_eye):
         data = rng.random(shape)
         images.append(Nifti1Image(data, affine_eye))
 
-    with testing.write_tmp_imgs(*images, create_files=True) as filenames:
-        second_level_input = filenames
-        design_matrix = pd.DataFrame(
-            [1] * len(second_level_input),
-            columns=["intercept"],
-        )
+    filenames = testing.write_imgs_to_path(
+        *images, file_path=tmp_path, create_files=True
+    )
+    second_level_input = filenames
+    design_matrix = pd.DataFrame(
+        [1] * len(second_level_input),
+        columns=["intercept"],
+    )
 
-        second_level_model = SecondLevelModel(smoothing_fwhm=8.0)
-        second_level_model = second_level_model.fit(
-            second_level_input,
-            design_matrix=design_matrix,
-        )
+    second_level_model = SecondLevelModel(smoothing_fwhm=8.0)
+    second_level_model = second_level_model.fit(
+        second_level_input,
+        design_matrix=design_matrix,
+    )
 
 
 def test_process_second_level_input_as_firstlevelmodels():

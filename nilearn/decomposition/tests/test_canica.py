@@ -5,10 +5,9 @@ import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal
 
-from nilearn._utils.testing import write_tmp_imgs
+from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _affine_eye, _rng
 from nilearn.decomposition.canica import CanICA
-from nilearn.decomposition.tests.test_multi_pca import _tmp_dir
 from nilearn.image import get_data, iter_img
 from nilearn.maskers import MultiNiftiMasker
 
@@ -257,44 +256,46 @@ def test_components_img(canica_data, mask_img):
     assert components_img.shape, check_shape
 
 
-def test_with_globbing_patterns_with_single_subject(mask_img):
+def test_with_globbing_patterns_with_single_subject(mask_img, tmp_path):
     # single subject
     data, *_ = _make_canica_test_data(n_subjects=1)
     n_components = 3
 
     canica = CanICA(n_components=n_components, mask=mask_img)
 
-    with write_tmp_imgs(data[0], create_files=True, use_wildcards=True) as img:
-        input_image = _tmp_dir() + img
-        canica.fit(input_image)
-        components_img = canica.components_img_
+    img = write_imgs_to_path(
+        data[0], file_path=tmp_path, create_files=True, use_wildcards=True
+    )
+    canica.fit(img)
+    components_img = canica.components_img_
 
-        assert isinstance(components_img, Nifti1Image)
+    assert isinstance(components_img, Nifti1Image)
 
-        # n_components = 3
-        check_shape = data[0].shape[:3] + (3,)
+    # n_components = 3
+    check_shape = data[0].shape[:3] + (3,)
 
-        assert components_img.shape, check_shape
+    assert components_img.shape, check_shape
 
 
-def test_with_globbing_patterns_with_multi_subjects(canica_data, mask_img):
+def test_with_globbing_patterns_with_multi_subjects(
+    canica_data, mask_img, tmp_path
+):
     # Multi subjects
     n_components = 3
     canica = CanICA(n_components=n_components, mask=mask_img)
 
-    with write_tmp_imgs(
-        *canica_data, create_files=True, use_wildcards=True
-    ) as img:
-        input_image = _tmp_dir() + img
-        canica.fit(input_image)
-        components_img = canica.components_img_
+    img = write_imgs_to_path(
+        *canica_data, file_path=tmp_path, create_files=True, use_wildcards=True
+    )
+    canica.fit(img)
+    components_img = canica.components_img_
 
-        assert isinstance(components_img, Nifti1Image)
+    assert isinstance(components_img, Nifti1Image)
 
-        # n_components = 3
-        check_shape = canica_data[0].shape[:3] + (3,)
+    # n_components = 3
+    check_shape = canica_data[0].shape[:3] + (3,)
 
-        assert components_img.shape, check_shape
+    assert components_img.shape, check_shape
 
 
 def test_canica_score(canica_data, mask_img):

@@ -13,10 +13,23 @@ message: If you use this software, please cite it as below.
 
 repository-code: https://github.com/nilearn/nilearn
 
+preferred-citation:
+  authors:
+    - family-names: Nilearn contributors
+  title: Nilearn
+  url: https://doi.org/10.5281/zenodo.8397156
+  type: software
+
 identifiers:
-  - description: Machine learning for neuroimaging with scikit-learn
+  - description: 2014, Frontiers in Neuroinformatics
     type: doi
     value: 10.3389/fninf.2014.00014
+  - description: Zenodo collection for all releases
+    type: doi
+    value: 10.5281/zenodo.8397156
+  - description: 2023, OHBM poster
+    type: doi
+    value: 10.5281/zenodo.8383514
 
 contact:
   - given-names: Bertrand
@@ -335,6 +348,12 @@ authors:
   - given-names: Jona
     family-names: Sassenhagen
     website: https://github.com/jona-sassenhagen
+  - given-names: Jordi
+    family-names: Huguet
+    website: https://github.com/jhuguetn
+    affiliation: BarcelonaBeta Brain Research Center
+    email: jhuguetn@gmail.com
+    orcid: https://orcid.org/0000-0001-8420-4833
   - given-names: Joshua
     family-names: Teves
     website: https://github.com/jbteves
@@ -434,6 +453,10 @@ authors:
     family-names: Rahim
     website: https://github.com/mrahim
     affiliation: Air Liquide, France
+  - given-names: Mia
+    family-names: Zwally
+    website: https://github.com/MIZwally
+    affiliation: DSST, National Institute of Mental Health, USA
   - given-names: Michael
     family-names: Eickenberg
     website: https://github.com/eickenberg

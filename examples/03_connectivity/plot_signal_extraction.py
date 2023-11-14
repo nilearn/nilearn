@@ -46,7 +46,7 @@ data = datasets.fetch_development_fmri(n_subjects=1, reduce_confounds=True)
 fmri_filenames = data.func[0]
 reduced_confounds = data.confounds[0]  # This is a preselected set of confounds
 
-# %%#
+# %%
 # Extract signals on a :term:`parcellation` defined by labels
 # -----------------------------------------------------------
 # Using the NiftiLabelsMasker

@@ -267,7 +267,7 @@ def test_resampling_continuous_with_affine(affine_eye, shape, angle, rng):
     )
 
 
-def test_resampling_error_checks():
+def test_resampling_error_checks(tmp_path):
     img, affine, _ = _make_resampling_test_data()
     target_shape = (5, 3, 2)
 
@@ -275,8 +275,8 @@ def test_resampling_error_checks():
     resample_img(img, target_shape=target_shape, target_affine=affine)
     resample_img(img, target_affine=affine)
 
-    with testing.write_tmp_imgs(img) as filename:
-        resample_img(filename, target_shape=target_shape, target_affine=affine)
+    filename = testing.write_imgs_to_path(img, file_path=tmp_path)
+    resample_img(filename, target_shape=target_shape, target_affine=affine)
 
     # Missing parameter
     with pytest.raises(ValueError, match="target_affine should be specified"):
@@ -940,15 +940,17 @@ def test_resampling_with_int64_types_no_crash(affine_eye, dtype):
     resample_img(img, target_affine=2.0 * affine_eye)
 
 
-def test_resample_input(affine_eye, shape, rng):
+def test_resample_input(affine_eye, shape, rng, tmp_path):
     data = rng.integers(0, 10, shape, dtype="int32")
     affine = affine_eye
     affine[:3, -1] = 0.5 * np.array(shape[:3])
     img = Nifti1Image(data, affine)
 
-    with testing.write_tmp_imgs(img, create_files=True) as filename:
-        filename = Path(filename)
-        resample_img(filename, target_affine=affine, interpolation="nearest")
+    filename = testing.write_imgs_to_path(
+        img, file_path=tmp_path, create_files=True
+    )
+    filename = Path(filename)
+    resample_img(filename, target_affine=affine, interpolation="nearest")
 
 
 def test_smoke_resampling_non_nifti(affine_eye, shape, rng):
