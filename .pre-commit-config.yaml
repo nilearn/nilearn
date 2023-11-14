@@ -66,7 +66,7 @@ repos:
     rev: v3.15.0
     hooks:
     -   id: pyupgrade
-        args: [--py36-plus]
+        args: [--py38-plus]
 
 -   repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
@@ -75,7 +75,7 @@ repos:
     -   id: rst-inline-touching-normal
 
 -   repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 23.9.1
+    rev: 23.11.0
     hooks:
     -   id: black
         args: [--config, pyproject.toml]

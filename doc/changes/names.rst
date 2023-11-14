@@ -136,6 +136,8 @@
 
 .. _Jona Sassenhagen: https://github.com/jona-sassenhagen
 
+.. _Jordi Huguet: https://github.com/jhuguetn
+
 .. _Joshua Teves: https://github.com/jbteves
 
 .. _Julia Huntenburg: https://github.com/juhuntenburg
@@ -182,6 +184,8 @@
 
 .. _Mehdi Rahim: https://github.com/mrahim
 
+.. _Mia Zwally: https://github.com/MIZwally
+
 .. _Michael Eickenberg: https://github.com/eickenberg
 
 .. _Michael Hanke: https://github.com/mih
@@ -203,6 +207,8 @@
 .. _Neelay Shah: https://github.com/NeelayS
 
 .. _Nicolas Gensollen: https://nicolasgensollen.github.io/
+
+.. _Nikhil Krish: https://github.com/NIkhilgKrish
 
 .. _Oliver Warrington: https://github.com/OliverWarrington
 

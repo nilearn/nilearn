@@ -345,7 +345,7 @@ def test_nifti_labels_masker_reduction_strategies():
     assert default_masker.strategy == "mean"
 
 
-def test_nifti_labels_masker_resampling():
+def test_nifti_labels_masker_resampling(tmp_path):
     """Test resampling in NiftiLabelsMasker."""
     n_regions = 9
     length = 3
@@ -481,9 +481,9 @@ def test_nifti_labels_masker_resampling():
     )
 
     # Test with filenames
-    with testing.write_tmp_imgs(fmri22_img) as filename:
-        masker = NiftiLabelsMasker(labels33_img, resampling_target="data")
-        masker.fit_transform(filename)
+    filename = testing.write_imgs_to_path(fmri22_img, file_path=tmp_path)
+    masker = NiftiLabelsMasker(labels33_img, resampling_target="data")
+    masker.fit_transform(filename)
 
     # test labels masker with resampling target in 'data', 'labels' to return
     # resampled labels having number of labels equal with transformed shape of

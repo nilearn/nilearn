@@ -16,7 +16,6 @@ classifiers = [
     "Operating System :: POSIX",
     "Operating System :: Unix",
     "Operating System :: MacOS",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -41,7 +40,7 @@ license = {text = "new BSD"}
 maintainers = [{name = "Bertrand Thirion", email = "bertrand.thirion@inria.fr"}]
 name = "nilearn"
 readme = "README.rst"
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 
 [project.optional-dependencies]
 # A combination of dependencies useful for developers
@@ -67,7 +66,7 @@ doc = [
     "myst-parser",
     "numpydoc",
     "ruamel.yaml",
-    "sphinx<7.2.0",
+    "sphinx",
     "sphinx-copybutton",
     "sphinx-design",
     "sphinx-gallery",
@@ -84,7 +83,13 @@ min = [
     "scipy==1.6.0"
 ]
 # For surface plotting mostly
-plotly = ["kaleido", "plotly"]
+# Kaleido version is pinned for windows due to bug
+# See https://github.com/plotly/Kaleido/issues/134 for more detail
+plotly = [
+    "plotly",
+    "kaleido ; platform_system != 'Windows'",
+    "kaleido==0.1.0.post1 ; platform_system == 'Windows'"
+]
 # Necessary req to use nilearn's plotting module
 plotmin = ["matplotlib==3.3.0"]
 plotting = ["matplotlib>=3.3.0"]

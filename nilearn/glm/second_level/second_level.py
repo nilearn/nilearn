@@ -48,6 +48,8 @@ def _check_input_type(second_level_input):
     """Determine the type of input provided."""
     if isinstance(second_level_input, pd.DataFrame):
         return "df_object"
+    if isinstance(second_level_input, pd.Series):
+        return "pd_series"
     if isinstance(second_level_input, (str, Nifti1Image)):
         return "nii_object"
     if isinstance(second_level_input, list):
@@ -56,6 +58,7 @@ def _check_input_type(second_level_input):
         "second_level_input must be "
         "either a pandas DataFrame, "
         "a Niimg-like object, "
+        "a pandas Series of Niimg-like object, "
         "a list of Niimg-like object or "
         "a list of FirstLevelModel objects. "
         f"Got {_return_type(second_level_input)} instead"
@@ -105,6 +108,9 @@ def _check_input_as_type(
 ):
     if input_type == "flm_object":
         _check_input_as_first_level_model(second_level_input, none_confounds)
+    elif input_type == "pd_series":
+        second_level_input = second_level_input.to_list()
+        _check_input_as_nifti_images(second_level_input, none_design_matrix)
     elif input_type == "nii_object":
         _check_input_as_nifti_images(second_level_input, none_design_matrix)
     else:
@@ -180,7 +186,7 @@ def _check_input_as_dataframe(second_level_input):
             raise ValueError(
                 "second_level_input DataFrame must have"
                 " columns subject_label, map_name and"
-                " effects_map_path"
+                " effects_map_path."
             )
     if not all(
         isinstance(_, str)
@@ -218,7 +224,7 @@ def _check_confounds(confounds):
             )
         # Make sure subject_label contain strings
         if not all(
-            [isinstance(_, str) for _ in confounds["subject_label"].tolist()]
+            isinstance(_, str) for _ in confounds["subject_label"].tolist()
         ):
             raise ValueError("subject_label column must contain only strings")
 
@@ -244,9 +250,10 @@ def _check_output_type(output_type, valid_types):
 
 def _check_design_matrix(design_matrix):
     """Check design_matrix type."""
-    if design_matrix is not None:
-        if not isinstance(design_matrix, pd.DataFrame):
-            raise ValueError("design matrix must be a pandas DataFrame")
+    if design_matrix is not None and not isinstance(
+        design_matrix, pd.DataFrame
+    ):
+        raise ValueError("design matrix must be a pandas DataFrame")
 
 
 def _check_effect_maps(effect_maps, design_matrix):
@@ -436,10 +443,7 @@ class SecondLevelModel(BaseGLM):
         self.target_shape = target_shape
         self.smoothing_fwhm = smoothing_fwhm
         memory = stringify_path(memory)
-        if isinstance(memory, str):
-            self.memory = Memory(memory)
-        else:
-            self.memory = memory
+        self.memory = Memory(memory) if isinstance(memory, str) else memory
         self.memory_level = memory_level
         self.verbose = verbose
         self.n_jobs = n_jobs
@@ -586,7 +590,7 @@ class SecondLevelModel(BaseGLM):
 
         """
         if self.second_level_input_ is None:
-            raise ValueError("The model has not been fit yet")
+            raise ValueError("The model has not been fit yet.")
 
         # check first_level_contrast
         _check_first_level_contrast(
@@ -949,10 +953,12 @@ def non_parametric_inference(
 
     else:
         masker = clone(mask)
-        if smoothing_fwhm is not None:
-            if getattr(masker, "smoothing_fwhm") is not None:
-                warn("Parameter smoothing_fwhm of the masker overridden")
-                setattr(masker, "smoothing_fwhm", smoothing_fwhm)
+        if (
+            smoothing_fwhm is not None
+            and getattr(masker, "smoothing_fwhm") is not None
+        ):
+            warn("Parameter smoothing_fwhm of the masker overridden")
+            setattr(masker, "smoothing_fwhm", smoothing_fwhm)
 
     masker.fit(sample_map)
 

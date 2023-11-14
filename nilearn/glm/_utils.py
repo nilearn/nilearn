@@ -67,9 +67,8 @@ def _check_and_load_tables(tables_, var_name):
             pass
         else:
             raise TypeError(
-                "%s can only be a pandas DataFrames or a"
-                "string. A %s was provided at idx %d"
-                % (var_name, type(table), table_idx)
+                f"{var_name} can only be a pandas DataFrames or a string. "
+                f"A {type(table)} was provided at idx {table_idx}"
             )
     return tables
 
@@ -109,6 +108,8 @@ def _check_events_file_uses_tab_separators(events_files):
     if not isinstance(events_files, (list, tuple)):
         events_files = [events_files]
     for events_file_ in events_files:
+        if isinstance(events_file_, (pd.DataFrame)):
+            continue
         try:
             with open(events_file_) as events_file_obj:
                 events_file_sample = events_file_obj.readline()
@@ -118,12 +119,6 @@ def _check_events_file_uses_tab_separators(events_files):
             Handling them here will beak the calling code,
             and refactoring that is not straightforward.
             """
-        except TypeError:  # events is Pandas dataframe.
-            pass
-        except UnicodeDecodeError:  # py3:if binary file
-            raise ValueError(
-                "The file does not seem to be a valid unicode text file."
-            )
         except OSError:  # if invalid filepath.
             pass
         else:
@@ -132,13 +127,13 @@ def _check_events_file_uses_tab_separators(events_files):
                     sample=events_file_sample,
                     delimiters=valid_separators,
                 )
-            except csv.Error:
+            except csv.Error as e:
                 raise ValueError(
                     "The values in the events file "
                     "are not separated by tabs; "
                     "please enforce BIDS conventions",
                     events_file_,
-                )
+                ) from e
 
 
 def _check_run_tables(run_imgs, tables_, tables_name):
@@ -343,3 +338,63 @@ def positive_reciprocal(X):
     """
     X = np.asarray(X)
     return np.where(X <= 0, 0, 1.0 / X)
+
+
+def pad_contrast(con_val, theta, contrast_type):
+    """Pad contrast with zeros if necessary.
+
+    If the contrast is shorter than the number of parameters,
+    it is padded with zeros.
+
+    If the contrast is longer than the number of parameters,
+    a ValueError is raised.
+
+    Parameters
+    ----------
+    con_val : numpy.ndarray of shape (p) or (n, p)
+        Where p = number of regressors
+        with a value explicitly passed by the user.
+        p must be <= P,
+        where P is the total number of regressors in the design matrix.
+
+    theta : numpy.ndarray with shape (P,m)
+        theta of RegressionResults instances
+        where P is the total number of regressors in the design matrix.
+
+    contrast_type : {'t', 'F'}, optional
+        Type of the :term:`contrast`.
+    """
+    nb_cols = con_val.shape[0] if con_val.ndim == 1 else con_val.shape[1]
+    if nb_cols > theta.shape[0]:
+        if contrast_type == "t":
+            raise ValueError(
+                f"t contrasts should be of length P={theta.shape[0]}, "
+                f"but it has length {nb_cols}."
+            )
+        if contrast_type == "F":
+            raise ValueError(
+                f"F contrasts should have {theta.shape[0]} columns, "
+                f"but it has {nb_cols}."
+            )
+
+    pad = False
+    if nb_cols < theta.shape[0]:
+        pad = True
+        if contrast_type == "t":
+            warn(
+                f"t contrasts should be of length P={theta.shape[0]}, "
+                f"but it has length {nb_cols}. "
+                "The rest of the contrast was padded with zeros."
+            )
+        if contrast_type == "F":
+            warn(
+                f"F contrasts should have {theta.shape[0]} colmuns, "
+                f"but it has only {nb_cols}. "
+                "The rest of the contrast was padded with zeros."
+            )
+
+    if pad:
+        padding = np.zeros((nb_cols, theta.shape[0] - nb_cols))
+        con_val = np.hstack((con_val, padding))
+
+    return con_val

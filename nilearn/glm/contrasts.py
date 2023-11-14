@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 import scipy.stats as sps
 
-from nilearn.glm._utils import z_score
+from nilearn.glm._utils import pad_contrast, z_score
 from nilearn.maskers import NiftiMasker
 
 DEF_TINY = 1e-50
@@ -95,17 +95,25 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
         var_ = np.zeros(labels.size)
         for label_ in regression_result:
             label_mask = labels == label_
-            resl = regression_result[label_].Tcontrast(con_val)
-            effect_[:, label_mask] = resl.effect.T
-            var_[label_mask] = (resl.sd**2).T
+            reg = regression_result[label_].Tcontrast(con_val)
+            effect_[:, label_mask] = reg.effect.T
+            var_[label_mask] = (reg.sd**2).T
+
     elif contrast_type == "F":
         from scipy.linalg import sqrtm
 
         effect_ = np.zeros((dim, labels.size))
         var_ = np.zeros(labels.size)
+        # TODO
+        # explain why we cannot simply do
+        # reg = regression_result[label_].Tcontrast(con_val)
+        # like above or refactor the code so it can be done
         for label_ in regression_result:
             label_mask = labels == label_
             reg = regression_result[label_]
+            con_val = pad_contrast(
+                con_val=con_val, theta=reg.theta, contrast_type=contrast_type
+            )
             cbeta = np.atleast_2d(np.dot(con_val, reg.theta))
             invcov = np.linalg.inv(
                 np.atleast_2d(reg.vcov(matrix=con_val, dispersion=1.0))
@@ -137,16 +145,13 @@ def _compute_fixed_effect_contrast(
     n_contrasts = 0
     for i, (lab, res, con_val) in enumerate(zip(labels, results, con_vals)):
         if np.all(con_val == 0):
-            warn(f"Contrast for session {int(i)} is null")
+            warn(f"Contrast for session {int(i)} is null.")
             continue
         contrast_ = compute_contrast(lab, res, con_val, contrast_type)
-        if contrast is None:
-            contrast = contrast_
-        else:
-            contrast = contrast + contrast_
+        contrast = contrast_ if contrast is None else contrast + contrast_
         n_contrasts += 1
     if contrast is None:
-        raise ValueError("all contrasts provided were null contrasts")
+        raise ValueError("All contrasts provided were null contrasts.")
     return contrast * (1.0 / n_contrasts)
 
 
@@ -208,10 +213,7 @@ class Contrast:
         self.effect = effect
         self.variance = variance
         self.dof = float(dof)
-        if dim is None:
-            self.dim = effect.shape[0]
-        else:
-            self.dim = dim
+        self.dim = effect.shape[0] if dim is None else dim
         if self.dim > 1 and contrast_type == "t":
             print("Automatically converted multi-dimensional t to F contrast")
             contrast_type = "F"
@@ -289,7 +291,7 @@ class Contrast:
             p-values, one per voxel
 
         """
-        if self.stat_ is None or not self.baseline == baseline:
+        if self.stat_ is None or self.baseline != baseline:
             self.stat_ = self.stat(baseline)
         # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
         if self.contrast_type == "t":
@@ -321,7 +323,7 @@ class Contrast:
             one_minus_pvalues, one per voxel
 
         """
-        if self.stat_ is None or not self.baseline == baseline:
+        if self.stat_ is None or self.baseline != baseline:
             self.stat_ = self.stat(baseline)
         # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
         if self.contrast_type == "t":
@@ -352,7 +354,7 @@ class Contrast:
             statistical values, one per voxel
 
         """
-        if self.p_value_ is None or not self.baseline == baseline:
+        if self.p_value_ is None or self.baseline != baseline:
             self.p_value_ = self.p_value(baseline)
         if self.one_minus_pvalue_ is None:
             self.one_minus_pvalue_ = self.one_minus_pvalue(baseline)
@@ -465,7 +467,7 @@ def compute_fixed_effects(
     if n_runs != len(variance_imgs):
         raise ValueError(
             f"The number of contrast images ({len(contrast_imgs)}) differs "
-            f"from the number of variance images ({len(variance_imgs)}). "
+            f"from the number of variance images ({len(variance_imgs)})."
         )
 
     if isinstance(mask, NiftiMasker):
