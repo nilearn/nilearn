@@ -80,6 +80,7 @@ tv_l1 = SpaceNetRegressor(
     penalty="tv-l1",
     eps=1e-1,  # prefer large alphas
     memory="nilearn_cache",
+    n_jobs=-1,
 )
 # tv_l1.fit(zmap_filenames, behavioral_target)
 # plot_stat_map(tv_l1.coef_img_, title="TV-L1", display_mode="yz",

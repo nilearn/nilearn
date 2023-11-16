@@ -77,7 +77,7 @@ masker = MultiNiftiLabelsMasker(
     standardize="zscore_sample",
     standardize_confounds="zscore_sample",
     memory="nilearn_cache",
-    n_jobs=2,
+    n_jobs=-1,
 )
 
 # extract time series from all subjects
@@ -162,7 +162,7 @@ masker = MultiNiftiMapsMasker(
     standardize="zscore_sample",
     standardize_confounds="zscore_sample",
     memory="nilearn_cache",
-    n_jobs=2,
+    n_jobs=-1,
 )
 
 # extract time series from all subjects

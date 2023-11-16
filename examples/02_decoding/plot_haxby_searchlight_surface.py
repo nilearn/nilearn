@@ -78,8 +78,7 @@ estimator = make_pipeline(StandardScaler(), RidgeClassifier(alpha=10.0))
 cv = KFold(n_splits=3, shuffle=False)
 
 # Cross-validated search light
-scores = search_light(X, y, estimator, adjacency, cv=cv, n_jobs=1)
-
+scores = search_light(X, y, estimator, adjacency, cv=cv, n_jobs=-1)
 # %%
 # Visualization
 # -------------
