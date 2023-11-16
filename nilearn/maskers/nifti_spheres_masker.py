@@ -265,23 +265,15 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
     seeds_ : :obj:`list` of :obj:`list`
         The coordinates of the seeds in the masker.
 
-<<<<<<< HEAD
-    See Also
-=======
-    reports : boolean, optional
+    reports : boolean, default=True
          If set to True, data is saved in order to produce a report.
-         Default=True.
 
     See also
->>>>>>> f1861ba67 (Initial work (WIP...))
     --------
     nilearn.maskers.NiftiMasker
 
     """
-
     # memory and memory_level are used by CacheMixin.
-
-<<<<<<< HEAD
     def __init__(
         self,
         seeds,
@@ -300,16 +292,9 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         memory=Memory(location=None, verbose=0),
         memory_level=1,
         verbose=0,
+        reports=True,
         **kwargs,
     ):
-=======
-    def __init__(self, seeds, radius=None, mask_img=None, allow_overlap=False,
-                 smoothing_fwhm=None, standardize=False,
-                 standardize_confounds=True, high_variance_confounds=False,
-                 detrend=False, low_pass=None, high_pass=None, t_r=None,
-                 dtype=None, memory=Memory(location=None, verbose=0),
-                 memory_level=1, verbose=0, reports=True):
->>>>>>> f1861ba67 (Initial work (WIP...))
         self.seeds = seeds
         self.mask_img = mask_img
         self.radius = radius
