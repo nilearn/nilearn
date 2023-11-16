@@ -704,7 +704,7 @@ def test_plot_surf_stat_map_error(rng):
 
 def _generate_data_test_surf_roi():
     mesh = generate_surf()
-    roi_idx = _rng().randint(0, mesh[0].shape[0], size=10)
+    roi_idx = _rng().integers(0, mesh[0].shape[0], size=10)
     roi_map = np.zeros(mesh[0].shape[0])
     roi_map[roi_idx] = 1
     parcellation = _rng().uniform(size=mesh[0].shape[0])
@@ -785,7 +785,7 @@ def test_plot_surf_roi_error(engine, rng):
     if not is_plotly_installed() and engine == "plotly":
         pytest.skip('Plotly is not installed; required for this test.')
     mesh = generate_surf()
-    roi_idx = rng.randint(0, mesh[0].shape[0], size=5)
+    roi_idx = rng.integers(0, mesh[0].shape[0], size=5)
     with pytest.raises(
             ValueError,
             match='roi_map does not have the same number of vertices'):

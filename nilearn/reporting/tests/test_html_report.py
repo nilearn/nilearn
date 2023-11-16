@@ -5,11 +5,21 @@ import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal
 
-from nilearn._utils import as_ndarray
-from nilearn._utils.data_gen import generate_labeled_regions, generate_maps
-from nilearn.conftest import _rng
+from nilearn._utils.data_gen import (
+    generate_fake_fmri,
+    generate_labeled_regions,
+    generate_maps,
+    generate_random_img,
+)
 from nilearn.image import get_data, new_img_like
-from nilearn.maskers import NiftiLabelsMasker, NiftiMapsMasker, NiftiMasker
+from nilearn.maskers import (
+    MultiNiftiLabelsMasker,
+    MultiNiftiMapsMasker,
+    MultiNiftiMasker,
+    NiftiLabelsMasker,
+    NiftiMapsMasker,
+    NiftiMasker,
+)
 
 # Note: html output by nilearn view_* functions
 # should validate as html5 using https://validator.w3.org/nu/ with no
@@ -49,35 +59,37 @@ def niftimapsmasker_inputs(affine_eye):
     return {"maps_img": label_img}
 
 
-def generate_random_img(shape, length=1, affine=np.eye(4),
-                        rand_gen=_rng()):
-    data = rand_gen.standard_normal(size=(shape + (length,)))
-    return Nifti1Image(data, affine), Nifti1Image(
-        as_ndarray(data[..., 0] > 0.2, dtype=np.int8), affine)
-
-
 @pytest.fixture
 def input_parameters(masker_class, data_img_3d, affine_eye):
     n_regions = 9
     shape = (13, 11, 12)
     labels = ["background"]
     labels += [f"region_{i}" for i in range(1, n_regions + 1)]
-    if masker_class == NiftiMasker:
+    if masker_class in (NiftiMasker, MultiNiftiMasker):
         return {"mask_img": data_img_3d}
-    if masker_class == NiftiLabelsMasker:
+    if masker_class in (NiftiLabelsMasker, MultiNiftiLabelsMasker):
         labels_img = generate_labeled_regions(
             shape, n_regions=n_regions, affine=affine_eye
         )
         return {"labels_img": labels_img, "labels": labels}
-    elif masker_class == NiftiMapsMasker:
+    elif masker_class in (NiftiMapsMasker, MultiNiftiMapsMasker):
         label_img, _ = generate_maps(
             shape, n_regions=n_regions, affine=affine_eye
         )
         return {"maps_img": label_img}
 
 
-@pytest.mark.parametrize("masker_class",
-                         [NiftiMasker, NiftiLabelsMasker, NiftiMapsMasker])
+@pytest.mark.parametrize(
+    "masker_class",
+    [
+        NiftiMasker,
+        MultiNiftiMasker,
+        NiftiLabelsMasker,
+        MultiNiftiLabelsMasker,
+        NiftiMapsMasker,
+        MultiNiftiMapsMasker
+    ]
+)
 def test_report_empty_fit(masker_class, input_parameters):
     """Test minimal report generation."""
     masker = masker_class(**input_parameters)
@@ -85,8 +97,17 @@ def test_report_empty_fit(masker_class, input_parameters):
     _check_html(masker.generate_report())
 
 
-@pytest.mark.parametrize("masker_class",
-                         [NiftiMasker, NiftiLabelsMasker, NiftiMapsMasker])
+@pytest.mark.parametrize(
+    "masker_class",
+    [
+        NiftiMasker,
+        MultiNiftiMasker,
+        NiftiLabelsMasker,
+        MultiNiftiLabelsMasker,
+        NiftiMapsMasker,
+        MultiNiftiMapsMasker
+    ]
+)
 def test_empty_report(masker_class, input_parameters):
     """Test with reports set to False."""
     masker = masker_class(**input_parameters, reports=False)
@@ -221,7 +242,7 @@ def test_nifti_maps_masker_report_image_in_fit(niftimapsmasker_inputs,
                                                affine_eye):
     """Tests NiftiMapsMasker reporting with image provided to fit."""
     masker = NiftiMapsMasker(**niftimapsmasker_inputs)
-    image, _ = generate_random_img((13, 11, 12), affine=affine_eye, length=3)
+    image, _ = generate_random_img((13, 11, 12, 3), affine=affine_eye)
     masker.fit(image)
     html = masker.generate_report(2)
     assert masker._report_content['report_id'] == 0
@@ -370,3 +391,100 @@ def test_overlaid_report(data_img_3d):
     masker.fit(data_img_3d)
     html = masker.generate_report()
     assert '<div class="overlay">' in str(html)
+
+
+@pytest.mark.parametrize(
+    "reports,expected", [(True, dict), (False, type(None))]
+)
+def test_multi_nifti_masker_generate_report_imgs(
+    reports, expected, affine_eye
+):
+    """Smoke test for generate_report method with image data."""
+    shape = (9, 9, 5)
+    imgs, _ = generate_fake_fmri(shape, affine=affine_eye, length=2)
+    masker = MultiNiftiMasker(reports=reports)
+    masker.fit([imgs, imgs])
+    assert isinstance(masker._reporting_data, expected)
+    masker.generate_report()
+
+
+def test_multi_nifti_masker_generate_report_mask(affine_eye):
+    """Smoke test for generate_report method with only mask."""
+    shape = (9, 9, 5)
+    mask = Nifti1Image(np.ones(shape), affine_eye)
+    masker = MultiNiftiMasker(
+        mask_img=mask,
+        # to test resampling lines without imgs
+        target_affine=affine_eye,
+        target_shape=shape,
+    )
+    masker.fit().generate_report()
+
+
+def test_multi_nifti_masker_generate_report_imgs_and_mask(affine_eye):
+    """Smoke test for generate_report method with images and mask."""
+    shape = (9, 9, 5)
+    imgs, _ = generate_fake_fmri(shape, affine=affine_eye, length=2)
+    mask = Nifti1Image(np.ones(shape), affine_eye)
+    masker = MultiNiftiMasker(
+        mask_img=mask,
+        # to test resampling lines with imgs
+        target_affine=affine_eye,
+        target_shape=shape,
+    )
+    masker.fit([imgs, imgs]).generate_report()
+
+
+def test_multi_nifti_masker_generate_report_warning(affine_eye):
+    """Test calling generate report on multiple subjects raises warning."""
+    shape = (9, 9, 9)
+    imgs, _ = generate_fake_fmri(shape, affine=affine_eye, length=5)
+    mask = Nifti1Image(np.ones(shape), affine_eye)
+    masker = MultiNiftiMasker(
+        mask_img=mask,
+    )
+
+    with pytest.warns(
+        UserWarning, match="A list of 4D subject images were provided to fit. "
+    ):
+        masker.fit([imgs, imgs]).generate_report()
+
+
+def test_multi_nifti_labels_masker_report_warning(affine_eye):
+    """Test calling generate report on multiple subjects raises warning."""
+    shape = (13, 11, 12)
+    n_regions = 9
+    length = 3
+
+    labels_img = generate_labeled_regions(
+        shape, affine=affine_eye, n_regions=n_regions
+    )
+    imgs, _ = generate_fake_fmri(
+        shape, affine=affine_eye, length=length
+    )
+
+    masker = MultiNiftiLabelsMasker(labels_img)
+
+    with pytest.warns(
+        UserWarning, match="A list of 4D subject images were provided to fit. "
+    ):
+        masker.fit([imgs, imgs]).generate_report()
+
+
+def test_multi_nifti_maps_masker_report_warning(affine_eye):
+    """Test calling generate report on multiple subjects raises warning."""
+    shape = (13, 11, 12)
+    n_regions = 9
+    length = 3
+
+    maps_img, _ = generate_maps(shape, n_regions, affine=affine_eye)
+    imgs, _ = generate_fake_fmri(
+        shape, affine=affine_eye, length=length
+    )
+
+    masker = MultiNiftiMapsMasker(maps_img)
+
+    with pytest.warns(
+        UserWarning, match="A list of 4D subject images were provided to fit. "
+    ):
+        masker.fit([imgs, imgs]).generate_report()
