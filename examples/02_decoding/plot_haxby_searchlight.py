@@ -67,7 +67,7 @@ process_mask_img = new_img_like(mask_img, process_mask)
 # Make processing parallel
 # /!\ As each thread will print its progress, n_jobs > 1 could mess up the
 #     information output.
-n_jobs = -1
+n_jobs = 2
 
 # Define the cross-validation scheme used for validation.
 # Here we use a KFold cross-validation on the session, which corresponds to
