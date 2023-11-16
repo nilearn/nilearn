@@ -938,7 +938,7 @@ class FirstLevelModel(BaseGLM):
         return self
 
     def compute_contrast(
-        self, contrast_def, stat_type=None, output_type="z_score"
+        self, contrast_def, stat_type=None, output_type="z_score", format_type='niimg'
     ):
         """Generate different outputs corresponding to \
         the contrasts provided e.g. z_map, t_map, effects and variance.
@@ -968,10 +968,12 @@ class FirstLevelModel(BaseGLM):
             :term:`'effect_size'<Parameter Estimate>`, 'effect_variance' or
             'all'.
 
+        format_type : str, default='niimg'
+            Data format type of the output. Can be 'niimg', or 'array'.
 
         Returns
         -------
-        output : Nifti1Image or dict
+        output : Nifti1Image, numpy array, or dict
             The desired output image(s). If ``output_type == 'all'``, then
             the output is a dictionary of images, keyed by the type of image.
 
@@ -1023,6 +1025,12 @@ class FirstLevelModel(BaseGLM):
         contrast = _compute_fixed_effect_contrast(
             self.labels_, self.results_, con_vals, stat_type
         )
+        valid_formats = [
+            "niimg",
+            "array",
+        ]
+        if format_type not in valid_formats:
+            raise ValueError(f"format_type must be one of {valid_formats}")
         output_types = (
             valid_types[:-1] if output_type == "all" else [output_type]
         )
@@ -1030,11 +1038,14 @@ class FirstLevelModel(BaseGLM):
         for output_type_ in output_types:
             estimate_ = getattr(contrast, output_type_)()
             # Prepare the returned images
-            output = self.masker_.inverse_transform(estimate_)
-            contrast_name = str(con_vals)
-            output.header[
-                "descrip"
-            ] = f"{output_type_} of contrast {contrast_name}"
+            if format_type == "niimg":
+                output = self.masker_.inverse_transform(estimate_)
+                contrast_name = str(con_vals)
+                output.header[
+                    "descrip"
+                ] = f"{output_type_} of contrast {contrast_name}"
+            else:
+                output = estimate_
             outputs[output_type_] = output
 
         return outputs if output_type == "all" else output
