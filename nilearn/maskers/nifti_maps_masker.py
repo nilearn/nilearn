@@ -5,6 +5,7 @@ import numpy as np
 from joblib import Memory
 
 from nilearn import _utils, image
+from nilearn.maskers import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 
 
@@ -326,11 +327,13 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 display.close()
             return embeded_images
 
-        dim = image.load_img(img).shape
-        if len(dim) == 4:
-            # compute middle image from 4D series for plotting
-            img = image.index_img(img, dim[-1] // 2)
-
+        if self._reporting_data["dim"] == 5:
+            msg = (
+                "A list of 4D subject images were provided to fit. "
+                "Only first subject is shown in the report."
+            )
+            warnings.warn(msg)
+            self._report_content["warning_message"] = msg
         # Find the cut coordinates
         cut_coords = [
             plotting.find_xyz_cut_coords(image.index_img(maps_image, i))
@@ -425,8 +428,13 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
             self._reporting_data = {
                 "maps_image": self.maps_img_,
                 "mask": self.mask_img_,
+                "dim": None,
                 "img": imgs,
             }
+            if imgs is not None:
+                imgs, dims = compute_middle_image(imgs)
+                self._reporting_data["img"] = imgs
+                self._reporting_data["dim"] = dims
         else:
             self._reporting_data = None
 
