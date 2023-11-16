@@ -1025,8 +1025,8 @@ def first_level_from_bids(
 
     Kwargs prefixed with ``confound_``
     will be passed to :func:`~nilearn.interfaces.fmriprep.load_confounds`.
-    This allows to ``first_level_from_bids`` to return
-    a specific set of confounds by relying confound loading strategies
+    This allows ``first_level_from_bids`` to return
+    a specific set of confounds by relying on confound loading strategies
     defined in :func:`~nilearn.interfaces.fmriprep.load_confounds`.
     If no kwargs are passed, ``first_level_from_bids`` will return
     all the confounds available in the confounds TSV files.
@@ -1722,9 +1722,7 @@ def _check_kwargs_load_confounds(**kwargs):
         "demean": True,
     }
 
-    if "confounds_strategy" not in kwargs:
-        return None
-    if kwargs["confounds_strategy"] is None:
+    if kwargs.get("confounds_strategy") is None:
         return None
 
     kwargs_load_confounds = {
