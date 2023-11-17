@@ -6,6 +6,7 @@ SPHINXOPTS    = -v
 SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = _build
+VERSIONTAG    = x.y.z
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
@@ -20,6 +21,7 @@ help:
 	@echo "Please use \`make <target>' where <target> is one of"
 	@echo "  html      to make standalone HTML files"
 	@echo "  html-noplot to make standalone HTML files, without plotting anything"
+	@echo "  ci-html-noplot to run html-noplot with warnings as errors"
 	@echo "  check     to do a sanity check of the documentation"
 	@echo "  dirhtml   to make HTML files named index.html in directories"
 	@echo "  pickle    to make pickle files"
@@ -79,6 +81,12 @@ html-modified-examples-only: 	sym_links
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
 html-noplot:
+	BUILD_DEV_HTML=1 $(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	touch $(BUILDDIR)/html/.nojekyll
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+
+ci-html-noplot:
 	BUILD_DEV_HTML=1 $(SPHINXBUILD) -W --keep-going -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	touch $(BUILDDIR)/html/.nojekyll
 	@echo
@@ -182,4 +190,5 @@ install:
 	git add -A && \
 	git add .nojekyll && \
 	git commit -a -m 'Make install' && \
-	git push
+	git tag $(VERSIONTAG)
+	git push --tags

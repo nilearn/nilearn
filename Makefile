@@ -43,6 +43,10 @@ doc-plot:
 doc:
 	make -C doc html-noplot
 
+.PHONY : ci-doc
+ci-doc:
+	make -C doc ci-html-noplot
+
 .PHONY : pdf
 pdf:
 	make -C doc pdf

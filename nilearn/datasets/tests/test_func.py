@@ -18,7 +18,7 @@ import pandas as pd
 import pytest
 
 from nilearn.datasets import func
-from nilearn.datasets._testing import dict_to_archive, list_to_archive
+from nilearn.datasets.tests._testing import dict_to_archive, list_to_archive
 from nilearn.datasets.utils import _get_dataset_dir
 
 
@@ -386,12 +386,13 @@ def test_fetch_abide_pcp(tmp_path, request_mocker, quality_checked):
     )
 
 
-def test__load_mixed_gambles(rng):
+def test__load_mixed_gambles(rng, affine_eye):
     n_trials = 48
-    affine = np.eye(4)
     for n_subjects in [1, 5, 16]:
         zmaps = [
-            nibabel.Nifti1Image(rng.randn(3, 4, 5, n_trials), affine)
+            nibabel.Nifti1Image(
+                rng.standard_normal((3, 4, 5, n_trials)), affine_eye
+            )
             for _ in range(n_subjects)
         ]
         zmaps, gain, _ = func._load_mixed_gambles(zmaps)
@@ -950,7 +951,7 @@ def test_make_spm_auditory_events_file():
     assert actual_events_data_string == expected_events_data_string
 
 
-def test_fetch_spm_auditory(tmp_path):
+def test_fetch_spm_auditory(affine_eye, tmp_path):
     saf = [f"fM00223/fM00223_{int(index):03}.img" for index in range(4, 100)]
     saf_ = [f"fM00223/fM00223_{int(index):03}.hdr" for index in range(4, 100)]
 
@@ -963,7 +964,7 @@ def test_fetch_spm_auditory(tmp_path):
 
     path_img = str(tmp_path / "tmp.img")
     path_hdr = str(tmp_path / "tmp.hdr")
-    nib.save(nib.Nifti1Image(np.zeros((2, 3, 4)), np.eye(4)), path_img)
+    nib.save(nib.Nifti1Image(np.zeros((2, 3, 4)), affine_eye), path_img)
     shutil.copy(path_img, os.path.join(subject_dir, "sM00223/sM00223_002.img"))
     shutil.copy(path_hdr, os.path.join(subject_dir, "sM00223/sM00223_002.hdr"))
     for file_ in saf:

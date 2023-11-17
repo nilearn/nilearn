@@ -1,6 +1,5 @@
 """Utilities for testing nilearn."""
 # Author: Alexandre Abraham, Philippe Gervais
-import contextlib
 import functools
 import gc
 import os
@@ -53,7 +52,7 @@ def check_deprecation(func, match=None):
 
     @functools.wraps(func)
     def wrapped(*args, **kwargs):
-        with pytest.warns(FutureWarning, match=match):
+        with pytest.warns(DeprecationWarning, match=match):
             result = func(*args, **kwargs)
         return result
 
@@ -113,12 +112,10 @@ def serialize_niimg(img, gzipped=True):
             return f.read()
 
 
-@contextlib.contextmanager
-def write_tmp_imgs(*imgs, **kwargs):
-    """Context manager for writing Nifti images.
+def write_imgs_to_path(*imgs, file_path=None, **kwargs):
+    """Write Nifti images on disk.
 
-    Write nifti images in a temporary location, and remove them at the end of
-    the block.
+    Write nifti images in a specified location.
 
     Parameters
     ----------
@@ -144,6 +141,9 @@ def write_tmp_imgs(*imgs, **kwargs):
         list of string is returned.
 
     """
+    if file_path is None:
+        file_path = Path.cwd()
+
     valid_keys = {"create_files", "use_wildcards"}
     input_keys = set(kwargs.keys())
     invalid_keys = input_keys - valid_keys
@@ -160,49 +160,25 @@ def write_tmp_imgs(*imgs, **kwargs):
 
     if create_files:
         filenames = []
-        try:
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore", RuntimeWarning)
-                for img in imgs:
-                    fd, filename = tempfile.mkstemp(
-                        prefix=prefix, suffix=suffix, dir=None
-                    )
-                    os.close(fd)
-                    filenames.append(filename)
-                    img.to_filename(filename)
-                    del img
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", RuntimeWarning)
+            for i, img in enumerate(imgs):
+                filename = file_path / (prefix + str(i) + suffix)
+                filenames.append(str(filename))
+                img.to_filename(filename)
+                del img
 
-                if use_wildcards:
-                    yield f"{prefix}*{suffix}"
-                else:
-                    if len(imgs) == 1:
-                        yield filenames[0]
-                    else:
-                        yield filenames
-        finally:
-            failures = []
-            # Ensure all created files are removed
-            for filename in filenames:
-                try:
-                    os.remove(filename)
-                except FileNotFoundError:
-                    # ok, file already removed
-                    pass
-                except OSError as e:
-                    # problem eg permission, or open file descriptor
-                    failures.append(e)
-            if failures:
-                failed_lines = "\n".join(str(e) for e in failures)
-                raise OSError(
-                    "The following files could not be removed:\n"
-                    f"{failed_lines}"
-                )
+            if use_wildcards:
+                return str(file_path / f"{prefix}*{suffix}")
+            else:
+                if len(filenames) == 1:
+                    return filenames[0]
+                return filenames
 
     else:  # No-op
         if len(imgs) == 1:
-            yield imgs[0]
-        else:
-            yield imgs
+            return imgs[0]
+        return imgs
 
 
 def are_tests_running():

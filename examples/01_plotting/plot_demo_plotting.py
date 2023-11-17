@@ -106,8 +106,8 @@ plotting.plot_roi(
 )
 
 # %%
-# Plotting EPI image with function `plot_epi`
-# -------------------------------------------
+# Plotting :term:`EPI` image with function `plot_epi`
+# ---------------------------------------------------
 
 # Import image processing tool
 from nilearn import image

@@ -16,7 +16,6 @@ classifiers = [
     "Operating System :: POSIX",
     "Operating System :: Unix",
     "Operating System :: MacOS",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -41,7 +40,7 @@ license = {text = "new BSD"}
 maintainers = [{name = "Bertrand Thirion", email = "bertrand.thirion@inria.fr"}]
 name = "nilearn"
 readme = "README.rst"
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 
 [project.optional-dependencies]
 # A combination of dependencies useful for developers
@@ -57,7 +56,8 @@ doc = [
     "memory_profiler",  # measuring memory during docs building
     "myst-parser",
     "numpydoc",
-    "sphinx<7.2.0",
+    "ruamel.yaml",
+    "sphinx",
     "sphinx-copybutton",
     "sphinx-design",
     "sphinx-gallery",
@@ -66,7 +66,14 @@ doc = [
     "ruamel.yaml"
 ]
 # Necessary req to use nilearn's plotting module
-plotting = ["matplotlib>=3.3.0", "kaleido", "plotly"]
+# Kaleido version is pinned for windows due to bug
+# See https://github.com/plotly/Kaleido/issues/134 for more detail
+plotting = [
+    "matplotlib>=3.3.0",
+    "plotly",
+    "kaleido ; platform_system != 'Windows'",
+    "kaleido==0.1.0.post1 ; platform_system == 'Windows'"
+]
 style = [
     "black",
     "blacken-docs",
@@ -112,7 +119,7 @@ extend-exclude = """
   | nilearn/interfaces/fmriprep/load_confounds_compcor.py
   | nilearn/interfaces/fmriprep/tests/test_load_confounds_utils.py
   | nilearn/interfaces/fmriprep/tests/test_load_confounds_strategy.py
-  | nilearn/interfaces/fmriprep/tests/utils.py
+  | nilearn/interfaces/fmriprep/tests/_testing.py
   | nilearn/interfaces/fmriprep/tests/test_load_confounds.py
   | nilearn/maskers/nifti_spheres_masker.py
   | nilearn/maskers/nifti_labels_masker.py

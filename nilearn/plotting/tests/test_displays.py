@@ -93,7 +93,7 @@ def test_base_axes_exceptions():
         axes.draw_2d(None, None, None)
 
 
-def test_cut_axes_exception():
+def test_cut_axes_exception(affine_eye):
     """Tests for exceptions raised by class ``CutAxes``."""
     from nilearn.plotting.displays import CutAxes
 
@@ -101,7 +101,7 @@ def test_cut_axes_exception():
     assert axes.direction == "foo"
     assert axes.coord == 2
     with pytest.raises(ValueError, match="Invalid value for direction"):
-        axes.transform_to_2d(None, np.eye(4))
+        axes.transform_to_2d(None, affine_eye)
 
 
 def test_glass_brain_axes():
@@ -317,7 +317,7 @@ def test_user_given_cmap_with_colorbar(img):
 
 
 @pytest.mark.parametrize("display", [OrthoSlicer, LYRZProjector])
-def test_data_complete_mask(display):
+def test_data_complete_mask(affine_eye, display):
     """Test for a special case due to matplotlib 2.1.0.
     When the data is completely masked, then we have plotting issues
     See similar issue #9280 reported in matplotlib. This function
@@ -325,7 +325,7 @@ def test_data_complete_mask(display):
     """
     # data is completely masked
     data = np.zeros((10, 20, 30))
-    img = Nifti1Image(data, np.eye(4))
+    img = Nifti1Image(data, affine_eye)
     n_cuts = 3 if display == OrthoSlicer else 4
     display = display(cut_coords=(0,) * n_cuts)
     display.add_overlay(img)
@@ -375,3 +375,22 @@ def test_add_graph_with_node_color_as_string(node_color):
     node_coords = [[-53.60, -62.80, 36.64], [23.87, 0.31, 69.42]]
     lzry_projector.add_graph(matrix, node_coords, node_color=node_color)
     lzry_projector.close()
+
+
+@pytest.mark.parametrize(
+    "threshold,vmin,vmax,expected_results",
+    [
+        (None, None, None, [[-2, -1, 0], [0, 1, 2]]),
+        (0.5, None, None, [[-2, -1, np.nan], [np.nan, 1, 2]]),
+        (1, 0, None, [[np.nan, np.nan, np.nan], [np.nan, np.nan, 2]]),
+        (1, None, 1, [[-2, np.nan, np.nan], [np.nan, np.nan, np.nan]]),
+        (0, 0, 0, [[np.nan, np.nan, np.nan], [np.nan, np.nan, np.nan]]),
+    ],
+)
+def test_threshold(threshold, vmin, vmax, expected_results):
+    """Tests for ``OrthoSlicer._threshold``."""
+    data = np.array([[-2, -1, 0], [0, 1, 2]], dtype=float)
+    assert np.ma.allequal(
+        OrthoSlicer._threshold(data, threshold, vmin, vmax),
+        np.ma.masked_invalid(expected_results),
+    )

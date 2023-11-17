@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
-from nilearn._utils.niimg import _is_binary_niimg
+from nilearn._utils.niimg import is_binary_niimg
 from nilearn.image import get_data
 from nilearn.plotting import plot_img
 
@@ -58,11 +58,11 @@ def test_plot_empty_slice(affine_mni):
 
 
 @pytest.mark.parametrize("display_mode", ["x", "y", "z"])
-def test_plot_img_with_auto_cut_coords(display_mode):
+def test_plot_img_with_auto_cut_coords(affine_eye, display_mode):
     """Smoke test for plot_img with cut_coords set in auto mode."""
     data = np.zeros((20, 20, 20))
     data[3:-3, 3:-3, 3:-3] = 1
-    img = Nifti1Image(data, np.eye(4))
+    img = Nifti1Image(data, affine_eye)
     plot_img(img, cut_coords=None, display_mode=display_mode, black_bg=True)
     plt.close()
 
@@ -72,9 +72,9 @@ def test_plot_img_with_resampling(binary_img, img_3d_mni):
     """Tests for plot_img with resampling of the data image."""
     img = _testdata_3d_for_plotting_for_resampling(img_3d_mni, binary_img)
     if binary_img:
-        assert _is_binary_niimg(img)
+        assert is_binary_niimg(img)
     else:
-        assert not _is_binary_niimg(img)
+        assert not is_binary_niimg(img)
     display = plot_img(img)
     display.add_overlay(img)
     display.add_contours(

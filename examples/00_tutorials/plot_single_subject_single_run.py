@@ -16,9 +16,9 @@ The data
 
 The dataset comes from an experiment conducted at the FIL by Geraint Rees
 under the direction of Karl Friston. It is provided by FIL methods
-group which develops the SPM software.
+group which develops the :term:`SPM` software.
 
-According to SPM documentation, 96 scans were acquired (repetition time
+According to :term:`SPM` documentation, 96 scans were acquired (repetition time
 :term:`TR` = 7s) in one session. The paradigm consisted of alternating periods
 of stimulation and rest, lasting 42s each (that is, for 6 scans). The session
 started with a rest block.  Auditory stimulation consisted of bi-syllabic words
@@ -79,8 +79,8 @@ events = pd.read_table(subject_data["events"])
 events
 
 # %%
-# Performing the GLM analysis
-# ---------------------------
+# Performing the :term:`GLM` analysis
+# -----------------------------------
 #
 # It is now time to create and estimate a ``FirstLevelModel`` object,
 # that will generate the *design matrix*
@@ -95,7 +95,8 @@ from nilearn.glm.first_level import FirstLevelModel
 # * noise_model='ar1' specifies the noise covariance model: a lag-1 dependence
 # * standardize=False means that we do not want
 #   to rescale the time series to mean 0, variance 1
-# * hrf_model='spm' means that we rely on the SPM "canonical hrf" model
+# * hrf_model='spm' means that we rely
+#   on the :term:`SPM` "canonical hrf" model
 #   (without time or dispersion derivatives)
 # * drift_model='cosine' means that we model the signal drifts
 #   as slow oscillating time functions
@@ -164,7 +165,7 @@ plt.show()
 # created :term:`contrast` with a single '1' in each of the columns: The role
 # of the :term:`contrast` is to select some columns of the model --and
 # potentially weight them-- to study the associated statistics. So in
-# a nutshell, a contrast is a weighted combination of the estimated
+# a nutshell, a :term:`contrast` is a weighted combination of the estimated
 # effects.  Here we can define canonical contrasts that just consider
 # the two effects in isolation ---let's call them "conditions"---
 # then a :term:`contrast` that makes the difference between these conditions.
@@ -347,9 +348,9 @@ table.to_csv(join(outdir, "table.csv"))
 # explained by the combination of the active and rest condition.
 
 # %%
-# Specify the contrast and compute the corresponding map. Actually, the
-# contrast specification is done exactly the same way as for t-
-# contrasts.
+# Specify the :term:`contrast` and compute the corresponding map.
+# Actually, the :term:`contrast` specification is done exactly the same way
+# as for t-contrasts.
 
 effects_of_interest = np.vstack((conditions["active"], conditions["rest"]))
 plot_contrast_matrix(effects_of_interest, design_matrix)

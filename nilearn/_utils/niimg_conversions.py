@@ -14,8 +14,8 @@ import nilearn as ni
 from .cache_mixin import cache
 from .exceptions import DimensionError
 from .helpers import stringify_path
-from .niimg import _get_data, _safe_get_data, load_niimg
-from .path_finding import _resolve_globbing
+from .niimg import _get_data, load_niimg, safe_get_data
+from .path_finding import resolve_globbing
 
 
 def _check_fov(img, affine, shape):
@@ -25,7 +25,7 @@ def _check_fov(img, affine, shape):
     return img.shape[:3] == shape and np.allclose(img.affine, affine)
 
 
-def _check_same_fov(*args, **kwargs):
+def check_same_fov(*args, **kwargs):
     """Return True if provided images have the same field of view (shape and \
     affine) and return False or raise an error elsewhere, depending on the \
     `raise_error` argument.
@@ -81,7 +81,7 @@ def _index_img(img, index):
     )
 
 
-def _iter_check_niimg(
+def iter_check_niimg(
     niimgs,
     ensure_ndim=None,
     atleast_4d=False,
@@ -102,9 +102,8 @@ def _iter_check_niimg(
         If specified, an error is raised if the data does not have the
         required dimension.
 
-    atleast_4d : boolean, optional
+    atleast_4d : boolean, default=False
         If True, any 3D image is converted to a 4D single scan.
-        Default=False.
 
     target_fov : tuple of affine and shape, optional
        If specified, images are resampled to this field of view.
@@ -114,19 +113,17 @@ def _iter_check_niimg(
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
 
-    memory : instance of joblib.Memory or string, optional
+    memory : instance of joblib.Memory or string, default=Memory(location=None)
         Used to cache the masking process.
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
-        Default=Memory(location=None).
 
-    memory_level : integer, optional
+    memory_level : integer, default=0
         Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching. Default=0.
+        means more memory for caching.
 
-    verbose : integer, optional
+    verbose : integer, default=0
         Indicate the level of verbosity. By default, nothing is printed.
-        Default=0.
 
     See Also
     --------
@@ -134,7 +131,7 @@ def _iter_check_niimg(
 
     """
     # If niimgs is a string, use glob to expand it to the matching filenames.
-    niimgs = _resolve_globbing(niimgs)
+    niimgs = resolve_globbing(niimgs)
 
     ref_fov = None
     resample_to_first_img = False
@@ -232,28 +229,24 @@ def check_niimg(
         Indicate the dimensionality of the expected niimg. An
         error is raised if the niimg is of another dimensionality.
 
-    atleast_4d : boolean, optional
+    atleast_4d : boolean, default=False
         Indicates if a 3d image should be turned into a single-scan 4d niimg.
-        Default=False.
 
-    dtype : {None, dtype, "auto"}, optional
+    dtype : {None, dtype, "auto"}, default=None
         Data type toward which the data should be converted. If "auto", the
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous. If None, data will not be converted to a new data type.
-        Default=None.
 
-    return_iterator : boolean, optional
+    return_iterator : boolean, default=False
         Returns an iterator on the content of the niimg file input.
-        Default=False.
 
-    wildcards : boolean, optional
+    wildcards : boolean, default=True
         Use niimg as a regular expression to get a list of matching input
         filenames.
         If multiple files match, the returned list is sorted using an ascending
         order.
         If no file matches the regular expression, a ValueError exception is
         raised.
-        Default=True.
 
     Returns
     -------
@@ -273,7 +266,7 @@ def check_niimg(
 
     See Also
     --------
-        _iter_check_niimg, check_niimg_3d, check_niimg_4d
+        iter_check_niimg, check_niimg_3d, check_niimg_4d
 
     """
     from ..image import new_img_like  # avoid circular imports
@@ -310,7 +303,7 @@ def check_niimg(
     # in case of an iterable
     if hasattr(niimg, "__iter__") and not isinstance(niimg, str):
         if return_iterator:
-            return _iter_check_niimg(
+            return iter_check_niimg(
                 niimg, ensure_ndim=ensure_ndim, dtype=dtype
             )
         return concat_niimgs(niimg, ensure_ndim=ensure_ndim, dtype=dtype)
@@ -320,7 +313,7 @@ def check_niimg(
 
     if ensure_ndim == 3 and len(niimg.shape) == 4 and niimg.shape[3] == 1:
         # "squeeze" the image.
-        data = _safe_get_data(niimg)
+        data = safe_get_data(niimg)
         affine = niimg.affine
         niimg = new_img_like(niimg, data[:, :, :, 0], affine)
     if atleast_4d and len(niimg.shape) == 3:
@@ -393,12 +386,11 @@ def check_niimg_4d(niimg, return_iterator=False, dtype=None):
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
 
-    return_iterator : boolean, optional
+    return_iterator : boolean, default=False
         If True, an iterator of 3D images is returned. This reduces the memory
         usage when `niimgs` contains 3D images.
         If False, a single 4D image is returned. When `niimgs` contains 3D
         images they are concatenated together.
-        Default=False.
 
     Returns
     -------
@@ -438,30 +430,27 @@ def concat_niimgs(
         See :ref:`extracting_data`.
         Niimgs to concatenate.
 
-    dtype : numpy dtype, optional
-        The dtype of the returned image. Default=np.float32.
+    dtype : numpy dtype, default=np.float32
+        The dtype of the returned image.
 
     ensure_ndim : integer, optional
         Indicate the dimensionality of the expected niimg. An
         error is raised if the niimg is of another dimensionality.
 
-    auto_resample : boolean, optional
+    auto_resample : boolean, default=False
         Converts all images to the space of the first one.
-        Default=False.
 
-    verbose : int, optional
+    verbose : int, default=0
         Controls the amount of verbosity (0 means no messages).
-        Default=0.
 
-    memory : instance of joblib.Memory or string, optional
+    memory : instance of joblib.Memory or string, default=Memory(location=None)
         Used to cache the resampling process.
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
-        Default=Memory(location=None).
 
-    memory_level : integer, optional
+    memory_level : integer, default=0
         Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching. Default=0.
+        means more memory for caching.
 
     Returns
     -------
@@ -483,7 +472,7 @@ def concat_niimgs(
         ndim = ensure_ndim - 1
 
     # If niimgs is a string, use glob to expand it to the matching filenames.
-    niimgs = _resolve_globbing(niimgs)
+    niimgs = resolve_globbing(niimgs)
 
     # First niimg is extracted to get information and for new_img_like
     first_niimg = None
@@ -528,7 +517,7 @@ def concat_niimgs(
     for index, (size, niimg) in enumerate(
         zip(
             lengths,
-            _iter_check_niimg(
+            iter_check_niimg(
                 iterator,
                 atleast_4d=True,
                 target_fov=target_fov,

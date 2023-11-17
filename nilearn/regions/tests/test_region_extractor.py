@@ -43,17 +43,18 @@ def labels_img():
 
 @pytest.fixture
 def maps():
-    return generate_maps(shape=MAP_SHAPE, n_regions=N_REGIONS)[0]
+    return generate_maps(
+        shape=MAP_SHAPE, n_regions=N_REGIONS, random_state=42
+    )[0]
 
 
 @pytest.fixture
 def maps_and_mask():
-    return generate_maps(shape=MAP_SHAPE, n_regions=N_REGIONS)
+    return generate_maps(shape=MAP_SHAPE, n_regions=N_REGIONS, random_state=42)
 
 
 @pytest.fixture
-def map_img_3D():
-    rng = np.random.RandomState(42)
+def map_img_3D(rng):
     map_img = np.zeros(MAP_SHAPE) + 0.1 * rng.standard_normal(size=MAP_SHAPE)
     return Nifti1Image(map_img, affine=_affine_eye())
 
@@ -276,7 +277,7 @@ def test_region_extractor_zeros_affine_diagonal(affine_eye):
     affine = affine_eye
     affine[[0, 1]] = affine[[1, 0]]  # permutes first and second lines
     maps, _ = generate_maps(
-        shape=[40, 40, 40], n_regions=n_regions, affine=affine
+        shape=[40, 40, 40], n_regions=n_regions, affine=affine, random_state=42
     )
 
     extract_ratio = RegionExtractor(

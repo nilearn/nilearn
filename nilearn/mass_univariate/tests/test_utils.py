@@ -5,10 +5,9 @@ import numpy as np
 import pytest
 from numpy.testing import assert_array_almost_equal
 from scipy.ndimage import generate_binary_structure
-from sklearn.utils import check_random_state
 
 from nilearn.mass_univariate import _utils
-from nilearn.mass_univariate.tests.utils import (
+from nilearn.mass_univariate.tests._testing import (
     get_tvalue_with_alternative_library,
 )
 
@@ -132,10 +131,9 @@ def test_null_to_p_float_error(null):
     [("two-sided", 1 / 10000), ("smaller", 1 - 1 / 10000)],
 )
 def test_null_to_p_float_with_extreme_values(
-    alternative, expected_p_value, random_state=0
+    alternative, expected_p_value, rng
 ):
     """Test that 1/n(null) is preserved with extreme values"""
-    rng = check_random_state(random_state)
     null = rng.normal(size=10000)
 
     result = _utils._null_to_p(20, null, alternative=alternative)
@@ -145,9 +143,8 @@ def test_null_to_p_float_with_extreme_values(
     )
 
 
-def test_null_to_p_array(random_state=0):
+def test_null_to_p_array(rng):
     """Test _null_to_p with 1d array input."""
-    rng = check_random_state(random_state)
     N = 10000
     nulldist = rng.normal(size=N)
     t = np.sort(rng.normal(size=N))
@@ -225,16 +222,14 @@ def test_calculate_cluster_measures_on_empty_array():
     assert test_mass[0] == true_mass
 
 
-def test_t_score_with_covars_and_normalized_design_nocovar(random_state=0):
+def test_t_score_with_covars_and_normalized_design_nocovar(rng):
     """Test t-scores computation without covariates."""
-    rng = check_random_state(random_state)
-
     # Normalized data
     n_samples = 50
 
     # generate data
     var1 = np.ones((n_samples, 1)) / np.sqrt(n_samples)
-    var2 = rng.randn(n_samples, 1)
+    var2 = rng.standard_normal((n_samples, 1))
     var2 = var2 / np.sqrt(np.sum(var2**2, 0))  # normalize
 
     # compute t-scores with nilearn routine
@@ -245,16 +240,14 @@ def test_t_score_with_covars_and_normalized_design_nocovar(random_state=0):
     assert_array_almost_equal(t_val_own, t_val_alt)
 
 
-def test_t_score_with_covars_and_normalized_design_withcovar(random_state=0):
+def test_t_score_with_covars_and_normalized_design_withcovar(rng):
     """Test t-scores computation with covariates."""
-    rng = check_random_state(random_state)
-
     # Normalized data
     n_samples = 50
 
     # generate data
     var1 = np.ones((n_samples, 1)) / np.sqrt(n_samples)  # normalized
-    var2 = rng.randn(n_samples, 1)
+    var2 = rng.standard_normal((n_samples, 1))
     var2 = var2 / np.sqrt(np.sum(var2**2, 0))  # normalize
     covars = np.eye(n_samples, 3)  # covars is orthogonal
     covars[3] = -1  # covars is orthogonal to var1

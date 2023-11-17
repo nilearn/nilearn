@@ -9,7 +9,7 @@ from nilearn.connectome.group_sparse_cov import (
 )
 
 
-def test_group_sparse_covariance():
+def test_group_sparse_covariance(rng):
     # run in debug mode. Should not fail
     # without debug mode: cost must decrease.
 
@@ -19,7 +19,7 @@ def test_group_sparse_covariance():
         n_features=10,
         min_n_samples=100,
         max_n_samples=151,
-        random_state=np.random.RandomState(0),
+        random_state=rng,
     )
 
     alpha = 0.1
@@ -35,14 +35,14 @@ def test_group_sparse_covariance():
     np.testing.assert_almost_equal(omega, omega2, decimal=4)
 
 
-def test_group_sparse_covariance_with_probe_function():
+def test_group_sparse_covariance_with_probe_function(rng):
     signals, _, _ = generate_group_sparse_gaussian_graphs(
         density=0.1,
         n_subjects=5,
         n_features=10,
         min_n_samples=100,
         max_n_samples=151,
-        random_state=np.random.RandomState(0),
+        random_state=rng,
     )
 
     alpha = 0.1
@@ -83,14 +83,14 @@ def test_group_sparse_covariance_with_probe_function():
     assert omega.shape == (10, 10, 5)
 
 
-def test_group_sparse_covariance_check_consistency_between_classes():
+def test_group_sparse_covariance_check_consistency_between_classes(rng):
     signals, _, _ = generate_group_sparse_gaussian_graphs(
         density=0.1,
         n_subjects=5,
         n_features=10,
         min_n_samples=100,
         max_n_samples=151,
-        random_state=np.random.RandomState(0),
+        random_state=rng,
     )
 
     # Check consistency between classes
@@ -109,14 +109,14 @@ def test_group_sparse_covariance_check_consistency_between_classes():
     )
 
 
-def test_group_sparse_covariance_errors():
+def test_group_sparse_covariance_errors(rng):
     signals, _, _ = generate_group_sparse_gaussian_graphs(
         density=0.1,
         n_subjects=5,
         n_features=10,
         min_n_samples=100,
         max_n_samples=151,
-        random_state=np.random.RandomState(0),
+        random_state=rng,
     )
 
     alpha = 0.1

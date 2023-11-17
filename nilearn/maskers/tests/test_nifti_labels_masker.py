@@ -136,7 +136,7 @@ def test_nifti_labels_masker():
     np.testing.assert_almost_equal(fmri11_img_r.affine, fmri11_img.affine)
 
 
-def test_nifti_labels_masker_io_shapes():
+def test_nifti_labels_masker_io_shapes(rng):
     """Ensure that NiftiLabelsMasker handles 1D/2D/3D/4D data appropriately.
 
     transform(4D image) --> 2D output, no warning
@@ -148,8 +148,8 @@ def test_nifti_labels_masker_io_shapes():
     n_regions, n_volumes = 9, 5
     shape_3d = (10, 11, 12)
     shape_4d = (10, 11, 12, n_volumes)
-    data_1d = np.random.random(n_regions)
-    data_2d = np.random.random((n_volumes, n_regions))
+    data_1d = rng.random(n_regions)
+    data_2d = rng.random((n_volumes, n_regions))
     affine = np.eye(4)
 
     img_4d, mask_img = data_gen.generate_random_img(
@@ -345,7 +345,7 @@ def test_nifti_labels_masker_reduction_strategies():
     assert default_masker.strategy == "mean"
 
 
-def test_nifti_labels_masker_resampling():
+def test_nifti_labels_masker_resampling(tmp_path):
     """Test resampling in NiftiLabelsMasker."""
     n_regions = 9
     length = 3
@@ -481,9 +481,9 @@ def test_nifti_labels_masker_resampling():
     )
 
     # Test with filenames
-    with testing.write_tmp_imgs(fmri22_img) as filename:
-        masker = NiftiLabelsMasker(labels33_img, resampling_target="data")
-        masker.fit_transform(filename)
+    filename = testing.write_imgs_to_path(fmri22_img, file_path=tmp_path)
+    masker = NiftiLabelsMasker(labels33_img, resampling_target="data")
+    masker.fit_transform(filename)
 
     # test labels masker with resampling target in 'data', 'labels' to return
     # resampled labels having number of labels equal with transformed shape of
@@ -525,8 +525,7 @@ def test_nifti_labels_masker_resampling():
         )
 
 
-def test_standardization():
-    rng = np.random.RandomState(42)
+def test_standardization(rng):
     data_shape = (9, 9, 5)
     n_samples = 500
 

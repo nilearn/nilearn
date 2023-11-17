@@ -15,7 +15,7 @@ from nilearn._utils.data_gen import (
     generate_timeseries,
 )
 from nilearn._utils.exceptions import DimensionError
-from nilearn._utils.testing import write_tmp_imgs
+from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _affine_eye, _shape_3d_default
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiLabelsMasker
@@ -332,7 +332,7 @@ def test_img_to_signals_maps_bad_masks(
 
 
 def test_signals_extraction_with_labels_without_mask(
-    signals, labels_data, labels_img, shape_3d_default
+    signals, labels_data, labels_img, shape_3d_default, tmp_path
 ):
     """Test conversion between signals and images \
     using regions defined by labels."""
@@ -356,17 +356,17 @@ def test_signals_extraction_with_labels_without_mask(
     assert_almost_equal(signals_r, signals)
     assert labels_r == list(range(1, 9))
 
-    with write_tmp_imgs(data_img) as filenames:
-        signals_r, labels_r = img_to_signals_labels(
-            imgs=filenames, labels_img=labels_img
-        )
+    filenames = write_imgs_to_path(data_img, file_path=tmp_path)
+    signals_r, labels_r = img_to_signals_labels(
+        imgs=filenames, labels_img=labels_img
+    )
 
-        assert_almost_equal(signals_r, signals)
-        assert labels_r == list(range(1, 9))
+    assert_almost_equal(signals_r, signals)
+    assert labels_r == list(range(1, 9))
 
 
 def test_signals_extraction_with_labels_with_mask(
-    signals, labels_img, labels_data, mask_img, shape_3d_default
+    signals, labels_img, labels_data, mask_img, shape_3d_default, tmp_path
 ):
     """Test conversion between signals and images \
     using regions defined by labels with a mask."""
@@ -382,18 +382,16 @@ def test_signals_extraction_with_labels_with_mask(
     # Zero outside of the mask
     assert np.all(data[np.logical_not(get_data(mask_img))].std(axis=-1) < EPS)
 
-    with write_tmp_imgs(labels_img, mask_img) as filenames:
-        data_img = signals_to_img_labels(
-            signals=signals, labels_img=filenames[0], mask_img=filenames[1]
-        )
+    filenames = write_imgs_to_path(labels_img, mask_img, file_path=tmp_path)
+    data_img = signals_to_img_labels(
+        signals=signals, labels_img=filenames[0], mask_img=filenames[1]
+    )
 
-        assert data_img.shape == (shape_3d_default + (N_TIMEPOINTS,))
-        data = get_data(data_img)
-        assert abs(data).max() > 1e-9
-        # Zero outside of the mask
-        assert np.all(
-            data[np.logical_not(get_data(mask_img))].std(axis=-1) < EPS
-        )
+    assert data_img.shape == (shape_3d_default + (N_TIMEPOINTS,))
+    data = get_data(data_img)
+    assert abs(data).max() > 1e-9
+    # Zero outside of the mask
+    assert np.all(data[np.logical_not(get_data(mask_img))].std(axis=-1) < EPS)
 
     # mask labels before checking
     masked_labels_data = labels_data.copy()
@@ -411,9 +409,8 @@ def test_signals_extraction_with_labels_with_mask(
     assert labels_r == list(range(1, 9))
 
 
-def test_signal_extraction_with_maps(affine_eye, shape_3d_default):
+def test_signal_extraction_with_maps(affine_eye, shape_3d_default, rng):
     # Generate signal imgs
-    rng = np.random.RandomState(42)
     maps_img, mask_img = generate_maps(shape_3d_default, N_REGIONS)
     maps_data = get_data(maps_img)
     data = np.zeros(shape_3d_default + (N_TIMEPOINTS,))
@@ -684,9 +681,7 @@ def test_trim_maps(shape_3d_default):
     "target_dtype",
     (float, np.float32, np.float64, int, np.uint),
 )
-def test_img_to_signals_labels_non_float_type(target_dtype):
-    rng = np.random.RandomState(42)
-
+def test_img_to_signals_labels_non_float_type(target_dtype, rng):
     fake_fmri_data = rng.uniform(size=(10, 10, 10, N_TIMEPOINTS)) > 0.5
     fake_affine = np.eye(4, 4).astype(np.float64)
     fake_fmri_img_orig = Nifti1Image(
