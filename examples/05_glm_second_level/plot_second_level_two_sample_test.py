@@ -100,11 +100,11 @@ plotting.show()
 # We specify the analysis models and fit them.
 from nilearn.glm.second_level import SecondLevelModel
 
-second_level_model_unpaired = SecondLevelModel().fit(
+second_level_model_unpaired = SecondLevelModel(n_jobs=2).fit(
     second_level_input, design_matrix=unpaired_design_matrix
 )
 
-second_level_model_paired = SecondLevelModel().fit(
+second_level_model_paired = SecondLevelModel(n_jobs=2).fit(
     second_level_input, design_matrix=paired_design_matrix
 )
 

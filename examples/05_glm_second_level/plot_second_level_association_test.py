@@ -68,7 +68,7 @@ design_matrix = pd.DataFrame(
 # Fit of the second-level model
 from nilearn.glm.second_level import SecondLevelModel
 
-model = SecondLevelModel(smoothing_fwhm=5.0)
+model = SecondLevelModel(smoothing_fwhm=5.0, n_jobs=2)
 model.fit(contrast_map_filenames, design_matrix=design_matrix)
 
 # %%

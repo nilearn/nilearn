@@ -79,6 +79,7 @@ models, models_run_imgs, events_dfs, models_confounds = first_level_from_bids(
     data_dir,
     "languagelocalizer",
     img_filters=[("desc", "preproc")],
+    n_jobs=2,
 )
 
 # Grab the first subject's model, functional file, and events DataFrame
