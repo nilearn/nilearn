@@ -65,6 +65,8 @@ doc = [
     "sphinxext-opengraph",
     "ruamel.yaml"
 ]
+# the following is kept for "backward compatibility"
+plotly = ["nilearn[plotting]"]
 # Necessary req to use nilearn's plotting module
 # Kaleido version is pinned for windows due to bug
 # See https://github.com/plotly/Kaleido/issues/134 for more detail
