@@ -970,7 +970,7 @@ def non_parametric_inference(
         )
 
     # Check and obtain the contrast
-    contrast = _get_contrast(second_level_contrast, design_matrix)
+    contrast = _get_con_val(second_level_contrast, design_matrix)
     # Get first-level effect_maps
     effect_maps = _infer_effect_maps(second_level_input, first_level_contrast)
 
@@ -981,9 +981,10 @@ def non_parametric_inference(
     var_names = design_matrix.columns.tolist()
 
     # Obtain tested_var
-    tested_var = np.asarray(design_matrix[contrast])
+    column_mask = [bool(val) for val in contrast]
+    tested_var = np.asarray(design_matrix.loc[:, column_mask])
     # Remove tested var from remaining var names
-    var_names.remove(contrast)
+    var_names = [var for var, mask in zip(var_names, column_mask) if not mask]
 
     # Obtain confounding vars
     if len(var_names) == 0:
