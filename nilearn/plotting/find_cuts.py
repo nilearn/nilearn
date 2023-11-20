@@ -475,16 +475,16 @@ def find_parcellation_cut_coords(
         right_hemi[: int(x)] = 0
 
         # Two connected component in both hemispheres
-        if not np.all(left_hemi == False) or np.all(  # noqa: E712
-            right_hemi == False  # noqa: E712
-        ):
+        left_hemi_has_values = np.any(left_hemi)
+        right_hemi_all_zero = not np.any(right_hemi)
+        if left_hemi_has_values or right_hemi_all_zero:
             if label_hemisphere == "left":
                 cur_img = left_hemi.astype(int)
             elif label_hemisphere == "right":
                 cur_img = right_hemi.astype(int)
 
         # Take the largest connected component
-        labels, label_nb = label(cur_img)
+        labels, _ = label(cur_img)
         label_count = np.bincount(labels.ravel().astype(int))
         label_count[0] = 0
         component = labels == label_count.argmax()
