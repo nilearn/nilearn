@@ -21,14 +21,14 @@ from nilearn.image import get_data, load_img, resampling
 try:
     from sklearn.exceptions import EfficiencyWarning
 except ImportError:
-    class EfficiencyWarning(UserWarning):
+    class EfficiencyWarning(UserWarning):  # type: ignore
         """Warning used to notify the user of inefficient computation."""
 
 # Create a namedtuple object for meshes
-Mesh = namedtuple("mesh", ["coordinates", "faces"])
+Mesh = namedtuple("Mesh", ["coordinates", "faces"])
 
 # Create a namedtuple object for surfaces
-Surface = namedtuple("surface", ["mesh", "data"])
+Surface = namedtuple("Surface", ["mesh", "data"])
 
 
 def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):

@@ -56,7 +56,12 @@ dev = [
     "flake8-functions",
     'codespell',
     'tomli',
-    'pre-commit'
+    'pre-commit',
+    'types-all',
+    'types-tqdm',
+    'pandas-stubs',
+    'lxml-stubs',
+    'nilearn._version'
 ]
 # Requirements necessary for building the documentation
 doc = [
@@ -171,6 +176,35 @@ src_paths = [
     'maint_tools',
     'nilearn',
     'doc'
+]
+
+[tool.mypy]
+exclude = [
+    "^doc/.*py$",
+    "^examples/.*py$",
+    "^.*tempita/.*py$",
+    "^nilearn/.*/tests/.*py$",
+    "^env/.*py$"
+]
+
+[[tool.mypy.overrides]]
+ignore_missing_imports = true
+module = [
+    "boto3",
+    "botocore.handlers",
+    "joblib",
+    "joblib.memory",
+    "kaleido",
+    "matplotlib.*",
+    "memory_profiler",
+    "mpl_toolkits.*",
+    "nibabel.*",
+    "sklearn.*",
+    "plotly.*",
+    "scipy.*",
+    "sphinx_gallery.notebook",
+    "statsmodels",
+    "svg"
 ]
 
 [tool.pytest.ini_options]
