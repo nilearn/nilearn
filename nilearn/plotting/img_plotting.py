@@ -307,6 +307,20 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
     display : :class:`~plotting.displays.OrthoSlicer` or None
         An instance of the OrthoSlicer class. If ``output_file`` is defined,
         None is returned.
+
+    Notes
+    -----
+    This is a low-level function. For most use cases, other plotting functions
+    might be more appropriate and easier to use.
+    
+    See Also
+    --------
+    :func:`~plotting.plot_anat` : To simply plot anatomical images
+    :func:`~plotting.plot_epi` : To simply plot raw EPI images
+    :func:`~plotting.plot_roi` : To simply plot max-prob atlases (3D images)
+    :func:`~plotting.plot_prob_atlas` : To simply plot probabilistic atlases \
+        (4D images)
+    :mod:`~nilearn.plotting` : See API reference for more
     """
     display = _plot_img_with_bg(
         img, cut_coords=cut_coords,
