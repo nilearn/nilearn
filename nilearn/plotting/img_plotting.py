@@ -177,10 +177,10 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
 
     Returns
     -------
-    display : :class:`~plotting.displays.OrthoSlicer` or \
-        :class:`~plotting.displays.OrthoProjector` or None
+    display : :class:`~nilearn.plotting.displays.OrthoSlicer` or \
+        :class:`~nilearn.plotting.displays.OrthoProjector` or None
         An instance of the OrthoSlicer or OrthoProjector class depending on the
-        funciton defined in ``display_factory``. If ``output_file`` is defined,
+        function defined in ``display_factory``. If ``output_file`` is defined,
         None is returned.
     """
     show_nan_msg = False
@@ -304,23 +304,27 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
 
     Returns
     -------
-    display : :class:`~plotting.displays.OrthoSlicer` or None
+    display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
         An instance of the OrthoSlicer class. If ``output_file`` is defined,
         None is returned.
 
-    Notes
-    -----
-    This is a low-level function. For most use cases, other plotting functions
-    might be more appropriate and easier to use.
-    
-    See Also
-    --------
-    :func:`~plotting.plot_anat` : To simply plot anatomical images
-    :func:`~plotting.plot_epi` : To simply plot raw EPI images
-    :func:`~plotting.plot_roi` : To simply plot max-prob atlases (3D images)
-    :func:`~plotting.plot_prob_atlas` : To simply plot probabilistic atlases \
-        (4D images)
-    :mod:`~nilearn.plotting` : See API reference for more
+    .. note::
+
+        This is a low-level function. For most use cases, other plotting
+        functions might be more appropriate and easier to use.
+
+    .. seealso::
+
+        :func:`~nilearn.plotting.plot_anat`
+            To simply plot anatomical images
+        :func:`~nilearn.plotting.plot_epi`
+            To simply plot raw EPI images
+        :func:`~nilearn.plotting.plot_roi`
+            To simply plot max-prob atlases (3D images)
+        :func:`~nilearn.plotting.plot_prob_atlas`
+            To simply plot probabilistic atlases (4D images)
+        :mod:`nilearn.plotting`
+            See API reference for other options
     """
     display = _plot_img_with_bg(
         img, cut_coords=cut_coords,
@@ -512,7 +516,7 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
 
     Returns
     -------
-    display : :class:`~plotting.displays.OrthoSlicer` or None
+    display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
         An instance of the OrthoSlicer class. If ``output_file`` is defined,
         None is returned.
 
@@ -582,7 +586,7 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
 
     Returns
     -------
-    display : :class:`~plotting.displays.OrthoSlicer` or None
+    display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
         An instance of the OrthoSlicer class. If ``output_file`` is defined,
         None is returned.
 
@@ -711,7 +715,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
 
     Returns
     -------
-    display : :class:`~plotting.displays.OrthoSlicer` or None
+    display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
         An instance of the OrthoSlicer class. If ``output_file`` is defined,
         None is returned.
 
@@ -838,7 +842,7 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
 
     Returns
     -------
-    display : :class:`~plotting.displays.OrthoSlicer` or None
+    display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
         An instance of the OrthoSlicer class. If ``output_file`` is defined,
         None is returned.
 
@@ -999,7 +1003,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
 
     Returns
     -------
-    display : :class:`~plotting.displays.OrthoSlicer` or None
+    display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
         An instance of the OrthoSlicer class. If ``output_file`` is defined,
         None is returned.
 
@@ -1116,7 +1120,7 @@ def plot_glass_brain(stat_map_img,
 
     Returns
     -------
-    display : :class:`~plotting.displays.OrthoProjector` or None
+    display : :class:`~nilearn.plotting.displays.OrthoProjector` or None
         An instance of the OrthoProjector class. If ``output_file`` is defined,
         None is returned.
 
@@ -1256,7 +1260,7 @@ def plot_connectome(adjacency_matrix, node_coords,
 
     Returns
     -------
-    display : :class:`~plotting.displays.OrthoProjector` or None
+    display : :class:`~nilearn.plotting.displays.OrthoProjector` or None
         An instance of the OrthoProjector class. If ``output_file`` is defined,
         None is returned.
 
@@ -1357,7 +1361,7 @@ def plot_markers(node_values, node_coords, node_size='auto',
 
     Returns
     -------
-    display : :class:`~plotting.displays.OrthoProjector` or None
+    display : :class:`~nilearn.plotting.displays.OrthoProjector` or None
         An instance of the OrthoProjector class. If ``output_file`` is defined,
         None is returned.
     """
