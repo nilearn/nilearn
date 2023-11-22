@@ -175,6 +175,13 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
     display_factory : function, default=get_slicer
         Takes a display_mode argument and return a display class.
 
+    Returns
+    -------
+    display : :class:`~plotting.displays.OrthoSlicer` or \
+        :class:`~plotting.displays.OrthoProjector` or None
+        An instance of the OrthoSlicer or OrthoProjector class depending on the
+        funciton defined in ``display_factory``. If ``output_file`` is defined,
+        None is returned.
     """
     show_nan_msg = False
     if vmax is not None and np.isnan(vmax):
@@ -295,6 +302,11 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
     kwargs : extra keyword arguments, optional
         Extra keyword arguments passed to matplotlib.pyplot.imshow.
 
+    Returns
+    -------
+    display : :class:`~plotting.displays.OrthoSlicer` or None
+        An instance of the OrthoSlicer class. If ``output_file`` is defined,
+        None is returned.
     """
     display = _plot_img_with_bg(
         img, cut_coords=cut_coords,
@@ -484,6 +496,12 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
     %(vmin)s
     %(vmax)s
 
+    Returns
+    -------
+    display : :class:`~plotting.displays.OrthoSlicer` or None
+        An instance of the OrthoSlicer class. If ``output_file`` is defined,
+        None is returned.
+
     Notes
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
@@ -547,6 +565,12 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
     %(vmin)s
     %(vmax)s
     %(radiological)s
+
+    Returns
+    -------
+    display : :class:`~plotting.displays.OrthoSlicer` or None
+        An instance of the OrthoSlicer class. If ``output_file`` is defined,
+        None is returned.
 
     Notes
     -----
@@ -671,6 +695,12 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         Default=2.5.
     %(radiological)s
 
+    Returns
+    -------
+    display : :class:`~plotting.displays.OrthoSlicer` or None
+        An instance of the OrthoSlicer class. If ``output_file`` is defined,
+        None is returned.
+
     Notes
     -----
     A small threshold is applied by default to eliminate numerical
@@ -791,6 +821,12 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
     alpha : float between 0 and 1, default=0.7
         Alpha sets the transparency of the color inside the filled contours.
     %(radiological)s
+
+    Returns
+    -------
+    display : :class:`~plotting.displays.OrthoSlicer` or None
+        An instance of the OrthoSlicer class. If ``output_file`` is defined,
+        None is returned.
 
     See Also
     --------
@@ -947,6 +983,12 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         Default='continuous'.
     %(radiological)s
 
+    Returns
+    -------
+    display : :class:`~plotting.displays.OrthoSlicer` or None
+        An instance of the OrthoSlicer class. If ``output_file`` is defined,
+        None is returned.
+
     Notes
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
@@ -1057,7 +1099,13 @@ def plot_glass_brain(stat_map_img,
     %(resampling_interpolation)s
         Default='continuous'.
     %(radiological)s 
-        
+
+    Returns
+    -------
+    display : :class:`~plotting.displays.OrthoProjector` or None
+        An instance of the OrthoProjector class. If ``output_file`` is defined,
+        None is returned.
+
     Notes
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
@@ -1192,6 +1240,12 @@ def plot_connectome(adjacency_matrix, node_coords,
         Default=False.
     %(radiological)s
 
+    Returns
+    -------
+    display : :class:`~plotting.displays.OrthoProjector` or None
+        An instance of the OrthoProjector class. If ``output_file`` is defined,
+        None is returned.
+
     See Also
     --------
     nilearn.plotting.find_parcellation_cut_coords : Extraction of node
@@ -1287,6 +1341,11 @@ def plot_markers(node_values, node_coords, node_size='auto',
         Default=True.
     %(radiological)s
 
+    Returns
+    -------
+    display : :class:`~plotting.displays.OrthoProjector` or None
+        An instance of the OrthoProjector class. If ``output_file`` is defined,
+        None is returned.
     """
     node_values = np.array(node_values).flatten()
     node_coords = np.array(node_coords)
