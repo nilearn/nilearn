@@ -21,12 +21,7 @@ from nilearn._utils.param_validation import check_run_sample_masks
 availiable_filters = ["butterworth", "cosine"]
 
 
-def _standardize(
-    signals,
-    detrend=False,
-    standardize="zscore",
-    mean_signals=None,
-):
+def _standardize(signals, detrend=False, standardize="zscore"):
     """Center and standardize a given signal (time is along first axis).
 
     Parameters
@@ -58,8 +53,6 @@ def _standardize(
     std_signals : :class:`numpy.ndarray`
         Copy of signals, standardized.
     """
-    if mean_signals is None:
-        mean_signals = signals.mean(axis=0)
     if standardize not in [True, False, "psc", "zscore", "zscore_sample"]:
         raise ValueError(f"{standardize} is no valid standardize strategy.")
 
@@ -110,6 +103,7 @@ def _standardize(
             signals /= std
 
         elif standardize == "psc":
+            mean_signals = signals.mean(axis=0)
             invalid_ix = np.absolute(mean_signals) < np.finfo(np.float64).eps
             signals = (signals - mean_signals) / np.absolute(mean_signals)
             signals *= 100
@@ -808,10 +802,9 @@ def clean(
         )
     else:
         signals = _standardize(
-            signals,
+            signals + mean_signals,
             standardize=standardize,
             detrend=False,
-            mean_signals=mean_signals,
         )
 
     return signals
