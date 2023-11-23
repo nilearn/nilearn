@@ -103,9 +103,9 @@ def _standardize(signals, detrend=False, standardize="zscore"):
             signals /= std
 
         elif standardize == "psc":
-            mean_signals = signals.mean(axis=0)
-            invalid_ix = np.absolute(mean_signals) < np.finfo(np.float64).eps
-            signals = (signals - mean_signals) / np.absolute(mean_signals)
+            mean_signal = signals.mean(axis=0)
+            invalid_ix = np.absolute(mean_signal) < np.finfo(np.float64).eps
+            signals = (signals - mean_signal) / np.absolute(mean_signal)
             signals *= 100
 
             if np.any(invalid_ix):
