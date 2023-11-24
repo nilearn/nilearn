@@ -921,7 +921,6 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         return scores
 
     def _apply_mask(self, X):
-        # Nifti masking
         masker_type = "nifti"
         if isinstance(self.mask, SurfaceMasker):
             masker_type = "surface"
