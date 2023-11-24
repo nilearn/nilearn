@@ -40,11 +40,6 @@ def _check_embedded_nifti_masker(estimator, masker_type="multi_nii"):
         New masker
 
     """
-    if masker_type not in ["multi_nii", "nii", "surface"]:
-        raise ValueError(
-            f"Masker type must be one of 'multi_nii', 'nii' or 'surface', "
-            f"got {masker_type}"
-        )
     if masker_type == "surface":
         masker_type = SurfaceMasker
     elif masker_type == "multi_nii":
