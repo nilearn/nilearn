@@ -10,6 +10,7 @@ from functools import partial
 from joblib import Memory, Parallel, delayed
 
 from nilearn import _utils, image, masking
+from nilearn.maskers import compute_middle_image
 from nilearn.maskers.nifti_masker import NiftiMasker, _filter_and_mask
 
 
@@ -62,10 +63,10 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
     %(smoothing_fwhm)s
     %(standardize_maskers)s
     %(standardize_confounds)s
-    high_variance_confounds : :obj:`bool`, optional
+    high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
-        and regressed out. Default=False.
+        and regressed out.
     %(detrend)s
     %(low_pass)s
     %(high_pass)s
@@ -86,7 +87,7 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
             :func:`nilearn.masking.compute_multi_epi_mask`, or
             :func:`nilearn.masking.compute_multi_brain_mask`.
 
-        Default is 'background'.
+        Default='background'.
 
     mask_args : :obj:`dict`, optional
         If mask is None, these are additional parameters passed to
@@ -148,32 +149,31 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
         verbose=0,
         **kwargs,
     ):
-        # Mask is provided or computed
-        self.mask_img = mask_img
-
-        self.smoothing_fwhm = smoothing_fwhm
-        self.standardize = standardize
-        self.standardize_confounds = standardize_confounds
-        self.high_variance_confounds = high_variance_confounds
-        self.detrend = detrend
-        self.low_pass = low_pass
-        self.high_pass = high_pass
-        self.t_r = t_r
-        self.target_affine = target_affine
-        self.target_shape = target_shape
-        self.mask_strategy = mask_strategy
-        self.mask_args = mask_args
-        self.dtype = dtype
-        self.clean_kwargs = {
-            k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
-        }
-
-        self.memory = memory
-        self.memory_level = memory_level
+        super().__init__(
+            # Mask is provided or computed
+            mask_img=mask_img,
+            smoothing_fwhm=smoothing_fwhm,
+            standardize=standardize,
+            standardize_confounds=standardize_confounds,
+            high_variance_confounds=high_variance_confounds,
+            detrend=detrend,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            t_r=t_r,
+            target_affine=target_affine,
+            target_shape=target_shape,
+            mask_strategy=mask_strategy,
+            mask_args=mask_args,
+            dtype=dtype,
+            clean_kwargs={
+                k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
+            },
+            memory=memory,
+            memory_level=memory_level,
+            verbose=verbose,
+            **kwargs,
+        )
         self.n_jobs = n_jobs
-
-        self.verbose = verbose
-
         self._shelving = False
 
     def fit(self, imgs=None, y=None):
@@ -239,6 +239,18 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
 
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
 
+        self._reporting_data = None
+        if self.reports:  # save inputs for reporting
+            self._reporting_data = {
+                "mask": self.mask_img_,
+                "dim": None,
+                "images": imgs,
+            }
+            if imgs is not None:
+                imgs, dims = compute_middle_image(imgs)
+                self._reporting_data["images"] = imgs
+                self._reporting_data["dim"] = dims
+
         # If resampling is requested, resample the mask as well.
         # Resampling: allows the user to change the affine, the shape or both.
         if self.verbose > 0:
@@ -263,6 +275,22 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
         # Infer the number of elements (voxels) in the mask
         self.n_elements_ = int(data.sum())
 
+        if (
+            (self.target_shape is not None)
+            or (self.target_affine is not None)
+            and self.reports
+        ):
+            resampl_imgs = None
+            if imgs is not None:
+                resampl_imgs = self._cache(image.resample_img)(
+                    imgs,
+                    target_affine=self.affine_,
+                    copy=False,
+                    interpolation="nearest",
+                )
+
+            self._reporting_data["transform"] = [resampl_imgs, self.mask_img_]
+
         return self
 
     def transform_imgs(
@@ -286,13 +314,13 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
 
                 .. versionadded:: 0.8.0
 
-        copy : :obj:`bool`, optional
+        copy : :obj:`bool`, default=True
             If True, guarantees that output array has no memory in common with
-            input array. Default=True.
+            input array.
 
-        n_jobs : :obj:`int`, optional
+        n_jobs : :obj:`int`, default=1
             The number of cpus to use to do the computation. -1 means
-            'all cpus'. Default=1.
+            'all cpus'.
 
         Returns
         -------
@@ -320,7 +348,7 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
             # Force resampling on first image
             target_fov = "first"
 
-        niimg_iter = _utils.niimg_conversions._iter_check_niimg(
+        niimg_iter = _utils.niimg_conversions.iter_check_niimg(
             imgs_list,
             ensure_ndim=None,
             atleast_4d=False,

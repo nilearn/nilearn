@@ -127,16 +127,16 @@ def test_resample_to_mask_warning():
         masker.fit_transform(img)
 
 
-def test_with_files():
+def test_with_files(tmp_path):
     """Test standard masking with filenames."""
     data = np.zeros((40, 40, 40, 2))
     data[20, 20, 20] = 1
     data_img = nibabel.Nifti1Image(data, np.eye(4))
 
-    with testing.write_tmp_imgs(data_img) as filename:
-        masker = NiftiMasker()
-        masker.fit(filename)
-        masker.transform(filename)
+    filename = testing.write_imgs_to_path(data_img, file_path=tmp_path)
+    masker = NiftiMasker()
+    masker.fit(filename)
+    masker.transform(filename)
 
 
 def test_nan():
@@ -184,17 +184,21 @@ def test_matrix_orientation():
     np.testing.assert_array_almost_equal(get_data(recovered), get_data(fmri))
 
 
-def test_mask_3d():
+def test_mask_3d(tmp_path):
     """Test that the masker raises an error when no data img is provided."""
     # Dummy mask
     data = np.zeros((40, 40, 40, 2))
     data[20, 20, 20] = 1
     data_img = nibabel.Nifti1Image(data, np.eye(4))
 
-    with testing.write_tmp_imgs(data_img, create_files=True) as filename:
-        masker = NiftiMasker(mask_img=filename)
-        with pytest.raises(TypeError):
-            masker.fit()
+    filename = testing.write_imgs_to_path(
+        data_img,
+        file_path=tmp_path,
+        create_files=True,
+    )
+    masker = NiftiMasker(mask_img=filename)
+    with pytest.raises(TypeError):
+        masker.fit()
 
 
 def test_mask_4d():
@@ -242,7 +246,7 @@ def test_mask_4d():
     assert_array_equal(data_trans3, data_trans_direct_diff)
 
 
-def test_4d_single_scan():
+def test_4d_single_scan(rng):
     """Test that list of 4D images with last dim=1 is treated as 3D."""
     shape_3d = (10, 10, 10)
     shape_4d = shape_3d + (1,)
@@ -250,8 +254,7 @@ def test_4d_single_scan():
     mask[3:7, 3:7, 3:7] = 1
     mask_img = nibabel.Nifti1Image(mask, np.eye(4))
 
-    rng = np.random.RandomState(42)
-    data_5d = [rng.random_sample(shape_4d) for _ in range(5)]
+    data_5d = [rng.random(shape_4d) for _ in range(5)]
     data_4d = [d[..., 0] for d in data_5d]
     data_5d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_5d]
     data_4d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_4d]
@@ -275,7 +278,7 @@ def test_4d_single_scan():
     assert_array_equal(data_trans_4d, data_trans_5d)
 
 
-def test_5d():
+def test_5d(rng):
     """Test that list of 4D images with last dim=3 raises a DimensionError."""
     shape_3d = (10, 10, 10)
     shape_4d = shape_3d + (3,)
@@ -283,8 +286,7 @@ def test_5d():
     mask[3:7, 3:7, 3:7] = 1
     mask_img = nibabel.Nifti1Image(mask, np.eye(4))
 
-    rng = np.random.RandomState(42)
-    data_5d = [rng.random_sample(shape_4d) for _ in range(5)]
+    data_5d = [rng.random(shape_4d) for _ in range(5)]
     data_5d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_5d]
 
     masker = NiftiMasker(mask_img=mask_img)
@@ -316,7 +318,7 @@ def test_sessions():
         masker.fit_transform(data_img)
 
 
-def test_joblib_cache():
+def test_joblib_cache(tmp_path):
     """Test using joblib cache."""
     from joblib import Memory, hash
 
@@ -324,30 +326,34 @@ def test_joblib_cache():
     mask[20, 20, 20] = 1
     mask_img = nibabel.Nifti1Image(mask, np.eye(4))
 
-    with testing.write_tmp_imgs(mask_img, create_files=True) as filename:
-        masker = NiftiMasker(mask_img=filename)
-        masker.fit()
-        mask_hash = hash(masker.mask_img_)
-        get_data(masker.mask_img_)
-        assert mask_hash == hash(masker.mask_img_)
+    filename = testing.write_imgs_to_path(
+        mask_img,
+        file_path=tmp_path,
+        create_files=True,
+    )
+    masker = NiftiMasker(mask_img=filename)
+    masker.fit()
+    mask_hash = hash(masker.mask_img_)
+    get_data(masker.mask_img_)
+    assert mask_hash == hash(masker.mask_img_)
 
-        # Test a tricky issue with memmapped joblib.memory that makes
-        # imgs return by inverse_transform impossible to save
-        cachedir = mkdtemp()
-        try:
-            masker.memory = Memory(location=cachedir, mmap_mode="r", verbose=0)
-            X = masker.transform(mask_img)
-            # inverse_transform a first time, so that the result is cached
-            out_img = masker.inverse_transform(X)
-            out_img = masker.inverse_transform(X)
-            out_img.to_filename(os.path.join(cachedir, "test.nii"))
-        finally:
-            # enables to delete "filename" on windows
-            del masker
-            shutil.rmtree(cachedir, ignore_errors=True)
+    # Test a tricky issue with memmapped joblib.memory that makes
+    # imgs return by inverse_transform impossible to save
+    cachedir = mkdtemp()
+    try:
+        masker.memory = Memory(location=cachedir, mmap_mode="r", verbose=0)
+        X = masker.transform(mask_img)
+        # inverse_transform a first time, so that the result is cached
+        out_img = masker.inverse_transform(X)
+        out_img = masker.inverse_transform(X)
+        out_img.to_filename(os.path.join(cachedir, "test.nii"))
+    finally:
+        # enables to delete "filename" on windows
+        del masker
+        shutil.rmtree(cachedir, ignore_errors=True)
 
 
-def test_mask_strategy_errors():
+def test_mask_strategy_errors(rng):
     """Check that mask_strategy errors are raised."""
     # Error with unknown mask_strategy
     mask = NiftiMasker(mask_strategy="oops")
@@ -357,7 +363,7 @@ def test_mask_strategy_errors():
         mask.fit()
     # Warning with deprecated 'template' strategy,
     # plus an exception because there's no resulting mask
-    img = np.random.RandomState(42).uniform(size=(9, 9, 5))
+    img = rng.uniform(size=(9, 9, 5))
     img = nibabel.Nifti1Image(img, np.eye(4))
     mask = NiftiMasker(mask_strategy="template")
     with pytest.warns(
@@ -491,8 +497,7 @@ def test_dtype():
     assert masker_2.fit_transform(img_64).dtype == np.float64
 
 
-def test_standardization():
-    rng = np.random.RandomState(42)
+def test_standardization(rng):
     data_shape = (9, 9, 5)
     n_samples = 500
 
@@ -524,7 +529,7 @@ def test_standardization():
     )
 
 
-def test_nifti_masker_io_shapes():
+def test_nifti_masker_io_shapes(rng):
     """Ensure that NiftiMasker handles 1D/2D/3D/4D data appropriately.
 
     transform(4D image) --> 2D output, no warning
@@ -544,8 +549,8 @@ def test_nifti_masker_io_shapes():
     )
     img_3d, _ = data_gen.generate_random_img(shape_3d, affine=affine)
     n_regions = np.sum(mask_img.get_fdata().astype(bool))
-    data_1d = np.random.random(n_regions)
-    data_2d = np.random.random((n_volumes, n_regions))
+    data_1d = rng.random(n_regions)
+    data_2d = rng.random((n_volumes, n_regions))
 
     masker = NiftiMasker(mask_img)
     masker.fit()

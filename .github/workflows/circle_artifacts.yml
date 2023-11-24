@@ -1,4 +1,5 @@
 ---
+name: Redirect circleci artifacts
 # Display a link to the artifacts at the bottom of a PR
 # from https://github.com/marketplace/actions/run-circleci-artifacts-redirector
 on: [status]

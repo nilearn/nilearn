@@ -8,6 +8,8 @@ import pandas as pd
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.cluster.hierarchy import leaves_list, linkage, optimal_leaf_ordering
 
+from nilearn.glm.first_level.experimental_paradigm import check_events
+
 from .._utils import fill_doc
 
 with warnings.catch_warnings():
@@ -249,30 +251,27 @@ def plot_matrix(
         Default=True.
     %(cmap)s
         Default=`plt.cm.RdBu_r`.
-    tri : {'full', 'lower', 'diag'}, optional
+    tri : {'full', 'lower', 'diag'}, default='full'
         Which triangular part of the matrix to plot:
 
             - 'lower': Plot the lower part
             - 'diag': Plot the lower part with the diagonal
             - 'full': Plot the full matrix
 
-        Default='full'.
 
-    auto_fit : :obj:`bool`, optional
+    auto_fit : :obj:`bool`, default=True
         If auto_fit is True, the axes are dimensioned to give room
         for the labels. This assumes that the labels are resting
         against the bottom and left edges of the figure.
-        Default=True.
 
-    grid : color or False, optional
+    grid : color or False, default=False
         If not False, a grid is plotted to separate rows and columns
-        using the given color. Default=False.
+        using the given color.
 
-    reorder : :obj:`bool` or {'single', 'complete', 'average'}, optional
+    reorder : :obj:`bool` or {'single', 'complete', 'average'}, default=False
         If not False, reorders the matrix into blocks of clusters.
         Accepted linkage options for the clustering are 'single',
         'complete', and 'average'. True defaults to average linkage.
-        Default=False.
 
         .. note::
             This option is only available with SciPy >= 1.0.0.
@@ -335,7 +334,7 @@ def plot_matrix(
 def plot_contrast_matrix(
     contrast_def, design_matrix, colorbar=False, ax=None, output_file=None
 ):
-    """Create plot for contrast definition.
+    """Create plot for :term:`contrast` definition.
 
     Parameters
     ----------
@@ -343,9 +342,10 @@ def plot_contrast_matrix(
     or :obj:`list` of :obj:`str`, or :class:`numpy.ndarray` of shape (n_col)
 
         where ``n_col`` is the number of columns of the design matrix, (one
-        array per run). If only one array is provided when there are several
-        runs, it will be assumed that the same contrast is desired for all
-        runs. The string can be a formula compatible with
+        array per run).
+        If only one array is provided when there are several runs,
+        it will be assumed that the same :term:`contrast` is desired
+        for all runs. The string can be a formula compatible with
         :meth:`pandas.DataFrame.eval`. Basically one can use the name of the
         conditions as they appear in the design matrix of the fitted model
         combined with operators +- and combined with numbers with operators
@@ -418,9 +418,8 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
     design matrix : :class:`pandas.DataFrame`
         Describes a design matrix.
 
-    rescale : :obj:`bool`, optional
+    rescale : :obj:`bool`, default=True
         Rescale columns magnitude for visualization or not.
-        Default=True.
 
     ax : :class:`matplotlib.axes.Axes`, optional
         Handle to axes onto which we will draw the design matrix.
@@ -495,6 +494,10 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     """
     if isinstance(model_event, pd.DataFrame):
         model_event = [model_event]
+
+    for i, event in enumerate(model_event):
+        event_copy = check_events(event)
+        model_event[i] = event_copy
 
     n_runs = len(model_event)
     figure, ax = plt.subplots(1, 1, **fig_kwargs)

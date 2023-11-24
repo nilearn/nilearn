@@ -62,6 +62,7 @@ def test_hrf_norm_and_length(
     """Test that the hrf models are correctly normalized and \
     have correct lengths."""
     h = hrf_model(tr)
+
     assert_almost_equal(h.sum(), expected_integral)
     assert len(h) == expected_length
 
@@ -70,7 +71,9 @@ def test_resample_regressor():
     """Test regressor resampling on a linear function."""
     x = np.linspace(0, 1, 200)
     y = np.linspace(0, 1, 30)
+
     z = _resample_regressor(x, x, y)
+
     assert_almost_equal(z, y)
 
 
@@ -78,26 +81,31 @@ def test_resample_regressor_nl():
     """Test regressor resampling on a sine function."""
     x = np.linspace(0, 10, 1000)
     y = np.linspace(0, 10, 30)
+
     z = _resample_regressor(np.cos(x), x, y)
+
     assert_almost_equal(z, np.cos(y), decimal=2)
 
 
-def test_orthogonalize():
+def test_orthogonalize(rng):
     """Test that the orthogonalization is OK."""
-    rng = np.random.RandomState(42)
     X = rng.standard_normal(size=(100, 5))
+
     X = _orthogonalize(X)
+
     K = np.dot(X.T, X)
     K -= np.diag(np.diag(K))
+
     assert_almost_equal((K**2).sum(), 0, 15)
 
 
-def test_orthogonalize_trivial():
+def test_orthogonalize_trivial(rng):
     """Test that the orthogonalization is OK."""
-    rng = np.random.RandomState(42)
     X = rng.standard_normal(size=100)
     Y = X.copy()
+
     X = _orthogonalize(X)
+
     assert_array_equal(Y, X)
 
 
@@ -105,15 +113,18 @@ def test_sample_condition_1():
     """Test that the experimental condition is correctly sampled."""
     condition = ([1, 20, 36.5], [0, 0, 0], [1, 1, 1])
     frame_times = np.linspace(0, 49, 50)
+
     reg, _ = _sample_condition(
         condition, frame_times, oversampling=1, min_onset=0
     )
+
     assert reg.sum() == 3
     assert reg[1] == 1
     assert reg[20] == 1
     assert reg[37] == 1
 
     reg, _ = _sample_condition(condition, frame_times, oversampling=1)
+
     assert reg.sum() == 3
     assert reg[25] == 1
     assert reg[44] == 1
@@ -124,9 +135,11 @@ def test_sample_condition_2():
     """Test the experimental condition sampling -- onset = 0."""
     condition = ([0, 20, 36.5], [2, 2, 2], [1, 1, 1])
     frame_times = np.linspace(0, 49, 50)
+
     reg, _ = _sample_condition(
         condition, frame_times, oversampling=1, min_onset=-10
     )
+
     assert reg.sum() == 6
     assert reg[10] == 1
     assert reg[48] == 1
@@ -137,18 +150,22 @@ def test_sample_condition_3():
     """Test the experimental condition sampling -- oversampling=10."""
     condition = ([1, 20, 36.5], [2, 2, 2], [1, 1, 1])
     frame_times = np.linspace(0, 49, 50)
+
     reg, _ = _sample_condition(
         condition, frame_times, oversampling=10, min_onset=0
     )
+
     assert_almost_equal(reg.sum(), 60.0)
     assert reg[10] == 1
     assert reg[380] == 1
     assert reg[210] == 1
     assert np.sum(reg > 0) == 60
+
     # check robustness to non-int oversampling
     reg_, _ = _sample_condition(
         condition, frame_times, oversampling=10.0, min_onset=0
     )
+
     assert_almost_equal(reg, reg_)
 
 
@@ -156,7 +173,9 @@ def test_sample_condition_4():
     """Test the experimental condition sampling -- negative amplitude."""
     condition = ([1, 20, 36.5], [2, 2, 2], [1.0, -1.0, 5.0])
     frame_times = np.linspace(0, 49, 50)
+
     reg, _ = _sample_condition(condition, frame_times, oversampling=1)
+
     assert reg.sum() == 10
     assert reg[25] == 1.0
     assert reg[44] == -1.0
@@ -167,7 +186,9 @@ def test_sample_condition_5():
     """Test the experimental condition sampling -- negative onset."""
     condition = ([-10, 0, 36.5], [2, 2, 2], [1.0, -1.0, 5.0])
     frame_times = np.linspace(0, 49, 50)
+
     reg, _ = _sample_condition(condition, frame_times, oversampling=1)
+
     assert reg.sum() == 10
     assert reg[14] == 1.0
     assert reg[24] == -1.0
@@ -179,7 +200,9 @@ def test_sample_condition_6():
     different durations."""
     condition = ([0, 0, 10], [1, 2, 1], [1.0, 1.0, 1.0])
     frame_times = np.linspace(0, 49, 50)
+
     reg, _ = _sample_condition(condition, frame_times, oversampling=1)
+
     assert reg.sum() == 4
     assert reg[24] == 2.0
     assert reg[34] == 1.0
@@ -191,7 +214,9 @@ def test_sample_condition_7():
     overlapping offsets."""
     condition = ([0, 10, 20], [11, 1, 1], [1.0, 1.0, 1.0])
     frame_times = np.linspace(0, 49, 50)
+
     reg, _ = _sample_condition(condition, frame_times, oversampling=1)
+
     assert reg.sum() == 13
     assert reg[24] == 1.0
     assert reg[34] == 2.0
@@ -252,48 +277,81 @@ def test_names():
         )
 
 
+@pytest.mark.parametrize(
+    "hrf_model, expected_len",
+    [
+        ("spm", 1),
+        ("glover", 1),
+        (None, 1),
+        ("spm + derivative", 2),
+        ("glover + derivative", 2),
+        ("spm + derivative + dispersion", 3),
+        ("glover + derivative + dispersion", 3),
+    ],
+)
+def test_hkernel_length(hrf_model, expected_len):
+    """Test the hrf computation."""
+    tr = 2.0
+    assert len(_hrf_kernel(hrf_model, tr)) == expected_len
+
+
+def test_hkernel_length_fir_lambda():
+    """Test the hrf computation."""
+    tr = 2.0
+
+    h = _hrf_kernel("fir", tr, fir_delays=np.arange(4))
+    assert len(h) == 4
+
+    h = _hrf_kernel(lambda tr, ov: np.ones(int(tr * ov)), tr)
+    assert len(h) == 1
+
+    h = _hrf_kernel([lambda tr, ov: np.ones(int(tr * ov))], tr)
+    assert len(h) == 1
+
+
 def test_hkernel():
     """Test the hrf computation."""
     tr = 2.0
+
     h = _hrf_kernel("spm", tr)
     assert_almost_equal(h[0], spm_hrf(tr))
-    assert len(h) == 1
+
     h = _hrf_kernel("spm + derivative", tr)
     assert_almost_equal(h[1], spm_time_derivative(tr))
-    assert len(h) == 2
+
     h = _hrf_kernel("spm + derivative + dispersion", tr)
     assert_almost_equal(h[2], spm_dispersion_derivative(tr))
-    assert len(h) == 3
+
     h = _hrf_kernel("glover", tr)
     assert_almost_equal(h[0], glover_hrf(tr))
-    assert len(h) == 1
+
     h = _hrf_kernel("glover + derivative", tr)
     assert_almost_equal(h[1], glover_time_derivative(tr))
     assert_almost_equal(h[0], glover_hrf(tr))
-    assert len(h) == 2
+
     h = _hrf_kernel("glover + derivative + dispersion", tr)
-    assert len(h) == 3
     assert_almost_equal(h[2], glover_dispersion_derivative(tr))
     assert_almost_equal(h[1], glover_time_derivative(tr))
     assert_almost_equal(h[0], glover_hrf(tr))
+
     h = _hrf_kernel("fir", tr, fir_delays=np.arange(4))
-    assert len(h) == 4
     for dh in h:
         assert_almost_equal(dh.sum(), 1.0)
+
     h = _hrf_kernel(None, tr)
-    assert len(h) == 1
     assert_almost_equal(h[0], np.hstack((1, np.zeros(49))))
+
     with pytest.raises(
         ValueError, match="Could not process custom HRF model provided."
     ):
         _hrf_kernel(lambda x: np.ones(int(x)), tr)
         _hrf_kernel([lambda x, y, z: x + y + z], tr)
         _hrf_kernel([lambda x: np.ones(int(x))] * 2, tr)
+
     h = _hrf_kernel(lambda tr, ov: np.ones(int(tr * ov)), tr)
-    assert len(h) == 1
     assert_almost_equal(h[0], np.ones(100))
+
     h = _hrf_kernel([lambda tr, ov: np.ones(int(tr * ov))], tr)
-    assert len(h) == 1
     assert_almost_equal(h[0], np.ones(100))
     with pytest.raises(ValueError, match="is not a known hrf model."):
         _hrf_kernel("foo", tr)
@@ -304,7 +362,9 @@ def test_make_regressor_1():
     condition = ([1, 20, 36.5], [2, 2, 2], [1, 1, 1])
     frame_times = np.linspace(0, 69, 70)
     hrf_model = "spm"
+
     reg, reg_names = compute_regressor(condition, hrf_model, frame_times)
+
     assert_almost_equal(reg.sum(), 6, 1)
     assert reg_names[0] == "cond"
 
@@ -314,7 +374,9 @@ def test_make_regressor_2():
     condition = ([1, 20, 36.5], [0, 0, 0], [1, 1, 1])
     frame_times = np.linspace(0, 69, 70)
     hrf_model = "spm"
+
     reg, reg_names = compute_regressor(condition, hrf_model, frame_times)
+
     assert_almost_equal(reg.sum() * 50, 3, 1)
     assert reg_names[0] == "cond"
 
@@ -324,11 +386,14 @@ def test_make_regressor_3():
     condition = ([1, 20, 36.5], [2, 2, 2], [1, 1, 1])
     frame_times = np.linspace(0, 138, 70)
     hrf_model = "fir"
+
     reg, reg_names = compute_regressor(
         condition, hrf_model, frame_times, fir_delays=np.arange(4)
     )
+
     assert_array_almost_equal(np.sum(reg, 0), np.array([3, 3, 3, 3]))
     assert len(reg_names) == 4
+
     reg_, _ = compute_regressor(
         condition,
         hrf_model,
@@ -336,6 +401,7 @@ def test_make_regressor_3():
         fir_delays=np.arange(4),
         oversampling=50.0,
     )
+
     assert_array_equal(reg, reg_)
 
 
@@ -351,6 +417,7 @@ def test_calculate_tr():
     )
 
     estimated_tr = _calculate_tr(frame_times)
+
     assert_almost_equal(estimated_tr, true_tr, 2)
 
 
@@ -366,12 +433,18 @@ def test_design_warnings():
     condition = ([-25, 20, 36.5], [0, 0, 0], [1, 1, 1])
     frame_times = np.linspace(0, 69, 70)
     hrf_model = "spm"
+
     with warnings.catch_warnings(record=True):
         warnings.simplefilter("always")
-        with pytest.warns(UserWarning):
+        with pytest.warns(
+            UserWarning, match="Some stimulus onsets are earlier than -24.0"
+        ):
             compute_regressor(condition, hrf_model, frame_times)
     condition = ([-25, -25, 36.5], [0, 0, 0], [1, 1, 1])
+
     with warnings.catch_warnings(record=True):
         warnings.simplefilter("always")
-        with pytest.warns(UserWarning):
+        with pytest.warns(
+            UserWarning, match="Some stimulus onsets are earlier than -24.0"
+        ):
             compute_regressor(condition, hrf_model, frame_times)

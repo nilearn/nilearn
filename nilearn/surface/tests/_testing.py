@@ -3,6 +3,8 @@
 import numpy as np
 from scipy.spatial import Delaunay
 
+from nilearn.conftest import _rng
+
 
 def generate_surf():
     """
@@ -10,9 +12,9 @@ def generate_surf():
 
     This does not generate meaningful surfaces.
     """
-    rng = np.random.RandomState(42)
-    coords = rng.rand(20, 3)
-    faces = rng.randint(coords.shape[0], size=(30, 3))
+    rng = _rng()
+    coords = rng.random((20, 3))
+    faces = rng.integers(coords.shape[0], size=(30, 3))
     return [coords, faces]
 
 

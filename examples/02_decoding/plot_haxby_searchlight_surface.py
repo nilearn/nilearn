@@ -9,7 +9,7 @@ searchlight decoding. NeuroImage 56, 582–592.
 
 """
 
-#########################################################################
+# %%
 # Load Haxby dataset
 # ------------------
 import pandas as pd
@@ -24,7 +24,7 @@ labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
 y = labels["labels"]
 session = labels["chunks"]
 
-#########################################################################
+# %%
 # Restrict to faces and houses
 # ----------------------------
 from nilearn.image import index_img
@@ -34,9 +34,9 @@ condition_mask = y.isin(["face", "house"])
 fmri_img = index_img(fmri_filename, condition_mask)
 y, session = y[condition_mask], session[condition_mask]
 
-#########################################################################
-# Surface bold response
-# ---------------------
+# %%
+# Surface :term:`BOLD` response
+# -----------------------------
 from sklearn import neighbors
 
 from nilearn import datasets, surface
@@ -61,7 +61,7 @@ radius = 3.0
 nn = neighbors.NearestNeighbors(radius=radius)
 adjacency = nn.fit(coords).radius_neighbors_graph(coords).tolil()
 
-#########################################################################
+# %%
 # Searchlight computation
 # -----------------------
 from sklearn.linear_model import RidgeClassifier
@@ -78,9 +78,8 @@ estimator = make_pipeline(StandardScaler(), RidgeClassifier(alpha=10.0))
 cv = KFold(n_splits=3, shuffle=False)
 
 # Cross-validated search light
-scores = search_light(X, y, estimator, adjacency, cv=cv, n_jobs=1)
-
-#########################################################################
+scores = search_light(X, y, estimator, adjacency, cv=cv, n_jobs=2)
+# %%
 # Visualization
 # -------------
 from nilearn import plotting

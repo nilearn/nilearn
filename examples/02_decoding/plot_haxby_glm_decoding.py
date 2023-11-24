@@ -2,7 +2,8 @@
 Decoding of a dataset after GLM fit for signal extraction
 =========================================================
 
-Full step-by-step example of fitting a GLM to perform a decoding experiment.
+Full step-by-step example of fitting a :term:`GLM`
+to perform a decoding experiment.
 We use the data from one subject of the Haxby dataset.
 
 More specifically:
@@ -13,7 +14,7 @@ More specifically:
 3. Analyze the decoding performance using a classifier.
 """
 
-##############################################################################
+# %%
 # Fetch example Haxby dataset
 # ---------------------------
 # We download the Haxby dataset
@@ -30,7 +31,7 @@ haxby_dataset = datasets.fetch_haxby()
 # repetition has to be known
 TR = 2.5
 
-##############################################################################
+# %%
 # Load the behavioral data
 # ------------------------
 
@@ -45,7 +46,7 @@ unique_sessions = behavioral["chunks"].unique()
 # fMRI data: a unique file for each session
 func_filename = haxby_dataset.func[0]
 
-##############################################################################
+# %%
 # Build a proper event structure for each session
 # -----------------------------------------------
 
@@ -71,7 +72,7 @@ for session in unique_sessions:
     # remove the rest condition and insert into the dictionary
     events[session] = events_[events_.trial_type != "rest"]
 
-##############################################################################
+# %%
 # Instantiate and run FirstLevelModel
 # -----------------------------------
 #
@@ -92,9 +93,9 @@ glm = FirstLevelModel(
     memory="nilearn_cache",
 )
 
-##############################################################################
-# Run the glm on data from each session
-# -------------------------------------
+# %%
+# Run the :term:`GLM` on data from each session
+# ---------------------------------------------
 events[session].trial_type.unique()
 from nilearn.image import index_img
 
@@ -102,7 +103,7 @@ for session in unique_sessions:
     # grab the fmri data for that particular session
     fmri_session = index_img(func_filename, sessions == session)
 
-    # fit the glm
+    # fit the GLM
     glm.fit(fmri_session, events=events[session])
 
     # set up contrasts: one per condition
@@ -112,11 +113,11 @@ for session in unique_sessions:
         conditions_label.append(condition_)
         session_label.append(session)
 
-##############################################################################
+# %%
 # Generating a report
 # -------------------
 # Since we have already computed the FirstLevelModel
-# and have the contrast, we can quickly create a summary report.
+# and have the :term:`contrast`, we can quickly create a summary report.
 
 from nilearn.image import mean_img
 from nilearn.reporting import make_glm_report
@@ -130,14 +131,14 @@ report = make_glm_report(
 
 report  # This report can be viewed in a notebook
 
-##############################################################################
+# %%
 # In a jupyter notebook, the report will be automatically inserted, as above.
 # We have several other ways to access the report:
 
 # report.save_as_html('report.html')
 # report.open_in_browser()
 
-##############################################################################
+# %%
 # Build the decoding pipeline
 # ---------------------------
 # To define the decoding pipeline we use Decoder object, we choose :

@@ -8,6 +8,7 @@ from functools import partial
 from joblib import Memory
 
 from nilearn import _utils, image, masking
+from nilearn.maskers import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 
 
@@ -104,7 +105,7 @@ def _filter_and_mask(
     # Check whether resampling is truly necessary. If so, crop mask
     # as small as possible in order to speed up the process
 
-    if not _utils.niimg_conversions._check_same_fov(imgs, mask_img_):
+    if not _utils.niimg_conversions.check_same_fov(imgs, mask_img_):
         warnings.warn(
             "imgs are being resampled to the mask_img resolution. "
             "This process is memory intensive. You might want to provide "
@@ -145,7 +146,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
 
     NiftiMasker is useful when preprocessing (detrending, standardization,
     resampling, etc.) of in-mask :term:`voxels<voxel>` is necessary.
-    Use case: working with time series of resting-state or task maps.
+    Use case: working with time series of :term:`resting-state` or task maps.
 
     Parameters
     ----------
@@ -166,10 +167,10 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
     %(smoothing_fwhm)s
     %(standardize_maskers)s
     %(standardize_confounds)s
-    high_variance_confounds : :obj:`bool`, optional
+    high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
-        and regressed out. Default=False.
+        and regressed out.
     %(detrend)s
     %(low_pass)s
     %(high_pass)s
@@ -189,7 +190,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
                 :func:`nilearn.masking.compute_epi_mask`, or
                 :func:`nilearn.masking.compute_brain_mask`.
 
-        Default is 'background'.
+        Default='background'.
 
     mask_args : :obj:`dict`, optional
         If mask is None, these are additional parameters passed to
@@ -204,9 +205,8 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
     %(memory)s
     %(memory_level1)s
     %(verbose0)s
-    reports : :obj:`bool`, optional
+    reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
-        Default=True.
 
     %(masker_kwargs)s
 
@@ -339,13 +339,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         img = self._reporting_data["images"]
         mask = self._reporting_data["mask"]
 
-        if img is not None:
-            dim = image.load_img(img).shape
-            if len(dim) == 4:
-                # compute middle image from 4D series for plotting
-                img = image.index_img(img, dim[-1] // 2)
-
-        else:  # images were not provided to fit
+        if img is None:  # images were not provided to fit
             msg = (
                 "No image provided to fit in NiftiMasker. "
                 "Setting image to mask for reporting."
@@ -353,7 +347,13 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             warnings.warn(msg)
             self._report_content["warning_message"] = msg
             img = mask
-
+        if self._reporting_data["dim"] == 5:
+            msg = (
+                "A list of 4D subject images were provided to fit. "
+                "Only first subject is shown in the report."
+            )
+            warnings.warn(msg)
+            self._report_content["warning_message"] = msg
         # create display of retained input mask, image
         # for visual comparison
         init_display = plotting.plot_img(
@@ -377,13 +377,9 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         self._report_content["description"] += self._overlay_text
 
         # create display of resampled NiftiImage and mask
-        # assuming that resampl_img has same dim as img
         resampl_img, resampl_mask = self._reporting_data["transform"]
         if resampl_img is None:  # images were not provided to fit
             resampl_img = resampl_mask
-        elif len(dim) == 4:
-            # compute middle image from 4D series for plotting
-            resampl_img = image.index_img(resampl_img, dim[-1] // 2)
 
         final_display = plotting.plot_img(
             resampl_img,
@@ -443,7 +439,15 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
 
         if self.reports:  # save inputs for reporting
-            self._reporting_data = {"images": imgs, "mask": self.mask_img_}
+            self._reporting_data = {
+                "mask": self.mask_img_,
+                "dim": None,
+                "images": imgs,
+            }
+            if imgs is not None:
+                imgs, dims = compute_middle_image(imgs)
+                self._reporting_data["images"] = imgs
+                self._reporting_data["dim"] = dims
         else:
             self._reporting_data = None
 
@@ -486,6 +490,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
                     copy=False,
                     interpolation="nearest",
                 )
+                resampl_imgs, _ = compute_middle_image(resampl_imgs)
             else:  # imgs not provided to fit
                 resampl_imgs = None
 
@@ -521,13 +526,13 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             (remove volumes with high motion) and/or non-steady-state volumes.
             This parameter is passed to signal.clean.
 
-        copy : :obj:`bool`, optional
-            Indicates whether a copy is returned or not. Default=True.
+        copy : :obj:`bool`, default=True
+            Indicates whether a copy is returned or not.
 
         Returns
         -------
         region_signals : 2D :obj:`numpy.ndarray`
-            Signal for each voxel inside the mask.
+            Signal for each :term:`voxel` inside the mask.
             shape: (number of scans, number of voxels)
 
         Warns

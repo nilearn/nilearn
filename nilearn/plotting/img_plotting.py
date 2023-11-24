@@ -22,6 +22,7 @@ import matplotlib.pyplot as plt
 # delayed, so that the part module can be used without them).
 import numpy as np
 from matplotlib import gridspec as mgs
+from matplotlib.colors import LinearSegmentedColormap
 from nibabel.spatialimages import SpatialImage
 from scipy import stats
 from scipy.ndimage import binary_fill_holes
@@ -32,10 +33,10 @@ from nilearn.plotting.displays import get_projector, get_slicer
 from nilearn.plotting.displays._slicers import _get_cbar_ticks
 
 from .. import _utils
-from .._utils import _compare_version, fill_doc
+from .._utils import compare_version, fill_doc
 from .._utils.extmath import fast_abs_percentile
 from .._utils.ndimage import get_border_data
-from .._utils.niimg import _safe_get_data
+from .._utils.niimg import safe_get_data
 from .._utils.numpy_conversions import as_ndarray
 from .._utils.param_validation import check_threshold
 from ..datasets import load_mni152_template
@@ -63,22 +64,20 @@ def show():
 
 def _get_colorbar_and_data_ranges(
     stat_map_data, vmin=None, vmax=None, symmetric_cbar=True,
-    force_min_stat_map_value=None, symmetric_data_range=True,
+    force_min_stat_map_value=None,
 ):
     """Set colormap and colorbar limits.
 
     Used by plot_stat_map, plot_glass_brain and plot_img_on_surf.
 
-    If symmetric_data_range is True, the limits for the colormap will
-    always be set to range from -vmax to vmax. The limits for the colorbar
-    depend on the symmetric_cbar argument, please refer to docstring of
-    plot_stat_map.
+    The limits for the colorbar depend on the symmetric_cbar argument. Please
+    refer to docstring of plot_stat_map.
     """
-    if symmetric_data_range and (vmin is not None):
-        raise ValueError('this function does not accept a "vmin" '
-                         'argument, as it uses a symmetrical range '
-                         'defined via the vmax argument. To threshold '
-                         'the plotted map, use the "threshold" argument')
+    # handle invalid vmin/vmax inputs
+    if (not isinstance(vmin, numbers.Number)) or (not np.isfinite(vmin)):
+        vmin = None
+    if (not isinstance(vmax, numbers.Number)) or (not np.isfinite(vmax)):
+        vmax = None
 
     # avoid dealing with masked_array:
     if hasattr(stat_map_data, '_mask'):
@@ -92,13 +91,13 @@ def _get_colorbar_and_data_ranges(
     stat_map_max = np.nanmax(stat_map_data)
 
     if symmetric_cbar == "auto":
-        if symmetric_data_range or (vmin is None) or (vmax is None):
+        if (vmin is None) or (vmax is None):
             symmetric_cbar = stat_map_min < 0 and stat_map_max > 0
         else:
             symmetric_cbar = np.isclose(vmin, -vmax)
 
     # check compatibility between vmin, vmax and symmetric_cbar
-    if symmetric_cbar or symmetric_data_range:
+    if symmetric_cbar:
         if vmin is None and vmax is None:
             vmax = max(-stat_map_min, stat_map_max)
             vmin = -vmax
@@ -110,28 +109,35 @@ def _get_colorbar_and_data_ranges(
             raise ValueError(
                 "vmin must be equal to -vmax unless symmetric_cbar is False."
             )
+        cbar_vmin = vmin
+        cbar_vmax = vmax
+
+    # set colorbar limits
+    else:
+        negative_range = stat_map_max <= 0
+        positive_range = stat_map_min >= 0
+        if positive_range:
+            if vmin is None:
+                cbar_vmin = 0
+            else:
+                cbar_vmin = vmin
+            cbar_vmax = vmax
+        elif negative_range:
+            if vmax is None:
+                cbar_vmax = 0
+            else:
+                cbar_vmax = vmax
+            cbar_vmin = vmin
+        else:
+            # limit colorbar to plotted values
+            cbar_vmin = vmin
+            cbar_vmax = vmax
 
     # set vmin/vmax based on data if they are not already set
     if vmin is None:
         vmin = stat_map_min
     if vmax is None:
         vmax = stat_map_max
-
-    # set colorbar limits
-    if not symmetric_cbar:
-        negative_range = stat_map_max <= 0
-        positive_range = stat_map_min >= 0
-        if positive_range:
-            cbar_vmin = 0
-            cbar_vmax = None
-        elif negative_range:
-            cbar_vmax = 0
-            cbar_vmin = None
-        else:
-            cbar_vmin = stat_map_min
-            cbar_vmax = stat_map_max
-    else:
-        cbar_vmin, cbar_vmax = None, None
 
     return cbar_vmin, cbar_vmax, vmin, vmax
 
@@ -164,14 +170,19 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
     bg_vmax : :obj:`float`, optional
         vmax for `bg_img`.
 
-    interpolation : string, optional
+    interpolation : string, default='nearest'
         Passed to the add_overlay calls.
-        Default='nearest'.
 
-    display_factory : function, optional
+    display_factory : function, default=get_slicer
         Takes a display_mode argument and return a display class.
-        Default=get_slicer.
 
+    Returns
+    -------
+    display : :class:`~nilearn.plotting.displays.OrthoSlicer` or \
+        :class:`~nilearn.plotting.displays.OrthoProjector` or None
+        An instance of the OrthoSlicer or OrthoProjector class depending on the
+        function defined in ``display_factory``. If ``output_file`` is defined,
+        None is returned.
     """
     show_nan_msg = False
     if vmax is not None and np.isnan(vmax):
@@ -195,7 +206,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
 
     if img is not False and img is not None:
         img = _utils.check_niimg_3d(img, dtype='auto')
-        data = _safe_get_data(img, ensure_finite=True)
+        data = safe_get_data(img, ensure_finite=True)
         affine = img.affine
 
         if np.isnan(np.sum(data)):
@@ -285,7 +296,8 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
              annotate=True, draw_cross=True, black_bg=False, colorbar=False,
              cbar_tick_format="%.2g",
              resampling_interpolation='continuous',
-             bg_img=None, vmin=None, vmax=None, radiological=False, **kwargs):
+             bg_img=None, vmin=None, vmax=None, radiological=False,
+             decimals=False, **kwargs):
     """Plot cuts of a given image.
 
     By default Frontal, Axial, and Lateral.
@@ -301,7 +313,7 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
     %(title)s
     %(threshold)s
     %(annotate)s
-    decimals : integer, optional
+    decimals : :obj:`int` or bool, default=False
         Number of decimal places on slice position annotation.
         If False (default),
         the slice position is integer without decimal point.
@@ -310,10 +322,9 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
         Default=False.
     %(colorbar)s
         Default=False.
-    cbar_tick_format: str, optional
+    cbar_tick_format: str, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
-        Default is '%%.2g' for scientific notation.
     %(resampling_interpolation)s
         Default='continuous'.
     %(bg_img)s
@@ -325,6 +336,29 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
     kwargs : extra keyword arguments, optional
         Extra keyword arguments passed to matplotlib.pyplot.imshow.
 
+    Returns
+    -------
+    display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
+        An instance of the OrthoSlicer class. If ``output_file`` is defined,
+        None is returned.
+
+    .. note::
+
+        This is a low-level function. For most use cases, other plotting
+        functions might be more appropriate and easier to use.
+
+    .. seealso::
+
+        :func:`~nilearn.plotting.plot_anat`
+            To simply plot anatomical images
+        :func:`~nilearn.plotting.plot_epi`
+            To simply plot raw EPI images
+        :func:`~nilearn.plotting.plot_roi`
+            To simply plot max-prob atlases (3D images)
+        :func:`~nilearn.plotting.plot_prob_atlas`
+            To simply plot probabilistic atlases (4D images)
+        :mod:`nilearn.plotting`
+            See API reference for other options
     """
     display = _plot_img_with_bg(
         img, cut_coords=cut_coords,
@@ -336,7 +370,7 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
         black_bg=black_bg, colorbar=colorbar,
         cbar_tick_format=cbar_tick_format,
         bg_img=bg_img, vmin=vmin, vmax=vmax, radiological=radiological,
-        **kwargs)
+        decimals=decimals, **kwargs)
 
     return display
 
@@ -437,7 +471,7 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim='auto', black_bg='auto'):
         anat_img = _utils.check_niimg_3d(anat_img)
         # Clean anat_img for non-finite values to avoid computing unnecessary
         # border data values.
-        data = _safe_get_data(anat_img, ensure_finite=True)
+        data = safe_get_data(anat_img, ensure_finite=True)
         anat_img = new_img_like(anat_img, data, affine=anat_img.affine)
         if dim or black_bg == 'auto':
             # We need to inspect the values of the image
@@ -486,11 +520,10 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
 
     Parameters
     ----------
-    anat_img : Niimg-like object, optional
+    anat_img : Niimg-like object, default=MNI152TEMPLATE
         See :ref:`extracting_data`.
         The anatomical image to be used as a background. If None is
         given, nilearn tries to find a T1 template.
-        Default=MNI152TEMPLATE.
     %(cut_coords)s
     %(output_file)s
     %(display_mode)s
@@ -506,16 +539,20 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
         Default='auto'.
     %(cmap)s
         Default=`plt.cm.gray`.
-    colorbar : boolean, optional
+    colorbar : boolean, default=False
         If True, display a colorbar on the right of the plots.
-        Default=False.
-    cbar_tick_format: str, optional
+    cbar_tick_format: str, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
-        Default is '%%.2g' for scientific notation.
     %(radiological)s
     %(vmin)s
     %(vmax)s
+
+    Returns
+    -------
+    display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
+        An instance of the OrthoSlicer class. If ``output_file`` is defined,
+        None is returned.
 
     Notes
     -----
@@ -552,14 +589,14 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
              colorbar=False, cbar_tick_format="%.2g",
              cmap=plt.cm.nipy_spectral, vmin=None, vmax=None,
              radiological=False, **kwargs):
-    """Plot cuts of an EPI image.
+    """Plot cuts of an :term:`EPI` image.
 
     By default 3 cuts: Frontal, Axial, and Lateral.
 
     Parameters
     ----------
     epi_img : a nifti-image like object or a filename, optional
-        The EPI (T2*) image.
+        The :term:`EPI` (T2*) image.
     %(cut_coords)s
     %(output_file)s
     %(display_mode)s
@@ -570,18 +607,22 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
     %(draw_cross)s
     %(black_bg)s
         Default=True.
-    colorbar : boolean, optional
+    colorbar : boolean, default=False
         If True, display a colorbar on the right of the plots.
-        Default=False.
-    cbar_tick_format: str, optional
+    cbar_tick_format: str, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
-        Default is '%%.2g' for scientific notation.
     %(cmap)s
         Default=`plt.cm.nipy_spectral`.
     %(vmin)s
     %(vmax)s
     %(radiological)s
+
+    Returns
+    -------
+    display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
+        An instance of the OrthoSlicer class. If ``output_file`` is defined,
+        None is returned.
 
     Notes
     -----
@@ -680,34 +721,37 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         Default='auto'.
     %(threshold)s
         Default=0.5.
-    alpha : float between 0 and 1, optional
+    alpha : float between 0 and 1, default=0.7
         Alpha sets the transparency of the color inside the filled
-        contours. Default=0.7.
+        contours.
     %(cmap)s
         Default=`plt.cm.gist_ncar`.
     %(dim)s
         Default='auto'.
-    colorbar : boolean, optional
+    colorbar : boolean, default=False
         If True, display a colorbar on the right of the plots.
-        Default=False.
-    cbar_tick_format: str, optional
+    cbar_tick_format: str, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%.2g" to use scientific notation.
-        Default is '%%i' to display as integers.
     %(vmin)s
     %(vmax)s
     %(resampling_interpolation)s
         Default='nearest'.
-    view_type : {'continuous', 'contours'}, optional
+    view_type : {'continuous', 'contours'}, default='continuous'
         By default view_type == 'continuous',
         rois are shown as continuous colors.
         If view_type == 'contours', maps are shown as contours.
         For this type, label
         denoted as 0 is considered as background and not shown.
-        Default='continuous'.
     %(linewidths)s
         Default=2.5.
     %(radiological)s
+
+    Returns
+    -------
+    display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
+        An instance of the OrthoSlicer class. If ``output_file`` is defined,
+        None is returned.
 
     Notes
     -----
@@ -762,13 +806,13 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
                     colorbar=False,
                     cmap=plt.cm.gist_rainbow, vmin=None, vmax=None,
                     alpha=0.7, radiological=False, **kwargs):
-    """Plot the probabilistic atlases onto the anatomical image \
-    by default MNI template.
+    """Plot a :term:`Probabilistic atlas` onto the anatomical image \
+    by default :term:`MNI` template.
 
     Parameters
     ----------
     maps_img : Niimg-like object or the filename
-        4D image of the probabilistic atlas maps.
+        4D image of the :term:`Probabilistic atlas` maps.
     %(bg_img)s
         If nothing is specified, the MNI152 template will be used.
         To turn off background image, just pass "bg_img=False".
@@ -776,8 +820,9 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
 
         .. versionadded:: 0.4.0
 
-    view_type : {'auto', 'contours', 'filled_contours', 'continuous'}, optional
-        By default view_type == 'auto', means maps will be displayed
+    view_type : {'auto', 'contours', 'filled_contours', 'continuous'}, \
+                default='auto'
+        If view_type == 'auto', it means maps will be displayed
         automatically using any one of the three view types. The automatic
         selection of view type depends on the total number of maps.
         If view_type == 'contours', maps are overlaid as contours
@@ -785,9 +830,8 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
         along with color fillings inside the contours.
         If view_type == 'continuous', maps are overlaid as continuous
         colors irrespective of the number maps.
-        Default='auto'.
 
-    threshold : a str or a number, list of str or numbers, optional
+    threshold : a str or a number, list of str or numbers, default='auto'
         This parameter is optional and is used to threshold the maps image
         using the given value or automatically selected value. The values
         in the image above the threshold level will be visualized.
@@ -826,10 +870,15 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
         Default=False.
     %(vmin)s
     %(vmax)s
-    alpha : float between 0 and 1, optional
+    alpha : float between 0 and 1, default=0.7
         Alpha sets the transparency of the color inside the filled contours.
-        Default=0.7.
     %(radiological)s
+
+    Returns
+    -------
+    display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
+        An instance of the OrthoSlicer class. If ``output_file`` is defined,
+        None is returned.
 
     See Also
     --------
@@ -959,10 +1008,9 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     %(display_mode)s
     %(colorbar)s
         Default=True.
-    cbar_tick_format: str, optional
+    cbar_tick_format: str, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
-        Default is '%%.2g' for scientific notation.
     %(figure)s
     %(axes)s
     %(title)s
@@ -979,7 +1027,6 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
 
         Default=`plt.cm.cold_hot`.
     %(symmetric_cbar)s
-        Default='auto'.
     %(dim)s
         Default='auto'.
     %(vmin)s
@@ -987,6 +1034,12 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     %(resampling_interpolation)s
         Default='continuous'.
     %(radiological)s
+
+    Returns
+    -------
+    display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
+        An instance of the OrthoSlicer class. If ``output_file`` is defined,
+        None is returned.
 
     Notes
     -----
@@ -1009,7 +1062,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype='auto')
 
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        _safe_get_data(stat_map_img, ensure_finite=True),
+        safe_get_data(stat_map_img, ensure_finite=True),
         vmin=vmin,
         vmax=vmax,
         symmetric_cbar=symmetric_cbar)
@@ -1047,7 +1100,7 @@ def plot_glass_brain(stat_map_img,
     Frontal, Axial, and Lateral). The brain glass schematics
     are added on top of the image.
 
-    The plotted image should be in MNI space for this function to work
+    The plotted image should be in :term:`MNI` space for this function to work
     properly.
 
     Only glass brain can be plotted by switching stat_map_img to None.
@@ -1056,22 +1109,22 @@ def plot_glass_brain(stat_map_img,
     ----------
     stat_map_img : Niimg-like object
         See :ref:`extracting_data`.
-        The statistical map image. It needs to be in MNI space
+        The statistical map image. 
+        It needs to be in :term:`MNI` space
         in order to align with the brain schematics.
     %(output_file)s
-    display_mode : string, optional
+    display_mode : string, default='ortho'
         Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
         'z' - axial, 'l' - sagittal left hemisphere only,
         'r' - sagittal right hemisphere only, 'ortho' - three cuts are
         performed in orthogonal directions. Possible values are: 'ortho',
         'x', 'y', 'z', 'xz', 'yx', 'yz', 'l', 'r', 'lr', 'lzr', 'lyr',
-        'lzry', 'lyrz'. Default='ortho'.
+        'lzry', 'lyrz'.
     %(colorbar)s
         Default=False.
-    cbar_tick_format: str, optional
+    cbar_tick_format: str, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
-        Default is '%%.2g' for scientific notation.
     %(figure)s
     %(axes)s
     %(title)s
@@ -1082,24 +1135,29 @@ def plot_glass_brain(stat_map_img,
         Default=False.
     %(cmap)s
         Default=None.
-    alpha : float between 0 and 1, optional
-        Alpha transparency for the brain schematics. Default=0.7.
+    alpha : float between 0 and 1, default=0.7
+        Alpha transparency for the brain schematics.
     %(vmin)s
     %(vmax)s
-    plot_abs : boolean, optional
-        If set to True (default) maximum intensity projection of the
+    plot_abs : boolean, default=True
+        If set to True maximum intensity projection of the
         absolute value will be used (rendering positive and negative
         values in the same manner). If set to false the sign of the
         maximum intensity will be represented with different colors.
         See
         :ref:`sphx_glr_auto_examples_01_plotting_plot_demo_glass_brain_extensive.py` # noqa
-        for examples. Default=True.
+        for examples.
     %(symmetric_cbar)s
-        Default='auto'.
     %(resampling_interpolation)s
         Default='continuous'.
     %(radiological)s 
-        
+
+    Returns
+    -------
+    display : :class:`~nilearn.plotting.displays.OrthoProjector` or None
+        An instance of the OrthoProjector class. If ``output_file`` is defined,
+        None is returned.
+
     Notes
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
@@ -1107,20 +1165,31 @@ def plot_glass_brain(stat_map_img,
     """
     if cmap is None:
         cmap = cm.cold_hot if black_bg else cm.cold_white_hot
+        # use only positive half of colormap if plotting absolute values
+        if plot_abs:
+            cmap = LinearSegmentedColormap.from_list(
+                'cmap_pos', cmap(np.linspace(0.5, 1, 256)),
+            )
 
     if stat_map_img:
         stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype='auto')
         if plot_abs:
-            cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-                _safe_get_data(stat_map_img, ensure_finite=True),
-                vmax=vmax,
-                symmetric_cbar=symmetric_cbar,
-                force_min_stat_map_value=0)
+            if vmin is not None and vmin < 0:
+                warnings.warn(
+                    'vmin is negative but plot_abs is True',
+                    category=UserWarning,
+                )
+            force_min_stat_map_value = 0
         else:
-            cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-                _safe_get_data(stat_map_img, ensure_finite=True),
-                vmax=vmax,
-                symmetric_cbar=symmetric_cbar)
+            force_min_stat_map_value = None
+
+        cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+            safe_get_data(stat_map_img, ensure_finite=True),
+            vmin=vmin,
+            vmax=vmax,
+            symmetric_cbar=symmetric_cbar,
+            force_min_stat_map_value=force_min_stat_map_value,
+        )
     else:
         cbar_vmin, cbar_vmax = None, None
 
@@ -1157,7 +1226,7 @@ def plot_connectome(adjacency_matrix, node_coords,
                     colorbar=False, radiological=False):
     """Plot connectome on top of the brain glass schematics.
 
-    The plotted image should be in MNI space for this function to work
+    The plotted image should be in :term:`MNI` space for this function to work
     properly.
 
     In the case of 'l' and 'r' directions (for hemispheric projections),
@@ -1177,12 +1246,11 @@ def plot_connectome(adjacency_matrix, node_coords,
         Color(s) of the nodes. If string is given, all nodes
         are plotted with same color given in string.
 
-    node_size : scalar or array_like, optional
-        Size(s) of the nodes in points^2. Default=50.
+    node_size : scalar or array_like, default=50
+        Size(s) of the nodes in points^2.
 
-    edge_cmap : colormap, optional
+    edge_cmap : colormap, default=cm.bwr
         Colormap used for representing the strength of the edges.
-        Default=cm.bwr.
 
     edge_vmin, edge_vmax : float, optional
         If not None, either or both of these values will be used to
@@ -1198,21 +1266,21 @@ def plot_connectome(adjacency_matrix, node_coords,
         e.g. "25.3%%", and only the edges with a abs(value) above
         the given percentile will be shown.
     %(output_file)s
-    display_mode : string, optional
+    display_mode : string, default='ortho'
         Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
         'z' - axial, 'l' - sagittal left hemisphere only,
         'r' - sagittal right hemisphere only, 'ortho' - three cuts are
         performed in orthogonal directions. Possible values are: 'ortho',
         'x', 'y', 'z', 'xz', 'yx', 'yz', 'l', 'r', 'lr', 'lzr', 'lyr',
-        'lzry', 'lyrz'. Default='ortho'.
+        'lzry', 'lyrz'.
     %(figure)s
     %(axes)s
     %(title)s
     %(annotate)s
     %(black_bg)s
         Default=False.
-    alpha : float between 0 and 1, optional
-        Alpha transparency for the brain schematics. Default=0.7.
+    alpha : float between 0 and 1, default=0.7
+        Alpha transparency for the brain schematics.
 
     edge_kwargs : dict, optional
         Will be passed as kwargs for each edge matlotlib Line2D.
@@ -1223,6 +1291,12 @@ def plot_connectome(adjacency_matrix, node_coords,
     %(colorbar)s
         Default=False.
     %(radiological)s
+
+    Returns
+    -------
+    display : :class:`~nilearn.plotting.displays.OrthoProjector` or None
+        An instance of the OrthoProjector class. If ``output_file`` is defined,
+        None is returned.
 
     See Also
     --------
@@ -1280,8 +1354,8 @@ def plot_markers(node_values, node_coords, node_size='auto',
         Size(s) of the nodes in points^2. By default the size of the node is
         inversely proportional to the number of nodes.
 
-    node_cmap : str or colormap, optional
-        Colormap used to represent the node measure. Default=plt.cm.viridis_r.
+    node_cmap : str or colormap, default=plt.cm.viridis_r.
+        Colormap used to represent the node measure.
 
     node_vmin : float, optional
         Lower bound of the colormap. If `None`, the min of the node_values is
@@ -1295,17 +1369,17 @@ def plot_markers(node_values, node_coords, node_size='auto',
         If provided only the nodes with a value greater than node_threshold
         will be shown.
 
-    alpha : float between 0 and 1, optional
-        Alpha transparency for markers. Default=0.7.
+    alpha : float between 0 and 1, default=0.7
+        Alpha transparency for markers.
     %(output_file)s
 
-    display_mode : string, optional
+    display_mode : string, default='ortho'
         Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
         'z' - axial, 'l' - sagittal left hemisphere only,
         'r' - sagittal right hemisphere only, 'ortho' - three cuts are
         performed in orthogonal directions. Possible values are: 'ortho',
         'x', 'y', 'z', 'xz', 'yx', 'yz', 'l', 'r', 'lr', 'lzr', 'lyr',
-        'lzry', 'lyrz'. Default='ortho'.
+        'lzry', 'lyrz'.
     %(figure)s
     %(axes)s
     %(title)s
@@ -1319,6 +1393,11 @@ def plot_markers(node_values, node_coords, node_size='auto',
         Default=True.
     %(radiological)s
 
+    Returns
+    -------
+    display : :class:`~nilearn.plotting.displays.OrthoProjector` or None
+        An instance of the OrthoProjector class. If ``output_file`` is defined,
+        None is returned.
     """
     node_values = np.array(node_values).flatten()
     node_coords = np.array(node_coords)
@@ -1395,7 +1474,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
                 figure=None, axes=None, vmin=None, vmax=None, title=None,
                 cmap="gray", cmap_labels=plt.cm.gist_ncar,
                 standardize=True):
-    """Plot an image representation of voxel intensities across time.
+    """Plot an image representation of :term:`voxel` intensities across time.
 
     This figure is also known as a "grayplot" or "Power plot".
 
@@ -1404,9 +1483,9 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
     %(img)s
         4D image.
 
-    mask_img : Niimg-like object or None, optional
-        Limit plotted voxels to those inside the provided mask (default is
-        None). If a 3D atlas is provided, voxels will be grouped by atlas
+    mask_img : Niimg-like object or None, default=None
+        Limit plotted voxels to those inside the provided mask.
+        If a 3D atlas is provided, voxels will be grouped by atlas
         value and a colorbar will be added to the left side of the figure
         with atlas labels.
         If not specified, a new mask will be derived from data.
@@ -1426,8 +1505,8 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
             Prior to this, ``t_r`` would be inferred from ``img`` without
             user input.
 
-    detrend : :obj:`bool`, optional
-        Detrend and z-score the data prior to plotting. Default=True.
+    detrend : :obj:`bool`, default=True
+        Detrend and z-score the data prior to plotting.
     %(output_file)s
     %(figure)s
     %(axes)s
@@ -1438,12 +1517,12 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
 
         Default=`gray`.
 
-    cmap_labels : :class:`matplotlib.colors.Colormap`, or :obj:`str`,
-        optional If ``mask_img`` corresponds to an atlas, then cmap_labels
+    cmap_labels : :class:`matplotlib.colors.Colormap`, or :obj:`str`, \
+                  default=`plt.cm.gist_ncar`
+        If ``mask_img`` corresponds to an atlas, then cmap_labels
         can be used to define the colormap for coloring the labels placed
         on the side of the carpet plot.
 
-        Default=`plt.cm.gist_ncar`.
     %(standardize)s
 
         .. note::
@@ -1577,7 +1656,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
             ax0.set_yticks([])
 
         # Carpet plot
-        if _compare_version(matplotlib.__version__, ">=", "3.8.0rc1"):
+        if compare_version(matplotlib.__version__, ">=", "3.8.0rc1"):
             axes.remove()  # remove axes for newer versions of mpl
         axes = plt.subplot(gs[1])  # overwrites axes with older versions of mpl
         axes.imshow(
@@ -1645,7 +1724,7 @@ def plot_img_comparison(ref_imgs, src_imgs, masker, plot_hist=True, log=True,
                         output_dir=None, axes=None):
     """Create plots to compare two lists of images and measure correlation.
 
-    The first plot displays linear correlation between voxel values.
+    The first plot displays linear correlation between :term:`voxel` values.
     The second plot superimposes histograms to compare values distribution.
 
     Parameters
@@ -1659,19 +1738,18 @@ def plot_img_comparison(ref_imgs, src_imgs, masker, plot_hist=True, log=True,
     masker : NiftiMasker object
         Mask to be used on data.
 
-    plot_hist : Boolean, optional
+    plot_hist : Boolean, default=True
         If True then histograms of each img in ref_imgs will be plotted
         along-side the histogram of the corresponding image in src_imgs.
-        Default=True.
 
-    log : Boolean, optional
-        Passed to plt.hist. Default=True.
+    log : Boolean, default=True
+        Passed to plt.hist.
 
-    ref_label : str, optional
-        Name of reference images. Default='image set 1'.
+    ref_label : str, default='image set 1'
+        Name of reference images.
 
-    src_label : str, optional
-        Name of source images. Default='image set 2'.
+    src_label : str, default='image set 2'
+        Name of source images.
 
     output_dir : string, optional
         Directory where plotted figures will be stored.

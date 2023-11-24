@@ -4,7 +4,7 @@ Decoding with FREM: face vs house vs chair object recognition
 
 This example uses fast ensembling of regularized models (FREM) to decode
 a face vs house vs chair discrimination task from Haxby 2001 study.
-FREM uses an implicit spatial regularization
+:term:`FREM` uses an implicit spatial regularization
 through fast clustering and aggregates a high number of estimators
 trained on various splits of the training set,
 thus returning a very robust decoder
@@ -13,7 +13,7 @@ at a lower computational cost than other spatially regularized methods.
 To have more details, see: :ref:`frem`.
 """
 
-##############################################################################
+# %%
 # Load the Haxby dataset
 # ----------------------
 from nilearn.datasets import fetch_haxby
@@ -45,24 +45,24 @@ y_train = conditions[condition_mask_train].values
 y_test = conditions[condition_mask_test].values
 
 
-# Compute the mean epi to be used for the background of the plotting
+# Compute the mean EPI to be used for the background of the plotting
 from nilearn.image import mean_img
 
 background_img = mean_img(func_filenames)
 
-##############################################################################
+# %%
 # Fit FREM
 # --------
 from nilearn.decoding import FREMClassifier
 
-decoder = FREMClassifier(cv=10, standardize="zscore_sample")
+decoder = FREMClassifier(cv=10, standardize="zscore_sample", n_jobs=2)
 # Fit model on train data and predict on test data
 decoder.fit(X_train, y_train)
 y_pred = decoder.predict(X_test)
 accuracy = (y_pred == y_test).mean() * 100.0
 print(f"FREM classification accuracy : {accuracy:g}%")
 
-#############################################################################
+# %%
 # Plot confusion matrix
 # ------------------------------------
 
@@ -96,9 +96,9 @@ ax.get_figure().tight_layout()
 
 plotting.show()
 
-#############################################################################
-# Visualization of FREM weights
-# -----------------------------
+# %%
+# Visualization of :term:`FREM` weights
+# -------------------------------------
 from nilearn import plotting
 
 plotting.plot_stat_map(
@@ -109,8 +109,9 @@ plotting.plot_stat_map(
     display_mode="yz",
 )
 plotting.show()
-#############################################################################
-# FREM ensembling procedure yields an important improvement of decoding
+# %%
+# :term:`FREM` ensembling procedure
+# yields an important improvement of decoding
 # accuracy on this simple example compared to fitting only one model per
 # fold and the clustering mechanism keeps its computational cost reasonable
 # even on heavier examples. Here we ensembled several instances of l2-SVC,

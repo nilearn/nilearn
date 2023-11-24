@@ -18,7 +18,7 @@ hemisphere, negative in the left hemisphere).
 
 """
 
-###############################################################################
+# %%
 # Fetch dataset
 # -------------
 # We download a list of left vs right button press :term:`contrasts<contrast>`
@@ -35,7 +35,7 @@ data = fetch_localizer_contrasts(
     legacy_format=False,
 )
 
-###############################################################################
+# %%
 # Display subject t_maps
 # ----------------------
 # We plot a grid with all the subjects t-maps thresholded at t = 2 for simple
@@ -60,7 +60,7 @@ for cidx, tmap in enumerate(data["tmaps"]):
 fig.suptitle("subjects t_map left-right button press")
 plt.show()
 
-###############################################################################
+# %%
 # Estimate second level model
 # ---------------------------
 # We wish to perform a one-sample test.
@@ -76,17 +76,17 @@ design_matrix = pd.DataFrame(
     columns=["intercept"],
 )
 
-###############################################################################
+# %%
 # Next, we specify the model and fit it.
 from nilearn.glm.second_level import SecondLevelModel
 
-second_level_model = SecondLevelModel(smoothing_fwhm=8.0)
+second_level_model = SecondLevelModel(smoothing_fwhm=8.0, n_jobs=2)
 second_level_model = second_level_model.fit(
     second_level_input,
     design_matrix=design_matrix,
 )
 
-###############################################################################
+# %%
 # To estimate the :term:`contrast` is very simple. We can just provide the
 # column name of the design matrix.
 z_map = second_level_model.compute_contrast(
@@ -94,8 +94,9 @@ z_map = second_level_model.compute_contrast(
     output_type="z_score",
 )
 
-###############################################################################
-# We threshold the second level contrast at uncorrected p < 0.001 and plot it.
+# %%
+# We threshold the second level :term:`contrast`
+# at uncorrected p < 0.001 and plot it.
 from scipy.stats import norm
 
 p_val = 0.001
@@ -111,10 +112,10 @@ display = plotting.plot_glass_brain(
 )
 plotting.show()
 
-###############################################################################
+# %%
 # As expected, we find the motor cortex.
 
-###############################################################################
+# %%
 # Next, we compute the (corrected) p-values with a parametric test to compare
 # them with the results from a nonparametric test.
 import numpy as np
@@ -129,7 +130,7 @@ neg_log_pval = math_img(
     img=p_val,
 )
 
-###############################################################################
+# %%
 # Now, we compute the (corrected) p-values with a permutation test.
 #
 # We will use :func:`~nilearn.glm.second_level.non_parametric_inference` for
@@ -166,11 +167,11 @@ out_dict = non_parametric_inference(
     n_perm=500,  # 500 for the sake of time. Ideally, this should be 10,000.
     two_sided_test=False,
     smoothing_fwhm=8.0,
-    n_jobs=1,
+    n_jobs=2,
     threshold=0.001,
 )
 
-###############################################################################
+# %%
 # Let us plot the (corrected) negative log p-values for the both tests.
 #
 # We will use a negative log10 p threshold of 1, which corresponds to p<0.1.
@@ -223,7 +224,7 @@ for img_counter, (i_row, j_col) in enumerate(
 fig.suptitle("Group left-right button press\n(negative log10 p-values)")
 plt.show()
 
-###############################################################################
+# %%
 # The nonparametric test yields many more discoveries and is more powerful than
 # the usual parametric procedure.
 # Even within the nonparametric test, the different correction metrics produce

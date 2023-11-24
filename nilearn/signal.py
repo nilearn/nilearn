@@ -16,7 +16,7 @@ from sklearn.utils import as_float_array, gen_even_slices
 
 from nilearn._utils import fill_doc, stringify_path
 from nilearn._utils.numpy_conversions import as_ndarray, csv_to_array
-from nilearn._utils.param_validation import _check_run_sample_masks
+from nilearn._utils.param_validation import check_run_sample_masks
 
 availiable_filters = ["butterworth", "cosine"]
 
@@ -29,25 +29,24 @@ def _standardize(signals, detrend=False, standardize="zscore"):
     signals : :class:`numpy.ndarray`
         Timeseries to standardize.
 
-    detrend : :obj:`bool`, optional
+    detrend : :obj:`bool`, default=False
         If detrending of timeseries is requested.
-        Default=False.
 
-    standardize : {'zscore_sample', 'zscore', 'psc', True, False}, optional
+    standardize : {'zscore_sample', 'zscore', 'psc', True, False}, \
+                  default='zscore'
         Strategy to standardize the signal:
 
             - 'zscore_sample': The signal is z-scored. Timeseries are shifted
               to zero mean and scaled to unit variance. Uses sample std.
             - 'zscore': The signal is z-scored. Timeseries are shifted
               to zero mean and scaled to unit variance. Uses population std
-              by calling default :obj:`numpy.std` with N - ``ddof=0``.
+              by calling :obj:`numpy.std` with N - ``ddof=0``.
             - 'psc':  Timeseries are shifted to zero mean value and scaled
               to percent signal change (as compared to original mean signal).
             - True: The signal is z-scored (same as option `zscore`).
               Timeseries are shifted to zero mean and scaled to unit variance.
             - False: Do not standardize the data.
 
-        Default='zscore'.
 
     Returns
     -------
@@ -88,7 +87,7 @@ def _standardize(signals, detrend=False, standardize="zscore"):
                 "'zscore_sample' instead."
             )
             warnings.warn(
-                category=FutureWarning,
+                category=DeprecationWarning,
                 message=std_strategy_default,
                 stacklevel=3,
             )
@@ -138,7 +137,7 @@ def _mean_of_squares(signals, n_batches=20):
     signals : :class:`numpy.ndarray`, shape (n_samples, n_features)
         Signal whose mean of squares must be computed.
 
-    n_batches : :obj:`int`, optional
+    n_batches : :obj:`int`, default=20
         Number of batches to use in the computation.
 
         .. note::
@@ -146,7 +145,6 @@ def _mean_of_squares(signals, n_batches=20):
             and computation time. The higher the value, the lower the
             memory consumption.
 
-        Default=20.
 
     Returns
     -------
@@ -184,7 +182,7 @@ def _row_sum_of_squares(signals, n_batches=20):
     signals : :class:`numpy.ndarray`, shape (n_samples, n_features)
         Signal whose sum of squares must be computed.
 
-    n_batches : :obj:`int`, optional
+    n_batches : :obj:`int`, default=20
         Number of batches to use in the computation.
 
         .. note::
@@ -192,7 +190,6 @@ def _row_sum_of_squares(signals, n_batches=20):
             and computation time. The higher the value, the lower the
             memory consumption.
 
-        Default=20.
 
     Returns
     -------
@@ -224,14 +221,12 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
         This parameter must be two-dimensional.
         Signals to detrend. A signal is a column.
 
-    inplace : :obj:`bool`, optional
+    inplace : :obj:`bool`, default=False
         Tells if the computation must be made inplace or not.
-        Default=False.
 
-    type : {"linear", "constant"}, optional
+    type : {"linear", "constant"}, default="linear"
         Detrending type, either "linear" or "constant".
         See also :func:`scipy.signal.detrend`.
-        Default="linear".
 
     n_batches : :obj:`int`, optional
         Number of batches to use in the computation.
@@ -341,13 +336,12 @@ def butterworth(
         Number of samples per second (sample frequency, in Hertz).
     %(low_pass)s
     %(high_pass)s
-    order : :obj:`int`, optional
+    order : :obj:`int`, default=5
         Order of the `Butterworth filter
         <https://en.wikipedia.org/wiki/Butterworth_filter>`_.
         When filtering signals, the filter has a decay to avoid ringing.
         Increasing the order sharpens this decay. Be aware that very high
         orders can lead to numerical instability.
-        Default=5.
 
     padtype : {"odd", "even", "constant", None}, optional
         Type of padding to use for the Butterworth filter.
@@ -469,14 +463,14 @@ def high_variance_confounds(
         Timeseries. A timeseries is a column in the "series" array.
         shape (sample number, feature number)
 
-    n_confounds : :obj:`int`, optional
-        Number of confounds to return. Default=5.
+    n_confounds : :obj:`int`, default=5
+        Number of confounds to return.
 
-    percentile : :obj:`float`, optional
+    percentile : :obj:`float`, default=2.0
         Highest-variance series percentile to keep before computing the
         singular value decomposition, 0. <= `percentile` <= 100.
         ``series.shape[0] * percentile / 100`` must be greater
-        than ``n_confounds``. Default=2.0.
+        than ``n_confounds``.
     %(detrend)s
         Default=True.
 
@@ -547,6 +541,7 @@ def clean(
     high_pass=None,
     t_r=2.5,
     ensure_finite=False,
+    extrapolate=True,
     **kwargs,
 ):
     """Improve :term:`SNR` on masked :term:`fMRI` signals.
@@ -597,13 +592,13 @@ def clean(
         Timeseries. Must have shape (instant number, features number).
         This array is not modified.
 
-    runs : :class:`numpy.ndarray`, optional
+    runs : :class:`numpy.ndarray`, default=None
         Add a run level to the cleaning process. Each run will be
         cleaned independently. Must be a 1D array of n_samples elements.
-        Default is None.
 
-    confounds : :class:`numpy.ndarray`, :obj:`str`, :class:`pathlib.Path`,\
-    :class:`pandas.DataFrame` or :obj:`list` of confounds timeseries.
+    confounds : :class:`numpy.ndarray`, :obj:`str`, :class:`pathlib.Path`, \
+                :class:`pandas.DataFrame` \
+                or :obj:`list` of confounds timeseries, default=None
         Shape must be (instant number, confound number), or just
         (instant number,).
         The number of time instants in ``signals`` and ``confounds`` must be
@@ -612,12 +607,12 @@ def clean(
         containing signals as columns, with an optional one-line header.
         If a list is provided, all confounds are removed from the input
         signal, as if all were in the same array.
-        Default is None.
 
     sample_mask : None, Any type compatible with numpy-array indexing, \
-        or :obj:`list` of
-        shape: (number of scans - number of volumes removed, ) for explicit \
-            index, or (number of scans, ) for binary mask
+                  or :obj:`list` of \
+                  shape: (number of scans - number of volumes removed, ) \
+                  for explicit index, or (number of scans, ) for binary mask, \
+                  default=None
         Masks the niimgs along time/fourth dimension to perform scrubbing
         (remove volumes with high motion) and/or non-steady-state volumes.
         When passing binary mask with boolean values, ``True`` refers to
@@ -626,19 +621,17 @@ def clean(
         information, sample_mask must be a list containing sets of indexes for
         each run.
 
-            .. versionadded:: 0.8.0
+        .. versionadded:: 0.8.0
 
-        Default is None.
     %(t_r)s
         Default=2.5.
-    filter : {'butterworth', 'cosine', False}, optional
+    filter : {'butterworth', 'cosine', False}, default='butterworth'
         Filtering methods:
 
             - 'butterworth': perform butterworth filtering.
             - 'cosine': generate discrete cosine transformation drift terms.
             - False: Do not perform filtering.
 
-        Default='butterworth'.
     %(low_pass)s
 
         .. note::
@@ -646,26 +639,31 @@ def clean(
 
     %(high_pass)s
     %(detrend)s
-    standardize : {'zscore_sample', 'zscore', 'psc', True, False}, optional
+    standardize : {'zscore_sample', 'zscore', 'psc', True, False}, \
+                  default="zscore"
         Strategy to standardize the signal:
 
             - 'zscore_sample': The signal is z-scored. Timeseries are shifted
               to zero mean and scaled to unit variance. Uses sample std.
             - 'zscore': The signal is z-scored. Timeseries are shifted
               to zero mean and scaled to unit variance. Uses population std
-              by calling default :obj:`numpy.std` with N - ``ddof=0``.
+              by calling :obj:`numpy.std` with N - ``ddof=0``.
             - 'psc':  Timeseries are shifted to zero mean value and scaled
               to percent signal change (as compared to original mean signal).
             - True: The signal is z-scored (same as option `zscore`).
               Timeseries are shifted to zero mean and scaled to unit variance.
             - False: Do not standardize the data.
 
-        Default="zscore".
     %(standardize_confounds)s
 
     ensure_finite : :obj:`bool`, default=False
         If `True`, the non-finite values (NANs and infs) found in the data
         will be replaced by zeros.
+
+    extrapolate : :obj:`bool`, default=True
+        If `True` and filter='butterworth', censored volumes in both ends of
+        the signal data will be interpolated before filtering. Otherwise, they
+        will be discarded from the band-pass filtering process.
 
     kwargs : dict
         Keyword arguments to be passed to functions called within ``clean``.
@@ -731,10 +729,9 @@ def clean(
         )
 
     # Interpolation / censoring
-    signals, confounds = _handle_scrubbed_volumes(
-        signals, confounds, sample_mask, filter_type, t_r
+    signals, confounds, sample_mask = _handle_scrubbed_volumes(
+        signals, confounds, sample_mask, filter_type, t_r, extrapolate
     )
-
     # Detrend
     # Detrend and filtering should apply to confounds, if confound presents
     # keep filters orthogonal (according to Lindquist et al. (2018))
@@ -810,19 +807,29 @@ def clean(
 
 
 def _handle_scrubbed_volumes(
-    signals, confounds, sample_mask, filter_type, t_r
+    signals, confounds, sample_mask, filter_type, t_r, extrapolate
 ):
     """Interpolate or censor scrubbed volumes."""
     if sample_mask is None:
-        return signals, confounds
+        return signals, confounds, sample_mask
 
     if filter_type == "butterworth":
-        signals = _interpolate_volumes(signals, sample_mask, t_r)
+        signals = _interpolate_volumes(signals, sample_mask, t_r, extrapolate)
+        # discard non-interpolated out-of-bounds volumes
+        signals = signals[~np.isnan(signals).all(axis=1), :]
         if confounds is not None:
-            confounds = _interpolate_volumes(confounds, sample_mask, t_r)
+            confounds = _interpolate_volumes(
+                confounds, sample_mask, t_r, extrapolate
+            )
+            # discard non-interpolated out-of-bounds volumes
+            confounds = confounds[~np.isnan(confounds).all(axis=1), :]
+        if sample_mask is not None and not extrapolate:
+            # reset the indexing of the sample_mask excluding non-interpolated
+            # volumes at the head of the data
+            sample_mask -= sample_mask[0]
     else:  # Or censor when no filtering, or cosine filter
         signals, confounds = _censor_signals(signals, confounds, sample_mask)
-    return signals, confounds
+    return signals, confounds, sample_mask
 
 
 def _censor_signals(signals, confounds, sample_mask):
@@ -833,12 +840,26 @@ def _censor_signals(signals, confounds, sample_mask):
     return signals, confounds
 
 
-def _interpolate_volumes(volumes, sample_mask, t_r):
+def _interpolate_volumes(volumes, sample_mask, t_r, extrapolate):
     """Interpolate censored volumes in signals/confounds."""
+    if extrapolate:
+        extrapolate_default = (
+            "By default the cubic spline interpolator extrapolates "
+            "the out-of-bounds censored volumes in the data run. This "
+            "can lead to undesired filtered signal results. Starting in "
+            "version 0.13, the default strategy will be not to extrapolate "
+            "but to discard those volumes at filtering."
+        )
+        warnings.warn(
+            category=FutureWarning,
+            message=extrapolate_default,
+        )
     frame_times = np.arange(volumes.shape[0]) * t_r
     remained_vol = frame_times[sample_mask]
     remained_x = volumes[sample_mask, :]
-    cubic_spline_fitter = CubicSpline(remained_vol, remained_x)
+    cubic_spline_fitter = CubicSpline(
+        remained_vol, remained_x, extrapolate=extrapolate
+    )
     volumes_interpolated = cubic_spline_fitter(frame_times)
     volumes[~sample_mask, :] = volumes_interpolated[~sample_mask, :]
     return volumes
@@ -968,7 +989,7 @@ def _sanitize_sample_mask(n_time, n_runs, runs, sample_mask):
     if sample_mask is None:
         return sample_mask
 
-    sample_mask = _check_run_sample_masks(n_runs, sample_mask)
+    sample_mask = check_run_sample_masks(n_runs, sample_mask)
 
     if runs is None:
         runs = np.zeros(n_time)

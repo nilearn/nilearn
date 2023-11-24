@@ -135,15 +135,14 @@ def _chunk_read_(
     local_file : file
         Hard disk file where data should be written.
 
-    chunk_size : int, optional
-        Size of downloaded chunks. Default=8192.
+    chunk_size : int, default=8192
+        Size of downloaded chunks.
 
     report_hook : bool, optional
         Whether or not to show downloading advancement. Default: None
 
-    initial_size : int, optional
+    initial_size : int, default=0
         If resuming, indicate the initial size of the file.
-        Default=0.
 
     total_size : int, optional
         Expected final size of download (None means it is unknown).
@@ -303,6 +302,10 @@ def _get_dataset_dir(
         if not os.path.exists(path):
             try:
                 os.makedirs(path)
+                _add_readme_to_default_data_locations(
+                    data_dir=data_dir,
+                    verbose=verbose,
+                )
                 if verbose > 0:
                     print(f"\nDataset created in {path}\n")
                 return path
@@ -314,6 +317,23 @@ def _get_dataset_dir(
         "Nilearn tried to store the dataset in the following "
         f"directories, but: {''.join(errors)}"
     )
+
+
+def _add_readme_to_default_data_locations(data_dir=None, verbose=1):
+    for d in get_data_dirs(data_dir=data_dir):
+        file = Path(d) / "README.md"
+        if file.parent.exists() and not file.exists():
+            with open(file, "w") as f:
+                f.write(
+                    """# Nilearn data folder
+
+This directory is used by Nilearn to store datasets
+and atlases downloaded from the internet.
+It can be safely deleted.
+If you delete it, previously downloaded data will be downloaded again."""
+                )
+            if verbose > 0:
+                print(f"\nAdded README.md to {d}\n")
 
 
 # The functions _is_within_directory and _safe_extract were implemented in
@@ -346,9 +366,8 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
     file_ : string
         Path of file to be uncompressed.
 
-    delete_archive : bool, optional
+    delete_archive : bool, default=True
         Whether or not to delete archive once it is uncompressed.
-        Default=True.
     %(verbose)s
 
     Notes
@@ -472,9 +491,9 @@ def _filter_columns(array, filters, combination="and"):
     filters : list of criteria
         See _filter_column.
 
-    combination : string {'and', 'or'}, optional
+    combination : string {'and', 'or'}, default='and'
         String describing the combination operator. Possible values are "and"
-        and "or". Default='and'.
+        and "or".
 
     """
     if combination == "and":
@@ -532,8 +551,8 @@ def _fetch_file(
     %(url)s
     %(data_dir)s
     %(resume)s
-    overwrite : bool, optional
-        If true and file already exists, delete it. Default=False.
+    overwrite : bool, default=False
+        If true and file already exists, delete it.
 
     md5sum : string, optional
         MD5 sum of the file. Checked if download of the file is required.
@@ -733,7 +752,7 @@ def movetree(src, dst):
                 os.rmdir(srcname)
             else:
                 shutil.move(srcname, dstname)
-        except (OSError, os.error) as why:
+        except OSError as why:
             errors.append((srcname, dstname, str(why)))
         # catch the Error from the recursive movetree so that we can
         # continue with other files
@@ -901,9 +920,8 @@ def _tree(path, pattern=None, dictionary=False):
     pattern : string, optional
         Pattern used to filter files (see fnmatch).
 
-    dictionary : boolean, optional
+    dictionary : boolean, default=False
         If True, the function will return a dict instead of a list.
-        Default=False.
 
     """
     files = []

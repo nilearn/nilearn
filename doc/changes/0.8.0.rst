@@ -53,7 +53,7 @@ Fixes
 
 - :bdg-dark:`Code` Fix detrending and temporal filtering order for confounders in function :func:`~signal.clean`, so that these operations are applied in the same order as for the signals, i.e., first detrending and then temporal filtering (see :gh:`2730`) (:gh:`2732` by `Javier Rasero`_).
 
-- :bdg-success:`API` Fix number of attributes returned by the `nilearn.glm.first_level.FirstLevelModel._get_voxelwise_model_attribute` method in the :class:`~glm.first_level.FirstLevelModel`. It used to return only the first attribute, and now returns as many attributes as design matrices (:gh:`2792` by `Raphael Meudec`_).
+- :bdg-success:`API` Fix number of attributes returned by the ``nilearn.glm.first_level.FirstLevelModel._get_voxelwise_model_attribute`` method in the :class:`~glm.first_level.FirstLevelModel`. It used to return only the first attribute, and now returns as many attributes as design matrices (:gh:`2792` by `Raphael Meudec`_).
 
 - :bdg-info:`Plotting` Plotting functions that show a stack of slices from a 3D image (e.g. :func:`~plotting.plot_stat_map`) will now plot the slices in the user specified order, rather than automatically sorting into ascending order (see :gh:`1155`) (:gh:`2831` by `Evan Edmond`_).
 

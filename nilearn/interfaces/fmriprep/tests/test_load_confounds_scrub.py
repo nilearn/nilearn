@@ -45,12 +45,12 @@ def test_get_outlier_cols():
     assert outlier_cols == non_steady_state
 
 
-def test_extract_outlier_regressors():
+def test_extract_outlier_regressors(rng):
     """Check outlier regressors of different types."""
     # Create a fake confound dataframe
     n_scans = 50
     fake_confounds = pd.DataFrame(
-        np.random.rand(n_scans, 1), columns=["confound_regressor"]
+        rng.random((n_scans, 1)), columns=["confound_regressor"]
     )
 
     # scrubbed volume one-hot, overlap with non-steady-state

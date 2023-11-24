@@ -15,11 +15,12 @@ import pytest
 import requests
 
 from nilearn._utils.data_gen import generate_fake_fmri
+from nilearn.conftest import _rng
 from nilearn.datasets import neurovault
 from nilearn.image import load_img
 
 
-def _get_neurovault_data(random_seed=0):
+def _get_neurovault_data():
     """Make fake images and collections to mock neurovault in the unit tests.
 
     Returns two pandas DataFrames: collections and images. Each row contains
@@ -34,7 +35,7 @@ def _get_neurovault_data(random_seed=0):
     """
     if getattr(_get_neurovault_data, "data", None) is not None:
         return _get_neurovault_data.data
-    rng = np.random.RandomState(random_seed)
+    rng = _rng()
     n_collections, n_images = 73, 546
     collection_ids = rng.choice(
         np.arange(1000), size=n_collections, replace=False
@@ -52,7 +53,7 @@ def _get_neurovault_data(random_seed=0):
     ).values
     collections["number_of_images"] = collections[
         "true_number_of_images"
-    ] + rng.binomial(1, 0.1, n_collections) * rng.randint(
+    ] + rng.binomial(1, 0.1, n_collections) * rng.integers(
         0, 100, n_collections
     )
     images["not_mni"] = rng.binomial(1, 0.1, size=n_images).astype(bool)
@@ -76,7 +77,7 @@ def _get_neurovault_data(random_seed=0):
         p=[0.4, 0.4, 0.2],
     )
     images["some_key"] = "some_value"
-    images[13] = rng.randn(n_images)
+    images[13] = rng.standard_normal(n_images)
     url = "https://neurovault.org/media/images/{}/{}.nii.gz"
     image_names = [
         hashlib.sha1(bytes(img_id)).hexdigest()[:4] for img_id in image_ids

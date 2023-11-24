@@ -5,7 +5,8 @@ jobs:
     run:
         runs-on: ubuntu-latest
         steps:
-        -   uses: bubkoo/auto-comment@v1.1.2
+        -   name: Auto comment pull request
+            uses: bubkoo/auto-comment@v1.1.2
             with:
                 GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

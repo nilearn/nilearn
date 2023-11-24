@@ -44,8 +44,9 @@ from sklearn.model_selection import KFold, LeaveOneGroupOut, ParameterGrid
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR, LinearSVC
 
-from nilearn._utils import _compare_version
+from nilearn._utils import compare_version
 from nilearn._utils.param_validation import check_feature_screening
+from nilearn.conftest import _rng
 from nilearn.decoding.decoder import (
     Decoder,
     DecoderRegressor,
@@ -78,10 +79,9 @@ def _make_binary_classification_test_data(n_samples=N_SAMPLES):
     return X, y, mask
 
 
-@pytest.fixture(scope="session")
-def rand_X_Y():
-    rng = np.random.RandomState(0)
-    X = rng.rand(N_SAMPLES, 10)
+@pytest.fixture()
+def rand_X_Y(rng):
+    X = rng.random((N_SAMPLES, 10))
     Y = np.hstack([[-1] * 50, [1] * 50])
     return X, Y
 
@@ -148,14 +148,13 @@ def multiclass_data():
         (LassoCV(), ["n_alphas"]),
     ],
 )
-def test_check_param_grid_regression(regressor, param):
+def test_check_param_grid_regression(regressor, param, rng):
     """Test several estimators.
 
     Each one with its specific regularization parameter.
     """
-    rng = np.random.RandomState(0)
-    X = rng.rand(N_SAMPLES, 10)
-    Y = rng.rand(N_SAMPLES)
+    X = rng.random((N_SAMPLES, 10))
+    Y = rng.random(N_SAMPLES)
 
     param_grid = _check_param_grid(regressor, X, Y, None)
 
@@ -265,20 +264,23 @@ def test_wrap_param_grid(param_grid):
     ],
 )
 def test_wrap_param_grid_warning(param_grid, need_wrap):
-    param_name = "alphas"
     expected_warning_substring = "should be a sequence of iterables"
 
-    with warnings.catch_warnings(record=True) as raised_warnings:
-        _wrap_param_grid(param_grid, param_name)
-    warning_messages = [str(warning.message) for warning in raised_warnings]
-
-    found_warning = any(
-        expected_warning_substring in x for x in warning_messages
-    )
-
     if need_wrap:
-        assert found_warning
+        with pytest.warns(UserWarning, match=expected_warning_substring):
+            _wrap_param_grid(param_grid, param_name="alphas")
+
     else:
+        with warnings.catch_warnings(record=True) as raised_warnings:
+            _wrap_param_grid(param_grid, param_name="alphas")
+        warning_messages = [
+            str(warning.message) for warning in raised_warnings
+        ]
+
+        found_warning = any(
+            expected_warning_substring in x for x in warning_messages
+        )
+
         assert not found_warning
 
 
@@ -565,19 +567,17 @@ def test_decoder_binary_classification_clustering(
 
 @pytest.mark.parametrize("cv", [KFold(n_splits=5), LeaveOneGroupOut()])
 def test_decoder_binary_classification_cross_validation(
-    binary_classification_data, cv
+    binary_classification_data, cv, rng
 ):
     X, y, mask = binary_classification_data
 
     # check cross-validation scheme and fit attribute with groups enabled
-    rand_local = np.random.RandomState(42)
-
     model = Decoder(
         estimator="svc", mask=mask, standardize="zscore_sample", cv=cv
     )
     groups = None
     if isinstance(cv, LeaveOneGroupOut):
-        groups = rand_local.binomial(2, 0.3, size=len(y))
+        groups = rng.binomial(2, 0.3, size=len(y))
     model.fit(X, y, groups=groups)
     y_pred = model.predict(X)
 
@@ -691,7 +691,7 @@ def test_decoder_error_unknown_scoring_metrics(
 
     model = Decoder(estimator=dummy_classifier, mask=mask, scoring="foo")
 
-    if _compare_version(sklearn.__version__, ">", "1.2.2"):
+    if compare_version(sklearn.__version__, ">", "1.2.2"):
         with pytest.raises(
             ValueError,
             match="The 'scoring' parameter of check_scoring "
@@ -894,14 +894,12 @@ def test_decoder_multiclass_classification_cross_validation(
     X, y, mask = multiclass_data
 
     # check cross-validation scheme and fit attribute with groups enabled
-    rand_local = np.random.RandomState(42)
-
     model = Decoder(
         estimator="svc", mask=mask, standardize="zscore_sample", cv=cv
     )
     groups = None
     if isinstance(cv, LeaveOneGroupOut):
-        groups = rand_local.binomial(2, 0.3, size=len(y))
+        groups = _rng(0).binomial(2, 0.3, size=len(y))
     model.fit(X, y, groups=groups)
     y_pred = model.predict(X)
 
@@ -928,7 +926,7 @@ def test_decoder_multiclass_classification_apply_mask_shape():
     assert X_masked.shape == X_init.shape
 
 
-def test_decoder_multiclass_classification_apply_mask_attributes():
+def test_decoder_multiclass_classification_apply_mask_attributes(affine_eye):
     """Test whether model.masker_ have some desire attributes \
     manually set after calling _apply_mask.
 
@@ -944,7 +942,7 @@ def test_decoder_multiclass_classification_apply_mask_attributes():
     )
     X, _ = to_niimgs(X_init, [5, 5, 5])
 
-    target_affine = 2 * np.eye(4)
+    target_affine = 2 * affine_eye
     target_shape = (1, 1, 1)
     t_r = 1
     high_pass = 1
@@ -982,8 +980,7 @@ def test_decoder_multiclass_error_incorrect_cv(multiclass_data):
 
 def test_decoder_multiclass_warnings(multiclass_data):
     X, y, _ = multiclass_data
-    rand_local = np.random.RandomState(42)
-    groups = rand_local.binomial(2, 0.3, size=len(y))
+    groups = _rng(0).binomial(2, 0.3, size=len(y))
 
     # Check whether decoder raised warning when groups is set to specific
     # value but CV Splitter is not set

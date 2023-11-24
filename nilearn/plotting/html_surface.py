@@ -225,7 +225,7 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
     stat_map_img : Niimg-like object, 3D
         See :ref:`extracting_data`.
 
-    surf_mesh : str or dict, optional.
+    surf_mesh : str or dict, default='fsaverage5'
         If a string, it should be one of the following values:
         %(fsaverage_options)s
         If a dictionary, it should have the same structure as those returned by
@@ -233,7 +233,6 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
         'pial_left', 'sulc_left', 'infl_right', 'pial_right', and 'sulc_right',
         containing inflated and pial meshes, and sulcal depth values for left
         and right hemispheres.
-        Default='fsaverage5'.
 
     threshold : str, number or None, optional
         If None, no thresholding.
@@ -243,12 +242,12 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
         e.g. "25.3%%", and only values of amplitude above the
         given percentile will be shown.
 
-    cmap : str or matplotlib colormap, optional
-        Colormap to use. Default=cm.cold_hot.
+    cmap : str or matplotlib colormap, default=cm.cold_hot
+        Colormap to use.
 
-    black_bg : bool, optional
+    black_bg : bool, default=False
         If True, image is plotted on a black background. Otherwise on a
-        white background. Default=False.
+        white background.
 
     %(bg_on_data)s
 
@@ -263,28 +262,27 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
         min value for mapping colors.
         If `symmetric_cmap` is `True`, `vmin` is always equal to `-vmax` and
         cannot be chosen.
-        If `symmetric_cmap` is `False`, `vmin` defaults to the min of the
+        If `symmetric_cmap` is `False`, `vmin` is equal to the min of the
         image, or 0 when a threshold is used.
 
-    symmetric_cmap : bool, optional
+    symmetric_cmap : bool, default=True
         Make colormap symmetric (ranging from -vmax to vmax).
         You can set it to False if you are plotting only positive values.
-        Default=True.
 
-    colorbar : bool, optional
-        Add a colorbar or not. Default=True.
+    colorbar : bool, default=True
+        Add a colorbar or not.
 
-    colorbar_height : float, optional
-        Height of the colorbar, relative to the figure height. Default=0.5.
+    colorbar_height : float, default=0.5
+        Height of the colorbar, relative to the figure height
 
-    colorbar_fontsize : int, optional
-        Fontsize of the colorbar tick labels. Default=25.
+    colorbar_fontsize : int, default=25
+        Fontsize of the colorbar tick labels.
 
     title : str, optional
         Title for the plot.
 
-    title_fontsize : int, optional
-        Fontsize of the title. Default=25.
+    title_fontsize : int, default=25
+        Fontsize of the title.
 
     vol_to_surf_kwargs : dict, optional
         Dictionary of keyword arguments that are passed on to
@@ -323,6 +321,7 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
     return _fill_html_template(info, embed_js=True)
 
 
+@fill_doc
 def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
               cmap=cm.cold_hot, black_bg=False, vmax=None, vmin=None,
               bg_on_data=False, darkness=.7, symmetric_cmap=True,
@@ -346,14 +345,13 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
         .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array
 
-    bg_map : str or numpy.ndarray, optional
+    bg_map : str or numpy.ndarray, default=None
         Background image to be plotted on the mesh underneath the
         surf_data in greyscale, most likely a sulcal depth map for
         realistic shading.
         If the map contains values outside [0, 1], it will be
         rescaled such that all values are in [0, 1]. Otherwise,
         it will not be modified.
-        Default=None.
 
     %(bg_on_data)s
 
@@ -365,20 +363,20 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
         If it is a number only values of amplitude greater
         than threshold will be shown.
         If it is a string it must finish with a percent sign,
-        e.g. "25.3%", and only values of amplitude above the
+        e.g. "25.3%%", and only values of amplitude above the
         given percentile will be shown.
 
-    cmap : str or matplotlib colormap, optional
+    cmap : str or matplotlib colormap, default=cm.cold_hot
         You might want to change it to 'gnist_ncar' if plotting a
-        surface atlas. Default=cm.cold_hot.
+        surface atlas.
 
-    black_bg : bool, optional
+    black_bg : bool, default=False
         If True, image is plotted on a black background. Otherwise on a
-        white background. Default=False.
+        white background.
 
-    symmetric_cmap : bool, optional
+    symmetric_cmap : bool, default=True
         Make colormap symmetric (ranging from -vmax to vmax).
-        Set it to False if you are plotting a surface atlas. Default=True.
+        Set it to False if you are plotting a surface atlas.
 
     vmax : float or None, optional
         upper bound for the colorbar. if None, use the absolute max of the
@@ -391,20 +389,20 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
         If `symmetric_cmap` is `False`, `vmin` defaults to the min of the
         image, or 0 when a threshold is used.
 
-    colorbar : bool, optional
-        Add a colorbar or not. Default=True.
+    colorbar : bool, default=True
+        Add a colorbar or not.
 
-    colorbar_height : float, optional
-        Height of the colorbar, relative to the figure height. Default=0.5.
+    colorbar_height : float, default=0.5
+        Height of the colorbar, relative to the figure height.
 
-    colorbar_fontsize : int, optional
-        Fontsize of the colorbar tick labels. Default=25.
+    colorbar_fontsize : int, default=25
+        Fontsize of the colorbar tick labels.
 
     title : str, optional
         Title for the plot.
 
-    title_fontsize : int, optional
-        Fontsize of the title. Default=25.
+    title_fontsize : int, default=25
+        Fontsize of the title.
 
     Returns
     -------

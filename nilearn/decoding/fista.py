@@ -14,7 +14,6 @@ from math import sqrt
 
 import numpy as np
 from scipy import linalg
-from sklearn.utils import check_random_state
 
 
 def _check_lipschitz_continuous(
@@ -53,9 +52,9 @@ def _check_lipschitz_continuous(
     ------
     RuntimeError
     """
-    rng = check_random_state(random_state)
-    for x in rng.randn(n_trials, ndim):
-        for y in rng.randn(n_trials, ndim):
+    rng = np.random.default_rng(random_state)
+    for x in rng.standard_normal((n_trials, ndim)):
+        for y in rng.standard_normal((n_trials, ndim)):
             a = linalg.norm(f(x).ravel() - f(y).ravel(), 2)
             b = lipschitz_constant * linalg.norm(x - y, 2)
             if a > b:
@@ -98,16 +97,15 @@ def mfista(
     lipschitz_constant : float
         Lipschitz constant of gradient of f1_grad.
 
-    check_lipschitz : boolean, optional
+    check_lipschitz : boolean, default=False
         If True, check Lipschitz continuity of gradient of smooth part.
-        Default=False.
 
     w_size : int
         Size of the solution. f1, f2, f1_grad, f2_prox (fixed l, tol) must
         accept a w such that w.shape = (w_size,).
 
-    tol : float, optional
-        Tolerance on the (primal) cost function. Default=1e-4.
+    tol : float, default=1e-4
+        Tolerance on the (primal) cost function.
 
     dgap_tol : float, optional
         If None, the nonsmooth_prox argument returns a float, with the value,
@@ -127,13 +125,11 @@ def mfista(
         Function called on every iteration. If it returns True, then the loop
         breaks.
 
-    max_iter : integer, optional
+    max_iter : integer, default=1000
         Maximum number of iterations for the solver.
-        Default=1000.
 
-    verbose : integer, optional
+    verbose : integer, default=2
         Indicate the level of verbosity.
-        Default=2.
 
     Returns
     -------
@@ -152,7 +148,7 @@ def mfista(
     penalized problems emerged in the paper: Elvis Dohmatob,
     Alexandre Gramfort, Bertrand Thirion, Gael Varoquaux,
     "Benchmarking solvers for TV-L1 least-squares and logistic regression
-    in brain imaging". Pattern Recoginition in Neuroimaging (PRNI),
+    in brain imaging". Pattern Recognition in Neuroimaging (PRNI),
     Jun 2014, Tubingen, Germany. IEEE
 
     """
