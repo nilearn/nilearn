@@ -1300,7 +1300,8 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
                      inflate=False, views=['lateral', 'medial'],
                      output_file=None, title=None, colorbar=True,
                      vmin=None, vmax=None, threshold=None,
-                     symmetric_cbar='auto', cmap='cold_hot', **kwargs):
+                     symmetric_cbar='auto', cmap='cold_hot',
+                     cbar_tick_format='%i', **kwargs):
     """Plot multiple views of plot_surf_stat_map \
     in a single figure.
 
@@ -1364,6 +1365,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         Default=True.
     %(cmap)s
         Default='cold_hot'.
+    %(cbar_tick_format)s
     kwargs : dict, optional
         keyword arguments passed to plot_surf_stat_map.
 
@@ -1473,7 +1475,15 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         cbar_grid = gridspec.GridSpecFromSubplotSpec(3, 3, grid[-1, :])
         cbar_ax = fig.add_subplot(cbar_grid[1])
         axes.append(cbar_ax)
-        fig.colorbar(sm, cax=cbar_ax, orientation='horizontal')
+        # Get custom ticks to set in colorbar
+        ticks = _get_ticks_matplotlib(vmin, vmax, cbar_tick_format, threshold)
+        fig.colorbar(
+            sm,
+            cax=cbar_ax,
+            orientation='horizontal',
+            ticks=ticks,
+            format=cbar_tick_format,
+        )
 
     if title is not None:
         fig.suptitle(title, y=1. - title_h / sum(height_ratios), va="bottom")
