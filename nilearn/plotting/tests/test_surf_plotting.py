@@ -828,8 +828,7 @@ def test_plot_surf_roi_colorbar_vmin_equal_across_engines(kwargs):
         mesh, roi_map=roi_map, colorbar=True, engine="plotly", **kwargs
     )
     assert (
-        int(mpl_plot.axes[-1].get_yticklabels()[0].get_text())
-        == plotly_plot.figure.data[1]["cmin"]
+        mpl_plot.axes[-1].get_ylim()[0] == plotly_plot.figure.data[1]["cmin"]
     )
 
 
