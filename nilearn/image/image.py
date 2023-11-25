@@ -1114,6 +1114,8 @@ def binarize_img(img, threshold=0, two_sided=True, mask_img=None):
      >>> img = binarize_img(anatomical_image)
 
     """
+
+
 warnings.warn(
     'The current default behavior for the "two_sided argument "'
     'is  "True". This behavior will be changed to "False" in '
@@ -1121,12 +1123,10 @@ warnings.warn(
     DeprecationWarning,
     stacklevel=3,
 )
-        
+
 return math_img(
     "img.astype(bool).astype(int)",
-    img=threshold_img(
-        img, threshold, mask_img=mask_img, two_sided=two_sided
-    ),
+    img=threshold_img(img, threshold, mask_img=mask_img, two_sided=two_sided),
 )
 
 
