@@ -1063,7 +1063,7 @@ def math_img(formula, **imgs):
     return new_img_like(niimg, result, niimg.affine)
 
 
-def binarize_img(img, threshold=0, mask_img=None):
+def binarize_img(img, threshold=0, two_sided=True, mask_img=None):
     """Binarize an image such that its values are either 0 or 1.
 
     .. versionadded:: 0.8.1
@@ -1083,6 +1083,10 @@ def binarize_img(img, threshold=0, mask_img=None):
         the image data. The voxels which have intensities greater than
         this score will be kept. The given string should be
         within the range of "0%" to "100%".
+
+    two_sided : :obj:`bool`
+        If `True`, threshold is applied to the absolute value of the image.
+        If `False`, threshold is applied to the original value of the image.
 
     mask_img : Niimg-like object, default=None
         Mask image applied to mask the input data.
@@ -1110,9 +1114,17 @@ def binarize_img(img, threshold=0, mask_img=None):
      >>> img = binarize_img(anatomical_image)
 
     """
+    warnings.warn(
+            'The current default behavior for the "two_sided argument "'
+            'is  "True". This behavior will be changed to "False" in '
+            'version 0.3."',
+            DeprecationWarning,
+            stacklevel=3
+        )
+        
     return math_img(
         "img.astype(bool).astype(int)",
-        img=threshold_img(img, threshold, mask_img=mask_img),
+        img=threshold_img(img, threshold, mask_img=mask_img, two_sided=two_sided)
     )
 
 
