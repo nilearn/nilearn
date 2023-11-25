@@ -862,7 +862,10 @@ def test_binarize_img(img_4d_rand_eye):
     # Test option to use original or absolute values
     img4_data = img_4d_rand_eye.get_fdata()
     # Create a mask for half of the values and them negative
-    neg_mask = np.random.choice([True, False], size=img_4d_rand_eye.shape, p=[0.5, 0.5])
+    neg_mask = np.random.choice(
+        [True, False], size=img_4d_rand_eye.shape, p=[0.5, 0.5]
+    )
+    
     img4_data[neg_mask] *= -1
     img4 = new_img_like(img_4d_rand_eye, img4_data)
     # Binarize using original and absolute values
@@ -871,7 +874,8 @@ def test_binarize_img(img_4d_rand_eye):
     # Check that all values are 1 for absolute valued threshold
     assert_array_equal(np.unique(img4_absolute.dataobj), np.array([1]))
     # Check that binarized image contains 0 and 1 for original threshold
-    assert_array_equal(np.unique(img4_original.dataobj), np.array([0,1]))
+    assert_array_equal(np.unique(img4_original.dataobj), np.array([0, 1]))
+
 
 def test_clean_img(affine_eye, shape_3d_default, rng):
     data = rng.standard_normal(size=(10, 10, 10, 100)) + 0.5
