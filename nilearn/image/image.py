@@ -1117,7 +1117,7 @@ def binarize_img(img, threshold=0, two_sided=True, mask_img=None):
     warnings.warn(
         'The current default behavior for the "two_sided argument "'
         'is  "True". This behavior will be changed to "False" in '
-        'version 0.3."',
+        'version 0.13."',
         DeprecationWarning,
         stacklevel=3,
     )
