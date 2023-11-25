@@ -858,14 +858,14 @@ def test_binarize_img(img_4d_rand_eye):
     img3.dataobj[img_4d_rand_eye.dataobj >= 0.5] = 1
 
     assert_array_equal(img2.dataobj, img3.dataobj)
-    
+
     # Test option to use original or absolute values
     img4_data = img_4d_rand_eye.get_fdata()
     # Create a mask for half of the values and them negative
     neg_mask = np.random.choice(
         [True, False], size=img_4d_rand_eye.shape, p=[0.5, 0.5]
     )
-    
+
     img4_data[neg_mask] *= -1
     img4 = new_img_like(img_4d_rand_eye, img4_data)
     # Binarize using original and absolute values
