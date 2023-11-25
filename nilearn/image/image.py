@@ -1125,7 +1125,9 @@ def binarize_img(img, threshold=0, two_sided=True, mask_img=None):
 
     return math_img(
         "img.astype(bool).astype(int)",
-        img=threshold_img(img, threshold, mask_img=mask_img, two_sided=two_sided),
+        img=threshold_img(
+            img, threshold, mask_img=mask_img, two_sided=two_sided
+        ),
     )
 
 
