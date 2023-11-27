@@ -19,6 +19,7 @@ from nilearn._utils.niimg_conversions import (
     safe_get_data,
 )
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
+from nilearn.maskers import compute_middle_image
 
 
 def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
@@ -429,10 +430,6 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
             warnings.warn(msg)
             self._report_content['warning_message'] = msg
         else:
-            dim = image.load_img(img).shape
-            if len(dim) == 4:
-                # compute middle image from 4D series for plotting
-                img = image.index_img(img, dim[-1] // 2)
             positions = [
                 np.round(
                     coord_transform(*seed, np.linalg.inv(img.affine))
@@ -453,9 +450,9 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         elif isinstance(self.displayed_spheres, (list, np.ndarray)):
             if max(self.displayed_spheres) > len(seeds):
                 raise ValueError("Report cannot display the "
-                                    "following spheres "
-                                    f"{self.displayed_spheres} because "
-                                    f"masker only has {len(seeds)} seeds.")
+                                 "following spheres "
+                                 f"{self.displayed_spheres} because "
+                                 f"masker only has {len(seeds)} seeds.")
             spheres_to_be_displayed = self.displayed_spheres
         self._report_content['displayed_spheres'] = list(
             spheres_to_be_displayed
@@ -525,6 +522,8 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
                     )
                 else:
                     resampl_imgs = X
+                # Store 1 timepoint to pass to reporter 
+                resampl_imgs, _ = compute_middle_image(resampl_imgs)
             else:  # imgs not provided to fit
                 resampl_imgs = None
 
