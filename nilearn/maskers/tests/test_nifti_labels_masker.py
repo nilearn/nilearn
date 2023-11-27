@@ -600,7 +600,7 @@ def test_region_names():
     """Test region_names_ attribute in NiftiLabelsMasker"""
     shape = (13, 11, 12, 3)
     affine = np.eye(4)
-    fmri_img, mask_img = data_gen.generate_random_img(shape, affine=affine)
+    fmri_img, _ = data_gen.generate_random_img(shape, affine=affine)
     labels_img = data_gen.generate_labeled_regions(
         shape[:3],
         affine=affine,
@@ -624,6 +624,31 @@ def test_region_names():
     region_names.sort()
     region_names.pop(region_names.index("background"))
     assert region_names_after_fit == region_names
+
+
+def test_missing_labels_due_to_resampling(affine_eye):
+    """Test region_names_ matches signals after resampling drops labels."""
+    shape = (13, 11, 12, 3)
+    affine_low = np.diag((4, 4, 4, 4))
+    fmri_img, _ = data_gen.generate_random_img(shape, affine=affine_low)
+    labels_img = data_gen.generate_labeled_regions(
+        shape[:3],
+        affine=affine_eye,
+        n_regions=7,
+    )
+
+    # define region_names
+    region_names = ["background"] + ["region_" + str(i + 1) for i in range(7)]
+
+    masker = NiftiLabelsMasker(
+        labels_img,
+        labels=region_names,
+        resampling_target="data",
+    )
+    signals = masker.fit().transform(fmri_img)
+
+    assert len(masker.region_names_) == signals.shape[1]
+    assert len(list(masker.region_ids_.items())[1:]) == signals.shape[1]
 
 
 def test_3d_images():

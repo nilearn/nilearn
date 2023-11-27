@@ -272,16 +272,16 @@ def img_to_signals_labels(
         Every point outside the mask is considered
         as background (i.e. no region).
 
-    background_label : number, optional
-        Number representing background in labels_img. Default=0.
+    background_label : number, default=0
+        Number representing background in labels_img.
 
-    order : :obj:`str`, optional
-        Ordering of output array ("C" or "F"). Default="F".
+    order : :obj:`str`, default="F"
+        Ordering of output array ("C" or "F").
 
-    strategy : :obj:`str`, optional
+    strategy : :obj:`str`, default="mean"
         The name of a valid function to reduce the region with.
         Must be one of: sum, mean, median, minimum, maximum, variance,
-        standard_deviation. Default="mean".
+        standard_deviation.
     %(keep_masked_labels)s
 
     return_masked_atlas : :obj:`bool`, default=False
