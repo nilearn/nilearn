@@ -1082,15 +1082,15 @@ def binarize_img(img, threshold=0, mask_img=None, two_sided=True):
         threshold based on the score obtained using this percentile on
         the image data. The voxels which have intensities greater than
         this score will be kept. The given string should be
-        within the range of "0%" to "100%".
-
-    two_sided : :obj:`bool`
-        If `True`, threshold is applied to the absolute value of the image.
-        If `False`, threshold is applied to the original value of the image.
+        within the range of "0%" to "100%"
 
     mask_img : Niimg-like object, default=None
         Mask image applied to mask the input data.
         If None, no masking will be applied.
+
+    two_sided : :obj:`bool`
+        If `True`, threshold is applied to the absolute value of the image.
+        If `False`, threshold is applied to the original value of the image.
 
     Returns
     -------
