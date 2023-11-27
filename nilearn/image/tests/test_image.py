@@ -858,7 +858,7 @@ def test_binarize_img(img_4d_rand_eye):
     img3.dataobj[img_4d_rand_eye.dataobj >= 0.5] = 1
 
     assert_array_equal(img2.dataobj, img3.dataobj)
-    
+
 
 def test_binarize_negative_img(img_4d_rand_eye):
     # Test option to use original or absolute values
