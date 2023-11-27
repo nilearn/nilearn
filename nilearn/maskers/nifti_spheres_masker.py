@@ -268,11 +268,12 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
     reports : boolean, default=True
          If set to True, data is saved in order to produce a report.
 
-    See also
+    See Also
     --------
     nilearn.maskers.NiftiMasker
 
     """
+
     # memory and memory_level are used by CacheMixin.
     def __init__(
         self,
@@ -332,9 +333,11 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         self.verbose = verbose
 
     def generate_report(self, displayed_spheres="all"):
-        """Generate an HTML report for the current ``NiftiSpheresMasker`` object.
+        """Generate an HTML report for current ``NiftiSpheresMasker`` object.
+
         .. note::
             This functionality requires to have ``Matplotlib`` installed.
+
         Parameters
         ----------
         displayed_spheres : :obj:`int`, or :obj:`list`,\
@@ -360,13 +363,14 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
                 .. code-block:: python
                     masker.generate_report(16)
             Default="all".
+
         Returns
         -------
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
         from nilearn.reporting.html_report import generate_report
-        if(displayed_spheres != "all"
+        if (displayed_spheres != "all"
            and not isinstance(displayed_spheres, (list, np.ndarray, int))):
             raise TypeError("Parameter ``displayed_maps`` of "
                             "``generate_report()`` should be either 'all' or "
@@ -377,7 +381,8 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         return generate_report(self)
 
     def _reporting(self):
-        """
+        """Return a list of all displays to be rendered.
+
         Returns
         -------
         displays : list
@@ -385,7 +390,6 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         """
         from nilearn.reporting.html_report import _embed_img
         try:
-            import matplotlib.pyplot as plt
             from nilearn import plotting
         except ImportError:
             with warnings.catch_warnings():
@@ -417,8 +421,9 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
                 if len(dim) == 4:
                     # compute middle image from 4D series for plotting
                     img = image.index_img(img, dim[-1] // 2)
-                positions = [np.round(
-                    coord_transform(*seed, np.linalg.inv(img.affine))
+                positions = [
+                    np.round(
+                        coord_transform(*seed, np.linalg.inv(img.affine))
                     ).astype(int) for seed in seeds
                 ]
             self._report_content['number_of_seeds'] = len(seeds)
@@ -440,7 +445,9 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
                                      f"{self.displayed_spheres} because "
                                      f"masker only has {len(seeds)} seeds.")
                 spheres_to_be_displayed = self.displayed_spheres
-            self._report_content['displayed_spheres'] = list(spheres_to_be_displayed)
+            self._report_content['displayed_spheres'] = list(
+                spheres_to_be_displayed
+            )
             columns = ['seed number', 'coordinates', 'position',
                        'radius', 'size (in mm^3)', 'size (in voxels)',
                        'relative size (in %)']
@@ -462,7 +469,9 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
                 regions_summary['size (in voxels)'].append('not implemented')
                 regions_summary['size (in mm^3)'].append(round(
                     4. / 3. * np.pi * self.radius, 2))
-                regions_summary['relative size (in %)'].append('not implemented')
+                regions_summary['relative size (in %)'].append(
+                    'not implemented'
+                )
                 if idx in spheres_to_be_displayed:
                     display = plotting.plot_img(img, cut_coords=positions[idx])
                     display.add_markers(
@@ -551,7 +560,6 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         self.n_elements_ = len(self.seeds_)
 
         return self
-
 
     def fit_transform(self, imgs, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction.
