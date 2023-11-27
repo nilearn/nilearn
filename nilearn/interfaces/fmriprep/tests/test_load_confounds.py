@@ -466,7 +466,7 @@ def test_invalid_filetype(tmp_path, rng):
     (tmp_path / add_conf).unlink()  # Remove for the rest of the tests to run
 
     # invalid fmriprep version: confound file with no header (<1.0)
-    fake_confounds = rng.rand(30, 20)
+    fake_confounds = rng.random((30, 20))
     np.savetxt(bad_conf, fake_confounds, delimiter="\t")
     with pytest.raises(ValueError) as error_log:
         load_confounds(bad_nii)

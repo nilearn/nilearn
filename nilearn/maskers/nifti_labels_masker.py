@@ -6,6 +6,7 @@ import numpy as np
 from joblib import Memory
 
 from nilearn import _utils, image, masking
+from nilearn.maskers import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 
 
@@ -322,12 +323,16 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             self._report_content['summary'] = regions_summary
 
             img = self._reporting_data['img']
+
             # If we have a func image to show in the report, use it
             if img is not None:
-                dim = image.load_img(img).shape
-                if len(dim) == 4:
-                    # compute middle image from 4D series for plotting
-                    img = image.index_img(img, dim[-1] // 2)
+                if self._reporting_data["dim"] == 5:
+                    msg = (
+                        "A list of 4D subject images were provided to fit. "
+                        "Only first subject is shown in the report."
+                    )
+                    warnings.warn(msg)
+                    self._report_content['warning_message'] = msg
                 display = plotting.plot_img(
                     img,
                     black_bg=False,
@@ -443,10 +448,15 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
         if self.reports:
             self._reporting_data = {
-                'labels_image': self._resampled_labels_img_,
-                'mask': self.mask_img_,
-                'img': imgs,
+                "labels_image": self._resampled_labels_img_,
+                "mask": self.mask_img_,
+                "dim": None,
+                "img": imgs,
             }
+            if imgs is not None:
+                imgs, dims = compute_middle_image(imgs)
+                self._reporting_data["img"] = imgs
+                self._reporting_data["dim"] = dims
         else:
             self._reporting_data = None
 

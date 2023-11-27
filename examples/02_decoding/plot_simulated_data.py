@@ -183,7 +183,7 @@ estimators = [
             estimator=svm.SVR(kernel="linear"),
             cv=KFold(n_splits=4),
             verbose=1,
-            n_jobs=1,
+            n_jobs=2,
         ),
     ),
 ]
