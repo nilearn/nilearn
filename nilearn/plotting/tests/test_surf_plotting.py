@@ -1048,7 +1048,10 @@ def test_get_ticks_matplotlib(vmin, vmax, cbar_tick_format, expected):
     ticks = _get_ticks_matplotlib(vmin, vmax, cbar_tick_format, threshold=None)
     assert 1 <= len(ticks) <= 5
     assert ticks[0] == vmin and ticks[-1] == vmax
-    assert len(ticks) == len(expected) and (ticks == expected).all()
+    assert (
+        len(np.unique(ticks)) == len(expected)
+        and (np.unique(ticks) == expected).all()
+    )
 
 
 def test_compute_facecolors_matplotlib():

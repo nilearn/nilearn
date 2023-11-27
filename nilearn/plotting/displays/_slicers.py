@@ -834,6 +834,9 @@ def _get_cbar_ticks(vmin, vmax, offset, nb_ticks=5):
                 idx_closest = np.sort(np.argpartition(diff, 3)[:3])
                 idx_closest = idx_closest[[0, 2]]
         ticks[idx_closest] = [-offset, offset]
+    if len(ticks) > 0 and ticks[0] < vmin:
+        ticks[0] = vmin
+
     return ticks
 
 
