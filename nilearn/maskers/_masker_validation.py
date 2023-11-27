@@ -3,7 +3,7 @@ from string import Template
 
 import numpy as np
 
-from nilearn.experimental.surface._maskers import SurfaceMasker
+from nilearn.experimental.surface import SurfaceMasker
 
 from .._utils.cache_mixin import _check_memory
 from .._utils.class_inspect import get_params

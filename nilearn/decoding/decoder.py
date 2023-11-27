@@ -46,7 +46,7 @@ from sklearn.utils.validation import check_is_fitted, check_X_y
 from nilearn._utils import CacheMixin, fill_doc
 from nilearn._utils.cache_mixin import _check_memory
 from nilearn._utils.param_validation import check_feature_screening
-from nilearn.experimental.surface._maskers import SurfaceMasker
+from nilearn.experimental.surface import SurfaceMasker
 from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
 from nilearn.regions.rena_clustering import ReNA
 

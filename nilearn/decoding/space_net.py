@@ -28,7 +28,7 @@ from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_array, check_X_y
 from sklearn.utils.extmath import safe_sparse_dot
 
-from nilearn.experimental.surface._maskers import SurfaceMasker
+from nilearn.experimental.surface import SurfaceMasker
 from nilearn.image import get_data
 from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
 from nilearn.masking import _unmask_from_to_3d_array

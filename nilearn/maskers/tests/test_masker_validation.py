@@ -4,6 +4,7 @@ import pytest
 from joblib import Memory
 from sklearn.base import BaseEstimator
 
+from nilearn.experimental.surface import SurfaceMasker
 from nilearn.maskers import MultiNiftiMasker, NiftiMasker
 from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
 
@@ -80,14 +81,13 @@ def test_check_embedded_nifti_masker():
     masker = _check_embedded_nifti_masker(owner)
     assert type(masker) is MultiNiftiMasker
 
-    for mask, multi_subject in (
-        (MultiNiftiMasker(), True),
-        (NiftiMasker(), False),
+    for mask, masker_type in (
+        (MultiNiftiMasker(), "multi_nii"),
+        (NiftiMasker(), "nii"),
+        (SurfaceMasker(), "surface"),
     ):
         owner = OwningClass(mask=mask)
-        masker = _check_embedded_nifti_masker(
-            owner, multi_subject=multi_subject
-        )
+        masker = _check_embedded_nifti_masker(owner, masker_type=masker_type)
         assert isinstance(masker, type(mask))
         for param_key in masker.get_params():
             if param_key not in [
