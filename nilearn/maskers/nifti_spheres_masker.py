@@ -391,103 +391,111 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         return generate_report(self)
 
     def _reporting(self):
-        """Generate a report for the NiftiSpheresMasker.
+        """Return a list of all displays to be rendered.
 
         Returns
         -------
-        report : dict
-            A dictionary containing the report content.
+        displays : list
+            A list of all displays to be rendered.
         """
-        report = {}
+        from nilearn.reporting.html_report import _embed_img
+        try:
+            from nilearn import plotting
+        except ImportError:
+            with warnings.catch_warnings():
+                mpl_unavail_msg = ('Matplotlib is not imported! '
+                                   'No reports will be generated.')
+                warnings.filterwarnings('always', message=mpl_unavail_msg)
+                warnings.warn(category=ImportWarning,
+                              message=mpl_unavail_msg)
+                return [None]
 
         if self._reporting_data is not None:
             seeds = self._reporting_data['seeds']
         else:
-            seeds = None
-
-        if seeds is not None:
-            from nilearn.image import coord_transform
-            img = self._reporting_data['img']
-            if img is None:
-                from nilearn.datasets import load_mni152_template
-                img = load_mni152_template()
-                positions = seeds
-                msg = ("No image provided to fit in NiftiSpheresMasker. "
-                       "Spheres are plotted on top of the MNI152 template.")
-                warnings.warn(msg)
-                report['warning_message'] = msg
-            else:
-                dim = image.load_img(img).shape
-                if len(dim) == 4:
-                    # compute middle image from 4D series for plotting
-                    img = image.index_img(img, dim[-1] // 2)
-                positions = [
-                    np.round(
-                        coord_transform(*seed, np.linalg.inv(img.affine))
-                    ).astype(int) for seed in seeds
-                ]
-            report['number_of_seeds'] = len(seeds)
-            spheres_to_be_displayed = range(len(seeds))
-            if isinstance(self.displayed_spheres, int):
-                if len(seeds) < self.displayed_spheres:
-                    msg = ("`generate_report()` received "
-                           f"{self.displayed_spheres} to be displayed. "
-                           f"But masker only has {len(seeds)} seeds."
-                           "Setting number of displayed spheres "
-                           f"to {len(seeds)}.")
-                    warnings.warn(category=UserWarning, message=msg)
-                    self.displayed_spheres = len(seeds)
-                spheres_to_be_displayed = range(self.displayed_spheres)
-            elif isinstance(self.displayed_spheres, (list, np.ndarray)):
-                if max(self.displayed_spheres) > len(seeds):
-                    raise ValueError("Report cannot display the "
-                                     "following spheres "
-                                     f"{self.displayed_spheres} because "
-                                     f"masker only has {len(seeds)} seeds.")
-                spheres_to_be_displayed = self.displayed_spheres
-            self._report_content['displayed_spheres'] = list(
-                spheres_to_be_displayed
-            )
-            columns = ['seed number', 'coordinates', 'position',
-                       'radius', 'size (in mm^3)', 'size (in voxels)',
-                       'relative size (in %)']
-            regions_summary = {c: [] for c in columns}
-            embeded_images = []
-            display = plotting.plot_markers(
-                [1 for _ in seeds],
-                seeds,
-                node_size=20 * self.radius,
-                colorbar=False
-            )
-            embeded_images.append(_embed_img(display))
-            display.close()
-            for idx, seed in enumerate(seeds):
-                regions_summary['seed number'].append(idx)
-                regions_summary['coordinates'].append(str(seed))
-                regions_summary['position'].append(positions[idx])
-                regions_summary['radius'].append(self.radius)
-                regions_summary['size (in voxels)'].append('not implemented')
-                regions_summary['size (in mm^3)'].append(round(
-                    4. / 3. * np.pi * self.radius, 2))
-                regions_summary['relative size (in %)'].append(
-                    'not implemented'
-                )
-                if idx in spheres_to_be_displayed:
-                    display = plotting.plot_img(img, cut_coords=positions[idx])
-                    display.add_markers(
-                        marker_coords=[positions[idx]],
-                        marker_color='g',
-                        marker_size=20 * self.radius
-                    )
-                    embeded_images.append(_embed_img(display))
-                    display.close()
-            self._report_content['summary'] = regions_summary
-            return embeded_images
-        else:
             self._report_content['summary'] = None
-            display = None
 
-            return [display]
+            return [None]
+
+        from nilearn.image import coord_transform
+
+        img = self._reporting_data['img']
+        if img is None:
+            from nilearn.datasets import load_mni152_template
+            img = load_mni152_template()
+            positions = seeds
+            msg = ("No image provided to fit in NiftiSpheresMasker. "
+                    "Spheres are plotted on top of the MNI152 template.")
+            warnings.warn(msg)
+            self._report_content['warning_message'] = msg
+        else:
+            dim = image.load_img(img).shape
+            if len(dim) == 4:
+                # compute middle image from 4D series for plotting
+                img = image.index_img(img, dim[-1] // 2)
+            positions = [
+                np.round(
+                    coord_transform(*seed, np.linalg.inv(img.affine))
+                ).astype(int) for seed in seeds
+            ]
+        self._report_content['number_of_seeds'] = len(seeds)
+        spheres_to_be_displayed = range(len(seeds))
+        if isinstance(self.displayed_spheres, int):
+            if len(seeds) < self.displayed_spheres:
+                msg = ("`generate_report()` received "
+                        f"{self.displayed_spheres} to be displayed. "
+                        f"But masker only has {len(seeds)} seeds."
+                        "Setting number of displayed spheres "
+                        f"to {len(seeds)}.")
+                warnings.warn(category=UserWarning, message=msg)
+                self.displayed_spheres = len(seeds)
+            spheres_to_be_displayed = range(self.displayed_spheres)
+        elif isinstance(self.displayed_spheres, (list, np.ndarray)):
+            if max(self.displayed_spheres) > len(seeds):
+                raise ValueError("Report cannot display the "
+                                    "following spheres "
+                                    f"{self.displayed_spheres} because "
+                                    f"masker only has {len(seeds)} seeds.")
+            spheres_to_be_displayed = self.displayed_spheres
+        self._report_content['displayed_spheres'] = list(
+            spheres_to_be_displayed
+        )
+        columns = ['seed number', 'coordinates', 'position',
+                    'radius', 'size (in mm^3)', 'size (in voxels)',
+                    'relative size (in %)']
+        regions_summary = {c: [] for c in columns}
+        embeded_images = []
+        display = plotting.plot_markers(
+            [1 for _ in seeds],
+            seeds,
+            node_size=20 * self.radius,
+            colorbar=False
+        )
+        embeded_images.append(_embed_img(display))
+        display.close()
+        for idx, seed in enumerate(seeds):
+            regions_summary['seed number'].append(idx)
+            regions_summary['coordinates'].append(str(seed))
+            regions_summary['position'].append(positions[idx])
+            regions_summary['radius'].append(self.radius)
+            regions_summary['size (in voxels)'].append('not implemented')
+            regions_summary['size (in mm^3)'].append(round(
+                4. / 3. * np.pi * self.radius, 2))
+            regions_summary['relative size (in %)'].append(
+                'not implemented'
+            )
+            if idx in spheres_to_be_displayed:
+                display = plotting.plot_img(img, cut_coords=positions[idx])
+                display.add_markers(
+                    marker_coords=[positions[idx]],
+                    marker_color='g',
+                    marker_size=20 * self.radius
+                )
+                embeded_images.append(_embed_img(display))
+                display.close()
+        self._report_content['summary'] = regions_summary
+
+        return embeded_images
 
     def fit(self, X=None, y=None):
         """Prepare signal extraction from regions.
