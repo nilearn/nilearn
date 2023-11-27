@@ -226,9 +226,9 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
 
     radius : :obj:`float`, default=None
         Indicates, in millimeters, the radius for the sphere around the seed.
-        Default is None (signal is extracted on a single voxel).
+        By default signal is extracted on a single voxel.
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object, default=None
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
 
@@ -341,28 +341,38 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         Parameters
         ----------
         displayed_spheres : :obj:`int`, or :obj:`list`,\
-        or :class:`~numpy.ndarray`, or "all", optional
+                            or :class:`~numpy.ndarray`, or "all", default="all"
             Indicates which spheres will be displayed in the HTML report.
+
                 - If "all": All spheres will be displayed in the report.
+
                 .. code-block:: python
+
                     masker.generate_report("all")
-                .. warning:
+
+                .. warning::
+
                     If there are too many spheres, this might be time and
                     memory consuming, and will result in very heavy
                     reports.
+
                 - If a :obj:`list` or :class:`~numpy.ndarray`: This indicates
                   the indices of the spheres to be displayed in the report.
                   For example, the following code will generate a report with
                   spheres 6, 3, and 12, displayed in this specific order:
+
                 .. code-block:: python
+
                     masker.generate_report([6, 3, 12])
+
                 - If an :obj:`int`: This will only display the first n
                   spheres, n being the value of the parameter. By default,
                   the report will only contain the first 10 spheres.
                   Example to display the first 16 spheres:
+
                 .. code-block:: python
+
                     masker.generate_report(16)
-            Default="all".
 
         Returns
         -------
@@ -381,24 +391,14 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         return generate_report(self)
 
     def _reporting(self):
-        """Return a list of all displays to be rendered.
+        """Generate a report for the NiftiSpheresMasker.
 
         Returns
         -------
-        displays : list
-            A list of all displays to be rendered.
+        report : dict
+            A dictionary containing the report content.
         """
-        from nilearn.reporting.html_report import _embed_img
-        try:
-            from nilearn import plotting
-        except ImportError:
-            with warnings.catch_warnings():
-                mpl_unavail_msg = ('Matplotlib is not imported! '
-                                   'No reports will be generated.')
-                warnings.filterwarnings('always', message=mpl_unavail_msg)
-                warnings.warn(category=ImportWarning,
-                              message=mpl_unavail_msg)
-                return [None]
+        report = {}
 
         if self._reporting_data is not None:
             seeds = self._reporting_data['seeds']
@@ -415,7 +415,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
                 msg = ("No image provided to fit in NiftiSpheresMasker. "
                        "Spheres are plotted on top of the MNI152 template.")
                 warnings.warn(msg)
-                self._report_content['warning_message'] = msg
+                report['warning_message'] = msg
             else:
                 dim = image.load_img(img).shape
                 if len(dim) == 4:
@@ -426,7 +426,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
                         coord_transform(*seed, np.linalg.inv(img.affine))
                     ).astype(int) for seed in seeds
                 ]
-            self._report_content['number_of_seeds'] = len(seeds)
+            report['number_of_seeds'] = len(seeds)
             spheres_to_be_displayed = range(len(seeds))
             if isinstance(self.displayed_spheres, int):
                 if len(seeds) < self.displayed_spheres:
