@@ -1,0 +1,14 @@
+{
+  "nilearn.plotting.tests.test_img_plotting.test_baseline_comparisons.test_plot_functions_3d_default_params[plot_epi]": "b60c6f8393bf9f20882008274a18db4143c5c5d7bba885d45cedc2c49e158d62",
+  "nilearn.plotting.tests.test_img_plotting.test_baseline_comparisons.test_plot_functions_3d_default_params[plot_img]": "c1652feb16c4479d5829493aa7d31acc6231d9cebfb18c041af7a1e755f64479",
+  "nilearn.plotting.tests.test_img_plotting.test_baseline_comparisons.test_plot_functions_3d_default_params[plot_stat_map]": "c9fce8421916d2ce6cf8f487983d397c831ba8c41b02191360138a68c4676200",
+  "nilearn.plotting.tests.test_img_plotting.test_baseline_comparisons.test_plot_functions_3d_default_params[plot_glass_brain]": "944d041247d2c27ed700cf120b74ac60c48857b5a023aabcec0bf955a5fee941",
+  "nilearn.plotting.tests.test_img_plotting.test_baseline_comparisons.test_plot_functions_3d_default_params[plot_roi]": "6fafae07015b1160c05139a327320d29083fa60572c530daadd8f003ad86b06a",
+  "nilearn.plotting.tests.test_img_plotting.test_baseline_comparisons.test_plot_functions_3d_default_params[plot_anat]": "23894dcd441736e3f28a196791dade59cc68262c299b8ca3e150e404a5f38a84",
+  "nilearn.plotting.tests.test_img_plotting.test_baseline_comparisons.test_plot_carpet_default_params": "3c8250ab0b26c968f3f63a02596e1a326e0f199c57d0503649516f39304578d4",
+  "nilearn.plotting.tests.test_img_plotting.test_baseline_comparisons.test_plot_prob_atlas_default_params": "fdfa96a499192e1ed7a678fa183650db5b9db7ad0d4042efd6a72f914a97a97e",
+  "nilearn.plotting.tests.test_img_plotting.test_baseline_comparisons.test_plot_anat_MNI[z-False]": "841bfb26737a964220ceea367544a280fcff5c03a0a8725dcc1e8b864d87c28f",
+  "nilearn.plotting.tests.test_img_plotting.test_baseline_comparisons.test_plot_anat_MNI[z-anat_img1]": "86ead0fcbb30175fdcafeab181582dd3892a5d14a6e1aab5ab39e69e554623ac",
+  "nilearn.plotting.tests.test_img_plotting.test_baseline_comparisons.test_plot_anat_MNI[ortho-False]": "bc0920d044f912937e3a7c90523ee960971029f9496c144d7481b562f25ccc8f",
+  "nilearn.plotting.tests.test_img_plotting.test_baseline_comparisons.test_plot_anat_MNI[ortho-anat_img1]": "575d44207783adb9f1a4d73219a1a2b2ead00e1a25e344edb31727169be8d92e"
+}
