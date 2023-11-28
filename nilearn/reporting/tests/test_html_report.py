@@ -19,6 +19,7 @@ from nilearn.maskers import (
     NiftiLabelsMasker,
     NiftiMapsMasker,
     NiftiMasker,
+    NiftiSpheresMasker,
 )
 
 # Note: html output by nilearn view_* functions
@@ -74,11 +75,13 @@ def input_parameters(masker_class, data_img_3d):
             shape, n_regions=n_regions, affine=affine
         )
         return {"labels_img": labels_img, "labels": labels}
-    elif masker_class in (NiftiMapsMasker, MultiNiftiMapsMasker):
+    if masker_class in (NiftiMapsMasker, MultiNiftiMapsMasker):
         label_img, _ = generate_maps(
             shape, n_regions=n_regions, affine=affine
         )
         return {"maps_img": label_img}
+    if masker_class is NiftiSpheresMasker:
+        return {"seeds": [(1, 1, 1)]}
 
 
 @pytest.mark.parametrize(
@@ -89,7 +92,8 @@ def input_parameters(masker_class, data_img_3d):
         NiftiLabelsMasker,
         MultiNiftiLabelsMasker,
         NiftiMapsMasker,
-        MultiNiftiMapsMasker
+        MultiNiftiMapsMasker,
+        NiftiSpheresMasker,
     ]
 )
 def test_report_empty_fit(masker_class, input_parameters):
@@ -107,7 +111,8 @@ def test_report_empty_fit(masker_class, input_parameters):
         NiftiLabelsMasker,
         MultiNiftiLabelsMasker,
         NiftiMapsMasker,
-        MultiNiftiMapsMasker
+        MultiNiftiMapsMasker,
+        NiftiSpheresMasker,
     ]
 )
 def test_empty_report(masker_class, input_parameters):
@@ -147,8 +152,11 @@ def test_reports_after_fit_3d_data_with_mask(masker_class,
     _check_html(html)
 
 
-@pytest.mark.parametrize("masker_class",
-                         [NiftiMasker, NiftiLabelsMasker, NiftiMapsMasker])
+@pytest.mark.parametrize(
+        "masker_class", [
+            NiftiMasker, NiftiLabelsMasker, NiftiMapsMasker, NiftiSpheresMasker
+        ]
+)
 def test_warning_in_report_after_empty_fit(masker_class,
                                            input_parameters):
     """Tests that a warning is both given and written in the report if

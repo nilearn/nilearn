@@ -458,14 +458,15 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
             spheres_to_be_displayed
         )
         columns = ['seed number', 'coordinates', 'position',
-                    'radius', 'size (in mm^3)', 'size (in voxels)',
-                    'relative size (in %)']
+                   'radius', 'size (in mm^3)', 'size (in voxels)',
+                   'relative size (in %)']
         regions_summary = {c: [] for c in columns}
         embeded_images = []
+        radius = 1.0 if self.radius is None else self.radius
         display = plotting.plot_markers(
             [1 for _ in seeds],
             seeds,
-            node_size=20 * self.radius,
+            node_size=20 * radius,
             colorbar=False
         )
         embeded_images.append(_embed_img(display))
@@ -474,10 +475,10 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
             regions_summary['seed number'].append(idx)
             regions_summary['coordinates'].append(str(seed))
             regions_summary['position'].append(positions[idx])
-            regions_summary['radius'].append(self.radius)
+            regions_summary['radius'].append(radius)
             regions_summary['size (in voxels)'].append('not implemented')
             regions_summary['size (in mm^3)'].append(round(
-                4. / 3. * np.pi * self.radius, 2))
+                4. / 3. * np.pi * radius, 2))
             regions_summary['relative size (in %)'].append(
                 'not implemented'
             )
@@ -486,7 +487,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
                 display.add_markers(
                     marker_coords=[positions[idx]],
                     marker_color='g',
-                    marker_size=20 * self.radius
+                    marker_size=20 * radius
                 )
                 embeded_images.append(_embed_img(display))
                 display.close()
