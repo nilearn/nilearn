@@ -153,9 +153,9 @@ def test_reports_after_fit_3d_data_with_mask(masker_class,
 
 
 @pytest.mark.parametrize(
-        "masker_class", [
-            NiftiMasker, NiftiLabelsMasker, NiftiMapsMasker, NiftiSpheresMasker
-        ]
+    "masker_class", [
+        NiftiMasker, NiftiLabelsMasker, NiftiMapsMasker, NiftiSpheresMasker
+    ]
 )
 def test_warning_in_report_after_empty_fit(masker_class,
                                            input_parameters):

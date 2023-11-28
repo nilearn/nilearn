@@ -18,8 +18,8 @@ from nilearn._utils.niimg_conversions import (
     check_niimg_4d,
     safe_get_data,
 )
-from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 from nilearn.maskers import compute_middle_image
+from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 
 
 def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
@@ -425,8 +425,10 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
             from nilearn.datasets import load_mni152_template
             img = load_mni152_template()
             positions = seeds
-            msg = ("No image provided to fit in NiftiSpheresMasker. "
-                    "Spheres are plotted on top of the MNI152 template.")
+            msg = (
+                "No image provided to fit in NiftiSpheresMasker. "
+                "Spheres are plotted on top of the MNI152 template."
+            )
             warnings.warn(msg)
             self._report_content['warning_message'] = msg
         else:
@@ -439,11 +441,13 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         spheres_to_be_displayed = range(len(seeds))
         if isinstance(self.displayed_spheres, int):
             if len(seeds) < self.displayed_spheres:
-                msg = ("`generate_report()` received "
-                        f"{self.displayed_spheres} to be displayed. "
-                        f"But masker only has {len(seeds)} seeds."
-                        "Setting number of displayed spheres "
-                        f"to {len(seeds)}.")
+                msg = (
+                    "`generate_report()` received "
+                    f"{self.displayed_spheres} to be displayed. "
+                    f"But masker only has {len(seeds)} seeds."
+                    "Setting number of displayed spheres "
+                    f"to {len(seeds)}."
+                )
                 warnings.warn(category=UserWarning, message=msg)
                 self.displayed_spheres = len(seeds)
             spheres_to_be_displayed = range(self.displayed_spheres)
@@ -523,7 +527,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
                     )
                 else:
                     resampl_imgs = X
-                # Store 1 timepoint to pass to reporter 
+                # Store 1 timepoint to pass to reporter
                 resampl_imgs, _ = compute_middle_image(resampl_imgs)
             else:  # imgs not provided to fit
                 resampl_imgs = None
