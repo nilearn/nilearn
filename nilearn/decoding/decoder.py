@@ -47,7 +47,7 @@ from nilearn._utils import CacheMixin, fill_doc
 from nilearn._utils.cache_mixin import _check_memory
 from nilearn._utils.param_validation import check_feature_screening
 from nilearn.experimental.surface import SurfaceMasker
-from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
+from nilearn.maskers._masker_validation import _check_embedded_masker
 from nilearn.regions.rena_clustering import ReNA
 
 SUPPORTED_ESTIMATORS = dict(
@@ -924,9 +924,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         masker_type = "nifti"
         if isinstance(self.mask, SurfaceMasker):
             masker_type = "surface"
-        self.masker_ = _check_embedded_nifti_masker(
-            self, masker_type=masker_type
-        )
+        self.masker_ = _check_embedded_masker(self, masker_type=masker_type)
         X = self.masker_.fit_transform(X)
         self.mask_img_ = self.masker_.mask_img_
 

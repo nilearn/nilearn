@@ -11,7 +11,7 @@ from .multi_nifti_masker import MultiNiftiMasker
 from .nifti_masker import NiftiMasker
 
 
-def _check_embedded_nifti_masker(estimator, masker_type="multi_nii"):
+def _check_embedded_masker(estimator, masker_type="multi_nii"):
     """Create a masker from instance parameters.
 
     Base function for using a masker within a BaseEstimator class
