@@ -31,12 +31,13 @@ def _check_embedded_masker(estimator, masker_type="multi_nii"):
     instance : object, instance of BaseEstimator
         The object that gives us the values of the parameters
 
-    masker_type : string, default="mutli_nifti"
-        Indicates whether to return a MultiNiftiMasker or a NiftiMasker
+    masker_type : {"multi_nii", "nii", "surface"}, default="mutli_nii"
+        Indicates whether to return a MultiNiftiMasker, NiftiMasker, or a
+        SurfaceMasker
 
     Returns
     -------
-    masker : MultiNiftiMasker or NiftiMasker
+    masker : MultiNiftiMasker, NiftiMasker, or SurfaceMasker
         New masker
 
     """

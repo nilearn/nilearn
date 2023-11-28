@@ -60,7 +60,6 @@ from nilearn.decoding.decoder import (
 )
 from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.experimental.surface import SurfaceMasker
-from nilearn.experimental.surface.tests.conftest import make_mini_img
 from nilearn.maskers import NiftiMasker
 
 N_SAMPLES = 100
