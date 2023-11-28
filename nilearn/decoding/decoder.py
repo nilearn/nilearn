@@ -469,7 +469,8 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         then its mask and parameters will be used. If no mask is given, mask
         will be computed automatically from provided images by an inbuilt
         masker with default parameters. Refer to NiftiMasker or
-        MultiNiftiMasker to check for default parameters.
+        MultiNiftiMasker to check for default parameters. For use with
+        SurfaceImage data, a SurfaceMasker instance must be passed.
 
     cv: cross-validation generator or int, default=10
         A cross-validation generator.
