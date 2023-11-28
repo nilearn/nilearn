@@ -12,6 +12,7 @@ from nilearn import image
 # we need to import these fixtures even if not used in this module
 from nilearn.datasets.tests._testing import request_mocker  # noqa: F401
 from nilearn.datasets.tests._testing import temp_nilearn_data_dir  # noqa: F401
+from nilearn.experimental.surface.tests.conftest import *  # noqa: F401, F403
 
 collect_ignore = ["datasets/data/convert_templates.py"]
 collect_ignore_glob = ["reporting/_visual_testing/*"]
@@ -356,3 +357,9 @@ def img_atlas(shape_3d_default, affine_mni):
             "csf": 3,
         },
     }
+
+
+@pytest.fixture()
+def mini_surface_img(mini_img):
+    """Return a mini surface image."""
+    return mini_img

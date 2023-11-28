@@ -463,8 +463,8 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         For regression, choose among:
         %(regressor_options)s
 
-    mask: filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, \
-          default=None
+    mask: filename, Nifti1Image, NiftiMasker, MultiNiftiMasker, or\
+          SurfaceMasker, default=None
         Mask to be used on data. If an instance of masker is passed,
         then its mask and parameters will be used. If no mask is given, mask
         will be computed automatically from provided images by an inbuilt
@@ -626,10 +626,10 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
         Attributes
         ----------
-        masker_ : instance of NiftiMasker or MultiNiftiMasker
+        masker_ : instance of NiftiMasker, MultiNiftiMasker, or SurfaceMasker
             The NiftiMasker used to mask the data.
 
-        mask_img_ : Nifti1Image
+        mask_img_ : Nifti1Image or SurfaceImage
             Mask computed by the masker object.
 
         classes_ : numpy.ndarray

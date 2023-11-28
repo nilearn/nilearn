@@ -59,6 +59,8 @@ from nilearn.decoding.decoder import (
     _wrap_param_grid,
 )
 from nilearn.decoding.tests.test_same_api import to_niimgs
+from nilearn.experimental.surface import SurfaceMasker
+from nilearn.experimental.surface.tests.conftest import make_mini_img
 from nilearn.maskers import NiftiMasker
 
 N_SAMPLES = 100
@@ -966,6 +968,15 @@ def test_decoder_multiclass_classification_apply_mask_attributes(affine_eye):
     assert model.masker_.high_pass == high_pass
     assert model.masker_.low_pass == low_pass
     assert model.masker_.smoothing_fwhm == smoothing_fwhm
+
+
+def test_decoder_apply_masker_surface(mini_surface_img):
+    """Test whether _apply_mask works for surface image."""
+    X = mini_surface_img
+    model = Decoder(mask=SurfaceMasker())
+    X_masked = model._apply_mask(X)
+
+    assert X_masked.shape == X.shape
 
 
 def test_decoder_multiclass_error_incorrect_cv(multiclass_data):

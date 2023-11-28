@@ -31,7 +31,7 @@ def _check_embedded_masker(estimator, masker_type="multi_nii"):
     instance : object, instance of BaseEstimator
         The object that gives us the values of the parameters
 
-    multi_subject : boolean, default=True
+    masker_type : string, default="mutli_nifti"
         Indicates whether to return a MultiNiftiMasker or a NiftiMasker
 
     Returns
