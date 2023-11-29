@@ -261,6 +261,49 @@ def test_nifti_maps_masker_report_image_in_fit(niftimapsmasker_inputs,
     assert html.body.count("<img") == 2
 
 
+@pytest.mark.parametrize("displayed_spheres", ["foo", '1', {"foo": "bar"}])
+def test_nifti_spheres_masker_report_displayed_spheres_errors(
+    displayed_spheres
+):
+    """Tests that a TypeError is raised when the argument `displayed_spheres`
+    of `generate_report()` is not valid.
+    """
+    masker = NiftiSpheresMasker(seeds=[(1, 1, 1)])
+    masker.fit()
+    with pytest.raises(
+        TypeError, match=("Parameter ``displayed_spheres``")
+    ):
+        masker.generate_report(displayed_spheres)
+
+
+def test_nifti_spheres_masker_report_displayed_spheres_more_than_seeds():
+    """Tests that a warning is raised when number of `displayed_spheres`
+    is greater than number of seeds.
+    """
+    displayed_spheres = 10
+    seeds = [(1, 1, 1)]
+    masker = NiftiSpheresMasker(seeds=seeds)
+    masker.fit()
+    with pytest.warns(
+        UserWarning, match="masker only has 1 seeds."
+    ):
+        masker.generate_report(displayed_spheres=displayed_spheres)
+
+
+def test_nifti_spheres_masker_report_displayed_spheres_list_more_than_seeds():
+    """Tests that a ValueError is raised when list of `displayed_spheres`
+    maximum is greater than number of seeds.
+    """
+    displayed_spheres = [1, 2, 3]
+    seeds = [(1, 1, 1)]
+    masker = NiftiSpheresMasker(seeds=seeds)
+    masker.fit()
+    with pytest.raises(
+        ValueError, match="masker only has 1 seeds."
+    ):
+        masker.generate_report(displayed_spheres=displayed_spheres)
+
+
 def test_nifti_labels_masker_report(data_img_3d, mask):
     shape = (13, 11, 12)
     affine = np.diag([2, 2, 2, 1])

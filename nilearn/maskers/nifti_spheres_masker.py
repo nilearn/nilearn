@@ -383,7 +383,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         from nilearn.reporting.html_report import generate_report
         if (displayed_spheres != "all"
            and not isinstance(displayed_spheres, (list, np.ndarray, int))):
-            raise TypeError("Parameter ``displayed_maps`` of "
+            raise TypeError("Parameter ``displayed_spheres`` of "
                             "``generate_report()`` should be either 'all' or "
                             "an int, or a list/array of ints. You provided a "
                             f"{type(displayed_spheres)}")
@@ -442,9 +442,9 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         if isinstance(self.displayed_spheres, int):
             if len(seeds) < self.displayed_spheres:
                 msg = (
-                    "`generate_report()` received "
-                    f"{self.displayed_spheres} to be displayed. "
-                    f"But masker only has {len(seeds)} seeds."
+                    "generate_report() received "
+                    f"{self.displayed_spheres} spheres to be displayed. "
+                    f"But masker only has {len(seeds)} seeds. "
                     "Setting number of displayed spheres "
                     f"to {len(seeds)}."
                 )
