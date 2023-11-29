@@ -23,12 +23,17 @@ class _ExtractionFunctor:
         self.mask_img = mask_img
 
     def __call__(self, imgs):
-        from ..regions import signal_extraction
+        from ..regions.signal_extraction import img_to_signals_labels
 
-        return signal_extraction.img_to_signals_labels(
-            imgs, self._resampled_labels_img_,
-            background_label=self.background_label, strategy=self.strategy,
-            keep_masked_labels=self.keep_masked_labels, mask_img=self.mask_img)
+        signals, labels, masked_labels_img =\
+            img_to_signals_labels(
+                imgs, self._resampled_labels_img_,
+                background_label=self.background_label, strategy=self.strategy,
+                keep_masked_labels=self.keep_masked_labels,
+                mask_img=self.mask_img,
+                return_masked_atlas=True,
+            )
+        return signals, (labels, masked_labels_img)
 
 
 @_utils.fill_doc
@@ -110,6 +115,33 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         ignoring the background value.
 
         .. versionadded:: 0.9.2
+
+    region_ids_ : dict
+        A dictionary containing the region ids corresponding
+        to each column in region_signal.
+        The region id corresponding to ``region_signal[:,i]``
+        is ``region_ids_[i]``.
+        ``region_ids_['background']`` is the background label.
+
+        .. versionadded:: 0.11.0.dev
+
+    region_names_ : dict
+        A dictionary containing the region names corresponding
+        to each column in region_signal.
+        The region names correspond to the labels provided
+        in labels in input.
+        The region name corresponding to ``region_signal[:,i]``
+        is ``region_names_[i]``.
+
+        .. versionadded:: 0.11.0.dev
+
+    region_atlas_ : Niimg-like object
+        Regions definition as labels.
+        The labels correspond to the indices in ``region_ids_``.
+        The region in ``region_atlas_`` that takes the value ``region_ids_[i]``
+        is used to compute the signal in ``region_signal[:,i]``.
+
+        .. versionadded:: 0.11.0.dev
 
     See Also
     --------
@@ -606,7 +638,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         params['target_affine'] = target_affine
         params['clean_kwargs'] = self.clean_kwargs
 
-        region_signals, labels_ = self._cache(
+        region_signals, (ids, masked_atlas) = self._cache(
             _filter_and_extract,
             ignore=['verbose', 'memory', 'memory_level'],
         )(
@@ -629,7 +661,24 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             verbose=self.verbose,
         )
 
-        self.labels_ = labels_
+        self.labels_ = ids
+
+        # defining a dictionary containing regions ids
+        region_ids = {'background': self.background_label}
+        for i in range(region_signals.shape[1]):
+            # ids does not include background label
+            region_ids[i] = ids[i]
+
+        if self.labels is not None:
+            self.region_names_ = {
+                key: self.labels[region_id]
+                for key, region_id in region_ids.items()
+                if region_id != self.background_label
+            }
+        else:
+            self.region_names_ = None
+        self.region_ids_ = region_ids
+        self.region_atlas_ = masked_atlas
 
         return region_signals
 
