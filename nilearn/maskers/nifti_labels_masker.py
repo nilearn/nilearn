@@ -324,6 +324,12 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
             img = self._reporting_data['img']
 
+            # compute the cut coordinates on the label image in case
+            # we have a functional image
+            cut_coords = plotting.find_xyz_cut_coords(
+                labels_image, activation_threshold=.5
+            )
+
             # If we have a func image to show in the report, use it
             if img is not None:
                 if self._reporting_data["dim"] == 5:
@@ -335,6 +341,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                     self._report_content['warning_message'] = msg
                 display = plotting.plot_img(
                     img,
+                    cut_coords=cut_coords,
                     black_bg=False,
                     cmap=self.cmap,
                 )

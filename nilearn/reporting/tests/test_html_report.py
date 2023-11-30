@@ -50,33 +50,31 @@ def mask(affine_eye):
 
 
 @pytest.fixture
-def niftimapsmasker_inputs():
+def niftimapsmasker_inputs(affine_eye):
     n_regions = 9
     shape = (13, 11, 12)
-    affine = np.diag([2, 2, 2, 1])
     label_img, _ = generate_maps(
-        shape, n_regions=n_regions, affine=affine
+        shape, n_regions=n_regions, affine=affine_eye
     )
     return {"maps_img": label_img}
 
 
 @pytest.fixture
-def input_parameters(masker_class, data_img_3d):
+def input_parameters(masker_class, data_img_3d, affine_eye):
     n_regions = 9
     shape = (13, 11, 12)
-    affine = np.diag([2, 2, 2, 1])
     labels = ["background"]
     labels += [f"region_{i}" for i in range(1, n_regions + 1)]
     if masker_class in (NiftiMasker, MultiNiftiMasker):
         return {"mask_img": data_img_3d}
     if masker_class in (NiftiLabelsMasker, MultiNiftiLabelsMasker):
         labels_img = generate_labeled_regions(
-            shape, n_regions=n_regions, affine=affine
+            shape, n_regions=n_regions, affine=affine_eye
         )
         return {"labels_img": labels_img, "labels": labels}
     elif masker_class in (NiftiMapsMasker, MultiNiftiMapsMasker):
         label_img, _ = generate_maps(
-            shape, n_regions=n_regions, affine=affine
+            shape, n_regions=n_regions, affine=affine_eye
         )
         return {"maps_img": label_img}
 
@@ -253,9 +251,8 @@ def test_nifti_maps_masker_report_image_in_fit(niftimapsmasker_inputs,
     assert html.body.count("<img") == 2
 
 
-def test_nifti_labels_masker_report(data_img_3d, mask):
+def test_nifti_labels_masker_report(data_img_3d, mask, affine_eye):
     shape = (13, 11, 12)
-    affine = np.diag([2, 2, 2, 1])
     n_regions = 9
     labels = (
         ['background'] +
@@ -266,7 +263,7 @@ def test_nifti_labels_masker_report(data_img_3d, mask):
                         'size (in mm^3)',
                         'relative size (in %)']
     labels_img = generate_labeled_regions(
-        shape, affine=affine, n_regions=n_regions
+        shape, affine=affine_eye, n_regions=n_regions
     )
     labels_img_floats = new_img_like(
         labels_img, get_data(labels_img).astype(float)
@@ -332,7 +329,7 @@ def test_nifti_labels_masker_report(data_img_3d, mask):
         assert_almost_equal(
             masker._report_content['summary']['size (in mm^3)'][r - 1],
             expected_region_sizes[r]
-            * np.abs(np.linalg.det(affine[:3, :3])))
+            * np.abs(np.linalg.det(affine_eye[:3, :3])))
 
     # Check that region labels are no displayed in the report
     # when they were not provided by the user.
@@ -345,6 +342,21 @@ def test_nifti_labels_masker_report(data_img_3d, mask):
         else:
             assert col in masker._report_content["summary"]
             assert len(masker._report_content['summary'][col]) == n_regions
+
+
+@pytest.mark.parametrize("masker_class", [NiftiLabelsMasker])
+def test_nifti_labels_masker_report_cut_coords(
+    masker_class, input_parameters, data_img_3d
+):
+    """Test cut coordinate are equal with and without passing data to fit."""
+    masker = masker_class(**input_parameters, reports=True)
+    # Get display without data
+    masker.fit()
+    display = masker._reporting()
+    # Get display with data
+    masker.fit(data_img_3d)
+    display_data = masker._reporting()
+    assert display[0].cut_coords == display_data[0].cut_coords
 
 
 def test_4d_reports(mask, affine_eye):
