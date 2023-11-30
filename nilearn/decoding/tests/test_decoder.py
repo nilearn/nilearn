@@ -969,9 +969,9 @@ def test_decoder_multiclass_classification_apply_mask_attributes(affine_eye):
     assert model.masker_.smoothing_fwhm == smoothing_fwhm
 
 
-def test_decoder_apply_mask_surface(mini_surface_img):
+def test_decoder_apply_mask_surface(mini_img):
     """Test whether _apply_mask works for surface image."""
-    X = mini_surface_img
+    X = mini_img
     model = Decoder(mask=SurfaceMasker())
     X_masked = model._apply_mask(X)
 
