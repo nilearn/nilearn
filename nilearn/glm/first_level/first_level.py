@@ -23,6 +23,7 @@ from sklearn.cluster import KMeans
 from nilearn._utils import fill_doc, stringify_path
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_run_sample_masks
+from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
 from nilearn.glm._base import BaseGLM
 from nilearn.glm._utils import (
     _check_events_file_uses_tab_separators,
@@ -576,11 +577,16 @@ class FirstLevelModel(BaseGLM):
         # Learn the mask
         if self.mask_img is False:
             # We create a dummy mask to preserve functionality of api
-            ref_img = check_niimg(run_imgs[0])
-            self.mask_img = Nifti1Image(
-                np.ones(ref_img.shape[:3]), ref_img.affine
-            )
-        if not isinstance(self.mask_img, NiftiMasker):
+            if isinstance(run_imgs[0], SurfaceImage):
+                self.mask_img = SurfaceImage()
+            else:
+                ref_img = check_niimg(run_imgs[0])
+                self.mask_img = Nifti1Image(
+                    np.ones(ref_img.shape[:3]), ref_img.affine
+                )
+        if not isinstance(
+            self.mask_img, (NiftiMasker, SurfaceMasker, SurfaceImage)
+        ):
             self.masker_ = NiftiMasker(
                 mask_img=self.mask_img,
                 smoothing_fwhm=self.smoothing_fwhm,
@@ -594,6 +600,15 @@ class FirstLevelModel(BaseGLM):
                 memory_level=self.memory_level,
             )
             self.masker_.fit(run_imgs[0])
+        elif isinstance(self.mask_img, (SurfaceMasker, SurfaceImage)):
+            if isinstance(self.mask_img, SurfaceImage):
+                self.masker_ = SurfaceMasker(mask_img=self.mask_img)
+            else:
+                self.mask_img._check_fitted()
+                if self.mask_img.mask_img_ is None and self.masker_ is None:
+                    self.masker_.fit(run_imgs[0])
+                else:
+                    self.masker_ = self.mask_img
         else:
             # Make sure masker has been fitted otherwise no attribute mask_img_
             self.mask_img._check_fitted()
@@ -642,6 +657,7 @@ class FirstLevelModel(BaseGLM):
                 )
 
             # Build the experimental design for the glm
+            # TODO: adapt check and get_data
             run_img = check_niimg(run_img, ensure_ndim=4)
             if design_matrices is None:
                 n_scans = get_data(run_img).shape[3]
