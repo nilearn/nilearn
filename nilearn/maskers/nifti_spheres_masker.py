@@ -437,6 +437,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
                     )
                 ).astype(int) for seed in seeds
             ]
+        self._report_content["report_id"] = self.report_id
         self._report_content['number_of_seeds'] = len(seeds)
         spheres_to_be_displayed = range(len(seeds))
         if isinstance(self.displayed_spheres, int):

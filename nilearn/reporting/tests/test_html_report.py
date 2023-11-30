@@ -287,6 +287,8 @@ def test_nifti_spheres_masker_report_displayed_spheres_more_than_seeds():
     ):
         masker.generate_report(displayed_spheres=displayed_spheres)
 
+    assert masker._report_content['report_id'] == 0
+
 
 def test_nifti_spheres_masker_report_displayed_spheres_list_more_than_seeds():
     """Tests that a ValueError is raised when list of `displayed_spheres`
