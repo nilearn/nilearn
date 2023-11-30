@@ -482,7 +482,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
             regions_summary['radius'].append(radius)
             regions_summary['size (in voxels)'].append('not implemented')
             regions_summary['size (in mm^3)'].append(round(
-                4. / 3. * np.pi * radius, 2))
+                4. / 3. * np.pi * radius**3, 2))
             regions_summary['relative size (in %)'].append(
                 'not implemented'
             )
