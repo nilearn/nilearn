@@ -23,11 +23,7 @@ from sklearn.cluster import KMeans
 from nilearn._utils import fill_doc, stringify_path
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_run_sample_masks
-from nilearn.experimental.surface import (
-    SurfaceImage,
-    SurfaceMasker,
-    load_fsaverage,
-)
+from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
 from nilearn.glm._base import BaseGLM
 from nilearn.glm._utils import (
     _check_events_file_uses_tab_separators,
@@ -584,7 +580,7 @@ class FirstLevelModel(BaseGLM):
             if isinstance(run_imgs[0], SurfaceImage):
                 left, right = run_imgs[0].mesh.keys()
                 self.mask_img = SurfaceImage(
-                    mesh=load_fsaverage("fsaverage5")["pial"],
+                    mesh=run_imgs[0].mesh,
                     data={
                         "left_hemisphere": np.ones(
                             run_imgs[0].data[left].shape
@@ -617,7 +613,16 @@ class FirstLevelModel(BaseGLM):
             self.masker_.fit(run_imgs[0])
         elif isinstance(self.mask_img, (SurfaceMasker, SurfaceImage)):
             if isinstance(self.mask_img, SurfaceImage):
-                self.masker_ = SurfaceMasker(mask_img=self.mask_img)
+                self.masker_ = SurfaceMasker(
+                    mask_img=self.mask_img,
+                    smoothing_fwhm=self.smoothing_fwhm,
+                    target_affine=self.target_affine,
+                    standardize=self.standardize,
+                    t_r=self.t_r,
+                    memory=self.memory,
+                    memory_level=self.memory_level,
+                )
+                self.masker_.fit(run_imgs[0])
             else:
                 self.mask_img._check_fitted()
                 if self.mask_img.mask_img_ is None and self.masker_ is None:
