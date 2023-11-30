@@ -15,8 +15,8 @@ from sklearn.utils import check_random_state
 from sklearn.utils.extmath import randomized_svd, svd_flip
 
 import nilearn
+from nilearn._utils.masker_validation import check_embedded_masker
 from nilearn.maskers import NiftiMapsMasker
-from nilearn.maskers._masker_validation import _check_embedded_masker
 
 from .._utils import fill_doc
 from .._utils.cache_mixin import CacheMixin, cache
@@ -420,7 +420,7 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
                 "Need one or more Niimg-like objects as input, "
                 "an empty list was given."
             )
-        self.masker_ = _check_embedded_masker(self)
+        self.masker_ = check_embedded_masker(self)
 
         # Avoid warning with imgs != None
         # if masker_ has been provided a mask_img

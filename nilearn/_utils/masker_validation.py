@@ -4,14 +4,13 @@ from string import Template
 import numpy as np
 
 from nilearn.experimental.surface import SurfaceMasker
+from nilearn.maskers import MultiNiftiMasker, NiftiMasker
 
-from .._utils.cache_mixin import _check_memory
-from .._utils.class_inspect import get_params
-from .multi_nifti_masker import MultiNiftiMasker
-from .nifti_masker import NiftiMasker
+from .cache_mixin import _check_memory
+from .class_inspect import get_params
 
 
-def _check_embedded_masker(estimator, masker_type="multi_nii"):
+def check_embedded_masker(estimator, masker_type="multi_nii"):
     """Create a masker from instance parameters.
 
     Base function for using a masker within a BaseEstimator class

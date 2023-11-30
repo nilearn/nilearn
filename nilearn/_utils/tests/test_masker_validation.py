@@ -4,9 +4,9 @@ import pytest
 from joblib import Memory
 from sklearn.base import BaseEstimator
 
+from nilearn._utils.masker_validation import check_embedded_masker
 from nilearn.experimental.surface import SurfaceMasker
 from nilearn.maskers import MultiNiftiMasker, NiftiMasker
-from nilearn.maskers._masker_validation import _check_embedded_masker
 
 
 class OwningClass(BaseEstimator):
@@ -54,7 +54,7 @@ class DummyEstimator:
             setattr(self, k, v)
 
     def fit(self, *args, **kwargs):
-        self.masker = _check_embedded_masker(self)
+        self.masker = check_embedded_masker(self)
 
 
 def test_check_embedded_masker_defaults():
@@ -78,7 +78,7 @@ def test_check_embedded_masker_defaults():
 
 def test_check_embedded_masker():
     owner = OwningClass()
-    masker = _check_embedded_masker(owner)
+    masker = check_embedded_masker(owner)
     assert type(masker) is MultiNiftiMasker
 
     for mask, masker_type in (
@@ -87,7 +87,7 @@ def test_check_embedded_masker():
         (SurfaceMasker(), "surface"),
     ):
         owner = OwningClass(mask=mask)
-        masker = _check_embedded_masker(owner, masker_type=masker_type)
+        masker = check_embedded_masker(owner, masker_type=masker_type)
         assert isinstance(masker, type(mask))
         for param_key in masker.get_params():
             if param_key not in [
@@ -105,7 +105,7 @@ def test_check_embedded_masker():
     affine = np.eye(4)
     mask = nibabel.Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine)
     owner = OwningClass(mask=mask)
-    masker = _check_embedded_masker(owner)
+    masker = check_embedded_masker(owner)
     assert masker.mask_img is mask
 
     # Check attribute forwarding
@@ -115,11 +115,11 @@ def test_check_embedded_masker():
     mask = MultiNiftiMasker()
     mask.fit([[imgs]])
     owner = OwningClass(mask=mask)
-    masker = _check_embedded_masker(owner)
+    masker = check_embedded_masker(owner)
     assert masker.mask_img is mask.mask_img_
 
     # Check conflict warning
     mask = NiftiMasker(mask_strategy="epi")
     owner = OwningClass(mask=mask)
     with pytest.warns(UserWarning):
-        _check_embedded_masker(owner)
+        check_embedded_masker(owner)
