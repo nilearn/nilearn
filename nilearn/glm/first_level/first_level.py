@@ -23,7 +23,11 @@ from sklearn.cluster import KMeans
 from nilearn._utils import fill_doc, stringify_path
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_run_sample_masks
-from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
+from nilearn.experimental.surface import (
+    SurfaceImage,
+    SurfaceMasker,
+    load_fsaverage,
+)
 from nilearn.glm._base import BaseGLM
 from nilearn.glm._utils import (
     _check_events_file_uses_tab_separators,
@@ -578,7 +582,18 @@ class FirstLevelModel(BaseGLM):
         if self.mask_img is False:
             # We create a dummy mask to preserve functionality of api
             if isinstance(run_imgs[0], SurfaceImage):
-                self.mask_img = SurfaceImage()
+                left, right = run_imgs[0].mesh.keys()
+                self.mask_img = SurfaceImage(
+                    mesh=load_fsaverage("fsaverage5")["pial"],
+                    data={
+                        "left_hemisphere": np.ones(
+                            run_imgs[0].data[left].shape
+                        ),
+                        "right_hemisphere": np.ones(
+                            run_imgs[0].data[right].shape
+                        ),
+                    },
+                )
             else:
                 ref_img = check_niimg(run_imgs[0])
                 self.mask_img = Nifti1Image(
@@ -606,6 +621,7 @@ class FirstLevelModel(BaseGLM):
             else:
                 self.mask_img._check_fitted()
                 if self.mask_img.mask_img_ is None and self.masker_ is None:
+                    # TODO check parameters and override with flm params
                     self.masker_.fit(run_imgs[0])
                 else:
                     self.masker_ = self.mask_img
