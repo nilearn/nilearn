@@ -335,6 +335,27 @@ def test_find_parcellation_cut_coords(affine_eye):
         find_parcellation_cut_coords(labels_img=img, label_hemisphere="lft")
 
 
+def test_find_parcellation_cut_coords_hemispheres(affine_mni):
+    # Create a mock labels_img object
+    data = np.zeros((10, 10, 10))
+    data[2:5, 2:5, 2:5] = 1  # left hemisphere
+    labels_img = nibabel.Nifti1Image(data, affine_mni)
+
+    # Test when label_hemisphere is "left"
+    coords, labels = find_parcellation_cut_coords(
+        labels_img, return_label_names=True, label_hemisphere="left"
+    )
+    assert len(coords) == 1
+    assert labels == [1]
+
+    # Test when label_hemisphere is "right"
+    coords, labels = find_parcellation_cut_coords(
+        labels_img, return_label_names=True, label_hemisphere="right"
+    )
+    assert len(coords) == 1
+    assert labels == [1]
+
+
 def test_find_probabilistic_atlas_cut_coords(affine_eye):
     # make data
     arr1 = np.zeros((100, 100, 100))

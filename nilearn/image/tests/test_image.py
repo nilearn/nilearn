@@ -31,6 +31,7 @@ from nilearn.image import (
     binarize_img,
     clean_img,
     concat_imgs,
+    copy_img,
     crop_img,
     get_data,
     high_variance_confounds,
@@ -852,11 +853,29 @@ def test_binarize_img(img_4d_rand_eye):
 
     assert_array_equal(np.unique(img2.dataobj), np.array([0, 1]))
     # Test that manual binarization equals binarize_img results.
-    img3 = img_4d_rand_eye
+    img3 = copy_img(img_4d_rand_eye)
     img3.dataobj[img_4d_rand_eye.dataobj < 0.5] = 0
     img3.dataobj[img_4d_rand_eye.dataobj >= 0.5] = 1
 
     assert_array_equal(img2.dataobj, img3.dataobj)
+
+
+def test_binarize_negative_img(img_4d_rand_eye):
+    # Test option to use original or absolute values
+    img_data = img_4d_rand_eye.dataobj
+    # Create a mask for half of the values and make them negative
+    neg_mask = np.random.choice(
+        [True, False], size=img_4d_rand_eye.shape, p=[0.5, 0.5]
+    )
+    img_data[neg_mask] *= -1
+    img = new_img_like(img_4d_rand_eye, img_data)
+    # Binarize using original and absolute values
+    img_original = binarize_img(img, threshold=0, two_sided=False)
+    img_absolute = binarize_img(img, threshold=0, two_sided=True)
+    # Check that all values are 1 for absolute valued threshold
+    assert_array_equal(np.unique(img_absolute.dataobj), np.array([1]))
+    # Check that binarized image contains 0 and 1 for original threshold
+    assert_array_equal(np.unique(img_original.dataobj), np.array([0, 1]))
 
 
 def test_clean_img(affine_eye, shape_3d_default, rng):

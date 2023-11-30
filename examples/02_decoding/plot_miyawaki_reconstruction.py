@@ -63,7 +63,7 @@ t0 = time.time()
 
 # Load and mask fMRI data
 masker = MultiNiftiMasker(
-    mask_img=miyawaki_dataset.mask, detrend=True, standardize=False
+    mask_img=miyawaki_dataset.mask, detrend=True, standardize=False, n_jobs=2
 )
 masker.fit()
 X_train = masker.transform(X_random_filenames)

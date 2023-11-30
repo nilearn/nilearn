@@ -30,6 +30,7 @@ from scipy.ndimage import binary_fill_holes
 from nilearn.image.resampling import reorder_img
 from nilearn.maskers import NiftiMasker
 from nilearn.plotting.displays import get_projector, get_slicer
+from nilearn.plotting.displays._slicers import _get_cbar_ticks
 
 from .. import _utils
 from .._utils import compare_version, fill_doc
@@ -175,6 +176,13 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
     display_factory : function, default=get_slicer
         Takes a display_mode argument and return a display class.
 
+    Returns
+    -------
+    display : :class:`~nilearn.plotting.displays.OrthoSlicer` or \
+        :class:`~nilearn.plotting.displays.OrthoProjector` or None
+        An instance of the OrthoSlicer or OrthoProjector class depending on the
+        function defined in ``display_factory``. If ``output_file`` is defined,
+        None is returned.
     """
     show_nan_msg = False
     if vmax is not None and np.isnan(vmax):
@@ -240,13 +248,46 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         display.annotate(decimals=decimals)
     if draw_cross:
         display.draw_cross()
-    if title is not None and not title == '':
+    if title is not None and title != '':
         display.title(title)
+    if hasattr(display, '_cbar'):
+        cbar = display._cbar
+        new_tick_locs = _get_cropped_cbar_ticks(cbar.vmin,
+                                                cbar.vmax,
+                                                threshold,
+                                                n_ticks=len(cbar.locator.locs))
+        cbar.set_ticks(new_tick_locs)
     if output_file is not None:
         display.savefig(output_file)
         display.close()
         display = None
     return display
+
+
+def _get_cropped_cbar_ticks(cbar_vmin, cbar_vmax, threshold=None, n_ticks=5):
+    """Return ticks for cropped colorbars."""
+    new_tick_locs = np.linspace(cbar_vmin, cbar_vmax, n_ticks)
+    if threshold is not None:
+        # Case where cbar is either all positive or all negative
+        if 0 <= cbar_vmin <= cbar_vmax or cbar_vmin <= cbar_vmax <= 0:
+            idx_closest = np.argmin([abs(abs(new_tick_locs) - threshold)
+                                     for _ in new_tick_locs])
+            new_tick_locs[idx_closest] = threshold
+        # Case where we do a symmetric thresholding
+        # within an asymmetric cbar
+        # and both threshold values are within bounds
+        elif cbar_vmin <= -threshold <= threshold <= cbar_vmax:
+            new_tick_locs = _get_cbar_ticks(cbar_vmin,
+                                            cbar_vmax,
+                                            threshold,
+                                            nb_ticks=len(new_tick_locs))
+        # Case where one of the threshold values is out of bounds
+        else:
+            idx_closest = np.argmin([abs(new_tick_locs - threshold)
+                                     for _ in new_tick_locs])
+            new_tick_locs[idx_closest] = (
+                -threshold if threshold > cbar_vmax else threshold)
+    return new_tick_locs
 
 
 @fill_doc
@@ -295,6 +336,29 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
     kwargs : extra keyword arguments, optional
         Extra keyword arguments passed to matplotlib.pyplot.imshow.
 
+    Returns
+    -------
+    display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
+        An instance of the OrthoSlicer class. If ``output_file`` is defined,
+        None is returned.
+
+    .. note::
+
+        This is a low-level function. For most use cases, other plotting
+        functions might be more appropriate and easier to use.
+
+    .. seealso::
+
+        :func:`~nilearn.plotting.plot_anat`
+            To simply plot anatomical images
+        :func:`~nilearn.plotting.plot_epi`
+            To simply plot raw EPI images
+        :func:`~nilearn.plotting.plot_roi`
+            To simply plot max-prob atlases (3D images)
+        :func:`~nilearn.plotting.plot_prob_atlas`
+            To simply plot probabilistic atlases (4D images)
+        :mod:`nilearn.plotting`
+            See API reference for other options
     """
     display = _plot_img_with_bg(
         img, cut_coords=cut_coords,
@@ -484,6 +548,12 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
     %(vmin)s
     %(vmax)s
 
+    Returns
+    -------
+    display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
+        An instance of the OrthoSlicer class. If ``output_file`` is defined,
+        None is returned.
+
     Notes
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
@@ -547,6 +617,12 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
     %(vmin)s
     %(vmax)s
     %(radiological)s
+
+    Returns
+    -------
+    display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
+        An instance of the OrthoSlicer class. If ``output_file`` is defined,
+        None is returned.
 
     Notes
     -----
@@ -671,6 +747,12 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         Default=2.5.
     %(radiological)s
 
+    Returns
+    -------
+    display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
+        An instance of the OrthoSlicer class. If ``output_file`` is defined,
+        None is returned.
+
     Notes
     -----
     A small threshold is applied by default to eliminate numerical
@@ -791,6 +873,12 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
     alpha : float between 0 and 1, default=0.7
         Alpha sets the transparency of the color inside the filled contours.
     %(radiological)s
+
+    Returns
+    -------
+    display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
+        An instance of the OrthoSlicer class. If ``output_file`` is defined,
+        None is returned.
 
     See Also
     --------
@@ -947,6 +1035,12 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         Default='continuous'.
     %(radiological)s
 
+    Returns
+    -------
+    display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
+        An instance of the OrthoSlicer class. If ``output_file`` is defined,
+        None is returned.
+
     Notes
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
@@ -1057,7 +1151,13 @@ def plot_glass_brain(stat_map_img,
     %(resampling_interpolation)s
         Default='continuous'.
     %(radiological)s 
-        
+
+    Returns
+    -------
+    display : :class:`~nilearn.plotting.displays.OrthoProjector` or None
+        An instance of the OrthoProjector class. If ``output_file`` is defined,
+        None is returned.
+
     Notes
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
@@ -1192,6 +1292,12 @@ def plot_connectome(adjacency_matrix, node_coords,
         Default=False.
     %(radiological)s
 
+    Returns
+    -------
+    display : :class:`~nilearn.plotting.displays.OrthoProjector` or None
+        An instance of the OrthoProjector class. If ``output_file`` is defined,
+        None is returned.
+
     See Also
     --------
     nilearn.plotting.find_parcellation_cut_coords : Extraction of node
@@ -1287,6 +1393,11 @@ def plot_markers(node_values, node_coords, node_size='auto',
         Default=True.
     %(radiological)s
 
+    Returns
+    -------
+    display : :class:`~nilearn.plotting.displays.OrthoProjector` or None
+        An instance of the OrthoProjector class. If ``output_file`` is defined,
+        None is returned.
     """
     node_values = np.array(node_values).flatten()
     node_coords = np.array(node_coords)

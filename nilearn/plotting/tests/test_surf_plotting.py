@@ -809,8 +809,7 @@ def test_plot_surf_roi_colorbar_vmin_equal_across_engines(kwargs):
         mesh, roi_map=roi_map, colorbar=True, engine="plotly", **kwargs
     )
     assert (
-        int(mpl_plot.axes[-1].get_yticklabels()[0].get_text())
-        == plotly_plot.figure.data[1]["cmin"]
+        mpl_plot.axes[-1].get_ylim()[0] == plotly_plot.figure.data[1]["cmin"]
     )
 
 
@@ -1046,10 +1045,13 @@ def test_plot_surf_contours_error(rng):
     (0, np.nextafter(0, 1), "%.1f", [0.e+000, 5.e-324]),
 ])
 def test_get_ticks_matplotlib(vmin, vmax, cbar_tick_format, expected):
-    ticks = _get_ticks_matplotlib(vmin, vmax, cbar_tick_format)
+    ticks = _get_ticks_matplotlib(vmin, vmax, cbar_tick_format, threshold=None)
     assert 1 <= len(ticks) <= 5
     assert ticks[0] == vmin and ticks[-1] == vmax
-    assert len(ticks) == len(expected) and (ticks == expected).all()
+    assert (
+        len(np.unique(ticks)) == len(expected)
+        and (np.unique(ticks) == expected).all()
+    )
 
 
 def test_compute_facecolors_matplotlib():

@@ -103,7 +103,9 @@ ax.set_ylabel("maps")
 # also smooth a little bit to improve statistical behavior.
 from nilearn.glm.second_level import SecondLevelModel
 
-second_level_model = SecondLevelModel(smoothing_fwhm=2.0, mask_img=mask_img)
+second_level_model = SecondLevelModel(
+    smoothing_fwhm=2.0, mask_img=mask_img, n_jobs=2
+)
 second_level_model.fit(
     gray_matter_map_filenames,
     design_matrix=design_matrix,

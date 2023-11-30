@@ -8,6 +8,7 @@ or as weights in one image per region (maps).
 import warnings
 
 import numpy as np
+from nibabel import Nifti1Image
 from scipy import linalg, ndimage
 
 from .. import _utils, masking
@@ -246,6 +247,7 @@ def img_to_signals_labels(
     order="F",
     strategy="mean",
     keep_masked_labels=True,
+    return_masked_atlas=False,
 ):
     """Extract region signals from image.
 
@@ -282,6 +284,11 @@ def img_to_signals_labels(
         standard_deviation.
     %(keep_masked_labels)s
 
+    return_masked_atlas : :obj:`bool`, default=False
+        If True, the masked atlas is returned.
+        deprecated in version 0.13, to be removed in 0.15.
+        after 0.13, the masked atlas will always be returned.
+
     Returns
     -------
     signals : :class:`numpy.ndarray`
@@ -293,6 +300,10 @@ def img_to_signals_labels(
     labels : :obj:`list` or :obj:`tuple`
         Corresponding labels for each signal. signal[:, n] was extracted from
         the region with label labels[n].
+
+    masked_atlas : Niimg-like object
+        Regions definition as labels after applying the mask.
+        returned if `return_masked_atlas` is True.
 
     See Also
     --------
@@ -334,7 +345,23 @@ def img_to_signals_labels(
         labels_index = {l: n for n, l in enumerate(labels)}
         for this_label in missing_labels:
             signals[:, labels_index[this_label]] = 0
-    return signals, labels
+
+    if return_masked_atlas:
+        # finding the new labels image
+        masked_atlas = Nifti1Image(
+            labels_data.astype(np.int8), labels_img.affine
+        )
+        return signals, labels, masked_atlas
+    else:
+        warnings.warn(
+            'After version 0.13. "img_to_signals_labels" will also return the '
+            '"masked_atlas". Meanwhile "return_masked_atlas" parameter can be '
+            "used to toggle this behavior. In version 0.15, "
+            '"return_masked_atlas" parameter will be removed.',
+            DeprecationWarning,
+            stacklevel=1,
+        )
+        return signals, labels
 
 
 def signals_to_img_labels(
