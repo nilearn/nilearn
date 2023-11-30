@@ -418,8 +418,6 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
 
             return [None]
 
-        from nilearn.image import coord_transform
-
         img = self._reporting_data['img']
         if img is None:
             from nilearn.datasets import load_mni152_template
@@ -434,7 +432,9 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         else:
             positions = [
                 np.round(
-                    coord_transform(*seed, np.linalg.inv(img.affine))
+                    image.resampling.coord_transform(
+                        *seed, np.linalg.inv(img.affine)
+                    )
                 ).astype(int) for seed in seeds
             ]
         self._report_content['number_of_seeds'] = len(seeds)

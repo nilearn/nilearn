@@ -10,6 +10,13 @@ from nilearn._utils import data_gen
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiSpheresMasker
 
+try:
+    import matplotlib as mpl  # noqa: F401
+except ImportError:
+    have_mpl = False
+else:
+    have_mpl = True
+
 
 def test_seed_extraction(rng):
     """Test seed extraction."""
@@ -390,3 +397,12 @@ def test_nifti_spheres_masker_io_shapes(rng, shape_3d_default, affine_eye):
 
     with pytest.raises(ValueError):
         masker.inverse_transform(data_2d.T)
+
+
+@pytest.mark.skipif(
+    have_mpl, reason="Test requires matplotlib to be not installed."
+)
+def test_nifti_spheres_masker_reporting_mpl_import_error():
+    """Raise ImportError if matplotlib is not installed."""
+    with pytest.raises(ImportError):
+        NiftiSpheresMasker([(1, 1, 1)]).fit().generate_report()
