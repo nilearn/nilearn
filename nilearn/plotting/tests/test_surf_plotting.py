@@ -791,6 +791,13 @@ def test_plot_surf_roi_error(engine, rng):
             match='roi_map does not have the same number of vertices'):
         plot_surf_roi(mesh, roi_map=roi_idx, engine=engine)
 
+    mesh, roi_map, _ = _generate_data_test_surf_roi()
+    roi_map[0] = -1
+    with pytest.raises(
+            ValueError,
+            match="roi_map should only contain non-negative integers"):
+        plot_surf_roi(mesh, roi_map=roi_map, engine=engine)
+
 
 @pytest.mark.skipif(not is_plotly_installed(),
                     reason=("This test only runs if Plotly is installed."))
