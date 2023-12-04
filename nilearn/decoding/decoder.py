@@ -468,8 +468,8 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         Mask to be used on data. If an instance of masker is passed,
         then its mask and parameters will be used. If no mask is given, mask
         will be computed automatically from provided images by an inbuilt
-        masker with default parameters. Refer to NiftiMasker or
-        MultiNiftiMasker to check for default parameters. For use with
+        masker with default parameters. Refer to NiftiMasker, MultiNiftiMasker
+        or SurfaceMasker to check for default parameters. For use with
         SurfaceImage data, a SurfaceMasker instance must be passed.
 
     cv: cross-validation generator or int, default=10
@@ -603,7 +603,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
         Parameters
         ----------
-        X: list of Niimg-like objects
+        X: list of Niimg-like or SurfaceImage objects
             See :ref:`extracting_data`.
             Data on which model is to be fitted. If this is a list,
             the affine is considered the same for all.
