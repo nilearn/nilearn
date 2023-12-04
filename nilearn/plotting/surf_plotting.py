@@ -1645,7 +1645,12 @@ def plot_surf_roi(surf_mesh,
                          'roi_map = np.zeros(n_vertices)\n'
                          'roi_map[roi_idx] = 1')
     if (roi < 0).any():
-        raise ValueError('roi_map should only contain non-negative integers')
+        raise ValueError('roi_map should only contain non-negative values')
+    # make sure roi_map only contains integers
+    try:
+        roi.astype(int, casting='safe')
+    except TypeError:
+        raise ValueError('roi_map should only contain integers')
 
     if cbar_tick_format == "auto":
         cbar_tick_format = "." if engine == "plotly" else "%i"

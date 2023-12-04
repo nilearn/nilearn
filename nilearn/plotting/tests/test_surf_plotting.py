@@ -795,7 +795,13 @@ def test_plot_surf_roi_error(engine, rng):
     roi_map[0] = -1
     with pytest.raises(
             ValueError,
-            match="roi_map should only contain non-negative integers"):
+            match="roi_map should only contain non-negative values"):
+        plot_surf_roi(mesh, roi_map=roi_map, engine=engine)
+
+    roi_map[0] = 1.2
+    with pytest.raises(
+            ValueError,
+            match="roi_map should only contain integers"):
         plot_surf_roi(mesh, roi_map=roi_map, engine=engine)
 
 
