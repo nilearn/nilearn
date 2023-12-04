@@ -380,7 +380,18 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
-        from nilearn.reporting.html_report import generate_report
+        try:
+            from nilearn.reporting.html_report import generate_report
+        except ImportError:
+            with warnings.catch_warnings():
+                mpl_unavail_msg = ('Matplotlib is not imported! '
+                                   'No reports will be generated.')
+                warnings.filterwarnings('always', message=mpl_unavail_msg)
+                warnings.warn(
+                    category=ImportWarning, message=mpl_unavail_msg
+                )
+                return [None]
+
         if (displayed_spheres != "all"
            and not isinstance(displayed_spheres, (list, np.ndarray, int))):
             raise TypeError("Parameter ``displayed_spheres`` of "
@@ -400,16 +411,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
             A list of all displays to be rendered.
         """
         from nilearn.reporting.html_report import _embed_img
-        try:
-            from nilearn import plotting
-        except ImportError:
-            with warnings.catch_warnings():
-                mpl_unavail_msg = ('Matplotlib is not imported! '
-                                   'No reports will be generated.')
-                warnings.filterwarnings('always', message=mpl_unavail_msg)
-                warnings.warn(category=ImportWarning,
-                              message=mpl_unavail_msg)
-                return [None]
+        from nilearn import plotting
 
         if self._reporting_data is not None:
             seeds = self._reporting_data['seeds']
