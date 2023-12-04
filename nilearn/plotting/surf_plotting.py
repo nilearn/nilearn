@@ -1628,6 +1628,7 @@ def plot_surf_roi(surf_mesh,
     # messages in case of wrong inputs
 
     roi = load_surf_data(roi_map)
+    idx_not_na = ~np.isnan(roi)
     if vmin is None:
         vmin = np.nanmin(roi)
     if vmax is None:
@@ -1646,7 +1647,7 @@ def plot_surf_roi(surf_mesh,
                          'roi_map[roi_idx] = 1')
     if (roi < 0).any():
         raise ValueError('roi_map should only contain non-negative values')
-    if not np.array_equal(roi, roi.astype(int)):
+    if not np.array_equal(roi[idx_not_na], roi[idx_not_na].astype(int)):
         raise ValueError('roi_map should only contain integers')
 
     if cbar_tick_format == "auto":
