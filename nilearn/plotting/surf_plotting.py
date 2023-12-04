@@ -1646,10 +1646,7 @@ def plot_surf_roi(surf_mesh,
                          'roi_map[roi_idx] = 1')
     if (roi < 0).any():
         raise ValueError('roi_map should only contain non-negative values')
-    # make sure roi_map only contains integers
-    try:
-        roi.astype(int, casting='safe')
-    except TypeError:
+    if not np.array_equal(roi, roi.astype(int)):
         raise ValueError('roi_map should only contain integers')
 
     if cbar_tick_format == "auto":
