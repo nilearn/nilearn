@@ -32,7 +32,7 @@ def check_embedded_masker(estimator, masker_type="multi_nii"):
 
     masker_type : {"multi_nii", "nii", "surface"}, default="mutli_nii"
         Indicates whether to return a MultiNiftiMasker, NiftiMasker, or a
-        SurfaceMasker
+        SurfaceMasker.
 
     Returns
     -------
@@ -50,16 +50,17 @@ def check_embedded_masker(estimator, masker_type="multi_nii"):
     mask = getattr(estimator, "mask", None)
 
     if isinstance(mask, (NiftiMasker, MultiNiftiMasker, SurfaceMasker)):
-        # Creating (Multi)NiftiMasker from provided masker
+        # Creating masker from provided masker
         masker_params = get_params(masker_type, mask)
         new_masker_params = masker_params
     else:
-        # Creating (Multi)NiftiMasker
-        # with parameters extracted from estimator
+        # Creating a masker with parameters extracted from estimator
         new_masker_params = estimator_params
         new_masker_params["mask_img"] = mask
     # Forwarding system parameters of instance to new masker in all case
-    if masker_type == "multi_nii" and hasattr(estimator, "n_jobs"):
+    if issubclass(masker_type, MultiNiftiMasker) and hasattr(
+        estimator, "n_jobs"
+    ):
         # For MultiNiftiMasker only
         new_masker_params["n_jobs"] = estimator.n_jobs
 

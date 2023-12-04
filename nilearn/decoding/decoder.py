@@ -628,7 +628,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         Attributes
         ----------
         masker_ : instance of NiftiMasker, MultiNiftiMasker, or SurfaceMasker
-            The NiftiMasker used to mask the data.
+            The masker used to mask the data.
 
         mask_img_ : Nifti1Image or SurfaceImage
             Mask computed by the masker object.
