@@ -290,6 +290,16 @@ def test_nifti_spheres_masker_report_displayed_spheres_more_than_seeds():
     assert masker._report_content['report_id'] == 0
 
 
+def test_nifti_spheres_masker_report_displayed_spheres_list():
+    """Tests that spheres_to_be_displayed is set correctly."""
+    displayed_spheres = [0, 1, 2]
+    seeds = [(1, 1, 1), (2, 2, 2), (3, 3, 3)]
+    masker = NiftiSpheresMasker(seeds=seeds)
+    masker.fit()
+    masker.generate_report(displayed_spheres=displayed_spheres)
+    assert masker._report_content['displayed_spheres'] == displayed_spheres
+
+
 def test_nifti_spheres_masker_report_displayed_spheres_list_more_than_seeds():
     """Tests that a ValueError is raised when list of `displayed_spheres`
     maximum is greater than number of seeds.
