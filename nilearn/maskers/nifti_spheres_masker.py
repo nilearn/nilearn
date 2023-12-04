@@ -410,8 +410,8 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         displays : list
             A list of all displays to be rendered.
         """
-        from nilearn.reporting.html_report import _embed_img
         from nilearn import plotting
+        from nilearn.reporting.html_report import _embed_img
 
         if self._reporting_data is not None:
             seeds = self._reporting_data['seeds']
