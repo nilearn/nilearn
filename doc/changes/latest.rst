@@ -28,6 +28,7 @@ Enhancements
 - :bdg-primary:`Code` Add ``two_sided`` option for :class:`~nilearn.image.binarize_img` (:gh:`4121` by `Steven Meisler`_).
 - :bdg-dark:`Code` :meth:`~maskers.NiftiLabelsMasker.generate_report` now uses appropriate cut coordinates when functional image is provided (:gh:`4099` by `Yasmin Mzayek`_ and `Nicolas Gensollen`_).
 - :bdg-info:`Plotting` When plotting thresholded statistical maps with a colorbar, the threshold value(s) will now be displayed as tick labels on the colorbar (:gh:`#2833` by `Nicolas Gensollen`_).
+- :bdg-success:`API` :class:`~maskers.NiftiSpheresMasker` now has ``generate_report`` method (:gh:`3102` by `Yasmin Mzayek`_ and `Nicolas Gensollen`_).
 
 Changes
 -------
