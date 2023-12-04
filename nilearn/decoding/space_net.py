@@ -851,7 +851,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         if self.verbose:
             tic = time.time()
 
-        masker_type = "nifti"
+        masker_type = "nii"
         if isinstance(self.mask, SurfaceMasker):
             masker_type = "surface"
         self.masker_ = check_embedded_masker(self, masker_type=masker_type)
