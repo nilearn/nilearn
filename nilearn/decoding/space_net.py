@@ -28,8 +28,9 @@ from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_array, check_X_y
 from sklearn.utils.extmath import safe_sparse_dot
 
+from nilearn._utils.masker_validation import check_embedded_masker
+from nilearn.experimental.surface import SurfaceMasker
 from nilearn.image import get_data
-from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
 from nilearn.masking import _unmask_from_to_3d_array
 
 from .._utils import fill_doc
@@ -850,8 +851,10 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         if self.verbose:
             tic = time.time()
 
-        # nifti masking
-        self.masker_ = _check_embedded_nifti_masker(self, multi_subject=False)
+        masker_type = "nii"
+        if isinstance(self.mask, SurfaceMasker):
+            masker_type = "surface"
+        self.masker_ = check_embedded_masker(self, masker_type=masker_type)
         X = self.masker_.fit_transform(X)
 
         X, y = check_X_y(
