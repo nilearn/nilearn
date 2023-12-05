@@ -707,7 +707,7 @@ def _generate_data_test_surf_roi():
     roi_idx = _rng().integers(0, mesh[0].shape[0], size=10)
     roi_map = np.zeros(mesh[0].shape[0])
     roi_map[roi_idx] = 1
-    parcellation = _rng().uniform(size=mesh[0].shape[0])
+    parcellation = _rng().integers(100, size=mesh[0].shape[0]).astype(float)
     return mesh, roi_map, parcellation
 
 
