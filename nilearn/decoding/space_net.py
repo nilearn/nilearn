@@ -279,7 +279,7 @@ class _EarlyStoppingCallback:
         """
         if self.is_classif:
             w = w[:-1]
-        if w.ptp() == 0:
+        if np.ptp(w) == 0:
             # constant map, there is nothing
             return (-np.inf, -np.inf)
         y_pred = np.dot(self.X_test, w)

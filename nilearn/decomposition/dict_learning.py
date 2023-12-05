@@ -297,7 +297,7 @@ class DictLearning(_BaseDecomposition):
             data.T,
             self.n_components,
             alpha=self.alpha,
-            n_iter=max_iter,
+            max_iter=max_iter,
             batch_size=self.batch_size,
             method=self.method,
             dict_init=dict_init,
