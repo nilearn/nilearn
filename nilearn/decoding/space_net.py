@@ -401,7 +401,7 @@ def path_scores(
 
     # it is essential to center the data in regression
     X_train, y_train, _, y_train_mean, _ = center_data(
-        X_train, y_train, fit_intercept=True, normalize=False, copy=False
+        X_train, y_train, fit_intercept=True, copy=False
     )
 
     # misc

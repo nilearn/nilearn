@@ -259,7 +259,7 @@ def test_smooth_array_fwhm_is_odd_no_copy(affine):
 
 def test_smooth_array_nan_do_not_propagate():
     data = _new_data_for_smooth_array()
-    data[10, 10, 10] = np.NaN
+    data[10, 10, 10] = np.nan
     fwhm = 9
     affine = AFFINE_TO_TEST[2]
 
