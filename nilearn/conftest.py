@@ -13,6 +13,14 @@ from nilearn import image
 from nilearn.datasets.tests._testing import request_mocker  # noqa: F401
 from nilearn.datasets.tests._testing import temp_nilearn_data_dir  # noqa: F401
 
+# TODO This import needs to be removed once the experimental surface API and
+# its pytest fixtures are integrated into the stable API
+from nilearn.experimental.surface.tests.conftest import (  # noqa: F401
+    make_mini_img,
+    mini_img,
+    mini_mesh,
+)
+
 collect_ignore = ["datasets/data/convert_templates.py"]
 collect_ignore_glob = ["reporting/_visual_testing/*"]
 
