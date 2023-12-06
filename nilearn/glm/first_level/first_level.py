@@ -492,27 +492,28 @@ class FirstLevelModel(BaseGLM):
 
         Parameters
         ----------
-        run_imgs : Niimg-like object or list of Niimg-like objects,
+        run_imgs : Niimg-like object, :obj:`list` of Niimg-like objects, \
+                   SurfaceImage object, or :obj:`list` of SurfaceImage
             Data on which the :term:`GLM` will be fitted. If this is a list,
             the affine is considered the same for all.
 
-        events : pandas Dataframe or string or list of pandas DataFrames \
-                 or strings, default=None
+        events : :class:`pandas.DataFrame` or :obj:`str` or :obj:`list` of \
+                 :class:`pandas.DataFrame` or :obj:`str`, default=None
             :term:`fMRI` events used to build design matrices.
             One events object expected per run_img.
             Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
 
-        confounds : pandas Dataframe, numpy array or string or \
-                    list of pandas DataFrames, numpy arrays or strings, \
-                    default=None
+        confounds : :class:`pandas.DataFrame`, :class:`numpy.ndarray` or \
+                    :obj:`str` or :obj:`list` of :class:`pandas.DataFrame`, \
+                    :class:`numpy.ndarray` or :obj:`str`, default=None
             Each column in a DataFrame corresponds to a confound variable
             to be included in the regression model of the respective run_img.
             The number of rows must match the number of volumes in the
             respective run_img. Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
 
-        sample_masks : array_like, or list of array_like, default=None
+        sample_masks : array_like, or :obj:`list` of array_like, default=None
             shape of array: (number of scans - number of volumes remove)
             Indices of retained volumes. Masks the niimgs along time/fourth
             dimension to perform scrubbing (remove volumes with high motion)
@@ -520,12 +521,12 @@ class FirstLevelModel(BaseGLM):
 
             .. versionadded:: 0.9.2
 
-        design_matrices : pandas DataFrame or \
-                          list of pandas DataFrames, default=None
+        design_matrices : :class:`pandas.DataFrame` or :obj:`list` of \
+                          :class:`pandas.DataFrame`, default=None
             Design matrices that will be used to fit the GLM. If given it
             takes precedence over events and confounds.
 
-        bins : int, default=100
+        bins : :obj:`int`, default=100
             Maximum number of discrete bins for the AR coef histogram.
             If an autoregressive model with order greater than one is specified
             then adaptive quantification is performed and the coefficients
