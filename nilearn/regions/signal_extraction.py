@@ -501,7 +501,8 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
     use_mask = _check_shape_and_affine_compatibility(imgs, mask_img)
     if use_mask:
         mask_img = _utils.check_niimg_3d(mask_img)
-        labels_before_mask = set(labels)
+        breakpoint()
+        labels_before_mask = {int(label) for label in labels}
         maps_data, maps_mask, labels = _trim_maps(
             maps_data,
             safe_get_data(mask_img, ensure_finite=True),
@@ -522,7 +523,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
                 stacklevel=2,
             )
         else:
-            labels_after_mask = set(labels)
+            labels_after_mask = {int(label) for label in labels}
             labels_diff = labels_before_mask.difference(labels_after_mask)
             # Raising a warning if any map is removed due to the mask
             if len(labels_diff) > 0:
