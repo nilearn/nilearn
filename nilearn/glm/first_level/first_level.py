@@ -679,10 +679,14 @@ class FirstLevelModel(BaseGLM):
                 )
 
             # Build the experimental design for the glm
-            # TODO: adapt check and get_data
-            run_img = check_niimg(run_img, ensure_ndim=4)
+            if not isinstance(run_img[0], SurfaceImage):
+                run_img = check_niimg(run_img, ensure_ndim=4)
             if design_matrices is None:
-                n_scans = get_data(run_img).shape[3]
+                if isinstance(run_img[0], SurfaceImage):
+                    dims = len(run_img[0].shape[0])
+                    n_scans = run_img[0].shape[0] if dims == 2 else 1
+                else:
+                    n_scans = get_data(run_img).shape[3]
                 if confounds is not None:
                     confounds_matrix = confounds[run_idx].values
                     if confounds_matrix.shape[0] != n_scans:
