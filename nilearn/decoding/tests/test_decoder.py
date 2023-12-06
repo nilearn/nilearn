@@ -507,6 +507,10 @@ def test_decoder_param_grid_sequence(binary_classification_data):
             assert len(param_list) == n_cv_folds
 
 
+# TODO: remove xfail when resolving nilearn/nilearn#4132
+@pytest.mark.xfail(
+    sklearn.__version__ >= "1.4", reason="Fails on scikit-learn >= 1.4"
+)
 def test_decoder_binary_classification_with_masker_object(
     binary_classification_data,
 ):

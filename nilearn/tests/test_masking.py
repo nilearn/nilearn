@@ -299,7 +299,7 @@ def test_apply_mask(affine_eye, tmp_path):
                 )
 
     # Check that NaNs in the data do not propagate
-    data[10, 10, 10] = np.NaN
+    data[10, 10, 10] = np.nan
     data_img = Nifti1Image(data, affine)
     mask_img = Nifti1Image(mask, affine)
     full_mask_img = Nifti1Image(full_mask, affine)
