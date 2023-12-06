@@ -501,7 +501,6 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
     use_mask = _check_shape_and_affine_compatibility(imgs, mask_img)
     if use_mask:
         mask_img = _utils.check_niimg_3d(mask_img)
-        breakpoint()
         labels_before_mask = {int(label) for label in labels}
         maps_data, maps_mask, labels = _trim_maps(
             maps_data,
