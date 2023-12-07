@@ -4,8 +4,6 @@
 name: Numpy2 compatibility
 
 on:
-    # TODO remove on pull request
-    pull_request:
     schedule:
     # Run every day at 8am UTC
     -   cron: 0 8 * * *
