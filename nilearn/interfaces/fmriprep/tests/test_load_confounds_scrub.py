@@ -50,7 +50,7 @@ def test_extract_outlier_regressors(rng):
     # Create a fake confound dataframe
     n_scans = 50
     fake_confounds = pd.DataFrame(
-        rng.rand(n_scans, 1), columns=["confound_regressor"]
+        rng.random((n_scans, 1)), columns=["confound_regressor"]
     )
 
     # scrubbed volume one-hot, overlap with non-steady-state

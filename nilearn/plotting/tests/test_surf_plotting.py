@@ -704,7 +704,7 @@ def test_plot_surf_stat_map_error(rng):
 
 def _generate_data_test_surf_roi():
     mesh = generate_surf()
-    roi_idx = _rng().randint(0, mesh[0].shape[0], size=10)
+    roi_idx = _rng().integers(0, mesh[0].shape[0], size=10)
     roi_map = np.zeros(mesh[0].shape[0])
     roi_map[roi_idx] = 1
     parcellation = _rng().uniform(size=mesh[0].shape[0])
@@ -785,7 +785,7 @@ def test_plot_surf_roi_error(engine, rng):
     if not is_plotly_installed() and engine == "plotly":
         pytest.skip('Plotly is not installed; required for this test.')
     mesh = generate_surf()
-    roi_idx = rng.randint(0, mesh[0].shape[0], size=5)
+    roi_idx = rng.integers(0, mesh[0].shape[0], size=5)
     with pytest.raises(
             ValueError,
             match='roi_map does not have the same number of vertices'):
@@ -809,8 +809,7 @@ def test_plot_surf_roi_colorbar_vmin_equal_across_engines(kwargs):
         mesh, roi_map=roi_map, colorbar=True, engine="plotly", **kwargs
     )
     assert (
-        int(mpl_plot.axes[-1].get_yticklabels()[0].get_text())
-        == plotly_plot.figure.data[1]["cmin"]
+        mpl_plot.axes[-1].get_ylim()[0] == plotly_plot.figure.data[1]["cmin"]
     )
 
 
@@ -1046,10 +1045,13 @@ def test_plot_surf_contours_error(rng):
     (0, np.nextafter(0, 1), "%.1f", [0.e+000, 5.e-324]),
 ])
 def test_get_ticks_matplotlib(vmin, vmax, cbar_tick_format, expected):
-    ticks = _get_ticks_matplotlib(vmin, vmax, cbar_tick_format)
+    ticks = _get_ticks_matplotlib(vmin, vmax, cbar_tick_format, threshold=None)
     assert 1 <= len(ticks) <= 5
     assert ticks[0] == vmin and ticks[-1] == vmax
-    assert len(ticks) == len(expected) and (ticks == expected).all()
+    assert (
+        len(np.unique(ticks)) == len(expected)
+        and (np.unique(ticks) == expected).all()
+    )
 
 
 def test_compute_facecolors_matplotlib():

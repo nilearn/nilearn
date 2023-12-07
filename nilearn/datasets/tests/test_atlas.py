@@ -334,7 +334,7 @@ def test_fetch_coords_seitzman_2018():
 def _destrieux_data():
     """Function mocking the download of the destrieux atlas."""
     data = {"destrieux2009.rst": "readme"}
-    atlas = _rng().randint(0, 10, (10, 10, 10), dtype="int32")
+    atlas = _rng().integers(0, 10, (10, 10, 10), dtype="int32")
     atlas_img = nibabel.Nifti1Image(atlas, np.eye(4))
     labels = "\n".join([f"{idx},label {idx}" for idx in range(10)])
     labels = f"index,name\n{labels}"

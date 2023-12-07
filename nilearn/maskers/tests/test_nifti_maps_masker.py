@@ -17,7 +17,7 @@ from nilearn.image import get_data
 from nilearn.maskers import NiftiMapsMasker
 
 
-def test_nifti_maps_masker():
+def test_nifti_maps_masker(tmp_path):
     """Check working of shape/affine checks."""
     n_regions = 9
     length = 3
@@ -47,14 +47,14 @@ def test_nifti_maps_masker():
 
     # No exception raised here
     for create_files in (True, False):
-        with testing.write_tmp_imgs(
-            labels11_img, create_files=create_files
-        ) as labels11:
-            masker11 = NiftiMapsMasker(labels11, resampling_target=None)
-            signals11 = masker11.fit().transform(fmri11_img)
-            assert signals11.shape == (length, n_regions)
-            # enables to delete "labels11" on windows
-            del masker11
+        labels11 = testing.write_imgs_to_path(
+            labels11_img, file_path=tmp_path, create_files=create_files
+        )
+        masker11 = NiftiMapsMasker(labels11, resampling_target=None)
+        signals11 = masker11.fit().transform(fmri11_img)
+        assert signals11.shape == (length, n_regions)
+        # enables to delete "labels11" on windows
+        del masker11
 
     masker11 = NiftiMapsMasker(
         labels11_img, mask_img=mask11_img, resampling_target=None
@@ -69,23 +69,26 @@ def test_nifti_maps_masker():
 
     # Test all kinds of mismatches between shapes and between affines
     for create_files in (True, False):
-        with testing.write_tmp_imgs(
-            labels11_img, mask12_img, create_files=create_files
-        ) as images:
-            labels11, mask12 = images
-            masker11 = NiftiMapsMasker(labels11, resampling_target=None)
-            masker11.fit()
-            with pytest.raises(ValueError):
-                masker11.transform(fmri12_img)
-            with pytest.raises(ValueError):
-                masker11.transform(fmri21_img)
+        images = testing.write_imgs_to_path(
+            labels11_img,
+            mask12_img,
+            file_path=tmp_path,
+            create_files=create_files,
+        )
+        labels11, mask12 = images
+        masker11 = NiftiMapsMasker(labels11, resampling_target=None)
+        masker11.fit()
+        with pytest.raises(ValueError):
+            masker11.transform(fmri12_img)
+        with pytest.raises(ValueError):
+            masker11.transform(fmri21_img)
 
-            masker11 = NiftiMapsMasker(
-                labels11, mask_img=mask12, resampling_target=None
-            )
-            with pytest.raises(ValueError):
-                masker11.fit()
-            del masker11
+        masker11 = NiftiMapsMasker(
+            labels11, mask_img=mask12, resampling_target=None
+        )
+        with pytest.raises(ValueError):
+            masker11.fit()
+        del masker11
 
     masker11 = NiftiMapsMasker(
         labels11_img, mask_img=mask21_img, resampling_target=None

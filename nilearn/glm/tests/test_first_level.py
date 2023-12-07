@@ -460,8 +460,8 @@ def test_run_glm_errors(rng):
 def test_glm_AR_estimates(rng, ar_vals):
     """Test that Yule-Walker AR fits are correct."""
     n, p, q = 1, 500, 2
-    X_orig = rng.randn(p, q)
-    Y_orig = rng.randn(p, n)
+    X_orig = rng.standard_normal((p, q))
+    Y_orig = rng.standard_normal((p, n))
 
     ar_order = len(ar_vals)
     ar_arg = f"ar{ar_order}"
@@ -492,7 +492,7 @@ def test_glm_AR_estimates(rng, ar_vals):
 def test_glm_AR_estimates_errors(rng):
     """Test Yule-Walker errors."""
     (n, p) = (1, 500)
-    Y_orig = rng.randn(p, n)
+    Y_orig = rng.standard_normal((p, n))
 
     with pytest.raises(TypeError, match="AR order must be an integer"):
         _yule_walker(Y_orig, 1.2)

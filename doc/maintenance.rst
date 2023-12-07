@@ -123,6 +123,50 @@ We welcome pull requests from all community members, if they follow the
 details on their process are available
 :sklearn:`here <developers/contributing.html#contributing-code>`).
 
+Using tox
+=========
+
+`Tox <See https://tox.wiki/en>`_ is set
+to facilitate testing and managing environments during development
+and ensure that the same commands can easily be run locally and in CI.
+
+Install it with:
+
+.. code-block:: bash
+
+    pip install tox
+
+You can set up certain environment or run certain command by calling ``tox``.
+
+Calling ``tox`` with no extra argument will simply run
+all the default commands defined in the tox configuration (``tox.ini``).
+
+Use ``tox list`` to view all environment descriptions.
+
+Use ``tox run`` to run a specific environment.
+
+Example
+
+.. code-block:: bash
+
+    tox run -e lint
+
+Some environments allow passing extra argument:
+
+.. code-block:: bash
+
+    # only run black
+    tox run -e lint -- black
+
+    # only run some tests
+    tox -e test_plotting -- nilearn/glm/tests/test_contrasts.py
+
+You can also run any arbitrary command in a given environment with ``tox exec``:
+
+.. code-block:: bash
+
+    tox exec -e test_latest -- python -m pytest nilearn/_utils/tests/test_data_gen.py
+
 
 How to make a release?
 ======================

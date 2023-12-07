@@ -32,28 +32,15 @@ jobs:
         if: github.repository == 'nilearn/nilearn'
         runs-on: ubuntu-latest
         env:
-            PIP_FLAGS: --pre
             WARN_DEPRECATION_ERRORS: true
-
-        defaults:
-            run:
-                shell: bash
         steps:
-        -   uses: actions/checkout@v4
-
+        -   name: Checkout nilearn
+            uses: actions/checkout@v4
         -   name: Setup python
             uses: actions/setup-python@v4
             with:
                 python-version: 3.12
-
-        -   name: Display Python version
-            run: python -c "import sys; print(sys.version)"
-
-        -   name: Install dependencies
-            run: ./build_tools/github/dependencies.sh
-
-        -   name: Install nilearn
-            run: ./build_tools/github/install.sh
-
-        -   name: Run tests
-            run: python -m pytest --pyargs nilearn
+        -   name: Install tox
+            run: python -m pip install tox
+        -   name: Run test suite
+            run: tox run -e test_pre

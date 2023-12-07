@@ -101,7 +101,7 @@ def test_check_same_fov(affine_eye):
         )
 
 
-def test_check_niimg_3d(affine_eye, img_3d_zeros_eye):
+def test_check_niimg_3d(affine_eye, img_3d_zeros_eye, tmp_path):
     # check error for non-forced but necessary resampling
     with pytest.raises(TypeError, match="nibabel format"):
         _utils.check_niimg(0)
@@ -124,8 +124,10 @@ def test_check_niimg_3d(affine_eye, img_3d_zeros_eye):
     data[20, 20, 20] = 1
     data_img = Nifti1Image(data, affine_eye)
 
-    with testing.write_tmp_imgs(data_img, create_files=True) as filename:
-        _utils.check_niimg_3d(filename)
+    filename = testing.write_imgs_to_path(
+        data_img, file_path=tmp_path, create_files=True
+    )
+    _utils.check_niimg_3d(filename)
 
     # check data dtype equal with dtype='auto'
     img_check = _utils.check_niimg_3d(img_3d_zeros_eye, dtype="auto")
@@ -242,12 +244,12 @@ def test_check_niimg(img_3d_zeros_eye, img_4d_zeros_eye):
     )
 
 
-def test_check_niimg_pathlike(img_3d_zeros_eye):
-    with testing.write_tmp_imgs(
-        img_3d_zeros_eye, create_files=True
-    ) as filename:
-        filename = Path(filename)
-        _utils.check_niimg_3d(filename)
+def test_check_niimg_pathlike(img_3d_zeros_eye, tmp_path):
+    filename = testing.write_imgs_to_path(
+        img_3d_zeros_eye, file_path=tmp_path, create_files=True
+    )
+    filename = Path(filename)
+    _utils.check_niimg_3d(filename)
 
 
 def test_check_niimg_wildcards_errors():
@@ -278,58 +280,55 @@ def test_check_niimg_wildcards_errors():
 @pytest.mark.parametrize(
     "wildcards", [True, False]
 )  # (With globbing behavior or not)
-def test_check_niimg_wildcards(affine_eye, shape, wildcards):
+def test_check_niimg_wildcards(affine_eye, shape, wildcards, tmp_path):
     # First create some testing data
     img = Nifti1Image(np.zeros(shape), affine_eye)
 
-    with testing.write_tmp_imgs(img, create_files=True) as filename:
-        assert_array_equal(
-            get_data(_utils.check_niimg(filename, wildcards=wildcards)),
-            get_data(img),
-        )
+    filename = testing.write_imgs_to_path(
+        img, file_path=tmp_path, create_files=True
+    )
+    assert_array_equal(
+        get_data(_utils.check_niimg(filename, wildcards=wildcards)),
+        get_data(img),
+    )
 
 
-def test_check_niimg_wildcards_one_file_name(img_3d_zeros_eye):
-    tmp_dir = tempfile.tempdir + os.sep
-
+def test_check_niimg_wildcards_one_file_name(img_3d_zeros_eye, tmp_path):
     file_not_found_msg = "File not found: '%s'"
 
     # Testing with a glob matching exactly one filename
     # Using a glob matching one file containing a 3d image returns a 4d image
     # with 1 as last dimension.
-    with testing.write_tmp_imgs(
-        img_3d_zeros_eye, create_files=True, use_wildcards=True
-    ) as globs:
-        glob_input = tmp_dir + globs
-        assert_array_equal(
-            get_data(_utils.check_niimg(glob_input))[..., 0],
-            get_data(img_3d_zeros_eye),
-        )
+    globs = testing.write_imgs_to_path(
+        img_3d_zeros_eye,
+        file_path=tmp_path,
+        create_files=True,
+        use_wildcards=True,
+    )
+    assert_array_equal(
+        get_data(_utils.check_niimg(globs))[..., 0],
+        get_data(img_3d_zeros_eye),
+    )
     # Disabled globbing behavior should raise an ValueError exception
-    with testing.write_tmp_imgs(
-        img_3d_zeros_eye, create_files=True, use_wildcards=True
-    ) as globs:
-        glob_input = tmp_dir + globs
-        with pytest.raises(
-            ValueError, match=file_not_found_msg % re.escape(glob_input)
-        ):
-            _utils.check_niimg(glob_input, wildcards=False)
+    with pytest.raises(
+        ValueError, match=file_not_found_msg % re.escape(globs)
+    ):
+        _utils.check_niimg(globs, wildcards=False)
 
     # Testing with a glob matching multiple filenames
     img_4d = _utils.check_niimg_4d((img_3d_zeros_eye, img_3d_zeros_eye))
-    with testing.write_tmp_imgs(
+    globs = testing.write_imgs_to_path(
         img_3d_zeros_eye,
         img_3d_zeros_eye,
+        file_path=tmp_path,
         create_files=True,
         use_wildcards=True,
-    ) as globs:
-        assert_array_equal(
-            get_data(_utils.check_niimg(glob_input)), get_data(img_4d)
-        )
+    )
+    assert_array_equal(get_data(_utils.check_niimg(globs)), get_data(img_4d))
 
 
 def test_check_niimg_wildcards_no_expand_wildcards(
-    img_3d_zeros_eye, img_4d_zeros_eye
+    img_3d_zeros_eye, img_4d_zeros_eye, tmp_path
 ):
     nofile_path = "/tmp/nofile"
 
@@ -350,20 +349,20 @@ def test_check_niimg_wildcards_no_expand_wildcards(
         _utils.check_niimg(nofile_path, wildcards=False)
 
     # Testing with an exact filename matching (3d case)
-    with testing.write_tmp_imgs(
-        img_3d_zeros_eye, create_files=True
-    ) as filename:
-        assert_array_equal(
-            get_data(_utils.check_niimg(filename)), get_data(img_3d_zeros_eye)
-        )
+    filename = testing.write_imgs_to_path(
+        img_3d_zeros_eye, file_path=tmp_path, create_files=True
+    )
+    assert_array_equal(
+        get_data(_utils.check_niimg(filename)), get_data(img_3d_zeros_eye)
+    )
 
     # Testing with an exact filename matching (4d case)
-    with testing.write_tmp_imgs(
-        img_4d_zeros_eye, create_files=True
-    ) as filename:
-        assert_array_equal(
-            get_data(_utils.check_niimg(filename)), get_data(img_4d_zeros_eye)
-        )
+    filename = testing.write_imgs_to_path(
+        img_4d_zeros_eye, file_path=tmp_path, create_files=True
+    )
+    assert_array_equal(
+        get_data(_utils.check_niimg(filename)), get_data(img_4d_zeros_eye)
+    )
 
     # Reverting to default behavior
     ni.EXPAND_PATH_WILDCARDS = True

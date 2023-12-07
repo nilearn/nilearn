@@ -31,8 +31,8 @@ def test_mix_colormaps(rng):
 
     # Mixin map's shape should be equal to that of
     # the foreground and background maps
-    foreground_map = rng.rand(n, 4)
-    background_map = rng.rand(n, 4)
+    foreground_map = rng.random((n, 4))
+    background_map = rng.random((n, 4))
     mix_map = _mix_colormaps(foreground_map, background_map)
     assert mix_map.shape == (n, 4)
     # Transparency of mixin map should be higher
@@ -42,22 +42,22 @@ def test_mix_colormaps(rng):
 
     # If foreground and background maps' shapes are different,
     # an Exception should be raised
-    background_map = rng.rand(n - 1, 4)
+    background_map = rng.random((n - 1, 4))
     with pytest.raises(Exception):
         _mix_colormaps(foreground_map, background_map)
 
     # If foreground map is transparent,
     # mixin should be equal to background map
-    foreground_map = rng.rand(n, 4)
-    background_map = rng.rand(n, 4)
+    foreground_map = rng.random((n, 4))
+    background_map = rng.random((n, 4))
     foreground_map[:, 3] = 0
     mix_map = _mix_colormaps(foreground_map, background_map)
     assert np.allclose(mix_map, background_map)
 
     # If background map is transparent,
     # mixin should be equal to foreground map
-    foreground_map = rng.rand(n, 4)
-    background_map = rng.rand(n, 4)
+    foreground_map = rng.random((n, 4))
+    background_map = rng.random((n, 4))
     background_map[:, 3] = 0
     mix_map = _mix_colormaps(foreground_map, background_map)
     assert np.allclose(mix_map, foreground_map)
@@ -65,7 +65,7 @@ def test_mix_colormaps(rng):
     # If foreground and background maps are equal,
     # RBG values of the mixin map should be equal
     # to that of the foreground and background maps
-    foreground_map = rng.rand(n, 4)
+    foreground_map = rng.random((n, 4))
     background_map = foreground_map
     mix_map = _mix_colormaps(foreground_map, background_map)
     assert np.allclose(mix_map[:, :3], foreground_map[:, :3])

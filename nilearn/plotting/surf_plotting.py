@@ -18,6 +18,7 @@ from nilearn import image, surface
 from nilearn._utils import check_niimg_3d, compare_version, fill_doc
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn.plotting.cm import _mix_colormaps, cold_hot
+from nilearn.plotting.displays._slicers import _get_cbar_ticks
 from nilearn.plotting.html_surface import _get_vertexcolor
 from nilearn.plotting.img_plotting import _get_colorbar_and_data_ranges
 from nilearn.plotting.js_plotting_utils import colorscale
@@ -401,7 +402,7 @@ def _compute_surf_map_faces_matplotlib(surf_map, faces, avg_method,
     return surf_map_faces
 
 
-def _get_ticks_matplotlib(vmin, vmax, cbar_tick_format):
+def _get_ticks_matplotlib(vmin, vmax, cbar_tick_format, threshold):
     """Help for plot_surf with matplotlib engine.
 
     This function computes the tick values for the colorbar.
@@ -411,14 +412,12 @@ def _get_ticks_matplotlib(vmin, vmax, cbar_tick_format):
     # ...unless we are dealing with integers with a small range
     # in this case, we reduce the number of ticks
     if cbar_tick_format == "%i" and vmax - vmin < n_ticks - 1:
-        ticks = np.arange(vmin, vmax + 1)
+        return np.arange(vmin, vmax + 1)
     else:
-        # remove duplicate ticks when vmin == vmax, or almost
-        ticks = np.unique(np.linspace(vmin, vmax, n_ticks))
-    return ticks
+        return _get_cbar_ticks(vmin, vmax, threshold, n_ticks)
 
 
-def _get_cmap_matplotlib(cmap, vmin, vmax, threshold=None):
+def _get_cmap_matplotlib(cmap, vmin, vmax, cbar_tick_format, threshold=None):
     """Help for plot_surf with matplotlib engine.
 
     This function returns the colormap.
@@ -427,6 +426,9 @@ def _get_cmap_matplotlib(cmap, vmin, vmax, threshold=None):
     norm = Normalize(vmin=vmin, vmax=vmax)
     cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
     if threshold is not None:
+        if cbar_tick_format == "%i" and int(threshold) != threshold:
+            warn("You provided a non integer threshold "
+                 "but configured the colorbar to use integer formatting.")
         # set colors to grey for absolute values < threshold
         istart = int(norm(-threshold, clip=True) * (our_cmap.N - 1))
         istop = int(norm(threshold, clip=True) * (our_cmap.N - 1))
@@ -600,9 +602,14 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
             cbar_vmin = cbar_vmin if cbar_vmin is not None else vmin
             cbar_vmax = cbar_vmax if cbar_vmax is not None else vmax
             ticks = _get_ticks_matplotlib(cbar_vmin, cbar_vmax,
-                                          cbar_tick_format)
-            our_cmap, norm = _get_cmap_matplotlib(cmap, vmin, vmax, threshold)
+                                          cbar_tick_format, threshold)
+            our_cmap, norm = _get_cmap_matplotlib(cmap,
+                                                  vmin,
+                                                  vmax,
+                                                  cbar_tick_format,
+                                                  threshold)
             bounds = np.linspace(cbar_vmin, cbar_vmax, our_cmap.N)
+
             # we need to create a proxy mappable
             proxy_mappable = ScalarMappable(cmap=our_cmap, norm=norm)
             proxy_mappable.set_array(surf_map_faces)
@@ -1281,7 +1288,8 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
                      inflate=False, views=['lateral', 'medial'],
                      output_file=None, title=None, colorbar=True,
                      vmin=None, vmax=None, threshold=None,
-                     symmetric_cbar='auto', cmap='cold_hot', **kwargs):
+                     symmetric_cbar='auto', cmap='cold_hot',
+                     cbar_tick_format='%i', **kwargs):
     """Plot multiple views of plot_surf_stat_map \
     in a single figure.
 
@@ -1338,6 +1346,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
     %(symmetric_cbar)s
     %(cmap)s
         Default='cold_hot'.
+    %(cbar_tick_format)s
     kwargs : dict, optional
         keyword arguments passed to plot_surf_stat_map.
 
@@ -1446,7 +1455,15 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         cbar_grid = gridspec.GridSpecFromSubplotSpec(3, 3, grid[-1, :])
         cbar_ax = fig.add_subplot(cbar_grid[1])
         axes.append(cbar_ax)
-        fig.colorbar(sm, cax=cbar_ax, orientation='horizontal')
+        # Get custom ticks to set in colorbar
+        ticks = _get_ticks_matplotlib(vmin, vmax, cbar_tick_format, threshold)
+        fig.colorbar(
+            sm,
+            cax=cbar_ax,
+            orientation='horizontal',
+            ticks=ticks,
+            format=cbar_tick_format,
+        )
 
     if title is not None:
         fig.suptitle(title, y=1. - title_h / sum(height_ratios), va="bottom")

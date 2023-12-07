@@ -535,7 +535,7 @@ class BaseSlicer:
         # yields a cryptic matplotlib error message
         # when trying to plot the color bar
         nb_ticks = 5 if cbar_vmin != cbar_vmax else 1
-        ticks = np.linspace(cbar_vmin, cbar_vmax, nb_ticks)
+        ticks = _get_cbar_ticks(cbar_vmin, cbar_vmax, offset, nb_ticks)
         bounds = np.linspace(cbar_vmin, cbar_vmax, our_cmap.N)
 
         # some colormap hacking
@@ -806,6 +806,38 @@ class BaseSlicer:
         self.frame_axes.figure.savefig(
             filename, dpi=dpi, facecolor=facecolor, edgecolor=edgecolor
         )
+
+
+def _get_cbar_ticks(vmin, vmax, offset, nb_ticks=5):
+    """Help for BaseSlicer."""
+    # edge case where the data has a single value yields
+    # a cryptic matplotlib error message when trying to plot the color bar
+    if vmin == vmax:
+        return np.linspace(vmin, vmax, 1)
+
+    # If a threshold is specified, we want two of the tick
+    # to correspond to -thresold and +threshold on the colorbar.
+    # If the threshold is very small compared to vmax,
+    # we use a simple linspace as the result would be very difficult to see.
+    ticks = np.linspace(vmin, vmax, nb_ticks)
+    if offset is not None and offset / vmax > 0.12:
+        diff = [abs(abs(tick) - offset) for tick in ticks]
+        # Edge case where the thresholds are exactl
+        # at the same distance to 4 ticks
+        if diff.count(min(diff)) == 4:
+            idx_closest = np.sort(np.argpartition(diff, 4)[:4])
+            idx_closest = np.in1d(ticks, np.sort(ticks[idx_closest])[1:3])
+        else:
+            # Find the closest 2 ticks
+            idx_closest = np.sort(np.argpartition(diff, 2)[:2])
+            if 0 in ticks[idx_closest]:
+                idx_closest = np.sort(np.argpartition(diff, 3)[:3])
+                idx_closest = idx_closest[[0, 2]]
+        ticks[idx_closest] = [-offset, offset]
+    if len(ticks) > 0 and ticks[0] < vmin:
+        ticks[0] = vmin
+
+    return ticks
 
 
 @fill_doc
