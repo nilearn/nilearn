@@ -374,46 +374,41 @@ def test_load_surf_mesh_file_gii(tmp_path):
     os.remove(filename_gii_mesh_no_face)
 
 
-def test_load_surf_mesh_file_freesurfer(tmp_path):
+@pytest.mark.parametrize("suffix", ['.pial',
+                                    '.inflated',
+                                    '.white',
+                                    '.orig',
+                                    'sphere'])
+def test_load_surf_mesh_file_freesurfer(suffix, tmp_path):
     mesh = generate_surf()
-    for suff in ['.pial', '.inflated', '.white', '.orig', 'sphere']:
-        fd, filename_fs_mesh = tempfile.mkstemp(suffix=suff,
-                                                dir=str(tmp_path))
-        os.close(fd)
-        nb.freesurfer.write_geometry(filename_fs_mesh, mesh[0], mesh[1])
-        assert len(load_surf_mesh(filename_fs_mesh)) == 2
-        assert_array_almost_equal(load_surf_mesh(filename_fs_mesh)[0],
-                                  mesh[0])
-        assert_array_almost_equal(load_surf_mesh(filename_fs_mesh)[1],
-                                  mesh[1])
-        os.remove(filename_fs_mesh)
+
+    _, filename_fs_mesh = tempfile.mkstemp(suffix=suffix,
+                                           dir=str(tmp_path))
+    nb.freesurfer.write_geometry(filename_fs_mesh, mesh[0], mesh[1])
+
+    assert len(load_surf_mesh(filename_fs_mesh)) == 2
+    assert_array_almost_equal(load_surf_mesh(filename_fs_mesh)[0], mesh[0])
+    assert_array_almost_equal(load_surf_mesh(filename_fs_mesh)[1], mesh[1])
 
 
-def test_load_surf_mesh_file_error(tmp_path):
+@pytest.mark.parametrize("suffix", ['.vtk', '.obj', '.mnc', '.txt'])
+def test_load_surf_mesh_file_error(suffix, tmp_path):
     # test if files with unexpected suffixes raise errors
     mesh = generate_surf()
-    wrong_suff = ['.vtk', '.obj', '.mnc', '.txt']
-    for suff in wrong_suff:
-        fd, filename_wrong = tempfile.mkstemp(suffix=suff,
-                                              dir=str(tmp_path))
-        os.close(fd)
-        nb.freesurfer.write_geometry(filename_wrong, mesh[0], mesh[1])
-        with pytest.raises(ValueError,
-                           match='input type is not recognized'
-                           ):
-            load_surf_mesh(filename_wrong)
-        os.remove(filename_wrong)
+    _, filename_wrong = tempfile.mkstemp(suffix=suffix, dir=str(tmp_path))
+    nb.freesurfer.write_geometry(filename_wrong, mesh[0], mesh[1])
+
+    with pytest.raises(ValueError, match='input type is not recognized'):
+        load_surf_mesh(filename_wrong)
 
 
 def test_load_surf_mesh_file_glob(tmp_path):
     mesh = generate_surf()
-    fd1, fname1 = tempfile.mkstemp(suffix='.pial',
-                                   dir=str(tmp_path))
-    os.close(fd1)
+    _, fname1 = tempfile.mkstemp(suffix='.pial', dir=str(tmp_path))
+
     nb.freesurfer.write_geometry(fname1, mesh[0], mesh[1])
-    fd2, fname2 = tempfile.mkstemp(suffix='.pial',
-                                   dir=str(tmp_path))
-    os.close(fd2)
+    _, fname2 = tempfile.mkstemp(suffix='.pial', dir=str(tmp_path))
+
     nb.freesurfer.write_geometry(fname2, mesh[0], mesh[1])
 
     with pytest.raises(ValueError, match='More than one file matching path'):
@@ -425,8 +420,6 @@ def test_load_surf_mesh_file_glob(tmp_path):
     assert len(load_surf_mesh(fname1)) == 2
     assert_array_almost_equal(load_surf_mesh(fname1)[0], mesh[0])
     assert_array_almost_equal(load_surf_mesh(fname1)[1], mesh[1])
-    os.remove(fname1)
-    os.remove(fname2)
 
 
 def test_load_surf_data_file_glob(tmp_path):
@@ -765,7 +758,7 @@ def test_check_mesh_and_data(rng):
     assert (d == data).all()
     # Generate faces such that max index is larger than
     # the length of coordinates array.
-    wrong_faces = rng.randint(coords.shape[0] + 1, size=(30, 3))
+    wrong_faces = rng.integers(coords.shape[0] + 1, size=(30, 3))
     wrong_mesh = Mesh(coords, wrong_faces)
     # Check that check_mesh_and_data raises an error
     # with the resulting wrong mesh
@@ -794,7 +787,7 @@ def test_check_surface(rng):
     assert_array_equal(s.mesh.faces, mesh.faces)
     # Generate faces such that max index is larger than
     # the length of coordinates array.
-    wrong_faces = rng.randint(coords.shape[0] + 1, size=(30, 3))
+    wrong_faces = rng.integers(coords.shape[0] + 1, size=(30, 3))
     wrong_mesh = Mesh(coords, wrong_faces)
     wrong_surface = Surface(wrong_mesh, data)
     # Check that check_mesh_and_data raises an error

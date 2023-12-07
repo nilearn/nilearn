@@ -126,7 +126,7 @@ cv_scores = cross_val_score(
     cv=cv,
     scoring="roc_auc",
     groups=session_label,
-    n_jobs=-1,
+    n_jobs=2,
 )
 print(f"SVC accuracy (tuned parameters): {cv_scores.mean():.3f}")
 
@@ -274,6 +274,6 @@ rfe_svc = Pipeline([("rfe", rfe), ("svc", svc)])
 #                             fmri_masked,
 #                             target,
 #                             cv=cv,
-#                             n_jobs=-1,
+#                             n_jobs=2,
 #                             verbose=1)
 # But, be aware that this can take * A WHILE * ...

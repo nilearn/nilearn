@@ -390,7 +390,9 @@ def test__load_mixed_gambles(rng, affine_eye):
     n_trials = 48
     for n_subjects in [1, 5, 16]:
         zmaps = [
-            nibabel.Nifti1Image(rng.randn(3, 4, 5, n_trials), affine_eye)
+            nibabel.Nifti1Image(
+                rng.standard_normal((3, 4, 5, n_trials)), affine_eye
+            )
             for _ in range(n_subjects)
         ]
         zmaps, gain, _ = func._load_mixed_gambles(zmaps)
@@ -619,7 +621,7 @@ def test_fetch_development_fmri(tmp_path, request_mocker):
     assert data.description != ""
 
     # check reduced confounds
-    confounds = np.recfromcsv(data.confounds[0], delimiter="\t")
+    confounds = np.genfromtxt(data.confounds[0], delimiter="\t")
 
     assert len(confounds[0]) == 15
 
@@ -627,7 +629,7 @@ def test_fetch_development_fmri(tmp_path, request_mocker):
     data = func.fetch_development_fmri(
         n_subjects=2, reduce_confounds=False, verbose=1
     )
-    confounds = np.recfromcsv(data.confounds[0], delimiter="\t")
+    confounds = np.genfromtxt(data.confounds[0], delimiter="\t")
 
     assert len(confounds[0]) == 28
 

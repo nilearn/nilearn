@@ -3,13 +3,14 @@ from string import Template
 
 import numpy as np
 
-from .._utils.cache_mixin import _check_memory
-from .._utils.class_inspect import get_params
-from .multi_nifti_masker import MultiNiftiMasker
-from .nifti_masker import NiftiMasker
+from nilearn.experimental.surface import SurfaceMasker
+from nilearn.maskers import MultiNiftiMasker, NiftiMasker
+
+from .cache_mixin import _check_memory
+from .class_inspect import get_params
 
 
-def _check_embedded_nifti_masker(estimator, multi_subject=True):
+def check_embedded_masker(estimator, masker_type="multi_nii"):
     """Create a masker from instance parameters.
 
     Base function for using a masker within a BaseEstimator class
@@ -29,30 +30,37 @@ def _check_embedded_nifti_masker(estimator, multi_subject=True):
     instance : object, instance of BaseEstimator
         The object that gives us the values of the parameters
 
-    multi_subject : boolean, default=True
-        Indicates whether to return a MultiNiftiMasker or a NiftiMasker
+    masker_type : {"multi_nii", "nii", "surface"}, default="mutli_nii"
+        Indicates whether to return a MultiNiftiMasker, NiftiMasker, or a
+        SurfaceMasker.
 
     Returns
     -------
-    masker : MultiNiftiMasker or NiftiMasker
+    masker : MultiNiftiMasker, NiftiMasker, or SurfaceMasker
         New masker
 
     """
-    masker_type = MultiNiftiMasker if multi_subject else NiftiMasker
+    if masker_type == "surface":
+        masker_type = SurfaceMasker
+    elif masker_type == "multi_nii":
+        masker_type = MultiNiftiMasker
+    else:
+        masker_type = NiftiMasker
     estimator_params = get_params(masker_type, estimator)
     mask = getattr(estimator, "mask", None)
 
-    if isinstance(mask, (NiftiMasker, MultiNiftiMasker)):
-        # Creating (Multi)NiftiMasker from provided masker
+    if isinstance(mask, (NiftiMasker, MultiNiftiMasker, SurfaceMasker)):
+        # Creating masker from provided masker
         masker_params = get_params(masker_type, mask)
         new_masker_params = masker_params
     else:
-        # Creating (Multi)NiftiMasker
-        # with parameters extracted from estimator
+        # Creating a masker with parameters extracted from estimator
         new_masker_params = estimator_params
         new_masker_params["mask_img"] = mask
     # Forwarding system parameters of instance to new masker in all case
-    if multi_subject and hasattr(estimator, "n_jobs"):
+    if issubclass(masker_type, MultiNiftiMasker) and hasattr(
+        estimator, "n_jobs"
+    ):
         # For MultiNiftiMasker only
         new_masker_params["n_jobs"] = estimator.n_jobs
 
@@ -86,7 +94,6 @@ def _check_embedded_nifti_masker(estimator, multi_subject=True):
             warning_msg.substitute(attribute="verbose", default_value="0")
         )
         new_masker_params["verbose"] = 0
-
     # Raising warning if masker override parameters
     conflict_string = ""
     for param_key in sorted(estimator_params):

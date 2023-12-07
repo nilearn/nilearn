@@ -229,7 +229,7 @@ def test_t_score_with_covars_and_normalized_design_nocovar(rng):
 
     # generate data
     var1 = np.ones((n_samples, 1)) / np.sqrt(n_samples)
-    var2 = rng.randn(n_samples, 1)
+    var2 = rng.standard_normal((n_samples, 1))
     var2 = var2 / np.sqrt(np.sum(var2**2, 0))  # normalize
 
     # compute t-scores with nilearn routine
@@ -247,7 +247,7 @@ def test_t_score_with_covars_and_normalized_design_withcovar(rng):
 
     # generate data
     var1 = np.ones((n_samples, 1)) / np.sqrt(n_samples)  # normalized
-    var2 = rng.randn(n_samples, 1)
+    var2 = rng.standard_normal((n_samples, 1))
     var2 = var2 / np.sqrt(np.sum(var2**2, 0))  # normalize
     covars = np.eye(n_samples, 3)  # covars is orthogonal
     covars[3] = -1  # covars is orthogonal to var1

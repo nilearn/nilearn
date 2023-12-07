@@ -12,7 +12,6 @@ from numpy.testing import (
     assert_array_equal,
 )
 from sklearn.datasets import load_iris
-from sklearn.utils import check_random_state
 
 from nilearn.decoding._objective_functions import (
     logistic_loss_lipschitz_constant,
@@ -40,14 +39,14 @@ from nilearn.masking import unmask_from_to_3d_array
 
 def _make_data(rng=None, masked=False, dim=(2, 2, 2)):
     if rng is None:
-        rng = check_random_state(42)
+        rng = np.random.default_rng(42)
     mask = np.ones(dim).astype(bool)
-    mask[rng.rand(*dim) < 0.7] = 0
+    mask[rng.random(dim) < 0.7] = 0
     w = np.zeros(dim)
     w[dim[0] // 2 :, dim[1] // 2 :, : dim[2] // 2] = 1
     n = 5
     X = np.ones([n] + list(dim))
-    X += rng.randn(*X.shape)
+    X += rng.standard_normal(X.shape)
     y = np.dot([x[mask] for x in X], w[mask])
     if masked:
         X = np.array([x[mask] for x in X])

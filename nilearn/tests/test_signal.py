@@ -238,7 +238,7 @@ def test_standardize(rng):
     n_samples = 17
 
     # Create random signals with offsets
-    a = rng.random_sample((n_samples, n_features))
+    a = rng.random((n_samples, n_features))
     a += np.linspace(0, 2.0, n_features)
 
     # Test raise error when strategy is not valid option
@@ -876,7 +876,7 @@ def test_clean_psc(rng):
     signals, _, _ = generate_signals(n_features=n_features, length=n_samples)
 
     # positive mean signal
-    means = rng.randn(1, n_features)
+    means = rng.standard_normal((1, n_features))
     signals_pos_mean = signals + means
 
     # a mix of pos and neg mean signal

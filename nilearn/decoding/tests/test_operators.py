@@ -8,7 +8,7 @@ from nilearn.decoding.proximal_operators import prox_l1, prox_tvl1
 
 
 def test_prox_l1_nonexpansiveness(rng, n_features=10):
-    x = rng.randn(n_features, 1)
+    x = rng.standard_normal((n_features, 1))
     tau = 0.3
     s = prox_l1(x.copy(), tau)
     p = x - s  # projection + shrinkage = id
@@ -29,7 +29,7 @@ def test_prox_tvl1_approximates_prox_l1_for_lasso(
     l1_ratio = 1.0  # pure LASSO
 
     shape = [size] * ndim
-    z = rng.randn(*shape)
+    z = rng.standard_normal(shape)
 
     # use prox_tvl1 approximation to prox_l1
     a = prox_tvl1(

@@ -57,7 +57,7 @@ task_label = "languagelocalizer"
     models_events,
     models_confounds,
 ) = first_level_from_bids(
-    data_dir, task_label, img_filters=[("desc", "preproc")]
+    data_dir, task_label, img_filters=[("desc", "preproc")], n_jobs=2
 )
 
 # %%
@@ -137,7 +137,7 @@ second_level_input = models
 
 # %%
 # Note that we apply a smoothing of 8mm.
-second_level_model = SecondLevelModel(smoothing_fwhm=8.0)
+second_level_model = SecondLevelModel(smoothing_fwhm=8.0, n_jobs=2)
 second_level_model = second_level_model.fit(second_level_input)
 
 # %%

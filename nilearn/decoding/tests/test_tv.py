@@ -14,9 +14,9 @@ from nilearn.decoding.space_net_solvers import (
 def test_tvl1_from_gradient(rng, alpha, l1_ratio, size=5, n_samples=10):
     shape = [size] * 3
     n_voxels = np.prod(shape)
-    X = rng.randn(n_samples, n_voxels)
-    y = rng.randn(n_samples)
-    w = rng.randn(*shape)
+    X = rng.standard_normal((n_samples, n_voxels))
+    y = rng.standard_normal(n_samples)
+    w = rng.standard_normal(shape)
     mask = np.ones_like(w).astype(bool)
 
     gradid = gradient_id(w, l1_ratio=l1_ratio)
