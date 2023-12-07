@@ -177,7 +177,8 @@ decoder = Decoder(
 )
 decoder.fit(z_maps, conditions_label, groups=session_label)
 
-# Return the corresponding mean prediction accuracy compared to chance for classifying one-vs-all items.
+# Return the corresponding mean prediction accuracy compared to chance
+# for classifying one-vs-all items.
 
 classification_accuracy = np.mean(list(decoder.cv_scores_.values()))
 chance_level = 1.0 / len(np.unique(conditions))
