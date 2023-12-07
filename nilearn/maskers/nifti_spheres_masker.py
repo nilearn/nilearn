@@ -18,9 +18,9 @@ from nilearn._utils.niimg_conversions import (
     check_niimg_4d,
     safe_get_data,
 )
+from nilearn.datasets import load_mni152_template
 from nilearn.maskers import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
-from nilearn.datasets import load_mni152_template
 
 
 def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
