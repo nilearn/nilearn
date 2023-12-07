@@ -1863,7 +1863,20 @@ def test_missing_trial_type_column_warning(tmp_path_factory):
         )
 
 
-def test_flm_fit_surface_mask(rng, make_mini_img, mini_mask):
+def test_flm_fit_surface_image(rng, make_mini_img):
+    """Test FirstLevelModel with surface image and mask_img set to False."""
+    ts = 5
+    des = pd.DataFrame(rng.standard_normal((ts, 3)), columns=["", "", ""])
+    mini_img = make_mini_img((ts,))
+    model = FirstLevelModel(mask_img=False)
+    model.fit(mini_img, design_matrices=des)
+
+    assert isinstance(model.masker_.mask_img_, SurfaceImage)
+    assert model.masker_.mask_img_.shape == (9,)
+    assert isinstance(model.masker_, SurfaceMasker)
+
+
+def test_flm_fit_surface_image_with_mask(rng, make_mini_img, mini_mask):
     """Test FirstLevelModel with surface mask."""
     ts = 5
     des = pd.DataFrame(rng.standard_normal((ts, 3)), columns=["", "", ""])
@@ -1876,7 +1889,7 @@ def test_flm_fit_surface_mask(rng, make_mini_img, mini_mask):
     assert isinstance(model.masker_, SurfaceMasker)
 
 
-def test_flm_with_surface_masker_no_mask(rng, make_mini_img):
+def test_flm_with_surface_image_with_surface_masker(rng, make_mini_img):
     """Test FirstLevelModel with SurfaceMasker."""
     ts = 5
     des = pd.DataFrame(rng.standard_normal((ts, 3)), columns=["", "", ""])
@@ -1891,7 +1904,7 @@ def test_flm_with_surface_masker_no_mask(rng, make_mini_img):
 
 
 def test_flm_with_surface_masker_with_mask(rng, make_mini_img, mini_mask):
-    """Test FirstLevelModel with SurfaceMasker and mask."""
+    """Test FirstLevelModel with SurfaceMasker and mask image."""
     ts = 5
     des = pd.DataFrame(rng.standard_normal((ts, 3)), columns=["", "", ""])
     mini_img = make_mini_img((ts,))

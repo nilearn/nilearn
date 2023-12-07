@@ -584,10 +584,10 @@ class FirstLevelModel(BaseGLM):
                     mesh=run_imgs[0].mesh,
                     data={
                         "left_hemisphere": np.ones(
-                            run_imgs[0].data[left].shape
+                            run_imgs[0].data[left].shape[1], dtype="int8"
                         ),
                         "right_hemisphere": np.ones(
-                            run_imgs[0].data[right].shape
+                            run_imgs[0].data[right].shape[1], dtype="int8"
                         ),
                     },
                 )
@@ -683,8 +683,7 @@ class FirstLevelModel(BaseGLM):
                 run_img = check_niimg(run_img, ensure_ndim=4)
             if design_matrices is None:
                 if isinstance(run_img, SurfaceImage):
-                    dims = len(run_img.shape)
-                    n_scans = run_img.shape[0] if dims == 2 else 1
+                    n_scans = run_img.shape[0]
                 else:
                     n_scans = get_data(run_img).shape[3]
                 if confounds is not None:
