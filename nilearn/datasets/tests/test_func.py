@@ -621,7 +621,7 @@ def test_fetch_development_fmri(tmp_path, request_mocker):
     assert data.description != ""
 
     # check reduced confounds
-    confounds = np.recfromcsv(data.confounds[0], delimiter="\t")
+    confounds = np.genfromtxt(data.confounds[0], delimiter="\t")
 
     assert len(confounds[0]) == 15
 
@@ -629,7 +629,7 @@ def test_fetch_development_fmri(tmp_path, request_mocker):
     data = func.fetch_development_fmri(
         n_subjects=2, reduce_confounds=False, verbose=1
     )
-    confounds = np.recfromcsv(data.confounds[0], delimiter="\t")
+    confounds = np.genfromtxt(data.confounds[0], delimiter="\t")
 
     assert len(confounds[0]) == 28
 

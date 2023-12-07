@@ -62,11 +62,7 @@ def all_modules(modules_to_ignore=None, modules_to_consider=None):
             "cannot be both specified."
         )
     if modules_to_ignore is None:
-        modules_to_ignore = {
-            "data",
-            "tests",
-            "externals",
-        }
+        modules_to_ignore = {"data", "tests", "externals", "conftest"}
     all_modules = []
     root = str(Path(__file__).parent.parent)
     with warnings.catch_warnings():

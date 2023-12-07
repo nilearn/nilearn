@@ -110,11 +110,6 @@ def monkeypatch_masker_checks():
 
     param_validation.adjust_screening_percentile = adjust_screening_percentile
 
-    def check_embedded_nifti_masker(estimator, *args, **kwargs):
-        return estimator.mask
-
-    decoding.decoder._check_embedded_nifti_masker = check_embedded_nifti_masker
-
 
 monkeypatch_masker_checks()
 
