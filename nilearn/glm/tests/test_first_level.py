@@ -23,6 +23,7 @@ from nilearn._utils.data_gen import (
     generate_fake_fmri_data_and_design,
     write_fake_fmri_data_and_design,
 )
+from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
 from nilearn.glm.contrasts import compute_fixed_effects
 from nilearn.glm.first_level import (
     FirstLevelModel,
@@ -1860,3 +1861,44 @@ def test_missing_trial_type_column_warning(tmp_path_factory):
             "No column named 'trial_type' found" in r.message.args[0]
             for r in record
         )
+
+
+def test_flm_fit_surface_mask(rng, make_mini_img, mini_mask):
+    """Test FirstLevelModel with surface mask."""
+    ts = 5
+    des = pd.DataFrame(rng.standard_normal((ts, 3)), columns=["", "", ""])
+    mini_img = make_mini_img((ts,))
+    model = FirstLevelModel(mask_img=mini_mask)
+    model.fit(mini_img, design_matrices=des)
+
+    assert isinstance(model.masker_.mask_img_, SurfaceImage)
+    assert model.masker_.mask_img_.shape == (9,)
+    assert isinstance(model.masker_, SurfaceMasker)
+
+
+def test_flm_with_surface_masker_no_mask(rng, make_mini_img):
+    """Test FirstLevelModel with SurfaceMasker."""
+    ts = 5
+    des = pd.DataFrame(rng.standard_normal((ts, 3)), columns=["", "", ""])
+    mini_img = make_mini_img((ts,))
+    masker = SurfaceMasker().fit(mini_img)
+    model = FirstLevelModel(mask_img=masker)
+    model.fit(mini_img, design_matrices=des)
+
+    assert isinstance(model.masker_.mask_img_, SurfaceImage)
+    assert model.masker_.mask_img_.shape == (9,)
+    assert isinstance(model.masker_, SurfaceMasker)
+
+
+def test_flm_with_surface_masker_with_mask(rng, make_mini_img, mini_mask):
+    """Test FirstLevelModel with SurfaceMasker and mask."""
+    ts = 5
+    des = pd.DataFrame(rng.standard_normal((ts, 3)), columns=["", "", ""])
+    mini_img = make_mini_img((ts,))
+    masker = SurfaceMasker(mask_img=mini_mask).fit(mini_img)
+    model = FirstLevelModel(mask_img=masker)
+    model.fit(mini_img, design_matrices=des)
+
+    assert isinstance(model.masker_.mask_img_, SurfaceImage)
+    assert model.masker_.mask_img_.shape == (9,)
+    assert isinstance(model.masker_, SurfaceMasker)
