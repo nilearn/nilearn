@@ -1038,7 +1038,7 @@ def first_level_from_bids(
 
     .. code-block:: python
 
-        models, m_imgs, m_events, m_confounds = first_level_from_bids(
+        models, imgs, events, confounds = first_level_from_bids(
             dataset_path=path_to_a_bids_dataset,
             task_label="TaskName",
             space_label="MNI",
@@ -1052,7 +1052,7 @@ def first_level_from_bids(
 
     .. code-block:: python
 
-        models, m_imgs, m_events, m_confounds = first_level_from_bids(
+        models, imgs, events, confounds = first_level_from_bids(
             dataset_path=path_to_a_bids_dataset,
             task_label="TaskName",
             space_label="MNI",
@@ -1066,7 +1066,7 @@ def first_level_from_bids(
 
     .. code-block:: python
 
-        models, m_imgs, m_events, m_confounds = first_level_from_bids(
+        models, imgs, events, confounds = first_level_from_bids(
             dataset_path=path_to_a_bids_dataset,
             task_label="TaskName",
             space_label="MNI",
@@ -1080,7 +1080,7 @@ def first_level_from_bids(
 
     .. code-block:: python
 
-        models, m_imgs, m_events, m_confounds = first_level_from_bids(
+        models, imgs, events, confounds = first_level_from_bids(
             dataset_path=path_to_a_bids_dataset,
             task_label="TaskName",
             space_label="MNI",
