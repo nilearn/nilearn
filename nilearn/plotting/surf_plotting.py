@@ -1646,9 +1646,23 @@ def plot_surf_roi(surf_mesh,
                          'roi_map = np.zeros(n_vertices)\n'
                          'roi_map[roi_idx] = 1')
     if (roi < 0).any():
-        raise ValueError('roi_map should only contain non-negative values')
+        # raise ValueError('roi_map should only contain non-negative values')
+        warn(
+            (
+                'Negative values in roi_map will no longer be allowed in a'
+                ' future version of Nilearn'
+            ),
+            DeprecationWarning,
+        )
     if not np.array_equal(roi[idx_not_na], roi[idx_not_na].astype(int)):
-        raise ValueError('roi_map should only contain integers')
+        # raise ValueError('roi_map should only contain integers')
+        warn(
+            (
+                'Non-integer values in roi_map will no longer be allowed in a'
+                ' future version of Nilearn'
+            ),
+            DeprecationWarning,
+        )
 
     if cbar_tick_format == "auto":
         cbar_tick_format = "." if engine == "plotly" else "%i"
