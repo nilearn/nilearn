@@ -553,7 +553,7 @@ def test_fmri_inputs(tmp_path):
     des.to_csv(des_fname)
 
     conf = pd.DataFrame([0, 0])
-    breakpoint()
+
     events = basic_paradigm()
 
     for fi in func_img, FUNCFILE:
