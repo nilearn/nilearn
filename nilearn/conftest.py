@@ -98,6 +98,7 @@ def suppress_specific_warning():
             "The `darkness` parameter will be deprecated.*|"
             "`legacy_format` will default to `False`.*|"
             "In release 0.13, this fetcher will return a dictionary.*|"
+            "The default strategy for standardize.*|"
         )
         warnings.filterwarnings(
             "ignore",
