@@ -1932,3 +1932,15 @@ def test_flm_with_surface_data_no_design_matrix(_make_surface_glm_data):
     masker = SurfaceMasker().fit(mini_img)
     model = FirstLevelModel(mask_img=masker, t_r=2.0)
     model.fit(mini_img, events=basic_paradigm())
+
+
+def test_flm_compute_contrast_with_surface_data(_make_surface_glm_data):
+    """Smoke test FirstLevelModel compute_contrast with surface data."""
+    mini_img, _ = _make_surface_glm_data(5)
+    masker = SurfaceMasker().fit(mini_img)
+    model = FirstLevelModel(mask_img=masker, t_r=2.0)
+    events = basic_paradigm()
+    model.fit([mini_img, mini_img], events=[events, events])
+    result = model.compute_contrast("c0")
+
+    assert isinstance(result, SurfaceImage)

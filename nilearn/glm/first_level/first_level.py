@@ -867,9 +867,10 @@ class FirstLevelModel(BaseGLM):
             # Prepare the returned images
             output = self.masker_.inverse_transform(estimate_)
             contrast_name = str(con_vals)
-            output.header[
-                "descrip"
-            ] = f"{output_type_} of contrast {contrast_name}"
+            if not isinstance(output, SurfaceImage):
+                output.header[
+                    "descrip"
+                ] = f"{output_type_} of contrast {contrast_name}"
             outputs[output_type_] = output
 
         return outputs if output_type == "all" else output
