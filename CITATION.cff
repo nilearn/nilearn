@@ -645,6 +645,10 @@ authors:
     website: https://github.com/SylvainTakerkart
     affiliation: CNRS, Institut des Neurosciences de la Timone, Marseille, France
     orcid: https://orcid.org/0000-0001-8410-0962
+  - given-names: Tamer
+    family-names: Gezici
+    website: https://github.com/TamerGezici
+    affiliation: Bilkent University
   - given-names: Tarun
     family-names: Samanta
     website: https://github.com/tarunsamanta2k20
@@ -701,7 +705,3 @@ authors:
     family-names: Nájera
     website: https://github.com/Titan-C
     affiliation: Checkmk
-  - given-names: Tamer
-    family-names: Gezici
-    website: https://github.com/TamerGezici
-    affiliation: Bilkent University
