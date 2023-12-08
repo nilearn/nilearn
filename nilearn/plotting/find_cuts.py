@@ -199,7 +199,7 @@ def _get_auto_mask_bounds(img):
             + data[-1, -1, -1]
         )
         edge_value /= 6
-        mask = np.abs(data - edge_value) > 0.005 * data.ptp()
+        mask = np.abs(data - edge_value) > 0.005 * np.ptp(data)
     xmin, xmax, ymin, ymax, zmin, zmax = get_mask_bounds(
         new_img_like(img, mask, affine)
     )

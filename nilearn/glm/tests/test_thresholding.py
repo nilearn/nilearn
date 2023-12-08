@@ -23,7 +23,7 @@ def test_fdr(rng):
     rng.shuffle(x)
 
     assert_almost_equal(fdr_threshold(x, 0.1), norm.isf(0.0005))
-    assert fdr_threshold(x, 0.001) == np.infty
+    assert fdr_threshold(x, 0.001) == np.inf
 
     # addresses #2879
     n = 10
