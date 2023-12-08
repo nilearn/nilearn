@@ -553,7 +553,7 @@ def test_fmri_inputs(tmp_path):
     des.to_csv(des_fname)
 
     conf = pd.DataFrame([0, 0])
-
+    breakpoint()
     events = basic_paradigm()
 
     for fi in func_img, FUNCFILE:
@@ -1924,3 +1924,11 @@ def test_flm_with_surface_masker_with_mask(_make_surface_glm_data, mini_mask):
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
     assert model.masker_.mask_img_.shape == (9,)
     assert isinstance(model.masker_, SurfaceMasker)
+
+
+def test_flm_with_surface_data_no_design_matrix(_make_surface_glm_data):
+    """Smoke test FirstLevelModel with surface data and no design matrix."""
+    mini_img, _ = _make_surface_glm_data(5)
+    masker = SurfaceMasker().fit(mini_img)
+    model = FirstLevelModel(mask_img=masker, t_r=2.0)
+    model.fit(mini_img, events=basic_paradigm())

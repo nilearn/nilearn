@@ -584,10 +584,10 @@ class FirstLevelModel(BaseGLM):
                     mesh=run_imgs[0].mesh,
                     data={
                         "left_hemisphere": np.ones(
-                            run_imgs[0].data[left].shape[1], dtype="int8"
+                            run_imgs[0].data[left].shape[1], dtype=bool
                         ),
                         "right_hemisphere": np.ones(
-                            run_imgs[0].data[right].shape[1], dtype="int8"
+                            run_imgs[0].data[right].shape[1], dtype=bool
                         ),
                     },
                 )
