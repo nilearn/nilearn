@@ -612,25 +612,16 @@ class FirstLevelModel(BaseGLM):
                 memory_level=self.memory_level,
             )
             self.masker_.fit(run_imgs[0])
-        elif isinstance(self.mask_img, (SurfaceMasker, SurfaceImage)):
-            if isinstance(self.mask_img, SurfaceImage):
-                self.masker_ = SurfaceMasker(
-                    mask_img=self.mask_img,
-                    smoothing_fwhm=self.smoothing_fwhm,
-                    target_affine=self.target_affine,
-                    standardize=self.standardize,
-                    t_r=self.t_r,
-                    memory=self.memory,
-                    memory_level=self.memory_level,
-                )
-                self.masker_.fit(run_imgs[0])
-            else:
-                self.mask_img._check_fitted()
-                if self.mask_img.mask_img_ is None and self.masker_ is None:
-                    # TODO check parameters and override with flm params
-                    self.masker_.fit(run_imgs[0])
-                else:
-                    self.masker_ = self.mask_img
+        elif isinstance(self.mask_img, SurfaceImage):
+            self.masker_ = SurfaceMasker(
+                mask_img=self.mask_img,
+                smoothing_fwhm=self.smoothing_fwhm,
+                standardize=self.standardize,
+                t_r=self.t_r,
+                memory=self.memory,
+                memory_level=self.memory_level,
+            )
+            self.masker_.fit(run_imgs[0])
         else:
             # Make sure masker has been fitted otherwise no attribute mask_img_
             self.mask_img._check_fitted()
@@ -651,7 +642,11 @@ class FirstLevelModel(BaseGLM):
                         warn(
                             f"Parameter {param_name} of the masker overridden"
                         )
-                    setattr(self.masker_, param_name, our_param)
+                    if isinstance(self.masker_, SurfaceMasker):
+                        if param_name not in ["target_affine", "target_shape"]:
+                            setattr(self.masker_, param_name, our_param)
+                    else:
+                        setattr(self.masker_, param_name, our_param)
                 self.masker_.fit(run_imgs[0])
             else:
                 self.masker_ = self.mask_img
