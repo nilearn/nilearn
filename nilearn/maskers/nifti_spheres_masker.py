@@ -66,7 +66,7 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
 
     # Compute world coordinates of all in-mask voxels.
     if niimg is None:
-        mask, affine = masking._load_mask_img(mask_img)
+        mask, affine = masking.load_mask_img(mask_img)
         # Get coordinate for all voxels inside of mask
         mask_coords = np.asarray(np.nonzero(mask)).T.tolist()
         X = None
@@ -80,10 +80,10 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
             target_shape=niimg.shape[:3],
             interpolation='nearest',
         )
-        mask, _ = masking._load_mask_img(mask_img)
+        mask, _ = masking.load_mask_img(mask_img)
         mask_coords = list(zip(*np.where(mask != 0)))
 
-        X = masking._apply_mask_fmri(niimg, mask_img)
+        X = masking.apply_mask_fmri(niimg, mask_img)
 
     elif niimg is not None:
         affine = niimg.affine
@@ -298,7 +298,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         self.radius = radius
         self.allow_overlap = allow_overlap
 
-        # Parameters for _smooth_array
+        # Parameters for smooth_array
         self.smoothing_fwhm = smoothing_fwhm
 
         # Parameters for clean()

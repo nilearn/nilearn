@@ -18,7 +18,7 @@ from .._utils.numpy_conversions import as_ndarray
 
 # Local imports
 from ..image import iter_img, new_img_like, reorder_img
-from ..image.image import _smooth_array
+from ..image.image import smooth_array
 from ..image.resampling import coord_transform, get_mask_bounds
 
 ###############################################################################
@@ -324,7 +324,7 @@ def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
     if data.dtype.kind in ("i", "u"):
         data = data.astype(np.float64)
 
-    data = _smooth_array(data, affine, fwhm="fast")
+    data = smooth_array(data, affine, fwhm="fast")
 
     # to control floating point error problems
     # during given input value "n_cuts"

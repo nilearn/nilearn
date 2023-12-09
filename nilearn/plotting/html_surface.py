@@ -121,7 +121,8 @@ def one_mesh_info(
                           vmax=vmax, vmin=vmin)
 
 
-def _check_mesh(mesh):
+def check_mesh(mesh):
+    """Validate type and content of a mesh."""
     if isinstance(mesh, str):
         return datasets.fetch_surf_fsaverage(mesh)
     if not isinstance(mesh, collections.abc.Mapping):
@@ -150,7 +151,7 @@ def _full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
 
     """
     info = {}
-    mesh = surface.surface._check_mesh(mesh)
+    mesh = surface.surface.check_mesh(mesh)
     surface_maps = {
         h: surface.vol_to_surf(volume_img, mesh[f'pial_{h}'],
                                inner_mesh=mesh.get(f'white_{h}', None),
