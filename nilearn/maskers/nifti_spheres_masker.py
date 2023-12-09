@@ -18,6 +18,8 @@ from nilearn._utils.niimg_conversions import (
     check_niimg_4d,
     safe_get_data,
 )
+from nilearn.datasets import load_mni152_template
+from nilearn.maskers import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 
 
@@ -226,9 +228,9 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
 
     radius : :obj:`float`, default=None
         Indicates, in millimeters, the radius for the sphere around the seed.
-        Default is None (signal is extracted on a single voxel).
+        By default signal is extracted on a single voxel.
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object, default=None
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
 
@@ -265,6 +267,9 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
     seeds_ : :obj:`list` of :obj:`list`
         The coordinates of the seeds in the masker.
 
+    reports : boolean, default=True
+         If set to True, data is saved in order to produce a report.
+
     See Also
     --------
     nilearn.maskers.NiftiMasker
@@ -272,7 +277,6 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
     """
 
     # memory and memory_level are used by CacheMixin.
-
     def __init__(
         self,
         seeds,
@@ -291,6 +295,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         memory=Memory(location=None, verbose=0),
         memory_level=1,
         verbose=0,
+        reports=True,
         **kwargs,
     ):
         self.seeds = seeds
@@ -318,7 +323,184 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         self.memory = memory
         self.memory_level = memory_level
 
+        # Parameters for reporting
+        self.reports = reports
+        self.report_id = -1
+        self._report_content = dict()
+        self._report_content['description'] = (
+            'This reports shows the regions '
+            'defined by the spheres of the masker.')
+        self._report_content['warning_message'] = None
+
         self.verbose = verbose
+
+    def generate_report(self, displayed_spheres="all"):
+        """Generate an HTML report for current ``NiftiSpheresMasker`` object.
+
+        .. note::
+            This functionality requires to have ``Matplotlib`` installed.
+
+        Parameters
+        ----------
+        displayed_spheres : :obj:`int`, or :obj:`list`,\
+                            or :class:`~numpy.ndarray`, or "all", default="all"
+            Indicates which spheres will be displayed in the HTML report.
+
+                - If "all": All spheres will be displayed in the report.
+
+                .. code-block:: python
+
+                    masker.generate_report("all")
+
+                .. warning::
+
+                    If there are too many spheres, this might be time and
+                    memory consuming, and will result in very heavy
+                    reports.
+
+                - If a :obj:`list` or :class:`~numpy.ndarray`: This indicates
+                  the indices of the spheres to be displayed in the report.
+                  For example, the following code will generate a report with
+                  spheres 6, 3, and 12, displayed in this specific order:
+
+                .. code-block:: python
+
+                    masker.generate_report([6, 3, 12])
+
+                - If an :obj:`int`: This will only display the first n
+                  spheres, n being the value of the parameter. By default,
+                  the report will only contain the first 10 spheres.
+                  Example to display the first 16 spheres:
+
+                .. code-block:: python
+
+                    masker.generate_report(16)
+
+        Returns
+        -------
+        report : `nilearn.reporting.html_report.HTMLReport`
+            HTML report for the masker.
+        """
+        try:
+            from nilearn.reporting.html_report import generate_report
+        except ImportError:
+            with warnings.catch_warnings():
+                mpl_unavail_msg = ('Matplotlib is not imported! '
+                                   'No reports will be generated.')
+                warnings.filterwarnings('always', message=mpl_unavail_msg)
+                warnings.warn(
+                    category=ImportWarning, message=mpl_unavail_msg
+                )
+                return [None]
+
+        if (displayed_spheres != "all"
+           and not isinstance(displayed_spheres, (list, np.ndarray, int))):
+            raise TypeError("Parameter ``displayed_spheres`` of "
+                            "``generate_report()`` should be either 'all' or "
+                            "an int, or a list/array of ints. You provided a "
+                            f"{type(displayed_spheres)}")
+        self.displayed_spheres = displayed_spheres
+        self.report_id += 1
+        return generate_report(self)
+
+    def _reporting(self):
+        """Return a list of all displays to be rendered.
+
+        Returns
+        -------
+        displays : list
+            A list of all displays to be rendered.
+        """
+        from nilearn import plotting
+        from nilearn.reporting.html_report import _embed_img
+
+        if self._reporting_data is not None:
+            seeds = self._reporting_data['seeds']
+        else:
+            self._report_content['summary'] = None
+
+            return [None]
+
+        img = self._reporting_data['img']
+        if img is None:
+            img = load_mni152_template()
+            positions = seeds
+            msg = (
+                "No image provided to fit in NiftiSpheresMasker. "
+                "Spheres are plotted on top of the MNI152 template."
+            )
+            warnings.warn(msg)
+            self._report_content['warning_message'] = msg
+        else:
+            positions = [
+                np.round(
+                    image.resampling.coord_transform(
+                        *seed, np.linalg.inv(img.affine)
+                    )
+                ).astype(int) for seed in seeds
+            ]
+        self._report_content["report_id"] = self.report_id
+        self._report_content['number_of_seeds'] = len(seeds)
+        spheres_to_be_displayed = range(len(seeds))
+        if isinstance(self.displayed_spheres, int):
+            if len(seeds) < self.displayed_spheres:
+                msg = (
+                    "generate_report() received "
+                    f"{self.displayed_spheres} spheres to be displayed. "
+                    f"But masker only has {len(seeds)} seeds. "
+                    "Setting number of displayed spheres "
+                    f"to {len(seeds)}."
+                )
+                warnings.warn(category=UserWarning, message=msg)
+                self.displayed_spheres = len(seeds)
+            spheres_to_be_displayed = range(self.displayed_spheres)
+        elif isinstance(self.displayed_spheres, (list, np.ndarray)):
+            if max(self.displayed_spheres) > len(seeds):
+                raise ValueError("Report cannot display the "
+                                 "following spheres "
+                                 f"{self.displayed_spheres} because "
+                                 f"masker only has {len(seeds)} seeds.")
+            spheres_to_be_displayed = self.displayed_spheres
+        self._report_content['displayed_spheres'] = list(
+            spheres_to_be_displayed
+        )
+        columns = ['seed number', 'coordinates', 'position',
+                   'radius', 'size (in mm^3)', 'size (in voxels)',
+                   'relative size (in %)']
+        regions_summary = {c: [] for c in columns}
+        embeded_images = []
+        radius = 1.0 if self.radius is None else self.radius
+        display = plotting.plot_markers(
+            [1 for _ in seeds],
+            seeds,
+            node_size=20 * radius,
+            colorbar=False
+        )
+        embeded_images.append(_embed_img(display))
+        display.close()
+        for idx, seed in enumerate(seeds):
+            regions_summary['seed number'].append(idx)
+            regions_summary['coordinates'].append(str(seed))
+            regions_summary['position'].append(positions[idx])
+            regions_summary['radius'].append(radius)
+            regions_summary['size (in voxels)'].append('not implemented')
+            regions_summary['size (in mm^3)'].append(round(
+                4. / 3. * np.pi * radius**3, 2))
+            regions_summary['relative size (in %)'].append(
+                'not implemented'
+            )
+            if idx in spheres_to_be_displayed:
+                display = plotting.plot_img(img, cut_coords=positions[idx])
+                display.add_markers(
+                    marker_coords=[positions[idx]],
+                    marker_color='g',
+                    marker_size=20 * radius
+                )
+                embeded_images.append(_embed_img(display))
+                display.close()
+        self._report_content['summary'] = regions_summary
+
+        return embeded_images
 
     def fit(self, X=None, y=None):
         """Prepare signal extraction from regions.
@@ -333,6 +515,25 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
             'Seeds must be a list of triplets of coordinates in '
             'native space.\n'
         )
+
+        if self.mask_img is not None:
+            self.mask_img_ = check_niimg_3d(self.mask_img)
+        else:
+            self.mask_img_ = None
+
+        if self.reports:
+            if X is not None:
+                if self.mask_img_ is not None:
+                    resampl_imgs = self._cache(image.resample_img)(
+                        X, target_affine=self.mask_img_.affine,
+                        copy=False, interpolation='nearest'
+                    )
+                else:
+                    resampl_imgs = X
+                # Store 1 timepoint to pass to reporter
+                resampl_imgs, _ = compute_middle_image(resampl_imgs)
+            else:  # imgs not provided to fit
+                resampl_imgs = None
 
         if not hasattr(self.seeds, '__iter__'):
             raise ValueError(
@@ -362,6 +563,14 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
                 )
 
             self.seeds_.append(seed)
+
+        self._reporting_data = None
+        if self.reports:
+            self._reporting_data = {
+                'seeds': self.seeds_,
+                'mask': self.mask_img_,
+                'img': resampl_imgs,
+            }
 
         self.n_elements_ = len(self.seeds_)
 

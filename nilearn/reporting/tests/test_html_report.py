@@ -19,6 +19,7 @@ from nilearn.maskers import (
     NiftiLabelsMasker,
     NiftiMapsMasker,
     NiftiMasker,
+    NiftiSpheresMasker,
 )
 
 # Note: html output by nilearn view_* functions
@@ -72,11 +73,13 @@ def input_parameters(masker_class, data_img_3d, affine_eye):
             shape, n_regions=n_regions, affine=affine_eye
         )
         return {"labels_img": labels_img, "labels": labels}
-    elif masker_class in (NiftiMapsMasker, MultiNiftiMapsMasker):
+    if masker_class in (NiftiMapsMasker, MultiNiftiMapsMasker):
         label_img, _ = generate_maps(
             shape, n_regions=n_regions, affine=affine_eye
         )
         return {"maps_img": label_img}
+    if masker_class is NiftiSpheresMasker:
+        return {"seeds": [(1, 1, 1)]}
 
 
 @pytest.mark.parametrize(
@@ -87,7 +90,8 @@ def input_parameters(masker_class, data_img_3d, affine_eye):
         NiftiLabelsMasker,
         MultiNiftiLabelsMasker,
         NiftiMapsMasker,
-        MultiNiftiMapsMasker
+        MultiNiftiMapsMasker,
+        NiftiSpheresMasker,
     ]
 )
 def test_report_empty_fit(masker_class, input_parameters):
@@ -105,7 +109,8 @@ def test_report_empty_fit(masker_class, input_parameters):
         NiftiLabelsMasker,
         MultiNiftiLabelsMasker,
         NiftiMapsMasker,
-        MultiNiftiMapsMasker
+        MultiNiftiMapsMasker,
+        NiftiSpheresMasker,
     ]
 )
 def test_empty_report(masker_class, input_parameters):
@@ -145,8 +150,11 @@ def test_reports_after_fit_3d_data_with_mask(masker_class,
     _check_html(html)
 
 
-@pytest.mark.parametrize("masker_class",
-                         [NiftiMasker, NiftiLabelsMasker, NiftiMapsMasker])
+@pytest.mark.parametrize(
+    "masker_class", [
+        NiftiMasker, NiftiLabelsMasker, NiftiMapsMasker, NiftiSpheresMasker
+    ]
+)
 def test_warning_in_report_after_empty_fit(masker_class,
                                            input_parameters):
     """Tests that a warning is both given and written in the report if
@@ -249,6 +257,61 @@ def test_nifti_maps_masker_report_image_in_fit(niftimapsmasker_inputs,
     assert masker._report_content['number_of_maps'] == 9
     assert masker._report_content['warning_message'] is None
     assert html.body.count("<img") == 2
+
+
+@pytest.mark.parametrize("displayed_spheres", ["foo", '1', {"foo": "bar"}])
+def test_nifti_spheres_masker_report_displayed_spheres_errors(
+    displayed_spheres
+):
+    """Tests that a TypeError is raised when the argument `displayed_spheres`
+    of `generate_report()` is not valid.
+    """
+    masker = NiftiSpheresMasker(seeds=[(1, 1, 1)])
+    masker.fit()
+    with pytest.raises(
+        TypeError, match=("Parameter ``displayed_spheres``")
+    ):
+        masker.generate_report(displayed_spheres)
+
+
+def test_nifti_spheres_masker_report_displayed_spheres_more_than_seeds():
+    """Tests that a warning is raised when number of `displayed_spheres`
+    is greater than number of seeds.
+    """
+    displayed_spheres = 10
+    seeds = [(1, 1, 1)]
+    masker = NiftiSpheresMasker(seeds=seeds)
+    masker.fit()
+    with pytest.warns(
+        UserWarning, match="masker only has 1 seeds."
+    ):
+        masker.generate_report(displayed_spheres=displayed_spheres)
+
+    assert masker._report_content['report_id'] == 0
+
+
+def test_nifti_spheres_masker_report_displayed_spheres_list():
+    """Tests that spheres_to_be_displayed is set correctly."""
+    displayed_spheres = [0, 1, 2]
+    seeds = [(1, 1, 1), (2, 2, 2), (3, 3, 3)]
+    masker = NiftiSpheresMasker(seeds=seeds)
+    masker.fit()
+    masker.generate_report(displayed_spheres=displayed_spheres)
+    assert masker._report_content['displayed_spheres'] == displayed_spheres
+
+
+def test_nifti_spheres_masker_report_displayed_spheres_list_more_than_seeds():
+    """Tests that a ValueError is raised when list of `displayed_spheres`
+    maximum is greater than number of seeds.
+    """
+    displayed_spheres = [1, 2, 3]
+    seeds = [(1, 1, 1)]
+    masker = NiftiSpheresMasker(seeds=seeds)
+    masker.fit()
+    with pytest.raises(
+        ValueError, match="masker only has 1 seeds."
+    ):
+        masker.generate_report(displayed_spheres=displayed_spheres)
 
 
 def test_nifti_labels_masker_report(data_img_3d, mask, affine_eye):
