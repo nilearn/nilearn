@@ -26,7 +26,7 @@ n_subjects = 16
 data = fetch_localizer_contrasts(
     ["left vs right button press"],
     n_subjects,
-    legacy_format=False
+    legacy_format=False,
 )
 # %%
 # Estimate second level model
