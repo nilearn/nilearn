@@ -29,7 +29,8 @@ Enhancements
 - :bdg-dark:`Code` :meth:`~maskers.NiftiLabelsMasker.generate_report` now uses appropriate cut coordinates when functional image is provided (:gh:`4099` by `Yasmin Mzayek`_ and `Nicolas Gensollen`_).
 - :bdg-info:`Plotting` When plotting thresholded statistical maps with a colorbar, the threshold value(s) will now be displayed as tick labels on the colorbar (:gh:`#2833` by `Nicolas Gensollen`_).
 - :bdg-success:`API` :class:`~maskers.NiftiSpheresMasker` now has ``generate_report`` method (:gh:`3102` by `Yasmin Mzayek`_ and `Nicolas Gensollen`_).
-- :bdg-primary:`Doc`  Mention the classification type (all-vs-one) in  :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_glm_decoding.py` (:gh:`4122` by `Tamer Gezici`_).
+- :bdg-primary:`Doc`  Mention the classification type (all-vs-one) in  :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_glm_decoding.py` (:gh:`4122` by `Tamer Gezici`_). 
+- :bdg-primary:`Doc` Don't fetch tmaps in examples if tmaps aren't used in the example. (:gh:`4136` by `Christina Roßmanith`_).
 
 Changes
 -------
