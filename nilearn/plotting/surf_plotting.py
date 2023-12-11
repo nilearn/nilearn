@@ -1646,20 +1646,20 @@ def plot_surf_roi(surf_mesh,
                          'roi_map = np.zeros(n_vertices)\n'
                          'roi_map[roi_idx] = 1')
     if (roi < 0).any():
-        # raise ValueError('roi_map should only contain non-negative values')
+        # TODO raise ValueError in release 0.13
         warn(
             (
-                'Negative values in roi_map will no longer be allowed in a'
-                ' future version of Nilearn'
+                'Negative values in roi_map will no longer be allowed in'
+                ' Nilearn version 0.13'
             ),
             DeprecationWarning,
         )
     if not np.array_equal(roi[idx_not_na], roi[idx_not_na].astype(int)):
-        # raise ValueError('roi_map should only contain integers')
+        # TODO raise ValueError in release 0.13
         warn(
             (
-                'Non-integer values in roi_map will no longer be allowed in a'
-                ' future version of Nilearn'
+                'Non-integer values in roi_map will no longer be allowed in'
+                ' Nilearn version 0.13'
             ),
             DeprecationWarning,
         )

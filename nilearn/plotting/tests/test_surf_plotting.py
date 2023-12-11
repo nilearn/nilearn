@@ -802,9 +802,6 @@ def test_plot_surf_roi_error(engine, rng):
 
     # negative value in roi map
     roi_map[0] = -1
-    # with pytest.raises(
-    #         ValueError,
-    #         match="roi_map should only contain non-negative values"):
     with pytest.warns(
         DeprecationWarning,
         match="Negative values in roi_map will no longer be allowed",
@@ -813,9 +810,6 @@ def test_plot_surf_roi_error(engine, rng):
 
     # float value in roi map
     roi_map[0] = 1.2
-    # with pytest.raises(
-    #         ValueError,
-    #         match="roi_map should only contain integers"):
     with pytest.warns(
         DeprecationWarning,
         match="Non-integer values in roi_map will no longer be allowed",
