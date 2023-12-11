@@ -18,8 +18,6 @@ exclude: |
         | examples/07_advanced/plot_surface_bids_analysis.py
         | nilearn/_utils/helpers.py
         | nilearn/_utils/data_gen.py
-        | nilearn/reporting/html_report.py
-        | nilearn/reporting/tests/test_html_report.py
         | nilearn/interfaces/fmriprep/load_confounds_compcor.py
         | nilearn/interfaces/fmriprep/tests/test_load_confounds_utils.py
         | nilearn/interfaces/fmriprep/tests/test_load_confounds_strategy.py
