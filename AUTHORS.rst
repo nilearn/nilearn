@@ -74,6 +74,7 @@ Some other past or present contributors are:
 * `Chris Markiewicz`_: Stanford University, Stanford, California, USA
 * `Christian Horea`_: Dartmouth College, PBS, Hanover, New Hampshire, USA
 * `Christian Gerloff`_
+* `Christina Roßmanith`_: Dept. of Neurology, Medical Faculty Mannheim, University of Heidelberg, Germany
 * `Colin Reininger`_: Denver, Colorado, USA
 * `Connor Lane`_: Child Mind Institute, Baltimore, MD, USA
 * `Czarina Sy`_
