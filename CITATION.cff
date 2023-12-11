@@ -161,6 +161,12 @@ authors:
   - given-names: Christian
     family-names: Gerloff
     website: https://github.com/ChristianGerloff
+  - given-names: Christina
+    family-names: Roßmanith
+    affiliation: Dept. of Neurology, Medical Faculty Mannheim, University of Heidelberg,
+      Germany
+    email: christina.rossmanith@medma.uni-heidelberg.de
+    website: https://github.com/crossmanith
   - given-names: Colin
     family-names: Reininger
     website: https://github.com/reiningc
