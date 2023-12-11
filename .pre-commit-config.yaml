@@ -26,7 +26,6 @@ exclude: |
         | nilearn/interfaces/fmriprep/tests/_testing.py
         | nilearn/interfaces/fmriprep/tests/test_load_confounds.py
         | nilearn/maskers/nifti_spheres_masker.py
-        | nilearn/maskers/nifti_labels_masker.py
         | nilearn/plotting/html_surface.py
         | nilearn/plotting/img_plotting.py
         | nilearn/plotting/js_plotting_utils.py
