@@ -1891,6 +1891,20 @@ def test_flm_fit_surface_image(_make_surface_glm_data):
     assert isinstance(model.masker_, SurfaceMasker)
 
 
+def test_flm_fit_surface_image_one_hemisphere(
+    _make_surface_glm_data, drop_img_part
+):
+    """Test FirstLevelModel with surface image with one hemisphere"""
+    mini_img, des = _make_surface_glm_data(5)
+    mini_img_one_hemi = drop_img_part(mini_img)
+    model = FirstLevelModel(mask_img=False)
+    model.fit(mini_img_one_hemi, design_matrices=des)
+
+    assert isinstance(model.masker_.mask_img_, SurfaceImage)
+    assert model.masker_.mask_img_.shape == (4,)
+    assert isinstance(model.masker_, SurfaceMasker)
+
+
 def test_flm_fit_surface_image_with_mask(_make_surface_glm_data, mini_mask):
     """Test FirstLevelModel with surface mask."""
     mini_img, des = _make_surface_glm_data(5)
