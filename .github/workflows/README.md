@@ -80,14 +80,6 @@ Artifacts hosting and deployment of development docs use CircleCI. See [.circlec
 On a pull request, only the "host" job is run. Then the artifacts can be accessed from the `host_and_deploy_doc` workflow seen under the checks list. Click on "Details" and then on the "host_docs" link on the page that opens. From there you can click on the artifacts tab to see all the html files. If you click on any of them you can then normally navigate the pages from there.
 With a merge on main, both "host" and "deploy" jobs are run.
 
-## DeprecationWarnings as errors
-
-### check_deprecations.yml
-
-Checks external core dependencies for deprecation warnings so they can be caught and resolved before causing a failure.
-Runs once a month and can be run manually from Github Actions.
-It works by calling pytest with an environment variable that will trigger a pytest fixture (``warnings_as_errors``) defined in [nilearn/conftest.py](/nilearn/conftest.py).
-
 ## Check spelling errors
 
 ### codespell.yml
