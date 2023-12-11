@@ -30,7 +30,7 @@ Enhancements
 - :bdg-info:`Plotting` When plotting thresholded statistical maps with a colorbar, the threshold value(s) will now be displayed as tick labels on the colorbar (:gh:`#2833` by `Nicolas Gensollen`_).
 - :bdg-success:`API` :class:`~maskers.NiftiSpheresMasker` now has ``generate_report`` method (:gh:`3102` by `Yasmin Mzayek`_ and `Nicolas Gensollen`_).
 - :bdg-primary:`Doc`  Mention the classification type (all-vs-one) in  :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_glm_decoding.py` (:gh:`4122` by `Tamer Gezici`_). 
-- :bdg-primary:`Doc`  Specify full form of LSS in  :ref:`plot_beta_series.py` (:gh:`4122` by `Tamer Gezici`_). 
+- :bdg-primary:`Doc`  Specify full form of LSS in  :ref:`sphx_glr_auto_examples_07_advanced_plot_beta_series.py` (:gh:`4141` by `Tamer Gezici`_). 
 
 Changes
 -------
