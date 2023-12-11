@@ -30,7 +30,7 @@ jobs:
         -   name: Checkout nilearn
             uses: actions/checkout@v4
         -   name: Setup python
-            uses: actions/setup-python@v4
+            uses: actions/setup-python@v5
             with:
                 python-version: ${{ matrix.python-version }}
         -   name: Install dependencies for building Nilearn
