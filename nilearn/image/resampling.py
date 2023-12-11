@@ -280,9 +280,9 @@ def _resample_one_img(
             # array
             data = data.copy()
         # data[not_finite] = 0
-        from ..masking import _extrapolate_out_mask
+        from ..masking import extrapolate_out_mask
 
-        data = _extrapolate_out_mask(
+        data = extrapolate_out_mask(
             data, np.logical_not(not_finite), iterations=2
         )[0]
 

@@ -21,8 +21,8 @@ from nilearn.decoding.space_net import (
     path_scores,
 )
 from nilearn.decoding.space_net_solvers import (
-    _graph_net_logistic,
-    _graph_net_squared_loss,
+    graph_net_logistic,
+    graph_net_squared_loss,
 )
 from nilearn.decoding.tests._testing import create_graph_net_simulation_data
 from nilearn.image import get_data
@@ -173,7 +173,7 @@ def test_logistic_path_scores():
     alphas = [1.0, 0.1, 0.01]
 
     test_scores, best_w = logistic_path_scores(
-        _graph_net_logistic,
+        graph_net_logistic,
         X,
         y,
         mask,
@@ -197,7 +197,7 @@ def test_squared_loss_path_scores():
     alphas = [1.0, 0.1, 0.01]
 
     test_scores, best_w = squared_loss_path_scores(
-        _graph_net_squared_loss,
+        graph_net_squared_loss,
         X,
         y,
         mask,

@@ -75,17 +75,17 @@ def test_get_vertexcolor():
 
 
 def test_check_mesh():
-    mesh = html_surface._check_mesh('fsaverage5')
-    assert mesh is html_surface._check_mesh(mesh)
+    mesh = html_surface.check_mesh('fsaverage5')
+    assert mesh is html_surface.check_mesh(mesh)
     with pytest.raises(ValueError):
-        html_surface._check_mesh('fsaverage2')
+        html_surface.check_mesh('fsaverage2')
     mesh.pop('pial_left')
     with pytest.raises(ValueError):
-        html_surface._check_mesh(mesh)
+        html_surface.check_mesh(mesh)
     with pytest.raises(TypeError):
-        html_surface._check_mesh(surface.load_surf_mesh(mesh['pial_right']))
+        html_surface.check_mesh(surface.load_surf_mesh(mesh['pial_right']))
     mesh = datasets.fetch_surf_fsaverage()
-    assert mesh is html_surface._check_mesh(mesh)
+    assert mesh is html_surface.check_mesh(mesh)
 
 
 def test_one_mesh_info():

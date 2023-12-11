@@ -23,7 +23,7 @@ from nilearn.plotting.html_surface import _get_vertexcolor
 from nilearn.plotting.img_plotting import _get_colorbar_and_data_ranges
 from nilearn.plotting.js_plotting_utils import colorscale
 from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
-from nilearn.surface.surface import _check_mesh
+from nilearn.surface.surface import check_mesh
 
 VALID_VIEWS = "anterior", "posterior", "medial", "lateral", "dorsal", "ventral"
 VALID_HEMISPHERES = "left", "right"
@@ -1370,7 +1370,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
     stat_map = check_niimg_3d(stat_map, dtype='auto')
     modes = _check_views(views)
     hemis = _check_hemispheres(hemispheres)
-    surf_mesh = _check_mesh(surf_mesh)
+    surf_mesh = check_mesh(surf_mesh)
 
     mesh_prefix = "infl" if inflate else "pial"
     surf = {

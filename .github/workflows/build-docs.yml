@@ -85,7 +85,7 @@ jobs:
                 sudo -E apt-get -yq --no-install-suggests --no-install-recommends install \
                     dvipng texlive-latex-base texlive-latex-extra
         -   name: Setup python
-            uses: actions/setup-python@v4
+            uses: actions/setup-python@v5
             with:
                 python-version: '3.12'
         # Install the local version of the library, along with both standard and testing-related dependencies
