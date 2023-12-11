@@ -56,6 +56,8 @@
 
 .. _Christian Gerloff: https://github.com/ChristianGerloff
 
+.. _Christina Roßmanith: https://github.com/crossmanith
+
 .. _Colin Reininger: https://github.com/reiningc
 
 .. _Connor Lane: https://github.com/clane9
