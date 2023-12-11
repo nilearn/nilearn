@@ -39,12 +39,13 @@ from nilearn.datasets import fetch_localizer_contrasts
 # localizer dataset.
 n_subjects = 16
 sample_vertical = fetch_localizer_contrasts(
-    ["vertical checkerboard"], n_subjects, get_tmaps=True, legacy_format=False
+    ["vertical checkerboard"],
+    n_subjects,
+    legacy_format=False,
 )
 sample_horizontal = fetch_localizer_contrasts(
     ["horizontal checkerboard"],
     n_subjects,
-    get_tmaps=True,
     legacy_format=False,
 )
 

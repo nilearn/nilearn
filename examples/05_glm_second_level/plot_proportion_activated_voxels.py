@@ -26,7 +26,6 @@ n_subjects = 16
 data = fetch_localizer_contrasts(
     ["left vs right button press"],
     n_subjects,
-    get_tmaps=True,
     legacy_format=False,
 )
 # %%
