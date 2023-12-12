@@ -1253,7 +1253,7 @@ def test_non_parametric_inference_contrast_computation_errors(tmp_path, rng):
     # passing null contrast should give back a value error
     with pytest.raises(
         ValueError,
-        match=("second_level_contrast must be a list of 0s and 1s."),
+        match=("Second_level_contrast must be a list of 0s and 1s."),
     ):
         non_parametric_inference(
             second_level_input=Y,
@@ -1263,7 +1263,7 @@ def test_non_parametric_inference_contrast_computation_errors(tmp_path, rng):
         )
     with pytest.raises(
         ValueError,
-        match=("second_level_contrast must be a list of 0s and 1s."),
+        match=("Second_level_contrast must be a list of 0s and 1s."),
     ):
         non_parametric_inference(
             second_level_input=Y,
