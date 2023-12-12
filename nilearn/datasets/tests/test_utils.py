@@ -395,7 +395,7 @@ def test_fetch_file_overwrite(
         tmp_path = str(tmp_path)
 
     # overwrite non-exiting file.
-    fil = _utils.fetch_file(
+    fil = _utils.fetch_single_file(
         url="http://foo/", data_dir=str(tmp_path), verbose=0, overwrite=True
     )
 
@@ -409,7 +409,7 @@ def test_fetch_file_overwrite(
         fp.write("some content")
 
     # Don't overwrite existing file.
-    fil = _utils.fetch_file(
+    fil = _utils.fetch_single_file(
         url="http://foo/", data_dir=str(tmp_path), verbose=0, overwrite=False
     )
 
@@ -419,7 +419,7 @@ def test_fetch_file_overwrite(
         assert fp.read() == "some content"
 
     # Overwrite existing file.
-    fil = _utils.fetch_file(
+    fil = _utils.fetch_single_file(
         url="http://foo/", data_dir=str(tmp_path), verbose=0, overwrite=True
     )
 
