@@ -108,8 +108,6 @@ extend-exclude = """
   nilearn/externals
   | nilearn/_utils/data_gen.py
   | nilearn/_utils/helpers.py
-  | nilearn/reporting/html_report.py
-  | nilearn/reporting/tests/test_html_report.py
   | examples/01_plotting/plot_3d_map_to_surface_projection.py
   | examples/01_plotting/plot_surf_atlas.py
   | examples/01_plotting/plot_surf_stat_map.py
@@ -123,9 +121,7 @@ extend-exclude = """
   | nilearn/interfaces/fmriprep/tests/test_load_confounds_strategy.py
   | nilearn/interfaces/fmriprep/tests/_testing.py
   | nilearn/interfaces/fmriprep/tests/test_load_confounds.py
-  | nilearn/maskers/nifti_labels_masker.py
   | nilearn/plotting/html_surface.py
-  | nilearn/plotting/img_plotting.py
   | nilearn/plotting/js_plotting_utils.py
   | nilearn/plotting/surf_plotting.py
   | nilearn/plotting/tests/test_html_surface.py

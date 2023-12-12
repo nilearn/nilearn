@@ -1628,6 +1628,7 @@ def plot_surf_roi(surf_mesh,
     # messages in case of wrong inputs
 
     roi = load_surf_data(roi_map)
+    idx_not_na = ~np.isnan(roi)
     if vmin is None:
         vmin = np.nanmin(roi)
     if vmax is None:
@@ -1644,6 +1645,24 @@ def plot_surf_roi(surf_mesh,
                          'ROI you can convert them into a ROI map like this:\n'
                          'roi_map = np.zeros(n_vertices)\n'
                          'roi_map[roi_idx] = 1')
+    if (roi < 0).any():
+        # TODO raise ValueError in release 0.13
+        warn(
+            (
+                'Negative values in roi_map will no longer be allowed in'
+                ' Nilearn version 0.13'
+            ),
+            DeprecationWarning,
+        )
+    if not np.array_equal(roi[idx_not_na], roi[idx_not_na].astype(int)):
+        # TODO raise ValueError in release 0.13
+        warn(
+            (
+                'Non-integer values in roi_map will no longer be allowed in'
+                ' Nilearn version 0.13'
+            ),
+            DeprecationWarning,
+        )
 
     if cbar_tick_format == "auto":
         cbar_tick_format = "." if engine == "plotly" else "%i"
