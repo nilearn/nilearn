@@ -365,15 +365,15 @@ def test_fit_no_mask_no_img_error():
 def test_mask_strategy_errors(rng):
     """Check that mask_strategy errors are raised."""
     # Error with unknown mask_strategy
+    img = rng.uniform(size=(9, 9, 5))
+    img = nibabel.Nifti1Image(img, np.eye(4))
     mask = NiftiMasker(mask_strategy="oops")
     with pytest.raises(
         ValueError, match="Unknown value of mask_strategy 'oops'"
     ):
-        mask.fit()
+        mask.fit(img)
     # Warning with deprecated 'template' strategy,
     # plus an exception because there's no resulting mask
-    img = rng.uniform(size=(9, 9, 5))
-    img = nibabel.Nifti1Image(img, np.eye(4))
     mask = NiftiMasker(mask_strategy="template")
     with pytest.warns(
         UserWarning, match="Masking strategy 'template' is deprecated."
