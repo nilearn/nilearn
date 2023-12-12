@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_almost_equal
 
-from nilearn.decoding.proximal_operators import prox_l1, prox_tvl1
+from nilearn.decoding._proximal_operators import prox_l1, prox_tvl1
 
 
 def test_prox_l1_nonexpansiveness(rng, n_features=10):
