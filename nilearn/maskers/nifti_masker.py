@@ -428,6 +428,12 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
 
         # Compute the mask if not given by the user
         if self.mask_img is None:
+            if imgs is None:
+                raise ValueError(
+                    "Parameter 'imgs' must be provided to "
+                    f"{self.__class__.__name__}.fit() "
+                    "if no mask is passed to mask_img."
+                )
             mask_args = self.mask_args if self.mask_args is not None else {}
             compute_mask = _get_mask_strategy(self.mask_strategy)
             if self.verbose > 0:

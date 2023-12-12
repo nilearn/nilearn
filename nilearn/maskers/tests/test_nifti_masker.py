@@ -353,6 +353,15 @@ def test_joblib_cache(tmp_path):
         shutil.rmtree(cachedir, ignore_errors=True)
 
 
+def test_fit_no_mask_no_img_error():
+    """Check error is raised when no mask and no img is provided."""
+    mask = NiftiMasker(mask_img=None)
+    with pytest.raises(
+        ValueError, match="Parameter 'imgs' must be provided to "
+    ):
+        mask.fit()
+
+
 def test_mask_strategy_errors(rng):
     """Check that mask_strategy errors are raised."""
     # Error with unknown mask_strategy
