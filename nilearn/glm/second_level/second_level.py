@@ -275,10 +275,10 @@ def _get_con_val(second_level_contrast, design_matrix):
             raise ValueError("No second-level contrast is specified.")
     if not isinstance(second_level_contrast, str):
         con_val = second_level_contrast
-        if np.all(con_val == 0) or con_val == []:
+        if np.all(con_val == 0) or len(con_val) == 0:
             raise ValueError(
                 "Contrast is null. Second_level_contrast must be "
-                "a list of 0s and 1s."
+                "a list of 0s and 1s, a string, or a string expression."
             )
     else:
         design_columns = design_matrix.columns.tolist()
