@@ -8,6 +8,7 @@ import os
 import re
 import warnings
 from io import BytesIO
+from pathlib import Path
 
 import nibabel
 import nibabel as nib
@@ -2987,3 +2988,14 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
         return fetch_fiac_first_level(data_dir=data_dir)
 
     return _glob_fiac_data()
+
+
+def load_sample_motor_activation_image():
+    """Load a single functional image showing motor activations.
+
+    Returns
+    -------
+    str
+        Path to the sample functional image.
+    """
+    return str(Path(__file__).parent / "data" / "image_10426.nii.gz")

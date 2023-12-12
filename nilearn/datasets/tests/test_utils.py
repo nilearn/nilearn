@@ -16,8 +16,7 @@ import numpy as np
 import pytest
 import requests
 
-from nilearn.datasets import _utils, utils
-from nilearn.image import load_img
+from nilearn.datasets import _utils
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, "data")
@@ -511,10 +510,3 @@ def test_naive_ftp_adapter():
         resp = sender.send(
             requests.Request("GET", "ftp://example.com").prepare()
         )
-
-
-def test_load_sample_motor_activation_image():
-    path_img = utils.load_sample_motor_activation_image()
-
-    assert os.path.exists(path_img)
-    assert load_img(path_img)

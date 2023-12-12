@@ -41,6 +41,7 @@ from .func import (
     fetch_spm_auditory,
     fetch_spm_multimodal_fmri,
     fetch_surf_nki_enhanced,
+    load_sample_motor_activation_image,
     patch_openneuro_dataset,
     select_from_index,
 )
@@ -65,7 +66,7 @@ from .struct import (
     load_mni152_wm_mask,
     load_mni152_wm_template,
 )
-from .utils import get_data_dirs, load_sample_motor_activation_image
+from .utils import get_data_dirs
 
 __all__ = [
     "MNI152_FILE_PATH",
