@@ -108,8 +108,6 @@ extend-exclude = """
   nilearn/externals
   | nilearn/_utils/data_gen.py
   | nilearn/_utils/helpers.py
-  | nilearn/reporting/html_report.py
-  | nilearn/reporting/tests/test_html_report.py
   | examples/01_plotting/plot_3d_map_to_surface_projection.py
   | examples/01_plotting/plot_surf_atlas.py
   | examples/01_plotting/plot_surf_stat_map.py
