@@ -121,7 +121,6 @@ extend-exclude = """
   | nilearn/interfaces/fmriprep/tests/test_load_confounds_strategy.py
   | nilearn/interfaces/fmriprep/tests/_testing.py
   | nilearn/interfaces/fmriprep/tests/test_load_confounds.py
-  | nilearn/maskers/nifti_spheres_masker.py
   | nilearn/plotting/html_surface.py
   | nilearn/plotting/js_plotting_utils.py
   | nilearn/plotting/surf_plotting.py
