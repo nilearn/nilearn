@@ -1205,6 +1205,18 @@ def test_non_parametric_inference_contrast_formula(
     )
 
 
+def test_non_parametric_inference_contrast_string_expression(tmp_path, rng):
+    func_img, _ = fake_fmri_data(file_path=tmp_path)
+    Y = [func_img] * 4
+    X = pd.DataFrame(rng.uniform(size=(4, 2)), columns=["r1", "r2"])
+
+    non_parametric_inference(
+        second_level_input=Y,
+        design_matrix=X,
+        second_level_contrast="r1-r2",
+    )
+
+
 def test_non_parametric_inference_contrast_computation_errors(tmp_path, rng):
     func_img, mask = fake_fmri_data(file_path=tmp_path)
 
