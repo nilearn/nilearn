@@ -1190,7 +1190,9 @@ def test_non_parametric_inference_contrast_computation(tmp_path):
     )
 
 
-@pytest.mark.parametrize("second_level_contrast", [[1, 0], "r1"])
+@pytest.mark.parametrize(
+    "second_level_contrast", [[1, 0], "r1", "r1-r2", [-1, 1]]
+)
 def test_non_parametric_inference_contrast_formula(
     tmp_path, second_level_contrast, rng
 ):
@@ -1202,18 +1204,6 @@ def test_non_parametric_inference_contrast_formula(
         second_level_input=Y,
         design_matrix=X,
         second_level_contrast=second_level_contrast,
-    )
-
-
-def test_non_parametric_inference_contrast_string_expression(tmp_path, rng):
-    func_img, _ = fake_fmri_data(file_path=tmp_path)
-    Y = [func_img] * 4
-    X = pd.DataFrame(rng.uniform(size=(4, 2)), columns=["r1", "r2"])
-
-    non_parametric_inference(
-        second_level_input=Y,
-        design_matrix=X,
-        second_level_contrast="r1-r2",
     )
 
 
@@ -1238,7 +1228,7 @@ def test_non_parametric_inference_contrast_computation_errors(tmp_path, rng):
     # passing null contrast should give back a value error
     with pytest.raises(
         ValueError,
-        match=("Second_level_contrast must be a list of 0s and 1s."),
+        match=("Second_level_contrast must be a valid"),
     ):
         non_parametric_inference(
             second_level_input=Y,
@@ -1248,7 +1238,7 @@ def test_non_parametric_inference_contrast_computation_errors(tmp_path, rng):
         )
     with pytest.raises(
         ValueError,
-        match=("Second_level_contrast must be a list of 0s and 1s."),
+        match=("Second_level_contrast must be a valid"),
     ):
         non_parametric_inference(
             second_level_input=Y,
