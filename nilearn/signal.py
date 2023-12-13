@@ -18,6 +18,12 @@ from nilearn._utils import fill_doc, stringify_path
 from nilearn._utils.numpy_conversions import as_ndarray, csv_to_array
 from nilearn._utils.param_validation import check_run_sample_masks
 
+__all__ = [
+    "butterworth",
+    "clean",
+    "high_variance_confounds",
+]
+
 availiable_filters = ["butterworth", "cosine"]
 
 
