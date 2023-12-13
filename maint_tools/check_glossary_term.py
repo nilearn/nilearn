@@ -12,6 +12,8 @@ from docstring_parser import parse
 from docstring_parser.common import DocstringStyle
 from rich import print
 
+SEARCH = ["faces", "vertex", "mesh"]
+
 
 def root_dir() -> Path:
     """Return path to root directory."""
@@ -25,6 +27,9 @@ def glossary_file() -> Path:
 
 def get_terms_in_glossary() -> list[str]:
     """Return list of terms in glossary.rst."""
+    if len(SEARCH) > 0:
+        return SEARCH
+
     terms = []
 
     track = False

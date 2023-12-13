@@ -649,22 +649,24 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     Parameters
     ----------
     surf_mesh : str or list of two numpy.ndarray or Mesh
-        Surface mesh geometry, can be a file (valid formats are
+        Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
         a list of two Numpy arrays, the first containing the x-y-z coordinates
-        of the mesh vertices, the second containing the indices
-        (into coords) of the mesh faces, or a Mesh object with
+        of the :term:`mesh` vertices, the second containing the indices
+        (into coords) of the :term:`mesh` :term:`faces`, or a Mesh object with
         "coordinates" and "faces" attributes.
 
     surf_map : str or numpy.ndarray, optional
-        Data to be displayed on the surface mesh. Can be a file (valid formats
-        are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific files such as
+        Data to be displayed on the surface :term:`mesh`.
+        Can be a file
+        (valid formats are .gii, .mgz, .nii, .nii.gz,
+        or Freesurfer specific files such as
         .thickness, .area, .curv, .sulc, .annot, .label) or
-        a Numpy array with a value for each vertex of the surf_mesh.
+        a Numpy array with a value for each vertex of the `surf_mesh`.
 
     bg_map : str or numpy.ndarray, optional
-        Background image to be plotted on the mesh underneath the
+        Background image to be plotted on the :term:`mesh` underneath the
         surf_data in greyscale, most likely a sulcal depth map for
         realistic shading.
         If the map contains values outside [0, 1], it will be
@@ -720,7 +722,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         below the threshold (in absolute value) are plotted as transparent.
 
     alpha : float or 'auto', default='auto'
-        Alpha level of the mesh (not surf_data).
+        Alpha level of the :term:`mesh` (not surf_data).
         If 'auto' is chosen, alpha will default to 0.5 when no bg_map
         is passed and to 1 if a bg_map is passed.
 
@@ -865,12 +867,12 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
     Parameters
     ----------
     surf_mesh : str or list of two numpy.ndarray
-        Surface mesh geometry, can be a file (valid formats are
+        Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
         a list of two Numpy arrays, the first containing the x-y-z coordinates
-        of the mesh vertices, the second containing the indices
-        (into coords) of the mesh faces.
+        of the :term:`mesh` vertices, the second containing the indices
+        (into coords) of the :term:`mesh` :term:`faces`.
 
     roi_map : str or numpy.ndarray or list of numpy.ndarray
         ROI map to be displayed on the surface mesh, can be a file
@@ -1001,32 +1003,32 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
                        cbar_tick_format="auto", bg_on_data=False, darkness=.7,
                        title=None, title_font_size=18, output_file=None,
                        axes=None, figure=None, **kwargs):
-    """Plot a stats map on a surface mesh with optional background.
+    """Plot a stats map on a surface :term:`mesh` with optional background.
 
     .. versionadded:: 0.3
 
     Parameters
     ----------
     surf_mesh : str or list of two numpy.ndarray or Mesh
-        Surface mesh geometry, can be a file (valid formats are
+        Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
         a list of two Numpy arrays, the first containing the x-y-z
-        coordinates of the mesh vertices, the second containing the
-        indices (into coords) of the mesh faces, or a Mesh object
-        with "coordinates" and "faces" attributes.
+        coordinates of the :term:`mesh` vertices, the second containing the
+        indices (into coords) of the :term:`mesh` :term:`faces`,
+        or a Mesh object with "coordinates" and "faces" attributes.
 
     stat_map : str or numpy.ndarray
-        Statistical map to be displayed on the surface mesh, can
-        be a file (valid formats are .gii, .mgz, .nii, .nii.gz, or
+        Statistical map to be displayed on the surface :term:`mesh`,
+        can be a file (valid formats are .gii, .mgz, .nii, .nii.gz, or
         Freesurfer specific files such as .thickness, .area, .curv,
         .sulc, .annot, .label) or
         a Numpy array with a value for each vertex of the surf_mesh.
 
     bg_map : str or numpy.ndarray, optional
-        Background image to be plotted on the mesh underneath the
-        stat_map in greyscale, most likely a sulcal depth map for
-        realistic shading.
+        Background image to be plotted on the :term:`mesh` underneath
+        the stat_map in greyscale, most likely a sulcal depth map
+        for realistic shading.
         If the map contains values outside [0, 1], it will be
         rescaled such that all values are in [0, 1]. Otherwise,
         it will not be modified.
@@ -1075,7 +1077,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         Default=True.
 
     alpha : float or 'auto', default='auto'
-        Alpha level of the mesh (not the stat_map).
+        Alpha level of the :term:`mesh` (not the stat_map).
         If 'auto' is chosen, alpha will default to .5 when no bg_map is
         passed and to 1 if a bg_map is passed.
 
@@ -1306,11 +1308,12 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
 
     surf_mesh : str, dict, or None, default='fsaverage5'
         If str, either one of the two:
-        'fsaverage5': the low-resolution fsaverage5 mesh (10242 nodes)
-        'fsaverage': the high-resolution fsaverage mesh (163842 nodes)
+        'fsaverage5': the low-resolution fsaverage5 :term:`mesh` (10242 nodes)
+        'fsaverage': the high-resolution fsaverage :term:`mesh` (163842 nodes)
         If dict, a dictionary with keys: ['infl_left', 'infl_right',
         'pial_left', 'pial_right', 'sulc_left', 'sulc_right'], where
-        values are surface mesh geometries as accepted by plot_surf_stat_map.
+        values are surface :term:`mesh` geometries as accepted
+        by plot_surf_stat_map.
 
     mask_img : Niimg-like object or None, optional
         The mask is passed to vol_to_surf.
@@ -1497,32 +1500,34 @@ def plot_surf_roi(surf_mesh,
                   axes=None,
                   figure=None,
                   **kwargs):
-    """Plot ROI on a surface mesh with optional background.
+    """Plot ROI on a surface :term:`mesh` with optional background.
 
     .. versionadded:: 0.3
 
     Parameters
     ----------
     surf_mesh : str or list of two numpy.ndarray or Mesh
-        Surface mesh geometry, can be a file (valid formats are
+        Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
         a list of two Numpy arrays, the first containing the x-y-z
-        coordinates of the mesh vertices, the second containing the indices
-        (into coords) of the mesh faces, or a Mesh object with
-        "coordinates" and "faces" attributes.
+        coordinates of the :term:`mesh` vertices,
+        the second containing the indices
+        (into coords) of the :term:`mesh` :term:`faces`,
+        or a Mesh object with "coordinates" and "faces" attributes.
 
     roi_map : str or numpy.ndarray or list of numpy.ndarray
-        ROI map to be displayed on the surface mesh, can be a file
+        ROI map to be displayed on the surface :term:`mesh`,
+        can be a file
         (valid formats are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific
         files such as .annot or .label), or
-        a Numpy array with a value for each vertex of the surf_mesh.
+        a Numpy array with a value for each vertex of the `surf_mesh`.
         The value at each vertex one inside the ROI and zero inside ROI, or an
         integer giving the label number for atlases.
 
     bg_map : str or numpy.ndarray, optional
-        Background image to be plotted on the mesh underneath the
-        stat_map in greyscale, most likely a sulcal depth map for
+        Background image to be plotted on the :term:`mesh` underneath
+        the stat_map in greyscale, most likely a sulcal depth map for
         realistic shading.
         If the map contains values outside [0, 1], it will be
         rescaled such that all values are in [0, 1]. Otherwise,
@@ -1572,8 +1577,8 @@ def plot_surf_roi(surf_mesh,
         .. versionadded:: 0.7.1
 
     alpha : float or 'auto', default='auto'
-        Alpha level of the mesh (not the stat_map). If default,
-        alpha will default to 0.5 when no bg_map is passed
+        Alpha level of the :term:`mesh` (not the stat_map).
+        If default, alpha will default to 0.5 when no bg_map is passed
         and to 1 if a bg_map is passed.
 
         .. note::

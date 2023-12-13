@@ -14,7 +14,7 @@ PolyData = Dict[str, np.ndarray]
 
 
 class Mesh(abc.ABC):
-    """A surface mesh, having vertex coordinates and faces(triangles)."""
+    """A surface mesh, having vertex coordinates and faces (triangles)."""
 
     n_vertices: int
 
