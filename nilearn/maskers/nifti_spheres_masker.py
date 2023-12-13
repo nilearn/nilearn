@@ -19,7 +19,7 @@ from nilearn._utils.niimg_conversions import (
     safe_get_data,
 )
 from nilearn.datasets import load_mni152_template
-from nilearn.maskers import compute_middle_image
+from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 
 

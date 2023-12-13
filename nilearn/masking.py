@@ -19,12 +19,24 @@ from .datasets import (
 )
 from .image import get_data, new_img_like, resampling
 
+__all__ = [
+    "compute_epi_mask",
+    "compute_multi_epi_mask",
+    "compute_brain_mask",
+    "compute_multi_brain_mask",
+    "compute_background_mask",
+    "compute_multi_background_mask",
+    "intersect_masks",
+    "apply_mask",
+    "unmask",
+]
 
-class MaskWarning(UserWarning):
+
+class _MaskWarning(UserWarning):
     """A class to always raise warnings."""
 
 
-warnings.simplefilter("always", MaskWarning)
+warnings.simplefilter("always", _MaskWarning)
 
 
 def load_mask_img(mask_img, allow_empty=False):
@@ -196,7 +208,9 @@ def _post_process_mask(
     mask_any = mask.any()
     if not mask_any:
         warnings.warn(
-            f"Computed an empty mask. {warning_msg}", MaskWarning, stacklevel=2
+            f"Computed an empty mask. {warning_msg}",
+            _MaskWarning,
+            stacklevel=2,
         )
     if connected and mask_any:
         mask = largest_connected_component(mask)
