@@ -82,12 +82,11 @@ def create_tmp_filepath(
         *_bids_entities()["derivatives"]
     ]
     if bids_fields is None:
-        bids_fields = {"entities": {"sub": "test01",
+        bids_fields = {"entities": {"sub": fmriprep_version.replace(".", ""),
                                     "task": "test"}}
 
     """Create test files in temporary directory."""
     derivative = "regressors" if fmriprep_version == "1.2.x" else "timeseries"
-    suffix = "test-v21" if fmriprep_version == "21.x.x" else suffix
 
     # confound files
     bids_fields["entities"]["desc"] = "confounds"

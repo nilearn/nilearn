@@ -464,7 +464,7 @@ def test_invalid_filetype(tmp_path, rng):
     _, _ = load_confounds(bad_nii)
 
     # more than one legal filename for confounds
-    add_conf = "sub-test01_task-test_desc-confounds_regressors.tsv"
+    add_conf = "sub-14x_task-test_desc-confounds_regressors.tsv"
     leagal_confounds, _ = get_legal_confound()
     leagal_confounds.to_csv(tmp_path / add_conf, sep="\t", index=False)
     with pytest.raises(ValueError) as info:
