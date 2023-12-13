@@ -1086,15 +1086,17 @@ def fetch_abide_pcp(
 
     HANDEDNESS_SCORE : integer in [-100, 100], optional
         Positive = Right, Negative = Left, 0 = Ambidextrous.
-    
+
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
             - 'description': :obj:`str`, description of the dataset.
-            - 'phenotypic': :obj:`pandas.DataFrame`, a pandas DataFrame containing phenotypic information for each subject.
-            - 'func_preproc': :obj:`numpy.ndarray`, a numpy array containing paths to preprocessed functional MRI data in NIfTI format.
+            - 'phenotypic': :obj:`pandas.DataFrame`, a pandas DataFrame 
+              containing phenotypic information for each subject.
+            - 'func_preproc': :obj:`numpy.ndarray`, a numpy array containing
+              paths to preprocessed functional MRI data in NIfTI format.
 
     Notes
     -----
