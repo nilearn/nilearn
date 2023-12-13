@@ -45,12 +45,12 @@ img_file_patterns = {
 }
 
 
-def get_testdata_path(non_steady_state=True,     fmriprep_version="1.4.x"):
+def get_testdata_path(non_steady_state=True, fmriprep_version="1.4.x"):
     """Get file path for the confound regressors."""
     derivative = "regressors" if fmriprep_version != "21.x.x" else "timeseries"
     path_data = os.path.join(os.path.dirname(
         load_confounds_utils.__file__), "data")
-    suffix = "test-v21" if fmriprep_version == "21.x.x" else "test"    
+    suffix = "test-v21" if fmriprep_version == "21.x.x" else "test"
     if non_steady_state:
         return [
             os.path.join(path_data, filename)
@@ -148,7 +148,7 @@ def get_legal_confound(non_steady_state=True, fmriprep_version="1.4.x"):
     conf = pd.read_csv(conf, delimiter="\t", encoding="utf-8")
     with open(meta, "r") as file:
         meta = json.load(file)
-    return conf, meta    
+    return conf, meta
 
 
 def update_bids_fields(bids_fields, img_file_patterns_type):
