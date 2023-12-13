@@ -1325,7 +1325,7 @@ def test_first_level_from_bids(
         base_dir=tmp_path, n_sub=n_sub, n_ses=n_ses, tasks=tasks, n_runs=n_runs
     )
 
-    models, m_imgs, m_events, m_confounds = first_level_from_bids(
+    models, models, imgs, events, confounds = first_level_from_bids(
         dataset_path=bids_path,
         task_label=tasks[task_index],
         space_label=space_label,
@@ -1333,9 +1333,7 @@ def test_first_level_from_bids(
         slice_time_ref=None,
     )
 
-    _check_output_first_level_from_bids(
-        n_sub, models, m_imgs, m_events, m_confounds
-    )
+    _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
 
     n_imgs_expected = n_ses * n_runs[task_index]
 
@@ -1349,13 +1347,13 @@ def test_first_level_from_bids(
     elif no_run_entity:
         n_imgs_expected = n_ses
 
-    assert len(m_imgs[0]) == n_imgs_expected
+    assert len(imgs[0]) == n_imgs_expected
 
 
 def test_first_level_from_bids_select_one_run_per_session(bids_dataset):
     n_sub, n_ses, *_ = _inputs_for_new_bids_dataset()
 
-    models, m_imgs, m_events, m_confounds = first_level_from_bids(
+    models, imgs, events, confounds = first_level_from_bids(
         dataset_path=bids_dataset,
         task_label="main",
         space_label="MNI",
@@ -1363,18 +1361,16 @@ def test_first_level_from_bids_select_one_run_per_session(bids_dataset):
         slice_time_ref=None,
     )
 
-    _check_output_first_level_from_bids(
-        n_sub, models, m_imgs, m_events, m_confounds
-    )
+    _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
 
     n_imgs_expected = n_ses
-    assert len(m_imgs[0]) == n_imgs_expected
+    assert len(imgs[0]) == n_imgs_expected
 
 
 def test_first_level_from_bids_select_all_runs_of_one_session(bids_dataset):
     n_sub, _, _, n_runs = _inputs_for_new_bids_dataset()
 
-    models, m_imgs, m_events, m_confounds = first_level_from_bids(
+    models, imgs, events, confounds = first_level_from_bids(
         dataset_path=bids_dataset,
         task_label="main",
         space_label="MNI",
@@ -1382,12 +1378,10 @@ def test_first_level_from_bids_select_all_runs_of_one_session(bids_dataset):
         slice_time_ref=None,
     )
 
-    _check_output_first_level_from_bids(
-        n_sub, models, m_imgs, m_events, m_confounds
-    )
+    _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
 
     n_imgs_expected = n_runs[0]
-    assert len(m_imgs[0]) == n_imgs_expected
+    assert len(imgs[0]) == n_imgs_expected
 
 
 @pytest.mark.parametrize("verbose", [0, 1])
@@ -1426,7 +1420,7 @@ def test_first_level_from_bids_several_labels_per_entity(tmp_path, entity):
         entities={entity: ["A", "B"]},
     )
 
-    models, m_imgs, m_events, m_confounds = first_level_from_bids(
+    models, imgs, events, confounds = first_level_from_bids(
         dataset_path=bids_path,
         task_label="main",
         space_label="MNI",
@@ -1434,32 +1428,28 @@ def test_first_level_from_bids_several_labels_per_entity(tmp_path, entity):
         slice_time_ref=None,
     )
 
-    _check_output_first_level_from_bids(
-        n_sub, models, m_imgs, m_events, m_confounds
-    )
+    _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
     n_imgs_expected = n_ses * n_runs[0]
-    assert len(m_imgs[0]) == n_imgs_expected
+    assert len(imgs[0]) == n_imgs_expected
 
 
 def _check_output_first_level_from_bids(
-    n_sub, models, m_imgs, m_events, m_confounds
+    n_sub, models, imgs, events, confounds
 ):
     assert len(models) == n_sub
     assert all(isinstance(model, FirstLevelModel) for model in models)
-    assert len(models) == len(m_imgs)
-    for imgs in m_imgs:
-        assert isinstance(imgs, list)
-        assert all(Path(img_).exists() for img_ in imgs)
-    assert len(models) == len(m_events)
-    for events in m_events:
-        assert isinstance(events, list)
-        assert all(isinstance(event_, pd.DataFrame) for event_ in events)
-    assert len(models) == len(m_confounds)
-    for confounds in m_confounds:
-        assert isinstance(confounds, list)
-        assert all(
-            isinstance(confound_, pd.DataFrame) for confound_ in confounds
-        )
+    assert len(models) == len(imgs)
+    for img_ in imgs:
+        assert isinstance(img_, list)
+        assert all(Path(x).exists() for x in img_)
+    assert len(models) == len(events)
+    for event_ in events:
+        assert isinstance(event_, list)
+        assert all(isinstance(x, pd.DataFrame) for x in event_)
+    assert len(models) == len(confounds)
+    for confound_ in confounds:
+        assert isinstance(confound_, list)
+        assert all(isinstance(x, pd.DataFrame) for x in confound_)
 
 
 def test_first_level_from_bids_with_subject_labels(bids_dataset):
@@ -1722,7 +1712,7 @@ def test_first_level_from_bids_all_confounds_missing(tmp_path_factory):
     for f in confound_files:
         os.remove(f)
 
-    models, m_imgs, m_events, m_confounds = first_level_from_bids(
+    models, models, imgs, events, confounds = first_level_from_bids(
         dataset_path=bids_dataset,
         task_label="main",
         space_label="MNI",
@@ -1731,10 +1721,10 @@ def test_first_level_from_bids_all_confounds_missing(tmp_path_factory):
         slice_time_ref=None,
     )
 
-    assert len(models) == len(m_imgs)
-    assert len(models) == len(m_events)
-    assert len(models) == len(m_confounds)
-    for condounds_ in m_confounds:
+    assert len(models) == len(imgs)
+    assert len(models) == len(events)
+    assert len(models) == len(confounds)
+    for condounds_ in confounds:
         assert condounds_ is None
 
 
