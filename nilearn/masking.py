@@ -20,14 +20,14 @@ from .datasets import (
 from .image import get_data, new_img_like, resampling
 
 __all__ = [
-    "compute_epi_mask",
-    "compute_multi_epi_mask",
-    "compute_brain_mask",
-    "compute_multi_brain_mask",
-    "compute_background_mask",
-    "compute_multi_background_mask",
-    "intersect_masks",
     "apply_mask",
+    "compute_background_mask",
+    "compute_brain_mask",
+    "compute_epi_mask",
+    "compute_multi_background_mask",
+    "compute_multi_brain_mask",
+    "compute_multi_epi_mask",
+    "intersect_masks",
     "unmask",
 ]
 
