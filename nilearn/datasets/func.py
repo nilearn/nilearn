@@ -27,8 +27,8 @@ from nilearn.image import get_data
 from .._utils import check_niimg, fill_doc
 from .._utils.numpy_conversions import csv_to_array
 from ._utils import (
-    fetch_file,
     fetch_files,
+    fetch_single_file,
     filter_columns,
     get_dataset_descr,
     get_dataset_dir,
@@ -763,7 +763,7 @@ def fetch_localizer_contrasts(
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
-    index_file = fetch_file(index_url, data_dir, verbose=verbose)
+    index_file = fetch_single_file(index_url, data_dir, verbose=verbose)
     with open(index_file) as of:
         index = json.load(of)
 
@@ -2565,7 +2565,7 @@ def _download_spm_auditory_data(data_dir, subject_dir, subject_id):
         "MoAEpilot.zip"
     )
     archive_path = os.path.join(subject_dir, os.path.basename(url))
-    fetch_file(url, subject_dir)
+    fetch_single_file(url, subject_dir)
     try:
         uncompress_file(archive_path)
     except Exception:
@@ -2832,7 +2832,7 @@ def _download_data_spm_multimodal(data_dir, subject_dir, subject_id):
 
     for url in urls:
         archive_path = os.path.join(subject_dir, os.path.basename(url))
-        fetch_file(url, subject_dir)
+        fetch_single_file(url, subject_dir)
         try:
             uncompress_file(archive_path)
         except Exception:
@@ -2979,7 +2979,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     url = "https://nipy.org/data-packages/nipy-data-0.2.tar.gz"
 
     archive_path = os.path.join(data_dir, os.path.basename(url))
-    fetch_file(url, data_dir)
+    fetch_single_file(url, data_dir)
     try:
         uncompress_file(archive_path)
     except Exception:

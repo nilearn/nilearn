@@ -483,7 +483,7 @@ class _NaiveFTPAdapter(requests.adapters.BaseAdapter):
 
 
 @fill_doc
-def fetch_file(
+def fetch_single_file(
     url,
     data_dir,
     resume=True,
@@ -530,7 +530,7 @@ def fetch_file(
     if session is None:
         with requests.Session() as session:
             session.mount("ftp:", _NaiveFTPAdapter())
-            return fetch_file(
+            return fetch_single_file(
                 url,
                 data_dir,
                 resume=resume,
@@ -611,7 +611,7 @@ def fetch_file(
             except Exception:
                 if verbose > 0:
                     print("Resuming failed, try to download the whole file.")
-                return fetch_file(
+                return fetch_single_file(
                     url,
                     data_dir,
                     resume=False,
@@ -810,7 +810,7 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
                 os.mkdir(temp_dir)
             md5sum = opts.get("md5sum", None)
 
-            dl_file = fetch_file(
+            dl_file = fetch_single_file(
                 url,
                 temp_dir,
                 resume=resume,
