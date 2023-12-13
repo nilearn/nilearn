@@ -2,8 +2,11 @@
 
 .. include:: names.rst
 
-0.10.1.dev
+0.11.0.dev
 ==========
+
+HIGHLIGHTS
+----------
 
 NEW
 ---
@@ -11,23 +14,33 @@ NEW
 Fixes
 -----
 
-- Restore :func:`~image.resample_img` compatibility with all :class:`nibabel.spatialimages.SpatialImage` objects (:gh:`3462` by `Mathias Goncalves`_).
-
-- :func:`~nilearn.glm.second_level.non_parametric_inference` now supports confounding variates when they are available in the input design matrix :func:`~nilearn.mass_univariate.permuted_ols` (:gh:`3465` by `Jelle Roelof Dalenberg`_).
-
-- :func:`~nilearn.mass_univariate.permuted_ols` now checks if confounding variates contain a intercept and raises an warning when multiple intercepts are defined across target and confounding variates (:gh:`3465` by `Jelle Roelof Dalenberg`_).
-- Update the ``CompCor`` strategy in :func:`~interfaces.fmriprep.load_confounds` 
-  and :func:`~interfaces.fmriprep.load_confounds_strategy` to support 
-  `fmriprep` 21.x series and above. (:gh:`3285` by `Hao-Ting Wang`_).
+- :bdg-dark:`Code` Update the ``CompCor`` strategy in :func:`~interfaces.fmriprep.load_confounds` and :func:`~interfaces.fmriprep.load_confounds_strategy` to support ``fmriprep`` 21.x series and above. (:gh:`3285` by `Hao-Ting Wang`_).
+- :bdg-success:`API` :class:`~maskers.MultiNiftiMasker` can now call :meth:`~maskers.NiftiMasker.generate_report` which will generate a report for the first subject in the list of subjects (:gh:`4001` by `Yasmin Mzayek`_).
+- :bdg-dark:`Code` :func:`~image.clean_img` can now use kwargs ``clean__sample_mask`` argument to correctly reshape the nifti image to the dimensions of the mask in the output (:gh:`4051` by 'Mia Zwally`_).
 
 Enhancements
 ------------
 
-- Addition to docs to note that :meth:`~maskers.BaseMasker.inverse_transform` only performs spatial unmasking (:gh:`3445` by `Robert Williamson`_).
-- Give users control over Butterworth filter (:func:`~signal.butterworth`) parameters in :func:`~signal.clean` and Masker objects as kwargs (:gh:`3478` by `Taylor Salo`_).
-- Allow users to output label maps from :func:`~reporting.get_clusters_table` (:gh:`3477` by `Steven Meisler`_).
+- :bdg-primary:`Doc` Add backslash to homogenize :class:`~nilearn.regions.Parcellations` documentation (:gh:`4042` by `Nikhil Krish`_).
+- :bdg-success:`API` Allow passing Pandas Series of image filenames to :class:`~nilearn.glm.second_level.SecondLevelModel` (:gh:`4070` by `Rémi Gau`_).
+- :bdg-info:`Plotting` Allow setting ``vmin`` in :func:`~nilearn.plotting.plot_glass_brain` and :func:`~nilearn.plotting.plot_stat_map` (:gh:`3993` by `Michelle Wang`_).
+- :bdg-success:`API` Support passing t and F contrasts to :func:`~nilearn.glm.compute_contrast` that that have fewer columns than the number of estimated parameters. Remaining columns are padded with zero (:gh:`4067` by `Rémi Gau`_).
+- :bdg-dark:`Code` Multi-subject maskers' ``generate_report`` method no longer fails with 5D data but instead shows report of first subject. User can index input list to show report for different subjects (:gh:`3935` by `Yasmin Mzayek`_).
+- :bdg-primary:`Code` Add ``two_sided`` option for :class:`~nilearn.image.binarize_img` (:gh:`4121` by `Steven Meisler`_).
+- :bdg-dark:`Code` :meth:`~maskers.NiftiLabelsMasker.generate_report` now uses appropriate cut coordinates when functional image is provided (:gh:`4099` by `Yasmin Mzayek`_ and `Nicolas Gensollen`_).
+- :bdg-info:`Plotting` When plotting thresholded statistical maps with a colorbar, the threshold value(s) will now be displayed as tick labels on the colorbar (:gh:`#2833` by `Nicolas Gensollen`_).
+- :bdg-success:`API` :class:`~maskers.NiftiSpheresMasker` now has ``generate_report`` method (:gh:`3102` by `Yasmin Mzayek`_ and `Nicolas Gensollen`_).
+- :bdg-primary:`Doc`  Mention the classification type (all-vs-one) in  :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_glm_decoding.py` (:gh:`4122` by `Tamer Gezici`_).
+- :bdg-primary:`Doc`  Specify full form of LSS in  :ref:`sphx_glr_auto_examples_07_advanced_plot_beta_series.py` (:gh:`4141` by `Tamer Gezici`_).
+- :bdg-primary:`Doc` Don't fetch tmaps in examples if tmaps aren't used in the example. (:gh:`4136` by `Christina Roßmanith`_).
 
 Changes
 -------
 
-- The documentation for :func:`~image.threshold_img` has been improved, with more information about which voxels are set to 0 and which ones keep their original values (:gh:`3485` by `Rémi Gau`_).
+- :bdg-danger:`Deprecation` :func:`~regions.img_to_signals_labels` will also return ``masked_atlas`` in release 0.15. Meanwhile, use ``return_masked_atlas`` parameter to enable/disable this behavior. (:gh:`3761` by `Mohammad Torabi`_).
+- :bdg-success:`API` Expose scipy CubicSpline ``extrapolate`` parameter in :func:`~signal.clean` to control the interpolation of censored volumes in both ends of the BOLD signal data (:gh:`4028` by `Jordi Huguet`_).
+- :bdg-secondary:`Maint` Switch to using tox to manage environments during development and testing. All plotting python dependencies (matplotlib AND plotly) are now installed when running ``pip install nilearn[plotting]`` (:gh:`4029` by `Rémi Gau`_).
+- :bdg-dark:`Code` Private utility context manager ``write_tmp_imgs`` is refactored into function ``write_imgs_to_path`` (:gh:`4094` by `Yasmin Mzayek`_).
+- :bdg-danger:`Deprecation` :func:`~plotting.plot_surf_roi` will raise a warning if ``roi_map`` contains negative or non-integer values; in version 0.13 this will be a ``ValueError`` (:gh:`4131` by `Michelle Wang`_).
+- :bdg-dark:`Code` Remove leading underscore from non private functions to align with PEP8 (:gh:`4086` by `Rémi Gau`_).
+- :bdg-dark:`Code` Make ``decoding/proximal_operator`` explicitly private to align with PEP8 (:gh:`4153` by `Rémi Gau`_).

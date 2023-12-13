@@ -18,7 +18,7 @@ hemisphere, negative in the left hemisphere).
 
 """
 
-###############################################################################
+# %%
 # Fetch dataset
 # -------------
 # We download a list of left vs right button press :term:`contrasts<contrast>`
@@ -29,24 +29,25 @@ from nilearn.datasets import fetch_localizer_contrasts
 
 n_subjects = 16
 data = fetch_localizer_contrasts(
-    ['left vs right button press'],
+    ["left vs right button press"],
     n_subjects,
     get_tmaps=True,
     legacy_format=False,
 )
 
-###############################################################################
+# %%
 # Display subject t_maps
 # ----------------------
 # We plot a grid with all the subjects t-maps thresholded at t = 2 for simple
 # visualization purposes. The button press effect is visible among all
 # subjects.
-from nilearn import plotting
 import matplotlib.pyplot as plt
 
-subjects = data['ext_vars']['participant_id'].tolist()
+from nilearn import plotting
+
+subjects = data["ext_vars"]["participant_id"].tolist()
 fig, axes = plt.subplots(nrows=4, ncols=4)
-for cidx, tmap in enumerate(data['tmaps']):
+for cidx, tmap in enumerate(data["tmaps"]):
     plotting.plot_glass_brain(
         tmap,
         colorbar=False,
@@ -54,12 +55,12 @@ for cidx, tmap in enumerate(data['tmaps']):
         title=subjects[cidx],
         axes=axes[int(cidx / 4), int(cidx % 4)],
         plot_abs=False,
-        display_mode='z',
+        display_mode="z",
     )
-fig.suptitle('subjects t_map left-right button press')
+fig.suptitle("subjects t_map left-right button press")
 plt.show()
 
-###############################################################################
+# %%
 # Estimate second level model
 # ---------------------------
 # We wish to perform a one-sample test.
@@ -69,32 +70,33 @@ plt.show()
 # single column of ones, corresponding to the model intercept.
 import pandas as pd
 
-second_level_input = data['cmaps']
+second_level_input = data["cmaps"]
 design_matrix = pd.DataFrame(
     [1] * len(second_level_input),
-    columns=['intercept'],
+    columns=["intercept"],
 )
 
-###############################################################################
+# %%
 # Next, we specify the model and fit it.
 from nilearn.glm.second_level import SecondLevelModel
 
-second_level_model = SecondLevelModel(smoothing_fwhm=8.0)
+second_level_model = SecondLevelModel(smoothing_fwhm=8.0, n_jobs=2)
 second_level_model = second_level_model.fit(
     second_level_input,
     design_matrix=design_matrix,
 )
 
-###############################################################################
+# %%
 # To estimate the :term:`contrast` is very simple. We can just provide the
 # column name of the design matrix.
 z_map = second_level_model.compute_contrast(
-    second_level_contrast='intercept',
-    output_type='z_score',
+    second_level_contrast="intercept",
+    output_type="z_score",
 )
 
-###############################################################################
-# We threshold the second level contrast at uncorrected p < 0.001 and plot it.
+# %%
+# We threshold the second level :term:`contrast`
+# at uncorrected p < 0.001 and plot it.
 from scipy.stats import norm
 
 p_val = 0.001
@@ -103,30 +105,32 @@ display = plotting.plot_glass_brain(
     z_map,
     threshold=p001_unc,
     colorbar=True,
-    display_mode='z',
+    display_mode="z",
     plot_abs=False,
-    title='group left-right button press (unc p<0.001)',
+    title="group left-right button press (unc p<0.001)",
+    figure=plt.figure(figsize=(5, 5)),
 )
 plotting.show()
 
-###############################################################################
+# %%
 # As expected, we find the motor cortex.
 
-###############################################################################
+# %%
 # Next, we compute the (corrected) p-values with a parametric test to compare
 # them with the results from a nonparametric test.
 import numpy as np
+
 from nilearn.image import get_data, math_img
 
-p_val = second_level_model.compute_contrast(output_type='p_value')
+p_val = second_level_model.compute_contrast(output_type="p_value")
 n_voxels = np.sum(get_data(second_level_model.masker_.mask_img_))
 # Correcting the p-values for multiple testing and taking negative logarithm
 neg_log_pval = math_img(
-    '-np.log10(np.minimum(1, img * {}))'.format(str(n_voxels)),
+    f"-np.log10(np.minimum(1, img * {str(n_voxels)}))",
     img=p_val,
 )
 
-###############################################################################
+# %%
 # Now, we compute the (corrected) p-values with a permutation test.
 #
 # We will use :func:`~nilearn.glm.second_level.non_parametric_inference` for
@@ -163,11 +167,11 @@ out_dict = non_parametric_inference(
     n_perm=500,  # 500 for the sake of time. Ideally, this should be 10,000.
     two_sided_test=False,
     smoothing_fwhm=8.0,
-    n_jobs=1,
+    n_jobs=2,
     threshold=0.001,
 )
 
-###############################################################################
+# %%
 # Let us plot the (corrected) negative log p-values for the both tests.
 #
 # We will use a negative log10 p threshold of 1, which corresponds to p<0.1.
@@ -180,6 +184,8 @@ out_dict = non_parametric_inference(
 # We will also cap the negative log10 p-values at 2.69, because this is the
 # maximum observable value for the nonparametric tests, which were run with
 # only 500 permutations.
+import itertools
+
 threshold = 1  # p < 0.1
 vmax = 2.69  # ~= -np.log10(1 / 500)
 
@@ -187,40 +193,38 @@ cut_coords = [0]
 
 IMAGES = [
     neg_log_pval,
-    out_dict['logp_max_t'],
-    out_dict['logp_max_size'],
-    out_dict['logp_max_mass'],
+    out_dict["logp_max_t"],
+    out_dict["logp_max_size"],
+    out_dict["logp_max_mass"],
 ]
 TITLES = [
-    'Parametric Test',
-    'Permutation Test\n(Voxel-Level Error Control)',
-    'Permutation Test\n(Cluster-Size Error Control)',
-    'Permutation Test\n(Cluster-Mass Error Control)',
+    "Parametric Test",
+    "Permutation Test\n(Voxel-Level Error Control)",
+    "Permutation Test\n(Cluster-Size Error Control)",
+    "Permutation Test\n(Cluster-Mass Error Control)",
 ]
 
 fig, axes = plt.subplots(figsize=(8, 8), nrows=2, ncols=2)
-img_counter = 0
-for i_row in range(2):
-    for j_col in range(2):
-        ax = axes[i_row, j_col]
-        plotting.plot_glass_brain(
-            IMAGES[img_counter],
-            colorbar=True,
-            vmax=vmax,
-            display_mode='z',
-            plot_abs=False,
-            cut_coords=cut_coords,
-            threshold=threshold,
-            figure=fig,
-            axes=ax,
-        )
-        ax.set_title(TITLES[img_counter])
-        img_counter += 1
-
-fig.suptitle('Group left-right button press\n(negative log10 p-values)')
+for img_counter, (i_row, j_col) in enumerate(
+    itertools.product(range(2), range(2))
+):
+    ax = axes[i_row, j_col]
+    plotting.plot_glass_brain(
+        IMAGES[img_counter],
+        colorbar=True,
+        vmax=vmax,
+        display_mode="z",
+        plot_abs=False,
+        cut_coords=cut_coords,
+        threshold=threshold,
+        figure=fig,
+        axes=ax,
+    )
+    ax.set_title(TITLES[img_counter])
+fig.suptitle("Group left-right button press\n(negative log10 p-values)")
 plt.show()
 
-###############################################################################
+# %%
 # The nonparametric test yields many more discoveries and is more powerful than
 # the usual parametric procedure.
 # Even within the nonparametric test, the different correction metrics produce

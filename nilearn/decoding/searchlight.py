@@ -6,24 +6,23 @@ in the neighborhood of each location of a domain."""
 #           Alexandre Gramfort (alexandre.gramfort@inria.fr)
 #           Philippe Gervais (philippe.gervais@inria.fr)
 #
-# License: simplified BSD
 
-import time
 import sys
+import time
 import warnings
 
 import numpy as np
-
-from joblib import Parallel, delayed, cpu_count
+from joblib import Parallel, cpu_count, delayed
 from sklearn import svm
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import ConvergenceWarning
+from sklearn.model_selection import cross_val_score
+
+from nilearn.maskers.nifti_spheres_masker import _apply_mask_and_get_affinity
 
 from .. import masking
-from ..image.resampling import coord_transform
-from nilearn.maskers.nifti_spheres_masker import _apply_mask_and_get_affinity
 from .._utils import check_niimg_4d, fill_doc
-from sklearn.model_selection import cross_val_score
+from ..image.resampling import coord_transform
 
 ESTIMATOR_CATALOG = dict(svc=svm.LinearSVC, svr=svm.SVR)
 
@@ -125,8 +124,7 @@ class GroupIterator:
         self.n_jobs = n_jobs
 
     def __iter__(self):
-        split = np.array_split(np.arange(self.n_features), self.n_jobs)
-        yield from split
+        yield from np.array_split(np.arange(self.n_features), self.n_jobs)
 
 
 def _group_iter_search_light(
@@ -141,7 +139,7 @@ def _group_iter_search_light(
     total,
     verbose=0,
 ):
-    """Function for grouped iterations of search_light.
+    """Perform grouped iterations of search_light.
 
     Parameters
     ----------
@@ -177,8 +175,8 @@ def _group_iter_search_light(
     total : int
         Total number of voxels, used for display
 
-    verbose : int, optional
-        The verbosity level. Default is 0
+    verbose : int, default=0
+        The verbosity level.
 
     Returns
     -------
@@ -188,9 +186,7 @@ def _group_iter_search_light(
     par_scores = np.zeros(len(list_rows))
     t0 = time.time()
     for i, row in enumerate(list_rows):
-        kwargs = dict()
-        kwargs["scoring"] = scoring
-        kwargs["groups"] = groups
+        kwargs = {"scoring": scoring, "groups": groups}
         par_scores[i] = np.mean(
             cross_val_score(estimator, X[:, row], y, cv=cv, n_jobs=1, **kwargs)
         )
@@ -199,19 +195,15 @@ def _group_iter_search_light(
             step = 11 - min(verbose, 10)
             if i % step == 0:
                 # If there is only one job, progress information is fixed
-                if total == len(list_rows):
-                    crlf = "\r"
-                else:
-                    crlf = "\n"
+                crlf = "\r" if total == len(list_rows) else "\n"
                 percent = float(i) / len(list_rows)
                 percent = round(percent * 100, 2)
                 dt = time.time() - t0
                 # We use a max to avoid a division by zero
                 remaining = (100.0 - percent) / max(0.01, percent) * dt
                 sys.stderr.write(
-                    "Job #%d, processed %d/%d voxels "
-                    "(%0.2f%%, %i seconds remaining)%s"
-                    % (thread_id, i, len(list_rows), percent, remaining, crlf)
+                    f"Job #{thread_id}, processed {i}/{len(list_rows)} voxels "
+                    f"({percent:0.2f}%, {remaining} seconds remaining){crlf}"
                 )
     return par_scores
 
@@ -234,8 +226,8 @@ class SearchLight(BaseEstimator):
         Boolean image giving voxels on which searchlight should be
         computed.
 
-    radius : float, optional
-        radius of the searchlight ball, in millimeters. Defaults to 2.
+    radius : float, default=2.
+        radius of the searchlight ball, in millimeters.
 
     estimator : 'svr', 'svc', or an estimator object implementing 'fit'
         The object to use to fit the data
@@ -253,7 +245,7 @@ class SearchLight(BaseEstimator):
     %(verbose0)s
 
     Notes
-    ------
+    -----
     The searchlight [Kriegeskorte 06] is a widely used approach for the
     study of the fine-grained patterns of information in fMRI analysis.
     Its principle is relatively simple: a small group of neighboring
@@ -319,7 +311,7 @@ class SearchLight(BaseEstimator):
             process_mask_img = self.mask_img
 
         # Compute world coordinates of the seeds
-        process_mask, process_mask_affine = masking._load_mask_img(
+        process_mask, process_mask_affine = masking.load_mask_img(
             process_mask_img
         )
         process_mask_coords = np.where(process_mask != 0)
@@ -340,7 +332,9 @@ class SearchLight(BaseEstimator):
         )
 
         estimator = self.estimator
-        if isinstance(estimator, str):
+        if estimator == "svc":
+            estimator = ESTIMATOR_CATALOG[estimator](dual=True)
+        elif isinstance(estimator, str):
             estimator = ESTIMATOR_CATALOG[estimator]()
 
         scores = search_light(

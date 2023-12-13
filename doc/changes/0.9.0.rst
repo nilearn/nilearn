@@ -27,120 +27,120 @@ HIGHLIGHTS
  | - Joblib -- v0.15
 
 
-- Surface plotting functions can now produce interactive plots with ``Plotly``. This can be selected with the ``engine`` parameter (set it to ``matplotlib`` or ``plotly``) (:gh:`2902` by `Nicolas Gensollen`_).
+- :bdg-info:`Plotting` Surface plotting functions can now produce interactive plots with ``Plotly``. This can be selected with the ``engine`` parameter (set it to ``matplotlib`` or ``plotly``) (:gh:`2902` by `Nicolas Gensollen`_).
 
-- New module :mod:`nilearn.interfaces` to implement loading and saving utilities with various interfaces (:term:`fMRIPrep`, :term:`BIDS`...) (:gh:`3061` by `Nicolas Gensollen`_).
+- :bdg-success:`API` New module :mod:`nilearn.interfaces` to implement loading and saving utilities with various interfaces (:term:`fMRIPrep`, :term:`BIDS`...) (:gh:`3061` by `Nicolas Gensollen`_).
 
-- New functions :func:`~interfaces.fmriprep.load_confounds` and :func:`~interfaces.fmriprep.load_confounds_strategy` to load confound variables easily from :term:`fMRIPrep` outputs (:gh:`2946` and :gh:`3016` by `Hao-Ting Wang`_).
+- :bdg-success:`API` New functions :func:`~interfaces.fmriprep.load_confounds` and :func:`~interfaces.fmriprep.load_confounds_strategy` to load confound variables easily from :term:`fMRIPrep` outputs (:gh:`2946` and :gh:`3016` by `Hao-Ting Wang`_).
 
-- New class :class:`~regions.HierarchicalKMeans` which yields more balanced clusters than :class:`~sklearn.cluster.KMeans`. It is also callable through :class:`~regions.Parcellations` using ``method=hierarchical_kmeans`` (:gh:`2282` by `Thomas Bazeille`_).
+- :bdg-success:`API` New class :class:`~regions.HierarchicalKMeans` which yields more balanced clusters than :class:`~sklearn.cluster.KMeans`. It is also callable through :class:`~regions.Parcellations` using ``method=hierarchical_kmeans`` (:gh:`2282` by `Thomas Bazeille`_).
 
-- Masker objects like :class:`~maskers.NiftiMasker` now belong to the new module :mod:`nilearn.maskers`. The old import style, through the module ``input_data``, still works but has been deprecated (:gh:`3065` by `Nicolas Gensollen`_).
+- :bdg-danger:`Deprecation` Masker objects like :class:`~maskers.NiftiMasker` now belong to the new module :mod:`nilearn.maskers`. The old import style, through the module ``input_data``, still works but has been deprecated (:gh:`3065` by `Nicolas Gensollen`_).
 
-- Class :class:`~maskers.NiftiMapsMasker` can now generate HTML reports in the same way as :class:`~maskers.NiftiMasker` and :class:`~maskers.NiftiLabelsMasker` (:gh:`2880` by `Nicolas Gensollen`_).
+- :bdg-success:`API` Class :class:`~maskers.NiftiMapsMasker` can now generate HTML reports in the same way as :class:`~maskers.NiftiMasker` and :class:`~maskers.NiftiLabelsMasker` (:gh:`2880` by `Nicolas Gensollen`_).
 
-- The :doc:`contributing documentation</development>` and :doc:`maintenance</maintenance>` pages were improved (:gh:`3010` by `Nicolas Gensollen`_).
+- :bdg-primary:`Doc` The :doc:`contributing documentation</development>` and :doc:`maintenance</maintenance>` pages were improved (:gh:`3010` by `Nicolas Gensollen`_).
 
 
 NEW
 ---
 
-- **Support for Python 3.6 is deprecated and will be removed in release 0.10.** Users with a Python 3.6 environment will be warned at their first Nilearn import and encouraged to update to more recent versions of Python (:gh:`3026` by `Nicolas Gensollen`_).
+- :bdg-danger:`Deprecation` **Support for Python 3.6 is deprecated and will be removed in release 0.10.** Users with a Python 3.6 environment will be warned at their first Nilearn import and encouraged to update to more recent versions of Python (:gh:`3026` by `Nicolas Gensollen`_).
 
-- Masker objects like :class:`~maskers.NiftiMasker` now belong to the new module :mod:`nilearn.maskers`. The old import style, through the module ``input_data``, still works but has been deprecated (:gh:`3065` by `Nicolas Gensollen`_).
+- :bdg-danger:`Deprecation` Masker objects like :class:`~maskers.NiftiMasker` now belong to the new module :mod:`nilearn.maskers`. The old import style, through the module ``input_data``, still works but has been deprecated (:gh:`3065` by `Nicolas Gensollen`_).
 
-- New module :mod:`nilearn.interfaces` to implement loading and saving utilities with various interfaces (:term:`fMRIPrep`, :term:`BIDS`...) (:gh:`3061` by `Nicolas Gensollen`_).
+- :bdg-success:`API` New module :mod:`nilearn.interfaces` to implement loading and saving utilities with various interfaces (:term:`fMRIPrep`, :term:`BIDS`...) (:gh:`3061` by `Nicolas Gensollen`_).
 
-- New submodule :mod:`nilearn.interfaces.fmriprep` to implement loading utilities for :term:`fMRIPrep` (:gh:`3061` by `Nicolas Gensollen`_).
+- :bdg-success:`API` New submodule :mod:`nilearn.interfaces.fmriprep` to implement loading utilities for :term:`fMRIPrep` (:gh:`3061` by `Nicolas Gensollen`_).
 
-- New function :func:`~interfaces.fmriprep.load_confounds` to load confound variables easily from :term:`fMRIPrep` outputs (:gh:`2946` by `Hao-Ting Wang`_).
+- :bdg-success:`API` New function :func:`~interfaces.fmriprep.load_confounds` to load confound variables easily from :term:`fMRIPrep` outputs (:gh:`2946` by `Hao-Ting Wang`_).
 
-- New function :func:`~interfaces.fmriprep.load_confounds_strategy` to load confound variables from :term:`fMRIPrep` outputs using four preset strategies: ``simple``, ``scrubbing``, ``compcor``, and ``ica_aroma`` (:gh:`3016` by `Hao-Ting Wang`_).
+- :bdg-success:`API` New function :func:`~interfaces.fmriprep.load_confounds_strategy` to load confound variables from :term:`fMRIPrep` outputs using four preset strategies: ``simple``, ``scrubbing``, ``compcor``, and ``ica_aroma`` (:gh:`3016` by `Hao-Ting Wang`_).
 
-- New submodule :mod:`nilearn.interfaces.bids` to implement loading utilities for :term:`BIDS` datasets (:gh:`3126` by `Taylor Salo`_).
+- :bdg-success:`API` New submodule :mod:`nilearn.interfaces.bids` to implement loading utilities for :term:`BIDS` datasets (:gh:`3126` by `Taylor Salo`_).
 
-- New function :func:`~interfaces.bids.get_bids_files` to select files easily from :term:`BIDS` datasets (:gh:`3126` by `Taylor Salo`_).
+- :bdg-success:`API` New function :func:`~interfaces.bids.get_bids_files` to select files easily from :term:`BIDS` datasets (:gh:`3126` by `Taylor Salo`_).
 
-- New function :func:`~interfaces.bids.parse_bids_filename` to identify subparts of :term:`BIDS` filenames (:gh:`3126` by `Taylor Salo`_).
+- :bdg-success:`API` New function :func:`~interfaces.bids.parse_bids_filename` to identify subparts of :term:`BIDS` filenames (:gh:`3126` by `Taylor Salo`_).
 
-- New submodule :mod:`nilearn.interfaces.fsl` to implement loading utilities for FSL outputs. (:gh:`3126` by `Taylor Salo`_).
+- :bdg-success:`API` New submodule :mod:`nilearn.interfaces.fsl` to implement loading utilities for FSL outputs. (:gh:`3126` by `Taylor Salo`_).
 
-- New function :func:`~interfaces.fsl.get_design_from_fslmat` to load design matrices from FSL files (:gh:`3126` by `Taylor Salo`_).
+- :bdg-success:`API` New function :func:`~interfaces.fsl.get_design_from_fslmat` to load design matrices from FSL files (:gh:`3126` by `Taylor Salo`_).
 
-- Surface plotting functions like :func:`~plotting.plot_surf_stat_map` now have an ``engine`` parameter, defaulting to ``matplotlib``, but which can be set to ``plotly``. If ``plotly`` and ``kaleido`` are installed, this will generate an interactive plot of the surface map using ``plotly`` instead of ``matplotlib``. Note that this functionality is still experimental, and that some capabilities supported by our ``matplotlib`` engine are not yet supported by the ``plotly`` engine (:gh:`2902` by `Nicolas Gensollen`_).
+- :bdg-info:`Plotting` Surface plotting functions like :func:`~plotting.plot_surf_stat_map` now have an ``engine`` parameter, defaulting to ``matplotlib``, but which can be set to ``plotly``. If ``plotly`` and ``kaleido`` are installed, this will generate an interactive plot of the surface map using ``plotly`` instead of ``matplotlib``. Note that this functionality is still experimental, and that some capabilities supported by our ``matplotlib`` engine are not yet supported by the ``plotly`` engine (:gh:`2902` by `Nicolas Gensollen`_).
 
-- When using the ``plotly`` engine, surface plotting functions derived from :func:`~plotting.plot_surf` return a new display object, a :class:`~plotting.displays.PlotlySurfaceFigure`, which provides a similar interface to the :class:`~matplotlib.figure.Figure` returned with the ``matplotlib`` engine (:gh:`3036` by `Nicolas Gensollen`_).
+- :bdg-info:`Plotting` When using the ``plotly`` engine, surface plotting functions derived from :func:`~plotting.plot_surf` return a new display object, a :class:`~plotting.displays.PlotlySurfaceFigure`, which provides a similar interface to the :class:`~matplotlib.figure.Figure` returned with the ``matplotlib`` engine (:gh:`3036` by `Nicolas Gensollen`_).
 
-- Class :class:`~maskers.NiftiMapsMasker` can now generate HTML reports in the same way as :class:`~maskers.NiftiMasker` and :class:`~maskers.NiftiLabelsMasker`. The report enables the users to browse through the spatial maps with a previous and next button. The users can filter the maps they wish to display by passing an integer, or a list of integers to :meth:`~maskers.NiftiMapsMasker.generate_report` (:gh:`2880` by `Nicolas Gensollen`_).
+- :bdg-success:`API` Class :class:`~maskers.NiftiMapsMasker` can now generate HTML reports in the same way as :class:`~maskers.NiftiMasker` and :class:`~maskers.NiftiLabelsMasker`. The report enables the users to browse through the spatial maps with a previous and next button. The users can filter the maps they wish to display by passing an integer, or a list of integers to :meth:`~maskers.NiftiMapsMasker.generate_report` (:gh:`2880` by `Nicolas Gensollen`_).
 
-- New class :class:`~regions.HierarchicalKMeans` which yields more balanced clusters than :class:`~sklearn.cluster.KMeans`. It is also callable through :class:`~regions.Parcellations` using ``method=hierarchical_kmeans`` (:gh:`2282` by `Thomas Bazeille`_).
+- :bdg-success:`API` New class :class:`~regions.HierarchicalKMeans` which yields more balanced clusters than :class:`~sklearn.cluster.KMeans`. It is also callable through :class:`~regions.Parcellations` using ``method=hierarchical_kmeans`` (:gh:`2282` by `Thomas Bazeille`_).
 
 
 Fixes
 -----
 
-- When a label image with non integer values was provided to the :class:`~maskers.NiftiLabelsMasker`, its :meth:`~maskers.NiftiLabelsMasker.generate_report` method was raising an ``IndexError`` (:gh:`3009` by `Nicolas Gensollen`_).
+- :bdg-dark:`Code` When a label image with non integer values was provided to the :class:`~maskers.NiftiLabelsMasker`, its :meth:`~maskers.NiftiLabelsMasker.generate_report` method was raising an ``IndexError`` (:gh:`3009` by `Nicolas Gensollen`_).
 
-- Function :func:`~plotting.plot_markers` did not work when the ``display_mode`` parameter included ``l`` and ``r`` and the parameter ``node_size`` was provided as an array (:gh:`3013` by `Leonard Sasse`_).
+- :bdg-info:`Plotting` Function :func:`~plotting.plot_markers` did not work when the ``display_mode`` parameter included ``l`` and ``r`` and the parameter ``node_size`` was provided as an array (:gh:`3013` by `Leonard Sasse`_).
 
-- Method :meth:`~glm.first_level.FirstLevelModel.generate_report` threw a ``TypeError`` when :class:`~glm.first_level.FirstLevelModel` was instantiated with ``mask_img`` being a :class:`~maskers.NiftiMasker`. Function :func:`~reporting.make_glm_report` was fixed accordingly (:gh:`3035` by `Alexis Thual`_).
+- :bdg-dark:`Code` Method :meth:`~glm.first_level.FirstLevelModel.generate_report` threw a ``TypeError`` when :class:`~glm.first_level.FirstLevelModel` was instantiated with ``mask_img`` being a :class:`~maskers.NiftiMasker`. Function :func:`~reporting.make_glm_report` was fixed accordingly (:gh:`3035` by `Alexis Thual`_).
 
-- Function :func:`~plotting.find_parcellation_cut_coords` now returns coordinates and labels having the same order as the one of the input labels index (:gh:`3078` by `Myeong Seop Song`_).
+- :bdg-dark:`Code` Function :func:`~plotting.find_parcellation_cut_coords` now returns coordinates and labels having the same order as the one of the input labels index (:gh:`3078` by `Myeong Seop Song`_).
 
-- Convert references in ``nilearn/regions/region_extractor.py`` to use footcite / footbibliography (:gh:`3111` by `Neelay Shah`_).
+- :bdg-primary:`Doc` Convert references in ``nilearn/regions/region_extractor.py`` to use footcite / footbibliography (:gh:`3111` by `Neelay Shah`_).
 
-- Fixed Hommel value computation in ``nilearn/glm/thresholding.py`` used in the ``cluster_level_inference`` function (:gh:`3109` by `Bertrand Thirion`_).
+- :bdg-dark:`Code` Fixed Hommel value computation in ``nilearn/glm/thresholding.py`` used in the ``cluster_level_inference`` function (:gh:`3109` by `Bertrand Thirion`_).
 
-- Fixed computation of Benjamini-Hocheberg threshold in ``nilearn/glm/thresholding.py`` function (:gh:`3137` by `Bertrand Thirion`_).
+- :bdg-dark:`Code` Fixed computation of Benjamini-Hocheberg threshold in ``nilearn/glm/thresholding.py`` function (:gh:`3137` by `Bertrand Thirion`_).
 
-- Attribute ``scaling_axis`` of :class:`~.glm.first_level.FirstLevelModel` has been deprecated and will be removed in ``0.11.0``. When scaling is performed, the attribute ``signal_scaling`` is used to define the axis instead (:gh:`3135` by `Nicolas Gensollen`_).
+- :bdg-danger:`Deprecation` Attribute ``scaling_axis`` of :class:`~.glm.first_level.FirstLevelModel` has been deprecated and will be removed in ``0.11.0``. When scaling is performed, the attribute ``signal_scaling`` is used to define the axis instead (:gh:`3135` by `Nicolas Gensollen`_).
 
 
 Enhancements
 ------------
 
-- Function :func:`~image.threshold_img` accepts new parameters ``cluster_threshold`` and ``two_sided``. ``cluster_threshold`` applies a cluster-size threshold (in :term:`voxels<voxel>`). ``two_sided``, which is ``True`` by default, separately thresholds both positive and negative values in the map, as was done previously. When ``two_sided`` is ``False``, only values greater than or equal to the threshold are retained (:gh:`2965` by `Taylor Salo`_).
+- :bdg-success:`API` Function :func:`~image.threshold_img` accepts new parameters ``cluster_threshold`` and ``two_sided``. ``cluster_threshold`` applies a cluster-size threshold (in :term:`voxels<voxel>`). ``two_sided``, which is ``True`` by default, separately thresholds both positive and negative values in the map, as was done previously. When ``two_sided`` is ``False``, only values greater than or equal to the threshold are retained (:gh:`2965` by `Taylor Salo`_).
 
-- Function :func:`~signal.clean` raises a warning when the user sets parameters ``detrend`` and ``standardize_confound`` to ``False``. The user is suggested to set one of those options to ``True``, or standardize/demean the confounds before using the function (:gh:`3003` by `Hao-Ting Wang`_).
+- :bdg-success:`API` Function :func:`~signal.clean` raises a warning when the user sets parameters ``detrend`` and ``standardize_confound`` to ``False``. The user is suggested to set one of those options to ``True``, or standardize/demean the confounds before using the function (:gh:`3003` by `Hao-Ting Wang`_).
 
-- The :doc:`contributing documentation</development>` and :doc:`maintenance</maintenance>` pages were improved, especially towards ways of contributing to the project which do not require to write code. The roles of the ``triage`` were defined more clearly with sections on issue :ref:`issue_labels` and issue :ref:`closing_policy` (:gh:`3010` by `Nicolas Gensollen`_).
+- :bdg-primary:`Doc` The :doc:`contributing documentation</development>` and :doc:`maintenance</maintenance>` pages were improved, especially towards ways of contributing to the project which do not require to write code. The roles of the ``triage`` were defined more clearly with sections on issue :ref:`issue_labels` and issue :ref:`closing_policy` (:gh:`3010` by `Nicolas Gensollen`_).
 
-- It is now possible to provide custom :term:`HRF` models to :class:`~glm.first_level.FirstLevelModel`. The custom model should be defined as a function, or a list of functions, implementing the same API as Nilearn's usual models (see :func:`~glm.first_level.spm_hrf` for example). The example :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_hrf.py` was also modified to demo how to define custom :term:`HRF` models (:gh:`2942` by `Nicolas Gensollen`_).
+- :bdg-success:`API` It is now possible to provide custom :term:`HRF` models to :class:`~glm.first_level.FirstLevelModel`. The custom model should be defined as a function, or a list of functions, implementing the same API as Nilearn's usual models (see :func:`~glm.first_level.spm_hrf` for example). The example :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_hrf.py` was also modified to demo how to define custom :term:`HRF` models (:gh:`2942` by `Nicolas Gensollen`_).
 
-- Class :class:`~maskers.NiftiLabelsMasker` now gives a warning when some labels are removed from the label image at transform time due to resampling of the label image to the data image (:gh:`3008` by `Nicolas Gensollen`_).
+- :bdg-dark:`Code` Class :class:`~maskers.NiftiLabelsMasker` now gives a warning when some labels are removed from the label image at transform time due to resampling of the label image to the data image (:gh:`3008` by `Nicolas Gensollen`_).
 
-- Function :func:`~glm.second_level.non_parametric_inference` now accepts :class:`~pandas.DataFrame` as possible values for its ``second_level_input`` parameter. Note that a new parameter ``first_level_contrast`` has been added to this function to enable this feature (:gh:`3042` by `Nicolas Gensollen`_).
+- :bdg-success:`API` Function :func:`~glm.second_level.non_parametric_inference` now accepts :class:`~pandas.DataFrame` as possible values for its ``second_level_input`` parameter. Note that a new parameter ``first_level_contrast`` has been added to this function to enable this feature (:gh:`3042` by `Nicolas Gensollen`_).
 
-- Tests from ``nilearn/plotting/tests/test_img_plotting.py`` have been refactored and reorganized in separate files in new folder ``nilearn/plotting/tests/test_img_plotting/`` (:gh:`3015` by `Nicolas Gensollen`_).
+- :bdg-secondary:`Maint` Tests from ``nilearn/plotting/tests/test_img_plotting.py`` have been refactored and reorganized in separate files in new folder ``nilearn/plotting/tests/test_img_plotting/`` (:gh:`3015` by `Nicolas Gensollen`_).
 
-- Once a :class:`~glm.second_level.SecondLevelModel` has been fitted and contrasts have been computed, it is now possible to access the ``residuals``, ``predicted``, and ``r_square`` model attributes like it was already possible for :class:`~glm.first_level.FirstLevelModel` (:gh:`3033` by `Nicolas Gensollen`_).
+- :bdg-success:`API` Once a :class:`~glm.second_level.SecondLevelModel` has been fitted and contrasts have been computed, it is now possible to access the ``residuals``, ``predicted``, and ``r_square`` model attributes like it was already possible for :class:`~glm.first_level.FirstLevelModel` (:gh:`3033` by `Nicolas Gensollen`_).
 
-- Importing :mod:`nilearn.plotting` will now raise a warning if the ``matplotlib`` backend has been changed from its original value, instead of silently modifying it (:gh:`3077` by `Raphael Meudec`_).
+- :bdg-info:`Plotting` Importing :mod:`nilearn.plotting` will now raise a warning if the ``matplotlib`` backend has been changed from its original value, instead of silently modifying it (:gh:`3077` by `Raphael Meudec`_).
 
-- Function :func:`~plotting.plot_img` and deriving functions like :func:`~plotting.plot_anat`, :func:`~plotting.plot_stat_map`, or :func:`~plotting.plot_epi` now accept an optional argument ``cbar_tick_format`` to specify how numbers should be displayed on the colorbar. This is consistent with the API of surface plotting functions (see release ``0.7.1``). The default format is scientific notation (:gh:`2859` by `Nicolas Gensollen`_).
+- :bdg-info:`Plotting` Function :func:`~plotting.plot_img` and deriving functions like :func:`~plotting.plot_anat`, :func:`~plotting.plot_stat_map`, or :func:`~plotting.plot_epi` now accept an optional argument ``cbar_tick_format`` to specify how numbers should be displayed on the colorbar. This is consistent with the API of surface plotting functions (see release ``0.7.1``). The default format is scientific notation (:gh:`2859` by `Nicolas Gensollen`_).
 
 
 Changes
 -------
 
-- Nibabel 2.x is no longer supported. Please consider upgrading to Nibabel >= 3.0 (:gh:`3106` by `Nicolas Gensollen`_).
+- :bdg-danger:`Deprecation` Nibabel 2.x is no longer supported. Please consider upgrading to Nibabel >= 3.0 (:gh:`3106` by `Nicolas Gensollen`_).
 
-- Deprecated function ``nilearn.datasets.fetch_cobre`` has been removed (:gh:`3081` by `Nicolas Gensollen`_).
+- :bdg-danger:`Deprecation` Deprecated function ``nilearn.datasets.fetch_cobre`` has been removed (:gh:`3081` by `Nicolas Gensollen`_).
 
-- Deprecated function ``nilearn.plotting.plot_connectome_strength`` has been removed (:gh:`3082` by `Nicolas Gensollen`_).
+- :bdg-danger:`Deprecation` Deprecated function ``nilearn.plotting.plot_connectome_strength`` has been removed (:gh:`3082` by `Nicolas Gensollen`_).
 
-- Deprecated function ``nilearn.masking.compute_gray_matter_mask`` has been removed (:gh:`3090` by `Nicolas Gensollen`_).
+- :bdg-danger:`Deprecation` Deprecated function ``nilearn.masking.compute_gray_matter_mask`` has been removed (:gh:`3090` by `Nicolas Gensollen`_).
 
-- Deprecated parameter ``sessions`` of function :func:`~signal.clean` has been removed. Use ``runs`` instead (:gh:`3093` by `Nicolas Gensollen`_).
+- :bdg-danger:`Deprecation` Deprecated parameter ``sessions`` of function :func:`~signal.clean` has been removed. Use ``runs`` instead (:gh:`3093` by `Nicolas Gensollen`_).
 
-- Deprecated parameters ``sessions`` and ``sample_mask`` of :class:`~maskers.NiftiMasker` have been removed. Please use ``runs`` instead of ``sessions``, and provide a ``sample_mask`` through :meth:`~maskers.NiftiMasker.transform` (:gh:`3133` by `Nicolas Gensollen`_).
+- :bdg-danger:`Deprecation` Deprecated parameters ``sessions`` and ``sample_mask`` of :class:`~maskers.NiftiMasker` have been removed. Please use ``runs`` instead of ``sessions``, and provide a ``sample_mask`` through :meth:`~maskers.NiftiMasker.transform` (:gh:`3133` by `Nicolas Gensollen`_).
 
-- Function :func:`glm.first_level.compute_regressor` will now raise an exception if parameter ``cond_id`` is not a string which could be used to name a python variable. For instance, number strings (ex: "1") will no longer be accepted as valid condition names. In particular, this will also impact :func:`glm.first_level.make_first_level_design_matrix` and :class:`glm.first_level.FirstLevelModel`, for which proper condition names will also be needed (:gh:`3025` by `Alexis Thual`_).
+- :bdg-danger:`Deprecation` Function :func:`glm.first_level.compute_regressor` will now raise an exception if parameter ``cond_id`` is not a string which could be used to name a python variable. For instance, number strings (ex: "1") will no longer be accepted as valid condition names. In particular, this will also impact :func:`glm.first_level.make_first_level_design_matrix` and :class:`glm.first_level.FirstLevelModel`, for which proper condition names will also be needed (:gh:`3025` by `Alexis Thual`_).
 
-- Replace parameter ``sessions`` with ``runs`` in function :func:`~image.clean_img` as this replacement was already made for function :func:`~signal.clean` in :gh:`2821` in order to match :term:`BIDS` semantics. The use of ``sessions`` in function :func:`~image.clean_img` is deprecated and will be removed in ``0.10.0`` (:gh:`3039` by `Nicolas Gensollen`_).
+- :bdg-danger:`Deprecation` Replace parameter ``sessions`` with ``runs`` in function :func:`~image.clean_img` as this replacement was already made for function :func:`~signal.clean` in :gh:`2821` in order to match :term:`BIDS` semantics. The use of ``sessions`` in function :func:`~image.clean_img` is deprecated and will be removed in ``0.10.0`` (:gh:`3039` by `Nicolas Gensollen`_).
 
-- Display objects have been reorganized. For example, ``Slicers`` (like the :class:`~plotting.displays.OrthoSlicer`) are all in file ``nilearn/plotting/displays/_slicers.py``, and ``Projectors`` (like the :class:`~plotting.displays.OrthoProjector`) are all in file ``nilearn/plotting/displays/_projectors.py``. All display objects have been added to the public API, and examples have been improved to show how to use these objects to customize figures obtained with plotting functions (:gh:`3073` by `Nicolas Gensollen`_).
+- :bdg-secondary:`Maint` Display objects have been reorganized. For example, ``Slicers`` (like the :class:`~plotting.displays.OrthoSlicer`) are all in file ``nilearn/plotting/displays/_slicers.py``, and ``Projectors`` (like the :class:`~plotting.displays.OrthoProjector`) are all in file ``nilearn/plotting/displays/_projectors.py``. All display objects have been added to the public API, and examples have been improved to show how to use these objects to customize figures obtained with plotting functions (:gh:`3073` by `Nicolas Gensollen`_).
 
-- Descriptions of datasets retrieved with fetchers from :mod:`nilearn.datasets` are now python strings rather than ``bytes``. Therefore, decoding the descriptions is no longer necessary (:gh:`2655` by `Nicolas Gensollen`_).
+- :bdg-secondary:`Maint` Descriptions of datasets retrieved with fetchers from :mod:`nilearn.datasets` are now python strings rather than ``bytes``. Therefore, decoding the descriptions is no longer necessary (:gh:`2655` by `Nicolas Gensollen`_).
 
-- Dataset fetchers returning a :class:`~numpy.recarray` can now return a :class:`~pandas.DataFrame` instead. These fetchers now have a ``legacy_format`` optional argument defaulting to ``True`` for backward compatibility. Users will be warned that this parameter will default to ``False`` in release ``0.11.0``, making :class:`~pandas.DataFrame` the default return type instead or :class:`~numpy.recarray` (:gh:`2829` by `Ahmad Chamma`_).
+- :bdg-secondary:`Maint` Dataset fetchers returning a :class:`~numpy.recarray` can now return a :class:`~pandas.DataFrame` instead. These fetchers now have a ``legacy_format`` optional argument defaulting to ``True`` for backward compatibility. Users will be warned that this parameter will default to ``False`` in release ``0.11.0``, making :class:`~pandas.DataFrame` the default return type instead or :class:`~numpy.recarray` (:gh:`2829` by `Ahmad Chamma`_).

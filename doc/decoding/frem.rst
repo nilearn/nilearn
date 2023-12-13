@@ -62,7 +62,7 @@ Spatial regularization of decoding maps on mixed gambles study
 
 .. seealso::
 
-    * The `scikit-learn documentation <http://scikit-learn.org>`_
+    * The `scikit-learn documentation <https://scikit-learn.org>`_
       has very detailed explanations on a large variety of estimators and
       machine learning techniques. To become better at decoding, you need
       to study it.

@@ -26,21 +26,21 @@ It also includes a full rewamp of the documentation, and support for Python 3.
 Fixes
 -----
 
-- Dealing with ``NaNs`` in function :func:`~plotting.plot_connectome`.
-  
-- Fix extreme values in colorbar were sometimes brok.
-  
-- Fix confounds removal with single confounds.
+- :bdg-dark:`Code` Dealing with ``NaNs`` in function :func:`~plotting.plot_connectome`.
 
-- Fix frequency filtering.
+- :bdg-info:`Plotting` Fix extreme values in colorbar were sometimes brok.
 
-- Keep header information in images.
+- :bdg-dark:`Code` Fix confounds removal with single confounds.
 
-- ``add_overlay`` finds ``vmin`` and ``vmax`` automatically.
+- :bdg-dark:`Code` Fix frequency filtering.
 
-- Function :func:`~plotting.plot_connectome` now supports ``vmin`` and ``vmax``.
+- :bdg-dark:`Code` Keep header information in images.
 
-- Detrending 3D images no longer puts them to zero.
+- :bdg-dark:`Code` ``add_overlay`` finds ``vmin`` and ``vmax`` automatically.
+
+- :bdg-success:`API` Function :func:`~plotting.plot_connectome` now supports ``vmin`` and ``vmax``.
+
+- :bdg-dark:`Code` Detrending 3D images no longer puts them to zero.
 
 
 Contributors (from ``git shortlog -ns 0.1.2..0.1.3``):

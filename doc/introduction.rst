@@ -1,11 +1,3 @@
-.. for doc tests to run with recent NumPy 1.14, we need to set print options
-   to older versions. See issue #1593 for more details
-    >>> import numpy as np
-    >>> from nilearn.version import _compare_version
-    >>> if _compare_version(np.__version__, '>=', '1.14'):
-    ...     np.set_printoptions(legacy='1.13')
-
-============
 Introduction
 ============
 
@@ -41,8 +33,8 @@ Using ``nilearn`` for the first time
 ====================================
 
 ``nilearn`` is a Python library. If you have never used Python before,
-you should probably have a look at a `general introduction about Python <http://www.learnpython.org/>`_
-as well as to an `introduction to using Python for science <http://scipy-lectures.github.io/>`_ before diving into ``nilearn``.
+you should probably have a look at a `general introduction about Python <https://www.learnpython.org/>`_
+as well as to `Scientific Python Lectures <https://lectures.scientific-python.org/>`_ before diving into ``nilearn``.
 
 First steps with nilearn
 ------------------------
@@ -56,7 +48,7 @@ or an IPython / Python session.  First, load ``nilearn`` with
 
 ``nilearn`` comes in with some data that are commonly used in neuroimaging.
 For instance, it comes with volumic template images of brains such as MNI:
-    
+
 .. code-block:: default
 
     print(nilearn.datasets.MNI152_FILE_PATH)
@@ -207,7 +199,7 @@ For new-comers, we recommend going through the following examples in the suggest
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example shows manual steps to create and further modify an ROI spatial mask. They represen...">
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows manual steps to create and further modify an ROI spatial mask. They represent...">
 
 .. only:: html
 
@@ -273,9 +265,9 @@ that could be of interest to new-comers:
 
 3. The documentation of ``scikit-learn`` explains each method with tips on practical use and examples: :sklearn:`\ `.  While not specific to neuroimaging, it is often a recommended read.
 
-4. (For Python beginners) A quick and gentle introduction to scientific computing with Python with the `scipy lecture notes <http://scipy-lectures.github.io/>`_.
-Moreover, you can use ``nilearn`` with `Jupyter <http://jupyter.org>`_ notebooks or
-`IPython <http://ipython.org>`_ sessions. They provide an interactive 
+4. (For Python beginners) A quick and gentle introduction to scientific computing with Python with the `scientififc Python lectures <https://lectures.scientific-python.org/>`_.
+Moreover, you can use ``nilearn`` with `Jupyter <https://jupyter.org/>`_ notebooks or
+`IPython <https://ipython.org/>`_ sessions. They provide an interactive
 environment that greatly facilitates debugging and visualisation.
 
 
@@ -293,20 +285,20 @@ Machine learning applications to Neuroimaging
 The interested reader can dive into the following articles for more content.
 
 We give a non-exhaustive list of such important applications.
-    
+
 **Diagnosis and prognosis**
 
 Predicting a clinical score or even treatment response
 from brain imaging with :ref:`supervised
 learning <decoding>` e.g. `[Mourao-Miranda 2012]
-<http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0029482>`_
+<https://doi.org/10.1371/journal.pone.0029482>`_
 
 **Information mapping**
 
 Using the prediction accuracy of a classifier
 to characterize relationships between brain images and stimuli. (e.g.
 :ref:`searchlight <searchlight>`) `[Kriegeskorte 2006]
-<http://www.pnas.org/content/103/10/3863.short>`_
+<https://doi.org/10.1073/pnas.0600244103>`_
 
 **Transfer learning**
 
@@ -315,7 +307,7 @@ specific psychological process/task can predict the neural activity
 underlying another specific psychological process/task
 (e.g. discriminating left from
 right eye movements also discriminates additions from subtractions
-`[Knops 2009] <http://www.sciencemag.org/content/324/5934/1583.short>`_)
+`[Knops 2009] <https://doi.org/10.1126/science.1171599>`_)
 
 **High-dimensional multivariate statistics**
 
@@ -324,15 +316,14 @@ statistical estimation of models with a large number of parameters.
 Tricks pulled in machine learning (e.g. regularization) can
 make this estimation possible despite the usually
 small number of observations in the neuroimaging domain
-`[Varoquaux 2012] <http://icml.cc/2012/papers/688.pdf>`_. This
+`[Varoquaux 2012] <https://icml.cc/2012/papers/688.pdf>`_. This
 usage of machine learning requires some understanding of the models.
 
 **Data mining / exploration**
 
 Data-driven exploration of brain images. This includes the extraction of
-the major brain networks from resting-state data ("resting-state networks")
+the major brain networks from :term:`resting-state` data ("resting-state networks")
 or movie-watching data as well as the discovery of connectionally coherent
 functional modules ("connectivity-based parcellation").
 For example,
 :ref:`extracting_rsn` or :ref:`parcellating_brain` with clustering.
-

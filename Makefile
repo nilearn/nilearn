@@ -6,7 +6,7 @@ PYTHON ?= python
 CYTHON ?= cython
 CTAGS ?= ctags
 
-all: clean test doc-noplot
+all: clean doc-noplot
 
 clean-pyc:
 	find . -name "*.pyc" | xargs rm -f
@@ -23,24 +23,6 @@ clean-ctags:
 	rm -f tags
 
 clean: clean-build clean-pyc clean-so clean-ctags
-
-in: inplace # just a shortcut
-inplace:
-	$(PYTHON) setup.py build_ext -i
-
-test-code:
-	python -m pytest --pyargs nilearn --cov=nilearn
-
-test-doc:
-	pytest --doctest-glob='*.rst' `find doc/ -name '*.rst'`
-	pytest doc/_additional_doctests.txt
-
-
-test-coverage:
-	rm -rf coverage .coverage
-	pytest --pyargs nilearn --showlocals --cov=nilearn --cov-report=html:coverage
-
-test: test-code test-doc
 
 trailing-spaces:
 	find . -name "*.py" | xargs perl -pi -e 's/[ \t]*$$//'
@@ -60,6 +42,10 @@ doc-plot:
 .PHONY : doc
 doc:
 	make -C doc html-noplot
+
+.PHONY : ci-doc
+ci-doc:
+	make -C doc ci-html-noplot
 
 .PHONY : pdf
 pdf:

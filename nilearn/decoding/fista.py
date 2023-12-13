@@ -9,12 +9,11 @@ we approximate the prox using an inner FISTA loop.
 #         VAROQUAUX Gael,
 #         GRAMFORT Alexandre,
 #         THIRION Bertrand
-# License: simplified BSD
 
 from math import sqrt
+
 import numpy as np
 from scipy import linalg
-from sklearn.utils import check_random_state
 
 
 def _check_lipschitz_continuous(
@@ -53,9 +52,9 @@ def _check_lipschitz_continuous(
     ------
     RuntimeError
     """
-    rng = check_random_state(random_state)
-    for x in rng.randn(n_trials, ndim):
-        for y in rng.randn(n_trials, ndim):
+    rng = np.random.default_rng(random_state)
+    for x in rng.standard_normal((n_trials, ndim)):
+        for y in rng.standard_normal((n_trials, ndim)):
             a = linalg.norm(f(x).ravel() - f(y).ravel(), 2)
             b = lipschitz_constant * linalg.norm(x - y, 2)
             if a > b:
@@ -77,7 +76,7 @@ def mfista(
     callback=None,
     verbose=2,
 ):
-    """Generic FISTA solver.
+    """Solve FISTA in a generic way.
 
     Minimizes the a sum `f + g` of two convex functions f (smooth)
     and g (proximable nonsmooth).
@@ -98,16 +97,15 @@ def mfista(
     lipschitz_constant : float
         Lipschitz constant of gradient of f1_grad.
 
-    check_lipschitz : boolean, optional
+    check_lipschitz : boolean, default=False
         If True, check Lipschitz continuity of gradient of smooth part.
-        Default=False.
 
     w_size : int
         Size of the solution. f1, f2, f1_grad, f2_prox (fixed l, tol) must
         accept a w such that w.shape = (w_size,).
 
-    tol : float, optional
-        Tolerance on the (primal) cost function. Default=1e-4.
+    tol : float, default=1e-4
+        Tolerance on the (primal) cost function.
 
     dgap_tol : float, optional
         If None, the nonsmooth_prox argument returns a float, with the value,
@@ -127,13 +125,11 @@ def mfista(
         Function called on every iteration. If it returns True, then the loop
         breaks.
 
-    max_iter : integer, optional
+    max_iter : integer, default=1000
         Maximum number of iterations for the solver.
-        Default=1000.
 
-    verbose : integer, optional
+    verbose : integer, default=2
         Indicate the level of verbosity.
-        Default=2.
 
     Returns
     -------
@@ -152,13 +148,13 @@ def mfista(
     penalized problems emerged in the paper: Elvis Dohmatob,
     Alexandre Gramfort, Bertrand Thirion, Gael Varoquaux,
     "Benchmarking solvers for TV-L1 least-squares and logistic regression
-    in brain imaging". Pattern Recoginition in Neuroimaging (PRNI),
+    in brain imaging". Pattern Recognition in Neuroimaging (PRNI),
     Jun 2014, Tubingen, Germany. IEEE
 
     """
     # initialization
     if init is None:
-        init = dict()
+        init = {}
     w = init.get("w", np.zeros(w_size))
     z = init.get("z", w.copy())
     t = init.get("t", 1.0)
@@ -194,8 +190,8 @@ def mfista(
         # invoke callback
         if verbose:
             print(
-                "mFISTA: Iteration % 2i/%2i: E = %7.4e, dE % 4.4e"
-                % (i + 1, max_iter, old_energy, energy_delta)
+                f"mFISTA: Iteration {i + 1: 2}/{max_iter:2}: "
+                f"E = {old_energy:7.4e}, dE {energy_delta: 4.4e}"
             )
         if callback and callback(locals()):
             break
@@ -216,17 +212,21 @@ def mfista(
                 init=w,
             )
             energy = total_energy(w)
-            if ista_step and prox_info["converged"] and old_energy <= energy:
-                # Even when doing ISTA steps we are not decreasing.
-                # Thus we need a tighter dual_gap on the prox_tv
-                # This corresponds to a line search on the dual_gap
-                # tolerance.
-                dgap_factor *= 0.2
-                if verbose:
-                    print("decreased dgap_tol")
-            else:
+            if (
+                not ista_step
+                or not prox_info["converged"]
+                or old_energy > energy
+            ):
                 break
 
+            # Even when doing ISTA steps we are not decreasing.
+            # Thus we need a tighter dual_gap on the prox_tv
+            # This corresponds to a line search on the dual_gap
+            # tolerance.
+            dgap_factor *= 0.2
+
+            if verbose:
+                print("decreased dgap_tol")
         # energy house-keeping
         energy_delta = old_energy - energy
         old_energy = energy

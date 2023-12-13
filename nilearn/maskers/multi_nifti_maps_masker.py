@@ -1,13 +1,11 @@
-"""
-Transformer for computing ROI signals of multiple 4D images
-"""
+"""Transformer for computing ROI signals of multiple 4D images."""
 
 import itertools
 
 from joblib import Memory, Parallel, delayed
 
 from .._utils import fill_doc
-from .._utils.niimg_conversions import _iter_check_niimg
+from .._utils.niimg_conversions import iter_check_niimg
 from .nifti_maps_masker import NiftiMapsMasker
 
 
@@ -34,28 +32,16 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
 
-    allow_overlap : :obj:`bool`, optional
+    allow_overlap : :obj:`bool`, default=True
         If False, an error is raised if the maps overlaps (ie at least two
-        maps have a non-zero value for the same voxel). Default=True.
+        maps have a non-zero value for the same voxel).
     %(smoothing_fwhm)s
-    standardize : {False, True, 'zscore', 'psc'}, optional
-        Strategy to standardize the signal.
-
-            - 'zscore': the signal is z-scored. Timeseries are shifted
-              to zero mean and scaled to unit variance.
-            - 'psc':  Timeseries are shifted to zero mean value and scaled
-              to percent signal change (as compared to original mean signal).
-            - True : the signal is z-scored. Timeseries are shifted
-              to zero mean and scaled to unit variance.
-            - False : Do not standardize the data.
-
-        Default=False.
-
+    %(standardize_maskers)s
     %(standardize_confounds)s
-    high_variance_confounds : :obj:`bool`, optional
+    high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
-        and regressed out. Default=False.
+        and regressed out.
     %(detrend)s
     %(low_pass)s
     %(high_pass)s
@@ -65,7 +51,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
 
-    resampling_target : {"data", "mask", "maps", None}, optional.
+    resampling_target : {"data", "mask", "maps", None}, default="data"
         Gives which image gives the final shape/size:
 
             - "data" means the atlas is resampled to the shape of the data if
@@ -77,17 +63,25 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
             - None means no resampling: if shapes and affines do not match,
               a ValueError is raised.
 
-        Default="data".
 
     %(memory)s
     %(memory_level)s
     %(n_jobs)s
     %(verbose0)s
-    reports : :obj:`bool`, optional
+    reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
-        Default=True.
-
     %(masker_kwargs)s
+
+    Attributes
+    ----------
+    maps_img_ : :obj:`nibabel.nifti1.Nifti1Image`
+        The maps mask of the data.
+
+    n_elements_ : :obj:`int`
+        The number of overlapping maps in the mask.
+        This is equivalent to the number of volumes in the mask image.
+
+        .. versionadded:: 0.9.2
 
     Notes
     -----
@@ -95,13 +89,14 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
     transform() will be resampled to the shape of maps_img. It may lead to a
     very large memory consumption if the voxel number in maps_img is large.
 
-    See also
+    See Also
     --------
     nilearn.maskers.NiftiMasker
     nilearn.maskers.NiftiLabelsMasker
     nilearn.maskers.NiftiMapsMasker
 
     """
+
     # memory and memory_level are used by CacheMixin.
 
     def __init__(
@@ -148,8 +143,10 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
             **kwargs,
         )
 
-    def transform_imgs(self, imgs_list, confounds=None, n_jobs=1,
-                       sample_mask=None):
+    @fill_doc
+    def transform_imgs(
+        self, imgs_list, confounds=None, n_jobs=1, sample_mask=None
+    ):
         """Extract signals from a list of 4D niimgs.
 
         Parameters
@@ -172,24 +169,32 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
 
         self._check_fitted()
 
-        niimg_iter = _iter_check_niimg(imgs_list, ensure_ndim=None,
-                                       atleast_4d=False,
-                                       memory=self.memory,
-                                       memory_level=self.memory_level,
-                                       verbose=self.verbose)
+        niimg_iter = iter_check_niimg(
+            imgs_list,
+            ensure_ndim=None,
+            atleast_4d=False,
+            memory=self.memory,
+            memory_level=self.memory_level,
+            verbose=self.verbose,
+        )
 
         if confounds is None:
             confounds = itertools.repeat(None, len(imgs_list))
 
+        if sample_mask is None:
+            sample_mask = itertools.repeat(None, len(imgs_list))
+
         func = self._cache(self.transform_single_imgs)
 
         region_signals = Parallel(n_jobs=n_jobs)(
-            delayed(func)(imgs=imgs, confounds=cfs, sample_mask=sample_mask)
-            for imgs, cfs in zip(niimg_iter, confounds))
+            delayed(func)(imgs=imgs, confounds=cfs, sample_mask=sms)
+            for imgs, cfs, sms in zip(niimg_iter, confounds, sample_mask)
+        )
         return region_signals
 
+    @fill_doc
     def transform(self, imgs, confounds=None, sample_mask=None):
-        """ Apply mask, spatial and temporal preprocessing
+        """Apply mask, spatial and temporal preprocessing.
 
         Parameters
         ----------
@@ -205,10 +210,9 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
             shape: list of (number of scans, number of maps)
 
         """
-
         self._check_fitted()
-        if (not hasattr(imgs, '__iter__')
-                or isinstance(imgs, str)):
+        if not hasattr(imgs, "__iter__") or isinstance(imgs, str):
             return self.transform_single_imgs(imgs)
-        return self.transform_imgs(imgs, confounds, n_jobs=self.n_jobs,
-                                   sample_mask=sample_mask)
+        return self.transform_imgs(
+            imgs, confounds, n_jobs=self.n_jobs, sample_mask=sample_mask
+        )

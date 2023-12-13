@@ -16,28 +16,32 @@ Inputing data: file names or image objects
 File names and objects, 3D and 4D images
 -----------------------------------------
 
-All Nilearn functions accept file names as arguments::
+All Nilearn functions accept file names as arguments:
 
-    >>> from nilearn import image
-    >>> smoothed_img = image.smooth_img('/home/user/t_map001.nii')  # doctest: +SKIP
+.. code-block:: default
+
+     from nilearn import image
+     smoothed_img = image.smooth_img('/home/user/t_map001.nii')
 
 Nilearn can operate on either file names or `NiftiImage objects
-<http://nipy.org/nibabel/nibabel_images.html>`_. The later represent the
+<https://nipy.org/nibabel/nibabel_images.html>`_. The later represent the
 data loaded in memory. In the example above, the
 function :func:`smooth_img` returns a Nifti1Image object, which can then
 be readily passed to other nilearn functions.
 
 In nilearn, we often use the term *"niimg"* as abbreviation that denotes
 either a file name or a `NiftiImage object
-<http://nipy.org/nibabel/nibabel_images.html>`_.
+<https://nipy.org/nibabel/nibabel_images.html>`_.
 
 Niimgs can be 3D or 4D. A 4D niimg may for instance represent a time
 series of 3D images. It can be **a list of file names**, if these contain
-3D information::
+3D information:
 
-    >>> # dataset folder contains subject1.nii and subject2.nii
-    >>> from nilearn.image import smooth_img
-    >>> result_img = smooth_img(['dataset/subject1.nii', 'dataset/subject2.nii']) # doctest: +SKIP
+.. code-block:: default
+
+     # dataset folder contains subject1.nii and subject2.nii
+     from nilearn.image import smooth_img
+     result_img = smooth_img(['dataset/subject1.nii', 'dataset/subject2.nii'])
 
 ``result_img`` is a 4D in-memory image, containing the data of both
 subjects.
@@ -53,22 +57,26 @@ shell):
 
  * **Matching multiple files**: suppose the dataset folder contains
    subject_01.nii, subject_03.nii, and subject_03.nii;
-   ``dataset/subject_*.nii`` is a glob expression matching all filenames::
+   ``dataset/subject_*.nii`` is a glob expression matching all filenames:
 
-    >>> # Example with a smoothing process:
-    >>> from nilearn.image import smooth_img
-    >>> result_img = smooth_img("dataset/subject_*.nii") # doctest: +SKIP
+ .. code-block:: default
 
-   Note that the resulting is a 4D image.
+    # Example with a smoothing process:
+    from nilearn.image import smooth_img
+    result_img = smooth_img("dataset/subject_*.nii")
+
+ Note that the resulting is a 4D image.
 
  * **Expanding the home directory** ``~`` is expanded to your home
-   directory::
+   directory:
 
-    >>> result_img = smooth_img("~/dataset/subject_01.nii") # doctest: +SKIP
+ .. code-block:: default
 
-   Using ``~`` rather than specifying the details of the path is good
-   practice, as it will make it more likely that your script work on
-   different computers.
+    result_img = smooth_img("~/dataset/subject_01.nii")
+
+ Using ``~`` rather than specifying the details of the path is good
+ practice, as it will make it more likely that your script work on
+ different computers.
 
 
 .. topic:: **Python globbing**
@@ -97,33 +105,39 @@ Fetching open datasets from Internet
 Nilearn provides dataset fetching function that
 automatically downloads reference
 datasets and atlases. They can be imported from
-:mod:`nilearn.datasets`::
+:mod:`nilearn.datasets`:
 
-    >>> from nilearn import datasets
-    >>> haxby_dataset = datasets.fetch_haxby()  # doctest: +SKIP
+.. code-block:: default
+
+     from nilearn import datasets
+     haxby_dataset = datasets.fetch_haxby()
 
 They return a data structure that contains different pieces of
 information on the retrieved dataset, including the
-file names on hard disk::
+file names on hard disk:
 
-    >>> # The different files
-    >>> print(sorted(list(haxby_dataset.keys())))  # doctest: +SKIP
-    ['anat', 'description', 'func', 'mask', 'mask_face', 'mask_face_little',
-    'mask_house', 'mask_house_little', 'mask_vt', 'session_target']
-    >>> # Path to first functional file
-    >>> print(haxby_dataset.func[0])  # doctest: +SKIP
-    /.../nilearn_data/haxby2001/subj1/bold.nii.gz
+.. code-block:: default
+
+     # The different files
+     print(sorted(list(haxby_dataset.keys())))
+     # ['anat', 'description', 'func', 'mask', 'mask_face', 'mask_face_little',
+     # 'mask_house', 'mask_house_little', 'mask_vt', 'session_target']
+     # Path to first functional file
+     print(haxby_dataset.func[0])
+     # /.../nilearn_data/haxby2001/subj1/bold.nii.gz
 
 Explanation and further resources of the dataset at hand can be retrieved as
-follows::
+follows:
 
-    >>> print(haxby_dataset.description)  # doctest: +SKIP
-    Haxby 2001 results
+.. code-block:: default
+
+     print(haxby_dataset.description)
+     # Haxby 2001 results
 
 
-    Notes
-    -----
-    Results from a classical fMRI study that...
+     # Notes
+     # -----
+     # Results from a classical fMRI study that...
 
 |
 
@@ -166,7 +180,7 @@ Nifti and Analyze data
 For volumetric data, nilearn works with data stored as in the Nifti
 structure (via the nibabel_ package).
 
-The `NifTi <http://nifti.nimh.nih.gov/>`_ data structure (also used in
+The `NifTi <https://nifti.nimh.nih.gov/>`_ data structure (also used in
 Analyze files) is the standard way of sharing data in neuroimaging
 research. Three main components are:
 
@@ -174,7 +188,7 @@ research. Three main components are:
     raw scans in form of a numpy array: ``data = nilearn.image.get_data(img)``
 :affine:
     returns the transformation matrix that maps
-    from voxel indices of the numpy array to actual real-world
+    from :term:`voxel` indices of the numpy array to actual real-world
     locations of the brain:
     ``affine = img.affine``
 :header:
@@ -205,11 +219,11 @@ with ``get_affine()`` and ``get_header()``.
 
     - a big 4D matrix representing (3D MRI + 1D for time), stored in a single
       Nifti file.
-      `FSL <http://www.fmrib.ox.ac.uk/fsl/>`_ users tend to
+      `FSL <https://fsl.fmrib.ox.ac.uk/fsl/>`_ users tend to
       prefer this format.
     - several 3D matrices representing each time point (single 3D volume) of the
       session, stored in set of 3D Nifti or analyse files.
-      `SPM <http://www.fil.ion.ucl.ac.uk/spm/>`_ users tend
+      `SPM <https://www.fil.ion.ucl.ac.uk/spm/>`_ users tend
       to prefer this format.
 
 .. _niimg:
@@ -254,26 +268,27 @@ Text files: phenotype or behavior
 
 Phenotypic or behavioral data are often provided as text or CSV
 (Comma Separated Values) file. They
-can be loaded with `pd.read_csv` but you may have to specify some options
-(typically `sep` if fields aren't delimited with a comma).
+can be loaded with ``pd.read_csv`` but you may have to specify some options
+(typically ``sep`` if fields aren't delimited with a comma).
 
 For the Haxby datasets, we can load the categories of the images
-presented to the subject::
+presented to the subject:
 
-    >>> from nilearn import datasets
-    >>> haxby_dataset = datasets.fetch_haxby()  # doctest: +SKIP
-    >>> import pandas as pd  # doctest: +SKIP
-    >>> labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")  # doctest: +SKIP
-    >>> stimuli = labels['labels']  # doctest: +SKIP
-    >>> print(stimuli.unique())  # doctest: +SKIP
-    ['bottle' 'cat' 'chair' 'face' 'house' 'rest' 'scissors' 'scrambledpix'
-     'shoe']
+.. code-block:: default
+
+     from nilearn import datasets
+     haxby_dataset = datasets.fetch_haxby()
+     import pandas as pd
+     labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
+     stimuli = labels['labels']
+     print(stimuli.unique())
+     # ['bottle' 'cat' 'chair' 'face' 'house' 'rest' 'scissors' 'scrambledpix' 'shoe']
 
 .. topic:: **Reading CSV with pandas**
 
-    `Pandas <http://pandas.pydata.org/>`_ is a powerful package to read
+    `Pandas <https://pandas.pydata.org/>`_ is a powerful package to read
     data from CSV files and manipulate them.
 
 |
 
-.. _nibabel: http://nipy.sourceforge.net/nibabel/
+.. _nibabel: https://nipy.org/nibabel/

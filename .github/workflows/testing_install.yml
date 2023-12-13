@@ -1,0 +1,52 @@
+---
+name: test installation
+
+on:
+    push:
+        branches:
+        -   main
+    pull_request:
+        branches:
+        -   '*'
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    test_install:
+        if: github.repository == 'nilearn/nilearn'
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ubuntu-latest, macos-latest, windows-latest]
+                python-version: ['3.8']
+        name: ${{ matrix.os }} with Python ${{ matrix.python-version }} and latest package versions
+        defaults:
+            run:
+                shell: bash
+        steps:
+        -   name: Checkout nilearn
+            uses: actions/checkout@v4
+        -   name: Setup python
+            uses: actions/setup-python@v5
+            with:
+                python-version: ${{ matrix.python-version }}
+        -   name: Install dependencies for building Nilearn
+            shell: bash {0}
+            run: |
+                set -e
+                python -m pip install --upgrade pip
+                pip install --prefer-binary build
+        -   name: Build Nilearn
+            shell: bash {0}
+            run: |
+                set -e
+                python -m build
+        -   name: Install Nilearn from wheel & check installation
+            shell: bash {0}
+            run: |
+                set -e
+                pip install dist/nilearn-*-py3-none-any.whl
+                python -c "import nilearn"
