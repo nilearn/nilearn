@@ -1325,7 +1325,7 @@ def test_first_level_from_bids(
         base_dir=tmp_path, n_sub=n_sub, n_ses=n_ses, tasks=tasks, n_runs=n_runs
     )
 
-    models, models, imgs, events, confounds = first_level_from_bids(
+    models, imgs, events, confounds = first_level_from_bids(
         dataset_path=bids_path,
         task_label=tasks[task_index],
         space_label=space_label,
@@ -1712,7 +1712,7 @@ def test_first_level_from_bids_all_confounds_missing(tmp_path_factory):
     for f in confound_files:
         os.remove(f)
 
-    models, models, imgs, events, confounds = first_level_from_bids(
+    models, imgs, events, confounds = first_level_from_bids(
         dataset_path=bids_dataset,
         task_label="main",
         space_label="MNI",
