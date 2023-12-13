@@ -192,3 +192,26 @@ install:
 	git commit -a -m 'Make install' && \
 	git tag $(VERSIONTAG)
 	git push --tags
+
+test_make_install:
+	echo "VERSIONTAG=$(git describe --tags --abbrev=0)"
+	rm -rf _build/doctrees _build/nilearn.github.io
+	# first clone the nilearn.github.io repo because it may ask
+	# for password and we don't want to delay this long build in
+	# the middle of it
+	# --depth 1 is a speed optimization since we don't need the
+	# history prior to the last commit
+	git clone --depth 1 git@github.com:nilearn/nilearn.github.io.git _build/nilearn.github.io
+	touch _build/nilearn.github.io/.nojekyll
+	rm -Rf _build/nilearn.github.io/stable;
+	mkdir _build/nilearn.github.io/stable;
+	make html
+	cd _build/ && \
+	cp -r html/* nilearn.github.io/stable/ && \
+	cd nilearn.github.io && \
+	git checkout -b test_build
+	git add -A && \
+	git add .nojekyll && \
+	git commit -a -m 'Make test build' && \
+	git tag $(VERSIONTAG)
+	git push origin test_build $(VERSIONTAG)

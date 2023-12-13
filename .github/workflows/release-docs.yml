@@ -8,7 +8,8 @@ on:
 
 jobs:
     release-docs:
-        if: github.repository == 'nilearn/nilearn'
+        # if: github.repository == 'nilearn/nilearn' && contains('["ymzayek","Remi-Gau"]', github.actor)
+        if: github.repository == 'ymzayek/nilearn' && github.actor == 'ymzayek'
         runs-on: ubuntu-latest
         timeout-minutes: 360
         env:
@@ -22,28 +23,37 @@ jobs:
         steps:
         -   name: Checkout nilearn
             uses: actions/checkout@v4
+
         -   name: Install apt packages
-            run: ./build_tools/github/build_docs_apt_dependencies.sh
-        -   name: Setup conda
-            uses: conda-incubator/setup-miniconda@v2
+            run: |
+                sudo -E apt-get -yq update
+                sudo -E apt-get -yq --no-install-suggests --no-install-recommends install \
+                    dvipng texlive-latex-base texlive-latex-extra
+
+        -   name: Setup python
+            uses: actions/setup-python@v5
             with:
-                auto-activate-base: true
-                activate-environment: ''
-                miniconda-version: latest
-                channels: conda-forge
-        -   name: Install packages in conda env
-            run: ./build_tools/github/build_docs_dependencies.sh
+                python-version: '3.12'
+
+        -   name: Install packages
+            run: |
+                python -m pip install --user --upgrade pip setuptools
+                python -m pip install .[plotting,doc]
+
         # Update the authors file and the names file
         # in case a contributor has been added to citation.cff
         # but did not run the maint_tools/citation_cff_maint.py script.
         -   name: update AUTHORS.rst and doc/changes/names.rst
             run: python maint_tools/citation_cff_maint.py
+
+        # Set up and launch a virtual browser needed for one example to run
+        # without stalling the job. The example launches an html in the browser.
         -   name: Set up display server for virtual browser
             run: Xvfb -ac :99 -screen 0 1280x1024x16 > /dev/null 2>&1 &
+
         -   name: Build docs
             run: |
-                source activate testenv
-                echo "Conda active env = $CONDA_DEFAULT_ENV";
                 cd doc;
                 set -o pipefail;
-                make install
+                make test_make_install;
+            # TODO: run make install
