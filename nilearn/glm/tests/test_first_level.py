@@ -1863,14 +1863,23 @@ def test_missing_trial_type_column_warning(tmp_path_factory):
 
 
 def test_first_level_from_bids_load_confounds(tmp_path):
-    """Test several BIDS structure."""
+    """Test that only a subset of confounds can be loaded."""
     n_sub = 2
 
     bids_path = create_fake_bids_dataset(
         base_dir=tmp_path, n_sub=n_sub, n_ses=2, tasks=["main"], n_runs=[2]
     )
 
-    models, m_imgs, m_events, m_confounds = first_level_from_bids(
+    _, _, _, confounds = first_level_from_bids(
+        dataset_path=bids_path,
+        task_label="main",
+        space_label="MNI",
+        img_filters=[("desc", "preproc")],
+    )
+
+    assert len(confounds[0][0].columns) == 189
+
+    models, imgs, events, confounds = first_level_from_bids(
         dataset_path=bids_path,
         task_label="main",
         space_label="MNI",
@@ -1883,6 +1892,53 @@ def test_first_level_from_bids_load_confounds(tmp_path):
         confounds_std_dvars_threshold=3,
     )
 
-    _check_output_first_level_from_bids(
-        n_sub, models, m_imgs, m_events, m_confounds
+    _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
+
+    assert len(confounds[0][0].columns) == 26
+
+
+def test_first_level_from_bids_load_confounds_warnings(tmp_path):
+    """Throw warning when incompatible confound loading strategy are used."""
+    n_sub = 2
+
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path, n_sub=n_sub, n_ses=2, tasks=["main"], n_runs=[2]
     )
+
+    # high pass is loaded from the confounds: no warning
+    first_level_from_bids(
+        dataset_path=bids_path,
+        task_label="main",
+        space_label="MNI",
+        img_filters=[("desc", "preproc")],
+        drift_model=None,
+        confounds_strategy=("high_pass",),
+    )
+
+    with pytest.warns(
+        UserWarning, match=("duplicate .*the cosine one used in the model.")
+    ):
+        # cosine loaded from confounds may duplicate
+        # the one created during model specification
+        first_level_from_bids(
+            dataset_path=bids_path,
+            task_label="main",
+            space_label="MNI",
+            img_filters=[("desc", "preproc")],
+            drift_model="cosine",
+            confounds_strategy=("high_pass",),
+        )
+
+    with pytest.warns(
+        UserWarning, match=("conflict .*the polynomial one used in the model.")
+    ):
+        # cosine loaded from confounds may conflict
+        # the one created during model specification
+        first_level_from_bids(
+            dataset_path=bids_path,
+            task_label="main",
+            space_label="MNI",
+            img_filters=[("desc", "preproc")],
+            drift_model="polynomial",
+            confounds_strategy=("high_pass",),
+        )

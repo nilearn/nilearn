@@ -1136,6 +1136,18 @@ def first_level_from_bids(
 
     # TODO check compatibility of kwargs with FirstLevelModel
     # for example high_pass and strategy high_pass
+    if drift_model is not None and kwargs_load_confounds is not None:
+        if "high_pass" in kwargs_load_confounds.get("strategy"):
+            if drift_model == "cosine":
+                verb = "duplicate"
+            if drift_model == "polynomial":
+                verb = "conflict with"
+
+            warn(
+                f"""Confounds will contain a high pass filter,
+ that may {verb} the {drift_model} one used in the model.""",
+                UserWarning,
+            )
 
     derivatives_path = Path(dataset_path) / derivatives_folder
 
@@ -1710,6 +1722,7 @@ def _check_args_first_level_from_bids(
 def _check_kwargs_load_confounds(**kwargs):
     # reuse the default from nilearn.interface.fmriprep.load_confounds
     defaults = {
+        "strategy": ("motion", "high_pass", "wm_csf"),
         "motion": "full",
         "scrub": 5,
         "fd_threshold": 0.2,
