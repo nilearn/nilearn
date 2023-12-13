@@ -1134,8 +1134,6 @@ def first_level_from_bids(
 
     kwargs_load_confounds = _check_kwargs_load_confounds(**kwargs)
 
-    # TODO check compatibility of kwargs with FirstLevelModel
-    # for example high_pass and strategy high_pass
     if drift_model is not None and kwargs_load_confounds is not None:
         if "high_pass" in kwargs_load_confounds.get("strategy"):
             if drift_model == "cosine":
@@ -1145,7 +1143,9 @@ def first_level_from_bids(
 
             warn(
                 f"""Confounds will contain a high pass filter,
- that may {verb} the {drift_model} one used in the model.""",
+ that may {verb} the {drift_model} one used in the model.
+ Remember to visualize your design matrix before fitting your model
+ to check that your model is not overspecified.""",
                 UserWarning,
             )
 
