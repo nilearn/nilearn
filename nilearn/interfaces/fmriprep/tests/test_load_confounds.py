@@ -324,7 +324,7 @@ def test_motion(tmp_path, motion, param, expected_suffixes, fmriprep_version):
 
 
 @pytest.mark.parametrize(
-    "compcor,n_compcor,test_keyword,test_n,fmriprep_version",
+    "compcor, n_compcor, test_keyword, test_n, fmriprep_version",
     [("anat_combined", 2, "a_comp_cor_", 2, "1.4.x"),
      ("anat_separated", 2, "a_comp_cor_", 4, "1.4.x"),
      ("anat_combined", "all", "a_comp_cor_", 57, "1.4.x"),
@@ -351,6 +351,31 @@ def test_n_compcor(tmp_path, compcor,
     assert sum(True for col in conf.columns if test_keyword in col) == test_n
 
 
+missing_params = ["trans_y", "trans_x_derivative1", "rot_z_power2"]
+missing_keywords = ["cosine", "global_signal"]
+
+
+def _remove_confounds(conf_file):
+    legal_confounds = pd.read_csv(conf_file, delimiter="\t", encoding="utf-8")
+    remove_columns = []
+    for missing_kw in missing_keywords:
+        remove_columns += [
+            col_name
+            for col_name in legal_confounds.columns
+            if missing_kw in col_name
+        ]
+
+    aroma = [
+        col_name
+        for col_name in legal_confounds.columns
+        if "aroma" in col_name
+    ]
+    missing_confounds = legal_confounds.drop(
+        columns=missing_params + remove_columns + aroma
+    )
+    missing_confounds.to_csv(conf_file, sep="\t", index=False)
+
+
 @pytest.mark.parametrize("fmriprep_version", ["1.4.x", "21.x.x"])
 def test_not_found_exception(tmp_path, fmriprep_version):
     """Check various file or parameter missing scenario."""
@@ -361,27 +386,8 @@ def test_not_found_exception(tmp_path, fmriprep_version):
         copy_json=False,
         fmriprep_version=fmriprep_version
     )
-    missing_params = ["trans_y", "trans_x_derivative1", "rot_z_power2"]
-    missing_keywords = ["cosine", "global_signal"]
 
-    leagal_confounds = pd.read_csv(bad_conf, delimiter="\t", encoding="utf-8")
-    remove_columns = []
-    for missing_kw in missing_keywords:
-        remove_columns += [
-            col_name
-            for col_name in leagal_confounds.columns
-            if missing_kw in col_name
-        ]
-
-    aroma = [
-        col_name
-        for col_name in leagal_confounds.columns
-        if "aroma" in col_name
-    ]
-    missing_confounds = leagal_confounds.drop(
-        columns=missing_params + remove_columns + aroma
-    )
-    missing_confounds.to_csv(bad_conf, sep="\t", index=False)
+    _remove_confounds(bad_conf)
 
     with pytest.raises(ValueError) as exc_info:
         load_confounds(
@@ -391,6 +397,7 @@ def test_not_found_exception(tmp_path, fmriprep_version):
             motion="full",
         )
     assert f"{missing_params}" in exc_info.value.args[0]
+
     # missing cosine if it's not present in the file it's fine
     assert f"{missing_keywords[-1:]}" in exc_info.value.args[0]
 
@@ -410,6 +417,20 @@ def test_not_found_exception(tmp_path, fmriprep_version):
             compcor="blah"
         )
 
+
+@pytest.mark.parametrize("fmriprep_version", ["1.4.x", "21.x.x"])
+def test_not_found_exception_ica_aroma(tmp_path, fmriprep_version):
+    """Check various file or parameter for ICA-AROMA strategy."""
+    # Create invalid confound file in temporary dir
+    img_missing_confounds, bad_conf = create_tmp_filepath(
+        tmp_path,
+        copy_confounds=True,
+        copy_json=False,
+        fmriprep_version=fmriprep_version
+    )
+
+    _remove_confounds(bad_conf)
+
     # Aggressive ICA-AROMA strategy requires
     # default nifti and noise ICs in confound file
     # correct nifti but missing noise regressor
@@ -418,21 +439,6 @@ def test_not_found_exception(tmp_path, fmriprep_version):
             img_missing_confounds, strategy=("ica_aroma", ), ica_aroma="basic"
         )
     assert "ica_aroma" in exc_info.value.args[0]
-
-
-@pytest.mark.parametrize("fmriprep_version", ["1.4.x", "21.x.x"])
-def test_not_found_exception_ica_aroma(tmp_path, fmriprep_version):
-    """Check various file or parameter for ICA-AROMA strategy.
-
-    Aggressive ICA-AROMA strategy requires
-    """
-    # Create invalid confound file in temporary dir
-    img_missing_confounds, bad_conf = create_tmp_filepath(
-        tmp_path,
-        copy_confounds=True,
-        copy_json=False,
-        fmriprep_version=fmriprep_version
-    )
 
     # Default nifti
     aroma_nii, _ = create_tmp_filepath(
@@ -509,8 +515,8 @@ def test_invalid_filetype(tmp_path, rng):
 
     # more than one legal filename for confounds
     add_conf = "sub-14x_task-test_desc-confounds_regressors.tsv"
-    leagal_confounds, _ = get_legal_confound()
-    leagal_confounds.to_csv(tmp_path / add_conf, sep="\t", index=False)
+    legal_confounds, _ = get_legal_confound()
+    legal_confounds.to_csv(tmp_path / add_conf, sep="\t", index=False)
     with pytest.raises(ValueError) as info:
         load_confounds(bad_nii)
     assert "more than one" in str(info.value)
@@ -524,10 +530,10 @@ def test_invalid_filetype(tmp_path, rng):
     assert "The confound file contains no header." in str(error_log.value)
 
     # invalid fmriprep version: old camel case header (<1.2)
-    leagal_confounds, _ = get_legal_confound()
-    camel_confounds = leagal_confounds.copy()
+    legal_confounds, _ = get_legal_confound()
+    camel_confounds = legal_confounds.copy()
     camel_confounds.columns = [
-        to_camel_case(col_name) for col_name in leagal_confounds.columns
+        to_camel_case(col_name) for col_name in legal_confounds.columns
     ]
     camel_confounds.to_csv(bad_conf, sep="\t", index=False)
     with pytest.raises(ValueError) as error_log:
