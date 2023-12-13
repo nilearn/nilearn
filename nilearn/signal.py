@@ -21,7 +21,7 @@ from nilearn._utils.param_validation import check_run_sample_masks
 availiable_filters = ["butterworth", "cosine"]
 
 
-def _standardize(
+def standardize_signal(
     signals,
     detrend=False,
     standardize="zscore",
@@ -744,7 +744,9 @@ def clean(
     # Restrict the signal to the orthogonal of the confounds
     mean_signals = signals.mean(axis=0)
     if detrend:
-        signals = _standardize(signals, standardize=False, detrend=detrend)
+        signals = standardize_signal(
+            signals, standardize=False, detrend=detrend
+        )
         if confounds is not None:
             confounds = standardize_signal(
                 confounds, standardize=False, detrend=detrend
@@ -807,7 +809,7 @@ def clean(
             signals + mean_signals, standardize=standardize, detrend=False
         )
     else:
-        signals = _standardize(
+        signals = standardize_signal(
             signals,
             standardize=standardize,
             detrend=False,
