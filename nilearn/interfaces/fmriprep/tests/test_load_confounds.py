@@ -111,6 +111,7 @@ def _regression(confounds, tmp_path):
     assert tseries_clean.shape[0] == confounds.shape[0]
 
 
+@pytest.mark.parametrize("fmriprep_version", ["1.4.x", "21.x.x"])
 @pytest.mark.filterwarnings("ignore")
 @pytest.mark.parametrize(
     "test_strategy,param",
@@ -125,11 +126,16 @@ def _regression(confounds, tmp_path):
         (("ica_aroma", ), {"ica_aroma": "basic"}),
     ],
 )
-def test_nilearn_regress(tmp_path, test_strategy, param):
+def test_nilearn_regress(tmp_path, test_strategy, param, fmriprep_version):
     """Try regressing out all motion types without sample mask."""
     img_nii, _ = create_tmp_filepath(
-        tmp_path, copy_confounds=True, copy_json=True
+        tmp_path,
+        copy_confounds=True,
+        copy_json=True,
+        fmriprep_version=fmriprep_version
     )
+    if fmriprep_version == "21.x.x" and test_strategy == ("ica_aroma", ):
+        return
     confounds, _ = load_confounds(img_nii, strategy=test_strategy, **param)
     _regression(confounds, tmp_path)
 
@@ -236,18 +242,24 @@ def test_nilearn_standardize(tmp_path, standardize_signal,
     assert corr.mean() > 0.8
 
 
-def test_confounds2df(tmp_path):
+@pytest.mark.parametrize("fmriprep_version", ["1.4.x", "21.x.x"])
+def test_confounds2df(tmp_path, fmriprep_version):
     """Check auto-detect of confonds from an fMRI nii image."""
-    img_nii, _ = create_tmp_filepath(tmp_path, copy_confounds=True)
+    img_nii, _ = create_tmp_filepath(tmp_path,
+                                     copy_confounds=True,
+                                     fmriprep_version=fmriprep_version)
     confounds, _ = load_confounds(img_nii)
     assert "trans_x" in confounds.columns
 
 
-def test_load_single_confounds_file(tmp_path):
+@pytest.mark.parametrize("fmriprep_version", ["1.4.x", "21.x.x"])
+def test_load_single_confounds_file(tmp_path, fmriprep_version):
     """Check that the load_confounds function returns the same confounds \
     as _load_single_confounds_file."""
-    nii_file, confounds_file = create_tmp_filepath(tmp_path,
-                                                   copy_confounds=True)
+    nii_file, confounds_file = create_tmp_filepath(
+        tmp_path,
+        copy_confounds=True,
+        fmriprep_version=fmriprep_version)
 
     # get defaults from load_confounds
     import inspect
@@ -292,12 +304,15 @@ def expected_suffixes(motion):
     return SUFFIXES[expectation[motion]]
 
 
+@pytest.mark.parametrize("fmriprep_version", ["1.4.x", "21.x.x"])
 @pytest.mark.parametrize("motion", ["basic", "derivatives", "power2", "full"])
 @pytest.mark.parametrize(
     "param", ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z"]
 )
-def test_motion(tmp_path, motion, param, expected_suffixes):
-    img_nii, _ = create_tmp_filepath(tmp_path, copy_confounds=True)
+def test_motion(tmp_path, motion, param, expected_suffixes, fmriprep_version):
+    img_nii, _ = create_tmp_filepath(tmp_path,
+                                     copy_confounds=True,
+                                     fmriprep_version=fmriprep_version)
     conf, _ = load_confounds(
         img_nii, strategy=("motion", ), motion=motion
     )
@@ -318,10 +333,15 @@ def test_motion(tmp_path, motion, param, expected_suffixes):
      ("anat_separated", "all", "w_comp_cor_", 4, "21.x.x"),
      ("temporal_anat_separated", "all", "c_comp_cor_", 3, "21.x.x"),
      ("temporal", "all", "t_comp_cor_", 3, "21.x.x")])
-def test_n_compcor(tmp_path, compcor, n_compcor, test_keyword, test_n,
+def test_n_compcor(tmp_path, compcor,
+                   n_compcor,
+                   test_keyword,
+                   test_n,
                    fmriprep_version):
     img_nii, _ = create_tmp_filepath(
-        tmp_path, copy_confounds=True, copy_json=True,
+        tmp_path,
+        copy_confounds=True,
+        copy_json=True,
         fmriprep_version=fmriprep_version
     )
     conf, _ = load_confounds(
@@ -331,11 +351,15 @@ def test_n_compcor(tmp_path, compcor, n_compcor, test_keyword, test_n,
     assert sum(True for col in conf.columns if test_keyword in col) == test_n
 
 
-def test_not_found_exception(tmp_path):
+@pytest.mark.parametrize("fmriprep_version", ["1.4.x", "21.x.x"])
+def test_not_found_exception(tmp_path, fmriprep_version):
     """Check various file or parameter missing scenario."""
     # Create invalid confound file in temporary dir
     img_missing_confounds, bad_conf = create_tmp_filepath(
-        tmp_path, copy_confounds=True, copy_json=False
+        tmp_path,
+        copy_confounds=True,
+        copy_json=False,
+        fmriprep_version=fmriprep_version
     )
     missing_params = ["trans_y", "trans_x_derivative1", "rot_z_power2"]
     missing_keywords = ["cosine", "global_signal"]
@@ -395,11 +419,27 @@ def test_not_found_exception(tmp_path):
         )
     assert "ica_aroma" in exc_info.value.args[0]
 
-    # Aggressive ICA-AROMA strategy requires
-    # default nifti
+
+@pytest.mark.parametrize("fmriprep_version", ["1.4.x", "21.x.x"])
+def test_not_found_exception_ica_aroma(tmp_path, fmriprep_version):
+    """Check various file or parameter for ICA-AROMA strategy.
+
+    Aggressive ICA-AROMA strategy requires
+    """
+    # Create invalid confound file in temporary dir
+    img_missing_confounds, bad_conf = create_tmp_filepath(
+        tmp_path,
+        copy_confounds=True,
+        copy_json=False,
+        fmriprep_version=fmriprep_version
+    )
+
+    # Default nifti
     aroma_nii, _ = create_tmp_filepath(
-        tmp_path, image_type="ica_aroma", bids_fields={"entities":
-                                                       {"sub": "icaAroma"}}
+        tmp_path, image_type="ica_aroma",
+        bids_fields={"entities":
+                     {"sub": "icaAroma"}},
+        fmriprep_version=fmriprep_version
     )
     with pytest.raises(ValueError) as exc_info:
         load_confounds(
@@ -422,12 +462,15 @@ def test_not_found_exception(tmp_path):
     assert "Could not find associated confound file." in exc_info.value.args[0]
 
 
-def test_non_steady_state(tmp_path):
+@pytest.mark.parametrize("fmriprep_version", ["1.4.x", "21.x.x"])
+def test_non_steady_state(tmp_path, fmriprep_version):
     """Warn when 'non_steady_state' is in strategy."""
     # supplying 'non_steady_state' in strategy is not necessary
     # check warning is correctly raised
     img, _ = create_tmp_filepath(
-        tmp_path, copy_confounds=True
+        tmp_path,
+        copy_confounds=True,
+        fmriprep_version=fmriprep_version
     )
     warning_message = (r"Non-steady state")
     with pytest.warns(UserWarning, match=warning_message):
@@ -459,7 +502,8 @@ def test_load_non_nifti(tmp_path):
 
 def test_invalid_filetype(tmp_path, rng):
     """Invalid file types/associated files for load method."""
-    bad_nii, bad_conf = create_tmp_filepath(tmp_path, copy_confounds=True,
+    bad_nii, bad_conf = create_tmp_filepath(tmp_path,
+                                            copy_confounds=True,
                                             fmriprep_version="1.4.x")
     _, _ = load_confounds(bad_nii)
 
@@ -499,13 +543,20 @@ def test_invalid_filetype(tmp_path, rng):
         load_confounds(bad_nii)
 
 
-def test_ica_aroma(tmp_path):
+@pytest.mark.parametrize("fmriprep_version", ["1.4.x"])
+def test_ica_aroma(tmp_path, fmriprep_version):
     """Test ICA AROMA related file input."""
     aroma_nii, _ = create_tmp_filepath(
-        tmp_path, image_type="ica_aroma", copy_confounds=True
+        tmp_path,
+        image_type="ica_aroma",
+        copy_confounds=True,
+        fmriprep_version=fmriprep_version
     )
     regular_nii, _ = create_tmp_filepath(
-        tmp_path, image_type="regular", copy_confounds=True
+        tmp_path,
+        image_type="regular",
+        copy_confounds=True,
+        fmriprep_version=fmriprep_version
     )
     # Aggressive strategy
     conf, _ = load_confounds(
@@ -529,26 +580,36 @@ def test_ica_aroma(tmp_path):
     assert "Current input: invalid" in exc_info.value.args[0]
 
 
-def test_sample_mask(tmp_path):
+@pytest.mark.parametrize(
+    "fmriprep_version, scrubbed_time_points, non_steady_outliers",
+    [("1.4.x", 8, 1), ("21.x.x", 30, 3)])
+def test_sample_mask(tmp_path,
+                     fmriprep_version,
+                     scrubbed_time_points,
+                     non_steady_outliers):
     """Test load method and sample mask."""
     regular_nii, regular_conf = create_tmp_filepath(
-        tmp_path, image_type="regular", copy_confounds=True
+        tmp_path,
+        image_type="regular",
+        copy_confounds=True,
+        fmriprep_version=fmriprep_version
     )
 
     reg, mask = load_confounds(
         regular_nii, strategy=("motion", "scrub"), scrub=5, fd_threshold=0.15
     )
-    # the current test data has 6 time points marked as motion outliers,
+    # the "1.4.x" test data has 6 time points marked as motion outliers,
     # and one nonsteady state (overlap with the first motion outlier)
-    # 2 time points removed due to the "full" srubbing strategy (remove segment
-    # shorter than 5 volumes)
-    assert reg.shape[0] - len(mask) == 8
+    # 2 time points removed due to the "full" srubbing strategy
+    # (remove segment shorter than 5 volumes)
+    assert reg.shape[0] - len(mask) == scrubbed_time_points
+
     # nilearn requires unmasked confound regressors
     assert reg.shape[0] == 30
 
     # non steady state will always be removed
     reg, mask = load_confounds(regular_nii, strategy=("motion", ))
-    assert reg.shape[0] - len(mask) == 1
+    assert reg.shape[0] - len(mask) == non_steady_outliers
 
     # When no non-steady state volumes are present
     conf_data, _ = get_legal_confound(non_steady_state=False)
