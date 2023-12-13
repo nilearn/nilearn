@@ -17,8 +17,8 @@ from nilearn._utils import data_gen
 from nilearn._utils.testing import serialize_niimg
 from nilearn.conftest import _rng
 from nilearn.datasets import atlas
+from nilearn.datasets._utils import fetch_files
 from nilearn.datasets.tests._testing import dict_to_archive
-from nilearn.datasets.utils import _fetch_files
 from nilearn.image import get_data
 
 
@@ -61,7 +61,7 @@ def test_downloader(tmp_path, request_mocker):
     ]
 
     with pytest.raises(IOError):
-        _fetch_files(
+        fetch_files(
             str(tmp_path / "craddock_2012"),
             files,
             verbose=0,
@@ -334,7 +334,7 @@ def test_fetch_coords_seitzman_2018():
 def _destrieux_data():
     """Function mocking the download of the destrieux atlas."""
     data = {"destrieux2009.rst": "readme"}
-    atlas = _rng().randint(0, 10, (10, 10, 10), dtype="int32")
+    atlas = _rng().integers(0, 10, (10, 10, 10), dtype="int32")
     atlas_img = nibabel.Nifti1Image(atlas, np.eye(4))
     labels = "\n".join([f"{idx},label {idx}" for idx in range(10)])
     labels = f"index,name\n{labels}"

@@ -67,7 +67,7 @@ print(f"Image mean: {mean_img}")
 plot_surf_img(mean_img)
 plotting.show()
 
-# %%##
+# %%
 # Connectivity with a surface atlas and `SurfaceLabelsMasker`
 # -----------------------------------------------------------
 from nilearn import connectome, plotting
@@ -91,7 +91,7 @@ plotting.plot_matrix(connectome, labels=labels_masker.label_names_)
 plotting.show()
 
 
-# %%##
+# %%
 # Using the `Decoder`
 # -------------------
 import numpy as np
@@ -109,11 +109,6 @@ def monkeypatch_masker_checks():
         return screening_percentile
 
     param_validation.adjust_screening_percentile = adjust_screening_percentile
-
-    def check_embedded_nifti_masker(estimator, *args, **kwargs):
-        return estimator.mask
-
-    decoding.decoder._check_embedded_nifti_masker = check_embedded_nifti_masker
 
 
 monkeypatch_masker_checks()
@@ -137,7 +132,7 @@ print("CV scores:", decoder.cv_scores_)
 plot_surf_img(decoder.coef_img_[0], threshold=1e-6)
 plotting.show()
 
-# %%##
+# %%
 # Decoding with a scikit-learn `Pipeline`
 # ---------------------------------------
 import numpy as np

@@ -16,7 +16,7 @@ from sklearn.utils.validation import check_is_fitted
 
 from nilearn._utils import fill_doc
 from nilearn.image import get_data
-from nilearn.masking import _unmask_from_to_3d_array
+from nilearn.masking import unmask_from_to_3d_array
 
 
 def _compute_weights(X, mask_img):
@@ -50,9 +50,7 @@ def _compute_weights(X, mask_img):
 
     data = np.empty((shape[0], shape[1], shape[2], n_samples))
     for sample in range(n_samples):
-        data[:, :, :, sample] = _unmask_from_to_3d_array(
-            X[sample].copy(), mask
-        )
+        data[:, :, :, sample] = unmask_from_to_3d_array(X[sample].copy(), mask)
 
     weights_deep = np.sum(np.diff(data, axis=2) ** 2, axis=-1).ravel()
     weights_right = np.sum(np.diff(data, axis=1) ** 2, axis=-1).ravel()
@@ -459,13 +457,13 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
     Attributes
     ----------
-    `labels_ ` : :class:`numpy.ndarray`, shape = [n_features]
+    labels_ : :class:`numpy.ndarray`, shape = [n_features]
         Cluster labels for each feature.
 
-    `n_clusters_` : :obj:`int`
+    n_clusters_ : :obj:`int`
         Number of clusters.
 
-    `sizes_` : :class:`numpy.ndarray`, shape = [n_features]
+    sizes_ : :class:`numpy.ndarray`, shape = [n_features]
         It contains the size of each cluster.
 
     References

@@ -8,7 +8,6 @@ from numpy.testing import assert_array_almost_equal, assert_array_equal
 from pandas import DataFrame
 from scipy import linalg
 from sklearn.covariance import EmpiricalCovariance, LedoitWolf
-from sklearn.utils import check_random_state
 
 from nilearn._utils.extmath import is_spd
 from nilearn.connectome.connectivity_matrices import (
@@ -60,8 +59,8 @@ def random_diagonal(p, v_min=1.0, v_max=2.0, random_state=0):
         A diagonal matrix with the given minimal and maximal elements.
 
     """
-    random_state = check_random_state(random_state)
-    diag = random_state.rand(p) * (v_max - v_min) + v_min
+    random_state = np.random.default_rng(random_state)
+    diag = random_state.random(p) * (v_max - v_min) + v_min
     diag[diag == np.amax(diag)] = v_max
     diag[diag == np.amin(diag)] = v_min
     return np.diag(diag)
@@ -91,8 +90,8 @@ def random_spd(p, eig_min, cond, random_state=0):
         A symmetric positive definite matrix with the given minimal eigenvalue
         and condition number.
     """
-    random_state = check_random_state(random_state)
-    mat = random_state.randn(p, p)
+    rand_gen = np.random.default_rng(random_state)
+    mat = rand_gen.standard_normal((p, p))
     unitary, _ = linalg.qr(mat)
     diag = random_diagonal(
         p, v_min=eig_min, v_max=cond * eig_min, random_state=random_state
@@ -273,12 +272,12 @@ def random_non_singular(p, sing_min=1.0, sing_max=2.0, random_state=0):
         A nonsingular matrix with the given minimal and maximal singular
         values.
     """
-    random_state = check_random_state(random_state)
+    rand_gen = np.random.default_rng(random_state)
     diag = random_diagonal(
         p, v_min=sing_min, v_max=sing_max, random_state=random_state
     )
-    mat1 = random_state.randn(p, p)
-    mat2 = random_state.randn(p, p)
+    mat1 = rand_gen.standard_normal((p, p))
+    mat2 = rand_gen.standard_normal((p, p))
     unitary1, _ = linalg.qr(mat1)
     unitary2, _ = linalg.qr(mat2)
     return unitary1.dot(diag).dot(unitary2.T)
@@ -468,13 +467,13 @@ def test_sym_matrix_to_vec_is_the_inverse_of_vec_to_sym_matrix(rng):
     p = n * (n + 1) // 2
 
     # when diagonal is included
-    vec = rng.rand(p)
+    vec = rng.random(p)
     sym = vec_to_sym_matrix(vec)
 
     assert_array_almost_equal(sym_matrix_to_vec(sym), vec)
 
     # when diagonal given separately
-    diagonal = rng.rand(n + 1)
+    diagonal = rng.random(n + 1)
     sym = vec_to_sym_matrix(vec, diagonal=diagonal)
 
     assert_array_almost_equal(

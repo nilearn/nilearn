@@ -108,7 +108,7 @@ variance_threshold.fit_transform(gm_maps_masked)
 # decoding process
 mask = nifti_masker.inverse_transform(variance_threshold.get_support())
 
-# %%#
+# %%
 # Prediction pipeline with :term:`ANOVA` and SVR using
 # :class:`nilearn.decoding.DecoderRegressor` Object
 #
@@ -128,7 +128,7 @@ decoder = DecoderRegressor(
     mask=mask,
     scoring="neg_mean_absolute_error",
     screening_percentile=1,
-    n_jobs=1,
+    n_jobs=2,
     standardize="zscore_sample",
 )
 # Fit and predict with the decoder
@@ -197,7 +197,7 @@ neg_log_pvals, t_scores_original_data, _ = permuted_ols(
     data,  # + intercept as a covariate by default
     n_perm=2000,  # 1,000 in the interest of time; 10000 would be better
     verbose=1,  # display progress bar
-    n_jobs=1,
+    n_jobs=2,
 )
 signed_neg_log_pvals = neg_log_pvals * np.sign(t_scores_original_data)
 signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(

@@ -115,7 +115,7 @@ Loading the data into nilearn
 
 * **Loading the behavioral labels**: Behavioral information is often stored
   in a text file such as a CSV, and must be load with
-  **numpy.recfromcsv** or `pandas <https://pandas.pydata.org/>`_
+  **numpy.genfromtxt** or `pandas <https://pandas.pydata.org/>`_
 
 * **Sample mask**: Masking some of the time points
   may be useful to

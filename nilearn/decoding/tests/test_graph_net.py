@@ -6,7 +6,7 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal
 from scipy import linalg
 
-from nilearn.decoding.objective_functions import _div, _gradient
+from nilearn.decoding._objective_functions import divergence, gradient
 from nilearn.decoding.space_net import BaseSpaceNet
 from nilearn.decoding.space_net_solvers import (
     _graph_net_adjoint_data_function,
@@ -53,7 +53,7 @@ def get_gradient_matrix(w_size, mask):
         base_vector = np.zeros(w_size)
         base_vector[i] = 1
         image_buffer[mask] = base_vector
-        gradient_column = _gradient(image_buffer)[grad_mask]
+        gradient_column = gradient(image_buffer)[grad_mask]
         grad_matrix[:, i] = gradient_column
 
     return grad_matrix
@@ -68,19 +68,19 @@ def test_grad_matrix(rng):
     image_buffer = np.zeros(mask.shape)
     grad_mask = np.array([mask for _ in range(mask.ndim)])
     for _ in range(10):
-        v = rng.rand(w.size) * rng.randint(1000)
+        v = rng.random(w.size) * rng.integers(1000)
         image_buffer[mask] = v
-        assert_almost_equal(_gradient(image_buffer)[grad_mask], np.dot(G, v))
+        assert_almost_equal(gradient(image_buffer)[grad_mask], np.dot(G, v))
 
 
 def test_adjointness(rng, size=4):
-    """Test for adjointness between gradient and div operators."""
+    """Test for adjointness between gradient and divergence operators."""
     for _ in range(3):
-        image_1 = rng.rand(size, size, size)
-        image_2 = rng.rand(3, size, size, size)
-        Axdoty = np.dot((_gradient(image_1).ravel()), image_2.ravel())
+        image_1 = rng.random((size, size, size))
+        image_2 = rng.random((3, size, size, size))
+        Axdoty = np.dot((gradient(image_1).ravel()), image_2.ravel())
 
-        xdotAty = np.dot((_div(image_2).ravel()), image_1.ravel())
+        xdotAty = np.dot((divergence(image_2).ravel()), image_1.ravel())
 
         assert_almost_equal(Axdoty, -xdotAty)
 
@@ -98,8 +98,8 @@ def test_identity_adjointness(rng, size=4):
     X = np.eye(n_samples)
     l1_ratio = 0.5
     for _ in range(10):
-        x = rng.rand(np.sum(mask))
-        y = rng.rand(n_samples + np.sum(mask) * mask.ndim)
+        x = rng.random(np.sum(mask))
+        y = rng.random(n_samples + np.sum(mask) * mask.ndim)
         Axdoty = np.dot(_graph_net_data_function(X, x, mask, l1_ratio), y)
         xdotAty = np.dot(
             _graph_net_adjoint_data_function(X, y, adjoint_mask, l1_ratio), x
@@ -117,11 +117,11 @@ def test_operators_adjointness(rng, size=4):
     mask[0:3, 0:3, 0:3] = 0
     adjoint_mask = np.array([mask for _ in range(mask.ndim)])
     n_samples = 200
-    X = rng.rand(n_samples, np.sum(mask))
+    X = rng.random((n_samples, np.sum(mask)))
     l1_ratio = 0.5
     for _ in range(10):
-        x = rng.rand(np.sum(mask))
-        y = rng.rand(n_samples + np.sum(mask) * mask.ndim)
+        x = rng.random(np.sum(mask))
+        y = rng.random(n_samples + np.sum(mask) * mask.ndim)
         Axdoty = np.dot(_graph_net_data_function(X, x, mask, l1_ratio), y)
         xdotAty = np.dot(
             _graph_net_adjoint_data_function(X, y, adjoint_mask, l1_ratio), x
@@ -183,7 +183,7 @@ def test_logistic_gradient_at_simple_points():
 
 
 def test_squared_loss_derivative_lipschitz_constant(rng):
-    """Test Lipschitz-continuity of the derivative of _squared_loss loss \
+    """Test Lipschitz-continuity of the derivative of squared_loss loss \
     function."""
     X, y, w, mask, *_ = _make_data()
     grad_weight = 2.08e-1
@@ -193,8 +193,8 @@ def test_squared_loss_derivative_lipschitz_constant(rng):
     )
 
     for _ in range(20):
-        x_1 = rng.rand(*w.shape) * rng.randint(1000)
-        x_2 = rng.rand(*w.shape) * rng.randint(1000)
+        x_1 = rng.random(w.shape) * rng.integers(1000)
+        x_2 = rng.random(w.shape) * rng.integers(1000)
         gradient_difference = linalg.norm(
             _squared_loss_and_spatial_grad_derivative(
                 X, y, x_1, mask, grad_weight
@@ -218,8 +218,8 @@ def test_logistic_derivative_lipschitz_constant(rng):
     )
 
     for _ in range(20):
-        x_1 = rng.rand(w.shape[0] + 1) * rng.randint(1000)
-        x_2 = rng.rand(w.shape[0] + 1) * rng.randint(1000)
+        x_1 = rng.random(w.shape[0] + 1) * rng.integers(1000)
+        x_2 = rng.random(w.shape[0] + 1) * rng.integers(1000)
         gradient_difference = linalg.norm(
             _logistic_data_loss_and_spatial_grad_derivative(
                 X, y, x_1, mask, grad_weight

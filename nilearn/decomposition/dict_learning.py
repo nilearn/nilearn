@@ -10,11 +10,13 @@ constitutes output maps
 import warnings
 
 import numpy as np
+import sklearn
 from joblib import Memory
 from sklearn.decomposition import dict_learning_online
 from sklearn.linear_model import Ridge
 
 from nilearn._utils import fill_doc
+from nilearn._utils.helpers import _transfer_deprecated_param_vals
 
 from ._base import _BaseDecomposition
 from .canica import CanICA
@@ -150,7 +152,7 @@ class DictLearning(_BaseDecomposition):
 
     Attributes
     ----------
-    `components_` : 2D numpy array (n_components x n-voxels)
+    components_ : 2D numpy array (n_components x n-voxels)
         Masked dictionary components extracted from the input images.
 
         .. note::
@@ -158,18 +160,18 @@ class DictLearning(_BaseDecomposition):
             Use attribute `components_img_` rather than manually unmasking
             `components_` with `masker_` attribute.
 
-    `components_img_` : 4D Nifti image
+    components_img_ : 4D Nifti image
         4D image giving the extracted components. Each 3D image is a component.
 
         .. versionadded:: 0.4.1
 
-    `masker_` : instance of MultiNiftiMasker
+    masker_ : instance of MultiNiftiMasker
         Masker used to filter and mask data as first step. If an instance of
         MultiNiftiMasker is given in `mask` parameter,
         this is a copy of it. Otherwise, a masker is created using the value
         of `mask` and other NiftiMasker related parameters as initialization.
 
-    `mask_img_` : Niimg-like object
+    mask_img_ : Niimg-like object
         See :ref:`extracting_data`.
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.
@@ -292,12 +294,19 @@ class DictLearning(_BaseDecomposition):
 
         if self.verbose:
             print("[DictLearning] Learning dictionary")
-        # TODO: turn n_iter to max_iter when dropping python 3.7
+
+        # TODO: remove this when sklearn 1.0 not supported anymore;
+        # replace kwargs with actual parameter name
+        if sklearn.__version__ <= "1.0":
+            kwargs = {"n_iter": max_iter}
+        else:
+            kwargs = _transfer_deprecated_param_vals(
+                {"n_iter": "max_iter"}, {"max_iter": max_iter}
+            )
         self.components_, _ = self._cache(dict_learning_online)(
             data.T,
             self.n_components,
             alpha=self.alpha,
-            n_iter=max_iter,
             batch_size=self.batch_size,
             method=self.method,
             dict_init=dict_init,
@@ -306,6 +315,7 @@ class DictLearning(_BaseDecomposition):
             return_code=True,
             shuffle=True,
             n_jobs=1,
+            **kwargs,
         )
         self.components_ = self.components_.T
         # Unit-variance scaling

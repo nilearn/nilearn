@@ -40,14 +40,14 @@ from sklearn.model_selection import (
 )
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.svm import SVR, LinearSVC, l1_min_c
-from sklearn.utils import check_random_state
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import check_is_fitted, check_X_y
 
 from nilearn._utils import CacheMixin, fill_doc
 from nilearn._utils.cache_mixin import _check_memory
+from nilearn._utils.masker_validation import check_embedded_masker
 from nilearn._utils.param_validation import check_feature_screening
-from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
+from nilearn.experimental.surface import SurfaceMasker
 from nilearn.regions.rena_clustering import ReNA
 
 SUPPORTED_ESTIMATORS = dict(
@@ -463,13 +463,14 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         For regression, choose among:
         %(regressor_options)s
 
-    mask: filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, \
-          default=None
+    mask: filename, Nifti1Image, NiftiMasker, MultiNiftiMasker, or\
+          SurfaceMasker, default=None
         Mask to be used on data. If an instance of masker is passed,
         then its mask and parameters will be used. If no mask is given, mask
         will be computed automatically from provided images by an inbuilt
-        masker with default parameters. Refer to NiftiMasker or
-        MultiNiftiMasker to check for default parameters.
+        masker with default parameters. Refer to NiftiMasker, MultiNiftiMasker
+        or SurfaceMasker to check for default parameters. For use with
+        SurfaceImage data, a SurfaceMasker instance must be passed.
 
     cv: cross-validation generator or int, default=10
         A cross-validation generator.
@@ -602,7 +603,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
         Parameters
         ----------
-        X: list of Niimg-like objects
+        X: list of Niimg-like or SurfaceImage objects
             See :ref:`extracting_data`.
             Data on which model is to be fitted. If this is a list,
             the affine is considered the same for all.
@@ -626,51 +627,51 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
         Attributes
         ----------
-        `masker_` : instance of NiftiMasker or MultiNiftiMasker
-            The NiftiMasker used to mask the data.
+        masker_ : instance of NiftiMasker, MultiNiftiMasker, or SurfaceMasker
+            The masker used to mask the data.
 
-        `mask_img_` : Nifti1Image
+        mask_img_ : Nifti1Image or SurfaceImage
             Mask computed by the masker object.
 
-        `classes_` : numpy.ndarray
+        classes_ : numpy.ndarray
             Classes to predict. For classification only.
 
-        `screening_percentile_` : float
+        screening_percentile_ : float
             Screening percentile corrected according to volume of mask,
             relative to the volume of standard brain.
 
-        `coef_` : numpy.ndarray, shape=(n_classes, n_features)
+        coef_ : numpy.ndarray, shape=(n_classes, n_features)
             Contains the mean of the models weight vector across
             fold for each class. Returns None for Dummy estimators.
 
-        `coef_img_` : dict of Nifti1Image
+        coef_img_ : dict of Nifti1Image
             Dictionary containing `coef_` with class names as keys,
             and `coef_` transformed in Nifti1Images as values. In the case of
             a regression, it contains a single Nifti1Image at the key 'beta'.
             Ignored if Dummy estimators are provided.
 
-        `intercept_` : ndarray, shape (nclasses,)
+        intercept_ : ndarray, shape (nclasses,)
             Intercept (a.k.a. bias) added to the decision function.
             Ignored if Dummy estimators are provided.
 
-        `cv_` : list of pairs of lists
+        cv_ : list of pairs of lists
             List of the (n_folds,) folds. For the corresponding fold,
             each pair is composed of two lists of indices,
             one for the train samples and one for the test samples.
 
-        `std_coef_` : numpy.ndarray, shape=(n_classes, n_features)
+        std_coef_ : numpy.ndarray, shape=(n_classes, n_features)
             Contains the standard deviation of the models weight vector across
             fold for each class. Note that folds are not independent, see
             https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation-iterators-for-grouped-data
             Ignored if Dummy estimators are provided.
 
-        `std_coef_img_` : dict of Nifti1Image
+        std_coef_img_ : dict of Nifti1Image
             Dictionary containing `std_coef_` with class names as keys,
             and `coef_` transformed in Nifti1Image as values. In the case of
             a regression, it contains a single Nifti1Image at the key 'beta'.
             Ignored if Dummy estimators are provided.
 
-        `cv_params_` : dict of lists
+        cv_params_ : dict of lists
             Best point in the parameter grid for each tested fold
             in the inner cross validation loop. The grid is empty
             when Dummy estimators are provided. Note: if the estimator used its
@@ -680,17 +681,17 @@ class _BaseDecoder(LinearRegression, CacheMixin):
             RidgeCV/RidgeClassifierCV/LassoCV), in addition to the input list
             of values.
 
-        'scorer_' : function
+        scorer_ : function
             Scorer function used on the held out data to choose the best
             parameters for the model.
 
-        `cv_scores_` : dict, (classes, n_folds)
+        cv_scores_ : dict, (classes, n_folds)
             Scores (misclassification) for each parameter, and on each fold
 
-        `n_outputs_` : int
+        n_outputs_ : int
             Number of outputs (column-wise)
 
-        `dummy_output_`: ndarray, shape=(n_classes, 2)
+        dummy_output_: ndarray, shape=(n_classes, 2)
             or shape=(1, 1) for regression
             Contains dummy estimator attributes after class predictions
             using strategies of DummyClassifier (class_prior)
@@ -921,8 +922,10 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         return scores
 
     def _apply_mask(self, X):
-        # Nifti masking
-        self.masker_ = _check_embedded_nifti_masker(self, multi_subject=False)
+        masker_type = "nii"
+        if isinstance(self.mask, SurfaceMasker):
+            masker_type = "surface"
+        self.masker_ = check_embedded_masker(self, masker_type=masker_type)
         X = self.masker_.fit_transform(X)
         self.mask_img_ = self.masker_.mask_img_
 
@@ -1051,7 +1054,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
             if strategy in ["most_frequent", "prior"]:
                 scores = np.tile(dummy_output, reps=(n_samples, 1))
             elif strategy == "stratified":
-                rs = check_random_state(0)
+                rs = np.random.default_rng(0)
                 scores = rs.multinomial(1, dummy_output, size=n_samples)
 
         elif isinstance(self.estimator, DummyRegressor):

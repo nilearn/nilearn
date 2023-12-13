@@ -123,6 +123,50 @@ We welcome pull requests from all community members, if they follow the
 details on their process are available
 :sklearn:`here <developers/contributing.html#contributing-code>`).
 
+Using tox
+=========
+
+`Tox <See https://tox.wiki/en>`_ is set
+to facilitate testing and managing environments during development
+and ensure that the same commands can easily be run locally and in CI.
+
+Install it with:
+
+.. code-block:: bash
+
+    pip install tox
+
+You can set up certain environment or run certain command by calling ``tox``.
+
+Calling ``tox`` with no extra argument will simply run
+all the default commands defined in the tox configuration (``tox.ini``).
+
+Use ``tox list`` to view all environment descriptions.
+
+Use ``tox run`` to run a specific environment.
+
+Example
+
+.. code-block:: bash
+
+    tox run -e lint
+
+Some environments allow passing extra argument:
+
+.. code-block:: bash
+
+    # only run black
+    tox run -e lint -- black
+
+    # only run some tests
+    tox -e test_plotting -- nilearn/glm/tests/test_contrasts.py
+
+You can also run any arbitrary command in a given environment with ``tox exec``:
+
+.. code-block:: bash
+
+    tox exec -e test_latest -- python -m pytest nilearn/_utils/tests/test_data_gen.py
+
 
 How to make a release?
 ======================
@@ -180,6 +224,9 @@ Finally, we need to change the title from ``x.y.z.dev`` to ``x.y.z``:
 
    - Nilearn now includes functionality A
    - ...
+
+We must also ensure that every entry in ``nilearn/doc/changes/latest.rst``
+starts with a "badge" (see the :ref:`changelog` section).
 
 Once we have made all the necessary changes to ``nilearn/doc/changes/latest.rst``, we should rename it into ``nilearn/doc/changes/x.y.z.rst``, where ``x.y.z`` is the corresponding version number.
 
@@ -325,12 +372,13 @@ See available linux distributions of texlive-latex-base and texlive-latex-extra:
 - https://pkgs.org/search/?q=texlive-latex-base
 - https://pkgs.org/search/?q=texlive-latex-extra
 
-We now need to update the documentation:
+We now need to update the documentation. Make sure to change ``x.y.z`` to the
+current release version:
 
 .. code-block:: bash
 
     cd doc
-    make install
+    make install VERSIONTAG=x.y.z
 
 
 This will build the documentation (beware, this is time consuming...)

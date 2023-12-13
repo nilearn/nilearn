@@ -12,23 +12,23 @@ from nilearn import masking
 # Authors: Ana Luisa Pinho, Jerome Dockes, NicolasGensollen
 from nilearn._utils import data_gen
 from nilearn._utils.exceptions import DimensionError
-from nilearn._utils.testing import write_tmp_imgs
+from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _rng
 from nilearn.image import get_data, high_variance_confounds
 from nilearn.maskers import NiftiMasker
 from nilearn.masking import (
-    MaskWarning,
-    _extrapolate_out_mask,
+    _MaskWarning,
     _unmask_3d,
     _unmask_4d,
-    _unmask_from_to_3d_array,
     compute_background_mask,
     compute_brain_mask,
     compute_epi_mask,
     compute_multi_brain_mask,
     compute_multi_epi_mask,
+    extrapolate_out_mask,
     intersect_masks,
     unmask,
+    unmask_from_to_3d_array,
 )
 
 np_version = (
@@ -47,9 +47,9 @@ _TEST_DIM_ERROR_MSG = (
 def _simu_img():
     # Random confounds
     rng = _rng()
-    conf = 2 + rng.randn(100, 6)
+    conf = 2 + rng.standard_normal((100, 6))
     # Random 4D volume
-    vol = 100 + 10 * rng.randn(5, 5, 2, 100)
+    vol = 100 + 10 * rng.standard_normal((5, 5, 2, 100))
     img = Nifti1Image(vol, np.eye(4))
     # Create an nifti image with the data, and corresponding mask
     mask = Nifti1Image(np.ones([5, 5, 2]), np.eye(4))
@@ -199,7 +199,7 @@ def test_compute_epi_mask(affine_eye):
     mean_image[0, 0, 0] = 1.2
     mean_image[0, 0, 2] = 1.1
     mean_image = Nifti1Image(mean_image, affine_eye)
-    with pytest.warns(MaskWarning, match="Computed an empty mask"):
+    with pytest.warns(_MaskWarning, match="Computed an empty mask"):
         compute_epi_mask(mean_image, exclude_zeros=True)
 
 
@@ -223,7 +223,7 @@ def test_compute_background_mask(affine_eye):
     # Check that we get a useful warning for empty masks
     mean_image = np.zeros((9, 9, 9))
     mean_image = Nifti1Image(mean_image, affine_eye)
-    with pytest.warns(MaskWarning, match="Computed an empty mask"):
+    with pytest.warns(_MaskWarning, match="Computed an empty mask"):
         compute_background_mask(mean_image)
 
 
@@ -247,7 +247,7 @@ def test_compute_brain_mask():
     # Test that gm and wm masks have empty intersection
     assert (np.logical_and(gm_data, wm_data) == 0).all()
     # Check that we get a useful warning for empty masks
-    with pytest.warns(masking.MaskWarning):
+    with pytest.warns(masking._MaskWarning):
         compute_brain_mask(img, threshold=1)
     # Check that masks obtained from same FOV are the same
     img1, _ = data_gen.generate_mni_space_img(res=8, random_state=1)
@@ -258,7 +258,7 @@ def test_compute_brain_mask():
         compute_brain_mask(img, verbose=1, mask_type="foo")
 
 
-def test_apply_mask(affine_eye):
+def test_apply_mask(affine_eye, tmp_path):
     """Test smoothing of timeseries extraction."""
     # A delta in 3D
     # Standard masking
@@ -274,12 +274,15 @@ def test_apply_mask(affine_eye):
         ):
             data_img = Nifti1Image(data, affine)
             mask_img = Nifti1Image(mask, affine)
-            with write_tmp_imgs(
-                data_img, mask_img, create_files=create_files
-            ) as filenames:
-                series = masking.apply_mask(
-                    filenames[0], filenames[1], smoothing_fwhm=9
-                )
+            filenames = write_imgs_to_path(
+                data_img,
+                mask_img,
+                file_path=tmp_path,
+                create_files=create_files,
+            )
+            series = masking.apply_mask(
+                filenames[0], filenames[1], smoothing_fwhm=9
+            )
 
             series = np.reshape(series[0, :], (40, 40, 40))
             vmax = series.max()
@@ -296,7 +299,7 @@ def test_apply_mask(affine_eye):
                 )
 
     # Check that NaNs in the data do not propagate
-    data[10, 10, 10] = np.NaN
+    data[10, 10, 10] = np.nan
     data_img = Nifti1Image(data, affine)
     mask_img = Nifti1Image(mask, affine)
     full_mask_img = Nifti1Image(full_mask, affine)
@@ -338,12 +341,12 @@ def test_apply_mask(affine_eye):
         masking.apply_mask(Nifti1Image(data, affine), mask_img)
 
 
-def test_unmask(rng, affine_eye):
+def test_unmask(rng, affine_eye, tmp_path):
     # A delta in 3D
     shape = (10, 20, 30, 40)
     data4D = rng.uniform(size=shape)
     data3D = data4D[..., 0]
-    mask = rng.randint(2, size=shape[:3], dtype="int32")
+    mask = rng.integers(2, size=shape[:3], dtype="int32")
     mask_img = Nifti1Image(mask, affine_eye)
     mask = mask.astype(bool)
 
@@ -370,19 +373,23 @@ def test_unmask(rng, affine_eye):
 
     # 3D Test - check both with Nifti1Image and file
     for create_files in (False, True):
-        with write_tmp_imgs(mask_img, create_files=create_files) as filename:
-            t = get_data(unmask(masked3D, filename, order="C"))
-            assert t.ndim == 3
-            assert t.flags["C_CONTIGUOUS"]
-            assert not t.flags["F_CONTIGUOUS"]
-            assert_array_equal(t, unmasked3D)
-            t = unmask([masked3D], filename, order="F")
-            t = [get_data(t_) for t_ in t]
-            assert isinstance(t, list)
-            assert t[0].ndim == 3
-            assert not t[0].flags["C_CONTIGUOUS"]
-            assert t[0].flags["F_CONTIGUOUS"]
-            assert_array_equal(t[0], unmasked3D)
+        filename = write_imgs_to_path(
+            mask_img,
+            file_path=tmp_path,
+            create_files=create_files,
+        )
+        t = get_data(unmask(masked3D, filename, order="C"))
+        assert t.ndim == 3
+        assert t.flags["C_CONTIGUOUS"]
+        assert not t.flags["F_CONTIGUOUS"]
+        assert_array_equal(t, unmasked3D)
+        t = unmask([masked3D], filename, order="F")
+        t = [get_data(t_) for t_ in t]
+        assert isinstance(t, list)
+        assert t[0].ndim == 3
+        assert not t[0].flags["C_CONTIGUOUS"]
+        assert t[0].flags["F_CONTIGUOUS"]
+        assert_array_equal(t[0], unmasked3D)
 
     # Error test: shape
     vec_1D = np.empty((500,), dtype=int)
@@ -409,7 +416,7 @@ def test_unmask(rng, affine_eye):
         unmask(transposed_vector, mask_img)
 
 
-def test_intersect_masks_filename(affine_eye):
+def test_intersect_masks_filename(affine_eye, tmp_path):
     # Create dummy masks
     mask_a = np.zeros((4, 4, 1), dtype=bool)
     mask_a[2:4, 2:4] = 1
@@ -439,13 +446,13 @@ def test_intersect_masks_filename(affine_eye):
     # |   |   |   |   |
     # +---+---+---+---+
 
-    with write_tmp_imgs(
-        mask_a_img, mask_b_img, create_files=True
-    ) as filenames:
-        mask_ab = np.zeros((4, 4, 1), dtype=bool)
-        mask_ab[2, 2] = 1
-        mask_ab_ = intersect_masks(filenames, threshold=1.0)
-        assert_array_equal(mask_ab, get_data(mask_ab_))
+    filenames = write_imgs_to_path(
+        mask_a_img, mask_b_img, file_path=tmp_path, create_files=True
+    )
+    mask_ab = np.zeros((4, 4, 1), dtype=bool)
+    mask_ab[2, 2] = 1
+    mask_ab_ = intersect_masks(filenames, threshold=1.0)
+    assert_array_equal(mask_ab, get_data(mask_ab_))
 
 
 def test_intersect_masks(affine_eye):
@@ -551,7 +558,7 @@ def test_compute_multi_epi_mask(affine_eye):
     mask_b_img = Nifti1Image(mask_b.astype("uint8"), affine_eye / 2.0)
 
     with warnings.catch_warnings():
-        warnings.simplefilter("ignore", MaskWarning)
+        warnings.simplefilter("ignore", _MaskWarning)
         with pytest.raises(ValueError):
             compute_multi_epi_mask([mask_a_img, mask_b_img])
     mask_ab = np.zeros((4, 4, 1), dtype=bool)
@@ -724,7 +731,7 @@ def test__extrapolate_out_mask():
     )
 
     # Test:
-    extrapolated_data, extrapolated_mask = _extrapolate_out_mask(
+    extrapolated_data, extrapolated_mask = extrapolate_out_mask(
         initial_data, initial_mask, iterations=1
     )
     assert_array_equal(extrapolated_data, target_data)
@@ -737,6 +744,6 @@ def test_unmask_from_to_3d_array(rng, size=5):
         mask = np.zeros(shape).astype(bool)
         mask[rng.uniform(size=shape) > 0.8] = 1
         support = rng.standard_normal(size=mask.sum())
-        full = _unmask_from_to_3d_array(support, mask)
+        full = unmask_from_to_3d_array(support, mask)
         np.testing.assert_array_equal(full.shape, shape)
         np.testing.assert_array_equal(full[mask], support)

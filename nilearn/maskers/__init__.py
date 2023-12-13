@@ -11,11 +11,11 @@ from .nifti_spheres_masker import NiftiSpheresMasker
 
 __all__ = [
     "BaseMasker",
-    "NiftiMasker",
+    "MultiNiftiLabelsMasker",
+    "MultiNiftiMapsMasker",
     "MultiNiftiMasker",
     "NiftiLabelsMasker",
-    "MultiNiftiLabelsMasker",
     "NiftiMapsMasker",
-    "MultiNiftiMapsMasker",
+    "NiftiMasker",
     "NiftiSpheresMasker",
 ]

@@ -3,7 +3,8 @@ Decoding of a dataset after GLM fit for signal extraction
 =========================================================
 
 Full step-by-step example of fitting a :term:`GLM`
-to perform a decoding experiment.
+to perform a decoding experiment. In this decoding analysis,
+we will be doing a one-vs-all classification.
 We use the data from one subject of the Haxby dataset.
 
 More specifically:
@@ -93,7 +94,7 @@ glm = FirstLevelModel(
     memory="nilearn_cache",
 )
 
-# %%#
+# %%
 # Run the :term:`GLM` on data from each session
 # ---------------------------------------------
 events[session].trial_type.unique()
@@ -177,6 +178,7 @@ decoder = Decoder(
 decoder.fit(z_maps, conditions_label, groups=session_label)
 
 # Return the corresponding mean prediction accuracy compared to chance
+# for classifying one-vs-all items.
 
 classification_accuracy = np.mean(list(decoder.cv_scores_.values()))
 chance_level = 1.0 / len(np.unique(conditions))

@@ -1,23 +1,15 @@
 """Test the multi-PCA module."""
-import os
-import tempfile
-
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal
 
-from nilearn._utils.testing import write_tmp_imgs
+from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _affine_eye, _rng
 from nilearn.decomposition._multi_pca import _MultiPCA
 from nilearn.maskers import MultiNiftiMasker, NiftiMasker
 
 SHAPE = (6, 8, 10)
-
-
-def _tmp_dir():
-    """Test globbing patterns in input images."""
-    return tempfile.tempdir + os.sep
 
 
 def img_4D():
@@ -234,18 +226,19 @@ def test_components_img(multi_pca_data, mask_img):
 
 
 @pytest.mark.parametrize("imgs", [[img_4D()], [img_4D(), img_4D()]])
-def test_with_globbing_patterns_on_one_or_several_images(imgs):
+def test_with_globbing_patterns_on_one_or_several_images(imgs, tmp_path):
     multi_pca = _MultiPCA(n_components=3)
 
-    with write_tmp_imgs(*imgs, create_files=True, use_wildcards=True) as img:
-        input_image = _tmp_dir() + img
+    filenames = write_imgs_to_path(
+        *imgs, file_path=tmp_path, create_files=True, use_wildcards=True
+    )
 
-        multi_pca.fit(input_image)
+    multi_pca.fit(filenames)
 
-        components_img = multi_pca.components_img_
-        assert isinstance(components_img, Nifti1Image)
+    components_img = multi_pca.components_img_
+    assert isinstance(components_img, Nifti1Image)
 
-        # n_components = 3
-        check_shape = img_4D().shape[:3] + (3,)
-        assert components_img.shape == check_shape
-        assert len(components_img.shape) == 4
+    # n_components = 3
+    check_shape = img_4D().shape[:3] + (3,)
+    assert components_img.shape == check_shape
+    assert len(components_img.shape) == 4

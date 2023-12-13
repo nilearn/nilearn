@@ -18,10 +18,16 @@ from nilearn._utils import fill_doc, stringify_path
 from nilearn._utils.numpy_conversions import as_ndarray, csv_to_array
 from nilearn._utils.param_validation import check_run_sample_masks
 
+__all__ = [
+    "butterworth",
+    "clean",
+    "high_variance_confounds",
+]
+
 availiable_filters = ["butterworth", "cosine"]
 
 
-def _standardize(signals, detrend=False, standardize="zscore"):
+def standardize_signal(signals, detrend=False, standardize="zscore"):
     """Center and standardize a given signal (time is along first axis).
 
     Parameters
@@ -165,7 +171,7 @@ def _mean_of_squares(signals, n_batches=20):
     return var
 
 
-def _row_sum_of_squares(signals, n_batches=20):
+def row_sum_of_squares(signals, n_batches=20):
     """Compute sum of squares for each signal.
 
     This function is equivalent to:
@@ -541,6 +547,7 @@ def clean(
     high_pass=None,
     t_r=2.5,
     ensure_finite=False,
+    extrapolate=True,
     **kwargs,
 ):
     """Improve :term:`SNR` on masked :term:`fMRI` signals.
@@ -659,6 +666,11 @@ def clean(
         If `True`, the non-finite values (NANs and infs) found in the data
         will be replaced by zeros.
 
+    extrapolate : :obj:`bool`, default=True
+        If `True` and filter='butterworth', censored volumes in both ends of
+        the signal data will be interpolated before filtering. Otherwise, they
+        will be discarded from the band-pass filtering process.
+
     kwargs : dict
         Keyword arguments to be passed to functions called within ``clean``.
         Kwargs prefixed with ``'butterworth__'`` will be passed to
@@ -723,19 +735,20 @@ def clean(
         )
 
     # Interpolation / censoring
-    signals, confounds = _handle_scrubbed_volumes(
-        signals, confounds, sample_mask, filter_type, t_r
+    signals, confounds, sample_mask = _handle_scrubbed_volumes(
+        signals, confounds, sample_mask, filter_type, t_r, extrapolate
     )
-
     # Detrend
     # Detrend and filtering should apply to confounds, if confound presents
     # keep filters orthogonal (according to Lindquist et al. (2018))
     # Restrict the signal to the orthogonal of the confounds
     if detrend:
         mean_signals = signals.mean(axis=0)
-        signals = _standardize(signals, standardize=False, detrend=detrend)
+        signals = standardize_signal(
+            signals, standardize=False, detrend=detrend
+        )
         if confounds is not None:
-            confounds = _standardize(
+            confounds = standardize_signal(
                 confounds, standardize=False, detrend=detrend
             )
 
@@ -772,12 +785,12 @@ def clean(
 
     # Remove confounds
     if confounds is not None:
-        confounds = _standardize(
+        confounds = standardize_signal(
             confounds, standardize=standardize_confounds, detrend=False
         )
         if not standardize_confounds:
             # Improve numerical stability by controlling the range of
-            # confounds. We don't rely on _standardize as it removes any
+            # confounds. We don't rely on standardize_signal as it removes any
             # constant contribution to confounds.
             confound_max = np.max(np.abs(confounds), axis=0)
             confound_max[confound_max == 0] = 1
@@ -792,29 +805,41 @@ def clean(
     if detrend and (standardize == "psc"):
         # If the signal is detrended, we have to know the original mean
         # signal to calculate the psc.
-        signals = _standardize(
+        signals = standardize_signal(
             signals + mean_signals, standardize=standardize, detrend=False
         )
     else:
-        signals = _standardize(signals, standardize=standardize, detrend=False)
+        signals = standardize_signal(
+            signals, standardize=standardize, detrend=False
+        )
 
     return signals
 
 
 def _handle_scrubbed_volumes(
-    signals, confounds, sample_mask, filter_type, t_r
+    signals, confounds, sample_mask, filter_type, t_r, extrapolate
 ):
     """Interpolate or censor scrubbed volumes."""
     if sample_mask is None:
-        return signals, confounds
+        return signals, confounds, sample_mask
 
     if filter_type == "butterworth":
-        signals = _interpolate_volumes(signals, sample_mask, t_r)
+        signals = _interpolate_volumes(signals, sample_mask, t_r, extrapolate)
+        # discard non-interpolated out-of-bounds volumes
+        signals = signals[~np.isnan(signals).all(axis=1), :]
         if confounds is not None:
-            confounds = _interpolate_volumes(confounds, sample_mask, t_r)
+            confounds = _interpolate_volumes(
+                confounds, sample_mask, t_r, extrapolate
+            )
+            # discard non-interpolated out-of-bounds volumes
+            confounds = confounds[~np.isnan(confounds).all(axis=1), :]
+        if sample_mask is not None and not extrapolate:
+            # reset the indexing of the sample_mask excluding non-interpolated
+            # volumes at the head of the data
+            sample_mask -= sample_mask[0]
     else:  # Or censor when no filtering, or cosine filter
         signals, confounds = _censor_signals(signals, confounds, sample_mask)
-    return signals, confounds
+    return signals, confounds, sample_mask
 
 
 def _censor_signals(signals, confounds, sample_mask):
@@ -825,12 +850,26 @@ def _censor_signals(signals, confounds, sample_mask):
     return signals, confounds
 
 
-def _interpolate_volumes(volumes, sample_mask, t_r):
+def _interpolate_volumes(volumes, sample_mask, t_r, extrapolate):
     """Interpolate censored volumes in signals/confounds."""
+    if extrapolate:
+        extrapolate_default = (
+            "By default the cubic spline interpolator extrapolates "
+            "the out-of-bounds censored volumes in the data run. This "
+            "can lead to undesired filtered signal results. Starting in "
+            "version 0.13, the default strategy will be not to extrapolate "
+            "but to discard those volumes at filtering."
+        )
+        warnings.warn(
+            category=FutureWarning,
+            message=extrapolate_default,
+        )
     frame_times = np.arange(volumes.shape[0]) * t_r
     remained_vol = frame_times[sample_mask]
     remained_x = volumes[sample_mask, :]
-    cubic_spline_fitter = CubicSpline(remained_vol, remained_x)
+    cubic_spline_fitter = CubicSpline(
+        remained_vol, remained_x, extrapolate=extrapolate
+    )
     volumes_interpolated = cubic_spline_fitter(frame_times)
     volumes[~sample_mask, :] = volumes_interpolated[~sample_mask, :]
     return volumes

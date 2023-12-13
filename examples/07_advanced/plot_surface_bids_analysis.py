@@ -18,7 +18,7 @@ Notice that in this case the preprocessed :term:`bold<BOLD>`
 images were already normalized to the same :term:`MNI` space.
 """
 
-# %%#
+# %%
 # Fetch example :term:`BIDS` dataset
 # ----------------------------------
 # We download a simplified :term:`BIDS` dataset made available for illustrative
@@ -53,7 +53,9 @@ task_label = 'languagelocalizer'
 _, models_run_imgs, models_events, models_confounds = \
     first_level_from_bids(
         data_dir, task_label,
-        img_filters=[('desc', 'preproc')])
+        img_filters=[('desc', 'preproc')],
+        n_jobs=2
+    )
 
 # %%
 # We also need to get the :term:`TR` information.
