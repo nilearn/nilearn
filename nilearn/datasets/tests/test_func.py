@@ -18,8 +18,8 @@ import pandas as pd
 import pytest
 
 from nilearn.datasets import func
+from nilearn.datasets._utils import get_dataset_dir
 from nilearn.datasets.tests._testing import dict_to_archive, list_to_archive
-from nilearn.datasets.utils import _get_dataset_dir
 
 
 def _load_localizer_index():
@@ -621,7 +621,7 @@ def test_fetch_development_fmri(tmp_path, request_mocker):
     assert data.description != ""
 
     # check reduced confounds
-    confounds = np.recfromcsv(data.confounds[0], delimiter="\t")
+    confounds = np.genfromtxt(data.confounds[0], delimiter="\t")
 
     assert len(confounds[0]) == 15
 
@@ -629,7 +629,7 @@ def test_fetch_development_fmri(tmp_path, request_mocker):
     data = func.fetch_development_fmri(
         n_subjects=2, reduce_confounds=False, verbose=1
     )
-    confounds = np.recfromcsv(data.confounds[0], delimiter="\t")
+    confounds = np.genfromtxt(data.confounds[0], delimiter="\t")
 
     assert len(confounds[0]) == 28
 
@@ -824,7 +824,7 @@ def test_fetch_openneuro_dataset(tmp_path):
     data_prefix = (
         f"{dataset_version.split('_')[0]}/{dataset_version}/uncompressed"
     )
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         data_prefix,
         data_dir=tmp_path,
         verbose=1,

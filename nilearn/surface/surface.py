@@ -965,7 +965,7 @@ def load_surface(surface):
     return Surface(mesh, data)
 
 
-def _check_mesh(mesh):
+def check_mesh(mesh):
     """Check that mesh data is either a :obj:`str`, \
         or a :obj:`dict` with sufficient entries.
 

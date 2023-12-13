@@ -13,11 +13,11 @@ from numpy.testing import (
 )
 from sklearn.datasets import load_iris
 
-from nilearn.decoding.objective_functions import (
-    _logistic_loss_lipschitz_constant,
-    _squared_loss,
-    _squared_loss_grad,
+from nilearn.decoding._objective_functions import (
+    logistic_loss_lipschitz_constant,
     spectral_norm_squared,
+    squared_loss,
+    squared_loss_grad,
 )
 from nilearn.decoding.space_net import (
     BaseSpaceNet,
@@ -25,16 +25,16 @@ from nilearn.decoding.space_net import (
     SpaceNetRegressor,
 )
 from nilearn.decoding.space_net_solvers import (
-    _graph_net_logistic,
-    _graph_net_squared_loss,
     _logistic_derivative_lipschitz_constant,
     _squared_loss_and_spatial_grad,
     _squared_loss_and_spatial_grad_derivative,
     _squared_loss_derivative_lipschitz_constant,
+    graph_net_logistic,
+    graph_net_squared_loss,
     tvl1_solver,
 )
 from nilearn.image import get_data
-from nilearn.masking import _unmask_from_to_3d_array
+from nilearn.masking import unmask_from_to_3d_array
 
 
 def _make_data(rng=None, masked=False, dim=(2, 2, 2)):
@@ -70,7 +70,7 @@ def to_niimgs(X, dim):
 
     mask = mask.reshape(dim)
     X = np.rollaxis(
-        np.array([_unmask_from_to_3d_array(x, mask) for x in X]), 0, start=4
+        np.array([unmask_from_to_3d_array(x, mask) for x in X]), 0, start=4
     )
     affine = np.eye(4)
 
@@ -81,13 +81,13 @@ def test_same_energy_calculus_pure_lasso(rng):
     X, y, w, mask = _make_data(rng=rng, masked=True)
 
     # check funcvals
-    f1 = _squared_loss(X, y, w)
+    f1 = squared_loss(X, y, w)
     f2 = _squared_loss_and_spatial_grad(X, y, w.ravel(), mask, 0.0)
 
     assert f1 == f2
 
     # check derivatives
-    g1 = _squared_loss_grad(X, y, w)
+    g1 = squared_loss_grad(X, y, w)
     g2 = _squared_loss_and_spatial_grad_derivative(X, y, w.ravel(), mask, 0.0)
 
     assert_array_equal(g1, g2)
@@ -113,7 +113,7 @@ def test_lipschitz_constant_loss_logreg(rng):
     grad_weight = alpha * X.shape[0] * (1.0 - l1_ratio)
 
     a = _logistic_derivative_lipschitz_constant(X, mask, grad_weight)
-    b = _logistic_loss_lipschitz_constant(X)
+    b = logistic_loss_lipschitz_constant(X)
 
     assert a == b
 
@@ -142,7 +142,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
         max_iter=max_iter,
         verbose=0,
     )[0]
-    b = _graph_net_squared_loss(
+    b = graph_net_squared_loss(
         unmasked_X,
         y,
         alpha,
@@ -210,7 +210,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic(max_iter=20, decimal=2):
     _, mask_ = to_niimgs(X, (2, 2, 2))
     mask = get_data(mask_).astype(bool).ravel()
 
-    a = _graph_net_logistic(
+    a = graph_net_logistic(
         X, y, alpha, l1_ratio=1.0, mask=mask, max_iter=max_iter, verbose=0
     )[0]
     b = tvl1_solver(

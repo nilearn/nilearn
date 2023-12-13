@@ -171,7 +171,7 @@ def _mean_of_squares(signals, n_batches=20):
     return var
 
 
-def _row_sum_of_squares(signals, n_batches=20):
+def row_sum_of_squares(signals, n_batches=20):
     """Compute sum of squares for each signal.
 
     This function is equivalent to:
@@ -746,7 +746,7 @@ def clean(
     if detrend:
         signals = _standardize(signals, standardize=False, detrend=detrend)
         if confounds is not None:
-            confounds = _standardize(
+            confounds = standardize_signal(
                 confounds, standardize=False, detrend=detrend
             )
 
@@ -783,12 +783,12 @@ def clean(
 
     # Remove confounds
     if confounds is not None:
-        confounds = _standardize(
+        confounds = standardize_signal(
             confounds, standardize=standardize_confounds, detrend=False
         )
         if not standardize_confounds:
             # Improve numerical stability by controlling the range of
-            # confounds. We don't rely on _standardize as it removes any
+            # confounds. We don't rely on standardize_signal as it removes any
             # constant contribution to confounds.
             confound_max = np.max(np.abs(confounds), axis=0)
             confound_max[confound_max == 0] = 1
@@ -803,7 +803,7 @@ def clean(
     if detrend and (standardize == "psc"):
         # If the signal is detrended, we have to know the original mean
         # signal to calculate the psc.
-        signals = _standardize(
+        signals = standardize_signal(
             signals + mean_signals, standardize=standardize, detrend=False
         )
     else:

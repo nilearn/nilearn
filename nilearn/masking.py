@@ -27,7 +27,7 @@ class MaskWarning(UserWarning):
 warnings.simplefilter("always", MaskWarning)
 
 
-def _load_mask_img(mask_img, allow_empty=False):
+def load_mask_img(mask_img, allow_empty=False):
     """Check that a mask is valid, ie with two values including 0 and load it.
 
     Parameters
@@ -75,10 +75,10 @@ def _load_mask_img(mask_img, allow_empty=False):
     return mask, mask_img.affine
 
 
-def _extrapolate_out_mask(data, mask, iterations=1):
+def extrapolate_out_mask(data, mask, iterations=1):
     """Extrapolate values outside of the mask."""
     if iterations > 1:
-        data, mask = _extrapolate_out_mask(
+        data, mask = extrapolate_out_mask(
             data, mask, iterations=iterations - 1
         )
     new_mask = binary_dilation(mask)
@@ -147,7 +147,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     if len(mask_imgs) == 0:
         raise ValueError("No mask provided for intersection")
     grp_mask = None
-    first_mask, ref_affine = _load_mask_img(mask_imgs[0], allow_empty=True)
+    first_mask, ref_affine = load_mask_img(mask_imgs[0], allow_empty=True)
     ref_shape = first_mask.shape
     if threshold > 1:
         raise ValueError("The threshold should be smaller than 1")
@@ -156,7 +156,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     threshold = min(threshold, 1 - 1.0e-7)
 
     for this_mask in mask_imgs:
-        mask, affine = _load_mask_img(this_mask, allow_empty=True)
+        mask, affine = load_mask_img(this_mask, allow_empty=True)
         if np.any(affine != ref_affine):
             raise ValueError("All masks should have the same affine")
         if np.any(mask.shape != ref_shape):
@@ -790,9 +790,9 @@ def apply_mask(
     values would spread across the image.
     """
     mask_img = _utils.check_niimg_3d(mask_img)
-    mask, mask_affine = _load_mask_img(mask_img)
+    mask, mask_affine = load_mask_img(mask_img)
     mask_img = new_img_like(mask_img, mask, mask_affine)
-    return _apply_mask_fmri(
+    return apply_mask_fmri(
         imgs,
         mask_img,
         dtype=dtype,
@@ -801,7 +801,7 @@ def apply_mask(
     )
 
 
-def _apply_mask_fmri(
+def apply_mask_fmri(
     imgs, mask_img, dtype="f", smoothing_fwhm=None, ensure_finite=True
 ):
     """Perform similar action to :func:`nilearn.masking.apply_mask`.
@@ -845,9 +845,9 @@ def _apply_mask_fmri(
     del imgs_img  # frees a lot of memory
 
     # Delayed import to avoid circular imports
-    from .image.image import _smooth_array
+    from .image.image import smooth_array
 
-    _smooth_array(
+    smooth_array(
         series,
         affine,
         fwhm=smoothing_fwhm,
@@ -952,7 +952,7 @@ def unmask(X, mask_img, order="F"):
     X = np.asanyarray(X)
 
     mask_img = _utils.check_niimg_3d(mask_img)
-    mask, affine = _load_mask_img(mask_img)
+    mask, affine = load_mask_img(mask_img)
 
     if np.ndim(X) == 2:
         unmasked = _unmask_4d(X, mask, order=order)
@@ -966,7 +966,7 @@ def unmask(X, mask_img, order="F"):
     return new_img_like(mask_img, unmasked, affine)
 
 
-def _unmask_from_to_3d_array(w, mask):
+def unmask_from_to_3d_array(w, mask):
     """Unmask an image into whole brain, \
     with off-mask :term:`voxels<voxel>` set to 0.
 

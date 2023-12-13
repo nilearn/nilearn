@@ -39,12 +39,13 @@ from nilearn.datasets import fetch_localizer_contrasts
 # localizer dataset.
 n_subjects = 16
 sample_vertical = fetch_localizer_contrasts(
-    ["vertical checkerboard"], n_subjects, get_tmaps=True, legacy_format=False
+    ["vertical checkerboard"],
+    n_subjects,
+    legacy_format=False,
 )
 sample_horizontal = fetch_localizer_contrasts(
     ["horizontal checkerboard"],
     n_subjects,
-    get_tmaps=True,
     legacy_format=False,
 )
 
@@ -100,11 +101,11 @@ plotting.show()
 # We specify the analysis models and fit them.
 from nilearn.glm.second_level import SecondLevelModel
 
-second_level_model_unpaired = SecondLevelModel().fit(
+second_level_model_unpaired = SecondLevelModel(n_jobs=2).fit(
     second_level_input, design_matrix=unpaired_design_matrix
 )
 
-second_level_model_paired = SecondLevelModel().fit(
+second_level_model_paired = SecondLevelModel(n_jobs=2).fit(
     second_level_input, design_matrix=paired_design_matrix
 )
 

@@ -79,6 +79,7 @@ models, models_run_imgs, events_dfs, models_confounds = first_level_from_bids(
     data_dir,
     "languagelocalizer",
     img_filters=[("desc", "preproc")],
+    n_jobs=2,
 )
 
 # Grab the first subject's model, functional file, and events DataFrame
@@ -161,7 +162,8 @@ lsa_beta_maps = {
 # %%
 # Define the LSS models
 # ---------------------
-# We will now create a separate LSS model for each trial of interest.
+# We will now create a separate Least Squares- Separate (LSS) model for each
+# trial of interest.
 # The transformation is much like the LSA approach, except that we only
 # relabel *one* trial in the DataFrame.
 # We loop through the trials, create a version of the DataFrame where the

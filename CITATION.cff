@@ -161,6 +161,12 @@ authors:
   - given-names: Christian
     family-names: Gerloff
     website: https://github.com/ChristianGerloff
+  - given-names: Christina
+    family-names: Roßmanith
+    affiliation: Dept. of Neurology, Medical Faculty Mannheim, University of Heidelberg,
+      Germany
+    email: christina.rossmanith@medma.uni-heidelberg.de
+    website: https://github.com/crossmanith
   - given-names: Colin
     family-names: Reininger
     website: https://github.com/reiningc
@@ -645,6 +651,10 @@ authors:
     website: https://github.com/SylvainTakerkart
     affiliation: CNRS, Institut des Neurosciences de la Timone, Marseille, France
     orcid: https://orcid.org/0000-0001-8410-0962
+  - given-names: Tamer
+    family-names: Gezici
+    website: https://github.com/TamerGezici
+    affiliation: Bilkent University
   - given-names: Tarun
     family-names: Samanta
     website: https://github.com/tarunsamanta2k20
