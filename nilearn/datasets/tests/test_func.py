@@ -11,7 +11,6 @@ import uuid
 from collections import OrderedDict
 from pathlib import Path
 
-import nibabel
 import nibabel as nib
 import numpy as np
 import pandas as pd
@@ -20,6 +19,7 @@ import pytest
 from nilearn.datasets import func
 from nilearn.datasets._utils import get_dataset_dir
 from nilearn.datasets.tests._testing import dict_to_archive, list_to_archive
+from nilearn.image import load_img
 
 
 def _load_localizer_index():
@@ -390,7 +390,7 @@ def test__load_mixed_gambles(rng, affine_eye):
     n_trials = 48
     for n_subjects in [1, 5, 16]:
         zmaps = [
-            nibabel.Nifti1Image(
+            nib.Nifti1Image(
                 rng.standard_normal((3, 4, 5, n_trials)), affine_eye
             )
             for _ in range(n_subjects)
@@ -1039,3 +1039,10 @@ def test_fiac(tmp_path):
     assert isinstance(dataset.design_matrix1, str)
     assert isinstance(dataset.design_matrix2, str)
     assert isinstance(dataset.mask, str)
+
+
+def test_load_sample_motor_activation_image():
+    path_img = func.load_sample_motor_activation_image()
+
+    assert os.path.exists(path_img)
+    assert load_img(path_img)

@@ -1,8 +1,15 @@
 """Downloading NeuroImaging datasets: utility functions."""
 import os
-from pathlib import Path
+from warnings import warn
 
 from .._utils import fill_doc
+
+_GENERAL_MESSAGE = (
+    "The import path 'nilearn.datasets.utils' "
+    "will deprecated in version 0.13. "
+    "Importing from 'nilearn.datasets.utils will be possible "
+    "at least until release 0.13.0."
+)
 
 
 @fill_doc
@@ -64,4 +71,13 @@ def load_sample_motor_activation_image():
     str
         Path to the sample functional image.
     """
-    return str(Path(__file__).parent / "data" / "image_10426.nii.gz")
+    from .func import load_sample_motor_activation_image as tmp
+
+    warn(
+        (
+            f"{_GENERAL_MESSAGE}"
+            "Please import this function from 'nilearn.datasets.func' instead."
+        ),
+        DeprecationWarning,
+    )
+    return tmp()

@@ -16,8 +16,7 @@ import numpy as np
 import pytest
 import requests
 
-from nilearn.datasets import _utils, utils
-from nilearn.image import load_img
+from nilearn.datasets import _utils
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, "data")
@@ -513,8 +512,13 @@ def test_naive_ftp_adapter():
         )
 
 
-def test_load_sample_motor_activation_image():
-    path_img = utils.load_sample_motor_activation_image()
+# TODO remove for release 0.13.0
+from nilearn.datasets import utils
 
-    assert os.path.exists(path_img)
-    assert load_img(path_img)
+
+def test_load_sample_motor_activation_image():
+    with pytest.warns(
+        DeprecationWarning,
+        match="Please import this function from 'nilearn.datasets.func'",
+    ):
+        utils.load_sample_motor_activation_image()
