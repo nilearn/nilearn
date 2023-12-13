@@ -2,10 +2,7 @@
 
 Like, for example, a (3+)D block of data, and an affine.
 """
-# TODO move copy_img out of nilearn._utils..niimg
 from .._utils.niimg import copy_img
-
-# TODO move concat_niimgs out of nilearn._utils.niimg_conversions
 from .._utils.niimg_conversions import concat_niimgs as concat_imgs
 from .image import (
     binarize_img,
