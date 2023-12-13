@@ -1852,6 +1852,9 @@ def test_missing_trial_type_column_warning(tmp_path_factory):
         )
 
 
+from itertools import product
+
+
 def test_first_level_from_bids_load_confounds(tmp_path):
     """Test that only a subset of confounds can be loaded."""
     n_sub = 2
@@ -1874,17 +1877,23 @@ def test_first_level_from_bids_load_confounds(tmp_path):
         task_label="main",
         space_label="MNI",
         img_filters=[("desc", "preproc")],
-        confounds_strategy=("motion", "wm_csf", "scrub"),
+        confounds_strategy=("motion", "wm_csf"),
         confounds_motion="full",
         confounds_wm_csf="basic",
-        confounds_scrub=1,
-        confounds_fd_threshold=0.2,
-        confounds_std_dvars_threshold=3,
     )
 
     _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
 
     assert len(confounds[0][0].columns) == 26
+
+    assert all(x in confounds[0][0].columns for x in ["csf", "white_matter"])
+    for dir, motion, der, power in product(
+        ["x", "y", "z"],
+        ["rot", "trans"],
+        ["", "_derivative1"],
+        ["", "_power2"],
+    ):
+        assert f"{motion}_{dir}{der}{power}" in confounds[0][0].columns
 
 
 def test_first_level_from_bids_load_confounds_warnings(tmp_path):
