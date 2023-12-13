@@ -24,13 +24,13 @@ from ._objective_functions import (
     squared_loss,
     squared_loss_grad,
 )
-from .fista import mfista
-from .proximal_operators import (
+from ._proximal_operators import (
     prox_l1,
     prox_l1_with_intercept,
     prox_tvl1,
     prox_tvl1_with_intercept,
 )
+from .fista import mfista
 
 
 def _squared_loss_and_spatial_grad(X, y, w, mask, grad_weight):

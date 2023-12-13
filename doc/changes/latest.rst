@@ -29,8 +29,8 @@ Enhancements
 - :bdg-dark:`Code` :meth:`~maskers.NiftiLabelsMasker.generate_report` now uses appropriate cut coordinates when functional image is provided (:gh:`4099` by `Yasmin Mzayek`_ and `Nicolas Gensollen`_).
 - :bdg-info:`Plotting` When plotting thresholded statistical maps with a colorbar, the threshold value(s) will now be displayed as tick labels on the colorbar (:gh:`#2833` by `Nicolas Gensollen`_).
 - :bdg-success:`API` :class:`~maskers.NiftiSpheresMasker` now has ``generate_report`` method (:gh:`3102` by `Yasmin Mzayek`_ and `Nicolas Gensollen`_).
-- :bdg-primary:`Doc`  Mention the classification type (all-vs-one) in  :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_glm_decoding.py` (:gh:`4122` by `Tamer Gezici`_). 
-- :bdg-primary:`Doc`  Specify full form of LSS in  :ref:`sphx_glr_auto_examples_07_advanced_plot_beta_series.py` (:gh:`4141` by `Tamer Gezici`_). 
+- :bdg-primary:`Doc`  Mention the classification type (all-vs-one) in  :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_glm_decoding.py` (:gh:`4122` by `Tamer Gezici`_).
+- :bdg-primary:`Doc`  Specify full form of LSS in  :ref:`sphx_glr_auto_examples_07_advanced_plot_beta_series.py` (:gh:`4141` by `Tamer Gezici`_).
 - :bdg-primary:`Doc` Don't fetch tmaps in examples if tmaps aren't used in the example. (:gh:`4136` by `Christina Roßmanith`_).
 
 Changes
@@ -42,3 +42,4 @@ Changes
 - :bdg-dark:`Code` Private utility context manager ``write_tmp_imgs`` is refactored into function ``write_imgs_to_path`` (:gh:`4094` by `Yasmin Mzayek`_).
 - :bdg-danger:`Deprecation` :func:`~plotting.plot_surf_roi` will raise a warning if ``roi_map`` contains negative or non-integer values; in version 0.13 this will be a ``ValueError`` (:gh:`4131` by `Michelle Wang`_).
 - :bdg-dark:`Code` Remove leading underscore from non private functions to align with PEP8 (:gh:`4086` by `Rémi Gau`_).
+- :bdg-dark:`Code` Make ``decoding/proximal_operator`` explicitly private to align with PEP8 (:gh:`4153` by `Rémi Gau`_).

@@ -8,8 +8,8 @@ from nilearn.decoding._objective_functions import (
     squared_loss,
     squared_loss_grad,
 )
+from nilearn.decoding._proximal_operators import prox_l1
 from nilearn.decoding.fista import _check_lipschitz_continuous, mfista
-from nilearn.decoding.proximal_operators import prox_l1
 
 
 @pytest.mark.parametrize("scaling", list(np.logspace(-3, 3, num=7)))
