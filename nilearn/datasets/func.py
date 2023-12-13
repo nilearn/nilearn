@@ -1093,7 +1093,7 @@ def fetch_abide_pcp(
         Dictionary-like object, keys are:
 
             - 'description': :obj:`str`, description of the dataset.
-            - 'phenotypic': :obj:`pandas.DataFrame`, a pandas DataFrame 
+            - 'phenotypic': :obj:`pandas.DataFrame`, a pandas DataFrame
               containing phenotypic information for each subject.
             - 'func_preproc': :obj:`numpy.ndarray`, a numpy array containing
               paths to preprocessed functional MRI data in NIfTI format.
