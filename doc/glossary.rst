@@ -179,9 +179,9 @@ If you wish to add a missing term, please
         of the brain's surface geometry.
         It is a collection of vertices, edges, and faces
         that define the shape and structure of the brain's outer surface.
-        Each :term:`vertex`` represents a point in 3D space,
+        Each :term:`vertex` represents a point in 3D space,
         and edges connect these vertices to form a network.
-        :term:`Faces<face>` are then created by connecting
+        :term:`Faces<faces>` are then created by connecting
         three or more vertices to form triangles.
 
     MNI
@@ -327,7 +327,7 @@ If you wish to add a missing term, please
     vertex
         A vertex (plural vertices) represents the coordinate
         of an angle of :term:`face<faces>`
-        on a triangular :term:`mesh`` in 3D space.
+        on a triangular :term:`mesh` in 3D space.
 
     voxel
         A voxel represents a value on a regular grid in 3D space.
