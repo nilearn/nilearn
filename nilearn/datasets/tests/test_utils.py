@@ -510,3 +510,15 @@ def test_naive_ftp_adapter():
         resp = sender.send(
             requests.Request("GET", "ftp://example.com").prepare()
         )
+
+
+# TODO remove for release 0.13.0
+from nilearn.datasets import utils
+
+
+def test_load_sample_motor_activation_image():
+    with pytest.warns(
+        DeprecationWarning,
+        match="Please import this function from 'nilearn.datasets.func'",
+    ):
+        utils.load_sample_motor_activation_image()

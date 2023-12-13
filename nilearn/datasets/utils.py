@@ -5,8 +5,9 @@ from warnings import warn
 from .._utils import fill_doc
 
 _GENERAL_MESSAGE = (
-    "The import path 'nilearn.utils' will deprecated in version 0.13. "
-    "Importing from 'nilearn.utils' will be possible "
+    "The import path 'nilearn.datasets.utils' "
+    "will deprecated in version 0.13. "
+    "Importing from 'nilearn.datasets.utils will be possible "
     "at least until release 0.13.0."
 )
 
@@ -75,7 +76,7 @@ def load_sample_motor_activation_image():
     warn(
         (
             f"{_GENERAL_MESSAGE}"
-            "Please import from 'nilearn.datasets.func' instead."
+            "Please import this function from 'nilearn.datasets.func' instead."
         ),
         DeprecationWarning,
     )
