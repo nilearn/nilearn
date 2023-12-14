@@ -1095,8 +1095,22 @@ def fetch_abide_pcp(
             - 'description': :obj:`str`, description of the dataset.
             - 'phenotypic': :obj:`pandas.DataFrame`, a pandas DataFrame
               containing phenotypic information for each subject.
-            - 'func_preproc': :obj:`numpy.ndarray`, a numpy array containing
-              paths to preprocessed functional MRI data in NIfTI format.
+            - Specific Derivative Keys:
+                Additional keys,'func_preproc' being the default, are
+                introduced based on the provided 'derivatives' parameter during
+                fetching. For example:
+                - 'func_preproc' (default): :obj:`numpy.ndarray`, a numpy array
+                  containing paths to preprocessed functional MRI data in NIfTI format.
+                  This key is present by default when fetching the dataset.
+                - 'alff': :obj:`numpy.ndarray`, a numpy array containing amplitude
+                  values of low-frequency fluctuations in functional MRI data.
+                - 'degree_binarize': :obj:`numpy.ndarray`, a numpy array with data
+                  specific to binarized node degree in brain networks.
+                - degree_weighted': :obj:`numpy.ndarray`, a numpy array with data
+                  specific to weighted node degree, considering connectivity strength
+                  in brain networks.
+                - and so on, based on the value provided for the 'derivatives' parameter
+                  during fetching.
 
     Notes
     -----
