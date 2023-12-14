@@ -54,8 +54,9 @@ img_file_patterns = {
 def get_testdata_path(non_steady_state=True, fmriprep_version="1.4.x"):
     """Get file path for the confound regressors."""
     derivative = "regressors" if fmriprep_version != "21.x.x" else "timeseries"
-    path_data = os.path.join(os.path.dirname(
-        load_confounds_utils.__file__), "data")
+    path_data = os.path.join(
+        os.path.dirname(load_confounds_utils.__file__), "data"
+    )
     suffix = "test-v21" if fmriprep_version == "21.x.x" else "test"
     if non_steady_state:
         return [
@@ -81,15 +82,19 @@ def create_tmp_filepath(
     bids_fields=None,
     copy_confounds=False,
     copy_json=False,
-    fmriprep_version="1.4.x"
+    fmriprep_version="1.4.x",
 ):
     entities_to_include = [
         *_bids_entities()["raw"],
         *_bids_entities()["derivatives"],
     ]
     if bids_fields is None:
-        bids_fields = {"entities": {"sub": fmriprep_version.replace(".", ""),
-                                    "task": "test"}}
+        bids_fields = {
+            "entities": {
+                "sub": fmriprep_version.replace(".", ""),
+                "task": "test",
+            }
+        }
 
     """Create test files in temporary directory."""
     derivative = "regressors" if fmriprep_version == "1.2.x" else "timeseries"
@@ -145,8 +150,9 @@ def create_tmp_filepath(
 
 def get_legal_confound(non_steady_state=True, fmriprep_version="1.4.x"):
     """Load the valid confound files for manipulation."""
-    conf, meta = get_testdata_path(non_steady_state=non_steady_state,
-                                   fmriprep_version=fmriprep_version)
+    conf, meta = get_testdata_path(
+        non_steady_state=non_steady_state, fmriprep_version=fmriprep_version
+    )
     conf = pd.read_csv(conf, delimiter="\t", encoding="utf-8")
     with open(meta, "r") as file:
         meta = json.load(file)
