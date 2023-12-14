@@ -30,20 +30,30 @@ def test_sanitize_confounds(inputs, flag):
     assert singleflag is flag
 
 
-@pytest.mark.parametrize("flag,keyword",
-                         [("1.2.x", "_desc-confounds_regressors"),
-                          ("1.4.x", "_desc-confounds_timeseries"),
-                          ("21.x.x", "21xx")])
+@pytest.mark.parametrize(
+    "flag,keyword",
+    [
+        ("1.2.x", "_desc-confounds_regressors"),
+        ("1.4.x", "_desc-confounds_timeseries"),
+        ("21.x.x", "21xx"),
+    ],
+)
 @pytest.mark.parametrize(
     "image_type", ["regular", "native", "res", "cifti", "den", "part", "gifti"]
 )
 def test_get_file_name(tmp_path, flag, keyword, image_type):
     """Test _get_file_name."""
     if image_type == "part":
-        kwargs = {"bids_fields": {"entities": {"sub": flag.replace(".", ""),
-                                               "task": "test",
-                                               "part": "mag",
-                                               "run": "01"}}}
+        kwargs = {
+            "bids_fields": {
+                "entities": {
+                    "sub": flag.replace(".", ""),
+                    "task": "test",
+                    "part": "mag",
+                    "run": "01",
+                }
+            }
+        }
     else:
         kwargs = {}
 
