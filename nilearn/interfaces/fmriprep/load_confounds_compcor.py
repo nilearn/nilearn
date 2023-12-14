@@ -1,9 +1,12 @@
 """Helper function for _load_compcor."""
 
 
-prefix_compcor = {"temporal_anat": ["t", "a"],
+prefix_compcor = {"temporal_anat_combined": ["t", "a"],
+                  "temporal_anat_separated": ["t", "a", "w", "c"],
                   "temporal": ["t"],
-                  "anat": ["a"]}
+                  "anat_combined": ["a"],
+                  "anat_separated": ["a", "w", "c"],
+                  }
 anat_masker = {"combined": ["combined"],
                "separated": ["WM", "CSF"],
                None: None}
@@ -32,8 +35,7 @@ def _find_compcor(confounds_json, compcor, n_compcor):
 
     collector = []
     for prefix in prefix_set:
-        # all possible compcor confounds in order, mixing different
-        # types of mask
+        # all possible compcor confounds in order
         all_compcor_name = [
             comp
             for comp in confounds_json.keys()
@@ -94,16 +96,11 @@ def _check_compcor_method(compcor):
     anat_mask : :obj:`list`
         List of anatomical masks to use for acompcor.
     """
-    compcor_type = compcor.split("_")
-    if len(compcor_type) > 1:
-        compcor_type = "_".join(compcor_type[:-1])
-        anat_mask_type = compcor.split("_")[-1:][0]
-    else:
-        compcor_type = compcor_type[0]
-        anat_mask_type = None
     # get relevant prefix from compcor strategy
-    prefix_set = prefix_compcor[compcor_type]
+    prefix_set = prefix_compcor[compcor]
     # get relevant compcor mask
+    check_masktype = compcor.split("_")
+    anat_mask_type = None if len(check_masktype) == 1 else check_masktype[-1]
     anat_mask = anat_masker[anat_mask_type]
     return prefix_set, anat_mask
 

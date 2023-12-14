@@ -18,10 +18,16 @@ from nilearn._utils import fill_doc, stringify_path
 from nilearn._utils.numpy_conversions import as_ndarray, csv_to_array
 from nilearn._utils.param_validation import check_run_sample_masks
 
+__all__ = [
+    "butterworth",
+    "clean",
+    "high_variance_confounds",
+]
+
 availiable_filters = ["butterworth", "cosine"]
 
 
-def _standardize(signals, detrend=False, standardize="zscore"):
+def standardize_signal(signals, detrend=False, standardize="zscore"):
     """Center and standardize a given signal (time is along first axis).
 
     Parameters
@@ -165,7 +171,7 @@ def _mean_of_squares(signals, n_batches=20):
     return var
 
 
-def _row_sum_of_squares(signals, n_batches=20):
+def row_sum_of_squares(signals, n_batches=20):
     """Compute sum of squares for each signal.
 
     This function is equivalent to:
@@ -738,9 +744,11 @@ def clean(
     # Restrict the signal to the orthogonal of the confounds
     if detrend:
         mean_signals = signals.mean(axis=0)
-        signals = _standardize(signals, standardize=False, detrend=detrend)
+        signals = standardize_signal(
+            signals, standardize=False, detrend=detrend
+        )
         if confounds is not None:
-            confounds = _standardize(
+            confounds = standardize_signal(
                 confounds, standardize=False, detrend=detrend
             )
 
@@ -777,12 +785,12 @@ def clean(
 
     # Remove confounds
     if confounds is not None:
-        confounds = _standardize(
+        confounds = standardize_signal(
             confounds, standardize=standardize_confounds, detrend=False
         )
         if not standardize_confounds:
             # Improve numerical stability by controlling the range of
-            # confounds. We don't rely on _standardize as it removes any
+            # confounds. We don't rely on standardize_signal as it removes any
             # constant contribution to confounds.
             confound_max = np.max(np.abs(confounds), axis=0)
             confound_max[confound_max == 0] = 1
@@ -797,11 +805,13 @@ def clean(
     if detrend and (standardize == "psc"):
         # If the signal is detrended, we have to know the original mean
         # signal to calculate the psc.
-        signals = _standardize(
+        signals = standardize_signal(
             signals + mean_signals, standardize=standardize, detrend=False
         )
     else:
-        signals = _standardize(signals, standardize=standardize, detrend=False)
+        signals = standardize_signal(
+            signals, standardize=standardize, detrend=False
+        )
 
     return signals
 

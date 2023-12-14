@@ -74,6 +74,7 @@ Some other past or present contributors are:
 * `Chris Markiewicz`_: Stanford University, Stanford, California, USA
 * `Christian Horea`_: Dartmouth College, PBS, Hanover, New Hampshire, USA
 * `Christian Gerloff`_
+* `Christina Roßmanith`_: Dept. of Neurology, Medical Faculty Mannheim, University of Heidelberg, Germany
 * `Colin Reininger`_: Denver, Colorado, USA
 * `Connor Lane`_: Child Mind Institute, Baltimore, MD, USA
 * `Czarina Sy`_
@@ -180,6 +181,7 @@ Some other past or present contributors are:
 * `Steven Meisler`_: Harvard-MIT Division of Health Sciences and Technology, Cambridge, Massachusetts, USA
 * `Sylvain Lan`_
 * `Sylvain Takerkart`_: CNRS, Institut des Neurosciences de la Timone, Marseille, France
+* `Tamer Gezici`_: Bilkent University
 * `Tarun Samanta`_: Acharya Prafulla Chandra College
 * `Taylor Salo`_: Lifespan Informatics & Neuroimaging Center, University of Pennsylvania, USA
 * `Thomas Bazeille`_: Inria, Saclay, France

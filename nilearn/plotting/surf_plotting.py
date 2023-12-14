@@ -23,7 +23,7 @@ from nilearn.plotting.html_surface import _get_vertexcolor
 from nilearn.plotting.img_plotting import _get_colorbar_and_data_ranges
 from nilearn.plotting.js_plotting_utils import colorscale
 from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
-from nilearn.surface.surface import _check_mesh
+from nilearn.surface.surface import check_mesh
 
 VALID_VIEWS = "anterior", "posterior", "medial", "lateral", "dorsal", "ventral"
 VALID_HEMISPHERES = "left", "right"
@@ -1370,7 +1370,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
     stat_map = check_niimg_3d(stat_map, dtype='auto')
     modes = _check_views(views)
     hemis = _check_hemispheres(hemispheres)
-    surf_mesh = _check_mesh(surf_mesh)
+    surf_mesh = check_mesh(surf_mesh)
 
     mesh_prefix = "infl" if inflate else "pial"
     surf = {
@@ -1628,6 +1628,7 @@ def plot_surf_roi(surf_mesh,
     # messages in case of wrong inputs
 
     roi = load_surf_data(roi_map)
+    idx_not_na = ~np.isnan(roi)
     if vmin is None:
         vmin = np.nanmin(roi)
     if vmax is None:
@@ -1644,6 +1645,24 @@ def plot_surf_roi(surf_mesh,
                          'ROI you can convert them into a ROI map like this:\n'
                          'roi_map = np.zeros(n_vertices)\n'
                          'roi_map[roi_idx] = 1')
+    if (roi < 0).any():
+        # TODO raise ValueError in release 0.13
+        warn(
+            (
+                'Negative values in roi_map will no longer be allowed in'
+                ' Nilearn version 0.13'
+            ),
+            DeprecationWarning,
+        )
+    if not np.array_equal(roi[idx_not_na], roi[idx_not_na].astype(int)):
+        # TODO raise ValueError in release 0.13
+        warn(
+            (
+                'Non-integer values in roi_map will no longer be allowed in'
+                ' Nilearn version 0.13'
+            ),
+            DeprecationWarning,
+        )
 
     if cbar_tick_format == "auto":
         cbar_tick_format = "." if engine == "plotly" else "%i"

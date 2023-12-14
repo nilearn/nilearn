@@ -162,7 +162,8 @@ lsa_beta_maps = {
 # %%
 # Define the LSS models
 # ---------------------
-# We will now create a separate LSS model for each trial of interest.
+# We will now create a separate Least Squares- Separate (LSS) model for each
+# trial of interest.
 # The transformation is much like the LSA approach, except that we only
 # relabel *one* trial in the DataFrame.
 # We loop through the trials, create a version of the DataFrame where the
