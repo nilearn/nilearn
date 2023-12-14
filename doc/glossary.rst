@@ -91,7 +91,7 @@ If you wish to add a missing term, please
         contained in the input image.
 
     faces
-        When referring to surface data, a face corresponds to one of the triangle
+        When referring to surface data, a face corresponds to one of the triangles
         of a triangular :term:`mesh`.
 
     FDR correction
