@@ -12,7 +12,7 @@ from docstring_parser import parse
 from docstring_parser.common import DocstringStyle
 from rich import print
 
-SEARCH = ["faces", "vertex", "mesh"]
+SEARCH = ["faces", "vertex", "mesh", "vertices"]
 
 
 def root_dir() -> Path:

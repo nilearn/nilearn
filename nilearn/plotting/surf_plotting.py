@@ -653,9 +653,10 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
         a list of two Numpy arrays, the first containing the x-y-z coordinates
-        of the :term:`mesh` vertices, the second containing the indices
-        (into coords) of the :term:`mesh` :term:`faces`, or a Mesh object with
-        "coordinates" and "faces" attributes.
+        of the :term:`mesh` :term:`vertices<vertex>`,
+        the second containing the indices (into coords)
+        of the :term:`mesh` :term:`faces`,
+        or a Mesh object with "coordinates" and "faces" attributes.
 
     surf_map : str or numpy.ndarray, optional
         Data to be displayed on the surface :term:`mesh`.
@@ -663,7 +664,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         (valid formats are .gii, .mgz, .nii, .nii.gz,
         or Freesurfer specific files such as
         .thickness, .area, .curv, .sulc, .annot, .label) or
-        a Numpy array with a value for each vertex of the `surf_mesh`.
+        a Numpy array with a value for each :term:`vertex` of the `surf_mesh`.
 
     bg_map : str or numpy.ndarray, optional
         Background image to be plotted on the :term:`mesh` underneath the
@@ -871,16 +872,18 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
         a list of two Numpy arrays, the first containing the x-y-z coordinates
-        of the :term:`mesh` vertices, the second containing the indices
-        (into coords) of the :term:`mesh` :term:`faces`.
+        of the :term:`mesh` :term:`vertices<vertex>`,
+        the second containing the indices (into coords)
+        of the :term:`mesh` :term:`faces`.
 
     roi_map : str or numpy.ndarray or list of numpy.ndarray
         ROI map to be displayed on the surface mesh, can be a file
         (valid formats are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific
         files such as .annot or .label), or
-        a Numpy array with a value for each vertex of the surf_mesh.
-        The value at each vertex one inside the ROI and zero inside ROI, or an
-        integer giving the label number for atlases.
+        a Numpy array with a value for each :term:`vertex` of the surf_mesh.
+        The value at each :term:`vertex` one inside the ROI
+        and zero inside ROI,
+        or an integer giving the label number for atlases.
 
     axes : instance of matplotlib axes, None, optional
         The axes instance to plot to. The projection must be '3d' (e.g.,
@@ -1014,8 +1017,9 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
         a list of two Numpy arrays, the first containing the x-y-z
-        coordinates of the :term:`mesh` vertices, the second containing the
-        indices (into coords) of the :term:`mesh` :term:`faces`,
+        coordinates of the :term:`mesh` :term:`vertices<vertex>`,
+        the second containing the indices (into coords)
+        of the :term:`mesh` :term:`faces`,
         or a Mesh object with "coordinates" and "faces" attributes.
 
     stat_map : str or numpy.ndarray
@@ -1023,7 +1027,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         can be a file (valid formats are .gii, .mgz, .nii, .nii.gz, or
         Freesurfer specific files such as .thickness, .area, .curv,
         .sulc, .annot, .label) or
-        a Numpy array with a value for each vertex of the surf_mesh.
+        a Numpy array with a value for each :term:`vertex` of the `surf_mesh`.
 
     bg_map : str or numpy.ndarray, optional
         Background image to be plotted on the :term:`mesh` underneath
@@ -1521,7 +1525,7 @@ def plot_surf_roi(surf_mesh,
         can be a file
         (valid formats are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific
         files such as .annot or .label), or
-        a Numpy array with a value for each vertex of the `surf_mesh`.
+        a Numpy array with a value for each :term:`vertex` of the `surf_mesh`.
         The value at each vertex one inside the ROI and zero inside ROI, or an
         integer giving the label number for atlases.
 

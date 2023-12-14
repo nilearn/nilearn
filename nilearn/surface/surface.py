@@ -522,8 +522,8 @@ def vol_to_surf(img, surf_mesh,
             vertex.
 
     n_samples : :obj:`int` or `None`, optional
-        How many samples are drawn around each vertex and averaged. If
-        `None`, use a reasonable default for the chosen sampling strategy
+        How many samples are drawn around each :term:`vertex` and averaged.
+        If `None`, use a reasonable default for the chosen sampling strategy
         (20 for 'ball' or 10 for 'line').
         For performance reasons, if using `kind` ="ball", choose `n_samples` in
         [10, 20, 40, 80, 160] (default is 20), because cached positions are
@@ -936,7 +936,7 @@ def load_surface(surface):
                     - a nilearn.surface.Mesh
                     - a path to .gii or .gii.gz etc.
                     - a sequence of two numpy arrays,
-                    the first containing vertex coordinates
+                    the first containing :term:`vertex` coordinates
                     and the second containing triangles.
                 - data can be:
                     - a path to .gii or .gii.gz etc.
@@ -1060,7 +1060,7 @@ def check_surface(surface):
                     - a nilearn.surface.Mesh
                     - a path to .gii or .gii.gz etc.
                     - a sequence of two numpy arrays,
-                    the first containing vertex coordinates
+                    the first containing :term:`vertex` coordinates
                     and the second containing triangles.
                 - data can be:
                     - a path to .gii or .gii.gz etc.
