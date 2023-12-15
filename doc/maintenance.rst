@@ -274,7 +274,8 @@ Build of stable docs
 Once the new version tag of a release is pushed upstream following the step
 above, the Github Actions workflow ``release-docs.yml`` will be triggered
 automatically to build the stable docs and push them to
-our github pages repository ``nilearn/nilearn.github.io``.
+our github pages repository ``nilearn/nilearn.github.io``. The workflow can
+also be triggered from the Actions tab.
 
 Build the distributions and upload them to Pypi
 -----------------------------------------------
@@ -385,8 +386,7 @@ See available linux distributions of texlive-latex-base and texlive-latex-extra:
 - https://pkgs.org/search/?q=texlive-latex-base
 - https://pkgs.org/search/?q=texlive-latex-extra
 
-We now need to update the documentation. To do this you can trigger the GitHub
-Action ``Build release docs`` (preferred) or run it locally:
+We now need to update the documentation.
 
 .. code-block:: bash
 
