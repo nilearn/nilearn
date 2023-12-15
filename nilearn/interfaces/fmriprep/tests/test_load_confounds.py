@@ -121,27 +121,9 @@ def _regression(confounds, tmp_path):
         (("high_pass",), {}),
         (("wm_csf",), {"wm_csf": "full"}),
         (("global_signal",), {"global_signal": "full"}),
-        (
-            (
-                "high_pass",
-                "compcor",
-            ),
-            {},
-        ),
-        (
-            (
-                "high_pass",
-                "compcor",
-            ),
-            {"compcor": "anat_separated"},
-        ),
-        (
-            (
-                "high_pass",
-                "compcor",
-            ),
-            {"compcor": "temporal"},
-        ),
+        (("high_pass", "compcor"), {}),
+        (("high_pass", "compcor"), {"compcor": "anat_separated"}),
+        (("high_pass", "compcor"), {"compcor": "temporal"}),
         (("ica_aroma",), {"ica_aroma": "basic"}),
     ],
 )
@@ -338,9 +320,7 @@ def test_load_single_confounds_file(tmp_path, fmriprep_version):
     "strategy,message",
     [
         (
-            [
-                "string",
-            ],
+            ["string"],
             "not a supported type of confounds.",
         ),
         ("error", "tuple or list of strings"),
