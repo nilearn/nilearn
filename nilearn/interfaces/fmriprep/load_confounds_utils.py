@@ -334,9 +334,9 @@ def _load_confounds_file_as_dataframe(confounds_raw_path):
     # header format. 1.0.x and 1.1.x series uses camel case
     if any(is_camel_case(col_name) for col_name in confounds_raw.columns):
         raise ValueError(
-            "The confound file contains header in camel case."
-            "This is likely the output from 1.0.x and 1.1.x "
-            "series. We only support fmriprep outputs >= 1.2.0."
+            "The confound file contains header in camel case. "
+            "This is likely the output from 1.0.x and 1.1.x series. "
+            "We only support fmriprep outputs >= 1.2.0."
             f"{confounds_raw.columns}"
         )
 

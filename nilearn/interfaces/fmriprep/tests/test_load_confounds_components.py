@@ -23,17 +23,23 @@ def expected_parameters(strategy_keywords):
         return False
 
 
+@pytest.mark.parametrize("fmriprep_version", ["1.4.x", "21.x.x"])
 @pytest.mark.parametrize(
     "strategy_keywords",
     ["motion", "wm_csf", "global_signal", "compcor", "ica_aroma", "high_pass"],
 )
-def test_missing_keywords(tmp_path, strategy_keywords, expected_parameters):
+def test_missing_keywords(
+    tmp_path, strategy_keywords, expected_parameters, fmriprep_version
+):
     """
     Check the strategy keywords are raising errors correctly in low and
     high level functions with the exception of `high_pass`.
     """
     img, bad_conf = create_tmp_filepath(
-        tmp_path, copy_confounds=True, copy_json=True
+        tmp_path,
+        copy_confounds=True,
+        copy_json=True,
+        fmriprep_version=fmriprep_version,
     )
     legal_confounds = pd.read_csv(bad_conf, delimiter="\t", encoding="utf-8")
     meta_json = bad_conf.parent / bad_conf.name.replace("tsv", "json")
