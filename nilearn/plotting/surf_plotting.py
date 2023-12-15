@@ -534,7 +534,7 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
     This function handles surface plotting when the selected
     engine is matplotlib.
     """
-    _default_figsize = [4, 4]
+    _default_figsize = [4, 5]
     limits = [coords.min(), coords.max()]
 
     # Get elevation and azimut from view
