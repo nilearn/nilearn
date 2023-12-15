@@ -3,6 +3,7 @@
 Author: Bertrand Thirion, 2011--2015
 """
 import numpy as np
+from nibabel.onetime import auto_attr
 from scipy.linalg import inv
 from scipy.stats import t as t_distribution
 
@@ -85,7 +86,9 @@ class LikelihoodModelResults:
         # put this as a parameter of LikelihoodModel
         self.df_residuals = self.df_total - self.df_model
 
-    @property
+    # @auto_attr store the value as an object attribute after initial call
+    # better performance than @property 
+    @auto_attr
     def logL(self):
         """Return the maximized log-likelihood."""
         return self.model.logL(self.theta, self.Y, nuisance=self.nuisance)

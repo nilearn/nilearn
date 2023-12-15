@@ -17,9 +17,9 @@ General reference for regression models:
 
 __docformat__ = "restructuredtext en"
 
-
 import numpy as np
 import scipy.linalg as spl
+from nibabel.onetime import auto_attr
 from numpy.linalg import matrix_rank
 
 from nilearn.glm._utils import positive_reciprocal
@@ -308,12 +308,14 @@ class RegressionResults(LikelihoodModelResults):
         self.whitened_residuals = whitened_residuals
         self.whitened_design = model.whitened_design
 
-    @property
+    # @auto_attr store the value as an object attribute after initial call
+    # better performance than @property 
+    @auto_attr
     def residuals(self):
         """Residuals from the fit."""
         return self.Y - self.predicted
 
-    @property
+    @auto_attr
     def normalized_residuals(self):
         """Residuals, normalized to have unit length.
 
@@ -336,7 +338,7 @@ class RegressionResults(LikelihoodModelResults):
         """
         return self.residuals * positive_reciprocal(np.sqrt(self.dispersion))
 
-    @property
+    @auto_attr
     def predicted(self):
         """Return linear predictor values from a design matrix."""
         beta = self.theta
@@ -344,7 +346,7 @@ class RegressionResults(LikelihoodModelResults):
         X = self.whitened_design
         return np.dot(X, beta)
 
-    @property
+    @auto_attr
     def SSE(self):
         """Error sum of squares.
 
@@ -352,7 +354,7 @@ class RegressionResults(LikelihoodModelResults):
         """
         return (self.whitened_residuals**2).sum(0)
 
-    @property
+    @auto_attr
     def r_square(self):
         """Proportion of explained variance.
 
@@ -360,7 +362,7 @@ class RegressionResults(LikelihoodModelResults):
         """
         return np.var(self.predicted, 0) / np.var(self.whitened_Y, 0)
 
-    @property
+    @auto_attr
     def MSE(self):
         """Return Mean square (error)."""
         return self.SSE / self.df_residuals

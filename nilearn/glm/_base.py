@@ -1,3 +1,4 @@
+from nibabel.onetime import auto_attr
 from sklearn.base import BaseEstimator, TransformerMixin
 
 from nilearn._utils import CacheMixin
@@ -7,7 +8,9 @@ class BaseGLM(BaseEstimator, TransformerMixin, CacheMixin):
     """Implement a base class \
     for the :term:`General Linear Model<GLM>`."""
 
-    @property
+    # @auto_attr store the value as an object attribute after initial call
+    # better performance than @property 
+    @auto_attr
     def residuals(self):
         """Transform voxelwise residuals to the same shape \
         as the input Nifti1Image(s).
@@ -22,7 +25,7 @@ class BaseGLM(BaseEstimator, TransformerMixin, CacheMixin):
             "residuals", result_as_time_series=True
         )
 
-    @property
+    @auto_attr
     def predicted(self):
         """Transform voxelwise predicted values to the same shape \
         as the input Nifti1Image(s).
@@ -37,7 +40,7 @@ class BaseGLM(BaseEstimator, TransformerMixin, CacheMixin):
             "predicted", result_as_time_series=True
         )
 
-    @property
+    @auto_attr
     def r_square(self):
         """Transform voxelwise r-squared values to the same shape \
         as the input Nifti1Image(s).
