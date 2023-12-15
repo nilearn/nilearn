@@ -75,7 +75,7 @@ jobs:
             run: |
                 git config --global user.email "actions@github.com"
                 git config --global user.name "GitHub actions"
-                cd doc;
-                set -o pipefail;
-                export VERSIONTAG=$(git describe --tags --abbrev=0);
-                make install;
+                cd doc
+                set -o pipefail
+                export VERSIONTAG=$(git describe --tags --abbrev=0)
+                make install
