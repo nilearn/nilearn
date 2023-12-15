@@ -309,7 +309,7 @@ class RegressionResults(LikelihoodModelResults):
         self.whitened_design = model.whitened_design
 
     # @auto_attr store the value as an object attribute after initial call
-    # better performance than @property 
+    # better performance than @property
     @auto_attr
     def residuals(self):
         """Residuals from the fit."""
