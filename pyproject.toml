@@ -116,10 +116,6 @@ extend-exclude = """
   | examples/04_glm_first_level/plot_fixed_effects.py
   | examples/04_glm_first_level/plot_localizer_surface_analysis.py
   | examples/07_advanced/plot_surface_bids_analysis.py
-  | nilearn/interfaces/fmriprep/load_confounds_compcor.py
-  | nilearn/interfaces/fmriprep/tests/test_load_confounds_utils.py
-  | nilearn/interfaces/fmriprep/tests/test_load_confounds_strategy.py
-  | nilearn/interfaces/fmriprep/tests/test_load_confounds.py
   | nilearn/plotting/html_surface.py
   | nilearn/plotting/js_plotting_utils.py
   | nilearn/plotting/surf_plotting.py

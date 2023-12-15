@@ -154,7 +154,7 @@ def get_legal_confound(non_steady_state=True, fmriprep_version="1.4.x"):
         non_steady_state=non_steady_state, fmriprep_version=fmriprep_version
     )
     conf = pd.read_csv(conf, delimiter="\t", encoding="utf-8")
-    with open(meta, "r") as file:
+    with open(meta) as file:
         meta = json.load(file)
     return conf, meta
 
