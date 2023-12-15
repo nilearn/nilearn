@@ -6,10 +6,15 @@ on:
     # It should be run right after tagging the release commit on main
     workflow_dispatch:
 
+    push:
+        branches:
+        -   main
+        tags:
+        -   '*'
+
 jobs:
     release-docs:
-        # if: github.repository == 'nilearn/nilearn' && contains('["ymzayek","Remi-Gau"]', github.actor)
-        if: github.repository == 'ymzayek/nilearn' && github.actor == 'ymzayek'
+        if: github.repository == 'nilearn/nilearn'
         runs-on: ubuntu-latest
         timeout-minutes: 360
         env:
@@ -55,5 +60,4 @@ jobs:
             run: |
                 cd doc;
                 set -o pipefail;
-                make test_make_install;
-            # TODO: run make install
+                make install;
