@@ -1101,7 +1101,7 @@ def fetch_abide_pcp(
                 parameter during fetching. Any combination of the
                 parameters below may occur.
                 - 'func_preproc' (default): :obj:`numpy.ndarray`,
-                  a numpy array containing paths to preprocessed
+                  paths to preprocessed
                   functional MRI data in NIfTI format. This key
                   is present by default when fetching the dataset.
                 - 'alff': :obj:`numpy.ndarray`, a numpy array
