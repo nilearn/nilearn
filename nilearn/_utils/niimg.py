@@ -186,16 +186,18 @@ def copy_img(img):
     img_copy: image
         copy of input (data, affine and header)
     """
-    from ..image import new_img_like  # avoid circular imports
-
-    if not isinstance(img, nibabel.spatialimages.SpatialImage):
-        raise ValueError("Input value is not an image")
-    return new_img_like(
-        img,
-        safe_get_data(img, copy_data=True),
-        img.affine.copy(),
-        copy_header=True,
+    from nilearn.image import copy_img  as cp_img
+    warn(
+        (
+            "Import 'copy_img' from 'nilearn._utils.niimg'\n"
+            "will be deprecated in version 0.13.\n"
+            "Importing from 'nilearn.datasets.utils will be possible\n"
+            "at least until release 0.13.0.\n"
+            "Import this function from 'nilearn.image.copy_img' instead.\n"
+        ),
+        DeprecationWarning,
     )
+    return cp_img(img)
 
 
 def _repr_niimgs(niimgs, shorten=True):

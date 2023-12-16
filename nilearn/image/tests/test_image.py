@@ -1,4 +1,5 @@
 """Test image pre-processing functions"""
+import joblib
 import platform
 import sys
 import warnings
@@ -1054,3 +1055,15 @@ def test_clean_img_sample_mask_mask_img(shape_3d_default):
     )
     # original shape is (10, 10, 10, 10)
     assert img.shape == (10, 10, 10, 9)
+
+
+def test_copy_img():
+    with pytest.raises(ValueError, match="Input value is not an image"):
+        copy_img(3)
+
+
+def test_copy_img_side_effect(img1):
+    hash1 = joblib.hash(img1)
+    copy_img(img1)
+    hash2 = joblib.hash(img1)
+    assert hash1 == hash2
