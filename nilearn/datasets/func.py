@@ -1158,7 +1158,7 @@ def fetch_abide_pcp(
                   atlas.
                 - 'rois_tt': :obj:`numpy.ndarray`, a numpy array containing
                   data specific to regions defined by the Talairach atlas.
-                - 'vmhc': :obj:`numpy.ndarray`, a numpy array containing
+                - 'vmhc': :obj:`numpy.ndarray`,
                   data specific to voxel-mirrored homotopic connectivity in
                   functional MRI data.
 
