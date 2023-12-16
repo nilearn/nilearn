@@ -1098,7 +1098,8 @@ def fetch_abide_pcp(
             - Specific Derivative Keys:
                 Additional keys,'func_preproc' being the default, are
                 introduced based on the provided 'derivatives'
-                parameter during fetching. For example:
+                parameter during fetching. Any combination of the
+                parameters below may occur.
                 - 'func_preproc' (default): :obj:`numpy.ndarray`,
                   a numpy array containing paths to preprocessed
                   functional MRI data in NIfTI format. This key
@@ -1112,8 +1113,54 @@ def fetch_abide_pcp(
                 - degree_weighted': :obj:`numpy.ndarray`, a numpy
                   array with data specific to weighted node degree,
                   considering connectivity strength in brain networks.
-                - and so on, based on the value provided for the
-                  'derivatives' parameter during fetching.
+                - 'dual_regression': :obj:`numpy.ndarray`, a numpy
+                  array containing results from dual regression analysis,
+                  often involving the identification of resting-state
+                  networks.
+                - 'eigenvector_binarize': :obj:`numpy.ndarray`, a numpy
+                  array containing data specific to binarized eigenvector
+                  centrality, a measure of node influence in brain networks.
+                - 'eigenvector_weighted': :obj:`numpy.ndarray`, a numpy
+                  array containing data specific to weighted eigenvector
+                  centrality, reflecting node influence with consideration
+                  of connectivity strength.
+                - 'falff': :obj:`numpy.ndarray`, a numpy array containing
+                  data specific to fractional amplitude values of
+                  low-frequency fluctuations.
+                - 'func_mask': :obj:`numpy.ndarray`, a numpy array
+                  containing functional mask data, often used to define
+                  regions of interest.
+                - 'func_mean': :obj:`numpy.ndarray`, a numpy array
+                  containing mean functional MRI data, representing
+                  average activity across the brain.
+                - 'lfcd': :obj:`numpy.ndarray`, a numpy array containing
+                  data specific to local functional connectivity density
+                  in brain networks.
+                - 'reho': :obj:`numpy.ndarray`, a numpy array containing
+                  data specific to regional homogeneity in functional
+                  MRI data.
+                - 'rois_aal': :obj:`numpy.ndarray`, a numpy array containing
+                  data specific to anatomical regions defined by the
+                  Automatic Anatomical Labeling atlas.
+                - 'rois_cc200': :obj:`numpy.ndarray`, a numpy array
+                  containing data specific to regions defined by the
+                  Craddock 200 atlas.
+                - 'rois_cc400': :obj:`numpy.ndarray`, a numpy array
+                  containing data specific to regions defined by the
+                  Craddock 400 atlas.
+                - 'rois_dosenbach160': :obj:`numpy.ndarray`, a numpy array
+                  containing data specific to regions defined by the
+                  Dosenbach 160 atlas.
+                - 'rois_ez': :obj:`numpy.ndarray`, a numpy array containing
+                  data specific to regions defined by the EZ atlas.
+                - 'rois_ho': :obj:`numpy.ndarray`, a numpy array containing
+                  data specific to regions defined by the Harvard-Oxford
+                  atlas.
+                - 'rois_tt': :obj:`numpy.ndarray`, a numpy array containing
+                  data specific to regions defined by the Talairach atlas.
+                - 'vmhc': :obj:`numpy.ndarray`, a numpy array containing
+                  data specific to voxel-mirrored homotopic connectivity in
+                  functional MRI data.
 
     Notes
     -----
