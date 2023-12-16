@@ -10,11 +10,9 @@ import copy
 import itertools
 import warnings
 
-from joblib import Memory
-
 import nibabel
 import numpy as np
-from joblib import Parallel, delayed
+from joblib import Memory, Parallel, delayed
 from scipy.ndimage import gaussian_filter1d, generate_binary_structure, label
 from scipy.stats import scoreatpercentile
 
@@ -27,11 +25,15 @@ from .._utils import (
     check_niimg_4d,
     fill_doc,
 )
+from .._utils.exceptions import DimensionError
 from .._utils.helpers import rename_parameters, stringify_path
 from .._utils.niimg import _get_data, safe_get_data
-from .._utils.niimg_conversions import _index_img, check_same_fov, iter_check_niimg
+from .._utils.niimg_conversions import (
+    _index_img,
+    check_same_fov,
+    iter_check_niimg,
+)
 from .._utils.param_validation import check_threshold
-from .._utils.exceptions import DimensionError
 from .._utils.path_finding import resolve_globbing
 
 
@@ -1352,7 +1354,6 @@ def load_img(img, wildcards=True, dtype=None):
     return check_niimg(img, wildcards=wildcards, dtype=dtype)
 
 
-
 def concat_imgs(
     niimgs,
     dtype=np.float32,
@@ -1485,7 +1486,6 @@ def concat_imgs(
     )
 
 
-
 def largest_connected_component_img(imgs):
     """Return the largest connected component of an image or list of images.
 
@@ -1530,5 +1530,3 @@ def largest_connected_component_img(imgs):
         )
 
     return ret[0] if single_img else ret
-
-

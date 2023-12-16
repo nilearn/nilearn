@@ -306,7 +306,9 @@ def check_niimg(
             return iter_check_niimg(
                 niimg, ensure_ndim=ensure_ndim, dtype=dtype
             )
-        return ni.image.concat_imgs(niimg, ensure_ndim=ensure_ndim, dtype=dtype)
+        return ni.image.concat_imgs(
+            niimg, ensure_ndim=ensure_ndim, dtype=dtype
+        )
 
     # Otherwise, it should be a filename or a SpatialImage, we load it
     niimg = load_niimg(niimg, dtype=dtype)
@@ -421,20 +423,21 @@ def concat_niimgs(
     """Concatenate a list of 3D/4D niimgs of varying lengths."""
     warnings.warn(
         (
-        "Import 'concat_niimgs' from 'nilearn._utils.niimg_conversions'\n"
-        "will be deprecated in version 0.13.\n"
-        "Importing from 'nilearn._utils.niimg_conversions' will be possible\n"
-        "at least until release 0.13.0.\n"
-        "Please import this function from 'nilearn.image' instead."
+            "Import 'concat_niimgs' from 'nilearn._utils.niimg_conversions'\n"
+            "will be deprecated in version 0.13.\n"
+            "Importing from 'nilearn._utils.niimg_conversions'\n"
+            "will be possible at least until release 0.13.0.\n"
+            "Please import this function from 'nilearn.image' instead."
         ),
         DeprecationWarning,
-    )    
+    )
 
-    return ni.image.concat_imgs(niimgs,
-    dtype,
-    ensure_ndim,
-    memory,
-    memory_level,
-    auto_resample,
-    verbose)
-
+    return ni.image.concat_imgs(
+        niimgs,
+        dtype,
+        ensure_ndim,
+        memory,
+        memory_level,
+        auto_resample,
+        verbose,
+    )

@@ -13,9 +13,9 @@ from nibabel.freesurfer import MGHImage
 from numpy.testing import (
     assert_allclose,
     assert_almost_equal,
+    assert_array_almost_equal,
     assert_array_equal,
     assert_equal,
-    assert_array_almost_equal
 )
 
 from nilearn import signal
@@ -27,7 +27,7 @@ from nilearn._utils.data_gen import (
     generate_maps,
 )
 from nilearn._utils.exceptions import DimensionError
-from nilearn.conftest import _affine_eye, _rng, _shape_4d_default, _img_3d_rand
+from nilearn.conftest import _affine_eye, _img_3d_rand, _rng, _shape_4d_default
 from nilearn.image import (
     binarize_img,
     clean_img,
@@ -1100,9 +1100,7 @@ def test_concat_niimgs(affine_eye, tmp_path):
     concatenated = concat_imgs((img1, img2, img1))
 
     # smoke-test auto_resample
-    concatenated = concat_imgs(
-        (img1, img1b, img1c), auto_resample=True
-    )
+    concatenated = concat_imgs((img1, img1b, img1c), auto_resample=True)
     assert concatenated.shape == img1.shape + (3,)
 
     # test list of 4D niimgs as input

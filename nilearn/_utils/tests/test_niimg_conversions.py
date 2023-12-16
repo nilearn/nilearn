@@ -29,6 +29,7 @@ from nilearn._utils.testing import (
 )
 from nilearn.image import get_data
 
+
 class PhonyNiimage(nibabel.spatialimages.SpatialImage):
     def __init__(self):
         self.data = np.ones((9, 9, 9, 9))
@@ -602,5 +603,3 @@ def test_repr_niimgs_with_niimg(
         _utils._repr_niimgs(img_3d_ones_eye, shorten=True)
         == f"{class_name}('{Path(filename).name[:18]}...')"
     )
-
-

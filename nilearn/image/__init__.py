@@ -6,8 +6,8 @@ from .._utils.niimg import copy_img
 from .image import (
     binarize_img,
     clean_img,
-    crop_img,
     concat_imgs,
+    crop_img,
     get_data,
     high_variance_confounds,
     index_img,
