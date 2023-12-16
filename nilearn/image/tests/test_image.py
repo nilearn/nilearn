@@ -1062,8 +1062,8 @@ def test_copy_img():
         copy_img(3)
 
 
-def test_copy_img_side_effect(img1):
-    hash1 = joblib.hash(img1)
-    copy_img(img1)
-    hash2 = joblib.hash(img1)
+def test_copy_img_side_effect(img_4d_ones_eye):
+    hash1 = joblib.hash(img_4d_ones_eye)
+    copy_img(img_4d_ones_eye)
+    hash2 = joblib.hash(img_4d_ones_eye)
     assert hash1 == hash2
