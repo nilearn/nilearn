@@ -5,7 +5,7 @@ import warnings
 
 import numpy as np
 
-import nilearn
+from nilearn import __version__
 
 
 def _clean_contrast_name(contrast_name):
@@ -140,13 +140,13 @@ def _generate_dataset_description(out_file, model_level):
     dataset_description = {
         "GeneratedBy": {
             "Name": "nilearn",
-            "Version": nilearn.__version__,
+            "Version": __version__,
             "Description": (
                 "A Nilearn "
                 f"{'first' if model_level == 1 else 'second'}"
                 "-level GLM."
             ),
-            "CodeURL": (f"{repo_url}/releases/tag/{nilearn.__version__}"),
+            "CodeURL": (f"{repo_url}/releases/tag/{__version__}"),
         }
     }
 
