@@ -1104,8 +1104,8 @@ def fetch_abide_pcp(
                   paths to preprocessed
                   functional MRI data in NIfTI format. This key
                   is present by default when fetching the dataset.
-                - 'alff': :obj:`numpy.ndarray`, a numpy array
-                  containing amplitude values of low-frequency
+                - 'alff': :obj:`numpy.ndarray`,
+                  amplitude values of low-frequency
                   fluctuations in functional MRI data.
                 - 'degree_binarize': :obj:`numpy.ndarray`, a numpy
                   array with data specific to binarized node degree
