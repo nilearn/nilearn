@@ -1148,8 +1148,8 @@ def fetch_abide_pcp(
                 - 'rois_cc400': :obj:`numpy.ndarray`, a numpy array
                   containing data specific to regions defined by the
                   Craddock 400 atlas.
-                - 'rois_dosenbach160': :obj:`numpy.ndarray`, a numpy array
-                  containing data specific to regions defined by the
+                - 'rois_dosenbach160': :obj:`numpy.ndarray`,
+                  data specific to regions defined by the
                   Dosenbach 160 atlas.
                 - 'rois_ez': :obj:`numpy.ndarray`, a numpy array containing
                   data specific to regions defined by the EZ atlas.
