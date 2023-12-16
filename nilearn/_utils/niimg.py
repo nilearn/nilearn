@@ -186,7 +186,8 @@ def copy_img(img):
     img_copy: image
         copy of input (data, affine and header)
     """
-    from nilearn.image import copy_img  as cp_img
+    from nilearn.image import copy_img as cp_img
+
     warn(
         (
             "Import 'copy_img' from 'nilearn._utils.niimg'\n"

@@ -6,8 +6,8 @@ from .._utils.niimg_conversions import concat_niimgs as concat_imgs
 from .image import (
     binarize_img,
     clean_img,
-    crop_img,
     copy_img,
+    crop_img,
     get_data,
     high_variance_confounds,
     index_img,

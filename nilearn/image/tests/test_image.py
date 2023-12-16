@@ -1,10 +1,10 @@
 """Test image pre-processing functions"""
-import joblib
 import platform
 import sys
 import warnings
 from pathlib import Path
 
+import joblib
 import nibabel
 import numpy as np
 import pandas as pd
