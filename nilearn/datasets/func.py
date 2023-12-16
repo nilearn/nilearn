@@ -1093,8 +1093,8 @@ def fetch_abide_pcp(
         Dictionary-like object, keys are:
 
             - 'description': :obj:`str`, description of the dataset.
-            - 'phenotypic': :obj:`pandas.DataFrame`, a pandas DataFrame
-              containing phenotypic information for each subject.
+            - 'phenotypic': :obj:`pandas.DataFrame`
+              phenotypic information for each subject.
             - Specific Derivative Keys:
                 Additional keys,'func_preproc' being the default, are
                 introduced based on the provided 'derivatives'
