@@ -15,7 +15,7 @@ from scipy.ndimage import binary_dilation
 
 from nilearn import datasets, image, maskers, masking
 from nilearn._utils import as_ndarray, logger
-from nilearn.interfaces.bids.utils import check_bids_label, bids_entities
+from nilearn.interfaces.bids.utils import bids_entities, check_bids_label
 
 
 def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
