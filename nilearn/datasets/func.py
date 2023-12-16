@@ -1156,7 +1156,7 @@ def fetch_abide_pcp(
                 - 'rois_ho': :obj:`numpy.ndarray`,
                   data specific to regions defined by the Harvard-Oxford
                   atlas.
-                - 'rois_tt': :obj:`numpy.ndarray`, a numpy array containing
+                - 'rois_tt': :obj:`numpy.ndarray`,
                   data specific to regions defined by the Talairach atlas.
                 - 'vmhc': :obj:`numpy.ndarray`,
                   data specific to voxel-mirrored homotopic connectivity in
