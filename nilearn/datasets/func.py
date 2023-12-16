@@ -1107,8 +1107,8 @@ def fetch_abide_pcp(
                 - 'alff': :obj:`numpy.ndarray`,
                   amplitude values of low-frequency
                   fluctuations in functional MRI data.
-                - 'degree_binarize': :obj:`numpy.ndarray`, a numpy
-                  array with data specific to binarized node degree
+                - 'degree_binarize': :obj:`numpy.ndarray`,
+                  data specific to binarized node degree
                   in brain networks.
                 - degree_weighted': :obj:`numpy.ndarray`, a numpy
                   array with data specific to weighted node degree,
