@@ -5,7 +5,7 @@ import os
 import pandas as pd
 
 from nilearn._utils.data_gen import _create_bids_filename
-from nilearn.interfaces.bids._utils import _bids_entities
+from nilearn.interfaces.bids.utils import bids_entities
 from nilearn.interfaces.fmriprep import load_confounds_utils
 
 img_file_patterns = {
@@ -85,8 +85,8 @@ def create_tmp_filepath(
     fmriprep_version="1.4.x",
 ):
     entities_to_include = [
-        *_bids_entities()["raw"],
-        *_bids_entities()["derivatives"],
+        *bids_entities()["raw"],
+        *bids_entities()["derivatives"],
     ]
     if bids_fields is None:
         bids_fields = {

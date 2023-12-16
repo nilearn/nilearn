@@ -43,11 +43,11 @@ from nilearn.glm.regression import (
 )
 from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
-from nilearn.interfaces.bids._utils import _bids_entities, _check_bids_label
 from nilearn.interfaces.bids.query import (
     infer_repetition_time_from_dataset,
     infer_slice_timing_start_time_from_dataset,
 )
+from nilearn.interfaces.bids.utils import bids_entities, check_bids_label
 
 
 def mean_scaling(Y, axis=0):
@@ -1066,8 +1066,8 @@ def first_level_from_bids(
         task_label=task_label,
         space_label=space_label,
         supported_filters=[
-            *_bids_entities()["raw"],
-            *_bids_entities()["derivatives"],
+            *bids_entities()["raw"],
+            *bids_entities()["derivatives"],
         ],
         extra_filter=img_filters,
         verbose=verbose,
@@ -1078,7 +1078,7 @@ def first_level_from_bids(
     if inferred_t_r is None:
         filters = _make_bids_files_filter(
             task_label=task_label,
-            supported_filters=[*_bids_entities()["raw"]],
+            supported_filters=[*bids_entities()["raw"]],
             extra_filter=img_filters,
             verbose=verbose,
         )
@@ -1112,8 +1112,8 @@ def first_level_from_bids(
         task_label=task_label,
         space_label=space_label,
         supported_filters=[
-            *_bids_entities()["raw"],
-            *_bids_entities()["derivatives"],
+            *bids_entities()["raw"],
+            *bids_entities()["derivatives"],
         ],
         extra_filter=img_filters,
         verbose=verbose,
@@ -1330,8 +1330,8 @@ def _get_processed_imgs(
     filters = _make_bids_files_filter(
         task_label=task_label,
         space_label=space_label,
-        supported_filters=_bids_entities()["raw"]
-        + _bids_entities()["derivatives"],
+        supported_filters=bids_entities()["raw"]
+        + bids_entities()["derivatives"],
         extra_filter=img_filters,
         verbose=verbose,
     )
@@ -1395,7 +1395,7 @@ def _get_events_files(
     """
     events_filters = _make_bids_files_filter(
         task_label=task_label,
-        supported_filters=_bids_entities()["raw"],
+        supported_filters=bids_entities()["raw"],
         extra_filter=img_filters,
         verbose=verbose,
     )
@@ -1468,7 +1468,7 @@ def _get_confounds(
     """
     filters = _make_bids_files_filter(
         task_label=task_label,
-        supported_filters=_bids_entities()["raw"],
+        supported_filters=bids_entities()["raw"],
         extra_filter=img_filters,
         verbose=verbose,
     )
@@ -1578,17 +1578,17 @@ def _check_args_first_level_from_bids(
             f"{derivatives_folder}"
         )
 
-    _check_bids_label(task_label)
+    check_bids_label(task_label)
 
     if space_label is not None:
-        _check_bids_label(space_label)
+        check_bids_label(space_label)
 
     if not isinstance(sub_labels, list):
         raise TypeError(
             f"sub_labels must be a list, instead {type(sub_labels)} was given"
         )
     for sub_label_ in sub_labels:
-        _check_bids_label(sub_label_)
+        check_bids_label(sub_label_)
 
     if not isinstance(img_filters, list):
         raise TypeError(
@@ -1596,8 +1596,8 @@ def _check_args_first_level_from_bids(
             f"Got {type(img_filters)} instead."
         )
     supported_filters = [
-        *_bids_entities()["raw"],
-        *_bids_entities()["derivatives"],
+        *bids_entities()["raw"],
+        *bids_entities()["derivatives"],
     ]
     for filter_ in img_filters:
         if len(filter_) != 2 or not all(isinstance(x, str) for x in filter_):
@@ -1610,7 +1610,7 @@ def _check_args_first_level_from_bids(
                 f"Entity {filter_[0]} for {filter_} is not a possible filter. "
                 f"Only {supported_filters} are allowed."
             )
-        _check_bids_label(filter_[1])
+        check_bids_label(filter_[1])
 
 
 def _make_bids_files_filter(
@@ -1797,7 +1797,7 @@ def _check_bids_events_list(
         "sub",
         "ses",
         "task",
-        *_bids_entities()["raw"],
+        *bids_entities()["raw"],
     ]
     for this_img in imgs:
         parsed_filename = parse_bids_filename(this_img)
