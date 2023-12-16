@@ -1,4 +1,4 @@
-"""Helper function for _load_compcor."""
+"""Helper function for load_compcor."""
 
 
 prefix_compcor = {
@@ -15,7 +15,7 @@ anat_masker = {
 }
 
 
-def _find_compcor(confounds_json, compcor, n_compcor):
+def find_compcor(confounds_json, compcor, n_compcor):
     """Build list for the number of compcor components.
 
     Parameters

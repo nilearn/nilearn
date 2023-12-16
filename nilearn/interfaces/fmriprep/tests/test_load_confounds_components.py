@@ -4,7 +4,7 @@ import pytest
 from nilearn.interfaces.fmriprep import load_confounds
 from nilearn.interfaces.fmriprep.load_confounds import _load_noise_component
 from nilearn.interfaces.fmriprep.load_confounds_utils import (
-    _load_confounds_json,
+    load_confounds_json,
 )
 from nilearn.interfaces.fmriprep.tests._testing import create_tmp_filepath
 
@@ -43,7 +43,7 @@ def test_missing_keywords(
     )
     legal_confounds = pd.read_csv(bad_conf, delimiter="\t", encoding="utf-8")
     meta_json = bad_conf.parent / bad_conf.name.replace("tsv", "json")
-    meta_json = _load_confounds_json(meta_json, flag_acompcor=True)
+    meta_json = load_confounds_json(meta_json, flag_acompcor=True)
 
     # remove confound strategy keywords in the test data
     if expected_parameters:

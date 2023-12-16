@@ -45,8 +45,8 @@ from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
 from nilearn.interfaces.bids._utils import _bids_entities, _check_bids_label
 from nilearn.interfaces.bids.query import (
-    _infer_repetition_time_from_dataset,
-    _infer_slice_timing_start_time_from_dataset,
+    infer_repetition_time_from_dataset,
+    infer_slice_timing_start_time_from_dataset,
 )
 
 
@@ -1072,7 +1072,7 @@ def first_level_from_bids(
         extra_filter=img_filters,
         verbose=verbose,
     )
-    inferred_t_r = _infer_repetition_time_from_dataset(
+    inferred_t_r = infer_repetition_time_from_dataset(
         bids_path=derivatives_path, filters=filters, verbose=verbose
     )
     if inferred_t_r is None:
@@ -1082,7 +1082,7 @@ def first_level_from_bids(
             extra_filter=img_filters,
             verbose=verbose,
         )
-        inferred_t_r = _infer_repetition_time_from_dataset(
+        inferred_t_r = infer_repetition_time_from_dataset(
             bids_path=dataset_path, filters=filters, verbose=verbose
         )
 
@@ -1118,7 +1118,7 @@ def first_level_from_bids(
         extra_filter=img_filters,
         verbose=verbose,
     )
-    StartTime = _infer_slice_timing_start_time_from_dataset(
+    StartTime = infer_slice_timing_start_time_from_dataset(
         bids_path=derivatives_path, filters=filters, verbose=verbose
     )
     if StartTime is not None and t_r is not None:

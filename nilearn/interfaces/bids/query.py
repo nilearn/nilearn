@@ -54,7 +54,7 @@ def _get_metadata_from_bids(
     return None
 
 
-def _infer_slice_timing_start_time_from_dataset(bids_path, filters, verbose=0):
+def infer_slice_timing_start_time_from_dataset(bids_path, filters, verbose=0):
     """Return the StartTime metadata field from a BIDS derivatives dataset.
 
     This corresponds to the reference time (in seconds) used for the slice
@@ -103,7 +103,7 @@ def _infer_slice_timing_start_time_from_dataset(bids_path, filters, verbose=0):
     )
 
 
-def _infer_repetition_time_from_dataset(bids_path, filters, verbose=0):
+def infer_repetition_time_from_dataset(bids_path, filters, verbose=0):
     """Return the RepetitionTime metadata field from a BIDS dataset.
 
     Parameters

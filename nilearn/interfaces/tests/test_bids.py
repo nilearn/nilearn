@@ -20,8 +20,8 @@ from nilearn.interfaces.bids import (
 )
 from nilearn.interfaces.bids.query import (
     _get_metadata_from_bids,
-    _infer_repetition_time_from_dataset,
-    _infer_slice_timing_start_time_from_dataset,
+    infer_repetition_time_from_dataset,
+    infer_slice_timing_start_time_from_dataset,
 )
 from nilearn.maskers import NiftiMasker
 
@@ -68,7 +68,7 @@ def test_infer_repetition_time_from_dataset(tmp_path):
         base_dir=tmp_path, n_sub=1, n_ses=1, tasks=["main"], n_runs=[1]
     )
 
-    t_r = _infer_repetition_time_from_dataset(
+    t_r = infer_repetition_time_from_dataset(
         bids_path=tmp_path / bids_path, filters=[("task", "main")]
     )
 
@@ -81,7 +81,7 @@ def test_infer_repetition_time_from_dataset(tmp_path):
         metadata={"RepetitionTime": expected_t_r},
     )
 
-    t_r = _infer_repetition_time_from_dataset(
+    t_r = infer_repetition_time_from_dataset(
         bids_path=tmp_path / bids_path / "derivatives",
         filters=[("task", "main"), ("run", "01")],
     )
@@ -102,7 +102,7 @@ def test_infer_slice_timing_start_time_from_dataset(tmp_path):
         base_dir=tmp_path, n_sub=1, n_ses=1, tasks=["main"], n_runs=[1]
     )
 
-    StartTime = _infer_slice_timing_start_time_from_dataset(
+    StartTime = infer_slice_timing_start_time_from_dataset(
         bids_path=tmp_path / bids_path / "derivatives",
         filters=[("task", "main")],
     )
@@ -116,7 +116,7 @@ def test_infer_slice_timing_start_time_from_dataset(tmp_path):
         metadata={"StartTime": expected_StartTime},
     )
 
-    StartTime = _infer_slice_timing_start_time_from_dataset(
+    StartTime = infer_slice_timing_start_time_from_dataset(
         bids_path=tmp_path / bids_path / "derivatives",
         filters=[("task", "main")],
     )
