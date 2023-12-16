@@ -7,7 +7,7 @@ from nilearn.image import get_data
 # Set backend to avoid DISPLAY problems
 from nilearn.plotting import _set_mpl_backend
 from nilearn.reporting import get_clusters_table
-from nilearn.reporting._get_clusters_table import (
+from nilearn.reporting.get_clusters_table import (
     _cluster_nearest_neighbor,
     _local_max,
 )
