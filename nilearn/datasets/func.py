@@ -1113,40 +1113,40 @@ def fetch_abide_pcp(
                 - degree_weighted': :obj:`numpy.ndarray`,
                   data specific to weighted node degree,
                   considering connectivity strength in brain networks.
-                - 'dual_regression': :obj:`numpy.ndarray`, a numpy
-                  array containing results from dual regression analysis,
+                - 'dual_regression': :obj:`numpy.ndarray`,
+                  results from dual regression analysis,
                   often involving the identification of resting-state
                   networks.
-                - 'eigenvector_binarize': :obj:`numpy.ndarray`, a numpy
-                  array containing data specific to binarized eigenvector
+                - 'eigenvector_binarize': :obj:`numpy.ndarray`,
+                  data specific to binarized eigenvector
                   centrality, a measure of node influence in brain networks.
-                - 'eigenvector_weighted': :obj:`numpy.ndarray`, a numpy
-                  array containing data specific to weighted eigenvector
+                - 'eigenvector_weighted': :obj:`numpy.ndarray`,
+                  data specific to weighted eigenvector
                   centrality, reflecting node influence with consideration
                   of connectivity strength.
-                - 'falff': :obj:`numpy.ndarray`, a numpy array containing
+                - 'falff': :obj:`numpy.ndarray`,
                   data specific to fractional amplitude values of
                   low-frequency fluctuations.
-                - 'func_mask': :obj:`numpy.ndarray`, a numpy array
-                  containing functional mask data, often used to define
+                - 'func_mask': :obj:`numpy.ndarray`,
+                  functional mask data, often used to define
                   regions of interest.
-                - 'func_mean': :obj:`numpy.ndarray`, a numpy array
-                  containing mean functional MRI data, representing
+                - 'func_mean': :obj:`numpy.ndarray`,
+                  mean functional MRI data, representing
                   average activity across the brain.
-                - 'lfcd': :obj:`numpy.ndarray`, a numpy array containing
+                - 'lfcd': :obj:`numpy.ndarray`,
                   data specific to local functional connectivity density
                   in brain networks.
-                - 'reho': :obj:`numpy.ndarray`, a numpy array containing
+                - 'reho': :obj:`numpy.ndarray`,
                   data specific to regional homogeneity in functional
                   MRI data.
-                - 'rois_aal': :obj:`numpy.ndarray`, a numpy array containing
+                - 'rois_aal': :obj:`numpy.ndarray`,
                   data specific to anatomical regions defined by the
                   Automatic Anatomical Labeling atlas.
-                - 'rois_cc200': :obj:`numpy.ndarray`, a numpy array
-                  containing data specific to regions defined by the
+                - 'rois_cc200': :obj:`numpy.ndarray`
+                  data specific to regions defined by the
                   Craddock 200 atlas.
-                - 'rois_cc400': :obj:`numpy.ndarray`, a numpy array
-                  containing data specific to regions defined by the
+                - 'rois_cc400': :obj:`numpy.ndarray`,
+                  data specific to regions defined by the
                   Craddock 400 atlas.
                 - 'rois_dosenbach160': :obj:`numpy.ndarray`,
                   data specific to regions defined by the
