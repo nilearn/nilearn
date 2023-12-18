@@ -42,7 +42,7 @@ repos:
     -   id: trailing-whitespace
 
 -   repo: https://github.com/pycqa/isort
-    rev: 5.13.0
+    rev: 5.13.2
     hooks:
     -   id: isort
         args: [--profile, black, --settings-path, pyproject.toml]
@@ -65,7 +65,7 @@ repos:
     -   id: rst-inline-touching-normal
 
 -   repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 23.11.0
+    rev: 23.12.0
     hooks:
     -   id: black
         args: [--config, pyproject.toml]
