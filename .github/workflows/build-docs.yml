@@ -303,7 +303,7 @@ jobs:
                 cat doc/tmp/doc_check.txt
         -   name: Upload documentation
             if: always()
-            uses: actions/upload-artifact@v3
+            uses: actions/upload-artifact@v4
             with:
                 name: doc
                 path: doc/_build/html
