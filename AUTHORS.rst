@@ -179,6 +179,7 @@ Some other past or present contributors are:
 * `Simon Steinkamp`_: Danish Research Centre for Magnetic Resonance, Copenhagen University Hospital Amager & Hvidovre, Copenhagen, Denmark.
 * `Sourav Singh`_
 * `Steven Meisler`_: Harvard-MIT Division of Health Sciences and Technology, Cambridge, Massachusetts, USA
+* `Suramya Pokharel`_: Tribhuvan University, Kathmandu, Nepal
 * `Sylvain Lan`_
 * `Sylvain Takerkart`_: CNRS, Institut des Neurosciences de la Timone, Marseille, France
 * `Tamer Gezici`_: Bilkent University

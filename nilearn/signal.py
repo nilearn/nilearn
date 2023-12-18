@@ -963,13 +963,13 @@ def _sanitize_inputs(signals, runs, confounds, sample_mask, ensure_finite):
     """Clean up signals and confounds before processing."""
     n_time = len(signals)  # original length of the signal
     n_runs, runs = _sanitize_runs(n_time, runs)
-    confounds = _sanitize_confounds(n_time, n_runs, confounds)
+    confounds = sanitize_confounds(n_time, n_runs, confounds)
     sample_mask = _sanitize_sample_mask(n_time, n_runs, runs, sample_mask)
     signals = _sanitize_signals(signals, ensure_finite)
     return signals, runs, confounds, sample_mask
 
 
-def _sanitize_confounds(n_time, n_runs, confounds):
+def sanitize_confounds(n_time, n_runs, confounds):
     """Check confounds are the correct type.
 
     When passing multiple runs, ensure the

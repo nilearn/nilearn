@@ -15,7 +15,14 @@ from scipy.ndimage import binary_dilation
 
 from nilearn import datasets, image, maskers, masking
 from nilearn._utils import as_ndarray, logger
-from nilearn.interfaces.bids._utils import _bids_entities, _check_bids_label
+from nilearn.interfaces.bids.utils import (
+    bids_entities,
+    check_bids_label,
+    create_bids_filename,
+)
+
+# TODO get legal_confounds out of private testing module
+from nilearn.interfaces.fmriprep.tests._testing import get_legal_confound
 
 
 def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
@@ -736,9 +743,15 @@ def _basic_confounds(length, random_state=0):
 
     """
     rand_gen = np.random.default_rng(random_state)
-    columns = ['csf', 'white_matter', 'global_signal',
-               'rot_x', 'rot_y', 'rot_z',
-               'trans_x', 'trans_y', 'trans_z']
+    columns = ['csf',
+               'white_matter',
+               'global_signal',
+               'rot_x',
+               'rot_y',
+               'rot_z',
+               'trans_x',
+               'trans_y',
+               'trans_z']
     data = rand_gen.random((length, len(columns)))
     confounds = pd.DataFrame(data, columns=columns)
     return confounds
@@ -918,7 +931,7 @@ def create_fake_bids_dataset(
     bids_path = Path(base_dir) / bids_dataset_dir
 
     for task_ in tasks:
-        _check_bids_label(task_)
+        check_bids_label(task_)
 
     if not isinstance(n_runs, list) or not all(
         isinstance(x, int) for x in n_runs
@@ -983,15 +996,15 @@ def _check_entities_and_labels(entities):
         raise ValueError("Only a single extra entity is supported for now.")
 
     for key in entities:
-        if key not in [*_bids_entities()["raw"],
-                       *_bids_entities()["derivatives"]]:
-            allowed_entities = [*_bids_entities()['raw'],
-                                *_bids_entities()['derivatives']]
+        if key not in [*bids_entities()["raw"],
+                       *bids_entities()["derivatives"]]:
+            allowed_entities = [*bids_entities()['raw'],
+                                *bids_entities()['derivatives']]
             raise ValueError(
                 f"Invalid entity: {key}. Allowed entities are: "
                 f"{allowed_entities}"
             )
-        [_check_bids_label(label_) for label_ in entities[key]]
+        [check_bids_label(label_) for label_ in entities[key]]
 
 
 def _mock_bids_dataset(
@@ -1065,7 +1078,7 @@ def _mock_bids_dataset(
                                 task=task,
                                 run=run,
                             )
-                            if key in _bids_entities()["raw"]:
+                            if key in bids_entities()["raw"]:
                                 fields["entities"][key] = label
                             _write_bids_raw_func(
                                 func_path=func_path,
@@ -1200,46 +1213,6 @@ def _listify(n):
     return [""] if n <= 0 else [f"{label:02}" for label in range(1, n + 1)]
 
 
-def _create_bids_filename(
-    fields, entities_to_include=None
-):
-    """Create BIDS filename from dictionary of entity-label pairs.
-
-    Parameters
-    ----------
-    fields : :obj:`dict` of :obj:`str`
-        Dictionary of entity-label pairs, for example:
-
-        {
-         "suffix": "T1w",
-         "extension": "nii.gz",
-         "entities": {"acq":  "ap",
-                      "desc": "preproc"}
-        }.
-
-    Returns
-    -------
-    BIDS filename : :obj:`str`
-
-    """
-    if entities_to_include is None:
-        entities_to_include = _bids_entities()["raw"]
-
-    filename = ""
-
-    for key in entities_to_include:
-        if key in fields["entities"]:
-            value = fields["entities"][key]
-            if value not in (None, ""):
-                filename += f"{key}-{value}_"
-    if "suffix" in fields:
-        filename += f"{fields['suffix']}"
-    if "extension" in fields:
-        filename += f".{fields['extension']}"
-
-    return filename
-
-
 def _init_fields(subject,
                  session,
                  task,
@@ -1267,7 +1240,7 @@ def _init_fields(subject,
 
     See Also
     --------
-    _create_bids_filename
+    create_bids_filename
 
     """
     fields = {
@@ -1304,7 +1277,7 @@ def _write_bids_raw_anat(subses_dir, subject, session) -> None:
         "extension": "nii.gz",
         "entities": {"sub": subject, "ses": session},
     }
-    (anat_path / _create_bids_filename(fields)).write_text("")
+    (anat_path / create_bids_filename(fields)).write_text("")
 
 
 def _write_bids_raw_func(
@@ -1331,8 +1304,9 @@ def _write_bids_raw_func(
         Random number generator.
 
     """
-    n_time_points = 100
-    bold_path = func_path / _create_bids_filename(fields)
+    n_time_points = 30
+    bold_path = func_path / create_bids_filename(fields)
+
     write_fake_bold_img(
         bold_path,
         [n_voxels, n_voxels, n_voxels, n_time_points],
@@ -1341,12 +1315,12 @@ def _write_bids_raw_func(
 
     repetition_time = 1.5
     fields["extension"] = "json"
-    param_path = func_path / _create_bids_filename(fields)
+    param_path = func_path / create_bids_filename(fields)
     param_path.write_text(json.dumps({"RepetitionTime": repetition_time}))
 
     fields["suffix"] = "events"
     fields["extension"] = "tsv"
-    events_path = func_path / _create_bids_filename(fields)
+    events_path = func_path / create_bids_filename(fields)
     basic_paradigm().to_csv(events_path, sep="\t", index=None)
 
 
@@ -1387,17 +1361,20 @@ def _write_bids_derivative_func(
         or "desc-confounds_regressors".
 
     """
-    n_time_points = 100
+    n_time_points = 30
 
     if confounds_tag is not None:
         fields["suffix"] = confounds_tag
         fields["extension"] = "tsv"
-        confounds_path = func_path / _create_bids_filename(
-            fields=fields, entities_to_include=_bids_entities()["raw"]
+        confounds_path = func_path / create_bids_filename(
+            fields=fields, entities_to_include=bids_entities()["raw"]
         )
-        _basic_confounds(length=n_time_points, random_state=rand_gen).to_csv(
-            confounds_path, sep="\t", index=None
+        confounds, metadata = get_legal_confound()
+        confounds.to_csv(
+            confounds_path, sep="\t", index=None, encoding="utf-8"
         )
+        with open(confounds_path.with_suffix(".json"), "w") as f:
+            json.dump(metadata, f)
 
     fields["suffix"] = "bold"
     fields["extension"] = "nii.gz"
@@ -1405,8 +1382,8 @@ def _write_bids_derivative_func(
     shape = [n_voxels, n_voxels, n_voxels, n_time_points]
 
     entities_to_include = [
-        *_bids_entities()["raw"],
-        *_bids_entities()["derivatives"]
+        *bids_entities()["raw"],
+        *bids_entities()["derivatives"]
     ]
 
     for space in ("MNI", "T1w"):
@@ -1418,7 +1395,7 @@ def _write_bids_derivative_func(
             fields["entities"]["space"] = space
             fields["entities"]["desc"] = desc
 
-            bold_path = func_path / _create_bids_filename(
+            bold_path = func_path / create_bids_filename(
                 fields=fields, entities_to_include=entities_to_include
             )
             write_fake_bold_img(bold_path, shape=shape, random_state=rand_gen)
@@ -1428,7 +1405,7 @@ def _write_bids_derivative_func(
     fields["entities"].pop("desc")
     for hemi in ["L", "R"]:
         fields["entities"]["hemi"] = hemi
-        gifti_path = func_path / _create_bids_filename(
+        gifti_path = func_path / create_bids_filename(
             fields=fields,
             entities_to_include=entities_to_include
         )
