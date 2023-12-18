@@ -10,12 +10,12 @@ import pandas as pd
 from . import load_confounds_components as components
 from .load_confounds_utils import (
     MissingConfound,
-    _get_confounds_file,
-    _get_json,
-    _load_confounds_file_as_dataframe,
-    _load_confounds_json,
-    _prepare_output,
-    _sanitize_confounds,
+    get_confounds_file,
+    get_json,
+    load_confounds_file_as_dataframe,
+    load_confounds_json,
+    prepare_output,
+    sanitize_confounds,
 )
 
 # Global variables listing the admissible types of noise components
@@ -295,7 +295,7 @@ def load_confounds(
     _check_strategy(strategy)
 
     # load confounds per image provided
-    img_files, flag_single = _sanitize_confounds(img_files)
+    img_files, flag_single = sanitize_confounds(img_files)
     confounds_out = []
     sample_mask_out = []
     for file in img_files:
@@ -359,10 +359,10 @@ def _load_confounds_for_single_image_file(
         kwargs.get("ica_aroma") == "full"
     )
 
-    confounds_file = _get_confounds_file(
+    confounds_file = get_confounds_file(
         image_file, flag_full_aroma=flag_full_aroma
     )
-    confounds_json_file = _get_json(confounds_file)
+    confounds_json_file = get_json(confounds_file)
 
     return _load_single_confounds_file(
         confounds_file=confounds_file,
@@ -411,13 +411,13 @@ def _load_single_confounds_file(
         "anat" in kwargs.get("compcor")
     )
     # Convert tsv file to pandas dataframe
-    confounds_all = _load_confounds_file_as_dataframe(confounds_file)
+    confounds_all = load_confounds_file_as_dataframe(confounds_file)
 
     if confounds_json_file is None:
-        confounds_json_file = _get_json(confounds_file)
+        confounds_json_file = get_json(confounds_file)
 
     # Read the associated json file
-    meta_json = _load_confounds_json(
+    meta_json = load_confounds_json(
         confounds_json_file, flag_acompcor=flag_acompcor
     )
 
@@ -439,7 +439,7 @@ def _load_single_confounds_file(
         )
 
     _check_error(missing)  # raise any missing
-    return _prepare_output(confounds_select, demean)
+    return prepare_output(confounds_select, demean)
 
 
 def _load_noise_component(confounds_raw, component, missing, **kargs):

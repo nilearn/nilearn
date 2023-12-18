@@ -35,6 +35,7 @@ Enhancements
 - :bdg-primary:`Doc`  Mention the classification type (all-vs-one) in  :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_glm_decoding.py` (:gh:`4122` by `Tamer Gezici`_).
 - :bdg-primary:`Doc`  Specify full form of LSS in  :ref:`sphx_glr_auto_examples_07_advanced_plot_beta_series.py` (:gh:`4141` by `Tamer Gezici`_).
 - :bdg-primary:`Doc` Don't fetch tmaps in examples if tmaps aren't used in the example. (:gh:`4136` by `Christina Roßmanith`_).
+- :bdg-primary:`Doc` Describe the return value in :func:`~nilearn.datasets.fetch_abide_pcp` documentation (:gh:`4159` by `Suramya Pokharel`_).
 
 Changes
 -------
@@ -46,3 +47,4 @@ Changes
 - :bdg-danger:`Deprecation` :func:`~plotting.plot_surf_roi` will raise a warning if ``roi_map`` contains negative or non-integer values; in version 0.13 this will be a ``ValueError`` (:gh:`4131` by `Michelle Wang`_).
 - :bdg-dark:`Code` Remove leading underscore from non private functions to align with PEP8 (:gh:`4086` by `Rémi Gau`_).
 - :bdg-dark:`Code` Make ``decoding/proximal_operator`` explicitly private to align with PEP8 (:gh:`4153` by `Rémi Gau`_).
+- :bdg-dark:`Code` Make private functions public when used outside of their module ``nilearn.interface`` to align with PEP8 (:gh:`4168` by `Rémi Gau`_).
