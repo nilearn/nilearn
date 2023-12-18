@@ -4,8 +4,7 @@ import os
 
 import pandas as pd
 
-from nilearn._utils.data_gen import _create_bids_filename
-from nilearn.interfaces.bids._utils import _bids_entities
+from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
 from nilearn.interfaces.fmriprep import load_confounds_utils
 
 img_file_patterns = {
@@ -85,8 +84,8 @@ def create_tmp_filepath(
     fmriprep_version="1.4.x",
 ):
     entities_to_include = [
-        *_bids_entities()["raw"],
-        *_bids_entities()["derivatives"],
+        *bids_entities()["raw"],
+        *bids_entities()["derivatives"],
     ]
     if bids_fields is None:
         bids_fields = {
@@ -103,7 +102,7 @@ def create_tmp_filepath(
     bids_fields["entities"]["desc"] = "confounds"
     bids_fields["suffix"] = derivative
     bids_fields["extension"] = "tsv"
-    confounds_filename = _create_bids_filename(
+    confounds_filename = create_bids_filename(
         fields=bids_fields, entities_to_include=entities_to_include
     )
     tmp_conf = base_path / confounds_filename
@@ -116,7 +115,7 @@ def create_tmp_filepath(
 
     if copy_json:
         bids_fields["extension"] = "json"
-        confounds_sidecar = _create_bids_filename(
+        confounds_sidecar = create_bids_filename(
             fields=bids_fields, entities_to_include=entities_to_include
         )
         tmp_meta = base_path / confounds_sidecar
@@ -129,7 +128,7 @@ def create_tmp_filepath(
     img_file_patterns_type = img_file_patterns[image_type]
     if type(img_file_patterns_type) is dict:
         bids_fields = update_bids_fields(bids_fields, img_file_patterns_type)
-        tmp_img = _create_bids_filename(
+        tmp_img = create_bids_filename(
             fields=bids_fields, entities_to_include=entities_to_include
         )
         tmp_img = base_path / tmp_img
@@ -139,7 +138,7 @@ def create_tmp_filepath(
         tmp_img = []
         for root in img_file_patterns_type:
             bids_fields = update_bids_fields(bids_fields, root)
-            tmp_gii = _create_bids_filename(
+            tmp_gii = create_bids_filename(
                 fields=bids_fields, entities_to_include=entities_to_include
             )
             tmp_gii = base_path / tmp_gii

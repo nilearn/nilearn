@@ -43,11 +43,12 @@ from nilearn.glm.regression import (
 )
 from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
-from nilearn.interfaces.bids._utils import _bids_entities, _check_bids_label
 from nilearn.interfaces.bids.query import (
-    _infer_repetition_time_from_dataset,
-    _infer_slice_timing_start_time_from_dataset,
+    infer_repetition_time_from_dataset,
+    infer_slice_timing_start_time_from_dataset,
 )
+from nilearn.interfaces.bids.utils import bids_entities, check_bids_label
+from nilearn.interfaces.fmriprep.load_confounds import load_confounds
 
 
 def mean_scaling(Y, axis=0):
@@ -957,6 +958,7 @@ def first_level_from_bids(
     n_jobs=1,
     minimize_memory=True,
     derivatives_folder="derivatives",
+    **kwargs,
 ):
     """Create FirstLevelModel objects and fit arguments \
        from a :term:`BIDS` dataset.
@@ -1015,6 +1017,86 @@ def first_level_from_bids(
     The subject label of the model will be determined directly
     from the :term:`BIDS` dataset.
 
+    kwargs: :obj:`dict`
+
+        .. versionadded:: 0.11.0
+
+    Keyword arguments to be passed to functions called within this function.
+
+    Kwargs prefixed with ``confound_``
+    will be passed to :func:`~nilearn.interfaces.fmriprep.load_confounds`.
+    This allows ``first_level_from_bids`` to return
+    a specific set of confounds by relying on confound loading strategies
+    defined in :func:`~nilearn.interfaces.fmriprep.load_confounds`.
+    If no kwargs are passed, ``first_level_from_bids`` will return
+    all the confounds available in the confounds TSV files.
+
+    Examples
+    --------
+    If you want to only load
+    the rotation and translation motion parameters confounds:
+
+    .. code-block:: python
+
+        models, imgs, events, confounds = first_level_from_bids(
+            dataset_path=path_to_a_bids_dataset,
+            task_label="TaskName",
+            space_label="MNI",
+            img_filters=[("desc", "preproc")],
+            confounds_strategy=("motion"),
+            confounds_motion="basic",
+        )
+
+    If you want to load the motion parameters confounds
+    with their derivatives:
+
+    .. code-block:: python
+
+        models, imgs, events, confounds = first_level_from_bids(
+            dataset_path=path_to_a_bids_dataset,
+            task_label="TaskName",
+            space_label="MNI",
+            img_filters=[("desc", "preproc")],
+            confounds_strategy=("motion"),
+            confounds_motion="derivatives",
+        )
+
+    If you additionally want to load
+    the confounds with CSF and white matter signal:
+
+    .. code-block:: python
+
+        models, imgs, events, confounds = first_level_from_bids(
+            dataset_path=path_to_a_bids_dataset,
+            task_label="TaskName",
+            space_label="MNI",
+            img_filters=[("desc", "preproc")],
+            confounds_strategy=("motion", "wm_csf"),
+            confounds_motion="derivatives",
+            confounds_wm_csf="basic",
+        )
+
+    If you also want to scrub high-motion timepoints:
+
+    .. code-block:: python
+
+        models, imgs, events, confounds = first_level_from_bids(
+            dataset_path=path_to_a_bids_dataset,
+            task_label="TaskName",
+            space_label="MNI",
+            img_filters=[("desc", "preproc")],
+            confounds_strategy=("motion", "wm_csf", "scrub"),
+            confounds_motion="derivatives",
+            confounds_wm_csf="basic",
+            confounds_scrub=1,
+            confounds_fd_threshold=0.2,
+            confounds_std_dvars_threshold=0,
+        )
+
+    Please refer to the documentation
+    of :func:`~nilearn.interfaces.fmriprep.load_confounds`
+    for more details on the confounds loading strategies.
+
     Returns
     -------
     models : list of `FirstLevelModel` objects
@@ -1050,6 +1132,23 @@ def first_level_from_bids(
         derivatives_folder=derivatives_folder,
     )
 
+    kwargs_load_confounds = _check_kwargs_load_confounds(**kwargs)
+
+    if drift_model is not None and kwargs_load_confounds is not None:
+        if "high_pass" in kwargs_load_confounds.get("strategy"):
+            if drift_model == "cosine":
+                verb = "duplicate"
+            if drift_model == "polynomial":
+                verb = "conflict with"
+
+            warn(
+                f"""Confounds will contain a high pass filter,
+ that may {verb} the {drift_model} one used in the model.
+ Remember to visualize your design matrix before fitting your model
+ to check that your model is not overspecified.""",
+                UserWarning,
+            )
+
     derivatives_path = Path(dataset_path) / derivatives_folder
 
     # Get metadata for models.
@@ -1066,23 +1165,23 @@ def first_level_from_bids(
         task_label=task_label,
         space_label=space_label,
         supported_filters=[
-            *_bids_entities()["raw"],
-            *_bids_entities()["derivatives"],
+            *bids_entities()["raw"],
+            *bids_entities()["derivatives"],
         ],
         extra_filter=img_filters,
         verbose=verbose,
     )
-    inferred_t_r = _infer_repetition_time_from_dataset(
+    inferred_t_r = infer_repetition_time_from_dataset(
         bids_path=derivatives_path, filters=filters, verbose=verbose
     )
     if inferred_t_r is None:
         filters = _make_bids_files_filter(
             task_label=task_label,
-            supported_filters=[*_bids_entities()["raw"]],
+            supported_filters=[*bids_entities()["raw"]],
             extra_filter=img_filters,
             verbose=verbose,
         )
-        inferred_t_r = _infer_repetition_time_from_dataset(
+        inferred_t_r = infer_repetition_time_from_dataset(
             bids_path=dataset_path, filters=filters, verbose=verbose
         )
 
@@ -1112,13 +1211,13 @@ def first_level_from_bids(
         task_label=task_label,
         space_label=space_label,
         supported_filters=[
-            *_bids_entities()["raw"],
-            *_bids_entities()["derivatives"],
+            *bids_entities()["raw"],
+            *bids_entities()["derivatives"],
         ],
         extra_filter=img_filters,
         verbose=verbose,
     )
-    StartTime = _infer_slice_timing_start_time_from_dataset(
+    StartTime = infer_slice_timing_start_time_from_dataset(
         bids_path=derivatives_path, filters=filters, verbose=verbose
     )
     if StartTime is not None and t_r is not None:
@@ -1216,11 +1315,8 @@ def first_level_from_bids(
             img_filters=img_filters,
             imgs=imgs,
             verbose=verbose,
+            kwargs_load_confounds=kwargs_load_confounds,
         )
-        if confounds:
-            confounds = [
-                pd.read_csv(c, sep="\t", index_col=None) for c in confounds
-            ]
         models_confounds.append(confounds)
 
     return models, models_run_imgs, models_events, models_confounds
@@ -1330,8 +1426,8 @@ def _get_processed_imgs(
     filters = _make_bids_files_filter(
         task_label=task_label,
         space_label=space_label,
-        supported_filters=_bids_entities()["raw"]
-        + _bids_entities()["derivatives"],
+        supported_filters=bids_entities()["raw"]
+        + bids_entities()["derivatives"],
         extra_filter=img_filters,
         verbose=verbose,
     )
@@ -1395,7 +1491,7 @@ def _get_events_files(
     """
     events_filters = _make_bids_files_filter(
         task_label=task_label,
-        supported_filters=_bids_entities()["raw"],
+        supported_filters=bids_entities()["raw"],
         extra_filter=img_filters,
         verbose=verbose,
     )
@@ -1433,6 +1529,7 @@ def _get_confounds(
     img_filters,
     imgs,
     verbose,
+    kwargs_load_confounds,
 ):
     """Get confounds.tsv files for a given subject, task and filters.
 
@@ -1462,13 +1559,12 @@ def _get_confounds(
 
     Returns
     -------
-    confounds : :obj:`list` of :obj:`str` or None
-        List of fullpath to the confounds.tsv files
+    confounds : :obj:`list` of :class:`pandas.DataFrame`
 
     """
     filters = _make_bids_files_filter(
         task_label=task_label,
-        supported_filters=_bids_entities()["raw"],
+        supported_filters=bids_entities()["raw"],
         extra_filter=img_filters,
         verbose=verbose,
     )
@@ -1488,7 +1584,17 @@ def _get_confounds(
             filters=filters,
         )
     _check_confounds_list(confounds=confounds, imgs=imgs)
-    return confounds or None
+
+    if confounds:
+        if kwargs_load_confounds is None:
+            confounds = [
+                pd.read_csv(c, sep="\t", index_col=None) for c in confounds
+            ]
+            return confounds or None
+
+        confounds, _ = load_confounds(img_files=imgs, **kwargs_load_confounds)
+
+        return confounds
 
 
 def _check_confounds_list(confounds, imgs):
@@ -1578,17 +1684,17 @@ def _check_args_first_level_from_bids(
             f"{derivatives_folder}"
         )
 
-    _check_bids_label(task_label)
+    check_bids_label(task_label)
 
     if space_label is not None:
-        _check_bids_label(space_label)
+        check_bids_label(space_label)
 
     if not isinstance(sub_labels, list):
         raise TypeError(
             f"sub_labels must be a list, instead {type(sub_labels)} was given"
         )
     for sub_label_ in sub_labels:
-        _check_bids_label(sub_label_)
+        check_bids_label(sub_label_)
 
     if not isinstance(img_filters, list):
         raise TypeError(
@@ -1596,8 +1702,8 @@ def _check_args_first_level_from_bids(
             f"Got {type(img_filters)} instead."
         )
     supported_filters = [
-        *_bids_entities()["raw"],
-        *_bids_entities()["derivatives"],
+        *bids_entities()["raw"],
+        *bids_entities()["derivatives"],
     ]
     for filter_ in img_filters:
         if len(filter_) != 2 or not all(isinstance(x, str) for x in filter_):
@@ -1610,7 +1716,36 @@ def _check_args_first_level_from_bids(
                 f"Entity {filter_[0]} for {filter_} is not a possible filter. "
                 f"Only {supported_filters} are allowed."
             )
-        _check_bids_label(filter_[1])
+        check_bids_label(filter_[1])
+
+
+def _check_kwargs_load_confounds(**kwargs):
+    # reuse the default from nilearn.interface.fmriprep.load_confounds
+    defaults = {
+        "strategy": ("motion", "high_pass", "wm_csf"),
+        "motion": "full",
+        "scrub": 5,
+        "fd_threshold": 0.2,
+        "std_dvars_threshold": 3,
+        "wm_csf": "basic",
+        "global_signal": "basic",
+        "compcor": "anat_combined",
+        "n_compcor": "all",
+        "ica_aroma": "full",
+        "demean": True,
+    }
+
+    if kwargs.get("confounds_strategy") is None:
+        return None
+
+    kwargs_load_confounds = {
+        key: defaults[key]
+        if f"confounds_{key}" not in kwargs
+        else kwargs[f"confounds_{key}"]
+        for key in defaults
+    }
+
+    return kwargs_load_confounds
 
 
 def _make_bids_files_filter(
@@ -1797,7 +1932,7 @@ def _check_bids_events_list(
         "sub",
         "ses",
         "task",
-        *_bids_entities()["raw"],
+        *bids_entities()["raw"],
     ]
     for this_img in imgs:
         parsed_filename = parse_bids_filename(this_img)

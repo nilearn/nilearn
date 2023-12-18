@@ -266,6 +266,8 @@
 
 .. _Steven Meisler: https://www.stevenmeisler.com
 
+.. _Suramya Pokharel: https://github.com/SuramyaP
+
 .. _Sylvain Lan: https://github.com/SylvainLan
 
 .. _Sylvain Takerkart: https://github.com/SylvainTakerkart
