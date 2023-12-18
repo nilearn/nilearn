@@ -20,6 +20,7 @@ from nilearn.interfaces.bids.utils import (
     check_bids_label,
     create_bids_filename,
 )
+# TODO get legal_confounds out of private testing module
 from nilearn.interfaces.fmriprep.tests._testing import get_legal_confound
 
 
