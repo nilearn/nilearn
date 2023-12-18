@@ -2,7 +2,7 @@ import pytest
 
 from nilearn.interfaces.fmriprep.load_confounds_utils import (
     _get_file_name,
-    _sanitize_confounds,
+    sanitize_confounds,
 )
 from nilearn.interfaces.fmriprep.tests._testing import create_tmp_filepath
 
@@ -26,7 +26,7 @@ from nilearn.interfaces.fmriprep.tests._testing import create_tmp_filepath
 )
 def test_sanitize_confounds(inputs, flag):
     """Should correctly catch inputs that are a single image."""
-    _, singleflag = _sanitize_confounds(inputs)
+    _, singleflag = sanitize_confounds(inputs)
     assert singleflag is flag
 
 

@@ -15,8 +15,13 @@ from scipy.ndimage import binary_dilation
 
 from nilearn import datasets, image, maskers, masking
 from nilearn._utils import as_ndarray, logger
-from nilearn._utils.bids import create_bids_filename
-from nilearn.interfaces.bids._utils import _bids_entities, _check_bids_label
+from nilearn.interfaces.bids.utils import (
+    bids_entities,
+    check_bids_label,
+    create_bids_filename,
+)
+
+# TODO get legal_confounds out of private testing module
 from nilearn.interfaces.fmriprep.tests._testing import get_legal_confound
 
 
@@ -926,7 +931,7 @@ def create_fake_bids_dataset(
     bids_path = Path(base_dir) / bids_dataset_dir
 
     for task_ in tasks:
-        _check_bids_label(task_)
+        check_bids_label(task_)
 
     if not isinstance(n_runs, list) or not all(
         isinstance(x, int) for x in n_runs
@@ -991,15 +996,15 @@ def _check_entities_and_labels(entities):
         raise ValueError("Only a single extra entity is supported for now.")
 
     for key in entities:
-        if key not in [*_bids_entities()["raw"],
-                       *_bids_entities()["derivatives"]]:
-            allowed_entities = [*_bids_entities()['raw'],
-                                *_bids_entities()['derivatives']]
+        if key not in [*bids_entities()["raw"],
+                       *bids_entities()["derivatives"]]:
+            allowed_entities = [*bids_entities()['raw'],
+                                *bids_entities()['derivatives']]
             raise ValueError(
                 f"Invalid entity: {key}. Allowed entities are: "
                 f"{allowed_entities}"
             )
-        [_check_bids_label(label_) for label_ in entities[key]]
+        [check_bids_label(label_) for label_ in entities[key]]
 
 
 def _mock_bids_dataset(
@@ -1073,7 +1078,7 @@ def _mock_bids_dataset(
                                 task=task,
                                 run=run,
                             )
-                            if key in _bids_entities()["raw"]:
+                            if key in bids_entities()["raw"]:
                                 fields["entities"][key] = label
                             _write_bids_raw_func(
                                 func_path=func_path,
@@ -1362,7 +1367,7 @@ def _write_bids_derivative_func(
         fields["suffix"] = confounds_tag
         fields["extension"] = "tsv"
         confounds_path = func_path / create_bids_filename(
-            fields=fields, entities_to_include=_bids_entities()["raw"]
+            fields=fields, entities_to_include=bids_entities()["raw"]
         )
         confounds, metadata = get_legal_confound()
         confounds.to_csv(
@@ -1377,8 +1382,8 @@ def _write_bids_derivative_func(
     shape = [n_voxels, n_voxels, n_voxels, n_time_points]
 
     entities_to_include = [
-        *_bids_entities()["raw"],
-        *_bids_entities()["derivatives"]
+        *bids_entities()["raw"],
+        *bids_entities()["derivatives"]
     ]
 
     for space in ("MNI", "T1w"):

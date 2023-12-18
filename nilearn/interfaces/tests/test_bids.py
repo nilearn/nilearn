@@ -20,8 +20,8 @@ from nilearn.interfaces.bids import (
 )
 from nilearn.interfaces.bids.query import (
     _get_metadata_from_bids,
-    _infer_repetition_time_from_dataset,
-    _infer_slice_timing_start_time_from_dataset,
+    infer_repetition_time_from_dataset,
+    infer_slice_timing_start_time_from_dataset,
 )
 from nilearn.maskers import NiftiMasker
 
@@ -68,7 +68,7 @@ def test_infer_repetition_time_from_dataset(tmp_path):
         base_dir=tmp_path, n_sub=1, n_ses=1, tasks=["main"], n_runs=[1]
     )
 
-    t_r = _infer_repetition_time_from_dataset(
+    t_r = infer_repetition_time_from_dataset(
         bids_path=tmp_path / bids_path, filters=[("task", "main")]
     )
 
@@ -81,7 +81,7 @@ def test_infer_repetition_time_from_dataset(tmp_path):
         metadata={"RepetitionTime": expected_t_r},
     )
 
-    t_r = _infer_repetition_time_from_dataset(
+    t_r = infer_repetition_time_from_dataset(
         bids_path=tmp_path / bids_path / "derivatives",
         filters=[("task", "main"), ("run", "01")],
     )
@@ -102,7 +102,7 @@ def test_infer_slice_timing_start_time_from_dataset(tmp_path):
         base_dir=tmp_path, n_sub=1, n_ses=1, tasks=["main"], n_runs=[1]
     )
 
-    StartTime = _infer_slice_timing_start_time_from_dataset(
+    StartTime = infer_slice_timing_start_time_from_dataset(
         bids_path=tmp_path / bids_path / "derivatives",
         filters=[("task", "main")],
     )
@@ -116,7 +116,7 @@ def test_infer_slice_timing_start_time_from_dataset(tmp_path):
         metadata={"StartTime": expected_StartTime},
     )
 
-    StartTime = _infer_slice_timing_start_time_from_dataset(
+    StartTime = infer_slice_timing_start_time_from_dataset(
         bids_path=tmp_path / bids_path / "derivatives",
         filters=[("task", "main")],
     )
@@ -377,43 +377,15 @@ def test_save_glm_to_bids(tmp_path_factory):
         assert os.path.isfile(full_filename)
 
 
-def test_save_glm_to_bids_contrast_definitions(tmp_path_factory):
-    """Test that save_glm_to_bids operates on different contrast definitions as
-    expected.
+@pytest.fixture
+def nb_cols_design_matrix():
+    return 3
 
-    This test reuses code from
-    nilearn.glm.tests.test_first_level.test_high_level_glm_one_session.
-    """
-    tmpdir = tmp_path_factory.mktemp(
-        "test_save_glm_to_bids_contrast_definitions"
-    )
 
-    EXPECTED_FILENAMES = [
-        "dataset_description.json",
-        (
-            "sub-01_ses-01_task-nback_contrast-aaaMinusBbb"
-            "_stat-effect_statmap.nii.gz"
-        ),
-        "sub-01_ses-01_task-nback_contrast-aaaMinusBbb_stat-p_statmap.nii.gz",
-        "sub-01_ses-01_task-nback_contrast-aaaMinusBbb_stat-t_statmap.nii.gz",
-        (
-            "sub-01_ses-01_task-nback_contrast-aaaMinusBbb"
-            "_stat-variance_statmap.nii.gz"
-        ),
-        "sub-01_ses-01_task-nback_contrast-aaaMinusBbb_stat-z_statmap.nii.gz",
-        "sub-01_ses-01_task-nback_run-1_contrast-aaaMinusBbb_design.svg",
-        "sub-01_ses-01_task-nback_run-1_design.svg",
-        "sub-01_ses-01_task-nback_run-1_design.tsv",
-        "sub-01_ses-01_task-nback_run-2_contrast-aaaMinusBbb_design.svg",
-        "sub-01_ses-01_task-nback_run-2_design.svg",
-        "sub-01_ses-01_task-nback_run-2_design.tsv",
-        "sub-01_ses-01_task-nback_stat-errorts_statmap.nii.gz",
-        "sub-01_ses-01_task-nback_stat-rSquare_statmap.nii.gz",
-        "sub-01_ses-01_task-nback_statmap.json",
-    ]
-
+@pytest.fixture
+def two_runs_model(nb_cols_design_matrix):
     # Create two runs of data
-    shapes, rk = [(7, 8, 9, 15), (7, 8, 9, 15)], 3
+    shapes, rk = [(7, 8, 9, 15), (7, 8, 9, 15)], nb_cols_design_matrix
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes,
         rk,
@@ -433,8 +405,7 @@ def test_save_glm_to_bids_contrast_definitions(tmp_path_factory):
     masker = NiftiMasker(mask)
     masker.fit()
 
-    # Call with verbose (improve coverage)
-    single_session_model = FirstLevelModel(
+    return FirstLevelModel(
         mask_img=None,
         minimize_memory=False,
     ).fit(
@@ -442,13 +413,20 @@ def test_save_glm_to_bids_contrast_definitions(tmp_path_factory):
         design_matrices=design_matrices,
     )
 
+
+def test_save_glm_to_bids_errors(
+    tmp_path_factory, two_runs_model, nb_cols_design_matrix
+):
+    """Test errors of save_glm_to_bids."""
+    tmpdir = tmp_path_factory.mktemp("test_save_glm_to_bids_errors")
+
     # Contrast names must be strings
-    contrasts = {5: np.eye(rk)}
+    contrasts = {5: np.eye(nb_cols_design_matrix)}
     contrast_types = {5: "F"}
 
     with pytest.raises(ValueError):
         save_glm_to_bids(
-            model=single_session_model,
+            model=two_runs_model,
             contrasts=contrasts,
             contrast_types=contrast_types,
             out_dir=tmpdir,
@@ -461,25 +439,64 @@ def test_save_glm_to_bids_contrast_definitions(tmp_path_factory):
 
     with pytest.raises(ValueError):
         save_glm_to_bids(
-            model=single_session_model,
+            model=two_runs_model,
             contrasts=contrasts,
             contrast_types=contrast_types,
             out_dir=tmpdir,
             prefix="sub-01_ses-01_task-nback",
         )
 
-    # Test string-based contrasts and undefined contrast types
-    contrasts = ["AAA - BBB"]
+
+@pytest.mark.parametrize(
+    "prefix", ["sub-01_ses-01_task-nback", "sub-01_task-nback_", 1]
+)
+@pytest.mark.parametrize("contrasts", [["AAA - BBB"], "AAA - BBB"])
+def test_save_glm_to_bids_contrast_definitions(
+    tmp_path_factory, two_runs_model, contrasts, prefix
+):
+    """Test that save_glm_to_bids operates on different contrast definitions as
+    expected.
+
+    - Test string-based contrasts and undefined contrast types
+
+    This test reuses code from
+    nilearn.glm.tests.test_first_level.test_high_level_glm_one_session.
+    """
+    tmpdir = tmp_path_factory.mktemp(
+        "test_save_glm_to_bids_contrast_definitions"
+    )
+
+    EXPECTED_FILENAME_ENDINGS = [
+        "dataset_description.json",
+        ("contrast-aaaMinusBbb_stat-effect_statmap.nii.gz"),
+        "contrast-aaaMinusBbb_stat-p_statmap.nii.gz",
+        "contrast-aaaMinusBbb_stat-t_statmap.nii.gz",
+        ("contrast-aaaMinusBbb_stat-variance_statmap.nii.gz"),
+        "contrast-aaaMinusBbb_stat-z_statmap.nii.gz",
+        "run-1_contrast-aaaMinusBbb_design.svg",
+        "run-1_design.svg",
+        "run-1_design.tsv",
+        "run-2_contrast-aaaMinusBbb_design.svg",
+        "run-2_design.svg",
+        "run-2_design.tsv",
+        "stat-errorts_statmap.nii.gz",
+        "stat-rSquare_statmap.nii.gz",
+        "statmap.json",
+    ]
 
     save_glm_to_bids(
-        model=single_session_model,
+        model=two_runs_model,
         contrasts=contrasts,
         contrast_types=None,
         out_dir=tmpdir,
-        prefix="sub-01_ses-01_task-nback",
+        prefix=prefix,
     )
 
-    for fname in EXPECTED_FILENAMES:
+    for fname in EXPECTED_FILENAME_ENDINGS:
+        if fname != "dataset_description.json" and isinstance(prefix, str):
+            fname = (
+                prefix + fname if prefix.endswith("_") else f"{prefix}_{fname}"
+            )
         full_filename = os.path.join(tmpdir, fname)
         assert os.path.isfile(full_filename)
 
@@ -509,7 +526,7 @@ def test_save_glm_to_bids_second_level(tmp_path_factory):
 
     shapes = ((7, 8, 9, 1),)
     rk = 3
-    mask, func_img, design_matrices = generate_fake_fmri_data_and_design(
+    mask, func_img, _ = generate_fake_fmri_data_and_design(
         shapes,
         rk,
     )
