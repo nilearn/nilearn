@@ -56,8 +56,10 @@ def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
     if mask_dilation is not None and mask_dilation > 0:
         mask_img = image.new_img_like(
             mask_img,
-            binary_dilation(image.get_data(mask_img),
-                            iterations=mask_dilation))
+            binary_dilation(
+                image.get_data(mask_img), iterations=mask_dilation
+            ),
+        )
     inverse_img = masker.inverse_transform(data)
     return inverse_img, mask_img
 
@@ -87,11 +89,9 @@ def generate_timeseries(n_timepoints, n_features, random_state=0):
     return rand_gen.standard_normal((n_timepoints, n_features))
 
 
-def generate_regions_ts(n_features,
-                        n_regions,
-                        overlap=0,
-                        random_state=0,
-                        window="boxcar"):
+def generate_regions_ts(
+    n_features, n_regions, overlap=0, random_state=0, window="boxcar"
+):
     """Generate some regions as timeseries.
 
     Parameters
@@ -129,13 +129,14 @@ def generate_regions_ts(n_features,
     # Start at 1 to avoid getting an empty region
     boundaries = np.zeros(n_regions + 1)
     boundaries[-1] = n_features
-    boundaries[1:-1] = rand_gen.permutation(np.arange(
-        1, n_features))[:n_regions - 1]
+    boundaries[1:-1] = rand_gen.permutation(np.arange(1, n_features))[
+        : n_regions - 1
+    ]
     boundaries.sort()
 
     regions = np.zeros((n_regions, n_features), order="C")
-    overlap_end = int((overlap + 1) / 2.)
-    overlap_start = int(overlap / 2.)
+    overlap_end = int((overlap + 1) / 2.0)
+    overlap_start = int(overlap / 2.0)
     for n in range(len(boundaries) - 1):
         start = int(max(0, boundaries[n] - overlap_start))
         end = int(min(n_features, boundaries[n + 1] + overlap_end))
@@ -146,13 +147,15 @@ def generate_regions_ts(n_features,
     return regions
 
 
-def generate_maps(shape,
-                  n_regions,
-                  overlap=0,
-                  border=1,
-                  window="boxcar",
-                  random_state=0,
-                  affine=np.eye(4)):
+def generate_maps(
+    shape,
+    n_regions,
+    overlap=0,
+    border=1,
+    window="boxcar",
+    random_state=0,
+    affine=np.eye(4),
+):
     """Generate a 4D volume containing several maps.
 
     Parameters
@@ -187,21 +190,25 @@ def generate_maps(shape,
     """
     mask = np.zeros(shape, dtype=np.int8)
     mask[border:-border, border:-border, border:-border] = 1
-    ts = generate_regions_ts(mask.sum(),
-                             n_regions,
-                             overlap=overlap,
-                             random_state=random_state,
-                             window=window)
+    ts = generate_regions_ts(
+        mask.sum(),
+        n_regions,
+        overlap=overlap,
+        random_state=random_state,
+        window=window,
+    )
     mask_img = Nifti1Image(mask, affine)
     return masking.unmask(ts, mask_img), mask_img
 
 
-def generate_labeled_regions(shape,
-                             n_regions,
-                             random_state=0,
-                             labels=None,
-                             affine=np.eye(4),
-                             dtype="int32"):
+def generate_labeled_regions(
+    shape,
+    n_regions,
+    random_state=0,
+    labels=None,
+    affine=np.eye(4),
+    dtype="int32",
+):
     """Generate a 3D volume with labeled regions.
 
     Parameters
@@ -239,9 +246,9 @@ def generate_labeled_regions(shape,
     else:
         n_regions = len(labels)
 
-    regions = generate_regions_ts(n_voxels,
-                                  n_regions,
-                                  random_state=random_state)
+    regions = generate_regions_ts(
+        n_voxels, n_regions, random_state=random_state
+    )
     # replace weights with labels
     for n, row in zip(labels, regions):
         row[row > 0] = n
@@ -250,14 +257,16 @@ def generate_labeled_regions(shape,
     return Nifti1Image(data, affine)
 
 
-def generate_fake_fmri(shape=(10, 11, 12),
-                       length=17,
-                       kind="noise",
-                       affine=np.eye(4),
-                       n_blocks=None,
-                       block_size=None,
-                       block_type='classification',
-                       random_state=0):
+def generate_fake_fmri(
+    shape=(10, 11, 12),
+    length=17,
+    kind="noise",
+    affine=np.eye(4),
+    n_blocks=None,
+    block_size=None,
+    block_type="classification",
+    random_state=0,
+):
     """Generate a signal which can be used for testing.
 
     The return value is a 4D image, representing 3D volumes along time.
@@ -313,7 +322,7 @@ def generate_fake_fmri(shape=(10, 11, 12),
         Returned only if ``n_blocks`` is not None.
 
     """
-    full_shape = shape + (length, )
+    full_shape = shape + (length,)
     fmri = np.zeros(full_shape)
     # Fill central voxels timeseries with random signals
     width = [s // 2 for s in shape]
@@ -324,20 +333,26 @@ def generate_fake_fmri(shape=(10, 11, 12),
         signals = rand_gen.integers(256, size=(width + [length]))
     elif kind == "step":
         signals = np.ones(width + [length])
-        signals[..., :length // 2] = 0.5
+        signals[..., : length // 2] = 0.5
     else:
         raise ValueError("Unhandled value for parameter 'kind'")
 
-    fmri[shift[0]:shift[0] + width[0], shift[1]:shift[1] + width[1],
-         shift[2]:shift[2] + width[2], :] = signals
+    fmri[
+        shift[0] : shift[0] + width[0],
+        shift[1] : shift[1] + width[1],
+        shift[2] : shift[2] + width[2],
+        :,
+    ] = signals
 
     mask = np.zeros(shape)
-    mask[shift[0]:shift[0] + width[0], shift[1]:shift[1] + width[1],
-         shift[2]:shift[2] + width[2]] = 1
+    mask[
+        shift[0] : shift[0] + width[0],
+        shift[1] : shift[1] + width[1],
+        shift[2] : shift[2] + width[2],
+    ] = 1
 
     if n_blocks is None:
-        return (Nifti1Image(fmri, affine),
-                Nifti1Image(mask, affine))
+        return (Nifti1Image(fmri, affine), Nifti1Image(mask, affine))
 
     block_size = 3 if block_size is None else block_size
     flat_fmri = fmri[mask.astype(bool)]
@@ -345,16 +360,18 @@ def generate_fake_fmri(shape=(10, 11, 12),
     target = np.zeros(length, dtype=int)
     rest_max_size = (length - (n_blocks * block_size)) // n_blocks
     if rest_max_size < 0:
-        raise ValueError(f'{length} is too small '
-                         f'to put {n_blocks} blocks of size {block_size}')
+        raise ValueError(
+            f"{length} is too small "
+            f"to put {n_blocks} blocks of size {block_size}"
+        )
     t_start = 0
     if rest_max_size > 0:
         t_start = rand_gen.integers(0, rest_max_size, 1)[0]
     for block in range(n_blocks):
-        if block_type == 'classification':
+        if block_type == "classification":
             # Select a random voxel and add some signal to the background
             voxel_idx = rand_gen.integers(0, flat_fmri.shape[0], 1)[0]
-            trials_effect = (rand_gen.random(block_size) + 1) * 3.
+            trials_effect = (rand_gen.random(block_size) + 1) * 3.0
         else:
             # Select the voxel in the image center and add some signal
             # that increases with each block
@@ -363,21 +380,20 @@ def generate_fake_fmri(shape=(10, 11, 12),
         t_rest = 0
         if rest_max_size > 0:
             t_rest = rand_gen.integers(0, rest_max_size, 1)[0]
-        flat_fmri[voxel_idx, t_start:t_start + block_size] += trials_effect
-        target[t_start:t_start + block_size] = block + 1
+        flat_fmri[voxel_idx, t_start : t_start + block_size] += trials_effect
+        target[t_start : t_start + block_size] = block + 1
         t_start += t_rest + block_size
-    target = target if block_type == 'classification' \
-        else target.astype(np.float64)
+    target = (
+        target if block_type == "classification" else target.astype(np.float64)
+    )
     fmri = np.zeros(fmri.shape)
     fmri[mask.astype(bool)] = flat_fmri
-    return (Nifti1Image(fmri, affine),
-            Nifti1Image(mask, affine), target)
+    return (Nifti1Image(fmri, affine), Nifti1Image(mask, affine), target)
 
 
-def generate_fake_fmri_data_and_design(shapes,
-                                       rk=3,
-                                       affine=np.eye(4),
-                                       random_state=0):
+def generate_fake_fmri_data_and_design(
+    shapes, rk=3, affine=np.eye(4), random_state=0
+):
     """Generate random :term:`fMRI` time series \
     and design matrices of given shapes.
 
@@ -415,24 +431,23 @@ def generate_fake_fmri_data_and_design(shapes,
         data = rand_gen.standard_normal(shape)
         data[1:-1, 1:-1, 1:-1] += 100
         fmri_data.append(Nifti1Image(data, affine))
-        columns = rand_gen.choice(list(string.ascii_lowercase),
-                                  size=rk,
-                                  replace=False)
+        columns = rand_gen.choice(
+            list(string.ascii_lowercase), size=rk, replace=False
+        )
         design_matrices.append(
             pd.DataFrame(
                 rand_gen.standard_normal((shape[3], rk)), columns=columns
             )
         )
-    mask = Nifti1Image((rand_gen.random(shape[:3]) > .5).astype(np.int8),
-                       affine)
+    mask = Nifti1Image(
+        (rand_gen.random(shape[:3]) > 0.5).astype(np.int8), affine
+    )
     return mask, fmri_data, design_matrices
 
 
-def write_fake_fmri_data_and_design(shapes,
-                                    rk=3,
-                                    affine=np.eye(4),
-                                    random_state=0,
-                                    file_path=None):
+def write_fake_fmri_data_and_design(
+    shapes, rk=3, affine=np.eye(4), random_state=0, file_path=None
+):
     """Generate random :term:`fMRI` data \
     and design matrices and write them to disk.
 
@@ -473,22 +488,23 @@ def write_fake_fmri_data_and_design(shapes,
     if file_path is None:
         file_path = Path.cwd()
 
-    mask_file, fmri_files, design_files = file_path / 'mask.nii', [], []
+    mask_file, fmri_files, design_files = file_path / "mask.nii", [], []
 
     rand_gen = np.random.default_rng(random_state)
     for i, shape in enumerate(shapes):
-
         data = rand_gen.standard_normal(shape)
         data[1:-1, 1:-1, 1:-1] += 100
-        fmri_files.append(str(file_path / f'fmri_run{i:d}.nii'))
+        fmri_files.append(str(file_path / f"fmri_run{i:d}.nii"))
         Nifti1Image(data, affine).to_filename(fmri_files[-1])
 
-        design_files.append(str(file_path / f'dmtx_{i:d}.csv'))
-        pd.DataFrame(rand_gen.standard_normal((shape[3], rk)),
-                     columns=['', '', '']).to_csv(design_files[-1])
+        design_files.append(str(file_path / f"dmtx_{i:d}.csv"))
+        pd.DataFrame(
+            rand_gen.standard_normal((shape[3], rk)), columns=["", "", ""]
+        ).to_csv(design_files[-1])
 
-    Nifti1Image((rand_gen.random(shape[:3]) > .5).astype(np.int8),
-                affine).to_filename(mask_file)
+    Nifti1Image(
+        (rand_gen.random(shape[:3]) > 0.5).astype(np.int8), affine
+    ).to_filename(mask_file)
 
     return mask_file, fmri_files, design_files
 
@@ -514,10 +530,7 @@ def _write_fake_bold_gifti(file_path):
     return file_path
 
 
-def write_fake_bold_img(file_path,
-                        shape,
-                        affine=np.eye(4),
-                        random_state=0):
+def write_fake_bold_img(file_path, shape, affine=np.eye(4), random_state=0):
     """Generate a random image of given shape and write it to disk.
 
     Parameters
@@ -548,10 +561,9 @@ def write_fake_bold_img(file_path,
     return file_path
 
 
-def _generate_signals_from_precisions(precisions,
-                                      min_n_samples=50,
-                                      max_n_samples=100,
-                                      random_state=0):
+def _generate_signals_from_precisions(
+    precisions, min_n_samples=50, max_n_samples=100, random_state=0
+):
     """Generate timeseries according to some given precision matrices.
 
     Signals all have zero mean.
@@ -581,24 +593,27 @@ def _generate_signals_from_precisions(precisions,
     rand_gen = np.random.default_rng(random_state)
 
     signals = []
-    n_samples = rand_gen.integers(min_n_samples,
-                                  high=max_n_samples,
-                                  size=len(precisions))
+    n_samples = rand_gen.integers(
+        min_n_samples, high=max_n_samples, size=len(precisions)
+    )
 
     mean = np.zeros(precisions[0].shape[0])
     for n, prec in zip(n_samples, precisions):
         signals.append(
-            rand_gen.multivariate_normal(mean, np.linalg.inv(prec), (n, )))
+            rand_gen.multivariate_normal(mean, np.linalg.inv(prec), (n,))
+        )
     return signals
 
 
-def generate_group_sparse_gaussian_graphs(n_subjects=5,
-                                          n_features=30,
-                                          min_n_samples=30,
-                                          max_n_samples=50,
-                                          density=0.1,
-                                          random_state=0,
-                                          verbose=0):
+def generate_group_sparse_gaussian_graphs(
+    n_subjects=5,
+    n_features=30,
+    min_n_samples=30,
+    max_n_samples=50,
+    density=0.1,
+    random_state=0,
+    verbose=0,
+):
     """Generate signals drawn from a sparse Gaussian graphical model.
 
     Parameters
@@ -644,19 +659,22 @@ def generate_group_sparse_gaussian_graphs(n_subjects=5,
     # diagonal)
     topology = np.empty((n_features, n_features))
     topology[:, :] = np.triu(
-        (rand_gen.integers(0,
-                           high=int(1. / density),
-                           size=n_features * n_features)).reshape(
-                               n_features, n_features) == 0, k=1)
+        (
+            rand_gen.integers(
+                0, high=int(1.0 / density), size=n_features * n_features
+            )
+        ).reshape(n_features, n_features)
+        == 0,
+        k=1,
+    )
 
     # Generate edges weights on topology
     precisions = []
     mask = topology > 0
     for _ in range(n_subjects):
-
         # See also sklearn.datasets.samples_generator.make_sparse_spd_matrix
         prec = topology.copy()
-        prec[mask] = rand_gen.uniform(low=.1, high=.8, size=(mask.sum()))
+        prec[mask] = rand_gen.uniform(low=0.1, high=0.8, size=(mask.sum()))
         prec += np.eye(prec.shape[0])
         prec = np.dot(prec.T, prec)
 
@@ -664,25 +682,30 @@ def generate_group_sparse_gaussian_graphs(n_subjects=5,
         np.testing.assert_almost_equal(prec, prec.T)
         eigenvalues = np.linalg.eigvalsh(prec)
         if eigenvalues.min() < 0:
-            raise ValueError("Failed generating a positive definite precision "
-                             "matrix. Decreasing n_features can help solving "
-                             "this problem.")
+            raise ValueError(
+                "Failed generating a positive definite precision "
+                "matrix. Decreasing n_features can help solving "
+                "this problem."
+            )
         precisions.append(prec)
 
     # Returns the topology matrix of precision matrices.
     topology += np.eye(*topology.shape)
     topology = np.dot(topology.T, topology)
     topology = topology > 0
-    assert (np.all(topology == topology.T))
+    assert np.all(topology == topology.T)
     logger.log(
         f"Sparsity: {1.0 * topology.sum() / topology.shape[0] ** 2 :f}",
-        verbose=verbose)
+        verbose=verbose,
+    )
 
     # Generate temporal signals
-    signals = _generate_signals_from_precisions(precisions,
-                                                min_n_samples=min_n_samples,
-                                                max_n_samples=max_n_samples,
-                                                random_state=rand_gen)
+    signals = _generate_signals_from_precisions(
+        precisions,
+        min_n_samples=min_n_samples,
+        max_n_samples=max_n_samples,
+        random_state=rand_gen,
+    )
     return signals, precisions, topology
 
 
@@ -700,17 +723,25 @@ def basic_paradigm(condition_names_have_spaces=False):
         Basic experimental paradigm with events data.
 
     """
-    conditions = ['c 0', 'c 0', 'c 0',
-                  'c 1', 'c 1', 'c 1',
-                  'c 2', 'c 2', 'c 2']
+    conditions = [
+        "c 0",
+        "c 0",
+        "c 0",
+        "c 1",
+        "c 1",
+        "c 1",
+        "c 2",
+        "c 2",
+        "c 2",
+    ]
 
     if not condition_names_have_spaces:
-        conditions = [c.replace(' ', '') for c in conditions]
+        conditions = [c.replace(" ", "") for c in conditions]
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
     durations = 1 * np.ones(9)
-    events = pd.DataFrame({'trial_type': conditions,
-                           'onset': onsets,
-                           'duration': durations})
+    events = pd.DataFrame(
+        {"trial_type": conditions, "onset": onsets, "duration": durations}
+    )
     return events
 
 
@@ -738,23 +769,23 @@ def _basic_confounds(length, random_state=0):
 
     """
     rand_gen = np.random.default_rng(random_state)
-    columns = ['csf',
-               'white_matter',
-               'global_signal',
-               'rot_x',
-               'rot_y',
-               'rot_z',
-               'trans_x',
-               'trans_y',
-               'trans_z']
+    columns = [
+        "csf",
+        "white_matter",
+        "global_signal",
+        "rot_x",
+        "rot_y",
+        "rot_z",
+        "trans_x",
+        "trans_y",
+        "trans_z",
+    ]
     data = rand_gen.random((length, len(columns)))
     confounds = pd.DataFrame(data, columns=columns)
     return confounds
 
 
-def add_metadata_to_bids_dataset(bids_path,
-                                 metadata,
-                                 json_file=None):
+def add_metadata_to_bids_dataset(bids_path, metadata, json_file=None):
     """Add JSON file with specific metadata to BIDS dataset.
 
     Note no "BIDS validation" are performed on the metadata,
@@ -782,17 +813,17 @@ def add_metadata_to_bids_dataset(bids_path,
     """
     if json_file is None:
         json_file = (
-            Path(bids_path) /
-            'derivatives' /
-            'sub-01' /
-            'ses-01' /
-            'func' /
-            'sub-01_ses-01_task-main_run-01_space-MNI_desc-preproc_bold.json'
+            Path(bids_path)
+            / "derivatives"
+            / "sub-01"
+            / "ses-01"
+            / "func"
+            / "sub-01_ses-01_task-main_run-01_space-MNI_desc-preproc_bold.json"
         )
     else:
         json_file = Path(bids_path) / json_file
 
-    with open(json_file, 'w') as f:
+    with open(json_file, "w") as f:
         json.dump(metadata, f)
 
     return json_file
@@ -991,10 +1022,14 @@ def _check_entities_and_labels(entities):
         raise ValueError("Only a single extra entity is supported for now.")
 
     for key in entities:
-        if key not in [*_bids_entities()["raw"],
-                       *_bids_entities()["derivatives"]]:
-            allowed_entities = [*_bids_entities()['raw'],
-                                *_bids_entities()['derivatives']]
+        if key not in [
+            *_bids_entities()["raw"],
+            *_bids_entities()["derivatives"],
+        ]:
+            allowed_entities = [
+                *_bids_entities()["raw"],
+                *_bids_entities()["derivatives"],
+            ]
             raise ValueError(
                 f"Invalid entity: {key}. Allowed entities are: "
                 f"{allowed_entities}"
@@ -1063,7 +1098,6 @@ def _mock_bids_dataset(
 
         for task, n_run in zip(tasks, n_runs):
             for run in _listify(n_run):
-
                 if entities:
                     for key in entities:
                         for label in entities[key]:
@@ -1158,7 +1192,6 @@ def _mock_bids_derivatives(
 
         for task, n_run in zip(tasks, n_runs):
             for run in _listify(n_run):
-
                 if entities:
                     for key in entities:
                         for label in entities[key]:
@@ -1208,10 +1241,7 @@ def _listify(n):
     return [""] if n <= 0 else [f"{label:02}" for label in range(1, n + 1)]
 
 
-def _init_fields(subject,
-                 session,
-                 task,
-                 run):
+def _init_fields(subject, session, task, run):
     """Initialize fields to help create a valid BIDS filename.
 
     Parameters
@@ -1378,7 +1408,7 @@ def _write_bids_derivative_func(
 
     entities_to_include = [
         *_bids_entities()["raw"],
-        *_bids_entities()["derivatives"]
+        *_bids_entities()["derivatives"],
     ]
 
     for space in ("MNI", "T1w"):
@@ -1401,7 +1431,6 @@ def _write_bids_derivative_func(
     for hemi in ["L", "R"]:
         fields["entities"]["hemi"] = hemi
         gifti_path = func_path / create_bids_filename(
-            fields=fields,
-            entities_to_include=entities_to_include
+            fields=fields, entities_to_include=entities_to_include
         )
         _write_fake_bold_gifti(gifti_path)
