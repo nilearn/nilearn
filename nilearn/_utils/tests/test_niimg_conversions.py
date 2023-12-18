@@ -603,3 +603,11 @@ def test_repr_niimgs_with_niimg(
         _utils._repr_niimgs(img_3d_ones_eye, shorten=True)
         == f"{class_name}('{Path(filename).name[:18]}...')"
     )
+
+
+def test_concat_niimgs_warning(img_3d_zeros_eye):
+    with pytest.warns(
+        DeprecationWarning,
+        match="Please import this function from 'nilearn.image'",
+    ):
+        niimg_conversions.concat_niimgs((img_3d_zeros_eye, img_3d_zeros_eye))
