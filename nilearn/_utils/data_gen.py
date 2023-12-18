@@ -1413,7 +1413,7 @@ def _write_bids_derivative_func(
 
     entities_to_include = [
         *bids_entities()["raw"],
-        *bids_entities()["derivatives"]
+        *bids_entities()["derivatives"],
     ]
 
     for space in ("MNI", "T1w"):
