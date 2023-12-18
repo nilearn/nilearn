@@ -1,4 +1,18 @@
-"""Functions to noise components based on selected strategey."""
+"""Functions to noise components based on selected strategey.
+
+
+The _load_* functions  of this module are indirectly used
+in nilearn.interfaces.fmriprep._load_noise_component.
+
+See an example below:
+
+.. code-block:: python
+
+    loaded_confounds = getattr(components, f"_load_{component}")(
+        confounds_raw, **params
+    )  # noqa
+
+"""
 import numpy as np
 import pandas as pd
 
