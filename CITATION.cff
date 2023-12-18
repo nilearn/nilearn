@@ -643,6 +643,11 @@ authors:
       Massachusetts, USA
     email: smeisler@g.harvard.edu
     orcid: https://orcid.org/0000-0002-8888-1572
+  - given-names: Suramya
+    family-names: Pokharel
+    website: https://github.com/SuramyaP
+    affiliation: Tribhuvan University, Kathmandu, Nepal
+    email: suramyapokharel7@gmail.com
   - given-names: Sylvain
     family-names: Lan
     website: https://github.com/SylvainLan
@@ -711,8 +716,3 @@ authors:
     family-names: Nájera
     website: https://github.com/Titan-C
     affiliation: Checkmk
-  - given-names: Suramya
-    family-names: Pokharel
-    website: https://github.com/SuramyaP
-    affiliation: Tribhuvan University, Kathmandu, Nepal
-    email: suramyapokharel7@gmail.com
