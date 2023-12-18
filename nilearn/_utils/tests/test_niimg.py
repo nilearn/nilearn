@@ -89,3 +89,11 @@ def test_load_niimg(img1, tmp_path):
     )
     filename = Path(filename)
     load_niimg(filename)
+
+
+def test_copy_warning(img_3d_zeros_eye):
+    with pytest.warns(
+        DeprecationWarning,
+        match="Import this function from 'nilearn.image.copy_img'",
+    ):
+        niimg.copy_img(img_3d_zeros_eye)
