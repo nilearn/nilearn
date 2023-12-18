@@ -269,7 +269,7 @@ def test_get_bids_files(tmp_path):
         os.path.join(bids_path, "derivatives"),
         file_tag="desc-confounds_timeseries",
     )
-    assert len(selection) == 80
+    assert len(selection) == 160
 
     bids_path = create_fake_bids_dataset(
         base_dir=tmp_path,
@@ -284,7 +284,7 @@ def test_get_bids_files(tmp_path):
         os.path.join(bids_path, "derivatives"),
         file_tag="desc-confounds_regressors",
     )
-    assert len(selection) == 80
+    assert len(selection) == 160
 
 
 def test_parse_bids_filename():
