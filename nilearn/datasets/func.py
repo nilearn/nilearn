@@ -1110,7 +1110,7 @@ def fetch_abide_pcp(
                 - 'degree_binarize': :obj:`numpy.ndarray`,
                   data specific to binarized node degree
                   in brain networks.
-                - degree_weighted': :obj:`numpy.ndarray`,
+                - 'degree_weighted': :obj:`numpy.ndarray`,
                   data specific to weighted node degree,
                   considering connectivity strength in brain networks.
                 - 'dual_regression': :obj:`numpy.ndarray`,
