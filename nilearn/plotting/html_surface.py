@@ -333,26 +333,27 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
     Parameters
     ----------
     surf_mesh : str or list of two numpy.ndarray
-        Surface mesh geometry, can be a file (valid formats are
-        .gii or Freesurfer specific files such as .orig, .pial,
-        .sphere, .white, .inflated) or
+        Surface :term:`mesh` geometry, can be a file
+        (valid formats are .gii or Freesurfer specific files
+        such as .orig, .pial, .sphere, .white, .inflated) or
         a list of two Numpy arrays, the first containing the x-y-z coordinates
-        of the mesh vertices, the second containing the indices
-        (into coords) of the mesh faces.
+        of the :term:`mesh` vertices, the second containing the indices
+        (into coords) of the :term:`mesh` :term:`faces`.
 
     surf_map : str or numpy.ndarray, optional
-        Data to be displayed on the surface mesh. Can be a file (valid formats
-        are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific files such as
+        Data to be displayed on the surface :term:`mesh`.
+        Can be a file (valid formats are .gii, .mgz, .nii, .nii.gz,
+        or Freesurfer specific files such as
         .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array
 
     bg_map : str or numpy.ndarray, default=None
-        Background image to be plotted on the mesh underneath the
-        surf_data in greyscale, most likely a sulcal depth map for
+        Background image to be plotted on the :term:`mesh` underneath
+        the surf_data in greyscale, most likely a sulcal depth map for
         realistic shading.
-        If the map contains values outside [0, 1], it will be
-        rescaled such that all values are in [0, 1]. Otherwise,
-        it will not be modified.
+        If the map contains values outside [0, 1],
+        it will be rescaled such that all values are in [0, 1].
+        Otherwise, it will not be modified.
 
     %(bg_on_data)s
 
