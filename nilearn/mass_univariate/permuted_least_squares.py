@@ -348,9 +348,9 @@ def permuted_ols(
         to the explanatory and confounding variates.
 
         In a group-level analysis, the samples will typically be voxels
-        (for volumetric data) or vertices (for surface data), while the
-        descriptors will generally be images, such as run-wise z-statistic
-        maps.
+        (for volumetric data) or :term:`vertices<vertex>` (for surface data),
+        while the descriptors will generally be images,
+        such as run-wise z-statistic maps.
 
     confounding_vars : array-like, shape=(n_samples, n_covars), optional
         Confounding variates (covariates), fitted but not tested.

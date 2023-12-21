@@ -875,7 +875,8 @@ def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
     Parameters
     ----------
     mesh : str, default='fsaverage5'
-        Which mesh to fetch. Should be one of the following values:
+        Which :term:`mesh` to fetch.
+        Should be one of the following values:
         %(fsaverage_options)s
     %(data_dir)s
 
@@ -887,21 +888,26 @@ def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
          - 'area_right': Gifti file, right hemisphere area data
          - 'curv_left': Gifti file, left hemisphere curvature data
          - 'curv_right': Gifti file, right hemisphere curvature data
-         - 'flat_left': Gifti file, left hemisphere flat surface mesh
-         - 'flat_right': Gifti file, right hemisphere flat surface mesh
-         - 'pial_left': Gifti file, left hemisphere pial surface mesh
-         - 'pial_right': Gifti file, right hemisphere pial surface mesh
-         - 'infl_left': Gifti file, left hemisphere inflated pial surface mesh
+         - 'flat_left': Gifti file, left hemisphere flat surface :term:`mesh`
+         - 'flat_right': Gifti file, right hemisphere flat surface :term:`mesh`
+         - 'pial_left': Gifti file, left hemisphere pial surface :term:`mesh`
+         - 'pial_right': Gifti file, right hemisphere pial surface :term:`mesh`
+         - 'infl_left': Gifti file, left hemisphere inflated pial surface
+           :term:`mesh`
          - 'infl_right': Gifti file, right hemisphere inflated pial
-                         surface mesh
-         - 'sphere_left': Gifti file, left hemisphere sphere surface mesh
-         - 'sphere_right': Gifti file, right hemisphere sphere surface mesh
+                         surface :term:`mesh`
+         - 'sphere_left': Gifti file, left hemisphere sphere surface
+           :term:`mesh`
+         - 'sphere_right': Gifti file, right hemisphere sphere surface
+           :term:`mesh`
          - 'sulc_left': Gifti file, left hemisphere sulcal depth data
          - 'sulc_right': Gifti file, right hemisphere sulcal depth data
          - 'thick_left': Gifti file, left hemisphere cortical thickness data
          - 'thick_right': Gifti file, right hemisphere cortical thickness data
-         - 'white_left': Gifti file, left hemisphere white surface mesh
-         - 'white_right': Gifti file, right hemisphere white surface mesh
+         - 'white_left': Gifti file, left hemisphere
+           white surface :term:`mesh`
+         - 'white_right': Gifti file, right hemisphere*
+           white surface :term:`mesh`
 
     References
     ----------
