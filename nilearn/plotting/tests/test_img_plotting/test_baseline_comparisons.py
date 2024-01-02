@@ -37,26 +37,26 @@ PLOTTING_FUNCS_3D = {
 PLOTTING_FUNCS_4D = {plot_prob_atlas, plot_carpet}
 
 
-@pytest.mark.mpl_image_compare(hash_library="baseline_comparison.json")
+@pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 def test_plot_functions_3d_default_params(plot_func, img_3d_mni):
     """Smoke tests for 3D plotting functions with default parameters."""
     return plot_func(img_3d_mni)
 
 
-@pytest.mark.mpl_image_compare(hash_library="baseline_comparison.json")
+@pytest.mark.mpl_image_compare
 def test_plot_carpet_default_params(img_4d_mni, img_3d_ones_mni):
     """Smoke-test for 4D plot_carpet with default arguments."""
     return plot_carpet(img_4d_mni, mask_img=img_3d_ones_mni)
 
 
-@pytest.mark.mpl_image_compare(hash_library="baseline_comparison.json")
+@pytest.mark.mpl_image_compare
 def test_plot_prob_atlas_default_params(img_3d_mni, img_4d_mni):
     """Smoke-test for plot_prob_atlas with default arguments."""
     return plot_prob_atlas(img_4d_mni, bg_img=img_3d_mni)
 
 
-@pytest.mark.mpl_image_compare(hash_library="baseline_comparison.json")
+@pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("anat_img", [False, MNI152TEMPLATE])
 @pytest.mark.parametrize("display_mode", ["z", "ortho"])
 def test_plot_anat_MNI(anat_img, display_mode, tmp_path):
