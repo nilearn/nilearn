@@ -191,4 +191,4 @@ install:
 	git add .nojekyll && \
 	git commit -a -m 'Make install' && \
 	git tag $(VERSIONTAG) && \
-	git push $(VERSIONTAG)
+	git push --tags
