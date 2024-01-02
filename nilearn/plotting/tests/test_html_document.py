@@ -1,5 +1,6 @@
 import time
 import webbrowser
+from unittest.mock import Mock
 
 import pytest
 import requests
@@ -19,6 +20,7 @@ class Get:
     def __call__(self, url):
         time.sleep(self.delay)
         self.url = url
+        requests.get(url.replace("index.html", "favicon.ico"))
         self.content = requests.get(url).content
 
 
@@ -39,6 +41,24 @@ def test_open_in_browser_timeout(monkeypatch):
     doc = html_document.HTMLDocument("hello")
     with pytest.raises(RuntimeError, match="Failed to open"):
         doc.open_in_browser()
+
+
+@pytest.mark.parametrize("request_mocker", [None])
+def test_open_in_browser_deprecation_warning(monkeypatch):
+    monkeypatch.setattr(webbrowser, "open", Get())
+    doc = html_document.HTMLDocument("hello")
+    with pytest.warns(DeprecationWarning, match="temp_file_lifetime"):
+        doc.open_in_browser(temp_file_lifetime=30.0)
+
+
+def test_open_in_browser_file(tmp_path, monkeypatch):
+    opener = Mock()
+    monkeypatch.setattr(webbrowser, "open", opener)
+    file_path = tmp_path / "doc.html"
+    doc = html_document.HTMLDocument("hello")
+    doc.open_in_browser(file_name=str(file_path))
+    assert file_path.read_text("utf-8") == "hello"
+    opener.assert_called_once_with(f"file://{file_path}")
 
 
 def _open_views():

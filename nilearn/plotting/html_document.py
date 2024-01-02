@@ -200,7 +200,8 @@ class HTMLDocument:
             warnings.warn(
                 "temp_file_lifetime is deprecated. It has no "
                 "effect and passing a value for this parameter "
-                "will result in an error starting with nilearn version 0.13"
+                "will result in an error starting with nilearn version 0.13",
+                DeprecationWarning,
             )
         if file_name is None:
             _open_in_browser(self.get_standalone().encode("utf-8"))
