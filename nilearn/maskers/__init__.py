@@ -1,6 +1,5 @@
 """The :mod:`nilearn.maskers` contains masker objects."""
 
-from ._utils import compute_middle_image
 from .base_masker import BaseMasker
 from .multi_nifti_labels_masker import MultiNiftiLabelsMasker
 from .multi_nifti_maps_masker import MultiNiftiMapsMasker
@@ -12,12 +11,11 @@ from .nifti_spheres_masker import NiftiSpheresMasker
 
 __all__ = [
     "BaseMasker",
-    "NiftiMasker",
+    "MultiNiftiLabelsMasker",
+    "MultiNiftiMapsMasker",
     "MultiNiftiMasker",
     "NiftiLabelsMasker",
-    "MultiNiftiLabelsMasker",
     "NiftiMapsMasker",
-    "MultiNiftiMapsMasker",
+    "NiftiMasker",
     "NiftiSpheresMasker",
-    "compute_middle_image",
 ]

@@ -17,7 +17,7 @@ from .._utils.niimg import safe_get_data
 from .._utils.niimg_conversions import check_same_fov, concat_niimgs
 from .._utils.segmentation import random_walker
 from ..image import new_img_like, resample_img
-from ..image.image import _smooth_array, threshold_img
+from ..image.image import smooth_array, threshold_img
 
 
 def _threshold_maps_ratio(maps_img, threshold):
@@ -166,7 +166,7 @@ def connected_regions(
 
         .. note::
 
-            This parameter is passed to `nilearn.image.image._smooth_array`.
+            This parameter is passed to `nilearn.image.image.smooth_array`.
             It will be used only if ``extract_type='local_regions'``.
 
         Default=6.
@@ -218,7 +218,7 @@ def connected_regions(
                 target_shape=maps_img.shape[:3],
                 interpolation="nearest",
             )
-        mask_data, _ = masking._load_mask_img(mask_img)
+        mask_data, _ = masking.load_mask_img(mask_img)
         # Set as 0 to the values which are outside of the mask
         maps[mask_data == 0.0] = 0.0
 
@@ -227,7 +227,7 @@ def connected_regions(
         map_3d = maps[..., index]
         # Mark the seeds using random walker
         if extract_type == "local_regions":
-            smooth_map = _smooth_array(
+            smooth_map = smooth_array(
                 map_3d, affine=affine, fwhm=smoothing_fwhm
             )
             seeds = peak_local_max(smooth_map)

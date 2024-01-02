@@ -17,18 +17,7 @@ exclude: |
         | examples/04_glm_first_level/plot_localizer_surface_analysis.py
         | examples/07_advanced/plot_surface_bids_analysis.py
         | nilearn/_utils/helpers.py
-        | nilearn/_utils/data_gen.py
-        | nilearn/reporting/html_report.py
-        | nilearn/reporting/tests/test_html_report.py
-        | nilearn/interfaces/fmriprep/load_confounds_compcor.py
-        | nilearn/interfaces/fmriprep/tests/test_load_confounds_utils.py
-        | nilearn/interfaces/fmriprep/tests/test_load_confounds_strategy.py
-        | nilearn/interfaces/fmriprep/tests/utils.py
-        | nilearn/interfaces/fmriprep/tests/test_load_confounds.py
-        | nilearn/maskers/nifti_spheres_masker.py
-        | nilearn/maskers/nifti_labels_masker.py
         | nilearn/plotting/html_surface.py
-        | nilearn/plotting/img_plotting.py
         | nilearn/plotting/js_plotting_utils.py
         | nilearn/plotting/surf_plotting.py
         | nilearn/plotting/tests/test_html_surface.py
@@ -52,7 +41,7 @@ repos:
     -   id: trailing-whitespace
 
 -   repo: https://github.com/pycqa/isort
-    rev: 5.12.0
+    rev: 5.13.2
     hooks:
     -   id: isort
         args: [--profile, black, --settings-path, pyproject.toml]
@@ -75,7 +64,7 @@ repos:
     -   id: rst-inline-touching-normal
 
 -   repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 23.11.0
+    rev: 23.12.1
     hooks:
     -   id: black
         args: [--config, pyproject.toml]
@@ -101,7 +90,7 @@ repos:
         args: [--mapping, '4', --sequence, '4', --offset, '0']
 
 -   repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-    rev: v2.11.0
+    rev: v2.12.0
     hooks:
     -   id: pretty-format-toml
         args: [--autofix, --indent, '4']

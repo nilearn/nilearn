@@ -10,7 +10,8 @@ More specifically:
 1. Download an :term:`fMRI` :term:`BIDS` dataset
 with two language conditions to contrast.
 2. Project the data to a standard mesh, fsaverage5,
-aka the Freesurfer template mesh downsampled to about 10k nodes per hemisphere.
+aka the Freesurfer template :term:`mesh` downsampled
+to about 10k nodes per hemisphere.
 3. Run the first level model objects.
 4. Fit a second level model on the fitted first level models.
 

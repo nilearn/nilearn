@@ -86,6 +86,8 @@ class LikelihoodModelResults:
         # put this as a parameter of LikelihoodModel
         self.df_residuals = self.df_total - self.df_model
 
+    # @auto_attr store the value as an object attribute after initial call
+    # better performance than @property
     @auto_attr
     def logL(self):
         """Return the maximized log-likelihood."""

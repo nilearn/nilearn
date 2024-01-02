@@ -11,11 +11,11 @@ from nilearn.decoding.searchlight import SearchLight
 from nilearn.decoding.space_net import SpaceNetClassifier, SpaceNetRegressor
 
 __all__ = [
+    "FREMClassifier",
+    "FREMRegressor",
+    "Decoder",
+    "DecoderRegressor",
     "SearchLight",
     "SpaceNetClassifier",
     "SpaceNetRegressor",
-    "Decoder",
-    "DecoderRegressor",
-    "FREMClassifier",
-    "FREMRegressor",
 ]

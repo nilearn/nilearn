@@ -88,9 +88,10 @@ plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
 # Display connectome from surface parcellation
 #
 # The following code extracts 3D coordinates of surface parcels (a.k.a. labels
-# in the Freesurfer naming convention). To do so we load the pial surface
-# of fsaverage subject, get the vertices contained in each parcel and compute
-# the mean location to obtain the coordinates.
+# in the Freesurfer naming convention).
+# To do so we load the pial surface of fsaverage subject,
+# get the :term:`vertices<vertex>` contained in each parcel
+# and compute the mean location to obtain the coordinates.
 
 import numpy as np
 

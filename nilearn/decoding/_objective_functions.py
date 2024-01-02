@@ -35,7 +35,7 @@ def spectral_norm_squared(X):
     return linalg.svdvals(X)[0] ** 2
 
 
-def _logistic_loss_lipschitz_constant(X):
+def logistic_loss_lipschitz_constant(X):
     """Compute the Lipschitz constant (upper bound) for the gradient of the \
     logistic sum.
 
@@ -49,7 +49,7 @@ def _logistic_loss_lipschitz_constant(X):
     return spectral_norm_squared(X)
 
 
-def _squared_loss(X, y, w, compute_energy=True, compute_grad=False):
+def squared_loss(X, y, w, compute_energy=True, compute_grad=False):
     """Compute the MSE error, and optionally, its gradient too.
 
     The cost / energy function is
@@ -102,7 +102,7 @@ def _squared_loss(X, y, w, compute_energy=True, compute_grad=False):
     return (energy, grad) if compute_energy else grad
 
 
-def _tv_l1_from_gradient(spatial_grad):
+def tv_l1_from_gradient(spatial_grad):
     """Compute energy contribution due to penalized gradient, in TV-L1 model.
 
     Parameters
@@ -122,7 +122,7 @@ def _tv_l1_from_gradient(spatial_grad):
     return l1_term + tv_term
 
 
-def _div_id(grad, l1_ratio=0.5):
+def divergence_id(grad, l1_ratio=0.5):
     """Compute divergence + id of image gradient + id.
 
     Parameters
@@ -168,7 +168,7 @@ def _div_id(grad, l1_ratio=0.5):
     return res
 
 
-def _gradient_id(img, l1_ratio=0.5):
+def gradient_id(img, l1_ratio=0.5):
     """Compute gradient + id of an image.
 
     Parameters
@@ -225,7 +225,7 @@ def _sigmoid(t, copy=True):
     return t
 
 
-def _logistic(X, y, w):
+def logistic_loss(X, y, w):
     """Compute the logistic function of the data: sum(sigmoid(yXw)).
 
     Parameters
@@ -254,7 +254,7 @@ def _logistic(X, y, w):
     return out
 
 
-def _logistic_loss_grad(X, y, w):
+def logistic_loss_grad(X, y, w):
     """Compute the derivative of logistic."""
     z = np.dot(X, w[:-1]) + w[-1]
     yz = y * z
@@ -267,16 +267,16 @@ def _logistic_loss_grad(X, y, w):
 
 
 # gradient of squared loss function
-_squared_loss_grad = partial(
-    _squared_loss, compute_energy=False, compute_grad=True
+squared_loss_grad = partial(
+    squared_loss, compute_energy=False, compute_grad=True
 )
 
 
-def _gradient(w):
+def gradient(w):
     """Pure spatial gradient."""
-    return _gradient_id(w, l1_ratio=0.0)[:-1]  # pure nabla
+    return gradient_id(w, l1_ratio=0.0)[:-1]  # pure nabla
 
 
-def _div(v):
+def divergence(v):
     """Pure spatial divergence."""
-    return _div_id(np.vstack((v, [np.zeros_like(v[0])])), l1_ratio=0.0)
+    return divergence_id(np.vstack((v, [np.zeros_like(v[0])])), l1_ratio=0.0)

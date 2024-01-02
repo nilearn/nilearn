@@ -1,5 +1,4 @@
 """Configuration and extra fixtures for pytest."""
-import os
 import warnings
 
 import nibabel
@@ -12,6 +11,14 @@ from nilearn import image
 # we need to import these fixtures even if not used in this module
 from nilearn.datasets.tests._testing import request_mocker  # noqa: F401
 from nilearn.datasets.tests._testing import temp_nilearn_data_dir  # noqa: F401
+
+# TODO This import needs to be removed once the experimental surface API and
+# its pytest fixtures are integrated into the stable API
+from nilearn.experimental.surface.tests.conftest import (  # noqa: F401
+    make_mini_img,
+    mini_img,
+    mini_mesh,
+)
 
 collect_ignore = ["datasets/data/convert_templates.py"]
 collect_ignore_glob = ["reporting/_visual_testing/*"]
@@ -84,35 +91,6 @@ def close_all():
 
 
 @pytest.fixture(autouse=True)
-def warnings_as_errors():
-    """Raise errors on deprecations from external library prereleases."""
-    flag = os.environ.get("WARN_DEPRECATION_ERRORS")
-    if flag == "true":
-        with warnings.catch_warnings():
-            warnings.filterwarnings(
-                "error",
-                message=".*numpy.*|.*scipy.*|.*nibabel.*|"
-                ".*joblib.*|.*pandas.*|.*scikit-learn.*",
-                category=DeprecationWarning,
-            )
-            if matplotlib is not None:
-                warnings.filterwarnings(
-                    "error",
-                    category=matplotlib.MatplotlibDeprecationWarning,
-                )
-            # Ignore internal DeprecationWarnings that reference a dependency
-            pattern = '.*The "C" parameter.*'
-            warnings.filterwarnings(
-                "ignore",
-                message=pattern,
-                category=DeprecationWarning,
-            )
-            yield
-    else:
-        yield
-
-
-@pytest.fixture(autouse=True)
 def suppress_specific_warning():
     """Ignore internal deprecation warnings."""
     with warnings.catch_warnings():
@@ -120,6 +98,7 @@ def suppress_specific_warning():
             "The `darkness` parameter will be deprecated.*|"
             "`legacy_format` will default to `False`.*|"
             "In release 0.13, this fetcher will return a dictionary.*|"
+            "The default strategy for standardize.*|"
         )
         warnings.filterwarnings(
             "ignore",
