@@ -9,6 +9,12 @@ Failures are expected at times when the output is changed intentionally
 (e.g. fixing a bug or adding features) for a particular function. In such
 cases, the output needs to be manually/visually checked as part of the PR
 review process and then a new baseline set for comparison.
+
+Set a new baseline by running:
+
+pytest nilearn/plotting/tests/test_img_plotting/test_baseline_comparisons.py \
+--mpl-generate-path=nilearn/plotting/tests/test_img_plotting/baseline
+
 """
 
 import pytest
