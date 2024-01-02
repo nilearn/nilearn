@@ -10,6 +10,7 @@ HIGHLIGHTS
 
 NEW
 ---
+- The ``temp_file_lifetime`` parameter of interactive plots' ``open_in_browser`` method is deprecated and has no effect.
 
 Fixes
 -----

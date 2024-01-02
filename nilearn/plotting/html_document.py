@@ -181,7 +181,7 @@ class HTMLDocument:
         with open(file_name, "wb") as f:
             f.write(self.get_standalone().encode("utf-8"))
 
-    def open_in_browser(self, file_name=None, temp_file_lifetime=30):
+    def open_in_browser(self, file_name=None, temp_file_lifetime="deprecated"):
         """Save the plot to a temporary HTML file and open it in a browser.
 
         Parameters
@@ -190,10 +190,18 @@ class HTMLDocument:
             HTML file to use as a temporary file.
 
         temp_file_lifetime : :obj:`float`, default=30
-            Deprecated. The parameter is kept for backward compatibility and
-            will be removed in a future version. It has no effect.
+
+            .. deprecated:: 0.11
+
+                The parameter is kept for backward compatibility and will be
+                removed in a future version. It has no effect.
         """
-        del temp_file_lifetime
+        if temp_file_lifetime != "deprecated":
+            warnings.warn(
+                "temp_file_lifetime is deprecated. It has no "
+                "effect and passing a value for this parameter "
+                "will result in an error starting with nilearn version 0.13"
+            )
         if file_name is None:
             _open_in_browser(self.get_standalone().encode("utf-8"))
         else:
