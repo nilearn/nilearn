@@ -21,7 +21,8 @@
 
             info['lighting'] = getLighting();
             let layout = getLayout("surface-plot", "select-view",
-                                   surfaceMapInfo["black_bg"]);
+                                   surfaceMapInfo["black_bg"],
+                                   surfaceMapInfo["aspect_ratio"]);
             layout['title'] = {
                 text: surfaceMapInfo['title'],
                 font: {size: surfaceMapInfo["title_fontsize"],
@@ -52,7 +53,8 @@
 
         function surfaceRelayout(){
             return updateLayout("surface-plot", "select-view",
-                                surfaceMapInfo["black_bg"]);
+                                surfaceMapInfo["black_bg"],
+                                surfaceMapInfo["aspect_ratio"]);
         }
 
     </script>
