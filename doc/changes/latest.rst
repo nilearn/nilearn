@@ -10,7 +10,7 @@ HIGHLIGHTS
 
 NEW
 ---
-- The ``temp_file_lifetime`` parameter of interactive plots' ``open_in_browser`` method is deprecated and has no effect.
+- :bdg-info:`Plotting` The ``temp_file_lifetime`` parameter of interactive plots' ``open_in_browser`` method is deprecated and has no effect (:gh:`4180` by `Jerome Dockes`_)..
 
 Fixes
 -----
