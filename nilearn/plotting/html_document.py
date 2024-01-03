@@ -162,6 +162,9 @@ class HTMLDocument:
         Used by the Jupyter notebook.
 
         Users normally won't call this method explicitly.
+
+        See the jupyter documentation:
+        https://ipython.readthedocs.io/en/stable/config/integrating.html
         """
         return self.get_iframe()
 
@@ -171,6 +174,9 @@ class HTMLDocument:
         Used by the Jupyter notebook.
 
         Users normally won't call this method explicitly.
+
+        See the jupyter documentation:
+        https://ipython.readthedocs.io/en/stable/config/integrating.html
         """
         del include, exclude
         return {"text/html": self.get_iframe()}
