@@ -165,6 +165,16 @@ class HTMLDocument:
         """
         return self.get_iframe()
 
+    def _repr_mimebundle_(self, include=None, exclude=None):
+        """Return html representation of the plot.
+
+        Used by the Jupyter notebook.
+
+        Users normally won't call this method explicitly.
+        """
+        del include, exclude
+        return {"text/html": self.get_iframe()}
+
     def __str__(self):
         return self.html
 

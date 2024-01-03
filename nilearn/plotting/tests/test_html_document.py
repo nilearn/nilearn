@@ -84,3 +84,9 @@ def test_open_view_warning():
     assert_no_warnings(_open_views)
     html_document.set_max_img_views_before_warning(6)
     pytest.warns(UserWarning, _open_views)
+
+
+def test_repr():
+    doc = html_document.HTMLDocument("hello")
+    assert "hello" in doc._repr_html_()
+    assert "hello" in doc._repr_mimebundle_()["text/html"]
