@@ -243,33 +243,37 @@ def test_standardize(rng):
 
     # Test raise error when strategy is not valid option
     with pytest.raises(ValueError, match="no valid standardize strategy"):
-        nisignal._standardize(a, standardize="foo")
+        nisignal.standardize_signal(a, standardize="foo")
 
     # test warning for strategy that will be removed
     with pytest.warns(
         DeprecationWarning, match="default strategy for standardize"
     ):
-        nisignal._standardize(a, standardize="zscore")
+        nisignal.standardize_signal(a, standardize="zscore")
 
-    # transpose array to fit _standardize input.
+    # transpose array to fit standardize input.
     # Without trend removal
-    b = nisignal._standardize(a, standardize="zscore_sample")
+    b = nisignal.standardize_signal(a, standardize="zscore_sample")
     stds = np.std(b)
     np.testing.assert_almost_equal(stds, np.ones(n_features), decimal=1)
     np.testing.assert_almost_equal(b.sum(axis=0), np.zeros(n_features))
 
     # With trend removal
     a = np.atleast_2d(np.linspace(0, 2.0, n_features)).T
-    b = nisignal._standardize(a, detrend=True, standardize=False)
+    b = nisignal.standardize_signal(a, detrend=True, standardize=False)
     np.testing.assert_almost_equal(b, np.zeros(b.shape))
 
-    b = nisignal._standardize(a, detrend=True, standardize="zscore_sample")
+    b = nisignal.standardize_signal(
+        a, detrend=True, standardize="zscore_sample"
+    )
     np.testing.assert_almost_equal(b, np.zeros(b.shape))
 
     length_1_signal = np.atleast_2d(np.linspace(0, 2.0, n_features))
     np.testing.assert_array_equal(
         length_1_signal,
-        nisignal._standardize(length_1_signal, standardize="zscore_sample"),
+        nisignal.standardize_signal(
+            length_1_signal, standardize="zscore_sample"
+        ),
     )
 
 
@@ -337,7 +341,7 @@ def test_mean_of_squares():
 
 
 def test_row_sum_of_squares():
-    """Test _row_sum_of_squares."""
+    """Test row_sum_of_squares."""
     n_samples = 11
     n_features = 501  # Higher than 500 required
     signals, _, _ = generate_signals(
@@ -347,7 +351,7 @@ def test_row_sum_of_squares():
     var1 = signals**2
     var1 = var1.sum(axis=0)
 
-    var2 = nisignal._row_sum_of_squares(signals)
+    var2 = nisignal.row_sum_of_squares(signals)
 
     np.testing.assert_almost_equal(var1, var2)
 

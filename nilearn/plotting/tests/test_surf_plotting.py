@@ -707,7 +707,7 @@ def _generate_data_test_surf_roi():
     roi_idx = _rng().integers(0, mesh[0].shape[0], size=10)
     roi_map = np.zeros(mesh[0].shape[0])
     roi_map[roi_idx] = 1
-    parcellation = _rng().uniform(size=mesh[0].shape[0])
+    parcellation = _rng().integers(100, size=mesh[0].shape[0]).astype(float)
     return mesh, roi_map, parcellation
 
 
@@ -784,12 +784,37 @@ def test_plot_surf_roi_matplotlib_specific():
 def test_plot_surf_roi_error(engine, rng):
     if not is_plotly_installed() and engine == "plotly":
         pytest.skip('Plotly is not installed; required for this test.')
-    mesh = generate_surf()
+    mesh, roi_map, _ = _generate_data_test_surf_roi()
+
+    # too many axes
+    with pytest.raises(
+        ValueError,
+            match="roi_map can only have one dimension but has"):
+        plot_surf_roi(
+            mesh, roi_map=np.array([roi_map, roi_map]), engine=engine)
+
+    # wrong number of vertices
     roi_idx = rng.integers(0, mesh[0].shape[0], size=5)
     with pytest.raises(
             ValueError,
             match='roi_map does not have the same number of vertices'):
         plot_surf_roi(mesh, roi_map=roi_idx, engine=engine)
+
+    # negative value in roi map
+    roi_map[0] = -1
+    with pytest.warns(
+        DeprecationWarning,
+        match="Negative values in roi_map will no longer be allowed",
+    ):
+        plot_surf_roi(mesh, roi_map=roi_map, engine=engine)
+
+    # float value in roi map
+    roi_map[0] = 1.2
+    with pytest.warns(
+        DeprecationWarning,
+        match="Non-integer values in roi_map will no longer be allowed",
+    ):
+        plot_surf_roi(mesh, roi_map=roi_map, engine=engine)
 
 
 @pytest.mark.skipif(not is_plotly_installed(),

@@ -90,6 +90,10 @@ If you wish to add a missing term, please
         Erosion uses a structuring element for probing and reducing the shapes
         contained in the input image.
 
+    faces
+        When referring to surface data, a face corresponds to one of the triangles
+        of a triangular :term:`mesh`.
+
     FDR correction
         `False discovery rate`_ controlling procedures are designed to control
         the expected proportion of "discoveries" (rejected null hypotheses)
@@ -169,6 +173,16 @@ If you wish to add a missing term, please
         `Magnetoencephalography`_ is a functional neuroimaging technique for mapping
         brain activity by recording magnetic fields produced by electrical currents
         occurring naturally in the brain.
+
+    mesh
+        In the context of brain surface data, a mesh refers to a 3D representation
+        of the brain's surface geometry.
+        It is a collection of vertices, edges, and faces
+        that define the shape and structure of the brain's outer surface.
+        Each :term:`vertex` represents a point in 3D space,
+        and edges connect these vertices to form a network.
+        :term:`Faces<faces>` are then created by connecting
+        three or more vertices to form triangles.
 
     MNI
         MNI stands for "Montreal Neurological Institute". Usually, this is
@@ -309,6 +323,11 @@ If you wish to add a missing term, please
     VBM
         `Voxel-Based Morphometry`_ measures differences in local concentrations of brain
         tissue, through a voxel-wise comparison of multiple brain images.
+
+    vertex
+        A vertex (plural vertices) represents the coordinate
+        of an angle of :term:`face<faces>`
+        on a triangular :term:`mesh` in 3D space.
 
     voxel
         A voxel represents a value on a regular grid in 3D space.

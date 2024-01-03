@@ -8,7 +8,7 @@ from functools import partial
 from joblib import Memory
 
 from nilearn import _utils, image, masking
-from nilearn.maskers import compute_middle_image
+from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 
 
@@ -428,6 +428,12 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
 
         # Compute the mask if not given by the user
         if self.mask_img is None:
+            if imgs is None:
+                raise ValueError(
+                    "Parameter 'imgs' must be provided to "
+                    f"{self.__class__.__name__}.fit() "
+                    "if no mask is passed to mask_img."
+                )
             mask_args = self.mask_args if self.mask_args is not None else {}
             compute_mask = _get_mask_strategy(self.mask_strategy)
             if self.verbose > 0:
@@ -470,7 +476,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             self.affine_ = self.mask_img_.affine
 
         # Load data in memory, while also checking that mask is binary/valid
-        data, _ = masking._load_mask_img(self.mask_img_, allow_empty=True)
+        data, _ = masking.load_mask_img(self.mask_img_, allow_empty=True)
 
         # Infer the number of elements (voxels) in the mask
         self.n_elements_ = int(data.sum())

@@ -31,14 +31,14 @@ from sklearn.utils.extmath import safe_sparse_dot
 from nilearn._utils.masker_validation import check_embedded_masker
 from nilearn.experimental.surface import SurfaceMasker
 from nilearn.image import get_data
-from nilearn.masking import _unmask_from_to_3d_array
+from nilearn.masking import unmask_from_to_3d_array
 
 from .._utils import fill_doc
 from .._utils.cache_mixin import CacheMixin
 from .._utils.param_validation import adjust_screening_percentile
 from .space_net_solvers import (
-    _graph_net_logistic,
-    _graph_net_squared_loss,
+    graph_net_logistic,
+    graph_net_squared_loss,
     tvl1_solver,
 )
 
@@ -108,7 +108,7 @@ def _univariate_feature_screening(
         sX = np.empty(X.shape)
         for sample in range(sX.shape[0]):
             sX[sample] = gaussian_filter(
-                _unmask_from_to_3d_array(
+                unmask_from_to_3d_array(
                     X[sample].copy(), mask  # avoid modifying X
                 ),
                 (smoothing_fwhm, smoothing_fwhm, smoothing_fwhm),
@@ -899,9 +899,9 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         # set backend solver
         if self.penalty.lower() == "graph-net":
             if not self.is_classif or loss == "mse":
-                solver = _graph_net_squared_loss
+                solver = graph_net_squared_loss
             else:
-                solver = _graph_net_logistic
+                solver = graph_net_logistic
         else:
             if not self.is_classif or loss == "mse":
                 solver = partial(tvl1_solver, loss="mse")

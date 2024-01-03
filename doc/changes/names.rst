@@ -56,6 +56,8 @@
 
 .. _Christian Gerloff: https://github.com/ChristianGerloff
 
+.. _Christina Roßmanith: https://github.com/crossmanith
+
 .. _Colin Reininger: https://github.com/reiningc
 
 .. _Connor Lane: https://github.com/clane9
@@ -264,9 +266,13 @@
 
 .. _Steven Meisler: https://www.stevenmeisler.com
 
+.. _Suramya Pokharel: https://github.com/SuramyaP
+
 .. _Sylvain Lan: https://github.com/SylvainLan
 
 .. _Sylvain Takerkart: https://github.com/SylvainTakerkart
+
+.. _Tamer Gezici: https://github.com/TamerGezici
 
 .. _Tarun Samanta: https://github.com/tarunsamanta2k20
 

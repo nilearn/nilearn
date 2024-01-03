@@ -22,7 +22,7 @@ from .._utils import fill_doc
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.niimg import safe_get_data
 from .._utils.niimg_conversions import resolve_globbing
-from ..signal import _row_sum_of_squares
+from ..signal import row_sum_of_squares
 
 
 def _fast_svd(X, n_components, random_state=None):
@@ -618,5 +618,5 @@ def _explained_variance(X, components, per_component=True):
         lr = LinearRegression(fit_intercept=True)
         lr.fit(components.T, X.T)
         res = X - lr.coef_.dot(components)
-        res_var = _row_sum_of_squares(res).sum()
-        return np.maximum(0.0, 1.0 - res_var / _row_sum_of_squares(X).sum())
+        res_var = row_sum_of_squares(res).sum()
+        return np.maximum(0.0, 1.0 - res_var / row_sum_of_squares(X).sum())
