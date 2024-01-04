@@ -173,34 +173,6 @@ def is_binary_niimg(niimg):
     return sorted(list(unique_values)) == [0, 1]
 
 
-def copy_img(img):
-    """Copy an image to a nibabel.Nifti1Image.
-
-    Parameters
-    ----------
-    img: image
-        nibabel SpatialImage object to copy.
-
-    Returns
-    -------
-    img_copy: image
-        copy of input (data, affine and header)
-    """
-    from nilearn.image import copy_img as cp_img
-
-    warn(
-        (
-            "Import 'copy_img' from 'nilearn._utils.niimg'\n"
-            "will be deprecated in version 0.13.\n"
-            "Importing from 'nilearn.datasets.utils will be possible\n"
-            "at least until release 0.13.0.\n"
-            "Import this function from 'nilearn.image.copy_img' instead.\n"
-        ),
-        DeprecationWarning,
-    )
-    return cp_img(img)
-
-
 def _repr_niimgs(niimgs, shorten=True):
     """Pretty printing of niimg or niimgs.
 
