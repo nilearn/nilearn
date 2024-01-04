@@ -22,10 +22,10 @@ from typing import Iterable
 import numpy as np
 from joblib import Parallel, delayed
 from sklearn import clone
+from sklearn.base import ClassifierMixin, MultiOutputMixin, RegressorMixin
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.linear_model import (
     LassoCV,
-    LinearRegression,
     LogisticRegressionCV,
     RidgeClassifierCV,
     RidgeCV,
@@ -444,7 +444,7 @@ def _parallel_fit(
 
 
 @fill_doc
-class _BaseDecoder(LinearRegression, CacheMixin):
+class _BaseDecoder(CacheMixin):
     """A wrapper for popular classification/regression strategies in \
     neuroimaging.
 
@@ -1067,7 +1067,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
 
 @fill_doc
-class Decoder(_BaseDecoder):
+class Decoder(_BaseDecoder, ClassifierMixin):
     """A wrapper for popular classification strategies in neuroimaging.
 
     The `Decoder` object supports classification methods.
@@ -1201,7 +1201,7 @@ class Decoder(_BaseDecoder):
 
 
 @fill_doc
-class DecoderRegressor(_BaseDecoder):
+class DecoderRegressor(_BaseDecoder, MultiOutputMixin, RegressorMixin):
     """A wrapper for popular regression strategies in neuroimaging.
 
     The `DecoderRegressor` object supports regression methods.
