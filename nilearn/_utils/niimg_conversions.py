@@ -409,35 +409,3 @@ def check_niimg_4d(niimg, return_iterator=False, dtype=None):
     return check_niimg(
         niimg, ensure_ndim=4, return_iterator=return_iterator, dtype=dtype
     )
-
-
-def concat_niimgs(
-    niimgs,
-    dtype=np.float32,
-    ensure_ndim=None,
-    memory=Memory(location=None),
-    memory_level=0,
-    auto_resample=False,
-    verbose=0,
-):
-    """Concatenate a list of 3D/4D niimgs of varying lengths."""
-    warnings.warn(
-        (
-            "Import 'concat_niimgs' from 'nilearn._utils.niimg_conversions'\n"
-            "will be deprecated in version 0.13.\n"
-            "Importing from 'nilearn._utils.niimg_conversions'\n"
-            "will be possible at least until release 0.13.0.\n"
-            "Please import this function from 'nilearn.image' instead."
-        ),
-        DeprecationWarning,
-    )
-
-    return ni.image.concat_imgs(
-        niimgs,
-        dtype,
-        ensure_ndim,
-        memory,
-        memory_level,
-        auto_resample,
-        verbose,
-    )
