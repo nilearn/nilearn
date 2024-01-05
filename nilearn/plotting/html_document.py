@@ -10,6 +10,8 @@ from queue import Empty, Queue
 from socketserver import TCPServer
 from threading import Thread
 
+from nilearn._utils import remove_parameters
+
 MAX_IMG_VIEWS_BEFORE_WARNING = 10
 BROWSER_TIMEOUT_SECONDS = 3.0
 
@@ -197,6 +199,11 @@ class HTMLDocument:
         with open(file_name, "wb") as f:
             f.write(self.get_standalone().encode("utf-8"))
 
+    @remove_parameters(
+        removed_params=["temp_file_lifetime"],
+        reason="'temp_file_lifetime' has no effect.",
+        end_version="0.13.0",
+    )
     def open_in_browser(self, file_name=None, temp_file_lifetime="deprecated"):
         """Save the plot to a temporary HTML file and open it in a browser.
 
@@ -212,13 +219,6 @@ class HTMLDocument:
                 The parameter is kept for backward compatibility and will be
                 removed in a future version. It has no effect.
         """
-        if temp_file_lifetime != "deprecated":
-            warnings.warn(
-                "temp_file_lifetime is deprecated. It has no "
-                "effect and passing a value for this parameter "
-                "will result in an error starting with nilearn version 0.13",
-                DeprecationWarning,
-            )
         if file_name is None:
             _open_in_browser(self.get_standalone().encode("utf-8"))
         else:
