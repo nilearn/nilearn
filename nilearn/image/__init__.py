@@ -2,11 +2,11 @@
 
 Like, for example, a (3+)D block of data, and an affine.
 """
-from .._utils.niimg import copy_img
 from .image import (
     binarize_img,
     clean_img,
     concat_imgs,
+    copy_img,
     crop_img,
     get_data,
     high_variance_confounds,

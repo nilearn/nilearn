@@ -4,6 +4,7 @@ import sys
 import warnings
 from pathlib import Path
 
+import joblib
 import nibabel
 import numpy as np
 import pandas as pd
@@ -1149,3 +1150,15 @@ def test_iterator_generator(img_3d_rand_eye):
     cc = concat_imgs(g)
     assert cc.shape[-1] == 10
     assert len(b) == 10
+
+
+def test_copy_img():
+    with pytest.raises(ValueError, match="Input value is not an image"):
+        copy_img(3)
+
+
+def test_copy_img_side_effect(img_4d_ones_eye):
+    hash1 = joblib.hash(img_4d_ones_eye)
+    copy_img(img_4d_ones_eye)
+    hash2 = joblib.hash(img_4d_ones_eye)
+    assert hash1 == hash2

@@ -17,7 +17,6 @@ exclude: |
         | examples/04_glm_first_level/plot_localizer_surface_analysis.py
         | examples/07_advanced/plot_surface_bids_analysis.py
         | nilearn/_utils/helpers.py
-        | nilearn/_utils/data_gen.py
         | nilearn/plotting/html_surface.py
         | nilearn/plotting/js_plotting_utils.py
         | nilearn/plotting/surf_plotting.py
@@ -65,7 +64,7 @@ repos:
     -   id: rst-inline-touching-normal
 
 -   repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 23.12.0
+    rev: 23.12.1
     hooks:
     -   id: black
         args: [--config, pyproject.toml]
@@ -91,7 +90,7 @@ repos:
         args: [--mapping, '4', --sequence, '4', --offset, '0']
 
 -   repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-    rev: v2.11.0
+    rev: v2.12.0
     hooks:
     -   id: pretty-format-toml
         args: [--autofix, --indent, '4']
