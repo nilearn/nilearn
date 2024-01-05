@@ -1,7 +1,9 @@
 import pandas as pd
 import pytest
 
-from nilearn.glm.first_level import _check_events_file_uses_tab_separators
+from nilearn.glm.first_level.first_level import (
+    _check_events_file_uses_tab_separators,
+)
 
 
 def make_data_for_test_runs():
