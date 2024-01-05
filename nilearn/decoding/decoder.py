@@ -870,6 +870,7 @@ class _BaseDecoder(CacheMixin):
         y_pred: ndarray, shape (n_samples,)
             Predicted class label per sample.
         """
+        X = self.masker_.transform(X)
         n_features = self.coef_.shape[1]
         if X.shape[1] != n_features:
             raise ValueError(
@@ -902,8 +903,7 @@ class _BaseDecoder(CacheMixin):
         check_is_fitted(self, "coef_")
         check_is_fitted(self, "masker_")
 
-        X = self.masker_.transform(X)
-        n_samples = X.shape[0]
+        n_samples = X.shape[-1]
 
         # Prediction for dummy estimator is different from others as there is
         # no fitted coefficient
