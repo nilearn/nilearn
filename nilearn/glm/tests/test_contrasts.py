@@ -74,7 +74,7 @@ def test_Fcontrast(rng, set_up_glm, model):
     labels, results, q = set_up_glm(rng, model)
     for con_val in [np.eye(q)[0], np.eye(q)[:3]]:
         z_vals = compute_contrast(
-            labels, results, con_val, contrast_type="F"
+            labels, results, con_val, stat_type="F"
         ).z_score()
 
         assert_almost_equal(z_vals.mean(), 0, 0)
@@ -284,4 +284,4 @@ def test_contrast_padding(rng):
         compute_contrast(labels, results, con_val).z_score()
 
     con_val = np.eye(q)[:3, :3]
-    compute_contrast(labels, results, con_val, contrast_type="F").z_score()
+    compute_contrast(labels, results, con_val, stat_type="F").z_score()
