@@ -46,6 +46,7 @@ Changes
 - :bdg-success:`API` Expose scipy CubicSpline ``extrapolate`` parameter in :func:`~signal.clean` to control the interpolation of censored volumes in both ends of the BOLD signal data (:gh:`4028` by `Jordi Huguet`_).
 - :bdg-secondary:`Maint` Switch to using tox to manage environments during development and testing. All plotting python dependencies (matplotlib AND plotly) are now installed when running ``pip install nilearn[plotting]`` (:gh:`4029` by `Rémi Gau`_).
 - :bdg-dark:`Code` Private utility context manager ``write_tmp_imgs`` is refactored into function ``write_imgs_to_path`` (:gh:`4094` by `Yasmin Mzayek`_).
+- :bdg-dark:`Code` Move user facing function ``concat_niimgs`` out of private module ``nilearn._utils.niimg_conversions`` (:gh:`4167` by `Rémi Gau`_).
 - :bdg-danger:`Deprecation` :func:`~plotting.plot_surf_roi` will raise a warning if ``roi_map`` contains negative or non-integer values; in version 0.13 this will be a ``ValueError`` (:gh:`4131` by `Michelle Wang`_).
 - :bdg-dark:`Code` Remove leading underscore from non private functions to align with PEP8 (:gh:`4086` by `Rémi Gau`_).
 - :bdg-dark:`Code` Make ``decoding/proximal_operator`` explicitly private to align with PEP8 (:gh:`4153` by `Rémi Gau`_).

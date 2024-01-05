@@ -14,10 +14,10 @@ from .. import masking
 from .._utils import check_niimg, check_niimg_3d, check_niimg_4d, fill_doc
 from .._utils.ndimage import peak_local_max
 from .._utils.niimg import safe_get_data
-from .._utils.niimg_conversions import check_same_fov, concat_niimgs
+from .._utils.niimg_conversions import check_same_fov
 from .._utils.segmentation import random_walker
 from ..image import new_img_like, resample_img
-from ..image.image import smooth_array, threshold_img
+from ..image.image import concat_imgs, smooth_array, threshold_img
 
 
 def _threshold_maps_ratio(maps_img, threshold):
@@ -255,7 +255,7 @@ def connected_regions(
         index_of_each_map.extend([index] * len(regions))
         all_regions_imgs.extend(regions)
 
-    regions_extracted_img = concat_niimgs(all_regions_imgs)
+    regions_extracted_img = concat_imgs(all_regions_imgs)
 
     return regions_extracted_img, index_of_each_map
 
