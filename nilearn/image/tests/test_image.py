@@ -4,6 +4,7 @@ import sys
 import warnings
 from pathlib import Path
 
+import joblib
 import nibabel
 import numpy as np
 import pandas as pd
@@ -1054,3 +1055,15 @@ def test_clean_img_sample_mask_mask_img(shape_3d_default):
     )
     # original shape is (10, 10, 10, 10)
     assert img.shape == (10, 10, 10, 9)
+
+
+def test_copy_img():
+    with pytest.raises(ValueError, match="Input value is not an image"):
+        copy_img(3)
+
+
+def test_copy_img_side_effect(img_4d_ones_eye):
+    hash1 = joblib.hash(img_4d_ones_eye)
+    copy_img(img_4d_ones_eye)
+    hash2 = joblib.hash(img_4d_ones_eye)
+    assert hash1 == hash2
