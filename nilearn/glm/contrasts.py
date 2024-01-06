@@ -211,9 +211,9 @@ class Contrast:
 
         contrast_type :
 
-        .. deprecated:: 0.13.0
+            .. deprecated:: 0.13.0
 
-            Use ``stat_type`` instead (see above).
+                Use ``stat_type`` instead (see above).
 
         tiny : float, default=DEF_TINY
             Small quantity used to avoid numerical underflows.
