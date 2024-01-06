@@ -249,10 +249,21 @@ def test_one_minus_pvalue():
     effect = np.ones((1, 3))
     variance = effect[0]
 
-    contrast = Contrast(effect, variance, contrast_type="t")
+    contrast = Contrast(effect, variance, stat_type="t")
 
     assert np.allclose(contrast.one_minus_pvalue(), 0.84, 1)
     assert np.allclose(contrast.stat_, 1.0, 1)
+
+
+def test_deprecation_contrast_type_attribute():
+    effect = np.ones((1, 3))
+    variance = effect[0]
+
+    with pytest.warns(DeprecationWarning, match="0.13.0"):
+        contrast = Contrast(effect, variance, contrast_type="t")
+
+    with pytest.warns(DeprecationWarning, match="0.13.0"):
+        contrast.contrast_type
 
 
 @pytest.mark.parametrize(
@@ -268,21 +279,21 @@ def test_one_minus_pvalue():
 )
 def test_improper_Contrast_inputs(effect, variance, match):
     with pytest.raises(ValueError, match=match):
-        Contrast(effect, variance, contrast_type="t")
+        Contrast(effect, variance, stat_type="t")
 
 
 def test_automatic_t2F_conversion():
     effect = np.ones((5, 3))
     variance = np.ones(5)
-    contrast = Contrast(effect, variance, contrast_type="t")
-    assert contrast.contrast_type == "F"
+    contrast = Contrast(effect, variance, stat_type="t")
+    assert contrast.stat_type == "F"
 
 
 def test_invalid_contarst_type():
     effect = np.ones((1, 3))
     variance = np.ones(1)
-    with pytest.raises(ValueError, match="is not a valid contrast_type."):
-        Contrast(effect, variance, contrast_type="foo")
+    with pytest.raises(ValueError, match="is not a valid stat_type."):
+        Contrast(effect, variance, stat_type="foo")
 
 
 def test_contrast_padding(rng):
