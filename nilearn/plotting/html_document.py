@@ -201,7 +201,7 @@ class HTMLDocument:
 
     @remove_parameters(
         removed_params=["temp_file_lifetime"],
-        reason="'temp_file_lifetime' has no effect.",
+        reason="this function does not use a temporary file anymore and 'temp_file_lifetime' has no effect.",
         end_version="0.13.0",
     )
     def open_in_browser(self, file_name=None, temp_file_lifetime="deprecated"):
