@@ -59,6 +59,20 @@ def set_up_glm():
     return _set_up_glm
 
 
+def test_deprecation_contrast_type(rng, set_up_glm):
+    """Throw deprecation warning when using contrast_type as parameter."""
+    labels, results, q = set_up_glm(rng, "ar1")
+    con_val = np.eye(q)[0]
+
+    with pytest.warns(DeprecationWarning, match="0.13.0"):
+        compute_contrast(
+            labels=labels,
+            regression_result=results,
+            con_val=con_val,
+            contrast_type="t",
+        )
+
+
 def test_Tcontrast(rng, set_up_glm):
     labels, results, q = set_up_glm(rng, "ar1")
     con_val = np.eye(q)[0]
