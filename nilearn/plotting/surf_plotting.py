@@ -627,7 +627,7 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
     # aspect ratio in data space
     limits = np.array([getattr(axes, f'get_{axis}lim')()
                        for axis in 'xyz'])
-    axes.set_box_aspect(np.ptp(limits, axis=1))
+    axes.set_box_aspect(np.ptp(limits, axis=1), zoom=1.3)
 
     # save figure if output file is given
     if output_file is not None:
