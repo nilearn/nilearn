@@ -18,8 +18,8 @@ from numpy.testing import (
 from nilearn._utils.data_gen import basic_paradigm
 from nilearn.glm.first_level.design_matrix import (
     _convolve_regressors,
-    _cosine_drift,
     check_design_matrix,
+    create_cosine_drift,
     make_first_level_design_matrix,
     make_second_level_design_matrix,
 )
@@ -86,7 +86,7 @@ def test_cosine_drift():
     spm_drifts = DESIGN_MATRIX["cosbf_dt_1_nt_20_hcut_0p1"]
     frame_times = np.arange(20)
     high_pass_frequency = 0.1
-    nistats_drifts = _cosine_drift(high_pass_frequency, frame_times)
+    nistats_drifts = create_cosine_drift(high_pass_frequency, frame_times)
     assert_almost_equal(spm_drifts[:, 1:], nistats_drifts[:, :-2])
     # nistats_drifts is placing the constant at the end [:, : - 1]
 
@@ -331,7 +331,7 @@ def test_design_matrix20(n_frames):
     # Test for commit 10662f7
     frame_times = np.arange(
         0, n_frames
-    )  # was 127 in old version of _cosine_drift
+    )  # was 127 in old version of create_cosine_drift
     events = modulated_event_paradigm()
     X, _ = design_matrix_light(
         frame_times, events, hrf_model="glover", drift_model="cosine"
