@@ -1,15 +1,19 @@
-{# Adapted from https://github.com/pradyunsg/furo/blob/main/src/furo/theme/furo/components/edit-this-page.html #}
+{#
+  Adapted from https://github.com/pradyunsg/furo/blob/main/src/furo/theme/furo/components/edit-this-page.html
+  Required to properly link the edit button in the examples from the doc to source document in the github repo.
+#}
 
 {% extends "basic-ng/components/edit-this-page.html" %}
 {% from "basic-ng/components/edit-this-page.html" import determine_page_edit_link with context %}
 
 {%- macro furo_edit_button(url) -%}
-<!-- {%- if "auto_examples" in url -%}
-{{ url }}
-{%- endif -%} -->
 <div class="edit-this-page">
-  <a class="muted-link" href="{{ url|replace("doc/auto_examples", "examples")|replace(".rst", ".py") }}" title="{{ _("Edit this page") }}">
-    <svg aria-hidden="true" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <a class="muted-link"
+     href="{{ url|replace("doc/auto_examples", "examples")|replace(".rst", ".py")|replace("index.py", "README.rst") }}"
+     title="{{ _("Edit this page") }}"
+     target="_blank">
+    <svg aria-hidden="true" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+         fill="none" stroke-linecap="round" stroke-linejoin="round">
       <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
       <path d="M4 20h4l10.5 -10.5a1.5 1.5 0 0 0 -4 -4l-10.5 10.5v4" />
       <line x1="13.5" y1="6.5" x2="17.5" y2="10.5" />
