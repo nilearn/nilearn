@@ -1961,6 +1961,22 @@ def _make_surface_glm_data(rng, make_mini_img):
     return _make_surface_image
 
 
+def test_flm_fit_surface_image_default_mask_img(_make_surface_glm_data):
+    """Test FirstLevelModel with mask_img default."""
+    mini_img, des = _make_surface_glm_data(5)
+    model = FirstLevelModel()
+    model.fit(mini_img, design_matrices=des)
+
+    assert isinstance(model.masker_.mask_img_, SurfaceImage)
+    assert model.masker_.mask_img_.shape == (9,)
+    assert isinstance(model.masker_, SurfaceMasker)
+    sum_mask = (
+        model.masker_.mask_img_.data["left_hemisphere"].sum()
+        + model.masker_.mask_img_.data["right_hemisphere"].sum()
+    )
+    assert sum_mask == 9
+
+
 def test_flm_fit_surface_image(_make_surface_glm_data):
     """Test FirstLevelModel with surface image and mask_img set to False."""
     mini_img, des = _make_surface_glm_data(5)

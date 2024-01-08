@@ -316,11 +316,13 @@ class FirstLevelModel(BaseGLM):
         (in seconds). Events that start before (slice_time_ref * t_r +
         min_onset) are not considered.
 
-    mask_img : Niimg-like, NiftiMasker object or False, optional
+    mask_img : Niimg-like, NiftiMasker, SurfaceImage, SurfaceMasker, False or \
+               None, default=None
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given,
         it will be computed automatically by a NiftiMasker with default
         parameters. If False is given then the data will not be masked.
+        In the case of surface analysis, passing None is equivalent to False.
 
     target_affine : 3x3 or 4x4 matrix, optional
         This parameter is passed to nilearn.image.resample_img.
@@ -594,7 +596,19 @@ class FirstLevelModel(BaseGLM):
                 self.mask_img = Nifti1Image(
                     np.ones(ref_img.shape[:3]), ref_img.affine
                 )
-        if not isinstance(
+        if isinstance(run_imgs[0], SurfaceImage) and not isinstance(
+            self.mask_img, SurfaceMasker
+        ):
+            self.masker_ = SurfaceMasker(
+                mask_img=self.mask_img,
+                smoothing_fwhm=self.smoothing_fwhm,
+                standardize=self.standardize,
+                t_r=self.t_r,
+                memory=self.memory,
+                memory_level=self.memory_level,
+            )
+            self.masker_.fit(run_imgs[0])
+        elif not isinstance(
             self.mask_img, (NiftiMasker, SurfaceMasker, SurfaceImage)
         ):
             self.masker_ = NiftiMasker(
@@ -607,16 +621,6 @@ class FirstLevelModel(BaseGLM):
                 memory=self.memory,
                 verbose=max(0, self.verbose - 2),
                 target_shape=self.target_shape,
-                memory_level=self.memory_level,
-            )
-            self.masker_.fit(run_imgs[0])
-        elif isinstance(self.mask_img, SurfaceImage):
-            self.masker_ = SurfaceMasker(
-                mask_img=self.mask_img,
-                smoothing_fwhm=self.smoothing_fwhm,
-                standardize=self.standardize,
-                t_r=self.t_r,
-                memory=self.memory,
                 memory_level=self.memory_level,
             )
             self.masker_.fit(run_imgs[0])
