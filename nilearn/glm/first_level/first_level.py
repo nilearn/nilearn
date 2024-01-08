@@ -581,29 +581,14 @@ class FirstLevelModel(BaseGLM):
             # We create a dummy mask to preserve functionality of api
             if isinstance(run_imgs[0], SurfaceImage):
                 parts = run_imgs[0].mesh.keys()
-                if len(parts) == 2:
-                    part_1, part_2 = parts
-                    self.mask_img = SurfaceImage(
-                        mesh=run_imgs[0].mesh,
-                        data={
-                            part_1: np.ones(
-                                run_imgs[0].data[part_1].shape[1], dtype=bool
-                            ),
-                            part_2: np.ones(
-                                run_imgs[0].data[part_2].shape[1], dtype=bool
-                            ),
-                        },
+                surf_data = {}
+                for part in parts:
+                    surf_data[part] = np.ones(
+                        run_imgs[0].data[part].shape[1], dtype=bool
                     )
-                else:
-                    part = list(parts)[0]
-                    self.mask_img = SurfaceImage(
-                        mesh=run_imgs[0].mesh,
-                        data={
-                            part: np.ones(
-                                run_imgs[0].data[part].shape[1], dtype=bool
-                            ),
-                        },
-                    )
+                self.mask_img = SurfaceImage(
+                    mesh=run_imgs[0].mesh, data=surf_data
+                )
             else:
                 ref_img = check_niimg(run_imgs[0])
                 self.mask_img = Nifti1Image(
