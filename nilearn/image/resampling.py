@@ -14,7 +14,7 @@ from scipy.ndimage import affine_transform, find_objects
 from .. import _utils
 from .._utils import stringify_path
 from .._utils.niimg import _get_data
-from .image import crop_img
+from .image import copy_img, crop_img
 
 ###############################################################################
 # Affine utils
@@ -280,9 +280,9 @@ def _resample_one_img(
             # array
             data = data.copy()
         # data[not_finite] = 0
-        from ..masking import _extrapolate_out_mask
+        from ..masking import extrapolate_out_mask
 
-        data = _extrapolate_out_mask(
+        data = extrapolate_out_mask(
             data, np.logical_not(not_finite), iterations=2
         )[0]
 
@@ -497,7 +497,7 @@ def resample_img(
     # noop cases
     if target_affine is None and target_shape is None:
         if copy and not input_img_is_string:
-            img = _utils.copy_img(img)
+            img = copy_img(img)
         return img
     if (
         np.shape(target_affine) == np.shape(affine)
@@ -512,7 +512,7 @@ def resample_img(
         target_affine, affine
     ):
         if copy and not input_img_is_string:
-            img = _utils.copy_img(img)
+            img = copy_img(img)
         return img
 
     # We now know that some resampling must be done.

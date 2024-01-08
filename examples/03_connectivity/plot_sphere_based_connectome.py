@@ -89,8 +89,17 @@ time_series = masker.fit_transform(
 )
 
 # %%
+# Display spheres summary report
+# ------------------------------
+# By default all spheres are displayed. This can be tweaked by passing an
+# integer or list/array of indices to the ``displayed_spheres`` argument of
+# ``generate_report``.
+report = masker.generate_report()
+report
+
+# %%
 # Display time series
-# --------------------
+# -------------------
 import matplotlib.pyplot as plt
 
 for time_serie, label in zip(time_series.T, labels):

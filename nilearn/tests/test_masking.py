@@ -17,18 +17,18 @@ from nilearn.conftest import _rng
 from nilearn.image import get_data, high_variance_confounds
 from nilearn.maskers import NiftiMasker
 from nilearn.masking import (
-    MaskWarning,
-    _extrapolate_out_mask,
+    _MaskWarning,
     _unmask_3d,
     _unmask_4d,
-    _unmask_from_to_3d_array,
     compute_background_mask,
     compute_brain_mask,
     compute_epi_mask,
     compute_multi_brain_mask,
     compute_multi_epi_mask,
+    extrapolate_out_mask,
     intersect_masks,
     unmask,
+    unmask_from_to_3d_array,
 )
 
 np_version = (
@@ -199,7 +199,7 @@ def test_compute_epi_mask(affine_eye):
     mean_image[0, 0, 0] = 1.2
     mean_image[0, 0, 2] = 1.1
     mean_image = Nifti1Image(mean_image, affine_eye)
-    with pytest.warns(MaskWarning, match="Computed an empty mask"):
+    with pytest.warns(_MaskWarning, match="Computed an empty mask"):
         compute_epi_mask(mean_image, exclude_zeros=True)
 
 
@@ -223,7 +223,7 @@ def test_compute_background_mask(affine_eye):
     # Check that we get a useful warning for empty masks
     mean_image = np.zeros((9, 9, 9))
     mean_image = Nifti1Image(mean_image, affine_eye)
-    with pytest.warns(MaskWarning, match="Computed an empty mask"):
+    with pytest.warns(_MaskWarning, match="Computed an empty mask"):
         compute_background_mask(mean_image)
 
 
@@ -247,7 +247,7 @@ def test_compute_brain_mask():
     # Test that gm and wm masks have empty intersection
     assert (np.logical_and(gm_data, wm_data) == 0).all()
     # Check that we get a useful warning for empty masks
-    with pytest.warns(masking.MaskWarning):
+    with pytest.warns(masking._MaskWarning):
         compute_brain_mask(img, threshold=1)
     # Check that masks obtained from same FOV are the same
     img1, _ = data_gen.generate_mni_space_img(res=8, random_state=1)
@@ -558,7 +558,7 @@ def test_compute_multi_epi_mask(affine_eye):
     mask_b_img = Nifti1Image(mask_b.astype("uint8"), affine_eye / 2.0)
 
     with warnings.catch_warnings():
-        warnings.simplefilter("ignore", MaskWarning)
+        warnings.simplefilter("ignore", _MaskWarning)
         with pytest.raises(ValueError):
             compute_multi_epi_mask([mask_a_img, mask_b_img])
     mask_ab = np.zeros((4, 4, 1), dtype=bool)
@@ -731,7 +731,7 @@ def test__extrapolate_out_mask():
     )
 
     # Test:
-    extrapolated_data, extrapolated_mask = _extrapolate_out_mask(
+    extrapolated_data, extrapolated_mask = extrapolate_out_mask(
         initial_data, initial_mask, iterations=1
     )
     assert_array_equal(extrapolated_data, target_data)
@@ -744,6 +744,6 @@ def test_unmask_from_to_3d_array(rng, size=5):
         mask = np.zeros(shape).astype(bool)
         mask[rng.uniform(size=shape) > 0.8] = 1
         support = rng.standard_normal(size=mask.sum())
-        full = _unmask_from_to_3d_array(support, mask)
+        full = unmask_from_to_3d_array(support, mask)
         np.testing.assert_array_equal(full.shape, shape)
         np.testing.assert_array_equal(full[mask], support)

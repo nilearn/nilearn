@@ -268,6 +268,14 @@ Once the PR has been reviewed and merged, pull from master and tag the merge com
     When building the distribution as described below, ``hatch-vcs``, defined in ``pyproject.toml``,
     extracts the version number using this tag and writes it to a ``_version.py`` file.
 
+Build of stable docs
+--------------------
+
+Once the new version tag of a release is pushed upstream following the step
+above, the Github Actions workflow ``release-docs.yml`` will be triggered
+automatically to build the stable docs and push them to
+our github pages repository ``nilearn/nilearn.github.io``. The workflow can
+also be triggered from the Actions tab.
 
 Build the distributions and upload them to Pypi
 -----------------------------------------------
@@ -337,8 +345,14 @@ and edit the ``x.y.z`` tag by providing a description,
 and upload the distributions we just created (you can just drag and drop the files).
 
 
-Build and deploy the documentation
-----------------------------------
+Build and deploy the documentation manually
+-------------------------------------------
+
+.. note::
+
+    This step is now automated as described above. If there is a need to run it
+    manually please follow the instructions below.
+
 
 Before building the documentation, make sure that the following LaTeX
 dependencies are installed on your system:
@@ -372,13 +386,13 @@ See available linux distributions of texlive-latex-base and texlive-latex-extra:
 - https://pkgs.org/search/?q=texlive-latex-base
 - https://pkgs.org/search/?q=texlive-latex-extra
 
-We now need to update the documentation. Make sure to change ``x.y.z`` to the
-current release version:
+We now need to update the documentation.
 
 .. code-block:: bash
 
     cd doc
-    make install VERSIONTAG=x.y.z
+    export VERSIONTAG=$(git describe --tags --abbrev=0)
+    make install
 
 
 This will build the documentation (beware, this is time consuming...)

@@ -12,7 +12,7 @@ from sklearn.utils import Bunch
 
 from .._utils import check_niimg, fill_doc
 from ..image import get_data, new_img_like, resampling
-from .utils import _fetch_files, _get_dataset_descr, _get_dataset_dir
+from ._utils import fetch_files, get_dataset_descr, get_dataset_dir
 
 _package_directory = os.path.dirname(os.path.abspath(__file__))
 MNI152_FILE_PATH = os.path.join(
@@ -156,14 +156,14 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     ]
 
     dataset_name = "icbm152_2009"
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
-    sub_files = _fetch_files(
+    sub_files = fetch_files(
         data_dir, filenames, resume=resume, verbose=verbose
     )
 
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     params = dict([("description", fdescr)] + list(zip(keys, sub_files)))
     return Bunch(**params)
@@ -824,10 +824,10 @@ def fetch_oasis_vbm(
         file_names_gm + file_names_wm + file_names_extvars + file_names_dua
     )
     dataset_name = "oasis1"
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
-    files = _fetch_files(data_dir, file_names, resume=resume, verbose=verbose)
+    files = fetch_files(data_dir, file_names, resume=resume, verbose=verbose)
 
     # Build Bunch
     gm_maps = files[:n_subjects]
@@ -849,7 +849,7 @@ def fetch_oasis_vbm(
     csv_data = csv_data.rename(
         columns={c: c.lower().replace("/", "") for c in csv_data.columns}
     )
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     if legacy_format:
         warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
@@ -875,7 +875,8 @@ def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
     Parameters
     ----------
     mesh : str, default='fsaverage5'
-        Which mesh to fetch. Should be one of the following values:
+        Which :term:`mesh` to fetch.
+        Should be one of the following values:
         %(fsaverage_options)s
     %(data_dir)s
 
@@ -887,21 +888,26 @@ def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
          - 'area_right': Gifti file, right hemisphere area data
          - 'curv_left': Gifti file, left hemisphere curvature data
          - 'curv_right': Gifti file, right hemisphere curvature data
-         - 'flat_left': Gifti file, left hemisphere flat surface mesh
-         - 'flat_right': Gifti file, right hemisphere flat surface mesh
-         - 'pial_left': Gifti file, left hemisphere pial surface mesh
-         - 'pial_right': Gifti file, right hemisphere pial surface mesh
-         - 'infl_left': Gifti file, left hemisphere inflated pial surface mesh
+         - 'flat_left': Gifti file, left hemisphere flat surface :term:`mesh`
+         - 'flat_right': Gifti file, right hemisphere flat surface :term:`mesh`
+         - 'pial_left': Gifti file, left hemisphere pial surface :term:`mesh`
+         - 'pial_right': Gifti file, right hemisphere pial surface :term:`mesh`
+         - 'infl_left': Gifti file, left hemisphere inflated pial surface
+           :term:`mesh`
          - 'infl_right': Gifti file, right hemisphere inflated pial
-                         surface mesh
-         - 'sphere_left': Gifti file, left hemisphere sphere surface mesh
-         - 'sphere_right': Gifti file, right hemisphere sphere surface mesh
+                         surface :term:`mesh`
+         - 'sphere_left': Gifti file, left hemisphere sphere surface
+           :term:`mesh`
+         - 'sphere_right': Gifti file, right hemisphere sphere surface
+           :term:`mesh`
          - 'sulc_left': Gifti file, left hemisphere sulcal depth data
          - 'sulc_right': Gifti file, right hemisphere sulcal depth data
          - 'thick_left': Gifti file, left hemisphere cortical thickness data
          - 'thick_right': Gifti file, right hemisphere cortical thickness data
-         - 'white_left': Gifti file, left hemisphere white surface mesh
-         - 'white_right': Gifti file, right hemisphere white surface mesh
+         - 'white_left': Gifti file, left hemisphere
+           white surface :term:`mesh`
+         - 'white_right': Gifti file, right hemisphere*
+           white surface :term:`mesh`
 
     References
     ----------
@@ -966,7 +972,7 @@ def _fetch_surf_fsaverage5():
         ]
         for hemi in ["left", "right"]
     }
-    data["description"] = _get_dataset_descr("fsaverage5")
+    data["description"] = get_dataset_descr("fsaverage5")
 
     return Bunch(**data)
 
@@ -979,7 +985,7 @@ def _fetch_surf_fsaverage(dataset_name, data_dir=None):
 
     The source of the data is downloaded from OSF.
     """
-    dataset_dir = _get_dataset_dir(dataset_name, data_dir=data_dir)
+    dataset_dir = get_dataset_dir(dataset_name, data_dir=data_dir)
     opts = {"uncompress": True}
 
     url = {
@@ -1007,7 +1013,7 @@ def _fetch_surf_fsaverage(dataset_name, data_dir=None):
     ]
 
     # Note that the file names match the attribute's
-    _fetch_files(
+    fetch_files(
         dataset_dir,
         [
             (f"{attribute}.gii.gz", url, opts)
@@ -1019,6 +1025,6 @@ def _fetch_surf_fsaverage(dataset_name, data_dir=None):
         attribute: os.path.join(dataset_dir, f"{attribute}.gii.gz")
         for attribute in dataset_attributes
     }
-    result["description"] = str(_get_dataset_descr(dataset_name))
+    result["description"] = str(get_dataset_descr(dataset_name))
 
     return Bunch(**result)

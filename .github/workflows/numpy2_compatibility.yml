@@ -4,8 +4,6 @@
 name: Numpy2 compatibility
 
 on:
-    # TODO remove on pull request
-    pull_request:
     schedule:
     # Run every day at 8am UTC
     -   cron: 0 8 * * *
@@ -19,7 +17,7 @@ jobs:
         -   name: Checkout nilearn
             uses: actions/checkout@v4
         -   name: Setup python
-            uses: actions/setup-python@v4
+            uses: actions/setup-python@v5
             with:
                 python-version: 3.12
         -   name: Install tox

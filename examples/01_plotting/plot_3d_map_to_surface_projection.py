@@ -26,11 +26,11 @@ stat_img = datasets.load_sample_motor_activation_image()
 fsaverage = datasets.fetch_surf_fsaverage()
 
 # %%
-# Use mesh curvature to display useful anatomical information
+# Use :term:`mesh` curvature to display useful anatomical information
 # on inflated meshes
 #
 # Here, we load the curvature map of the hemisphere under study,
-# and define a surface map whose value for a given vertex is
+# and define a surface map whose value for a given :term:`vertex` is
 # 1 if the curvature is positive, -1 if the curvature is negative.
 
 import numpy as np
