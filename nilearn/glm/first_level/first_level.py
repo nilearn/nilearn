@@ -986,6 +986,7 @@ def first_level_from_bids(
     sub_labels : :obj:`list` of :obj:`str`, optional
         Specifies the subset of subject labels to model.
         If 'None', will model all subjects in the dataset.
+
         .. versionadded:: 0.10.1
 
     img_filters : :obj:`list` of :obj:`tuple` (str, str), optional
