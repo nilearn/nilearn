@@ -7,9 +7,9 @@ from sklearn.linear_model import LinearRegression
 
 from nilearn.glm.contrasts import (
     Contrast,
-    _compute_fixed_effect_contrast,
     _compute_fixed_effects_params,
     compute_contrast,
+    compute_fixed_effect_contrast,
     expression_to_contrast_vector,
 )
 from nilearn.glm.first_level import run_glm
@@ -99,7 +99,7 @@ def test_fixed_effect_contrast(set_up_glm, rng):
     labels, results, q = set_up_glm(rng, "ols")
     c1, c2 = np.eye(q)[0], np.eye(q)[1]
 
-    con = _compute_fixed_effect_contrast(
+    con = compute_fixed_effect_contrast(
         [labels, labels], [results, results], [c1, c2]
     )
 
@@ -117,7 +117,7 @@ def test_fixed_effect_contrast_nonzero_effect():
     for i in range(X.shape[1]):
         contrast = np.zeros(X.shape[1])
         contrast[i] = 1.0
-        fixed_effect = _compute_fixed_effect_contrast(
+        fixed_effect = compute_fixed_effect_contrast(
             [labels],
             [results],
             [contrast],
@@ -125,7 +125,7 @@ def test_fixed_effect_contrast_nonzero_effect():
 
         assert_almost_equal(fixed_effect.effect_size(), coef.ravel()[i])
 
-        fixed_effect = _compute_fixed_effect_contrast(
+        fixed_effect = compute_fixed_effect_contrast(
             [labels] * 3, [results] * 3, [contrast] * 3
         )
 
