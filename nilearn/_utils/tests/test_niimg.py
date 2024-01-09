@@ -16,18 +16,6 @@ def img1(affine_eye):
     return Nifti1Image(data, affine=affine_eye)
 
 
-def test_copy_img():
-    with pytest.raises(ValueError, match="Input value is not an image"):
-        niimg.copy_img(3)
-
-
-def test_copy_img_side_effect(img1):
-    hash1 = joblib.hash(img1)
-    niimg.copy_img(img1)
-    hash2 = joblib.hash(img1)
-    assert hash1 == hash2
-
-
 def test_new_img_like_side_effect(img1):
     hash1 = joblib.hash(img1)
     new_img_like(
@@ -95,7 +83,9 @@ def test_img_data_dtype(rng, affine_eye, tmp_path):
     assert not all(dtype_matches)
 
 
-def test_load_niimg(img1):
-    with testing.write_tmp_imgs(img1, create_files=True) as filename:
-        filename = Path(filename)
-        load_niimg(filename)
+def test_load_niimg(img1, tmp_path):
+    filename = testing.write_imgs_to_path(
+        img1, file_path=tmp_path, create_files=True
+    )
+    filename = Path(filename)
+    load_niimg(filename)

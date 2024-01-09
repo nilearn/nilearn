@@ -60,7 +60,10 @@ import numpy as np
 from nilearn.maskers import MultiNiftiMasker
 
 masker = MultiNiftiMasker(
-    mask_img=dataset.mask, detrend=True, standardize="zscore_sample"
+    mask_img=dataset.mask,
+    detrend=True,
+    standardize="zscore_sample",
+    n_jobs=2,
 )
 masker.fit()
 fmri_data = masker.transform(fmri_random_runs_filenames)
@@ -95,7 +98,7 @@ plt.axis("off")
 plt.title(f"Run {3}, Stimulus {102}")
 plt.subplots_adjust(wspace=0.5)
 
-# %%#
+# %%
 # We now stack the :term:`fMRI` and stimulus data and remove an offset in the
 # beginning/end.
 

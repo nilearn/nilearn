@@ -25,7 +25,7 @@ an explicit model of the signal. The reference paper is:
       `preprint <https://hal.inria.fr/hal-00489507/>`_
 
 """
-# %%##
+# %%
 # Load brain development :term:`fMRI` dataset
 # -------------------------------------------
 from nilearn import datasets
@@ -54,6 +54,7 @@ canica = CanICA(
     mask_strategy="whole-brain-template",
     random_state=0,
     standardize="zscore_sample",
+    n_jobs=2,
 )
 canica.fit(func_filenames)
 
@@ -116,6 +117,7 @@ dict_learning = DictLearning(
     n_epochs=1,
     mask_strategy="whole-brain-template",
     standardize="zscore_sample",
+    n_jobs=2,
 )
 
 print("[Example] Fitting dictionary learning model")

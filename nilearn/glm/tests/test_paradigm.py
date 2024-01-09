@@ -13,8 +13,8 @@ import pytest
 from numpy.testing import assert_array_equal
 
 from nilearn._utils.data_gen import basic_paradigm
-from nilearn.glm.first_level import check_events
 from nilearn.glm.first_level.experimental_paradigm import (
+    check_events,
     handle_modulation_of_duplicate_events,
 )
 

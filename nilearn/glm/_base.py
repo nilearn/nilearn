@@ -8,6 +8,8 @@ class BaseGLM(BaseEstimator, TransformerMixin, CacheMixin):
     """Implement a base class \
     for the :term:`General Linear Model<GLM>`."""
 
+    # @auto_attr store the value as an object attribute after initial call
+    # better performance than @property
     @auto_attr
     def residuals(self):
         """Transform voxelwise residuals to the same shape \

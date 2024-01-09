@@ -34,7 +34,13 @@ from nilearn.glm.first_level.design_matrix import (
     check_design_matrix,
     make_first_level_design_matrix,
 )
-from nilearn.glm.first_level.first_level import _check_trial_type, _yule_walker
+from nilearn.glm.first_level.first_level import (
+    _check_and_load_tables,
+    _check_list_length_match,
+    _check_run_tables,
+    _check_trial_type,
+    _yule_walker,
+)
 from nilearn.glm.regression import ARModel, OLSModel
 from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files
@@ -460,8 +466,8 @@ def test_run_glm_errors(rng):
 def test_glm_AR_estimates(rng, ar_vals):
     """Test that Yule-Walker AR fits are correct."""
     n, p, q = 1, 500, 2
-    X_orig = rng.randn(p, q)
-    Y_orig = rng.randn(p, n)
+    X_orig = rng.standard_normal((p, q))
+    Y_orig = rng.standard_normal((p, n))
 
     ar_order = len(ar_vals)
     ar_arg = f"ar{ar_order}"
@@ -492,7 +498,7 @@ def test_glm_AR_estimates(rng, ar_vals):
 def test_glm_AR_estimates_errors(rng):
     """Test Yule-Walker errors."""
     (n, p) = (1, 500)
-    Y_orig = rng.randn(p, n)
+    Y_orig = rng.standard_normal((p, n))
 
     with pytest.raises(TypeError, match="AR order must be an integer"):
         _yule_walker(Y_orig, 1.2)
@@ -1325,7 +1331,7 @@ def test_first_level_from_bids(
         base_dir=tmp_path, n_sub=n_sub, n_ses=n_ses, tasks=tasks, n_runs=n_runs
     )
 
-    models, m_imgs, m_events, m_confounds = first_level_from_bids(
+    models, imgs, events, confounds = first_level_from_bids(
         dataset_path=bids_path,
         task_label=tasks[task_index],
         space_label=space_label,
@@ -1333,9 +1339,7 @@ def test_first_level_from_bids(
         slice_time_ref=None,
     )
 
-    _check_output_first_level_from_bids(
-        n_sub, models, m_imgs, m_events, m_confounds
-    )
+    _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
 
     n_imgs_expected = n_ses * n_runs[task_index]
 
@@ -1349,13 +1353,13 @@ def test_first_level_from_bids(
     elif no_run_entity:
         n_imgs_expected = n_ses
 
-    assert len(m_imgs[0]) == n_imgs_expected
+    assert len(imgs[0]) == n_imgs_expected
 
 
 def test_first_level_from_bids_select_one_run_per_session(bids_dataset):
     n_sub, n_ses, *_ = _inputs_for_new_bids_dataset()
 
-    models, m_imgs, m_events, m_confounds = first_level_from_bids(
+    models, imgs, events, confounds = first_level_from_bids(
         dataset_path=bids_dataset,
         task_label="main",
         space_label="MNI",
@@ -1363,18 +1367,16 @@ def test_first_level_from_bids_select_one_run_per_session(bids_dataset):
         slice_time_ref=None,
     )
 
-    _check_output_first_level_from_bids(
-        n_sub, models, m_imgs, m_events, m_confounds
-    )
+    _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
 
     n_imgs_expected = n_ses
-    assert len(m_imgs[0]) == n_imgs_expected
+    assert len(imgs[0]) == n_imgs_expected
 
 
 def test_first_level_from_bids_select_all_runs_of_one_session(bids_dataset):
     n_sub, _, _, n_runs = _inputs_for_new_bids_dataset()
 
-    models, m_imgs, m_events, m_confounds = first_level_from_bids(
+    models, imgs, events, confounds = first_level_from_bids(
         dataset_path=bids_dataset,
         task_label="main",
         space_label="MNI",
@@ -1382,12 +1384,10 @@ def test_first_level_from_bids_select_all_runs_of_one_session(bids_dataset):
         slice_time_ref=None,
     )
 
-    _check_output_first_level_from_bids(
-        n_sub, models, m_imgs, m_events, m_confounds
-    )
+    _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
 
     n_imgs_expected = n_runs[0]
-    assert len(m_imgs[0]) == n_imgs_expected
+    assert len(imgs[0]) == n_imgs_expected
 
 
 @pytest.mark.parametrize("verbose", [0, 1])
@@ -1426,7 +1426,7 @@ def test_first_level_from_bids_several_labels_per_entity(tmp_path, entity):
         entities={entity: ["A", "B"]},
     )
 
-    models, m_imgs, m_events, m_confounds = first_level_from_bids(
+    models, imgs, events, confounds = first_level_from_bids(
         dataset_path=bids_path,
         task_label="main",
         space_label="MNI",
@@ -1434,32 +1434,28 @@ def test_first_level_from_bids_several_labels_per_entity(tmp_path, entity):
         slice_time_ref=None,
     )
 
-    _check_output_first_level_from_bids(
-        n_sub, models, m_imgs, m_events, m_confounds
-    )
+    _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
     n_imgs_expected = n_ses * n_runs[0]
-    assert len(m_imgs[0]) == n_imgs_expected
+    assert len(imgs[0]) == n_imgs_expected
 
 
 def _check_output_first_level_from_bids(
-    n_sub, models, m_imgs, m_events, m_confounds
+    n_sub, models, imgs, events, confounds
 ):
     assert len(models) == n_sub
     assert all(isinstance(model, FirstLevelModel) for model in models)
-    assert len(models) == len(m_imgs)
-    for imgs in m_imgs:
-        assert isinstance(imgs, list)
-        assert all(Path(img_).exists() for img_ in imgs)
-    assert len(models) == len(m_events)
-    for events in m_events:
-        assert isinstance(events, list)
-        assert all(isinstance(event_, pd.DataFrame) for event_ in events)
-    assert len(models) == len(m_confounds)
-    for confounds in m_confounds:
-        assert isinstance(confounds, list)
-        assert all(
-            isinstance(confound_, pd.DataFrame) for confound_ in confounds
-        )
+    assert len(models) == len(imgs)
+    for img_ in imgs:
+        assert isinstance(img_, list)
+        assert all(Path(x).exists() for x in img_)
+    assert len(models) == len(events)
+    for event_ in events:
+        assert isinstance(event_, list)
+        assert all(isinstance(x, pd.DataFrame) for x in event_)
+    assert len(models) == len(confounds)
+    for confound_ in confounds:
+        assert isinstance(confound_, list)
+        assert all(isinstance(x, pd.DataFrame) for x in confound_)
 
 
 def test_first_level_from_bids_with_subject_labels(bids_dataset):
@@ -1722,7 +1718,7 @@ def test_first_level_from_bids_all_confounds_missing(tmp_path_factory):
     for f in confound_files:
         os.remove(f)
 
-    models, m_imgs, m_events, m_confounds = first_level_from_bids(
+    models, imgs, events, confounds = first_level_from_bids(
         dataset_path=bids_dataset,
         task_label="main",
         space_label="MNI",
@@ -1731,10 +1727,10 @@ def test_first_level_from_bids_all_confounds_missing(tmp_path_factory):
         slice_time_ref=None,
     )
 
-    assert len(models) == len(m_imgs)
-    assert len(models) == len(m_events)
-    assert len(models) == len(m_confounds)
-    for condounds_ in m_confounds:
+    assert len(models) == len(imgs)
+    assert len(models) == len(events)
+    assert len(models) == len(confounds)
+    for condounds_ in confounds:
         assert condounds_ is None
 
 
@@ -1860,3 +1856,124 @@ def test_missing_trial_type_column_warning(tmp_path_factory):
             "No column named 'trial_type' found" in r.message.args[0]
             for r in record
         )
+
+
+from itertools import product
+
+
+def test_first_level_from_bids_load_confounds(tmp_path):
+    """Test that only a subset of confounds can be loaded."""
+    n_sub = 2
+
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path, n_sub=n_sub, n_ses=2, tasks=["main"], n_runs=[2]
+    )
+
+    _, _, _, confounds = first_level_from_bids(
+        dataset_path=bids_path,
+        task_label="main",
+        space_label="MNI",
+        img_filters=[("desc", "preproc")],
+    )
+
+    assert len(confounds[0][0].columns) == 189
+
+    models, imgs, events, confounds = first_level_from_bids(
+        dataset_path=bids_path,
+        task_label="main",
+        space_label="MNI",
+        img_filters=[("desc", "preproc")],
+        confounds_strategy=("motion", "wm_csf"),
+        confounds_motion="full",
+        confounds_wm_csf="basic",
+    )
+
+    _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
+
+    assert len(confounds[0][0].columns) == 26
+
+    assert all(x in confounds[0][0].columns for x in ["csf", "white_matter"])
+    for dir, motion, der, power in product(
+        ["x", "y", "z"],
+        ["rot", "trans"],
+        ["", "_derivative1"],
+        ["", "_power2"],
+    ):
+        assert f"{motion}_{dir}{der}{power}" in confounds[0][0].columns
+
+
+def test_first_level_from_bids_load_confounds_warnings(tmp_path):
+    """Throw warning when incompatible confound loading strategy are used."""
+    n_sub = 2
+
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path, n_sub=n_sub, n_ses=2, tasks=["main"], n_runs=[2]
+    )
+
+    # high pass is loaded from the confounds: no warning
+    first_level_from_bids(
+        dataset_path=bids_path,
+        task_label="main",
+        space_label="MNI",
+        img_filters=[("desc", "preproc")],
+        drift_model=None,
+        confounds_strategy=("high_pass",),
+    )
+
+    with pytest.warns(
+        UserWarning, match=("duplicate .*the cosine one used in the model.")
+    ):
+        # cosine loaded from confounds may duplicate
+        # the one created during model specification
+        first_level_from_bids(
+            dataset_path=bids_path,
+            task_label="main",
+            space_label="MNI",
+            img_filters=[("desc", "preproc")],
+            drift_model="cosine",
+            confounds_strategy=("high_pass",),
+        )
+
+    with pytest.warns(
+        UserWarning, match=("conflict .*the polynomial one used in the model.")
+    ):
+        # cosine loaded from confounds may conflict
+        # the one created during model specification
+        first_level_from_bids(
+            dataset_path=bids_path,
+            task_label="main",
+            space_label="MNI",
+            img_filters=[("desc", "preproc")],
+            drift_model="polynomial",
+            confounds_strategy=("high_pass",),
+        )
+
+
+def test_check_run_tables_errors():
+    # check high level wrapper keeps behavior
+    with pytest.raises(ValueError, match="len.* does not match len.*"):
+        _check_run_tables([""] * 2, [""], "")
+    with pytest.raises(ValueError, match="table path .* could not be loaded"):
+        _check_run_tables([""] * 2, [".csv", ".csv"], "")
+    with pytest.raises(
+        TypeError, match="can only be a pandas DataFrames or a string"
+    ):
+        _check_run_tables([""] * 2, [[0], pd.DataFrame()], "")
+    with pytest.raises(ValueError, match="table path .* could not be loaded"):
+        _check_run_tables([""] * 2, [".csv", pd.DataFrame()], "")
+
+
+def test_img_table_checks():
+    # check matching lengths
+    with pytest.raises(ValueError, match="len.* does not match len.*"):
+        _check_list_length_match([""] * 2, [""], "", "")
+
+    # check tables type and that can be loaded
+    with pytest.raises(ValueError, match="table path .* could not be loaded"):
+        _check_and_load_tables([".csv", ".csv"], "")
+    with pytest.raises(
+        TypeError, match="can only be a pandas DataFrames or a string"
+    ):
+        _check_and_load_tables([[], pd.DataFrame()], "")
+    with pytest.raises(ValueError, match="table path .* could not be loaded"):
+        _check_and_load_tables([".csv", pd.DataFrame()], "")

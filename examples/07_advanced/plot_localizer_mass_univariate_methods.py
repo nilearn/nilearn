@@ -99,7 +99,7 @@ ols_outputs = permuted_ols(
     tfce=True,
     n_perm=200,  # 200 for the sake of time. Ideally, this should be 10000.
     verbose=1,  # display progress bar
-    n_jobs=1,  # can be changed to use more CPUs
+    n_jobs=2,  # can be changed to use more CPUs
     output_type="dict",
 )
 neg_log_pvals_permuted_ols_unmasked = nifti_masker.inverse_transform(

@@ -19,6 +19,8 @@ pip-log.txt
 
 .pytest_cache
 
+.tox
+
 .ropeproject/
 
 tags
@@ -45,6 +47,7 @@ venv/
 # coverage
 .coverage
 coverage
+coverage.xml
 nosetests_coverage/
 
 # documentation
@@ -56,6 +59,7 @@ doc/datasets/generated/
 doc/generated/
 doc/modules/generated/
 doc/themes/nilearn/static/jquery.js
+doc/sg_execution_times.rst
 
 # examples
 examples/**/*.pdf

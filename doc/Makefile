@@ -172,6 +172,7 @@ check:
 	BUILD_DEV_HTML=1 $(SPHINXBUILD) -W --keep-going -T -n -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 
 install:
+	@echo $(VERSIONTAG)
 	rm -rf _build/doctrees _build/nilearn.github.io
 	# first clone the nilearn.github.io repo because it may ask
 	# for password and we don't want to delay this long build in
@@ -189,4 +190,5 @@ install:
 	git add -A && \
 	git add .nojekyll && \
 	git commit -a -m 'Make install' && \
-	git push
+	git tag $(VERSIONTAG) && \
+	git push --tags

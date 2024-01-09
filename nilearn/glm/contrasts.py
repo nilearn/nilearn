@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 import scipy.stats as sps
 
+from nilearn._utils import rename_parameters
 from nilearn.glm._utils import pad_contrast, z_score
 from nilearn.maskers import NiftiMasker
 
@@ -47,7 +48,10 @@ def expression_to_contrast_vector(expression, design_columns):
     return contrast_vector
 
 
-def compute_contrast(labels, regression_result, con_val, contrast_type=None):
+@rename_parameters(
+    replacement_params={"contrast_type": "stat_type"}, end_version="0.13.0"
+)
+def compute_contrast(labels, regression_result, con_val, stat_type=None):
     """Compute the specified :term:`contrast` given an estimated glm.
 
     Parameters
@@ -63,10 +67,16 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
         Where q = number of :term:`contrast` vectors
         and p = number of regressors.
 
-    contrast_type : {None, 't', 'F'}, optional
+    stat_type : {None, 't', 'F'}, optional
         Type of the :term:`contrast`.
         If None, then defaults to 't' for 1D `con_val`
         and 'F' for 2D `con_val`.
+
+    contrast_type :
+
+        .. deprecated:: 0.11.0
+
+            Use ``stat_type`` instead (see above).
 
     Returns
     -------
@@ -80,17 +90,17 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
     if con_val.ndim > 1:
         dim = con_val.shape[0]
 
-    if contrast_type is None:
-        contrast_type = "t" if dim == 1 else "F"
+    if stat_type is None:
+        stat_type = "t" if dim == 1 else "F"
 
-    acceptable_contrast_types = ["t", "F"]
-    if contrast_type not in acceptable_contrast_types:
+    acceptable_stat_types = ["t", "F"]
+    if stat_type not in acceptable_stat_types:
         raise ValueError(
-            f"'{contrast_type}' is not a known contrast type. "
-            f"Allowed types are {acceptable_contrast_types}."
+            f"'{stat_type}' is not a known contrast type. "
+            f"Allowed types are {acceptable_stat_types}."
         )
 
-    if contrast_type == "t":
+    if stat_type == "t":
         effect_ = np.zeros((1, labels.size))
         var_ = np.zeros(labels.size)
         for label_ in regression_result:
@@ -99,7 +109,7 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
             effect_[:, label_mask] = reg.effect.T
             var_[label_mask] = (reg.sd**2).T
 
-    elif contrast_type == "F":
+    elif stat_type == "F":
         from scipy.linalg import sqrtm
 
         effect_ = np.zeros((dim, labels.size))
@@ -112,7 +122,7 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
             label_mask = labels == label_
             reg = regression_result[label_]
             con_val = pad_contrast(
-                con_val=con_val, theta=reg.theta, contrast_type=contrast_type
+                con_val=con_val, theta=reg.theta, stat_type=stat_type
             )
             cbeta = np.atleast_2d(np.dot(con_val, reg.theta))
             invcov = np.linalg.inv(
@@ -129,13 +139,11 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
         variance=var_,
         dim=dim,
         dof=dof_,
-        contrast_type=contrast_type,
+        contrast_type=stat_type,
     )
 
 
-def _compute_fixed_effect_contrast(
-    labels, results, con_vals, contrast_type=None
-):
+def compute_fixed_effect_contrast(labels, results, con_vals, stat_type=None):
     """Compute the summary contrast assuming fixed effects.
 
     Adds the same contrast applied to all labels and results lists.
@@ -147,7 +155,7 @@ def _compute_fixed_effect_contrast(
         if np.all(con_val == 0):
             warn(f"Contrast for session {int(i)} is null.")
             continue
-        contrast_ = compute_contrast(lab, res, con_val, contrast_type)
+        contrast_ = compute_contrast(lab, res, con_val, stat_type)
         contrast = contrast_ if contrast is None else contrast + contrast_
         n_contrasts += 1
     if contrast is None:
@@ -169,13 +177,16 @@ class Contrast:
     may lead to memory breakage).
     """
 
+    @rename_parameters(
+        replacement_params={"contrast_type": "stat_type"}, end_version="0.13.0"
+    )
     def __init__(
         self,
         effect,
         variance,
         dim=None,
         dof=DEF_DOFMAX,
-        contrast_type="t",
+        stat_type="t",
         tiny=DEF_TINY,
         dofmax=DEF_DOFMAX,
     ):
@@ -195,8 +206,14 @@ class Contrast:
         dof : scalar, default=DEF_DOFMAX
             The degrees of freedom of the residuals.
 
-        contrast_type : {'t', 'F'}, default='t'
+        stat_type : {'t', 'F'}, default='t'
             Specification of the :term:`contrast` type.
+
+        contrast_type :
+
+            .. deprecated:: 0.11.0
+
+                Use ``stat_type`` instead (see above).
 
         tiny : float, default=DEF_TINY
             Small quantity used to avoid numerical underflows.
@@ -214,21 +231,38 @@ class Contrast:
         self.variance = variance
         self.dof = float(dof)
         self.dim = effect.shape[0] if dim is None else dim
-        if self.dim > 1 and contrast_type == "t":
+        if self.dim > 1 and stat_type == "t":
             print("Automatically converted multi-dimensional t to F contrast")
-            contrast_type = "F"
-        if contrast_type not in ["t", "F"]:
+            stat_type = "F"
+        if stat_type not in ["t", "F"]:
             raise ValueError(
-                f"{contrast_type} is not a valid contrast_type. "
-                "Should be t or F"
+                f"{stat_type} is not a valid stat_type. " "Should be t or F"
             )
-        self.contrast_type = contrast_type
+        self.stat_type = stat_type
         self.stat_ = None
         self.p_value_ = None
         self.one_minus_pvalue_ = None
         self.baseline = 0
         self.tiny = tiny
         self.dofmax = dofmax
+
+    @property
+    def contrast_type(self):
+        """Return value of stat_type.
+
+        .. deprecated:: 0.11.0
+        """
+        attrib_deprecation_msg = (
+            'The attribute "contrast_type" '
+            "will be removed in 0.13.0 release of Nilearn. "
+            'Please use the attribute "stat_type" instead.'
+        )
+        warn(
+            category=DeprecationWarning,
+            message=attrib_deprecation_msg,
+            stacklevel=3,
+        )
+        return self.stat_type
 
     def effect_size(self):
         """Make access to summary statistics more straightforward \
@@ -258,13 +292,13 @@ class Contrast:
         self.baseline = baseline
 
         # Case: one-dimensional contrast ==> t or t**2
-        if self.contrast_type == "F":
+        if self.stat_type == "F":
             stat = (
                 np.sum((self.effect - baseline) ** 2, 0)
                 / self.dim
                 / np.maximum(self.variance, self.tiny)
             )
-        elif self.contrast_type == "t":
+        elif self.stat_type == "t":
             # avoids division by zero
             stat = (self.effect - baseline) / np.sqrt(
                 np.maximum(self.variance, self.tiny)
@@ -294,9 +328,9 @@ class Contrast:
         if self.stat_ is None or self.baseline != baseline:
             self.stat_ = self.stat(baseline)
         # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
-        if self.contrast_type == "t":
+        if self.stat_type == "t":
             p_values = sps.t.sf(self.stat_, np.minimum(self.dof, self.dofmax))
-        elif self.contrast_type == "F":
+        elif self.stat_type == "F":
             p_values = sps.f.sf(
                 self.stat_, self.dim, np.minimum(self.dof, self.dofmax)
             )
@@ -326,12 +360,12 @@ class Contrast:
         if self.stat_ is None or self.baseline != baseline:
             self.stat_ = self.stat(baseline)
         # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
-        if self.contrast_type == "t":
+        if self.stat_type == "t":
             one_minus_pvalues = sps.t.cdf(
                 self.stat_, np.minimum(self.dof, self.dofmax)
             )
         else:
-            assert self.contrast_type == "F"
+            assert self.stat_type == "F"
             one_minus_pvalues = sps.f.cdf(
                 self.stat_, self.dim, np.minimum(self.dof, self.dofmax)
             )
@@ -370,7 +404,7 @@ class Contrast:
 
         This should be used only on indepndent contrasts.
         """
-        if self.contrast_type != other.contrast_type:
+        if self.stat_type != other.stat_type:
             raise ValueError(
                 "The two contrasts do not have consistent type dimensions"
             )
@@ -379,7 +413,7 @@ class Contrast:
                 "The two contrasts do not have compatible dimensions"
             )
         dof_ = self.dof + other.dof
-        if self.contrast_type == "F":
+        if self.stat_type == "F":
             warn("Running approximate fixed effects on F statistics.")
         effect_ = self.effect + other.effect
         variance_ = self.variance + other.variance
@@ -388,7 +422,7 @@ class Contrast:
             variance=variance_,
             dim=self.dim,
             dof=dof_,
-            contrast_type=self.contrast_type,
+            stat_type=self.stat_type,
         )
 
     def __rmul__(self, scalar):
@@ -401,7 +435,7 @@ class Contrast:
             effect=effect_,
             variance=variance_,
             dof=dof_,
-            contrast_type=self.contrast_type,
+            stat_type=self.stat_type,
         )
 
     __mul__ = __rmul__
@@ -539,12 +573,12 @@ def _compute_fixed_effects_params(
         fixed_fx_variance = np.mean(variances, 0) / len(variances)
         fixed_fx_contrasts = np.mean(contrasts, 0)
     dim = 1
-    contrast_type = "t"
+    stat_type = "t"
     fixed_fx_contrasts_ = fixed_fx_contrasts
     if len(fixed_fx_contrasts.shape) == 2:
         dim = fixed_fx_contrasts.shape[0]
         if dim > 1:
-            contrast_type = "F"
+            stat_type = "F"
     else:
         fixed_fx_contrasts_ = fixed_fx_contrasts[np.newaxis]
     con = Contrast(
@@ -552,7 +586,7 @@ def _compute_fixed_effects_params(
         variance=fixed_fx_variance,
         dim=dim,
         dof=np.sum(dofs),
-        contrast_type=contrast_type,
+        stat_type=stat_type,
     )
     fixed_fx_z_score = con.z_score()
     fixed_fx_stat = con.stat_

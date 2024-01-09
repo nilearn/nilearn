@@ -103,13 +103,15 @@ ax.set_ylabel("maps")
 # also smooth a little bit to improve statistical behavior.
 from nilearn.glm.second_level import SecondLevelModel
 
-second_level_model = SecondLevelModel(smoothing_fwhm=2.0, mask_img=mask_img)
+second_level_model = SecondLevelModel(
+    smoothing_fwhm=2.0, mask_img=mask_img, n_jobs=2
+)
 second_level_model.fit(
     gray_matter_map_filenames,
     design_matrix=design_matrix,
 )
 
-# %%##
+# %%
 # Estimating the :term:`contrast` is very simple.
 # We can just provide the column name of the design matrix.
 z_map = second_level_model.compute_contrast(
@@ -117,7 +119,7 @@ z_map = second_level_model.compute_contrast(
     output_type="z_score",
 )
 
-# %%##
+# %%
 # We threshold the second level :term:`contrast`
 # at FDR-corrected p < 0.05 and plot it.
 from nilearn.glm import threshold_stats_img

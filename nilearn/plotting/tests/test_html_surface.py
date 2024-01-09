@@ -75,17 +75,17 @@ def test_get_vertexcolor():
 
 
 def test_check_mesh():
-    mesh = html_surface._check_mesh('fsaverage5')
-    assert mesh is html_surface._check_mesh(mesh)
+    mesh = html_surface.check_mesh('fsaverage5')
+    assert mesh is html_surface.check_mesh(mesh)
     with pytest.raises(ValueError):
-        html_surface._check_mesh('fsaverage2')
+        html_surface.check_mesh('fsaverage2')
     mesh.pop('pial_left')
     with pytest.raises(ValueError):
-        html_surface._check_mesh(mesh)
+        html_surface.check_mesh(mesh)
     with pytest.raises(TypeError):
-        html_surface._check_mesh(surface.load_surf_mesh(mesh['pial_right']))
+        html_surface.check_mesh(surface.load_surf_mesh(mesh['pial_right']))
     mesh = datasets.fetch_surf_fsaverage()
-    assert mesh is html_surface._check_mesh(mesh)
+    assert mesh is html_surface.check_mesh(mesh)
 
 
 def test_one_mesh_info():
@@ -181,7 +181,7 @@ def test_view_surf(rng):
     assert "SOME_TITLE" in html.html
     html = html_surface.view_surf(fsaverage['pial_right'])
     check_html(html)
-    atlas = rng.randint(0, 10, size=len(mesh[0]))
+    atlas = rng.integers(0, 10, size=len(mesh[0]))
     html = html_surface.view_surf(
         fsaverage['pial_left'], atlas, symmetric_cmap=False)
     check_html(html)

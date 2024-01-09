@@ -1,5 +1,4 @@
 """Configuration and extra fixtures for pytest."""
-import os
 import warnings
 
 import nibabel
@@ -12,6 +11,14 @@ from nilearn import image
 # we need to import these fixtures even if not used in this module
 from nilearn.datasets.tests._testing import request_mocker  # noqa: F401
 from nilearn.datasets.tests._testing import temp_nilearn_data_dir  # noqa: F401
+
+# TODO This import needs to be removed once the experimental surface API and
+# its pytest fixtures are integrated into the stable API
+from nilearn.experimental.surface.tests.conftest import (  # noqa: F401
+    make_mini_img,
+    mini_img,
+    mini_mesh,
+)
 
 collect_ignore = ["datasets/data/convert_templates.py"]
 collect_ignore_glob = ["reporting/_visual_testing/*"]
@@ -84,35 +91,6 @@ def close_all():
 
 
 @pytest.fixture(autouse=True)
-def warnings_as_errors():
-    """Raise errors on deprecations from external library prereleases."""
-    flag = os.environ.get("WARN_DEPRECATION_ERRORS")
-    if flag == "true":
-        with warnings.catch_warnings():
-            warnings.filterwarnings(
-                "error",
-                message=".*numpy.*|.*scipy.*|.*nibabel.*|"
-                ".*joblib.*|.*pandas.*|.*scikit-learn.*",
-                category=DeprecationWarning,
-            )
-            if matplotlib is not None:
-                warnings.filterwarnings(
-                    "error",
-                    category=matplotlib.MatplotlibDeprecationWarning,
-                )
-            # Ignore internal DeprecationWarnings that reference a dependency
-            pattern = '.*The "C" parameter.*'
-            warnings.filterwarnings(
-                "ignore",
-                message=pattern,
-                category=DeprecationWarning,
-            )
-            yield
-    else:
-        yield
-
-
-@pytest.fixture(autouse=True)
 def suppress_specific_warning():
     """Ignore internal deprecation warnings."""
     with warnings.catch_warnings():
@@ -120,6 +98,7 @@ def suppress_specific_warning():
             "The `darkness` parameter will be deprecated.*|"
             "`legacy_format` will default to `False`.*|"
             "In release 0.13, this fetcher will return a dictionary.*|"
+            "The default strategy for standardize.*|"
         )
         warnings.filterwarnings(
             "ignore",
@@ -132,8 +111,8 @@ def suppress_specific_warning():
 # ------------------------   RNG   ------------------------#
 
 
-def _rng():
-    return np.random.RandomState(42)
+def _rng(seed=42):
+    return np.random.default_rng(seed)
 
 
 @pytest.fixture()
@@ -238,7 +217,7 @@ def _img_3d_rand(affine=_affine_eye()):
 
     Mostly used for set up in other fixtures in other testing modules.
     """
-    data = _rng().rand(*_shape_3d_default())
+    data = _rng().random(_shape_3d_default())
     return Nifti1Image(data, affine)
 
 
@@ -251,7 +230,7 @@ def img_3d_rand_eye():
 def _img_3d_mni(affine=_affine_mni()):
     data_positive = np.zeros((7, 7, 3))
     rng = _rng()
-    data_rng = rng.rand(7, 7, 3)
+    data_rng = rng.random((7, 7, 3))
     data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
     return Nifti1Image(data_positive, affine)
 
@@ -326,7 +305,7 @@ def img_4d_ones_eye():
 @pytest.fixture
 def img_4d_rand_eye():
     """Return a default random filled 4D Nifti1Image (identity affine)."""
-    data = _rng().rand(*_shape_4d_default())
+    data = _rng().random(_shape_4d_default())
     return Nifti1Image(data, _affine_eye())
 
 

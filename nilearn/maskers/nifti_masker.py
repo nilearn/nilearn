@@ -8,6 +8,7 @@ from functools import partial
 from joblib import Memory
 
 from nilearn import _utils, image, masking
+from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 
 
@@ -338,13 +339,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         img = self._reporting_data["images"]
         mask = self._reporting_data["mask"]
 
-        if img is not None:
-            dim = image.load_img(img).shape
-            if len(dim) == 4:
-                # compute middle image from 4D series for plotting
-                img = image.index_img(img, dim[-1] // 2)
-
-        else:  # images were not provided to fit
+        if img is None:  # images were not provided to fit
             msg = (
                 "No image provided to fit in NiftiMasker. "
                 "Setting image to mask for reporting."
@@ -352,7 +347,13 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             warnings.warn(msg)
             self._report_content["warning_message"] = msg
             img = mask
-
+        if self._reporting_data["dim"] == 5:
+            msg = (
+                "A list of 4D subject images were provided to fit. "
+                "Only first subject is shown in the report."
+            )
+            warnings.warn(msg)
+            self._report_content["warning_message"] = msg
         # create display of retained input mask, image
         # for visual comparison
         init_display = plotting.plot_img(
@@ -376,13 +377,9 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         self._report_content["description"] += self._overlay_text
 
         # create display of resampled NiftiImage and mask
-        # assuming that resampl_img has same dim as img
         resampl_img, resampl_mask = self._reporting_data["transform"]
         if resampl_img is None:  # images were not provided to fit
             resampl_img = resampl_mask
-        elif len(dim) == 4:
-            # compute middle image from 4D series for plotting
-            resampl_img = image.index_img(resampl_img, dim[-1] // 2)
 
         final_display = plotting.plot_img(
             resampl_img,
@@ -431,6 +428,12 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
 
         # Compute the mask if not given by the user
         if self.mask_img is None:
+            if imgs is None:
+                raise ValueError(
+                    "Parameter 'imgs' must be provided to "
+                    f"{self.__class__.__name__}.fit() "
+                    "if no mask is passed to mask_img."
+                )
             mask_args = self.mask_args if self.mask_args is not None else {}
             compute_mask = _get_mask_strategy(self.mask_strategy)
             if self.verbose > 0:
@@ -442,7 +445,15 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
 
         if self.reports:  # save inputs for reporting
-            self._reporting_data = {"images": imgs, "mask": self.mask_img_}
+            self._reporting_data = {
+                "mask": self.mask_img_,
+                "dim": None,
+                "images": imgs,
+            }
+            if imgs is not None:
+                imgs, dims = compute_middle_image(imgs)
+                self._reporting_data["images"] = imgs
+                self._reporting_data["dim"] = dims
         else:
             self._reporting_data = None
 
@@ -465,7 +476,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             self.affine_ = self.mask_img_.affine
 
         # Load data in memory, while also checking that mask is binary/valid
-        data, _ = masking._load_mask_img(self.mask_img_, allow_empty=True)
+        data, _ = masking.load_mask_img(self.mask_img_, allow_empty=True)
 
         # Infer the number of elements (voxels) in the mask
         self.n_elements_ = int(data.sum())
@@ -485,6 +496,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
                     copy=False,
                     interpolation="nearest",
                 )
+                resampl_imgs, _ = compute_middle_image(resampl_imgs)
             else:  # imgs not provided to fit
                 resampl_imgs = None
 

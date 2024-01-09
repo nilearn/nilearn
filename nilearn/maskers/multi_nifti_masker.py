@@ -10,6 +10,7 @@ from functools import partial
 from joblib import Memory, Parallel, delayed
 
 from nilearn import _utils, image, masking
+from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.nifti_masker import NiftiMasker, _filter_and_mask
 
 
@@ -240,8 +241,15 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
 
         self._reporting_data = None
         if self.reports:  # save inputs for reporting
-            imgs = imgs[0] if isinstance(imgs, list) else imgs
-            self._reporting_data = {"images": imgs, "mask": self.mask_img_}
+            self._reporting_data = {
+                "mask": self.mask_img_,
+                "dim": None,
+                "images": imgs,
+            }
+            if imgs is not None:
+                imgs, dims = compute_middle_image(imgs)
+                self._reporting_data["images"] = imgs
+                self._reporting_data["dim"] = dims
 
         # If resampling is requested, resample the mask as well.
         # Resampling: allows the user to change the affine, the shape or both.
@@ -262,7 +270,7 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
             self.affine_ = self.mask_img_.affine
 
         # Load data in memory, while also checking that mask is binary/valid
-        data, _ = masking._load_mask_img(self.mask_img_, allow_empty=True)
+        data, _ = masking.load_mask_img(self.mask_img_, allow_empty=True)
 
         # Infer the number of elements (voxels) in the mask
         self.n_elements_ = int(data.sum())

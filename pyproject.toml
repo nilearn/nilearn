@@ -45,48 +45,49 @@ requires-python = ">=3.8"
 [project.optional-dependencies]
 # A combination of dependencies useful for developers
 dev = [
-    "nilearn[plotting,plotly,doc,test]",
-    "isort",
-    "flynt",
-    "black",
-    "blacken-docs",
-    "flake8",
-    "flake8-docstrings",
-    "flake8-use-fstring",
-    "flake8-functions",
-    'codespell',
-    'tomli',
-    'pre-commit'
+    "nilearn[plotting,doc,style,test]",
+    'pre-commit',
+    'tox'
 ]
 # Requirements necessary for building the documentation
 doc = [
-    "nilearn[plotly]",
+    "nilearn[plotting]",
     "furo",
     "memory_profiler",  # measuring memory during docs building
     "myst-parser",
     "numpydoc",
     "ruamel.yaml",
-    "sphinx<7.2.0",
+    "sphinx",
     "sphinx-copybutton",
     "sphinx-design",
     "sphinx-gallery",
     "sphinxcontrib-bibtex",
-    "sphinxext-opengraph"
+    "sphinxext-opengraph",
+    "ruamel.yaml"
 ]
-# For testing of oldest usable versions of dependencies.
-min = [
-    "joblib==1.0.0",
-    "nibabel==4.0.0",
-    "numpy==1.19.0",
-    "pandas==1.1.5",
-    "scikit-learn==1.0.0",
-    "scipy==1.6.0"
-]
-# For surface plotting mostly
-plotly = ["kaleido", "plotly"]
+# the following is kept for "backward compatibility"
+plotly = ["nilearn[plotting]"]
 # Necessary req to use nilearn's plotting module
-plotmin = ["matplotlib==3.3.0"]
-plotting = ["matplotlib>=3.3.0"]
+# Kaleido version is pinned for windows due to bug
+# See https://github.com/plotly/Kaleido/issues/134 for more detail
+plotting = [
+    "matplotlib>=3.3.0",
+    "plotly",
+    "kaleido ; platform_system != 'Windows'",
+    "kaleido==0.1.0.post1 ; platform_system == 'Windows'"
+]
+style = [
+    "black",
+    "blacken-docs",
+    'codespell',
+    "isort",
+    "flake8",
+    "flake8-docstrings",
+    "flake8-use-fstring",
+    "flake8-functions",
+    "flynt",
+    'tomli'
+]
 # For running unit and docstring tests
 test = [
     "coverage",
@@ -105,10 +106,7 @@ Homepage = "https://nilearn.github.io"
 extend-exclude = """
 (
   nilearn/externals
-  | nilearn/_utils/data_gen.py
   | nilearn/_utils/helpers.py
-  | nilearn/reporting/html_report.py
-  | nilearn/reporting/tests/test_html_report.py
   | examples/01_plotting/plot_3d_map_to_surface_projection.py
   | examples/01_plotting/plot_surf_atlas.py
   | examples/01_plotting/plot_surf_stat_map.py
@@ -117,15 +115,7 @@ extend-exclude = """
   | examples/04_glm_first_level/plot_fixed_effects.py
   | examples/04_glm_first_level/plot_localizer_surface_analysis.py
   | examples/07_advanced/plot_surface_bids_analysis.py
-  | nilearn/interfaces/fmriprep/load_confounds_compcor.py
-  | nilearn/interfaces/fmriprep/tests/test_load_confounds_utils.py
-  | nilearn/interfaces/fmriprep/tests/test_load_confounds_strategy.py
-  | nilearn/interfaces/fmriprep/tests/_testing.py
-  | nilearn/interfaces/fmriprep/tests/test_load_confounds.py
-  | nilearn/maskers/nifti_spheres_masker.py
-  | nilearn/maskers/nifti_labels_masker.py
   | nilearn/plotting/html_surface.py
-  | nilearn/plotting/img_plotting.py
   | nilearn/plotting/js_plotting_utils.py
   | nilearn/plotting/surf_plotting.py
   | nilearn/plotting/tests/test_html_surface.py
@@ -168,10 +158,8 @@ src_paths = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "-ra --strict-config --strict-markers --doctest-modules -s -vv --durations=0"
+addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --durations=0"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
-# TODO: Remove filter in release 0.13
-filterwarnings = "ignore:.*Please use 'zscore_sample' instead.:FutureWarning"
 junit_family = "xunit2"
 minversion = "6.0"
 xfail_strict = true

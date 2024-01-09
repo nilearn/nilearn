@@ -24,7 +24,7 @@ More specifically:
 """
 
 
-# %%#
+# %%
 # Fetch openneuro :term:`BIDS` dataset
 # ------------------------------------
 # We download one subject from the stopsignal task
@@ -90,6 +90,7 @@ derivatives_folder = "derivatives/fmriprep"
     space_label,
     smoothing_fwhm=5.0,
     derivatives_folder=derivatives_folder,
+    n_jobs=2,
 )
 
 # %%

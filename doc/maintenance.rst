@@ -123,6 +123,50 @@ We welcome pull requests from all community members, if they follow the
 details on their process are available
 :sklearn:`here <developers/contributing.html#contributing-code>`).
 
+Using tox
+=========
+
+`Tox <See https://tox.wiki/en>`_ is set
+to facilitate testing and managing environments during development
+and ensure that the same commands can easily be run locally and in CI.
+
+Install it with:
+
+.. code-block:: bash
+
+    pip install tox
+
+You can set up certain environment or run certain command by calling ``tox``.
+
+Calling ``tox`` with no extra argument will simply run
+all the default commands defined in the tox configuration (``tox.ini``).
+
+Use ``tox list`` to view all environment descriptions.
+
+Use ``tox run`` to run a specific environment.
+
+Example
+
+.. code-block:: bash
+
+    tox run -e lint
+
+Some environments allow passing extra argument:
+
+.. code-block:: bash
+
+    # only run black
+    tox run -e lint -- black
+
+    # only run some tests
+    tox -e test_plotting -- nilearn/glm/tests/test_contrasts.py
+
+You can also run any arbitrary command in a given environment with ``tox exec``:
+
+.. code-block:: bash
+
+    tox exec -e test_latest -- python -m pytest nilearn/_utils/tests/test_data_gen.py
+
 
 How to make a release?
 ======================
@@ -181,6 +225,9 @@ Finally, we need to change the title from ``x.y.z.dev`` to ``x.y.z``:
    - Nilearn now includes functionality A
    - ...
 
+We must also ensure that every entry in ``nilearn/doc/changes/latest.rst``
+starts with a "badge" (see the :ref:`changelog` section).
+
 Once we have made all the necessary changes to ``nilearn/doc/changes/latest.rst``, we should rename it into ``nilearn/doc/changes/x.y.z.rst``, where ``x.y.z`` is the corresponding version number.
 
 We then need to update ``nilearn/doc/changes/whats_new.rst`` and replace:
@@ -221,6 +268,14 @@ Once the PR has been reviewed and merged, pull from master and tag the merge com
     When building the distribution as described below, ``hatch-vcs``, defined in ``pyproject.toml``,
     extracts the version number using this tag and writes it to a ``_version.py`` file.
 
+Build of stable docs
+--------------------
+
+Once the new version tag of a release is pushed upstream following the step
+above, the Github Actions workflow ``release-docs.yml`` will be triggered
+automatically to build the stable docs and push them to
+our github pages repository ``nilearn/nilearn.github.io``. The workflow can
+also be triggered from the Actions tab.
 
 Build the distributions and upload them to Pypi
 -----------------------------------------------
@@ -290,8 +345,14 @@ and edit the ``x.y.z`` tag by providing a description,
 and upload the distributions we just created (you can just drag and drop the files).
 
 
-Build and deploy the documentation
-----------------------------------
+Build and deploy the documentation manually
+-------------------------------------------
+
+.. note::
+
+    This step is now automated as described above. If there is a need to run it
+    manually please follow the instructions below.
+
 
 Before building the documentation, make sure that the following LaTeX
 dependencies are installed on your system:
@@ -325,11 +386,12 @@ See available linux distributions of texlive-latex-base and texlive-latex-extra:
 - https://pkgs.org/search/?q=texlive-latex-base
 - https://pkgs.org/search/?q=texlive-latex-extra
 
-We now need to update the documentation:
+We now need to update the documentation.
 
 .. code-block:: bash
 
     cd doc
+    export VERSIONTAG=$(git describe --tags --abbrev=0)
     make install
 
 

@@ -16,7 +16,7 @@ for a careful study.
 
 """
 
-# %%##
+# %%
 # Load brain development :term:`fMRI` dataset and MSDL atlas
 # ----------------------------------------------------------
 # We study only 60 subjects from the dataset, to save computation time.
@@ -107,7 +107,7 @@ gs = GridSearchCV(
     cv=cv,
     verbose=1,
     refit=False,
-    n_jobs=8,
+    n_jobs=2,
 )
 gs.fit(masked_data, classes)
 mean_scores = gs.cv_results_["mean_test_score"]

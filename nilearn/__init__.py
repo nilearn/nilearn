@@ -16,14 +16,17 @@ visualization tools.
 Submodules
 ---------
 
-datasets                --- Utilities to download NeuroImaging datasets
-decoding                --- Decoding tools and algorithms
-decomposition           --- Includes a subject level variant of the ICA
-                            algorithm called Canonical ICA
 connectome              --- Set of tools for computing functional
                             connectivity matrices
                             and for sparse multi-subjects learning
                             of Gaussian graphical models
+datasets                --- Utilities to download NeuroImaging datasets
+decoding                --- Decoding tools and algorithms
+decomposition           --- Includes a subject level variant of the ICA
+                            algorithm called Canonical ICA
+experimental            --- Provides importable modules
+                            that enable the use of experimental features
+glm                     --- Analysing fMRI data using GLMs
 image                   --- Set of functions defining mathematical operations
                             working on Niimg-like objects
 maskers                 --- Includes scikit-learn transformers.
@@ -36,6 +39,8 @@ plotting                --- Plotting code for nilearn
 region                  --- Set of functions for extracting region-defined
                             signals, clustering methods,
                             connected regions extraction
+reporting               --- Implements functions useful
+                            to report analysis results
 signal                  --- Set of preprocessing functions for time series
 """
 
@@ -63,6 +68,7 @@ __all__ = [
     "decoding",
     "decomposition",
     "connectome",
+    "experimental",
     "image",
     "maskers",
     "masking",

@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import numpy as np
-import pandas as pd
 import pytest
 import scipy.linalg as spl
 import scipy.stats as sps
@@ -9,9 +8,6 @@ from scipy.stats import norm
 
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.glm._utils import (
-    _check_and_load_tables,
-    _check_list_length_match,
-    _check_run_tables,
     full_rank,
     multiple_fast_inverse,
     multiple_mahalanobis,
@@ -177,7 +173,7 @@ def test_mahalanobis2(rng):
         A = rng.standard_normal(size=(120, n))
         A = np.dot(A.T, A)
         Aa[:, :, i] = A
-    i = rng.randint(3)
+    i = rng.integers(3)
     mah = np.dot(x[:, i], np.dot(spl.inv(Aa[:, :, i]), x[:, i]))
     f_mah = (multiple_mahalanobis(x, Aa))[i]
 
@@ -246,31 +242,3 @@ def test_pos_recipr():
     assert positive_reciprocal(-1) == 0
     assert positive_reciprocal(0) == 0
     assert positive_reciprocal(2) == 0.5
-
-
-def test_img_table_checks():
-    # check matching lengths
-    with pytest.raises(ValueError, match="len.* does not match len.*"):
-        _check_list_length_match([""] * 2, [""], "", "")
-
-    # check tables type and that can be loaded
-    with pytest.raises(ValueError, match="table path .* could not be loaded"):
-        _check_and_load_tables([".csv", ".csv"], "")
-    with pytest.raises(
-        TypeError, match="can only be a pandas DataFrames or a string"
-    ):
-        _check_and_load_tables([[], pd.DataFrame()], "")
-    with pytest.raises(ValueError, match="table path .* could not be loaded"):
-        _check_and_load_tables([".csv", pd.DataFrame()], "")
-
-    # check high level wrapper keeps behavior
-    with pytest.raises(ValueError, match="len.* does not match len.*"):
-        _check_run_tables([""] * 2, [""], "")
-    with pytest.raises(ValueError, match="table path .* could not be loaded"):
-        _check_run_tables([""] * 2, [".csv", ".csv"], "")
-    with pytest.raises(
-        TypeError, match="can only be a pandas DataFrames or a string"
-    ):
-        _check_run_tables([""] * 2, [[0], pd.DataFrame()], "")
-    with pytest.raises(ValueError, match="table path .* could not be loaded"):
-        _check_run_tables([""] * 2, [".csv", pd.DataFrame()], "")

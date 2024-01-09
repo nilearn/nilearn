@@ -173,31 +173,6 @@ def is_binary_niimg(niimg):
     return sorted(list(unique_values)) == [0, 1]
 
 
-def copy_img(img):
-    """Copy an image to a nibabel.Nifti1Image.
-
-    Parameters
-    ----------
-    img: image
-        nibabel SpatialImage object to copy.
-
-    Returns
-    -------
-    img_copy: image
-        copy of input (data, affine and header)
-    """
-    from ..image import new_img_like  # avoid circular imports
-
-    if not isinstance(img, nibabel.spatialimages.SpatialImage):
-        raise ValueError("Input value is not an image")
-    return new_img_like(
-        img,
-        safe_get_data(img, copy_data=True),
-        img.affine.copy(),
-        copy_header=True,
-    )
-
-
 def _repr_niimgs(niimgs, shorten=True):
     """Pretty printing of niimg or niimgs.
 
@@ -295,7 +270,7 @@ def img_data_dtype(niimg):
         1.0,
         0.0,
     ):
-        return np.float_
+        return np.float64
 
     # ArrayProxy gained the dtype attribute in nibabel 2.2
     if hasattr(dataobj, "dtype"):
