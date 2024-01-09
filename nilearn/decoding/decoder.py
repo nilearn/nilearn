@@ -1067,7 +1067,7 @@ class _BaseDecoder(CacheMixin):
 
 
 @fill_doc
-class Decoder(_BaseDecoder, ClassifierMixin):
+class Decoder(ClassifierMixin, _BaseDecoder):
     """A wrapper for popular classification strategies in neuroimaging.
 
     The `Decoder` object supports classification methods.
@@ -1199,9 +1199,13 @@ class Decoder(_BaseDecoder, ClassifierMixin):
             n_jobs=n_jobs,
         )
 
+    def score(self, X, y, *args):
+        """Call score method from base class."""
+        return _BaseDecoder.score(self, X, y, *args)
+
 
 @fill_doc
-class DecoderRegressor(_BaseDecoder, MultiOutputMixin, RegressorMixin):
+class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
     """A wrapper for popular regression strategies in neuroimaging.
 
     The `DecoderRegressor` object supports regression methods.
@@ -1337,6 +1341,10 @@ class DecoderRegressor(_BaseDecoder, MultiOutputMixin, RegressorMixin):
             verbose=verbose,
             n_jobs=n_jobs,
         )
+
+    def score(self, X, y, *args):
+        """Call score method from base class."""
+        return _BaseDecoder.score(self, X, y, *args)
 
 
 @fill_doc
