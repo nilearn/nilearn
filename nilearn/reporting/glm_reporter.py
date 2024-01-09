@@ -36,6 +36,7 @@ with warnings.catch_warnings():
     from nilearn.glm.thresholding import threshold_stats_img
 
 from nilearn._utils import check_niimg
+from nilearn.experimental.surface import SurfaceMasker
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting.get_clusters_table import get_clusters_table
 from nilearn.reporting.utils import figure_to_svg_quoted
@@ -213,7 +214,7 @@ def make_glm_report(
     html_design_matrices = _dmtx_to_svg_url(design_matrices)
 
     # Select mask_img to use for plotting
-    if isinstance(model.mask_img, NiftiMasker):
+    if isinstance(model.mask_img, (NiftiMasker, SurfaceMasker)):
         mask_img = model.masker_.mask_img_
     else:
         try:
@@ -223,24 +224,27 @@ def make_glm_report(
         except Exception:
             mask_img = model.masker_.mask_img_
 
-    mask_plot_html_code = _mask_to_svg(
-        mask_img=mask_img,
-        bg_img=bg_img,
-    )
-    all_components = _make_stat_maps_contrast_clusters(
-        stat_img=statistical_maps,
-        contrasts_plots=contrast_plots,
-        threshold=threshold,
-        alpha=alpha,
-        cluster_threshold=cluster_threshold,
-        height_control=height_control,
-        two_sided=two_sided,
-        min_distance=min_distance,
-        bg_img=bg_img,
-        cut_coords=cut_coords,
-        display_mode=display_mode,
-        plot_type=plot_type,
-    )
+    mask_plot_html_code = None
+    all_components = ""
+    if isinstance(mask_img, NiftiMasker):
+        mask_plot_html_code = _mask_to_svg(
+            mask_img=mask_img,
+            bg_img=bg_img,
+        )
+        all_components = _make_stat_maps_contrast_clusters(
+            stat_img=statistical_maps,
+            contrasts_plots=contrast_plots,
+            threshold=threshold,
+            alpha=alpha,
+            cluster_threshold=cluster_threshold,
+            height_control=height_control,
+            two_sided=two_sided,
+            min_distance=min_distance,
+            bg_img=bg_img,
+            cut_coords=cut_coords,
+            display_mode=display_mode,
+            plot_type=plot_type,
+        )
     all_components_text = "\n".join(all_components)
     report_values_head = {
         "page_title": escape(page_title),

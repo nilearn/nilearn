@@ -219,3 +219,19 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     )
 
 plotting.show()
+
+# %%
+# Generating a report
+# -------------------
+# We can also create a summary report with some relevant information about
+# the model. Here we generate the report for left-right button press contrast.
+report = glm.generate_report(contrasts["left - right button press"])
+
+report  # This report can be viewed in a notebook
+
+# %%
+# In a jupyter notebook, the report will be automatically inserted, as above.
+# We have several other ways to access the report:
+
+# report.save_as_html('report.html')
+# report.open_in_browser()
