@@ -17,9 +17,9 @@ New
 
 - :bdg-success:`API` Display object created by plotting now uniformly expose an ``add_markers`` method.
 
-- :bdg-info:`Plotting` Function :func:`~plotting.plot_connectome` now plots connectome with colorbars.
-
 - :bdg-success:`API` New function :func:`~image.resample_to_img` to resample one image on another one (just resampling / interpolation, no coregistration).
+
+- :bdg-info:`Plotting` Function :func:`~plotting.plot_connectome` now plots connectome with colorbars.
 
 Changes
 -------
