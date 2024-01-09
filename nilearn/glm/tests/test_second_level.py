@@ -29,7 +29,6 @@ from nilearn.glm.second_level.second_level import (
     _check_input_as_first_level_model,
     _check_output_type,
     _check_second_level_input,
-    _get_contrast,
     _infer_effect_maps,
     _process_second_level_input_as_dataframe,
     _process_second_level_input_as_firstlevelmodels,
@@ -418,32 +417,6 @@ def test_check_effect_maps():
         match="design_matrix does not match the number of maps considered",
     ):
         _check_effect_maps([1, 2], np.array([[1, 2], [3, 4], [5, 6]]))
-
-
-def test_get_contrast():
-    design_matrix = pd.DataFrame([1, 2, 3], columns=["conf"])
-    assert _get_contrast("conf", design_matrix) == "conf"
-
-    design_matrix = pd.DataFrame({"conf1": [1, 2, 3], "conf2": [4, 5, 6]})
-    assert _get_contrast([0, 1], design_matrix) == "conf2"
-    assert _get_contrast([1, 0], design_matrix) == "conf1"
-
-
-def test_get_contrast_errors():
-    design_matrix = pd.DataFrame([1, 2, 3], columns=["conf"])
-    with pytest.raises(ValueError, match='"foo" is not a valid contrast name'):
-        _get_contrast("foo", design_matrix)
-
-    design_matrix = pd.DataFrame({"conf1": [1, 2, 3], "conf2": [4, 5, 6]})
-    with pytest.raises(
-        ValueError, match="No second-level contrast is specified."
-    ):
-        _get_contrast(None, design_matrix)
-    with pytest.raises(
-        ValueError,
-        match="second_level_contrast must be a list of 0s and 1s",
-    ):
-        _get_contrast([0, 0], design_matrix)
 
 
 def test_infer_effect_maps(tmp_path):
@@ -1217,7 +1190,9 @@ def test_non_parametric_inference_contrast_computation(tmp_path):
     )
 
 
-@pytest.mark.parametrize("second_level_contrast", [[1, 0], "r1"])
+@pytest.mark.parametrize(
+    "second_level_contrast", [[1, 0], "r1", "r1-r2", [-1, 1]]
+)
 def test_non_parametric_inference_contrast_formula(
     tmp_path, second_level_contrast, rng
 ):
@@ -1253,7 +1228,7 @@ def test_non_parametric_inference_contrast_computation_errors(tmp_path, rng):
     # passing null contrast should give back a value error
     with pytest.raises(
         ValueError,
-        match=("second_level_contrast must be a list of 0s and 1s."),
+        match=("Second_level_contrast must be a valid"),
     ):
         non_parametric_inference(
             second_level_input=Y,
@@ -1263,7 +1238,7 @@ def test_non_parametric_inference_contrast_computation_errors(tmp_path, rng):
         )
     with pytest.raises(
         ValueError,
-        match=("second_level_contrast must be a list of 0s and 1s."),
+        match=("Second_level_contrast must be a valid"),
     ):
         non_parametric_inference(
             second_level_input=Y,

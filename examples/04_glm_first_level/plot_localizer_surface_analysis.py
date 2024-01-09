@@ -179,6 +179,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
           f"{contrast_id}, right hemisphere")
     # compute contrast-related statistics
     z_score = glm.compute_contrast(contrast_val, stat_type='t')
+
     # we plot it on the surface, on the inflated fsaverage mesh,
     # together with a suitable background to give an impression
     # of the cortex folding.

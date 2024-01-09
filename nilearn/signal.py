@@ -877,11 +877,11 @@ def _interpolate_volumes(volumes, sample_mask, t_r, extrapolate):
 
 def _create_cosine_drift_terms(signals, confounds, high_pass, t_r):
     """Create cosine drift terms, append to confounds regressors."""
-    from nilearn.glm.first_level.design_matrix import _cosine_drift
+    from nilearn.glm.first_level.design_matrix import create_cosine_drift
 
     frame_times = np.arange(signals.shape[0]) * t_r
     # remove constant, as the signal is mean centered
-    cosine_drift = _cosine_drift(high_pass, frame_times)[:, :-1]
+    cosine_drift = create_cosine_drift(high_pass, frame_times)[:, :-1]
     confounds = _check_cosine_by_user(confounds, cosine_drift)
     return confounds
 

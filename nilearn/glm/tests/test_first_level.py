@@ -35,7 +35,13 @@ from nilearn.glm.first_level.design_matrix import (
     check_design_matrix,
     make_first_level_design_matrix,
 )
-from nilearn.glm.first_level.first_level import _check_trial_type, _yule_walker
+from nilearn.glm.first_level.first_level import (
+    _check_and_load_tables,
+    _check_list_length_match,
+    _check_run_tables,
+    _check_trial_type,
+    _yule_walker,
+)
 from nilearn.glm.regression import ARModel, OLSModel
 from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files
@@ -1942,6 +1948,36 @@ def test_first_level_from_bids_load_confounds_warnings(tmp_path):
             drift_model="polynomial",
             confounds_strategy=("high_pass",),
         )
+
+
+def test_check_run_tables_errors():
+    # check high level wrapper keeps behavior
+    with pytest.raises(ValueError, match="len.* does not match len.*"):
+        _check_run_tables([""] * 2, [""], "")
+    with pytest.raises(ValueError, match="table path .* could not be loaded"):
+        _check_run_tables([""] * 2, [".csv", ".csv"], "")
+    with pytest.raises(
+        TypeError, match="can only be a pandas DataFrames or a string"
+    ):
+        _check_run_tables([""] * 2, [[0], pd.DataFrame()], "")
+    with pytest.raises(ValueError, match="table path .* could not be loaded"):
+        _check_run_tables([""] * 2, [".csv", pd.DataFrame()], "")
+
+
+def test_img_table_checks():
+    # check matching lengths
+    with pytest.raises(ValueError, match="len.* does not match len.*"):
+        _check_list_length_match([""] * 2, [""], "", "")
+
+    # check tables type and that can be loaded
+    with pytest.raises(ValueError, match="table path .* could not be loaded"):
+        _check_and_load_tables([".csv", ".csv"], "")
+    with pytest.raises(
+        TypeError, match="can only be a pandas DataFrames or a string"
+    ):
+        _check_and_load_tables([[], pd.DataFrame()], "")
+    with pytest.raises(ValueError, match="table path .* could not be loaded"):
+        _check_and_load_tables([".csv", pd.DataFrame()], "")
 
 
 # -----------------------surface tests--------------------------------------- #
