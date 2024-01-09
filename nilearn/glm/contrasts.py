@@ -143,7 +143,7 @@ def compute_contrast(labels, regression_result, con_val, stat_type=None):
     )
 
 
-def _compute_fixed_effect_contrast(labels, results, con_vals, stat_type=None):
+def compute_fixed_effect_contrast(labels, results, con_vals, stat_type=None):
     """Compute the summary contrast assuming fixed effects.
 
     Adds the same contrast applied to all labels and results lists.
