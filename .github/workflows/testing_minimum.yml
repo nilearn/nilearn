@@ -1,6 +1,12 @@
 ---
 name: test minimal version of each dependency
 
+# Test that if the minimal version of each dependency is installed
+# along with the latest version of all the other dependencies
+# then there is no problem installing
+#
+# see https://github.com/nilearn/nilearn/issues/4069
+
 on:
 
     # Uses the cron schedule for github actions
@@ -17,14 +23,12 @@ on:
     #            │ │ │ │ │
     #            * * * * *
     schedule:
-    -   cron: 0 0 * * 1 # every monday
+    -   cron: 0 0 1 * * # every first day of the month
 
     # Allows you to run this workflow manually from the Actions tab
     workflow_dispatch:
 
-    push:
-        branches:
-        -   main
+    # TODO remove before merging PR
     pull_request:
         branches:
         -   '*'
@@ -41,8 +45,8 @@ jobs:
             fail-fast: false
             matrix:
                 os: [ubuntu-latest, macos-latest, windows-latest]
-                python-version: ['3.8', '3.12']
-                min_dep: [joblib==1.0.0, nibabel==4.0.0, numpy==1.21.0, pandas==1.2.0, scikit-learn==1.2.0, scipy==1.9.2]
+                python-version: ['3.8']
+                min_dep: [joblib==1.0.0, nibabel==3.2.0, numpy==1.19.0, pandas==1.1.5, scikit-learn==1.0.0, scipy==1.6.0]
         name: ${{ matrix.os }} with Python ${{ matrix.python-version }} and ${{ matrix.min_dep }}
         steps:
         -   name: Checkout nilearn
