@@ -2,7 +2,7 @@
 
 The functions represent feature comprehensive examples
 to visualize, inspect, and test the functionality
-of nistats.reporting.make_glm_reports().
+of nilearn.reporting.make_glm_reports().
 
 Disable any of the function calls in the __main__()
 to run a specific script and save time.
