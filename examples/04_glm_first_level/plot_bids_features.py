@@ -17,12 +17,17 @@ More specifically:
 1. Download an :term:`fMRI` :term:`BIDS` dataset
    with derivatives from openneuro.
 2. Extract first level model objects automatically
-   from the :term:`BIDS` dataset.
-3. Demonstrate Quality assurance of Nistats estimation against available FSL.
+   from the :term:`BIDS` dataset with a specific set of confounds.
+4. Run this first level model.
+3. Demonstrate Quality assurance of Nilearn estimation against available FSL.
    estimation in the openneuro dataset.
 4. Display contrast plot and uncorrected first level statistics table report.
 """
 
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
 
 # %%
 # Fetch openneuro :term:`BIDS` dataset
@@ -66,14 +71,21 @@ data_dir, _ = fetch_openneuro_dataset(urls=urls)
 # --------------------------------------------------------------
 # From the dataset directory we automatically obtain FirstLevelModel objects
 # with their subject_id filled from the :term:`BIDS` dataset.
+# To get the first level models we have to specify the ``dataset_path``,
+# the ``task_label`` and the ``space_label`` as specified in the file names.
+# We also have to provide the folder with the desired derivatives,
+# that in this case were produced by the :term:`fMRIPrep` :term:`BIDS` app.
 # Moreover we obtain,
-# for each model, the list of run images and their respective events and
-# confound regressors. Those are inferred from the confounds.tsv files
+# for each model, the list of run images and their respective events
+# and confound regressors.
+# Those are inferred from the confounds.tsv files
 # available in the :term:`BIDS` dataset.
-# To get the first level models we have to specify the dataset directory,
-# the task_label and the space_label as specified in the file names.
-# We also have to provide the folder with the desired derivatives, that in this
-# case were produced by the :term:`fMRIPrep` :term:`BIDS` app.
+# We can specify which confounds to load by passing extra arguments
+# prefixed with ``confound_`` that will be handled
+# by # :func:`~nilearn.interfaces.fmriprep.load_confounds`.
+# Here we will include 6 motions regressors (6 rotations and 6 translations),
+# as well as the regressors corresponding to signals from the white matter
+# and cerebrospinal fluid.
 from nilearn.glm.first_level import first_level_from_bids
 
 task_label = "stopsignal"
@@ -85,10 +97,13 @@ derivatives_folder = "derivatives/fmriprep"
     models_events,
     models_confounds,
 ) = first_level_from_bids(
-    data_dir,
-    task_label,
-    space_label,
+    dataset_path=data_dir,
+    task_label=task_label,
+    space_label=space_label,
     smoothing_fwhm=5.0,
+    confounds_strategy=("motion", "wm_csf"),
+    confounds_motion="basic",
+    confounds_wm_csf="basic",
     derivatives_folder=derivatives_folder,
     n_jobs=2,
 )
@@ -105,6 +120,19 @@ model, imgs, events, confounds = (
 subject = f"sub-{model.subject_label}"
 model.minimize_memory = False  # override default
 
+
+# %%
+# First level model estimation (one subject)
+# ------------------------------------------
+
+model.fit(imgs, events=events, confounds=confounds)
+
+print(model.design_matrices_)
+
+#  %%
+# Compare Nilearn and FSL estimation
+# ----------------------------------
+# Load design matrix generated with FSL
 import os
 
 from nilearn.interfaces.fsl import get_design_from_fslmat
@@ -116,10 +144,21 @@ design_matrix = get_design_from_fslmat(
     fsl_design_matrix_path, column_names=None
 )
 
+from nilearn.plotting import plot_design_matrix
+
+# Compare design matrices
+fig, (ax1, ax2) = plt.subplots(figsize=(10, 6), nrows=1, ncols=2)
+plot_design_matrix(model.design_matrices_, ax=ax1)
+ax1.set_title("Original design matrix", fontsize=12)
+plot_design_matrix(design_matrix, ax=ax2)
+ax1.set_title("FSL design matrix", fontsize=12)
+fig.show()
+
+
 # %%
-# We identify the columns of the Go and StopSuccess conditions of the
-# design matrix inferred from the FSL file, to use them later for contrast
-# definition.
+# We identify the columns of the Go and StopSuccess conditions
+# of the design matrix inferred from the FSL file,
+# to use them later for contrast definitions.
 design_columns = [
     f"cond_{int(i):02}" for i in range(len(design_matrix.columns))
 ]
@@ -128,14 +167,12 @@ design_columns[4] = "StopSuccess"
 design_matrix.columns = design_columns
 
 # %%
-# First level model estimation (one subject)
-# ------------------------------------------
 # We fit the first level model for one subject.
 model.fit(imgs, design_matrices=[design_matrix])
 
 # %%
-# Then we compute the StopSuccess - Go contrast. We can use the column names
-# of the design matrix.
+# Then we compute the StopSuccess - Go contrast.
+# We can use the column names of the design matrix.
 z_map = model.compute_contrast("StopSuccess - Go")
 
 # %%
@@ -203,8 +240,8 @@ plotting.plot_glass_brain(
 plt.show()
 
 # %%
-# We can get a latex table from a Pandas Dataframe for display and publication
-# purposes
+# We can get a latex table from a Pandas Dataframe
+# for display and publication purposes
 from nilearn.reporting import get_clusters_table
 
 table = get_clusters_table(z_map, norm.isf(0.001), 10)
