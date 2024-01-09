@@ -63,7 +63,6 @@ doc = [
     "sphinx-gallery",
     "sphinxcontrib-bibtex",
     "sphinxext-opengraph",
-    "ruamel.yaml"
 ]
 # the following is kept for "backward compatibility"
 plotly = ["nilearn[plotting]"]
