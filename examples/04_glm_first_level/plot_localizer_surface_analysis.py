@@ -72,17 +72,21 @@ from nilearn import surface
 from nilearn.experimental.surface import SurfaceImage, load_fsaverage
 
 fsaverage5 = load_fsaverage()
-texture_left = surface.vol_to_surf(fmri_img, fsaverage5['pial']['left_hemisphere'])
-texture_right = surface.vol_to_surf(fmri_img, fsaverage5['pial']['right_hemisphere'])
+texture_left = surface.vol_to_surf(
+    fmri_img, fsaverage5["pial"]["left_hemisphere"]
+)
+texture_right = surface.vol_to_surf(
+    fmri_img, fsaverage5["pial"]["right_hemisphere"]
+)
 image = SurfaceImage(
     mesh={
-        'lh': fsaverage5['pial']['left_hemisphere'],
-        'rh': fsaverage5['pial']['right_hemisphere'],
+        "lh": fsaverage5["pial"]["left_hemisphere"],
+        "rh": fsaverage5["pial"]["right_hemisphere"],
     },
     data={
-        'lh': texture_left.T,
-        'rh': texture_right.T,
-    }
+        "lh": texture_left.T,
+        "rh": texture_right.T,
+    },
 )
 
 # %%
@@ -97,7 +101,7 @@ from nilearn.glm.first_level import FirstLevelModel
 glm = FirstLevelModel(
     t_r,
     slice_time_ref=slice_time_ref,
-    hrf_model='glover + derivative',
+    hrf_model="glover + derivative",
 ).fit(image, events)
 
 # %%
@@ -108,37 +112,47 @@ glm = FirstLevelModel(
 # For practical purpose, we first generate an identity matrix whose size is
 # the number of columns of the design matrix.
 import numpy as np
+
 design_matrix = glm.design_matrices_[0]
 contrast_matrix = np.eye(design_matrix.shape[1])
 
 # %%
 # At first, we create basic contrasts.
-basic_contrasts = dict([(column, contrast_matrix[i])
-                        for i, column in enumerate(design_matrix.columns)])
+basic_contrasts = dict(
+    [
+        (column, contrast_matrix[i])
+        for i, column in enumerate(design_matrix.columns)
+    ]
+)
 
 # %%
 # Next, we add some intermediate contrasts and
 # one :term:`contrast` adding all conditions with some auditory parts.
-basic_contrasts['audio'] = (
-    basic_contrasts['audio_left_hand_button_press']
-    + basic_contrasts['audio_right_hand_button_press']
-    + basic_contrasts['audio_computation']
-    + basic_contrasts['sentence_listening'])
+basic_contrasts["audio"] = (
+    basic_contrasts["audio_left_hand_button_press"]
+    + basic_contrasts["audio_right_hand_button_press"]
+    + basic_contrasts["audio_computation"]
+    + basic_contrasts["sentence_listening"]
+)
 
 # one contrast adding all conditions involving instructions reading
-basic_contrasts['visual'] = (
-    basic_contrasts['visual_left_hand_button_press']
-    + basic_contrasts['visual_right_hand_button_press']
-    + basic_contrasts['visual_computation']
-    + basic_contrasts['sentence_reading'])
+basic_contrasts["visual"] = (
+    basic_contrasts["visual_left_hand_button_press"]
+    + basic_contrasts["visual_right_hand_button_press"]
+    + basic_contrasts["visual_computation"]
+    + basic_contrasts["sentence_reading"]
+)
 
 # one contrast adding all conditions involving computation
-basic_contrasts['computation'] = (basic_contrasts['visual_computation']
-                                  + basic_contrasts['audio_computation'])
+basic_contrasts["computation"] = (
+    basic_contrasts["visual_computation"]
+    + basic_contrasts["audio_computation"]
+)
 
 # one contrast adding all conditions involving sentences
-basic_contrasts['sentences'] = (basic_contrasts['sentence_listening']
-                                + basic_contrasts['sentence_reading'])
+basic_contrasts["sentences"] = (
+    basic_contrasts["sentence_listening"] + basic_contrasts["sentence_reading"]
+)
 
 # %%
 # Finally, we create a dictionary of more relevant contrasts
@@ -155,51 +169,53 @@ basic_contrasts['sentences'] = (basic_contrasts['sentence_listening']
 # but we keep only 3 for simplicity.
 
 contrasts = {
-    'left - right button press': (
-        basic_contrasts['audio_left_hand_button_press']
-        - basic_contrasts['audio_right_hand_button_press']
-        + basic_contrasts['visual_left_hand_button_press']
-        - basic_contrasts['visual_right_hand_button_press']
+    "left - right button press": (
+        basic_contrasts["audio_left_hand_button_press"]
+        - basic_contrasts["audio_right_hand_button_press"]
+        + basic_contrasts["visual_left_hand_button_press"]
+        - basic_contrasts["visual_right_hand_button_press"]
     ),
-    'audio - visual': basic_contrasts['audio'] - basic_contrasts['visual'],
-    'computation - sentences': (
-        basic_contrasts['computation']
-        - basic_contrasts['sentences']
-    )
+    "audio - visual": basic_contrasts["audio"] - basic_contrasts["visual"],
+    "computation - sentences": (
+        basic_contrasts["computation"] - basic_contrasts["sentences"]
+    ),
 }
 
 
 # %%
 # Let's estimate the contrasts by iterating over them.
 from nilearn import plotting
+
 fsaverage = datasets.fetch_surf_fsaverage()
 
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
-    print(f"  Contrast {index + 1:1} out of {len(contrasts)}: "
-          f"{contrast_id}, right hemisphere")
+    print(
+        f"  Contrast {index + 1:1} out of {len(contrasts)}: "
+        f"{contrast_id}, right hemisphere"
+    )
     # compute contrast-related statistics
-    z_score = glm.compute_contrast(contrast_val, stat_type='t')
+    z_score = glm.compute_contrast(contrast_val, stat_type="t")
 
     # we plot it on the surface, on the inflated fsaverage mesh,
     # together with a suitable background to give an impression
     # of the cortex folding.
     plotting.plot_surf_stat_map(
         fsaverage.infl_right,
-        z_score.data['rh'],
-        hemi='right',
+        z_score.data["rh"],
+        hemi="right",
         title=contrast_id,
         colorbar=True,
-        threshold=3.,
-        bg_map=fsaverage.sulc_right
+        threshold=3.0,
+        bg_map=fsaverage.sulc_right,
     )
     plotting.plot_surf_stat_map(
         fsaverage.infl_left,
-        z_score.data['lh'],
-        hemi='left',
+        z_score.data["lh"],
+        hemi="left",
         title=contrast_id,
         colorbar=True,
-        threshold=3.,
-        bg_map=fsaverage.sulc_right
+        threshold=3.0,
+        bg_map=fsaverage.sulc_right,
     )
 
 plotting.show()
