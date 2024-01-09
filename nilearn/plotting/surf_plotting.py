@@ -17,7 +17,7 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from nilearn import image, surface
 from nilearn._utils import check_niimg_3d, compare_version, fill_doc
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
-from nilearn.plotting.cm import mix_colormaps, cold_hot
+from nilearn.plotting.cm import cold_hot, mix_colormaps
 from nilearn.plotting.displays._slicers import _get_cbar_ticks
 from nilearn.plotting.html_surface import get_vertexcolor
 from nilearn.plotting.img_plotting import get_colorbar_and_data_ranges
