@@ -62,7 +62,7 @@ def show():
 # Core, usage-agnostic functions
 
 
-def _get_colorbar_and_data_ranges(
+def get_colorbar_and_data_ranges(
     stat_map_data,
     vmin=None,
     vmax=None,
@@ -511,7 +511,7 @@ class _MNI152Template(SpatialImage):
 MNI152TEMPLATE = _MNI152Template()
 
 
-def _load_anat(anat_img=MNI152TEMPLATE, dim="auto", black_bg="auto"):
+def load_anat(anat_img=MNI152TEMPLATE, dim="auto", black_bg="auto"):
     """Load anatomy, for optional diming."""
     vmin = None
     vmax = None
@@ -640,7 +640,7 @@ def plot_anat(
     are set to zero.
 
     """
-    anat_img, black_bg, anat_vmin, anat_vmax = _load_anat(
+    anat_img, black_bg, anat_vmin, anat_vmax = load_anat(
         anat_img, dim=dim, black_bg=black_bg
     )
 
@@ -916,7 +916,7 @@ def plot_roi(
         img = roi_img
         roi_img = None
 
-    bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(
+    bg_img, black_bg, bg_vmin, bg_vmax = load_anat(
         bg_img, dim=dim, black_bg=black_bg
     )
 
@@ -1273,13 +1273,13 @@ def plot_stat_map(
 
     """
     # dim the background
-    bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(
+    bg_img, black_bg, bg_vmin, bg_vmax = load_anat(
         bg_img, dim=dim, black_bg=black_bg
     )
 
     stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype="auto")
 
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+    cbar_vmin, cbar_vmax, vmin, vmax = get_colorbar_and_data_ranges(
         safe_get_data(stat_map_img, ensure_finite=True),
         vmin=vmin,
         vmax=vmax,
@@ -1427,7 +1427,7 @@ def plot_glass_brain(
         else:
             force_min_stat_map_value = None
 
-        cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+        cbar_vmin, cbar_vmax, vmin, vmax = get_colorbar_and_data_ranges(
             safe_get_data(stat_map_img, ensure_finite=True),
             vmin=vmin,
             vmax=vmax,

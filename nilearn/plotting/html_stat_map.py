@@ -22,7 +22,7 @@ from ..datasets import load_mni152_template
 from ..image import get_data, new_img_like, reorder_img, resample_to_img
 from ..plotting import cm
 from ..plotting.find_cuts import find_xyz_cut_coords
-from ..plotting.img_plotting import _load_anat
+from ..plotting.img_plotting import load_anat
 from .js_plotting_utils import colorscale, get_html_template
 
 
@@ -230,7 +230,7 @@ def _load_bg_img(stat_map_img, bg_img="MNI152", black_bg="auto", dim="auto"):
             safe_get_data(bg_img, ensure_finite=True), -1e-6, 1e-6, copy=False
         )
         bg_img = new_img_like(bg_img, masked_data)
-        bg_img, black_bg, bg_min, bg_max = _load_anat(
+        bg_img, black_bg, bg_min, bg_max = load_anat(
             bg_img, dim=dim, black_bg=black_bg
         )
     bg_img = reorder_img(bg_img, resample="nearest")

@@ -360,7 +360,7 @@ def _get_index_from_direction(direction):
     return index
 
 
-def _coords_3d_to_2d(coords_3d, direction, return_direction=False):
+def coords_3d_to_2d(coords_3d, direction, return_direction=False):
     """Project 3d coordinates into 2d ones given the direction of a cut."""
     index = _get_index_from_direction(direction)
     dimensions = [0, 1, 2]
@@ -475,7 +475,7 @@ class GlassBrainAxes(BaseAxes):
         In the case of 'l' and 'r' directions (for hemispheric projections),
         markers in the coordinate x == 0 are included in both hemispheres.
         """
-        marker_coords_2d = _coords_3d_to_2d(marker_coords, self.direction)
+        marker_coords_2d = coords_3d_to_2d(marker_coords, self.direction)
         xdata, ydata = marker_coords_2d.T
 
         # Allow markers only in their respective hemisphere when appropriate
@@ -591,7 +591,7 @@ class GlassBrainAxes(BaseAxes):
             line_values = line_values[relevant_lines]
 
         for start_end_point_3d, line_value in zip(line_coords, line_values):
-            start_end_point_2d = _coords_3d_to_2d(
+            start_end_point_2d = coords_3d_to_2d(
                 start_end_point_3d, self.direction
             )
 
