@@ -204,7 +204,7 @@ def positive_reciprocal(X):
     return np.where(X <= 0, 0, 1.0 / X)
 
 
-def pad_contrast(con_val, theta, contrast_type):
+def pad_contrast(con_val, theta, stat_type):
     """Pad contrast with zeros if necessary.
 
     If the contrast is shorter than the number of parameters,
@@ -225,17 +225,17 @@ def pad_contrast(con_val, theta, contrast_type):
         theta of RegressionResults instances
         where P is the total number of regressors in the design matrix.
 
-    contrast_type : {'t', 'F'}, optional
+    stat_type : {'t', 'F'}, optional
         Type of the :term:`contrast`.
     """
     nb_cols = con_val.shape[0] if con_val.ndim == 1 else con_val.shape[1]
     if nb_cols > theta.shape[0]:
-        if contrast_type == "t":
+        if stat_type == "t":
             raise ValueError(
                 f"t contrasts should be of length P={theta.shape[0]}, "
                 f"but it has length {nb_cols}."
             )
-        if contrast_type == "F":
+        if stat_type == "F":
             raise ValueError(
                 f"F contrasts should have {theta.shape[0]} columns, "
                 f"but it has {nb_cols}."
@@ -244,13 +244,13 @@ def pad_contrast(con_val, theta, contrast_type):
     pad = False
     if nb_cols < theta.shape[0]:
         pad = True
-        if contrast_type == "t":
+        if stat_type == "t":
             warn(
                 f"t contrasts should be of length P={theta.shape[0]}, "
                 f"but it has length {nb_cols}. "
                 "The rest of the contrast was padded with zeros."
             )
-        if contrast_type == "F":
+        if stat_type == "F":
             warn(
                 f"F contrasts should have {theta.shape[0]} colmuns, "
                 f"but it has only {nb_cols}. "
