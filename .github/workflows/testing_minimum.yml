@@ -46,7 +46,7 @@ jobs:
             matrix:
                 os: [ubuntu-latest, macos-latest, windows-latest]
                 python-version: ['3.8']
-                min_dep: [joblib==1.0.0, nibabel==3.2.0, numpy==1.19.0, pandas==1.1.5, scikit-learn==1.0.0, scipy==1.6.0]
+                min_dep: [joblib==1.0.0, nibabel==4.0.0, numpy==1.19.0, pandas==1.1.5, scikit-learn==1.0.0, scipy==1.7.0]
         name: ${{ matrix.os }} with Python ${{ matrix.python-version }} and ${{ matrix.min_dep }}
         steps:
         -   name: Checkout nilearn
