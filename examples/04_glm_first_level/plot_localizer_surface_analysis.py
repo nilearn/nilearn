@@ -96,7 +96,6 @@ glm = FirstLevelModel(
     t_r,
     slice_time_ref=slice_time_ref,
     hrf_model='glover + derivative',
-    mask_img=False
 ).fit(image, events)
 
 # %%
