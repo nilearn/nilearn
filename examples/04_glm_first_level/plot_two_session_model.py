@@ -55,15 +55,6 @@ import pandas as pd
 design_files = [data["design_matrix1"], data["design_matrix2"]]
 design_matrices = [pd.DataFrame(np.load(df)["X"]) for df in design_files]
 
-# %%
-# To define the contrasts, we will first use a small function to ease the
-# contrast definition.
-
-
-def pad_vector(contrast_, n_columns):
-    """Aappend zeros in contrast vectors."""
-    return np.hstack((contrast_, np.zeros(n_columns - len(contrast_))))
-
 
 # %%
 # Initialize the GLM
@@ -92,7 +83,7 @@ from nilearn import plotting
 
 # Here, we define the contrast of interest for the first session.
 # This may differ across sessions depending on if the design matrices vary.
-contrast_val = pad_vector([-1, -1, 1, 1], design_matrices[0].shape[1])
+contrast_val = [[-1, -1, 1, 1]]
 
 fmri_glm_ses1 = fmri_glm.fit(fmri_imgs[0], design_matrices=design_matrices[0])
 summary_statistics_ses1 = fmri_glm_ses1.compute_contrast(
@@ -111,7 +102,7 @@ plotting.plot_stat_map(
 # Compute the statistics for the second session.
 fmri_glm_ses2 = fmri_glm.fit(fmri_imgs[1], design_matrices=design_matrices[1])
 
-contrast_val = pad_vector([-1, -1, 1, 1], design_matrices[1].shape[1])
+contrast_val = np.array([[-1, -1, 1, 1]])
 
 summary_statistics_ses2 = fmri_glm_ses2.compute_contrast(
     contrast_val,
@@ -128,7 +119,7 @@ plotting.plot_stat_map(
 # %%
 # Compute the fixed effects statistics using both sessions' statistical maps.
 #
-# We can use :func:`~nilearn.glm.contrasts.compute_fixed_effects` to compute
+# We can use :func:`~nilearn.glm.compute_fixed_effects` to compute
 # the fixed effects statistics using the outputs from the session-specific
 # FirstLevelModel results.
 from nilearn.glm.contrasts import compute_fixed_effects
@@ -165,7 +156,7 @@ plotting.plot_stat_map(
 #
 # A more straightforward alternative to fitting session-specific GLMs, then
 # combining the results with
-# :func:`~nilearn.glm.contrasts.compute_fixed_effects`, is to simply fit the
+# :func:`~nilearn.glm.compute_fixed_effects`, is to simply fit the
 # GLM to both sessions at once.
 #
 # Since we can assume that the design matrices of both sessions have the same
@@ -178,8 +169,8 @@ fmri_glm_multises = fmri_glm.fit(fmri_imgs, design_matrices=design_matrices)
 # However, if we want to be safe, we should define each contrast separately,
 # and provide it as a list.
 contrast_val = [
-    pad_vector([-1, -1, 1, 1], design_matrices[0].shape[1]),  # session 1
-    pad_vector([-1, -1, 1, 1], design_matrices[1].shape[1]),  # session 2
+    np.array([[-1, -1, 1, 1]]),  # session 1
+    np.array([[-1, -1, 1, 1]]),  # session 2
 ]
 
 z_map = fmri_glm_multises.compute_contrast(
@@ -211,13 +202,13 @@ plotting.show()
 # Contrast specification
 n_columns = design_matrices[0].shape[1]
 contrasts = {
-    "SStSSp_minus_DStDSp": pad_vector([1, 0, 0, -1], n_columns),
-    "DStDSp_minus_SStSSp": pad_vector([-1, 0, 0, 1], n_columns),
-    "DSt_minus_SSt": pad_vector([-1, -1, 1, 1], n_columns),
-    "DSp_minus_SSp": pad_vector([-1, 1, -1, 1], n_columns),
-    "DSt_minus_SSt_for_DSp": pad_vector([0, -1, 0, 1], n_columns),
-    "DSp_minus_SSp_for_DSt": pad_vector([0, 0, -1, 1], n_columns),
-    "Deactivation": pad_vector([-1, -1, -1, -1, 4], n_columns),
+    "SStSSp_minus_DStDSp": np.array([[1, 0, 0, -1]]),
+    "DStDSp_minus_SStSSp": np.array([[-1, 0, 0, 1]]),
+    "DSt_minus_SSt": np.array([[-1, -1, 1, 1]]),
+    "DSp_minus_SSp": np.array([[-1, 1, -1, 1]]),
+    "DSt_minus_SSt_for_DSp": np.array([[0, -1, 0, 1]]),
+    "DSp_minus_SSp_for_DSt": np.array([[0, 0, -1, 1]]),
+    "Deactivation": np.array([[-1, -1, -1, -1, 4]]),
     "Effects_of_interest": np.eye(n_columns)[:5, :],  # An F-contrast
 }
 
