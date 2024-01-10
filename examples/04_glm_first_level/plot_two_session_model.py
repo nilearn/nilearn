@@ -24,9 +24,9 @@ statistics across the two sessions.
 ###############################################################################
 # Create a write directory to work,
 # it will be a 'results' subdirectory of the current directory.
-from os import mkdir, path, getcwd
+from os import getcwd, mkdir, path
 
-write_dir = path.join(getcwd(), 'results')
+write_dir = path.join(getcwd(), "results")
 if not path.exists(write_dir):
     mkdir(write_dir)
 
@@ -38,7 +38,7 @@ if not path.exists(write_dir):
 from nilearn.datasets import func
 
 data = func.fetch_fiac_first_level()
-fmri_imgs = [data['func1'], data['func2']]
+fmri_imgs = [data["func1"], data["func2"]]
 
 ###############################################################################
 # Create a mean image for plotting purpose.
@@ -52,8 +52,8 @@ mean_img_ = mean_img(fmri_imgs[0])
 import numpy as np
 import pandas as pd
 
-design_files = [data['design_matrix1'], data['design_matrix2']]
-design_matrices = [pd.DataFrame(np.load(df)['X']) for df in design_files]
+design_files = [data["design_matrix1"], data["design_matrix2"]]
+design_matrices = [pd.DataFrame(np.load(df)["X"]) for df in design_files]
 
 ###############################################################################
 # To define the contrasts, we will first use a small function to ease the
@@ -61,7 +61,7 @@ design_matrices = [pd.DataFrame(np.load(df)['X']) for df in design_files]
 
 
 def pad_vector(contrast_, n_columns):
-    """A small routine to append zeros in contrast vectors."""
+    """Aappend zeros in contrast vectors."""
     return np.hstack((contrast_, np.zeros(n_columns - len(contrast_))))
 
 
@@ -74,7 +74,7 @@ def pad_vector(contrast_, n_columns):
 from nilearn.glm.first_level import FirstLevelModel
 
 fmri_glm = FirstLevelModel(
-    mask_img=data['mask'],
+    mask_img=data["mask"],
     smoothing_fwhm=5,
     minimize_memory=True,
 )
@@ -84,7 +84,7 @@ fmri_glm = FirstLevelModel(
 # Here, we compare the activation mas produced from each session separately and
 # then the fixed effects version.
 cut_coords = [-129, -126, 49]
-contrast_id = 'DSt_minus_SSt'
+contrast_id = "DSt_minus_SSt"
 
 ###############################################################################
 # Compute the statistics for the first session.
@@ -97,14 +97,14 @@ contrast_val = pad_vector([-1, -1, 1, 1], design_matrices[0].shape[1])
 fmri_glm_ses1 = fmri_glm.fit(fmri_imgs[0], design_matrices=design_matrices[0])
 summary_statistics_ses1 = fmri_glm_ses1.compute_contrast(
     contrast_val,
-    output_type='all',
+    output_type="all",
 )
 plotting.plot_stat_map(
-    summary_statistics_ses1['z_score'],
+    summary_statistics_ses1["z_score"],
     bg_img=mean_img_,
     threshold=3.0,
     cut_coords=cut_coords,
-    title=f'{contrast_id}, first session',
+    title=f"{contrast_id}, first session",
 )
 
 ###############################################################################
@@ -115,14 +115,14 @@ contrast_val = pad_vector([-1, -1, 1, 1], design_matrices[1].shape[1])
 
 summary_statistics_ses2 = fmri_glm_ses2.compute_contrast(
     contrast_val,
-    output_type='all',
+    output_type="all",
 )
 plotting.plot_stat_map(
-    summary_statistics_ses2['z_score'],
+    summary_statistics_ses2["z_score"],
     bg_img=mean_img_,
     threshold=3.0,
     cut_coords=cut_coords,
-    title=f'{contrast_id}, second session',
+    title=f"{contrast_id}, second session",
 )
 
 ###############################################################################
@@ -134,25 +134,25 @@ plotting.plot_stat_map(
 from nilearn.glm.contrasts import compute_fixed_effects
 
 contrast_imgs = [
-    summary_statistics_ses1['effect_size'],
-    summary_statistics_ses2['effect_size'],
+    summary_statistics_ses1["effect_size"],
+    summary_statistics_ses2["effect_size"],
 ]
 variance_imgs = [
-    summary_statistics_ses1['effect_variance'],
-    summary_statistics_ses2['effect_variance'],
+    summary_statistics_ses1["effect_variance"],
+    summary_statistics_ses2["effect_variance"],
 ]
 
 fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat = compute_fixed_effects(
     contrast_imgs,
     variance_imgs,
-    data['mask'],
+    data["mask"],
 )
 plotting.plot_stat_map(
     fixed_fx_stat,
     bg_img=mean_img_,
     threshold=3.0,
     cut_coords=cut_coords,
-    title=f'{contrast_id}, fixed effects',
+    title=f"{contrast_id}, fixed effects",
 )
 
 ###############################################################################
@@ -169,7 +169,7 @@ plotting.plot_stat_map(
 # GLM to both sessions at once.
 #
 # Since we can assume that the design matrices of both sessions have the same
-# columns, in the same order, we can again re-use the first session's contrast
+# columns, in the same order, we can again reuse the first session's contrast
 # vector.
 fmri_glm_multises = fmri_glm.fit(fmri_imgs, design_matrices=design_matrices)
 
@@ -184,14 +184,14 @@ contrast_val = [
 
 z_map = fmri_glm_multises.compute_contrast(
     contrast_val,
-    output_type='z_score',
+    output_type="z_score",
 )
 plotting.plot_stat_map(
     z_map,
     bg_img=mean_img_,
     threshold=3.0,
     cut_coords=cut_coords,
-    title=f'{contrast_id}, fixed effects',
+    title=f"{contrast_id}, fixed effects",
 )
 
 plotting.show()
@@ -211,27 +211,27 @@ plotting.show()
 # Contrast specification
 n_columns = design_matrices[0].shape[1]
 contrasts = {
-    'SStSSp_minus_DStDSp': pad_vector([1, 0, 0, -1], n_columns),
-    'DStDSp_minus_SStSSp': pad_vector([-1, 0, 0, 1], n_columns),
-    'DSt_minus_SSt': pad_vector([-1, -1, 1, 1], n_columns),
-    'DSp_minus_SSp': pad_vector([-1, 1, -1, 1], n_columns),
-    'DSt_minus_SSt_for_DSp': pad_vector([0, -1, 0, 1], n_columns),
-    'DSp_minus_SSp_for_DSt': pad_vector([0, 0, -1, 1], n_columns),
-    'Deactivation': pad_vector([-1, -1, -1, -1, 4], n_columns),
-    'Effects_of_interest': np.eye(n_columns)[:5, :],  # An F-contrast
+    "SStSSp_minus_DStDSp": pad_vector([1, 0, 0, -1], n_columns),
+    "DStDSp_minus_SStSSp": pad_vector([-1, 0, 0, 1], n_columns),
+    "DSt_minus_SSt": pad_vector([-1, -1, 1, 1], n_columns),
+    "DSp_minus_SSp": pad_vector([-1, 1, -1, 1], n_columns),
+    "DSt_minus_SSt_for_DSp": pad_vector([0, -1, 0, 1], n_columns),
+    "DSp_minus_SSp_for_DSt": pad_vector([0, 0, -1, 1], n_columns),
+    "Deactivation": pad_vector([-1, -1, -1, -1, 4], n_columns),
+    "Effects_of_interest": np.eye(n_columns)[:5, :],  # An F-contrast
 }
 
 ###############################################################################
 # Next, we compute and plot the statistics for these new contrasts.
 
-print('Computing contrasts...')
+print("Computing contrasts...")
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
-    print(f'  Contrast {index + 1:02g} out of {len(contrasts)}: {contrast_id}')
+    print(f"  Contrast {index + 1:02g} out of {len(contrasts)}: {contrast_id}")
     # Estimate the contasts.
-    z_map = fmri_glm.compute_contrast(contrast_val, output_type='z_score')
+    z_map = fmri_glm.compute_contrast(contrast_val, output_type="z_score")
 
     # Write the resulting stat images to file.
-    z_image_path = path.join(write_dir, f'{contrast_id}_z_map.nii.gz')
+    z_image_path = path.join(write_dir, f"{contrast_id}_z_map.nii.gz")
     z_map.to_filename(z_image_path)
 
 ###############################################################################
