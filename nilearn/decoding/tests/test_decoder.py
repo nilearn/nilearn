@@ -970,16 +970,6 @@ def test_decoder_multiclass_classification_apply_mask_attributes(affine_eye):
     assert model.masker_.smoothing_fwhm == smoothing_fwhm
 
 
-def test_decoder_apply_mask_surface(mini_img):
-    """Test whether _apply_mask works for surface image."""
-    X = mini_img
-    model = Decoder(mask=SurfaceMasker())
-    X_masked = model._apply_mask(X)
-
-    assert X_masked.shape == X.shape
-    assert type(model.mask_img_).__name__ == "SurfaceImage"
-
-
 def test_decoder_multiclass_error_incorrect_cv(multiclass_data):
     """Check whether ValueError is raised when cv is not set correctly."""
     X, y, _ = multiclass_data
@@ -1073,3 +1063,47 @@ def test_decoder_decision_function_raises_value_error(
         ValueError, match=f"X has {X.shape[1]} features per sample"
     ):
         model.decision_function(X)
+
+
+# ------------------------ surface tests ------------------------------------ #
+
+
+@pytest.fixture()
+def _make_surface_class_data(rng, make_mini_img):
+    """Create a surface image classification for testing."""
+
+    def _make_surface_image(shape=50):
+        mini_img = make_mini_img((shape,))
+        y = rng.choice([0, 1], size=shape)
+        return mini_img, y
+
+    return _make_surface_image
+
+
+@pytest.fixture()
+def _make_surface_reg_data(rng, make_mini_img):
+    """Create a surface image regression for testing."""
+
+    def _make_surface_image(shape=50):
+        mini_img = make_mini_img((shape,))
+        y = rng.random(50)
+        return mini_img, y
+
+    return _make_surface_image
+
+
+def test_decoder_apply_mask_surface(_make_surface_class_data):
+    """Test whether _apply_mask works for surface image."""
+    X, _ = _make_surface_class_data()
+    model = Decoder(mask=SurfaceMasker())
+    X_masked = model._apply_mask(X)
+
+    assert X_masked.shape == X.shape
+    assert type(model.mask_img_).__name__ == "SurfaceImage"
+
+
+def test_decoder_fit_surface(_make_surface_class_data):
+    """Test whether fit works for surface image."""
+    X, y = _make_surface_class_data()
+    model = Decoder(mask=SurfaceMasker())
+    model.fit(X, y)
