@@ -1014,3 +1014,15 @@ def test_decoder_multiclass_warnings(multiclass_data):
             cv=1,
         )
         model.fit(X, y)
+
+
+def test_decoder_tags_classification():
+    """Check value returned by _more_tags."""
+    model = Decoder()
+    assert model._more_tags()["require_y"] is True
+
+
+def test_decoder_tags_regression():
+    """Check value returned by _more_tags."""
+    model = DecoderRegressor()
+    assert model._more_tags()["multioutput"] is True
