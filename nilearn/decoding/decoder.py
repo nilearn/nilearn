@@ -22,12 +22,7 @@ from typing import Iterable
 import numpy as np
 from joblib import Parallel, delayed
 from sklearn import clone
-from sklearn.base import (
-    BaseEstimator,
-    ClassifierMixin,
-    MultiOutputMixin,
-    RegressorMixin,
-)
+from sklearn.base import BaseEstimator, MultiOutputMixin
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.linear_model import (
     LassoCV,
@@ -1070,9 +1065,12 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             )
         return scores.ravel() if scores.shape[1] == 1 else scores
 
+    def _more_tags(self):
+        return {"require_y": True}
+
 
 @fill_doc
-class Decoder(ClassifierMixin, _BaseDecoder):
+class Decoder(_BaseDecoder):
     """A wrapper for popular classification strategies in neuroimaging.
 
     The `Decoder` object supports classification methods.
@@ -1161,6 +1159,8 @@ class Decoder(ClassifierMixin, _BaseDecoder):
     nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
     """
 
+    _estimator_type = "classifier"
+
     def __init__(
         self,
         estimator="svc",
@@ -1204,13 +1204,9 @@ class Decoder(ClassifierMixin, _BaseDecoder):
             n_jobs=n_jobs,
         )
 
-    def score(self, X, y, *args):
-        """Call score method from base class."""
-        return _BaseDecoder.score(self, X, y, *args)
-
 
 @fill_doc
-class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
+class DecoderRegressor(MultiOutputMixin, _BaseDecoder):
     """A wrapper for popular regression strategies in neuroimaging.
 
     The `DecoderRegressor` object supports regression methods.
@@ -1302,6 +1298,8 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
     nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
     """
 
+    _estimator_type = "regressor"
+
     def __init__(
         self,
         estimator="svr",
@@ -1346,10 +1344,6 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
             verbose=verbose,
             n_jobs=n_jobs,
         )
-
-    def score(self, X, y, *args):
-        """Call score method from base class."""
-        return _BaseDecoder.score(self, X, y, *args)
 
 
 @fill_doc
