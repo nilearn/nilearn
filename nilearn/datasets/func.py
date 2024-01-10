@@ -2981,7 +2981,7 @@ def fetch_spm_multimodal_fmri(
     subject_dir = os.path.join(data_dir, subject_id)
 
     # maybe data_dir already contains the data ?
-    if (data := _glob_spm_multimodal_fmri_data(subject_dir)) is not None:
+    if data := _glob_spm_multimodal_fmri_data(subject_dir):
         return data
 
     # No. Download the data
@@ -3037,7 +3037,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
         return Bunch(**_subject_data)
 
     # maybe data_dir already contains the data ?
-    if (data := _glob_fiac_data()) is not None:
+    if data := _glob_fiac_data():
         return data
 
     # No. Download the data
