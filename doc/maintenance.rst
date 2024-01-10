@@ -205,6 +205,17 @@ Switch to a new branch locally:
 First we need to prepare the release by updating the file ``nilearn/doc/changes/latest.rst``
 to make sure all the new features, enhancements, and bug fixes are included in their respective sections.
 
+Tehn we need to make sure that all the entries in each section of the changelog
+in ``nilearn/doc/changes/latest.rst`` a) have a label,
+and b) are sorted by their "label" alphabetically.
+For example::
+
+    - :bdg-success:`API` ...
+
+    - :bdg-dark:`Code` ...
+
+    - :bdg-info:`Plotting` ...
+
 We also need to write a "Highlights" section promoting the most important additions that come with this new release.
 Finally, we need to change the title from ``x.y.z.dev`` to ``x.y.z``:
 
