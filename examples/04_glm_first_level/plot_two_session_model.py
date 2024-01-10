@@ -21,7 +21,7 @@ same experimental conditions. The model directly returns a fixed effect of the
 statistics across the two sessions.
 """
 
-###############################################################################
+# %%
 # Create a write directory to work,
 # it will be a 'results' subdirectory of the current directory.
 from os import getcwd, mkdir, path
@@ -30,7 +30,7 @@ write_dir = path.join(getcwd(), "results")
 if not path.exists(write_dir):
     mkdir(write_dir)
 
-###############################################################################
+# %%
 # Prepare data and analysis parameters
 # ------------------------------------
 # Inspecting 'data', we note that there are two sessions.
@@ -40,13 +40,13 @@ from nilearn.datasets import func
 data = func.fetch_fiac_first_level()
 fmri_imgs = [data["func1"], data["func2"]]
 
-###############################################################################
+# %%
 # Create a mean image for plotting purpose.
 from nilearn.image import mean_img
 
 mean_img_ = mean_img(fmri_imgs[0])
 
-###############################################################################
+# %%
 # The design matrices were pre-computed, we simply put them in a list of
 # DataFrames.
 import numpy as np
@@ -55,7 +55,7 @@ import pandas as pd
 design_files = [data["design_matrix1"], data["design_matrix2"]]
 design_matrices = [pd.DataFrame(np.load(df)["X"]) for df in design_files]
 
-###############################################################################
+# %%
 # To define the contrasts, we will first use a small function to ease the
 # contrast definition.
 
@@ -65,7 +65,7 @@ def pad_vector(contrast_, n_columns):
     return np.hstack((contrast_, np.zeros(n_columns - len(contrast_))))
 
 
-###############################################################################
+# %%
 # Initialize the GLM
 # ------------------
 # First, we need to specify the model before fitting it to the data.
@@ -79,14 +79,14 @@ fmri_glm = FirstLevelModel(
     minimize_memory=True,
 )
 
-###############################################################################
+# %%
 # We can then compare session-specific and fixed effects.
 # Here, we compare the activation mas produced from each session separately and
 # then the fixed effects version.
 cut_coords = [-129, -126, 49]
 contrast_id = "DSt_minus_SSt"
 
-###############################################################################
+# %%
 # Compute the statistics for the first session.
 from nilearn import plotting
 
@@ -107,7 +107,7 @@ plotting.plot_stat_map(
     title=f"{contrast_id}, first session",
 )
 
-###############################################################################
+# %%
 # Compute the statistics for the second session.
 fmri_glm_ses2 = fmri_glm.fit(fmri_imgs[1], design_matrices=design_matrices[1])
 
@@ -125,7 +125,7 @@ plotting.plot_stat_map(
     title=f"{contrast_id}, second session",
 )
 
-###############################################################################
+# %%
 # Compute the fixed effects statistics using both sessions' statistical maps.
 #
 # We can use :func:`~nilearn.glm.contrasts.compute_fixed_effects` to compute
@@ -155,12 +155,12 @@ plotting.plot_stat_map(
     title=f"{contrast_id}, fixed effects",
 )
 
-###############################################################################
+# %%
 # Not unexpectedly, the fixed effects version displays higher peaks than the
 # input sessions. Computing fixed effects enhances the signal-to-noise ratio of
 # the resulting brain maps.
 
-###############################################################################
+# %%
 # Compute the fixed effects statistics using both sessions' preprocessed data.
 #
 # A more straightforward alternative to fitting session-specific GLMs, then
@@ -196,18 +196,18 @@ plotting.plot_stat_map(
 
 plotting.show()
 
-###############################################################################
+# %%
 # You may note that the results are the same as the first fixed effects
 # analysis, but with a lot less code.
 
-###############################################################################
+# %%
 # Compute a range of contrasts across both sessions
 # -------------------------------------------------
 # It may be useful to investigate a number of contrasts.
 # Therefore, we will move beyond the original contrast of interest and both
 # define and compute several.
 
-###############################################################################
+# %%
 # Contrast specification
 n_columns = design_matrices[0].shape[1]
 contrasts = {
@@ -221,7 +221,7 @@ contrasts = {
     "Effects_of_interest": np.eye(n_columns)[:5, :],  # An F-contrast
 }
 
-###############################################################################
+# %%
 # Next, we compute and plot the statistics for these new contrasts.
 
 print("Computing contrasts...")
@@ -234,7 +234,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     z_image_path = path.join(write_dir, f"{contrast_id}_z_map.nii.gz")
     z_map.to_filename(z_image_path)
 
-###############################################################################
+# %%
 # Generating a report
 # -------------------
 # Since we have already computed the FirstLevelModel and have a number of
@@ -243,14 +243,14 @@ from nilearn.reporting import make_glm_report
 
 report = make_glm_report(fmri_glm_multises, contrasts, bg_img=mean_img_)
 
-###############################################################################
+# %%
 # We have several ways to access the report:
 
 # report  # This report can be viewed in a notebook
 # report.save_as_html('report.html')
 # report.open_in_browser()
 
-###############################################################################
+# %%
 # References
 # ----------
 #
