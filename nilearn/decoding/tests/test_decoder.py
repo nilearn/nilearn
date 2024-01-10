@@ -1072,28 +1072,28 @@ def test_decoder_decision_function_raises_value_error(
 def _make_surface_class_data(rng, make_mini_img):
     """Create a surface image classification for testing."""
 
-    def _make_surface_image(shape=50):
+    def _surface_classes(shape=50):
         mini_img = make_mini_img((shape,))
         y = rng.choice([0, 1], size=shape)
         return mini_img, y
 
-    return _make_surface_image
+    return _surface_classes
 
 
 @pytest.fixture()
 def _make_surface_reg_data(rng, make_mini_img):
     """Create a surface image regression for testing."""
 
-    def _make_surface_image(shape=50):
+    def _surface_regression(shape=50):
         mini_img = make_mini_img((shape,))
-        y = rng.random(50)
+        y = rng.random(shape)
         return mini_img, y
 
-    return _make_surface_image
+    return _surface_regression
 
 
 def test_decoder_apply_mask_surface(_make_surface_class_data):
-    """Test whether _apply_mask works for surface image."""
+    """Test _apply_mask on surface image."""
     X, _ = _make_surface_class_data()
     model = Decoder(mask=SurfaceMasker())
     X_masked = model._apply_mask(X)
@@ -1103,7 +1103,22 @@ def test_decoder_apply_mask_surface(_make_surface_class_data):
 
 
 def test_decoder_fit_surface(_make_surface_class_data):
-    """Test whether fit works for surface image."""
+    """Test fit for surface image."""
     X, y = _make_surface_class_data()
     model = Decoder(mask=SurfaceMasker())
     model.fit(X, y)
+
+    assert model.coef_ is not None
+
+
+def test_decoder_predict_score_surface(_make_surface_class_data):
+    """Test predict and scoring for surface image."""
+    X, y = _make_surface_class_data()
+    model = Decoder(mask=SurfaceMasker())
+    model.fit(X, y)
+    y_pred = model.predict(X)
+
+    assert model.scoring == "roc_auc"
+
+    model.score(X, y)
+    accuracy_score(y, y_pred)
