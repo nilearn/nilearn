@@ -2,8 +2,8 @@
 Simple example of two-session fMRI model fitting
 ================================================
 
-Here, we will go through a full step-by-step example of fitting a GLM to
-experimental data and visualizing the results.
+Here, we will go through a full step-by-step example of fitting a GLM
+to experimental data and visualizing the results.
 This is done on two runs of one subject of the FIAC dataset.
 
 For details on the data, please see :footcite:p:`dehaene2006functional`.
@@ -16,9 +16,10 @@ More specifically:
 4. A GLM is applied to the dataset (effect/covariance,
    then contrast estimation).
 
-Technically, this example shows how to handle two sessions that contain the
-same experimental conditions. The model directly returns a fixed effect of the
-statistics across the two sessions.
+Technically, this example shows how to handle two sessions
+that contain the same experimental conditions.
+The model directly returns a fixed effect
+of the statistics across the two sessions.
 """
 
 # %%
@@ -47,8 +48,8 @@ from nilearn.image import mean_img
 mean_img_ = mean_img(fmri_imgs[0])
 
 # %%
-# The design matrices were pre-computed, we simply put them in a list of
-# DataFrames.
+# The design matrices were pre-computed,
+# we simply put them in a list of DataFrames.
 import numpy as np
 import pandas as pd
 
@@ -60,8 +61,8 @@ design_matrices = [pd.DataFrame(np.load(df)["X"]) for df in design_files]
 # Initialize the GLM
 # ------------------
 # First, we need to specify the model before fitting it to the data.
-# Note that a brain mask was provided in the dataset, so that is what we will
-# use.
+# Note that a brain mask was provided in the dataset,
+# so that is what we will use.
 from nilearn.glm.first_level import FirstLevelModel
 
 fmri_glm = FirstLevelModel(
@@ -72,8 +73,8 @@ fmri_glm = FirstLevelModel(
 
 # %%
 # We can then compare session-specific and fixed effects.
-# Here, we compare the activation mas produced from each session separately and
-# then the fixed effects version.
+# Here, we compare the activation mas produced from each session separately
+# and then the fixed effects version.
 cut_coords = [-129, -126, 49]
 contrast_id = "DSt_minus_SSt"
 
@@ -120,8 +121,8 @@ plotting.plot_stat_map(
 # Compute the fixed effects statistics using both sessions' statistical maps.
 #
 # We can use :func:`~nilearn.glm.compute_fixed_effects` to compute
-# the fixed effects statistics using the outputs from the session-specific
-# FirstLevelModel results.
+# the fixed effects statistics using the outputs
+# from the session-specific FirstLevelModel results.
 from nilearn.glm.contrasts import compute_fixed_effects
 
 contrast_imgs = [
@@ -147,25 +148,25 @@ plotting.plot_stat_map(
 )
 
 # %%
-# Not unexpectedly, the fixed effects version displays higher peaks than the
-# input sessions. Computing fixed effects enhances the signal-to-noise ratio of
-# the resulting brain maps.
+# Not unexpectedly, the fixed effects version displays higher peaks
+# than the input sessions.
+# Computing fixed effects enhances the signal-to-noise ratio
+# of the resulting brain maps.
 
 # %%
 # Compute the fixed effects statistics using both sessions' preprocessed data.
 #
-# A more straightforward alternative to fitting session-specific GLMs, then
-# combining the results with
-# :func:`~nilearn.glm.compute_fixed_effects`, is to simply fit the
-# GLM to both sessions at once.
+# A more straightforward alternative to fitting session-specific GLMs,
+# than combining the results with :func:`~nilearn.glm.compute_fixed_effects`,
+# is to simply fit the GLM to both sessions at once.
 #
-# Since we can assume that the design matrices of both sessions have the same
-# columns, in the same order, we can again reuse the first session's contrast
-# vector.
+# Since we can assume that the design matrices of both sessions
+# have the same columns, in the same order,
+# we can again reuse the first session's contrast vector.
 fmri_glm_multises = fmri_glm.fit(fmri_imgs, design_matrices=design_matrices)
 
-# We can just define the contrast array for one session and assume that the
-# design matrix is the same for the other.
+# We can just define the contrast array for one session and assume
+# that the design matrix is the same for the other.
 # However, if we want to be safe, we should define each contrast separately,
 # and provide it as a list.
 contrast_val = [
@@ -195,8 +196,8 @@ plotting.show()
 # Compute a range of contrasts across both sessions
 # -------------------------------------------------
 # It may be useful to investigate a number of contrasts.
-# Therefore, we will move beyond the original contrast of interest and both
-# define and compute several.
+# Therefore, we will move beyond the original contrast of interest
+# and both define and compute several.
 
 # %%
 # Contrast specification
@@ -228,8 +229,9 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
 # %%
 # Generating a report
 # -------------------
-# Since we have already computed the FirstLevelModel and have a number of
-# contrasts, we can quickly create a summary report.
+# Since we have already computed the FirstLevelModel
+# and have a number of contrasts,
+# we can quickly create a summary report.
 from nilearn.reporting import make_glm_report
 
 report = make_glm_report(fmri_glm_multises, contrasts, bg_img=mean_img_)
