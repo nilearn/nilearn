@@ -22,7 +22,12 @@ from typing import Iterable
 import numpy as np
 from joblib import Parallel, delayed
 from sklearn import clone
-from sklearn.base import ClassifierMixin, MultiOutputMixin, RegressorMixin
+from sklearn.base import (
+    BaseEstimator,
+    ClassifierMixin,
+    MultiOutputMixin,
+    RegressorMixin,
+)
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.linear_model import (
     LassoCV,
@@ -444,7 +449,7 @@ def _parallel_fit(
 
 
 @fill_doc
-class _BaseDecoder(CacheMixin):
+class _BaseDecoder(CacheMixin, BaseEstimator):
     """A wrapper for popular classification/regression strategies in \
     neuroimaging.
 
