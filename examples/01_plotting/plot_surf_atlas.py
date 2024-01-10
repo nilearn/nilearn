@@ -1,24 +1,23 @@
 """
 Loading and plotting of a cortical surface atlas
-=================================================
+================================================
 
-The Destrieux parcellation (Destrieux et al, 2010) in fsaverage5 space as
-distributed with Freesurfer is used as the chosen atlas.
+The Destrieux :term:`parcellation` (Destrieux et al, 2010)
+in fsaverage5 space as distributed with Freesurfer is used as the chosen atlas.
 
 The :func:`nilearn.plotting.plot_surf_roi` function is used
-to plot the parcellation on the pial surface.
+to plot the :term:`parcellation` on the pial surface.
 
 See :ref:`plotting` for more details.
 
 References
 ----------
-
 Destrieux et al, (2010). Automatic parcellation of human cortical gyri and
 sulci using standard anatomical nomenclature. NeuroImage, 53, 1.
-URL http://dx.doi.org/10.1016/j.neuroimage.2010.06.010.
+URL https://doi.org/10.1016/j.neuroimage.2010.06.010.
 """
 
-###############################################################################
+# %%
 # Data fetcher
 # ------------
 
@@ -36,14 +35,14 @@ parcellation = destrieux_atlas['map_left']
 fsaverage = datasets.fetch_surf_fsaverage()
 
 # The fsaverage dataset contains file names pointing to the file locations
-print('Fsaverage5 pial surface of left hemisphere is at: %s' %
-      fsaverage['pial_left'])
-print('Fsaverage5 inflated surface of left hemisphere is at: %s' %
-      fsaverage['infl_left'])
-print('Fsaverage5 sulcal depth map of left hemisphere is at: %s' %
-      fsaverage['sulc_left'])
+print("Fsaverage5 pial surface of left hemisphere is at: "
+      f"{fsaverage['pial_left']}")
+print("Fsaverage5 inflated surface of left hemisphere is at: "
+      f"{fsaverage['infl_left']}")
+print("Fsaverage5 sulcal depth map of left hemisphere is at: "
+      f"{fsaverage['sulc_left']}")
 
-###############################################################################
+# %%
 # Visualization
 # -------------
 
@@ -55,45 +54,55 @@ plotting.plot_surf_roi(fsaverage['pial_left'], roi_map=parcellation,
                        bg_map=fsaverage['sulc_left'], bg_on_data=True,
                        darkness=.5)
 
-###############################################################################
-# Display Destrieux parcellation on inflated fsaverage5 surface
+# %%
+# Display Destrieux :term:`parcellation` on inflated fsaverage5 surface
 plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
                        hemi='left', view='lateral',
                        bg_map=fsaverage['sulc_left'], bg_on_data=True,
                        darkness=.5)
 
-###############################################################################
-# Display Destrieux parcellation with different views: posterior
+# %%
+# Display Destrieux :term:`parcellation` with different views: posterior
 plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
                        hemi='left', view='posterior',
                        bg_map=fsaverage['sulc_left'], bg_on_data=True,
                        darkness=.5)
 
-###############################################################################
-# Display Destrieux parcellation with different views: ventral
+# %%
+# Display Destrieux :term:`parcellation` with different views: ventral
 plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
                        hemi='left', view='ventral',
                        bg_map=fsaverage['sulc_left'], bg_on_data=True,
                        darkness=.5)
 plotting.show()
 
-###############################################################################
+# %%
+# Display Destrieux :term:`parcellation` with custom view: explicitly set angle
+elev, azim = 210.0, 90.0  # appropriate for visualizing, e.g., the OTS
+plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
+                       hemi='left', view=(elev, azim),
+                       bg_map=fsaverage['sulc_left'], bg_on_data=True,
+                       darkness=.5)
+
+# %%
 # Display connectome from surface parcellation
 #
 # The following code extracts 3D coordinates of surface parcels (a.k.a. labels
-# in the Freesurfer naming convention). To do so we load the pial surface
-# of fsaverage subject, get the vertices contained in each parcel and compute
-# the mean location to obtain the coordinates.
+# in the Freesurfer naming convention).
+# To do so we load the pial surface of fsaverage subject,
+# get the :term:`vertices<vertex>` contained in each parcel
+# and compute the mean location to obtain the coordinates.
 
 import numpy as np
+
 from nilearn import surface
 
 atlas = destrieux_atlas
 coordinates = []
 labels = destrieux_atlas['labels']
 for hemi in ['left', 'right']:
-    vert = destrieux_atlas['map_%s' % hemi]
-    rr, _ = surface.load_surf_mesh(fsaverage['pial_%s' % hemi])
+    vert = destrieux_atlas[f'map_{hemi}']
+    rr, _ = surface.load_surf_mesh(fsaverage[f'pial_{hemi}'])
     for k, label in enumerate(labels):
         if "Unknown" not in str(label):  # Omit the Unknown label.
             # Compute mean location of vertices in label of index k
@@ -114,7 +123,7 @@ plotting.plot_connectome(corr, coordinates,
                          title='fsaverage Destrieux atlas')
 plotting.show()
 
-##############################################################################
+# %%
 # 3D visualization in a web browser
 # ---------------------------------
 # An alternative to :func:`nilearn.plotting.plot_surf_roi` is to use
@@ -128,12 +137,12 @@ view = plotting.view_surf(fsaverage.infl_left, parcellation,
 # be displayed below the cell
 
 view
-##############################################################################
+# %%
 
 # uncomment this to open the plot in a web browser:
 # view.open_in_browser()
 
-##############################################################################
+# %%
 # you can also use :func:`nilearn.plotting.view_connectome` to open an
 # interactive view of the connectome.
 
@@ -141,3 +150,5 @@ view = plotting.view_connectome(corr, coordinates, edge_threshold='90%')
 # uncomment this to open the plot in a web browser:
 # view.open_in_browser()
 view
+
+# sphinx_gallery_dummy_images=1

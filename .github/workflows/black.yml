@@ -1,0 +1,33 @@
+---
+name: Black
+
+on:
+    push:
+        branches:
+        -   main
+    pull_request:
+        branches:
+        -   '*'
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    black:
+        runs-on: ubuntu-latest
+        steps:
+        -   name: Checkout
+            uses: actions/checkout@v4
+
+        -   name: Set up Python
+            uses: actions/setup-python@v5
+            with:
+                python-version: '3.12'
+                allow-prereleases: false
+
+        -   name: Install black
+            run: python -m pip install --upgrade pip black
+
+        -   name: Run Black
+            run: black --check --diff --color .

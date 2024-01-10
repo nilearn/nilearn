@@ -27,7 +27,7 @@ timing issues.
 This example requires matplotlib and scipy.
 """
 
-#########################################################################
+# %%
 # Define stimulus parameters and response models
 # ----------------------------------------------
 #
@@ -41,19 +41,20 @@ frame_times = np.linspace(0, time_length, 61)
 onset, amplitude, duration = 0.0, 1.0, 1.0
 exp_condition = np.array((onset, duration, amplitude)).reshape(3, 1)
 
-#########################################################################
+# %%
 # Make a time array of this condition for display:
 stim = np.zeros_like(frame_times)
 stim[(frame_times > onset) * (frame_times <= onset + duration)] = amplitude
 
-#########################################################################
+# %%
 # Define custom response functions for MION. Custom response
-# functions should at least take tr and oversampling as arguments:
+# functions should at least take :term:`TR` and oversampling as arguments:
 from scipy.stats import gamma
 
 
 def mion_response_function(tr, oversampling=16, onset=0.0):
-    """Implementation of the MION response function model.
+    """Implement the MION response function model.
+
     Parameters
     ----------
     tr: float
@@ -70,7 +71,7 @@ def mion_response_function(tr, oversampling=16, onset=0.0):
     """
     dt = tr / oversampling
     time_stamps = np.linspace(
-        0, time_length, np.rint(float(time_length) / dt).astype(int)
+        0, time_length, np.rint(time_length / dt).astype(int)
     )
     time_stamps -= onset
 
@@ -86,7 +87,8 @@ def mion_response_function(tr, oversampling=16, onset=0.0):
 
 
 def mion_time_derivative(tr, oversampling=16.0):
-    """Implementation of the MION time derivative response function model.
+    """Implement the MION time derivative response function model.
+
     Parameters
     ----------
     tr: float
@@ -108,7 +110,7 @@ def mion_time_derivative(tr, oversampling=16.0):
     return drf
 
 
-#########################################################################
+# %%
 # Define response function models to be displayed:
 
 rf_models = [
@@ -121,11 +123,12 @@ rf_models = [
     ),
 ]
 
-#########################################################################
+# %%
 # Sample and plot response functions
 # ----------------------------------
 
 import matplotlib.pyplot as plt
+
 from nilearn.glm.first_level import compute_regressor
 
 oversampling = 16

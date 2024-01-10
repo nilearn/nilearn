@@ -5,7 +5,7 @@ Content
 -------
 This work is a derivative from the Cambridge sample found in the [1000
 functional connectome project]
-(http://fcon_1000.projects.nitrc.org/fcpClassic/FcpTable.html) (Liu et
+(https://fcon_1000.projects.nitrc.org/fcpClassic/FcpTable.html) (Liu et
 al., 2009), originally released under Creative Commons -- Attribution
 Non-Commercial. It includes group brain parcellations generated from
 resting-state functional magnetic resonance images for about 200 young
@@ -22,7 +22,7 @@ This release more specifically contains the following files:
      'scale122', 'scale197', 'scale325', 'scale444'
 brain_parcellation_cambridge_basc_multiscale_(sym,asym)_scale(NNN).nii.gz:
 a 3D volume .nii format at 3 mm isotropic resolution, in the MNI non-linear
-2009a space (http://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009).
+2009a space (https://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009).
 Region number I is filled with Is (background is filled with 0s).
 
 
@@ -40,9 +40,8 @@ Preprocessing
 -------------
 The datasets were analysed using the NeuroImaging Analysis Kit (NIAK
 https://github.com/SIMEXP/niak) version 0.12.14, under CentOS version 6.3 with
-Octave (http://gnu.octave.org) version 3.8.1 and the Minc toolkit
-(http://www.bic.mni.mcgill.ca/ServicesSoftware/ServicesSoftwareMincToolKit)
-version 0.3.18.
+Octave (https://octave.org) version 3.8.1 and the Minc toolkit
+(https://bic-mni.github.io/) version 0.3.18.
 Each fMRI dataset was corrected for inter-slice difference in acquisition time
 and the parameters of a rigid-body motion were estimated for each time frame.
 Rigid-body motion was estimated within as well as between runs, using the
@@ -77,7 +76,7 @@ hierarchical clustering with Ward's criterion on resampled individual time
 series, using circular block bootstrap. A consensus clustering (hierarchical
 with Ward's criterion) was generated across all the individual clustering
 replications pooled together, hence generating group clusters. The generation
-of group clusters was itself replicated by bootstraping subjects 500 times,
+of group clusters was itself replicated by bootstrapping subjects 500 times,
 and a (final) consensus clustering (hierarchical Ward's criterion) was
 generated on the replicated group clusters. The MSTEPS procedure (Bellec et
 al., 2013) was implemented to select a data-driven subset of scales in the
@@ -100,7 +99,7 @@ of the Human Brain Mapping Organization. Neuroimage, Florence, Italy.
 Bellec P, Rosa-Neto P, Lyttelton O C, Benali H, Evans A C, Jul. 2010
 Multi-level bootstrap analysis of stable clusters in resting-state fMRI.
 NeuroImage 51 (3), 1126-1139.
-URL http://dx.doi.org/10.1016/j.neuroimage.2010.02.082
+URL https://doi.org/10.1016/j.neuroimage.2010.02.082
 
 Bellec P, Jun. 2013. Mining the Hierarchy of Resting-State Brain Networks:
 Selection of Representative Clusters in a Multiscale Structure. In: Pattern
@@ -114,20 +113,20 @@ Pattern Recognition and Artificial Intelligence 11, 1271-1294.
 Fonov V, Evans A C, Botteron K, Almli C R, McKinstry, R C, Collins D L,
 Jan. 2011. Unbiased average age-appropriate atlases for pediatric
 studies. NeuroImage 54 (1), 313-327.
-URL http://dx.doi.org/10.1016/j.neuroimage.2010.07.033
+URL https://doi.org/10.1016/j.neuroimage.2010.07.033
 
 Giove F, Gili T, Iacovella V, Macaluso E, Maraviglia B, Oct. 2009.
 Images-based suppression of unwanted global signals in resting-state
 functional connectivity studies. Magnetic resonance imaging 27 (8), 1058-1064.
-URL http://dx.doi.org/10.1016/j.mri.2009.06.004
+URL https://doi.org/10.1016/j.mri.2009.06.004
 
 Liu H, Stufflebeam S M, Sepulcre J, Hedden T, Buckner R L, Dec. 2009
 Evidence from intrinsic activity that asymmetry of the human brain
 is controlled by multiple factors. Proceedings of the National Academy
 of Sciences 106 (48), 20499-20503.
-URL http://dx.doi.org/10.1073/pnas.0908073106
+URL https://doi.org/10.1073/pnas.0908073106
 
 Power J D, Barnes K A, Snyder A Z, Schlaggar B L, Petersen S E, Feb 2012
 Spurious but systematic correlations in functional connectivity
 MRI networks arise from subject motion. NeuroImage 59 (3), 2142-2154.
-URL http://dx.doi.org/10.1016/j.neuroimage.2011.10.018
+URL https://doi.org/10.1016/j.neuroimage.2011.10.018
