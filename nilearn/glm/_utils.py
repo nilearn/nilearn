@@ -172,8 +172,7 @@ def full_rank(X, cmax=1e15):
     """
     U, s, V = spl.svd(X, full_matrices=False)
     smax, smin = s.max(), s.min()
-    cond = smax / smin
-    if cond < cmax:
+    if (cond := smax / smin) < cmax:
         return X, cond
 
     warn("Matrix is singular at working precision, regularizing...")

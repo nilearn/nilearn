@@ -906,8 +906,7 @@ def plot_roi(
         (4D images)
 
     """
-    valid_view_types = ["continuous", "contours"]
-    if view_type not in valid_view_types:
+    if view_type not in (valid_view_types := ["continuous", "contours"]):
         raise ValueError(
             f"Unknown view type: {view_type}. "
             f"Valid view types are {valid_view_types}."

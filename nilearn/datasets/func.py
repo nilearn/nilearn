@@ -1492,8 +1492,7 @@ def fetch_megatrawls_netmats(
         "Invalid {0} input is provided: {1}, choose one of them {2}"
     )
     # standard dataset terms
-    dimensionalities = [25, 50, 100, 200, 300]
-    if dimensionality not in dimensionalities:
+    if dimensionality not in (dimensionalities := [25, 50, 100, 200, 300]):
         raise ValueError(
             error_message.format(
                 "dimensionality", dimensionality, dimensionalities
@@ -2092,8 +2091,7 @@ def fetch_development_fmri(
 
 def _filter_func_regressors_by_participants(participants, age_group):
     """Filter functional and regressors based on participants."""
-    valid_age_groups = ("both", "child", "adult")
-    if age_group not in valid_age_groups:
+    if age_group not in (valid_age_groups := ("both", "child", "adult")):
         raise ValueError(
             f"Wrong value for age_group={age_group}. "
             f"Valid arguments are: {valid_age_groups}"
@@ -2983,8 +2981,7 @@ def fetch_spm_multimodal_fmri(
     subject_dir = os.path.join(data_dir, subject_id)
 
     # maybe data_dir already contains the data ?
-    data = _glob_spm_multimodal_fmri_data(subject_dir)
-    if data is not None:
+    if (data := _glob_spm_multimodal_fmri_data(subject_dir)) is not None:
         return data
 
     # No. Download the data
@@ -3040,8 +3037,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
         return Bunch(**_subject_data)
 
     # maybe data_dir already contains the data ?
-    data = _glob_fiac_data()
-    if data is not None:
+    if (data := _glob_fiac_data()) is not None:
         return data
 
     # No. Download the data

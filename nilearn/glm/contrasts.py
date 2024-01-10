@@ -93,8 +93,7 @@ def compute_contrast(labels, regression_result, con_val, stat_type=None):
     if stat_type is None:
         stat_type = "t" if dim == 1 else "F"
 
-    acceptable_stat_types = ["t", "F"]
-    if stat_type not in acceptable_stat_types:
+    if stat_type not in (acceptable_stat_types := ["t", "F"]):
         raise ValueError(
             f"'{stat_type}' is not a known contrast type. "
             f"Allowed types are {acceptable_stat_types}."
