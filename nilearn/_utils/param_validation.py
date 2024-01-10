@@ -202,6 +202,8 @@ def check_feature_screening(
        Used to perform the :term:`ANOVA` univariate feature selection.
 
     """
+    from nilearn.experimental.surface import SurfaceImage
+
     f_test = f_classif if is_classification else f_regression
 
     if screening_percentile == 100 or screening_percentile is None:
@@ -212,6 +214,11 @@ def check_feature_screening(
             f" [0, 100], got {screening_percentile:g}"
         )
     else:
+        if isinstance(mask_img, SurfaceImage):
+            return SelectPercentile(
+                f_test, percentile=int(screening_percentile)
+            )
+
         # correct screening_percentile according to the volume of the data mask
         screening_percentile_ = adjust_screening_percentile(
             screening_percentile, mask_img, verbose=verbose
