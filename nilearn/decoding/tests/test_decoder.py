@@ -517,6 +517,7 @@ def test_decoder_binary_classification_with_masker_object(
     y_pred = model.predict(X)
 
     assert model.scoring == "roc_auc"
+    breakpoint()
     assert model.score(X, y) == 1.0
     assert accuracy_score(y, y_pred) > 0.95
 
@@ -1026,3 +1027,14 @@ def test_decoder_tags_regression():
     """Check value returned by _more_tags."""
     model = DecoderRegressor()
     assert model._more_tags()["multioutput"] is True
+
+
+def test_decoder_decision_function(binary_classification_data):
+    """Test decision_function with ndarray. Test for backward compatibility."""
+    X, y, mask = binary_classification_data
+
+    model = Decoder(mask=mask)
+    model.fit(X, y)
+    X = model.masker_.transform(X)
+    assert X.shape[1] == model.coef_.shape[1]
+    model.decision_function(X)
