@@ -838,7 +838,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         ----------
         X : Niimg-like
             See :ref:`extracting_data`.
-            Data on prediction is to be made.
+            Data on which prediction is to be made.
 
         y : array-like
             Target values.
@@ -871,7 +871,9 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         y_pred: ndarray, shape (n_samples,)
             Predicted class label per sample.
         """
-        X = self.masker_.transform(X)
+        # for backwards compatibility
+        if not isinstance(X, type(np.array)):
+            X = self.masker_.transform(X)
         n_features = self.coef_.shape[1]
         if X.shape[1] != n_features:
             raise ValueError(
@@ -893,7 +895,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         ----------
         X: Niimg-like
             See :ref:`extracting_data`.
-            Data on prediction is to be made.
+            Data on which prediction is to be made.
 
         Returns
         -------
