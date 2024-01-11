@@ -872,7 +872,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             Predicted class label per sample.
         """
         # for backwards compatibility
-        if not isinstance(X, type(np.array)):
+        if not isinstance(X, np.ndarray):
             X = self.masker_.transform(X)
         n_features = self.coef_.shape[1]
         if X.shape[1] != n_features:
