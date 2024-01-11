@@ -156,6 +156,7 @@ Some other past or present contributors are:
 * `Oscar Esteban`_: Centre Hospitalier Universitaire Vaudoise, Lausanne, Switzerland
 * `Patrick Sadil`_: Department of Biostatistics, Johns Hopkins Bloomberg School of Public Health, USA
 * `Paul Bogdan`_
+* `Paul Reiners`_: Masonic Institute for the Developing Brain, University of Minnesota, USA
 * `Paula Sanz-Leon`_: Medical Research Institute, Brisbane, Australia
 * `Peer Herholz`_: Origami lab, McGill University, Montréal, Canada
 * `Philippe Gervais`_: Zurich, Switzerland

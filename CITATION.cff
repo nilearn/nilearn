@@ -540,7 +540,8 @@ authors:
   - given-names: Paul
     family-names: Reiners
     website: https://github.com/paul-reiners
-    affiliation: Masonic Institute for the Developing Brain, University of Minnesota, USA
+    affiliation: Masonic Institute for the Developing Brain, University of Minnesota,
+      USA
     orcid: https://orcid.org/0000-0002-6167-5007
   - given-names: Paula
     family-names: Sanz-Leon

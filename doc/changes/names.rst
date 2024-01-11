@@ -220,6 +220,8 @@
 
 .. _Paul Bogdan: https://github.com/paulcbogdan
 
+.. _Paul Reiners: https://github.com/paul-reiners
+
 .. _Paula Sanz-Leon: https://github.com/pausz
 
 .. _Peer Herholz: https://peerherholz.github.io/
