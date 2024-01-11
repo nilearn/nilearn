@@ -39,8 +39,7 @@ of the statistics across the two runs.
 """
 
 # %%
-# Create a write directory to work,
-# it will be a ``results`` subdirectory
+# Create an output ``results`` subdirectory
 # in the directory of this example file.
 from pathlib import Path
 
@@ -48,6 +47,8 @@ output_dir = (
     Path(__file__).parent / "results" / Path(__file__).name.replace(".py", "")
 )
 output_dir.mkdir(exist_ok=True, parents=True)
+print(f"Output will be saved to: {output_dir}")
+
 
 # %%
 # Set up the GLM
