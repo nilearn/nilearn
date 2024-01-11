@@ -39,13 +39,10 @@ of the statistics across the two runs.
 """
 
 # %%
-# Create an output ``results`` subdirectory
-# in the directory of this example file.
+# Create an output ``results`` in the current working directory.
 from pathlib import Path
 
-output_dir = (
-    Path(__file__).parent / "results" / Path(__file__).name.replace(".py", "")
-)
+output_dir = Path.cwd() / "results" / "plot_two_runs_model"
 output_dir.mkdir(exist_ok=True, parents=True)
 print(f"Output will be saved to: {output_dir}")
 
@@ -106,13 +103,13 @@ from nilearn import plotting
 # This may differ across runs depending on if the design matrices vary.
 contrast_val = [[-1, -1, 1, 1]]
 
-fmri_glm_ses1 = fmri_glm.fit(fmri_imgs[0], design_matrices=design_matrices[0])
-summary_statistics_ses1 = fmri_glm_ses1.compute_contrast(
+fmri_glm_run_1 = fmri_glm.fit(fmri_imgs[0], design_matrices=design_matrices[0])
+summary_statistics_run_1 = fmri_glm_run_1.compute_contrast(
     contrast_val,
     output_type="all",
 )
 plotting.plot_stat_map(
-    summary_statistics_ses1["z_score"],
+    summary_statistics_run_1["z_score"],
     bg_img=mean_img_,
     threshold=3.0,
     cut_coords=cut_coords,
@@ -121,16 +118,16 @@ plotting.plot_stat_map(
 
 # %%
 # Compute the statistics for the second run.
-fmri_glm_ses2 = fmri_glm.fit(fmri_imgs[1], design_matrices=design_matrices[1])
+fmri_glm_run_2 = fmri_glm.fit(fmri_imgs[1], design_matrices=design_matrices[1])
 
 contrast_val = np.array([[-1, -1, 1, 1]])
 
-summary_statistics_ses2 = fmri_glm_ses2.compute_contrast(
+summary_statistics_run_2 = fmri_glm_run_2.compute_contrast(
     contrast_val,
     output_type="all",
 )
 plotting.plot_stat_map(
-    summary_statistics_ses2["z_score"],
+    summary_statistics_run_2["z_score"],
     bg_img=mean_img_,
     threshold=3.0,
     cut_coords=cut_coords,
@@ -147,12 +144,12 @@ plotting.plot_stat_map(
 from nilearn.glm.contrasts import compute_fixed_effects
 
 contrast_imgs = [
-    summary_statistics_ses1["effect_size"],
-    summary_statistics_ses2["effect_size"],
+    summary_statistics_run_1["effect_size"],
+    summary_statistics_run_2["effect_size"],
 ]
 variance_imgs = [
-    summary_statistics_ses1["effect_variance"],
-    summary_statistics_ses2["effect_variance"],
+    summary_statistics_run_1["effect_variance"],
+    summary_statistics_run_2["effect_variance"],
 ]
 
 fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat = compute_fixed_effects(
@@ -185,7 +182,7 @@ plotting.plot_stat_map(
 # Since we can assume that the design matrices of both runs
 # have the same columns, in the same order,
 # we can again reuse the first run's contrast vector.
-fmri_glm_multises = fmri_glm.fit(fmri_imgs, design_matrices=design_matrices)
+fmri_glm_multirun = fmri_glm.fit(fmri_imgs, design_matrices=design_matrices)
 
 # We can just define the contrast array for one run and assume
 # that the design matrix is the same for the other.
@@ -196,7 +193,7 @@ contrast_val = [
     np.array([[-1, -1, 1, 1]]),  # run 2
 ]
 
-z_map = fmri_glm_multises.compute_contrast(
+z_map = fmri_glm_multirun.compute_contrast(
     contrast_val,
     output_type="z_score",
 )
@@ -256,7 +253,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
 # we can quickly create a summary report.
 from nilearn.reporting import make_glm_report
 
-report = make_glm_report(fmri_glm_multises, contrasts, bg_img=mean_img_)
+report = make_glm_report(fmri_glm_multirun, contrasts, bg_img=mean_img_)
 
 # %%
 # We have several ways to access the report:
