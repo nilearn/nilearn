@@ -517,7 +517,6 @@ def test_decoder_binary_classification_with_masker_object(
     y_pred = model.predict(X)
 
     assert model.scoring == "roc_auc"
-    breakpoint()
     assert model.score(X, y) == 1.0
     assert accuracy_score(y, y_pred) > 0.95
 
