@@ -6,15 +6,31 @@ Here, we will go through a full step-by-step example of fitting a GLM
 to experimental data and visualizing the results.
 This is done on two runs of one subject of the FIAC dataset.
 
-For details on the data, please see :footcite:t:`dehaene2006functional`.
+This is a block design experiment with a 2 X 2 experimental design
+with the following factors:
 
-More specifically:
+- ``Sentence`` with 2 levels: Same (SSt) vs Different (DSt)
+- ``Speaker``  with 2 levels: Same (SSp) vs Different (DSp)
 
-1. A sequence of fMRI volumes is loaded.
-2. A design matrix describing all the effects related to the data is computed.
-3. A mask of the useful brain volume is computed.
-4. A GLM is applied to the dataset (effect/covariance,
-   then contrast estimation).
+giving the 4 following conditions:
+
+- Same Sentence-Same Speaker (SStSSp)
+- Same Sentence-Different Speakers (SStDSp)
+- Different Sentences-Same Speaker (DStSSp)
+- Different Sentences-Different Speakers (DStDSp)
+
+The design also included a 5th condition
+containing the first sentence pooled across all conditions.
+
+For more details on the data,
+please see experiment 2 in:footcite:t:`dehaene2006functional`.
+
+Here are the steps we will go through:
+
+1. Set up the GLM
+2. Compare run-specific and fixed effects contrasts
+3. Compute a range of contrasts across both runs
+4. Generate a report
 
 Technically, this example shows how to handle two runs.
 that contain the same experimental conditions.
@@ -24,16 +40,18 @@ of the statistics across the two runs.
 
 # %%
 # Create a write directory to work,
-# it will be a ``results`` subdirectory of the current directory.
-from os import getcwd, mkdir, path
+# it will be a ``results`` subdirectory
+# in the directory of this example file.
+from pathlib import Path
 
-write_dir = path.join(getcwd(), "results")
-if not path.exists(write_dir):
-    mkdir(write_dir)
+output_dir = (
+    Path(__file__).parent / "results" / Path(__file__).name.replace(".py", "")
+)
+output_dir.mkdir(exist_ok=True, parents=True)
 
 # %%
-# Prepare data and analysis parameters
-# ------------------------------------
+# Set up the GLM
+# --------------
 # Inspecting 'data', we note that there are two runs.gst
 # We will retain those two runs in a list of 4D img objects.
 from nilearn.datasets import func
@@ -58,8 +76,7 @@ design_matrices = [pd.DataFrame(np.load(df)["X"]) for df in design_files]
 
 
 # %%
-# Initialize the GLM
-# ------------------
+# Initialize and run the GLM
 # First, we need to specify the model before fitting it to the data.
 # Note that a brain mask was provided in the dataset,
 # so that is what we will use.
@@ -72,8 +89,10 @@ fmri_glm = FirstLevelModel(
 )
 
 # %%
+# Compare run-specific and fixed effects contrasts
+# ------------------------------------------------
 # We can then compare run-specific and fixed effects.
-# Here, we compare the activation mas produced from each run separately
+# Here, we compare the activation produced from each run separately
 # and then the fixed effects version.
 cut_coords = [-129, -126, 49]
 contrast_id = "DSt_minus_SSt"
@@ -118,7 +137,8 @@ plotting.plot_stat_map(
 )
 
 # %%
-# Compute the fixed effects statistics using both runs' statistical maps.
+# Compute the fixed effects statistics
+# using the statistical maps of both runs.
 #
 # We can use :func:`~nilearn.glm.compute_fixed_effects` to compute
 # the fixed effects statistics using the outputs
@@ -154,7 +174,8 @@ plotting.plot_stat_map(
 # of the resulting brain maps.
 
 # %%
-# Compute the fixed effects statistics using both runs' preprocessed data.
+# Compute the fixed effects statistics
+# using the preprocessed data of both runs.
 #
 # A more straightforward alternative to fitting run-specific GLMs,
 # than combining the results with :func:`~nilearn.glm.compute_fixed_effects`,
@@ -194,7 +215,7 @@ plotting.show()
 
 # %%
 # Compute a range of contrasts across both runs
-# -------------------------------------------------
+# ---------------------------------------------
 # It may be useful to investigate a number of contrasts.
 # Therefore, we will move beyond the original contrast of interest
 # and both define and compute several.
@@ -209,7 +230,7 @@ contrasts = {
     "DSp_minus_SSp": np.array([[-1, 1, -1, 1]]),
     "DSt_minus_SSt_for_DSp": np.array([[0, -1, 0, 1]]),
     "DSp_minus_SSp_for_DSt": np.array([[0, 0, -1, 1]]),
-    "Deactivation": np.array([[-1, -1, -1, -1, 4]]),
+    "Deactivation": np.array([[-1, -1, -1, -1, -1]]),
     "Effects_of_interest": np.eye(n_columns)[:5, :],  # An F-contrast
 }
 
@@ -223,7 +244,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     z_map = fmri_glm.compute_contrast(contrast_val, output_type="z_score")
 
     # Write the resulting stat images to file.
-    z_image_path = path.join(write_dir, f"{contrast_id}_z_map.nii.gz")
+    z_image_path = output_dir / f"{contrast_id}_z_map.nii.gz"
     z_map.to_filename(z_image_path)
 
 # %%
@@ -240,7 +261,7 @@ report = make_glm_report(fmri_glm_multises, contrasts, bg_img=mean_img_)
 # We have several ways to access the report:
 
 # report  # This report can be viewed in a notebook
-# report.save_as_html('report.html')
+# report.save_as_html(output_dir / 'report.html')
 # report.open_in_browser()
 
 # %%
