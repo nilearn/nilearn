@@ -836,8 +836,9 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        X : {array-like, sparse matrix}, shape = (n_samples, n_features)
-            Samples.
+        X : Niimg-like
+            See :ref:`extracting_data`.
+            Data on prediction is to be made.
 
         y : array-like
             Target values.
@@ -890,8 +891,9 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        X: {array-like, sparse matrix}, shape = (n_samples, n_features)
-            Samples.
+        X: Niimg-like
+            See :ref:`extracting_data`.
+            Data on prediction is to be made.
 
         Returns
         -------
