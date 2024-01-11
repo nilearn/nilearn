@@ -85,6 +85,8 @@ Enhancements
 
 - :bdg-success:`API` Improve ``contrasts`` allowing fixed effects on F contrasts (:gh:`3203` by `Bertrand Thirion`_)
 
+- :bdg-dark:`Code` ``nilearn/tests/test_signal.py`` Remove unnecessary code in test (:gh:`4208` by `Paul Reiners`_).
+
 Changes
 -------
 

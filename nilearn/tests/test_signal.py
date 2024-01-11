@@ -887,16 +887,12 @@ def test_clean_psc(rng):
         cleaned_signals = clean(s, standardize="psc")
         np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
 
-        cleaned_signals.std(axis=0)
-        np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
-
         tmp = (s - s.mean(0)) / np.abs(s.mean(0))
         tmp *= 100
         np.testing.assert_almost_equal(cleaned_signals, tmp)
 
     # leave out the last 3 columns with a mean of zero to test user warning
     signals_w_zero = signals + np.append(means[:, :-3], np.zeros((1, 3)))
-    cleaned_w_zero = clean(signals_w_zero, standardize="psc")
     with pytest.warns(UserWarning) as records:
         cleaned_w_zero = clean(signals_w_zero, standardize="psc")
     psc_warning = sum(
