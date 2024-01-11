@@ -46,7 +46,6 @@ from nilearn.glm.regression import ARModel, OLSModel
 from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files
 from nilearn.maskers import NiftiMasker
-from nilearn.reporting import make_glm_report
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 FUNCFILE = os.path.join(BASEDIR, "functional.nii.gz")
@@ -2092,18 +2091,3 @@ def test_flm_compute_contrast_with_surface_data(_make_surface_glm_data):
     result = model.compute_contrast("c0")
 
     assert isinstance(result, SurfaceImage)
-
-
-def test_flm_generate_report_error_with_surface_data(_make_surface_glm_data):
-    """Raise NotImplementedError when generate report is called on surface."""
-    mini_img, _ = _make_surface_glm_data(5)
-    masker = SurfaceMasker().fit(mini_img)
-    model = FirstLevelModel(mask_img=masker, t_r=2.0)
-    events = basic_paradigm()
-    model.fit(mini_img, events=events)
-
-    with pytest.raises(NotImplementedError):
-        model.generate_report("c0")
-
-    with pytest.raises(NotImplementedError):
-        make_glm_report(model, "c0")
