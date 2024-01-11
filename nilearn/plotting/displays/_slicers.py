@@ -815,6 +815,10 @@ def _get_cbar_ticks(vmin, vmax, offset, nb_ticks=5):
     if vmin == vmax:
         return np.linspace(vmin, vmax, 1)
 
+    # edge case where the data has all negative values but vmax is exactly 0
+    if vmax == 0:
+        vmax += np.finfo(np.float32).eps
+
     # If a threshold is specified, we want two of the tick
     # to correspond to -thresold and +threshold on the colorbar.
     # If the threshold is very small compared to vmax,
@@ -822,7 +826,7 @@ def _get_cbar_ticks(vmin, vmax, offset, nb_ticks=5):
     ticks = np.linspace(vmin, vmax, nb_ticks)
     if offset is not None and offset / vmax > 0.12:
         diff = [abs(abs(tick) - offset) for tick in ticks]
-        # Edge case where the thresholds are exactl
+        # Edge case where the thresholds are exactly
         # at the same distance to 4 ticks
         if diff.count(min(diff)) == 4:
             idx_closest = np.sort(np.argpartition(diff, 4)[:4])

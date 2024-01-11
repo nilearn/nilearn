@@ -24,7 +24,8 @@ else:
     not_have_mpl, reason="Matplotlib not installed; required for this test"
 )
 @pytest.mark.parametrize("use_method", [True, False])
-def test_flm_reporting(tmp_path, use_method):
+@pytest.mark.parametrize("height_control", ["fpr", "fdr", "bonferroni", None])
+def test_flm_reporting(tmp_path, use_method, height_control):
     shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 16)), 3
     mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(
         shapes, rk, file_path=tmp_path
@@ -37,7 +38,7 @@ def test_flm_reporting(tmp_path, use_method):
         report_flm = flm.generate_report(
             contrast,
             plot_type="glass",
-            height_control=None,
+            height_control=height_control,
             min_distance=15,
             alpha=0.001,
             threshold=2.78,
@@ -47,7 +48,7 @@ def test_flm_reporting(tmp_path, use_method):
             flm,
             contrast,
             plot_type="glass",
-            height_control=None,
+            height_control=height_control,
             min_distance=15,
             alpha=0.001,
             threshold=2.78,
@@ -64,7 +65,8 @@ def test_flm_reporting(tmp_path, use_method):
     not_have_mpl, reason="Matplotlib not installed; required for this test"
 )
 @pytest.mark.parametrize("use_method", [True, False])
-def test_slm_reporting(tmp_path, use_method):
+@pytest.mark.parametrize("height_control", ["fpr", "fdr", "bonferroni", None])
+def test_slm_reporting(tmp_path, use_method, height_control):
     shapes = ((7, 8, 9, 1),)
     _, FUNCFILE, _ = write_fake_fmri_data_and_design(
         shapes, file_path=tmp_path
@@ -77,9 +79,11 @@ def test_slm_reporting(tmp_path, use_method):
     model = model.fit(Y, design_matrix=X)
     c1 = np.eye(len(model.design_matrix_.columns))[0]
     if use_method:
-        report_slm = glmr.make_glm_report(model, c1)
+        report_slm = glmr.make_glm_report(
+            model, c1, height_control=height_control
+        )
     else:
-        report_slm = model.generate_report(c1)
+        report_slm = model.generate_report(c1, height_control=height_control)
     # catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
     report_slm.get_iframe()
 
