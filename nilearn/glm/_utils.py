@@ -250,7 +250,7 @@ def pad_contrast(con_val, theta, stat_type):
                 f"but it has length {nb_cols}. "
                 "The rest of the contrast was padded with zeros.",
                 category=UserWarning,
-                stacklevel=2,
+                stacklevel=3,
             )
         if stat_type == "F":
             warn(
@@ -258,7 +258,7 @@ def pad_contrast(con_val, theta, stat_type):
                 f"but it has only {nb_cols}. "
                 "The rest of the contrast was padded with zeros.",
                 category=UserWarning,
-                stacklevel=2,
+                stacklevel=3,
             )
 
     if pad:
