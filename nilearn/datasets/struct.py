@@ -45,8 +45,8 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     %(templateflow)s
 
-    For more information, see :footcite:`Fonov2011`,
-    :footcite:`Fonov2009`, and :footcite:`Collins1999`.
+    For more information, see :footcite:t:`Fonov2011`,
+    :footcite:t:`Fonov2009`, and :footcite:t:`Collins1999`.
 
     Parameters
     ----------
@@ -177,8 +177,8 @@ def load_mni152_template(resolution=None):
     re-scaled 1mm-resolution version of the :term:`MNI` ICBM152 T1 template
     and re-samples it using a different resolution, if specified.
 
-    For more information, see :footcite:`Fonov2011`,
-    and :footcite:`Fonov2009`.
+    For more information, see :footcite:t:`Fonov2011`,
+    and :footcite:t:`Fonov2009`.
 
     Parameters
     ----------
@@ -608,8 +608,8 @@ def fetch_oasis_vbm(
 ):
     """Download and load Oasis "cross-sectional MRI" dataset (416 subjects).
 
-    For more information, see :footcite:`OASISbrain`,
-    and :footcite:`Marcus2007`.
+    For more information, see :footcite:t:`OASISbrain`,
+    and :footcite:t:`Marcus2007`.
 
     Parameters
     ----------
@@ -870,7 +870,7 @@ def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
 
     File names are subject to change and only attribute names
     are guaranteed to be stable across nilearn versions.
-    See :footcite:`Fischl1999`.
+    See :footcite:t:`Fischl1999`.
 
     Parameters
     ----------

@@ -270,7 +270,7 @@ class RegionExtractor(NiftiMapsMasker):
     Particularly, to show that each decomposed brain maps can be
     used to focus on a target specific Regions of Interest analysis.
 
-    See :footcite:`Abraham2014`.
+    See :footcite:t:`Abraham2014`.
 
     .. versionadded:: 0.2
 
