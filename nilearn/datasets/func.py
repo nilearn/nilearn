@@ -3028,6 +3028,19 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     %(data_dir)s
     %(verbose)s
 
+    Returns
+    -------
+    data : sklearn.datasets.base.Bunch
+        Dictionary-like object, the interest attributes are:
+        - 'design_matrix1': :obj:`str`.
+          Path to design matrix .npz file of run 1
+        - 'func1': :obj:`str`. Path to Nifti file of run 1
+        - 'design_matrix2': :obj:`str`.
+          Path to design matrix .npz file of run 2
+        - 'func2': :obj:`str`. Path to Nifti file of run 2
+        - 'mask': :obj:`str`. Path to mask file
+        - 'description': :obj:`str`. Data description
+
     """
     data_dir = get_dataset_dir(
         "fiac_nilearn.glm", data_dir=data_dir, verbose=verbose

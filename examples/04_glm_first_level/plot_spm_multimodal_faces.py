@@ -23,10 +23,6 @@ sampled in different positions (encoded by different affine functions).
 
 """
 # %%
-print(__doc__)
-
-
-# %%
 # Fetch the :term:`SPM` multimodal_faces data.
 from nilearn.datasets import fetch_spm_multimodal_fmri
 

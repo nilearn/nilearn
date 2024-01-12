@@ -21,12 +21,16 @@ containing the first sentence pooled across all conditions.
 
 Content
 -------
-
+    :'design_matrix1': Path to design matrix .npz file of run 1
+    :'func1': Path to Nifti file of run 1
+    :'design_matrix2': Path to design matrix .npz file of run 2
+    :'func2': Path to Nifti file of run 2
+    :'mask': Path to mask file
+    :'description': Data description
 
 References
 ----------
-For more details on the data,
-please see experiment 2 in:footcite:t:`dehaene2006functional`.
+For more details on the data, please see experiment 2 in:
 
 Dehaene-Lambertz G, Dehaene S, Anton JL, Campagne A, Ciuciu P, Dehaene
 G, Denghien I, Jobert A, LeBihan D, Sigman M, Pallier C, Poline JB.
