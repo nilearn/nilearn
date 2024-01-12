@@ -94,28 +94,12 @@ plotting.show()
 # %%
 # Using the `Decoder`
 # -------------------
+# Now using the appropriate masker we can use a `Decoder` on surface data just
+# as we do for volume images.
+
 import numpy as np
 
 from nilearn import decoding, plotting
-from nilearn._utils import param_validation
-
-# %%
-# The following is just disabling a couple of checks performed by the decoder
-# that would force us to use a `NiftiMasker`.
-
-
-def monkeypatch_masker_checks():
-    def adjust_screening_percentile(screening_percentile, *args, **kwargs):
-        return screening_percentile
-
-    param_validation.adjust_screening_percentile = adjust_screening_percentile
-
-
-monkeypatch_masker_checks()
-
-# %%
-# Now using the appropriate masker we can use a `Decoder` on surface data just
-# as we do for volume images.
 
 img = surface.fetch_nki()[0]
 y = np.random.RandomState(0).choice([0, 1], replace=True, size=img.shape[0])
