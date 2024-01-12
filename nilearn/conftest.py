@@ -17,6 +17,7 @@ from nilearn.datasets.tests._testing import temp_nilearn_data_dir  # noqa: F401
 from nilearn.experimental.surface.tests.conftest import (  # noqa: F401
     make_mini_img,
     mini_img,
+    mini_mask,
     mini_mesh,
 )
 
