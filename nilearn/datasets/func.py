@@ -2801,7 +2801,7 @@ def fetch_spm_auditory(
         Dictionary-like object, the interest attributes are:
         - 'func': :obj:`list` of :obj:`str`. Paths to functional images
         - 'anat': :obj:`list` of :obj:`str`. Path to anat image
-        - description: :obj:`str`. Data description
+        - 'description': :obj:`str`. Data description
 
     References
     ----------
@@ -2996,6 +2996,7 @@ def fetch_spm_multimodal_fmri(
         - 'trials_ses1': string list. Path to onsets file for run 1
         - 'trials_ses2': string list. Path to onsets file for run 2
         - 'anat': string. Path to anat file
+        - 'description': :obj:`str`. Description of the data
 
     References
     ----------

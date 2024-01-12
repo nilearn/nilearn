@@ -15,10 +15,17 @@ to find face-specific responses.
 
 Content
 -------
+    :'func1': Paths to functional images for run 1
+    :'func2': Paths to functional images for run 2
+    :'trials_ses1': Path to onsets file for run 1
+    :'trials_ses2': Path to onsets file for run 2
+    :'anat': Path to anat file
 
 
 References
 ----------
+See :cite:`spm_multiface`.
+
 For details on the data, please see:
 
 Henson, R.N., Goshen-Gottstein, Y., Ganel, T., Otten, L.J., Quayle, A.,
