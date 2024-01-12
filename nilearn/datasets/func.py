@@ -3033,6 +3033,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     -------
     data : sklearn.datasets.base.Bunch
         Dictionary-like object, the interest attributes are:
+
         - 'design_matrix1': :obj:`str`.
           Path to design matrix .npz file of run 1
         - 'func1': :obj:`str`. Path to Nifti file of run 1
