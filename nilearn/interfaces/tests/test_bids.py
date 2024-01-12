@@ -350,7 +350,7 @@ def test_save_glm_to_bids(tmp_path_factory):
     masker.fit()
 
     # Call with verbose (improve coverage)
-    single_session_model = FirstLevelModel(
+    single_run_model = FirstLevelModel(
         mask_img=None,
         minimize_memory=False,
     ).fit(
@@ -365,7 +365,7 @@ def test_save_glm_to_bids(tmp_path_factory):
         "effects of interest": "F",
     }
     save_glm_to_bids(
-        model=single_session_model,
+        model=single_run_model,
         contrasts=contrasts,
         contrast_types=contrast_types,
         out_dir=tmpdir,

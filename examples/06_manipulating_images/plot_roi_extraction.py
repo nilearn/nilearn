@@ -71,9 +71,9 @@ print(
 # Second, load the labels stored in a text file into array using pandas
 import pandas as pd
 
-session_target = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
+run_target = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
 # Now, we have the labels and will be useful while computing student's t-test
-haxby_labels = session_target["labels"]
+haxby_labels = run_target["labels"]
 
 # %%
 # We have the datasets in hand especially paths to the locations. Now, we do

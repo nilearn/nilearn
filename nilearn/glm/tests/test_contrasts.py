@@ -202,9 +202,9 @@ def test_contrast_values(set_up_glm, rng):
 
 def test_low_level_fixed_effects(rng):
     p = 100
-    # X1 is some effects estimate, V1 their variance for "session 1"
+    # X1 is some effects estimate, V1 their variance for "run 1"
     X1, V1 = rng.standard_normal(p), np.ones(p)
-    # same thing for a "session 2"
+    # same thing for a "run 2"
     X2, V2 = 2 * X1, 4 * V1
     # compute the fixed effects estimate, Xf, their variance Vf,
     # and the corresponding t statistic tf

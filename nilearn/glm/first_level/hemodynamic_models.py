@@ -703,7 +703,7 @@ def compute_regressor(
         fir_delays = [int(x) for x in fir_delays]
     oversampling = int(oversampling)
 
-    # this is the minimal tr in this session, not necessarily the true tr
+    # this is the minimal tr in this run, not necessarily the true tr
     tr = _calculate_tr(frame_times)
     # 1. create the high temporal resolution regressor
     hr_regressor, frame_times_high_res = _sample_condition(

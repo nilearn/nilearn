@@ -401,7 +401,7 @@ def check_niimg_4d(niimg, return_iterator=False, dtype=None):
     Notes
     -----
     This function is the equivalent to check_niimg_3d() for Niimg-like objects
-    with a session level.
+    with a run level.
 
     Its application is idempotent.
 

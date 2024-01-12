@@ -12,7 +12,7 @@ capitalizing on their correlation structure.
 
 Content
 -------
-    :'label': Paths to text files containing session and target data
+    :'label': Paths to text files containing run and target data
     :'func': Paths to nifti files with :term:`BOLD` data
     :'mask': Path to general mask nifti that defines target volume in visual cortex
     :'mask_roi': List of paths to images with specific data ('RH' for right hemisphere, 'LH' for left hemisphere, 'Vxxx' denote visual areas)

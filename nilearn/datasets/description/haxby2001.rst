@@ -12,7 +12,7 @@ Content
 -------
 The "simple" dataset includes
     :'func': Nifti images with bold data
-    :'session_target': Text file containing session data
+    :'session_target': Text file containing run data
     :'mask': Nifti images with employed mask
     :'session': Text file with condition labels
 

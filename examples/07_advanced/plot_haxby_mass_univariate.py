@@ -5,9 +5,9 @@ Massively univariate analysis of face vs house recognition
 A permuted Ordinary Least Squares algorithm is run at each voxel in
 order to determine whether or not it behaves differently under a "face
 viewing" condition and a "house viewing" condition.
-We consider the mean image per session and per condition.
+We consider the mean image per run and per condition.
 Otherwise, the observations cannot be exchanged at random because
-a time dependence exists between observations within a same session
+a time dependence exists between observations within a same run
 (see [1] for more detailed explanations).
 
 The example shows the small differences that exist between
@@ -55,7 +55,7 @@ categories = conditions.unique()
 conditions_encoded = np.zeros_like(conditions)
 for c, category in enumerate(categories):
     conditions_encoded[conditions == category] = c
-sessions = labels["chunks"]
+runs = labels["chunks"]
 condition_mask = conditions.isin(["face", "house"])
 conditions_encoded = conditions_encoded[condition_mask]
 
@@ -76,32 +76,30 @@ func_filename = haxby_dataset.func[0]
 func_reduced = index_img(func_filename, condition_mask)
 fmri_masked = nifti_masker.fit_transform(func_reduced)
 
-# We consider the mean image per session and per condition.
+# We consider the mean image per run and per condition.
 # Otherwise, the observations cannot be exchanged at random because
-# a time dependence exists between observations within a same session.
-n_sessions = np.unique(sessions).size
-conditions_per_session = 2
+# a time dependence exists between observations within a same run.
+n_runs = np.unique(runs).size
+conditions_per_run = 2
 grouped_fmri_masked = np.empty(
-    (conditions_per_session * n_sessions, fmri_masked.shape[1])
+    (conditions_per_run * n_runs, fmri_masked.shape[1])
 )
-grouped_conditions_encoded = np.empty((conditions_per_session * n_sessions, 1))
+grouped_conditions_encoded = np.empty((conditions_per_run * n_runs, 1))
 
-for s in range(n_sessions):
-    session_mask = sessions[condition_mask] == s
-    session_house_mask = np.logical_and(
-        session_mask, conditions[condition_mask] == "house"
+for s in range(n_runs):
+    run_mask = runs[condition_mask] == s
+    run_house_mask = np.logical_and(
+        run_mask, conditions[condition_mask] == "house"
     )
-    session_face_mask = np.logical_and(
-        session_mask, conditions[condition_mask] == "face"
+    run_face_mask = np.logical_and(
+        run_mask, conditions[condition_mask] == "face"
     )
-    grouped_fmri_masked[2 * s] = fmri_masked[session_house_mask].mean(0)
-    grouped_fmri_masked[2 * s + 1] = fmri_masked[session_face_mask].mean(0)
-    grouped_conditions_encoded[2 * s] = conditions_encoded[session_house_mask][
+    grouped_fmri_masked[2 * s] = fmri_masked[run_house_mask].mean(0)
+    grouped_fmri_masked[2 * s + 1] = fmri_masked[run_face_mask].mean(0)
+    grouped_conditions_encoded[2 * s] = conditions_encoded[run_house_mask][0]
+    grouped_conditions_encoded[2 * s + 1] = conditions_encoded[run_face_mask][
         0
     ]
-    grouped_conditions_encoded[2 * s + 1] = conditions_encoded[
-        session_face_mask
-    ][0]
 
 # %%
 # Perform massively univariate analysis with permuted OLS

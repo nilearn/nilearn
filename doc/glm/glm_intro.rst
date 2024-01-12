@@ -10,11 +10,17 @@ A primer on BOLD-fMRI data analysis
 What is fMRI ?
 --------------
 
-Functional magnetic resonance imaging (:term:`fMRI`) is based on the fact that when local neural activity increases, increases in metabolism and blood flow lead to fluctuations of the relative concentrations of oxyhaemoglobin (the red cells in the blood that carry oxygen) and deoxyhaemoglobin (the same red cells after they have delivered the oxygen). Oxyhaemoglobin and deoxyhaemoglobin have different magnetic properties (diamagnetic and paramagnetic, respectively), and they affect the local magnetic field in different ways. The signal picked up by the MRI scanner is sensitive to these modifications of the local magnetic field. To record cerebral activity during functional sessions, the scanner is tuned to detect this "Blood Oxygen Level Dependent" (:term:`BOLD`) signal.
+Functional magnetic resonance imaging (:term:`fMRI`) is based on the fact that when local neural activity increases, increases in metabolism and blood flow lead to fluctuations of the relative concentrations of oxyhaemoglobin (the red cells in the blood that carry oxygen) and deoxyhaemoglobin (the same red cells after they have delivered the oxygen). Oxyhaemoglobin and deoxyhaemoglobin have different magnetic properties (diamagnetic and paramagnetic, respectively), and they affect the local magnetic field in different ways.
+The signal picked up by the MRI scanner is sensitive to these modifications of the local magnetic field. To record cerebral activity during functional runs,
+the scanner is tuned to detect this "Blood Oxygen Level Dependent" (:term:`BOLD`) signal.
 
-Brain activity is measured in sessions that span several minutes, during which the participant performs some cognitive task and the scanner acquires brain images, typically every 2 or 3 seconds (the time between two successive image acquisition is called the Repetition time, or :term:`TR`).
+Brain activity is measured in runs that span several minutes,
+during which the participant performs some cognitive task and the scanner acquires brain images,
+typically every 2 or 3 seconds (the time between two successive image acquisition is called the Repetition time, or :term:`TR`).
 
-A cerebral MR image provides a 3D image of the brain that can be decomposed into `voxels`_ (the equivalent of pixels, but in 3 dimensions). The series of images acquired during a functional session provides, in each voxel, a time series of positive real number representing the MRI signal, sampled at the :term:`TR`.
+A cerebral MR image provides a 3D image of the brain that can be decomposed into `voxels`_ (the equivalent of pixels, but in 3 dimensions).
+The series of images acquired during a functional run provides, in each voxel,
+a time series of positive real number representing the MRI signal, sampled at the :term:`TR`.
 
 .. _voxels: https://en.wikipedia.org/wiki/Voxel
 
@@ -25,7 +31,8 @@ A cerebral MR image provides a 3D image of the brain that can be decomposed into
 fMRI data modelling
 -------------------
 
-One way to analyze times series consists in comparing them to a *model* built from our knowledge of the events that occurred during the functional session. Events can correspond to actions of the participant (e.g. button presses), presentations of sensory stimui (e.g. sound, images), or hypothesized internal processes (e.g. memorization of a stimulus), ...
+One way to analyze times series consists in comparing them to a *model* built from our knowledge of the events that occurred during the functional run.
+Events can correspond to actions of the participant (e.g. button presses), presentations of sensory stimui (e.g. sound, images), or hypothesized internal processes (e.g. memorization of a stimulus), ...
 
 
 .. figure:: ../images/stimulation-time-diagram.png
@@ -57,7 +64,8 @@ Correlations are computed separately at each :term:`voxel` and a correlation map
 .. figure:: ../images/example-spmZ_map.png
 
 
-In most :term:`fMRI` experiments, several predictors are needed to fully describe the events occurring during the session -- for example, the experimenter may want to distinguish brain activities linked to the perception of auditory stimuli and to button presses. To find the effect specific to each predictor, a multiple  `linear regression`_ approach is typically used: all predictors are entered as columns in a *design matrix* and the software finds the linear combination of these columns that best fits the signal. The weights assigned to each predictor by this linear combination are estimates of the contribution of this predictor to the response in the voxel. One can plot this using effect size maps or, maps showing their statistical significance (how unlikely they are under the null hypothesis of no effect).
+In most :term:`fMRI` experiments, several predictors are needed to fully describe the events occurring during the run -- for example, the experimenter may want to distinguish brain activities linked to the perception of auditory stimuli and to button presses.
+To find the effect specific to each predictor, a multiple  `linear regression`_ approach is typically used: all predictors are entered as columns in a *design matrix* and the software finds the linear combination of these columns that best fits the signal. The weights assigned to each predictor by this linear combination are estimates of the contribution of this predictor to the response in the voxel. One can plot this using effect size maps or, maps showing their statistical significance (how unlikely they are under the null hypothesis of no effect).
 
 
 .. _linear regression: https://en.wikipedia.org/wiki/Linear_regression
