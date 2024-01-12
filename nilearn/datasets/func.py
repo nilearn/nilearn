@@ -2620,7 +2620,7 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
     data : sklearn.datasets.base.Bunch
         Dictionary-like object, with the keys:
         epi_img: the input 4D image
-        events: a csv file describing the paardigm
+        events: a csv file describing the paradigm
         description: data description
 
     """
