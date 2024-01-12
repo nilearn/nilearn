@@ -20,7 +20,7 @@ from ._multi_pca import _MultiPCA
 class CanICA(_MultiPCA):
     """Perform :term:`Canonical Independent Component Analysis<CanICA>`.
 
-    See :footcite:`Varoquaux2010c` and :footcite:`Varoquaux2010d`.
+    See :footcite:t:`Varoquaux2010c` and :footcite:t:`Varoquaux2010d`.
 
     Parameters
     ----------

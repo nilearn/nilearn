@@ -488,7 +488,7 @@ def high_variance_confounds(
     Notes
     -----
     This method is related to what has been published in the literature
-    as 'CompCor' :footcite:`Behzadi2007`.
+    as 'CompCor' :footcite:p:`Behzadi2007`.
 
     The implemented algorithm does the following:
 
@@ -568,7 +568,7 @@ def clean(
 
     When performing scrubbing (censoring high-motion volumes) with butterworth
     filtering, the signal is processed in the following order, based on the
-    second recommendation in :footcite:`Lindquist2018`:
+    second recommendation in :footcite:t:`Lindquist2018`:
 
     - interpolate high motion volumes with cubic spline interpolation
     - detrend
@@ -577,14 +577,14 @@ def clean(
     - remove confounds
     - standardize
 
-    According to :footcite:`Lindquist2018`, removal of confounds will be done
+    According to :footcite:t:`Lindquist2018`, removal of confounds will be done
     orthogonally to temporal filters (low- and/or high-pass filters), if both
     are specified. The censored volumes should be removed in both signals and
     confounds before the nuisance regression.
 
     When performing scrubbing with cosine drift term filtering, the signal is
     processed in the following order, based on the first recommendation in
-    :footcite:`Lindquist2018`:
+    :footcite:t:`Lindquist2018`:
 
     - generate cosine drift term
     - censor high motion volumes in both signal and confounds
@@ -686,10 +686,10 @@ def clean(
     Notes
     -----
     Confounds removal is based on a projection on the orthogonal
-    of the signal space. See :footcite:`Friston1994`.
+    of the signal space. See :footcite:t:`Friston1994`.
 
     Orthogonalization between temporal filters and confound removal is based on
-    suggestions in :footcite:`Lindquist2018`.
+    suggestions in :footcite:t:`Lindquist2018`.
 
     References
     ----------

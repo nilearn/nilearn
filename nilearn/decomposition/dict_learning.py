@@ -43,7 +43,7 @@ class DictLearning(_BaseDecomposition):
 
     This yields more stable maps than :term:`CanICA`.
 
-    See :footcite:`Mensch2016`.
+    See :footcite:t:`Mensch2016`.
 
      .. versionadded:: 0.2
 

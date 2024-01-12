@@ -1858,7 +1858,7 @@ def plot_carpet(
 
     Notes
     -----
-    This figure was originally developed in :footcite:`Power2017`.
+    This figure was originally developed in :footcite:t:`Power2017`.
 
     In cases of long acquisitions (>800 volumes), the data will be downsampled
     to have fewer than 800 volumes before being plotted.
