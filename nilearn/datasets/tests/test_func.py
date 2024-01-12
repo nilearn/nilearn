@@ -1023,11 +1023,11 @@ def test_fiac(tmp_path):
     )
     fiac0_dir = os.path.join(fiac_dir, "fiac0")
     os.makedirs(fiac0_dir)
-    for session in [1, 2]:
-        # glob func data for session session + 1
-        session_func = os.path.join(fiac0_dir, f"run{int(session)}.nii.gz")
-        open(session_func, "a").close()
-        sess_dmtx = os.path.join(fiac0_dir, f"run{int(session)}_design.npz")
+    for run in [1, 2]:
+        # glob func data for run + 1
+        run_func = os.path.join(fiac0_dir, f"run{int(run)}.nii.gz")
+        open(run_func, "a").close()
+        sess_dmtx = os.path.join(fiac0_dir, f"run{int(run)}_design.npz")
         open(sess_dmtx, "a").close()
     mask = os.path.join(fiac0_dir, "mask.nii.gz")
     open(mask, "a").close()

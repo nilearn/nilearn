@@ -84,12 +84,12 @@ def test_non_parametric_inference_with_flm_objects():
 
     masker = NiftiMasker(mask)
     masker.fit()
-    single_session_model = FirstLevelModel(mask_img=masker).fit(
+    single_run_model = FirstLevelModel(mask_img=masker).fit(
         fmri_data[0], design_matrices=design_matrices[0]
     )
-    single_session_model.compute_contrast("x")
+    single_run_model.compute_contrast("x")
 
-    second_level_input = [single_session_model, single_session_model]
+    second_level_input = [single_run_model, single_run_model]
 
     design_matrix = pd.DataFrame(
         [1] * len(second_level_input),

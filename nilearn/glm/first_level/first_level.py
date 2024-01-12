@@ -272,7 +272,7 @@ def _check_trial_type(events):
 
 @fill_doc
 class FirstLevelModel(BaseGLM):
-    """Implement the General Linear Model for single session :term:`fMRI` data.
+    """Implement the General Linear Model for single run :term:`fMRI` data.
 
     Parameters
     ----------
@@ -740,7 +740,7 @@ class FirstLevelModel(BaseGLM):
         """Generate different outputs corresponding to \
         the contrasts provided e.g. z_map, t_map, effects and variance.
 
-        In multi-session case, outputs the fixed effects map.
+        In multi-run case, outputs the fixed effects map.
 
         Parameters
         ----------

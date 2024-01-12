@@ -82,7 +82,7 @@ def fetch_haxby(
         - 'anat': string list. Paths to anatomic images.
         - 'func': string list. Paths to nifti file with :term:`BOLD` data.
         - 'session_target': string list.
-          Paths to text file containing session and target data.
+          Paths to text file containing run and target data.
         - 'mask': string. Path to fullbrain mask file.
         - 'mask_vt': string list. Paths to nifti ventral temporal mask file.
         - 'mask_face': string list. Paths to nifti ventral temporal mask file.
@@ -439,7 +439,7 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
         - 'func': string list
             Paths to nifti file with :term:`BOLD` data
         - 'label': string list
-            Paths to text file containing session and target data
+            Paths to text file containing run and target data
         - 'mask': string
             Path to nifti mask file to define target volume in visual
             cortex
@@ -2968,10 +2968,10 @@ def fetch_spm_multimodal_fmri(
     -------
     data : sklearn.datasets.base.Bunch
         Dictionary-like object, the interest attributes are:
-        - 'func1': string list. Paths to functional images for session 1
-        - 'func2': string list. Paths to functional images for session 2
-        - 'trials_ses1': string list. Path to onsets file for session 1
-        - 'trials_ses2': string list. Path to onsets file for session 2
+        - 'func1': string list. Paths to functional images for run 1
+        - 'func2': string list. Paths to functional images for run 2
+        - 'trials_ses1': string list. Path to onsets file for run 1
+        - 'trials_ses2': string list. Path to onsets file for run 2
         - 'anat': string. Path to anat file
 
     References
