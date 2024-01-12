@@ -1,6 +1,6 @@
 """
 Simple example of two-runs fMRI model fitting
-================================================
+=============================================
 
 Here, we will go through a full step-by-step example of fitting a GLM
 to experimental data and visualizing the results.
