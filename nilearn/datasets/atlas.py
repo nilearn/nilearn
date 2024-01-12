@@ -448,6 +448,7 @@ def fetch_atlas_harvard_oxford(
               regions in the atlas.
             - 'filename': Same as 'maps', kept for backward
               compatibility only.
+            - 'description': :obj:`str`, description of the atlas.
 
     See Also
     --------
@@ -504,9 +505,18 @@ def fetch_atlas_harvard_oxford(
         resume=resume,
         verbose=verbose,
     )
+
+    fdescr = get_dataset_descr("harvard_oxford")
+
     atlas_niimg = check_niimg(atlas_img)
     if not symmetric_split or is_lateralized:
-        return Bunch(filename=atlas_filename, maps=atlas_niimg, labels=names)
+        return Bunch(
+            filename=atlas_filename,
+            maps=atlas_niimg,
+            labels=names,
+            description=fdescr,
+        )
+
     new_atlas_data, new_names = _compute_symmetric_split(
         "HarvardOxford", atlas_niimg, names
     )
@@ -517,6 +527,7 @@ def fetch_atlas_harvard_oxford(
         filename=atlas_filename,
         maps=new_atlas_niimg,
         labels=new_names,
+        description=fdescr,
     )
 
 
@@ -598,6 +609,7 @@ def fetch_atlas_juelich(
               regions in the atlas.
             - 'filename': Same as 'maps', kept for backward
               compatibility only.
+            - 'description': :obj:`str`, description of the atlas.
 
     See Also
     --------
@@ -649,8 +661,14 @@ def fetch_atlas_juelich(
     new_atlas_niimg = new_img_like(
         atlas_niimg, new_atlas_data, atlas_niimg.affine
     )
+
+    fdescr = get_dataset_descr("juelich")
+
     return Bunch(
-        filename=atlas_filename, maps=new_atlas_niimg, labels=list(new_names)
+        filename=atlas_filename,
+        maps=new_atlas_niimg,
+        labels=list(new_names),
+        description=fdescr,
     )
 
 

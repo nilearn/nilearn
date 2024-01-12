@@ -3,7 +3,6 @@ Oasis
 
 Notes
 -----
-
 The Open Access Series of Imaging Studies (OASIS) is a project aimed
 at making MRI data sets of the brain freely available to the scientific community.
 
@@ -12,7 +11,6 @@ Research Center, Dr. Randy Buckner at the Howard Hughes Medical
 Institute (HHMI) at Harvard University, the Neuroinformatics Research
 Group (NRG) at Washington University School of Medicine, and the Biomedical
 Informatics Research Network (BIRN).
-
 
 Content
 -------
@@ -31,5 +29,6 @@ Open Access Series of Imaging Studies (OASIS): Cross-sectional MRI
 Data in Young, Middle Aged, Nondemented, and Demented Older Adults.
 Marcus, D. S and al., 2007, Journal of Cognitive Neuroscience.
 
-
-Licence: provided under an open access data use agreement (DUA).
+License
+-------
+Provided under an open access data use agreement (DUA).

@@ -661,13 +661,11 @@ def fetch_single_file(
 
 def get_dataset_descr(ds_name):
     """Return the description of a dataset."""
-    module_path = os.path.dirname(os.path.abspath(__file__))
-
-    fname = ds_name
+    module_path = Path(__file__).parent
 
     try:
         with open(
-            os.path.join(module_path, "description", f"{fname}.rst"), "rb"
+            module_path / "description" / f"{ds_name}.rst", "rb"
         ) as rst_file:
             descr = rst_file.read()
     except OSError:

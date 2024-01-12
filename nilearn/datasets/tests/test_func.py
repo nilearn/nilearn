@@ -702,11 +702,11 @@ def test_fetch_bids_langloc_dataset(tmp_path):
     main_folder = os.path.join(data_dir, "bids_langloc_dataset")
     os.mkdir(main_folder)
 
-    datadir, dl_files, desc = func.fetch_bids_langloc_dataset(tmp_path)
+    datadir, dl_files, description = func.fetch_bids_langloc_dataset(tmp_path)
 
     assert isinstance(datadir, str)
     assert isinstance(dl_files, list)
-    assert desc != ""
+    assert description != ""
 
 
 def test_select_from_index():
@@ -784,7 +784,7 @@ def test_fetch_ds000030_urls():
             json.dump(mock_json_content, f)
 
         # fetch_ds000030_urls should retrieve the appropriate URLs
-        urls_path, urls, desc = func.fetch_ds000030_urls(
+        urls_path, urls = func.fetch_ds000030_urls(
             data_dir=tmpdir,
             verbose=1,
         )
@@ -792,8 +792,6 @@ def test_fetch_ds000030_urls():
 
         assert urls_path == filepath
         assert urls == mock_json_content
-
-        assert desc != ""
 
         # fetch_openneuro_dataset_index should do the same, but with a warning
         with pytest.warns(DeprecationWarning):

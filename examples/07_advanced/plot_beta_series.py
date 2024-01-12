@@ -73,7 +73,7 @@ from nilearn import image, plotting
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
 
-data_dir, _ = fetch_language_localizer_demo_dataset()
+data_dir, _, _ = fetch_language_localizer_demo_dataset()
 
 models, models_run_imgs, events_dfs, models_confounds = first_level_from_bids(
     data_dir,

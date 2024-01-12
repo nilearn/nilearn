@@ -42,4 +42,6 @@ and Pietrini, P. (2001). Distributed and overlapping representations of
 faces and objects in ventral temporal cortex. Science 293, 2425-2430.`
 
 
-Licence: unknown.
+License
+-------
+unknown
