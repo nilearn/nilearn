@@ -1102,10 +1102,11 @@ def test_decoder_apply_mask_surface(_make_surface_class_data):
     assert type(model.mask_img_).__name__ == "SurfaceImage"
 
 
-def test_decoder_fit_surface(_make_surface_class_data):
+@pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
+def test_decoder_fit_surface(decoder, _make_surface_class_data):
     """Test fit for surface image."""
     X, y = _make_surface_class_data()
-    model = Decoder(mask=SurfaceMasker())
+    model = decoder(mask=SurfaceMasker())
     model.fit(X, y)
 
     assert model.coef_ is not None
@@ -1122,3 +1123,16 @@ def test_decoder_predict_score_surface(_make_surface_class_data):
 
     model.score(X, y)
     accuracy_score(y, y_pred)
+
+
+def test_decoder_regressor_predict_score_surface(_make_surface_reg_data):
+    """Test predict and scoring for surface image."""
+    X, y = _make_surface_reg_data()
+    model = DecoderRegressor(mask=SurfaceMasker())
+    model.fit(X, y)
+    y_pred = model.predict(X)
+
+    assert model.scoring == "r2"
+
+    model.score(X, y)
+    r2_score(y, y_pred)
