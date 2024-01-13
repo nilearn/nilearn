@@ -100,9 +100,8 @@ def fetch_atlas_difumo(
         512: "9b76y",
         1024: "34792",
     }
-    valid_dimensions = [64, 128, 256, 512, 1024]
     valid_resolution_mm = [2, 3]
-    if dimension not in valid_dimensions:
+    if dimension not in (valid_dimensions := [64, 128, 256, 512, 1024]):
         raise ValueError(
             f"Requested dimension={dimension} is not available. "
             f"Valid options: {valid_dimensions}"
@@ -1268,8 +1267,7 @@ def fetch_atlas_aal(
     Licence: unknown.
 
     """
-    versions = ["SPM5", "SPM8", "SPM12"]
-    if version not in versions:
+    if version not in (versions := ["SPM5", "SPM8", "SPM12"]):
         raise ValueError(
             f"The version of AAL requested '{version}' does not exist."
             f"Please choose one among {versions}."
@@ -1405,8 +1403,7 @@ def fetch_atlas_basc_multiscale_2015(
     https://figshare.com/articles/basc/1285615
 
     """
-    versions = ["sym", "asym"]
-    if version not in versions:
+    if version not in (versions := ["sym", "asym"]):
         raise ValueError(
             f"The version of Brain parcellations requested '{version}' "
             "does not exist. "
@@ -2113,20 +2110,17 @@ def fetch_atlas_schaefer_2018(
     Licence: MIT.
 
     """
-    valid_n_rois = list(range(100, 1100, 100))
-    valid_yeo_networks = [7, 17]
-    valid_resolution_mm = [1, 2]
-    if n_rois not in valid_n_rois:
+    if n_rois not in (valid_n_rois := list(range(100, 1100, 100))):
         raise ValueError(
             f"Requested n_rois={n_rois} not available. "
             f"Valid options: {valid_n_rois}"
         )
-    if yeo_networks not in valid_yeo_networks:
+    if yeo_networks not in (valid_yeo_networks := [7, 17]):
         raise ValueError(
             f"Requested yeo_networks={yeo_networks} not available. "
             f"Valid options: {valid_yeo_networks}"
         )
-    if resolution_mm not in valid_resolution_mm:
+    if resolution_mm not in (valid_resolution_mm := [1, 2]):
         raise ValueError(
             f"Requested resolution_mm={resolution_mm} not available. "
             f"Valid options: {valid_resolution_mm}"

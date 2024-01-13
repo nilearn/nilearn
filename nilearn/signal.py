@@ -1014,9 +1014,8 @@ def _sanitize_sample_mask(n_time, n_runs, runs, sample_mask):
 def _check_sample_mask_index(i, n_runs, runs, current_mask):
     """Ensure the index in sample mask is valid."""
     len_run = sum(i == runs)
-    len_current_mask = len(current_mask)
     # sample_mask longer than signal
-    if len_current_mask > len_run:
+    if (len_current_mask := len(current_mask)) > len_run:
         raise IndexError(
             f"sample_mask {i + 1} of {n_runs} is has more timepoints "
             f"than the current run ;sample_mask contains {len_current_mask} "

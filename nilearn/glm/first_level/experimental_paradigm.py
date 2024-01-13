@@ -161,8 +161,9 @@ VALID_FIELDS = {"onset", "duration", "trial_type", "modulation"}
 
 def _check_unexpected_columns(events):
     """Warn for each unexpected column that will not be used afterwards."""
-    unexpected_columns = list(set(events.columns).difference(VALID_FIELDS))
-    if unexpected_columns:
+    if unexpected_columns := list(
+        set(events.columns).difference(VALID_FIELDS)
+    ):
         warnings.warn(
             "The following unexpected columns "
             "in events data will be ignored: "

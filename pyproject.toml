@@ -62,7 +62,7 @@ doc = [
     "sphinx-design",
     "sphinx-gallery",
     "sphinxcontrib-bibtex",
-    "sphinxext-opengraph",
+    "sphinxext-opengraph"
 ]
 # the following is kept for "backward compatibility"
 plotly = ["nilearn[plotting]"]
