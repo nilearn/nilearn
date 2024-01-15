@@ -15,6 +15,7 @@ from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
 from nilearn._utils import fill_doc
+from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
 from nilearn.image import get_data
 from nilearn.masking import unmask_from_to_3d_array
 
@@ -515,7 +516,9 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
         )
         n_features = X.shape[1]
 
-        if not isinstance(self.mask_img, (str, Nifti1Image)):
+        if not isinstance(
+            self.mask_img, (str, Nifti1Image, SurfaceImage, SurfaceMasker)
+        ):
             raise ValueError(
                 "The mask image should be a Niimg-like"
                 f"object. Instead a {type(self.mask_img)} object was provided."
