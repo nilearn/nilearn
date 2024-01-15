@@ -1102,17 +1102,22 @@ def test_decoder_apply_mask_surface(_make_surface_class_data):
     assert type(model.mask_img_).__name__ == "SurfaceImage"
 
 
-@pytest.mark.parametrize("perc", [None, 100, 0])
-def test_decoder_screening_percentile_surface(perc, _make_surface_class_data):
-    """Test applying screening percentile on surface image."""
+def test_decoder_screening_percentile_surface_default(
+    _make_surface_class_data,
+):
+    """Test default screening percentile with surface image."""
     X, y = _make_surface_class_data()
 
-    # test default case
     model = Decoder(mask=SurfaceMasker())
     model.fit(X, y)
     assert model.screening_percentile_ == 20
 
-    # test passing a value as argument
+
+@pytest.mark.parametrize("perc", [None, 100, 0])
+def test_decoder_screening_percentile_surface(perc, _make_surface_class_data):
+    """Test passing screening percentile with surface image."""
+    X, y = _make_surface_class_data()
+
     model = Decoder(mask=SurfaceMasker(), screening_percentile=perc)
     model.fit(X, y)
     if perc is None:
