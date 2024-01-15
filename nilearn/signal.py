@@ -25,7 +25,6 @@ def standardize_signal(
     signals,
     detrend=False,
     standardize="zscore",
-    mean_signals=None,
 ):
     """Center and standardize a given signal (time is along first axis).
 
@@ -58,8 +57,6 @@ def standardize_signal(
     std_signals : :class:`numpy.ndarray`
         Copy of signals, standardized.
     """
-    if mean_signals is None:
-        mean_signals = signals.mean(axis=0)
     if standardize not in [True, False, "psc", "zscore", "zscore_sample"]:
         raise ValueError(f"{standardize} is no valid standardize strategy.")
 
@@ -110,6 +107,7 @@ def standardize_signal(
             signals /= std
 
         elif standardize == "psc":
+            mean_signals = signals.mean(axis=0)
             invalid_ix = np.absolute(mean_signals) < np.finfo(np.float64).eps
             signals = (signals - mean_signals) / np.absolute(mean_signals)
             signals *= 100
@@ -802,20 +800,21 @@ def clean(
         signals -= Q.dot(Q.T).dot(signals)
 
     # Standardize
-    if detrend and (standardize == "psc"):
-        # If the signal is detrended, we have to know the original mean
-        # signal to calculate the psc.
+    if (detrend and standardize == "psc") or (filter_type == "butterworth"):
+        # If the signal is detrended or filtered,
+        # the mean signal will be zero or close to zero. In this case,
+        # we have to know the original mean signal to calculate the psc.
         signals = standardize_signal(
-            signals + mean_signals, standardize=standardize, detrend=False
+            signals + mean_signals,
+            standardize=standardize,
+            detrend=False,
         )
     else:
         signals = standardize_signal(
             signals,
             standardize=standardize,
             detrend=False,
-            mean_signals=mean_signals,
         )
-
     return signals
 
 
@@ -1104,9 +1103,9 @@ def _check_filter_parameters(filter, low_pass, high_pass, t_r):
                 f"filtering.t_r='{t_r}', high_pass='{high_pass}'"
             )
         if filter == "butterworth":
-            if all(item is None for item in [low_pass, high_pass, t_r]):
+            if all(item is None for item in [low_pass, high_pass]):
                 # Butterworth was switched off by passing
-                # None to all these parameters
+                # None to at least low_pass and high_pass
                 return False
             if t_r is None:
                 raise ValueError(
