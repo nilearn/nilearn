@@ -1102,6 +1102,25 @@ def test_decoder_apply_mask_surface(_make_surface_class_data):
     assert type(model.mask_img_).__name__ == "SurfaceImage"
 
 
+@pytest.mark.parametrize("perc", [None, 100, 0])
+def test_decoder_screening_percentile_surface(perc, _make_surface_class_data):
+    """Test applying screening percentile on surface image."""
+    X, y = _make_surface_class_data()
+
+    # test default case
+    model = Decoder(mask=SurfaceMasker())
+    model.fit(X, y)
+    assert model.screening_percentile_ == 20
+
+    # test passing a value as argument
+    model = Decoder(mask=SurfaceMasker(), screening_percentile=perc)
+    model.fit(X, y)
+    if perc is None:
+        assert model.screening_percentile_ == 100
+    else:
+        assert model.screening_percentile_ == perc
+
+
 @pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
 def test_decoder_fit_surface(decoder, _make_surface_class_data):
     """Test fit for surface image."""
@@ -1113,7 +1132,7 @@ def test_decoder_fit_surface(decoder, _make_surface_class_data):
 
 
 def test_decoder_predict_score_surface(_make_surface_class_data):
-    """Test predict and scoring for surface image."""
+    """Test classification predict and scoring for surface image."""
     X, y = _make_surface_class_data()
     model = Decoder(mask=SurfaceMasker())
     model.fit(X, y)
@@ -1126,7 +1145,7 @@ def test_decoder_predict_score_surface(_make_surface_class_data):
 
 
 def test_decoder_regressor_predict_score_surface(_make_surface_reg_data):
-    """Test predict and scoring for surface image."""
+    """Test regression predict and scoring for surface image."""
     X, y = _make_surface_reg_data()
     model = DecoderRegressor(mask=SurfaceMasker())
     model.fit(X, y)

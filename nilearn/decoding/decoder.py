@@ -502,7 +502,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         MNI template. In particular, if it is lower than 100, a univariate
         feature selection based on the Anova F-value for the input data will be
         performed. A float according to a percentile of the highest
-        scores.
+        scores. If None is passed, the percentile is set to 100.
 
     scoring: str, callable or None,
              default=None
