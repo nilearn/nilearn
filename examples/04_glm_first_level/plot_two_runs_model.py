@@ -6,22 +6,6 @@ Here, we will go through a full step-by-step example of fitting a GLM
 to experimental data and visualizing the results.
 This is done on two runs of one subject of the FIAC dataset.
 
-This is a block design experiment with a 2 X 2 experimental design
-with the following factors:
-
-- ``Sentence`` with 2 levels: Same (SSt) vs Different (DSt)
-- ``Speaker``  with 2 levels: Same (SSp) vs Different (DSp)
-
-giving the 4 following conditions:
-
-- Same Sentence-Same Speaker (SStSSp)
-- Same Sentence-Different Speakers (SStDSp)
-- Different Sentences-Same Speaker (DStSSp)
-- Different Sentences-Different Speakers (DStDSp)
-
-The design also included a 5th condition
-containing the first sentence pooled across all conditions.
-
 For more details on the data,
 please see experiment 2 in:footcite:t:`dehaene2006functional`.
 
@@ -228,7 +212,7 @@ contrasts = {
     "DSp_minus_SSp": np.array([[-1, 1, -1, 1]]),
     "DSt_minus_SSt_for_DSp": np.array([[0, -1, 0, 1]]),
     "DSp_minus_SSp_for_DSt": np.array([[0, 0, -1, 1]]),
-    "Deactivation": np.array([[-1, -1, -1, -1, -1]]),
+    "Deactivation": np.array([[-1, -1, -1, -1, 4]]),
     "Effects_of_interest": np.eye(n_columns)[:5, :],  # An F-contrast
 }
 
@@ -259,8 +243,8 @@ report = make_glm_report(fmri_glm_multirun, contrasts, bg_img=mean_img_)
 # We have several ways to access the report:
 
 # report  # This report can be viewed in a notebook
-# report.save_as_html(output_dir / 'report.html')
-# report.open_in_browser()
+report.save_as_html(output_dir / "report.html")
+report.open_in_browser()
 
 # %%
 # References

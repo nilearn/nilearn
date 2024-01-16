@@ -261,5 +261,24 @@ def test_show_contrast_matrix(tmp_path):
     assert (tmp_path / "contrast.pdf").exists()
 
 
+def test_show_contrast_matrix_padding(tmp_path):
+    """Smoke test for contrasts padding before plotting.
+
+    See https://github.com/nilearn/nilearn/issues/4211
+    """
+    frame_times = np.linspace(0, 127 * 1.0, 128)
+    dmtx = make_first_level_design_matrix(
+        frame_times, drift_model="polynomial", drift_order=3
+    )
+    contrast = np.array([[1, -1]])
+    plot_contrast_matrix(
+        contrast, dmtx, output_file=tmp_path / "contrast_1.png", colorbar=True
+    )
+    contrast = np.eye(3)
+    plot_contrast_matrix(
+        contrast, dmtx, output_file=tmp_path / "contrast_2.png", colorbar=True
+    )
+
+
 def test_show_event_plot_duration_0():
     plot_event(design_with_null_durations())

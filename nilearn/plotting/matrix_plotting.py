@@ -371,19 +371,34 @@ def plot_contrast_matrix(
         contrast_def = expression_to_contrast_vector(
             contrast_def, design_column_names
         )
-    maxval = np.max(np.abs(contrast_def))
+
+    nb_columns_design_matrix = len(design_column_names)
+    nb_columns_contrast_def = (
+        contrast_def.shape[0]
+        if contrast_def.ndim == 1
+        else contrast_def.shape[1]
+    )
+    horizontal_padding = nb_columns_design_matrix - nb_columns_contrast_def
+    contrast_def = np.pad(
+        contrast_def,
+        ((0, 0), (0, horizontal_padding)),
+        "constant",
+        constant_values=(0, 0),
+    )
     con_matrix = np.asmatrix(contrast_def)
+
     max_len = np.max([len(str(name)) for name in design_column_names])
 
     if ax is None:
         plt.figure(
             figsize=(
-                0.4 * len(design_column_names),
+                0.4 * nb_columns_design_matrix,
                 1 + 0.5 * con_matrix.shape[0] + 0.04 * max_len,
             )
         )
         ax = plt.gca()
 
+    maxval = np.max(np.abs(contrast_def))
     mat = ax.matshow(
         con_matrix, aspect="equal", cmap="gray", vmin=-maxval, vmax=maxval
     )
