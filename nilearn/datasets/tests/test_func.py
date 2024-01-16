@@ -702,11 +702,10 @@ def test_fetch_bids_langloc_dataset(tmp_path):
     main_folder = os.path.join(data_dir, "bids_langloc_dataset")
     os.mkdir(main_folder)
 
-    datadir, dl_files, description = func.fetch_bids_langloc_dataset(tmp_path)
+    datadir, dl_files = func.fetch_bids_langloc_dataset(tmp_path)
 
     assert isinstance(datadir, str)
     assert isinstance(dl_files, list)
-    assert description != ""
 
 
 def test_select_from_index():
