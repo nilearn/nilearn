@@ -20,9 +20,9 @@ See :footcite:t:`Cisler2014` for more information about this,
 in the context of :term:`functional connectivity` analyses.
 
 Two of the most well-known beta series modeling methods are
-Least Squares- All (LSA) :footcite:p:`Rissman2004` and
+Least Squares- All (LSA) (:footcite:t:`Rissman2004`) and
 Least Squares- Separate (LSS)
-:footcite:p:`Mumford2012,Turner2012`.
+(:footcite:t:`Mumford2012,Turner2012`).
 In LSA, a single :term:`GLM` is run, in which each trial of each condition of
 interest is separated out into its own condition within the design matrix.
 In LSS, each trial of each condition of interest has its own :term:`GLM`,

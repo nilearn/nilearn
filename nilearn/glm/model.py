@@ -202,9 +202,7 @@ class LikelihoodModelResults:
             raise ValueError(
                 "t contrasts should have only one row: " f"got {matrix}."
             )
-        matrix = pad_contrast(
-            con_val=matrix, theta=self.theta, contrast_type="t"
-        )
+        matrix = pad_contrast(con_val=matrix, theta=self.theta, stat_type="t")
         store = set(store)
         if not store.issubset(("t", "effect", "sd")):
             raise ValueError(f"Unexpected store request in {store}")
@@ -272,9 +270,7 @@ class LikelihoodModelResults:
                 f"F contrasts should have shape[1]={self.theta.shape[0]}, "
                 f"but this has shape[1]={matrix.shape[1]}"
             )
-        matrix = pad_contrast(
-            con_val=matrix, theta=self.theta, contrast_type="F"
-        )
+        matrix = pad_contrast(con_val=matrix, theta=self.theta, stat_type="F")
         ctheta = np.dot(matrix, self.theta)
         if matrix.ndim == 1:
             matrix = matrix.reshape((1, matrix.shape[0]))

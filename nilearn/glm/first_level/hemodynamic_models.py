@@ -475,7 +475,7 @@ def _resample_regressor(hr_regressor, frame_times_high_res, frame_times):
     return f(frame_times).T
 
 
-def _orthogonalize(X):
+def orthogonalize(X):
     """Orthogonalize every column of design `X` w.r.t preceding columns.
 
     Parameters
@@ -703,7 +703,7 @@ def compute_regressor(
         fir_delays = [int(x) for x in fir_delays]
     oversampling = int(oversampling)
 
-    # this is the minimal tr in this session, not necessarily the true tr
+    # this is the minimal tr in this run, not necessarily the true tr
     tr = _calculate_tr(frame_times)
     # 1. create the high temporal resolution regressor
     hr_regressor, frame_times_high_res = _sample_condition(
@@ -732,7 +732,7 @@ def compute_regressor(
 
     # 5. ortogonalize the regressors
     if hrf_model != "fir":
-        computed_regressors = _orthogonalize(computed_regressors)
+        computed_regressors = orthogonalize(computed_regressors)
 
     # 6 generate regressor names
     reg_names = _regressor_names(con_id, hrf_model, fir_delays=fir_delays)

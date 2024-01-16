@@ -884,19 +884,26 @@ def test_clean_psc(rng):
 
     # both types should pass
     for s in [signals_pos_mean, signals_mixed_mean]:
-        cleaned_signals = clean(s, standardize="psc")
-        np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
-
-        cleaned_signals.std(axis=0)
+        cleaned_signals = clean(s, standardize="psc", detrend=False)
         np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
 
         tmp = (s - s.mean(0)) / np.abs(s.mean(0))
         tmp *= 100
         np.testing.assert_almost_equal(cleaned_signals, tmp)
 
+        # test with high pass with butterworth
+        butterworth_signals = clean(
+            s,
+            detrend=False,
+            filter="butterworth",
+            high_pass=0.01,
+            tr=2,
+            standardize="psc",
+        )
+        np.testing.assert_almost_equal(butterworth_signals.mean(0), 0)
+
     # leave out the last 3 columns with a mean of zero to test user warning
     signals_w_zero = signals + np.append(means[:, :-3], np.zeros((1, 3)))
-    cleaned_w_zero = clean(signals_w_zero, standardize="psc")
     with pytest.warns(UserWarning) as records:
         cleaned_w_zero = clean(signals_w_zero, standardize="psc")
     psc_warning = sum(
@@ -929,7 +936,7 @@ def test_clean_zscore(rng):
 
 def test_create_cosine_drift_terms():
     """Testing cosine filter interface and output."""
-    from nilearn.glm.first_level.design_matrix import _cosine_drift
+    from nilearn.glm.first_level.design_matrix import create_cosine_drift
 
     # fmriprep high pass cutoff is 128s, it's around 0.008 hz
     t_r, high_pass = 2.5, 0.008
@@ -939,7 +946,7 @@ def test_create_cosine_drift_terms():
 
     # Not passing confounds it will return drift terms only
     frame_times = np.arange(signals.shape[0]) * t_r
-    cosine_drift = _cosine_drift(high_pass, frame_times)[:, :-1]
+    cosine_drift = create_cosine_drift(high_pass, frame_times)[:, :-1]
     confounds_with_drift = np.hstack((confounds, cosine_drift))
 
     cosine_confounds = nisignal._create_cosine_drift_terms(

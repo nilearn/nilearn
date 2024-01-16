@@ -57,9 +57,9 @@ New
 
 - :bdg-success:`API` New simple data downloader :func:`~datasets.fetch_localizer_button_task` to simplify some examples.
 
-- :bdg-dark:`Code` Function :func:`~datasets.fetch_localizer_contrasts` can now download a specific list of subjects rather than a range of subjects.
-
 - :bdg-success:`API` New function :func:`~datasets.get_data_dirs` to check where nilearn downloads data.
+
+- :bdg-dark:`Code` Function :func:`~datasets.fetch_localizer_contrasts` can now download a specific list of subjects rather than a range of subjects.
 
 Contributors
 ------------

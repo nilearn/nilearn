@@ -45,8 +45,8 @@ from nilearn.glm.first_level.experimental_paradigm import (
     handle_modulation_of_duplicate_events,
 )
 from nilearn.glm.first_level.hemodynamic_models import (
-    _orthogonalize,
     compute_regressor,
+    orthogonalize,
 )
 
 ######################################################################
@@ -76,12 +76,12 @@ def _poly_drift(order, frame_times):
     tmax = float(frame_times.max())
     for k in range(order + 1):
         pol[:, k] = (frame_times / tmax) ** k
-    pol = _orthogonalize(pol)
+    pol = orthogonalize(pol)
     pol = np.hstack((pol[:, 1:], pol[:, :1]))
     return pol
 
 
-def _cosine_drift(high_pass, frame_times):
+def create_cosine_drift(high_pass, frame_times):
     """Create a cosine drift matrix with frequencies or equal to high_pass.
 
     Parameters
@@ -169,7 +169,7 @@ def _make_drift(drift_model, frame_times, order, high_pass):
     if drift_model == "polynomial":
         drift = _poly_drift(order, frame_times)
     elif drift_model == "cosine":
-        drift = _cosine_drift(high_pass, frame_times)
+        drift = create_cosine_drift(high_pass, frame_times)
     elif drift_model is None:
         drift = _none_drift(frame_times)
     else:

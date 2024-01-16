@@ -22,7 +22,7 @@ haxby_dataset = datasets.fetch_haxby()
 fmri_filename = haxby_dataset.func[0]
 labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
 y = labels["labels"]
-session = labels["chunks"]
+run = labels["chunks"]
 
 # %%
 # Restrict to faces and houses
@@ -32,7 +32,7 @@ from nilearn.image import index_img
 condition_mask = y.isin(["face", "house"])
 
 fmri_img = index_img(fmri_filename, condition_mask)
-y, session = y[condition_mask], session[condition_mask]
+y, run = y[condition_mask], run[condition_mask]
 
 # %%
 # Surface :term:`BOLD` response

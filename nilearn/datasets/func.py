@@ -56,7 +56,7 @@ def fetch_haxby(
 ):
     """Download and loads complete haxby dataset.
 
-    See :footcite:`Haxby2001`.
+    See :footcite:t:`Haxby2001`.
 
     Parameters
     ----------
@@ -82,7 +82,7 @@ def fetch_haxby(
         - 'anat': string list. Paths to anatomic images.
         - 'func': string list. Paths to nifti file with :term:`BOLD` data.
         - 'session_target': string list.
-          Paths to text file containing session and target data.
+          Paths to text file containing run and target data.
         - 'mask': string. Path to fullbrain mask file.
         - 'mask_vt': string list. Paths to nifti ventral temporal mask file.
         - 'mask_face': string list. Paths to nifti ventral temporal mask file.
@@ -268,7 +268,7 @@ def adhd_ids():
 def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the ADHD :term:`resting-state` dataset.
 
-    See :footcite:`ADHDdataset`.
+    See :footcite:t:`ADHDdataset`.
 
     Parameters
     ----------
@@ -422,7 +422,7 @@ def miyawaki2008_file_mask():
 def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     """Download and loads Miyawaki et al. 2008 dataset (153MB).
 
-    See :footcite:`Miyawaki2008`.
+    See :footcite:t:`Miyawaki2008`.
 
     Parameters
     ----------
@@ -439,7 +439,7 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
         - 'func': string list
             Paths to nifti file with :term:`BOLD` data
         - 'label': string list
-            Paths to text file containing session and target data
+            Paths to text file containing run and target data
         - 'mask': string
             Path to nifti mask file to define target volume in visual
             cortex
@@ -557,11 +557,11 @@ def fetch_localizer_contrasts(
     Functional Localizer page."
     (see https://osf.io/vhtf6/)
 
-    You may cite :footcite:`Papadopoulos-Orfanos2017`
+    You may cite :footcite:t:`Papadopoulos-Orfanos2017`
     when using this dataset.
 
     Scientific results obtained using this dataset are described
-    in :footcite:`Pinel2007`.
+    in :footcite:t:`Pinel2007`.
 
     Parameters
     ----------
@@ -1026,7 +1026,7 @@ def fetch_abide_pcp(
     Fetch the Autism Brain Imaging Data Exchange (ABIDE) dataset wrt criteria
     that can be passed as parameter. Note that this is the preprocessed
     version of ABIDE provided by the preprocess connectome projects (PCP).
-    See :footcite:`Nielsen2013`.
+    See :footcite:t:`Nielsen2013`.
 
     Parameters
     ----------
@@ -1348,7 +1348,7 @@ def fetch_mixed_gambles(
 ):
     """Fetch Jimura "mixed gambles" dataset.
 
-    See :footcite:`Jimura2012`.
+    See :footcite:t:`Jimura2012`.
 
     Parameters
     ----------
@@ -1431,9 +1431,9 @@ def fetch_megatrawls_netmats(
     The network matrices are estimated from functional connectivity
     datasets of 461 subjects. Full technical details in references.
 
-    More information available in :footcite:`Smith2015b`,
-    :footcite:`Smith2015a`, :footcite:`Filippini2009`,
-    :footcite:`Smith2014`, and :footcite:`Reilly2009`.
+    More information available in :footcite:t:`Smith2015b`,
+    :footcite:t:`Smith2015a`, :footcite:t:`Filippini2009`,
+    :footcite:t:`Smith2014`, and :footcite:t:`Reilly2009`.
 
     Parameters
     ----------
@@ -1664,9 +1664,9 @@ def fetch_surf_nki_enhanced(
     """Download and load the NKI enhanced :term:`resting-state` dataset, \
     preprocessed and projected to the fsaverage5 space surface.
 
-    See :footcite:`Nooner2012`.
+    See :footcite:t:`Nooner2012`.
 
-    Direct download link :footcite:`NKIdataset`.
+    Direct download link :footcite:t:`NKIdataset`.
 
     .. versionadded:: 0.3
 
@@ -1958,7 +1958,7 @@ def fetch_development_fmri(
     with a repetition time (TR) of 2 secs.
     The origin of the data is coming from OpenNeuro. See Notes below.
 
-    Please cite :footcite:`Richardson2018`
+    Please cite :footcite:t:`Richardson2018`
     if you are using this dataset.
 
     .. versionadded:: 0.5.2
@@ -2763,7 +2763,7 @@ def fetch_spm_auditory(
 ):
     """Fetch :term:`SPM` auditory single-subject data.
 
-    See :footcite:`spm_auditory`.
+    See :footcite:t:`spm_auditory`.
 
     Parameters
     ----------
@@ -2952,7 +2952,7 @@ def fetch_spm_multimodal_fmri(
 ):
     """Fetcher for Multi-modal Face Dataset.
 
-    See :footcite:`spm_multiface`.
+    See :footcite:t:`spm_multiface`.
 
     Parameters
     ----------
@@ -2968,10 +2968,10 @@ def fetch_spm_multimodal_fmri(
     -------
     data : sklearn.datasets.base.Bunch
         Dictionary-like object, the interest attributes are:
-        - 'func1': string list. Paths to functional images for session 1
-        - 'func2': string list. Paths to functional images for session 2
-        - 'trials_ses1': string list. Path to onsets file for session 1
-        - 'trials_ses2': string list. Path to onsets file for session 2
+        - 'func1': string list. Paths to functional images for run 1
+        - 'func2': string list. Paths to functional images for run 2
+        - 'trials_ses1': string list. Path to onsets file for run 1
+        - 'trials_ses2': string list. Path to onsets file for run 2
         - 'anat': string. Path to anat file
 
     References

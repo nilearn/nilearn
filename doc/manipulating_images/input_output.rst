@@ -222,7 +222,7 @@ with ``get_affine()`` and ``get_header()``.
       `FSL <https://fsl.fmrib.ox.ac.uk/fsl/>`_ users tend to
       prefer this format.
     - several 3D matrices representing each time point (single 3D volume) of the
-      session, stored in set of 3D Nifti or analyse files.
+      run, stored in set of 3D Nifti or analyse files.
       `SPM <https://www.fil.ion.ucl.ac.uk/spm/>`_ users tend
       to prefer this format.
 

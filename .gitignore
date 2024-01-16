@@ -17,8 +17,6 @@ nilearn_data
 
 pip-log.txt
 
-.pytest_cache
-
 .tox
 
 .ropeproject/
@@ -43,6 +41,10 @@ nilearn/_version.py
 # virtual environment
 env/
 venv/
+
+# testing
+.pytest_cache
+generated_glm_reports
 
 # coverage
 .coverage

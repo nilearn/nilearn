@@ -25,12 +25,12 @@ classifiers = [
 dependencies = [
     "joblib>=1.0.0",
     "lxml",
-    "nibabel>=3.2.0",
+    "nibabel>=4.0.0",
     "numpy>=1.19.0",
     "pandas>=1.1.5",
     "requests>=2.25.0",
     "scikit-learn>=1.0.0",
-    "scipy>=1.6.0",
+    "scipy>=1.8.0",
     "packaging"
 ]
 description = "Statistical learning for neuroimaging in Python"
@@ -63,7 +63,6 @@ doc = [
     "sphinx-gallery",
     "sphinxcontrib-bibtex",
     "sphinxext-opengraph",
-    "ruamel.yaml"
 ]
 # the following is kept for "backward compatibility"
 plotly = ["nilearn[plotting]"]

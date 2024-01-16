@@ -6,6 +6,7 @@ Author: Bertrand Thirion, Martin Perez-Guevara, 2016
 """
 from __future__ import annotations
 
+import csv
 import glob
 import os
 import sys
@@ -24,12 +25,8 @@ from nilearn._utils import fill_doc, stringify_path
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_run_sample_masks
 from nilearn.glm._base import BaseGLM
-from nilearn.glm._utils import (
-    _check_events_file_uses_tab_separators,
-    _check_run_tables,
-)
 from nilearn.glm.contrasts import (
-    _compute_fixed_effect_contrast,
+    compute_fixed_effect_contrast,
     expression_to_contrast_vector,
 )
 from nilearn.glm.first_level.design_matrix import (
@@ -77,7 +74,9 @@ def mean_scaling(Y, axis=0):
         warn(
             "Mean values of 0 observed."
             "The data have probably been centered."
-            "Scaling might not work as expected"
+            "Scaling might not work as expected",
+            UserWarning,
+            stacklevel=2,
         )
     mean = np.maximum(mean, 1)
     Y = 100 * (Y / mean - 1)
@@ -275,7 +274,7 @@ def _check_trial_type(events):
 
 @fill_doc
 class FirstLevelModel(BaseGLM):
-    """Implement the General Linear Model for single session :term:`fMRI` data.
+    """Implement the General Linear Model for single run :term:`fMRI` data.
 
     Parameters
     ----------
@@ -743,7 +742,7 @@ class FirstLevelModel(BaseGLM):
         """Generate different outputs corresponding to \
         the contrasts provided e.g. z_map, t_map, effects and variance.
 
-        In multi-session case, outputs the fixed effects map.
+        In multi-run case, outputs the fixed effects map.
 
         Parameters
         ----------
@@ -792,7 +791,11 @@ class FirstLevelModel(BaseGLM):
         n_runs = len(self.labels_)
         n_contrasts = len(con_vals)
         if n_contrasts == 1 and n_runs > 1:
-            warn(f"One contrast given, assuming it for all {n_runs} runs")
+            warn(
+                f"One contrast given, assuming it for all {n_runs} runs",
+                category=UserWarning,
+                stacklevel=2,
+            )
             con_vals = con_vals * n_runs
         elif n_contrasts != n_runs:
             raise ValueError(
@@ -820,7 +823,7 @@ class FirstLevelModel(BaseGLM):
         valid_types.append("all")  # ensuring 'all' is the final entry.
         if output_type not in valid_types:
             raise ValueError(f"output_type must be one of {valid_types}")
-        contrast = _compute_fixed_effect_contrast(
+        contrast = compute_fixed_effect_contrast(
             self.labels_, self.results_, con_vals, stat_type
         )
         output_types = (
@@ -907,6 +910,137 @@ class FirstLevelModel(BaseGLM):
         return output
 
 
+def _check_events_file_uses_tab_separators(events_files):
+    """Raise a ValueError if provided list of text based data files \
+    (.csv, .tsv, etc) do not enforce \
+    the :term:`BIDS` convention of using Tabs as separators.
+
+    Only scans their first row.
+    Does nothing if:
+        - If the separator used is :term:`BIDS` compliant.
+        - Paths are invalid.
+        - File(s) are not text files.
+
+    Does not flag comma-separated-values-files for compatibility reasons;
+    this may change in future as commas are not :term:`BIDS` compliant.
+
+    Parameters
+    ----------
+    events_files : str, List/Tuple[str]
+        A single file's path or a collection of filepaths.
+        Files are expected to be text files.
+        Non-text files will raise ValueError.
+
+    Returns
+    -------
+    None
+
+    Raises
+    ------
+    ValueError:
+        If value separators are not Tabs (or commas)
+
+    """
+    valid_separators = [",", "\t"]
+    if not isinstance(events_files, (list, tuple)):
+        events_files = [events_files]
+    for events_file_ in events_files:
+        if isinstance(events_file_, (pd.DataFrame)):
+            continue
+        try:
+            with open(events_file_) as events_file_obj:
+                events_file_sample = events_file_obj.readline()
+            """
+            The following errors are not being handled here,
+            as they are handled elsewhere in the calling code.
+            Handling them here will beak the calling code,
+            and refactoring that is not straightforward.
+            """
+        except OSError:  # if invalid filepath.
+            pass
+        else:
+            try:
+                csv.Sniffer().sniff(
+                    sample=events_file_sample,
+                    delimiters=valid_separators,
+                )
+            except csv.Error as e:
+                raise ValueError(
+                    "The values in the events file "
+                    "are not separated by tabs; "
+                    "please enforce BIDS conventions",
+                    events_file_,
+                ) from e
+
+
+def _check_run_tables(run_imgs, tables_, tables_name):
+    """Check fMRI runs and corresponding tables to raise error if necessary."""
+    if isinstance(tables_, (str, pd.DataFrame, np.ndarray)):
+        tables_ = [tables_]
+    _check_list_length_match(run_imgs, tables_, "run_imgs", tables_name)
+    tables_ = _check_and_load_tables(tables_, tables_name)
+    return tables_
+
+
+def _check_list_length_match(list_1, list_2, var_name_1, var_name_2):
+    """Check length match of two given lists to raise error if necessary."""
+    if len(list_1) != len(list_2):
+        raise ValueError(
+            "len(%s) %d does not match len(%s) %d"
+            % (str(var_name_1), len(list_1), str(var_name_2), len(list_2))
+        )
+
+
+def _check_and_load_tables(tables_, var_name):
+    """Check tables can be loaded in DataFrame to raise error if necessary."""
+    tables = []
+    for table_idx, table in enumerate(tables_):
+        table = stringify_path(table)
+        if isinstance(table, str):
+            loaded = _read_events_table(table)
+            tables.append(loaded)
+        elif isinstance(table, pd.DataFrame):
+            tables.append(table)
+        elif isinstance(table, np.ndarray):
+            pass
+        else:
+            raise TypeError(
+                f"{var_name} can only be a pandas DataFrames or a string. "
+                f"A {type(table)} was provided at idx {table_idx}"
+            )
+    return tables
+
+
+def _read_events_table(table):
+    """Accept the path to en event.tsv file \
+    and loads it as a Pandas Dataframe.
+
+    Raises an error if loading fails.
+
+    Parameters
+    ----------
+    table : string
+        Accepts the path to an events file.
+
+    Returns
+    -------
+    loaded : pandas.Dataframe object
+        Pandas Dataframe with e events data.
+
+    """
+    try:
+        # kept for historical reasons, a lot of tests use csv with index column
+        loaded = pd.read_csv(table, index_col=0)
+    except:  # noqa: E722
+        raise ValueError(f"table path {table} could not be loaded")
+    if loaded.empty:
+        try:
+            loaded = pd.read_csv(table, sep="\t")
+        except:  # noqa: E722
+            raise ValueError(f"table path {table} could not be loaded")
+    return loaded
+
+
 def _check_repetition_time(t_r):
     """Check that the repetition time is a positive number."""
     if not isinstance(t_r, (float, int)):
@@ -986,6 +1120,7 @@ def first_level_from_bids(
     sub_labels : :obj:`list` of :obj:`str`, optional
         Specifies the subset of subject labels to model.
         If 'None', will model all subjects in the dataset.
+
         .. versionadded:: 0.10.1
 
     img_filters : :obj:`list` of :obj:`tuple` (str, str), optional

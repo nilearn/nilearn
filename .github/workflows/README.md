@@ -136,6 +136,13 @@ Runs once a month.
 Use pytest with the pytest-random-order plugin to run all tests in a random order.
 This aims to detect tests that are not properly isolated from each other (test pollution).
 
+### testing_minimum.yml
+
+Runs once a month.
+
+Checks that installing the minimum version of a given dependency of Nilearn
+along with the latest version of all the other dependencies leads to a successful run of all the tests.
+
 ## Update precommit hooks
 
 ### update_precommit_hooks.yml

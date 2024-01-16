@@ -258,7 +258,7 @@ The group connectivity is computed using all the subjects timeseries.:
      connectivities = measure.fit([time_series_1, time_series_2, ...])
      group_connectivity = measure.mean_
 
-Deviations from this mean in the tangent space are provided in the connectivities array and can be used to compare different groups/sessions. In practice, the tangent measure can outperform the correlation and partial correlation measures, especially for noisy or heterogeneous data.
+Deviations from this mean in the tangent space are provided in the connectivities array and can be used to compare different groups/runs. In practice, the tangent measure can outperform the correlation and partial correlation measures, especially for noisy or heterogeneous data.
 
 
 .. topic:: **Full example**
