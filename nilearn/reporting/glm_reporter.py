@@ -37,7 +37,7 @@ with warnings.catch_warnings():
 
 from nilearn._utils import check_niimg
 from nilearn.maskers import NiftiMasker
-from nilearn.reporting._get_clusters_table import get_clusters_table
+from nilearn.reporting.get_clusters_table import get_clusters_table
 from nilearn.reporting.utils import figure_to_svg_quoted
 
 HTML_TEMPLATE_ROOT_PATH = os.path.join(
@@ -286,7 +286,10 @@ def _check_report_dims(report_size):
         width = int(width)
         height = int(height)
     except ValueError:
-        warnings.warn("Report size has invalid values. Using default 1600x800")
+        warnings.warn(
+            "Report size has invalid values. Using default 1600x800",
+            stacklevel=3,
+        )
         width, height = (1600, 800)
     return width, height
 

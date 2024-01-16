@@ -71,7 +71,9 @@ def check_threshold(threshold, data, percentile_func, name="threshold"):
         if abs(threshold) > value_check:
             warnings.warn(
                 f"The given float value must not exceed {value_check}. "
-                f"But, you have given threshold={threshold}."
+                f"But, you have given threshold={threshold}.",
+                category=UserWarning,
+                stacklevel=3,
             )
     else:
         raise TypeError(

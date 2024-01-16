@@ -537,6 +537,12 @@ authors:
   - given-names: Paul
     family-names: Bogdan
     website: https://github.com/paulcbogdan
+  - given-names: Paul
+    family-names: Reiners
+    website: https://github.com/paul-reiners
+    affiliation: Masonic Institute for the Developing Brain, University of Minnesota,
+      USA
+    orcid: https://orcid.org/0000-0002-6167-5007
   - given-names: Paula
     family-names: Sanz-Leon
     website: https://github.com/pausz
@@ -643,6 +649,11 @@ authors:
       Massachusetts, USA
     email: smeisler@g.harvard.edu
     orcid: https://orcid.org/0000-0002-8888-1572
+  - given-names: Suramya
+    family-names: Pokharel
+    website: https://github.com/SuramyaP
+    affiliation: Tribhuvan University, Kathmandu, Nepal
+    email: suramyapokharel7@gmail.com
   - given-names: Sylvain
     family-names: Lan
     website: https://github.com/SylvainLan

@@ -7,7 +7,7 @@ First level models
 .. topic:: **Page summary**
 
   First level models are, in essence, linear regression models run at the level of a single
-  session or single subject. The model is applied on a voxel-wise basis, either on the whole
+  run or single subject. The model is applied on a voxel-wise basis, either on the whole
   brain or within a region of interest. The timecourse of each :term:`voxel` is regressed against a
   predicted :term:`BOLD` response created by convolving the haemodynamic response function (HRF) with
   a set of predictors defined within the design matrix.

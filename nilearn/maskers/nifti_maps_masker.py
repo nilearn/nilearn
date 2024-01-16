@@ -5,7 +5,7 @@ import numpy as np
 from joblib import Memory
 
 from nilearn import _utils, image
-from nilearn.maskers import compute_middle_image
+from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 
 

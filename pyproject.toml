@@ -25,12 +25,12 @@ classifiers = [
 dependencies = [
     "joblib>=1.0.0",
     "lxml",
-    "nibabel>=3.2.0",
+    "nibabel>=4.0.0",
     "numpy>=1.19.0",
     "pandas>=1.1.5",
     "requests>=2.25.0",
     "scikit-learn>=1.0.0",
-    "scipy>=1.6.0",
+    "scipy>=1.8.0",
     "packaging"
 ]
 description = "Statistical learning for neuroimaging in Python"
@@ -63,7 +63,6 @@ doc = [
     "sphinx-gallery",
     "sphinxcontrib-bibtex",
     "sphinxext-opengraph",
-    "ruamel.yaml"
 ]
 # the following is kept for "backward compatibility"
 plotly = ["nilearn[plotting]"]
@@ -106,7 +105,6 @@ Homepage = "https://nilearn.github.io"
 extend-exclude = """
 (
   nilearn/externals
-  | nilearn/_utils/data_gen.py
   | nilearn/_utils/helpers.py
   | examples/01_plotting/plot_3d_map_to_surface_projection.py
   | examples/01_plotting/plot_surf_atlas.py
@@ -116,11 +114,6 @@ extend-exclude = """
   | examples/04_glm_first_level/plot_fixed_effects.py
   | examples/04_glm_first_level/plot_localizer_surface_analysis.py
   | examples/07_advanced/plot_surface_bids_analysis.py
-  | nilearn/interfaces/fmriprep/load_confounds_compcor.py
-  | nilearn/interfaces/fmriprep/tests/test_load_confounds_utils.py
-  | nilearn/interfaces/fmriprep/tests/test_load_confounds_strategy.py
-  | nilearn/interfaces/fmriprep/tests/_testing.py
-  | nilearn/interfaces/fmriprep/tests/test_load_confounds.py
   | nilearn/plotting/html_surface.py
   | nilearn/plotting/js_plotting_utils.py
   | nilearn/plotting/surf_plotting.py

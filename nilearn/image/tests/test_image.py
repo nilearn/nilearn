@@ -4,6 +4,7 @@ import sys
 import warnings
 from pathlib import Path
 
+import joblib
 import nibabel
 import numpy as np
 import pandas as pd
@@ -13,12 +14,13 @@ from nibabel.freesurfer import MGHImage
 from numpy.testing import (
     assert_allclose,
     assert_almost_equal,
+    assert_array_almost_equal,
     assert_array_equal,
     assert_equal,
 )
 
 from nilearn import signal
-from nilearn._utils import niimg_conversions, testing
+from nilearn._utils import testing
 from nilearn._utils.data_gen import (
     _basic_confounds,
     generate_fake_fmri,
@@ -26,7 +28,7 @@ from nilearn._utils.data_gen import (
     generate_maps,
 )
 from nilearn._utils.exceptions import DimensionError
-from nilearn.conftest import _affine_eye, _rng, _shape_4d_default
+from nilearn.conftest import _affine_eye, _img_3d_rand, _rng, _shape_4d_default
 from nilearn.image import (
     binarize_img,
     clean_img,
@@ -479,10 +481,6 @@ def test_swap_img_hemispheres(affine_eye, shape_3d_default, rng):
         get_data(swap_img_hemispheres(swap_img_hemispheres(data_img))),
         data,
     )
-
-
-def test_concat_imgs():
-    assert concat_imgs is niimg_conversions.concat_niimgs
 
 
 def test_index_img_error_3D(affine_eye):
@@ -1054,3 +1052,113 @@ def test_clean_img_sample_mask_mask_img(shape_3d_default):
     )
     # original shape is (10, 10, 10, 10)
     assert img.shape == (10, 10, 10, 9)
+
+
+def test_concat_niimgs_errors(affine_eye, shape_3d_default):
+    img1 = Nifti1Image(np.ones(shape_3d_default), affine_eye)
+    img2 = Nifti1Image(np.ones(shape_3d_default), 2 * affine_eye)
+    img4d = Nifti1Image(np.ones(shape_3d_default + (2,)), affine_eye)
+
+    # check error for non-forced but necessary resampling
+    with pytest.raises(ValueError, match="Field of view of image"):
+        concat_imgs([img1, img2], auto_resample=False)
+
+    # Regression test for #601.
+    # Dimensionality of first image was not checked properly.
+    _dimension_error_msg = (
+        "Input data has incompatible dimensionality: "
+        "Expected dimension is 4D and you provided "
+        "a list of 4D images \\(5D\\)"
+    )
+    with pytest.raises(DimensionError, match=_dimension_error_msg):
+        concat_imgs([img4d], ensure_ndim=4)
+
+    with pytest.raises(DimensionError, match=_dimension_error_msg):
+        concat_imgs([img1, img4d])
+
+    img5d = Nifti1Image(np.ones((2, 2, 2, 2, 2)), affine_eye)
+    with pytest.raises(
+        TypeError,
+        match="Concatenated images must be 3D or 4D. "
+        "You gave a list of 5D images",
+    ):
+        concat_imgs([img5d, img5d])
+
+
+def test_concat_niimgs(affine_eye, tmp_path):
+    # create images different in affine and 3D/4D shape
+    shape = (10, 11, 12)
+    img1 = Nifti1Image(np.ones(shape), affine_eye)
+    img2 = Nifti1Image(np.zeros(shape), affine_eye)
+
+    shape2 = (12, 11, 10)
+    img1b = Nifti1Image(np.ones(shape2), affine_eye)
+
+    shape3 = (11, 22, 33)
+    img1c = Nifti1Image(np.ones(shape3), affine_eye)
+
+    # check basic concatenation with equal shape/affine
+    # versbose for coverage
+    concatenated = concat_imgs((img1, img2, img1), verbose=1)
+
+    # smoke-test auto_resample
+    concatenated = concat_imgs((img1, img1b, img1c), auto_resample=True)
+    assert concatenated.shape == img1.shape + (3,)
+
+    # test list of 4D niimgs as input
+    nibabel.save(img1, tmp_path / "1.nii")
+    nibabel.save(img2, tmp_path / "2.nii")
+    concatenated = concat_imgs(tmp_path / "*")
+    assert_array_equal(get_data(concatenated)[..., 0], get_data(img1))
+    assert_array_equal(get_data(concatenated)[..., 1], get_data(img2))
+
+
+def test_concat_niimg_dtype(affine_eye):
+    shape = [2, 3, 4]
+    vols = [
+        Nifti1Image(np.zeros(shape + [n_scans]).astype(np.int16), affine_eye)
+        for n_scans in [1, 5]
+    ]
+    nimg = concat_imgs(vols)
+    assert get_data(nimg).dtype == np.float32
+    nimg = concat_imgs(vols, dtype=None)
+    assert get_data(nimg).dtype == np.int16
+
+
+def nifti_generator(buffer):
+    for _ in range(10):
+        buffer.append(_img_3d_rand())
+        yield buffer[-1]
+
+
+def test_iterator_generator(img_3d_rand_eye):
+    # Create a list of random images
+    list_images = [img_3d_rand_eye for _ in range(10)]
+    cc = concat_imgs(list_images)
+    assert cc.shape[-1] == 10
+    assert_array_almost_equal(get_data(cc)[..., 0], get_data(list_images[0]))
+
+    # Same with iteration
+    i = image.iter_img(list_images)
+    cc = concat_imgs(i)
+    assert cc.shape[-1] == 10
+    assert_array_almost_equal(get_data(cc)[..., 0], get_data(list_images[0]))
+
+    # Now, a generator
+    b = []
+    g = nifti_generator(b)
+    cc = concat_imgs(g)
+    assert cc.shape[-1] == 10
+    assert len(b) == 10
+
+
+def test_copy_img():
+    with pytest.raises(ValueError, match="Input value is not an image"):
+        copy_img(3)
+
+
+def test_copy_img_side_effect(img_4d_ones_eye):
+    hash1 = joblib.hash(img_4d_ones_eye)
+    copy_img(img_4d_ones_eye)
+    hash2 = joblib.hash(img_4d_ones_eye)
+    assert hash1 == hash2

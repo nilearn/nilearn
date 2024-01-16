@@ -274,40 +274,19 @@ def _get_con_val(second_level_contrast, design_matrix):
         else:
             raise ValueError("No second-level contrast is specified.")
     if not isinstance(second_level_contrast, str):
-        con_val = second_level_contrast
-        if np.all(con_val == 0):
-            raise ValueError("Contrast is null")
+        con_val = np.array(second_level_contrast)
+        if np.all(con_val == 0) or len(con_val) == 0:
+            raise ValueError(
+                "Contrast is null. Second_level_contrast must be a valid "
+                "contrast vector, a list/array of 0s and 1s, a string, or a "
+                "string expression."
+            )
     else:
         design_columns = design_matrix.columns.tolist()
         con_val = expression_to_contrast_vector(
             second_level_contrast, design_columns
         )
     return con_val
-
-
-def _get_contrast(second_level_contrast, design_matrix):
-    """Check and return contrast when testing one contrast at the time."""
-    if isinstance(second_level_contrast, str):
-        if second_level_contrast in design_matrix.columns.tolist():
-            contrast = second_level_contrast
-        else:
-            raise ValueError(
-                f'"{second_level_contrast}" is not a valid contrast name'
-            )
-    else:
-        # Check contrast definition
-        if second_level_contrast is None:
-            if design_matrix.shape[1] == 1:
-                second_level_contrast = np.ones([1])
-            else:
-                raise ValueError("No second-level contrast is specified.")
-        elif (np.nonzero(second_level_contrast)[0]).size != 1:
-            raise ValueError(
-                "second_level_contrast must be a list of 0s and 1s."
-            )
-        con_val = np.asarray(second_level_contrast, dtype=bool)
-        contrast = np.asarray(design_matrix.columns.tolist())[con_val][0]
-    return contrast
 
 
 def _infer_effect_maps(second_level_input, contrast_def):
@@ -970,7 +949,7 @@ def non_parametric_inference(
         )
 
     # Check and obtain the contrast
-    contrast = _get_contrast(second_level_contrast, design_matrix)
+    contrast = _get_con_val(second_level_contrast, design_matrix)
     # Get first-level effect_maps
     effect_maps = _infer_effect_maps(second_level_input, first_level_contrast)
 
@@ -981,9 +960,11 @@ def non_parametric_inference(
     var_names = design_matrix.columns.tolist()
 
     # Obtain tested_var
-    tested_var = np.asarray(design_matrix[contrast])
+    column_mask = [bool(val) for val in contrast]
+    tested_var = np.dot(design_matrix, contrast)
+
     # Remove tested var from remaining var names
-    var_names.remove(contrast)
+    var_names = [var for var, mask in zip(var_names, column_mask) if not mask]
 
     # Obtain confounding vars
     if len(var_names) == 0:

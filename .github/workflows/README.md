@@ -47,6 +47,8 @@ $ git commit -m "[example] plot_nilearn_101.py"
 
 However for quick checks to do yourself you should always opt for local builds following the instructions here: [building-documentation](https://nilearn.github.io/stable/development.html#building-documentation).
 
+Note: setuptools needs to be installed to run the doc build with python 3.12.
+
 #### Dataset caching
 
 We also implemented a dataset caching strategy within this Actions workflow such that datasets are only downloaded once every week. Once these datasets are cached, they will be used by all jobs running on Actions without requiring any download. This saves a lot of time and avoids potential network errors that can happen when downloading datasets from remote servers.
@@ -107,6 +109,14 @@ This workflow will fail if it finds any potential target to be converted.
 
 Sorts Python imports alphabetically and by section. Configured in [pyproject.toml](../../pyproject.toml)
 
+## Building the stable release documentation
+
+### release-docs.yml
+
+Should be triggered automatically after merging and tagging a release PR to
+build the stable docs with a GitHub runner and push to nilearn.github.io.
+Can Also be triggered manually.
+
 ## Running unit tests
 
 ### test_with_tox.yml
@@ -125,6 +135,13 @@ Tries to install Nilearn from wheel & check installation on all operating system
 Runs once a month.
 Use pytest with the pytest-random-order plugin to run all tests in a random order.
 This aims to detect tests that are not properly isolated from each other (test pollution).
+
+### testing_minimum.yml
+
+Runs once a month.
+
+Checks that installing the minimum version of a given dependency of Nilearn
+along with the latest version of all the other dependencies leads to a successful run of all the tests.
 
 ## Update precommit hooks
 

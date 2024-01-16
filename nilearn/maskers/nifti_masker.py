@@ -8,7 +8,7 @@ from functools import partial
 from joblib import Memory
 
 from nilearn import _utils, image, masking
-from nilearn.maskers import compute_middle_image
+from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 
 

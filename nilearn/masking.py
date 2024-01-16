@@ -19,12 +19,24 @@ from .datasets import (
 )
 from .image import get_data, new_img_like, resampling
 
+__all__ = [
+    "apply_mask",
+    "compute_background_mask",
+    "compute_brain_mask",
+    "compute_epi_mask",
+    "compute_multi_background_mask",
+    "compute_multi_brain_mask",
+    "compute_multi_epi_mask",
+    "intersect_masks",
+    "unmask",
+]
 
-class MaskWarning(UserWarning):
+
+class _MaskWarning(UserWarning):
     """A class to always raise warnings."""
 
 
-warnings.simplefilter("always", MaskWarning)
+warnings.simplefilter("always", _MaskWarning)
 
 
 def load_mask_img(mask_img, allow_empty=False):
@@ -196,7 +208,9 @@ def _post_process_mask(
     mask_any = mask.any()
     if not mask_any:
         warnings.warn(
-            f"Computed an empty mask. {warning_msg}", MaskWarning, stacklevel=2
+            f"Computed an empty mask. {warning_msg}",
+            _MaskWarning,
+            stacklevel=2,
         )
     if connected and mask_any:
         mask = largest_connected_component(mask)
@@ -339,10 +353,9 @@ def compute_multi_epi_mask(
     memory=None,
     verbose=0,
 ):
-    """Compute a common mask for several sessions or \
-    subjects of :term:`fMRI` data.
+    """Compute a common mask for several runs or subjects of :term:`fMRI` data.
 
-    Uses the mask-finding algorithms to extract masks for each session
+    Uses the mask-finding algorithms to extract masks for each run
     or subject, and then keep only the main connected component of the
     a given fraction of the intersection of all the masks.
 
@@ -350,17 +363,17 @@ def compute_multi_epi_mask(
     ----------
     epi_imgs : :obj:`list` of Niimg-like objects
         See :ref:`extracting_data`.
-        A list of arrays, each item being a subject or a session.
+        A list of arrays, each item being a subject or a run.
         3D and 4D images are accepted.
 
         .. note::
 
             If 3D images are given, we suggest to use the mean image
-            of each session.
+            of each run.
 
     threshold : :obj:`float`, optional
-        The inter-session threshold: the fraction of the
-        total number of sessions in for which a :term:`voxel` must be
+        The inter-run threshold: the fraction of the
+        total number of runs in for which a :term:`voxel` must be
         in the mask to be kept in the common mask.
         threshold=1 corresponds to keeping the intersection of all
         masks, whereas threshold=0 is the union of all masks.
@@ -515,9 +528,9 @@ def compute_multi_background_mask(
     memory=None,
     verbose=0,
 ):
-    """Compute a common mask for several sessions or subjects of data.
+    """Compute a common mask for several runs or subjects of data.
 
-    Uses the mask-finding algorithms to extract masks for each session
+    Uses the mask-finding algorithms to extract masks for each run
     or subject, and then keep only the main connected component of the
     a given fraction of the intersection of all the masks.
 
@@ -525,16 +538,16 @@ def compute_multi_background_mask(
     ----------
     data_imgs : :obj:`list` of Niimg-like objects
         See :ref:`extracting_data`.
-        A list of arrays, each item being a subject or a session.
+        A list of arrays, each item being a subject or a run.
         3D and 4D images are accepted.
 
         .. note::
             If 3D images are given, we suggest to use the mean image
-            of each session.
+            of each run.
 
     threshold : :obj:`float`, optional
-        The inter-session threshold: the fraction of the
-        total number of session in for which a :term:`voxel` must be
+        The inter-run threshold: the fraction of the
+        total number of run in for which a :term:`voxel` must be
         in the mask to be kept in the common mask.
         threshold=1 corresponds to keeping the intersection of all
         masks, whereas threshold=0 is the union of all masks.
@@ -781,7 +794,7 @@ def apply_mask(
 
     Returns
     -------
-    session_series : :class:`numpy.ndarray`
+    run_series : :class:`numpy.ndarray`
         2D array of series with shape (image number, :term:`voxel` number)
 
     Notes

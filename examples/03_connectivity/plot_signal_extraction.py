@@ -260,8 +260,8 @@ plotting.plot_matrix(
 # :func:`nilearn.interfaces.fmriprep.load_confounds`, one can use a predefined
 # strategy with :func:`nilearn.interfaces.fmriprep.load_confounds_strategy`.
 # Based on the confound variables generated through :term:`fMRIPrep`, and past
-# benchmarks studies (:footcite:`Ciric2017`, :footcite:`Parker2018`): `simple`,
-# `scrubbing`, `compcor`, `ica_aroma`.
+# benchmarks studies (:footcite:t:`Ciric2017`, :footcite:t:`Parker2018`):
+# `simple`, `scrubbing`, `compcor`, `ica_aroma`.
 # The following examples shows how to use the `simple` strategy and overwrite
 # the motion default to basic.
 

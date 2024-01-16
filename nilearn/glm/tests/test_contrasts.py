@@ -7,9 +7,9 @@ from sklearn.linear_model import LinearRegression
 
 from nilearn.glm.contrasts import (
     Contrast,
-    _compute_fixed_effect_contrast,
     _compute_fixed_effects_params,
     compute_contrast,
+    compute_fixed_effect_contrast,
     expression_to_contrast_vector,
 )
 from nilearn.glm.first_level import run_glm
@@ -59,6 +59,20 @@ def set_up_glm():
     return _set_up_glm
 
 
+def test_deprecation_contrast_type(rng, set_up_glm):
+    """Throw deprecation warning when using contrast_type as parameter."""
+    labels, results, q = set_up_glm(rng, "ar1")
+    con_val = np.eye(q)[0]
+
+    with pytest.warns(DeprecationWarning, match="0.13.0"):
+        compute_contrast(
+            labels=labels,
+            regression_result=results,
+            con_val=con_val,
+            contrast_type="t",
+        )
+
+
 def test_Tcontrast(rng, set_up_glm):
     labels, results, q = set_up_glm(rng, "ar1")
     con_val = np.eye(q)[0]
@@ -74,7 +88,7 @@ def test_Fcontrast(rng, set_up_glm, model):
     labels, results, q = set_up_glm(rng, model)
     for con_val in [np.eye(q)[0], np.eye(q)[:3]]:
         z_vals = compute_contrast(
-            labels, results, con_val, contrast_type="F"
+            labels, results, con_val, stat_type="F"
         ).z_score()
 
         assert_almost_equal(z_vals.mean(), 0, 0)
@@ -99,7 +113,7 @@ def test_fixed_effect_contrast(set_up_glm, rng):
     labels, results, q = set_up_glm(rng, "ols")
     c1, c2 = np.eye(q)[0], np.eye(q)[1]
 
-    con = _compute_fixed_effect_contrast(
+    con = compute_fixed_effect_contrast(
         [labels, labels], [results, results], [c1, c2]
     )
 
@@ -117,7 +131,7 @@ def test_fixed_effect_contrast_nonzero_effect():
     for i in range(X.shape[1]):
         contrast = np.zeros(X.shape[1])
         contrast[i] = 1.0
-        fixed_effect = _compute_fixed_effect_contrast(
+        fixed_effect = compute_fixed_effect_contrast(
             [labels],
             [results],
             [contrast],
@@ -125,7 +139,7 @@ def test_fixed_effect_contrast_nonzero_effect():
 
         assert_almost_equal(fixed_effect.effect_size(), coef.ravel()[i])
 
-        fixed_effect = _compute_fixed_effect_contrast(
+        fixed_effect = compute_fixed_effect_contrast(
             [labels] * 3, [results] * 3, [contrast] * 3
         )
 
@@ -188,9 +202,9 @@ def test_contrast_values(set_up_glm, rng):
 
 def test_low_level_fixed_effects(rng):
     p = 100
-    # X1 is some effects estimate, V1 their variance for "session 1"
+    # X1 is some effects estimate, V1 their variance for "run 1"
     X1, V1 = rng.standard_normal(p), np.ones(p)
-    # same thing for a "session 2"
+    # same thing for a "run 2"
     X2, V2 = 2 * X1, 4 * V1
     # compute the fixed effects estimate, Xf, their variance Vf,
     # and the corresponding t statistic tf
@@ -235,10 +249,21 @@ def test_one_minus_pvalue():
     effect = np.ones((1, 3))
     variance = effect[0]
 
-    contrast = Contrast(effect, variance, contrast_type="t")
+    contrast = Contrast(effect, variance, stat_type="t")
 
     assert np.allclose(contrast.one_minus_pvalue(), 0.84, 1)
     assert np.allclose(contrast.stat_, 1.0, 1)
+
+
+def test_deprecation_contrast_type_attribute():
+    effect = np.ones((1, 3))
+    variance = effect[0]
+
+    with pytest.warns(DeprecationWarning, match="0.13.0"):
+        contrast = Contrast(effect, variance, contrast_type="t")
+
+    with pytest.warns(DeprecationWarning, match="0.13.0"):
+        contrast.contrast_type
 
 
 @pytest.mark.parametrize(
@@ -254,21 +279,21 @@ def test_one_minus_pvalue():
 )
 def test_improper_Contrast_inputs(effect, variance, match):
     with pytest.raises(ValueError, match=match):
-        Contrast(effect, variance, contrast_type="t")
+        Contrast(effect, variance, stat_type="t")
 
 
 def test_automatic_t2F_conversion():
     effect = np.ones((5, 3))
     variance = np.ones(5)
-    contrast = Contrast(effect, variance, contrast_type="t")
-    assert contrast.contrast_type == "F"
+    contrast = Contrast(effect, variance, stat_type="t")
+    assert contrast.stat_type == "F"
 
 
 def test_invalid_contarst_type():
     effect = np.ones((1, 3))
     variance = np.ones(1)
-    with pytest.raises(ValueError, match="is not a valid contrast_type."):
-        Contrast(effect, variance, contrast_type="foo")
+    with pytest.raises(ValueError, match="is not a valid stat_type."):
+        Contrast(effect, variance, stat_type="foo")
 
 
 def test_contrast_padding(rng):
@@ -284,4 +309,4 @@ def test_contrast_padding(rng):
         compute_contrast(labels, results, con_val).z_score()
 
     con_val = np.eye(q)[:3, :3]
-    compute_contrast(labels, results, con_val, contrast_type="F").z_score()
+    compute_contrast(labels, results, con_val, stat_type="F").z_score()

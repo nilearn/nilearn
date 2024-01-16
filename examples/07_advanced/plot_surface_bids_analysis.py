@@ -10,7 +10,8 @@ More specifically:
 1. Download an :term:`fMRI` :term:`BIDS` dataset
 with two language conditions to contrast.
 2. Project the data to a standard mesh, fsaverage5,
-aka the Freesurfer template mesh downsampled to about 10k nodes per hemisphere.
+aka the Freesurfer template :term:`mesh` downsampled
+to about 10k nodes per hemisphere.
 3. Run the first level model objects.
 4. Fit a second level model on the fitted first level models.
 
@@ -118,7 +119,7 @@ for (fmri_img, confound, events) in zip(
     # We input them for contrast computation.
     labels, estimates = run_glm(texture.T, design_matrix.values)
     contrast = compute_contrast(labels, estimates, contrast_values,
-                                contrast_type='t')
+                                stat_type='t')
     # We present the Z-transform of the t map.
     z_score = contrast.z_score()
     z_scores_right.append(z_score)
@@ -127,7 +128,7 @@ for (fmri_img, confound, events) in zip(
     texture = surface.vol_to_surf(fmri_img, fsaverage.pial_left)
     labels, estimates = run_glm(texture.T, design_matrix.values)
     contrast = compute_contrast(labels, estimates, contrast_values,
-                                contrast_type='t')
+                                stat_type='t')
     z_scores_left.append(contrast.z_score())
 
 # %%

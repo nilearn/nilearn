@@ -7,11 +7,12 @@ See also nilearn.signal.
 
 import collections.abc
 import copy
+import itertools
 import warnings
 
 import nibabel
 import numpy as np
-from joblib import Parallel, delayed
+from joblib import Memory, Parallel, delayed
 from scipy.ndimage import gaussian_filter1d, generate_binary_structure, label
 from scipy.stats import scoreatpercentile
 
@@ -24,10 +25,16 @@ from .._utils import (
     check_niimg_4d,
     fill_doc,
 )
+from .._utils.exceptions import DimensionError
 from .._utils.helpers import rename_parameters, stringify_path
 from .._utils.niimg import _get_data, safe_get_data
-from .._utils.niimg_conversions import _index_img, check_same_fov
+from .._utils.niimg_conversions import (
+    _index_img,
+    check_same_fov,
+    iter_check_niimg,
+)
 from .._utils.param_validation import check_threshold
+from .._utils.path_finding import resolve_globbing
 
 
 def get_data(img):
@@ -1238,10 +1245,10 @@ def clean_img(
     Notes
     -----
     Confounds removal is based on a projection on the orthogonal
-    of the signal space [:footcite:`Friston1994`].
+    of the signal space [:footcite:t:`Friston1994`].
 
     Orthogonalization between temporal filters and confound removal is based on
-    suggestions in [:footcite:`Lindquist2018`].
+    suggestions in [:footcite:t:`Lindquist2018`].
 
     References
     ----------
@@ -1347,6 +1354,139 @@ def load_img(img, wildcards=True, dtype=None):
     return check_niimg(img, wildcards=wildcards, dtype=dtype)
 
 
+def concat_imgs(
+    niimgs,
+    dtype=np.float32,
+    ensure_ndim=None,
+    memory=Memory(location=None),
+    memory_level=0,
+    auto_resample=False,
+    verbose=0,
+):
+    """Concatenate a list of 3D/4D niimgs of varying lengths.
+
+    The niimgs list can contain niftis/paths to images of varying dimensions
+    (i.e., 3D or 4D) as well as different 3D shapes and affines, as they
+    will be matched to the first image in the list if auto_resample=True.
+
+    Parameters
+    ----------
+    niimgs : iterable of Niimg-like objects or glob pattern
+        See :ref:`extracting_data`.
+        Niimgs to concatenate.
+
+    dtype : numpy dtype, default=np.float32
+        The dtype of the returned image.
+
+    ensure_ndim : integer, optional
+        Indicate the dimensionality of the expected niimg. An
+        error is raised if the niimg is of another dimensionality.
+
+    auto_resample : boolean, default=False
+        Converts all images to the space of the first one.
+
+    verbose : int, default=0
+        Controls the amount of verbosity (0 means no messages).
+
+    memory : instance of joblib.Memory or string, default=Memory(location=None)
+        Used to cache the resampling process.
+        By default, no caching is done. If a string is given, it is the
+        path to the caching directory.
+
+    memory_level : integer, default=0
+        Rough estimator of the amount of memory used by caching. Higher value
+        means more memory for caching.
+
+    Returns
+    -------
+    concatenated : nibabel.Nifti1Image
+        A single image.
+
+    See Also
+    --------
+    nilearn.image.index_img
+
+    """
+    from ..image import new_img_like  # avoid circular imports
+
+    target_fov = "first" if auto_resample else None
+
+    # We remove one to the dimensionality because of the list is one dimension.
+    ndim = None
+    if ensure_ndim is not None:
+        ndim = ensure_ndim - 1
+
+    # If niimgs is a string, use glob to expand it to the matching filenames.
+    niimgs = resolve_globbing(niimgs)
+
+    # First niimg is extracted to get information and for new_img_like
+    first_niimg = None
+
+    iterator, literator = itertools.tee(iter(niimgs))
+    try:
+        first_niimg = check_niimg(next(literator), ensure_ndim=ndim)
+    except StopIteration:
+        raise TypeError("Cannot concatenate empty objects")
+    except DimensionError as exc:
+        # Keep track of the additional dimension in the error
+        exc.increment_stack_counter()
+        raise
+
+    # If no particular dimensionality is asked, we force consistency wrt the
+    # first image
+    if ndim is None:
+        ndim = len(first_niimg.shape)
+
+    if ndim not in [3, 4]:
+        raise TypeError(
+            "Concatenated images must be 3D or 4D. You gave a "
+            f"list of {ndim}D images"
+        )
+
+    lengths = [first_niimg.shape[-1] if ndim == 4 else 1]
+    for niimg in literator:
+        # We check the dimensionality of the niimg
+        try:
+            niimg = check_niimg(niimg, ensure_ndim=ndim)
+        except DimensionError as exc:
+            # Keep track of the additional dimension in the error
+            exc.increment_stack_counter()
+            raise
+        lengths.append(niimg.shape[-1] if ndim == 4 else 1)
+
+    target_shape = first_niimg.shape[:3]
+    if dtype is None:
+        dtype = _get_data(first_niimg).dtype
+    data = np.ndarray(target_shape + (sum(lengths),), order="F", dtype=dtype)
+    cur_4d_index = 0
+    for index, (size, niimg) in enumerate(
+        zip(
+            lengths,
+            iter_check_niimg(
+                iterator,
+                atleast_4d=True,
+                target_fov=target_fov,
+                memory=memory,
+                memory_level=memory_level,
+            ),
+        )
+    ):
+        if verbose > 0:
+            nii_str = (
+                f"image {niimg}"
+                if isinstance(niimg, str)
+                else f"image #{index}"
+            )
+            print(f"Concatenating {index + 1}: {nii_str}")
+
+        data[..., cur_4d_index : cur_4d_index + size] = _get_data(niimg)
+        cur_4d_index += size
+
+    return new_img_like(
+        first_niimg, data, first_niimg.affine, copy_header=True
+    )
+
+
 def largest_connected_component_img(imgs):
     """Return the largest connected component of an image or list of images.
 
@@ -1391,3 +1531,26 @@ def largest_connected_component_img(imgs):
         )
 
     return ret[0] if single_img else ret
+
+
+def copy_img(img):
+    """Copy an image to a nibabel.Nifti1Image.
+
+    Parameters
+    ----------
+    img: image
+        nibabel SpatialImage object to copy.
+
+    Returns
+    -------
+    img_copy: image
+        copy of input (data, affine and header)
+    """
+    if not isinstance(img, nibabel.spatialimages.SpatialImage):
+        raise ValueError("Input value is not an image")
+    return new_img_like(
+        img,
+        safe_get_data(img, copy_data=True),
+        img.affine.copy(),
+        copy_header=True,
+    )

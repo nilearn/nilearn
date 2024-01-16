@@ -8,6 +8,7 @@ import os
 import re
 import warnings
 from io import BytesIO
+from pathlib import Path
 
 import nibabel
 import nibabel as nib
@@ -55,7 +56,7 @@ def fetch_haxby(
 ):
     """Download and loads complete haxby dataset.
 
-    See :footcite:`Haxby2001`.
+    See :footcite:t:`Haxby2001`.
 
     Parameters
     ----------
@@ -81,7 +82,7 @@ def fetch_haxby(
         - 'anat': string list. Paths to anatomic images.
         - 'func': string list. Paths to nifti file with :term:`BOLD` data.
         - 'session_target': string list.
-          Paths to text file containing session and target data.
+          Paths to text file containing run and target data.
         - 'mask': string. Path to fullbrain mask file.
         - 'mask_vt': string list. Paths to nifti ventral temporal mask file.
         - 'mask_face': string list. Paths to nifti ventral temporal mask file.
@@ -267,7 +268,7 @@ def adhd_ids():
 def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the ADHD :term:`resting-state` dataset.
 
-    See :footcite:`ADHDdataset`.
+    See :footcite:t:`ADHDdataset`.
 
     Parameters
     ----------
@@ -421,7 +422,7 @@ def miyawaki2008_file_mask():
 def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     """Download and loads Miyawaki et al. 2008 dataset (153MB).
 
-    See :footcite:`Miyawaki2008`.
+    See :footcite:t:`Miyawaki2008`.
 
     Parameters
     ----------
@@ -438,7 +439,7 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
         - 'func': string list
             Paths to nifti file with :term:`BOLD` data
         - 'label': string list
-            Paths to text file containing session and target data
+            Paths to text file containing run and target data
         - 'mask': string
             Path to nifti mask file to define target volume in visual
             cortex
@@ -556,11 +557,11 @@ def fetch_localizer_contrasts(
     Functional Localizer page."
     (see https://osf.io/vhtf6/)
 
-    You may cite :footcite:`Papadopoulos-Orfanos2017`
+    You may cite :footcite:t:`Papadopoulos-Orfanos2017`
     when using this dataset.
 
     Scientific results obtained using this dataset are described
-    in :footcite:`Pinel2007`.
+    in :footcite:t:`Pinel2007`.
 
     Parameters
     ----------
@@ -1025,7 +1026,7 @@ def fetch_abide_pcp(
     Fetch the Autism Brain Imaging Data Exchange (ABIDE) dataset wrt criteria
     that can be passed as parameter. Note that this is the preprocessed
     version of ABIDE provided by the preprocess connectome projects (PCP).
-    See :footcite:`Nielsen2013`.
+    See :footcite:t:`Nielsen2013`.
 
     Parameters
     ----------
@@ -1087,10 +1088,79 @@ def fetch_abide_pcp(
     HANDEDNESS_SCORE : integer in [-100, 100], optional
         Positive = Right, Negative = Left, 0 = Ambidextrous.
 
+    Returns
+    -------
+    data : :class:`sklearn.utils.Bunch`
+        Dictionary-like object, the keys are described below.
+
+    - 'description': :obj:`str`, description of the dataset.
+
+    - 'phenotypic': :obj:`pandas.DataFrame`
+      phenotypic information for each subject.
+
+    - Specific Derivative Keys:
+      Additional keys,'func_preproc' being the default, are
+      introduced based on the provided 'derivatives'
+      parameter during fetching. Any combination of the
+      parameters below may occur.
+
+        - 'func_preproc' (default): :obj:`numpy.ndarray`,
+          paths to preprocessed functional MRI data in NIfTI format.
+          This key is present by default when fetching the dataset.
+        - 'alff': :obj:`numpy.ndarray`,
+          amplitude values of low-frequency fluctuations
+          in functional MRI data.
+        - 'degree_binarize': :obj:`numpy.ndarray`,
+          data specific to binarized node degree in brain networks.
+        - 'degree_weighted': :obj:`numpy.ndarray`,
+          data specific to weighted node degree,
+          considering connectivity strength in brain networks.
+        - 'dual_regression': :obj:`numpy.ndarray`,
+          results from dual regression analysis,
+          often involving the identification of resting-state networks.
+        - 'eigenvector_binarize': :obj:`numpy.ndarray`,
+          data specific to binarized eigenvector
+          centrality, a measure of node influence in brain networks.
+        - 'eigenvector_weighted': :obj:`numpy.ndarray`,
+          data specific to weighted eigenvector
+          centrality, reflecting node influence with consideration
+          of connectivity strength.
+        - 'falff': :obj:`numpy.ndarray`,
+          data specific to fractional amplitude values of
+          low-frequency fluctuations.
+        - 'func_mask': :obj:`numpy.ndarray`,
+          functional mask data, often used to define regions of interest.
+        - 'func_mean': :obj:`numpy.ndarray`,
+          mean functional MRI data,
+          representing average activity across the brain.
+        - 'lfcd': :obj:`numpy.ndarray`,
+          data specific to local functional connectivity density
+          in brain networks.
+        - 'reho': :obj:`numpy.ndarray`,
+          data specific to regional homogeneity in functional MRI data.
+        - 'rois_aal': :obj:`numpy.ndarray`,
+          data specific to anatomical regions
+          defined by the Automatic Anatomical Labeling atlas.
+        - 'rois_cc200': :obj:`numpy.ndarray`
+          data specific to regions defined by the Craddock 200 atlas.
+        - 'rois_cc400': :obj:`numpy.ndarray`,
+          data specific to regions defined by the Craddock 400 atlas.
+        - 'rois_dosenbach160': :obj:`numpy.ndarray`,
+          data specific to regions defined by the Dosenbach 160 atlas.
+        - 'rois_ez': :obj:`numpy.ndarray`,
+          data specific to regions defined by the EZ atlas.
+        - 'rois_ho': :obj:`numpy.ndarray`,
+          data specific to regions defined by the Harvard-Oxford atlas.
+        - 'rois_tt': :obj:`numpy.ndarray`,
+          data specific to regions defined by the Talairach atlas.
+        - 'vmhc': :obj:`numpy.ndarray`,
+          data specific to voxel-mirrored homotopic connectivity in
+          functional MRI data.
+
     Notes
     -----
     Code and description of preprocessing pipelines are provided on the
-    `PCP website <http://preprocessed-connectomes-project.github.io/>`.
+    `PCP website <http://preprocessed-connectomes-project.github.io/>`_.
 
     References
     ----------
@@ -1278,7 +1348,7 @@ def fetch_mixed_gambles(
 ):
     """Fetch Jimura "mixed gambles" dataset.
 
-    See :footcite:`Jimura2012`.
+    See :footcite:t:`Jimura2012`.
 
     Parameters
     ----------
@@ -1361,9 +1431,9 @@ def fetch_megatrawls_netmats(
     The network matrices are estimated from functional connectivity
     datasets of 461 subjects. Full technical details in references.
 
-    More information available in :footcite:`Smith2015b`,
-    :footcite:`Smith2015a`, :footcite:`Filippini2009`,
-    :footcite:`Smith2014`, and :footcite:`Reilly2009`.
+    More information available in :footcite:t:`Smith2015b`,
+    :footcite:t:`Smith2015a`, :footcite:t:`Filippini2009`,
+    :footcite:t:`Smith2014`, and :footcite:t:`Reilly2009`.
 
     Parameters
     ----------
@@ -1594,9 +1664,9 @@ def fetch_surf_nki_enhanced(
     """Download and load the NKI enhanced :term:`resting-state` dataset, \
     preprocessed and projected to the fsaverage5 space surface.
 
-    See :footcite:`Nooner2012`.
+    See :footcite:t:`Nooner2012`.
 
-    Direct download link :footcite:`NKIdataset`.
+    Direct download link :footcite:t:`NKIdataset`.
 
     .. versionadded:: 0.3
 
@@ -1888,7 +1958,7 @@ def fetch_development_fmri(
     with a repetition time (TR) of 2 secs.
     The origin of the data is coming from OpenNeuro. See Notes below.
 
-    Please cite :footcite:`Richardson2018`
+    Please cite :footcite:t:`Richardson2018`
     if you are using this dataset.
 
     .. versionadded:: 0.5.2
@@ -2693,7 +2763,7 @@ def fetch_spm_auditory(
 ):
     """Fetch :term:`SPM` auditory single-subject data.
 
-    See :footcite:`spm_auditory`.
+    See :footcite:t:`spm_auditory`.
 
     Parameters
     ----------
@@ -2882,7 +2952,7 @@ def fetch_spm_multimodal_fmri(
 ):
     """Fetcher for Multi-modal Face Dataset.
 
-    See :footcite:`spm_multiface`.
+    See :footcite:t:`spm_multiface`.
 
     Parameters
     ----------
@@ -2898,10 +2968,10 @@ def fetch_spm_multimodal_fmri(
     -------
     data : sklearn.datasets.base.Bunch
         Dictionary-like object, the interest attributes are:
-        - 'func1': string list. Paths to functional images for session 1
-        - 'func2': string list. Paths to functional images for session 2
-        - 'trials_ses1': string list. Path to onsets file for session 1
-        - 'trials_ses2': string list. Path to onsets file for session 2
+        - 'func1': string list. Paths to functional images for run 1
+        - 'func2': string list. Paths to functional images for run 2
+        - 'trials_ses1': string list. Path to onsets file for run 1
+        - 'trials_ses2': string list. Path to onsets file for run 2
         - 'anat': string. Path to anat file
 
     References
@@ -2987,3 +3057,14 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
         return fetch_fiac_first_level(data_dir=data_dir)
 
     return _glob_fiac_data()
+
+
+def load_sample_motor_activation_image():
+    """Load a single functional image showing motor activations.
+
+    Returns
+    -------
+    str
+        Path to the sample functional image.
+    """
+    return str(Path(__file__).parent / "data" / "image_10426.nii.gz")

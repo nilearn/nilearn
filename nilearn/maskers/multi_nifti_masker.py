@@ -10,7 +10,7 @@ from functools import partial
 from joblib import Memory, Parallel, delayed
 
 from nilearn import _utils, image, masking
-from nilearn.maskers import compute_middle_image
+from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.nifti_masker import NiftiMasker, _filter_and_mask
 
 

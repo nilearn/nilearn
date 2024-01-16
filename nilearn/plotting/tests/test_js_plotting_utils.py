@@ -2,7 +2,6 @@ import base64
 import os
 import re
 import tempfile
-import webbrowser
 
 import numpy as np
 import pytest
@@ -208,7 +207,6 @@ def check_html(
     assert html._repr_html_() == html.get_iframe()
     assert str(html) == html.get_standalone()
     assert '<meta charset="UTF-8" />' in str(html)
-    _check_open_in_browser(html)
     resized = html.resize(3, 17)
     assert resized is html
     assert (html.width, html.height) == (3, 17)
@@ -239,32 +237,6 @@ def check_html(
     view = selects[2]
     assert ("id", "select-view") in view.items()
     assert len(view.findall("option")) == 7
-
-
-def _open_mock(f):
-    print(f"opened {f}")
-
-
-def _check_open_in_browser(html):
-    wb_open = webbrowser.open
-    webbrowser.open = _open_mock
-    try:
-        html.open_in_browser(temp_file_lifetime=None)
-        temp_file = html._temp_file
-        assert html._temp_file is not None
-        assert os.path.isfile(temp_file)
-        html.remove_temp_file()
-        assert html._temp_file is None
-        assert not os.path.isfile(temp_file)
-        html.remove_temp_file()
-        html._temp_file = "aaaaaaaaaaaaaaaaaaaaaa"
-        html.remove_temp_file()
-    finally:
-        webbrowser.open = wb_open
-        try:
-            os.remove(temp_file)
-        except Exception:
-            pass
 
 
 @pytest.mark.parametrize(

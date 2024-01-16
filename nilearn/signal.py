@@ -18,6 +18,12 @@ from nilearn._utils import fill_doc, stringify_path
 from nilearn._utils.numpy_conversions import as_ndarray, csv_to_array
 from nilearn._utils.param_validation import check_run_sample_masks
 
+__all__ = [
+    "butterworth",
+    "clean",
+    "high_variance_confounds",
+]
+
 availiable_filters = ["butterworth", "cosine"]
 
 
@@ -486,7 +492,7 @@ def high_variance_confounds(
     Notes
     -----
     This method is related to what has been published in the literature
-    as 'CompCor' :footcite:`Behzadi2007`.
+    as 'CompCor' :footcite:p:`Behzadi2007`.
 
     The implemented algorithm does the following:
 
@@ -566,7 +572,7 @@ def clean(
 
     When performing scrubbing (censoring high-motion volumes) with butterworth
     filtering, the signal is processed in the following order, based on the
-    second recommendation in :footcite:`Lindquist2018`:
+    second recommendation in :footcite:t:`Lindquist2018`:
 
     - interpolate high motion volumes with cubic spline interpolation
     - detrend
@@ -575,14 +581,14 @@ def clean(
     - remove confounds
     - standardize
 
-    According to :footcite:`Lindquist2018`, removal of confounds will be done
+    According to :footcite:t:`Lindquist2018`, removal of confounds will be done
     orthogonally to temporal filters (low- and/or high-pass filters), if both
     are specified. The censored volumes should be removed in both signals and
     confounds before the nuisance regression.
 
     When performing scrubbing with cosine drift term filtering, the signal is
     processed in the following order, based on the first recommendation in
-    :footcite:`Lindquist2018`:
+    :footcite:t:`Lindquist2018`:
 
     - generate cosine drift term
     - censor high motion volumes in both signal and confounds
@@ -684,10 +690,10 @@ def clean(
     Notes
     -----
     Confounds removal is based on a projection on the orthogonal
-    of the signal space. See :footcite:`Friston1994`.
+    of the signal space. See :footcite:t:`Friston1994`.
 
     Orthogonalization between temporal filters and confound removal is based on
-    suggestions in :footcite:`Lindquist2018`.
+    suggestions in :footcite:t:`Lindquist2018`.
 
     References
     ----------
@@ -879,11 +885,11 @@ def _interpolate_volumes(volumes, sample_mask, t_r, extrapolate):
 
 def _create_cosine_drift_terms(signals, confounds, high_pass, t_r):
     """Create cosine drift terms, append to confounds regressors."""
-    from nilearn.glm.first_level.design_matrix import _cosine_drift
+    from nilearn.glm.first_level.design_matrix import create_cosine_drift
 
     frame_times = np.arange(signals.shape[0]) * t_r
     # remove constant, as the signal is mean centered
-    cosine_drift = _cosine_drift(high_pass, frame_times)[:, :-1]
+    cosine_drift = create_cosine_drift(high_pass, frame_times)[:, :-1]
     confounds = _check_cosine_by_user(confounds, cosine_drift)
     return confounds
 
@@ -965,13 +971,13 @@ def _sanitize_inputs(signals, runs, confounds, sample_mask, ensure_finite):
     """Clean up signals and confounds before processing."""
     n_time = len(signals)  # original length of the signal
     n_runs, runs = _sanitize_runs(n_time, runs)
-    confounds = _sanitize_confounds(n_time, n_runs, confounds)
+    confounds = sanitize_confounds(n_time, n_runs, confounds)
     sample_mask = _sanitize_sample_mask(n_time, n_runs, runs, sample_mask)
     signals = _sanitize_signals(signals, ensure_finite)
     return signals, runs, confounds, sample_mask
 
 
-def _sanitize_confounds(n_time, n_runs, confounds):
+def sanitize_confounds(n_time, n_runs, confounds):
     """Check confounds are the correct type.
 
     When passing multiple runs, ensure the

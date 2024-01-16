@@ -129,7 +129,7 @@ def decode(b, dtype):
 
 
 def mesh_to_plotly(mesh):
-    """Convert a mesh to plotly format."""
+    """Convert a :term:`mesh` to plotly format."""
     mesh = surface.load_surf_mesh(mesh)
     x, y, z = map(encode, np.asarray(mesh[0].T, dtype='<f4'))
     i, j, k = map(encode, np.asarray(mesh[1].T, dtype='<i4'))
