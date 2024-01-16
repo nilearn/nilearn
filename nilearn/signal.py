@@ -27,7 +27,11 @@ __all__ = [
 availiable_filters = ["butterworth", "cosine"]
 
 
-def standardize_signal(signals, detrend=False, standardize="zscore"):
+def standardize_signal(
+    signals,
+    detrend=False,
+    standardize="zscore",
+):
     """Center and standardize a given signal (time is along first axis).
 
     Parameters
@@ -109,9 +113,9 @@ def standardize_signal(signals, detrend=False, standardize="zscore"):
             signals /= std
 
         elif standardize == "psc":
-            mean_signal = signals.mean(axis=0)
-            invalid_ix = np.absolute(mean_signal) < np.finfo(np.float64).eps
-            signals = (signals - mean_signal) / np.absolute(mean_signal)
+            mean_signals = signals.mean(axis=0)
+            invalid_ix = np.absolute(mean_signals) < np.finfo(np.float64).eps
+            signals = (signals - mean_signals) / np.absolute(mean_signals)
             signals *= 100
 
             if np.any(invalid_ix):
@@ -742,8 +746,8 @@ def clean(
     # Detrend and filtering should apply to confounds, if confound presents
     # keep filters orthogonal (according to Lindquist et al. (2018))
     # Restrict the signal to the orthogonal of the confounds
+    mean_signals = signals.mean(axis=0)
     if detrend:
-        mean_signals = signals.mean(axis=0)
         signals = standardize_signal(
             signals, standardize=False, detrend=detrend
         )
@@ -802,17 +806,21 @@ def clean(
         signals -= Q.dot(Q.T).dot(signals)
 
     # Standardize
-    if detrend and (standardize == "psc"):
-        # If the signal is detrended, we have to know the original mean
-        # signal to calculate the psc.
+    if (detrend and standardize == "psc") or (filter_type == "butterworth"):
+        # If the signal is detrended or filtered,
+        # the mean signal will be zero or close to zero. In this case,
+        # we have to know the original mean signal to calculate the psc.
         signals = standardize_signal(
-            signals + mean_signals, standardize=standardize, detrend=False
+            signals + mean_signals,
+            standardize=standardize,
+            detrend=False,
         )
     else:
         signals = standardize_signal(
-            signals, standardize=standardize, detrend=False
+            signals,
+            standardize=standardize,
+            detrend=False,
         )
-
     return signals
 
 
@@ -1101,9 +1109,9 @@ def _check_filter_parameters(filter, low_pass, high_pass, t_r):
                 f"filtering.t_r='{t_r}', high_pass='{high_pass}'"
             )
         if filter == "butterworth":
-            if all(item is None for item in [low_pass, high_pass, t_r]):
+            if all(item is None for item in [low_pass, high_pass]):
                 # Butterworth was switched off by passing
-                # None to all these parameters
+                # None to at least low_pass and high_pass
                 return False
             if t_r is None:
                 raise ValueError(
