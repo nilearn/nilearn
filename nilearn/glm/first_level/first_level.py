@@ -545,8 +545,6 @@ class FirstLevelModel(BaseGLM):
                 "If design matrices are supplied, "
                 "confounds and events will be ignored."
             )
-        # Local import to prevent circular imports
-        from nilearn.maskers import NiftiMasker
 
         # Check arguments
         # Check imgs type
@@ -576,80 +574,7 @@ class FirstLevelModel(BaseGLM):
         if sample_masks is not None:
             sample_masks = check_run_sample_masks(len(run_imgs), sample_masks)
 
-        # Learn the mask
-        if self.mask_img is False:
-            # We create a dummy mask to preserve functionality of api
-            if isinstance(run_imgs[0], SurfaceImage):
-                parts = run_imgs[0].mesh.keys()
-                surf_data = {}
-                for part in parts:
-                    surf_data[part] = np.ones(
-                        run_imgs[0].data[part].shape[1], dtype=bool
-                    )
-                self.mask_img = SurfaceImage(
-                    mesh=run_imgs[0].mesh, data=surf_data
-                )
-            else:
-                ref_img = check_niimg(run_imgs[0])
-                self.mask_img = Nifti1Image(
-                    np.ones(ref_img.shape[:3]), ref_img.affine
-                )
-        if isinstance(run_imgs[0], SurfaceImage) and not isinstance(
-            self.mask_img, SurfaceMasker
-        ):
-            self.masker_ = SurfaceMasker(
-                mask_img=self.mask_img,
-                smoothing_fwhm=self.smoothing_fwhm,
-                standardize=self.standardize,
-                t_r=self.t_r,
-                memory=self.memory,
-                memory_level=self.memory_level,
-            )
-            self.masker_.fit(run_imgs[0])
-        elif not isinstance(
-            self.mask_img, (NiftiMasker, SurfaceMasker, SurfaceImage)
-        ):
-            self.masker_ = NiftiMasker(
-                mask_img=self.mask_img,
-                smoothing_fwhm=self.smoothing_fwhm,
-                target_affine=self.target_affine,
-                standardize=self.standardize,
-                mask_strategy="epi",
-                t_r=self.t_r,
-                memory=self.memory,
-                verbose=max(0, self.verbose - 2),
-                target_shape=self.target_shape,
-                memory_level=self.memory_level,
-            )
-            self.masker_.fit(run_imgs[0])
-        else:
-            # Make sure masker has been fitted otherwise no attribute mask_img_
-            self.mask_img._check_fitted()
-            if self.mask_img.mask_img_ is None and self.masker_ is None:
-                self.masker_ = clone(self.mask_img)
-                for param_name in [
-                    "target_affine",
-                    "target_shape",
-                    "smoothing_fwhm",
-                    "t_r",
-                    "memory",
-                    "memory_level",
-                ]:
-                    our_param = getattr(self, param_name)
-                    if our_param is None:
-                        continue
-                    if getattr(self.masker_, param_name) is not None:
-                        warn(
-                            f"Parameter {param_name} of the masker overridden"
-                        )
-                    if isinstance(self.masker_, SurfaceMasker):
-                        if param_name not in ["target_affine", "target_shape"]:
-                            setattr(self.masker_, param_name, our_param)
-                    else:
-                        setattr(self.masker_, param_name, our_param)
-                self.masker_.fit(run_imgs[0])
-            else:
-                self.masker_ = self.mask_img
+        self._apply_mask(run_imgs)
 
         # For each run fit the model and keep only the regression results.
         self.labels_, self.results_, self.design_matrices_ = [], [], []
@@ -941,6 +866,86 @@ class FirstLevelModel(BaseGLM):
             output.append(self.masker_.inverse_transform(voxelwise_attribute))
 
         return output
+
+    def _apply_mask(self, run_imgs):
+        """."""
+        # Local import to prevent circular imports
+        from nilearn.maskers import NiftiMasker
+
+        # Learn the mask
+        if self.mask_img is False:
+            # We create a dummy mask to preserve functionality of api
+            if isinstance(run_imgs[0], SurfaceImage):
+                parts = run_imgs[0].mesh.keys()
+                surf_data = {}
+                for part in parts:
+                    surf_data[part] = np.ones(
+                        run_imgs[0].data[part].shape[1], dtype=bool
+                    )
+                self.mask_img = SurfaceImage(
+                    mesh=run_imgs[0].mesh, data=surf_data
+                )
+            else:
+                ref_img = check_niimg(run_imgs[0])
+                self.mask_img = Nifti1Image(
+                    np.ones(ref_img.shape[:3]), ref_img.affine
+                )
+        if isinstance(run_imgs[0], SurfaceImage) and not isinstance(
+            self.mask_img, SurfaceMasker
+        ):
+            self.masker_ = SurfaceMasker(
+                mask_img=self.mask_img,
+                smoothing_fwhm=self.smoothing_fwhm,
+                standardize=self.standardize,
+                t_r=self.t_r,
+                memory=self.memory,
+                memory_level=self.memory_level,
+            )
+            self.masker_.fit(run_imgs[0])
+        elif not isinstance(
+            self.mask_img, (NiftiMasker, SurfaceMasker, SurfaceImage)
+        ):
+            self.masker_ = NiftiMasker(
+                mask_img=self.mask_img,
+                smoothing_fwhm=self.smoothing_fwhm,
+                target_affine=self.target_affine,
+                standardize=self.standardize,
+                mask_strategy="epi",
+                t_r=self.t_r,
+                memory=self.memory,
+                verbose=max(0, self.verbose - 2),
+                target_shape=self.target_shape,
+                memory_level=self.memory_level,
+            )
+            self.masker_.fit(run_imgs[0])
+        else:
+            # Make sure masker has been fitted otherwise no attribute mask_img_
+            self.mask_img._check_fitted()
+            if self.mask_img.mask_img_ is None and self.masker_ is None:
+                self.masker_ = clone(self.mask_img)
+                for param_name in [
+                    "target_affine",
+                    "target_shape",
+                    "smoothing_fwhm",
+                    "t_r",
+                    "memory",
+                    "memory_level",
+                ]:
+                    our_param = getattr(self, param_name)
+                    if our_param is None:
+                        continue
+                    if getattr(self.masker_, param_name) is not None:
+                        warn(
+                            f"Parameter {param_name} of the masker overridden"
+                        )
+                    if isinstance(self.masker_, SurfaceMasker):
+                        if param_name not in ["target_affine", "target_shape"]:
+                            setattr(self.masker_, param_name, our_param)
+                    else:
+                        setattr(self.masker_, param_name, our_param)
+                self.masker_.fit(run_imgs[0])
+            else:
+                self.masker_ = self.mask_img
 
 
 def _check_events_file_uses_tab_separators(events_files):
