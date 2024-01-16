@@ -2208,9 +2208,10 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
     .. deprecated:: 0.10.2
 
         This fetcher function will be removed as it returns the same data
-        as :func:`~datasets.fetch_language_localizer_demo_dataset`.
+        as :func:`nilearn.datasets.fetch_language_localizer_demo_dataset`.
 
-        Please use :func:`~datasets.fetch_language_localizer_demo_dataset`
+        Please use
+        :func:`nilearn.datasets.fetch_language_localizer_demo_dataset`
         instead.
 
     Parameters
