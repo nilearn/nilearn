@@ -74,7 +74,9 @@ def mean_scaling(Y, axis=0):
         warn(
             "Mean values of 0 observed."
             "The data have probably been centered."
-            "Scaling might not work as expected"
+            "Scaling might not work as expected",
+            UserWarning,
+            stacklevel=2,
         )
     mean = np.maximum(mean, 1)
     Y = 100 * (Y / mean - 1)
@@ -789,7 +791,11 @@ class FirstLevelModel(BaseGLM):
         n_runs = len(self.labels_)
         n_contrasts = len(con_vals)
         if n_contrasts == 1 and n_runs > 1:
-            warn(f"One contrast given, assuming it for all {n_runs} runs")
+            warn(
+                f"One contrast given, assuming it for all {n_runs} runs",
+                category=UserWarning,
+                stacklevel=2,
+            )
             con_vals = con_vals * n_runs
         elif n_contrasts != n_runs:
             raise ValueError(

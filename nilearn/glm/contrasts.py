@@ -414,7 +414,11 @@ class Contrast:
             )
         dof_ = self.dof + other.dof
         if self.stat_type == "F":
-            warn("Running approximate fixed effects on F statistics.")
+            warn(
+                "Running approximate fixed effects on F statistics.",
+                category=UserWarning,
+                stacklevel=2,
+            )
         effect_ = self.effect + other.effect
         variance_ = self.variance + other.variance
         return Contrast(
