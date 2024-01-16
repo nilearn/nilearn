@@ -927,12 +927,10 @@ def test_fetch_language_localizer_demo_dataset(tmp_path):
     (
         actual_dir,
         actual_subdirs,
-        desc,
     ) = func.fetch_language_localizer_demo_dataset(data_dir)
 
     assert actual_dir == str(expected_data_dir)
     assert actual_subdirs == sorted(expected_files)
-    assert desc != ""
 
 
 def test_make_spm_auditory_events_file():

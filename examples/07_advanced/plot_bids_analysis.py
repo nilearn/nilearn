@@ -30,7 +30,7 @@ More specifically:
 # confounds.tsv files.
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 
-data_dir, _, _ = fetch_language_localizer_demo_dataset()
+data_dir, _ = fetch_language_localizer_demo_dataset()
 
 # %%
 # Here is the location of the dataset on disk.

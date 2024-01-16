@@ -2208,8 +2208,7 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
         for path, _, files in os.walk(data_dir)
         for f in files
     ]
-    description = get_dataset_descr("language_localizer_demo")
-    return data_dir, sorted(file_list), description
+    return data_dir, sorted(file_list)
 
 
 @fill_doc
@@ -2252,8 +2251,7 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
         for path, _, files in os.walk(main_path)
         for f in files
     ]
-    description = get_dataset_descr("bids_langloc")
-    return os.path.join(data_dir, main_folder), sorted(file_list), description
+    return os.path.join(data_dir, main_folder), sorted(file_list)
 
 
 @fill_doc
