@@ -15,10 +15,10 @@ NEW
 Fixes
 -----
 
+- :bdg-dark:`Code` Make sure that all atlases and datasets fetchers return a description (:gh:`4215` `Rémi Gau`_).
 - :bdg-dark:`Code` Update the ``CompCor`` strategy in :func:`~interfaces.fmriprep.load_confounds` and :func:`~interfaces.fmriprep.load_confounds_strategy` to support ``fmriprep`` 21.x series and above. (:gh:`3285` by `Hao-Ting Wang`_).
 - :bdg-success:`API` :class:`~maskers.MultiNiftiMasker` can now call :meth:`~maskers.NiftiMasker.generate_report` which will generate a report for the first subject in the list of subjects (:gh:`4001` by `Yasmin Mzayek`_).
-- :bdg-dark:`Code` Fix :class:`~nilearn.glm.regression.SimpleRegressionResults` to accommodate for the lack of a ``model`` attribute (:gh:`4071` `Rémi Gau`_)
-- :bdg-dark:`Code` Make sure that all atlases and datasets fetchers return a description. :func:`~datasets.fetch_language_localizer_demo_dataset` and  :func:`~datasets.fetch_bids_langloc_dataset`. (:gh:`4215` `Rémi Gau`_)
+- :bdg-dark:`Code` Fix :class:`~nilearn.glm.regression.SimpleRegressionResults` to accommodate for the lack of a ``model`` attribute (:gh:`4071` `Rémi Gau`_).
 - :bdg-dark:`Code` :func:`~image.clean_img` can now use kwargs ``clean__sample_mask`` argument to correctly reshape the nifti image to the dimensions of the mask in the output (:gh:`4051` by 'Mia Zwally`_).
 
 
