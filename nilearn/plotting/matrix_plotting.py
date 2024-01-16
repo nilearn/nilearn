@@ -338,19 +338,14 @@ def plot_contrast_matrix(
 
     Parameters
     ----------
-    contrast_def : :obj:`str` or :class:`numpy.ndarray` of shape (n_col),\
-    or :obj:`list` of :obj:`str`, or :class:`numpy.ndarray` of shape (n_col)
-
-        where ``n_col`` is the number of columns of the design matrix, (one
-        array per run).
-        If only one array is provided when there are several runs,
-        it will be assumed that the same :term:`contrast` is desired
-        for all runs. The string can be a formula compatible with
-        :meth:`pandas.DataFrame.eval`. Basically one can use the name of the
-        conditions as they appear in the design matrix of the fitted model
-        combined with operators +- and combined with numbers with operators
-        +-`*`/.
-
+    contrast_def : :obj:`str` or :class:`numpy.ndarray` of shape[1] <= n_col \
+        where ``n_col`` is the number of columns of the design matrix.
+        The string can be a formula compatible
+        with :meth:`pandas.DataFrame.eval`.
+        Basically one can use the name of the conditions
+        as they appear in the design matrix of the fitted model
+        combined with operators +-
+        and combined with numbers with operators +-`*`/.
     design_matrix : :class:`pandas.DataFrame`
         Design matrix to use.
     %(colorbar)s
@@ -371,20 +366,7 @@ def plot_contrast_matrix(
         contrast_def = expression_to_contrast_vector(
             contrast_def, design_column_names
         )
-
-    nb_columns_design_matrix = len(design_column_names)
-    nb_columns_contrast_def = (
-        contrast_def.shape[0]
-        if contrast_def.ndim == 1
-        else contrast_def.shape[1]
-    )
-    horizontal_padding = nb_columns_design_matrix - nb_columns_contrast_def
-    contrast_def = np.pad(
-        contrast_def,
-        ((0, 0), (0, horizontal_padding)),
-        "constant",
-        constant_values=(0, 0),
-    )
+    contrast_def = pad_contrast_matrix(contrast_def, design_matrix)
     con_matrix = np.asmatrix(contrast_def)
 
     max_len = np.max([len(str(name)) for name in design_column_names])
@@ -392,7 +374,7 @@ def plot_contrast_matrix(
     if ax is None:
         plt.figure(
             figsize=(
-                0.4 * nb_columns_design_matrix,
+                0.4 * len(design_column_names),
                 1 + 0.5 * con_matrix.shape[0] + 0.04 * max_len,
             )
         )
@@ -422,6 +404,41 @@ def plot_contrast_matrix(
         ax = None
 
     return ax
+
+
+def pad_contrast_matrix(contrast_def, design_matrix):
+    """Pad contrasts with zeros.
+
+    Parameters
+    ----------
+    contrast_def : :class:`numpy.ndarray`
+        Contrast to be padded
+
+    design_matrix : :class:`pandas.DataFrame`
+        Design matrix to use.
+
+    Returns
+    -------
+    ax : :class:`numpy.ndarray`
+        Padded contrast
+
+    """
+    nb_columns_design_matrix = len(design_matrix.columns.tolist())
+    nb_columns_contrast_def = (
+        contrast_def.shape[0]
+        if contrast_def.ndim == 1
+        else contrast_def.shape[1]
+    )
+    horizontal_padding = nb_columns_design_matrix - nb_columns_contrast_def
+    if horizontal_padding == 0:
+        return contrast_def
+    contrast_def = np.pad(
+        contrast_def,
+        ((0, 0), (0, horizontal_padding)),
+        "constant",
+        constant_values=(0, 0),
+    )
+    return contrast_def
 
 
 @fill_doc

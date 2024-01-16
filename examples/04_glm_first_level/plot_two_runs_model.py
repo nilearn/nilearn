@@ -243,8 +243,8 @@ report = make_glm_report(fmri_glm_multirun, contrasts, bg_img=mean_img_)
 # We have several ways to access the report:
 
 # report  # This report can be viewed in a notebook
-report.save_as_html(output_dir / "report.html")
-report.open_in_browser()
+# report.save_as_html(output_dir / "report.html")
+# report.open_in_browser()
 
 # %%
 # References

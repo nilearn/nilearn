@@ -3,12 +3,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
+from numpy.testing import assert_array_equal
 
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
 from nilearn.glm.tests._testing import design_with_null_durations
 from nilearn.plotting.matrix_plotting import (
+    pad_contrast_matrix,
     plot_contrast_matrix,
     plot_design_matrix,
     plot_event,
@@ -257,12 +259,13 @@ def test_show_contrast_matrix(tmp_path):
     )
     assert (tmp_path / "contrast.png").exists()
     assert ax is None
+
     plot_contrast_matrix(contrast, dmtx, output_file=tmp_path / "contrast.pdf")
     assert (tmp_path / "contrast.pdf").exists()
 
 
-def test_show_contrast_matrix_padding(tmp_path):
-    """Smoke test for contrasts padding before plotting.
+def test_pad_contrast_matrix(tmp_path):
+    """Test for contrasts padding before plotting.
 
     See https://github.com/nilearn/nilearn/issues/4211
     """
@@ -271,12 +274,20 @@ def test_show_contrast_matrix_padding(tmp_path):
         frame_times, drift_model="polynomial", drift_order=3
     )
     contrast = np.array([[1, -1]])
-    plot_contrast_matrix(
-        contrast, dmtx, output_file=tmp_path / "contrast_1.png", colorbar=True
-    )
+    padded_contrast = pad_contrast_matrix(contrast, dmtx)
+    assert_array_equal(padded_contrast, np.array([[1, -1, 0, 0]]))
+
     contrast = np.eye(3)
-    plot_contrast_matrix(
-        contrast, dmtx, output_file=tmp_path / "contrast_2.png", colorbar=True
+    padded_contrast = pad_contrast_matrix(contrast, dmtx)
+    assert_array_equal(
+        padded_contrast,
+        np.array(
+            [
+                [1, 0, 0, 0],
+                [0, 1, 0, 0],
+                [0, 0, 1, 0],
+            ]
+        ),
     )
 
 
