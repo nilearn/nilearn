@@ -19,10 +19,9 @@ under the direction of Karl Friston and the FIL methods group.
 
 Content
 -------
-        - 'func': :obj:`list` of :obj:`str`. Paths to functional images
-        - 'anat': :obj:`list` of :obj:`str`. Path to anat image
-        - 'description': :obj:`str`. Data description
-
+    :'func': Paths to functional images
+    :'anat': Path to anat image
+    :'description': Data description
 
 References
 ----------
