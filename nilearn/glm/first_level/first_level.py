@@ -316,8 +316,8 @@ class FirstLevelModel(BaseGLM):
     mask_img : Niimg-like, NiftiMasker, SurfaceImage, SurfaceMasker, False or \
                None, default=None
         Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is given (None),
-        it will be computed automatically by a NiftiMasker with default
+        then its mask will be used. If None is passed, the mask
+        will be computed automatically by a NiftiMasker with default
         parameters. If False is given then the data will not be masked.
         In the case of surface analysis, passing None or False will lead to
         no masking.
