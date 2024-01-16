@@ -338,7 +338,9 @@ def get_clusters_table(
             warnings.warn(
                 "Attention: No clusters "
                 f'with stat {"higher" if sign == 1 else "lower"} '
-                f"than {stat_threshold * sign}"
+                f"than {stat_threshold * sign}",
+                category=UserWarning,
+                stacklevel=2,
             )
             continue
 

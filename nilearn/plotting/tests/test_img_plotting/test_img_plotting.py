@@ -289,3 +289,16 @@ def test_plot_asymmetric_colorbar_threshold(
         tick.get_text() for tick in display._cbar.ax.get_yticklabels()
     ] == expected_ticks
     plt.close()
+
+
+@pytest.mark.parametrize("plot_func", [plot_stat_map, plot_img])
+@pytest.mark.parametrize("vmax", [None, 0])
+def test_img_plotting_vmax_equal_to_zero(plot_func, vmax):
+    """Make sure image plotting works if the maximum value is zero.
+
+    Regression test for: https://github.com/nilearn/nilearn/issues/4203
+    """
+    img_data = np.zeros((10, 10, 10))
+    img_data[4:6, 2:4, 4:6] = -5
+    img = Nifti1Image(img_data, affine=np.eye(4))
+    plot_func(img, colorbar=True, vmax=vmax)

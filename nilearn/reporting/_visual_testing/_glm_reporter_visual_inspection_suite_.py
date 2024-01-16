@@ -232,13 +232,10 @@ def _make_design_matrix_slm_oasis(
     oasis_dataset, n_subjects
 ):  # pragma: no cover # noqa
     age = oasis_dataset.ext_vars["age"].astype(float)
-    sex = oasis_dataset.ext_vars["mf"] == b"F"
+    sex = oasis_dataset.ext_vars["mf"] == "F"
     intercept = np.ones(n_subjects)
     design_matrix = pd.DataFrame(
         np.vstack((age, sex, intercept)).T, columns=["age", "sex", "intercept"]
-    )
-    design_matrix = pd.DataFrame(
-        design_matrix, columns=["age", "sex", "intercept"]
     )
     return design_matrix
 
