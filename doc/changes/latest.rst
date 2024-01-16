@@ -22,9 +22,6 @@ Fixes
 - :bdg-dark:`Code` :func:`~image.clean_img` can now use kwargs ``clean__sample_mask`` argument to correctly reshape the nifti image to the dimensions of the mask in the output (:gh:`4051` by `Mia Zwally`_).
 - :bdg-dark:`Code` Fix plotting of an image with color bar when maximum value is exactly zero (:gh:`4204` by `Rémi Gau`_).
 
-
-
-
 Enhancements
 ------------
 
