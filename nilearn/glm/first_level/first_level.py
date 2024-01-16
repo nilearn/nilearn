@@ -574,7 +574,7 @@ class FirstLevelModel(BaseGLM):
         if sample_masks is not None:
             sample_masks = check_run_sample_masks(len(run_imgs), sample_masks)
 
-        self._apply_mask(run_imgs)
+        self._prepare_mask(run_imgs[0])
 
         # For each run fit the model and keep only the regression results.
         self.labels_, self.results_, self.design_matrices_ = [], [], []
@@ -867,30 +867,34 @@ class FirstLevelModel(BaseGLM):
 
         return output
 
-    def _apply_mask(self, run_imgs):
-        """."""
+    def _prepare_mask(self, run_img):
+        """Set up the masker.
+
+        Parameters
+        ----------
+        run_img : Niimg-like object or SurfaceImage object
+            Used for setting up the masker object.
+        """
         # Local import to prevent circular imports
         from nilearn.maskers import NiftiMasker
 
         # Learn the mask
         if self.mask_img is False:
             # We create a dummy mask to preserve functionality of api
-            if isinstance(run_imgs[0], SurfaceImage):
-                parts = run_imgs[0].mesh.keys()
+            if isinstance(run_img, SurfaceImage):
+                parts = run_img.mesh.keys()
                 surf_data = {}
                 for part in parts:
                     surf_data[part] = np.ones(
-                        run_imgs[0].data[part].shape[1], dtype=bool
+                        run_img.data[part].shape[1], dtype=bool
                     )
-                self.mask_img = SurfaceImage(
-                    mesh=run_imgs[0].mesh, data=surf_data
-                )
+                self.mask_img = SurfaceImage(mesh=run_img.mesh, data=surf_data)
             else:
-                ref_img = check_niimg(run_imgs[0])
+                ref_img = check_niimg(run_img)
                 self.mask_img = Nifti1Image(
                     np.ones(ref_img.shape[:3]), ref_img.affine
                 )
-        if isinstance(run_imgs[0], SurfaceImage) and not isinstance(
+        if isinstance(run_img, SurfaceImage) and not isinstance(
             self.mask_img, SurfaceMasker
         ):
             self.masker_ = SurfaceMasker(
@@ -901,7 +905,7 @@ class FirstLevelModel(BaseGLM):
                 memory=self.memory,
                 memory_level=self.memory_level,
             )
-            self.masker_.fit(run_imgs[0])
+            self.masker_.fit(run_img)
         elif not isinstance(
             self.mask_img, (NiftiMasker, SurfaceMasker, SurfaceImage)
         ):
@@ -917,7 +921,7 @@ class FirstLevelModel(BaseGLM):
                 target_shape=self.target_shape,
                 memory_level=self.memory_level,
             )
-            self.masker_.fit(run_imgs[0])
+            self.masker_.fit(run_img)
         else:
             # Make sure masker has been fitted otherwise no attribute mask_img_
             self.mask_img._check_fitted()
@@ -943,7 +947,7 @@ class FirstLevelModel(BaseGLM):
                             setattr(self.masker_, param_name, our_param)
                     else:
                         setattr(self.masker_, param_name, our_param)
-                self.masker_.fit(run_imgs[0])
+                self.masker_.fit(run_img)
             else:
                 self.masker_ = self.mask_img
 
