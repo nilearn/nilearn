@@ -53,7 +53,7 @@ def mask(affine_eye):
 @pytest.fixture
 def niftimapsmasker_inputs(affine_eye):
     n_regions = 9
-    shape = (13, 11, 12)
+    shape = (8, 8, 8)
     label_img, _ = generate_maps(shape, n_regions=n_regions, affine=affine_eye)
     return {"maps_img": label_img}
 
