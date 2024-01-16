@@ -16,7 +16,7 @@ Here are the steps we will go through:
 3. Compute a range of contrasts across both runs
 4. Generate a report
 
-Technically, this example shows how to handle two runs.
+Technically, this example shows how to handle two runs
 that contain the same experimental conditions.
 The model directly returns a fixed effect
 of the statistics across the two runs.
@@ -34,7 +34,7 @@ print(f"Output will be saved to: {output_dir}")
 # %%
 # Set up the GLM
 # --------------
-# Inspecting 'data', we note that there are two runs.gst
+# Inspecting 'data', we note that there are two runs.
 # We will retain those two runs in a list of 4D img objects.
 from nilearn.datasets import func
 
@@ -59,6 +59,7 @@ design_matrices = [pd.DataFrame(np.load(df)["X"]) for df in design_files]
 
 # %%
 # Initialize and run the GLM
+# --------------------------
 # First, we need to specify the model before fitting it to the data.
 # Note that a brain mask was provided in the dataset,
 # so that is what we will use.
