@@ -361,20 +361,17 @@ def plot_contrast_matrix(
         Figure object.
 
     """
-    design_column_names = design_matrix.columns.tolist()
-    if isinstance(contrast_def, str):
-        contrast_def = expression_to_contrast_vector(
-            contrast_def, design_column_names
-        )
     contrast_def = pad_contrast_matrix(contrast_def, design_matrix)
     con_matrix = np.asmatrix(contrast_def)
 
+    design_column_names = design_matrix.columns.tolist()
     max_len = np.max([len(str(name)) for name in design_column_names])
 
+    nb_columns_design_matrix = len(design_column_names)
     if ax is None:
         plt.figure(
             figsize=(
-                0.4 * len(design_column_names),
+                0.4 * nb_columns_design_matrix,
                 1 + 0.5 * con_matrix.shape[0] + 0.04 * max_len,
             )
         )
@@ -389,7 +386,7 @@ def plot_contrast_matrix(
     ax.set_ylabel("")
     ax.set_yticks(())
 
-    ax.xaxis.set(ticks=np.arange(len(design_column_names)))
+    ax.xaxis.set(ticks=np.arange(nb_columns_design_matrix))
     ax.set_xticklabels(design_column_names, rotation=50, ha="left")
 
     if colorbar:
@@ -423,7 +420,12 @@ def pad_contrast_matrix(contrast_def, design_matrix):
         Padded contrast
 
     """
-    nb_columns_design_matrix = len(design_matrix.columns.tolist())
+    design_column_names = design_matrix.columns.tolist()
+    if isinstance(contrast_def, str):
+        contrast_def = expression_to_contrast_vector(
+            contrast_def, design_column_names
+        )
+    nb_columns_design_matrix = len(design_column_names)
     nb_columns_contrast_def = (
         contrast_def.shape[0]
         if contrast_def.ndim == 1
@@ -432,6 +434,14 @@ def pad_contrast_matrix(contrast_def, design_matrix):
     horizontal_padding = nb_columns_design_matrix - nb_columns_contrast_def
     if horizontal_padding == 0:
         return contrast_def
+    warnings.warn(
+        (
+            f"Contrasts will be padded with {horizontal_padding} "
+            "column(s) of zeros."
+        ),
+        category=UserWarning,
+        stacklevel=3,
+    )
     contrast_def = np.pad(
         contrast_def,
         ((0, 0), (0, horizontal_padding)),

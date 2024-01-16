@@ -23,7 +23,6 @@ from matplotlib import pyplot as plt
 from nilearn.plotting import plot_glass_brain, plot_roi, plot_stat_map
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
 from nilearn.plotting.matrix_plotting import (
-    pad_contrast_matrix,
     plot_contrast_matrix,
     plot_design_matrix,
 )
@@ -196,7 +195,6 @@ def make_glm_report(
     report_body_template = string.Template(html_body_template_text)
 
     contrasts = _coerce_to_dict(contrasts)
-    pad_contrast_matrix
     contrast_plots = _plot_contrasts(contrasts, design_matrices)
     page_title, page_heading_1, page_heading_2 = _make_headings(
         contrasts,
