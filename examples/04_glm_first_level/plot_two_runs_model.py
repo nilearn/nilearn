@@ -236,10 +236,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
 # Since we have already computed the FirstLevelModel
 # and have a number of contrasts,
 # we can quickly create a summary report.
-from nilearn.reporting import make_glm_report
-
-report = make_glm_report(
-    fmri_glm_multirun,
+report = fmri_glm_multirun.generate_report(
     contrasts,
     bg_img=mean_img_,
     title="two-runs fMRI model fitting",
