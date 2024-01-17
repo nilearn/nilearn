@@ -7,9 +7,16 @@ import plotly.express as px
 import requests
 from rich import print
 
+user = "nilearn"
+repo = "nilearn"
+
 token_file = Path("/home/remi/Documents/tokens/gh_read_repo_for_orga.txt")
 username = "Remi-Gau"
+
+# can be found out at
+# "https://api.github.com/repos/{user}/{repo}/actions/workflows"
 workflow_id = "71549417"
+
 output_file = Path(__file__).parent / "test_runs_timing.tsv"
 
 
@@ -26,7 +33,7 @@ def get_auth(username, token_file):
 
 def get_runs(workflow_id, auth=None, page=1):
     """Get list of runs for a workflow."""
-    source = "https://api.github.com/repos/nilearn/nilearn/actions/workflows"
+    source = f"https://api.github.com/repos/{user}/{repo}/actions/workflows"
     query = f"?per_page=100&status=completed&branch=main&page={page}"
     url = f"{source}/{workflow_id}/runs{query}"
 
