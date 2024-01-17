@@ -2,17 +2,8 @@
 A short demo of the surface images & maskers
 ============================================
 
-copied from the nilearn sandbox discussion, to be transformed into tests &
-examples
-
-.. note::
-
-    this example is meant to support discussion around a tentative API for
-    surface images in nilearn. This functionality is provided by the
-    nilearn.experimental.surface module; it is still incomplete and subject to
-    change without a deprecation cycle. Please participate in the discussion on
-    GitHub!
-
+Copied from the nilearn sandbox discussion, to be transformed into tests &
+examples.
 """
 
 # %%
@@ -21,8 +12,7 @@ from typing import Optional, Sequence
 
 from matplotlib import pyplot as plt
 
-from nilearn import plotting
-from nilearn.experimental import surface
+from nilearn import datasets, maskers, plotting, surface
 
 
 def plot_surf_img(
@@ -53,10 +43,10 @@ def plot_surf_img(
     return fig
 
 
-img = surface.fetch_nki()[0]
+img = datasets.fetch_nki()[0]
 print(f"NKI image: {img}")
 
-masker = surface.SurfaceMasker()
+masker = maskers.SurfaceMasker()
 masked_data = masker.fit_transform(img)
 print(f"Masked data shape: {masked_data.shape}")
 
@@ -72,14 +62,14 @@ plotting.show()
 # -----------------------------------------------------------
 from nilearn import connectome, plotting
 
-img = surface.fetch_nki()[0]
+img = datasets.fetch_nki()[0]
 print(f"NKI image: {img}")
 
-labels_img, label_names = surface.fetch_destrieux()
+labels_img, label_names = datasets.fetch_destrieux()
 print(f"Destrieux image: {labels_img}")
 plot_surf_img(labels_img, cmap="gist_ncar", avg_method="median")
 
-labels_masker = surface.SurfaceLabelsMasker(labels_img, label_names).fit()
+labels_masker = datasets.SurfaceLabelsMasker(labels_img, label_names).fit()
 masked_data = labels_masker.transform(img)
 print(f"Masked data shape: {masked_data.shape}")
 
@@ -117,11 +107,11 @@ monkeypatch_masker_checks()
 # Now using the appropriate masker we can use a `Decoder` on surface data just
 # as we do for volume images.
 
-img = surface.fetch_nki()[0]
+img = datasets.fetch_nki()[0]
 y = np.random.RandomState(0).choice([0, 1], replace=True, size=img.shape[0])
 
 decoder = decoding.Decoder(
-    mask=surface.SurfaceMasker(),
+    mask=maskers.SurfaceMasker(),
     param_grid={"C": [0.01, 0.1]},
     cv=3,
     screening_percentile=1,
@@ -140,11 +130,11 @@ from sklearn import feature_selection, linear_model, pipeline, preprocessing
 
 from nilearn import plotting
 
-img = surface.fetch_nki()[0]
+img = datasets.fetch_nki()[0]
 y = np.random.RandomState(0).normal(size=img.shape[0])
 
 decoder = pipeline.make_pipeline(
-    surface.SurfaceMasker(),
+    maskers.SurfaceMasker(),
     preprocessing.StandardScaler(),
     feature_selection.SelectKBest(
         score_func=feature_selection.f_regression, k=500
