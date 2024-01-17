@@ -68,9 +68,9 @@ task_label = "languagelocalizer"
 
 # %%
 # We just expect one run_img per subject.
-import os
+from pathlib import Path
 
-print([os.path.basename(run) for run in models_run_imgs[0]])
+print([Path(run).name for run in models_run_imgs[0]])
 
 # %%
 # The only confounds stored are regressors obtained from motion correction. As
