@@ -4,35 +4,27 @@ from __future__ import annotations
 import abc
 import dataclasses
 import pathlib
-from typing import Dict
-
-import numpy as np
 
 from nilearn.surface import _io
-
-PolyData = Dict[str, np.ndarray]
 
 
 class _Mesh(abc.ABC):
     """A surface :term:`mesh` having vertex, \
     coordinates and faces (triangles)."""
 
-    n_vertices: int
+    n_vertices: ...
 
     # TODO those are properties for now for compatibility with plot_surf_img
     # for the demo.
     # But they should probably become functions as they can take some time to
     # return or even fail
-    coordinates: np.ndarray
-    faces: np.ndarray
-
-    def __repr__(self) -> str:
+    def __repr__(self):
         return (
             f"<{self.__class__.__name__} "
             f"with {getattr(self, 'n_vertices', '??')} vertices>"
         )
 
-    def to_gifti(self, gifti_file: pathlib.Path | str):
+    def to_gifti(self, gifti_file):
         """Write surface mesh to a Gifti file on disk.
 
         Parameters
@@ -46,12 +38,7 @@ class _Mesh(abc.ABC):
 class InMemoryMesh(_Mesh):
     """A surface mesh stored as in-memory numpy arrays."""
 
-    n_vertices: int
-
-    coordinates: np.ndarray
-    faces: np.ndarray
-
-    def __init__(self, coordinates: np.ndarray, faces: np.ndarray) -> None:
+    def __init__(self, coordinates, faces):
         self.coordinates = coordinates
         self.faces = faces
         self.n_vertices = coordinates.shape[0]
@@ -60,25 +47,21 @@ class InMemoryMesh(_Mesh):
 class FileMesh(_Mesh):
     """A surface mesh stored in a Gifti or Freesurfer file."""
 
-    n_vertices: int
-
-    file_path: pathlib.Path
-
-    def __init__(self, file_path: pathlib.Path | str) -> None:
+    def __init__(self, file_path):
         self.file_path = pathlib.Path(file_path)
         self.n_vertices = _io.read_mesh(self.file_path)["coordinates"].shape[0]
 
     @property
-    def coordinates(self) -> np.ndarray:
+    def coordinates(self):
         """Get x, y, z, values for each mesh vertex."""
         return _io.read_mesh(self.file_path)["coordinates"]
 
     @property
-    def faces(self) -> np.ndarray:
+    def faces(self):
         """Get array of adjacent vertices."""
         return _io.read_mesh(self.file_path)["faces"]
 
-    def loaded(self) -> InMemoryMesh:
+    def loaded(self):
         """Load surface mesh into memory."""
         loaded_arrays = _io.read_mesh(self.file_path)
         return InMemoryMesh(
@@ -86,10 +69,7 @@ class FileMesh(_Mesh):
         )
 
 
-PolyMesh = Dict[str, _Mesh]
-
-
-def _check_data_consistent_shape(data: PolyData):
+def _check_data_consistent_shape(data):
     """Check that shapes of PolyData parts match.
 
     They must match in all but the last dimension (which is the number of
@@ -109,7 +89,7 @@ def _check_data_consistent_shape(data: PolyData):
             )
 
 
-def _check_data_and_mesh_compat(mesh: PolyMesh, data: PolyData):
+def _check_data_and_mesh_compat(mesh, data):
     """Check that mesh and data have the same keys and that shapes match."""
     data_keys, mesh_keys = set(data.keys()), set(mesh.keys())
     if data_keys != mesh_keys:
@@ -132,11 +112,11 @@ def _check_data_and_mesh_compat(mesh: PolyMesh, data: PolyData):
 class SurfaceImage:
     """Surface image, usually containing meshes & data for both hemispheres."""
 
-    mesh: PolyMesh
-    data: PolyData
-    shape: tuple[int, ...] = dataclasses.field(init=False)
+    mesh: ...
+    data: ...
+    shape: ... = dataclasses.field(init=False)
 
-    def __post_init__(self) -> None:
+    def __post_init__(self):
         _check_data_consistent_shape(self.data)
         _check_data_and_mesh_compat(self.mesh, self.data)
         total_n_vertices = sum(
@@ -145,5 +125,5 @@ class SurfaceImage:
         first_data_shape = list(self.data.values())[0].shape
         self.shape = (*first_data_shape[:-1], total_n_vertices)
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return f"<{self.__class__.__name__} {getattr(self, 'shape', '')}>"

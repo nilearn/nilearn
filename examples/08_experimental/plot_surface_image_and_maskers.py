@@ -7,20 +7,12 @@ examples.
 """
 
 # %%
-
-from typing import Optional, Sequence
-
 from matplotlib import pyplot as plt
 
-from nilearn import datasets, maskers, plotting, surface
+from nilearn import datasets, maskers, plotting
 
 
-def plot_surf_img(
-    img: surface.SurfaceImage,
-    parts: Optional[Sequence[str]] = None,
-    mesh: Optional[surface.surface_image.PolyMesh] = None,
-    **kwargs,
-) -> plt.Figure:
+def plot_surf_img(img, parts=None, mesh=None, **kwargs):
     if mesh is None:
         mesh = img.mesh
     if parts is None:

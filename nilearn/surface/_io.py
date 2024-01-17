@@ -1,29 +1,23 @@
 """Input/output for surface data and meshes."""
 import pathlib
-from typing import Dict, Union
 
 import nibabel as nib
-import numpy as np
 
 from nilearn import surface as old_surface
 
 
-def read_array(array_file: Union[pathlib.Path, str]) -> np.ndarray:
+def read_array(array_file):
     """Load surface data into a Numpy array."""
     return old_surface.load_surf_data(array_file)
 
 
-def read_mesh(mesh_file: Union[pathlib.Path, str]) -> Dict[str, np.ndarray]:
+def read_mesh(mesh_file):
     """Load surface mesh geometry into Numpy arrays."""
     loaded = old_surface.load_surf_mesh(mesh_file)
     return {"coordinates": loaded.coordinates, "faces": loaded.faces}
 
 
-def mesh_to_gifti(
-    coordinates: np.ndarray,
-    faces: np.ndarray,
-    gifti_file: Union[pathlib.Path, str],
-) -> None:
+def mesh_to_gifti(coordinates, faces, gifti_file):
     """Write surface mesh to gifti file on disk."""
     gifti_file = pathlib.Path(gifti_file)
     gifti_img = nib.gifti.GiftiImage()
