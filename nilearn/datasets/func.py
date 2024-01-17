@@ -2215,7 +2215,7 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
 def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
     """Download language localizer example :term:`bids<BIDS>` dataset.
 
-    .. deprecated:: 0.10.2
+    .. deprecated:: 0.11.0
 
         This fetcher function will be removed as it returns the same data
         as :func:`nilearn.datasets.fetch_language_localizer_demo_dataset`.
