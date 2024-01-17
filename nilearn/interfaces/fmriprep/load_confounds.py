@@ -304,9 +304,9 @@ def load_confounds(
 
     """
     _check_strategy(strategy)
-    if fd_threshold == 0.2:
+    if "scrub" in strategy and fd_threshold == 0.2:
         fd_threshold_default = (
-            "The default parameter for standardize is currently 0.2 "
+            "The default parameter for fd_threshold is currently 0.2 "
             "which is inconsistent with the fMRIPrep default of 0.5. "
             "In release 0.13.0, "
             "the default strategy will be replaced by 0.5."
@@ -314,11 +314,11 @@ def load_confounds(
         warnings.warn(
             category=DeprecationWarning,
             message=fd_threshold_default,
-            stacklevel=3,
+            stacklevel=2,
         )
-    if std_dvars_threshold == 3:
+    if "scrub" in strategy and std_dvars_threshold == 3:
         std_dvars_threshold_default = (
-            "The default parameter for standardize is currently 3 "
+            "The default parameter for std_dvars_threshold is currently 3 "
             "which is inconsistent with the fMRIPrep default of 1.5. "
             "In release 0.13.0, "
             "the default strategy will be replaced by 1.5."
@@ -326,7 +326,7 @@ def load_confounds(
         warnings.warn(
             category=DeprecationWarning,
             message=std_dvars_threshold_default,
-            stacklevel=3,
+            stacklevel=2,
         )
     # load confounds per image provided
     img_files, flag_single = sanitize_confounds(img_files)
