@@ -32,6 +32,12 @@ Note that more power would be obtained from using a larger sample of subjects.
     - Gael Varoquaux, Apr 2014
 
 """
+# %%
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
+
 
 # %%
 # Load Oasis dataset
@@ -94,9 +100,10 @@ design_matrix = pd.DataFrame(
 # Let's plot the design matrix.
 from nilearn import plotting
 
-ax = plotting.plot_design_matrix(design_matrix)
-ax.set_title("Second level design matrix", fontsize=12)
+fig, ax1 = plt.subplots(1, 1, figsize=(4, 8))
+ax = plotting.plot_design_matrix(design_matrix, ax=ax1)
 ax.set_ylabel("maps")
+fig.suptitle("Second level design matrix")
 
 # %%
 # Next, we specify and fit the second-level model when loading the data and
@@ -127,14 +134,16 @@ from nilearn.glm import threshold_stats_img
 _, threshold = threshold_stats_img(z_map, alpha=0.05, height_control="fdr")
 print(f"The FDR=.05-corrected threshold is: {threshold:03g}")
 
+fig = plt.figure(figsize=(5, 3))
 display = plotting.plot_stat_map(
     z_map,
     threshold=threshold,
     colorbar=True,
     display_mode="z",
     cut_coords=[-4, 26],
-    title="age effect on gray matter density (FDR = .05)",
+    figure=fig,
 )
+fig.suptitle("age effect on gray matter density (FDR = .05)")
 plotting.show()
 
 # %%
