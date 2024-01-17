@@ -26,10 +26,6 @@ model with a random design matrix **X**:
 * **e** is random normal noise.
 
 """
-
-# %%
-print(__doc__)
-
 from time import time
 
 import matplotlib.pyplot as plt

@@ -25,6 +25,10 @@ spontaneous activity Gael Varoquaux, Alexandre Gramfort, Fabian Pedregosa,
 Vincent Michel, Bertrand Thirion Information Processing in Medical Imaging,
 2011, pp. 562-573, Lecture Notes in Computer Science
 
-Learning and comparing functional connectomes across subjects. Gael Varoquaux, R.C. Craddock NeuroImage, 2013
+Learning and comparing functional connectomes across subjects.
+Gael Varoquaux, R.C. Craddock NeuroImage, 2013
 
-Licence: usage is unrestricted for non-commercial research purposes.
+
+License
+-------
+usage is unrestricted for non-commercial research purposes.

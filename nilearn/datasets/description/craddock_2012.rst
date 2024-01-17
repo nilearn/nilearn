@@ -30,6 +30,9 @@ http://www.nitrc.org/projects/cluster_roi/
 Craddock, R. Cameron, G.Andrew James, Paul E. Holtzheimer, Xiaoping P. Hu,
 and Helen S. Mayberg. "A Whole Brain fMRI Atlas Generated via Spatially
 Constrained Spectral Clustering". Human Brain Mapping 33, no 8 (2012):
-1914–1928. doi:10.1002/hbm.21333.
+1914-1928. doi:10.1002/hbm.21333.
 
-Licence: Creative Commons Attribution Non-commercial Share Alike.
+
+License
+-------
+Creative Commons Attribution Non-commercial Share Alike.

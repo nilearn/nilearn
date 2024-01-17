@@ -15,6 +15,7 @@ NEW
 Fixes
 -----
 
+- :bdg-dark:`Code` Make sure that all atlases and datasets fetchers return a description (:gh:`4215` `Rémi Gau`_).
 - :bdg-dark:`Code` Update the ``CompCor`` strategy in :func:`~interfaces.fmriprep.load_confounds` and :func:`~interfaces.fmriprep.load_confounds_strategy` to support ``fmriprep`` 21.x series and above. (:gh:`3285` by `Hao-Ting Wang`_).
 - :bdg-success:`API` :class:`~maskers.MultiNiftiMasker` can now call :meth:`~maskers.NiftiMasker.generate_report` which will generate a report for the first subject in the list of subjects (:gh:`4001` by `Yasmin Mzayek`_).
 - :bdg-dark:`Code` Fix :class:`~nilearn.glm.regression.SimpleRegressionResults` to accommodate for the lack of a ``model`` attribute (:gh:`4071` `Rémi Gau`_)
@@ -54,4 +55,5 @@ Changes
 - :bdg-danger:`Deprecation` :func:`~plotting.plot_surf_roi` will raise a warning if ``roi_map`` contains negative or non-integer values; in version 0.13 this will be a ``ValueError`` (:gh:`4131` by `Michelle Wang`_).
 - :bdg-dark:`Code` Remove leading underscore from non private functions to align with PEP8 (:gh:`4086` by `Rémi Gau`_).
 - :bdg-dark:`Code` Make ``decoding/proximal_operator`` explicitly private to align with PEP8 (:gh:`4153` by `Rémi Gau`_).
+- :bdg-primary:`Doc` Combine GLM examples ``plot_fixed_effect`` and ``plot_fiac_analysis`` into a a single example ``plot_two_runs_model`` (:gh:`3191` by `Taylor Salo`_ and `Rémi Gau`_).
 - :bdg-dark:`Code` Make private functions public when used outside of their module ``nilearn.interface`` to align with PEP8 (:gh:`4168` by `Rémi Gau`_).

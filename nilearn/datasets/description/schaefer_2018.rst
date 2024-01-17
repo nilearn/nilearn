@@ -8,7 +8,6 @@ space, see Schaefer et al. (2018). Each ROI is annotated with a
 network from the Yeo parcellation (7- or 17-network solution; see
 Yeo et al., 2011).
 
-
 Different versions of the atlas are available, varying in
 - number of rois (100 to 1000),
 - network annotation (7 or 17)
@@ -35,4 +34,6 @@ Roffman JL, Smoller JW, Zollei L., Polimeni JR, Fischl B, Liu H,
 Buckner RL. The organization of the human cerebral cortex estimated by
 intrinsic functional connectivity. J Neurophysiol 106(3):1125-65, 2011.
 
-Licence: MIT.
+License
+-------
+MIT

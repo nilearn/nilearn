@@ -20,12 +20,7 @@ https://doi.org/10.1093/cercor/13.7.793
 
 This example takes a lot of time because the input are lists of 3D images
 sampled in different positions (encoded by different affine functions).
-
 """
-# %%
-print(__doc__)
-
-
 # %%
 # Fetch the :term:`SPM` multimodal_faces data.
 from nilearn.datasets import fetch_spm_multimodal_fmri
