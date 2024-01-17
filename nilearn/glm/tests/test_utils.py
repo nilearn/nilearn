@@ -3,7 +3,11 @@ import numpy as np
 import pytest
 import scipy.linalg as spl
 import scipy.stats as sps
-from numpy.testing import assert_almost_equal, assert_array_almost_equal
+from numpy.testing import (
+    assert_almost_equal,
+    assert_array_almost_equal,
+    assert_array_equal,
+)
 from scipy.stats import norm
 
 from nilearn._utils.data_gen import generate_fake_fmri
@@ -11,6 +15,7 @@ from nilearn.glm._utils import (
     full_rank,
     multiple_fast_inverse,
     multiple_mahalanobis,
+    pad_contrast,
     positive_reciprocal,
     z_score,
 )
@@ -242,3 +247,22 @@ def test_pos_recipr():
     assert positive_reciprocal(-1) == 0
     assert positive_reciprocal(0) == 0
     assert positive_reciprocal(2) == 0.5
+
+
+@pytest.mark.parametrize("val", [[1], [1, 0]])
+@pytest.mark.parametrize("stat_type", ["t", "F"])
+def test_pad_contrast(rng, val, stat_type):
+    """Check padding of vector contrasts."""
+    theta = rng.random((4, 1))
+    con_val = np.array([val])
+    padded_contrast = pad_contrast(con_val, theta, stat_type=stat_type)
+    assert_array_equal(padded_contrast, [[1, 0, 0, 0]])
+
+
+@pytest.mark.parametrize("val", [[[1, 0], [0, 1]], [[1, 0, 0], [0, 1, 0]]])
+def test_pad_F_contrast(rng, val):
+    """Check padding of matrix contrasts."""
+    theta = rng.random((4, 1))
+    con_val = np.array(val)
+    padded_contrast = pad_contrast(con_val, theta, stat_type="F")
+    assert_array_equal(padded_contrast, [[1, 0, 0, 0], [0, 1, 0, 0]])

@@ -170,13 +170,13 @@ For new-comers, we recommend going through the following examples in the suggest
 .. only:: html
 
   .. image:: /auto_examples/00_tutorials/images/thumb/sphx_glr_plot_single_subject_single_run_thumb.png
-    :alt: Intro to GLM Analysis: a single-session, single-subject fMRI dataset
+    :alt: Intro to GLM Analysis: a single-run, single-subject fMRI dataset
 
   :ref:`sphx_glr_auto_examples_00_tutorials_plot_single_subject_single_run.py`
 
 .. raw:: html
 
-      <div class="sphx-glr-thumbnail-title">Intro to GLM Analysis: a single-session, single-subject fMRI dataset</div>
+      <div class="sphx-glr-thumbnail-title">Intro to GLM Analysis: a single-run, single-subject fMRI dataset</div>
     </div>
 
 
@@ -221,13 +221,13 @@ For new-comers, we recommend going through the following examples in the suggest
 .. only:: html
 
   .. image:: /auto_examples/04_glm_first_level/images/thumb/sphx_glr_plot_fiac_analysis_thumb.png
-    :alt: Simple example of two-session fMRI model fitting
+    :alt: Simple example of two-runs fMRI model fitting
 
-  :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_fiac_analysis.py`
+  :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_two_runs_model.py`
 
 .. raw:: html
 
-      <div class="sphx-glr-thumbnail-title">Simple example of two-session fMRI model fitting</div>
+      <div class="sphx-glr-thumbnail-title">Simple example of two-runs fMRI model fitting</div>
     </div>
 
 

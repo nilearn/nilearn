@@ -248,17 +248,24 @@ def pad_contrast(con_val, theta, stat_type):
             warn(
                 f"t contrasts should be of length P={theta.shape[0]}, "
                 f"but it has length {nb_cols}. "
-                "The rest of the contrast was padded with zeros."
+                "The rest of the contrast was padded with zeros.",
+                category=UserWarning,
+                stacklevel=3,
             )
         if stat_type == "F":
             warn(
                 f"F contrasts should have {theta.shape[0]} colmuns, "
                 f"but it has only {nb_cols}. "
-                "The rest of the contrast was padded with zeros."
+                "The rest of the contrast was padded with zeros.",
+                category=UserWarning,
+                stacklevel=3,
             )
 
     if pad:
-        padding = np.zeros((nb_cols, theta.shape[0] - nb_cols))
+        if stat_type == "t" or (stat_type == "F" and con_val.shape[0] == 1):
+            padding = np.zeros((1, theta.shape[0] - nb_cols))
+        elif stat_type == "F":
+            padding = np.zeros((con_val.shape[0], theta.shape[0] - nb_cols))
         con_val = np.hstack((con_val, padding))
 
     return con_val

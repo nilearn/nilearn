@@ -112,7 +112,7 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
 
     In case of positive numbers, this mean is the usual geometric mean.
 
-    See Algorithm 3 of :footcite:`Fletcher2007`.
+    See Algorithm 3 of :footcite:t:`Fletcher2007`.
 
     References
     ----------
@@ -387,7 +387,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
     kind : {"covariance", "correlation", "partial correlation",\
             "tangent", "precision"}, default='covariance'
         The matrix kind.
-        For the use of "tangent" see :footcite:`Varoquaux2010b`.
+        For the use of "tangent" see :footcite:t:`Varoquaux2010b`.
 
     vectorize : bool, default=False
         If True, connectivity matrices are reshaped into 1D arrays and only

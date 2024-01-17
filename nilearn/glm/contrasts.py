@@ -153,7 +153,7 @@ def compute_fixed_effect_contrast(labels, results, con_vals, stat_type=None):
     n_contrasts = 0
     for i, (lab, res, con_val) in enumerate(zip(labels, results, con_vals)):
         if np.all(con_val == 0):
-            warn(f"Contrast for session {int(i)} is null.")
+            warn(f"Contrast for run {int(i)} is null.")
             continue
         contrast_ = compute_contrast(lab, res, con_val, stat_type)
         contrast = contrast_ if contrast is None else contrast + contrast_
@@ -414,7 +414,11 @@ class Contrast:
             )
         dof_ = self.dof + other.dof
         if self.stat_type == "F":
-            warn("Running approximate fixed effects on F statistics.")
+            warn(
+                "Running approximate fixed effects on F statistics.",
+                category=UserWarning,
+                stacklevel=2,
+            )
         effect_ = self.effect + other.effect
         variance_ = self.variance + other.variance
         return Contrast(

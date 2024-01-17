@@ -13,8 +13,8 @@ from nilearn._utils.niimg import is_binary_niimg, safe_get_data
 from nilearn.image import get_data, new_img_like, reorder_img
 from nilearn.image.resampling import get_bounds, get_mask_bounds
 from nilearn.plotting.displays import CutAxes
-from nilearn.plotting.displays._axes import _coords_3d_to_2d
-from nilearn.plotting.edge_detect import _edge_map
+from nilearn.plotting.displays._axes import coords_3d_to_2d
+from nilearn.plotting.edge_detect import edge_map
 from nilearn.plotting.find_cuts import find_cut_slices, find_xyz_cut_coords
 
 
@@ -595,7 +595,7 @@ class BaseSlicer:
         for display_ax in self.axes.values():
             try:
                 data_2d = display_ax.transform_to_2d(data, affine)
-                edge_mask = _edge_map(data_2d)
+                edge_mask = edge_map(data_2d)
             except IndexError:
                 # We are cutting outside the indices of the data
                 continue
@@ -639,7 +639,7 @@ class BaseSlicer:
         for display_ax in self.axes.values():
             direction = display_ax.direction
             coord = display_ax.coord
-            marker_coords_2d, third_d = _coords_3d_to_2d(
+            marker_coords_2d, third_d = coords_3d_to_2d(
                 marker_coords, direction, return_direction=True
             )
             xdata, ydata = marker_coords_2d.T
@@ -815,6 +815,10 @@ def _get_cbar_ticks(vmin, vmax, offset, nb_ticks=5):
     if vmin == vmax:
         return np.linspace(vmin, vmax, 1)
 
+    # edge case where the data has all negative values but vmax is exactly 0
+    if vmax == 0:
+        vmax += np.finfo(np.float32).eps
+
     # If a threshold is specified, we want two of the tick
     # to correspond to -thresold and +threshold on the colorbar.
     # If the threshold is very small compared to vmax,
@@ -822,7 +826,7 @@ def _get_cbar_ticks(vmin, vmax, offset, nb_ticks=5):
     ticks = np.linspace(vmin, vmax, nb_ticks)
     if offset is not None and offset / vmax > 0.12:
         diff = [abs(abs(tick) - offset) for tick in ticks]
-        # Edge case where the thresholds are exactl
+        # Edge case where the thresholds are exactly
         # at the same distance to 4 ticks
         if diff.count(min(diff)) == 4:
             idx_closest = np.sort(np.argpartition(diff, 4)[:4])

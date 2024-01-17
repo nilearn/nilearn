@@ -1,6 +1,6 @@
 """
-Intro to GLM Analysis: a single-session, single-subject fMRI dataset
-====================================================================
+Intro to GLM Analysis: a single-run, single-subject fMRI dataset
+================================================================
 
 In this tutorial, we use a General Linear Model (:term:`GLM`) to compare the
 :term:`fMRI` signal during periods of auditory stimulation
@@ -19,9 +19,10 @@ under the direction of Karl Friston. It is provided by FIL methods
 group which develops the :term:`SPM` software.
 
 According to :term:`SPM` documentation, 96 scans were acquired (repetition time
-:term:`TR` = 7s) in one session. The paradigm consisted of alternating periods
-of stimulation and rest, lasting 42s each (that is, for 6 scans). The session
-started with a rest block.  Auditory stimulation consisted of bi-syllabic words
+:term:`TR` = 7s) in one run. The paradigm consisted of alternating periods
+of stimulation and rest, lasting 42s each (that is, for 6 scans).
+The run started with a rest block.
+Auditory stimulation consisted of bi-syllabic words
 presented binaurally at a rate of 60 per minute.
 The functional data starts at scan number 4,
 that is the image file ``fM00223_004``.

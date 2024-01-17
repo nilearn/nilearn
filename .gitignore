@@ -17,8 +17,6 @@ nilearn_data
 
 pip-log.txt
 
-.pytest_cache
-
 .tox
 
 .ropeproject/
@@ -44,6 +42,10 @@ nilearn/_version.py
 env/
 venv/
 
+# testing
+.pytest_cache
+generated_glm_reports
+
 # coverage
 .coverage
 coverage
@@ -58,8 +60,8 @@ doc/building_blocks/generated/
 doc/datasets/generated/
 doc/generated/
 doc/modules/generated/
-doc/themes/nilearn/static/jquery.js
 doc/sg_execution_times.rst
+doc/themes/nilearn/static/jquery.js
 
 # examples
 examples/**/*.pdf

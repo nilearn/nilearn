@@ -43,7 +43,7 @@ def fetch_atlas_difumo(
     256, 512, and 1024).
     These modes are optimized to represent well raw :term:`BOLD` timeseries,
     over a with range of experimental conditions.
-    See :footcite:`Dadi2020`.
+    See :footcite:t:`Dadi2020`.
 
     .. versionadded:: 0.7.1
 
@@ -169,9 +169,9 @@ def fetch_atlas_craddock_2012(
     The provided images are in MNI152 space. All images are 4D with
     shapes equal to ``(47, 56, 46, 43)``.
 
-    See :footcite:`CreativeCommons` for the licence.
+    See :footcite:t:`CreativeCommons` for the licence.
 
-    See :footcite:`Craddock2012` and :footcite:`nitrcClusterROI`
+    See :footcite:t:`Craddock2012` and :footcite:t:`nitrcClusterROI`
     for more information on this :term:`parcellation`.
 
     Parameters
@@ -292,8 +292,8 @@ def fetch_atlas_destrieux_2009(
     """Download and load the Destrieux cortical \
     :term:`deterministic atlas<Deterministic atlas>` (dated 2009).
 
-    See :footcite:`Fischl2004`,
-    and :footcite:`Destrieux2009`.
+    See :footcite:t:`Fischl2004`,
+    and :footcite:t:`Destrieux2009`.
 
     .. note::
 
@@ -448,6 +448,7 @@ def fetch_atlas_harvard_oxford(
               regions in the atlas.
             - 'filename': Same as 'maps', kept for backward
               compatibility only.
+            - 'description': :obj:`str`, description of the atlas.
 
     See Also
     --------
@@ -504,9 +505,18 @@ def fetch_atlas_harvard_oxford(
         resume=resume,
         verbose=verbose,
     )
+
+    fdescr = get_dataset_descr("harvard_oxford")
+
     atlas_niimg = check_niimg(atlas_img)
     if not symmetric_split or is_lateralized:
-        return Bunch(filename=atlas_filename, maps=atlas_niimg, labels=names)
+        return Bunch(
+            filename=atlas_filename,
+            maps=atlas_niimg,
+            labels=names,
+            description=fdescr,
+        )
+
     new_atlas_data, new_names = _compute_symmetric_split(
         "HarvardOxford", atlas_niimg, names
     )
@@ -517,6 +527,7 @@ def fetch_atlas_harvard_oxford(
         filename=atlas_filename,
         maps=new_atlas_niimg,
         labels=new_names,
+        description=fdescr,
     )
 
 
@@ -598,6 +609,7 @@ def fetch_atlas_juelich(
               regions in the atlas.
             - 'filename': Same as 'maps', kept for backward
               compatibility only.
+            - 'description': :obj:`str`, description of the atlas.
 
     See Also
     --------
@@ -649,8 +661,14 @@ def fetch_atlas_juelich(
     new_atlas_niimg = new_img_like(
         atlas_niimg, new_atlas_data, atlas_niimg.affine
     )
+
+    fdescr = get_dataset_descr("juelich")
+
     return Bunch(
-        filename=atlas_filename, maps=new_atlas_niimg, labels=list(new_names)
+        filename=atlas_filename,
+        maps=new_atlas_niimg,
+        labels=list(new_names),
+        description=fdescr,
     )
 
 
@@ -828,9 +846,9 @@ def _compute_symmetric_split(source, atlas_niimg, names):
 def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the MSDL brain :term:`Probabilistic atlas`.
 
-    It can be downloaded at :footcite:`atlas_msdl`, and cited
-    using :footcite:`Varoquaux2011`.
-    See also :footcite:`Varoquaux2013` for more information.
+    It can be downloaded at :footcite:t:`atlas_msdl`, and cited
+    using :footcite:t:`Varoquaux2011`.
+    See also :footcite:t:`Varoquaux2013` for more information.
 
     Parameters
     ----------
@@ -903,7 +921,7 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
 def fetch_coords_power_2011(legacy_format=True):
     """Download and load the Power et al. brain atlas composed of 264 ROIs.
 
-    See :footcite:`Power2011`.
+    See :footcite:t:`Power2011`.
 
     Parameters
     ----------
@@ -953,7 +971,7 @@ def fetch_atlas_smith_2009(
     """Download and load the Smith :term:`ICA` and BrainMap \
     :term:`Probabilistic atlas` (2009).
 
-    See :footcite:`Smith2009b` and :footcite:`Laird2011`.
+    See :footcite:t:`Smith2009b` and :footcite:t:`Laird2011`.
 
     Parameters
     ----------
@@ -981,14 +999,14 @@ def fetch_atlas_smith_2009(
               The shape of the image is ``(91, 109, 91, 20)``.
             - 'rsn10': :obj:`str`, path to nifti file containing the
               10 well-matched maps from the 20 maps obtained as for 'rsn20',
-              as shown in :footcite:`Smith2009b`. The shape of the
+              as shown in :footcite:t:`Smith2009b`. The shape of the
               image is ``(91, 109, 91, 10)``.
             - 'bm20': :obj:`str`, path to nifti file containing the
               20-dimensional :term:`ICA`, BrainMap components.
               The shape of the image is ``(91, 109, 91, 20)``.
             - 'bm10': :obj:`str`, path to nifti file containing the
               10 well-matched maps from the 20 maps obtained as for 'bm20',
-              as shown in :footcite:`Smith2009b`. The shape of the
+              as shown in :footcite:t:`Smith2009b`. The shape of the
               image is ``(91, 109, 91, 10)``.
             - 'rsn70': :obj:`str`, path to nifti file containing the
               70-dimensional :term:`ICA`, resting-:term:`fMRI` components.
@@ -1087,8 +1105,8 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
     7 or 17 depending on the atlas version considered.
 
     For more information on this dataset's structure,
-    see :footcite:`CorticalParcellation_Yeo2011`,
-    and :footcite:`Yeo2011`.
+    see :footcite:t:`CorticalParcellation_Yeo2011`,
+    and :footcite:t:`Yeo2011`.
 
     Parameters
     ----------
@@ -1198,8 +1216,8 @@ def fetch_atlas_aal(
     (D. L. Collins et al., 1998, Trans. Med. Imag. 17, 463-468, PubMed).
 
     For more information on this dataset's structure,
-    see :footcite:`AAL_atlas`,
-    and :footcite:`Tzourio-Mazoyer2002`.
+    see :footcite:t:`AAL_atlas`,
+    and :footcite:t:`Tzourio-Mazoyer2002`.
 
     .. warning::
 
@@ -1346,9 +1364,9 @@ def fetch_atlas_basc_multiscale_2015(
     Multiple resolutions (number of networks) are available, among
     7, 12, 20, 36, 64, 122, 197, 325, 444. The brain parcellations
     have been generated using a method called bootstrap analysis of
-    stable clusters called as BASC :footcite:`Bellec2010`,
+    stable clusters called as BASC :footcite:t:`Bellec2010`,
     and the resolutions have been selected using a data-driven method
-    called MSTEPS :footcite:`Bellec2013`.
+    called MSTEPS :footcite:t:`Bellec2013`.
 
     Note that two versions of the template are available, 'sym' or 'asym'.
     The 'asym' type contains brain images that have been registered in the
@@ -1485,7 +1503,7 @@ def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=True):
     These ROIs cover much of the cerebral cortex
     and cerebellum and are assigned to 6 networks.
 
-    See :footcite:`Dosenbach2010`.
+    See :footcite:t:`Dosenbach2010`.
 
     Parameters
     ----------
@@ -1554,7 +1572,7 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
     Visual) and have a regional label (cortexL, cortexR, cerebellum, thalamus,
     hippocampus, basalGanglia, amygdala, cortexMid).
 
-    See :footcite:`Seitzman2020`.
+    See :footcite:t:`Seitzman2020`.
 
     .. versionadded:: 0.5.1
 
@@ -1640,7 +1658,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     """Download and return file names for the Allen and MIALAB :term:`ICA` \
     :term:`Probabilistic atlas` (dated 2011).
 
-    See :footcite:`Allen2011`.
+    See :footcite:t:`Allen2011`.
 
     The provided images are in MNI152 space.
 
@@ -1660,7 +1678,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
           T-maps of all 75 unthresholded components. The image has
           shape ``(53, 63, 46, 75)``.
         - 'rsn28': :obj:`str`, path to nifti file containing the
-          T-maps of 28 RSNs included in :footcite:`Allen2011`.
+          T-maps of 28 RSNs included in :footcite:t:`Allen2011`.
           The image has shape ``(53, 63, 46, 28)``.
         - 'networks': :obj:`list` of :obj:`list` of :obj:`str`, list
           containing the names for the 28 RSNs.
@@ -1742,7 +1760,7 @@ def fetch_atlas_surf_destrieux(
     """Download and load Destrieux et al, 2010 cortical \
     :term:`Deterministic atlas`.
 
-    See :footcite:`Destrieux2010`.
+    See :footcite:t:`Destrieux2010`.
 
     This atlas returns 76 labels per hemisphere based on sulco-gryal patterns
     as distributed with Freesurfer in fsaverage5 surface space.
@@ -1885,9 +1903,9 @@ def _download_talairach(talairach_dir, verbose):
 def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     """Download the Talairach :term:`Deterministic atlas`.
 
-    For more information, see :footcite:`talairach_atlas`,
-    :footcite:`Lancaster2000`,
-    and :footcite:`Lancaster1997`.
+    For more information, see :footcite:t:`talairach_atlas`,
+    :footcite:t:`Lancaster2000`,
+    and :footcite:t:`Lancaster1997`.
 
     .. versionadded:: 0.4.0
 
@@ -1938,7 +1956,7 @@ def fetch_atlas_pauli_2017(version="prob", data_dir=None, verbose=1):
     """Download the Pauli et al. (2017) atlas.
 
     This atlas has 12 subcortical nodes in total. See
-    :footcite:`pauli_atlas` and :footcite:`Pauli2018`.
+    :footcite:t:`pauli_atlas` and :footcite:t:`Pauli2018`.
 
     Parameters
     ----------
@@ -2040,9 +2058,9 @@ def fetch_atlas_schaefer_2018(
     This function returns a :term:`Deterministic atlas`, and the provided
     images are in MNI152 space.
 
-    For more information on this dataset, see :footcite:`schaefer_atlas`,
-    :footcite:`Schaefer2017`,
-    and :footcite:`Yeo2011`.
+    For more information on this dataset, see :footcite:t:`schaefer_atlas`,
+    :footcite:t:`Schaefer2017`,
+    and :footcite:t:`Yeo2011`.
 
     Parameters
     ----------

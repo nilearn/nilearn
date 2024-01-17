@@ -25,12 +25,12 @@ classifiers = [
 dependencies = [
     "joblib>=1.0.0",
     "lxml",
-    "nibabel>=3.2.0",
+    "nibabel>=4.0.0",
     "numpy>=1.19.0",
     "pandas>=1.1.5",
     "requests>=2.25.0",
     "scikit-learn>=1.0.0",
-    "scipy>=1.6.0",
+    "scipy>=1.8.0",
     "packaging"
 ]
 description = "Statistical learning for neuroimaging in Python"
@@ -62,8 +62,7 @@ doc = [
     "sphinx-design",
     "sphinx-gallery",
     "sphinxcontrib-bibtex",
-    "sphinxext-opengraph",
-    "ruamel.yaml"
+    "sphinxext-opengraph"
 ]
 # the following is kept for "backward compatibility"
 plotly = ["nilearn[plotting]"]
@@ -111,8 +110,7 @@ extend-exclude = """
   | examples/01_plotting/plot_surf_atlas.py
   | examples/01_plotting/plot_surf_stat_map.py
   | examples/01_plotting/plot_surface_projection_strategies.py
-  | examples/04_glm_first_level/plot_fiac_analysis.py
-  | examples/04_glm_first_level/plot_fixed_effects.py
+  | examples/04_glm_first_level/plot_localizer_surface_analysis.py
   | examples/07_advanced/plot_surface_bids_analysis.py
   | nilearn/plotting/html_surface.py
   | nilearn/plotting/js_plotting_utils.py

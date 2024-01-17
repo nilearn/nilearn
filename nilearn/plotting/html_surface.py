@@ -26,9 +26,14 @@ class SurfaceView(HTMLDocument):  # noqa: D101
     pass
 
 
-def _get_vertexcolor(surf_map, cmap, norm,
-                     absolute_threshold=None, bg_map=None,
-                     bg_on_data=None, darkness=None):
+def get_vertexcolor(surf_map,
+                    cmap,
+                    norm,
+                    absolute_threshold=None,
+                    bg_map=None,
+                    bg_on_data=None,
+                    darkness=None):
+    """Get the color of the verrices."""
     if bg_map is None:
         bg_data = np.ones(len(surf_map)) * .5
         bg_vmin, bg_vmax = 0, 1
@@ -67,7 +72,7 @@ def _get_vertexcolor(surf_map, cmap, norm,
         # so that background map becomes visible
         surf_colors[~under_threshold, 3] = 0.7
 
-    vertex_colors = cm._mix_colormaps(surf_colors, bg_colors)
+    vertex_colors = cm.mix_colormaps(surf_colors, bg_colors)
 
     return to_color_strings(vertex_colors)
 
@@ -89,7 +94,7 @@ def _one_mesh_info(
         cmap, surf_map, threshold, symmetric_cmap=symmetric_cmap,
         vmax=vmax, vmin=vmin)
     info['inflated_left'] = mesh_to_plotly(surf_mesh)
-    info['vertexcolor_left'] = _get_vertexcolor(
+    info['vertexcolor_left'] = get_vertexcolor(
         surf_map, colors['cmap'], colors['norm'],
         absolute_threshold=colors['abs_threshold'], bg_map=bg_map,
         bg_on_data=bg_on_data, darkness=darkness,
@@ -171,7 +176,7 @@ def _full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
         info[f'inflated_{hemi}'] = mesh_to_plotly(
             mesh[f'infl_{hemi}'])
 
-        info[f'vertexcolor_{hemi}'] = _get_vertexcolor(
+        info[f'vertexcolor_{hemi}'] = get_vertexcolor(
             surf_map, colors['cmap'], colors['norm'],
             absolute_threshold=colors['abs_threshold'], bg_map=bg_map,
             bg_on_data=bg_on_data, darkness=darkness,

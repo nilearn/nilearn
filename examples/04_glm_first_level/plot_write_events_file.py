@@ -15,10 +15,6 @@ Fast reproducible identification and large-scale databasing of individual
 functional cognitive networks.
 BMC Neurosci 8, 91 (2007). https://doi.org/10.1186/1471-2202-8-91
 """
-
-# %%
-print(__doc__)
-
 # %%
 # Define the onset times in seconds. These are typically extracted from
 # the stimulation software used, but we will use hardcoded values in this

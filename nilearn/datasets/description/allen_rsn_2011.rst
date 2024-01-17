@@ -28,4 +28,7 @@ vol. 5, p. 12, 2011. https://doi.org/10.3389/fnsys.2011.00002
 Slices and label of the RSN ICs:
 https://www.frontiersin.org/files/Articles/2093/fnsys-05-00002-HTML/image_m/fnsys-05-00002-g004.jpg
 
-Licence: unknown.
+
+License
+-------
+unknown

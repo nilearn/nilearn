@@ -202,9 +202,9 @@ def test_contrast_values(set_up_glm, rng):
 
 def test_low_level_fixed_effects(rng):
     p = 100
-    # X1 is some effects estimate, V1 their variance for "session 1"
+    # X1 is some effects estimate, V1 their variance for "run 1"
     X1, V1 = rng.standard_normal(p), np.ones(p)
-    # same thing for a "session 2"
+    # same thing for a "run 2"
     X2, V2 = 2 * X1, 4 * V1
     # compute the fixed effects estimate, Xf, their variance Vf,
     # and the corresponding t statistic tf
@@ -289,7 +289,7 @@ def test_automatic_t2F_conversion():
     assert contrast.stat_type == "F"
 
 
-def test_invalid_contarst_type():
+def test_invalid_contrast_type():
     effect = np.ones((1, 3))
     variance = np.ones(1)
     with pytest.raises(ValueError, match="is not a valid stat_type."):
@@ -301,7 +301,7 @@ def test_contrast_padding(rng):
     X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
     labels, results = run_glm(Y, X, "ar1")
 
-    con_val = [1]
+    con_val = [1, 1]
 
     with pytest.warns(
         UserWarning, match="The rest of the contrast was padded with zeros."

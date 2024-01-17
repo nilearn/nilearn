@@ -29,7 +29,7 @@ print(f"Functional nifti image (4D) is located at: {haxby_dataset.func[0]}")
 fmri_filename = haxby_dataset.func[0]
 labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
 y = labels["labels"]
-session = labels["chunks"]
+run = labels["chunks"]
 
 # %%
 # Restrict to faces and houses
@@ -39,7 +39,7 @@ from nilearn.image import index_img
 condition_mask = y.isin(["face", "house"])
 
 fmri_img = index_img(fmri_filename, condition_mask)
-y, session = y[condition_mask], session[condition_mask]
+y, run = y[condition_mask], run[condition_mask]
 
 # %%
 # Prepare masks
@@ -70,7 +70,7 @@ process_mask_img = new_img_like(mask_img, process_mask)
 n_jobs = 2
 
 # Define the cross-validation scheme used for validation.
-# Here we use a KFold cross-validation on the session, which corresponds to
+# Here we use a KFold cross-validation on the run, which corresponds to
 # splitting the samples in 4 folds and make 4 runs using each fold as a test
 # set once and the others as learning sets
 from sklearn.model_selection import KFold
@@ -98,7 +98,7 @@ from nilearn.maskers import NiftiMasker
 # For decoding, standardizing is often very important
 nifti_masker = NiftiMasker(
     mask_img=mask_img,
-    runs=session,
+    runs=run,
     standardize="zscore_sample",
     memory="nilearn_cache",
     memory_level=1,

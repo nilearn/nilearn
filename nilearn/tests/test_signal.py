@@ -884,19 +884,26 @@ def test_clean_psc(rng):
 
     # both types should pass
     for s in [signals_pos_mean, signals_mixed_mean]:
-        cleaned_signals = clean(s, standardize="psc")
-        np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
-
-        cleaned_signals.std(axis=0)
+        cleaned_signals = clean(s, standardize="psc", detrend=False)
         np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
 
         tmp = (s - s.mean(0)) / np.abs(s.mean(0))
         tmp *= 100
         np.testing.assert_almost_equal(cleaned_signals, tmp)
 
+        # test with high pass with butterworth
+        butterworth_signals = clean(
+            s,
+            detrend=False,
+            filter="butterworth",
+            high_pass=0.01,
+            tr=2,
+            standardize="psc",
+        )
+        np.testing.assert_almost_equal(butterworth_signals.mean(0), 0)
+
     # leave out the last 3 columns with a mean of zero to test user warning
     signals_w_zero = signals + np.append(means[:, :-3], np.zeros((1, 3)))
-    cleaned_w_zero = clean(signals_w_zero, standardize="psc")
     with pytest.warns(UserWarning) as records:
         cleaned_w_zero = clean(signals_w_zero, standardize="psc")
     psc_warning = sum(

@@ -7,7 +7,7 @@ from matplotlib import cm as _cm, colors as _colors, rcParams as _rcParams
 # Custom colormaps for two-tailed symmetric statistics
 
 
-def _mix_colormaps(fg, bg):
+def mix_colormaps(fg, bg):
     """Mixes foreground and background arrays of RGBA colors.
 
     Parameters

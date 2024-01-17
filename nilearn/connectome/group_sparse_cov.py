@@ -30,7 +30,7 @@ def compute_alpha_max(emp_covs, n_samples):
     matrices are fully dense (i.e. minimal number of zero coefficients).
 
     The formula used in this function was derived using the same method
-    as in :footcite:`Duchi2012`.
+    as in :footcite:t:`Duchi2012`.
 
     Parameters
     ----------
@@ -148,7 +148,7 @@ def group_sparse_covariance(
     Running time is linear on max_iter, and number of subjects (len(subjects)),
     but cubic on number of features (subjects[0].shape[1]).
 
-    The present algorithm is based on :footcite:`Honorio2015`.
+    The present algorithm is based on :footcite:t:`Honorio2015`.
 
     Parameters
     ----------
@@ -502,8 +502,8 @@ def _group_sparse_covariance(
 class GroupSparseCovariance(BaseEstimator, CacheMixin):
     """Covariance and precision matrix estimator.
 
-    The model used has been introduced in :footcite:`Varoquaux2010a`, and the
-    algorithm used is based on what is described in :footcite:`Honorio2015`.
+    The model used has been introduced in :footcite:t:`Varoquaux2010a`, and the
+    algorithm used is based on what is described in :footcite:t:`Honorio2015`.
 
     Parameters
     ----------

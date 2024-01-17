@@ -36,3 +36,6 @@ NeuroImage, 206, 116290. https://doi.org/10.1016/j.neuroimage.2019.116290
 
 Preprint:
 Seitzman et al. (2018). https://doi.org/10.1101/450452
+
+License
+-------

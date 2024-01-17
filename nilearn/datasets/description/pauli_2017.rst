@@ -18,4 +18,7 @@ References
 For more information about this dataset:
 https://osf.io/r2hvk/
 
-Licence: UCC-By Attribution 4.0 International
+
+License
+-------
+UCC-By Attribution 4.0 International

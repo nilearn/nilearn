@@ -31,3 +31,7 @@ References
 ----------
 Fischl et al, (1999). High-resolution intersubject averaging and a
 coordinate system for the cortical surface. Hum Brain Mapp 8, 272-284.
+
+
+License
+-------
