@@ -7,6 +7,18 @@
 
 .. No relevant user manual section yet.
 
+**Classes**:
+
+.. currentmodule:: nilearn.surface
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+
+   FileMesh
+   InMemoryMesh
+   SurfaceImage
+
 **Functions**:
 
 .. currentmodule:: nilearn.surface

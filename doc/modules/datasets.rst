@@ -29,6 +29,7 @@ Templates
    load_mni152_template
    load_mni152_wm_mask
    load_mni152_wm_template
+   load_surf_fsaverage
 
 Atlases
 -------
@@ -59,6 +60,7 @@ Atlases
    fetch_coords_dosenbach_2010
    fetch_coords_power_2011
    fetch_coords_seitzman_2018
+   load_sample_atlas_surf_destrieux
 
 Preprocessed datasets
 ---------------------
@@ -85,6 +87,7 @@ Preprocessed datasets
    fetch_spm_auditory
    fetch_spm_multimodal_fmri
    fetch_surf_nki_enhanced
+   load_sample_surf_nki_enhanced
 
 Statistical maps/derivatives
 ----------------------------
