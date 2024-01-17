@@ -363,7 +363,13 @@ condition_names[np.where(condition_names == "scrambledpix")] = "scrambled"
 
 # %%
 # save the ROI 'atlas' to a Nifti file
-new_img_like(fmri_img, labels).to_filename("mask_atlas.nii.gz")
+from pathlib import Path
+
+output_dir = Path.cwd() / "results" / "plot_roi_extraction"
+output_dir.mkdir(exist_ok=True, parents=True)
+print(f"Output will be saved to: {output_dir}")
+
+new_img_like(fmri_img, labels).to_filename(output_dir / "mask_atlas.nii.gz")
 
 # %%
 # Plot the average in the different condition names
