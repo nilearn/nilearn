@@ -64,11 +64,4 @@ doc/themes/nilearn/static/jquery.js
 doc/sg_execution_times.rst
 
 # examples
-examples/**/*.pdf
-examples/**/results/
-examples/results/
 results/
-examples/*.nii
-examples/*.nii.gz
-examples/*.png
-examples/04_glm_first_level/derivatives
