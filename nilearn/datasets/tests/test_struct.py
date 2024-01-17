@@ -186,7 +186,7 @@ def test_load_surf_fsaverage():
 def test_load_surf_fsaverage_wrong_mesh_name():
     """Give incorrect value to mesh_name argument."""
     with pytest.raises(ValueError, match="'mesh' should be one of"):
-        struct.load_surf_fsaverage(mesh_name="foo")
+        struct.load_surf_fsaverage(mesh="foo")
 
 
 def test_load_surf_fsaverage_hemispheres_have_file():
