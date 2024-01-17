@@ -18,7 +18,7 @@ from nilearn import datasets, maskers, plotting, surface
 def plot_surf_img(
     img: surface.SurfaceImage,
     parts: Optional[Sequence[str]] = None,
-    mesh: Optional[surface.PolyMesh] = None,
+    mesh: Optional[surface.surface_image.PolyMesh] = None,
     **kwargs,
 ) -> plt.Figure:
     if mesh is None:
@@ -43,7 +43,7 @@ def plot_surf_img(
     return fig
 
 
-img = datasets.fetch_nki()[0]
+img = datasets.load_sample_surf_nki_enhanced()[0]
 print(f"NKI image: {img}")
 
 masker = maskers.SurfaceMasker()
@@ -62,14 +62,14 @@ plotting.show()
 # -----------------------------------------------------------
 from nilearn import connectome, plotting
 
-img = datasets.fetch_nki()[0]
+img = datasets.load_sample_surf_nki_enhanced()[0]
 print(f"NKI image: {img}")
 
-labels_img, label_names = datasets.fetch_destrieux()
+labels_img, label_names = datasets.load_sample_atlas_surf_destrieux()
 print(f"Destrieux image: {labels_img}")
 plot_surf_img(labels_img, cmap="gist_ncar", avg_method="median")
 
-labels_masker = datasets.SurfaceLabelsMasker(labels_img, label_names).fit()
+labels_masker = maskers.SurfaceLabelsMasker(labels_img, label_names).fit()
 masked_data = labels_masker.transform(img)
 print(f"Masked data shape: {masked_data.shape}")
 
@@ -107,7 +107,7 @@ monkeypatch_masker_checks()
 # Now using the appropriate masker we can use a `Decoder` on surface data just
 # as we do for volume images.
 
-img = datasets.fetch_nki()[0]
+img = datasets.load_sample_surf_nki_enhanced()[0]
 y = np.random.RandomState(0).choice([0, 1], replace=True, size=img.shape[0])
 
 decoder = decoding.Decoder(
@@ -130,7 +130,7 @@ from sklearn import feature_selection, linear_model, pipeline, preprocessing
 
 from nilearn import plotting
 
-img = datasets.fetch_nki()[0]
+img = datasets.load_sample_surf_nki_enhanced()[0]
 y = np.random.RandomState(0).normal(size=img.shape[0])
 
 decoder = pipeline.make_pipeline(
