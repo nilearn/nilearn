@@ -837,9 +837,9 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         Parameters
         ----------
         X : Niimg-like, :obj:`list` of Niimg-like objects, or \
-            :class:`numpy.ndarray` of :obj:`str`
+            :obj:`list` of :obj:`str`
             See :ref:`extracting_data`.
-            Data on which prediction is to be made. If array of strings,
+            Data on which prediction is to be made. If list of strings,
             should be the paths to the files.
 
         y : :class:`numpy.ndarray`
@@ -864,10 +864,10 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         Parameters
         ----------
         X: Niimg-like, :obj:`list` of Niimg-like objects, or \
-           :class:`numpy.ndarray` of :obj:`str`
+           :obj:`list` of :obj:`str`
             See :ref:`extracting_data`.
             Data on prediction is to be made. If this is a list,
-            the affine is considered the same for all. If array of strings,
+            the affine is considered the same for all. If list of strings,
             should be the paths to the files.
 
         Returns
@@ -875,8 +875,9 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         y_pred: :class:`numpy.ndarray`, shape (n_samples,)
             Predicted class label per sample.
         """
-        # for backwards compatibility
-        if not isinstance(X, np.ndarray):
+        # for backwards compatibility - apply masker transform if X is
+        # niimg-like or a list of strings
+        if not isinstance(X, np.ndarray) or len(np.shape(X)) == 1:
             X = self.masker_.transform(X)
         n_features = self.coef_.shape[1]
         if X.shape[1] != n_features:
@@ -898,9 +899,9 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         Parameters
         ----------
         X: Niimg-like, :obj:`list` of Niimg-like objects, or \
-            :class:`numpy.ndarray` of :obj:`str`
+            :obj:`list` of :obj:`str`
             See :ref:`extracting_data`.
-            Data on which prediction is to be made. If array of strings,
+            Data on which prediction is to be made. If list of strings,
             should be the paths to the files.
 
         Returns
@@ -913,7 +914,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         check_is_fitted(self, "coef_")
         check_is_fitted(self, "masker_")
 
-        n_samples = X.shape[-1]
+        n_samples = np.shape(X)[-1]
 
         # Prediction for dummy estimator is different from others as there is
         # no fitted coefficient

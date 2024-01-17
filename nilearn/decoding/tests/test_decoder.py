@@ -1043,11 +1043,9 @@ def test_decoder_decision_function(binary_classification_data):
 def test_decoder_strings_filepaths_input(
     tiny_binary_classification_data, tmp_path
 ):
-    """Smoke test for decoder methods to accept ndarray of strings as input."""
+    """Smoke test for decoder methods to accept list of strings as input."""
     X, y, _ = tiny_binary_classification_data
-    X_paths = np.array(
-        [tmp_path / f"niimg{i}.nii" for i in range(X.shape[-1])]
-    )
+    X_paths = [tmp_path / f"niimg{i}.nii" for i in range(X.shape[-1])]
     for i, nii_path in enumerate(X_paths):
         nibabel.save(X.slicer[..., i], nii_path)
 
