@@ -837,10 +837,9 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         Parameters
         ----------
         X : Niimg-like, :obj:`list` of Niimg-like objects, or \
-            :obj:`list` of :obj:`str`
+            :obj:`list` of :obj:`str` or path-like
             See :ref:`extracting_data`.
-            Data on which prediction is to be made. If list of strings,
-            should be the paths to the files.
+            Data on which prediction is to be made.
 
         y : :class:`numpy.ndarray`
             Target values.
@@ -864,11 +863,10 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         Parameters
         ----------
         X: Niimg-like, :obj:`list` of Niimg-like objects, or \
-           :obj:`list` of :obj:`str`
+           :obj:`list` of :obj:`str` or path-like
             See :ref:`extracting_data`.
             Data on prediction is to be made. If this is a list,
-            the affine is considered the same for all. If list of strings,
-            should be the paths to the files.
+            the affine is considered the same for all.
 
         Returns
         -------
@@ -899,10 +897,9 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         Parameters
         ----------
         X: Niimg-like, :obj:`list` of Niimg-like objects, or \
-            :obj:`list` of :obj:`str`
+            :obj:`list` of :obj:`str` or path-like
             See :ref:`extracting_data`.
-            Data on which prediction is to be made. If list of strings,
-            should be the paths to the files.
+            Data on which prediction is to be made.
 
         Returns
         -------
