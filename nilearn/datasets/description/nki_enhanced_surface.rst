@@ -14,7 +14,6 @@ Content
     :'func_right': resting-state data for the right hemisphere
     :'phenotypic': phenotypical metadata
 
-
 References
 ----------
 :Download: https://fcon_1000.projects.nitrc.org/indi/enhanced/
@@ -22,3 +21,7 @@ References
 Nooner et al, (2012). The NKI-Rockland Sample: A model for accelerating the
 pace of discovery science in psychiatry. Frontiers in neuroscience 6, 152.
 URL https://doi.org/10.3389/fnins.2012.00152
+
+
+License
+-------
