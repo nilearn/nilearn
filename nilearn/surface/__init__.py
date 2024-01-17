@@ -17,6 +17,7 @@ from .surface import (
     load_surface,
     vol_to_surf,
 )
+from .surface_image import FileMesh, InMemoryMesh, SurfaceImage
 
 __all__ = [
     "Mesh",
@@ -27,4 +28,7 @@ __all__ = [
     "load_surf_mesh",
     "load_surface",
     "vol_to_surf",
+    "FileMesh",
+    "InMemoryMesh",
+    "SurfaceImage",
 ]

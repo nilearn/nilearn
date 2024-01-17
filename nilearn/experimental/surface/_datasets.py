@@ -5,8 +5,8 @@ eventually nilearn.datasets would be updated
 from typing import Dict, Sequence, Tuple
 
 from nilearn import datasets
-from nilearn.experimental.surface import _io
-from nilearn.experimental.surface._surface_image import (
+from nilearn.surface import _io
+from nilearn.surface.surface_image import (
     FileMesh,
     Mesh,
     PolyMesh,

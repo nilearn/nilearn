@@ -8,12 +8,12 @@ from typing import Dict
 
 import numpy as np
 
-from nilearn.experimental.surface import _io
+from nilearn.surface import _io
 
 PolyData = Dict[str, np.ndarray]
 
 
-class Mesh(abc.ABC):
+class _Mesh(abc.ABC):
     """A surface :term:`mesh` having vertex, \
     coordinates and faces (triangles)."""
 
@@ -43,7 +43,7 @@ class Mesh(abc.ABC):
         _io.mesh_to_gifti(self.coordinates, self.faces, gifti_file)
 
 
-class InMemoryMesh(Mesh):
+class InMemoryMesh(_Mesh):
     """A surface mesh stored as in-memory numpy arrays."""
 
     n_vertices: int
@@ -57,7 +57,7 @@ class InMemoryMesh(Mesh):
         self.n_vertices = coordinates.shape[0]
 
 
-class FileMesh(Mesh):
+class FileMesh(_Mesh):
     """A surface mesh stored in a Gifti or Freesurfer file."""
 
     n_vertices: int
@@ -86,7 +86,7 @@ class FileMesh(Mesh):
         )
 
 
-PolyMesh = Dict[str, Mesh]
+PolyMesh = Dict[str, _Mesh]
 
 
 def _check_data_consistent_shape(data: PolyData):

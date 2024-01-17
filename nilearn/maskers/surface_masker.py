@@ -11,7 +11,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from nilearn import signal
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.class_inspect import get_params
-from nilearn.experimental.surface._surface_image import PolyMesh, SurfaceImage
+from nilearn.surface.surface_image import PolyMesh, SurfaceImage
 
 
 def check_same_n_vertices(mesh_1: PolyMesh, mesh_2: PolyMesh) -> None:
