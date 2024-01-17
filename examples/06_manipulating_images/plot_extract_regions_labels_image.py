@@ -88,12 +88,6 @@ print(f"Output will be saved to: {output_dir}")
 
 region_labels.to_filename(output_dir / "relabeled_yeo_atlas.nii.gz")
 
-# The images are saved to the current folder. It is possible to specify the
-# folder for saving the results, i.e.
-# import os
-# region_labels.to_filename(os.path.join(folder_path,
-#                                        'relabeled_yeo_atlas.nii.gz'))
-
 
 # %%
 # Different connectivity modes

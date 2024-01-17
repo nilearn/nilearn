@@ -98,10 +98,9 @@ events
 # Export them to a tsv file.
 from pathlib import Path
 
-outdir = Path("results")
-if not outdir.exists():
-    outdir.mkdir()
-tsvfile = outdir / "localizer_events.tsv"
+output_dir = Path.cwd() / "results" / "plot_write_events_file"
+output_dir.mkdir(exist_ok=True, parents=True)
+tsvfile = output_dir / "localizer_events.tsv"
 events.to_csv(tsvfile, sep="\t", index=False)
 print(f"The event information has been saved to {tsvfile}")
 
