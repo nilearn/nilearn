@@ -38,6 +38,6 @@
    :toctree: generated/
    :template: function.rst
 
-   fetch_destrieux
-   fetch_nki
-   load_fsaverage
+   load_sample_atlas_surf_destrieux
+   load_sample_surf_nki_enhanced
+   load_surf_fsaverage

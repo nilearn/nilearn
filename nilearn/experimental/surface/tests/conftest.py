@@ -7,7 +7,7 @@ from nilearn.experimental.surface import (
     InMemoryMesh,
     PolyMesh,
     SurfaceImage,
-    load_fsaverage,
+    load_surf_fsaverage,
 )
 
 
@@ -87,7 +87,7 @@ def flip_img(flip):
 @pytest.fixture
 def pial_surface_mesh():
     """Get fsaverage mesh for testing."""
-    return load_fsaverage()["pial"]
+    return load_surf_fsaverage()["pial"]
 
 
 @pytest.fixture

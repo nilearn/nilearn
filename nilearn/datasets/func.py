@@ -23,7 +23,10 @@ except ImportError:  # SciPy < 1.8
 
 from sklearn.utils import Bunch
 
+from nilearn import surface
+from nilearn.datasets import load_surf_fsaverage
 from nilearn.image import get_data
+from nilearn.surface import SurfaceImage
 
 from .._utils import check_niimg, fill_doc
 from .._utils.numpy_conversions import csv_to_array
@@ -1797,6 +1800,39 @@ def fetch_surf_nki_enhanced(
         phenotypic=phenotypic,
         description=fdescr,
     )
+
+
+def load_sample_surf_nki_enhanced(n_subjects=1):
+    """Load NKI enhanced surface data into a list of SurfaceImage objects.
+
+    Parameters
+    ----------
+    n_subjects : :obj:`int`, default=11
+        The number of subjects to load from maximum of 102 subjects.
+        By default, 1 subject will be loaded. If None is given,
+        all 102 subjects will be loaded.
+
+    Returns
+    -------
+    images : :obj:`list` of SurfaceImage objects
+    """
+    fsaverage = load_surf_fsaverage("fsaverage5")
+    nki_dataset = fetch_surf_nki_enhanced(n_subjects=n_subjects)
+    images = []
+    for left, right in zip(
+        nki_dataset["func_left"], nki_dataset["func_right"]
+    ):
+        left_data = surface._io.read_array(left).T
+        right_data = surface._io.read_array(right).T
+        img = SurfaceImage(
+            mesh=fsaverage["pial"],
+            data={
+                "left_hemisphere": left_data,
+                "right_hemisphere": right_data,
+            },
+        )
+        images.append(img)
+    return images
 
 
 @fill_doc

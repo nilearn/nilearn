@@ -10,6 +10,8 @@ import pandas as pd
 from scipy.ndimage import binary_closing
 from sklearn.utils import Bunch
 
+from nilearn.surface import FileMesh
+
 from .._utils import check_niimg, fill_doc
 from ..image import get_data, new_img_like, resampling
 from ._utils import fetch_files, get_dataset_descr, get_dataset_dir
@@ -944,6 +946,34 @@ def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
             f"'mesh' should be one of {available_meshes}; "
             f"{mesh!r} was provided"
         )
+
+
+def load_surf_fsaverage(mesh="fsaverage5"):
+    """Load several fsaverage mesh types for both hemispheres.
+
+    Parameters
+    ----------
+    mesh : :obj:`str`, default='fsaverage5'
+        Which :term:`mesh` to fetch.
+        Should be one of the following values:
+        %(fsaverage_options)s
+
+    Returns
+    -------
+    meshes : :obj:`dict` of FileMesh objects
+    """
+    fsaverage = fetch_surf_fsaverage(mesh)
+    meshes = {}
+
+    # TODO load all types
+    renaming = {"pial": "pial", "white": "white_matter", "infl": "inflated"}
+    for mesh_type, mesh in renaming.items():
+        meshes[mesh] = {}
+        for hemisphere in "left", "right":
+            meshes[mesh][f"{hemisphere}_hemisphere"] = FileMesh(
+                fsaverage[f"{mesh_type}_{hemisphere}"]
+            )
+    return meshes
 
 
 def _fetch_surf_fsaverage5():
