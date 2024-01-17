@@ -15,11 +15,14 @@ NEW
 Fixes
 -----
 
+- :bdg-dark:`Code` Make sure that all atlases and datasets fetchers return a description (:gh:`4215` `Rémi Gau`_).
 - :bdg-dark:`Code` Update the ``CompCor`` strategy in :func:`~interfaces.fmriprep.load_confounds` and :func:`~interfaces.fmriprep.load_confounds_strategy` to support ``fmriprep`` 21.x series and above. (:gh:`3285` by `Hao-Ting Wang`_).
 - :bdg-success:`API` :class:`~maskers.MultiNiftiMasker` can now call :meth:`~maskers.NiftiMasker.generate_report` which will generate a report for the first subject in the list of subjects (:gh:`4001` by `Yasmin Mzayek`_).
 - :bdg-dark:`Code` Fix :class:`~nilearn.glm.regression.SimpleRegressionResults` to accommodate for the lack of a ``model`` attribute (:gh:`4071` `Rémi Gau`_)
 - :bdg-dark:`Code` :func:`~image.clean_img` can now use kwargs ``clean__sample_mask`` argument to correctly reshape the nifti image to the dimensions of the mask in the output (:gh:`4051` by `Mia Zwally`_).
 - :bdg-dark:`Code` Fix plotting of an image with color bar when maximum value is exactly zero (:gh:`4204` by `Rémi Gau`_).
+- :bdg-dark:`Code` Fix PSC normalisation method applied by ``standardize_signal`` in :mod:`~nilearn.signal` (:gh:`4116` by `Hao-Ting Wang`_ and `Yasmin Mzayek`_).
+- :bdg-dark:`Code` Fixed inheritance of decoder classes to keep compatibility with scikit-learn>v1.3 (:gh:`4188` by `Yasmin Mzayek`_).
 
 Enhancements
 ------------

@@ -27,4 +27,7 @@ Miyawaki, Y., Uchida, H., Yamashita, O., Sato, M. A.,
 Morito, Y., Tanabe, H. C., ... & Kamitani, Y. (2008).
 Neuron, 60(5), 915-929.
 
-Licence: unknown.
+
+License
+-------
+unknown.

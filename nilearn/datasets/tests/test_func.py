@@ -218,6 +218,7 @@ def test_fetch_localizer_contrasts(tmp_path, localizer_mocker):
     assert isinstance(dataset.ext_vars, np.recarray)
     assert len(dataset.cmaps) == 2
     assert dataset.ext_vars.size == 2
+    assert dataset.description != ""
 
     dataset = func.fetch_localizer_contrasts(
         ["checkerboard"],
@@ -234,6 +235,7 @@ def test_fetch_localizer_contrasts(tmp_path, localizer_mocker):
     assert isinstance(dataset.ext_vars, pd.DataFrame)
     assert len(dataset.cmaps) == 2
     assert len(dataset["ext_vars"]) == 2
+    assert dataset.description != ""
 
 
 def test_fetch_localizer_contrasts_multiple_contrasts(
@@ -415,6 +417,8 @@ def test_fetch_mixed_gambles(tmp_path):
             datasetdir / "zmaps" / "sub001_zmaps.nii.gz"
         )
         assert len(mgambles["zmaps"]) == n_subjects
+
+        assert mgambles.description != ""
 
 
 def test_check_parameters_megatrawls_datasets():
@@ -884,6 +888,7 @@ def test_fetch_localizer(tmp_path):
 
     assert isinstance(dataset["events"], str)
     assert isinstance(dataset.epi_img, str)
+    assert dataset.description != ""
 
 
 def _mock_original_spm_auditory_events_file():
@@ -918,9 +923,10 @@ def test_fetch_language_localizer_demo_dataset(tmp_path):
             str(expected_data_dir / file_path.strip())
             for file_path in f.readlines()[1:]
         ]
-    actual_dir, actual_subdirs = func.fetch_language_localizer_demo_dataset(
-        data_dir
-    )
+    (
+        actual_dir,
+        actual_subdirs,
+    ) = func.fetch_language_localizer_demo_dataset(data_dir)
 
     assert actual_dir == str(expected_data_dir)
     assert actual_subdirs == sorted(expected_files)
@@ -978,6 +984,8 @@ def test_fetch_spm_auditory(affine_eye, tmp_path):
     assert isinstance(dataset.func[0], str)
     assert len(dataset.func) == 96
 
+    assert dataset.description != ""
+
 
 def test_fetch_spm_multimodal(tmp_path):
     data_dir = str(tmp_path / "spm_multimodal_fmri")
@@ -1014,6 +1022,7 @@ def test_fetch_spm_multimodal(tmp_path):
     assert dataset.slice_order == "descending"
     assert isinstance(dataset.trials_ses1, str)
     assert isinstance(dataset.trials_ses2, str)
+    assert dataset.description != ""
 
 
 def test_fiac(tmp_path):
@@ -1039,6 +1048,7 @@ def test_fiac(tmp_path):
     assert isinstance(dataset.design_matrix1, str)
     assert isinstance(dataset.design_matrix2, str)
     assert isinstance(dataset.mask, str)
+    assert dataset.description != ""
 
 
 def test_load_sample_motor_activation_image():
