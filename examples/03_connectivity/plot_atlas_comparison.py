@@ -114,7 +114,7 @@ import numpy as np
 # Define a custom function to compute lag correlation on the time series
 def lag_correlation(time_series, lag):
     n_subjects = len(time_series)
-    n_samples, n_features = time_series[0].shape
+    _, n_features = time_series[0].shape
     lag_cor = np.zeros((n_subjects, n_features, n_features))
     for subject, serie in enumerate(time_series):
         for i in range(n_features):

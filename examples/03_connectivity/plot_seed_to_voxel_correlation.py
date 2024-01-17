@@ -195,7 +195,13 @@ display.add_markers(
     marker_coords=pcc_coords, marker_color="g", marker_size=300
 )
 # At last, we save the plot as pdf.
-display.savefig("pcc_seed_correlation.pdf")
+from pathlib import Path
+
+output_dir = Path.cwd() / "results" / "plot_seed_to_voxel_correlation"
+output_dir.mkdir(exist_ok=True, parents=True)
+print(f"Output will be saved to: {output_dir}")
+
+display.savefig(output_dir / "pcc_seed_correlation.pdf")
 
 # %%
 # Fisher-z transformation and save nifti
@@ -216,5 +222,5 @@ seed_to_voxel_correlations_fisher_z_img = brain_masker.inverse_transform(
     seed_to_voxel_correlations_fisher_z.T
 )
 seed_to_voxel_correlations_fisher_z_img.to_filename(
-    "pcc_seed_correlation_z.nii.gz"
+    output_dir / "pcc_seed_correlation_z.nii.gz"
 )
