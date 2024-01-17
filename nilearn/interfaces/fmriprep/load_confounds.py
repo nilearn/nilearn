@@ -208,17 +208,17 @@ def load_confounds(
     fd_threshold : :obj:`float`, default=0.2
 
         .. deprecated:: 0.11.0
-           The default value will be changed to 0.5 in 0.x.
+           The default value will be changed to 0.5 in 0.13.0
 
         Framewise displacement threshold for scrub in mm.
 
     std_dvars_threshold : :obj:`float`, default=3
 
         .. deprecated:: 0.11.0
-           The default value will be changed to 1.5 in 0.x.
+           The default value will be changed to 1.5 in 0.13.0
 
         Standardized DVARS threshold for scrub.
-        The default threashould matchines :term:`fMRIPrep`.
+        The default threshold matching :term:`fMRIPrep`.
         DVARs is defined as root mean squared intensity difference of volume N
         to volume N+1 :footcite:t:`Power2012`.
         D referring to temporal derivative of timecourses,
@@ -308,8 +308,8 @@ def load_confounds(
         fd_threshold_default = (
             "The default parameter for standardize is currently 0.2 "
             "which is inconsistent with the fMRIPrep default of 0.5. "
-            "In release X, the default strategy will be replaced by "
-            "0.5."
+            "In release 0.13.0, "
+            "the default strategy will be replaced by 0.5."
         )
         warnings.warn(
             category=DeprecationWarning,
@@ -320,8 +320,8 @@ def load_confounds(
         std_dvars_threshold_default = (
             "The default parameter for standardize is currently 3 "
             "which is inconsistent with the fMRIPrep default of 1.5. "
-            "In release X, the default strategy will be replaced by "
-            "1.5."
+            "In release 0.13.0, "
+            "the default strategy will be replaced by 1.5."
         )
         warnings.warn(
             category=DeprecationWarning,
