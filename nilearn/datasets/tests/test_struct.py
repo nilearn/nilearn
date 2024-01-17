@@ -174,3 +174,29 @@ def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
 
     assert mesh_attributes.issubset(set(dataset.keys()))
     assert dataset.description != ""
+
+
+def test_load_surf_fsaverage():
+    """Call default function smoke test and assert return."""
+    result = struct.load_surf_fsaverage()
+    assert isinstance(result, dict)
+    assert result["pial"]["left_hemisphere"].n_vertices == 10242  # fsaverage5
+
+
+def test_load_surf_fsaverage_wrong_mesh_name():
+    """Give incorrect value to mesh_name argument."""
+    with pytest.raises(ValueError, match="'mesh' should be one of"):
+        struct.load_surf_fsaverage(mesh_name="foo")
+
+
+def test_load_surf_fsaverage_hemispheres_have_file():
+    """Make sure file paths are present."""
+    result = struct.load_surf_fsaverage()
+    left_hemisphere_meshes = [
+        mesh for mesh in result.values() if "left_hemisphere" in mesh
+    ]
+    assert len(left_hemisphere_meshes) > 0
+    right_hemisphere_meshes = [
+        mesh for mesh in result.values() if "right_hemisphere" in mesh
+    ]
+    assert len(right_hemisphere_meshes) > 0
