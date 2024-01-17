@@ -573,7 +573,7 @@ def _dmtx_to_svg_url(design_matrices):
     for dmtx_count, design_matrix in enumerate(design_matrices, start=1):
         dmtx_text_ = string.Template(dmtx_template_text)
         dmtx_plot = plot_design_matrix(design_matrix)
-        dmtx_title = f"Session {dmtx_count}"
+        dmtx_title = f"Run {dmtx_count}"
         plt.title(dmtx_title, y=0.987)
         dmtx_plot = _resize_plot_inches(dmtx_plot, height_change=0.3)
         url_design_matrix_svg = _plot_to_svg(dmtx_plot)

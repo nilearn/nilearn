@@ -60,8 +60,8 @@ doc/building_blocks/generated/
 doc/datasets/generated/
 doc/generated/
 doc/modules/generated/
-doc/themes/nilearn/static/jquery.js
 doc/sg_execution_times.rst
+doc/themes/nilearn/static/jquery.js
 
 # examples
 examples/**/*.pdf

@@ -3020,7 +3020,7 @@ def fetch_spm_multimodal_fmri(
 
 @fill_doc
 def fetch_fiac_first_level(data_dir=None, verbose=1):
-    """Download a first-level fiac :term:`fMRI` dataset (2 sessions).
+    """Download a first-level fiac :term:`fMRI` dataset (2 runs).
 
     Parameters
     ----------
@@ -3050,26 +3050,22 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
         """Glob data from subject_dir."""
         _subject_data = {}
         subject_dir = os.path.join(data_dir, "nipy-data-0.2/data/fiac/fiac0")
-        for session in [1, 2]:
+        for run in [1, 2]:
             # glob func data for session
-            session_func = os.path.join(
-                subject_dir, f"run{int(session)}.nii.gz"
-            )
+            session_func = os.path.join(subject_dir, f"run{int(run)}.nii.gz")
             if not os.path.isfile(session_func):
-                print(f"Missing functional scan for session {int(session)}.")
+                print(f"Missing functional scan for session {int(run)}.")
                 return None
 
-            _subject_data[f"func{int(session)}"] = session_func
+            _subject_data[f"func{int(run)}"] = session_func
 
             # glob design matrix .npz file
-            sess_dmtx = os.path.join(
-                subject_dir, f"run{int(session)}_design.npz"
-            )
+            sess_dmtx = os.path.join(subject_dir, f"run{int(run)}_design.npz")
             if not os.path.isfile(sess_dmtx):
-                print(f"Missing session file: {sess_dmtx}")
+                print(f"Missing run file: {sess_dmtx}")
                 return None
 
-            _subject_data[f"design_matrix{int(session)}"] = sess_dmtx
+            _subject_data[f"design_matrix{int(run)}"] = sess_dmtx
 
         # glob for mask data
         mask = os.path.join(subject_dir, "mask.nii.gz")
