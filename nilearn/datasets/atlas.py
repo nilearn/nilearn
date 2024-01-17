@@ -13,12 +13,12 @@ import numpy as np
 import pandas as pd
 from sklearn.utils import Bunch
 
-from nilearn.datasets import load_surf_fsaverage
 from nilearn.surface import SurfaceImage
 
 from .._utils import check_niimg, fill_doc
 from ..image import get_data, new_img_like, reorder_img
 from ._utils import fetch_files, get_dataset_descr, get_dataset_dir
+from .struct import load_surf_fsaverage
 
 _TALAIRACH_LEVELS = ["hemisphere", "lobe", "gyrus", "tissue", "ba"]
 

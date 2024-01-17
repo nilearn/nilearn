@@ -24,7 +24,6 @@ except ImportError:  # SciPy < 1.8
 from sklearn.utils import Bunch
 
 from nilearn import surface
-from nilearn.datasets import load_surf_fsaverage
 from nilearn.image import get_data
 from nilearn.surface import SurfaceImage
 
@@ -40,6 +39,7 @@ from ._utils import (
     tree,
     uncompress_file,
 )
+from .struct import load_surf_fsaverage
 
 _LEGACY_FORMAT_MSG = (
     "`legacy_format` will default to `False` in release 0.11. "
