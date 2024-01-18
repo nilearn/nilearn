@@ -12,7 +12,7 @@ from docstring_parser import parse
 from docstring_parser.common import DocstringStyle
 from rich import print
 
-SEARCH = ["faces", "vertex", "mesh", "vertices"]
+SEARCH = []
 
 
 def root_dir() -> Path:
@@ -210,6 +210,7 @@ def check_doc(terms):
         "sphinxext",
         "templates",
         "themes",
+        "description",
     ]
 
     print("\n\nCheck .rst files in doc\n")
@@ -218,14 +219,22 @@ def check_doc(terms):
 
     doc_folder = root_dir() / "doc"
 
+    print(f"Checking: {doc_folder}")
+
     files = list(doc_folder.glob("*.rst"))
     for folder in doc_folder.glob("*"):
         if folder.is_dir() and folder.name not in folders_to_skip:
             files.extend(f for f in folder.glob("*.rst") if f is not None)
 
+    files.extend(
+        (root_dir() / "nilearn" / "datasets" / "description").glob("*.rst")
+    )
+
     count = check_files(files, terms, files_to_skip)
 
     print(f"\n\nTotal: {count} terms not linked to glossary\n")
+
+    print(f"Checking: {doc_folder}")
 
 
 def check_examples(terms):

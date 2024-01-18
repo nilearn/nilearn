@@ -18,13 +18,11 @@ method called MSTEPS (Bellec, 2013).
 
 This release more specifically contains the following files:
     :'description': a markdown (text) description of the release.
-    :'scale007', 'scale012', 'scale020', 'scale036', 'scale064',
-     'scale122', 'scale197', 'scale325', 'scale444'
-
-brain_parcellation_cambridge_basc_multiscale_(sym,asym)_scale(NNN).nii.gz:
-a 3D volume .nii format at 3 mm isotropic resolution, in the MNI non-linear
-2009a space (https://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009).
-Region number I is filled with Is (background is filled with 0s).
+    :'scale007', 'scale012', 'scale020', 'scale036', 'scale064', 'scale122', 'scale197', 'scale325', 'scale444':
+        brain_parcellation_cambridge_basc_multiscale_(sym,asym)_scale(NNN).nii.gz:
+        a 3D volume .nii format at 3 mm isotropic resolution, in the MNI non-linear
+        2009a space (https://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009).
+        Region number I is filled with Is (background is filled with 0s).
 
 
 Note that two versions of the template are available, ending with either
