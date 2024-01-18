@@ -8,9 +8,8 @@ Requires:
 
 For a given github action workflow:
 - ping the github API to collect the start and end time
-  of all the jobs of the different runs of that workflow
-  each job and plots them,
-- saves to TSV and plots the duration of each job against time
+  of all the jobs of the different runs of that workflow,
+- saves to TSV and plots the duration of each job against time.
 
 This script should in principle run for any repo and any workflow.
 
