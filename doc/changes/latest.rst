@@ -53,6 +53,7 @@ Changes
 - :bdg-dark:`Code` Move user facing function ``concat_niimgs`` out of private module ``nilearn._utils.niimg_conversions`` (:gh:`4167` by `Rémi Gau`_).
 - :bdg-danger:`Deprecation` Rename the parameter ``contrast_type`` in :func:`~glm.compute_contrast` and attribute ``contrast_type`` in  :class:`~glm.Contrast` to ``stat_type`` (:gh:`4191` by `Rémi Gau`_).
 - :bdg-danger:`Deprecation` :func:`~plotting.plot_surf_roi` will raise a warning if ``roi_map`` contains negative or non-integer values; in version 0.13 this will be a ``ValueError`` (:gh:`4131` by `Michelle Wang`_).
+- :bdg-danger:`Deprecation` ``nilearn.datasets.fetch_bids_langloc_dataset`` will be deprecated in release 0.13 as it returns data simuilar to :func:`~.datasets.fetch_language_localizer_demo_dataset` (:gh:`4219` by `Rémi Gau`_).
 - :bdg-dark:`Code` Remove leading underscore from non private functions to align with PEP8 (:gh:`4086` by `Rémi Gau`_).
 - :bdg-dark:`Code` Make ``decoding/proximal_operator`` explicitly private to align with PEP8 (:gh:`4153` by `Rémi Gau`_).
 - :bdg-primary:`Doc` Combine GLM examples ``plot_fixed_effect`` and ``plot_fiac_analysis`` into a a single example ``plot_two_runs_model`` (:gh:`3191` by `Taylor Salo`_ and `Rémi Gau`_).

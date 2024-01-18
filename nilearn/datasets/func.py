@@ -2215,6 +2215,15 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
 def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
     """Download language localizer example :term:`bids<BIDS>` dataset.
 
+    .. deprecated:: 0.11.0
+
+        This fetcher function will be removed as it returns the same data
+        as :func:`nilearn.datasets.fetch_language_localizer_demo_dataset`.
+
+        Please use
+        :func:`nilearn.datasets.fetch_language_localizer_demo_dataset`
+        instead.
+
     Parameters
     ----------
     %(data_dir)s
@@ -2227,11 +2236,17 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
 
     downloaded_files : :obj:`list` of :obj:`str`
         Absolute paths of downloaded files on disk.
-
-    description: :obj:`str`
-        data description
-
     """
+    warnings.warn(
+        (
+            "The 'fetch_bids_langloc_dataset' function will be removed "
+            "in version 0.13.0 as it returns the same data "
+            "as 'fetch_language_localizer_demo_dataset'.\n"
+            "Please use 'fetch_language_localizer_demo_dataset' instead.'"
+        ),
+        DeprecationWarning,
+        stacklevel=2,
+    )
     url = "https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/5888d9a76c613b01fc6acc4e"  # noqa: E501
     dataset_name = "bids_langloc_example"
     main_folder = "bids_langloc_dataset"
