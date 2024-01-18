@@ -15,11 +15,24 @@ import nibabel as nib
 import numpy as np
 import pandas as pd
 import pytest
+from sklearn.utils import Bunch
 
 from nilearn.datasets import func
 from nilearn.datasets._utils import get_dataset_dir
 from nilearn.datasets.tests._testing import dict_to_archive, list_to_archive
 from nilearn.image import load_img
+
+
+@pytest.mark.parametrize(
+    "fn",
+    [
+        func.fetch_localizer_first_level,
+        func.fetch_miyawaki2008,
+    ],
+)
+def test_func_fetcher_return_bunch(fn):
+    data = fn()
+    assert isinstance(data, Bunch)
 
 
 def _load_localizer_index():
@@ -80,6 +93,7 @@ def test_fetch_haxby(tmp_path, request_mocker):
         haxby = func.fetch_haxby(data_dir=tmp_path, subjects=[i], verbose=0)
         # subject_data + (md5 + mask if first subj)
 
+        assert isinstance(haxby, Bunch)
         assert request_mocker.url_count == i + 2
         assert len(haxby.func) == 1
         assert len(haxby.anat) == 1
@@ -183,6 +197,7 @@ def test_fetch_adhd(tmp_path, request_mocker):
     ] = _adhd_example_subject
     adhd = func.fetch_adhd(data_dir=tmp_path, n_subjects=12, verbose=0)
 
+    assert isinstance(adhd, Bunch)
     assert len(adhd.func) == 12
     assert len(adhd.confounds) == 12
     assert request_mocker.url_count == 13  # Subjects + phenotypic
@@ -211,6 +226,7 @@ def test_fetch_localizer_contrasts(tmp_path, localizer_mocker):
         legacy_format=True,
     )
 
+    assert isinstance(dataset, Bunch)
     assert not hasattr(dataset, "anats")
     assert not hasattr(dataset, "tmaps")
     assert not hasattr(dataset, "masks")
@@ -306,6 +322,7 @@ def test_fetch_localizer_calculation_task(tmp_path, localizer_mocker):
         n_subjects=2, data_dir=tmp_path, verbose=1, legacy_format=False
     )
 
+    assert isinstance(dataset, Bunch)
     assert isinstance(dataset.ext_vars, pd.DataFrame)
     assert isinstance(dataset.cmaps[0], str)
     assert len(dataset["ext_vars"]) == 2
@@ -327,6 +344,8 @@ def test_fetch_localizer_button_task(tmp_path, localizer_mocker):
     # Disabled: cannot be tested without actually fetching covariates CSV file
     # Only one subject
     dataset = func.fetch_localizer_button_task(data_dir=tmp_path, verbose=1)
+
+    assert isinstance(dataset, Bunch)
 
     assert isinstance(dataset.tmaps, list)
     assert isinstance(dataset.anats, list)
@@ -376,6 +395,8 @@ def test_fetch_abide_pcp(tmp_path, request_mocker, quality_checked):
     )
     div = 4 if quality_checked else 2
 
+    assert isinstance(dataset, Bunch)
+
     assert len(dataset.func_preproc) == n_subjects / div
     assert dataset.description != ""
 
@@ -418,6 +439,7 @@ def test_fetch_mixed_gambles(tmp_path):
         )
         assert len(mgambles["zmaps"]) == n_subjects
 
+        assert isinstance(mgambles, Bunch)
         assert mgambles.description != ""
 
 
@@ -463,6 +485,8 @@ def test_fetch_megatrawls_netmats(tmp_path):
             net_file.write("1")
 
     megatrawl_netmats_data = func.fetch_megatrawls_netmats(data_dir=tmp_path)
+
+    assert isinstance(megatrawl_netmats_data, Bunch)
 
     # expected number of returns in output name should be equal
     assert len(megatrawl_netmats_data) == 5
@@ -519,6 +543,7 @@ def test_fetch_surf_nki_enhanced(tmp_path, request_mocker):
     )
     nki_data = func.fetch_surf_nki_enhanced(data_dir=tmp_path)
 
+    assert isinstance(nki_data, Bunch)
     assert nki_data.description != ""
     assert len(nki_data.func_left) == 10
     assert len(nki_data.func_right) == 10
@@ -618,6 +643,7 @@ def test_fetch_development_fmri(tmp_path, request_mocker):
         n_subjects=2, data_dir=tmp_path, verbose=1
     )
 
+    assert isinstance(data, Bunch)
     assert len(data.func) == 2
     assert len(data.confounds) == 2
     assert isinstance(data.phenotypic, np.ndarray)
@@ -928,6 +954,7 @@ def test_fetch_language_localizer_demo_dataset(tmp_path):
         actual_subdirs,
     ) = func.fetch_language_localizer_demo_dataset(data_dir)
 
+    # assert isinstance(dataset, Bunch)
     assert actual_dir == str(expected_data_dir)
     assert actual_subdirs == sorted(expected_files)
 
@@ -980,6 +1007,7 @@ def test_fetch_spm_auditory(affine_eye, tmp_path):
 
     dataset = func.fetch_spm_auditory(data_dir=tmp_path)
 
+    assert isinstance(dataset, Bunch)
     assert isinstance(dataset.anat, str)
     assert isinstance(dataset.func[0], str)
     assert len(dataset.func) == 96
@@ -1014,6 +1042,7 @@ def test_fetch_spm_multimodal(tmp_path):
 
     dataset = func.fetch_spm_multimodal_fmri(data_dir=tmp_path)
 
+    assert isinstance(dataset, Bunch)
     assert isinstance(dataset.anat, str)
     assert isinstance(dataset.func1[0], str)
     assert len(dataset.func1) == 390
@@ -1043,6 +1072,7 @@ def test_fiac(tmp_path):
 
     dataset = func.fetch_fiac_first_level(data_dir=tmp_path)
 
+    assert isinstance(dataset, Bunch)
     assert isinstance(dataset.func1, str)
     assert isinstance(dataset.func2, str)
     assert isinstance(dataset.design_matrix1, str)
