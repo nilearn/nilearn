@@ -2185,7 +2185,7 @@ def fetch_language_localizer_demo_dataset(
             Starting from version 0.13.0
             the ``legacy_ouput`` argument will be removed
             and the fetcher will always return
-            a :obj:`sklearn.datasets.base.Bunch`.
+            a ``sklearn.datasets.base.Bunch``.
 
 
     Returns
