@@ -6,7 +6,7 @@ Notes
 -----
 This atlas provides a labeling of cortical voxels in the MNI152
 space, see Schaefer et al. (2018). Each ROI is annotated with a
-network from the Yeo parcellation (7- or 17-network solution; see
+network from the Yeo :term:`parcellation` (7- or 17-network solution; see
 Yeo et al., 2011).
 
 Different versions of the atlas are available, varying in

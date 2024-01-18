@@ -8,7 +8,7 @@ Notes
 
 Content
 -------
-    :'rois': Coordinates of ROIs in MNI space.
+    :'rois': Coordinates of ROIs in :term:`MNI` space.
 
 References
 ----------

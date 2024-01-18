@@ -6,7 +6,7 @@ Notes
 -----
 Contains network matrices data of two types, full correlation and partial
 correlation which were estimated using each subject specific timeseries
-signals extracted from group of ICA nodes or parcellations. In total,
+signals extracted from group of :term:`ICA` nodes or parcellations. In total,
 461 functional connectivity datasets were used to obtain these matrices
 and is part of HCP Megatrawls release.
 

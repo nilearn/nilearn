@@ -234,8 +234,6 @@ def check_doc(terms):
 
     print(f"\n\nTotal: {count} terms not linked to glossary\n")
 
-    print(f"Checking: {doc_folder}")
-
 
 def check_examples(terms):
     """Check examples content."""

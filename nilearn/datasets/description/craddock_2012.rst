@@ -5,7 +5,7 @@ Craddock 2012
 Notes
 -----
 Collection of regions of interest (ROI) that have been generated from applying
-spatially constrained clustering on resting-state data.
+spatially constrained clustering on :term:`resting-state` data.
 
 Several clustering statistics are used to compare methodological trade-offs
 as well as determine an adequate number of clusters. The proposed functional
@@ -17,10 +17,10 @@ by using spatially constrained Ncut spectral clustering.
 Content
 -------
     :'random': result of random clustering for comparison
-    :'scorr_2level': parcellation results when emphasizing spatial homogeneity
-    :'scorr_mean': group-mean parcellation results when emphasizing spatial homogeneity
-    :'tcorr_2level': parcellation results when emphasizing temporal homogeneity
-    :'tcorr_mean': group-mean parcellation results when emphasizing temporal homogeneity
+    :'scorr_2level': :term:`parcellation`  results when emphasizing spatial homogeneity
+    :'scorr_mean': group-mean :term:`parcellation` results when emphasizing spatial homogeneity
+    :'tcorr_2level': :term:`parcellation` results when emphasizing temporal homogeneity
+    :'tcorr_mean': group-mean :term:`parcellation` results when emphasizing temporal homogeneity
 
 
 References

@@ -4,7 +4,7 @@ Haxby 2001 results
 
 Notes
 -----
-Results from a classical fMRI study that investigated the differences between
+Results from a classical :term:`fMRI` study that investigated the differences between
 the neural correlates of face versus object processing in the ventral visual
 stream. Face and object stimuli showed widely distributed and overlapping
 response patterns.

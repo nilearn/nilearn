@@ -8,18 +8,18 @@ This atlas provides spatial maps of the major brain networks
 during task-constrained brain activity
 and task-unconstrained (resting) brain activity.
 
-Those were derived from 6 minutes of resting-state time series
+Those were derived from 6 minutes of :term:`resting-state` time series
 from 36 subjects as well as from the from the smoothed task activity coordinates
 of healthy subjects stored in the BrainMap database.
 
 Content
 -------
-    :'rsn20': 20 ICA maps derived from resting-state decomposition
-    :'rsn10': 10 ICA maps from the above that matched across task and rest
-    :'rsn70': 70 ICA maps derived from resting-state decomposition
-    :'bm20': 20 ICA maps derived from decomposition BrainMap task data
-    :'bm10': 10 ICA maps from the above that matched across task and rest
-    :'bm70': 70 ICA maps derived from decomposition BrainMap task data
+    :'rsn20': 20 :term:`ICA` maps derived from :term:`resting-state` decomposition
+    :'rsn10': 10 :term:`ICA` maps from the above that matched across task and rest
+    :'rsn70': 70 :term:`ICA` maps derived from :term:`resting-state` decomposition
+    :'bm20': 20 :term:`ICA` maps derived from decomposition BrainMap task data
+    :'bm10': 10 :term:`ICA` maps from the above that matched across task and rest
+    :'bm70': 70 :term:`ICA` maps derived from decomposition BrainMap task data
 
 
 References

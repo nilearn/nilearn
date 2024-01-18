@@ -5,13 +5,13 @@ Juelich
 Notes
 -----
 The Julich-Brain Cytoarchitectonic Atlas presents cytoarchitectonic maps in several coordinate spaces,
-such as MNI colin27, MNI152, and freesurfer.
+such as :term:`MNI` colin27, MNI152, and freesurfer.
 These maps originate from peer-reviewed probability maps that define
 both cortical and subcortical brain regions.
 Notably, these probability maps account for the brain's inter-individual variability
 by analyzing data from multiple post-mortem samples.
 For a whole-brain parcellation, the available probability maps are combined
-into a maximum probability map by considering for each voxel the probability of all cytoarchitectonic brain regions,
+into a maximum probability map by considering for each :term:`voxel` the probability of all cytoarchitectonic brain regions,
 and determining the most probable assignment.
 
 For more details: https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/Atlases

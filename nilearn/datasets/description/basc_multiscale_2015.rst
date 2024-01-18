@@ -8,7 +8,7 @@ functional connectome project]
 (https://fcon_1000.projects.nitrc.org/fcpClassic/FcpTable.html) (Liu et
 al., 2009), originally released under Creative Commons -- Attribution
 Non-Commercial. It includes group brain parcellations generated from
-resting-state functional magnetic resonance images for about 200 young
+:term:`resting-state` functional magnetic resonance images for about 200 young
 healthy subjects. Multiple scales (number of networks) are available,
 and includes 7, 12, 20, 36, 64, 122, 197, 325, 444. The brain parcellations
 have been generated using a method called bootstrap analysis of stable clusters
@@ -20,16 +20,16 @@ This release more specifically contains the following files:
     :'description': a markdown (text) description of the release.
     :'scale007', 'scale012', 'scale020', 'scale036', 'scale064', 'scale122', 'scale197', 'scale325', 'scale444':
         brain_parcellation_cambridge_basc_multiscale_(sym,asym)_scale(NNN).nii.gz:
-        a 3D volume .nii format at 3 mm isotropic resolution, in the MNI non-linear
+        a 3D volume .nii format at 3 mm isotropic resolution, in the :term:`MNI` non-linear
         2009a space (https://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009).
         Region number I is filled with Is (background is filled with 0s).
 
 
 Note that two versions of the template are available, ending with either
 nii_sym or nii_asym. The asym flavor contains brain images that have been
-registered in the asymmetric version of the MNI brain template (reflecting
+registered in the asymmetric version of the :term:`MNI` brain template (reflecting
 that the brain is asymmetric), while with the sym flavor they have been
-registered in the symmetric version of the MNI template. The symmetric
+registered in the symmetric version of the :term:`MNI` template. The symmetric
 template has been forced to be symmetric anatomically, and is therefore
 ideally suited to study homotopic functional connections in fMRI: finding
 homotopic regions simply consists of flipping the x-axis of the template.
@@ -41,18 +41,18 @@ The datasets were analysed using the NeuroImaging Analysis Kit (NIAK
 https://github.com/SIMEXP/niak) version 0.12.14, under CentOS version 6.3 with
 Octave (https://octave.org) version 3.8.1 and the Minc toolkit
 (https://bic-mni.github.io/) version 0.3.18.
-Each fMRI dataset was corrected for inter-slice difference in acquisition time
+Each :term:`fMRI` dataset was corrected for inter-slice difference in acquisition time
 and the parameters of a rigid-body motion were estimated for each time frame.
 Rigid-body motion was estimated within as well as between runs, using the
 median volume of the first run as a target. The median volume of one selected
-fMRI run for each subject was coregistered with a T1 individual scan using
+:term:`fMRI` run for each subject was coregistered with a T1 individual scan using
 Minctracc (Collins and Evans, 1998), which was itself non-linearly transformed
-to the Montreal Neurological Institute (MNI) template (Fonov et al., 2011)
-using the CIVET pipeline (Ad-Dabbagh et al., 2006). The MNI symmetric template
+to the Montreal Neurological Institute (:term:`MNI`) template (Fonov et al., 2011)
+using the CIVET pipeline (Ad-Dabbagh et al., 2006). The :term:`MNI` symmetric template
 was generated from the ICBM152 sample of 152 young adults, after 40 iterations
 of non-linear coregistration. The rigid-body transform, fMRI-to-T1 transform
 and T1-to-stereotaxic transform were all combined, and the functional volumes
-were resampled in the MNI space at a 3 mm isotropic resolution. The
+were resampled in the :term:`MNI` space at a 3 mm isotropic resolution. The
 "scrubbing" method of (Power et al., 2012), was used to remove the volumes
 with excessive motion (frame displacement greater than 0.5 mm). A minimum
 number of 60 unscrubbed volumes per run, corresponding to ~180 s of
@@ -62,7 +62,7 @@ drifts (basis of discrete cosines with a 0.01 Hz high-pass cut-off), average
 signals in conservative masks of the white matter and the lateral ventricles
 as well as the first principal components (95% energy) of the
 six rigid-body motion parameters and their squares (Giove et al., 2009). The
-fMRI volumes were finally spatially smoothed with a 6 mm isotropic Gaussian
+:term:`fMRI` volumes were finally spatially smoothed with a 6 mm isotropic Gaussian
 blurring kernel.
 
 

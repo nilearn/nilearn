@@ -4,14 +4,14 @@ Destrieux Surface
 
 Notes
 -----
-Anatomical parcellation of the cortex based on sulco-gyral patterns
+Anatomical :term:`parcellation` of the cortex based on sulco-gyral patterns
 (Destrieux et al, 2010) distributed with Freesurfer (Dale et al, 1999,
 Fischl et al, 1999) in fsaverage5 standard surface space.
 
 Content
 -------
-    :'map_left': parcellation on left hemisphere in freesurfer annot format
-    :'map_right': parcellation on right hemisphere in freesurfer annot format
+    :'map_left': :term:`parcellation` on left hemisphere in freesurfer annot format
+    :'map_right': :term:`parcellation` on right hemisphere in freesurfer annot format
 
 
 References

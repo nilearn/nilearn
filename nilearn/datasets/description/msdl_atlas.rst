@@ -4,7 +4,7 @@ MSDL atlas
 
 Notes
 -----
-Result maps of sparse :term:`Dictionary learning` based on resting-state data.
+Result maps of sparse :term:`Dictionary learning` based on :term:`resting-state` data.
 
 This can be understand as a variant of :term:`ICA` based on the assumption
 of sparsity rather than independence.

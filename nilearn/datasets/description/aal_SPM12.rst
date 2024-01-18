@@ -4,9 +4,16 @@ AAl atlas for SPM 12
 
 Notes
 -----
-This atlas is the result of an automated anatomical parcellation of the spatially normalized single-subject high-resolution T1 volume provided by the Montreal Neurological Institute (MNI) (D. L. Collins et al., 1998, Trans. Med. Imag. 17, 463-468, PubMed).
+This atlas is the result of an automated anatomical :term:`parcellation`
+of the spatially normalized single-subject high-resolution T1 volume
+provided by the Montreal Neurological Institute (MNI)
+(D. L. Collins et al., 1998, Trans. Med. Imag. 17, 463-468, PubMed).
 
-Using this parcellation method, three procedures to perform the automated anatomical labeling of functional studies are proposed: (1) labeling of an extremum defined by a set of coordinates, (2) percentage of voxels belonging to each of the AVOI intersected by a sphere centered by a set of coordinates, and (3) percentage of voxels belonging to each of the AVOI intersected by an activated cluster.
+Using this :term:`parcellation` method, three procedures to perform the automated anatomical labeling
+of functional studies are proposed:
+(1) labeling of an extremum defined by a set of coordinates,
+(2) percentage of voxels belonging to each of the AVOI intersected by a sphere centered by a set of coordinates, and
+(3) percentage of voxels belonging to each of the AVOI intersected by an activated cluster.
 
 Content
 -------

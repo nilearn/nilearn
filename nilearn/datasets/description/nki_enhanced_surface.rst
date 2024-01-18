@@ -11,8 +11,8 @@ Contains phenotypical metadata.
 
 Content
 -------
-    :'func_left': resting-state data for the left hemisphere
-    :'func_right': resting-state data for the right hemisphere
+    :'func_left': :term:`resting-state` data for the left hemisphere
+    :'func_right': :term:`resting-state` data for the right hemisphere
     :'phenotypic': phenotypical metadata
 
 References

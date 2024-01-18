@@ -6,7 +6,7 @@ Notes
 -----
 300 ROI coordinates in cortical, subcortical and cerebellar regions.
 
-"Here, we apply a winner-take-all partitioning method to resting-state fMRI data and careful consideration of
+"Here, we apply a winner-take-all partitioning method to :term:`resting-state` :term:`fMRI` data and careful consideration of
 anatomy to generate novel functionally-constrained ROIs in the thalamus, basal ganglia, amygdala, hippocampus, and
 cerebellum. We validate these ROIs in three datasets via several anatomical and functional criteria, including known
 anatomical divisions and functions, as well as agreement with existing literature.
@@ -17,7 +17,7 @@ previously described functional network organization." (Seitzman et. al, 2018, 2
 
 Content
 -------
-    :"rois": Coordinates of 300 ROIs in MNI space
+    :"rois": Coordinates of 300 ROIs in :term:`MNI` space
     :"radius": Radius of each ROI in mm
     :"networks": Network names
     :"regions": Region names
