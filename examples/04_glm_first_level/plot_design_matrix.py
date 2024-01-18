@@ -9,13 +9,6 @@ Three examples of design matrices specification and computation for first-level
 This examples requires matplotlib.
 
 """
-
-# %%
-try:
-    import matplotlib.pyplot as plt
-except ImportError:
-    raise RuntimeError("This script needs the matplotlib library")
-
 # %%
 # Define parameters
 # -----------------
@@ -106,6 +99,8 @@ X3 = make_first_level_design_matrix(
 
 # %%
 # Here are the three designs side by side.
+import matplotlib.pyplot as plt
+
 from nilearn.plotting import plot_design_matrix
 
 fig, (ax1, ax2, ax3) = plt.subplots(figsize=(10, 6), nrows=1, ncols=3)

@@ -33,13 +33,6 @@ Note that more power would be obtained from using a larger sample of subjects.
 
 """
 # %%
-try:
-    import matplotlib.pyplot as plt
-except ImportError:
-    raise RuntimeError("This script needs the matplotlib library")
-
-
-# %%
 # Load Oasis dataset
 # ------------------
 from nilearn import datasets
@@ -95,6 +88,8 @@ design_matrix = pd.DataFrame(
     np.vstack((age, sex, intercept)).T,
     columns=["age", "sex", "intercept"],
 )
+
+from matplotlib import pyplot as plt
 
 # %%
 # Let's plot the design matrix.
