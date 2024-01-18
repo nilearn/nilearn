@@ -390,7 +390,7 @@ def mini_img(make_mini_img):
 
 @pytest.fixture
 def flip():
-    """Flip first and second dictionary keys."""
+    """Reorder dictionary keys by putting the last key as the first."""
 
     def f(parts):
         if not parts:
@@ -404,7 +404,8 @@ def flip():
 
 @pytest.fixture
 def flip_img(flip):
-    """Flip first and second dictionary keys for data and mesh."""
+    """Reorder dictionary keys by putting the last key as the first for mesh \
+       and data parts of SurfaceImage object."""
 
     def f(img):
         return SurfaceImage(flip(img.mesh), flip(img.data))
