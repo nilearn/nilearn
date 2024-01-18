@@ -56,4 +56,4 @@ Changes
 - :bdg-dark:`Code` Remove leading underscore from non private functions to align with PEP8 (:gh:`4086` by `Rémi Gau`_).
 - :bdg-dark:`Code` Make ``decoding/proximal_operator`` explicitly private to align with PEP8 (:gh:`4153` by `Rémi Gau`_).
 - :bdg-dark:`Code` Make private functions public when used outside of their module ``nilearn.interface`` to align with PEP8 (:gh:`4168` by `Rémi Gau`_).
-- :bdg-danger:`Deprecation` the default parameter of ``fd_threshold`` and ``std_dvars_threshold`` in :func:`~interfaces.fmriprep.load_confounds` with be updated to match ``fmriprep`` default in version 0.15 (:gh:`4225` by `Hao-Ting Wang`_).
+- :bdg-danger:`Deprecation` the default parameter of ``fd_threshold`` and ``std_dvars_threshold`` in :func:`~interfaces.fmriprep.load_confounds` with be updated to match ``fmriprep`` default in version 0.13 (:gh:`4225` by `Hao-Ting Wang`_).
