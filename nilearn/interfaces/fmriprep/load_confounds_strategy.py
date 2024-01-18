@@ -157,7 +157,7 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
         N/A                 N/A            N/A       N/A       True*
         scrubbing True      full*  full   None*         5*    0.2*         \
         3*                  N/A            N/A       N/A       True*
-        compcor   True      full*  N/A    None*           N/A   N/A          \
+        compcor   True      full*  N/A    None*         N/A   N/A          \
         N/A                 anat_combined* all*      N/A       True*
         ica_aroma True      N/A    basic* None*         N/A   N/A          \
         N/A                 N/A            N/A       full      True*
