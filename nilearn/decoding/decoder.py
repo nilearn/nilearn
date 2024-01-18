@@ -896,8 +896,8 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        X: Niimg-like, :obj:`list` of Niimg-like objects, or \
-            :obj:`list` of :obj:`str` or path-like
+        X: Niimg-like, :obj:`list` of either \
+           Niimg-like objects or :obj:`str` or path-like
             See :ref:`extracting_data`.
             Data on which prediction is to be made.
 
