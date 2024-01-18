@@ -939,7 +939,8 @@ def _mock_bids_compliant_spm_auditory_events_file():
     return actual_events_data_string, events_filepath
 
 
-def test_fetch_language_localizer_demo_dataset(tmp_path):
+@pytest.mark.parametrize("legacy", [True, False])
+def test_fetch_language_localizer_demo_dataset(tmp_path, legacy):
     data_dir = tmp_path
     expected_data_dir = tmp_path / "fMRI-language-localizer-demo-dataset"
     contents_dir = Path(__file__).parent / "data" / "archive_contents"
@@ -949,14 +950,26 @@ def test_fetch_language_localizer_demo_dataset(tmp_path):
             str(expected_data_dir / file_path.strip())
             for file_path in f.readlines()[1:]
         ]
-    (
-        actual_dir,
-        actual_subdirs,
-    ) = func.fetch_language_localizer_demo_dataset(data_dir)
+    if legacy:
+        with pytest.deprecated_call(match="Bunch"):
+            (
+                actual_dir,
+                actual_subdirs,
+            ) = func.fetch_language_localizer_demo_dataset(
+                data_dir, legacy_output=legacy
+            )
 
-    # assert isinstance(dataset, Bunch)
-    assert actual_dir == str(expected_data_dir)
-    assert actual_subdirs == sorted(expected_files)
+        assert actual_dir == str(expected_data_dir)
+        assert actual_subdirs == sorted(expected_files)
+    else:
+        bunch = func.fetch_language_localizer_demo_dataset(
+            data_dir, legacy_output=legacy
+        )
+
+        assert isinstance(bunch, Bunch)
+        assert bunch.data_dir == str(expected_data_dir)
+        assert bunch.func == sorted(expected_files)
+        assert bunch.description != ""
 
 
 def test_make_spm_auditory_events_file():

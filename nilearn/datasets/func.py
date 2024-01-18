@@ -2168,23 +2168,43 @@ def _reduce_confounds(regressors, keep_confounds):
 
 
 @fill_doc
-def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
+def fetch_language_localizer_demo_dataset(
+    data_dir=None, verbose=1, legacy_output=True
+):
     """Download language localizer demo dataset.
 
     Parameters
     ----------
     %(data_dir)s
     %(verbose)s
+    legacy_output: bool, default=True
+
+        .. versionadded:: 0.11.0
+        .. deprecated:: 0.11.0
+
+            Starting from version 0.13.0
+            the ``legacy_ouput`` argument will be removed
+            and the fetcher will always return
+            a :obj:`sklearn.datasets.base.Bunch`.
+
 
     Returns
     -------
+    data : sklearn.datasets.base.Bunch
+        Dictionary-like object, the interest attributes are :
+
+        - 'data_dir': :obj:`str` Path to downloaded dataset.
+        - 'func': :obj:`list` of :obj:`str`,
+                  Absolute paths of downloaded files on disk
+        - 'description' : :obj:`str`, dataset description
+
+    Legacy output
+    -------------
     data_dir : :obj:`str`
         Path to downloaded dataset.
 
     downloaded_files : :obj:`list` of :obj:`str`
         Absolute paths of downloaded files on disk
-
-    description : :obj:`str`
 
     """
     url = "https://osf.io/3dj2a/download"
@@ -2208,7 +2228,23 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
         for path, _, files in os.walk(data_dir)
         for f in files
     ]
-    return data_dir, sorted(file_list)
+    if legacy_output:
+        warnings.warn(
+            category=DeprecationWarning,
+            stacklevel=2,
+            message=(
+                "From version 0.13.0 this fetcher"
+                "will always return a Bunch.\n"
+                "Use `legacy_output=False` "
+                "to start switch to this new behavior."
+            ),
+        )
+        return data_dir, sorted(file_list)
+
+    description = get_dataset_descr("language_localizer_demo")
+    return Bunch(
+        data_dir=data_dir, func=sorted(file_list), description=description
+    )
 
 
 @fill_doc
