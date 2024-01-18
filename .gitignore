@@ -57,7 +57,7 @@ doc/.nojekyll
 doc/_build/
 doc/auto_examples/
 doc/building_blocks/generated/
-doc/datasets/generated/
+doc/datasets/description
 doc/generated/
 doc/modules/generated/
 doc/sg_execution_times.rst

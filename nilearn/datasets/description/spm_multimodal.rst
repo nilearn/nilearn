@@ -1,4 +1,5 @@
 SPM multimodal
+==============
 
 
 Notes
@@ -24,7 +25,7 @@ Content
 
 References
 ----------
-See :cite:`spm_multiface`.
+See :footcite:t:`spm_multiface`.
 
 For details on the data, please see:
 

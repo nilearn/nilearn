@@ -1,4 +1,5 @@
 SPM auditory
+============
 
 Notes
 -----
@@ -25,7 +26,7 @@ Content
 
 References
 ----------
-See :cite:`spm_auditory`.
+See :footcite:t:`spm_auditory`.
 
 
 License
