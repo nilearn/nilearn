@@ -239,32 +239,36 @@ def _make_edges_and_weights_surface(X, mask_img):
         shape: (n_edges,).
 
     """
-    # mask = np.concatenate(list(mask_img.data.values()))
     # TODO: Handle parts together or separately?
     # Using face indices to calculate edges; issue of overlapping indices
-    # values in separate hemispheres
+    # values in separate hemispheres so outputting edges and weights
+    # separately for each defined surface part
     weights = {}
     edges = {}
+    len_mask_before = 0
     for part in mask_img.mesh.keys():
         face_part = mask_img.mesh[part].faces
         mask_part = mask_img.data[part]
+
         edges_unmasked, edges_mask = _make_edges_surface(face_part, mask_part)
 
-        # TODO: fix input X; should correspond to one part
+        idxs = np.array(range(mask_part.sum())) + len_mask_before
         weights_unmasked = _compute_weights_surface(
-            X, mask_part.astype("bool"), edges_unmasked
+            X[:, idxs], mask_part.astype("bool"), edges_unmasked
         )
 
         # Apply mask to edges and weights
         weights[part] = np.copy(weights_unmasked[edges_mask])
-        edges[part] = np.copy(edges_unmasked[:, edges_mask])
+        edges = np.copy(edges_unmasked[:, edges_mask])
 
-        # TODO: this is unfinished
+        len_mask_before += mask_part.sum()
 
-    # Reorder the indices of the graph
-    max_index = edges.max()
-    order = np.searchsorted(np.unique(edges.ravel()), np.arange(max_index + 1))
-    edges = order[edges]
+        # Reorder the indices of the graph
+        max_index = edges.max()
+        order = np.searchsorted(
+            np.unique(edges.ravel()), np.arange(max_index + 1)
+        )
+        edges[part] = order[edges]
 
     return edges, weights
 
@@ -294,6 +298,8 @@ def _weighted_connectivity_graph(X, mask_img):
         edges, weight = _make_edges_and_weights_surface(X, mask_img)
     else:
         edges, weight = _make_edges_and_weights(X, mask_img)
+
+    # TODO : deal with dict results if surface analysis
 
     connectivity = coo_matrix(
         (weight, edges), (n_features, n_features)
