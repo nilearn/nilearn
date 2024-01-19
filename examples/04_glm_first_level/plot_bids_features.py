@@ -22,7 +22,7 @@ More specifically:
    estimation in the openneuro dataset.
 4. Display contrast plot and uncorrected first level statistics table report.
 """
-
+from nilearn import plotting
 
 # %%
 # Fetch openneuro :term:`BIDS` dataset
@@ -160,8 +160,6 @@ fsl_z_map = nib.load(
 
 import matplotlib.pyplot as plt
 from scipy.stats import norm
-
-from nilearn import plotting
 
 plotting.plot_glass_brain(
     z_map,

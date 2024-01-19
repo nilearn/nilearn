@@ -58,11 +58,14 @@ to build the LSS beta series.
 .. include:: ../../../examples/masker_note.rst
 
 """
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
+
 # sphinx_gallery_thumbnail_number = -2
 
 # %%
-import matplotlib.pyplot as plt
-
 from nilearn import image, plotting
 
 # %%

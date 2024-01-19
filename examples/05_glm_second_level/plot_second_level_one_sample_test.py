@@ -17,6 +17,7 @@ expected to elicit activity in the motor cortex (positive in the right
 hemisphere, negative in the left hemisphere).
 
 """
+from nilearn import plotting
 
 # %%
 # Fetch dataset
@@ -42,8 +43,6 @@ data = fetch_localizer_contrasts(
 # visualization purposes. The button press effect is visible among all
 # subjects.
 import matplotlib.pyplot as plt
-
-from nilearn import plotting
 
 subjects = data["ext_vars"]["participant_id"].tolist()
 fig, axes = plt.subplots(nrows=4, ncols=4, figsize=(8, 8))

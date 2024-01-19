@@ -24,9 +24,12 @@ At the group level, such a mapping is not possible. Yet, we may
 observe some significant effects in these areas.
 
 """
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
 
 # %%
-import matplotlib.pyplot as plt
 import pandas as pd
 
 from nilearn import plotting

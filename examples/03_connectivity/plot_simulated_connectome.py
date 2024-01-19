@@ -8,7 +8,10 @@ estimation of connectivity structure for a synthetic dataset.
 """
 
 # %%
-import matplotlib.pyplot as plt
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
 
 # Generate synthetic data
 from nilearn._utils.data_gen import generate_group_sparse_gaussian_graphs

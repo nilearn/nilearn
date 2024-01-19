@@ -22,7 +22,6 @@ For an encoding approach for the same dataset, see also
 .. include:: ../../../examples/masker_note.rst
 
 """
-
 # %%
 import sys
 import time
@@ -31,6 +30,7 @@ import time
 # First we load the Miyawaki dataset
 # ----------------------------------
 from nilearn import datasets
+from nilearn.plotting import show
 
 sys.stderr.write("Fetching dataset...")
 t0 = time.time()
@@ -300,8 +300,6 @@ print(
 from pathlib import Path
 
 from matplotlib import pyplot as plt
-
-from nilearn.plotting import show
 
 output_dir = Path.cwd() / "results" / "plot_miyawaki_reconstruction"
 output_dir.mkdir(exist_ok=True, parents=True)

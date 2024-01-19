@@ -35,7 +35,7 @@ Note that more power would be obtained from using a larger sample of subjects.
 # %%
 # Load Oasis dataset
 # ------------------
-from nilearn import datasets
+from nilearn import datasets, plotting
 
 n_subjects = 100  # more subjects requires more memory
 
@@ -93,8 +93,6 @@ from matplotlib import pyplot as plt
 
 # %%
 # Let's plot the design matrix.
-from nilearn import plotting
-
 fig, ax1 = plt.subplots(1, 1, figsize=(4, 8))
 ax = plotting.plot_design_matrix(design_matrix, ax=ax1)
 ax.set_ylabel("maps")

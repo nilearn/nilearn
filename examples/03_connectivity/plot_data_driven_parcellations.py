@@ -36,6 +36,10 @@ Vincent Michel, Alexandre Gramfort, Gael Varoquaux, Evelyn Eger,
 The big picture discussion corresponding to this example can be found
 in the documentation section :ref:`parcellating_brain`.
 """
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
 
 # %%
 # Download a brain development fMRI dataset and turn it to a data matrix
@@ -45,7 +49,6 @@ in the documentation section :ref:`parcellating_brain`.
 
 import time
 
-import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import patches, ticker
 

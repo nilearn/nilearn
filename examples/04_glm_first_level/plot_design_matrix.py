@@ -15,6 +15,8 @@ This examples requires matplotlib.
 # At first, we define parameters related to the images acquisition.
 import numpy as np
 
+from nilearn.plotting import plot_design_matrix
+
 tr = 1.0  # repetition time is 1 second
 n_scans = 128  # the acquisition comprises 128 scans
 frame_times = np.arange(n_scans) * tr  # here are the corresponding frame times
@@ -100,8 +102,6 @@ X3 = make_first_level_design_matrix(
 # %%
 # Here are the three designs side by side.
 import matplotlib.pyplot as plt
-
-from nilearn.plotting import plot_design_matrix
 
 fig, (ax1, ax2, ax3) = plt.subplots(figsize=(10, 6), nrows=1, ncols=3)
 plot_design_matrix(X1, ax=ax1)
