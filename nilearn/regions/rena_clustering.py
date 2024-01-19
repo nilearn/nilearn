@@ -151,6 +151,127 @@ def _make_edges_and_weights(X, mask_img):
     return edges, weights
 
 
+def _compute_weights_surface(X, mask_img):
+    """Compute the weights in direction of each axis using Euclidean distance.
+
+    i.e. weights = (weight_deep, weights_right, weight_down).
+
+    Notes
+    -----
+    Here we assume a square lattice (no diagonal connections).
+
+    Parameters
+    ----------
+    X : ndarray, shape = [n_samples, n_features]
+        Training data.
+
+    mask_img : Niimg-like object
+        Object used for masking the data.
+
+    Returns
+    -------
+    weights : ndarray
+        Weights corresponding to all edges in the mask.
+        shape: (n_edges,).
+
+    """
+    n_samples, _ = X.shape
+
+    mask = get_data(mask_img).astype("bool")
+    shape = mask.shape
+
+    data = np.empty((shape[0], shape[1], shape[2], n_samples))
+    for sample in range(n_samples):
+        data[:, :, :, sample] = unmask_from_to_3d_array(X[sample].copy(), mask)
+
+    weights_deep = np.sum(np.diff(data, axis=2) ** 2, axis=-1).ravel()
+    weights_right = np.sum(np.diff(data, axis=1) ** 2, axis=-1).ravel()
+    weights_down = np.sum(np.diff(data, axis=0) ** 2, axis=-1).ravel()
+
+    weights = np.hstack([weights_deep, weights_right, weights_down])
+
+    return weights
+
+
+def _make_edges_surface(mesh_faces, is_mask):
+    """Create the edges set: Returns a list of edges for a surface mesh.
+
+    Parameters
+    ----------
+    mesh_faces : ndarray
+        The triangle indices of the mesh vertices.
+
+    is_mask : boolean
+        If is_mask is true, it returns the mask of edges.
+        Returns 1 if the edge is contained in the mask, 0 otherwise.
+
+    Returns
+    -------
+    edges : ndarray
+        Edges corresponding to the image or mask.
+        shape: (1, n_edges) if_mask,
+               (2, n_edges) otherwise.
+
+    """
+    if is_mask:
+        pass
+    else:
+        mesh_edges = set()
+        for face in mesh_faces:
+            for i in range(len(face)):
+                edge = tuple(sorted([face[i], face[(i + 1) % len(face)]]))
+                mesh_edges.add(edge)
+
+    edges = mesh_edges.T
+
+    return edges
+
+
+def _make_edges_and_weights_surface(X, mask_img):
+    """Compute the weights to all edges in the mask.
+
+    Parameters
+    ----------
+    X : ndarray, shape = [n_samples, n_features]
+        Training data.
+
+    mask_img : SurfaceImage object
+        Object used for masking the data.
+
+    Returns
+    -------
+    edges : ndarray
+        Array containing edges of mesh
+
+    weights : ndarray
+        Weights corresponding to all edges in the mask.
+        shape: (n_edges,).
+
+    """
+    mask = np.concatenate(list(mask_img.data.values()))
+    shape = mask.shape
+    n_vertices = np.prod(shape)
+
+    # Indexing each voxel
+    vertices = np.arange(n_vertices).reshape(shape)
+
+    weights_unmasked = _compute_weights_surface(X, mask_img)
+
+    edges_unmasked = _make_edges_surface(vertices, is_mask=False)
+    edges_mask = _make_edges_surface(mask, is_mask=True)
+
+    # Apply mask to edges and weights
+    weights = np.copy(weights_unmasked[edges_mask])
+    edges = np.copy(edges_unmasked[:, edges_mask])
+
+    # Reorder the indices of the graph
+    max_index = edges.max()
+    order = np.searchsorted(np.unique(edges.ravel()), np.arange(max_index + 1))
+    edges = order[edges]
+
+    return edges, weights
+
+
 def _weighted_connectivity_graph(X, mask_img):
     """Create a symmetric weighted graph.
 
@@ -172,7 +293,10 @@ def _weighted_connectivity_graph(X, mask_img):
     """
     n_features = X.shape[1]
 
-    edges, weight = _make_edges_and_weights(X, mask_img)
+    if isinstance(mask_img, SurfaceImage):
+        edges, weight = _make_edges_and_weights_surface(X, mask_img)
+    else:
+        edges, weight = _make_edges_and_weights(X, mask_img)
 
     connectivity = coo_matrix(
         (weight, edges), (n_features, n_features)

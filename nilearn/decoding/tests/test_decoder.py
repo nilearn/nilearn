@@ -1163,10 +1163,10 @@ def test_decoder_regressor_predict_score_surface(_make_surface_reg_data):
 
 
 @pytest.mark.parametrize("frem", [FREMRegressor, FREMClassifier])
-def test_frem_decoder_fit_surface(frem, _make_surface_class_data):
+def test_frem_decoder_fit_surface(frem, _make_surface_class_data, mini_mask):
     """Test fit for using FREM decoding with surface image."""
     X, y = _make_surface_class_data()
-    model = frem(mask=SurfaceMasker(), clustering_percentile=90)
+    model = frem(mask=mini_mask, clustering_percentile=90)
     model.fit(X, y)
 
     assert model.coef_ is not None
