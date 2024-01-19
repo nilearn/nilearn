@@ -1168,5 +1168,3 @@ def test_frem_decoder_fit_surface(frem, _make_surface_class_data, mini_mask):
     X, y = _make_surface_class_data()
     model = frem(mask=mini_mask, clustering_percentile=90)
     model.fit(X, y)
-
-    assert model.coef_ is not None

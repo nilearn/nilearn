@@ -151,22 +151,18 @@ def _make_edges_and_weights(X, mask_img):
     return edges, weights
 
 
-def _compute_weights_surface(X, mask_img):
-    """Compute the weights in direction of each axis using Euclidean distance.
-
-    i.e. weights = (weight_deep, weights_right, weight_down).
-
-    Notes
-    -----
-    Here we assume a square lattice (no diagonal connections).
+def _compute_weights_surface(X, mask, edges):
+    """Compute the weights for each edge using Euclidean distance.
 
     Parameters
     ----------
     X : ndarray, shape = [n_samples, n_features]
         Training data.
 
-    mask_img : Niimg-like object
+    mask : boolean
         Object used for masking the data.
+
+    edges : ndarray
 
     Returns
     -------
@@ -176,55 +172,50 @@ def _compute_weights_surface(X, mask_img):
 
     """
     n_samples, _ = X.shape
-
-    mask = get_data(mask_img).astype("bool")
     shape = mask.shape
 
-    data = np.empty((shape[0], shape[1], shape[2], n_samples))
+    data = np.empty((shape[0], n_samples))
     for sample in range(n_samples):
-        data[:, :, :, sample] = unmask_from_to_3d_array(X[sample].copy(), mask)
+        data[:, sample] = unmask_from_to_3d_array(X[sample].copy(), mask)
 
-    weights_deep = np.sum(np.diff(data, axis=2) ** 2, axis=-1).ravel()
-    weights_right = np.sum(np.diff(data, axis=1) ** 2, axis=-1).ravel()
-    weights_down = np.sum(np.diff(data, axis=0) ** 2, axis=-1).ravel()
-
-    weights = np.hstack([weights_deep, weights_right, weights_down])
+    data_i = data[edges[0]]
+    data_j = data[edges[1]]
+    weights = np.sum((data_i - data_j) ** 2, axis=-1).ravel()
 
     return weights
 
 
-def _make_edges_surface(mesh_faces, is_mask):
+def _make_edges_surface(faces, mask):
     """Create the edges set: Returns a list of edges for a surface mesh.
 
     Parameters
     ----------
-    mesh_faces : ndarray
-        The triangle indices of the mesh vertices.
+    faces : ndarray
+        The vertex indices corresponding the mesh triangles.
 
-    is_mask : boolean
-        If is_mask is true, it returns the mask of edges.
-        Returns 1 if the edge is contained in the mask, 0 otherwise.
+    mask : boolean
+        Returns True if the edge is contained in the mask, False otherwise.
 
     Returns
     -------
     edges : ndarray
-        Edges corresponding to the image or mask.
-        shape: (1, n_edges) if_mask,
-               (2, n_edges) otherwise.
+        Edges corresponding to the image with shape: (2, n_edges).
+
+    edges_masked : ndarray
+        Edges corresponding to the mask with shape: (1, n_edges).
 
     """
-    if is_mask:
-        pass
-    else:
-        mesh_edges = set()
-        for face in mesh_faces:
-            for i in range(len(face)):
-                edge = tuple(sorted([face[i], face[(i + 1) % len(face)]]))
-                mesh_edges.add(edge)
+    mesh_edges = set()
+    for face in faces:
+        for i in range(len(face)):
+            edge = tuple(sorted([face[i], face[(i + 1) % len(face)]]))
+            mesh_edges.add(edge)
 
-    edges = mesh_edges.T
+    edges = np.array(list(mesh_edges))
+    false_indices = np.where(~mask)[0]
+    edges_masked = ~np.isin(edges, false_indices).any(axis=1)
 
-    return edges
+    return edges.T, edges_masked
 
 
 def _make_edges_and_weights_surface(X, mask_img):
@@ -248,21 +239,27 @@ def _make_edges_and_weights_surface(X, mask_img):
         shape: (n_edges,).
 
     """
-    mask = np.concatenate(list(mask_img.data.values()))
-    shape = mask.shape
-    n_vertices = np.prod(shape)
+    # mask = np.concatenate(list(mask_img.data.values()))
+    # TODO: Handle parts together or separately?
+    # Using face indices to calculate edges; issue of overlapping indices
+    # values in separate hemispheres
+    weights = {}
+    edges = {}
+    for part in mask_img.mesh.keys():
+        face_part = mask_img.mesh[part].faces
+        mask_part = mask_img.data[part]
+        edges_unmasked, edges_mask = _make_edges_surface(face_part, mask_part)
 
-    # Indexing each voxel
-    vertices = np.arange(n_vertices).reshape(shape)
+        # TODO: fix input X; should correspond to one part
+        weights_unmasked = _compute_weights_surface(
+            X, mask_part.astype("bool"), edges_unmasked
+        )
 
-    weights_unmasked = _compute_weights_surface(X, mask_img)
+        # Apply mask to edges and weights
+        weights[part] = np.copy(weights_unmasked[edges_mask])
+        edges[part] = np.copy(edges_unmasked[:, edges_mask])
 
-    edges_unmasked = _make_edges_surface(vertices, is_mask=False)
-    edges_mask = _make_edges_surface(mask, is_mask=True)
-
-    # Apply mask to edges and weights
-    weights = np.copy(weights_unmasked[edges_mask])
-    edges = np.copy(edges_unmasked[:, edges_mask])
+        # TODO: this is unfinished
 
     # Reorder the indices of the graph
     max_index = edges.max()
