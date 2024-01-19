@@ -15,6 +15,7 @@ NEW
 Fixes
 -----
 
+- :bdg-danger:`Deprecation` Make sure that all the fetchers from :mod:`~datasets.func` and :mod:`~datasets.atlas` return a ``Bunch``. Add new behavior to :func:`~datasets.fetch_language_localizer_demo_dataset` to return output as ``Bunch``. This behavior will become the default in version 0.13.0 (:gh:`4233` by `Rémi Gau`_).
 - :bdg-dark:`Code` Make sure that all atlases and datasets fetchers return a description (:gh:`4215` `Rémi Gau`_).
 - :bdg-dark:`Code` Update the ``CompCor`` strategy in :func:`~interfaces.fmriprep.load_confounds` and :func:`~interfaces.fmriprep.load_confounds_strategy` to support ``fmriprep`` 21.x series and above. (:gh:`3285` by `Hao-Ting Wang`_).
 - :bdg-success:`API` :class:`~maskers.MultiNiftiMasker` can now call :meth:`~maskers.NiftiMasker.generate_report` which will generate a report for the first subject in the list of subjects (:gh:`4001` by `Yasmin Mzayek`_).
