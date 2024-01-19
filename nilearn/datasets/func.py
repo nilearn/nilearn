@@ -2190,7 +2190,7 @@ def fetch_language_localizer_demo_dataset(
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are :
 
         - 'data_dir': :obj:`str` Path to downloaded dataset.
