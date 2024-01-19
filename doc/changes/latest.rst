@@ -41,6 +41,7 @@ Enhancements
 - :bdg-primary:`Doc`  Specify full form of LSS in  :ref:`sphx_glr_auto_examples_07_advanced_plot_beta_series.py` (:gh:`4141` by `Tamer Gezici`_).
 - :bdg-primary:`Doc` Don't fetch tmaps in examples if tmaps aren't used in the example. (:gh:`4136` by `Christina Roßmanith`_).
 - :bdg-primary:`Doc` Describe the return value in :func:`~nilearn.datasets.fetch_abide_pcp` documentation (:gh:`4159` by `Suramya Pokharel`_).
+- :bdg-dark:`Code` Allow ``global_signal`` parameter in :func:`~interfaces.fmriprep.load_confounds_strategy` in ``denoise_strategy='compcor'`` (:gh:`4225` by `Hao-Ting Wang`_).
 
 Changes
 -------
@@ -58,3 +59,4 @@ Changes
 - :bdg-dark:`Code` Make ``decoding/proximal_operator`` explicitly private to align with PEP8 (:gh:`4153` by `Rémi Gau`_).
 - :bdg-primary:`Doc` Combine GLM examples ``plot_fixed_effect`` and ``plot_fiac_analysis`` into a a single example ``plot_two_runs_model`` (:gh:`3191` by `Taylor Salo`_ and `Rémi Gau`_).
 - :bdg-dark:`Code` Make private functions public when used outside of their module ``nilearn.interface`` to align with PEP8 (:gh:`4168` by `Rémi Gau`_).
+- :bdg-danger:`Deprecation` the default parameter of ``fd_threshold`` and ``std_dvars_threshold`` in :func:`~interfaces.fmriprep.load_confounds` with be updated to match ``fmriprep`` default in version 0.13 (:gh:`4225` by `Hao-Ting Wang`_).
