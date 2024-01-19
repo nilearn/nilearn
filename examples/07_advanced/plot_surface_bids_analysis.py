@@ -53,7 +53,7 @@ from nilearn.glm.first_level import first_level_from_bids
 task_label = 'languagelocalizer'
 _, models_run_imgs, models_events, models_confounds = \
     first_level_from_bids(
-        data.data_dir, 
+        data.data_dir,
         task_label,
         img_filters=[('desc', 'preproc')],
         n_jobs=2
