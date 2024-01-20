@@ -22,7 +22,7 @@ from sklearn.feature_extraction import DictVectorizer
 from sklearn.utils import Bunch
 
 from ..image import resample_img
-from .utils import _fetch_file, _get_dataset_descr, _get_dataset_dir
+from ._utils import fetch_single_file, get_dataset_descr, get_dataset_dir
 
 _NEUROVAULT_BASE_URL = "https://neurovault.org/api/"
 _NEUROVAULT_COLLECTIONS_URL = urljoin(_NEUROVAULT_BASE_URL, "collections/")
@@ -1128,7 +1128,7 @@ def _yield_from_url_list(url_list, verbose=3):
 
 
 def _simple_download(url, target_file, temp_dir, verbose=3):
-    """Wrap around ``utils._fetch_file``.
+    """Wrap around ``utils.fetch_single_file``.
 
     This allows specifying the target file name.
 
@@ -1141,7 +1141,7 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
         Location of the downloaded file on filesystem.
 
     temp_dir : str
-        Location of sandbox directory used by ``_fetch_file``.
+        Location of sandbox directory used by ``fetch_single_file``.
 
     verbose : int, default=3
         An integer in [0, 1, 2, 3] to control the verbosity level.
@@ -1158,12 +1158,12 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
 
     See Also
     --------
-    nilearn.datasets._utils._fetch_file
+    nilearn.datasets._utils.fetch_single_file
 
     """
     _print_if(f"Downloading file: {url}", _DEBUG, verbose)
     try:
-        downloaded = _fetch_file(
+        downloaded = fetch_single_file(
             url, temp_dir, resume=False, overwrite=True, verbose=0
         )
     except Exception:
@@ -2365,7 +2365,7 @@ def _result_list_to_bunch(result_list, download_params):
         images=images,
         images_meta=images_meta,
         collections_meta=collections_meta,
-        description=_get_dataset_descr("neurovault"),
+        description=get_dataset_descr("neurovault"),
     )
     if (
         download_params["fetch_neurosynth_words"]
@@ -2407,7 +2407,7 @@ def _fetch_neurovault_implementation(
 ):
     """Download data from neurovault.org and neurosynth.org."""
     image_terms = dict(image_terms, **kwarg_image_filters)
-    neurovault_data_dir = _get_dataset_dir("neurovault", data_dir)
+    neurovault_data_dir = get_dataset_dir("neurovault", data_dir)
     if mode != "offline" and not os.access(neurovault_data_dir, os.W_OK):
         warnings.warn(
             "You don't have write access to neurovault dir: "
@@ -2466,8 +2466,8 @@ def fetch_neurovault(
     skimmed through the whole database or until an (optional) maximum
     number of images to fetch has been reached.
 
-    For more information, see :footcite:`Gorgolewski2015`,
-    and :footcite:`Yarkoni2011`.
+    For more information, see :footcite:t:`Gorgolewski2015`,
+    and :footcite:t:`Yarkoni2011`.
 
     Parameters
     ----------
@@ -2692,8 +2692,8 @@ def fetch_neurovault_ids(
     This is the fast way to get the data from the server if we already
     know which images or collections we want.
 
-    For more information, see :footcite:`Gorgolewski2015`,
-    and :footcite:`Yarkoni2011`.
+    For more information, see :footcite:t:`Gorgolewski2015`,
+    and :footcite:t:`Yarkoni2011`.
 
     Parameters
     ----------

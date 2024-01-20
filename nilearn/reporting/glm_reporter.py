@@ -37,7 +37,7 @@ with warnings.catch_warnings():
 
 from nilearn._utils import check_niimg
 from nilearn.maskers import NiftiMasker
-from nilearn.reporting._get_clusters_table import get_clusters_table
+from nilearn.reporting.get_clusters_table import get_clusters_table
 from nilearn.reporting.utils import figure_to_svg_quoted
 
 HTML_TEMPLATE_ROOT_PATH = os.path.join(
@@ -286,7 +286,10 @@ def _check_report_dims(report_size):
         width = int(width)
         height = int(height)
     except ValueError:
-        warnings.warn("Report size has invalid values. Using default 1600x800")
+        warnings.warn(
+            "Report size has invalid values. Using default 1600x800",
+            stacklevel=3,
+        )
         width, height = (1600, 800)
     return width, height
 
@@ -570,7 +573,7 @@ def _dmtx_to_svg_url(design_matrices):
     for dmtx_count, design_matrix in enumerate(design_matrices, start=1):
         dmtx_text_ = string.Template(dmtx_template_text)
         dmtx_plot = plot_design_matrix(design_matrix)
-        dmtx_title = f"Session {dmtx_count}"
+        dmtx_title = f"Run {dmtx_count}"
         plt.title(dmtx_title, y=0.987)
         dmtx_plot = _resize_plot_inches(dmtx_plot, height_change=0.3)
         url_design_matrix_svg = _plot_to_svg(dmtx_plot)

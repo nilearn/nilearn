@@ -15,7 +15,7 @@ from sklearn.utils import Bunch
 
 from .._utils import check_niimg, fill_doc
 from ..image import get_data, new_img_like, reorder_img
-from .utils import _fetch_files, _get_dataset_descr, _get_dataset_dir
+from ._utils import fetch_files, get_dataset_descr, get_dataset_dir
 
 _TALAIRACH_LEVELS = ["hemisphere", "lobe", "gyrus", "tissue", "ba"]
 
@@ -43,7 +43,7 @@ def fetch_atlas_difumo(
     256, 512, and 1024).
     These modes are optimized to represent well raw :term:`BOLD` timeseries,
     over a with range of experimental conditions.
-    See :footcite:`Dadi2020`.
+    See :footcite:t:`Dadi2020`.
 
     .. versionadded:: 0.7.1
 
@@ -129,12 +129,12 @@ def fetch_atlas_difumo(
 
     dataset_name = "difumo_atlases"
 
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name=dataset_name, data_dir=data_dir, verbose=verbose
     )
 
     # Download the zip file, first
-    files_ = _fetch_files(data_dir, files, verbose=verbose)
+    files_ = fetch_files(data_dir, files, verbose=verbose)
     labels = pd.read_csv(files_[0])
     labels = labels.rename(columns={c: c.lower() for c in labels.columns})
     if legacy_format:
@@ -146,9 +146,9 @@ def fetch_atlas_difumo(
         ("README.md", "https://osf.io/4k9bf/download", {"move": "README.md"})
     ]
     if not os.path.exists(os.path.join(data_dir, "README.md")):
-        _fetch_files(data_dir, readme_files, verbose=verbose)
+        fetch_files(data_dir, readme_files, verbose=verbose)
 
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     return Bunch(description=fdescr, maps=files_[1], labels=labels)
 
@@ -169,9 +169,9 @@ def fetch_atlas_craddock_2012(
     The provided images are in MNI152 space. All images are 4D with
     shapes equal to ``(47, 56, 46, 43)``.
 
-    See :footcite:`CreativeCommons` for the licence.
+    See :footcite:t:`CreativeCommons` for the licence.
 
-    See :footcite:`Craddock2012` and :footcite:`nitrcClusterROI`
+    See :footcite:t:`Craddock2012` and :footcite:t:`nitrcClusterROI`
     for more information on this :term:`parcellation`.
 
     Parameters
@@ -244,15 +244,15 @@ def fetch_atlas_craddock_2012(
         ("random_all.nii.gz", url, opts),
     ]
 
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
 
-    sub_files = _fetch_files(
+    sub_files = fetch_files(
         data_dir, filenames, resume=resume, verbose=verbose
     )
 
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     if homogeneity:
         if homogeneity in ["spatial", "temporal"]:
@@ -266,7 +266,7 @@ def fetch_atlas_craddock_2012(
                 ]
         else:
             filename = [("random_all.nii.gz", url, opts)]
-        data = _fetch_files(data_dir, filename, resume=resume, verbose=verbose)
+        data = fetch_files(data_dir, filename, resume=resume, verbose=verbose)
         params = dict(maps=data[0], description=fdescr)
     else:
         params = dict([("description", fdescr)] + list(zip(keys, sub_files)))
@@ -292,8 +292,8 @@ def fetch_atlas_destrieux_2009(
     """Download and load the Destrieux cortical \
     :term:`deterministic atlas<Deterministic atlas>` (dated 2009).
 
-    See :footcite:`Fischl2004`,
-    and :footcite:`Destrieux2009`.
+    See :footcite:t:`Fischl2004`,
+    and :footcite:t:`Destrieux2009`.
 
     .. note::
 
@@ -347,10 +347,10 @@ def fetch_atlas_destrieux_2009(
     ]
 
     dataset_name = "destrieux_2009"
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
-    files_ = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
+    files_ = fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
     params = dict(maps=files_[1], labels=pd.read_csv(files_[0], index_col=0))
 
@@ -448,6 +448,7 @@ def fetch_atlas_harvard_oxford(
               regions in the atlas.
             - 'filename': Same as 'maps', kept for backward
               compatibility only.
+            - 'description': :obj:`str`, description of the atlas.
 
     See Also
     --------
@@ -504,9 +505,18 @@ def fetch_atlas_harvard_oxford(
         resume=resume,
         verbose=verbose,
     )
+
+    fdescr = get_dataset_descr("harvard_oxford")
+
     atlas_niimg = check_niimg(atlas_img)
     if not symmetric_split or is_lateralized:
-        return Bunch(filename=atlas_filename, maps=atlas_niimg, labels=names)
+        return Bunch(
+            filename=atlas_filename,
+            maps=atlas_niimg,
+            labels=names,
+            description=fdescr,
+        )
+
     new_atlas_data, new_names = _compute_symmetric_split(
         "HarvardOxford", atlas_niimg, names
     )
@@ -517,6 +527,7 @@ def fetch_atlas_harvard_oxford(
         filename=atlas_filename,
         maps=new_atlas_niimg,
         labels=new_names,
+        description=fdescr,
     )
 
 
@@ -598,6 +609,7 @@ def fetch_atlas_juelich(
               regions in the atlas.
             - 'filename': Same as 'maps', kept for backward
               compatibility only.
+            - 'description': :obj:`str`, description of the atlas.
 
     See Also
     --------
@@ -649,8 +661,14 @@ def fetch_atlas_juelich(
     new_atlas_niimg = new_img_like(
         atlas_niimg, new_atlas_data, atlas_niimg.affine
     )
+
+    fdescr = get_dataset_descr("juelich")
+
     return Bunch(
-        filename=atlas_filename, maps=new_atlas_niimg, labels=list(new_names)
+        filename=atlas_filename,
+        maps=new_atlas_niimg,
+        labels=list(new_names),
+        description=fdescr,
     )
 
 
@@ -674,7 +692,7 @@ def _get_atlas_data_and_labels(
     else:
         raise ValueError(f"Atlas source {atlas_source} is not valid.")
     # For practical reasons, we mimic the FSL data directory here.
-    data_dir = _get_dataset_dir("fsl", data_dir=data_dir, verbose=verbose)
+    data_dir = get_dataset_dir("fsl", data_dir=data_dir, verbose=verbose)
     opts = {"uncompress": True}
     root = os.path.join("data", "atlases")
 
@@ -698,7 +716,7 @@ def _get_atlas_data_and_labels(
     atlas_file = os.path.join(
         root, atlas_source, f"{atlas_source}-{atlas_name}.nii.gz"
     )
-    atlas_file, label_file = _fetch_files(
+    atlas_file, label_file = fetch_files(
         data_dir,
         [(atlas_file, url, opts), (label_file, url, opts)],
         resume=resume,
@@ -828,9 +846,9 @@ def _compute_symmetric_split(source, atlas_niimg, names):
 def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the MSDL brain :term:`Probabilistic atlas`.
 
-    It can be downloaded at :footcite:`atlas_msdl`, and cited
-    using :footcite:`Varoquaux2011`.
-    See also :footcite:`Varoquaux2013` for more information.
+    It can be downloaded at :footcite:t:`atlas_msdl`, and cited
+    using :footcite:t:`Varoquaux2011`.
+    See also :footcite:t:`Varoquaux2013` for more information.
 
     Parameters
     ----------
@@ -873,10 +891,10 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
         (os.path.join("MSDL_rois", "msdl_rois.nii"), url, opts),
     ]
 
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
-    files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
+    files = fetch_files(data_dir, files, resume=resume, verbose=verbose)
     csv_data = pd.read_csv(files[0])
     labels = [name.strip() for name in csv_data["name"].tolist()]
 
@@ -888,7 +906,7 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     net_names = [
         net_name.strip() for net_name in csv_data["net name"].tolist()
     ]
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     return Bunch(
         maps=files[1],
@@ -903,7 +921,7 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
 def fetch_coords_power_2011(legacy_format=True):
     """Download and load the Power et al. brain atlas composed of 264 ROIs.
 
-    See :footcite:`Power2011`.
+    See :footcite:t:`Power2011`.
 
     Parameters
     ----------
@@ -927,7 +945,7 @@ def fetch_coords_power_2011(legacy_format=True):
 
     """
     dataset_name = "power_2011"
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
     package_directory = os.path.dirname(os.path.abspath(__file__))
     csv = os.path.join(package_directory, "data", "power_2011.csv")
     params = dict(rois=pd.read_csv(csv), description=fdescr)
@@ -953,7 +971,7 @@ def fetch_atlas_smith_2009(
     """Download and load the Smith :term:`ICA` and BrainMap \
     :term:`Probabilistic atlas` (2009).
 
-    See :footcite:`Smith2009b` and :footcite:`Laird2011`.
+    See :footcite:t:`Smith2009b` and :footcite:t:`Laird2011`.
 
     Parameters
     ----------
@@ -981,14 +999,14 @@ def fetch_atlas_smith_2009(
               The shape of the image is ``(91, 109, 91, 20)``.
             - 'rsn10': :obj:`str`, path to nifti file containing the
               10 well-matched maps from the 20 maps obtained as for 'rsn20',
-              as shown in :footcite:`Smith2009b`. The shape of the
+              as shown in :footcite:t:`Smith2009b`. The shape of the
               image is ``(91, 109, 91, 10)``.
             - 'bm20': :obj:`str`, path to nifti file containing the
               20-dimensional :term:`ICA`, BrainMap components.
               The shape of the image is ``(91, 109, 91, 20)``.
             - 'bm10': :obj:`str`, path to nifti file containing the
               10 well-matched maps from the 20 maps obtained as for 'bm20',
-              as shown in :footcite:`Smith2009b`. The shape of the
+              as shown in :footcite:t:`Smith2009b`. The shape of the
               image is ``(91, 109, 91, 10)``.
             - 'rsn70': :obj:`str`, path to nifti file containing the
               70-dimensional :term:`ICA`, resting-:term:`fMRI` components.
@@ -1047,23 +1065,23 @@ def fetch_atlas_smith_2009(
         url = [url] * len(files)
 
     dataset_name = "smith_2009"
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
 
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     if dimension:
         key = f"{'rsn' if resting else 'bm'}{dimension}"
         key_index = list(files).index(key)
 
         file = [(files[key], url[key_index] + files[key], {})]
-        data = _fetch_files(data_dir, file, resume=resume, verbose=verbose)
+        data = fetch_files(data_dir, file, resume=resume, verbose=verbose)
         params = Bunch(maps=data[0], description=fdescr)
     else:
         keys = list(files.keys())
         files = [(f, u + f, {}) for f, u in zip(files.values(), url)]
-        files_ = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
+        files_ = fetch_files(data_dir, files, resume=resume, verbose=verbose)
         params = dict(zip(keys, files_))
         params["description"] = fdescr
         warnings.warn(
@@ -1087,8 +1105,8 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
     7 or 17 depending on the atlas version considered.
 
     For more information on this dataset's structure,
-    see :footcite:`CorticalParcellation_Yeo2011`,
-    and :footcite:`Yeo2011`.
+    see :footcite:t:`CorticalParcellation_Yeo2011`,
+    and :footcite:t:`Yeo2011`.
 
     Parameters
     ----------
@@ -1173,14 +1191,14 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
         for f in basenames
     ]
 
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
-    sub_files = _fetch_files(
+    sub_files = fetch_files(
         data_dir, filenames, resume=resume, verbose=verbose
     )
 
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     params = dict([("description", fdescr)] + list(zip(keys, sub_files)))
     return Bunch(**params)
@@ -1198,8 +1216,8 @@ def fetch_atlas_aal(
     (D. L. Collins et al., 1998, Trans. Med. Imag. 17, 463-468, PubMed).
 
     For more information on this dataset's structure,
-    see :footcite:`AAL_atlas`,
-    and :footcite:`Tzourio-Mazoyer2002`.
+    see :footcite:t:`AAL_atlas`,
+    and :footcite:t:`Tzourio-Mazoyer2002`.
 
     .. warning::
 
@@ -1294,13 +1312,13 @@ def fetch_atlas_aal(
                 for f in basenames
             ]
 
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
-    atlas_img, labels_file = _fetch_files(
+    atlas_img, labels_file = fetch_files(
         data_dir, filenames, resume=resume, verbose=verbose
     )
-    fdescr = _get_dataset_descr("aal_SPM12")
+    fdescr = get_dataset_descr("aal_SPM12")
     labels = []
     indices = []
     if version == "SPM12":
@@ -1346,9 +1364,9 @@ def fetch_atlas_basc_multiscale_2015(
     Multiple resolutions (number of networks) are available, among
     7, 12, 20, 36, 64, 122, 197, 325, 444. The brain parcellations
     have been generated using a method called bootstrap analysis of
-    stable clusters called as BASC :footcite:`Bellec2010`,
+    stable clusters called as BASC :footcite:t:`Bellec2010`,
     and the resolutions have been selected using a data-driven method
-    called MSTEPS :footcite:`Bellec2013`.
+    called MSTEPS :footcite:t:`Bellec2013`.
 
     Note that two versions of the template are available, 'sym' or 'asym'.
     The 'asym' type contains brain images that have been registered in the
@@ -1431,12 +1449,12 @@ def fetch_atlas_basc_multiscale_2015(
     ]
 
     dataset_name = "basc_multiscale_2015"
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
 
     folder_name = f"template_cambridge_basc_multiscale_nii_{version}"
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     if resolution:
         basename = (
@@ -1448,7 +1466,7 @@ def fetch_atlas_basc_multiscale_2015(
 
         filename = [(os.path.join(folder_name, basename), url, opts)]
 
-        data = _fetch_files(data_dir, filename, resume=resume, verbose=verbose)
+        data = fetch_files(data_dir, filename, resume=resume, verbose=verbose)
         params = Bunch(maps=data[0], description=fdescr)
     else:
         basenames = [
@@ -1463,11 +1481,9 @@ def fetch_atlas_basc_multiscale_2015(
             (os.path.join(folder_name, basename), url, opts)
             for basename in basenames
         ]
-        data = _fetch_files(
-            data_dir, filenames, resume=resume, verbose=verbose
-        )
+        data = fetch_files(data_dir, filenames, resume=resume, verbose=verbose)
 
-        descr = _get_dataset_descr(dataset_name)
+        descr = get_dataset_descr(dataset_name)
 
         params = dict(zip(keys, data))
         params["description"] = descr
@@ -1487,7 +1503,7 @@ def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=True):
     These ROIs cover much of the cerebral cortex
     and cerebellum and are assigned to 6 networks.
 
-    See :footcite:`Dosenbach2010`.
+    See :footcite:t:`Dosenbach2010`.
 
     Parameters
     ----------
@@ -1517,7 +1533,7 @@ def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=True):
 
     """
     dataset_name = "dosenbach_2010"
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
     package_directory = os.path.dirname(os.path.abspath(__file__))
     csv = os.path.join(package_directory, "data", "dosenbach_2010.csv")
     out_csv = pd.read_csv(csv)
@@ -1556,7 +1572,7 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
     Visual) and have a regional label (cortexL, cortexR, cerebellum, thalamus,
     hippocampus, basalGanglia, amygdala, cortexMid).
 
-    See :footcite:`Seitzman2020`.
+    See :footcite:t:`Seitzman2020`.
 
     .. versionadded:: 0.5.1
 
@@ -1590,7 +1606,7 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
 
     """
     dataset_name = "seitzman_2018"
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
     package_directory = os.path.dirname(os.path.abspath(__file__))
     roi_file = os.path.join(
         package_directory,
@@ -1642,7 +1658,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     """Download and return file names for the Allen and MIALAB :term:`ICA` \
     :term:`Probabilistic atlas` (dated 2011).
 
-    See :footcite:`Allen2011`.
+    See :footcite:t:`Allen2011`.
 
     The provided images are in MNI152 space.
 
@@ -1662,7 +1678,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
           T-maps of all 75 unthresholded components. The image has
           shape ``(53, 63, 46, 75)``.
         - 'rsn28': :obj:`str`, path to nifti file containing the
-          T-maps of 28 RSNs included in :footcite:`Allen2011`.
+          T-maps of 28 RSNs included in :footcite:t:`Allen2011`.
           The image has shape ``(53, 63, 46, 28)``.
         - 'networks': :obj:`list` of :obj:`list` of :obj:`str`, list
           containing the names for the 28 RSNs.
@@ -1719,14 +1735,14 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     filenames = [(os.path.join("allen_rsn_2011", f), url, opts) for f in files]
 
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
-    sub_files = _fetch_files(
+    sub_files = fetch_files(
         data_dir, filenames, resume=resume, verbose=verbose
     )
 
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     params = [
         ("description", fdescr),
@@ -1744,7 +1760,7 @@ def fetch_atlas_surf_destrieux(
     """Download and load Destrieux et al, 2010 cortical \
     :term:`Deterministic atlas`.
 
-    See :footcite:`Destrieux2010`.
+    See :footcite:t:`Destrieux2010`.
 
     This atlas returns 76 labels per hemisphere based on sulco-gryal patterns
     as distributed with Freesurfer in fsaverage5 surface space.
@@ -1768,9 +1784,10 @@ def fetch_atlas_surf_destrieux(
             - 'map_left': :class:`numpy.ndarray` of :obj:`int`, maps each
               vertex on the left hemisphere of the fsaverage5 surface to its
               index into the list of label name.
-            - 'map_right': :class:`numpy.ndarray` of :obj:`int`, maps each
-              vertex on the right hemisphere of the fsaverage5 surface to its
-              index into the list of label name.
+            - 'map_right': :class:`numpy.ndarray` of :obj:`int`,
+              maps each :term:`vertex` on the right hemisphere
+              of the fsaverage5 surface to its index
+              into the list of label name.
             - 'description': :obj:`str`, description of the dataset.
 
     See Also
@@ -1786,8 +1803,8 @@ def fetch_atlas_surf_destrieux(
         url = "https://www.nitrc.org/frs/download.php/"
 
     dataset_name = "destrieux_surface"
-    fdescr = _get_dataset_descr(dataset_name)
-    data_dir = _get_dataset_dir(
+    fdescr = get_dataset_descr(dataset_name)
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
 
@@ -1798,7 +1815,7 @@ def fetch_atlas_surf_destrieux(
 
     annots = []
     for hemi in [("lh", "left"), ("rh", "right")]:
-        annot = _fetch_files(
+        annot = fetch_files(
             data_dir,
             [
                 (
@@ -1867,7 +1884,7 @@ def _download_talairach(talairach_dir, verbose):
     atlas_url = "https://www.talairach.org/talairach.nii"
     temp_dir = mkdtemp()
     try:
-        temp_file = _fetch_files(
+        temp_file = fetch_files(
             temp_dir, [("talairach.nii", atlas_url, {})], verbose=verbose
         )[0]
         atlas_img = nb.load(temp_file, mmap=False)
@@ -1886,9 +1903,9 @@ def _download_talairach(talairach_dir, verbose):
 def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     """Download the Talairach :term:`Deterministic atlas`.
 
-    For more information, see :footcite:`talairach_atlas`,
-    :footcite:`Lancaster2000`,
-    and :footcite:`Lancaster1997`.
+    For more information, see :footcite:t:`talairach_atlas`,
+    :footcite:t:`Lancaster2000`,
+    and :footcite:t:`Lancaster1997`.
 
     .. versionadded:: 0.4.0
 
@@ -1922,7 +1939,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     if level_name not in _TALAIRACH_LEVELS:
         raise ValueError(f'"level_name" should be one of {_TALAIRACH_LEVELS}')
     talairach_dir = Path(
-        _get_dataset_dir("talairach_atlas", data_dir=data_dir, verbose=verbose)
+        get_dataset_dir("talairach_atlas", data_dir=data_dir, verbose=verbose)
     )
     img_file = talairach_dir.joinpath(f"{level_name}.nii.gz")
     labels_file = talairach_dir.joinpath(f"{level_name}-labels.json")
@@ -1930,7 +1947,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
         _download_talairach(talairach_dir, verbose=verbose)
     atlas_img = check_niimg(str(img_file))
     labels = json.loads(labels_file.read_text("utf-8"))
-    description = _get_dataset_descr("talairach_atlas").format(level_name)
+    description = get_dataset_descr("talairach_atlas").format(level_name)
     return Bunch(maps=atlas_img, labels=labels, description=description)
 
 
@@ -1939,7 +1956,7 @@ def fetch_atlas_pauli_2017(version="prob", data_dir=None, verbose=1):
     """Download the Pauli et al. (2017) atlas.
 
     This atlas has 12 subcortical nodes in total. See
-    :footcite:`pauli_atlas` and :footcite:`Pauli2018`.
+    :footcite:t:`pauli_atlas` and :footcite:t:`Pauli2018`.
 
     Parameters
     ----------
@@ -2007,7 +2024,7 @@ def fetch_atlas_pauli_2017(version="prob", data_dir=None, verbose=1):
     url_labels = "https://osf.io/6qrcb/download"
     dataset_name = "pauli_2017"
 
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
 
@@ -2015,11 +2032,11 @@ def fetch_atlas_pauli_2017(version="prob", data_dir=None, verbose=1):
         (filename, url_maps, {"move": filename}),
         ("labels.txt", url_labels, {"move": "labels.txt"}),
     ]
-    atlas_file, labels = _fetch_files(data_dir, files)
+    atlas_file, labels = fetch_files(data_dir, files)
 
     labels = np.loadtxt(labels, dtype=str)[:, 1].tolist()
 
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     return Bunch(maps=atlas_file, labels=labels, description=fdescr)
 
@@ -2041,9 +2058,9 @@ def fetch_atlas_schaefer_2018(
     This function returns a :term:`Deterministic atlas`, and the provided
     images are in MNI152 space.
 
-    For more information on this dataset, see :footcite:`schaefer_atlas`,
-    :footcite:`Schaefer2017`,
-    and :footcite:`Yeo2011`.
+    For more information on this dataset, see :footcite:t:`schaefer_atlas`,
+    :footcite:t:`Schaefer2017`,
+    and :footcite:t:`Yeo2011`.
 
     Parameters
     ----------
@@ -2153,16 +2170,16 @@ def fetch_atlas_schaefer_2018(
         files.append((f, base_url + f, {}))
 
     dataset_name = "schaefer_2018"
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
-    labels_file, atlas_file = _fetch_files(
+    labels_file, atlas_file = fetch_files(
         data_dir, files, resume=resume, verbose=verbose
     )
 
     labels = np.genfromtxt(
         labels_file, usecols=1, dtype="S", delimiter="\t", encoding=None
     )
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     return Bunch(maps=atlas_file, labels=labels, description=fdescr)

@@ -840,8 +840,8 @@ we recommend opening a :nilearn-gh:`new issue <issues/new/choose>` to discuss
 whether it is necessary or if existing downloaders could be used instead.
 
 To add a new fetcher, ``nilearn.datasets.utils`` provides some helper functions,
-such as ``_get_dataset_dir`` to find a directory where the dataset is or will be
-stored according to the user's configuration, or ``_fetch_files`` to load files
+such as ``get_dataset_dir`` to find a directory where the dataset is or will be
+stored according to the user's configuration, or ``fetch_files`` to load files
 from the disk or download them if they are missing.
 
 The new fetcher, as any other function, also needs to be tested (in the relevant

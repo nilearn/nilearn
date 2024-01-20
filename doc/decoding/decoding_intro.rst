@@ -115,7 +115,7 @@ Loading the data into nilearn
 
 * **Loading the behavioral labels**: Behavioral information is often stored
   in a text file such as a CSV, and must be load with
-  **numpy.recfromcsv** or `pandas <https://pandas.pydata.org/>`_
+  **numpy.genfromtxt** or `pandas <https://pandas.pydata.org/>`_
 
 * **Sample mask**: Masking some of the time points
   may be useful to
@@ -248,7 +248,7 @@ rule of thumb).
 
 As a general advice :
 
-* To train a decoder on one subject data, try to leave at least one session
+* To train a decoder on one subject data, try to leave at least one run
   out to have an independent test.
 
 * To train a decoder across different subject data, leaving some subjects data
@@ -260,9 +260,9 @@ As a general advice :
 
 
 To improve our first pipeline for the Haxby example, we can leave one entire
-session out. To do this, we can pass a ``LeaveOneGroupOut`` cross-validation
+run out. To do this, we can pass a ``LeaveOneGroupOut`` cross-validation
 object from scikit-learn to our ``Decoder``. Fitting it with the information of
-groups=`session_labels` will use one session as test set.
+groups=`run_labels` will use one run as test set.
 
 .. note::
   Full code example can be found at :

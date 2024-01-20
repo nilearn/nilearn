@@ -16,7 +16,7 @@ Automatically comments on a newly open pull request to provide some guidelines, 
 
 ### black.yml
 
-Runs black code formatter on the codebase both in pull requests and on main. Configurations can be found in [pyproject.toml](/pyproject.toml).
+Runs black code formatter on the codebase both in pull requests and on main. Configurations can be found in [pyproject.toml](../../pyproject.toml).
 
 ## Building the development documentation
 
@@ -47,6 +47,8 @@ $ git commit -m "[example] plot_nilearn_101.py"
 
 However for quick checks to do yourself you should always opt for local builds following the instructions here: [building-documentation](https://nilearn.github.io/stable/development.html#building-documentation).
 
+Note: setuptools needs to be installed to run the doc build with python 3.12.
+
 #### Dataset caching
 
 We also implemented a dataset caching strategy within this Actions workflow such that datasets are only downloaded once every week. Once these datasets are cached, they will be used by all jobs running on Actions without requiring any download. This saves a lot of time and avoids potential network errors that can happen when downloading datasets from remote servers.
@@ -76,36 +78,28 @@ Runs only if the workflow in `build-docs.yml` completes successfully. Triggers t
 
 ### [.circleci/config.yml](/.circleci/config.yml)
 
-Artifacts hosting and deployment of development docs use CircleCI. See [.circleci/README.md](/.circleci/README.md) for details.
+Artifacts hosting and deployment of development docs use CircleCI. See [.circleci/README.md](../../.circleci/README.md) for details.
 On a pull request, only the "host" job is run. Then the artifacts can be accessed from the `host_and_deploy_doc` workflow seen under the checks list. Click on "Details" and then on the "host_docs" link on the page that opens. From there you can click on the artifacts tab to see all the html files. If you click on any of them you can then normally navigate the pages from there.
 With a merge on main, both "host" and "deploy" jobs are run.
-
-## DeprecationWarnings as errors
-
-### check_deprecations.yml
-
-Checks external core dependencies for deprecation warnings so they can be caught and resolved before causing a failure.
-Runs once a month and can be run manually from Github Actions.
-It works by calling pytest with an environment variable that will trigger a pytest fixture (``warnings_as_errors``) defined in [nilearn/conftest.py](/nilearn/conftest.py).
 
 ## Check spelling errors
 
 ### codespell.yml
 
-Checks for spelling errors. Configured in [pyproject.toml](/pyproject.toml). More information here: https://github.com/codespell-project/actions-codespell
+Checks for spelling errors. Configured in [pyproject.toml](../../pyproject.toml). More information here: https://github.com/codespell-project/actions-codespell
 
 ## PEP8 check
 
 ### flake8.yml
 
-Uses flake8 tool to verify code is PEP8 compliant. Configured in [.flake8](/.flake8)
+Uses flake8 tool to verify code is PEP8 compliant. Configured in [.flake8](../../.flake8)
 
 ## f strings
 
 ### f_strings.yml
 
-Checks for f strings in the codebase with [flynt](https://pypi.org/project/flynt/).
-Configured in [pyproject.toml](/pyproject.toml)
+Checks for f strings in the codebase with [flynt](https:/pypi.org/project/flynt/).
+Configured in [pyproject.toml](../../pyproject.toml)
 Flynt will check if it automatically convert "format" or "%" strings to "f strings".
 This workflow will fail if it finds any potential target to be converted.
 
@@ -113,13 +107,22 @@ This workflow will fail if it finds any potential target to be converted.
 
 ### isort.yml
 
-Sorts Python imports alphabetically and by section. Configured in [pyproject.toml](/pyproject.toml)
+Sorts Python imports alphabetically and by section. Configured in [pyproject.toml](../../pyproject.toml)
+
+## Building the stable release documentation
+
+### release-docs.yml
+
+Should be triggered automatically after merging and tagging a release PR to
+build the stable docs with a GitHub runner and push to nilearn.github.io.
+Can Also be triggered manually.
 
 ## Running unit tests
 
-### testing.yml
+### test_with_tox.yml
 
 Runs pytest in several environments including several Python and dependencies versions as well as on different systems.
+All environments are defined in [tox.ini](../../tox.ini).
 
 ## Test installation
 
@@ -132,6 +135,13 @@ Tries to install Nilearn from wheel & check installation on all operating system
 Runs once a month.
 Use pytest with the pytest-random-order plugin to run all tests in a random order.
 This aims to detect tests that are not properly isolated from each other (test pollution).
+
+### testing_minimum.yml
+
+Runs once a month.
+
+Checks that installing the minimum version of a given dependency of Nilearn
+along with the latest version of all the other dependencies leads to a successful run of all the tests.
 
 ## Update precommit hooks
 

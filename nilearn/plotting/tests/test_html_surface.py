@@ -22,12 +22,12 @@ def test_get_vertexcolor():
     mesh = surface.load_surf_mesh(fsaverage['pial_left'])
     surf_map = np.arange(len(mesh[0]))
     colors = html_surface.colorscale('jet', surf_map, 10)
-    vertexcolors = html_surface._get_vertexcolor(
+    vertexcolors = html_surface.get_vertexcolor(
         surf_map, colors['cmap'], colors['norm'],
         absolute_threshold=colors['abs_threshold'],
         bg_map=fsaverage['sulc_left'])
     assert len(vertexcolors) == len(mesh[0])
-    vertexcolors = html_surface._get_vertexcolor(
+    vertexcolors = html_surface.get_vertexcolor(
         surf_map, colors['cmap'], colors['norm'],
         absolute_threshold=colors['abs_threshold'])
     assert len(vertexcolors) == len(mesh[0])
@@ -38,7 +38,7 @@ def test_get_vertexcolor():
     bg_map = np.sign(surface.load_surf_data(fsaverage['curv_left']))
     bg_min, bg_max = np.min(bg_map), np.max(bg_map)
     assert (bg_min < 0 or bg_max > 1)
-    vertexcolors_auto_normalized = html_surface._get_vertexcolor(
+    vertexcolors_auto_normalized = html_surface.get_vertexcolor(
         surf_map, colors['cmap'], colors['norm'],
         absolute_threshold=colors['abs_threshold'],
         bg_map=bg_map)
@@ -46,7 +46,7 @@ def test_get_vertexcolor():
     # Manually set values of background map between 0 and 1
     bg_map_normalized = (bg_map - bg_min) / (bg_max - bg_min)
     assert np.min(bg_map_normalized) == 0 and np.max(bg_map_normalized) == 1
-    vertexcolors_manually_normalized = html_surface._get_vertexcolor(
+    vertexcolors_manually_normalized = html_surface.get_vertexcolor(
         surf_map, colors['cmap'], colors['norm'],
         absolute_threshold=colors['abs_threshold'],
         bg_map=bg_map_normalized)
@@ -55,7 +55,7 @@ def test_get_vertexcolor():
     # Scale background map between 0.25 and 0.75
     bg_map_scaled = bg_map_normalized / 2 + 0.25
     assert np.min(bg_map_scaled) == 0.25 and np.max(bg_map_scaled) == 0.75
-    vertexcolors_manually_rescaled = html_surface._get_vertexcolor(
+    vertexcolors_manually_rescaled = html_surface.get_vertexcolor(
         surf_map, colors['cmap'], colors['norm'],
         absolute_threshold=colors['abs_threshold'],
         bg_map=bg_map_scaled)
@@ -68,24 +68,24 @@ def test_get_vertexcolor():
             "We recommend setting `darkness` to None"
         ),
     ):
-        vertexcolors = html_surface._get_vertexcolor(
+        vertexcolors = html_surface.get_vertexcolor(
             surf_map, colors['cmap'], colors['norm'],
             absolute_threshold=colors['abs_threshold'],
             bg_map=bg_map, darkness=0.5)
 
 
 def test_check_mesh():
-    mesh = html_surface._check_mesh('fsaverage5')
-    assert mesh is html_surface._check_mesh(mesh)
+    mesh = html_surface.check_mesh('fsaverage5')
+    assert mesh is html_surface.check_mesh(mesh)
     with pytest.raises(ValueError):
-        html_surface._check_mesh('fsaverage2')
+        html_surface.check_mesh('fsaverage2')
     mesh.pop('pial_left')
     with pytest.raises(ValueError):
-        html_surface._check_mesh(mesh)
+        html_surface.check_mesh(mesh)
     with pytest.raises(TypeError):
-        html_surface._check_mesh(surface.load_surf_mesh(mesh['pial_right']))
+        html_surface.check_mesh(surface.load_surf_mesh(mesh['pial_right']))
     mesh = datasets.fetch_surf_fsaverage()
-    assert mesh is html_surface._check_mesh(mesh)
+    assert mesh is html_surface.check_mesh(mesh)
 
 
 def test_one_mesh_info():

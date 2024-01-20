@@ -16,8 +16,7 @@ import numpy as np
 import pytest
 import requests
 
-from nilearn.datasets import utils
-from nilearn.image import load_img
+from nilearn.datasets import _utils
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, "data")
@@ -28,20 +27,27 @@ DATASET_NAMES = {
     "adhd",
     "allen_rsn_2011",
     "basc_multiscale_2015",
+    "bids_langloc",
     "brainomics_localizer",
     "craddock_2012",
     "destrieux_surface",
     "development_fmri",
     "difumo_atlases",
     "dosenbach_2010",
+    "fiac",
     "fsaverage3",
     "fsaverage4",
     "fsaverage5",
     "fsaverage6",
     "fsaverage",
+    "harvard_oxford",
     "haxby2001",
     "icbm152_2009",
+    "language_localizer_demo",
+    "localizer_first_level",
+    "juelich",
     "Megatrawls",
+    "mixed_gambles",
     "miyawaki2008",
     "msdl_atlas",
     "neurovault",
@@ -49,6 +55,8 @@ DATASET_NAMES = {
     "oasis1",
     "pauli_2017",
     "power_2011",
+    "spm_auditory",
+    "spm_multimodal",
     "schaefer_2018",
     "smith_2009",
     "talairach_atlas",
@@ -57,21 +65,21 @@ DATASET_NAMES = {
 
 
 def test_get_dataset_descr_warning():
-    """Tests that function ``_get_dataset_descr()`` gives a warning
+    """Tests that function ``get_dataset_descr()`` gives a warning
     when no description is available.
     """
     with pytest.warns(
         UserWarning, match="Could not find dataset description."
     ):
-        descr = utils._get_dataset_descr("")
+        descr = _utils.get_dataset_descr("")
 
     assert descr == ""
 
 
 @pytest.mark.parametrize("name", DATASET_NAMES)
 def test_get_dataset_descr(name):
-    """Test function ``_get_dataset_descr()``."""
-    descr = utils._get_dataset_descr(name)
+    """Test function ``get_dataset_descr()``."""
+    descr = _utils.get_dataset_descr(name)
 
     assert isinstance(descr, str)
     assert len(descr) > 0
@@ -84,7 +92,7 @@ def test_get_dataset_dir(tmp_path):
     os.environ.pop("NILEARN_SHARED_DATA", None)
 
     expected_base_dir = os.path.expanduser("~/nilearn_data")
-    data_dir = utils._get_dataset_dir("test", verbose=0)
+    data_dir = _utils.get_dataset_dir("test", verbose=0)
 
     assert data_dir == os.path.join(expected_base_dir, "test")
     assert os.path.exists(data_dir)
@@ -93,7 +101,7 @@ def test_get_dataset_dir(tmp_path):
 
     expected_base_dir = str(tmp_path / "test_nilearn_data")
     os.environ["NILEARN_DATA"] = expected_base_dir
-    data_dir = utils._get_dataset_dir("test", verbose=0)
+    data_dir = _utils.get_dataset_dir("test", verbose=0)
 
     assert data_dir == os.path.join(expected_base_dir, "test")
     assert os.path.exists(data_dir)
@@ -102,7 +110,7 @@ def test_get_dataset_dir(tmp_path):
 
     expected_base_dir = str(tmp_path / "nilearn_shared_data")
     os.environ["NILEARN_SHARED_DATA"] = expected_base_dir
-    data_dir = utils._get_dataset_dir("test", verbose=0)
+    data_dir = _utils.get_dataset_dir("test", verbose=0)
 
     assert data_dir == os.path.join(expected_base_dir, "test")
     assert os.path.exists(data_dir)
@@ -119,12 +127,12 @@ def test_get_dataset_dir(tmp_path):
         match="Nilearn tried to store the dataset in the following "
         "directories, but",
     ):
-        utils._get_dataset_dir("test", test_file, verbose=0)
+        _utils.get_dataset_dir("test", test_file, verbose=0)
 
 
 def test_add_readme_to_default_data_locations(tmp_path):
     assert not (tmp_path / "README.md").exists()
-    utils._get_dataset_dir(dataset_name="test", verbose=0, data_dir=tmp_path)
+    _utils.get_dataset_dir(dataset_name="test", verbose=0, data_dir=tmp_path)
     assert (tmp_path / "README.md").exists()
 
 
@@ -134,7 +142,7 @@ def test_get_dataset_dir_path_as_str(should_cast_path_to_string, tmp_path):
     expected_dataset_dir = expected_base_dir / "test"
     if should_cast_path_to_string:
         expected_dataset_dir = str(expected_dataset_dir)
-    data_dir = utils._get_dataset_dir(
+    data_dir = _utils.get_dataset_dir(
         "test", default_paths=[expected_dataset_dir], verbose=0
     )
 
@@ -153,7 +161,7 @@ def test_get_dataset_dir_write_access(tmp_path):
 
     expected_base_dir = str(tmp_path / "nilearn_shared_data")
     os.environ["NILEARN_SHARED_DATA"] = expected_base_dir
-    data_dir = utils._get_dataset_dir(
+    data_dir = _utils.get_dataset_dir(
         "test", default_paths=[no_write], verbose=0
     )
 
@@ -171,7 +179,7 @@ def test_md5_sum_file():
     os.write(out, b"abcfeg")
     os.close(out)
 
-    assert utils._md5_sum_file(f) == "18f32295c556b2a1a3a8e68fe1ad40f7"
+    assert _utils._md5_sum_file(f) == "18f32295c556b2a1a3a8e68fe1ad40f7"
 
     os.remove(f)
 
@@ -185,7 +193,7 @@ def test_read_md5_sum_file():
         b"70886dcabe7bf5c5a1c24ca24e4cbd94  test/some_image.nii",
     )
     os.close(out)
-    h = utils._read_md5_sum_file(f)
+    h = _utils.read_md5_sum_file(f)
 
     assert "/tmp/test" in h
     assert "/etc/test" not in h
@@ -214,7 +222,7 @@ def test_tree():
     open(os.path.join(dir11, "file111"), "w").close()
     open(os.path.join(dir2, "file21"), "w").close()
 
-    tree_ = utils._tree(parent)
+    tree_ = _utils.tree(parent)
 
     # Check the tree
     # assert_equal(tree_[0]['dir1'][0]['dir11'][0], 'file111')
@@ -255,7 +263,7 @@ def test_movetree():
     open(os.path.join(dir12, "file121"), "w").close()
     open(os.path.join(dir2, "file21"), "w").close()
 
-    utils.movetree(dir1, dir2)
+    _utils.movetree(dir1, dir2)
 
     assert not os.path.exists(dir11)
     assert not os.path.exists(dir12)
@@ -285,11 +293,11 @@ def test_filter_columns():
         list(zip(value1, value2)), dtype=[("INT", int), ("STR", "S1")]
     )
 
-    f = utils._filter_columns(values, {"INT": (23, 46)})
+    f = _utils.filter_columns(values, {"INT": (23, 46)})
 
     assert np.sum(f) == 24
 
-    f = utils._filter_columns(values, {"INT": [0, 9, (12, 24)]})
+    f = _utils.filter_columns(values, {"INT": [0, 9, (12, 24)]})
 
     assert np.sum(f) == 15
 
@@ -299,23 +307,23 @@ def test_filter_columns():
     )
 
     # No filter
-    f = utils._filter_columns(values, [])
+    f = _utils.filter_columns(values, [])
 
     assert np.sum(f) == 500
 
-    f = utils._filter_columns(values, {"STR": b"b"})
+    f = _utils.filter_columns(values, {"STR": b"b"})
 
     assert np.sum(f) == 167
 
-    f = utils._filter_columns(values, {"STR": "b"})
+    f = _utils.filter_columns(values, {"STR": "b"})
 
     assert np.sum(f) == 167
 
-    f = utils._filter_columns(values, {"INT": 1, "STR": b"b"})
+    f = _utils.filter_columns(values, {"INT": 1, "STR": b"b"})
 
     assert np.sum(f) == 84
 
-    f = utils._filter_columns(
+    f = _utils.filter_columns(
         values, {"INT": 1, "STR": b"b"}, combination="or"
     )
 
@@ -335,7 +343,7 @@ def test_uncompress():
     try:
         with contextlib.closing(zipfile.ZipFile(ztemp, "w")) as testzip:
             testzip.writestr(ftemp, " ")
-        utils._uncompress_file(ztemp, verbose=0)
+        _utils.uncompress_file(ztemp, verbose=0)
 
         assert os.path.exists(os.path.join(dtemp, ftemp))
 
@@ -350,7 +358,7 @@ def test_uncompress():
         os.close(fd)
         with contextlib.closing(tarfile.open(ztemp, "w")) as tar:
             tar.add(temp, arcname=ftemp)
-        utils._uncompress_file(ztemp, verbose=0)
+        _utils.uncompress_file(ztemp, verbose=0)
 
         assert os.path.exists(os.path.join(dtemp, ftemp))
 
@@ -359,7 +367,7 @@ def test_uncompress():
         dtemp = mkdtemp()
         ztemp = os.path.join(dtemp, "test.gz")
         gzip.open(ztemp, "wb").close()
-        utils._uncompress_file(ztemp, verbose=0)
+        _utils.uncompress_file(ztemp, verbose=0)
 
         # test.gz gets uncompressed into test
         assert os.path.exists(os.path.join(dtemp, "test"))
@@ -384,7 +392,7 @@ def test_safe_extract(tmp_path):
     with pytest.raises(
         Exception, match="Attempted Path Traversal in Tar File"
     ):
-        utils._uncompress_file(ztemp, verbose=0)
+        _utils.uncompress_file(ztemp, verbose=0)
 
 
 @pytest.mark.parametrize("should_cast_path_to_string", [False, True])
@@ -395,7 +403,7 @@ def test_fetch_file_overwrite(
         tmp_path = str(tmp_path)
 
     # overwrite non-exiting file.
-    fil = utils._fetch_file(
+    fil = _utils.fetch_single_file(
         url="http://foo/", data_dir=str(tmp_path), verbose=0, overwrite=True
     )
 
@@ -409,7 +417,7 @@ def test_fetch_file_overwrite(
         fp.write("some content")
 
     # Don't overwrite existing file.
-    fil = utils._fetch_file(
+    fil = _utils.fetch_single_file(
         url="http://foo/", data_dir=str(tmp_path), verbose=0, overwrite=False
     )
 
@@ -419,7 +427,7 @@ def test_fetch_file_overwrite(
         assert fp.read() == "some content"
 
     # Overwrite existing file.
-    fil = utils._fetch_file(
+    fil = _utils.fetch_single_file(
         url="http://foo/", data_dir=str(tmp_path), verbose=0, overwrite=True
     )
 
@@ -438,7 +446,7 @@ def test_fetch_files_use_session(
 
     # regression test for https://github.com/nilearn/nilearn/issues/2863
     session = MagicMock()
-    utils._fetch_files(
+    _utils.fetch_files(
         files=[
             ("example1", "https://example.org/example1", {"overwrite": True}),
             ("example2", "https://example.org/example2", {"overwrite": True}),
@@ -459,7 +467,7 @@ def test_fetch_files_overwrite(
 
     # overwrite non-exiting file.
     files = ("1.txt", "http://foo/1.txt")
-    fil = utils._fetch_files(
+    fil = _utils.fetch_files(
         data_dir=str(tmp_path),
         verbose=0,
         files=[files + (dict(overwrite=True),)],
@@ -475,7 +483,7 @@ def test_fetch_files_overwrite(
         fp.write("some content")
 
     # Don't overwrite existing file.
-    fil = utils._fetch_files(
+    fil = _utils.fetch_files(
         data_dir=str(tmp_path),
         verbose=0,
         files=[files + (dict(overwrite=False),)],
@@ -487,7 +495,7 @@ def test_fetch_files_overwrite(
         assert fp.read() == "some content"
 
     # Overwrite existing file.
-    fil = utils._fetch_files(
+    fil = _utils.fetch_files(
         data_dir=str(tmp_path),
         verbose=0,
         files=[files + (dict(overwrite=True),)],
@@ -500,7 +508,7 @@ def test_fetch_files_overwrite(
 
 
 def test_naive_ftp_adapter():
-    sender = utils._NaiveFTPAdapter()
+    sender = _utils._NaiveFTPAdapter()
     resp = sender.send(requests.Request("GET", "ftp://example.com").prepare())
     resp.close()
     resp.raw.close.assert_called_with()
@@ -513,8 +521,13 @@ def test_naive_ftp_adapter():
         )
 
 
-def test_load_sample_motor_activation_image():
-    path_img = utils.load_sample_motor_activation_image()
+# TODO remove for release 0.13.0
+from nilearn.datasets import utils
 
-    assert os.path.exists(path_img)
-    assert load_img(path_img)
+
+def test_load_sample_motor_activation_image():
+    with pytest.warns(
+        DeprecationWarning,
+        match="Please import this function from 'nilearn.datasets.func'",
+    ):
+        utils.load_sample_motor_activation_image()

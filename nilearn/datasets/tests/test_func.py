@@ -11,15 +11,15 @@ import uuid
 from collections import OrderedDict
 from pathlib import Path
 
-import nibabel
 import nibabel as nib
 import numpy as np
 import pandas as pd
 import pytest
 
 from nilearn.datasets import func
+from nilearn.datasets._utils import get_dataset_dir
 from nilearn.datasets.tests._testing import dict_to_archive, list_to_archive
-from nilearn.datasets.utils import _get_dataset_dir
+from nilearn.image import load_img
 
 
 def _load_localizer_index():
@@ -218,6 +218,7 @@ def test_fetch_localizer_contrasts(tmp_path, localizer_mocker):
     assert isinstance(dataset.ext_vars, np.recarray)
     assert len(dataset.cmaps) == 2
     assert dataset.ext_vars.size == 2
+    assert dataset.description != ""
 
     dataset = func.fetch_localizer_contrasts(
         ["checkerboard"],
@@ -234,6 +235,7 @@ def test_fetch_localizer_contrasts(tmp_path, localizer_mocker):
     assert isinstance(dataset.ext_vars, pd.DataFrame)
     assert len(dataset.cmaps) == 2
     assert len(dataset["ext_vars"]) == 2
+    assert dataset.description != ""
 
 
 def test_fetch_localizer_contrasts_multiple_contrasts(
@@ -390,7 +392,7 @@ def test__load_mixed_gambles(rng, affine_eye):
     n_trials = 48
     for n_subjects in [1, 5, 16]:
         zmaps = [
-            nibabel.Nifti1Image(
+            nib.Nifti1Image(
                 rng.standard_normal((3, 4, 5, n_trials)), affine_eye
             )
             for _ in range(n_subjects)
@@ -415,6 +417,8 @@ def test_fetch_mixed_gambles(tmp_path):
             datasetdir / "zmaps" / "sub001_zmaps.nii.gz"
         )
         assert len(mgambles["zmaps"]) == n_subjects
+
+        assert mgambles.description != ""
 
 
 def test_check_parameters_megatrawls_datasets():
@@ -621,7 +625,7 @@ def test_fetch_development_fmri(tmp_path, request_mocker):
     assert data.description != ""
 
     # check reduced confounds
-    confounds = np.recfromcsv(data.confounds[0], delimiter="\t")
+    confounds = np.genfromtxt(data.confounds[0], delimiter="\t")
 
     assert len(confounds[0]) == 15
 
@@ -629,7 +633,7 @@ def test_fetch_development_fmri(tmp_path, request_mocker):
     data = func.fetch_development_fmri(
         n_subjects=2, reduce_confounds=False, verbose=1
     )
-    confounds = np.recfromcsv(data.confounds[0], delimiter="\t")
+    confounds = np.genfromtxt(data.confounds[0], delimiter="\t")
 
     assert len(confounds[0]) == 28
 
@@ -824,7 +828,7 @@ def test_fetch_openneuro_dataset(tmp_path):
     data_prefix = (
         f"{dataset_version.split('_')[0]}/{dataset_version}/uncompressed"
     )
-    data_dir = _get_dataset_dir(
+    data_dir = get_dataset_dir(
         data_prefix,
         data_dir=tmp_path,
         verbose=1,
@@ -884,6 +888,7 @@ def test_fetch_localizer(tmp_path):
 
     assert isinstance(dataset["events"], str)
     assert isinstance(dataset.epi_img, str)
+    assert dataset.description != ""
 
 
 def _mock_original_spm_auditory_events_file():
@@ -918,9 +923,10 @@ def test_fetch_language_localizer_demo_dataset(tmp_path):
             str(expected_data_dir / file_path.strip())
             for file_path in f.readlines()[1:]
         ]
-    actual_dir, actual_subdirs = func.fetch_language_localizer_demo_dataset(
-        data_dir
-    )
+    (
+        actual_dir,
+        actual_subdirs,
+    ) = func.fetch_language_localizer_demo_dataset(data_dir)
 
     assert actual_dir == str(expected_data_dir)
     assert actual_subdirs == sorted(expected_files)
@@ -978,6 +984,8 @@ def test_fetch_spm_auditory(affine_eye, tmp_path):
     assert isinstance(dataset.func[0], str)
     assert len(dataset.func) == 96
 
+    assert dataset.description != ""
+
 
 def test_fetch_spm_multimodal(tmp_path):
     data_dir = str(tmp_path / "spm_multimodal_fmri")
@@ -1014,6 +1022,7 @@ def test_fetch_spm_multimodal(tmp_path):
     assert dataset.slice_order == "descending"
     assert isinstance(dataset.trials_ses1, str)
     assert isinstance(dataset.trials_ses2, str)
+    assert dataset.description != ""
 
 
 def test_fiac(tmp_path):
@@ -1023,11 +1032,11 @@ def test_fiac(tmp_path):
     )
     fiac0_dir = os.path.join(fiac_dir, "fiac0")
     os.makedirs(fiac0_dir)
-    for session in [1, 2]:
-        # glob func data for session session + 1
-        session_func = os.path.join(fiac0_dir, f"run{int(session)}.nii.gz")
-        open(session_func, "a").close()
-        sess_dmtx = os.path.join(fiac0_dir, f"run{int(session)}_design.npz")
+    for run in [1, 2]:
+        # glob func data for run + 1
+        run_func = os.path.join(fiac0_dir, f"run{int(run)}.nii.gz")
+        open(run_func, "a").close()
+        sess_dmtx = os.path.join(fiac0_dir, f"run{int(run)}_design.npz")
         open(sess_dmtx, "a").close()
     mask = os.path.join(fiac0_dir, "mask.nii.gz")
     open(mask, "a").close()
@@ -1039,3 +1048,11 @@ def test_fiac(tmp_path):
     assert isinstance(dataset.design_matrix1, str)
     assert isinstance(dataset.design_matrix2, str)
     assert isinstance(dataset.mask, str)
+    assert dataset.description != ""
+
+
+def test_load_sample_motor_activation_image():
+    path_img = func.load_sample_motor_activation_image()
+
+    assert os.path.exists(path_img)
+    assert load_img(path_img)

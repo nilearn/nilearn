@@ -54,7 +54,7 @@ fmri_niimgs = index_img(fmri_filename, condition_mask)
 conditions = conditions[condition_mask]
 # Convert to numpy array
 conditions = conditions.values
-session_label = behavioral["chunks"][condition_mask]
+run_label = behavioral["chunks"][condition_mask]
 
 # %%
 # Performing decoding with scikit-learn
@@ -84,7 +84,7 @@ from nilearn.maskers import NiftiMasker
 
 masker = NiftiMasker(
     mask_img=mask_filename,
-    runs=session_label,
+    runs=run_label,
     smoothing_fwhm=4,
     standardize="zscore_sample",
     memory="nilearn_cache",
@@ -125,8 +125,8 @@ cv_scores = cross_val_score(
     conditions,
     cv=cv,
     scoring="roc_auc",
-    groups=session_label,
-    n_jobs=-1,
+    groups=run_label,
+    n_jobs=2,
 )
 print(f"SVC accuracy (tuned parameters): {cv_scores.mean():.3f}")
 
@@ -144,7 +144,7 @@ print(f"SVC accuracy (tuned parameters): {cv_scores.mean():.3f}")
 from sklearn.dummy import DummyClassifier
 
 null_cv_scores = cross_val_score(
-    DummyClassifier(), fmri_masked, conditions, cv=cv, groups=session_label
+    DummyClassifier(), fmri_masked, conditions, cv=cv, groups=run_label
 )
 
 print(f"Dummy accuracy: {null_cv_scores.mean():.3f}")
@@ -155,7 +155,7 @@ print(f"Dummy accuracy: {null_cv_scores.mean():.3f}")
 from sklearn.model_selection import permutation_test_score
 
 null_cv_scores = permutation_test_score(
-    svc, fmri_masked, conditions, cv=cv, groups=session_label
+    svc, fmri_masked, conditions, cv=cv, groups=run_label
 )[1]
 print(f"Permutation test score: {null_cv_scores.mean():.3f}")
 
@@ -188,7 +188,7 @@ fitted_pipeline = cross_validate(
     fmri_masked,
     conditions,
     cv=cv,
-    groups=session_label,
+    groups=run_label,
     return_estimator=True,
 )
 print(f"ANOVA+SVC test score: {fitted_pipeline['test_score'].mean():.3f}")
@@ -243,7 +243,7 @@ anova_lda = Pipeline([("anova", feature_selection), ("LDA", lda)])
 import numpy as np
 
 cv_scores = cross_val_score(
-    anova_lda, fmri_masked, conditions, cv=cv, verbose=1, groups=session_label
+    anova_lda, fmri_masked, conditions, cv=cv, verbose=1, groups=run_label
 )
 classification_accuracy = np.mean(cv_scores)
 n_conditions = len(set(conditions))  # number of target classes
@@ -274,6 +274,6 @@ rfe_svc = Pipeline([("rfe", rfe), ("svc", svc)])
 #                             fmri_masked,
 #                             target,
 #                             cv=cv,
-#                             n_jobs=-1,
+#                             n_jobs=2,
 #                             verbose=1)
 # But, be aware that this can take * A WHILE * ...

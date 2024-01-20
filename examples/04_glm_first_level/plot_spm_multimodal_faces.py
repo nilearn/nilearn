@@ -1,6 +1,6 @@
 """
-Single-subject data (two sessions) in native space
-==================================================
+Single-subject data (two runs) in native space
+==============================================
 
 The example shows the analysis of an :term:`SPM` dataset
 studying face perception.
@@ -20,12 +20,7 @@ https://doi.org/10.1093/cercor/13.7.793
 
 This example takes a lot of time because the input are lists of 3D images
 sampled in different positions (encoded by different affine functions).
-
 """
-# %%
-print(__doc__)
-
-
 # %%
 # Fetch the :term:`SPM` multimodal_faces data.
 from nilearn.datasets import fetch_spm_multimodal_fmri
@@ -79,7 +74,7 @@ from nilearn.glm.first_level import make_first_level_design_matrix
 design_matrices = []
 
 # %%
-# Loop over the two sessions.
+# Loop over the two runs.
 for idx, img in enumerate(fmri_img, start=1):
     # Build experimental paradigm
     n_scans = img.shape[-1]
@@ -126,7 +121,7 @@ contrasts = {
 }
 
 # %%
-# Fit the :term:`GLM` for the 2 sessions
+# Fit the :term:`GLM` for the 2 runs
 # by specifying a FirstLevelModel and then fitting it.
 from nilearn.glm.first_level import FirstLevelModel
 

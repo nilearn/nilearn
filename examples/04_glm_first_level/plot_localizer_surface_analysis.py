@@ -17,7 +17,7 @@ More specifically:
 The result of the analysis are statistical maps that are defined on the brain
 mesh. We display them using Nilearn capabilities.
 
-The projection of :term:`fMRI` data onto a given brain mesh requires
+The projection of :term:`fMRI` data onto a given brain :term:`mesh` requires
 that both are initially defined in the same space.
 
 * The functional data should be coregistered to the anatomy from which the mesh
@@ -59,9 +59,11 @@ events = pd.read_table(events_file)
 # Project the :term:`fMRI` image to the surface
 # ---------------------------------------------
 #
-# For this we need to get a mesh representing the geometry of the surface. We
-# could use an individual mesh, but we first resort to a standard mesh, the
-# so-called fsaverage5 template from the FreeSurfer software.
+# For this we need to get a :term:`mesh`
+# representing the geometry of the surface.
+# We could use an individual :term:`mesh`,
+# but we first resort to a standard :term:`mesh`,
+# the so-called fsaverage5 template from the FreeSurfer software.
 import nilearn
 
 fsaverage = nilearn.datasets.fetch_surf_fsaverage()
@@ -184,7 +186,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
           f"{contrast_id}, right hemisphere")
     # compute contrast-related statistics
     contrast = compute_contrast(labels, estimates, contrast_val,
-                                contrast_type='t')
+                                stat_type='t')
     # we present the Z-transform of the t map
     z_score = contrast.z_score()
     # we plot it on the surface, on the inflated fsaverage mesh,
@@ -217,7 +219,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
           f"{contrast_id}, left hemisphere")
     # compute contrasts
     contrast = compute_contrast(labels, estimates, contrast_val,
-                                contrast_type='t')
+                                stat_type='t')
     z_score = contrast.z_score()
     # plot the result
     plotting.plot_surf_stat_map(

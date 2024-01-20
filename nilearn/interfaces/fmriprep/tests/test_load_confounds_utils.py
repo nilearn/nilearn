@@ -2,7 +2,7 @@ import pytest
 
 from nilearn.interfaces.fmriprep.load_confounds_utils import (
     _get_file_name,
-    _sanitize_confounds,
+    sanitize_confounds,
 )
 from nilearn.interfaces.fmriprep.tests._testing import create_tmp_filepath
 
@@ -26,35 +26,44 @@ from nilearn.interfaces.fmriprep.tests._testing import create_tmp_filepath
 )
 def test_sanitize_confounds(inputs, flag):
     """Should correctly catch inputs that are a single image."""
-    _, singleflag = _sanitize_confounds(inputs)
+    _, singleflag = sanitize_confounds(inputs)
     assert singleflag is flag
 
 
-@pytest.mark.parametrize("flag", [True, False])
+@pytest.mark.parametrize(
+    "flag,keyword",
+    [
+        ("1.2.x", "_desc-confounds_regressors"),
+        ("1.4.x", "_desc-confounds_timeseries"),
+        ("21.x.x", "21xx"),
+    ],
+)
 @pytest.mark.parametrize(
     "image_type", ["regular", "native", "res", "cifti", "den", "part", "gifti"]
 )
-def test_get_file_name(tmp_path, flag, image_type):
+def test_get_file_name(tmp_path, flag, keyword, image_type):
     """Test _get_file_name."""
-    if flag:
-        suffix = "_desc-confounds_regressors"
-    else:
-        suffix = "_desc-confounds_timeseries"
-
     if image_type == "part":
-        kwargs = {"bids_fields": {"entities": {"sub": "test01",
-                                               "task": "test",
-                                               "part": "mag",
-                                               "run": "01"}}}
+        kwargs = {
+            "bids_fields": {
+                "entities": {
+                    "sub": flag.replace(".", ""),
+                    "task": "test",
+                    "part": "mag",
+                    "run": "01",
+                }
+            }
+        }
     else:
         kwargs = {}
 
     img, _ = create_tmp_filepath(
         tmp_path,
         image_type=image_type,
-        old_derivative_suffix=flag,
+        fmriprep_version=flag,
         **kwargs,
     )
 
     conf = _get_file_name(img)
-    assert suffix in conf
+
+    assert keyword in conf

@@ -26,7 +26,6 @@ n_subjects = 16
 data = fetch_localizer_contrasts(
     ["left vs right button press"],
     n_subjects,
-    get_tmaps=True,
     legacy_format=False,
 )
 # %%
@@ -45,7 +44,7 @@ design_matrix = pd.DataFrame(
 # Model specification and fit
 from nilearn.glm.second_level import SecondLevelModel
 
-second_level_model = SecondLevelModel(smoothing_fwhm=8.0)
+second_level_model = SecondLevelModel(smoothing_fwhm=8.0, n_jobs=2)
 second_level_model = second_level_model.fit(
     second_level_input, design_matrix=design_matrix
 )

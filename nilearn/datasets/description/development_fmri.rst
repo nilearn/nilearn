@@ -28,13 +28,15 @@ Content
     :'phenotypic': Phenotypic information for each subject such as age,
                    age group, gender, handedness.
 
-
 References
 ----------
 Please cite this paper if you are using this dataset:
+
 Richardson, H., Lisandrelli, G., Riobueno-Naylor, A., & Saxe, R. (2018).
 Development of the social brain from age three to twelve years.
 Nature communications, 9(1), 1027.
 https://www.nature.com/articles/s41467-018-03399-2
 
-Licence: usage is unrestricted for non-commercial research purposes.
+License
+-------
+usage is unrestricted for non-commercial research purposes.

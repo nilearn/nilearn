@@ -86,7 +86,6 @@ number of scales itself was selected by the MSTEPS procedure in a data-driven
 fashion, and that the number of individual, group and final (consensus) number
 of clusters were not necessarily identical.
 
-
 References
 ----------
 Ad-Dabbagh Y, Einarson D, Lyttelton O, Muehlboeck J S, Mok K,
@@ -130,3 +129,8 @@ Power J D, Barnes K A, Snyder A Z, Schlaggar B L, Petersen S E, Feb 2012
 Spurious but systematic correlations in functional connectivity
 MRI networks arise from subject motion. NeuroImage 59 (3), 2142-2154.
 URL https://doi.org/10.1016/j.neuroimage.2011.10.018
+
+
+License
+-------
+unknown

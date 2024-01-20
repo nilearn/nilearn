@@ -41,4 +41,7 @@ DL Collins, AP Zijdenbos, WFC Baare and AC Evans,
 "ANIMAL+INSECT: Improved Cortical Structure Segmentation",
 IPMI Lecture Notes in Computer Science, 1999, Volume 1613/1999, 210-223
 
-Licence: unknown.
+
+License
+-------
+unknown

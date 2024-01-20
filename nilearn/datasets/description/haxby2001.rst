@@ -12,7 +12,7 @@ Content
 -------
 The "simple" dataset includes
     :'func': Nifti images with bold data
-    :'session_target': Text file containing session data
+    :'session_target': Text file containing run data
     :'mask': Nifti images with employed mask
     :'session': Text file with condition labels
 
@@ -42,4 +42,6 @@ and Pietrini, P. (2001). Distributed and overlapping representations of
 faces and objects in ventral temporal cortex. Science 293, 2425-2430.`
 
 
-Licence: unknown.
+License
+-------
+unknown

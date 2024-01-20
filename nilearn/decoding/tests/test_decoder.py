@@ -19,6 +19,7 @@ import collections
 import numbers
 import warnings
 
+import nibabel
 import numpy as np
 import pytest
 import sklearn
@@ -59,6 +60,7 @@ from nilearn.decoding.decoder import (
     _wrap_param_grid,
 )
 from nilearn.decoding.tests.test_same_api import to_niimgs
+from nilearn.experimental.surface import SurfaceMasker
 from nilearn.maskers import NiftiMasker
 
 N_SAMPLES = 100
@@ -968,6 +970,16 @@ def test_decoder_multiclass_classification_apply_mask_attributes(affine_eye):
     assert model.masker_.smoothing_fwhm == smoothing_fwhm
 
 
+def test_decoder_apply_mask_surface(mini_img):
+    """Test whether _apply_mask works for surface image."""
+    X = mini_img
+    model = Decoder(mask=SurfaceMasker())
+    X_masked = model._apply_mask(X)
+
+    assert X_masked.shape == X.shape
+    assert type(model.mask_img_).__name__ == "SurfaceImage"
+
+
 def test_decoder_multiclass_error_incorrect_cv(multiclass_data):
     """Check whether ValueError is raised when cv is not set correctly."""
     X, y, _ = multiclass_data
@@ -1003,3 +1015,61 @@ def test_decoder_multiclass_warnings(multiclass_data):
             cv=1,
         )
         model.fit(X, y)
+
+
+def test_decoder_tags_classification():
+    """Check value returned by _more_tags."""
+    model = Decoder()
+    assert model._more_tags()["require_y"] is True
+
+
+def test_decoder_tags_regression():
+    """Check value returned by _more_tags."""
+    model = DecoderRegressor()
+    assert model._more_tags()["multioutput"] is True
+
+
+def test_decoder_decision_function(binary_classification_data):
+    """Test decision_function with ndarray. Test for backward compatibility."""
+    X, y, mask = binary_classification_data
+
+    model = Decoder(mask=mask)
+    model.fit(X, y)
+    X = model.masker_.transform(X)
+    assert X.shape[1] == model.coef_.shape[1]
+    model.decision_function(X)
+
+
+def test_decoder_strings_filepaths_input(
+    tiny_binary_classification_data, tmp_path
+):
+    """Smoke test for decoder methods to accept list of paths as input.
+
+    See https://github.com/nilearn/nilearn/issues/4226
+    """
+    X, y, _ = tiny_binary_classification_data
+    X_paths = [tmp_path / f"niimg{i}.nii" for i in range(X.shape[-1])]
+    for i, nii_path in enumerate(X_paths):
+        nibabel.save(X.slicer[..., i], nii_path)
+
+    model = Decoder(mask=NiftiMasker())
+    model.fit(X_paths, y)
+    model.predict(X_paths)
+    model.score(X_paths, y)
+
+
+def test_decoder_decision_function_raises_value_error(
+    binary_classification_data,
+):
+    """Test decision_function raises value error."""
+    X, y, _ = binary_classification_data
+
+    model = Decoder(mask=NiftiMasker())
+    model.fit(X, y)
+    X = model.masker_.transform(X)
+    X = np.delete(X, 0, axis=1)
+
+    with pytest.raises(
+        ValueError, match=f"X has {X.shape[1]} features per sample"
+    ):
+        model.decision_function(X)

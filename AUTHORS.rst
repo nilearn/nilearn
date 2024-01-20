@@ -74,6 +74,7 @@ Some other past or present contributors are:
 * `Chris Markiewicz`_: Stanford University, Stanford, California, USA
 * `Christian Horea`_: Dartmouth College, PBS, Hanover, New Hampshire, USA
 * `Christian Gerloff`_
+* `Christina Roßmanith`_: Dept. of Neurology, Medical Faculty Mannheim, University of Heidelberg, Germany
 * `Colin Reininger`_: Denver, Colorado, USA
 * `Connor Lane`_: Child Mind Institute, Baltimore, MD, USA
 * `Czarina Sy`_
@@ -155,6 +156,7 @@ Some other past or present contributors are:
 * `Oscar Esteban`_: Centre Hospitalier Universitaire Vaudoise, Lausanne, Switzerland
 * `Patrick Sadil`_: Department of Biostatistics, Johns Hopkins Bloomberg School of Public Health, USA
 * `Paul Bogdan`_
+* `Paul Reiners`_: Masonic Institute for the Developing Brain, University of Minnesota, USA
 * `Paula Sanz-Leon`_: Medical Research Institute, Brisbane, Australia
 * `Peer Herholz`_: Origami lab, McGill University, Montréal, Canada
 * `Philippe Gervais`_: Zurich, Switzerland
@@ -178,8 +180,10 @@ Some other past or present contributors are:
 * `Simon Steinkamp`_: Danish Research Centre for Magnetic Resonance, Copenhagen University Hospital Amager & Hvidovre, Copenhagen, Denmark.
 * `Sourav Singh`_
 * `Steven Meisler`_: Harvard-MIT Division of Health Sciences and Technology, Cambridge, Massachusetts, USA
+* `Suramya Pokharel`_: Tribhuvan University, Kathmandu, Nepal
 * `Sylvain Lan`_
 * `Sylvain Takerkart`_: CNRS, Institut des Neurosciences de la Timone, Marseille, France
+* `Tamer Gezici`_: Bilkent University
 * `Tarun Samanta`_: Acharya Prafulla Chandra College
 * `Taylor Salo`_: Lifespan Informatics & Neuroimaging Center, University of Pennsylvania, USA
 * `Thomas Bazeille`_: Inria, Saclay, France

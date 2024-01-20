@@ -51,7 +51,7 @@ task_mask = stimuli != "rest"
 categories = stimuli[task_mask].unique()
 
 # extract tags indicating to which acquisition run a tag belongs
-session_labels = labels["chunks"][task_mask]
+run_labels = labels["chunks"][task_mask]
 
 # apply the task_mask to  fMRI data (func_filename)
 from nilearn.image import index_img
@@ -102,7 +102,7 @@ for mask_name in mask_names:
             scoring="roc_auc",
             standardize="zscore_sample",
         )
-        decoder.fit(task_data, classification_target, groups=session_labels)
+        decoder.fit(task_data, classification_target, groups=run_labels)
         mask_scores[mask_name][category] = decoder.cv_scores_[1]
         mean = np.mean(mask_scores[mask_name][category])
         std = np.std(mask_scores[mask_name][category])
@@ -116,7 +116,7 @@ for mask_name in mask_names:
             standardize="zscore_sample",
         )
         dummy_classifier.fit(
-            task_data, classification_target, groups=session_labels
+            task_data, classification_target, groups=run_labels
         )
         mask_chance_scores[mask_name][category] = dummy_classifier.cv_scores_[
             1

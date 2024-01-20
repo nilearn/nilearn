@@ -34,7 +34,13 @@ from nilearn.glm.first_level.design_matrix import (
     check_design_matrix,
     make_first_level_design_matrix,
 )
-from nilearn.glm.first_level.first_level import _check_trial_type, _yule_walker
+from nilearn.glm.first_level.first_level import (
+    _check_and_load_tables,
+    _check_list_length_match,
+    _check_run_tables,
+    _check_trial_type,
+    _yule_walker,
+)
 from nilearn.glm.regression import ARModel, OLSModel
 from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files
@@ -44,7 +50,7 @@ BASEDIR = os.path.dirname(os.path.abspath(__file__))
 FUNCFILE = os.path.join(BASEDIR, "functional.nii.gz")
 
 
-def test_high_level_glm_one_session():
+def test_high_level_glm_one_run():
     shapes, rk = [(7, 8, 9, 15)], 3
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk
@@ -74,25 +80,25 @@ def test_high_level_glm_one_session():
     # Give a fitted NiftiMasker
     masker = NiftiMasker(mask)
     masker.fit()
-    single_session_model = FirstLevelModel(mask_img=masker).fit(
+    single_run_model = FirstLevelModel(mask_img=masker).fit(
         fmri_data[0], design_matrices=design_matrices[0]
     )
-    assert single_session_model.masker_ == masker
+    assert single_run_model.masker_ == masker
 
     # Call with verbose (improve coverage)
-    single_session_model = FirstLevelModel(mask_img=None, verbose=1).fit(
+    single_run_model = FirstLevelModel(mask_img=None, verbose=1).fit(
         fmri_data[0], design_matrices=design_matrices[0]
     )
 
-    single_session_model = FirstLevelModel(mask_img=None).fit(
+    single_run_model = FirstLevelModel(mask_img=None).fit(
         fmri_data[0], design_matrices=design_matrices[0]
     )
-    assert isinstance(single_session_model.masker_.mask_img_, Nifti1Image)
+    assert isinstance(single_run_model.masker_.mask_img_, Nifti1Image)
 
-    single_session_model = FirstLevelModel(mask_img=mask).fit(
+    single_run_model = FirstLevelModel(mask_img=mask).fit(
         fmri_data[0], design_matrices=design_matrices[0]
     )
-    z1 = single_session_model.compute_contrast(np.eye(rk)[:1])
+    z1 = single_run_model.compute_contrast(np.eye(rk)[:1])
     assert isinstance(z1, Nifti1Image)
 
 
@@ -104,19 +110,19 @@ def test_explicit_fixed_effects(tmp_path):
     )
     contrast = np.eye(rk)[1]
 
-    # session 1
-    multi_session_model = FirstLevelModel(mask_img=mask).fit(
+    # run 1
+    multi_run_model = FirstLevelModel(mask_img=mask).fit(
         fmri_data[0], design_matrices=design_matrices[:1]
     )
-    dic1 = multi_session_model.compute_contrast(contrast, output_type="all")
+    dic1 = multi_run_model.compute_contrast(contrast, output_type="all")
 
-    # session 2
-    multi_session_model.fit(fmri_data[1], design_matrices=design_matrices[1:])
-    dic2 = multi_session_model.compute_contrast(contrast, output_type="all")
+    # run 2
+    multi_run_model.fit(fmri_data[1], design_matrices=design_matrices[1:])
+    dic2 = multi_run_model.compute_contrast(contrast, output_type="all")
 
     # fixed effects model
-    multi_session_model.fit(fmri_data, design_matrices=design_matrices)
-    fixed_fx_dic = multi_session_model.compute_contrast(
+    multi_run_model.fit(fmri_data, design_matrices=design_matrices)
+    fixed_fx_dic = multi_run_model.compute_contrast(
         contrast, output_type="all"
     )
 
@@ -165,19 +171,19 @@ def test_explicit_fixed_effects_without_mask(tmp_path):
     )
     contrast = np.eye(rk)[1]
 
-    # session 1
-    multi_session_model = FirstLevelModel().fit(
+    # run 1
+    multi_run_model = FirstLevelModel().fit(
         fmri_data[0], design_matrices=design_matrices[:1]
     )
-    dic1 = multi_session_model.compute_contrast(contrast, output_type="all")
+    dic1 = multi_run_model.compute_contrast(contrast, output_type="all")
 
-    # session 2
-    multi_session_model.fit(fmri_data[1], design_matrices=design_matrices[1:])
-    dic2 = multi_session_model.compute_contrast(contrast, output_type="all")
+    # run 2
+    multi_run_model.fit(fmri_data[1], design_matrices=design_matrices[1:])
+    dic2 = multi_run_model.compute_contrast(contrast, output_type="all")
 
     # fixed effects model
-    multi_session_model.fit(fmri_data, design_matrices=design_matrices)
-    fixed_fx_dic = multi_session_model.compute_contrast(
+    multi_run_model.fit(fmri_data, design_matrices=design_matrices)
+    fixed_fx_dic = multi_run_model.compute_contrast(
         contrast, output_type="all"
     )
 
@@ -208,11 +214,11 @@ def test_high_level_glm_with_data(tmp_path):
         shapes, rk, file_path=tmp_path
     )
 
-    multi_session_model = FirstLevelModel(mask_img=None).fit(
+    multi_run_model = FirstLevelModel(mask_img=None).fit(
         fmri_data, design_matrices=design_matrices
     )
-    n_voxels = get_data(multi_session_model.masker_.mask_img_).sum()
-    z_image = multi_session_model.compute_contrast(np.eye(rk)[1])
+    n_voxels = get_data(multi_run_model.masker_.mask_img_).sum()
+    z_image = multi_run_model.compute_contrast(np.eye(rk)[1])
 
     assert np.sum(get_data(z_image) != 0) == n_voxels
     assert get_data(z_image).std() < 3.0
@@ -224,30 +230,30 @@ def test_high_level_glm_with_data_with_mask(tmp_path):
         shapes, rk, file_path=tmp_path
     )
 
-    multi_session_model = FirstLevelModel(mask_img=mask).fit(
+    multi_run_model = FirstLevelModel(mask_img=mask).fit(
         fmri_data, design_matrices=design_matrices
     )
 
-    z_image = multi_session_model.compute_contrast(
+    z_image = multi_run_model.compute_contrast(
         np.eye(rk)[:2], output_type="z_score"
     )
-    p_value = multi_session_model.compute_contrast(
+    p_value = multi_run_model.compute_contrast(
         np.eye(rk)[:2], output_type="p_value"
     )
-    stat_image = multi_session_model.compute_contrast(
+    stat_image = multi_run_model.compute_contrast(
         np.eye(rk)[:2], output_type="stat"
     )
-    effect_image = multi_session_model.compute_contrast(
+    effect_image = multi_run_model.compute_contrast(
         np.eye(rk)[:2], output_type="effect_size"
     )
-    variance_image = multi_session_model.compute_contrast(
+    variance_image = multi_run_model.compute_contrast(
         np.eye(rk)[:2], output_type="effect_variance"
     )
 
     assert_array_equal(get_data(z_image) == 0.0, get_data(load(mask)) == 0.0)
     assert (get_data(variance_image)[get_data(load(mask)) > 0] > 0.001).all()
 
-    all_images = multi_session_model.compute_contrast(
+    all_images = multi_run_model.compute_contrast(
         np.eye(rk)[:2], output_type="all"
     )
 
@@ -267,10 +273,10 @@ def test_high_level_glm_with_paths(tmp_path):
     mask_file, fmri_files, design_files = write_fake_fmri_data_and_design(
         shapes, rk, file_path=tmp_path
     )
-    multi_session_model = FirstLevelModel(mask_img=None).fit(
+    multi_run_model = FirstLevelModel(mask_img=None).fit(
         fmri_files, design_matrices=design_files
     )
-    z_image = multi_session_model.compute_contrast(np.eye(rk)[1])
+    z_image = multi_run_model.compute_contrast(np.eye(rk)[1])
 
     assert_array_equal(z_image.affine, load(mask_file).affine)
     assert get_data(z_image).std() < 3.0
@@ -283,18 +289,16 @@ def test_high_level_glm_null_contrasts():
         shapes, rk
     )
 
-    multi_session_model = FirstLevelModel(mask_img=None).fit(
+    multi_run_model = FirstLevelModel(mask_img=None).fit(
         fmri_data, design_matrices=design_matrices
     )
-    single_session_model = FirstLevelModel(mask_img=None).fit(
+    single_run_model = FirstLevelModel(mask_img=None).fit(
         fmri_data[0], design_matrices=design_matrices[0]
     )
-    z1 = multi_session_model.compute_contrast(
+    z1 = multi_run_model.compute_contrast(
         [np.eye(rk)[:1], np.zeros((1, rk))], output_type="stat"
     )
-    z2 = single_session_model.compute_contrast(
-        np.eye(rk)[:1], output_type="stat"
-    )
+    z2 = single_run_model.compute_contrast(np.eye(rk)[:1], output_type="stat")
 
     np.testing.assert_almost_equal(get_data(z1), get_data(z2))
 
@@ -309,11 +313,11 @@ def test_high_level_glm_different_design_matrices():
     # add a column to the second design matrix
     design_matrices[1]["new"] = np.ones((19, 1))
 
-    # Fit a glm with two sessions and design matrices
-    multi_session_model = FirstLevelModel(mask_img=mask).fit(
+    # Fit a glm with two runs and design matrices
+    multi_run_model = FirstLevelModel(mask_img=mask).fit(
         fmri_data, design_matrices=design_matrices
     )
-    z_joint = multi_session_model.compute_contrast(
+    z_joint = multi_run_model.compute_contrast(
         [np.eye(rk)[:1], np.eye(rk + 1)[:1]], output_type="effect_size"
     )
     assert z_joint.shape == (7, 8, 7, 1)
@@ -343,8 +347,8 @@ def test_high_level_glm_different_design_matrices_formulas():
     # add a column to the second design matrix
     design_matrices[1]["new"] = np.ones((19, 1))
 
-    # Fit a glm with two sessions and design matrices
-    multi_session_model = FirstLevelModel(mask_img=mask).fit(
+    # Fit a glm with two runs and design matrices
+    multi_run_model = FirstLevelModel(mask_img=mask).fit(
         fmri_data, design_matrices=design_matrices
     )
 
@@ -355,9 +359,7 @@ def test_high_level_glm_different_design_matrices_formulas():
     with pytest.warns(
         UserWarning, match="One contrast given, assuming it for all 2 runs"
     ):
-        multi_session_model.compute_contrast(
-            formula, output_type="effect_size"
-        )
+        multi_run_model.compute_contrast(formula, output_type="effect_size")
 
 
 def test_compute_contrast_num_contrasts():
@@ -366,8 +368,8 @@ def test_compute_contrast_num_contrasts():
         shapes, rk
     )
 
-    # Fit a glm with 3 sessions and design matrices
-    multi_session_model = FirstLevelModel(mask_img=mask).fit(
+    # Fit a glm with 3 runs and design matrices
+    multi_run_model = FirstLevelModel(mask_img=mask).fit(
         fmri_data, design_matrices=design_matrices
     )
 
@@ -375,14 +377,14 @@ def test_compute_contrast_num_contrasts():
     with pytest.raises(
         ValueError, match="2 contrasts given, while there are 3 runs."
     ):
-        multi_session_model.compute_contrast([np.eye(rk)[1]] * 2)
+        multi_run_model.compute_contrast([np.eye(rk)[1]] * 2)
 
-    multi_session_model.compute_contrast([np.eye(rk)[1]] * 3)
+    multi_run_model.compute_contrast([np.eye(rk)[1]] * 3)
 
     with pytest.warns(
         UserWarning, match="One contrast given, assuming it for all 3 runs"
     ):
-        multi_session_model.compute_contrast([np.eye(rk)[1]])
+        multi_run_model.compute_contrast([np.eye(rk)[1]])
 
 
 def test_run_glm_ols(rng):
@@ -1325,7 +1327,7 @@ def test_first_level_from_bids(
         base_dir=tmp_path, n_sub=n_sub, n_ses=n_ses, tasks=tasks, n_runs=n_runs
     )
 
-    models, m_imgs, m_events, m_confounds = first_level_from_bids(
+    models, imgs, events, confounds = first_level_from_bids(
         dataset_path=bids_path,
         task_label=tasks[task_index],
         space_label=space_label,
@@ -1333,9 +1335,7 @@ def test_first_level_from_bids(
         slice_time_ref=None,
     )
 
-    _check_output_first_level_from_bids(
-        n_sub, models, m_imgs, m_events, m_confounds
-    )
+    _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
 
     n_imgs_expected = n_ses * n_runs[task_index]
 
@@ -1349,13 +1349,13 @@ def test_first_level_from_bids(
     elif no_run_entity:
         n_imgs_expected = n_ses
 
-    assert len(m_imgs[0]) == n_imgs_expected
+    assert len(imgs[0]) == n_imgs_expected
 
 
 def test_first_level_from_bids_select_one_run_per_session(bids_dataset):
     n_sub, n_ses, *_ = _inputs_for_new_bids_dataset()
 
-    models, m_imgs, m_events, m_confounds = first_level_from_bids(
+    models, imgs, events, confounds = first_level_from_bids(
         dataset_path=bids_dataset,
         task_label="main",
         space_label="MNI",
@@ -1363,18 +1363,16 @@ def test_first_level_from_bids_select_one_run_per_session(bids_dataset):
         slice_time_ref=None,
     )
 
-    _check_output_first_level_from_bids(
-        n_sub, models, m_imgs, m_events, m_confounds
-    )
+    _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
 
     n_imgs_expected = n_ses
-    assert len(m_imgs[0]) == n_imgs_expected
+    assert len(imgs[0]) == n_imgs_expected
 
 
 def test_first_level_from_bids_select_all_runs_of_one_session(bids_dataset):
     n_sub, _, _, n_runs = _inputs_for_new_bids_dataset()
 
-    models, m_imgs, m_events, m_confounds = first_level_from_bids(
+    models, imgs, events, confounds = first_level_from_bids(
         dataset_path=bids_dataset,
         task_label="main",
         space_label="MNI",
@@ -1382,12 +1380,10 @@ def test_first_level_from_bids_select_all_runs_of_one_session(bids_dataset):
         slice_time_ref=None,
     )
 
-    _check_output_first_level_from_bids(
-        n_sub, models, m_imgs, m_events, m_confounds
-    )
+    _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
 
     n_imgs_expected = n_runs[0]
-    assert len(m_imgs[0]) == n_imgs_expected
+    assert len(imgs[0]) == n_imgs_expected
 
 
 @pytest.mark.parametrize("verbose", [0, 1])
@@ -1426,7 +1422,7 @@ def test_first_level_from_bids_several_labels_per_entity(tmp_path, entity):
         entities={entity: ["A", "B"]},
     )
 
-    models, m_imgs, m_events, m_confounds = first_level_from_bids(
+    models, imgs, events, confounds = first_level_from_bids(
         dataset_path=bids_path,
         task_label="main",
         space_label="MNI",
@@ -1434,32 +1430,28 @@ def test_first_level_from_bids_several_labels_per_entity(tmp_path, entity):
         slice_time_ref=None,
     )
 
-    _check_output_first_level_from_bids(
-        n_sub, models, m_imgs, m_events, m_confounds
-    )
+    _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
     n_imgs_expected = n_ses * n_runs[0]
-    assert len(m_imgs[0]) == n_imgs_expected
+    assert len(imgs[0]) == n_imgs_expected
 
 
 def _check_output_first_level_from_bids(
-    n_sub, models, m_imgs, m_events, m_confounds
+    n_sub, models, imgs, events, confounds
 ):
     assert len(models) == n_sub
     assert all(isinstance(model, FirstLevelModel) for model in models)
-    assert len(models) == len(m_imgs)
-    for imgs in m_imgs:
-        assert isinstance(imgs, list)
-        assert all(Path(img_).exists() for img_ in imgs)
-    assert len(models) == len(m_events)
-    for events in m_events:
-        assert isinstance(events, list)
-        assert all(isinstance(event_, pd.DataFrame) for event_ in events)
-    assert len(models) == len(m_confounds)
-    for confounds in m_confounds:
-        assert isinstance(confounds, list)
-        assert all(
-            isinstance(confound_, pd.DataFrame) for confound_ in confounds
-        )
+    assert len(models) == len(imgs)
+    for img_ in imgs:
+        assert isinstance(img_, list)
+        assert all(Path(x).exists() for x in img_)
+    assert len(models) == len(events)
+    for event_ in events:
+        assert isinstance(event_, list)
+        assert all(isinstance(x, pd.DataFrame) for x in event_)
+    assert len(models) == len(confounds)
+    for confound_ in confounds:
+        assert isinstance(confound_, list)
+        assert all(isinstance(x, pd.DataFrame) for x in confound_)
 
 
 def test_first_level_from_bids_with_subject_labels(bids_dataset):
@@ -1722,7 +1714,7 @@ def test_first_level_from_bids_all_confounds_missing(tmp_path_factory):
     for f in confound_files:
         os.remove(f)
 
-    models, m_imgs, m_events, m_confounds = first_level_from_bids(
+    models, imgs, events, confounds = first_level_from_bids(
         dataset_path=bids_dataset,
         task_label="main",
         space_label="MNI",
@@ -1731,10 +1723,10 @@ def test_first_level_from_bids_all_confounds_missing(tmp_path_factory):
         slice_time_ref=None,
     )
 
-    assert len(models) == len(m_imgs)
-    assert len(models) == len(m_events)
-    assert len(models) == len(m_confounds)
-    for condounds_ in m_confounds:
+    assert len(models) == len(imgs)
+    assert len(models) == len(events)
+    assert len(models) == len(confounds)
+    for condounds_ in confounds:
         assert condounds_ is None
 
 
@@ -1860,3 +1852,124 @@ def test_missing_trial_type_column_warning(tmp_path_factory):
             "No column named 'trial_type' found" in r.message.args[0]
             for r in record
         )
+
+
+from itertools import product
+
+
+def test_first_level_from_bids_load_confounds(tmp_path):
+    """Test that only a subset of confounds can be loaded."""
+    n_sub = 2
+
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path, n_sub=n_sub, n_ses=2, tasks=["main"], n_runs=[2]
+    )
+
+    _, _, _, confounds = first_level_from_bids(
+        dataset_path=bids_path,
+        task_label="main",
+        space_label="MNI",
+        img_filters=[("desc", "preproc")],
+    )
+
+    assert len(confounds[0][0].columns) == 189
+
+    models, imgs, events, confounds = first_level_from_bids(
+        dataset_path=bids_path,
+        task_label="main",
+        space_label="MNI",
+        img_filters=[("desc", "preproc")],
+        confounds_strategy=("motion", "wm_csf"),
+        confounds_motion="full",
+        confounds_wm_csf="basic",
+    )
+
+    _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
+
+    assert len(confounds[0][0].columns) == 26
+
+    assert all(x in confounds[0][0].columns for x in ["csf", "white_matter"])
+    for dir, motion, der, power in product(
+        ["x", "y", "z"],
+        ["rot", "trans"],
+        ["", "_derivative1"],
+        ["", "_power2"],
+    ):
+        assert f"{motion}_{dir}{der}{power}" in confounds[0][0].columns
+
+
+def test_first_level_from_bids_load_confounds_warnings(tmp_path):
+    """Throw warning when incompatible confound loading strategy are used."""
+    n_sub = 2
+
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path, n_sub=n_sub, n_ses=2, tasks=["main"], n_runs=[2]
+    )
+
+    # high pass is loaded from the confounds: no warning
+    first_level_from_bids(
+        dataset_path=bids_path,
+        task_label="main",
+        space_label="MNI",
+        img_filters=[("desc", "preproc")],
+        drift_model=None,
+        confounds_strategy=("high_pass",),
+    )
+
+    with pytest.warns(
+        UserWarning, match=("duplicate .*the cosine one used in the model.")
+    ):
+        # cosine loaded from confounds may duplicate
+        # the one created during model specification
+        first_level_from_bids(
+            dataset_path=bids_path,
+            task_label="main",
+            space_label="MNI",
+            img_filters=[("desc", "preproc")],
+            drift_model="cosine",
+            confounds_strategy=("high_pass",),
+        )
+
+    with pytest.warns(
+        UserWarning, match=("conflict .*the polynomial one used in the model.")
+    ):
+        # cosine loaded from confounds may conflict
+        # the one created during model specification
+        first_level_from_bids(
+            dataset_path=bids_path,
+            task_label="main",
+            space_label="MNI",
+            img_filters=[("desc", "preproc")],
+            drift_model="polynomial",
+            confounds_strategy=("high_pass",),
+        )
+
+
+def test_check_run_tables_errors():
+    # check high level wrapper keeps behavior
+    with pytest.raises(ValueError, match="len.* does not match len.*"):
+        _check_run_tables([""] * 2, [""], "")
+    with pytest.raises(ValueError, match="table path .* could not be loaded"):
+        _check_run_tables([""] * 2, [".csv", ".csv"], "")
+    with pytest.raises(
+        TypeError, match="can only be a pandas DataFrames or a string"
+    ):
+        _check_run_tables([""] * 2, [[0], pd.DataFrame()], "")
+    with pytest.raises(ValueError, match="table path .* could not be loaded"):
+        _check_run_tables([""] * 2, [".csv", pd.DataFrame()], "")
+
+
+def test_img_table_checks():
+    # check matching lengths
+    with pytest.raises(ValueError, match="len.* does not match len.*"):
+        _check_list_length_match([""] * 2, [""], "", "")
+
+    # check tables type and that can be loaded
+    with pytest.raises(ValueError, match="table path .* could not be loaded"):
+        _check_and_load_tables([".csv", ".csv"], "")
+    with pytest.raises(
+        TypeError, match="can only be a pandas DataFrames or a string"
+    ):
+        _check_and_load_tables([[], pd.DataFrame()], "")
+    with pytest.raises(ValueError, match="table path .* could not be loaded"):
+        _check_and_load_tables([".csv", pd.DataFrame()], "")

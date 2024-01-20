@@ -10,11 +10,13 @@ constitutes output maps
 import warnings
 
 import numpy as np
+import sklearn
 from joblib import Memory
 from sklearn.decomposition import dict_learning_online
 from sklearn.linear_model import Ridge
 
 from nilearn._utils import fill_doc
+from nilearn._utils.helpers import _transfer_deprecated_param_vals
 
 from ._base import _BaseDecomposition
 from .canica import CanICA
@@ -41,7 +43,7 @@ class DictLearning(_BaseDecomposition):
 
     This yields more stable maps than :term:`CanICA`.
 
-    See :footcite:`Mensch2016`.
+    See :footcite:t:`Mensch2016`.
 
      .. versionadded:: 0.2
 
@@ -292,12 +294,19 @@ class DictLearning(_BaseDecomposition):
 
         if self.verbose:
             print("[DictLearning] Learning dictionary")
-        # TODO: turn n_iter to max_iter when dropping python 3.7
+
+        # TODO: remove this when sklearn 1.0 not supported anymore;
+        # replace kwargs with actual parameter name
+        if sklearn.__version__ <= "1.0":
+            kwargs = {"n_iter": max_iter}
+        else:
+            kwargs = _transfer_deprecated_param_vals(
+                {"n_iter": "max_iter"}, {"max_iter": max_iter}
+            )
         self.components_, _ = self._cache(dict_learning_online)(
             data.T,
             self.n_components,
             alpha=self.alpha,
-            n_iter=max_iter,
             batch_size=self.batch_size,
             method=self.method,
             dict_init=dict_init,
@@ -306,6 +315,7 @@ class DictLearning(_BaseDecomposition):
             return_code=True,
             shuffle=True,
             n_jobs=1,
+            **kwargs,
         )
         self.components_ = self.components_.T
         # Unit-variance scaling

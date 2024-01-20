@@ -17,8 +17,8 @@ from nilearn._utils import data_gen
 from nilearn._utils.testing import serialize_niimg
 from nilearn.conftest import _rng
 from nilearn.datasets import atlas
+from nilearn.datasets._utils import fetch_files
 from nilearn.datasets.tests._testing import dict_to_archive
-from nilearn.datasets.utils import _fetch_files
 from nilearn.image import get_data
 
 
@@ -61,7 +61,7 @@ def test_downloader(tmp_path, request_mocker):
     ]
 
     with pytest.raises(IOError):
-        _fetch_files(
+        fetch_files(
             str(tmp_path / "craddock_2012"),
             files,
             verbose=0,
@@ -222,6 +222,8 @@ def test_fetch_atlas_fsl(
         atlas_instance,
         is_symm=is_symm or split,
     )
+
+    assert atlas_instance.description != ""
 
     # check for typo in label names
     for label in atlas_instance.labels:
@@ -681,12 +683,16 @@ def test_fetch_atlas_talairach(tmp_path, request_mocker):
     level_values = np.ones((81, 3)) * [0, 1, 2]
     talairach = atlas.fetch_atlas_talairach("hemisphere", data_dir=tmp_path)
 
+    assert talairach.description != ""
+
     assert_array_equal(
         get_data(talairach.maps).ravel(), level_values.T.ravel()
     )
     assert_array_equal(talairach.labels, ["Background", "b", "a"])
 
     talairach = atlas.fetch_atlas_talairach("ba", data_dir=tmp_path)
+
+    assert talairach.description != ""
 
     assert_array_equal(get_data(talairach.maps).ravel(), level_values.ravel())
 
@@ -707,6 +713,8 @@ def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
 
     data = atlas.fetch_atlas_pauli_2017("det", data_dir)
 
+    assert data.description != ""
+
     assert len(data.labels) == 16
 
     values = get_data(nibabel.load(data.maps))
@@ -716,6 +724,8 @@ def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
     data = atlas.fetch_atlas_pauli_2017("prob", data_dir)
 
     assert nibabel.load(data.maps).shape[-1] == 16
+
+    assert data.description != ""
 
     with pytest.raises(NotImplementedError):
         atlas.fetch_atlas_pauli_2017("junk for testing", data_dir)

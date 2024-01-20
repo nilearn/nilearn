@@ -136,9 +136,9 @@ plotting.plot_surf_roi(
 )
 
 # %%
-# Using a flat mesh can be useful in order to easily locate the area
+# Using a flat :term:`mesh` can be useful in order to easily locate the area
 # of interest on the cortex. To make this plot easier to read,
-# we use the mesh curvature as a background map.
+# we use the :term:`mesh` curvature as a background map.
 
 bg_map = np.sign(surface.load_surf_data(fsaverage['curv_left']))
 # np.sign yields values in [-1, 1]. We rescale the background map
