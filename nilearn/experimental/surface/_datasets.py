@@ -22,7 +22,7 @@ def load_fsaverage(mesh_name: str = "fsaverage5") -> Dict[str, PolyMesh]:
     for mesh_type, mesh_name in renaming.items():
         meshes[mesh_name] = {}
         for hemisphere in "left", "right":
-            meshes[mesh_name][f"{hemisphere}_hemisphere"] = FileMesh(
+            meshes[mesh_name][hemisphere] = FileMesh(
                 fsaverage[f"{mesh_type}_{hemisphere}"]
             )
     return meshes
@@ -41,8 +41,8 @@ def fetch_nki(n_subjects=1) -> Sequence[SurfaceImage]:
         img = SurfaceImage(
             mesh=fsaverage["pial"],
             data={
-                "left_hemisphere": left_data,
-                "right_hemisphere": right_data,
+                "left": left_data,
+                "right": right_data,
             },
         )
         images.append(img)
@@ -60,8 +60,8 @@ def fetch_destrieux() -> Tuple[SurfaceImage, Dict[int, str]]:
         SurfaceImage(
             mesh=fsaverage["pial"],
             data={
-                "left_hemisphere": destrieux["map_left"],
-                "right_hemisphere": destrieux["map_right"],
+                "left": destrieux["map_left"],
+                "right": destrieux["map_right"],
             },
         ),
         label_names,

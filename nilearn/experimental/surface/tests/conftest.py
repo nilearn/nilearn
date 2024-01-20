@@ -31,8 +31,8 @@ def mini_mesh() -> PolyMesh:
         ]
     )
     return {
-        "left_hemisphere": InMemoryMesh(left_coords, left_faces),
-        "right_hemisphere": InMemoryMesh(right_coords, right_faces),
+        "left": InMemoryMesh(left_coords, left_faces),
+        "right": InMemoryMesh(right_coords, right_faces),
     }
 
 
@@ -102,7 +102,7 @@ def assert_img_equal():
 
 @pytest.fixture
 def drop_img_part():
-    def f(img, part_name="right_hemisphere"):
+    def f(img, part_name="right"):
         mesh = img.mesh.copy()
         mesh.pop(part_name)
         data = img.data.copy()

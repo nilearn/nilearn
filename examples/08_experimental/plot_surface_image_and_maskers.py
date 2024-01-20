@@ -17,13 +17,10 @@ examples
 
 # %%
 
-from typing import Optional, Sequence
-
 from matplotlib import pyplot as plt
 
-from nilearn import plotting as old_plotting
-from nilearn.experimental import surface, plotting
-
+from nilearn.experimental import plotting, surface
+from nilearn.plotting import plot_matrix
 
 img = surface.fetch_nki()[0]
 print(f"NKI image: {img}")
@@ -49,7 +46,12 @@ print(f"NKI image: {img}")
 
 labels_img, label_names = surface.fetch_destrieux()
 print(f"Destrieux image: {labels_img}")
-plotting.plot_surf(labels_img, cmap="gist_ncar", avg_method="median")
+plotting.plot_surf(
+    labels_img,
+    views=["lateral", "medial"],
+    cmap="gist_ncar",
+    avg_method="median",
+)
 
 labels_masker = surface.SurfaceLabelsMasker(labels_img, label_names).fit()
 masked_data = labels_masker.transform(img)
@@ -58,7 +60,7 @@ print(f"Masked data shape: {masked_data.shape}")
 connectome = (
     connectome.ConnectivityMeasure(kind="correlation").fit([masked_data]).mean_
 )
-old_plotting.plot_matrix(connectome, labels=labels_masker.label_names_)
+plot_matrix(connectome, labels=labels_masker.label_names_)
 
 plt.show()
 
@@ -110,14 +112,15 @@ plt.show()
 import numpy as np
 from sklearn import feature_selection, linear_model, pipeline, preprocessing
 
-
 img = surface.fetch_nki()[0]
 y = np.random.RandomState(0).normal(size=img.shape[0])
 
 decoder = pipeline.make_pipeline(
     surface.SurfaceMasker(),
     preprocessing.StandardScaler(),
-    feature_selection.SelectKBest(score_func=feature_selection.f_regression, k=500),
+    feature_selection.SelectKBest(
+        score_func=feature_selection.f_regression, k=500
+    ),
     linear_model.Ridge(),
 )
 decoder.fit(img, y)
