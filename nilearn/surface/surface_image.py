@@ -10,7 +10,7 @@ from nilearn.surface import _io
 
 class _Mesh(abc.ABC):
     """A surface :term:`mesh` having vertex, \
-    coordinates and faces (triangles)."""
+    coordinates and :term:`faces` (triangles)."""
 
     n_vertices: ...
 
@@ -25,18 +25,32 @@ class _Mesh(abc.ABC):
         )
 
     def to_gifti(self, gifti_file):
-        """Write surface mesh to a Gifti file on disk.
+        """Write surface :term:`mesh` to a Gifti file on disk.
 
         Parameters
         ----------
-        gifti_file : path-like or str
+        gifti_file : path-like or :obj:`str`
             filename to save the mesh.
         """
         _io.mesh_to_gifti(self.coordinates, self.faces, gifti_file)
 
 
 class InMemoryMesh(_Mesh):
-    """A surface mesh stored as in-memory numpy arrays."""
+    """A surface :term:`mesh` stored as in-memory numpy arrays.
+
+    Parameters
+    ----------
+    coordinates : :obj:`numpy.ndarray`
+        3d coordinates of the vertices with shape (n_vertices, 3).
+
+    faces : :obj:`numpy.ndarray`
+        Each row represents 3 vertices that form a triangle in the mesh.
+
+    Attributes
+    ----------
+    n_vertices : :obj:`int`
+        Number of vertices in a mesh.
+    """
 
     def __init__(self, coordinates, faces):
         self.coordinates = coordinates
@@ -45,7 +59,17 @@ class InMemoryMesh(_Mesh):
 
 
 class FileMesh(_Mesh):
-    """A surface mesh stored in a Gifti or Freesurfer file."""
+    """A surface :term:`mesh` stored in a Gifti or Freesurfer file.
+
+    Parameters
+    ----------
+    file_path : path-like or :obj:`str`
+
+    Attributes
+    ----------
+    n_vertices : :obj:`int`
+        Number of vertices in a mesh.
+    """
 
     def __init__(self, file_path):
         self.file_path = pathlib.Path(file_path)
@@ -74,7 +98,6 @@ def _check_data_consistent_shape(data):
 
     They must match in all but the last dimension (which is the number of
     vertices, and can be different for each part).
-
     """
     if len(data) == 0:
         raise ValueError("Surface image data must have at least one item.")
@@ -110,7 +133,22 @@ def _check_data_and_mesh_compat(mesh, data):
 
 @dataclasses.dataclass
 class SurfaceImage:
-    """Surface image, usually containing meshes & data for both hemispheres."""
+    """Surface image, usually containing meshes & data for both hemispheres.
+
+    Parameters
+    ----------
+    mesh : :obj:`dict`[:obj:`str`, mesh object]
+        A dictionary relating hemispheres represented by string keys to
+        their geometry represented by a mesh.
+
+    data : :obj:`dict`[:obj:`str`, :class:`numpy.ndarray`]
+        A dictionary relating hemispheres represented by string keys to
+        their surface data.
+
+    Attributes
+    ----------
+    shape : :obj:`tuple`
+    """
 
     mesh: ...
     data: ...

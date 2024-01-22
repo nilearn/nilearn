@@ -27,20 +27,47 @@ def check_same_n_vertices(mesh_1, mesh_2):
 
 
 class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
-    """Extract data from a SurfaceImage."""
+    """Extract data from a SurfaceImage.
+
+    Parameters
+    ----------
+    mask_img : SurfaceImage object, optional
+        See :ref:`extracting_data`.
+        Mask to apply to regions before extracting signals.
+    %(standardize_maskers)s
+    %(standardize_confounds)s
+    high_variance_confounds : :obj:`bool`, default=False
+        If True, high variance confounds are computed on provided image with
+        :func:`nilearn.image.high_variance_confounds` and default parameters
+        and regressed out.
+    %(detrend)s
+    %(low_pass)s
+    %(high_pass)s
+    %(t_r)s
+    %(memory)s
+    %(memory_level1)s
+    %(masker_kwargs)s
+
+    Attributes
+    ----------
+    mask_img_ : SurfaceImage object
+        The mask of the data, or the computed one.
+
+    output_dimension_ : :obj:`int`
+    """
 
     def __init__(
         self,
         mask_img=None,
         standardize=False,
         standardize_confounds=True,
-        detrend=False,
         high_variance_confounds=False,
+        detrend=False,
         low_pass=None,
         high_pass=None,
         t_r=None,
-        memory_level=1,
         memory=Memory(location=None),
+        memory_level=1,
         **kwargs,
     ):
         self.mask_img = mask_img
@@ -123,7 +150,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         Returns
         -------
-        output : numpy.ndarray
+        output : :obj:`numpy.ndarray`
             Signal for each element.
             shape: (img data shape, total number of vertices)
         """
@@ -181,7 +208,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         Returns
         -------
-        numpy.ndarray
+        :obj:`numpy.ndarray`
             Signal for each element.
             shape: (img data shape, total number of vertices)
         """
@@ -193,7 +220,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         Parameters
         ----------
-        masked_img : numpy.ndarray
+        masked_img : :obj:`numpy.ndarray`
             Extracted signal.
 
         Returns
@@ -287,7 +314,7 @@ class SurfaceLabelsMasker:
 
         Returns
         -------
-        output : numpy.ndarray
+        output : :obj:`numpy.ndarray`
             Signal for each element.
             shape: (img data shape, total number of vertices)
         """
@@ -314,7 +341,7 @@ class SurfaceLabelsMasker:
 
         Returns
         -------
-        numpy.ndarray
+        :obj:`numpy.ndarray`
             Signal for each element.
             shape: (img data shape, total number of vertices)
         """
@@ -326,7 +353,7 @@ class SurfaceLabelsMasker:
 
         Parameters
         ----------
-        masked_img : numpy.ndarray
+        masked_img : :obj:`numpy.ndarray`
             Extracted signal.
 
         Returns
