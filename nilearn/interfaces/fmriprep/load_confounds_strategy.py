@@ -27,8 +27,8 @@ preset_strategies = {
         "motion": "full",
         "wm_csf": "full",
         "scrub": 5,
-        "fd_threshold": 0.2,
-        "std_dvars_threshold": 3,
+        "fd_threshold": 0.2,  # updated here and doc to 0.5 in v0.13
+        "std_dvars_threshold": 3,  # updated here and doc to 1.5 in v0.13
         "global_signal": None,
         "demean": True,
     },
@@ -37,6 +37,7 @@ preset_strategies = {
         "motion": "full",
         "n_compcor": "all",
         "compcor": "anat_combined",
+        "global_signal": None,
         "demean": True,
     },
     "ica_aroma": {
@@ -101,6 +102,10 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
           variance as the noise component estimation as the number of compcor
           component can be really high. Please refer to :term:`fMRIPrep`
           documentation for more details.
+
+          .. versionadded:: 0.11.0
+            `golobal_signal` is now a tunable parameter for compcor.
+
         - 'ica_aroma': Load confounds for non-aggresive ICA-AROMA strategy
           described in :footcite:t:`Pruim2015`. The strategy requires
           :term:`fMRIPrep` outputs generated with `--use-aroma` suffixed with
@@ -152,7 +157,7 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
         N/A                 N/A            N/A       N/A       True*
         scrubbing True      full*  full   None*         5*    0.2*         \
         3*                  N/A            N/A       N/A       True*
-        compcor   True      full*  N/A    N/A           N/A   N/A          \
+        compcor   True      full*  N/A    None*         N/A   N/A          \
         N/A                 anat_combined* all*      N/A       True*
         ica_aroma True      N/A    basic* None*         N/A   N/A          \
         N/A                 N/A            N/A       full      True*
