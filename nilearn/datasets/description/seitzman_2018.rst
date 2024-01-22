@@ -23,7 +23,7 @@ Content
 References
 ----------
 
-.. footbiliography::
+.. footbibliography::
 
 For more information see:
 https://greenelab.wustl.edu/data_software
