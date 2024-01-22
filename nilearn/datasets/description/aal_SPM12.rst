@@ -15,6 +15,10 @@ of functional studies are proposed:
 (2) percentage of voxels belonging to each of the AVOI intersected by a sphere centered by a set of coordinates, and
 (3) percentage of voxels belonging to each of the AVOI intersected by an activated cluster.
 
+For more information on this atlas,
+see :footcite:t:`AAL_atlas`,
+and :footcite:t:`Tzourio-Mazoyer2002`.
+
 Content
 -------
     :"regions": str. path to nifti file containing regions.
@@ -22,14 +26,12 @@ Content
 
 References
 ----------
+
+.. footbibliography::
+
 For more information on this dataset's structure, see
 http://www.gin.cnrs.fr/AAL-217?lang=en
 
-Automated Anatomical Labeling of Activations in SPM Using a Macroscopic
-Anatomical Parcellation of the MNI MRI Single-Subject Brain.
-N. Tzourio-Mazoyer, B. Landeau, D. Papathanassiou, F. Crivello,
-O. Etard, N. Delcroix, B. Mazoyer, and M. Joliot.
-NeuroImage 2002. 15 :273-28
 
 License
 -------

@@ -11,9 +11,7 @@ anatomy to generate novel functionally-constrained ROIs in the thalamus, basal g
 cerebellum. We validate these ROIs in three datasets via several anatomical and functional criteria, including known
 anatomical divisions and functions, as well as agreement with existing literature.
 Further, we demonstrate that combining these ROIs with established cortical ROIs recapitulates and extends
-previously described functional network organization." (Seitzman et. al, 2018, 2020)
-
-
+previously described functional network organization." (:footcite:t:`Seitzman2020`)
 
 Content
 -------
@@ -24,19 +22,16 @@ Content
 
 References
 ----------
+
+.. footbiliography::
+
 For more information see:
 https://greenelab.wustl.edu/data_software
 
 ROI coordinates downloaded from:
 https://wustl.box.com/s/twpyb1pflj6vrlxgh3rohyqanxbdpelw
 
-Paper:
-Seitzman, B. A., Gratton, C., Marek, S., Raut, R. V., Dosenbach, N. U. F., Schlaggar, B. L., et al. (2020).
-A set of functionally-defined brain regions with improved representation of the subcortex and cerebellum.
-NeuroImage, 206, 116290. https://doi.org/10.1016/j.neuroimage.2019.116290
 
-Preprint:
-Seitzman et al. (2018). https://doi.org/10.1101/450452
 
 License
 -------

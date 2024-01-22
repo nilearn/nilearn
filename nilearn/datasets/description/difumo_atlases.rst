@@ -4,18 +4,27 @@ DiFuMo atlas
 
 Notes
 -----
-1. We provide Dictionaries of Functional Modes “DiFuMo”
+
+We provide Dictionaries of Functional Modes “DiFuMo” (:footcite:t:`Dadi2020`)
 that can serve as atlases to extract functional signals,
 e.g to serve as IDPs, with different dimensionalities (64, 128, 256, 512, and 1024).
 These modes are optimized to represent well raw :term:`BOLD` timeseries,
 over a with range of experimental conditions.
 
-    - All atlases are available in .nii.gz format and sampled to :term:`MNI` space
+* All atlases are available in .nii.gz format and sampled to :term:`MNI` space
 
-2. Additionally, we provide meaningful names for these modes,
+Additionally, we provide meaningful names for these modes,
 based on their anatomical location, to facilitate reporting of results.
 
-    - Anatomical names are available for each resolution in .csv
+* Anatomical names are available for each resolution in .csv
+
+Direct download links from OSF:
+
+    - 64: https://osf.io/pqu9r/download
+    - 128: https://osf.io/wjvd5/download
+    - 256: https://osf.io/3vrct/download
+    - 512: https://osf.io/9b76y/download
+    - 1024: https://osf.io/34792/download
 
 Content
 -------
@@ -24,15 +33,11 @@ Content
 
 References
 ----------
+
 For more information about this dataset's structure:
 https://hal.inria.fr/hal-02904869
 
-Dadi, K., Varoquaux, G., Machlouzarides-Shalit, A., Gorgolewski,
-KJ., Wassermann, D., Thirion, B., Mensch, A.
-Fine-grain atlases of functional modes for fMRI analysis.
-NeuroImage, Elsevier, 2020, pp.117126
-[Link to this paper](https://hal.inria.fr/hal-02904869)
-
+.. footbibliography::
 
 Mensch, A., Mairal, J., Thirion, B., Varoquaux, G., 2018.
 Stochastic Subsampling for Factorizing Huge Matrices.

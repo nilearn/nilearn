@@ -11,10 +11,11 @@ from :term:`resting-state` functional magnetic resonance images
 for about 200 young healthy subjects. Multiple scales (number of networks) are available,
 and includes 7, 12, 20, 36, 64, 122, 197, 325, 444.
 The brain parcellations have been generated using a method called bootstrap analysis of stable clusters
-(BASC, :footcite:t:`Bellec2010`) and the scales have been selected using a data-driven method called MSTEPS (Bellec, 2013).
+(BASC, :footcite:t:`Bellec2010`) and the scales have been selected using a data-driven method called MSTEPS (:footcite:t:`Bellec2013`).
 
 
 This release more specifically contains the following files:
+
     :'description': a markdown (text) description of the release.
     :'scale007', 'scale012', 'scale020', 'scale036', 'scale064', 'scale122', 'scale197', 'scale325', 'scale444':
         brain_parcellation_cambridge_basc_multiscale_(sym,asym)_scale(NNN).nii.gz:
@@ -76,10 +77,12 @@ with Ward's criterion) was generated across all the individual clustering
 replications pooled together, hence generating group clusters. The generation
 of group clusters was itself replicated by bootstrapping subjects 500 times,
 and a (final) consensus clustering (hierarchical Ward's criterion) was
-generated on the replicated group clusters. The MSTEPS procedure (Bellec et
-al., 2013) was implemented to select a data-driven subset of scales in the
-range 5-500, approximating the group stability matrices up to 5% residual
-energy, through linear interpolation over selected scales. Note that the
+generated on the replicated group clusters.
+The MSTEPS procedure (:footcite:t:`Bellec2013`) was implemented
+to select a data-driven subset of scales in the range 5-500,
+approximating the group stability matrices up to 5% residual energy,
+through linear interpolation over selected scales.
+Note that the
 number of scales itself was selected by the MSTEPS procedure in a data-driven
 fashion, and that the number of individual, group and final (consensus) number
 of clusters were not necessarily identical.
@@ -95,11 +98,6 @@ Ivanov O, Vincent R D, Lepage C, Lerch J, Fombonne E, Evans A C,
 Comprehensive Pipeline for Anatomical Neuroimaging Research.
 In: Corbetta, M. (Ed.), Proceedings of the 12th Annual Meeting
 of the Human Brain Mapping Organization. Neuroimage, Florence, Italy.
-
-Bellec P, Jun. 2013. Mining the Hierarchy of Resting-State Brain Networks:
-Selection of Representative Clusters in a Multiscale Structure. In: Pattern
-Recognition in Neuroimaging (PRNI), 2013 International Workshop on. pp.
-54-57.
 
 Collins D L, Evans A C, 1997. Animal: validation and applications of
 nonlinear registration-based segmentation. International Journal of

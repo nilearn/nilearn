@@ -83,6 +83,7 @@ Atlases descriptions
     description/allen_rsn_2011.rst
     description/basc_multiscale_2015.rst
     description/craddock_2012.rst
+    description/destrieux_surface.rst
     description/difumo_atlases.rst
     description/harvard_oxford.rst
     description/juelich.rst
@@ -90,7 +91,6 @@ Atlases descriptions
     description/pauli_2017.rst
     description/schaefer_2018.rst
     description/smith_2009.rst
-    description/destrieux_surface.rst
     description/talairach_atlas.rst
     description/yeo_2011.rst
     description/dosenbach_2010.rst

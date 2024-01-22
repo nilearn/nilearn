@@ -1,13 +1,16 @@
-In Vivo High Resolution Atlas of the Subcortical Human Brain
-============================================================
+Pauli 2007 atlas
+================
 
 
 Notes
 -----
 The purpose of this project is to develop a crowd-sourced In Vivo High Resolution Atlas of the Subcortical Human Brain.
-We invite contributions to this project, both to increase the precision of anatomical labels, and to increase the number of labeled subcortical nuclei.
+We invite contributions to this project, both to increase the precision of anatomical labels,
+and to increase the number of labeled subcortical nuclei.
 
 This resource can be used as a reference atlas for researchers and students alike.
+
+See :footcite:t:`pauli_atlas` and :footcite:t:`Pauli2018`.
 
 Content
 -------
@@ -16,8 +19,8 @@ Content
 
 References
 ----------
-For more information about this dataset:
-https://osf.io/r2hvk/
+
+.. footbibliography::
 
 
 License

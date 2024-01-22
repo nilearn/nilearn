@@ -5,8 +5,10 @@ Destrieux Surface
 Notes
 -----
 Anatomical :term:`parcellation` of the cortex based on sulco-gyral patterns
-(Destrieux et al, 2010) distributed with Freesurfer (Dale et al, 1999,
+(:footcite:t:`Destrieux2010`) distributed with Freesurfer (Dale et al, 1999,
 Fischl et al, 1999) in fsaverage5 standard surface space.
+
+See also :footcite:t:`Fischl2004` and :footcite:t:`Destrieux2009`.
 
 Content
 -------
@@ -16,9 +18,8 @@ Content
 
 References
 ----------
-Destrieux et al, (2010). Automatic parcellation of human cortical gyri and
-sulci using standard anatomical nomenclature. NeuroImage 53.
-https://doi.org/10.1016/j.neuroimage.2010.06.010
+
+.. footbibliography::
 
 Dale et al, (1999). Cortical surface-based analysis.I. Segmentation and
 surface reconstruction. Neuroimage 9.

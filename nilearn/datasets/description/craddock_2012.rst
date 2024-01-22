@@ -15,6 +15,8 @@ and random parcellations perform equivalently for most of the metrics evaluated.
 The online release also contains the scripts to derive these ROI atlases
 by using spatially constrained Ncut spectral clustering.
 
+See also :footcite:t:`nitrcClusterROI`
+
 
 Content
 -------
@@ -37,3 +39,4 @@ see http://www.nitrc.org/projects/cluster_roi/
 License
 -------
 Creative Commons Attribution Non-commercial Share Alike.
+See :footcite:t:`CreativeCommons` for more information.
