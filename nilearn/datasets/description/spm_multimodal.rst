@@ -1,5 +1,5 @@
-SPM multimodal
-==============
+SPM multimodal dataset
+======================
 
 
 Notes
@@ -14,6 +14,8 @@ viewing a face image or a scrambled face image,
 supposedly with the same low-level statistical properties,
 to find face-specific responses.
 
+See :footcite:t:`spm_multiface`.
+
 Content
 -------
     :'func1': Paths to functional images for run 1
@@ -25,7 +27,8 @@ Content
 
 References
 ----------
-See :footcite:t:`spm_multiface`.
+
+.. footbibliography::
 
 For details on the data, please see:
 

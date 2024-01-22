@@ -1,5 +1,5 @@
-ABIDE
-=====
+ABIDE PCP dataset
+=================
 
 Notes
 -----
@@ -14,21 +14,22 @@ phenotypic information common across nearly all sites (see below).
 Note that this is the preprocessed version of ABIDE provided by the
 preprocess connectome projects (PCP).
 
+See :footcite:t:`Nielsen2013`.
+
 Content
 -------
     :'phenotypic': Behavioral information.
 
 References
 ----------
+
+.. footbibliography::
+
 For more information about this dataset's structure:
 
 http://preprocessed-connectomes-project.github.io
 
 http://www.childmind.org/en/healthy-brain-network/abide/
-
-Nielsen, Jared A., et al. "Multisite functional connectivity MRI
-classification of autism: ABIDE results." Frontiers in human neuroscience
-7 (2013).
 
 
 License

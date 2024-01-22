@@ -141,8 +141,6 @@ Datasets descriptions
     description/spm_auditory.rst
     description/spm_multimodal.rst
     description/nki_enhanced_surface.rst
-
-    description/neurovault.rst
     description/brainomics_localizer.rst
 
 Statistical maps/derivatives

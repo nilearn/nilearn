@@ -1,5 +1,5 @@
-NKI enhanced surface
-====================
+NKI enhanced surface dataset
+============================
 
 
 Notes
@@ -9,6 +9,8 @@ Enhanced Nathan Kline Institute-Rockland Sample resting state fMRI data
 according to https://github.com/fliem/nki_nilearn.
 Contains phenotypical metadata.
 
+See :footcite:t:`Nooner2012`.
+
 Content
 -------
     :'func_left': :term:`resting-state` data for the left hemisphere
@@ -17,11 +19,10 @@ Content
 
 References
 ----------
-:Download: https://fcon_1000.projects.nitrc.org/indi/enhanced/
 
-Nooner et al, (2012). The NKI-Rockland Sample: A model for accelerating the
-pace of discovery science in psychiatry. Frontiers in neuroscience 6, 152.
-URL https://doi.org/10.3389/fnins.2012.00152
+.. footbibliography::
+
+:Download: https://fcon_1000.projects.nitrc.org/indi/enhanced/
 
 
 License

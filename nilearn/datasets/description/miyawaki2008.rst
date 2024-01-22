@@ -1,5 +1,5 @@
-Miyawaki 2008
-=============
+Miyawaki 2008 dataset
+=====================
 
 
 Notes
@@ -11,6 +11,8 @@ image bases of multiple scales. Their :term:`contrasts<contrast>` were independe
 decoded from :term:`fMRI` activity by selecting important :term:`voxels<voxel>` and
 capitalizing on their correlation structure.
 
+See :footcite:t:`Miyawaki2008`.
+
 Content
 -------
     :'label': Paths to text files containing run and target data
@@ -21,12 +23,11 @@ Content
 
 References
 ----------
-For more information on this dataset's structure, see
-http://www.cns.atr.jp/dni/en/downloads/ fmri-data-set-for-visual-image-reconstruction
 
-Miyawaki, Y., Uchida, H., Yamashita, O., Sato, M. A.,
-Morito, Y., Tanabe, H. C., ... & Kamitani, Y. (2008).
-Neuron, 60(5), 915-929.
+.. footbibliography::
+
+For more information on this dataset's structure, see
+http://www.cns.atr.jp/dni/en/downloads/fmri-data-set-for-visual-image-reconstruction
 
 
 License

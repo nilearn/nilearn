@@ -1,4 +1,4 @@
-Schaefer 2018 Atlas
+Schaefer 2018 atlas
 ===================
 
 

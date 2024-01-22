@@ -1,10 +1,10 @@
-The movie watching based brain development dataset (fMRI)
-=========================================================
+development fMRI dataset
+========================
 
 
 Notes
 -----
-This functional MRI dataset is used for teaching how to use
+This movie-watching based functional MRI dataset is used for teaching how to use
 machine learning to predict age from naturalistic stimuli (movie)
 watching with Nilearn.
 
@@ -22,6 +22,8 @@ Full pre-processed data: https://osf.io/5hju4/files/
 
 Raw data can be accessed from : https://openneuro.org/datasets/ds000228/versions/1.0.0
 
+See :footcite:t:`Richardson2018`.
+
 Content
 -------
     :'func': functional MRI Nifti images (4D) per subject
@@ -31,12 +33,8 @@ Content
 
 References
 ----------
-Please cite this paper if you are using this dataset:
 
-Richardson, H., Lisandrelli, G., Riobueno-Naylor, A., & Saxe, R. (2018).
-Development of the social brain from age three to twelve years.
-Nature communications, 9(1), 1027.
-https://www.nature.com/articles/s41467-018-03399-2
+.. footbibliography::
 
 License
 -------

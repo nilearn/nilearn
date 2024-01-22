@@ -1,5 +1,5 @@
-SPM auditory
-============
+SPM auditory dataset
+====================
 
 Notes
 -----
@@ -18,6 +18,8 @@ A structural image was also acquired.
 This experiment was conducted by Geriant Rees
 under the direction of Karl Friston and the FIL methods group.
 
+See :footcite:t:`spm_auditory`.
+
 Content
 -------
     :'func': Paths to functional images
@@ -26,7 +28,8 @@ Content
 
 References
 ----------
-See :footcite:t:`spm_auditory`.
+
+.. footbibliography::
 
 
 License

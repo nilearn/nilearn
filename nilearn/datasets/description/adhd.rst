@@ -1,5 +1,5 @@
-ADHD 200
-========
+ADHD dataset
+============
 
 
 Notes
@@ -14,6 +14,8 @@ Includes preprocessed data from 40 participants.
 
 Project was coordinated by Michael P. Milham.
 
+See :footcite:t:`ADHDdataset`.
+
 Content
 -------
     :'func': Nifti images of the :term:`resting-state` data
@@ -22,6 +24,9 @@ Content
 
 References
 ----------
+
+.. footbibliography::
+
 For more information about this dataset's structure:
 http://fcon_1000.projects.nitrc.org/indi/adhd200/index.html
 

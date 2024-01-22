@@ -1,5 +1,5 @@
-Destrieux Surface
-=================
+Destrieux atlas
+===============
 
 
 Notes
