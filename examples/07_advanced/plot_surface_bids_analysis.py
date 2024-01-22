@@ -30,11 +30,11 @@ images were already normalized to the same :term:`MNI` space.
 # confounds.tsv files.
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 
-data_dir, _ = fetch_language_localizer_demo_dataset()
+data = fetch_language_localizer_demo_dataset(legacy_output=False)
 
 # %%
 # Here is the location of the dataset on disk.
-print(data_dir)
+print(data.data_dir)
 
 # %%
 # Obtain automatically FirstLevelModel objects and fit arguments
@@ -53,7 +53,8 @@ from nilearn.glm.first_level import first_level_from_bids
 task_label = 'languagelocalizer'
 _, models_run_imgs, models_events, models_confounds = \
     first_level_from_bids(
-        data_dir, task_label,
+        data.data_dir,
+        task_label,
         img_filters=[('desc', 'preproc')],
         n_jobs=2
     )
@@ -65,7 +66,7 @@ import json
 import os
 
 json_file = os.path.join(
-    data_dir,
+    data.data_dir,
     'derivatives',
     'sub-01',
     'func',
