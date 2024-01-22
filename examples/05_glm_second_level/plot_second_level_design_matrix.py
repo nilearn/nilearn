@@ -19,6 +19,7 @@ try:
 except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
+
 # %%
 # Create a simple experimental paradigm
 # -------------------------------------
@@ -53,8 +54,9 @@ design_matrix = make_second_level_design_matrix(
 # Let's plot it.
 from nilearn.plotting import plot_design_matrix
 
-ax = plot_design_matrix(design_matrix)
-ax.set_title("Second level design matrix", fontsize=12)
+fig, ax1 = plt.subplots(1, 1, figsize=(3, 4))
+ax = plot_design_matrix(design_matrix, ax=ax1)
 ax.set_ylabel("maps")
+ax.set_title("Second level design matrix", fontsize=12)
 plt.tight_layout()
 plt.show()

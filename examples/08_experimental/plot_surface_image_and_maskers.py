@@ -14,12 +14,14 @@ examples
     GitHub!
 
 """
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
 
 # %%
 
 from typing import Optional, Sequence
-
-from matplotlib import pyplot as plt
 
 from nilearn import plotting
 from nilearn.experimental import surface

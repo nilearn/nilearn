@@ -14,13 +14,14 @@ that have been defined via a standard GLM-based analysis.
 .. include:: ../../../examples/masker_note.rst
 
 """
+# Fetch data using nilearn dataset fetcher
+from nilearn import datasets
+from nilearn.plotting import show
 
 # %%
 # Load and prepare the data
 # -------------------------
 
-# Fetch data using nilearn dataset fetcher
-from nilearn import datasets
 
 # by default we fetch 2nd subject data for analysis
 haxby_dataset = datasets.fetch_haxby()
@@ -127,8 +128,6 @@ for mask_name in mask_names:
 # We make a simple bar plot to summarize the results
 # --------------------------------------------------
 import matplotlib.pyplot as plt
-
-from nilearn.plotting import show
 
 plt.figure()
 

@@ -63,16 +63,13 @@ _, models_run_imgs, models_events, models_confounds = \
 # We also need to get the :term:`TR` information.
 # For that we use the json sidecar file of the dataset's functional images.
 import json
-import os
+from pathlib import Path
 
-json_file = os.path.join(
-    data.data_dir,
-    'derivatives',
-    'sub-01',
-    'func',
-    'sub-01_task-languagelocalizer_desc-preproc_bold.json'
-)
-
+json_file = (Path(data.data_dir) /
+             'derivatives' /
+             'sub-01' /
+             'func' /
+             'sub-01_task-languagelocalizer_desc-preproc_bold.json')
 with open(json_file, 'r') as f:
     t_r = json.load(f)['RepetitionTime']
 

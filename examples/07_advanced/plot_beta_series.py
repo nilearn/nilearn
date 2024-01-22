@@ -61,8 +61,6 @@ to build the LSS beta series.
 # sphinx_gallery_thumbnail_number = -2
 
 # %%
-import matplotlib.pyplot as plt
-
 from nilearn import image, plotting
 
 # %%
@@ -102,6 +100,7 @@ glm_parameters["signal_scaling"] = standard_glm.scaling_axis
 # models.
 # We will just use the one created by
 # :func:`~nilearn.glm.first_level.first_level_from_bids`.
+import matplotlib.pyplot as plt
 
 standard_glm.fit(fmri_file, events_df)
 

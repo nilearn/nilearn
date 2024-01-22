@@ -33,10 +33,10 @@ References
 
     - Virgile Fritsch, Feb. 2014
 """
-
 # %%
 # Load Haxby dataset
 from nilearn import datasets, image
+from nilearn.plotting import plot_stat_map, show
 
 haxby_dataset = datasets.fetch_haxby(subjects=[2])
 
@@ -145,7 +145,6 @@ neg_log_pvals_bonferroni_unmasked = nifti_masker.inverse_transform(
 import matplotlib.pyplot as plt
 
 from nilearn.image import get_data
-from nilearn.plotting import plot_stat_map, show
 
 # Use the fMRI mean image as a surrogate of anatomical data
 mean_fmri_img = image.mean_img(func_filename)
