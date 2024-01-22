@@ -13,7 +13,7 @@ See :footcite:t:`Haxby2001`.
 
 Content
 -------
-The "simple" dataset includes
+The "simple" dataset includes:
     :'func': Nifti images with bold data
     :'session_target': Text file containing run data
     :'mask': Nifti images with employed mask
