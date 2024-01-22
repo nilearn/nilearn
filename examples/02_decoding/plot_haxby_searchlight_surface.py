@@ -5,7 +5,7 @@ Cortical surface-based searchlight decoding
 This is a demo for surface-based searchlight decoding, as described in:
 Chen, Y., Namburi, P., Elliott, L.T., Heinzle, J., Soon, C.S.,
 Chee, M.W.L., and Haynes, J.-D. (2011). Cortical surface-based
-searchlight decoding. NeuroImage 56, 582–592.
+searchlight decoding. NeuroImage 56, 582-592.
 
 """
 

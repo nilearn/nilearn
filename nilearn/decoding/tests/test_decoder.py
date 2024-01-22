@@ -19,6 +19,7 @@ import collections
 import numbers
 import warnings
 
+import nibabel
 import numpy as np
 import pytest
 import sklearn
@@ -1036,3 +1037,38 @@ def test_decoder_decision_function(binary_classification_data):
     X = model.masker_.transform(X)
     assert X.shape[1] == model.coef_.shape[1]
     model.decision_function(X)
+
+
+def test_decoder_strings_filepaths_input(
+    tiny_binary_classification_data, tmp_path
+):
+    """Smoke test for decoder methods to accept list of paths as input.
+
+    See https://github.com/nilearn/nilearn/issues/4226
+    """
+    X, y, _ = tiny_binary_classification_data
+    X_paths = [tmp_path / f"niimg{i}.nii" for i in range(X.shape[-1])]
+    for i, nii_path in enumerate(X_paths):
+        nibabel.save(X.slicer[..., i], nii_path)
+
+    model = Decoder(mask=NiftiMasker())
+    model.fit(X_paths, y)
+    model.predict(X_paths)
+    model.score(X_paths, y)
+
+
+def test_decoder_decision_function_raises_value_error(
+    binary_classification_data,
+):
+    """Test decision_function raises value error."""
+    X, y, _ = binary_classification_data
+
+    model = Decoder(mask=NiftiMasker())
+    model.fit(X, y)
+    X = model.masker_.transform(X)
+    X = np.delete(X, 0, axis=1)
+
+    with pytest.raises(
+        ValueError, match=f"X has {X.shape[1]} features per sample"
+    ):
+        model.decision_function(X)

@@ -15,6 +15,7 @@ NEW
 Fixes
 -----
 
+- :bdg-danger:`Deprecation` Make sure that all the fetchers for ``atlas`` and ``func`` from :mod:`nilearn.datasets` return a :class:`sklearn.utils.Bunch`. Add new behavior to :func:`~datasets.fetch_language_localizer_demo_dataset` to return output as ``Bunch``. This behavior will become the default in version 0.13.0 (:gh:`4233` by `Rémi Gau`_).
 - :bdg-dark:`Code` Make sure that all atlases and datasets fetchers return a description (:gh:`4215` `Rémi Gau`_).
 - :bdg-dark:`Code` Update the ``CompCor`` strategy in :func:`~interfaces.fmriprep.load_confounds` and :func:`~interfaces.fmriprep.load_confounds_strategy` to support ``fmriprep`` 21.x series and above. (:gh:`3285` by `Hao-Ting Wang`_).
 - :bdg-success:`API` :class:`~maskers.MultiNiftiMasker` can now call :meth:`~maskers.NiftiMasker.generate_report` which will generate a report for the first subject in the list of subjects (:gh:`4001` by `Yasmin Mzayek`_).
@@ -41,6 +42,7 @@ Enhancements
 - :bdg-primary:`Doc`  Specify full form of LSS in  :ref:`sphx_glr_auto_examples_07_advanced_plot_beta_series.py` (:gh:`4141` by `Tamer Gezici`_).
 - :bdg-primary:`Doc` Don't fetch tmaps in examples if tmaps aren't used in the example. (:gh:`4136` by `Christina Roßmanith`_).
 - :bdg-primary:`Doc` Describe the return value in :func:`~nilearn.datasets.fetch_abide_pcp` documentation (:gh:`4159` by `Suramya Pokharel`_).
+- :bdg-dark:`Code` Allow ``global_signal`` parameter in :func:`~interfaces.fmriprep.load_confounds_strategy` in ``denoise_strategy='compcor'`` (:gh:`4225` by `Hao-Ting Wang`_).
 
 Changes
 -------
@@ -53,7 +55,9 @@ Changes
 - :bdg-dark:`Code` Move user facing function ``concat_niimgs`` out of private module ``nilearn._utils.niimg_conversions`` (:gh:`4167` by `Rémi Gau`_).
 - :bdg-danger:`Deprecation` Rename the parameter ``contrast_type`` in :func:`~glm.compute_contrast` and attribute ``contrast_type`` in  :class:`~glm.Contrast` to ``stat_type`` (:gh:`4191` by `Rémi Gau`_).
 - :bdg-danger:`Deprecation` :func:`~plotting.plot_surf_roi` will raise a warning if ``roi_map`` contains negative or non-integer values; in version 0.13 this will be a ``ValueError`` (:gh:`4131` by `Michelle Wang`_).
+- :bdg-danger:`Deprecation` ``nilearn.datasets.fetch_bids_langloc_dataset`` will be deprecated in release 0.13 as it returns data simuilar to :func:`~.datasets.fetch_language_localizer_demo_dataset` (:gh:`4219` by `Rémi Gau`_).
 - :bdg-dark:`Code` Remove leading underscore from non private functions to align with PEP8 (:gh:`4086` by `Rémi Gau`_).
 - :bdg-dark:`Code` Make ``decoding/proximal_operator`` explicitly private to align with PEP8 (:gh:`4153` by `Rémi Gau`_).
 - :bdg-primary:`Doc` Combine GLM examples ``plot_fixed_effect`` and ``plot_fiac_analysis`` into a a single example ``plot_two_runs_model`` (:gh:`3191` by `Taylor Salo`_ and `Rémi Gau`_).
 - :bdg-dark:`Code` Make private functions public when used outside of their module ``nilearn.interface`` to align with PEP8 (:gh:`4168` by `Rémi Gau`_).
+- :bdg-danger:`Deprecation` the default parameter of ``fd_threshold`` and ``std_dvars_threshold`` in :func:`~interfaces.fmriprep.load_confounds` with be updated to match ``fmriprep`` default in version 0.13 (:gh:`4225` by `Hao-Ting Wang`_).

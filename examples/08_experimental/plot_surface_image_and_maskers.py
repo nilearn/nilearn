@@ -5,10 +5,12 @@ A short demo of the surface images & maskers
 Copied from the nilearn sandbox discussion, to be transformed into tests &
 examples.
 """
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
 
 # %%
-from matplotlib import pyplot as plt
-
 from nilearn import datasets, maskers, plotting
 
 

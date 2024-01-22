@@ -92,6 +92,7 @@ def suppress_specific_warning():
             "`legacy_format` will default to `False`.*|"
             "In release 0.13, this fetcher will return a dictionary.*|"
             "The default strategy for standardize.*|"
+            "The 'fetch_bids_langloc_dataset' function will be removed.*|"
         )
         warnings.filterwarnings(
             "ignore",

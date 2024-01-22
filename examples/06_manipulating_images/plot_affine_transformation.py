@@ -39,14 +39,15 @@ causes an error message, because `resample_img` will not know where to start
 the bounding box (there is no intelligent way of inferring this given the
 bounding box shape).
 """
-
-# %%
-# First make a simple synthetic image
-
 # Create the data with numpy
 import numpy as np
 
 from nilearn.image import get_data
+from nilearn.plotting import show
+
+# %%
+# First make a simple synthetic image
+
 
 grid = np.mgrid[0:192, 0:128]
 circle = (
@@ -122,8 +123,6 @@ img_4d_affine_in_mm_space = resample_img(
 # %%
 # Finally, visualize
 import matplotlib.pyplot as plt
-
-from nilearn.plotting import show
 
 plt.figure()
 plt.imshow(image, interpolation="nearest", vmin=0, vmax=vmax)

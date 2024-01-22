@@ -64,7 +64,12 @@ plotting.plot_img(more_smooth_anat_img)
 # -------------------------
 #
 # We can save any in-memory object as follows:
-more_smooth_anat_img.to_filename("more_smooth_anat_img.nii.gz")
+from pathlib import Path
+
+output_dir = Path.cwd() / "results" / "plot_nilearn_101"
+output_dir.mkdir(exist_ok=True, parents=True)
+print(f"Output will be saved to: {output_dir}")
+more_smooth_anat_img.to_filename(output_dir / "more_smooth_anat_img.nii.gz")
 
 # %%
 # Finally, calling plotting.show() is necessary to display the figure

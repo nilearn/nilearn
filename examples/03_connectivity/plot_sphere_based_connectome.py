@@ -25,6 +25,7 @@ We'll start by extracting signals from Default Mode Network regions and
 computing a connectome from them.
 
 """
+from nilearn import datasets, plotting
 
 # %%
 # Retrieve the brain development :term:`fMRI` dataset
@@ -33,7 +34,6 @@ computing a connectome from them.
 # We are going to use a subject from the development functional
 # connectivity dataset.
 
-from nilearn import datasets
 
 dataset = datasets.fetch_development_fmri(n_subjects=10)
 
@@ -134,9 +134,6 @@ partial_correlation_matrix = connectivity_measure.fit_transform([time_series])[
 #
 # We display the graph of connections with
 # `:func: nilearn.plotting.plot_connectome`.
-
-from nilearn import plotting
-
 plotting.plot_connectome(
     partial_correlation_matrix,
     dmn_coords,
