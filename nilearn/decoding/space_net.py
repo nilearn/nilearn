@@ -842,7 +842,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         """
         if isinstance(X, SurfaceImage) or isinstance(self.mask, SurfaceMasker):
             raise NotImplementedError(
-                "Running space net on surface objects is not yet supported."
+                "Running space net on surface objects is not supported."
             )
 
         # misc
