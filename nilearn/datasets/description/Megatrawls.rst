@@ -18,6 +18,10 @@ These matrices can be used to predict the relationships between subjects
 functional connectivity datasets and their behavioural measures. Both can be
 downloaded from HCP connectome website under conditions. See disclaimer below.
 
+More information available in :footcite:t:`Smith2015b`,
+:footcite:t:`Smith2015a`, :footcite:t:`Filippini2009`,
+:footcite:t:`Smith2014`, and :footcite:t:`Reilly2009`.
+
 
 Content
 -------
@@ -29,6 +33,9 @@ Content
 
 References
 ----------
+
+.. footbibliography::
+
 For more technical details about predicting the measures, refer to:
 Stephen Smith et al, HCP beta-release of the Functional Connectivity MegaTrawl.
 April 2015 "HCP500-MegaTrawl" release.

@@ -7,6 +7,8 @@ Notes
 zmaps for each subject of the raw dataset dataset available at
 https://openneuro.org/datasets/ds000005/versions/00001
 
+See :footcite:p:`Jimura2012`.
+
 Content
 -------
     :'zmaps':
@@ -16,7 +18,8 @@ Content
 
 References
 ----------
-See :footcite:p:`Jimura2012`.
+
+.. footbibliography::
 
 License
 -------

@@ -13,6 +13,9 @@ Institute (HHMI) at Harvard University, the Neuroinformatics Research
 Group (NRG) at Washington University School of Medicine, and the Biomedical
 Informatics Research Network (BIRN).
 
+For more information, see :footcite:t:`OASISbrain`,
+and :footcite:t:`Marcus2007`.
+
 Content
 -------
     :'gray_matter_maps': Nifti images with gray matter density probability
@@ -23,12 +26,12 @@ Content
 
 References
 ----------
+
+.. footbibliography::
+
 For more information about this dataset's structure:
 http://www.oasis-brains.org/
 
-Open Access Series of Imaging Studies (OASIS): Cross-sectional MRI
-Data in Young, Middle Aged, Nondemented, and Demented Older Adults.
-Marcus, D. S and al., 2007, Journal of Cognitive Neuroscience.
 
 License
 -------
