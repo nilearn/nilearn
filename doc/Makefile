@@ -44,8 +44,8 @@ clean:
 
 sym_links_datasets:
 	# copy datasets RST from nilearn package to doc folder
-	mkdir -p datasets/description
-	cd ../nilearn/datasets/description && cp -l *.rst ../../../doc/datasets/description
+	mkdir -p modules/description
+	cd ../nilearn/datasets/description && cp -l *.rst ../../../doc/modules/description
 
 sym_links:
 	# Make sym-links to share the cache across various example directories

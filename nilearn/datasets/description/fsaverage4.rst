@@ -1,9 +1,9 @@
-fsaverage4
-==========
+fsaverage4 template
+===================
 
 Notes
 -----
-Fsaverage4 standard surface as distributed with Freesurfer (Fischl et al, 1999)
+Fsaverage4 standard surface as distributed with Freesurfer (:footcite:t:`Fischl1999`).
 
 Content
 -------
@@ -29,8 +29,9 @@ Content
 
 References
 ----------
-Fischl et al, (1999). High-resolution intersubject averaging and a
-coordinate system for the cortical surface. Hum Brain Mapp 8, 272-284.
+
+.. footbibliography::
+
 
 License
 -------

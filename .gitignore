@@ -57,9 +57,9 @@ doc/.nojekyll
 doc/_build/
 doc/auto_examples/
 doc/building_blocks/generated/
-doc/datasets/description
 doc/generated/
 doc/modules/generated/
+doc/modules/description
 doc/sg_execution_times.rst
 doc/themes/nilearn/static/jquery.js
 

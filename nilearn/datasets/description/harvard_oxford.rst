@@ -1,4 +1,4 @@
-Harvard Oxford Atlas
+Harvard Oxford atlas
 ====================
 
 Notes

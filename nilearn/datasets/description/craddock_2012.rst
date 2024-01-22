@@ -1,9 +1,11 @@
-Craddock 2012
-=============
+Craddock 2012 atlas
+===================
 
 
 Notes
 -----
+Atlas from (:footcite:t:`Craddock2012`).
+
 Collection of regions of interest (ROI) that have been generated from applying
 spatially constrained clustering on :term:`resting-state` data.
 
@@ -25,13 +27,11 @@ Content
 
 References
 ----------
-For more information on this dataset's structure, see
-http://www.nitrc.org/projects/cluster_roi/
 
-Craddock, R. Cameron, G.Andrew James, Paul E. Holtzheimer, Xiaoping P. Hu,
-and Helen S. Mayberg. "A Whole Brain fMRI Atlas Generated via Spatially
-Constrained Spectral Clustering". Human Brain Mapping 33, no 8 (2012):
-1914-1928. doi:10.1002/hbm.21333.
+.. footbibliography::
+
+For more information on this dataset's structure,
+see http://www.nitrc.org/projects/cluster_roi/
 
 
 License

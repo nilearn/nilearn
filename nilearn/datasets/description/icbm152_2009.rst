@@ -1,5 +1,5 @@
-ICBM 152 Atlas
-==============
+ICBM 152 template
+=================
 
 
 Notes

@@ -30,6 +30,19 @@ Templates
    load_mni152_wm_mask
    load_mni152_wm_template
 
+Templates descriptions
+^^^^^^^^^^^^^^^^^^^^^^
+
+.. toctree::
+    :titlesonly:
+
+    description/icbm152_2009.rst
+    description/fsaverage.rst
+    description/fsaverage3.rst
+    description/fsaverage4.rst
+    description/fsaverage5.rst
+    description/fsaverage6.rst
+
 Atlases
 -------
 
@@ -60,6 +73,30 @@ Atlases
    fetch_coords_power_2011
    fetch_coords_seitzman_2018
 
+Atlases descriptions
+^^^^^^^^^^^^^^^^^^^^
+
+.. toctree::
+    :titlesonly:
+
+    description/aal_SPM12.rst
+    description/allen_rsn_2011.rst
+    description/basc_multiscale_2015.rst
+    description/craddock_2012.rst
+    description/difumo_atlases.rst
+    description/harvard_oxford.rst
+    description/juelich.rst
+    description/msdl_atlas.rst
+    description/pauli_2017.rst
+    description/schaefer_2018.rst
+    description/smith_2009.rst
+    description/destrieux_surface.rst
+    description/talairach_atlas.rst
+    description/yeo_2011.rst
+    description/dosenbach_2010.rst
+    description/power_2011.rst
+    description/seitzman_2018.rst
+
 Preprocessed datasets
 ---------------------
 
@@ -86,6 +123,28 @@ Preprocessed datasets
    fetch_spm_multimodal_fmri
    fetch_surf_nki_enhanced
 
+Datasets descriptions
+^^^^^^^^^^^^^^^^^^^^^
+
+.. toctree::
+    :titlesonly:
+
+    description/ABIDE_pcp.rst
+    description/adhd.rst
+    description/bids_langloc.rst
+    description/development_fmri.rst
+    description/fiac.rst
+    description/haxby2001.rst
+    description/language_localizer_demo.rst
+    description/localizer_first_level.rst
+    description/miyawaki2008.rst
+    description/spm_auditory.rst
+    description/spm_multimodal.rst
+    description/nki_enhanced_surface.rst
+
+    description/neurovault.rst
+    description/brainomics_localizer.rst
+
 Statistical maps/derivatives
 ----------------------------
 
@@ -106,6 +165,16 @@ Statistical maps/derivatives
    fetch_neurovault_auditory_computation_task
    fetch_neurovault_motor_task
 
+Statistical maps/derivatives descriptions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. toctree::
+    :titlesonly:
+
+    description/Megatrawls.rst
+    description/mixed_gambles.rst
+    description/oasis1.rst
+
 General functions
 -----------------
 
@@ -124,3 +193,11 @@ General functions
    patch_openneuro_dataset
    select_from_index
    load_sample_motor_activation_image
+
+General functions descriptions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. toctree::
+    :titlesonly:
+
+    description/neurovault.rst

@@ -305,7 +305,6 @@ Featured examples
    auto_examples/index.rst
    user_guide.rst
    modules/index.rst
-   datasets/index.rst
    glossary.rst
 
 .. toctree::

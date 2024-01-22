@@ -1,5 +1,5 @@
-Allen 2011
-==========
+Allen 2011 atlas
+================
 
 
 Notes
@@ -13,8 +13,7 @@ Content
     :"maps": T-maps of all 75 unthresholded components.
     :"rsn28": T-maps of 28 RSNs included in E. Allen et al.
     :"networks": string list containing the names for the 28 RSNs.
-    :"rsn_indices": dict[rsn_name] -> list of int, indices in the "maps"
-                    file of the 28 RSNs.
+    :"rsn_indices": dict[rsn_name] -> list of int, indices in the "maps" file of the 28 RSNs.
     :"comps": The aggregate :term:`ICA` Components.
 
 References

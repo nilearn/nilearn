@@ -1,5 +1,5 @@
-AAl atlas for SPM 12
-====================
+AAL atlas
+=========
 
 
 Notes
