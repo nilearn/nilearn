@@ -137,11 +137,11 @@ class SurfaceImage:
 
     Parameters
     ----------
-    mesh : :obj:`dict`[:obj:`str`, mesh object]
+    mesh : dict[str, mesh object]
         A dictionary relating hemispheres represented by string keys to
         their geometry represented by a mesh.
 
-    data : :obj:`dict`[:obj:`str`, :class:`numpy.ndarray`]
+    data : dict[str, numpy.ndarray]
         A dictionary relating hemispheres represented by string keys to
         their surface data.
 
