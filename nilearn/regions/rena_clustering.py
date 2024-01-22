@@ -239,10 +239,6 @@ def _make_edges_and_weights_surface(X, mask_img):
         shape: (n_edges,).
 
     """
-    # TODO: Handle parts together or separately?
-    # Using face indices to calculate edges; issue of overlapping indices
-    # values in separate hemispheres so outputting edges and weights
-    # separately for each defined surface part
     weights = {}
     edges = {}
     len_previous_mask = 0
@@ -297,14 +293,18 @@ def _weighted_connectivity_graph(X, mask_img):
 
     if isinstance(mask_img, SurfaceImage):
         edges, weight = _make_edges_and_weights_surface(X, mask_img)
+        connectivity = coo_matrix((n_features, n_features))
+        for part in mask_img.mesh.keys():
+            conn_temp = coo_matrix(
+                (weight[part], edges[part]), (n_features, n_features)
+            ).tocsr()
+            connectivity += conn_temp
     else:
         edges, weight = _make_edges_and_weights(X, mask_img)
 
-    # TODO : deal with dict results if surface analysis
-
-    connectivity = coo_matrix(
-        (weight, edges), (n_features, n_features)
-    ).tocsr()
+        connectivity = coo_matrix(
+            (weight, edges), (n_features, n_features)
+        ).tocsr()
 
     # Making it symmetrical
     connectivity = (connectivity + connectivity.T) / 2
