@@ -36,11 +36,6 @@ Vincent Michel, Alexandre Gramfort, Gael Varoquaux, Evelyn Eger,
 The big picture discussion corresponding to this example can be found
 in the documentation section :ref:`parcellating_brain`.
 """
-try:
-    import matplotlib.pyplot as plt
-except ImportError:
-    raise RuntimeError("This script needs the matplotlib library")
-
 # %%
 # Download a brain development fMRI dataset and turn it to a data matrix
 # ----------------------------------------------------------------------
@@ -305,7 +300,7 @@ print(f"... each cluster should contain {voxel_ratio} voxels")
 # Let's plot clusters sizes distributions for both algorithms
 #
 # You can just skip the plotting code, the important part is the figure
-
+import matplotlib.pyplot as plt
 
 bins = np.concatenate(
     [

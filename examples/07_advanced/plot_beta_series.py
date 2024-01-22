@@ -58,11 +58,6 @@ to build the LSS beta series.
 .. include:: ../../../examples/masker_note.rst
 
 """
-try:
-    import matplotlib.pyplot as plt
-except ImportError:
-    raise RuntimeError("This script needs the matplotlib library")
-
 # sphinx_gallery_thumbnail_number = -2
 
 # %%
@@ -105,6 +100,7 @@ glm_parameters["signal_scaling"] = standard_glm.scaling_axis
 # models.
 # We will just use the one created by
 # :func:`~nilearn.glm.first_level.first_level_from_bids`.
+import matplotlib.pyplot as plt
 
 standard_glm.fit(fmri_file, events_df)
 

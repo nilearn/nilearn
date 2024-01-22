@@ -7,15 +7,11 @@ estimation of connectivity structure for a synthetic dataset.
 
 """
 
-# %%
-try:
-    import matplotlib.pyplot as plt
-except ImportError:
-    raise RuntimeError("This script needs the matplotlib library")
+from nilearn import plotting
 
+# %%
 # Generate synthetic data
 from nilearn._utils.data_gen import generate_group_sparse_gaussian_graphs
-from nilearn.plotting import show
 
 n_subjects = 20
 n_displayed = 3
@@ -29,7 +25,7 @@ subjects, precisions, _ = generate_group_sparse_gaussian_graphs(
 
 # %%
 # Run connectome estimations and plot the results
-from nilearn import plotting
+import matplotlib.pyplot as plt
 
 fig = plt.figure(figsize=(10, 7))
 plt.subplots_adjust(hspace=0.4)
@@ -111,6 +107,6 @@ plotting.plot_matrix(
 )
 plt.title(f"graph lasso, all subjects\n$\\alpha={gl.alpha_:.2f}$")
 
-show()
+plotting.show()
 
 # sphinx_gallery_dummy_images=1

@@ -24,11 +24,6 @@ At the group level, such a mapping is not possible. Yet, we may
 observe some significant effects in these areas.
 
 """
-try:
-    import matplotlib.pyplot as plt
-except ImportError:
-    raise RuntimeError("This script needs the matplotlib library")
-
 # %%
 import pandas as pd
 
@@ -88,13 +83,15 @@ paired_design_matrix = pd.DataFrame(
 
 # %%
 # and plot the designs.
-from nilearn.plotting import plot_design_matrix
+import matplotlib.pyplot as plt
 
 _, (ax_unpaired, ax_paired) = plt.subplots(
     1, 2, gridspec_kw={"width_ratios": [1, 17]}
 )
-plot_design_matrix(unpaired_design_matrix, rescale=False, ax=ax_unpaired)
-plot_design_matrix(paired_design_matrix, rescale=False, ax=ax_paired)
+plotting.plot_design_matrix(
+    unpaired_design_matrix, rescale=False, ax=ax_unpaired
+)
+plotting.plot_design_matrix(paired_design_matrix, rescale=False, ax=ax_paired)
 ax_unpaired.set_title("unpaired design", fontsize=12)
 ax_paired.set_title("paired design", fontsize=12)
 plt.tight_layout()
