@@ -18,6 +18,7 @@ More specifically:
    Notice that in this case the preprocessed :term:`bold<BOLD>`
    images were already normalized to the same :term:`MNI` space.
 """
+from nilearn import plotting
 
 # %%
 # Fetch example :term:`BIDS` dataset
@@ -30,11 +31,11 @@ More specifically:
 # confounds.tsv files.
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 
-data_dir, _ = fetch_language_localizer_demo_dataset()
+data = fetch_language_localizer_demo_dataset(legacy_output=False)
 
 # %%
 # Here is the location of the dataset on disk.
-print(data_dir)
+print(data.data_dir)
 
 # %%
 # Obtain automatically FirstLevelModel objects and fit arguments
@@ -57,7 +58,7 @@ task_label = "languagelocalizer"
     models_events,
     models_confounds,
 ) = first_level_from_bids(
-    data_dir, task_label, img_filters=[("desc", "preproc")], n_jobs=2
+    data.data_dir, task_label, img_filters=[("desc", "preproc")], n_jobs=2
 )
 
 # %%
@@ -68,9 +69,9 @@ task_label = "languagelocalizer"
 
 # %%
 # We just expect one run_img per subject.
-import os
+from pathlib import Path
 
-print([os.path.basename(run) for run in models_run_imgs[0]])
+print([Path(run).name for run in models_run_imgs[0]])
 
 # %%
 # The only confounds stored are regressors obtained from motion correction. As
@@ -102,8 +103,6 @@ p001_unc = norm.isf(0.001)
 # %%
 # Prepare figure for concurrent plot of individual maps.
 import matplotlib.pyplot as plt
-
-from nilearn import plotting
 
 fig, axes = plt.subplots(nrows=2, ncols=5, figsize=(8, 4.5))
 model_and_args = zip(models, models_run_imgs, models_events, models_confounds)

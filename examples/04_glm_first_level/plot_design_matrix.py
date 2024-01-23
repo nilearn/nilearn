@@ -9,18 +9,13 @@ Three examples of design matrices specification and computation for first-level
 This examples requires matplotlib.
 
 """
-
-# %%
-try:
-    import matplotlib.pyplot as plt
-except ImportError:
-    raise RuntimeError("This script needs the matplotlib library")
-
 # %%
 # Define parameters
 # -----------------
 # At first, we define parameters related to the images acquisition.
 import numpy as np
+
+from nilearn.plotting import plot_design_matrix
 
 tr = 1.0  # repetition time is 1 second
 n_scans = 128  # the acquisition comprises 128 scans
@@ -106,7 +101,7 @@ X3 = make_first_level_design_matrix(
 
 # %%
 # Here are the three designs side by side.
-from nilearn.plotting import plot_design_matrix
+import matplotlib.pyplot as plt
 
 fig, (ax1, ax2, ax3) = plt.subplots(figsize=(10, 6), nrows=1, ncols=3)
 plot_design_matrix(X1, ax=ax1)

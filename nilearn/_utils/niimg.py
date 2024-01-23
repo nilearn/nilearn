@@ -60,7 +60,8 @@ def safe_get_data(img, ensure_finite=False, copy_data=False):
         if non_finite_mask.sum() > 0:  # any non_finite_mask values?
             warn(
                 "Non-finite values detected. "
-                "These values will be replaced with zeros."
+                "These values will be replaced with zeros.",
+                stacklevel=2,
             )
             data[non_finite_mask] = 0
 

@@ -52,9 +52,7 @@ ____
     - Andres Hoyos-Idrobo, Apr 2017
 
 """
-
 # %%
-import matplotlib.pyplot as plt
 import numpy as np
 
 from nilearn import datasets
@@ -165,6 +163,8 @@ show()
 # %%
 # Visualize the quality of predictions
 # ------------------------------------
+import matplotlib.pyplot as plt
+
 plt.figure(figsize=(6, 4.5))
 plt.suptitle(f"Decoder: Mean Absolute Error {prediction_score:.2f} years")
 linewidth = 3

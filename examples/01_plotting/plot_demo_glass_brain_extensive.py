@@ -93,7 +93,7 @@ plot_glass_brain(
 # colorbar will not be centered around zero.
 
 # only plot positive values
-plotting.plot_glass_brain(
+plot_glass_brain(
     stat_img,
     colorbar=True,
     plot_abs=False,
@@ -107,7 +107,7 @@ plotting.plot_glass_brain(
 # %%
 # Here we set ``vmin`` to the threshold to use the full color range instead of
 # losing colours due to the thresholding.
-plotting.plot_glass_brain(
+plot_glass_brain(
     stat_img,
     colorbar=True,
     plot_abs=False,

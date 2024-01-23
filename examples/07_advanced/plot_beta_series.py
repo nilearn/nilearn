@@ -61,8 +61,6 @@ to build the LSS beta series.
 # sphinx_gallery_thumbnail_number = -2
 
 # %%
-import matplotlib.pyplot as plt
-
 from nilearn import image, plotting
 
 # %%
@@ -73,10 +71,10 @@ from nilearn import image, plotting
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
 
-data_dir, _ = fetch_language_localizer_demo_dataset()
+data = fetch_language_localizer_demo_dataset(legacy_output=False)
 
 models, models_run_imgs, events_dfs, models_confounds = first_level_from_bids(
-    data_dir,
+    data.data_dir,
     "languagelocalizer",
     img_filters=[("desc", "preproc")],
     n_jobs=2,
@@ -102,6 +100,7 @@ glm_parameters["signal_scaling"] = standard_glm.scaling_axis
 # models.
 # We will just use the one created by
 # :func:`~nilearn.glm.first_level.first_level_from_bids`.
+import matplotlib.pyplot as plt
 
 standard_glm.fit(fmri_file, events_df)
 

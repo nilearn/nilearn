@@ -32,11 +32,10 @@ Note that more power would be obtained from using a larger sample of subjects.
     - Gael Varoquaux, Apr 2014
 
 """
-
 # %%
 # Load Oasis dataset
 # ------------------
-from nilearn import datasets
+from nilearn import datasets, plotting
 
 n_subjects = 100  # more subjects requires more memory
 
@@ -90,13 +89,14 @@ design_matrix = pd.DataFrame(
     columns=["age", "sex", "intercept"],
 )
 
+from matplotlib import pyplot as plt
+
 # %%
 # Let's plot the design matrix.
-from nilearn import plotting
-
-ax = plotting.plot_design_matrix(design_matrix)
-ax.set_title("Second level design matrix", fontsize=12)
+fig, ax1 = plt.subplots(1, 1, figsize=(4, 8))
+ax = plotting.plot_design_matrix(design_matrix, ax=ax1)
 ax.set_ylabel("maps")
+fig.suptitle("Second level design matrix")
 
 # %%
 # Next, we specify and fit the second-level model when loading the data and
@@ -127,14 +127,16 @@ from nilearn.glm import threshold_stats_img
 _, threshold = threshold_stats_img(z_map, alpha=0.05, height_control="fdr")
 print(f"The FDR=.05-corrected threshold is: {threshold:03g}")
 
+fig = plt.figure(figsize=(5, 3))
 display = plotting.plot_stat_map(
     z_map,
     threshold=threshold,
     colorbar=True,
     display_mode="z",
     cut_coords=[-4, 26],
-    title="age effect on gray matter density (FDR = .05)",
+    figure=fig,
 )
+fig.suptitle("age effect on gray matter density (FDR = .05)")
 plotting.show()
 
 # %%
@@ -176,5 +178,10 @@ report = make_glm_report(
 # We have several ways to access the report:
 
 # report  # This report can be viewed in a notebook
-# report.save_as_html('report.html')
 # report.open_in_browser()
+
+# or we can save as an html file
+# from pathlib import Path
+# output_dir = Path.cwd() / "results" / "plot_oasis"
+# output_dir.mkdir(exist_ok=True, parents=True)
+# report.save_as_html(output_dir / 'report.html')

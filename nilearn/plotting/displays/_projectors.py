@@ -189,7 +189,8 @@ class OrthoProjector(OrthoSlicer):
             symmetric = False
             warnings.warn(
                 "'adjacency_matrix' is not symmetric. "
-                "A directed graph will be plotted."
+                "A directed graph will be plotted.",
+                stacklevel=3,
             )
 
         # For a masked array, masked values are replaced with zeros
