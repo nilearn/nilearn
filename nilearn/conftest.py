@@ -360,7 +360,7 @@ def mini_mesh():
 
 
 @pytest.fixture
-def make_mini_img(mini_mesh):
+def make_mini_surf_img(mini_mesh):
     """Small surface image for tests."""
 
     def f(shape=()):
@@ -377,16 +377,16 @@ def make_mini_img(mini_mesh):
 
 
 @pytest.fixture
-def mini_mask(mini_img):
+def mini_surf_mask(mini_surf_img):
     """Small surface mask."""
-    data = {k: (v > v.ravel()[0]) for k, v in mini_img.data.items()}
-    return SurfaceImage(mini_img.mesh, data)
+    data = {k: (v > v.ravel()[0]) for k, v in mini_surf_img.data.items()}
+    return SurfaceImage(mini_surf_img.mesh, data)
 
 
 @pytest.fixture
-def mini_img(make_mini_img):
+def mini_surf_img(make_mini_surf_img):
     """Small surface image for tests."""
-    return make_mini_img()
+    return make_mini_surf_img()
 
 
 @pytest.fixture
@@ -404,7 +404,7 @@ def flip():
 
 
 @pytest.fixture
-def flip_img(flip):
+def flip_surf_img(flip):
     """Reorder dictionary keys by putting the last key as the first for mesh \
        and data parts of SurfaceImage object."""
 
