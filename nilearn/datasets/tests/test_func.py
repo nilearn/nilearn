@@ -516,7 +516,8 @@ def test_fetch_megatrawls_netmats(tmp_path):
     assert netmats_data.matrices == "full_correlation"
 
 
-def test_fetch_surf_nki_enhanced(tmp_path, request_mocker):
+@pytest.fixture()
+def mock_surf_nki_enhanced(tmp_path, request_mocker):
     ids = np.asarray(
         [
             "A00028185",
@@ -541,7 +542,11 @@ def test_fetch_surf_nki_enhanced(tmp_path, request_mocker):
     request_mocker.url_mapping["*pheno_nki_nilearn.csv"] = pheno_data.to_csv(
         index=False
     )
-    nki_data = func.fetch_surf_nki_enhanced(data_dir=tmp_path)
+    return tmp_path
+
+
+def test_fetch_surf_nki_enhanced(mock_surf_nki_enhanced):
+    nki_data = func.fetch_surf_nki_enhanced(data_dir=mock_surf_nki_enhanced)
 
     assert isinstance(nki_data, Bunch)
     assert nki_data.description != ""
@@ -550,6 +555,14 @@ def test_fetch_surf_nki_enhanced(tmp_path, request_mocker):
     assert isinstance(nki_data.phenotypic, np.ndarray)
     assert nki_data.phenotypic.shape == (10,)
     assert nki_data.description != ""
+
+
+@pytest.mark.xfail(reason="mocking generates empty files")
+def test_load_sample_surf_nki_enhanced(mock_surf_nki_enhanced):
+    """Smoke test to load directly nki surface dataset surface data."""
+    func.load_sample_surf_nki_enhanced(
+        n_subjects=1, data_dir=mock_surf_nki_enhanced
+    )
 
 
 def _mock_participants_data(n_ids=5):

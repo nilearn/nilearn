@@ -1802,7 +1802,10 @@ def fetch_surf_nki_enhanced(
     )
 
 
-def load_sample_surf_nki_enhanced(n_subjects=1):
+@fill_doc
+def load_sample_surf_nki_enhanced(
+    n_subjects=1, data_dir=None, url=None, resume=True, verbose=1
+):
     """Load NKI enhanced surface data into a list of SurfaceImage objects.
 
     Parameters
@@ -1811,13 +1814,23 @@ def load_sample_surf_nki_enhanced(n_subjects=1):
         The number of subjects to load from maximum of 102 subjects.
         By default, 1 subject will be loaded. If None is given,
         all 102 subjects will be loaded.
+    %(data_dir)s
+    %(url)s
+    %(resume)s
+    %(verbose)s
 
     Returns
     -------
     images : :obj:`list` of SurfaceImage objects
     """
-    fsaverage = load_surf_fsaverage("fsaverage5")
-    nki_dataset = fetch_surf_nki_enhanced(n_subjects=n_subjects)
+    fsaverage = load_surf_fsaverage("fsaverage5", data_dir=data_dir)
+    nki_dataset = fetch_surf_nki_enhanced(
+        n_subjects=n_subjects,
+        data_dir=data_dir,
+        url=url,
+        resume=resume,
+        verbose=verbose,
+    )
     images = []
     for left, right in zip(
         nki_dataset["func_left"], nki_dataset["func_right"]
