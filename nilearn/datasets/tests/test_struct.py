@@ -189,14 +189,15 @@ def test_load_surf_fsaverage_wrong_mesh_name():
         struct.load_surf_fsaverage(mesh="foo")
 
 
-def test_load_surf_fsaverage_hemispheres_have_file():
-    """Make sure file paths are present."""
+def test_load_surf_fsaverage_hemispheres_all_meshes_loaded():
+    """Make all meshes are loaded."""
+    meshes = ["pial", "white_matter", "inflated", "flat", "sphere"]
     result = struct.load_surf_fsaverage()
     left_hemisphere_meshes = [
         mesh for mesh in result.values() if "left_hemisphere" in mesh
     ]
-    assert len(left_hemisphere_meshes) > 0
+    assert len(left_hemisphere_meshes) == len(meshes)
     right_hemisphere_meshes = [
         mesh for mesh in result.values() if "right_hemisphere" in mesh
     ]
-    assert len(right_hemisphere_meshes) > 0
+    assert len(right_hemisphere_meshes) == len(meshes)

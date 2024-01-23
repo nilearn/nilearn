@@ -948,8 +948,9 @@ def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
         )
 
 
-def load_surf_fsaverage(mesh="fsaverage5"):
-    """Load several fsaverage mesh types for both hemispheres.
+@fill_doc
+def load_surf_fsaverage(mesh="fsaverage5", data_dir=None):
+    """Load all fsaverage mesh types for both hemispheres.
 
     Parameters
     ----------
@@ -957,16 +958,22 @@ def load_surf_fsaverage(mesh="fsaverage5"):
         Which :term:`mesh` to fetch.
         Should be one of the following values:
         %(fsaverage_options)s
+    %(data_dir)s
 
     Returns
     -------
     meshes : :obj:`dict` of FileMesh objects
     """
-    fsaverage = fetch_surf_fsaverage(mesh)
+    fsaverage = fetch_surf_fsaverage(mesh, data_dir=data_dir)
     meshes = {}
 
-    # TODO load all types
-    renaming = {"pial": "pial", "white": "white_matter", "infl": "inflated"}
+    renaming = {
+        "pial": "pial",
+        "white": "white_matter",
+        "infl": "inflated",
+        "flat": "flat",
+        "sphere": "sphere",
+    }
     for mesh_type, mesh in renaming.items():
         meshes[mesh] = {}
         for hemisphere in "left", "right":
