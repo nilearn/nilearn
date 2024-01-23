@@ -1843,15 +1843,22 @@ def fetch_atlas_surf_destrieux(
     )
 
 
-def load_sample_atlas_surf_destrieux():
+def load_sample_atlas_surf_destrieux(
+    data_dir=None, mesh="fsaverage5", url=None, resume=True, verbose=1
+):
     """Load Destrieux surface atlas into a surface object.
 
     Returns
     -------
     tuple containing SurfaceImage object and dict of labels
     """
-    fsaverage = load_surf_fsaverage("fsaverage5")
-    destrieux = fetch_atlas_surf_destrieux()
+    fsaverage = load_surf_fsaverage(mesh=mesh, data_dir=data_dir)
+    destrieux = fetch_atlas_surf_destrieux(
+        data_dir=data_dir,
+        url=url,
+        resume=resume,
+        verbose=verbose,
+    )
     label_names = {
         i: label.decode("utf-8") for (i, label) in enumerate(destrieux.labels)
     }

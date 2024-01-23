@@ -668,7 +668,8 @@ def test_fetch_atlas_allen_2011(tmp_path, request_mocker):
     assert bunch.description != ""
 
 
-def test_fetch_atlas_surf_destrieux(tmp_path):
+@pytest.fixture
+def mock_atlas_surf_destrieux(tmp_path):
     data_dir = str(tmp_path / "destrieux_surface")
     os.mkdir(data_dir)
     # Create mock annots
@@ -679,8 +680,13 @@ def test_fetch_atlas_surf_destrieux(tmp_path):
             np.zeros((4, 5)),
             5 * ["a"],
         )
+    return tmp_path
 
-    bunch = atlas.fetch_atlas_surf_destrieux(data_dir=tmp_path, verbose=0)
+
+def test_fetch_atlas_surf_destrieux(mock_atlas_surf_destrieux):
+    bunch = atlas.fetch_atlas_surf_destrieux(
+        data_dir=mock_atlas_surf_destrieux, verbose=0
+    )
 
     assert isinstance(bunch, Bunch)
 
@@ -689,6 +695,11 @@ def test_fetch_atlas_surf_destrieux(tmp_path):
     assert bunch.map_left.shape == (4,)
     assert bunch.map_right.shape == (4,)
     assert bunch.description != ""
+
+
+@pytest.mark.xfail(reason="improper mock data shape")
+def test_load_sample_atlas_surf_destrieux(mock_atlas_surf_destrieux):
+    atlas.load_sample_atlas_surf_destrieux(data_dir=mock_atlas_surf_destrieux)
 
 
 def _get_small_fake_talairach():

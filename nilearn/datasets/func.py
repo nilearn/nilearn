@@ -1804,7 +1804,12 @@ def fetch_surf_nki_enhanced(
 
 @fill_doc
 def load_sample_surf_nki_enhanced(
-    n_subjects=1, data_dir=None, url=None, resume=True, verbose=1
+    n_subjects=1,
+    data_dir=None,
+    mesh="fsaverage5",
+    url=None,
+    resume=True,
+    verbose=1,
 ):
     """Load NKI enhanced surface data into a list of SurfaceImage objects.
 
@@ -1823,7 +1828,7 @@ def load_sample_surf_nki_enhanced(
     -------
     images : :obj:`list` of SurfaceImage objects
     """
-    fsaverage = load_surf_fsaverage("fsaverage5", data_dir=data_dir)
+    fsaverage = load_surf_fsaverage(mesh=mesh, data_dir=data_dir)
     nki_dataset = fetch_surf_nki_enhanced(
         n_subjects=n_subjects,
         data_dir=data_dir,
