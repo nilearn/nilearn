@@ -1820,6 +1820,10 @@ def load_sample_surf_nki_enhanced(
         By default, 1 subject will be loaded. If None is given,
         all 102 subjects will be loaded.
     %(data_dir)s
+    mesh : :obj:`str`, default='fsaverage5'
+        Which :term:`mesh` to fetch.
+        Should be one of the following values:
+        %(fsaverage_options)s
     %(url)s
     %(resume)s
     %(verbose)s

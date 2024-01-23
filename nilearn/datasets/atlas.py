@@ -1843,10 +1843,22 @@ def fetch_atlas_surf_destrieux(
     )
 
 
+@fill_doc
 def load_sample_atlas_surf_destrieux(
     data_dir=None, mesh="fsaverage5", url=None, resume=True, verbose=1
 ):
     """Load Destrieux surface atlas into a surface object.
+
+    Parameters
+    ----------
+    %(data_dir)s
+    mesh : :obj:`str`, default='fsaverage5'
+        Which :term:`mesh` to fetch.
+        Should be one of the following values:
+        %(fsaverage_options)s
+    %(url)s
+    %(resume)s
+    %(verbose)s
 
     Returns
     -------
