@@ -412,29 +412,3 @@ def flip_img(flip):
         return SurfaceImage(flip(img.mesh), flip(img.data))
 
     return f
-
-
-@pytest.fixture
-def assert_img_equal():
-    """Check two surface image objects are equivalent."""
-
-    def f(img_1, img_2):
-        assert set(img_1.data.keys()) == set(img_2.data.keys())
-        for key in img_1.data:
-            assert np.array_equal(img_1.data[key], img_2.data[key])
-
-    return f
-
-
-@pytest.fixture
-def drop_img_part():
-    """Drop right hemisphere part of surface image object."""
-
-    def f(img, part_name="right_hemisphere"):
-        mesh = img.mesh.copy()
-        mesh.pop(part_name)
-        data = img.data.copy()
-        data.pop(part_name)
-        return SurfaceImage(mesh, data)
-
-    return f
