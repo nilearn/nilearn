@@ -12,7 +12,7 @@ def plot_surf(img, parts=None, mesh=None, views=["lateral"], **kwargs):
     if mesh is None:
         mesh = img.mesh
     if parts is None:
-        parts = list(img.data.keys())
+        parts = list(img.data.parts.keys())
     fig, axes = plt.subplots(
         len(views),
         len(parts),
@@ -23,8 +23,8 @@ def plot_surf(img, parts=None, mesh=None, views=["lateral"], **kwargs):
     for view, ax_row in zip(views, axes):
         for ax, mesh_part in zip(ax_row, parts):
             old_plotting.plot_surf(
-                mesh[mesh_part],
-                img.data[mesh_part],
+                mesh.parts[mesh_part],
+                img.data.parts[mesh_part],
                 hemi=mesh_part,
                 view=view,
                 axes=ax,

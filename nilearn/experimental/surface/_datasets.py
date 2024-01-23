@@ -8,7 +8,6 @@ from nilearn import datasets
 from nilearn.experimental.surface import _io
 from nilearn.experimental.surface._surface_image import (
     FileMesh,
-    Mesh,
     PolyMesh,
     SurfaceImage,
 )
@@ -17,14 +16,15 @@ from nilearn.experimental.surface._surface_image import (
 def load_fsaverage(mesh_name: str = "fsaverage5") -> Dict[str, PolyMesh]:
     """Load several fsaverage mesh types for both hemispheres."""
     fsaverage = datasets.fetch_surf_fsaverage(mesh_name)
-    meshes: Dict[str, Dict[str, Mesh]] = {}
+    meshes: Dict[str, PolyMesh] = {}
     renaming = {"pial": "pial", "white": "white_matter", "infl": "inflated"}
     for mesh_type, mesh_name in renaming.items():
-        meshes[mesh_name] = {}
+        parts = {}
         for hemisphere in "left", "right":
-            meshes[mesh_name][hemisphere] = FileMesh(
+            parts[hemisphere] = FileMesh(
                 fsaverage[f"{mesh_type}_{hemisphere}"]
             )
+        meshes[mesh_name] = PolyMesh(**parts)
     return meshes
 
 
