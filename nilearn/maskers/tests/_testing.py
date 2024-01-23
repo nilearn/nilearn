@@ -2,6 +2,7 @@
 
 from numpy import array_equal
 
+from nilearn._utils.testing import put_last_key_as_first
 from nilearn.surface import SurfaceImage
 
 
@@ -19,3 +20,11 @@ def drop_hemisphere_surf_img(img, hemisphere="right_hemisphere"):
     data = img.data.copy()
     data.pop(hemisphere)
     return SurfaceImage(mesh, data)
+
+
+def flip_surf_img(img):
+    """Reorder dictionary keys by putting the last key as the first for mesh \
+       and data parts of SurfaceImage object."""
+    return SurfaceImage(
+        put_last_key_as_first(img.mesh), put_last_key_as_first(img.data)
+    )

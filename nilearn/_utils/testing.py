@@ -197,3 +197,21 @@ def skip_if_running_tests(msg=""):
     """
     if are_tests_running():
         pytest.skip(msg)
+
+
+def put_last_key_as_first(parts):
+    """Reorder dictionary keys by putting the last key as the first.
+
+    Parameters
+    ----------
+    parts : dict
+
+    Returns
+    -------
+    parts : dict with keys flip
+    """
+    if not parts:
+        return {}
+    keys = list(parts.keys())
+    keys = [keys[-1]] + keys[:-1]
+    return dict(zip(keys, parts.values()))

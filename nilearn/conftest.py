@@ -387,28 +387,3 @@ def mini_surf_mask(mini_surf_img):
 def mini_surf_img(make_mini_surf_img):
     """Small surface image for tests."""
     return make_mini_surf_img()
-
-
-@pytest.fixture
-def flip():
-    """Reorder dictionary keys by putting the last key as the first."""
-
-    def f(parts):
-        if not parts:
-            return {}
-        keys = list(parts.keys())
-        keys = [keys[-1]] + keys[:-1]
-        return dict(zip(keys, parts.values()))
-
-    return f
-
-
-@pytest.fixture
-def flip_surf_img(flip):
-    """Reorder dictionary keys by putting the last key as the first for mesh \
-       and data parts of SurfaceImage object."""
-
-    def f(img):
-        return SurfaceImage(flip(img.mesh), flip(img.data))
-
-    return f

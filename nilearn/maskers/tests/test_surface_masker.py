@@ -4,12 +4,14 @@ import pytest
 from nilearn.maskers import SurfaceMasker
 from nilearn.surface import SurfaceImage
 
-from ._testing import assert_surf_img_equal, drop_hemisphere_surf_img
+from ._testing import (
+    assert_surf_img_equal,
+    drop_hemisphere_surf_img,
+    flip_surf_img,
+)
 
 
-def test_mask_img_fit_shape_mismatch(
-    flip_surf_img, mini_surf_mask, make_mini_surf_img
-):
+def test_mask_img_fit_shape_mismatch(mini_surf_mask, make_mini_surf_img):
     img = make_mini_surf_img()
     masker = SurfaceMasker(mini_surf_mask)
     with pytest.raises(ValueError, match="number of vertices"):
@@ -44,9 +46,7 @@ def test_unfitted_masker(mini_surf_mask):
         masker.transform(mini_surf_mask)
 
 
-def test_mask_img_transform_shape_mismatch(
-    flip_surf_img, mini_surf_img, mini_surf_mask
-):
+def test_mask_img_transform_shape_mismatch(mini_surf_img, mini_surf_mask):
     masker = SurfaceMasker(mini_surf_mask).fit()
     with pytest.raises(ValueError, match="number of vertices"):
         masker.transform(flip_surf_img(mini_surf_img))

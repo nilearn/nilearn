@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 
+from nilearn._utils.testing import put_last_key_as_first
 from nilearn.surface import FileMesh, InMemoryMesh, SurfaceImage
 
 
@@ -30,9 +31,11 @@ def test_surface_image_shape(make_mini_surf_img):
     assert img.shape == (7, 3, 9)
 
 
-def test_data_shape_not_matching_mesh(mini_surf_img, flip):
+def test_data_shape_not_matching_mesh(mini_surf_img):
     with pytest.raises(ValueError, match="shape.*vertices"):
-        SurfaceImage(mini_surf_img.mesh, flip(mini_surf_img.data))
+        SurfaceImage(
+            mini_surf_img.mesh, put_last_key_as_first(mini_surf_img.data)
+        )
 
 
 def test_data_shape_inconsistent(make_mini_surf_img):
