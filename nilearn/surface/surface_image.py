@@ -5,6 +5,8 @@ import abc
 import dataclasses
 import pathlib
 
+import numpy as np
+
 from nilearn.surface import _io
 
 
@@ -12,7 +14,7 @@ class _Mesh(abc.ABC):
     """A surface :term:`mesh` having vertex, \
     coordinates and :term:`faces` (triangles)."""
 
-    n_vertices: ...
+    n_vertices: int
 
     # TODO those are properties for now for compatibility with plot_surf_img
     # for the demo.
@@ -131,6 +133,10 @@ def _check_data_and_mesh_compat(mesh, data):
             )
 
 
+PolyData = dict[str, np.ndarray]
+PolyMesh = dict[str, _Mesh]
+
+
 @dataclasses.dataclass
 class SurfaceImage:
     """Surface image, usually containing meshes & data for both hemispheres.
@@ -150,9 +156,9 @@ class SurfaceImage:
     shape : :obj:`tuple`
     """
 
-    mesh: ...
-    data: ...
-    shape: ... = dataclasses.field(init=False)
+    mesh: PolyMesh
+    data: PolyData
+    shape: tuple[int, ...] = dataclasses.field(init=False)
 
     def __post_init__(self):
         _check_data_consistent_shape(self.data)

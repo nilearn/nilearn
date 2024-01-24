@@ -148,6 +148,18 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         img : SurfaceImage object
             Mesh and data for both hemispheres.
 
+        confounds : CSV file or array-like or :obj:`pandas.DataFrame`, optional
+            This parameter is passed to :func:`nilearn.signal.clean`.
+            Please see the related documentation for details.
+            shape: (number of scans, number of confounds)
+
+        sample_mask : Any type compatible with numpy-array indexing, optional
+            shape: (number of scans - number of volumes removed, )
+            Masks the images along time/fourth dimension to perform scrubbing
+            (remove volumes with high motion)
+            and/or non-steady-state volumes.
+            This parameter is passed to :func:`nilearn.signal.clean`.
+
         Returns
         -------
         output : :obj:`numpy.ndarray`
@@ -267,8 +279,9 @@ class SurfaceLabelsMasker:
     label_names_ : :obj:`numpy.ndarray`
     """
 
-    # TODO check attribute names after PR 3761 and harmonize with volume labels
-    # masker if necessary.
+    # TODO check attribute names after PR 3761
+    # and harmonize with volume labels masker if necessary.
+    # https://github.com/nilearn/nilearn/pull/3761
     def __init__(self, labels_img, label_names=None):
         self.labels_img = labels_img
         self.label_names = label_names
