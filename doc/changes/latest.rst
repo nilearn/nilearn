@@ -28,6 +28,7 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-primary:`Code` Move surface image API from experimental to stable API (:gh:`4229` by `Yasmin Mzayek`_ and `Rémi Gau`_).
 - :bdg-primary:`Doc` Add backslash to homogenize :class:`~nilearn.regions.Parcellations` documentation (:gh:`4042` by `Nikhil Krish`_).
 - :bdg-success:`API` Allow passing Pandas Series of image filenames to :class:`~nilearn.glm.second_level.SecondLevelModel` (:gh:`4070` by `Rémi Gau`_).
 - :bdg-success:`API` Allow passing arguments to :func:`~nilearn.glm.first_level.first_level_from_bids` to build first level models that include specific set of confounds by relying on the strategies from :func:`~nilearn.interfaces.fmriprep.load_confounds` (:gh:`4103` by `Rémi Gau`_).
