@@ -36,7 +36,7 @@ jobs:
 
     deploy:
         docker:
-        -   image: circleci/python:3.9
+        -   image: cimg/python:3.9
         environment:
             STATUS: << pipeline.parameters.STATUS >>
         steps:
@@ -88,7 +88,6 @@ jobs:
                     fi
 
 workflows:
-    version: 2
 
     host_and_deploy_doc:
         when:
