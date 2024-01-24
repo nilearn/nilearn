@@ -1,7 +1,7 @@
 import nibabel as nib
 import numpy as np
 
-from nilearn.experimental.surface import _io
+from nilearn.surface import _io
 
 
 def test_read_array(tmp_path):

@@ -1,20 +1,15 @@
 """Masker for surface objects."""
-from __future__ import annotations
-
-from typing import Any
-
 import numpy as np
-import pandas as pd
 from joblib import Memory
 from sklearn.base import BaseEstimator, TransformerMixin
 
 from nilearn import signal
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.class_inspect import get_params
-from nilearn.experimental.surface._surface_image import PolyMesh, SurfaceImage
+from nilearn.surface.surface_image import SurfaceImage
 
 
-def check_same_n_vertices(mesh_1: PolyMesh, mesh_2: PolyMesh) -> None:
+def check_same_n_vertices(mesh_1, mesh_2):
     """Check that 2 meshes have the same keys and that n vertices match."""
     keys_1, keys_2 = set(mesh_1.keys()), set(mesh_2.keys())
     if keys_1 != keys_2:
@@ -32,25 +27,47 @@ def check_same_n_vertices(mesh_1: PolyMesh, mesh_2: PolyMesh) -> None:
 
 
 class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
-    """Extract data from a SurfaceImage."""
+    """Extract data from a SurfaceImage.
 
-    mask_img: SurfaceImage | None
+    Parameters
+    ----------
+    mask_img : SurfaceImage object, optional
+        See :ref:`extracting_data`.
+        Mask to apply to regions before extracting signals.
+    %(standardize_maskers)s
+    %(standardize_confounds)s
+    high_variance_confounds : :obj:`bool`, default=False
+        If True, high variance confounds are computed on provided image with
+        :func:`nilearn.image.high_variance_confounds` and default parameters
+        and regressed out.
+    %(detrend)s
+    %(low_pass)s
+    %(high_pass)s
+    %(t_r)s
+    %(memory)s
+    %(memory_level1)s
+    %(masker_kwargs)s
 
-    mask_img_: SurfaceImage | None
-    output_dimension_: int | None
+    Attributes
+    ----------
+    mask_img_ : SurfaceImage object
+        The mask of the data, or the computed one.
+
+    output_dimension_ : :obj:`int`
+    """
 
     def __init__(
         self,
         mask_img=None,
         standardize=False,
         standardize_confounds=True,
-        detrend=False,
         high_variance_confounds=False,
+        detrend=False,
         low_pass=None,
         high_pass=None,
         t_r=None,
-        memory_level=1,
         memory=Memory(location=None),
+        memory_level=1,
         **kwargs,
     ):
         self.mask_img = mask_img
@@ -69,7 +86,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
             k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
         }
 
-    def _fit_mask_img(self, img: SurfaceImage | None) -> None:
+    def _fit_mask_img(self, img):
         if self.mask_img is not None:
             if img is not None:
                 check_same_n_vertices(self.mask_img.mesh, img.mesh)
@@ -87,9 +104,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         }
         self.mask_img_ = SurfaceImage(mesh=img.mesh, data=mask_data)
 
-    def fit(
-        self, img: SurfaceImage | None = None, y: Any = None
-    ) -> SurfaceMasker:
+    def fit(self, img=None, y=None):
         """Prepare signal extraction from regions.
 
         Parameters
@@ -125,12 +140,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 "before calling transform."
             )
 
-    def transform(
-        self,
-        img: SurfaceImage,
-        confounds: pd.DataFrame | None = None,
-        sample_mask: np.ndarray | None = None,
-    ) -> np.ndarray:
+    def transform(self, img, confounds=None, sample_mask=None):
         """Extract signals from fitted surface object.
 
         Parameters
@@ -138,9 +148,21 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         img : SurfaceImage object
             Mesh and data for both hemispheres.
 
+        confounds : CSV file or array-like or :obj:`pandas.DataFrame`, optional
+            This parameter is passed to :func:`nilearn.signal.clean`.
+            Please see the related documentation for details.
+            shape: (number of scans, number of confounds)
+
+        sample_mask : Any type compatible with numpy-array indexing, optional
+            shape: (number of scans - number of volumes removed, )
+            Masks the images along time/fourth dimension to perform scrubbing
+            (remove volumes with high motion)
+            and/or non-steady-state volumes.
+            This parameter is passed to :func:`nilearn.signal.clean`.
+
         Returns
         -------
-        output : numpy.ndarray
+        output : :obj:`numpy.ndarray`
             Signal for each element.
             shape: (img data shape, total number of vertices)
         """
@@ -184,13 +206,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         )
         return output
 
-    def fit_transform(
-        self,
-        img: SurfaceImage,
-        y: Any = None,
-        confounds: pd.DataFrame | None = None,
-        sample_mask: np.ndarray | None = None,
-    ) -> np.ndarray:
+    def fit_transform(self, img, y=None, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction from regions.
 
         Parameters
@@ -204,19 +220,19 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         Returns
         -------
-        numpy.ndarray
+        :obj:`numpy.ndarray`
             Signal for each element.
             shape: (img data shape, total number of vertices)
         """
         del y
         return self.fit(img).transform(img, confounds, sample_mask)
 
-    def inverse_transform(self, masked_img: np.ndarray) -> SurfaceImage:
+    def inverse_transform(self, masked_img):
         """Transform extracted signal back to surface object.
 
         Parameters
         ----------
-        masked_img : numpy.ndarray
+        masked_img : :obj:`numpy.ndarray`
             Extracted signal.
 
         Returns
@@ -263,20 +279,10 @@ class SurfaceLabelsMasker:
     label_names_ : :obj:`numpy.ndarray`
     """
 
-    # TODO check attribute names after PR 3761 and harmonize with volume labels
-    # masker if necessary.
-    labels_img: SurfaceImage
-    label_names: dict[Any, str] | None
-
-    labels_data_: type[np.ndarray]
-    labels_: type[np.ndarray]
-    label_names_: type[np.ndarray]
-
-    def __init__(
-        self,
-        labels_img: SurfaceImage,
-        label_names: dict[Any, str] | None = None,
-    ) -> None:
+    # TODO check attribute names after PR 3761
+    # and harmonize with volume labels masker if necessary.
+    # https://github.com/nilearn/nilearn/pull/3761
+    def __init__(self, labels_img, label_names=None):
         self.labels_img = labels_img
         self.label_names = label_names
         self.labels_data_ = np.concatenate(list(labels_img.data.values()))
@@ -292,9 +298,7 @@ class SurfaceLabelsMasker:
                 [label_names[label] for label in self.labels_]
             )
 
-    def fit(
-        self, img: SurfaceImage | None = None, y: Any = None
-    ) -> SurfaceLabelsMasker:
+    def fit(self, img=None, y=None):
         """Prepare signal extraction from regions.
 
         Parameters
@@ -313,7 +317,7 @@ class SurfaceLabelsMasker:
         del img, y
         return self
 
-    def transform(self, img: SurfaceImage) -> np.ndarray:
+    def transform(self, img):
         """Extract signals from fitted surface object.
 
         Parameters
@@ -323,7 +327,7 @@ class SurfaceLabelsMasker:
 
         Returns
         -------
-        output : numpy.ndarray
+        output : :obj:`numpy.ndarray`
             Signal for each element.
             shape: (img data shape, total number of vertices)
         """
@@ -336,7 +340,7 @@ class SurfaceLabelsMasker:
             )
         return output
 
-    def fit_transform(self, img: SurfaceImage, y: Any = None) -> np.ndarray:
+    def fit_transform(self, img, y=None):
         """Prepare and perform signal extraction from regions.
 
         Parameters
@@ -350,19 +354,19 @@ class SurfaceLabelsMasker:
 
         Returns
         -------
-        numpy.ndarray
+        :obj:`numpy.ndarray`
             Signal for each element.
             shape: (img data shape, total number of vertices)
         """
         del y
         return self.fit(img).transform(img)
 
-    def inverse_transform(self, masked_img: np.ndarray) -> SurfaceImage:
+    def inverse_transform(self, masked_img):
         """Transform extracted signal back to surface object.
 
         Parameters
         ----------
-        masked_img : numpy.ndarray
+        masked_img : :obj:`numpy.ndarray`
             Extracted signal.
 
         Returns

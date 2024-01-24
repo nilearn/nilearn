@@ -60,8 +60,7 @@ from nilearn.decoding.decoder import (
     _wrap_param_grid,
 )
 from nilearn.decoding.tests.test_same_api import to_niimgs
-from nilearn.experimental.surface import SurfaceMasker
-from nilearn.maskers import NiftiMasker
+from nilearn.maskers import NiftiMasker, SurfaceMasker
 
 N_SAMPLES = 100
 
@@ -970,9 +969,9 @@ def test_decoder_multiclass_classification_apply_mask_attributes(affine_eye):
     assert model.masker_.smoothing_fwhm == smoothing_fwhm
 
 
-def test_decoder_apply_mask_surface(mini_img):
+def test_decoder_apply_mask_surface(mini_surf_img):
     """Test whether _apply_mask works for surface image."""
-    X = mini_img
+    X = mini_surf_img
     model = Decoder(mask=SurfaceMasker())
     X_masked = model._apply_mask(X)
 

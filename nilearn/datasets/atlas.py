@@ -13,9 +13,12 @@ import numpy as np
 import pandas as pd
 from sklearn.utils import Bunch
 
+from nilearn.surface import SurfaceImage
+
 from .._utils import check_niimg, fill_doc
 from ..image import get_data, new_img_like, reorder_img
 from ._utils import fetch_files, get_dataset_descr, get_dataset_dir
+from .struct import load_surf_fsaverage
 
 _TALAIRACH_LEVELS = ["hemisphere", "lobe", "gyrus", "tissue", "ba"]
 
@@ -1837,6 +1840,49 @@ def fetch_atlas_surf_destrieux(
         map_left=annot_left[0],
         map_right=annot_right[0],
         description=fdescr,
+    )
+
+
+@fill_doc
+def load_sample_atlas_surf_destrieux(
+    data_dir=None, mesh="fsaverage5", url=None, resume=True, verbose=1
+):
+    """Load Destrieux surface atlas into a surface object.
+
+    Parameters
+    ----------
+    %(data_dir)s
+    mesh : :obj:`str`, default='fsaverage5'
+        Which :term:`mesh` to fetch.
+        Should be one of the following values:
+        %(fsaverage_options)s
+    %(url)s
+    %(resume)s
+    %(verbose)s
+
+    Returns
+    -------
+    tuple containing SurfaceImage object and dict of labels
+    """
+    fsaverage = load_surf_fsaverage(mesh=mesh, data_dir=data_dir)
+    destrieux = fetch_atlas_surf_destrieux(
+        data_dir=data_dir,
+        url=url,
+        resume=resume,
+        verbose=verbose,
+    )
+    label_names = {
+        i: label.decode("utf-8") for (i, label) in enumerate(destrieux.labels)
+    }
+    return (
+        SurfaceImage(
+            mesh=fsaverage["pial"],
+            data={
+                "left_hemisphere": destrieux["map_left"],
+                "right_hemisphere": destrieux["map_right"],
+            },
+        ),
+        label_names,
     )
 
 

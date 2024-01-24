@@ -19,6 +19,7 @@ from .atlas import (
     fetch_coords_dosenbach_2010,
     fetch_coords_power_2011,
     fetch_coords_seitzman_2018,
+    load_sample_atlas_surf_destrieux,
 )
 from .func import (
     fetch_abide_pcp,
@@ -42,6 +43,7 @@ from .func import (
     fetch_spm_multimodal_fmri,
     fetch_surf_nki_enhanced,
     load_sample_motor_activation_image,
+    load_sample_surf_nki_enhanced,
     patch_openneuro_dataset,
     select_from_index,
 )
@@ -65,6 +67,7 @@ from .struct import (
     load_mni152_template,
     load_mni152_wm_mask,
     load_mni152_wm_template,
+    load_surf_fsaverage,
 )
 from .utils import get_data_dirs
 
@@ -125,7 +128,10 @@ __all__ = [
     "load_mni152_wm_mask",
     "load_mni152_wm_template",
     "load_mni152_template",
+    "load_sample_atlas_surf_destrieux",
     "load_sample_motor_activation_image",
+    "load_sample_surf_nki_enhanced",
+    "load_surf_fsaverage",
     "patch_openneuro_dataset",
     "select_from_index",
 ]

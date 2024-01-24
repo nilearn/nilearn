@@ -29,8 +29,8 @@ from sklearn.utils import check_array, check_X_y
 from sklearn.utils.extmath import safe_sparse_dot
 
 from nilearn._utils.masker_validation import check_embedded_masker
-from nilearn.experimental.surface import SurfaceMasker
 from nilearn.image import get_data
+from nilearn.maskers import SurfaceMasker
 from nilearn.masking import unmask_from_to_3d_array
 
 from .._utils import fill_doc

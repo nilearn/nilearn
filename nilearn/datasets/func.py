@@ -23,7 +23,9 @@ except ImportError:  # SciPy < 1.8
 
 from sklearn.utils import Bunch
 
+from nilearn import surface
 from nilearn.image import get_data
+from nilearn.surface import SurfaceImage
 
 from .._utils import check_niimg, fill_doc
 from .._utils.numpy_conversions import csv_to_array
@@ -37,6 +39,7 @@ from ._utils import (
     tree,
     uncompress_file,
 )
+from .struct import load_surf_fsaverage
 
 _LEGACY_FORMAT_MSG = (
     "`legacy_format` will default to `False` in release 0.11. "
@@ -1797,6 +1800,61 @@ def fetch_surf_nki_enhanced(
         phenotypic=phenotypic,
         description=fdescr,
     )
+
+
+@fill_doc
+def load_sample_surf_nki_enhanced(
+    n_subjects=1,
+    data_dir=None,
+    mesh="fsaverage5",
+    url=None,
+    resume=True,
+    verbose=1,
+):
+    """Load NKI enhanced surface data into a list of SurfaceImage objects.
+
+    Parameters
+    ----------
+    n_subjects : :obj:`int`, default=1
+        The number of subjects to load from maximum of 102 subjects.
+        By default, 1 subject will be loaded. If None is given,
+        all 102 subjects will be loaded.
+    %(data_dir)s
+    mesh : :obj:`str`, default='fsaverage5'
+        Which :term:`mesh` to fetch.
+        Should be one of the following values:
+        %(fsaverage_options)s
+    %(url)s
+    %(resume)s
+    %(verbose)s
+
+    Returns
+    -------
+    images : :obj:`list` of SurfaceImage objects
+    """
+    fsaverage = load_surf_fsaverage(mesh=mesh, data_dir=data_dir)
+    nki_dataset = fetch_surf_nki_enhanced(
+        n_subjects=n_subjects,
+        data_dir=data_dir,
+        url=url,
+        resume=resume,
+        verbose=verbose,
+    )
+    images = []
+    for left, right in zip(
+        nki_dataset["func_left"], nki_dataset["func_right"]
+    ):
+        left_data = surface._io.read_array(left).T
+        right_data = surface._io.read_array(right).T
+        img = SurfaceImage(
+            mesh=fsaverage["pial"],
+            data={
+                "left_hemisphere": left_data,
+                "right_hemisphere": right_data,
+            },
+        )
+        images.append(img)
+    return images
 
 
 @fill_doc

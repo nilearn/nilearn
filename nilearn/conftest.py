@@ -11,14 +11,7 @@ from nilearn import image
 # we need to import these fixtures even if not used in this module
 from nilearn.datasets.tests._testing import request_mocker  # noqa: F401
 from nilearn.datasets.tests._testing import temp_nilearn_data_dir  # noqa: F401
-
-# TODO This import needs to be removed once the experimental surface API and
-# its pytest fixtures are integrated into the stable API
-from nilearn.experimental.surface.tests.conftest import (  # noqa: F401
-    make_mini_img,
-    mini_img,
-    mini_mesh,
-)
+from nilearn.surface import InMemoryMesh, SurfaceImage
 
 collect_ignore = ["datasets/data/convert_templates.py"]
 collect_ignore_glob = ["reporting/_visual_testing/*"]
@@ -336,3 +329,61 @@ def img_atlas(shape_3d_default, affine_mni):
             "csf": 3,
         },
     }
+
+
+# ------------------------ SURFACE ------------------------#
+
+
+@pytest.fixture
+def mini_mesh():
+    """Small mesh for tests with 2 parts with different numbers of vertices."""
+    left_coords = np.asarray([[0.0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]])
+    left_faces = np.asarray([[1, 0, 2], [0, 1, 3], [0, 3, 2], [1, 2, 3]])
+    right_coords = (
+        np.asarray([[0.0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0], [0, 0, 1]])
+        + 2.0
+    )
+    right_faces = np.asarray(
+        [
+            [0, 1, 4],
+            [0, 3, 1],
+            [1, 3, 2],
+            [1, 2, 4],
+            [2, 3, 4],
+            [0, 4, 3],
+        ]
+    )
+    return {
+        "left_hemisphere": InMemoryMesh(left_coords, left_faces),
+        "right_hemisphere": InMemoryMesh(right_coords, right_faces),
+    }
+
+
+@pytest.fixture
+def make_mini_surf_img(mini_mesh):
+    """Small surface image for tests."""
+
+    def f(shape=()):
+        data = {}
+        for i, (key, val) in enumerate(mini_mesh.items()):
+            data_shape = tuple(shape) + (val.n_vertices,)
+            data_part = (
+                np.arange(np.prod(data_shape)).reshape(data_shape) + 1.0
+            ) * 10**i
+            data[key] = data_part
+        return SurfaceImage(mini_mesh, data)
+
+    return f
+
+
+@pytest.fixture
+def mini_surf_mask(mini_surf_img):
+    """Small surface mask."""
+    data = {k: (v > v.ravel()[0]) for k, v in mini_surf_img.data.items()}
+    return SurfaceImage(mini_surf_img.mesh, data)
+
+
+@pytest.fixture
+def mini_surf_img(make_mini_surf_img):
+    """Small surface image for tests."""
+    return make_mini_surf_img()
