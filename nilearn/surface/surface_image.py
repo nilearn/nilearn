@@ -1,9 +1,8 @@
 """Surface API."""
-from __future__ import annotations
-
 import abc
 import dataclasses
 import pathlib
+from typing import Dict
 
 import numpy as np
 
@@ -133,10 +132,6 @@ def _check_data_and_mesh_compat(mesh, data):
             )
 
 
-PolyData = dict[str, np.ndarray]
-PolyMesh = dict[str, _Mesh]
-
-
 @dataclasses.dataclass
 class SurfaceImage:
     """Surface image, usually containing meshes & data for both hemispheres.
@@ -156,8 +151,8 @@ class SurfaceImage:
     shape : :obj:`tuple`
     """
 
-    mesh: PolyMesh
-    data: PolyData
+    mesh: Dict[str, _Mesh]
+    data: Dict[str, np.ndarray]
     shape: tuple[int, ...] = dataclasses.field(init=False)
 
     def __post_init__(self):
