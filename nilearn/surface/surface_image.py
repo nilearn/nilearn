@@ -1,8 +1,9 @@
 """Surface API."""
+from __future__ import annotations
+
 import abc
 import dataclasses
 import pathlib
-from typing import Dict
 
 import numpy as np
 
@@ -151,8 +152,8 @@ class SurfaceImage:
     shape : :obj:`tuple`
     """
 
-    mesh: Dict[str, _Mesh]
-    data: Dict[str, np.ndarray]
+    mesh: dict[str, _Mesh]
+    data: dict[str, np.ndarray]
     shape: tuple[int, ...] = dataclasses.field(init=False)
 
     def __post_init__(self):
