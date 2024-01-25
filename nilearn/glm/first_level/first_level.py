@@ -1154,7 +1154,7 @@ def first_level_from_bids(
 
     kwargs: :obj:`dict`
 
-        .. versionadded:: 0.11.0
+        .. versionadded:: 0.10.3
 
     Keyword arguments to be passed to functions called within this function.
 
