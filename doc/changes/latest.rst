@@ -8,6 +8,17 @@
 HIGHLIGHTS
 ----------
 
+.. warning::
+
+ | **Minimum supported versions of packages have been bumped up:**
+ | - Numpy -- v1.19.0
+ | - SciPy -- v1.8.0
+ | - Scikit-learn -- v1.0.0
+ | - Nibabel -- v4.0.0
+ | - Pandas -- v1.1.5
+ | - Joblib -- v1.0.0
+
+
 - :bdg-success:`API` Allow passing arguments to :func:`~nilearn.glm.first_level.first_level_from_bids` to build first level models that include specific set of confounds by relying on the strategies from :func:`~nilearn.interfaces.fmriprep.load_confounds` (:gh:`4103` by `Rémi Gau`_).
 
 - :bdg-success:`API` Support passing t and F contrasts to :func:`~nilearn.glm.compute_contrast` that that have fewer columns than the number of estimated parameters. Remaining columns are padded with zero (:gh:`4067` by `Rémi Gau`_).
