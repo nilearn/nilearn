@@ -16,6 +16,16 @@ parameters:
         default: failure
 
 jobs:
+
+    wait:
+        machine:
+            image: ubuntu-2204:current
+        steps:
+        -   run:
+                name: waiting_msg
+                command: |
+                    echo "waiting for trigger";
+
     host_docs:
         machine:
             image: ubuntu-2204:current
@@ -95,6 +105,7 @@ workflows:
                 equal: [none, << pipeline.parameters.GITHUB_RUN_URL >>]
     # The jobs should run only when triggered by the workflow
         jobs:
+        -   wait
         -   host_docs
         -   deploy:
                 requires:
