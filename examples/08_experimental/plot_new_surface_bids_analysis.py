@@ -48,11 +48,11 @@ were already normalized to the same :term:`MNI` space.
 # and the confounds.tsv files.
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 
-data_dir, _ = fetch_language_localizer_demo_dataset()
+data = fetch_language_localizer_demo_dataset(legacy_output=False)
 
 # %%
 # Here is the location of the dataset on disk.
-print(data_dir)
+print(data.data_dir)
 
 # %%
 # Obtain automatically FirstLevelModel objects and fit arguments
@@ -70,7 +70,7 @@ from nilearn.glm.first_level import first_level_from_bids
 
 task_label = "languagelocalizer"
 models, run_imgs, events, confounds = first_level_from_bids(
-    data_dir,
+    data.data_dir,
     task_label,
     img_filters=[("desc", "preproc")],
     hrf_model="glover + derivative",
