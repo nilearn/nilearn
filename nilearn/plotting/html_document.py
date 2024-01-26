@@ -217,7 +217,7 @@ class HTMLDocument:
 
         temp_file_lifetime : :obj:`float`, default=30
 
-            .. deprecated:: 0.11
+            .. deprecated:: 0.10.3
 
                 The parameter is kept for backward compatibility and will be
                 removed in a future version. It has no effect.
