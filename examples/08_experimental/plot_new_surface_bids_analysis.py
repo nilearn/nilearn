@@ -77,22 +77,6 @@ models, run_imgs, events, confounds = first_level_from_bids(
     n_jobs=2,
 )
 
-# %%
-# We also need to get the :term:`TR` information.
-# For that we use the json sidecar file of the dataset's functional images.
-import json
-import os
-
-json_file = os.path.join(
-    data_dir,
-    "derivatives",
-    "sub-01",
-    "func",
-    "sub-01_task-languagelocalizer_desc-preproc_bold.json",
-)
-
-with open(json_file) as f:
-    t_r = json.load(f)["RepetitionTime"]
 
 # %%
 # Project :term:`fMRI` data to the surface: First get fsaverage5.
@@ -100,20 +84,10 @@ from nilearn.experimental.surface import SurfaceImage, load_fsaverage
 
 fsaverage5 = load_fsaverage()
 
-
-from nilearn.datasets import fetch_surf_fsaverage
-
-fsaverage = fetch_surf_fsaverage(mesh="fsaverage5")
-
 # %%
 # The projection function simply takes the :term:`fMRI` data and the mesh.
 # Note that those correspond spatially, as they are both in :term:`MNI` space.
-import numpy as np
-
 from nilearn import surface
-
-# from nilearn.glm.contrasts import compute_contrast
-# from nilearn.glm.first_level import make_first_level_design_matrix, run_glm
 
 # %%
 # Empty lists in which we are going to store activation values.
@@ -138,27 +112,8 @@ for first_level_glm, fmri_img, confound, events in zip(
             "rh": texture_right.T,
         },
     )
-    # texture = surface.vol_to_surf(fmri_img[0], fsaverage.pial_right)
-    # n_scans = texture.shape[1]
-    # frame_times = t_r * (np.arange(n_scans) + 0.5)
 
-    # Create the design matrix
-    #
-    # We specify an hrf model containing Glover model and its time derivative.
-    # The drift model is implicitly a cosine basis with period cutoff 128s.
-    # design_matrix = make_first_level_design_matrix(
-    #     frame_times,
-    #     events=events[0],
-    #     hrf_model="glover + derivative",
-    #     add_regs=confound[0],
-    # )
-
-    # Setup and fit GLM.
-    # Note that the output consists in 2 variables: `labels` and `fit`
-    # `labels` tags voxels according to noise autocorrelation.
-    # `estimates` contains the parameter estimates.
-    # We input them for contrast computation.
-    # labels, estimates = run_glm(texture.T, design_matrix.values)
+    # Fit GLM.
     first_level_glm.fit(image, events[0])
 
     # Contrast specification
@@ -169,17 +124,7 @@ for first_level_glm, fmri_img, confound, events in zip(
     z_scores = first_level_glm.compute_contrast(contrast_values, stat_type="t")
     z_scores_left.append(z_scores.data["lh"])
     z_scores_right.append(z_scores.data["rh"])
-    # We present the Z-transform of the t map.
-    # z_score = contrast.z_score()
-    # z_scores_right.append(z_score)
 
-    # Do the left hemisphere exactly the same way.
-    # texture = surface.vol_to_surf(fmri_img, fsaverage.pial_left)
-    # labels, estimates = run_glm(texture.T, design_matrix.values)
-    # contrast = compute_contrast(
-    #     labels, estimates, contrast_values, stat_type="t"
-    # )
-    # z_scores_left.append(contrast.z_score())
 
 # %%
 # Individual activation maps have been accumulated
@@ -193,6 +138,7 @@ for first_level_glm, fmri_img, confound, events in zip(
 # Prepare figure for concurrent plot of individual maps
 # compute population-level maps for left and right hemisphere
 # We directly do that on the value arrays.
+import numpy as np
 from scipy.stats import norm, ttest_1samp
 
 _, pval_left = ttest_1samp(np.array(z_scores_left), 0)
@@ -206,6 +152,9 @@ z_val_right = norm.isf(pval_right)
 # %%
 # Plot the resulting maps, at first on the left hemisphere.
 from nilearn import plotting
+from nilearn.datasets import fetch_surf_fsaverage
+
+fsaverage = fetch_surf_fsaverage(mesh="fsaverage5")
 
 plotting.plot_surf_stat_map(
     fsaverage5["inflated"]["left_hemisphere"],
