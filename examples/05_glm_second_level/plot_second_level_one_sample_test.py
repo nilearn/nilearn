@@ -17,6 +17,7 @@ expected to elicit activity in the motor cortex (positive in the right
 hemisphere, negative in the left hemisphere).
 
 """
+
 from nilearn import plotting
 
 # %%

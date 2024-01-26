@@ -2,6 +2,7 @@
 
 Author: Bertrand Thirion, 2011--2015
 """
+
 import numpy as np
 from nibabel.onetime import auto_attr
 from scipy.linalg import inv

@@ -1,4 +1,5 @@
 """Test the signals module."""
+
 # Author: Gael Varoquaux, Alexandre Abraham
 
 import os.path

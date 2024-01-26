@@ -1,4 +1,5 @@
 """Test the searchlight module."""
+
 # Author: Alexandre Abraham
 
 import numpy as np

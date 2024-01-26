@@ -18,6 +18,7 @@ More specifically:
    Notice that in this case the preprocessed :term:`bold<BOLD>`
    images were already normalized to the same :term:`MNI` space.
 """
+
 from nilearn import plotting
 
 # %%

@@ -20,6 +20,7 @@ More specifically:
 .. include:: ../../../examples/masker_note.rst
 
 """
+
 # %%
 import numpy as np
 

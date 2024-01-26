@@ -3,6 +3,7 @@
 Authors: Pierre Bellec, François Paugam, Hanad Sharmarke, Hao-Ting Wang,
 Michael W. Weiss, Steven Meisler, Thibault Piront.
 """
+
 import warnings
 
 import pandas as pd

@@ -15,6 +15,7 @@ for a careful study.
 .. include:: ../../../examples/masker_note.rst
 
 """
+
 try:
     import matplotlib.pyplot as plt
 except ImportError:

@@ -86,9 +86,9 @@ def _make_haxby_subject_data(match, response):
 
 
 def test_fetch_haxby(tmp_path, request_mocker):
-    request_mocker.url_mapping[
-        re.compile(r".*(subj\d).*\.tar\.gz")
-    ] = _make_haxby_subject_data
+    request_mocker.url_mapping[re.compile(r".*(subj\d).*\.tar\.gz")] = (
+        _make_haxby_subject_data
+    )
     for i in range(1, 6):
         haxby = func.fetch_haxby(data_dir=tmp_path, subjects=[i], verbose=0)
         # subject_data + (md5 + mask if first subj)
@@ -192,9 +192,9 @@ def _adhd_metadata():
 
 def test_fetch_adhd(tmp_path, request_mocker):
     request_mocker.url_mapping["*metadata.tgz"] = _adhd_metadata()
-    request_mocker.url_mapping[
-        re.compile(r".*adhd40_([0-9]+)\.tgz")
-    ] = _adhd_example_subject
+    request_mocker.url_mapping[re.compile(r".*adhd40_([0-9]+)\.tgz")] = (
+        _adhd_example_subject
+    )
     adhd = func.fetch_adhd(data_dir=tmp_path, n_subjects=12, verbose=0)
 
     assert isinstance(adhd, Bunch)
@@ -609,9 +609,9 @@ def _mock_development_confounds():
 
 def test_fetch_development_fmri_participants(tmp_path, request_mocker):
     mock_participants = _mock_participants_data()
-    request_mocker.url_mapping[
-        "https://osf.io/yr3av/download"
-    ] = mock_participants.to_csv(index=False, sep="\t")
+    request_mocker.url_mapping["https://osf.io/yr3av/download"] = (
+        mock_participants.to_csv(index=False, sep="\t")
+    )
     participants = func._fetch_development_fmri_participants(
         data_dir=tmp_path, url=None, verbose=1
     )
@@ -635,9 +635,9 @@ def test_fetch_development_fmri(tmp_path, request_mocker):
     request_mocker.url_mapping["*"] = _mock_development_confounds().to_csv(
         index=False, sep="\t"
     )
-    request_mocker.url_mapping[
-        "https://osf.io/yr3av/download"
-    ] = mock_participants.to_csv(index=False, sep="\t")
+    request_mocker.url_mapping["https://osf.io/yr3av/download"] = (
+        mock_participants.to_csv(index=False, sep="\t")
+    )
 
     data = func.fetch_development_fmri(
         n_subjects=2, data_dir=tmp_path, verbose=1
@@ -982,10 +982,8 @@ def test_make_spm_auditory_events_file():
         os.remove(events_filepath)
     expected_events_data_string = _mock_original_spm_auditory_events_file()
 
-    replace_win_line_ends = (
-        lambda text: text.replace("\r\n", "\n")
-        if text.find("\r\n") != -1
-        else text
+    replace_win_line_ends = lambda text: (  # noqa: E731
+        text.replace("\r\n", "\n") if text.find("\r\n") != -1 else text
     )
     actual_events_data_string = replace_win_line_ends(
         actual_events_data_string

@@ -25,6 +25,7 @@ We'll start by extracting signals from Default Mode Network regions and
 computing a connectome from them.
 
 """
+
 from nilearn import datasets, plotting
 
 # %%

@@ -8,6 +8,7 @@ cross-validated accuracy and the confusion matrix.
 .. include:: ../../../examples/masker_note.rst
 
 """
+
 import numpy as np
 import pandas as pd
 

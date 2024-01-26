@@ -1,6 +1,5 @@
 """Helper function for load_compcor."""
 
-
 prefix_compcor = {
     "temporal_anat_combined": ["t", "a"],
     "temporal_anat_separated": ["t", "a", "w", "c"],

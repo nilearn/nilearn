@@ -6,6 +6,7 @@ In this script we plot an overview of the stimuli used in "Distributed
 and Overlapping Representations of Faces and Objects in Ventral Temporal
 Cortex" (Science 2001)
 """
+
 try:
     import matplotlib.pyplot as plt
 except ImportError:

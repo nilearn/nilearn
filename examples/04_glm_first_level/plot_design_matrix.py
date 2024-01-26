@@ -9,6 +9,7 @@ Three examples of design matrices specification and computation for first-level
 This examples requires matplotlib.
 
 """
+
 # %%
 # Define parameters
 # -----------------

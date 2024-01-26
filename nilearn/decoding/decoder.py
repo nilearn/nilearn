@@ -9,6 +9,7 @@ strategy in which the best models within a cross validation loop are averaged.
 Also exposes a high-level method FREM that uses clustering and model
 ensembling to achieve state of the art performance
 """
+
 # Authors: Yannick Schwartz
 #          Andres Hoyos-Idrobo
 #          Binh Nguyen <tuan-binh.nguyen@inria.fr>

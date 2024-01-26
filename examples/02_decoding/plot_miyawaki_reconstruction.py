@@ -22,6 +22,7 @@ For an encoding approach for the same dataset, see also
 .. include:: ../../../examples/masker_note.rst
 
 """
+
 # %%
 import sys
 import time

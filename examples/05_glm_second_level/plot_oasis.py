@@ -32,6 +32,7 @@ Note that more power would be obtained from using a larger sample of subjects.
     - Gael Varoquaux, Apr 2014
 
 """
+
 # %%
 # Load Oasis dataset
 # ------------------

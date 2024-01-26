@@ -2,6 +2,7 @@
 
 Mask nifti images by spherical volumes for seed-region analyses
 """
+
 import warnings
 
 import numpy as np
