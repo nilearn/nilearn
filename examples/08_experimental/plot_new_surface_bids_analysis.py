@@ -79,23 +79,25 @@ models, run_imgs, events, confounds = first_level_from_bids(
 
 
 # %%
-# Project :term:`fMRI` data to the surface: First get fsaverage5.
+# Project :term:`fMRI` data to the surface and compute GLM and contrasts
+#
+# The projection function simply takes the :term:`fMRI` data and the mesh.
+# Note that those correspond spatially, as they are both in :term:`MNI` space.
+from pathlib import Path
+
+from nilearn import surface
 from nilearn.experimental.surface import SurfaceImage, load_fsaverage
 
 fsaverage5 = load_fsaverage()
 
-# %%
-# The projection function simply takes the :term:`fMRI` data and the mesh.
-# Note that those correspond spatially, as they are both in :term:`MNI` space.
-from nilearn import surface
-
-# %%
 # Empty lists in which we are going to store activation values.
 z_scores_left = []
 z_scores_right = []
 for first_level_glm, fmri_img, confound, events in zip(
     models, run_imgs, confounds, events
 ):
+    print(f"Running GLM on {Path(fmri_img[0]).relative_to(data.data_dir)}")
+
     texture_left = surface.vol_to_surf(
         fmri_img[0], fsaverage5["pial"]["left_hemisphere"]
     )
@@ -114,7 +116,9 @@ for first_level_glm, fmri_img, confound, events in zip(
     )
 
     # Fit GLM.
-    first_level_glm.fit(image, events[0])
+    first_level_glm.fit(
+        run_imgs=image, events=events[0], confounds=confound[0]
+    )
 
     # Contrast specification
     design_matrix = first_level_glm.design_matrices_[0]
@@ -127,13 +131,12 @@ for first_level_glm, fmri_img, confound, events in zip(
 
 
 # %%
+# Group study
+# -----------
+#
 # Individual activation maps have been accumulated
 # in the ``z_score_left`` and ``z_scores_right`` lists respectively.
 # We can now use them in a group study (one-sample study).
-
-# %%
-# Group study
-# -----------
 #
 # Prepare figure for concurrent plot of individual maps
 # compute population-level maps for left and right hemisphere
