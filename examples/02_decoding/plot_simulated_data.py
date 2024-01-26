@@ -26,6 +26,7 @@ model with a random design matrix **X**:
 * **e** is random normal noise.
 
 """
+
 try:
     import matplotlib.pyplot as plt
 except ImportError:

@@ -1,4 +1,5 @@
 """Configuration and extra fixtures for pytest."""
+
 import warnings
 
 import nibabel

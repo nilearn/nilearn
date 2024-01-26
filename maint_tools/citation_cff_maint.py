@@ -1,4 +1,5 @@
 """Update AUTHORS and names from CITATION.cff file."""
+
 from __future__ import annotations
 
 from pathlib import Path

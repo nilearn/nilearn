@@ -27,6 +27,7 @@ outside of temporary directories, this module also adds fixtures to patch the
 home directory and other default nilearn data directories.
 
 """
+
 import fnmatch
 import json
 import os

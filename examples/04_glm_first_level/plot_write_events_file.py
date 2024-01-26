@@ -15,6 +15,7 @@ Fast reproducible identification and large-scale databasing of individual
 functional cognitive networks.
 BMC Neurosci 8, 91 (2007). https://doi.org/10.1186/1471-2202-8-91
 """
+
 from nilearn.plotting import plot_event
 
 # %%

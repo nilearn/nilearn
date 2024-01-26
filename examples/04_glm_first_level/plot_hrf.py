@@ -26,6 +26,7 @@ timing issues.
 
 This example requires matplotlib and scipy.
 """
+
 try:
     import matplotlib.pyplot as plt
 except ImportError:

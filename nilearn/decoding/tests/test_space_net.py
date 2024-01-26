@@ -377,9 +377,9 @@ def test_univariate_feature_screening(
 
     assert mask.sum() >= 100.0
 
-    mask[
-        dim[0] // 2, dim[1] // 3 :, -dim[2] // 2 :
-    ] = 1  # put spatial structure
+    mask[dim[0] // 2, dim[1] // 3 :, -dim[2] // 2 :] = (
+        1  # put spatial structure
+    )
     n_features = mask.sum()
     X = rng.standard_normal((n_samples, n_features))
     w = rng.standard_normal(n_features)

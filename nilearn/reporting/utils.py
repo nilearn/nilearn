@@ -1,4 +1,5 @@
 """Utility functions for the reporting module."""
+
 import base64
 import io
 import urllib.parse

@@ -4,6 +4,7 @@ Functions in this file only test features added by the NiftiLabelsMasker class,
 not the underlying functions (clean(), img_to_signals_labels(), etc.). See
 test_masking.py and test_signal.py for details.
 """
+
 import warnings
 
 import nibabel

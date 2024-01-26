@@ -36,6 +36,7 @@ Vincent Michel, Alexandre Gramfort, Gael Varoquaux, Evelyn Eger,
 The big picture discussion corresponding to this example can be found
 in the documentation section :ref:`parcellating_brain`.
 """
+
 # %%
 # Download a brain development fMRI dataset and turn it to a data matrix
 # ----------------------------------------------------------------------

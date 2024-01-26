@@ -15,6 +15,7 @@ for a careful study.
 .. include:: ../../../examples/masker_note.rst
 
 """
+
 # %%
 # Load brain development :term:`fMRI` dataset and MSDL atlas
 # ----------------------------------------------------------

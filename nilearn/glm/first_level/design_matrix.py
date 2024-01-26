@@ -32,6 +32,7 @@ Design matrices contain three different types of regressors:
 Author: Bertrand Thirion, 2009-2015
 
 """
+
 import sys
 from warnings import warn
 

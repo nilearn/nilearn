@@ -7,6 +7,7 @@ of nilearn.reporting.make_glm_reports().
 Disable any of the function calls in the __main__()
 to run a specific script and save time.
 """
+
 import os
 
 import numpy as np

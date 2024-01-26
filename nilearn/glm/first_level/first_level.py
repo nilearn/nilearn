@@ -4,6 +4,7 @@ objects of fMRI data analyses.
 Author: Bertrand Thirion, Martin Perez-Guevara, 2016
 
 """
+
 from __future__ import annotations
 
 import csv
@@ -835,9 +836,9 @@ class FirstLevelModel(BaseGLM):
             # Prepare the returned images
             output = self.masker_.inverse_transform(estimate_)
             contrast_name = str(con_vals)
-            output.header[
-                "descrip"
-            ] = f"{output_type_} of contrast {contrast_name}"
+            output.header["descrip"] = (
+                f"{output_type_} of contrast {contrast_name}"
+            )
             outputs[output_type_] = output
 
         return outputs if output_type == "all" else output
@@ -1874,9 +1875,11 @@ def _check_kwargs_load_confounds(**kwargs):
         return None
 
     kwargs_load_confounds = {
-        key: defaults[key]
-        if f"confounds_{key}" not in kwargs
-        else kwargs[f"confounds_{key}"]
+        key: (
+            defaults[key]
+            if f"confounds_{key}" not in kwargs
+            else kwargs[f"confounds_{key}"]
+        )
         for key in defaults
     }
 

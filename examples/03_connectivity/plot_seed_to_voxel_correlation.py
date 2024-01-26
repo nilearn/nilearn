@@ -19,6 +19,7 @@ Author: Franz Liem
 .. include:: ../../../examples/masker_note.rst
 
 """
+
 # %%
 # Getting the data
 # ----------------

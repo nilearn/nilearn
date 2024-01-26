@@ -25,6 +25,7 @@ an explicit model of the signal. The reference paper is:
       `preprint <https://hal.inria.fr/hal-00489507/>`_
 
 """
+
 # %%
 # Load brain development :term:`fMRI` dataset
 # -------------------------------------------

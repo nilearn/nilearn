@@ -24,6 +24,7 @@ At the group level, such a mapping is not possible. Yet, we may
 observe some significant effects in these areas.
 
 """
+
 # %%
 import pandas as pd
 

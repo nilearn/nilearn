@@ -14,6 +14,7 @@ that have been defined via a standard GLM-based analysis.
 .. include:: ../../../examples/masker_note.rst
 
 """
+
 # Fetch data using nilearn dataset fetcher
 from nilearn import datasets
 from nilearn.plotting import show

@@ -12,6 +12,7 @@ It can also contain:
 Author: Bertrand Thirion, 2015
 
 """
+
 import warnings
 
 import pandas as pd

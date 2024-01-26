@@ -2,6 +2,7 @@
 
 Utilities for masking and dimension reduction of group data
 """
+
 import glob
 import itertools
 from math import ceil

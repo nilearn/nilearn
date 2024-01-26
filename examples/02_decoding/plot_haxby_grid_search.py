@@ -31,6 +31,7 @@ performing cross-validation for the feature selection must be done
 manually.
 
 """
+
 # %%
 # Load the Haxby dataset
 # ----------------------

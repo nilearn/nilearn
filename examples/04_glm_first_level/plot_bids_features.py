@@ -22,6 +22,7 @@ More specifically:
    estimation in the openneuro dataset.
 4. Display contrast plot and uncorrected first level statistics table report.
 """
+
 from nilearn import plotting
 
 # %%

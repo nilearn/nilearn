@@ -22,6 +22,7 @@ to plot the maps in one step that
 with less control over the plot (see below)
 
 """
+
 # %%
 # Fetching :term:`Probabilistic atlas` - MSDL atlas
 # -------------------------------------------------

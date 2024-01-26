@@ -7,6 +7,7 @@ which can be used for plotting brain images on surface.
 
 See :ref:`surface-plotting` for surface plotting details.
 """
+
 # %%
 # Plot color maps
 # ---------------

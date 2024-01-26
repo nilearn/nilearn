@@ -23,6 +23,7 @@ is included in the model.
     - Virgile Fritsch, May. 2014
 
 """
+
 try:
     import matplotlib.pyplot as plt
 except ImportError:

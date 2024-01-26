@@ -33,6 +33,7 @@ References
 
     - Virgile Fritsch, Feb. 2014
 """
+
 # %%
 # Load Haxby dataset
 from nilearn import datasets, image

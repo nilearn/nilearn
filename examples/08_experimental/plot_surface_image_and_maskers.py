@@ -14,6 +14,7 @@ examples
     GitHub!
 
 """
+
 try:
     import matplotlib.pyplot as plt
 except ImportError:
