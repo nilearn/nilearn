@@ -185,10 +185,16 @@ plotting.plot_surf_stat_map(fsaverage['pial_left'], stat_map=stat_map,
 # %%
 # The plots can be saved to file, in which case the display is closed after
 # creating the figure
+from pathlib import Path
+
+output_dir = Path.cwd() / "results" / "plot_surf_stat_map"
+output_dir.mkdir(exist_ok=True, parents=True)
+print(f"Output will be saved to: {output_dir}")
+
 plotting.plot_surf_stat_map(fsaverage['infl_left'], stat_map=stat_map,
                             hemi='left', bg_map=fsaverage['sulc_left'],
                             bg_on_data=True, threshold=.5, colorbar=True,
-                            output_file='plot_surf_stat_map.png')
+                            output_file=output_dir / 'plot_surf_stat_map.png')
 
 plotting.show()
 

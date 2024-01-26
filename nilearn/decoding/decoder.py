@@ -9,6 +9,7 @@ strategy in which the best models within a cross validation loop are averaged.
 Also exposes a high-level method FREM that uses clustering and model
 ensembling to achieve state of the art performance
 """
+
 # Authors: Yannick Schwartz
 #          Andres Hoyos-Idrobo
 #          Binh Nguyen <tuan-binh.nguyen@inria.fr>
@@ -836,11 +837,12 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        X : Niimg-like
+        X : Niimg-like, :obj:`list` of either \
+            Niimg-like objects or :obj:`str` or path-like
             See :ref:`extracting_data`.
             Data on which prediction is to be made.
 
-        y : array-like
+        y : :class:`numpy.ndarray`
             Target values.
 
         args : Optional arguments that can be passed to
@@ -861,18 +863,20 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        X: list of Niimg-like objects
+        X : Niimg-like, :obj:`list` of either \
+            Niimg-like objects or :obj:`str` or path-like
             See :ref:`extracting_data`.
             Data on prediction is to be made. If this is a list,
             the affine is considered the same for all.
 
         Returns
         -------
-        y_pred: ndarray, shape (n_samples,)
+        y_pred: :class:`numpy.ndarray`, shape (n_samples,)
             Predicted class label per sample.
         """
-        # for backwards compatibility
-        if not isinstance(X, np.ndarray):
+        # for backwards compatibility - apply masker transform if X is
+        # niimg-like or a list of strings
+        if not isinstance(X, np.ndarray) or len(np.shape(X)) == 1:
             X = self.masker_.transform(X)
         n_features = self.coef_.shape[1]
         if X.shape[1] != n_features:
@@ -893,7 +897,8 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        X: Niimg-like
+        X : Niimg-like, :obj:`list` of either \
+            Niimg-like objects or :obj:`str` or path-like
             See :ref:`extracting_data`.
             Data on which prediction is to be made.
 
@@ -907,7 +912,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         check_is_fitted(self, "coef_")
         check_is_fitted(self, "masker_")
 
-        n_samples = X.shape[-1]
+        n_samples = np.shape(X)[-1]
 
         # Prediction for dummy estimator is different from others as there is
         # no fitted coefficient

@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from numpy.testing import assert_array_equal
+from sklearn.utils import Bunch
 
 from nilearn._utils import data_gen
 from nilearn._utils.testing import serialize_niimg
@@ -20,6 +21,24 @@ from nilearn.datasets import atlas
 from nilearn.datasets._utils import fetch_files
 from nilearn.datasets.tests._testing import dict_to_archive
 from nilearn.image import get_data
+
+
+@pytest.mark.parametrize(
+    "fn",
+    [
+        atlas.fetch_atlas_allen_2011,
+        atlas.fetch_atlas_basc_multiscale_2015,
+        atlas.fetch_atlas_schaefer_2018,
+        atlas.fetch_atlas_smith_2009,
+        atlas.fetch_atlas_yeo_2011,
+        atlas.fetch_coords_dosenbach_2010,
+        atlas.fetch_coords_power_2011,
+        atlas.fetch_coords_seitzman_2018,
+    ],
+)
+def test_atlas_fetcher_return_bunch(fn):
+    data = fn()
+    assert isinstance(data, Bunch)
 
 
 def test_downloader(tmp_path, request_mocker):
@@ -218,6 +237,7 @@ def test_fetch_atlas_fsl(
         data_dir=tmp_path,
         symmetric_split=split,
     )
+    assert isinstance(atlas_instance, Bunch)
     _test_atlas_instance_should_match_data(
         atlas_instance,
         is_symm=is_symm or split,
@@ -239,6 +259,7 @@ def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):
     bunch = atlas.fetch_atlas_craddock_2012(
         data_dir=tmp_path, verbose=0, homogeneity="spatial"
     )
+    assert isinstance(bunch, Bunch)
     bunch_rand = atlas.fetch_atlas_craddock_2012(
         data_dir=tmp_path, verbose=0, homogeneity="random"
     )
@@ -359,6 +380,8 @@ def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker, lateralized):
         lateralized=lateralized, data_dir=tmp_path, verbose=0
     )
 
+    assert isinstance(bunch, Bunch)
+
     assert request_mocker.url_count == 1
 
     name = "_lateralized" if lateralized else ""
@@ -394,6 +417,7 @@ def test_fetch_atlas_msdl(tmp_path, request_mocker):
     )
     dataset = atlas.fetch_atlas_msdl(data_dir=tmp_path, verbose=0)
 
+    assert isinstance(dataset, Bunch)
     assert isinstance(dataset.labels, list)
     assert isinstance(dataset.region_coords, list)
     assert isinstance(dataset.networks, list)
@@ -447,6 +471,7 @@ def test_fetch_atlas_difumo(tmp_path, request_mocker):
                 data_dir=tmp_path, dimension=dim, resolution_mm=res, verbose=0
             )
 
+            assert isinstance(dataset, Bunch)
             assert len(dataset.keys()) == 3
             assert len(dataset.labels) == dim
             assert isinstance(dataset.maps, str)
@@ -507,6 +532,7 @@ def test_fetch_atlas_aal(
         version=version, data_dir=tmp_path, verbose=0
     )
 
+    assert isinstance(dataset, Bunch)
     assert isinstance(dataset.maps, str)
     assert isinstance(dataset.labels, list)
     assert isinstance(dataset.indices, list)
@@ -656,6 +682,8 @@ def test_fetch_atlas_surf_destrieux(tmp_path):
 
     bunch = atlas.fetch_atlas_surf_destrieux(data_dir=tmp_path, verbose=0)
 
+    assert isinstance(bunch, Bunch)
+
     # Our mock annots have 4 labels
     assert len(bunch.labels) == 4
     assert bunch.map_left.shape == (4,)
@@ -682,6 +710,8 @@ def test_fetch_atlas_talairach(tmp_path, request_mocker):
     request_mocker.url_mapping["*talairach.nii"] = _get_small_fake_talairach()
     level_values = np.ones((81, 3)) * [0, 1, 2]
     talairach = atlas.fetch_atlas_talairach("hemisphere", data_dir=tmp_path)
+
+    assert isinstance(talairach, Bunch)
 
     assert talairach.description != ""
 
@@ -712,6 +742,8 @@ def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
     data_dir = str(tmp_path / "pauli_2017")
 
     data = atlas.fetch_atlas_pauli_2017("det", data_dir)
+
+    assert isinstance(data, Bunch)
 
     assert data.description != ""
 

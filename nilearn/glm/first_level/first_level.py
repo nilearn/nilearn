@@ -4,6 +4,7 @@ objects of fMRI data analyses.
 Author: Bertrand Thirion, Martin Perez-Guevara, 2016
 
 """
+
 from __future__ import annotations
 
 import csv
@@ -799,9 +800,10 @@ class FirstLevelModel(BaseGLM):
             output = self.masker_.inverse_transform(estimate_)
             contrast_name = str(con_vals)
             if not isinstance(output, SurfaceImage):
-                output.header[
-                    "descrip"
-                ] = f"{output_type_} of contrast {contrast_name}"
+                output.header["descrip"] = (
+                    f"{output_type_} of contrast {contrast_name}"
+                )
+
             outputs[output_type_] = output
 
         return outputs if output_type == "all" else output
@@ -1202,7 +1204,7 @@ def first_level_from_bids(
 
     kwargs: :obj:`dict`
 
-        .. versionadded:: 0.11.0
+        .. versionadded:: 0.10.3
 
     Keyword arguments to be passed to functions called within this function.
 
@@ -1922,9 +1924,11 @@ def _check_kwargs_load_confounds(**kwargs):
         return None
 
     kwargs_load_confounds = {
-        key: defaults[key]
-        if f"confounds_{key}" not in kwargs
-        else kwargs[f"confounds_{key}"]
+        key: (
+            defaults[key]
+            if f"confounds_{key}" not in kwargs
+            else kwargs[f"confounds_{key}"]
+        )
         for key in defaults
     }
 

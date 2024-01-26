@@ -17,7 +17,6 @@ It is not a minimalistic example, as it strives to be didactic. It is not
 meant to be copied to analyze new data: many of the steps are unnecessary.
 """
 
-
 # %%
 # Retrieve and load the :term:`fMRI` data from the Haxby study
 # ------------------------------------------------------------
@@ -306,7 +305,12 @@ coef_img = decoder.coef_img_["face"]
 
 # %%
 # coef_img is now a NiftiImage.  We can save the coefficients as a nii.gz file:
-decoder.coef_img_["face"].to_filename("haxby_svc_weights.nii.gz")
+from pathlib import Path
+
+output_dir = Path.cwd() / "results" / "plot_decoding_tutorial"
+output_dir.mkdir(exist_ok=True, parents=True)
+print(f"Output will be saved to: {output_dir}")
+decoder.coef_img_["face"].to_filename(output_dir / "haxby_svc_weights.nii.gz")
 
 # %%
 # Plotting the :term:`SVM` weights

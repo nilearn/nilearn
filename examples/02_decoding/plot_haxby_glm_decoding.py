@@ -134,10 +134,15 @@ report  # This report can be viewed in a notebook
 
 # %%
 # In a jupyter notebook, the report will be automatically inserted, as above.
-# We have several other ways to access the report:
 
-# report.save_as_html('report.html')
+# We can access the report via a browser:
 # report.open_in_browser()
+
+# or we can save as an html file
+# from pathlib import Path
+# output_dir = Path.cwd() / "results" / "plot_haxby_glm_decoding"
+# output_dir.mkdir(exist_ok=True, parents=True)
+# report.save_as_html(output_dir / 'report.html')
 
 # %%
 # Build the decoding pipeline

@@ -20,7 +20,7 @@ for a careful study.
 # Load brain development :term:`fMRI` dataset and MSDL atlas
 # ----------------------------------------------------------
 # We study only 30 subjects from the dataset, to save computation time.
-from nilearn import datasets
+from nilearn import datasets, plotting
 
 development_dataset = datasets.fetch_development_fmri(n_subjects=30)
 
@@ -106,8 +106,6 @@ from matplotlib import pyplot as plt
 
 # %%
 # We display the connectome matrices of the first 3 children
-from nilearn import plotting
-
 _, axes = plt.subplots(1, 3, figsize=(15, 5))
 for i, (matrix, ax) in enumerate(zip(correlation_matrices, axes)):
     plotting.plot_matrix(

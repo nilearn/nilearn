@@ -4,6 +4,7 @@ Test the design_matrix utilities.
 Note that the tests just looks whether the data produces has correct dimension,
 not whether it is exact
 """
+
 from os import path as osp
 
 import numpy as np

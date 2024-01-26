@@ -166,6 +166,14 @@ def test_strategy_compcor(tmp_path, fmriprep_version):
         "a_comp_cor_57" if fmriprep_version == "1.4.x" else "w_comp_cor_00"
     )
     assert expected not in compcor_col_str_anat
+    assert "global_signal" not in compcor_col_str_anat
+
+    # test the global signal option
+    confounds, _ = load_confounds_strategy(
+        file_nii, denoise_strategy="compcor", global_signal="basic"
+    )
+    compcor_col_str_anat = "".join(confounds.columns)
+    assert "global_signal" in compcor_col_str_anat
 
 
 @pytest.mark.parametrize("fmriprep_version", ["1.4.x", "21.x.x"])

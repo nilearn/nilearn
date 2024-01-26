@@ -36,6 +36,7 @@ manually.
 # Load the Haxby dataset
 # ----------------------
 from nilearn import datasets
+from nilearn.plotting import show
 
 # by default 2nd subject data will be fetched on which we run our analysis
 haxby_dataset = datasets.fetch_haxby()
@@ -197,8 +198,6 @@ print(f"Nested CV score: {np.mean(nested_cv_scores):.4f}")
 # Plot the prediction scores using matplotlib
 # -------------------------------------------
 from matplotlib import pyplot as plt
-
-from nilearn.plotting import show
 
 plt.figure(figsize=(6, 4))
 plt.plot(cv_scores, label="Cross validation scores")

@@ -15,6 +15,9 @@ Fast reproducible identification and large-scale databasing of individual
 functional cognitive networks.
 BMC Neurosci 8, 91 (2007). https://doi.org/10.1186/1471-2202-8-91
 """
+
+from nilearn.plotting import plot_event
+
 # %%
 # Define the onset times in seconds. These are typically extracted from
 # the stimulation software used, but we will use hardcoded values in this
@@ -98,10 +101,9 @@ events
 # Export them to a tsv file.
 from pathlib import Path
 
-outdir = Path("results")
-if not outdir.exists():
-    outdir.mkdir()
-tsvfile = outdir / "localizer_events.tsv"
+output_dir = Path.cwd() / "results" / "plot_write_events_file"
+output_dir.mkdir(exist_ok=True, parents=True)
+tsvfile = output_dir / "localizer_events.tsv"
 events.to_csv(tsvfile, sep="\t", index=False)
 print(f"The event information has been saved to {tsvfile}")
 
@@ -109,8 +111,6 @@ print(f"The event information has been saved to {tsvfile}")
 # Optionally, the events can be visualized using the
 # :func:`~nilearn.plotting.plot_event` function.
 import matplotlib.pyplot as plt
-
-from nilearn.plotting import plot_event
 
 plot_event(events, figsize=(15, 5))
 plt.show()

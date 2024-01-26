@@ -75,10 +75,12 @@ def colorscale(cmap, values, threshold=None, symmetric_cmap=True,
     if not symmetric_cmap and (values.min() < 0):
         warnings.warn('you have specified symmetric_cmap=False '
                       'but the map contains negative values; '
-                      'setting symmetric_cmap to True')
+                      'setting symmetric_cmap to True',
+                      stacklevel=3)
         symmetric_cmap = True
     if symmetric_cmap and vmin is not None:
-        warnings.warn('vmin cannot be chosen when cmap is symmetric')
+        warnings.warn('vmin cannot be chosen when cmap is symmetric',
+                      stacklevel=3)
         vmin = None
     if vmax is None:
         vmax = abs_values.max()
