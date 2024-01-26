@@ -69,8 +69,12 @@ print(data_dir)
 from nilearn.glm.first_level import first_level_from_bids
 
 task_label = "languagelocalizer"
-_, models_run_imgs, models_events, models_confounds = first_level_from_bids(
-    data_dir, task_label, img_filters=[("desc", "preproc")], n_jobs=2
+models, run_imgs, events, confounds = first_level_from_bids(
+    data_dir,
+    task_label,
+    img_filters=[("desc", "preproc")],
+    hrf_model="glover + derivative",
+    n_jobs=2,
 )
 
 # %%
@@ -92,6 +96,11 @@ with open(json_file) as f:
 
 # %%
 # Project :term:`fMRI` data to the surface: First get fsaverage5.
+from nilearn.experimental.surface import SurfaceImage, load_fsaverage
+
+fsaverage5 = load_fsaverage()
+
+
 from nilearn.datasets import fetch_surf_fsaverage
 
 fsaverage = fetch_surf_fsaverage(mesh="fsaverage5")
@@ -102,56 +111,75 @@ fsaverage = fetch_surf_fsaverage(mesh="fsaverage5")
 import numpy as np
 
 from nilearn import surface
-from nilearn.glm.contrasts import compute_contrast
-from nilearn.glm.first_level import make_first_level_design_matrix, run_glm
+
+# from nilearn.glm.contrasts import compute_contrast
+# from nilearn.glm.first_level import make_first_level_design_matrix, run_glm
 
 # %%
 # Empty lists in which we are going to store activation values.
-z_scores_right = []
 z_scores_left = []
-for fmri_img, confound, events in zip(
-    models_run_imgs, models_confounds, models_events
+z_scores_right = []
+for first_level_glm, fmri_img, confound, events in zip(
+    models, run_imgs, confounds, events
 ):
-    texture = surface.vol_to_surf(fmri_img[0], fsaverage.pial_right)
-    n_scans = texture.shape[1]
-    frame_times = t_r * (np.arange(n_scans) + 0.5)
+    texture_left = surface.vol_to_surf(
+        fmri_img[0], fsaverage5["pial"]["left_hemisphere"]
+    )
+    texture_right = surface.vol_to_surf(
+        fmri_img[0], fsaverage5["pial"]["right_hemisphere"]
+    )
+    image = SurfaceImage(
+        mesh={
+            "lh": fsaverage5["pial"]["left_hemisphere"],
+            "rh": fsaverage5["pial"]["right_hemisphere"],
+        },
+        data={
+            "lh": texture_left.T,
+            "rh": texture_right.T,
+        },
+    )
+    # texture = surface.vol_to_surf(fmri_img[0], fsaverage.pial_right)
+    # n_scans = texture.shape[1]
+    # frame_times = t_r * (np.arange(n_scans) + 0.5)
 
     # Create the design matrix
     #
     # We specify an hrf model containing Glover model and its time derivative.
     # The drift model is implicitly a cosine basis with period cutoff 128s.
-    design_matrix = make_first_level_design_matrix(
-        frame_times,
-        events=events[0],
-        hrf_model="glover + derivative",
-        add_regs=confound[0],
-    )
-
-    # Contrast specification
-    contrast_values = (design_matrix.columns == "language") * 1.0 - (
-        design_matrix.columns == "string"
-    )
+    # design_matrix = make_first_level_design_matrix(
+    #     frame_times,
+    #     events=events[0],
+    #     hrf_model="glover + derivative",
+    #     add_regs=confound[0],
+    # )
 
     # Setup and fit GLM.
     # Note that the output consists in 2 variables: `labels` and `fit`
     # `labels` tags voxels according to noise autocorrelation.
     # `estimates` contains the parameter estimates.
     # We input them for contrast computation.
-    labels, estimates = run_glm(texture.T, design_matrix.values)
-    contrast = compute_contrast(
-        labels, estimates, contrast_values, stat_type="t"
+    # labels, estimates = run_glm(texture.T, design_matrix.values)
+    first_level_glm.fit(image, events[0])
+
+    # Contrast specification
+    design_matrix = first_level_glm.design_matrices_[0]
+    contrast_values = (design_matrix.columns == "language") * 1.0 - (
+        design_matrix.columns == "string"
     )
+    z_scores = first_level_glm.compute_contrast(contrast_values, stat_type="t")
+    z_scores_left.append(z_scores.data["lh"])
+    z_scores_right.append(z_scores.data["rh"])
     # We present the Z-transform of the t map.
-    z_score = contrast.z_score()
-    z_scores_right.append(z_score)
+    # z_score = contrast.z_score()
+    # z_scores_right.append(z_score)
 
     # Do the left hemisphere exactly the same way.
-    texture = surface.vol_to_surf(fmri_img, fsaverage.pial_left)
-    labels, estimates = run_glm(texture.T, design_matrix.values)
-    contrast = compute_contrast(
-        labels, estimates, contrast_values, stat_type="t"
-    )
-    z_scores_left.append(contrast.z_score())
+    # texture = surface.vol_to_surf(fmri_img, fsaverage.pial_left)
+    # labels, estimates = run_glm(texture.T, design_matrix.values)
+    # contrast = compute_contrast(
+    #     labels, estimates, contrast_values, stat_type="t"
+    # )
+    # z_scores_left.append(contrast.z_score())
 
 # %%
 # Individual activation maps have been accumulated
@@ -180,7 +208,7 @@ z_val_right = norm.isf(pval_right)
 from nilearn import plotting
 
 plotting.plot_surf_stat_map(
-    fsaverage.infl_left,
+    fsaverage5["inflated"]["left_hemisphere"],
     z_val_left,
     hemi="left",
     title="language-string, left hemisphere",
@@ -191,7 +219,7 @@ plotting.plot_surf_stat_map(
 # %%
 # Next, on the right hemisphere.
 plotting.plot_surf_stat_map(
-    fsaverage.infl_right,
+    fsaverage5["inflated"]["right_hemisphere"],
     z_val_right,
     hemi="right",
     title="language-string, right hemisphere",
