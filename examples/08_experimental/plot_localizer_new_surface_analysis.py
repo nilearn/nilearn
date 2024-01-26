@@ -15,8 +15,9 @@ Example of surface-based first-level analysis
 
     Please participate in the discussion on GitHub!
 
-A full step-by-step example of fitting a :term:`GLM` to experimental
-data sampled on the cortical surface and visualizing the results.
+A full step-by-step example of fitting a :term:`GLM`
+to experimental data sampled on the cortical surface
+and visualizing the results.
 
 More specifically:
 
@@ -26,28 +27,31 @@ More specifically:
 3. A :term:`GLM` is applied to the dataset
    (effect/covariance, then contrast estimation).
 
-The result of the analysis are statistical maps that are defined on the brain
-mesh. We display them using Nilearn capabilities.
+The result of the analysis are statistical maps that are defined
+on the brain mesh.
+We display them using Nilearn capabilities.
 
 The projection of :term:`fMRI` data onto a given brain :term:`mesh` requires
 that both are initially defined in the same space.
 
-* The functional data should be coregistered to the anatomy from which the mesh
-  was obtained.
+* The functional data should be coregistered to the anatomy
+  from which the mesh was obtained.
 
 * Another possibility, used here, is to project
   the normalized :term:`fMRI` data to an :term:`MNI`-coregistered mesh,
   such as fsaverage.
 
 The advantage of this second approach is that it makes it easy to run
-second-level analyses on the surface. On the other hand, it is obviously less
-accurate than using a subject-tailored mesh.
+second-level analyses on the surface.
+On the other hand, it is obviously less accurate
+than using a subject-tailored mesh.
 
 """
 
 # %%
 # Prepare data and analysis parameters
 # ------------------------------------
+#
 # Prepare the timing parameters.
 t_r = 2.4
 slice_time_ref = 0.5
@@ -127,6 +131,7 @@ glm = FirstLevelModel(
 # %%
 # Estimate contrasts
 # ------------------
+#
 # Specify the contrasts.
 #
 # For practical purpose, we first generate an identity matrix whose size is
