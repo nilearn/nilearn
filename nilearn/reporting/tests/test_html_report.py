@@ -35,45 +35,45 @@ def _check_html(html_view):
 
 
 @pytest.fixture
-def data_img_3d(affine_eye):
+def data_img_3d(shape_3d_default, affine_eye):
     """Dummy 3D data for testing."""
-    data = np.zeros((9, 9, 9))
+    data = np.zeros(shape_3d_default)
     data[3:-3, 3:-3, 3:-3] = 10
     return Nifti1Image(data, affine_eye)
 
 
 @pytest.fixture
-def mask(affine_eye):
+def mask(shape_3d_default, affine_eye):
     """Dummy mask for testing."""
-    data = np.zeros((10, 10, 10), dtype="uint8")
+    data = np.zeros(shape_3d_default, dtype="uint8")
     data[3:7, 3:7, 3:7] = 1
     return Nifti1Image(data, affine_eye)
 
 
 @pytest.fixture
-def niftimapsmasker_inputs(affine_eye):
+def niftimapsmasker_inputs(shape_3d_default, affine_eye):
     n_regions = 9
-    shape = (8, 8, 8)
-    label_img, _ = generate_maps(shape, n_regions=n_regions, affine=affine_eye)
+    label_img, _ = generate_maps(
+        shape_3d_default, n_regions=n_regions, affine=affine_eye
+    )
     return {"maps_img": label_img}
 
 
 @pytest.fixture
-def input_parameters(masker_class, data_img_3d, affine_eye):
+def input_parameters(shape_3d_default, masker_class, mask, affine_eye):
     n_regions = 9
-    shape = (13, 11, 12)
     labels = ["background"]
     labels += [f"region_{i}" for i in range(1, n_regions + 1)]
     if masker_class in (NiftiMasker, MultiNiftiMasker):
-        return {"mask_img": data_img_3d}
+        return {"mask_img": mask}
     if masker_class in (NiftiLabelsMasker, MultiNiftiLabelsMasker):
         labels_img = generate_labeled_regions(
-            shape, n_regions=n_regions, affine=affine_eye
+            shape_3d_default, n_regions=n_regions, affine=affine_eye
         )
         return {"labels_img": labels_img, "labels": labels}
     if masker_class in (NiftiMapsMasker, MultiNiftiMapsMasker):
         label_img, _ = generate_maps(
-            shape, n_regions=n_regions, affine=affine_eye
+            shape_3d_default, n_regions=n_regions, affine=affine_eye
         )
         return {"maps_img": label_img}
     if masker_class is NiftiSpheresMasker:
@@ -140,12 +140,12 @@ def test_reports_after_fit_3d_data(
 
 @pytest.mark.parametrize("masker_class", [NiftiMasker, NiftiLabelsMasker])
 def test_reports_after_fit_3d_data_with_mask(
-    masker_class, input_parameters, data_img_3d, mask
+    masker_class, input_parameters, img_3d_rand_eye, mask
 ):
     """Tests report generation after fitting on 3D data with mask_img."""
     input_parameters["mask_img"] = mask
     masker = masker_class(**input_parameters)
-    masker.fit(data_img_3d)
+    masker.fit(img_3d_rand_eye)
     assert masker._report_content["warning_message"] is None
     html = masker.generate_report()
     _check_html(html)
@@ -309,8 +309,9 @@ def test_nifti_spheres_masker_report_displayed_spheres_list_more_than_seeds():
         masker.generate_report(displayed_spheres=displayed_spheres)
 
 
-def test_nifti_labels_masker_report(data_img_3d, mask, affine_eye):
-    shape = (13, 11, 12)
+def test_nifti_labels_masker_report(
+    shape_3d_default, data_img_3d, mask, affine_eye
+):
     n_regions = 9
     labels = ["background"] + [f"region_{i}" for i in range(1, n_regions + 1)]
     EXPECTED_COLUMNS = [
@@ -320,7 +321,7 @@ def test_nifti_labels_masker_report(data_img_3d, mask, affine_eye):
         "relative size (in %)",
     ]
     labels_img = generate_labeled_regions(
-        shape, affine=affine_eye, n_regions=n_regions
+        shape_3d_default, affine=affine_eye, n_regions=n_regions
     )
     labels_img_floats = new_img_like(
         labels_img, get_data(labels_img).astype(float)
@@ -442,13 +443,13 @@ def test_4d_reports(mask, affine_eye):
     _check_html(html)
 
 
-def test_overlaid_report(data_img_3d):
+def test_overlaid_report(img_3d_mni):
     pytest.importorskip("matplotlib")
 
     masker = NiftiMasker(target_affine=np.eye(3) * 8)
     html = masker.generate_report()
     assert "Please `fit` the object" in str(html)
-    masker.fit(data_img_3d)
+    masker.fit(img_3d_mni)
     html = masker.generate_report()
     assert '<div class="overlay">' in str(html)
 
@@ -457,49 +458,50 @@ def test_overlaid_report(data_img_3d):
     "reports,expected", [(True, dict), (False, type(None))]
 )
 def test_multi_nifti_masker_generate_report_imgs(
-    reports, expected, affine_eye
+    reports, expected, affine_eye, shape_3d_default
 ):
     """Smoke test for generate_report method with image data."""
-    shape = (9, 9, 5)
-    imgs, _ = generate_fake_fmri(shape, affine=affine_eye, length=2)
+    imgs, _ = generate_fake_fmri(shape_3d_default, affine=affine_eye, length=2)
     masker = MultiNiftiMasker(reports=reports)
     masker.fit([imgs, imgs])
     assert isinstance(masker._reporting_data, expected)
     masker.generate_report()
 
 
-def test_multi_nifti_masker_generate_report_mask(affine_eye):
+def test_multi_nifti_masker_generate_report_mask(
+    img_3d_ones_eye, shape_3d_default, affine_eye
+):
     """Smoke test for generate_report method with only mask."""
-    shape = (9, 9, 5)
-    mask = Nifti1Image(np.ones(shape), affine_eye)
     masker = MultiNiftiMasker(
-        mask_img=mask,
+        mask_img=img_3d_ones_eye,
         # to test resampling lines without imgs
         target_affine=affine_eye,
-        target_shape=shape,
+        target_shape=shape_3d_default,
     )
     masker.fit().generate_report()
 
 
-def test_multi_nifti_masker_generate_report_imgs_and_mask(affine_eye):
+def test_multi_nifti_masker_generate_report_imgs_and_mask(
+    shape_3d_default, affine_eye
+):
     """Smoke test for generate_report method with images and mask."""
-    shape = (9, 9, 5)
-    imgs, _ = generate_fake_fmri(shape, affine=affine_eye, length=2)
-    mask = Nifti1Image(np.ones(shape), affine_eye)
+    imgs, _ = generate_fake_fmri(shape_3d_default, affine=affine_eye, length=2)
+    mask = Nifti1Image(np.ones(shape_3d_default), affine_eye)
     masker = MultiNiftiMasker(
         mask_img=mask,
         # to test resampling lines with imgs
         target_affine=affine_eye,
-        target_shape=shape,
+        target_shape=shape_3d_default,
     )
     masker.fit([imgs, imgs]).generate_report()
 
 
-def test_multi_nifti_masker_generate_report_warning(affine_eye):
+def test_multi_nifti_masker_generate_report_warning(
+    shape_3d_default, affine_eye
+):
     """Test calling generate report on multiple subjects raises warning."""
-    shape = (9, 9, 9)
-    imgs, _ = generate_fake_fmri(shape, affine=affine_eye, length=5)
-    mask = Nifti1Image(np.ones(shape), affine_eye)
+    imgs, _ = generate_fake_fmri(shape_3d_default, affine=affine_eye, length=5)
+    mask = Nifti1Image(np.ones(shape_3d_default), affine_eye)
     masker = MultiNiftiMasker(
         mask_img=mask,
     )
@@ -510,16 +512,19 @@ def test_multi_nifti_masker_generate_report_warning(affine_eye):
         masker.fit([imgs, imgs]).generate_report()
 
 
-def test_multi_nifti_labels_masker_report_warning(affine_eye):
+def test_multi_nifti_labels_masker_report_warning(
+    shape_3d_default, affine_eye
+):
     """Test calling generate report on multiple subjects raises warning."""
-    shape = (13, 11, 12)
     n_regions = 9
     length = 3
 
     labels_img = generate_labeled_regions(
-        shape, affine=affine_eye, n_regions=n_regions
+        shape_3d_default, affine=affine_eye, n_regions=n_regions
     )
-    imgs, _ = generate_fake_fmri(shape, affine=affine_eye, length=length)
+    imgs, _ = generate_fake_fmri(
+        shape_3d_default, affine=affine_eye, length=length
+    )
 
     masker = MultiNiftiLabelsMasker(labels_img)
 
@@ -529,14 +534,15 @@ def test_multi_nifti_labels_masker_report_warning(affine_eye):
         masker.fit([imgs, imgs]).generate_report()
 
 
-def test_multi_nifti_maps_masker_report_warning(affine_eye):
+def test_multi_nifti_maps_masker_report_warning(shape_3d_default, affine_eye):
     """Test calling generate report on multiple subjects raises warning."""
-    shape = (13, 11, 12)
     n_regions = 9
     length = 3
 
-    maps_img, _ = generate_maps(shape, n_regions, affine=affine_eye)
-    imgs, _ = generate_fake_fmri(shape, affine=affine_eye, length=length)
+    maps_img, _ = generate_maps(shape_3d_default, n_regions, affine=affine_eye)
+    imgs, _ = generate_fake_fmri(
+        shape_3d_default, affine=affine_eye, length=length
+    )
 
     masker = MultiNiftiMapsMasker(maps_img)
 
