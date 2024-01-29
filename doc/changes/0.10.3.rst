@@ -2,8 +2,8 @@
 
 .. include:: names.rst
 
-0.10.3.dev
-==========
+0.10.3
+======
 
 HIGHLIGHTS
 ----------
@@ -27,11 +27,11 @@ HIGHLIGHTS
 
 - :bdg-dark:`Code` Update the ``CompCor`` strategy in :func:`~interfaces.fmriprep.load_confounds` and :func:`~interfaces.fmriprep.load_confounds_strategy` to support ``fmriprep`` 21.x series and above. (:gh:`3285` by `Hao-Ting Wang`_).
 
+- :bdg-primary:`Doc` Combine GLM examples ``plot_fixed_effect`` and ``plot_fiac_analysis`` into a a single example ``plot_two_runs_model`` (:gh:`3191` by `Taylor Salo`_ and `Rémi Gau`_).
+
 - :bdg-info:`Plotting` Allow setting ``vmin`` in :func:`~nilearn.plotting.plot_glass_brain` and :func:`~nilearn.plotting.plot_stat_map` (:gh:`3993` by `Michelle Wang`_).
 
 - :bdg-info:`Plotting` When plotting thresholded statistical maps with a colorbar, the threshold value(s) will now be displayed as tick labels on the colorbar (:gh:`#2833` by `Nicolas Gensollen`_).
-
-- :bdg-primary:`Doc` Combine GLM examples ``plot_fixed_effect`` and ``plot_fiac_analysis`` into a a single example ``plot_two_runs_model`` (:gh:`3191` by `Taylor Salo`_ and `Rémi Gau`_).
 
 
 NEW
