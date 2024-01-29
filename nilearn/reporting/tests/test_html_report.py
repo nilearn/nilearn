@@ -69,15 +69,25 @@ def labels(n_regions):
 
 
 @pytest.fixture
+def labels_img(shape_3d_default, affine_eye, n_regions):
+    return generate_labeled_regions(
+        shape_3d_default, affine=affine_eye, n_regions=n_regions
+    )
+
+
+@pytest.fixture
 def input_parameters(
-    n_regions, shape_3d_default, masker_class, mask, affine_eye, labels
+    n_regions,
+    shape_3d_default,
+    masker_class,
+    mask,
+    affine_eye,
+    labels,
+    labels_img,
 ):
     if masker_class in (NiftiMasker, MultiNiftiMasker):
         return {"mask_img": mask}
     if masker_class in (NiftiLabelsMasker, MultiNiftiLabelsMasker):
-        labels_img = generate_labeled_regions(
-            shape_3d_default, n_regions=n_regions, affine=affine_eye
-        )
         return {"labels_img": labels_img, "labels": labels}
     if masker_class in (NiftiMapsMasker, MultiNiftiMapsMasker):
         label_img, _ = generate_maps(
@@ -236,7 +246,9 @@ def test_nifti_maps_masker_report_integer_and_all_displayed_maps(
     masker = NiftiMapsMasker(**niftimapsmasker_inputs)
     masker.fit()
     expected_n_maps = (
-        9 if displayed_maps == "all" else min(n_regions, displayed_maps)
+        n_regions
+        if displayed_maps == "all"
+        else min(n_regions, displayed_maps)
     )
     if displayed_maps != "all" and displayed_maps > n_regions:
         with pytest.warns(UserWarning, match="masker only has 9 maps."):
@@ -319,13 +331,8 @@ def test_nifti_spheres_masker_report_displayed_spheres_list_more_than_seeds():
         masker.generate_report(displayed_spheres=displayed_spheres)
 
 
-def test_nifti_labels_masker_report(
-    shape_3d_default, affine_eye, n_regions, labels
-):
+def test_nifti_labels_masker_report(labels, labels_img):
     """Smoke test."""
-    labels_img = generate_labeled_regions(
-        shape_3d_default, affine=affine_eye, n_regions=n_regions
-    )
     labels_img_floats = new_img_like(
         labels_img, get_data(labels_img).astype(float)
     )
@@ -334,13 +341,8 @@ def test_nifti_labels_masker_report(
     masker.generate_report()
 
 
-def test_nifti_labels_masker_report_incorrect_label_error(
-    shape_3d_default, affine_eye, n_regions, labels
-):
+def test_nifti_labels_masker_report_incorrect_label_error(labels, labels_img):
     """Check that providing incorrect labels raises an error."""
-    labels_img = generate_labeled_regions(
-        shape_3d_default, affine=affine_eye, n_regions=n_regions
-    )
     masker = NiftiLabelsMasker(labels_img, labels=labels[:-1])
     masker.fit()
 
@@ -350,13 +352,8 @@ def test_nifti_labels_masker_report_incorrect_label_error(
         masker.generate_report()
 
 
-def test_nifti_labels_masker_report_warning_no_img_fit(
-    shape_3d_default, affine_eye, n_regions, labels
-):
+def test_nifti_labels_masker_report_warning_no_img_fit(labels, labels_img):
     """Check warning thrown when no image was provided to fit."""
-    labels_img = generate_labeled_regions(
-        shape_3d_default, affine=affine_eye, n_regions=n_regions
-    )
     masker = NiftiLabelsMasker(labels_img, labels=labels)
     masker.fit()
     with pytest.warns(
@@ -366,13 +363,9 @@ def test_nifti_labels_masker_report_warning_no_img_fit(
 
 
 def test_nifti_labels_masker_report_more(
-    shape_3d_default, data_img_3d, affine_eye, n_regions, labels
+    data_img_3d, n_regions, labels, labels_img
 ):
     """Check warning thrown when no image was provided to fit."""
-    labels_img = generate_labeled_regions(
-        shape_3d_default, affine=affine_eye, n_regions=n_regions
-    )
-
     masker = NiftiLabelsMasker(labels_img, labels=labels)
     masker.fit()
 
@@ -391,42 +384,49 @@ def test_nifti_labels_masker_report_more(
 
 
 def test_nifti_labels_masker_report_more_more(
-    shape_3d_default, data_img_3d, mask, affine_eye, n_regions, labels
+    data_img_3d, mask, affine_eye, n_regions, labels, labels_img
 ):
     """Check warning thrown when no image was provided to fit."""
+    masker = NiftiLabelsMasker(labels_img, labels=labels, mask_img=mask)
+    masker.fit(data_img_3d)
+    report = masker.generate_report()
+
+    assert masker._reporting_data is not None
+
+    # Check that background label was left as default
+    assert masker.background_label == 0
+    assert masker._report_content["description"] == (
+        "This reports shows the regions defined by the labels of the mask."
+    )
+
+    # Check that the number of regions is correct
+    assert masker._report_content["number_of_regions"] == n_regions
+
+    # Check that all expected columns are present with the right size
     EXPECTED_COLUMNS = [
         "label value",
         "region name",
         "size (in mm^3)",
         "relative size (in %)",
     ]
-    labels_img = generate_labeled_regions(
-        shape_3d_default, affine=affine_eye, n_regions=n_regions
-    )
-
-    masker = NiftiLabelsMasker(labels_img, labels=labels, mask_img=mask)
-    masker.fit(data_img_3d)
-    report = masker.generate_report()
-    assert masker._reporting_data is not None
-    # Check that background label was left as default
-    assert masker.background_label == 0
-    assert masker._report_content["description"] == (
-        "This reports shows the regions defined by the labels of the mask."
-    )
-    # Check that the number of regions is correct
-    assert masker._report_content["number_of_regions"] == n_regions
-    # Check that all expected columns are present with the right size
     for col in EXPECTED_COLUMNS:
         assert col in masker._report_content["summary"]
         assert len(masker._report_content["summary"][col]) == n_regions
+
     # Check that labels match
     assert masker._report_content["summary"]["region name"] == labels[1:]
+
     # Relative sizes of regions should sum to 100%
     assert_almost_equal(
-        sum(masker._report_content["summary"]["relative size (in %)"]), 100
+        sum(masker._report_content["summary"]["relative size (in %)"]),
+        100,
+        decimal=2,
     )
+
     _check_html(report)
+
     assert "Regions summary" in str(report)
+
     # Check region sizes calculations
     expected_region_sizes = Counter(get_data(labels_img).ravel())
     for r in range(1, n_regions + 1):
@@ -441,6 +441,7 @@ def test_nifti_labels_masker_report_more_more(
     masker = NiftiLabelsMasker(labels_img)
     masker.fit()
     report = masker.generate_report()
+
     for col in EXPECTED_COLUMNS:
         if col == "region name":
             assert col not in masker._report_content["summary"]
@@ -557,14 +558,11 @@ def test_multi_nifti_masker_generate_report_warning(
 
 
 def test_multi_nifti_labels_masker_report_warning(
-    shape_3d_default, affine_eye, n_regions
+    shape_3d_default, affine_eye, labels_img
 ):
     """Test calling generate report on multiple subjects raises warning."""
     length = 3
 
-    labels_img = generate_labeled_regions(
-        shape_3d_default, affine=affine_eye, n_regions=n_regions
-    )
     imgs, _ = generate_fake_fmri(
         shape_3d_default, affine=affine_eye, length=length
     )
