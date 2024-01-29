@@ -107,35 +107,44 @@ def test_cluster_nearest_neighbor(shape):
     assert np.array_equal(nbrs, np.array([[4, 7, 5], [4, 5, 5], [4, 2, 6]]))
 
 
-def test_get_clusters_table(shape, affine_eye, tmp_path):
+@pytest.mark.parametrize(
+    "stat_threshold, cluster_threshold, two_sided, expected_nb_cluster",
+    [
+        (4, 0, False, 1),  # test one cluster extracted
+        (6, 0, False, 0),  # test empty table on high stat threshold
+        (4, 9, False, 0),  # test empty table on high cluster threshold
+        (4, 0, True, 2),  # test two clusters with different signs extracted
+        (6, 0, True, 0),  # test empty table on high stat threshold
+        (4, 9, True, 0),  # test empty table on high cluster threshold
+    ],
+)
+def test_get_clusters_table(
+    shape,
+    affine_eye,
+    stat_threshold,
+    cluster_threshold,
+    two_sided,
+    expected_nb_cluster,
+):
     data = np.zeros(shape)
     data[2:4, 5:7, 6:8] = 5.0
     data[4:6, 7:9, 8:10] = -5.0
     stat_img = nib.Nifti1Image(data, affine_eye)
 
-    # test one cluster extracted
-    cluster_table = get_clusters_table(stat_img, 4, 0, two_sided=False)
-    assert len(cluster_table) == 1
+    clusters_table = get_clusters_table(
+        stat_img,
+        stat_threshold=stat_threshold,
+        cluster_threshold=cluster_threshold,
+        two_sided=two_sided,
+    )
+    assert len(clusters_table) == expected_nb_cluster
 
-    # test empty table on high stat threshold
-    cluster_table = get_clusters_table(stat_img, 6, 0, two_sided=False)
-    assert len(cluster_table) == 0
 
-    # test empty table on high cluster threshold
-    cluster_table = get_clusters_table(stat_img, 4, 9, two_sided=False)
-    assert len(cluster_table) == 0
-
-    # test two clusters with different signs extracted
-    cluster_table = get_clusters_table(stat_img, 4, 0, two_sided=True)
-    assert len(cluster_table) == 2
-
-    # test empty table on high stat threshold
-    cluster_table = get_clusters_table(stat_img, 6, 0, two_sided=True)
-    assert len(cluster_table) == 0
-
-    # test empty table on high cluster threshold
-    cluster_table = get_clusters_table(stat_img, 4, 9, two_sided=True)
-    assert len(cluster_table) == 0
+def test_get_clusters_table_more(shape, affine_eye, tmp_path):
+    data = np.zeros(shape)
+    data[2:4, 5:7, 6:8] = 5.0
+    data[4:6, 7:9, 8:10] = -5.0
+    stat_img = nib.Nifti1Image(data, affine_eye)
 
     # test with filename
     fname = str(tmp_path / "stat_img.nii.gz")
