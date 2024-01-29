@@ -331,7 +331,7 @@ def test_nifti_spheres_masker_report_displayed_spheres_list_more_than_seeds():
         masker.generate_report(displayed_spheres=displayed_spheres)
 
 
-def test_nifti_labels_masker_report(labels, labels_img):
+def test_nifti_labels_masker_report_smoke_test(labels, labels_img):
     """Smoke test."""
     labels_img_floats = new_img_like(
         labels_img, get_data(labels_img).astype(float)
@@ -362,10 +362,10 @@ def test_nifti_labels_masker_report_warning_no_img_fit(labels, labels_img):
         masker.generate_report()
 
 
-def test_nifti_labels_masker_report_more(
+def test_nifti_labels_masker_report_no_image_for_fit(
     data_img_3d, n_regions, labels, labels_img
 ):
-    """Check warning thrown when no image was provided to fit."""
+    """Check no contour in image when no image was provided to fit."""
     masker = NiftiLabelsMasker(labels_img, labels=labels)
     masker.fit()
 
@@ -383,7 +383,7 @@ def test_nifti_labels_masker_report_more(
         assert len(display[0].axes[d].ax.collections) <= n_regions
 
 
-def test_nifti_labels_masker_report_more_more(
+def test_nifti_labels_masker_report(
     data_img_3d, mask, affine_eye, n_regions, labels, labels_img
 ):
     """Check warning thrown when no image was provided to fit."""
