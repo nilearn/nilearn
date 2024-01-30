@@ -46,6 +46,9 @@ venv/
 .pytest_cache
 generated_glm_reports
 
+# CI benchmark
+maint_tools/test_runs_timing.*
+
 # coverage
 .coverage
 coverage

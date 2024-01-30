@@ -5,6 +5,7 @@ Requires:
 - rich
 - pandas
 - plotly
+- kaleido
 
 For a given github action workflow:
 - ping the github API to collect the start and end time
@@ -14,6 +15,8 @@ For a given github action workflow:
 This script should in principle run for any repo and any workflow.
 
 """
+
+import sys
 import warnings
 from pathlib import Path
 from typing import Any
@@ -41,40 +44,124 @@ INCLUDE_FAILED_RUNS = True
 
 # Pages of runs to collect
 # 100 per page
-PAGES_TO_COLLECT = [1]
+PAGES_TO_COLLECT = range(1, 20)
+
+# If False, just plots the content of the TSV
+UPDATE_TSV = True
 
 OUTPUT_FILE = Path(__file__).parent / "test_runs_timing.tsv"
 
 
-def main() -> None:
+def main(args=sys.argv) -> None:
     """Collect duration of each job and plots them."""
-    auth = get_auth(USERNAME, TOKEN_FILE)
+    update_tsv = UPDATE_TSV if OUTPUT_FILE.exists() else True
+    if update_tsv:
+        if len(args) > 1:
+            _ = args[1]
+        else:
+            auth = get_auth(USERNAME, TOKEN_FILE)
 
-    jobs_data = {"name": [], "started_at": [], "completed_at": []}
+        jobs_data = {"name": [], "started_at": [], "completed_at": []}
 
-    for page in PAGES_TO_COLLECT:
-        runs = get_runs(
-            WORKFLOW_ID,
-            auth,
-            page=page,
-            include_failed_runs=INCLUDE_FAILED_RUNS,
-        )
-        print(f" found {len(runs)} runs")
-        jobs_data = udpate_jobs_data(jobs_data, runs, auth)
+        for page in PAGES_TO_COLLECT:
+            runs = get_runs(
+                WORKFLOW_ID,
+                auth,
+                page=page,
+                include_failed_runs=INCLUDE_FAILED_RUNS,
+            )
+            if len(runs) > 0:
+                print(f" found {len(runs)} runs")
+                jobs_data = udpate_jobs_data(jobs_data, runs, auth)
+            else:
+                break
 
-    df = pd.DataFrame(jobs_data)
-    df.to_csv(OUTPUT_FILE, sep="\t", index=False)
+        df = pd.DataFrame(jobs_data)
+        df.to_csv(OUTPUT_FILE, sep="\t", index=False)
 
     df = pd.read_csv(
         OUTPUT_FILE,
         sep="\t",
         parse_dates=["started_at", "completed_at"],
     )
-    df["duration"] = df["completed_at"] - df["started_at"]
+
+    df["duration"] = (df["completed_at"] - df["started_at"]) / pd.Timedelta(
+        minutes=1
+    )
+    df["python"] = df["name"].apply(set_python_version)
+    df["OS"] = df["name"].apply(set_os)
+    df["dependencies"] = df["name"].apply(set_dependencies)
+
     print(df)
 
-    fig = px.line(df, x="started_at", y="duration", color="name")
-    fig.show()
+    plot_job_durations(df)
+
+
+def plot_job_durations(df: pd.DataFrame) -> None:
+    """Plot and save."""
+    fig = px.line(
+        df,
+        x="started_at",
+        y="duration",
+        color="python",
+        symbol="dependencies",
+        line_dash="OS",
+        labels={
+            "duration": "Run duration (minutes)",
+            "started_at": "Run started on",
+            "OS": "OS",
+            "python": "python version",
+        },
+        title="Duration of nilearn test runs",
+    )
+
+    fig.update_xaxes(dtick="M1", tickformat="%b\n%Y")
+    fig.update_layout(autosize=True, width=1000, height=700)
+
+    fig.write_image(OUTPUT_FILE.with_suffix(".png"))
+    fig.write_html(OUTPUT_FILE.with_suffix(".html"))
+
+
+def set_os(x: str) -> str:
+    """Detect which OS the job was run on."""
+    if "ubuntu" in x:
+        return "ubuntu"
+    elif "windows" in x:
+        return "windows"
+    elif "macos" in x:
+        return "macos"
+    else:
+        return "n/a"
+
+
+def set_python_version(x: str) -> str:
+    """Detect which python version the job was run on."""
+    if "3.8" in x:
+        return "3.8"
+    elif "3.9" in x:
+        return "3.9"
+    elif "3.10" in x:
+        return "3.10"
+    elif "3.11" in x:
+        return "3.11"
+    elif "3.12" in x:
+        return "3.12"
+    else:
+        return "n/a"
+
+
+def set_dependencies(x: str) -> str:
+    """Detect which set of dependencies was used for the run."""
+    if "latest dependencies" in x:
+        return "latest"
+    elif "pre-release" in x:
+        return "pre-release"
+    elif "no plotting" in x:
+        return "no plotting"
+    elif "no plotly" in x:
+        return "no plotly"
+    else:
+        return "n/a"
 
 
 def get_auth(username: str, token_file: Path) -> None | tuple[str, str]:
