@@ -27,6 +27,11 @@ timing issues.
 This example requires matplotlib and scipy.
 """
 
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
+
 # %%
 # Define stimulus parameters and response models
 # ----------------------------------------------
@@ -126,9 +131,6 @@ rf_models = [
 # %%
 # Sample and plot response functions
 # ----------------------------------
-
-import matplotlib.pyplot as plt
-
 from nilearn.glm.first_level import compute_regressor
 
 oversampling = 16

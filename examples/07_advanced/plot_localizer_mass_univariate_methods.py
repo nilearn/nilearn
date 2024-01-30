@@ -24,8 +24,12 @@ is included in the model.
 
 """
 
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
+
 # %%
-import matplotlib.pyplot as plt
 import numpy as np
 
 from nilearn import datasets

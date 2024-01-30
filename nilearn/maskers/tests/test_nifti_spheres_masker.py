@@ -1,4 +1,5 @@
 """Test nilearn.maskers.nifti_spheres_masker."""
+
 import warnings
 
 import nibabel

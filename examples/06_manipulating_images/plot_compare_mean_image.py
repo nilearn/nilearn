@@ -8,7 +8,6 @@ We compare the means of 2 resting state 4D images. The mean of the images
 could have been computed with nilearn :func:`nilearn.image.mean_img` function.
 """
 
-
 # %%
 # Fetching 2 subject movie watching brain development :term:`fMRI` datasets.
 from nilearn import datasets

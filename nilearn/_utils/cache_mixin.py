@@ -1,4 +1,5 @@
 """Mixin for cache with joblib."""
+
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 
 import os
@@ -240,7 +241,8 @@ class CacheMixin:
             warnings.warn(
                 "memory_level is currently set to 0 but "
                 "a Memory object has been provided. "
-                "Setting memory_level to 1."
+                "Setting memory_level to 1.",
+                stacklevel=3,
             )
             self.memory_level = 1
 

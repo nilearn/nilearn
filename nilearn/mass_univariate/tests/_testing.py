@@ -1,4 +1,5 @@
 """Utility functions for the mass_univariate module's test suite."""
+
 import numpy as np
 
 

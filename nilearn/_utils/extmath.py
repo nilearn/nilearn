@@ -1,4 +1,5 @@
 """Extended math utilities."""
+
 # Author: Gael Varoquaux
 
 import numpy as np

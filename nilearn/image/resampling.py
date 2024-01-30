@@ -2,6 +2,7 @@
 
 See http://nilearn.github.io/stable/manipulating_images/input_output.html
 """
+
 import numbers
 
 # Author: Gael Varoquaux, Alexandre Abraham, Michael Eickenberg
@@ -586,7 +587,9 @@ def resample_img(
         aux = aux.replace("ufloat", "float").replace("floatc", "float")
         if aux in ["float8", "float16"]:
             aux = "float32"
-        warnings.warn(f"Casting data from {data.dtype.name} to {aux}")
+        warnings.warn(
+            f"Casting data from {data.dtype.name} to {aux}", stacklevel=2
+        )
         resampled_data_dtype = np.dtype(aux)
     else:
         resampled_data_dtype = data.dtype

@@ -26,9 +26,14 @@ model with a random design matrix **X**:
 * **e** is random normal noise.
 
 """
+
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
+
 from time import time
 
-import matplotlib.pyplot as plt
 import nibabel
 import numpy as np
 from scipy import linalg

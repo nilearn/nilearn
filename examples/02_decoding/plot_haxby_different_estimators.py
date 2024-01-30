@@ -6,13 +6,15 @@ Here we compare different classifiers on a visual object recognition
 decoding task.
 """
 
+# We start by loading data using nilearn dataset fetcher
+from nilearn import datasets
+from nilearn.image import get_data
+from nilearn.plotting import plot_stat_map, show
+
 # %%
 # Loading the data
 # ----------------
 
-# We start by loading data using nilearn dataset fetcher
-from nilearn import datasets
-from nilearn.image import get_data
 
 # by default 2nd subject data will be fetched
 haxby_dataset = datasets.fetch_haxby()
@@ -182,9 +184,7 @@ for classifier_name in sorted(classifiers):
 # %%
 # Finally, we plot the face vs house map for the different classifiers
 # Use the average :term:`EPI` as a background
-
 from nilearn.image import mean_img
-from nilearn.plotting import plot_stat_map, show
 
 mean_epi_img = mean_img(func_filename)
 

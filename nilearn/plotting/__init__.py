@@ -1,4 +1,5 @@
 """Plotting code for nilearn."""
+
 # Original Authors: Chris Filo Gorgolewski, Gael Varoquaux
 import importlib
 import warnings

@@ -7,9 +7,12 @@ and Overlapping Representations of Faces and Objects in Ventral Temporal
 Cortex" (Science 2001)
 """
 
-# %%
-import matplotlib.pyplot as plt
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
 
+# %%
 from nilearn import datasets
 from nilearn.plotting import show
 

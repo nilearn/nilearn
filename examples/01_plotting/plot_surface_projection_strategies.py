@@ -21,11 +21,14 @@ fsaverage and fsaverage5 surfaces fetched by `nilearn.datasets`) we recommend
 passing both to `vol_to_surf`.
 
 """
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
 
 # %%
 import matplotlib
 import numpy as np
-from matplotlib import pyplot as plt
 
 from nilearn.plotting import show
 from nilearn.surface import surface

@@ -198,7 +198,7 @@ def plot_contrast(first_level_model):
     design_matrix = first_level_model.design_matrices_[0]
     # Call the contrast specification within the function
     contrasts = make_localizer_contrasts(design_matrix)
-    plt.figure(figsize=(11, 3))
+    plt.figure(figsize=(20, 4))
     # compute the per-contrast z-map
     for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
         ax = plt.subplot(1, len(contrasts), 1 + index)

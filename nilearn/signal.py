@@ -4,6 +4,7 @@ Preprocessing functions for time series.
 All functions in this module should take X matrices with samples x
 features
 """
+
 # Authors: Alexandre Abraham, Gael Varoquaux, Philippe Gervais
 
 import warnings

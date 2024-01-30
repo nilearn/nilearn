@@ -187,8 +187,8 @@ confounds_scrub, sample_mask = load_confounds(
     motion="basic",
     wm_csf="basic",
     scrub=5,
-    fd_threshold=0.2,
-    std_dvars_threshold=3,
+    fd_threshold=0.5,
+    std_dvars_threshold=1.5,
 )
 
 print(

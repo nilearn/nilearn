@@ -1,4 +1,5 @@
 """Tests for nilearn.mass_univariate._utils."""
+
 import math
 
 import numpy as np
