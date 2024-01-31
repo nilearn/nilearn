@@ -24,11 +24,6 @@ on:
 
     workflow_dispatch:
 
-    # Remove before merge
-    pull_request:
-        branches:
-        -   '*'
-
 jobs:
     check_gha_workflow:
         if: github.repository == 'nilearn/nilearn'
