@@ -3,6 +3,10 @@
 Yeo 2011 atlas
 ==============
 
+Access
+------
+See :func:`nilearn.datasets.fetch_atlas_yeo_2011`.
+
 Notes
 -----
 This atlas provides a labeling of some cortical voxels in the MNI152

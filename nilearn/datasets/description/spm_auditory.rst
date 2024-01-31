@@ -3,6 +3,10 @@
 SPM auditory dataset
 ====================
 
+Access
+------
+See :func:`nilearn.datasets.fetch_spm_auditory`.
+
 Notes
 -----
 These whole brain BOLD/EPI images were acquired on a modified 2T Siemens MAGNETOM Vision system.

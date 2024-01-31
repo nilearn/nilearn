@@ -1,6 +1,10 @@
 Smith 2009 atlas
 ================
 
+Access
+------
+See :func:`nilearn.datasets.fetch_atlas_smith_2009`.
+
 Notes
 -----
 This atlas provides spatial maps of the major brain networks

@@ -3,6 +3,10 @@
 SPM multimodal dataset
 ======================
 
+Access
+------
+See :func:`nilearn.datasets.fetch_spm_multimodal_fmri`.
+
 Notes
 -----
 The example shows the analysis of an :term:`SPM` dataset studying face perception.

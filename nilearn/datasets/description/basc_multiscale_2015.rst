@@ -3,6 +3,10 @@
 BASC multiscale atlas
 =====================
 
+Access
+------
+See :func:`nilearn.datasets.fetch_atlas_basc_multiscale_2015`.
+
 Content
 -------
 This work is a derivative from the Cambridge sample found

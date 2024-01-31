@@ -3,6 +3,10 @@
 Juelich atlas
 =============
 
+Access
+------
+See :func:`nilearn.datasets.fetch_atlas_juelich`.
+
 Notes
 -----
 The Julich-Brain cytoarchitectonic atlas presents cytoarchitectonic maps in several coordinate spaces,

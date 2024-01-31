@@ -3,6 +3,10 @@
 ABIDE PCP dataset
 =================
 
+Access
+------
+See :func:`nilearn.datasets.fetch_abide_pcp`.
+
 Notes
 -----
 The Autism Brain Imaging Data Exchange (ABIDE) dataset provides previously

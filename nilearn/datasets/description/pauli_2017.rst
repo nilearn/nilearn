@@ -3,6 +3,10 @@
 Pauli 2007 atlas
 ================
 
+Access
+------
+See :func:`nilearn.datasets.fetch_atlas_pauli_2017`.
+
 Notes
 -----
 The purpose of this project is to develop a crowd-sourced In Vivo High Resolution Atlas of the Subcortical Human Brain.

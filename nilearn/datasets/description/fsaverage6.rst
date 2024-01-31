@@ -3,6 +3,10 @@
 fsaverage6 template
 ===================
 
+Access
+------
+See :func:`nilearn.datasets.fetch_surf_fsaverage`.
+
 Notes
 -----
 Fsaverage6 standard surface as distributed with Freesurfer (:footcite:t:`Fischl1999`).

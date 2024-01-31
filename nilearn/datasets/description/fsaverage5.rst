@@ -3,6 +3,10 @@
 fsaverage5 template
 ===================
 
+Access
+------
+See :func:`nilearn.datasets.fetch_surf_fsaverage`.
+
 Notes
 -----
 Fsaverage5 standard surface as distributed with Freesurfer (:footcite:t:`Fischl1999`).

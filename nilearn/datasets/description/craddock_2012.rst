@@ -3,6 +3,10 @@
 Craddock 2012 atlas
 ===================
 
+Access
+------
+See :func:`nilearn.datasets.fetch_atlas_craddock_2012`.
+
 Notes
 -----
 Atlas from (:footcite:t:`Craddock2012`).

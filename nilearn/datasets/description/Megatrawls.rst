@@ -3,6 +3,10 @@
 MegaTrawls Network Matrices HCP
 ===============================
 
+Access
+------
+See :func:`nilearn.datasets.fetch_megatrawls_netmats`.
+
 Notes
 -----
 Contains network matrices data of two types, full correlation and partial

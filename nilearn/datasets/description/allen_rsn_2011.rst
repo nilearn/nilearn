@@ -3,6 +3,10 @@
 Allen 2011 atlas
 ================
 
+Access
+------
+See :func:`nilearn.datasets.fetch_atlas_allen_2011`.
+
 Notes
 -----
 Collection of :term:`resting-state` network templates

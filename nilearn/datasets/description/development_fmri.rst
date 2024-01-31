@@ -3,6 +3,10 @@
 development fMRI dataset
 ========================
 
+Access
+------
+See :func:`nilearn.datasets.fetch_development_fmri`.
+
 Notes
 -----
 This movie-watching based functional MRI dataset is used for teaching how to use

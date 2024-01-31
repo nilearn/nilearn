@@ -3,6 +3,9 @@
 language localizer demo dataset
 ===============================
 
+Access
+------
+See :func:`nilearn.datasets.fetch_language_localizer_demo_dataset`.
 
 Notes
 -----

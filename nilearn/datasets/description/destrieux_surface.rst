@@ -3,6 +3,10 @@
 Destrieux atlas
 ===============
 
+Access
+------
+See :func:`nilearn.datasets.fetch_atlas_destrieux_2009`.
+
 Notes
 -----
 Anatomical :term:`parcellation` of the cortex based on sulco-gyral patterns

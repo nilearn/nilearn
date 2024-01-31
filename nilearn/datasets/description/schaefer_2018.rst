@@ -3,6 +3,10 @@
 Schaefer 2018 atlas
 ===================
 
+Access
+------
+See :func:`nilearn.datasets.fetch_atlas_schaefer_2018`.
+
 Notes
 -----
 This atlas (:footcite:t:`schaefer_atlas`) provides a labeling of cortical voxels in the MNI152

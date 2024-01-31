@@ -3,6 +3,10 @@
 NKI enhanced surface dataset
 ============================
 
+Access
+------
+See :func:`nilearn.datasets.fetch_surf_nki_enhanced`.
+
 Notes
 -----
 Enhanced Nathan Kline Institute-Rockland Sample resting state fMRI data

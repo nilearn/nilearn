@@ -3,6 +3,10 @@
 MSDL atlas
 ==========
 
+Access
+------
+See :func:`nilearn.datasets.fetch_atlas_msdl`.
+
 Notes
 -----
 Multi-subject Dictionary learning atlas.

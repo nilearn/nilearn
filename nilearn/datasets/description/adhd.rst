@@ -3,6 +3,10 @@
 ADHD dataset
 ============
 
+Access
+------
+See :func:`nilearn.datasets.fetch_adhd`.
+
 Notes
 -----
 Part of the 1000 Functional Connectome Project. Phenotypic

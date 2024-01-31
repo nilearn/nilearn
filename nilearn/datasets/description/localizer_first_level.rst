@@ -3,6 +3,10 @@
 localizer first level dataset
 =============================
 
+Access
+------
+See :func:`nilearn.datasets.fetch_localizer_first_level`.
+
 Notes
 -----
 Single subject dataset from the "Neurospin Localizer".

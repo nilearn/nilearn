@@ -3,6 +3,10 @@
 Talairach atlas
 ===============
 
+Access
+------
+See :func:`nilearn.datasets.fetch_atlas_talairach`.
+
 Notes
 -----
 

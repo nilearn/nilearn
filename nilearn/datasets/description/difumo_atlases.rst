@@ -3,6 +3,10 @@
 DiFuMo atlas
 ============
 
+Access
+------
+See :func:`nilearn.datasets.fetch_atlas_difumo`.
+
 Notes
 -----
 We provide Dictionaries of Functional Modes “DiFuMo” (:footcite:t:`Dadi2020`)

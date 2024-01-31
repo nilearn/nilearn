@@ -3,6 +3,10 @@
 Haxby dataset
 =============
 
+Access
+------
+See :func:`nilearn.datasets.fetch_haxby`.
+
 Notes
 -----
 Results from a classical :term:`fMRI` study that investigated the differences between

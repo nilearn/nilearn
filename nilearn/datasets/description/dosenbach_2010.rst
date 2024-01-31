@@ -3,6 +3,10 @@
 Dosenbach 2010 atlas
 ====================
 
+Access
+------
+See :func:`nilearn.datasets.fetch_coords_dosenbach_2010`.
+
 Notes
 -----
 160 regions of interest covering much of the cerebral cortex and cerebellum.

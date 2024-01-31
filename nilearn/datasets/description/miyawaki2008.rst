@@ -3,6 +3,10 @@
 Miyawaki 2008 dataset
 =====================
 
+Access
+------
+See :func:`nilearn.datasets.fetch_miyawaki2008`.
+
 Notes
 -----
 Collection of result images from MVPA investigation of the human visual systems.

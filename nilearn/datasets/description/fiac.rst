@@ -3,6 +3,10 @@
 fiac first level dataset
 ========================
 
+Access
+------
+See :func:`nilearn.datasets.fetch_fiac_first_level`.
+
 Notes
 -----
 Analysis from the Functional Imaging Analysis Contest (FIAC).

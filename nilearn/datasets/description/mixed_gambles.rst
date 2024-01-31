@@ -3,6 +3,10 @@
 Mixed gambles statistical maps
 ==============================
 
+Access
+------
+See :func:`nilearn.datasets.fetch_mixed_gambles`.
+
 Notes
 -----
 zmaps for each subject of the raw dataset dataset available at

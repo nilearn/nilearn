@@ -3,6 +3,10 @@
 AAL atlas
 =========
 
+Access
+------
+See :func:`nilearn.datasets.fetch_atlas_aal`.
+
 Notes
 -----
 This atlas is the result of an automated anatomical :term:`parcellation`

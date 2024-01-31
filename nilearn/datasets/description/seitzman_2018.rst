@@ -3,6 +3,10 @@
 Seitzman 2018 atlas
 ===================
 
+Access
+------
+See :func:`nilearn.datasets.fetch_coords_seitzman_2018`.
+
 Notes
 -----
 300 ROI coordinates in cortical, subcortical and cerebellar regions.

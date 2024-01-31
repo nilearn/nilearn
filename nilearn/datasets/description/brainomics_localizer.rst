@@ -3,6 +3,10 @@
 Brainomics Localizer
 ====================
 
+Access
+------
+See :func:`nilearn.datasets.fetch_localizer_contrasts`.
+
 Notes
 -----
 A protocol that captures the cerebral bases of auditory and

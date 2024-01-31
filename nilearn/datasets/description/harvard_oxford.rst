@@ -3,6 +3,10 @@
 Harvard Oxford atlas
 ====================
 
+Access
+------
+See :func:`nilearn.datasets.fetch_atlas_harvard_oxford`.
+
 Notes
 -----
 Probabilistic atlases covering 48 cortical and 21 subcortical structural areas,
