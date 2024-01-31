@@ -14,6 +14,21 @@ For a given github action workflow:
 
 This script should in principle run for any repo and any workflow.
 
+This may require a github token to function
+that you can pass to the script
+or save in a file the script will read.
+
+USAGE
+-----
+
+.. code-block:: bash
+
+    python maint_tools/check_gha_workflow.py
+
+    # or by passing github token directly
+    python maint_tools/check_gha_workflow.py GITHUB_TOKEN
+
+
 """
 
 import sys
@@ -31,7 +46,7 @@ REPO = "nilearn"
 
 # Your github username
 USERNAME = "Remi-Gau"
-# file containing the github token
+# file containing your github token
 # get one at:
 # https://github.com/settings/tokens
 TOKEN_FILE = Path("/home/remi/Documents/tokens/gh_read_repo_for_orga.txt")
@@ -55,9 +70,12 @@ OUTPUT_FILE = Path(__file__).parent / "test_runs_timing.tsv"
 def main(args=sys.argv) -> None:
     """Collect duration of each job and plots them."""
     update_tsv = UPDATE_TSV if OUTPUT_FILE.exists() else True
+
     if update_tsv:
+
         if len(args) > 1:
-            _ = args[1]
+            TOKEN = args[1]
+            auth = {"Authorization": "token " + TOKEN}
         else:
             auth = get_auth(USERNAME, TOKEN_FILE)
 
@@ -136,32 +154,26 @@ def set_os(x: str) -> str:
 
 def set_python_version(x: str) -> str:
     """Detect which python version the job was run on."""
-    if "3.8" in x:
-        return "3.8"
-    elif "3.9" in x:
-        return "3.9"
-    elif "3.10" in x:
-        return "3.10"
-    elif "3.11" in x:
-        return "3.11"
-    elif "3.12" in x:
-        return "3.12"
-    else:
-        return "n/a"
+    return next(
+        (
+            version
+            for version in ["3.8", "3.9", "3.10", "3.11", "3.12"]
+            if version in x
+        ),
+        "n/a",
+    )
 
 
 def set_dependencies(x: str) -> str:
     """Detect which set of dependencies was used for the run."""
-    if "latest dependencies" in x:
-        return "latest"
-    elif "pre-release" in x:
-        return "pre-release"
-    elif "no plotting" in x:
-        return "no plotting"
-    elif "no plotly" in x:
-        return "no plotly"
-    else:
-        return "n/a"
+    return next(
+        (
+            dependencies
+            for dependencies in ["pre-release", "no plotting", "no plotly"]
+            if dependencies in x
+        ),
+        "latest" if "latest dependencies" in x else "n/a",
+    )
 
 
 def get_auth(username: str, token_file: Path) -> None | tuple[str, str]:
@@ -215,7 +227,11 @@ def get_runs(
 
 def handle_request(url: str, auth: None | tuple[str, str]):
     """Wrap request."""
-    response = requests.get(url, auth=auth)
+    if isinstance(auth, tuple):
+        response = requests.get(url, auth=auth)
+    elif isinstance(auth, dict):
+        response = requests.get(url, headers=auth)
+
     if response.status_code != 200:
         print(response.status_code)
         print(response.json())
