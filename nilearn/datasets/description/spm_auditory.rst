@@ -1,3 +1,5 @@
+.. _spm_auditory_dataset:
+
 SPM auditory dataset
 ====================
 
@@ -30,7 +32,6 @@ References
 ----------
 
 .. footbibliography::
-
 
 License
 -------

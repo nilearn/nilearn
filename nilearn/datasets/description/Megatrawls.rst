@@ -1,3 +1,5 @@
+.. _megatrawls_maps:
+
 MegaTrawls Network Matrices HCP
 ===============================
 

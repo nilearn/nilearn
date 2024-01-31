@@ -1,5 +1,7 @@
-Mixed gambles dataset
-=====================
+.. _mixed_gamble_naps:
+
+Mixed gambles statistical maps
+==============================
 
 Notes
 -----

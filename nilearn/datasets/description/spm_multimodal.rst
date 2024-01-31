@@ -1,3 +1,5 @@
+.. _spm_multimodal_dataset:
+
 SPM multimodal dataset
 ======================
 

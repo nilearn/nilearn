@@ -1,3 +1,5 @@
+.. _icbm_152_template:
+
 ICBM 152 template
 =================
 

@@ -1,3 +1,5 @@
+.. _talairach_atlas:
+
 Talairach atlas
 ===============
 

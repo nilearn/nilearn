@@ -1,3 +1,5 @@
+.. _localizer_first_level_dataset:
+
 localizer first level dataset
 =============================
 

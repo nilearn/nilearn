@@ -1,3 +1,5 @@
+.. _power_atlas:
+
 Power 2011 atlas
 ================
 

@@ -1,3 +1,5 @@
+.. _miyawaki_dataset:
+
 Miyawaki 2008 dataset
 =====================
 

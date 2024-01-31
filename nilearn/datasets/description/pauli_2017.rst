@@ -1,3 +1,5 @@
+.. _pauli_atlas:
+
 Pauli 2007 atlas
 ================
 

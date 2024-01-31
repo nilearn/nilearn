@@ -1,3 +1,5 @@
+.. _haxby_dataset:
+
 Haxby dataset
 =============
 

@@ -1,3 +1,5 @@
+.. _neurovault_dataset:
+
 Neurovault statistical maps
 ===========================
 

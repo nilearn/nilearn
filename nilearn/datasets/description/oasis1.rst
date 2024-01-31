@@ -1,12 +1,14 @@
-Oasis
-=====
+.. _oasis_maps:
+
+OASIS volume based morphometry maps
+===================================
 
 Notes
 -----
 The Open Access Series of Imaging Studies (OASIS) is a project aimed
 at making MRI data sets of the brain freely available to the scientific community.
 
-OASIS is made available by the Washington University Alzheimer’s Disease
+OASIS is made available by the Washington University Alzheimer's Disease
 Research Center, Dr. Randy Buckner at the Howard Hughes Medical
 Institute (HHMI) at Harvard University, the Neuroinformatics Research
 Group (NRG) at Washington University School of Medicine, and the Biomedical

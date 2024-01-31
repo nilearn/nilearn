@@ -1,3 +1,5 @@
+.. _nki_dataset:
+
 NKI enhanced surface dataset
 ============================
 

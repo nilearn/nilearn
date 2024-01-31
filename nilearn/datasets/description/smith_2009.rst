@@ -1,4 +1,4 @@
-Smith 2009 Atlas
+Smith 2009 atlas
 ================
 
 Notes

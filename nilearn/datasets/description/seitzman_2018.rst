@@ -1,3 +1,5 @@
+.. _seitzman_atlas:
+
 Seitzman 2018 atlas
 ===================
 

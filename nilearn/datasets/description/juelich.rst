@@ -1,9 +1,11 @@
+.. _juelich_atlas:
+
 Juelich atlas
 =============
 
 Notes
 -----
-The Julich-Brain Cytoarchitectonic Atlas presents cytoarchitectonic maps in several coordinate spaces,
+The Julich-Brain cytoarchitectonic atlas presents cytoarchitectonic maps in several coordinate spaces,
 such as :term:`MNI` colin27, MNI152, and freesurfer.
 These maps originate from peer-reviewed probability maps that define
 both cortical and subcortical brain regions.
@@ -23,7 +25,7 @@ Content
 
 References
 ----------
-For the overall scientific concept and methodology of the Julich-Brain Cytoarchitectonic Atlas, please cite:
+For the overall scientific concept and methodology of the Julich-Brain cytoarchitectonic atlas, please cite:
 
 Amunts, K., Mohlberg, H., Bludau, S., & Zilles, K. (2020).
 Julich-Brain: A 3D probabilistic atlas of the human brain's cytoarchitecture.

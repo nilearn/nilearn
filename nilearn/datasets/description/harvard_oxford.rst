@@ -1,3 +1,5 @@
+.. _harvard_oxford_atlas:
+
 Harvard Oxford atlas
 ====================
 

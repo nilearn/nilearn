@@ -1,3 +1,5 @@
+.. _msdl_atlas:
+
 MSDL atlas
 ==========
 

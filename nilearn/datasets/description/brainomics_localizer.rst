@@ -1,4 +1,4 @@
-.. _brainomics_dataset:
+.. _brainomics_maps:
 
 Brainomics Localizer
 ====================
