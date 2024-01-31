@@ -2,5 +2,5 @@ docstring_parser
 kaleido
 pandas
 plotly
-request
+requests
 rich
