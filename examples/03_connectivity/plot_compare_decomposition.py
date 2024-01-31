@@ -25,6 +25,7 @@ an explicit model of the signal. The reference paper is:
       `preprint <https://hal.inria.fr/hal-00489507/>`_
 
 """
+
 # %%
 # Load brain development :term:`fMRI` dataset
 # -------------------------------------------
@@ -62,8 +63,13 @@ canica.fit(func_filenames)
 # accessible through attribute `components_img_`.
 canica_components_img = canica.components_img_
 # components_img is a Nifti Image object, and can be saved to a file with
-# the following line:
-canica_components_img.to_filename("canica_resting_state.nii.gz")
+# the following lines:
+from pathlib import Path
+
+output_dir = Path.cwd() / "results" / "plot_compare_decomposition"
+output_dir.mkdir(exist_ok=True, parents=True)
+print(f"Output will be saved to: {output_dir}")
+canica_components_img.to_filename(output_dir / "canica_resting_state.nii.gz")
 
 
 # %%
@@ -128,7 +134,7 @@ print("[Example] Saving results")
 # is not implemented. See Note section above for details.
 dictlearning_components_img = dict_learning.components_img_
 dictlearning_components_img.to_filename(
-    "dictionary_learning_resting_state.nii.gz"
+    output_dir / "dictionary_learning_resting_state.nii.gz"
 )
 
 

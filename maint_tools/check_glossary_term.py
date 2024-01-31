@@ -3,6 +3,7 @@
 Check rst files in doc, py files in examples and py files in nilearn.
 
 """
+
 from __future__ import annotations
 
 import ast

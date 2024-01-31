@@ -1,4 +1,5 @@
 """Visualizing 3D stat maps in a Brainsprite viewer."""
+
 import copy
 import json
 import os

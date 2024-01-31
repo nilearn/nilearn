@@ -1,4 +1,5 @@
 """Miscellaneous matrix plotting utilities."""
+
 import warnings
 
 import matplotlib.patches as mpatches

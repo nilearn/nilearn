@@ -25,12 +25,16 @@ else:
     have_mpl = True
 
 
+@pytest.fixture
+def shape():
+    return (9, 10, 11)
+
+
 @pytest.mark.skipif(
     not have_mpl, reason="Matplotlib not installed; required for this test"
 )
-def test_local_max(affine_eye):
+def test_local_max_two_maxima(shape, affine_eye):
     """Basic test of nilearn.reporting._get_clusters_table._local_max()"""
-    shape = (9, 10, 11)
     # Two maxima (one global, one local), 10 voxels apart.
     data = np.zeros(shape)
     data[4, 5, :] = [4, 3, 2, 1, 1, 1, 1, 1, 2, 3, 4]
@@ -45,6 +49,12 @@ def test_local_max(affine_eye):
     assert np.array_equal(ijk, np.array([[5.0, 5.0, 10.0]]))
     assert np.array_equal(vals, np.array([6]))
 
+
+@pytest.mark.skipif(
+    not have_mpl, reason="Matplotlib not installed; required for this test"
+)
+def test_local_max_two_global_maxima(shape, affine_eye):
+    """Basic test of nilearn.reporting._get_clusters_table._local_max()"""
     # Two global (equal) maxima, 10 voxels apart.
     data = np.zeros(shape)
     data[4, 5, :] = [4, 3, 2, 1, 1, 1, 1, 1, 2, 3, 4]
@@ -59,6 +69,12 @@ def test_local_max(affine_eye):
     assert np.array_equal(ijk, np.array([[5.0, 5.0, 0.0]]))
     assert np.array_equal(vals, np.array([5]))
 
+
+@pytest.mark.skipif(
+    not have_mpl, reason="Matplotlib not installed; required for this test"
+)
+def test_local_max_donut(shape, affine_eye):
+    """Basic test of nilearn.reporting._get_clusters_table._local_max()"""
     # A donut.
     data = np.zeros(shape)
     data[4, 5, :] = [0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0]
@@ -70,11 +86,10 @@ def test_local_max(affine_eye):
     assert np.array_equal(vals, np.array([1]))
 
 
-def test_cluster_nearest_neighbor():
+def test_cluster_nearest_neighbor(shape):
     """Check that _cluster_nearest_neighbor preserves within-cluster voxels,
     projects voxels to the correct cluster, and handles singleton clusters.
     """
-    shape = (9, 10, 11)
     labeled = np.zeros(shape)
     # cluster 1 is half the volume, cluster 2 is a single voxel
     labeled[:, 5:, :] = 1
@@ -92,36 +107,44 @@ def test_cluster_nearest_neighbor():
     assert np.array_equal(nbrs, np.array([[4, 7, 5], [4, 5, 5], [4, 2, 6]]))
 
 
-def test_get_clusters_table(affine_eye, tmp_path):
-    shape = (9, 10, 11)
+@pytest.mark.parametrize(
+    "stat_threshold, cluster_threshold, two_sided, expected_nb_cluster",
+    [
+        (4, 0, False, 1),  # test one cluster extracted
+        (6, 0, False, 0),  # test empty table on high stat threshold
+        (4, 9, False, 0),  # test empty table on high cluster threshold
+        (4, 0, True, 2),  # test two clusters with different signs extracted
+        (6, 0, True, 0),  # test empty table on high stat threshold
+        (4, 9, True, 0),  # test empty table on high cluster threshold
+    ],
+)
+def test_get_clusters_table(
+    shape,
+    affine_eye,
+    stat_threshold,
+    cluster_threshold,
+    two_sided,
+    expected_nb_cluster,
+):
     data = np.zeros(shape)
     data[2:4, 5:7, 6:8] = 5.0
     data[4:6, 7:9, 8:10] = -5.0
     stat_img = nib.Nifti1Image(data, affine_eye)
 
-    # test one cluster extracted
-    cluster_table = get_clusters_table(stat_img, 4, 0, two_sided=False)
-    assert len(cluster_table) == 1
+    clusters_table = get_clusters_table(
+        stat_img,
+        stat_threshold=stat_threshold,
+        cluster_threshold=cluster_threshold,
+        two_sided=two_sided,
+    )
+    assert len(clusters_table) == expected_nb_cluster
 
-    # test empty table on high stat threshold
-    cluster_table = get_clusters_table(stat_img, 6, 0, two_sided=False)
-    assert len(cluster_table) == 0
 
-    # test empty table on high cluster threshold
-    cluster_table = get_clusters_table(stat_img, 4, 9, two_sided=False)
-    assert len(cluster_table) == 0
-
-    # test two clusters with different signs extracted
-    cluster_table = get_clusters_table(stat_img, 4, 0, two_sided=True)
-    assert len(cluster_table) == 2
-
-    # test empty table on high stat threshold
-    cluster_table = get_clusters_table(stat_img, 6, 0, two_sided=True)
-    assert len(cluster_table) == 0
-
-    # test empty table on high cluster threshold
-    cluster_table = get_clusters_table(stat_img, 4, 9, two_sided=True)
-    assert len(cluster_table) == 0
+def test_get_clusters_table_more(shape, affine_eye, tmp_path):
+    data = np.zeros(shape)
+    data[2:4, 5:7, 6:8] = 5.0
+    data[4:6, 7:9, 8:10] = -5.0
+    stat_img = nib.Nifti1Image(data, affine_eye)
 
     # test with filename
     fname = str(tmp_path / "stat_img.nii.gz")
@@ -174,11 +197,10 @@ def test_get_clusters_table(affine_eye, tmp_path):
     assert "1a" in cluster_table["Cluster ID"].values
 
 
-def test_get_clusters_table_relabel_label_maps(affine_eye):
+def test_get_clusters_table_relabel_label_maps(shape, affine_eye):
     """Check that the cluster's labels in label_maps match their corresponding
     cluster IDs in the clusters table.
     """
-    shape = (9, 10, 11)
     data = np.zeros(shape)
     data[2:4, 5:7, 6:8] = 6.0
     data[5:7, 7:9, 7:9] = 5.5
@@ -202,8 +224,22 @@ def test_get_clusters_table_relabel_label_maps(affine_eye):
     assert np.array_equal(cluster_ids, lb_cluster_ids)
 
 
-def test_get_clusters_table_not_modifying_stat_image(affine_eye):
-    shape = (9, 10, 11)
+@pytest.mark.parametrize(
+    "stat_threshold, cluster_threshold, two_sided, expected_nb_cluster",
+    [
+        (4, 10, True, 1),  # test one cluster should be removed
+        (4, 7, False, 2),  # test no clusters should be removed
+        (4, None, False, 2),  # test cluster threshold is None
+    ],
+)
+def test_get_clusters_table_not_modifying_stat_image(
+    shape,
+    affine_eye,
+    stat_threshold,
+    cluster_threshold,
+    two_sided,
+    expected_nb_cluster,
+):
     data = np.zeros(shape)
     data[2:4, 5:7, 6:8] = 5.0
     data[0:3, 0:3, 0:3] = 6.0
@@ -211,34 +247,11 @@ def test_get_clusters_table_not_modifying_stat_image(affine_eye):
     stat_img = nib.Nifti1Image(data, affine_eye)
     data_orig = get_data(stat_img).copy()
 
-    # test one cluster should be removed
     clusters_table = get_clusters_table(
         stat_img,
-        4,
-        cluster_threshold=10,
-        two_sided=True,
+        stat_threshold=stat_threshold,
+        cluster_threshold=cluster_threshold,
+        two_sided=two_sided,
     )
     assert np.allclose(data_orig, get_data(stat_img))
-    assert len(clusters_table) == 1
-
-    # test no clusters should be removed
-    stat_img = nib.Nifti1Image(data, affine_eye)
-    clusters_table = get_clusters_table(
-        stat_img,
-        4,
-        cluster_threshold=7,
-        two_sided=False,
-    )
-    assert np.allclose(data_orig, get_data(stat_img))
-    assert len(clusters_table) == 2
-
-    # test cluster threshold is None
-    stat_img = nib.Nifti1Image(data, affine_eye)
-    clusters_table = get_clusters_table(
-        stat_img,
-        4,
-        cluster_threshold=None,
-        two_sided=False,
-    )
-    assert np.allclose(data_orig, get_data(stat_img))
-    assert len(clusters_table) == 2
+    assert len(clusters_table) == expected_nb_cluster

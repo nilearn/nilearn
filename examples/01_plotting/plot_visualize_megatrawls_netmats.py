@@ -8,6 +8,7 @@ of the Functional Connectivity Megatrawl project.
 See :func:`nilearn.datasets.fetch_megatrawls_netmats`
 documentation for more details.
 """
+
 # %%
 # Fetching the Megatrawls Network matrices
 # ----------------------------------------

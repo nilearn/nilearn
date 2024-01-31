@@ -4,6 +4,7 @@ For problems on which the prox of the nonsmooth term \
 cannot be computed closed-form (e.g TV-L1), \
 we approximate the prox using an inner FISTA loop.
 """
+
 # Author: DOHMATOB Elvis Dopgima,
 #         PIZARRO Gaspar,
 #         VAROQUAUX Gael,

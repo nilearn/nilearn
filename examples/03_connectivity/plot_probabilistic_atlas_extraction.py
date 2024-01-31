@@ -21,6 +21,7 @@ only the 20% edges with the highest values.
 .. include:: ../../../examples/masker_note.rst
 
 """
+
 # %%
 # Retrieve the atlas and the data
 # -------------------------------

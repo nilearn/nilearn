@@ -1,4 +1,5 @@
 """Transformer for computing ROI signals."""
+
 import warnings
 
 import numpy as np

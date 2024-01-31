@@ -74,7 +74,7 @@ def compute_contrast(labels, regression_result, con_val, stat_type=None):
 
     contrast_type :
 
-        .. deprecated:: 0.11.0
+        .. deprecated:: 0.10.3
 
             Use ``stat_type`` instead (see above).
 
@@ -211,7 +211,7 @@ class Contrast:
 
         contrast_type :
 
-            .. deprecated:: 0.11.0
+            .. deprecated:: 0.10.3
 
                 Use ``stat_type`` instead (see above).
 
@@ -250,7 +250,7 @@ class Contrast:
     def contrast_type(self):
         """Return value of stat_type.
 
-        .. deprecated:: 0.11.0
+        .. deprecated:: 0.10.3
         """
         attrib_deprecation_msg = (
             'The attribute "contrast_type" '

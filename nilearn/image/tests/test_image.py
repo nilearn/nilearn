@@ -1,4 +1,5 @@
 """Test image pre-processing functions"""
+
 import platform
 import sys
 import warnings

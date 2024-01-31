@@ -31,6 +31,7 @@ import time
 # First we load the Miyawaki dataset
 # ----------------------------------
 from nilearn import datasets
+from nilearn.plotting import show
 
 sys.stderr.write("Fetching dataset...")
 t0 = time.time()
@@ -297,9 +298,13 @@ print(
 # And finally, we plot six reconstructed images, to compare with
 # ground truth
 
+from pathlib import Path
+
 from matplotlib import pyplot as plt
 
-from nilearn.plotting import show
+output_dir = Path.cwd() / "results" / "plot_miyawaki_reconstruction"
+output_dir.mkdir(exist_ok=True, parents=True)
+print(f"Output will be saved to: {output_dir}")
 
 for i in range(6):
     j = 10 * i
@@ -328,6 +333,6 @@ for i in range(6):
         cmap=plt.cm.gray,
         interpolation="nearest",
     )
-    plt.savefig(f"miyawaki2008_reconstruction_{int(i)}")
+    plt.savefig(output_dir / f"miyawaki2008_reconstruction_{int(i)}.png")
 
 show()

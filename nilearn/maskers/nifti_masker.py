@@ -1,4 +1,5 @@
 """Transformer used to apply basic transformations on MRI data."""
+
 # Author: Gael Varoquaux, Alexandre Abraham
 
 import warnings

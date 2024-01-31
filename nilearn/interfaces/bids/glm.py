@@ -1,4 +1,5 @@
 """Functions for generating BIDS-compliant GLM outputs."""
+
 import json
 import os
 import warnings

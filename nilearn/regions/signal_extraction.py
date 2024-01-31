@@ -4,6 +4,7 @@ Functions for extracting region-defined signals.
 Two ways of defining regions are supported: as labels in a single 3D image,
 or as weights in one image per region (maps).
 """
+
 # Author: Philippe Gervais
 import warnings
 

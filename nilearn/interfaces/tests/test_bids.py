@@ -1,4 +1,5 @@
 """Tests for the nilearn.interfaces.bids submodule."""
+
 import json
 import os
 

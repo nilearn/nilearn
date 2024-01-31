@@ -12,6 +12,11 @@ operation in just a few lines of code.
 
 """
 
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
+
 # %%
 # Retrieve the brain development functional dataset
 #
@@ -79,8 +84,6 @@ signals.shape
 
 # %%
 # Plot the signals
-import matplotlib.pyplot as plt
-
 fig = plt.figure(figsize=(15, 5))
 ax = fig.add_subplot(111)
 for label_idx in range(3):

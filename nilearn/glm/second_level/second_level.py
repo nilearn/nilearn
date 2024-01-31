@@ -639,9 +639,9 @@ class SecondLevelModel(BaseGLM):
             # Prepare the returned images
             output = self.masker_.inverse_transform(estimate_)
             contrast_name = str(con_val)
-            output.header[
-                "descrip"
-            ] = f"{output_type} of contrast {contrast_name}"
+            output.header["descrip"] = (
+                f"{output_type} of contrast {contrast_name}"
+            )
             outputs[output_type_] = output
 
         return outputs if output_type == "all" else output

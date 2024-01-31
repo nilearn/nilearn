@@ -16,6 +16,11 @@ for a careful study.
 
 """
 
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
+
 # %%
 # Load brain development :term:`fMRI` dataset and MSDL atlas
 # ----------------------------------------------------------
@@ -115,8 +120,6 @@ scores_std = gs.cv_results_["std_test_score"]
 
 # %%
 # display the results
-from matplotlib import pyplot as plt
-
 plt.figure(figsize=(6, 4))
 positions = [0.1, 0.2, 0.3, 0.4]
 plt.barh(positions, mean_scores, align="center", height=0.05, xerr=scores_std)

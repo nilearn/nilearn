@@ -129,7 +129,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         is ``region_ids_[i]``.
         ``region_ids_['background']`` is the background label.
 
-        .. versionadded:: 0.11.0.dev
+        .. versionadded:: 0.10.3
 
     region_names_ : dict
         A dictionary containing the region names corresponding
@@ -139,7 +139,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         The region name corresponding to ``region_signal[:,i]``
         is ``region_names_[i]``.
 
-        .. versionadded:: 0.11.0.dev
+        .. versionadded:: 0.10.3
 
     region_atlas_ : Niimg-like object
         Regions definition as labels.
@@ -147,7 +147,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         The region in ``region_atlas_`` that takes the value ``region_ids_[i]``
         is used to compute the signal in ``region_signal[:,i]``.
 
-        .. versionadded:: 0.11.0.dev
+        .. versionadded:: 0.10.3
 
     See Also
     --------

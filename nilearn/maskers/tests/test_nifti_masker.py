@@ -5,6 +5,7 @@ Functions in this file only test features added by the NiftiMasker class,
 not the underlying functions used (e.g. clean()). See test_masking.py and
 test_signal.py for this.
 """
+
 # Author: Gael Varoquaux, Philippe Gervais
 import os
 import shutil
