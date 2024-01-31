@@ -1,7 +1,7 @@
 """Collects and plot run time of jobs in a GHA workflow.
 
 Requires:
-- request
+- requests
 - rich
 - pandas
 - plotly
@@ -233,9 +233,11 @@ def handle_request(url: str, auth: None | tuple[str, str]):
         response = requests.get(url, headers=auth)
 
     if response.status_code != 200:
-        print(response.status_code)
-        print(response.json())
-        return {}
+        raise RuntimeError(
+            f"\n Got code: {response.status_code}.\n"
+            f" With response: {response.json()}"
+        )
+
     return response.json()
 
 
