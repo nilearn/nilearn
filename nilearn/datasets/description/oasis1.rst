@@ -1,7 +1,6 @@
 Oasis
 =====
 
-
 Notes
 -----
 The Open Access Series of Imaging Studies (OASIS) is a project aimed

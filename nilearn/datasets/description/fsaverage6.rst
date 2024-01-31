@@ -1,6 +1,7 @@
+.. _fs_average_6_template:
+
 fsaverage6 template
 ===================
-
 
 Notes
 -----
@@ -33,6 +34,6 @@ References
 
 .. footbibliography::
 
-
 License
 -------
+unknown

@@ -1,6 +1,7 @@
+.. _destrieux_atlas:
+
 Destrieux atlas
 ===============
-
 
 Notes
 -----
@@ -15,7 +16,6 @@ Content
     :'map_left': :term:`parcellation` on left hemisphere in freesurfer annot format
     :'map_right': :term:`parcellation` on right hemisphere in freesurfer annot format
 
-
 References
 ----------
 
@@ -29,6 +29,6 @@ Fischl et al, (1999). Cortical surface-based analysis. II: Inflation,
 flattening, and a surface-based coordinate system. Neuroimage 9.
 https://doi.org/10.1006/nimg.1998.0396
 
-
 License
 -------
+unknown

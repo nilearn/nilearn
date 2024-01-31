@@ -1,10 +1,10 @@
+.. _difumo_atlas:
+
 DiFuMo atlas
 ============
 
-
 Notes
 -----
-
 We provide Dictionaries of Functional Modes “DiFuMo” (:footcite:t:`Dadi2020`)
 that can serve as atlases to extract functional signals,
 e.g to serve as IDPs, with different dimensionalities (64, 128, 256, 512, and 1024).
@@ -33,7 +33,6 @@ Content
 
 References
 ----------
-
 For more information about this dataset's structure:
 https://hal.inria.fr/hal-02904869
 

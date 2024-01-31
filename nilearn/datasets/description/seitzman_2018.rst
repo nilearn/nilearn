@@ -1,7 +1,6 @@
 Seitzman 2018 atlas
 ===================
 
-
 Notes
 -----
 300 ROI coordinates in cortical, subcortical and cerebellar regions.
@@ -31,7 +30,6 @@ https://greenelab.wustl.edu/data_software
 ROI coordinates downloaded from:
 https://wustl.box.com/s/twpyb1pflj6vrlxgh3rohyqanxbdpelw
 
-
-
 License
 -------
+unknown

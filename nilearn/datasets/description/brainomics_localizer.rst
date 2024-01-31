@@ -1,6 +1,7 @@
+.. _brainomics_dataset:
+
 Brainomics Localizer
 ====================
-
 
 Notes
 -----
@@ -30,7 +31,6 @@ References
 
 For more information about this dataset's structure:
 http://brainomics.cea.fr/localizer/
-
 
 License
 -------

@@ -1,6 +1,7 @@
+.. _dosenbach_atlas:
+
 Dosenbach 2010 atlas
 ====================
-
 
 Notes
 -----

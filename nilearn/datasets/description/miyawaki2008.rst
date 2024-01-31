@@ -1,7 +1,6 @@
 Miyawaki 2008 dataset
 =====================
 
-
 Notes
 -----
 Collection of result images from MVPA investigation of the human visual systems.
@@ -20,7 +19,6 @@ Content
     :'mask': Path to general mask nifti that defines target volume in visual cortex
     :'mask_roi': List of paths to images with specific data ('RH' for right hemisphere, 'LH' for left hemisphere, 'Vxxx' denote visual areas)
 
-
 References
 ----------
 
@@ -32,4 +30,4 @@ http://www.cns.atr.jp/dni/en/downloads/fmri-data-set-for-visual-image-reconstruc
 
 License
 -------
-unknown.
+unknown

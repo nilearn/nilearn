@@ -1,7 +1,6 @@
 Yeo 2011 atlas
 ==============
 
-
 Notes
 -----
 This atlas provides a labeling of some cortical voxels in the MNI152

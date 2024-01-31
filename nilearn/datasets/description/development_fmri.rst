@@ -1,6 +1,7 @@
+.. _development_dataset:
+
 development fMRI dataset
 ========================
-
 
 Notes
 -----

@@ -1,6 +1,7 @@
+.. _adhd_dataset:
+
 ADHD dataset
 ============
-
 
 Notes
 -----
@@ -29,7 +30,6 @@ References
 
 For more information about this dataset's structure:
 http://fcon_1000.projects.nitrc.org/indi/adhd200/index.html
-
 
 License
 -------

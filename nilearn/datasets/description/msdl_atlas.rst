@@ -1,7 +1,6 @@
 MSDL atlas
 ==========
 
-
 Notes
 -----
 Multi-subject Dictionary learning atlas.
@@ -16,12 +15,10 @@ and cited using :footcite:t:`Varoquaux2011`.
 
 See also :footcite:t:`Varoquaux2013` for more information.
 
-
 Content
 -------
     :'maps': Nifti images with the (probabilistic) region definitions
     :'labels': CSV file specifying the label information
-
 
 References
 ----------
@@ -30,7 +27,6 @@ References
 
 For more information about this dataset's structure:
 https://team.inria.fr/parietal/18-2/spatial_patterns/spatial-patterns-in-resting-state/
-
 
 License
 -------

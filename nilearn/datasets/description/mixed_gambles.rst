@@ -1,7 +1,6 @@
 Mixed gambles dataset
 =====================
 
-
 Notes
 -----
 zmaps for each subject of the raw dataset dataset available at
@@ -15,7 +14,6 @@ Content
     :'gain':
     :'y':
 
-
 References
 ----------
 
@@ -23,3 +21,4 @@ References
 
 License
 -------
+unknown

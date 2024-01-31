@@ -1,7 +1,6 @@
 Pauli 2007 atlas
 ================
 
-
 Notes
 -----
 The purpose of this project is to develop a crowd-sourced In Vivo High Resolution Atlas of the Subcortical Human Brain.
@@ -21,7 +20,6 @@ References
 ----------
 
 .. footbibliography::
-
 
 License
 -------

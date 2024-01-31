@@ -1,7 +1,6 @@
 NKI enhanced surface dataset
 ============================
 
-
 Notes
 -----
 Enhanced Nathan Kline Institute-Rockland Sample resting state fMRI data
@@ -24,6 +23,6 @@ References
 
 :Download: https://fcon_1000.projects.nitrc.org/indi/enhanced/
 
-
 License
 -------
+unknown

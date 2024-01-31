@@ -1,3 +1,5 @@
+.. _fs_average_4_template:
+
 fsaverage4 template
 ===================
 
@@ -32,6 +34,6 @@ References
 
 .. footbibliography::
 
-
 License
 -------
+unknown

@@ -1,6 +1,7 @@
+.. _craddock_atlas:
+
 Craddock 2012 atlas
 ===================
-
 
 Notes
 -----
@@ -17,7 +18,6 @@ by using spatially constrained Ncut spectral clustering.
 
 See also :footcite:t:`nitrcClusterROI`
 
-
 Content
 -------
     :'random': result of random clustering for comparison
@@ -26,7 +26,6 @@ Content
     :'tcorr_2level': :term:`parcellation` results when emphasizing temporal homogeneity
     :'tcorr_mean': group-mean :term:`parcellation` results when emphasizing temporal homogeneity
 
-
 References
 ----------
 
@@ -34,7 +33,6 @@ References
 
 For more information on this dataset's structure,
 see http://www.nitrc.org/projects/cluster_roi/
-
 
 License
 -------

@@ -1,7 +1,6 @@
 Schaefer 2018 atlas
 ===================
 
-
 Notes
 -----
 This atlas (:footcite:t:`schaefer_atlas`) provides a labeling of cortical voxels in the MNI152

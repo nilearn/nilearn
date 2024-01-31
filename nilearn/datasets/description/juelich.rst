@@ -1,7 +1,6 @@
 Juelich atlas
 =============
 
-
 Notes
 -----
 The Julich-Brain Cytoarchitectonic Atlas presents cytoarchitectonic maps in several coordinate spaces,
@@ -29,7 +28,6 @@ For the overall scientific concept and methodology of the Julich-Brain Cytoarchi
 Amunts, K., Mohlberg, H., Bludau, S., & Zilles, K. (2020).
 Julich-Brain: A 3D probabilistic atlas of the human brain's cytoarchitecture.
 Science, 369(6506), 988-992. DOI: 10.1126/science.abb4588
-
 
 License
 -------

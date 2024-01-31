@@ -1,6 +1,7 @@
+.. _fiac_dataset:
+
 fiac first level dataset
 ========================
-
 
 Notes
 -----

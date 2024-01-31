@@ -1,7 +1,6 @@
 Neurovault statistical maps
 ===========================
 
-
 Notes
 -----
 Neurovault is a public repository of unthresholded statistical

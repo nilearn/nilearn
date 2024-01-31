@@ -1,12 +1,12 @@
+.. _allen_atlas:
+
 Allen 2011 atlas
 ================
-
 
 Notes
 -----
 Collection of :term:`resting-state` network templates
 extracted from 600 healthy subjects :term:`fMRI` data.
-
 
 Content
 -------
@@ -21,13 +21,11 @@ References
 
 .. footbibliography::
 
-
 For more information on this dataset's structure, see:
 http://mialab.mrn.org/data/index.html
 
 Slices and label of the RSN ICs:
 https://www.frontiersin.org/files/Articles/2093/fnsys-05-00002-HTML/image_m/fnsys-05-00002-g004.jpg
-
 
 License
 -------

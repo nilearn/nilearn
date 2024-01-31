@@ -1,3 +1,5 @@
+.. _abide_dataset:
+
 ABIDE PCP dataset
 =================
 
@@ -30,7 +32,6 @@ For more information about this dataset's structure:
 http://preprocessed-connectomes-project.github.io
 
 http://www.childmind.org/en/healthy-brain-network/abide/
-
 
 License
 -------

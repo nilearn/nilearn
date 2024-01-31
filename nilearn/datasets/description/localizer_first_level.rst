@@ -1,7 +1,6 @@
 localizer first level dataset
 =============================
 
-
 Notes
 -----
 Single subject dataset from the "Neurospin Localizer".
@@ -26,10 +25,9 @@ The dataset includes
     :'events': a csv file describing the paradigm
     :'description': data description
 
-
 References
 ----------
 
-
 License
 -------
+unknown

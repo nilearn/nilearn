@@ -1,3 +1,5 @@
+.. _basc_atlas:
+
 BASC multiscale atlas
 =====================
 
@@ -33,7 +35,6 @@ template has been forced to be symmetric anatomically, and is therefore
 ideally suited to study homotopic functional connections in fMRI: finding
 homotopic regions simply consists of flipping the x-axis of the template.
 
-
 Preprocessing
 -------------
 The datasets were analysed using
@@ -64,7 +65,6 @@ as well as the first principal components (95% energy) of the
 six rigid-body motion parameters and their squares (Giove et al., 2009). The
 :term:`fMRI` volumes were finally spatially smoothed with a 6 mm isotropic Gaussian
 blurring kernel.
-
 
 Bootstrap Analysis of Stable Clusters
 -------------------------------------
@@ -113,7 +113,6 @@ Evidence from intrinsic activity that asymmetry of the human brain
 is controlled by multiple factors. Proceedings of the National Academy
 of Sciences 106 (48), 20499-20503.
 URL https://doi.org/10.1073/pnas.0908073106
-
 
 
 License

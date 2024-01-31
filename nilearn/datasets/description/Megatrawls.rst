@@ -1,7 +1,6 @@
 MegaTrawls Network Matrices HCP
 ===============================
 
-
 Notes
 -----
 Contains network matrices data of two types, full correlation and partial
@@ -22,14 +21,12 @@ More information available in :footcite:t:`Smith2015b`,
 :footcite:t:`Smith2015a`, :footcite:t:`Filippini2009`,
 :footcite:t:`Smith2014`, and :footcite:t:`Reilly2009`.
 
-
 Content
 -------
     :'dimensions': contains given input in dimensions used in fetching data.
     :'timeseries': contains given specific timeseries method used in fetching data.
     :'matrices': contains given specific type of matrices name.
     :'correlation_matrices': contains correlation network matrices data.
-
 
 References
 ----------
@@ -40,7 +37,6 @@ For more technical details about predicting the measures, refer to:
 Stephen Smith et al, HCP beta-release of the Functional Connectivity MegaTrawl.
 April 2015 "HCP500-MegaTrawl" release.
 https://db.humanconnectome.org/megatrawl/
-
 
 Disclaimer
 ----------

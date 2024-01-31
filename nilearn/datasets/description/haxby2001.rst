@@ -1,7 +1,6 @@
 Haxby dataset
 =============
 
-
 Notes
 -----
 Results from a classical :term:`fMRI` study that investigated the differences between
@@ -19,7 +18,6 @@ The "simple" dataset includes:
     :'mask': Nifti images with employed mask
     :'session': Text file with condition labels
 
-
 The full dataset additionally includes
     :'anat': Nifti images with anatomical image
     :'func': Nifti images with bold data
@@ -28,7 +26,6 @@ The full dataset additionally includes
     :'mask_house': Nifti images with house-reponsive brain regions
     :'mask_face_little': Spatially more constrained version of the above
     :'mask_house_little': Spatially more constrained version of the above
-
 
 References
 ----------

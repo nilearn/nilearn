@@ -1,7 +1,6 @@
 SPM multimodal dataset
 ======================
 
-
 Notes
 -----
 The example shows the analysis of an :term:`SPM` dataset studying face perception.
@@ -24,7 +23,6 @@ Content
     :'trials_ses2': Path to onsets file for run 2
     :'anat': Path to anat file
 
-
 References
 ----------
 
@@ -39,3 +37,4 @@ https://doi.org/10.1093/cercor/13.7.793
 
 License
 -------
+unknown

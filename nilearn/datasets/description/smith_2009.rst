@@ -1,7 +1,6 @@
 Smith 2009 Atlas
 ================
 
-
 Notes
 -----
 This atlas provides spatial maps of the major brain networks

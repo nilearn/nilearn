@@ -1,6 +1,7 @@
+.. _aal_atlas:
+
 AAL atlas
 =========
-
 
 Notes
 -----
@@ -31,7 +32,6 @@ References
 
 For more information on this dataset's structure, see
 http://www.gin.cnrs.fr/AAL-217?lang=en
-
 
 License
 -------

@@ -1,7 +1,7 @@
+.. _fs_average_3_template:
+
 fsaverage3 template
 ===================
-
-
 
 Notes
 -----
@@ -37,3 +37,4 @@ References
 
 License
 -------
+unknown

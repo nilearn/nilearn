@@ -1,7 +1,6 @@
 ICBM 152 template
 =================
 
-
 Notes
 -----
 References atlases intended for spatial normalization, registration, and
@@ -10,7 +9,6 @@ of MRI data in an unbiased fashion. MRI data from templates are derived from
 "a truly normal, well characterized population."
 
 See :footcite:t:`Collins1999`, :footcite:t:`Fonov2009` and :footcite:t:`Fonov2011`.
-
 
 Content
 -------
@@ -25,7 +23,6 @@ Content
     :'face_mask': average mask for face
     :'mask': average mask for brain
 
-
 References
 ----------
 
@@ -33,7 +30,6 @@ References
 
 For more information see:
 http://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009
-
 
 License
 -------

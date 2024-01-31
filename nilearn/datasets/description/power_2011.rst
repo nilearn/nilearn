@@ -1,7 +1,6 @@
 Power 2011 atlas
 ================
 
-
 Notes
 -----
 264 ROIs obtained by meta-analysis.
@@ -19,3 +18,4 @@ References
 
 License
 -------
+unknown
