@@ -1268,6 +1268,8 @@ def first_level_from_bids(
         derivatives_folder=derivatives_folder,
     )
 
+    dataset_path = Path(dataset_path).absolute()
+
     kwargs_load_confounds = _check_kwargs_load_confounds(**kwargs)
 
     if drift_model is not None and kwargs_load_confounds is not None:
@@ -1286,6 +1288,7 @@ def first_level_from_bids(
             )
 
     derivatives_path = Path(dataset_path) / derivatives_folder
+    derivatives_path = derivatives_path.absolute()
 
     # Get metadata for models.
     #
@@ -1396,6 +1399,8 @@ def first_level_from_bids(
     models_confounds = []
 
     sub_labels = _list_valid_subjects(derivatives_path, sub_labels)
+    if len(sub_labels) == 0:
+        raise RuntimeError(f"\nNo subject found in:\n {derivatives_path}")
     for sub_label_ in sub_labels:
         # Create model
         model = FirstLevelModel(

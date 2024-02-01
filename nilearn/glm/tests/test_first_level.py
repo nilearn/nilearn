@@ -2,6 +2,7 @@ import itertools
 import os
 import unittest.mock
 import warnings
+from itertools import product
 from pathlib import Path
 
 import numpy as np
@@ -1854,9 +1855,6 @@ def test_missing_trial_type_column_warning(tmp_path_factory):
         )
 
 
-from itertools import product
-
-
 def test_first_level_from_bids_load_confounds(tmp_path):
     """Test that only a subset of confounds can be loaded."""
     n_sub = 2
@@ -1942,6 +1940,24 @@ def test_first_level_from_bids_load_confounds_warnings(tmp_path):
             img_filters=[("desc", "preproc")],
             drift_model="polynomial",
             confounds_strategy=("high_pass",),
+        )
+
+
+import shutil
+
+
+def test_first_level_from_bids_no_subject(tmp_path):
+    """Throw error when no subject found."""
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path, n_sub=1, n_ses=0, tasks=["main"], n_runs=[2]
+    )
+    shutil.rmtree(bids_path / "derivatives" / "sub-01")
+    with pytest.raises(RuntimeError, match="No subject found in:"):
+        first_level_from_bids(
+            dataset_path=bids_path,
+            task_label="main",
+            space_label="MNI",
+            slice_time_ref=None,
         )
 
 
