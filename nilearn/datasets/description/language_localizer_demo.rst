@@ -1,4 +1,4 @@
-.. _langugage_localizer_dataset:
+.. _language_localizer_dataset:
 
 language localizer demo dataset
 ===============================
