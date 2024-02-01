@@ -1,4 +1,11 @@
-SPM auditory
+.. _spm_auditory_dataset:
+
+SPM auditory dataset
+====================
+
+Access
+------
+See :func:`nilearn.datasets.fetch_spm_auditory`.
 
 Notes
 -----
@@ -17,6 +24,8 @@ A structural image was also acquired.
 This experiment was conducted by Geriant Rees
 under the direction of Karl Friston and the FIL methods group.
 
+See :footcite:t:`spm_auditory`.
+
 Content
 -------
     :'func': Paths to functional images
@@ -25,8 +34,8 @@ Content
 
 References
 ----------
-See :cite:`spm_auditory`.
 
+.. footbibliography::
 
 License
 -------

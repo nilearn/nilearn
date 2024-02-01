@@ -1,5 +1,11 @@
-SPM multimodal
+.. _spm_multimodal_dataset:
 
+SPM multimodal dataset
+======================
+
+Access
+------
+See :func:`nilearn.datasets.fetch_spm_multimodal_fmri`.
 
 Notes
 -----
@@ -13,6 +19,8 @@ viewing a face image or a scrambled face image,
 supposedly with the same low-level statistical properties,
 to find face-specific responses.
 
+See :footcite:t:`spm_multiface`.
+
 Content
 -------
     :'func1': Paths to functional images for run 1
@@ -21,10 +29,10 @@ Content
     :'trials_ses2': Path to onsets file for run 2
     :'anat': Path to anat file
 
-
 References
 ----------
-See :cite:`spm_multiface`.
+
+.. footbibliography::
 
 For details on the data, please see:
 
@@ -35,3 +43,4 @@ https://doi.org/10.1093/cercor/13.7.793
 
 License
 -------
+unknown

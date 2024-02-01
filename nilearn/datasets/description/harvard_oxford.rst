@@ -1,5 +1,11 @@
-Harvard Oxford Atlas
+.. _harvard_oxford_atlas:
 
+Harvard Oxford atlas
+====================
+
+Access
+------
+See :func:`nilearn.datasets.fetch_atlas_harvard_oxford`.
 
 Notes
 -----
