@@ -7,9 +7,8 @@ between regions of interest : correlation, partial correlation,
 and tangent space embedding.
 
 The resulting connectivity coefficients can be used to
-discriminate children from adults. In general, the tangent space embedding
-**outperforms** the standard correlations: see `Dadi et al 2019
-<https://www.sciencedirect.com/science/article/pii/S1053811919301594>`_
+discriminate children from adults.In general, the tangent space embedding
+**outperforms** the standard correlations: see :footcite:t:`Dadi2019`
 for a careful study.
 
 .. include:: ../../../examples/masker_note.rst
@@ -260,9 +259,14 @@ plt.tight_layout()
 # This is a small example to showcase nilearn features. In practice such
 # comparisons need to be performed on much larger cohorts and several
 # datasets.
-# `Dadi et al 2019
-# <https://www.sciencedirect.com/science/article/pii/S1053811919301594>`_
-# Showed that across many cohorts and clinical questions, the tangent
-# kind should be preferred.
+# :footcite:t:`Dadi2019` showed that
+# across many cohorts and clinical questions,
+# the tangent kind should be preferred.
 
 plotting.show()
+
+# %%
+# References
+# ----------
+#
+#  .. footbibliography::

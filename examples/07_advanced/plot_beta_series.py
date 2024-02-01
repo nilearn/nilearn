@@ -114,7 +114,7 @@ fig.show()
 # %%
 # Define the LSA model
 # --------------------
-# We will now create a least squares- all (LSA) model.
+# We will now create a Least Squares All (LSA) model.
 # This involves a simple transformation, where each trial of interest receives
 # its own unique trial type.
 # It's important to ensure that the original trial types can be inferred from
@@ -162,7 +162,7 @@ lsa_beta_maps = {
 # %%
 # Define the LSS models
 # ---------------------
-# We will now create a separate Least Squares- Separate (LSS) model for each
+# We will now create a separate Least Squares Separate (LSS) model for each
 # trial of interest.
 # The transformation is much like the LSA approach, except that we only
 # relabel *one* trial in the DataFrame.

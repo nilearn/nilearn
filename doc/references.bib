@@ -106,6 +106,21 @@
 	abstract = {A variety of methods have been developed to identify brain networks with spontaneous, coherent activity in resting-state functional magnetic resonance imaging (fMRI). We propose here a generic statistical framework to quantify the stability of such resting-state networks (RSNs), which was implemented with k-means clustering. The core of the method consists in bootstrapping the available datasets to replicate the clustering process a large number of times and quantify the stable features across all replications. This bootstrap analysis of stable clusters (BASC) has several benefits: (1) it can be implemented in a multi-level fashion to investigate stable RSNs at the level of individual subjects and at the level of a group; (2) it provides a principled measure of RSN stability; and (3) the maximization of the stability measure can be used as a natural criterion to select the number of RSNs. A simulation study validated the good performance of the multi-level BASC on purely synthetic data. Stable networks were also derived from a real resting-state study for 43 subjects. At the group level, seven RSNs were identified which exhibited a good agreement with the previous findings from the literature. The comparison between the individual and group-level stability maps demonstrated the capacity of BASC to establish successful correspondences between these two levels of analysis and at the same time retain some interesting subject-specific characteristics, e.g. the specific involvement of subcortical regions in the visual and fronto-parietal networks for some subjects.}
 }
 
+@article{Chen2011,
+	title = {Cortical surface-based searchlight decoding},
+	journal = {NeuroImage},
+	volume = {56},
+	number = {2},
+	pages = {582-592},
+	year = {2011},
+	note = {Multivariate Decoding and Brain Reading},
+	issn = {1053-8119},
+	doi = {https://doi.org/10.1016/j.neuroimage.2010.07.035},
+	url = {https://www.sciencedirect.com/science/article/pii/S1053811910010086},
+	author = {Yi Chen and Praneeth Namburi and Lloyd T. Elliott and Jakob Heinzle and Chun Siong Soon and Michael W.L. Chee and John-Dylan Haynes},
+	abstract = {Local voxel patterns of fMRI signals contain specific information about cognitive processes ranging from basic sensory processing to high level decision making. These patterns can be detected using multivariate pattern classification, and localization of these patterns can be achieved with searchlight methods in which the information content of spherical sub-volumes of the fMRI signal is assessed. The only assumption made by this approach is that the patterns are spatially local. We present a cortical surface-based searchlight approach to pattern localization. Voxels are grouped according to distance along the cortical surface—the intrinsic metric of cortical anatomy—rather than Euclidean distance as in volumetric searchlights. Using a paradigm in which the category of visually presented objects is decoded, we compare the surface-based method to a standard volumetric searchlight technique. Group analyses of accuracy maps produced by both methods show similar distributions of informative regions. The surface-based method achieves a finer spatial specificity with comparable peak values of significance, while the volumetric method appears to be more sensitive to small informative regions and might also capture information not located directly within the gray matter. Furthermore, our findings show that a surface centered in the middle of the gray matter contains more information than to the white–gray boundary or the pial surface.}
+}
+
 @article{Ciric2017,
 	title = {Benchmarking of participant-level confound regression strategies for the control of motion artifact in studies of functional connectivity},
 	volume = {154},
@@ -180,6 +195,20 @@
 	year = {2012}
 }
 
+@article{Dadi2019,
+	title = {Benchmarking functional connectome-based predictive models for resting-state fMRI},
+	journal = {NeuroImage},
+	volume = {192},
+	pages = {115-134},
+	year = {2019},
+	issn = {1053-8119},
+	doi = {https://doi.org/10.1016/j.neuroimage.2019.02.062},
+	url = {https://www.sciencedirect.com/science/article/pii/S1053811919301594},
+	author = {Kamalaker Dadi and Mehdi Rahim and Alexandre Abraham and Darya Chyzhyk and Michael Milham and Bertrand Thirion and Gaël Varoquaux},
+	keywords = {Resting-state fMRI, Functional connectomes, Predictive modeling, Classification, Population study},
+	abstract = {Functional connectomes reveal biomarkers of individual psychological or clinical traits. However, there is great variability in the analytic pipelines typically used to derive them from rest-fMRI cohorts. Here, we consider a specific type of studies, using predictive models on the edge weights of functional connectomes, for which we highlight the best modeling choices. We systematically study the prediction performances of models in 6 different cohorts and a total of 2000 individuals, encompassing neuro-degenerative (Alzheimer's, Post-traumatic stress disorder), neuro-psychiatric (Schizophrenia, Autism), drug impact (Cannabis use) clinical settings and psychological trait (fluid intelligence). The typical prediction procedure from rest-fMRI consists of three main steps: defining brain regions, representing the interactions, and supervised learning. For each step we benchmark typical choices: 8 different ways of defining regions –either pre-defined or generated from the rest-fMRI data– 3 measures to build functional connectomes from the extracted time-series, and 10 classification models to compare functional interactions across subjects. Our benchmarks summarize more than 240 different pipelines and outline modeling choices that show consistent prediction performances in spite of variations in the populations and sites. We find that regions defined from functional data work best; that it is beneficial to capture between-region interactions with tangent-based parametrization of covariances, a midway between correlations and partial correlation; and that simple linear predictors such as a logistic regression give the best predictions. Our work is a step forward to establishing reproducible imaging-based biomarkers for clinical settings.}
+}
+
 @article{Dadi2020,
 	title = {Fine-grain atlases of functional modes for fMRI analysis},
 	journal = {NeuroImage},
@@ -192,6 +221,21 @@
 	author = {Kamalaker Dadi and Gaël Varoquaux and Antonia Machlouzarides-Shalit and Krzysztof J. Gorgolewski and Demian Wassermann and Bertrand Thirion and Arthur Mensch},
 	keywords = {Brain imaging atlases, Functional networks, Functional parcellations, Multi-resolution},
 	abstract = {Population imaging markedly increased the size of functional-imaging datasets, shedding new light on the neural basis of inter-individual differences. Analyzing these large data entails new scalability challenges, computational and statistical. For this reason, brain images are typically summarized in a few signals, for instance reducing voxel-level measures with brain atlases or functional modes. A good choice of the corresponding brain networks is important, as most data analyses start from these reduced signals. We contribute finely-resolved atlases of functional modes, comprising from 64 to 1024 networks. These dictionaries of functional modes (DiFuMo) are trained on millions of fMRI functional brain volumes of total size 2.4 ​TB, spanned over 27 studies and many research groups. We demonstrate the benefits of extracting reduced signals on our fine-grain atlases for many classic functional data analysis pipelines: stimuli decoding from 12,334 brain responses, standard GLM analysis of fMRI across sessions and individuals, extraction of resting-state functional-connectomes biomarkers for 2500 individuals, data compression and meta-analysis over more than 15,000 statistical maps. In each of these analysis scenarii, we compare the performance of our functional atlases with that of other popular references, and to a simple voxel-level analysis. Results highlight the importance of using high-dimensional “soft” functional atlases, to represent and analyze brain activity while capturing its functional gradients. Analyses on high-dimensional modes achieve similar statistical performance as at the voxel level, but with much reduced computational cost and higher interpretability. In addition to making them available, we provide meaningful names for these modes, based on their anatomical location. It will facilitate reporting of results.}
+}
+
+@article{Dale1999,
+	title = {Cortical Surface-Based Analysis: I. Segmentation and Surface Reconstruction},
+	journal = {NeuroImage},
+	volume = {9},
+	number = {2},
+	pages = {179-194},
+	year = {1999},
+	issn = {1053-8119},
+	doi = {https://doi.org/10.1006/nimg.1998.0395},
+	url = {https://www.sciencedirect.com/science/article/pii/S1053811998903950},
+	author = {Anders M. Dale and Bruce Fischl and Martin I. Sereno},
+	keywords = {segmentation, cortical surface reconstruction.},
+	abstract = {Several properties of the cerebral cortex, including its columnar and laminar organization, as well as the topographic organization of cortical areas, can only be properly understood in the context of the intrinsic two-dimensional structure of the cortical surface. In order to study such cortical properties in humans, it is necessary to obtain an accurate and explicit representation of the cortical surface in individual subjects. Here we describe a set of automated procedures for obtaining accurate reconstructions of the cortical surface, which have been applied to data from more than 100 subjects, requiring little or no manual intervention. Automated routines for unfolding and flattening the cortical surface are described in a companion paper. These procedures allow for the routine use of cortical surface-based analysis and visualization methods in functional brain imaging.}
 }
 
 @book{Davidson2004,
@@ -364,6 +408,21 @@
 	year = {1999}
 }
 
+@article{Fischl1999b,
+	title = {Cortical Surface-Based Analysis: II: Inflation, Flattening, and a Surface-Based Coordinate System},
+	journal = {NeuroImage},
+	volume = {9},
+	number = {2},
+	pages = {195-207},
+	year = {1999},
+	issn = {1053-8119},
+	doi = {https://doi.org/10.1006/nimg.1998.0396},
+	url = {https://www.sciencedirect.com/science/article/pii/S1053811998903962},
+	author = {Bruce Fischl and Martin I. Sereno and Anders M. Dale},
+	keywords = {Cortical surface reconstruction, flattening, coordinate systems, atlas.},
+	abstract = {The surface of the human cerebral cortex is a highly folded sheet with the majority of its surface area buried within folds. As such, it is a difficult domain for computational as well as visualization purposes. We have therefore designed a set of procedures for modifying the representation of the cortical surface to (i) inflate it so that activity buried inside sulci may be visualized, (ii) cut and flatten an entire hemisphere, and (iii) transform a hemisphere into a simple parameterizable surface such as a sphere for the purpose of establishing a surface-based coordinate system.}
+}
+
 @book{Fisher1935,
     added-at = {2009-10-28T04:42:52.000+0100},
     address = {Edinburgh},
@@ -534,6 +593,22 @@
 	URL = {https://science.sciencemag.org/content/293/5539/2425},
 	eprint = {https://science.sciencemag.org/content/293/5539/2425.full.pdf},
 	journal = {Science}
+}
+
+@article{Henson2003,
+    author = {Henson, R.N. and Goshen-Gottstein, Y. and Ganel, T. and Otten, L.J. and Quayle, A. and Rugg, M.D.},
+    title = "{Electrophysiological and Haemodynamic Correlates of Face Perception, Recognition and Priming}",
+    journal = {Cerebral Cortex},
+    volume = {13},
+    number = {7},
+    pages = {793-805},
+    year = {2003},
+    month = {07},
+    abstract = "{Face perception, recognition and priming were examined with event-related functional magnetic resonance imaging (fMRI) and scalp event-related potentials (ERPs). Face perception was associated with haemodynamic increases in regions including bilateral fusiform and right superior temporal cortices, and a right posterior negativity (N170), most likely generated in the superior temporal region. Face recognition was associated with haemodynamic increases in fusiform, medial frontal and orbitofrontal cortices, and with a frontocentral positivity from 550 ms poststimulus. Face repetition was associated with a positivity from 400 to 600 ms and behavioural priming. Repetition of familiar faces was also associated with earlier onset of the ERP familiarity effect, and haemodynamic decreases in fusiform cortex. These data support a multi-component model of face-processing, with priming arising from more than one stage.}",
+    issn = {1047-3211},
+    doi = {10.1093/cercor/13.7.793},
+    url = {https://doi.org/10.1093/cercor/13.7.793},
+    eprint = {https://academic.oup.com/cercor/article-pdf/13/7/793/9752528/1300793.pdf},
 }
 
 @article{Honorio2015,
@@ -727,6 +802,22 @@
     PDF = {https://hal.inria.fr/inria-00563468/file/arxiv_version.pdf},
     HAL_ID = {inria-00563468},
     HAL_VERSION = {v1},
+}
+
+@article{Michel2011b,
+	title = {A supervised clustering approach for fMRI-based inference of brain states},
+	journal = {Pattern Recognition},
+	volume = {45},
+	number = {6},
+	pages = {2041-2049},
+	year = {2012},
+	note = {Brain Decoding},
+	issn = {0031-3203},
+	doi = {https://doi.org/10.1016/j.patcog.2011.04.006},
+	url = {https://www.sciencedirect.com/science/article/pii/S0031320311001439},
+	author = {Vincent Michel and Alexandre Gramfort and Gaël Varoquaux and Evelyn Eger and Christine Keribin and Bertrand Thirion},
+	keywords = {, Brain reading, Prediction, Hierarchical clustering, Dimension reduction, Multi-scale analysis, Feature agglomeration},
+	abstract = {We propose a method that combines signals from many brain regions observed in functional Magnetic Resonance Imaging (fMRI) to predict the subject's behavior during a scanning session. Such predictions suffer from the huge number of brain regions sampled on the voxel grid of standard fMRI data sets: the curse of dimensionality. Dimensionality reduction is thus needed, but it is often performed using a univariate feature selection procedure, that handles neither the spatial structure of the images, nor the multivariate nature of the signal. By introducing a hierarchical clustering of the brain volume that incorporates connectivity constraints, we reduce the span of the possible spatial configurations to a single tree of nested regions tailored to the signal. We then prune the tree in a supervised setting, hence the name supervised clustering, in order to extract a parcellation (division of the volume) such that parcel-based signal averages best predict the target information. Dimensionality reduction is thus achieved by feature agglomeration, and the constructed features now provide a multi-scale representation of the signal. Comparisons with reference methods on both simulated and real data show that our approach yields higher prediction accuracy than standard voxel-based approaches. Moreover, the method infers an explicit weighting of the regions involved in the regression or classification task.}
 }
 
 @article{Miyawaki2008,
@@ -1125,6 +1216,18 @@
 	URL = {https://www.pnas.org/content/106/31/13040},
 	eprint = {https://www.pnas.org/content/106/31/13040.full.pdf},
 	journal = {Proceedings of the National Academy of Sciences}
+}
+
+@article{Thirion2014,
+	author={Thirion, Bertrand and Varoquaux, Gaël and Dohmatob, Elvis and Poline, Jean-Baptiste},
+	title={Which fMRI clustering gives good brain parcellations?},
+	journal={Frontiers in Neuroscience},
+	volume={8},
+	year={2014},
+	url={https://www.frontiersin.org/articles/10.3389/fnins.2014.00167},
+	doi={10.3389/fnins.2014.00167},
+	ISSN={1662-453X},
+	abstract={Analysis and interpretation of neuroimaging data often require one to divide the brain into a number of regions, or parcels, with homogeneous characteristics, be these regions defined in the brain volume or on the cortical surface. While predefined brain atlases do not adapt to the signal in the individual subject images, parcellation approaches use brain activity (e.g., found in some functional contrasts of interest) and clustering techniques to define regions with some degree of signal homogeneity. In this work, we address the question of which clustering technique is appropriate and how to optimize the corresponding model. We use two principled criteria: goodness of fit (accuracy), and reproducibility of the parcellation across bootstrap samples. We study these criteria on both simulated and two task-based functional Magnetic Resonance Imaging datasets for the Ward, spectral and k-means clustering algorithms. We show that in general Ward’s clustering performs better than alternative methods with regard to reproducibility and accuracy and that the two criteria diverge regarding the preferred models (reproducibility leading to more conservative solutions), thus deferring the practical decision to a higher level alternative, namely the choice of a trade-off between accuracy and stability.}
 }
 
 @article{Turner2012,
