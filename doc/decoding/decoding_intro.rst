@@ -128,7 +128,7 @@ Loading the data into nilearn
     explicitly define a masker :  :class:`nilearn.maskers.NiftiMasker`.
     This object extracts :term:`voxels<voxel>` belonging to a given spatial mask and converts
     their signal to a 2D data matrix with a shape (n_timepoints, n_voxels)
-    (see :ref:`mask_4d_2_3d` for a discussion on using
+    (see :ref:`mask_4d_2_3d` for a discussion on using masks).
 
 .. note::
   Seemingly minor data preparation can matter a lot on the final score,
