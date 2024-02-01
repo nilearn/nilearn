@@ -1,5 +1,6 @@
 import itertools
 import os
+import shutil
 import unittest.mock
 import warnings
 from itertools import product
@@ -1462,10 +1463,7 @@ def test_first_level_from_bids_with_subject_labels(bids_dataset):
     Check that the incorrect label `foo` raises a warning,
     but that we still get a model for existing subject.
     """
-    warning_message = (
-        "Subject label foo is not present in"
-        " the dataset and cannot be processed"
-    )
+    warning_message = "Subject label 'foo' is not present in*"
     with pytest.warns(UserWarning, match=warning_message):
         models, *_ = first_level_from_bids(
             dataset_path=bids_dataset,
@@ -1941,9 +1939,6 @@ def test_first_level_from_bids_load_confounds_warnings(tmp_path):
             drift_model="polynomial",
             confounds_strategy=("high_pass",),
         )
-
-
-import shutil
 
 
 def test_first_level_from_bids_no_subject(tmp_path):
