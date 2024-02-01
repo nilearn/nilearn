@@ -116,7 +116,7 @@ def _remove_small_regions(input_data, index, affine, min_size):
     # np.unique and then use np.bincount to count the region sizes.
 
     _, region_indices = np.unique(input_data, return_inverse=True)
-    region_sizes = np.bincount(region_indices)
+    region_sizes = np.bincount(region_indices.ravel())
     size_in_vox = min_size / np.abs(np.linalg.det(affine[:3, :3]))
     labels_kept = region_sizes > size_in_vox
     if not np.all(labels_kept):
