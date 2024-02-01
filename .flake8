@@ -6,9 +6,10 @@ exclude =
     build,
     dist,
 	env,
-	nilearn/externals/tempita
-	nilearn/externals/
-	nilearn_cache
+	nilearn/externals/tempita,
+	nilearn/externals/,
+	nilearn_cache,
+	nilearn/_version.py,
 	venv,
 	doc/_build
 --select = D,E,F,W,C90,CFQ

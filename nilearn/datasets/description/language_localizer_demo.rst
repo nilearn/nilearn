@@ -1,5 +1,11 @@
-language localizer demo
+.. _language_localizer_dataset:
 
+language localizer demo dataset
+===============================
+
+Access
+------
+See :func:`nilearn.datasets.fetch_language_localizer_demo_dataset`.
 
 Notes
 -----
@@ -9,8 +15,8 @@ or strings of consonants (trial_type='string'),
 presented one word at a time at the center of the screen (rapid serial visual presentation).
 
 The functional images files (in derivatives/)
-have been preprocessed (spatially realigned and normalized into the MNI space).
-Initially acquired with a voxel size of 1.5x1.5x1.5mm,
+have been preprocessed (spatially realigned and normalized into the :term:`MNI` space).
+Initially acquired with a :term:`voxel` size of 1.5x1.5x1.5mm,
 they have been resampled to 4.5x4.5x4.5mm to save disk space.
 
 https://osf.io/k4jp8/
