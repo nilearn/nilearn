@@ -1501,7 +1501,7 @@ def _list_valid_subjects(derivatives_path, sub_labels):
             sub_labels_exist.append(sub_label_)
         else:
             warn(
-                f"\nSubject label {sub_label_} is not present "
+                f"\nSubject label '{sub_label_}' is not present "
                 "in the following dataset and cannot be processed:\n"
                 f" {derivatives_path}",
                 stacklevel=3,
