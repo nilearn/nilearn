@@ -763,6 +763,12 @@ def _make_stat_maps_contrast_clusters(
         components_template_text = html_template_obj.read()
     for contrast_name, stat_map_img in stat_img.items():
         component_text_ = string.Template(components_template_text)
+
+        # Only use threshold_stats_img to adjust the threshold
+        # that we will pass to  _clustering_params_to_dataframe
+        # and _stat_map_to_svg
+        # Necessary to avoid :
+        # https://github.com/nilearn/nilearn/issues/4192
         _, threshold = threshold_stats_img(
             stat_img=stat_map_img,
             threshold=threshold,
@@ -770,6 +776,7 @@ def _make_stat_maps_contrast_clusters(
             cluster_threshold=cluster_threshold,
             height_control=height_control,
         )
+
         table_details = _clustering_params_to_dataframe(
             threshold,
             cluster_threshold,
@@ -777,6 +784,7 @@ def _make_stat_maps_contrast_clusters(
             height_control,
             alpha,
         )
+
         stat_map_svg = _stat_map_to_svg(
             stat_img=stat_map_img,
             threshold=threshold,
@@ -786,6 +794,7 @@ def _make_stat_maps_contrast_clusters(
             plot_type=plot_type,
             table_details=table_details,
         )
+
         cluster_table = get_clusters_table(
             stat_map_img,
             stat_threshold=threshold,
