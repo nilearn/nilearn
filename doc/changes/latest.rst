@@ -8,6 +8,8 @@
 Fixes
 -----
 
+- :bdg-dark:`Code` Fix errant warning when using ``stat_type`` in :func:`nilearn.glm.compute_contrast` (:gh:`4257` by `Eric Larson`_)
+
 Enhancements
 ------------
 
