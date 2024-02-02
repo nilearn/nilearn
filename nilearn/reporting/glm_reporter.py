@@ -763,7 +763,7 @@ def _make_stat_maps_contrast_clusters(
         components_template_text = html_template_obj.read()
     for contrast_name, stat_map_img in stat_img.items():
         component_text_ = string.Template(components_template_text)
-        thresholded_stat_map, threshold = threshold_stats_img(
+        _, threshold = threshold_stats_img(
             stat_img=stat_map_img,
             threshold=threshold,
             alpha=alpha,
@@ -778,7 +778,8 @@ def _make_stat_maps_contrast_clusters(
             alpha,
         )
         stat_map_svg = _stat_map_to_svg(
-            stat_img=thresholded_stat_map,
+            stat_img=stat_map_img,
+            threshold=threshold,
             bg_img=bg_img,
             cut_coords=cut_coords,
             display_mode=display_mode,
@@ -889,6 +890,7 @@ def _clustering_params_to_dataframe(
 @fill_doc
 def _stat_map_to_svg(
     stat_img,
+    threshold,
     bg_img,
     cut_coords,
     display_mode,
@@ -945,6 +947,7 @@ def _stat_map_to_svg(
             bg_img=bg_img,
             cut_coords=cut_coords,
             display_mode=display_mode,
+            threshold=threshold,
         )
     elif plot_type == "glass":
         stat_map_plot = plot_glass_brain(
@@ -952,6 +955,7 @@ def _stat_map_to_svg(
             display_mode=display_mode,
             colorbar=True,
             plot_abs=False,
+            threshold=threshold,
         )
     else:
         raise ValueError(
