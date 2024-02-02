@@ -907,6 +907,9 @@ def _stat_map_to_svg(
        to be plotted as slices or glass brain.
        Does not perform any thresholding.
 
+    threshold : float
+       Desired threshold in z-scale.
+
     bg_img : Niimg-like object
         Only used when plot_type is 'slice'.
         See :ref:`extracting_data`.
