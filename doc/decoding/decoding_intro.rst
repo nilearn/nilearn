@@ -77,11 +77,9 @@ _____
    :ref:`general linear model (or GLM) <glm_intro>` to retrieve one response
    map (a beta map) per trial as shown in
    :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_glm_decoding.py`.
-   This is sometimes known as "beta-series regressions" (see Mumford et al,
-   *Deconvolving bold activation in event-related designs for multivoxel
-   pattern classification analyses*, NeuroImage 2012). These maps can
-   then be input to the decoder as below, predicting the conditions
-   associated to trial.
+   This is sometimes known as "beta-series regressions" (see :footcite:t:`Mumford2012`).
+   These maps can then be input to the decoder as below,
+   predicting the conditions associated to trial.
 
    For simplicity, we will work on the raw time-series of the data.
    However, **it is strongly recommended that you fit a first-level model to
@@ -255,8 +253,7 @@ As a general advice :
   out is often a good option.
 
 * In any case leaving only one image as test set (leave-one-out) is often
-  the worst option (see Varoquaux et al, *Assessing and tuning brain decoders:
-  cross-validation, caveats, and guidelines*, Neuroimage 2017).
+  the worst option (see :footcite:t:`Varoquaux2017`).
 
 
 To improve our first pipeline for the Haxby example, we can leave one entire
@@ -401,3 +398,9 @@ To visualize the results, :class:`nilearn.decoding.Decoder` handles two main ste
   * :ref:`frem`
   * :ref:`space_net`
   * :ref:`searchlight`
+
+
+References
+----------
+
+.. footbibliography::
