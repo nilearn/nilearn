@@ -395,6 +395,16 @@ class BaseSlicer:
             img = reorder_img(img, resample=resampling_interpolation)
         threshold = float(threshold) if threshold is not None else None
 
+        if threshold is not None:
+            data = safe_get_data(img, ensure_finite=True)
+            if threshold == 0:
+                data = np.ma.masked_equal(data, 0, copy=False)
+            else:
+                data = np.ma.masked_inside(
+                    data, -threshold, threshold, copy=False
+                )
+            img = new_img_like(img, data, img.affine)
+
         affine = img.affine
         data = safe_get_data(img, ensure_finite=True)
         data_bounds = get_bounds(data.shape, affine)
@@ -436,6 +446,8 @@ class BaseSlicer:
 
             data_2d_list.append(data_2d)
 
+        print(kwargs)
+
         if kwargs.get("vmin") is None:
             kwargs["vmin"] = np.ma.min(
                 [d.min() for d in data_2d_list if d is not None]
@@ -444,6 +456,8 @@ class BaseSlicer:
             kwargs["vmax"] = np.ma.max(
                 [d.max() for d in data_2d_list if d is not None]
             )
+
+        print(kwargs)
 
         bounding_box = (xmin_, xmax_), (ymin_, ymax_), (zmin_, zmax_)
         ims = []
