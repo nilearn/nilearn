@@ -395,6 +395,7 @@ class BaseSlicer:
             img = reorder_img(img, resample=resampling_interpolation)
         threshold = float(threshold) if threshold is not None else None
 
+        affine = img.affine
         if threshold is not None:
             data = safe_get_data(img, ensure_finite=True)
             if threshold == 0:
@@ -403,9 +404,8 @@ class BaseSlicer:
                 data = np.ma.masked_inside(
                     data, -threshold, threshold, copy=False
                 )
-            img = new_img_like(img, data, img.affine)
+            img = new_img_like(img, data, affine)
 
-        affine = img.affine
         data = safe_get_data(img, ensure_finite=True)
         data_bounds = get_bounds(data.shape, affine)
         (xmin, xmax), (ymin, ymax), (zmin, zmax) = data_bounds
