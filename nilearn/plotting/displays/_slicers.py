@@ -446,8 +446,6 @@ class BaseSlicer:
 
             data_2d_list.append(data_2d)
 
-        print(kwargs)
-
         if kwargs.get("vmin") is None:
             kwargs["vmin"] = np.ma.min(
                 [d.min() for d in data_2d_list if d is not None]
@@ -456,8 +454,6 @@ class BaseSlicer:
             kwargs["vmax"] = np.ma.max(
                 [d.max() for d in data_2d_list if d is not None]
             )
-
-        print(kwargs)
 
         bounding_box = (xmin_, xmax_), (ymin_, ymax_), (zmin_, zmax_)
         ims = []
