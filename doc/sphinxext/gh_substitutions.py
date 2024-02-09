@@ -1,3 +1,5 @@
+"""Replace links to github during the doc build."""
+
 from docutils.nodes import reference
 from docutils.parsers.rst.roles import set_classes
 

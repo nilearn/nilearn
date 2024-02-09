@@ -1,3 +1,5 @@
+"""Necessary functions for sphinx.ext.linkcode to provide links to github."""
+
 import inspect
 import os
 import subprocess
