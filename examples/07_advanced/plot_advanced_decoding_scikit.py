@@ -10,12 +10,9 @@ objects. If some concepts seem unclear,
 please refer to the :ref:`documentation on decoding <decoding_intro>`
 and in particular to the :ref:`advanced section <going_further>`.
 As in many other examples, we perform decoding of the visual category of a
-stimuli on Haxby 2001 dataset, focusing on distinguishing two categories :
+stimuli on :footcite:t:`Haxby2001` dataset,
+focusing on distinguishing two categories:
 face and cat images.
-
-    * J.V. Haxby et al. "Distributed and Overlapping Representations of Faces
-      and Objects in Ventral Temporal Cortex", Science vol 293 (2001), p
-      2425.-2430.
 
 .. include:: ../../../examples/masker_note.rst
 
@@ -277,3 +274,9 @@ rfe_svc = Pipeline([("rfe", rfe), ("svc", svc)])
 #                             n_jobs=2,
 #                             verbose=1)
 # But, be aware that this can take * A WHILE * ...
+
+# %%
+# References
+# ----------
+#
+#  .. footbibliography::

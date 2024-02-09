@@ -34,12 +34,7 @@ References
 
 .. footbibliography::
 
-For details on the data, please see:
-
-Henson, R.N., Goshen-Gottstein, Y., Ganel, T., Otten, L.J., Quayle, A.,
-Rugg, M.D. Electrophysiological and haemodynamic correlates of face
-perception, recognition and priming. Cereb Cortex. 2003 Jul;13(7):793-805.
-https://doi.org/10.1093/cercor/13.7.793
+For details on the data, please see :footcite:t:`Henson2003`.
 
 License
 -------

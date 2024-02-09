@@ -12,12 +12,7 @@ into homogeneous regions from functional imaging data.
 .. topic:: **Reference**
 
    A big-picture reference on the use of clustering for brain
-   parcellations.
-
-    Thirion, et al. `"Which fMRI clustering gives good brain
-    parcellations?."
-    <https://www.frontiersin.org/articles/10.3389/fnins.2014.00167/full>`_
-    Frontiers in neuroscience 8.167 (2014): 13.
+   parcellations can be found in :footcite:t:`Thirion2014`.
 
 Data loading: movie-watching data
 =================================
@@ -39,9 +34,7 @@ Applying clustering
     The question of which clustering method to use is in itself subject
     to debate. There are many clustering methods; their computational
     cost will vary, as well as their results. A `well-cited empirical
-    comparison paper, Thirion et al. 2014
-    <https://www.frontiersin.org/articles/10.3389/fnins.2014.00167/full>`_
-    suggests that:
+    comparison paper (:footcite:t:`Thirion2014`) suggests that:
 
     * For a large number of clusters, it is preferable to use Ward
       agglomerative clustering with spatial constraints
@@ -160,3 +153,8 @@ approximated.
    All the steps discussed in this section can be seen implemented in
    :ref:`a full code example
    <sphx_glr_auto_examples_03_connectivity_plot_data_driven_parcellations.py>`.
+
+References
+----------
+
+.. footbibliography::
