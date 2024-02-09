@@ -60,7 +60,7 @@ def _load_localizer_index():
 
 @pytest.fixture()
 def localizer_mocker(request_mocker):
-    """Mocks the index for localizer dataset."""
+    """Mock the index for localizer dataset."""
     index, tsv_files = _load_localizer_index()
     request_mocker.url_mapping["https://osf.io/hwbm2/download"] = json.dumps(
         index

@@ -112,7 +112,7 @@ def test_check_events_warnings():
 
 
 def write_events(events, tmpdir):
-    """Function to write events of an experimental paradigm \
+    """Write events of an experimental paradigm \
        to a file and return the address."""
     tsvfile = os.path.join(tmpdir, "events.tsv")
     events.to_csv(tsvfile, sep="\t")

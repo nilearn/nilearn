@@ -47,7 +47,7 @@ def _make_resampling_test_data():
 
 
 def rotation(theta, phi):
-    """Returns a rotation 3x3 matrix."""
+    """Return a rotation 3x3 matrix."""
     cos = np.cos
     sin = np.sin
     a1 = np.array(

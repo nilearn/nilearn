@@ -36,7 +36,7 @@ def _check_html(html_view):
 
 @pytest.fixture
 def data_img_3d(shape_3d_default, affine_eye):
-    """Dummy 3D data for testing."""
+    """Return Dummy 3D data for testing."""
     data = np.zeros(shape_3d_default)
     data[3:-3, 3:-3, 3:-3] = 10
     return Nifti1Image(data, affine_eye)
@@ -44,7 +44,7 @@ def data_img_3d(shape_3d_default, affine_eye):
 
 @pytest.fixture
 def mask(shape_3d_default, affine_eye):
-    """Dummy mask for testing."""
+    """Return Dummy mask for testing."""
     data = np.zeros(shape_3d_default, dtype="uint8")
     data[3:7, 3:7, 3:7] = 1
     return Nifti1Image(data, affine_eye)

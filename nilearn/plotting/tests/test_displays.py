@@ -143,7 +143,7 @@ def img():
 
 @pytest.fixture
 def cut_coords(name):
-    """Selects appropriate cut coords."""
+    """Select appropriate cut coords."""
     if name == "mosaic":
         return 3
     if name in ["yx", "yz", "xz"]:
@@ -249,7 +249,7 @@ def test_mosaic_slicer_wrong_inputs(cut_coords):
 
 @pytest.fixture
 def expected_cuts(cut_coords):
-    """Expected cut with test_demo_mosaic_slicer."""
+    """Return expected cut with test_demo_mosaic_slicer."""
     if cut_coords == (1, 1, 1):
         return {"x": [-40.0], "y": [-30.0], "z": [-30.0]}
     if cut_coords == 5:

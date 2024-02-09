@@ -111,7 +111,7 @@ def _parse_query(query):
 
 
 def _neurovault_collections(parts, query):
-    """Mocks the Neurovault API behind the `/api/collections/` path.
+    """Mock the Neurovault API behind the `/api/collections/` path.
 
     parts: the parts of the URL path after "collections"
      ie [], ["<somecollectionid>"], or ["<somecollectionid>", "images"]
@@ -132,8 +132,8 @@ def _neurovault_collections(parts, query):
 
 
 def _neurovault_one_collection(parts):
-    """
-    Mocks Neurovault API behind the `/api/collections/<somecollectionid>` path.
+    """Mock Neurovault API \
+       behind the `/api/collections/<somecollectionid>` path.
 
     parts: parts of the URL path after "collections",
       ie ["<somecollectionid>"] or ["<somecollectionid>", "images"]
@@ -159,7 +159,7 @@ def _neurovault_one_collection(parts):
 
 
 def _neurovault_images(parts, query):
-    """Mocks the Neurovault API behind the `/api/images/` path.
+    """Mock the Neurovault API behind the `/api/images/` path.
 
     parts: parts of the URL path after "images",
       ie [] or ["<someimageid>"]
@@ -180,7 +180,7 @@ def _neurovault_images(parts, query):
 
 
 def _neurovault_one_image(img_id):
-    """Mocks the Neurovault API behind the `/api/images/<someimageid>` path.
+    """Mock the Neurovault API behind the `/api/images/<someimageid>` path.
 
     returns a dictionary of API results
 
@@ -195,7 +195,7 @@ def _neurovault_one_image(img_id):
 
 
 def _neurovault_file(parts, query):
-    """Mocks the Neurovault API behind the `/media/images/` path."""
+    """Mock the Neurovault API behind the `/media/images/` path."""
     return generate_fake_fmri(length=1)[0]
 
 

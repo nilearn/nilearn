@@ -39,7 +39,7 @@ def non_symmetric_matrix():
 
 @pytest.fixture
 def base_params():
-    """Basic set of parameters for testing."""
+    """Return basic set of parameters for testing."""
     return dict(edge_threshold=0.38, title="threshold=0.38", node_size=10)
 
 
@@ -237,7 +237,7 @@ def test_plot_connectome_non_symmetric(node_coords, non_symmetric_matrix):
 
 
 def plot_connectome_edge_thresholding(node_coords, non_symmetric_matrix):
-    """Tests for plot_connectome with edge thresholding."""
+    """Test for plot_connectome with edge thresholding."""
     # Case 1: Threshold is a number
     thresh = 1.1
     ax = plot_connectome(

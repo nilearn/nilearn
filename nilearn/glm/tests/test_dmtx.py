@@ -51,8 +51,8 @@ def design_matrix_light(
     add_reg_names=None,
     min_onset=-24,
 ):
-    """Same as make_first_level_design_matrix, \
-    but only returns the computed matrix and associated name."""
+    """Perform same as make_first_level_design_matrix, \
+       but only returns the computed matrix and associated name."""
     fir_delays = fir_delays or [0]
     dmtx = make_first_level_design_matrix(
         frame_times,
