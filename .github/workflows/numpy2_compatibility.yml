@@ -6,9 +6,9 @@ name: Numpy2 compatibility
 on:
 
     # Comment before merging in main
-    pull_request:
-        branches:
-        -   '*'
+    # pull_request:
+    #    branches:
+    #    -   '*'
 
     schedule:
     # Run every day at 8am UTC
