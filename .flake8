@@ -34,13 +34,12 @@ max_returns_amount = 10
 per-file-ignores =
 	**/__init__.py: D104
     # - docstrings rules that should not be applied to tests
-	**/tests/*: D100, D101, D102, D103, D104, D205
-	**/_testing.py: D100, D101, D102, D103, D104, D205
+	**/tests/*: D100, D101, D102, D103
     # - docstrings rules that should not be applied to examples
 	examples/*/*: D103, D205, D301, D400
     # - docstrings rules that should not be applied to doc
 	doc/*: D103, F401
-ignore = D105, D107, E402, W503, W504, W605, BLK100, CFQ003
+ignore = D105, D107, E402, W503, W504, W605, CFQ003
 # for compatibility with black
 # https://black.readthedocs.io/en/stable/guides/using_black_with_other_tools.html#flake8
 extend-ignore = E203

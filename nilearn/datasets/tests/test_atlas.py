@@ -373,6 +373,7 @@ def _destrieux_data():
 @pytest.mark.parametrize("lateralized", [True, False])
 def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker, lateralized):
     """Tests for function `fetch_atlas_destrieux_2009`.
+
     The atlas is fetched with different values for `lateralized`.
     """
     request_mocker.url_mapping["*destrieux2009.tgz"] = _destrieux_data()
