@@ -174,9 +174,8 @@ def test_reports_after_fit_3d_data_with_mask(
     [NiftiMasker, NiftiLabelsMasker, NiftiMapsMasker, NiftiSpheresMasker],
 )
 def test_warning_in_report_after_empty_fit(masker_class, input_parameters):
-    """Tests that a warning is both given and written in the report if
-    no images were provided to fit.
-    """
+    """Tests that a warning is both given and written in the report \
+       if no images were provided to fit."""
     masker = masker_class(**input_parameters)
     assert masker._report_content["warning_message"] is None
     masker.fit()
@@ -191,9 +190,8 @@ def test_warning_in_report_after_empty_fit(masker_class, input_parameters):
 def test_nifti_maps_masker_report_displayed_maps_errors(
     niftimapsmasker_inputs, displayed_maps
 ):
-    """Tests that a TypeError is raised when the argument `displayed_maps`
-    of `generate_report()` is not valid.
-    """
+    """Tests that a TypeError is raised when the argument `displayed_maps` \
+       of `generate_report()` is not valid."""
     masker = NiftiMapsMasker(**niftimapsmasker_inputs)
     masker.fit()
     with pytest.raises(TypeError, match=("Parameter ``displayed_maps``")):
@@ -204,9 +202,8 @@ def test_nifti_maps_masker_report_displayed_maps_errors(
 def test_nifti_maps_masker_report_maps_number_errors(
     niftimapsmasker_inputs, displayed_maps
 ):
-    """Tests that a ValueError is raised when the argument `displayed_maps`
-    contains invalid map numbers.
-    """
+    """Tests that a ValueError is raised when the argument `displayed_maps` \
+       contains invalid map numbers."""
     masker = NiftiMapsMasker(**niftimapsmasker_inputs)
     masker.fit()
     with pytest.raises(
@@ -219,9 +216,8 @@ def test_nifti_maps_masker_report_maps_number_errors(
 def test_nifti_maps_masker_report_list_and_arrays_maps_number(
     niftimapsmasker_inputs, displayed_maps, n_regions
 ):
-    """Tests report generation for NiftiMapsMasker with displayed_maps
-    passed as a list of a Numpy arrays.
-    """
+    """Tests report generation for NiftiMapsMasker with displayed_maps \
+       passed as a list of a Numpy arrays."""
     masker = NiftiMapsMasker(**niftimapsmasker_inputs)
     masker.fit()
     html = masker.generate_report(displayed_maps)
@@ -240,9 +236,8 @@ def test_nifti_maps_masker_report_list_and_arrays_maps_number(
 def test_nifti_maps_masker_report_integer_and_all_displayed_maps(
     niftimapsmasker_inputs, displayed_maps, n_regions
 ):
-    """Tests NiftiMapsMasker reporting with no image provided to fit
-    and displayed_maps provided as an integer or as 'all'.
-    """
+    """Tests NiftiMapsMasker reporting with no image provided to fit \
+       and displayed_maps provided as an integer or as 'all'."""
     masker = NiftiMapsMasker(**niftimapsmasker_inputs)
     masker.fit()
     expected_n_maps = (
@@ -286,9 +281,8 @@ def test_nifti_maps_masker_report_image_in_fit(
 def test_nifti_spheres_masker_report_displayed_spheres_errors(
     displayed_spheres,
 ):
-    """Tests that a TypeError is raised when the argument `displayed_spheres`
-    of `generate_report()` is not valid.
-    """
+    """Tests that a TypeError is raised when the argument `displayed_spheres` \
+       of `generate_report()` is not valid."""
     masker = NiftiSpheresMasker(seeds=[(1, 1, 1)])
     masker.fit()
     with pytest.raises(TypeError, match=("Parameter ``displayed_spheres``")):
@@ -296,9 +290,8 @@ def test_nifti_spheres_masker_report_displayed_spheres_errors(
 
 
 def test_nifti_spheres_masker_report_displayed_spheres_more_than_seeds():
-    """Tests that a warning is raised when number of `displayed_spheres`
-    is greater than number of seeds.
-    """
+    """Tests that a warning is raised when number of `displayed_spheres` \
+       is greater than number of seeds."""
     displayed_spheres = 10
     seeds = [(1, 1, 1)]
     masker = NiftiSpheresMasker(seeds=seeds)
@@ -320,9 +313,8 @@ def test_nifti_spheres_masker_report_displayed_spheres_list():
 
 
 def test_nifti_spheres_masker_report_displayed_spheres_list_more_than_seeds():
-    """Tests that a ValueError is raised when list of `displayed_spheres`
-    maximum is greater than number of seeds.
-    """
+    """Tests that a ValueError is raised when list of `displayed_spheres` \
+       maximum is greater than number of seeds."""
     displayed_spheres = [1, 2, 3]
     seeds = [(1, 1, 1)]
     masker = NiftiSpheresMasker(seeds=seeds)

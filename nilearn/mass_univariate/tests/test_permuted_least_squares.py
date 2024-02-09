@@ -179,7 +179,7 @@ def permuted_ols_with_intercept(tested_var, target_var, n_perm, i):
 
 
 def ks_stat_and_mse(df, h0_intercept):
-    """Run Kolmogorov-Smirnov test and compute Mean Squared Error"""
+    """Run Kolmogorov-Smirnov test and compute Mean Squared Error."""
     kstest_pval = stats.kstest(h0_intercept, stats.t(df).cdf)[1]
     mse = mean_squared_error(df=df, h0_intercept=h0_intercept)
     return kstest_pval, mse

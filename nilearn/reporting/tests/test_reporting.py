@@ -34,7 +34,7 @@ def shape():
     not have_mpl, reason="Matplotlib not installed; required for this test"
 )
 def test_local_max_two_maxima(shape, affine_eye):
-    """Basic test of nilearn.reporting._get_clusters_table._local_max()"""
+    """Basic test of nilearn.reporting._get_clusters_table._local_max()."""
     # Two maxima (one global, one local), 10 voxels apart.
     data = np.zeros(shape)
     data[4, 5, :] = [4, 3, 2, 1, 1, 1, 1, 1, 2, 3, 4]
@@ -54,7 +54,7 @@ def test_local_max_two_maxima(shape, affine_eye):
     not have_mpl, reason="Matplotlib not installed; required for this test"
 )
 def test_local_max_two_global_maxima(shape, affine_eye):
-    """Basic test of nilearn.reporting._get_clusters_table._local_max()"""
+    """Basic test of nilearn.reporting._get_clusters_table._local_max()."""
     # Two global (equal) maxima, 10 voxels apart.
     data = np.zeros(shape)
     data[4, 5, :] = [4, 3, 2, 1, 1, 1, 1, 1, 2, 3, 4]
@@ -74,7 +74,7 @@ def test_local_max_two_global_maxima(shape, affine_eye):
     not have_mpl, reason="Matplotlib not installed; required for this test"
 )
 def test_local_max_donut(shape, affine_eye):
-    """Basic test of nilearn.reporting._get_clusters_table._local_max()"""
+    """Basic test of nilearn.reporting._get_clusters_table._local_max()."""
     # A donut.
     data = np.zeros(shape)
     data[4, 5, :] = [0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0]
@@ -87,9 +87,9 @@ def test_local_max_donut(shape, affine_eye):
 
 
 def test_cluster_nearest_neighbor(shape):
-    """Check that _cluster_nearest_neighbor preserves within-cluster voxels,
-    projects voxels to the correct cluster, and handles singleton clusters.
-    """
+    """Check that _cluster_nearest_neighbor preserves within-cluster voxels, \
+       projects voxels to the correct cluster, \
+       and handles singleton clusters."""
     labeled = np.zeros(shape)
     # cluster 1 is half the volume, cluster 2 is a single voxel
     labeled[:, 5:, :] = 1
@@ -198,9 +198,8 @@ def test_get_clusters_table_more(shape, affine_eye, tmp_path):
 
 
 def test_get_clusters_table_relabel_label_maps(shape, affine_eye):
-    """Check that the cluster's labels in label_maps match their corresponding
-    cluster IDs in the clusters table.
-    """
+    """Check that the cluster's labels in label_maps match \
+       their corresponding cluster IDs in the clusters table."""
     data = np.zeros(shape)
     data[2:4, 5:7, 6:8] = 6.0
     data[5:7, 7:9, 7:9] = 5.5

@@ -184,7 +184,7 @@ def test_canica_square_img(mask_img):
 
 
 def test_canica_single_subject_smoke():
-    """Check that canica runs on a single-subject dataset"""
+    """Check that canica runs on a single-subject dataset."""
     data, _, rng = _make_canica_test_data(n_subjects=1)
 
     canica = CanICA(

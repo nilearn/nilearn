@@ -553,7 +553,7 @@ def test_fetch_surf_nki_enhanced(tmp_path, request_mocker):
 
 
 def _mock_participants_data(n_ids=5):
-    """Maximum 8 ids are allowed to mock"""
+    """Maximum 8 ids are allowed to mock."""
     ids = [
         "sub-pixar052",
         "sub-pixar073",

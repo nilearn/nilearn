@@ -200,7 +200,7 @@ def _neurovault_file(parts, query):
 
 
 class _NumpyJsonEncoder(json.JSONEncoder):
-    """A json encoder that can handle numpy objects"""
+    """A json encoder that can handle numpy objects."""
 
     def default(self, obj):
         if hasattr(obj, "tolist"):

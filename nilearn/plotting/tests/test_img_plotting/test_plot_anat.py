@@ -44,8 +44,7 @@ def test_plot_anat_3d_img(img_3d_mni, tmp_path):
 
 
 def test_plot_img_invalid():
-    """Check that we get a meaningful error message when
-    we give a wrong display_mode argument.
-    """
+    """Check that we get a meaningful error message \
+       when we give a wrong display_mode argument."""
     with pytest.raises(Exception):
         plot_anat(display_mode="zzz")

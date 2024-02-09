@@ -455,8 +455,8 @@ def test_save_glm_to_bids_errors(
 def test_save_glm_to_bids_contrast_definitions(
     tmp_path_factory, two_runs_model, contrasts, prefix
 ):
-    """Test that save_glm_to_bids operates on different contrast definitions as
-    expected.
+    """Test that save_glm_to_bids operates on different contrast definitions \
+       as expected.
 
     - Test string-based contrasts and undefined contrast types
 

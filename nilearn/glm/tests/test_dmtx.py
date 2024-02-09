@@ -401,7 +401,7 @@ def test_oversampling(n_frames):
 
 
 def test_high_pass(n_frames):
-    """Test that high-pass values lead to reasonable design matrices"""
+    """Test that high-pass values lead to reasonable design matrices."""
     tr = 2.0
     frame_times = np.arange(0, tr * n_frames, tr)
     X = make_first_level_design_matrix(

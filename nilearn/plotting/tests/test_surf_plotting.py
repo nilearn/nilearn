@@ -248,9 +248,8 @@ def test_surface_figure():
 @pytest.mark.skipif(is_plotly_installed(),
                     reason='Plotly is installed.')
 def test_plotly_surface_figure_import_error():
-    """Test that an ImportError is raised when instantiating a
-    PlotlySurfaceFigure without having Plotly installed.
-    """
+    """Test that an ImportError is raised when instantiating \
+       a PlotlySurfaceFigure without having Plotly installed."""
     with pytest.raises(ImportError, match="Plotly is required"):
         PlotlySurfaceFigure()
 
@@ -259,9 +258,8 @@ def test_plotly_surface_figure_import_error():
                     reason=("This test only runs if Plotly is "
                             "installed, but not kaleido."))
 def test_plotly_surface_figure_savefig_error():
-    """Test that an ImportError is raised when saving a
-    PlotlySurfaceFigure without having kaleido installed.
-    """
+    """Test that an ImportError is raised when saving \
+       a PlotlySurfaceFigure without having kaleido installed."""
     with pytest.raises(ImportError, match="`kaleido` is required"):
         PlotlySurfaceFigure().savefig()
 
@@ -823,7 +821,7 @@ def test_plot_surf_roi_error(engine, rng):
     "kwargs", [{"vmin": 2}, {"vmin": 2, "threshold": 5}, {"threshold": 5}]
 )
 def test_plot_surf_roi_colorbar_vmin_equal_across_engines(kwargs):
-    """See issue https://github.com/nilearn/nilearn/issues/3944"""
+    """See issue https://github.com/nilearn/nilearn/issues/3944."""
     mesh = generate_surf()
     roi_map = np.arange(0, len(mesh[0]))
 
@@ -1151,7 +1149,7 @@ def test_compute_facecolors_matplotlib():
 @pytest.mark.parametrize("symmetric_cmap", [True, False, None])
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 def test_plot_surf_roi_default_arguments(engine, symmetric_cmap, avg_method):
-    """Regression test for https://github.com/nilearn/nilearn/issues/3941"""
+    """Regression test for https://github.com/nilearn/nilearn/issues/3941."""
     mesh, roi_map, _ = _generate_data_test_surf_roi()
     plot_surf_roi(mesh, roi_map=roi_map,
                   engine=engine,
