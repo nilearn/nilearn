@@ -71,6 +71,7 @@ def report_flm_adhd_dmn():  # pragma: no cover # noqa
         contrasts=contrasts,
         title="ADHD DMN Report",
         cluster_threshold=15,
+        alpha=0.0009,
         height_control="bonferroni",
         min_distance=8.0,
         plot_type="glass",
@@ -258,7 +259,9 @@ def report_slm_oasis():  # pragma: no cover # noqa
         oasis_dataset.gray_matter_maps, design_matrix=design_matrix
     )
 
-    contrast = [[1, 0, 0], [0, 1, 0]]
+    contrast = [np.array([1, 0]), np.array([0, 1])]
+    contrast = [np.array([1, 0, 0]), np.array([0, 1, 0])]
+    contrast = ["age", "sex"]
     report = make_glm_report(
         model=second_level_model,
         contrasts=contrast,
@@ -307,9 +310,9 @@ def prefer_serial_execution(functions_to_be_called):  # pragma: no cover # noqa
 if __name__ == "__main__":  # pragma: no cover
     functions_to_be_called = [
         report_flm_adhd_dmn,
-        report_flm_bids_features,
-        report_flm_fiac,
-        report_slm_oasis,
+        # report_flm_bids_features,
+        # report_flm_fiac,
+        # report_slm_oasis,
     ]
-    prefer_parallel_execution(functions_to_be_called)
-    # prefer_serial_execution(functions_to_be_called)
+    # prefer_parallel_execution(functions_to_be_called)
+    prefer_serial_execution(functions_to_be_called)

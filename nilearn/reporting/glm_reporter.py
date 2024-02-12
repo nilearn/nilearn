@@ -14,6 +14,7 @@ import string
 import warnings
 from collections import OrderedDict
 from collections.abc import Iterable
+from decimal import Decimal
 from html import escape
 
 import numpy as np
@@ -481,12 +482,14 @@ def _model_attributes_to_dataframe(model):
         "smoothing_fwhm",
         "target_affine",
         "slice_time_ref",
-        "fir_delays",
     ]
     attribute_units = {
         "t_r": "s",
         "high_pass": "Hz",
     }
+
+    if hasattr(model, "hrf_model") and getattr(model, "hrf_model") == "fir":
+        selected_attributes.append("fir_delays")
 
     selected_attributes.sort()
     display_attributes = OrderedDict(
@@ -574,7 +577,9 @@ def _dmtx_to_svg_url(design_matrices):
         dmtx_text_ = string.Template(dmtx_template_text)
         dmtx_plot = plot_design_matrix(design_matrix)
         dmtx_title = f"Run {dmtx_count}"
-        plt.title(dmtx_title, y=0.987)
+        plt.title(
+            dmtx_title, y=1.025, x=-0.13, fontdict={"fontweight": "bold"}
+        )
         dmtx_plot = _resize_plot_inches(dmtx_plot, height_change=0.3)
         url_design_matrix_svg = _plot_to_svg(dmtx_plot)
         # prevents sphinx-gallery & jupyter from scraping & inserting plots
@@ -801,7 +806,7 @@ def _make_stat_maps_contrast_clusters(
         )
         table_details_html = _dataframe_to_html(
             table_details,
-            precision=2,
+            precision=3,
             header=False,
             classes="cluster-details-table",
         )
@@ -867,6 +872,8 @@ def _clustering_params_to_dataframe(
         This is simpler than overloading the class using inheritance,
         especially given limited Python2 use at time of release.
         """
+        if alpha < 0.001:
+            alpha = f"{Decimal(alpha):.2E}"
         if os.sys.version_info.major == 2:
             table_details.update({"alpha": alpha})
         else:
@@ -945,6 +952,7 @@ def _stat_map_to_svg(
             bg_img=bg_img,
             cut_coords=cut_coords,
             display_mode=display_mode,
+            colorbar=True,
         )
     elif plot_type == "glass":
         stat_map_plot = plot_glass_brain(
@@ -958,6 +966,10 @@ def _stat_map_to_svg(
             "Invalid plot type provided. "
             "Acceptable options are 'slice' or 'glass'."
         )
+
+    cbar = stat_map_plot._cbar
+    cbar.ax.set_xlabel("Z score", labelpad=8, fontweight="bold", loc="right")
+
     with pd.option_context("display.precision", 2):
         _add_params_to_plot(table_details, stat_map_plot)
     fig = plt.gcf()
