@@ -224,8 +224,7 @@ def make_glm_report(
             mask_img = model.masker_.mask_img_
 
     mask_plot_html_code = _mask_to_svg(
-        mask_img=mask_img,
-        bg_img=bg_img,
+        mask_img=mask_img, bg_img=bg_img, cut_coords=cut_coords
     )
     all_components = _make_stat_maps_contrast_clusters(
         stat_img=statistical_maps,
@@ -629,7 +628,7 @@ def _resize_plot_inches(plot, width_change=0, height_change=0):
     return plot
 
 
-def _mask_to_svg(mask_img, bg_img):
+def _mask_to_svg(mask_img, bg_img, cut_coords=None):
     """Plot cuts of an mask image and creates SVG code of it.
 
     Parameters
@@ -656,6 +655,7 @@ def _mask_to_svg(mask_img, bg_img):
             bg_img=bg_img,
             display_mode="z",
             cmap="Set1",
+            cut_coords=cut_coords,
         )
         mask_plot_svg = _plot_to_svg(plt.gcf())
         # prevents sphinx-gallery & jupyter from scraping & inserting plots
@@ -769,7 +769,7 @@ def _make_stat_maps_contrast_clusters(
         # and _stat_map_to_svg
         # Necessary to avoid :
         # https://github.com/nilearn/nilearn/issues/4192
-        _, threshold = threshold_stats_img(
+        thresholded_img, threshold = threshold_stats_img(
             stat_img=stat_map_img,
             threshold=threshold,
             alpha=alpha,
@@ -786,7 +786,7 @@ def _make_stat_maps_contrast_clusters(
         )
 
         stat_map_svg = _stat_map_to_svg(
-            stat_img=stat_map_img,
+            stat_img=thresholded_img,
             threshold=threshold,
             bg_img=bg_img,
             cut_coords=cut_coords,
@@ -796,7 +796,7 @@ def _make_stat_maps_contrast_clusters(
         )
 
         cluster_table = get_clusters_table(
-            stat_map_img,
+            thresholded_img,
             stat_threshold=threshold,
             cluster_threshold=cluster_threshold,
             min_distance=min_distance,
