@@ -1,4 +1,4 @@
-"""Utilities for testing the dataset fetchers
+"""Utilities for testing the dataset fetchers.
 
 Unit tests should not depend on an internet connection nor on external
 resources such as the servers from which we download datasets. Otherwise, tests

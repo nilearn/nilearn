@@ -60,7 +60,8 @@ def test_temp_nilearn_home_autoused():
 
 
 def check_doctest_fixture():
-    """
+    """Check doctest fixtures.
+
     >>> import requests
     >>> assert requests.get('https://example.com').is_mock
     """

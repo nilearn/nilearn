@@ -11,7 +11,7 @@ Content
 -------
 This work is a derivative from the Cambridge sample found
 in the `1000 functional connectome project <https://fcon_1000.projects.nitrc.org/fcpClassic/FcpTable.html>`_
-(Liu et al., 2009), originally released under Creative Commons -- Attribution Non-Commercial.
+(:footcite:t:`Liu2009`), originally released under Creative Commons -- Attribution Non-Commercial.
 It includes group brain parcellations generated
 from :term:`resting-state` functional magnetic resonance images
 for about 200 young healthy subjects. Multiple scales (number of networks) are available,
@@ -51,9 +51,9 @@ and the parameters of a rigid-body motion were estimated for each time frame.
 Rigid-body motion was estimated within as well as between runs, using the
 median volume of the first run as a target. The median volume of one selected
 :term:`fMRI` run for each subject was coregistered with a T1 individual scan using
-Minctracc (Collins and Evans, 1998), which was itself non-linearly transformed
+Minctracc (:footcite:t:`Collins1997`), which was itself non-linearly transformed
 to the Montreal Neurological Institute (:term:`MNI`) template (:footcite:t:`Fonov2011`)
-using the CIVET pipeline (Ad-Dabbagh et al., 2006). The :term:`MNI` symmetric template
+using the CIVET pipeline (:footcite:t:`AdDabbagh2006`). The :term:`MNI` symmetric template
 was generated from the ICBM152 sample of 152 young adults, after 40 iterations
 of non-linear coregistration. The rigid-body transform, fMRI-to-T1 transform
 and T1-to-stereotaxic transform were all combined, and the functional volumes
@@ -66,9 +66,9 @@ parameters were regressed out from the time series at each voxel: slow time
 drifts (basis of discrete cosines with a 0.01 Hz high-pass cut-off), average
 signals in conservative masks of the white matter and the lateral ventricles
 as well as the first principal components (95% energy) of the
-six rigid-body motion parameters and their squares (Giove et al., 2009). The
-:term:`fMRI` volumes were finally spatially smoothed with a 6 mm isotropic Gaussian
-blurring kernel.
+six rigid-body motion parameters and their squares (:footcite:t:`Giove2009`).
+The :term:`fMRI` volumes were finally spatially smoothed
+with a 6 mm isotropic Gaussian blurring kernel.
 
 Bootstrap Analysis of Stable Clusters
 -------------------------------------
@@ -95,28 +95,6 @@ References
 ----------
 
 .. footbibliography::
-
-Ad-Dabbagh Y, Einarson D, Lyttelton O, Muehlboeck J S, Mok K,
-Ivanov O, Vincent R D, Lepage C, Lerch J, Fombonne E, Evans A C,
-2006. The CIVET Image-Processing Environment: A Fully Automated
-Comprehensive Pipeline for Anatomical Neuroimaging Research.
-In: Corbetta, M. (Ed.), Proceedings of the 12th Annual Meeting
-of the Human Brain Mapping Organization. Neuroimage, Florence, Italy.
-
-Collins D L, Evans A C, 1997. Animal: validation and applications of
-nonlinear registration-based segmentation. International Journal of
-Pattern Recognition and Artificial Intelligence 11, 1271-1294.
-
-Giove F, Gili T, Iacovella V, Macaluso E, Maraviglia B, Oct. 2009.
-Images-based suppression of unwanted global signals in resting-state
-functional connectivity studies. Magnetic resonance imaging 27 (8), 1058-1064.
-URL https://doi.org/10.1016/j.mri.2009.06.004
-
-Liu H, Stufflebeam S M, Sepulcre J, Hedden T, Buckner R L, Dec. 2009
-Evidence from intrinsic activity that asymmetry of the human brain
-is controlled by multiple factors. Proceedings of the National Academy
-of Sciences 106 (48), 20499-20503.
-URL https://doi.org/10.1073/pnas.0908073106
 
 
 License

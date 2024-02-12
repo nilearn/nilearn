@@ -1100,6 +1100,8 @@ def binarize_img(img, threshold=0, mask_img=None, two_sided=True):
         If `True`, threshold is applied to the absolute value of the image.
         If `False`, threshold is applied to the original value of the image.
 
+        .. versionadded:: 0.10.3
+
     Returns
     -------
     :class:`~nibabel.nifti1.Nifti1Image`

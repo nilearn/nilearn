@@ -293,11 +293,8 @@ def test_plot_contrasts():
     not_have_mpl, reason="Matplotlib not installed; required for this test"
 )
 def test_masking_first_level_model(tmp_path):
-    """
-    Checks that using NiftiMasker when instantiating
-    FirstLevelModel doesn't raise Error when calling
-    generate_report().
-    """
+    """Check that using NiftiMasker when instantiating FirstLevelModel \
+       doesn't raise Error when calling generate_report()."""
     shapes, rk = ((7, 7, 7, 5),), 3
     mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(
         shapes, rk, file_path=tmp_path

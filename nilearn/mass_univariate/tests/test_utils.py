@@ -134,7 +134,7 @@ def test_null_to_p_float_error(null):
 def test_null_to_p_float_with_extreme_values(
     alternative, expected_p_value, rng
 ):
-    """Test that 1/n(null) is preserved with extreme values"""
+    """Test that 1/n(null) is preserved with extreme values."""
     null = rng.normal(size=10000)
 
     result = _utils.null_to_p(20, null, alternative=alternative)

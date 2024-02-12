@@ -315,8 +315,8 @@ def test_geometric_mean_properties_check_invariance():
 
 
 def grad_geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
-    """Return the norm of the covariant derivative at each iteration step of
-    geometric_mean. See its docstring for details.
+    """Return the norm of the covariant derivative at each iteration step \
+       of geometric_mean. See its docstring for details.
 
     Norm is intrinsic norm on the tangent space of the manifold of symmetric
     positive definite matrices.
@@ -659,8 +659,8 @@ def _assert_connectivity_precision(connectivities, covs):
 
 def _assert_connectivity_correlation(connectivities, cov_estimator, covs):
     """Verify that the estimated covariance matrix: \
-        - is symmetric and positive definite
-        - has values close to 1 on its diagonal
+       - is symmetric and positive definite \
+       - has values close to 1 on its diagonal.
 
     If the covariance estimator is EmpiricalCovariance,
     the product of:
@@ -840,7 +840,7 @@ def test_connectivity_measure_check_inverse_transformation_discard_diag(
 def test_connectivity_measure_inverse_transform_tangent(
     signals,
 ):
-    """For 'tangent' kind, covariance matrices are reconstructed"""
+    """For 'tangent' kind, covariance matrices are reconstructed."""
     # Without vectorization
     tangent_measure = ConnectivityMeasure(kind="tangent")
     displacements = tangent_measure.fit_transform(signals)
