@@ -11,7 +11,8 @@ from nilearn.plotting import plot_img
 
 
 def _testdata_3d_for_plotting_for_resampling(img, binary):
-    """Returns testing data for resampling tests.
+    """Return testing data for resampling tests.
+
     Data can be binarize or not.
     """
     data = get_data(img)
@@ -49,9 +50,8 @@ def test_plot_with_axes_or_figure(img_3d_mni):
 
 
 def test_plot_empty_slice(affine_mni):
-    """Test that things don't crash when we give a map with
-    nothing above threshold. This is only a smoke test.
-    """
+    """Test that things don't crash when we give a map \
+       with nothing above threshold. This is only a smoke test."""
     img = Nifti1Image(np.zeros((20, 20, 20)), affine_mni)
     plot_img(img, display_mode="y", threshold=1)
     plt.close()

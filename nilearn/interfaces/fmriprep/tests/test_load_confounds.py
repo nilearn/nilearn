@@ -100,7 +100,7 @@ def _handle_non_steady(confounds):
 
 
 def _regression(confounds, tmp_path):
-    """Simple regression with NiftiMasker."""
+    """Perform simple regression with NiftiMasker."""
     # Simulate data
     img, mask_conf, _, _, _ = _simu_img(tmp_path, demean=False)
     confounds = _handle_non_steady(confounds)

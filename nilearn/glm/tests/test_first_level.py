@@ -746,8 +746,8 @@ def test_first_level_glm_computation_with_memory_caching(tmp_path):
 
 
 def test_first_level_from_bids_set_repetition_time_warnings(tmp_path):
-    """Raise a warning when there is no bold.json file in the derivatives
-    and no TR value is passed as argument.
+    """Raise a warning when there is no bold.json file in the derivatives \
+       and no TR value is passed as argument.
 
     create_fake_bids_dataset does not add JSON files in derivatives,
     so the TR value will be inferred from the raw.
@@ -1074,8 +1074,8 @@ def test_first_level_with_scaling(affine_eye):
 
 
 def test_first_level_with_no_signal_scaling(affine_eye):
-    """Test to ensure that the FirstLevelModel works correctly
-    with a signal_scaling==False.
+    """Test to ensure that the FirstLevelModel works correctly \
+       with a signal_scaling==False.
 
     In particular, that derived theta are correct for a
     constant design matrix with a single valued fmri image
@@ -1236,8 +1236,8 @@ def test_first_level_predictions_r_square():
 )
 @pytest.mark.parametrize("spaces", [False, True])
 def test_first_level_hrf_model(hrf_model, spaces):
-    """Ensure that FirstLevelModel runs without raising errors
-    for different values of hrf_model.
+    """Ensure that FirstLevelModel runs without raising errors \
+       for different values of hrf_model.
 
     In particular, one checks that it runs
     without raising errors when given a custom response function.
@@ -1591,8 +1591,8 @@ def test_first_level_from_bids_validation_img_filter(
 
 
 def test_first_level_from_bids_too_many_bold_files(bids_dataset):
-    """Too many bold files if img_filters is underspecified,
-    should raise an error.
+    """Too many bold files if img_filters is underspecified, \
+       should raise an error.
 
     Here there is a desc-preproc and desc-fmriprep image for the space-T1w.
     """
@@ -1680,7 +1680,7 @@ def test_first_level_from_bids_with_one_events_missing(tmp_path_factory):
 
 
 def test_first_level_from_bids_one_confound_missing(tmp_path_factory):
-    """There must be only one confound file per image or none
+    """There must be only one confound file per image or none.
 
     If only one is missing, it should raise an error.
     """
