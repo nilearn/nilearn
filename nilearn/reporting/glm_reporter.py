@@ -950,12 +950,14 @@ def _stat_map_to_svg(
     data = safe_get_data(stat_img, ensure_finite=True)
     stat_map_min = np.nanmin(data)
     stat_map_max = np.nanmax(data)
+    print(stat_map_min)
+    print(stat_map_max)
     symmetric_cbar = True
     cmap = "bwr"
-    if stat_map_min > 0:
+    if stat_map_min >= 0.0:
         symmetric_cbar = False
         cmap = "red_transparent_full_alpha_range"
-    elif stat_map_max < 0:
+    elif stat_map_max <= 0.0:
         symmetric_cbar = False
         cmap = "blue_transparent_full_alpha_range"
         cmap = nilearn_cmaps[cmap].reversed()
@@ -976,6 +978,8 @@ def _stat_map_to_svg(
             display_mode=display_mode,
             colorbar=True,
             plot_abs=False,
+            symmetric_cbar=True,
+            cmap=cmap,
         )
     else:
         raise ValueError(

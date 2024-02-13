@@ -174,6 +174,7 @@ def report_flm_bids_features():  # pragma: no cover # noqa
         contrasts="StopSuccess - Go",
         title=title,
         cluster_threshold=3,
+        plot_type="glass",
     )
     output_filename = "generated_report_flm_bids_features.html"
     output_filepath = os.path.join(REPORTS_DIR, output_filename)
@@ -271,6 +272,7 @@ def report_slm_oasis():  # pragma: no cover # noqa
         contrasts=contrast,
         bg_img=nilearn.datasets.fetch_icbm152_2009()["t1"],
         height_control=None,
+        plot_type="glass",
     )
     output_filename = "generated_report_slm_oasis.html"
     output_filepath = os.path.join(REPORTS_DIR, output_filename)
