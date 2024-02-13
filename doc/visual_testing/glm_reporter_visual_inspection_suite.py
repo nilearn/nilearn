@@ -276,4 +276,4 @@ if __name__ == "__main__":
 
     t1 = time.time()
 
-    print(f"\nRun took: {(t1-t0)} seconds\n")
+    print(f"\nRun took: {(t1 - t0)} seconds\n")

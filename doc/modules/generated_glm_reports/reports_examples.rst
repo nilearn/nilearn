@@ -11,7 +11,7 @@ First level report
 ADHD
 ^^^^
 
-Adapted from :ref:`sphx_glr_auto_examples_04_plot_adhd_dmn.py`
+Adapted from :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_adhd_dmn.py`
 
 .. raw:: html
    :file: flm_adhd_dmn.html
@@ -19,7 +19,7 @@ Adapted from :ref:`sphx_glr_auto_examples_04_plot_adhd_dmn.py`
 BIDS features
 ^^^^^^^^^^^^^
 
-Adapted from :ref:`sphx_glr_auto_examples_04_plot_bids_features.py`
+Adapted from :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_bids_features.py`
 
 .. raw:: html
    :file: flm_bids_features.html
@@ -27,7 +27,7 @@ Adapted from :ref:`sphx_glr_auto_examples_04_plot_bids_features.py`
 FIAC
 ^^^^
 
-Adapted from :ref:`sphx_glr_auto_examples_04_plot_two_runs_model.py`
+Adapted from :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_two_runs_model.py`
 
 .. raw:: html
    :file: flm_fiac.html
