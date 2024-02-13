@@ -167,7 +167,7 @@ def _make_design_matrix_for_bids_feature(
 
 def report_flm_bids_features():  # pragma: no cover # noqa
     data_dir = _fetch_bids_data()
-    model, subject = _make_flm(data_dir)
+    model, _ = _make_flm(data_dir)
     title = "FLM Bids Features Stat maps"
     report = make_glm_report(
         model=model,
@@ -259,9 +259,13 @@ def report_slm_oasis():  # pragma: no cover # noqa
         oasis_dataset.gray_matter_maps, design_matrix=design_matrix
     )
 
-    contrast = [np.array([1, 0]), np.array([0, 1])]
-    contrast = [np.array([1, 0, 0]), np.array([0, 1, 0])]
+    # TODO the following crashes
+    # contrast = [np.array([1, 0]), np.array([0, 1])]
+
+    # The following are equivalent
+    # contrast = [np.array([1, 0, 0]), np.array([0, 1, 0])]
     contrast = ["age", "sex"]
+
     report = make_glm_report(
         model=second_level_model,
         contrasts=contrast,
@@ -310,9 +314,9 @@ def prefer_serial_execution(functions_to_be_called):  # pragma: no cover # noqa
 if __name__ == "__main__":  # pragma: no cover
     functions_to_be_called = [
         report_flm_adhd_dmn,
-        # report_flm_bids_features,
-        # report_flm_fiac,
-        # report_slm_oasis,
+        report_flm_bids_features,
+        report_flm_fiac,
+        report_slm_oasis,
     ]
     # prefer_parallel_execution(functions_to_be_called)
     prefer_serial_execution(functions_to_be_called)
