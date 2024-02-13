@@ -37,18 +37,16 @@ description = "Statistical learning for neuroimaging in Python"
 # Version from setuptools_scm
 dynamic = ["version"]
 license = {text = "new BSD"}
-maintainers = [{name = "Bertrand Thirion", email = "bertrand.thirion@inria.fr"}]
+maintainers = [
+    {name = "Bertrand Thirion", email = "bertrand.thirion@inria.fr"}
+]
 name = "nilearn"
 readme = "README.rst"
 requires-python = ">=3.8"
 
 [project.optional-dependencies]
 # A combination of dependencies useful for developers
-dev = [
-    "nilearn[plotting,doc,style,test]",
-    'pre-commit',
-    'tox'
-]
+dev = ["nilearn[plotting,doc,style,test]", 'pre-commit', 'tox']
 # Requirements necessary for building the documentation
 doc = [
     "nilearn[plotting]",
@@ -88,11 +86,7 @@ style = [
     'tomli'
 ]
 # For running unit and docstring tests
-test = [
-    "coverage",
-    "pytest>=6.0.0",
-    "pytest-cov"
-]
+test = ["coverage", "pytest>=6.0.0", "pytest-cov"]
 
 [project.urls]
 Changelog = "https://nilearn.github.io/stable/changes/whats_new.html"
@@ -144,15 +138,8 @@ combine_as_imports = true
 line_length = 79
 profile = "black"
 skip_gitignore = true
-skip_glob = [
-    "nilearn/externals/*",
-    "doc/auto_examples/*"
-]
-src_paths = [
-    'maint_tools',
-    'nilearn',
-    'doc'
-]
+skip_glob = ["nilearn/externals/*", "doc/auto_examples/*"]
+src_paths = ['maint_tools', 'nilearn', 'doc']
 
 [tool.pytest.ini_options]
 addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --durations=0"
