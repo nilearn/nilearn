@@ -234,6 +234,7 @@ def test_stat_map_to_svg_slice_z(img_3d_mni, cut_coords):
         display_mode="ortho",
         plot_type="slice",
         table_details=table_details,
+        threshold=2.76,
     )
 
 
@@ -247,6 +248,7 @@ def test_stat_map_to_svg_glass_z(img_3d_mni, cut_coords):
         display_mode="z",
         plot_type="glass",
         table_details=table_details,
+        threshold=2.76,
     )
 
 
@@ -264,6 +266,7 @@ def test_stat_map_to_svg_invalid_plot_type(img_3d_mni, cut_coords):
             display_mode="z",
             plot_type="junk",
             table_details={"junk": 0},
+            threshold=2.76,
         )
 
 
