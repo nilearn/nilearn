@@ -1,11 +1,10 @@
-"""Contain a bunch of functions run via __main__().
+"""Runs shorter version of several examples to generate their reports.
 
-The functions represent feature comprehensive examples
+Can be for GLM reports or masker reports.
+
+This should represent feature comprehensive examples
 to visualize, inspect, and test the functionality
 of nilearn.reporting.make_glm_reports().
-
-Disable any of the function calls in the __main__()
-to run a specific script and save time.
 """
 
 import time
@@ -14,30 +13,32 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-import nilearn
 from nilearn import datasets
 from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
 from nilearn.glm.second_level import SecondLevelModel
-from nilearn.image import resample_to_img
+from nilearn.image import mean_img, resample_to_img
 from nilearn.interfaces.fsl import get_design_from_fslmat
 from nilearn.maskers import NiftiSpheresMasker
 from nilearn.reporting import make_glm_report
 
-REPORTS_DIR = (
-    Path(__file__).parent.parent / "modules" / "generated_glm_reports"
-)
+REPORTS_DIR = Path(__file__).parent.parent / "modules" / "generated_reports"
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
 
+# %%
+# Adapted from examples/04_glm_first_level/plot_adhd_dmn.py
 def report_flm_adhd_dmn():
+
     t_r = 2.0
     slice_time_ref = 0.0
     n_scans = 176
     pcc_coords = (0, -53, 26)
-    adhd_dataset = nilearn.datasets.fetch_adhd(n_subjects=1)
+
+    adhd_dataset = datasets.fetch_adhd(n_subjects=1)
+
     seed_masker = NiftiSpheresMasker(
         [pcc_coords],
         radius=10,
@@ -45,13 +46,18 @@ def report_flm_adhd_dmn():
         standardize=True,
         low_pass=0.1,
         high_pass=0.01,
-        t_r=2.0,
+        t_r=t_r,
         memory="nilearn_cache",
         memory_level=1,
         verbose=0,
     )
+
     seed_time_series = seed_masker.fit_transform(adhd_dataset.func[0])
+    report = seed_masker.generate_report()
+    report.save_as_html(REPORTS_DIR / "flm_adhd_dmn_sphere_masker.html")
+
     frametimes = np.linspace(0, (n_scans - 1) * t_r, n_scans)
+
     design_matrix = make_first_level_design_matrix(
         frametimes,
         hrf_model="spm",
@@ -76,15 +82,13 @@ def report_flm_adhd_dmn():
         plot_type="glass",
         report_dims=(1200, "a"),
     )
-    output_filename = "flm_adhd_dmn.html"
-    output_filepath = REPORTS_DIR / output_filename
-    report.save_as_html(output_filepath)
+
+    report.save_as_html(REPORTS_DIR / "flm_adhd_dmn.html")
     report.get_iframe()
 
 
-###########################################################################
-
-
+# %%
+# Adapted from examples/04_glm_first_level/plot_bids_features.py
 def _fetch_bids_data():
     _, urls = datasets.func.fetch_openneuro_dataset_index()
 
@@ -166,26 +170,23 @@ def report_flm_bids_features():
     data_dir = _fetch_bids_data()
     model, _ = _make_flm(data_dir)
     title = "FLM Bids Features Stat maps"
+
     report = make_glm_report(
         model=model,
         contrasts="StopSuccess - Go",
         title=title,
         cluster_threshold=3,
     )
-    output_filename = "flm_bids_features.html"
-    output_filepath = REPORTS_DIR / output_filename
-    report.save_as_html(output_filepath)
+
+    report.save_as_html(REPORTS_DIR / "flm_bids_features.html")
     report.get_iframe()
 
 
-###########################################################################
-
-
+# %%
+# adapted from examples/04_glm_first_level/plot_two_runs_model.py
 def report_flm_fiac():
     data = datasets.func.fetch_fiac_first_level()
     fmri_img = [data["func1"], data["func2"]]
-
-    from nilearn.image import mean_img
 
     mean_img_ = mean_img(fmri_img[0])
 
@@ -213,15 +214,13 @@ def report_flm_fiac():
         bg_img=mean_img_,
         height_control="fdr",
     )
-    output_filename = "flm_fiac.html"
-    output_filepath = REPORTS_DIR / output_filename
-    report.save_as_html(output_filepath)
+
+    report.save_as_html(REPORTS_DIR / "flm_fiac.html")
     report.get_iframe()
 
 
-###########################################################################
-
-
+# %%
+# adatapted from examples/05_glm_second_level/plot_oasis.py
 def _make_design_matrix_slm_oasis(oasis_dataset, n_subjects):
     age = oasis_dataset.ext_vars["age"].astype(float)
     sex = oasis_dataset.ext_vars["mf"] == "F"
@@ -233,15 +232,19 @@ def _make_design_matrix_slm_oasis(oasis_dataset, n_subjects):
 
 
 def report_slm_oasis():
-    n_subjects = 5  # more subjects requires more memory
-    oasis_dataset = nilearn.datasets.fetch_oasis_vbm(n_subjects=n_subjects)
+    # more subjects requires more memory
+    n_subjects = 5
+    oasis_dataset = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
+
     # Resample the images, since this mask has a different resolution
     mask_img = resample_to_img(
-        nilearn.datasets.fetch_icbm152_brain_gm_mask(),
+        datasets.fetch_icbm152_brain_gm_mask(),
         oasis_dataset.gray_matter_maps[0],
         interpolation="nearest",
     )
+
     design_matrix = _make_design_matrix_slm_oasis(oasis_dataset, n_subjects)
+
     second_level_model = SecondLevelModel(
         smoothing_fwhm=2.0, mask_img=mask_img
     )
@@ -249,20 +252,22 @@ def report_slm_oasis():
         oasis_dataset.gray_matter_maps, design_matrix=design_matrix
     )
 
+    # TODO The following fails:
     # contrast = [[1, 0, 0], [0, 1, 0]]
     contrast = ["age", "sex"]
+
     report = make_glm_report(
         model=second_level_model,
         contrasts=contrast,
-        bg_img=nilearn.datasets.fetch_icbm152_2009()["t1"],
+        bg_img=datasets.fetch_icbm152_2009()["t1"],
         height_control=None,
     )
-    output_filename = "slm_oasis.html"
-    output_filepath = REPORTS_DIR / output_filename
-    report.save_as_html(output_filepath)
+
+    report.save_as_html(REPORTS_DIR / "slm_oasis.html")
     report.get_iframe()
 
 
+# %%
 if __name__ == "__main__":
 
     print("\nGenerating GLM reports templates\n")

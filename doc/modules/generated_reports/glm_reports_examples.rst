@@ -1,4 +1,4 @@
-.. _reporting_examples_ref:
+.. _glm_report_examples_ref:
 
 .. only:: html
 

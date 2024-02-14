@@ -31,4 +31,4 @@
 
 .. toctree::
 
-   generated_glm_reports/reports_examples.rst
+   generated_reports/glm_reports_examples.rst
