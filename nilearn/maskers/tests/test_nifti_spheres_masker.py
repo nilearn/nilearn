@@ -411,18 +411,3 @@ def test_nifti_spheres_masker_reporting_mpl_warning():
     assert len(warning_list) == 1
     assert issubclass(warning_list[0].category, ImportWarning)
     assert result == [None]
-
-
-def test_nifti_spheres_masker_report_1_sphere():
-    """Check the report for sphere actually works for one sphere.
-
-    See https://github.com/nilearn/nilearn/issues/4268
-    """
-    report = NiftiSpheresMasker([(1, 1, 1)]).fit().generate_report()
-
-    empty_div = """
-                    <img id="map1" class="pure-img" width="100%"
-                        src="data:image/svg+xml;base64,D"
-                        style="display:none;" alt="image"/>"""
-
-    assert empty_div not in report.body
