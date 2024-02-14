@@ -198,7 +198,7 @@ def _plot_img_with_bg(
         Extra keyword arguments passed
         to the display.add_overlay method (see below).
         Ultimately passed to `matplotlib.pyplot.imshow` via
-        :met:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
+        :meth:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
 
     Returns
     -------
@@ -393,7 +393,7 @@ def plot_img(
     kwargs : extra keyword arguments, optional
         Extra keyword arguments
         ultimately passed to `matplotlib.pyplot.imshow` via
-        :met:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
+        :meth:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
 
     Returns
     -------
@@ -638,7 +638,7 @@ def plot_anat(
     kwargs: extra keyword arguments, optional
         Extra keyword arguments
         ultimately passed to `matplotlib.pyplot.imshow` via
-        :met:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
+        :meth:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
 
     Returns
     -------
@@ -738,7 +738,7 @@ def plot_epi(
     kwargs: extra keyword arguments, optional
         Extra keyword arguments
         ultimately passed to `matplotlib.pyplot.imshow` via
-        :met:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
+        :meth:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
 
     Returns
     -------
@@ -908,7 +908,7 @@ def plot_roi(
     kwargs: extra keyword arguments, optional
         Extra keyword arguments
         ultimately passed to `matplotlib.pyplot.imshow` via
-        :met:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
+        :meth:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
 
     Returns
     -------
@@ -1074,7 +1074,7 @@ def plot_prob_atlas(
     kwargs: extra keyword arguments, optional
         Extra keyword arguments
         ultimately passed to `matplotlib.pyplot.imshow` via
-        :met:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
+        :meth:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
 
     Returns
     -------
@@ -1430,7 +1430,7 @@ def plot_glass_brain(
     kwargs: extra keyword arguments, optional
         Extra keyword arguments
         ultimately passed to `matplotlib.pyplot.imshow` via
-        :met:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
+        :meth:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
 
 
     Returns
