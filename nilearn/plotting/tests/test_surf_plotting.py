@@ -643,10 +643,10 @@ def test_plot_surf_stat_map_matplotlib_specific(rng):
     # Plot to axes
     axes = plt.subplots(ncols=2, subplot_kw={'projection': '3d'})[1]
     for ax in axes.flatten():
-        plot_surf_stat_map(mesh, stat_map=data, ax=ax)
+        plot_surf_stat_map(mesh, stat_map=data, axes=ax)
     axes = plt.subplots(ncols=2, subplot_kw={'projection': '3d'})[1]
     for ax in axes.flatten():
-        plot_surf_stat_map(mesh, stat_map=data, ax=ax, colorbar=True)
+        plot_surf_stat_map(mesh, stat_map=data, axes=ax, colorbar=True)
 
     fig = plot_surf_stat_map(mesh, stat_map=data, colorbar=False)
     assert len(fig.axes) == 1
@@ -723,7 +723,7 @@ def test_plot_surf_roi(engine):
     plot_surf_roi(mesh, roi_map=parcellation, colorbar=True,
                   engine=engine)
     plot_surf_roi(mesh, roi_map=parcellation, colorbar=True,
-                  cbar_tick_fomat="%f", engine=engine)
+                  cbar_tick_format="%f", engine=engine)
     plt.close()
 
 
@@ -750,16 +750,16 @@ def test_plot_surf_roi_matplotlib_specific():
     assert cbar_vmin == 1.2
     assert cbar_vmax == 8.9
     # plot to axes
-    plot_surf_roi(mesh, roi_map=roi_map, ax=None,
+    plot_surf_roi(mesh, roi_map=roi_map, axes=None,
                   figure=plt.gcf(), engine='matplotlib')
 
     # plot to axes
     with tempfile.NamedTemporaryFile() as tmp_file:
-        plot_surf_roi(mesh, roi_map=roi_map, ax=plt.gca(),
+        plot_surf_roi(mesh, roi_map=roi_map, axes=plt.gca(),
                       figure=None, output_file=tmp_file.name,
                       engine='matplotlib')
     with tempfile.NamedTemporaryFile() as tmp_file:
-        plot_surf_roi(mesh, roi_map=roi_map, ax=plt.gca(),
+        plot_surf_roi(mesh, roi_map=roi_map, axes=plt.gca(),
                       figure=None, output_file=tmp_file.name,
                       colorbar=True, engine='matplotlib')
 

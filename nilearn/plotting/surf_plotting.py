@@ -812,7 +812,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             threshold=threshold, alpha=alpha, bg_on_data=bg_on_data,
             darkness=darkness, vmin=vmin, vmax=vmax, cbar_vmin=cbar_vmin,
             cbar_vmax=cbar_vmax, cbar_tick_format=cbar_tick_format,
-            title=title, title_font_size=title_font_size,
+            title=title,
             output_file=output_file, axes=axes, figure=figure)
     elif engine == 'plotly':
         if cbar_tick_format == "auto":
