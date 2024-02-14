@@ -785,9 +785,10 @@ def test_plot_surf_roi_matplotlib_specific_plot_to_axes():
         plot_surf_roi(mesh, roi_map=roi_map, axes=ax,
                       figure=None, output_file=tmp_file.name,
                       colorbar=True, engine='matplotlib')
-        
+
     # Save execution time and memory
     plt.close()
+
 
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 def test_plot_surf_roi_error(engine, rng):
