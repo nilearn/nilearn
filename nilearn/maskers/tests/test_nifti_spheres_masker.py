@@ -425,4 +425,4 @@ def test_nifti_spheres_masker_report_1_sphere():
                         src="data:image/svg+xml;base64,D"
                         style="display:none;" alt="image"/>"""
 
-    assert empty_div in report.body
+    assert empty_div not in report.body
