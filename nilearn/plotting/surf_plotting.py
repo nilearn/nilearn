@@ -913,7 +913,7 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
 
     kwargs: extra keyword arguments, optional
         Extra keyword arguments passed to
-        :func:`~nilearn.plotting.surf_plotting.plot_surf`.
+        :func:`~nilearn.plotting.plot_surf`.
 
     See Also
     --------
