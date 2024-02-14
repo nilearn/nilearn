@@ -527,8 +527,8 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
                           alpha='auto', bg_on_data=False,
                           darkness=.7, vmin=None, vmax=None, cbar_vmin=None,
                           cbar_vmax=None, cbar_tick_format='%.2g',
-                          title=None, title_font_size=18, output_file=None,
-                          axes=None, figure=None, **kwargs):
+                          title=None, output_file=None,
+                          axes=None, figure=None):
     """Help for plot_surf.
 
     This function handles surface plotting when the selected
@@ -613,8 +613,8 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
             # we need to create a proxy mappable
             proxy_mappable = ScalarMappable(cmap=our_cmap, norm=norm)
             proxy_mappable.set_array(surf_map_faces)
-            cax, kw = make_axes(axes, location='right', fraction=.15,
-                                shrink=.5, pad=.0, aspect=10.)
+            cax, _ = make_axes(axes, location='right', fraction=.15,
+                               shrink=.5, pad=.0, aspect=10.)
             figure.colorbar(
                 proxy_mappable, cax=cax, ticks=ticks,
                 boundaries=bounds, spacing='proportional',
@@ -641,7 +641,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
               bg_on_data=False, darkness=.7, vmin=None, vmax=None,
               cbar_vmin=None, cbar_vmax=None, cbar_tick_format="auto",
               title=None, title_font_size=18, output_file=None, axes=None,
-              figure=None, **kwargs):
+              figure=None):
     """Plot surfaces with optional background and data.
 
     .. versionadded:: 0.3
@@ -813,7 +813,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             darkness=darkness, vmin=vmin, vmax=vmax, cbar_vmin=cbar_vmin,
             cbar_vmax=cbar_vmax, cbar_tick_format=cbar_tick_format,
             title=title, title_font_size=title_font_size,
-            output_file=output_file, axes=axes, figure=figure, **kwargs)
+            output_file=output_file, axes=axes, figure=figure)
     elif engine == 'plotly':
         if cbar_tick_format == "auto":
             cbar_tick_format = ".1f"
@@ -910,6 +910,10 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
         Default='tab20'.
     %(title)s
     %(output_file)s
+
+    kwargs: extra keyword arguments, optional
+        Extra keyword arguments passed to
+        :func:`~nilearn.plotting.surf_plotting.plot_surf`.
 
     See Also
     --------
