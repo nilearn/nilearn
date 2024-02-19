@@ -544,7 +544,6 @@ def fetch_localizer_contrasts(
     get_masks=False,
     get_anats=False,
     data_dir=None,
-    url=None,
     resume=True,
     verbose=1,
     legacy_format=True,
@@ -656,7 +655,6 @@ def fetch_localizer_contrasts(
     get_anats : boolean, default=False
         Whether individual structural images should be fetched or not.
     %(data_dir)s
-    %(url)s
     %(resume)s
     %(verbose)s
     %(legacy_format)s
@@ -769,7 +767,9 @@ def fetch_localizer_contrasts(
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
-    index_file = fetch_single_file(index_url, data_dir, verbose=verbose)
+    index_file = fetch_single_file(
+        index_url, data_dir, verbose=verbose, resume=resume
+    )
     with open(index_file) as of:
         index = json.load(of)
 

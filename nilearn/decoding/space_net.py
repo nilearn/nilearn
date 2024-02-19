@@ -309,7 +309,6 @@ def path_scores(
     eps=1e-3,
     key=None,
     debias=False,
-    Xmean=None,
     screening_percentile=20.0,
     verbose=1,
 ):
@@ -358,8 +357,6 @@ def path_scores(
     is_classif : bool, default=False
         Indicates whether the loss is a classification loss or a
         regression loss.
-
-    Xmean: ??? TODO: Add description.
 
     key: ??? TODO: Add description.
 
@@ -529,7 +526,7 @@ def path_scores(
         best_w = w_
 
     if len(best_w) == n_features:
-        # TODO: do something with Xmean
+        # TODO: implement with Xmean
         best_w = np.append(best_w, 0.0)
 
     all_test_scores = np.array(all_test_scores)

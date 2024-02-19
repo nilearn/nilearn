@@ -135,7 +135,7 @@ def fetch_atlas_difumo(
     )
 
     # Download the zip file, first
-    files_ = fetch_files(data_dir, files, verbose=verbose)
+    files_ = fetch_files(data_dir, files, verbose=verbose, resume=resume)
     labels = pd.read_csv(files_[0])
     labels = labels.rename(columns={c: c.lower() for c in labels.columns})
     if legacy_format:
@@ -147,7 +147,7 @@ def fetch_atlas_difumo(
         ("README.md", "https://osf.io/4k9bf/download", {"move": "README.md"})
     ]
     if not os.path.exists(os.path.join(data_dir, "README.md")):
-        fetch_files(data_dir, readme_files, verbose=verbose)
+        fetch_files(data_dir, readme_files, verbose=verbose, resume=resume)
 
     fdescr = get_dataset_descr(dataset_name)
 
