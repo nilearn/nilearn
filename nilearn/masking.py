@@ -714,7 +714,6 @@ def compute_multi_brain_mask(
     %(mask_type)s
     %(memory)s
     %(verbose0)s
-    %(n_jobs)s
 
         .. note::
             Argument not used but kept to fit the API
