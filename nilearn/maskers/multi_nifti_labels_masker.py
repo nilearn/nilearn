@@ -180,7 +180,6 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
             atleast_4d=False,
             memory=self.memory,
             memory_level=self.memory_level,
-            verbose=self.verbose,
         )
 
         if confounds is None:

@@ -356,7 +356,6 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
             target_fov=target_fov,
             memory=self.memory,
             memory_level=self.memory_level,
-            verbose=self.verbose,
         )
 
         if confounds is None:

@@ -912,7 +912,7 @@ def fetch_localizer_contrasts(
 
 @fill_doc
 def fetch_localizer_calculation_task(
-    n_subjects=1, data_dir=None, url=None, verbose=1, legacy_format=True
+    n_subjects=1, data_dir=None, verbose=1, legacy_format=True
 ):
     """Fetch calculation task contrast maps from the localizer.
 
@@ -922,7 +922,6 @@ def fetch_localizer_calculation_task(
         The number of subjects to load. If None is given,
         all 94 subjects are used.
     %(data_dir)s
-    %(url)s
     %(verbose)s
     %(legacy_format)s
 
@@ -951,7 +950,6 @@ def fetch_localizer_calculation_task(
         get_masks=False,
         get_anats=False,
         data_dir=data_dir,
-        url=url,
         resume=True,
         verbose=verbose,
         legacy_format=legacy_format,
@@ -960,16 +958,13 @@ def fetch_localizer_calculation_task(
 
 
 @fill_doc
-def fetch_localizer_button_task(
-    data_dir=None, url=None, verbose=1, legacy_format=True
-):
+def fetch_localizer_button_task(data_dir=None, verbose=1, legacy_format=True):
     """Fetch left vs right button press :term:`contrast` maps \
        from the localizer.
 
     Parameters
     ----------
     %(data_dir)s
-    %(url)s
     %(verbose)s
     %(legacy_format)s
 
@@ -1001,7 +996,6 @@ def fetch_localizer_button_task(
         get_masks=False,
         get_anats=True,
         data_dir=data_dir,
-        url=url,
         resume=True,
         verbose=verbose,
         legacy_format=legacy_format,
