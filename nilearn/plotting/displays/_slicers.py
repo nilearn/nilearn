@@ -273,15 +273,12 @@ class BaseSlicer:
                   values below the threshold (in absolute value) are
                   plotted as transparent.
 
-
-
         cbar_tick_format: str, default="%%.2g" (scientific notation)
             Controls how to format the tick labels of the colorbar.
             Ex: use "%%i" to display as integers.
 
         colorbar : :obj:`bool`, default=False
             If ``True``, display a colorbar on the right of the plots.
-
 
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to function
@@ -2003,6 +2000,9 @@ class MosaicSlicer(BaseSlicer):
                 display_ax = self._axes_class(ax, direction, coord, **kwargs)
                 self.axes[(direction, coord)] = display_ax
                 ax.set_axes_locator(self._locator)
+
+        bb = self.frame_axes.get_position()
+        self._colorbar_width = 0.5 * bb.width
 
     def _locator(self, axes, renderer):
         """Adjust the size of the axes.
