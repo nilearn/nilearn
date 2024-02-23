@@ -1951,6 +1951,8 @@ class MosaicSlicer(BaseSlicer):
     def _init_axes(self, **kwargs):
         """Initialize and place axes for display of 'xyz' multiple cuts.
 
+        Also adapts the width of the color bar relative to the axes.
+
         Parameters
         ----------
         kwargs : :obj:`dict`
@@ -1967,7 +1969,7 @@ class MosaicSlicer(BaseSlicer):
         x0, y0, x1, y1 = self.rect
 
         # Create our axes:
-        self.axes = dict()
+        self.axes = {}
         # portions for main axes
         fraction = y1 / len(self.cut_coords)
         height = fraction
@@ -2001,8 +2003,9 @@ class MosaicSlicer(BaseSlicer):
                 self.axes[(direction, coord)] = display_ax
                 ax.set_axes_locator(self._locator)
 
-        bb = self.frame_axes.get_position()
-        self._colorbar_width = 0.5 * bb.width
+        # increase color bar width to adapt to the number of cuts
+        #  see issue https://github.com/nilearn/nilearn/pull/4284
+        self._colorbar_width *= len(coords) ** 1.1
 
     def _locator(self, axes, renderer):
         """Adjust the size of the axes.
