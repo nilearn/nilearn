@@ -1,29 +1,20 @@
 """
 Extract signals on spheres and plot a connectome
-==============================================================
+================================================
 
 This example shows how to extract signals from spherical regions.
 We show how to build spheres around user-defined coordinates, as well as
-centered on coordinates from the Power-264 atlas [1],
-and the Dosenbach-160 atlas [2].
-
-.. include:: ../../../examples/masker_note.rst
-
-**References**
-
-[1] Power, Jonathan D., et al. "Functional network organization of the
-human brain." Neuron 72.4 (2011): 665-678.
-
-[2] Dosenbach N.U., Nardos B., et al. "Prediction of individual brain maturity
-using fMRI.", 2010, Science 329, 1358-1361.
+centered on coordinates from the Power-264 atlas (:footcite:t:`Power2011`),
+and the Dosenbach-160 atlas (:footcite:t:`Dosenbach2010`).
 
 We estimate connectomes using two different methods: **sparse inverse
-covariance** and **partial_correlation**, to recover the functional brain
-**networks structure**.
+covariance** and **partial_correlation**,
+to recover the functional brain **networks structure**.
 
 We'll start by extracting signals from Default Mode Network regions and
 computing a connectome from them.
 
+.. include:: ../../../examples/masker_note.rst
 """
 
 from nilearn import datasets, plotting
@@ -92,9 +83,9 @@ time_series = masker.fit_transform(
 # %%
 # Display spheres summary report
 # ------------------------------
-# By default all spheres are displayed. This can be tweaked by passing an
-# integer or list/array of indices to the ``displayed_spheres`` argument of
-# ``generate_report``.
+# By default all spheres are displayed.
+# This can be tweaked by passing an integer or list/array of indices
+# to the ``displayed_spheres`` argument of ``generate_report``.
 report = masker.generate_report()
 report
 
@@ -115,9 +106,9 @@ plt.tight_layout()
 # %%
 # Compute partial correlation matrix
 # -----------------------------------
-# Using object :class:`nilearn.connectome.ConnectivityMeasure`: Its
-# default covariance estimator is Ledoit-Wolf, allowing to obtain accurate
-# partial correlations.
+# Using object :class:`nilearn.connectome.ConnectivityMeasure`:
+# its default covariance estimator is Ledoit-Wolf,
+# allowing to obtain accurate partial correlations.
 
 from nilearn.connectome import ConnectivityMeasure
 
@@ -188,7 +179,6 @@ print(f"Power atlas comes with {power.keys()}.")
 
 # %%
 # .. note::
-#
 #
 #     You can retrieve the coordinates for any atlas, including atlases
 #     not included in nilearn, using
@@ -437,7 +427,7 @@ plotting.show()
 #
 # .. footbibliography::
 #
-# See Also
+# See also
 # --------
 #
 #   * :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`

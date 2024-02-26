@@ -84,23 +84,27 @@ def _simu_img(tmp_path, demean):
 
 
 def _handle_non_steady(confounds):
-    """Simulate non steady state correctly while increase the length."""
+    """Simulate non steady state correctly while increase the length.
+
+    - The first row is non-steady state,
+      replace it with the input from the second row.
+
+    - Repeat X in length (axis = 0) 10 times to increase
+      the degree of freedom for numerical stability.
+
+    - Put non-steady state volume back at the first sample.
+    """
     X = confounds.values
-    # the first row is non-steady state, replace it with the input from the
-    # second row
     non_steady = X[0, :]
-    X[0, :] = X[1, :]
-    # repeat X in length (axis = 0) 10 times to increase
-    # the degree of freedom for numerical stability
-    X = np.tile(X, (10, 1))
-    # put non-steady state volume back at the first sample
-    X[0, :] = non_steady
-    X = pd.DataFrame(X, columns=confounds.columns)
-    return X
+    tmp = np.vstack((X[1, :], X[1:, :]))
+    tmp = np.tile(tmp, (10, 1))
+    return pd.DataFrame(
+        np.vstack((non_steady, tmp[1:, :])), columns=confounds.columns
+    )
 
 
 def _regression(confounds, tmp_path):
-    """Simple regression with NiftiMasker."""
+    """Perform simple regression with NiftiMasker."""
     # Simulate data
     img, mask_conf, _, _, _ = _simu_img(tmp_path, demean=False)
     confounds = _handle_non_steady(confounds)

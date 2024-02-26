@@ -12,7 +12,7 @@ Notes
 This atlas is the result of an automated anatomical :term:`parcellation`
 of the spatially normalized single-subject high-resolution T1 volume
 provided by the Montreal Neurological Institute (MNI)
-(D. L. Collins et al., 1998, Trans. Med. Imag. 17, 463-468, PubMed).
+(:footcite:t:`Collins1998`).
 
 Using this :term:`parcellation` method, three procedures to perform the automated anatomical labeling
 of functional studies are proposed:

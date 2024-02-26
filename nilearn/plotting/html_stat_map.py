@@ -490,7 +490,6 @@ def view_img(
     vmin=None,
     resampling_interpolation="continuous",
     opacity=1,
-    **kwargs,
 ):
     """Interactive html viewer of a statistical map, with optional background.
 

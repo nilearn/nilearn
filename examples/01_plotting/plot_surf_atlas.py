@@ -2,19 +2,13 @@
 Loading and plotting of a cortical surface atlas
 ================================================
 
-The Destrieux :term:`parcellation` (Destrieux et al, 2010)
+The Destrieux :term:`parcellation` (:footcite:t:`Destrieux2010`)
 in fsaverage5 space as distributed with Freesurfer is used as the chosen atlas.
 
 The :func:`nilearn.plotting.plot_surf_roi` function is used
 to plot the :term:`parcellation` on the pial surface.
 
 See :ref:`plotting` for more details.
-
-References
-----------
-Destrieux et al, (2010). Automatic parcellation of human cortical gyri and
-sulci using standard anatomical nomenclature. NeuroImage, 53, 1.
-URL https://doi.org/10.1016/j.neuroimage.2010.06.010.
 """
 
 # %%
@@ -150,5 +144,12 @@ view = plotting.view_connectome(corr, coordinates, edge_threshold='90%')
 # uncomment this to open the plot in a web browser:
 # view.open_in_browser()
 view
+
+# %%
+# References
+# ----------
+#
+#  .. footbibliography::
+
 
 # sphinx_gallery_dummy_images=1

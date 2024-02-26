@@ -355,7 +355,7 @@ def test_fetch_coords_seitzman_2018():
 
 
 def _destrieux_data():
-    """Function mocking the download of the destrieux atlas."""
+    """Mock the download of the destrieux atlas."""
     data = {"destrieux2009.rst": "readme"}
     atlas = _rng().integers(0, 10, (10, 10, 10), dtype="int32")
     atlas_img = nibabel.Nifti1Image(atlas, np.eye(4))
@@ -373,6 +373,7 @@ def _destrieux_data():
 @pytest.mark.parametrize("lateralized", [True, False])
 def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker, lateralized):
     """Tests for function `fetch_atlas_destrieux_2009`.
+
     The atlas is fetched with different values for `lateralized`.
     """
     request_mocker.url_mapping["*destrieux2009.tgz"] = _destrieux_data()

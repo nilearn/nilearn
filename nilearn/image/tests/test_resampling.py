@@ -47,7 +47,7 @@ def _make_resampling_test_data():
 
 
 def rotation(theta, phi):
-    """Returns a rotation 3x3 matrix."""
+    """Return a rotation 3x3 matrix."""
     cos = np.cos
     sin = np.sin
     a1 = np.array(
@@ -99,7 +99,7 @@ def test_identity_resample(shape, affine_eye, rng):
 def test_identity_resample_non_native_endians(
     shape, affine_eye, endian_type, interpolation, rng
 ):
-    """Test resampling with an identity affine with non native endians
+    """Test resampling with an identity affine with non native endians.
 
     with big endian data ('>f8')
     with little endian data ('<f8')
@@ -180,7 +180,7 @@ def test_downsample_non_native_endian_data(
 @pytest.mark.parametrize("shape", [(1, 4, 4), (1, 4, 4, 3)])
 @pytest.mark.parametrize("value", [-3.75, 0])
 def test_resampling_fill_value(affine_eye, shape, value, rng):
-    """Test resampling with a non-zero fill value
+    """Test resampling with a non-zero fill value.
 
     Check on 3D and 4D data.
     """
@@ -446,7 +446,7 @@ def test_3x3_affine_bbox(affine_eye):
 
 
 def test_raises_bbox_error_if_data_outside_box(affine_eye):
-    """Make some cases which should raise exceptions"""
+    """Make some cases which should raise exceptions."""
     # original image
     data = np.zeros([8, 9, 10])
     affine_offset = np.array([1, 1, 1])

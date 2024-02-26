@@ -1,5 +1,4 @@
 """
-================================================
 Example of pattern recognition on simulated data
 ================================================
 
@@ -7,8 +6,8 @@ This example simulates data according to a very simple sketch of brain
 imaging data and applies machine learning techniques to predict output
 values.
 
-We use a very simple generating function to simulate data, as in `Michel
-et al. 2012 <https://doi.org/10.1109/TMI.2011.2113378>`_ , a linear
+We use a very simple generating function to simulate data,
+as in :footcite:t:`Michel2011`, a linear
 model with a random design matrix **X**:
 
 .. math::
@@ -255,3 +254,10 @@ show()
 # slow.
 
 # from sklearn.feature_selection import RFE
+
+
+# %%
+# References
+# ----------
+#
+#  .. footbibliography::

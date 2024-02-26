@@ -1,4 +1,4 @@
-"""Test functions for models.regression"""
+"""Test functions for models.regression."""
 
 import pytest
 from numpy.testing import (

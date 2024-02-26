@@ -121,7 +121,7 @@ def _all_voxel_of_each_region_have_same_values(
 
 
 def test_check_shape_and_affine_compatibility_without_dim(img_3d_zeros_eye):
-    """Ensure correct behaviour for valid data without dim"""
+    """Ensure correct behaviour for valid data without dim."""
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         _check_shape_and_affine_compatibility(
@@ -132,7 +132,7 @@ def test_check_shape_and_affine_compatibility_without_dim(img_3d_zeros_eye):
 def test_check_shape_and_affine_compatibility_with_dim(
     img_3d_zeros_eye, img_4d_zeros_eye
 ):
-    """Ensure correct behaviour for valid data without dim"""
+    """Ensure correct behaviour for valid data without dim."""
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         _check_shape_and_affine_compatibility(

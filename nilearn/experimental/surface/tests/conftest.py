@@ -38,7 +38,7 @@ def mini_mesh() -> PolyMesh:
 
 @pytest.fixture
 def make_mini_img(mini_mesh) -> Callable:
-    """Small surface image for tests"""
+    """Small surface image for tests."""
 
     def f(shape=()):
         data = {}

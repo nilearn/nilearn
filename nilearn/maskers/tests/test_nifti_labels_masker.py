@@ -1,4 +1,4 @@
-"""Test the nifti_region module
+"""Test the nifti_region module.
 
 Functions in this file only test features added by the NiftiLabelsMasker class,
 not the underlying functions (clean(), img_to_signals_labels(), etc.). See
@@ -307,7 +307,8 @@ def test_nifti_labels_masker_with_nans_and_infs_in_data():
 
 
 def test_nifti_labels_masker_reduction_strategies():
-    """Tests:
+    """Tests NiftiLabelsMasker strategies.
+
     1. whether the usage of different reduction strategies work.
     2. whether unrecognised strategies raise a ValueError
     3. whether the default option is backwards compatible (calls "mean")
@@ -598,7 +599,7 @@ def test_nifti_labels_masker_with_mask():
 
 
 def test_region_names():
-    """Test region_names_ attribute in NiftiLabelsMasker"""
+    """Test region_names_ attribute in NiftiLabelsMasker."""
     shape = (13, 11, 12, 3)
     affine = np.eye(4)
     fmri_img, _ = data_gen.generate_random_img(shape, affine=affine)

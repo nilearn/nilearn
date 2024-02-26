@@ -403,7 +403,7 @@ def test_clean_detrending():
 
 
 def test_clean_t_r(rng):
-    """Different TRs produce different results after butterworth filtering"""
+    """Different TRs produce different results after butterworth filtering."""
     n_samples = 34
     # n_features  Must be higher than 500
     n_features = 501
@@ -772,8 +772,8 @@ def test_clean_frequencies_using_power_spectrum_density():
 
 
 def test_clean_finite_no_inplace_mod():
-    """
-    Test for verifying that the passed in signal array is not modified.
+    """Test for verifying that the passed in signal array is not modified.
+
     For PR #2125 . This test is failing on main, passing in this PR.
     """
     n_samples = 2

@@ -7,7 +7,7 @@ to experimental data and visualizing the results.
 This is done on two runs of one subject of the FIAC dataset.
 
 For more details on the data,
-please see experiment 2 in :footcite:t:`dehaene2006functional`.
+please see experiment 2 in :footcite:t:`Dehaene2006`.
 
 Here are the steps we will go through:
 

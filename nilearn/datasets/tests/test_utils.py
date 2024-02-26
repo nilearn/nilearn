@@ -65,9 +65,8 @@ DATASET_NAMES = {
 
 
 def test_get_dataset_descr_warning():
-    """Tests that function ``get_dataset_descr()`` gives a warning
-    when no description is available.
-    """
+    """Tests that function ``get_dataset_descr()`` gives a warning \
+       when no description is available."""
     with pytest.warns(
         UserWarning, match="Could not find dataset description."
     ):

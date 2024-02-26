@@ -4,6 +4,11 @@
 name: Numpy2 compatibility
 
 on:
+
+    pull_request:
+        branches:
+        -   '*'
+
     schedule:
     # Run every day at 8am UTC
     -   cron: 0 8 * * *
