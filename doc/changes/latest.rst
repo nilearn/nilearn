@@ -22,3 +22,5 @@ Changes
 
 - :bdg-primary:`Doc` Render the description of the templates, atlases and datasets of the :mod:`nilearn.datasets` as part of the documentation (:gh:`4232` by `Rémi Gau`_).
 - :bdg-dark:`Code` Change the colormap to ``gray`` for the background image in the :class:`nilearn.maskers.NiftiSpheresMasker` (:gh:`4269` by `Rémi Gau`_).
+- :bdg-dark:`Code` Remove the unused argument ``url`` from  :func:`nilearn.datasets.fetch_localizer_contrasts`, :func:`nilearn.datasets.fetch_localizer_calculation_task` and :func:`nilearn.datasets.fetch_localizer_button_task` (:gh:`4273` by `Rémi Gau`_).
+- :bdg-dark:`Code` Remove the unused argument ``rank`` from the constructor of :Class:`nilearn.glm.LikelihoodModelResults` (:gh:`4273` by `Rémi Gau`_).
