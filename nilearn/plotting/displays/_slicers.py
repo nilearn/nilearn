@@ -969,7 +969,7 @@ class OrthoSlicer(BaseSlicer):
             )
             self.frame_axes.set_zorder(-1000)
 
-    def _locator(self, axes, renderer):
+    def _locator(self, axes):
         """Adjust the size of the axes.
 
         The locator function used by matplotlib to position axes.
@@ -998,7 +998,7 @@ class OrthoSlicer(BaseSlicer):
                 # refresh of the figure) we capture the problem and
                 # ignore it: it only adds a non informative traceback
                 bounds = [0, 1, 0, 1]
-            xmin, xmax, ymin, ymax = bounds
+            xmin, xmax, _, _ = bounds
             width_dict[display_ax.ax] = xmax - xmin
 
         total_width = float(sum(width_dict.values()))
@@ -1323,7 +1323,7 @@ class TiledSlicer(BaseSlicer):
 
         return (coord1, coord2, coord3, coord4)
 
-    def _locator(self, axes, renderer):
+    def _locator(self, axes):
         """Adjust the size of the axes.
 
         The locator function used by matplotlib to position axes.
@@ -1529,7 +1529,7 @@ class BaseStackedSlicer(BaseSlicer):
             )
             self.frame_axes.set_zorder(-1000)
 
-    def _locator(self, axes, renderer):
+    def _locator(self, axes):
         """Adjust the size of the axes.
 
         The locator function used by matplotlib to position axes.
@@ -1554,14 +1554,14 @@ class BaseStackedSlicer(BaseSlicer):
                 # refresh of the figure) we capture the problem and
                 # ignore it: it only adds a non informative traceback
                 bounds = [0, 1, 0, 1]
-            xmin, xmax, ymin, ymax = bounds
+            xmin, xmax, _, _ = bounds
             width_dict[display_ax.ax] = xmax - xmin
         total_width = float(sum(width_dict.values()))
         for ax, width in width_dict.items():
             width_dict[ax] = width / total_width * (x1 - x0)
         left_dict = dict()
         left = float(x0)
-        for coord, display_ax in display_ax_dict.items():
+        for _, display_ax in display_ax_dict.items():
             left_dict[display_ax.ax] = left
             this_width = width_dict[display_ax.ax]
             left += this_width
@@ -2001,7 +2001,7 @@ class MosaicSlicer(BaseSlicer):
                 self.axes[(direction, coord)] = display_ax
                 ax.set_axes_locator(self._locator)
 
-    def _locator(self, axes, renderer):
+    def _locator(self, axes):
         """Adjust the size of the axes.
 
         Locator function used by matplotlib to position axes.
@@ -2030,7 +2030,7 @@ class MosaicSlicer(BaseSlicer):
                         # refresh of the figure) we capture the problem and
                         # ignore it: it only adds a non informative traceback
                         bounds = [0, 1, 0, 1]
-                    xmin, xmax, ymin, ymax = bounds
+                    xmin, xmax, _, _ = bounds
                     this_width[display_ax.ax] = xmax - xmin
             total_width = float(sum(this_width.values()))
             for ax, w in this_width.items():
@@ -2045,7 +2045,7 @@ class MosaicSlicer(BaseSlicer):
         for index, direction in enumerate(self._cut_displayed):
             left = float(x0)
             this_height = fraction + fraction * index
-            for coord, display_ax in display_ax_dict.items():
+            for _, display_ax in display_ax_dict.items():
                 if direction == display_ax.direction:
                     left_dict[display_ax.ax] = left
                     this_width = width_dict[display_ax.ax]
