@@ -24,4 +24,6 @@ Changes
 - :bdg-dark:`Code` Change the colormap to ``gray`` for the background image in the :class:`nilearn.maskers.NiftiSpheresMasker` (:gh:`4269` by `Rémi Gau`_).
 - :bdg-dark:`Code` Remove the unused argument ``url`` from  :func:`nilearn.datasets.fetch_localizer_contrasts`, :func:`nilearn.datasets.fetch_localizer_calculation_task` and :func:`nilearn.datasets.fetch_localizer_button_task` (:gh:`4273` by `Rémi Gau`_).
 - :bdg-dark:`Code` Remove the unused argument ``rank`` from the constructor of :Class:`nilearn.glm.LikelihoodModelResults` (:gh:`4273` by `Rémi Gau`_).
+- :bdg-dark:`Code` Implement argument ``sample_mask`` for :method:`nilearn.maskers.MultiNiftiMasker.transform_imgs` (:gh:`4273` by `Rémi Gau`_).
+- :bdg-dark:`Code` Remove the unused arguments ``upper_cutoff`` and ``exclude_zeros`` for :func:`nilearn.masking.compute_multi_background_mask` (:gh:`4273` by `Rémi Gau`_).
 - :bdg-dark:`Code` Remove unused ``**kwargs`` from :func:`nilearn.plotting.view_img` and :func:`nilearn.plotting.plot_surf` (:gh:`4270` by `Rémi Gau`_).
