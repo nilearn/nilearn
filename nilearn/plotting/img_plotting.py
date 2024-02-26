@@ -1282,7 +1282,9 @@ def plot_stat_map(
     %(radiological)s
 
     kwargs: extra keyword arguments, optional
-        Extra keyword arguments passed to TODOODO
+        Extra keyword arguments
+        ultimately passed to `matplotlib.pyplot.imshow` via
+        :meth:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
 
     Returns
     -------

@@ -940,7 +940,7 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
                                               Poly3DCollection):
         _ = plot_surf(surf_mesh, axes=axes, **kwargs)
 
-    coords, faces = load_surf_mesh(surf_mesh)
+    _, faces = load_surf_mesh(surf_mesh)
     roi = load_surf_data(roi_map)
     if levels is None:
         levels = np.unique(roi_map)
