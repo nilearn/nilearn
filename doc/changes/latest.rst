@@ -10,6 +10,7 @@ Fixes
 
 - :bdg-dark:`Code` Fix errant warning when using ``stat_type`` in :func:`nilearn.glm.compute_contrast` (:gh:`4257` by `Eric Larson`_).
 - :bdg-dark:`Code` Fix when thresholding is applied to images by GLM reports (:gh:`4258` by `Rémi Gau`_).
+- :bdg-dark:`Code` Fix positions of the markers on the images on the sphere masker reports (:gh:`4285` by `Rémi Gau`_).
 - :bdg-dark:`Code` Make sure that :class:`nilearn.maskers.NiftiSpheresMasker` reports displays properly when it contains only 1 sphere (:gh:`4269` by `Rémi Gau`_).
 
 Enhancements
