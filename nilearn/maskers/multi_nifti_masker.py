@@ -48,11 +48,14 @@ def _get_mask_strategy(strategy):
 
 @_utils.fill_doc
 class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
-    """Class for masking of Niimg-like objects.
+    """Applying a mask to extract time-series from multiple Niimg-like objects.
 
     MultiNiftiMasker is useful when dealing with image sets from multiple
-    subjects. Use case: integrates well with decomposition by MultiPCA and
-    CanICA (multi-subject models)
+    subjects.
+    
+    Use case:
+    integrates well with decomposition by MultiPCA and CanICA
+    (multi-subject models)
 
     Parameters
     ----------
