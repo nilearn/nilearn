@@ -20,5 +20,6 @@ Enhancements
 Changes
 -------
 
+- :bdg-primary:`Doc` Render several examples of GLM reports as part of the documentation (:gh:`4267` by `Rémi Gau`_).
 - :bdg-primary:`Doc` Render the description of the templates, atlases and datasets of the :mod:`nilearn.datasets` as part of the documentation (:gh:`4232` by `Rémi Gau`_).
 - :bdg-dark:`Code` Change the colormap to ``gray`` for the background image in the :class:`nilearn.maskers.NiftiSpheresMasker` (:gh:`4269` by `Rémi Gau`_).
