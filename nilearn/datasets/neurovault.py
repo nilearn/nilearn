@@ -680,7 +680,7 @@ class Pattern(_SpecialValue):
         )
 
 
-def _empty_filter(arg):
+def _empty_filter():
     """Place holder for a filter which always returns True.
 
     This is the default ``image_filter`` and ``collection_filter``

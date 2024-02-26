@@ -361,6 +361,9 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
         if confounds is None:
             confounds = itertools.repeat(None, len(imgs_list))
 
+        if sample_mask is None:
+            sample_mask = itertools.repeat(None, len(imgs_list))
+
         # Ignore the mask-computing params: they are not useful and will
         # just invalidate the cache for no good reason
         # target_shape and target_affine are conveyed implicitly in mask_img
@@ -397,8 +400,9 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
                 confounds=cfs,
                 copy=copy,
                 dtype=self.dtype,
+                sample_mask=sms,
             )
-            for imgs, cfs in zip(niimg_iter, confounds)
+            for imgs, cfs, sms in zip(niimg_iter, confounds, sample_mask)
         )
         return data
 
