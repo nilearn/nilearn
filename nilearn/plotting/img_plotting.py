@@ -1985,7 +1985,7 @@ def plot_carpet(
         gs = mgs.GridSpecFromSubplotSpec(
             1,
             2 + int(legend),
-            subplot_spec=axes,
+            subplot_spec=axes.get_subplotspec(),
             width_ratios=wratios[: 2 + int(legend)],
             wspace=0.0,
         )
