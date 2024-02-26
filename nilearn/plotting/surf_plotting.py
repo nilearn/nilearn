@@ -757,7 +757,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
     %(title)s
     title_font_size : :obj:`int`, default=18
-        Size of the title font.
+        Size of the title font (only implemented for the plotly engine).
 
         .. versionadded:: 0.9.0
 
@@ -1107,7 +1107,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
     %(title)s
     title_font_size : :obj:`int`, default=18
-        Size of the title font.
+        Size of the title font (only implemented for the plotly engine).
 
         .. versionadded:: 0.9.0
 
@@ -1604,7 +1604,7 @@ def plot_surf_roi(surf_mesh,
 
     %(title)s
     title_font_size : :obj:`int`, default=18
-        Size of the title font.
+        Size of the title font (only implemented for the plotly engine).
 
         .. versionadded:: 0.9.0
 
