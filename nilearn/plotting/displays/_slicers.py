@@ -1858,7 +1858,7 @@ class MosaicSlicer(BaseSlicer):
 
     _cut_displayed = "yxz"
     _axes_class = CutAxes
-    _default_figsize = [11.1, 20.0]
+    _default_figsize = [4.0, 5.0]
 
     @classmethod
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
