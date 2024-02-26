@@ -52,7 +52,7 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
 
     MultiNiftiMasker is useful when dealing with image sets from multiple
     subjects.
-    
+
     Use case:
     integrates well with decomposition by MultiPCA and CanICA
     (multi-subject models)

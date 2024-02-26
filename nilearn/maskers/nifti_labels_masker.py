@@ -49,7 +49,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
     NiftiLabelsMasker is useful when data from non-overlapping volumes should
     be extracted (contrarily to :class:`nilearn.maskers.NiftiMapsMasker`).
-    
+
     Use case:
     summarize brain signals from clusters that were obtained by prior
     K-means or Ward clustering.

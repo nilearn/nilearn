@@ -225,8 +225,8 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
 
     NiftiSpheresMasker is useful when data from given seeds should be
     extracted.
-    
-    Use case: 
+
+    Use case:
     summarize brain signals from seeds that were obtained from prior knowledge.
 
     Parameters
