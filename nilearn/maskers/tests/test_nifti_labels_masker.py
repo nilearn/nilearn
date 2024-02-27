@@ -598,19 +598,17 @@ def test_nifti_labels_masker_with_mask():
     assert np.allclose(get_data(masker.region_atlas_), masked_labels_data)
 
 
-def test_region_names():
+def test_region_names(shape_3d_default, affine_eye):
     """Test region_names_ attribute in NiftiLabelsMasker."""
-    shape = (13, 11, 12, 3)
-    affine = np.eye(4)
-    fmri_img, _ = data_gen.generate_random_img(shape, affine=affine)
+    n_regions = 7
+    fmri_img, _ = data_gen.generate_random_img(
+        shape_3d_default, affine=affine_eye
+    )
     labels_img = data_gen.generate_labeled_regions(
-        shape[:3],
-        affine=affine,
-        n_regions=7,
+        shape_3d_default[:3], affine=affine_eye, n_regions=n_regions
     )
 
-    # define region_names
-    region_names = ["background"] + ["region_" + str(i + 1) for i in range(7)]
+    region_names = [f"region_{str(i + 1)}" for i in range(n_regions)]
 
     masker = NiftiLabelsMasker(
         labels_img,
@@ -619,13 +617,41 @@ def test_region_names():
     )
     _ = masker.fit().transform(fmri_img)
 
+    check_region_names_after_fit(masker, region_names)
+
+
+def check_region_names_after_fit(masker, region_names):
     region_names_after_fit = [
         masker.region_names_[i] for i in masker.region_names_
     ]
     region_names_after_fit.sort()
     region_names.sort()
-    region_names.pop(region_names.index("background"))
     assert region_names_after_fit == region_names
+
+
+def test_region_names_with_non_sequential_labels(shape_3d_default, affine_eye):
+    """Test region_names_ attribute in NiftiLabelsMasker."""
+    labels = [2001, 2002, 2101, 2102, 9170]
+    fmri_img, _ = data_gen.generate_random_img(
+        shape_3d_default, affine=affine_eye
+    )
+    labels_img = data_gen.generate_labeled_regions(
+        shape_3d_default[:3],
+        affine=affine_eye,
+        n_regions=len(labels),
+        labels=labels,
+    )
+
+    region_names = [f"region_{str(i + 1)}" for i in range(len(labels))]
+
+    masker = NiftiLabelsMasker(
+        labels_img,
+        labels=region_names,
+        resampling_target=None,
+    )
+    _ = masker.fit().transform(fmri_img)
+
+    check_region_names_after_fit(masker, region_names)
 
 
 def test_missing_labels_due_to_resampling(affine_eye):
@@ -640,7 +666,7 @@ def test_missing_labels_due_to_resampling(affine_eye):
     )
 
     # define region_names
-    region_names = ["background"] + ["region_" + str(i + 1) for i in range(7)]
+    region_names = ["background"] + [f"region_{str(i + 1)}" for i in range(7)]
 
     masker = NiftiLabelsMasker(
         labels_img,

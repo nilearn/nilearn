@@ -4,6 +4,7 @@ import warnings
 
 import numpy as np
 from joblib import Memory
+from rich import print
 
 from nilearn import _utils, image, masking
 from nilearn.maskers._utils import compute_middle_image
@@ -58,10 +59,12 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         Region definitions, as one image of labels.
 
     labels : :obj:`list` of :obj:`str`, optional
-        Full labels corresponding to the labels image. This is used
-        to improve reporting quality if provided.
-        Warning: The labels must be consistent with the label
-        values provided through `labels_img`.
+        Full labels corresponding to the labels image.
+        This is used to improve reporting quality if provided.
+
+        .. warning::
+            The labels must be consistent with the label values
+            provided through ``labels_img``.
 
     background_label : :obj:`int` or :obj:`float`, default=0
         Label used in labels_img to represent background.
@@ -122,18 +125,20 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
         .. versionadded:: 0.9.2
 
-    region_ids_ : dict
+    region_ids_ : dict[str | int, int]
         A dictionary containing the region ids corresponding
-        to each column in region_signal.
+        to each column in the ``region_signal``
+        returned by `fit_transform`.
         The region id corresponding to ``region_signal[:,i]``
         is ``region_ids_[i]``.
         ``region_ids_['background']`` is the background label.
 
         .. versionadded:: 0.10.3
 
-    region_names_ : dict
+    region_names_ : dict[int, str]
         A dictionary containing the region names corresponding
-        to each column in region_signal.
+        to each column in the ``region_signal``
+        returned by `fit_transform`.
         The region names correspond to the labels provided
         in labels in input.
         The region name corresponding to ``region_signal[:,i]``
@@ -182,7 +187,6 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         **kwargs,
     ):
         self.labels_img = labels_img
-        self.labels = labels
         self.background_label = background_label
         self.mask_img = mask_img
 
@@ -233,7 +237,6 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 f"Invalid strategy '{strategy}'. "
                 f"Valid strategies are {available_reduction_strategies}."
             )
-
         self.strategy = strategy
 
         if resampling_target not in ("labels", "data", None):
@@ -241,6 +244,17 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 "invalid value for 'resampling_target' "
                 f"parameter: {resampling_target}"
             )
+
+        # if not isinstance(labels, (list, np.ndarray)):
+        #     raise TypeError(
+        #         f"'labels' must be a list. Got: {type(labels)}"
+        #     )
+        # if not all(isinstance(x, (str, np.bytes_)) for x in labels):
+        #     raise TypeError(
+        #         "All elements of 'labels' must be a string.\n"
+        #         f"Got a list of {set([type(x) for x in labels])}"
+        #     )
+        self.labels = labels
 
         self.keep_masked_labels = keep_masked_labels
 
@@ -699,16 +713,28 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             # ids does not include background label
             region_ids[i] = ids[i]
 
+        print(f"{self.labels=}")
+        print(f"{self.labels_=}")
+        print(f"{region_ids=}")
+        print(f"{self.background_label=}")
+
         if self.labels is not None:
             self.region_names_ = {
-                key: self.labels[region_id]
+                key: self.labels[self.labels_.index(region_id)]
                 for key, region_id in region_ids.items()
                 if region_id != self.background_label
             }
+            # self.region_names_ = {
+            #     key: self.labels[region_id]
+            #     for key, region_id in region_ids.items()
+            #     if region_id != self.background_label
+            # }
         else:
             self.region_names_ = None
         self.region_ids_ = region_ids
         self.region_atlas_ = masked_atlas
+
+        print(f"{self.region_names_=}")
 
         return region_signals
 
