@@ -102,6 +102,7 @@ plot_glass_brain(
     threshold=2,
     symmetric_cbar=False,
     cmap="viridis",
+    title="only plot positive values",
 )
 
 # %%
@@ -116,6 +117,7 @@ plot_glass_brain(
     threshold=2,
     symmetric_cbar=False,
     cmap="viridis",
+    title="vmin == threshold",
 )
 
 # %%
