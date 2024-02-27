@@ -654,13 +654,14 @@ def test_region_names_with_non_sequential_labels(shape_3d_default, affine_eye):
     check_region_names_after_fit(masker, region_names)
 
 
-def test_missing_labels_due_to_resampling(affine_eye):
+def test_missing_labels_due_to_resampling(shape_3d_default, affine_eye):
     """Test region_names_ matches signals after resampling drops labels."""
-    shape = (13, 11, 12, 3)
     affine_low = np.diag((4, 4, 4, 4))
-    fmri_img, _ = data_gen.generate_random_img(shape, affine=affine_low)
+    fmri_img, _ = data_gen.generate_random_img(
+        shape_3d_default, affine=affine_low
+    )
     labels_img = data_gen.generate_labeled_regions(
-        shape[:3],
+        shape_3d_default[:3],
         affine=affine_eye,
         n_regions=7,
     )
