@@ -4,16 +4,12 @@ import numpy as np
 from rich import print
 
 from nilearn import datasets
-from nilearn._utils.exceptions import DimensionError
 from nilearn.datasets import (
     fetch_atlas_aal,
     fetch_atlas_basc_multiscale_2015,
     fetch_atlas_destrieux_2009,
-    fetch_atlas_difumo,
     fetch_atlas_harvard_oxford,
     fetch_atlas_juelich,
-    fetch_atlas_msdl,
-    fetch_atlas_pauli_2017,
     fetch_atlas_schaefer_2018,
     fetch_atlas_talairach,
     fetch_atlas_yeo_2011,
@@ -29,9 +25,6 @@ functions = {
     fetch_atlas_schaefer_2018: None,
     fetch_atlas_basc_multiscale_2015: [None, None, True, 1, 64, "sym"],
     fetch_atlas_yeo_2011: None,
-    fetch_atlas_difumo: None,
-    fetch_atlas_msdl: None,
-    fetch_atlas_pauli_2017: None,
 }
 
 
@@ -66,15 +59,13 @@ def main():
             labels=labels,
             standardize="zscore_sample",
         )
-        try:
-            masker.fit_transform(func_filename)
-            print(f"{masker.labels=}")
-            print(f"{masker.labels_=}")
-            print(f"{masker.region_ids_=}")
-            print(f"{masker.region_names_=}")
-            print(" SUCCESS")
-        except DimensionError:
-            print(" FAILED: DimensionError")
+
+        masker.fit_transform(func_filename)
+
+        print(f"{masker.labels=}")
+        print(f"{masker.labels_=}")
+        print(f"{masker.region_ids_=}")
+        print(f"{masker.region_names_=}")
 
 
 if __name__ == "__main__":
