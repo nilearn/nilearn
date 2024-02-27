@@ -33,15 +33,22 @@ class _ExtractionFunctor:
 
 @_utils.fill_doc
 class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
-    """Class for masking of Niimg-like objects.
+    """Class for extracting data from Niimg-like objects \
+       using maps of potentially overlapping brain regions.
 
     NiftiMapsMasker is useful when data from overlapping volumes should be
     extracted (contrarily to :class:`nilearn.maskers.NiftiLabelsMasker`).
-    Use case: Summarize brain signals from large-scale networks obtained by
-    prior PCA or :term:`ICA`.
 
-    Note that, Inf or NaN present in the given input images are automatically
-    put to zero rather than considered as missing data.
+    Use case:
+    summarize brain signals from large-scale networks
+    obtained by prior PCA or :term:`ICA`.
+
+    .. note::
+        Inf or NaN present in the given input images are automatically
+        put to zero rather than considered as missing data.
+
+    For more details on the definitions of maps in Nilearn,
+    see the :ref:`region` section.
 
     Parameters
     ----------
