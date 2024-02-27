@@ -3,16 +3,17 @@ Seed-based connectivity on the surface
 ======================================
 
 The dataset that is a subset of the enhanced NKI Rockland sample
-(https://fcon_1000.projects.nitrc.org/indi/enhanced/, Nooner et al, 2012)
+(https://fcon_1000.projects.nitrc.org/indi/enhanced/,
+:footcite:t:`Nooner2012`)
 
 Resting state :term:`fMRI` scans (TR=645ms) of 102 subjects were preprocessed
 (https://github.com/fliem/nki_nilearn) and projected onto the Freesurfer
-fsaverage5 template (Dale et al, 1999, Fischl et al, 1999). For this example
-we use the time series of a single subject's left hemisphere.
+fsaverage5 template (:footcite:t:`Dale1999` and  :footcite:t:`Fischl1999b`).
+For this example we use the time series of a single subject's left hemisphere.
 
-The Destrieux parcellation (Destrieux et al, 2010) in fsaverage5 space as
-distributed with Freesurfer is used to select a seed region in the posterior
-cingulate cortex.
+The Destrieux parcellation (:footcite:t:`Destrieux2010`)
+in fsaverage5 space as distributed with Freesurfer
+is used to select a seed region in the posterior cingulate cortex.
 
 Functional connectivity of the seed region to all other cortical nodes in the
 same hemisphere is calculated using Pearson product-moment correlation
@@ -25,25 +26,6 @@ See also :ref:`for a similar example but using volumetric input data
 <sphx_glr_auto_examples_03_connectivity_plot_seed_to_voxel_correlation.py>`.
 
 See :ref:`plotting` for more details on plotting tools.
-
-References
-----------
-Nooner et al, (2012). The NKI-Rockland Sample: A model for accelerating the
-pace of discovery science in psychiatry. Frontiers in neuroscience 6, 152.
-URL https://doi.org/10.3389/fnins.2012.00152
-
-Dale et al, (1999). Cortical surface-based analysis.I. Segmentation and
-surface reconstruction. Neuroimage 9.
-URL https://doi.org/10.1006/nimg.1998.0395
-
-Fischl et al, (1999). Cortical surface-based analysis. II: Inflation,
-flattening, and a surface-based coordinate system. Neuroimage 9.
-https://doi.org/10.1006/nimg.1998.0396
-
-Destrieux et al, (2010). Automatic parcellation of human cortical gyri and
-sulci using standard anatomical nomenclature. NeuroImage, 53, 1.
-URL https://doi.org/10.1016/j.neuroimage.2010.06.010.
-
 """
 
 # %%
@@ -197,6 +179,13 @@ plotting.plot_surf_stat_map(fsaverage['infl_left'], stat_map=stat_map,
                             output_file=output_dir / 'plot_surf_stat_map.png')
 
 plotting.show()
+
+# %%
+# References
+# ----------
+#
+#  .. footbibliography::
+
 
 # sphinx_gallery_thumbnail_number = 2
 # sphinx_gallery_dummy_images=1

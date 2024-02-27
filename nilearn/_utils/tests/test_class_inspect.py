@@ -1,5 +1,5 @@
 """
-Test the class_inspect module
+Test the class_inspect module.
 
 This test file is in nilearn/tests because Nosetest,
 which we historically used,

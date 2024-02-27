@@ -1268,6 +1268,8 @@ def first_level_from_bids(
         derivatives_folder=derivatives_folder,
     )
 
+    dataset_path = Path(dataset_path).absolute()
+
     kwargs_load_confounds = _check_kwargs_load_confounds(**kwargs)
 
     if drift_model is not None and kwargs_load_confounds is not None:
@@ -1286,6 +1288,7 @@ def first_level_from_bids(
             )
 
     derivatives_path = Path(dataset_path) / derivatives_folder
+    derivatives_path = derivatives_path.absolute()
 
     # Get metadata for models.
     #
@@ -1325,17 +1328,19 @@ def first_level_from_bids(
         t_r = inferred_t_r
     if t_r is not None and t_r != inferred_t_r:
         warn(
-            f"'t_r' provided ({t_r}) is different "
+            f"\n't_r' provided ({t_r}) is different "
             f"from the value found in the BIDS dataset ({inferred_t_r}).\n"
-            "Note this may lead to the wrong model specification."
+            "Note this may lead to the wrong model specification.",
+            stacklevel=2,
         )
     if t_r is not None:
         _check_repetition_time(t_r)
     else:
         warn(
-            "'t_r' not provided and cannot be inferred from BIDS metadata.\n"
+            "\n't_r' not provided and cannot be inferred from BIDS metadata.\n"
             "It will need to be set manually in the list of models, "
-            "otherwise their fit will throw an exception."
+            "otherwise their fit will throw an exception.",
+            stacklevel=2,
         )
 
     # Slice time correction reference time
@@ -1394,6 +1399,8 @@ def first_level_from_bids(
     models_confounds = []
 
     sub_labels = _list_valid_subjects(derivatives_path, sub_labels)
+    if len(sub_labels) == 0:
+        raise RuntimeError(f"\nNo subject found in:\n {derivatives_path}")
     for sub_label_ in sub_labels:
         # Create model
         model = FirstLevelModel(
@@ -1494,8 +1501,10 @@ def _list_valid_subjects(derivatives_path, sub_labels):
             sub_labels_exist.append(sub_label_)
         else:
             warn(
-                f"Subject label {sub_label_} is not present in the"
-                " dataset and cannot be processed."
+                f"\nSubject label '{sub_label_}' is not present "
+                "in the following dataset and cannot be processed:\n"
+                f" {derivatives_path}",
+                stacklevel=3,
             )
 
     return set(sub_labels_exist)
@@ -1933,7 +1942,8 @@ def _make_bids_files_filter(
                     warn(
                         f"The filter {filter_} will be skipped. "
                         f"'{filter_[0]}' is not among the supported filters. "
-                        f"Allowed filters include: {supported_filters}"
+                        f"Allowed filters include: {supported_filters}",
+                        stacklevel=3,
                     )
                 continue
 

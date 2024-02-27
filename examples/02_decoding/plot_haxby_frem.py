@@ -3,7 +3,8 @@ Decoding with FREM: face vs house vs chair object recognition
 =============================================================
 
 This example uses fast ensembling of regularized models (FREM) to decode
-a face vs house vs chair discrimination task from Haxby 2001 study.
+a face vs house vs chair discrimination task
+from :footcite:t:`Haxby2001` study.
 :term:`FREM` uses an implicit spatial regularization
 through fast clustering and aggregates a high number of estimators
 trained on various splits of the training set,
@@ -117,5 +118,12 @@ plotting.show()
 # even on heavier examples. Here we ensembled several instances of l2-SVC,
 # but FREMClassifier also works with ridge or logistic.
 # FREMRegressor object is also available to solve regression problems.
+
+# %%
+# References
+# ----------
+#
+#  .. footbibliography::
+
 
 # sphinx_gallery_dummy_images=1

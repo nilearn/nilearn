@@ -1,5 +1,4 @@
-"""
-Test the nifti_masker module
+"""Test the nifti_masker module.
 
 Functions in this file only test features added by the NiftiMasker class,
 not the underlying functions used (e.g. clean()). See test_masking.py and
@@ -105,9 +104,8 @@ def test_resample():
 
 
 def test_resample_to_mask_warning():
-    """Check that a warning is raised when data is
-    being resampled to mask's resolution.
-    """
+    """Check that a warning is raised when data is \
+       being resampled to mask's resolution."""
     data = np.zeros((9, 9, 9))
     data[3:-3, 3:-3, 3:-3] = 10
     img = nibabel.Nifti1Image(data, np.eye(4))

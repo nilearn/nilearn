@@ -27,7 +27,7 @@ giving the 4 following conditions:
 The design also included a 5th condition
 containing the first sentence pooled across all conditions.
 
-For more details on the data, please see experiment 2 :footcite:t:`dehaene2006functional`.
+For more details on the data, please see experiment 2 :footcite:t:`Dehaene2006`.
 
 Content
 -------

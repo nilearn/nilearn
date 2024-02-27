@@ -248,9 +248,8 @@ def test_surface_figure():
 @pytest.mark.skipif(is_plotly_installed(),
                     reason='Plotly is installed.')
 def test_plotly_surface_figure_import_error():
-    """Test that an ImportError is raised when instantiating a
-    PlotlySurfaceFigure without having Plotly installed.
-    """
+    """Test that an ImportError is raised when instantiating \
+       a PlotlySurfaceFigure without having Plotly installed."""
     with pytest.raises(ImportError, match="Plotly is required"):
         PlotlySurfaceFigure()
 
@@ -259,9 +258,8 @@ def test_plotly_surface_figure_import_error():
                     reason=("This test only runs if Plotly is "
                             "installed, but not kaleido."))
 def test_plotly_surface_figure_savefig_error():
-    """Test that an ImportError is raised when saving a
-    PlotlySurfaceFigure without having kaleido installed.
-    """
+    """Test that an ImportError is raised when saving \
+       a PlotlySurfaceFigure without having kaleido installed."""
     with pytest.raises(ImportError, match="`kaleido` is required"):
         PlotlySurfaceFigure().savefig()
 
@@ -645,10 +643,10 @@ def test_plot_surf_stat_map_matplotlib_specific(rng):
     # Plot to axes
     axes = plt.subplots(ncols=2, subplot_kw={'projection': '3d'})[1]
     for ax in axes.flatten():
-        plot_surf_stat_map(mesh, stat_map=data, ax=ax)
+        plot_surf_stat_map(mesh, stat_map=data, axes=ax)
     axes = plt.subplots(ncols=2, subplot_kw={'projection': '3d'})[1]
     for ax in axes.flatten():
-        plot_surf_stat_map(mesh, stat_map=data, ax=ax, colorbar=True)
+        plot_surf_stat_map(mesh, stat_map=data, axes=ax, colorbar=True)
 
     fig = plot_surf_stat_map(mesh, stat_map=data, colorbar=False)
     assert len(fig.axes) == 1
@@ -725,12 +723,13 @@ def test_plot_surf_roi(engine):
     plot_surf_roi(mesh, roi_map=parcellation, colorbar=True,
                   engine=engine)
     plot_surf_roi(mesh, roi_map=parcellation, colorbar=True,
-                  cbar_tick_fomat="%f", engine=engine)
+                  cbar_tick_format="%f", engine=engine)
     plt.close()
 
 
 def test_plot_surf_roi_matplotlib_specific():
     mesh, roi_map, parcellation = _generate_data_test_surf_roi()
+
     # change vmin, vmax
     img = plot_surf_roi(mesh, roi_map=roi_map, vmin=1.2,
                         vmax=8.9, colorbar=True,
@@ -741,6 +740,7 @@ def test_plot_surf_roi_matplotlib_specific():
     cbar_vmax = float(cbar.get_yticklabels()[-1].get_text())
     assert cbar_vmin == 1.0
     assert cbar_vmax == 8.0
+
     img2 = plot_surf_roi(mesh, roi_map=roi_map, vmin=1.2,
                          vmax=8.9, colorbar=True,
                          cbar_tick_format="%.2g",
@@ -751,19 +751,6 @@ def test_plot_surf_roi_matplotlib_specific():
     cbar_vmax = float(cbar.get_yticklabels()[-1].get_text())
     assert cbar_vmin == 1.2
     assert cbar_vmax == 8.9
-    # plot to axes
-    plot_surf_roi(mesh, roi_map=roi_map, ax=None,
-                  figure=plt.gcf(), engine='matplotlib')
-
-    # plot to axes
-    with tempfile.NamedTemporaryFile() as tmp_file:
-        plot_surf_roi(mesh, roi_map=roi_map, ax=plt.gca(),
-                      figure=None, output_file=tmp_file.name,
-                      engine='matplotlib')
-    with tempfile.NamedTemporaryFile() as tmp_file:
-        plot_surf_roi(mesh, roi_map=roi_map, ax=plt.gca(),
-                      figure=None, output_file=tmp_file.name,
-                      colorbar=True, engine='matplotlib')
 
     # Test nans handling
     parcellation[::2] = np.nan
@@ -776,6 +763,29 @@ def test_plot_surf_roi_matplotlib_specific():
         mesh[1].shape[0] ==
         ((tmp._facecolors[:, 3]) != 0).sum()
     )
+    # Save execution time and memory
+    plt.close()
+
+
+def test_plot_surf_roi_matplotlib_specific_plot_to_axes():
+    """Test plotting directly on some axes."""
+    mesh, roi_map, _ = _generate_data_test_surf_roi()
+
+    plot_surf_roi(mesh, roi_map=roi_map, axes=None,
+                  figure=plt.gcf(), engine='matplotlib')
+
+    _, ax = plt.subplots(subplot_kw={'projection': '3d'})
+
+    with tempfile.NamedTemporaryFile() as tmp_file:
+        plot_surf_roi(mesh, roi_map=roi_map, axes=ax,
+                      figure=None, output_file=tmp_file.name,
+                      engine='matplotlib')
+
+    with tempfile.NamedTemporaryFile() as tmp_file:
+        plot_surf_roi(mesh, roi_map=roi_map, axes=ax,
+                      figure=None, output_file=tmp_file.name,
+                      colorbar=True, engine='matplotlib')
+
     # Save execution time and memory
     plt.close()
 
@@ -823,7 +833,7 @@ def test_plot_surf_roi_error(engine, rng):
     "kwargs", [{"vmin": 2}, {"vmin": 2, "threshold": 5}, {"threshold": 5}]
 )
 def test_plot_surf_roi_colorbar_vmin_equal_across_engines(kwargs):
-    """See issue https://github.com/nilearn/nilearn/issues/3944"""
+    """See issue https://github.com/nilearn/nilearn/issues/3944."""
     mesh = generate_surf()
     roi_map = np.arange(0, len(mesh[0]))
 
@@ -1151,7 +1161,7 @@ def test_compute_facecolors_matplotlib():
 @pytest.mark.parametrize("symmetric_cmap", [True, False, None])
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 def test_plot_surf_roi_default_arguments(engine, symmetric_cmap, avg_method):
-    """Regression test for https://github.com/nilearn/nilearn/issues/3941"""
+    """Regression test for https://github.com/nilearn/nilearn/issues/3941."""
     mesh, roi_map, _ = _generate_data_test_surf_roi()
     plot_surf_roi(mesh, roi_map=roi_map,
                   engine=engine,

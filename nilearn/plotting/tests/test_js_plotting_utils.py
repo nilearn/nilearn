@@ -67,7 +67,7 @@ def test_add_js_lib():
 
 
 def check_colors(colors):
-    """Performs several checks on colors obtained from function colorscale."""
+    """Perform several checks on colors obtained from function colorscale."""
     assert len(colors) == 100
     val, cstring = zip(*colors)
     assert np.allclose(np.linspace(0, 1, 100), val, atol=1e-3)
@@ -91,7 +91,7 @@ def test_colorscale_no_threshold():
 
 @pytest.fixture
 def expected_abs_threshold(threshold):
-    """Returns the expected absolute threshold."""
+    """Return the expected absolute threshold."""
     expected = {"0%": 1.5, "50%": 7.55, "99%": 13}
     return expected[threshold] if threshold in expected else abs(threshold)
 
@@ -121,7 +121,7 @@ def test_colorscale_symmetric_cmap(vmin, vmax):
 
 @pytest.fixture
 def expected_vmin_vmax(values, vmax, vmin):
-    """Returns expected vmin and vmax."""
+    """Return expected vmin and vmax."""
     if vmax is None:
         return (min(values), max(values))
     if min(values) < 0:
@@ -189,7 +189,7 @@ def test_mesh_to_plotly(hemi):
 def check_html(
     html, check_selects=True, plot_div_id="surface-plot", title=None
 ):
-    """Performs several checks on raw HTML code."""
+    """Perform several checks on raw HTML code."""
     fd, tmpfile = tempfile.mkstemp()
     try:
         os.close(fd)

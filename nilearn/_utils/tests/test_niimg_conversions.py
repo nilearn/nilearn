@@ -1,5 +1,4 @@
-"""
-Test the niimg_conversions
+"""Test the niimg_conversions.
 
 This test file is in nilearn/tests because Nosetest,
 which we historically used,

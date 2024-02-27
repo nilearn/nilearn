@@ -8,12 +8,7 @@ information.
 The protocol described is the so-called "ARCHI Standard" functional localizer
 task.
 
-For details on the task, please see:
-
-Pinel, P., Thirion, B., Meriaux, S. et al.
-Fast reproducible identification and large-scale databasing of individual
-functional cognitive networks.
-BMC Neurosci 8, 91 (2007). https://doi.org/10.1186/1471-2202-8-91
+For details on the task, please see :footcite:t:`Pinel2007`.
 """
 
 from nilearn.plotting import plot_event
@@ -114,3 +109,9 @@ import matplotlib.pyplot as plt
 
 plot_event(events, figsize=(15, 5))
 plt.show()
+
+# %%
+# References
+# ----------
+#
+#  .. footbibliography::

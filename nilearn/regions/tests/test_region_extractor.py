@@ -1,4 +1,4 @@
-"""Test Region Extractor and its functions"""
+"""Test Region Extractor and its functions."""
 
 import numpy as np
 import pytest

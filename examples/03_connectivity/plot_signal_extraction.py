@@ -15,10 +15,8 @@ variables from :term:`fMRIPrep` outputs while following some implementation
 guideline of :term:`fMRIPrep` confounds documentation
 `<https://fmriprep.org/en/stable/outputs.html#confounds>`_.
 
-One reference that discusses the importance of confounds is `Varoquaux and
-Craddock, Learning and comparing functional connectomes across subjects,
-NeuroImage 2013
-<https://doi.org/10.1016/j.neuroimage.2013.04.007>`_.
+One reference that discusses the importance of confounds
+is :footcite:t:`Varoquaux2013`.
 
 This is just a code example, see the :ref:`corresponding section in the
 documentation <parcellation_time_series>` for more.
