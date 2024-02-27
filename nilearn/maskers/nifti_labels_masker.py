@@ -607,42 +607,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 imgs_,
                 self._resampled_labels_img_,
             ):
-                if self.verbose > 0:
-                    print("Resampling labels")
-                labels_before_resampling = set(
-                    np.unique(
-                        _utils.niimg.safe_get_data(
-                            self._resampled_labels_img_,
-                        )
-                    )
-                )
-                self._resampled_labels_img_ = self._cache(
-                    image.resample_img, func_memory_level=2
-                )(
-                    self.labels_img_,
-                    interpolation="nearest",
-                    target_shape=imgs_.shape[:3],
-                    target_affine=imgs_.affine,
-                )
-                labels_after_resampling = set(
-                    np.unique(
-                        _utils.niimg.safe_get_data(
-                            self._resampled_labels_img_,
-                        )
-                    )
-                )
-                labels_diff = labels_before_resampling.difference(
-                    labels_after_resampling
-                )
-                if len(labels_diff) > 0:
-                    warnings.warn(
-                        "After resampling the label image to the "
-                        "data image, the following labels were "
-                        f"removed: {labels_diff}. "
-                        "Label image only contains "
-                        f"{len(labels_after_resampling)} labels "
-                        "(including background)."
-                    )
+                self._resample_labels(imgs_)
 
             if (self.mask_img is not None) and (
                 not _utils.niimg_conversions.check_same_fov(
@@ -724,6 +689,44 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         self.region_atlas_ = masked_atlas
 
         return region_signals
+
+    def _resample_labels(self, imgs_):
+        if self.verbose > 0:
+            print("Resampling labels")
+        labels_before_resampling = set(
+            np.unique(
+                _utils.niimg.safe_get_data(
+                    self._resampled_labels_img_,
+                )
+            )
+        )
+        self._resampled_labels_img_ = self._cache(
+            image.resample_img, func_memory_level=2
+        )(
+            self.labels_img_,
+            interpolation="nearest",
+            target_shape=imgs_.shape[:3],
+            target_affine=imgs_.affine,
+        )
+        labels_after_resampling = set(
+            np.unique(
+                _utils.niimg.safe_get_data(
+                    self._resampled_labels_img_,
+                )
+            )
+        )
+        if labels_diff := labels_before_resampling.difference(
+            labels_after_resampling
+        ):
+            warnings.warn(
+                "After resampling the label image to the data image,"
+                f"the following labels were removed: {labels_diff}. "
+                "Label image only contains "
+                f"{len(labels_after_resampling)} labels "
+                "(including background)."
+            )
+
+        return self
 
     def inverse_transform(self, signals):
         """Compute :term:`voxel` signals from region signals.
