@@ -969,12 +969,14 @@ class OrthoSlicer(BaseSlicer):
             )
             self.frame_axes.set_zorder(-1000)
 
-    def _locator(self, axes):
+    def _locator(self, axes, renderer):
         """Adjust the size of the axes.
 
         The locator function used by matplotlib to position axes.
 
         Here we put the logic used to adjust the size of the axes.
+
+        ``renderer`` is required to match the matplolib API.
         """
         x0, y0, x1, y1 = self.rect
         width_dict = dict()
@@ -1323,12 +1325,14 @@ class TiledSlicer(BaseSlicer):
 
         return (coord1, coord2, coord3, coord4)
 
-    def _locator(self, axes):
+    def _locator(self, axes, renderer):
         """Adjust the size of the axes.
 
         The locator function used by matplotlib to position axes.
 
         Here we put the logic used to adjust the size of the axes.
+
+        ``renderer`` is required to match the matplolib API.
         """
         rect_x0, rect_y0, rect_x1, rect_y1 = self.rect
 
@@ -1529,12 +1533,14 @@ class BaseStackedSlicer(BaseSlicer):
             )
             self.frame_axes.set_zorder(-1000)
 
-    def _locator(self, axes):
+    def _locator(self, axes, renderer):
         """Adjust the size of the axes.
 
         The locator function used by matplotlib to position axes.
 
         Here we put the logic used to adjust the size of the axes.
+
+        ``renderer`` is required to match the matplolib API.
         """
         x0, y0, x1, y1 = self.rect
         width_dict = dict()
@@ -2007,12 +2013,14 @@ class MosaicSlicer(BaseSlicer):
         #  see issue https://github.com/nilearn/nilearn/pull/4284
         self._colorbar_width *= len(coords) ** 1.1
 
-    def _locator(self, axes):
+    def _locator(self, axes, renderer):
         """Adjust the size of the axes.
 
         Locator function used by matplotlib to position axes.
 
         Here we put the logic used to adjust the size of the axes.
+
+        ``renderer`` is required to match the matplolib API.
         """
         x0, y0, x1, y1 = self.rect
         display_ax_dict = self.axes
