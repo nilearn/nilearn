@@ -147,7 +147,9 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
 
     NiftiMasker is useful when preprocessing (detrending, standardization,
     resampling, etc.) of in-mask :term:`voxels<voxel>` is necessary.
-    Use case: working with time series of :term:`resting-state` or task maps.
+
+    Use case:
+    working with time series of :term:`resting-state` or task maps.
 
     Parameters
     ----------
