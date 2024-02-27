@@ -72,7 +72,7 @@ def test_demo_plot_roi_output_file(tmp_path):
 
 
 def test_cmap_with_one_level(shape_3d_default, affine_eye):
-    """Test we can handle cmap with only 1 level
+    """Test we can handle cmap with only 1 level.
 
     Regression test for
     https://github.com/nilearn/nilearn/issues/4255
