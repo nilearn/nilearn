@@ -4,7 +4,6 @@ import warnings
 
 import numpy as np
 from joblib import Memory
-from rich import print
 
 from nilearn import _utils, image, masking
 from nilearn.maskers._utils import compute_middle_image
@@ -713,28 +712,16 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             # ids does not include background label
             region_ids[i] = ids[i]
 
-        print(f"{self.labels=}")
-        print(f"{self.labels_=}")
-        print(f"{region_ids=}")
-        print(f"{self.background_label=}")
-
         if self.labels is not None:
             self.region_names_ = {
                 key: self.labels[self.labels_.index(region_id)]
                 for key, region_id in region_ids.items()
                 if region_id != self.background_label
             }
-            # self.region_names_ = {
-            #     key: self.labels[region_id]
-            #     for key, region_id in region_ids.items()
-            #     if region_id != self.background_label
-            # }
         else:
             self.region_names_ = None
         self.region_ids_ = region_ids
         self.region_atlas_ = masked_atlas
-
-        print(f"{self.region_names_=}")
 
         return region_signals
 
