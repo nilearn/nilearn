@@ -598,29 +598,61 @@ def test_nifti_labels_masker_with_mask():
     assert np.allclose(get_data(masker.region_atlas_), masked_labels_data)
 
 
-def test_region_names(shape_3d_default, affine_eye):
+@pytest.mark.parametrize(
+    "with_background",
+    [True, False],  # In case the list of labels includes one for background
+)
+@pytest.mark.parametrize(
+    "dtype", ["int32", "float32"]  # In case regions are labelled with floats
+)
+@pytest.mark.parametrize(
+    "affine_data",
+    [
+        None,
+        np.diag(
+            (4, 4, 4, 4)
+        ),  # region_names_ matches signals after resampling drops labels
+    ],
+)
+def test_region_names(
+    shape_3d_default, affine_eye, with_background, affine_data, dtype
+):
     """Test region_names_ attribute in NiftiLabelsMasker."""
     n_regions = 7
+    if affine_data is None:
+        affine_data = affine_eye
     fmri_img, _ = data_gen.generate_random_img(
-        shape_3d_default, affine=affine_eye
+        shape_3d_default, affine=affine_data
     )
     labels_img = data_gen.generate_labeled_regions(
-        shape_3d_default[:3], affine=affine_eye, n_regions=n_regions
+        shape_3d_default[:3],
+        affine=affine_eye,
+        n_regions=n_regions,
+        dtype=dtype,
     )
 
-    region_names = [f"region_{str(i + 1)}" for i in range(n_regions)]
+    region_names = generate_labels(n_regions, with_background=with_background)
 
     masker = NiftiLabelsMasker(
         labels_img,
         labels=region_names,
-        resampling_target=None,
+        resampling_target="data",
     )
-    _ = masker.fit().transform(fmri_img)
+    signals = masker.fit().transform(fmri_img)
 
-    check_region_names_after_fit(masker, region_names)
+    check_region_names_after_fit(
+        masker, signals, region_names, with_background
+    )
 
 
-def check_region_names_after_fit(masker, region_names):
+def check_region_names_after_fit(
+    masker, signals, region_names, with_background
+):
+
+    assert len(masker.region_names_) == signals.shape[1]
+
+    assert len(list(masker.region_ids_.items())[1:]) == signals.shape[1]
+
     region_names_after_fit = [
         masker.region_names_[i] for i in masker.region_names_
     ]
@@ -629,7 +661,18 @@ def check_region_names_after_fit(masker, region_names):
     assert region_names_after_fit == region_names
 
 
-def test_region_names_with_non_sequential_labels(shape_3d_default, affine_eye):
+def generate_labels(n_regions, with_background=True):
+    labels = []
+    if with_background:
+        labels.append("background")
+    labels.extend([f"region_{str(i + 1)}" for i in range(n_regions)])
+    return labels
+
+
+@pytest.mark.parametrize("with_background", [True, False])
+def test_region_names_with_non_sequential_labels(
+    shape_3d_default, affine_eye, with_background
+):
     """Test region_names_ attribute in NiftiLabelsMasker."""
     labels = [2001, 2002, 2101, 2102, 9170]
     fmri_img, _ = data_gen.generate_random_img(
@@ -642,42 +685,20 @@ def test_region_names_with_non_sequential_labels(shape_3d_default, affine_eye):
         labels=labels,
     )
 
-    region_names = [f"region_{str(i + 1)}" for i in range(len(labels))]
+    region_names = generate_labels(
+        len(labels), with_background=with_background
+    )
 
     masker = NiftiLabelsMasker(
         labels_img,
         labels=region_names,
         resampling_target=None,
     )
-    _ = masker.fit().transform(fmri_img)
-
-    check_region_names_after_fit(masker, region_names)
-
-
-def test_missing_labels_due_to_resampling(shape_3d_default, affine_eye):
-    """Test region_names_ matches signals after resampling drops labels."""
-    affine_low = np.diag((4, 4, 4, 4))
-    fmri_img, _ = data_gen.generate_random_img(
-        shape_3d_default, affine=affine_low
-    )
-    labels_img = data_gen.generate_labeled_regions(
-        shape_3d_default[:3],
-        affine=affine_eye,
-        n_regions=7,
-    )
-
-    # define region_names
-    region_names = ["background"] + [f"region_{str(i + 1)}" for i in range(7)]
-
-    masker = NiftiLabelsMasker(
-        labels_img,
-        labels=region_names,
-        resampling_target="data",
-    )
     signals = masker.fit().transform(fmri_img)
 
-    assert len(masker.region_names_) == signals.shape[1]
-    assert len(list(masker.region_ids_.items())[1:]) == signals.shape[1]
+    check_region_names_after_fit(
+        masker, signals, region_names, with_background
+    )
 
 
 def test_3d_images():

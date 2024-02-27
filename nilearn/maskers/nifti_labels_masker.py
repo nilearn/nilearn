@@ -711,7 +711,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             labels_after_resampling
         ):
             warnings.warn(
-                "After resampling the label image to the data image,"
+                "After resampling the label image to the data image, "
                 f"the following labels were removed: {labels_diff}. "
                 "Label image only contains "
                 f"{len(labels_after_resampling)} labels "

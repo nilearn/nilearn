@@ -71,7 +71,6 @@ def main():
             print(f"{masker.labels=}")
             print(f"{masker.labels_=}")
             print(f"{masker.region_ids_=}")
-            print(f"{masker.background_label=}")
             print(f"{masker.region_names_=}")
             print(" SUCCESS")
         except DimensionError:
