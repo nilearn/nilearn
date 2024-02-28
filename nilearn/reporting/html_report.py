@@ -7,6 +7,7 @@ from pathlib import Path
 from string import Template
 
 from nilearn.externals import tempita
+from nilearn.maskers import NiftiSpheresMasker
 from nilearn.plotting.html_document import HTMLDocument
 from nilearn.reporting.utils import figure_to_svg_base64
 
@@ -162,6 +163,9 @@ def _define_overlay(estimator):
 
     if len(displays) == 1:  # set overlay to None
         overlay, image = None, displays[0]
+
+    elif isinstance(estimator, NiftiSpheresMasker):
+        overlay, image = None, displays
 
     elif len(displays) == 2:
         overlay, image = displays[0], displays[1]

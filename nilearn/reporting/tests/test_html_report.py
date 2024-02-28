@@ -323,6 +323,21 @@ def test_nifti_spheres_masker_report_displayed_spheres_list_more_than_seeds():
         masker.generate_report(displayed_spheres=displayed_spheres)
 
 
+def test_nifti_spheres_masker_report_1_sphere():
+    """Check the report for sphere actually works for one sphere.
+
+    See https://github.com/nilearn/nilearn/issues/4268
+    """
+    report = NiftiSpheresMasker([(1, 1, 1)]).fit().generate_report()
+
+    empty_div = """
+                    <img id="map1" class="pure-img" width="100%"
+                        src="data:image/svg+xml;base64,D"
+                        style="display:none;" alt="image"/>"""
+
+    assert empty_div not in report.body
+
+
 def test_nifti_labels_masker_report_smoke_test(labels, labels_img):
     """Smoke test."""
     labels_img_floats = new_img_like(

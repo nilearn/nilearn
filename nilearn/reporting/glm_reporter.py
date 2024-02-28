@@ -227,8 +227,7 @@ def make_glm_report(
             mask_img = model.masker_.mask_img_
 
     mask_plot_html_code = _mask_to_svg(
-        mask_img=mask_img,
-        bg_img=bg_img,
+        mask_img=mask_img, bg_img=bg_img, cut_coords=cut_coords
     )
     all_components = _make_stat_maps_contrast_clusters(
         stat_img=statistical_maps,
@@ -635,7 +634,7 @@ def _resize_plot_inches(plot, width_change=0, height_change=0):
     return plot
 
 
-def _mask_to_svg(mask_img, bg_img):
+def _mask_to_svg(mask_img, bg_img, cut_coords=None):
     """Plot cuts of an mask image and creates SVG code of it.
 
     Parameters
@@ -662,6 +661,7 @@ def _mask_to_svg(mask_img, bg_img):
             bg_img=bg_img,
             display_mode="z",
             cmap="Set1",
+            cut_coords=cut_coords,
         )
         mask_plot_svg = _plot_to_svg(plt.gcf())
         # prevents sphinx-gallery & jupyter from scraping & inserting plots
@@ -769,13 +769,20 @@ def _make_stat_maps_contrast_clusters(
         components_template_text = html_template_obj.read()
     for contrast_name, stat_map_img in stat_img.items():
         component_text_ = string.Template(components_template_text)
-        thresholded_stat_map, threshold = threshold_stats_img(
+
+        # Only use threshold_stats_img to adjust the threshold
+        # that we will pass to  _clustering_params_to_dataframe
+        # and _stat_map_to_svg
+        # Necessary to avoid :
+        # https://github.com/nilearn/nilearn/issues/4192
+        thresholded_img, threshold = threshold_stats_img(
             stat_img=stat_map_img,
             threshold=threshold,
             alpha=alpha,
             cluster_threshold=cluster_threshold,
             height_control=height_control,
         )
+
         table_details = _clustering_params_to_dataframe(
             threshold,
             cluster_threshold,
@@ -783,16 +790,19 @@ def _make_stat_maps_contrast_clusters(
             height_control,
             alpha,
         )
+
         stat_map_svg = _stat_map_to_svg(
-            stat_img=thresholded_stat_map,
+            stat_img=thresholded_img,
+            threshold=threshold,
             bg_img=bg_img,
             cut_coords=cut_coords,
             display_mode=display_mode,
             plot_type=plot_type,
             table_details=table_details,
         )
+
         cluster_table = get_clusters_table(
-            stat_map_img,
+            thresholded_img,
             stat_threshold=threshold,
             cluster_threshold=cluster_threshold,
             min_distance=min_distance,
@@ -897,6 +907,7 @@ def _clustering_params_to_dataframe(
 @fill_doc
 def _stat_map_to_svg(
     stat_img,
+    threshold,
     bg_img,
     cut_coords,
     display_mode,
@@ -912,6 +923,9 @@ def _stat_map_to_svg(
        Statistical image (presumably in z scale),
        to be plotted as slices or glass brain.
        Does not perform any thresholding.
+
+    threshold : float
+       Desired threshold in z-scale.
 
     bg_img : Niimg-like object
         Only used when plot_type is 'slice'.
@@ -971,6 +985,7 @@ def _stat_map_to_svg(
             colorbar=True,
             cmap=cmap,
             symmetric_cbar=symmetric_cbar,
+            threshold=threshold,
         )
     elif plot_type == "glass":
         stat_map_plot = plot_glass_brain(
@@ -980,6 +995,7 @@ def _stat_map_to_svg(
             plot_abs=False,
             symmetric_cbar=True,
             cmap=cmap,
+            threshold=threshold,
         )
     else:
         raise ValueError(

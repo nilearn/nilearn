@@ -8,8 +8,8 @@ centered on coordinates from the Power-264 atlas (:footcite:t:`Power2011`),
 and the Dosenbach-160 atlas (:footcite:t:`Dosenbach2010`).
 
 We estimate connectomes using two different methods: **sparse inverse
-covariance** and **partial_correlation**, to recover the functional brain
-**networks structure**.
+covariance** and **partial_correlation**,
+to recover the functional brain **networks structure**.
 
 We'll start by extracting signals from Default Mode Network regions and
 computing a connectome from them.
@@ -83,9 +83,9 @@ time_series = masker.fit_transform(
 # %%
 # Display spheres summary report
 # ------------------------------
-# By default all spheres are displayed. This can be tweaked by passing an
-# integer or list/array of indices to the ``displayed_spheres`` argument of
-# ``generate_report``.
+# By default all spheres are displayed.
+# This can be tweaked by passing an integer or list/array of indices
+# to the ``displayed_spheres`` argument of ``generate_report``.
 report = masker.generate_report()
 report
 
@@ -106,9 +106,9 @@ plt.tight_layout()
 # %%
 # Compute partial correlation matrix
 # -----------------------------------
-# Using object :class:`nilearn.connectome.ConnectivityMeasure`: Its
-# default covariance estimator is Ledoit-Wolf, allowing to obtain accurate
-# partial correlations.
+# Using object :class:`nilearn.connectome.ConnectivityMeasure`:
+# its default covariance estimator is Ledoit-Wolf,
+# allowing to obtain accurate partial correlations.
 
 from nilearn.connectome import ConnectivityMeasure
 

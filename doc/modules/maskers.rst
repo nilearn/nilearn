@@ -25,3 +25,8 @@
    NiftiMapsMasker
    MultiNiftiMapsMasker
    NiftiSpheresMasker
+
+
+.. toctree::
+
+   generated_reports/masker_reports_examples.rst
