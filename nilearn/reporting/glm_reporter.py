@@ -964,8 +964,6 @@ def _stat_map_to_svg(
     data = safe_get_data(stat_img, ensure_finite=True)
     stat_map_min = np.nanmin(data)
     stat_map_max = np.nanmax(data)
-    print(stat_map_min)
-    print(stat_map_max)
     symmetric_cbar = True
     cmap = "bwr"
     if stat_map_min >= 0.0:
@@ -993,7 +991,7 @@ def _stat_map_to_svg(
             display_mode=display_mode,
             colorbar=True,
             plot_abs=False,
-            symmetric_cbar=True,
+            symmetric_cbar=symmetric_cbar,
             cmap=cmap,
             threshold=threshold,
         )
@@ -1003,19 +1001,18 @@ def _stat_map_to_svg(
             "Acceptable options are 'slice' or 'glass'."
         )
 
+    x_label_color = "black"
+    if plot_type == "slice":
+        x_label_color = "white"
+
     if hasattr(stat_map_plot, "_cbar"):
         cbar_ax = stat_map_plot._cbar.ax
         cbar_ax.set_xlabel(
-            "Z score", labelpad=7, fontweight="bold", loc="right"
-        )
-    elif hasattr(stat_map_plot, "_colorbar_ax"):
-        cbar_ax = stat_map_plot._colorbar_ax
-        cbar_ax.set_xlabel(
             "Z score",
-            labelpad=7,
+            labelpad=5,
             fontweight="bold",
             loc="right",
-            color="white",
+            color=x_label_color,
         )
 
     with pd.option_context("display.precision", 2):

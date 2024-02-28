@@ -73,7 +73,7 @@ def mean_scaling(Y, axis=0):
     mean = Y.mean(axis=axis)
     if (mean == 0).any():
         warn(
-            "Mean values of 0 observed."
+            "Mean values of 0 observed. "
             "The data have probably been centered."
             "Scaling might not work as expected",
             UserWarning,
