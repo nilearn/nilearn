@@ -322,7 +322,10 @@ def test_instantiation_error_plotly_surface_figure(input_obj):
         ("medial", True),
         ("latreal", False),
         ((100, 100), True),
+        ([100.0, 100.0], True),
         ((100, 100, 1), False),
+        (("lateral", "medial"), False),
+        ([100, "bar"], False),
     ]
 )
 def test_check_view_is_valid(view, is_valid):
