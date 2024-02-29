@@ -77,6 +77,7 @@ def report_flm_adhd_dmn():
         contrasts=contrasts,
         title="ADHD DMN Report",
         cluster_threshold=15,
+        alpha=0.0009,
         height_control="bonferroni",
         min_distance=8.0,
         plot_type="glass",
@@ -176,6 +177,7 @@ def report_flm_bids_features():
         contrasts="StopSuccess - Go",
         title=title,
         cluster_threshold=3,
+        plot_type="glass",
     )
 
     report.save_as_html(REPORTS_DIR / "flm_bids_features.html")
@@ -252,8 +254,12 @@ def report_slm_oasis():
         oasis_dataset.gray_matter_maps, design_matrix=design_matrix
     )
 
-    # TODO The following fails:
+    # TODO the following crashes
+    # contrast = [np.array([1, 0]), np.array([0, 1])]
     # contrast = [[1, 0, 0], [0, 1, 0]]
+
+    # The following are equivalent
+    # contrast = [np.array([1, 0, 0]), np.array([0, 1, 0])]
     contrast = ["age", "sex"]
 
     report = make_glm_report(
@@ -261,6 +267,7 @@ def report_slm_oasis():
         contrasts=contrast,
         bg_img=datasets.fetch_icbm152_2009()["t1"],
         height_control=None,
+        plot_type="glass",
     )
 
     report.save_as_html(REPORTS_DIR / "slm_oasis.html")
