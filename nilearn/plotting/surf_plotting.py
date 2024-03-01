@@ -1205,7 +1205,11 @@ def _check_view_is_valid(view) -> bool:
     """
     if isinstance(view, str) and (view in VALID_VIEWS):
         return True
-    if isinstance(view, Sequence) and len(view) == 2:
+    if (
+        isinstance(view, Sequence)
+        and len(view) == 2
+        and all(isinstance(x, (int, float)) for x in view)
+    ):
         return True
     return False
 

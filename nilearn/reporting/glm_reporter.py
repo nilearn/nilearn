@@ -14,6 +14,7 @@ import string
 import warnings
 from collections import OrderedDict
 from collections.abc import Iterable
+from decimal import Decimal
 from html import escape
 
 import numpy as np
@@ -21,6 +22,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 
 from nilearn.plotting import plot_glass_brain, plot_roi, plot_stat_map
+from nilearn.plotting.cm import _cmap_d as nilearn_cmaps
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
 from nilearn.plotting.matrix_plotting import (
     plot_contrast_matrix,
@@ -36,6 +38,7 @@ with warnings.catch_warnings():
     from nilearn.glm.thresholding import threshold_stats_img
 
 from nilearn._utils import check_niimg
+from nilearn._utils.niimg import safe_get_data
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting.get_clusters_table import get_clusters_table
 from nilearn.reporting.utils import figure_to_svg_quoted
@@ -480,12 +483,14 @@ def _model_attributes_to_dataframe(model):
         "smoothing_fwhm",
         "target_affine",
         "slice_time_ref",
-        "fir_delays",
     ]
     attribute_units = {
         "t_r": "s",
         "high_pass": "Hz",
     }
+
+    if hasattr(model, "hrf_model") and getattr(model, "hrf_model") == "fir":
+        selected_attributes.append("fir_delays")
 
     selected_attributes.sort()
     display_attributes = OrderedDict(
@@ -573,7 +578,8 @@ def _dmtx_to_svg_url(design_matrices):
         dmtx_text_ = string.Template(dmtx_template_text)
         dmtx_plot = plot_design_matrix(design_matrix)
         dmtx_title = f"Run {dmtx_count}"
-        plt.title(dmtx_title, y=0.987)
+        if len(design_matrices) > 1:
+            plt.title(dmtx_title, y=1.025, x=-0.1)
         dmtx_plot = _resize_plot_inches(dmtx_plot, height_change=0.3)
         url_design_matrix_svg = _plot_to_svg(dmtx_plot)
         # prevents sphinx-gallery & jupyter from scraping & inserting plots
@@ -811,7 +817,7 @@ def _make_stat_maps_contrast_clusters(
         )
         table_details_html = _dataframe_to_html(
             table_details,
-            precision=2,
+            precision=3,
             header=False,
             classes="cluster-details-table",
         )
@@ -877,6 +883,8 @@ def _clustering_params_to_dataframe(
         This is simpler than overloading the class using inheritance,
         especially given limited Python2 use at time of release.
         """
+        if alpha < 0.001:
+            alpha = f"{Decimal(alpha):.2E}"
         if os.sys.version_info.major == 2:
             table_details.update({"alpha": alpha})
         else:
@@ -953,12 +961,28 @@ def _stat_map_to_svg(
         SVG Image Data URL representing a statistical map.
 
     """
+    data = safe_get_data(stat_img, ensure_finite=True)
+    stat_map_min = np.nanmin(data)
+    stat_map_max = np.nanmax(data)
+    symmetric_cbar = True
+    cmap = "bwr"
+    if stat_map_min >= 0.0:
+        symmetric_cbar = False
+        cmap = "red_transparent_full_alpha_range"
+    elif stat_map_max <= 0.0:
+        symmetric_cbar = False
+        cmap = "blue_transparent_full_alpha_range"
+        cmap = nilearn_cmaps[cmap].reversed()
+
     if plot_type == "slice":
         stat_map_plot = plot_stat_map(
             stat_img,
             bg_img=bg_img,
             cut_coords=cut_coords,
             display_mode=display_mode,
+            colorbar=True,
+            cmap=cmap,
+            symmetric_cbar=symmetric_cbar,
             threshold=threshold,
         )
     elif plot_type == "glass":
@@ -967,6 +991,8 @@ def _stat_map_to_svg(
             display_mode=display_mode,
             colorbar=True,
             plot_abs=False,
+            symmetric_cbar=symmetric_cbar,
+            cmap=cmap,
             threshold=threshold,
         )
     else:
@@ -974,6 +1000,21 @@ def _stat_map_to_svg(
             "Invalid plot type provided. "
             "Acceptable options are 'slice' or 'glass'."
         )
+
+    x_label_color = "black"
+    if plot_type == "slice":
+        x_label_color = "white"
+
+    if hasattr(stat_map_plot, "_cbar"):
+        cbar_ax = stat_map_plot._cbar.ax
+        cbar_ax.set_xlabel(
+            "Z score",
+            labelpad=5,
+            fontweight="bold",
+            loc="right",
+            color=x_label_color,
+        )
+
     with pd.option_context("display.precision", 2):
         _add_params_to_plot(table_details, stat_map_plot)
     fig = plt.gcf()

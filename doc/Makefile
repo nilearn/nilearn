@@ -40,7 +40,10 @@ clean:
 	-rm -rf modules/generated/*
 	-rm -rf ../examples/**/nilearn_cache
 	-rm -rf ../**/nilearn_cache
-	-rm -rf datasets/description
+	-rm -rf modules/description/
+
+glm_reports:
+	python visual_testing/reporter_visual_inspection_suite.py
 
 sym_links_datasets:
 	# copy datasets RST from nilearn package to doc folder
@@ -60,7 +63,7 @@ force_html: force html
 force:
 	find . -name \*.rst -exec touch {} \;
 
-html:	sym_links sym_links_datasets
+html:	sym_links sym_links_datasets glm_reports
 	# These two lines make the build a bit more lengthy, and the
 	# the embedding of images more robust
 	rm -rf $(BUILDDIR)/html/_images
@@ -69,7 +72,7 @@ html:	sym_links sym_links_datasets
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-html-strict:	sym_links sym_links_datasets
+html-strict:	sym_links sym_links_datasets glm_reports
 	# Build html documentation using a strict mode: Warnings are
 	# considered as errors.
 	make check
@@ -77,19 +80,19 @@ html-strict:	sym_links sym_links_datasets
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-html-modified-examples-only: 	sym_links sym_links_datasets
+html-modified-examples-only: 	sym_links sym_links_datasets glm_reports
 	BUILD_DEV_HTML=1 $(SPHINXBUILD) -W --keep-going -D sphinx_gallery_conf.filename_pattern=$(PATTERN) -D sphinx_gallery_conf.run_stale_examples=True -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	touch $(BUILDDIR)/html/.nojekyll
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-html-noplot: sym_links_datasets
+html-noplot: sym_links_datasets glm_reports
 	BUILD_DEV_HTML=1 $(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	touch $(BUILDDIR)/html/.nojekyll
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-ci-html-noplot: sym_links_datasets
+ci-html-noplot: sym_links_datasets glm_reports
 	BUILD_DEV_HTML=1 $(SPHINXBUILD) -W --keep-going -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	touch $(BUILDDIR)/html/.nojekyll
 	@echo
@@ -175,7 +178,7 @@ check:
 	rm -rf $(BUILDDIR)/html/_images
 	BUILD_DEV_HTML=1 $(SPHINXBUILD) -W --keep-going -T -n -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 
-install: sym_links_datasets
+install: sym_links_datasets glm_reports
 	@echo $(VERSIONTAG)
 	rm -rf _build/doctrees _build/nilearn.github.io
 	# first clone the nilearn.github.io repo because it may ask

@@ -224,8 +224,10 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
     """Class for masking of Niimg-like objects using seeds.
 
     NiftiSpheresMasker is useful when data from given seeds should be
-    extracted. Use case: Summarize brain signals from seeds that were
-    obtained from prior knowledge.
+    extracted.
+
+    Use case:
+    summarize brain signals from seeds that were obtained from prior knowledge.
 
     Parameters
     ----------
