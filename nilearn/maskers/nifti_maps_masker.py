@@ -342,21 +342,20 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
             )
             warnings.warn(msg)
             self._report_content["warning_message"] = msg
-        # Find the cut coordinates
-        cut_coords = [
-            plotting.find_xyz_cut_coords(image.index_img(maps_image, i))
-            for i in maps_to_be_displayed
-        ]
 
-        for idx, component in enumerate(maps_to_be_displayed):
+        for component in maps_to_be_displayed:
+            # Find the cut coordinates
+            cut_coords = plotting.find_xyz_cut_coords(
+                image.index_img(maps_image, component)
+            )
             display = plotting.plot_img(
                 img,
-                cut_coords=cut_coords[idx],
+                cut_coords=cut_coords,
                 black_bg=False,
                 cmap=self.cmap,
             )
             display.add_overlay(
-                image.index_img(maps_image, idx),
+                image.index_img(maps_image, component),
                 cmap=plotting.cm.black_blue,
             )
             embeded_images.append(_embed_img(display))
