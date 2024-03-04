@@ -10,25 +10,32 @@ Requires:
 For a given github action workflow:
 - ping the github API to collect the start and end time
   of all the jobs of the different runs of that workflow,
-- saves to TSV and plots the duration of each job against time.
+- saves to TSV
+- plots the duration of each job against time.
 
 This script should in principle run for any repo and any workflow.
 
-This may require a github token to function
-that you can pass to the script
-or save in a file the script will read.
+This may require a github token to work
+(if you need to make a lot of call to the GitHub API).
+
+You can get a github token at:
+https://github.com/settings/tokens
+
+You can either:
+
+- save the github token in a file and modify the script
+  (see the variable USERNAME and TOKEN_FILE below).
+  This is can be useful if you want to run the script locally.
+
+- pass the token directly to the script as an argument.
+  This is the way to do it when using this script in continuous integration.
 
 USAGE
 -----
 
 .. code-block:: bash
 
-    python maint_tools/check_gha_workflow.py
-
-    # or by passing github token directly
-    python maint_tools/check_gha_workflow.py GITHUB_TOKEN
-
-
+    python maint_tools/check_gha_workflow.py $GITHUB_TOKEN
 """
 
 import sys
@@ -44,11 +51,14 @@ from rich import print
 USER = "nilearn"
 REPO = "nilearn"
 
-# Your github username
+# If you do not pass a github token directly to the script,
+# you must provide your github user name and the path to a file
+# containing your github action token.
+# See the doc string the top of the script for more details.
+
+# your github username
 USERNAME = "Remi-Gau"
 # file containing your github token
-# get one at:
-# https://github.com/settings/tokens
 TOKEN_FILE = Path("/home/remi/Documents/tokens/gh_read_repo_for_orga.txt")
 
 # can be found out at
@@ -90,7 +100,7 @@ def main(args=sys.argv) -> None:
             )
             if len(runs) > 0:
                 print(f" found {len(runs)} runs")
-                jobs_data = udpate_jobs_data(jobs_data, runs, auth)
+                jobs_data = update_jobs_data(jobs_data, runs, auth)
             else:
                 break
 
