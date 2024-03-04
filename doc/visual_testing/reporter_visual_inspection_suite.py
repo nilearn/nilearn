@@ -60,8 +60,8 @@ def report_flm_adhd_dmn():
     adhd_dataset = datasets.fetch_adhd(n_subjects=1)
     seed_time_series = seed_masker.fit_transform(adhd_dataset.func[0])
 
-    report = seed_masker.generate_report()
-    report.save_as_html(REPORTS_DIR / "nifti_sphere_masker.html")
+    masker_report = seed_masker.generate_report()
+    masker_report.save_as_html(REPORTS_DIR / "nifti_sphere_masker.html")
 
     frametimes = np.linspace(0, (n_scans - 1) * t_r, n_scans)
 
@@ -79,7 +79,7 @@ def report_flm_adhd_dmn():
         run_imgs=adhd_dataset.func[0], design_matrices=design_matrix
     )
 
-    report = make_glm_report(
+    glm_report = make_glm_report(
         first_level_model,
         contrasts=contrasts,
         title="ADHD DMN Report",
@@ -90,8 +90,9 @@ def report_flm_adhd_dmn():
         plot_type="glass",
         report_dims=(1200, "a"),
     )
+    glm_report.save_as_html(REPORTS_DIR / "flm_adhd_dmn.html")
 
-    report.save_as_html(REPORTS_DIR / "flm_adhd_dmn.html")
+    return masker_report, glm_report
 
 
 # %%
@@ -187,6 +188,7 @@ def report_flm_bids_features():
     )
 
     report.save_as_html(REPORTS_DIR / "flm_bids_features.html")
+    return report
 
 
 # %%
@@ -221,8 +223,8 @@ def report_flm_fiac():
         bg_img=mean_img_,
         height_control="fdr",
     )
-
     report.save_as_html(REPORTS_DIR / "flm_fiac.html")
+    return report
 
 
 # %%
@@ -273,8 +275,8 @@ def report_slm_oasis():
         height_control=None,
         plot_type="glass",
     )
-
     report.save_as_html(REPORTS_DIR / "slm_oasis.html")
+    return report
 
 
 # %%
@@ -297,6 +299,7 @@ def report_nifti_maps_masker():
 
     report = masker.generate_report(displayed_maps=[2, 6, 7, 16, 21])
     report.save_as_html(REPORTS_DIR / "nifti_maps_masker.html")
+    return report
 
 
 #  %%
@@ -320,6 +323,7 @@ def report_nifti_labels_masker():
     masker.fit(data.func[0])
     report = masker.generate_report()
     report.save_as_html(REPORTS_DIR / "nifti_labels_masker_fitted.html")
+    return report
 
 
 #  %%
@@ -339,6 +343,7 @@ def report_nifti_masker():
     masker.fit(data.func[0])
     report = masker.generate_report()
     report.save_as_html(REPORTS_DIR / "nifti_masker.html")
+    return report
 
 
 def report_multi_nifti_masker():
@@ -353,13 +358,14 @@ def report_multi_nifti_masker():
         cmap="grey",
     )
     masker.fit()
-    report = masker.generate_report()
-    report.save_as_html(REPORTS_DIR / "multi_nifti_masker.html")
+    empty_report = masker.generate_report()
+    empty_report.save_as_html(REPORTS_DIR / "multi_nifti_masker.html")
 
     fmri_random_runs_filenames = data.func[12:]
     masker.fit(fmri_random_runs_filenames)
     report = masker.generate_report()
     report.save_as_html(REPORTS_DIR / "multi_nifti_masker_fitted.html")
+    return empty_report, report
 
 
 #  %%
@@ -385,6 +391,7 @@ def report_multi_nifti_labels_masker():
     _ = masker.fit_transform(data.func, confounds=data.confounds)
     report = masker.generate_report()
     report.save_as_html(REPORTS_DIR / "multi_nifti_labels_masker_fitted.html")
+    return report
 
 
 #  %%
@@ -406,12 +413,16 @@ def report_multi_nifti_maps_masker():
     )
 
     masker.fit()
-    report = masker.generate_report()
-    report.save_as_html(REPORTS_DIR / "multi_nifti_maps_masker_atlas.html")
+    empty_report = masker.generate_report()
+    empty_report.save_as_html(
+        REPORTS_DIR / "multi_nifti_maps_masker_atlas.html"
+    )
 
     _ = masker.fit_transform(data.func, confounds=data.confounds)
     report = masker.generate_report()
     report.save_as_html(REPORTS_DIR / "multi_nifti_maps_masker_fitted.html")
+
+    return empty_report, report
 
 
 # %%
