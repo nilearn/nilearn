@@ -14,6 +14,7 @@ Fixes
 - :bdg-dark:`Code` Fix color bar handling with color map with only 1 level (:gh:`4255` by `Rémi Gau`_).
 - :bdg-dark:`Code` Check that the ``view`` parameter in surface plotting functions is a pair of ``int`` or ``float`` when it is not a ``string`` (:gh:`4297` by `Rémi Gau`_).
 - :bdg-dark:`Code` Fix positions of the markers on the images on the sphere masker reports (:gh:`4285` by `Rémi Gau`_).
+- :bdg-dark:`Code` Fix cut position in nifti maps maskers to match displayed map maximum (:gh:`4304` by `Rémi Gau`_).
 - :bdg-dark:`Code` Make sure that :class:`nilearn.maskers.NiftiSpheresMasker` reports displays properly when it contains only 1 sphere (:gh:`4269` by `Rémi Gau`_).
 - :bdg-dark:`Code` Miscellaneous fixes in GLM reports (only display FIR delay if FIR is used, display color bar "Z score" legend...) (:gh:`4266` by `Rémi Gau`_).
 
