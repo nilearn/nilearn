@@ -8,7 +8,6 @@ of nilearn.reporting.make_glm_reports().
 """
 
 import time
-from functools import lru_cache
 from pathlib import Path
 
 import numpy as np
@@ -39,14 +38,13 @@ REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
 # %%
 # Adapted from examples/04_glm_first_level/plot_adhd_dmn.py
-@lru_cache
-def report_nifti_sphere_masker():
+def report_flm_adhd_dmn():
 
     t_r = 2.0
+    slice_time_ref = 0.0
+    n_scans = 176
 
     pcc_coords = (0, -53, 26)
-
-    adhd_dataset = datasets.fetch_adhd(n_subjects=1)
 
     seed_masker = NiftiSpheresMasker(
         [pcc_coords],
@@ -59,22 +57,11 @@ def report_nifti_sphere_masker():
         memory="nilearn_cache",
     )
 
+    adhd_dataset = datasets.fetch_adhd(n_subjects=1)
     seed_time_series = seed_masker.fit_transform(adhd_dataset.func[0])
+
     report = seed_masker.generate_report()
     report.save_as_html(REPORTS_DIR / "nifti_sphere_masker.html")
-
-    return seed_time_series
-
-
-def report_flm_adhd_dmn():
-
-    t_r = 2.0
-    slice_time_ref = 0.0
-    n_scans = 176
-
-    adhd_dataset = datasets.fetch_adhd(n_subjects=1)
-
-    seed_time_series = report_nifti_sphere_masker()
 
     frametimes = np.linspace(0, (n_scans - 1) * t_r, n_scans)
 
@@ -105,7 +92,6 @@ def report_flm_adhd_dmn():
     )
 
     report.save_as_html(REPORTS_DIR / "flm_adhd_dmn.html")
-    report.get_iframe()
 
 
 # %%
@@ -345,8 +331,7 @@ def report_nifti_masker():
         mask_strategy="epi",
         memory="nilearn_cache",
         memory_level=2,
-        smoothing_fwhm=2,
-        mask_args=dict(upper_cutoff=0.9, lower_cutoff=0.8, opening=False),
+        smoothing_fwhm=8,
         cmap="grey",
     )
 
@@ -436,7 +421,6 @@ if __name__ == "__main__":
     t0 = time.time()
 
     report_nifti_masker()
-    report_nifti_sphere_masker()
     report_nifti_maps_masker()
     report_nifti_labels_masker()
     report_multi_nifti_masker()
