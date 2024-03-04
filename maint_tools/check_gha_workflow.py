@@ -65,6 +65,8 @@ TOKEN_FILE = Path("/home/remi/Documents/tokens/gh_read_repo_for_orga.txt")
 # "https://api.github.com/repos/{USER}/{REPO}/actions/workflows"
 WORKFLOW_ID = "71549417"
 
+BRANCH = "main"
+
 INCLUDE_FAILED_RUNS = True
 
 # Pages of runs to collect
@@ -73,6 +75,9 @@ PAGES_TO_COLLECT = range(1, 20)
 
 # If False, just plots the content of the TSV
 UPDATE_TSV = True
+
+# used by set_python_version to filter jobs by their python version
+EXPECTED_PYTHON_VERSIONS = ["3.8", "3.9", "3.10", "3.11", "3.12"]
 
 OUTPUT_FILE = Path(__file__).parent / "test_runs_timing.tsv"
 
@@ -181,11 +186,7 @@ def set_python_version(x: str) -> str:
     'Test with ${{ matrix.py }} on ${{ matrix.os }}: ${{ matrix.description }}'
     """
     return next(
-        (
-            version
-            for version in ["3.8", "3.9", "3.10", "3.11", "3.12"]
-            if version in x
-        ),
+        (version for version in EXPECTED_PYTHON_VERSIONS if version in x),
         "n/a",
     )
 
@@ -232,14 +233,12 @@ def get_runs(
     """Get list of runs for a workflow.
 
     Restricted to:
-    - main branch
     - completed runs
     """
     status = "completed"
-    branch = "main"
 
     source = f"https://api.github.com/repos/{USER}/{REPO}/actions/workflows"
-    query = f"?per_page=100&status={status}&branch={branch}&page={page}"
+    query = f"?per_page=100&status={status}&branch={BRANCH}&page={page}"
     url = f"{source}/{workflow_id}/runs{query}"
 
     print(f"pinging: {url}")
