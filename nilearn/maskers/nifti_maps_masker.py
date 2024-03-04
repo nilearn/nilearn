@@ -325,7 +325,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 "No image provided to fit in NiftiMapsMasker. "
                 "Plotting only spatial maps for reporting."
             )
-            warnings.warn(msg)
+            warnings.warn(msg, stacklevel=6)
             self._report_content["warning_message"] = msg
             for component in maps_to_be_displayed:
                 display = plotting.plot_stat_map(
@@ -340,7 +340,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 "A list of 4D subject images were provided to fit. "
                 "Only first subject is shown in the report."
             )
-            warnings.warn(msg)
+            warnings.warn(msg, stacklevel=6)
             self._report_content["warning_message"] = msg
         # Find the cut coordinates
         cut_coords = [
