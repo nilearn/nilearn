@@ -151,7 +151,15 @@ def plot_job_durations(df: pd.DataFrame) -> None:
 
 
 def set_os(x: str) -> str:
-    """Detect which OS the job was run on."""
+    """Detect which OS the job was run on.
+
+    .. note::
+        that this depend on the way each github acton job is named.
+        So this may not work as well with other repositories than Nilearn
+        that uses the following naming pattern for the test job:
+
+    'Test with ${{ matrix.py }} on ${{ matrix.os }}: ${{ matrix.description }}'
+    """
     if "ubuntu" in x:
         return "ubuntu"
     elif "windows" in x:
@@ -163,7 +171,15 @@ def set_os(x: str) -> str:
 
 
 def set_python_version(x: str) -> str:
-    """Detect which python version the job was run on."""
+    """Detect which python version the job was run on.
+
+    .. note::
+        that this depend on the way each github acton job is named.
+        So this may not work as well with other repositories than Nilearn
+        that uses the following naming pattern for the test job:
+
+    'Test with ${{ matrix.py }} on ${{ matrix.os }}: ${{ matrix.description }}'
+    """
     return next(
         (
             version
@@ -175,7 +191,15 @@ def set_python_version(x: str) -> str:
 
 
 def set_dependencies(x: str) -> str:
-    """Detect which set of dependencies was used for the run."""
+    """Detect which set of dependencies was used for the run.
+
+    .. note::
+        that this depend on the way each github acton job is named.
+        So this may not work as well with other repositories than Nilearn
+        that uses the following naming pattern for the test job:
+
+    'Test with ${{ matrix.py }} on ${{ matrix.os }}: ${{ matrix.description }}'
+    """
     return next(
         (
             dependencies
