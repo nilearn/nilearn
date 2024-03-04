@@ -136,7 +136,7 @@ def plot_job_durations(df: pd.DataFrame) -> None:
     fig.update_xaxes(dtick="M1", tickformat="%b\n%Y")
     fig.update_layout(autosize=True, width=1000, height=700)
 
-    fig.write_image(OUTPUT_FILE.with_suffix(".png"))
+    fig.write_image(OUTPUT_FILE.with_suffix(".png"), engine="kaleido")
     fig.write_html(OUTPUT_FILE.with_suffix(".html"))
 
 
@@ -241,7 +241,7 @@ def handle_request(url: str, auth: None | tuple[str, str]):
     return response.json()
 
 
-def udpate_jobs_data(
+def update_jobs_data(
     jobs_data: dict[str, list[str]],
     runs: list[dict[str, Any]],
     auth: None | tuple[str, str] = None,
