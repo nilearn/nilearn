@@ -33,7 +33,7 @@ Adapted from :ref:`sphx_glr_auto_examples_06_manipulating_images_plot_nifti_labe
 .. raw:: html
    :file: nifti_labels_masker_atlas.html
 
-Adapted from :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_decomposition.py`
+Adapted from :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
 
 .. raw:: html
    :file: multi_nifti_labels_masker_atlas.html
@@ -49,7 +49,7 @@ Adapted from :ref:`sphx_glr_auto_examples_03_connectivity_plot_probabilistic_atl
 .. raw:: html
    :file: nifti_maps_masker.html
 
-Adapted from :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_decomposition.py`
+Adapted from :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
 
 .. raw:: html
    :file: multi_nifti_maps_masker_atlas.html
