@@ -11,7 +11,7 @@ Fixes
 - :bdg-dark:`Code` Fix plotting of carpet plot due to a change in the coming version of matplolib (3.9.0) (:gh:`4279` by `Rémi Gau`_).
 - :bdg-dark:`Code` Fix errant warning when using ``stat_type`` in :func:`nilearn.glm.compute_contrast` (:gh:`4257` by `Eric Larson`_).
 - :bdg-dark:`Code` Fix when thresholding is applied to images by GLM reports (:gh:`4258` by `Rémi Gau`_).
-- :bdg-dark:`Code` Use the appropriate HTML templates for :class:`nilearn.maskers.MultiNiftiMapsMasker` and :class:`nilearn.maskers.MultiNiftiLabelsMasker` reports that wowuld lead to empty reports for ``MultiNiftiMapsMasker`` (:gh:`4310` by `Rémi Gau`_).
+- :bdg-dark:`Code` Use the appropriate HTML templates for :class:`nilearn.maskers.MultiNiftiMapsMasker` and :class:`nilearn.maskers.MultiNiftiLabelsMasker` reports that would lead to empty reports for ``MultiNiftiMapsMasker`` (:gh:`4310` by `Rémi Gau`_).
 - :bdg-dark:`Code` Fix color bar handling with color map with only 1 level (:gh:`4255` by `Rémi Gau`_).
 - :bdg-dark:`Code` Check that the ``view`` parameter in surface plotting functions is a pair of ``int`` or ``float`` when it is not a ``string`` (:gh:`4297` by `Rémi Gau`_).
 - :bdg-dark:`Code` Fix positions of the markers on the images on the sphere masker reports (:gh:`4285` by `Rémi Gau`_).
