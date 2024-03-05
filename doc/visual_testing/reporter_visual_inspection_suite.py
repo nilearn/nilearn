@@ -346,6 +346,8 @@ def report_nifti_masker():
     return report
 
 
+# %%
+# Adapted from examples/02_decoding/plot_miyawaki_encoding.py
 def report_multi_nifti_masker():
 
     data = datasets.fetch_miyawaki2008()
