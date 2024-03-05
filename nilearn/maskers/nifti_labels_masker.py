@@ -363,7 +363,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                         "A list of 4D subject images were provided to fit. "
                         "Only first subject is shown in the report."
                     )
-                    warnings.warn(msg)
+                    warnings.warn(msg, stacklevel=6)
                     self._report_content["warning_message"] = msg
                 display = plotting.plot_img(
                     img,
@@ -382,7 +382,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                     "Plotting ROIs of label image on the "
                     "MNI152Template for reporting."
                 )
-                warnings.warn(msg)
+                warnings.warn(msg, stacklevel=6)
                 self._report_content["warning_message"] = msg
                 display = plotting.plot_roi(labels_image)
                 plt.close()
