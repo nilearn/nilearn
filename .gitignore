@@ -38,6 +38,9 @@ build
 dist/
 nilearn/_version.py
 
+# notebooks
+.ipynb_checkpoints
+
 # virtual environment
 env/
 venv/
