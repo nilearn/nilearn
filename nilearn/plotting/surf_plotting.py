@@ -527,8 +527,8 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
                           alpha='auto', bg_on_data=False,
                           darkness=.7, vmin=None, vmax=None, cbar_vmin=None,
                           cbar_vmax=None, cbar_tick_format='%.2g',
-                          title=None, title_font_size=18, output_file=None,
-                          axes=None, figure=None, **kwargs):
+                          title=None, output_file=None,
+                          axes=None, figure=None):
     """Help for plot_surf.
 
     This function handles surface plotting when the selected
@@ -613,8 +613,8 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
             # we need to create a proxy mappable
             proxy_mappable = ScalarMappable(cmap=our_cmap, norm=norm)
             proxy_mappable.set_array(surf_map_faces)
-            cax, kw = make_axes(axes, location='right', fraction=.15,
-                                shrink=.5, pad=.0, aspect=10.)
+            cax, _ = make_axes(axes, location='right', fraction=.15,
+                               shrink=.5, pad=.0, aspect=10.)
             figure.colorbar(
                 proxy_mappable, cax=cax, ticks=ticks,
                 boundaries=bounds, spacing='proportional',
@@ -641,7 +641,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
               bg_on_data=False, darkness=.7, vmin=None, vmax=None,
               cbar_vmin=None, cbar_vmax=None, cbar_tick_format="auto",
               title=None, title_font_size=18, output_file=None, axes=None,
-              figure=None, **kwargs):
+              figure=None):
     """Plot surfaces with optional background and data.
 
     .. versionadded:: 0.3
@@ -757,7 +757,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
     %(title)s
     title_font_size : :obj:`int`, default=18
-        Size of the title font.
+        Size of the title font (only implemented for the plotly engine).
 
         .. versionadded:: 0.9.0
 
@@ -812,8 +812,8 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             threshold=threshold, alpha=alpha, bg_on_data=bg_on_data,
             darkness=darkness, vmin=vmin, vmax=vmax, cbar_vmin=cbar_vmin,
             cbar_vmax=cbar_vmax, cbar_tick_format=cbar_tick_format,
-            title=title, title_font_size=title_font_size,
-            output_file=output_file, axes=axes, figure=figure, **kwargs)
+            title=title,
+            output_file=output_file, axes=axes, figure=figure)
     elif engine == 'plotly':
         if cbar_tick_format == "auto":
             cbar_tick_format = ".1f"
@@ -911,6 +911,10 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
     %(title)s
     %(output_file)s
 
+    kwargs: extra keyword arguments, optional
+        Extra keyword arguments passed to
+        :func:`~nilearn.plotting.plot_surf`.
+
     See Also
     --------
     nilearn.datasets.fetch_surf_fsaverage : For surface data object to be
@@ -936,7 +940,7 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
                                               Poly3DCollection):
         _ = plot_surf(surf_mesh, axes=axes, **kwargs)
 
-    coords, faces = load_surf_mesh(surf_mesh)
+    _, faces = load_surf_mesh(surf_mesh)
     roi = load_surf_data(roi_map)
     if levels is None:
         levels = np.unique(roi_map)
@@ -1103,7 +1107,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
     %(title)s
     title_font_size : :obj:`int`, default=18
-        Size of the title font.
+        Size of the title font (only implemented for the plotly engine).
 
         .. versionadded:: 0.9.0
 
@@ -1201,7 +1205,11 @@ def _check_view_is_valid(view) -> bool:
     """
     if isinstance(view, str) and (view in VALID_VIEWS):
         return True
-    if isinstance(view, Sequence) and len(view) == 2:
+    if (
+        isinstance(view, Sequence)
+        and len(view) == 2
+        and all(isinstance(x, (int, float)) for x in view)
+    ):
         return True
     return False
 
@@ -1600,7 +1608,7 @@ def plot_surf_roi(surf_mesh,
 
     %(title)s
     title_font_size : :obj:`int`, default=18
-        Size of the title font.
+        Size of the title font (only implemented for the plotly engine).
 
         .. versionadded:: 0.9.0
 

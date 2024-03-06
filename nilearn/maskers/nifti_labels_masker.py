@@ -44,12 +44,18 @@ class _ExtractionFunctor:
 
 @_utils.fill_doc
 class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
-    """Class for masking of Niimg-like objects.
+    """Class for extracting data from Niimg-like objects \
+       using labels of non-overlapping brain regions.
 
     NiftiLabelsMasker is useful when data from non-overlapping volumes should
     be extracted (contrarily to :class:`nilearn.maskers.NiftiMapsMasker`).
-    Use case: Summarize brain signals from clusters that were obtained by prior
+
+    Use case:
+    summarize brain signals from clusters that were obtained by prior
     K-means or Ward clustering.
+
+    For more details on the definitions of labels in Nilearn,
+    see the :ref:`region` section.
 
     Parameters
     ----------
@@ -370,7 +376,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                         "A list of 4D subject images were provided to fit. "
                         "Only first subject is shown in the report."
                     )
-                    warnings.warn(msg)
+                    warnings.warn(msg, stacklevel=6)
                     self._report_content["warning_message"] = msg
                 display = plotting.plot_img(
                     img,
@@ -389,7 +395,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                     "Plotting ROIs of label image on the "
                     "MNI152Template for reporting."
                 )
-                warnings.warn(msg)
+                warnings.warn(msg, stacklevel=6)
                 self._report_content["warning_message"] = msg
                 display = plotting.plot_roi(labels_image)
                 plt.close()

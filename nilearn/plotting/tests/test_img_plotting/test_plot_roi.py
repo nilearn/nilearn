@@ -69,3 +69,25 @@ def test_demo_plot_roi_output_file(tmp_path):
     with open(filename, "wb") as fp:
         out = demo_plot_roi(output_file=fp)
     assert out is None
+
+
+def test_cmap_with_one_level(shape_3d_default, affine_eye):
+    """Test we can handle cmap with only 1 level.
+
+    Regression test for
+    https://github.com/nilearn/nilearn/issues/4255
+    """
+    array_data = np.zeros(shape_3d_default)
+    array_data[0, 1, 1] = 1
+
+    img = Nifti1Image(array_data, affine_eye)
+
+    clust_ids = list(np.unique(img.get_fdata())[1:])
+
+    try:
+        cmap = plt.colormaps["tab20"].resampled(len(clust_ids))
+    except TypeError:
+        # for older versions of matplotlib
+        cmap = plt.cm.get_cmap("tab20", len(clust_ids))
+
+    plot_roi(img, alpha=0.8, colorbar=True, cmap=cmap)

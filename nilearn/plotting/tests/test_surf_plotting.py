@@ -322,7 +322,10 @@ def test_instantiation_error_plotly_surface_figure(input_obj):
         ("medial", True),
         ("latreal", False),
         ((100, 100), True),
+        ([100.0, 100.0], True),
         ((100, 100, 1), False),
+        (("lateral", "medial"), False),
+        ([100, "bar"], False),
     ]
 )
 def test_check_view_is_valid(view, is_valid):
@@ -643,10 +646,10 @@ def test_plot_surf_stat_map_matplotlib_specific(rng):
     # Plot to axes
     axes = plt.subplots(ncols=2, subplot_kw={'projection': '3d'})[1]
     for ax in axes.flatten():
-        plot_surf_stat_map(mesh, stat_map=data, ax=ax)
+        plot_surf_stat_map(mesh, stat_map=data, axes=ax)
     axes = plt.subplots(ncols=2, subplot_kw={'projection': '3d'})[1]
     for ax in axes.flatten():
-        plot_surf_stat_map(mesh, stat_map=data, ax=ax, colorbar=True)
+        plot_surf_stat_map(mesh, stat_map=data, axes=ax, colorbar=True)
 
     fig = plot_surf_stat_map(mesh, stat_map=data, colorbar=False)
     assert len(fig.axes) == 1
@@ -723,12 +726,13 @@ def test_plot_surf_roi(engine):
     plot_surf_roi(mesh, roi_map=parcellation, colorbar=True,
                   engine=engine)
     plot_surf_roi(mesh, roi_map=parcellation, colorbar=True,
-                  cbar_tick_fomat="%f", engine=engine)
+                  cbar_tick_format="%f", engine=engine)
     plt.close()
 
 
 def test_plot_surf_roi_matplotlib_specific():
     mesh, roi_map, parcellation = _generate_data_test_surf_roi()
+
     # change vmin, vmax
     img = plot_surf_roi(mesh, roi_map=roi_map, vmin=1.2,
                         vmax=8.9, colorbar=True,
@@ -739,6 +743,7 @@ def test_plot_surf_roi_matplotlib_specific():
     cbar_vmax = float(cbar.get_yticklabels()[-1].get_text())
     assert cbar_vmin == 1.0
     assert cbar_vmax == 8.0
+
     img2 = plot_surf_roi(mesh, roi_map=roi_map, vmin=1.2,
                          vmax=8.9, colorbar=True,
                          cbar_tick_format="%.2g",
@@ -749,19 +754,6 @@ def test_plot_surf_roi_matplotlib_specific():
     cbar_vmax = float(cbar.get_yticklabels()[-1].get_text())
     assert cbar_vmin == 1.2
     assert cbar_vmax == 8.9
-    # plot to axes
-    plot_surf_roi(mesh, roi_map=roi_map, ax=None,
-                  figure=plt.gcf(), engine='matplotlib')
-
-    # plot to axes
-    with tempfile.NamedTemporaryFile() as tmp_file:
-        plot_surf_roi(mesh, roi_map=roi_map, ax=plt.gca(),
-                      figure=None, output_file=tmp_file.name,
-                      engine='matplotlib')
-    with tempfile.NamedTemporaryFile() as tmp_file:
-        plot_surf_roi(mesh, roi_map=roi_map, ax=plt.gca(),
-                      figure=None, output_file=tmp_file.name,
-                      colorbar=True, engine='matplotlib')
 
     # Test nans handling
     parcellation[::2] = np.nan
@@ -774,6 +766,29 @@ def test_plot_surf_roi_matplotlib_specific():
         mesh[1].shape[0] ==
         ((tmp._facecolors[:, 3]) != 0).sum()
     )
+    # Save execution time and memory
+    plt.close()
+
+
+def test_plot_surf_roi_matplotlib_specific_plot_to_axes():
+    """Test plotting directly on some axes."""
+    mesh, roi_map, _ = _generate_data_test_surf_roi()
+
+    plot_surf_roi(mesh, roi_map=roi_map, axes=None,
+                  figure=plt.gcf(), engine='matplotlib')
+
+    _, ax = plt.subplots(subplot_kw={'projection': '3d'})
+
+    with tempfile.NamedTemporaryFile() as tmp_file:
+        plot_surf_roi(mesh, roi_map=roi_map, axes=ax,
+                      figure=None, output_file=tmp_file.name,
+                      engine='matplotlib')
+
+    with tempfile.NamedTemporaryFile() as tmp_file:
+        plot_surf_roi(mesh, roi_map=roi_map, axes=ax,
+                      figure=None, output_file=tmp_file.name,
+                      colorbar=True, engine='matplotlib')
+
     # Save execution time and memory
     plt.close()
 

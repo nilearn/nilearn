@@ -194,6 +194,12 @@ def _plot_img_with_bg(
     display_factory : function, default=get_slicer
         Takes a display_mode argument and return a display class.
 
+    kwargs:  extra keyword arguments, optional
+        Extra keyword arguments passed
+        to the display.add_overlay method (see below).
+        Ultimately passed to `matplotlib.pyplot.imshow` via
+        :meth:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
+
     Returns
     -------
     display : :class:`~nilearn.plotting.displays.OrthoSlicer` or \
@@ -383,8 +389,11 @@ def plot_img(
     %(vmin)s
     %(vmax)s
     %(radiological)s
+
     kwargs : extra keyword arguments, optional
-        Extra keyword arguments passed to matplotlib.pyplot.imshow.
+        Extra keyword arguments
+        ultimately passed to `matplotlib.pyplot.imshow` via
+        :meth:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
 
     Returns
     -------
@@ -626,6 +635,11 @@ def plot_anat(
     %(vmin)s
     %(vmax)s
 
+    kwargs: extra keyword arguments, optional
+        Extra keyword arguments
+        ultimately passed to `matplotlib.pyplot.imshow` via
+        :meth:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
+
     Returns
     -------
     display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
@@ -720,6 +734,11 @@ def plot_epi(
     %(vmin)s
     %(vmax)s
     %(radiological)s
+
+    kwargs: extra keyword arguments, optional
+        Extra keyword arguments
+        ultimately passed to `matplotlib.pyplot.imshow` via
+        :meth:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
 
     Returns
     -------
@@ -886,6 +905,11 @@ def plot_roi(
         Default=2.5.
     %(radiological)s
 
+    kwargs: extra keyword arguments, optional
+        Extra keyword arguments
+        ultimately passed to `matplotlib.pyplot.imshow` via
+        :meth:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
+
     Returns
     -------
     display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
@@ -1046,6 +1070,11 @@ def plot_prob_atlas(
     alpha : float between 0 and 1, default=0.7
         Alpha sets the transparency of the color inside the filled contours.
     %(radiological)s
+
+    kwargs: extra keyword arguments, optional
+        Extra keyword arguments
+        ultimately passed to `matplotlib.pyplot.imshow` via
+        :meth:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
 
     Returns
     -------
@@ -1252,6 +1281,11 @@ def plot_stat_map(
         Default='continuous'.
     %(radiological)s
 
+    kwargs: extra keyword arguments, optional
+        Extra keyword arguments
+        ultimately passed to `matplotlib.pyplot.imshow` via
+        :meth:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
+
     Returns
     -------
     display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
@@ -1394,6 +1428,12 @@ def plot_glass_brain(
     %(resampling_interpolation)s
         Default='continuous'.
     %(radiological)s
+
+    kwargs: extra keyword arguments, optional
+        Extra keyword arguments
+        ultimately passed to `matplotlib.pyplot.imshow` via
+        :meth:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
+
 
     Returns
     -------
@@ -1947,7 +1987,7 @@ def plot_carpet(
         gs = mgs.GridSpecFromSubplotSpec(
             1,
             2 + int(legend),
-            subplot_spec=axes,
+            subplot_spec=axes.get_subplotspec(),
             width_ratios=wratios[: 2 + int(legend)],
             wspace=0.0,
         )
