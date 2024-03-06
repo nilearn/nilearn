@@ -22,6 +22,8 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-dark:`Code` Add footer to masker reports (:gh:`4307` by `Rémi Gau`_).
+
 Changes
 -------
 
