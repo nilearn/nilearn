@@ -598,6 +598,26 @@ def test_nifti_labels_masker_with_mask():
     assert np.allclose(get_data(masker.region_atlas_), masked_labels_data)
 
 
+def test_sanitize_labels_warnings(shape_3d_default, affine_eye):
+    labels_img = data_gen.generate_labeled_regions(
+        shape_3d_default[:3],
+        affine=affine_eye,
+        n_regions=3,
+    )
+    with pytest.warns(UserWarning, match="'labels' must be a list."):
+        NiftiLabelsMasker(
+            labels_img,
+            labels="foo",
+        )
+    with pytest.warns(
+        UserWarning, match="All elements of 'labels' must be a string"
+    ):
+        NiftiLabelsMasker(
+            labels_img,
+            labels=[1, 2, 3],
+        )
+
+
 @pytest.mark.parametrize(
     "background",
     [

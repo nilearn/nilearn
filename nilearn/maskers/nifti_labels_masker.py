@@ -192,6 +192,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         **kwargs,
     ):
         self.labels_img = labels_img
+        self.labels = self._sanitize_labels(labels)
         self.background_label = background_label
         self.mask_img = mask_img
 
@@ -250,8 +251,6 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 f"parameter: {resampling_target}"
             )
 
-        self.labels = self._sanitize_labels(labels)
-
         self.keep_masked_labels = keep_masked_labels
 
         self.cmap = kwargs.get("cmap", "CMRmap_r")
@@ -263,8 +262,21 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         - ensuring that nilearn atlases have a "standardized" data structure
           (that is all labels should be list of strings)
         - checking the label types passed to the constructor
+          and throw errors if they do not pass
+          instead of warnings like they do here.
         """
         if labels is not None:
+            if not isinstance(labels, list):
+                warnings.warn(
+                    f"'labels' must be a list. Got: {type(labels)}",
+                    stacklevel=3,
+                )
+            if not all(isinstance(x, str) for x in labels):
+                warnings.warn(
+                    "All elements of 'labels' must be a string.\n"
+                    f"Got a list of {set([type(x) for x in labels])}",
+                    stacklevel=3,
+                )
             labels = [
                 x.decode("utf-8") if isinstance(x, bytes) else str(x)
                 for x in labels
