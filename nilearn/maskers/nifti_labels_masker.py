@@ -264,10 +264,11 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
           (that is all labels should be list of strings)
         - checking the label types passed to the constructor
         """
-        labels = [
-            x.decode("utf-8") if isinstance(x, bytes) else str(x)
-            for x in labels
-        ]
+        if labels is not None:
+            labels = [
+                x.decode("utf-8") if isinstance(x, bytes) else str(x)
+                for x in labels
+            ]
         return labels
 
     def generate_report(self):
