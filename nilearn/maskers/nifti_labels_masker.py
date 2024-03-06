@@ -250,20 +250,25 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 f"parameter: {resampling_target}"
             )
 
-        # if not isinstance(labels, (list, np.ndarray)):
-        #     raise TypeError(
-        #         f"'labels' must be a list. Got: {type(labels)}"
-        #     )
-        # if not all(isinstance(x, (str, np.bytes_)) for x in labels):
-        #     raise TypeError(
-        #         "All elements of 'labels' must be a string.\n"
-        #         f"Got a list of {set([type(x) for x in labels])}"
-        #     )
-        self.labels = labels
+        self.labels = self._sanitize_labels(labels)
 
         self.keep_masked_labels = keep_masked_labels
 
         self.cmap = kwargs.get("cmap", "CMRmap_r")
+
+    def _sanitize_labels(self, labels):
+        """Clean up labels.
+
+        TODO this should ultimately be removed in favor of:
+        - ensuring that nilearn atlases have a "standardized" data structure
+          (that is all labels should be list of strings)
+        - checking the label types passed to the constructor
+        """
+        labels = [
+            x.decode("utf-8") if isinstance(x, bytes) else str(x)
+            for x in labels
+        ]
+        return labels
 
     def generate_report(self):
         """Generate a report."""
@@ -311,17 +316,36 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             number_of_regions = np.sum(
                 np.unique(labels_image_data) != self.background_label
             )
-            # Basic safety check to ensure we have as many labels as we
-            # have regions (plus background).
-            if (
-                self.labels is not None
-                and len(self.labels) != number_of_regions + 1
-            ):
-                raise ValueError(
-                    "Mismatch between the number of provided labels "
-                    f"({len(self.labels)}) and the number of regions in "
-                    f"provided label image ({number_of_regions + 1})."
-                )
+
+            if self.labels is not None:
+                # Soft checks of the labels types
+                # as this may lead to rendering issue in the HTML
+                # TODO this should ultimately be removed in favor of:
+                # - ensuring that nilearn atlases have a "standardized"
+                #   data structure
+                #   (that is all labels should be list of strings)
+                # - checking the label types passed to the constructor
+                #   and throw errors if they do not pass
+                #   instead of warnings like they do here.
+                if not isinstance(self.labels, list):
+                    warnings.warn(
+                        f"'labels' must be a list. Got: {type(self.labels)}",
+                        stacklevel=6,
+                    )
+                if not all(isinstance(x, str) for x in self.labels):
+                    warnings.warn(
+                        "All elements of 'labels' must be a string.\n"
+                        f"Got a list of {set([type(x) for x in self.labels])}",
+                        stacklevel=6,
+                    )
+                # Basic safety check to ensure we have as many labels as we
+                # have regions (plus background).
+                if len(self.labels) != number_of_regions + 1:
+                    raise ValueError(
+                        "Mismatch between the number of provided labels "
+                        f"({len(self.labels)}) and the number of regions in "
+                        f"provided label image ({number_of_regions + 1})."
+                    )
 
             self._report_content["number_of_regions"] = number_of_regions
 
@@ -683,14 +707,20 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             # ids does not include background label
             region_ids[i] = ids[i]
 
+        self.region_names_ = None
         if self.labels is not None:
+            lower_case_labels = {x.lower() for x in self.labels}
+            knwon_backgrounds = {"background"}
+            background_in_labels = any(
+                knwon_backgrounds.intersection(lower_case_labels)
+            )
+            offset = 1 if background_in_labels else 0
             self.region_names_ = {
-                key: self.labels[self.labels_.index(region_id)]
+                key: self.labels[key + offset]
                 for key, region_id in region_ids.items()
                 if region_id != self.background_label
             }
-        else:
-            self.region_names_ = None
+
         self.region_ids_ = region_ids
         self.region_atlas_ = masked_atlas
 

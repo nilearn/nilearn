@@ -649,8 +649,10 @@ def check_region_names_after_fit(
     masker, signals, region_names, with_background
 ):
 
+    # region_names_ dooes not include background
     assert len(masker.region_names_) == signals.shape[1]
 
+    # region_ids_ includes background
     assert len(list(masker.region_ids_.items())[1:]) == signals.shape[1]
 
     region_names_after_fit = [
@@ -658,6 +660,8 @@ def check_region_names_after_fit(
     ]
     region_names_after_fit.sort()
     region_names.sort()
+    if with_background:
+        region_names.pop(region_names.index("background"))
     assert region_names_after_fit == region_names
 
 
