@@ -32,3 +32,4 @@ Changes
 - :bdg-dark:`Code` Change the colormap to ``gray`` for the background image in the :class:`nilearn.maskers.NiftiSpheresMasker` (:gh:`4269` by `Rémi Gau`_).
 - :bdg-dark:`Code` Remove unused ``**kwargs`` from :func:`nilearn.plotting.view_img` and :func:`nilearn.plotting.plot_surf` (:gh:`4270` by `Rémi Gau`_).
 - :bdg-dark:`Code` Use red to blue color map in the GLM reports (:gh:`4266` by `Rémi Gau`_).
+- :bdg-dark:`Code` :class:`nilearn.maskers.NiftiSpheresMasker` will throw warnings if the ``labels`` passed to it is not a :obj:`list` of :obj:`str` (:gh:`4274` by `Rémi Gau`_).
