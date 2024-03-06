@@ -330,35 +330,17 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 np.unique(labels_image_data) != self.background_label
             )
 
-            if self.labels is not None:
-                # Soft checks of the labels types
-                # as this may lead to rendering issue in the HTML
-                # TODO this should ultimately be removed in favor of:
-                # - ensuring that nilearn atlases have a "standardized"
-                #   data structure
-                #   (that is all labels should be list of strings)
-                # - checking the label types passed to the constructor
-                #   and throw errors if they do not pass
-                #   instead of warnings like they do here.
-                if not isinstance(self.labels, list):
-                    warnings.warn(
-                        f"'labels' must be a list. Got: {type(self.labels)}",
-                        stacklevel=6,
-                    )
-                if not all(isinstance(x, str) for x in self.labels):
-                    warnings.warn(
-                        "All elements of 'labels' must be a string.\n"
-                        f"Got a list of {set([type(x) for x in self.labels])}",
-                        stacklevel=6,
-                    )
-                # Basic safety check to ensure we have as many labels as we
-                # have regions (plus background).
-                if len(self.labels) != number_of_regions + 1:
-                    raise ValueError(
-                        "Mismatch between the number of provided labels "
-                        f"({len(self.labels)}) and the number of regions in "
-                        f"provided label image ({number_of_regions + 1})."
-                    )
+            # Basic safety check to ensure we have as many labels as we
+            # have regions (plus background).
+            if (
+                self.labels is not None
+                and len(self.labels) != number_of_regions + 1
+            ):
+                raise ValueError(
+                    "Mismatch between the number of provided labels "
+                    f"({len(self.labels)}) and the number of regions in "
+                    f"provided label image ({number_of_regions + 1})."
+                )
 
             self._report_content["number_of_regions"] = number_of_regions
 
