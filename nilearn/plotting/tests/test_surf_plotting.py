@@ -536,6 +536,8 @@ def test_plot_surf_error(engine, rng):
 
 @pytest.mark.parametrize("kwargs", [{"avg_method": "mean"}, {"alpha": "auto"}])
 def test_plot_surf_warnings_not_implemented_in_plotly(rng, kwargs):
+    if not is_plotly_installed() and engine == "plotly":
+        pytest.skip('Plotly is not installed; required for this test.')
     mesh = generate_surf()
     with pytest.warns(UserWarning,
                       match='is not implemented for the plotly engine'):
