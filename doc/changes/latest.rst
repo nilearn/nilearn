@@ -27,6 +27,7 @@ Enhancements
 Changes
 -------
 
+- :bdg-dark:`Code` Throw warnings when passing parameters to surface plotting functions that are not used by the plolty engine (:gh:`4298` by `Rémi Gau`_).
 - :bdg-primary:`Doc` Render examples of GLM and masker reports as part of the documentation (:gh:`4267` and :gh:`4295` by `Rémi Gau`_).
 - :bdg-dark:`Code` Improve colorbar size and labels in mosaic display (:gh:`4284` by `Rémi Gau`_).
 - :bdg-primary:`Doc` Render the description of the templates, atlases and datasets of the :mod:`nilearn.datasets` as part of the documentation (:gh:`4232` by `Rémi Gau`_).
