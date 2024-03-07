@@ -22,6 +22,8 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-success:`API` Add an ``avg_method`` parameter to :func:`nilearn.plotting.plot_surf_stat_map` (:gh:`4298` by `Rémi Gau`_).
+
 Changes
 -------
 

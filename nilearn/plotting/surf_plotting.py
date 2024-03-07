@@ -1009,7 +1009,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
                        cmap='cold_hot', colorbar=True, symmetric_cbar="auto",
                        cbar_tick_format="auto", bg_on_data=False, darkness=.7,
                        title=None, title_font_size=18, output_file=None,
-                       axes=None, figure=None, **kwargs):
+                       axes=None, figure=None, avg_method='mean', **kwargs):
     """Plot a stats map on a surface :term:`mesh` with optional background.
 
     .. versionadded:: 0.3
@@ -1128,6 +1128,14 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
             This option is currently only implemented for the
             ``matplotlib`` engine.
 
+    %(avg_method)s
+
+        .. note::
+            This option is currently only implemented for the
+            ``matplotlib`` engine.
+
+        Default='mean'.
+
     kwargs : dict, optional
         Keyword arguments passed to :func:`nilearn.plotting.plot_surf`.
 
@@ -1155,7 +1163,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     display = plot_surf(
         surf_mesh, surf_map=loaded_stat_map,
         bg_map=bg_map, hemi=hemi,
-        view=view, engine=engine, avg_method='mean', threshold=threshold,
+        view=view, engine=engine, avg_method=avg_method, threshold=threshold,
         cmap=cmap, symmetric_cmap=True, colorbar=colorbar,
         cbar_tick_format=cbar_tick_format, alpha=alpha,
         bg_on_data=bg_on_data, darkness=darkness,
@@ -1565,7 +1573,6 @@ def plot_surf_roi(surf_mesh,
         .. warning::
             The ``plotly`` engine is new and experimental.
             Please report bugs that you may encounter.
-
 
     %(avg_method)s
 
