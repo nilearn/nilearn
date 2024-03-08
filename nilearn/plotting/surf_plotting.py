@@ -715,7 +715,8 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             This option is currently only implemented for the
             ``matplotlib`` engine.
 
-        Default='mean'.
+        When using matplolib as engine,
+        `avg_method` will default to ``"mean"`` if ``None`` is passed.
 
     threshold : a number or None, default=None.
         If None is given, the image is not thresholded.
@@ -724,7 +725,8 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
     alpha : float or 'auto', default='auto'
         Alpha level of the :term:`mesh` (not surf_data).
-        Will default to ``"auto"`` of ``None`` is passed.
+        When using matplolib as engine,
+        `alpha` will default to ``"auto"`` if ``None`` is passed.
         If 'auto' is chosen, alpha will default to 0.5 when no bg_map
         is passed and to 1 if a bg_map is passed.
 
@@ -820,15 +822,15 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
                      f"Got '{parameter} = {value}'.\n"
                      f"Use '{parameter} = None' to silence this warning."))
 
-    # setting defaults
-    if avg_method is None:
-        avg_method = 'mean'
-
-    if alpha is None:
-        alpha = 'auto'
-
     coords, faces = load_surf_mesh(surf_mesh)
+
     if engine == 'matplotlib':
+        # setting defaults
+        if avg_method is None:
+            avg_method = 'mean'
+        if alpha is None:
+            alpha = 'auto'
+
         if cbar_tick_format == "auto":
             cbar_tick_format = '%.2g'
         fig = _plot_surf_matplotlib(
@@ -839,6 +841,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             cbar_vmax=cbar_vmax, cbar_tick_format=cbar_tick_format,
             title=title,
             output_file=output_file, axes=axes, figure=figure)
+
     elif engine == 'plotly':
         if cbar_tick_format == "auto":
             cbar_tick_format = ".1f"
@@ -850,10 +853,12 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             vmin=vmin, vmax=vmax, cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
             cbar_tick_format=cbar_tick_format, title=title,
             title_font_size=title_font_size, output_file=output_file)
+
     else:
         raise ValueError(f"Unknown plotting engine {engine}. "
                          "Please use either 'matplotlib' or "
                          "'plotly'.")
+
     return fig
 
 
@@ -1160,8 +1165,8 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
             This option is currently only implemented for the
             ``matplotlib`` engine.
 
-        Default=None.
-        Will default to ``"mean"`` if ``None`` is passed.
+        When using matplolib as engine,
+        `avg_method` will default to ``"mean"`` if ``None`` is passed.
 
         .. versionadded:: 0.10.3dev
 
@@ -1614,7 +1619,8 @@ def plot_surf_roi(surf_mesh,
             This option is currently only implemented for the
             ``matplotlib`` engine.
 
-        Will default to ``"median"`` if None is passed.
+        When using matplolib as engine,
+        `avg_method` will default to ``"median"`` if ``None`` is passed.
 
     threshold : a number or None, default=1e-14
         Threshold regions that are labelled 0.
@@ -1631,8 +1637,8 @@ def plot_surf_roi(surf_mesh,
 
     alpha : float or 'auto' or None, default=None
         Alpha level of the :term:`mesh` (not surf_data).
-        Will default to ``"auto"`` if ``None`` is passed.
-``` + same comment as above
+        When using matplolib as engine,
+        `alpha` will default to ``"auto"`` if ``None`` is passed.
         If 'auto' is chosen, alpha will default to 0.5 when no bg_map
         is passed and to 1 if a bg_map is passed.
 
