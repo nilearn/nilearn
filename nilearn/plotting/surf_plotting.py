@@ -1111,7 +1111,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
     alpha : float or 'auto' or None, default=None
         Alpha level of the :term:`mesh` (not the stat_map).
-        Will default to ``"auto"`` of ``None`` is passed.
+        Will default to ``"auto"`` if ``None`` is passed.
         If 'auto' is chosen, alpha will default to .5 when no bg_map is
         passed and to 1 if a bg_map is passed.
 
@@ -1631,7 +1631,8 @@ def plot_surf_roi(surf_mesh,
 
     alpha : float or 'auto' or None, default=None
         Alpha level of the :term:`mesh` (not surf_data).
-        Will default to ``"auto"`` of ``None`` is passed.
+        Will default to ``"auto"`` if ``None`` is passed.
+``` + same comment as above
         If 'auto' is chosen, alpha will default to 0.5 when no bg_map
         is passed and to 1 if a bg_map is passed.
 
