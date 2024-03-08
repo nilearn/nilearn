@@ -1143,6 +1143,10 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     """
     loaded_stat_map = load_surf_data(stat_map)
 
+    symmetric_cmap = True
+    if engine == "plotly" and not symmetric_cbar:
+        symmetric_cmap = False
+
     # Call get_colorbar_and_data_ranges to derive symmetric vmin, vmax
     # And colorbar limits depending on symmetric_cbar settings
     cbar_vmin, cbar_vmax, vmin, vmax = get_colorbar_and_data_ranges(
@@ -1156,7 +1160,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         surf_mesh, surf_map=loaded_stat_map,
         bg_map=bg_map, hemi=hemi,
         view=view, engine=engine, avg_method='mean', threshold=threshold,
-        cmap=cmap, symmetric_cmap=True, colorbar=colorbar,
+        cmap=cmap, symmetric_cmap=symmetric_cmap, colorbar=colorbar,
         cbar_tick_format=cbar_tick_format, alpha=alpha,
         bg_on_data=bg_on_data, darkness=darkness,
         vmax=vmax, vmin=vmin,
