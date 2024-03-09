@@ -101,10 +101,7 @@ div.nilearn_report summary:focus {
 }
 
 div.nilearn_report table {
-    max-width: 100%;
-    border-collapse: collapse;
-    margin:50px auto;
-    float: right;
+  margin:50px auto;
 }
 
 div.nilearn_report thead th {
@@ -115,13 +112,8 @@ div.nilearn_report tbody tr:nth-child(even) {
    background-color: #ddd;
 }
 
-div.nilearn_report details {
-    overflow-x: visible;
-}
-
 div.nilearn_report div.raise {
-    z-index: 1;
-
+  z-index: 1;
 }
 
 /* Tooltip container */
@@ -206,7 +198,17 @@ div.nilearn_report .image:hover .overlay {
     height: 60px;
 }
 
+.table-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.scrollit {
+  overflow-x:scroll;
+}
+
 </style>
+
 <div class="nilearn_report">
     <h1 class="withtooltip">
         {{title}}
@@ -250,80 +252,90 @@ div.nilearn_report .image:hover .overlay {
             </div>
         </div>
         <div class="pure-u-1 pure-u-md-1-3 raise">
-            {{if warning_message}}
-                <p class="elem-warn">{{warning_message}}</p>
-            {{endif}}
-            {{if description}}
-                <p class="elem-desc">{{description}}</p>
-            {{endif}}
-            {{if number_of_seeds}}
-                <p class="elem-desc">
-                    The masker has <b>{{number_of_seeds}}</b> spheres in total
-                    (displayed together on the first image).
-                </p>
-                {{if len(displayed_spheres) != number_of_seeds}}
-                    <p>
-                        Only <b>{{len(displayed_spheres)}}</b> specific spheres can be
-                        browsed in this report with <b>Previous</b> and <b>Next</b> buttons.
-                    </p>
-                {{else}}
-                    <p>
-                        They can be individually browsed using <b>Previous</b> and <b>Next</b> buttons.
-                    </p>
-                {{endif}}
-            {{endif}}
-            <p></p>
-            <p></p>
-            {{if not warning_message}}
-                <div class="empty"></div>
-            {{endif}}
-            <details>
-              {{if summary}}
-              <summary class="pure-button">Regions summary</summary>
-              <table class="pure-table">
-                <thead>
-                  <tr>
-                  {{py: region = summary.items()}}
-                  {{for k, v in region}}
-                    <th>{{k}}</th>
-                  {{endfor}}
-                  </tr>
-                </thead>
-                <tbody>
-                  {{for idx in range(number_of_seeds)}}
+          {{if warning_message}}
+              <p class="elem-warn">{{warning_message}}</p>
+          {{endif}}
+          {{if description}}
+              <p class="elem-desc">{{description}}</p>
+          {{endif}}
+          {{if number_of_seeds}}
+              <p class="elem-desc">
+                  The masker has <b>{{number_of_seeds}}</b> spheres in total
+                  (displayed together on the first image).
+              </p>
+              {{if len(displayed_spheres) != number_of_seeds}}
+                  <p>
+                      Only <b>{{len(displayed_spheres)}}</b> specific spheres can be
+                      browsed in this report with <b>Previous</b> and <b>Next</b> buttons.
+                  </p>
+              {{else}}
+                  <p>
+                      They can be individually browsed using <b>Previous</b> and <b>Next</b> buttons.
+                  </p>
+              {{endif}}
+          {{endif}}
+          <p></p>
+          <p></p>
+          {{if not warning_message}}
+              <div class="empty"></div>
+          {{endif}}
+        </div>
+      </div>
+      <div class="pure-g">
+        <div class="pure-u-1 pure-u-md-3-3">
+          <div class="table-section">
+            {{if summary}}
+            <div class="scrollit">
+              <details>
+                <summary class="pure-button">Regions summary</summary>
+                <table class="pure-table">
+                  <thead>
                     <tr>
+                    {{py: region = summary.items()}}
                     {{for k, v in region}}
-                      <td data-column={{k}}>{{v[idx]}}</td>
+                      <th>{{k}}</th>
                     {{endfor}}
                     </tr>
-                  {{endfor}}
-                </tbody>
-              </table>
-              {{endif}}
-            </details>
-            {{if parameters}}
-                <details>
-                    <summary class="pure-button">Parameters</summary>
-                    <table class="pure-table">
-                        <thead>
-                            <tr>
-                                <th>Parameter</th>
-                                <th>Value</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {{py: params = parameters.items()}}
-                            {{for p, v in params}}
-                                <tr>
-                                    <td data-column="Parameter">{{p}}</td>
-                                    <td data-column="Value">{{v}}</td>
-                                </tr>
-                            {{endfor}}
-                        </tbody>
-                    </table>
-                </details>
+                  </thead>
+                  <tbody>
+                    {{for idx in range(number_of_seeds)}}
+                      <tr>
+                      {{for k, v in region}}
+                        <td data-column={{k}}>{{v[idx]}}</td>
+                      {{endfor}}
+                      </tr>
+                    {{endfor}}
+                  </tbody>
+                </table>
+              </details>
+            </div>
             {{endif}}
-        </div>
+            {{if parameters}}
+            <div class="scrollit">
+              <details>
+                <summary class="pure-button">Parameters</summary>
+                <table class="pure-table">
+                  <thead>
+                      <tr>
+                          <th>Parameter</th>
+                          <th>Value</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      {{py: params = parameters.items()}}
+                      {{for p, v in params}}
+                          <tr>
+                              <td data-column="Parameter">{{p}}</td>
+                              <td data-column="Value">{{v}}</td>
+                          </tr>
+                      {{endfor}}
+                  </tbody>
+                </table>
+              </details>
+            </div>
+            {{endif}}
+          </div>
+      </div>
     </div>
 </div>
 <script>
