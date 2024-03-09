@@ -412,13 +412,22 @@ def test_plot_surf(engine, tmp_path, rng):
     mesh = generate_surf()
     bg = rng.standard_normal(size=mesh[0].shape[0])
 
+    # to avoid extra warnings
+    alpha = None
+    cbar_vmin = None
+    cbar_vmax = None
+    if engine == "matplotlib":
+        alpha = 0.5
+        cbar_vmin = 0
+        cbar_vmax = 150
+
     # Plot mesh only
     plot_surf(mesh, engine=engine)
 
     # Plot mesh with background
     plot_surf(mesh, bg_map=bg, engine=engine)
     plot_surf(mesh, bg_map=bg, darkness=0.5, engine=engine)
-    plot_surf(mesh, bg_map=bg, alpha=0.5,
+    plot_surf(mesh, bg_map=bg, alpha=alpha,
               output_file=tmp_path / 'tmp.png', engine=engine)
 
     # Plot different views
@@ -428,8 +437,8 @@ def test_plot_surf(engine, tmp_path, rng):
 
     # Plot with colorbar
     plot_surf(mesh, bg_map=bg, colorbar=True, engine=engine)
-    plot_surf(mesh, bg_map=bg, colorbar=True, cbar_vmin=0,
-              cbar_vmax=150, cbar_tick_format="%i", engine=engine)
+    plot_surf(mesh, bg_map=bg, colorbar=True, cbar_vmin=cbar_vmin,
+              cbar_vmax=cbar_vmax, cbar_tick_format="%i", engine=engine)
     # Save execution time and memory
     plt.close()
 
@@ -525,6 +534,19 @@ def test_plot_surf_error(engine, rng):
         )
 
 
+@pytest.mark.parametrize("kwargs", [{"avg_method": "mean"}, {"alpha": "auto"}])
+def test_plot_surf_warnings_not_implemented_in_plotly(rng, kwargs):
+    if not is_plotly_installed():
+        pytest.skip('Plotly is not installed; required for this test.')
+    mesh = generate_surf()
+    with pytest.warns(UserWarning,
+                      match='is not implemented for the plotly engine'):
+        plot_surf(mesh,
+                  surf_map=rng.standard_normal(size=mesh[0].shape[0]),
+                  engine='plotly',
+                  **kwargs)
+
+
 def test_plot_surf_avg_method_errors(rng):
     mesh = generate_surf()
     with pytest.raises(
@@ -596,10 +618,15 @@ def test_plot_surf_stat_map(engine, rng):
     bg = rng.standard_normal(size=mesh[0].shape[0])
     data = 10 * rng.standard_normal(size=mesh[0].shape[0])
 
+    # to avoid extra warnings
+    alpha = None
+    if engine == "matplotlib":
+        alpha = 1
+
     # Plot mesh with stat map
     plot_surf_stat_map(mesh, stat_map=data, engine=engine)
     plot_surf_stat_map(mesh, stat_map=data, colorbar=True, engine=engine)
-    plot_surf_stat_map(mesh, stat_map=data, alpha=1, engine=engine)
+    plot_surf_stat_map(mesh, stat_map=data, alpha=alpha, engine=engine)
 
     # Plot mesh with background and stat map
     plot_surf_stat_map(mesh, stat_map=data, bg_map=bg, engine=engine)
@@ -1166,6 +1193,11 @@ def test_compute_facecolors_matplotlib():
 def test_plot_surf_roi_default_arguments(engine, symmetric_cmap, avg_method):
     """Regression test for https://github.com/nilearn/nilearn/issues/3941."""
     mesh, roi_map, _ = _generate_data_test_surf_roi()
+
+    # To avoid extra warnings
+    if engine == "plotly":
+        avg_method = None
+
     plot_surf_roi(mesh, roi_map=roi_map,
                   engine=engine,
                   symmetric_cmap=symmetric_cmap,
