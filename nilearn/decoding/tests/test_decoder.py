@@ -970,16 +970,6 @@ def test_decoder_multiclass_classification_apply_mask_attributes(affine_eye):
     assert model.masker_.smoothing_fwhm == smoothing_fwhm
 
 
-def test_decoder_apply_mask_surface(mini_img):
-    """Test whether _apply_mask works for surface image."""
-    X = mini_img
-    model = Decoder(mask=SurfaceMasker())
-    X_masked = model._apply_mask(X)
-
-    assert X_masked.shape == X.shape
-    assert type(model.mask_img_).__name__ == "SurfaceImage"
-
-
 def test_decoder_multiclass_error_incorrect_cv(multiclass_data):
     """Check whether ValueError is raised when cv is not set correctly."""
     X, y, _ = multiclass_data
@@ -1073,3 +1063,108 @@ def test_decoder_decision_function_raises_value_error(
         ValueError, match=f"X has {X.shape[1]} features per sample"
     ):
         model.decision_function(X)
+
+
+# ------------------------ surface tests ------------------------------------ #
+
+
+@pytest.fixture()
+def _make_surface_class_data(rng, make_mini_img):
+    """Create a surface image classification for testing."""
+
+    def _surface_classes(shape=50):
+        mini_img = make_mini_img((shape,))
+        y = rng.choice([0, 1], size=shape)
+        return mini_img, y
+
+    return _surface_classes
+
+
+@pytest.fixture()
+def _make_surface_reg_data(rng, make_mini_img):
+    """Create a surface image regression for testing."""
+
+    def _surface_regression(shape=50):
+        mini_img = make_mini_img((shape,))
+        y = rng.random(shape)
+        return mini_img, y
+
+    return _surface_regression
+
+
+def test_decoder_apply_mask_surface(_make_surface_class_data):
+    """Test _apply_mask on surface image."""
+    X, _ = _make_surface_class_data()
+    model = Decoder(mask=SurfaceMasker())
+    X_masked = model._apply_mask(X)
+
+    assert X_masked.shape == X.shape
+    assert type(model.mask_img_).__name__ == "SurfaceImage"
+
+
+def test_decoder_screening_percentile_surface_default(
+    _make_surface_class_data,
+):
+    """Test default screening percentile with surface image."""
+    X, y = _make_surface_class_data()
+
+    model = Decoder(mask=SurfaceMasker())
+    model.fit(X, y)
+    assert model.screening_percentile_ == 20
+
+
+@pytest.mark.parametrize("perc", [None, 100, 0])
+def test_decoder_screening_percentile_surface(perc, _make_surface_class_data):
+    """Test passing screening percentile with surface image."""
+    X, y = _make_surface_class_data()
+
+    model = Decoder(mask=SurfaceMasker(), screening_percentile=perc)
+    model.fit(X, y)
+    if perc is None:
+        assert model.screening_percentile_ == 100
+    else:
+        assert model.screening_percentile_ == perc
+
+
+@pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
+def test_decoder_fit_surface(decoder, _make_surface_class_data):
+    """Test fit for surface image."""
+    X, y = _make_surface_class_data()
+    model = decoder(mask=SurfaceMasker())
+    model.fit(X, y)
+
+    assert model.coef_ is not None
+
+
+def test_decoder_predict_score_surface(_make_surface_class_data):
+    """Test classification predict and scoring for surface image."""
+    X, y = _make_surface_class_data()
+    model = Decoder(mask=SurfaceMasker())
+    model.fit(X, y)
+    y_pred = model.predict(X)
+
+    assert model.scoring == "roc_auc"
+
+    model.score(X, y)
+    accuracy_score(y, y_pred)
+
+
+def test_decoder_regressor_predict_score_surface(_make_surface_reg_data):
+    """Test regression predict and scoring for surface image."""
+    X, y = _make_surface_reg_data()
+    model = DecoderRegressor(mask=SurfaceMasker())
+    model.fit(X, y)
+    y_pred = model.predict(X)
+
+    assert model.scoring == "r2"
+
+    model.score(X, y)
+    r2_score(y, y_pred)
+
+
+@pytest.mark.parametrize("frem", [FREMRegressor, FREMClassifier])
+def test_frem_decoder_fit_surface(frem, _make_surface_class_data, mini_mask):
+    """Test fit for using FREM decoding with surface image."""
+    X, y = _make_surface_class_data()
+    model = frem(mask=mini_mask, clustering_percentile=90)
+    model.fit(X, y)
