@@ -470,6 +470,18 @@ Code inside ``maskers._validation.py``:
 ..
       Source: Jerome Dockes https://github.com/nilearn/nilearn/issues/3628#issuecomment-1515211711
 
+Guidelines for HTML and CSS
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+We use `prettier <https://prettier.io/>`_ to format HTML and CSS.
+
+This is implemented via a pre-commit hook (see below)
+that can be run with
+
+.. code-block:: bash
+
+      pre-commit run --all-files prettier
+
 Pre-commit
 ----------
 
