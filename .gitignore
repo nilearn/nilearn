@@ -38,12 +38,18 @@ build
 dist/
 nilearn/_version.py
 
+# notebooks
+.ipynb_checkpoints
+
 # virtual environment
 env/
 venv/
 
 # testing
 .pytest_cache
+
+# CI benchmark
+maint_tools/test_runs_timing.*
 
 # coverage
 .coverage

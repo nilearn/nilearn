@@ -82,6 +82,14 @@ Artifacts hosting and deployment of development docs use CircleCI. See [.circlec
 On a pull request, only the "host" job is run. Then the artifacts can be accessed from the `host_and_deploy_doc` workflow seen under the checks list. Click on "Details" and then on the "host_docs" link on the page that opens. From there you can click on the artifacts tab to see all the html files. If you click on any of them you can then normally navigate the pages from there.
 With a merge on main, both "host" and "deploy" jobs are run.
 
+## Check run time of test suite
+
+### check_gha_workflow.yml
+
+Pings github API to collect information about how long each run of the test suite lasted.
+Plots the results and saves it as an artefact to download and manually inspect
+to see if there is a trend in tests taking longer.
+
 ## Check spelling errors
 
 ### codespell.yml
