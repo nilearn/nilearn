@@ -754,17 +754,7 @@ def load_surf_data(surf_data):
         for f in range(len(file_list)):
             surf_data = file_list[f]
 
-            if (not any(surf_data.endswith(x)
-                        for x in DATA_EXTENSIONS +
-                        FREESURFER_DATA_EXTENSIONS)):
-                raise ValueError(
-                    'The input type is not recognized. '
-                    f'{surf_data!r} was given '
-                    'while valid inputs are a Numpy array '
-                    'or one of the following file formats: '
-                    f"{_stringify(DATA_EXTENSIONS)}, "
-                    'Freesurfer specific files such as '
-                    f"{_stringify(FREESURFER_DATA_EXTENSIONS)}.")
+            check_extensions(surf_data, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
 
             if (surf_data.endswith('nii') or surf_data.endswith('nii.gz') or
                     surf_data.endswith('mgz')):
@@ -803,6 +793,20 @@ def load_surf_data(surf_data):
         data = surf_data
 
     return np.squeeze(data)
+
+
+def check_extensions(surf_data, data_extensions, freesurfer_data_extensions):
+    if (not any(surf_data.endswith(x)
+            for x in data_extensions +
+            freesurfer_data_extensions)):
+        raise ValueError(
+            'The input type is not recognized. '
+            f'{surf_data!r} was given '
+            'while valid inputs are a Numpy array '
+            'or one of the following file formats: '
+            f"{_stringify(data_extensions)}, "
+            'Freesurfer specific files such as '
+            f"{_stringify(freesurfer_data_extensions)}.")
 
 
 def _gifti_img_to_mesh(gifti_img):
