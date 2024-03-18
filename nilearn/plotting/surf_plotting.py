@@ -23,7 +23,10 @@ from nilearn.plotting.html_surface import get_vertexcolor
 from nilearn.plotting.img_plotting import get_colorbar_and_data_ranges
 from nilearn.plotting.js_plotting_utils import colorscale
 from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
-from nilearn.surface.surface import check_mesh, check_extensions, FREESURFER_DATA_EXTENSIONS
+from nilearn.surface.surface import (check_mesh,
+                                     check_extensions,
+                                     FREESURFER_DATA_EXTENSIONS)
+
 
 VALID_VIEWS = "anterior", "posterior", "medial", "lateral", "dorsal", "ventral"
 VALID_HEMISPHERES = "left", "right"
@@ -819,8 +822,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         "alpha": alpha
     }
 
-    if isinstance(surf_map, str):
-        check_extensions(surf_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
+    check_extensions(surf_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
 
     if engine == 'plotly':
         for parameter, value in parameters_not_implemented_in_plotly.items():
@@ -919,7 +921,7 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
         ROI map to be displayed on the surface mesh,
         can be a file
         (valid formats are .gii, .mgz, or
-        Freesurfer specific files such as 
+        Freesurfer specific files such as
         .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array with a value for each :term:`vertex` of the `surf_mesh`.
         The value at each :term:`vertex` one inside the ROI
@@ -983,8 +985,7 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
 
     _, faces = load_surf_mesh(surf_mesh)
 
-    if isinstance(roi_map, str):
-        check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
+    check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
     roi = load_surf_data(roi_map)
 
     if levels is None:
@@ -1075,7 +1076,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         Statistical map to be displayed on the surface :term:`mesh`,
         can be a file
         (valid formats are .gii, .mgz, or
-        Freesurfer specific files such as 
+        Freesurfer specific files such as
         .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array with a value for each :term:`vertex` of the `surf_mesh`.
 
@@ -1199,8 +1200,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
 
     """
-    if isinstance(stat_map, str):
-        check_extensions(stat_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
+    check_extensions(stat_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
     loaded_stat_map = load_surf_data(stat_map)
 
     # Call get_colorbar_and_data_ranges to derive symmetric vmin, vmax
@@ -1380,7 +1380,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
 
     Parameters
     ----------
-    stat_map : str or 3D Niimg-like object
+    stat_map : :obj:`str` or :class:`pathlib.Path` or 3D Niimg-like object
         See :ref:`extracting_data`.
 
     surf_mesh : str, dict, or None, default='fsaverage5'
@@ -1597,7 +1597,7 @@ def plot_surf_roi(surf_mesh,
         ROI map to be displayed on the surface :term:`mesh`,
         can be a file
         (valid formats are .gii, .mgz, or
-        Freesurfer specific files such as 
+        Freesurfer specific files such as
         .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array with a value for each :term:`vertex` of the `surf_mesh`.
         The value at each vertex one inside the ROI and zero inside ROI, or an
@@ -1714,8 +1714,7 @@ def plot_surf_roi(surf_mesh,
 
     # preload roi and mesh to determine vmin, vmax and give more useful error
     # messages in case of wrong inputs
-    if isinstance(roi_map, str):
-        check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
+    check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
     roi = load_surf_data(roi_map)
 
     idx_not_na = ~np.isnan(roi)

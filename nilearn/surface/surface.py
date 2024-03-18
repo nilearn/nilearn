@@ -5,6 +5,7 @@ import os
 import warnings
 from collections import namedtuple
 from collections.abc import Mapping
+from pathlib import Path
 
 import nibabel
 import numpy as np
@@ -754,7 +755,9 @@ def load_surf_data(surf_data):
         for f in range(len(file_list)):
             surf_data = file_list[f]
 
-            check_extensions(surf_data, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
+            check_extensions(surf_data,
+                             DATA_EXTENSIONS,
+                             FREESURFER_DATA_EXTENSIONS)
 
             if (surf_data.endswith('nii') or surf_data.endswith('nii.gz') or
                     surf_data.endswith('mgz')):
@@ -796,9 +799,22 @@ def load_surf_data(surf_data):
 
 
 def check_extensions(surf_data, data_extensions, freesurfer_data_extensions):
-    if (not any(surf_data.endswith(x)
-            for x in data_extensions +
-            freesurfer_data_extensions)):
+    """Check the extension of the input file.
+
+    Should either be one one of the supported data formats
+    or one of freesurfer data formats.
+
+    Raises
+    ------
+    ValueError
+        When the input is a string or a path with an extension
+        that does not match one of the supported ones.
+    """
+    if isinstance(surf_data, Path):
+        surf_data = str(surf_data)
+    if isinstance(surf_data, str) and (not any(surf_data.endswith(x)
+                                       for x in data_extensions +
+                                       freesurfer_data_extensions)):
         raise ValueError(
             'The input type is not recognized. '
             f'{surf_data!r} was given '
