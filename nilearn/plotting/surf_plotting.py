@@ -23,10 +23,11 @@ from nilearn.plotting.html_surface import get_vertexcolor
 from nilearn.plotting.img_plotting import get_colorbar_and_data_ranges
 from nilearn.plotting.js_plotting_utils import colorscale
 from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
-from nilearn.surface.surface import (check_mesh,
-                                     check_extensions,
-                                     FREESURFER_DATA_EXTENSIONS)
-
+from nilearn.surface.surface import (
+    FREESURFER_DATA_EXTENSIONS,
+    check_extensions,
+    check_mesh,
+)
 
 VALID_VIEWS = "anterior", "posterior", "medial", "lateral", "dorsal", "ventral"
 VALID_HEMISPHERES = "left", "right"
