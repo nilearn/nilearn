@@ -34,7 +34,7 @@ We welcome open discussion around improvements---both to the documentation as we
   to make sure it has not already been reported. If the bug has not been reported yet,
   create an :nilearn-gh:`new issue <issues/new/choose>`
   including a `minimal runnable example <https://stackoverflow.com/help/minimal-reproducible-example>`_
-  to showcase it (using Nilearn data) as well as your OS and Nilearn version.
+  to showcase it (using `Nilearn data <https://nilearn.github.io/stable/modules/datasets.html>`_) as well as your OS and Nilearn version.
 
 * If you have an idea for a new feature, check if it is in the :ref:`nilearn_scope`
   and feel free to open a :nilearn-gh:`new issue <issues/new/choose>` to discuss it.
