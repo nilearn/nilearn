@@ -23,10 +23,15 @@ from nilearn.plotting.html_surface import get_vertexcolor
 from nilearn.plotting.img_plotting import get_colorbar_and_data_ranges
 from nilearn.plotting.js_plotting_utils import colorscale
 from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
-from nilearn.surface.surface import check_mesh
+from nilearn.surface.surface import check_mesh, check_extensions, FREESURFER_DATA_EXTENSIONS
 
 VALID_VIEWS = "anterior", "posterior", "medial", "lateral", "dorsal", "ventral"
 VALID_HEMISPHERES = "left", "right"
+
+# subset of data format extensions supported
+DATA_EXTENSIONS = ("gii",
+                   "gii.gz",
+                   "mgz",)
 
 
 MATPLOTLIB_VIEWS = {
@@ -813,6 +818,10 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         "cbar_vmax": cbar_vmax,
         "alpha": alpha
     }
+
+    if isinstance(surf_map, str):
+        check_extensions(surf_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
+
     if engine == 'plotly':
         for parameter, value in parameters_not_implemented_in_plotly.items():
             if value is not None:
@@ -907,10 +916,12 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
         of the :term:`mesh` :term:`faces`.
 
     roi_map : str or numpy.ndarray or list of numpy.ndarray
-        ROI map to be displayed on the surface mesh, can be a file
-        (valid formats are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific
-        files such as .annot or .label), or
-        a Numpy array with a value for each :term:`vertex` of the surf_mesh.
+        ROI map to be displayed on the surface mesh,
+        can be a file
+        (valid formats are .gii, .mgz, or
+        Freesurfer specific files such as 
+        .thickness, .area, .curv, .sulc, .annot, .label) or
+        a Numpy array with a value for each :term:`vertex` of the `surf_mesh`.
         The value at each :term:`vertex` one inside the ROI
         and zero inside ROI,
         or an integer giving the label number for atlases.
@@ -971,7 +982,11 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
         _ = plot_surf(surf_mesh, axes=axes, **kwargs)
 
     _, faces = load_surf_mesh(surf_mesh)
+
+    if isinstance(roi_map, str):
+        check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
     roi = load_surf_data(roi_map)
+
     if levels is None:
         levels = np.unique(roi_map)
     if colors is None:
@@ -1058,9 +1073,10 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
     stat_map : str or numpy.ndarray
         Statistical map to be displayed on the surface :term:`mesh`,
-        can be a file (valid formats are .gii, .mgz, .nii, .nii.gz, or
-        Freesurfer specific files such as .thickness, .area, .curv,
-        .sulc, .annot, .label) or
+        can be a file
+        (valid formats are .gii, .mgz, or
+        Freesurfer specific files such as 
+        .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array with a value for each :term:`vertex` of the `surf_mesh`.
 
     bg_map : str or numpy.ndarray, optional
@@ -1183,6 +1199,8 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
 
     """
+    if isinstance(stat_map, str):
+        check_extensions(stat_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
     loaded_stat_map = load_surf_data(stat_map)
 
     # Call get_colorbar_and_data_ranges to derive symmetric vmin, vmax
@@ -1578,8 +1596,9 @@ def plot_surf_roi(surf_mesh,
     roi_map : str or numpy.ndarray or list of numpy.ndarray
         ROI map to be displayed on the surface :term:`mesh`,
         can be a file
-        (valid formats are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific
-        files such as .annot or .label), or
+        (valid formats are .gii, .mgz, or
+        Freesurfer specific files such as 
+        .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array with a value for each :term:`vertex` of the `surf_mesh`.
         The value at each vertex one inside the ROI and zero inside ROI, or an
         integer giving the label number for atlases.
@@ -1695,8 +1714,10 @@ def plot_surf_roi(surf_mesh,
 
     # preload roi and mesh to determine vmin, vmax and give more useful error
     # messages in case of wrong inputs
-
+    if isinstance(roi_map, str):
+        check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
     roi = load_surf_data(roi_map)
+
     idx_not_na = ~np.isnan(roi)
     if vmin is None:
         vmin = np.nanmin(roi)
