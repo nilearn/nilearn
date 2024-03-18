@@ -704,12 +704,33 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
         self.region_names_ = None
         if self.labels is not None:
+
+            # Keep track if background was explicitly passed as a label
+            # TODO:
+            # background should always be explicitly passed in the labels
+            # to avoid this.
             lower_case_labels = {x.lower() for x in self.labels}
             knwon_backgrounds = {"background"}
             background_in_labels = any(
                 knwon_backgrounds.intersection(lower_case_labels)
             )
             offset = 1 if background_in_labels else 0
+
+            if len(self.labels) > len(self.labels_) + offset:
+                msg = (
+                    f"\nToo many labels ({len(self.labels)}) passed "
+                    f"for the number of regions ({len(self.labels_)}) "
+                    "in the label image.\n"
+                    f"We should be expect {len(self.labels_) + offset} labels."
+                )
+                if self.resampling_target == "data":
+                    msg += (
+                        "\nNote that this may be due to some regions "
+                        "being dropped from the label image "
+                        "after resampling."
+                    )
+                    warnings.warn(msg, UserWarning, stacklevel=2)
+
             self.region_names_ = {
                 key: self.labels[key + offset]
                 for key, region_id in region_ids.items()

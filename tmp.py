@@ -54,10 +54,14 @@ def main():
             atlas["thick_17"] if f == fetch_atlas_yeo_2011 else atlas.maps
         )
 
+        resampling_target = "data"
+        # resampling_target="labels"
+
         masker = NiftiLabelsMasker(
             labels_img=labels_img,
             labels=labels,
             standardize="zscore_sample",
+            resampling_target=resampling_target,
         )
 
         masker.fit_transform(func_filename)

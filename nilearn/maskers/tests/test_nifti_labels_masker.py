@@ -710,7 +710,10 @@ def generate_labels(n_regions, background=True):
 def test_region_names_with_non_sequential_labels(
     shape_3d_default, affine_eye, background
 ):
-    """Test region_names_ attribute in NiftiLabelsMasker."""
+    """Test for atlases with region id that are not consecutive.
+
+    See the AAL atlas for an example of this.
+    """
     labels = [2001, 2002, 2101, 2102, 9170]
     fmri_img, _ = data_gen.generate_random_img(
         shape_3d_default, affine=affine_eye
@@ -732,6 +735,38 @@ def test_region_names_with_non_sequential_labels(
     signals = masker.fit().transform(fmri_img)
 
     check_region_names_after_fit(masker, signals, region_names, background)
+
+
+@pytest.mark.parametrize("background", [None, "background", "Background"])
+def test_more_labels_than_actual_region_in_atlas(
+    shape_3d_default, affine_eye, background
+):
+    """Test region_names_ attribute in NiftiLabelsMasker.
+
+    See fetch_atlas_destrieux_2009 for example.
+    Some labels have no associated voxels.
+    """
+    n_regions_in_atlas = 7
+    n_regions_in_labels = n_regions_in_atlas + 5
+
+    fmri_img, _ = data_gen.generate_random_img(
+        shape_3d_default, affine=affine_eye
+    )
+    labels_img = data_gen.generate_labeled_regions(
+        shape_3d_default[:3],
+        affine=affine_eye,
+        n_regions=n_regions_in_atlas,
+    )
+
+    region_names = generate_labels(n_regions_in_labels, background=background)
+
+    masker = NiftiLabelsMasker(
+        labels_img,
+        labels=region_names,
+        resampling_target="data",
+    )
+    with pytest.warns(UserWarning, match="Too many labels"):
+        masker.fit().transform(fmri_img)
 
 
 def test_3d_images():
