@@ -39,4 +39,7 @@ Changes
 - :bdg-primary:`Doc` Render the description of the templates, atlases and datasets of the :mod:`nilearn.datasets` as part of the documentation (:gh:`4232` by `Rémi Gau`_).
 - :bdg-dark:`Code` Change the colormap to ``gray`` for the background image in the :class:`nilearn.maskers.NiftiSpheresMasker` (:gh:`4269` by `Rémi Gau`_).
 - :bdg-dark:`Code` Remove unused ``**kwargs`` from :func:`nilearn.plotting.view_img` and :func:`nilearn.plotting.plot_surf` (:gh:`4270` by `Rémi Gau`_).
+
+- :bdg-secondary:`Maint` HTML, CSS are now linted using prettier. (:gh:`4302`,  by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Use red to blue color map in the GLM reports (:gh:`4266` by `Rémi Gau`_).
