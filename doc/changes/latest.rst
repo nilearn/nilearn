@@ -44,4 +44,4 @@ Changes
 - :bdg-secondary:`Maint` HTML, CSS are now linted using prettier. (:gh:`4302`,  by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Use red to blue color map in the GLM reports (:gh:`4266` by `Rémi Gau`_).
-- :bdg-dark:`Code` :class:`nilearn.maskers.NiftiSpheresMasker` will throw warnings if the ``labels`` passed to it is not a :obj:`list` of :obj:`str` (:gh:`4274` by `Rémi Gau`_).
+- :bdg-dark:`Code` :class:`nilearn.maskers.NiftiSpheresMasker` will throw warnings if the ``labels`` passed to it is not a :obj:`list` of :obj:`str`, or if the number of items in the list of labels does not match the number of regions in the label image (:gh:`4274` by `Rémi Gau`_).
