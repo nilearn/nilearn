@@ -319,8 +319,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 f"({self._number_of_regions(region_ids) + 1})."
             )
             if (
-                hasattr(self, "resampling_target")
-                and self.resampling_target == "data"
+                getattr(self, "resampling_target", None) == "data"
                 and resampling_done
             ):
                 msg += (
