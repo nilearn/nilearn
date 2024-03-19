@@ -267,14 +267,10 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         return np.unique(labels_image_data)
 
     def _sanitize_labels(self, labels):
-        """Clean up labels.
+        """Check and clean labels.
 
-        TODO this should ultimately be removed in favor of:
-        - ensuring that nilearn atlases have a "standardized" data structure
-          (that is all labels should be list of strings)
-        - checking the label types passed to the constructor
-          and throw errors if they do not pass
-          instead of warnings like they do here.
+        - checks that labels is a list of strings.
+        - cast all items of the list into strings if they are bytestrings.
         """
         if labels is not None:
             if not isinstance(labels, list):
@@ -297,7 +293,21 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
     def _check_mismatch_labels_regions(
         self, region_ids, tolerant=True, resampling_done=False
     ):
-        """Check we have as many labels as regions (plus background)."""
+        """Check we have as many labels as regions (plus background).
+
+        Parameters
+        ----------
+        region_ids : :obj:`list` or numpy.array
+
+        tolerant: :obj:`bool`, default=True
+                  If set to `True` this function will throw a warning,
+                  and will throw an error otherwise.
+
+        resampling_done: :obj:`bool`, default=False
+                         Used to mention if this check is done
+                         before or after the resampling has been done,
+                         to adapt the message accordingly.
+        """
         if (
             self.labels is not None
             and len(self.labels) != self._number_of_regions(region_ids) + 1
@@ -324,6 +334,12 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 raise ValueError(msg)
 
     def _number_of_regions(self, region_ids):
+        """Compute number of regions.
+
+        Parameters
+        ----------
+        region_ids : :obj:`list` or numpy.array
+        """
         if isinstance(region_ids, list):
             region_ids = np.array(region_ids)
         return np.sum(region_ids != self.background_label)
