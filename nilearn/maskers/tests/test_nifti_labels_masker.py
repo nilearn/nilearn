@@ -659,9 +659,9 @@ def test_sanitize_labels_warnings(shape_3d_default, affine_eye):
 @pytest.mark.parametrize(
     "affine_data",
     [
-        None,
+        None,  # no resampling
         np.diag(
-            (4, 4, 4, 4)
+            (4, 4, 4, 4)  # with resampling
         ),  # region_names_ matches signals after resampling drops labels
     ],
 )
