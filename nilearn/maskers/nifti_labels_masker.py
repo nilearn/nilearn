@@ -6,6 +6,7 @@ import numpy as np
 from joblib import Memory
 
 from nilearn import _utils, image, masking
+from nilearn._utils.niimg import safe_get_data
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 
@@ -192,8 +193,17 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         **kwargs,
     ):
         self.labels_img = labels_img
-        self.labels = self._sanitize_labels(labels)
         self.background_label = background_label
+
+        labels_img = _utils.check_niimg_3d(self.labels_img)
+        labels_img = safe_get_data(labels_img, ensure_finite=True)
+        self._original_region_ids = list(np.unique(labels_img))
+        if self.background_label in self._original_region_ids:
+            self._original_region_ids.remove(self.background_label)
+
+        print(self._original_region_ids)
+
+        self.labels = self._sanitize_labels(labels)
         self.mask_img = mask_img
 
         # Parameters for smooth_array
@@ -281,6 +291,14 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 x.decode("utf-8") if isinstance(x, bytes) else str(x)
                 for x in labels
             ]
+            if len(labels) != len(self._original_region_ids):
+                msg = (
+                    f"\nDifferent number of labels ({len(labels)}) "
+                    "compared to the number of regions "
+                    f"({len(self._original_region_ids)}) "
+                    "in the label image.\n"
+                )
+                warnings.warn(msg, UserWarning, stacklevel=3)
         return labels
 
     def generate_report(self):
@@ -736,6 +754,24 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 for key, region_id in region_ids.items()
                 if region_id != self.background_label
             }
+
+            tmp = {}
+            for i, region_id in enumerate(self._original_region_ids):
+                print(f"\n\n{region_id}\n\n")
+                if (
+                    region_id not in self.labels_
+                    or region_id == self.background_label
+                ):
+                    print(f"\n\n{region_id}\n\n")
+                    continue
+                key = next(
+                    key
+                    for key, value in region_ids.items()
+                    if value == region_id
+                )
+                tmp[key] = self.labels[i]
+
+            self.region_names__ = tmp
 
         self.region_ids_ = region_ids
         self.region_atlas_ = masked_atlas
