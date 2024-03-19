@@ -69,13 +69,11 @@ def main():
         print(f"{masker.labels=}")
         print(f"{masker.labels_=}")
         print(f"{masker.region_ids_=}")
-        print(f"{masker.region_names__=}")
         print(f"{masker.region_names_=}")
 
         print(f"labels {len(masker.labels)}")
         print(f"labels_ {len(masker.labels_)}")
         print(f"region_ids_ {len(masker.region_names_)}")
-        print(f"region_names__ {len(masker.region_names__)}")
         print(f"region_names_ {len(masker.region_names_)}")
 
 

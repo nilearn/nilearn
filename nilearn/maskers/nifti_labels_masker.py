@@ -201,8 +201,6 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         if self.background_label in self._original_region_ids:
             self._original_region_ids.remove(self.background_label)
 
-        print(self._original_region_ids)
-
         self.labels = self._sanitize_labels(labels)
         self.mask_img = mask_img
 
@@ -754,24 +752,6 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 for key, region_id in region_ids.items()
                 if region_id != self.background_label
             }
-
-            tmp = {}
-            for i, region_id in enumerate(self._original_region_ids):
-                print(f"\n\n{region_id}\n\n")
-                if (
-                    region_id not in self.labels_
-                    or region_id == self.background_label
-                ):
-                    print(f"\n\n{region_id}\n\n")
-                    continue
-                key = next(
-                    key
-                    for key, value in region_ids.items()
-                    if value == region_id
-                )
-                tmp[key] = self.labels[i]
-
-            self.region_names__ = tmp
 
         self.region_ids_ = region_ids
         self.region_atlas_ = masked_atlas
