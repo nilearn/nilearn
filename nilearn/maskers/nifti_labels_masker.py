@@ -334,7 +334,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 raise ValueError(msg)
 
     def _number_of_regions(self, region_ids):
-        """Compute number of regions.
+        """Compute number of regions excluding the background.
 
         Parameters
         ----------
@@ -387,9 +387,9 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
             self._check_mismatch_labels_regions(label_values, tolerant=False)
 
-            # Number of regions excluding the background
-            number_of_regions = np.sum(label_values != self.background_label)
-            self._report_content["number_of_regions"] = number_of_regions
+            self._report_content["number_of_regions"] = (
+                self._number_of_regions(label_values)
+            )
 
             label_values = label_values[label_values != self.background_label]
             columns = [
