@@ -18,6 +18,9 @@ Fixes
 - :bdg-dark:`Code` Masker reports tables do not overlap with report image (:gh:`4308` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Fix color bar handling with color map with only 1 level (:gh:`4255` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Ensure that :func:`nilearn.interfaces.bids.save_glm_to_bids` serializes numpy arrays to :obj:`list` used as GLM parameters before saving them to JSON (:gh:`4325` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Check that the ``view`` parameter in surface plotting functions is a pair of ``int`` or ``float`` when it is not a ``string`` (:gh:`4297` by `Rémi Gau`_).
 - :bdg-dark:`Code` Fix positions of the markers on the images on the sphere masker reports (:gh:`4285` by `Rémi Gau`_).
 - :bdg-dark:`Code` Fix cut position in nifti maps maskers to match displayed map maximum (:gh:`4304` by `Rémi Gau`_).
