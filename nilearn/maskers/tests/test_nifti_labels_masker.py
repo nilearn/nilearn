@@ -598,6 +598,33 @@ def test_nifti_labels_masker_with_mask():
     assert np.allclose(get_data(masker.region_atlas_), masked_labels_data)
 
 
+@pytest.mark.parametrize(
+    "background",
+    [
+        None,
+        "background",
+        "Background",
+    ],
+)
+def test_warning_nb_labels_not_equal_nb_regions(
+    shape_3d_default, affine_eye, background
+):
+    n_regions = 3
+    labels_img = data_gen.generate_labeled_regions(
+        shape_3d_default[:3],
+        affine=affine_eye,
+        n_regions=n_regions,
+    )
+    region_names = generate_labels(n_regions + 2, background=background)
+    with pytest.warns(
+        UserWarning, match="Mismatch between the number of provided labels"
+    ):
+        NiftiLabelsMasker(
+            labels_img,
+            labels=region_names,
+        )
+
+
 def test_sanitize_labels_warnings(shape_3d_default, affine_eye):
     labels_img = data_gen.generate_labeled_regions(
         shape_3d_default[:3],
@@ -674,11 +701,11 @@ def test_region_names(
 def check_region_names_after_fit(
     masker, signals, region_names, background, resampling=False
 ):
-    """Pefrom several checks on the expected attributes of the masker.
+    """Perform several checks on the expected attributes of the masker.
 
     - region_names_ does not include background
       should have same length as signals
-    - region_ids_ DOES includes background
+    - region_ids_ does include background
     - region_names_ should be the same as the region names
       passed to the masker minus that for "background"
     """
@@ -765,7 +792,9 @@ def test_more_labels_than_actual_region_in_atlas(
         labels=region_names,
         resampling_target="data",
     )
-    with pytest.warns(UserWarning, match="Too many labels"):
+    with pytest.warns(
+        UserWarning, match="Mismatch between the number of provided labels"
+    ):
         masker.fit().transform(fmri_img)
 
 

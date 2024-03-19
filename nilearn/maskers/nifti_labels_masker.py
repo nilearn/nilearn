@@ -6,7 +6,6 @@ import numpy as np
 from joblib import Memory
 
 from nilearn import _utils, image, masking
-from nilearn._utils.niimg import safe_get_data
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 
@@ -193,15 +192,14 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         **kwargs,
     ):
         self.labels_img = labels_img
+
         self.background_label = background_label
-
-        labels_img = _utils.check_niimg_3d(self.labels_img)
-        labels_img = safe_get_data(labels_img, ensure_finite=True)
-        self._original_region_ids = list(np.unique(labels_img))
-        if self.background_label in self._original_region_ids:
-            self._original_region_ids.remove(self.background_label)
-
+        self._original_region_ids = self._get_labels_values(self.labels_img)
         self.labels = self._sanitize_labels(labels)
+        self._check_mismatch_labels_regions(
+            self._original_region_ids, tolerant=True
+        )
+
         self.mask_img = mask_img
 
         # Parameters for smooth_array
@@ -263,6 +261,11 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
         self.cmap = kwargs.get("cmap", "CMRmap_r")
 
+    def _get_labels_values(self, labels_image):
+        labels_image = image.load_img(labels_image, dtype="int32")
+        labels_image_data = image.get_data(labels_image)
+        return np.unique(labels_image_data)
+
     def _sanitize_labels(self, labels):
         """Clean up labels.
 
@@ -289,15 +292,41 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 x.decode("utf-8") if isinstance(x, bytes) else str(x)
                 for x in labels
             ]
-            if len(labels) != len(self._original_region_ids):
-                msg = (
-                    f"\nDifferent number of labels ({len(labels)}) "
-                    "compared to the number of regions "
-                    f"({len(self._original_region_ids)}) "
-                    "in the label image.\n"
-                )
-                warnings.warn(msg, UserWarning, stacklevel=3)
         return labels
+
+    def _check_mismatch_labels_regions(
+        self, region_ids, tolerant=True, resampling_done=False
+    ):
+        """Check we have as many labels as regions (plus background)."""
+        if (
+            self.labels is not None
+            and len(self.labels) != self._number_of_regions(region_ids) + 1
+        ):
+            msg = (
+                "Mismatch between the number of provided labels "
+                f"({len(self.labels)}) and the number of regions in "
+                "provided label image "
+                f"({self._number_of_regions(region_ids) + 1})."
+            )
+            if (
+                hasattr(self, "resampling_target")
+                and self.resampling_target == "data"
+                and resampling_done
+            ):
+                msg += (
+                    "\nNote that this may be due to some regions "
+                    "being dropped from the label image "
+                    "after resampling."
+                )
+            if tolerant:
+                warnings.warn(msg, UserWarning, stacklevel=3)
+            else:
+                raise ValueError(msg)
+
+    def _number_of_regions(self, region_ids):
+        if isinstance(region_ids, list):
+            region_ids = np.array(region_ids)
+        return np.sum(region_ids != self.background_label)
 
     def generate_report(self):
         """Generate a report."""
@@ -338,29 +367,14 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             if "warning_message" in self._report_content:
                 self._report_content["warning_message"] = None
 
-            labels_image = image.load_img(labels_image, dtype="int32")
-            labels_image_data = image.get_data(labels_image)
-            labels_image_affine = labels_image.affine
+            label_values = self._get_labels_values(labels_image)
+
+            self._check_mismatch_labels_regions(label_values, tolerant=False)
+
             # Number of regions excluding the background
-            number_of_regions = np.sum(
-                np.unique(labels_image_data) != self.background_label
-            )
-
-            # Basic safety check to ensure we have as many labels as we
-            # have regions (plus background).
-            if (
-                self.labels is not None
-                and len(self.labels) != number_of_regions + 1
-            ):
-                raise ValueError(
-                    "Mismatch between the number of provided labels "
-                    f"({len(self.labels)}) and the number of regions in "
-                    f"provided label image ({number_of_regions + 1})."
-                )
-
+            number_of_regions = np.sum(label_values != self.background_label)
             self._report_content["number_of_regions"] = number_of_regions
 
-            label_values = np.unique(labels_image_data)
             label_values = label_values[label_values != self.background_label]
             columns = [
                 "label value",
@@ -371,6 +385,10 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
             if self.labels is None:
                 columns.remove("region name")
+
+            labels_image = image.load_img(labels_image, dtype="int32")
+            labels_image_data = image.get_data(labels_image)
+            labels_image_affine = labels_image.affine
 
             regions_summary = {c: [] for c in columns}
             for label in label_values:
@@ -719,33 +737,22 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             region_ids[i] = ids[i]
 
         self.region_names_ = None
+
+        self._check_mismatch_labels_regions(
+            self.labels_, tolerant=True, resampling_done=True
+        )
+
         if self.labels is not None:
 
             # Keep track if background was explicitly passed as a label
-            # TODO:
             # background should always be explicitly passed in the labels
             # to avoid this.
             lower_case_labels = {x.lower() for x in self.labels}
-            knwon_backgrounds = {"background"}
+            known_backgrounds = {"background"}
             background_in_labels = any(
-                knwon_backgrounds.intersection(lower_case_labels)
+                known_backgrounds.intersection(lower_case_labels)
             )
             offset = 1 if background_in_labels else 0
-
-            if len(self.labels) > len(self.labels_) + offset:
-                msg = (
-                    f"\nToo many labels ({len(self.labels)}) passed "
-                    f"for the number of regions ({len(self.labels_)}) "
-                    "in the label image.\n"
-                    f"We should be expect {len(self.labels_) + offset} labels."
-                )
-                if self.resampling_target == "data":
-                    msg += (
-                        "\nNote that this may be due to some regions "
-                        "being dropped from the label image "
-                        "after resampling."
-                    )
-                    warnings.warn(msg, UserWarning, stacklevel=2)
 
             self.region_names_ = {
                 key: self.labels[key + offset]
