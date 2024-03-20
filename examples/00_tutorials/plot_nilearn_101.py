@@ -89,7 +89,7 @@ anats_all_subjects_smooth = image.smooth_img(anats_all_subjects, fwhm=5)
 
 # %%
 # This is a 4D image containing one volume per subject
-anats_all_subjects_smooth.shape
+print(anats_all_subjects_smooth.shape)
 
 # %%
 # Saving results to a file
