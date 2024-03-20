@@ -598,49 +598,93 @@ def test_nifti_labels_masker_with_mask():
     assert np.allclose(get_data(masker.region_atlas_), masked_labels_data)
 
 
-def test_region_names():
-    """Test region_names_ attribute in NiftiLabelsMasker."""
-    shape = (13, 11, 12, 3)
-    affine = np.eye(4)
-    fmri_img, _ = data_gen.generate_random_img(shape, affine=affine)
+@pytest.mark.parametrize(
+    "background",
+    [
+        None,
+        "background",
+        "Background",
+    ],
+)
+def test_warning_nb_labels_not_equal_nb_regions(
+    shape_3d_default, affine_eye, background
+):
+    n_regions = 3
     labels_img = data_gen.generate_labeled_regions(
-        shape[:3],
-        affine=affine,
-        n_regions=7,
-    )
-
-    # define region_names
-    region_names = ["background"] + ["region_" + str(i + 1) for i in range(7)]
-
-    masker = NiftiLabelsMasker(
-        labels_img,
-        labels=region_names,
-        resampling_target=None,
-    )
-    _ = masker.fit().transform(fmri_img)
-
-    region_names_after_fit = [
-        masker.region_names_[i] for i in masker.region_names_
-    ]
-    region_names_after_fit.sort()
-    region_names.sort()
-    region_names.pop(region_names.index("background"))
-    assert region_names_after_fit == region_names
-
-
-def test_missing_labels_due_to_resampling(affine_eye):
-    """Test region_names_ matches signals after resampling drops labels."""
-    shape = (13, 11, 12, 3)
-    affine_low = np.diag((4, 4, 4, 4))
-    fmri_img, _ = data_gen.generate_random_img(shape, affine=affine_low)
-    labels_img = data_gen.generate_labeled_regions(
-        shape[:3],
+        shape_3d_default[:3],
         affine=affine_eye,
-        n_regions=7,
+        n_regions=n_regions,
+    )
+    region_names = generate_labels(n_regions + 2, background=background)
+    with pytest.warns(
+        UserWarning, match="Mismatch between the number of provided labels"
+    ):
+        NiftiLabelsMasker(
+            labels_img,
+            labels=region_names,
+        )
+
+
+def test_sanitize_labels_warnings(shape_3d_default, affine_eye):
+    labels_img = data_gen.generate_labeled_regions(
+        shape_3d_default[:3],
+        affine=affine_eye,
+        n_regions=3,
+    )
+    with pytest.warns(UserWarning, match="'labels' must be a list."):
+        NiftiLabelsMasker(
+            labels_img,
+            labels="foo",
+        )
+    with pytest.warns(
+        UserWarning, match="All elements of 'labels' must be a string"
+    ):
+        NiftiLabelsMasker(
+            labels_img,
+            labels=[1, 2, 3],
+        )
+
+
+@pytest.mark.parametrize(
+    "background",
+    [
+        None,
+        "background",
+        "Background",
+    ],  # In case the list of labels includes one for background
+)
+@pytest.mark.parametrize(
+    "dtype", ["int32", "float32"]  # In case regions are labelled with floats
+)
+@pytest.mark.parametrize(
+    "affine_data",
+    [
+        None,  # no resampling
+        np.diag(
+            (4, 4, 4, 4)  # with resampling
+        ),  # region_names_ matches signals after resampling drops labels
+    ],
+)
+def test_region_names(
+    shape_3d_default, affine_eye, background, affine_data, dtype
+):
+    """Test region_names_ attribute in NiftiLabelsMasker."""
+    n_regions = 7
+    resampling = True
+    if affine_data is None:
+        resampling = False
+        affine_data = affine_eye
+    fmri_img, _ = data_gen.generate_random_img(
+        shape_3d_default, affine=affine_data
+    )
+    labels_img = data_gen.generate_labeled_regions(
+        shape_3d_default[:3],
+        affine=affine_eye,
+        n_regions=n_regions,
+        dtype=dtype,
     )
 
-    # define region_names
-    region_names = ["background"] + ["region_" + str(i + 1) for i in range(7)]
+    region_names = generate_labels(n_regions, background=background)
 
     masker = NiftiLabelsMasker(
         labels_img,
@@ -649,8 +693,109 @@ def test_missing_labels_due_to_resampling(affine_eye):
     )
     signals = masker.fit().transform(fmri_img)
 
+    check_region_names_after_fit(
+        masker, signals, region_names, background, resampling
+    )
+
+
+def check_region_names_after_fit(
+    masker, signals, region_names, background, resampling=False
+):
+    """Perform several checks on the expected attributes of the masker.
+
+    - region_names_ does not include background
+      should have same length as signals
+    - region_ids_ does include background
+    - region_names_ should be the same as the region names
+      passed to the masker minus that for "background"
+    """
     assert len(masker.region_names_) == signals.shape[1]
-    assert len(list(masker.region_ids_.items())[1:]) == signals.shape[1]
+    assert len(list(masker.region_ids_.items())) == signals.shape[1] + 1
+
+    # resampling may drop some labels so we do not check the region names
+    # in this case
+    if not resampling:
+        region_names_after_fit = [
+            masker.region_names_[i] for i in masker.region_names_
+        ]
+        region_names_after_fit.sort()
+        region_names.sort()
+        if background:
+            region_names.pop(region_names.index(background))
+        assert region_names_after_fit == region_names
+
+
+def generate_labels(n_regions, background=True):
+    labels = []
+    if background:
+        labels.append(background)
+    labels.extend([f"region_{str(i + 1)}" for i in range(n_regions)])
+    return labels
+
+
+@pytest.mark.parametrize("background", [None, "background", "Background"])
+def test_region_names_with_non_sequential_labels(
+    shape_3d_default, affine_eye, background
+):
+    """Test for atlases with region id that are not consecutive.
+
+    See the AAL atlas for an example of this.
+    """
+    labels = [2001, 2002, 2101, 2102, 9170]
+    fmri_img, _ = data_gen.generate_random_img(
+        shape_3d_default, affine=affine_eye
+    )
+    labels_img = data_gen.generate_labeled_regions(
+        shape_3d_default[:3],
+        affine=affine_eye,
+        n_regions=len(labels),
+        labels=labels,
+    )
+
+    region_names = generate_labels(len(labels), background=background)
+
+    masker = NiftiLabelsMasker(
+        labels_img,
+        labels=region_names,
+        resampling_target=None,
+    )
+    signals = masker.fit().transform(fmri_img)
+
+    check_region_names_after_fit(masker, signals, region_names, background)
+
+
+@pytest.mark.parametrize("background", [None, "background", "Background"])
+def test_more_labels_than_actual_region_in_atlas(
+    shape_3d_default, affine_eye, background
+):
+    """Test region_names_ attribute in NiftiLabelsMasker.
+
+    See fetch_atlas_destrieux_2009 for example.
+    Some labels have no associated voxels.
+    """
+    n_regions_in_atlas = 7
+    n_regions_in_labels = n_regions_in_atlas + 5
+
+    fmri_img, _ = data_gen.generate_random_img(
+        shape_3d_default, affine=affine_eye
+    )
+    labels_img = data_gen.generate_labeled_regions(
+        shape_3d_default[:3],
+        affine=affine_eye,
+        n_regions=n_regions_in_atlas,
+    )
+
+    region_names = generate_labels(n_regions_in_labels, background=background)
+
+    masker = NiftiLabelsMasker(
+        labels_img,
+        labels=region_names,
+        resampling_target="data",
+    )
+    with pytest.warns(
+        UserWarning, match="Mismatch between the number of provided labels"
+    ):
+        masker.fit().transform(fmri_img)
 
 
 def test_3d_images():

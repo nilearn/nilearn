@@ -2087,15 +2087,17 @@ def fetch_atlas_schaefer_2018(
 
             - 'maps': :obj:`str`, path to nifti file containing the
               3D :class:`~nibabel.nifti1.Nifti1Image` (its shape is
-              ``(182, 218, 182)``). The values are consecutive integers
+              ``(182, 218, 182)``).
+              The values are consecutive integers
               between 0 and ``n_rois`` which can be interpreted as indices
               in the list of labels.
             - 'labels': :class:`numpy.ndarray` of :obj:`str`, array
               containing the ROI labels including Yeo-network annotation.
 
                 .. warning::
-                    The list of labels does not contain 'Background' by
-                    default. To have proper indexing, you should either
+                    The list of labels does not contain
+                    'Background' by default.
+                    To have proper indexing, you should either
                     manually add 'Background' to the list of labels:
 
                     .. code-block:: python
@@ -2111,8 +2113,6 @@ def fetch_atlas_schaefer_2018(
                         # 'Background' was not added to the list of labels:
                         # idx should be equal to 3:
                         idx = np.where(data.labels == b"7Networks_LH_Vis_3")[0] + 1
-
-
 
             - 'description': :obj:`str`, short description of the atlas
               and some references.
