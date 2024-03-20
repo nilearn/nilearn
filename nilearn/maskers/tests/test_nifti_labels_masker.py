@@ -7,12 +7,17 @@ test_masking.py and test_signal.py for details.
 
 import warnings
 
-import nibabel
 import numpy as np
 import pytest
+from nibabel import Nifti1Image
+from numpy.testing import assert_almost_equal, assert_array_equal
 
-from nilearn._utils import data_gen, testing
+from nilearn._utils.data_gen import (
+    generate_labeled_regions,
+    generate_random_img,
+)
 from nilearn._utils.exceptions import DimensionError
+from nilearn._utils.testing import write_imgs_to_path
 from nilearn.image import get_data
 from nilearn.maskers import NiftiLabelsMasker, NiftiMasker
 
@@ -28,26 +33,26 @@ def test_nifti_labels_masker():
 
     n_regions = 9
 
-    fmri11_img, mask11_img = data_gen.generate_random_img(
+    fmri11_img, mask11_img = generate_random_img(
         shape1,
         affine=affine1,
     )
-    fmri12_img, mask12_img = data_gen.generate_random_img(
+    fmri12_img, mask12_img = generate_random_img(
         shape1,
         affine=affine2,
     )
-    fmri21_img, mask21_img = data_gen.generate_random_img(
+    fmri21_img, mask21_img = generate_random_img(
         shape2,
         affine=affine1,
     )
 
-    labels11_img = data_gen.generate_labeled_regions(
+    labels11_img = generate_labeled_regions(
         shape1[:3],
         affine=affine1,
         n_regions=n_regions,
     )
 
-    mask_img_4d = nibabel.Nifti1Image(
+    mask_img_4d = Nifti1Image(
         np.ones((2, 2, 2, 2), dtype=np.int8),
         affine=np.diag((4, 4, 4, 1)),
     )
@@ -134,7 +139,7 @@ def test_nifti_labels_masker():
     # Call inverse transform (smoke test)
     fmri11_img_r = masker11.inverse_transform(signals11)
     assert fmri11_img_r.shape == fmri11_img.shape
-    np.testing.assert_almost_equal(fmri11_img_r.affine, fmri11_img.affine)
+    assert_almost_equal(fmri11_img_r.affine, fmri11_img.affine)
 
 
 def test_nifti_labels_masker_io_shapes(rng):
@@ -153,12 +158,12 @@ def test_nifti_labels_masker_io_shapes(rng):
     data_2d = rng.random((n_volumes, n_regions))
     affine = np.eye(4)
 
-    img_4d, mask_img = data_gen.generate_random_img(
+    img_4d, mask_img = generate_random_img(
         shape_4d,
         affine=affine,
     )
-    img_3d, _ = data_gen.generate_random_img(shape_3d, affine=affine)
-    labels_img = data_gen.generate_labeled_regions(
+    img_3d, _ = generate_random_img(shape_3d, affine=affine)
+    labels_img = generate_labeled_regions(
         shape_3d,
         affine=affine,
         n_regions=n_regions,
@@ -213,11 +218,11 @@ def test_nifti_labels_masker_with_nans_and_infs():
     """
     length = 3
     n_regions = 9
-    fmri_img, mask_img = data_gen.generate_random_img(
+    fmri_img, mask_img = generate_random_img(
         (13, 11, 12, length),
         affine=np.eye(4),
     )
-    labels_img = data_gen.generate_labeled_regions(
+    labels_img = generate_labeled_regions(
         (13, 11, 12),
         affine=np.eye(4),
         n_regions=n_regions,
@@ -227,7 +232,7 @@ def test_nifti_labels_masker_with_nans_and_infs():
     labels_data = get_data(labels_img).astype(np.float32)
     labels_data[:, :, 7] = np.nan
     labels_data[:, :, 4] = np.inf
-    labels_img = nibabel.Nifti1Image(labels_data, np.eye(4))
+    labels_img = Nifti1Image(labels_data, np.eye(4))
 
     masker = NiftiLabelsMasker(labels_img, mask_img=mask_img)
 
@@ -246,11 +251,11 @@ def test_nifti_labels_masker_with_nans_and_infs_in_mask():
     """
     length = 3
     n_regions = 9
-    fmri_img, mask_img = data_gen.generate_random_img(
+    fmri_img, mask_img = generate_random_img(
         (13, 11, 12, length),
         affine=np.eye(4),
     )
-    labels_img = data_gen.generate_labeled_regions(
+    labels_img = generate_labeled_regions(
         (13, 11, 12),
         affine=np.eye(4),
         n_regions=n_regions,
@@ -260,7 +265,7 @@ def test_nifti_labels_masker_with_nans_and_infs_in_mask():
     mask_data = get_data(mask_img).astype(np.float32)
     mask_data[:, :, 7] = np.nan
     mask_data[:, :, 4] = np.inf
-    mask_img = nibabel.Nifti1Image(mask_data, np.eye(4))
+    mask_img = Nifti1Image(mask_data, np.eye(4))
 
     masker = NiftiLabelsMasker(labels_img, mask_img=mask_img)
 
@@ -279,11 +284,11 @@ def test_nifti_labels_masker_with_nans_and_infs_in_data():
     """
     length = 3
     n_regions = 9
-    fmri_img, mask_img = data_gen.generate_random_img(
+    fmri_img, mask_img = generate_random_img(
         (13, 11, 12, length),
         affine=np.eye(4),
     )
-    labels_img = data_gen.generate_labeled_regions(
+    labels_img = generate_labeled_regions(
         (13, 11, 12),
         affine=np.eye(4),
         n_regions=n_regions,
@@ -295,7 +300,7 @@ def test_nifti_labels_masker_with_nans_and_infs_in_data():
     fmri_data = get_data(fmri_img).astype(np.float32)
     fmri_data[:, :, 7, :] = np.nan
     fmri_data[:, :, 4, 0] = np.inf
-    fmri_img = nibabel.Nifti1Image(fmri_data, np.eye(4))
+    fmri_img = Nifti1Image(fmri_data, np.eye(4))
 
     masker = NiftiLabelsMasker(labels_img, mask_img=mask_img)
 
@@ -320,8 +325,8 @@ def test_nifti_labels_masker_reduction_strategies():
     labels_data = np.array([[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1]]], dtype=np.int8)
 
     affine = np.eye(4)
-    img = nibabel.Nifti1Image(img_data, affine)
-    labels = nibabel.Nifti1Image(labels_data, affine)
+    img = Nifti1Image(img_data, affine)
+    labels = Nifti1Image(labels_data, affine)
 
     # What NiftiLabelsMasker should return for each reduction strategy?
     expected_results = {
@@ -362,16 +367,16 @@ def test_nifti_labels_masker_resampling(tmp_path):
     shape3 = (13, 14, 15)
 
     # With data of the same affine
-    fmri11_img, _ = data_gen.generate_random_img(
+    fmri11_img, _ = generate_random_img(
         shape1,
         affine=affine,
     )
-    _, mask22_img = data_gen.generate_random_img(
+    _, mask22_img = generate_random_img(
         shape2,
         affine=affine,
     )
 
-    labels33_img = data_gen.generate_labeled_regions(
+    labels33_img = generate_labeled_regions(
         shape3,
         n_regions,
         affine=affine,
@@ -392,23 +397,17 @@ def test_nifti_labels_masker_resampling(tmp_path):
     )
 
     masker.fit()
-    np.testing.assert_almost_equal(
-        masker.labels_img_.affine, labels33_img.affine
-    )
+    assert_almost_equal(masker.labels_img_.affine, labels33_img.affine)
     assert masker.labels_img_.shape == labels33_img.shape
 
-    np.testing.assert_almost_equal(
-        masker.mask_img_.affine, masker.labels_img_.affine
-    )
+    assert_almost_equal(masker.mask_img_.affine, masker.labels_img_.affine)
     assert masker.mask_img_.shape == masker.labels_img_.shape[:3]
 
     transformed = masker.transform(fmri11_img)
     assert transformed.shape == (length, n_regions)
 
     fmri11_img_r = masker.inverse_transform(transformed)
-    np.testing.assert_almost_equal(
-        fmri11_img_r.affine, masker.labels_img_.affine
-    )
+    assert_almost_equal(fmri11_img_r.affine, masker.labels_img_.affine)
     assert fmri11_img_r.shape == (masker.labels_img_.shape[:3] + (length,))
 
     # Test with clipped labels: mask does not contain all labels.
@@ -421,33 +420,27 @@ def test_nifti_labels_masker_resampling(tmp_path):
     shape2 = (8, 9, 10, length)  # mask
     shape3 = (16, 18, 20)  # maps
 
-    fmri11_img, _ = data_gen.generate_random_img(
+    fmri11_img, _ = generate_random_img(
         shape1,
         affine=affine,
     )
-    _, mask22_img = data_gen.generate_random_img(
+    _, mask22_img = generate_random_img(
         shape2,
         affine=affine,
     )
 
     # Target: labels
-    labels33_img = data_gen.generate_labeled_regions(
-        shape3, n_regions, affine=affine
-    )
+    labels33_img = generate_labeled_regions(shape3, n_regions, affine=affine)
 
     masker = NiftiLabelsMasker(
         labels33_img, mask_img=mask22_img, resampling_target="labels"
     )
 
     masker.fit()
-    np.testing.assert_almost_equal(
-        masker.labels_img_.affine, labels33_img.affine
-    )
+    assert_almost_equal(masker.labels_img_.affine, labels33_img.affine)
     assert masker.labels_img_.shape == labels33_img.shape
 
-    np.testing.assert_almost_equal(
-        masker.mask_img_.affine, masker.labels_img_.affine
-    )
+    assert_almost_equal(masker.mask_img_.affine, masker.labels_img_.affine)
     assert masker.mask_img_.shape == masker.labels_img_.shape[:3]
 
     uniq_labels = np.unique(get_data(masker.labels_img_))
@@ -460,9 +453,7 @@ def test_nifti_labels_masker_resampling(tmp_path):
     assert (transformed.var(axis=0) == 0).sum() < n_regions
 
     fmri11_img_r = masker.inverse_transform(transformed)
-    np.testing.assert_almost_equal(
-        fmri11_img_r.affine, masker.labels_img_.affine
-    )
+    assert_almost_equal(fmri11_img_r.affine, masker.labels_img_.affine)
     assert fmri11_img_r.shape == (masker.labels_img_.shape[:3] + (length,))
 
     # Test with data and atlas of different shape: the atlas should be
@@ -471,19 +462,17 @@ def test_nifti_labels_masker_resampling(tmp_path):
     affine2 = 2 * np.eye(4)
     affine2[-1, -1] = 1
 
-    fmri22_img, _ = data_gen.generate_random_img(
+    fmri22_img, _ = generate_random_img(
         shape22,
         affine=affine2,
     )
     masker = NiftiLabelsMasker(labels33_img, mask_img=mask22_img)
 
     masker.fit_transform(fmri22_img)
-    np.testing.assert_array_equal(
-        masker._resampled_labels_img_.affine, affine2
-    )
+    assert_array_equal(masker._resampled_labels_img_.affine, affine2)
 
     # Test with filenames
-    filename = testing.write_imgs_to_path(fmri22_img, file_path=tmp_path)
+    filename = write_imgs_to_path(fmri22_img, file_path=tmp_path)
     masker = NiftiLabelsMasker(labels33_img, resampling_target="data")
     masker.fit_transform(filename)
 
@@ -493,8 +482,8 @@ def test_nifti_labels_masker_resampling(tmp_path):
     shape = (13, 11, 12, 21)
     affine = np.eye(4) * 2
 
-    fmri_img, _ = data_gen.generate_random_img(shape, affine=affine)
-    labels_img = data_gen.generate_labeled_regions(
+    fmri_img, _ = generate_random_img(shape, affine=affine)
+    labels_img = generate_labeled_regions(
         (9, 8, 6), affine=np.eye(4), n_regions=10
     )
     for resampling_target in ["data", "labels"]:
@@ -522,9 +511,7 @@ def test_nifti_labels_masker_resampling(tmp_path):
         transformed2 = masker.fit_transform(fmri_img)
         # inverse transform again
         compressed_img2 = masker.inverse_transform(transformed2)
-        np.testing.assert_array_equal(
-            get_data(compressed_img), get_data(compressed_img2)
-        )
+        assert_array_equal(get_data(compressed_img), get_data(compressed_img2))
 
 
 def test_standardization(rng):
@@ -534,12 +521,12 @@ def test_standardization(rng):
     signals = rng.standard_normal(size=(np.prod(data_shape), n_samples))
     means = rng.standard_normal(size=(np.prod(data_shape), 1)) * 50 + 1000
     signals += means
-    img = nibabel.Nifti1Image(
+    img = Nifti1Image(
         signals.reshape(data_shape + (n_samples,)),
         np.eye(4),
     )
 
-    labels = data_gen.generate_labeled_regions((9, 9, 5), 10)
+    labels = generate_labeled_regions((9, 9, 5), 10)
 
     # Unstandarized
     masker = NiftiLabelsMasker(labels, standardize=False)
@@ -549,15 +536,15 @@ def test_standardization(rng):
     masker = NiftiLabelsMasker(labels, standardize="zscore_sample")
     trans_signals = masker.fit_transform(img)
 
-    np.testing.assert_almost_equal(trans_signals.mean(0), 0)
-    np.testing.assert_almost_equal(trans_signals.std(0), 1, decimal=3)
+    assert_almost_equal(trans_signals.mean(0), 0)
+    assert_almost_equal(trans_signals.std(0), 1, decimal=3)
 
     # psc
     masker = NiftiLabelsMasker(labels, standardize="psc")
     trans_signals = masker.fit_transform(img)
 
-    np.testing.assert_almost_equal(trans_signals.mean(0), 0)
-    np.testing.assert_almost_equal(
+    assert_almost_equal(trans_signals.mean(0), 0)
+    assert_almost_equal(
         trans_signals,
         (
             unstandarized_label_signals
@@ -572,8 +559,8 @@ def test_nifti_labels_masker_with_mask():
     """Test NiftiLabelsMasker with a separate mask_img parameter."""
     shape = (13, 11, 12, 3)
     affine = np.eye(4)
-    fmri_img, mask_img = data_gen.generate_random_img(shape, affine=affine)
-    labels_img = data_gen.generate_labeled_regions(
+    fmri_img, mask_img = generate_random_img(shape, affine=affine)
+    labels_img = generate_labeled_regions(
         shape[:3],
         affine=affine,
         n_regions=7,
@@ -610,7 +597,7 @@ def test_warning_nb_labels_not_equal_nb_regions(
     shape_3d_default, affine_eye, background
 ):
     n_regions = 3
-    labels_img = data_gen.generate_labeled_regions(
+    labels_img = generate_labeled_regions(
         shape_3d_default[:3],
         affine=affine_eye,
         n_regions=n_regions,
@@ -626,7 +613,7 @@ def test_warning_nb_labels_not_equal_nb_regions(
 
 
 def test_sanitize_labels_warnings(shape_3d_default, affine_eye):
-    labels_img = data_gen.generate_labeled_regions(
+    labels_img = generate_labeled_regions(
         shape_3d_default[:3],
         affine=affine_eye,
         n_regions=3,
@@ -674,10 +661,8 @@ def test_region_names(
     if affine_data is None:
         resampling = False
         affine_data = affine_eye
-    fmri_img, _ = data_gen.generate_random_img(
-        shape_3d_default, affine=affine_data
-    )
-    labels_img = data_gen.generate_labeled_regions(
+    fmri_img, _ = generate_random_img(shape_3d_default, affine=affine_data)
+    labels_img = generate_labeled_regions(
         shape_3d_default[:3],
         affine=affine_eye,
         n_regions=n_regions,
@@ -742,10 +727,8 @@ def test_region_names_with_non_sequential_labels(
     See the AAL atlas for an example of this.
     """
     labels = [2001, 2002, 2101, 2102, 9170]
-    fmri_img, _ = data_gen.generate_random_img(
-        shape_3d_default, affine=affine_eye
-    )
-    labels_img = data_gen.generate_labeled_regions(
+    fmri_img, _ = generate_random_img(shape_3d_default, affine=affine_eye)
+    labels_img = generate_labeled_regions(
         shape_3d_default[:3],
         affine=affine_eye,
         n_regions=len(labels),
@@ -776,10 +759,8 @@ def test_more_labels_than_actual_region_in_atlas(
     n_regions_in_atlas = 7
     n_regions_in_labels = n_regions_in_atlas + 5
 
-    fmri_img, _ = data_gen.generate_random_img(
-        shape_3d_default, affine=affine_eye
-    )
-    labels_img = data_gen.generate_labeled_regions(
+    fmri_img, _ = generate_random_img(shape_3d_default, affine=affine_eye)
+    labels_img = generate_labeled_regions(
         shape_3d_default[:3],
         affine=affine_eye,
         n_regions=n_regions_in_atlas,
@@ -804,13 +785,13 @@ def test_3d_images():
     n_regions = 3
     shape3 = (2, 2, 2)
 
-    labels33_img = data_gen.generate_labeled_regions(shape3, n_regions)
-    mask_img = nibabel.Nifti1Image(
+    labels33_img = generate_labeled_regions(shape3, n_regions)
+    mask_img = Nifti1Image(
         np.ones(shape3, dtype=np.int8),
         affine=affine,
     )
-    epi_img1 = nibabel.Nifti1Image(np.ones(shape3), affine=affine)
-    epi_img2 = nibabel.Nifti1Image(np.ones(shape3), affine=affine)
+    epi_img1 = Nifti1Image(np.ones(shape3), affine=affine)
+    epi_img2 = Nifti1Image(np.ones(shape3), affine=affine)
     masker = NiftiLabelsMasker(labels33_img, mask_img=mask_img)
 
     epis = masker.fit_transform(epi_img1)
