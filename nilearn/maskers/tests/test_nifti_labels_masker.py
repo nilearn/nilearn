@@ -316,7 +316,21 @@ def test_nifti_labels_masker_with_nans_and_infs_in_data(
     assert np.all(np.isfinite(sig))
 
 
-def test_nifti_labels_masker_reduction_strategies(affine_eye):
+@pytest.mark.parametrize(
+    "strategy, function",
+    [
+        ("mean", np.mean),
+        ("median", np.median),
+        ("sum", np.sum),
+        ("minimum", np.min),
+        ("maximum", np.max),
+        ("standard_deviation", np.std),
+        ("variance", np.var),
+    ],
+)
+def test_nifti_labels_masker_reduction_strategies(
+    affine_eye, strategy, function
+):
     """Tests NiftiLabelsMasker strategies.
 
     1. whether the usage of different reduction strategies work.
@@ -333,27 +347,25 @@ def test_nifti_labels_masker_reduction_strategies(affine_eye):
     labels = Nifti1Image(labels_data, affine_eye)
 
     # What NiftiLabelsMasker should return for each reduction strategy?
-    expected_results = {
-        "mean": np.mean(test_values),
-        "median": np.median(test_values),
-        "sum": np.sum(test_values),
-        "minimum": np.min(test_values),
-        "maximum": np.max(test_values),
-        "standard_deviation": np.std(test_values),
-        "variance": np.var(test_values),
-    }
+    expected_result = function(test_values)
 
-    for strategy, expected_result in expected_results.items():
-        masker = NiftiLabelsMasker(labels, strategy=strategy)
-        # Here passing [img] within a list because it's a 3D object.
-        result = masker.fit_transform([img]).squeeze()
-        assert result == expected_result
-
-    with pytest.raises(ValueError, match="Invalid strategy 'TESTRAISE'"):
-        NiftiLabelsMasker(labels, strategy="TESTRAISE")
+    masker = NiftiLabelsMasker(labels, strategy=strategy)
+    # Here passing [img] within a list because it's a 3D object.
+    result = masker.fit_transform([img]).squeeze()
+    assert result == expected_result
 
     default_masker = NiftiLabelsMasker(labels)
     assert default_masker.strategy == "mean"
+
+
+def test_nifti_labels_masker_reduction_strategies_error(affine_eye):
+    """Tests NiftiLabelsMasker invalid strategy."""
+    labels_data = np.array([[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1]]], dtype=np.int8)
+
+    labels = Nifti1Image(labels_data, affine_eye)
+
+    with pytest.raises(ValueError, match="Invalid strategy 'TESTRAISE'"):
+        NiftiLabelsMasker(labels, strategy="TESTRAISE")
 
 
 def test_nifti_labels_masker_resampling(
@@ -521,19 +533,20 @@ def test_nifti_labels_masker_resampling(
         assert_array_equal(get_data(compressed_img), get_data(compressed_img2))
 
 
-def test_standardization(rng, affine_eye):
-    data_shape = (9, 9, 5)
-    n_samples = 500
+def test_standardization(rng, affine_eye, shape_3d_default):
+    n_samples = 400
 
-    signals = rng.standard_normal(size=(np.prod(data_shape), n_samples))
-    means = rng.standard_normal(size=(np.prod(data_shape), 1)) * 50 + 1000
+    signals = rng.standard_normal(size=(np.prod(shape_3d_default), n_samples))
+    means = (
+        rng.standard_normal(size=(np.prod(shape_3d_default), 1)) * 50 + 1000
+    )
     signals += means
     img = Nifti1Image(
-        signals.reshape(data_shape + (n_samples,)),
+        signals.reshape(shape_3d_default + (n_samples,)),
         affine_eye,
     )
 
-    labels = generate_labeled_regions((9, 9, 5), 10)
+    labels = generate_labeled_regions(shape_3d_default, 10)
 
     # Unstandarized
     masker = NiftiLabelsMasker(labels, standardize=False)
@@ -586,7 +599,7 @@ def test_nifti_labels_masker_with_mask(shape_3d_default, affine_eye):
     assert np.allclose(signals, masked_signals)
 
     #  masker.region_atlas_ should be the same as the masked_labels
-    # masked_labels is a 4D image with shape (13,11,12,1)
+    # masked_labels is a 4D image with shape (10,10,10,1)
     masked_labels_data = get_data(masked_labels)[:, :, :, 0]
     assert np.allclose(get_data(masker.region_atlas_), masked_labels_data)
 
