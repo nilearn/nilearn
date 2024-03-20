@@ -368,6 +368,23 @@ def test_nifti_labels_masker_reduction_strategies_error(affine_eye):
         NiftiLabelsMasker(labels, strategy="TESTRAISE")
 
 
+def test_nifti_labels_masker_resampling_errors(affine_eye, shape_3d_default):
+    """Test errors of resampling in NiftiLabelsMasker."""
+    labels33_img = generate_labeled_regions(
+        shape=shape_3d_default,
+        n_regions=9,
+        affine=affine_eye,
+    )
+
+    with pytest.raises(ValueError):
+        NiftiLabelsMasker(labels33_img, resampling_target="mask")
+    with pytest.raises(ValueError):
+        NiftiLabelsMasker(
+            labels33_img,
+            resampling_target="invalid",
+        )
+
+
 def test_nifti_labels_masker_resampling(
     tmp_path, affine_eye, shape_3d_default
 ):
@@ -398,15 +415,6 @@ def test_nifti_labels_masker_resampling(
         n_regions,
         affine=affine_eye,
     )
-
-    # Test error checking
-    with pytest.raises(ValueError):
-        NiftiLabelsMasker(labels33_img, resampling_target="mask")
-    with pytest.raises(ValueError):
-        NiftiLabelsMasker(
-            labels33_img,
-            resampling_target="invalid",
-        )
 
     # Target: labels
     masker = NiftiLabelsMasker(
