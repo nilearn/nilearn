@@ -42,7 +42,7 @@ def test_plot_glass_brain_file_output(img_3d_mni, tmp_path):
     plt.close()
 
 
-def test_plot_noncurrent_axes(affine_eye, rng):
+def test_plot_noncurrent_axes(rng):
     """Regression test for Issue #450."""
     maps_img = Nifti1Image(rng.random((10, 10, 10)), np.eye(4))
     fh1 = plt.figure()

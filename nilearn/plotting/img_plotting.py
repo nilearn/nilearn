@@ -1099,6 +1099,8 @@ def plot_prob_atlas(
         black_bg=black_bg,
         dim=dim,
         radiological=radiological,
+        vmin=vmin,
+        vmax=vmax,
         **kwargs,
     )
 

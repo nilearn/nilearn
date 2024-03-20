@@ -241,7 +241,6 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
                       symmetric_cmap=True, colorbar=False,
                       threshold=None, bg_on_data=False,
                       darkness=.7, vmin=None, vmax=None,
-                      cbar_vmin=None, cbar_vmax=None,
                       cbar_tick_format=".1f", title=None,
                       title_font_size=18, output_file=None):
     """Help for plot_surf.
@@ -862,7 +861,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             hemi=hemi, cmap=cmap, symmetric_cmap=symmetric_cmap,
             colorbar=colorbar, threshold=threshold,
             bg_on_data=bg_on_data, darkness=darkness,
-            vmin=vmin, vmax=vmax, cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
+            vmin=vmin, vmax=vmax,
             cbar_tick_format=cbar_tick_format, title=title,
             title_font_size=title_font_size, output_file=output_file)
 

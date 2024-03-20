@@ -16,6 +16,7 @@ def _codes_bezier(pts):
 
 
 def _codes_segment(pts):
+    # pts is needed for API consistency with _codes_bezier
     return [Path.MOVETO, Path.LINETO]
 
 

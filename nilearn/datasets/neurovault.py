@@ -680,12 +680,14 @@ class Pattern(_SpecialValue):
         )
 
 
-def _empty_filter(arg):
+def _empty_filter(result):
     """Place holder for a filter which always returns True.
 
     This is the default ``image_filter`` and ``collection_filter``
     argument for ``fetch_neurovault``.
 
+    The ``result`` parameter is necessary for the API consistency
+    with other filters.
     """
     return True
 

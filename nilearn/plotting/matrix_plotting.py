@@ -180,7 +180,7 @@ def _configure_axis(
             label.set_rotation(y_label_rotation)
 
 
-def _configure_grid(axes, grid, tri, size):
+def _configure_grid(axes, tri, size):
     """Help for plot_matrix."""
     # Different grids for different layouts
     if tri == "lower":
@@ -308,7 +308,7 @@ def plot_matrix(
         y_label_rotation=10,
     )
     if grid is not False:
-        _configure_grid(axes, grid, tri, len(mat))
+        _configure_grid(axes, tri, len(mat))
     axes.set_ylim(ymin, ymax)
     if auto_fit:
         if labels:
