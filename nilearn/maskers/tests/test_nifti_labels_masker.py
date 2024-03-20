@@ -236,43 +236,11 @@ def test_nifti_labels_masker_io_shapes(rng, affine_eye, shape_3d_default):
         masker.inverse_transform(data_2d.T)
 
 
-def test_nifti_labels_masker_with_nans_and_infs(affine_eye, shape_3d_default):
-    """Apply a NiftiLabelsMasker containing NaNs and infs.
-
-    The masker should replace those NaNs and infs with zeros,
-    while raising a warning.
-    """
-    length = 3
-    n_regions = 9
-    fmri_img, mask_img = generate_random_img(
-        (*shape_3d_default, length),
-        affine=affine_eye,
-    )
-    labels_img = generate_labeled_regions(
-        shape_3d_default,
-        affine=affine_eye,
-        n_regions=n_regions,
-    )
-    # Introduce nans with data type float
-    # See issue: https://github.com/nilearn/nilearn/issues/2580
-    labels_data = get_data(labels_img).astype(np.float32)
-    labels_data[:, :, 7] = np.nan
-    labels_data[:, :, 4] = np.inf
-    labels_img = Nifti1Image(labels_data, np.eye(4))
-
-    masker = NiftiLabelsMasker(labels_img, mask_img=mask_img)
-
-    with pytest.warns(UserWarning, match="Non-finite values detected."):
-        sig = masker.fit_transform(fmri_img)
-
-    assert sig.shape == (length, n_regions)
-    assert np.all(np.isfinite(sig))
-
-
-def test_nifti_labels_masker_with_nans_and_infs_in_mask(
-    affine_eye, shape_3d_default
+@pytest.mark.parametrize("nans_in", ["mask", "labels"])
+def test_nifti_labels_masker_with_nans_and_infs(
+    affine_eye, shape_3d_default, nans_in
 ):
-    """Apply a NiftiLabelsMasker with a mask containing NaNs and infs.
+    """Deal with NaNs and infs in label image or mask.
 
     The masker should replace those NaNs and infs with zeros,
     while raising a warning.
@@ -288,12 +256,19 @@ def test_nifti_labels_masker_with_nans_and_infs_in_mask(
         affine=affine_eye,
         n_regions=n_regions,
     )
+
     # Introduce nans with data type float
     # See issue: https://github.com/nilearn/nilearn/issues/2580
-    mask_data = get_data(mask_img).astype(np.float32)
-    mask_data[:, :, 7] = np.nan
-    mask_data[:, :, 4] = np.inf
-    mask_img = Nifti1Image(mask_data, np.eye(4))
+    def add_nans_and_infs(img, affine):
+        data = get_data(img).astype(np.float32)
+        data[:, :, 7] = np.nan
+        data[:, :, 4] = np.inf
+        return Nifti1Image(data, affine)
+
+    if nans_in == "labels":
+        labels_img = add_nans_and_infs(labels_img, affine_eye)
+    elif nans_in == "mask":
+        mask_img = add_nans_and_infs(mask_img, affine_eye)
 
     masker = NiftiLabelsMasker(labels_img, mask_img=mask_img)
 
