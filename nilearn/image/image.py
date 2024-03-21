@@ -1068,7 +1068,7 @@ def math_img(formula, **imgs):
         ) + exc.args
         raise
 
-    return new_img_like(niimg, result, niimg.affine)
+    return new_img_like(niimg, result, niimg.affine, copy_header=True)
 
 
 def binarize_img(img, threshold=0, mask_img=None, two_sided=True):
