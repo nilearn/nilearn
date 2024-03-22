@@ -12,6 +12,21 @@ from .niimg import _get_data
 MNI152_BRAIN_VOLUME = 1827243.0
 
 
+def check_threshold_is_positive(threshold):
+    """Ensure that threshold values are positive."""
+    if threshold is None or not isinstance(threshold, numbers.Real):
+        return threshold
+    if threshold < 0:
+        warnings.warn(
+            (
+                f"A negative threshold was passed: {threshold}.\n"
+                "Will use the absolute value instead"
+            ),
+            stacklevel=2,
+        )
+        threshold = np.abs(threshold)
+
+
 def check_threshold(threshold, data, percentile_func, name="threshold"):
     """Check if the given threshold is in correct format \
     and within the limit.

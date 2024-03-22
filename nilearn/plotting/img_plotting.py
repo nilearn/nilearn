@@ -27,6 +27,7 @@ from nibabel.spatialimages import SpatialImage
 from scipy import stats
 from scipy.ndimage import binary_fill_holes
 
+from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn.image.resampling import reorder_img
 from nilearn.maskers import NiftiMasker
 from nilearn.plotting.displays import get_projector, get_slicer
@@ -37,8 +38,10 @@ from .._utils import compare_version, fill_doc
 from .._utils.extmath import fast_abs_percentile
 from .._utils.ndimage import get_border_data
 from .._utils.niimg import safe_get_data
-from .._utils.numpy_conversions import as_ndarray
-from .._utils.param_validation import check_threshold
+from .._utils.param_validation import (
+    check_threshold,
+    check_threshold_is_positive,
+)
 from ..datasets import load_mni152_template
 from ..image import get_data, iter_img, math_img, new_img_like, resample_to_img
 from ..masking import apply_mask, compute_epi_mask
@@ -232,6 +235,8 @@ def _plot_img_with_bg(
             "You provided single cut, "
             f"cut_coords={cut_coords}"
         )
+
+    threshold = check_threshold_is_positive(threshold)
 
     if img is not False and img is not None:
         img = _utils.check_niimg_3d(img, dtype="auto")
@@ -1139,14 +1144,14 @@ def plot_prob_atlas(
     if isinstance(threshold, collections.abc.Iterable) and not isinstance(
         threshold, str
     ):
-        threshold = [thr for thr in threshold]
+        threshold = [check_threshold_is_positive(thr) for thr in threshold]
         if len(threshold) != n_maps:
             raise TypeError(
                 "The list of values to threshold "
                 "should be equal to number of maps"
             )
     else:
-        threshold = [threshold] * n_maps
+        threshold = [check_threshold_is_positive(threshold)] * n_maps
 
     filled = view_type.startswith("filled")
     for map_img, color, thr in zip(iter_img(maps_img), color_list, threshold):
