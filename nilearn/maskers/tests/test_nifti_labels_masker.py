@@ -36,72 +36,72 @@ def test_nifti_labels_masker(affine_eye, shape_3d_default, n_regions, length):
     """Check working of shape/affine checks."""
     shape1 = (*shape_3d_default, length)
 
-    shape2 = (12, 10, 14, length)
-
-    fmri11_img, mask11_img = generate_random_img(
+    fmri_img, mask11_img = generate_random_img(
         shape1,
         affine=affine_eye,
     )
 
-    _, mask21_img = generate_random_img(
-        shape2,
-        affine=affine_eye,
-    )
-
-    labels11_img = generate_labeled_regions(
+    labels_img = generate_labeled_regions(
         shape1[:3],
         affine=affine_eye,
         n_regions=n_regions,
     )
 
     # No exception raised here
-    masker11 = NiftiLabelsMasker(labels11_img, resampling_target=None)
-    signals11 = masker11.fit().transform(fmri11_img)
+    masker = NiftiLabelsMasker(labels_img, resampling_target=None)
+    signals = masker.fit().transform(fmri_img)
 
-    assert signals11.shape == (length, n_regions)
+    assert signals.shape == (length, n_regions)
 
     # No exception should be raised either
-    masker11 = NiftiLabelsMasker(labels11_img, resampling_target=None)
+    masker = NiftiLabelsMasker(labels_img, resampling_target=None)
 
     # Check attributes defined at fit
-    assert not hasattr(masker11, "mask_img_")
-    assert not hasattr(masker11, "labels_img_")
-    assert not hasattr(masker11, "n_elements_")
+    assert not hasattr(masker, "mask_img_")
+    assert not hasattr(masker, "labels_img_")
+    assert not hasattr(masker, "n_elements_")
 
-    masker11.fit()
+    masker.fit()
 
     # Check attributes defined at fit
-    assert hasattr(masker11, "mask_img_")
-    assert hasattr(masker11, "labels_img_")
-    assert hasattr(masker11, "n_elements_")
-    assert masker11.n_elements_ == n_regions
+    assert hasattr(masker, "mask_img_")
+    assert hasattr(masker, "labels_img_")
+    assert hasattr(masker, "n_elements_")
+    assert masker.n_elements_ == n_regions
 
-    masker11.inverse_transform(signals11)
+    masker.inverse_transform(signals)
 
-    masker11 = NiftiLabelsMasker(
-        labels11_img, mask_img=mask11_img, resampling_target=None
+    # now with several mask_img
+    masker = NiftiLabelsMasker(
+        labels_img, mask_img=mask11_img, resampling_target=None
     )
-    signals11 = masker11.fit().transform(fmri11_img)
+    signals = masker.fit().transform(fmri_img)
 
-    assert signals11.shape == (length, n_regions)
+    assert signals.shape == (length, n_regions)
 
-    masker11 = NiftiLabelsMasker(
-        labels11_img, mask_img=mask21_img, resampling_target=None
+    shape2 = (12, 10, 14, length)
+    _, mask21_img = generate_random_img(
+        shape2,
+        affine=affine_eye,
+    )
+
+    masker = NiftiLabelsMasker(
+        labels_img, mask_img=mask21_img, resampling_target=None
     )
 
     # Transform, with smoothing (smoke test)
-    masker11 = NiftiLabelsMasker(
-        labels11_img, smoothing_fwhm=3, resampling_target=None
+    masker = NiftiLabelsMasker(
+        labels_img, smoothing_fwhm=3, resampling_target=None
     )
-    signals11 = masker11.fit().transform(fmri11_img)
+    signals = masker.fit().transform(fmri_img)
 
-    assert signals11.shape == (length, n_regions)
+    assert signals.shape == (length, n_regions)
 
     # Call inverse transform (smoke test)
-    fmri11_img_r = masker11.inverse_transform(signals11)
+    fmri_img_r = masker.inverse_transform(signals)
 
-    assert fmri11_img_r.shape == fmri11_img.shape
-    assert_almost_equal(fmri11_img_r.affine, fmri11_img.affine)
+    assert fmri_img_r.shape == fmri_img.shape
+    assert_almost_equal(fmri_img_r.affine, fmri_img.affine)
 
 
 def test_nifti_labels_masker_errors(
@@ -154,21 +154,27 @@ def test_nifti_labels_masker_errors(
 
     # Test all kinds of mismatch between shapes and between affines
     masker11.fit()
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="Images have different affine matrices."
+    ):
         masker11.transform(fmri12_img)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Images have incompatible shapes."):
         masker11.transform(fmri21_img)
 
     masker11 = NiftiLabelsMasker(
         labels11_img, mask_img=mask12_img, resampling_target=None
     )
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="Regions and mask do not have the same affine."
+    ):
         masker11.fit()
 
     masker11 = NiftiLabelsMasker(
         labels11_img, mask_img=mask21_img, resampling_target=None
     )
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="Regions and mask do not have the same shape"
+    ):
         masker11.fit()
 
     masker11 = NiftiLabelsMasker(
@@ -247,7 +253,9 @@ def test_nifti_labels_masker_io_shapes(
 
         assert test_img.shape == shape_4d
 
-    with pytest.raises(IndexError):
+    with pytest.raises(
+        IndexError, match="index 6 is out of bounds for axis 1 with size 5"
+    ):
         masker.inverse_transform(data_2d.T)
 
 
@@ -391,10 +399,16 @@ def test_nifti_labels_masker_resampling_errors(
         affine=affine_eye,
     )
 
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match="invalid value for 'resampling_target' parameter: mask",
+    ):
         NiftiLabelsMasker(labels_img, resampling_target="mask")
 
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match="invalid value for 'resampling_target' parameter: invalid",
+    ):
         NiftiLabelsMasker(
             labels_img,
             resampling_target="invalid",
@@ -410,14 +424,12 @@ def test_nifti_labels_masker_resampling_to_data(
     # maps
     shape3 = (16, 18, 20)
 
-    _, mask22_img = generate_random_img(
+    _, mask_img = generate_random_img(
         shape2,
         affine=affine_eye,
     )
 
-    labels33_img = generate_labeled_regions(
-        shape3, n_regions, affine=affine_eye
-    )
+    labels_img = generate_labeled_regions(shape3, n_regions, affine=affine_eye)
 
     # Test with data and atlas of different shape:
     # the atlas should be resampled to the data
@@ -425,21 +437,21 @@ def test_nifti_labels_masker_resampling_to_data(
     affine2 = 2 * affine_eye
     affine2[-1, -1] = 1
 
-    fmri22_img, _ = generate_random_img(
+    fmri_img, _ = generate_random_img(
         shape22,
         affine=affine2,
     )
 
     masker = NiftiLabelsMasker(
-        labels33_img, mask_img=mask22_img, resampling_target="data"
+        labels_img, mask_img=mask_img, resampling_target="data"
     )
-    masker.fit_transform(fmri22_img)
+    masker.fit_transform(fmri_img)
 
     assert_array_equal(masker._resampled_labels_img_.affine, affine2)
 
     # Test with filenames
-    filename = write_imgs_to_path(fmri22_img, file_path=tmp_path)
-    masker = NiftiLabelsMasker(labels33_img, resampling_target="data")
+    filename = write_imgs_to_path(fmri_img, file_path=tmp_path)
+    masker = NiftiLabelsMasker(labels_img, resampling_target="data")
     masker.fit_transform(filename)
 
 
@@ -503,33 +515,33 @@ def test_nifti_labels_masker_resampling_to_labels(
     shape3 = (13, 14, 15)
 
     # With data of the same affine
-    fmri11_img, _ = generate_random_img(
+    fmri_img, _ = generate_random_img(
         shape1,
         affine=affine_eye,
     )
-    _, mask22_img = generate_random_img(
+    _, mask_img = generate_random_img(
         shape2,
         affine=affine_eye,
     )
 
-    labels33_img = generate_labeled_regions(
+    labels_img = generate_labeled_regions(
         shape3,
         n_regions,
         affine=affine_eye,
     )
 
     masker = NiftiLabelsMasker(
-        labels33_img, mask_img=mask22_img, resampling_target="labels"
+        labels_img, mask_img=mask_img, resampling_target="labels"
     )
 
     masker.fit()
 
-    assert_almost_equal(masker.labels_img_.affine, labels33_img.affine)
-    assert masker.labels_img_.shape == labels33_img.shape
+    assert_almost_equal(masker.labels_img_.affine, labels_img.affine)
+    assert masker.labels_img_.shape == labels_img.shape
     assert_almost_equal(masker.mask_img_.affine, masker.labels_img_.affine)
     assert masker.mask_img_.shape == masker.labels_img_.shape[:3]
 
-    transformed = masker.transform(fmri11_img)
+    transformed = masker.transform(fmri_img)
 
     assert transformed.shape == (length, n_regions)
 
@@ -594,6 +606,39 @@ def test_nifti_labels_masker_resampling_to_clipped_labels(
 
     assert_almost_equal(fmri11_img_r.affine, masker.labels_img_.affine)
     assert fmri11_img_r.shape == (masker.labels_img_.shape[:3] + (length,))
+
+
+def test_nifti_labels_masker_resampling_to_none(
+    affine_eye, n_regions, length, shape_3d_default
+):
+    """Test resampling to None in NiftiLabelsMasker.
+
+    All inputs must have same affine to avoid errors.
+    """
+    fmri_img, mask_img = generate_random_img(
+        shape=(*shape_3d_default, length),
+        affine=affine_eye,
+    )
+    labels_img = generate_labeled_regions(
+        shape_3d_default, n_regions, affine=affine_eye
+    )
+
+    masker = NiftiLabelsMasker(
+        labels_img, mask_img=mask_img, resampling_target=None
+    )
+    masker.fit_transform(fmri_img)
+
+    fmri_img, _ = generate_random_img(
+        (*shape_3d_default, length),
+        affine=affine_eye * 2,
+    )
+    masker = NiftiLabelsMasker(
+        labels_img, mask_img=mask_img, resampling_target=None
+    )
+    with pytest.raises(
+        ValueError, match="Images have different affine matrices."
+    ):
+        masker.fit_transform(fmri_img)
 
 
 def test_standardization(rng, affine_eye, shape_3d_default, n_regions):
