@@ -38,7 +38,7 @@ from .._utils.extmath import fast_abs_percentile
 from .._utils.ndimage import get_border_data
 from .._utils.niimg import safe_get_data
 from .._utils.numpy_conversions import as_ndarray
-from .._utils.param_validation import check_threshold
+from .._utils.param_validation import check_symmetric_cbar, check_threshold
 from ..datasets import load_mni152_template
 from ..image import get_data, iter_img, math_img, new_img_like, resample_to_img
 from ..masking import apply_mask, compute_epi_mask
@@ -1313,6 +1313,8 @@ def plot_stat_map(
 
     stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype="auto")
 
+    symmetric_cbar = check_symmetric_cbar(symmetric_cbar)
+
     cbar_vmin, cbar_vmax, vmin, vmax = get_colorbar_and_data_ranges(
         safe_get_data(stat_map_img, ensure_finite=True),
         vmin=vmin,
@@ -1454,6 +1456,8 @@ def plot_glass_brain(
                 "cmap_pos",
                 cmap(np.linspace(0.5, 1, 256)),
             )
+
+    symmetric_cbar = check_symmetric_cbar(symmetric_cbar)
 
     if stat_map_img:
         stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype="auto")

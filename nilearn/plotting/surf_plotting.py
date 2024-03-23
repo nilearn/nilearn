@@ -17,6 +17,7 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from nilearn import image, surface
 from nilearn._utils import check_niimg_3d, compare_version, fill_doc
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
+from nilearn._utils.param_validation import check_symmetric_cbar
 from nilearn.plotting.cm import cold_hot, mix_colormaps
 from nilearn.plotting.displays._slicers import _get_cbar_ticks
 from nilearn.plotting.html_surface import get_vertexcolor
@@ -1183,6 +1184,8 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
 
     """
+    symmetric_cbar = check_symmetric_cbar(symmetric_cbar)
+
     loaded_stat_map = load_surf_data(stat_map)
 
     # Call get_colorbar_and_data_ranges to derive symmetric vmin, vmax
@@ -1433,6 +1436,8 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
     modes = _check_views(views)
     hemis = _check_hemispheres(hemispheres)
     surf_mesh = check_mesh(surf_mesh)
+
+    symmetric_cbar = check_symmetric_cbar(symmetric_cbar)
 
     mesh_prefix = "infl" if inflate else "pial"
     surf = {

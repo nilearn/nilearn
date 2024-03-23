@@ -83,6 +83,19 @@ def check_threshold(threshold, data, percentile_func, name="threshold"):
     return threshold
 
 
+def check_symmetric_cbar(symmetric_cbar):
+    """Check value of symmetric_cbar."""
+    if symmetric_cbar is None:
+        symmetric_cbar = "auto"
+    print(symmetric_cbar not in [True, False, "auto"])
+    if isinstance(symmetric_cbar, bool) or symmetric_cbar != "auto":
+        raise ValueError(
+            "'symmetric_cbar' must be a booelan or 'auto'.\n"
+            f"got: {symmetric_cbar}"
+        )
+    return symmetric_cbar
+
+
 def get_mask_volume(mask_img):
     """Compute the volume of a brain mask in mm^3.
 
