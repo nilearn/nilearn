@@ -247,8 +247,8 @@ def generate_labeled_regions(
     """
     n_voxels = shape[0] * shape[1] * shape[2]
     if labels is None:
-        labels = range(0, n_regions + 1)
         n_regions += 1
+        labels = range(n_regions)
     else:
         n_regions = len(labels)
 

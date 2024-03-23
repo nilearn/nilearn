@@ -484,7 +484,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         # Infer the number of elements (voxels) in the mask
         self.n_elements_ = int(data.sum())
 
-        if self.verbose > 10:
+        if self.verbose > 0:
             print(f"[{self.__class__.__name__}.fit] Finished fit")
 
         if (

@@ -111,6 +111,12 @@ Configured in [pyproject.toml](../../pyproject.toml)
 Flynt will check if it automatically convert "format" or "%" strings to "f strings".
 This workflow will fail if it finds any potential target to be converted.
 
+## Prettier formatting
+
+### prettier.yml
+
+Runs prettier to format HTML and CSS on the codebase both in pull requests and on main.
+
 ## Sort imports automatically
 
 ### isort.yml

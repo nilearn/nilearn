@@ -879,79 +879,82 @@ def test_plot_surf_roi_colorbar_vmin_equal_across_engines(kwargs):
 
 
 def test_plot_img_on_surf_hemispheres_and_orientations(img_3d_mni):
-    nii = img_3d_mni
     # Check that all combinations of 1D or 2D hemis and orientations work.
-    plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'])
-    plot_img_on_surf(nii, hemispheres=['left', 'right'], views=['lateral'])
-    plot_img_on_surf(nii,
+    plot_img_on_surf(img_3d_mni,
+                     hemispheres=['right'],
+                     views=['lateral'])
+    plot_img_on_surf(img_3d_mni,
+                     hemispheres=['left', 'right'],
+                     views=['lateral'])
+    plot_img_on_surf(img_3d_mni,
                      hemispheres=['right'],
                      views=['medial', 'lateral'])
-    plot_img_on_surf(nii,
+    plot_img_on_surf(img_3d_mni,
                      hemispheres=['left', 'right'],
                      views=['dorsal', 'medial'])
     # Check that manually set view angles work.
-    plot_img_on_surf(nii,
+    plot_img_on_surf(img_3d_mni,
                      hemispheres=['left', 'right'],
                      views=[(210.0, 90.0), (15.0, -45.0)])
 
 
 def test_plot_img_on_surf_colorbar(img_3d_mni):
-    nii = img_3d_mni
-    plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'],
+    plot_img_on_surf(img_3d_mni, hemispheres=['right'], views=['lateral'],
                      colorbar=True, vmin=-5, vmax=5, threshold=3)
-    plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'],
+    plot_img_on_surf(img_3d_mni, hemispheres=['right'], views=['lateral'],
                      colorbar=True, vmin=-1, vmax=5, symmetric_cbar=False,
                      threshold=3)
-    plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'],
+    plot_img_on_surf(img_3d_mni, hemispheres=['right'], views=['lateral'],
                      colorbar=False)
-    plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'],
+    plot_img_on_surf(img_3d_mni, hemispheres=['right'], views=['lateral'],
                      colorbar=False, cmap='roy_big_bl')
-    plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'],
+    plot_img_on_surf(img_3d_mni, hemispheres=['right'], views=['lateral'],
                      colorbar=True, cmap='roy_big_bl', vmax=2)
 
 
 def test_plot_img_on_surf_inflate(img_3d_mni):
-    nii = img_3d_mni
-    plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'],
+    plot_img_on_surf(img_3d_mni, hemispheres=['right'], views=['lateral'],
                      inflate=True)
 
 
 def test_plot_img_on_surf_surf_mesh(img_3d_mni):
-    nii = img_3d_mni
-    plot_img_on_surf(nii, hemispheres=['right', 'left'], views=['lateral'])
-    plot_img_on_surf(nii, hemispheres=['right', 'left'], views=['lateral'],
+    plot_img_on_surf(img_3d_mni,
+                     hemispheres=['right', 'left'],
+                     views=['lateral'])
+    plot_img_on_surf(img_3d_mni,
+                     hemispheres=['right', 'left'],
+                     views=['lateral'],
                      surf_mesh='fsaverage5')
-    surf_mesh = fetch_surf_fsaverage()
-    plot_img_on_surf(nii, hemispheres=['right', 'left'], views=['lateral'],
-                     surf_mesh=surf_mesh)
+    plot_img_on_surf(img_3d_mni,
+                     hemispheres=['right', 'left'],
+                     views=['lateral'],
+                     surf_mesh=fetch_surf_fsaverage())
 
 
 def test_plot_img_on_surf_with_invalid_orientation(img_3d_mni):
     kwargs = {"hemisphere": ["right"], "inflate": True}
-    nii = img_3d_mni
     with pytest.raises(ValueError):
-        plot_img_on_surf(nii, views=['latral'], **kwargs)
+        plot_img_on_surf(img_3d_mni, views=['latral'], **kwargs)
     with pytest.raises(ValueError):
-        plot_img_on_surf(nii, views=['dorsal', 'post'], **kwargs)
+        plot_img_on_surf(img_3d_mni, views=['dorsal', 'post'], **kwargs)
     with pytest.raises(TypeError):
-        plot_img_on_surf(nii, views=0, **kwargs)
+        plot_img_on_surf(img_3d_mni, views=0, **kwargs)
     with pytest.raises(ValueError):
-        plot_img_on_surf(nii, views=['medial', {'a': 'a'}], **kwargs)
+        plot_img_on_surf(img_3d_mni, views=['medial', {'a': 'a'}], **kwargs)
 
 
 def test_plot_img_on_surf_with_invalid_hemisphere(img_3d_mni):
-    nii = img_3d_mni
     with pytest.raises(ValueError):
         plot_img_on_surf(
-            nii, views=['lateral'], inflate=True, hemispheres=["lft]"]
+            img_3d_mni, views=['lateral'], inflate=True, hemispheres=["lft]"]
         )
     with pytest.raises(ValueError):
         plot_img_on_surf(
-            nii, views=['medial'], inflate=True, hemispheres=['lef']
+            img_3d_mni, views=['medial'], inflate=True, hemispheres=['lef']
         )
     with pytest.raises(ValueError):
         plot_img_on_surf(
-            nii,
+            img_3d_mni,
             views=['anterior', 'posterior'],
             inflate=True,
             hemispheres=['left', 'right', 'middle']
@@ -959,10 +962,9 @@ def test_plot_img_on_surf_with_invalid_hemisphere(img_3d_mni):
 
 
 def test_plot_img_on_surf_with_figure_kwarg(img_3d_mni):
-    nii = img_3d_mni
     with pytest.raises(ValueError):
         plot_img_on_surf(
-            nii,
+            img_3d_mni,
             views=["anterior"],
             hemispheres=["right"],
             figure=True,
@@ -970,10 +972,9 @@ def test_plot_img_on_surf_with_figure_kwarg(img_3d_mni):
 
 
 def test_plot_img_on_surf_with_axes_kwarg(img_3d_mni):
-    nii = img_3d_mni
     with pytest.raises(ValueError):
         plot_img_on_surf(
-            nii,
+            img_3d_mni,
             views=["anterior"],
             hemispheres=["right"],
             inflat=True,
@@ -1006,14 +1007,19 @@ def test_plot_img_on_surf_title(img_3d_mni):
 
 
 def test_plot_img_on_surf_output_file(tmp_path, img_3d_mni):
-    nii = img_3d_mni
     fname = tmp_path / 'tmp.png'
-    return_value = plot_img_on_surf(nii,
+    return_value = plot_img_on_surf(img_3d_mni,
                                     hemispheres=['right'],
                                     views=['lateral'],
                                     output_file=str(fname))
     assert return_value is None, "Returned figure and axes on file output."
     assert fname.is_file(), "Saved image file could not be found."
+
+
+def test_plot_img_on_surf_input_as_file(img_3d_mni_as_file):
+    """Test nifti is supported when passed as string or path to a file."""
+    plot_img_on_surf(stat_map=img_3d_mni_as_file)
+    plot_img_on_surf(stat_map=str(img_3d_mni_as_file))
 
 
 def test_plot_surf_contours():
@@ -1204,3 +1210,16 @@ def test_plot_surf_roi_default_arguments(engine, symmetric_cmap, avg_method):
                   darkness=None,  # to avoid deprecation warning
                   cmap="RdYlBu_r",
                   avg_method=avg_method)
+
+
+@pytest.mark.parametrize("function", [plot_surf_roi,
+                                      plot_surf_stat_map,
+                                      plot_surf_contours,
+                                      plot_surf])
+def test_error_nifti_not_supported(function, img_3d_mni_as_file):
+    """Test nifti file not supported by several surface plotting functions."""
+    mesh = generate_surf()
+    with pytest.raises(ValueError, match='The input type is not recognized'):
+        function(mesh, img_3d_mni_as_file)
+    with pytest.raises(ValueError, match='The input type is not recognized'):
+        function(mesh, str(img_3d_mni_as_file))

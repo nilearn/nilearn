@@ -34,7 +34,7 @@ We welcome open discussion around improvements---both to the documentation as we
   to make sure it has not already been reported. If the bug has not been reported yet,
   create an :nilearn-gh:`new issue <issues/new/choose>`
   including a `minimal runnable example <https://stackoverflow.com/help/minimal-reproducible-example>`_
-  to showcase it (using Nilearn data) as well as your OS and Nilearn version.
+  to showcase it (using :ref:`nilearn.datasets <datasets_ref>`) as well as your OS and Nilearn version.
 
 * If you have an idea for a new feature, check if it is in the :ref:`nilearn_scope`
   and feel free to open a :nilearn-gh:`new issue <issues/new/choose>` to discuss it.
@@ -470,6 +470,18 @@ Code inside ``maskers._validation.py``:
 
 ..
       Source: Jerome Dockes https://github.com/nilearn/nilearn/issues/3628#issuecomment-1515211711
+
+Guidelines for HTML and CSS
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+We use `prettier <https://prettier.io/>`_ to format HTML and CSS.
+
+This is implemented via a pre-commit hook (see below)
+that can be run with
+
+.. code-block:: bash
+
+      pre-commit run --all-files prettier
 
 Pre-commit
 ----------
