@@ -236,8 +236,6 @@ def _plot_img_with_bg(
             f"cut_coords={cut_coords}"
         )
 
-    threshold = check_threshold_is_positive(threshold)
-
     if img is not False and img is not None:
         img = _utils.check_niimg_3d(img, dtype="auto")
         data = safe_get_data(img, ensure_finite=True)
@@ -253,6 +251,8 @@ def _plot_img_with_bg(
             threshold = fast_abs_percentile(data) - 1e-5
 
         img = new_img_like(img, as_ndarray(data), affine)
+
+    threshold = check_threshold_is_positive(threshold)
 
     display = display_factory(display_mode)(
         img,

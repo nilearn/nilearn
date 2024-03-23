@@ -14,7 +14,7 @@ MNI152_BRAIN_VOLUME = 1827243.0
 
 def check_threshold_is_positive(threshold):
     """Ensure that threshold values are positive."""
-    if threshold is None or not isinstance(threshold, numbers.Real):
+    if threshold is None or isinstance(threshold, (str, list)):
         return threshold
     if threshold < 0:
         warnings.warn(
@@ -25,6 +25,7 @@ def check_threshold_is_positive(threshold):
             stacklevel=2,
         )
         threshold = np.abs(threshold)
+    return threshold
 
 
 def check_threshold(threshold, data, percentile_func, name="threshold"):
