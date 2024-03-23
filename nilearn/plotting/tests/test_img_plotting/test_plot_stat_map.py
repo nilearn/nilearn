@@ -78,9 +78,17 @@ def test_plot_stat_map_with_masked_image(img_3d_mni, affine_mni):
     ],
 )
 def test_plot_stat_map_threshold(data, affine_eye):
-    """Tests plot_stat_map with threshold (see #510)."""
+    """Test plot_stat_map with threshold.
+
+    See https://github.com/nilearn/nilearn/issues/510.
+    """
     plot_stat_map(Nifti1Image(data, affine_eye), threshold=1000, colorbar=True)
     plt.close()
+
+
+def test_plot_stat_map_negative_threshold(img_3d_rand_eye):
+    with pytest.warns(match="negative"):
+        plot_stat_map(img_3d_rand_eye, threshold=-0.1)
 
 
 def test_plot_stat_map_threshold_for_affine_with_rotation(rng):

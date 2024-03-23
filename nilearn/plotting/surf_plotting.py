@@ -17,6 +17,7 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from nilearn import image, surface
 from nilearn._utils import check_niimg_3d, compare_version, fill_doc
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
+from nilearn._utils.param_validation import check_threshold_is_positive
 from nilearn.plotting.cm import cold_hot, mix_colormaps
 from nilearn.plotting.displays._slicers import _get_cbar_ticks
 from nilearn.plotting.html_surface import get_vertexcolor
@@ -835,6 +836,14 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
                      f"Use '{parameter} = None' to silence this warning."))
 
     coords, faces = load_surf_mesh(surf_mesh)
+
+    threshold = check_threshold_is_positive(threshold)
+
+    if threshold is not None and threshold < 0:
+        warn((f"A negative threshold was passed: {threshold}.\n"
+              "Will use the absolute value instead"),
+             stacklevel=2)
+        threshold = np.abs(threshold)
 
     if engine == 'matplotlib':
         # setting defaults
