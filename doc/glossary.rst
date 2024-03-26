@@ -191,7 +191,7 @@ If you wish to add a missing term, please
         that have been matched to the MNI305 using a 9 parameter affine transform.
 
     MVPA
-        Mutli-Voxel Pattern Analysis. This is the way :term:`supervised learning`
+        Multi-Voxel Pattern Analysis. This is the way :term:`supervised learning`
         methods are called in the field of brain imaging.
 
     Neurovault
