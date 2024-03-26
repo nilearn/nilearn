@@ -91,7 +91,6 @@ import numpy as np
 
 from nilearn import surface
 
-atlas = destrieux_atlas
 coordinates = []
 labels = destrieux_atlas['labels']
 for hemi in ['left', 'right']:

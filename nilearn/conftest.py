@@ -13,13 +13,10 @@ from nilearn import image
 # we need to import these fixtures even if not used in this module
 from nilearn.datasets.tests._testing import request_mocker  # noqa: F401
 from nilearn.datasets.tests._testing import temp_nilearn_data_dir  # noqa: F401
-
-# TODO This import needs to be removed once the experimental surface API and
-# its pytest fixtures are integrated into the stable API
-from nilearn.experimental.surface.tests.conftest import (  # noqa: F401
-    make_mini_img,
-    mini_img,
+from nilearn.experimental.conftest import (
+    make_mini_surface_img,
     mini_mesh,
+    mini_surface_img,
 )
 
 collect_ignore = ["datasets/data/convert_templates.py"]
@@ -29,7 +26,7 @@ collect_ignore_glob = ["reporting/_visual_testing/*"]
 try:
     import matplotlib  # noqa: F401
 except ImportError:
-    collect_ignore.extend(["plotting", "reporting"])
+    collect_ignore.extend(["plotting", "reporting", "experimental/plotting"])
     matplotlib = None
 
 

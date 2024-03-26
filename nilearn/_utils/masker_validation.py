@@ -110,7 +110,7 @@ def check_embedded_masker(estimator, masker_type="multi_nii"):
             "Overriding provided-default estimator parameters with"
             f" provided masker parameters :\n{conflict_string}"
         )
-        warnings.warn(warn_str)
+        warnings.warn(warn_str, stacklevel=3)
     masker = masker_type(**new_masker_params)
 
     # Forwarding potential attribute of provided masker

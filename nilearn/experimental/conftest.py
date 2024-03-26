@@ -31,14 +31,14 @@ def mini_mesh() -> PolyMesh:
         ]
     )
     return {
-        "left_hemisphere": InMemoryMesh(left_coords, left_faces),
-        "right_hemisphere": InMemoryMesh(right_coords, right_faces),
+        "left": InMemoryMesh(left_coords, left_faces),
+        "right": InMemoryMesh(right_coords, right_faces),
     }
 
 
 @pytest.fixture
-def make_mini_img(mini_mesh) -> Callable:
-    """Small surface image for tests."""
+def make_mini_surface_img(mini_mesh) -> Callable:
+    """Small surface image for tests"""
 
     def f(shape=()):
         data = {}
@@ -54,14 +54,14 @@ def make_mini_img(mini_mesh) -> Callable:
 
 
 @pytest.fixture
-def mini_mask(mini_img) -> SurfaceImage:
-    data = {k: (v > v.ravel()[0]) for k, v in mini_img.data.items()}
-    return SurfaceImage(mini_img.mesh, data)
+def mini_surface_mask(mini_surface_img) -> SurfaceImage:
+    data = {k: (v > v.ravel()[0]) for k, v in mini_surface_img.data.items()}
+    return SurfaceImage(mini_surface_img.mesh, data)
 
 
 @pytest.fixture
-def mini_img(make_mini_img) -> SurfaceImage:
-    return make_mini_img()
+def mini_surface_img(make_mini_surface_img) -> SurfaceImage:
+    return make_mini_surface_img()
 
 
 @pytest.fixture
@@ -102,7 +102,7 @@ def assert_img_equal():
 
 @pytest.fixture
 def drop_img_part():
-    def f(img, part_name="right_hemisphere"):
+    def f(img, part_name="right"):
         mesh = img.mesh.copy()
         mesh.pop(part_name)
         data = img.data.copy()

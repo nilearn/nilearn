@@ -148,3 +148,10 @@ class SurfaceImage:
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {getattr(self, 'shape', '')}>"
+
+    def _check_hemi(self, hemi: str):
+        """Check that requested hemisphere is present."""
+        if hemi not in self.data:
+            raise ValueError(f"{hemi} must be present in SurfaceImage data")
+        if hemi not in self.mesh:
+            raise ValueError(f"{hemi} must be present in SurfaceImage mesh")

@@ -2200,13 +2200,12 @@ def fetch_language_localizer_demo_dataset(
         - 'description' : :obj:`str`, dataset description
 
     Legacy output
-    -------------
+
     data_dir : :obj:`str`
         Path to downloaded dataset.
 
     downloaded_files : :obj:`list` of :obj:`str`
         Absolute paths of downloaded files on disk
-
     """
     url = "https://osf.io/3dj2a/download"
     # When it starts working again change back to:

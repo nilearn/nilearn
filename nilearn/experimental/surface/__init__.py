@@ -4,6 +4,7 @@ from nilearn.experimental.surface._datasets import (
     fetch_destrieux,
     fetch_nki,
     load_fsaverage,
+    load_fsaverage_data,
 )
 from nilearn.experimental.surface._maskers import (
     SurfaceLabelsMasker,
@@ -23,9 +24,10 @@ __all__ = [
     "Mesh",
     "PolyMesh",
     "SurfaceImage",
-    "SurfaceLabelsMasker",
-    "SurfaceMasker",
     "fetch_destrieux",
     "fetch_nki",
     "load_fsaverage",
+    "SurfaceLabelsMasker",
+    "SurfaceMasker",
+    "load_fsaverage_data",
 ]
