@@ -279,14 +279,6 @@ Once the PR has been reviewed and merged, pull from master and tag the merge com
     When building the distribution as described below, ``hatch-vcs``, defined in ``pyproject.toml``,
     extracts the version number using this tag and writes it to a ``_version.py`` file.
 
-Build of stable docs
---------------------
-
-Once the new version tag of a release is pushed upstream following the step
-above, the Github Actions workflow ``release-docs.yml`` will be triggered
-automatically to build the stable docs and push them to
-our github pages repository ``nilearn/nilearn.github.io``. The workflow can
-also be triggered from the Actions tab.
 
 Build the distributions and upload them to Pypi
 -----------------------------------------------
@@ -354,6 +346,31 @@ At this point, we need to upload the binaries to GitHub and link them to the tag
 To do so, go to the :nilearn-gh:`Nilearn GitHub page <tags>` under the "Releases" tab,
 and edit the ``x.y.z`` tag by providing a description,
 and upload the distributions we just created (you can just drag and drop the files).
+
+
+Build of stable docs
+--------------------
+
+Once the new Github released has been done following the step above,
+the Github Actions workflow ``release-docs.yml`` will be triggered
+automatically to build the stable docs
+and push them to our github pages repository ``nilearn/nilearn.github.io``.
+The workflow can also be triggered manually from the Actions tab.
+
+Make sure the workflows completes successfully
+and check that the new version of the documentation
+has been properly deployed.
+
+
+Release on Zenodo
+-----------------
+
+The Github release should also automatically trigger a release on zenodo
+where each version gets minted with its own digital object identifier (DOI)
+and where this following DOI represents all versions,
+and will always resolve to the latest one:
+
+https://zenodo.org/doi/10.5281/zenodo.8397156
 
 
 Build and deploy the documentation manually

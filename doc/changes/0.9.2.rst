@@ -98,7 +98,7 @@ Changes
 
 - :bdg-primary:`Doc` 64-bit integers in Nifti files: some tools such as FSL, SPM and AFNI cannot handle Nifti images containing 64-bit integers. To avoid compatibility issues, it is best to avoid writing such images and in the future trying to create them with ``nibabel`` without explicitly specifying a data type will result in an error. See details in this issue: https://github.com/nipy/nibabel/issues/1046 and this PR: https://github.com/nipy/nibabel/pull/1082. To avoid this, :func:`~image.new_img_like` now warns when given int64 arrays and converts them to int32 when possible (ie when it would not result in an overflow). Moreover, any atlas fetcher that returned int64 images now produces images containing smaller ints. (:gh:`3227` by `Jerome Dockes`_)
 
-- :bdg-secondary:`Maint` Refactors fmriprep confound loading such that that the parsing of the relevant image file and the loading of the confounds are done in separate steps (:gh:`3274` by `David G Ellis`_).
+- :bdg-secondary:`Maint` Refactors fmriprep confound loading such that the parsing of the relevant image file and the loading of the confounds are done in separate steps (:gh:`3274` by `David G Ellis`_).
 
 - :bdg-secondary:`Maint` Private submodules, functions, and classes from the :mod:`~nilearn.decomposition` module now start with a "_" character to make it clear that they are not part of the public API (:gh:`3141` by `Nicolas Gensollen`_).
 

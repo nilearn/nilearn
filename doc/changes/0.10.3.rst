@@ -21,13 +21,13 @@ HIGHLIGHTS
 
 - :bdg-success:`API` Allow passing arguments to :func:`~nilearn.glm.first_level.first_level_from_bids` to build first level models that include specific set of confounds by relying on the strategies from :func:`~nilearn.interfaces.fmriprep.load_confounds` (:gh:`4103` by `Rémi Gau`_).
 
-- :bdg-success:`API` Support passing t and F contrasts to :func:`~nilearn.glm.compute_contrast` that that have fewer columns than the number of estimated parameters. Remaining columns are padded with zero (:gh:`4067` by `Rémi Gau`_).
+- :bdg-success:`API` Support passing t and F contrasts to :func:`~nilearn.glm.compute_contrast` that have fewer columns than the number of estimated parameters. Remaining columns are padded with zero (:gh:`4067` by `Rémi Gau`_).
 
 - :bdg-success:`API` :class:`~maskers.NiftiSpheresMasker` now has ``generate_report`` method (:gh:`3102` by `Yasmin Mzayek`_ and `Nicolas Gensollen`_).
 
 - :bdg-dark:`Code` Update the ``CompCor`` strategy in :func:`~interfaces.fmriprep.load_confounds` and :func:`~interfaces.fmriprep.load_confounds_strategy` to support ``fmriprep`` 21.x series and above. (:gh:`3285` by `Hao-Ting Wang`_).
 
-- :bdg-primary:`Doc` Combine GLM examples ``plot_fixed_effect`` and ``plot_fiac_analysis`` into a a single example ``plot_two_runs_model`` (:gh:`3191` by `Taylor Salo`_ and `Rémi Gau`_).
+- :bdg-primary:`Doc` Combine GLM examples ``plot_fixed_effect`` and ``plot_fiac_analysis`` into a single example ``plot_two_runs_model`` (:gh:`3191` by `Taylor Salo`_ and `Rémi Gau`_).
 
 - :bdg-info:`Plotting` Allow setting ``vmin`` in :func:`~nilearn.plotting.plot_glass_brain` and :func:`~nilearn.plotting.plot_stat_map` (:gh:`3993` by `Michelle Wang`_).
 
@@ -70,7 +70,7 @@ Enhancements
 
 - :bdg-success:`API` Allow passing arguments to :func:`~nilearn.glm.first_level.first_level_from_bids` to build first level models that include specific set of confounds by relying on the strategies from :func:`~nilearn.interfaces.fmriprep.load_confounds` (:gh:`4103` by `Rémi Gau`_).
 
-- :bdg-success:`API` Support passing t and F contrasts to :func:`~nilearn.glm.compute_contrast` that that have fewer columns than the number of estimated parameters. Remaining columns are padded with zero (:gh:`4067` by `Rémi Gau`_).
+- :bdg-success:`API` Support passing t and F contrasts to :func:`~nilearn.glm.compute_contrast` that have fewer columns than the number of estimated parameters. Remaining columns are padded with zero (:gh:`4067` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Multi-subject maskers' ``generate_report`` method no longer fails with 5D data but instead shows report of first subject. User can index input list to show report for different subjects (:gh:`3935` by `Yasmin Mzayek`_).
 
@@ -122,6 +122,6 @@ Changes
 
 - :bdg-danger:`Deprecation` the default parameter of ``fd_threshold`` and ``std_dvars_threshold`` in :func:`~interfaces.fmriprep.load_confounds` with be updated to match ``fmriprep`` default in version 0.13 (:gh:`4225` by `Hao-Ting Wang`_).
 
-- :bdg-primary:`Doc` Combine GLM examples ``plot_fixed_effect`` and ``plot_fiac_analysis`` into a a single example ``plot_two_runs_model`` (:gh:`3191` by `Taylor Salo`_ and `Rémi Gau`_).
+- :bdg-primary:`Doc` Combine GLM examples ``plot_fixed_effect`` and ``plot_fiac_analysis`` into a single example ``plot_two_runs_model`` (:gh:`3191` by `Taylor Salo`_ and `Rémi Gau`_).
 
 - :bdg-secondary:`Maint` Switch to using tox to manage environments during development and testing. All plotting python dependencies (matplotlib AND plotly) are now installed when running ``pip install nilearn[plotting]`` (:gh:`4029` by `Rémi Gau`_).
