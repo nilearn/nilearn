@@ -1239,7 +1239,7 @@ def first_level_from_bids(
 
     Returns
     -------
-    models : list of :class:`~nilearn.glm.FirstLevelModel` objects
+    models : list of :class:`~nilearn.glm.first_level.FirstLevelModel` objects
         Each FirstLevelModel object corresponds to a subject.
         All runs from different sessions are considered together
         for the same subject to run a fixed effects analysis on them.
