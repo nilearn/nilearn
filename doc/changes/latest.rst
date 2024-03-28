@@ -28,7 +28,7 @@ Fixes
 - :bdg-dark:`Code` Fix cut position in nifti maps maskers to match displayed map maximum (:gh:`4304` by `Rémi Gau`_).
 - :bdg-dark:`Code` Make sure that :class:`nilearn.maskers.NiftiSpheresMasker` reports displays properly when it contains only 1 sphere (:gh:`4269` by `Rémi Gau`_).
 - :bdg-dark:`Code` Miscellaneous fixes in GLM reports (only display FIR delay if FIR is used, display color bar "Z score" legend...) (:gh:`4266` by `Rémi Gau`_).
-
+- :bdg-primary:`Doc` Fix minor typos in documentation (glossary and connectivity/parcellating) (:gh:`4343` by `Florent Pollet`_).
 
 Enhancements
 ------------
