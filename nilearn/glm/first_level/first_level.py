@@ -1148,24 +1148,32 @@ def first_level_from_bids(
         derivatives and app folder path containing preprocessed files.
         Like "derivatives/FMRIPREP".
 
-    All other parameters correspond to a `FirstLevelModel` object, which
-    contains their documentation.
-    The subject label of the model will be determined directly
-    from the :term:`BIDS` dataset.
-
-    kwargs: :obj:`dict`
+    kwargs : :obj:`dict`
 
         .. versionadded:: 0.10.3
 
-    Keyword arguments to be passed to functions called within this function.
+        Keyword arguments to be passed to functions
+        called within this function.
 
-    Kwargs prefixed with ``confound_``
-    will be passed to :func:`~nilearn.interfaces.fmriprep.load_confounds`.
-    This allows ``first_level_from_bids`` to return
-    a specific set of confounds by relying on confound loading strategies
-    defined in :func:`~nilearn.interfaces.fmriprep.load_confounds`.
-    If no kwargs are passed, ``first_level_from_bids`` will return
-    all the confounds available in the confounds TSV files.
+        Kwargs prefixed with ``confounds_``
+        will be passed to :func:`~nilearn.interfaces.fmriprep.load_confounds`.
+        This allows ``first_level_from_bids`` to return
+        a specific set of confounds by relying on confound loading strategies
+        defined in :func:`~nilearn.interfaces.fmriprep.load_confounds`.
+        If no kwargs are passed, ``first_level_from_bids`` will return
+        all the confounds available in the confounds TSV files.
+
+        See examples below and refer to the documentation
+        of :func:`~nilearn.interfaces.fmriprep.load_confounds`
+        for more details on the confounds loading strategies.
+
+        .. note::
+
+            All other parameters correspond
+            to a :class:`~nilearn.glm.FirstLevelModel` object,
+            which contains their documentation.
+            The subject label of the model will be determined directly
+            from the :term:`BIDS` dataset.
 
     Examples
     --------
@@ -1229,13 +1237,9 @@ def first_level_from_bids(
             confounds_std_dvars_threshold=0,
         )
 
-    Please refer to the documentation
-    of :func:`~nilearn.interfaces.fmriprep.load_confounds`
-    for more details on the confounds loading strategies.
-
     Returns
     -------
-    models : list of `FirstLevelModel` objects
+    models : list of :class:`~nilearn.glm.FirstLevelModel` objects
         Each FirstLevelModel object corresponds to a subject.
         All runs from different sessions are considered together
         for the same subject to run a fixed effects analysis on them.
