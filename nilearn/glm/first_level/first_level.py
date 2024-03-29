@@ -1170,7 +1170,7 @@ def first_level_from_bids(
         .. note::
 
             All other parameters correspond
-            to a :class:`~nilearn.glm.FirstLevelModel` object,
+            to a :class:`~nilearn.glm.first_level.FirstLevelModel` object,
             which contains their documentation.
             The subject label of the model will be determined directly
             from the :term:`BIDS` dataset.
