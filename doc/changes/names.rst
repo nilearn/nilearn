@@ -90,6 +90,8 @@
 
 .. _Fabian Pedregosa: https://github.com/fabianp
 
+.. _Florent Pollet: https://florian6973.github.io/
+
 .. _Franz Liem: https://github.com/fliem
 
 .. _François Paugam: https://github.com/FrancoisPgm
