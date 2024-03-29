@@ -238,6 +238,10 @@ authors:
     website: https://github.com/fabianp
     affiliation: '@google, Geneva, Switzerland'
     orcid: https://orcid.org/0000-0003-4025-3953
+  - given-names: Florent
+    family-names: Pollet
+    website: https://florian6973.github.io/
+    affiliation: ENS Paris-Saclay, Saclay, France
   - given-names: Franz
     family-names: Liem
     website: https://github.com/fliem
@@ -722,7 +726,3 @@ authors:
     family-names: Nájera
     website: https://github.com/Titan-C
     affiliation: Checkmk
-  - given-names: Florent
-    family-names: Pollet
-    website: https://florian6973.github.io/
-    affiliation: ENS Paris-Saclay, Saclay, France
