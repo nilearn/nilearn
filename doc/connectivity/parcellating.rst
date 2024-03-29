@@ -34,7 +34,7 @@ Applying clustering
     The question of which clustering method to use is in itself subject
     to debate. There are many clustering methods; their computational
     cost will vary, as well as their results. A `well-cited empirical
-    comparison paper (:footcite:t:`Thirion2014`) suggests that:
+    comparison paper` (:footcite:t:`Thirion2014`) suggests that:
 
     * For a large number of clusters, it is preferable to use Ward
       agglomerative clustering with spatial constraints
