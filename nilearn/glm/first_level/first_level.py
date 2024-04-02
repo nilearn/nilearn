@@ -1107,7 +1107,7 @@ def first_level_from_bids(
     ``bold.json``.
 
     All parameters not described here are passed to
-    :obj:`~nilearn.glm.first_level.FirstLevelModel`.
+    :class:`~nilearn.glm.first_level.FirstLevelModel`.
 
     The subject label of the model will be determined directly
     from the :term:`BIDS` dataset.
@@ -1239,22 +1239,22 @@ def first_level_from_bids(
 
     Returns
     -------
-    models : list of :obj:`~nilearn.glm.first_level.FirstLevelModel` objects
-        Each :obj:`~nilearn.glm.first_level.FirstLevelModel` object
+    models : list of :class:`~nilearn.glm.first_level.FirstLevelModel` objects
+        Each :class:`~nilearn.glm.first_level.FirstLevelModel` object
         corresponds to a subject.
         All runs from different sessions are considered together
         for the same subject to run a fixed effects analysis on them.
 
     models_run_imgs : list of list of Niimg-like objects,
-        Items for the :obj:`~nilearn.glm.first_level.FirstLevelModel`
+        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
         fit function of their respective model.
 
     models_events : list of list of pandas DataFrames,
-        Items for the :obj:`~nilearn.glm.first_level.FirstLevelModel`
+        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
         fit function of their respective model.
 
     models_confounds : list of list of pandas DataFrames or ``None``,
-        Items for the :obj:`~nilearn.glm.first_level.FirstLevelModel`
+        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
         fit function of their respective model.
 
     """
