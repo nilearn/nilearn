@@ -293,7 +293,7 @@ def report_nifti_maps_masker():
         standardize="zscore_sample",
         standardize_confounds="zscore_sample",
         memory="nilearn_cache",
-        cmap="grey",
+        cmap="gray",
     )
     masker.fit(data.func[0])
 
@@ -336,7 +336,7 @@ def report_nifti_masker():
         memory="nilearn_cache",
         memory_level=2,
         smoothing_fwhm=8,
-        cmap="grey",
+        cmap="gray",
     )
 
     data = datasets.fetch_development_fmri(n_subjects=1)
@@ -357,7 +357,7 @@ def report_multi_nifti_masker():
         detrend=True,
         standardize="zscore_sample",
         n_jobs=2,
-        cmap="grey",
+        cmap="gray",
     )
     masker.fit()
     empty_report = masker.generate_report()
