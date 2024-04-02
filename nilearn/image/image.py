@@ -1001,12 +1001,13 @@ def math_img(formula, copy_header_from=None, **imgs):
         numpy imported as 'np'.
 
     copy_header_from : :obj:`str`, default=None
-        If not None, the header of the image with the name given to this
-        parameter will be copied to the result image. Note that the result
-        imageand the image to copy the header from should have the same number
-        of dimensions. If None, the default Nifti header is used, see
-        [nibabel docs](https://nipy.org/nibabel/reference/nibabel.nifti1.html#
-        nibabel.nifti1.Nifti1Header).
+        Takes the variable name of one of the images in the formula.
+        The header of this image will be copied to the result of the formula.
+        Note that the result image and the image to copy the header from,
+        should  have the same number of dimensions. If None, the default
+        :class:`~nibabel.nifti1.Nifti1header` is used.
+
+        .. versionadded:: 0.10.4.dev
 
     imgs : images (:class:`~nibabel.nifti1.Nifti1Image` or file names)
         Keyword arguments corresponding to the variables in the formula as
