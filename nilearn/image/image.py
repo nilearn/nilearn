@@ -989,7 +989,7 @@ def threshold_img(
     return thresholded_img
 
 
-def math_img(formula, **imgs):
+def math_img(formula, copy_header_from=None, **imgs):
     """Interpret a numpy based string formula using niimg in named parameters.
 
     .. versionadded:: 0.2.3
@@ -999,6 +999,14 @@ def math_img(formula, **imgs):
     formula : :obj:`str`
         The mathematical formula to apply to image internal data. It can use
         numpy imported as 'np'.
+
+    copy_header_from : :obj:`str`, default=None
+        If not None, the header of the image with the name given to this
+        parameter will be copied to the result image. Note that the result
+        imageand the image to copy the header from should have the same number
+        of dimensions. If None, the default Nifti header is used, see
+        [nibabel docs](https://nipy.org/nibabel/reference/nibabel.nifti1.html#
+        nibabel.nifti1.Nifti1Header).
 
     imgs : images (:class:`~nibabel.nifti1.Nifti1Image` or file names)
         Keyword arguments corresponding to the variables in the formula as
@@ -1068,7 +1076,19 @@ def math_img(formula, **imgs):
         ) + exc.args
         raise
 
-    return new_img_like(niimg, result, niimg.affine)
+    # check whether to copy header from one of the input images
+    if copy_header_from is not None:
+        niimg = check_niimg(imgs[copy_header_from])
+        # only copy the header if the result and the input image to copy the
+        # header from have the same shape
+        if result.ndim != niimg.ndim:
+            raise ValueError(
+                "The result of the formula has a different number of "
+                "dimensions than the image to copy the header from."
+            )
+        return new_img_like(niimg, result, niimg.affine, copy_header=True)
+    else:
+        return new_img_like(niimg, result, niimg.affine)
 
 
 def binarize_img(img, threshold=0, mask_img=None, two_sided=True):
