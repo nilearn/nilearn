@@ -2,8 +2,8 @@
 
 .. include:: names.rst
 
-0.10.4.dev
-==========
+0.10.4
+======
 
 **Released April 2024**
 
