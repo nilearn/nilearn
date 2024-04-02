@@ -73,66 +73,6 @@ def check_same_fov(*args, **kwargs):
     return len(errors) == 0
 
 
-def check_same_tr(*args, **kwargs):
-    """First check that all provided images are 4D, if so return True if they \
-    have the same repetition time (TR) and return False or raise an error \
-    elsewhere, depending on the `raise_error` argument.
-
-    Similar to `check_same_fov`, but for TR.
-
-    Parameters
-    ----------
-    args : images
-        Images to be checked. Images passed without keywords will be labelled \
-        as img_#1 in the error message (replace 1 with the appropriate index).
-
-    kwargs : images
-        Images to be checked. In case of error, images will be reference by \
-        their keyword name in the error message.
-
-    raise_error : boolean, optional
-        If True, an error will be raised in case of error.
-
-    """
-    raise_error = kwargs.pop("raise_error", False)
-    for i, arg in enumerate(args):
-        kwargs[f"img_#{i}"] = arg
-    all_errors = []
-    # Check that all input images are 4D
-    for name, img in kwargs.items():
-        if len(img.shape) != 4:
-            all_errors.append((name, img, "not 4D"))
-    if len(all_errors) > 0 and raise_error:
-        raise ValueError(
-            "All images should be 4D, but:\n"
-            + "\n".join(
-                [
-                    f"- {e[0]} has {len(e[1].shape)} dimensions"
-                    for e in all_errors
-                ]
-            )
-        )
-    tr_errors = []
-    # Check that all TRs are the same
-    for (a_name, a_img), (b_name, b_img) in itertools.combinations(
-        kwargs.items(), 2
-    ):
-        if a_img.header.get_zooms()[3] != b_img.header.get_zooms()[3]:
-            tr_errors.append((a_name, b_name, "TR"))
-    if len(tr_errors) > 0 and raise_error:
-        raise ValueError(
-            "Following errors were detected:\n"
-            + "\n".join(
-                [
-                    f"- {e[0]} and {e[1]} do not have the same TR"
-                    for e in tr_errors
-                ]
-            )
-        )
-    all_errors.extend(tr_errors)
-    return all_errors == 0
-
-
 def _index_img(img, index):
     from ..image import new_img_like  # avoid circular imports
 

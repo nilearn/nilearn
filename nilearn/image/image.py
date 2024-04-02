@@ -32,7 +32,6 @@ from .._utils.niimg import _get_data, safe_get_data
 from .._utils.niimg_conversions import (
     _index_img,
     check_same_fov,
-    check_same_tr,
     iter_check_niimg,
 )
 from .._utils.param_validation import check_threshold
@@ -1043,7 +1042,6 @@ def math_img(formula, **imgs):
     try:
         niimgs = [check_niimg(image) for image in imgs.values()]
         check_same_fov(*niimgs, raise_error=True)
-        check_same_tr(*niimgs, raise_error=True)
     except Exception as exc:
         exc.args = (
             "Input images cannot be compared, "
@@ -1070,7 +1068,7 @@ def math_img(formula, **imgs):
         ) + exc.args
         raise
 
-    return new_img_like(niimg, result, niimg.affine, copy_header=True)
+    return new_img_like(niimg, result, niimg.affine)
 
 
 def binarize_img(img, threshold=0, mask_img=None, two_sided=True):
