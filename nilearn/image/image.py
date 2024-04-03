@@ -1004,8 +1004,8 @@ def math_img(formula, copy_header_from=None, **imgs):
         Takes the variable name of one of the images in the formula.
         The header of this image will be copied to the result of the formula.
         Note that the result image and the image to copy the header from,
-        should  have the same number of dimensions. If None, the default
-        :class:`~nibabel.nifti1.Nifti1header` is used.
+        should have the same number of dimensions. If None, the default
+        :class:`~nibabel.nifti1.Nifti1Header` is used.
 
         .. versionadded:: 0.10.4.dev
 
@@ -1041,6 +1041,30 @@ def math_img(formula, copy_header_from=None, **imgs):
 
      >>> result_img = math_img("img1 + img2",
      ...                       img1=anatomical_image, img2=log_img)
+
+    The result image will have the same shape and affine as the input images;
+    but might have different header information, specifically the TR value,
+    see :gh:`2645`.
+
+    .. versionadded:: 0.10.4.dev
+
+    We can now copy the header from one of the input images::
+
+     >>> from nilearn.image import load_img
+     >>> haxby_data = datasets.fetch_haxby()
+     >>> bold_img = haxby_data.func[0]
+     >>> # check input image TR
+     >>> print(load_img(bold_img).header.get_zooms()[3])
+         2.5
+     >>> result_img_without_header = math_img("img**2", img=bold_img)
+     >>> # check result image TR
+     >>> print(result_img_without_header.header.get_zooms()[3])
+         1.0
+     >>> result_img_with_header = math_img("img**2", img=bold_img,
+     ...                                   copy_header_from="img")
+     >>> # result image TR is now same as input image TR
+     >>> print(result_img_with_header.header.get_zooms()[3])
+         2.5
 
     Notes
     -----
