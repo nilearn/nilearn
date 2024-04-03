@@ -818,6 +818,18 @@ def test_math_img_exceptions(affine_eye, img_4d_ones_eye):
     ):
         math_img(bad_formula, img1=img1, img3=img3)
 
+    # Test copy_header_from parameter
+    # Copying header from 4d image to a result that is 3d should raise a
+    # ValueError
+    formula = "np.mean(img1, axis=-1) - np.mean(img3, axis=-1)"
+    with pytest.raises(ValueError, match="Cannot copy the header."):
+        math_img(formula, img1=img1, img3=img3, copy_header_from="img1")
+
+    # Passing an 'img*' variable (to copy_header_from) that is not in the
+    # formula or an img* argument should raise a KeyError exception.
+    with pytest.raises(KeyError):
+        math_img(formula, img1=img1, img3=img3, copy_header_from="img2")
+
 
 def test_math_img(
     affine_eye, img_4d_ones_eye, img_4d_zeros_eye, shape_3d_default, tmp_path

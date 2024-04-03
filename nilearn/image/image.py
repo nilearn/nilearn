@@ -1108,6 +1108,7 @@ def math_img(formula, copy_header_from=None, **imgs):
         # header from have the same shape
         if result.ndim != niimg.ndim:
             raise ValueError(
+                "Cannot copy the header. "
                 "The result of the formula has a different number of "
                 "dimensions than the image to copy the header from."
             )
