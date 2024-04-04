@@ -849,6 +849,55 @@ def test_math_img(
         assert result.shape == expected_result.shape
 
 
+def test_math_img_copied_header(
+    img_4d_ones_eye_default_header, img_4d_ones_eye_tr2, img_4d_mni_tr2
+):
+    img_eye_default = img_4d_ones_eye_default_header
+    img_eye_tr2 = img_4d_ones_eye_tr2
+    img_mni_tr2 = img_4d_mni_tr2
+
+    # case where data values are not changed and header values are not copied
+    # the result should have default header values
+    formula_no_change = "img * 1"
+    # using img_eye_tr2 in the formula
+    result = math_img(
+        formula_no_change, img=img_eye_tr2, copy_header_from=None
+    )
+    # header values should instead be same as for img_eye_default that has
+    # default header values
+    assert result.header.__eq__(img_eye_default.header)
+
+    # case where data values are not changed but header values are copied
+    # the result should have the same header values as img_mni_tr2
+    result = math_img(
+        formula_no_change, img=img_mni_tr2, copy_header_from="img"
+    )
+    # all header values should be the same
+    assert result.header.__eq__(img_mni_tr2.header)
+
+    # case where data values are changed and header values are copied from one
+    # of the input images
+    # the result should have the same header values as img_eye_tr2, except for
+    # cal_max and cal_min that should be different
+    formula_change_min_max = "img1 - img2"
+    result = math_img(
+        formula_change_min_max,
+        img1=img_eye_default,
+        img2=img_eye_tr2,
+        copy_header_from="img2",
+    )
+    for key in img_mni_tr2.header.keys():
+        # cal_max and cal_min should be different in result
+        if key in ["cal_max", "cal_min"]:
+            assert result.header[key] != img_mni_tr2.header[key]
+        # other header values should be the same
+        else:
+            if isinstance(result.header[key], np.ndarray):
+                assert_array_equal(result.header[key], img_eye_tr2.header[key])
+            else:
+                assert result.header[key] == img_eye_tr2.header[key]
+
+
 def test_binarize_img(img_4d_rand_eye):
     # Test that all output values are 1.
     img1 = binarize_img(img_4d_rand_eye)
