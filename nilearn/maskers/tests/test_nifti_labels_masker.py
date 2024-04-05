@@ -923,7 +923,7 @@ def test_region_names_ids_match_after_fit(
 def check_region_names_ids_match_after_fit(
     masker, region_names, region_ids, background
 ):
-    """Check the region names and ids correspondance.
+    """Check the region names and ids correspondence.
 
     Check that the same region names and ids correspond to eac other
     after fit by comparing with before fit.
