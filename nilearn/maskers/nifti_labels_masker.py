@@ -202,6 +202,38 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             self._original_region_ids, tolerant=True
         )
 
+        # create region_id_name dictionary
+        self.region_id_name = None
+        if self.labels is not None:
+            known_backgrounds = {"background", "Background"}
+            initial_region_ids = [
+                region_id
+                for region_id in np.unique(
+                    _utils.niimg.safe_get_data(labels_img)
+                )
+                if region_id != self.background_label
+            ]
+            initial_region_names = [
+                region_name
+                for region_name in self.labels
+                if region_name not in known_backgrounds
+            ]
+
+            if len(initial_region_ids) != len(initial_region_names):
+                warnings.warn(
+                    "Number of regions in the labels image "
+                    "does not match the number of labels provided.",
+                    stacklevel=3,
+                )
+            # if number of regions in the labels image is more
+            # than the number of labels provided, then we cannot
+            # create a region_id_name dictionary
+            if len(initial_region_ids) <= len(initial_region_names):
+                self.region_id_name = {
+                    region_id: initial_region_names[i]
+                    for i, region_id in enumerate(initial_region_ids)
+                }
+
         self.mask_img = mask_img
 
         # Parameters for smooth_array
@@ -759,20 +791,10 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             self.labels_, tolerant=True, resampling_done=True
         )
 
-        if self.labels is not None:
-
-            # Keep track if background was explicitly passed as a label
-            # background should always be explicitly passed in the labels
-            # to avoid this.
-            lower_case_labels = {x.lower() for x in self.labels}
-            known_backgrounds = {"background"}
-            background_in_labels = any(
-                known_backgrounds.intersection(lower_case_labels)
-            )
-            offset = 1 if background_in_labels else 0
+        if self.region_id_name is not None:
 
             self.region_names_ = {
-                key: self.labels[key + offset]
+                key: self.region_id_name[region_id]
                 for key, region_id in region_ids.items()
                 if region_id != self.background_label
             }
