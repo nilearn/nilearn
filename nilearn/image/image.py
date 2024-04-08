@@ -1048,23 +1048,12 @@ def math_img(formula, copy_header_from=None, **imgs):
 
     .. versionadded:: 0.10.4.dev
 
-    We can now copy the header from one of the input images::
+    We can also copy the header from one of the input images using
+    ``copy_header_from``::
 
-     >>> from nilearn.image import load_img
-     >>> haxby_data = datasets.fetch_haxby()
-     >>> bold_img = haxby_data.func[0]
-     >>> # check input image TR
-     >>> print(load_img(bold_img).header.get_zooms()[3])
-         2.5
-     >>> result_img_without_header = math_img("img**2", img=bold_img)
-     >>> # check result image TR
-     >>> print(result_img_without_header.header.get_zooms()[3])
-         1.0
-     >>> result_img_with_header = math_img("img**2", img=bold_img,
-     ...                                   copy_header_from="img")
-     >>> # result image TR is now same as input image TR
-     >>> print(result_img_with_header.header.get_zooms()[3])
-         2.5
+     >>> result_img_with_header = math_img("img1 + img2",
+     ...                                   img1=anatomical_image, img2=log_img,
+     ...                                   copy_header_from="img1")
 
     Notes
     -----
