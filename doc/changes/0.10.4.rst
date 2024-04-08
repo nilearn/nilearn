@@ -58,7 +58,7 @@ Enhancements
 Changes
 -------
 
-- :bdg-dark:`Code` Throw warnings when passing parameters to surface plotting functions that are not used by the plolty engine (:gh:`4298` by `Rémi Gau`_).
+- :bdg-dark:`Code` Throw warnings when passing parameters to surface plotting functions that are not used by the plotly engine (:gh:`4298` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Improve colorbar size and labels in mosaic display (:gh:`4284` by `Rémi Gau`_).
 
