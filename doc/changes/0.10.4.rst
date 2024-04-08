@@ -12,6 +12,13 @@ HIGHLIGHTS
 
 - :bdg-dark:`Code` Use the appropriate HTML templates for :class:`nilearn.maskers.MultiNiftiMapsMasker` and :class:`nilearn.maskers.MultiNiftiLabelsMasker` reports that would lead to empty reports for ``MultiNiftiMapsMasker`` (:gh:`4310` by `Rémi Gau`_).
 
+- :bdg-dark:`Code` Fix color bar handling with color map with only 1 level (:gh:`4255` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Improve colorbar size and labels in mosaic display (:gh:`4284` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Remove unused ``**kwargs`` from :func:`nilearn.plotting.view_img` and :func:`nilearn.plotting.plot_surf` (:gh:`4270` by `Rémi Gau`_).
+
+
 Fixes
 -----
 
