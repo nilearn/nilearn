@@ -113,7 +113,12 @@ def _yule_walker(x, order):
         r[:, k] += (y[:, np.newaxis, 0:-k] @ y[:, k:, np.newaxis])[:, 0, 0]
     r /= denom * x.shape[-1]
     rt = np.array([toeplitz(rr[:-1]) for rr in r], np.float64)
-    rho = np.linalg.solve(rt, r[:, 1:])
+
+    # extra dimension added to r for compatibility with numpy <2 and >2
+    # see https://numpy.org/devdocs/release/2.0.0-notes.html
+    # section removed-ambiguity-when-broadcasting-in-np-solve
+    rho = np.linalg.solve(rt, r[:, 1:, None])[..., 0]
+
     rho.shape = x.shape[:-1] + (order,)
     return rho
 
