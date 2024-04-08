@@ -1007,7 +1007,7 @@ def math_img(formula, copy_header_from=None, **imgs):
         should have the same number of dimensions. If None, the default
         :class:`~nibabel.nifti1.Nifti1Header` is used.
 
-        .. versionadded:: 0.10.4.dev
+        .. versionadded:: 0.10.4
 
     imgs : images (:class:`~nibabel.nifti1.Nifti1Image` or file names)
         Keyword arguments corresponding to the variables in the formula as
@@ -1046,7 +1046,7 @@ def math_img(formula, copy_header_from=None, **imgs):
     but might have different header information, specifically the TR value,
     see :gh:`2645`.
 
-    .. versionadded:: 0.10.4.dev
+    .. versionadded:: 0.10.4
 
     We can also copy the header from one of the input images using
     ``copy_header_from``::
