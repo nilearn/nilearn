@@ -185,6 +185,30 @@ The repository should be checked and updated in preparation for the release.
 One thing that **must** be done before the release is made is
 to update ``deprecated``, ``versionchanged`` and ``versionadded`` directives
 from the current ``[x.y.z].dev`` tag to the new version number.
+These directives are added in a function's docstring to indicate the version number, when, say, a new parameter is added or deprecated.
+
+For example, if a parameter ``param2`` was added in version ``x.y.z``, the docstring should be updated to:
+
+.. code-block:: python
+
+    def my_function(param1, param2):
+        """
+        Parameters
+        ----------
+        param1 : type
+            Description of param1.
+
+        param2 : type
+            Description of param2.
+
+        .. versionadded:: x.y.z
+
+        Returns
+        -------
+        output : type
+            Description of the output.
+        """
+        ...
 
 Additionally, make sure all deprecations that are supposed to be removed with this new version have been addressed.
 
@@ -205,9 +229,8 @@ Switch to a new branch locally:
 First we need to prepare the release by updating the file ``nilearn/doc/changes/latest.rst``
 to make sure all the new features, enhancements, and bug fixes are included in their respective sections.
 
-Tehn we need to make sure that all the entries in each section of the changelog
-in ``nilearn/doc/changes/latest.rst`` a) have a label,
-and b) are sorted by their "label" alphabetically.
+Then we need to make sure that all the entries in each section of the changelog
+in ``nilearn/doc/changes/latest.rst`` a) have a label, b) are sorted by their "label" alphabetically and c) are followed by an empty line.
 For example::
 
     - :bdg-success:`API` ...
