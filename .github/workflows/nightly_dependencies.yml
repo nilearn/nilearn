@@ -1,10 +1,10 @@
 ---
-# Workflow to test against the latest nightly releases of development
-# versions of our dependencies
+# Workflow to test against the latest nightly releases of development versions of our dependencies
 name: test on nightly dependencies
 
 on:
 
+    # commits message must include 'smoke_test' to trigger the workflow on PR
     pull_request:
         branches:
         -   '*'
@@ -12,11 +12,13 @@ on:
     schedule:
     # Run every monday at 8am UTC
     -   cron: 0 8 * * 1
+
     workflow_dispatch:
 
 jobs:
     test_nightly:
-        # if: github.repository == 'nilearn/nilearn'
+        if: ${{ github.repository }} == 'nilearn/nilearn' && contains(fromJSON('["workflow_dispatch", "schedule"]'), github.event_name) || ( github.event_name
+            == "pull_request" && contains(github.event.head_commit.message, 'smoke_test') )
         runs-on: ubuntu-latest
         steps:
         -   name: Checkout nilearn
@@ -35,7 +37,8 @@ jobs:
         -   name: Run test suite
             id: nightly
             continue-on-error: true
-            run: tox run -e test_nightly -- nilearn
+            run: tmp.sh
+            #run: tox run -e test_nightly -- nilearn
         -   name: Create issue
             if: steps.nightly.outcome != 'success'
             uses: actions-cool/issues-helper@v3
