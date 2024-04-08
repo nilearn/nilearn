@@ -17,8 +17,10 @@ on:
 
 jobs:
     test_nightly:
-        if: ${{ github.repository }} == 'nilearn/nilearn' && contains(fromJSON('["workflow_dispatch", "schedule"]'), github.event_name) || ( github.event_name
-            == "pull_request" && contains(github.event.head_commit.message, 'smoke_test') )
+        if: |
+            ${{ github.repository }} == 'nilearn/nilearn' &&
+            ( contains(fromJSON('["workflow_dispatch", "schedule"]'), github.event_name) ||
+            ( github.event_name == "pull_request" && contains(github.event.head_commit.message, 'smoke_test') ) )
         runs-on: ubuntu-latest
         steps:
         -   name: Checkout nilearn
