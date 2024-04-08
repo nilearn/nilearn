@@ -70,6 +70,8 @@ Changes
 
 - :bdg-dark:`Code` :class:`nilearn.maskers.NiftiSpheresMasker` will throw warnings if the ``labels`` passed to it is not a :obj:`list` of :obj:`str`, or if the number of items in the list of labels does not match the number of regions in the label image (:gh:`4274` by `Rémi Gau`_).
 
+- :bdg-dark:`Code` Copy headers from user-specified image to the result of :func:`nilearn.image.math_img` (:gh:`4337` by `Himanshu Aggarwal`_).
+
 - :bdg-primary:`Doc` Render the description of the templates, atlases and datasets of the :mod:`nilearn.datasets` as part of the documentation (:gh:`4232` by `Rémi Gau`_).
 
 - :bdg-primary:`Doc` Render examples of GLM and masker reports as part of the documentation (:gh:`4267` and :gh:`4295` by `Rémi Gau`_).
