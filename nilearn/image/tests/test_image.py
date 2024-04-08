@@ -871,7 +871,7 @@ def test_math_img_copied_header_from_img(img_4d_mni_tr2):
         formula_no_change, img=img_4d_mni_tr2, copy_header_from="img"
     )
     # all header values should be the same
-    assert result.header.__eq__(img_4d_mni_tr2.header)
+    assert result.header == img_4d_mni_tr2.header
 
 
 def test_math_img_copied_header_data_values_changed(
