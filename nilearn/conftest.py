@@ -376,7 +376,7 @@ def img_4d_ones_eye_tr2():
     img = image.new_img_like(
         _img_ones(_shape_4d_default(), _affine_eye()),
         data=_img_ones(_shape_4d_default(), _affine_eye()).get_fdata(),
-        copy_header=False,
+        copy_header=True,
     )
     # Change the TR
     header = img.header.copy()
