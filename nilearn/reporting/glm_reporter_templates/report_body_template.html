@@ -1,61 +1,88 @@
-    <style>
-        div.report {
-            font-family: sans-serif;
-            text-align: center;
-            margin-left: auto;
-            margin-right: auto;
-        }
+<style>
+    /* Add a gutter to Pure's Columns */
+    .pure-g > div {
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+        padding: 0 0.5em;
+    }
 
-        div.model_details {
-            margin-left: auto;
-            margin-right: auto;
-            width: 100px;
-        }
+    div.nilearn_report {
+        text-align: center;
+        margin-left: auto;
+        margin-right: auto;
+        padding-top: 0px;
+        border: solid rgb(150, 150, 150);
+        border-width: 1pt;
+        border-radius: 6pt;
+        overflow: hidden;  /* Needed to avoid scrolling in jupyter :( */
+        color: black;
+        background-color: white;
+    }
 
-        table, th, td {
-            border: 1px solid black;
-            border-collapse: collapse;
-            margin-left: auto;
-            margin-right: auto;
-            padding: 5px;
-            padding-left: 15px;
-            padding-right: 15px;
-            text-align: center;
-        }
+    .terminal div.nilearn_report {
+        max-width: min(50ex, 100vw); /* Needed in vscode */
+    }
 
-        tr, td {
-            border-bottom: 0px;
-            border-top: 0px;
-        }
+    div.model_details {
+        margin-left: auto;
+        margin-right: auto;
+    }
 
-        tr:nth-child(even) {
-            background-color: lightgray;
-        }
+    table, th, td {
+        border: 1px solid black;
+        border-collapse: collapse;
+        margin-left: auto;
+        margin-right: auto;
+        padding: 5px;
+        padding-left: 15px;
+        padding-right: 15px;
+        text-align: center;
+    }
 
-        tr:hover {
-            background-color: yellow;
-        }
+    tr, td {
+        border-bottom: 0px;
+        border-top: 0px;
+    }
 
-        details:hover {
-            cursor: pointer;
-        }
-        details > summary {
-            margin-left: auto;
-            margin-right: auto;
-            width: 25%;
-            background-color: lightgray;
-            outline-color: lightgray;
-        }
+    tr:nth-child(even) {
+        background-color: lightgray;
+    }
 
-        address {
-            color: lightgray;
-        }
-        address > a:visited {
-            color: lightgray;
-        }
-    </style>
+    tr:hover {
+        background-color: yellow;
+    }
 
-<div class="report">
+    div.nilearn_report .image {
+  position: relative;
+  height: auto;
+  width: 100%;
+}
+
+    details:hover {
+        cursor: pointer;
+    }
+    details > summary {
+        margin-left: auto;
+        margin-right: auto;
+        width: 25%;
+        background-color: lightgray;
+        outline-color: lightgray;
+    }
+
+    address {
+        color: lightgray;
+    }
+    address > a:visited {
+        color: lightgray;
+    }
+</style>
+
+<div class="nilearn_report">
+
+    <div class="pure-g">
+
+    <div class="pure-u-1 pure-u-md-3-3">
 
     <h1>${page_heading_1}</h1>  <!-- func:glm_reporter._make_headings() -->
     <h2>${page_heading_2}</h2>  <!-- func:glm_reporter._make_headings() -->
@@ -72,9 +99,10 @@
     ${all_contrasts_with_plots}  <!-- func:glm_reporter._plot_contrasts() -->
 
     <h3>Mask</h3>  <!-- func:glm_reporter._mask_to_svg() -->
-    <img src="data:image/svg+xml,${mask_plot}"
-        alt="Model did not supply a mask image."/>
-
+    <div class="image">
+        <img src="data:image/svg+xml,${mask_plot}"
+            alt="Model did not supply a mask image."/>
+    </div>
     <h3> Stat Maps with Cluster Tables</h3>
     ${component}  <!-- func:glm_reporter._make_stat_maps_contrast_clusters() -->
     <br>
@@ -84,4 +112,7 @@
     File bugs & feature requests
     <a href="https://github.com/nilearn/nilearn/issues">here</a>.
 </address>
+
+</div>
+</div>
 </div>

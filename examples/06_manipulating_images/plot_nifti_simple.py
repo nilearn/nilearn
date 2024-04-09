@@ -53,7 +53,7 @@ plot_roi(mask_img, mean_func_img, display_mode="y", cut_coords=4, title="Mask")
 # opened in-browser using the .open_in_browser() method,
 # or saved to a file using the .save_as_html(output_filepath) method.
 report = nifti_masker.generate_report()
-report
+report.open_in_browser()
 
 # %%
 # Preprocess data with the NiftiMasker
