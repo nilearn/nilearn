@@ -14,6 +14,10 @@ on:
     -   cron: 0 8 * * *
     workflow_dispatch:
 
+# Force to use color
+env:
+    FORCE_COLOR: true
+
 jobs:
     test_numpy2:
         if: github.repository == 'nilearn/nilearn'
