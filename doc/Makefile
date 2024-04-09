@@ -168,7 +168,7 @@ zip: html pdf
 	zip -r _build/nilearn.zip _build/nilearn
 
 pdf: latex
-	cd _build/latex ; make all-pdf ; pdfnup nilearn.pdf
+	cd _build/latex ; make all-pdf ; pdfnup niearn.pdf
 	cp _build/latex/nilearn.pdf nilearn-simple.pdf
 	cp _build/latex/nilearn-nup.pdf nilearn.pdf
 	#cd _build/latex ; make all-pdf ; pdfnup nilearn.pdf
