@@ -302,14 +302,6 @@ Once the PR has been reviewed and merged, pull from master and tag the merge com
     When building the distribution as described below, ``hatch-vcs``, defined in ``pyproject.toml``,
     extracts the version number using this tag and writes it to a ``_version.py`` file.
 
-Build of stable docs
---------------------
-
-Once the new version tag of a release is pushed upstream following the step
-above, the Github Actions workflow ``release-docs.yml`` will be triggered
-automatically to build the stable docs and push them to
-our github pages repository ``nilearn/nilearn.github.io``. The workflow can
-also be triggered from the Actions tab.
 
 Build the distributions and upload them to Pypi
 -----------------------------------------------
@@ -369,14 +361,27 @@ We are now ready to upload to ``Pypi``. Note that you will need to have an `acco
 
     twine upload dist/*
 
-
 Once the upload is completed, make sure everything looks good on `Pypi <https://pypi.org/project/nilearn/>`_.
 Otherwise you will probably have to fix the issue and start over a new release with the patch number incremented.
+
+
+Github release
+--------------
 
 At this point, we need to upload the binaries to GitHub and link them to the tag.
 To do so, go to the :nilearn-gh:`Nilearn GitHub page <tags>` under the "Releases" tab,
 and edit the ``x.y.z`` tag by providing a description,
 and upload the distributions we just created (you can just drag and drop the files).
+
+
+Build of stable docs
+--------------------
+
+Once the new tagged github release is made following the step above,
+the Github Actions workflow ``release-docs.yml`` will be triggered automatically
+to build the stable docs and push them
+to our github pages repository ``nilearn/nilearn.github.io``.
+The workflow can also be triggered manually from the Actions tab.
 
 
 Build and deploy the documentation manually
