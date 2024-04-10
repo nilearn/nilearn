@@ -201,6 +201,7 @@ save_glm_to_bids(
     contrasts=["age", "sex"],
     out_dir=output_dir / "derivatives" / "nilearn_glm",
     prefix="ageEffectOnGM",
+    bg_img=icbm152_2009["t1"],
 )
 
 # %%

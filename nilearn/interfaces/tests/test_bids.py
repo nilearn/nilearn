@@ -469,6 +469,17 @@ def test_save_glm_to_bids_errors(
             prefix="sub-01_ses-01_task-nback",
         )
 
+    with pytest.raises(
+        ValueError, match="Extra key-word arguments must be one of"
+    ):
+        save_glm_to_bids(
+            model=two_runs_model,
+            contrasts=["AAA - BBB"],
+            out_dir=tmpdir,
+            prefix="sub-01_ses-01_task-nback",
+            foo="bar",
+        )
+
 
 @pytest.mark.parametrize(
     "prefix", ["sub-01_ses-01_task-nback", "sub-01_task-nback_", 1]
