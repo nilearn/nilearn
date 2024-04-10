@@ -26,7 +26,7 @@ exclude: |
 
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v4.6.0
     hooks:
     -   id: check-ast
     -   id: check-case-conflict
@@ -50,7 +50,7 @@ repos:
     -   id: flynt
 
 -   repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.1
+    rev: v3.15.2
     hooks:
     -   id: pyupgrade
         args: [--py38-plus]
@@ -62,7 +62,7 @@ repos:
     -   id: rst-inline-touching-normal
 
 -   repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 24.2.0
+    rev: 24.3.0
     hooks:
     -   id: black
         args: [--config, pyproject.toml]
@@ -88,10 +88,17 @@ repos:
         args: [--mapping, '4', --sequence, '4', --offset, '0']
 
 -   repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-    rev: v2.12.0
+    rev: v2.13.0
     hooks:
     -   id: pretty-format-toml
         args: [--autofix, --indent, '4']
+
+-   repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
+    hooks:
+    -   id: prettier
+        types_or: [css, html]
+
 
 -   repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0

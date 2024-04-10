@@ -347,7 +347,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
                 "No image provided to fit in NiftiMasker. "
                 "Setting image to mask for reporting."
             )
-            warnings.warn(msg)
+            warnings.warn(msg, stacklevel=6)
             self._report_content["warning_message"] = msg
             img = mask
         if self._reporting_data["dim"] == 5:
@@ -355,7 +355,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
                 "A list of 4D subject images were provided to fit. "
                 "Only first subject is shown in the report."
             )
-            warnings.warn(msg)
+            warnings.warn(msg, stacklevel=6)
             self._report_content["warning_message"] = msg
         # create display of retained input mask, image
         # for visual comparison
@@ -484,7 +484,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         # Infer the number of elements (voxels) in the mask
         self.n_elements_ = int(data.sum())
 
-        if self.verbose > 10:
+        if self.verbose > 0:
             print(f"[{self.__class__.__name__}.fit] Finished fit")
 
         if (

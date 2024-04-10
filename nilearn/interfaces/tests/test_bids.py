@@ -342,15 +342,11 @@ def test_save_glm_to_bids(tmp_path_factory):
     ]
 
     shapes, rk = [(7, 8, 9, 15)], 3
-    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+    _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes,
         rk,
     )
 
-    masker = NiftiMasker(mask)
-    masker.fit()
-
-    # Call with verbose (improve coverage)
     single_run_model = FirstLevelModel(
         mask_img=None,
         minimize_memory=False,
@@ -376,6 +372,40 @@ def test_save_glm_to_bids(tmp_path_factory):
     for fname in EXPECTED_FILENAMES:
         full_filename = os.path.join(tmpdir, fname)
         assert os.path.isfile(full_filename)
+
+
+def test_save_glm_to_bids_serialize_affine(tmp_path):
+    """Test that affines are turned into a serializable type.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/4324.
+    """
+    shapes, rk = [(7, 8, 9, 15)], 3
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes,
+        rk,
+    )
+
+    target_affine = mask.affine
+
+    single_run_model = FirstLevelModel(
+        target_affine=target_affine,
+        minimize_memory=False,
+    ).fit(
+        fmri_data[0],
+        design_matrices=design_matrices[0],
+    )
+
+    save_glm_to_bids(
+        model=single_run_model,
+        contrasts={
+            "effects of interest": np.eye(rk),
+        },
+        contrast_types={
+            "effects of interest": "F",
+        },
+        out_dir=tmp_path,
+        prefix="sub-01_ses-01_task-nback",
+    )
 
 
 @pytest.fixture

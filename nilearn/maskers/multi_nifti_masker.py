@@ -238,7 +238,8 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
                     f"[{self.__class__.__name__}.fit] "
                     "Generation of a mask has been requested (imgs != None) "
                     "while a mask has been provided at masker creation. "
-                    "Given mask will be used."
+                    "Given mask will be used.",
+                    stacklevel=2,
                 )
 
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)

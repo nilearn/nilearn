@@ -15,6 +15,10 @@ on:
     schedule:
     -   cron: 0 6 * * *
 
+# Force to use color
+env:
+    FORCE_COLOR: true
+
 jobs:
 
     # Make citation metadata from CITATION.cff is valid.

@@ -8,12 +8,14 @@ from nilearn._utils.exceptions import DimensionError
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.image import get_data
 from nilearn.plotting import html_surface
+from nilearn.plotting.html_surface import view_img_on_surf
 from nilearn.plotting.js_plotting_utils import decode
 
 from .test_js_plotting_utils import check_colors, check_html
 
 
-def _get_img():
+@pytest.fixture(scope="session")
+def mni152_template_res_2():
     return datasets.load_mni152_template(resolution=2)
 
 
@@ -118,10 +120,10 @@ def test_one_mesh_info():
         html_surface.one_mesh_info(surf_map, mesh)
 
 
-def test_full_brain_info():
+def test_full_brain_info(mni152_template_res_2):
     surfaces = datasets.fetch_surf_fsaverage()
-    img = _get_img()
-    info = html_surface._full_brain_info(img, surfaces)
+
+    info = html_surface._full_brain_info(mni152_template_res_2, surfaces)
     check_colors(info['colorscale'])
     assert {'pial_left', 'pial_right',
             'inflated_left', 'inflated_right',
@@ -145,14 +147,13 @@ def test_full_brain_info():
         "_full_brain_info. Using the deprecated name will raise an error "
         "in release 0.13",
     ):
-        html_surface.full_brain_info(img)
+        html_surface.full_brain_info(mni152_template_res_2)
 
 
-def test_fill_html_template():
+def test_fill_html_template(mni152_template_res_2):
     fsaverage = fetch_surf_fsaverage()
     mesh = surface.load_surf_mesh(fsaverage['pial_right'])
     surf_map = mesh[0][:, 0]
-    img = _get_img()
     info = html_surface._one_mesh_info(
         surf_map, fsaverage['pial_right'], '90%', black_bg=True,
         bg_map=fsaverage['sulc_right'])
@@ -160,7 +161,7 @@ def test_fill_html_template():
     html = html_surface._fill_html_template(info, embed_js=False)
     check_html(html)
     assert "jquery.min.js" in html.html
-    info = html_surface._full_brain_info(img)
+    info = html_surface._full_brain_info(mni152_template_res_2)
     info["title"] = None
     html = html_surface._fill_html_template(info)
     check_html(html)
@@ -196,31 +197,52 @@ def test_view_surf(rng):
                                bg_map=mesh[0][::2, 0])
 
 
-def test_view_img_on_surf():
-    img = _get_img()
+def test_view_img_on_surf(mni152_template_res_2):
+    html = view_img_on_surf(mni152_template_res_2, threshold='92.3%')
+    check_html(html)
+
     surfaces = datasets.fetch_surf_fsaverage()
-    html = html_surface.view_img_on_surf(img, threshold='92.3%')
+    html = view_img_on_surf(mni152_template_res_2,
+                            threshold=0,
+                            surf_mesh=surfaces)
     check_html(html)
-    html = html_surface.view_img_on_surf(img, threshold=0, surf_mesh=surfaces)
-    check_html(html)
-    html = html_surface.view_img_on_surf(img, threshold=.4, title="SOME_TITLE")
+
+    html = view_img_on_surf(mni152_template_res_2,
+                            threshold=.4,
+                            title="SOME_TITLE")
     assert "SOME_TITLE" in html.html
     check_html(html)
-    html = html_surface.view_img_on_surf(
-        img, threshold=.4, cmap='hot', black_bg=True)
+
+    html = view_img_on_surf(
+        mni152_template_res_2, threshold=.4, cmap='hot', black_bg=True)
     check_html(html)
-    with pytest.raises(DimensionError):
-        html_surface.view_img_on_surf([img, img])
-    img_4d = image.new_img_like(img, get_data(img)[:, :, :, np.newaxis])
+
+    img_4d = image.new_img_like(
+        mni152_template_res_2,
+        get_data(mni152_template_res_2)[:, :, :, np.newaxis])
     assert len(img_4d.shape) == 4
-    html = html_surface.view_img_on_surf(img, threshold='92.3%')
+
+    np.clip(get_data(mni152_template_res_2),
+            0,
+            None,
+            out=get_data(mni152_template_res_2))
+    html = view_img_on_surf(mni152_template_res_2, symmetric_cmap=False)
     check_html(html)
-    np.clip(get_data(img), 0, None, out=get_data(img))
-    html = html_surface.view_img_on_surf(img, symmetric_cmap=False)
+
+    html = view_img_on_surf(mni152_template_res_2,
+                            symmetric_cmap=False,
+                            vol_to_surf_kwargs={
+                                "n_samples": 1,
+                                "radius": 0.,
+                                "interpolation": "nearest"})
     check_html(html)
-    html = html_surface.view_img_on_surf(img, symmetric_cmap=False,
-                                         vol_to_surf_kwargs={
-                                             "n_samples": 1,
-                                             "radius": 0.,
-                                             "interpolation": "nearest"})
-    check_html(html)
+
+
+def test_view_img_on_surf_input_as_file(img_3d_mni_as_file):
+    view_img_on_surf(img_3d_mni_as_file)
+    view_img_on_surf(str(img_3d_mni_as_file))
+
+
+def test_view_img_on_surf_errors(img_3d_mni):
+    with pytest.raises(DimensionError):
+        view_img_on_surf([img_3d_mni, img_3d_mni])

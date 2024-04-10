@@ -23,10 +23,19 @@ from nilearn.plotting.html_surface import get_vertexcolor
 from nilearn.plotting.img_plotting import get_colorbar_and_data_ranges
 from nilearn.plotting.js_plotting_utils import colorscale
 from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
-from nilearn.surface.surface import check_mesh
+from nilearn.surface.surface import (
+    FREESURFER_DATA_EXTENSIONS,
+    check_extensions,
+    check_mesh,
+)
 
 VALID_VIEWS = "anterior", "posterior", "medial", "lateral", "dorsal", "ventral"
 VALID_HEMISPHERES = "left", "right"
+
+# subset of data format extensions supported
+DATA_EXTENSIONS = ("gii",
+                   "gii.gz",
+                   "mgz",)
 
 
 MATPLOTLIB_VIEWS = {
@@ -636,7 +645,7 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
 def plot_surf(surf_mesh, surf_map=None, bg_map=None,
               hemi='left', view='lateral', engine='matplotlib',
               cmap=None, symmetric_cmap=False, colorbar=False,
-              avg_method='mean', threshold=None, alpha='auto',
+              avg_method=None, threshold=None, alpha=None,
               bg_on_data=False, darkness=.7, vmin=None, vmax=None,
               cbar_vmin=None, cbar_vmax=None, cbar_tick_format="auto",
               title=None, title_font_size=18, output_file=None, axes=None,
@@ -714,7 +723,8 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             This option is currently only implemented for the
             ``matplotlib`` engine.
 
-        Default='mean'.
+        When using matplolib as engine,
+        `avg_method` will default to ``"mean"`` if ``None`` is passed.
 
     threshold : a number or None, default=None.
         If None is given, the image is not thresholded.
@@ -723,6 +733,8 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
     alpha : float or 'auto', default='auto'
         Alpha level of the :term:`mesh` (not surf_data).
+        When using matplolib as engine,
+        `alpha` will default to ``"auto"`` if ``None`` is passed.
         If 'auto' is chosen, alpha will default to 0.5 when no bg_map
         is passed and to 1 if a bg_map is passed.
 
@@ -801,8 +813,35 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
 
     """
+    parameters_not_implemented_in_plotly = {
+        "avg_method": avg_method,
+        "figure": figure,
+        "axes": axes,
+        "cbar_vmin": cbar_vmin,
+        "cbar_vmax": cbar_vmax,
+        "alpha": alpha
+    }
+
+    check_extensions(surf_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
+
+    if engine == 'plotly':
+        for parameter, value in parameters_not_implemented_in_plotly.items():
+            if value is not None:
+                warn(
+                    (f"'{parameter}' is not implemented "
+                     "for the plotly engine.\n"
+                     f"Got '{parameter} = {value}'.\n"
+                     f"Use '{parameter} = None' to silence this warning."))
+
     coords, faces = load_surf_mesh(surf_mesh)
+
     if engine == 'matplotlib':
+        # setting defaults
+        if avg_method is None:
+            avg_method = 'mean'
+        if alpha is None:
+            alpha = 'auto'
+
         if cbar_tick_format == "auto":
             cbar_tick_format = '%.2g'
         fig = _plot_surf_matplotlib(
@@ -813,6 +852,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             cbar_vmax=cbar_vmax, cbar_tick_format=cbar_tick_format,
             title=title,
             output_file=output_file, axes=axes, figure=figure)
+
     elif engine == 'plotly':
         if cbar_tick_format == "auto":
             cbar_tick_format = ".1f"
@@ -824,10 +864,12 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             vmin=vmin, vmax=vmax,
             cbar_tick_format=cbar_tick_format, title=title,
             title_font_size=title_font_size, output_file=output_file)
+
     else:
         raise ValueError(f"Unknown plotting engine {engine}. "
                          "Please use either 'matplotlib' or "
                          "'plotly'.")
+
     return fig
 
 
@@ -876,10 +918,12 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
         of the :term:`mesh` :term:`faces`.
 
     roi_map : str or numpy.ndarray or list of numpy.ndarray
-        ROI map to be displayed on the surface mesh, can be a file
-        (valid formats are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific
-        files such as .annot or .label), or
-        a Numpy array with a value for each :term:`vertex` of the surf_mesh.
+        ROI map to be displayed on the surface mesh,
+        can be a file
+        (valid formats are .gii, .mgz, or
+        Freesurfer specific files such as
+        .thickness, .area, .curv, .sulc, .annot, .label) or
+        a Numpy array with a value for each :term:`vertex` of the `surf_mesh`.
         The value at each :term:`vertex` one inside the ROI
         and zero inside ROI,
         or an integer giving the label number for atlases.
@@ -940,7 +984,10 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
         _ = plot_surf(surf_mesh, axes=axes, **kwargs)
 
     _, faces = load_surf_mesh(surf_mesh)
+
+    check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
     roi = load_surf_data(roi_map)
+
     if levels is None:
         levels = np.unique(roi_map)
     if colors is None:
@@ -1004,11 +1051,11 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
 @fill_doc
 def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
                        hemi='left', view='lateral', engine='matplotlib',
-                       threshold=None, alpha='auto', vmin=None, vmax=None,
+                       threshold=None, alpha=None, vmin=None, vmax=None,
                        cmap='cold_hot', colorbar=True, symmetric_cbar="auto",
                        cbar_tick_format="auto", bg_on_data=False, darkness=.7,
                        title=None, title_font_size=18, output_file=None,
-                       axes=None, figure=None, **kwargs):
+                       axes=None, figure=None, avg_method=None, **kwargs):
     """Plot a stats map on a surface :term:`mesh` with optional background.
 
     .. versionadded:: 0.3
@@ -1027,9 +1074,10 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
     stat_map : str or numpy.ndarray
         Statistical map to be displayed on the surface :term:`mesh`,
-        can be a file (valid formats are .gii, .mgz, .nii, .nii.gz, or
-        Freesurfer specific files such as .thickness, .area, .curv,
-        .sulc, .annot, .label) or
+        can be a file
+        (valid formats are .gii, .mgz, or
+        Freesurfer specific files such as
+        .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array with a value for each :term:`vertex` of the `surf_mesh`.
 
     bg_map : str or numpy.ndarray, optional
@@ -1083,8 +1131,9 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
         Default=True.
 
-    alpha : float or 'auto', default='auto'
+    alpha : float or 'auto' or None, default=None
         Alpha level of the :term:`mesh` (not the stat_map).
+        Will default to ``"auto"`` if ``None`` is passed.
         If 'auto' is chosen, alpha will default to .5 when no bg_map is
         passed and to 1 if a bg_map is passed.
 
@@ -1127,6 +1176,17 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
             This option is currently only implemented for the
             ``matplotlib`` engine.
 
+    %(avg_method)s
+
+        .. note::
+            This option is currently only implemented for the
+            ``matplotlib`` engine.
+
+        When using matplolib as engine,
+        `avg_method` will default to ``"mean"`` if ``None`` is passed.
+
+        .. versionadded:: 0.10.3dev
+
     kwargs : dict, optional
         Keyword arguments passed to :func:`nilearn.plotting.plot_surf`.
 
@@ -1140,6 +1200,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
 
     """
+    check_extensions(stat_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
     loaded_stat_map = load_surf_data(stat_map)
 
     # Call get_colorbar_and_data_ranges to derive symmetric vmin, vmax
@@ -1150,11 +1211,16 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         vmax=vmax,
         symmetric_cbar=symmetric_cbar,
     )
+    # Set to None the values that are not used by plotly
+    # to avoid warnings thrown by plot_surf
+    if engine == "plotly":
+        cbar_vmin = None
+        cbar_vmax = None
 
     display = plot_surf(
         surf_mesh, surf_map=loaded_stat_map,
         bg_map=bg_map, hemi=hemi,
-        view=view, engine=engine, avg_method='mean', threshold=threshold,
+        view=view, engine=engine, avg_method=avg_method, threshold=threshold,
         cmap=cmap, symmetric_cmap=True, colorbar=colorbar,
         cbar_tick_format=cbar_tick_format, alpha=alpha,
         bg_on_data=bg_on_data, darkness=darkness,
@@ -1204,7 +1270,11 @@ def _check_view_is_valid(view) -> bool:
     """
     if isinstance(view, str) and (view in VALID_VIEWS):
         return True
-    if isinstance(view, Sequence) and len(view) == 2:
+    if (
+        isinstance(view, Sequence)
+        and len(view) == 2
+        and all(isinstance(x, (int, float)) for x in view)
+    ):
         return True
     return False
 
@@ -1310,7 +1380,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
 
     Parameters
     ----------
-    stat_map : str or 3D Niimg-like object
+    stat_map : :obj:`str` or :class:`pathlib.Path` or 3D Niimg-like object
         See :ref:`extracting_data`.
 
     surf_mesh : str, dict, or None, default='fsaverage5'
@@ -1492,9 +1562,9 @@ def plot_surf_roi(surf_mesh,
                   hemi='left',
                   view='lateral',
                   engine='matplotlib',
-                  avg_method='median',
+                  avg_method=None,
                   threshold=1e-14,
-                  alpha='auto',
+                  alpha=None,
                   vmin=None,
                   vmax=None,
                   cmap='gist_ncar',
@@ -1526,8 +1596,9 @@ def plot_surf_roi(surf_mesh,
     roi_map : str or numpy.ndarray or list of numpy.ndarray
         ROI map to be displayed on the surface :term:`mesh`,
         can be a file
-        (valid formats are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific
-        files such as .annot or .label), or
+        (valid formats are .gii, .mgz, or
+        Freesurfer specific files such as
+        .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array with a value for each :term:`vertex` of the `surf_mesh`.
         The value at each vertex one inside the ROI and zero inside ROI, or an
         integer giving the label number for atlases.
@@ -1561,14 +1632,14 @@ def plot_surf_roi(surf_mesh,
             The ``plotly`` engine is new and experimental.
             Please report bugs that you may encounter.
 
-
     %(avg_method)s
 
         .. note::
             This option is currently only implemented for the
             ``matplotlib`` engine.
 
-        Default='median'.
+        When using matplolib as engine,
+        `avg_method` will default to ``"median"`` if ``None`` is passed.
 
     threshold : a number or None, default=1e-14
         Threshold regions that are labelled 0.
@@ -1583,10 +1654,12 @@ def plot_surf_roi(surf_mesh,
 
         .. versionadded:: 0.7.1
 
-    alpha : float or 'auto', default='auto'
-        Alpha level of the :term:`mesh` (not the stat_map).
-        If default, alpha will default to 0.5 when no bg_map is passed
-        and to 1 if a bg_map is passed.
+    alpha : float or 'auto' or None, default=None
+        Alpha level of the :term:`mesh` (not surf_data).
+        When using matplolib as engine,
+        `alpha` will default to ``"auto"`` if ``None`` is passed.
+        If 'auto' is chosen, alpha will default to 0.5 when no bg_map
+        is passed and to 1 if a bg_map is passed.
 
         .. note::
             This option is currently only implemented for the
@@ -1636,10 +1709,14 @@ def plot_surf_roi(surf_mesh,
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
 
     """
+    if engine == "matplotlib" and avg_method is None:
+        avg_method = "median"
+
     # preload roi and mesh to determine vmin, vmax and give more useful error
     # messages in case of wrong inputs
-
+    check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
     roi = load_surf_data(roi_map)
+
     idx_not_na = ~np.isnan(roi)
     if vmin is None:
         vmin = np.nanmin(roi)

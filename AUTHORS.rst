@@ -31,11 +31,11 @@ The nilearn core developers are:
 * `Bertrand Thirion`_
 * `Elizabeth DuPre`_
 * `Hao-Ting Wang`_
+* `Himanshu Aggarwal`_
 * `Jerome Dockes`_
 * `Nicolas Gensollen`_
 * `Rémi Gau`_
 * `Taylor Salo`_
-* `Yasmin Mzayek`_
 
 .. CORE DEV SECTION ENDS HERE
 
@@ -91,6 +91,7 @@ Some other past or present contributors are:
 * `Eric Larson`_: Institute for Learning and Brain Sciences, University of Washington, Washington, USA
 * `Evan Edmond`_: University of Oxford, Oxford, UK
 * `Fabian Pedregosa`_: @google, Geneva, Switzerland
+* `Florent Pollet`_: ENS Paris-Saclay, Saclay, France
 * `Franz Liem`_
 * `François Paugam`_
 * `Gael Varoquaux`_: Inria, Saclay, France
@@ -201,6 +202,8 @@ Some other past or present contributors are:
 Funding
 .......
 
+`Himanshu Aggarwal`_ is paid by `INRIA <https://www.inria.fr/en>`_.
+
 `Rémi Gau`_ is paid by a grant from the
 `Chan Zuckerberg Initiative <https://chanzuckerberg.com/eoss/proposals/improving-standard-practice-for-neuroimaging-analyses-with-nilearn/>`_
 
@@ -212,8 +215,8 @@ project, funded by the French `Investissement d'Avenir
 
 `Kshitij Chawla`_ was paid by `INRIA <https://www.inria.fr/en>`_.
 
-`Yasmin Mzayek`_ is paid by the `Human Brain Project <https://www.humanbrainproject.eu/en/>`_
-|HBP logo|. Previously `Nicolas Gensollen`_ was funded by HBP.
+`Yasmin Mzayek`_ and `Nicolas Gensollen`_ were paid by the `Human Brain Project <https://www.humanbrainproject.eu/en/>`_
+|HBP logo|.
 
 NiLearn is also supported by `DigiCosme <https://digicosme.lri.fr>`_
 |digicosme logo| and `DataIA <https://dataia.eu/en>`_ |dataia_logo|.

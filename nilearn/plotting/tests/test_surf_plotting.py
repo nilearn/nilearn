@@ -322,7 +322,10 @@ def test_instantiation_error_plotly_surface_figure(input_obj):
         ("medial", True),
         ("latreal", False),
         ((100, 100), True),
+        ([100.0, 100.0], True),
         ((100, 100, 1), False),
+        (("lateral", "medial"), False),
+        ([100, "bar"], False),
     ]
 )
 def test_check_view_is_valid(view, is_valid):
@@ -409,13 +412,22 @@ def test_plot_surf(engine, tmp_path, rng):
     mesh = generate_surf()
     bg = rng.standard_normal(size=mesh[0].shape[0])
 
+    # to avoid extra warnings
+    alpha = None
+    cbar_vmin = None
+    cbar_vmax = None
+    if engine == "matplotlib":
+        alpha = 0.5
+        cbar_vmin = 0
+        cbar_vmax = 150
+
     # Plot mesh only
     plot_surf(mesh, engine=engine)
 
     # Plot mesh with background
     plot_surf(mesh, bg_map=bg, engine=engine)
     plot_surf(mesh, bg_map=bg, darkness=0.5, engine=engine)
-    plot_surf(mesh, bg_map=bg, alpha=0.5,
+    plot_surf(mesh, bg_map=bg, alpha=alpha,
               output_file=tmp_path / 'tmp.png', engine=engine)
 
     # Plot different views
@@ -425,8 +437,8 @@ def test_plot_surf(engine, tmp_path, rng):
 
     # Plot with colorbar
     plot_surf(mesh, bg_map=bg, colorbar=True, engine=engine)
-    plot_surf(mesh, bg_map=bg, colorbar=True, cbar_vmin=0,
-              cbar_vmax=150, cbar_tick_format="%i", engine=engine)
+    plot_surf(mesh, bg_map=bg, colorbar=True, cbar_vmin=cbar_vmin,
+              cbar_vmax=cbar_vmax, cbar_tick_format="%i", engine=engine)
     # Save execution time and memory
     plt.close()
 
@@ -522,6 +534,19 @@ def test_plot_surf_error(engine, rng):
         )
 
 
+@pytest.mark.parametrize("kwargs", [{"avg_method": "mean"}, {"alpha": "auto"}])
+def test_plot_surf_warnings_not_implemented_in_plotly(rng, kwargs):
+    if not is_plotly_installed():
+        pytest.skip('Plotly is not installed; required for this test.')
+    mesh = generate_surf()
+    with pytest.warns(UserWarning,
+                      match='is not implemented for the plotly engine'):
+        plot_surf(mesh,
+                  surf_map=rng.standard_normal(size=mesh[0].shape[0]),
+                  engine='plotly',
+                  **kwargs)
+
+
 def test_plot_surf_avg_method_errors(rng):
     mesh = generate_surf()
     with pytest.raises(
@@ -593,10 +618,15 @@ def test_plot_surf_stat_map(engine, rng):
     bg = rng.standard_normal(size=mesh[0].shape[0])
     data = 10 * rng.standard_normal(size=mesh[0].shape[0])
 
+    # to avoid extra warnings
+    alpha = None
+    if engine == "matplotlib":
+        alpha = 1
+
     # Plot mesh with stat map
     plot_surf_stat_map(mesh, stat_map=data, engine=engine)
     plot_surf_stat_map(mesh, stat_map=data, colorbar=True, engine=engine)
-    plot_surf_stat_map(mesh, stat_map=data, alpha=1, engine=engine)
+    plot_surf_stat_map(mesh, stat_map=data, alpha=alpha, engine=engine)
 
     # Plot mesh with background and stat map
     plot_surf_stat_map(mesh, stat_map=data, bg_map=bg, engine=engine)
@@ -849,79 +879,82 @@ def test_plot_surf_roi_colorbar_vmin_equal_across_engines(kwargs):
 
 
 def test_plot_img_on_surf_hemispheres_and_orientations(img_3d_mni):
-    nii = img_3d_mni
     # Check that all combinations of 1D or 2D hemis and orientations work.
-    plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'])
-    plot_img_on_surf(nii, hemispheres=['left', 'right'], views=['lateral'])
-    plot_img_on_surf(nii,
+    plot_img_on_surf(img_3d_mni,
+                     hemispheres=['right'],
+                     views=['lateral'])
+    plot_img_on_surf(img_3d_mni,
+                     hemispheres=['left', 'right'],
+                     views=['lateral'])
+    plot_img_on_surf(img_3d_mni,
                      hemispheres=['right'],
                      views=['medial', 'lateral'])
-    plot_img_on_surf(nii,
+    plot_img_on_surf(img_3d_mni,
                      hemispheres=['left', 'right'],
                      views=['dorsal', 'medial'])
     # Check that manually set view angles work.
-    plot_img_on_surf(nii,
+    plot_img_on_surf(img_3d_mni,
                      hemispheres=['left', 'right'],
                      views=[(210.0, 90.0), (15.0, -45.0)])
 
 
 def test_plot_img_on_surf_colorbar(img_3d_mni):
-    nii = img_3d_mni
-    plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'],
+    plot_img_on_surf(img_3d_mni, hemispheres=['right'], views=['lateral'],
                      colorbar=True, vmin=-5, vmax=5, threshold=3)
-    plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'],
+    plot_img_on_surf(img_3d_mni, hemispheres=['right'], views=['lateral'],
                      colorbar=True, vmin=-1, vmax=5, symmetric_cbar=False,
                      threshold=3)
-    plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'],
+    plot_img_on_surf(img_3d_mni, hemispheres=['right'], views=['lateral'],
                      colorbar=False)
-    plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'],
+    plot_img_on_surf(img_3d_mni, hemispheres=['right'], views=['lateral'],
                      colorbar=False, cmap='roy_big_bl')
-    plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'],
+    plot_img_on_surf(img_3d_mni, hemispheres=['right'], views=['lateral'],
                      colorbar=True, cmap='roy_big_bl', vmax=2)
 
 
 def test_plot_img_on_surf_inflate(img_3d_mni):
-    nii = img_3d_mni
-    plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'],
+    plot_img_on_surf(img_3d_mni, hemispheres=['right'], views=['lateral'],
                      inflate=True)
 
 
 def test_plot_img_on_surf_surf_mesh(img_3d_mni):
-    nii = img_3d_mni
-    plot_img_on_surf(nii, hemispheres=['right', 'left'], views=['lateral'])
-    plot_img_on_surf(nii, hemispheres=['right', 'left'], views=['lateral'],
+    plot_img_on_surf(img_3d_mni,
+                     hemispheres=['right', 'left'],
+                     views=['lateral'])
+    plot_img_on_surf(img_3d_mni,
+                     hemispheres=['right', 'left'],
+                     views=['lateral'],
                      surf_mesh='fsaverage5')
-    surf_mesh = fetch_surf_fsaverage()
-    plot_img_on_surf(nii, hemispheres=['right', 'left'], views=['lateral'],
-                     surf_mesh=surf_mesh)
+    plot_img_on_surf(img_3d_mni,
+                     hemispheres=['right', 'left'],
+                     views=['lateral'],
+                     surf_mesh=fetch_surf_fsaverage())
 
 
 def test_plot_img_on_surf_with_invalid_orientation(img_3d_mni):
     kwargs = {"hemisphere": ["right"], "inflate": True}
-    nii = img_3d_mni
     with pytest.raises(ValueError):
-        plot_img_on_surf(nii, views=['latral'], **kwargs)
+        plot_img_on_surf(img_3d_mni, views=['latral'], **kwargs)
     with pytest.raises(ValueError):
-        plot_img_on_surf(nii, views=['dorsal', 'post'], **kwargs)
+        plot_img_on_surf(img_3d_mni, views=['dorsal', 'post'], **kwargs)
     with pytest.raises(TypeError):
-        plot_img_on_surf(nii, views=0, **kwargs)
+        plot_img_on_surf(img_3d_mni, views=0, **kwargs)
     with pytest.raises(ValueError):
-        plot_img_on_surf(nii, views=['medial', {'a': 'a'}], **kwargs)
+        plot_img_on_surf(img_3d_mni, views=['medial', {'a': 'a'}], **kwargs)
 
 
 def test_plot_img_on_surf_with_invalid_hemisphere(img_3d_mni):
-    nii = img_3d_mni
     with pytest.raises(ValueError):
         plot_img_on_surf(
-            nii, views=['lateral'], inflate=True, hemispheres=["lft]"]
+            img_3d_mni, views=['lateral'], inflate=True, hemispheres=["lft]"]
         )
     with pytest.raises(ValueError):
         plot_img_on_surf(
-            nii, views=['medial'], inflate=True, hemispheres=['lef']
+            img_3d_mni, views=['medial'], inflate=True, hemispheres=['lef']
         )
     with pytest.raises(ValueError):
         plot_img_on_surf(
-            nii,
+            img_3d_mni,
             views=['anterior', 'posterior'],
             inflate=True,
             hemispheres=['left', 'right', 'middle']
@@ -929,10 +962,9 @@ def test_plot_img_on_surf_with_invalid_hemisphere(img_3d_mni):
 
 
 def test_plot_img_on_surf_with_figure_kwarg(img_3d_mni):
-    nii = img_3d_mni
     with pytest.raises(ValueError):
         plot_img_on_surf(
-            nii,
+            img_3d_mni,
             views=["anterior"],
             hemispheres=["right"],
             figure=True,
@@ -940,10 +972,9 @@ def test_plot_img_on_surf_with_figure_kwarg(img_3d_mni):
 
 
 def test_plot_img_on_surf_with_axes_kwarg(img_3d_mni):
-    nii = img_3d_mni
     with pytest.raises(ValueError):
         plot_img_on_surf(
-            nii,
+            img_3d_mni,
             views=["anterior"],
             hemispheres=["right"],
             inflat=True,
@@ -976,14 +1007,19 @@ def test_plot_img_on_surf_title(img_3d_mni):
 
 
 def test_plot_img_on_surf_output_file(tmp_path, img_3d_mni):
-    nii = img_3d_mni
     fname = tmp_path / 'tmp.png'
-    return_value = plot_img_on_surf(nii,
+    return_value = plot_img_on_surf(img_3d_mni,
                                     hemispheres=['right'],
                                     views=['lateral'],
                                     output_file=str(fname))
     assert return_value is None, "Returned figure and axes on file output."
     assert fname.is_file(), "Saved image file could not be found."
+
+
+def test_plot_img_on_surf_input_as_file(img_3d_mni_as_file):
+    """Test nifti is supported when passed as string or path to a file."""
+    plot_img_on_surf(stat_map=img_3d_mni_as_file)
+    plot_img_on_surf(stat_map=str(img_3d_mni_as_file))
 
 
 def test_plot_surf_contours():
@@ -1163,9 +1199,27 @@ def test_compute_facecolors_matplotlib():
 def test_plot_surf_roi_default_arguments(engine, symmetric_cmap, avg_method):
     """Regression test for https://github.com/nilearn/nilearn/issues/3941."""
     mesh, roi_map, _ = _generate_data_test_surf_roi()
+
+    # To avoid extra warnings
+    if engine == "plotly":
+        avg_method = None
+
     plot_surf_roi(mesh, roi_map=roi_map,
                   engine=engine,
                   symmetric_cmap=symmetric_cmap,
                   darkness=None,  # to avoid deprecation warning
                   cmap="RdYlBu_r",
                   avg_method=avg_method)
+
+
+@pytest.mark.parametrize("function", [plot_surf_roi,
+                                      plot_surf_stat_map,
+                                      plot_surf_contours,
+                                      plot_surf])
+def test_error_nifti_not_supported(function, img_3d_mni_as_file):
+    """Test nifti file not supported by several surface plotting functions."""
+    mesh = generate_surf()
+    with pytest.raises(ValueError, match='The input type is not recognized'):
+        function(mesh, img_3d_mni_as_file)
+    with pytest.raises(ValueError, match='The input type is not recognized'):
+        function(mesh, str(img_3d_mni_as_file))

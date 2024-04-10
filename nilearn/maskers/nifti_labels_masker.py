@@ -64,10 +64,12 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         Region definitions, as one image of labels.
 
     labels : :obj:`list` of :obj:`str`, optional
-        Full labels corresponding to the labels image. This is used
-        to improve reporting quality if provided.
-        Warning: The labels must be consistent with the label
-        values provided through `labels_img`.
+        Full labels corresponding to the labels image.
+        This is used to improve reporting quality if provided.
+
+        .. warning::
+            The labels must be consistent with the label values
+            provided through ``labels_img``.
 
     background_label : :obj:`int` or :obj:`float`, default=0
         Label used in labels_img to represent background.
@@ -94,12 +96,14 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         is continuous.
 
     resampling_target : {"data", "labels", None}, default="data"
-        Gives which image gives the final shape/size. For example, if
-        `resampling_target` is "data", the atlas is resampled to the
-        shape of the data if needed. If it is "labels" then mask_img
-        and images provided to fit() are resampled to the shape and
-        affine of maps_img. "None" means no resampling: if shapes and
-        affines do not match, a ValueError is raised.
+        Gives which image gives the final shape/size.
+        For example, if ``resampling_target`` is ``"data"``,
+        the atlas is resampled to the shape of the data if needed.
+        If it is ``"labels"`` then mask_img and images provided to fit()
+        are resampled to the shape and affine of maps_img.
+        ``"None"`` means no resampling:
+        if shapes and affines do not match, a ValueError is raised.
+
     %(memory)s
     %(memory_level1)s
     %(verbose0)s
@@ -128,18 +132,20 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
         .. versionadded:: 0.9.2
 
-    region_ids_ : dict
+    region_ids_ : dict[str | int, int]
         A dictionary containing the region ids corresponding
-        to each column in region_signal.
+        to each column in the ``region_signal``
+        returned by `fit_transform`.
         The region id corresponding to ``region_signal[:,i]``
         is ``region_ids_[i]``.
         ``region_ids_['background']`` is the background label.
 
         .. versionadded:: 0.10.3
 
-    region_names_ : dict
+    region_names_ : dict[int, str]
         A dictionary containing the region names corresponding
-        to each column in region_signal.
+        to each column in the ``region_signal``
+        returned by `fit_transform`.
         The region names correspond to the labels provided
         in labels in input.
         The region name corresponding to ``region_signal[:,i]``
@@ -188,8 +194,14 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         **kwargs,
     ):
         self.labels_img = labels_img
-        self.labels = labels
+
         self.background_label = background_label
+        self._original_region_ids = self._get_labels_values(self.labels_img)
+        self.labels = self._sanitize_labels(labels)
+        self._check_mismatch_labels_regions(
+            self._original_region_ids, tolerant=True
+        )
+
         self.mask_img = mask_img
 
         # Parameters for smooth_array
@@ -239,7 +251,6 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 f"Invalid strategy '{strategy}'. "
                 f"Valid strategies are {available_reduction_strategies}."
             )
-
         self.strategy = strategy
 
         if resampling_target not in ("labels", "data", None):
@@ -251,6 +262,88 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         self.keep_masked_labels = keep_masked_labels
 
         self.cmap = kwargs.get("cmap", "CMRmap_r")
+
+    def _get_labels_values(self, labels_image):
+        labels_image = image.load_img(labels_image, dtype="int32")
+        labels_image_data = image.get_data(labels_image)
+        return np.unique(labels_image_data)
+
+    def _sanitize_labels(self, labels):
+        """Check and clean labels.
+
+        - checks that labels is a list of strings.
+        - cast all items of the list into strings if they are bytestrings.
+        """
+        if labels is not None:
+            if not isinstance(labels, list):
+                warnings.warn(
+                    f"'labels' must be a list. Got: {type(labels)}",
+                    stacklevel=3,
+                )
+            if not all(isinstance(x, str) for x in labels):
+                warnings.warn(
+                    "All elements of 'labels' must be a string.\n"
+                    f"Got a list of {set([type(x) for x in labels])}",
+                    stacklevel=3,
+                )
+            labels = [
+                x.decode("utf-8") if isinstance(x, bytes) else str(x)
+                for x in labels
+            ]
+        return labels
+
+    def _check_mismatch_labels_regions(
+        self, region_ids, tolerant=True, resampling_done=False
+    ):
+        """Check we have as many labels as regions (plus background).
+
+        Parameters
+        ----------
+        region_ids : :obj:`list` or numpy.array
+
+        tolerant: :obj:`bool`, default=True
+                  If set to `True` this function will throw a warning,
+                  and will throw an error otherwise.
+
+        resampling_done: :obj:`bool`, default=False
+                         Used to mention if this check is done
+                         before or after the resampling has been done,
+                         to adapt the message accordingly.
+        """
+        if (
+            self.labels is not None
+            and len(self.labels) != self._number_of_regions(region_ids) + 1
+        ):
+            msg = (
+                "Mismatch between the number of provided labels "
+                f"({len(self.labels)}) and the number of regions in "
+                "provided label image "
+                f"({self._number_of_regions(region_ids) + 1})."
+            )
+            if (
+                getattr(self, "resampling_target", None) == "data"
+                and resampling_done
+            ):
+                msg += (
+                    "\nNote that this may be due to some regions "
+                    "being dropped from the label image "
+                    "after resampling."
+                )
+            if tolerant:
+                warnings.warn(msg, UserWarning, stacklevel=3)
+            else:
+                raise ValueError(msg)
+
+    def _number_of_regions(self, region_ids):
+        """Compute number of regions excluding the background.
+
+        Parameters
+        ----------
+        region_ids : :obj:`list` or numpy.array
+        """
+        if isinstance(region_ids, list):
+            region_ids = np.array(region_ids)
+        return np.sum(region_ids != self.background_label)
 
     def generate_report(self):
         """Generate a report."""
@@ -291,28 +384,14 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             if "warning_message" in self._report_content:
                 self._report_content["warning_message"] = None
 
-            labels_image = image.load_img(labels_image, dtype="int32")
-            labels_image_data = image.get_data(labels_image)
-            labels_image_affine = labels_image.affine
-            # Number of regions excluding the background
-            number_of_regions = np.sum(
-                np.unique(labels_image_data) != self.background_label
+            label_values = self._get_labels_values(labels_image)
+
+            self._check_mismatch_labels_regions(label_values, tolerant=False)
+
+            self._report_content["number_of_regions"] = (
+                self._number_of_regions(label_values)
             )
-            # Basic safety check to ensure we have as many labels as we
-            # have regions (plus background).
-            if (
-                self.labels is not None
-                and len(self.labels) != number_of_regions + 1
-            ):
-                raise ValueError(
-                    "Mismatch between the number of provided labels "
-                    f"({len(self.labels)}) and the number of regions in "
-                    f"provided label image ({number_of_regions + 1})."
-                )
 
-            self._report_content["number_of_regions"] = number_of_regions
-
-            label_values = np.unique(labels_image_data)
             label_values = label_values[label_values != self.background_label]
             columns = [
                 "label value",
@@ -323,6 +402,10 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
             if self.labels is None:
                 columns.remove("region name")
+
+            labels_image = image.load_img(labels_image, dtype="int32")
+            labels_image_data = image.get_data(labels_image)
+            labels_image_affine = labels_image.affine
 
             regions_summary = {c: [] for c in columns}
             for label in label_values:
@@ -363,7 +446,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                         "A list of 4D subject images were provided to fit. "
                         "Only first subject is shown in the report."
                     )
-                    warnings.warn(msg)
+                    warnings.warn(msg, stacklevel=6)
                     self._report_content["warning_message"] = msg
                 display = plotting.plot_img(
                     img,
@@ -382,7 +465,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                     "Plotting ROIs of label image on the "
                     "MNI152Template for reporting."
                 )
-                warnings.warn(msg)
+                warnings.warn(msg, stacklevel=6)
                 self._report_content["warning_message"] = msg
                 display = plotting.plot_roi(labels_image)
                 plt.close()
@@ -600,42 +683,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 imgs_,
                 self._resampled_labels_img_,
             ):
-                if self.verbose > 0:
-                    print("Resampling labels")
-                labels_before_resampling = set(
-                    np.unique(
-                        _utils.niimg.safe_get_data(
-                            self._resampled_labels_img_,
-                        )
-                    )
-                )
-                self._resampled_labels_img_ = self._cache(
-                    image.resample_img, func_memory_level=2
-                )(
-                    self.labels_img_,
-                    interpolation="nearest",
-                    target_shape=imgs_.shape[:3],
-                    target_affine=imgs_.affine,
-                )
-                labels_after_resampling = set(
-                    np.unique(
-                        _utils.niimg.safe_get_data(
-                            self._resampled_labels_img_,
-                        )
-                    )
-                )
-                labels_diff = labels_before_resampling.difference(
-                    labels_after_resampling
-                )
-                if len(labels_diff) > 0:
-                    warnings.warn(
-                        "After resampling the label image to the "
-                        "data image, the following labels were "
-                        f"removed: {labels_diff}. "
-                        "Label image only contains "
-                        f"{len(labels_after_resampling)} labels "
-                        "(including background)."
-                    )
+                self._resample_labels(imgs_)
 
             if (self.mask_img is not None) and (
                 not _utils.niimg_conversions.check_same_fov(
@@ -705,18 +753,64 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             # ids does not include background label
             region_ids[i] = ids[i]
 
+        self.region_names_ = None
+
+        self._check_mismatch_labels_regions(
+            self.labels_, tolerant=True, resampling_done=True
+        )
+
         if self.labels is not None:
+
+            # Keep track if background was explicitly passed as a label
+            # background should always be explicitly passed in the labels
+            # to avoid this.
+            lower_case_labels = {x.lower() for x in self.labels}
+            known_backgrounds = {"background"}
+            background_in_labels = any(
+                known_backgrounds.intersection(lower_case_labels)
+            )
+            offset = 1 if background_in_labels else 0
+
             self.region_names_ = {
-                key: self.labels[region_id]
+                key: self.labels[key + offset]
                 for key, region_id in region_ids.items()
                 if region_id != self.background_label
             }
-        else:
-            self.region_names_ = None
+
         self.region_ids_ = region_ids
         self.region_atlas_ = masked_atlas
 
         return region_signals
+
+    def _resample_labels(self, imgs_):
+        if self.verbose > 0:
+            print("Resampling labels")
+        labels_before_resampling = set(
+            np.unique(_utils.niimg.safe_get_data(self._resampled_labels_img_))
+        )
+        self._resampled_labels_img_ = self._cache(
+            image.resample_img, func_memory_level=2
+        )(
+            self.labels_img_,
+            interpolation="nearest",
+            target_shape=imgs_.shape[:3],
+            target_affine=imgs_.affine,
+        )
+        labels_after_resampling = set(
+            np.unique(_utils.niimg.safe_get_data(self._resampled_labels_img_))
+        )
+        if labels_diff := labels_before_resampling.difference(
+            labels_after_resampling
+        ):
+            warnings.warn(
+                "After resampling the label image to the data image, "
+                f"the following labels were removed: {labels_diff}. "
+                "Label image only contains "
+                f"{len(labels_after_resampling)} labels "
+                "(including background)."
+            )
+
+        return self
 
     def inverse_transform(self, signals):
         """Compute :term:`voxel` signals from region signals.
