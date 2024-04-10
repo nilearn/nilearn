@@ -89,47 +89,51 @@
     <div class="pure-u-1 pure-u-md-2-3">
       <div class="table-section">
         {{if summary}}
-        <details>
-          <summary class="pure-button">Regions summary</summary>
-          <table class="pure-table">
-            <thead>
-              <tr>
-                {{py: region = summary.items()}} {{for k, v in region}}
-                <th>{{k}}</th>
+        <div class="scrollit">
+          <details>
+            <summary class="pure-button">Regions summary</summary>
+            <table class="pure-table">
+              <thead>
+                <tr>
+                  {{py: region = summary.items()}} {{for k, v in region}}
+                  <th>{{k}}</th>
+                  {{endfor}}
+                </tr>
+              </thead>
+              <tbody>
+                {{for idx in range(number_of_seeds)}}
+                <tr>
+                  {{for k, v in region}}
+                  <td data-column="{{k}}">{{v[idx]}}</td>
+                  {{endfor}}
+                </tr>
                 {{endfor}}
-              </tr>
-            </thead>
-            <tbody>
-              {{for idx in range(number_of_seeds)}}
-              <tr>
-                {{for k, v in region}}
-                <td data-column="{{k}}">{{v[idx]}}</td>
-                {{endfor}}
-              </tr>
-              {{endfor}}
-            </tbody>
-          </table>
-        </details>
+              </tbody>
+            </table>
+          </details>
+        </div>
         {{endif}} {{if parameters}}
-        <details>
-          <summary class="pure-button">Parameters</summary>
-          <table class="pure-table">
-            <thead>
-              <tr>
-                <th>Parameter</th>
-                <th>Value</th>
-              </tr>
-            </thead>
-            <tbody>
-              {{py: params = parameters.items()}} {{for p, v in params}}
-              <tr>
-                <td data-column="Parameter">{{p}}</td>
-                <td data-column="Value">{{v}}</td>
-              </tr>
-              {{endfor}}
-            </tbody>
-          </table>
-        </details>
+        <div class="scrollit">
+          <details>
+            <summary class="pure-button">Parameters</summary>
+            <table class="pure-table">
+              <thead>
+                <tr>
+                  <th>Parameter</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{py: params = parameters.items()}} {{for p, v in params}}
+                <tr>
+                  <td data-column="Parameter">{{p}}</td>
+                  <td data-column="Value">{{v}}</td>
+                </tr>
+                {{endfor}}
+              </tbody>
+            </table>
+          </details>
+        </div>
         {{endif}}
       </div>
     </div>
