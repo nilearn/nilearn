@@ -82,9 +82,8 @@
       <p></p>
       {{if not warning_message}}
       <div class="empty"></div>
-      {{endif}}
+      {{endif}} {{if summary}}
       <details>
-        {{if summary}}
         <summary class="pure-button">Regions summary</summary>
         <table class="pure-table">
           <thead>
@@ -104,9 +103,8 @@
             {{endfor}}
           </tbody>
         </table>
-        {{endif}}
       </details>
-      {{if parameters}}
+      {{endif}} {{if parameters}}
       <details>
         <summary class="pure-button">Parameters</summary>
         <table class="pure-table">
