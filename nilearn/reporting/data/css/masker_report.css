@@ -38,6 +38,7 @@ https://github.com/yahoo/pure/blob/master/LICENSE.md
   font-family: inherit;
   font-size: 100%;
   padding: 0.5em 1em;
+  margin: 5px;
   color: #444; /* rgba not supported (IE 8) */
   color: rgba(0, 0, 0, 0.8); /* rgba supported */
   border: 1px solid #999; /*IE 6/7/8*/
@@ -198,4 +199,9 @@ div.nilearn_report .image:hover .overlay {
 
 .scrollit {
   overflow-x: scroll;
+}
+
+.note {
+  display: flex;
+  justify-content: center;
 }
