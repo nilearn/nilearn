@@ -21,9 +21,10 @@ pip-log.txt
 
 .ropeproject/
 
-tags
-
 tmp
+
+#  prettier and other JS
+node_modules
 
 # Mac OS X
 .DS_Store
