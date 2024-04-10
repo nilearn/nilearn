@@ -92,10 +92,7 @@ div.nilearn_report summary:focus {
 }
 
 div.nilearn_report table {
-  max-width: 100%;
-  border-collapse: collapse;
   margin: 50px auto;
-  float: right;
 }
 
 div.nilearn_report thead th {
@@ -104,10 +101,6 @@ div.nilearn_report thead th {
 
 div.nilearn_report tbody tr:nth-child(even) {
   background-color: #ddd;
-}
-
-div.nilearn_report details {
-  overflow-x: visible;
 }
 
 div.nilearn_report div.raise {
@@ -196,4 +189,13 @@ div.nilearn_report .image:hover .overlay {
 
 .empty {
   height: 60px;
+}
+
+.table-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.scrollit {
+  overflow-x: scroll;
 }
