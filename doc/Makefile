@@ -69,7 +69,7 @@ sym_links:
 	# subdirectories of ../examples/ and creates a sym-link to
 	# ../examples/nilearn_cache/
 	-find ../examples/ -type d -mindepth 1 -maxdepth 1 -not -path "../examples/nilearn_cache" -exec ln -sf ../nilearn_cache "{}/nilearn_cache" \;
-	-mkdir -p ../examples/nilearn_cache/joblibvolunteers from the maintainers group who would like
+	-mkdir -p ../examples/nilearn_cache/joblib
 
 force_html: force html
 
