@@ -12,7 +12,9 @@ from nilearn.reporting.utils import figure_to_svg_base64
 
 ESTIMATOR_TEMPLATES = {
     "NiftiLabelsMasker": "report_body_template_niftilabelsmasker.html",
+    "MultiNiftiLabelsMasker": "report_body_template_niftilabelsmasker.html",
     "NiftiMapsMasker": "report_body_template_niftimapsmasker.html",
+    "MultiNiftiMapsMasker": "report_body_template_niftimapsmasker.html",
     "NiftiSpheresMasker": "report_body_template_niftispheresmasker.html",
     "default": "report_body_template.html",
 }

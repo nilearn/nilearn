@@ -1,6 +1,18 @@
 # Makefile for Sphinx documentation
 #
 
+#  script to open an html file a browser
+define BROWSER_PYSCRIPT
+import os, webbrowser, sys
+
+from urllib.request import pathname2url
+
+webbrowser.open("file://" + pathname2url(os.path.abspath(sys.argv[1])))
+endef
+export BROWSER_PYSCRIPT
+
+BROWSER := python -c "$$BROWSER_PYSCRIPT"
+
 # You can set these variables from the command line.
 SPHINXOPTS    = -v
 SPHINXBUILD   = sphinx-build
@@ -62,6 +74,10 @@ force_html: force html
 
 force:
 	find . -name \*.rst -exec touch {} \;
+
+# view doc
+view: _build/html/index.html
+	$(BROWSER) _build/html/index.html
 
 html:	sym_links sym_links_datasets glm_reports
 	# These two lines make the build a bit more lengthy, and the
@@ -158,20 +174,10 @@ doctest:
 	@echo "Testing of doctests in the sources finished, look at the " \
 	      "results in $(BUILDDIR)/doctest/output.txt."
 
-download-data:
-
 zip: html pdf
 	mkdir -p _build/nilearn ;
 	cp -r _build/html _build/nilearn ;
-	cp -r data _build/nilearn ;
-	cp nilearn.pdf _build/nilearn;
 	zip -r _build/nilearn.zip _build/nilearn
-
-pdf: latex
-	cd _build/latex ; make all-pdf ; pdfnup niearn.pdf
-	cp _build/latex/nilearn.pdf nilearn-simple.pdf
-	cp _build/latex/nilearn-nup.pdf nilearn.pdf
-	#cd _build/latex ; make all-pdf ; pdfnup nilearn.pdf
 
 check:
 	rm -rf _build/doctrees

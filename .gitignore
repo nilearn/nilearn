@@ -21,9 +21,10 @@ pip-log.txt
 
 .ropeproject/
 
-tags
-
 tmp
+
+#  prettier and other JS
+node_modules
 
 # Mac OS X
 .DS_Store
@@ -37,6 +38,9 @@ nilearn.egg-info/
 build
 dist/
 nilearn/_version.py
+
+# notebooks
+.ipynb_checkpoints
 
 # virtual environment
 env/

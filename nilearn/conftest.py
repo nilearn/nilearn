@@ -3,6 +3,7 @@
 import warnings
 
 import nibabel
+import nibabel as nb
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
@@ -241,6 +242,14 @@ def _img_3d_mni(affine=_affine_mni()):
 def img_3d_mni():
     """Return a default random 3D Nifti1Image in MNI space."""
     return _img_3d_mni()
+
+
+@pytest.fixture()
+def img_3d_mni_as_file(tmp_path):
+    """Return path to a random 3D Nifti1Image in MNI space saved to disk."""
+    filename = tmp_path / "img.nii"
+    nb.save(_img_3d_mni(), filename)
+    return filename
 
 
 def _img_3d_zeros(shape=_shape_3d_default(), affine=_affine_eye()):

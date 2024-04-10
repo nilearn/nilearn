@@ -32,7 +32,8 @@ annotate : :obj:`bool`, default=True
 docdict[
     "avg_method"
 ] = """
-avg_method : {"mean", "median", "min", "max", custom function}, default="mean"
+avg_method : {"mean", "median", "min", "max", custom function, None}, \
+             default=None
     How to average vertex values to derive the face value:
 
         - `mean`: results in smooth boundaries
