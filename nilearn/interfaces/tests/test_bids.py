@@ -303,7 +303,10 @@ def test_parse_bids_filename():
     assert file_dict["file_fields"] == fields
 
 
-def test_save_glm_to_bids(tmp_path_factory):
+@pytest.mark.parametrize(
+    "prefix", ["sub-01_ses-01_task-nback", "sub-01_task-nback", "task-nback"]
+)
+def test_save_glm_to_bids(tmp_path_factory, prefix):
     """Test that save_glm_to_bids saves the appropriate files.
 
     This test reuses code from
@@ -312,33 +315,17 @@ def test_save_glm_to_bids(tmp_path_factory):
     tmpdir = tmp_path_factory.mktemp("test_save_glm_results")
 
     EXPECTED_FILENAMES = [
-        "dataset_description.json",
-        "sub-01_ses-01_task-nback_contrast-effectsOfInterest_design.svg",
-        (
-            "sub-01_ses-01_task-nback_contrast-effectsOfInterest_"
-            "stat-F_statmap.nii.gz"
-        ),
-        (
-            "sub-01_ses-01_task-nback_contrast-effectsOfInterest_"
-            "stat-effect_statmap.nii.gz"
-        ),
-        (
-            "sub-01_ses-01_task-nback_contrast-effectsOfInterest_"
-            "stat-p_statmap.nii.gz"
-        ),
-        (
-            "sub-01_ses-01_task-nback_contrast-effectsOfInterest_"
-            "stat-variance_statmap.nii.gz"
-        ),
-        (
-            "sub-01_ses-01_task-nback_contrast-effectsOfInterest_"
-            "stat-z_statmap.nii.gz"
-        ),
-        "sub-01_ses-01_task-nback_design.svg",
-        "sub-01_ses-01_task-nback_design.tsv",
-        "sub-01_ses-01_task-nback_stat-errorts_statmap.nii.gz",
-        "sub-01_ses-01_task-nback_stat-rSquare_statmap.nii.gz",
-        "sub-01_ses-01_task-nback_statmap.json",
+        "contrast-effectsOfInterest_design.svg",
+        "contrast-effectsOfInterest_stat-F_statmap.nii.gz",
+        "contrast-effectsOfInterest_stat-effect_statmap.nii.gz",
+        "contrast-effectsOfInterest_stat-p_statmap.nii.gz",
+        "contrast-effectsOfInterest_stat-variance_statmap.nii.gz",
+        "contrast-effectsOfInterest_stat-z_statmap.nii.gz",
+        "design.svg",
+        "design.tsv",
+        "stat-errorts_statmap.nii.gz",
+        "stat-rSquare_statmap.nii.gz",
+        "statmap.json",
     ]
 
     shapes, rk = [(7, 8, 9, 15)], 3
@@ -366,12 +353,15 @@ def test_save_glm_to_bids(tmp_path_factory):
         contrasts=contrasts,
         contrast_types=contrast_types,
         out_dir=tmpdir,
-        prefix="sub-01_ses-01_task-nback",
+        prefix=prefix,
     )
 
+    assert (tmpdir / "dataset_description.json").exists()
+
+    sub_prefix = prefix.split("_")[0] if prefix.startswith("sub-") else ""
+
     for fname in EXPECTED_FILENAMES:
-        full_filename = os.path.join(tmpdir, fname)
-        assert os.path.isfile(full_filename)
+        assert (tmpdir / sub_prefix / f"{prefix}_{fname}").exists()
 
 
 def test_save_glm_to_bids_serialize_affine(tmp_path):
@@ -498,11 +488,10 @@ def test_save_glm_to_bids_contrast_definitions(
     )
 
     EXPECTED_FILENAME_ENDINGS = [
-        "dataset_description.json",
-        ("contrast-aaaMinusBbb_stat-effect_statmap.nii.gz"),
+        "contrast-aaaMinusBbb_stat-effect_statmap.nii.gz",
         "contrast-aaaMinusBbb_stat-p_statmap.nii.gz",
         "contrast-aaaMinusBbb_stat-t_statmap.nii.gz",
-        ("contrast-aaaMinusBbb_stat-variance_statmap.nii.gz"),
+        "contrast-aaaMinusBbb_stat-variance_statmap.nii.gz",
         "contrast-aaaMinusBbb_stat-z_statmap.nii.gz",
         "run-1_contrast-aaaMinusBbb_design.svg",
         "run-1_design.svg",
@@ -523,13 +512,18 @@ def test_save_glm_to_bids_contrast_definitions(
         prefix=prefix,
     )
 
+    assert (tmpdir / "dataset_description.json").exists()
+
+    if not isinstance(prefix, str):
+        prefix = ""
+
+    if prefix and not prefix.endswith("_"):
+        prefix = f"{prefix}_"
+
+    sub_prefix = prefix.split("_")[0] if prefix.startswith("sub-") else ""
+
     for fname in EXPECTED_FILENAME_ENDINGS:
-        if fname != "dataset_description.json" and isinstance(prefix, str):
-            fname = (
-                prefix + fname if prefix.endswith("_") else f"{prefix}_{fname}"
-            )
-        full_filename = os.path.join(tmpdir, fname)
-        assert os.path.isfile(full_filename)
+        assert (tmpdir / sub_prefix / f"{prefix}{fname}").exists()
 
 
 def test_save_glm_to_bids_second_level(tmp_path_factory):
@@ -541,7 +535,6 @@ def test_save_glm_to_bids_second_level(tmp_path_factory):
     tmpdir = tmp_path_factory.mktemp("test_save_glm_to_bids_second_level")
 
     EXPECTED_FILENAMES = [
-        "dataset_description.json",
         "task-nback_contrast-effectsOfInterest_design.svg",
         "task-nback_contrast-effectsOfInterest_stat-F_statmap.nii.gz",
         "task-nback_contrast-effectsOfInterest_stat-effect_statmap.nii.gz",
@@ -584,6 +577,7 @@ def test_save_glm_to_bids_second_level(tmp_path_factory):
         prefix="task-nback",
     )
 
+    assert (tmpdir / "dataset_description.json").exists()
+
     for fname in EXPECTED_FILENAMES:
-        full_filename = os.path.join(tmpdir, fname)
-        assert os.path.isfile(full_filename)
+        assert (tmpdir / "group" / fname).exists()

@@ -1,8 +1,8 @@
 """Functions for generating BIDS-compliant GLM outputs."""
 
 import json
-import os
 import warnings
+from pathlib import Path
 
 import numpy as np
 
@@ -200,7 +200,7 @@ def save_glm_to_bids(
         for which :term:`contrast` type must be
         explicitly set need to be included.
 
-    out_dir : :obj:`str`, optional
+    out_dir : :obj:`str` or :obj:`pathlib.Path`, optional
         Output directory for files. Default is current working directory.
 
     prefix : :obj:`str` or None, default=None
@@ -265,12 +265,24 @@ def save_glm_to_bids(
                 f"not {type(v)}"
             )
 
-    out_dir = os.path.abspath(out_dir)
-    os.makedirs(out_dir, exist_ok=True)
-
     model_level = (
         1 if isinstance(model, glm.first_level.FirstLevelModel) else 2
     )
+
+    if model_level == 2:
+        sub_directory = "group"
+    else:
+        sub_directory = (
+            prefix.split("_")[0] if prefix.startswith("sub-") else ""
+        )
+
+    out_dir = Path(out_dir)
+
+    dset_desc_file = out_dir / "dataset_description.json"
+    _generate_dataset_description(dset_desc_file, model_level)
+
+    out_dir = out_dir / sub_directory
+    out_dir.mkdir(exist_ok=True, parents=True)
 
     if not isinstance(contrast_types, dict):
         contrast_types = {}
@@ -287,22 +299,14 @@ def save_glm_to_bids(
         run_str = f"run-{i_run + 1}_" if len(design_matrices) > 1 else ""
 
         # Save design matrix and associated figure
-        dm_file = os.path.join(
-            out_dir,
-            f"{prefix}{run_str}design.tsv",
-        )
         design_matrix.to_csv(
-            dm_file,
+            out_dir / f"{prefix}{run_str}design.tsv",
             sep="\t",
             index=False,
         )
 
-        dm_fig_file = os.path.join(
-            out_dir,
-            f"{prefix}{run_str}design.svg",
-        )
         dm_fig = plot_design_matrix(design_matrix)
-        dm_fig.figure.savefig(dm_fig_file)
+        dm_fig.figure.savefig(out_dir / f"{prefix}{run_str}design.svg")
 
         # Save contrast plots as well
         for contrast_name, contrast_data in contrasts.items():
@@ -315,9 +319,9 @@ def save_glm_to_bids(
             contrast_plot.figure.set_figheight(2)
             contrast_plot.figure.set_tight_layout(True)
             contrast_name = _clean_contrast_name(contrast_name)
-            constrast_fig_file = os.path.join(
-                out_dir,
-                f"{prefix}{run_str}contrast-{contrast_name}_design.svg",
+            constrast_fig_file = (
+                out_dir
+                / f"{prefix}{run_str}contrast-{contrast_name}_design.svg"
             )
             contrast_plot.figure.savefig(constrast_fig_file)
 
@@ -325,11 +329,8 @@ def save_glm_to_bids(
 
     # Model metadata
     # TODO: Determine optimal mapping of model metadata to BIDS fields.
-    metadata_file = os.path.join(out_dir, f"{prefix}statmap.json")
+    metadata_file = out_dir / f"{prefix}statmap.json"
     _generate_model_metadata(metadata_file, model)
-
-    dset_desc_file = os.path.join(out_dir, "dataset_description.json")
-    _generate_dataset_description(dset_desc_file, model_level)
 
     # Write out contrast-level statistical maps
     for contrast_name, contrast_maps in statistical_maps.items():
@@ -374,8 +375,7 @@ def save_glm_to_bids(
         }
 
         for map_name, img in renamed_contrast_maps.items():
-            out_file = os.path.join(out_dir, map_name)
-            img.to_filename(out_file)
+            img.to_filename(out_dir / map_name)
 
     # Write out model-level statistical maps
     model_level_mapping = {
@@ -388,5 +388,4 @@ def save_glm_to_bids(
         if isinstance(img, list):
             img = img[0]
 
-        out_file = os.path.join(out_dir, map_name)
-        img.to_filename(out_file)
+        img.to_filename(out_dir / map_name)
