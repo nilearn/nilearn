@@ -59,6 +59,7 @@ glm_reports:
 
 sym_links_datasets:
 	# copy datasets RST from nilearn package to doc folder
+	rm -fr modules/description
 	mkdir -p modules/description
 	cd ../nilearn/datasets/description && cp -l *.rst ../../../doc/modules/description
 
@@ -68,7 +69,7 @@ sym_links:
 	# subdirectories of ../examples/ and creates a sym-link to
 	# ../examples/nilearn_cache/
 	-find ../examples/ -type d -mindepth 1 -maxdepth 1 -not -path "../examples/nilearn_cache" -exec ln -sf ../nilearn_cache "{}/nilearn_cache" \;
-	-mkdir -p ../examples/nilearn_cache/joblib
+	-mkdir -p ../examples/nilearn_cache/joblibvolunteers from the maintainers group who would like
 
 force_html: force html
 
