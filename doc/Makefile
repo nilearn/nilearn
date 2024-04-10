@@ -59,7 +59,6 @@ glm_reports:
 
 sym_links_datasets:
 	# copy datasets RST from nilearn package to doc folder
-	rm -fr modules/description
 	mkdir -p modules/description
 	cd ../nilearn/datasets/description && cp -l *.rst ../../../doc/modules/description
 
