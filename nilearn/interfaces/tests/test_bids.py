@@ -323,9 +323,11 @@ def test_save_glm_to_bids(tmp_path_factory, prefix):
         "contrast-effectsOfInterest_stat-z_statmap.nii.gz",
         "design.svg",
         "design.tsv",
+        "design.json",
         "stat-errorts_statmap.nii.gz",
         "stat-rSquare_statmap.nii.gz",
         "statmap.json",
+        "report.html",
     ]
 
     shapes, rk = [(7, 8, 9, 15)], 3
@@ -496,12 +498,15 @@ def test_save_glm_to_bids_contrast_definitions(
         "run-1_contrast-aaaMinusBbb_design.svg",
         "run-1_design.svg",
         "run-1_design.tsv",
+        "run-1_design.json",
         "run-2_contrast-aaaMinusBbb_design.svg",
         "run-2_design.svg",
         "run-2_design.tsv",
+        "run-2_design.json",
         "stat-errorts_statmap.nii.gz",
         "stat-rSquare_statmap.nii.gz",
         "statmap.json",
+        "report.html",
     ]
 
     save_glm_to_bids(
@@ -526,7 +531,8 @@ def test_save_glm_to_bids_contrast_definitions(
         assert (tmpdir / sub_prefix / f"{prefix}{fname}").exists()
 
 
-def test_save_glm_to_bids_second_level(tmp_path_factory):
+@pytest.mark.parametrize("prefix", ["task-nback"])
+def test_save_glm_to_bids_second_level(tmp_path_factory, prefix):
     """Test save_glm_to_bids on a SecondLevelModel.
 
     This test reuses code from
@@ -535,17 +541,18 @@ def test_save_glm_to_bids_second_level(tmp_path_factory):
     tmpdir = tmp_path_factory.mktemp("test_save_glm_to_bids_second_level")
 
     EXPECTED_FILENAMES = [
-        "task-nback_contrast-effectsOfInterest_design.svg",
-        "task-nback_contrast-effectsOfInterest_stat-F_statmap.nii.gz",
-        "task-nback_contrast-effectsOfInterest_stat-effect_statmap.nii.gz",
-        "task-nback_contrast-effectsOfInterest_stat-p_statmap.nii.gz",
-        "task-nback_contrast-effectsOfInterest_stat-variance_statmap.nii.gz",
-        "task-nback_contrast-effectsOfInterest_stat-z_statmap.nii.gz",
-        "task-nback_design.svg",
-        "task-nback_design.tsv",
-        "task-nback_stat-errorts_statmap.nii.gz",
-        "task-nback_stat-rSquare_statmap.nii.gz",
-        "task-nback_statmap.json",
+        "contrast-effectsOfInterest_design.svg",
+        "contrast-effectsOfInterest_stat-F_statmap.nii.gz",
+        "contrast-effectsOfInterest_stat-effect_statmap.nii.gz",
+        "contrast-effectsOfInterest_stat-p_statmap.nii.gz",
+        "contrast-effectsOfInterest_stat-variance_statmap.nii.gz",
+        "contrast-effectsOfInterest_stat-z_statmap.nii.gz",
+        "design.svg",
+        "design.tsv",
+        "stat-errorts_statmap.nii.gz",
+        "stat-rSquare_statmap.nii.gz",
+        "statmap.json",
+        "report.html",
     ]
 
     shapes = ((7, 8, 9, 1),)
@@ -574,10 +581,10 @@ def test_save_glm_to_bids_second_level(tmp_path_factory):
         contrasts=contrasts,
         contrast_types=contrast_types,
         out_dir=tmpdir,
-        prefix="task-nback",
+        prefix=prefix,
     )
 
     assert (tmpdir / "dataset_description.json").exists()
 
     for fname in EXPECTED_FILENAMES:
-        assert (tmpdir / "group" / fname).exists()
+        assert (tmpdir / "group" / f"{prefix}_{fname}").exists()
