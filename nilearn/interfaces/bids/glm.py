@@ -353,7 +353,15 @@ def save_glm_to_bids(
             )
             contrast_plot.figure.savefig(constrast_fig_file)
 
-    statistical_maps = _make_stat_maps(model, contrasts, output_type="all")
+        # Write out model-level statistical maps
+        model_level_mapping = {
+            "residuals": f"{prefix}{run_str}stat-errorts_statmap.nii.gz",
+            "r_square": f"{prefix}{run_str}stat-rSquare_statmap.nii.gz",
+        }
+        for attr, map_name in model_level_mapping.items():
+            img = getattr(model, attr)
+            stat_map_to_save = img[i_run]
+            stat_map_to_save.to_filename(out_dir / map_name)
 
     # Model metadata
     # TODO: Determine optimal mapping of model metadata to BIDS fields.
@@ -361,6 +369,7 @@ def save_glm_to_bids(
     _generate_model_metadata(metadata_file, model)
 
     # Write out contrast-level statistical maps
+    statistical_maps = _make_stat_maps(model, contrasts, output_type="all")
     for contrast_name, contrast_maps in statistical_maps.items():
         # Extract stat_type
         contrast_matrix = contrasts[contrast_name]
@@ -404,20 +413,6 @@ def save_glm_to_bids(
 
         for map_name, img in renamed_contrast_maps.items():
             img.to_filename(out_dir / map_name)
-
-    # Write out model-level statistical maps
-    # TODO: only one resiudal / rsquare for all the runs?
-    model_level_mapping = {
-        "residuals": f"{prefix}stat-errorts_statmap.nii.gz",
-        "r_square": f"{prefix}stat-rSquare_statmap.nii.gz",
-    }
-    for attr, map_name in model_level_mapping.items():
-        print(f"Extracting and saving {attr}")
-        img = getattr(model, attr)
-        if isinstance(img, list):
-            img = img[0]
-
-        img.to_filename(out_dir / map_name)
 
     # Add html report
     glm_report = model.generate_report(contrasts=contrasts, **kwargs)
