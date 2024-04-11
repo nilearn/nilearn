@@ -202,38 +202,6 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             self._original_region_ids, tolerant=True
         )
 
-        # create region_id_name dictionary
-        self.region_id_name = None
-        if self.labels is not None:
-            known_backgrounds = {"background", "Background"}
-            initial_region_ids = [
-                region_id
-                for region_id in np.unique(
-                    _utils.niimg.safe_get_data(labels_img)
-                )
-                if region_id != self.background_label
-            ]
-            initial_region_names = [
-                region_name
-                for region_name in self.labels
-                if region_name not in known_backgrounds
-            ]
-
-            if len(initial_region_ids) != len(initial_region_names):
-                warnings.warn(
-                    "Number of regions in the labels image "
-                    "does not match the number of labels provided.",
-                    stacklevel=3,
-                )
-            # if number of regions in the labels image is more
-            # than the number of labels provided, then we cannot
-            # create a region_id_name dictionary
-            if len(initial_region_ids) <= len(initial_region_names):
-                self.region_id_name = {
-                    region_id: initial_region_names[i]
-                    for i, region_id in enumerate(initial_region_ids)
-                }
-
         self.mask_img = mask_img
 
         # Parameters for smooth_array
@@ -533,6 +501,39 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         msg = f"loading data from {repr}"
         _utils.logger.log(msg=msg, verbose=self.verbose)
         self.labels_img_ = _utils.check_niimg_3d(self.labels_img)
+        
+        # create region_id_name_ dictionary
+        self.region_id_name_ = None
+        if self.labels is not None:
+            known_backgrounds = {"background", "Background"}
+            initial_region_ids = [
+                region_id
+                for region_id in np.unique(
+                    _utils.niimg.safe_get_data(self.labels_img_)
+                )
+                if region_id != self.background_label
+            ]
+            initial_region_names = [
+                region_name
+                for region_name in self.labels
+                if region_name not in known_backgrounds
+            ]
+
+            if len(initial_region_ids) != len(initial_region_names):
+                warnings.warn(
+                    "Number of regions in the labels image "
+                    "does not match the number of labels provided.",
+                    stacklevel=3,
+                )
+            # if number of regions in the labels image is more
+            # than the number of labels provided, then we cannot
+            # create region_id_name_ dictionary
+            if len(initial_region_ids) <= len(initial_region_names):
+                self.region_id_name_ = {
+                    region_id: initial_region_names[i]
+                    for i, region_id in enumerate(initial_region_ids)
+                }
+        
         if self.mask_img is not None:
             repr = _utils._repr_niimgs(
                 self.mask_img, shorten=(not self.verbose)
@@ -791,10 +792,10 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             self.labels_, tolerant=True, resampling_done=True
         )
 
-        if self.region_id_name is not None:
+        if self.region_id_name_ is not None:
 
             self.region_names_ = {
-                key: self.region_id_name[region_id]
+                key: self.region_id_name_[region_id]
                 for key, region_id in region_ids.items()
                 if region_id != self.background_label
             }
