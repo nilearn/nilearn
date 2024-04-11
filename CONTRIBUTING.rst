@@ -399,7 +399,7 @@ Estimated Attributes
 """"""""""""""""""""
 
 Attributes that have been estimated from the data
-must always have a name ending with trailing underscore.
+should always have a name ending with trailing underscore.
 For example the coefficients of some regression estimator
 would be stored in a ``coef_`` attribute after ``fit`` has been called.
 
