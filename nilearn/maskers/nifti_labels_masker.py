@@ -501,7 +501,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         msg = f"loading data from {repr}"
         _utils.logger.log(msg=msg, verbose=self.verbose)
         self.labels_img_ = _utils.check_niimg_3d(self.labels_img)
-        
+
         # create region_id_name_ dictionary
         self.region_id_name_ = None
         if self.labels is not None:
@@ -533,7 +533,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                     region_id: initial_region_names[i]
                     for i, region_id in enumerate(initial_region_ids)
                 }
-        
+
         if self.mask_img is not None:
             repr = _utils._repr_niimgs(
                 self.mask_img, shorten=(not self.verbose)
