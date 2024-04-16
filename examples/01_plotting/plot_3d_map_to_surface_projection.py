@@ -10,13 +10,13 @@ different plotting engines, and add contours of regions of interest using
 
 """
 
-print("basic plotly example.")
+# print("basic plotly example.")
 
-import plotly.express as px
+# import plotly.express as px
 
-fig = px.line(x=["a","b","c"], y=[1,3,2], title="sample figure")
+# fig = px.line(x=["a","b","c"], y=[1,3,2], title="sample figure")
 
-fig.show()
+# fig.show()
 
 
 # %%
@@ -64,6 +64,8 @@ texture = surface.vol_to_surf(stat_img, fsaverage.pial_right)
 # as the default plotting engine.
 
 from nilearn import plotting
+
+print("basic matplotlib example.")
 
 fig = plotting.plot_surf_stat_map(
     fsaverage.infl_right, texture, hemi='right',
