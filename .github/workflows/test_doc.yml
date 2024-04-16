@@ -13,6 +13,9 @@ concurrency:
 jobs:
     test_doc:
         runs-on: ubuntu-latest
+        env:
+            BROWSER: /usr/bin/firefox
+            DISPLAY: :99.0
         steps:
         -   name: Checkout nilearn
             uses: actions/checkout@v4
