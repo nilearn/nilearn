@@ -54,7 +54,7 @@ texture = surface.vol_to_surf(stat_img, fsaverage.pial_right)
 # :func:`~nilearn.plotting.plot_surf_stat_map` which uses ``matplotlib``
 # as the default plotting engine.
 
-print(f"basic {engine} example.")
+print(f"basic plotly example.")
 
 import plotly.express as px
 
