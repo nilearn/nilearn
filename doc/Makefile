@@ -174,7 +174,7 @@ doctest:
 	@echo "Testing of doctests in the sources finished, look at the " \
 	      "results in $(BUILDDIR)/doctest/output.txt."
 
-zip: html pdf
+zip: html
 	mkdir -p _build/nilearn ;
 	cp -r _build/html _build/nilearn ;
 	zip -r _build/nilearn.zip _build/nilearn
