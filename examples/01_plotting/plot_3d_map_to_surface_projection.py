@@ -10,6 +10,15 @@ different plotting engines, and add contours of regions of interest using
 
 """
 
+print("basic plotly example.")
+
+import plotly.express as px
+
+fig = px.line(x=["a","b","c"], y=[1,3,2], title="sample figure")
+
+fig.show()
+
+
 # %%
 # Get a statistical map
 # ---------------------
@@ -53,14 +62,6 @@ texture = surface.vol_to_surf(stat_img, fsaverage.pial_right)
 # You can visualize the texture on the surface using the function
 # :func:`~nilearn.plotting.plot_surf_stat_map` which uses ``matplotlib``
 # as the default plotting engine.
-
-print(f"basic plotly example.")
-
-import plotly.express as px
-
-fig = px.line(x=["a","b","c"], y=[1,3,2], title="sample figure")
-
-fig.show()
 
 from nilearn import plotting
 
