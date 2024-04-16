@@ -325,7 +325,7 @@ def test_save_glm_to_bids(tmp_path_factory, prefix):
         "design.tsv",
         "design.json",
         "stat-errorts_statmap.nii.gz",
-        "stat-rSquare_statmap.nii.gz",
+        "stat-rsquared_statmap.nii.gz",
         "statmap.json",
         "report.html",
     ]
@@ -511,13 +511,13 @@ def test_save_glm_to_bids_contrast_definitions(
         "run-1_design.tsv",
         "run-1_design.json",
         "run-1_stat-errorts_statmap.nii.gz",
-        "run-1_stat-rSquare_statmap.nii.gz",
+        "run-1_stat-rsquared_statmap.nii.gz",
         "run-2_contrast-aaaMinusBbb_design.svg",
         "run-2_design.svg",
         "run-2_design.tsv",
         "run-2_design.json",
         "run-2_stat-errorts_statmap.nii.gz",
-        "run-2_stat-rSquare_statmap.nii.gz",
+        "run-2_stat-rsquared_statmap.nii.gz",
         "statmap.json",
         "report.html",
     ]
@@ -563,7 +563,7 @@ def test_save_glm_to_bids_second_level(tmp_path_factory, prefix):
         "design.svg",
         "design.tsv",
         "stat-errorts_statmap.nii.gz",
-        "stat-rSquare_statmap.nii.gz",
+        "stat-rsquared_statmap.nii.gz",
         "statmap.json",
         "report.html",
     ]

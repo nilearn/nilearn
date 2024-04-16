@@ -224,7 +224,7 @@ def save_glm_to_bids(
         - Model design metadata (``design.json``)
         - Model design matrix figure (``design.svg``)
         - Model error (``stat-errorts_statmap.nii.gz``)
-        - Model r-squared (``stat-rSquare_statmap.nii.gz``)
+        - Model r-squared (``stat-rsquared_statmap.nii.gz``)
         - Contrast :term:`'parameter estimates'<Parameter Estimate>`
           (``contrast-[name]_stat-effect_statmap.nii.gz``)
         - Variance of the contrast parameter estimates
@@ -237,7 +237,6 @@ def save_glm_to_bids(
 
     """
     # Import here to avoid circular imports
-    from nilearn import glm
     from nilearn.plotting.matrix_plotting import (
         plot_contrast_matrix,
         plot_design_matrix,
@@ -283,9 +282,7 @@ def save_glm_to_bids(
                 f"not {type(v)}"
             )
 
-    model_level = (
-        1 if isinstance(model, glm.first_level.FirstLevelModel) else 2
-    )
+    model_level = _model_level(model)
 
     if model_level == 2:
         sub_directory = "group"
@@ -353,16 +350,6 @@ def save_glm_to_bids(
             )
             contrast_plot.figure.savefig(constrast_fig_file)
 
-        # Write out model-level statistical maps
-        model_level_mapping = {
-            "residuals": f"{prefix}{run_str}stat-errorts_statmap.nii.gz",
-            "r_square": f"{prefix}{run_str}stat-rSquare_statmap.nii.gz",
-        }
-        for attr, map_name in model_level_mapping.items():
-            img = getattr(model, attr)
-            stat_map_to_save = img[i_run]
-            stat_map_to_save.to_filename(out_dir / map_name)
-
     # Model metadata
     # TODO: Determine optimal mapping of model metadata to BIDS fields.
     metadata_file = out_dir / f"{prefix}statmap.json"
@@ -414,6 +401,44 @@ def save_glm_to_bids(
         for map_name, img in renamed_contrast_maps.items():
             img.to_filename(out_dir / map_name)
 
+    _write_model_level_statistical_maps(model, prefix, out_dir)
+
     # Add html report
     glm_report = model.generate_report(contrasts=contrasts, **kwargs)
     glm_report.save_as_html(out_dir / f"{prefix}report.html")
+
+
+def _model_level(model):
+    from nilearn.glm.first_level import FirstLevelModel
+
+    return 1 if isinstance(model, FirstLevelModel) else 2
+
+
+def _write_model_level_statistical_maps(model, prefix, out_dir):
+    if _model_level(model) == 2:
+
+        model_level_mapping = {
+            "residuals": f"{prefix}stat-errorts_statmap.nii.gz",
+            "r_square": f"{prefix}stat-rsquared_statmap.nii.gz",
+        }
+        for attr, map_name in model_level_mapping.items():
+            stat_map_to_save = getattr(model, attr)
+            stat_map_to_save.to_filename(out_dir / map_name)
+
+    else:
+
+        if hasattr(model, "design_matrices_"):
+            design_matrices = model.design_matrices_
+        else:
+            design_matrices = [model.design_matrix_]
+
+        for i_run, _ in enumerate(design_matrices):
+            run_str = f"run-{i_run + 1}_" if len(design_matrices) > 1 else ""
+            model_level_mapping = {
+                "residuals": f"{prefix}{run_str}stat-errorts_statmap.nii.gz",
+                "r_square": f"{prefix}{run_str}stat-rsquared_statmap.nii.gz",
+            }
+            for attr, map_name in model_level_mapping.items():
+                img = getattr(model, attr)
+                stat_map_to_save = img[i_run]
+                stat_map_to_save.to_filename(out_dir / map_name)
