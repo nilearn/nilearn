@@ -10,9 +10,13 @@ on:
         -   '*'
 
     schedule:
-    # Run every day at 8am UTC
-    -   cron: 0 8 * * *
+    # Run Monday, Wednesday, Friday at 6am UTC
+    -   cron: 0 6 * * 1,3,5
     workflow_dispatch:
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
 
 # Force to use color
 env:
