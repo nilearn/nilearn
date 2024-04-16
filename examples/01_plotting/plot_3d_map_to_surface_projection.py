@@ -100,7 +100,7 @@ fig = plotting.plot_surf_stat_map(
 )
 
 # Display the figure as with matplotlib figures
-fig.show()
+# fig.show()
 
 # %%
 # When using ``matplolib`` as the plotting engine, a standard
