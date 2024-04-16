@@ -54,6 +54,14 @@ texture = surface.vol_to_surf(stat_img, fsaverage.pial_right)
 # :func:`~nilearn.plotting.plot_surf_stat_map` which uses ``matplotlib``
 # as the default plotting engine.
 
+print(f"basic {engine} example.")
+
+import plotly.express as px
+
+fig = px.line(x=["a","b","c"], y=[1,3,2], title="sample figure")
+
+fig.show()
+
 from nilearn import plotting
 
 fig = plotting.plot_surf_stat_map(
@@ -78,14 +86,6 @@ try:
     import plotly.graph_objects as go  # noqa: F401
 except ImportError:
     engine = 'matplotlib'
-
-print(f"basic {engine} example.")
-
-import plotly.express as px
-
-fig = px.line(x=["a","b","c"], y=[1,3,2], title="sample figure")
-
-fig.show()
 
 print(f"Using plotting engine {engine}.")
 
