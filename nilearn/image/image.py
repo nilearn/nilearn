@@ -1396,7 +1396,7 @@ def concat_imgs(
     niimgs,
     dtype=np.float32,
     ensure_ndim=None,
-    memory=Memory(location=None),
+    memory=None,
     memory_level=0,
     auto_resample=False,
     verbose=0,
@@ -1446,6 +1446,9 @@ def concat_imgs(
 
     """
     from ..image import new_img_like  # avoid circular imports
+
+    if memory is None:
+        memory = Memory(location=None)
 
     target_fov = "first" if auto_resample else None
 

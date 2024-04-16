@@ -280,7 +280,7 @@ class HTMLReport(HTMLDocument):
 
     """
 
-    def __init__(self, head_tpl, body, head_values={}):
+    def __init__(self, head_tpl, body, head_values=None):
         """Construct the ``HTMLReport`` class.
 
         Parameters
@@ -307,6 +307,8 @@ class HTMLReport(HTMLDocument):
                 with custom templates.
 
         """
+        if head_values is None:
+            head_values = {}
         html = head_tpl.safe_substitute(body=body, **head_values)
         super().__init__(html)
         self.head_tpl = head_tpl

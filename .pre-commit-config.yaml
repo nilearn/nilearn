@@ -110,4 +110,4 @@ repos:
     hooks:
     -   id: flake8
         args: [--config, .flake8, --verbose, nilearn, examples, maint_tools]
-        additional_dependencies: [flake8-docstrings, flake8-use-fstring, flake8-functions]
+        additional_dependencies: [flake8-docstrings, flake8-use-fstring, flake8-functions, flake8-bugbear]

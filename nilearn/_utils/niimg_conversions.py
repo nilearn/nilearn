@@ -88,7 +88,7 @@ def iter_check_niimg(
     atleast_4d=False,
     target_fov=None,
     dtype=None,
-    memory=Memory(location=None),
+    memory=None,
     memory_level=0,
     verbose=0,
 ):
@@ -131,6 +131,8 @@ def iter_check_niimg(
         check_niimg, check_niimg_3d, check_niimg_4d
 
     """
+    if memory is None:
+        memory = Memory(location=None)
     # If niimgs is a string, use glob to expand it to the matching filenames.
     niimgs = resolve_globbing(niimgs)
 

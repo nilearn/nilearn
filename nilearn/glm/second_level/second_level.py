@@ -411,12 +411,14 @@ class SecondLevelModel(BaseGLM):
         target_affine=None,
         target_shape=None,
         smoothing_fwhm=None,
-        memory=Memory(None),
+        memory=None,
         memory_level=1,
         verbose=0,
         n_jobs=1,
         minimize_memory=True,
     ):
+        if memory is None:
+            memory = Memory(None)
         self.mask_img = mask_img
         self.target_affine = target_affine
         self.target_shape = target_shape

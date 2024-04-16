@@ -94,7 +94,7 @@ def _mask_and_reduce(
     n_components=None,
     random_state=None,
     memory_level=0,
-    memory=Memory(location=None),
+    memory=None,
     n_jobs=1,
 ):
     """Mask and reduce provided 4D images with given masker.
@@ -146,6 +146,8 @@ def _mask_and_reduce(
         Concatenation of reduced data.
 
     """
+    if memory is None:
+        memory = Memory(location=None)
     if not hasattr(imgs, "__iter__"):
         imgs = [imgs]
 
@@ -349,11 +351,13 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         target_shape=None,
         mask_strategy="epi",
         mask_args=None,
-        memory=Memory(location=None),
+        memory=None,
         memory_level=0,
         n_jobs=1,
         verbose=0,
     ):
+        if memory is None:
+            memory = Memory(location=None)
         self.n_components = n_components
         self.random_state = random_state
         self.mask = mask

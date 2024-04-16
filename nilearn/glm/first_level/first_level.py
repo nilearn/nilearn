@@ -409,13 +409,13 @@ class FirstLevelModel(BaseGLM):
         drift_model="cosine",
         high_pass=0.01,
         drift_order=1,
-        fir_delays=[0],
+        fir_delays=None,
         min_onset=-24,
         mask_img=None,
         target_affine=None,
         target_shape=None,
         smoothing_fwhm=None,
-        memory=Memory(None),
+        memory=None,
         memory_level=1,
         standardize=False,
         signal_scaling=0,
@@ -426,6 +426,10 @@ class FirstLevelModel(BaseGLM):
         subject_label=None,
         random_state=None,
     ):
+        if fir_delays is None:
+            fir_delays = [0]
+        if memory is None:
+            memory = Memory(None)
         # design matrix parameters
         if t_r is not None:
             _check_repetition_time(t_r)
@@ -1083,13 +1087,13 @@ def first_level_from_bids(
     drift_model="cosine",
     high_pass=0.01,
     drift_order=1,
-    fir_delays=[0],
+    fir_delays=None,
     min_onset=-24,
     mask_img=None,
     target_affine=None,
     target_shape=None,
     smoothing_fwhm=None,
-    memory=Memory(None),
+    memory=None,
     memory_level=1,
     standardize=False,
     signal_scaling=0,
@@ -1263,6 +1267,8 @@ def first_level_from_bids(
         fit function of their respective model.
 
     """
+    if memory is None:
+        memory = Memory(None)
     if slice_time_ref == 0:
         warn(
             "Starting in version 0.12, slice_time_ref will default to None.",

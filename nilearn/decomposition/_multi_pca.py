@@ -151,11 +151,13 @@ class _MultiPCA(_BaseDecomposition):
         target_shape=None,
         mask_strategy="epi",
         mask_args=None,
-        memory=Memory(location=None),
+        memory=None,
         memory_level=0,
         n_jobs=1,
         verbose=0,
     ):
+        if memory is None:
+            memory = Memory(location=None)
         self.n_components = n_components
         self.do_cca = do_cca
 

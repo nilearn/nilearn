@@ -147,12 +147,14 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
         mask_strategy="background",
         mask_args=None,
         dtype=None,
-        memory=Memory(location=None),
+        memory=None,
         memory_level=0,
         n_jobs=1,
         verbose=0,
         **kwargs,
     ):
+        if memory is None:
+            memory = Memory(location=None)
         super().__init__(
             # Mask is provided or computed
             mask_img=mask_img,

@@ -429,12 +429,14 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
     def __init__(
         self,
-        cov_estimator=LedoitWolf(store_precision=False),
+        cov_estimator=None,
         kind="covariance",
         vectorize=False,
         discard_diagonal=False,
         standardize=True,
     ):
+        if cov_estimator is None:
+            cov_estimator = LedoitWolf(store_precision=False)
         self.cov_estimator = cov_estimator
         self.kind = kind
         self.vectorize = vectorize

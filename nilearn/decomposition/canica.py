@@ -170,11 +170,13 @@ class CanICA(_MultiPCA):
         target_shape=None,
         mask_strategy="epi",
         mask_args=None,
-        memory=Memory(location=None),
+        memory=None,
         memory_level=0,
         n_jobs=1,
         verbose=0,
     ):
+        if memory is None:
+            memory = Memory(location=None)
         super().__init__(
             n_components=n_components,
             do_cca=do_cca,

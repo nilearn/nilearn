@@ -205,9 +205,11 @@ class DictLearning(_BaseDecomposition):
         mask_args=None,
         n_jobs=1,
         verbose=0,
-        memory=Memory(location=None),
+        memory=None,
         memory_level=0,
     ):
+        if memory is None:
+            memory = Memory(location=None)
         _BaseDecomposition.__init__(
             self,
             n_components=n_components,

@@ -551,9 +551,11 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
         tol=1e-3,
         max_iter=10,
         verbose=0,
-        memory=Memory(location=None),
+        memory=None,
         memory_level=0,
     ):
+        if memory is None:
+            memory = Memory(location=None)
         self.alpha = alpha
         self.tol = tol
         self.max_iter = max_iter
@@ -1143,7 +1145,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
             # case of equality)
             best_score = -np.inf
             last_finite_idx = 0
-            for index, (alpha, this_score, _) in enumerate(path):
+            for index, (_, this_score, _) in enumerate(path):
                 if this_score >= 0.1 / np.finfo(np.float64).eps:
                     this_score = np.nan
                 if np.isfinite(this_score):
