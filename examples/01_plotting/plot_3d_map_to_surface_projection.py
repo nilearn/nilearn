@@ -79,6 +79,14 @@ try:
 except ImportError:
     engine = 'matplotlib'
 
+print(f"basic {engine} example.")
+
+import plotly.express as px
+
+fig = px.line(x=["a","b","c"], y=[1,3,2], title="sample figure")
+
+fig.show()
+
 print(f"Using plotting engine {engine}.")
 
 fig = plotting.plot_surf_stat_map(
@@ -87,7 +95,9 @@ fig = plotting.plot_surf_stat_map(
     threshold=1., bg_map=curv_right_sign, bg_on_data=True,
     engine=engine  # Specify the plotting engine here
 )
-fig.show()  # Display the figure as with matplotlib figures
+
+# Display the figure as with matplotlib figures
+fig.show()
 
 # %%
 # When using ``matplolib`` as the plotting engine, a standard
