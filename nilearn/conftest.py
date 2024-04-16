@@ -221,7 +221,7 @@ def _img_3d_rand(affine=None):
     Mostly used for set up in other fixtures in other testing modules.
     """
     if affine is None:
-        affine = _affine_eye()()
+        affine = _affine_eye()
     data = _rng().random(_shape_3d_default())
     return Nifti1Image(data, affine)
 
