@@ -126,15 +126,17 @@ jobs:
             id: cache-key
             run: |
                 if [[ $(cat restore.txt) == "true" ]]; then
-                    date +%U > week_num;
                     echo "restore=true" >> $GITHUB_OUTPUT
                 fi
+
+        -   name: Key for cache based on week number
+            run: date +%U > week_num;
 
         -   name: Try get cache from a previous attempt
             uses: actions/cache/restore@v4
             with:
                 path: nilearn_data
-                key: v1-${{ github.run_id }}
+                key: v1-${{ hashFiles('week_num') }}
 
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
@@ -291,7 +293,7 @@ jobs:
             if: always()
             with:
                 path: nilearn_data/
-                key: v1-${{ github.run_id }}
+                key: v1-${{ hashFiles('week_num') }}
 
     # Steps to build the documentation.
     build_docs:
@@ -365,12 +367,15 @@ jobs:
                 echo "PATTERN = $(cat pattern.txt)"
                 echo "BUILD = $(cat build.txt)"
 
+        -   name: Key for cache based on week number
+            run: date +%U > week_num;
+
         # Restore data from cache from the get_data job
         -   name: Data caching
             uses: actions/cache/restore@v4
             with:
                 path: nilearn_data
-                key: v1-${{ github.run_id }}
+                key: v1-${{ hashFiles('week_num') }}
 
         # Update the authors file and the names file
         # in case a contributor has been added to citation.cff
