@@ -13,7 +13,8 @@ on:
         branches:
         -   '*'
     schedule:
-    -   cron: 0 6 * * *
+    # Run every Monday at 8am UTC
+    -   cron: 0 8 * * 1
 
 # Force to use color
 env:
