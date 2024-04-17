@@ -1414,7 +1414,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         The montage will contain as many rows as views specified by
         display mode. Order is preserved, and left and right hemispheres
         are shown on the left and right sides of the figure.
-        Will defautl to ``['lateral', 'medial']`` if ``None`` is passed.
+        Will default to ``['lateral', 'medial']`` if ``None`` is passed.
     %(output_file)s
     %(title)s
     %(colorbar)s
