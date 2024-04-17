@@ -967,7 +967,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         self.dummy_output_ = {}
         classes = self.classes_
 
-        for i, (
+        for _, (
             class_index,
             coef,
             intercept,

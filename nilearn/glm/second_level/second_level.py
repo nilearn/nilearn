@@ -934,12 +934,9 @@ def non_parametric_inference(
 
     else:
         masker = clone(mask)
-        if (
-            smoothing_fwhm is not None
-            and getattr(masker, "smoothing_fwhm") is not None
-        ):
+        if smoothing_fwhm is not None and masker.smoothing_fwhm is not None:
             warn("Parameter smoothing_fwhm of the masker overridden")
-            setattr(masker, "smoothing_fwhm", smoothing_fwhm)
+            masker.smoothing_fwhm = smoothing_fwhm
 
     masker.fit(sample_map)
 

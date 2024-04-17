@@ -42,4 +42,4 @@ per-file-ignores =
 ignore = D105, D107, E402, W503, W504, W605, CFQ003
 # for compatibility with black
 # https://black.readthedocs.io/en/stable/guides/using_black_with_other_tools.html#flake8
-extend-ignore = E203, B001, B004, B007, B009, B010, B015, B017, B018, B026, B028
+extend-ignore = E203, B026, B028

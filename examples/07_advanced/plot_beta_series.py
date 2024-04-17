@@ -270,7 +270,7 @@ fig, axes = plt.subplots(
     gridspec_kw={"width_ratios": [1, 2, 1]},
 )
 
-for i_ax, ax in enumerate(axes):
+for i_ax, _ in enumerate(axes):
     plotting.plot_design_matrix(DESIGN_MATRICES[i_ax], ax=axes[i_ax])
     axes[i_ax].set_title(DM_TITLES[i_ax])
 
