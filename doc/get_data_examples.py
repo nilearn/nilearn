@@ -27,13 +27,13 @@ datasets.load_sample_motor_activation_image()
 datasets.fetch_coords_power_2011()
 datasets.fetch_coords_dosenbach_2010(legacy_format=False)
 
-# datasets.fetch_adhd(n_subjects=1)
-# datasets.fetch_development_fmri(n_subjects=60)
-# datasets.fetch_fiac_first_level()
-# datasets.fetch_haxby()
-# datasets.fetch_language_localizer_demo_dataset(legacy_output=False)
-# datasets.fetch_localizer_button_task(legacy_format=False)
-# datasets.fetch_localizer_calculation_task(n_subjects=20, legacy_format=False)
+datasets.fetch_adhd(n_subjects=1)
+datasets.fetch_development_fmri(n_subjects=60)
+datasets.fetch_fiac_first_level()
+datasets.fetch_haxby()
+datasets.fetch_language_localizer_demo_dataset(legacy_output=False)
+datasets.fetch_localizer_button_task(legacy_format=False)
+datasets.fetch_localizer_calculation_task(n_subjects=20, legacy_format=False)
 # datasets.fetch_localizer_contrasts(
 #     ["left button press (auditory cue)"],
 #     n_subjects=94,
