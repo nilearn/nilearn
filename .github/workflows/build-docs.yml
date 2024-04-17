@@ -15,9 +15,16 @@ on:
     schedule:
     -   cron: 0 6 * * *
 
-# Force to use color
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
 env:
+    # Force to use color
     FORCE_COLOR: true
+    BROWSER: /usr/bin/firefox
+    DISPLAY: :99.0
+    NILEARN_DATA: /home/runner/work/nilearn/nilearn/nilearn_data
 
 jobs:
 
@@ -40,15 +47,13 @@ jobs:
         if: github.repository == 'nilearn/nilearn'
         runs-on: ubuntu-latest
         timeout-minutes: 360
-        env:
-            NILEARN_DATA: /home/runner/work/nilearn/nilearn/nilearn_data
         defaults:
             run:
                 shell: bash -el {0}
 
         steps:
         -   name: Source caching
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
             with:
                 path: .git
                 key: source-cache-${{ runner.os }}-${{ github.run_id }}
@@ -126,7 +131,7 @@ jobs:
                 fi
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~48 MB
             with:
                 path: |
@@ -143,126 +148,126 @@ jobs:
                 key: v1-small-cache-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~45 MB
             with:
                 path: nilearn_data/adhd
                 key: v1-adhd-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~32 MB
             with:
                 path: nilearn_data/allen_rsn_2011
                 key: v1-allen_rsn_2011-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~66 MB
             with:
                 path: nilearn_data/brainomics_localizer
                 key: v1-brainomics_localizer-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~373 MB
             with:
                 path: nilearn_data/development_fmri
                 key: v1-development_fmri-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~832 MB
             with:
                 path: nilearn_data/ds000030
                 key: v1-ds000030-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~82 MB
             with:
                 path: nilearn_data/fiac_nilearn.glm
                 key: v1-fiac_nilearn.glm-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~750 MB
             with:
                 path: nilearn_data/fMRI-language-localizer-demo-dataset
                 key: v1-fMRI-language-localizer-demo-dataset-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~30 MB
             with:
                 path: nilearn_data/fsl
                 key: v1-fsl-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~302 MB
             with:
                 path: nilearn_data/haxby2001
                 key: v1-haxby2001-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~63 MB
             with:
                 path: nilearn_data/icbm152_2009
                 key: v1-icbm152_2009-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~105 MB
             with:
                 path: nilearn_data/jimura_poldrack_2012_zmaps
                 key: v1-jimura_poldrack_2012_zmaps-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~35 MB
             with:
                 path: nilearn_data/localizer_first_level
                 key: v1-localizer_first_level-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~181 MB
             with:
                 path: nilearn_data/miyawaki2008
                 key: v1-miyawaki2008-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~85 MB
             with:
                 path: nilearn_data/nki_enhanced_surface
                 key: v1-nki_enhanced_surface-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~913 MB
             with:
                 path: nilearn_data/oasis1
                 key: v1-oasis1-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~171 MB
             with:
                 path: nilearn_data/smith_2009
                 key: v1-smith_2009-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~230 MB
             with:
                 path: nilearn_data/spm_auditory
                 key: v1-spm_auditory-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~227 MB
             with:
                 path: nilearn_data/spm_multimodal_fmri
@@ -275,26 +280,27 @@ jobs:
                     make -C doc data
                 fi
 
+        -   uses: actions/cache/save@v4
+            if: always()
+            with:
+                path: nilearn_data/
+                key: v1-${{ github.run_id }}
 
     # Steps to build the documentation.
     build_docs:
-        needs: get_data
+        needs: [get_data, validate_cff]
         # This prevents this workflow from running on a fork.
         # To test this workflow on a fork, uncomment the following line.
         if: github.repository == 'nilearn/nilearn'
         runs-on: ubuntu-latest
         timeout-minutes: 360
-        env:
-            BROWSER: /usr/bin/firefox
-            DISPLAY: :99.0
-            NILEARN_DATA: /home/runner/work/nilearn/nilearn/nilearn_data
         defaults:
             run:
                 shell: bash -el {0}
 
         steps:
         -   name: Source caching
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
             with:
                 path: .git
                 key: source-cache-${{ runner.os }}-${{ github.run_id }}
@@ -380,7 +386,7 @@ jobs:
                 fi
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~48 MB
             with:
                 path: |
@@ -397,126 +403,126 @@ jobs:
                 key: v1-small-cache-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~45 MB
             with:
                 path: nilearn_data/adhd
                 key: v1-adhd-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~32 MB
             with:
                 path: nilearn_data/allen_rsn_2011
                 key: v1-allen_rsn_2011-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~66 MB
             with:
                 path: nilearn_data/brainomics_localizer
                 key: v1-brainomics_localizer-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~373 MB
             with:
                 path: nilearn_data/development_fmri
                 key: v1-development_fmri-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~832 MB
             with:
                 path: nilearn_data/ds000030
                 key: v1-ds000030-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~82 MB
             with:
                 path: nilearn_data/fiac_nilearn.glm
                 key: v1-fiac_nilearn.glm-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~750 MB
             with:
                 path: nilearn_data/fMRI-language-localizer-demo-dataset
                 key: v1-fMRI-language-localizer-demo-dataset-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~30 MB
             with:
                 path: nilearn_data/fsl
                 key: v1-fsl-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~302 MB
             with:
                 path: nilearn_data/haxby2001
                 key: v1-haxby2001-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~63 MB
             with:
                 path: nilearn_data/icbm152_2009
                 key: v1-icbm152_2009-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~105 MB
             with:
                 path: nilearn_data/jimura_poldrack_2012_zmaps
                 key: v1-jimura_poldrack_2012_zmaps-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~35 MB
             with:
                 path: nilearn_data/localizer_first_level
                 key: v1-localizer_first_level-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~181 MB
             with:
                 path: nilearn_data/miyawaki2008
                 key: v1-miyawaki2008-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~85 MB
             with:
                 path: nilearn_data/nki_enhanced_surface
                 key: v1-nki_enhanced_surface-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~913 MB
             with:
                 path: nilearn_data/oasis1
                 key: v1-oasis1-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~171 MB
             with:
                 path: nilearn_data/smith_2009
                 key: v1-smith_2009-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~230 MB
             with:
                 path: nilearn_data/spm_auditory
                 key: v1-spm_auditory-${{ hashFiles('week_num') }}
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache@v4
+            uses: actions/cache/restore@v4
         # ~227 MB
             with:
                 path: nilearn_data/spm_multimodal_fmri
