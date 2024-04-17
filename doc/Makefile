@@ -79,6 +79,10 @@ force:
 view: _build/html/index.html
 	$(BROWSER) _build/html/index.html
 
+data:
+	# downloads all the data for the examples
+	python get_data_examples.py
+
 html:	sym_links sym_links_datasets glm_reports
 	# These two lines make the build a bit more lengthy, and the
 	# the embedding of images more robust

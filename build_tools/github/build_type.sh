@@ -12,12 +12,12 @@ else
     else
         EXAMPLE=""
     fi;
-    git diff --name-only $(git merge-base $COMMIT_SHA upstream/main) $COMMIT_SHA | tee examples.txt;
+    git diff --name-only $(git merge-base $COMMIT_SHA upstream/main) "$COMMIT_SHA" | tee examples.txt;
     echo $EXAMPLE >> examples.txt
-    for FILENAME in `cat examples.txt`; do
-        if [[ `expr match $FILENAME "\(examples\)/.*plot_.*\.py"` ]]; then
+    for FILENAME in $(cat examples.txt); do
+        if [[ $(expr match "$FILENAME" "\(examples\)/.*plot_.*\.py") ]]; then
             echo "Checking example $FILENAME ...";
-            PATTERN=`basename $FILENAME`"\\|"$PATTERN;
+            PATTERN=$(basename "$FILENAME")"\\|"$PATTERN;
         fi;
     done;
     echo PATTERN="$PATTERN";

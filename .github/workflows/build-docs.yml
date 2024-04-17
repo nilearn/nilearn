@@ -280,6 +280,13 @@ jobs:
                 path: nilearn_data/spm_multimodal_fmri
                 key: v1-spm_multimodal_fmri-${{ hashFiles('week_num') }}
 
+        -   name: get data for full builds
+            run: |
+                BUILD_TYPE=$(cat build.txt)
+                if [[ $BUILD_TYPE == "html-strict" ]]; then
+                    make -C doc data
+                fi
+
         # Update the authors file and the names file
         # in case a contributor has been added to citation.cff
         # but did not run the maint_tools/citation_cff_maint.py script.
