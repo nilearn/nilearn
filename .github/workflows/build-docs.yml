@@ -34,9 +34,251 @@ jobs:
             with:
                 args: --validate
 
+    get_data:
+        # This prevents this workflow from running on a fork.
+        # To test this workflow on a fork, uncomment the following line.
+        if: github.repository == 'nilearn/nilearn'
+        runs-on: ubuntu-latest
+        timeout-minutes: 360
+        env:
+            NILEARN_DATA: /home/runner/work/nilearn/nilearn/nilearn_data
+        defaults:
+            run:
+                shell: bash -el {0}
+
+        steps:
+        -   name: Source caching
+            uses: actions/cache@v4
+            with:
+                path: .git
+                key: source-cache-${{ runner.os }}-${{ github.run_id }}
+                restore-keys: source-cache-${{ runner.os }}
+
+        -   name: Checkout nilearn
+            uses: actions/checkout@v4
+            with:
+        # If pull request, checkout HEAD commit with all commit history
+                ref: ${{ github.event.pull_request.head.sha }}
+                fetch-depth: 0
+        -   name: Complete checkout
+            run: |
+                set -x
+                if ! git remote -v | grep upstream; then
+                  git remote add upstream https://github.com/nilearn/nilearn.git
+                fi
+                git fetch upstream
+        -   name: Merge with upstream
+            run: |
+                set -x
+                echo $(git log -1 --pretty=%B) | tee gitlog.txt
+                echo "gitlog.txt = $(cat gitlog.txt)"
+                echo $GITHUB_REF_NAME | tee merge.txt
+                if [ "$GITHUB_REF_NAME" != "main" ]; then
+                    echo "Merging $(cat merge.txt)";
+                    git pull --ff-only upstream "refs/pull/$(cat merge.txt)";
+                fi
+
+        # Set up environment
+        -   name: Setup python
+            uses: actions/setup-python@v5
+            with:
+                python-version: '3.12'
+        -   name: Install packages
+            run: |
+                python -m pip install --user --upgrade pip setuptools
+                python -m pip install .
+
+        # Check if we are doing a full or partial build
+        -   name: Find build type
+            run: ./build_tools/github/build_type.sh
+            env:
+                COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
+        -   name: Verify build type
+            run: |
+                echo "PATTERN = $(cat pattern.txt)"
+                echo "BUILD = $(cat build.txt)"
+
+        # Restore data from cache, or set up caching if data not found or
+        # [force download] is defined in commit message
+        -   name: Determine restore data
+            run: |
+                commit_msg=$(git log -2 --format=oneline);
+                echo $commit_msg;
+                if [[ $commit_msg == *"[force download]"* ]]; then
+                  echo "All datasets will be downloaded as requested (only for full builds).";
+                  echo "false" | tee restore.txt;
+                else
+                  echo "Data cache will be used if available.";
+                  echo "true" | tee restore.txt;
+                fi
+
+                if [[ "$(cat build.txt)" == "ci-html-noplot" ]]; then
+                  echo "Data cache will not be used for partial builds.";
+                  echo "false" | tee restore.txt;
+                fi
+
+        -   name: Get cache key
+            id: cache-key
+            run: |
+                if [[ $(cat restore.txt) == "true" ]]; then
+                    date +%U > week_num;
+                    echo "restore=true" >> $GITHUB_OUTPUT
+                fi
+        -   name: Data caching
+            if: steps.cache-key.outputs.restore == 'true'
+            uses: actions/cache@v4
+        # ~48 MB
+            with:
+                path: |
+                    nilearn_data/basc_multiscale_2015
+                    nilearn_data/destrieux_surface
+                    nilearn_data/destrieux_2009
+                    nilearn_data/difumo_atlases
+                    nilearn_data/fsaverage
+                    nilearn_data/Megatrawls
+                    nilearn_data/msdl_atlas
+                    nilearn_data/neurovault
+                    nilearn_data/pauli_2017
+                    nilearn_data/yeo_2011
+                key: v1-small-cache-${{ hashFiles('week_num') }}
+        -   name: Data caching
+            if: steps.cache-key.outputs.restore == 'true'
+            uses: actions/cache@v4
+        # ~45 MB
+            with:
+                path: nilearn_data/adhd
+                key: v1-adhd-${{ hashFiles('week_num') }}
+        -   name: Data caching
+            if: steps.cache-key.outputs.restore == 'true'
+            uses: actions/cache@v4
+        # ~32 MB
+            with:
+                path: nilearn_data/allen_rsn_2011
+                key: v1-allen_rsn_2011-${{ hashFiles('week_num') }}
+        -   name: Data caching
+            if: steps.cache-key.outputs.restore == 'true'
+            uses: actions/cache@v4
+        # ~66 MB
+            with:
+                path: nilearn_data/brainomics_localizer
+                key: v1-brainomics_localizer-${{ hashFiles('week_num') }}
+        -   name: Data caching
+            if: steps.cache-key.outputs.restore == 'true'
+            uses: actions/cache@v4
+        # ~373 MB
+            with:
+                path: nilearn_data/development_fmri
+                key: v1-development_fmri-${{ hashFiles('week_num') }}
+        -   name: Data caching
+            if: steps.cache-key.outputs.restore == 'true'
+            uses: actions/cache@v4
+        # ~832 MB
+            with:
+                path: nilearn_data/ds000030
+                key: v1-ds000030-${{ hashFiles('week_num') }}
+        -   name: Data caching
+            if: steps.cache-key.outputs.restore == 'true'
+            uses: actions/cache@v4
+        # ~82 MB
+            with:
+                path: nilearn_data/fiac_nilearn.glm
+                key: v1-fiac_nilearn.glm-${{ hashFiles('week_num') }}
+        -   name: Data caching
+            if: steps.cache-key.outputs.restore == 'true'
+            uses: actions/cache@v4
+        # ~750 MB
+            with:
+                path: nilearn_data/fMRI-language-localizer-demo-dataset
+                key: v1-fMRI-language-localizer-demo-dataset-${{ hashFiles('week_num') }}
+        -   name: Data caching
+            if: steps.cache-key.outputs.restore == 'true'
+            uses: actions/cache@v4
+        # ~30 MB
+            with:
+                path: nilearn_data/fsl
+                key: v1-fsl-${{ hashFiles('week_num') }}
+        -   name: Data caching
+            if: steps.cache-key.outputs.restore == 'true'
+            uses: actions/cache@v4
+        # ~302 MB
+            with:
+                path: nilearn_data/haxby2001
+                key: v1-haxby2001-${{ hashFiles('week_num') }}
+        -   name: Data caching
+            if: steps.cache-key.outputs.restore == 'true'
+            uses: actions/cache@v4
+        # ~63 MB
+            with:
+                path: nilearn_data/icbm152_2009
+                key: v1-icbm152_2009-${{ hashFiles('week_num') }}
+        -   name: Data caching
+            if: steps.cache-key.outputs.restore == 'true'
+            uses: actions/cache@v4
+        # ~105 MB
+            with:
+                path: nilearn_data/jimura_poldrack_2012_zmaps
+                key: v1-jimura_poldrack_2012_zmaps-${{ hashFiles('week_num') }}
+        -   name: Data caching
+            if: steps.cache-key.outputs.restore == 'true'
+            uses: actions/cache@v4
+        # ~35 MB
+            with:
+                path: nilearn_data/localizer_first_level
+                key: v1-localizer_first_level-${{ hashFiles('week_num') }}
+        -   name: Data caching
+            if: steps.cache-key.outputs.restore == 'true'
+            uses: actions/cache@v4
+        # ~181 MB
+            with:
+                path: nilearn_data/miyawaki2008
+                key: v1-miyawaki2008-${{ hashFiles('week_num') }}
+        -   name: Data caching
+            if: steps.cache-key.outputs.restore == 'true'
+            uses: actions/cache@v4
+        # ~85 MB
+            with:
+                path: nilearn_data/nki_enhanced_surface
+                key: v1-nki_enhanced_surface-${{ hashFiles('week_num') }}
+        -   name: Data caching
+            if: steps.cache-key.outputs.restore == 'true'
+            uses: actions/cache@v4
+        # ~913 MB
+            with:
+                path: nilearn_data/oasis1
+                key: v1-oasis1-${{ hashFiles('week_num') }}
+        -   name: Data caching
+            if: steps.cache-key.outputs.restore == 'true'
+            uses: actions/cache@v4
+        # ~171 MB
+            with:
+                path: nilearn_data/smith_2009
+                key: v1-smith_2009-${{ hashFiles('week_num') }}
+        -   name: Data caching
+            if: steps.cache-key.outputs.restore == 'true'
+            uses: actions/cache@v4
+        # ~230 MB
+            with:
+                path: nilearn_data/spm_auditory
+                key: v1-spm_auditory-${{ hashFiles('week_num') }}
+        -   name: Data caching
+            if: steps.cache-key.outputs.restore == 'true'
+            uses: actions/cache@v4
+        # ~227 MB
+            with:
+                path: nilearn_data/spm_multimodal_fmri
+                key: v1-spm_multimodal_fmri-${{ hashFiles('week_num') }}
+
+        -   name: get data for full builds
+            run: |
+                BUILD_TYPE=$(cat build.txt)
+                if [[ $BUILD_TYPE == "html-strict" ]]; then
+                    make -C doc data
+                fi
+
+
     # Steps to build the documentation.
     build_docs:
-        needs: validate_cff
+        needs: get_data
         # This prevents this workflow from running on a fork.
         # To test this workflow on a fork, uncomment the following line.
         if: github.repository == 'nilearn/nilearn'
