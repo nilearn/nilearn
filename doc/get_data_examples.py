@@ -100,7 +100,7 @@ def main(args=sys.argv) -> None:
             "left vs right button press",
         ]:
             datasets.fetch_localizer_contrasts(
-                contrasts=contrast,
+                contrasts=[contrast],
                 n_subjects=16,
                 legacy_format=False,
             )
