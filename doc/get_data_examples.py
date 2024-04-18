@@ -121,3 +121,7 @@ def main(args=sys.argv) -> None:
         datasets.fetch_spm_multimodal_fmri()
         datasets.fetch_spm_auditory()
         datasets.fetch_surf_nki_enhanced(n_subjects=1)
+
+
+if __name__ == "__main__":
+    main()
