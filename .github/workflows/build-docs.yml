@@ -287,8 +287,9 @@ jobs:
                 path: nilearn_data/spm_multimodal_fmri
                 key: v1-spm_multimodal_fmri-${{ hashFiles('week_num') }}
 
-        -   name: get data for full builds
+        -   name: Get data
             run: |
+                python doc/get_data_examples.py partial
                 if [[ $commit_msg == *"[force download]"* ]]; then
                     python doc/get_data_examples.py force_download
                 else

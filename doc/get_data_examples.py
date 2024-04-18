@@ -9,6 +9,8 @@ def main(args=sys.argv) -> None:
 
     build_type = args[1] if len(args) > 1 else "partial"
 
+    print(f"Getting data for a build: {build_type}")
+
     datasets.fetch_icbm152_2009()
 
     datasets.fetch_atlas_msdl()
