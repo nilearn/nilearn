@@ -65,23 +65,8 @@ jobs:
         # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
                 fetch-depth: 0
-        -   name: Complete checkout
-            run: |
-                set -x
-                if ! git remote -v | grep upstream; then
-                  git remote add upstream https://github.com/nilearn/nilearn.git
-                fi
-                git fetch upstream
         -   name: Merge with upstream
-            run: |
-                set -x
-                echo $(git log -1 --pretty=%B) | tee gitlog.txt
-                echo "gitlog.txt = $(cat gitlog.txt)"
-                echo $GITHUB_REF_NAME | tee merge.txt
-                if [ "$GITHUB_REF_NAME" != "main" ]; then
-                    echo "Merging $(cat merge.txt)";
-                    git pull --ff-only upstream "refs/pull/$(cat merge.txt)";
-                fi
+            run: ./build_tools/github/merge_upstream.sh
 
         # Set up environment
         -   name: Setup python
@@ -103,24 +88,8 @@ jobs:
                 echo "PATTERN = $(cat pattern.txt)"
                 echo "BUILD = $(cat build.txt)"
 
-        # Restore data from cache, or set up caching if data not found or
-        # [force download] is defined in commit message
-        -   name: Determine restore data
-            run: |
-                commit_msg=$(git log -2 --format=oneline);
-                echo $commit_msg;
-                if [[ $commit_msg == *"[force download]"* ]]; then
-                  echo "All datasets will be downloaded as requested (only for full builds).";
-                  echo "false" | tee restore.txt;
-                else
-                  echo "Data cache will be used if available.";
-                  echo "true" | tee restore.txt;
-                fi
-
-                if [[ "$(cat build.txt)" == "ci-html-noplot" ]]; then
-                  echo "Data cache will not be used for partial builds.";
-                  echo "false" | tee restore.txt;
-                fi
+        -   name: Determine if we will use cached data
+            run: ./build_tools/github/determine_restore_data.sh
 
         -   name: Get cache key
             id: cache-key
@@ -141,7 +110,6 @@ jobs:
                     data-cache-${{ github.run_id }}-${{ hashFiles('week_num') }}-${{ github.run_number }}
                     data-cache-${{ github.run_id }}-${{ hashFiles('week_num') }}
                     data-cache-${{ github.run_id }}
-
 
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
@@ -329,23 +297,8 @@ jobs:
         # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
                 fetch-depth: 0
-        -   name: Complete checkout
-            run: |
-                set -x
-                if ! git remote -v | grep upstream; then
-                  git remote add upstream https://github.com/nilearn/nilearn.git
-                fi
-                git fetch upstream
         -   name: Merge with upstream
-            run: |
-                set -x
-                echo $(git log -1 --pretty=%B) | tee gitlog.txt
-                echo "gitlog.txt = $(cat gitlog.txt)"
-                echo $GITHUB_REF_NAME | tee merge.txt
-                if [ "$GITHUB_REF_NAME" != "main" ]; then
-                    echo "Merging $(cat merge.txt)";
-                    git pull --ff-only upstream "refs/pull/$(cat merge.txt)";
-                fi
+            run: ./build_tools/github/merge_upstream.sh
 
         # Set up environment
         -   name: Install apt packages
