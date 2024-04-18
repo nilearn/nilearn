@@ -135,7 +135,7 @@ jobs:
         -   name: Try get cache from a previous attempt
             uses: actions/cache/restore@v4
             with:
-                path: nilearn_data
+                path: /home/runner/work/nilearn/nilearn/nilearn_data
                 key: v1-${{ hashFiles('week_num') }}
 
         -   name: Data caching
@@ -374,7 +374,7 @@ jobs:
         -   name: Data caching
             uses: actions/cache/restore@v4
             with:
-                path: nilearn_data
+                path: /home/runner/work/nilearn/nilearn/nilearn_data
                 key: v1-${{ hashFiles('week_num') }}
 
         # Update the authors file and the names file
