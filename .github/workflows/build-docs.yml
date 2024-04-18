@@ -136,7 +136,12 @@ jobs:
             uses: actions/cache/restore@v4
             with:
                 path: /home/runner/work/nilearn/nilearn/nilearn_data
-                key: v1-${{ hashFiles('week_num') }}
+                key: data-cache-${{ github.run_id }}-${{ hashFiles('week_num') }}-${{ github.run_number }}
+                restore-keys: |
+                    data-cache-${{ github.run_id }}-${{ hashFiles('week_num') }}-${{ github.run_number }}
+                    data-cache-${{ github.run_id }}-${{ hashFiles('week_num') }}
+                    data-cache-${{ github.run_id }}
+
 
         -   name: Data caching
             if: steps.cache-key.outputs.restore == 'true'
@@ -284,16 +289,18 @@ jobs:
 
         -   name: get data for full builds
             run: |
-                BUILD_TYPE=$(cat build.txt)
-                if [[ $BUILD_TYPE == "html-strict" ]]; then
-                    make -C doc data
+                if [[ $commit_msg == *"[force download]"* ]]; then
+                    python doc/get_data_examples.py force_download
+                else
+                    BUILD_TYPE=$(cat build.txt)
+                    python doc/get_data_examples.py $BUILD_TYPE
                 fi
 
         -   uses: actions/cache/save@v4
             if: always()
             with:
-                path: nilearn_data/
-                key: v1-${{ hashFiles('week_num') }}
+                path: /home/runner/work/nilearn/nilearn/nilearn_data
+                key: data-cache-${{ github.run_id }}-${{ hashFiles('week_num') }}-${{ github.run_number }}
 
     # Steps to build the documentation.
     build_docs:
@@ -371,11 +378,15 @@ jobs:
             run: date +%U > week_num;
 
         # Restore data from cache from the get_data job
-        -   name: Data caching
+        -   name: Get data from cache
             uses: actions/cache/restore@v4
             with:
                 path: /home/runner/work/nilearn/nilearn/nilearn_data
-                key: v1-${{ hashFiles('week_num') }}
+                key: data-cache-${{ github.run_id }}-${{ hashFiles('week_num') }}-${{ github.run_number }}
+                restore-keys: |
+                    data-cache-${{ github.run_id }}-${{ hashFiles('week_num') }}-${{ github.run_number }}
+                    data-cache-${{ github.run_id }}-${{ hashFiles('week_num') }}
+                    data-cache-${{ github.run_id }}
 
         # Update the authors file and the names file
         # in case a contributor has been added to citation.cff
