@@ -1,8 +1,15 @@
 ---
-# Workflow to build the documentation. On pull requests, partial builds are run
-# except if "[full doc]" is defined in commit message. Full builds are
-# always run on "main". This is done every time there is a push on "main"
-# and every night.
+# Workflow to build the documentation.
+#
+#  On pull requests, partial builds are run except
+#  if "[full doc]" is defined in commit message.
+#  Full builds are always run on "main".
+#  This is done every time there is a push on "main" and every week.
+#
+#  Data is cached after the get_data job to be passed to the build_docs job.
+#  Data can be cached and restore across attempts of a run of this workflow.
+#  Data can be cached and restored across run of this workflow:
+#   - using "[force download]" in the commit message should prevent from using across runs cache
 name: Documentation builder
 
 on:
@@ -99,9 +106,9 @@ jobs:
                 fi
 
         -   name: Key for cache based on month number
-            run: date +%U > month_num;
+            run: date +%m > month_num;
 
-        -   name: Try get cache from a previous attempt
+        -   name: Get cache from a previous attempts of this run number
             uses: actions/cache/restore@v4
             with:
                 path: nilearn_data
@@ -109,7 +116,7 @@ jobs:
                 restore-keys: |
                     data-cache-${{ github.run_id }}-${{ hashFiles('month_num') }}-${{ github.run_number }}
 
-        -   name: Data caching
+        -   name: Get cache from a previous run
             if: steps.cache-key.outputs.restore == 'true'
             uses: actions/cache/restore@v4
             with:
@@ -131,7 +138,8 @@ jobs:
                 fi
 
 
-        -   uses: actions/cache/save@v4
+        -   name: Save cache to pass to build_docs job
+            uses: actions/cache/save@v4
             if: always()
             with:
                 path: /home/runner/work/nilearn/nilearn/nilearn_data
@@ -197,8 +205,7 @@ jobs:
         -   name: Key for cache based on month number
             run: date +%m > month_num;
 
-        # Restore data from cache from the get_data job
-        -   name: Get data from cache
+        -   name: Get data from the get_data job
             uses: actions/cache/restore@v4
             with:
                 path: /home/runner/work/nilearn/nilearn/nilearn_data
@@ -215,8 +222,7 @@ jobs:
         # Set up and launch a virtual browser needed for one example to run
         # without stalling the job. The example launches an html in the browser.
         -   name: Set up display server for virtual browser
-            run: |
-                Xvfb -ac :99 -screen 0 1280x1024x16 > /dev/null 2>&1 &
+            run: Xvfb -ac :99 -screen 0 1280x1024x16 > /dev/null 2>&1 &
 
         # Run the doc build. If no data is restored in previous steps, the data
         # will be downloaded during the build (this only applies for full builds;
@@ -241,12 +247,13 @@ jobs:
             if: always()
             run: |
                 if [[ "$(cat build.txt)" != "html-strict" ]]; then
-                    echo "Partial build : No data is downloaded or cached";
+                    echo "Partial build : No data is downloaded or cached across runs.";
                 else
-                    echo "Full build : Data is downloaded and cached if not restored from previous cache";
+                    echo "Full build : Data is downloaded and cached for future runs if not restored from previous cache";
                 fi
 
-        -   uses: actions/cache/save@v4
+        -   name: Saving cache for future attempts of this run
+            uses: actions/cache/save@v4
             if: always()
             with:
                 path: /home/runner/work/nilearn/nilearn/nilearn_data
