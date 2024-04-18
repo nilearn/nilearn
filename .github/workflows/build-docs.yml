@@ -363,7 +363,7 @@ jobs:
         -   name: Check for unreplaced argument in docstrings
             if: always()
             run: |
-                ./ build_tools/github/fill_doc_check.sh
+                ./build_tools/github/fill_doc_check.sh
                 cat doc/tmp/doc_check.txt
         -   name: Upload documentation
             if: always()
