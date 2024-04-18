@@ -2,7 +2,6 @@
 
 # Add upstream as remote and merge main branch into the PR branch
 
-set -e
 set -x
 
 if ! git remote -v | grep upstream; then
