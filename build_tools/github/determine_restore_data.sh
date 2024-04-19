@@ -19,8 +19,3 @@ else
     echo "Data cache will be used if available.";
     echo "true" | tee restore.txt;
 fi
-
-if [[ "$(cat build.txt)" == "ci-html-noplot" ]]; then
-    echo "Data cache will not be used for partial builds.";
-    echo "false" | tee restore.txt;
-fi
