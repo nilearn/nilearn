@@ -116,7 +116,25 @@ jobs:
                 path: nilearn_data
                 key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}_ref-${{ github.ref }}
 
-        -   name: Get cache from a previous successful run
+        -   name: Get data for reports from a previous successful run
+            uses: actions/cache@v4
+            with:
+                path: |
+                    nilearn_data/adhd
+                    nilearn_data/development_fmri
+                    nilearn_data/difumo_atlases
+                    nilearn_data/ds000030
+                    nilearn_data/fiac_nilearn.glm
+                    nilearn_data/icbm152_2009
+                    nilearn_data/miyawaki2008
+                    nilearn_data/msdl_atlas
+                    nilearn_data/oasis1
+                    nilearn_data/schaefer_2018
+                    nilearn_data/yeo_2011
+
+                key: data-cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}
+
+        -   name: Get data from a previous successful run
             if: steps.cache-key.outputs.restore == 'true'
             uses: actions/cache@v4
             with:
@@ -142,7 +160,7 @@ jobs:
             uses: actions/cache/save@v4
             if: always()
             with:
-                path: /home/runner/work/nilearn/nilearn/nilearn_data
+                path: nilearn_data
                 key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}_ref-${{ github.ref }}
 
     # Steps to build the documentation.
@@ -162,7 +180,7 @@ jobs:
             uses: actions/cache@v4
             with:
                 path: .git
-                key: source-cache-${{ github.run_id }}
+                key: source-cache-${{ github.workflow }}
                 restore-keys: source-cache
 
         -   name: Checkout nilearn
@@ -208,7 +226,7 @@ jobs:
         -   name: Get data from the get_data job
             uses: actions/cache@v4
             with:
-                path: /home/runner/work/nilearn/nilearn/nilearn_data
+                path: nilearn_data
                 key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}_ref-${{ github.ref }}
 
         # Update the authors file and the names file
