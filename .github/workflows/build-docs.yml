@@ -10,7 +10,7 @@
 #  Data can be cached and restore across attempts of a run of this workflow.
 #  Data can be cached and restored across run of this workflow:
 #   - using "[force download]" in the commit message should prevent from using across runs cache
-name: Documentation builder
+name: DocumentationBuilder
 
 on:
     push:
@@ -65,7 +65,7 @@ jobs:
             uses: actions/cache@v4
             with:
                 path: .git
-                key: source-cache-${{ github.run_id }}
+                key: source-cache-${{ github.workflow }}
                 restore-keys: source-cache
 
         -   name: Checkout nilearn
