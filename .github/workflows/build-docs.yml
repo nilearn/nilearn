@@ -131,7 +131,7 @@ jobs:
                 key: data-cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}
 
         -   name: Get data from a previous successful run for full builds
-            if: ${{ steps.build-type.outputs.build == 'html-strict' }} && ${{ steps.cache-key.outputs.restore == 'true' }}
+            if: ${{ steps.build-type.outputs.build == 'html-strict' && steps.cache-key.outputs.restore == 'true' }}
             uses: actions/cache@v4
             with:
                 path: nilearn_data
