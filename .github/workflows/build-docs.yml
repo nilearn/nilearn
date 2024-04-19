@@ -62,7 +62,7 @@ jobs:
 
         steps:
         -   name: Source caching
-            uses: actions/cache/restore@v4
+            uses: actions/cache@v4
             with:
                 path: .git
                 key: source-cache-${{ github.run_id }}
@@ -116,9 +116,9 @@ jobs:
                 path: nilearn_data
                 key: data-cache-${{ github.run_id }}-${{ hashFiles('month_num') }}-${{ github.run_number }}
 
-        -   name: Get cache from a previous run
+        -   name: Get cache from a previous successful run
             if: steps.cache-key.outputs.restore == 'true'
-            uses: actions/cache/restore@v4
+            uses: actions/cache@v4
             with:
                 path: nilearn_data
                 key: data-cache-${{ github.run_id }}-${{ hashFiles('month_num') }}
@@ -159,7 +159,7 @@ jobs:
 
         steps:
         -   name: Source caching
-            uses: actions/cache/restore@v4
+            uses: actions/cache@v4
             with:
                 path: .git
                 key: source-cache-${{ github.run_id }}
@@ -206,7 +206,7 @@ jobs:
             run: date +%m > month_num;
 
         -   name: Get data from the get_data job
-            uses: actions/cache/restore@v4
+            uses: actions/cache@v4
             with:
                 path: /home/runner/work/nilearn/nilearn/nilearn_data
                 key: data-cache-${{ github.run_id }}-${{ hashFiles('month_num') }}-${{ github.run_number }}
@@ -249,10 +249,3 @@ jobs:
                 else
                     echo "Full build : Data is downloaded and cached for future runs if not restored from previous cache";
                 fi
-
-        -   name: Saving cache for future attempts of this run
-            uses: actions/cache/save@v4
-            if: always()
-            with:
-                path: /home/runner/work/nilearn/nilearn/nilearn_data
-                key: data-cache-${{ github.run_id }}-${{ hashFiles('month_num') }}-${{ github.run_number }}
