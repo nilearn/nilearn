@@ -1,4 +1,4 @@
-"""Dowxnloads all the data for the examples."""
+"""Downloads the data for building the reports and the examples."""
 
 import sys
 
@@ -11,15 +11,21 @@ def main(args=sys.argv) -> None:
 
     print(f"Getting data for a build: {build_type}")
 
+    # %%
+    # Even on partial build of the doc,
+    # the reports for GLM and maskers need to be built.
+    # See doc/visual_testing/reporter_visual_inspection_suite.py
+    # The following section downloads the necessary data for this.
+
     datasets.fetch_icbm152_2009()
 
-    datasets.fetch_atlas_msdl()
-    datasets.fetch_atlas_schaefer_2018()
     datasets.fetch_atlas_difumo(
         dimension=64, resolution_mm=2, legacy_format=False
     )
+    datasets.fetch_atlas_msdl()
+    datasets.fetch_atlas_schaefer_2018()
+    datasets.fetch_atlas_yeo_2011()
 
-    datasets.fetch_adhd(n_subjects=1)
     _, urls = datasets.fetch_ds000030_urls()
     exclusion_patterns = [
         "*group*",
@@ -41,33 +47,27 @@ def main(args=sys.argv) -> None:
     )
     datasets.fetch_openneuro_dataset(urls=urls)
 
+    datasets.fetch_adhd(n_subjects=1)
+    datasets.fetch_development_fmri(n_subjects=5)
     datasets.fetch_fiac_first_level()
-
+    datasets.fetch_miyawaki2008()
     datasets.fetch_oasis_vbm(n_subjects=5)
 
-    datasets.fetch_development_fmri(n_subjects=5)
-
-    datasets.fetch_miyawaki2008()
-
-    datasets.fetch_atlas_yeo_2011()
-
     if build_type in ["full", "force_download", "html-strict"]:
+        # On full build of the doc we get all the data
+        # needed for building all the examples.
 
         datasets.fetch_atlas_allen_2011()
         datasets.fetch_atlas_surf_destrieux()
-        datasets.fetch_atlas_basc_multiscale_2015(version="sym", resolution=64)
-        datasets.fetch_atlas_basc_multiscale_2015(
-            version="sym", resolution=197
-        )
-        datasets.fetch_atlas_basc_multiscale_2015(
-            version="sym", resolution=444
-        )
-        datasets.fetch_atlas_destrieux_2009(legacy_format=False)
+        for resolution in [64, 197, 444]:
+            datasets.fetch_atlas_basc_multiscale_2015(
+                version="sym", resolution=resolution
+            )
+        datasets.fetch_atlas_destrieux_2009()
         datasets.fetch_atlas_harvard_oxford("cort-maxprob-thr25-2mm")
         datasets.fetch_atlas_juelich("maxprob-thr0-1mm")
-
-        datasets.fetch_atlas_smith_2009(resting=False, dimension=20)
-        datasets.fetch_atlas_smith_2009(resting=True, dimension=10)
+        for dimension in [10, 20]:
+            datasets.fetch_atlas_smith_2009(resting=False, dimension=dimension)
         datasets.fetch_atlas_yeo_2011()
 
         datasets.fetch_surf_fsaverage()
@@ -79,30 +79,26 @@ def main(args=sys.argv) -> None:
         datasets.load_sample_motor_activation_image()
 
         datasets.fetch_coords_power_2011()
-        datasets.fetch_coords_dosenbach_2010(legacy_format=False)
+        datasets.fetch_coords_dosenbach_2010()
 
         datasets.fetch_development_fmri(n_subjects=60)
 
         datasets.fetch_haxby()
-        datasets.fetch_language_localizer_demo_dataset(legacy_output=False)
-        datasets.fetch_localizer_button_task(legacy_format=False)
-        datasets.fetch_localizer_calculation_task(
-            n_subjects=20, legacy_format=False
-        )
-        datasets.fetch_localizer_contrasts(
-            ["left button press (auditory cue)"],
-            n_subjects=94,
-            legacy_format=False,
-        )
-        for contrast in [
-            "vertical checkerboard",
-            "horizontal checkerboard",
-            "left vs right button press",
-        ]:
+        datasets.fetch_language_localizer_demo_dataset()
+        datasets.fetch_localizer_button_task()
+        datasets.fetch_localizer_calculation_task(n_subjects=20)
+        for contrast, n_subjects in zip(
+            [
+                "vertical checkerboard",
+                "horizontal checkerboard",
+                "left vs right button press",
+                "left button press (auditory cue)",
+            ],
+            [16, 16, 16, 94],
+        ):
             datasets.fetch_localizer_contrasts(
                 contrasts=[contrast],
-                n_subjects=16,
-                legacy_format=False,
+                n_subjects=n_subjects,
             )
         datasets.fetch_localizer_first_level()
         datasets.fetch_neurovault_motor_task()
@@ -117,7 +113,7 @@ def main(args=sys.argv) -> None:
             matrices="partial_correlation",
         )
         datasets.fetch_mixed_gambles(n_subjects=16)
-        datasets.fetch_oasis_vbm(n_subjects=100, legacy_format=False)
+        datasets.fetch_oasis_vbm(n_subjects=100)
         datasets.fetch_spm_multimodal_fmri()
         datasets.fetch_spm_auditory()
         datasets.fetch_surf_nki_enhanced(n_subjects=1)
