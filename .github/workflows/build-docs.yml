@@ -104,7 +104,7 @@ jobs:
         -   name: Key for cache based on month number
             run: date +%m > month_num;
 
-        -   name: Get cache from a previous attempts on this PR or branch number
+        -   name: Get cache from a previous attempts on this PR or branch
             if: steps.cache-key.outputs.restore == 'true'
             uses: actions/cache/restore@v4
             with:
@@ -130,8 +130,8 @@ jobs:
 
                 key: data-cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}
 
-        -   name: Get data from a previous successful run for partial builds
-            if: ${{ steps.cache-key.outputs.restore == 'true' }} && ${{ steps.build-type.outputs.build == 'html-strict' }}
+        -   name: Get data from a previous successful run for full builds
+            if: ${{ steps.build-type.outputs.build == 'html-strict' }} && ${{ steps.cache-key.outputs.restore == 'true' }}
             uses: actions/cache@v4
             with:
                 path: nilearn_data
@@ -139,6 +139,8 @@ jobs:
 
         -   name: Get data
             run: |
+                echo ${{ steps.build-type.outputs.build == 'html-strict' }}
+                echo ${{ steps.cache-key.outputs.restore == 'true' }}
                 echo "Download data required for building reports in doc"
                 python doc/get_data_examples.py
 
