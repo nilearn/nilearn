@@ -86,13 +86,15 @@ jobs:
             env:
                 COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
         -   name: Verify build type
+            id: build-type
             run: |
+                BUILD=$(cat build.txt)
                 echo "PATTERN = $(cat pattern.txt)"
-                echo "BUILD = $(cat build.txt)"
+                echo "BUILD = $BUILD"
+                echo "BUILD=$(cat build.txt)" >> $GITHUB_OUTPUT
 
         -   name: Determine if we will use cached data
             run: ./build_tools/github/determine_restore_data.sh
-
         -   name: Get cache key
             id: cache-key
             run: |
@@ -241,11 +243,3 @@ jobs:
             with:
                 name: doc
                 path: doc/_build/html
-        -   name: Note about build
-            if: always()
-            run: |
-                if [[ "$(cat build.txt)" != "html-strict" ]]; then
-                    echo "Partial build : No data is downloaded or cached across runs.";
-                else
-                    echo "Full build : Data is downloaded and cached for future runs if not restored from previous cache";
-                fi
