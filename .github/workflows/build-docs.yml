@@ -86,12 +86,9 @@ jobs:
             env:
                 COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
         -   name: Verify build type
-            id: build-type
             run: |
-                BUILD=$(cat build.txt)
                 echo "PATTERN = $(cat pattern.txt)"
-                echo "BUILD = $BUILD"
-                echo "BUILD=$(cat build.txt)" >> $GITHUB_OUTPUT
+                echo "BUILD = $(cat build.txt)"
 
         -   name: Determine if we will use cached data
             run: ./build_tools/github/determine_restore_data.sh
