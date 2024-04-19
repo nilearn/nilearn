@@ -45,7 +45,7 @@ jobs:
             uses: actions/cache/restore@v4
             with:
                 path: nilearn_data
-                key: data-cache-${{ github.run_id }}-${{ github.run_number }}
+                key: data_cache-${{ github.workflow }}_ref-${{ github.ref }}
 
         -   name: Get data
             run: |
@@ -57,7 +57,7 @@ jobs:
             if: always()
             with:
                 path: /home/runner/work/nilearn/nilearn/nilearn_data
-                key: data-cache-${{ github.run_id }}-${{ github.run_number }}
+                key: data_cache-${{ github.workflow }}_ref-${{ github.ref }}
 
     release-docs:
         if: github.repository == 'nilearn/nilearn'
@@ -111,7 +111,7 @@ jobs:
             uses: actions/cache/restore@v4
             with:
                 path: /home/runner/work/nilearn/nilearn/nilearn_data
-                key: data-cache-${{ github.run_id }}-${{ github.run_number }}
+                key: data_cache-${{ github.workflow }}_ref-${{ github.ref }}
 
         # Set up and launch a virtual browser needed for one example to run
         # without stalling the job. The example launches an html in the browser.

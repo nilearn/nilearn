@@ -110,18 +110,18 @@ jobs:
         -   name: Key for cache based on month number
             run: date +%m > month_num;
 
-        -   name: Get cache from a previous attempts of this run number
+        -   name: Get cache from a previous attempts on this PR or branch number
             uses: actions/cache/restore@v4
             with:
                 path: nilearn_data
-                key: data-cache-${{ github.run_id }}-${{ hashFiles('month_num') }}-${{ github.run_number }}
+                key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}_ref-${{ github.ref }}
 
         -   name: Get cache from a previous successful run
             if: steps.cache-key.outputs.restore == 'true'
             uses: actions/cache@v4
             with:
                 path: nilearn_data
-                key: data-cache-${{ github.run_id }}-${{ hashFiles('month_num') }}
+                key: data-cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}
 
         -   name: Get data
             run: |
@@ -143,7 +143,7 @@ jobs:
             if: always()
             with:
                 path: /home/runner/work/nilearn/nilearn/nilearn_data
-                key: data-cache-${{ github.run_id }}-${{ hashFiles('month_num') }}-${{ github.run_number }}
+                key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}_ref-${{ github.ref }}
 
     # Steps to build the documentation.
     build_docs:
@@ -209,7 +209,7 @@ jobs:
             uses: actions/cache@v4
             with:
                 path: /home/runner/work/nilearn/nilearn/nilearn_data
-                key: data-cache-${{ github.run_id }}-${{ hashFiles('month_num') }}-${{ github.run_number }}
+                key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}_ref-${{ github.ref }}
 
         # Update the authors file and the names file
         # in case a contributor has been added to citation.cff
