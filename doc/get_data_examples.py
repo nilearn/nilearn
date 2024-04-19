@@ -53,7 +53,7 @@ def main(args=sys.argv) -> None:
     datasets.fetch_miyawaki2008()
     datasets.fetch_oasis_vbm(n_subjects=5)
 
-    if build_type in ["full", "force_download", "html-strict"]:
+    if build_type in ["full", "html", "html-strict"]:
         # On full build of the doc we get all the data
         # needed for building all the examples.
 

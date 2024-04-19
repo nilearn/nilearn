@@ -8,8 +8,8 @@
 #
 #  Data is cached after the get_data job to be passed to the build_docs job.
 #  Data can be cached and restore across attempts of a run of this workflow.
-#  Data can be cached and restored across run of this workflow:
-#   - using "[force download]" in the commit message should prevent from using across runs cache
+#  Data can be cached and restored across run of this workflow.
+#  Using "[force download]" in the commit message should prevent from using any cache.
 name: DocumentationBuilder
 
 on:
@@ -61,13 +61,6 @@ jobs:
                 shell: bash -el {0}
 
         steps:
-        -   name: Source caching
-            uses: actions/cache@v4
-            with:
-                path: .git
-                key: source-cache-${{ github.workflow }}
-                restore-keys: source-cache
-
         -   name: Checkout nilearn
             uses: actions/checkout@v4
             with:
@@ -111,12 +104,14 @@ jobs:
             run: date +%m > month_num;
 
         -   name: Get cache from a previous attempts on this PR or branch number
+            if: steps.cache-key.outputs.restore == 'true'
             uses: actions/cache/restore@v4
             with:
                 path: nilearn_data
                 key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}_ref-${{ github.ref }}
 
         -   name: Get data for reports from a previous successful run
+            if: steps.cache-key.outputs.restore == 'true'
             uses: actions/cache@v4
             with:
                 path: |
@@ -150,12 +145,6 @@ jobs:
                 BUILD_TYPE=$(cat build.txt)
                 python doc/get_data_examples.py $BUILD_TYPE
 
-                if [[ $commit_msg == *"[force download]"* ]]; then
-                    echo "Force download all data."
-                    python doc/get_data_examples.py force_download
-                fi
-
-
         -   name: Save cache to pass to build_docs job
             uses: actions/cache/save@v4
             if: always()
@@ -176,13 +165,6 @@ jobs:
                 shell: bash -el {0}
 
         steps:
-        -   name: Source caching
-            uses: actions/cache@v4
-            with:
-                path: .git
-                key: source-cache-${{ github.workflow }}
-                restore-keys: source-cache
-
         -   name: Checkout nilearn
             uses: actions/checkout@v4
             with:
