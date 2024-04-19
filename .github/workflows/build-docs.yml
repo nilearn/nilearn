@@ -65,8 +65,8 @@ jobs:
             uses: actions/cache/restore@v4
             with:
                 path: .git
-                key: source-cache-${{ runner.os }}-${{ github.run_id }}
-                restore-keys: source-cache-${{ runner.os }}
+                key: source-cache-${{ github.run_id }}
+                restore-keys: source-cache
 
         -   name: Checkout nilearn
             uses: actions/checkout@v4
@@ -162,8 +162,8 @@ jobs:
             uses: actions/cache/restore@v4
             with:
                 path: .git
-                key: source-cache-${{ runner.os }}-${{ github.run_id }}
-                restore-keys: source-cache-${{ runner.os }}
+                key: source-cache-${{ github.run_id }}
+                restore-keys: source-cache
 
         -   name: Checkout nilearn
             uses: actions/checkout@v4

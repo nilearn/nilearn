@@ -16,6 +16,7 @@ env:
 
 jobs:
 
+    # this job gets the data required for the build and passes via cache to the build_doc job
     get_data:
         # This prevents this workflow from running on a fork.
         # To test this workflow on a fork, uncomment the following line.
@@ -58,9 +59,9 @@ jobs:
                 path: /home/runner/work/nilearn/nilearn/nilearn_data
                 key: data-cache-${{ github.run_id }}-${{ github.run_number }}
 
-
     release-docs:
         if: github.repository == 'nilearn/nilearn'
+        needs: [get_data]
         runs-on: ubuntu-latest
         timeout-minutes: 360
         defaults:
