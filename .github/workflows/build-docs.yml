@@ -64,7 +64,7 @@ jobs:
         -   name: Checkout nilearn
             uses: actions/checkout@v4
             with:
-        # If pull request, checkout HEAD commit with all commit history
+                # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
                 fetch-depth: 0
         -   name: Merge with upstream
@@ -80,8 +80,7 @@ jobs:
                 python -m pip install --user --upgrade pip setuptools
                 python -m pip install .
 
-        # Check if we are doing a full or partial build
-        -   name: Find build type
+        -   name: Check if we are doing a full or partial build
             run: ./build_tools/github/build_type.sh
             env:
                 COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
@@ -106,13 +105,15 @@ jobs:
 
         -   name: Get cache from a previous attempts on this PR or branch
             if: steps.cache-key.outputs.restore == 'true'
+            id: restore-previous-run
             uses: actions/cache/restore@v4
             with:
                 path: nilearn_data
                 key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}_ref-${{ github.ref }}
 
         -   name: Get data for reports from a previous successful run
-            if: steps.cache-key.outputs.restore == 'true'
+            # only run it if we did not get the data from a previous attempt
+            if: ${{ steps.cache-key.outputs.restore == 'true' && steps.restore-previous-run.outputs.cache-hit != 'true' }}
             uses: actions/cache@v4
             with:
                 path: |
@@ -131,7 +132,9 @@ jobs:
                 key: data-cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}
 
         -   name: Get data from a previous successful run for full builds
-            if: ${{ steps.build-type.outputs.build == 'html-strict' && steps.cache-key.outputs.restore == 'true' }}
+            # only run it if we did not get the data from a previous attempt
+            if: ${{ steps.build-type.outputs.build == 'html-strict' && steps.cache-key.outputs.restore == 'true' && steps.restore-previous-run.outputs.cache-hit
+                != 'true' }}
             uses: actions/cache@v4
             with:
                 path: nilearn_data
@@ -139,8 +142,6 @@ jobs:
 
         -   name: Get data
             run: |
-                echo ${{ steps.build-type.outputs.build == 'html-strict' }}
-                echo ${{ steps.cache-key.outputs.restore == 'true' }}
                 echo "Download data required for building reports in doc"
                 python doc/get_data_examples.py
 
