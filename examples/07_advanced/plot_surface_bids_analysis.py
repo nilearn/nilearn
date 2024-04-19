@@ -70,7 +70,7 @@ json_file = (Path(data.data_dir) /
              'sub-01' /
              'func' /
              'sub-01_task-languagelocalizer_desc-preproc_bold.json')
-with open(json_file, 'r') as f:
+with open(json_file) as f:
     t_r = json.load(f)['RepetitionTime']
 
 # %%

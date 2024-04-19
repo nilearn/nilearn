@@ -121,8 +121,8 @@ contrast_matrix = np.eye(design_matrix.shape[1])
 
 # %%
 # At first, we create basic contrasts.
-basic_contrasts = dict([(column, contrast_matrix[i])
-                        for i, column in enumerate(design_matrix.columns)])
+basic_contrasts = {column: contrast_matrix[i]
+                   for i, column in enumerate(design_matrix.columns)}
 
 # %%
 # Next, we add some intermediate contrasts and
