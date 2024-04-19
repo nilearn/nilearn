@@ -115,8 +115,6 @@ jobs:
             with:
                 path: nilearn_data
                 key: data-cache-${{ github.run_id }}-${{ hashFiles('month_num') }}-${{ github.run_number }}
-                restore-keys: |
-                    data-cache-${{ github.run_id }}-${{ hashFiles('month_num') }}-${{ github.run_number }}
 
         -   name: Get cache from a previous run
             if: steps.cache-key.outputs.restore == 'true'
@@ -212,8 +210,6 @@ jobs:
             with:
                 path: /home/runner/work/nilearn/nilearn/nilearn_data
                 key: data-cache-${{ github.run_id }}-${{ hashFiles('month_num') }}-${{ github.run_number }}
-                restore-keys: |
-                    data-cache-${{ github.run_id }}-${{ hashFiles('month_num') }}-${{ github.run_number }}
 
         # Update the authors file and the names file
         # in case a contributor has been added to citation.cff
