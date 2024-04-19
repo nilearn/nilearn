@@ -7,8 +7,7 @@
 #
 # If the build type is a no plot in CI, then cache is not used.
 
-set -e
-set -x
+set -e -x
 
 commit_msg=$(git log -2 --format=oneline);
 echo $commit_msg;

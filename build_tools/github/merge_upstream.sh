@@ -2,7 +2,7 @@
 
 # Add upstream as remote and merge main branch into the PR branch
 
-set -x
+set -x -e
 
 if ! git remote -v | grep upstream; then
     git remote add upstream https://github.com/nilearn/nilearn.git
