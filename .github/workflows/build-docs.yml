@@ -86,9 +86,11 @@ jobs:
             env:
                 COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
         -   name: Verify build type
+            id: build-type
             run: |
                 echo "PATTERN = $(cat pattern.txt)"
                 echo "BUILD = $(cat build.txt)"
+                echo "build=$(cat build.txt)" >> $GITHUB_OUTPUT
 
         -   name: Determine if we will use cached data
             run: ./build_tools/github/determine_restore_data.sh
@@ -128,8 +130,8 @@ jobs:
 
                 key: data-cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}
 
-        -   name: Get data from a previous successful run
-            if: steps.cache-key.outputs.restore == 'true'
+        -   name: Get data from a previous successful run for partial builds
+            if: ${{ steps.cache-key.outputs.restore == 'true' }} && ${{ steps.build-type.outputs.build == 'html-strict' }}
             uses: actions/cache@v4
             with:
                 path: nilearn_data
