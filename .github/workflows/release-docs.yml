@@ -1,5 +1,5 @@
 ---
-name: Build release docs
+name: BuildReleaseDocs
 
 on:
     # Allows you to run this workflow manually from the Actions tab
