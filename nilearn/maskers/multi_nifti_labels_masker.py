@@ -69,7 +69,6 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
             - None means no resampling: if shapes and affines do not match, a
               ValueError is raised
 
-
     %(memory)s
     %(memory_level1)s
     %(n_jobs)s

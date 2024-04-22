@@ -523,10 +523,11 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
     verbose : int, default=0
         verbosity level. Zero means "no message".
 
-    memory : instance of joblib.Memory or string, optional
+    memory : instance of joblib.Memory or string, default=None
         Used to cache the masking process.
-        By default, no caching is done. If a string is given, it is the
-        path to the caching directory.
+        By default, no caching is done.
+        If a string is given, it is the path to the caching directory.
+        If ``None`` is passed will default to ``Memory(location=None)``.
 
     memory_level : int, default=0
         Caching aggressiveness. Higher values mean more caching.

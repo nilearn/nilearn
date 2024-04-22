@@ -134,10 +134,11 @@ class DictLearning(_BaseDecomposition):
         to fine-tune mask computation. Please see the related documentation
         for details.
 
-    memory : instance of joblib.Memory or string, optional
+    memory : instance of joblib.Memory or string, default=None
         Used to cache the masking process.
-        By default, no caching is done. If a string is given, it is the
-        path to the caching directory.
+        By default, no caching is done.
+        If a string is given, it is the path to the caching directory.
+        If ``None`` is passed will default to ``Memory(location=None)``.
 
     memory_level : integer, default=0
         Rough estimator of the amount of memory used by caching. Higher value

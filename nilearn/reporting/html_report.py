@@ -299,8 +299,9 @@ class HTMLReport(HTMLDocument):
             ``head_tpl`` template. It contains the full body of the
             HTML page.
 
-        head_values : :obj:`dict`, default={}
+        head_values : :obj:`dict`, default=None
             Additional substitutions in ``head_tpl``.
+            if ``None`` is passed, defaults to ``{}``
 
             .. note::
                 This can be used to provide additional values

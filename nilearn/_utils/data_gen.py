@@ -179,8 +179,9 @@ def generate_maps(
                    default=0
         Random number generator, or seed.
 
-    affine : :obj:`numpy.ndarray`, default=np.eye(4)
+    affine : :obj:`numpy.ndarray`, default=None
         Affine transformation to use.
+        Will default to ``np.eye(4)`` if ``None`` is passed.
 
     border : :obj:`int`, default=1
         Number of background voxels on each side of the 3D volumes.
@@ -235,8 +236,9 @@ def generate_labeled_regions(
     labels : iterable, optional
         Labels to use for each zone. If provided, n_regions is unused.
 
-    affine : :obj:`numpy.ndarray`, default=np.eye(4)
+    affine : :obj:`numpy.ndarray`, default=None
         Affine of returned image.
+        Will default to ``np.eye(4)`` if ``None`` is passed.
 
     dtype : :obj:`type`, default='int32'
         Data type of image.
@@ -298,8 +300,9 @@ def generate_fake_fmri(
         "noise": uniformly sampled values in [0..255]
         "step": 0.5 for the first half then 1.
 
-    affine : :obj:`numpy.ndarray`, default=np.eye(4)
+    affine : :obj:`numpy.ndarray`, default=None
         Affine of returned images.
+        Will default to ``np.eye(4)`` if ``None`` is passed.
 
     n_blocks : :obj:`int` or None, default=None
         Number of condition blocks.
@@ -417,8 +420,9 @@ def generate_fake_fmri_data_and_design(
     rk : :obj:`int`, default=3
         Number of columns in the design matrix to be generated.
 
-    affine : :obj:`numpy.ndarray`, default=np.eye(4)
+    affine : :obj:`numpy.ndarray`, default=None
         Affine of returned images. Must be a 4x4 array.
+        Will default to ``np.eye(4)`` if ``None`` is passed.
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
                    default=0
@@ -473,8 +477,9 @@ def write_fake_fmri_data_and_design(
     rk : :obj:`int`, default=3
         Number of columns in the design matrix to be generated.
 
-    affine : :obj:`numpy.ndarray`, default=np.eye(4)
+    affine : :obj:`numpy.ndarray`, default=None
         Affine of returned images.
+        Will default to ``np.eye(4)`` if ``None`` is passed.
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
                    default=0
@@ -557,8 +562,9 @@ def write_fake_bold_img(file_path, shape, affine=None, random_state=0):
     shape : :obj:`tuple` of :obj:`int`
         Shape of output array. Should be at least 3D.
 
-    affine : :obj:`numpy.ndarray`, default=np.eye(4)
+    affine : :obj:`numpy.ndarray`, default=None
         Affine of returned images.
+        Will default to ``np.eye(4)`` if ``None`` is passed.
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
                    default=0
@@ -860,8 +866,9 @@ def generate_random_img(
         The shape of the image being generated.
         The number of elements determines the dimensionality of the image.
 
-    affine : 4x4 numpy.ndarray
+    affine : 4x4 numpy.ndarray, default=None
         The affine of the image
+        Will default to ``np.eye(4)`` if ``None`` is passed.
 
     random_state : int, optional
         Seed for random number generator.
