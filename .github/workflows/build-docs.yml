@@ -109,7 +109,10 @@ jobs:
             uses: actions/cache/restore@v4
             with:
                 path: nilearn_data
-                key: data_cache-${{ github.workflow }}_ref-${{ github.ref }}
+                key: data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}_attempt-${{ github.run_attempt }}
+                restore-keys: |
+                    data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}
+                    data_cache-${{ github.workflow }}_ref-${{ github.ref }}
 
         -   name: Get data for reports from a previous successful run
             # only run it if we did not get the data from a previous attempt
@@ -154,7 +157,7 @@ jobs:
             if: always()
             with:
                 path: nilearn_data
-                key: data_cache-${{ github.workflow }}_ref-${{ github.ref }}
+                key: data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}_attempt-${{ github.run_attempt }}
 
     # Steps to build the documentation.
     build_docs:
@@ -213,7 +216,10 @@ jobs:
             uses: actions/cache@v4
             with:
                 path: nilearn_data
-                key: data_cache-${{ github.workflow }}_ref-${{ github.ref }}
+                key: data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}_attempt-${{ github.run_attempt }}
+                restore-keys: |
+                    data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}
+
 
         # Update the authors file and the names file
         # in case a contributor has been added to citation.cff
