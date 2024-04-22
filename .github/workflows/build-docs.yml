@@ -114,9 +114,20 @@ jobs:
                     data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}
                     data_cache-${{ github.workflow }}_ref-${{ github.ref }}
 
+        -   name: Get data from a previous successful run for full builds
+            # only run it if we did not get the data from a previous attempt
+            if: ${{ steps.build-type.outputs.build == 'html-strict' && steps.cache-key.outputs.restore == 'true' && steps.restore-previous-run.outputs.cache-hit
+                != 'true' }}
+            id: restore-previous-full-build
+            uses: actions/cache@v4
+            with:
+                path: nilearn_data
+                key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}
+
         -   name: Get data for reports from a previous successful run
             # only run it if we did not get the data from a previous attempt
-            if: ${{ steps.cache-key.outputs.restore == 'true' && steps.restore-previous-run.outputs.cache-hit != 'true' }}
+            if: ${{ steps.cache-key.outputs.restore == 'true' && steps.restore-previous-run.outputs.cache-hit != 'true' && steps.restore-previous-full-build.outputs.cache-hit
+                != 'true' }}
             uses: actions/cache@v4
             with:
                 path: |
@@ -132,15 +143,6 @@ jobs:
                     nilearn_data/schaefer_2018
                     nilearn_data/yeo_2011
 
-                key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}
-
-        -   name: Get data from a previous successful run for full builds
-            # only run it if we did not get the data from a previous attempt
-            if: ${{ steps.build-type.outputs.build == 'html-strict' && steps.cache-key.outputs.restore == 'true' && steps.restore-previous-run.outputs.cache-hit
-                != 'true' }}
-            uses: actions/cache@v4
-            with:
-                path: nilearn_data
                 key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}
 
         -   name: Get data
