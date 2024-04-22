@@ -109,7 +109,7 @@ jobs:
             uses: actions/cache/restore@v4
             with:
                 path: nilearn_data
-                key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}_ref-${{ github.ref }}
+                key: data_cache-${{ github.workflow }}_ref-${{ github.ref }}
 
         -   name: Get data for reports from a previous successful run
             # only run it if we did not get the data from a previous attempt
@@ -129,7 +129,7 @@ jobs:
                     nilearn_data/schaefer_2018
                     nilearn_data/yeo_2011
 
-                key: data-cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}
+                key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}
 
         -   name: Get data from a previous successful run for full builds
             # only run it if we did not get the data from a previous attempt
@@ -138,7 +138,7 @@ jobs:
             uses: actions/cache@v4
             with:
                 path: nilearn_data
-                key: data-cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}
+                key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}
 
         -   name: Get data
             run: |
@@ -154,7 +154,7 @@ jobs:
             if: always()
             with:
                 path: nilearn_data
-                key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}_ref-${{ github.ref }}
+                key: data_cache-${{ github.workflow }}_ref-${{ github.ref }}
 
     # Steps to build the documentation.
     build_docs:
@@ -213,7 +213,7 @@ jobs:
             uses: actions/cache@v4
             with:
                 path: nilearn_data
-                key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}_ref-${{ github.ref }}
+                key: data_cache-${{ github.workflow }}_ref-${{ github.ref }}
 
         # Update the authors file and the names file
         # in case a contributor has been added to citation.cff

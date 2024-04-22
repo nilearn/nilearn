@@ -42,7 +42,7 @@ jobs:
                 python -m pip install .
 
         -   name: Get cache from a previous attempts of this run number
-            uses: actions/cache/restore@v4
+            uses: actions/cache@v4
             with:
                 path: nilearn_data
                 key: data_cache-${{ github.workflow }}_ref-${{ github.ref }}
@@ -108,7 +108,7 @@ jobs:
             run: python maint_tools/citation_cff_maint.py
 
         -   name: Get data from the get_data job
-            uses: actions/cache/restore@v4
+            uses: actions/cache@v4
             with:
                 path: /home/runner/work/nilearn/nilearn/nilearn_data
                 key: data_cache-${{ github.workflow }}_ref-${{ github.ref }}
