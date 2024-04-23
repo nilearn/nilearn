@@ -18,7 +18,7 @@ on:
 jobs:
     test_nightly:
         if: |
-            ${{ github.repository }} == 'Remi-Gau/nilearn' &&
+            ${{ github.repository }} == 'nilearn/nilearn' &&
             ( contains(fromJSON('["workflow_dispatch", "schedule"]'), github.event_name) ||
               ( github.event_name == "pull_request" && contains(github.event.head_commit.message, '[test nightly]') )
             )
@@ -42,8 +42,7 @@ jobs:
         -   name: Run test suite
             id: nightly
             continue-on-error: true
-            run: tmp.sh
-            #run: tox run -e test_nightly -- nilearn
+            run: tox run -e test_nightly -- nilearn
         -   name: Create issue
             if: steps.nightly.outcome != 'success'
             uses: JasonEtco/create-an-issue@v2.9.2
