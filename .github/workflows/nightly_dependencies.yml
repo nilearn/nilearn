@@ -4,6 +4,10 @@ name: test on nightly dependencies
 
 on:
 
+    push:
+        branches:
+        -   main
+
     # commits message must include 'smoke_test' to trigger the workflow on PR
     pull_request:
         branches:
