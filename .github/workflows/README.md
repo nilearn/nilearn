@@ -26,13 +26,18 @@ Runs black code formatter on the codebase both in pull requests and on main. Con
 
 This workflow configuration is based on what is done in [scikit-learn](https://github.com/scikit-learn/scikit-learn).
 
-On Pull Requests, Actions run "partial builds" by default which render all the rst files, but only build examples modified in the Pull Request. This saves a lot of time and resources when working on Pull Requests.
+On Pull Requests, Actions run "partial builds" by default which render all the rst files,
+but only build examples modified in the Pull Request.
+This saves a lot of time and resources when working on Pull Requests.
 
-Occasionally, some changes necessitate rebuilding the documentation from scratch, for example to see the full effect of the changes. These are called "full builds".
+Occasionally, some changes necessitate rebuilding the documentation from scratch,
+for example to see the full effect of the changes.
+These are called "full builds".
 
 Note that **Actions will always run full builds on main.**
 
-You can request a full build from a Pull Request at any time by including the tag "[full doc]" in your commit message. Note that this will trigger a full build of the documentation which usually takes around 90 minutes.
+You can request a full build from a Pull Request at any time by including the tag "[full doc]" in your commit message.
+Note that this will trigger a full build of the documentation which usually takes around 90 minutes.
 
 ```bash
 $ git commit -m "[full doc] request full build"
@@ -51,9 +56,12 @@ Note: setuptools needs to be installed to run the doc build with python 3.12.
 
 #### Dataset caching
 
-We also implemented a dataset caching strategy within this Actions workflow such that datasets are only downloaded once every week. Once these datasets are cached, they will be used by all jobs running on Actions without requiring any download. This saves a lot of time and avoids potential network errors that can happen when downloading datasets from remote servers.
+We also implemented a dataset caching strategy within this Actions workflow such that datasets are only downloaded once every month.
+Once these datasets are cached, they will be used by all jobs running on Actions without requiring any download.
+This saves a lot of time and avoids potential network errors that can happen when downloading datasets from remote servers.
 
-Note that you can request to download all datasets and ignore the cache at any time by including the tag "[force download]" in your commit message.
+Note that you can request to download all datasets and ignore the cache at any time
+by including the tag "[force download]" in your commit message.
 
 To run a full build and download all datasets, you would then combine both tags:
 

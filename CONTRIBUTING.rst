@@ -339,6 +339,9 @@ Additionally, we use:
 - black_ to format our code,
 - isort_  to organize the import statements.
 
+Documentation style
+^^^^^^^^^^^^^^^^^^^
+
 Each function and class must come with a “docstring” at the top of the function code,
 using numpydoc_ formatting.
 The docstring must summarize what the function does and document every parameter.
@@ -388,6 +391,21 @@ This is also useful for writing unit tests.
 
 Writing small functions is not always possible, and we do not recommend trying to reorganize larger,
 but well-tested, older functions in the codebase, unless there is a strong reason to do so (e.g., when adding a new feature).
+
+APIs of nilearn objects
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Estimated Attributes
+""""""""""""""""""""
+
+Attributes that have been estimated from the data
+should always have a name ending with trailing underscore.
+For example the coefficients of some regression estimator
+would be stored in a ``coef_`` attribute after ``fit`` has been called.
+
+The estimated attributes are expected to be overridden when you call ``fit`` a second time.
+
+This follows the `scikit-learn convention <https://scikit-learn.org/stable/developers/develop.html#estimated-attributes>`_.
 
 .. _private_functions:
 
