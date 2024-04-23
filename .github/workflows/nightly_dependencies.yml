@@ -1,0 +1,84 @@
+---
+# Workflow to test against the latest nightly releases of development versions of our dependencies
+name: test on nightly dependencies
+
+on:
+
+    # commits message must include 'smoke_test' to trigger the workflow on PR
+    pull_request:
+        branches:
+        -   '*'
+
+    schedule:
+    # Run every monday at 8am UTC
+    -   cron: 0 8 * * 1
+
+    workflow_dispatch:
+
+jobs:
+    test_nightly:
+
+        # This prevents this workflow from running on a fork.
+        # To test this workflow on a fork, uncomment the following line.
+        if: github.repository == 'Remi-Gau/nilearn'
+
+        runs-on: ubuntu-latest
+
+        steps:
+
+        -   name: Checkout nilearn
+            uses: actions/checkout@v4
+            with:
+                # If pull request, checkout HEAD commit with all commit history
+                ref: ${{ github.event.pull_request.head.sha }}
+
+        -   name: For PRs check if commit message contains [test nightly]
+            if: ${{ github.event_name == 'pull_request' }}
+            run: |
+                set -e -x
+                commit_msg=$(git log -2 --format=oneline);
+                if [[ $commit_msg == *"[test nightly]"* ]]; then
+                    echo "run test on nightly releases of nilearn dependencies"
+                else
+                    echo "skip test on nightly releases of nilearn dependencies"
+                    exit 0
+                fi;
+
+        -   name: Setup python
+            uses: actions/setup-python@v5
+            with:
+                python-version: 3.12
+
+        -   name: Install and run ruff checks for NPY NPY201
+            # see https://numpy.org/devdocs/numpy_2_0_migration_guide.html#ruff-plugin
+            continue-on-error: true
+            run: |
+                python -m pip install ruff>0.1.8
+                ruff check --preview --select NPY201 .
+
+        -   name: Install tox
+            run: python -m pip install tox
+
+        -   name: Run test suite
+            id: nightly
+            continue-on-error: true
+            # run: tox run -e test_nightly -- nilearn
+            run: tmp.sh
+
+        -   name: Create issue
+            # Do not open issues when on a PR
+            # because the result will be visible in the PR CI report
+            if: ${{ github.event_name != 'pull_request' && steps.nightly.outcome != 'success' }}
+            uses: JasonEtco/create-an-issue@v2.9.2
+            env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                run_id: ${{ github.run_id }}
+                repository: ${{ github.repository }}
+            with:
+                filename: .github/nightly_failure.md
+                update_existing: true
+                search_existing: open
+
+        -   name: Return failure
+            if: steps.nightly.outcome != 'success'
+            run: exit 1

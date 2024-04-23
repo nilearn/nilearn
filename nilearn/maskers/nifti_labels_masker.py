@@ -185,7 +185,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         t_r=None,
         dtype=None,
         resampling_target="data",
-        memory=Memory(location=None, verbose=0),
+        memory=None,
         memory_level=1,
         verbose=0,
         strategy="mean",
@@ -193,6 +193,8 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         reports=True,
         **kwargs,
     ):
+        if memory is None:
+            memory = Memory(location=None, verbose=0)
         self.labels_img = labels_img
 
         self.background_label = background_label

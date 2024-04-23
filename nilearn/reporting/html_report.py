@@ -280,7 +280,7 @@ class HTMLReport(HTMLDocument):
 
     """
 
-    def __init__(self, head_tpl, body, head_values={}):
+    def __init__(self, head_tpl, body, head_values=None):
         """Construct the ``HTMLReport`` class.
 
         Parameters
@@ -299,14 +299,17 @@ class HTMLReport(HTMLDocument):
             ``head_tpl`` template. It contains the full body of the
             HTML page.
 
-        head_values : :obj:`dict`, default={}
+        head_values : :obj:`dict`, default=None
             Additional substitutions in ``head_tpl``.
+            if ``None`` is passed, defaults to ``{}``
 
             .. note::
                 This can be used to provide additional values
                 with custom templates.
 
         """
+        if head_values is None:
+            head_values = {}
         html = head_tpl.safe_substitute(body=body, **head_values)
         super().__init__(html)
         self.head_tpl = head_tpl

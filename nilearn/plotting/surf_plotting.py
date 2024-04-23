@@ -1364,8 +1364,8 @@ def _colorbar_from_array(array, vmin, vmax, threshold, symmetric_cbar=True,
 
 @fill_doc
 def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
-                     hemispheres=['left', 'right'], bg_on_data=False,
-                     inflate=False, views=['lateral', 'medial'],
+                     hemispheres=None, bg_on_data=False,
+                     inflate=False, views=None,
                      output_file=None, title=None, colorbar=True,
                      vmin=None, vmax=None, threshold=None,
                      symmetric_cbar='auto', cmap='cold_hot',
@@ -1401,18 +1401,20 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
 
     %(bg_on_data)s
 
-    hemispheres : :obj:`list` of :obj:`str`, default=["left", "right"]
+    hemispheres : :obj:`list` of :obj:`str`, default=None
         Hemispheres to display.
+        Will default to ``['left', 'right']`` if ``None`` is passed.
 
     inflate : bool, default=False
         If True, display images in inflated brain.
         If False, display images in pial surface.
 
-    views : list of strings, default=['lateral', 'medial']
+    views : list of strings, default=None
         A list containing all views to display.
         The montage will contain as many rows as views specified by
         display mode. Order is preserved, and left and right hemispheres
         are shown on the left and right sides of the figure.
+        Will default to ``['lateral', 'medial']`` if ``None`` is passed.
     %(output_file)s
     %(title)s
     %(colorbar)s
@@ -1442,6 +1444,10 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         accepted by plot_img_on_surf.
 
     """
+    if hemispheres is None:
+        hemispheres = ['left', 'right']
+    if views is None:
+        views = ['lateral', 'medial']
     for arg in ("figure", "axes", "engine"):
         if arg in kwargs:
             raise ValueError(

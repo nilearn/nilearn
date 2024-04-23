@@ -122,13 +122,15 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         t_r=None,
         dtype=None,
         resampling_target="data",
-        memory=Memory(location=None, verbose=0),
+        memory=None,
         memory_level=0,
         verbose=0,
         reports=True,
         n_jobs=1,
         **kwargs,
     ):
+        if memory is None:
+            memory = Memory(location=None, verbose=0)
         self.n_jobs = n_jobs
         super().__init__(
             maps_img,

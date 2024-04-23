@@ -789,7 +789,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     if copy_header:
         header = copy.deepcopy(ref_niimg.header)
         try:
-            "something" in header
+            "something" in header  # noqa B015
         except TypeError:
             pass
         else:
@@ -1396,7 +1396,7 @@ def concat_imgs(
     niimgs,
     dtype=np.float32,
     ensure_ndim=None,
-    memory=Memory(location=None),
+    memory=None,
     memory_level=0,
     auto_resample=False,
     verbose=0,
@@ -1426,10 +1426,11 @@ def concat_imgs(
     verbose : int, default=0
         Controls the amount of verbosity (0 means no messages).
 
-    memory : instance of joblib.Memory or string, default=Memory(location=None)
+    memory : instance of joblib.Memory or string, default=None
         Used to cache the resampling process.
-        By default, no caching is done. If a string is given, it is the
-        path to the caching directory.
+        By default, no caching is done.
+        If a string is given, it is the path to the caching directory.
+        If ``None`` is passed will default to ``Memory(location=None)``.
 
     memory_level : integer, default=0
         Rough estimator of the amount of memory used by caching. Higher value
@@ -1446,6 +1447,9 @@ def concat_imgs(
 
     """
     from ..image import new_img_like  # avoid circular imports
+
+    if memory is None:
+        memory = Memory(location=None)
 
     target_fov = "first" if auto_resample else None
 

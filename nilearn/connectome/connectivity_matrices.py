@@ -408,8 +408,10 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-    cov_estimator_ : estimator object
+    cov_estimator_ : estimator object, default=None
         A new covariance estimator with the same parameters as cov_estimator.
+        If ``None`` is passed,
+        defaults to ``LedoitWolf(store_precision=False)``.
 
     mean_ : numpy.ndarray
         The mean connectivity matrix across subjects. For 'tangent' kind,
@@ -429,12 +431,14 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
     def __init__(
         self,
-        cov_estimator=LedoitWolf(store_precision=False),
+        cov_estimator=None,
         kind="covariance",
         vectorize=False,
         discard_diagonal=False,
         standardize=True,
     ):
+        if cov_estimator is None:
+            cov_estimator = LedoitWolf(store_precision=False)
         self.cov_estimator = cov_estimator
         self.kind = kind
         self.vectorize = vectorize
