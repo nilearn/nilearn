@@ -37,7 +37,6 @@ jobs:
             run: |
                 set -e -x
                 commit_msg=$(git log -2 --format=oneline);
-                echo $commit_msg;
                 if [[ $commit_msg == *"[test nightly]"* ]]; then
                     echo "run test on nightly releases of nilearn dependencies"
                 else
