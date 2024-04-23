@@ -7,6 +7,6 @@ The run {{ github.run_number }} of the workflow testing Nilearn with the nightly
 
 You can view the report here:
 
-https://github.com/Remi-Gau/nilearn/actions/runs/{{ github.run_number }}
+https://github.com/{{ github.repository }}/actions/runs/{{ github.run_number }}
 
 @nilearn/core
