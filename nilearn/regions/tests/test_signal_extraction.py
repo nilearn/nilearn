@@ -54,7 +54,9 @@ N_REGIONS = 8
 N_TIMEPOINTS = 17
 
 
-def _make_label_data(shape=_shape_3d_default()):
+def _make_label_data(shape=None):
+    if shape is None:
+        shape = _shape_3d_default()
     labels_data = np.zeros(shape, dtype="int32")
     h0, h1, h2 = (s // 2 for s in shape)
     labels_data[:h0, :h1, :h2] = 1

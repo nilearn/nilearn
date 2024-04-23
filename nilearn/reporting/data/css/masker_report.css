@@ -1,0 +1,207 @@
+/* Add a gutter to Pure's Columns */
+.pure-g > div {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  padding: 0 0.5em;
+}
+
+/*!
+Pure-button class copied from pure-min.css,
+in case reports are displayed offline.
+
+Pure v1.0.0
+Copyright 2013 Yahoo!
+Licensed under the BSD License.
+https://github.com/yahoo/pure/blob/master/LICENSE.md
+*/
+
+.pure-button {
+  /* Structure */
+  display: inline-block;
+  zoom: 1;
+  line-height: normal;
+  white-space: nowrap;
+  vertical-align: middle;
+  text-align: center;
+  cursor: pointer;
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.pure-button {
+  /* Button styling */
+  font-family: inherit;
+  font-size: 100%;
+  padding: 0.5em 1em;
+  margin: 5px;
+  color: #444; /* rgba not supported (IE 8) */
+  color: rgba(0, 0, 0, 0.8); /* rgba supported */
+  border: 1px solid #999; /*IE 6/7/8*/
+  border: none rgba(0, 0, 0, 0); /*IE9 + everything else*/
+  background-color: #e6e6e6;
+  text-decoration: none;
+  border-radius: 2px;
+}
+
+/*!
+End pure-button class definition from pure-min.css
+*/
+
+div.nilearn_report {
+  padding-top: 0px;
+  border: solid rgb(150, 150, 150);
+  border-width: 1pt;
+  border-radius: 6pt;
+  overflow: hidden; /* Needed to avoid scrolling in jupyter :( */
+  color: black;
+  background-color: white;
+}
+
+.terminal div.nilearn_report {
+  max-width: min(50ex, 100vw); /* Needed in vscode */
+}
+
+/* Isolate us a bit from the styles specified by other stylesheets */
+
+div.nilearn_report h1 {
+  text-align: left;
+  margin-left: 0pt;
+  margin-right: 0pt;
+  padding-top: 5pt;
+  font-size: 1.8em;
+  padding-left: 5pt;
+}
+
+div.nilearn_report h1:first-child {
+  margin-top: 0pt;
+  background-color: #f5f5f5;
+  border-radius: 6pt 6pt 0pt 0pt;
+  padding-left: 5pt;
+}
+
+div.nilearn_report summary::-webkit-details-marker {
+  margin-right: 2px;
+}
+
+div.nilearn_report summary:focus {
+  outline-style: none;
+}
+
+div.nilearn_report table {
+  margin: 50px auto;
+}
+
+div.nilearn_report thead th {
+  text-align: center;
+}
+
+div.nilearn_report tbody tr:nth-child(even) {
+  background-color: #ddd;
+}
+
+div.nilearn_report div.raise {
+  z-index: 1;
+}
+
+/* Tooltip container */
+div.nilearn_report .withtooltip {
+  position: relative;
+  border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+}
+
+/* Tooltip text */
+div.nilearn_report .withtooltip .tooltiptext {
+  visibility: hidden;
+  max-width: 35em;
+  width: 90%;
+  background-color: rgba(24, 24, 24, 0.9);
+  color: #fff;
+  text-align: left;
+  font-size: 12pt;
+  font-weight: 200;
+  border-radius: 6px;
+  padding: 5px;
+
+  margin-left: 3pt;
+
+  /* Position the tooltip text - see examples below! */
+  position: absolute;
+  z-index: 2;
+
+  width: 99%;
+  left: 2pt;
+  top: 133%;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+div.nilearn_report .withtooltip:hover .tooltiptext {
+  visibility: visible;
+}
+
+div.nilearn_report .image {
+  position: relative;
+  height: auto;
+  width: 100%;
+}
+
+div.nilearn_report .image .overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  transition: 0.5s ease;
+  height: auto;
+  width: 100%;
+  -webkit-transition: 0.5s ease;
+}
+
+div.nilearn_report .image:hover .overlay {
+  opacity: 1;
+}
+
+.elem-warn {
+  color: #ff0000;
+  font-weight: bold;
+}
+
+.btn {
+  background-color: #3498db;
+  color: white;
+  padding: 6px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn:hover,
+.btn:focus {
+  background-color: #2980b9;
+}
+
+.buttonContainer {
+  float: left;
+  width: 33%;
+}
+
+.empty {
+  height: 60px;
+}
+
+.table-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.scrollit {
+  overflow-x: scroll;
+}
+
+.note {
+  display: flex;
+  justify-content: center;
+}

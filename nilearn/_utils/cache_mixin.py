@@ -19,7 +19,7 @@ def _check_memory(memory, verbose=0):
 
     Parameters
     ----------
-    memory : None,instance of joblib.Memory, str or pathlib.Path
+    memory : None, instance of joblib.Memory, str or pathlib.Path
         Used to cache the masking process.
         If a str is given, it is the path to the caching directory.
 

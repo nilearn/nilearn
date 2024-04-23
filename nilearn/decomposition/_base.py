@@ -94,7 +94,7 @@ def _mask_and_reduce(
     n_components=None,
     random_state=None,
     memory_level=0,
-    memory=Memory(location=None),
+    memory=None,
     n_jobs=1,
 ):
     """Mask and reduce provided 4D images with given masker.
@@ -133,8 +133,9 @@ def _mask_and_reduce(
         Integer indicating the level of memorization. The higher, the more
         function calls are cached.
 
-    memory : joblib.Memory, optional
+    memory : joblib.Memory, default=None
         Used to cache the function calls.
+        If ``None`` is passed will default to ``Memory(location=None)``.
 
     n_jobs : integer, default=1
         The number of CPUs to use to do the computation. -1 means
@@ -146,6 +147,8 @@ def _mask_and_reduce(
         Concatenation of reduced data.
 
     """
+    if memory is None:
+        memory = Memory(location=None)
     if not hasattr(imgs, "__iter__"):
         imgs = [imgs]
 
@@ -308,10 +311,11 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         to fine-tune mask computation. Please see the related documentation
         for details.
 
-    memory : instance of joblib.Memory or str, optional
+    memory : instance of joblib.Memory or str, default=None
         Used to cache the masking process.
-        By default, no caching is done. If a string is given, it is the
-        path to the caching directory.
+        By default, no caching is done.
+        If a string is given, it is the path to the caching directory.
+        If ``None`` is passed will default to ``Memory(location=None)``.
 
     memory_level : integer, default=0
         Rough estimator of the amount of memory used by caching. Higher value
@@ -349,11 +353,13 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         target_shape=None,
         mask_strategy="epi",
         mask_args=None,
-        memory=Memory(location=None),
+        memory=None,
         memory_level=0,
         n_jobs=1,
         verbose=0,
     ):
+        if memory is None:
+            memory = Memory(location=None)
         self.n_components = n_components
         self.random_state = random_state
         self.mask = mask

@@ -63,7 +63,7 @@ def _filter_and_mask(
     mask_img_,
     parameters,
     memory_level=0,
-    memory=Memory(location=None),
+    memory=None,
     verbose=0,
     confounds=None,
     sample_mask=None,
@@ -86,6 +86,8 @@ def _filter_and_mask(
         friendly 2D array with shape n_sample x n_features.
 
     """
+    if memory is None:
+        memory = Memory(location=None)
     # Convert input to niimg to check shape.
     # This must be repeated after the shape check because check_niimg will
     # coerce 5D data to 4D, which we don't want.
@@ -255,11 +257,13 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         mask_args=None,
         dtype=None,
         memory_level=1,
-        memory=Memory(location=None),
+        memory=None,
         verbose=0,
         reports=True,
         **kwargs,
     ):
+        if memory is None:
+            memory = Memory(location=None)
         # Mask is provided or computed
         self.mask_img = mask_img
         self.runs = runs
