@@ -15,6 +15,10 @@ on:
 
     workflow_dispatch:
 
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
 jobs:
     test_nightly:
 
@@ -72,6 +76,7 @@ jobs:
             uses: JasonEtco/create-an-issue@v2.9.2
             env:
                 GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                ref: ${{ github.ref }}
                 run_id: ${{ github.run_id }}
                 repository: ${{ github.repository }}
             with:
