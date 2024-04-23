@@ -157,7 +157,6 @@ or from a PR if commit message includes `[test nightly]`.
 When running on `main`, if the workflow fails the action will open an issue
 using this issue [template](../nightly_failure.md).
 
-
 ## Test installation
 
 ### testing_install.yml
