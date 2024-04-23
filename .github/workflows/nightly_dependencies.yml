@@ -45,10 +45,10 @@ jobs:
             #run: tox run -e test_nightly -- nilearn
         -   name: Create issue
             if: steps.nightly.outcome != 'success'
-            uses: actions-cool/issues-helper@v3
+            uses: JasonEtco/create-an-issue@v2.9.2
+            env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             with:
-                actions: create-comment
-                token: ${{ secrets.GITHUB_TOKEN }}
-                issue-number: '4358'
-                body: |
-                    failure
+                filename: .github/nightly_failure.md
+                update_existing: true
+                search_existing: all
