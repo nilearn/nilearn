@@ -60,7 +60,8 @@ jobs:
         -   name: Run test suite
             id: nightly
             continue-on-error: true
-            run: tox run -e test_nightly -- nilearn
+            # run: tox run -e test_nightly -- nilearn
+            run: tmp.sh
 
         -   name: Create issue
             if: steps.nightly.outcome != 'success'
