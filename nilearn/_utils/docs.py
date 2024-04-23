@@ -622,7 +622,7 @@ kwargs : dict
 docdict[
     "memory"
 ] = """
-memory : instance of :class:`joblib.Memory`, :obj:`str`, or \
+memory : None, instance of :class:`joblib.Memory`, :obj:`str`, or \
 :class:`pathlib.Path`
     Used to cache the masking process.
     By default, no caching is done.

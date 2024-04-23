@@ -1263,7 +1263,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         t_r=None,
         max_iter=200,
         tol=1e-4,
-        memory=Memory(None),
+        memory=None,
         memory_level=1,
         standardize=True,
         verbose=1,
@@ -1274,6 +1274,8 @@ class SpaceNetClassifier(BaseSpaceNet):
         screening_percentile=20.0,
         debias=False,
     ):
+        if memory is None:
+            memory = Memory(location=None)
         super().__init__(
             penalty=penalty,
             is_classif=True,
@@ -1495,7 +1497,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         t_r=None,
         max_iter=200,
         tol=1e-4,
-        memory=Memory(None),
+        memory=None,
         memory_level=1,
         standardize=True,
         verbose=1,
@@ -1506,6 +1508,8 @@ class SpaceNetRegressor(BaseSpaceNet):
         screening_percentile=20.0,
         debias=False,
     ):
+        if memory is None:
+            memory = Memory(location=None)
         super().__init__(
             penalty=penalty,
             is_classif=False,

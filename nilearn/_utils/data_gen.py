@@ -160,7 +160,7 @@ def generate_maps(
     border=1,
     window="boxcar",
     random_state=0,
-    affine=np.eye(4),
+    affine=None,
 ):
     """Generate a 4D volume containing several maps.
 
@@ -179,8 +179,9 @@ def generate_maps(
                    default=0
         Random number generator, or seed.
 
-    affine : :obj:`numpy.ndarray`, default=np.eye(4)
+    affine : :obj:`numpy.ndarray`, default=None
         Affine transformation to use.
+        Will default to ``np.eye(4)`` if ``None`` is passed.
 
     border : :obj:`int`, default=1
         Number of background voxels on each side of the 3D volumes.
@@ -194,6 +195,8 @@ def generate_maps(
         3D mask giving non-zero voxels.
 
     """
+    if affine is None:
+        affine = np.eye(4)
     mask = np.zeros(shape, dtype=np.int8)
     mask[border:-border, border:-border, border:-border] = 1
     ts = generate_regions_ts(
@@ -212,7 +215,7 @@ def generate_labeled_regions(
     n_regions,
     random_state=0,
     labels=None,
-    affine=np.eye(4),
+    affine=None,
     dtype="int32",
 ):
     """Generate a 3D volume with labeled regions.
@@ -233,8 +236,9 @@ def generate_labeled_regions(
     labels : iterable, optional
         Labels to use for each zone. If provided, n_regions is unused.
 
-    affine : :obj:`numpy.ndarray`, default=np.eye(4)
+    affine : :obj:`numpy.ndarray`, default=None
         Affine of returned image.
+        Will default to ``np.eye(4)`` if ``None`` is passed.
 
     dtype : :obj:`type`, default='int32'
         Data type of image.
@@ -245,6 +249,8 @@ def generate_labeled_regions(
         Data has shape "shape", containing region labels.
 
     """
+    if affine is None:
+        affine = np.eye(4)
     n_voxels = shape[0] * shape[1] * shape[2]
     if labels is None:
         n_regions += 1
@@ -267,7 +273,7 @@ def generate_fake_fmri(
     shape=(10, 11, 12),
     length=17,
     kind="noise",
-    affine=np.eye(4),
+    affine=None,
     n_blocks=None,
     block_size=None,
     block_type="classification",
@@ -294,8 +300,9 @@ def generate_fake_fmri(
         "noise": uniformly sampled values in [0..255]
         "step": 0.5 for the first half then 1.
 
-    affine : :obj:`numpy.ndarray`, default=np.eye(4)
+    affine : :obj:`numpy.ndarray`, default=None
         Affine of returned images.
+        Will default to ``np.eye(4)`` if ``None`` is passed.
 
     n_blocks : :obj:`int` or None, default=None
         Number of condition blocks.
@@ -328,6 +335,8 @@ def generate_fake_fmri(
         Returned only if ``n_blocks`` is not None.
 
     """
+    if affine is None:
+        affine = np.eye(4)
     full_shape = shape + (length,)
     fmri = np.zeros(full_shape)
     # Fill central voxels timeseries with random signals
@@ -398,7 +407,7 @@ def generate_fake_fmri(
 
 
 def generate_fake_fmri_data_and_design(
-    shapes, rk=3, affine=np.eye(4), random_state=0
+    shapes, rk=3, affine=None, random_state=0
 ):
     """Generate random :term:`fMRI` time series \
     and design matrices of given shapes.
@@ -411,8 +420,9 @@ def generate_fake_fmri_data_and_design(
     rk : :obj:`int`, default=3
         Number of columns in the design matrix to be generated.
 
-    affine : :obj:`numpy.ndarray`, default=np.eye(4)
+    affine : :obj:`numpy.ndarray`, default=None
         Affine of returned images. Must be a 4x4 array.
+        Will default to ``np.eye(4)`` if ``None`` is passed.
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
                    default=0
@@ -430,10 +440,12 @@ def generate_fake_fmri_data_and_design(
         A list of pd.DataFrame
 
     """
+    if affine is None:
+        affine = np.eye(4)
     fmri_data = []
     design_matrices = []
     rand_gen = np.random.default_rng(random_state)
-    for i, shape in enumerate(shapes):
+    for _, shape in enumerate(shapes):
         data = rand_gen.standard_normal(shape)
         data[1:-1, 1:-1, 1:-1] += 100
         fmri_data.append(Nifti1Image(data, affine))
@@ -452,7 +464,7 @@ def generate_fake_fmri_data_and_design(
 
 
 def write_fake_fmri_data_and_design(
-    shapes, rk=3, affine=np.eye(4), random_state=0, file_path=None
+    shapes, rk=3, affine=None, random_state=0, file_path=None
 ):
     """Generate random :term:`fMRI` data \
     and design matrices and write them to disk.
@@ -465,8 +477,9 @@ def write_fake_fmri_data_and_design(
     rk : :obj:`int`, default=3
         Number of columns in the design matrix to be generated.
 
-    affine : :obj:`numpy.ndarray`, default=np.eye(4)
+    affine : :obj:`numpy.ndarray`, default=None
         Affine of returned images.
+        Will default to ``np.eye(4)`` if ``None`` is passed.
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
                    default=0
@@ -491,6 +504,8 @@ def write_fake_fmri_data_and_design(
     nilearn._utils.data_gen.generate_fake_fmri_data_and_design
 
     """
+    if affine is None:
+        affine = np.eye(4)
     if file_path is None:
         file_path = Path.cwd()
 
@@ -536,7 +551,7 @@ def _write_fake_bold_gifti(file_path):
     return file_path
 
 
-def write_fake_bold_img(file_path, shape, affine=np.eye(4), random_state=0):
+def write_fake_bold_img(file_path, shape, affine=None, random_state=0):
     """Generate a random image of given shape and write it to disk.
 
     Parameters
@@ -547,8 +562,9 @@ def write_fake_bold_img(file_path, shape, affine=np.eye(4), random_state=0):
     shape : :obj:`tuple` of :obj:`int`
         Shape of output array. Should be at least 3D.
 
-    affine : :obj:`numpy.ndarray`, default=np.eye(4)
+    affine : :obj:`numpy.ndarray`, default=None
         Affine of returned images.
+        Will default to ``np.eye(4)`` if ``None`` is passed.
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
                    default=0
@@ -560,6 +576,8 @@ def write_fake_bold_img(file_path, shape, affine=np.eye(4), random_state=0):
         Output file path.
 
     """
+    if affine is None:
+        affine = np.eye(4)
     rand_gen = np.random.default_rng(random_state)
     data = rand_gen.standard_normal(shape)
     data[1:-1, 1:-1, 1:-1] += 100
@@ -837,7 +855,7 @@ def add_metadata_to_bids_dataset(bids_path, metadata, json_file=None):
 
 def generate_random_img(
     shape,
-    affine=np.eye(4),
+    affine=None,
     random_state=0,
 ):
     """Create a random 3D or 4D image with a given shape and affine.
@@ -848,8 +866,9 @@ def generate_random_img(
         The shape of the image being generated.
         The number of elements determines the dimensionality of the image.
 
-    affine : 4x4 numpy.ndarray
+    affine : 4x4 numpy.ndarray, default=None
         The affine of the image
+        Will default to ``np.eye(4)`` if ``None`` is passed.
 
     random_state : int, optional
         Seed for random number generator.
@@ -862,6 +881,8 @@ def generate_random_img(
     mask_img : 3D niimg
         The mask image.
     """
+    if affine is None:
+        affine = np.eye(4)
     rng = np.random.default_rng(random_state)
     data = rng.standard_normal(size=shape)
     data_img = Nifti1Image(data, affine)
@@ -876,11 +897,11 @@ def generate_random_img(
 
 
 def create_fake_bids_dataset(
-    base_dir=Path(),
+    base_dir=None,
     n_sub=10,
     n_ses=2,
-    tasks=["localizer", "main"],
-    n_runs=[1, 3],
+    tasks=None,
+    n_runs=None,
     with_derivatives=True,
     with_confounds=True,
     confounds_tag="desc-confounds_timeseries",
@@ -955,6 +976,12 @@ def create_fake_bids_dataset(
         Creates a directory with dummy files.
 
     """
+    if base_dir is None:
+        base_dir = Path()
+    if tasks is None:
+        tasks = ["localizer", "main"]
+    if n_runs is None:
+        n_runs = [1, 3]
     n_voxels = 4
 
     rand_gen = np.random.default_rng(random_state)

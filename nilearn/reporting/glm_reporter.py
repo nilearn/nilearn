@@ -489,7 +489,7 @@ def _model_attributes_to_dataframe(model):
         "high_pass": "Hz",
     }
 
-    if hasattr(model, "hrf_model") and getattr(model, "hrf_model") == "fir":
+    if hasattr(model, "hrf_model") and model.hrf_model == "fir":
         selected_attributes.append("fir_delays")
 
     selected_attributes.sort()

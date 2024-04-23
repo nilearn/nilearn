@@ -1303,11 +1303,13 @@ def bids_dataset(tmp_path_factory):
     )
 
 
-def _new_bids_dataset(base_dir=Path()):
+def _new_bids_dataset(base_dir=None):
     """Create a new BIDS dataset for testing purposes.
 
     Use if the dataset needs to be modified after creation.
     """
+    if base_dir is None:
+        base_dir = Path()
     n_sub, n_ses, tasks, n_runs = _inputs_for_new_bids_dataset()
     return create_fake_bids_dataset(
         base_dir=base_dir, n_sub=n_sub, n_ses=n_ses, tasks=tasks, n_runs=n_runs

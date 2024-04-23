@@ -43,7 +43,7 @@ def test_mix_colormaps(rng):
     # If foreground and background maps' shapes are different,
     # an Exception should be raised
     background_map = rng.random((n - 1, 4))
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         mix_colormaps(foreground_map, background_map)
 
     # If foreground map is transparent,

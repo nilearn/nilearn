@@ -1571,7 +1571,7 @@ class BaseStackedSlicer(BaseSlicer):
             width_dict[ax] = width / total_width * (x1 - x0)
         left_dict = dict()
         left = float(x0)
-        for coord, display_ax in display_ax_dict.items():
+        for _, display_ax in display_ax_dict.items():
             left_dict[display_ax.ax] = left
             this_width = width_dict[display_ax.ax]
             left += this_width
@@ -2061,7 +2061,7 @@ class MosaicSlicer(BaseSlicer):
         for index, direction in enumerate(self._cut_displayed):
             left = float(x0)
             this_height = fraction + fraction * index
-            for coord, display_ax in display_ax_dict.items():
+            for _, display_ax in display_ax_dict.items():
                 if direction == display_ax.direction:
                     left_dict[display_ax.ax] = left
                     this_width = width_dict[display_ax.ax]

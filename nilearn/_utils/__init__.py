@@ -62,7 +62,7 @@ def all_modules(modules_to_ignore=None, modules_to_consider=None):
     root = str(Path(__file__).parent.parent)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        for importer, modname, ispkg in pkgutil.walk_packages(
+        for _, modname, _ in pkgutil.walk_packages(
             path=[root], prefix="nilearn."
         ):
             mod_parts = modname.split(".")

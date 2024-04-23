@@ -69,7 +69,6 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
             - None means no resampling: if shapes and affines do not match, a
               ValueError is raised
 
-
     %(memory)s
     %(memory_level1)s
     %(n_jobs)s
@@ -122,7 +121,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         t_r=None,
         dtype=None,
         resampling_target="data",
-        memory=Memory(location=None, verbose=0),
+        memory=None,
         memory_level=1,
         verbose=0,
         strategy="mean",
@@ -130,6 +129,8 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         n_jobs=1,
         **kwargs,
     ):
+        if memory is None:
+            memory = Memory(location=None, verbose=0)
         self.n_jobs = n_jobs
         super().__init__(
             labels_img,

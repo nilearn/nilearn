@@ -38,8 +38,10 @@ PLOTTING_FUNCS_4D = {plot_prob_atlas, plot_carpet}
 PLOTTING_FUNCS_3D = ALL_PLOTTING_FUNCS.difference(PLOTTING_FUNCS_4D)
 
 
-def _add_nans_to_img(img, affine_mni=_affine_mni()):
+def _add_nans_to_img(img, affine_mni=None):
     """Add nans in test image data."""
+    if affine_mni is None:
+        affine_mni = _affine_mni()
     data = get_data(img)
     data[6, 5, 1] = np.nan
     data[1, 5, 2] = np.nan
