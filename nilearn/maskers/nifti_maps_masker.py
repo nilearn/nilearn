@@ -138,12 +138,14 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
         dtype=None,
         resampling_target="data",
         keep_masked_maps=True,
-        memory=Memory(location=None, verbose=0),
+        memory=None,
         memory_level=0,
         verbose=0,
         reports=True,
         **kwargs,
     ):
+        if memory is None:
+            memory = Memory(location=None, verbose=0)
         self.maps_img = maps_img
         self.mask_img = mask_img
 

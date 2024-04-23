@@ -818,6 +818,18 @@ def test_math_img_exceptions(affine_eye, img_4d_ones_eye):
     ):
         math_img(bad_formula, img1=img1, img3=img3)
 
+    # Test copy_header_from parameter
+    # Copying header from 4d image to a result that is 3d should raise a
+    # ValueError
+    formula = "np.mean(img1, axis=-1) - np.mean(img3, axis=-1)"
+    with pytest.raises(ValueError, match="Cannot copy the header."):
+        math_img(formula, img1=img1, img3=img3, copy_header_from="img1")
+
+    # Passing an 'img*' variable (to copy_header_from) that is not in the
+    # formula or an img* argument should raise a KeyError exception.
+    with pytest.raises(KeyError):
+        math_img(formula, img1=img1, img3=img3, copy_header_from="img2")
+
 
 def test_math_img(
     affine_eye, img_4d_ones_eye, img_4d_zeros_eye, shape_3d_default, tmp_path
@@ -835,6 +847,59 @@ def test_math_img(
         assert_array_equal(get_data(result), get_data(expected_result))
         assert_array_equal(result.affine, expected_result.affine)
         assert result.shape == expected_result.shape
+
+
+def test_math_img_copy_default_header(
+    img_4d_ones_eye_default_header, img_4d_ones_eye_tr2
+):
+    # case where data values are not changed and header values are not copied
+    # the result should have default header values
+    formula_no_change = "img * 1"
+    # using img_4d_ones_eye_tr2 with edited header in the formula
+    result = math_img(
+        formula_no_change, img=img_4d_ones_eye_tr2, copy_header_from=None
+    )
+    # header values should instead match default header values
+    assert result.header == img_4d_ones_eye_default_header.header
+
+
+def test_math_img_copied_header_from_img(img_4d_mni_tr2):
+    # case where data values are not changed but header values are copied
+    # the result should have the same header values as the given image
+    formula_no_change = "img * 1"
+    result = math_img(
+        formula_no_change, img=img_4d_mni_tr2, copy_header_from="img"
+    )
+    # all header values should be the same
+    assert result.header == img_4d_mni_tr2.header
+
+
+def test_math_img_copied_header_data_values_changed(
+    img_4d_ones_eye_default_header, img_4d_ones_eye_tr2
+):
+    # case where data values are changed and header values are copied from one
+    # of the input images
+    # the result should have the same header values as img_4d_ones_eye_tr2,
+    # except for cal_max and cal_min that should be different
+    formula_change_min_max = "img1 - img2"
+    result = math_img(
+        formula_change_min_max,
+        img1=img_4d_ones_eye_default_header,
+        img2=img_4d_ones_eye_tr2,
+        copy_header_from="img2",
+    )
+    for key in img_4d_ones_eye_tr2.header.keys():
+        # cal_max and cal_min should be different in result
+        if key in ["cal_max", "cal_min"]:
+            assert result.header[key] != img_4d_ones_eye_tr2.header[key]
+        # other header values should be the same
+        else:
+            if isinstance(result.header[key], np.ndarray):
+                assert_array_equal(
+                    result.header[key], img_4d_ones_eye_tr2.header[key]
+                )
+            else:
+                assert result.header[key] == img_4d_ones_eye_tr2.header[key]
 
 
 def test_binarize_img(img_4d_rand_eye):

@@ -729,9 +729,8 @@ def _get_atlas_data_and_labels(
     from xml.etree import ElementTree
 
     names[0] = "Background"
-    for n, label in enumerate(
-        ElementTree.parse(label_file).findall(".//label")
-    ):
+    all_labels = ElementTree.parse(label_file).findall(".//label")
+    for label in all_labels:
         new_idx = int(label.get("index")) + 1
         if new_idx in names:
             raise ValueError(
@@ -747,7 +746,7 @@ def _get_atlas_data_and_labels(
         names[new_idx] = label.text.strip()
 
     # The label indices should range from 0 to nlabel + 1
-    assert list(names.keys()) == list(range(n + 2))
+    assert list(names.keys()) == [x for x in range(len(all_labels) + 1)]
     names = [item[1] for item in sorted(names.items())]
     return atlas_img, atlas_file, names, is_lateralized
 

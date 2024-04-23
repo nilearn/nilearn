@@ -184,7 +184,7 @@ def _convolve_regressors(
     events,
     hrf_model,
     frame_times,
-    fir_delays=[0],
+    fir_delays=None,
     min_onset=-24,
     oversampling=50,
 ):
@@ -206,9 +206,10 @@ def _convolve_regressors(
     frame_times : array of shape (n_scans,)
         The targeted timing for the design matrix.
 
-    fir_delays : array-like of shape (n_onsets,), default=[0]
+    fir_delays : array-like of shape (n_onsets,), default=None
         In case of FIR design, yields the array of delays
         used in the FIR model (in scans).
+        Will default to ``[0]`` if ``None`` is passed.
 
     min_onset : float, default=-24
         Minimal onset relative to frame_times[0] (in seconds) events
@@ -234,6 +235,8 @@ def _convolve_regressors(
         if 'fir', the regressos are numbered according to '#name_#delay'
 
     """
+    if fir_delays is None:
+        fir_delays = [0]
     regressor_names = []
     regressor_matrix = None
 
@@ -283,7 +286,7 @@ def make_first_level_design_matrix(
     drift_model="cosine",
     high_pass=0.01,
     drift_order=1,
-    fir_delays=[0],
+    fir_delays=None,
     add_regs=None,
     add_reg_names=None,
     min_onset=-24,
@@ -357,6 +360,8 @@ def make_first_level_design_matrix(
         and each column a regressor.
 
     """
+    if fir_delays is None:
+        fir_delays = [0]
     # check arguments
     # check that additional regressor specification is correct
     n_add_regs = 0

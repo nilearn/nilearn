@@ -66,7 +66,7 @@ def _open_views():
 
 
 def _open_one_view():
-    for i in range(12):
+    for _ in range(12):
         v = html_document.HTMLDocument("")
     return v
 
