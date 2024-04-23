@@ -53,7 +53,7 @@ jobs:
             with:
                 filename: .github/nightly_failure.md
                 update_existing: true
-                search_existing: all
+                search_existing: open
         -   name: return failure
             if: steps.nightly.outcome != 'success'
             run: exit 1
