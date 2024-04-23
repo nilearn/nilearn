@@ -151,10 +151,10 @@ All environments are defined in [tox.ini](../../tox.ini).
 ### nightly_dependencies.yml
 
 Run test suite using the nightly release of Nilearn dependencies.
-Runs on main (by a push or on manual trigger from the `Action` tab)
+Runs on `main` (by a push or on manual trigger from the `Action` tab)
 or from a PR if commit message includes `[test nightly]`.
 
-When running on main, if the workflow fails the action will open an issue
+When running on `main`, if the workflow fails the action will open an issue
 using this issue [template](../nightly_failure.md).
 
 
