@@ -41,15 +41,21 @@ jobs:
                 ref: ${{ github.event.pull_request.head.sha }}
 
         -   name: For PRs check if commit message contains [test nightly]
-            if: ${{ github.event_name == 'pull_request' }}
+            id: check-commit-msg
             run: |
                 set -e -x
                 commit_msg=$(git log -2 --format=oneline);
-                if [[ $commit_msg == *"[test nightly]"* ]]; then
+                if [ "$GITHUB_REF_NAME" == "main" ]; then
                     echo "run test on nightly releases of nilearn dependencies"
+                    echo "skip=false" >> $GITHUB_OUTPUT
                 else
-                    echo "skip test on nightly releases of nilearn dependencies"
-                    exit 0
+                    if [[ $commit_msg == *"[test nightly]"* ]]; then
+                        echo "run test on nightly releases of nilearn dependencies"
+                        echo "skip=false" >> $GITHUB_OUTPUT
+                    else
+                        echo "skip test on nightly releases of nilearn dependencies"
+                        echo "skip=true" >> $GITHUB_OUTPUT
+                    fi;
                 fi;
 
         -   name: Setup python
@@ -69,6 +75,7 @@ jobs:
             run: python -m pip install tox
 
         -   name: Run test suite
+            if: steps.check-commit-msg.outputs.skip == 'false'
             id: nightly
             continue-on-error: true
             run: tox run -e test_nightly -- nilearn
