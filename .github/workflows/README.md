@@ -139,7 +139,7 @@ Sorts Python imports alphabetically and by section. Configured in [pyproject.tom
 
 Should be triggered automatically after merging and tagging a release PR to
 build the stable docs with a GitHub runner and push to nilearn.github.io.
-Can Also be triggered manually.
+Can also be triggered manually.
 
 ## Running unit tests
 
