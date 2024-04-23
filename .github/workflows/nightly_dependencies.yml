@@ -48,6 +48,8 @@ jobs:
             uses: JasonEtco/create-an-issue@v2.9.2
             env:
                 GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                run_number: ${{ github.run_number }}
+                repository: ${{ github.repository }}
             with:
                 filename: .github/nightly_failure.md
                 update_existing: true
