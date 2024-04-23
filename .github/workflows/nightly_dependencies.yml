@@ -52,3 +52,6 @@ jobs:
                 filename: .github/nightly_failure.md
                 update_existing: true
                 search_existing: all
+        -   name: return failure
+            if: steps.nightly.outcome != 'success'
+            run: exit 1
