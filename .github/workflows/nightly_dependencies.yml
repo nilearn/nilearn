@@ -26,6 +26,9 @@ jobs:
 
         steps:
 
+        -   name: Checkout nilearn
+            uses: actions/checkout@v4
+
         -   name: For PRs check if commit message contains [test nightly]
             if: ${{ github.event_name == 'pull_request' }}
             run: |
@@ -38,9 +41,6 @@ jobs:
                     echo "skip test on nightly releases of nilearn dependencies"
                     exit 0
                 fi;
-
-        -   name: Checkout nilearn
-            uses: actions/checkout@v4
 
         -   name: Setup python
             uses: actions/setup-python@v5
