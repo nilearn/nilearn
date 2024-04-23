@@ -20,7 +20,8 @@ jobs:
         if: |
             ${{ github.repository }} == 'nilearn/nilearn' &&
             ( contains(fromJSON('["workflow_dispatch", "schedule"]'), github.event_name) ||
-            ( github.event_name == "pull_request" && contains(github.event.head_commit.message, 'smoke_test') ) )
+              ( github.event_name == "pull_request" && contains(github.event.head_commit.message, 'smoke_test') )
+            )
         runs-on: ubuntu-latest
         steps:
         -   name: Checkout nilearn
@@ -45,7 +46,8 @@ jobs:
             if: steps.nightly.outcome != 'success'
             uses: actions-cool/issues-helper@v3
             with:
-                actions: create-issue
+                actions: create-comment
                 token: ${{ secrets.GITHUB_TOKEN }}
-                title: '[BOT] failure of tests on nightly dependencies'
-                body: 'test on nightly dependencies failed: @nilearn/core '
+                issue-number: '4358'
+                body: |
+                    failure
