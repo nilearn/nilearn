@@ -829,10 +829,10 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         for parameter, value in parameters_not_implemented_in_plotly.items():
             if value is not None:
                 warn(
-                    (f"'{parameter}' is not implemented "
-                     "for the plotly engine.\n"
-                     f"Got '{parameter} = {value}'.\n"
-                     f"Use '{parameter} = None' to silence this warning."))
+                    f"'{parameter}' is not implemented "
+                    "for the plotly engine.\n"
+                    f"Got '{parameter} = {value}'.\n"
+                    f"Use '{parameter} = None' to silence this warning.")
 
     coords, faces = load_surf_mesh(surf_mesh)
 
