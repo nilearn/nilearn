@@ -1019,7 +1019,7 @@ def fetch_abide_pcp(
     pipeline="cpac",
     band_pass_filtering=False,
     global_signal_regression=False,
-    derivatives=["func_preproc"],
+    derivatives=None,
     quality_checked=True,
     url=None,
     verbose=1,
@@ -1059,6 +1059,7 @@ def fetch_abide_pcp(
         reho, rois_aal, rois_cc200, rois_cc400, rois_dosenbach160, rois_ez,
         rois_ho, rois_tt, and vmhc. Please refer to the PCP site for more
         details.
+        Will default to ``['func_preproc']`` if ``None`` is passed.
 
     quality_checked : :obj:`bool`, default=True
         If true (default), restrict the list of the subjects to the one that
@@ -1172,6 +1173,8 @@ def fetch_abide_pcp(
     .. footbibliography::
 
     """
+    if derivatives is None:
+        derivatives = ["func_preproc"]
     # People keep getting it wrong and submitting a string instead of a
     # list of strings. We'll make their life easy
     if isinstance(derivatives, str):

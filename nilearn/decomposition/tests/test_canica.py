@@ -18,11 +18,13 @@ N_SUBJECTS = 2
 
 def _make_data_from_components(
     components,
-    affine=_affine_eye(),
+    affine=None,
     shape=SHAPE,
     rng=None,
     n_subjects=N_SUBJECTS,
 ):
+    if affine is None:
+        affine = _affine_eye()
     data = []
     if rng is None:
         rng = _rng()

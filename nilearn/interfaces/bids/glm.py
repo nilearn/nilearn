@@ -85,7 +85,7 @@ def _generate_model_metadata(out_file, model):
         "slice_time_ref",
     ]
 
-    if hasattr(model, "hrf_model") and getattr(model, "hrf_model") == "fir":
+    if hasattr(model, "hrf_model") and model.hrf_model == "fir":
         PARAMETER_ATTRIBUTES.append("fir_delays")
 
     # Fields for a nested section of the dictionary
@@ -327,7 +327,7 @@ def save_glm_to_bids(
         if model_level == 1:
             with open(out_dir / f"{prefix}{run_str}design.json", "w") as f_obj:
                 json.dump(
-                    {"RepetitionTime": getattr(model, "t_r")},
+                    {"RepetitionTime": model.t_r},
                     f_obj,
                     indent=4,
                     sort_keys=True,

@@ -290,7 +290,7 @@ class Sender:
             return None
 
     def get_response(self, response, match, request):
-        if hasattr(response, "__call__"):
+        if callable(response):
             response = response(match, request)
 
         if isinstance(response, Response):
