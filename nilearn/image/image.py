@@ -1174,6 +1174,7 @@ def binarize_img(img, threshold=0, mask_img=None, two_sided=True):
         img=threshold_img(
             img, threshold, mask_img=mask_img, two_sided=two_sided
         ),
+        copy_header_from="img",
     )
 
 
