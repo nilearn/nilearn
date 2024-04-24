@@ -386,11 +386,57 @@ def test_crop_img():
 
     cropped_img = crop_img(img)
 
+    print(img.get_fdata())
+
     # correction for padding with "-1"
     # check that correct part was extracted:
     # This also corrects for padding
     assert (get_data(cropped_img)[1:-1, 1:-1, 1:-1] == 1).all()
     assert cropped_img.shape == (2 + 2, 4 + 2, 3 + 2)
+
+
+def test_crop_img_copied_header(img_4d_mni_tr2):
+
+    # create zero padded data
+    data = np.zeros((10, 10, 10, 10))
+    data[0:4, 0:4, 0:4, :] = 1
+    # replace the img_4d_mni_tr2 values with data
+    img_4d_mni_tr2_zero_padded = new_img_like(
+        img_4d_mni_tr2,
+        data=data,
+        affine=img_4d_mni_tr2.affine,
+        copy_header=True,
+    )
+    cropped_img = crop_img(img_4d_mni_tr2_zero_padded)
+
+    for key in img_4d_mni_tr2_zero_padded.header.keys():
+        if key in ["dim"]:
+            # only dim[1:4] should be different
+            assert (
+                cropped_img.header[key][1:4]
+                != img_4d_mni_tr2_zero_padded.header[key][1:4]
+            ).all()
+            # other dim indices should match
+            assert (
+                cropped_img.header[key][4:]
+                == img_4d_mni_tr2_zero_padded.header[key][4:]
+            ).all()
+            assert (
+                cropped_img.header[key][0]
+                == img_4d_mni_tr2_zero_padded.header[key][0]
+            ).all()
+        # other header values should also match
+        else:
+            if isinstance(cropped_img.header[key], np.ndarray):
+                assert_array_equal(
+                    cropped_img.header[key],
+                    img_4d_mni_tr2_zero_padded.header[key],
+                )
+            else:
+                assert (
+                    cropped_img.header[key]
+                    == img_4d_mni_tr2_zero_padded.header[key]
+                ).all()
 
 
 def test_crop_threshold_tolerance(affine_eye):
