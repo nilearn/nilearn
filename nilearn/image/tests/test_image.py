@@ -49,6 +49,7 @@ from nilearn.image import (
     swap_img_hemispheres,
     threshold_img,
 )
+from nilearn.image.tests.conftest import match_headers_keys
 
 X64 = platform.architecture()[0] == "64bit"
 
@@ -396,7 +397,7 @@ def test_crop_img():
 
 
 def test_crop_img_copied_header(img_4d_mni_tr2):
-
+    # Test equality of header fields between input and output
     # create zero padded data
     data = np.zeros((10, 10, 10, 10))
     data[0:4, 0:4, 0:4, :] = 1
@@ -408,35 +409,24 @@ def test_crop_img_copied_header(img_4d_mni_tr2):
         copy_header=True,
     )
     cropped_img = crop_img(img_4d_mni_tr2_zero_padded)
-
-    for key in img_4d_mni_tr2_zero_padded.header.keys():
-        if key in ["dim"]:
-            # only dim[1:4] should be different
-            assert (
-                cropped_img.header[key][1:4]
-                != img_4d_mni_tr2_zero_padded.header[key][1:4]
-            ).all()
-            # other dim indices should match
-            assert (
-                cropped_img.header[key][4:]
-                == img_4d_mni_tr2_zero_padded.header[key][4:]
-            ).all()
-            assert (
-                cropped_img.header[key][0]
-                == img_4d_mni_tr2_zero_padded.header[key][0]
-            ).all()
-        # other header values should also match
-        else:
-            if isinstance(cropped_img.header[key], np.ndarray):
-                assert_array_equal(
-                    cropped_img.header[key],
-                    img_4d_mni_tr2_zero_padded.header[key],
-                )
-            else:
-                assert (
-                    cropped_img.header[key]
-                    == img_4d_mni_tr2_zero_padded.header[key]
-                ).all()
+    # only dim[1:4] should be different
+    assert (
+        cropped_img.header["dim"][1:4]
+        != img_4d_mni_tr2_zero_padded.header["dim"][1:4]
+    ).all()
+    # other dim indices should be the same
+    assert (
+        cropped_img.header["dim"][0]
+        == img_4d_mni_tr2_zero_padded.header["dim"][0]
+    )
+    assert (
+        cropped_img.header["dim"][4:]
+        == img_4d_mni_tr2_zero_padded.header["dim"][4:]
+    ).all()
+    # other header fields should also be same
+    match_headers_keys(
+        cropped_img, img_4d_mni_tr2_zero_padded, except_keys=["dim"]
+    )
 
 
 def test_crop_threshold_tolerance(affine_eye):
@@ -510,6 +500,16 @@ def test_mean_img_resample(rng):
         resampled_mean_image.affine, mean_img_with_resampling.affine
     )
     assert_array_equal(mean_img_with_resampling.affine, target_affine)
+
+
+def test_mean_img_copied_header(img_4d_mni_tr2):
+    # Test equality of header fields between input and output
+    result = image.mean_img(img_4d_mni_tr2)
+    match_headers_keys(
+        result,
+        img_4d_mni_tr2,
+        except_keys=["dim", "pixdim", "cal_max", "cal_min"],
+    )
 
 
 def test_swap_img_hemispheres(affine_eye, shape_3d_default, rng):
@@ -843,6 +843,19 @@ def test_isnan_threshold_img_data(affine_eye, shape_3d_default):
     threshold_img(maps_img, threshold=0.8)
 
 
+def test_threshold_img_copied_header(img_4d_mni_tr2):
+    # Test equality of header fields between input and output
+    result = threshold_img(img_4d_mni_tr2, threshold=0.5)
+    # only the min value should be different
+    match_headers_keys(
+        result,
+        img_4d_mni_tr2,
+        except_keys=["cal_min"],
+    )
+    # min value should be 0 in the result
+    assert result.header["cal_min"] == 0
+
+
 def test_math_img_exceptions(affine_eye, img_4d_ones_eye):
     img1 = img_4d_ones_eye
     img2 = Nifti1Image(np.zeros((10, 20, 10, 10)), affine_eye)
@@ -982,6 +995,21 @@ def test_binarize_negative_img(img_4d_rand_eye):
     assert_array_equal(np.unique(img_absolute.dataobj), np.array([1]))
     # Check that binarized image contains 0 and 1 for original threshold
     assert_array_equal(np.unique(img_original.dataobj), np.array([0, 1]))
+
+
+def test_binarize_img_copied_header(img_4d_mni_tr2):
+    # Test equality of header fields between input and output
+    result = binarize_img(img_4d_mni_tr2, threshold=0.5)
+    # only the min value should be different
+    match_headers_keys(
+        result,
+        img_4d_mni_tr2,
+        except_keys=["cal_min", "cal_max"],
+    )
+    # min value should be 0 in the result
+    assert result.header["cal_min"] == 0
+    # max value should be 1 in the result
+    assert result.header["cal_max"] == 1
 
 
 def test_clean_img(affine_eye, shape_3d_default, rng):

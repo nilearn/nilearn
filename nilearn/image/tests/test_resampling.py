@@ -31,6 +31,7 @@ from nilearn.image.resampling import (
     resample_img,
     resample_to_img,
 )
+from nilearn.image.tests.conftest import match_headers_keys
 
 ANGLES_TO_TEST = (0, np.pi, np.pi / 2.0, np.pi / 4.0, np.pi / 3.0)
 
@@ -349,6 +350,32 @@ def test_resampling_warning_binary_image(affine_eye, rng):
 
     with pytest.warns(Warning, match="Resampling binary images with"):
         resample_img(img_binary, target_affine=rot, interpolation="linear")
+
+
+def test_resample_img_copied_header(img_4d_mni_tr2):
+    # Test that the header is copied when resampling
+    result = resample_img(img_4d_mni_tr2, target_affine=np.diag((6, 6, 6)))
+    # pixdim[1:4] should change to [6, 6, 6]
+    assert (result.header["pixdim"][1:4] == np.array([6, 6, 6])).all()
+    # pixdim at other indices should remain the same
+    assert (
+        result.header["pixdim"][4:] == img_4d_mni_tr2.header["pixdim"][4:]
+    ).all()
+    assert result.header["pixdim"][0] == img_4d_mni_tr2.header["pixdim"][0]
+    # dim, srow_* and min/max should also change
+    match_headers_keys(
+        img_4d_mni_tr2,
+        result,
+        except_keys=[
+            "pixdim",
+            "dim",
+            "cal_max",
+            "cal_min",
+            "srow_x",
+            "srow_y",
+            "srow_z",
+        ],
+    )
 
 
 def test_4d_affine_bounding_box_error(affine_eye):
@@ -837,6 +864,17 @@ def test_reorder_img_mirror():
     assert_allclose(
         get_bounds(reordered.shape, reordered.affine),
         get_bounds(img.shape, img.affine),
+    )
+
+
+def test_reorder_img_copied_header(img_4d_mni_tr2):
+    # Test that the header is copied when reordering
+    result = reorder_img(img_4d_mni_tr2)
+    # all header fields should stay the same
+    match_headers_keys(
+        img_4d_mni_tr2,
+        result,
+        except_keys=[],
     )
 
 
