@@ -570,7 +570,9 @@ def mean_img(imgs, target_affine=None, target_shape=None, verbose=0, n_jobs=1):
         running_mean += this_mean
 
     running_mean = running_mean / float(n_imgs)
-    return new_img_like(first_img, running_mean, target_affine)
+    return new_img_like(
+        first_img, running_mean, target_affine, copy_header=True
+    )
 
 
 def swap_img_hemispheres(img):
