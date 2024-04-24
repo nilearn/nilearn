@@ -986,7 +986,7 @@ def threshold_img(
         img_data = img_data[:, :, :, 0]
 
     # Reconstitute img object
-    thresholded_img = new_img_like(img, img_data, affine)
+    thresholded_img = new_img_like(img, img_data, affine, copy_header=True)
 
     return thresholded_img
 
