@@ -681,7 +681,7 @@ def resample_img(
         vmax = max(np.nanmax(data), 0)
         resampled_data.clip(vmin, vmax, out=resampled_data)
 
-    return new_img_like(img, resampled_data, target_affine)
+    return new_img_like(img, resampled_data, target_affine, copy_header=True)
 
 
 def resample_to_img(
@@ -847,4 +847,4 @@ def reorder_img(img, resample=None):
     data = data[slice1, slice2, slice3]
     affine = from_matrix_vector(np.diag(pixdim), b)
 
-    return new_img_like(img, data, affine)
+    return new_img_like(img, data, affine, copy_header=True)
