@@ -94,7 +94,9 @@ With a merge on main, both "host" and "deploy" jobs are run.
 
 ### check_gha_workflow.yml
 
-Pings github API to collect information about how long each run of the test suite lasted.
+Pings github API to collect information about:
+- how long each run of the test suite lasted,
+- how long the build of the doc lasted.
 Plots the results and saves it as an artefact to download and manually inspect
 to see if there is a trend in tests taking longer.
 
@@ -137,7 +139,7 @@ Sorts Python imports alphabetically and by section. Configured in [pyproject.tom
 
 Should be triggered automatically after merging and tagging a release PR to
 build the stable docs with a GitHub runner and push to nilearn.github.io.
-Can Also be triggered manually.
+Can also be triggered manually.
 
 ## Running unit tests
 
@@ -145,6 +147,15 @@ Can Also be triggered manually.
 
 Runs pytest in several environments including several Python and dependencies versions as well as on different systems.
 All environments are defined in [tox.ini](../../tox.ini).
+
+### nightly_dependencies.yml
+
+Run test suite using the nightly release of Nilearn dependencies.
+Runs on `main` (by a push or on manual trigger from the `Action` tab)
+or from a PR if commit message includes `[test nightly]`.
+
+When running on `main`, if the workflow fails the action will open an issue
+using this issue [template](../nightly_failure.md).
 
 ## Test installation
 
