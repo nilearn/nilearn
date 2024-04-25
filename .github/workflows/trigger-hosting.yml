@@ -4,7 +4,7 @@ name: Documentation push trigger
 on:
     workflow_run:
     # Run the workflow after the separate "DocumentationBuilder" workflow completes
-        workflows: [DocumentationBuilder]
+        workflows: [flake8]
         types: [completed, in_progress]
 
 jobs:
