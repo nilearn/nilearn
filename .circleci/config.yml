@@ -10,18 +10,6 @@ parameters:
     GITHUB_RUN_URL:
         type: string
         default: none
-    GHA_Actor:
-        type: string
-        default: ''
-    GHA_Action:
-        type: string
-        default: ''
-    GHA_Event:
-        type: string
-        default: ''
-    GHA_Meta:
-        type: string
-        default: ''
 
 jobs:
     host_docs:
@@ -56,7 +44,7 @@ jobs:
         -   run:
                 name: Fetch docs
                 command: |
-                    set -e
+                    set -x -e
                     mkdir -p ~/.ssh
                     ssh-keyscan github.com >> ~/.ssh/known_hosts;
                     if [ ! -d ~/nilearn.github.io ]; then
@@ -88,7 +76,9 @@ jobs:
 workflows:
 
     host_and_deploy_doc:
-        when: << pipeline.parameters.GHA_Action >>
+        when:
+            not:
+                equal: [none, << pipeline.parameters.GITHUB_RUN_URL >>]
     # The jobs should run only when triggered by the workflow
         jobs:
         -   host_docs
