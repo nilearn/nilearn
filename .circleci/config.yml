@@ -10,6 +10,18 @@ parameters:
     GITHUB_RUN_URL:
         type: string
         default: none
+    GHA_Actor:
+        type: string
+        default: ''
+    GHA_Action:
+        type: string
+        default: ''
+    GHA_Event:
+        type: string
+        default: ''
+    GHA_Meta:
+        type: string
+        default: ''
 
 jobs:
     host_docs:
@@ -76,9 +88,7 @@ jobs:
 workflows:
 
     host_and_deploy_doc:
-        when:
-            not:
-                equal: [none, << pipeline.parameters.GITHUB_RUN_URL >>]
+        when: << pipeline.parameters.GHA_Action >>
     # The jobs should run only when triggered by the workflow
         jobs:
         -   host_docs
