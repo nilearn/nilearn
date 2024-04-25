@@ -505,7 +505,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         self.labels_img_ = _utils.check_niimg_3d(self.labels_img)
 
         # create _region_id_name dictionary
-        # this dictionary will be used to store region names and 
+        # this dictionary will be used to store region names and
         # the corresponding region ids as keys
         self._region_id_name = None
         if self.labels is not None:
