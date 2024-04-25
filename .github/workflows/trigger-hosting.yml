@@ -2,10 +2,13 @@
 # Workflow to trigger the job that will host the documentation
 name: Documentation push trigger
 on:
-    workflow_run:
-    # Run the workflow after the separate "DocumentationBuilder" workflow completes
-        workflows: [flake8]
-        types: [completed, in_progress]
+    # workflow_run:
+    # # Run the workflow after the separate "DocumentationBuilder" workflow completes
+    #     workflows: [flake8]
+    #     types: [completed, in_progress]
+    pull_request:
+        branches:
+        -   '*'
 
 jobs:
     push:
@@ -22,13 +25,24 @@ jobs:
             uses: actions/checkout@v4
 
         -   name: Trigger hosting jobs
-            run: bash build_tools/github/trigger_hosting.sh
-            env:
-                CIRCLE_CI_TOKEN: ${{ secrets.CIRCLE_CI_TOKEN }}
-                EVENT: ${{ github.event.workflow_run.event }}
-                RUN_ID: ${{ github.event.workflow_run.id }}
-                HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
-                COMMIT_SHA: ${{ github.event.workflow_run.head_sha }}
-                REPO_NAME: ${{ github.event.workflow_run.head_repository.full_name }}
-                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                STATUS: ${{ github.event.workflow_run.conclusion }}
+            run: |
+                GITHUB_RUN_URL="https://nightly.link/nilearn/nilearn/actions/runs/8831115092"
+                STATUS="success"
+                curl --request POST \
+                --url https://circleci.com/api/v2/project/gh/nilearn/nilearn/pipeline \
+                --header "Circle-Token: ${{ secrets.CIRCLE_CI_TOKEN }}" \
+                --header "content-type: application/json" \
+                --header "x-attribution-actor-id: github_actions" \
+                --header "x-attribution-login: github_actions" \
+                --data \{\"branch\":\"main\",\"parameters\":\{\"GITHUB_RUN_URL\":\"$GITHUB_RUN_URL\",\"STATUS\":\"$STATUS\"\}\}
+
+        #     run: bash build_tools/github/trigger_hosting.sh
+        #     env:
+        #         CIRCLE_CI_TOKEN: ${{ secrets.CIRCLE_CI_TOKEN }}
+        #         EVENT: ${{ github.event.workflow_run.event }}
+        #         RUN_ID: ${{ github.event.workflow_run.id }}
+        #         HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+        #         COMMIT_SHA: ${{ github.event.workflow_run.head_sha }}
+        #         REPO_NAME: ${{ github.event.workflow_run.head_repository.full_name }}
+        #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        #         STATUS: ${{ github.event.workflow_run.conclusion }}

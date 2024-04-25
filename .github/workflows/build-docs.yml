@@ -56,9 +56,8 @@ jobs:
     get_data:
         # This prevents this workflow from running on a fork.
         # To test this workflow on a fork, uncomment the following line.
-        # if: github.repository == 'nilearn/nilearn'
+        if: github.repository == 'nilearn/nilearn'
         runs-on: ubuntu-latest
-        timeout-minutes: 360
         defaults:
             run:
                 shell: bash -el {0}
@@ -170,7 +169,6 @@ jobs:
         # This prevents this workflow from running on a fork.
         # To test this workflow on a fork, uncomment the following line.
         runs-on: ubuntu-latest
-        timeout-minutes: 360
         defaults:
             run:
                 shell: bash -el {0}
@@ -255,3 +253,19 @@ jobs:
             with:
                 name: doc
                 path: doc/_build/html
+
+    trigger_circle_ci_hosting:
+        needs: [build_docs]
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+                shell: bash -el {0}
+        steps:
+        -   name: Checkout nilearn
+            uses: actions/checkout@v4
+
+        -   name: Trigger
+            id: trigger-circle-ci
+            uses: CircleCI-Public/trigger-circleci-pipeline-action@v1.0.5
+            env:
+                CCI_TOKEN: ${{ secrets.CIRCLE_CI_TOKEN }}
