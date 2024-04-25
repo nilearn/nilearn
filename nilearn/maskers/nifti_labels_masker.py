@@ -504,8 +504,10 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         _utils.logger.log(msg=msg, verbose=self.verbose)
         self.labels_img_ = _utils.check_niimg_3d(self.labels_img)
 
-        # create region_id_name_ dictionary
-        self.region_id_name_ = None
+        # create _region_id_name dictionary
+        # this dictionary will be used to store region names and 
+        # the corresponding region ids as keys
+        self._region_id_name = None
         if self.labels is not None:
             known_backgrounds = {"background", "Background"}
             initial_region_ids = [
@@ -529,9 +531,9 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 )
             # if number of regions in the labels image is more
             # than the number of labels provided, then we cannot
-            # create region_id_name_ dictionary
+            # create _region_id_name dictionary
             if len(initial_region_ids) <= len(initial_region_names):
-                self.region_id_name_ = {
+                self._region_id_name = {
                     region_id: initial_region_names[i]
                     for i, region_id in enumerate(initial_region_ids)
                 }
@@ -794,10 +796,10 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             self.labels_, tolerant=True, resampling_done=True
         )
 
-        if self.region_id_name_ is not None:
+        if self._region_id_name is not None:
 
             self.region_names_ = {
-                key: self.region_id_name_[region_id]
+                key: self._region_id_name[region_id]
                 for key, region_id in region_ids.items()
                 if region_id != self.background_label
             }
