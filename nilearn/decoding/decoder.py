@@ -1658,4 +1658,7 @@ class FREMClassifier(_BaseDecoder):
             memory_level=memory_level,
             verbose=verbose,
             n_jobs=n_jobs,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            t_r=t_r,
         )
