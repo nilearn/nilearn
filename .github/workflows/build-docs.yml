@@ -257,6 +257,7 @@ jobs:
                 name: doc
                 path: doc/_build/html
 
+        # Trigger hosting / deploy of the doc on nilearn.github.io via circcle-ci
         -   name: Trigger hosting jobs on circle ci
             if: steps.build-docs.outcome == 'success'
             run: |
