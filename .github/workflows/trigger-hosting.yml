@@ -5,8 +5,7 @@ on:
     workflow_run:
     # Run the workflow after the separate "DocumentationBuilder" workflow completes
         workflows: [DocumentationBuilder]
-        types:
-        -   completed
+        types: [completed, in_progress]
 
 jobs:
     push:
@@ -16,6 +15,9 @@ jobs:
     # To test this workflow on a fork remove the `github.repository == nilearn/nilearn` condition
         # if: github.repository == 'nilearn/nilearn' && github.event.workflow_run.conclusion == 'success'
         steps:
+        -   name: Display
+            run: echo "triggering hosting of doc on Circle-CI"
+
         -   name: Checkout nilearn
             uses: actions/checkout@v4
 

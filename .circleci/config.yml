@@ -88,7 +88,6 @@ jobs:
                     fi
 
 workflows:
-    version: 2
 
     host_and_deploy_doc:
         when:
