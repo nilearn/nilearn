@@ -14,18 +14,6 @@ parameters:
     STATUS:
         type: string
         default: failure
-    GHA_Actor:
-        type: string
-        default: ''
-    GHA_Action:
-        type: string
-        default: ''
-    GHA_Event:
-        type: string
-        default: ''
-    GHA_Meta:
-        type: string
-        default: ''
 
 jobs:
     host_docs:
@@ -102,10 +90,10 @@ jobs:
 workflows:
 
     host_and_deploy_doc:
-        # This workflow is set to be conditionally triggered, only when
-        # the GitHub Action is triggered.
-        # With no other workflows, normal push events will be ignored currently.
-        when: << pipeline.parameters.GHA_Action >>
+        when:
+            not:
+                equal: [none, << pipeline.parameters.GITHUB_RUN_URL >>]
+    # The jobs should run only when triggered by the workflow
         jobs:
         -   host_docs
         -   deploy:

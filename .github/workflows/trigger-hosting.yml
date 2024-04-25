@@ -24,6 +24,11 @@ jobs:
         -   name: Checkout nilearn
             uses: actions/checkout@v4
 
+        -   name: Dump GitHub context
+            env:
+                GITHUB_CONTEXT: ${{ toJson(github) }}
+            run: echo "$GITHUB_CONTEXT"
+
         -   name: Trigger hosting jobs
             run: |
                 GITHUB_RUN_URL="https://nightly.link/nilearn/nilearn/actions/runs/8831115092"
