@@ -26,13 +26,18 @@ Runs black code formatter on the codebase both in pull requests and on main. Con
 
 This workflow configuration is based on what is done in [scikit-learn](https://github.com/scikit-learn/scikit-learn).
 
-On Pull Requests, Actions run "partial builds" by default which render all the rst files, but only build examples modified in the Pull Request. This saves a lot of time and resources when working on Pull Requests.
+On Pull Requests, Actions run "partial builds" by default which render all the rst files,
+but only build examples modified in the Pull Request.
+This saves a lot of time and resources when working on Pull Requests.
 
-Occasionally, some changes necessitate rebuilding the documentation from scratch, for example to see the full effect of the changes. These are called "full builds".
+Occasionally, some changes necessitate rebuilding the documentation from scratch,
+for example to see the full effect of the changes.
+These are called "full builds".
 
 Note that **Actions will always run full builds on main.**
 
-You can request a full build from a Pull Request at any time by including the tag "[full doc]" in your commit message. Note that this will trigger a full build of the documentation which usually takes around 90 minutes.
+You can request a full build from a Pull Request at any time by including the tag "[full doc]" in your commit message.
+Note that this will trigger a full build of the documentation which usually takes around 90 minutes.
 
 ```bash
 $ git commit -m "[full doc] request full build"
@@ -51,9 +56,12 @@ Note: setuptools needs to be installed to run the doc build with python 3.12.
 
 #### Dataset caching
 
-We also implemented a dataset caching strategy within this Actions workflow such that datasets are only downloaded once every week. Once these datasets are cached, they will be used by all jobs running on Actions without requiring any download. This saves a lot of time and avoids potential network errors that can happen when downloading datasets from remote servers.
+We also implemented a dataset caching strategy within this Actions workflow such that datasets are only downloaded once every month.
+Once these datasets are cached, they will be used by all jobs running on Actions without requiring any download.
+This saves a lot of time and avoids potential network errors that can happen when downloading datasets from remote servers.
 
-Note that you can request to download all datasets and ignore the cache at any time by including the tag "[force download]" in your commit message.
+Note that you can request to download all datasets and ignore the cache at any time
+by including the tag "[force download]" in your commit message.
 
 To run a full build and download all datasets, you would then combine both tags:
 
@@ -86,7 +94,9 @@ With a merge on main, both "host" and "deploy" jobs are run.
 
 ### check_gha_workflow.yml
 
-Pings github API to collect information about how long each run of the test suite lasted.
+Pings github API to collect information about:
+- how long each run of the test suite lasted,
+- how long the build of the doc lasted.
 Plots the results and saves it as an artefact to download and manually inspect
 to see if there is a trend in tests taking longer.
 
@@ -129,7 +139,7 @@ Sorts Python imports alphabetically and by section. Configured in [pyproject.tom
 
 Should be triggered automatically after merging and tagging a release PR to
 build the stable docs with a GitHub runner and push to nilearn.github.io.
-Can Also be triggered manually.
+Can also be triggered manually.
 
 ## Running unit tests
 
@@ -137,6 +147,15 @@ Can Also be triggered manually.
 
 Runs pytest in several environments including several Python and dependencies versions as well as on different systems.
 All environments are defined in [tox.ini](../../tox.ini).
+
+### nightly_dependencies.yml
+
+Run test suite using the nightly release of Nilearn dependencies.
+Runs on `main` (by a push or on manual trigger from the `Action` tab)
+or from a PR if commit message includes `[test nightly]`.
+
+When running on `main`, if the workflow fails the action will open an issue
+using this issue [template](../nightly_failure.md).
 
 ## Test installation
 

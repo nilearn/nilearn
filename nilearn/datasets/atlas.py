@@ -135,7 +135,7 @@ def fetch_atlas_difumo(
     )
 
     # Download the zip file, first
-    files_ = fetch_files(data_dir, files, verbose=verbose)
+    files_ = fetch_files(data_dir, files, verbose=verbose, resume=resume)
     labels = pd.read_csv(files_[0])
     labels = labels.rename(columns={c: c.lower() for c in labels.columns})
     if legacy_format:
@@ -147,7 +147,7 @@ def fetch_atlas_difumo(
         ("README.md", "https://osf.io/4k9bf/download", {"move": "README.md"})
     ]
     if not os.path.exists(os.path.join(data_dir, "README.md")):
-        fetch_files(data_dir, readme_files, verbose=verbose)
+        fetch_files(data_dir, readme_files, verbose=verbose, resume=resume)
 
     fdescr = get_dataset_descr(dataset_name)
 
@@ -729,9 +729,8 @@ def _get_atlas_data_and_labels(
     from xml.etree import ElementTree
 
     names[0] = "Background"
-    for n, label in enumerate(
-        ElementTree.parse(label_file).findall(".//label")
-    ):
+    all_labels = ElementTree.parse(label_file).findall(".//label")
+    for label in all_labels:
         new_idx = int(label.get("index")) + 1
         if new_idx in names:
             raise ValueError(
@@ -747,7 +746,7 @@ def _get_atlas_data_and_labels(
         names[new_idx] = label.text.strip()
 
     # The label indices should range from 0 to nlabel + 1
-    assert list(names.keys()) == list(range(n + 2))
+    assert list(names.keys()) == [x for x in range(len(all_labels) + 1)]
     names = [item[1] for item in sorted(names.items())]
     return atlas_img, atlas_file, names, is_lateralized
 

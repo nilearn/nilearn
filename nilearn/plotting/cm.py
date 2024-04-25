@@ -85,11 +85,11 @@ def _pigtailed_cmap(cmap, swap_order=("green", "red", "blue")):
 
 def _concat_cmap(cmap1, cmap2):
     """Make a new colormap by concatenating two colormaps."""
-    cdict = dict()
+    cdict = {}
 
     cdict1 = cmap1._segmentdata.copy()
     cdict2 = cmap2._segmentdata.copy()
-    if not hasattr(cdict1["red"], "__call__"):
+    if not callable(cdict1["red"]):
         for c in ["red", "green", "blue"]:
             cdict[c] = [(0.5 * p, c1, c2) for (p, c1, c2) in cdict1[c]]
     else:
@@ -97,11 +97,11 @@ def _concat_cmap(cmap1, cmap2):
             cdict[c] = []
         ps = _np.linspace(0, 1, 10)
         colors = cmap1(ps)
-        for p, (r, g, b, a) in zip(ps, colors):
+        for p, (r, g, b, _) in zip(ps, colors):
             cdict["red"].append((0.5 * p, r, r))
             cdict["green"].append((0.5 * p, g, g))
             cdict["blue"].append((0.5 * p, b, b))
-    if not hasattr(cdict2["red"], "__call__"):
+    if not callable(cdict2["red"]):
         for c in ["red", "green", "blue"]:
             cdict[c].extend(
                 [(0.5 * (1 + p), c1, c2) for (p, c1, c2) in cdict2[c]]
@@ -109,7 +109,7 @@ def _concat_cmap(cmap1, cmap2):
     else:
         ps = _np.linspace(0, 1, 10)
         colors = cmap2(ps)
-        for p, (r, g, b, a) in zip(ps, colors):
+        for p, (r, g, b, _) in zip(ps, colors):
             cdict["red"].append((0.5 * (1 + p), r, r))
             cdict["green"].append((0.5 * (1 + p), g, g))
             cdict["blue"].append((0.5 * (1 + p), b, b))
@@ -324,7 +324,7 @@ def dim_cmap(cmap, factor=0.3, to_white=True):
             return factor * c
 
     cdict = cmap._segmentdata.copy()
-    for c_index, color in enumerate(("red", "green", "blue")):
+    for _, color in enumerate(("red", "green", "blue")):
         color_lst = list()
         for value, c1, c2 in cdict[color]:
             color_lst.append((value, dimmer(c1), dimmer(c2)))
@@ -347,18 +347,18 @@ def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
     outer_cdict = outer_cmap._segmentdata.copy()
     inner_cdict = inner_cmap._segmentdata.copy()
 
-    cdict = dict()
+    cdict = {}
     for this_cdict, cmap in [
         (outer_cdict, outer_cmap),
         (inner_cdict, inner_cmap),
     ]:
-        if hasattr(this_cdict["red"], "__call__"):
+        if callable(this_cdict["red"]):
             ps = _np.linspace(0, 1, 25)
             colors = cmap(ps)
-            this_cdict["red"] = list()
-            this_cdict["green"] = list()
-            this_cdict["blue"] = list()
-            for p, (r, g, b, a) in zip(ps, colors):
+            this_cdict["red"] = []
+            this_cdict["green"] = []
+            this_cdict["blue"] = []
+            for p, (r, g, b, _) in zip(ps, colors):
                 this_cdict["red"].append((p, r, r))
                 this_cdict["green"].append((p, g, g))
                 this_cdict["blue"].append((p, b, b))

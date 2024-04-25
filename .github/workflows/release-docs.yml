@@ -1,5 +1,5 @@
 ---
-name: Build release docs
+name: BuildReleaseDocs
 
 on:
     # Allows you to run this workflow manually from the Actions tab
@@ -9,15 +9,63 @@ on:
     release:
         types: [published]
 
+env:
+    BROWSER: /usr/bin/firefox
+    DISPLAY: :99.0
+    NILEARN_DATA: /home/runner/work/nilearn/nilearn/nilearn_data
+
 jobs:
-    release-docs:
+
+    # this job gets the data required for the build and passes via cache to the build_doc job
+    get_data:
+        # This prevents this workflow from running on a fork.
+        # To test this workflow on a fork, uncomment the following line.
         if: github.repository == 'nilearn/nilearn'
         runs-on: ubuntu-latest
         timeout-minutes: 360
-        env:
-            BROWSER: /usr/bin/firefox
-            DISPLAY: :99.0
-            NILEARN_DATA: /home/runner/work/nilearn/nilearn/nilearn_data
+        defaults:
+            run:
+                shell: bash -el {0}
+
+        steps:
+        -   name: Checkout nilearn
+            uses: actions/checkout@v4
+
+        # Set up environment
+        -   name: Setup python
+            uses: actions/setup-python@v5
+            with:
+                python-version: '3.12'
+        -   name: Install packages
+            run: |
+                python -m pip install --user --upgrade pip setuptools
+                python -m pip install .
+
+        -   name: Get cache from a previous attempts of this run number
+            uses: actions/cache@v4
+            with:
+                path: nilearn_data
+                key: data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}_attempt-${{ github.run_attempt }}
+                restore-keys: |
+                    data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}
+
+        -   name: Get data
+            run: |
+                echo "Download data required for building doc"
+                python doc/get_data_examples.py full
+
+        -   name: Save cache to pass to build_docs job
+            uses: actions/cache/save@v4
+            if: always()
+            with:
+                path: /home/runner/work/nilearn/nilearn/nilearn_data
+                key: data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}_attempt-${{ github.run_attempt }}
+
+    release-docs:
+        if: github.repository == 'nilearn/nilearn'
+        needs: [get_data]
+        runs-on: ubuntu-latest
+        timeout-minutes: 360
         defaults:
             run:
                 shell: bash -el {0}
@@ -60,6 +108,14 @@ jobs:
         # but did not run the maint_tools/citation_cff_maint.py script.
         -   name: update AUTHORS.rst and doc/changes/names.rst
             run: python maint_tools/citation_cff_maint.py
+
+        -   name: Get data from the get_data job
+            uses: actions/cache@v4
+            with:
+                path: /home/runner/work/nilearn/nilearn/nilearn_data
+                key: data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}_attempt-${{ github.run_attempt }}
+                restore-keys: |
+                    data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}
 
         # Set up and launch a virtual browser needed for one example to run
         # without stalling the job. The example launches an html in the browser.

@@ -285,11 +285,13 @@ class Parcellations(_MultiPCA):
         mask_args=None,
         scaling=False,
         n_iter=10,
-        memory=Memory(location=None),
+        memory=None,
         memory_level=0,
         n_jobs=1,
         verbose=1,
     ):
+        if memory is None:
+            memory = Memory(location=None)
         self.method = method
         self.n_parcels = n_parcels
         self.scaling = scaling

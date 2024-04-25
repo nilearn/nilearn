@@ -22,7 +22,7 @@ def _filter_and_extract(
     extraction_function,
     parameters,
     memory_level=0,
-    memory=Memory(location=None),
+    memory=None,
     verbose=0,
     confounds=None,
     sample_mask=None,
@@ -53,6 +53,8 @@ def _filter_and_extract(
         friendly 2D array with shape n_samples x n_features.
 
     """
+    if memory is None:
+        memory = Memory(location=None)
     # Since the calling class can be any *Nifti*Masker, we look for exact type
     if verbose > 0:
         class_name = enclosing_scope_name(stack_level=10)

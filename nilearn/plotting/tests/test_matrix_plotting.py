@@ -264,7 +264,7 @@ def test_show_contrast_matrix(tmp_path):
     assert (tmp_path / "contrast.pdf").exists()
 
 
-def test_pad_contrast_matrix(tmp_path):
+def test_pad_contrast_matrix():
     """Test for contrasts padding before plotting.
 
     See https://github.com/nilearn/nilearn/issues/4211

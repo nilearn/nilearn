@@ -1,7 +1,6 @@
 """Generate HTML reports."""
 
 import copy
-import os
 import warnings
 from pathlib import Path
 from string import Template
@@ -129,18 +128,23 @@ def _update_template(
         An instance of a populated HTML report.
 
     """
-    resource_path = Path(__file__).resolve().parent.joinpath("data", "html")
+    resource_path = Path(__file__).resolve().parent / "data"
 
     if template_name is None:
         body_template_name = "report_body_template.html"
     else:
         body_template_name = template_name
-    body_template_path = resource_path.joinpath(body_template_name)
-    if not os.path.exists(str(body_template_path)):
+    body_template_path = resource_path / "html" / body_template_name
+    if not body_template_path.exists():
         raise FileNotFoundError(f"No template {body_template_name}")
     tpl = tempita.HTMLTemplate.from_filename(
         str(body_template_path), encoding="utf-8"
     )
+
+    css_file_path = resource_path / "css" / "masker_report.css"
+    with open(css_file_path, encoding="utf-8") as css_file:
+        css = css_file.read()
+
     body = tpl.substitute(
         title=title,
         content=content,
@@ -148,14 +152,24 @@ def _update_template(
         docstring=docstring,
         parameters=parameters,
         **data,
+        css=css,
     )
 
+    # revert HTML safe substitutions in CSS sections
+    body = body.replace(".pure-g &gt; div", ".pure-g > div")
+
     head_template_name = "report_head_template.html"
-    head_template_path = resource_path.joinpath(head_template_name)
+    head_template_path = resource_path / "html" / head_template_name
     with open(str(head_template_path)) as head_file:
         head_tpl = Template(head_file.read())
 
-    return HTMLReport(body=body, head_tpl=head_tpl)
+    head_css_file_path = resource_path / "css" / "head.css"
+    with open(head_css_file_path, encoding="utf-8") as head_css_file:
+        head_css = head_css_file.read()
+
+    return HTMLReport(
+        body=body, head_tpl=head_tpl, head_values={"head_css": head_css}
+    )
 
 
 def _define_overlay(estimator):
@@ -266,7 +280,7 @@ class HTMLReport(HTMLDocument):
 
     """
 
-    def __init__(self, head_tpl, body, head_values={}):
+    def __init__(self, head_tpl, body, head_values=None):
         """Construct the ``HTMLReport`` class.
 
         Parameters
@@ -285,14 +299,17 @@ class HTMLReport(HTMLDocument):
             ``head_tpl`` template. It contains the full body of the
             HTML page.
 
-        head_values : :obj:`dict`, default={}
+        head_values : :obj:`dict`, default=None
             Additional substitutions in ``head_tpl``.
+            if ``None`` is passed, defaults to ``{}``
 
             .. note::
                 This can be used to provide additional values
                 with custom templates.
 
         """
+        if head_values is None:
+            head_values = {}
         html = head_tpl.safe_substitute(body=body, **head_values)
         super().__init__(html)
         self.head_tpl = head_tpl
