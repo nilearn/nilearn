@@ -387,8 +387,6 @@ def test_crop_img():
 
     cropped_img = crop_img(img)
 
-    print(img.get_fdata())
-
     # correction for padding with "-1"
     # check that correct part was extracted:
     # This also corrects for padding
