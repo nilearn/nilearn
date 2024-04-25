@@ -234,10 +234,13 @@ jobs:
         -   name: Set up display server for virtual browser
             run: Xvfb -ac :99 -screen 0 1280x1024x16 > /dev/null 2>&1 &
 
-        # Run the doc build. If no data is restored in previous steps, the data
-        # will be downloaded during the build (this only applies for full builds;
+        # Run the doc build.
+        # If no data is restored in previous steps,
+        # the data will be downloaded during the build
+        # (this only applies for full builds;
         # no data is downloaded for partial builds).
         -   name: Build docs
+            id: build-docs
             run: |
                 cd doc;
                 set -o pipefail;
@@ -248,24 +251,20 @@ jobs:
                 ./build_tools/github/fill_doc_check.sh
                 cat doc/tmp/doc_check.txt
         -   name: Upload documentation
-            if: always()
+            if: steps.build-docs.outcome == 'success'
             uses: actions/upload-artifact@v4
             with:
                 name: doc
                 path: doc/_build/html
 
-    trigger_circle_ci_hosting:
-        needs: [build_docs]
-        runs-on: ubuntu-latest
-        defaults:
-            run:
-                shell: bash -el {0}
-        steps:
-        -   name: Checkout nilearn
-            uses: actions/checkout@v4
-
-        -   name: Trigger
-            id: trigger-circle-ci
-            uses: CircleCI-Public/trigger-circleci-pipeline-action@v1.0.5
-            env:
-                CCI_TOKEN: ${{ secrets.CIRCLE_CI_TOKEN }}
+        -   name: Trigger hosting jobs on circle ci
+            if: steps.build-docs.outcome == 'success'
+            run: |
+                GITHUB_RUN_URL="https://nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                curl --request POST \
+                --url https://circleci.com/api/v2/project/gh/${{ github.repository }}/pipeline \
+                --header "Circle-Token: ${{ secrets.CIRCLE_CI_TOKEN }}" \
+                --header "content-type: application/json" \
+                --header "x-attribution-actor-id: github_actions" \
+                --header "x-attribution-login: github_actions" \
+                --data \{\"branch\":\"main\",\"parameters\":\{\"GITHUB_RUN_URL\":\"$GITHUB_RUN_URL\"\}\}

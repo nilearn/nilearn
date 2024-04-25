@@ -29,12 +29,13 @@ jobs:
                 GITHUB_CONTEXT: ${{ toJson(github) }}
             run: echo "$GITHUB_CONTEXT"
 
+
         -   name: Trigger hosting jobs
             run: |
-                GITHUB_RUN_URL="https://nightly.link/nilearn/nilearn/actions/runs/8831115092"
+                GITHUB_RUN_URL="https://nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}"
                 STATUS="success"
                 curl --request POST \
-                --url https://circleci.com/api/v2/project/gh/nilearn/nilearn/pipeline \
+                --url https://circleci.com/api/v2/project/gh/${{ github.repository }}/pipeline \
                 --header "Circle-Token: ${{ secrets.CIRCLE_CI_TOKEN }}" \
                 --header "content-type: application/json" \
                 --header "x-attribution-actor-id: github_actions" \
