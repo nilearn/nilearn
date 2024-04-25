@@ -44,7 +44,6 @@ jobs:
     validate_cff:
         # This prevents this workflow from running on a fork.
         # To test this workflow on a fork, uncomment the following line.
-        if: github.repository == 'nilearn/nilearn'
         runs-on: ubuntu-latest
         steps:
         -   name: Checkout nilearn
@@ -57,7 +56,7 @@ jobs:
     get_data:
         # This prevents this workflow from running on a fork.
         # To test this workflow on a fork, uncomment the following line.
-        if: github.repository == 'nilearn/nilearn'
+        # if: github.repository == 'nilearn/nilearn'
         runs-on: ubuntu-latest
         timeout-minutes: 360
         defaults:
@@ -170,7 +169,6 @@ jobs:
         needs: [get_data, validate_cff]
         # This prevents this workflow from running on a fork.
         # To test this workflow on a fork, uncomment the following line.
-        if: github.repository == 'nilearn/nilearn'
         runs-on: ubuntu-latest
         timeout-minutes: 360
         defaults:
