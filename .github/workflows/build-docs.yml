@@ -258,7 +258,7 @@ jobs:
                 path: doc/_build/html
 
         # Trigger hosting / deploy of the doc on nilearn.github.io via circcle-ci
-        # We get the url for circle-ci
+        # We get the url for the artifacts for circle-ci from https://nightly.link/
         -   name: Trigger hosting jobs on circle ci
             if: steps.build-docs.outcome == 'success'
             run: |
@@ -269,4 +269,4 @@ jobs:
                 --header "content-type: application/json" \
                 --header "x-attribution-actor-id: github_actions" \
                 --header "x-attribution-login: github_actions" \
-                --data \{\"parameters\":\{\"GITHUB_RUN_URL\":\"$GITHUB_RUN_URL\"\}\}
+                --data \{\"branch\":\"${{ github.head_ref }}\",\"parameters\":\{\"GITHUB_RUN_URL\":\"$GITHUB_RUN_URL\"\}\}
