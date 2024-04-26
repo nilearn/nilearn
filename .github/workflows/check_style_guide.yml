@@ -1,5 +1,5 @@
 ---
-name: flake8
+name: check style guide compliance
 
 on:
     push:
@@ -14,13 +14,9 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    flake8:
-        name: run flake8
+    style_check:
+        name: run pre-commit on all files
         runs-on: ubuntu-latest
-
-        defaults:
-            run:
-                shell: bash
 
         steps:
         -   name: Checkout nilearn
@@ -35,5 +31,5 @@ jobs:
         -   name: Install tox
             run: python -m pip install --upgrade tox
 
-        -   name: Run Flake8
-            run: tox run -e flake8
+        -   name: Run pre-commit
+            run: tox
