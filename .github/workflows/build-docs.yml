@@ -257,7 +257,7 @@ jobs:
                 name: doc
                 path: doc/_build/html
 
-        # Trigger hosting / deploy of the doc on nilearn.github.io via circcle-ci
+        # Trigger hosting / deploy of the doc on nilearn.github.io via circle-ci
         # We get the url for the artifacts for circle-ci from https://nightly.link/
         -   name: Trigger hosting jobs on circle ci
             if: steps.build-docs.outcome == 'success'
