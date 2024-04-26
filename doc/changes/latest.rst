@@ -11,6 +11,8 @@ NEW
 Fixes
 -----
 
+- :bdg-dark:`Code` Add a new attribute ``_region_id_name`` to :class:`nilearn.maskers.NiftiLabelsMasker` which is used to fix the issue with creating ``region_names_`` attribute (:gh:`4360` by `Mohammad Torabi`_).
+
 Enhancements
 ------------
 
