@@ -29,11 +29,11 @@ jobs:
         -   name: Setup python
             uses: actions/setup-python@v5
             with:
-                python-version: '3.12'
+                python-version: '3.11'
                 allow-prereleases: false
 
         -   name: Install tox
             run: python -m pip install --upgrade tox
 
-        -   name: Run pre-commit
+        -   name: Run pre-commit via tox
             run: tox

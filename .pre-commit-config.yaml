@@ -53,7 +53,7 @@ repos:
 # Aplly black formatting to python code
 # https://github.com/psf/black
 -   repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 24.4.0
+    rev: 24.4.2
     hooks:
     -   id: black
         args: [--config, pyproject.toml]
