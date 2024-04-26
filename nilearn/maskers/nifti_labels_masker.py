@@ -285,7 +285,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             if not all(isinstance(x, str) for x in labels):
                 warnings.warn(
                     "All elements of 'labels' must be a string.\n"
-                    f"Got a list of {set([type(x) for x in labels])}",
+                    f"Got a list of {set(type(x) for x in labels)}",
                     stacklevel=3,
                 )
             labels = [
