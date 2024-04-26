@@ -1,5 +1,14 @@
 # GitHub Actions Specification
 
+## Skip CI
+
+You can decide to skip CI at any time by including the tag "[skip ci]" in your commit message.
+For more information, see: https://docs.github.com/en/actions/managing-workflow-runs/skipping-workflow-runs
+
+```bash
+$ git commit -m "[skip ci] commit message"
+```
+
 ## Automatically assign issue
 
 ### assign.yml
@@ -48,6 +57,9 @@ However for quick checks to do yourself you should always opt for local builds f
 
 Note: setuptools needs to be installed to run the doc build with python 3.12.
 
+Upon a successful build of the doc, it is zipped and uploaded as an artifact.
+A circle-ci workflow is then triggered. See below.
+
 #### Dataset caching
 
 We also implemented a dataset caching strategy within this Actions workflow such that datasets are only downloaded once every month.
@@ -63,20 +75,6 @@ To run a full build and download all datasets, you would then combine both tags:
 $ git commit -m "[full doc][force download] request full build"
 ```
 
-#### Skip CI
-
-You can decide to skip documentation building and tests execution at any time by including the tag "[skip ci]" in your commit message.
-For more information, see: https://docs.github.com/en/actions/managing-workflow-runs/skipping-workflow-runs
-
-```bash
-$ git commit -m "[skip ci] commit message"
-```
-
-### trigger-hosting.yml
-
-Runs only if the workflow in `build-docs.yml` completes successfully.
-Triggers the CircleCI job described below.
-
 ## Building the stable release documentation
 
 ### release-docs.yml
@@ -89,17 +87,23 @@ Can also be triggered manually.
 
 ### [.circleci/config.yml](/.circleci/config.yml)
 
-Artifacts hosting and deployment of development docs use CircleCI. See [.circleci/README.md](../../.circleci/README.md) for details.
-On a pull request, only the "host" job is run. Then the artifacts can be accessed from the `host_and_deploy_doc` workflow seen under the checks list. Click on "Details" and then on the "host_docs" link on the page that opens. From there you can click on the artifacts tab to see all the html files. If you click on any of them you can then normally navigate the pages from there.
+Artifacts hosting and deployment of development docs use CircleCI.
+See [.circleci/README.md](../../.circleci/README.md) for details.
+On a pull request, only the "host" job is run.
+Then the artifacts can be accessed from the `host_and_deploy_doc` workflow seen under the checks list.
+Click on "Details" and then on the "host_docs" link on the page that opens.
+From there you can click on the artifacts tab to see all the html files.
+If you click on any of them you can then normally navigate the pages from there.
 With a merge on main, both "host" and "deploy" jobs are run.
 
-## Check run time of test suite
+## Check run time of CI
 
 ### check_gha_workflow.yml
 
 Pings github API to collect information about:
 - how long each run of the test suite lasted,
 - how long the build of the doc lasted.
+
 Plots the results and saves it as an artefact to download and manually inspect
 to see if there is a trend in tests taking longer.
 
