@@ -32,14 +32,14 @@ repos:
     -   id: isort
         args: [--profile, black, --settings-path, pyproject.toml]
 
-# automatically upgrade syntax for newer versions of the language.
+# Automatically upgrade syntax for newer versions of the language.
 -   repo: https://github.com/asottile/pyupgrade
     rev: v3.15.2
     hooks:
     -   id: pyupgrade
         args: [--py38-plus]
 
-#  checks for .rst files
+# Checks for .rst files
 -   repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
     hooks:
@@ -82,7 +82,7 @@ repos:
                 | nilearn/surface/tests/test_surface.py
             )$
 
-# Aplly black formatting to doc strings
+# Apply black formatting to doc strings
 -   repo: https://github.com/adamchainz/blacken-docs
     rev: 1.16.0
     hooks:
