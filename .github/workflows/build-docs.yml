@@ -44,7 +44,6 @@ jobs:
     validate_cff:
         # This prevents this workflow from running on a fork.
         # To test this workflow on a fork, uncomment the following line.
-        if: github.repository == 'nilearn/nilearn'
         runs-on: ubuntu-latest
         steps:
         -   name: Checkout nilearn
@@ -59,7 +58,6 @@ jobs:
         # To test this workflow on a fork, uncomment the following line.
         if: github.repository == 'nilearn/nilearn'
         runs-on: ubuntu-latest
-        timeout-minutes: 360
         defaults:
             run:
                 shell: bash -el {0}
@@ -170,9 +168,7 @@ jobs:
         needs: [get_data, validate_cff]
         # This prevents this workflow from running on a fork.
         # To test this workflow on a fork, uncomment the following line.
-        if: github.repository == 'nilearn/nilearn'
         runs-on: ubuntu-latest
-        timeout-minutes: 360
         defaults:
             run:
                 shell: bash -el {0}
@@ -238,10 +234,13 @@ jobs:
         -   name: Set up display server for virtual browser
             run: Xvfb -ac :99 -screen 0 1280x1024x16 > /dev/null 2>&1 &
 
-        # Run the doc build. If no data is restored in previous steps, the data
-        # will be downloaded during the build (this only applies for full builds;
+        # Run the doc build.
+        # If no data is restored in previous steps,
+        # the data will be downloaded during the build
+        # (this only applies for full builds;
         # no data is downloaded for partial builds).
         -   name: Build docs
+            id: build-docs
             run: |
                 cd doc;
                 set -o pipefail;
@@ -252,8 +251,22 @@ jobs:
                 ./build_tools/github/fill_doc_check.sh
                 cat doc/tmp/doc_check.txt
         -   name: Upload documentation
-            if: always()
+            if: steps.build-docs.outcome == 'success'
             uses: actions/upload-artifact@v4
             with:
                 name: doc
                 path: doc/_build/html
+
+        # Trigger hosting / deploy of the doc on nilearn.github.io via circle-ci
+        # We get the url for the artifacts for circle-ci from https://nightly.link/
+        -   name: Trigger hosting jobs on circle ci
+            if: steps.build-docs.outcome == 'success'
+            run: |
+                GITHUB_RUN_URL="https://nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                curl --request POST \
+                --url https://circleci.com/api/v2/project/gh/${{ github.repository }}/pipeline \
+                --header "Circle-Token: ${{ secrets.CIRCLE_CI_TOKEN }}" \
+                --header "content-type: application/json" \
+                --header "x-attribution-actor-id: github_actions" \
+                --header "x-attribution-login: github_actions" \
+                --data \{\"branch\":\"${{ github.head_ref }}\",\"parameters\":\{\"GITHUB_RUN_URL\":\"$GITHUB_RUN_URL\"\}\}
