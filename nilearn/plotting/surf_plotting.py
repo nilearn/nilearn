@@ -241,7 +241,6 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
                       symmetric_cmap=True, colorbar=False,
                       threshold=None, bg_on_data=False,
                       darkness=.7, vmin=None, vmax=None,
-                      cbar_vmin=None, cbar_vmax=None,
                       cbar_tick_format=".1f", title=None,
                       title_font_size=18, output_file=None):
     """Help for plot_surf.
@@ -829,10 +828,10 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         for parameter, value in parameters_not_implemented_in_plotly.items():
             if value is not None:
                 warn(
-                    (f"'{parameter}' is not implemented "
-                     "for the plotly engine.\n"
-                     f"Got '{parameter} = {value}'.\n"
-                     f"Use '{parameter} = None' to silence this warning."))
+                    f"'{parameter}' is not implemented "
+                    "for the plotly engine.\n"
+                    f"Got '{parameter} = {value}'.\n"
+                    f"Use '{parameter} = None' to silence this warning.")
 
     coords, faces = load_surf_mesh(surf_mesh)
 
@@ -862,7 +861,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             hemi=hemi, cmap=cmap, symmetric_cmap=symmetric_cmap,
             colorbar=colorbar, threshold=threshold,
             bg_on_data=bg_on_data, darkness=darkness,
-            vmin=vmin, vmax=vmax, cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
+            vmin=vmin, vmax=vmax,
             cbar_tick_format=cbar_tick_format, title=title,
             title_font_size=title_font_size, output_file=output_file)
 
@@ -1364,8 +1363,8 @@ def _colorbar_from_array(array, vmin, vmax, threshold, symmetric_cbar=True,
 
 @fill_doc
 def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
-                     hemispheres=['left', 'right'], bg_on_data=False,
-                     inflate=False, views=['lateral', 'medial'],
+                     hemispheres=None, bg_on_data=False,
+                     inflate=False, views=None,
                      output_file=None, title=None, colorbar=True,
                      vmin=None, vmax=None, threshold=None,
                      symmetric_cbar='auto', cmap='cold_hot',
@@ -1401,18 +1400,20 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
 
     %(bg_on_data)s
 
-    hemispheres : :obj:`list` of :obj:`str`, default=["left", "right"]
+    hemispheres : :obj:`list` of :obj:`str`, default=None
         Hemispheres to display.
+        Will default to ``['left', 'right']`` if ``None`` is passed.
 
     inflate : bool, default=False
         If True, display images in inflated brain.
         If False, display images in pial surface.
 
-    views : list of strings, default=['lateral', 'medial']
+    views : list of strings, default=None
         A list containing all views to display.
         The montage will contain as many rows as views specified by
         display mode. Order is preserved, and left and right hemispheres
         are shown on the left and right sides of the figure.
+        Will default to ``['lateral', 'medial']`` if ``None`` is passed.
     %(output_file)s
     %(title)s
     %(colorbar)s
@@ -1442,6 +1443,10 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         accepted by plot_img_on_surf.
 
     """
+    if hemispheres is None:
+        hemispheres = ['left', 'right']
+    if views is None:
+        views = ['lateral', 'medial']
     for arg in ("figure", "axes", "engine"):
         if arg in kwargs:
             raise ValueError(

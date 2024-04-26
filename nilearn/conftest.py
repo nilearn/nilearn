@@ -215,11 +215,13 @@ def _img_ones(shape, affine):
 # ------------------------ 3D IMAGES ------------------------#
 
 
-def _img_3d_rand(affine=_affine_eye()):
+def _img_3d_rand(affine=None):
     """Return random 3D Nifti1Image in MNI space.
 
     Mostly used for set up in other fixtures in other testing modules.
     """
+    if affine is None:
+        affine = _affine_eye()
     data = _rng().random(_shape_3d_default())
     return Nifti1Image(data, affine)
 
@@ -230,7 +232,9 @@ def img_3d_rand_eye():
     return _img_3d_rand()
 
 
-def _img_3d_mni(affine=_affine_mni()):
+def _img_3d_mni(affine=None):
+    if affine is None:
+        affine = _affine_mni()
     data_positive = np.zeros((7, 7, 3))
     rng = _rng()
     data_rng = rng.random((7, 7, 3))
@@ -252,11 +256,15 @@ def img_3d_mni_as_file(tmp_path):
     return filename
 
 
-def _img_3d_zeros(shape=_shape_3d_default(), affine=_affine_eye()):
+def _img_3d_zeros(shape=None, affine=None):
     """Return a default zeros filled 3D Nifti1Image (identity affine).
 
     Mostly used for set up in other fixtures in other testing modules.
     """
+    if shape is None:
+        shape = _shape_3d_default()
+    if affine is None:
+        affine = _affine_eye()
     return _img_zeros(shape, affine)
 
 
@@ -266,11 +274,15 @@ def img_3d_zeros_eye():
     return _img_3d_zeros()
 
 
-def _img_3d_ones(shape=_shape_3d_default(), affine=_affine_eye()):
+def _img_3d_ones(shape=None, affine=None):
     """Return a ones-filled 3D Nifti1Image (identity affine).
 
     Mostly used for set up in other fixtures in other testing modules.
     """
+    if shape is None:
+        shape = _shape_3d_default()
+    if affine is None:
+        affine = _affine_eye()
     return _img_ones(shape, affine)
 
 
@@ -289,15 +301,23 @@ def img_3d_ones_mni():
 # ------------------------ 4D IMAGES ------------------------#
 
 
-def _img_4d_zeros(shape=_shape_4d_default(), affine=_affine_eye()):
+def _img_4d_zeros(shape=None, affine=None):
     """Return a default zeros filled 4D Nifti1Image (identity affine).
 
     Mostly used for set up in other fixtures in other testing modules.
     """
+    if shape is None:
+        shape = _shape_4d_default()
+    if affine is None:
+        affine = _affine_eye()
     return _img_zeros(shape, affine)
 
 
-def _img_4d_mni(shape=_shape_4d_default(), affine=_affine_mni()):
+def _img_4d_mni(shape=None, affine=None):
+    if shape is None:
+        shape = _shape_4d_default()
+    if affine is None:
+        affine = _affine_mni()
     return Nifti1Image(_rng().uniform(size=shape), affine=affine)
 
 

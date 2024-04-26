@@ -44,4 +44,4 @@ jobs:
             uses: actions/upload-artifact@v4
             with:
                 name: test_runs_timing_outputs
-                path: maint_tools/test_runs_timing.*
+                path: maint_tools/*_runs_timing.*

@@ -334,14 +334,17 @@ class FirstLevelModel(BaseGLM):
         This parameter is passed to nilearn.image.resample_img.
         Please see the related documentation for details.
     %(smoothing_fwhm)s
-    memory : string or pathlib.Path, optional
-        Path to the directory used to cache the masking process and the glm
-        fit. By default, no caching is done.
+    memory : string or pathlib.Path, default=None
+        Path to the directory used to cache the masking process
+        and the glm fit.
+        By default, no caching is done.
         Creates instance of joblib.Memory.
+        If ``None`` is passed will default to ``Memory(location=None)``.
 
     memory_level : integer, optional
-        Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching.
+        Rough estimator of the amount of memory used by caching.
+        Higher value means more memory for caching.
+
 
     standardize : boolean, default=False
         If standardize is True, the time-series are centered and normed:
@@ -409,13 +412,13 @@ class FirstLevelModel(BaseGLM):
         drift_model="cosine",
         high_pass=0.01,
         drift_order=1,
-        fir_delays=[0],
+        fir_delays=None,
         min_onset=-24,
         mask_img=None,
         target_affine=None,
         target_shape=None,
         smoothing_fwhm=None,
-        memory=Memory(None),
+        memory=None,
         memory_level=1,
         standardize=False,
         signal_scaling=0,
@@ -426,6 +429,10 @@ class FirstLevelModel(BaseGLM):
         subject_label=None,
         random_state=None,
     ):
+        if fir_delays is None:
+            fir_delays = [0]
+        if memory is None:
+            memory = Memory(None)
         # design matrix parameters
         if t_r is not None:
             _check_repetition_time(t_r)
@@ -1037,12 +1044,12 @@ def _read_events_table(table):
     try:
         # kept for historical reasons, a lot of tests use csv with index column
         loaded = pd.read_csv(table, index_col=0)
-    except:  # noqa: E722
+    except:  # noqa: E722 B001
         raise ValueError(f"table path {table} could not be loaded")
     if loaded.empty:
         try:
             loaded = pd.read_csv(table, sep="\t")
-        except:  # noqa: E722
+        except:  # noqa: E722 B001
             raise ValueError(f"table path {table} could not be loaded")
     return loaded
 
@@ -1083,13 +1090,13 @@ def first_level_from_bids(
     drift_model="cosine",
     high_pass=0.01,
     drift_order=1,
-    fir_delays=[0],
+    fir_delays=None,
     min_onset=-24,
     mask_img=None,
     target_affine=None,
     target_shape=None,
     smoothing_fwhm=None,
-    memory=Memory(None),
+    memory=None,
     memory_level=1,
     standardize=False,
     signal_scaling=0,
@@ -1263,6 +1270,8 @@ def first_level_from_bids(
         fit function of their respective model.
 
     """
+    if memory is None:
+        memory = Memory(None)
     if slice_time_ref == 0:
         warn(
             "Starting in version 0.12, slice_time_ref will default to None.",

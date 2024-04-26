@@ -88,9 +88,8 @@ def iter_check_niimg(
     atleast_4d=False,
     target_fov=None,
     dtype=None,
-    memory=Memory(location=None),
+    memory=None,
     memory_level=0,
-    verbose=0,
 ):
     """Iterate over a list of niimgs and do sanity checks and resampling.
 
@@ -114,23 +113,23 @@ def iter_check_niimg(
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
 
-    memory : instance of joblib.Memory or string, default=Memory(location=None)
+    memory : instance of joblib.Memory or string, default=None
         Used to cache the masking process.
-        By default, no caching is done. If a string is given, it is the
-        path to the caching directory.
+        By default, no caching is done.
+        If a string is given, it is the path to the caching directory.
+        If ``None`` is passed will default to ``Memory(location=None)``.
 
     memory_level : integer, default=0
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
-
-    verbose : integer, default=0
-        Indicate the level of verbosity. By default, nothing is printed.
 
     See Also
     --------
         check_niimg, check_niimg_3d, check_niimg_4d
 
     """
+    if memory is None:
+        memory = Memory(location=None)
     # If niimgs is a string, use glob to expand it to the matching filenames.
     niimgs = resolve_globbing(niimgs)
 

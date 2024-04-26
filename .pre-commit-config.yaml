@@ -8,20 +8,6 @@ exclude: |
         | nilearn/externals/.*
         | nilearn/plotting/data/js/.*js
         | nilearn/_version.py
-        | examples/01_plotting/plot_3d_map_to_surface_projection.py
-        | examples/01_plotting/plot_surf_atlas.py
-        | examples/01_plotting/plot_surf_stat_map.py
-        | examples/01_plotting/plot_surface_projection_strategies.py
-        | examples/04_glm_first_level/plot_localizer_surface_analysis.py
-        | examples/07_advanced/plot_surface_bids_analysis.py
-        | nilearn/_utils/helpers.py
-        | nilearn/plotting/html_surface.py
-        | nilearn/plotting/js_plotting_utils.py
-        | nilearn/plotting/surf_plotting.py
-        | nilearn/plotting/tests/test_html_surface.py
-        | nilearn/plotting/tests/test_surf_plotting.py
-        | nilearn/surface/surface.py
-        | nilearn/surface/tests/test_surface.py
     )$
 
 repos:
@@ -66,6 +52,27 @@ repos:
     hooks:
     -   id: black
         args: [--config, pyproject.toml]
+        exclude: |
+            (?x)^(
+                nilearn/datasets/tests/data/localizer_behavioural.tsv
+                | nilearn/externals/.*
+                | nilearn/plotting/data/js/.*js
+                | nilearn/_version.py
+                | examples/01_plotting/plot_3d_map_to_surface_projection.py
+                | examples/01_plotting/plot_surf_atlas.py
+                | examples/01_plotting/plot_surf_stat_map.py
+                | examples/01_plotting/plot_surface_projection_strategies.py
+                | examples/04_glm_first_level/plot_localizer_surface_analysis.py
+                | examples/07_advanced/plot_surface_bids_analysis.py
+                | nilearn/_utils/helpers.py
+                | nilearn/plotting/html_surface.py
+                | nilearn/plotting/js_plotting_utils.py
+                | nilearn/plotting/surf_plotting.py
+                | nilearn/plotting/tests/test_html_surface.py
+                | nilearn/plotting/tests/test_surf_plotting.py
+                | nilearn/surface/surface.py
+                | nilearn/surface/tests/test_surface.py
+            )$
 
 -   repo: https://github.com/adamchainz/blacken-docs
     rev: 1.16.0
@@ -110,4 +117,4 @@ repos:
     hooks:
     -   id: flake8
         args: [--config, .flake8, --verbose, nilearn, examples, maint_tools]
-        additional_dependencies: [flake8-docstrings, flake8-use-fstring, flake8-functions]
+        additional_dependencies: [flake8-docstrings, flake8-use-fstring, flake8-functions, flake8-bugbear]
