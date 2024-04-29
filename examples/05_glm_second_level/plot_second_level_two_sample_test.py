@@ -60,7 +60,7 @@ sample_horizontal = fetch_localizer_contrasts(
 second_level_input = sample_vertical["cmaps"] + sample_horizontal["cmaps"]
 
 # %%
-# Next, we assign the subjects for vertical and horizontal checkerboard respectively.
+# Next, we model the effect of conditions (sample 1 vs sample 2).
 import numpy as np
 
 condition_effect = np.hstack(([1] * n_subjects, [0] * n_subjects))
@@ -113,9 +113,8 @@ second_level_model_paired = SecondLevelModel(n_jobs=2).fit(
 )
 
 # %%
-# Estimating the :term:`contrast` is simple. To do so, we provide 
-# the column name of the design matrix.
-# The argument 'output_type' is set to return all
+# Estimating the :term:`contrast` is simple. To do so, we provide the column
+# name of the design matrix. The argument 'output_type' is set to return all
 # available outputs so that we can compare differences in the effect size,
 # variance, and z-score.
 stat_maps_unpaired = second_level_model_unpaired.compute_contrast(
