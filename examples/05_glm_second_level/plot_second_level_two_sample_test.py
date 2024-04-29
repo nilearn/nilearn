@@ -60,26 +60,30 @@ sample_horizontal = fetch_localizer_contrasts(
 second_level_input = sample_vertical["cmaps"] + sample_horizontal["cmaps"]
 
 # %%
-# Next, we model the effect of conditions (sample 1 vs sample 2).
+# Next, we assign the subjects for vertical and horizontal checkerboard respectively.
 import numpy as np
 
-condition_effect = np.hstack(([1] * n_subjects, [-1] * n_subjects))
+vertical_subjects = np.hstack(([1] * n_subjects, [0] * n_subjects))
+horizontal_subjects = np.hstack(([0] * n_subjects, [1] * n_subjects))
 
 # %%
-# The design matrix for the unpaired test doesn't need any more columns
+# The design matrix for the unpaired test doesn't need any more columns,
+# as this would cause the design matrix rank-deficient.
 # For the paired test, we include an intercept for each subject.
 subject_effect = np.vstack((np.eye(n_subjects), np.eye(n_subjects)))
 subjects = [f"S{i:02d}" for i in range(1, n_subjects + 1)]
 
 # %%
 # We then assemble those into design matrices
-unpaired_design_matrix = pd.DataFrame(
-    condition_effect[:, np.newaxis], columns=["vertical vs horizontal"]
+unpaired_design_matrix = pd.DataFrame({
+    "vertical": vertical_subjects,
+    "horizontal": horizontal_subjects,
+}
 )
 
 paired_design_matrix = pd.DataFrame(
-    np.hstack((condition_effect[:, np.newaxis], subject_effect)),
-    columns=["vertical vs horizontal"] + subjects,
+    np.hstack((vertical_subjects[:, np.newaxis], horizontal_subjects[:, np.newaxis], subject_effect)),
+    columns=["vertical"] + ["horizontal"] + subjects,
 )
 
 # %%
@@ -111,16 +115,18 @@ second_level_model_paired = SecondLevelModel(n_jobs=2).fit(
 )
 
 # %%
-# Estimating the :term:`contrast` is simple. To do so, we provide the column
-# name of the design matrix. The argument 'output_type' is set to return all
+# Estimating the :term:`contrast` is simple. To do so, we provide a string of formula
+# with the column name of the design matrix. In the case of estimating the vertical vs horizontal,
+# we can use the following formula: "vertical - horizontal".
+# The argument 'output_type' is set to return all
 # available outputs so that we can compare differences in the effect size,
 # variance, and z-score.
 stat_maps_unpaired = second_level_model_unpaired.compute_contrast(
-    "vertical vs horizontal", output_type="all"
+    "vertical - horizontal", output_type="all"
 )
 
 stat_maps_paired = second_level_model_paired.compute_contrast(
-    "vertical vs horizontal", output_type="all"
+    "vertical - horizontal", output_type="all"
 )
 
 # %%
