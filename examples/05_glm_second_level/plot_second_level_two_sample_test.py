@@ -114,8 +114,7 @@ second_level_model_paired = SecondLevelModel(n_jobs=2).fit(
 
 # %%
 # Estimating the :term:`contrast` is simple. To do so, we provide 
-# the column name of the design matrix. In the case of estimating the vertical vs horizontal,
-# we can use the following formula: "vertical - horizontal".
+# the column name of the design matrix.
 # The argument 'output_type' is set to return all
 # available outputs so that we can compare differences in the effect size,
 # variance, and z-score.
