@@ -60,7 +60,7 @@ sample_horizontal = fetch_localizer_contrasts(
 second_level_input = sample_vertical["cmaps"] + sample_horizontal["cmaps"]
 
 # %%
-# Next, we model the effect of conditions (sample 1 vs sample 2).
+# Next, we assign the subjects for vertical and horizontal checkerboard respectively.
 import numpy as np
 
 condition_effect = np.hstack(([1] * n_subjects, [0] * n_subjects))
