@@ -211,9 +211,6 @@ jobs:
                 echo "PATTERN = $(cat pattern.txt)"
                 echo "BUILD = $(cat build.txt)"
 
-        -   name: Key for cache based on month number
-            run: date +%m > month_num;
-
         -   name: Get data from the get_data job
             uses: actions/cache@v4
             with:
@@ -257,16 +254,30 @@ jobs:
                 name: doc
                 path: doc/_build/html
 
+        -   name: Get artifact url
+            id: artifact-url
+            run: |
+                artifact_url="https://nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                echo "artifact_url=true" >> $GITHUB_OUTPUT
+
         # Trigger hosting / deploy of the doc on nilearn.github.io via circle-ci
         # We get the url for the artifacts for circle-ci from https://nightly.link/
         -   name: Trigger hosting jobs on circle ci
             if: steps.build-docs.outcome == 'success'
             run: |
-                GITHUB_RUN_URL="https://nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                ARTIFACT_URL="https://nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}"
                 curl --request POST \
                 --url https://circleci.com/api/v2/project/gh/${{ github.repository }}/pipeline \
                 --header "Circle-Token: ${{ secrets.CIRCLE_CI_TOKEN }}" \
                 --header "content-type: application/json" \
                 --header "x-attribution-actor-id: github_actions" \
                 --header "x-attribution-login: github_actions" \
-                --data \{\"branch\":\"${{ github.head_ref }}\",\"parameters\":\{\"GITHUB_RUN_URL\":\"$GITHUB_RUN_URL\"\}\}
+                --data \{\"branch\":\"${{ github.head_ref }}\",\"parameters\":\{\"ARTIFACT_URL\":\"${{  steps.artifact-url.outputs.artifact_url }}\"\}\}
+
+        -   name: Trigger hosting jobs on circle ci
+            if: steps.build-docs.outcome == 'success'
+            uses: CircleCI-Public/trigger-circleci-pipeline-action@v1.2.0
+            env:
+                CCI_TOKEN: ${{ secrets.CIRCLE_CI_TOKEN }}
+            with:
+                GHA_Meta: ${{ steps.artifact-url.outputs.artifact_url }}
