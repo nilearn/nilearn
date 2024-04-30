@@ -21,12 +21,6 @@ Allows anyone to self-assign an issue automatically by commenting the word `take
 
 Automatically comments on a newly open pull request to provide some guidelines, useful links and a checklist. The checklist is only editable by maintainers at the moment.
 
-## Black formatting
-
-### black.yml
-
-Runs black code formatter on the codebase both in pull requests and on main. Configurations can be found in [pyproject.toml](../../pyproject.toml).
-
 ## Building the development documentation
 
 ### build-docs.yml
@@ -63,6 +57,9 @@ However for quick checks to do yourself you should always opt for local builds f
 
 Note: setuptools needs to be installed to run the doc build with python 3.12.
 
+Upon a successful build of the doc, it is zipped and uploaded as an artifact.
+A circle-ci workflow is then triggered. See below.
+
 #### Dataset caching
 
 We also implemented a dataset caching strategy within this Actions workflow such that datasets are only downloaded once every month.
@@ -78,10 +75,13 @@ To run a full build and download all datasets, you would then combine both tags:
 $ git commit -m "[full doc][force download] request full build"
 ```
 
-#### Hosting of the docs
+## Building the stable release documentation
 
-Upon a successful build of the doc, it is zipped and uploaded as an artifact.
-A circle-ci workflow is then triggered. See below.
+### release-docs.yml
+
+Should be triggered automatically after merging and tagging a release PR to
+build the stable docs with a GitHub runner and push to nilearn.github.io.
+Can also be triggered manually.
 
 ## Hosting and deploying development documentation
 
@@ -107,46 +107,12 @@ Pings github API to collect information about:
 Plots the results and saves it as an artefact to download and manually inspect
 to see if there is a trend in tests taking longer.
 
-## Check spelling errors
+## Style checks
 
-### codespell.yml
+### check_style_guide.yml
 
-Checks for spelling errors. Configured in [pyproject.toml](../../pyproject.toml). More information here: https://github.com/codespell-project/actions-codespell
-
-## PEP8 check
-
-### flake8.yml
-
-Uses flake8 tool to verify code is PEP8 compliant. Configured in [.flake8](../../.flake8)
-
-## f strings
-
-### f_strings.yml
-
-Checks for f strings in the codebase with [flynt](https:/pypi.org/project/flynt/).
-Configured in [pyproject.toml](../../pyproject.toml)
-Flynt will check if it automatically convert "format" or "%" strings to "f strings".
-This workflow will fail if it finds any potential target to be converted.
-
-## Prettier formatting
-
-### prettier.yml
-
-Runs prettier to format HTML and CSS on the codebase both in pull requests and on main.
-
-## Sort imports automatically
-
-### isort.yml
-
-Sorts Python imports alphabetically and by section. Configured in [pyproject.toml](../../pyproject.toml)
-
-## Building the stable release documentation
-
-### release-docs.yml
-
-Should be triggered automatically after merging and tagging a release PR to
-build the stable docs with a GitHub runner and push to nilearn.github.io.
-Can also be triggered manually.
+Relies on pre-commit to run a series of check on the content of the repositories.
+See the config [`.pre-commit-config.yaml`](../../.pre-commit-config.yaml).
 
 ## Running unit tests
 
