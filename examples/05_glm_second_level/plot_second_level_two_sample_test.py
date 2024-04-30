@@ -73,10 +73,11 @@ subjects = [f"S{i:02d}" for i in range(1, n_subjects + 1)]
 
 # %%
 # We then assemble those into design matrices
-unpaired_design_matrix = pd.DataFrame({
-    "vertical vs horizontal": condition_effect,
-    "intercept": 1,
-}
+unpaired_design_matrix = pd.DataFrame(
+    {
+        "vertical vs horizontal": condition_effect,
+        "intercept": 1,
+    }
 )
 
 paired_design_matrix = pd.DataFrame(
