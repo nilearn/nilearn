@@ -985,6 +985,8 @@ class OrthoSlicer(BaseSlicer):
         The locator function used by matplotlib to position axes.
 
         Here we put the logic used to adjust the size of the axes.
+
+        ``renderer`` is required to match the matplolib API.
         """
         x0, y0, x1, y1 = self.rect
         width_dict = dict()
@@ -1008,7 +1010,7 @@ class OrthoSlicer(BaseSlicer):
                 # refresh of the figure) we capture the problem and
                 # ignore it: it only adds a non informative traceback
                 bounds = [0, 1, 0, 1]
-            xmin, xmax, ymin, ymax = bounds
+            xmin, xmax, _, _ = bounds
             width_dict[display_ax.ax] = xmax - xmin
 
         total_width = float(sum(width_dict.values()))
@@ -1339,6 +1341,8 @@ class TiledSlicer(BaseSlicer):
         The locator function used by matplotlib to position axes.
 
         Here we put the logic used to adjust the size of the axes.
+
+        ``renderer`` is required to match the matplolib API.
         """
         rect_x0, rect_y0, rect_x1, rect_y1 = self.rect
 
@@ -1545,6 +1549,8 @@ class BaseStackedSlicer(BaseSlicer):
         The locator function used by matplotlib to position axes.
 
         Here we put the logic used to adjust the size of the axes.
+
+        ``renderer`` is required to match the matplolib API.
         """
         x0, y0, x1, y1 = self.rect
         width_dict = dict()
@@ -1564,7 +1570,7 @@ class BaseStackedSlicer(BaseSlicer):
                 # refresh of the figure) we capture the problem and
                 # ignore it: it only adds a non informative traceback
                 bounds = [0, 1, 0, 1]
-            xmin, xmax, ymin, ymax = bounds
+            xmin, xmax, _, _ = bounds
             width_dict[display_ax.ax] = xmax - xmin
         total_width = float(sum(width_dict.values()))
         for ax, width in width_dict.items():
@@ -2023,6 +2029,8 @@ class MosaicSlicer(BaseSlicer):
         Locator function used by matplotlib to position axes.
 
         Here we put the logic used to adjust the size of the axes.
+
+        ``renderer`` is required to match the matplolib API.
         """
         x0, y0, x1, y1 = self.rect
         display_ax_dict = self.axes
@@ -2046,7 +2054,7 @@ class MosaicSlicer(BaseSlicer):
                         # refresh of the figure) we capture the problem and
                         # ignore it: it only adds a non informative traceback
                         bounds = [0, 1, 0, 1]
-                    xmin, xmax, ymin, ymax = bounds
+                    xmin, xmax, _, _ = bounds
                     this_width[display_ax.ax] = xmax - xmin
             total_width = float(sum(this_width.values()))
             for ax, w in this_width.items():
