@@ -31,7 +31,7 @@ from nilearn.image.resampling import (
     resample_img,
     resample_to_img,
 )
-from nilearn.image.tests.conftest import match_headers_keys
+from nilearn.image.tests._testing import match_headers_keys
 
 ANGLES_TO_TEST = (0, np.pi, np.pi / 2.0, np.pi / 4.0, np.pi / 3.0)
 
