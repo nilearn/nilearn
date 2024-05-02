@@ -49,7 +49,7 @@ from nilearn.image import (
     swap_img_hemispheres,
     threshold_img,
 )
-from nilearn.image.tests.conftest import match_headers_keys
+from nilearn.image.tests._testing import match_headers_keys
 
 X64 = platform.architecture()[0] == "64bit"
 
