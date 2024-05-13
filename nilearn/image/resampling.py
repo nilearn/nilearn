@@ -340,7 +340,7 @@ def resample_img(
     order="F",
     clip=True,
     fill_value=0,
-    force_resample=False,
+    force_resample=True,
 ):
     """Resample a Niimg-like object.
 
@@ -383,8 +383,8 @@ def resample_img(
     fill_value : float, default=0
         Use a fill value for points outside of input volume.
 
-    force_resample : bool, default=False
-        Intended for testing, this prevents the use of a padding optimization.
+    force_resample : bool, default=True; False is
+        intended for testing, this prevents the use of a padding optimization.
 
     Returns
     -------
@@ -692,7 +692,7 @@ def resample_to_img(
     order="F",
     clip=False,
     fill_value=0,
-    force_resample=False,
+    force_resample=True,
 ):
     """Resample a Niimg-like source image on a target Niimg-like image.
 
@@ -731,8 +731,8 @@ def resample_to_img(
     fill_value : float, default=0
         Use a fill value for points outside of input volume.
 
-    force_resample : bool, default=False
-        Intended for testing, this prevents the use of a padding optimization.
+    force_resample : bool, default=True; False is
+        intended for testing, this prevents the use of a padding optimization.
 
     Returns
     -------
