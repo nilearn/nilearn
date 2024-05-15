@@ -11,6 +11,8 @@ NEW
 Fixes
 -----
 
+- :bdg-dark:`Code` Fix failing test in ``test_nilearn_standardize`` on MacOS 14 by adding trend in simulated data (:gh:`4411` by `Hao-Ting Wang`_).
+
 Enhancements
 ------------
 
