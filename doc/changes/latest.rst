@@ -27,4 +27,4 @@ Changes
 
 - :bdg-dark:`Code` Remove the unused arguments ``upper_cutoff`` and ``exclude_zeros`` for :func:`nilearn.masking.compute_multi_background_mask` (:gh:`4273` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` Copy input image header to the output image in :func:`nilearn.image` functions by default (:gh:`4397` by `Himanshu Aggarwal `_).
+- :bdg-dark:`Code` Copy input image header to the output image in :func:`nilearn.image` functions by default (:gh:`4397` by `Himanshu Aggarwal`_).
