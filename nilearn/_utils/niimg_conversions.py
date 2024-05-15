@@ -90,7 +90,6 @@ def iter_check_niimg(
     dtype=None,
     memory=None,
     memory_level=0,
-    verbose=0,
 ):
     """Iterate over a list of niimgs and do sanity checks and resampling.
 
@@ -123,9 +122,6 @@ def iter_check_niimg(
     memory_level : integer, default=0
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
-
-    verbose : integer, default=0
-        Indicate the level of verbosity. By default, nothing is printed.
 
     See Also
     --------

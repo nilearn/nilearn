@@ -245,7 +245,7 @@ show()
 # An exercise to go further
 # -------------------------
 #
-# As an exercice, you can use recursive feature elimination (RFE) with
+# As an exercise, you can use recursive feature elimination (RFE) with
 # the SVM
 #
 # Read the object's documentation to find out how to use RFE.
