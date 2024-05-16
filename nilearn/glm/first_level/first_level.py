@@ -1292,7 +1292,14 @@ def first_level_from_bids(
 
     dataset_path = Path(dataset_path).absolute()
 
-    kwargs_load_confounds = _check_kwargs_load_confounds(**kwargs)
+    kwargs_load_confounds, remaining_kwargs = _check_kwargs_load_confounds(
+        **kwargs
+    )
+
+    if len(remaining_kwargs) > 0:
+        raise RuntimeError(
+            f"Some keyword arguments were unused: {remaining_kwargs}"
+        )
 
     if drift_model is not None and kwargs_load_confounds is not None:
         if "high_pass" in kwargs_load_confounds.get("strategy"):
@@ -1903,18 +1910,18 @@ def _check_kwargs_load_confounds(**kwargs):
     }
 
     if kwargs.get("confounds_strategy") is None:
-        return None
+        return None, kwargs
 
-    kwargs_load_confounds = {
-        key: (
-            defaults[key]
-            if f"confounds_{key}" not in kwargs
-            else kwargs[f"confounds_{key}"]
-        )
-        for key in defaults
-    }
+    remaining_kwargs = kwargs.copy()
+    kwargs_load_confounds = {}
+    for key in defaults:
+        confounds_key = f"confounds_{key}"
+        if confounds_key in kwargs:
+            kwargs_load_confounds[key] = remaining_kwargs.pop(confounds_key)
+        else:
+            kwargs_load_confounds[key] = defaults[key]
 
-    return kwargs_load_confounds
+    return kwargs_load_confounds, remaining_kwargs
 
 
 def _make_bids_files_filter(
