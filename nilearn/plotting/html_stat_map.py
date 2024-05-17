@@ -317,7 +317,7 @@ def _json_view_params(
     return params
 
 
-def _json_view_size(params,width_view=600):
+def _json_view_size(params, width_view=600):
     """Define the size of the viewer.
 
     Returns: width_view, height_view
@@ -412,7 +412,7 @@ def _json_view_data(
     return json_view
 
 
-def _json_view_to_html(json_view,width_view=600):
+def _json_view_to_html(json_view, width_view=600):
     """Fill a brainsprite html template with relevant parameters and data.
 
     Returns: html_view
