@@ -419,7 +419,7 @@ def _json_view_to_html(json_view,width_view=600):
 
     """
     # Fix the size of the viewer
-    width, height = _json_view_size(json_view["params"],width_view)
+    width, height = _json_view_size(json_view["params"], width_view)
 
     # Populate all missing keys with html-ready data
     json_view["INSERT_PAGE_TITLE_HERE"] = (
