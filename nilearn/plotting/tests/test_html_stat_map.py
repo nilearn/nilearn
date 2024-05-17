@@ -10,7 +10,6 @@ from nibabel import Nifti1Image
 from nilearn import datasets, image
 from nilearn.image import get_data, new_img_like
 from nilearn.plotting import html_stat_map
-
 from nilearn.plotting.js_plotting_utils import colorscale
 
 
