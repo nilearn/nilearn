@@ -333,7 +333,6 @@ def _json_view_size(params, width_view=600):
     slices_height = 1.20 * slices_height
 
     # Get the final size of the viewer
-    # width_view = 600
     ratio = slices_height / slices_width
     height_view = np.ceil(ratio * width_view)
 
