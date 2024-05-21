@@ -56,6 +56,7 @@ Some other past or present contributors are:
 * `Alexandre Gramfort`_: Meta, France
 * `Alexandre Savio`_
 * `Alexandre Cionca`_: Centre Hospitalier Universitaire Vaudoise, Lausanne, Switzerland
+* `Alexandre Sayal`_: CIBIT, University of Coimbra, Portugal
 * `Alexis Thual`_: Inria, Saclay, France
 * `Alisha Kodibagkar`_: MIT McGovern Institute, Cambridge, Massachusetts, United States
 * `Amadeus Kanaan`_
