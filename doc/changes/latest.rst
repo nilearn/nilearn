@@ -16,6 +16,8 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-success:`API` Add option to resize output image width ``width_view`` in :func:`nilearn.plotting.view_img` (:gh:`4416` by `Alexandre Sayal`_).
+
 Changes
 -------
 
