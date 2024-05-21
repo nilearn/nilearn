@@ -1966,6 +1966,8 @@ def test_first_level_from_bids_unused_kwargs(tmp_path):
     with pytest.raises(
         RuntimeError, match="Some keyword arguments were unused:"
     ):
+        # wrong kwarg name `confound_strategy` (wrong)
+        # instead of `confounds_strategy` (correct)
         first_level_from_bids(
             dataset_path=bids_path,
             task_label="main",
