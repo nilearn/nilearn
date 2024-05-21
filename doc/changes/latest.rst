@@ -26,3 +26,5 @@ Changes
 - :bdg-dark:`Code` Implement argument ``sample_mask`` for :meth:`nilearn.maskers.MultiNiftiMasker.transform_imgs` (:gh:`4273` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Remove the unused arguments ``upper_cutoff`` and ``exclude_zeros`` for :func:`nilearn.masking.compute_multi_background_mask` (:gh:`4273` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Add option to resize output image width ``width_view`` in :func:`nilearn.plotting.html_stat_map.view_img` (:gh:`4416` by `Alexandre Sayal`_).
