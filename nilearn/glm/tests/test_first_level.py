@@ -1963,9 +1963,7 @@ def test_first_level_from_bids_unused_kwargs(tmp_path):
     bids_path = create_fake_bids_dataset(
         base_dir=tmp_path, n_sub=1, n_ses=1, tasks=["main"], n_runs=[2]
     )
-    with pytest.raises(
-        RuntimeError, match="Unknown keyword arguments"
-    ):
+    with pytest.raises(RuntimeError, match="Unknown keyword arguments"):
         # wrong kwarg name `confound_strategy` (wrong)
         # instead of `confounds_strategy` (correct)
         first_level_from_bids(
