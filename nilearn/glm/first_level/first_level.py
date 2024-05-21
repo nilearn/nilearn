@@ -1298,7 +1298,8 @@ def first_level_from_bids(
 
     if len(remaining_kwargs) > 0:
         raise RuntimeError(
-            f"Unknown keyword arguments. Keyword arguments should start with `confounds_` prefix: {remaining_kwargs}"
+            "Unknown keyword arguments. Keyword arguments should start with "
+            f"`confounds_` prefix: {remaining_kwargs}"
         )
 
     if drift_model is not None and kwargs_load_confounds is not None:
