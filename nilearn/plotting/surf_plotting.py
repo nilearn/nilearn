@@ -430,7 +430,7 @@ def _get_cmap_matplotlib(cmap, vmin, vmax, cbar_tick_format, threshold=None):
 
     This function returns the colormap.
     """
-    our_cmap = plt.colormaps[cmap]
+    our_cmap = plt.cm.ColormapRegistry.get_cmap(cmap)
     norm = Normalize(vmin=vmin, vmax=vmax)
     cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
     if threshold is not None:

@@ -70,7 +70,7 @@ def get_html_template(template_name):
 def colorscale(cmap, values, threshold=None, symmetric_cmap=True,
                vmax=None, vmin=None):
     """Normalize a cmap, put it in plotly format, get threshold and range."""
-    cmap = plt.colormaps[cmap]
+    cmap = plt.cm.ColormapRegistry.get_cmap(cmap)
     abs_values = np.abs(values)
     if not symmetric_cmap and (values.min() < 0):
         warnings.warn('you have specified symmetric_cmap=False '
