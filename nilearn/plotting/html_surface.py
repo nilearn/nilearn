@@ -56,7 +56,7 @@ def get_vertexcolor(surf_map,
             DeprecationWarning,
         )
 
-    bg_colors = plt.get_cmap('Greys')(bg_data)
+    bg_colors = plt.colormaps['Greys'](bg_data)
 
     # select vertices which are filtered out by the threshold
     if absolute_threshold is None:

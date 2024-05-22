@@ -342,7 +342,7 @@ def _json_view_size(params, width_view=600):
 def _get_bg_mask_and_cmap(bg_img, black_bg):
     """Get background data for _json_view_data."""
     bg_mask = np.ma.getmaskarray(get_data(bg_img))
-    bg_cmap = copy.copy(matplotlib.pyplot.get_cmap("gray"))
+    bg_cmap = copy.copy(matplotlib.colormaps["gray"])
     if black_bg:
         bg_cmap.set_bad("black")
     else:

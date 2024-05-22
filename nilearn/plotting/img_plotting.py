@@ -807,7 +807,7 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
     roi_img = _utils.check_niimg_3d(roi_img)
     roi_data = get_data(roi_img)
     labels = np.unique(roi_data)
-    cmap = plt.get_cmap(cmap)
+    cmap = plt.colormaps[cmap]
     color_list = cmap(np.linspace(0, 1, len(labels)))
     for idx, label in enumerate(labels):
         if label == 0:
@@ -1114,7 +1114,7 @@ def plot_prob_atlas(
             f"Valid view types are {valid_view_types}."
         )
 
-    cmap = plt.get_cmap(cmap)
+    cmap = plt.colormaps[cmap]
     color_list = cmap(np.linspace(0, 1, n_maps))
 
     if view_type == "auto":
@@ -1791,7 +1791,7 @@ def plot_markers(
         node_vmax = 1.1 * node_vmax
     norm = matplotlib.colors.Normalize(vmin=node_vmin, vmax=node_vmax)
     node_cmap = (
-        plt.get_cmap(node_cmap) if isinstance(node_cmap, str) else node_cmap
+        plt.colormaps[node_cmap] if isinstance(node_cmap, str) else node_cmap
     )
     node_color = [node_cmap(norm(node_value)) for node_value in node_values]
 

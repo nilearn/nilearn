@@ -474,7 +474,7 @@ def test_plot_surf_avg_method(rng):
         vmax = np.max(agg_faces)
         agg_faces -= vmin
         agg_faces /= (vmax - vmin)
-        cmap = plt.get_cmap(plt.rcParamsDefault['image.cmap'])
+        cmap = plt.colormaps[plt.rcParamsDefault['image.cmap']]
         assert_array_equal(
             cmap(agg_faces),
             display._axstack.as_list()[0].collections[0]._facecolors

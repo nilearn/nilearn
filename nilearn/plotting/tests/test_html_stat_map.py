@@ -129,7 +129,7 @@ def test_save_sprite(rng):
         mask=html_stat_map._data_to_sprite(mask),
     )
     correct_img = plt.Normalize(0, 1)(correct_img)
-    cmapped = plt.get_cmap("Greys")(correct_img)
+    cmapped = plt.colormaps["Greys"](correct_img)
     assert np.allclose(img, cmapped, atol=0.1)
 
 
@@ -148,7 +148,7 @@ def test_save_cmap(cmap, n_colors):
     decoded_io.write(base64.b64decode(cmap_base64))
     decoded_io.seek(0)
     img = plt.imread(decoded_io, format="png")
-    expected = plt.get_cmap(cmap)(np.linspace(0, 1, n_colors))
+    expected = plt.colormaps[cmap](np.linspace(0, 1, n_colors))
     assert np.allclose(img, expected, atol=0.1)
 
 

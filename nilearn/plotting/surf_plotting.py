@@ -430,7 +430,7 @@ def _get_cmap_matplotlib(cmap, vmin, vmax, cbar_tick_format, threshold=None):
 
     This function returns the colormap.
     """
-    our_cmap = plt.get_cmap(cmap)
+    our_cmap = plt.colormaps[cmap]
     norm = Normalize(vmin=vmin, vmax=vmax)
     cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
     if threshold is not None:
@@ -550,10 +550,10 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
 
     # if no cmap is given, set to matplotlib default
     if cmap is None:
-        cmap = plt.get_cmap(plt.rcParamsDefault['image.cmap'])
+        cmap = plt.colormaps[plt.rcParamsDefault['image.cmap']]
     # if cmap is given as string, translate to matplotlib cmap
     elif isinstance(cmap, str):
-        cmap = plt.get_cmap(cmap)
+        cmap = plt.colormaps[cmap]
 
     figsize = _default_figsize
     # Leave space for colorbar
@@ -993,7 +993,7 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
     if colors is None:
         n_levels = len(levels)
         vmax = n_levels
-        cmap = plt.get_cmap(cmap)
+        cmap = plt.colormaps[cmap]
         norm = Normalize(vmin=0, vmax=vmax)
         colors = [cmap(norm(color_i)) for color_i in range(vmax)]
     else:
@@ -1535,7 +1535,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
             vmax,
             threshold,
             symmetric_cbar=symmetric_cbar,
-            cmap=plt.get_cmap(cmap),
+            cmap=plt.colormaps[cmap],
         )
 
         cbar_grid = gridspec.GridSpecFromSubplotSpec(3, 3, grid[-1, :])
