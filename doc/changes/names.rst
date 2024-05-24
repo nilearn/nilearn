@@ -20,6 +20,8 @@
 
 .. _Alexandre Cionca: https://github.com/acionca
 
+.. _Alexandre Sayal: https://github.com/alexsayal
+
 .. _Alexis Thual: https://github.com/alexisthual
 
 .. _Alisha Kodibagkar: https://github.com/alishakodibagkar/

@@ -11,10 +11,13 @@ NEW
 Fixes
 -----
 
+- :bdg-dark:`Code` Fix failing test in ``test_nilearn_standardize`` on MacOS 14 by adding trend in simulated data (:gh:`4411` by `Hao-Ting Wang`_).
 - :bdg-dark:`Code` Add a new attribute ``_region_id_name`` to :class:`nilearn.maskers.NiftiLabelsMasker` which is used to fix the issue with creating ``region_names_`` attribute (:gh:`4360` by `Mohammad Torabi`_).
 
 Enhancements
 ------------
+
+- :bdg-success:`API` Add option to resize output image width ``width_view`` in :func:`nilearn.plotting.view_img` (:gh:`4416` by `Alexandre Sayal`_).
 
 Changes
 -------
@@ -26,3 +29,5 @@ Changes
 - :bdg-dark:`Code` Implement argument ``sample_mask`` for :meth:`nilearn.maskers.MultiNiftiMasker.transform_imgs` (:gh:`4273` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Remove the unused arguments ``upper_cutoff`` and ``exclude_zeros`` for :func:`nilearn.masking.compute_multi_background_mask` (:gh:`4273` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Throw error in :func:`nilearn.glm.first_level.first_level_from_bids` if unknown ``kwargs`` are passed (:gh:`4414` by `Michelle Wang`_).

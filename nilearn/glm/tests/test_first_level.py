@@ -1958,6 +1958,23 @@ def test_first_level_from_bids_no_subject(tmp_path):
         )
 
 
+def test_first_level_from_bids_unused_kwargs(tmp_path):
+    """Check that unused kwargs are properly handled."""
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path, n_sub=1, n_ses=1, tasks=["main"], n_runs=[2]
+    )
+    with pytest.raises(RuntimeError, match="Unknown keyword arguments"):
+        # wrong kwarg name `confound_strategy` (wrong)
+        # instead of `confounds_strategy` (correct)
+        first_level_from_bids(
+            dataset_path=bids_path,
+            task_label="main",
+            space_label="MNI",
+            slice_time_ref=None,
+            confound_strategy="motion",
+        )
+
+
 def test_check_run_tables_errors():
     # check high level wrapper keeps behavior
     with pytest.raises(ValueError, match="len.* does not match len.*"):
