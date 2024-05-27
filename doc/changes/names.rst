@@ -298,6 +298,8 @@
 
 .. _Yasmin Mzayek: https://github.com/ymzayek
 
+.. _Yichun Huang: https://github.com/YCHuang0610
+
 .. _Zvi Baratz: https://github.com/ZviBaratz
 
 .. _Óscar Nájera: https://github.com/Titan-C
