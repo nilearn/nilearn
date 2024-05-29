@@ -439,6 +439,16 @@ def resample_img(
     """
     from .image import new_img_like  # avoid circular imports
 
+    copy_header_default = (
+        "From release 0.13.0 this function will, by default, copy the header "
+        "of the input image to the output. Currently, the header is not "
+        "copied at all."
+    )
+    warnings.warn(
+        category=FutureWarning,
+        message=copy_header_default,
+    )
+
     # Do as many checks as possible before loading data, to avoid potentially
     # costly calls before raising an exception.
     if target_shape is not None and target_affine is None:
@@ -788,6 +798,16 @@ def reorder_img(img, resample=None):
 
     """
     from .image import new_img_like
+
+    copy_header_default = (
+        "From release 0.13.0 this function will, by default, copy the header "
+        "of the input image to the output. Currently, the header is not "
+        "copied at all."
+    )
+    warnings.warn(
+        category=FutureWarning,
+        message=copy_header_default,
+    )
 
     img = _utils.check_niimg(img)
     # The copy is needed in order not to modify the input img affine

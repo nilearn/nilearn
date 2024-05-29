@@ -376,6 +376,16 @@ def crop_img(img, rtol=1e-8, copy=True, pad=True, return_offset=False):
         *[(x1_pre, x1_post), (x2_pre, x2_post), ..., (xN_pre, xN_post)]*
 
     """
+    copy_header_default = (
+        "From release 0.13.0 this function will by default copy the header of "
+        "the input image to the cropped image. Currently, the header is "
+        "not copied at all."
+    )
+    warnings.warn(
+        category=FutureWarning,
+        message=copy_header_default,
+    )
+
     img = check_niimg(img)
     data = get_data(img)
     infinity_norm = max(-data.min(), data.max())
@@ -536,6 +546,16 @@ def mean_img(imgs, target_affine=None, target_shape=None, verbose=0, n_jobs=1):
     nilearn.image.math_img : For more general operations on images.
 
     """
+    copy_header_default = (
+        "From release 0.13.0 this function will, by default, copy the header "
+        "of the 4D input image or the first image (if the input is a list of "
+        "3D images) to the output. Currently, the header is not copied at all."
+    )
+    warnings.warn(
+        category=FutureWarning,
+        message=copy_header_default,
+    )
+
     imgs = stringify_path(imgs)
     is_str = isinstance(imgs, str)
     is_iterable = isinstance(imgs, collections.abc.Iterable)
@@ -934,6 +954,16 @@ def threshold_img(
     """
     from .. import masking
     from . import resampling
+
+    copy_header_default = (
+        "From release 0.13.0 this function will, by default, copy the header "
+        "of the input image to the output. Currently, the header is not "
+        "copied at all."
+    )
+    warnings.warn(
+        category=FutureWarning,
+        message=copy_header_default,
+    )
 
     img = check_niimg(img)
     img_data = safe_get_data(img, ensure_finite=True, copy_data=copy)
