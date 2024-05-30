@@ -1,4 +1,5 @@
 """Update AUTHORS and names from CITATION.cff file."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -14,11 +15,11 @@ CORE_DEVS = [
     "Bertrand Thirion",
     "Elizabeth DuPre",
     "Hao-Ting Wang",
+    "Himanshu Aggarwal",
     "Jerome Dockes",
     "Nicolas Gensollen",
     "Rémi Gau",
     "Taylor Salo",
-    "Yasmin Mzayek",
 ]
 
 

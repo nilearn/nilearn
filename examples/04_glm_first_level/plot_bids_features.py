@@ -22,6 +22,7 @@ More specifically:
    estimation in the openneuro dataset.
 4. Display contrast plot and uncorrected first level statistics table report.
 """
+
 from nilearn import plotting
 
 # %%
@@ -212,10 +213,39 @@ table = get_clusters_table(z_map, norm.isf(0.001), 10)
 print(table.to_latex())
 
 # %%
-# Generating a report
-# -------------------
+# Saving model outputs to disk
+# ----------------------------
+#
+# We can now easily save the main results,
+# the model metadata and an HTML report to the disk.
+#
+
+from pathlib import Path
+
+output_dir = Path.cwd() / "results" / "plot_bids_features"
+output_dir.mkdir(exist_ok=True, parents=True)
+
+from nilearn.interfaces.bids import save_glm_to_bids
+
+save_glm_to_bids(
+    model,
+    contrasts="StopSuccess - Go",
+    contrast_types={"StopSuccess - Go": "t"},
+    out_dir=output_dir / "derivatives" / "nilearn_glm",
+    prefix=f"{subject}_task-stopsignal",
+)
+
+# %%
+# View the generated files
+files = sorted(list((output_dir / "derivatives" / "nilearn_glm").glob("**/*")))
+print("\n".join([str(x.relative_to(output_dir)) for x in files]))
+
+# %%
+# Only generating the HTML report
+# -------------------------------
+#
 # Using the computed FirstLevelModel and :term:`contrast` information,
-# we can quickly create a summary report.
+# we can quickly also also only create a summary report.
 from nilearn.reporting import make_glm_report
 
 report = make_glm_report(
@@ -230,26 +260,4 @@ report = make_glm_report(
 # report.open_in_browser()
 
 # or we can save as an html file
-from pathlib import Path
-
-output_dir = Path.cwd() / "results" / "plot_bids_features"
-output_dir.mkdir(exist_ok=True, parents=True)
 # report.save_as_html(output_dir / 'report.html')
-
-# %%
-# Saving model outputs to disk
-# ----------------------------
-from nilearn.interfaces.bids import save_glm_to_bids
-
-save_glm_to_bids(
-    model,
-    contrasts="StopSuccess - Go",
-    contrast_types={"StopSuccess - Go": "t"},
-    out_dir=output_dir / "derivatives" / "nilearn_glm",
-    prefix=f"{subject}_task-stopsignal",
-)
-
-# %%
-# View the generated files
-files = sorted(list((output_dir / "derivatives" / "nilearn_glm").glob("*")))
-print("\n".join([str(x.relative_to(output_dir)) for x in files]))

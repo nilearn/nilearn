@@ -39,6 +39,7 @@ causes an error message, because `resample_img` will not know where to start
 the bounding box (there is no intelligent way of inferring this given the
 bounding box shape).
 """
+
 # Create the data with numpy
 import numpy as np
 

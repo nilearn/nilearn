@@ -2,6 +2,7 @@
 
 See http://nilearn.github.io/stable/manipulating_images/input_output.html
 """
+
 import numbers
 
 # Author: Gael Varoquaux, Alexandre Abraham, Michael Eickenberg
@@ -223,7 +224,7 @@ def get_mask_bounds(img):
     (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(mask.shape, affine)
     slices = find_objects(mask.astype(int))
     if len(slices) == 0:
-        warnings.warn("empty mask", stacklevel=2)
+        warnings.warn("empty mask", stacklevel=3)
     else:
         x_slice, y_slice, z_slice = slices[0]
         x_width, y_width, z_width = mask.shape

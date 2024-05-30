@@ -1,4 +1,5 @@
 """Analysing fMRI data using GLMs."""
+
 from nilearn.glm import first_level, second_level
 from nilearn.glm.contrasts import (
     Contrast,

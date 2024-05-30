@@ -2,6 +2,7 @@
 
 Authors: Bertrand Thirion, Matthew Brett, Ana Luisa Pinho, 2020
 """
+
 from warnings import warn
 
 import numpy as np

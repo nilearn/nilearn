@@ -2,6 +2,7 @@
 
 Author: Bertrand Thirion, 2011--2015
 """
+
 import numpy as np
 from nibabel.onetime import auto_attr
 from scipy.linalg import inv
@@ -30,7 +31,6 @@ class LikelihoodModelResults:
         cov=None,
         dispersion=1.0,
         nuisance=None,
-        rank=None,
     ):
         """Set up results structure.
 
@@ -51,13 +51,8 @@ class LikelihoodModelResults:
         dispersion : scalar, default=1
             Multiplicative factor in front of `cov`.
 
-
         nuisance : None of ndarray, optional
             Parameter estimates needed to compute logL.
-
-        rank : None or scalar, optional
-            Rank of the model.  If rank is not None, it is used for df_model
-            instead of the usual counting of parameters.
 
         Notes
         -----

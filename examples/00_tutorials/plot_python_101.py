@@ -2,6 +2,7 @@
 Basic numerics and plotting with Python
 =======================================
 """
+
 try:
     import matplotlib.pyplot as plt
 except ImportError:

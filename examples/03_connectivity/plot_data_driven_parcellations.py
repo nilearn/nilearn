@@ -14,28 +14,18 @@ Also, these methods can be used to learn functional connectomes
 and subsequently for classification tasks or to analyze data at a local
 level.
 
-References
-----------
-Which clustering method to use, an empirical comparison can be found in this
-paper:
-
-Bertrand Thirion, Gael Varoquaux, Elvis Dohmatob, Jean-Baptiste Poline.
-  `Which fMRI clustering gives good brain parcellations ?
-  <https://doi.org/10.3389/fnins.2014.00167>`_ Frontiers in Neuroscience,
-  2014.
+See Also
+--------
+Which clustering method to use, an empirical comparison can be found
+in :footcite:t:`Thirion2014`.
 
 This :term:`parcellation` may be useful in a supervised learning,
-see for instance:
-
-Vincent Michel, Alexandre Gramfort, Gael Varoquaux, Evelyn Eger,
-  Christine Keribin, Bertrand Thirion. `A supervised clustering approach
-  for fMRI-based inference of brain states.
-  <https://doi.org/10.1016/j.patcog.2011.04.006>`_.
-  Pattern Recognition, Elsevier, 2011.
+see for instance :footcite:t:`Michel2011b`.
 
 The big picture discussion corresponding to this example can be found
 in the documentation section :ref:`parcellating_brain`.
 """
+
 # %%
 # Download a brain development fMRI dataset and turn it to a data matrix
 # ----------------------------------------------------------------------
@@ -344,16 +334,9 @@ fig.legend(handles, labels, loc=(0.5, 0.8))
 # As before, the :term:`parcellation` is done with a ``Parcellations`` object.
 # The spatial constraints are implemented inside the ``Parcellations`` object.
 #
-# References
-# ..........
+# More about :term:`ReNA` clustering algorithm
+# in the original paper (:footcite:t:`Hoyos2019`).
 #
-# More about :term:`ReNA` clustering algorithm in the original paper
-#
-#     * A. Hoyos-Idrobo, G. Varoquaux, J. Kahn and B. Thirion, "Recursive
-#       Nearest Agglomeration (ReNA): Fast Clustering for Approximation of
-#       Structured Signals," in IEEE Transactions on Pattern Analysis and
-#       Machine Intelligence, vol. 41, no. 3, pp. 669-681, 1 March 2019.
-#       https://hal.archives-ouvertes.fr/hal-01366651/
 start = time.time()
 rena = Parcellations(
     method="rena",
@@ -436,5 +419,12 @@ plotting.plot_epi(
 # However, as said in the previous section, the computation time is
 # reduced which could still make :term:`ReNA` more relevant than Ward in
 # some cases.
+
+# %%
+# References
+# ----------
+#
+#  .. footbibliography::
+
 
 # sphinx_gallery_dummy_images=3

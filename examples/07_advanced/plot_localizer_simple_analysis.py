@@ -19,6 +19,7 @@ variates.  The user can refer to the
     - Virgile Fritsch, May. 2014
 
 """
+
 try:
     import matplotlib.pyplot as plt
 except ImportError:

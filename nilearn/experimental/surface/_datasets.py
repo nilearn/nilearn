@@ -2,6 +2,7 @@
 
 eventually nilearn.datasets would be updated
 """
+
 from typing import Dict, Sequence, Tuple
 
 from nilearn import datasets

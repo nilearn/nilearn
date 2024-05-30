@@ -1,4 +1,5 @@
 """Utility functions for the permuted least squares method."""
+
 import numpy as np
 from scipy import linalg
 from scipy.ndimage import label
@@ -120,9 +121,7 @@ def calculate_tfce(
                 # (via the current score_thresh)
                 # NOTE: We do not multiply by dh, based on fslmaths'
                 # implementation. This differs from the original paper.
-                cluster_tfces = (
-                    sign * (cluster_counts**E) * (score_thresh**H)
-                )
+                cluster_tfces = sign * (cluster_counts**E) * (score_thresh**H)
 
                 # Before we can add these values to tfce_4d, we need to
                 # map cluster-wise tfce values back to a voxel-wise array,

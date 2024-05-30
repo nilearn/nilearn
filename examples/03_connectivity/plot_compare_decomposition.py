@@ -18,13 +18,11 @@ for group-level analysis of :term:`fMRI` data.
 Compared to other strategies, it brings a well-controlled group model,
 as well as a
 thresholding algorithm controlling for specificity and sensitivity with
-an explicit model of the signal. The reference paper is:
+an explicit model of the signal.
 
-    * G. Varoquaux et al. "A group model for stable multi-subject ICA on
-      fMRI datasets", NeuroImage Vol 51 (2010), p. 288-299
-      `preprint <https://hal.inria.fr/hal-00489507/>`_
-
+The reference paper is :footcite:t:`Varoquaux2010c`.
 """
+
 # %%
 # Load brain development :term:`fMRI` dataset
 # -------------------------------------------
@@ -102,10 +100,7 @@ for i, cur_img in enumerate(iter_img(canica_components_img)):
 # and usually cleaner than :term:`ICA`. Here, we will compare networks built
 # with :term:`CanICA` to networks built with :term:`Dictionary learning`.
 #
-#    * Arthur Mensch et al. `Compressed online dictionary
-#      learning for fast resting-state fMRI decomposition
-#      <https://hal.archives-ouvertes.fr/hal-01271033/>`_,
-#      ISBI 2016, Lecture Notes in Computer Science
+# For more detailse see :footcite:t:`Mensch2016`.
 #
 
 
@@ -188,5 +183,12 @@ show()
 #     created using :term:`Dictionary learning`, see :ref:`example Regions
 #     extraction using dictionary learning and functional connectomes
 #     <sphx_glr_auto_examples_03_connectivity_plot_extract_regions_dictlearning_maps.py>`.
+
+# %%
+# References
+# ----------
+#
+#  .. footbibliography::
+
 
 # sphinx_gallery_dummy_images=5

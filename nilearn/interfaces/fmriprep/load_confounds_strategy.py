@@ -2,6 +2,7 @@
 
 Authors: Hao-Ting Wang, Pierre Bellec
 """
+
 import warnings
 
 from . import load_confounds
@@ -103,7 +104,7 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
           component can be really high. Please refer to :term:`fMRIPrep`
           documentation for more details.
 
-          .. versionadded:: 0.11.0
+          .. versionadded:: 0.10.3
             `golobal_signal` is now a tunable parameter for compcor.
 
         - 'ica_aroma': Load confounds for non-aggresive ICA-AROMA strategy

@@ -1,4 +1,5 @@
 """Masker for surface objects."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -51,9 +52,11 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         high_pass=None,
         t_r=None,
         memory_level=1,
-        memory=Memory(location=None),
+        memory=None,
         **kwargs,
     ):
+        if memory is None:
+            memory = Memory(location=None)
         self.mask_img = mask_img
         self.standardize = standardize
         self.standardize_confounds = standardize_confounds

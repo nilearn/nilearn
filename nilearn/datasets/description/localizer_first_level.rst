@@ -1,5 +1,11 @@
-localizer first level
+.. _localizer_first_level_dataset:
 
+localizer first level dataset
+=============================
+
+Access
+------
+See :func:`nilearn.datasets.fetch_localizer_first_level`.
 
 Notes
 -----
@@ -25,10 +31,9 @@ The dataset includes
     :'events': a csv file describing the paradigm
     :'description': data description
 
-
 References
 ----------
 
-
 License
 -------
+unknown

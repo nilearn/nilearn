@@ -2,6 +2,7 @@
 
 Mask nifti images by spherical volumes for seed-region analyses
 """
+
 import warnings
 
 import numpy as np
@@ -223,8 +224,10 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
     """Class for masking of Niimg-like objects using seeds.
 
     NiftiSpheresMasker is useful when data from given seeds should be
-    extracted. Use case: Summarize brain signals from seeds that were
-    obtained from prior knowledge.
+    extracted.
+
+    Use case:
+    summarize brain signals from seeds that were obtained from prior knowledge.
 
     Parameters
     ----------
@@ -298,12 +301,14 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         high_pass=None,
         t_r=None,
         dtype=None,
-        memory=Memory(location=None, verbose=0),
+        memory=None,
         memory_level=1,
         verbose=0,
         reports=True,
         **kwargs,
     ):
+        if memory is None:
+            memory = Memory(location=None, verbose=0)
         self.seeds = seeds
         self.mask_img = mask_img
         self.radius = radius
@@ -332,13 +337,13 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         # Parameters for reporting
         self.reports = reports
         self.report_id = -1
-        self._report_content = dict()
-        self._report_content["description"] = (
-            "This reports shows the regions "
-            "defined by the spheres of the masker."
-        )
-        self._report_content["warning_message"] = None
-
+        self._report_content = {
+            "description": (
+                "This reports shows the regions defined "
+                "by the spheres of the masker."
+            ),
+            "warning_message": None,
+        }
         self.verbose = verbose
 
     def generate_report(self, displayed_spheres="all"):
@@ -505,9 +510,11 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
             )
             regions_summary["relative size (in %)"].append("not implemented")
             if idx in spheres_to_be_displayed:
-                display = plotting.plot_img(img, cut_coords=positions[idx])
+                display = plotting.plot_img(
+                    img, cut_coords=seeds[idx], cmap="gray"
+                )
                 display.add_markers(
-                    marker_coords=[positions[idx]],
+                    marker_coords=[seeds[idx]],
                     marker_color="g",
                     marker_size=20 * radius,
                 )

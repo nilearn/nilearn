@@ -273,15 +273,12 @@ class BaseSlicer:
                   values below the threshold (in absolute value) are
                   plotted as transparent.
 
-
-
         cbar_tick_format: str, default="%%.2g" (scientific notation)
             Controls how to format the tick labels of the colorbar.
             Ex: use "%%i" to display as integers.
 
         colorbar : :obj:`bool`, default=False
             If ``True``, display a colorbar on the right of the plots.
-
 
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to function
@@ -396,6 +393,16 @@ class BaseSlicer:
         threshold = float(threshold) if threshold is not None else None
 
         affine = img.affine
+        if threshold is not None:
+            data = safe_get_data(img, ensure_finite=True)
+            if threshold == 0:
+                data = np.ma.masked_equal(data, 0, copy=False)
+            else:
+                data = np.ma.masked_inside(
+                    data, -threshold, threshold, copy=False
+                )
+            img = new_img_like(img, data, affine)
+
         data = safe_get_data(img, ensure_finite=True)
         data_bounds = get_bounds(data.shape, affine)
         (xmin, xmax), (ymin, ymax), (zmin, zmax) = data_bounds
@@ -978,6 +985,8 @@ class OrthoSlicer(BaseSlicer):
         The locator function used by matplotlib to position axes.
 
         Here we put the logic used to adjust the size of the axes.
+
+        ``renderer`` is required to match the matplolib API.
         """
         x0, y0, x1, y1 = self.rect
         width_dict = dict()
@@ -1001,7 +1010,7 @@ class OrthoSlicer(BaseSlicer):
                 # refresh of the figure) we capture the problem and
                 # ignore it: it only adds a non informative traceback
                 bounds = [0, 1, 0, 1]
-            xmin, xmax, ymin, ymax = bounds
+            xmin, xmax, _, _ = bounds
             width_dict[display_ax.ax] = xmax - xmin
 
         total_width = float(sum(width_dict.values()))
@@ -1332,6 +1341,8 @@ class TiledSlicer(BaseSlicer):
         The locator function used by matplotlib to position axes.
 
         Here we put the logic used to adjust the size of the axes.
+
+        ``renderer`` is required to match the matplolib API.
         """
         rect_x0, rect_y0, rect_x1, rect_y1 = self.rect
 
@@ -1538,6 +1549,8 @@ class BaseStackedSlicer(BaseSlicer):
         The locator function used by matplotlib to position axes.
 
         Here we put the logic used to adjust the size of the axes.
+
+        ``renderer`` is required to match the matplolib API.
         """
         x0, y0, x1, y1 = self.rect
         width_dict = dict()
@@ -1557,14 +1570,14 @@ class BaseStackedSlicer(BaseSlicer):
                 # refresh of the figure) we capture the problem and
                 # ignore it: it only adds a non informative traceback
                 bounds = [0, 1, 0, 1]
-            xmin, xmax, ymin, ymax = bounds
+            xmin, xmax, _, _ = bounds
             width_dict[display_ax.ax] = xmax - xmin
         total_width = float(sum(width_dict.values()))
         for ax, width in width_dict.items():
             width_dict[ax] = width / total_width * (x1 - x0)
         left_dict = dict()
         left = float(x0)
-        for coord, display_ax in display_ax_dict.items():
+        for _, display_ax in display_ax_dict.items():
             left_dict[display_ax.ax] = left
             this_width = width_dict[display_ax.ax]
             left += this_width
@@ -1861,7 +1874,7 @@ class MosaicSlicer(BaseSlicer):
 
     _cut_displayed = "yxz"
     _axes_class = CutAxes
-    _default_figsize = [11.1, 20.0]
+    _default_figsize = [4.0, 5.0]
 
     @classmethod
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
@@ -1954,6 +1967,8 @@ class MosaicSlicer(BaseSlicer):
     def _init_axes(self, **kwargs):
         """Initialize and place axes for display of 'xyz' multiple cuts.
 
+        Also adapts the width of the color bar relative to the axes.
+
         Parameters
         ----------
         kwargs : :obj:`dict`
@@ -1970,7 +1985,7 @@ class MosaicSlicer(BaseSlicer):
         x0, y0, x1, y1 = self.rect
 
         # Create our axes:
-        self.axes = dict()
+        self.axes = {}
         # portions for main axes
         fraction = y1 / len(self.cut_coords)
         height = fraction
@@ -2004,12 +2019,18 @@ class MosaicSlicer(BaseSlicer):
                 self.axes[(direction, coord)] = display_ax
                 ax.set_axes_locator(self._locator)
 
+        # increase color bar width to adapt to the number of cuts
+        #  see issue https://github.com/nilearn/nilearn/pull/4284
+        self._colorbar_width *= len(coords) ** 1.1
+
     def _locator(self, axes, renderer):
         """Adjust the size of the axes.
 
         Locator function used by matplotlib to position axes.
 
         Here we put the logic used to adjust the size of the axes.
+
+        ``renderer`` is required to match the matplolib API.
         """
         x0, y0, x1, y1 = self.rect
         display_ax_dict = self.axes
@@ -2033,7 +2054,7 @@ class MosaicSlicer(BaseSlicer):
                         # refresh of the figure) we capture the problem and
                         # ignore it: it only adds a non informative traceback
                         bounds = [0, 1, 0, 1]
-                    xmin, xmax, ymin, ymax = bounds
+                    xmin, xmax, _, _ = bounds
                     this_width[display_ax.ax] = xmax - xmin
             total_width = float(sum(this_width.values()))
             for ax, w in this_width.items():
@@ -2048,7 +2069,7 @@ class MosaicSlicer(BaseSlicer):
         for index, direction in enumerate(self._cut_displayed):
             left = float(x0)
             this_height = fraction + fraction * index
-            for coord, display_ax in display_ax_dict.items():
+            for _, display_ax in display_ax_dict.items():
                 if direction == display_ax.direction:
                     left_dict[display_ax.ax] = left
                     this_width = width_dict[display_ax.ax]

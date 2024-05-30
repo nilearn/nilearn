@@ -23,12 +23,14 @@ class OwningClass(BaseEstimator):
         target_shape=None,
         mask_strategy="background",
         mask_args=None,
-        memory=Memory(location=None),
+        memory=None,
         memory_level=0,
         n_jobs=1,
         verbose=0,
         dummy=None,
     ):
+        if memory is None:
+            memory = Memory(location=None)
         self.mask = mask
 
         self.smoothing_fwhm = smoothing_fwhm
