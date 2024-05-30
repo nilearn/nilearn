@@ -21,6 +21,7 @@ except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
 # %%
+import numpy as np
 
 from nilearn.experimental import plotting, surface
 from nilearn.plotting import plot_matrix
@@ -36,7 +37,33 @@ mean_data = masked_data.mean(axis=0)
 mean_img = masker.inverse_transform(mean_data)
 print(f"Image mean: {mean_img}")
 
-plotting.plot_surf(mean_img)
+# let's create a figure with all the views for both hemispheres
+views = ["lateral", "medial", "dorsal", "ventral", "anterior", "posterior"]
+hemispheres = ["left", "right"]
+
+fig, axes = plt.subplots(
+    len(views),
+    len(hemispheres),
+    subplot_kw={"projection": "3d"},
+    figsize=(4 * len(hemispheres), 4),
+)
+axes = np.atleast_2d(axes)
+
+for view, ax_row in zip(views, axes):
+    for ax, hemi in zip(ax_row, hemispheres):
+        plotting.plot_surf(
+            mean_img,
+            part=hemi,
+            view=view,
+            figure=fig,
+            axes=ax,
+            title=f"mean image - {hemi} - {view}",
+            colorbar=False,
+            cmap="bwr",
+            symmetric_cmap=True,
+        )
+fig.set_size_inches(6, 8)
+
 plt.show()
 
 # %%
@@ -51,8 +78,6 @@ labels_img, label_names = surface.fetch_destrieux()
 print(f"Destrieux image: {labels_img}")
 plotting.plot_surf(
     labels_img,
-    views=["lateral", "medial"],
-    cmap="gist_ncar",
     avg_method="median",
 )
 
@@ -71,8 +96,6 @@ plt.show()
 # %%
 # Using the `Decoder`
 # -------------------
-import numpy as np
-
 from nilearn import decoding
 from nilearn._utils import param_validation
 
@@ -112,7 +135,6 @@ plt.show()
 # %%
 # Decoding with a scikit-learn `Pipeline`
 # ---------------------------------------
-import numpy as np
 from sklearn import feature_selection, linear_model, pipeline, preprocessing
 
 img = surface.fetch_nki()[0]

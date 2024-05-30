@@ -1,36 +1,31 @@
-import numpy as np
-from matplotlib import pyplot as plt
-
 from nilearn import plotting as old_plotting
+from nilearn.experimental.surface import SurfaceImage
 
-
-def plot_surf(img, parts=None, mesh=None, views=None, **kwargs):
+def plot_surf(img, part: str | None =None, mesh=None, view: str | None=None, **kwargs):
     """Plot a SurfaceImage.
 
     TODO: docstring.
     """
+    if not isinstance(img, SurfaceImage):
+        return old_plotting.plot_surf(
+            surf_mesh=mesh,
+            surf_map=img,
+            hemi=part,
+            **kwargs,
+        )
+    
     if mesh is None:
         mesh = img.mesh
-    if parts is None:
-        parts = list(img.data.parts.keys())
-    if views is None:
-        views=["lateral"]
-    fig, axes = plt.subplots(
-        len(views),
-        len(parts),
-        subplot_kw={"projection": "3d"},
-        figsize=(4 * len(parts), 4),
-    )
-    axes = np.atleast_2d(axes)
-    for view, ax_row in zip(views, axes):
-        for ax, mesh_part in zip(ax_row, parts):
-            old_plotting.plot_surf(
-                mesh.parts[mesh_part],
-                img.data.parts[mesh_part],
-                hemi=mesh_part,
+    if part is None:
+        # only take the first hemipshere by default
+        part = list(img.data.parts.keys())[0]
+    if view is None:
+        view="lateral"
+
+    return   old_plotting.plot_surf(
+                surf_mesh=mesh.parts[part],
+                surf_map=img.data.parts[part],
+                hemi=part,
                 view=view,
-                axes=ax,
-                title=mesh_part,
                 **kwargs,
             )
-    return fig
