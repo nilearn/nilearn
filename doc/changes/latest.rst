@@ -33,4 +33,4 @@ Changes
 
 - :bdg-primary:`Doc` Refactor design matrix and contrast formula for the two-sample T-test example in :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_second_level_two_sample_test.py` (:gh:`4407` by `Yichun Huang`_).
 
-- :bdg-success:`API` Add future warning for copying header by default in :func:`nilearn.image` functions from version 0.13.0 onwards (:gh:`4427` by `Himanshu Aggarwal`_).
+- :bdg-success:`API` Allow users to control copying header to the output in :func:`nilearn.image` functions and add future warning to copy headers by default in release 0.13.0 onwards (:gh:`4397` by `Himanshu Aggarwal`_).
