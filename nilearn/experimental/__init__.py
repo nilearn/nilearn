@@ -16,4 +16,4 @@ enable the use of experimental features.
     Use those features at your own risks!
 """
 
-__all__ = ["surface",  "plotting"]
+__all__ = ["surface", "plotting"]
