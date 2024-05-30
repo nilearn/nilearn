@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 from nilearn import plotting as old_plotting
 
 
-def plot_surf(img, parts=None, mesh=None, views=["lateral"], **kwargs):
+def plot_surf(img, parts=None, mesh=None, views=None, **kwargs):
     """Plot a SurfaceImage.
 
     TODO: docstring.
@@ -13,6 +13,8 @@ def plot_surf(img, parts=None, mesh=None, views=["lateral"], **kwargs):
         mesh = img.mesh
     if parts is None:
         parts = list(img.data.parts.keys())
+    if views is None:
+        views=["lateral"]
     fig, axes = plt.subplots(
         len(views),
         len(parts),
