@@ -341,6 +341,7 @@ def resample_img(
     clip=True,
     fill_value=0,
     force_resample=False,
+    copy_header=None,
 ):
     """Resample a Niimg-like object.
 
@@ -385,6 +386,14 @@ def resample_img(
 
     force_resample : bool, default=False
         Intended for testing, this prevents the use of a padding optimization.
+
+    copy_header : :obj:`bool`, default=None
+        Whether to copy the header of the input image to the output.
+        If None, the default behavior is to not copy the header.
+
+        .. versionadded:: 0.11.0
+
+        This parameter will be set to True by default in 0.13.0.
 
     Returns
     -------
@@ -439,15 +448,21 @@ def resample_img(
     """
     from .image import new_img_like  # avoid circular imports
 
-    copy_header_default = (
-        "From release 0.13.0 this function will, by default, copy the header "
-        "of the input image to the output. Currently, the header is not "
-        "copied at all."
-    )
-    warnings.warn(
-        category=FutureWarning,
-        message=copy_header_default,
-    )
+    # TODO: remove this warning in 0.13.0
+    if copy_header is None:
+        copy_header_default = (
+            "From release 0.13.0 onwards, this function will, by default, "
+            "copy the header of the input image to the output."
+            "Currently, the header is reset to the default Nifti1Header."
+            "To suppress this warning and continue using the current behavior "
+            "set `copy_header=False`. To use the new behavior, set "
+            "`copy_header=True`."
+        )
+        warnings.warn(
+            category=FutureWarning,
+            message=copy_header_default,
+        )
+        copy_header = False
 
     # Do as many checks as possible before loading data, to avoid potentially
     # costly calls before raising an exception.
@@ -691,7 +706,9 @@ def resample_img(
         vmax = max(np.nanmax(data), 0)
         resampled_data.clip(vmin, vmax, out=resampled_data)
 
-    return new_img_like(img, resampled_data, target_affine, copy_header=True)
+    return new_img_like(
+        img, resampled_data, target_affine, copy_header=copy_header
+    )
 
 
 def resample_to_img(
@@ -703,6 +720,7 @@ def resample_to_img(
     clip=False,
     fill_value=0,
     force_resample=False,
+    copy_header=None,
 ):
     """Resample a Niimg-like source image on a target Niimg-like image.
 
@@ -744,6 +762,14 @@ def resample_to_img(
     force_resample : bool, default=False
         Intended for testing, this prevents the use of a padding optimization.
 
+    copy_header : :obj:`bool`, default=None
+        Whether to copy the header of the input image to the output.
+        If None, the default behavior is to not copy the header.
+
+        .. versionadded:: 0.11.0
+
+        This parameter will be set to True by default in 0.13.0.
+
     Returns
     -------
     resampled: nibabel.Nifti1Image
@@ -773,6 +799,7 @@ def resample_to_img(
         clip=clip,
         fill_value=fill_value,
         force_resample=force_resample,
+        copy_header=copy_header,
     )
 
 
