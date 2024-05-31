@@ -309,7 +309,7 @@ objects":
     .thickness, .curv, .sulc, .annot, .label)
   * A 1D Numpy array with a value for each of vertex of the surface.
 
-**Nisurf-data-2D** Simmilarly, some functions require 2D Nisurf-data-like
+**Nisurf-data-2D** Similarly, some functions require 2D Nisurf-data-like
 input, which we call Nisurfs-data or Nisurf-data-2D. Accepted input arguments are:
 
   * A string with a file path to a 2D surface file
@@ -324,4 +324,3 @@ input, which we call Nisurfs-data or Nisurf-data-2D. Accepted input arguments ar
     specific files such as .orig, .pial, .sphere, .white, .inflated)
   * A list of two Numpy arrays, the first containing the x-y-z coordinates,
     the second containing the indices (into coords) of the mesh faces.
-

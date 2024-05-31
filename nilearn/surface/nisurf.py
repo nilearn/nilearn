@@ -2,13 +2,14 @@
 Surface file input and output utils
 """
 
-import numpy as np
-
 import collections.abc
 from copy import deepcopy
+
+import numpy as np
+
+from .._utils import as_ndarray
 from .._utils.exceptions import DimensionError
 from .._utils.niimg import _get_target_dtype
-from .._utils import as_ndarray
 from .surface import load_surf_data
 
 
@@ -31,7 +32,7 @@ def check_nisurf_1d(nisurf, dtype=None):
     Returns
     -------
     result: 1D Numpy array
-        Result is a 1D Numpy array representing the surface. 
+        Result is a 1D Numpy array representing the surface.
 
     """
 
@@ -42,7 +43,7 @@ def check_nisurf_1d(nisurf, dtype=None):
     if len(data.shape) != 1:
         raise DimensionError(len(data.shape), 1)
 
-    # Proccess passed dtype
+    # Process passed dtype
     new_dtype = _get_target_dtype(data.dtype, dtype)
     data = as_ndarray(data, dtype=new_dtype)
 
@@ -61,7 +62,7 @@ def check_nisurf_2d(nisurf, atleast_2d=False, dtype=None):
         If it is a Numpy array, check to make sure it really is a 2D Numpy
         array.
         If it is an iterable, and not a Numpy array,
-        load each piece seperately, and concatenate.
+        load each piece separately, and concatenate.
 
     atleast_2d : boolean, optional
         Indicates if a 1d Numpy array should be turned into a single-scan
@@ -80,11 +81,11 @@ def check_nisurf_2d(nisurf, atleast_2d=False, dtype=None):
     """
 
     # Handle different cases for 2D surface input
-    if isinstance(nisurf, str) or isinstance(nisurf, np.ndarray):
+    if isinstance(nisurf, (str, np.ndarray)):
         # If str, or already ndarray call load_surf_data
         data = load_surf_data(nisurf)
     elif isinstance(nisurf, collections.abc.Iterable):
-        # If iterable, try to load each piece seperately
+        # If iterable, try to load each piece separately
         for s in range(len(nisurf)):
             data_part = load_surf_data(nisurf[s])
 
@@ -96,15 +97,19 @@ def check_nisurf_2d(nisurf, atleast_2d=False, dtype=None):
                 try:
                     data = np.concatenate((data, data_part), axis=1)
                 except ValueError:
-                    raise ValueError('When more than one file is input, all '
-                                     'files must contain data with the same '
-                                     'shape in axis=0')
+                    raise ValueError(
+                        "When more than one file is input, all "
+                        "files must contain data with the same "
+                        "shape in axis=0"
+                    )
     else:
-        raise ValueError('The input type is not recognized. '
-                         'Valid inputs are a 2D Numpy array '
-                         'a list of 1D Numpy arrays, a valid file '
-                         'with a 2D surface or a list of valid files '
-                         'with 1D surfaces.')
+        raise ValueError(
+            "The input type is not recognized. "
+            "Valid inputs are a 2D Numpy array "
+            "a list of 1D Numpy arrays, a valid file "
+            "with a 2D surface or a list of valid files "
+            "with 1D surfaces."
+        )
 
     # Convert to 2D if specified
     if atleast_2d and len(data.shape) == 1:
@@ -113,7 +118,7 @@ def check_nisurf_2d(nisurf, atleast_2d=False, dtype=None):
     if len(data.shape) != 2:
         raise DimensionError(len(data.shape), 2)
 
-    # Proccess passed dtype
+    # Process passed dtype
     new_dtype = _get_target_dtype(data.dtype, dtype)
     data = as_ndarray(data, dtype=new_dtype)
 
@@ -121,18 +126,16 @@ def check_nisurf_2d(nisurf, atleast_2d=False, dtype=None):
 
 
 def _repr_nisurfs_data(nisurfs):
-    """ Pretty printing of nisurf-data or nisurfs-data
-    """
+    """Pretty printing of nisurf-data or nisurfs-data"""
     if isinstance(nisurfs, str):
         return nisurfs
     if isinstance(nisurfs, np.ndarray):
-        return "Surface(shape=%s)" % \
-               (repr(nisurfs.shape))
-    if isinstance(nisurfs, collections.abc.Iterable):
-        return ('[%s]' % ', '.join(_repr_nisurfs_data(nisurf)
-                for nisurf in nisurfs))
-
-    return repr(nisurfs)
+        return f"Surface(shape={repr(nisurfs.shape)})"
+    return (
+        f'[{", ".join(_repr_nisurfs_data(nisurf) for nisurf in nisurfs)}]'
+        if isinstance(nisurfs, collections.abc.Iterable)
+        else repr(nisurfs)
+    )
 
 
 def _load_surf_mask(mask_surf, allow_empty=False):
@@ -159,26 +162,30 @@ def _load_surf_mask(mask_surf, allow_empty=False):
         # We accept a single value if it is not 0 (full true mask).
         if values[0] == 0 and not allow_empty:
             raise ValueError(
-                'The mask is invalid as it is empty: it masks all data.')
+                "The mask is invalid as it is empty: it masks all data."
+            )
     elif len(values) == 2:
         # If there are 2 different values, one of them must be 0 (background)
         if 0 not in values:
-            raise ValueError('Background of the mask must be represented with'
-                             '0. Given mask contains: %s.' % values)
-    elif len(values) != 2:
+            raise ValueError(
+                "Background of the mask must be represented with"
+                "0. Given mask contains: %s." % values
+            )
+    else:
         # If there are more than 2 values, the mask is invalid
-        raise ValueError('Given mask is not made of 2 values: %s'
-                         '. Cannot interpret as true or false'
-                         % values)
+        raise ValueError(
+            "Given mask is not made of 2 values: %s"
+            ". Cannot interpret as true or false" % values
+        )
 
     mask = as_ndarray(mask, dtype=bool)
     return mask
 
 
 def _safe_get_data(surf, copy=False, ensure_finite=False):
-    """ Analog to niimg _safe_get_data.
+    """Analog to niimg _safe_get_data.
     Right now, as there is no wrapper object for surfaces,
-    this will just allow retriving a copy / a version w/o
+    this will just allow retrieving a copy / a version w/o
     NaNs + infs.
 
     In the future, if a wrapper object for Nisurf-data
@@ -205,11 +212,7 @@ def _safe_get_data(surf, copy=False, ensure_finite=False):
         nilearn.image.get_data return from Nifti image.
     """
 
-    if copy:
-        surf_copy = deepcopy(surf)
-    else:
-        surf_copy = surf
-
+    surf_copy = deepcopy(surf) if copy else surf
     non_finite_mask = np.logical_not(np.isfinite(surf_copy))
     if non_finite_mask.sum() > 0:
 

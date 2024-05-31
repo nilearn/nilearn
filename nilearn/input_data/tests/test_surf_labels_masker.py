@@ -1,18 +1,19 @@
 import os
 import tempfile
-import numpy as np
-import nibabel as nb
-
-from nilearn._utils.exceptions import DimensionError
 
 import nibabel
+import nibabel as nb
+import numpy as np
 import pytest
-
-from nilearn.input_data.surf_labels_masker import (SurfLabelsMasker,
-                                                   _all_files_check,
-                                                   _get_single_surf,
-                                                   surf_to_signals_labels)
 from numpy.testing import assert_array_equal
+
+from nilearn._utils.exceptions import DimensionError
+from nilearn.input_data.surf_labels_masker import (
+    SurfLabelsMasker,
+    _all_files_check,
+    _get_single_surf,
+    surf_to_signals_labels,
+)
 
 
 def test_surf_labels_maskers():
@@ -52,9 +53,9 @@ def test_surf_labels_maskers():
     masker = SurfLabelsMasker(labels_surf=labels_surf)
 
     # Test load from list of 1D files
-    files = [tempfile.mktemp(suffix='.nii') for _ in range(3)]
+    files = [tempfile.mktemp(suffix=".nii") for _ in range(3)]
     for f in files:
-        nii = nb.Nifti1Image(np.zeros((4, )), affine=None)
+        nii = nb.Nifti1Image(np.zeros((4,)), affine=None)
         nb.save(nii, f)
     trans_surf = masker.fit_transform(files)
     assert_array_equal(trans_surf, np.zeros((3, 3)))
@@ -66,8 +67,7 @@ def test_surf_labels_maskers():
         os.remove(f)
 
     # Test with passing a different background label
-    masker = SurfLabelsMasker(labels_surf=labels_surf,
-                              background_label=1)
+    masker = SurfLabelsMasker(labels_surf=labels_surf, background_label=1)
     trans_surf = masker.fit_transform(fake_1d_surf)
     assert_array_equal(trans_surf, np.ones((1, 2)))
     back_to_original = masker.inverse_transform(trans_surf)
@@ -76,9 +76,11 @@ def test_surf_labels_maskers():
     assert_array_equal(back_to_original, expected)
 
     # Test with mask_labels_surf
-    masker = SurfLabelsMasker(labels_surf=labels_surf,
-                              background_label=1,
-                              mask_labels_surf=np.array([0, 0, 0, 1]))
+    masker = SurfLabelsMasker(
+        labels_surf=labels_surf,
+        background_label=1,
+        mask_labels_surf=np.array([0, 0, 0, 1]),
+    )
     trans_surf = masker.fit_transform(fake_1d_surf)
     assert_array_equal(trans_surf, np.ones((1, 1)))
     back_to_original = masker.inverse_transform(trans_surf)
@@ -87,24 +89,26 @@ def test_surf_labels_maskers():
 
     # Check is fitted
     masker = SurfLabelsMasker(labels_surf=labels_surf)
-    with pytest.raises(ValueError, match='has not been fitted. '):
+    with pytest.raises(ValueError, match="has not been fitted. "):
         masker.inverse_transform(back_to_original)
 
 
 def test_surf_labels_masker_reduction_strategies():
 
-    test_values = [-2., -1., 0., 1., 2]
+    test_values = [-2.0, -1.0, 0.0, 1.0, 2]
     surf_data = np.array(test_values * 2)
     labels = np.array([0] * 5 + [1] * 5, dtype=np.int8)
 
     # What SurfLabelsMasker should return for each reduction strategy
-    expected_results = {"mean": np.mean(test_values),
-                        "median": np.median(test_values),
-                        "sum": np.sum(test_values),
-                        "minimum": np.min(test_values),
-                        "maximum": np.max(test_values),
-                        "standard_deviation": np.std(test_values),
-                        "variance": np.var(test_values)}
+    expected_results = {
+        "mean": np.mean(test_values),
+        "median": np.median(test_values),
+        "sum": np.sum(test_values),
+        "minimum": np.min(test_values),
+        "maximum": np.max(test_values),
+        "standard_deviation": np.std(test_values),
+        "variance": np.var(test_values),
+    }
 
     for strategy, expected_result in expected_results.items():
         masker = SurfLabelsMasker(labels, strategy=strategy)
@@ -112,10 +116,7 @@ def test_surf_labels_masker_reduction_strategies():
         assert_array_equal(result, expected_result)
 
     with pytest.raises(ValueError, match="Invalid strategy 'TESTRAISE'"):
-        SurfLabelsMasker(
-            labels,
-            strategy="TESTRAISE"
-        )
+        SurfLabelsMasker(labels, strategy="TESTRAISE")
 
     default_masker = SurfLabelsMasker(labels)
     assert default_masker.strategy == "mean"
@@ -144,7 +145,7 @@ def test_bad_input_surf_labels_masker_errors():
     with pytest.raises(ValueError):
         SurfLabelsMasker(labels, background_label=6.6)
     with pytest.raises(ValueError):
-        SurfLabelsMasker(labels, background_label='bad')
+        SurfLabelsMasker(labels, background_label="bad")
 
     # Check bad data to transform
     labels = np.array([1, 2, 3])
@@ -158,10 +159,10 @@ def test_bad_input_surf_labels_masker_errors():
     bad_surf_data = np.ones((5, 3))
     pytest.raises(ValueError, masker.fit_transform, bad_surf_data)
 
-    # Check files case, with mimatch surf labels shape
-    files = [tempfile.mktemp(suffix='.nii') for _ in range(3)]
+    # Check files case, with mismatch surf labels shape
+    files = [tempfile.mktemp(suffix=".nii") for _ in range(3)]
     for f in range(len(files)):
-        nii = nb.Nifti1Image(np.zeros((3 + f)), affine=None)
+        nii = nb.Nifti1Image(np.zeros(3 + f), affine=None)
         nb.save(nii, files[f])
 
     pytest.raises(ValueError, masker.fit_transform, files)
@@ -184,17 +185,17 @@ def test_surf_labels_masker_with_nans_and_infs():
 
 def test_all_files_checks():
 
-    files1 = [tempfile.mktemp(suffix='.nii') for _ in range(3)]
-    files2 = ['as_strs' for _ in range(5)]
+    files1 = [tempfile.mktemp(suffix=".nii") for _ in range(3)]
+    files2 = ["as_strs" for _ in range(5)]
 
-    assert(_all_files_check(files1))
-    assert(_all_files_check(files2))
+    assert _all_files_check(files1)
+    assert _all_files_check(files2)
 
     not_files1 = np.array((10, 6))
     not_files2 = [np.ones(5), np.ones(5)]
 
-    assert (_all_files_check(not_files1) is False)
-    assert (_all_files_check(not_files2) is False)
+    assert _all_files_check(not_files1) is False
+    assert _all_files_check(not_files2) is False
 
 
 def test_get_single_surf():
@@ -216,27 +217,4 @@ def test_surf_to_signals_labels_bad_strategy():
 
     with pytest.raises(ValueError):
 
-        surf_to_signals_labels(np.ones((5, 5)), np.ones((5)),
-                               strategy='magic')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
-    
-
-
-    
-
+        surf_to_signals_labels(np.ones((5, 5)), np.ones(5), strategy="magic")

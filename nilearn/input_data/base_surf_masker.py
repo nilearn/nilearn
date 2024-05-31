@@ -1,27 +1,32 @@
 """
 Transformer used to apply basic transformations on surface data.
 """
+
 # Author: Sage Hahn
 # License: simplified BSD
 
 import abc
 
-from sklearn.base import BaseEstimator, TransformerMixin
 from joblib import Memory
+from sklearn.base import BaseEstimator, TransformerMixin
 
-from ..surface import nisurf
 from .. import signal
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.class_inspect import enclosing_scope_name
+from ..surface import nisurf
 
 
-def filter_and_extract(surfs, extraction_function,
-                       parameters,
-                       memory_level=0, memory=Memory(location=None),
-                       verbose=0,
-                       confounds=None,
-                       copy=True,
-                       dtype=None):
+def filter_and_extract(
+    surfs,
+    extraction_function,
+    parameters,
+    memory_level=0,
+    memory=Memory(location=None),
+    verbose=0,
+    confounds=None,
+    copy=True,
+    dtype=None,
+):
     """Extract representative time series using given function.
 
     Parameters
@@ -49,18 +54,23 @@ def filter_and_extract(surfs, extraction_function,
         class_name = enclosing_scope_name(stack_level=10)
 
     if verbose > 0:
-        print("[%s] Loading data from %s" % (
-            class_name,
-            nisurf._repr_nisurfs_data(surfs)[:200]))
+        print(
+            "[{}] Loading data from {}".format(
+                class_name, nisurf._repr_nisurfs_data(surfs)[:200]
+            )
+        )
 
     # Load surface ensuring 2D
     surfs = nisurf.check_nisurf_2d(surfs, atleast_2d=True, dtype=dtype)
 
     if verbose > 0:
         print("[%s] Extracting region signals" % class_name)
-    region_signals, aux = cache(extraction_function, memory,
-                                func_memory_level=2,
-                                memory_level=memory_level)(surfs)
+    region_signals, aux = cache(
+        extraction_function,
+        memory,
+        func_memory_level=2,
+        memory_level=memory_level,
+    )(surfs)
 
     # Temporal
     # --------
@@ -70,25 +80,28 @@ def filter_and_extract(surfs, extraction_function,
     # Normalizing
     if verbose > 0:
         print("[%s] Cleaning extracted signals" % class_name)
-    sessions = parameters.get('sessions')
+    sessions = parameters.get("sessions")
     region_signals = cache(
-        signal.clean, memory=memory, func_memory_level=2,
-        memory_level=memory_level)(
-            region_signals,
-            detrend=parameters['detrend'],
-            standardize=parameters['standardize'],
-            t_r=parameters['t_r'],
-            low_pass=parameters['low_pass'],
-            high_pass=parameters['high_pass'],
-            confounds=confounds,
-            sessions=sessions)
+        signal.clean,
+        memory=memory,
+        func_memory_level=2,
+        memory_level=memory_level,
+    )(
+        region_signals,
+        detrend=parameters["detrend"],
+        standardize=parameters["standardize"],
+        t_r=parameters["t_r"],
+        low_pass=parameters["low_pass"],
+        high_pass=parameters["high_pass"],
+        confounds=confounds,
+        sessions=sessions,
+    )
 
     return region_signals, aux
 
 
 class BaseSurfMasker(BaseEstimator, TransformerMixin, CacheMixin):
-    """Base class for SurfMaskers
-    """
+    """Base class for SurfMaskers"""
 
     @abc.abstractmethod
     def transform_single_surfs(self, surfs, confounds=None, copy=True):
@@ -167,8 +180,7 @@ class BaseSurfMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
     @abc.abstractmethod
     def inverse_transform(self, X):
-        """ Transform the 2D data matrix back to surface brain space.
-        """
+        """Transform the 2D data matrix back to surface brain space."""
         raise NotImplementedError()
 
     @abc.abstractmethod

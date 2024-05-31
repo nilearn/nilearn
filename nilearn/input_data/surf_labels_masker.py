@@ -2,20 +2,20 @@
 Transformer for computing ROI signals from surface data.
 """
 
-import numpy as np
-
-from joblib import Memory
-
 import collections.abc
-from ..surface import nisurf
+
+import numpy as np
+from joblib import Memory
 from scipy import ndimage
-from .._utils import logger, CacheMixin, _compose_err_msg
+
+from .._utils import CacheMixin, _compose_err_msg, logger
 from .._utils.class_inspect import get_params
+from ..surface import nisurf
 from .base_surf_masker import BaseSurfMasker, filter_and_extract
 
 
 def _all_files_check(surfs):
-    '''In the case where surfs are a list of not yet loaded files,
+    """In the case where surfs are a list of not yet loaded files,
     we should load and proc files 1 by 1
 
     Parameters
@@ -30,17 +30,17 @@ def _all_files_check(surfs):
     all_files : bool
         If surfs is a list of 1D Nisurf-data-like file_paths returns
         True, otherwise false.
-    '''
+    """
 
-    all_files =\
-        (isinstance(surfs, collections.abc.Iterable)) and (
-            all([isinstance(surf, str) for surf in surfs]))
+    all_files = (isinstance(surfs, collections.abc.Iterable)) and all(
+        isinstance(surf, str) for surf in surfs
+    )
 
     return all_files
 
 
 def _get_single_surf(surfs, n, all_files):
-    '''Helper function to return the right single
+    """Helper function to return the right single
     surface, based on an all_files passed case where
     files have yet to be loaded, or a case where the input is
     already loaded
@@ -62,16 +62,14 @@ def _get_single_surf(surfs, n, all_files):
     -------
     surf : 1D Nisurf-data like
         The n'th surf in passed surfs
-    '''
+    """
 
-    if all_files:
-        return nisurf.check_nisurf_1d(surfs[n])
-    else:
-        return surfs[:, n]
+    return nisurf.check_nisurf_1d(surfs[n]) if all_files else surfs[:, n]
 
 
-def surf_to_signals_labels(surfs, labels_surf, background_label=0,
-                           order='F', strategy='mean'):
+def surf_to_signals_labels(
+    surfs, labels_surf, background_label=0, order="F", strategy="mean"
+):
     """Extract region signals from surfs.
 
     This function is applicable to regions defined by labels.
@@ -96,7 +94,7 @@ def surf_to_signals_labels(surfs, labels_surf, background_label=0,
 
     strategy: str
         The name of a valid function to reduce the region with.
-        Must be one of: sum, mean, median, mininum, maximum, variance,
+        Must be one of: sum, mean, median, minimum, maximum, variance,
         standard_deviation
 
     Returns
@@ -114,15 +112,23 @@ def surf_to_signals_labels(surfs, labels_surf, background_label=0,
     nilearn.regions.img_to_signals_labels
     """
 
-    available_reduction_strategies = {'mean', 'median', 'sum',
-                                      'minimum', 'maximum',
-                                      'standard_deviation', 'variance'}
+    available_reduction_strategies = {
+        "mean",
+        "median",
+        "sum",
+        "minimum",
+        "maximum",
+        "standard_deviation",
+        "variance",
+    }
     if strategy not in available_reduction_strategies:
-        raise ValueError(str.format(
-            "Invalid strategy '{}'. Valid strategies are {}.",
-            strategy,
-            available_reduction_strategies
-        ))
+        raise ValueError(
+            str.format(
+                "Invalid strategy '{}'. Valid strategies are {}.",
+                strategy,
+                available_reduction_strategies,
+            )
+        )
     reduction_function = getattr(ndimage.measurements, strategy)
 
     # Load labels
@@ -143,8 +149,9 @@ def surf_to_signals_labels(surfs, labels_surf, background_label=0,
         surf_dtype, surf_sz = first_surf.dtype, first_surf.shape[-1]
 
     target_datatype = np.float32 if surf_dtype == np.float32 else np.float64
-    signals = np.ndarray((surf_sz, len(labels)), dtype=target_datatype,
-                         order=order)
+    signals = np.ndarray(
+        (surf_sz, len(labels)), dtype=target_datatype, order=order
+    )
 
     # Process by data point / # of scans
     for n in range(surf_sz):
@@ -153,26 +160,31 @@ def surf_to_signals_labels(surfs, labels_surf, background_label=0,
         # path or not
         surf = _get_single_surf(surfs, n, all_files)
         if surf.shape != labels_surf.shape:
-            raise ValueError("labels_surf and each passed surf must have the "
-                             "the same shape.")
+            raise ValueError(
+                "labels_surf and each passed surf must have the "
+                "the same shape."
+            )
 
         # Pass version of surf-data w/o NaN's or infs
-        signals[n] =\
-            np.asarray(reduction_function(
+        signals[n] = np.asarray(
+            reduction_function(
                 nisurf._safe_get_data(surf, ensure_finite=True),
                 labels=labels_surf,
-                index=labels))
+                index=labels,
+            )
+        )
 
     # Set to zero signals for missing labels. Workaround for Scipy behaviour
     missing_labels = set(labels) - set(np.unique(labels_surf))
-    labels_index = dict([(l, n) for n, l in enumerate(labels)])
+    labels_index = {l: n for n, l in enumerate(labels)}
     for l in missing_labels:
         signals[:, labels_index[l]] = 0
     return signals, labels
 
 
-def signals_to_surf_labels(signals, labels_surf,
-                           background_label=0, order="C"):
+def signals_to_surf_labels(
+    signals, labels_surf, background_label=0, order="C"
+):
     """Create a surface from region signal defined labels.
 
     The same region signal is used for each verex of the corresponding 1D
@@ -213,8 +225,11 @@ def signals_to_surf_labels(signals, labels_surf,
         labels.remove(background_label)
 
     # Init data as array of zeros, shape = (# or vertex, # of datapoints)
-    data = np.zeros((labels_surf.shape[0], signals.shape[0]),
-                    dtype=signals.dtype, order=order)
+    data = np.zeros(
+        (labels_surf.shape[0], signals.shape[0]),
+        dtype=signals.dtype,
+        order=order,
+    )
 
     # This seems fast enough for surface data
     # for C ordering it only takes 700ms
@@ -225,9 +240,9 @@ def signals_to_surf_labels(signals, labels_surf,
     return data
 
 
-class _ExtractionFunctor(object):
+class _ExtractionFunctor:
 
-    func_name = 'surf_labels_masker_extractor'
+    func_name = "surf_labels_masker_extractor"
 
     def __init__(self, _labels_surf_, background_label, strategy):
         self._labels_surf_ = _labels_surf_
@@ -235,9 +250,12 @@ class _ExtractionFunctor(object):
         self.strategy = strategy
 
     def __call__(self, surfs):
-        return surf_to_signals_labels(surfs, self._labels_surf_,
-                                      background_label=self.background_label,
-                                      strategy=self.strategy)
+        return surf_to_signals_labels(
+            surfs,
+            self._labels_surf_,
+            background_label=self.background_label,
+            strategy=self.strategy,
+        )
 
 
 class SurfLabelsMasker(BaseSurfMasker, CacheMixin):
@@ -306,16 +324,28 @@ class SurfLabelsMasker(BaseSurfMasker, CacheMixin):
 
     strategy: str
         The name of a valid function to reduce the region with.
-        Must be one of: sum, mean, median, mininum, maximum, variance,
+        Must be one of: sum, mean, median, minimum, maximum, variance,
         standard_deviation
     """
+
     # memory and memory_level are used by CacheMixin.
 
-    def __init__(self, labels_surf, background_label=0, mask_labels_surf=None,
-                 standardize=False, detrend=False,
-                 low_pass=None, high_pass=None, t_r=None, dtype=None,
-                 memory=Memory(location=None, verbose=0), memory_level=1,
-                 verbose=0, strategy="mean"):
+    def __init__(
+        self,
+        labels_surf,
+        background_label=0,
+        mask_labels_surf=None,
+        standardize=False,
+        detrend=False,
+        low_pass=None,
+        high_pass=None,
+        t_r=None,
+        dtype=None,
+        memory=Memory(location=None, verbose=0),
+        memory_level=1,
+        verbose=0,
+        strategy="mean",
+    ):
         self.labels_surf = labels_surf
         self.background_label = background_label
         self.mask_labels_surf = mask_labels_surf
@@ -333,23 +363,32 @@ class SurfLabelsMasker(BaseSurfMasker, CacheMixin):
         self.memory_level = memory_level
         self.verbose = verbose
 
-        available_reduction_strategies = {'mean', 'median', 'sum',
-                                          'minimum', 'maximum',
-                                          'standard_deviation', 'variance'}
+        available_reduction_strategies = {
+            "mean",
+            "median",
+            "sum",
+            "minimum",
+            "maximum",
+            "standard_deviation",
+            "variance",
+        }
 
         if strategy not in available_reduction_strategies:
-            raise ValueError(str.format(
-                "Invalid strategy '{}'. Valid strategies are {}.",
-                strategy,
-                available_reduction_strategies
-            ))
+            raise ValueError(
+                str.format(
+                    "Invalid strategy '{}'. Valid strategies are {}.",
+                    strategy,
+                    available_reduction_strategies,
+                )
+            )
 
         # Check background label
         if not isinstance(background_label, int):
-            raise ValueError(str.format(
-                "Invalid background_label '{}'. Must be int.",
-                strategy
-            ))
+            raise ValueError(
+                str.format(
+                    "Invalid background_label '{}'. Must be int.", strategy
+                )
+            )
 
         self.strategy = strategy
 
@@ -360,18 +399,21 @@ class SurfLabelsMasker(BaseSurfMasker, CacheMixin):
         """
 
         # Load labels_surf
-        logger.log("loading data from %s" %
-                   nisurf._repr_nisurfs_data(self.labels_surf)[:200],
-                   verbose=self.verbose)
+        logger.log(
+            f"loading data from {nisurf._repr_nisurfs_data(self.labels_surf)[:200]}",
+            verbose=self.verbose,
+        )
         self.labels_surf_ = nisurf.check_nisurf_1d(self.labels_surf)
 
         # Load mask_labels_surf, if any
         if self.mask_labels_surf is not None:
-            logger.log("loading data from %s" %
-                       nisurf._repr_nisurfs_data(self.mask_labels_surf)[:200],
-                       verbose=self.verbose)
-            self.mask_labels_surf_ =\
-                nisurf._load_surf_mask(self.mask_labels_surf)
+            logger.log(
+                f"loading data from {nisurf._repr_nisurfs_data(self.mask_labels_surf)[:200]}",
+                verbose=self.verbose,
+            )
+            self.mask_labels_surf_ = nisurf._load_surf_mask(
+                self.mask_labels_surf
+            )
         else:
             self.mask_labels_surf_ = None
 
@@ -382,7 +424,9 @@ class SurfLabelsMasker(BaseSurfMasker, CacheMixin):
                     _compose_err_msg(
                         "Regions and mask do not have the same shape",
                         mask_labels_surf=self.mask_labels_surf,
-                        labels_surf=self.labels_surf))
+                        labels_surf=self.labels_surf,
+                    )
+                )
 
             # Mask labels, as set area outside of mask to background
             self.labels_surf_[~self.mask_labels_surf_] = self.background_label
@@ -390,15 +434,16 @@ class SurfLabelsMasker(BaseSurfMasker, CacheMixin):
         return self
 
     def fit_transform(self, surfs, confounds=None):
-        """ Prepare and perform signal extraction from regions.
-        """
+        """Prepare and perform signal extraction from regions."""
         return self.fit().transform(surfs, confounds=confounds)
 
     def _check_fitted(self):
         if not hasattr(self, "labels_surf_"):
-            raise ValueError('It seems that %s has not been fitted. '
-                             'You must call fit() before calling transform().'
-                             % self.__class__.__name__)
+            raise ValueError(
+                "It seems that %s has not been fitted. "
+                "You must call fit() before calling transform()."
+                % self.__class__.__name__
+            )
 
     def transform_single_surfs(self, surfs, confounds=None):
         """Extract signals from a single 2D nisurf.
@@ -423,21 +468,23 @@ class SurfLabelsMasker(BaseSurfMasker, CacheMixin):
         """
 
         params = get_params(SurfLabelsMasker, self)
-        region_signals, labels_ =\
-            self._cache(filter_and_extract,
-                        ignore=['verbose', 'memory', 'memory_level'])(
-                # Images
-                surfs, _ExtractionFunctor(self.labels_surf_,
-                                          self.background_label,
-                                          self.strategy),
-                # Pre-processing
-                params,
-                confounds=confounds,
-                dtype=self.dtype,
-                # Caching
-                memory=self.memory,
-                memory_level=self.memory_level,
-                verbose=self.verbose)
+        region_signals, labels_ = self._cache(
+            filter_and_extract, ignore=["verbose", "memory", "memory_level"]
+        )(
+            # Images
+            surfs,
+            _ExtractionFunctor(
+                self.labels_surf_, self.background_label, self.strategy
+            ),
+            # Pre-processing
+            params,
+            confounds=confounds,
+            dtype=self.dtype,
+            # Caching
+            memory=self.memory,
+            memory_level=self.memory_level,
+            verbose=self.verbose,
+        )
 
         self.labels_ = labels_
 
@@ -464,10 +511,6 @@ class SurfLabelsMasker(BaseSurfMasker, CacheMixin):
         self._check_fitted()
 
         logger.log("computing surface from signals", verbose=self.verbose)
-        return signals_to_surf_labels(signals, self.labels_surf_,
-                                      background_label=self.background_label)
-
-
-            
-
-
+        return signals_to_surf_labels(
+            signals, self.labels_surf_, background_label=self.background_label
+        )
