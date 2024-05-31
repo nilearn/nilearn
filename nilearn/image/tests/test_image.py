@@ -406,7 +406,7 @@ def test_crop_img_copied_header(img_4d_mni_tr2):
         affine=img_4d_mni_tr2.affine,
         copy_header=True,
     )
-    cropped_img = crop_img(img_4d_mni_tr2_zero_padded)
+    cropped_img = crop_img(img_4d_mni_tr2_zero_padded, copy_header=True)
     # only dim[1:4] should be different
     assert (
         cropped_img.header["dim"][1:4]
@@ -502,7 +502,7 @@ def test_mean_img_resample(rng):
 
 def test_mean_img_copied_header(img_4d_mni_tr2):
     # Test equality of header fields between input and output
-    result = image.mean_img(img_4d_mni_tr2)
+    result = image.mean_img(img_4d_mni_tr2, copy_header=True)
     match_headers_keys(
         result,
         img_4d_mni_tr2,
@@ -843,7 +843,7 @@ def test_isnan_threshold_img_data(affine_eye, shape_3d_default):
 
 def test_threshold_img_copied_header(img_4d_mni_tr2):
     # Test equality of header fields between input and output
-    result = threshold_img(img_4d_mni_tr2, threshold=0.5)
+    result = threshold_img(img_4d_mni_tr2, threshold=0.5, copy_header=True)
     # only the min value should be different
     match_headers_keys(
         result,
@@ -997,7 +997,7 @@ def test_binarize_negative_img(img_4d_rand_eye):
 
 def test_binarize_img_copied_header(img_4d_mni_tr2):
     # Test equality of header fields between input and output
-    result = binarize_img(img_4d_mni_tr2, threshold=0.5)
+    result = binarize_img(img_4d_mni_tr2, threshold=0.5, copy_header=True)
     # only the min value should be different
     match_headers_keys(
         result,

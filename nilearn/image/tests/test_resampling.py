@@ -354,7 +354,9 @@ def test_resampling_warning_binary_image(affine_eye, rng):
 
 def test_resample_img_copied_header(img_4d_mni_tr2):
     # Test that the header is copied when resampling
-    result = resample_img(img_4d_mni_tr2, target_affine=np.diag((6, 6, 6)))
+    result = resample_img(
+        img_4d_mni_tr2, target_affine=np.diag((6, 6, 6)), copy_header=True
+    )
     # pixdim[1:4] should change to [6, 6, 6]
     assert (result.header["pixdim"][1:4] == np.array([6, 6, 6])).all()
     # pixdim at other indices should remain the same
