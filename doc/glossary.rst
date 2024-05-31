@@ -191,7 +191,7 @@ If you wish to add a missing term, please
         that have been matched to the MNI305 using a 9 parameter affine transform.
 
     MVPA
-        Mutli-Voxel Pattern Analysis. This is the way :term:`supervised learning`
+        Multi-Voxel Pattern Analysis. This is the way :term:`supervised learning`
         methods are called in the field of brain imaging.
 
     Neurovault
@@ -300,8 +300,7 @@ If you wish to add a missing term, please
         magnitude and cluster extent to enhance the importance of clusters that are large,
         have high magnitude, or both.
 
-        For more information about TFCE, see
-        `Smith and Nichols (2009) <https://doi.org/10.1016/j.neuroimage.2008.03.061>`_ or
+        For more information about TFCE, see :footcite:t:`Smith2009a` or
         `Benedikt Ehinger's tutorial <https://benediktehinger.de/blog/science/threshold-free-cluster-enhancement-explained/>`_.
 
     TR
@@ -333,8 +332,13 @@ If you wish to add a missing term, please
         A voxel represents a value on a regular grid in 3D space.
 
     Ward clustering
-        Ward’s algorithm is a hierarchical clustering algorithm: it recursively merges voxels,
+        Ward's algorithm is a hierarchical clustering algorithm: it recursively merges voxels,
         then clusters that have similar signal (parameters, measurements or time courses).
+
+References
+----------
+
+.. footbibliography::
 
 
 .. LINKS

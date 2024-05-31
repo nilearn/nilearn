@@ -1,7 +1,9 @@
 import itertools
 import os
+import shutil
 import unittest.mock
 import warnings
+from itertools import product
 from pathlib import Path
 
 import numpy as np
@@ -745,8 +747,8 @@ def test_first_level_glm_computation_with_memory_caching(tmp_path):
 
 
 def test_first_level_from_bids_set_repetition_time_warnings(tmp_path):
-    """Raise a warning when there is no bold.json file in the derivatives
-    and no TR value is passed as argument.
+    """Raise a warning when there is no bold.json file in the derivatives \
+       and no TR value is passed as argument.
 
     create_fake_bids_dataset does not add JSON files in derivatives,
     so the TR value will be inferred from the raw.
@@ -1073,8 +1075,8 @@ def test_first_level_with_scaling(affine_eye):
 
 
 def test_first_level_with_no_signal_scaling(affine_eye):
-    """Test to ensure that the FirstLevelModel works correctly
-    with a signal_scaling==False.
+    """Test to ensure that the FirstLevelModel works correctly \
+       with a signal_scaling==False.
 
     In particular, that derived theta are correct for a
     constant design matrix with a single valued fmri image
@@ -1235,8 +1237,8 @@ def test_first_level_predictions_r_square():
 )
 @pytest.mark.parametrize("spaces", [False, True])
 def test_first_level_hrf_model(hrf_model, spaces):
-    """Ensure that FirstLevelModel runs without raising errors
-    for different values of hrf_model.
+    """Ensure that FirstLevelModel runs without raising errors \
+       for different values of hrf_model.
 
     In particular, one checks that it runs
     without raising errors when given a custom response function.
@@ -1302,11 +1304,13 @@ def bids_dataset(tmp_path_factory):
     )
 
 
-def _new_bids_dataset(base_dir=Path()):
+def _new_bids_dataset(base_dir=None):
     """Create a new BIDS dataset for testing purposes.
 
     Use if the dataset needs to be modified after creation.
     """
+    if base_dir is None:
+        base_dir = Path()
     n_sub, n_ses, tasks, n_runs = _inputs_for_new_bids_dataset()
     return create_fake_bids_dataset(
         base_dir=base_dir, n_sub=n_sub, n_ses=n_ses, tasks=tasks, n_runs=n_runs
@@ -1462,10 +1466,7 @@ def test_first_level_from_bids_with_subject_labels(bids_dataset):
     Check that the incorrect label `foo` raises a warning,
     but that we still get a model for existing subject.
     """
-    warning_message = (
-        "Subject label foo is not present in"
-        " the dataset and cannot be processed"
-    )
+    warning_message = "Subject label 'foo' is not present in*"
     with pytest.warns(UserWarning, match=warning_message):
         models, *_ = first_level_from_bids(
             dataset_path=bids_dataset,
@@ -1593,8 +1594,8 @@ def test_first_level_from_bids_validation_img_filter(
 
 
 def test_first_level_from_bids_too_many_bold_files(bids_dataset):
-    """Too many bold files if img_filters is underspecified,
-    should raise an error.
+    """Too many bold files if img_filters is underspecified, \
+       should raise an error.
 
     Here there is a desc-preproc and desc-fmriprep image for the space-T1w.
     """
@@ -1682,7 +1683,7 @@ def test_first_level_from_bids_with_one_events_missing(tmp_path_factory):
 
 
 def test_first_level_from_bids_one_confound_missing(tmp_path_factory):
-    """There must be only one confound file per image or none
+    """There must be only one confound file per image or none.
 
     If only one is missing, it should raise an error.
     """
@@ -1855,9 +1856,6 @@ def test_missing_trial_type_column_warning(tmp_path_factory):
         )
 
 
-from itertools import product
-
-
 def test_first_level_from_bids_load_confounds(tmp_path):
     """Test that only a subset of confounds can be loaded."""
     n_sub = 2
@@ -1943,6 +1941,38 @@ def test_first_level_from_bids_load_confounds_warnings(tmp_path):
             img_filters=[("desc", "preproc")],
             drift_model="polynomial",
             confounds_strategy=("high_pass",),
+        )
+
+
+def test_first_level_from_bids_no_subject(tmp_path):
+    """Throw error when no subject found."""
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path, n_sub=1, n_ses=0, tasks=["main"], n_runs=[2]
+    )
+    shutil.rmtree(bids_path / "derivatives" / "sub-01")
+    with pytest.raises(RuntimeError, match="No subject found in:"):
+        first_level_from_bids(
+            dataset_path=bids_path,
+            task_label="main",
+            space_label="MNI",
+            slice_time_ref=None,
+        )
+
+
+def test_first_level_from_bids_unused_kwargs(tmp_path):
+    """Check that unused kwargs are properly handled."""
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path, n_sub=1, n_ses=1, tasks=["main"], n_runs=[2]
+    )
+    with pytest.raises(RuntimeError, match="Unknown keyword arguments"):
+        # wrong kwarg name `confound_strategy` (wrong)
+        # instead of `confounds_strategy` (correct)
+        first_level_from_bids(
+            dataset_path=bids_path,
+            task_label="main",
+            space_label="MNI",
+            slice_time_ref=None,
+            confound_strategy="motion",
         )
 
 

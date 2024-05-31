@@ -185,6 +185,30 @@ The repository should be checked and updated in preparation for the release.
 One thing that **must** be done before the release is made is
 to update ``deprecated``, ``versionchanged`` and ``versionadded`` directives
 from the current ``[x.y.z].dev`` tag to the new version number.
+These directives are added in a function's docstring to indicate the version number, when, say, a new parameter is added or deprecated.
+
+For example, if a parameter ``param2`` was added in version ``x.y.z``, the docstring should be updated to:
+
+.. code-block:: python
+
+    def my_function(param1, param2):
+        """
+        Parameters
+        ----------
+        param1 : type
+            Description of param1.
+
+        param2 : type
+            Description of param2.
+
+        .. versionadded:: x.y.z
+
+        Returns
+        -------
+        output : type
+            Description of the output.
+        """
+        ...
 
 Additionally, make sure all deprecations that are supposed to be removed with this new version have been addressed.
 
@@ -205,9 +229,8 @@ Switch to a new branch locally:
 First we need to prepare the release by updating the file ``nilearn/doc/changes/latest.rst``
 to make sure all the new features, enhancements, and bug fixes are included in their respective sections.
 
-Tehn we need to make sure that all the entries in each section of the changelog
-in ``nilearn/doc/changes/latest.rst`` a) have a label,
-and b) are sorted by their "label" alphabetically.
+Then we need to make sure that all the entries in each section of the changelog
+in ``nilearn/doc/changes/latest.rst`` a) have a label, b) are sorted by their "label" alphabetically and c) are followed by an empty line.
 For example::
 
     - :bdg-success:`API` ...
@@ -279,14 +302,6 @@ Once the PR has been reviewed and merged, pull from master and tag the merge com
     When building the distribution as described below, ``hatch-vcs``, defined in ``pyproject.toml``,
     extracts the version number using this tag and writes it to a ``_version.py`` file.
 
-Build of stable docs
---------------------
-
-Once the new version tag of a release is pushed upstream following the step
-above, the Github Actions workflow ``release-docs.yml`` will be triggered
-automatically to build the stable docs and push them to
-our github pages repository ``nilearn/nilearn.github.io``. The workflow can
-also be triggered from the Actions tab.
 
 Build the distributions and upload them to Pypi
 -----------------------------------------------
@@ -346,14 +361,27 @@ We are now ready to upload to ``Pypi``. Note that you will need to have an `acco
 
     twine upload dist/*
 
-
 Once the upload is completed, make sure everything looks good on `Pypi <https://pypi.org/project/nilearn/>`_.
 Otherwise you will probably have to fix the issue and start over a new release with the patch number incremented.
+
+
+Github release
+--------------
 
 At this point, we need to upload the binaries to GitHub and link them to the tag.
 To do so, go to the :nilearn-gh:`Nilearn GitHub page <tags>` under the "Releases" tab,
 and edit the ``x.y.z`` tag by providing a description,
 and upload the distributions we just created (you can just drag and drop the files).
+
+
+Build of stable docs
+--------------------
+
+Once the new tagged github release is made following the step above,
+the Github Actions workflow ``release-docs.yml`` will be triggered automatically
+to build the stable docs and push them
+to our github pages repository ``nilearn/nilearn.github.io``.
+The workflow can also be triggered manually from the Actions tab.
 
 
 Build and deploy the documentation manually

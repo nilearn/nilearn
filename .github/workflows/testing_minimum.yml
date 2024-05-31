@@ -23,7 +23,8 @@ on:
     #            │ │ │ │ │
     #            * * * * *
     schedule:
-    -   cron: 0 0 1 * * # every first day of the month
+    # Run first day of the month at midnight UTC
+    -   cron: 0 0 1 * *
 
     # Allows you to run this workflow manually from the Actions tab
     workflow_dispatch:
@@ -31,6 +32,10 @@ on:
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
+
+# Force to use color
+env:
+    FORCE_COLOR: true
 
 jobs:
     test_min_install:

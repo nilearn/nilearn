@@ -15,11 +15,11 @@ CORE_DEVS = [
     "Bertrand Thirion",
     "Elizabeth DuPre",
     "Hao-Ting Wang",
+    "Himanshu Aggarwal",
     "Jerome Dockes",
     "Nicolas Gensollen",
     "Rémi Gau",
     "Taylor Salo",
-    "Yasmin Mzayek",
 ]
 
 

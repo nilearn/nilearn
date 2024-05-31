@@ -317,7 +317,7 @@ def _json_view_params(
     return params
 
 
-def _json_view_size(params):
+def _json_view_size(params, width_view=600):
     """Define the size of the viewer.
 
     Returns: width_view, height_view
@@ -333,7 +333,6 @@ def _json_view_size(params):
     slices_height = 1.20 * slices_height
 
     # Get the final size of the viewer
-    width_view = 600
     ratio = slices_height / slices_width
     height_view = np.ceil(ratio * width_view)
 
@@ -412,14 +411,14 @@ def _json_view_data(
     return json_view
 
 
-def _json_view_to_html(json_view):
+def _json_view_to_html(json_view, width_view=600):
     """Fill a brainsprite html template with relevant parameters and data.
 
     Returns: html_view
 
     """
     # Fix the size of the viewer
-    width, height = _json_view_size(json_view["params"])
+    width, height = _json_view_size(json_view["params"], width_view)
 
     # Populate all missing keys with html-ready data
     json_view["INSERT_PAGE_TITLE_HERE"] = (
@@ -489,8 +488,8 @@ def view_img(
     vmax=None,
     vmin=None,
     resampling_interpolation="continuous",
+    width_view=600,
     opacity=1,
-    **kwargs,
 ):
     """Interactive html viewer of a statistical map, with optional background.
 
@@ -554,6 +553,11 @@ def view_img(
         image, or 0 when a threshold is used.
     %(resampling_interpolation)s
         Default='continuous'.
+
+    width_view : int, optional
+        Default=600.
+        Width of the viewer in pixels.
+
     opacity : float in [0,1], default=1
         The level of opacity of the overlay (0: transparent, 1: opaque).
 
@@ -628,6 +632,6 @@ def view_img(
         value=False,
     )
 
-    html_view = _json_view_to_html(json_view)
+    html_view = _json_view_to_html(json_view, width_view)
 
     return html_view

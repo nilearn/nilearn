@@ -8,25 +8,16 @@ viewing" condition and a "house viewing" condition.
 We consider the mean image per run and per condition.
 Otherwise, the observations cannot be exchanged at random because
 a time dependence exists between observations within a same run
-(see [1] for more detailed explanations).
+(see :footcite:t:`Winkler2014` for more detailed explanations).
 
 The example shows the small differences that exist between
 Bonferroni-corrected p-values and family-wise corrected p-values obtained
-from a permutation test combined with a max-type procedure [2].
+from a permutation test combined
+with a max-type procedure (:footcite:t:`Anderson2001`).
 Bonferroni correction is a bit conservative, as revealed by the presence of
 a few false negative.
 
 .. include:: ../../../examples/masker_note.rst
-
-References
-----------
-[1] Winkler, A. M. et al. (2014).
-    Permutation inference for the general linear model. Neuroimage.
-
-[2] Anderson, M. J. & Robinson, J. (2001).
-    Permutation tests for linear models.
-    Australian & New Zealand Journal of Statistics, 43(1), 75-88.
-    (https://www.uvm.edu/~statdhtx/fundamentals9/Supplements/RandomizationTestsWithR/permut2.pdf)
 
 ..
     Original authors:
@@ -198,5 +189,12 @@ title = (
 display.title(title, size=10)
 
 show()
+
+# %%
+# References
+# ----------
+#
+#  .. footbibliography::
+
 
 # sphinx_gallery_dummy_images=1

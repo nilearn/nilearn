@@ -38,8 +38,10 @@ PLOTTING_FUNCS_4D = {plot_prob_atlas, plot_carpet}
 PLOTTING_FUNCS_3D = ALL_PLOTTING_FUNCS.difference(PLOTTING_FUNCS_4D)
 
 
-def _add_nans_to_img(img, affine_mni=_affine_mni()):
+def _add_nans_to_img(img, affine_mni=None):
     """Add nans in test image data."""
+    if affine_mni is None:
+        affine_mni = _affine_mni()
     data = get_data(img)
     data[6, 5, 1] = np.nan
     data[1, 5, 2] = np.nan
@@ -111,9 +113,10 @@ def test_plot_functions_mosaic_mode(plot_func, cut_coords, img_3d_mni):
 
 @pytest.mark.parametrize("plot_func", [plot_stat_map, plot_glass_brain])
 def test_plot_threshold_for_uint8(affine_eye, plot_func):
-    """Mask was applied in [-threshold, threshold] which is problematic
-    for uint8 data. See https://github.com/nilearn/nilearn/issues/611
-    for more details.
+    """Mask was applied in [-threshold, threshold] which is problematic \
+       for uint8 data.
+
+    See https://github.com/nilearn/nilearn/issues/611 for more details.
     """
     data = 10 * np.ones((10, 10, 10), dtype="uint8")
     # Having a zero minimum value is important to reproduce
@@ -143,9 +146,8 @@ def test_plot_threshold_for_uint8(affine_eye, plot_func):
 
 @pytest.fixture
 def expected_error_message(display_mode, cut_coords):
-    """Return the expected error message depending on display_mode and
-    cut_coords. Used in test_invalid_cut_coords_with_display_mode.
-    """
+    """Return the expected error message depending on display_mode \
+       and cut_coords. Used in test_invalid_cut_coords_with_display_mode."""
     if display_mode == "ortho" or (
         display_mode == "tiled" and cut_coords == 2
     ):

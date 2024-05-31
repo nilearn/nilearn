@@ -435,9 +435,9 @@ def test_parallel_fit_builtin_cv(
     is_classification,
     param_values,
 ):
-    """Check that the `fitted_param_name` output of _parallel_fit is a single
-    value even if param_grid is wrapped in a list for models with built-in CV.
-    """
+    """Check that the `fitted_param_name` output of _parallel_fit is \
+       a single value even if param_grid is wrapped in a list \
+       for models with built-in CV."""
     # y will be replaced if this is a classification
     X, y = make_regression(
         n_samples=N_SAMPLES,

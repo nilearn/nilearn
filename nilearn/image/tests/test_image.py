@@ -1,4 +1,4 @@
-"""Test image pre-processing functions"""
+"""Test image pre-processing functions."""
 
 import platform
 import sys
@@ -86,7 +86,7 @@ def _make_largest_cc_img_test_data():
 
 
 def _images_to_mean():
-    """Return a mixture of 4D and 3D images"""
+    """Return a mixture of 4D and 3D images."""
     rng = _rng()
 
     data1 = np.zeros((5, 6, 7))
@@ -109,7 +109,7 @@ def _images_to_mean():
 
 
 def _check_fwhm(data, affine, fwhm):
-    """Expect a full-width at half maximum of fwhm / voxel_size"""
+    """Expect a full-width at half maximum of fwhm / voxel_size."""
     vmax = data.max()
     above_half_max = data > 0.5 * vmax
     for axis in [0, 1, 2]:
@@ -295,14 +295,14 @@ def test_fast_smooth_array_give_same_result_as_smooth_array(
 
 
 def test_smooth_array_raise_warning_if_fwhm_is_zero(smooth_array_data):
-    """See https://github.com/nilearn/nilearn/issues/1537"""
+    """See https://github.com/nilearn/nilearn/issues/1537."""
     affine = AFFINE_TO_TEST[2]
     with pytest.warns(UserWarning):
         image.smooth_array(smooth_array_data, affine, fwhm=0.0)
 
 
 def test_smooth_img(affine_eye, tmp_path):
-    """Checks added functionalities compared to image._smooth_array()"""
+    """Checks added functionalities compared to image._smooth_array()."""
     shapes = ((10, 11, 12), (13, 14, 15))
     lengths = (17, 18)
     fwhm = (1.0, 2.0, 3.0)
@@ -648,10 +648,8 @@ def test_new_img_like_accepts_paths(affine_eye, tmp_path, rng):
 
 
 def test_new_img_like_non_iterable_header(rng):
-    """
-    Tests that when an niimg's header is not iterable
-    & it is set to be copied, an error is not raised.
-    """
+    """Tests that when an niimg's header is not iterable \
+       and it is set to be copied, an error is not raised."""
     fake_fmri_data = rng.uniform(size=_shape_4d_default())
     fake_affine = rng.uniform(size=(4, 4))
     fake_spatial_image = nibabel.spatialimages.SpatialImage(
@@ -688,9 +686,8 @@ def test_new_img_like_int64(shape_3d_default):
 
 
 def test_validity_threshold_value_in_threshold_img(shape_3d_default):
-    """Check that invalid values to threshold_img's threshold parameter raise
-    Exceptions.
-    """
+    """Check that invalid values to threshold_img's threshold parameter \
+       raise Exceptions."""
     maps, _ = generate_maps(shape_3d_default, n_regions=2)
 
     # testing to raise same error when threshold=None case
@@ -755,9 +752,8 @@ def test_threshold_img_with_cluster_threshold(
 
 
 def test_threshold_img_threshold_nb_clusters(stat_img_test_data):
-    """With a cluster threshold of 5 we get 8 clusters with |values| > 2 and
-    cluster sizes > 5
-    """
+    """With a cluster threshold of 5 we get 8 clusters with |values| > 2 \
+       and cluster sizes > 5."""
     thr_img = threshold_img(
         img=stat_img_test_data,
         threshold=2,
@@ -822,6 +818,18 @@ def test_math_img_exceptions(affine_eye, img_4d_ones_eye):
     ):
         math_img(bad_formula, img1=img1, img3=img3)
 
+    # Test copy_header_from parameter
+    # Copying header from 4d image to a result that is 3d should raise a
+    # ValueError
+    formula = "np.mean(img1, axis=-1) - np.mean(img3, axis=-1)"
+    with pytest.raises(ValueError, match="Cannot copy the header."):
+        math_img(formula, img1=img1, img3=img3, copy_header_from="img1")
+
+    # Passing an 'img*' variable (to copy_header_from) that is not in the
+    # formula or an img* argument should raise a KeyError exception.
+    with pytest.raises(KeyError):
+        math_img(formula, img1=img1, img3=img3, copy_header_from="img2")
+
 
 def test_math_img(
     affine_eye, img_4d_ones_eye, img_4d_zeros_eye, shape_3d_default, tmp_path
@@ -839,6 +847,59 @@ def test_math_img(
         assert_array_equal(get_data(result), get_data(expected_result))
         assert_array_equal(result.affine, expected_result.affine)
         assert result.shape == expected_result.shape
+
+
+def test_math_img_copy_default_header(
+    img_4d_ones_eye_default_header, img_4d_ones_eye_tr2
+):
+    # case where data values are not changed and header values are not copied
+    # the result should have default header values
+    formula_no_change = "img * 1"
+    # using img_4d_ones_eye_tr2 with edited header in the formula
+    result = math_img(
+        formula_no_change, img=img_4d_ones_eye_tr2, copy_header_from=None
+    )
+    # header values should instead match default header values
+    assert result.header == img_4d_ones_eye_default_header.header
+
+
+def test_math_img_copied_header_from_img(img_4d_mni_tr2):
+    # case where data values are not changed but header values are copied
+    # the result should have the same header values as the given image
+    formula_no_change = "img * 1"
+    result = math_img(
+        formula_no_change, img=img_4d_mni_tr2, copy_header_from="img"
+    )
+    # all header values should be the same
+    assert result.header == img_4d_mni_tr2.header
+
+
+def test_math_img_copied_header_data_values_changed(
+    img_4d_ones_eye_default_header, img_4d_ones_eye_tr2
+):
+    # case where data values are changed and header values are copied from one
+    # of the input images
+    # the result should have the same header values as img_4d_ones_eye_tr2,
+    # except for cal_max and cal_min that should be different
+    formula_change_min_max = "img1 - img2"
+    result = math_img(
+        formula_change_min_max,
+        img1=img_4d_ones_eye_default_header,
+        img2=img_4d_ones_eye_tr2,
+        copy_header_from="img2",
+    )
+    for key in img_4d_ones_eye_tr2.header.keys():
+        # cal_max and cal_min should be different in result
+        if key in ["cal_max", "cal_min"]:
+            assert result.header[key] != img_4d_ones_eye_tr2.header[key]
+        # other header values should be the same
+        else:
+            if isinstance(result.header[key], np.ndarray):
+                assert_array_equal(
+                    result.header[key], img_4d_ones_eye_tr2.header[key]
+                )
+            else:
+                assert result.header[key] == img_4d_ones_eye_tr2.header[key]
 
 
 def test_binarize_img(img_4d_rand_eye):
@@ -1006,9 +1067,8 @@ def test_new_img_like_mgh_image(affine_eye, shape_3d_default):
 
 @pytest.mark.parametrize("image", [MGHImage, AnalyzeImage])
 def test_new_img_like_boolean_data(affine_eye, image, shape_3d_default, rng):
-    """Check defaulting boolean input data to np.uint8 dtype is valid for
-    encoding with nibabel image classes MGHImage and AnalyzeImage.
-    """
+    """Checks defaulting boolean input data to np.uint8 dtype is valid \
+       forencoding with nibabel image classes MGHImage and AnalyzeImage."""
     data = rng.standard_normal(shape_3d_default).astype("uint8")
     in_img = image(dataobj=data, affine=affine_eye)
 

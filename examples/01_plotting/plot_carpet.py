@@ -45,6 +45,7 @@ display = plot_carpet(
     mask_img,
     t_r=t_r,
     standardize="zscore_sample",
+    title="global patterns over time",
 )
 
 display.show()
@@ -83,8 +84,9 @@ display = plot_carpet(
     axes=ax,
     cmap="gray",
     standardize="zscore_sample",
+    title="global patterns over time separated by tissue type",
 )
 
-fig.show()
+plt.show()
 
 # sphinx_gallery_dummy_images=1

@@ -139,7 +139,7 @@ def compute_contrast(labels, regression_result, con_val, stat_type=None):
         variance=var_,
         dim=dim,
         dof=dof_,
-        contrast_type=stat_type,
+        stat_type=stat_type,
     )
 
 

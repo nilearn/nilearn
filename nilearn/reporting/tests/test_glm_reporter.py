@@ -237,6 +237,7 @@ def test_stat_map_to_svg_slice_z(img_3d_mni, cut_coords):
         display_mode="ortho",
         plot_type="slice",
         table_details=table_details,
+        threshold=2.76,
     )
 
 
@@ -250,6 +251,7 @@ def test_stat_map_to_svg_glass_z(img_3d_mni, cut_coords):
         display_mode="z",
         plot_type="glass",
         table_details=table_details,
+        threshold=2.76,
     )
 
 
@@ -267,6 +269,7 @@ def test_stat_map_to_svg_invalid_plot_type(img_3d_mni, cut_coords):
             display_mode="z",
             plot_type="junk",
             table_details={"junk": 0},
+            threshold=2.76,
         )
 
 
@@ -293,11 +296,8 @@ def test_plot_contrasts():
     not_have_mpl, reason="Matplotlib not installed; required for this test"
 )
 def test_masking_first_level_model(tmp_path):
-    """
-    Checks that using NiftiMasker when instantiating
-    FirstLevelModel doesn't raise Error when calling
-    generate_report().
-    """
+    """Check that using NiftiMasker when instantiating FirstLevelModel \
+       doesn't raise Error when calling generate_report()."""
     shapes, rk = ((7, 7, 7, 5),), 3
     mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(
         shapes, rk, file_path=tmp_path

@@ -518,13 +518,11 @@ def compute_background_mask(
 def compute_multi_background_mask(
     data_imgs,
     border_size=2,
-    upper_cutoff=0.85,
     connected=True,
     opening=2,
     threshold=0.5,
     target_affine=None,
     target_shape=None,
-    exclude_zeros=False,
     n_jobs=1,
     memory=None,
     verbose=0,
@@ -681,7 +679,6 @@ def compute_multi_brain_mask(
     opening=2,
     memory=None,
     verbose=0,
-    n_jobs=1,
     mask_type="whole-brain",
     **kwargs,
 ):
@@ -714,10 +711,9 @@ def compute_multi_brain_mask(
     %(mask_type)s
     %(memory)s
     %(verbose0)s
-    %(n_jobs)s
 
-        .. note::
-            Argument not used but kept to fit the API
+    .. note::
+        Argument not used but kept to fit the API
 
     **kwargs : optional arguments
         Arguments such as 'target_affine' are used in the call of other

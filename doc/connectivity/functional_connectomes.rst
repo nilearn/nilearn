@@ -12,9 +12,7 @@ Extracting times series to build a functional connectome
 
 .. topic:: **References**
 
-   * `Varoquaux and Craddock, "Learning and comparing functional
-     connectomes across subjects", NeuroImage 2013
-     <https://www.sciencedirect.com/science/article/pii/S1053811913003340>`_.
+   * Learning and comparing functional connectomes across subjects :footcite:p:`Varoquaux2013`
 
 .. _parcellation_time_series:
 
@@ -80,8 +78,7 @@ filenames or `NiftiImage objects
 
 Note that confound signals can be specified in the call. Indeed, to
 obtain time series that capture well the functional interactions between
-regions, regressing out noise sources is very important
-`[Varoquaux & Craddock 2013] <https://hal.inria.fr/hal-00812911/>`_.
+regions, regressing out noise sources is very important (:footcite:t:`Varoquaux2013`).
 For data processed by :term:`fMRIPrep`,
 :func:`~nilearn.interfaces.fmriprep.load_confounds` and
 :func:`~nilearn.interfaces.fmriprep.load_confounds_strategy` can help you
@@ -252,8 +249,11 @@ can be computed for each region on hard :term:`parcellation` or probabilistic at
 
 .. topic:: **References**
 
-  * `Zalesky et al., NeuroImage 2012, "On the use of correlation as a measure of
-    network connectivity" <https://www.sciencedirect.com/science/article/pii/S1053811912001784>`_.
+   * On the use of correlation as a measure of network connectivity :footcite:p:`zalesky2012use`
 
-  * `Varoquaux et al., NeuroImage 2013, "Learning and comparing functional
-    connectomes across subjects" <https://www.sciencedirect.com/science/article/pii/S1053811913003340>`_.
+   * Learning and comparing functional connectomes across subjects :footcite:p:`Varoquaux2013`
+
+References
+----------
+
+.. footbibliography::

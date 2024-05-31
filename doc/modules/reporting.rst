@@ -27,3 +27,8 @@
 
    get_clusters_table
    make_glm_report
+
+
+.. toctree::
+
+   generated_reports/glm_reports_examples.rst

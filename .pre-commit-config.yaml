@@ -2,31 +2,18 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 
+#  Files that should not be checked
 exclude: |
     (?x)^(
         nilearn/datasets/tests/data/localizer_behavioural.tsv
         | nilearn/externals/.*
         | nilearn/plotting/data/js/.*js
         | nilearn/_version.py
-        | examples/01_plotting/plot_3d_map_to_surface_projection.py
-        | examples/01_plotting/plot_surf_atlas.py
-        | examples/01_plotting/plot_surf_stat_map.py
-        | examples/01_plotting/plot_surface_projection_strategies.py
-        | examples/04_glm_first_level/plot_localizer_surface_analysis.py
-        | examples/07_advanced/plot_surface_bids_analysis.py
-        | nilearn/_utils/helpers.py
-        | nilearn/plotting/html_surface.py
-        | nilearn/plotting/js_plotting_utils.py
-        | nilearn/plotting/surf_plotting.py
-        | nilearn/plotting/tests/test_html_surface.py
-        | nilearn/plotting/tests/test_surf_plotting.py
-        | nilearn/surface/surface.py
-        | nilearn/surface/tests/test_surface.py
     )$
 
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v4.6.0
     hooks:
     -   id: check-ast
     -   id: check-case-conflict
@@ -38,35 +25,64 @@ repos:
     -   id: mixed-line-ending
     -   id: trailing-whitespace
 
+# Sorts Python imports alphabetically and by section with `isort`.
 -   repo: https://github.com/pycqa/isort
     rev: 5.13.2
     hooks:
     -   id: isort
         args: [--profile, black, --settings-path, pyproject.toml]
 
--   repo: https://github.com/ikamensh/flynt/
-    rev: 1.0.1
-    hooks:
-    -   id: flynt
-
+# Automatically upgrade syntax for newer versions of the language.
 -   repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.0
+    rev: v3.15.2
     hooks:
     -   id: pyupgrade
         args: [--py38-plus]
 
+# Checks for .rst files
 -   repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
     hooks:
     -   id: rst-directive-colons
     -   id: rst-inline-touching-normal
+-   repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.10.0
+    hooks:
+    -   id: rst-backticks
 
+# Aplly black formatting to python code
+# https://github.com/psf/black
 -   repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 24.1.0
+    rev: 24.4.2
     hooks:
     -   id: black
         args: [--config, pyproject.toml]
+        # exclude files that
+        #  - are skipped for other hooks
+        #  - are still involved in some PR
+        exclude: |
+            (?x)^(
+                nilearn/datasets/tests/data/localizer_behavioural.tsv
+                | nilearn/externals/.*
+                | nilearn/plotting/data/js/.*js
+                | nilearn/_version.py
+                | examples/01_plotting/plot_3d_map_to_surface_projection.py
+                | examples/01_plotting/plot_surf_atlas.py
+                | examples/01_plotting/plot_surf_stat_map.py
+                | examples/01_plotting/plot_surface_projection_strategies.py
+                | examples/04_glm_first_level/plot_localizer_surface_analysis.py
+                | examples/07_advanced/plot_surface_bids_analysis.py
+                | nilearn/_utils/helpers.py
+                | nilearn/plotting/html_surface.py
+                | nilearn/plotting/js_plotting_utils.py
+                | nilearn/plotting/surf_plotting.py
+                | nilearn/plotting/tests/test_html_surface.py
+                | nilearn/plotting/tests/test_surf_plotting.py
+                | nilearn/surface/surface.py
+                | nilearn/surface/tests/test_surface.py
+            )$
 
+# Apply black formatting to doc strings
 -   repo: https://github.com/adamchainz/blacken-docs
     rev: 1.16.0
     hooks:
@@ -74,33 +90,45 @@ repos:
         additional_dependencies:
         -   black==23.9.1
 
+# Checks for spelling errors
 -   repo: https://github.com/codespell-project/codespell
-    rev: v2.2.6
+    rev: v2.3.0
     hooks:
     -   id: codespell
         args: [--toml, pyproject.toml]
         additional_dependencies: [tomli]
 
+# Format YAML files
 -   repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
     rev: 0.2.3
     hooks:
     -   id: yamlfmt
         args: [--mapping, '4', --sequence, '4', --offset, '0']
 
+# Format TOML files
 -   repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-    rev: v2.12.0
+    rev: v2.13.0
     hooks:
     -   id: pretty-format-toml
         args: [--autofix, --indent, '4']
 
--   repo: https://github.com/pre-commit/pygrep-hooks
-    rev: v1.10.0
+# Check formatting of CSS and HTML
+# prettier: https://prettier.io/
+-   repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
     hooks:
-    -   id: rst-backticks
+    -   id: prettier
+        types_or: [css, html]
 
+# Check that Python code complies with PEP8 guidelines
+# flake8 uses pydocstyle to check docstrings: https://flake8.pycqa.org/en/latest/
+# flake8-docstrings: https://pypi.org/project/flake8-docstrings/
+# flake8-use-fstring forces to use fstrings: https://pypi.org/project/flake8-use-fstring/
+# flake8-functions checks functions quality: https://pypi.org/project/flake8-functions/
+# flake8-bugbear detects some common bugs: https://github.com/PyCQA/flake8-bugbear
 -   repo: https://github.com/pyCQA/flake8
     rev: 7.0.0
     hooks:
     -   id: flake8
         args: [--config, .flake8, --verbose, nilearn, examples, maint_tools]
-        additional_dependencies: [flake8-docstrings, flake8-use-fstring, flake8-functions]
+        additional_dependencies: [flake8-docstrings, flake8-use-fstring, flake8-functions, flake8-bugbear]
