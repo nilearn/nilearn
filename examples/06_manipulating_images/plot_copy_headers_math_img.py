@@ -133,7 +133,7 @@ result_img_with_header = new_img_like(
 # over the time dimension.
 #
 # And again, ``cal_min`` and ``cal_max`` are set to minimum and maximum data
-# values respectively, by nilearn.
+# values respectively, by Nilearn.
 print("Following header fields do not match:")
 for key in result_img_with_header.header.keys():
     if not (subj1_img.header[key] == result_img_with_header.header[key]).all():
