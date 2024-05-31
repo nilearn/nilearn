@@ -5,6 +5,11 @@ Copying headers from input images with ``math_img``
 This example shows how to copy the header information from one of
 the input images to the result image when using the function
 :func:`nilearn.image.math_img`.
+
+The header information contains metadata about the image, such as the
+dimensions, the voxel sizes, the affine matrix, repetition time (:term:`TR`),
+etc. Some of this information might be important for downstream analyses
+depending on the software used.
 """
 
 # %%
