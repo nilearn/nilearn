@@ -1,0 +1,82 @@
+
+.. currentmodule:: nilearn
+
+.. include:: names.rst
+
+0.2.5.1
+=======
+
+**Released August 2016**
+
+This is a bugfix release.
+The new minimum required version of ``scikit-learn`` is ``0.14.1``.
+
+Changes
+-------
+
+- :bdg-dark:`Code` Default option for ``dim`` argument in plotting functions which uses :term:`MNI` template as a background image is now changed to 'auto' mode. Meaning that an automatic contrast setting on background image is applied by default.
+
+- :bdg-dark:`Code` ``Scikit-learn`` validation tools have been imported and are now used to check consistency of input data, in SpaceNet for example.
+
+New
+---
+
+- :bdg-success:`API` Add an option to select only off-diagonal elements in function ``sym_to_vec``. Also, the scaling of matrices is modified: we divide the diagonal by ``sqrt(2)`` instead of multiplying the off-diagonal elements.
+
+- :bdg-primary:`Doc` Connectivity examples rely on :class:`~connectome.ConnectivityMeasure`.
+
+Fixes
+-----
+
+- :bdg-dark:`Code` ``Scipy 0.18`` introduces a bug in a corner-case of resampling. Nilearn ``0.2.5`` can give wrong results with ``scipy 0.18``, but this is fixed in ``0.2.6``.
+
+- :bdg-secondary:`Maint` Broken links and references fixed in docs.
+
+
+0.2.5
+=====
+
+**Released June 2016**
+
+The ``0.2.5`` release includes plotting for connectomes and glass brain with
+hemisphere-specific projection, as well as more didactic examples and
+improved documentation.
+
+New
+---
+
+- :bdg-success:`API` New display_mode options in functions :func:`~plotting.plot_glass_brain` and :func:`~plotting.plot_connectome`. It is possible to plot right and left hemisphere projections separately.
+
+- :bdg-success:`API` New function :func:`~datasets.load_mni152_brain_mask` to load canonical brain mask image in :term:`MNI` template space.
+
+- :bdg-success:`API` New function :func:`~datasets.fetch_icbm152_brain_gm_mask` to load brain grey matter mask image.
+
+- :bdg-success:`API` New function :func:`~image.load_img` loads data from a filename or a list of filenames.
+
+- :bdg-success:`API` New function :func:`~image.clean_img` applies the cleaning function :func:`~signal.clean` on all :term:`voxels<voxel>`.
+
+- :bdg-success:`API` New simple data downloader :func:`~datasets.fetch_localizer_button_task` to simplify some examples.
+
+- :bdg-success:`API` New function :func:`~datasets.get_data_dirs` to check where nilearn downloads data.
+
+- :bdg-dark:`Code` Function :func:`~datasets.fetch_localizer_contrasts` can now download a specific list of subjects rather than a range of subjects.
+
+Contributors
+------------
+
+Contributors (from ``git shortlog -ns 0.2.4..0.2.5``):
+
+    * `Gael Varoquaux`_ (55)
+    * `Alexandre Abraham`_ (39)
+    * `Martin Perez-Guevara`_ (26)
+    * `Kamalakar Reddy Daddy`_ (20)
+    * `Amadeus Kanaan`_ (8)
+    * `Alexandre Abadie`_ (3)
+    * `Arthur Mensch`_ (3)
+    * `Elvis Dohmatob`_ (3)
+    * `Loic Estève`_ (3)
+    * `Jerome Dockes`_ (2)
+    * Alexandre M. S (1)
+    * `Bertrand Thirion`_ (1)
+    * Ivan Gonzalez (1)
+    * `Roberto Guidotti`_ (1)

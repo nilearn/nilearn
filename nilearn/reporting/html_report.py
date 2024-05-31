@@ -1,196 +1,324 @@
-import io
+"""Generate HTML reports."""
+
 import copy
-import base64
 import warnings
 from pathlib import Path
 from string import Template
 
-from .html_document import HTMLDocument
 from nilearn.externals import tempita
+from nilearn.maskers import NiftiSpheresMasker
+from nilearn.plotting.html_document import HTMLDocument
+from nilearn.reporting.utils import figure_to_svg_base64
+
+ESTIMATOR_TEMPLATES = {
+    "NiftiLabelsMasker": "report_body_template_niftilabelsmasker.html",
+    "MultiNiftiLabelsMasker": "report_body_template_niftilabelsmasker.html",
+    "NiftiMapsMasker": "report_body_template_niftimapsmasker.html",
+    "MultiNiftiMapsMasker": "report_body_template_niftimapsmasker.html",
+    "NiftiSpheresMasker": "report_body_template_niftispheresmasker.html",
+    "default": "report_body_template.html",
+}
+
+
+def _get_estimator_template(estimator):
+    """Return the HTML template to use for a given estimator \
+    if a specific template was defined in ESTIMATOR_TEMPLATES, \
+    otherwise return the default template.
+
+    Parameters
+    ----------
+    estimator : object instance of BaseEstimator
+        The object we wish to retrieve template of.
+
+    Returns
+    -------
+    template : str
+        Name of the template file to use.
+
+    """
+    if estimator.__class__.__name__ in ESTIMATOR_TEMPLATES:
+        return ESTIMATOR_TEMPLATES[estimator.__class__.__name__]
+    else:
+        return ESTIMATOR_TEMPLATES["default"]
 
 
 def _embed_img(display):
-    """
+    """Embed an image or just return its instance if already embedded.
+
     Parameters
     ----------
-    display: obj
-        A Nilearn plotting object to display
+    display : obj
+        A Nilearn plotting object to display.
 
     Returns
     -------
     embed : str
-        Binary image string
+        Binary image string.
+
     """
     if display is None:  # no image to display
         return None
-
-    else:  # we were passed a matplotlib display
-        io_buffer = io.BytesIO()
-        display.frame_axes.figure.savefig(io_buffer, format='svg',
-                                          facecolor='white',
-                                          edgecolor='white')
-        display.close()
-
-        io_buffer.seek(0)
-        data = base64.b64encode(io_buffer.read())
-
-        return '{}'.format(data.decode())
+    # If already embedded, simply return as is
+    if isinstance(display, str):
+        return display
+    return figure_to_svg_base64(display.frame_axes.figure)
 
 
 def _str_params(params):
-    """
-    Convert NoneType values to the string 'None'
-    for display.
+    """Convert NoneType values to the string 'None' for display.
 
     Parameters
     ----------
-    params: dict
-        A dictionary of input values to a function
+    params : dict
+        A dictionary of input values to a function.
+
     """
     params_str = copy.deepcopy(params)
     for k, v in params_str.items():
         if v is None:
-            params_str[k] = 'None'
+            params_str[k] = "None"
     return params_str
 
 
-def _update_template(title, docstring, content, overlay,
-                     parameters, description=None):
-    """
-    Populate a report with content.
+def _update_template(
+    title, docstring, content, overlay, parameters, data, template_name=None
+):
+    """Populate a report with content.
 
     Parameters
     ----------
     title : str
-        The title for the report
+        The title for the report.
+
     docstring : str
-        The introductory docstring for the reported object
+        The introductory docstring for the reported object.
+
     content : img
-        The content to display
+        The content to display.
+
     overlay : img
-        Overlaid content, to appear on hover
+        Overlaid content, to appear on hover.
+
     parameters : dict
-        A dictionary of object parameters and their values
-    description : str
-        An optional description of the content
+        A dictionary of object parameters and their values.
+
+    data : dict
+        A dictionary holding the data to be added to the report.
+        The keys must match exactly the ones used in the template.
+        The default template accepts the following:
+            - description (str) : Description of the content.
+            - warning_message (str) : An optional warning
+              message to be displayed in red. This is used
+              for example when no image was provided to the
+              estimator when fitting.
+        The NiftiLabelsMasker template accepts the additional
+        fields:
+            - summary (dict) : A summary description of the
+              region labels and sizes. This will be displayed
+              as an expandable table in the report.
+
+    template_name : str, optional
+        The name of the template to use. If not provided, the
+        default template `report_body_template.html` will be
+        used.
 
     Returns
     -------
-    HTMLReport : an instance of a populated HTML report
+    report : HTMLReport
+        An instance of a populated HTML report.
+
     """
-    resource_path = Path(__file__).resolve().parent.joinpath('data', 'html')
+    resource_path = Path(__file__).resolve().parent / "data"
 
-    body_template_name = 'report_body_template.html'
-    body_template_path = resource_path.joinpath(body_template_name)
-    tpl = tempita.HTMLTemplate.from_filename(str(body_template_path),
-                                             encoding='utf-8')
-    body = tpl.substitute(title=title, content=content,
-                          overlay=overlay,
-                          docstring=docstring,
-                          parameters=parameters,
-                          description=description)
+    if template_name is None:
+        body_template_name = "report_body_template.html"
+    else:
+        body_template_name = template_name
+    body_template_path = resource_path / "html" / body_template_name
+    if not body_template_path.exists():
+        raise FileNotFoundError(f"No template {body_template_name}")
+    tpl = tempita.HTMLTemplate.from_filename(
+        str(body_template_path), encoding="utf-8"
+    )
 
-    head_template_name = 'report_head_template.html'
-    head_template_path = resource_path.joinpath(head_template_name)
-    with open(str(head_template_path), 'r') as head_file:
+    css_file_path = resource_path / "css" / "masker_report.css"
+    with open(css_file_path, encoding="utf-8") as css_file:
+        css = css_file.read()
+
+    body = tpl.substitute(
+        title=title,
+        content=content,
+        overlay=overlay,
+        docstring=docstring,
+        parameters=parameters,
+        **data,
+        css=css,
+    )
+
+    # revert HTML safe substitutions in CSS sections
+    body = body.replace(".pure-g &gt; div", ".pure-g > div")
+
+    head_template_name = "report_head_template.html"
+    head_template_path = resource_path / "html" / head_template_name
+    with open(str(head_template_path)) as head_file:
         head_tpl = Template(head_file.read())
 
-    return HTMLReport(body=body, head_tpl=head_tpl)
+    head_css_file_path = resource_path / "css" / "head.css"
+    with open(head_css_file_path, encoding="utf-8") as head_css_file:
+        head_css = head_css_file.read()
+
+    return HTMLReport(
+        body=body, head_tpl=head_tpl, head_values={"head_css": head_css}
+    )
 
 
-class ReportMixin:
+def _define_overlay(estimator):
+    """Determine whether an overlay was provided and \
+    update the report text as appropriate."""
+    displays = estimator._reporting()
+
+    if len(displays) == 1:  # set overlay to None
+        overlay, image = None, displays[0]
+
+    elif isinstance(estimator, NiftiSpheresMasker):
+        overlay, image = None, displays
+
+    elif len(displays) == 2:
+        overlay, image = displays[0], displays[1]
+
+    else:
+        overlay, image = None, displays
+
+    return overlay, image
+
+
+def generate_report(estimator):
+    """Generate a report for Nilearn objects.
+
+    Reports are useful to visualize steps in a processing pipeline.
+    Example use case: visualize the overlap of a mask and reference image
+    in NiftiMasker.
+
+    Parameters
+    ----------
+    estimator : Object instance of BaseEstimator.
+        Object for which the report should be generated.
+
+    Returns
+    -------
+    report : HTMLReport
+
     """
-    A class to provide general reporting functionality
-    """
+    if hasattr(estimator, "_report_content"):
+        data = estimator._report_content
+    else:
+        data = {}
+    if not hasattr(estimator, "_reporting_data"):
+        warnings.warn(
+            "This object has not been fitted yet ! "
+            "Make sure to run `fit` before inspecting reports."
+        )
+        return _update_template(
+            title="Empty Report",
+            docstring=(
+                "This report was not generated. Please `fit` the object."
+            ),
+            content=_embed_img(None),
+            overlay=None,
+            parameters={},
+            data=data,
+        )
 
-    def _define_overlay(self):
-        """
-        Determine whether an overlay was provided and
-        update the report text as appropriate.
+    elif estimator._reporting_data is None:
+        warnings.warn(
+            "Report generation not enabled ! "
+            "No visual outputs will be created."
+        )
+        return _update_template(
+            title="Empty Report",
+            docstring=(
+                "This report was not "
+                "generated. Please check "
+                "that reporting is enabled."
+            ),
+            content=_embed_img(None),
+            overlay=None,
+            parameters={},
+            data=data,
+        )
 
-        Parameters
-        ----------
+    return _create_report(estimator, data)
 
-        Returns
-        -------
-        """
-        displays = self._reporting()
 
-        if len(displays) == 1:  # set overlay to None
-            overlay, image = None, displays[0]
-
-        elif len(displays) == 2:
-            overlay, image = displays[0], displays[1]
-
-        return overlay, image
-
-    def generate_report(self):
-        """
-        Generate a report for Nilearn objects.
-
-        Reports are useful to visualize steps in a processing pipeline.
-        Example use case: visualize the overlap of a mask and reference image
-        in NiftiMasker.
-
-        Returns
-        -------
-        report : HTMLReport
-        """
-        if not hasattr(self, '_reporting_data'):
-            warnings.warn('This object has not been fitted yet ! '
-                          'Make sure to run `fit` before inspecting reports.')
-            report = _update_template(title='Empty Report',
-                                      docstring=('This report was not '
-                                                 'generated. Please `fit` the '
-                                                 'object.'),
-                                      content=_embed_img(None),
-                                      overlay=None,
-                                      parameters=dict())
-
-        elif self._reporting_data is None:
-            warnings.warn('Report generation not enabled ! '
-                          'No visual outputs will be created.')
-            report = _update_template(title='Empty Report',
-                                      docstring=('This report was not '
-                                                 'generated. Please check '
-                                                 'that reporting is enabled.'),
-                                      content=_embed_img(None),
-                                      overlay=None,
-                                      parameters=dict())
-
-        else:  # We can create a report
-            overlay, image = self._define_overlay()
-            description = self._report_description
-            parameters = _str_params(self.get_params())
-            docstring = self.__doc__
-            snippet = docstring.partition('Parameters\n    ----------\n')[0]
-            report = _update_template(title=self.__class__.__name__,
-                                      docstring=snippet,
-                                      content=_embed_img(image),
-                                      overlay=_embed_img(overlay),
-                                      parameters=parameters,
-                                      description=description)
-        return report
+def _create_report(estimator, data):
+    html_template = _get_estimator_template(estimator)
+    overlay, image = _define_overlay(estimator)
+    embeded_images = (
+        [_embed_img(i) for i in image]
+        if isinstance(image, list)
+        else _embed_img(image)
+    )
+    parameters = _str_params(estimator.get_params())
+    docstring = estimator.__doc__
+    snippet = docstring.partition("Parameters\n    ----------\n")[0]
+    return _update_template(
+        title=estimator.__class__.__name__,
+        docstring=snippet,
+        content=embeded_images,
+        overlay=_embed_img(overlay),
+        parameters=parameters,
+        data=data,
+        template_name=html_template,
+    )
 
 
 class HTMLReport(HTMLDocument):
+    """A report written as HTML.
+
+    Methods such as ``save_as_html``, or ``open_in_browser``
+    are inherited from class ``nilearn.plotting.html_document.HTMLDocument``.
+
     """
-    A report written as HTML.
-    Methods such as save_as_html(), open_in_browser()
-    are inherited from HTMLDocument
-    """
-    def __init__(self, head_tpl, body):
-        """ The head_tpl is meant for display as a full page, eg writing on
-            disk. The body is used for embedding in an existing page.
+
+    def __init__(self, head_tpl, body, head_values=None):
+        """Construct the ``HTMLReport`` class.
+
+        Parameters
+        ----------
+        head_tpl : Template
+            This is meant for display as a full page, eg writing on disk.
+            This is the Template object used to generate the HTML head
+            section of the report. The template should be filled with:
+
+                - title: The title of the HTML page.
+                - body: The full body of the HTML page. Provided through
+                  the ``body`` input.
+
+        body : :obj:`str`
+            This parameter is used for embedding in the provided
+            ``head_tpl`` template. It contains the full body of the
+            HTML page.
+
+        head_values : :obj:`dict`, default=None
+            Additional substitutions in ``head_tpl``.
+            if ``None`` is passed, defaults to ``{}``
+
+            .. note::
+                This can be used to provide additional values
+                with custom templates.
+
         """
-        html = head_tpl.substitute(body=body)
-        super(HTMLReport, self).__init__(html)
+        if head_values is None:
+            head_values = {}
+        html = head_tpl.safe_substitute(body=body, **head_values)
+        super().__init__(html)
         self.head_tpl = head_tpl
         self.body = body
 
     def _repr_html_(self):
-        """
-        Used by the Jupyter notebook.
+        """Return body of the report.
+
+        Method used by the Jupyter notebook.
         Users normally won't call this method explicitly.
         """
         return self.body

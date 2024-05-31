@@ -1,0 +1,6 @@
+docstring_parser
+kaleido
+pandas
+plotly
+requests
+rich

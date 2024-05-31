@@ -1,0 +1,43 @@
+
+.. currentmodule:: nilearn
+
+.. include:: names.rst
+
+0.4.1
+=====
+
+**Released March 2018**
+
+This bug fix release is focused on few bug fixes and minor developments.
+
+Enhancements
+------------
+
+- :bdg-success:`API` Classes :class:`~decomposition.CanICA` and :class:`~decomposition.DictLearning` have a new attribute ``components_img_`` providing directly the components learned as a :class:`~nibabel.nifti1.Nifti1Image`. This avoids the step of unmasking the attribute ``components_`` which is true for older versions (:gh:`1536` by `Kamalakar Reddy Daddy`_).
+
+- :bdg-success:`API` New class :class:`nilearn.regions.Parcellations` for learning brain parcellations on :term:`fMRI` data (:gh:`1370` by `Kamalakar Reddy Daddy`_).
+
+- :bdg-success:`API` Add optional reordering of the matrix using a argument ``reorder`` with function :func:`~plotting.plot_matrix`.
+
+.. note::
+    This feature is usable only if ``SciPy`` version is ``>= 1.0.0``.
+
+Changes
+-------
+
+- :bdg-danger:`Deprecation` Using output attribute ``components_`` which is an extracted components in classes :class:`~decomposition.CanICA` and :class:`~decomposition.DictLearning` is deprecated and will be removed in next two releases. Use ``components_img_`` instead (:gh:`1536` by `Kamalakar Reddy Daddy`_).
+
+Bug fixes
+---------
+
+- :bdg-dark:`Code` Fix bug loading :class:`~nibabel.nifti2.Nifti2Image`.
+
+- :bdg-dark:`Code` Fix issues with estimators in decomposition module when input images are given in glob patterns.
+
+- :bdg-info:`Plotting` Fix issues using function :func:`~plotting.plot_connectome` when string is passed in ``node_color`` with display modes left and right hemispheric cuts in the glass brain.
+
+- :bdg-info:`Plotting` Fix bug while plotting only coordinates using ``add_markers`` on glass brain (:gh:`1595` by `Kamalakar Reddy Daddy`_).
+
+- :bdg-info:`Plotting` Fix bug while adjusting contrast of the background template while using function :func:`~plotting.plot_prob_atlas`.
+
+- :bdg-info:`Plotting` Fix colormap bug with recent ``matplotlib 2.2.0``.

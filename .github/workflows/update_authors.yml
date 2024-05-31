@@ -1,0 +1,42 @@
+---
+# github action to update AUTHORS.rst file if CITATION.cff is updated
+name: Update authors
+
+on:
+    push:
+        branches:
+        -   main
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    update_authors:
+        if: github.repository == 'nilearn/nilearn'
+        runs-on: ubuntu-latest
+        steps:
+        -   name: Checkout nilearn
+            uses: actions/checkout@v4
+
+        -   name: Set up Python
+            uses: actions/setup-python@v5
+            with:
+                python-version: '3.12'
+                allow-prereleases: false
+
+        -   name: Install dependencies
+            run: python -m pip install --upgrade pip ruamel.yaml
+
+        -   name: Update AUTHORS.rst and doc/changes/names.rst
+            run: python maint_tools/citation_cff_maint.py
+
+        -   name: Create Pull Request
+            uses: peter-evans/create-pull-request@v6
+            with:
+                commit-message: update AUTHORS.rst and doc/changes/names.rst
+                base: main
+                token: ${{ secrets.GITHUB_TOKEN }}
+                delete-branch: true
+                title: '[BOT] update AUTHORS.rst and doc/changes/names.rst'
+                body: done via this [GitHub Action](https://github.com/${{ github.repository_owner }}/nilearn/blob/main/.github/workflows/update_authors.yml)

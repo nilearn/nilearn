@@ -1,0 +1,56 @@
+---
+name: Auto Comment
+on: [pull_request_target]
+jobs:
+    run:
+        runs-on: ubuntu-latest
+        steps:
+        -   name: Auto comment pull request
+            uses: bubkoo/auto-comment@v1.1.2
+            with:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+          # TODO after next release:
+          # - update the link to changelog item in the checklist to this:
+          #
+          #       (see our documentation on [changelogs](https://nilearn.github.io/stable/development.html#changelog))
+                pullRequestOpened: >
+                    👋 @{{ author }} Thanks for creating a PR!
+
+
+                    Until this PR is ready for review, you can include the [WIP] tag
+                    in its title, or leave it as a github draft.
+
+
+                    Please make sure it is compliant
+                    with our [contributing guidelines](https://nilearn.github.io/stable/development.html#contribution-guidelines).
+                    In particular, be sure it checks the boxes listed below.
+
+                    - [ ] PR has an interpretable title.
+
+                    - [ ] PR links to Github issue with mention `Closes #XXXX`
+                    (see our documentation on [PR structure](https://nilearn.github.io/stable/development.html#pr-structure))
+
+                    - [ ] Code is PEP8-compliant
+                    (see our documentation on [coding style](https://nilearn.github.io/stable/development.html#coding-style))
+
+                    - [ ] Changelog or what's new entry in `doc/changes/latest.rst`
+                    (see our documentation on [PR structure](https://nilearn.github.io/stable/development.html#pr-structure))
+
+
+                    For new features:
+
+                    - [ ] There is at least one unit test per new function / class
+                    (see our documentation on [testing](https://nilearn.github.io/stable/development.html#tests))
+
+                    - [ ] The new feature is demoed in at least one relevant example.
+
+
+                    For bug fixes:
+
+                    - [ ] There is at least one test that would fail
+                    under the original bug conditions.
+
+
+                    We will review it as quick as possible, feel free to ping us with
+                    questions if needed.

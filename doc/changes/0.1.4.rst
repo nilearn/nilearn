@@ -1,0 +1,31 @@
+
+.. currentmodule:: nilearn
+
+.. include:: names.rst
+
+0.1.4
+=====
+
+**Released July 2015**
+
+Highlights
+----------
+
+- :bdg-success:`API` New class :class:`nilearn.maskers.NiftiSpheresMasker` which extracts signals from balls specified by their coordinates.
+
+- :bdg-dark:`Code` Add the Destrieux 2009 and Power 2011 atlas.
+
+- :bdg-dark:`Code` Better caching in maskers.
+
+- :bdg-secondary:`Maint` Obey Debian packaging rules.
+
+
+Contributors (from ``git shortlog -ns 0.1.3..0.1.4``):
+
+    * `Alexandre Abraham`_ (141)
+    * `Gael Varoquaux`_ (15)
+    * `Loic Estève`_ (10)
+    * `Arthur Mensch`_ (2)
+    * `Danilo Bzdok`_ (2)
+    * `Michael Hanke`_ (2)
+    * `Mehdi Rahim`_ (1)

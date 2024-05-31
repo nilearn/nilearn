@@ -1,5 +1,11 @@
-Brainomics Localizer
+.. _brainomics_maps:
 
+Brainomics Localizer
+====================
+
+Access
+------
+See :func:`nilearn.datasets.fetch_localizer_contrasts`.
 
 Notes
 -----
@@ -8,6 +14,11 @@ visual perception, motor actions, reading, language comprehension
 and mental calculation at an individual level. Individual functional
 maps are reliable and quite precise.
 
+You may cite :footcite:t:`Papadopoulos-Orfanos2017`
+when using this dataset.
+
+Scientific results obtained using this dataset are described
+in :footcite:t:`Pinel2007`.
 
 Content
 -------
@@ -19,18 +30,12 @@ Content
 
 References
 ----------
+
+.. footbibliography::
+
 For more information about this dataset's structure:
 http://brainomics.cea.fr/localizer/
 
-To cite this dataset:
-Papadopoulos Orfanos, Dimitri, et al.
-"The Brainomics/Localizer database."
-NeuroImage 144.B (2017): 309.
-
-For an example of scientific results obtained using this dataset:
-Pinel, Philippe, et al.
-"Fast reproducible identification and large-scale databasing of
- individual functional cognitive networks."
-BMC Neuroscience 8.1 (2007): 91.
-
-Licence: usage is unrestricted for non-commercial research purposes.
+License
+-------
+usage is unrestricted for non-commercial research purposes.

@@ -1,0 +1,86 @@
+
+.. currentmodule:: nilearn
+
+.. include:: names.rst
+
+0.2.0
+=====
+
+**Released December 2015**
+
+Changelog
+---------
+
+.. warning::
+
+    The new minimum required version of scikit-learn is ``0.13``.
+
+New features
+------------
+
+- :bdg-success:`API` The new module :mod:`nilearn.connectome` now has class :class:`nilearn.connectome.ConnectivityMeasure` can be useful for computing functional connectivity matrices.
+
+- :bdg-success:`API` Globbing expressions can now be used in all nilearn functions expecting a list of files.
+
+- :bdg-success:`API` The new module :mod:`nilearn.regions` now has class :class:`regions.RegionExtractor` which can be used for post processing brain regions of interest extraction.
+
+- :bdg-success:`API` The function :func:`~regions.connected_regions` in :mod:`nilearn.regions` is also implemented as a helper function to :class:`regions.RegionExtractor`.
+
+- :bdg-success:`API` The function :func:`~image.threshold_img` in :mod:`nilearn.image` is implemented to use it for thresholding statistical maps.
+
+- :bdg-dark:`Code` The function ``nilearn.connectome.sym_to_vec`` in same module :mod:`nilearn.connectome` is also implemented as a helper function to class :class:`nilearn.connectome.ConnectivityMeasure`.
+
+- :bdg-dark:`Code` The class :class:`decomposition.DictLearning` in :mod:`nilearn.decomposition` is a decomposition method similar to :term:`ICA` that imposes sparsity on components instead of independence between them.
+
+- :bdg-secondary:`Maint` Integrating back references template from ``sphinx-gallery`` of ``0.0.11`` version release.
+
+Enhancements
+------------
+
+- :bdg-primary:`Doc` Documentation about class :class:`maskers.NiftiSpheresMasker`.
+
+- :bdg-secondary:`Maint` Making website a bit elaborated & modernise by using ``sphinx-gallery``.
+
+- :bdg-secondary:`Maint` Documentation enhancement by integrating ``sphinx-gallery`` notebook style examples.
+
+Bug fixes
+---------
+
+- :bdg-dark:`Code` Fixed bug to control the behaviour when ``cut_coords=0`` in function :func:`~plotting.plot_stat_map` in :mod:`nilearn.plotting` (See :gh:`784`).
+
+- :bdg-dark:`Code` Fixed bug in function :func:`~image.copy_img` occurred while caching the Nifti images (See :gh:`793`).
+
+- :bdg-dark:`Code` Fixed bug causing an ``IndexError`` in ``fast_abs_percentile`` (See :gh:`875`).
+
+API changes summary
+-------------------
+
+- :bdg-success:`API` The default value for number of cuts (``n_cuts``) in function :func:`~plotting.find_cut_slices` in :mod:`nilearn.plotting` module has been changed from 12 to 7 i.e. ``n_cuts=7``.
+
+- :bdg-secondary:`Maint` The utilities in function :func:`~connectome.group_sparse_covariance` have been moved into module :mod:`nilearn.connectome`.
+
+Contributors
+------------
+
+Contributors (from ``git shortlog -ns 0.1.4..0.2.0``):
+
+    * `Elvis Dohmatob`_ (822)
+    * `Gael Varoquaux`_ (142)
+    * `Alexandre Abraham`_ (119)
+    * `Loic Estève`_ (90)
+    * `Kamalakar Reddy Daddy`_ (85)
+    * `Alexandre Abadie`_ (65)
+    * `Chris Gorgolewski`_ (43)
+    * `Salma Bougacha`_ (39)
+    * `Danilo Bzdok`_ (29)
+    * `Martin Perez-Guevara`_ (20)
+    * `Mehdi Rahim`_ (19)
+    * `Óscar Nájera`_ (19)
+    * `Arthur Mensch`_ (8)
+    * `Ben Cipollini`_ (8)
+    * `Aina Frau-Pascual`_ (4)
+    * `Julia Huntenburg`_ (4)
+    * `Michael Hanke`_ (2)
+    * `Ariel Rokem`_ (2)
+    * `Bertrand Thirion`_ (1)
+    * `Dimitri Papadopoulos Orfanos`_ (1)

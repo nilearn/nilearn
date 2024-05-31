@@ -1,0 +1,284 @@
+
+.. currentmodule:: nilearn
+
+.. include:: names.rst
+
+0.6.0
+=====
+
+**Released December 2019**
+
+HIGHLIGHTS
+----------
+
+.. warning::
+
+ | **Python2 and 3.4 are no longer supported. We recommend upgrading to Python 3.6 minimum.** (:gh:`2214` by `Kshitij Chawla`_).
+ |
+ | **Support for Python3.5 will be removed in the 0.7.x release.**
+ | Users with a Python ``3.5`` environment will be warned at their first Nilearn import.
+ |
+ | **joblib is now a dependency**
+ |
+ | **Minimum supported versions of packages have been bumped up.**
+ | - ``Matplotlib -- v2.0``.
+ | - ``Scikit-learn -- v0.19``.
+ | - ``Scipy -- v0.19``.
+
+NEW
+---
+
+- :bdg-success:`API` New method for :class:`~maskers.NiftiMasker` instances for generating reports viewable in a web browser, Jupyter Notebook, or VSCode (:gh:`2019` by `Elizabeth DuPre`_).
+
+- :bdg-success:`API` New function :func:`~image.get_data` to replace the deprecated nibabel method ``Nifti1Image.get_data``. Now use ``nilearn.image.get_data(img)`` rather than ``img.get_data()``. This is because Nibabel is removing the ``get_data`` method. You may also consider using the Nibabel method ``nibabel.nifti1.Nifti1Image.get_fdata``, which returns the data cast to floating-point. See `BIAP8 <https://github.com/nipy/nibabel/wiki/BIAP8>`_. As a benefit, the :func:`~image.get_data` function works on niimg-like objects such as filenames (see `input_output <http://nilearn.github.io/manipulating_images/input_output.html>`_) (:gh:`2172` by `Jerome Dockes`_).
+
+- :bdg-success:`API` New class :class:`~regions.ReNA` implementing parcellation method :term:`ReNA`: Fast agglomerative clustering based on recursive nearest neighbor grouping. Yields very fast & accurate models, without creation of giant clusters (:gh:`1336` by `Andrés Hoyos Idrobo`_).
+
+- :bdg-success:`API` New brain development :term:`fMRI` dataset fetcher :func:`datasets.fetch_development_fmri` can be used to download movie-watching data in children and adults. A light-weight dataset implemented for teaching and usage in the examples. All the connectivity examples are changed from ADHD to brain development :term:`fMRI` dataset (:gh:`1953` by `Kamalakar Reddy Daddy`_).
+
+- :bdg-dark:`Code` Function :func:`~image.resample_img` has been optimized to pad rather than resample images in the special case when there is only a translation between two spaces. This is a common case in class :class:`~maskers.NiftiMasker` when using the ``mask_strategy="template"`` option for brains in :term:`MNI` space (:gh:`2025` by `Greg Kiar`_).
+
+- :bdg-info:`Plotting` New function ``nilearn.plotting.plot_connectome_strength`` to plot the strength of a connectome on a glass brain.  Strength is absolute sum of the edges at a node (:gh:`2028` by `Guillaume Lemaitre`_).
+
+ENHANCEMENTS
+------------
+
+- :bdg-success:`API` Rework of the standardize-options of function :func:`~signal.clean` and the various Maskers in :mod:`nilearn.maskers`. You can now set ``standardize`` to ``zscore`` or ``psc``. ``psc`` stands for ``Percent Signal Change``, which can be a meaningful metric for :term:`BOLD` (:gh:`1952` by `Gilles de Hollander`_).
+
+- :bdg-success:`API` Class :class:`~maskers.NiftiLabelsMasker` now accepts an optional ``strategy`` parameter which allows it to change the function used to reduce values within each labelled ROI. Available functions include ``mean``, ``median``, ``minimum``, ``maximum``, ``standard_deviation`` and ``variance``. This change is also introduced in function :func:`~regions.img_to_signals_labels` (:gh:`2221` by `Daniel Gomez`_).
+
+- :bdg-info:`Plotting` Functions :func:`~plotting.view_img_on_surf`, :func:`~plotting.view_surf` and :func:`~plotting.view_connectome` can display a title, and allow disabling the colorbar, and setting its height and the fontsize of its ticklabels (:gh:`1951` by `Jerome Dockes`_).
+
+- :bdg-info:`Plotting` Function :func:`~plotting.view_surf` now accepts surface data provided as a file path (:gh:`2057` by `Jerome Dockes`_).
+
+CHANGES
+-------
+
+- :bdg-info:`Plotting` Function :func:`~plotting.plot_img` now has explicit keyword arguments ``bg_img``, ``vmin`` and ``vmax`` to control the background image and the bounds of the colormap. These arguments were already accepted in ``kwargs`` but not documented before (:gh:`2157` by `Jerome Dockes`_).
+
+FIXES
+-----
+
+- :bdg-dark:`Code` Class :class:`~maskers.NiftiLabelsMasker` no longer truncates region means to their integral part when input images are of integer type (:gh:`2195` by `Kshitij Chawla`_).
+
+- :bdg-dark:`Code` The argument ``version='det'`` in function :func:`~datasets.fetch_atlas_pauli_2017` now works as expected (:gh:`2235` by `Ryan Hammonds`_).
+
+- :bdg-secondary:`Maint` ``pip install nilearn`` now installs the necessary dependencies (:gh:`2214` by `Kshitij Chawla`_).
+
+**Lots of other fixes in documentation and examples.** More detailed change list follows:
+
+0.6.0rc
+=======
+
+NEW
+---
+.. warning::
+
+  - :bdg-danger:`Deprecation` **Support for Python3.5 will be removed in the 0.7.x release.** Users with a Python3.5 environment will be warned at their first Nilearn import (:gh:`2214` by `Kshitij Chawla`_).
+
+  - :bdg-info:`Plotting` Function :func:`~plotting.view_connectome` no longer accepts old parameter names. Instead of ``coords``, ``threshold``, ``cmap``, and ``marker_size``, use ``node_coords``, ``edge_threshold``, ``edge_cmap``, and ``node_size`` respectively (:gh:`2255` by `Kshitij Chawla`_).
+
+  - :bdg-info:`Plotting` Function :func:`~plotting.view_markers` no longer accepts old parameter names. Instead of ``coord`` and ``color``, use ``marker_coords`` and ``marker_color`` respectively (:gh:`2255` by `Kshitij Chawla`_).
+
+
+Changes
+-------
+
+- :bdg-success:`API` Class :class:`~maskers.NiftiLabelsMasker` now accepts an optional ``strategy`` parameter which allows it to change the function used to reduce values within each labelled ROI. Available functions include ``mean``, ``median``, ``minimum``, ``maximum``, ``standard_deviation`` and ``variance``. This change is also introduced in function :func:`~regions.img_to_signals_labels` (:gh:`2221` by `Daniel Gomez`_).
+
+- :bdg-dark:`Code` Add a warning to :class:`~regions.Parcellations` if the generated number of parcels does not match the requested number of parcels (:gh:`2240` by `Elizabeth DuPre`_).
+
+Fixes
+-----
+
+- :bdg-success:`API` Method :meth:`~maskers.NiftiLabelsMasker.inverse_transform` now works without the need to call ``transform`` first (:gh:`2248` by `Gael Varoquaux`_).
+
+- :bdg-dark:`Code` Class :class:`~maskers.NiftiLabelsMasker` no longer truncates region means to their integral part when input images are of integer type (:gh:`2195` by `Kshitij Chawla`_).
+
+- :bdg-dark:`Code` Function :func:`~image.smooth_img` no longer fails if ``fwhm`` is a :class:`numpy.ndarray` (:gh:`2107` by `Paula Sanz-Leon`_).
+
+- :bdg-dark:`Code` Function :func:`~image.new_img_like` no longer attempts to copy non-iterable headers (:gh:`2212` by `Kshitij Chawla`_).
+
+- :bdg-dark:`Code` Nilearn no longer raises ``ImportError`` for nose when Matplotlib is not installed (:gh:`2231` by `Kshitij Chawla`_).
+
+- :bdg-dark:`Code` The argument ``version='det'`` in function :func:`~datasets.fetch_atlas_pauli_2017` now works as expected (:gh:`2235` by `Ryan Hammonds`_).
+
+- :bdg-secondary:`Maint` ``pip install nilearn`` now installs the necessary dependencies (:gh:`2214` by `Kshitij Chawla`_).
+
+Contributors
+------------
+
+The following people contributed to this release (in alphabetical order):
+
+    * `Chris Markiewicz`_
+    * `Dan Gale`_
+    * `Daniel Gomez`_
+    * `Derek Pisner`_
+    * `Elizabeth DuPre`_
+    * `Eric Larson`_
+    * `Gael Varoquaux`_
+    * `Jerome Dockes`_
+    * `Johannes Wiesner`_
+    * `Kshitij Chawla`_
+    * `Paula Sanz-Leon`_
+    * `Loic Tetrel`_
+    * `Ryan Hammonds`_
+
+
+0.6.0b0
+=======
+
+**Released November 2019**
+
+
+.. warning::
+
+ | **Python2 and 3.4 are no longer supported. Pip will raise an error in these environments.**
+ | **Minimum supported version of Python is now 3.5 .**
+ | **We recommend upgrading to Python 3.6 .**
+
+
+NEW
+---
+
+- :bdg-success:`API` New function :func:`~image.get_data` to replace the deprecated nibabel method ``Nifti1Image.get_data``. Now use ``nilearn.image.get_data(img)`` rather than ``img.get_data()``. This is because Nibabel is removing the ``get_data`` method. You may also consider using the Nibabel method ``nibabel.nifti1.Nifti1Image.get_fdata``, which returns the data cast to floating-point. See `BIAP8 <https://github.com/nipy/nibabel/wiki/BIAP8>`_. As a benefit, the :func:`~image.get_data` function works on niimg-like objects such as filenames (see `input_output <http://nilearn.github.io/manipulating_images/input_output.html>`_) (:gh:`2172` by `Jerome Dockes`_).
+
+Changes
+-------
+
+- :bdg-success:`API` All functions and examples now use function :func:`~image.get_data` rather than the deprecated method ``nibabel.Nifti1Image.get_data`` (:gh:`2172` by `Jerome Dockes`_).
+
+- :bdg-success:`API` Users can now specify fetching data for adults, children, or both from :func:`~datasets.fetch_development_fmri`.
+
+- :bdg-dark:`Code` Function :func:`~datasets.fetch_neurovault` now does not filter out images that have their metadata field ``is_valid`` cleared by default (:gh:`2169` by `Jerome Dockes`_).
+
+Fixes
+-----
+
+- :bdg-info:`Plotting` Function :func:`~plotting.plot_connectome` now correctly displays marker size on 'l' and 'r' orientations, if an array or a list is passed to the function.
+
+Contributors
+------------
+
+The following people contributed to this release (in alphabetical order):
+
+    * `Jake Vogel`_
+    * `Jerome Dockes`_
+    * `Kshitij Chawla`_
+    * `Roberto Guidotti`_
+
+0.6.0a0
+=======
+
+**Released October 2019**
+
+NEW
+---
+
+.. warning::
+
+ | **Python2 and 3.4 are no longer supported. We recommend upgrading to Python 3.6 minimum.**
+ |
+ | **Minimum supported versions of packages have been bumped up.**
+ | - ``Matplotlib -- v2.0``.
+ | - ``Scikit-learn -- v0.19``.
+ | - ``Scipy -- v0.19``.
+
+- :bdg-success:`API` A new method for :class:`~maskers.NiftiMasker` instances for generating reports viewable in a web browser, Jupyter Notebook, or VSCode (:gh:`2019` by `Elizabeth DuPre`_).
+
+- :bdg-success:`API` New class :class:`~regions.ReNA` implementing parcellation method :term:`ReNA`: Fast agglomerative clustering based on recursive nearest neighbor grouping. Yields very fast & accurate models, without creation of giant clusters (:gh:`1336` by `Andrés Hoyos Idrobo`_).
+
+- :bdg-dark:`Code` Function :func:`~image.resample_img` has been optimized to pad rather than resample images in the special case when there is only a translation between two spaces. This is a common case in class :class:`~maskers.NiftiMasker` when using the ``mask_strategy="template"`` option for brains in :term:`MNI` space (:gh:`2025` by `Greg Kiar`_).
+
+- :bdg-dark:`Code` New brain development :term:`fMRI` dataset fetcher :func:`~datasets.fetch_development_fmri` can be used to download movie-watching data in children and adults; a light-weight dataset implemented for teaching and usage in the examples.
+
+- :bdg-primary:`Doc` New example in ``examples/05_advanced/plot_age_group_prediction_cross_val.py`` to compare methods for classifying subjects into age groups based on functional connectivity. Similar example in ``examples/03_connectivity/plot_group_level_connectivity.py`` simplified (:gh:`2063` by `Jerome Dockes`_).
+
+- :bdg-secondary:`Maint`  ``joblib`` is now a dependency (:gh:`2090` by `Jerome Dockes`_).
+
+- :bdg-secondary:`Maint` Merged ``examples/03_connectivity/plot_adhd_spheres.py`` and ``examples/03_connectivity/plot_sphere_based_connectome.py`` to remove duplication across examples. The improved ``examples/03_connectivity/plot_sphere_based_connectome.py`` contains concepts previously reviewed in both examples (:gh:`2013` by `Jake Vogel`_).
+
+- :bdg-secondary:`Maint` Merged ``examples/03_connectivity/plot_compare_decomposition.py`` and ``examples/03_connectivity/plot_canica_analysis.py`` into an improved ``examples/03_connectivity/plot_compare_decomposition.py`` (:gh:`2013` by `Jake Vogel`_).
+
+- :bdg-secondary:`Maint` The Localizer dataset now follows the :term:`BIDS` organization.
+
+- :bdg-info:`Plotting` New function ``nilearn.plotting.plot_connectome_strength`` to plot the strength of a connectome on a glass brain.  Strength is absolute sum of the edges at a node (:gh:`2028` by `Guillaume Lemaitre`_).
+
+Changes
+-------
+
+- :bdg-success:`API` Rework of the standardize-options of function :func:`~signal.clean` and the various Maskers in :mod:`nilearn.maskers`. You can now set ``standardize`` to ``zscore`` or ``psc``. ``psc`` stands for ``Percent Signal Change``, which can be a meaningful metric for :term:`BOLD` (:gh:`1952` by `Gilles de Hollander`_).
+
+- :bdg-primary:`Doc` Examples ``plot_decoding_tutorial``, ``plot_haxby_decoder``, ``plot_haxby_different_estimators``, ``plot_haxby_full_analysis``, ``plot_oasis_vbm`` now use :class:`~decoding.Decoder` and :class:`~decoding.DecoderRegressor` instead of sklearn SVC and SVR (:gh:`2000` by `Binh Nguyen`_).
+
+- :bdg-primary:`Doc` Removed the plotting connectomes example which used the Seitzman atlas from ``examples/03_connectivity/plot_sphere_based_connectome.py``. The atlas data is unsuitable for the method & the example is redundant (:gh:`2177` by `Kshitij Chawla`_).
+
+- :bdg-secondary:`Maint` All the connectivity examples are changed from ADHD to brain development :term:`fMRI` dataset.
+
+- :bdg-info:`Plotting` Functions :func:`~plotting.view_img_on_surf`, :func:`~plotting.view_surf` and :func:`~plotting.view_connectome` can display a title, and allow disabling the colorbar, and setting its height and the fontsize of its ticklabels (:gh:`1951` by `Jerome Dockes`_).
+
+- :bdg-info:`Plotting` Function :func:`~plotting.plot_img` now has explicit keyword arguments ``bg_img``, ``vmin`` and ``vmax`` to control the background image and the bounds of the colormap. These arguments were already accepted in ``kwargs`` but not documented before (:gh:`2157` by `Jerome Dockes`_).
+
+- :bdg-info:`Plotting` Function :func:`~plotting.view_connectome` now converts ``NaNs`` in the adjacency matrix to 0 (:gh:`2166` by `Jerome Dockes`_).
+
+
+Fixes
+-----
+
+- :bdg-success:`API` Function ``add_contours`` now accepts ``threshold`` argument for ``filled=False``. Now ``threshold`` is equally applied when asked for fillings in the contours.
+
+- :bdg-dark:`Code` Function :func:`~datasets.fetch_surf_nki_enhanced` is now downloading the correct left and right functional surface data for each subject (:gh:`2118` by `Julia Huntenburg`_).
+
+- :bdg-dark:`Code` Function :func:`~datasets.fetch_atlas_schaefer_2018` now downloads from release version ``0.14.3`` (instead of ``0.8.1``) by default, which includes corrected region label names along with 700 and 900 region parcelations (:gh:`2138` by `Dan Gale`_).
+
+- :bdg-dark:`Code` Colormap creation functions have been updated to avoid matplotlib deprecation warnings about colormap reversal (:gh:`2131` by `Eric Larson`_).
+
+- :bdg-dark:`Code` Neurovault fetcher no longer fails if unable to update dataset metadata file due to faulty permissions.
+
+- :bdg-info:`Plotting` Function :func:`~plotting.plot_glass_brain` with ``colorbar=True`` does not crash when images have ``NaNs`` (:gh:`1953` by `Kamalakar Reddy Daddy`_).
+
+- :bdg-info:`Plotting` Functions :func:`~plotting.plot_surf` and :func:`~plotting.plot_surf_stat_map` no longer threshold zero values when no threshold is given (:gh:`1997` by `Julia Huntenburg`_).
+
+- :bdg-info:`Plotting` Function :func:`~plotting.plot_surf_stat_map` used with a thresholded map but without a background map results in the surface mesh being displayed in half-transparent grey to maintain a 3D perception (:gh:`1997` by `Julia Huntenburg`_).
+
+- :bdg-info:`Plotting` Function :func:`~plotting.view_surf` now accepts surface data provided as a file path.
+
+- :bdg-info:`Plotting` Function :func:`~plotting.plot_glass_brain` now correctly displays the left 'l' orientation even when the given images are completely masked (empty images) (:gh:`1888` by `Kamalakar Reddy Daddy`_).
+
+- :bdg-info:`Plotting` Function :func:`~plotting.plot_matrix` with providing ``labels=None``, ``False``, or an empty list now correctly disables labels (:gh:`2083` by `Moritz Boos`_).
+
+- :bdg-info:`Plotting` Function :func:`~plotting.plot_surf_roi` now takes ``vmin``, and ``vmax`` parameters (:gh:`2052` by `Ian Abenes`_).
+
+
+Contributors
+------------
+
+The following people contributed to this release (in alphabetical order):
+
+  * `Alexandre Abraham`_
+  * `Alexandre Gramfort`_
+  * `Ana Luisa Pinho`_
+  * `Andrés Hoyos Idrobo`_
+  * `Thomas Bazeille`_
+  * `Bertrand Thirion`_
+  * `Colin Reininger`_
+  * `Céline Delettre`_
+  * `Dan Gale`_
+  * `Daniel Gomez`_
+  * `Elizabeth DuPre`_
+  * `Eric Larson`_
+  * `Franz Liem`_
+  * `Gael Varoquaux`_
+  * `Gilles de Hollander`_
+  * `Greg Kiar`_
+  * `Guillaume Lemaitre`_
+  * `Ian Abenes`_
+  * `Jake Vogel`_
+  * `Jerome Dockes`_
+  * `Jerome-Alexis Chevalier`_
+  * `Julia Huntenburg`_
+  * `Kamalakar Reddy Daddy`_
+  * `Kshitij Chawla`_
+  * `Mehdi Rahim`_
+  * `Moritz Boos`_
+  * `Sylvain Takerkart`_

@@ -1,0 +1,5 @@
+format: zip
+https://example.org/example_zip
+README.txt
+data/img.nii.gz
+data/labels.csv

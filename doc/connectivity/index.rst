@@ -1,6 +1,3 @@
-.. include:: ../tune_toc.rst
-
-
 .. _functional_connectivity:
 
 ============================================
@@ -14,9 +11,6 @@ and networks, via resting-state networks or parcellations.
 
 |
 
-.. include:: ../includes/big_toc_css.rst
-
-
 .. toctree::
 
    functional_connectomes.rst
@@ -24,4 +18,3 @@ and networks, via resting-state networks or parcellations.
    resting_state_networks.rst
    region_extraction.rst
    parcellating.rst
-

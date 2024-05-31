@@ -1,0 +1,29 @@
+
+.. currentmodule:: nilearn
+
+.. include:: names.rst
+
+0.4.2
+=====
+
+**Released June 2018**
+
+Few important bugs fix release for OHBM conference.
+
+Changes
+-------
+
+- :bdg-info:`Plotting` Default colormaps for surface plotting functions have changed to be more consistent with slice plotting. :func:`~plotting.plot_surf_stat_map` now uses ``cold_hot``, as :func:`~plotting.plot_stat_map` does, and :func:`~plotting.plot_surf_roi` now uses ``gist_ncar``, as :func:`~plotting.plot_roi` does.
+
+- :bdg-info:`Plotting` Improve 3D surface plotting: lock the aspect ratio of the plots and reduce the whitespace around the plots.
+
+Fixes
+-----
+
+- :bdg-dark:`Code` Fix bug with input repetition time (:term:`TR`) which had no effect in signal cleaning (fixed by `Pradeep Reddy Raamana`_).
+
+- :bdg-dark:`Code` Fix issues with signal extraction on list of 3D images in :class:`~regions.Parcellations`.
+
+- :bdg-dark:`Code` Fix issues with raising ``AttributeError`` rather than ``HTTPError`` in datasets fetching utilities (by `Jerome Dockes`_).
+
+- :bdg-dark:`Code` Fix issues in datasets testing function uncompression of files (by `Pierre Glaser`_).

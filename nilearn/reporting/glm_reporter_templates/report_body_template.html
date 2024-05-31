@@ -1,0 +1,97 @@
+<style>
+  div.report {
+    font-family: sans-serif;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  div.model_details {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100px;
+  }
+
+  table,
+  th,
+  td {
+    border: 1px solid black;
+    border-collapse: collapse;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 5px;
+    padding-left: 15px;
+    padding-right: 15px;
+    text-align: center;
+  }
+
+  tr,
+  td {
+    border-bottom: 0px;
+    border-top: 0px;
+  }
+
+  tr:nth-child(even) {
+    background-color: lightgray;
+  }
+
+  tr:hover {
+    background-color: yellow;
+  }
+
+  details:hover {
+    cursor: pointer;
+  }
+  details > summary {
+    margin-left: auto;
+    margin-right: auto;
+    width: 25%;
+    background-color: lightgray;
+    outline-color: lightgray;
+  }
+
+  address {
+    color: lightgray;
+  }
+  address > a:visited {
+    color: lightgray;
+  }
+</style>
+
+<div class="report">
+  <h1>${page_heading_1}</h1>
+  <!-- func:glm_reporter._make_headings() -->
+  <h2>${page_heading_2}</h2>
+  <!-- func:glm_reporter._make_headings() -->
+
+  <h3>Model details:</h3>
+  <div class="model_details">
+    ${model_attributes}
+    <!-- func:glm_reporter._model_attributes_to_dataframe() -->
+  </div>
+
+  <h3>Design Matrix:</h3>
+  ${design_matrices}
+  <!-- func:glm_reporter._dmtx_to_svg_url() -->
+
+  <h3 id="all-contrasts">Contrasts</h3>
+  ${all_contrasts_with_plots}
+  <!-- func:glm_reporter._plot_contrasts() -->
+
+  <h3>Mask</h3>
+  <!-- func:glm_reporter._mask_to_svg() -->
+  <img
+    src="data:image/svg+xml,${mask_plot}"
+    alt="Model did not supply a mask image."
+  />
+
+  <h3>Stat Maps with Cluster Tables</h3>
+  ${component}
+  <!-- func:glm_reporter._make_stat_maps_contrast_clusters() -->
+  <br />
+  <address>
+    Built using <a href="https://nilearn.github.io">Nilearn</a>. Source code on
+    <a href="https://github.com/nilearn/nilearn">GitHub</a>. File bugs & feature
+    requests <a href="https://github.com/nilearn/nilearn/issues">here</a>.
+  </address>
+</div>

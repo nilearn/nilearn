@@ -1,0 +1,59 @@
+
+.. currentmodule:: nilearn
+
+.. include:: names.rst
+
+0.1.3
+=====
+
+**Released May 2015**
+
+Changelog
+---------
+
+The ``0.1.3`` release is a bugfix release that fixes a lot of minor bugs.
+It also includes a full rewamp of the documentation, and support for Python 3.
+
+.. warning::
+
+    Minimum version of supported packages are now:
+
+        - ``numpy -- 1.6.1``
+        - ``scipy -- 0.9.0``
+        - ``scikit-learn -- 0.12.1``
+        - ``Matplotlib -- 1.1.1`` (optional)
+
+Fixes
+-----
+
+- :bdg-success:`API` Function :func:`~plotting.plot_connectome` now supports ``vmin`` and ``vmax``.
+
+- :bdg-dark:`Code` Dealing with ``NaNs`` in function :func:`~plotting.plot_connectome`.
+
+- :bdg-dark:`Code` Fix confounds removal with single confounds.
+
+- :bdg-dark:`Code` Fix frequency filtering.
+
+- :bdg-dark:`Code` Keep header information in images.
+
+- :bdg-dark:`Code` ``add_overlay`` finds ``vmin`` and ``vmax`` automatically.
+
+- :bdg-dark:`Code` Detrending 3D images no longer puts them to zero.
+
+- :bdg-info:`Plotting` Fix extreme values in colorbar were sometimes brok.
+
+
+Contributors (from ``git shortlog -ns 0.1.2..0.1.3``):
+
+    * `Alexandre Abraham`_ (129)
+    * `Loic Estève`_ (67)
+    * `Gael Varoquaux`_ (57)
+    * `Ben Cipollini`_ (44)
+    * `Danilo Bzdok`_ (37)
+    * `Elvis Dohmatob`_ (20)
+    * `Óscar Nájera`_ (14)
+    * `Salma Bougacha`_ (9)
+    * `Alexandre Gramfort`_ (8)
+    * `Kamalakar Reddy Daddy`_ (7)
+    * `Demian Wassermann`_ (3)
+    * `Bertrand Thirion`_ (1)

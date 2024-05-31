@@ -1,0 +1,30 @@
+
+.. currentmodule:: nilearn
+
+.. include:: names.rst
+
+0.2.3
+=====
+
+**Released February 2016**
+
+Changelog
+---------
+
+The ``0.2.3`` is a small feature release for BrainHack 2016.
+
+New features
+------------
+
+- :bdg-dark:`Code` Mathematical formulas based on ``numpy`` functions can be applied on an image or a list of images using function :func:`~image.math_img`.
+
+- :bdg-dark:`Code` Downloader for COBRE datasets of 146 rest :term:`fMRI` subjects with function ``nilearn.datasets.fetch_cobre``.
+
+- :bdg-dark:`Code` Downloader for Dosenbach atlas :func:`~datasets.fetch_coords_dosenbach_2010`.
+
+- :bdg-dark:`Code` Fetcher for multiscale functional brain parcellations (BASC) :func:`~datasets.fetch_atlas_basc_multiscale_2015`.
+
+Bug fixes
+---------
+
+- :bdg-info:`Plotting` Better dimming on white background for plotting.

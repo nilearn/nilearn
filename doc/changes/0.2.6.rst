@@ -1,0 +1,47 @@
+
+.. currentmodule:: nilearn
+
+.. include:: names.rst
+
+0.2.6
+=====
+
+**Released September 2016**
+
+This release enhances usage of several functions by fine tuning their parameters.
+It allows to select which Haxby subject to fetch.
+It also refactors documentation to make it easier to understand.
+``Sphinx-gallery`` has been updated and nilearn is ready for new ``nibabel 2.1`` version.
+Several bugs related to masks in Searchlight and ABIDE fetching have been resolved.
+
+Fixes
+-----
+
+- :bdg-dark:`Code` Change default ``dtype`` in function :func:`~image.concat_imgs` to be the original type of the data (see :gh:`1238`).
+
+- :bdg-dark:`Code` Fix ``SearchLight`` that did not run without ``process_mask`` or with one :term:`voxel` mask.
+
+- :bdg-dark:`Code` Fix bug when downloading ABIDE timeseries.
+
+- :bdg-info:`Plotting` Fix flipping of left hemisphere when plotting glass brain.
+
+Enhancements
+------------
+
+- :bdg-danger:`Deprecation` Remove outdated power atlas example.
+
+- :bdg-secondary:`Maint` ``Sphinx-gallery`` updated to version ``0.1.3``.
+
+- :bdg-secondary:`Maint` Refactoring of examples and documentation.
+
+- :bdg-secondary:`Maint` Better ordering of regions in function :func:`~datasets.fetch_coords_dosenbach_2010`.
+
+
+Changes
+-------
+
+- :bdg-success:`API` The function :func:`~datasets.fetch_haxby` will now fetch the data accepting input given in ``subjects`` as a list than integer.
+
+- :bdg-danger:`Deprecation` The parameter ``n_subjects`` is deprecated and will be removed in future release. Use ``subjects`` instead in function :func:`~datasets.fetch_haxby`.
+
+- :bdg-danger:`Deprecation` Replace ``get_affine`` by ``affine`` with recent versions of ``nibabel``.

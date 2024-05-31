@@ -1,0 +1,156 @@
+h1 {
+  font-size: 2em;
+}
+h2 {
+  font-size: 1.75em;
+}
+h3 {
+  font-size: 1.4em;
+}
+
+@media (max-width: 1100px) {
+  h1 {
+    font-size: 1.75em;
+  }
+  h2 {
+    font-size: 1.5em;
+  }
+  h3 {
+    font-size: 1.25em;
+  }
+  h4 {
+    font-size: 1.15em;
+  }
+  h5 {
+    font-size: 1.1em;
+  }
+}
+
+@media (max-width: 400px) {
+  h1 {
+    font-size: 1.45em;
+  }
+  h2 {
+    font-size: 1.3em;
+  }
+  h3 {
+    font-size: 1.15em;
+  }
+  h4 {
+    font-size: 1.05em;
+  }
+  h5 {
+    font-size: 1em;
+  }
+}
+
+div.sphx-glr-download a {
+  background-color: transparent;
+  background-image: none;
+  border: 1px solid var(--sd-color-primary);
+  border-radius: 4px;
+  color: var(--sd-color-primary);
+  padding: 1ex;
+  text-align: center;
+}
+
+div.sphx-glr-download a:hover {
+  box-shadow: none;
+  text-decoration: none;
+  background-image: none;
+  background-color: var(--sd-color-primary-highlight);
+  border: 1px solid var(--sd-color-primary-highlight);
+  color: var(--sd-color-light);
+}
+
+div.sphx-glr-download a .pre {
+  font-family: var(--font-stack);
+}
+
+/* Hide note in examples' header */
+div.sphx-glr-download-link-note {
+  height: 0px;
+  visibility: hidden;
+}
+
+/* Output images should take all width available */
+ul.sphx-glr-horizontal li img {
+  max-width: 100%;
+}
+
+/* Scripts outputs */
+.sphx-glr-script-out {
+  /* Use Furo color variables to handle light/dark modes */
+  color: var(--color-content-foreground);
+}
+
+div[class*=" highlight-"].sphx-glr-script-out,
+div[class^="highlight-"].sphx-glr-script-out {
+  display: block;
+}
+
+.sphx-glr-script-out::before {
+  content: "Output:";
+  display: block;
+  padding: 15px 0px;
+}
+
+.sphx-glr-script-out .highlight {
+  border-radius: 0px;
+  border-left: 4px solid var(--color-background-border);
+}
+
+.sphx-glr-script-out .highlight pre {
+  /* Use Furo color variables to handle light/dark modes */
+  background-color: var(--color-background-secondary);
+  color: var(--color-content-foreground);
+  margin: 0;
+}
+
+/* Copy button styling */
+button.copybtn {
+  top: 0.5em;
+  right: 0.5em;
+}
+
+/* Code snippets styling */
+.highlight {
+  border-radius: 0px;
+  background-color: var(--color-background-secondary);
+}
+
+.highlight-default .highlight {
+  border-left: 4px solid var(--sd-color-primary);
+}
+
+.highlight-primary .highlight {
+  border-left: 4px solid var(--color-background-border);
+}
+
+table.plotting-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+table.plotting-table col {
+  width: auto !important;
+}
+
+table.plotting-table img {
+  object-fit: contain;
+}
+
+/* Furo changes */
+.announcement {
+  height: auto;
+}
+
+.announcement-content {
+  white-space: normal;
+}
+
+/* Wrap code blocks */
+pre {
+  white-space: pre-wrap !important;
+  word-break: break-all;
+}

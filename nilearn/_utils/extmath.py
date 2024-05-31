@@ -1,39 +1,38 @@
-"""
-Extended math utilities
-"""
+"""Extended math utilities."""
+
 # Author: Gael Varoquaux
-# License: BSD
 
 import numpy as np
 
 
 def fast_abs_percentile(data, percentile=80):
-    """ A fast version of the percentile of the absolute value.
+    """Implement a fast version of the percentile of the absolute value.
 
     Parameters
     ----------
-    data: ndarray, possibly masked array
-        The input data
-    percentile: number between 0 and 100
-        The percentile that we are asking for
+    data : ndarray, possibly masked array
+        The input data.
+
+    percentile : number between 0 and 100
+        The percentile that we are asking for.
 
     Returns
     -------
-    value: number
-        The score at percentile
+    value : number
+        The score at percentile.
 
     Notes
     -----
-
     This is a faster, and less accurate version of
     scipy.stats.scoreatpercentile(np.abs(data), percentile)
+
     """
-    if hasattr(data, 'mask'):
+    if hasattr(data, "mask"):
         # Catter for masked arrays
         data = np.asarray(data[np.logical_not(data.mask)])
     data = np.abs(data)
     data = data.ravel()
-    index = int(data.size * .01 * percentile)
+    index = int(data.size * 0.01 * percentile)
     # Partial sort: faster than sort
     data = np.partition(data, index)
     return data[index]
@@ -47,23 +46,27 @@ def is_spd(M, decimal=15, verbose=1):
 
     Parameters
     ----------
-    M: numpy.ndarray
-        symmetric positive definite matrix.
+    M : numpy.ndarray
+        Symmetric positive definite matrix.
 
-    verbose: int, optional
-        verbosity level (0 means no message)
+    decimal : int, default=15
+        Decimal.
+
+    verbose : int, default=1
+        Verbosity level (0 means no message).
 
     Returns
     -------
-    answer: boolean
+    answer : boolean
         True if matrix is symmetric positive definite, False otherwise.
+
     """
-    if not np.allclose(M, M.T, atol=0, rtol=10 ** -decimal):
+    if not np.allclose(M, M.T, atol=0, rtol=10**-decimal):
         if verbose > 0:
-            print("matrix not symmetric to %d decimals" % decimal)
+            print(f"matrix not symmetric to {decimal:d} decimals")
         return False
     eigvalsh = np.linalg.eigvalsh(M)
     ispd = eigvalsh.min() > 0
     if not ispd and verbose > 0:
-        print("matrix has a negative eigenvalue: %.3f" % eigvalsh.min())
+        print(f"matrix has a negative eigenvalue: {eigvalsh.min():.3f}")
     return ispd

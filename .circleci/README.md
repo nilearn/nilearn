@@ -1,14 +1,10 @@
-CircleCI is used to build our documentations and tutorial examples.
-CircleCI's cache stores previously built documentation and 
-only rebuild any changes, instead of rebuilding the documentation from scratch. 
-This saves a lot of time.
+# Hosting and deployment of development docs on CircleCI
 
-Occasionally, some changes necessitate rebuilding the documentation from scratch,
-either to see the full effect of the changes 
-or because the cached builds are raising some error.
+The development docs are built using GitHub Actions.
 
-To run a new CircleCI build from the beginning, without using the cache:
+See [.github/workflows/README.md](/.github/workflows/README.md) for details.
 
-1. Run the script `clean-cache.py`.
-2. Commit the change (with a clear message).
-3. Push the commit.
+CircleCI is used to download and host the artifacts from GitHub Actions from builds on pull requests and "main".
+It also runs the deploy job to deploy the development documentation when there is a merge on "main".
+These jobs are triggered by Github Actions
+using [build-docs.yml](/.github/workflows/build-docs.yml) after a successful doc build.

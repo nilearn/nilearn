@@ -1,0 +1,4 @@
+format: zip
+https://osf.io/2bqxn/download
+localizer_first_level/sub-12069_task-localizer_events.tsv
+localizer_first_level/sub-12069_task-localizer_space-MNI305.nii.gz

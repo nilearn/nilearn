@@ -1,0 +1,28 @@
+
+.. currentmodule:: nilearn
+
+.. include:: names.rst
+
+0.6.1
+=====
+
+**Released January 2020**
+
+ENHANCEMENTS
+------------
+
+- :bdg-dark:`Code` HTML pages use the user-provided plot title, if any, as their title (:gh:`2272` by `Jerome Dockes`_).
+
+Fixes
+-----
+
+- :bdg-dark:`Code` Fetchers for developmental_fmri and localizer datasets resolve URLs correctly (:gh:`2290` by `Elizabeth DuPre`_).
+
+Contributors
+------------
+
+The following people contributed to this release:
+
+    * `Elizabeth DuPre`_
+    * `Jerome Dockes`_
+    * `Kshitij Chawla`_

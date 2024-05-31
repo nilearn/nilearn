@@ -1,0 +1,51 @@
+
+.. currentmodule:: nilearn
+
+.. include:: names.rst
+
+0.3.1
+=====
+
+**Released June 2017**
+
+This is a minor release for BrainHack.
+
+Highlights
+----------
+
+- :bdg-danger:`Deprecation` **Dropped support for scikit-learn older than 0.14.1** Minimum supported version is now ``0.15``.
+
+Changes
+-------
+
+- :bdg-success:`API` Added argument ``smoothing_fwhm`` to :class:`~regions.RegionExtractor` to control smoothing according to the resolution of atlas images.
+
+- :bdg-danger:`Deprecation` The function ``sym_to_vec`` is deprecated and will be removed in release ``0.4``. Use function :func:`~connectome.sym_matrix_to_vec` instead.
+
+Fixes
+-----
+
+- :bdg-dark:`Code` The helper function ``largest_connected_component`` should now work with inputs of non-native data ``dtypes``.
+
+- :bdg-dark:`Code` A workaround to handle non-native endianness in :class:`~nibabel.nifti1.Nifti1Image` passed to resampling the image.
+
+- :bdg-info:`Plotting` Fix plotting issues when non-finite values are present in background anatomical image.
+
+Enhancements
+------------
+
+- :bdg-success:`API` New functions :func:`~datasets.fetch_neurovault` and :func:`~datasets.fetch_neurovault_ids` help you download statistical maps from the `Neurovault <http://neurovault.org>`_ platform.
+
+- :bdg-success:`API` New function :func:`~connectome.vec_to_sym_matrix` reshapes vectors to symmetric matrices. It acts as the reverse of function :func:`~connectome.sym_matrix_to_vec`.
+
+- :bdg-success:`API` Add an option allowing to vectorize connectivity matrices returned by the ``transform`` method of class :class:`~connectome.ConnectivityMeasure`.
+
+- :bdg-success:`API` Class :class:`~connectome.ConnectivityMeasure` now exposes an ``inverse_transform`` method, useful for going back from vectorized connectivity coefficients to connectivity matrices. Also, it allows to recover the covariance matrices for the "tangent" kind.
+
+- :bdg-dark:`Code` Function :func:`~image.largest_connected_component_img` to directly extract the largest connected component from :class:`~nibabel.nifti1.Nifti1Image`.
+
+- :bdg-primary:`Doc` Reworking and renaming of connectivity measures example. Renamed from ``plot_connectivity_measures`` to ``plot_group_level_connectivity``.
+
+- :bdg-primary:`Doc` Improvements in plotting, decoding and functional connectivity examples.
+
+- :bdg-info:`Plotting` Tighter bounding boxes when using ``add_contours`` for plotting.

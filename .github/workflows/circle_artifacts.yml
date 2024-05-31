@@ -1,0 +1,22 @@
+---
+name: Redirect circleci artifacts
+# Display a link to the artifacts at the bottom of a PR
+# from https://github.com/marketplace/actions/run-circleci-artifacts-redirector
+permissions: read-all
+on: [status]
+jobs:
+    circleci_artifacts_redirector_job:
+        if: "${{ startsWith(github.event.context, 'ci/circleci: host_docs') }}"
+        runs-on: ubuntu-latest
+        name: Run CircleCI artifacts redirector
+        permissions:
+            statuses: write
+        steps:
+        -   name: GitHub Action step
+            uses: larsoner/circleci-artifacts-redirector-action@master
+            with:
+                repo-token: ${{ secrets.GITHUB_TOKEN }}
+                api-token: ${{ secrets.CIRCLE_CI_TOKEN }}
+                artifact-path: 0/dev/index.html
+                circleci-jobs: host_docs
+                job-title: Check the HTML doc here!

@@ -1,66 +1,74 @@
-"""
-sklearn-compatible implementation of spatially structured learners (
-TV-L1, Graph-Net, etc.)
+"""sklearn-compatible implementation of spatially structured learners.
 
+For example: TV-L1, Graph-Net, etc
 """
+
 # Author: DOHMATOB Elvis Dopgima,
 #         PIZARRO Gaspar,
 #         VAROQUAUX Gael,
 #         GRAMFORT Alexandre,
 #         EICKENBERG Michael,
 #         THIRION Bertrand
-# License: simplified BSD
 
-import warnings
-import numbers
-import time
+import collections
 import sys
+import time
+import warnings
 from functools import partial
+
 import numpy as np
-from scipy import stats, ndimage
-from sklearn.base import RegressorMixin
-from sklearn.utils.extmath import safe_sparse_dot
-from sklearn.utils import check_array
-from sklearn.linear_model.base import LinearModel
-from sklearn.feature_selection import (SelectPercentile, f_regression,
-                                       f_classif)
 from joblib import Memory, Parallel, delayed
-from sklearn.preprocessing import LabelBinarizer
+from scipy import stats
+from scipy.ndimage import binary_dilation, binary_erosion, gaussian_filter
+from sklearn.feature_selection import SelectPercentile, f_classif, f_regression
+from sklearn.linear_model import LinearRegression
+from sklearn.linear_model._base import _preprocess_data as center_data
 from sklearn.metrics import accuracy_score
-from ..input_data.masker_validation import check_embedded_nifti_masker
-from .._utils.param_validation import _adjust_screening_percentile
-from sklearn.utils import check_X_y
 from sklearn.model_selection import check_cv
-from sklearn.linear_model.base import _preprocess_data as center_data
-from .._utils.cache_mixin import CacheMixin
-from nilearn.masking import _unmask_from_to_3d_array
-from .space_net_solvers import (tvl1_solver, _graph_net_logistic,
-                                _graph_net_squared_loss)
+from sklearn.preprocessing import LabelBinarizer
+from sklearn.utils import check_array, check_X_y
+from sklearn.utils.extmath import safe_sparse_dot
+
+from nilearn._utils.masker_validation import check_embedded_masker
+from nilearn.experimental.surface import SurfaceMasker
 from nilearn.image import get_data
+from nilearn.masking import unmask_from_to_3d_array
+
+from .._utils import fill_doc
+from .._utils.cache_mixin import CacheMixin
+from .._utils.param_validation import adjust_screening_percentile
+from .space_net_solvers import (
+    graph_net_logistic,
+    graph_net_squared_loss,
+    tvl1_solver,
+)
 
 
 def _crop_mask(mask):
-    """Crops input mask to produce tighter (i.e smaller) bounding box with
-    the same support (active voxels)"""
+    """Crops input mask to produce tighter (i.e smaller) bounding box \
+    with the same support (active voxels)."""
     idx = np.where(mask)
     if idx[0].size == 0:
-        raise ValueError("Empty mask: if you have given a mask, it is "
-                         "empty, and if you have not given a mask, the "
-                         "mask-extraction routines have failed. Please "
-                         "provide an appropriate mask.")
+        raise ValueError(
+            "Empty mask: if you have given a mask, it is "
+            "empty, and if you have not given a mask, the "
+            "mask-extraction routines have failed. Please "
+            "provide an appropriate mask."
+        )
     i_min = max(idx[0].min() - 1, 0)
     i_max = idx[0].max()
     j_min = max(idx[1].min() - 1, 0)
     j_max = idx[1].max()
     k_min = max(idx[2].min() - 1, 0)
     k_max = idx[2].max()
-    return mask[i_min:i_max + 1, j_min:j_max + 1, k_min:k_max + 1]
+    return mask[i_min : i_max + 1, j_min : j_max + 1, k_min : k_max + 1]
 
 
+@fill_doc
 def _univariate_feature_screening(
-        X, y, mask, is_classif, screening_percentile, smoothing_fwhm=2.):
-    """
-    Selects the most import features, via a univariate test
+    X, y, mask, is_classif, screening_percentile, smoothing_fwhm=2.0
+):
+    """Select the most import features, via a univariate test.
 
     Parameters
     ----------
@@ -79,10 +87,8 @@ def _univariate_feature_screening(
     screening_percentile : float in the closed interval [0., 100.]
         Only the `screening_percentile * 100" percent most import voxels will
         be retained.
-
-    smoothing_fwhm : float, optional (default 2.)
-        FWHM for isotropically smoothing the data X before F-testing. A value
-        of zero means "don't smooth".
+    %(smoothing_fwhm)s
+        Default=2.
 
     Returns
     -------
@@ -99,27 +105,30 @@ def _univariate_feature_screening(
         original mask.
     """
     # smooth the data (with isotropic Gaussian kernel) before screening
-    if smoothing_fwhm > 0.:
+    if smoothing_fwhm > 0.0:
         sX = np.empty(X.shape)
         for sample in range(sX.shape[0]):
-            sX[sample] = ndimage.gaussian_filter(
-                _unmask_from_to_3d_array(X[sample].copy(),  # avoid modifying X
-                                         mask), (smoothing_fwhm, smoothing_fwhm,
-                                                 smoothing_fwhm))[mask]
+            sX[sample] = gaussian_filter(
+                unmask_from_to_3d_array(
+                    X[sample].copy(), mask  # avoid modifying X
+                ),
+                (smoothing_fwhm, smoothing_fwhm, smoothing_fwhm),
+            )[mask]
     else:
         sX = X
 
     # do feature screening proper
-    selector = SelectPercentile(f_classif if is_classif else f_regression,
-                                percentile=screening_percentile).fit(sX, y)
+    selector = SelectPercentile(
+        f_classif if is_classif else f_regression,
+        percentile=screening_percentile,
+    ).fit(sX, y)
     support = selector.get_support()
 
     # erode and then dilate mask, thus obtaining a "cleaner" version of
     # the mask on which a spatial prior actually makes sense
     mask_ = mask.copy()
-    mask_[mask] = (support > 0)
-    mask_ = ndimage.binary_dilation(ndimage.binary_erosion(
-        mask_)).astype(np.bool)
+    mask_[mask] = support > 0
+    mask_ = binary_dilation(binary_erosion(mask_)).astype(bool)
     mask_[np.logical_not(mask)] = 0
     support = mask_[mask]
     X = X[:, support]
@@ -127,8 +136,9 @@ def _univariate_feature_screening(
     return X, mask_, support
 
 
-def _space_net_alpha_grid(X, y, eps=1e-3, n_alphas=10, l1_ratio=1.,
-                          logistic=False):
+def _space_net_alpha_grid(
+    X, y, eps=1e-3, n_alphas=10, l1_ratio=1.0, logistic=False
+):
     """Compute the grid of alpha values for TV-L1 and Graph-Net.
 
     Parameters
@@ -139,48 +149,47 @@ def _space_net_alpha_grid(X, y, eps=1e-3, n_alphas=10, l1_ratio=1.,
     y : ndarray, shape (n_samples,)
         Target / response vector.
 
-    l1_ratio : float
+    l1_ratio : float, default=1
         The ElasticNet mixing parameter, with ``0 <= l1_ratio <= 1``.
         For ``l1_ratio = 0`` the penalty is purely a spatial prior
         (Graph-Net, TV, etc.). ``For l1_ratio = 1`` it is an L1 penalty.
         For ``0 < l1_ratio < 1``, the penalty is a combination of L1
         and a spatial prior.
 
-    eps : float, optional
+    eps : float, default=1e-3
         Length of the path. ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``.
 
-    n_alphas : int, optional
+    n_alphas : int, default=10
         Number of alphas along the regularization path.
 
-    logistic : bool, optional (default False)
+    logistic : bool, default=False
         Indicates where the underlying loss function is logistic.
 
     """
-
     if logistic:
         # Computes the theoretical upper bound for the overall
         # regularization, as derived in "An Interior-Point Method for
         # Large-Scale l1-Regularized Logistic Regression", by Koh, Kim,
         # Boyd, in Journal of Machine Learning Research, 8:1519-1555,
         # July 2007.
-        # url: http://www.stanford.edu/~boyd/papers/pdf/l1_logistic_reg.pdf
+        # url: https://web.stanford.edu/~boyd/papers/pdf/l1_logistic_reg.pdf
         m = float(y.size)
         m_plus = float(y[y == 1].size)
         m_minus = float(y[y == -1].size)
         b = np.zeros_like(y)
         b[y == 1] = m_minus / m
-        b[y == -1] = - m_plus / m
+        b[y == -1] = -m_plus / m
         alpha_max = np.max(np.abs(X.T.dot(b)))
 
         # tt may happen that b is in the kernel of X.T!
-        if alpha_max == 0.:
+        if alpha_max == 0.0:
             alpha_max = np.abs(np.dot(X.T, y)).max()
     else:
         alpha_max = np.abs(np.dot(X.T, y)).max()
 
     # prevent alpha_max from exploding when l1_ratio = 0
-    if l1_ratio == 0.:
+    if l1_ratio == 0.0:
         l1_ratio = 1e-3
     alpha_max /= l1_ratio
 
@@ -188,16 +197,17 @@ def _space_net_alpha_grid(X, y, eps=1e-3, n_alphas=10, l1_ratio=1.,
         return np.array([alpha_max])
 
     alpha_min = alpha_max * eps
-    return np.logspace(np.log10(alpha_min), np.log10(alpha_max),
-                       num=n_alphas)[::-1]
+    return np.logspace(np.log10(alpha_min), np.log10(alpha_max), num=n_alphas)[
+        ::-1
+    ]
 
 
-class _EarlyStoppingCallback(object):
-    """Out-of-bag early stopping
+class _EarlyStoppingCallback:
+    """Out-of-bag early stopping.
 
-        A callable that returns True when the test error starts
-        rising. We use a Spearman correlation (between X_test.w and y_test)
-        for scoring.
+    A callable that returns True when the test error starts
+    rising. We use a Spearman correlation (between X_test.w and y_test)
+    for scoring.
     """
 
     def __init__(self, X_test, y_test, is_classif, debias=False, verbose=0):
@@ -208,46 +218,50 @@ class _EarlyStoppingCallback(object):
         self.verbose = verbose
         self.tol = -1e-4 if self.is_classif else -1e-2
         self.test_scores = []
-        self.counter = 0.
+        self.counter = 0.0
 
     def __call__(self, variables):
-        """The callback proper """
+        """Perform callback."""
         # misc
         if not isinstance(variables, dict):
             variables = dict(w=variables)
         self.counter += 1
-        w = variables['w']
+        w = variables["w"]
 
         # use Spearman score as stopping criterion
         score = self.test_score(w)[0]
 
         self.test_scores.append(score)
-        if not (self.counter > 20 and (self.counter % 10) == 2):
+        if self.counter <= 20 or self.counter % 10 != 2:
             return
 
         # check whether score increased on average over last 5 iterations
-        if len(self.test_scores) > 4:
-            if np.mean(np.diff(self.test_scores[-5:][::-1])) >= self.tol:
-                if self.verbose:
-                    if self.verbose > 1:
-                        print('Early stopping. Test score: %.8f %s' % (
-                              score, 40 * '-'))
-                    else:
-                        sys.stderr.write('.')
-                return True
+        if (
+            len(self.test_scores) > 4
+            and np.mean(np.diff(self.test_scores[-5:][::-1])) >= self.tol
+        ):
+            if self.verbose:
+                if self.verbose > 1:
+                    print(
+                        "Early stopping. "
+                        f"Test score: {score:.8f} {40 * '-'}"
+                    )
+                else:
+                    sys.stderr.write(".")
+            return True
 
         if self.verbose > 1:
-            print('Test score: %.8f' % score)
+            print(f"Test score: {score:.8f}")
         return False
 
     def _debias(self, w):
-        """"Debias w by rescaling the coefficients by a fixed factor.
+        """Debias w by rescaling the coefficients by a fixed factor.
 
         Precisely, the scaling factor is: <y_pred, y_test> / ||y_test||^2.
         """
         y_pred = np.dot(self.X_test, w)
         scaling = np.dot(y_pred, y_pred)
-        if scaling > 0.:
+        if scaling > 0.0:
             scaling = np.dot(y_pred, self.y_test) / scaling
             w *= scaling
         return w
@@ -267,7 +281,7 @@ class _EarlyStoppingCallback(object):
         """
         if self.is_classif:
             w = w[:-1]
-        if w.ptp() == 0:
+        if np.ptp(w) == 0:
             # constant map, there is nothing
             return (-np.inf, -np.inf)
         y_pred = np.dot(self.X_test, w)
@@ -279,12 +293,27 @@ class _EarlyStoppingCallback(object):
             return pearson_score, spearman_score
 
 
-def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
-                solver_params, is_classif=False, n_alphas=10, eps=1E-3,
-                key=None, debias=False, Xmean=None,
-                screening_percentile=20., verbose=1):
-    """Function to compute scores of different alphas in regression and
-    classification used by CV objects
+@fill_doc
+def path_scores(
+    solver,
+    X,
+    y,
+    mask,
+    alphas,
+    l1_ratios,
+    train,
+    test,
+    solver_params,
+    is_classif=False,
+    n_alphas=10,
+    eps=1e-3,
+    key=None,
+    debias=False,
+    screening_percentile=20.0,
+    verbose=1,
+):
+    """Compute scores of different alphas in regression \
+    and classification used by CV objects.
 
     Parameters
     ----------
@@ -306,9 +335,10 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
     test : array or list of integers
         List of indices for the test samples.
 
-    l1_ratio : float in the interval [0, 1]; optional (default .5)
+    l1_ratios : float or list of floats in the interval [0, 1];\
+        optional (default .5)
         Constant that mixes L1 and TV (resp. Graph-Net) penalization.
-        l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
+        l1_ratios == 0: just smooth. l1_ratios == 1: just lasso.
 
     eps : float, optional (default 1e-3)
         Length of the path. For example, ``eps=1e-3`` means that
@@ -321,8 +351,29 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
     solver : function handle
        See for example tv.TVl1Classifier documentation.
 
-    solver_params: dict
+    solver_params : dict
        Dictionary of param-value pairs to be passed to solver.
+
+    is_classif : bool, default=False
+        Indicates whether the loss is a classification loss or a
+        regression loss.
+
+    key: ??? TODO: Add description.
+
+    debias : bool, default=False
+        If set, then the estimated weights maps will be debiased.
+
+    screening_percentile : float in the interval [0, 100], optional\
+        (default 20)
+        Percentile value for :term:`ANOVA` univariate feature selection.
+        A value of 100 means 'keep all features'.
+        This percentile is expressed
+        w.r.t the volume of a standard (MNI152) brain, and so is corrected
+        at runtime to correspond to the volume of the user-supplied mask
+        (which is typically smaller). If '100' is given, all the features
+        are used, regardless of the number of voxels.
+    %(verbose)s
+
     """
     if l1_ratios is None:
         raise ValueError("l1_ratios must be specified!")
@@ -334,10 +385,11 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
     # Univariate feature screening. Note that if we have only as few as 100
     # features in the mask's support, then we should use all of them to
     # learn the model i.e disable this screening)
-    do_screening = (n_features > 100) and screening_percentile < 100.
+    do_screening = (n_features > 100) and screening_percentile < 100.0
     if do_screening:
         X, mask, support = _univariate_feature_screening(
-            X, y, mask, is_classif, screening_percentile)
+            X, y, mask, is_classif, screening_percentile
+        )
 
     # crop the mask to have a tighter bounding box
     mask = _crop_mask(mask)
@@ -348,11 +400,11 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
 
     # it is essential to center the data in regression
     X_train, y_train, _, y_train_mean, _ = center_data(
-        X_train, y_train, fit_intercept=True, normalize=False,
-        copy=False)
+        X_train, y_train, fit_intercept=True, copy=False
+    )
 
     # misc
-    if isinstance(l1_ratios, numbers.Number):
+    if not isinstance(l1_ratios, collections.abc.Iterable):
         l1_ratios = [l1_ratios]
     l1_ratios = sorted(l1_ratios)[::-1]  # from large to small l1_ratios
     best_score = -np.inf
@@ -361,7 +413,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
     best_alpha = None
     best_init = None
     all_test_scores = []
-    if len(test) > 0.:
+    if len(test) > 0.0:
         # do l1_ratio path
         for l1_ratio in l1_ratios:
             this_test_scores = []
@@ -369,8 +421,13 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
             # make alpha grid
             if alphas is None:
                 alphas_ = _space_net_alpha_grid(
-                    X_train, y_train, l1_ratio=l1_ratio, eps=eps,
-                    n_alphas=n_alphas, logistic=is_classif)
+                    X_train,
+                    y_train,
+                    l1_ratio=l1_ratio,
+                    eps=eps,
+                    n_alphas=n_alphas,
+                    logistic=is_classif,
+                )
             else:
                 alphas_ = alphas
             alphas_ = sorted(alphas_)[::-1]  # from large to small l1_ratios
@@ -381,26 +438,40 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
             init = None
             path_solver_params = solver_params.copy()
             # Use a lighter tol during the path
-            path_solver_params['tol'] = 2 * path_solver_params.get('tol', 1e-4)
+            path_solver_params["tol"] = 2 * path_solver_params.get("tol", 1e-4)
             for alpha in alphas_:
                 # setup callback mechanism for early stopping
                 early_stopper = _EarlyStoppingCallback(
-                    X_test, y_test, is_classif=is_classif, debias=debias,
-                    verbose=verbose)
+                    X_test,
+                    y_test,
+                    is_classif=is_classif,
+                    debias=debias,
+                    verbose=verbose,
+                )
                 w, _, init = solver(
-                    X_train, y_train, alpha, l1_ratio, mask=mask, init=init,
-                    callback=early_stopper, verbose=max(verbose - 1, 0.),
-                    **path_solver_params)
+                    X_train,
+                    y_train,
+                    alpha,
+                    l1_ratio,
+                    mask=mask,
+                    init=init,
+                    callback=early_stopper,
+                    verbose=max(verbose - 1, 0.0),
+                    **path_solver_params,
+                )
 
                 # We use 2 scores for model selection: the second one is to
                 # disambiguate between regions of equivalent Spearman
                 # correlations
                 score, secondary_score = early_stopper.test_score(w)
                 this_test_scores.append(score)
-                if (np.isfinite(score) and
-                        (score > best_score
-                         or (score == best_score and
-                             secondary_score > best_secondary_score))):
+                if np.isfinite(score) and (
+                    score > best_score
+                    or (
+                        score == best_score
+                        and secondary_score > best_secondary_score
+                    )
+                ):
                     best_secondary_score = secondary_score
                     best_score = score
                     best_l1_ratio = l1_ratio
@@ -410,22 +481,38 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
     else:
         if alphas is None:
             alphas_ = _space_net_alpha_grid(
-                X_train, y_train, l1_ratio=best_l1_ratio, eps=eps,
-                n_alphas=n_alphas, logistic=is_classif)
+                X_train,
+                y_train,
+                l1_ratio=best_l1_ratio,
+                eps=eps,
+                n_alphas=n_alphas,
+                logistic=is_classif,
+            )
         else:
             alphas_ = alphas
         best_alpha = alphas_[0]
 
     # re-fit best model to high precision (i.e without early stopping, etc.)
-    best_w, _, init = solver(X_train, y_train, best_alpha, best_l1_ratio,
-                             mask=mask, init=best_init,
-                             verbose=max(verbose - 1, 0), **solver_params)
+    best_w, _, init = solver(
+        X_train,
+        y_train,
+        best_alpha,
+        best_l1_ratio,
+        mask=mask,
+        init=best_init,
+        verbose=max(verbose - 1, 0),
+        **solver_params,
+    )
     if debias:
         best_w = _EarlyStoppingCallback(
-            X_test, y_test, is_classif=is_classif, debias=debias,
-            verbose=verbose)._debias(best_w)
+            X_test,
+            y_test,
+            is_classif=is_classif,
+            debias=debias,
+            verbose=verbose,
+        )._debias(best_w)
 
-    if len(test) == 0.:
+    if len(test) == 0.0:
         all_test_scores.append(np.nan)
 
     # unmask univariate screening
@@ -439,21 +526,27 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
         best_w = w_
 
     if len(best_w) == n_features:
-        if Xmean is None:
-            Xmean = np.zeros(n_features)
-        best_w = np.append(best_w, 0.)
+        # TODO: implement with Xmean
+        best_w = np.append(best_w, 0.0)
 
     all_test_scores = np.array(all_test_scores)
-    return (all_test_scores, best_w, best_alpha, best_l1_ratio, alphas_,
-            y_train_mean, key)
+    return (
+        all_test_scores,
+        best_w,
+        best_alpha,
+        best_l1_ratio,
+        alphas_,
+        y_train_mean,
+        key,
+    )
 
 
-class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
-    """
-    Regression and classification learners with sparsity and spatial priors
+@fill_doc
+class BaseSpaceNet(LinearRegression, CacheMixin):
+    """Regression and classification learners with sparsity and spatial priors.
 
     `SpaceNet` implements Graph-Net and TV-L1 priors /
-    penalties. Thus, the penalty is a sum an L1 term and a spatial term. The
+    penalties. Thus, the penalty is a sum of an L1 term and a spatial term. The
     aim of such a hybrid prior is to obtain weights maps which are structured
     (due to the spatial prior) and sparse (enforced by L1 norm).
 
@@ -468,10 +561,10 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
     is_classif : bool, optional (default False)
         Flag telling whether the learning task is classification or regression.
 
-    l1_ratios : float or list of floats in the interval [0, 1];
-    optional (default .5)
+    l1_ratios : float or list of floats in the interval [0, 1];\
+        optional (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
-        l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
+        l1_ratios == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
         then the best value will be selected by cross-validation.
 
@@ -493,31 +586,15 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a NiftiMasker.
-
-    target_affine : 3x3 or 4x4 matrix, optional (default None)
-        This parameter is passed to image.resample_img. An important use-case
-        of this parameter is for downsampling the input data to a coarser
-        resolution (to speed of the model fit). Please see the related
-        documentation for details.
-
-    target_shape : 3-tuple of integers, optional (default None)
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
-
-    low_pass: None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    high_pass: None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    t_r : float, optional (default None)
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details.
-
-    screening_percentile : float in the interval [0, 100]; Optional (
-    default 20)
+    %(target_affine)s
+        An important use-case of this parameter is for downsampling the
+        input data to a coarser resolution (to speed of the model fit).
+    %(target_shape)s
+    %(low_pass)s
+    %(high_pass)s
+    %(t_r)s
+    screening_percentile : float in the interval [0, 100]; Optional (\
+        default 20)
         Percentile value for ANOVA univariate feature selection. A value of
         100 means 'keep all features'. This percentile is expressed
         w.r.t the volume of a standard (MNI152) brain, and so is corrected
@@ -538,22 +615,10 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
 
     tol : float, optional (default 5e-4)
         Defines the tolerance for convergence for the backend FISTA solver.
-
-    verbose : int, optional (default 1)
-        Verbosity level.
-
-    n_jobs : int, optional (default 1)
-        Number of jobs in solving the sub-problems.
-
-    memory: instance of joblib.Memory or string
-        Used to cache the masking process.
-        By default, no caching is done. If a string is given, it is the
-        path to the caching directory.
-
-    memory_level: integer, optional (default 1)
-        Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching.
-
+    %(verbose)s
+    %(n_jobs)s
+    %(memory)s
+    %(memory_level1)s
     cv : int, a cv generator instance, or None (default 8)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
@@ -565,87 +630,111 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
 
     Attributes
     ----------
-    `all_coef_` : ndarray, shape (n_l1_ratios, n_folds, n_features)
+    all_coef_ : ndarray, shape (n_l1_ratios, n_folds, n_features)
         Coefficients for all folds and features.
 
-    `alpha_grids_` : ndarray, shape (n_folds, n_alphas)
+    alpha_grids_ : ndarray, shape (n_folds, n_alphas)
         Alpha values considered for selection of the best ones
         (saved in `best_model_params_`)
 
-    `best_model_params_` : ndarray, shape (n_folds, n_parameter)
+    best_model_params_ : ndarray, shape (n_folds, n_parameter)
         Best model parameters (alpha, l1_ratio) saved for the different
         cross-validation folds.
 
-    `classes_` : ndarray of labels (`n_classes_`)
+    classes_ : ndarray of labels (`n_classes_`)
         Labels of the classes (for classification problems)
 
-    `n_classes_` : int
+    n_classes_ : int
         Number of classes (for classification problems)
 
-    `coef_` : ndarray, shape
-        (1, n_features) for 2 class classification problems (i.e n_classes = 2)
+    coef_ : ndarray, shape\
+        (1, n_features) for 2 class classification problems\
+        (i.e n_classes = 2)\
         (n_classes, n_features) for n_classes > 2
         Coefficient of the features in the decision function.
 
-    `coef_img_` : nifti image
+    coef_img_ : nifti image
         Masked model coefficients
 
-    `mask_` : ndarray 3D
+    mask_ : ndarray 3D
         An array contains values of the mask image.
 
-    `masker_` : instance of NiftiMasker
+    masker_ : instance of NiftiMasker
         The nifti masker used to mask the data.
 
-    `mask_img_` : Nifti like image
+    mask_img_ : Nifti like image
         The mask of the data. If no mask was supplied by the user,
         this attribute is the mask image computed automatically from the
         data `X`.
 
-    `memory_` : joblib memory cache
+    memory_ : joblib memory cache
 
-    `intercept_` : narray, shape
+    intercept_ : narray, shape
         (1,) for 2 class classification problems (i.e n_classes = 2)
         (n_classes,) for n_classes > 2
         Intercept (a.k.a. bias) added to the decision function.
         It is available only when parameter intercept is set to True.
 
-    `cv_` : list of pairs of lists
+    cv_ : list of pairs of lists
         Each pair is the list of indices for the train and test samples
         for the corresponding fold.
 
-    `cv_scores_` : ndarray, shape (n_folds, n_alphas) or (n_l1_ratios, n_folds, n_alphas)
+    cv_scores_ : ndarray, shape (n_folds, n_alphas)\
+        or (n_l1_ratios, n_folds, n_alphas)
         Scores (misclassification) for each alpha, and on each fold
 
-    `screening_percentile_` : float
+    screening_percentile_ : float
         Screening percentile corrected according to volume of mask,
         relative to the volume of standard brain.
 
-    `w_` : ndarray, shape
-        (1, n_features + 1) for 2 class classification problems (i.e n_classes = 2)
-        (n_classes, n_features + 1) for n_classes > 2, and (n_features,) for
-        regression
+    w_ : ndarray, shape
+        (1, n_features + 1) for 2 class classification problems
+        (i.e n_classes = 2)
+        (n_classes, n_features + 1) for n_classes > 2, and (n_features,)
+        for regression
         Model weights
 
-    `ymean_` : array, shape (n_samples,)
+    ymean_ : array, shape (n_samples,)
         Mean of prediction targets
 
-    `Xmean_` : array, shape (n_features,)
+    Xmean_ : array, shape (n_features,)
         Mean of X across samples
 
-    `Xstd_` : array, shape (n_features,)
+    Xstd_ : array, shape (n_features,)
         Standard deviation of X across samples
     """
+
     SUPPORTED_PENALTIES = ["graph-net", "tv-l1"]
     SUPPORTED_LOSSES = ["mse", "logistic"]
 
-    def __init__(self, penalty="graph-net", is_classif=False, loss=None,
-                 l1_ratios=.5, alphas=None, n_alphas=10, mask=None,
-                 target_affine=None, target_shape=None, low_pass=None,
-                 high_pass=None, t_r=None, max_iter=200, tol=5e-4,
-                 memory=None, memory_level=1, standardize=True, verbose=1,
-                 mask_args=None,
-                 n_jobs=1, eps=1e-3, cv=8, fit_intercept=True,
-                 screening_percentile=20., debias=False):
+    def __init__(
+        self,
+        penalty="graph-net",
+        is_classif=False,
+        loss=None,
+        l1_ratios=0.5,
+        alphas=None,
+        n_alphas=10,
+        mask=None,
+        target_affine=None,
+        target_shape=None,
+        low_pass=None,
+        high_pass=None,
+        t_r=None,
+        max_iter=200,
+        tol=5e-4,
+        memory=None,
+        memory_level=1,
+        standardize=True,
+        verbose=1,
+        mask_args=None,
+        n_jobs=1,
+        eps=1e-3,
+        cv=8,
+        fit_intercept=True,
+        screening_percentile=20.0,
+        debias=False,
+    ):
         self.penalty = penalty
         self.is_classif = is_classif
         self.loss = loss
@@ -676,45 +765,51 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         self.check_params()
 
     def check_params(self):
-        """Makes sure parameters are sane"""
+        """Make sure parameters are sane."""
         if self.l1_ratios is not None:
             l1_ratios = self.l1_ratios
-            if isinstance(l1_ratios, numbers.Number):
+            if not isinstance(l1_ratios, collections.abc.Iterable):
                 l1_ratios = [l1_ratios]
             for l1_ratio in l1_ratios:
-                if not 0 <= l1_ratio <= 1.:
+                if not 0 <= l1_ratio <= 1.0:
                     raise ValueError(
-                        "l1_ratio must be in the interval [0, 1]; got %g" % (
-                            l1_ratio))
-                elif l1_ratio == 0. or l1_ratio == 1.:
+                        "l1_ratio must be in the interval [0, 1]; "
+                        f" got {l1_ratio:g}"
+                    )
+                elif l1_ratio in (0.0, 1.0):
                     warnings.warn(
-                        ("Specified l1_ratio = %g. It's advised to only "
-                         "specify values of l1_ratio strictly between 0 "
-                         "and 1." % l1_ratio))
-        if not (0. <= self.screening_percentile <= 100.):
+                        f"Specified l1_ratio = {l1_ratio:g}. "
+                        "It's advised to only specify values of l1_ratio "
+                        "strictly between 0 and 1."
+                    )
+        if not (0.0 <= self.screening_percentile <= 100.0):
             raise ValueError(
-                ("screening_percentile should be in the interval"
-                 " [0, 100], got %g" % self.screening_percentile))
+                "screening_percentile should be in the interval [0, 100]. "
+                f"Got {self.screening_percentile:g}."
+            )
         if self.penalty not in self.SUPPORTED_PENALTIES:
             raise ValueError(
-                "'penalty' parameter must be one of %s%s or %s; got %s" % (
-                    ",".join(self.SUPPORTED_PENALTIES[:-1]), "," if len(
-                        self.SUPPORTED_PENALTIES) > 2 else "",
-                    self.SUPPORTED_PENALTIES[-1], self.penalty))
+                "'penalty' parameter must be one of "
+                f"{self.SUPPORTED_PENALTIES}. "
+                f"Got {self.penalty}."
+            )
         if not (self.loss is None or self.loss in self.SUPPORTED_LOSSES):
             raise ValueError(
-                "'loss' parameter must be one of %s%s or %s; got %s" % (
-                    ",".join(self.SUPPORTED_LOSSES[:-1]), "," if len(
-                        self.SUPPORTED_LOSSES) > 2 else "",
-                    self.SUPPORTED_LOSSES[-1], self.loss))
-        if self.loss is not None and not self.is_classif and (
-                self.loss == "logistic"):
+                f"'loss' parameter must be one of {self.SUPPORTED_LOSSES}. "
+                f"Got {self.loss}."
+            )
+        if (
+            self.loss is not None
+            and not self.is_classif
+            and (self.loss == "logistic")
+        ):
             raise ValueError(
-                ("'logistic' loss is only available for classification "
-                 "problems."))
+                "'logistic' loss is only available for classification "
+                "problems."
+            )
 
     def _set_coef_and_intercept(self, w):
-        """Sets the loadings vector (coef) and the intercept of the fitted
+        """Set the loadings vector (coef) and the intercept of the fitted \
         model."""
         self.w_ = np.array(w)
         if self.w_.ndim == 1:
@@ -726,12 +821,12 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
             self._set_intercept(self.Xmean_, self.ymean_, self.Xstd_)
 
     def fit(self, X, y):
-        """Fit the learner
+        """Fit the learner.
 
         Parameters
         ----------
         X : list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See :ref:`extracting_data`.
             Data on which model is to be fitted. If this is a list,
             the affine is considered the same for all.
 
@@ -746,38 +841,51 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         # misc
         self.check_params()
         if self.memory is None or isinstance(self.memory, str):
-            self.memory_ = Memory(self.memory,
-                                  verbose=max(0, self.verbose - 1))
+            self.memory_ = Memory(
+                self.memory, verbose=max(0, self.verbose - 1)
+            )
         else:
             self.memory_ = self.memory
         if self.verbose:
             tic = time.time()
 
-        # nifti masking
-        self.masker_ = check_embedded_nifti_masker(self, multi_subject=False)
+        masker_type = "nii"
+        if isinstance(self.mask, SurfaceMasker):
+            masker_type = "surface"
+        self.masker_ = check_embedded_masker(self, masker_type=masker_type)
         X = self.masker_.fit_transform(X)
 
-        X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
-                         multi_output=True, y_numeric=not self.is_classif)
+        X, y = check_X_y(
+            X,
+            y,
+            ["csr", "csc", "coo"],
+            dtype=float,
+            multi_output=True,
+            y_numeric=not self.is_classif,
+        )
 
-        if not self.is_classif and np.all(np.diff(y) == 0.):
-            raise ValueError("The given input y must have atleast 2 targets"
-                             " to do regression analysis. You provided only"
-                             " one target {0}".format(np.unique(y)))
+        if not self.is_classif and np.all(np.diff(y) == 0.0):
+            raise ValueError(
+                "The given input y must have at least 2 targets"
+                " to do regression analysis. You provided only"
+                f" one target {np.unique(y)}"
+            )
 
         # misc
         self.Xmean_ = X.mean(axis=0)
         self.Xstd_ = X.std(axis=0)
         self.Xstd_[self.Xstd_ < 1e-8] = 1
         self.mask_img_ = self.masker_.mask_img_
-        self.mask_ = get_data(self.mask_img_).astype(np.bool)
+        self.mask_ = get_data(self.mask_img_).astype(bool)
         n_samples, _ = X.shape
         y = np.array(y).copy()
         l1_ratios = self.l1_ratios
-        if isinstance(l1_ratios, numbers.Number):
+        if not isinstance(l1_ratios, collections.abc.Iterable):
             l1_ratios = [l1_ratios]
         alphas = self.alphas
-        if isinstance(alphas, numbers.Number):
+        if alphas is not None and not isinstance(
+            alphas, collections.abc.Iterable
+        ):
             alphas = [alphas]
         if self.loss is not None:
             loss = self.loss
@@ -789,9 +897,9 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         # set backend solver
         if self.penalty.lower() == "graph-net":
             if not self.is_classif or loss == "mse":
-                solver = _graph_net_squared_loss
+                solver = graph_net_squared_loss
             else:
-                solver = _graph_net_logistic
+                solver = graph_net_logistic
         else:
             if not self.is_classif or loss == "mse":
                 solver = partial(tvl1_solver, loss="mse")
@@ -802,22 +910,20 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         case1 = (None in [alphas, l1_ratios]) and self.n_alphas > 1
         case2 = (alphas is not None) and min(len(l1_ratios), len(alphas)) > 1
         if case1 or case2:
-            self.cv_ = list(check_cv(
-                self.cv, y=y, classifier=self.is_classif).split(X, y))
+            self.cv_ = list(
+                check_cv(self.cv, y=y, classifier=self.is_classif).split(X, y)
+            )
         else:
             # no cross-validation needed, user supplied all params
             self.cv_ = [(np.arange(n_samples), [])]
         n_folds = len(self.cv_)
 
         # number of problems to solve
-        if self.is_classif:
-            y = self._binarize_y(y)
-        else:
-            y = y[:, np.newaxis]
-        if self.is_classif and self.n_classes_ > 2:
-            n_problems = self.n_classes_
-        else:
-            n_problems = 1
+        y = self._binarize_y(y) if self.is_classif else y[:, np.newaxis]
+
+        n_problems = (
+            self.n_classes_ if self.is_classif and self.n_classes_ > 2 else 1
+        )
 
         # standardize y
         self.ymean_ = np.zeros(y.shape[0])
@@ -825,29 +931,48 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
             y = y[:, 0]
 
         # scores & mean weights map over all folds
-        self.cv_scores_ = [[] for i in range(n_problems)]
+        self.cv_scores_ = [[] for _ in range(n_problems)]
         w = np.zeros((n_problems, X.shape[1] + 1))
         self.all_coef_ = np.ndarray((n_problems, n_folds, X.shape[1]))
 
-        self.screening_percentile_ = _adjust_screening_percentile(
-            self.screening_percentile, self.mask_img_, verbose=self.verbose)
+        self.screening_percentile_ = adjust_screening_percentile(
+            self.screening_percentile, self.mask_img_, verbose=self.verbose
+        )
 
         # main loop: loop on classes and folds
         solver_params = dict(tol=self.tol, max_iter=self.max_iter)
         self.best_model_params_ = []
         self.alpha_grids_ = []
-        for (test_scores, best_w, best_alpha, best_l1_ratio, alphas,
-             y_train_mean, (cls, fold)) in Parallel(
-            n_jobs=self.n_jobs, verbose=2 * self.verbose)(
-                delayed(self._cache(path_scores, func_memory_level=2))(
-                    solver, X, y[:, cls] if n_problems > 1 else y,
-                    self.mask_, alphas, l1_ratios, self.cv_[fold][0],
-                    self.cv_[fold][1], solver_params, n_alphas=self.n_alphas,
-                    eps=self.eps, is_classif=self.loss == "logistic",
-                    key=(cls, fold), debias=self.debias,
-                    verbose=self.verbose,
-                    screening_percentile=self.screening_percentile_,
-                ) for cls in range(n_problems) for fold in range(n_folds)):
+        for (
+            test_scores,
+            best_w,
+            best_alpha,
+            best_l1_ratio,
+            alphas,
+            y_train_mean,
+            (cls, fold),
+        ) in Parallel(n_jobs=self.n_jobs, verbose=2 * self.verbose)(
+            delayed(self._cache(path_scores, func_memory_level=2))(
+                solver,
+                X,
+                y[:, cls] if n_problems > 1 else y,
+                self.mask_,
+                alphas,
+                l1_ratios,
+                self.cv_[fold][0],
+                self.cv_[fold][1],
+                solver_params,
+                n_alphas=self.n_alphas,
+                eps=self.eps,
+                is_classif=self.loss == "logistic",
+                key=(cls, fold),
+                debias=self.debias,
+                verbose=self.verbose,
+                screening_percentile=self.screening_percentile_,
+            )
+            for cls in range(n_problems)
+            for fold in range(n_folds)
+        ):
             self.best_model_params_.append((best_alpha, best_l1_ratio))
             self.alpha_grids_.append(alphas)
             self.ymean_[cls] += y_train_mean
@@ -879,13 +1004,14 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         # report time elapsed
         if self.verbose:
             duration = time.time() - tic
-            print("Time Elapsed: %g seconds, %i minutes." % (
-                duration, duration / 60.))
+            print(
+                f"Time Elapsed: {duration} seconds, {duration / 60.0} minutes."
+            )
 
         return self
 
     def decision_function(self, X):
-        """Predict confidence scores for samples
+        """Predict confidence scores for samples.
 
         The confidence score for a sample is the signed distance of that
         sample to the hyperplane.
@@ -899,21 +1025,25 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         -------
         array, shape=(n_samples,) if n_classes == 2 else (n_samples, n_classes)
             Confidence scores per (sample, class) combination. In the binary
-            case, confidence score for self.classes_[1] where >0 means this
+            case, confidence score for `self.classes_[1]` where >0 means this
             class would be predicted.
         """
         # handle regression (least-squared loss)
         if not self.is_classif:
-            return LinearModel.decision_function(self, X)
+            raise ValueError("There is no decision_function in classification")
 
         X = check_array(X)
         n_features = self.coef_.shape[1]
         if X.shape[1] != n_features:
-            raise ValueError("X has %d features per sample; expecting %d"
-                             % (X.shape[1], n_features))
+            raise ValueError(
+                f"X has {X.shape[1]} features per sample; "
+                f"expecting {n_features}."
+            )
 
-        scores = safe_sparse_dot(X, self.coef_.T,
-                                 dense_output=True) + self.intercept_
+        scores = (
+            safe_sparse_dot(X, self.coef_.T, dense_output=True)
+            + self.intercept_
+        )
         return scores.ravel() if scores.shape[1] == 1 else scores
 
     def predict(self, X):
@@ -922,7 +1052,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         Parameters
         ----------
         X : list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See :ref:`extracting_data`.
             Data on prediction is to be made. If this is a list,
             the affine is considered the same for all.
 
@@ -933,23 +1063,25 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         """
         # cast X into usual 2D array
         if not hasattr(self, "masker_"):
-            raise RuntimeError("This %s instance is not fitted yet!" % (
-                self.__class__.__name__))
+            raise RuntimeError(
+                f"This {self.__class__.__name__} instance is not fitted yet!"
+            )
         X = self.masker_.transform(X)
 
         # handle regression (least-squared loss)
         if not self.is_classif:
-            return LinearModel.predict(self, X)
+            return LinearRegression.predict(self, X)
 
         # prediction proper
         scores = self.decision_function(X)
         if len(scores.shape) == 1:
-            indices = (scores > 0).astype(np.int)
+            indices = (scores > 0).astype(int)
         else:
             indices = scores.argmax(axis=1)
         return self.classes_[indices]
 
 
+@fill_doc
 class SpaceNetClassifier(BaseSpaceNet):
     """Classification learners with sparsity and spatial priors.
 
@@ -967,9 +1099,10 @@ class SpaceNetClassifier(BaseSpaceNet):
     loss : string, optional (default "logistic")
         Loss to be used in the classifier. Must be one of "mse", or "logistic".
 
-    l1_ratios : float or list of floats in the interval [0, 1]; optional (default .5)
+    l1_ratios : float or list of floats in the interval [0, 1];\
+        optional (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
-        l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
+        l1_ratios == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
         then the best value will be selected by cross-validation.
 
@@ -991,34 +1124,21 @@ class SpaceNetClassifier(BaseSpaceNet):
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a MultiNiftiMasker with default parameters.
-
-    target_affine : 3x3 or 4x4 matrix, optional (default None)
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
-
-    target_shape : 3-tuple of integers, optional (default None)
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
-
-    low_pass: None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    high_pass: None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    t_r : float, optional (default None)
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details.
-
-    screening_percentile : float in the interval [0, 100]; Optional (default 20)
-        Percentile value for ANOVA univariate feature selection. A value of
-        100 means 'keep all features'. This percentile is is expressed
-        w.r.t the volume of a standard (MNI152) brain, and so is corrected
-        at runtime by premultiplying it with the ratio of the volume of the
-        mask of the data and volume of a standard brain.  If '100' is given,
-        all the features are used, regardless of the number of voxels.
+    %(target_affine)s
+    %(target_shape)s
+    %(low_pass)s
+    %(high_pass)s
+    %(t_r)s
+    screening_percentile : float in the interval [0, 100]; Optional\
+        (default 20)
+        Percentile value for ANOVA univariate feature selection.
+        A value of 100 means 'keep all features'.
+        This percentile is expressed w.r.t the volume
+        of a standard (MNI152) brain, and so is corrected
+        at runtime by premultiplying it with the ratio of the volume
+        of the mask of the data and volume of a standard brain.
+        If '100' is given, all the features are used,
+        regardless of the number of voxels.
 
     standardize : bool, optional (default True):
         If set, then we'll center the data (X, y) have mean zero along axis 0.
@@ -1031,24 +1151,12 @@ class SpaceNetClassifier(BaseSpaceNet):
     max_iter : int (default 200)
         Defines the iterations for the solver.
 
-    tol : float
-        Defines the tolerance for convergence. Defaults to 1e-4.
-
-    verbose : int, optional (default 1)
-        Verbosity level.
-
-    n_jobs : int, optional (default 1)
-        Number of jobs in solving the sub-problems.
-
-    memory: instance of joblib.Memory or string
-        Used to cache the masking process.
-        By default, no caching is done. If a string is given, it is the
-        path to the caching directory.
-
-    memory_level: integer, optional (default 1)
-        Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching.
-
+    tol : float, default=1e-4.
+        Defines the tolerance for convergence.
+    %(verbose)s
+    %(n_jobs)s
+    %(memory)s
+    %(memory_level1)s
     cv : int, a cv generator instance, or None (default 8)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
@@ -1060,97 +1168,143 @@ class SpaceNetClassifier(BaseSpaceNet):
 
     Attributes
     ----------
-    `all_coef_` : ndarray, shape (n_l1_ratios, n_folds, n_features)
+    all_coef_ : ndarray, shape (n_l1_ratios, n_folds, n_features)
         Coefficients for all folds and features.
 
-    `alpha_grids_` : ndarray, shape (n_folds, n_alphas)
+    alpha_grids_ : ndarray, shape (n_folds, n_alphas)
         Alpha values considered for selection of the best ones
         (saved in `best_model_params_`)
 
-    `best_model_params_` : ndarray, shape (n_folds, n_parameter)
+    best_model_params_ : ndarray, shape (n_folds, n_parameter)
         Best model parameters (alpha, l1_ratio) saved for the different
         cross-validation folds.
 
-    `classes_` : ndarray of labels (`n_classes_`)
+    classes_ : ndarray of labels (`n_classes_`)
         Labels of the classes
 
-    `n_classes_` : int
+    n_classes_ : int
         Number of classes
 
-    `coef_` : ndarray, shape
+    coef_ : ndarray, shape
         (1, n_features) for 2 class classification problems (i.e n_classes = 2)
         (n_classes, n_features) for n_classes > 2
         Coefficient of the features in the decision function.
 
-    `coef_img_` : nifti image
+    coef_img_ : nifti image
         Masked model coefficients
 
-    `mask_` : ndarray 3D
+    mask_ : ndarray 3D
         An array contains values of the mask image.
 
-    `masker_` : instance of NiftiMasker
+    masker_ : instance of NiftiMasker
         The nifti masker used to mask the data.
 
-    `mask_img_` : Nifti like image
+    mask_img_ : Nifti like image
         The mask of the data. If no mask was supplied by the user,
         this attribute is the mask image computed automatically from the
         data `X`.
 
-    `memory_` : joblib memory cache
+    memory_ : joblib memory cache
 
-    `intercept_` : narray, shape
+    intercept_ : narray, shape
         (1, ) for 2 class classification problems (i.e n_classes = 2)
         (n_classes, ) for n_classes > 2
         Intercept (a.k.a. bias) added to the decision function.
         It is available only when parameter intercept is set to True.
 
-    `cv_` : list of pairs of lists
+    cv_ : list of pairs of lists
         Each pair is the list of indices for the train and test
         samples for the corresponding fold.
 
-    `cv_scores_` : ndarray, shape (n_folds, n_alphas) or (n_l1_ratios, n_folds, n_alphas)
+    cv_scores_ : ndarray, shape (n_folds, n_alphas)\
+        or (n_l1_ratios, n_folds, n_alphas)
         Scores (misclassification) for each alpha, and on each fold
 
-    `screening_percentile_` : float
+    screening_percentile_ : float
         Screening percentile corrected according to volume of mask,
         relative to the volume of standard brain.
 
-    `w_` : ndarray, shape
-        (1, n_features + 1) for 2 class classification problems (i.e n_classes = 2)
+    w_ : ndarray, shape
+        (1, n_features + 1) for 2 class classification problems
+        (i.e n_classes = 2)
         (n_classes, n_features + 1) for n_classes > 2
         Model weights
 
-    `ymean_` : array, shape (n_samples,)
+    ymean_ : array, shape (n_samples,)
         Mean of prediction targets
 
-    `Xmean_` : array, shape (n_features,)
+    Xmean_ : array, shape (n_features,)
         Mean of X across samples
 
-    `Xstd_` : array, shape (n_features,)
+    Xstd_ : array, shape (n_features,)
         Standard deviation of X across samples
+
+    See Also
+    --------
+    nilearn.decoding.SpaceNetRegressor: Graph-Net and TV-L1 priors/penalties
+
     """
 
-    def __init__(self, penalty="graph-net", loss="logistic",
-                 l1_ratios=.5, alphas=None, n_alphas=10, mask=None,
-                 target_affine=None, target_shape=None, low_pass=None,
-                 high_pass=None, t_r=None, max_iter=200, tol=1e-4,
-                 memory=Memory(None), memory_level=1, standardize=True,
-                 verbose=1, n_jobs=1, eps=1e-3,
-                 cv=8, fit_intercept=True, screening_percentile=20.,
-                 debias=False):
-        super(SpaceNetClassifier, self).__init__(
-            penalty=penalty, is_classif=True, l1_ratios=l1_ratios,
-            alphas=alphas, n_alphas=n_alphas, target_shape=target_shape,
-            low_pass=low_pass, high_pass=high_pass, mask=mask, t_r=t_r,
-            max_iter=max_iter, tol=tol, memory=memory,
+    def __init__(
+        self,
+        penalty="graph-net",
+        loss="logistic",
+        l1_ratios=0.5,
+        alphas=None,
+        n_alphas=10,
+        mask=None,
+        target_affine=None,
+        target_shape=None,
+        low_pass=None,
+        high_pass=None,
+        t_r=None,
+        max_iter=200,
+        tol=1e-4,
+        memory=None,
+        memory_level=1,
+        standardize=True,
+        verbose=1,
+        n_jobs=1,
+        eps=1e-3,
+        cv=8,
+        fit_intercept=True,
+        screening_percentile=20.0,
+        debias=False,
+    ):
+        if memory is None:
+            memory = Memory(location=None)
+        super().__init__(
+            penalty=penalty,
+            is_classif=True,
+            l1_ratios=l1_ratios,
+            alphas=alphas,
+            n_alphas=n_alphas,
+            target_shape=target_shape,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            mask=mask,
+            t_r=t_r,
+            max_iter=max_iter,
+            tol=tol,
+            memory=memory,
             memory_level=memory_level,
-            n_jobs=n_jobs, eps=eps, cv=cv, debias=debias,
-            fit_intercept=fit_intercept, standardize=standardize,
-            screening_percentile=screening_percentile, loss=loss,
-            target_affine=target_affine, verbose=verbose)
+            n_jobs=n_jobs,
+            eps=eps,
+            cv=cv,
+            debias=debias,
+            fit_intercept=fit_intercept,
+            standardize=standardize,
+            screening_percentile=screening_percentile,
+            loss=loss,
+            target_affine=target_affine,
+            verbose=verbose,
+        )
 
     def _binarize_y(self, y):
-        """Helper function invoked just before fitting a classifier."""
+        """Encode target classes as -1 and 1.
+
+        Helper function invoked just before fitting a classifier.
+        """
         y = np.array(y)
 
         # encode target classes as -1 and 1
@@ -1161,12 +1315,12 @@ class SpaceNetClassifier(BaseSpaceNet):
         return y
 
     def score(self, X, y):
-        """Returns the mean accuracy on the given test data and labels.
+        """Return the mean accuracy on the given test data and labels.
 
         Parameters
         ----------
         X : list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See :ref:`extracting_data`.
             Data on which model is to be fitted. If this is a list,
             the affine is considered the same for all.
 
@@ -1181,6 +1335,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         return accuracy_score(y, self.predict(X))
 
 
+@fill_doc
 class SpaceNetRegressor(BaseSpaceNet):
     """Regression learners with sparsity and spatial priors.
 
@@ -1195,9 +1350,10 @@ class SpaceNetRegressor(BaseSpaceNet):
     penalty : string, optional (default 'graph-net')
         Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
 
-    l1_ratios : float or list of floats in the interval [0, 1]; optional (default .5)
+    l1_ratios : float or list of floats in the interval [0, 1];\
+        optional (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
-        l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
+        l1_ratios == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
         then the best value will be selected by cross-validation.
 
@@ -1219,31 +1375,17 @@ class SpaceNetRegressor(BaseSpaceNet):
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a MultiNiftiMasker with default parameters.
-
-    target_affine : 3x3 or 4x4 matrix, optional (default None)
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
-
-    target_shape : 3-tuple of integers, optional (default None)
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
-
-    low_pass: None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    high_pass: None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    t_r : float, optional (default None)
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    screening_percentile : float in the interval [0, 100]; Optional (default 20)
-        Percentile value for ANOVA univariate feature selection. A value of
-        100 means 'keep all features'. This percentile is is expressed
-        w.r.t the volume of a standard (MNI152) brain, and so is corrected
+    %(target_affine)s
+    %(target_shape)s
+    %(low_pass)s
+    %(high_pass)s
+    %(t_r)s
+    screening_percentile : float in the interval [0, 100]; Optional\
+        (default 20)
+        Percentile value for ANOVA univariate feature selection.
+        A value of 100 means 'keep all features'.
+        This percentile is expressed w.r.t the volume
+        of a standard (MNI152) brain, and so is corrected
         at runtime to correspond to the volume of the user-supplied mask
         (which is typically smaller).
 
@@ -1258,25 +1400,13 @@ class SpaceNetRegressor(BaseSpaceNet):
     max_iter : int (default 200)
         Defines the iterations for the solver.
 
-    tol : float
-        Defines the tolerance for convergence. Defaults to 1e-4.
-
-    verbose : int, optional (default 1)
-        Verbosity level.
-
-    n_jobs : int, optional (default 1)
-        Number of jobs in solving the sub-problems.
-
-    memory: instance of joblib.Memory or string
-        Used to cache the masking process.
-        By default, no caching is done. If a string is given, it is the
-        path to the caching directory.
-
-    memory_level: integer, optional (default 1)
-        Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching.
-
-    cv : int, a cv generator instance, or None (default 8)
+    tol : float, default=1e-4
+        Defines the tolerance for convergence.
+    %(verbose)s
+    %(n_jobs)s
+    %(memory)s
+    %(memory_level1)s
+    cv : int, a cv generator instance, or None, default=8
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
         KFold, None, in which case 3 fold is used, or another object, that
@@ -1287,76 +1417,118 @@ class SpaceNetRegressor(BaseSpaceNet):
 
     Attributes
     ----------
-    `all_coef_` : ndarray, shape (n_l1_ratios, n_folds, n_features)
+    all_coef_ : ndarray, shape (n_l1_ratios, n_folds, n_features)
         Coefficients for all folds and features.
 
-    `alpha_grids_` : ndarray, shape (n_folds, n_alphas)
+    alpha_grids_ : ndarray, shape (n_folds, n_alphas)
         Alpha values considered for selection of the best ones
         (saved in `best_model_params_`)
 
-    `best_model_params_` : ndarray, shape (n_folds, n_parameter)
+    best_model_params_ : ndarray, shape (n_folds, n_parameter)
         Best model parameters (alpha, l1_ratio) saved for the different
         cross-validation folds.
 
-    `coef_` : ndarray, shape (n_features,)
+    coef_ : ndarray, shape (n_features,)
         Coefficient of the features in the decision function.
 
-    `coef_img_` : nifti image
+    coef_img_ : nifti image
         Masked model coefficients
 
-    `mask_` : ndarray 3D
+    mask_ : ndarray 3D
         An array contains values of the mask image.
 
-    `masker_` : instance of NiftiMasker
+    masker_ : instance of NiftiMasker
         The nifti masker used to mask the data.
 
-    `mask_img_` : Nifti like image
+    mask_img_ : Nifti like image
         The mask of the data. If no mask was supplied by the user, this
         attribute is the mask image computed automatically from the data `X`.
 
-    `memory_` : joblib memory cache
+    memory_ : joblib memory cache
 
-    `intercept_` : narray, shape (1)
+    intercept_ : narray, shape (1)
         Intercept (a.k.a. bias) added to the decision function.
         It is available only when parameter intercept is set to True.
 
-    `cv_` : list of pairs of lists
+    cv_ : list of pairs of lists
         Each pair is the list of indices for the train and test
         samples for the corresponding fold.
 
-    `cv_scores_` : ndarray, shape (n_folds, n_alphas) or (n_l1_ratios, n_folds, n_alphas)
+    cv_scores_ : ndarray, shape (n_folds, n_alphas)\
+        or (n_l1_ratios, n_folds, n_alphas)
         Scores (misclassification) for each alpha, and on each fold
 
-    `screening_percentile_` : float
+    screening_percentile_ : float
         Screening percentile corrected according to volume of mask,
         relative to the volume of standard brain.
 
-    `w_` : ndarray, shape (n_features,)
+    w_ : ndarray, shape (n_features,)
         Model weights
 
-    `ymean_` : array, shape (n_samples,)
+    ymean_ : array, shape (n_samples,)
         Mean of prediction targets
 
-    `Xmean_` : array, shape (n_features,)
+    Xmean_ : array, shape (n_features,)
         Mean of X across samples
 
-    `Xstd_` : array, shape (n_features,)
+    Xstd_ : array, shape (n_features,)
         Standard deviation of X across samples
+
+    See Also
+    --------
+    nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
+
     """
 
-    def __init__(self, penalty="graph-net", l1_ratios=.5, alphas=None,
-                 n_alphas=10, mask=None, target_affine=None,
-                 target_shape=None, low_pass=None, high_pass=None, t_r=None,
-                 max_iter=200, tol=1e-4, memory=Memory(None), memory_level=1,
-                 standardize=True, verbose=1, n_jobs=1, eps=1e-3, cv=8,
-                 fit_intercept=True, screening_percentile=20., debias=False):
-        super(SpaceNetRegressor, self).__init__(
-            penalty=penalty, is_classif=False, l1_ratios=l1_ratios,
-            alphas=alphas, n_alphas=n_alphas, target_shape=target_shape,
-            low_pass=low_pass, high_pass=high_pass, mask=mask, t_r=t_r,
-            max_iter=max_iter, tol=tol, memory=memory,
+    def __init__(
+        self,
+        penalty="graph-net",
+        l1_ratios=0.5,
+        alphas=None,
+        n_alphas=10,
+        mask=None,
+        target_affine=None,
+        target_shape=None,
+        low_pass=None,
+        high_pass=None,
+        t_r=None,
+        max_iter=200,
+        tol=1e-4,
+        memory=None,
+        memory_level=1,
+        standardize=True,
+        verbose=1,
+        n_jobs=1,
+        eps=1e-3,
+        cv=8,
+        fit_intercept=True,
+        screening_percentile=20.0,
+        debias=False,
+    ):
+        if memory is None:
+            memory = Memory(location=None)
+        super().__init__(
+            penalty=penalty,
+            is_classif=False,
+            l1_ratios=l1_ratios,
+            alphas=alphas,
+            n_alphas=n_alphas,
+            target_shape=target_shape,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            mask=mask,
+            t_r=t_r,
+            max_iter=max_iter,
+            tol=tol,
+            memory=memory,
             memory_level=memory_level,
-            n_jobs=n_jobs, eps=eps, cv=cv, debias=debias,
-            fit_intercept=fit_intercept, standardize=standardize,
+            n_jobs=n_jobs,
+            eps=eps,
+            cv=cv,
+            debias=debias,
+            fit_intercept=fit_intercept,
+            standardize=standardize,
             screening_percentile=screening_percentile,
-            target_affine=target_affine, verbose=verbose)
+            target_affine=target_affine,
+            verbose=verbose,
+        )
