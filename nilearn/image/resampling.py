@@ -789,7 +789,7 @@ def resample_to_img(
     )
 
 
-def reorder_img(img, resample=None):
+def reorder_img(img, resample=None, copy_header=False):
     """Return an image with the affine diagonal (by permuting axes).
 
     The orientation of the new image will be RAS (Right, Anterior, Superior).
@@ -809,19 +809,16 @@ def reorder_img(img, resample=None):
         be passed as the 'interpolation' argument into
         resample_img.
 
+    copy_header : :obj:`bool`, default=None
+        Whether to copy the header of the input image to the output.
+
+        .. versionadded:: 0.11.0
+
+        This parameter will be set to True by default in 0.13.0.
     """
     from .image import new_img_like
 
-    copy_header_default = (
-        "From release 0.13.0 this function will, by default, copy the header "
-        "of the input image to the output. Currently, the header is not "
-        "copied at all."
-    )
-    warnings.warn(
-        category=FutureWarning,
-        message=copy_header_default,
-    )
-
+    check_copy_header(copy_header)
     img = _utils.check_niimg(img)
     # The copy is needed in order not to modify the input img affine
     # see https://github.com/nilearn/nilearn/issues/325 for a concrete bug
@@ -880,4 +877,4 @@ def reorder_img(img, resample=None):
     data = data[slice1, slice2, slice3]
     affine = from_matrix_vector(np.diag(pixdim), b)
 
-    return new_img_like(img, data, affine, copy_header=True)
+    return new_img_like(img, data, affine, copy_header=copy_header)
