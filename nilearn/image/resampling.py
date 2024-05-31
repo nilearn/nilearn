@@ -14,6 +14,7 @@ from scipy.ndimage import affine_transform, find_objects
 
 from .. import _utils
 from .._utils import stringify_path
+from .._utils.helpers import check_copy_header
 from .._utils.niimg import _get_data
 from .image import copy_img, crop_img
 
@@ -389,7 +390,6 @@ def resample_img(
 
     copy_header : :obj:`bool`, default=None
         Whether to copy the header of the input image to the output.
-        If None, the default behavior is to not copy the header.
 
         .. versionadded:: 0.11.0
 
@@ -449,20 +449,7 @@ def resample_img(
     from .image import new_img_like  # avoid circular imports
 
     # TODO: remove this warning in 0.13.0
-    if copy_header is None:
-        copy_header_default = (
-            "From release 0.13.0 onwards, this function will, by default, "
-            "copy the header of the input image to the output."
-            "Currently, the header is reset to the default Nifti1Header."
-            "To suppress this warning and continue using the current behavior "
-            "set `copy_header=False`. To use the new behavior, set "
-            "`copy_header=True`."
-        )
-        warnings.warn(
-            category=FutureWarning,
-            message=copy_header_default,
-        )
-        copy_header = False
+    check_copy_header(copy_header)
 
     # Do as many checks as possible before loading data, to avoid potentially
     # costly calls before raising an exception.
@@ -720,7 +707,7 @@ def resample_to_img(
     clip=False,
     fill_value=0,
     force_resample=False,
-    copy_header=None,
+    copy_header=False,
 ):
     """Resample a Niimg-like source image on a target Niimg-like image.
 
@@ -762,9 +749,8 @@ def resample_to_img(
     force_resample : bool, default=False
         Intended for testing, this prevents the use of a padding optimization.
 
-    copy_header : :obj:`bool`, default=None
+    copy_header : :obj:`bool`, default=False
         Whether to copy the header of the input image to the output.
-        If None, the default behavior is to not copy the header.
 
         .. versionadded:: 0.11.0
 

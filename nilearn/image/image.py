@@ -27,7 +27,11 @@ from .._utils import (
     fill_doc,
 )
 from .._utils.exceptions import DimensionError
-from .._utils.helpers import rename_parameters, stringify_path
+from .._utils.helpers import (
+    check_copy_header,
+    rename_parameters,
+    stringify_path,
+)
 from .._utils.niimg import _get_data, safe_get_data
 from .._utils.niimg_conversions import (
     _index_img,
@@ -347,7 +351,7 @@ def _crop_img_to(img, slices, copy=True, copy_header=None):
 
 
 def crop_img(
-    img, rtol=1e-8, copy=True, pad=True, return_offset=False, copy_header=None
+    img, rtol=1e-8, copy=True, pad=True, return_offset=False, copy_header=False
 ):
     """Crops an image as much as possible.
 
@@ -377,9 +381,8 @@ def crop_img(
     return_offset : :obj:`bool`, default=False
         Specifies whether to return a tuple of the removed padding.
 
-    copy_header : :obj:`bool`, default=None
+    copy_header : :obj:`bool`, default=False
         Whether to copy the header of the input image to the output.
-        If None, the default behavior is to not copy the header.
 
         .. versionadded:: 0.11.0
 
@@ -395,20 +398,7 @@ def crop_img(
 
     """
     # TODO: remove this warning in 0.13.0
-    if copy_header is None:
-        copy_header_default = (
-            "From release 0.13.0 onwards, this function will, by default, "
-            "copy the header of the input image to the cropped image."
-            "Currently, the header is reset to the default Nifti1Header."
-            "To suppress this warning and continue using the current behavior "
-            "set `copy_header=False`. To use the new behavior, set "
-            "`copy_header=True`."
-        )
-        warnings.warn(
-            category=FutureWarning,
-            message=copy_header_default,
-        )
-        copy_header = False
+    check_copy_header(copy_header)
 
     img = check_niimg(img)
     data = get_data(img)
@@ -537,7 +527,7 @@ def mean_img(
     target_shape=None,
     verbose=0,
     n_jobs=1,
-    copy_header=None,
+    copy_header=False,
 ):
     """Compute the mean of the images over time or the 4th dimension.
 
@@ -567,9 +557,8 @@ def mean_img(
         The number of CPUs to use to do the computation (-1 means
         'all CPUs').
 
-    copy_header : :obj:`bool`, default=None
+    copy_header : :obj:`bool`, default=False
         Whether to copy the header of the input image to the output.
-        If None, the default behavior is to not copy the header.
 
         .. versionadded:: 0.11.0
 
@@ -586,21 +575,7 @@ def mean_img(
 
     """
     # TODO: remove this warning in 0.13.0
-    if copy_header is None:
-        copy_header_default = (
-            "From release 0.13.0 onwards, this function will, by default, "
-            "copy the header of the 4D input image or the first image "
-            "(if the input is a list of 3D images) to the output."
-            "Currently, the header is reset to the default Nifti1Header."
-            "To suppress this warning and continue using the current behavior "
-            "set `copy_header=False`. To use the new behavior, set "
-            "`copy_header=True`."
-        )
-        warnings.warn(
-            category=FutureWarning,
-            message=copy_header_default,
-        )
-        copy_header = False
+    check_copy_header(copy_header)
 
     imgs = stringify_path(imgs)
     is_str = isinstance(imgs, str)
@@ -936,7 +911,7 @@ def threshold_img(
     two_sided=True,
     mask_img=None,
     copy=True,
-    copy_header=None,
+    copy_header=False,
 ):
     """Threshold the given input image, mostly statistical or atlas images.
 
@@ -989,9 +964,8 @@ def threshold_img(
         If True, input array is not modified. True by default: the filtering
         is not performed in-place.
 
-    copy_header : :obj:`bool`, default=None
+    copy_header : :obj:`bool`, default=False
         Whether to copy the header of the input image to the output.
-        If None, the default behavior is to not copy the header.
 
         .. versionadded:: 0.11.0
 
@@ -1013,20 +987,7 @@ def threshold_img(
     from . import resampling
 
     # TODO: remove this warning in 0.13.0
-    if copy_header is None:
-        copy_header_default = (
-            "From release 0.13.0 onwards, this function will, by default, "
-            "copy the header of the input image to the output."
-            "Currently, the header is reset to the default Nifti1Header."
-            "To suppress this warning and continue using the current behavior "
-            "set `copy_header=False`. To use the new behavior, set "
-            "`copy_header=True`."
-        )
-        warnings.warn(
-            category=FutureWarning,
-            message=copy_header_default,
-        )
-        copy_header = False
+    check_copy_header(copy_header)
 
     img = check_niimg(img)
     img_data = safe_get_data(img, ensure_finite=True, copy_data=copy)
@@ -1201,7 +1162,9 @@ def math_img(formula, copy_header_from=None, **imgs):
         return new_img_like(niimg, result, niimg.affine)
 
 
-def binarize_img(img, threshold=0, mask_img=None, two_sided=True):
+def binarize_img(
+    img, threshold=0, mask_img=None, two_sided=True, copy_header=False
+):
     """Binarize an image such that its values are either 0 or 1.
 
     .. versionadded:: 0.8.1
@@ -1231,6 +1194,13 @@ def binarize_img(img, threshold=0, mask_img=None, two_sided=True):
         If `False`, threshold is applied to the original value of the image.
 
         .. versionadded:: 0.10.3
+
+    copy_header : :obj:`bool`, default=False
+        Whether to copy the header of the input image to the output.
+
+        .. versionadded:: 0.11.0
+
+        This parameter will be set to True by default in 0.13.0.
 
     Returns
     -------
@@ -1265,7 +1235,11 @@ def binarize_img(img, threshold=0, mask_img=None, two_sided=True):
     return math_img(
         "img.astype(bool).astype(int)",
         img=threshold_img(
-            img, threshold, mask_img=mask_img, two_sided=two_sided
+            img,
+            threshold,
+            mask_img=mask_img,
+            two_sided=two_sided,
+            copy_header=copy_header,
         ),
         copy_header_from="img",
     )
