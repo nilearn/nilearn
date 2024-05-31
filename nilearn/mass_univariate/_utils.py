@@ -1,15 +1,16 @@
 """Utility functions for the permuted least squares method."""
+
 import numpy as np
 from scipy import linalg
 from scipy.ndimage import label
 
 
-def _calculate_tfce(
+def calculate_tfce(
     arr4d,
     bin_struct,
     E=0.5,
     H=2,
-    dh='auto',
+    dh="auto",
     two_sided_test=True,
 ):
     """Calculate threshold-free cluster enhancement values for scores maps.
@@ -25,19 +26,17 @@ def _calculate_tfce(
         R = regressor.
     bin_struct : :obj:`numpy.ndarray` of shape (3, 3, 3)
         Connectivity matrix for defining clusters.
-    E : :obj:`float`, optional
-        Extent weight. Default is 0.5.
-    H : :obj:`float`, optional
-        Height weight. Default is 2.
-    dh : 'auto' or :obj:`float`, optional
+    E : :obj:`float`, default=0.5
+        Extent weight.
+    H : :obj:`float`, default=2
+        Height weight.
+    dh : 'auto' or :obj:`float`, default='auto'
         Step size for TFCE calculation.
         If set to 'auto', use 100 steps, as is done in fslmaths.
         A good alternative is 0.1 for z and t maps, as in [1]_.
-        Default is 'auto'.
-    two_sided_test : :obj:`bool`, optional
+    two_sided_test : :obj:`bool`, default=False
         Whether to assess both positive and negative clusters (True) or just
         positive ones (False).
-        Default is False.
 
     Returns
     -------
@@ -65,55 +64,83 @@ def _calculate_tfce(
     """
     tfce_4d = np.zeros_like(arr4d)
 
+    # For each passed t map
     for i_regressor in range(arr4d.shape[3]):
         arr3d = arr4d[..., i_regressor]
+
+        # Get signs / threshs
         if two_sided_test:
             signs = [-1, 1]
-
-            # Get the maximum statistic in the map
             max_score = np.max(np.abs(arr3d))
         else:
             signs = [1]
-
-            # Get the maximum statistic in the map
             max_score = np.max(arr3d)
 
-        if dh == 'auto':
-            step = max_score / 100
-        else:
-            step = dh
+        step = max_score / 100 if dh == "auto" else dh
 
-        for score_thresh in np.arange(step, max_score + step, step):
-            for sign in signs:
-                temp_arr3d = arr3d * sign
+        # Set based on determined step size
+        score_threshs = np.arange(step, max_score + step, step)
 
-                # Threshold map at *h*
+        # If we apply the sign first...
+        for sign in signs:
+            # Init a temp copy of arr3d with the current sign applied,
+            # which can then be re-used by incrementally setting more
+            # voxel's to background, by taking advantage that each score_thresh
+            # is incrementally larger
+            temp_arr3d = arr3d * sign
+
+            # Prep step
+            for score_thresh in score_threshs:
                 temp_arr3d[temp_arr3d < score_thresh] = 0
 
-                # Derive clusters
-                labeled_arr3d, n_clusters = label(
-                    temp_arr3d,
-                    bin_struct,
-                )
+                # Label into clusters - importantly (for the next step)
+                # this returns clusters labelled ordinally
+                # from 1 to n_clusters+1,
+                # which allows us to use bincount to count
+                # frequencies directly.
+                labeled_arr3d, _ = label(temp_arr3d, bin_struct)
 
-                # Label each cluster with its extent
-                # Each voxel's cluster extent at threshold *h* is thus *e(h)*
-                cluster_map = np.zeros(temp_arr3d.shape, int)
-                for cluster_val in range(1, n_clusters + 1):
-                    bool_map = labeled_arr3d == cluster_val
-                    cluster_map[bool_map] = np.sum(bool_map)
+                # Next, we want to replace each label with its cluster
+                # extent, that is, the size of the cluster it is part of
+                # To do this, we will first compute a flattened version of
+                # only the non-zero cluster labels.
+                labeled_arr3d_flat = labeled_arr3d.flatten()
+                non_zero_inds = np.where(labeled_arr3d_flat != 0)[0]
+                labeled_non_zero = labeled_arr3d_flat[non_zero_inds]
 
-                # Calculate each voxel's tfce value based on its cluster extent
-                # and z-value
+                # Count the size of each unique cluster, via its label.
+                # The reason why we pass only the non-zero labels to bincount
+                # is because it includes a bin for zeros, and in our labels
+                # zero represents the background,
+                # which we want to have a TFCE value of 0.
+                cluster_counts = np.bincount(labeled_non_zero)
+
+                # Next, we convert each unique cluster count to its TFCE value.
+                # Where each cluster's tfce value is based
+                # on both its cluster extent and z-value
+                # (via the current score_thresh)
                 # NOTE: We do not multiply by dh, based on fslmaths'
                 # implementation. This differs from the original paper.
-                tfce_step_values = (cluster_map**E) * (score_thresh**H)
-                tfce_4d[..., i_regressor] += sign * tfce_step_values
+                cluster_tfces = sign * (cluster_counts**E) * (score_thresh**H)
+
+                # Before we can add these values to tfce_4d, we need to
+                # map cluster-wise tfce values back to a voxel-wise array,
+                # including any zero / background voxels.
+                tfce_step_values = np.zeros(labeled_arr3d_flat.shape)
+                tfce_step_values[non_zero_inds] = cluster_tfces[
+                    labeled_non_zero
+                ]
+
+                # Now, we just need to reshape these values back to 3D
+                # and they can be incremented to tfce_4d.
+                tfce_4d[..., i_regressor] += tfce_step_values.reshape(
+                    temp_arr3d.shape
+                )
 
     return tfce_4d
 
 
-def _null_to_p(test_values, null_array, alternative='two-sided'):
+def null_to_p(test_values, null_array, alternative="two-sided"):
     """Return p-value for test value(s) against null array.
 
     Parameters
@@ -122,12 +149,11 @@ def _null_to_p(test_values, null_array, alternative='two-sided'):
         Value(s) for which to determine p-value.
     null_array : array_like of shape (n_iters,)
         Null distribution against which test_values is compared.
-    alternative : {'two-sided', 'larger', 'smaller'}, optional
+    alternative : {'two-sided', 'larger', 'smaller'}, default='two-sided'
         Whether to compare value against null distribution in a two-sided
         or one-sided ('larger' or 'smaller') manner. If 'larger', then higher
         values for the test_values are more significant. If 'smaller', then
         lower values for the test_values are more significant.
-        Default is 'two-sided'.
 
     Returns
     -------
@@ -145,7 +171,7 @@ def _null_to_p(test_values, null_array, alternative='two-sided'):
     This function assumes that the null distribution for two-sided tests is
     symmetric around zero.
     """
-    if alternative not in {'two-sided', 'larger', 'smaller'}:
+    if alternative not in {"two-sided", "larger", "smaller"}:
         raise ValueError(
             'Argument "alternative" must be one of '
             '["two-sided", "larger", "smaller"]'
@@ -165,13 +191,13 @@ def _null_to_p(test_values, null_array, alternative='two-sided'):
 
     def compute_p(t, null):
         null = np.sort(null)
-        idx = np.searchsorted(null, t, side='left').astype(float)
+        idx = np.searchsorted(null, t, side="left").astype(float)
         return 1 - idx / len(null)
 
-    if alternative == 'two-sided':
+    if alternative == "two-sided":
         # Assumes null distribution is symmetric around 0
         p = compute_p(np.abs(test_values), np.abs(null_array))
-    elif alternative == 'smaller':
+    elif alternative == "smaller":
         p = compute_p(test_values * -1, null_array * -1)
     else:
         p = compute_p(test_values, null_array)
@@ -187,7 +213,7 @@ def _null_to_p(test_values, null_array, alternative='two-sided'):
     return result[0] if return_first else result
 
 
-def _calculate_cluster_measures(
+def calculate_cluster_measures(
     arr4d,
     threshold,
     bin_struct,
@@ -204,10 +230,9 @@ def _calculate_cluster_measures(
         Uncorrected t-statistic threshold for defining clusters.
     bin_struct : :obj:`numpy.ndarray` of shape (3, 3, 3)
         Connectivity matrix for defining clusters.
-    two_sided_test : :obj:`bool`, optional
+    two_sided_test : :obj:`bool`, default=False
         Whether to assess both positive and negative clusters (True) or just
         positive ones (False).
-        Default is False.
 
     Returns
     -------
@@ -253,27 +278,25 @@ def _calculate_cluster_measures(
             max_mass = np.maximum(max_mass, np.sum(ss_vals))
 
         # Cluster size-based inference
+        max_size = 0
         if clust_sizes.size:
             max_size = np.max(clust_sizes)
-        else:
-            max_size = 0
 
         max_sizes[i_regressor], max_masses[i_regressor] = max_size, max_mass
 
     return max_sizes, max_masses
 
 
-def _normalize_matrix_on_axis(m, axis=0):
-    """ Normalize a 2D matrix on an axis.
+def normalize_matrix_on_axis(m, axis=0):
+    """Normalize a 2D matrix on an axis.
 
     Parameters
     ----------
     m : numpy 2D array,
         The matrix to normalize.
 
-    axis : integer in {0, 1}, optional
+    axis : integer in {0, 1}, default=0
         A valid axis to normalize across.
-        Default=0.
 
     Returns
     -------
@@ -284,32 +307,34 @@ def _normalize_matrix_on_axis(m, axis=0):
     --------
     >>> import numpy as np
     >>> from nilearn.mass_univariate.permuted_least_squares import (
-    ...     _normalize_matrix_on_axis)
+    ...     normalize_matrix_on_axis)
     >>> X = np.array([[0, 4], [1, 0]])
-    >>> _normalize_matrix_on_axis(X)
+    >>> normalize_matrix_on_axis(X)
     array([[0., 1.],
            [1., 0.]])
-    >>> _normalize_matrix_on_axis(X, axis=1)
+    >>> normalize_matrix_on_axis(X, axis=1)
     array([[0., 1.],
            [1., 0.]])
 
     """
     if m.ndim > 2:
-        raise ValueError('This function only accepts 2D arrays. '
-                         'An array of shape %r was passed.' % m.shape)
+        raise ValueError(
+            "This function only accepts 2D arrays. "
+            f"An array of shape {m.shape:r} was passed."
+        )
 
     if axis == 0:
         # array transposition preserves the contiguity flag of that array
-        ret = (m.T / np.sqrt(np.sum(m ** 2, axis=0))[:, np.newaxis]).T
+        ret = (m.T / np.sqrt(np.sum(m**2, axis=0))[:, np.newaxis]).T
     elif axis == 1:
-        ret = _normalize_matrix_on_axis(m.T).T
+        ret = normalize_matrix_on_axis(m.T).T
     else:
-        raise ValueError('axis(=%d) out of bounds' % axis)
+        raise ValueError(f"axis(={int(axis)}) out of bounds")
     return ret
 
 
-def _orthonormalize_matrix(m, tol=1.e-12):
-    """ Orthonormalize a matrix.
+def orthonormalize_matrix(m, tol=1.0e-12):
+    """Orthonormalize a matrix.
 
     Uses a Singular Value Decomposition.
     If the input matrix is rank-deficient, then its shape is cropped.
@@ -319,8 +344,8 @@ def _orthonormalize_matrix(m, tol=1.e-12):
     m : numpy array,
         The matrix to orthonormalize.
 
-    tol: float, optional
-        Tolerance parameter for nullity. Default=1e-12.
+    tol : float, default=1e-12
+        Tolerance parameter for nullity.
 
     Returns
     -------
@@ -331,14 +356,14 @@ def _orthonormalize_matrix(m, tol=1.e-12):
     --------
     >>> import numpy as np
     >>> from nilearn.mass_univariate.permuted_least_squares import (
-    ...     _orthonormalize_matrix)
+    ...     orthonormalize_matrix)
     >>> X = np.array([[1, 2], [0, 1], [1, 1]])
-    >>> _orthonormalize_matrix(X)
+    >>> orthonormalize_matrix(X)
     array([[-0.81049889, -0.0987837 ],
            [-0.31970025, -0.75130448],
            [-0.49079864,  0.65252078]])
     >>> X = np.array([[0, 1], [4, 0]])
-    >>> _orthonormalize_matrix(X)
+    >>> orthonormalize_matrix(X)
     array([[ 0., -1.],
            [-1.,  0.]])
 
@@ -348,9 +373,10 @@ def _orthonormalize_matrix(m, tol=1.e-12):
     return np.ascontiguousarray(U[:, :n_eig])
 
 
-def _t_score_with_covars_and_normalized_design(tested_vars, target_vars,
-                                               covars_orthonormalized=None):
-    """t-score in the regression of tested variates against target variates
+def t_score_with_covars_and_normalized_design(
+    tested_vars, target_vars, covars_orthonormalized=None
+):
+    """t-score in the regression of tested variates against target variates.
 
     Covariates are taken into account (if not None).
     The normalized_design case corresponds to the following assumptions:
@@ -387,9 +413,9 @@ def _t_score_with_covars_and_normalized_design(tested_vars, target_vars,
     dof = target_vars.shape[0] - lost_dof
     beta_targetvars_testedvars = np.dot(target_vars.T, tested_vars)
     if covars_orthonormalized is None:
-        rss = (1 - beta_targetvars_testedvars ** 2)
+        rss = 1 - beta_targetvars_testedvars**2
     else:
         beta_targetvars_covars = np.dot(target_vars.T, covars_orthonormalized)
-        a2 = np.sum(beta_targetvars_covars ** 2, 1)
-        rss = (1 - a2[:, np.newaxis] - beta_targetvars_testedvars ** 2)
-    return beta_targetvars_testedvars * np.sqrt((dof - 1.) / rss)
+        a2 = np.sum(beta_targetvars_covars**2, 1)
+        rss = 1 - a2[:, np.newaxis] - beta_targetvars_testedvars**2
+    return beta_targetvars_testedvars * np.sqrt((dof - 1.0) / rss)

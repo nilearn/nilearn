@@ -6,7 +6,7 @@
 # unix system. The same result can easily be obtained manually: download the
 # archive, list its contents (one item per line), using '/' as the path
 # separator, add the url on the first line. See the docstring for
-# nilearn.datasets._testing.Sender for details.
+# nilearn.datasets._testing.tests.Sender for details.
 
 url=$1
 if [[ -z "$url" ]]; then

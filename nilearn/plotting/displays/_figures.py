@@ -1,3 +1,4 @@
+from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 
 
 class SurfaceFigure:
@@ -11,6 +12,7 @@ class SurfaceFigure:
     output_file : :obj:`str` or ``None``, optional
         Path to output file.
     """
+
     def __init__(self, figure=None, output_file=None):
         self.figure = figure
         self.output_file = output_file
@@ -20,8 +22,8 @@ class SurfaceFigure:
         raise NotImplementedError
 
     def _check_output_file(self, output_file=None):
-        """If an output file is provided, set it as
-        the new default output file.
+        """If an output file is provided, \
+        set it as the new default output file.
 
         Parameters
         ----------
@@ -30,8 +32,10 @@ class SurfaceFigure:
         """
         if output_file is None:
             if self.output_file is None:
-                raise ValueError("You must provide an output file "
-                                 "name to save the figure.")
+                raise ValueError(
+                    "You must provide an output file "
+                    "name to save the figure."
+                )
         else:
             self.output_file = output_file
 
@@ -58,15 +62,18 @@ class PlotlySurfaceFigure(SurfaceFigure):
         Output file path.
 
     """
+
     def __init__(self, figure=None, output_file=None):
-        try:
-            import plotly.graph_objects as go
-        except ImportError:
-            raise ImportError("Plotly is required to use "
-                              "`PlotlySurfaceFigure`.")
+        if not is_plotly_installed():
+            raise ImportError(
+                "Plotly is required to use `PlotlySurfaceFigure`."
+            )
+        import plotly.graph_objects as go
+
         if figure is not None and not isinstance(figure, go.Figure):
-            raise TypeError("`PlotlySurfaceFigure` accepts only "
-                            "plotly figure objects.")
+            raise TypeError(
+                "`PlotlySurfaceFigure` accepts only plotly figure objects."
+            )
         super().__init__(figure=figure, output_file=output_file)
 
     def show(self, renderer="browser"):
@@ -74,27 +81,26 @@ class PlotlySurfaceFigure(SurfaceFigure):
 
         Parameters
         ----------
-        renderer : :obj:`str`, optional
+        renderer : :obj:`str`, default='browser'
             Plotly renderer to be used.
-            Default='browser'.
+
         """
         if self.figure is not None:
             self.figure.show(renderer=renderer)
             return self.figure
 
     def savefig(self, output_file=None):
-        """Saves the figure to file.
+        """Save the figure to file.
 
         Parameters
         ----------
         output_file : :obj:`str` or ``None``, optional
             Path to output file.
         """
-        try:
-            import kaleido  # noqa: F401
-        except ImportError:
-            raise ImportError("`kaleido` is required to save plotly "
-                              "figures to disk.")
+        if not is_kaleido_installed():
+            raise ImportError(
+                "`kaleido` is required to save plotly figures to disk."
+            )
         self._check_output_file(output_file=output_file)
         if self.figure is not None:
             self.figure.write_image(self.output_file)

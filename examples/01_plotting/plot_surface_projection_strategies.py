@@ -1,4 +1,5 @@
-"""Technical point: Illustration of the volume to surface sampling schemes
+"""
+Technical point: Illustration of the volume to surface sampling schemes
 =======================================================================
 
 In nilearn, :func:`nilearn.surface.vol_to_surf` allows us to measure values of
@@ -20,19 +21,21 @@ fsaverage and fsaverage5 surfaces fetched by `nilearn.datasets`) we recommend
 passing both to `vol_to_surf`.
 
 """
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
 
+# %%
+import matplotlib
 import numpy as np
 
-import matplotlib
-from matplotlib import pyplot as plt
-
-from nilearn.surface import surface
 from nilearn.plotting import show
+from nilearn.surface import surface
 
-
-######################################################################
+# %%
 # Build a mesh (of a cylinder)
-######################################################################
+# ----------------------------
 
 N_Z = 5
 N_T = 10
@@ -46,9 +49,9 @@ mesh = [np.asarray([x, y, z]).T, triangulation.triangles]
 inner_mesh = [[.7, .7, 1.] * mesh[0], triangulation.triangles]
 
 
-#########################################################################
+# %%
 # Get the locations from which vol_to_surf would draw its samples
-#########################################################################
+# ---------------------------------------------------------------
 
 nested_sample_points = surface._sample_locations_between_surfaces(
     mesh, inner_mesh, np.eye(4))
@@ -60,9 +63,9 @@ ball_sample_points = surface._ball_sample_locations(
     mesh, np.eye(4), ball_radius=.15, n_points=20)
 
 
-######################################################################
+# %%
 # Plot the mesh and the sample locations
-######################################################################
+# --------------------------------------
 
 fig = plt.figure()
 ax = plt.subplot(projection='3d')
@@ -78,9 +81,9 @@ for sample_points in [line_sample_points, ball_sample_points]:
     ax.plot_trisurf(x, y, z, triangles=triangulation.triangles)
     ax.scatter(*sample_points.T, color='r')
 
-######################################################################
+# %%
 # Adjust the sample locations
-######################################################################
+# ---------------------------
 # For "line" and nested surfaces, the depth parameter allows adjusting the
 # position of samples along the line
 

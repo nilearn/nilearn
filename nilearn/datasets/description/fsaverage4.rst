@@ -1,9 +1,15 @@
-fsaverage4
+.. _fs_average_4_template:
 
+fsaverage4 template
+===================
+
+Access
+------
+See :func:`nilearn.datasets.fetch_surf_fsaverage`.
 
 Notes
 -----
-Fsaverage4 standard surface as distributed with Freesurfer (Fischl et al, 1999)
+Fsaverage4 standard surface as distributed with Freesurfer (:footcite:t:`Fischl1999`).
 
 Content
 -------
@@ -11,6 +17,8 @@ Content
     :'area_right': Gifti file, right hemisphere area data
     :'curv_left': Gifti file, left hemisphere curvature data
     :'curv_right': Gifti file, right hemisphere curvature data
+    :'flat_left': Gifti file, left hemisphere flat surface mesh
+    :'flat_right': Gifti file, right hemisphere flat surface mesh
     :'pial_left': Gifti file, left hemisphere pial surface mesh
     :'pial_right': Gifti file, right hemisphere pial surface mesh
     :'infl_left': Gifti file, left hemisphere inflated pial surface mesh
@@ -27,5 +35,9 @@ Content
 
 References
 ----------
-Fischl et al, (1999). High-resolution intersubject averaging and a
-coordinate system for the cortical surface. Hum Brain Mapp 8, 272-284.
+
+.. footbibliography::
+
+License
+-------
+unknown
