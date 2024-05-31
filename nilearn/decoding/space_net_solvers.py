@@ -1,4 +1,5 @@
 """Regression with spatial priors like TV-L1 and Graph-Net."""
+
 # Author: DOHMATOB Elvis Dopgima,
 #         Gael Varoquaux,
 #         Alexandre Gramfort,
@@ -617,9 +618,11 @@ def tvl1_solver(
                 alpha * stepsize,
                 dgap_tol,
                 prox_max_iter,
-                init=unmask_from_to_3d_array(init[:-1], mask)
-                if init is not None
-                else None,
+                init=(
+                    unmask_from_to_3d_array(init[:-1], mask)
+                    if init is not None
+                    else None
+                ),
                 verbose=verbose,
             )
             return maskvec(out.ravel()), info

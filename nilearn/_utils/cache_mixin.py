@@ -1,4 +1,5 @@
 """Mixin for cache with joblib."""
+
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 
 import os
@@ -18,7 +19,7 @@ def _check_memory(memory, verbose=0):
 
     Parameters
     ----------
-    memory : None,instance of joblib.Memory, str or pathlib.Path
+    memory : None, instance of joblib.Memory, str or pathlib.Path
         Used to cache the masking process.
         If a str is given, it is the path to the caching directory.
 
@@ -240,7 +241,8 @@ class CacheMixin:
             warnings.warn(
                 "memory_level is currently set to 0 but "
                 "a Memory object has been provided. "
-                "Setting memory_level to 1."
+                "Setting memory_level to 1.",
+                stacklevel=3,
             )
             self.memory_level = 1
 

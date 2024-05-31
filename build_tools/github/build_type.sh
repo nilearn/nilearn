@@ -1,5 +1,7 @@
 #!/bin/bash -exf
 
+set -x -e
+
 GITLOG=$(cat gitlog.txt)
 if [ "$GITHUB_REF_NAME" == "main" ] || [[ $GITLOG == *"[full doc]"* ]]; then
     echo "Doing a full build";
@@ -12,12 +14,12 @@ else
     else
         EXAMPLE=""
     fi;
-    git diff --name-only $(git merge-base $COMMIT_SHA upstream/main) $COMMIT_SHA | tee examples.txt;
-    echo $EXAMPLE >> examples.txt
-    for FILENAME in `cat examples.txt`; do
-        if [[ `expr match $FILENAME "\(examples\)/.*plot_.*\.py"` ]]; then
+    git diff --name-only "$(git merge-base $COMMIT_SHA upstream/main)" "$COMMIT_SHA" | tee examples.txt;
+    echo "$EXAMPLE" >> examples.txt
+    for FILENAME in $(cat examples.txt); do
+        if [[ $(expr match "$FILENAME" "\(examples\)/.*plot_.*\.py") ]]; then
             echo "Checking example $FILENAME ...";
-            PATTERN=`basename $FILENAME`"\\|"$PATTERN;
+            PATTERN=$(basename "$FILENAME")"\\|"$PATTERN;
         fi;
     done;
     echo PATTERN="$PATTERN";

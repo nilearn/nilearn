@@ -32,7 +32,8 @@ annotate : :obj:`bool`, default=True
 docdict[
     "avg_method"
 ] = """
-avg_method : {"mean", "median", "min", "max", custom function}, default="mean"
+avg_method : {"mean", "median", "min", "max", custom function, None}, \
+             default=None
     How to average vertex values to derive the face value:
 
         - `mean`: results in smooth boundaries
@@ -621,7 +622,7 @@ kwargs : dict
 docdict[
     "memory"
 ] = """
-memory : instance of :class:`joblib.Memory`, :obj:`str`, or \
+memory : None, instance of :class:`joblib.Memory`, :obj:`str`, or \
 :class:`pathlib.Path`
     Used to cache the masking process.
     By default, no caching is done.
@@ -990,12 +991,12 @@ docdict["verbose0"] = verbose.format(0)
 docdict[
     "view"
 ] = """
-view : :obj:`str` or a pair of :obj:`float`, default="lateral"
-    If a string, must be in {"lateral", "medial", "dorsal", "ventral",\
-"anterior", "posterior"}.
-    If a sequence, must be a pair (elev, azim) of float
+view : :obj:`str`, or a pair of :obj:`float` or :obj:`int`, default="lateral"
+    If a string, must be in \
+    {"lateral", "medial", "dorsal", "ventral", "anterior", "posterior"}.
+    If a sequence, must be a pair (elev, azim) of :obj:`float` or :obj:`int`
     angles in degrees that will manually set a custom view.
-    E.g., view=[270.0, 90.0] or view=(0.0, -180.0).
+    E.g., view=[270.0, 90] or view=(0, -180.0).
     View of the surface that is rendered.
 """
 

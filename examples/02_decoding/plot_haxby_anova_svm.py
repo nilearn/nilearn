@@ -119,6 +119,11 @@ from nilearn.plotting import view_img
 view_img(weight_img, bg_img=haxby_dataset.anat[0], title="SVM weights", dim=-1)
 # %%
 # Saving the results as a Nifti file may also be important
-weight_img.to_filename("haxby_face_vs_house.nii")
+from pathlib import Path
+
+output_dir = Path.cwd() / "results" / "plot_haxby_anova_svm"
+output_dir.mkdir(exist_ok=True, parents=True)
+print(f"Output will be saved to: {output_dir}")
+weight_img.to_filename(output_dir / "haxby_face_vs_house.nii")
 
 # sphinx_gallery_dummy_images=1

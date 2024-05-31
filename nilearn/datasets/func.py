@@ -1,5 +1,6 @@
 """Downloading NeuroImaging datasets: \
 functional datasets (task + resting-state)."""
+
 import fnmatch
 import glob
 import json
@@ -543,7 +544,6 @@ def fetch_localizer_contrasts(
     get_masks=False,
     get_anats=False,
     data_dir=None,
-    url=None,
     resume=True,
     verbose=1,
     legacy_format=True,
@@ -655,7 +655,6 @@ def fetch_localizer_contrasts(
     get_anats : boolean, default=False
         Whether individual structural images should be fetched or not.
     %(data_dir)s
-    %(url)s
     %(resume)s
     %(verbose)s
     %(legacy_format)s
@@ -768,7 +767,9 @@ def fetch_localizer_contrasts(
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
-    index_file = fetch_single_file(index_url, data_dir, verbose=verbose)
+    index_file = fetch_single_file(
+        index_url, data_dir, verbose=verbose, resume=resume
+    )
     with open(index_file) as of:
         index = json.load(of)
 
@@ -911,7 +912,7 @@ def fetch_localizer_contrasts(
 
 @fill_doc
 def fetch_localizer_calculation_task(
-    n_subjects=1, data_dir=None, url=None, verbose=1, legacy_format=True
+    n_subjects=1, data_dir=None, verbose=1, legacy_format=True
 ):
     """Fetch calculation task contrast maps from the localizer.
 
@@ -921,7 +922,6 @@ def fetch_localizer_calculation_task(
         The number of subjects to load. If None is given,
         all 94 subjects are used.
     %(data_dir)s
-    %(url)s
     %(verbose)s
     %(legacy_format)s
 
@@ -950,7 +950,6 @@ def fetch_localizer_calculation_task(
         get_masks=False,
         get_anats=False,
         data_dir=data_dir,
-        url=url,
         resume=True,
         verbose=verbose,
         legacy_format=legacy_format,
@@ -959,16 +958,13 @@ def fetch_localizer_calculation_task(
 
 
 @fill_doc
-def fetch_localizer_button_task(
-    data_dir=None, url=None, verbose=1, legacy_format=True
-):
+def fetch_localizer_button_task(data_dir=None, verbose=1, legacy_format=True):
     """Fetch left vs right button press :term:`contrast` maps \
        from the localizer.
 
     Parameters
     ----------
     %(data_dir)s
-    %(url)s
     %(verbose)s
     %(legacy_format)s
 
@@ -1000,7 +996,6 @@ def fetch_localizer_button_task(
         get_masks=False,
         get_anats=True,
         data_dir=data_dir,
-        url=url,
         resume=True,
         verbose=verbose,
         legacy_format=legacy_format,
@@ -1018,7 +1013,7 @@ def fetch_abide_pcp(
     pipeline="cpac",
     band_pass_filtering=False,
     global_signal_regression=False,
-    derivatives=["func_preproc"],
+    derivatives=None,
     quality_checked=True,
     url=None,
     verbose=1,
@@ -1058,6 +1053,7 @@ def fetch_abide_pcp(
         reho, rois_aal, rois_cc200, rois_cc400, rois_dosenbach160, rois_ez,
         rois_ho, rois_tt, and vmhc. Please refer to the PCP site for more
         details.
+        Will default to ``['func_preproc']`` if ``None`` is passed.
 
     quality_checked : :obj:`bool`, default=True
         If true (default), restrict the list of the subjects to the one that
@@ -1171,6 +1167,8 @@ def fetch_abide_pcp(
     .. footbibliography::
 
     """
+    if derivatives is None:
+        derivatives = ["func_preproc"]
     # People keep getting it wrong and submitting a string instead of a
     # list of strings. We'll make their life easy
     if isinstance(derivatives, str):
@@ -2168,23 +2166,43 @@ def _reduce_confounds(regressors, keep_confounds):
 
 
 @fill_doc
-def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
+def fetch_language_localizer_demo_dataset(
+    data_dir=None, verbose=1, legacy_output=True
+):
     """Download language localizer demo dataset.
 
     Parameters
     ----------
     %(data_dir)s
     %(verbose)s
+    legacy_output: bool, default=True
+
+        .. versionadded:: 0.10.3
+        .. deprecated::0.10.3
+
+            Starting from version 0.13.0
+            the ``legacy_ouput`` argument will be removed
+            and the fetcher will always return
+            a ``sklearn.datasets.base.Bunch``.
+
 
     Returns
     -------
+    data : :class:`sklearn.utils.Bunch`
+        Dictionary-like object, the interest attributes are :
+
+        - 'data_dir': :obj:`str` Path to downloaded dataset.
+        - 'func': :obj:`list` of :obj:`str`,
+                  Absolute paths of downloaded files on disk
+        - 'description' : :obj:`str`, dataset description
+
+    Legacy output
+    -------------
     data_dir : :obj:`str`
         Path to downloaded dataset.
 
     downloaded_files : :obj:`list` of :obj:`str`
         Absolute paths of downloaded files on disk
-
-    description : :obj:`str`
 
     """
     url = "https://osf.io/3dj2a/download"
@@ -2208,14 +2226,30 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
         for path, _, files in os.walk(data_dir)
         for f in files
     ]
-    return data_dir, sorted(file_list)
+    if legacy_output:
+        warnings.warn(
+            category=DeprecationWarning,
+            stacklevel=2,
+            message=(
+                "From version 0.13.0 this fetcher"
+                "will always return a Bunch.\n"
+                "Use `legacy_output=False` "
+                "to start switch to this new behavior."
+            ),
+        )
+        return data_dir, sorted(file_list)
+
+    description = get_dataset_descr("language_localizer_demo")
+    return Bunch(
+        data_dir=data_dir, func=sorted(file_list), description=description
+    )
 
 
 @fill_doc
 def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
     """Download language localizer example :term:`bids<BIDS>` dataset.
 
-    .. deprecated:: 0.11.0
+    .. deprecated:: 0.10.3
 
         This fetcher function will be removed as it returns the same data
         as :func:`nilearn.datasets.fetch_language_localizer_demo_dataset`.

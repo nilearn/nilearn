@@ -231,13 +231,13 @@ def test_pos_recipr():
     eX = np.array([0.5, 1, 0, 0])
     Y = positive_reciprocal(X)
 
-    assert_array_almost_equal, Y, eX
+    assert_array_almost_equal(Y, eX)
     assert Y.dtype.type == np.float64
 
     X2 = X.reshape((2, 2))
     Y2 = positive_reciprocal(X2)
 
-    assert_array_almost_equal, Y2, eX.reshape((2, 2))
+    assert_array_almost_equal(Y2, eX.reshape((2, 2)))
 
     # check that lists have arrived
     XL = [0, 1, -1]

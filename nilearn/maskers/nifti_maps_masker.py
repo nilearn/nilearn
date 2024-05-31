@@ -1,4 +1,5 @@
 """Transformer for computing ROI signals."""
+
 import warnings
 
 import numpy as np
@@ -32,15 +33,22 @@ class _ExtractionFunctor:
 
 @_utils.fill_doc
 class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
-    """Class for masking of Niimg-like objects.
+    """Class for extracting data from Niimg-like objects \
+       using maps of potentially overlapping brain regions.
 
     NiftiMapsMasker is useful when data from overlapping volumes should be
     extracted (contrarily to :class:`nilearn.maskers.NiftiLabelsMasker`).
-    Use case: Summarize brain signals from large-scale networks obtained by
-    prior PCA or :term:`ICA`.
 
-    Note that, Inf or NaN present in the given input images are automatically
-    put to zero rather than considered as missing data.
+    Use case:
+    summarize brain signals from large-scale networks
+    obtained by prior PCA or :term:`ICA`.
+
+    .. note::
+        Inf or NaN present in the given input images are automatically
+        put to zero rather than considered as missing data.
+
+    For more details on the definitions of maps in Nilearn,
+    see the :ref:`region` section.
 
     Parameters
     ----------
@@ -130,12 +138,14 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
         dtype=None,
         resampling_target="data",
         keep_masked_maps=True,
-        memory=Memory(location=None, verbose=0),
+        memory=None,
         memory_level=0,
         verbose=0,
         reports=True,
         **kwargs,
     ):
+        if memory is None:
+            memory = Memory(location=None, verbose=0)
         self.maps_img = maps_img
         self.mask_img = mask_img
 
@@ -317,7 +327,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 "No image provided to fit in NiftiMapsMasker. "
                 "Plotting only spatial maps for reporting."
             )
-            warnings.warn(msg)
+            warnings.warn(msg, stacklevel=6)
             self._report_content["warning_message"] = msg
             for component in maps_to_be_displayed:
                 display = plotting.plot_stat_map(
@@ -332,23 +342,22 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 "A list of 4D subject images were provided to fit. "
                 "Only first subject is shown in the report."
             )
-            warnings.warn(msg)
+            warnings.warn(msg, stacklevel=6)
             self._report_content["warning_message"] = msg
-        # Find the cut coordinates
-        cut_coords = [
-            plotting.find_xyz_cut_coords(image.index_img(maps_image, i))
-            for i in maps_to_be_displayed
-        ]
 
-        for idx, component in enumerate(maps_to_be_displayed):
+        for component in maps_to_be_displayed:
+            # Find the cut coordinates
+            cut_coords = plotting.find_xyz_cut_coords(
+                image.index_img(maps_image, component)
+            )
             display = plotting.plot_img(
                 img,
-                cut_coords=cut_coords[idx],
+                cut_coords=cut_coords,
                 black_bg=False,
                 cmap=self.cmap,
             )
             display.add_overlay(
-                image.index_img(maps_image, idx),
+                image.index_img(maps_image, component),
                 cmap=plotting.cm.black_blue,
             )
             embeded_images.append(_embed_img(display))

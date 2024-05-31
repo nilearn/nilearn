@@ -21,9 +21,10 @@ from nilearn.interfaces.fmriprep.tests._testing import (
     get_legal_confound,
 )
 from nilearn.maskers import NiftiMasker
+from nilearn.tests.test_signal import generate_trends
 
 
-def _simu_img(tmp_path, demean):
+def _simu_img(tmp_path, trend, demean):
     """Simulate an nifti image based on confound file \
     with some parts confounds and some parts noise."""
     file_nii, _ = create_tmp_filepath(tmp_path, copy_confounds=True)
@@ -68,6 +69,11 @@ def _simu_img(tmp_path, demean):
     # Shift the mean to non-zero
     vol = vol + 10
 
+    # add a linear trend to the data
+    if trend:
+        signal_trend = generate_trends(n_features=nx * ny * 2 * nz, length=nt)
+        vol += signal_trend.reshape(nx, ny, 2 * nz, nt)
+
     # create an nifti image with the data, and corresponding mask
     img = Nifti1Image(vol, np.eye(4))
     mask_conf = Nifti1Image(vol_conf, np.eye(4))
@@ -84,25 +90,29 @@ def _simu_img(tmp_path, demean):
 
 
 def _handle_non_steady(confounds):
-    """Simulate non steady state correctly while increase the length."""
+    """Simulate non steady state correctly while increase the length.
+
+    - The first row is non-steady state,
+      replace it with the input from the second row.
+
+    - Repeat X in length (axis = 0) 10 times to increase
+      the degree of freedom for numerical stability.
+
+    - Put non-steady state volume back at the first sample.
+    """
     X = confounds.values
-    # the first row is non-steady state, replace it with the input from the
-    # second row
     non_steady = X[0, :]
-    X[0, :] = X[1, :]
-    # repeat X in length (axis = 0) 10 times to increase
-    # the degree of freedom for numerical stability
-    X = np.tile(X, (10, 1))
-    # put non-steady state volume back at the first sample
-    X[0, :] = non_steady
-    X = pd.DataFrame(X, columns=confounds.columns)
-    return X
+    tmp = np.vstack((X[1, :], X[1:, :]))
+    tmp = np.tile(tmp, (10, 1))
+    return pd.DataFrame(
+        np.vstack((non_steady, tmp[1:, :])), columns=confounds.columns
+    )
 
 
 def _regression(confounds, tmp_path):
-    """Simple regression with NiftiMasker."""
+    """Perform simple regression with NiftiMasker."""
     # Simulate data
-    img, mask_conf, _, _, _ = _simu_img(tmp_path, demean=False)
+    img, mask_conf, _, _, _ = _simu_img(tmp_path, trend=False, demean=False)
     confounds = _handle_non_steady(confounds)
     # Do the regression
     masker = NiftiMasker(mask_img=mask_conf, standardize=True)
@@ -202,7 +212,7 @@ def test_nilearn_standardize_false(tmp_path):
 
     # Simulate data; set demean to False as standardize_confounds=True
     (img, mask_conf, mask_rand, confounds, sample_mask) = _simu_img(
-        tmp_path, demean=False
+        tmp_path, trend=False, demean=False
     )
 
     # Check that most variance is removed
@@ -244,7 +254,7 @@ def test_nilearn_standardize(
     """Test confounds removal with logical parameters for processing signal."""
     # demean is set to False to let signal.clean handle everything
     (img, mask_conf, mask_rand, confounds, mask) = _simu_img(
-        tmp_path, demean=False
+        tmp_path, trend=True, demean=False
     )
     # We now load the time series with vs without confounds
     # in voxels composed of pure confounds

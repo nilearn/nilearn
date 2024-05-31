@@ -5,15 +5,11 @@
 
 version: 2.1
 
-# Parameters required to trigger the execution
-# of the "host_docs" job
+# Parameters required to trigger the execution of the "host_docs" job
 parameters:
     GITHUB_RUN_URL:
         type: string
         default: none
-    STATUS:
-        type: string
-        default: failure
 
 jobs:
     host_docs:
@@ -23,12 +19,14 @@ jobs:
             GITHUB_ARTIFACT_URL: << pipeline.parameters.GITHUB_RUN_URL >>/doc.zip
         steps:
         -   checkout
-        -   run: bash build_tools/circle/download_documentation.sh
+        -   run:
+                name: Download documentation
+                command: bash build_tools/circle/download_documentation.sh
         -   store_artifacts:
                 path: doc/_build/html/
                 destination: dev
-      # Persists the generated documentation, so that it
-      # can be attached and deployed in the "deploy" job
+        # Persists the generated documentation, so that it
+        # can be attached and deployed in the "deploy" job
         -   persist_to_workspace:
                 root: doc/_build
                 paths:
@@ -36,9 +34,7 @@ jobs:
 
     deploy:
         docker:
-        -   image: circleci/python:3.9
-        environment:
-            STATUS: << pipeline.parameters.STATUS >>
+        -   image: cimg/python:3.12
         steps:
         -   add_ssh_keys:
                 fingerprints:
@@ -46,28 +42,18 @@ jobs:
         -   attach_workspace:
                 at: /tmp/_build
         -   run:
-                name: Check status
-                command: |
-                    echo $STATUS
-                    if [[ "$STATUS" == "success" ]]; then
-                        echo "Doc build is successful. Deploying docs..."
-                    else
-                        echo "Failed to deploy because doc build status is 'failure'"
-                        exit 1
-                    fi
-        -   run:
                 name: Fetch docs
                 command: |
-                    set -e
+                    set -x -e
                     mkdir -p ~/.ssh
                     ssh-keyscan github.com >> ~/.ssh/known_hosts;
                     if [ ! -d ~/nilearn.github.io ]; then
-                      git clone git@github.com:nilearn/nilearn.github.io.git ~/nilearn.github.io --depth=1
+                        git clone git@github.com:nilearn/nilearn.github.io.git ~/nilearn.github.io --depth=1
                     fi
         -   run:
                 name: Deploy dev docs
                 command: |
-                    set -e;
+                    set -x -e
                     if [ "${CIRCLE_BRANCH}" == "main" ]; then
                       git config --global user.email "circle@nilearn.com";
                       git config --global user.name "CircleCI";
@@ -88,7 +74,6 @@ jobs:
                     fi
 
 workflows:
-    version: 2
 
     host_and_deploy_doc:
         when:

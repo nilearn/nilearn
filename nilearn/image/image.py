@@ -3,6 +3,7 @@ Preprocessing functions for images.
 
 See also nilearn.signal.
 """
+
 # Authors: Philippe Gervais, Alexandre Abraham
 
 import collections.abc
@@ -788,7 +789,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     if copy_header:
         header = copy.deepcopy(ref_niimg.header)
         try:
-            "something" in header
+            "something" in header  # noqa B015
         except TypeError:
             pass
         else:
@@ -988,7 +989,7 @@ def threshold_img(
     return thresholded_img
 
 
-def math_img(formula, **imgs):
+def math_img(formula, copy_header_from=None, **imgs):
     """Interpret a numpy based string formula using niimg in named parameters.
 
     .. versionadded:: 0.2.3
@@ -998,6 +999,15 @@ def math_img(formula, **imgs):
     formula : :obj:`str`
         The mathematical formula to apply to image internal data. It can use
         numpy imported as 'np'.
+
+    copy_header_from : :obj:`str`, default=None
+        Takes the variable name of one of the images in the formula.
+        The header of this image will be copied to the result of the formula.
+        Note that the result image and the image to copy the header from,
+        should have the same number of dimensions. If None, the default
+        :class:`~nibabel.nifti1.Nifti1Header` is used.
+
+        .. versionadded:: 0.10.4
 
     imgs : images (:class:`~nibabel.nifti1.Nifti1Image` or file names)
         Keyword arguments corresponding to the variables in the formula as
@@ -1031,6 +1041,19 @@ def math_img(formula, **imgs):
 
      >>> result_img = math_img("img1 + img2",
      ...                       img1=anatomical_image, img2=log_img)
+
+    The result image will have the same shape and affine as the input images;
+    but might have different header information, specifically the TR value,
+    see :gh:`2645`.
+
+    .. versionadded:: 0.10.4
+
+    We can also copy the header from one of the input images using
+    ``copy_header_from``::
+
+     >>> result_img_with_header = math_img("img1 + img2",
+     ...                                   img1=anatomical_image, img2=log_img,
+     ...                                   copy_header_from="img1")
 
     Notes
     -----
@@ -1067,7 +1090,20 @@ def math_img(formula, **imgs):
         ) + exc.args
         raise
 
-    return new_img_like(niimg, result, niimg.affine)
+    # check whether to copy header from one of the input images
+    if copy_header_from is not None:
+        niimg = check_niimg(imgs[copy_header_from])
+        # only copy the header if the result and the input image to copy the
+        # header from have the same shape
+        if result.ndim != niimg.ndim:
+            raise ValueError(
+                "Cannot copy the header. "
+                "The result of the formula has a different number of "
+                "dimensions than the image to copy the header from."
+            )
+        return new_img_like(niimg, result, niimg.affine, copy_header=True)
+    else:
+        return new_img_like(niimg, result, niimg.affine)
 
 
 def binarize_img(img, threshold=0, mask_img=None, two_sided=True):
@@ -1098,6 +1134,8 @@ def binarize_img(img, threshold=0, mask_img=None, two_sided=True):
     two_sided : :obj:`bool`
         If `True`, threshold is applied to the absolute value of the image.
         If `False`, threshold is applied to the original value of the image.
+
+        .. versionadded:: 0.10.3
 
     Returns
     -------
@@ -1358,7 +1396,7 @@ def concat_imgs(
     niimgs,
     dtype=np.float32,
     ensure_ndim=None,
-    memory=Memory(location=None),
+    memory=None,
     memory_level=0,
     auto_resample=False,
     verbose=0,
@@ -1388,10 +1426,11 @@ def concat_imgs(
     verbose : int, default=0
         Controls the amount of verbosity (0 means no messages).
 
-    memory : instance of joblib.Memory or string, default=Memory(location=None)
+    memory : instance of joblib.Memory or string, default=None
         Used to cache the resampling process.
-        By default, no caching is done. If a string is given, it is the
-        path to the caching directory.
+        By default, no caching is done.
+        If a string is given, it is the path to the caching directory.
+        If ``None`` is passed will default to ``Memory(location=None)``.
 
     memory_level : integer, default=0
         Rough estimator of the amount of memory used by caching. Higher value
@@ -1408,6 +1447,9 @@ def concat_imgs(
 
     """
     from ..image import new_img_like  # avoid circular imports
+
+    if memory is None:
+        memory = Memory(location=None)
 
     target_fov = "first" if auto_resample else None
 

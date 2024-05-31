@@ -2,9 +2,8 @@
 ROI-based decoding analysis in Haxby et al. dataset
 ===================================================
 
-In this script we reproduce the data analysis conducted by
-Haxby et al. in "Distributed and Overlapping Representations of Faces and
-Objects in Ventral Temporal Cortex".
+In this script we reproduce the data analysis
+conducted by :footcite:t:`Haxby2001`.
 
 Specifically, we look at decoding accuracy for different objects in
 three different masks: the full ventral stream (mask_vt), the house
@@ -15,12 +14,14 @@ that have been defined via a standard GLM-based analysis.
 
 """
 
+# Fetch data using nilearn dataset fetcher
+from nilearn import datasets
+from nilearn.plotting import show
+
 # %%
 # Load and prepare the data
 # -------------------------
 
-# Fetch data using nilearn dataset fetcher
-from nilearn import datasets
 
 # by default we fetch 2nd subject data for analysis
 haxby_dataset = datasets.fetch_haxby()
@@ -128,8 +129,6 @@ for mask_name in mask_names:
 # --------------------------------------------------
 import matplotlib.pyplot as plt
 
-from nilearn.plotting import show
-
 plt.figure()
 
 tick_position = np.arange(len(categories))
@@ -164,7 +163,13 @@ plt.legend(loc="lower right")
 plt.title("Category-specific classification accuracy for different masks")
 plt.tight_layout()
 
-
 show()
+
+# %%
+# References
+# ----------
+#
+#  .. footbibliography::
+
 
 # sphinx_gallery_dummy_images=1

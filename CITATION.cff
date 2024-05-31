@@ -79,6 +79,10 @@ authors:
     website: https://github.com/acionca
     affiliation: Centre Hospitalier Universitaire Vaudoise, Lausanne, Switzerland
     orcid: https://orcid.org/0000-0002-1910-9650
+  - given-names: Alexandre
+    family-names: Sayal
+    website: https://github.com/alexsayal
+    affiliation: CIBIT, University of Coimbra, Portugal
   - given-names: Alexis
     family-names: Thual
     website: https://github.com/alexisthual
@@ -238,6 +242,10 @@ authors:
     website: https://github.com/fabianp
     affiliation: '@google, Geneva, Switzerland'
     orcid: https://orcid.org/0000-0003-4025-3953
+  - given-names: Florent
+    family-names: Pollet
+    website: https://florian6973.github.io/
+    affiliation: ENS Paris-Saclay, Saclay, France
   - given-names: Franz
     family-names: Liem
     website: https://github.com/fliem
@@ -712,6 +720,10 @@ authors:
     website: https://github.com/ymzayek
     affiliation: Inria, Saclay, France
     orcid: https://orcid.org/0000-0003-2904-2530
+  - given-names: Yichun
+    family-names: Huang
+    website: https://github.com/YCHuang0610
+    affiliation: Peking University, Beijing, China
   - given-names: Zvi
     family-names: Baratz
     website: https://github.com/ZviBaratz

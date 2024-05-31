@@ -2,6 +2,7 @@
 
 For example: TV-L1, Graph-Net, etc
 """
+
 # Author: DOHMATOB Elvis Dopgima,
 #         PIZARRO Gaspar,
 #         VAROQUAUX Gael,
@@ -308,7 +309,6 @@ def path_scores(
     eps=1e-3,
     key=None,
     debias=False,
-    Xmean=None,
     screening_percentile=20.0,
     verbose=1,
 ):
@@ -357,8 +357,6 @@ def path_scores(
     is_classif : bool, default=False
         Indicates whether the loss is a classification loss or a
         regression loss.
-
-    Xmean: ??? TODO: Add description.
 
     key: ??? TODO: Add description.
 
@@ -528,7 +526,7 @@ def path_scores(
         best_w = w_
 
     if len(best_w) == n_features:
-        # TODO: do something with Xmean
+        # TODO: implement with Xmean
         best_w = np.append(best_w, 0.0)
 
     all_test_scores = np.array(all_test_scores)
@@ -1264,7 +1262,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         t_r=None,
         max_iter=200,
         tol=1e-4,
-        memory=Memory(None),
+        memory=None,
         memory_level=1,
         standardize=True,
         verbose=1,
@@ -1275,6 +1273,8 @@ class SpaceNetClassifier(BaseSpaceNet):
         screening_percentile=20.0,
         debias=False,
     ):
+        if memory is None:
+            memory = Memory(location=None)
         super().__init__(
             penalty=penalty,
             is_classif=True,
@@ -1496,7 +1496,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         t_r=None,
         max_iter=200,
         tol=1e-4,
-        memory=Memory(None),
+        memory=None,
         memory_level=1,
         standardize=True,
         verbose=1,
@@ -1507,6 +1507,8 @@ class SpaceNetRegressor(BaseSpaceNet):
         screening_percentile=20.0,
         debias=False,
     ):
+        if memory is None:
+            memory = Memory(location=None)
         super().__init__(
             penalty=penalty,
             is_classif=False,

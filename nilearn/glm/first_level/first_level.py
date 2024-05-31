@@ -4,6 +4,7 @@ objects of fMRI data analyses.
 Author: Bertrand Thirion, Martin Perez-Guevara, 2016
 
 """
+
 from __future__ import annotations
 
 import csv
@@ -72,7 +73,7 @@ def mean_scaling(Y, axis=0):
     mean = Y.mean(axis=axis)
     if (mean == 0).any():
         warn(
-            "Mean values of 0 observed."
+            "Mean values of 0 observed. "
             "The data have probably been centered."
             "Scaling might not work as expected",
             UserWarning,
@@ -112,7 +113,12 @@ def _yule_walker(x, order):
         r[:, k] += (y[:, np.newaxis, 0:-k] @ y[:, k:, np.newaxis])[:, 0, 0]
     r /= denom * x.shape[-1]
     rt = np.array([toeplitz(rr[:-1]) for rr in r], np.float64)
-    rho = np.linalg.solve(rt, r[:, 1:])
+
+    # extra dimension added to r for compatibility with numpy <2 and >2
+    # see https://numpy.org/devdocs/release/2.0.0-notes.html
+    # section removed-ambiguity-when-broadcasting-in-np-solve
+    rho = np.linalg.solve(rt, r[:, 1:, None])[..., 0]
+
     rho.shape = x.shape[:-1] + (order,)
     return rho
 
@@ -328,14 +334,17 @@ class FirstLevelModel(BaseGLM):
         This parameter is passed to nilearn.image.resample_img.
         Please see the related documentation for details.
     %(smoothing_fwhm)s
-    memory : string or pathlib.Path, optional
-        Path to the directory used to cache the masking process and the glm
-        fit. By default, no caching is done.
+    memory : string or pathlib.Path, default=None
+        Path to the directory used to cache the masking process
+        and the glm fit.
+        By default, no caching is done.
         Creates instance of joblib.Memory.
+        If ``None`` is passed will default to ``Memory(location=None)``.
 
     memory_level : integer, optional
-        Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching.
+        Rough estimator of the amount of memory used by caching.
+        Higher value means more memory for caching.
+
 
     standardize : boolean, default=False
         If standardize is True, the time-series are centered and normed:
@@ -403,13 +412,13 @@ class FirstLevelModel(BaseGLM):
         drift_model="cosine",
         high_pass=0.01,
         drift_order=1,
-        fir_delays=[0],
+        fir_delays=None,
         min_onset=-24,
         mask_img=None,
         target_affine=None,
         target_shape=None,
         smoothing_fwhm=None,
-        memory=Memory(None),
+        memory=None,
         memory_level=1,
         standardize=False,
         signal_scaling=0,
@@ -420,6 +429,10 @@ class FirstLevelModel(BaseGLM):
         subject_label=None,
         random_state=None,
     ):
+        if fir_delays is None:
+            fir_delays = [0]
+        if memory is None:
+            memory = Memory(None)
         # design matrix parameters
         if t_r is not None:
             _check_repetition_time(t_r)
@@ -835,9 +848,9 @@ class FirstLevelModel(BaseGLM):
             # Prepare the returned images
             output = self.masker_.inverse_transform(estimate_)
             contrast_name = str(con_vals)
-            output.header[
-                "descrip"
-            ] = f"{output_type_} of contrast {contrast_name}"
+            output.header["descrip"] = (
+                f"{output_type_} of contrast {contrast_name}"
+            )
             outputs[output_type_] = output
 
         return outputs if output_type == "all" else output
@@ -1031,12 +1044,12 @@ def _read_events_table(table):
     try:
         # kept for historical reasons, a lot of tests use csv with index column
         loaded = pd.read_csv(table, index_col=0)
-    except:  # noqa: E722
+    except:  # noqa: E722 B001
         raise ValueError(f"table path {table} could not be loaded")
     if loaded.empty:
         try:
             loaded = pd.read_csv(table, sep="\t")
-        except:  # noqa: E722
+        except:  # noqa: E722 B001
             raise ValueError(f"table path {table} could not be loaded")
     return loaded
 
@@ -1077,13 +1090,13 @@ def first_level_from_bids(
     drift_model="cosine",
     high_pass=0.01,
     drift_order=1,
-    fir_delays=[0],
+    fir_delays=None,
     min_onset=-24,
     mask_img=None,
     target_affine=None,
     target_shape=None,
     smoothing_fwhm=None,
-    memory=Memory(None),
+    memory=None,
     memory_level=1,
     standardize=False,
     signal_scaling=0,
@@ -1097,12 +1110,19 @@ def first_level_from_bids(
     """Create FirstLevelModel objects and fit arguments \
        from a :term:`BIDS` dataset.
 
-    If ``t_r`` is ``None`` this function will attempt
-    to load it from a bold.json.
-    If ``slice_time_ref`` is  `None` this function will attempt
-    to infer it from a bold.json.
-    Otherwise ``t_r`` and ``slice_time_ref`` are taken as given,
-    but a warning may be raised if they are not consistent with the bold.json.
+    If ``t_r`` is ``None``, this function will attempt
+    to load it from a ``bold.json``.
+    If ``slice_time_ref`` is  ``None``, this function will attempt
+    to infer it from a ``bold.json``.
+    Otherwise, ``t_r`` and ``slice_time_ref`` are taken as given,
+    but a warning may be raised if they are not consistent with the
+    ``bold.json``.
+
+    All parameters not described here are passed to
+    :class:`~nilearn.glm.first_level.FirstLevelModel`.
+
+    The subject label of the model will be determined directly
+    from the :term:`BIDS` dataset.
 
     Parameters
     ----------
@@ -1111,60 +1131,57 @@ def first_level_from_bids(
         Should contain subject folders and a derivatives folder.
 
     task_label : :obj:`str`
-        Task_label as specified in the file names like _task-<task_label>_.
+        Task_label as specified in the file names like ``_task-<task_label>_``.
 
     space_label : :obj:`str`, optional
         Specifies the space label of the preprocessed bold.nii images.
-        As they are specified in the file names like _space-<space_label>_.
+        As they are specified in the file names like ``_space-<space_label>_``.
 
     sub_labels : :obj:`list` of :obj:`str`, optional
         Specifies the subset of subject labels to model.
-        If 'None', will model all subjects in the dataset.
+        If ``None``, will model all subjects in the dataset.
 
         .. versionadded:: 0.10.1
 
-    img_filters : :obj:`list` of :obj:`tuple` (str, str), optional
-        Filters are of the form (field, label). Only one filter per field
+    img_filters : :obj:`list` of :obj:`tuple` (:obj:`str`, :obj:`str`), \
+        optional
+        Filters are of the form ``(field, label)``. Only one filter per field
         allowed.
         A file that does not match a filter will be discarded.
-        Possible filters are 'acq', 'ce', 'dir', 'rec', 'run', 'echo', 'res',
-        'den', and 'desc'.
-        Filter examples would be ('desc', 'preproc'), ('dir', 'pa')
-        and ('run', '10').
+        Possible filters are ``'acq'``, ``'ce'``, ``'dir'``, ``'rec'``,
+        ``'run'``, ``'echo'``, ``'res'``, ``'den'``, and ``'desc'``.
+        Filter examples would be ``('desc', 'preproc')``, ``('dir', 'pa')``
+        and ``('run', '10')``.
 
-    slice_time_ref : :obj:`float` between 0.0 and 1.0, default=0.0
+    slice_time_ref : :obj:`float` between ``0.0`` and ``1.0``, default= ``0.0``
         This parameter indicates the time of the reference slice used in the
         slice timing preprocessing step of the experimental runs. It is
-        expressed as a fraction of the t_r (time repetition), so it can have
-        values between 0. and 1.
+        expressed as a fraction of the ``t_r`` (time repetition), so it can
+        have values between ``0.`` and ``1.``
 
         .. deprecated:: 0.10.1
 
-            The default=0 for ``slice_time_ref`` will be deprecated.
-            The default value will change to 'None' in 0.12.
+            The default= ``0`` for ``slice_time_ref`` will be deprecated.
+            The default value will change to ``None`` in 0.12.
 
-    derivatives_folder : :obj:`str`, default="derivatives".
+    derivatives_folder : :obj:`str`, default= ``"derivatives"``.
         derivatives and app folder path containing preprocessed files.
-        Like "derivatives/FMRIPREP".
+        Like ``"derivatives/FMRIPREP"``.
 
-    All other parameters correspond to a `FirstLevelModel` object, which
-    contains their documentation.
-    The subject label of the model will be determined directly
-    from the :term:`BIDS` dataset.
+    kwargs : :obj:`dict`
 
-    kwargs: :obj:`dict`
+        Keyword arguments to be passed to functions called within this
+        function.
 
-        .. versionadded:: 0.11.0
+        Kwargs prefixed with ``confounds_``
+        will be passed to :func:`~nilearn.interfaces.fmriprep.load_confounds`.
+        This allows ``first_level_from_bids`` to return
+        a specific set of confounds by relying on confound loading strategies
+        defined in :func:`~nilearn.interfaces.fmriprep.load_confounds`.
+        If no kwargs are passed, ``first_level_from_bids`` will return
+        all the confounds available in the confounds TSV files.
 
-    Keyword arguments to be passed to functions called within this function.
-
-    Kwargs prefixed with ``confound_``
-    will be passed to :func:`~nilearn.interfaces.fmriprep.load_confounds`.
-    This allows ``first_level_from_bids`` to return
-    a specific set of confounds by relying on confound loading strategies
-    defined in :func:`~nilearn.interfaces.fmriprep.load_confounds`.
-    If no kwargs are passed, ``first_level_from_bids`` will return
-    all the confounds available in the confounds TSV files.
+        .. versionadded:: 0.10.3
 
     Examples
     --------
@@ -1234,21 +1251,27 @@ def first_level_from_bids(
 
     Returns
     -------
-    models : list of `FirstLevelModel` objects
-        Each FirstLevelModel object corresponds to a subject.
+    models : list of :class:`~nilearn.glm.first_level.FirstLevelModel` objects
+        Each :class:`~nilearn.glm.first_level.FirstLevelModel` object
+        corresponds to a subject.
         All runs from different sessions are considered together
         for the same subject to run a fixed effects analysis on them.
 
     models_run_imgs : list of list of Niimg-like objects,
-        Items for the FirstLevelModel fit function of their respective model.
+        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
+        fit function of their respective model.
 
     models_events : list of list of pandas DataFrames,
-        Items for the FirstLevelModel fit function of their respective model.
+        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
+        fit function of their respective model.
 
-    models_confounds : list of list of pandas DataFrames or None,
-        Items for the FirstLevelModel fit function of their respective model.
+    models_confounds : list of list of pandas DataFrames or ``None``,
+        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
+        fit function of their respective model.
 
     """
+    if memory is None:
+        memory = Memory(None)
     if slice_time_ref == 0:
         warn(
             "Starting in version 0.12, slice_time_ref will default to None.",
@@ -1267,7 +1290,17 @@ def first_level_from_bids(
         derivatives_folder=derivatives_folder,
     )
 
-    kwargs_load_confounds = _check_kwargs_load_confounds(**kwargs)
+    dataset_path = Path(dataset_path).absolute()
+
+    kwargs_load_confounds, remaining_kwargs = _check_kwargs_load_confounds(
+        **kwargs
+    )
+
+    if len(remaining_kwargs) > 0:
+        raise RuntimeError(
+            "Unknown keyword arguments. Keyword arguments should start with "
+            f"`confounds_` prefix: {remaining_kwargs}"
+        )
 
     if drift_model is not None and kwargs_load_confounds is not None:
         if "high_pass" in kwargs_load_confounds.get("strategy"):
@@ -1285,6 +1318,7 @@ def first_level_from_bids(
             )
 
     derivatives_path = Path(dataset_path) / derivatives_folder
+    derivatives_path = derivatives_path.absolute()
 
     # Get metadata for models.
     #
@@ -1324,17 +1358,19 @@ def first_level_from_bids(
         t_r = inferred_t_r
     if t_r is not None and t_r != inferred_t_r:
         warn(
-            f"'t_r' provided ({t_r}) is different "
+            f"\n't_r' provided ({t_r}) is different "
             f"from the value found in the BIDS dataset ({inferred_t_r}).\n"
-            "Note this may lead to the wrong model specification."
+            "Note this may lead to the wrong model specification.",
+            stacklevel=2,
         )
     if t_r is not None:
         _check_repetition_time(t_r)
     else:
         warn(
-            "'t_r' not provided and cannot be inferred from BIDS metadata.\n"
+            "\n't_r' not provided and cannot be inferred from BIDS metadata.\n"
             "It will need to be set manually in the list of models, "
-            "otherwise their fit will throw an exception."
+            "otherwise their fit will throw an exception.",
+            stacklevel=2,
         )
 
     # Slice time correction reference time
@@ -1393,6 +1429,8 @@ def first_level_from_bids(
     models_confounds = []
 
     sub_labels = _list_valid_subjects(derivatives_path, sub_labels)
+    if len(sub_labels) == 0:
+        raise RuntimeError(f"\nNo subject found in:\n {derivatives_path}")
     for sub_label_ in sub_labels:
         # Create model
         model = FirstLevelModel(
@@ -1493,8 +1531,10 @@ def _list_valid_subjects(derivatives_path, sub_labels):
             sub_labels_exist.append(sub_label_)
         else:
             warn(
-                f"Subject label {sub_label_} is not present in the"
-                " dataset and cannot be processed."
+                f"\nSubject label '{sub_label_}' is not present "
+                "in the following dataset and cannot be processed:\n"
+                f" {derivatives_path}",
+                stacklevel=3,
             )
 
     return set(sub_labels_exist)
@@ -1871,16 +1911,18 @@ def _check_kwargs_load_confounds(**kwargs):
     }
 
     if kwargs.get("confounds_strategy") is None:
-        return None
+        return None, kwargs
 
-    kwargs_load_confounds = {
-        key: defaults[key]
-        if f"confounds_{key}" not in kwargs
-        else kwargs[f"confounds_{key}"]
-        for key in defaults
-    }
+    remaining_kwargs = kwargs.copy()
+    kwargs_load_confounds = {}
+    for key in defaults:
+        confounds_key = f"confounds_{key}"
+        if confounds_key in kwargs:
+            kwargs_load_confounds[key] = remaining_kwargs.pop(confounds_key)
+        else:
+            kwargs_load_confounds[key] = defaults[key]
 
-    return kwargs_load_confounds
+    return kwargs_load_confounds, remaining_kwargs
 
 
 def _make_bids_files_filter(
@@ -1930,7 +1972,8 @@ def _make_bids_files_filter(
                     warn(
                         f"The filter {filter_} will be skipped. "
                         f"'{filter_[0]}' is not among the supported filters. "
-                        f"Allowed filters include: {supported_filters}"
+                        f"Allowed filters include: {supported_filters}",
+                        stacklevel=3,
                     )
                 continue
 

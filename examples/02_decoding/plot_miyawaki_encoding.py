@@ -1,24 +1,17 @@
 """
-============================================================
 Encoding models for visual stimuli from Miyawaki et al. 2008
 ============================================================
 
-This example partly reproduces the encoding model presented in
-    `Visual image reconstruction from human brain activity
-    using a combination of multiscale local image decoders
-    <https://doi.org/10.1016/j.neuron.2008.11.004>`_,
-    Miyawaki, Y., Uchida, H., Yamashita, O., Sato, M. A.,
-    Morito, Y., Tanabe, H. C., ... & Kamitani, Y. (2008).
-    Neuron, 60(5), 915-929.
+This example partly reproduces the encoding model presented
+in :footcite:t:`Miyawaki2008`.
 
 Encoding models try to predict neuronal activity using information from
 presented stimuli, like an image or sound. Where decoding goes from
 brain data to real-world stimulus, encoding goes the other direction.
 
-We demonstrate how to build such an **encoding model** in nilearn, predicting
-**fMRI data** from **visual stimuli**, using the dataset from
-`Miyawaki et al., 2008
-<https://doi.org/10.1016/j.neuron.2008.11.004>`_.
+We demonstrate how to build such an **encoding model** in nilearn,
+predicting **fMRI data** from **visual stimuli**,
+using the dataset from :footcite:t:`Miyawaki2008`.
 
 Participants were shown images, which consisted of random 10x10 binary
 (either black or white) pixels, and the corresponding :term:`fMRI` activity
@@ -315,3 +308,9 @@ plt.colorbar(ax_im, ax=ax)
 # roughly maps to the relative location of the voxels to each other.
 # We can see a relationship between some voxel's receptive field and
 # its location in the brain.
+
+# %%
+# References
+# ----------
+#
+#  .. footbibliography::

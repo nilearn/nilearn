@@ -7,7 +7,7 @@ to experimental data and visualizing the results.
 This is done on two runs of one subject of the FIAC dataset.
 
 For more details on the data,
-please see experiment 2 in :footcite:t:`dehaene2006functional`.
+please see experiment 2 in :footcite:t:`Dehaene2006`.
 
 Here are the steps we will go through:
 
@@ -246,8 +246,13 @@ report = fmri_glm_multirun.generate_report(
 # We have several ways to access the report:
 
 # report  # This report can be viewed in a notebook
-# report.save_as_html(output_dir / "report.html")
 # report.open_in_browser()
+
+# or we can save as an html file
+# from pathlib import Path
+# output_dir = Path.cwd() / "results" / "plot_oasis"
+# output_dir.mkdir(exist_ok=True, parents=True)
+# report.save_as_html(output_dir / 'report.html')
 
 # %%
 # References

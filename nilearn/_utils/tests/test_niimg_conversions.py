@@ -1,10 +1,10 @@
-"""
-Test the niimg_conversions
+"""Test the niimg_conversions.
 
 This test file is in nilearn/tests because Nosetest,
 which we historically used,
 ignores modules whose name starts with an underscore.
 """
+
 # Author: Gael Varoquaux, Alexandre Abraham
 
 import os

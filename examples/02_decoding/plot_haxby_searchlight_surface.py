@@ -2,11 +2,8 @@
 Cortical surface-based searchlight decoding
 ===========================================
 
-This is a demo for surface-based searchlight decoding, as described in:
-Chen, Y., Namburi, P., Elliott, L.T., Heinzle, J., Soon, C.S.,
-Chee, M.W.L., and Haynes, J.-D. (2011). Cortical surface-based
-searchlight decoding. NeuroImage 56, 582–592.
-
+This is a demo for surface-based searchlight decoding,
+as described in :footcite:t:`Chen2011`.
 """
 
 # %%
@@ -95,3 +92,9 @@ plotting.plot_surf_stat_map(
     title="Accuracy map, left hemisphere",
 )
 plotting.show()
+
+# %%
+# References
+# ----------
+#
+#  .. footbibliography::

@@ -37,9 +37,8 @@ datadir = os.path.join(currdir, 'data')
 
 
 class MeshLikeObject:
-    """Class with attributes coordinates and
-    faces to be used for testing purposes.
-    """
+    """Class with attributes coordinates \
+       and faces to be used for testing purposes."""
 
     def __init__(self, coordinates, faces):
         self._coordinates = coordinates
@@ -55,9 +54,7 @@ class MeshLikeObject:
 
 
 class SurfaceLikeObject:
-    """Class with attributes mesh and
-    data to be used for testing purposes.
-    """
+    """Class with attributes mesh and data to be used for testing purposes."""
 
     def __init__(self, mesh, data):
         self._mesh = mesh
@@ -77,7 +74,7 @@ class SurfaceLikeObject:
 
 
 def test_load_surf_data_numpy_gt_1pt23():
-    """Test loading fsaverage surface
+    """Test loading fsaverage surface.
 
     Threw an error with numpy >=1.24.x
     but only a deprecaton warning with numpy <1.24.x.
@@ -681,10 +678,10 @@ def test_sampling_affine(affine_eye):
     affine[-1, -1] = 1
     texture = surface._nearest_voxel_sampling(
         [img], mesh, affine=affine, radius=1, kind='ball')
-    assert_array_equal(texture[0], [1., 2., 1.])
+    assert_array_almost_equal(texture[0], [1.0, 2.0, 1.0], decimal=15)
     texture = surface._interpolation_sampling(
         [img], mesh, affine=affine, radius=0, kind='ball')
-    assert_array_almost_equal(texture[0], [1.1, 2., 1.])
+    assert_array_almost_equal(texture[0], [1.1, 2.0, 1.0], decimal=15)
 
 
 @pytest.mark.parametrize("kind", ["auto", "line", "ball"])

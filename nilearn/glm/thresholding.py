@@ -5,6 +5,7 @@ discovery rate control, false discovery proportion in clusters.
 Author: Bertrand Thirion, 2015 -- 2019
 
 """
+
 import warnings
 
 import numpy as np

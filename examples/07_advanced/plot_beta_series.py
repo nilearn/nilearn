@@ -58,11 +58,10 @@ to build the LSS beta series.
 .. include:: ../../../examples/masker_note.rst
 
 """
+
 # sphinx_gallery_thumbnail_number = -2
 
 # %%
-import matplotlib.pyplot as plt
-
 from nilearn import image, plotting
 
 # %%
@@ -73,10 +72,10 @@ from nilearn import image, plotting
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
 
-data_dir, _ = fetch_language_localizer_demo_dataset()
+data = fetch_language_localizer_demo_dataset(legacy_output=False)
 
 models, models_run_imgs, events_dfs, models_confounds = first_level_from_bids(
-    data_dir,
+    data.data_dir,
     "languagelocalizer",
     img_filters=[("desc", "preproc")],
     n_jobs=2,
@@ -102,6 +101,7 @@ glm_parameters["signal_scaling"] = standard_glm.scaling_axis
 # models.
 # We will just use the one created by
 # :func:`~nilearn.glm.first_level.first_level_from_bids`.
+import matplotlib.pyplot as plt
 
 standard_glm.fit(fmri_file, events_df)
 
@@ -114,7 +114,7 @@ fig.show()
 # %%
 # Define the LSA model
 # --------------------
-# We will now create a least squares- all (LSA) model.
+# We will now create a Least Squares All (LSA) model.
 # This involves a simple transformation, where each trial of interest receives
 # its own unique trial type.
 # It's important to ensure that the original trial types can be inferred from
@@ -162,7 +162,7 @@ lsa_beta_maps = {
 # %%
 # Define the LSS models
 # ---------------------
-# We will now create a separate Least Squares- Separate (LSS) model for each
+# We will now create a separate Least Squares Separate (LSS) model for each
 # trial of interest.
 # The transformation is much like the LSA approach, except that we only
 # relabel *one* trial in the DataFrame.
@@ -270,7 +270,7 @@ fig, axes = plt.subplots(
     gridspec_kw={"width_ratios": [1, 2, 1]},
 )
 
-for i_ax, ax in enumerate(axes):
+for i_ax, _ in enumerate(axes):
     plotting.plot_design_matrix(DESIGN_MATRICES[i_ax], ax=axes[i_ax])
     axes[i_ax].set_title(DM_TITLES[i_ax])
 

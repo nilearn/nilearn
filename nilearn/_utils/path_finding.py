@@ -1,4 +1,5 @@
 """Path finding utilities."""
+
 import glob
 import os.path
 

@@ -2,13 +2,9 @@
 A introduction tutorial to fMRI decoding
 ========================================
 
-Here is a simple tutorial on decoding with nilearn. It reproduces the
-Haxby 2001 study on a face vs cat discrimination task in a mask of the
-ventral stream.
-
-    * J.V. Haxby et al. "Distributed and Overlapping Representations of Faces
-      and Objects in Ventral Temporal Cortex", Science vol 293 (2001), p
-      2425.-2430.
+Here is a simple tutorial on decoding with nilearn.
+It reproduces the :footcite:t:`Haxby2001` study
+on a face vs cat discrimination task in a mask of the ventral stream.
 
 This tutorial is meant as an introduction to the various steps of a decoding
 analysis using Nilearn meta-estimator: :class:`nilearn.decoding.Decoder`
@@ -16,7 +12,6 @@ analysis using Nilearn meta-estimator: :class:`nilearn.decoding.Decoder`
 It is not a minimalistic example, as it strives to be didactic. It is not
 meant to be copied to analyze new data: many of the steps are unnecessary.
 """
-
 
 # %%
 # Retrieve and load the :term:`fMRI` data from the Haxby study
@@ -306,7 +301,12 @@ coef_img = decoder.coef_img_["face"]
 
 # %%
 # coef_img is now a NiftiImage.  We can save the coefficients as a nii.gz file:
-decoder.coef_img_["face"].to_filename("haxby_svc_weights.nii.gz")
+from pathlib import Path
+
+output_dir = Path.cwd() / "results" / "plot_decoding_tutorial"
+output_dir.mkdir(exist_ok=True, parents=True)
+print(f"Output will be saved to: {output_dir}")
+decoder.coef_img_["face"].to_filename(output_dir / "haxby_svc_weights.nii.gz")
 
 # %%
 # Plotting the :term:`SVM` weights
@@ -344,8 +344,13 @@ dummy_decoder.fit(fmri_niimgs, conditions, groups=run_label)
 print(dummy_decoder.cv_scores_)
 
 # %%
-# Further reading
-# ---------------
+# References
+# ----------
+#
+#  .. footbibliography::
+#
+# See also
+# --------
 #
 # * The :ref:`section of the documentation on decoding <decoding>`
 #

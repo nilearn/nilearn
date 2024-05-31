@@ -1,5 +1,5 @@
 ---
-name: flake8
+name: check style guide compliance
 
 on:
     push:
@@ -13,14 +13,14 @@ concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
 
-jobs:
-    flake8:
-        name: run flake8
-        runs-on: ubuntu-latest
+# Force to use color
+env:
+    FORCE_COLOR: true
 
-        defaults:
-            run:
-                shell: bash
+jobs:
+    style_check:
+        name: run pre-commit on all files
+        runs-on: ubuntu-latest
 
         steps:
         -   name: Checkout nilearn
@@ -29,11 +29,11 @@ jobs:
         -   name: Setup python
             uses: actions/setup-python@v5
             with:
-                python-version: '3.12'
+                python-version: '3.11'
                 allow-prereleases: false
 
         -   name: Install tox
             run: python -m pip install --upgrade tox
 
-        -   name: Run Flake8
-            run: tox run -e flake8
+        -   name: Run pre-commit via tox
+            run: tox

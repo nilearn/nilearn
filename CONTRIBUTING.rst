@@ -11,7 +11,8 @@ How to get help?
 
 If you have issues when using Nilearn, or if you have questions on how to use it, please don't hesitate to reach out!
 
-There are currently three ways to interact with the Nilearn team: through the :neurostars:`neurostars <>` forum, our :nilearn-gh:`github <>` issues, and through our weekly :nilearn-gh:`drop-in hours <issues/2882>`, usually **every Wednesday from 4pm to 5pm UTC**.
+There are currently three ways to interact with the Nilearn team: through the :neurostars:`neurostars <>` forum, our :nilearn-gh:`github <>` issues, and through our weekly `drop-in hours <https://tinyurl.com/nilearn-drop-in-hour>`_, usually **every Wednesday from 4pm to 5pm UTC**.
+We post on our `X account <https://twitter.com/nilearn>`_ in advance to let you know if the drop-in hours are happening that week.
 
 If you have a *usage question*, that is if you need help troubleshooting scripts using Nilearn, we would appreciate it if you either ask it during the drop-in hours or create a topic on :neurostars:`neurostars <>` with the "nilearn" tag.
 Asking questions or reporting issues is always valuable because it will help other users having the same problem. So, please don't hold onto a burning question!
@@ -33,7 +34,7 @@ We welcome open discussion around improvements---both to the documentation as we
   to make sure it has not already been reported. If the bug has not been reported yet,
   create an :nilearn-gh:`new issue <issues/new/choose>`
   including a `minimal runnable example <https://stackoverflow.com/help/minimal-reproducible-example>`_
-  to showcase it (using Nilearn data) as well as your OS and Nilearn version.
+  to showcase it (using :ref:`nilearn.datasets <datasets_ref>`) as well as your OS and Nilearn version.
 
 * If you have an idea for a new feature, check if it is in the :ref:`nilearn_scope`
   and feel free to open a :nilearn-gh:`new issue <issues/new/choose>` to discuss it.
@@ -338,6 +339,9 @@ Additionally, we use:
 - black_ to format our code,
 - isort_  to organize the import statements.
 
+Documentation style
+^^^^^^^^^^^^^^^^^^^
+
 Each function and class must come with a “docstring” at the top of the function code,
 using numpydoc_ formatting.
 The docstring must summarize what the function does and document every parameter.
@@ -387,6 +391,21 @@ This is also useful for writing unit tests.
 
 Writing small functions is not always possible, and we do not recommend trying to reorganize larger,
 but well-tested, older functions in the codebase, unless there is a strong reason to do so (e.g., when adding a new feature).
+
+APIs of nilearn objects
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Estimated Attributes
+""""""""""""""""""""
+
+Attributes that have been estimated from the data
+should always have a name ending with trailing underscore.
+For example the coefficients of some regression estimator
+would be stored in a ``coef_`` attribute after ``fit`` has been called.
+
+The estimated attributes are expected to be overridden when you call ``fit`` a second time.
+
+This follows the `scikit-learn convention <https://scikit-learn.org/stable/developers/develop.html#estimated-attributes>`_.
 
 .. _private_functions:
 
@@ -469,6 +488,18 @@ Code inside ``maskers._validation.py``:
 
 ..
       Source: Jerome Dockes https://github.com/nilearn/nilearn/issues/3628#issuecomment-1515211711
+
+Guidelines for HTML and CSS
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+We use `prettier <https://prettier.io/>`_ to format HTML and CSS.
+
+This is implemented via a pre-commit hook (see below)
+that can be run with
+
+.. code-block:: bash
+
+      pre-commit run --all-files prettier
 
 Pre-commit
 ----------

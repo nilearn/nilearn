@@ -76,7 +76,7 @@ def _threshold_maps_ratio(maps_img, threshold):
     return threshold_maps_img
 
 
-def _remove_small_regions(input_data, index, affine, min_size):
+def _remove_small_regions(input_data, affine, min_size):
     """Remove small regions in volume from input_data of specified min_size.
 
     min_size should be specified in mm^3 (region size in volume).
@@ -87,11 +87,6 @@ def _remove_small_regions(input_data, index, affine, min_size):
         Values inside the regions defined by labels contained in input_data
         are summed together to get the size and compare with given min_size.
         For example, see scipy.ndimage.label.
-
-    index : numpy.ndarray
-        A sequence of label numbers of the regions to be measured corresponding
-        to input_data. For example, sequence can be generated using
-        np.arange(n_labels + 1).
 
     affine : numpy.ndarray
         Affine of input_data is used to convert size in voxels to size in
@@ -116,7 +111,7 @@ def _remove_small_regions(input_data, index, affine, min_size):
     # np.unique and then use np.bincount to count the region sizes.
 
     _, region_indices = np.unique(input_data, return_inverse=True)
-    region_sizes = np.bincount(region_indices)
+    region_sizes = np.bincount(region_indices.ravel())
     size_in_vox = min_size / np.abs(np.linalg.det(affine[:3, :3]))
     labels_kept = region_sizes > size_in_vox
     if not np.all(labels_kept):
@@ -398,10 +393,12 @@ class RegionExtractor(NiftiMapsMasker):
         low_pass=None,
         high_pass=None,
         t_r=None,
-        memory=Memory(location=None),
+        memory=None,
         memory_level=0,
         verbose=0,
     ):
+        if memory is None:
+            memory = Memory(location=None)
         super().__init__(
             maps_img=maps_img,
             mask_img=mask_img,
@@ -592,10 +589,7 @@ def connected_label_regions(
             regions, this_n_labels = label(this_label_mask.astype(int))
 
         if min_size is not None:
-            index = np.arange(this_n_labels + 1)
-            regions = _remove_small_regions(
-                regions, index, affine, min_size=min_size
-            )
+            regions = _remove_small_regions(regions, affine, min_size=min_size)
             this_n_labels = regions.max()
 
         cur_regions = regions[regions != 0] + current_max_label
