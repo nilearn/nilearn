@@ -72,7 +72,6 @@ repos:
                 | examples/01_plotting/plot_surface_projection_strategies.py
                 | examples/04_glm_first_level/plot_localizer_surface_analysis.py
                 | examples/07_advanced/plot_surface_bids_analysis.py
-                | nilearn/_utils/helpers.py
                 | nilearn/plotting/html_surface.py
                 | nilearn/plotting/js_plotting_utils.py
                 | nilearn/plotting/surf_plotting.py
