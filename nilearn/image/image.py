@@ -290,7 +290,7 @@ def smooth_img(imgs, fwhm):
     return ret[0] if single_img else ret
 
 
-def _crop_img_to(img, slices, copy=True, copy_header=None):
+def _crop_img_to(img, slices, copy=True, copy_header=False):
     """Crops an image to a smaller size.
 
     Crop `img` to size indicated by slices and adjust affine accordingly.
@@ -310,7 +310,7 @@ def _crop_img_to(img, slices, copy=True, copy_header=None):
     copy : :obj:`bool`, default=True
         Specifies whether cropped data is to be copied or not.
 
-    copy_header : :obj:`bool`, default=None
+    copy_header : :obj:`bool`
         Whether to copy the header of the input image to the output.
         If None, the default behavior is to not copy the header.
 

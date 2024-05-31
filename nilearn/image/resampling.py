@@ -342,7 +342,7 @@ def resample_img(
     clip=True,
     fill_value=0,
     force_resample=False,
-    copy_header=None,
+    copy_header=False,
 ):
     """Resample a Niimg-like object.
 
@@ -388,7 +388,7 @@ def resample_img(
     force_resample : bool, default=False
         Intended for testing, this prevents the use of a padding optimization.
 
-    copy_header : :obj:`bool`, default=None
+    copy_header : :obj:`bool`
         Whether to copy the header of the input image to the output.
 
         .. versionadded:: 0.11.0
