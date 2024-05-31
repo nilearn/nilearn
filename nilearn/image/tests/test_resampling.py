@@ -880,6 +880,20 @@ def test_reorder_img_copied_header(img_4d_mni_tr2):
     )
 
 
+@pytest.mark.parametrize(
+    "func, input_img",
+    [
+        (resample_img, "img_4d_mni_tr2"),
+        (reorder_img, "img_4d_mni_tr2"),
+    ],
+)
+def test_warning_copy_header_false(request, func, input_img):
+    # Use the request fixture to get the actual fixture value
+    actual_input_img = request.getfixturevalue(input_img)
+    with pytest.warns(FutureWarning, match="From release 0.13.0 onwards*"):
+        func(actual_input_img, copy_header=False)
+
+
 def test_coord_transform_trivial(affine_eye, rng):
     sform = affine_eye
     x = rng.random((10,))

@@ -43,6 +43,7 @@ from nilearn.image import (
     iter_img,
     largest_connected_component_img,
     math_img,
+    mean_img,
     new_img_like,
     resampling,
     smooth_img,
@@ -1008,6 +1009,25 @@ def test_binarize_img_copied_header(img_4d_mni_tr2):
     assert result.header["cal_min"] == 0
     # max value should be 1 in the result
     assert result.header["cal_max"] == 1
+
+
+@pytest.mark.parametrize(
+    "func, input_img",
+    [
+        (binarize_img, "img_4d_mni_tr2"),
+        (crop_img, "img_4d_mni_tr2"),
+        (mean_img, "img_4d_mni_tr2"),
+        (threshold_img, "img_4d_mni_tr2"),
+    ],
+)
+def test_warning_copy_header_false(request, func, input_img):
+    # Use the request fixture to get the actual fixture value
+    actual_input_img = request.getfixturevalue(input_img)
+    with pytest.warns(FutureWarning, match="From release 0.13.0 onwards*"):
+        if func == threshold_img:
+            func(actual_input_img, threshold=0.5, copy_header=False)
+        else:
+            func(actual_input_img, copy_header=False)
 
 
 def test_clean_img(affine_eye, shape_3d_default, rng):
