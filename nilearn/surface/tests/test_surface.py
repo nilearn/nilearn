@@ -811,4 +811,3 @@ def test_smooth_surface_data():
     surf_data_smooth = surface.smooth_surface_data(surface=sphere, surf_data=surf_data, iterations=1, match='sum')
     # checking that output was properly normalized
     assert np.isclose(np.sum(surf_data_smooth), np.sum(surf_data))
-    

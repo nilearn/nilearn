@@ -15,7 +15,7 @@ from .surface import (
     load_surf_data,
     load_surf_mesh,
     load_surface,
-  smooth_surface_data,
+    smooth_surface_data,
     vol_to_surf,
 )
 
@@ -27,7 +27,6 @@ __all__ = [
     "load_surf_data",
     "load_surf_mesh",
     "load_surface",
-  "smooth_surface_data",
+    "smooth_surface_data",
     "vol_to_surf",
 ]
-

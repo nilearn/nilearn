@@ -1169,12 +1169,12 @@ def _compute_vertex_neighborhoods(surface):
     """For each vertex, compute the neighborhood.
     The neighborhood is  defined as all the vertices that are connected by a
     face.
-    
+
     Parameters
     ----------
     surface : Surface-like
         The surface whose vertex neighborhoods are to be computed.
-    
+
     Returns
     -------
     neighbors : list
@@ -1184,7 +1184,7 @@ def _compute_vertex_neighborhoods(surface):
     matrix = _compute_adjacency_matrix(surface)
     return [find(row)[1] for row in matrix]
 
-       
+
 def smooth_surface_data(surface, surf_data,
                         iterations=1,
                         distance_weights=False,
@@ -1193,7 +1193,7 @@ def smooth_surface_data(surface, surf_data,
                         center_surround_knob=0,
                         match='sum'):
     """Smooth values along the surface.
-    
+
     Parameters
     ----------
     surface : Surface-like
@@ -1206,7 +1206,7 @@ def smooth_surface_data(surface, surf_data,
         smoothed independently.
 
     iterations : :obj:`int`, optional
-        The number of times to repeat the smoothing operation (it must be a positive value). 
+        The number of times to repeat the smoothing operation (it must be a positive value).
         Defaults to 1
 
     distance_weights : :obj:`bool`, optional
@@ -1244,8 +1244,8 @@ def smooth_surface_data(surface, surf_data,
         `'mean'`, then the output is shifted to match the mean of the input. If
         the value is `'var'` or `'std'`, then the variance of the output is
         matched. Finally, if the value is `'dist'`, then the mean and the
-        variance are matched. Default is `'sum'` 
-    
+        variance are matched. Default is `'sum'`
+
     Returns
     -------
     surf_data_smooth : array
@@ -1273,7 +1273,7 @@ def smooth_surface_data(surface, surf_data,
     # Calculate the adjacency matrix either weighting by inverse distance or not weighting (ones)
     values = 'invlen' if distance_weights else 'ones'
     matrix = _compute_adjacency_matrix(surface, values=values)
-    
+
     # If there are vertex weights, get them ready.
     if vertex_weights:
         w = np.array(vertex_weights)
