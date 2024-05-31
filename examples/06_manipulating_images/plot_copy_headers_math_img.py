@@ -52,7 +52,7 @@ for key in result_img.header.keys():
         )
 
 # %%
-# This could affect some downstream analyses with other software.
+# This could affect some downstream analyses.
 #
 # For example, here the :term:`TR` (given as fifth element in ``pixdim``)
 # is changed from 2 in ``subj1_img`` to 1 in ``result_img``.
