@@ -871,7 +871,7 @@ def test_reorder_img_mirror():
 
 def test_reorder_img_copied_header(img_4d_mni_tr2):
     # Test that the header is copied when reordering
-    result = reorder_img(img_4d_mni_tr2)
+    result = reorder_img(img_4d_mni_tr2, copy_header=True)
     # all header fields should stay the same
     match_headers_keys(
         img_4d_mni_tr2,
