@@ -97,10 +97,7 @@ texture_right = surface.vol_to_surf(
     fmri_img, fsaverage5["pial"].parts["right"]
 )
 image = SurfaceImage(
-    mesh={
-        "left": fsaverage5["pial"].parts["left"],
-        "right": fsaverage5["pial"].parts["right"],
-    },
+    mesh=fsaverage5["pial"],
     data={
         "left": texture_left.T,
         "right": texture_right.T,
@@ -236,7 +233,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
         title=contrast_id,
         colorbar=True,
         threshold=3.0,
-        bg_map=fsaverage.sulc_right,
+        bg_map=fsaverage.sulc_left,
     )
 
 plotting.show()

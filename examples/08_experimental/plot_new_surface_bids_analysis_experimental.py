@@ -105,10 +105,7 @@ for first_level_glm, fmri_img, confound, event in zip(
         fmri_img[0], fsaverage5["pial"].parts["right"]
     )
     image = SurfaceImage(
-        mesh={
-            "left": fsaverage5["pial"].parts["left"],
-            "right": fsaverage5["pial"].parts["right"],
-        },
+        mesh=fsaverage5["pial"],
         data={
             "left": texture_left.T,
             "right": texture_right.T,
