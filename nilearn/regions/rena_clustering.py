@@ -243,9 +243,9 @@ def _make_edges_and_weights_surface(X, mask_img):
     weights = {}
     edges = {}
     len_previous_mask = 0
-    for part in mask_img.mesh.keys():
-        face_part = mask_img.mesh[part].faces
-        mask_part = mask_img.data[part]
+    for part in mask_img.mesh.parts:
+        face_part = mask_img.mesh.parts[part].faces
+        mask_part = mask_img.data.parts[part]
 
         edges_unmasked, edges_mask = _make_edges_surface(face_part, mask_part)
 
@@ -295,7 +295,7 @@ def _weighted_connectivity_graph(X, mask_img):
     if isinstance(mask_img, SurfaceImage):
         edges, weight = _make_edges_and_weights_surface(X, mask_img)
         connectivity = coo_matrix((n_features, n_features))
-        for part in mask_img.mesh.keys():
+        for part in mask_img.mesh.parts:
             conn_temp = coo_matrix(
                 (weight[part], edges[part]), (n_features, n_features)
             ).tocsr()

@@ -102,7 +102,6 @@ plt.show()
 import numpy as np
 
 from nilearn import decoding
-from nilearn._utils import param_validation
 
 img = surface.fetch_nki()[0]
 y = np.random.RandomState(0).choice([0, 1], replace=True, size=img.shape[0])
