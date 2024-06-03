@@ -38,8 +38,8 @@ with warnings.catch_warnings():
     from nilearn.glm.thresholding import threshold_stats_img
 
 from nilearn._utils import check_niimg
-from nilearn.experimental.surface import SurfaceMasker
 from nilearn._utils.niimg import safe_get_data
+from nilearn.experimental.surface import SurfaceMasker
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting.get_clusters_table import get_clusters_table
 from nilearn.reporting.utils import figure_to_svg_quoted

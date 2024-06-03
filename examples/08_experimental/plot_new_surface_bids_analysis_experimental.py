@@ -93,7 +93,7 @@ fsaverage5 = load_fsaverage()
 # Empty lists in which we are going to store activation values.
 z_scores_left = []
 z_scores_right = []
-for first_level_glm, fmri_img, confound, events in zip(
+for first_level_glm, fmri_img, confound, event in zip(
     models, run_imgs, confounds, events
 ):
     print(f"Running GLM on {Path(fmri_img[0]).relative_to(data.data_dir)}")
@@ -116,9 +116,7 @@ for first_level_glm, fmri_img, confound, events in zip(
     )
 
     # Fit GLM.
-    first_level_glm.fit(
-        run_imgs=image, events=events[0], confounds=confound[0]
-    )
+    first_level_glm.fit(run_imgs=image, events=event, confounds=confound[0])
 
     # Contrast specification
     design_matrix = first_level_glm.design_matrices_[0]
