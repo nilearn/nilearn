@@ -31,12 +31,8 @@ from nilearn.experimental.surface import (
 
 destrieux_atlas, labels = fetch_destrieux(mesh_type="pial")
 
-# The parcellation is already loaded into memory.
-parcellation = destrieux_atlas.data.parts["left"]
-
 # Retrieve fsaverage5 surface dataset for the plotting background.
-# It contains the surface template as pial
-# and inflated version and a sulcal depth maps which is used for shading.
+# It contains the surface template as pial and inflated version.
 fsaverage_meshes = load_fsaverage()
 
 # The fsaverage meshes contains the FileMesh objects:
@@ -50,6 +46,7 @@ print(
 )
 
 # The fsaverage data contains file names pointing to the file locations
+# The sulcal depth maps will be is used for shading.
 fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
 print(f"Fsaverage5 sulcal depth map: {fsaverage_sulcal}")
 
@@ -74,50 +71,27 @@ plotting.plot_surf_roi(
 
 # %%
 # Display Destrieux :term:`parcellation` on inflated fsaverage5 surface
-plotting.plot_surf_roi(
-    surf_mesh=fsaverage_meshes["inflated"].parts["left"],
-    roi_map=parcellation,
-    hemi="left",
-    view="lateral",
-    bg_map=fsaverage_sulcal,
-    bg_on_data=True,
-    darkness=0.5,
-    title="Destrieux parcellation on inflated surface",
-)
+# with different views
+for view in ["lateral", "posterior", "ventral"]:
+    plotting.plot_surf_roi(
+        surf_mesh=fsaverage_meshes["inflated"],
+        roi_map=destrieux_atlas,
+        hemi="left",
+        view="lateral",
+        bg_map=fsaverage_sulcal,
+        bg_on_data=True,
+        darkness=0.5,
+        title=f"Destrieux parcellation on inflated surface: {view} view",
+    )
 
-# %%
-# Display Destrieux :term:`parcellation` with different views: posterior
-plotting.plot_surf_roi(
-    surf_mesh=fsaverage_meshes["inflated"].parts["left"],
-    roi_map=parcellation,
-    hemi="left",
-    view="posterior",
-    bg_map=fsaverage_sulcal,
-    bg_on_data=True,
-    darkness=0.5,
-    title="Posterior view of Destrieux parcellation",
-)
-
-# %%
-# Display Destrieux :term:`parcellation` with different views: ventral
-plotting.plot_surf_roi(
-    surf_mesh=fsaverage_meshes["inflated"].parts["left"],
-    roi_map=parcellation,
-    hemi="left",
-    view="ventral",
-    bg_map=fsaverage_sulcal,
-    bg_on_data=True,
-    darkness=0.5,
-    title="Ventral view of Destrieux parcellation",
-)
 show()
 
 # %%
 # Display Destrieux :term:`parcellation` with custom view: explicitly set angle
 elev, azim = 210.0, 90.0  # appropriate for visualizing, e.g., the OTS
 plotting.plot_surf_roi(
-    surf_mesh=fsaverage_meshes["inflated"].parts["left"],
-    roi_map=parcellation,
+    surf_mesh=fsaverage_meshes["inflated"],
+    roi_map=destrieux_atlas,
     hemi="left",
     view=(elev, azim),
     bg_map=fsaverage_sulcal,
@@ -173,8 +147,8 @@ show()
 # See :ref:`interactive-surface-plotting` for more details.
 
 view = plotting.view_surf(
-    surf_mesh=fsaverage_meshes["inflated"].parts["left"],
-    surf_map=parcellation,
+    surf_mesh=fsaverage_meshes["inflated"],
+    surf_map=destrieux_atlas,
     cmap="gist_ncar",
     symmetric_cmap=False,
 )
