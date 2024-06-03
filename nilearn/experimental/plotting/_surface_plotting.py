@@ -8,21 +8,14 @@ from nilearn.experimental.surface import Mesh, PolyMesh, SurfaceImage
 
 
 def plot_surf(
-    img, part: str | None = None, mesh=None, view: str | None = None, **kwargs
+    img,
+    part: str | None = "left",
+    mesh=None,
+    view: str | None = None,
+    bg_map: str | numpy.array | SurfaceImage | None = None,
+    **kwargs,
 ):
-    """Plot surfaces with optional background and data.
-
-    Parameters
-    ----------
-    surf_map : SurfaceImage or :obj:`str` or numpy.ndarray, optional
-
-    surf_mesh : :obj:`str` or :obj:`list` of two numpy.ndarray \
-                or Mesh or PolyMesh, optional
-
-    %(hemi)s
-
-    bg_map : str or numpy.ndarray or SurfaceImage, optional
-    """
+    """Plot surfaces with optional background and data."""
     if not isinstance(img, SurfaceImage):
         return old_plotting.plot_surf(
             surf_mesh=mesh,
@@ -30,6 +23,8 @@ def plot_surf(
             hemi=part,
             **kwargs,
         )
+
+    bg_map = _check_bg_map(bg_map, part)
 
     if mesh is None:
         mesh = img.mesh
@@ -39,8 +34,12 @@ def plot_surf(
     if view is None:
         view = "lateral"
 
+    if isinstance(mesh, PolyMesh):
+        _check_hemi_present(mesh, part)
+        mesh = mesh.parts
+
     return old_plotting.plot_surf(
-        surf_mesh=mesh.parts[part],
+        surf_mesh=mesh[part],
         surf_map=img.data.parts[part],
         hemi=part,
         view=view,
@@ -195,7 +194,7 @@ def plot_surf_roi(
     assert roi_map.data.parts[hemi] is not None
 
     fig = old_plotting.plot_surf_roi(
-        surf_mesh=surf_mesh.parts[hemi],
+        surf_mesh=surf_mesh[hemi],
         roi_map=roi_map.data.parts[hemi],
         hemi=hemi,
         bg_map=bg_map,
