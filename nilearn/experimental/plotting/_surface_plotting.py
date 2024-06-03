@@ -10,20 +10,20 @@ from nilearn.experimental.surface import Mesh, PolyMesh, SurfaceImage
 
 DEFAULT_HEMI = "left"
 
-# TODO1 double check types if we decide to keep them
-SURF_MESH_TYPE = (
-    str | Path | list[numpy.ndarray, numpy.ndarray] | Mesh | PolyMesh | None
-)
+# TODO double check types if we decide to keep them
+# SURF_MESH_TYPE = (
+#     str | Path | list[numpy.ndarray, numpy.ndarray] | Mesh | PolyMesh | None
+# )
+SURF_MESH_TYPE = str | Path | Mesh | PolyMesh | None
 
-SURF_MAP_TYPE = str | Path | numpy.ndarray | SurfaceImage | None
-
-BG_MAP_TYPE = str | Path | numpy.ndarray | SurfaceImage | None
+# MAP_TYPE = str | Path | numpy.ndarray | SurfaceImage | None
+MAP_TYPE = str | Path | SurfaceImage | None
 
 
 def plot_surf(
-    surf_map: SURF_MAP_TYPE,
+    surf_map: MAP_TYPE,
     surf_mesh: SURF_MESH_TYPE = None,
-    bg_map: BG_MAP_TYPE = None,
+    bg_map: MAP_TYPE = None,
     hemi: str = DEFAULT_HEMI,
     **kwargs,
 ):
@@ -79,9 +79,9 @@ def plot_surf(
 
 @fill_doc
 def plot_surf_stat_map(
-    stat_map: SURF_MAP_TYPE,
+    stat_map: MAP_TYPE,
     surf_mesh: SURF_MESH_TYPE = None,
-    bg_map: BG_MAP_TYPE = None,
+    bg_map: MAP_TYPE = None,
     hemi: str = DEFAULT_HEMI,
     **kwargs,
 ):
@@ -101,7 +101,7 @@ def plot_surf_stat_map(
 
 @fill_doc
 def plot_surf_contours(
-    roi_map: SURF_MAP_TYPE | list[numpy.ndarray],
+    roi_map: MAP_TYPE | list[numpy.ndarray],
     hemi: str = DEFAULT_HEMI,
     surf_mesh: SURF_MESH_TYPE = None,
     **kwargs,
@@ -119,9 +119,9 @@ def plot_surf_contours(
 
 @fill_doc
 def plot_surf_roi(
-    roi_map: SURF_MAP_TYPE | list[numpy.ndarray],
+    roi_map: MAP_TYPE | list[numpy.ndarray],
     surf_mesh: SURF_MESH_TYPE = None,
-    bg_map: BG_MAP_TYPE = None,
+    bg_map: MAP_TYPE = None,
     hemi: str = DEFAULT_HEMI,
     **kwargs,
 ):
@@ -142,8 +142,8 @@ def plot_surf_roi(
 @fill_doc
 def view_surf(
     surf_mesh: SURF_MESH_TYPE,
-    surf_map: SURF_MAP_TYPE = None,
-    bg_map: BG_MAP_TYPE = None,
+    surf_map: MAP_TYPE = None,
+    bg_map: MAP_TYPE = None,
     hemi: str = DEFAULT_HEMI,
     **kwargs,
 ):
@@ -161,10 +161,10 @@ def view_surf(
 
 
 def _check_inputs(
-    surf_map: SURF_MAP_TYPE,
+    surf_map: MAP_TYPE,
     surf_mesh: SURF_MESH_TYPE,
     hemi: str,
-    bg_map: BG_MAP_TYPE = None,
+    bg_map: MAP_TYPE = None,
 ) -> tuple[
     str | Path | numpy.ndarray | None,
     SURF_MESH_TYPE,
@@ -190,7 +190,7 @@ def _check_inputs(
 
 
 def _check_bg_map(
-    bg_map: BG_MAP_TYPE, hemi: str
+    bg_map: MAP_TYPE, hemi: str
 ) -> str | Path | numpy.ndarray | None:
     """Return proper format of background map to be used."""
     if isinstance(bg_map, SurfaceImage):
