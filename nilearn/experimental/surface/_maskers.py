@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import warnings
 from typing import Any
 
 import numpy as np
@@ -53,6 +54,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         t_r=None,
         memory_level=1,
         memory=None,
+        reports=True,
         **kwargs,
     ):
         if memory is None:
@@ -71,6 +73,17 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         self._shelving = False
         self.clean_kwargs = {
             k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
+        }
+        self.reports = reports
+        self.cmap = kwargs.get("cmap", "CMRmap_r")
+        self._report_content = {
+            "description": (
+                "This report shows the input surface image overlaid "
+                "with the outlines of the mask. "
+                "We recommend to inspect the report for the overlap "
+                "between the mask and its input image. "
+            ),
+            "warning_message": None,
         }
 
     def _fit_mask_img(self, img: SurfaceImage | None) -> None:
@@ -121,6 +134,18 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
             self.slices[part_name] = start, stop
             start = stop
         self.output_dimension_ = stop
+
+        if self.reports:  # save inputs for reporting
+            self._reporting_data = {
+                "mask": self.mask_img_,
+                "dim": None,
+                "images": img,
+            }
+            if img is not None:
+                self._reporting_data["images"] = img
+                self._reporting_data["dim"] = self.mask_img_.mesh.n_vertices
+        else:
+            self._reporting_data = None
         return self
 
     def _check_fitted(self):
@@ -247,6 +272,89 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
             data[part_name][..., mask] = masked_img[..., start:stop]
         return SurfaceImage(mesh=self.mask_img_.mesh, data=data)
 
+    def generate_report(self):
+        """Generate a report."""
+        from nilearn.reporting.html_report import generate_report
+
+        return generate_report(self)
+
+    def _reporting(self):
+        """Load displays needed for report.
+
+        Returns
+        -------
+        displays : list
+            A list of all displays to be rendered.
+        """
+        from nilearn.reporting.utils import figure_to_png_base64
+
+        try:
+            import matplotlib.pyplot as plt
+
+            from nilearn.experimental import plotting
+
+        except ImportError:
+            with warnings.catch_warnings():
+                mpl_unavail_msg = (
+                    "Matplotlib is not imported! "
+                    "No reports will be generated."
+                )
+                warnings.filterwarnings("always", message=mpl_unavail_msg)
+                warnings.warn(
+                    category=ImportWarning,
+                    message=mpl_unavail_msg,
+                )
+                return [None]
+
+        # Handle the edge case where this function is
+        # called with a masker having report capabilities disabled
+        if self._reporting_data is None:
+            return [None]
+
+        img = self._reporting_data["images"]
+
+        if img is None:  # images were not provided to fit
+            msg = (
+                "No image provided to fit in NiftiMasker. "
+                "Setting image to mask for reporting."
+            )
+            warnings.warn(msg, stacklevel=6)
+            self._report_content["warning_message"] = msg
+
+        masked_data = self.fit_transform(img)
+        mean_data = masked_data.mean(axis=0)
+        mean_img = self.inverse_transform(mean_data)
+
+        views = ["lateral", "medial", "dorsal", "ventral"]
+        hemispheres = ["left", "right"]
+
+        fig, axes = plt.subplots(
+            len(hemispheres),
+            len(views),
+            subplot_kw={"projection": "3d"},
+            figsize=(10 * len(hemispheres), 10),
+        )
+        axes = np.atleast_2d(axes)
+
+        for hemi, ax_row in zip(hemispheres, axes):
+            for ax, view in zip(ax_row, views):
+                plotting.plot_surf(
+                    mean_img,
+                    part=hemi,
+                    view=view,
+                    figure=fig,
+                    axes=ax,
+                    cmap=self.cmap,
+                    colorbar=True,
+                )
+        plt.tight_layout()
+        fig.subplots_adjust(wspace=0.001, hspace=0.001)
+        plt.close()
+
+        init_display = figure_to_png_base64(fig)
+
+        return [init_display]
+
 
 class SurfaceLabelsMasker:
     """Extract data from a SurfaceImage, averaging over atlas regions.
@@ -298,6 +406,15 @@ class SurfaceLabelsMasker:
             self.label_names_ = np.asarray(
                 [label_names[label] for label in self.labels_]
             )
+        self._report_content = {
+            "description": (
+                "This report shows the input surface image overlaid "
+                "with the outlines of the mask. "
+                "We recommend to inspect the report for the overlap "
+                "between the mask and its input image. "
+            ),
+            "warning_message": None,
+        }
 
     def fit(
         self, img: SurfaceImage | None = None, y: Any = None

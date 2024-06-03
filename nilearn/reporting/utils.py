@@ -14,9 +14,23 @@ def figure_to_svg_bytes(fig):
         return io_buffer.getvalue()
 
 
+def figure_to_png_bytes(fig):
+    """Save figure as png and return it as bytes."""
+    with io.BytesIO() as io_buffer:
+        fig.savefig(
+            io_buffer, format="png", facecolor="white", edgecolor="white"
+        )
+        return io_buffer.getvalue()
+
+
 def figure_to_svg_base64(fig):
     """Save figure as svg and return it as 64 bytes."""
     return base64.b64encode(figure_to_svg_bytes(fig)).decode()
+
+
+def figure_to_png_base64(fig):
+    """Save figure as png and return it as 64 bytes."""
+    return base64.b64encode(figure_to_png_bytes(fig)).decode()
 
 
 def figure_to_svg_quoted(fig):

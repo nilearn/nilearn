@@ -85,3 +85,16 @@ def test_transform_inverse_transform_with_mask(
         v[..., 0] = 0.0
     expected_img = SurfaceImage(img.mesh, expected_data)
     assert_img_equal(expected_img, unmasked_img)
+
+
+from pathlib import Path
+
+
+def test_report(mini_img):
+    masker = SurfaceMasker()
+    report = masker.generate_report()
+    report.save_as_html(Path() / "surface_masker_empty.html")
+
+    masker = SurfaceMasker().fit(mini_img)
+    report = masker.generate_report()
+    report.save_as_html(Path() / "surface_masker.html")
