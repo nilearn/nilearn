@@ -48,7 +48,7 @@ import numpy as np
 from nilearn import surface
 
 fsaverage_curvature = load_fsaverage_data(data_type="curvature")
-curv_right_sign = np.sign(fsaverage_curvature.data["right"])
+curv_right_sign = np.sign(fsaverage_curvature.data.parts["right"])
 
 # %%
 # Sample the 3D data around each node of the mesh

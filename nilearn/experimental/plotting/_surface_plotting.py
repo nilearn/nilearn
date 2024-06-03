@@ -85,12 +85,15 @@ def plot_surf_stat_map(
     if surf_mesh is None:
         surf_mesh = stat_map.mesh
 
-    stat_map._check_hemi(hemi)
-    _check_hemi_present(surf_mesh, hemi)
+    if isinstance(surf_mesh, PolyMesh):
+        _check_hemi_present(surf_mesh, hemi)
+        surf_mesh = surf_mesh.parts
+
+    assert stat_map.data.parts[hemi] is not None
 
     fig = old_plotting.plot_surf_stat_map(
         surf_mesh=surf_mesh[hemi],
-        stat_map=stat_map.data[hemi],
+        stat_map=stat_map.data.parts[hemi],
         hemi=hemi,
         bg_map=bg_map,
         **kwargs,
@@ -131,12 +134,15 @@ def plot_surf_contours(
     if surf_mesh is None:
         surf_mesh = roi_map.mesh
 
-    roi_map._check_hemi(hemi)
-    _check_hemi_present(surf_mesh, hemi)
+    if isinstance(surf_mesh, PolyMesh):
+        _check_hemi_present(surf_mesh, hemi)
+        surf_mesh = surf_mesh.parts
+
+    assert roi_map.data.parts[hemi] is not None
 
     fig = old_plotting.plot_surf_contours(
         surf_mesh=surf_mesh[hemi],
-        roi_map=roi_map.data[hemi],
+        roi_map=roi_map.data.parts[hemi],
         hemi=hemi,
         **kwargs,
     )
@@ -181,9 +187,12 @@ def plot_surf_roi(
     if surf_mesh is None:
         surf_mesh = roi_map.mesh
 
+    if isinstance(surf_mesh, PolyMesh):
+        _check_hemi_present(surf_mesh, hemi)
+        surf_mesh = surf_mesh.parts
+
     # TODO refactor
     assert roi_map.data.parts[hemi] is not None
-    _check_hemi_present(surf_mesh, hemi)
 
     fig = old_plotting.plot_surf_roi(
         surf_mesh=surf_mesh.parts[hemi],
@@ -231,12 +240,15 @@ def view_surf(
     if surf_mesh is None:
         surf_mesh = surf_map.mesh
 
-    surf_map._check_hemi(hemi)
-    _check_hemi_present(surf_mesh, hemi)
+    if isinstance(surf_mesh, PolyMesh):
+        _check_hemi_present(surf_mesh, hemi)
+        surf_mesh = surf_mesh.parts
+
+    assert surf_map.data.parts[hemi] is not None
 
     fig = old_plotting.view_surf(
         surf_mesh=surf_mesh[hemi],
-        surf_map=surf_map.data[hemi],
+        surf_map=surf_map.data.parts[hemi],
         bg_map=bg_map,
         **kwargs,
     )
