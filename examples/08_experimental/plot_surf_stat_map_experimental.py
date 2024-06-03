@@ -122,6 +122,8 @@ pcc_map[pcc_labels] = 1
 from nilearn.experimental import plotting
 from nilearn.plotting import show
 
+print(f"{type(nki_dataset[0].mesh)=}")
+
 plotting.plot_surf_roi(
     surf_mesh=nki_dataset[0].mesh.parts["left"],
     roi_map=pcc_map,
