@@ -54,7 +54,7 @@ nki_dataset = fetch_nki(n_subjects=1)
 
 # Destrieux parcellation for left hemisphere in fsaverage5 space
 destrieux_atlas, labels = fetch_destrieux()
-parcellation = destrieux_atlas.data["left"]
+parcellation = destrieux_atlas.data.parts["left"]
 
 # Fsaverage5 surface template
 fsaverage_meshes = load_fsaverage()
@@ -85,7 +85,7 @@ print(f"Fsaverage5 sulcal curvature map: {fsaverage_curvature}")
 # -------------------------------
 
 # Load resting state time series from nilearn
-timeseries = nki_dataset[0].data["left"].T
+timeseries = nki_dataset[0].data.parts["left"].T
 
 # Extract seed region via label
 pcc_region = b"G_cingul-Post-dorsal"
@@ -123,7 +123,7 @@ from nilearn.experimental import plotting
 from nilearn.plotting import show
 
 plotting.plot_surf_roi(
-    surf_mesh=nki_dataset[0].mesh["left"],
+    surf_mesh=nki_dataset[0].mesh.parts["left"],
     roi_map=pcc_map,
     hemi="left",
     view="medial",
@@ -140,7 +140,7 @@ show()
 # To make this plot easier to read,
 # we use the :term:`mesh` curvature as a background map.
 
-bg_map = np.sign(fsaverage_curvature.data["left"])
+bg_map = np.sign(fsaverage_curvature.data.parts["left"])
 # np.sign yields values in [-1, 1]. We rescale the background map
 # such that values are in [0.25, 0.75], resulting in a nicer looking plot.
 bg_map_rescaled = (bg_map + 1) / 4 + 0.25
@@ -158,7 +158,7 @@ plotting.plot_surf_roi(
 # %%
 # Display unthresholded stat map with a slightly dimmed background
 plotting.plot_surf_stat_map(
-    surf_mesh=nki_dataset[0].mesh["left"],
+    surf_mesh=nki_dataset[0].mesh.parts["left"],
     stat_map=stat_map,
     hemi="left",
     view="medial",
@@ -175,7 +175,7 @@ show()
 # Many different options are available for plotting, for example thresholding,
 # or using custom colormaps
 plotting.plot_surf_stat_map(
-    surf_mesh=nki_dataset[0].mesh["left"],
+    surf_mesh=nki_dataset[0].mesh.parts["left"],
     stat_map=stat_map,
     hemi="left",
     view="medial",
@@ -196,7 +196,7 @@ show()
 # Note that you can also control the transparency
 # with a background map using the alpha parameter.
 plotting.plot_surf_stat_map(
-    surf_mesh=nki_dataset[0].mesh["left"],
+    surf_mesh=nki_dataset[0].mesh.parts["left"],
     stat_map=stat_map,
     hemi="left",
     view="lateral",
