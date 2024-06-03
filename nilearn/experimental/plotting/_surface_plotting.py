@@ -6,7 +6,7 @@ import numpy
 
 from nilearn import plotting as old_plotting
 from nilearn._utils.docs import fill_doc
-from nilearn.experimental.surface import Mesh, PolyMesh, SurfaceImage
+from nilearn.experimental.surface import PolyMesh, SurfaceImage
 
 DEFAULT_HEMI = "left"
 
@@ -14,16 +14,13 @@ DEFAULT_HEMI = "left"
 # SURF_MESH_TYPE = (
 #     str | Path | list[numpy.ndarray, numpy.ndarray] | Mesh | PolyMesh | None
 # )
-SURF_MESH_TYPE = str | Path | Mesh | PolyMesh | None
-
 # MAP_TYPE = str | Path | numpy.ndarray | SurfaceImage | None
-MAP_TYPE = str | Path | SurfaceImage | None
 
 
 def plot_surf(
-    surf_map: MAP_TYPE,
-    surf_mesh: SURF_MESH_TYPE = None,
-    bg_map: MAP_TYPE = None,
+    surf_map,
+    surf_mesh=None,
+    bg_map=None,
     hemi: str = DEFAULT_HEMI,
     **kwargs,
 ):
@@ -79,9 +76,9 @@ def plot_surf(
 
 @fill_doc
 def plot_surf_stat_map(
-    stat_map: MAP_TYPE,
-    surf_mesh: SURF_MESH_TYPE = None,
-    bg_map: MAP_TYPE = None,
+    stat_map,
+    surf_mesh=None,
+    bg_map=None,
     hemi: str = DEFAULT_HEMI,
     **kwargs,
 ):
@@ -101,9 +98,9 @@ def plot_surf_stat_map(
 
 @fill_doc
 def plot_surf_contours(
-    roi_map: MAP_TYPE | list[numpy.ndarray],
+    roi_map,
     hemi: str = DEFAULT_HEMI,
-    surf_mesh: SURF_MESH_TYPE = None,
+    surf_mesh=None,
     **kwargs,
 ):
     """Plot contours of ROIs on a surface, optionally on a statistical map."""
@@ -119,9 +116,9 @@ def plot_surf_contours(
 
 @fill_doc
 def plot_surf_roi(
-    roi_map: MAP_TYPE | list[numpy.ndarray],
-    surf_mesh: SURF_MESH_TYPE = None,
-    bg_map: MAP_TYPE = None,
+    roi_map,
+    surf_mesh=None,
+    bg_map=None,
     hemi: str = DEFAULT_HEMI,
     **kwargs,
 ):
@@ -141,9 +138,9 @@ def plot_surf_roi(
 
 @fill_doc
 def view_surf(
-    surf_mesh: SURF_MESH_TYPE,
-    surf_map: MAP_TYPE = None,
-    bg_map: MAP_TYPE = None,
+    surf_mesh,
+    surf_map=None,
+    bg_map=None,
     hemi: str = DEFAULT_HEMI,
     **kwargs,
 ):
@@ -161,15 +158,11 @@ def view_surf(
 
 
 def _check_inputs(
-    surf_map: MAP_TYPE,
-    surf_mesh: SURF_MESH_TYPE,
+    surf_map,
+    surf_mesh,
     hemi: str,
-    bg_map: MAP_TYPE = None,
-) -> tuple[
-    str | Path | numpy.ndarray | None,
-    SURF_MESH_TYPE,
-    str | Path | numpy.ndarray | None,
-]:
+    bg_map=None,
+):
     """Check inputs for surface plotting.
 
     Where possible this will 'convert' the inputs to be able to pass them
@@ -189,9 +182,7 @@ def _check_inputs(
     return surf_map, surf_mesh, bg_map
 
 
-def _check_bg_map(
-    bg_map: MAP_TYPE, hemi: str
-) -> str | Path | numpy.ndarray | None:
+def _check_bg_map(bg_map, hemi: str) -> str | Path | numpy.ndarray | None:
     """Return proper format of background map to be used."""
     if isinstance(bg_map, SurfaceImage):
         assert bg_map.data.parts[hemi] is not None
