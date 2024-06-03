@@ -503,6 +503,7 @@ def _compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
         target_affine=target_affine,
         target_shape=target_shape,
         copy=False,
+        copy_header=True,
     )
     affine = mean_data.affine
     mean_data = get_data(mean_data)
@@ -648,7 +649,7 @@ def swap_img_hemispheres(img):
     img = check_niimg_3d(img)
 
     # get nifti in x-y-z order
-    img = reorder_img(img)
+    img = reorder_img(img, copy_header=True)
 
     # create swapped nifti object
     out_img = new_img_like(
@@ -1001,6 +1002,7 @@ def threshold_img(
                 target_affine=affine,
                 target_shape=img.shape[:3],
                 interpolation="nearest",
+                copy_header=True,
             )
 
         mask_data, _ = masking.load_mask_img(mask_img)

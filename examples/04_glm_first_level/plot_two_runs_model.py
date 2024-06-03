@@ -45,7 +45,7 @@ fmri_imgs = [data["func1"], data["func2"]]
 # Create a mean image for plotting purpose.
 from nilearn.image import mean_img
 
-mean_img_ = mean_img(fmri_imgs[0])
+mean_img_ = mean_img(fmri_imgs[0], copy_header=True)
 
 # %%
 # The design matrices were pre-computed,

@@ -641,7 +641,9 @@ def resample_img(
 
         # ... special case: can be solved with padding alone
         # crop source image and keep N voxels offset before/after volume
-        cropped_img, offsets = crop_img(img, pad=False, return_offset=True)
+        cropped_img, offsets = crop_img(
+            img, pad=False, return_offset=True, copy_header=True
+        )
 
         # TODO: flip axes that are flipped
         # TODO: un-shuffle permuted dimensions
@@ -837,7 +839,10 @@ def reorder_img(img, resample=None, copy_header=False):
         Q, R = np.linalg.qr(affine[:3, :3])
         target_affine = np.diag(np.abs(np.diag(R))[np.abs(Q).argmax(axis=1)])
         return resample_img(
-            img, target_affine=target_affine, interpolation=resample
+            img,
+            target_affine=target_affine,
+            interpolation=resample,
+            copy_header=True,
         )
 
     axis_numbers = np.argmax(np.abs(A), axis=0)

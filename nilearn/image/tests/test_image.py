@@ -386,7 +386,7 @@ def test_crop_img():
     affine = np.diag((4, 3, 2, 1))
     img = Nifti1Image(data, affine=affine)
 
-    cropped_img = crop_img(img)
+    cropped_img = crop_img(img, copy_header=True)
 
     # correction for padding with "-1"
     # check that correct part was extracted:
@@ -441,7 +441,7 @@ def test_crop_threshold_tolerance(affine_eye):
     data[3, 3, 3] = 1e-12
     img = Nifti1Image(data, affine=affine_eye)
 
-    cropped_img = crop_img(img)
+    cropped_img = crop_img(img, copy_header=True)
 
     assert cropped_img.shape == active_shape
 
@@ -452,14 +452,14 @@ def test_mean_img(images_to_mean, tmp_path):
 
     truth = _mean_ground_truth(images_to_mean)
 
-    mean_img = image.mean_img(images_to_mean)
+    mean_img = image.mean_img(images_to_mean, copy_header=True)
 
     assert_array_equal(mean_img.affine, affine)
     assert_array_equal(get_data(mean_img), truth)
 
     # Test with files
     imgs = testing.write_imgs_to_path(*images_to_mean, file_path=tmp_path)
-    mean_img = image.mean_img(imgs)
+    mean_img = image.mean_img(imgs, copy_header=True)
 
     assert_array_equal(mean_img.affine, affine)
     if X64:
@@ -486,10 +486,12 @@ def test_mean_img_resample(rng):
 
     target_affine = affine[:, [1, 0, 2, 3]]  # permutation of axes
 
-    mean_img_with_resampling = image.mean_img(img, target_affine=target_affine)
+    mean_img_with_resampling = image.mean_img(
+        img, target_affine=target_affine, copy_header=True
+    )
 
     resampled_mean_image = resampling.resample_img(
-        mean_img, target_affine=target_affine
+        mean_img, target_affine=target_affine, copy_header=True
     )
 
     assert_array_equal(
@@ -740,7 +742,7 @@ def test_validity_threshold_value_in_threshold_img(shape_3d_default):
         TypeError,
         match="threshold should be either a number or a string",
     ):
-        threshold_img(maps, threshold=None)
+        threshold_img(maps, threshold=None, copy_header=True)
 
     invalid_threshold_values = ["90t%", "s%", "t", "0.1"]
     name = "threshold"
@@ -749,7 +751,7 @@ def test_validity_threshold_value_in_threshold_img(shape_3d_default):
             ValueError,
             match=f"{name}.+should be a number followed by the percent sign",
         ):
-            threshold_img(maps, threshold=thr)
+            threshold_img(maps, threshold=thr, copy_header=True)
 
 
 def test_threshold_img(affine_eye):
@@ -760,13 +762,13 @@ def test_threshold_img(affine_eye):
 
     for img in iter_img(maps):
         # when threshold is a float value
-        threshold_img(img, threshold=0.8)
+        threshold_img(img, threshold=0.8, copy_header=True)
 
         # when we provide mask image
-        threshold_img(img, threshold=1, mask_img=mask_img)
+        threshold_img(img, threshold=1, mask_img=mask_img, copy_header=True)
 
         # when threshold is a percentile
-        threshold_img(img, threshold="2%")
+        threshold_img(img, threshold="2%", copy_header=True)
 
 
 @pytest.mark.parametrize(
@@ -791,6 +793,7 @@ def test_threshold_img_with_cluster_threshold(
         two_sided=two_sided,
         cluster_threshold=cluster_threshold,
         copy=True,
+        copy_header=True,
     )
 
     assert np.array_equal(np.unique(thr_img.get_fdata()), np.array(expected))
@@ -805,6 +808,7 @@ def test_threshold_img_threshold_nb_clusters(stat_img_test_data):
         two_sided=True,
         cluster_threshold=5,
         copy=True,
+        copy_header=True,
     )
 
     assert np.sum(thr_img.get_fdata() == 4) == 8
@@ -813,7 +817,9 @@ def test_threshold_img_threshold_nb_clusters(stat_img_test_data):
 def test_threshold_img_copy(img_4d_ones_eye):
     """Test the behavior of threshold_img's copy parameter."""
     # Check that copy does not mutate. It returns modified copy.
-    thresholded = threshold_img(img_4d_ones_eye, 2)  # threshold 2 > 1
+    thresholded = threshold_img(
+        img_4d_ones_eye, 2, copy_header=True
+    )  # threshold 2 > 1
 
     # Original img_ones should have all ones.
     assert_array_equal(get_data(img_4d_ones_eye), np.ones(_shape_4d_default()))
@@ -823,7 +829,7 @@ def test_threshold_img_copy(img_4d_ones_eye):
     # Check that not copying does mutate.
     img_to_mutate = img_4d_ones_eye
 
-    thresholded = threshold_img(img_to_mutate, 2, copy=False)
+    thresholded = threshold_img(img_to_mutate, 2, copy=False, copy_header=True)
 
     # Check that original mutates
     assert_array_equal(get_data(img_to_mutate), np.zeros(_shape_4d_default()))
@@ -839,7 +845,7 @@ def test_isnan_threshold_img_data(affine_eye, shape_3d_default):
 
     maps_img = Nifti1Image(data, affine_eye)
 
-    threshold_img(maps_img, threshold=0.8)
+    threshold_img(maps_img, threshold=0.8, copy_header=True)
 
 
 def test_threshold_img_copied_header(img_4d_mni_tr2):
