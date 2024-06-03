@@ -32,7 +32,7 @@ from nilearn.experimental.surface import (
 destrieux_atlas, labels = fetch_destrieux(mesh_type="pial")
 
 # The parcellation is already loaded into memory.
-parcellation = destrieux_atlas.data["left"]
+parcellation = destrieux_atlas.data.parts["left"]
 
 # Retrieve fsaverage5 surface dataset for the plotting background.
 # It contains the surface template as pial
@@ -58,7 +58,7 @@ print(f"Fsaverage5 sulcal depth map: {fsaverage_sulcal}")
 # Visualization
 # -------------
 
-# Display Destrieux parcellation on fsaverage5 sulcal surface using nilearn
+# Display Destrieux :term:`parcellation` on fsaverage5 sulcal surface
 from nilearn.experimental import plotting
 from nilearn.plotting import show
 

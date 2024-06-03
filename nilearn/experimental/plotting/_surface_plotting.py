@@ -181,12 +181,13 @@ def plot_surf_roi(
     if surf_mesh is None:
         surf_mesh = roi_map.mesh
 
-    roi_map._check_hemi(hemi)
+    # TODO refactor
+    assert roi_map.data.parts[hemi] is not None
     _check_hemi_present(surf_mesh, hemi)
 
     fig = old_plotting.plot_surf_roi(
-        surf_mesh=surf_mesh[hemi],
-        roi_map=roi_map.data[hemi],
+        surf_mesh=surf_mesh.parts[hemi],
+        roi_map=roi_map.data.parts[hemi],
         hemi=hemi,
         bg_map=bg_map,
         **kwargs,
@@ -248,12 +249,12 @@ def _check_bg_map(bg_map, hemi):
     TODO refactor when experimental gets integrated as part of stable code.
     """
     if isinstance(bg_map, SurfaceImage):
-        bg_map._check_hemi(hemi)
-        bg_map = bg_map.data[hemi]
+        assert bg_map.data.parts[hemi] is not None
+        bg_map = bg_map.data.parts[hemi]
     return bg_map
 
 
 def _check_hemi_present(mesh: PolyMesh, hemi: str):
     """Check that a given hemisphere exists both in data and mesh."""
-    if hemi not in mesh:
+    if hemi not in mesh.parts:
         raise ValueError(f"{hemi} must be present in mesh")
