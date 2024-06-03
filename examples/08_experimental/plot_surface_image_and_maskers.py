@@ -53,8 +53,8 @@ axes = np.atleast_2d(axes)
 for view, ax_row in zip(views, axes):
     for ax, hemi in zip(ax_row, hemispheres):
         plotting.plot_surf(
-            mean_img,
-            part=hemi,
+            surf_map=mean_img,
+            hemi=hemi,
             view=view,
             figure=fig,
             axes=ax,
@@ -86,7 +86,7 @@ print(f"NKI image: {img}")
 labels_img, label_names = fetch_destrieux()
 print(f"Destrieux image: {labels_img}")
 plotting.plot_surf_roi(
-    labels_img,
+    roi_map=labels_img,
     avg_method="median",
     view="lateral",
     bg_on_data=True,

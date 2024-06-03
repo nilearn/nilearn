@@ -196,7 +196,7 @@ figure = plot_surf_stat_map(
 )
 
 plot_surf_contours(
-    destrieux_atlas,
+    roi_map=destrieux_atlas,
     labels=labels,
     levels=regions_indices,
     figure=figure,
@@ -279,8 +279,8 @@ plotting.show()
 from nilearn.experimental.plotting import view_surf
 
 view = view_surf(
-    img,
     surf_mesh=fsaverage_meshes["inflated"],
+    surf_map=img,
     threshold="90%",
     bg_map=fsaverage_sulcal,
     hemi="right",
