@@ -11,7 +11,6 @@ from nilearn import datasets
 from nilearn.experimental.surface import _io
 from nilearn.experimental.surface._surface_image import (
     FileMesh,
-    Mesh,
     PolyMesh,
     SurfaceImage,
 )
@@ -29,13 +28,11 @@ def load_fsaverage(
         "sphere": "sphere",
         "flat": "flat",
     }
-    meshes: dict[str, dict[str, Mesh]] = {
-        mesh_name: {
-            f"{hemisphere}": FileMesh(fsaverage[f"{mesh_type}_{hemisphere}"])
-            for hemisphere in ("left", "right")
-        }
-        for mesh_type, mesh_name in renaming.items()
-    }
+    meshes = {}
+    for mesh_type, mesh_name in renaming.items():
+        left = FileMesh(fsaverage[f"{mesh_type}_left"])
+        right = FileMesh(fsaverage[f"{mesh_type}_left"])
+        meshes[mesh_name] = PolyMesh(left=left, right=right)
     return meshes
 
 
