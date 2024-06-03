@@ -1,14 +1,23 @@
+"""Experimental Surface plotting."""
+
 from __future__ import annotations
 
 import numpy
 
 from nilearn import plotting as old_plotting
-from nilearn._utils.docs import fill_doc
+from nilearn._utils import fill_doc
 from nilearn.experimental.surface import Mesh, PolyMesh, SurfaceImage
 
 
+@fill_doc
 def plot_surf(
-    img, part: str | None = None, mesh=None, view: str | None = None, **kwargs
+    surf_map: SurfaceImage | str | numpy.array | None = None,
+    hemi: str = "left",
+    surf_mesh: (
+        str | list[numpy.array, numpy.array] | Mesh | PolyMesh | None
+    ) = None,
+    bg_map: str | numpy.array | SurfaceImage | None = None,
+    **kwargs,
 ):
     """Plot surfaces with optional background and data.
 
@@ -23,27 +32,28 @@ def plot_surf(
 
     bg_map : str or numpy.ndarray or SurfaceImage, optional
     """
-    if not isinstance(img, SurfaceImage):
+    bg_map = _check_bg_map(bg_map, hemi)
+
+    if not isinstance(surf_map, SurfaceImage):
         return old_plotting.plot_surf(
-            surf_mesh=mesh,
-            surf_map=img,
-            hemi=part,
+            surf_mesh=surf_mesh,
+            surf_map=surf_map,
+            hemi=hemi,
+            bg_map=bg_map,
             **kwargs,
         )
 
-    if mesh is None:
-        mesh = img.mesh
-    if part is None:
-        # only take the first hemisphere by default
-        part = list(img.data.parts.keys())[0]
-    if view is None:
-        view = "lateral"
+    if surf_mesh is None:
+        surf_mesh = surf_map.mesh
+
+    surf_map._check_hemi(hemi)
+    _check_hemi_present(surf_mesh, hemi)
 
     return old_plotting.plot_surf(
-        surf_mesh=mesh.parts[part],
-        surf_map=img.data.parts[part],
-        hemi=part,
-        view=view,
+        surf_mesh=surf_mesh[hemi],
+        surf_map=surf_map.data[hemi],
+        hemi=hemi,
+        bg_map=bg_map,
         **kwargs,
     )
 
