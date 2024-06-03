@@ -308,7 +308,7 @@ def test_resampling_error_checks(tmp_path):
 
     # Missing parameter
     with pytest.raises(ValueError, match="target_affine should be specified"):
-        resample_img(img, target_shape=target_shape)
+        resample_img(img, target_shape=target_shape, copy_header=True)
 
     # Invalid shape
     with pytest.raises(ValueError, match="shape .* should be .* 3D grid"):

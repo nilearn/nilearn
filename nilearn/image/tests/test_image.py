@@ -968,7 +968,7 @@ def test_math_img_copied_header_data_values_changed(
 
 def test_binarize_img(img_4d_rand_eye):
     # Test that all output values are 1.
-    img1 = binarize_img(img_4d_rand_eye)
+    img1 = binarize_img(img_4d_rand_eye, copy_header=True)
 
     assert_array_equal(np.unique(img1.dataobj), np.array([1]))
 
