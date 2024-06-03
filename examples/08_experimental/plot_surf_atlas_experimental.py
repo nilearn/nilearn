@@ -42,11 +42,11 @@ fsaverage_meshes = load_fsaverage()
 # The fsaverage meshes contains the FileMesh objects:
 print(
     "Fsaverage5 pial surface of left hemisphere is: "
-    f"{fsaverage_meshes['pial']['left']}"
+    f"{fsaverage_meshes['pial'].parts['left']}"
 )
 print(
     "Fsaverage5 inflated surface of left hemisphere is: "
-    f"{fsaverage_meshes['inflated']['left']}"
+    f"{fsaverage_meshes['inflated'].parts['left']}"
 )
 
 # The fsaverage data contains file names pointing to the file locations
@@ -75,10 +75,10 @@ plotting.plot_surf_roi(
 # %%
 # Display Destrieux :term:`parcellation` on inflated fsaverage5 surface
 plotting.plot_surf_roi(
-    surf_mesh=fsaverage_meshes["inflated"]["left"],
+    surf_mesh=fsaverage_meshes["inflated"].parts["left"],
     roi_map=parcellation,
     hemi="left",
-    view=["lateral", "medial"],
+    view="lateral",
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
     darkness=0.5,
@@ -88,7 +88,7 @@ plotting.plot_surf_roi(
 # %%
 # Display Destrieux :term:`parcellation` with different views: posterior
 plotting.plot_surf_roi(
-    surf_mesh=fsaverage_meshes["inflated"]["left"],
+    surf_mesh=fsaverage_meshes["inflated"].parts["left"],
     roi_map=parcellation,
     hemi="left",
     view="posterior",
@@ -101,7 +101,7 @@ plotting.plot_surf_roi(
 # %%
 # Display Destrieux :term:`parcellation` with different views: ventral
 plotting.plot_surf_roi(
-    surf_mesh=fsaverage_meshes["inflated"]["left"],
+    surf_mesh=fsaverage_meshes["inflated"].parts["left"],
     roi_map=parcellation,
     hemi="left",
     view="ventral",
@@ -116,7 +116,7 @@ show()
 # Display Destrieux :term:`parcellation` with custom view: explicitly set angle
 elev, azim = 210.0, 90.0  # appropriate for visualizing, e.g., the OTS
 plotting.plot_surf_roi(
-    surf_mesh=fsaverage_meshes["inflated"]["left"],
+    surf_mesh=fsaverage_meshes["inflated"].parts["left"],
     roi_map=parcellation,
     hemi="left",
     view=(elev, azim),
@@ -142,8 +142,8 @@ from nilearn.plotting import plot_connectome, view_connectome
 
 coordinates = []
 for hemi in ["left", "right"]:
-    vert = destrieux_atlas.data[hemi]
-    rr, _ = surface.load_surf_mesh(fsaverage_meshes["pial"][hemi])
+    vert = destrieux_atlas.data.parts[hemi]
+    rr, _ = surface.load_surf_mesh(fsaverage_meshes["pial"].parts[hemi])
     coordinates.extend(
         np.mean(rr[vert == k], axis=0)
         for k, label in enumerate(labels)
@@ -173,7 +173,7 @@ show()
 # See :ref:`interactive-surface-plotting` for more details.
 
 view = plotting.view_surf(
-    surf_mesh=fsaverage_meshes["inflated"]["left"],
+    surf_mesh=fsaverage_meshes["inflated"].parts["left"],
     surf_map=parcellation,
     cmap="gist_ncar",
     symmetric_cmap=False,

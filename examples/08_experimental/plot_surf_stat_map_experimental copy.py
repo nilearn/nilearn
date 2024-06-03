@@ -62,15 +62,15 @@ fsaverage_meshes = load_fsaverage()
 # The fsaverage meshes contains the FileMesh objects:
 print(
     "Fsaverage5 pial surface of left hemisphere is: "
-    f"{fsaverage_meshes['pial']['left']}"
+    f"{fsaverage_meshes['pial'].parts['left']}"
 )
 print(
     "Fsaverage5 inflated surface of left hemisphere is: "
-    f"{fsaverage_meshes['flat']['left']}"
+    f"{fsaverage_meshes['flat'].parts['left']}"
 )
 print(
     "Fsaverage5 inflated surface of left hemisphere is: "
-    f"{fsaverage_meshes['inflated']['left']}"
+    f"{fsaverage_meshes['inflated'].parts['left']}"
 )
 
 # The fsaverage data contains SurfaceImage instances with meshes and data
@@ -146,7 +146,7 @@ bg_map = np.sign(fsaverage_curvature.data.parts["left"])
 bg_map_rescaled = (bg_map + 1) / 4 + 0.25
 
 plotting.plot_surf_roi(
-    surf_mesh=fsaverage_meshes["flat"]["left"],
+    surf_mesh=fsaverage_meshes["flat"].parts["left"],
     roi_map=pcc_map,
     hemi="left",
     view="dorsal",
@@ -218,7 +218,7 @@ output_dir.mkdir(exist_ok=True, parents=True)
 print(f"Output will be saved to: {output_dir}")
 
 plotting.plot_surf_stat_map(
-    surf_mesh=fsaverage_meshes["inflated"]["left"],
+    surf_mesh=fsaverage_meshes["inflated"].parts["left"],
     stat_map=stat_map,
     hemi="left",
     bg_map=fsaverage_sulcal,

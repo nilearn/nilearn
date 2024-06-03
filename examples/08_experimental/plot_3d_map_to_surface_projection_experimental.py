@@ -59,10 +59,10 @@ img = SurfaceImage(
     mesh=fsaverage_meshes["pial"],
     data={
         "left": surface.vol_to_surf(
-            stat_img, fsaverage_meshes["pial"]["left"]
+            stat_img, fsaverage_meshes["pial"].parts["left"]
         ),
         "right": surface.vol_to_surf(
-            stat_img, fsaverage_meshes["pial"]["right"]
+            stat_img, fsaverage_meshes["pial"].parts["right"]
         ),
     },
 )
@@ -225,10 +225,10 @@ big_img = SurfaceImage(
     mesh=big_fsaverage_meshes["pial"],
     data={
         "left": surface.vol_to_surf(
-            stat_img, big_fsaverage_meshes["pial"]["left"]
+            stat_img, big_fsaverage_meshes["pial"].parts["left"]
         ),
         "right": surface.vol_to_surf(
-            stat_img, big_fsaverage_meshes["pial"]["right"]
+            stat_img, big_fsaverage_meshes["pial"].parts["right"]
         ),
     },
 )
