@@ -92,20 +92,18 @@ from nilearn import surface
 from nilearn.experimental.surface import SurfaceImage, load_fsaverage
 
 fsaverage5 = load_fsaverage()
-texture_left = surface.vol_to_surf(
-    fmri_img, fsaverage5["pial"]["left_hemisphere"]
-)
+texture_left = surface.vol_to_surf(fmri_img, fsaverage5["pial"].parts["left"])
 texture_right = surface.vol_to_surf(
-    fmri_img, fsaverage5["pial"]["right_hemisphere"]
+    fmri_img, fsaverage5["pial"].parts["right"]
 )
 image = SurfaceImage(
     mesh={
-        "lh": fsaverage5["pial"]["left_hemisphere"],
-        "rh": fsaverage5["pial"]["right_hemisphere"],
+        "left": fsaverage5["pial"].parts["left"],
+        "right": fsaverage5["pial"].parts["right"],
     },
     data={
-        "lh": texture_left.T,
-        "rh": texture_right.T,
+        "left": texture_left.T,
+        "right": texture_right.T,
     },
 )
 
@@ -224,7 +222,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     # of the cortex folding.
     plotting.plot_surf_stat_map(
         fsaverage.infl_right,
-        z_score.data["rh"],
+        z_score.data.parts["right"],
         hemi="right",
         title=contrast_id,
         colorbar=True,
@@ -233,7 +231,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     )
     plotting.plot_surf_stat_map(
         fsaverage.infl_left,
-        z_score.data["lh"],
+        z_score.data.parts["left"],
         hemi="left",
         title=contrast_id,
         colorbar=True,

@@ -913,6 +913,7 @@ class FirstLevelModel(BaseGLM):
                 self.mask_img = Nifti1Image(
                     np.ones(ref_img.shape[:3]), ref_img.affine
                 )
+
         if isinstance(run_img, SurfaceImage) and not isinstance(
             self.mask_img, SurfaceMasker
         ):
@@ -925,6 +926,7 @@ class FirstLevelModel(BaseGLM):
                 memory_level=self.memory_level,
             )
             self.masker_.fit(run_img)
+
         elif not isinstance(
             self.mask_img, (NiftiMasker, SurfaceMasker, SurfaceImage)
         ):
@@ -941,6 +943,7 @@ class FirstLevelModel(BaseGLM):
                 memory_level=self.memory_level,
             )
             self.masker_.fit(run_img)
+
         else:
             # Make sure masker has been fitted otherwise no attribute mask_img_
             self.mask_img._check_fitted()

@@ -99,24 +99,24 @@ for first_level_glm, fmri_img, confound, event in zip(
     print(f"Running GLM on {Path(fmri_img[0]).relative_to(data.data_dir)}")
 
     texture_left = surface.vol_to_surf(
-        fmri_img[0], fsaverage5["pial"]["left_hemisphere"]
+        fmri_img[0], fsaverage5["pial"].parts["left"]
     )
     texture_right = surface.vol_to_surf(
-        fmri_img[0], fsaverage5["pial"]["right_hemisphere"]
+        fmri_img[0], fsaverage5["pial"].parts["right"]
     )
     image = SurfaceImage(
         mesh={
-            "lh": fsaverage5["pial"]["left_hemisphere"],
-            "rh": fsaverage5["pial"]["right_hemisphere"],
+            "left": fsaverage5["pial"].parts["left"],
+            "right": fsaverage5["pial"].parts["right"],
         },
         data={
-            "lh": texture_left.T,
-            "rh": texture_right.T,
+            "left": texture_left.T,
+            "right": texture_right.T,
         },
     )
 
     # Fit GLM.
-    first_level_glm.fit(run_imgs=image, events=event, confounds=confound[0])
+    first_level_glm.fit(run_imgs=image, events=event[0], confounds=confound[0])
 
     # Contrast specification
     design_matrix = first_level_glm.design_matrices_[0]
@@ -124,8 +124,8 @@ for first_level_glm, fmri_img, confound, event in zip(
         design_matrix.columns == "string"
     )
     z_scores = first_level_glm.compute_contrast(contrast_values, stat_type="t")
-    z_scores_left.append(z_scores.data["lh"])
-    z_scores_right.append(z_scores.data["rh"])
+    z_scores_left.append(z_scores.data.parts["left"])
+    z_scores_right.append(z_scores.data.parts["right"])
 
 
 # %%
@@ -158,7 +158,7 @@ from nilearn.datasets import fetch_surf_fsaverage
 fsaverage = fetch_surf_fsaverage(mesh="fsaverage5")
 
 plotting.plot_surf_stat_map(
-    fsaverage5["inflated"]["left_hemisphere"],
+    fsaverage5["inflated"].parts["left"],
     z_val_left,
     hemi="left",
     title="language-string, left hemisphere",
@@ -169,7 +169,7 @@ plotting.plot_surf_stat_map(
 # %%
 # Next, on the right hemisphere.
 plotting.plot_surf_stat_map(
-    fsaverage5["inflated"]["right_hemisphere"],
+    fsaverage5["inflated"].parts["right"],
     z_val_right,
     hemi="right",
     title="language-string, right hemisphere",
