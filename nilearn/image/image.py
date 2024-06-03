@@ -1223,7 +1223,7 @@ def binarize_img(
     Now we binarize it, generating a pseudo brainmask::
 
      >>> from nilearn.image import binarize_img
-     >>> img = binarize_img(anatomical_image)
+     >>> img = binarize_img(anatomical_image, copy_header=True)
 
     """
     warnings.warn(
