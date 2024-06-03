@@ -172,14 +172,8 @@ class SurfaceImage:
         mesh: PolyMesh | dict[str, Mesh],
         data: PolyData | dict[str, Mesh],
     ) -> None:
-        if isinstance(mesh, PolyMesh):
-            self.mesh = mesh
-        else:
-            self.mesh = PolyMesh(**mesh)
-        if isinstance(data, PolyData):
-            self.data = data
-        else:
-            self.data = PolyData(**data)
+        self.mesh = mesh if isinstance(mesh, PolyMesh) else PolyMesh(**mesh)
+        self.data = data if isinstance(data, PolyData) else PolyData(**data)
         _check_data_and_mesh_compat(self.mesh, self.data)
         self.shape = self.data.shape
 

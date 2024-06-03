@@ -6,43 +6,34 @@ from nilearn import plotting as old_plotting
 from nilearn._utils.docs import fill_doc
 from nilearn.experimental.surface import Mesh, PolyMesh, SurfaceImage
 
+DEFAULT_HEMI = "left"
+
 
 def plot_surf(
-    img,
-    part: str | None = "left",
-    mesh=None,
-    view: str | None = None,
+    surf_mesh,
+    surf_map,
     bg_map: str | numpy.array | SurfaceImage | None = None,
+    hemi: str | None = DEFAULT_HEMI,
     **kwargs,
 ):
     """Plot surfaces with optional background and data."""
-    if not isinstance(img, SurfaceImage):
+    surf_mesh, bg_map = _check_inputs(surf_mesh, bg_map, hemi)
+
+    if not isinstance(surf_map, SurfaceImage):
         return old_plotting.plot_surf(
-            surf_mesh=mesh,
-            surf_map=img,
-            hemi=part,
+            surf_mesh=surf_mesh,
+            surf_map=surf_map,
+            hemi=hemi,
             **kwargs,
         )
 
-    bg_map = _check_bg_map(bg_map, part)
-
-    if mesh is None:
-        mesh = img.mesh
-    if part is None:
-        # only take the first hemisphere by default
-        part = list(img.data.parts.keys())[0]
-    if view is None:
-        view = "lateral"
-
-    if isinstance(mesh, PolyMesh):
-        _check_hemi_present(mesh, part)
-        mesh = mesh.parts
+    if surf_mesh is None:
+        surf_mesh = surf_map.mesh
 
     return old_plotting.plot_surf(
-        surf_mesh=mesh[part],
-        surf_map=img.data.parts[part],
-        hemi=part,
-        view=view,
+        surf_mesh=surf_mesh[hemi],
+        surf_map=surf_map.data.parts[hemi],
+        hemi=hemi,
         bg_map=bg_map,
         **kwargs,
     )
@@ -50,12 +41,10 @@ def plot_surf(
 
 @fill_doc
 def plot_surf_stat_map(
-    stat_map: SurfaceImage | str | numpy.array | None = None,
-    hemi: str = "left",
-    surf_mesh: (
-        str | list[numpy.array, numpy.array] | Mesh | PolyMesh | None
-    ) = None,
+    surf_mesh: str | list[numpy.array, numpy.array] | Mesh | PolyMesh | None,
+    stat_map: SurfaceImage | str | numpy.array | None,
     bg_map: str | numpy.array | SurfaceImage | None = None,
+    hemi: str = DEFAULT_HEMI,
     **kwargs,
 ):
     """Plot a stats map on a surface :term:`mesh` with optional background.
@@ -71,7 +60,7 @@ def plot_surf_stat_map(
 
     bg_map : str or numpy.ndarray or SurfaceImage, optional
     """
-    bg_map = _check_bg_map(bg_map, hemi)
+    surf_mesh, bg_map = _check_inputs(surf_mesh, bg_map, hemi)
 
     if not isinstance(stat_map, SurfaceImage):
         return old_plotting.plot_surf_stat_map(
@@ -84,10 +73,6 @@ def plot_surf_stat_map(
 
     if surf_mesh is None:
         surf_mesh = stat_map.mesh
-
-    if isinstance(surf_mesh, PolyMesh):
-        _check_hemi_present(surf_mesh, hemi)
-        surf_mesh = surf_mesh.parts
 
     assert stat_map.data.parts[hemi] is not None
 
@@ -103,11 +88,9 @@ def plot_surf_stat_map(
 
 @fill_doc
 def plot_surf_contours(
+    surf_mesh: str | list[numpy.array, numpy.array] | Mesh | PolyMesh | None,
     roi_map: SurfaceImage | str | numpy.array | list[numpy.ndarray],
-    hemi: str = "left",
-    surf_mesh: (
-        str | list[numpy.array, numpy.array] | Mesh | PolyMesh | None
-    ) = None,
+    hemi: str = DEFAULT_HEMI,
     **kwargs,
 ):
     """Plot contours of ROIs on a surface, \
@@ -115,14 +98,18 @@ def plot_surf_contours(
 
     Parameters
     ----------
-    roi_map : SurfaceImage or :obj:`str` or numpy.ndarray \
-              or :obj:`list` of numpy.ndarray
-
     surf_mesh : :obj:`str` or :obj:`list` of two numpy.ndarray \
                 or Mesh or PolyMesh, optional
 
+    roi_map : SurfaceImage or :obj:`str` or numpy.ndarray \
+              or :obj:`list` of numpy.ndarray
+
     %(hemi)s
     """
+    if isinstance(surf_mesh, PolyMesh):
+        _check_hemi_present(surf_mesh, hemi)
+        surf_mesh = surf_mesh.parts
+
     if not isinstance(roi_map, SurfaceImage):
         return old_plotting.plot_surf_contours(
             surf_mesh=surf_mesh,
@@ -133,10 +120,6 @@ def plot_surf_contours(
 
     if surf_mesh is None:
         surf_mesh = roi_map.mesh
-
-    if isinstance(surf_mesh, PolyMesh):
-        _check_hemi_present(surf_mesh, hemi)
-        surf_mesh = surf_mesh.parts
 
     assert roi_map.data.parts[hemi] is not None
 
@@ -151,29 +134,27 @@ def plot_surf_contours(
 
 @fill_doc
 def plot_surf_roi(
+    surf_mesh: str | list[numpy.array, numpy.array] | Mesh | PolyMesh | None,
     roi_map: SurfaceImage | str | numpy.array | list[numpy.ndarray],
-    hemi: str = "left",
-    surf_mesh: (
-        str | list[numpy.array, numpy.array] | Mesh | PolyMesh | None
-    ) = None,
     bg_map: str | numpy.array | SurfaceImage | None = None,
+    hemi: str = DEFAULT_HEMI,
     **kwargs,
 ):
     """Plot ROI on a surface :term:`mesh` with optional background.
 
     Parameters
     ----------
-    roi_map : SurfaceImage or :obj:`str` or numpy.ndarray \
-              or :obj:`list` of numpy.ndarray
-
     surf_mesh : :obj:`str` or :obj:`list` of two numpy.ndarray \
                 or Mesh or PolyMesh, optional
 
-    %(hemi)s
+    roi_map : SurfaceImage or :obj:`str` or numpy.ndarray \
+              or :obj:`list` of numpy.ndarray
 
     bg_map : str or numpy.ndarray or SurfaceImage, optional
+
+    %(hemi)s
     """
-    bg_map = _check_bg_map(bg_map, hemi)
+    surf_mesh, bg_map = _check_inputs(surf_mesh, bg_map, hemi)
 
     if not isinstance(roi_map, SurfaceImage):
         return old_plotting.plot_surf_roi(
@@ -187,11 +168,6 @@ def plot_surf_roi(
     if surf_mesh is None:
         surf_mesh = roi_map.mesh
 
-    if isinstance(surf_mesh, PolyMesh):
-        _check_hemi_present(surf_mesh, hemi)
-        surf_mesh = surf_mesh.parts
-
-    # TODO refactor
     assert roi_map.data.parts[hemi] is not None
 
     fig = old_plotting.plot_surf_roi(
@@ -206,28 +182,26 @@ def plot_surf_roi(
 
 @fill_doc
 def view_surf(
+    surf_mesh: str | list[numpy.array, numpy.array] | Mesh | PolyMesh | None,
     surf_map: SurfaceImage | str | numpy.array | None = None,
-    hemi: str = "left",
-    surf_mesh: (
-        str | list[numpy.array, numpy.array] | Mesh | PolyMesh | None
-    ) = None,
     bg_map: str | numpy.array | SurfaceImage | None = None,
+    hemi: str = DEFAULT_HEMI,
     **kwargs,
 ):
     """Insert a surface plot of a surface map into an HTML page.
 
     Parameters
     ----------
-    surf_map : SurfaceImage or :obj:`str` or numpy.ndarray, optional
-
     surf_mesh : :obj:`str` or :obj:`list` of two numpy.ndarray \
                 or Mesh or PolyMesh, optional
 
-    %(hemi)s
+    surf_map : SurfaceImage or :obj:`str` or numpy.ndarray, optional
 
     bg_map : str or numpy.ndarray or SurfaceImage, optional
+
+    %(hemi)s
     """
-    bg_map = _check_bg_map(bg_map, hemi)
+    surf_mesh, bg_map = _check_inputs(surf_mesh, bg_map, hemi)
 
     if not isinstance(surf_map, SurfaceImage):
         return old_plotting.view_surf(
@@ -240,10 +214,6 @@ def view_surf(
     if surf_mesh is None:
         surf_mesh = surf_map.mesh
 
-    if isinstance(surf_mesh, PolyMesh):
-        _check_hemi_present(surf_mesh, hemi)
-        surf_mesh = surf_mesh.parts
-
     assert surf_map.data.parts[hemi] is not None
 
     fig = old_plotting.view_surf(
@@ -253,6 +223,16 @@ def view_surf(
         **kwargs,
     )
     return fig
+
+
+def _check_inputs(surf_mesh, bg_map, hemi):
+    if isinstance(surf_mesh, PolyMesh):
+        _check_hemi_present(surf_mesh, hemi)
+        surf_mesh = surf_mesh.parts
+
+    bg_map = _check_bg_map(bg_map, hemi)
+
+    return surf_mesh, bg_map
 
 
 def _check_bg_map(bg_map, hemi):
