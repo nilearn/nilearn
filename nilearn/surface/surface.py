@@ -22,10 +22,8 @@ from nilearn.image import get_data, load_img, resampling
 try:
     from sklearn.exceptions import EfficiencyWarning
 except ImportError:
-
     class EfficiencyWarning(UserWarning):
         """Warning used to notify the user of inefficient computation."""
-
 
 # Create a namedtuple object for meshes
 Mesh = namedtuple("mesh", ["coordinates", "faces"])
@@ -38,29 +36,25 @@ def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
     """Get points uniformly spaced in the unit ball."""
     rng = np.random.RandomState(0)
     mc_cube = rng.uniform(-1, 1, size=(n_monte_carlo, dim))
-    mc_ball = mc_cube[(mc_cube**2).sum(axis=1) <= 1.0]
+    mc_ball = mc_cube[(mc_cube**2).sum(axis=1) <= 1.]
     centroids, *_ = sklearn.cluster.k_means(
-        mc_ball, n_clusters=n_points, random_state=0
-    )
+        mc_ball, n_clusters=n_points, random_state=0)
     return centroids
 
 
 def _load_uniform_ball_cloud(n_points=20):
     stored_points = os.path.abspath(
-        os.path.join(
-            __file__, "..", "data", f"ball_cloud_{n_points}_samples.csv"
-        )
-    )
+        os.path.join(__file__, '..', 'data',
+                     f'ball_cloud_{n_points}_samples.csv'))
     if os.path.isfile(stored_points):
         points = np.loadtxt(stored_points)
         return points
     warnings.warn(
-        "Cached sample positions are provided for "
-        "n_samples = 10, 20, 40, 80, 160. Since the number of samples does "
-        "have a big impact on the result, we strongly recommend using one "
+        'Cached sample positions are provided for '
+        'n_samples = 10, 20, 40, 80, 160. Since the number of samples does '
+        'have a big impact on the result, we strongly recommend using one '
         'of these values when using kind="ball" for much better performance.',
-        EfficiencyWarning,
-    )
+        EfficiencyWarning)
     return _uniform_ball_cloud(n_points=n_points)
 
 
@@ -75,10 +69,8 @@ def _face_outer_normals(mesh):
     vertices, faces = load_surf_mesh(mesh)
     face_vertices = vertices[faces]
     # The right-hand rule gives the direction of the outer normal
-    normals = np.cross(
-        face_vertices[:, 1, :] - face_vertices[:, 0, :],
-        face_vertices[:, 2, :] - face_vertices[:, 0, :],
-    )
+    normals = np.cross(face_vertices[:, 1, :] - face_vertices[:, 0, :],
+                       face_vertices[:, 2, :] - face_vertices[:, 0, :])
     normals = sklearn.preprocessing.normalize(normals)
     return normals
 
@@ -91,13 +83,8 @@ def _surrounding_faces(mesh):
     """
     vertices, faces = load_surf_mesh(mesh)
     n_faces = faces.shape[0]
-    return sparse.csr_matrix(
-        (
-            np.ones(3 * n_faces),
-            (faces.ravel(), np.tile(np.arange(n_faces), (3, 1)).T.ravel()),
-        ),
-        (vertices.shape[0], n_faces),
-    )
+    return sparse.csr_matrix((np.ones(3 * n_faces), (faces.ravel(), np.tile(
+        np.arange(n_faces), (3, 1)).T.ravel())), (vertices.shape[0], n_faces))
 
 
 def _vertex_outer_normals(mesh):
@@ -115,8 +102,7 @@ def _vertex_outer_normals(mesh):
 
 
 def _sample_locations_between_surfaces(
-    mesh, inner_mesh, affine, n_points=10, depth=None
-):
+        mesh, inner_mesh, affine, n_points=10, depth=None):
     outer_vertices, _ = mesh
     inner_vertices, _ = inner_mesh
 
@@ -126,21 +112,18 @@ def _sample_locations_between_surfaces(
         steps = np.asarray(depth)[:, None, None]
 
     sample_locations = outer_vertices + steps * (
-        inner_vertices - outer_vertices
-    )
+        inner_vertices - outer_vertices)
     sample_locations = np.rollaxis(sample_locations, 1)
 
     sample_locations_voxel_space = np.asarray(
         resampling.coord_transform(
-            *np.vstack(sample_locations).T, affine=np.linalg.inv(affine)
-        )
-    ).T.reshape(sample_locations.shape)
+            *np.vstack(sample_locations).T,
+            affine=np.linalg.inv(affine))).T.reshape(sample_locations.shape)
     return sample_locations_voxel_space
 
 
 def _ball_sample_locations(
-    mesh, affine, ball_radius=3.0, n_points=20, depth=None
-):
+        mesh, affine, ball_radius=3., n_points=20, depth=None):
     """Locations to draw samples from to project volume data onto a mesh.
 
     For each mesh vertex, the locations of `n_points` points evenly spread in a
@@ -180,33 +163,26 @@ def _ball_sample_locations(
 
     """
     if depth is not None:
-        raise ValueError(
-            "The 'ball' sampling strategy does not support "
-            "the 'depth' parameter"
-        )
+        raise ValueError("The 'ball' sampling strategy does not support "
+                         "the 'depth' parameter")
     vertices, faces = mesh
-    offsets_world_space = (
-        _load_uniform_ball_cloud(n_points=n_points) * ball_radius
-    )
+    offsets_world_space = _load_uniform_ball_cloud(
+        n_points=n_points) * ball_radius
     mesh_voxel_space = np.asarray(
-        resampling.coord_transform(*vertices.T, affine=np.linalg.inv(affine))
-    ).T
+        resampling.coord_transform(*vertices.T,
+                                   affine=np.linalg.inv(affine))).T
     linear_map = np.eye(affine.shape[0])
     linear_map[:-1, :-1] = affine[:-1, :-1]
     offsets_voxel_space = np.asarray(
-        resampling.coord_transform(
-            *offsets_world_space.T, affine=np.linalg.inv(linear_map)
-        )
-    ).T
-    sample_locations_voxel_space = (
-        mesh_voxel_space[:, np.newaxis, :] + offsets_voxel_space[np.newaxis, :]
-    )
+        resampling.coord_transform(*offsets_world_space.T,
+                                   affine=np.linalg.inv(linear_map))).T
+    sample_locations_voxel_space = (mesh_voxel_space[:, np.newaxis, :] +
+                                    offsets_voxel_space[np.newaxis, :])
     return sample_locations_voxel_space
 
 
 def _line_sample_locations(
-    mesh, affine, segment_half_width=3.0, n_points=10, depth=None
-):
+        mesh, affine, segment_half_width=3., n_points=10, depth=None):
     """Locations to draw samples from to project volume data onto a mesh.
 
     For each mesh vertex, the locations of `n_points` points evenly spread in a
@@ -250,20 +226,16 @@ def _line_sample_locations(
     normals = _vertex_outer_normals(mesh)
     if depth is None:
         offsets = np.linspace(
-            segment_half_width, -segment_half_width, n_points
-        )
+            segment_half_width, -segment_half_width, n_points)
     else:
-        offsets = -segment_half_width * np.asarray(depth)
-    sample_locations = (
-        vertices[np.newaxis, :, :]
-        + normals * offsets[:, np.newaxis, np.newaxis]
-    )
+        offsets = - segment_half_width * np.asarray(depth)
+    sample_locations = vertices[
+        np.newaxis, :, :] + normals * offsets[:, np.newaxis, np.newaxis]
     sample_locations = np.rollaxis(sample_locations, 1)
     sample_locations_voxel_space = np.asarray(
         resampling.coord_transform(
-            *np.vstack(sample_locations).T, affine=np.linalg.inv(affine)
-        )
-    ).T.reshape(sample_locations.shape)
+            *np.vstack(sample_locations).T,
+            affine=np.linalg.inv(affine))).T.reshape(sample_locations.shape)
     return sample_locations_voxel_space
 
 
@@ -271,41 +243,31 @@ def _choose_kind(kind, inner_mesh):
     if kind == "depth" and inner_mesh is None:
         raise TypeError(
             "'inner_mesh' must be provided to use "
-            "the 'depth' sampling strategy"
-        )
+            "the 'depth' sampling strategy")
     if kind == "auto":
         kind = "line" if inner_mesh is None else "depth"
     return kind
 
 
-def _sample_locations(
-    mesh,
-    affine,
-    radius,
-    kind="auto",
-    n_points=None,
-    inner_mesh=None,
-    depth=None,
-):
+def _sample_locations(mesh, affine, radius, kind='auto', n_points=None,
+                      inner_mesh=None, depth=None):
     """Get either ball or line sample locations."""
     kind = _choose_kind(kind, inner_mesh)
-    kwargs = {} if n_points is None else {"n_points": n_points}
+    kwargs = ({} if n_points is None else {'n_points': n_points})
     projectors = {
-        "line": (_line_sample_locations, {"segment_half_width": radius}),
-        "ball": (_ball_sample_locations, {"ball_radius": radius}),
-        "depth": (
-            _sample_locations_between_surfaces,
-            {"inner_mesh": inner_mesh},
-        ),
+        'line': (_line_sample_locations, {"segment_half_width": radius}),
+        'ball': (_ball_sample_locations, {"ball_radius": radius}),
+        'depth': (_sample_locations_between_surfaces,
+                  {"inner_mesh": inner_mesh})
     }
     if kind not in projectors:
-        raise ValueError(f'"kind" must be one of {tuple(projectors.keys())}')
+        raise ValueError(
+            f'"kind" must be one of {tuple(projectors.keys())}')
     projector, extra_kwargs = projectors[kind]
     # let the projector choose the default for n_points
     # (for example a ball probably needs more than a line)
     sample_locations = projector(
-        mesh=mesh, affine=affine, depth=depth, **kwargs, **extra_kwargs
-    )
+        mesh=mesh, affine=affine, depth=depth, **kwargs, **extra_kwargs)
     return sample_locations
 
 
@@ -335,21 +297,13 @@ def _masked_indices(sample_locations, img_shape, mask=None):
         kept = np.logical_and(kept, sample_locations[:, dim] < size)
     if mask is not None:
         indices = np.asarray(np.floor(sample_locations[kept]), dtype=int)
-        kept[kept] = mask[indices[:, 0], indices[:, 1], indices[:, 2]] != 0
+        kept[kept] = mask[
+            indices[:, 0], indices[:, 1], indices[:, 2]] != 0
     return ~kept
 
 
-def _projection_matrix(
-    mesh,
-    affine,
-    img_shape,
-    kind="auto",
-    radius=3.0,
-    n_points=None,
-    mask=None,
-    inner_mesh=None,
-    depth=None,
-):
+def _projection_matrix(mesh, affine, img_shape, kind='auto', radius=3.,
+                       n_points=None, mask=None, inner_mesh=None, depth=None):
     """Get a sparse matrix that projects volume data onto a mesh.
 
     Parameters
@@ -428,24 +382,17 @@ def _projection_matrix(
     """
     # A user might want to call this function directly so check mask size.
     if mask is not None and tuple(mask.shape) != img_shape:
-        raise ValueError("mask should have shape img_shape")
+        raise ValueError('mask should have shape img_shape')
     mesh = load_surf_mesh(mesh)
     sample_locations = _sample_locations(
-        mesh,
-        affine,
-        kind=kind,
-        radius=radius,
-        n_points=n_points,
-        inner_mesh=inner_mesh,
-        depth=depth,
-    )
+        mesh, affine, kind=kind, radius=radius, n_points=n_points,
+        inner_mesh=inner_mesh, depth=depth)
     sample_locations = np.asarray(np.round(sample_locations), dtype=int)
     n_vertices, n_points, _ = sample_locations.shape
     masked = _masked_indices(np.vstack(sample_locations), img_shape, mask=mask)
     sample_locations = np.rollaxis(sample_locations, -1)
     sample_indices = np.ravel_multi_index(
-        sample_locations, img_shape, mode="clip"
-    ).ravel()
+        sample_locations, img_shape, mode='clip').ravel()
     row_indices, _ = np.mgrid[:n_vertices, :n_points]
     row_indices = row_indices.ravel()
     row_indices = row_indices[~masked]
@@ -453,23 +400,14 @@ def _projection_matrix(
     weights = np.ones(len(row_indices))
     proj = sparse.csr_matrix(
         (weights, (row_indices, sample_indices.ravel())),
-        shape=(n_vertices, np.prod(img_shape)),
-    )
-    proj = sklearn.preprocessing.normalize(proj, axis=1, norm="l1")
+        shape=(n_vertices, np.prod(img_shape)))
+    proj = sklearn.preprocessing.normalize(proj, axis=1, norm='l1')
     return proj
 
 
-def _nearest_voxel_sampling(
-    images,
-    mesh,
-    affine,
-    kind="auto",
-    radius=3.0,
-    n_points=None,
-    mask=None,
-    inner_mesh=None,
-    depth=None,
-):
+def _nearest_voxel_sampling(images, mesh, affine, kind='auto', radius=3.,
+                            n_points=None, mask=None, inner_mesh=None,
+                            depth=None):
     """In each image, measure the intensity at each node of the mesh.
 
     Image intensity at each sample point is that of the nearest voxel.
@@ -479,16 +417,8 @@ def _nearest_voxel_sampling(
 
     """
     proj = _projection_matrix(
-        mesh,
-        affine,
-        images[0].shape,
-        kind=kind,
-        radius=radius,
-        n_points=n_points,
-        mask=mask,
-        inner_mesh=inner_mesh,
-        depth=depth,
-    )
+        mesh, affine, images[0].shape, kind=kind, radius=radius,
+        n_points=n_points, mask=mask, inner_mesh=inner_mesh, depth=depth)
     data = np.asarray(images).reshape(len(images), -1).T
     texture = proj.dot(data)
     # if all samples around a mesh vertex are outside the image,
@@ -498,17 +428,9 @@ def _nearest_voxel_sampling(
     return texture.T
 
 
-def _interpolation_sampling(
-    images,
-    mesh,
-    affine,
-    kind="auto",
-    radius=3,
-    n_points=None,
-    mask=None,
-    inner_mesh=None,
-    depth=None,
-):
+def _interpolation_sampling(images, mesh, affine, kind='auto', radius=3,
+                            n_points=None, mask=None, inner_mesh=None,
+                            depth=None):
     """In each image, measure the intensity at each node of the mesh.
 
     Image intensity at each sample point is computed with trilinear
@@ -519,14 +441,8 @@ def _interpolation_sampling(
 
     """
     sample_locations = _sample_locations(
-        mesh,
-        affine,
-        kind=kind,
-        radius=radius,
-        n_points=n_points,
-        inner_mesh=inner_mesh,
-        depth=depth,
-    )
+        mesh, affine, kind=kind, radius=radius, n_points=n_points,
+        inner_mesh=inner_mesh, depth=depth)
     n_vertices, n_points, _ = sample_locations.shape
     grid = [np.arange(size) for size in images[0].shape]
     interp_locations = np.vstack(sample_locations)
@@ -535,8 +451,8 @@ def _interpolation_sampling(
     all_samples = []
     for img in images:
         interpolator = interpolate.RegularGridInterpolator(
-            grid, img, bounds_error=False, method="linear", fill_value=None
-        )
+            grid, img,
+            bounds_error=False, method='linear', fill_value=None)
         samples = interpolator(interp_locations)
         # if all samples around a mesh vertex are outside the image,
         # there is no reasonable value to assign to this vertex.
@@ -549,17 +465,9 @@ def _interpolation_sampling(
     return texture
 
 
-def vol_to_surf(
-    img,
-    surf_mesh,
-    radius=3.0,
-    interpolation="linear",
-    kind="auto",
-    n_samples=None,
-    mask_img=None,
-    inner_mesh=None,
-    depth=None,
-):
+def vol_to_surf(img, surf_mesh,
+                radius=3., interpolation='linear', kind='auto',
+                n_samples=None, mask_img=None, inner_mesh=None, depth=None):
     """Extract surface data from a Nifti image.
 
     .. versionadded:: 0.4.0
@@ -724,27 +632,17 @@ def vol_to_surf(
      ... )
 
     """
-    sampling_schemes = {
-        "linear": _interpolation_sampling,
-        "nearest": _nearest_voxel_sampling,
-    }
+    sampling_schemes = {'linear': _interpolation_sampling,
+                        'nearest': _nearest_voxel_sampling}
     if interpolation not in sampling_schemes:
-        raise ValueError(
-            "'interpolation' should be one of "
-            f"{tuple(sampling_schemes.keys())}"
-        )
+        raise ValueError("'interpolation' should be one of "
+                         f"{tuple(sampling_schemes.keys())}")
     img = load_img(img)
     if mask_img is not None:
         mask_img = _utils.check_niimg(mask_img)
-        mask = get_data(
-            resampling.resample_to_img(
-                mask_img,
-                img,
-                interpolation="nearest",
-                copy=False,
-                copy_header=True,
-            )
-        )
+        mask = get_data(resampling.resample_to_img(
+            mask_img, img, interpolation='nearest', copy=False,
+            copy_header=True))
     else:
         mask = None
     original_dimension = len(img.shape)
@@ -755,16 +653,8 @@ def vol_to_surf(
         inner_mesh = load_surf_mesh(inner_mesh)
     sampling = sampling_schemes[interpolation]
     texture = sampling(
-        frames,
-        mesh,
-        img.affine,
-        radius=radius,
-        kind=kind,
-        n_points=n_samples,
-        mask=mask,
-        inner_mesh=inner_mesh,
-        depth=depth,
-    )
+        frames, mesh, img.affine, radius=radius, kind=kind,
+        n_points=n_samples, mask=mask, inner_mesh=inner_mesh, depth=depth)
     if original_dimension == 3:
         texture = texture[0]
     return texture.T
@@ -792,28 +682,34 @@ def _gifti_img_to_data(gifti_img):
 
     """
     if not gifti_img.darrays:
-        raise ValueError("Gifti must contain at least one data array")
+        raise ValueError('Gifti must contain at least one data array')
 
     if len(gifti_img.darrays) == 1:
         return np.asarray([gifti_img.darrays[0].data]).T.squeeze()
 
     return np.asarray(
-        [arr.data for arr in gifti_img.darrays], dtype=object
-    ).T.squeeze()
+        [arr.data for arr in gifti_img.darrays],
+        dtype=object).T.squeeze()
 
 
-FREESURFER_MESH_EXTENSIONS = ("orig", "pial", "sphere", "white", "inflated")
+FREESURFER_MESH_EXTENSIONS = ("orig",
+                              "pial",
+                              "sphere",
+                              "white",
+                              "inflated")
 
-FREESURFER_DATA_EXTENSIONS = (
-    "area",
-    "curv",
-    "sulc",
-    "thickness",
-    "label",
-    "annot",
-)
+FREESURFER_DATA_EXTENSIONS = ("area",
+                              "curv",
+                              "sulc",
+                              "thickness",
+                              "label",
+                              "annot")
 
-DATA_EXTENSIONS = ("gii", "gii.gz", "mgz", "nii", "nii.gz")
+DATA_EXTENSIONS = ("gii",
+                   "gii.gz",
+                   "mgz",
+                   "nii",
+                   "nii.gz")
 
 
 def _stringify(word_list):
@@ -844,13 +740,12 @@ def load_surf_data(surf_data):
 
     if not isinstance(surf_data, (str, np.ndarray)):
         raise ValueError(
-            "The input type is not recognized. "
-            "Valid inputs are a Numpy array or one of the "
-            "following file formats: "
+            'The input type is not recognized. '
+            'Valid inputs are a Numpy array or one of the '
+            'following file formats: '
             f"{_stringify(DATA_EXTENSIONS)}, "
-            "Freesurfer specific files such as "
-            f"{_stringify(FREESURFER_DATA_EXTENSIONS)}."
-        )
+            'Freesurfer specific files such as '
+            f"{_stringify(FREESURFER_DATA_EXTENSIONS)}.")
 
     if isinstance(surf_data, str):
 
@@ -861,30 +756,27 @@ def load_surf_data(surf_data):
         for f in range(len(file_list)):
             surf_data = file_list[f]
 
-            check_extensions(
-                surf_data, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS
-            )
+            check_extensions(surf_data,
+                             DATA_EXTENSIONS,
+                             FREESURFER_DATA_EXTENSIONS)
 
-            if (
-                surf_data.endswith("nii")
-                or surf_data.endswith("nii.gz")
-                or surf_data.endswith("mgz")
-            ):
+            if (surf_data.endswith('nii') or surf_data.endswith('nii.gz') or
+                    surf_data.endswith('mgz')):
                 data_part = np.squeeze(get_data(nibabel.load(surf_data)))
             elif (
-                surf_data.endswith("area")
-                or surf_data.endswith("curv")
-                or surf_data.endswith("sulc")
-                or surf_data.endswith("thickness")
+                surf_data.endswith('area')
+                or surf_data.endswith('curv')
+                or surf_data.endswith('sulc')
+                or surf_data.endswith('thickness')
             ):
                 data_part = fs.io.read_morph_data(surf_data)
-            elif surf_data.endswith("annot"):
+            elif surf_data.endswith('annot'):
                 data_part = fs.io.read_annot(surf_data)[0]
-            elif surf_data.endswith("label"):
+            elif surf_data.endswith('label'):
                 data_part = fs.io.read_label(surf_data)
-            elif surf_data.endswith("gii"):
+            elif surf_data.endswith('gii'):
                 data_part = _gifti_img_to_data(nibabel.load(surf_data))
-            elif surf_data.endswith("gii.gz"):
+            elif surf_data.endswith('gii.gz'):
                 gii = _load_surf_files_gifti_gzip(surf_data)
                 data_part = _gifti_img_to_data(gii)
 
@@ -896,11 +788,9 @@ def load_surf_data(surf_data):
                 try:
                     data = np.concatenate((data, data_part), axis=1)
                 except ValueError:
-                    raise ValueError(
-                        "When more than one file is input, all "
-                        "files must contain data with the same "
-                        "shape in axis=0"
-                    )
+                    raise ValueError('When more than one file is input, all '
+                                     'files must contain data with the same '
+                                     'shape in axis=0')
 
     # if the input is a numpy array
     elif isinstance(surf_data, np.ndarray):
@@ -923,21 +813,17 @@ def check_extensions(surf_data, data_extensions, freesurfer_data_extensions):
     """
     if isinstance(surf_data, Path):
         surf_data = str(surf_data)
-    if isinstance(surf_data, str) and (
-        not any(
-            surf_data.endswith(x)
-            for x in data_extensions + freesurfer_data_extensions
-        )
-    ):
+    if isinstance(surf_data, str) and (not any(surf_data.endswith(x)
+                                       for x in data_extensions +
+                                       freesurfer_data_extensions)):
         raise ValueError(
-            "The input type is not recognized. "
-            f"{surf_data!r} was given "
-            "while valid inputs are a Numpy array "
-            "or one of the following file formats: "
+            'The input type is not recognized. '
+            f'{surf_data!r} was given '
+            'while valid inputs are a Numpy array '
+            'or one of the following file formats: '
             f"{_stringify(data_extensions)}, "
-            "Freesurfer specific files such as "
-            f"{_stringify(freesurfer_data_extensions)}."
-        )
+            'Freesurfer specific files such as '
+            f"{_stringify(freesurfer_data_extensions)}.")
 
 
 def _gifti_img_to_mesh(gifti_img):
@@ -947,39 +833,25 @@ def _gifti_img_to_mesh(gifti_img):
     acceptable to .gii or .gii.gz
 
     """
-    error_message = (
-        "The surf_mesh input is not recognized. "
-        "Valid Freesurfer surface mesh inputs are: "
-        f"{_stringify(FREESURFER_MESH_EXTENSIONS)}."
-        "You provided input which have "
-        "no {0} or of empty value={1}"
-    )
+    error_message = ('The surf_mesh input is not recognized. '
+                     'Valid Freesurfer surface mesh inputs are: '
+                     f"{_stringify(FREESURFER_MESH_EXTENSIONS)}."
+                     'You provided input which have '
+                     'no {0} or of empty value={1}')
     try:
         coords = gifti_img.get_arrays_from_intent(
-            nibabel.nifti1.intent_codes["NIFTI_INTENT_POINTSET"]
-        )[0].data
+            nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])[0].data
     except IndexError:
-        raise ValueError(
-            error_message.format(
-                "NIFTI_INTENT_POINTSET",
-                gifti_img.get_arrays_from_intent(
-                    nibabel.nifti1.intent_codes["NIFTI_INTENT_POINTSET"]
-                ),
-            )
-        )
+        raise ValueError(error_message.format(
+            'NIFTI_INTENT_POINTSET', gifti_img.get_arrays_from_intent(
+                nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])))
     try:
         faces = gifti_img.get_arrays_from_intent(
-            nibabel.nifti1.intent_codes["NIFTI_INTENT_TRIANGLE"]
-        )[0].data
+            nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])[0].data
     except IndexError:
-        raise ValueError(
-            error_message.format(
-                "NIFTI_INTENT_TRIANGLE",
-                gifti_img.get_arrays_from_intent(
-                    nibabel.nifti1.intent_codes["NIFTI_INTENT_TRIANGLE"]
-                ),
-            )
-        )
+        raise ValueError(error_message.format(
+            'NIFTI_INTENT_TRIANGLE', gifti_img.get_arrays_from_intent(
+                nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])))
     return coords, faces
 
 
@@ -1016,65 +888,57 @@ def load_surf_mesh(surf_mesh):
             # empty list is handled inside resolve_globbing function
             raise ValueError(
                 f"More than one file matching path: {surf_mesh} \n"
-                "load_surf_mesh can only load one file at a time."
-            )
+                "load_surf_mesh can only load one file at a time.")
 
         if any(surf_mesh.endswith(x) for x in FREESURFER_MESH_EXTENSIONS):
-            coords, faces, header = fs.io.read_geometry(
-                surf_mesh, read_metadata=True
-            )
+            coords, faces, header = fs.io.read_geometry(surf_mesh,
+                                                        read_metadata=True)
             # See https://github.com/nilearn/nilearn/pull/3235
-            if "cras" in header:
-                coords += header["cras"]
+            if 'cras' in header:
+                coords += header['cras']
             mesh = Mesh(coordinates=coords, faces=faces)
-        elif surf_mesh.endswith("gii"):
+        elif surf_mesh.endswith('gii'):
             coords, faces = _gifti_img_to_mesh(nibabel.load(surf_mesh))
             mesh = Mesh(coordinates=coords, faces=faces)
-        elif surf_mesh.endswith("gii.gz"):
+        elif surf_mesh.endswith('gii.gz'):
             gifti_img = _load_surf_files_gifti_gzip(surf_mesh)
             coords, faces = _gifti_img_to_mesh(gifti_img)
             mesh = Mesh(coordinates=coords, faces=faces)
         else:
-            raise ValueError(
-                "The input type is not recognized. "
-                f"{surf_mesh!r} was given "
-                "while valid inputs are one of the following "
-                "file formats: .gii, .gii.gz, "
-                "Freesurfer specific files such as "
-                f"{_stringify(FREESURFER_MESH_EXTENSIONS)}, "
-                "two Numpy arrays organized in a list, tuple "
-                "or a namedtuple with the "
-                'fields "coordinates" and "faces".'
-            )
+            raise ValueError('The input type is not recognized. '
+                             f'{surf_mesh!r} was given '
+                             'while valid inputs are one of the following '
+                             'file formats: .gii, .gii.gz, '
+                             'Freesurfer specific files such as '
+                             f"{_stringify(FREESURFER_MESH_EXTENSIONS)}, "
+                             'two Numpy arrays organized in a list, tuple '
+                             'or a namedtuple with the '
+                             'fields "coordinates" and "faces".')
     elif isinstance(surf_mesh, (list, tuple)):
         try:
             coords, faces = surf_mesh
             mesh = Mesh(coordinates=coords, faces=faces)
         except Exception:
-            raise ValueError(
-                "If a list or tuple is given as input, "
-                "it must have two elements, the first is "
-                "a Numpy array containing the x-y-z coordinates "
-                "of the mesh vertices, the second is a Numpy "
-                "array containing  the indices (into coords) of "
-                "the mesh faces. The input was a list with "
-                f"{len(surf_mesh)} elements."
-            )
-    elif hasattr(surf_mesh, "faces") and hasattr(surf_mesh, "coordinates"):
+            raise ValueError('If a list or tuple is given as input, '
+                             'it must have two elements, the first is '
+                             'a Numpy array containing the x-y-z coordinates '
+                             'of the mesh vertices, the second is a Numpy '
+                             'array containing  the indices (into coords) of '
+                             'the mesh faces. The input was a list with '
+                             f'{len(surf_mesh)} elements.')
+    elif (hasattr(surf_mesh, "faces") and hasattr(surf_mesh, "coordinates")):
         coords, faces = surf_mesh.coordinates, surf_mesh.faces
         mesh = Mesh(coordinates=coords, faces=faces)
 
     else:
-        raise ValueError(
-            "The input type is not recognized. "
-            "Valid inputs are one of the following file "
-            "formats: .gii, .gii.gz, "
-            "Freesurfer specific files such as "
-            f"{_stringify(FREESURFER_MESH_EXTENSIONS)}"
-            "or two Numpy arrays organized in a list, tuple or "
-            'a namedtuple with the fields "coordinates" and '
-            '"faces"'
-        )
+        raise ValueError('The input type is not recognized. '
+                         'Valid inputs are one of the following file '
+                         'formats: .gii, .gii.gz, '
+                         'Freesurfer specific files such as '
+                         f"{_stringify(FREESURFER_MESH_EXTENSIONS)}"
+                         'or two Numpy arrays organized in a list, tuple or '
+                         'a namedtuple with the fields "coordinates" and '
+                         '"faces"')
 
     return mesh
 
@@ -1115,19 +979,16 @@ def load_surface(surface):
     # (mesh, data)
     elif isinstance(surface, (list, tuple, np.ndarray)):
         if len(surface) != 2:
-            raise ValueError(
-                "`load_surface` accepts iterables "
-                "of length 2 to define a surface. "
-                f"You provided a {type(surface)} "
-                f"of length {len(surface)}."
-            )
+            raise ValueError("`load_surface` accepts iterables "
+                             "of length 2 to define a surface. "
+                             f"You provided a {type(surface)} "
+                             f"of length {len(surface)}.")
         mesh = load_surf_mesh(surface[0])
         data = load_surf_data(surface[1])
     else:
         raise ValueError(
             "Wrong parameter `surface` in `load_surface`. "
-            "Please refer to the documentation for more information."
-        )
+            "Please refer to the documentation for more information.")
     return Surface(mesh, data)
 
 
@@ -1142,23 +1003,14 @@ def check_mesh(mesh):
     if isinstance(mesh, str):
         return datasets.fetch_surf_fsaverage(mesh)
     if not isinstance(mesh, Mapping):
-        raise TypeError(
-            "The mesh should be a str or a dictionary, "
-            f"you provided: {type(mesh).__name__}."
-        )
-    missing = {
-        "pial_left",
-        "pial_right",
-        "sulc_left",
-        "sulc_right",
-        "infl_left",
-        "infl_right",
-    }.difference(mesh.keys())
+        raise TypeError("The mesh should be a str or a dictionary, "
+                        f"you provided: {type(mesh).__name__}.")
+    missing = {'pial_left', 'pial_right', 'sulc_left', 'sulc_right',
+               'infl_left', 'infl_right'}.difference(mesh.keys())
     if missing:
         raise ValueError(
             f"{missing} {'are' if len(missing) > 1 else 'is'} "
-            "missing from the provided mesh dictionary"
-        )
+            "missing from the provided mesh dictionary")
     return mesh
 
 
@@ -1197,10 +1049,9 @@ def check_mesh_and_data(mesh, data):
     # equal to the size of the data.
     if len(data) != len(mesh.coordinates):
         raise ValueError(
-            "Mismatch between number of nodes "
-            f"in mesh ({len(mesh.coordinates)}) and "
-            f"size of surface data ({len(data)})"
-        )
+            'Mismatch between number of nodes '
+            f'in mesh ({len(mesh.coordinates)}) and '
+            f'size of surface data ({len(data)})')
     # Check that the indices of faces are consistent with the
     # mesh coordinates. That is, we shouldn't have an index
     # larger or equal to the length of the coordinates array.
@@ -1244,5 +1095,6 @@ def check_surface(surface):
 
     """
     surface = load_surface(surface)
-    mesh, data = check_mesh_and_data(surface.mesh, surface.data)
+    mesh, data = check_mesh_and_data(surface.mesh,
+                                     surface.data)
     return Surface(mesh, data)
