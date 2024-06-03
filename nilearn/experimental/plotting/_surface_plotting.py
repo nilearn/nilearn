@@ -43,6 +43,7 @@ def plot_surf(
         surf_map=img.data.parts[part],
         hemi=part,
         view=view,
+        bg_map=bg_map,
         **kwargs,
     )
 
