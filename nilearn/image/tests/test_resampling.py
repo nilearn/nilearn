@@ -299,7 +299,12 @@ def test_resampling_error_checks(tmp_path):
     resample_img(img, target_affine=affine, copy_header=True)
 
     filename = testing.write_imgs_to_path(img, file_path=tmp_path)
-    resample_img(filename, target_shape=target_shape, target_affine=affine)
+    resample_img(
+        filename,
+        target_shape=target_shape,
+        target_affine=affine,
+        copy_header=True,
+    )
 
     # Missing parameter
     with pytest.raises(ValueError, match="target_affine should be specified"):
@@ -374,10 +379,20 @@ def test_resampling_warning_binary_image(affine_eye, rng):
     assert _utils.niimg.is_binary_niimg(img_binary)
 
     with pytest.warns(Warning, match="Resampling binary images with"):
-        resample_img(img_binary, target_affine=rot, interpolation="continuous")
+        resample_img(
+            img_binary,
+            target_affine=rot,
+            interpolation="continuous",
+            copy_header=True,
+        )
 
     with pytest.warns(Warning, match="Resampling binary images with"):
-        resample_img(img_binary, target_affine=rot, interpolation="linear")
+        resample_img(
+            img_binary,
+            target_affine=rot,
+            interpolation="linear",
+            copy_header=True,
+        )
 
 
 def test_resample_img_copied_header(img_4d_mni_tr2):
@@ -664,7 +679,9 @@ def test_resampling_nan_big(affine_eye):
     source_img = Nifti1Image(data, 2 * affine_eye)
 
     with pytest.warns(RuntimeWarning):
-        resampled_img = resample_img(source_img, target_affine=affine_eye)
+        resampled_img = resample_img(
+            source_img, target_affine=affine_eye, copy_header=True
+        )
 
     resampled_data = get_data(resampled_img)
     assert_allclose(10, resampled_data[np.isfinite(resampled_data)])
@@ -796,7 +813,9 @@ def test_reorder_img(affine_eye, rng):
         b = 0.5 * np.array(shape[:3])
         new_affine = from_matrix_vector(rot, b)
 
-        rot_img = resample_img(ref_img, target_affine=new_affine)
+        rot_img = resample_img(
+            ref_img, target_affine=new_affine, copy_header=True
+        )
 
         assert_array_equal(rot_img.affine, new_affine)
         assert_array_equal(get_data(rot_img).shape, shape)

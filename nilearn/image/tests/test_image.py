@@ -973,7 +973,7 @@ def test_binarize_img(img_4d_rand_eye):
     assert_array_equal(np.unique(img1.dataobj), np.array([1]))
 
     # Test that it works with threshold
-    img2 = binarize_img(img_4d_rand_eye, threshold=0.5)
+    img2 = binarize_img(img_4d_rand_eye, threshold=0.5, copy_header=True)
 
     assert_array_equal(np.unique(img2.dataobj), np.array([0, 1]))
     # Test that manual binarization equals binarize_img results.
@@ -994,8 +994,12 @@ def test_binarize_negative_img(img_4d_rand_eye):
     img_data[neg_mask] *= -1
     img = new_img_like(img_4d_rand_eye, img_data)
     # Binarize using original and absolute values
-    img_original = binarize_img(img, threshold=0, two_sided=False)
-    img_absolute = binarize_img(img, threshold=0, two_sided=True)
+    img_original = binarize_img(
+        img, threshold=0, two_sided=False, copy_header=True
+    )
+    img_absolute = binarize_img(
+        img, threshold=0, two_sided=True, copy_header=True
+    )
     # Check that all values are 1 for absolute valued threshold
     assert_array_equal(np.unique(img_absolute.dataobj), np.array([1]))
     # Check that binarized image contains 0 and 1 for original threshold
