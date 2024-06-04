@@ -83,7 +83,10 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 "We recommend to inspect the report for the overlap "
                 "between the mask and its input image. "
             ),
-            "warning_message": None,
+            "warning_message": (
+                "This object has not been fitted yet ! "
+                "Make sure to run `fit` before inspecting reports."
+            ),
         }
 
     def _fit_mask_img(self, img: SurfaceImage | None) -> None:
@@ -135,20 +138,20 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
             start = stop
         self.output_dimension_ = stop
 
-        if self.reports:  # save inputs for reporting
+        # save inputs for reporting
+        if self.reports:
+            self._report_content["warning_message"] = None
             self._reporting_data = {
                 "mask": self.mask_img_,
                 "n_vertices": {},
                 "images": img,
             }
-            if img is not None:
-                self._reporting_data["images"] = img
-                for part in self.mask_img_.data.parts.keys():
-                    self._reporting_data["n_vertices"][part] = (
-                        self.mask_img_.mesh.parts[part].n_vertices
-                    )
-        # else:
-        #     self._reporting_data = None
+            for part in self.mask_img_.data.parts.keys():
+                self._reporting_data["n_vertices"][part] = (
+                    self.mask_img_.mesh.parts[part].n_vertices
+                )
+        else:
+            self._reporting_data = None
         return self
 
     def _check_fitted(self):
