@@ -3,9 +3,8 @@
 See http://nilearn.github.io/stable/manipulating_images/input_output.html
 """
 
-import numbers
-
 # Author: Gael Varoquaux, Alexandre Abraham, Michael Eickenberg
+import numbers
 import warnings
 
 import numpy as np
@@ -331,6 +330,21 @@ def _resample_one_img(
     return out
 
 
+def _check_force_resample(force_resample):
+    if force_resample is None:
+        force_resample = False
+        warnings.warn(
+            (
+                "'force_resample' will be set to 'True'"
+                " by default in Nilearn 0.13.0. \n"
+                "Use 'force_resample=True' to suppress this warning."
+            ),
+            FutureWarning,
+            stacklevel=2,
+        )
+    return force_resample
+
+
 def resample_img(
     img,
     target_affine=None,
@@ -340,7 +354,7 @@ def resample_img(
     order="F",
     clip=True,
     fill_value=0,
-    force_resample=True,
+    force_resample=None,
 ):
     """Resample a Niimg-like object.
 
@@ -383,8 +397,11 @@ def resample_img(
     fill_value : float, default=0
         Use a fill value for points outside of input volume.
 
-    force_resample : bool, default=True; False is
-        intended for testing, this prevents the use of a padding optimization.
+    force_resample : :obj:`bool`, default=None
+        False is intended for testing,
+        this prevents the use of a padding optimization.
+        Will be set to ``False`` if ``None`` is passed.
+        The default value will be set to ``True`` for Nilearn >=0.13.0.
 
     Returns
     -------
@@ -438,6 +455,8 @@ def resample_img(
 
     """
     from .image import new_img_like  # avoid circular imports
+
+    force_resample = _check_force_resample(force_resample)
 
     # Do as many checks as possible before loading data, to avoid potentially
     # costly calls before raising an exception.
@@ -692,7 +711,7 @@ def resample_to_img(
     order="F",
     clip=False,
     fill_value=0,
-    force_resample=True,
+    force_resample=None,
 ):
     """Resample a Niimg-like source image on a target Niimg-like image.
 
@@ -731,8 +750,11 @@ def resample_to_img(
     fill_value : float, default=0
         Use a fill value for points outside of input volume.
 
-    force_resample : bool, default=True; False is
-        intended for testing, this prevents the use of a padding optimization.
+    force_resample : :obj:`bool`, default=None
+        False is intended for testing,
+        this prevents the use of a padding optimization.
+        Will be set to ``False`` if ``None`` is passed.
+        The default value will be set to ``True`` for Nilearn >=0.13.0.
 
     Returns
     -------
@@ -745,6 +767,8 @@ def resample_to_img(
     nilearn.image.resample_img
 
     """
+    force_resample = _check_force_resample(force_resample)
+
     target = _utils.check_niimg(target_img)
     target_shape = target.shape
 
@@ -802,12 +826,14 @@ def reorder_img(img, resample=None):
                 "the image affine contains rotations"
             )
 
-        # Identify the voxel size using a QR decomposition of the
-        # affine
+        # Identify the voxel size using a QR decomposition of the affine
         Q, R = np.linalg.qr(affine[:3, :3])
         target_affine = np.diag(np.abs(np.diag(R))[np.abs(Q).argmax(axis=1)])
         return resample_img(
-            img, target_affine=target_affine, interpolation=resample
+            img,
+            target_affine=target_affine,
+            interpolation=resample,
+            force_resample=False,
         )
 
     axis_numbers = np.argmax(np.abs(A), axis=0)

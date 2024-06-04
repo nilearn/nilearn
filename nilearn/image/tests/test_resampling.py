@@ -64,6 +64,20 @@ def shape():
     return SHAPE
 
 
+def test_resample_depreacation_force_resample(shape, affine_eye, rng):
+    """Test change of value of force_resample."""
+    data = rng.integers(0, 10, shape, dtype="int32")
+    affine_eye[:3, -1] = 0.5 * np.array(shape[:3])
+
+    with pytest.warns(FutureWarning, match="force_resample"):
+        resample_img(
+            Nifti1Image(data, affine_eye),
+            target_affine=affine_eye,
+            interpolation="nearest",
+            force_resample=None,
+        )
+
+
 def test_identity_resample(shape, affine_eye, rng):
     """Test resampling with an identity affine."""
     data = rng.integers(0, 10, shape, dtype="int32")
@@ -73,6 +87,7 @@ def test_identity_resample(shape, affine_eye, rng):
         Nifti1Image(data, affine_eye),
         target_affine=affine_eye,
         interpolation="nearest",
+        force_resample=False,
     )
 
     assert_almost_equal(data, get_data(rot_img))
@@ -82,6 +97,7 @@ def test_identity_resample(shape, affine_eye, rng):
         Nifti1Image(data, affine_eye),
         target_affine=affine_eye[:3, :3],
         interpolation="nearest",
+        force_resample=False,
     )
 
     assert_almost_equal(data, get_data(rot_img))
@@ -91,6 +107,7 @@ def test_identity_resample(shape, affine_eye, rng):
         Nifti1Image(data, affine_eye),
         target_affine=affine_eye.tolist(),
         interpolation="nearest",
+        force_resample=False,
     )
 
 
@@ -111,6 +128,7 @@ def test_identity_resample_non_native_endians(
         Nifti1Image(data.astype(endian_type), affine_eye),
         target_affine=affine_eye.tolist(),
         interpolation=interpolation,
+        force_resample=False,
     )
 
     assert_almost_equal(data, get_data(rot_img))
@@ -124,6 +142,7 @@ def test_downsample(shape, affine_eye, rng):
         Nifti1Image(data, affine_eye),
         target_affine=2 * affine_eye,
         interpolation="nearest",
+        force_resample=False,
     )
 
     downsampled = data[::2, ::2, ::2, ...]
@@ -160,6 +179,7 @@ def test_downsample_non_native_endian_data(
         Nifti1Image(data, affine_eye),
         target_affine=2 * affine_eye,
         interpolation="nearest",
+        force_resample=False,
     )
 
     downsampled = data[::2, ::2, ::2, ...]
@@ -172,6 +192,7 @@ def test_downsample_non_native_endian_data(
         target_affine=2 * affine_eye,
         interpolation="nearest",
         copy=copy_data,
+        force_resample=False,
     )
 
     assert_almost_equal(downsampled, get_data(rot_img)[:x, :y, :z, ...])
@@ -196,6 +217,7 @@ def test_resampling_fill_value(affine_eye, shape, value, rng):
             interpolation="nearest",
             fill_value=value,
             clip=False,
+            force_resample=False,
         )
     else:
         rot_img = resample_img(
@@ -203,6 +225,7 @@ def test_resampling_fill_value(affine_eye, shape, value, rng):
             target_affine=rot,
             interpolation="nearest",
             clip=False,
+            force_resample=False,
         )
 
     assert get_data(rot_img).flatten()[0] == value
@@ -212,6 +235,7 @@ def test_resampling_fill_value(affine_eye, shape, value, rng):
         rot_img,
         interpolation="nearest",
         fill_value=value,
+        force_resample=False,
     )
 
     assert get_data(rot_img2).flatten()[0] == value
@@ -231,6 +255,7 @@ def test_resampling_with_affine(affine_eye, shape, angle, rng):
         Nifti1Image(data, affine_eye),
         target_affine=rot,
         interpolation="nearest",
+        force_resample=False,
     )
 
     assert np.max(data) == np.max(get_data(rot_img))
@@ -241,7 +266,9 @@ def test_resampling_with_affine(affine_eye, shape, angle, rng):
     img = Nifti1Image(data.astype(">f8"), affine_eye)
     rot = rotation(0, angle)
 
-    rot_img = resample_img(img, target_affine=rot, interpolation="nearest")
+    rot_img = resample_img(
+        img, target_affine=rot, interpolation="nearest", force_resample=False
+    )
 
     assert np.max(data) == np.max(get_data(rot_img))
 
@@ -253,9 +280,17 @@ def test_resampling_continuous_with_affine(affine_eye, shape, angle, rng):
     rot = rotation(0, angle)
     img = Nifti1Image(data, affine_eye)
 
-    rot_img = resample_img(img, target_affine=rot, interpolation="continuous")
+    rot_img = resample_img(
+        img,
+        target_affine=rot,
+        interpolation="continuous",
+        force_resample=False,
+    )
     rot_img_back = resample_img(
-        rot_img, target_affine=affine_eye, interpolation="continuous"
+        rot_img,
+        target_affine=affine_eye,
+        interpolation="continuous",
+        force_resample=False,
     )
 
     center = slice(1, 9)
@@ -273,15 +308,25 @@ def test_resampling_error_checks(tmp_path):
     target_shape = (5, 3, 2)
 
     # Correct parameters: no exception
-    resample_img(img, target_shape=target_shape, target_affine=affine)
-    resample_img(img, target_affine=affine)
+    resample_img(
+        img,
+        target_shape=target_shape,
+        target_affine=affine,
+        force_resample=False,
+    )
+    resample_img(img, target_affine=affine, force_resample=False)
 
     filename = testing.write_imgs_to_path(img, file_path=tmp_path)
-    resample_img(filename, target_shape=target_shape, target_affine=affine)
+    resample_img(
+        filename,
+        target_shape=target_shape,
+        target_affine=affine,
+        force_resample=False,
+    )
 
     # Missing parameter
     with pytest.raises(ValueError, match="target_affine should be specified"):
-        resample_img(img, target_shape=target_shape)
+        resample_img(img, target_shape=target_shape, force_resample=False)
 
     # Invalid shape
     with pytest.raises(ValueError, match="shape .* should be .* 3D grid"):
@@ -289,6 +334,7 @@ def test_resampling_error_checks(tmp_path):
             img,
             target_shape=(2, 3),
             target_affine=affine,
+            force_resample=False,
         )
 
     # Invalid interpolation
@@ -298,6 +344,7 @@ def test_resampling_error_checks(tmp_path):
             target_shape=target_shape,
             target_affine=affine,
             interpolation="an_invalid_interpolation",
+            force_resample=False,
         )
 
 
@@ -308,13 +355,21 @@ def test_resampling_copy_has_no_shared_memory(target_shape):
     target_affine = None if target_shape is None else affine
 
     img_r = resample_img(
-        img, target_affine=target_affine, target_shape=target_shape, copy=False
+        img,
+        target_affine=target_affine,
+        target_shape=target_shape,
+        copy=False,
+        force_resample=False,
     )
 
     assert img_r == img
 
     img_r = resample_img(
-        img, target_affine=target_affine, target_shape=target_shape, copy=True
+        img,
+        target_affine=target_affine,
+        target_shape=target_shape,
+        copy=True,
+        force_resample=False,
     )
 
     assert not np.may_share_memory(get_data(img_r), get_data(img))
@@ -328,7 +383,9 @@ def test_resampling_warning_s_form(affine_eye, shape, rng):
     img_no_sform.set_sform(None)
 
     with pytest.warns(Warning, match="The provided image has no sform"):
-        resample_img(img_no_sform, target_affine=affine_eye)
+        resample_img(
+            img_no_sform, target_affine=affine_eye, force_resample=False
+        )
 
 
 def test_resampling_warning_binary_image(affine_eye, rng):
@@ -345,10 +402,20 @@ def test_resampling_warning_binary_image(affine_eye, rng):
     assert _utils.niimg.is_binary_niimg(img_binary)
 
     with pytest.warns(Warning, match="Resampling binary images with"):
-        resample_img(img_binary, target_affine=rot, interpolation="continuous")
+        resample_img(
+            img_binary,
+            target_affine=rot,
+            interpolation="continuous",
+            force_resample=False,
+        )
 
     with pytest.warns(Warning, match="Resampling binary images with"):
-        resample_img(img_binary, target_affine=rot, interpolation="linear")
+        resample_img(
+            img_binary,
+            target_affine=rot,
+            interpolation="linear",
+            force_resample=False,
+        )
 
 
 def test_4d_affine_bounding_box_error(affine_eye):
@@ -373,14 +440,17 @@ def test_4d_affine_bounding_box_error(affine_eye):
         small_img,
         target_affine=bigger_img.affine,
         target_shape=bigger_img.shape,
+        force_resample=False,
     )
     # resample using 3D affine and no target shape
     small_to_big_without_shape_3D_affine = resample_img(
-        small_img, target_affine=bigger_img.affine[:3, :3]
+        small_img,
+        target_affine=bigger_img.affine[:3, :3],
+        force_resample=False,
     )
     # resample using 4D affine and no target shape
     small_to_big_without_shape = resample_img(
-        small_img, target_affine=bigger_img.affine
+        small_img, target_affine=bigger_img.affine, force_resample=False
     )
 
     # The first 2 should pass
@@ -414,7 +484,10 @@ def test_raises_upon_3x3_affine_and_no_shape(affine_eye):
     )
     with pytest.raises(ValueError, match=message):
         resample_img(
-            img, target_affine=np.eye(3) * 2, target_shape=(10, 10, 10)
+            img,
+            target_affine=np.eye(3) * 2,
+            target_shape=(10, 10, 10),
+            force_resample=False,
         )
 
 
@@ -438,7 +511,9 @@ def test_3x3_affine_bbox(affine_eye):
     # One negative axes
     target_affine_3x3[1] *= -1
 
-    img_3d_affine = resample_img(img, target_affine=target_affine_3x3)
+    img_3d_affine = resample_img(
+        img, target_affine=target_affine_3x3, force_resample=False
+    )
 
     # If the bounding box is computed wrong, the image will be only
     # zeros
@@ -491,7 +566,7 @@ def test_raises_bbox_error_if_data_outside_box(affine_eye):
     )
     for new_affine in new_affines:
         with pytest.raises(exception, match=message):
-            resample_img(img, target_affine=new_affine)
+            resample_img(img, target_affine=new_affine, force_resample=False)
 
 
 @pytest.mark.parametrize(
@@ -515,7 +590,9 @@ def test_resampling_result_axis_permutation(affine_eye, axis_permutation):
     # check 3x3 transformation matrix
     target_affine = np.eye(3)[axis_permutation]
 
-    resampled_img = resample_img(source_img, target_affine=target_affine)
+    resampled_img = resample_img(
+        source_img, target_affine=target_affine, force_resample=False
+    )
 
     resampled_data = get_data(resampled_img)
     expected_data = full_data.transpose(axis_permutation)
@@ -528,7 +605,9 @@ def test_resampling_result_axis_permutation(affine_eye, axis_permutation):
     target_affine[:3, :3] = np.eye(3)[axis_permutation]
     target_affine[:3, 3] = offset
 
-    resampled_img = resample_img(source_img, target_affine=target_affine)
+    resampled_img = resample_img(
+        source_img, target_affine=target_affine, force_resample=False
+    )
 
     resampled_data = get_data(resampled_img)
     offset_cropping = (
@@ -565,7 +644,9 @@ def test_resampling_nan(affine_eye, core_shape):
 
     # check 3x3 transformation matrix
     target_affine = np.eye(3)[axis_permutation]
-    resampled_img = resample_img(source_img, target_affine=target_affine)
+    resampled_img = resample_img(
+        source_img, target_affine=target_affine, force_resample=False
+    )
 
     resampled_data = get_data(resampled_img)
     if full_data.ndim == 4:
@@ -595,7 +676,9 @@ def test_resampling_nan_big(affine_eye):
     source_img = Nifti1Image(data, 2 * affine_eye)
 
     with pytest.warns(RuntimeWarning):
-        resampled_img = resample_img(source_img, target_affine=affine_eye)
+        resampled_img = resample_img(
+            source_img, target_affine=affine_eye, force_resample=False
+        )
 
     resampled_data = get_data(resampled_img)
     assert_allclose(10, resampled_data[np.isfinite(resampled_data)])
@@ -611,7 +694,7 @@ def test_resample_to_img(affine_eye, shape, rng):
     target_img = Nifti1Image(data, target_affine)
 
     result_img = resample_to_img(
-        source_img, target_img, interpolation="nearest"
+        source_img, target_img, interpolation="nearest", force_resample=False
     )
 
     downsampled = data[::2, ::2, ::2, ...]
@@ -648,12 +731,12 @@ def test_resample_identify_affine_int_translation(affine_eye, rng):
     target_img = Nifti1Image(target_data, target_affine)
 
     result_img = resample_to_img(
-        source_img, target_img, interpolation="nearest"
+        source_img, target_img, interpolation="nearest", force_resample=False
     )
     assert_almost_equal(get_data(target_img), get_data(result_img))
 
     result_img_2 = resample_to_img(
-        result_img, source_img, interpolation="nearest"
+        result_img, source_img, interpolation="nearest", force_resample=False
     )
     assert_almost_equal(get_data(source_img), get_data(result_img_2))
 
@@ -680,10 +763,20 @@ def test_resample_clip(affine_eye):
     source_img = Nifti1Image(data, source_affine)
 
     no_clip_data = get_data(
-        resample_img(source_img, target_affine=affine_eye, clip=False)
+        resample_img(
+            source_img,
+            target_affine=affine_eye,
+            clip=False,
+            force_resample=False,
+        )
     )
     clip_data = get_data(
-        resample_img(source_img, target_affine=affine_eye, clip=True)
+        resample_img(
+            source_img,
+            target_affine=affine_eye,
+            clip=True,
+            force_resample=False,
+        )
     )
 
     not_clip = np.where(
@@ -715,7 +808,9 @@ def test_reorder_img(affine_eye, rng):
         b = 0.5 * np.array(shape[:3])
         new_affine = from_matrix_vector(rot, b)
 
-        rot_img = resample_img(ref_img, target_affine=new_affine)
+        rot_img = resample_img(
+            ref_img, target_affine=new_affine, force_resample=False
+        )
 
         assert_array_equal(rot_img.affine, new_affine)
         assert_array_equal(get_data(rot_img).shape, shape)
@@ -741,6 +836,7 @@ def test_reorder_img_with_resample_arg(affine_eye, rng):
         ref_img,
         target_affine=reordered_img.affine,
         interpolation=interpolation,
+        force_resample=False,
     )
     assert_array_equal(get_data(reordered_img), get_data(resampled_img))
 
@@ -815,7 +911,7 @@ def test_reorder_img_non_native_endianness():
         )
 
         img = Nifti1Image(data, affine)
-        return resample_img(img, target_affine=affine)
+        return resample_img(img, target_affine=affine, force_resample=False)
 
     img_1 = _get_resampled_img("<f8")
     img_2 = _get_resampled_img(">f8")
@@ -904,7 +1000,12 @@ def test_resample_img_segmentation_fault():
     else:
         img_in = Nifti1Image(data, aff_in)
 
-        resample_img(img_in, target_affine=aff_out, interpolation="nearest")
+        resample_img(
+            img_in,
+            target_affine=aff_out,
+            interpolation="nearest",
+            force_resample=False,
+        )
 
 
 @pytest.mark.parametrize(
@@ -926,7 +1027,7 @@ def test_resample_img_segmentation_fault():
 def test_resampling_with_int_types_no_crash(affine_eye, dtype):
     data = np.zeros((2, 2, 2))
     img = Nifti1Image(data.astype(dtype), affine_eye)
-    resample_img(img, target_affine=2.0 * affine_eye)
+    resample_img(img, target_affine=2.0 * affine_eye, force_resample=False)
 
 
 @pytest.mark.parametrize("dtype", ["int64", "uint64", "<i8", ">i8"])
@@ -938,7 +1039,7 @@ def test_resampling_with_int64_types_no_crash(affine_eye, dtype):
     hdr = Nifti1Header()
     hdr.set_data_dtype(dtype)
     img = Nifti1Image(data.astype(dtype), affine_eye, header=hdr)
-    resample_img(img, target_affine=2.0 * affine_eye)
+    resample_img(img, target_affine=2.0 * affine_eye, force_resample=False)
 
 
 def test_resample_input(affine_eye, shape, rng, tmp_path):
@@ -951,7 +1052,12 @@ def test_resample_input(affine_eye, shape, rng, tmp_path):
         img, file_path=tmp_path, create_files=True
     )
     filename = Path(filename)
-    resample_img(filename, target_affine=affine, interpolation="nearest")
+    resample_img(
+        filename,
+        target_affine=affine,
+        interpolation="nearest",
+        force_resample=False,
+    )
 
 
 def test_smoke_resampling_non_nifti(affine_eye, shape, rng):
@@ -959,4 +1065,9 @@ def test_smoke_resampling_non_nifti(affine_eye, shape, rng):
     data = rng.integers(0, 10, shape, dtype="int32")
     img = MGHImage(data, affine_eye)
 
-    resample_img(img, target_affine=target_affine, interpolation="nearest")
+    resample_img(
+        img,
+        target_affine=target_affine,
+        interpolation="nearest",
+        force_resample=False,
+    )
