@@ -330,7 +330,7 @@ def _process_second_level_input(second_level_input):
             second_level_input
         )
     else:
-        return mean_img(second_level_input), None
+        return mean_img(second_level_input, copy_header=True), None
 
 
 def _process_second_level_input_as_dataframe(second_level_input):
