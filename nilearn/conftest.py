@@ -17,8 +17,10 @@ from nilearn.datasets.tests._testing import temp_nilearn_data_dir  # noqa: F401
 # TODO This import needs to be removed once the experimental surface API and
 # its pytest fixtures are integrated into the stable API
 from nilearn.experimental.surface.tests.conftest import (  # noqa: F401
+    drop_img_part,
     make_mini_img,
     mini_img,
+    mini_mask,
     mini_mesh,
 )
 
