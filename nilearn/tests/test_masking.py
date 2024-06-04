@@ -1,4 +1,5 @@
 """Test the mask-extracting utilities."""
+
 import warnings
 
 import numpy as np

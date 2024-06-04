@@ -2,6 +2,7 @@
 
 Fastclustering for approximation of structured signals
 """
+
 # Author: Andres Hoyos idrobo, Gael Varoquaux, Jonas Kahn and  Bertrand Thirion
 
 import warnings
@@ -365,7 +366,7 @@ def recursive_neighbor_agglomeration(
     """Recursive neighbor agglomeration (:term:`ReNA`).
 
     It performs iteratively the nearest neighbor grouping.
-    See :footcite:`Hoyos2019`.
+    See :footcite:t:`Hoyos2019`.
 
     Parameters
     ----------
@@ -432,7 +433,7 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
     Recursively merges the pair of clusters according to 1-nearest neighbors
     criterion.
-    See :footcite:`Hoyos2019`.
+    See :footcite:t:`Hoyos2019`.
 
     Parameters
     ----------

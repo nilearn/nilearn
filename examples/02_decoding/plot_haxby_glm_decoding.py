@@ -40,25 +40,25 @@ TR = 2.5
 behavioral = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
 conditions = behavioral["labels"].values
 
-# Record these as an array of sessions
-sessions = behavioral["chunks"].values
-unique_sessions = behavioral["chunks"].unique()
+# Record these as an array of runs
+runs = behavioral["chunks"].values
+unique_runs = behavioral["chunks"].unique()
 
-# fMRI data: a unique file for each session
+# fMRI data: a unique file for each run
 func_filename = haxby_dataset.func[0]
 
 # %%
-# Build a proper event structure for each session
-# -----------------------------------------------
+# Build a proper event structure for each run
+# -------------------------------------------
 
 events = {}
-# events will take  the form of a dictionary of Dataframes, one per session
-for session in unique_sessions:
-    # get the condition label per session
-    conditions_session = conditions[sessions == session]
-    # get the number of scans per session, then the corresponding
+# events will take  the form of a dictionary of Dataframes, one per run
+for run in unique_runs:
+    # get the condition label per run
+    conditions_run = conditions[runs == run]
+    # get the number of scans per run, then the corresponding
     # vector of frame times
-    n_scans = len(conditions_session)
+    n_scans = len(conditions_run)
     frame_times = TR * np.arange(n_scans)
     # each event last the full TR
     duration = TR * np.ones(n_scans)
@@ -66,22 +66,22 @@ for session in unique_sessions:
     events_ = pd.DataFrame(
         {
             "onset": frame_times,
-            "trial_type": conditions_session,
+            "trial_type": conditions_run,
             "duration": duration,
         }
     )
     # remove the rest condition and insert into the dictionary
-    events[session] = events_[events_.trial_type != "rest"]
+    events[run] = events_[events_.trial_type != "rest"]
 
 # %%
 # Instantiate and run FirstLevelModel
 # -----------------------------------
 #
-# We generate a list of z-maps together with their session and condition index
+# We generate a list of z-maps together with their run and condition index
 
 z_maps = []
 conditions_label = []
-session_label = []
+run_label = []
 
 # Instantiate the glm
 from nilearn.glm.first_level import FirstLevelModel
@@ -95,24 +95,24 @@ glm = FirstLevelModel(
 )
 
 # %%
-# Run the :term:`GLM` on data from each session
-# ---------------------------------------------
-events[session].trial_type.unique()
+# Run the :term:`GLM` on data from each run
+# -----------------------------------------
+events[run].trial_type.unique()
 from nilearn.image import index_img
 
-for session in unique_sessions:
-    # grab the fmri data for that particular session
-    fmri_session = index_img(func_filename, sessions == session)
+for run in unique_runs:
+    # grab the fmri data for that particular run
+    fmri_run = index_img(func_filename, runs == run)
 
     # fit the GLM
-    glm.fit(fmri_session, events=events[session])
+    glm.fit(fmri_run, events=events[run])
 
     # set up contrasts: one per condition
-    conditions = events[session].trial_type.unique()
+    conditions = events[run].trial_type.unique()
     for condition_ in conditions:
         z_maps.append(glm.compute_contrast(condition_))
         conditions_label.append(condition_)
-        session_label.append(session)
+        run_label.append(run)
 
 # %%
 # Generating a report
@@ -134,10 +134,15 @@ report  # This report can be viewed in a notebook
 
 # %%
 # In a jupyter notebook, the report will be automatically inserted, as above.
-# We have several other ways to access the report:
 
-# report.save_as_html('report.html')
+# We can access the report via a browser:
 # report.open_in_browser()
+
+# or we can save as an html file
+# from pathlib import Path
+# output_dir = Path.cwd() / "results" / "plot_haxby_glm_decoding"
+# output_dir.mkdir(exist_ok=True, parents=True)
+# report.save_as_html(output_dir / 'report.html')
 
 # %%
 # Build the decoding pipeline
@@ -157,11 +162,11 @@ report  # This report can be viewed in a notebook
 #       problem keeping only 5% of voxels which are most informative.
 #
 #     * a cross-validation scheme, here we use LeaveOneGroupOut
-#       cross-validation on the sessions which corresponds to a
-#       leave-one-session-out
+#       cross-validation on the runs which corresponds
+#       to a leave-one-run-out
 #
 # We fit directly this pipeline on the Niimgs outputs of the GLM, with
-# corresponding conditions labels and session labels
+# corresponding conditions labels and run labels
 # (for the cross validation).
 
 from sklearn.model_selection import LeaveOneGroupOut
@@ -175,7 +180,7 @@ decoder = Decoder(
     screening_percentile=5,
     cv=LeaveOneGroupOut(),
 )
-decoder.fit(z_maps, conditions_label, groups=session_label)
+decoder.fit(z_maps, conditions_label, groups=run_label)
 
 # Return the corresponding mean prediction accuracy compared to chance
 # for classifying one-vs-all items.

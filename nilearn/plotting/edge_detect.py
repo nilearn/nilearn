@@ -119,7 +119,7 @@ def _edge_detect(image, high_threshold=0.75, low_threshold=0.4):
     return grad_mag, edge_mask
 
 
-def _edge_map(image):
+def edge_map(image):
     """Return a maps of edges suitable for visualization.
 
     Parameters

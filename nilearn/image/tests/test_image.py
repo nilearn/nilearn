@@ -1,9 +1,11 @@
-"""Test image pre-processing functions"""
+"""Test image pre-processing functions."""
+
 import platform
 import sys
 import warnings
 from pathlib import Path
 
+import joblib
 import nibabel
 import numpy as np
 import pandas as pd
@@ -13,12 +15,13 @@ from nibabel.freesurfer import MGHImage
 from numpy.testing import (
     assert_allclose,
     assert_almost_equal,
+    assert_array_almost_equal,
     assert_array_equal,
     assert_equal,
 )
 
 from nilearn import signal
-from nilearn._utils import niimg_conversions, testing
+from nilearn._utils import testing
 from nilearn._utils.data_gen import (
     _basic_confounds,
     generate_fake_fmri,
@@ -26,7 +29,7 @@ from nilearn._utils.data_gen import (
     generate_maps,
 )
 from nilearn._utils.exceptions import DimensionError
-from nilearn.conftest import _affine_eye, _rng, _shape_4d_default
+from nilearn.conftest import _affine_eye, _img_3d_rand, _rng, _shape_4d_default
 from nilearn.image import (
     binarize_img,
     clean_img,
@@ -83,7 +86,7 @@ def _make_largest_cc_img_test_data():
 
 
 def _images_to_mean():
-    """Return a mixture of 4D and 3D images"""
+    """Return a mixture of 4D and 3D images."""
     rng = _rng()
 
     data1 = np.zeros((5, 6, 7))
@@ -106,7 +109,7 @@ def _images_to_mean():
 
 
 def _check_fwhm(data, affine, fwhm):
-    """Expect a full-width at half maximum of fwhm / voxel_size"""
+    """Expect a full-width at half maximum of fwhm / voxel_size."""
     vmax = data.max()
     above_half_max = data > 0.5 * vmax
     for axis in [0, 1, 2]:
@@ -292,14 +295,14 @@ def test_fast_smooth_array_give_same_result_as_smooth_array(
 
 
 def test_smooth_array_raise_warning_if_fwhm_is_zero(smooth_array_data):
-    """See https://github.com/nilearn/nilearn/issues/1537"""
+    """See https://github.com/nilearn/nilearn/issues/1537."""
     affine = AFFINE_TO_TEST[2]
     with pytest.warns(UserWarning):
         image.smooth_array(smooth_array_data, affine, fwhm=0.0)
 
 
 def test_smooth_img(affine_eye, tmp_path):
-    """Checks added functionalities compared to image._smooth_array()"""
+    """Checks added functionalities compared to image._smooth_array()."""
     shapes = ((10, 11, 12), (13, 14, 15))
     lengths = (17, 18)
     fwhm = (1.0, 2.0, 3.0)
@@ -481,10 +484,6 @@ def test_swap_img_hemispheres(affine_eye, shape_3d_default, rng):
     )
 
 
-def test_concat_imgs():
-    assert concat_imgs is niimg_conversions.concat_niimgs
-
-
 def test_index_img_error_3D(affine_eye):
     img_3d = Nifti1Image(np.ones((3, 4, 5)), affine_eye)
     expected_error_msg = (
@@ -649,10 +648,8 @@ def test_new_img_like_accepts_paths(affine_eye, tmp_path, rng):
 
 
 def test_new_img_like_non_iterable_header(rng):
-    """
-    Tests that when an niimg's header is not iterable
-    & it is set to be copied, an error is not raised.
-    """
+    """Tests that when an niimg's header is not iterable \
+       and it is set to be copied, an error is not raised."""
     fake_fmri_data = rng.uniform(size=_shape_4d_default())
     fake_affine = rng.uniform(size=(4, 4))
     fake_spatial_image = nibabel.spatialimages.SpatialImage(
@@ -689,9 +686,8 @@ def test_new_img_like_int64(shape_3d_default):
 
 
 def test_validity_threshold_value_in_threshold_img(shape_3d_default):
-    """Check that invalid values to threshold_img's threshold parameter raise
-    Exceptions.
-    """
+    """Check that invalid values to threshold_img's threshold parameter \
+       raise Exceptions."""
     maps, _ = generate_maps(shape_3d_default, n_regions=2)
 
     # testing to raise same error when threshold=None case
@@ -756,9 +752,8 @@ def test_threshold_img_with_cluster_threshold(
 
 
 def test_threshold_img_threshold_nb_clusters(stat_img_test_data):
-    """With a cluster threshold of 5 we get 8 clusters with |values| > 2 and
-    cluster sizes > 5
-    """
+    """With a cluster threshold of 5 we get 8 clusters with |values| > 2 \
+       and cluster sizes > 5."""
     thr_img = threshold_img(
         img=stat_img_test_data,
         threshold=2,
@@ -823,6 +818,18 @@ def test_math_img_exceptions(affine_eye, img_4d_ones_eye):
     ):
         math_img(bad_formula, img1=img1, img3=img3)
 
+    # Test copy_header_from parameter
+    # Copying header from 4d image to a result that is 3d should raise a
+    # ValueError
+    formula = "np.mean(img1, axis=-1) - np.mean(img3, axis=-1)"
+    with pytest.raises(ValueError, match="Cannot copy the header."):
+        math_img(formula, img1=img1, img3=img3, copy_header_from="img1")
+
+    # Passing an 'img*' variable (to copy_header_from) that is not in the
+    # formula or an img* argument should raise a KeyError exception.
+    with pytest.raises(KeyError):
+        math_img(formula, img1=img1, img3=img3, copy_header_from="img2")
+
 
 def test_math_img(
     affine_eye, img_4d_ones_eye, img_4d_zeros_eye, shape_3d_default, tmp_path
@@ -840,6 +847,59 @@ def test_math_img(
         assert_array_equal(get_data(result), get_data(expected_result))
         assert_array_equal(result.affine, expected_result.affine)
         assert result.shape == expected_result.shape
+
+
+def test_math_img_copy_default_header(
+    img_4d_ones_eye_default_header, img_4d_ones_eye_tr2
+):
+    # case where data values are not changed and header values are not copied
+    # the result should have default header values
+    formula_no_change = "img * 1"
+    # using img_4d_ones_eye_tr2 with edited header in the formula
+    result = math_img(
+        formula_no_change, img=img_4d_ones_eye_tr2, copy_header_from=None
+    )
+    # header values should instead match default header values
+    assert result.header == img_4d_ones_eye_default_header.header
+
+
+def test_math_img_copied_header_from_img(img_4d_mni_tr2):
+    # case where data values are not changed but header values are copied
+    # the result should have the same header values as the given image
+    formula_no_change = "img * 1"
+    result = math_img(
+        formula_no_change, img=img_4d_mni_tr2, copy_header_from="img"
+    )
+    # all header values should be the same
+    assert result.header == img_4d_mni_tr2.header
+
+
+def test_math_img_copied_header_data_values_changed(
+    img_4d_ones_eye_default_header, img_4d_ones_eye_tr2
+):
+    # case where data values are changed and header values are copied from one
+    # of the input images
+    # the result should have the same header values as img_4d_ones_eye_tr2,
+    # except for cal_max and cal_min that should be different
+    formula_change_min_max = "img1 - img2"
+    result = math_img(
+        formula_change_min_max,
+        img1=img_4d_ones_eye_default_header,
+        img2=img_4d_ones_eye_tr2,
+        copy_header_from="img2",
+    )
+    for key in img_4d_ones_eye_tr2.header.keys():
+        # cal_max and cal_min should be different in result
+        if key in ["cal_max", "cal_min"]:
+            assert result.header[key] != img_4d_ones_eye_tr2.header[key]
+        # other header values should be the same
+        else:
+            if isinstance(result.header[key], np.ndarray):
+                assert_array_equal(
+                    result.header[key], img_4d_ones_eye_tr2.header[key]
+                )
+            else:
+                assert result.header[key] == img_4d_ones_eye_tr2.header[key]
 
 
 def test_binarize_img(img_4d_rand_eye):
@@ -1007,9 +1067,8 @@ def test_new_img_like_mgh_image(affine_eye, shape_3d_default):
 
 @pytest.mark.parametrize("image", [MGHImage, AnalyzeImage])
 def test_new_img_like_boolean_data(affine_eye, image, shape_3d_default, rng):
-    """Check defaulting boolean input data to np.uint8 dtype is valid for
-    encoding with nibabel image classes MGHImage and AnalyzeImage.
-    """
+    """Checks defaulting boolean input data to np.uint8 dtype is valid \
+       forencoding with nibabel image classes MGHImage and AnalyzeImage."""
     data = rng.standard_normal(shape_3d_default).astype("uint8")
     in_img = image(dataobj=data, affine=affine_eye)
 
@@ -1054,3 +1113,113 @@ def test_clean_img_sample_mask_mask_img(shape_3d_default):
     )
     # original shape is (10, 10, 10, 10)
     assert img.shape == (10, 10, 10, 9)
+
+
+def test_concat_niimgs_errors(affine_eye, shape_3d_default):
+    img1 = Nifti1Image(np.ones(shape_3d_default), affine_eye)
+    img2 = Nifti1Image(np.ones(shape_3d_default), 2 * affine_eye)
+    img4d = Nifti1Image(np.ones(shape_3d_default + (2,)), affine_eye)
+
+    # check error for non-forced but necessary resampling
+    with pytest.raises(ValueError, match="Field of view of image"):
+        concat_imgs([img1, img2], auto_resample=False)
+
+    # Regression test for #601.
+    # Dimensionality of first image was not checked properly.
+    _dimension_error_msg = (
+        "Input data has incompatible dimensionality: "
+        "Expected dimension is 4D and you provided "
+        "a list of 4D images \\(5D\\)"
+    )
+    with pytest.raises(DimensionError, match=_dimension_error_msg):
+        concat_imgs([img4d], ensure_ndim=4)
+
+    with pytest.raises(DimensionError, match=_dimension_error_msg):
+        concat_imgs([img1, img4d])
+
+    img5d = Nifti1Image(np.ones((2, 2, 2, 2, 2)), affine_eye)
+    with pytest.raises(
+        TypeError,
+        match="Concatenated images must be 3D or 4D. "
+        "You gave a list of 5D images",
+    ):
+        concat_imgs([img5d, img5d])
+
+
+def test_concat_niimgs(affine_eye, tmp_path):
+    # create images different in affine and 3D/4D shape
+    shape = (10, 11, 12)
+    img1 = Nifti1Image(np.ones(shape), affine_eye)
+    img2 = Nifti1Image(np.zeros(shape), affine_eye)
+
+    shape2 = (12, 11, 10)
+    img1b = Nifti1Image(np.ones(shape2), affine_eye)
+
+    shape3 = (11, 22, 33)
+    img1c = Nifti1Image(np.ones(shape3), affine_eye)
+
+    # check basic concatenation with equal shape/affine
+    # versbose for coverage
+    concatenated = concat_imgs((img1, img2, img1), verbose=1)
+
+    # smoke-test auto_resample
+    concatenated = concat_imgs((img1, img1b, img1c), auto_resample=True)
+    assert concatenated.shape == img1.shape + (3,)
+
+    # test list of 4D niimgs as input
+    nibabel.save(img1, tmp_path / "1.nii")
+    nibabel.save(img2, tmp_path / "2.nii")
+    concatenated = concat_imgs(tmp_path / "*")
+    assert_array_equal(get_data(concatenated)[..., 0], get_data(img1))
+    assert_array_equal(get_data(concatenated)[..., 1], get_data(img2))
+
+
+def test_concat_niimg_dtype(affine_eye):
+    shape = [2, 3, 4]
+    vols = [
+        Nifti1Image(np.zeros(shape + [n_scans]).astype(np.int16), affine_eye)
+        for n_scans in [1, 5]
+    ]
+    nimg = concat_imgs(vols)
+    assert get_data(nimg).dtype == np.float32
+    nimg = concat_imgs(vols, dtype=None)
+    assert get_data(nimg).dtype == np.int16
+
+
+def nifti_generator(buffer):
+    for _ in range(10):
+        buffer.append(_img_3d_rand())
+        yield buffer[-1]
+
+
+def test_iterator_generator(img_3d_rand_eye):
+    # Create a list of random images
+    list_images = [img_3d_rand_eye for _ in range(10)]
+    cc = concat_imgs(list_images)
+    assert cc.shape[-1] == 10
+    assert_array_almost_equal(get_data(cc)[..., 0], get_data(list_images[0]))
+
+    # Same with iteration
+    i = image.iter_img(list_images)
+    cc = concat_imgs(i)
+    assert cc.shape[-1] == 10
+    assert_array_almost_equal(get_data(cc)[..., 0], get_data(list_images[0]))
+
+    # Now, a generator
+    b = []
+    g = nifti_generator(b)
+    cc = concat_imgs(g)
+    assert cc.shape[-1] == 10
+    assert len(b) == 10
+
+
+def test_copy_img():
+    with pytest.raises(ValueError, match="Input value is not an image"):
+        copy_img(3)
+
+
+def test_copy_img_side_effect(img_4d_ones_eye):
+    hash1 = joblib.hash(img_4d_ones_eye)
+    copy_img(img_4d_ones_eye)
+    hash2 = joblib.hash(img_4d_ones_eye)
+    assert hash1 == hash2

@@ -8,13 +8,17 @@ and tangent space embedding.
 
 The resulting connectivity coefficients can be used to
 discriminate children from adults. In general, the tangent space embedding
-**outperforms** the standard correlations: see `Dadi et al 2019
-<https://www.sciencedirect.com/science/article/pii/S1053811919301594>`_
-for a careful study.
+**outperforms** the standard correlations:
+see :footcite:t:`Dadi2019` for a careful study.
 
 .. include:: ../../../examples/masker_note.rst
 
 """
+
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
 
 # %%
 # Load brain development :term:`fMRI` dataset and MSDL atlas
@@ -115,8 +119,6 @@ scores_std = gs.cv_results_["std_test_score"]
 
 # %%
 # display the results
-from matplotlib import pyplot as plt
-
 plt.figure(figsize=(6, 4))
 positions = [0.1, 0.2, 0.3, 0.4]
 plt.barh(positions, mean_scores, align="center", height=0.05, xerr=scores_std)
@@ -132,9 +134,14 @@ plt.tight_layout()
 # This is a small example to showcase nilearn features. In practice such
 # comparisons need to be performed on much larger cohorts and several
 # datasets.
-# `Dadi et al 2019
-# <https://www.sciencedirect.com/science/article/pii/S1053811919301594>`_
-# Showed that across many cohorts and clinical questions, the tangent
-# kind should be preferred.
+# :footcite:t:`Dadi2019` showed
+# that across many cohorts and clinical questions,
+# the tangent kind should be preferred.
 
 plt.show()
+
+# %%
+# References
+# ----------
+#
+#  .. footbibliography::

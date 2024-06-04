@@ -30,7 +30,7 @@ def compute_alpha_max(emp_covs, n_samples):
     matrices are fully dense (i.e. minimal number of zero coefficients).
 
     The formula used in this function was derived using the same method
-    as in :footcite:`Duchi2012`.
+    as in :footcite:t:`Duchi2012`.
 
     Parameters
     ----------
@@ -148,7 +148,7 @@ def group_sparse_covariance(
     Running time is linear on max_iter, and number of subjects (len(subjects)),
     but cubic on number of features (subjects[0].shape[1]).
 
-    The present algorithm is based on :footcite:`Honorio2015`.
+    The present algorithm is based on :footcite:t:`Honorio2015`.
 
     Parameters
     ----------
@@ -502,8 +502,8 @@ def _group_sparse_covariance(
 class GroupSparseCovariance(BaseEstimator, CacheMixin):
     """Covariance and precision matrix estimator.
 
-    The model used has been introduced in :footcite:`Varoquaux2010a`, and the
-    algorithm used is based on what is described in :footcite:`Honorio2015`.
+    The model used has been introduced in :footcite:t:`Varoquaux2010a`, and the
+    algorithm used is based on what is described in :footcite:t:`Honorio2015`.
 
     Parameters
     ----------
@@ -523,10 +523,11 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
     verbose : int, default=0
         verbosity level. Zero means "no message".
 
-    memory : instance of joblib.Memory or string, optional
+    memory : instance of joblib.Memory or string, default=None
         Used to cache the masking process.
-        By default, no caching is done. If a string is given, it is the
-        path to the caching directory.
+        By default, no caching is done.
+        If a string is given, it is the path to the caching directory.
+        If ``None`` is passed will default to ``Memory(location=None)``.
 
     memory_level : int, default=0
         Caching aggressiveness. Higher values mean more caching.
@@ -551,9 +552,11 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
         tol=1e-3,
         max_iter=10,
         verbose=0,
-        memory=Memory(location=None),
+        memory=None,
         memory_level=0,
     ):
+        if memory is None:
+            memory = Memory(location=None)
         self.alpha = alpha
         self.tol = tol
         self.max_iter = max_iter
@@ -1143,7 +1146,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
             # case of equality)
             best_score = -np.inf
             last_finite_idx = 0
-            for index, (alpha, this_score, _) in enumerate(path):
+            for index, (_, this_score, _) in enumerate(path):
                 if this_score >= 0.1 / np.finfo(np.float64).eps:
                     this_score = np.nan
                 if np.isfinite(this_score):

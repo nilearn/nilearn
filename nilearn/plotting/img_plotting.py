@@ -62,7 +62,7 @@ def show():
 # Core, usage-agnostic functions
 
 
-def _get_colorbar_and_data_ranges(
+def get_colorbar_and_data_ranges(
     stat_map_data,
     vmin=None,
     vmax=None,
@@ -193,6 +193,12 @@ def _plot_img_with_bg(
 
     display_factory : function, default=get_slicer
         Takes a display_mode argument and return a display class.
+
+    kwargs:  extra keyword arguments, optional
+        Extra keyword arguments passed
+        to the display.add_overlay method (see below).
+        Ultimately passed to `matplotlib.pyplot.imshow` via
+        :meth:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
 
     Returns
     -------
@@ -383,8 +389,11 @@ def plot_img(
     %(vmin)s
     %(vmax)s
     %(radiological)s
+
     kwargs : extra keyword arguments, optional
-        Extra keyword arguments passed to matplotlib.pyplot.imshow.
+        Extra keyword arguments
+        ultimately passed to `matplotlib.pyplot.imshow` via
+        :meth:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
 
     Returns
     -------
@@ -511,7 +520,7 @@ class _MNI152Template(SpatialImage):
 MNI152TEMPLATE = _MNI152Template()
 
 
-def _load_anat(anat_img=MNI152TEMPLATE, dim="auto", black_bg="auto"):
+def load_anat(anat_img=MNI152TEMPLATE, dim="auto", black_bg="auto"):
     """Load anatomy, for optional diming."""
     vmin = None
     vmax = None
@@ -626,6 +635,11 @@ def plot_anat(
     %(vmin)s
     %(vmax)s
 
+    kwargs: extra keyword arguments, optional
+        Extra keyword arguments
+        ultimately passed to `matplotlib.pyplot.imshow` via
+        :meth:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
+
     Returns
     -------
     display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
@@ -640,7 +654,7 @@ def plot_anat(
     are set to zero.
 
     """
-    anat_img, black_bg, anat_vmin, anat_vmax = _load_anat(
+    anat_img, black_bg, anat_vmin, anat_vmax = load_anat(
         anat_img, dim=dim, black_bg=black_bg
     )
 
@@ -720,6 +734,11 @@ def plot_epi(
     %(vmin)s
     %(vmax)s
     %(radiological)s
+
+    kwargs: extra keyword arguments, optional
+        Extra keyword arguments
+        ultimately passed to `matplotlib.pyplot.imshow` via
+        :meth:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
 
     Returns
     -------
@@ -886,6 +905,11 @@ def plot_roi(
         Default=2.5.
     %(radiological)s
 
+    kwargs: extra keyword arguments, optional
+        Extra keyword arguments
+        ultimately passed to `matplotlib.pyplot.imshow` via
+        :meth:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
+
     Returns
     -------
     display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
@@ -916,7 +940,7 @@ def plot_roi(
         img = roi_img
         roi_img = None
 
-    bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(
+    bg_img, black_bg, bg_vmin, bg_vmax = load_anat(
         bg_img, dim=dim, black_bg=black_bg
     )
 
@@ -1047,6 +1071,11 @@ def plot_prob_atlas(
         Alpha sets the transparency of the color inside the filled contours.
     %(radiological)s
 
+    kwargs: extra keyword arguments, optional
+        Extra keyword arguments
+        ultimately passed to `matplotlib.pyplot.imshow` via
+        :meth:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
+
     Returns
     -------
     display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
@@ -1070,6 +1099,8 @@ def plot_prob_atlas(
         black_bg=black_bg,
         dim=dim,
         radiological=radiological,
+        vmin=vmin,
+        vmax=vmax,
         **kwargs,
     )
 
@@ -1252,6 +1283,11 @@ def plot_stat_map(
         Default='continuous'.
     %(radiological)s
 
+    kwargs: extra keyword arguments, optional
+        Extra keyword arguments
+        ultimately passed to `matplotlib.pyplot.imshow` via
+        :meth:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
+
     Returns
     -------
     display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
@@ -1273,13 +1309,13 @@ def plot_stat_map(
 
     """
     # dim the background
-    bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(
+    bg_img, black_bg, bg_vmin, bg_vmax = load_anat(
         bg_img, dim=dim, black_bg=black_bg
     )
 
     stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype="auto")
 
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+    cbar_vmin, cbar_vmax, vmin, vmax = get_colorbar_and_data_ranges(
         safe_get_data(stat_map_img, ensure_finite=True),
         vmin=vmin,
         vmax=vmax,
@@ -1395,6 +1431,12 @@ def plot_glass_brain(
         Default='continuous'.
     %(radiological)s
 
+    kwargs: extra keyword arguments, optional
+        Extra keyword arguments
+        ultimately passed to `matplotlib.pyplot.imshow` via
+        :meth:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
+
+
     Returns
     -------
     display : :class:`~nilearn.plotting.displays.OrthoProjector` or None
@@ -1427,7 +1469,7 @@ def plot_glass_brain(
         else:
             force_min_stat_map_value = None
 
-        cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+        cbar_vmin, cbar_vmax, vmin, vmax = get_colorbar_and_data_ranges(
             safe_get_data(stat_map_img, ensure_finite=True),
             vmin=vmin,
             vmax=vmax,
@@ -1858,7 +1900,7 @@ def plot_carpet(
 
     Notes
     -----
-    This figure was originally developed in :footcite:`Power2017`.
+    This figure was originally developed in :footcite:t:`Power2017`.
 
     In cases of long acquisitions (>800 volumes), the data will be downsampled
     to have fewer than 800 volumes before being plotted.
@@ -1947,7 +1989,7 @@ def plot_carpet(
         gs = mgs.GridSpecFromSubplotSpec(
             1,
             2 + int(legend),
-            subplot_spec=axes,
+            subplot_spec=axes.get_subplotspec(),
             width_ratios=wratios[: 2 + int(legend)],
             wspace=0.0,
         )

@@ -14,10 +14,10 @@ from .. import masking
 from .._utils import check_niimg, check_niimg_3d, check_niimg_4d, fill_doc
 from .._utils.ndimage import peak_local_max
 from .._utils.niimg import safe_get_data
-from .._utils.niimg_conversions import check_same_fov, concat_niimgs
+from .._utils.niimg_conversions import check_same_fov
 from .._utils.segmentation import random_walker
 from ..image import new_img_like, resample_img
-from ..image.image import smooth_array, threshold_img
+from ..image.image import concat_imgs, smooth_array, threshold_img
 
 
 def _threshold_maps_ratio(maps_img, threshold):
@@ -76,7 +76,7 @@ def _threshold_maps_ratio(maps_img, threshold):
     return threshold_maps_img
 
 
-def _remove_small_regions(input_data, index, affine, min_size):
+def _remove_small_regions(input_data, affine, min_size):
     """Remove small regions in volume from input_data of specified min_size.
 
     min_size should be specified in mm^3 (region size in volume).
@@ -87,11 +87,6 @@ def _remove_small_regions(input_data, index, affine, min_size):
         Values inside the regions defined by labels contained in input_data
         are summed together to get the size and compare with given min_size.
         For example, see scipy.ndimage.label.
-
-    index : numpy.ndarray
-        A sequence of label numbers of the regions to be measured corresponding
-        to input_data. For example, sequence can be generated using
-        np.arange(n_labels + 1).
 
     affine : numpy.ndarray
         Affine of input_data is used to convert size in voxels to size in
@@ -116,7 +111,7 @@ def _remove_small_regions(input_data, index, affine, min_size):
     # np.unique and then use np.bincount to count the region sizes.
 
     _, region_indices = np.unique(input_data, return_inverse=True)
-    region_sizes = np.bincount(region_indices)
+    region_sizes = np.bincount(region_indices.ravel())
     size_in_vox = min_size / np.abs(np.linalg.det(affine[:3, :3]))
     labels_kept = region_sizes > size_in_vox
     if not np.all(labels_kept):
@@ -255,7 +250,7 @@ def connected_regions(
         index_of_each_map.extend([index] * len(regions))
         all_regions_imgs.extend(regions)
 
-    regions_extracted_img = concat_niimgs(all_regions_imgs)
+    regions_extracted_img = concat_imgs(all_regions_imgs)
 
     return regions_extracted_img, index_of_each_map
 
@@ -270,7 +265,7 @@ class RegionExtractor(NiftiMapsMasker):
     Particularly, to show that each decomposed brain maps can be
     used to focus on a target specific Regions of Interest analysis.
 
-    See :footcite:`Abraham2014`.
+    See :footcite:t:`Abraham2014`.
 
     .. versionadded:: 0.2
 
@@ -398,10 +393,12 @@ class RegionExtractor(NiftiMapsMasker):
         low_pass=None,
         high_pass=None,
         t_r=None,
-        memory=Memory(location=None),
+        memory=None,
         memory_level=0,
         verbose=0,
     ):
+        if memory is None:
+            memory = Memory(location=None)
         super().__init__(
             maps_img=maps_img,
             mask_img=mask_img,
@@ -592,10 +589,7 @@ def connected_label_regions(
             regions, this_n_labels = label(this_label_mask.astype(int))
 
         if min_size is not None:
-            index = np.arange(this_n_labels + 1)
-            regions = _remove_small_regions(
-                regions, index, affine, min_size=min_size
-            )
+            regions = _remove_small_regions(regions, affine, min_size=min_size)
             this_n_labels = regions.max()
 
         cur_regions = regions[regions != 0] + current_max_label

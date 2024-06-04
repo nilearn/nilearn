@@ -80,13 +80,13 @@ plotting.plot_roi(
 # ROIs.
 #
 # You can save the new atlas to a nifti file using to_filename method.
-region_labels.to_filename("relabeled_yeo_atlas.nii.gz")
+from pathlib import Path
 
-# The images are saved to the current folder. It is possible to specify the
-# folder for saving the results, i.e.
-# import os
-# region_labels.to_filename(os.path.join(folder_path,
-#                                        'relabeled_yeo_atlas.nii.gz'))
+output_dir = Path.cwd() / "results" / "plot_extract_regions_labels_image"
+output_dir.mkdir(exist_ok=True, parents=True)
+print(f"Output will be saved to: {output_dir}")
+
+region_labels.to_filename(output_dir / "relabeled_yeo_atlas.nii.gz")
 
 
 # %%

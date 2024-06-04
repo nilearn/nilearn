@@ -31,11 +31,11 @@ The nilearn core developers are:
 * `Bertrand Thirion`_
 * `Elizabeth DuPre`_
 * `Hao-Ting Wang`_
+* `Himanshu Aggarwal`_
 * `Jerome Dockes`_
 * `Nicolas Gensollen`_
 * `Rémi Gau`_
 * `Taylor Salo`_
-* `Yasmin Mzayek`_
 
 .. CORE DEV SECTION ENDS HERE
 
@@ -56,6 +56,7 @@ Some other past or present contributors are:
 * `Alexandre Gramfort`_: Meta, France
 * `Alexandre Savio`_
 * `Alexandre Cionca`_: Centre Hospitalier Universitaire Vaudoise, Lausanne, Switzerland
+* `Alexandre Sayal`_: CIBIT, University of Coimbra, Portugal
 * `Alexis Thual`_: Inria, Saclay, France
 * `Alisha Kodibagkar`_: MIT McGovern Institute, Cambridge, Massachusetts, United States
 * `Amadeus Kanaan`_
@@ -91,6 +92,7 @@ Some other past or present contributors are:
 * `Eric Larson`_: Institute for Learning and Brain Sciences, University of Washington, Washington, USA
 * `Evan Edmond`_: University of Oxford, Oxford, UK
 * `Fabian Pedregosa`_: @google, Geneva, Switzerland
+* `Florent Pollet`_: ENS Paris-Saclay, Saclay, France
 * `Franz Liem`_
 * `François Paugam`_
 * `Gael Varoquaux`_: Inria, Saclay, France
@@ -156,6 +158,7 @@ Some other past or present contributors are:
 * `Oscar Esteban`_: Centre Hospitalier Universitaire Vaudoise, Lausanne, Switzerland
 * `Patrick Sadil`_: Department of Biostatistics, Johns Hopkins Bloomberg School of Public Health, USA
 * `Paul Bogdan`_
+* `Paul Reiners`_: Masonic Institute for the Developing Brain, University of Minnesota, USA
 * `Paula Sanz-Leon`_: Medical Research Institute, Brisbane, Australia
 * `Peer Herholz`_: Origami lab, McGill University, Montréal, Canada
 * `Philippe Gervais`_: Zurich, Switzerland
@@ -192,6 +195,7 @@ Some other past or present contributors are:
 * `Virgile Fritsch`_: Inria, Saclay, France
 * `Yaroslav Halchenko`_: Dartmouth College, PBS, Hanover, New Hampshire, USA
 * `Yasmin Mzayek`_: Inria, Saclay, France
+* `Yichun Huang`_: Peking University, Beijing, China
 * `Zvi Baratz`_: Tel-Aviv University, Israel
 * `Óscar Nájera`_: Checkmk
 
@@ -199,6 +203,8 @@ Some other past or present contributors are:
 
 Funding
 .......
+
+`Himanshu Aggarwal`_ is paid by `INRIA <https://www.inria.fr/en>`_.
 
 `Rémi Gau`_ is paid by a grant from the
 `Chan Zuckerberg Initiative <https://chanzuckerberg.com/eoss/proposals/improving-standard-practice-for-neuroimaging-analyses-with-nilearn/>`_
@@ -211,8 +217,8 @@ project, funded by the French `Investissement d'Avenir
 
 `Kshitij Chawla`_ was paid by `INRIA <https://www.inria.fr/en>`_.
 
-`Yasmin Mzayek`_ is paid by the `Human Brain Project <https://www.humanbrainproject.eu/en/>`_
-|HBP logo|. Previously `Nicolas Gensollen`_ was funded by HBP.
+`Yasmin Mzayek`_ and `Nicolas Gensollen`_ were paid by the `Human Brain Project <https://www.humanbrainproject.eu/en/>`_
+|HBP logo|.
 
 NiLearn is also supported by `DigiCosme <https://digicosme.lri.fr>`_
 |digicosme logo| and `DataIA <https://dataia.eu/en>`_ |dataia_logo|.

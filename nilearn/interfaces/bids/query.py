@@ -46,10 +46,10 @@ def _get_metadata_from_bids(
         if value is not None:
             return value
         else:
-            warn(f"'{field}' not found in file {json_files[0]}.")
+            warn(f"'{field}' not found in file {json_files[0]}.", stacklevel=4)
     else:
-        msg_suffix = f" in {bids_path}" if bids_path else ""
-        warn(f"No bold.json found in BIDS folder{msg_suffix}.")
+        msg_suffix = f" in:\n {bids_path}" if bids_path else ""
+        warn(f"\nNo bold.json found in BIDS folder{msg_suffix}.", stacklevel=3)
 
     return None
 
@@ -92,8 +92,11 @@ def infer_slice_timing_start_time_from_dataset(bids_path, filters, verbose=0):
     )
     if not img_specs:
         if verbose:
-            msg_suffix = f" in {bids_path}"
-            warn(f"No bold.json found in BIDS folder{msg_suffix}.")
+            msg_suffix = f" in:\n {bids_path}"
+            warn(
+                f"\nNo bold.json found in BIDS folder{msg_suffix}.",
+                stacklevel=3,
+            )
         return None
 
     return _get_metadata_from_bids(
@@ -137,8 +140,11 @@ def infer_repetition_time_from_dataset(bids_path, filters, verbose=0):
 
     if not img_specs:
         if verbose:
-            msg_suffix = f" in {bids_path}"
-            warn(f"No bold.json found in BIDS folder{msg_suffix}.")
+            msg_suffix = f" in:\n {bids_path}"
+            warn(
+                f"\nNo bold.json found in BIDS folder{msg_suffix}.",
+                stacklevel=3,
+            )
         return None
 
     return _get_metadata_from_bids(

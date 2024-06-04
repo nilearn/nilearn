@@ -77,11 +77,9 @@ _____
    :ref:`general linear model (or GLM) <glm_intro>` to retrieve one response
    map (a beta map) per trial as shown in
    :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_glm_decoding.py`.
-   This is sometimes known as "beta-series regressions" (see Mumford et al,
-   *Deconvolving bold activation in event-related designs for multivoxel
-   pattern classification analyses*, NeuroImage 2012). These maps can
-   then be input to the decoder as below, predicting the conditions
-   associated to trial.
+   This is sometimes known as "beta-series regressions" (see :footcite:t:`Mumford2012`).
+   These maps can then be input to the decoder as below,
+   predicting the conditions associated to trial.
 
    For simplicity, we will work on the raw time-series of the data.
    However, **it is strongly recommended that you fit a first-level model to
@@ -128,7 +126,7 @@ Loading the data into nilearn
     explicitly define a masker :  :class:`nilearn.maskers.NiftiMasker`.
     This object extracts :term:`voxels<voxel>` belonging to a given spatial mask and converts
     their signal to a 2D data matrix with a shape (n_timepoints, n_voxels)
-    (see :ref:`mask_4d_2_3d` for a discussion on using
+    (see :ref:`mask_4d_2_3d` for a discussion on using masks).
 
 .. note::
   Seemingly minor data preparation can matter a lot on the final score,
@@ -248,21 +246,20 @@ rule of thumb).
 
 As a general advice :
 
-* To train a decoder on one subject data, try to leave at least one session
+* To train a decoder on one subject data, try to leave at least one run
   out to have an independent test.
 
 * To train a decoder across different subject data, leaving some subjects data
   out is often a good option.
 
 * In any case leaving only one image as test set (leave-one-out) is often
-  the worst option (see Varoquaux et al, *Assessing and tuning brain decoders:
-  cross-validation, caveats, and guidelines*, Neuroimage 2017).
+  the worst option (see :footcite:t:`Varoquaux2017`).
 
 
 To improve our first pipeline for the Haxby example, we can leave one entire
-session out. To do this, we can pass a ``LeaveOneGroupOut`` cross-validation
+run out. To do this, we can pass a ``LeaveOneGroupOut`` cross-validation
 object from scikit-learn to our ``Decoder``. Fitting it with the information of
-groups=`session_labels` will use one session as test set.
+groups=`run_labels` will use one run as test set.
 
 .. note::
   Full code example can be found at :
@@ -401,3 +398,9 @@ To visualize the results, :class:`nilearn.decoding.Decoder` handles two main ste
   * :ref:`frem`
   * :ref:`space_net`
   * :ref:`searchlight`
+
+
+References
+----------
+
+.. footbibliography::

@@ -71,7 +71,9 @@ def check_threshold(threshold, data, percentile_func, name="threshold"):
         if abs(threshold) > value_check:
             warnings.warn(
                 f"The given float value must not exceed {value_check}. "
-                f"But, you have given threshold={threshold}."
+                f"But, you have given threshold={threshold}.",
+                category=UserWarning,
+                stacklevel=3,
             )
     else:
         raise TypeError(
@@ -132,14 +134,14 @@ def adjust_screening_percentile(screening_percentile, mask_img, verbose=0):
             "Brain mask is bigger than the volume of a standard "
             "human brain. This object is probably not tuned to "
             "be used on such data.",
-            stacklevel=2,
+            stacklevel=3,
         )
     elif mask_volume < 0.005 * MNI152_BRAIN_VOLUME:
         warnings.warn(
             "Brain mask is smaller than .5% of the volume "
             "human brain. This object is probably not tuned to "
             "be used on such data.",
-            stacklevel=2,
+            stacklevel=3,
         )
 
     if screening_percentile < 100.0:

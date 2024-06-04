@@ -1,4 +1,5 @@
 """Visualizing 3D stat maps in a Brainsprite viewer."""
+
 import copy
 import json
 import os
@@ -22,7 +23,7 @@ from ..datasets import load_mni152_template
 from ..image import get_data, new_img_like, reorder_img, resample_to_img
 from ..plotting import cm
 from ..plotting.find_cuts import find_xyz_cut_coords
-from ..plotting.img_plotting import _load_anat
+from ..plotting.img_plotting import load_anat
 from .js_plotting_utils import colorscale, get_html_template
 
 
@@ -230,7 +231,7 @@ def _load_bg_img(stat_map_img, bg_img="MNI152", black_bg="auto", dim="auto"):
             safe_get_data(bg_img, ensure_finite=True), -1e-6, 1e-6, copy=False
         )
         bg_img = new_img_like(bg_img, masked_data)
-        bg_img, black_bg, bg_min, bg_max = _load_anat(
+        bg_img, black_bg, bg_min, bg_max = load_anat(
             bg_img, dim=dim, black_bg=black_bg
         )
     bg_img = reorder_img(bg_img, resample="nearest")
@@ -316,7 +317,7 @@ def _json_view_params(
     return params
 
 
-def _json_view_size(params):
+def _json_view_size(params, width_view=600):
     """Define the size of the viewer.
 
     Returns: width_view, height_view
@@ -332,7 +333,6 @@ def _json_view_size(params):
     slices_height = 1.20 * slices_height
 
     # Get the final size of the viewer
-    width_view = 600
     ratio = slices_height / slices_width
     height_view = np.ceil(ratio * width_view)
 
@@ -411,14 +411,14 @@ def _json_view_data(
     return json_view
 
 
-def _json_view_to_html(json_view):
+def _json_view_to_html(json_view, width_view=600):
     """Fill a brainsprite html template with relevant parameters and data.
 
     Returns: html_view
 
     """
     # Fix the size of the viewer
-    width, height = _json_view_size(json_view["params"])
+    width, height = _json_view_size(json_view["params"], width_view)
 
     # Populate all missing keys with html-ready data
     json_view["INSERT_PAGE_TITLE_HERE"] = (
@@ -488,8 +488,8 @@ def view_img(
     vmax=None,
     vmin=None,
     resampling_interpolation="continuous",
+    width_view=600,
     opacity=1,
-    **kwargs,
 ):
     """Interactive html viewer of a statistical map, with optional background.
 
@@ -553,6 +553,11 @@ def view_img(
         image, or 0 when a threshold is used.
     %(resampling_interpolation)s
         Default='continuous'.
+
+    width_view : int, optional
+        Default=600.
+        Width of the viewer in pixels.
+
     opacity : float in [0,1], default=1
         The level of opacity of the overlay (0: transparent, 1: opaque).
 
@@ -627,6 +632,6 @@ def view_img(
         value=False,
     )
 
-    html_view = _json_view_to_html(json_view)
+    html_view = _json_view_to_html(json_view, width_view)
 
     return html_view

@@ -3,6 +3,7 @@
 Authors: Pierre Bellec, François Paugam, Hanad Sharmarke, Hao-Ting Wang,
 Michael W. Weiss, Steven Meisler, Thibault Piront.
 """
+
 import warnings
 
 import pandas as pd
@@ -143,12 +144,13 @@ def load_confounds(
           Associated parameter: `wm_csf`
         - "global_signal" confounds derived from the global signal.
           Associated parameter: `global_signal`
-        - "compcor" confounds derived from CompCor :footcite:`Behzadi2007`.
+        - "compcor" confounds derived from CompCor (:footcite:t:`Behzadi2007`).
           When using this noise component, "high_pass" must also be applied.
           Associated parameter: `compcor`, `n_compcor`
-        - "ica_aroma" confounds derived from ICA-AROMA :footcite:`Pruim2015`.
+        - "ica_aroma" confounds derived
+          from ICA-AROMA (:footcite:t:`Pruim2015`).
           Associated parameter: `ica_aroma`
-        - "scrub" regressors for :footcite:`Power2014` scrubbing approach.
+        - "scrub" regressors for :footcite:t:`Power2014` scrubbing approach.
           Associated parameter: `scrub`, `fd_threshold`, `std_dvars_threshold`
 
         For each component above, associated parameters will be applied if
@@ -200,19 +202,28 @@ def load_confounds(
     scrub : :obj:`int`, default=5
         After accounting for time frames with excessive motion, further remove
         segments shorter than the given number. The default value is referred
-        as full scrubbing in :footcite:`Power2014`. When the value is 0,
+        as full scrubbing in :footcite:t:`Power2014`. When the value is 0,
         remove time frames based on excessive framewise displacement and
         DVARS only.
 
     fd_threshold : :obj:`float`, default=0.2
+
+        .. deprecated:: 0.10.3
+           The default value will be changed to 0.5 in 0.13.0
+
         Framewise displacement threshold for scrub in mm.
 
     std_dvars_threshold : :obj:`float`, default=3
+
+        .. deprecated:: 0.10.3
+           The default value will be changed to 1.5 in 0.13.0
+
         Standardized DVARS threshold for scrub.
+        The default threshold matching :term:`fMRIPrep`.
         DVARs is defined as root mean squared intensity difference of volume N
-        to volume N+1 :footcite:`Power2012`. D referring to temporal derivative
-        of timecourses, VARS referring to root mean squared variance over
-        voxels.
+        to volume N+1 :footcite:t:`Power2012`.
+        D referring to temporal derivative of timecourses,
+        VARS referring to root mean squared variance over voxels.
 
     compcor : :obj:`str`, default="anat_combined"
 
@@ -220,7 +231,7 @@ def load_confounds(
             Require :term:`fMRIPrep` >= v:1.4.0.
 
         Type of confounds extracted from a component based noise correction
-        method :footcite:`Behzadi2007`.
+        method :footcite:t:`Behzadi2007`.
 
         - "anat_combined" noise components calculated using a white matter and
           CSF combined anatomical mask
@@ -278,9 +289,10 @@ def load_confounds(
     Notes
     -----
     The noise components implemented in this class are adapted from
-    :footcite:`Ciric2017`. Band-pass filter is replaced by high-pass filter.
-    Low-pass filters can be implemented, e.g., through `NifitMaskers`. Other
-    aspects of the preprocessing listed in :footcite:`Ciric2017` are controlled
+    :footcite:t:`Ciric2017`. Band-pass filter is replaced by high-pass filter.
+    Low-pass filters can be implemented, e.g., through `NifitMaskers`.
+    Other aspects of the preprocessing listed
+    in :footcite:t:`Ciric2017` are controlled
     through :term:`fMRIPrep`, e.g. distortion correction.
 
     See Also
@@ -293,7 +305,30 @@ def load_confounds(
 
     """
     _check_strategy(strategy)
-
+    if "scrub" in strategy and fd_threshold == 0.2:
+        fd_threshold_default = (
+            "The default parameter for fd_threshold is currently 0.2 "
+            "which is inconsistent with the fMRIPrep default of 0.5. "
+            "In release 0.13.0, "
+            "the default strategy will be replaced by 0.5."
+        )
+        warnings.warn(
+            category=DeprecationWarning,
+            message=fd_threshold_default,
+            stacklevel=2,
+        )
+    if "scrub" in strategy and std_dvars_threshold == 3:
+        std_dvars_threshold_default = (
+            "The default parameter for std_dvars_threshold is currently 3 "
+            "which is inconsistent with the fMRIPrep default of 1.5. "
+            "In release 0.13.0, "
+            "the default strategy will be replaced by 1.5."
+        )
+        warnings.warn(
+            category=DeprecationWarning,
+            message=std_dvars_threshold_default,
+            stacklevel=2,
+        )
     # load confounds per image provided
     img_files, flag_single = sanitize_confounds(img_files)
     confounds_out = []

@@ -121,8 +121,8 @@ contrast_matrix = np.eye(design_matrix.shape[1])
 
 # %%
 # At first, we create basic contrasts.
-basic_contrasts = dict([(column, contrast_matrix[i])
-                        for i, column in enumerate(design_matrix.columns)])
+basic_contrasts = {column: contrast_matrix[i]
+                   for i, column in enumerate(design_matrix.columns)}
 
 # %%
 # Next, we add some intermediate contrasts and
@@ -186,7 +186,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
           f"{contrast_id}, right hemisphere")
     # compute contrast-related statistics
     contrast = compute_contrast(labels, estimates, contrast_val,
-                                contrast_type='t')
+                                stat_type='t')
     # we present the Z-transform of the t map
     z_score = contrast.z_score()
     # we plot it on the surface, on the inflated fsaverage mesh,
@@ -219,7 +219,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
           f"{contrast_id}, left hemisphere")
     # compute contrasts
     contrast = compute_contrast(labels, estimates, contrast_val,
-                                contrast_type='t')
+                                stat_type='t')
     z_score = contrast.z_score()
     # plot the result
     plotting.plot_surf_stat_map(

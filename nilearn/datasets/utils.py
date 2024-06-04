@@ -1,13 +1,14 @@
 """Downloading NeuroImaging datasets: utility functions."""
+
 import os
 from warnings import warn
 
 from .._utils import fill_doc
 
 _GENERAL_MESSAGE = (
-    "The import path 'nilearn.datasets.utils' "
-    "will deprecated in version 0.13. "
-    "Importing from 'nilearn.datasets.utils will be possible "
+    "The import path 'nilearn.datasets.utils'\n"
+    "will be deprecated in version 0.13.\n"
+    "Importing from 'nilearn.datasets.utils will be possible\n"
     "at least until release 0.13.0."
 )
 

@@ -14,6 +14,7 @@ import string
 import warnings
 from collections import OrderedDict
 from collections.abc import Iterable
+from decimal import Decimal
 from html import escape
 
 import numpy as np
@@ -21,6 +22,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 
 from nilearn.plotting import plot_glass_brain, plot_roi, plot_stat_map
+from nilearn.plotting.cm import _cmap_d as nilearn_cmaps
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
 from nilearn.plotting.matrix_plotting import (
     plot_contrast_matrix,
@@ -36,8 +38,10 @@ with warnings.catch_warnings():
     from nilearn.glm.thresholding import threshold_stats_img
 
 from nilearn._utils import check_niimg
+from nilearn._utils.niimg import safe_get_data
+from nilearn.experimental.surface import SurfaceMasker
 from nilearn.maskers import NiftiMasker
-from nilearn.reporting._get_clusters_table import get_clusters_table
+from nilearn.reporting.get_clusters_table import get_clusters_table
 from nilearn.reporting.utils import figure_to_svg_quoted
 
 HTML_TEMPLATE_ROOT_PATH = os.path.join(
@@ -167,6 +171,11 @@ def make_glm_report(
         Contains the HTML code for the :term:`GLM` Report.
 
     """
+    if isinstance(model.masker_, SurfaceMasker):
+        raise NotImplementedError(
+            "Report generation is not yet supported for surface analysis."
+        )
+
     if bg_img == "MNI152TEMPLATE":
         bg_img = MNI152TEMPLATE
     if not display_mode:
@@ -224,8 +233,7 @@ def make_glm_report(
             mask_img = model.masker_.mask_img_
 
     mask_plot_html_code = _mask_to_svg(
-        mask_img=mask_img,
-        bg_img=bg_img,
+        mask_img=mask_img, bg_img=bg_img, cut_coords=cut_coords
     )
     all_components = _make_stat_maps_contrast_clusters(
         stat_img=statistical_maps,
@@ -286,7 +294,10 @@ def _check_report_dims(report_size):
         width = int(width)
         height = int(height)
     except ValueError:
-        warnings.warn("Report size has invalid values. Using default 1600x800")
+        warnings.warn(
+            "Report size has invalid values. Using default 1600x800",
+            stacklevel=3,
+        )
         width, height = (1600, 800)
     return width, height
 
@@ -478,12 +489,14 @@ def _model_attributes_to_dataframe(model):
         "smoothing_fwhm",
         "target_affine",
         "slice_time_ref",
-        "fir_delays",
     ]
     attribute_units = {
         "t_r": "s",
         "high_pass": "Hz",
     }
+
+    if hasattr(model, "hrf_model") and model.hrf_model == "fir":
+        selected_attributes.append("fir_delays")
 
     selected_attributes.sort()
     display_attributes = OrderedDict(
@@ -570,8 +583,9 @@ def _dmtx_to_svg_url(design_matrices):
     for dmtx_count, design_matrix in enumerate(design_matrices, start=1):
         dmtx_text_ = string.Template(dmtx_template_text)
         dmtx_plot = plot_design_matrix(design_matrix)
-        dmtx_title = f"Session {dmtx_count}"
-        plt.title(dmtx_title, y=0.987)
+        dmtx_title = f"Run {dmtx_count}"
+        if len(design_matrices) > 1:
+            plt.title(dmtx_title, y=1.025, x=-0.1)
         dmtx_plot = _resize_plot_inches(dmtx_plot, height_change=0.3)
         url_design_matrix_svg = _plot_to_svg(dmtx_plot)
         # prevents sphinx-gallery & jupyter from scraping & inserting plots
@@ -626,7 +640,7 @@ def _resize_plot_inches(plot, width_change=0, height_change=0):
     return plot
 
 
-def _mask_to_svg(mask_img, bg_img):
+def _mask_to_svg(mask_img, bg_img, cut_coords=None):
     """Plot cuts of an mask image and creates SVG code of it.
 
     Parameters
@@ -653,6 +667,7 @@ def _mask_to_svg(mask_img, bg_img):
             bg_img=bg_img,
             display_mode="z",
             cmap="Set1",
+            cut_coords=cut_coords,
         )
         mask_plot_svg = _plot_to_svg(plt.gcf())
         # prevents sphinx-gallery & jupyter from scraping & inserting plots
@@ -760,13 +775,20 @@ def _make_stat_maps_contrast_clusters(
         components_template_text = html_template_obj.read()
     for contrast_name, stat_map_img in stat_img.items():
         component_text_ = string.Template(components_template_text)
-        thresholded_stat_map, threshold = threshold_stats_img(
+
+        # Only use threshold_stats_img to adjust the threshold
+        # that we will pass to  _clustering_params_to_dataframe
+        # and _stat_map_to_svg
+        # Necessary to avoid :
+        # https://github.com/nilearn/nilearn/issues/4192
+        thresholded_img, threshold = threshold_stats_img(
             stat_img=stat_map_img,
             threshold=threshold,
             alpha=alpha,
             cluster_threshold=cluster_threshold,
             height_control=height_control,
         )
+
         table_details = _clustering_params_to_dataframe(
             threshold,
             cluster_threshold,
@@ -774,16 +796,19 @@ def _make_stat_maps_contrast_clusters(
             height_control,
             alpha,
         )
+
         stat_map_svg = _stat_map_to_svg(
-            stat_img=thresholded_stat_map,
+            stat_img=thresholded_img,
+            threshold=threshold,
             bg_img=bg_img,
             cut_coords=cut_coords,
             display_mode=display_mode,
             plot_type=plot_type,
             table_details=table_details,
         )
+
         cluster_table = get_clusters_table(
-            stat_map_img,
+            thresholded_img,
             stat_threshold=threshold,
             cluster_threshold=cluster_threshold,
             min_distance=min_distance,
@@ -798,7 +823,7 @@ def _make_stat_maps_contrast_clusters(
         )
         table_details_html = _dataframe_to_html(
             table_details,
-            precision=2,
+            precision=3,
             header=False,
             classes="cluster-details-table",
         )
@@ -864,6 +889,8 @@ def _clustering_params_to_dataframe(
         This is simpler than overloading the class using inheritance,
         especially given limited Python2 use at time of release.
         """
+        if alpha < 0.001:
+            alpha = f"{Decimal(alpha):.2E}"
         if os.sys.version_info.major == 2:
             table_details.update({"alpha": alpha})
         else:
@@ -886,6 +913,7 @@ def _clustering_params_to_dataframe(
 @fill_doc
 def _stat_map_to_svg(
     stat_img,
+    threshold,
     bg_img,
     cut_coords,
     display_mode,
@@ -901,6 +929,9 @@ def _stat_map_to_svg(
        Statistical image (presumably in z scale),
        to be plotted as slices or glass brain.
        Does not perform any thresholding.
+
+    threshold : float
+       Desired threshold in z-scale.
 
     bg_img : Niimg-like object
         Only used when plot_type is 'slice'.
@@ -936,12 +967,29 @@ def _stat_map_to_svg(
         SVG Image Data URL representing a statistical map.
 
     """
+    data = safe_get_data(stat_img, ensure_finite=True)
+    stat_map_min = np.nanmin(data)
+    stat_map_max = np.nanmax(data)
+    symmetric_cbar = True
+    cmap = "bwr"
+    if stat_map_min >= 0.0:
+        symmetric_cbar = False
+        cmap = "red_transparent_full_alpha_range"
+    elif stat_map_max <= 0.0:
+        symmetric_cbar = False
+        cmap = "blue_transparent_full_alpha_range"
+        cmap = nilearn_cmaps[cmap].reversed()
+
     if plot_type == "slice":
         stat_map_plot = plot_stat_map(
             stat_img,
             bg_img=bg_img,
             cut_coords=cut_coords,
             display_mode=display_mode,
+            colorbar=True,
+            cmap=cmap,
+            symmetric_cbar=symmetric_cbar,
+            threshold=threshold,
         )
     elif plot_type == "glass":
         stat_map_plot = plot_glass_brain(
@@ -949,12 +997,30 @@ def _stat_map_to_svg(
             display_mode=display_mode,
             colorbar=True,
             plot_abs=False,
+            symmetric_cbar=symmetric_cbar,
+            cmap=cmap,
+            threshold=threshold,
         )
     else:
         raise ValueError(
             "Invalid plot type provided. "
             "Acceptable options are 'slice' or 'glass'."
         )
+
+    x_label_color = "black"
+    if plot_type == "slice":
+        x_label_color = "white"
+
+    if hasattr(stat_map_plot, "_cbar"):
+        cbar_ax = stat_map_plot._cbar.ax
+        cbar_ax.set_xlabel(
+            "Z score",
+            labelpad=5,
+            fontweight="bold",
+            loc="right",
+            color=x_label_color,
+        )
+
     with pd.option_context("display.precision", 2):
         _add_params_to_plot(table_details, stat_map_plot)
     fig = plt.gcf()

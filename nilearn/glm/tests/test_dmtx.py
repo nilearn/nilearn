@@ -4,6 +4,7 @@ Test the design_matrix utilities.
 Note that the tests just looks whether the data produces has correct dimension,
 not whether it is exact
 """
+
 from os import path as osp
 
 import numpy as np
@@ -18,8 +19,8 @@ from numpy.testing import (
 from nilearn._utils.data_gen import basic_paradigm
 from nilearn.glm.first_level.design_matrix import (
     _convolve_regressors,
-    _cosine_drift,
     check_design_matrix,
+    create_cosine_drift,
     make_first_level_design_matrix,
     make_second_level_design_matrix,
 )
@@ -50,8 +51,8 @@ def design_matrix_light(
     add_reg_names=None,
     min_onset=-24,
 ):
-    """Same as make_first_level_design_matrix, \
-    but only returns the computed matrix and associated name."""
+    """Perform same as make_first_level_design_matrix, \
+       but only returns the computed matrix and associated name."""
     fir_delays = fir_delays or [0]
     dmtx = make_first_level_design_matrix(
         frame_times,
@@ -86,9 +87,9 @@ def test_cosine_drift():
     spm_drifts = DESIGN_MATRIX["cosbf_dt_1_nt_20_hcut_0p1"]
     frame_times = np.arange(20)
     high_pass_frequency = 0.1
-    nistats_drifts = _cosine_drift(high_pass_frequency, frame_times)
-    assert_almost_equal(spm_drifts[:, 1:], nistats_drifts[:, :-2])
-    # nistats_drifts is placing the constant at the end [:, : - 1]
+    nilearn_drifts = create_cosine_drift(high_pass_frequency, frame_times)
+    assert_almost_equal(spm_drifts[:, 1:], nilearn_drifts[:, :-2])
+    # nilearn_drifts is placing the constant at the end [:, : - 1]
 
 
 def test_design_matrix_no_experimental_paradigm(frame_times):
@@ -331,7 +332,7 @@ def test_design_matrix20(n_frames):
     # Test for commit 10662f7
     frame_times = np.arange(
         0, n_frames
-    )  # was 127 in old version of _cosine_drift
+    )  # was 127 in old version of create_cosine_drift
     events = modulated_event_paradigm()
     X, _ = design_matrix_light(
         frame_times, events, hrf_model="glover", drift_model="cosine"
@@ -400,7 +401,7 @@ def test_oversampling(n_frames):
 
 
 def test_high_pass(n_frames):
-    """Test that high-pass values lead to reasonable design matrices"""
+    """Test that high-pass values lead to reasonable design matrices."""
     tr = 2.0
     frame_times = np.arange(0, tr * n_frames, tr)
     X = make_first_level_design_matrix(
@@ -432,7 +433,7 @@ def test_csv_io(tmp_path, frame_times):
     "block_duration, array", [(1, "arr_0"), (10, "arr_1")]
 )
 def test_compare_design_matrix_to_spm(block_duration, array):
-    # Check that the nistats design matrix is close enough to the SPM one
+    # Check that the nilearn design matrix is close enough to the SPM one
     # (it cannot be identical, because the hrf shape is different)
     events, frame_times = spm_paradigm(block_duration=block_duration)
     X1 = make_first_level_design_matrix(frame_times, events, drift_model=None)

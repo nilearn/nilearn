@@ -1,4 +1,5 @@
 """Utilities to compute and operate on brain masks."""
+
 # Authors: Gael Varoquaux, Alexandre Abraham, Philippe Gervais, Ana Luisa Pinho
 import numbers
 import warnings
@@ -353,10 +354,9 @@ def compute_multi_epi_mask(
     memory=None,
     verbose=0,
 ):
-    """Compute a common mask for several sessions or \
-    subjects of :term:`fMRI` data.
+    """Compute a common mask for several runs or subjects of :term:`fMRI` data.
 
-    Uses the mask-finding algorithms to extract masks for each session
+    Uses the mask-finding algorithms to extract masks for each run
     or subject, and then keep only the main connected component of the
     a given fraction of the intersection of all the masks.
 
@@ -364,17 +364,17 @@ def compute_multi_epi_mask(
     ----------
     epi_imgs : :obj:`list` of Niimg-like objects
         See :ref:`extracting_data`.
-        A list of arrays, each item being a subject or a session.
+        A list of arrays, each item being a subject or a run.
         3D and 4D images are accepted.
 
         .. note::
 
             If 3D images are given, we suggest to use the mean image
-            of each session.
+            of each run.
 
     threshold : :obj:`float`, optional
-        The inter-session threshold: the fraction of the
-        total number of sessions in for which a :term:`voxel` must be
+        The inter-run threshold: the fraction of the
+        total number of runs in for which a :term:`voxel` must be
         in the mask to be kept in the common mask.
         threshold=1 corresponds to keeping the intersection of all
         masks, whereas threshold=0 is the union of all masks.
@@ -518,20 +518,18 @@ def compute_background_mask(
 def compute_multi_background_mask(
     data_imgs,
     border_size=2,
-    upper_cutoff=0.85,
     connected=True,
     opening=2,
     threshold=0.5,
     target_affine=None,
     target_shape=None,
-    exclude_zeros=False,
     n_jobs=1,
     memory=None,
     verbose=0,
 ):
-    """Compute a common mask for several sessions or subjects of data.
+    """Compute a common mask for several runs or subjects of data.
 
-    Uses the mask-finding algorithms to extract masks for each session
+    Uses the mask-finding algorithms to extract masks for each run
     or subject, and then keep only the main connected component of the
     a given fraction of the intersection of all the masks.
 
@@ -539,16 +537,16 @@ def compute_multi_background_mask(
     ----------
     data_imgs : :obj:`list` of Niimg-like objects
         See :ref:`extracting_data`.
-        A list of arrays, each item being a subject or a session.
+        A list of arrays, each item being a subject or a run.
         3D and 4D images are accepted.
 
         .. note::
             If 3D images are given, we suggest to use the mean image
-            of each session.
+            of each run.
 
     threshold : :obj:`float`, optional
-        The inter-session threshold: the fraction of the
-        total number of session in for which a :term:`voxel` must be
+        The inter-run threshold: the fraction of the
+        total number of run in for which a :term:`voxel` must be
         in the mask to be kept in the common mask.
         threshold=1 corresponds to keeping the intersection of all
         masks, whereas threshold=0 is the union of all masks.
@@ -681,7 +679,6 @@ def compute_multi_brain_mask(
     opening=2,
     memory=None,
     verbose=0,
-    n_jobs=1,
     mask_type="whole-brain",
     **kwargs,
 ):
@@ -714,10 +711,9 @@ def compute_multi_brain_mask(
     %(mask_type)s
     %(memory)s
     %(verbose0)s
-    %(n_jobs)s
 
-        .. note::
-            Argument not used but kept to fit the API
+    .. note::
+        Argument not used but kept to fit the API
 
     **kwargs : optional arguments
         Arguments such as 'target_affine' are used in the call of other
@@ -795,7 +791,7 @@ def apply_mask(
 
     Returns
     -------
-    session_series : :class:`numpy.ndarray`
+    run_series : :class:`numpy.ndarray`
         2D array of series with shape (image number, :term:`voxel` number)
 
     Notes

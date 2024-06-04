@@ -2,6 +2,7 @@
 
 See http://nilearn.github.io/stable/manipulating_images/input_output.html
 """
+
 import numbers
 
 # Author: Gael Varoquaux, Alexandre Abraham, Michael Eickenberg
@@ -14,7 +15,7 @@ from scipy.ndimage import affine_transform, find_objects
 from .. import _utils
 from .._utils import stringify_path
 from .._utils.niimg import _get_data
-from .image import crop_img
+from .image import copy_img, crop_img
 
 ###############################################################################
 # Affine utils
@@ -223,7 +224,7 @@ def get_mask_bounds(img):
     (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(mask.shape, affine)
     slices = find_objects(mask.astype(int))
     if len(slices) == 0:
-        warnings.warn("empty mask", stacklevel=2)
+        warnings.warn("empty mask", stacklevel=3)
     else:
         x_slice, y_slice, z_slice = slices[0]
         x_width, y_width, z_width = mask.shape
@@ -497,7 +498,7 @@ def resample_img(
     # noop cases
     if target_affine is None and target_shape is None:
         if copy and not input_img_is_string:
-            img = _utils.copy_img(img)
+            img = copy_img(img)
         return img
     if (
         np.shape(target_affine) == np.shape(affine)
@@ -512,7 +513,7 @@ def resample_img(
         target_affine, affine
     ):
         if copy and not input_img_is_string:
-            img = _utils.copy_img(img)
+            img = copy_img(img)
         return img
 
     # We now know that some resampling must be done.
@@ -586,7 +587,9 @@ def resample_img(
         aux = aux.replace("ufloat", "float").replace("floatc", "float")
         if aux in ["float8", "float16"]:
             aux = "float32"
-        warnings.warn(f"Casting data from {data.dtype.name} to {aux}")
+        warnings.warn(
+            f"Casting data from {data.dtype.name} to {aux}", stacklevel=2
+        )
         resampled_data_dtype = np.dtype(aux)
     else:
         resampled_data_dtype = data.dtype

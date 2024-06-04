@@ -1,4 +1,5 @@
 """Test for "region" module."""
+
 # Author: Ph. Gervais
 
 import warnings
@@ -53,7 +54,9 @@ N_REGIONS = 8
 N_TIMEPOINTS = 17
 
 
-def _make_label_data(shape=_shape_3d_default()):
+def _make_label_data(shape=None):
+    if shape is None:
+        shape = _shape_3d_default()
     labels_data = np.zeros(shape, dtype="int32")
     h0, h1, h2 = (s // 2 for s in shape)
     labels_data[:h0, :h1, :h2] = 1
@@ -120,7 +123,7 @@ def _all_voxel_of_each_region_have_same_values(
 
 
 def test_check_shape_and_affine_compatibility_without_dim(img_3d_zeros_eye):
-    """Ensure correct behaviour for valid data without dim"""
+    """Ensure correct behaviour for valid data without dim."""
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         _check_shape_and_affine_compatibility(
@@ -131,7 +134,7 @@ def test_check_shape_and_affine_compatibility_without_dim(img_3d_zeros_eye):
 def test_check_shape_and_affine_compatibility_with_dim(
     img_3d_zeros_eye, img_4d_zeros_eye
 ):
-    """Ensure correct behaviour for valid data without dim"""
+    """Ensure correct behaviour for valid data without dim."""
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         _check_shape_and_affine_compatibility(

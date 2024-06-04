@@ -27,20 +27,27 @@ DATASET_NAMES = {
     "adhd",
     "allen_rsn_2011",
     "basc_multiscale_2015",
+    "bids_langloc",
     "brainomics_localizer",
     "craddock_2012",
     "destrieux_surface",
     "development_fmri",
     "difumo_atlases",
     "dosenbach_2010",
+    "fiac",
     "fsaverage3",
     "fsaverage4",
     "fsaverage5",
     "fsaverage6",
     "fsaverage",
+    "harvard_oxford",
     "haxby2001",
     "icbm152_2009",
+    "language_localizer_demo",
+    "localizer_first_level",
+    "juelich",
     "Megatrawls",
+    "mixed_gambles",
     "miyawaki2008",
     "msdl_atlas",
     "neurovault",
@@ -48,6 +55,8 @@ DATASET_NAMES = {
     "oasis1",
     "pauli_2017",
     "power_2011",
+    "spm_auditory",
+    "spm_multimodal",
     "schaefer_2018",
     "smith_2009",
     "talairach_atlas",
@@ -56,9 +65,8 @@ DATASET_NAMES = {
 
 
 def test_get_dataset_descr_warning():
-    """Tests that function ``get_dataset_descr()`` gives a warning
-    when no description is available.
-    """
+    """Tests that function ``get_dataset_descr()`` gives a warning \
+       when no description is available."""
     with pytest.warns(
         UserWarning, match="Could not find dataset description."
     ):

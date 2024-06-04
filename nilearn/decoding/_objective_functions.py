@@ -1,4 +1,5 @@
 """Common functions and base classes."""
+
 # Author: DOHMATOB Elvis Dopgima,
 #         PIZARRO Gaspar,
 #         VAROQUAUX Gael,

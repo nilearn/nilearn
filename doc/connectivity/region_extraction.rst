@@ -13,9 +13,8 @@ Region Extraction for better brain parcellations
 
 .. topic:: **References**
 
-   * `Abraham et al. "Region segmentation for sparse decompositions: better
-     brain parcellations from rest fMRI", Sparsity Techniques in Medical Imaging,
-     Sep 2014 <https://hal.inria.fr/hal-01093944>`_
+   * Region segmentation for sparse decompositions:
+     better brain parcellations from rest fMRI :footcite:p:`Abraham2014`
 
 .. currentmodule:: nilearn.datasets
 
@@ -195,3 +194,9 @@ color.
 
    The full code can be found as an example:
    :ref:`sphx_glr_auto_examples_03_connectivity_plot_extract_regions_dictlearning_maps.py`
+
+
+References
+----------
+
+.. footbibliography::

@@ -30,11 +30,11 @@ images were already normalized to the same :term:`MNI` space.
 # confounds.tsv files.
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 
-data_dir, _ = fetch_language_localizer_demo_dataset()
+data = fetch_language_localizer_demo_dataset(legacy_output=False)
 
 # %%
 # Here is the location of the dataset on disk.
-print(data_dir)
+print(data.data_dir)
 
 # %%
 # Obtain automatically FirstLevelModel objects and fit arguments
@@ -53,7 +53,8 @@ from nilearn.glm.first_level import first_level_from_bids
 task_label = 'languagelocalizer'
 _, models_run_imgs, models_events, models_confounds = \
     first_level_from_bids(
-        data_dir, task_label,
+        data.data_dir,
+        task_label,
         img_filters=[('desc', 'preproc')],
         n_jobs=2
     )
@@ -62,17 +63,14 @@ _, models_run_imgs, models_events, models_confounds = \
 # We also need to get the :term:`TR` information.
 # For that we use the json sidecar file of the dataset's functional images.
 import json
-import os
+from pathlib import Path
 
-json_file = os.path.join(
-    data_dir,
-    'derivatives',
-    'sub-01',
-    'func',
-    'sub-01_task-languagelocalizer_desc-preproc_bold.json'
-)
-
-with open(json_file, 'r') as f:
+json_file = (Path(data.data_dir) /
+             'derivatives' /
+             'sub-01' /
+             'func' /
+             'sub-01_task-languagelocalizer_desc-preproc_bold.json')
+with open(json_file) as f:
     t_r = json.load(f)['RepetitionTime']
 
 # %%
@@ -119,7 +117,7 @@ for (fmri_img, confound, events) in zip(
     # We input them for contrast computation.
     labels, estimates = run_glm(texture.T, design_matrix.values)
     contrast = compute_contrast(labels, estimates, contrast_values,
-                                contrast_type='t')
+                                stat_type='t')
     # We present the Z-transform of the t map.
     z_score = contrast.z_score()
     z_scores_right.append(z_score)
@@ -128,7 +126,7 @@ for (fmri_img, confound, events) in zip(
     texture = surface.vol_to_surf(fmri_img, fsaverage.pial_left)
     labels, estimates = run_glm(texture.T, design_matrix.values)
     contrast = compute_contrast(labels, estimates, contrast_values,
-                                contrast_type='t')
+                                stat_type='t')
     z_scores_left.append(contrast.z_score())
 
 # %%

@@ -1,4 +1,5 @@
 """Tests for the nilearn.interfaces.bids submodule."""
+
 import json
 import os
 
@@ -302,7 +303,10 @@ def test_parse_bids_filename():
     assert file_dict["file_fields"] == fields
 
 
-def test_save_glm_to_bids(tmp_path_factory):
+@pytest.mark.parametrize(
+    "prefix", ["sub-01_ses-01_task-nback", "sub-01_task-nback", "task-nback"]
+)
+def test_save_glm_to_bids(tmp_path_factory, prefix):
     """Test that save_glm_to_bids saves the appropriate files.
 
     This test reuses code from
@@ -311,46 +315,28 @@ def test_save_glm_to_bids(tmp_path_factory):
     tmpdir = tmp_path_factory.mktemp("test_save_glm_results")
 
     EXPECTED_FILENAMES = [
-        "dataset_description.json",
-        "sub-01_ses-01_task-nback_contrast-effectsOfInterest_design.svg",
-        (
-            "sub-01_ses-01_task-nback_contrast-effectsOfInterest_"
-            "stat-F_statmap.nii.gz"
-        ),
-        (
-            "sub-01_ses-01_task-nback_contrast-effectsOfInterest_"
-            "stat-effect_statmap.nii.gz"
-        ),
-        (
-            "sub-01_ses-01_task-nback_contrast-effectsOfInterest_"
-            "stat-p_statmap.nii.gz"
-        ),
-        (
-            "sub-01_ses-01_task-nback_contrast-effectsOfInterest_"
-            "stat-variance_statmap.nii.gz"
-        ),
-        (
-            "sub-01_ses-01_task-nback_contrast-effectsOfInterest_"
-            "stat-z_statmap.nii.gz"
-        ),
-        "sub-01_ses-01_task-nback_design.svg",
-        "sub-01_ses-01_task-nback_design.tsv",
-        "sub-01_ses-01_task-nback_stat-errorts_statmap.nii.gz",
-        "sub-01_ses-01_task-nback_stat-rSquare_statmap.nii.gz",
-        "sub-01_ses-01_task-nback_statmap.json",
+        "contrast-effectsOfInterest_design.svg",
+        "contrast-effectsOfInterest_stat-F_statmap.nii.gz",
+        "contrast-effectsOfInterest_stat-effect_statmap.nii.gz",
+        "contrast-effectsOfInterest_stat-p_statmap.nii.gz",
+        "contrast-effectsOfInterest_stat-variance_statmap.nii.gz",
+        "contrast-effectsOfInterest_stat-z_statmap.nii.gz",
+        "design.svg",
+        "design.tsv",
+        "design.json",
+        "stat-errorts_statmap.nii.gz",
+        "stat-rsquared_statmap.nii.gz",
+        "statmap.json",
+        "report.html",
     ]
 
     shapes, rk = [(7, 8, 9, 15)], 3
-    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+    _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes,
         rk,
     )
 
-    masker = NiftiMasker(mask)
-    masker.fit()
-
-    # Call with verbose (improve coverage)
-    single_session_model = FirstLevelModel(
+    single_run_model = FirstLevelModel(
         mask_img=None,
         minimize_memory=False,
     ).fit(
@@ -365,16 +351,53 @@ def test_save_glm_to_bids(tmp_path_factory):
         "effects of interest": "F",
     }
     save_glm_to_bids(
-        model=single_session_model,
+        model=single_run_model,
         contrasts=contrasts,
         contrast_types=contrast_types,
         out_dir=tmpdir,
-        prefix="sub-01_ses-01_task-nback",
+        prefix=prefix,
     )
 
+    assert (tmpdir / "dataset_description.json").exists()
+
+    sub_prefix = prefix.split("_")[0] if prefix.startswith("sub-") else ""
+
     for fname in EXPECTED_FILENAMES:
-        full_filename = os.path.join(tmpdir, fname)
-        assert os.path.isfile(full_filename)
+        assert (tmpdir / sub_prefix / f"{prefix}_{fname}").exists()
+
+
+def test_save_glm_to_bids_serialize_affine(tmp_path):
+    """Test that affines are turned into a serializable type.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/4324.
+    """
+    shapes, rk = [(7, 8, 9, 15)], 3
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes,
+        rk,
+    )
+
+    target_affine = mask.affine
+
+    single_run_model = FirstLevelModel(
+        target_affine=target_affine,
+        minimize_memory=False,
+    ).fit(
+        fmri_data[0],
+        design_matrices=design_matrices[0],
+    )
+
+    save_glm_to_bids(
+        model=single_run_model,
+        contrasts={
+            "effects of interest": np.eye(rk),
+        },
+        contrast_types={
+            "effects of interest": "F",
+        },
+        out_dir=tmp_path,
+        prefix="sub-01_ses-01_task-nback",
+    )
 
 
 @pytest.fixture
@@ -446,6 +469,17 @@ def test_save_glm_to_bids_errors(
             prefix="sub-01_ses-01_task-nback",
         )
 
+    with pytest.raises(
+        ValueError, match="Extra key-word arguments must be one of"
+    ):
+        save_glm_to_bids(
+            model=two_runs_model,
+            contrasts=["AAA - BBB"],
+            out_dir=tmpdir,
+            prefix="sub-01_ses-01_task-nback",
+            foo="bar",
+        )
+
 
 @pytest.mark.parametrize(
     "prefix", ["sub-01_ses-01_task-nback", "sub-01_task-nback_", 1]
@@ -454,8 +488,8 @@ def test_save_glm_to_bids_errors(
 def test_save_glm_to_bids_contrast_definitions(
     tmp_path_factory, two_runs_model, contrasts, prefix
 ):
-    """Test that save_glm_to_bids operates on different contrast definitions as
-    expected.
+    """Test that save_glm_to_bids operates on different contrast definitions \
+       as expected.
 
     - Test string-based contrasts and undefined contrast types
 
@@ -467,21 +501,25 @@ def test_save_glm_to_bids_contrast_definitions(
     )
 
     EXPECTED_FILENAME_ENDINGS = [
-        "dataset_description.json",
-        ("contrast-aaaMinusBbb_stat-effect_statmap.nii.gz"),
+        "contrast-aaaMinusBbb_stat-effect_statmap.nii.gz",
         "contrast-aaaMinusBbb_stat-p_statmap.nii.gz",
         "contrast-aaaMinusBbb_stat-t_statmap.nii.gz",
-        ("contrast-aaaMinusBbb_stat-variance_statmap.nii.gz"),
+        "contrast-aaaMinusBbb_stat-variance_statmap.nii.gz",
         "contrast-aaaMinusBbb_stat-z_statmap.nii.gz",
         "run-1_contrast-aaaMinusBbb_design.svg",
         "run-1_design.svg",
         "run-1_design.tsv",
+        "run-1_design.json",
+        "run-1_stat-errorts_statmap.nii.gz",
+        "run-1_stat-rsquared_statmap.nii.gz",
         "run-2_contrast-aaaMinusBbb_design.svg",
         "run-2_design.svg",
         "run-2_design.tsv",
-        "stat-errorts_statmap.nii.gz",
-        "stat-rSquare_statmap.nii.gz",
+        "run-2_design.json",
+        "run-2_stat-errorts_statmap.nii.gz",
+        "run-2_stat-rsquared_statmap.nii.gz",
         "statmap.json",
+        "report.html",
     ]
 
     save_glm_to_bids(
@@ -492,16 +530,22 @@ def test_save_glm_to_bids_contrast_definitions(
         prefix=prefix,
     )
 
+    assert (tmpdir / "dataset_description.json").exists()
+
+    if not isinstance(prefix, str):
+        prefix = ""
+
+    if prefix and not prefix.endswith("_"):
+        prefix = f"{prefix}_"
+
+    sub_prefix = prefix.split("_")[0] if prefix.startswith("sub-") else ""
+
     for fname in EXPECTED_FILENAME_ENDINGS:
-        if fname != "dataset_description.json" and isinstance(prefix, str):
-            fname = (
-                prefix + fname if prefix.endswith("_") else f"{prefix}_{fname}"
-            )
-        full_filename = os.path.join(tmpdir, fname)
-        assert os.path.isfile(full_filename)
+        assert (tmpdir / sub_prefix / f"{prefix}{fname}").exists()
 
 
-def test_save_glm_to_bids_second_level(tmp_path_factory):
+@pytest.mark.parametrize("prefix", ["task-nback"])
+def test_save_glm_to_bids_second_level(tmp_path_factory, prefix):
     """Test save_glm_to_bids on a SecondLevelModel.
 
     This test reuses code from
@@ -510,18 +554,18 @@ def test_save_glm_to_bids_second_level(tmp_path_factory):
     tmpdir = tmp_path_factory.mktemp("test_save_glm_to_bids_second_level")
 
     EXPECTED_FILENAMES = [
-        "dataset_description.json",
-        "task-nback_contrast-effectsOfInterest_design.svg",
-        "task-nback_contrast-effectsOfInterest_stat-F_statmap.nii.gz",
-        "task-nback_contrast-effectsOfInterest_stat-effect_statmap.nii.gz",
-        "task-nback_contrast-effectsOfInterest_stat-p_statmap.nii.gz",
-        "task-nback_contrast-effectsOfInterest_stat-variance_statmap.nii.gz",
-        "task-nback_contrast-effectsOfInterest_stat-z_statmap.nii.gz",
-        "task-nback_design.svg",
-        "task-nback_design.tsv",
-        "task-nback_stat-errorts_statmap.nii.gz",
-        "task-nback_stat-rSquare_statmap.nii.gz",
-        "task-nback_statmap.json",
+        "contrast-effectsOfInterest_design.svg",
+        "contrast-effectsOfInterest_stat-F_statmap.nii.gz",
+        "contrast-effectsOfInterest_stat-effect_statmap.nii.gz",
+        "contrast-effectsOfInterest_stat-p_statmap.nii.gz",
+        "contrast-effectsOfInterest_stat-variance_statmap.nii.gz",
+        "contrast-effectsOfInterest_stat-z_statmap.nii.gz",
+        "design.svg",
+        "design.tsv",
+        "stat-errorts_statmap.nii.gz",
+        "stat-rsquared_statmap.nii.gz",
+        "statmap.json",
+        "report.html",
     ]
 
     shapes = ((7, 8, 9, 1),)
@@ -550,9 +594,10 @@ def test_save_glm_to_bids_second_level(tmp_path_factory):
         contrasts=contrasts,
         contrast_types=contrast_types,
         out_dir=tmpdir,
-        prefix="task-nback",
+        prefix=prefix,
     )
 
+    assert (tmpdir / "dataset_description.json").exists()
+
     for fname in EXPECTED_FILENAMES:
-        full_filename = os.path.join(tmpdir, fname)
-        assert os.path.isfile(full_filename)
+        assert (tmpdir / "group" / f"{prefix}_{fname}").exists()

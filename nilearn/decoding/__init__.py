@@ -1,6 +1,5 @@
 """Decoding tools and algorithms."""
 
-
 from nilearn.decoding.decoder import (
     Decoder,
     DecoderRegressor,

@@ -1,4 +1,5 @@
-"""Test the parcellations tools module"""
+"""Test the parcellations tools module."""
+
 import warnings
 
 import numpy as np
@@ -47,9 +48,7 @@ def test_error_parcellation_method_none(test_image):
 
 @pytest.mark.parametrize("method", ["kmens", "avg", "completed"])
 def test_errors_raised_in_check_parameters_fit(method, test_image):
-    """Test whether an error is raised or not given
-    a false method type.
-    """
+    """Test whether an error is raised or not given a false method type."""
     with pytest.raises(
         ValueError,
         match=(f"The method you have selected is not implemented '{method}'"),
@@ -118,10 +117,8 @@ def test_parcellations_fit_on_multi_nifti_images(
 def test_parcellations_transform_single_nifti_image(
     method, n_parcel, test_image_2
 ):
-    """Test with NiftiLabelsMasker extraction of timeseries data
-    after building a parcellations image.
-
-    """
+    """Test with NiftiLabelsMasker extraction of timeseries data \
+       after building a parcellations image."""
     parcellator = Parcellations(method=method, n_parcels=n_parcel, verbose=0)
     parcellator.fit(test_image_2)
     # transform to signals

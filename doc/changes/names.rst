@@ -20,6 +20,8 @@
 
 .. _Alexandre Cionca: https://github.com/acionca
 
+.. _Alexandre Sayal: https://github.com/alexsayal
+
 .. _Alexis Thual: https://github.com/alexisthual
 
 .. _Alisha Kodibagkar: https://github.com/alishakodibagkar/
@@ -89,6 +91,8 @@
 .. _Evan Edmond: https://evan.science/
 
 .. _Fabian Pedregosa: https://github.com/fabianp
+
+.. _Florent Pollet: https://florian6973.github.io/
 
 .. _Franz Liem: https://github.com/fliem
 
@@ -220,6 +224,8 @@
 
 .. _Paul Bogdan: https://github.com/paulcbogdan
 
+.. _Paul Reiners: https://github.com/paul-reiners
+
 .. _Paula Sanz-Leon: https://github.com/pausz
 
 .. _Peer Herholz: https://peerherholz.github.io/
@@ -291,6 +297,8 @@
 .. _Yaroslav Halchenko: https://github.com/yarikoptic
 
 .. _Yasmin Mzayek: https://github.com/ymzayek
+
+.. _Yichun Huang: https://github.com/YCHuang0610
 
 .. _Zvi Baratz: https://github.com/ZviBaratz
 

@@ -3,15 +3,17 @@ Preprocessing functions for images.
 
 See also nilearn.signal.
 """
+
 # Authors: Philippe Gervais, Alexandre Abraham
 
 import collections.abc
 import copy
+import itertools
 import warnings
 
 import nibabel
 import numpy as np
-from joblib import Parallel, delayed
+from joblib import Memory, Parallel, delayed
 from scipy.ndimage import gaussian_filter1d, generate_binary_structure, label
 from scipy.stats import scoreatpercentile
 
@@ -24,10 +26,16 @@ from .._utils import (
     check_niimg_4d,
     fill_doc,
 )
+from .._utils.exceptions import DimensionError
 from .._utils.helpers import rename_parameters, stringify_path
 from .._utils.niimg import _get_data, safe_get_data
-from .._utils.niimg_conversions import _index_img, check_same_fov
+from .._utils.niimg_conversions import (
+    _index_img,
+    check_same_fov,
+    iter_check_niimg,
+)
 from .._utils.param_validation import check_threshold
+from .._utils.path_finding import resolve_globbing
 
 
 def get_data(img):
@@ -781,7 +789,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     if copy_header:
         header = copy.deepcopy(ref_niimg.header)
         try:
-            "something" in header
+            "something" in header  # noqa B015
         except TypeError:
             pass
         else:
@@ -981,7 +989,7 @@ def threshold_img(
     return thresholded_img
 
 
-def math_img(formula, **imgs):
+def math_img(formula, copy_header_from=None, **imgs):
     """Interpret a numpy based string formula using niimg in named parameters.
 
     .. versionadded:: 0.2.3
@@ -991,6 +999,15 @@ def math_img(formula, **imgs):
     formula : :obj:`str`
         The mathematical formula to apply to image internal data. It can use
         numpy imported as 'np'.
+
+    copy_header_from : :obj:`str`, default=None
+        Takes the variable name of one of the images in the formula.
+        The header of this image will be copied to the result of the formula.
+        Note that the result image and the image to copy the header from,
+        should have the same number of dimensions. If None, the default
+        :class:`~nibabel.nifti1.Nifti1Header` is used.
+
+        .. versionadded:: 0.10.4
 
     imgs : images (:class:`~nibabel.nifti1.Nifti1Image` or file names)
         Keyword arguments corresponding to the variables in the formula as
@@ -1024,6 +1041,19 @@ def math_img(formula, **imgs):
 
      >>> result_img = math_img("img1 + img2",
      ...                       img1=anatomical_image, img2=log_img)
+
+    The result image will have the same shape and affine as the input images;
+    but might have different header information, specifically the TR value,
+    see :gh:`2645`.
+
+    .. versionadded:: 0.10.4
+
+    We can also copy the header from one of the input images using
+    ``copy_header_from``::
+
+     >>> result_img_with_header = math_img("img1 + img2",
+     ...                                   img1=anatomical_image, img2=log_img,
+     ...                                   copy_header_from="img1")
 
     Notes
     -----
@@ -1060,7 +1090,20 @@ def math_img(formula, **imgs):
         ) + exc.args
         raise
 
-    return new_img_like(niimg, result, niimg.affine)
+    # check whether to copy header from one of the input images
+    if copy_header_from is not None:
+        niimg = check_niimg(imgs[copy_header_from])
+        # only copy the header if the result and the input image to copy the
+        # header from have the same shape
+        if result.ndim != niimg.ndim:
+            raise ValueError(
+                "Cannot copy the header. "
+                "The result of the formula has a different number of "
+                "dimensions than the image to copy the header from."
+            )
+        return new_img_like(niimg, result, niimg.affine, copy_header=True)
+    else:
+        return new_img_like(niimg, result, niimg.affine)
 
 
 def binarize_img(img, threshold=0, mask_img=None, two_sided=True):
@@ -1091,6 +1134,8 @@ def binarize_img(img, threshold=0, mask_img=None, two_sided=True):
     two_sided : :obj:`bool`
         If `True`, threshold is applied to the absolute value of the image.
         If `False`, threshold is applied to the original value of the image.
+
+        .. versionadded:: 0.10.3
 
     Returns
     -------
@@ -1238,10 +1283,10 @@ def clean_img(
     Notes
     -----
     Confounds removal is based on a projection on the orthogonal
-    of the signal space [:footcite:`Friston1994`].
+    of the signal space [:footcite:t:`Friston1994`].
 
     Orthogonalization between temporal filters and confound removal is based on
-    suggestions in [:footcite:`Lindquist2018`].
+    suggestions in [:footcite:t:`Lindquist2018`].
 
     References
     ----------
@@ -1347,6 +1392,143 @@ def load_img(img, wildcards=True, dtype=None):
     return check_niimg(img, wildcards=wildcards, dtype=dtype)
 
 
+def concat_imgs(
+    niimgs,
+    dtype=np.float32,
+    ensure_ndim=None,
+    memory=None,
+    memory_level=0,
+    auto_resample=False,
+    verbose=0,
+):
+    """Concatenate a list of 3D/4D niimgs of varying lengths.
+
+    The niimgs list can contain niftis/paths to images of varying dimensions
+    (i.e., 3D or 4D) as well as different 3D shapes and affines, as they
+    will be matched to the first image in the list if auto_resample=True.
+
+    Parameters
+    ----------
+    niimgs : iterable of Niimg-like objects or glob pattern
+        See :ref:`extracting_data`.
+        Niimgs to concatenate.
+
+    dtype : numpy dtype, default=np.float32
+        The dtype of the returned image.
+
+    ensure_ndim : integer, optional
+        Indicate the dimensionality of the expected niimg. An
+        error is raised if the niimg is of another dimensionality.
+
+    auto_resample : boolean, default=False
+        Converts all images to the space of the first one.
+
+    verbose : int, default=0
+        Controls the amount of verbosity (0 means no messages).
+
+    memory : instance of joblib.Memory or string, default=None
+        Used to cache the resampling process.
+        By default, no caching is done.
+        If a string is given, it is the path to the caching directory.
+        If ``None`` is passed will default to ``Memory(location=None)``.
+
+    memory_level : integer, default=0
+        Rough estimator of the amount of memory used by caching. Higher value
+        means more memory for caching.
+
+    Returns
+    -------
+    concatenated : nibabel.Nifti1Image
+        A single image.
+
+    See Also
+    --------
+    nilearn.image.index_img
+
+    """
+    from ..image import new_img_like  # avoid circular imports
+
+    if memory is None:
+        memory = Memory(location=None)
+
+    target_fov = "first" if auto_resample else None
+
+    # We remove one to the dimensionality because of the list is one dimension.
+    ndim = None
+    if ensure_ndim is not None:
+        ndim = ensure_ndim - 1
+
+    # If niimgs is a string, use glob to expand it to the matching filenames.
+    niimgs = resolve_globbing(niimgs)
+
+    # First niimg is extracted to get information and for new_img_like
+    first_niimg = None
+
+    iterator, literator = itertools.tee(iter(niimgs))
+    try:
+        first_niimg = check_niimg(next(literator), ensure_ndim=ndim)
+    except StopIteration:
+        raise TypeError("Cannot concatenate empty objects")
+    except DimensionError as exc:
+        # Keep track of the additional dimension in the error
+        exc.increment_stack_counter()
+        raise
+
+    # If no particular dimensionality is asked, we force consistency wrt the
+    # first image
+    if ndim is None:
+        ndim = len(first_niimg.shape)
+
+    if ndim not in [3, 4]:
+        raise TypeError(
+            "Concatenated images must be 3D or 4D. You gave a "
+            f"list of {ndim}D images"
+        )
+
+    lengths = [first_niimg.shape[-1] if ndim == 4 else 1]
+    for niimg in literator:
+        # We check the dimensionality of the niimg
+        try:
+            niimg = check_niimg(niimg, ensure_ndim=ndim)
+        except DimensionError as exc:
+            # Keep track of the additional dimension in the error
+            exc.increment_stack_counter()
+            raise
+        lengths.append(niimg.shape[-1] if ndim == 4 else 1)
+
+    target_shape = first_niimg.shape[:3]
+    if dtype is None:
+        dtype = _get_data(first_niimg).dtype
+    data = np.ndarray(target_shape + (sum(lengths),), order="F", dtype=dtype)
+    cur_4d_index = 0
+    for index, (size, niimg) in enumerate(
+        zip(
+            lengths,
+            iter_check_niimg(
+                iterator,
+                atleast_4d=True,
+                target_fov=target_fov,
+                memory=memory,
+                memory_level=memory_level,
+            ),
+        )
+    ):
+        if verbose > 0:
+            nii_str = (
+                f"image {niimg}"
+                if isinstance(niimg, str)
+                else f"image #{index}"
+            )
+            print(f"Concatenating {index + 1}: {nii_str}")
+
+        data[..., cur_4d_index : cur_4d_index + size] = _get_data(niimg)
+        cur_4d_index += size
+
+    return new_img_like(
+        first_niimg, data, first_niimg.affine, copy_header=True
+    )
+
+
 def largest_connected_component_img(imgs):
     """Return the largest connected component of an image or list of images.
 
@@ -1391,3 +1573,26 @@ def largest_connected_component_img(imgs):
         )
 
     return ret[0] if single_img else ret
+
+
+def copy_img(img):
+    """Copy an image to a nibabel.Nifti1Image.
+
+    Parameters
+    ----------
+    img: image
+        nibabel SpatialImage object to copy.
+
+    Returns
+    -------
+    img_copy: image
+        copy of input (data, affine and header)
+    """
+    if not isinstance(img, nibabel.spatialimages.SpatialImage):
+        raise ValueError("Input value is not an image")
+    return new_img_like(
+        img,
+        safe_get_data(img, copy_data=True),
+        img.affine.copy(),
+        copy_header=True,
+    )

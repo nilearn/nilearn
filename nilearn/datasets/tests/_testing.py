@@ -1,4 +1,4 @@
-"""Utilities for testing the dataset fetchers
+"""Utilities for testing the dataset fetchers.
 
 Unit tests should not depend on an internet connection nor on external
 resources such as the servers from which we download datasets. Otherwise, tests
@@ -27,6 +27,7 @@ outside of temporary directories, this module also adds fixtures to patch the
 home directory and other default nilearn data directories.
 
 """
+
 import fnmatch
 import json
 import os
@@ -289,7 +290,7 @@ class Sender:
             return None
 
     def get_response(self, response, match, request):
-        if hasattr(response, "__call__"):
+        if callable(response):
             response = response(match, request)
 
         if isinstance(response, Response):

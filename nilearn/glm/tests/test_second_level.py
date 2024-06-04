@@ -1,4 +1,5 @@
 """Test the second level model."""
+
 import os
 from pathlib import Path
 
@@ -29,7 +30,6 @@ from nilearn.glm.second_level.second_level import (
     _check_input_as_first_level_model,
     _check_output_type,
     _check_second_level_input,
-    _get_contrast,
     _infer_effect_maps,
     _process_second_level_input_as_dataframe,
     _process_second_level_input_as_firstlevelmodels,
@@ -85,12 +85,12 @@ def test_non_parametric_inference_with_flm_objects():
 
     masker = NiftiMasker(mask)
     masker.fit()
-    single_session_model = FirstLevelModel(mask_img=masker).fit(
+    single_run_model = FirstLevelModel(mask_img=masker).fit(
         fmri_data[0], design_matrices=design_matrices[0]
     )
-    single_session_model.compute_contrast("x")
+    single_run_model.compute_contrast("x")
 
-    second_level_input = [single_session_model, single_session_model]
+    second_level_input = [single_run_model, single_run_model]
 
     design_matrix = pd.DataFrame(
         [1] * len(second_level_input),
@@ -157,9 +157,8 @@ def test_second_level_input_as_3D_images(rng, affine_eye, tmp_path):
 
 
 def test_process_second_level_input_as_firstlevelmodels():
-    """Unit tests for function
-    _process_second_level_input_as_firstlevelmodels().
-    """
+    """Unit tests for function \
+       _process_second_level_input_as_firstlevelmodels()."""
     shapes, rk = [(7, 8, 9, 15)], 3
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk
@@ -418,32 +417,6 @@ def test_check_effect_maps():
         match="design_matrix does not match the number of maps considered",
     ):
         _check_effect_maps([1, 2], np.array([[1, 2], [3, 4], [5, 6]]))
-
-
-def test_get_contrast():
-    design_matrix = pd.DataFrame([1, 2, 3], columns=["conf"])
-    assert _get_contrast("conf", design_matrix) == "conf"
-
-    design_matrix = pd.DataFrame({"conf1": [1, 2, 3], "conf2": [4, 5, 6]})
-    assert _get_contrast([0, 1], design_matrix) == "conf2"
-    assert _get_contrast([1, 0], design_matrix) == "conf1"
-
-
-def test_get_contrast_errors():
-    design_matrix = pd.DataFrame([1, 2, 3], columns=["conf"])
-    with pytest.raises(ValueError, match='"foo" is not a valid contrast name'):
-        _get_contrast("foo", design_matrix)
-
-    design_matrix = pd.DataFrame({"conf1": [1, 2, 3], "conf2": [4, 5, 6]})
-    with pytest.raises(
-        ValueError, match="No second-level contrast is specified."
-    ):
-        _get_contrast(None, design_matrix)
-    with pytest.raises(
-        ValueError,
-        match="second_level_contrast must be a list of 0s and 1s",
-    ):
-        _get_contrast([0, 0], design_matrix)
 
 
 def test_infer_effect_maps(tmp_path):
@@ -853,11 +826,10 @@ def test_second_level_glm_computation(tmp_path):
 
 @pytest.mark.parametrize("attribute", ["residuals", "predicted", "r_square"])
 def test_second_level_voxelwise_attribute_errors(attribute):
-    """Tests that an error is raised when trying to access
-    voxelwise attributes before fitting the model, before
-    computing a contrast, and when not setting
-    ``minimize_memory`` to ``True``.
-    """
+    """Tests that an error is raised when trying to access \
+       voxelwise attributes before fitting the model, \
+       before computing a contrast, \
+       and when not setting ``minimize_memory`` to ``True``."""
     shapes = (SHAPE,)
     mask, fmri_data, _ = generate_fake_fmri_data_and_design(shapes)
     model = SecondLevelModel(mask_img=mask, minimize_memory=False)
@@ -1217,7 +1189,9 @@ def test_non_parametric_inference_contrast_computation(tmp_path):
     )
 
 
-@pytest.mark.parametrize("second_level_contrast", [[1, 0], "r1"])
+@pytest.mark.parametrize(
+    "second_level_contrast", [[1, 0], "r1", "r1-r2", [-1, 1]]
+)
 def test_non_parametric_inference_contrast_formula(
     tmp_path, second_level_contrast, rng
 ):
@@ -1253,7 +1227,7 @@ def test_non_parametric_inference_contrast_computation_errors(tmp_path, rng):
     # passing null contrast should give back a value error
     with pytest.raises(
         ValueError,
-        match=("second_level_contrast must be a list of 0s and 1s."),
+        match=("Second_level_contrast must be a valid"),
     ):
         non_parametric_inference(
             second_level_input=Y,
@@ -1263,7 +1237,7 @@ def test_non_parametric_inference_contrast_computation_errors(tmp_path, rng):
         )
     with pytest.raises(
         ValueError,
-        match=("second_level_contrast must be a list of 0s and 1s."),
+        match=("Second_level_contrast must be a valid"),
     ):
         non_parametric_inference(
             second_level_input=Y,

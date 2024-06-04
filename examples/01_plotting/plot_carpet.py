@@ -13,6 +13,7 @@ from a 4D functional image.
 # Fetching data from ADHD dataset
 # -------------------------------
 from nilearn import datasets
+from nilearn.plotting import plot_carpet
 
 adhd_dataset = datasets.fetch_adhd(n_subjects=1)
 
@@ -39,13 +40,12 @@ mask_img = masking.compute_epi_mask(adhd_dataset.func[0])
 # -------------------------------------
 import matplotlib.pyplot as plt
 
-from nilearn.plotting import plot_carpet
-
 display = plot_carpet(
     adhd_dataset.func[0],
     mask_img,
     t_r=t_r,
     standardize="zscore_sample",
+    title="global patterns over time",
 )
 
 display.show()
@@ -84,8 +84,9 @@ display = plot_carpet(
     axes=ax,
     cmap="gray",
     standardize="zscore_sample",
+    title="global patterns over time separated by tissue type",
 )
 
-fig.show()
+plt.show()
 
 # sphinx_gallery_dummy_images=1

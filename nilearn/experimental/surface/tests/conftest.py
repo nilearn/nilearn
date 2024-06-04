@@ -30,19 +30,19 @@ def mini_mesh() -> PolyMesh:
             [0, 4, 3],
         ]
     )
-    return {
-        "left_hemisphere": InMemoryMesh(left_coords, left_faces),
-        "right_hemisphere": InMemoryMesh(right_coords, right_faces),
-    }
+    return PolyMesh(
+        left=InMemoryMesh(left_coords, left_faces),
+        right=InMemoryMesh(right_coords, right_faces),
+    )
 
 
 @pytest.fixture
 def make_mini_img(mini_mesh) -> Callable:
-    """Small surface image for tests"""
+    """Small surface image for tests."""
 
     def f(shape=()):
         data = {}
-        for i, (key, val) in enumerate(mini_mesh.items()):
+        for i, (key, val) in enumerate(mini_mesh.parts.items()):
             data_shape = tuple(shape) + (val.n_vertices,)
             data_part = (
                 np.arange(np.prod(data_shape)).reshape(data_shape) + 1.0
@@ -55,7 +55,7 @@ def make_mini_img(mini_mesh) -> Callable:
 
 @pytest.fixture
 def mini_mask(mini_img) -> SurfaceImage:
-    data = {k: (v > v.ravel()[0]) for k, v in mini_img.data.items()}
+    data = {k: (v > v.ravel()[0]) for k, v in mini_img.data.parts.items()}
     return SurfaceImage(mini_img.mesh, data)
 
 
@@ -66,12 +66,10 @@ def mini_img(make_mini_img) -> SurfaceImage:
 
 @pytest.fixture
 def flip():
-    def f(parts):
-        if not parts:
-            return {}
-        keys = list(parts.keys())
+    def f(poly_obj):
+        keys = list(poly_obj.parts.keys())
         keys = [keys[-1]] + keys[:-1]
-        return dict(zip(keys, parts.values()))
+        return dict(zip(keys, poly_obj.parts.values()))
 
     return f
 
@@ -93,20 +91,20 @@ def pial_surface_mesh():
 @pytest.fixture
 def assert_img_equal():
     def f(img_1, img_2):
-        assert set(img_1.data.keys()) == set(img_2.data.keys())
-        for key in img_1.data:
-            assert np.array_equal(img_1.data[key], img_2.data[key])
+        assert set(img_1.data.parts.keys()) == set(img_2.data.parts.keys())
+        for key in img_1.data.parts:
+            assert np.array_equal(img_1.data.parts[key], img_2.data.parts[key])
 
     return f
 
 
 @pytest.fixture
 def drop_img_part():
-    def f(img, part_name="right_hemisphere"):
-        mesh = img.mesh.copy()
-        mesh.pop(part_name)
-        data = img.data.copy()
-        data.pop(part_name)
-        return SurfaceImage(mesh, data)
+    def f(img, part_name="right"):
+        mesh_parts = img.mesh.parts.copy()
+        mesh_parts.pop(part_name)
+        data_parts = img.data.parts.copy()
+        data_parts.pop(part_name)
+        return SurfaceImage(mesh_parts, data_parts)
 
     return f

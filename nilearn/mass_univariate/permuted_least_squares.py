@@ -1,5 +1,6 @@
 """Massively Univariate Linear Model estimated \
 with OLS and permutation test."""
+
 # Author: Benoit Da Mota, <benoit.da_mota@inria.fr>, sept. 2011
 #         Virgile Fritsch, <virgile.fritsch@inria.fr>, jan. 2014
 import sys
@@ -90,7 +91,7 @@ def _permuted_ols_on_chunk(
 
     intercept_test : boolean, default=True
         Change the permutation scheme (swap signs for intercept,
-        switch labels otherwise). See :footcite:`Fisher1935`.
+        switch labels otherwise). See :footcite:t:`Fisher1935`.
 
     two_sided_test : boolean, default=True
         If True, performs an unsigned t-test. Both positive and negative

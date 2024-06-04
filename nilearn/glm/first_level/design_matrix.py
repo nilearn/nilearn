@@ -32,6 +32,7 @@ Design matrices contain three different types of regressors:
 Author: Bertrand Thirion, 2009-2015
 
 """
+
 import sys
 from warnings import warn
 
@@ -45,8 +46,8 @@ from nilearn.glm.first_level.experimental_paradigm import (
     handle_modulation_of_duplicate_events,
 )
 from nilearn.glm.first_level.hemodynamic_models import (
-    _orthogonalize,
     compute_regressor,
+    orthogonalize,
 )
 
 ######################################################################
@@ -76,12 +77,12 @@ def _poly_drift(order, frame_times):
     tmax = float(frame_times.max())
     for k in range(order + 1):
         pol[:, k] = (frame_times / tmax) ** k
-    pol = _orthogonalize(pol)
+    pol = orthogonalize(pol)
     pol = np.hstack((pol[:, 1:], pol[:, :1]))
     return pol
 
 
-def _cosine_drift(high_pass, frame_times):
+def create_cosine_drift(high_pass, frame_times):
     """Create a cosine drift matrix with frequencies or equal to high_pass.
 
     Parameters
@@ -169,7 +170,7 @@ def _make_drift(drift_model, frame_times, order, high_pass):
     if drift_model == "polynomial":
         drift = _poly_drift(order, frame_times)
     elif drift_model == "cosine":
-        drift = _cosine_drift(high_pass, frame_times)
+        drift = create_cosine_drift(high_pass, frame_times)
     elif drift_model is None:
         drift = _none_drift(frame_times)
     else:
@@ -183,7 +184,7 @@ def _convolve_regressors(
     events,
     hrf_model,
     frame_times,
-    fir_delays=[0],
+    fir_delays=None,
     min_onset=-24,
     oversampling=50,
 ):
@@ -205,9 +206,10 @@ def _convolve_regressors(
     frame_times : array of shape (n_scans,)
         The targeted timing for the design matrix.
 
-    fir_delays : array-like of shape (n_onsets,), default=[0]
+    fir_delays : array-like of shape (n_onsets,), default=None
         In case of FIR design, yields the array of delays
         used in the FIR model (in scans).
+        Will default to ``[0]`` if ``None`` is passed.
 
     min_onset : float, default=-24
         Minimal onset relative to frame_times[0] (in seconds) events
@@ -233,6 +235,8 @@ def _convolve_regressors(
         if 'fir', the regressos are numbered according to '#name_#delay'
 
     """
+    if fir_delays is None:
+        fir_delays = [0]
     regressor_names = []
     regressor_matrix = None
 
@@ -282,7 +286,7 @@ def make_first_level_design_matrix(
     drift_model="cosine",
     high_pass=0.01,
     drift_order=1,
-    fir_delays=[0],
+    fir_delays=None,
     add_regs=None,
     add_reg_names=None,
     min_onset=-24,
@@ -356,6 +360,8 @@ def make_first_level_design_matrix(
         and each column a regressor.
 
     """
+    if fir_delays is None:
+        fir_delays = [0]
     # check arguments
     # check that additional regressor specification is correct
     n_add_regs = 0

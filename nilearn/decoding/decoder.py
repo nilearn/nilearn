@@ -9,6 +9,7 @@ strategy in which the best models within a cross validation loop are averaged.
 Also exposes a high-level method FREM that uses clustering and model
 ensembling to achieve state of the art performance
 """
+
 # Authors: Yannick Schwartz
 #          Andres Hoyos-Idrobo
 #          Binh Nguyen <tuan-binh.nguyen@inria.fr>
@@ -22,10 +23,10 @@ from typing import Iterable
 import numpy as np
 from joblib import Parallel, delayed
 from sklearn import clone
+from sklearn.base import BaseEstimator, MultiOutputMixin
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.linear_model import (
     LassoCV,
-    LinearRegression,
     LogisticRegressionCV,
     RidgeClassifierCV,
     RidgeCV,
@@ -444,7 +445,7 @@ def _parallel_fit(
 
 
 @fill_doc
-class _BaseDecoder(LinearRegression, CacheMixin):
+class _BaseDecoder(CacheMixin, BaseEstimator):
     """A wrapper for popular classification/regression strategies in \
     neuroimaging.
 
@@ -836,10 +837,12 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
         Parameters
         ----------
-        X : {array-like, sparse matrix}, shape = (n_samples, n_features)
-            Samples.
+        X : Niimg-like, :obj:`list` of either \
+            Niimg-like objects or :obj:`str` or path-like
+            See :ref:`extracting_data`.
+            Data on which prediction is to be made.
 
-        y : array-like
+        y : :class:`numpy.ndarray`
             Target values.
 
         args : Optional arguments that can be passed to
@@ -860,16 +863,21 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
         Parameters
         ----------
-        X: list of Niimg-like objects
+        X : Niimg-like, :obj:`list` of either \
+            Niimg-like objects or :obj:`str` or path-like
             See :ref:`extracting_data`.
             Data on prediction is to be made. If this is a list,
             the affine is considered the same for all.
 
         Returns
         -------
-        y_pred: ndarray, shape (n_samples,)
+        y_pred: :class:`numpy.ndarray`, shape (n_samples,)
             Predicted class label per sample.
         """
+        # for backwards compatibility - apply masker transform if X is
+        # niimg-like or a list of strings
+        if not isinstance(X, np.ndarray) or len(np.shape(X)) == 1:
+            X = self.masker_.transform(X)
         n_features = self.coef_.shape[1]
         if X.shape[1] != n_features:
             raise ValueError(
@@ -889,8 +897,10 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
         Parameters
         ----------
-        X: {array-like, sparse matrix}, shape = (n_samples, n_features)
-            Samples.
+        X : Niimg-like, :obj:`list` of either \
+            Niimg-like objects or :obj:`str` or path-like
+            See :ref:`extracting_data`.
+            Data on which prediction is to be made.
 
         Returns
         -------
@@ -902,8 +912,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         check_is_fitted(self, "coef_")
         check_is_fitted(self, "masker_")
 
-        X = self.masker_.transform(X)
-        n_samples = X.shape[0]
+        n_samples = np.shape(X)[-1]
 
         # Prediction for dummy estimator is different from others as there is
         # no fitted coefficient
@@ -958,7 +967,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         self.dummy_output_ = {}
         classes = self.classes_
 
-        for i, (
+        for _, (
             class_index,
             coef,
             intercept,
@@ -1065,6 +1074,9 @@ class _BaseDecoder(LinearRegression, CacheMixin):
             )
         return scores.ravel() if scores.shape[1] == 1 else scores
 
+    def _more_tags(self):
+        return {"require_y": True}
+
 
 @fill_doc
 class Decoder(_BaseDecoder):
@@ -1156,6 +1168,8 @@ class Decoder(_BaseDecoder):
     nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
     """
 
+    _estimator_type = "classifier"
+
     def __init__(
         self,
         estimator="svc",
@@ -1201,7 +1215,7 @@ class Decoder(_BaseDecoder):
 
 
 @fill_doc
-class DecoderRegressor(_BaseDecoder):
+class DecoderRegressor(MultiOutputMixin, _BaseDecoder):
     """A wrapper for popular regression strategies in neuroimaging.
 
     The `DecoderRegressor` object supports regression methods.
@@ -1293,6 +1307,8 @@ class DecoderRegressor(_BaseDecoder):
     nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
     """
 
+    _estimator_type = "regressor"
+
     def __init__(
         self,
         estimator="svr",
@@ -1346,8 +1362,9 @@ class FREMRegressor(_BaseDecoder):
 
     FREM uses an implicit spatial regularization through fast clustering and
     aggregates a high number of estimators trained on various splits of the
-    training set, thus returning a very robust decoder at a lower computational
-    cost than other spatially regularized methods :footcite:`Hoyos-Idrobo2018`.
+    training set, thus returning a very robust decoder
+    at a lower computational cost
+    than other spatially regularized methods :footcite:p:`Hoyos-Idrobo2018`.
 
     Parameters
     ----------
@@ -1500,8 +1517,9 @@ class FREMClassifier(_BaseDecoder):
 
     FREM uses an implicit spatial regularization through fast clustering and
     aggregates a high number of estimators trained on various splits of the
-    training set, thus returning a very robust decoder at a lower computational
-    cost than other spatially regularized methods :footcite:`Hoyos-Idrobo2018`.
+    training set, thus returning a very robust decoder
+    at a lower computational cost
+    than other spatially regularized methods :footcite:p:`Hoyos-Idrobo2018`.
 
     Parameters
     ----------
@@ -1640,4 +1658,7 @@ class FREMClassifier(_BaseDecoder):
             memory_level=memory_level,
             verbose=verbose,
             n_jobs=n_jobs,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            t_r=t_r,
         )
