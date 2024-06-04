@@ -31,6 +31,7 @@ from nilearn.image.resampling import (
     resample_img,
     resample_to_img,
 )
+from nilearn.image.tests._testing import match_headers_keys
 
 ANGLES_TO_TEST = (0, np.pi, np.pi / 2.0, np.pi / 4.0, np.pi / 3.0)
 
@@ -87,7 +88,7 @@ def test_identity_resample(shape, affine_eye, rng):
         Nifti1Image(data, affine_eye),
         target_affine=affine_eye,
         interpolation="nearest",
-        force_resample=False,
+        force_resample=False, copy_header=True
     )
 
     assert_almost_equal(data, get_data(rot_img))
@@ -97,7 +98,7 @@ def test_identity_resample(shape, affine_eye, rng):
         Nifti1Image(data, affine_eye),
         target_affine=affine_eye[:3, :3],
         interpolation="nearest",
-        force_resample=False,
+        force_resample=False, copy_header=True
     )
 
     assert_almost_equal(data, get_data(rot_img))
@@ -107,7 +108,7 @@ def test_identity_resample(shape, affine_eye, rng):
         Nifti1Image(data, affine_eye),
         target_affine=affine_eye.tolist(),
         interpolation="nearest",
-        force_resample=False,
+        force_resample=False, copy_header=True
     )
 
 
@@ -128,7 +129,7 @@ def test_identity_resample_non_native_endians(
         Nifti1Image(data.astype(endian_type), affine_eye),
         target_affine=affine_eye.tolist(),
         interpolation=interpolation,
-        force_resample=False,
+        force_resample=False, copy_header=True
     )
 
     assert_almost_equal(data, get_data(rot_img))
@@ -142,7 +143,7 @@ def test_downsample(shape, affine_eye, rng):
         Nifti1Image(data, affine_eye),
         target_affine=2 * affine_eye,
         interpolation="nearest",
-        force_resample=False,
+        force_resample=False, copy_header=True
     )
 
     downsampled = data[::2, ::2, ::2, ...]
@@ -155,6 +156,7 @@ def test_downsample(shape, affine_eye, rng):
         target_affine=2 * affine_eye,
         interpolation="nearest",
         force_resample=True,
+        copy_header=True,
     )
 
     assert_almost_equal(get_data(rot_img_2), get_data(rot_img))
@@ -179,7 +181,7 @@ def test_downsample_non_native_endian_data(
         Nifti1Image(data, affine_eye),
         target_affine=2 * affine_eye,
         interpolation="nearest",
-        force_resample=False,
+        force_resample=False, copy_header=True
     )
 
     downsampled = data[::2, ::2, ::2, ...]
@@ -192,7 +194,7 @@ def test_downsample_non_native_endian_data(
         target_affine=2 * affine_eye,
         interpolation="nearest",
         copy=copy_data,
-        force_resample=False,
+        force_resample=False, copy_header=True
     )
 
     assert_almost_equal(downsampled, get_data(rot_img)[:x, :y, :z, ...])
@@ -217,7 +219,7 @@ def test_resampling_fill_value(affine_eye, shape, value, rng):
             interpolation="nearest",
             fill_value=value,
             clip=False,
-            force_resample=False,
+            force_resample=False, copy_header=True
         )
     else:
         rot_img = resample_img(
@@ -225,7 +227,7 @@ def test_resampling_fill_value(affine_eye, shape, value, rng):
             target_affine=rot,
             interpolation="nearest",
             clip=False,
-            force_resample=False,
+            force_resample=False, copy_header=True
         )
 
     assert get_data(rot_img).flatten()[0] == value
@@ -235,7 +237,7 @@ def test_resampling_fill_value(affine_eye, shape, value, rng):
         rot_img,
         interpolation="nearest",
         fill_value=value,
-        force_resample=False,
+        force_resample=False, copy_header=True
     )
 
     assert get_data(rot_img2).flatten()[0] == value
@@ -255,7 +257,7 @@ def test_resampling_with_affine(affine_eye, shape, angle, rng):
         Nifti1Image(data, affine_eye),
         target_affine=rot,
         interpolation="nearest",
-        force_resample=False,
+        force_resample=False, copy_header=True
     )
 
     assert np.max(data) == np.max(get_data(rot_img))
@@ -267,7 +269,7 @@ def test_resampling_with_affine(affine_eye, shape, angle, rng):
     rot = rotation(0, angle)
 
     rot_img = resample_img(
-        img, target_affine=rot, interpolation="nearest", force_resample=False
+        img, target_affine=rot, interpolation="nearest", force_resample=False, copy_header=True
     )
 
     assert np.max(data) == np.max(get_data(rot_img))
@@ -284,13 +286,13 @@ def test_resampling_continuous_with_affine(affine_eye, shape, angle, rng):
         img,
         target_affine=rot,
         interpolation="continuous",
-        force_resample=False,
+        force_resample=False, copy_header=True
     )
     rot_img_back = resample_img(
         rot_img,
         target_affine=affine_eye,
         interpolation="continuous",
-        force_resample=False,
+        force_resample=False, copy_header=True
     )
 
     center = slice(1, 9)
@@ -312,21 +314,21 @@ def test_resampling_error_checks(tmp_path):
         img,
         target_shape=target_shape,
         target_affine=affine,
-        force_resample=False,
+        force_resample=False, copy_header=True
     )
-    resample_img(img, target_affine=affine, force_resample=False)
+    resample_img(img, target_affine=affine, force_resample=False, copy_header=True)
 
     filename = testing.write_imgs_to_path(img, file_path=tmp_path)
     resample_img(
         filename,
         target_shape=target_shape,
         target_affine=affine,
-        force_resample=False,
+        force_resample=False, copy_header=True,
     )
 
     # Missing parameter
     with pytest.raises(ValueError, match="target_affine should be specified"):
-        resample_img(img, target_shape=target_shape, force_resample=False)
+        resample_img(img, target_shape=target_shape, force_resample=False, copy_header=True,)
 
     # Invalid shape
     with pytest.raises(ValueError, match="shape .* should be .* 3D grid"):
@@ -334,7 +336,7 @@ def test_resampling_error_checks(tmp_path):
             img,
             target_shape=(2, 3),
             target_affine=affine,
-            force_resample=False,
+            force_resample=False, copy_header=True,
         )
 
     # Invalid interpolation
@@ -344,7 +346,7 @@ def test_resampling_error_checks(tmp_path):
             target_shape=target_shape,
             target_affine=affine,
             interpolation="an_invalid_interpolation",
-            force_resample=False,
+            force_resample=False, copy_header=True,
         )
 
 
@@ -359,7 +361,7 @@ def test_resampling_copy_has_no_shared_memory(target_shape):
         target_affine=target_affine,
         target_shape=target_shape,
         copy=False,
-        force_resample=False,
+        force_resample=False, copy_header=True,
     )
 
     assert img_r == img
@@ -369,7 +371,7 @@ def test_resampling_copy_has_no_shared_memory(target_shape):
         target_affine=target_affine,
         target_shape=target_shape,
         copy=True,
-        force_resample=False,
+        force_resample=False, copy_header=True,
     )
 
     assert not np.may_share_memory(get_data(img_r), get_data(img))
@@ -384,7 +386,7 @@ def test_resampling_warning_s_form(affine_eye, shape, rng):
 
     with pytest.warns(Warning, match="The provided image has no sform"):
         resample_img(
-            img_no_sform, target_affine=affine_eye, force_resample=False
+            img_no_sform, target_affine=affine_eye, force_resample=False, copy_header=True,
         )
 
 
@@ -406,7 +408,7 @@ def test_resampling_warning_binary_image(affine_eye, rng):
             img_binary,
             target_affine=rot,
             interpolation="continuous",
-            force_resample=False,
+            force_resample=False, copy_header=True,
         )
 
     with pytest.warns(Warning, match="Resampling binary images with"):
@@ -414,8 +416,38 @@ def test_resampling_warning_binary_image(affine_eye, rng):
             img_binary,
             target_affine=rot,
             interpolation="linear",
+
             force_resample=False,
+          copy_header=True,
         )
+
+
+def test_resample_img_copied_header(img_4d_mni_tr2):
+    # Test that the header is copied when resampling
+    result = resample_img(
+        img_4d_mni_tr2, target_affine=np.diag((6, 6, 6)), copy_header=True, force_resample=False,
+    )
+    # pixdim[1:4] should change to [6, 6, 6]
+    assert (result.header["pixdim"][1:4] == np.array([6, 6, 6])).all()
+    # pixdim at other indices should remain the same
+    assert (
+        result.header["pixdim"][4:] == img_4d_mni_tr2.header["pixdim"][4:]
+    ).all()
+    assert result.header["pixdim"][0] == img_4d_mni_tr2.header["pixdim"][0]
+    # dim, srow_* and min/max should also change
+    match_headers_keys(
+        img_4d_mni_tr2,
+        result,
+        except_keys=[
+            "pixdim",
+            "dim",
+            "cal_max",
+            "cal_min",
+            "srow_x",
+            "srow_y",
+            "srow_z",
+        ],
+    )
 
 
 def test_4d_affine_bounding_box_error(affine_eye):
@@ -441,16 +473,15 @@ def test_4d_affine_bounding_box_error(affine_eye):
         target_affine=bigger_img.affine,
         target_shape=bigger_img.shape,
         force_resample=False,
+       copy_header=True,
     )
     # resample using 3D affine and no target shape
     small_to_big_without_shape_3D_affine = resample_img(
-        small_img,
-        target_affine=bigger_img.affine[:3, :3],
-        force_resample=False,
+        small_img, target_affine=bigger_img.affine[:3, :3], copy_header=True, force_resample=False
     )
     # resample using 4D affine and no target shape
     small_to_big_without_shape = resample_img(
-        small_img, target_affine=bigger_img.affine, force_resample=False
+        small_img, target_affine=bigger_img.affine, copy_header=True, force_resample=False
     )
 
     # The first 2 should pass
@@ -487,7 +518,7 @@ def test_raises_upon_3x3_affine_and_no_shape(affine_eye):
             img,
             target_affine=np.eye(3) * 2,
             target_shape=(10, 10, 10),
-            force_resample=False,
+            force_resample=False, copy_header=True
         )
 
 
@@ -512,7 +543,7 @@ def test_3x3_affine_bbox(affine_eye):
     target_affine_3x3[1] *= -1
 
     img_3d_affine = resample_img(
-        img, target_affine=target_affine_3x3, force_resample=False
+        img, target_affine=target_affine_3x3, force_resample=False, copy_header=Tru
     )
 
     # If the bounding box is computed wrong, the image will be only
@@ -566,7 +597,7 @@ def test_raises_bbox_error_if_data_outside_box(affine_eye):
     )
     for new_affine in new_affines:
         with pytest.raises(exception, match=message):
-            resample_img(img, target_affine=new_affine, force_resample=False)
+            resample_img(img, target_affine=new_affine, force_resample=False, copy_header=True)
 
 
 @pytest.mark.parametrize(
@@ -591,7 +622,7 @@ def test_resampling_result_axis_permutation(affine_eye, axis_permutation):
     target_affine = np.eye(3)[axis_permutation]
 
     resampled_img = resample_img(
-        source_img, target_affine=target_affine, force_resample=False
+        source_img, target_affine=target_affine, force_resample=False, copy_header=True
     )
 
     resampled_data = get_data(resampled_img)
@@ -606,7 +637,7 @@ def test_resampling_result_axis_permutation(affine_eye, axis_permutation):
     target_affine[:3, 3] = offset
 
     resampled_img = resample_img(
-        source_img, target_affine=target_affine, force_resample=False
+        source_img, target_affine=target_affine, force_resample=False, copy_header=True
     )
 
     resampled_data = get_data(resampled_img)
@@ -645,7 +676,7 @@ def test_resampling_nan(affine_eye, core_shape):
     # check 3x3 transformation matrix
     target_affine = np.eye(3)[axis_permutation]
     resampled_img = resample_img(
-        source_img, target_affine=target_affine, force_resample=False
+        source_img, target_affine=target_affine, force_resample=False, copy_header=True
     )
 
     resampled_data = get_data(resampled_img)
@@ -677,7 +708,7 @@ def test_resampling_nan_big(affine_eye):
 
     with pytest.warns(RuntimeWarning):
         resampled_img = resample_img(
-            source_img, target_affine=affine_eye, force_resample=False
+            source_img, target_affine=affine_eye, force_resample=False, copy_header=True
         )
 
     resampled_data = get_data(resampled_img)
@@ -694,7 +725,7 @@ def test_resample_to_img(affine_eye, shape, rng):
     target_img = Nifti1Image(data, target_affine)
 
     result_img = resample_to_img(
-        source_img, target_img, interpolation="nearest", force_resample=False
+        source_img, target_img, interpolation="nearest", force_resample=False, copy_header=True
     )
 
     downsampled = data[::2, ::2, ::2, ...]
@@ -709,7 +740,7 @@ def test_crop(affine_eye):
     padded = _pad_array(data, [3, 2, 4, 4, 5, 7])
     padd_nii = Nifti1Image(padded, affine_eye)
 
-    cropped = crop_img(padd_nii, pad=False)
+    cropped = crop_img(padd_nii, pad=False, copy_header=True)
 
     assert_equal(get_data(cropped), data)
 
@@ -731,22 +762,30 @@ def test_resample_identify_affine_int_translation(affine_eye, rng):
     target_img = Nifti1Image(target_data, target_affine)
 
     result_img = resample_to_img(
-        source_img, target_img, interpolation="nearest", force_resample=False
+        source_img, target_img, interpolation="nearest", force_resample=False, copy_header=True
     )
     assert_almost_equal(get_data(target_img), get_data(result_img))
 
     result_img_2 = resample_to_img(
-        result_img, source_img, interpolation="nearest", force_resample=False
+        result_img, source_img, interpolation="nearest", force_resample=False, copy_header=True
     )
     assert_almost_equal(get_data(source_img), get_data(result_img_2))
 
     result_img_3 = resample_to_img(
-        result_img, source_img, interpolation="nearest", force_resample=True
+        result_img,
+        source_img,
+        interpolation="nearest",
+        force_resample=True,
+        copy_header=True,
     )
     assert_almost_equal(get_data(result_img_2), get_data(result_img_3))
 
     result_img_4 = resample_to_img(
-        source_img, target_img, interpolation="nearest", force_resample=True
+        source_img,
+        target_img,
+        interpolation="nearest",
+        force_resample=True,
+        copy_header=True,
     )
     assert_almost_equal(get_data(target_img), get_data(result_img_4))
 
@@ -768,6 +807,7 @@ def test_resample_clip(affine_eye):
             target_affine=affine_eye,
             clip=False,
             force_resample=False,
+          copy_header=True
         )
     )
     clip_data = get_data(
@@ -776,6 +816,7 @@ def test_resample_clip(affine_eye):
             target_affine=affine_eye,
             clip=True,
             force_resample=False,
+          copy_header=True
         )
     )
 
@@ -810,12 +851,15 @@ def test_reorder_img(affine_eye, rng):
 
         rot_img = resample_img(
             ref_img, target_affine=new_affine, force_resample=False
+
+            ref_img, target_affine=new_affine, copy_header=True
+
         )
 
         assert_array_equal(rot_img.affine, new_affine)
         assert_array_equal(get_data(rot_img).shape, shape)
 
-        reordered_img = reorder_img(rot_img)
+        reordered_img = reorder_img(rot_img, copy_header=True)
 
         assert_array_equal(reordered_img.affine[:3, :3], np.eye(3))
         assert_almost_equal(get_data(reordered_img), data)
@@ -830,13 +874,16 @@ def test_reorder_img_with_resample_arg(affine_eye, rng):
 
     interpolation = "nearest"
 
-    reordered_img = reorder_img(ref_img, resample=interpolation)
+    reordered_img = reorder_img(
+        ref_img, resample=interpolation, copy_header=True
+    )
 
     resampled_img = resample_img(
         ref_img,
         target_affine=reordered_img.affine,
         interpolation=interpolation,
         force_resample=False,
+        copy_header=True,
     )
     assert_array_equal(get_data(reordered_img), get_data(resampled_img))
 
@@ -852,10 +899,10 @@ def test_reorder_img_error_reorder_axis(affine_eye, rng):
     ref_img = Nifti1Image(data, non_diagonal_affine)
 
     # Test that no exception is raised when resample='continuous'
-    reorder_img(ref_img, resample="continuous")
+    reorder_img(ref_img, resample="continuous", copy_header=True)
 
     with pytest.raises(ValueError, match="Cannot reorder the axes"):
-        reorder_img(ref_img)
+        reorder_img(ref_img, copy_header=True)
 
 
 def test_reorder_img_flipping_axis(affine_eye, rng):
@@ -873,7 +920,7 @@ def test_reorder_img_flipping_axis(affine_eye, rng):
         img = Nifti1Image(data, affine)
         orig_img = copy.copy(img)
 
-        img2 = reorder_img(img)
+        img2 = reorder_img(img, copy_header=True)
 
         # Check that img has not been changed
         assert_array_equal(img.affine, orig_img.affine)
@@ -894,7 +941,9 @@ def test_reorder_img_error_interpolation(affine_eye, rng):
     ref_img = Nifti1Image(data, affine)
 
     with pytest.raises(ValueError, match="interpolation must be one of"):
-        reorder_img(ref_img, resample="an_invalid_interpolation")
+        reorder_img(
+            ref_img, resample="an_invalid_interpolation", copy_header=True
+        )
 
 
 def test_reorder_img_non_native_endianness():
@@ -911,7 +960,7 @@ def test_reorder_img_non_native_endianness():
         )
 
         img = Nifti1Image(data, affine)
-        return resample_img(img, target_affine=affine, force_resample=False)
+        return resample_img(img, target_affine=affine, force_resample=False, copy_header=True)
 
     img_1 = _get_resampled_img("<f8")
     img_2 = _get_resampled_img(">f8")
@@ -929,11 +978,36 @@ def test_reorder_img_mirror():
         ]
     )
     img = Nifti1Image(np.zeros((4, 6, 8)), affine=affine)
-    reordered = reorder_img(img)
+    reordered = reorder_img(img, copy_header=True)
     assert_allclose(
         get_bounds(reordered.shape, reordered.affine),
         get_bounds(img.shape, img.affine),
     )
+
+
+def test_reorder_img_copied_header(img_4d_mni_tr2):
+    # Test that the header is copied when reordering
+    result = reorder_img(img_4d_mni_tr2, copy_header=True)
+    # all header fields should stay the same
+    match_headers_keys(
+        img_4d_mni_tr2,
+        result,
+        except_keys=[],
+    )
+
+
+@pytest.mark.parametrize(
+    "func, input_img",
+    [
+        (resample_img, "img_4d_mni_tr2"),
+        (reorder_img, "img_4d_mni_tr2"),
+    ],
+)
+def test_warning_copy_header_false(request, func, input_img):
+    # Use the request fixture to get the actual fixture value
+    actual_input_img = request.getfixturevalue(input_img)
+    with pytest.warns(FutureWarning, match="From release 0.13.0 onwards*"):
+        func(actual_input_img, copy_header=False)
 
 
 def test_coord_transform_trivial(affine_eye, rng):
@@ -1005,6 +1079,7 @@ def test_resample_img_segmentation_fault():
             target_affine=aff_out,
             interpolation="nearest",
             force_resample=False,
+            copy_header=True,
         )
 
 
@@ -1027,7 +1102,7 @@ def test_resample_img_segmentation_fault():
 def test_resampling_with_int_types_no_crash(affine_eye, dtype):
     data = np.zeros((2, 2, 2))
     img = Nifti1Image(data.astype(dtype), affine_eye)
-    resample_img(img, target_affine=2.0 * affine_eye, force_resample=False)
+    resample_img(img, target_affine=2.0 * affine_eye, force_resample=False, copy_header=True)
 
 
 @pytest.mark.parametrize("dtype", ["int64", "uint64", "<i8", ">i8"])
@@ -1039,7 +1114,8 @@ def test_resampling_with_int64_types_no_crash(affine_eye, dtype):
     hdr = Nifti1Header()
     hdr.set_data_dtype(dtype)
     img = Nifti1Image(data.astype(dtype), affine_eye, header=hdr)
-    resample_img(img, target_affine=2.0 * affine_eye, force_resample=False)
+    resample_img(img, target_affine=2.0 * affine_eye, force_resample=False, copy_header=True)
+
 
 
 def test_resample_input(affine_eye, shape, rng, tmp_path):
@@ -1057,6 +1133,7 @@ def test_resample_input(affine_eye, shape, rng, tmp_path):
         target_affine=affine,
         interpolation="nearest",
         force_resample=False,
+        copy_header=True,
     )
 
 
@@ -1070,4 +1147,5 @@ def test_smoke_resampling_non_nifti(affine_eye, shape, rng):
         target_affine=target_affine,
         interpolation="nearest",
         force_resample=False,
+        copy_header=True,
     )

@@ -25,7 +25,7 @@ print(
 from nilearn import image
 
 func_filename = haxby_dataset.func[0]
-mean_img = image.mean_img(func_filename)
+mean_img = image.mean_img(func_filename, copy_header=True)
 
 z_slice = -14
 

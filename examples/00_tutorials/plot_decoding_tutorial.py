@@ -52,7 +52,7 @@ print(f"First subject functional nifti images (4D) are at: {fmri_filename}")
 from nilearn import plotting
 from nilearn.image import mean_img
 
-plotting.view_img(mean_img(fmri_filename), threshold=None)
+plotting.view_img(mean_img(fmri_filename, copy_header=True), threshold=None)
 
 # %%
 # Feature extraction: from :term:`fMRI` volumes to a data matrix

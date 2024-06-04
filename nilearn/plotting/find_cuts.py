@@ -295,7 +295,7 @@ def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
         )
         # resample is set to avoid issues with an image having a non-diagonal
         # affine and rotation.
-        img = reorder_img(img, resample="nearest")
+        img = reorder_img(img, resample="nearest", copy_header=True)
         affine = img.affine
     # note: orig_data is a copy of img._data_cache thanks to np.abs
     orig_data = np.abs(safe_get_data(img))
@@ -451,7 +451,7 @@ def find_parcellation_cut_coords(
             "Should be one of these 'left' or 'right'."
         )
     # Grab data and affine
-    labels_img = reorder_img(check_niimg_3d(labels_img))
+    labels_img = reorder_img(check_niimg_3d(labels_img), copy_header=True)
     labels_data = get_data(labels_img)
     labels_affine = labels_img.affine
 
