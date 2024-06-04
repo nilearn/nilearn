@@ -138,7 +138,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         if self.reports:  # save inputs for reporting
             self._reporting_data = {
                 "mask": self.mask_img_,
-                "dim": None,
+                "n_vertices": None,
                 "images": img,
             }
             if img is not None:
