@@ -328,6 +328,10 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         mean_data = masked_data.mean(axis=0)
         mean_img = self.inverse_transform(mean_data)
 
+        from rich import inspect
+
+        inspect(mean_img)
+
         vmin = mean_data.min()
         vmax = mean_data.max()
 
@@ -354,6 +358,13 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
                     vmin=vmin,
                     vmax=vmax,
                     # colorbar=True,
+                )
+                plotting.plot_surf_contours(
+                    self.mask_img_,
+                    hemi=hemi,
+                    view=view,
+                    figure=fig,
+                    axes=ax,
                 )
 
         plt.tight_layout()
