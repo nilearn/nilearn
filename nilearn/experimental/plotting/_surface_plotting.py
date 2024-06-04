@@ -17,6 +17,45 @@ DEFAULT_HEMI = "left"
 # MAP_TYPE = str | Path | numpy.ndarray | SurfaceImage | None
 
 
+def _check_inputs(
+    surf_map,
+    surf_mesh,
+    hemi: str,
+    bg_map=None,
+):
+    """Check inputs for surface plotting.
+
+    Where possible this will 'convert' the inputs to be able to pass them
+    to the the 'old' surface plotting functions.
+    """
+    if isinstance(surf_mesh, PolyMesh):
+        _check_hemi_present(surf_mesh, hemi)
+        surf_mesh = surf_mesh.parts[hemi]
+
+    if isinstance(surf_map, SurfaceImage):
+        if surf_mesh is None:
+            surf_mesh = surf_map.mesh.parts[hemi]
+        surf_map = surf_map.data.parts[hemi]
+
+    bg_map = _check_bg_map(bg_map, hemi)
+
+    return surf_map, surf_mesh, bg_map
+
+
+def _check_bg_map(bg_map, hemi: str) -> str | Path | numpy.ndarray | None:
+    """Return proper format of background map to be used."""
+    if isinstance(bg_map, SurfaceImage):
+        assert bg_map.data.parts[hemi] is not None
+        bg_map = bg_map.data.parts[hemi]
+    return bg_map
+
+
+def _check_hemi_present(mesh: PolyMesh, hemi: str) -> None:
+    """Check that a given hemisphere exists both in data and mesh."""
+    if hemi not in mesh.parts:
+        raise ValueError(f"{hemi} must be present in mesh")
+
+
 def plot_surf(
     surf_map,
     surf_mesh=None,
@@ -155,42 +194,3 @@ def view_surf(
         bg_map=bg_map,
         **kwargs,
     )
-
-
-def _check_inputs(
-    surf_map,
-    surf_mesh,
-    hemi: str,
-    bg_map=None,
-):
-    """Check inputs for surface plotting.
-
-    Where possible this will 'convert' the inputs to be able to pass them
-    to the the 'old' surface plotting functions.
-    """
-    if isinstance(surf_mesh, PolyMesh):
-        _check_hemi_present(surf_mesh, hemi)
-        surf_mesh = surf_mesh.parts[hemi]
-
-    if isinstance(surf_map, SurfaceImage):
-        if surf_mesh is None:
-            surf_mesh = surf_map.mesh.parts[hemi]
-        surf_map = surf_map.data.parts[hemi]
-
-    bg_map = _check_bg_map(bg_map, hemi)
-
-    return surf_map, surf_mesh, bg_map
-
-
-def _check_bg_map(bg_map, hemi: str) -> str | Path | numpy.ndarray | None:
-    """Return proper format of background map to be used."""
-    if isinstance(bg_map, SurfaceImage):
-        assert bg_map.data.parts[hemi] is not None
-        bg_map = bg_map.data.parts[hemi]
-    return bg_map
-
-
-def _check_hemi_present(mesh: PolyMesh, hemi: str) -> None:
-    """Check that a given hemisphere exists both in data and mesh."""
-    if hemi not in mesh.parts:
-        raise ValueError(f"{hemi} must be present in mesh")
