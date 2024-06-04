@@ -31,7 +31,7 @@ def load_fsaverage(
     meshes = {}
     for mesh_type, mesh_name in renaming.items():
         left = FileMesh(fsaverage[f"{mesh_type}_left"])
-        right = FileMesh(fsaverage[f"{mesh_type}_left"])
+        right = FileMesh(fsaverage[f"{mesh_type}_right"])
         meshes[mesh_name] = PolyMesh(left=left, right=right)
     return meshes
 
