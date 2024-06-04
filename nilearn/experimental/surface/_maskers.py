@@ -75,7 +75,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
             k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
         }
         self.reports = reports
-        self.cmap = kwargs.get("cmap", "CMRmap_r")
+        self.cmap = kwargs.get("cmap", "inferno")
         self._report_content = {
             "description": (
                 "This report shows the input surface image overlaid "
@@ -138,12 +138,15 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         if self.reports:  # save inputs for reporting
             self._reporting_data = {
                 "mask": self.mask_img_,
-                "n_vertices": None,
+                "n_vertices": {},
                 "images": img,
             }
             if img is not None:
                 self._reporting_data["images"] = img
-                self._reporting_data["dim"] = self.mask_img_.mesh.n_vertices
+                for part in self.mask_img_.data.parts.keys():
+                    self._reporting_data["n_vertices"][part] = (
+                        self.mask_img_.mesh.parts[part].n_vertices
+                    )
         else:
             self._reporting_data = None
         return self
@@ -325,19 +328,22 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         mean_data = masked_data.mean(axis=0)
         mean_img = self.inverse_transform(mean_data)
 
-        views = ["lateral", "medial", "dorsal", "ventral"]
+        vmin = mean_data.min()
+        vmax = mean_data.max()
+
+        views = ["lateral", "medial"]
         hemispheres = ["left", "right"]
 
         fig, axes = plt.subplots(
-            len(hemispheres),
             len(views),
+            len(hemispheres),
             subplot_kw={"projection": "3d"},
-            figsize=(10 * len(hemispheres), 10),
+            figsize=(20, 20),
         )
         axes = np.atleast_2d(axes)
 
-        for hemi, ax_row in zip(hemispheres, axes):
-            for ax, view in zip(ax_row, views):
+        for ax_row, view in zip(axes, views):
+            for ax, hemi in zip(ax_row, hemispheres):
                 plotting.plot_surf(
                     mean_img,
                     part=hemi,
@@ -345,10 +351,12 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
                     figure=fig,
                     axes=ax,
                     cmap=self.cmap,
-                    colorbar=True,
+                    vmin=vmin,
+                    vmax=vmax,
+                    # colorbar=True,
                 )
+
         plt.tight_layout()
-        fig.subplots_adjust(wspace=0.001, hspace=0.001)
         plt.close()
 
         init_display = figure_to_png_base64(fig)
