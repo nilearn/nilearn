@@ -16,7 +16,7 @@ def test_read_array(tmp_path):
 
 
 def test_read_mesh(tmp_path, mini_mesh):
-    left = mini_mesh["left_hemisphere"]
+    left = mini_mesh.parts["left"]
     gifti_file = tmp_path / "img.gii"
     _io.mesh_to_gifti(left.coordinates, left.faces, gifti_file)
     read_mesh = _io.read_mesh(gifti_file)
