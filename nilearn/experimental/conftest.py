@@ -1,3 +1,5 @@
+"""Fxitures for experimental module."""
+
 from typing import Callable
 
 import numpy as np
@@ -55,17 +57,21 @@ def make_mini_img(mini_mesh) -> Callable:
 
 @pytest.fixture
 def mini_mask(mini_img) -> SurfaceImage:
+    """Raturn small surface mask."""
     data = {k: (v > v.ravel()[0]) for k, v in mini_img.data.parts.items()}
     return SurfaceImage(mini_img.mesh, data)
 
 
 @pytest.fixture
 def mini_img(make_mini_img) -> SurfaceImage:
+    """Raturn small surface image."""
     return make_mini_img()
 
 
 @pytest.fixture
 def flip():
+    """Flip hemispheres of a surface image data or mesh."""
+
     def f(poly_obj):
         keys = list(poly_obj.parts.keys())
         keys = [keys[-1]] + keys[:-1]
@@ -76,6 +82,8 @@ def flip():
 
 @pytest.fixture
 def flip_img(flip):
+    """Flip hemispheres of a surface image."""
+
     def f(img):
         return SurfaceImage(flip(img.mesh), flip(img.data))
 
@@ -90,6 +98,8 @@ def pial_surface_mesh():
 
 @pytest.fixture
 def assert_img_equal():
+    """Check that 2 SurfaceImages are equal."""
+
     def f(img_1, img_2):
         assert set(img_1.data.parts.keys()) == set(img_2.data.parts.keys())
         for key in img_1.data.parts:
@@ -100,6 +110,8 @@ def assert_img_equal():
 
 @pytest.fixture
 def drop_img_part():
+    """Remove one hemisphere from a SurfaceImage."""
+
     def f(img, part_name="right"):
         mesh_parts = img.mesh.parts.copy()
         mesh_parts.pop(part_name)
