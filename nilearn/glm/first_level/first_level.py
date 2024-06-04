@@ -25,6 +25,7 @@ from sklearn.cluster import KMeans
 from nilearn._utils import fill_doc, stringify_path
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_run_sample_masks
+from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     compute_fixed_effect_contrast,
@@ -320,11 +321,14 @@ class FirstLevelModel(BaseGLM):
         (in seconds). Events that start before (slice_time_ref * t_r +
         min_onset) are not considered.
 
-    mask_img : Niimg-like, NiftiMasker object or False, optional
+    mask_img : Niimg-like, NiftiMasker, SurfaceImage, SurfaceMasker, False or \
+               None, default=None
         Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is given,
-        it will be computed automatically by a NiftiMasker with default
+        then its mask will be used. If None is passed, the mask
+        will be computed automatically by a NiftiMasker with default
         parameters. If False is given then the data will not be masked.
+        In the case of surface analysis, passing None or False will lead to
+        no masking.
 
     target_affine : 3x3 or 4x4 matrix, optional
         This parameter is passed to nilearn.image.resample_img.
@@ -504,27 +508,28 @@ class FirstLevelModel(BaseGLM):
 
         Parameters
         ----------
-        run_imgs : Niimg-like object or list of Niimg-like objects,
+        run_imgs : Niimg-like object, :obj:`list` of Niimg-like objects, \
+                   SurfaceImage object, or :obj:`list` of SurfaceImage
             Data on which the :term:`GLM` will be fitted. If this is a list,
             the affine is considered the same for all.
 
-        events : pandas Dataframe or string or list of pandas DataFrames \
-                 or strings, default=None
+        events : :class:`pandas.DataFrame` or :obj:`str` or :obj:`list` of \
+                 :class:`pandas.DataFrame` or :obj:`str`, default=None
             :term:`fMRI` events used to build design matrices.
             One events object expected per run_img.
             Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
 
-        confounds : pandas Dataframe, numpy array or string or \
-                    list of pandas DataFrames, numpy arrays or strings, \
-                    default=None
+        confounds : :class:`pandas.DataFrame`, :class:`numpy.ndarray` or \
+                    :obj:`str` or :obj:`list` of :class:`pandas.DataFrame`, \
+                    :class:`numpy.ndarray` or :obj:`str`, default=None
             Each column in a DataFrame corresponds to a confound variable
             to be included in the regression model of the respective run_img.
             The number of rows must match the number of volumes in the
             respective run_img. Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
 
-        sample_masks : array_like, or list of array_like, default=None
+        sample_masks : array_like, or :obj:`list` of array_like, default=None
             shape of array: (number of scans - number of volumes remove)
             Indices of retained volumes. Masks the niimgs along time/fourth
             dimension to perform scrubbing (remove volumes with high motion)
@@ -532,12 +537,12 @@ class FirstLevelModel(BaseGLM):
 
             .. versionadded:: 0.9.2
 
-        design_matrices : pandas DataFrame or \
-                          list of pandas DataFrames, default=None
+        design_matrices : :class:`pandas.DataFrame` or :obj:`list` of \
+                          :class:`pandas.DataFrame`, default=None
             Design matrices that will be used to fit the GLM. If given it
             takes precedence over events and confounds.
 
-        bins : int, default=100
+        bins : :obj:`int`, default=100
             Maximum number of discrete bins for the AR coef histogram.
             If an autoregressive model with order greater than one is specified
             then adaptive quantification is performed and the coefficients
@@ -555,8 +560,6 @@ class FirstLevelModel(BaseGLM):
                 "If design matrices are supplied, "
                 "confounds and events will be ignored."
             )
-        # Local import to prevent circular imports
-        from nilearn.maskers import NiftiMasker
 
         # Check arguments
         # Check imgs type
@@ -586,51 +589,7 @@ class FirstLevelModel(BaseGLM):
         if sample_masks is not None:
             sample_masks = check_run_sample_masks(len(run_imgs), sample_masks)
 
-        # Learn the mask
-        if self.mask_img is False:
-            # We create a dummy mask to preserve functionality of api
-            ref_img = check_niimg(run_imgs[0])
-            self.mask_img = Nifti1Image(
-                np.ones(ref_img.shape[:3]), ref_img.affine
-            )
-        if not isinstance(self.mask_img, NiftiMasker):
-            self.masker_ = NiftiMasker(
-                mask_img=self.mask_img,
-                smoothing_fwhm=self.smoothing_fwhm,
-                target_affine=self.target_affine,
-                standardize=self.standardize,
-                mask_strategy="epi",
-                t_r=self.t_r,
-                memory=self.memory,
-                verbose=max(0, self.verbose - 2),
-                target_shape=self.target_shape,
-                memory_level=self.memory_level,
-            )
-            self.masker_.fit(run_imgs[0])
-        else:
-            # Make sure masker has been fitted otherwise no attribute mask_img_
-            self.mask_img._check_fitted()
-            if self.mask_img.mask_img_ is None and self.masker_ is None:
-                self.masker_ = clone(self.mask_img)
-                for param_name in [
-                    "target_affine",
-                    "target_shape",
-                    "smoothing_fwhm",
-                    "t_r",
-                    "memory",
-                    "memory_level",
-                ]:
-                    our_param = getattr(self, param_name)
-                    if our_param is None:
-                        continue
-                    if getattr(self.masker_, param_name) is not None:
-                        warn(
-                            f"Parameter {param_name} of the masker overridden"
-                        )
-                    setattr(self.masker_, param_name, our_param)
-                self.masker_.fit(run_imgs[0])
-            else:
-                self.masker_ = self.mask_img
+        self._prepare_mask(run_imgs[0])
 
         # For each run fit the model and keep only the regression results.
         self.labels_, self.results_, self.design_matrices_ = [], [], []
@@ -655,9 +614,13 @@ class FirstLevelModel(BaseGLM):
                 )
 
             # Build the experimental design for the glm
-            run_img = check_niimg(run_img, ensure_ndim=4)
+            if not isinstance(run_img, SurfaceImage):
+                run_img = check_niimg(run_img, ensure_ndim=4)
             if design_matrices is None:
-                n_scans = get_data(run_img).shape[3]
+                if isinstance(run_img, SurfaceImage):
+                    n_scans = run_img.shape[0]
+                else:
+                    n_scans = get_data(run_img).shape[3]
                 if confounds is not None:
                     confounds_matrix = confounds[run_idx].values
                     if confounds_matrix.shape[0] != n_scans:
@@ -848,9 +811,11 @@ class FirstLevelModel(BaseGLM):
             # Prepare the returned images
             output = self.masker_.inverse_transform(estimate_)
             contrast_name = str(con_vals)
-            output.header["descrip"] = (
-                f"{output_type_} of contrast {contrast_name}"
-            )
+            if not isinstance(output, SurfaceImage):
+                output.header["descrip"] = (
+                    f"{output_type_} of contrast {contrast_name}"
+                )
+
             outputs[output_type_] = output
 
         return outputs if output_type == "all" else output
@@ -921,6 +886,92 @@ class FirstLevelModel(BaseGLM):
             output.append(self.masker_.inverse_transform(voxelwise_attribute))
 
         return output
+
+    def _prepare_mask(self, run_img):
+        """Set up the masker.
+
+        Parameters
+        ----------
+        run_img : Niimg-like object or SurfaceImage object
+            Used for setting up the masker object.
+        """
+        # Local import to prevent circular imports
+        from nilearn.maskers import NiftiMasker
+
+        # Learn the mask
+        if self.mask_img is False:
+            # We create a dummy mask to preserve functionality of api
+            if isinstance(run_img, SurfaceImage):
+                surf_data = {}
+                for part in run_img.mesh.parts:
+                    surf_data[part] = np.ones(
+                        run_img.data.parts[part].shape[1], dtype=bool
+                    )
+                self.mask_img = SurfaceImage(mesh=run_img.mesh, data=surf_data)
+            else:
+                ref_img = check_niimg(run_img)
+                self.mask_img = Nifti1Image(
+                    np.ones(ref_img.shape[:3]), ref_img.affine
+                )
+
+        if isinstance(run_img, SurfaceImage) and not isinstance(
+            self.mask_img, SurfaceMasker
+        ):
+            self.masker_ = SurfaceMasker(
+                mask_img=self.mask_img,
+                smoothing_fwhm=self.smoothing_fwhm,
+                standardize=self.standardize,
+                t_r=self.t_r,
+                memory=self.memory,
+                memory_level=self.memory_level,
+            )
+            self.masker_.fit(run_img)
+
+        elif not isinstance(
+            self.mask_img, (NiftiMasker, SurfaceMasker, SurfaceImage)
+        ):
+            self.masker_ = NiftiMasker(
+                mask_img=self.mask_img,
+                smoothing_fwhm=self.smoothing_fwhm,
+                target_affine=self.target_affine,
+                standardize=self.standardize,
+                mask_strategy="epi",
+                t_r=self.t_r,
+                memory=self.memory,
+                verbose=max(0, self.verbose - 2),
+                target_shape=self.target_shape,
+                memory_level=self.memory_level,
+            )
+            self.masker_.fit(run_img)
+
+        else:
+            # Make sure masker has been fitted otherwise no attribute mask_img_
+            self.mask_img._check_fitted()
+            if self.mask_img.mask_img_ is None and self.masker_ is None:
+                self.masker_ = clone(self.mask_img)
+                for param_name in [
+                    "target_affine",
+                    "target_shape",
+                    "smoothing_fwhm",
+                    "t_r",
+                    "memory",
+                    "memory_level",
+                ]:
+                    our_param = getattr(self, param_name)
+                    if our_param is None:
+                        continue
+                    if getattr(self.masker_, param_name) is not None:
+                        warn(
+                            f"Parameter {param_name} of the masker overridden"
+                        )
+                    if isinstance(self.masker_, SurfaceMasker):
+                        if param_name not in ["target_affine", "target_shape"]:
+                            setattr(self.masker_, param_name, our_param)
+                    else:
+                        setattr(self.masker_, param_name, our_param)
+                self.masker_.fit(run_img)
+            else:
+                self.masker_ = self.mask_img
 
 
 def _check_events_file_uses_tab_separators(events_files):
