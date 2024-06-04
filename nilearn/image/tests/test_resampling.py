@@ -65,7 +65,7 @@ def shape():
     return SHAPE
 
 
-def test_resample_depreacation_force_resample(shape, affine_eye, rng):
+def test_resample_deprecation_force_resample(shape, affine_eye, rng):
     """Test change of value of force_resample."""
     data = rng.integers(0, 10, shape, dtype="int32")
     affine_eye[:3, -1] = 0.5 * np.array(shape[:3])
