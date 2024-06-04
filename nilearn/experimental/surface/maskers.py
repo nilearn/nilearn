@@ -147,8 +147,8 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
                     self._reporting_data["n_vertices"][part] = (
                         self.mask_img_.mesh.parts[part].n_vertices
                     )
-        else:
-            self._reporting_data = None
+        # else:
+        #     self._reporting_data = None
         return self
 
     def _check_fitted(self):
@@ -328,10 +328,6 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         mean_data = masked_data.mean(axis=0)
         mean_img = self.inverse_transform(mean_data)
 
-        from rich import inspect
-
-        inspect(mean_img)
-
         vmin = mean_data.min()
         vmax = mean_data.max()
 
@@ -359,13 +355,13 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
                     vmax=vmax,
                     # colorbar=True,
                 )
-                plotting.plot_surf_contours(
-                    self.mask_img_,
-                    hemi=hemi,
-                    view=view,
-                    figure=fig,
-                    axes=ax,
-                )
+                # plotting.plot_surf_contours(
+                #     self.mask_img_,
+                #     hemi=hemi,
+                #     view=view,
+                #     figure=fig,
+                #     axes=ax,
+                # )
 
         plt.tight_layout()
         plt.close()

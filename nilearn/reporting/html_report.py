@@ -216,8 +216,13 @@ def generate_report(estimator):
     if not hasattr(estimator, "_reporting_data"):
         warnings.warn(
             "This object has not been fitted yet ! "
-            "Make sure to run `fit` before inspecting reports."
+            "Make sure to run `fit` before inspecting reports.",
+            stacklevel=3,
         )
+        if "warning_message" in data and not data["warning_message"]:
+            data["warning_message"] = (
+                "This report was not generated. Please `fit` the object."
+            )
         return _update_template(
             title="Empty Report",
             docstring=(
@@ -232,14 +237,20 @@ def generate_report(estimator):
     elif estimator._reporting_data is None:
         warnings.warn(
             "Report generation not enabled ! "
-            "No visual outputs will be created."
+            "No visual outputs will be created.",
+            stacklevel=3,
         )
+        if "warning_message" in data and not data["warning_message"]:
+            data["warning_message"] = (
+                "This report was not generated. "
+                "Please check that reporting is enabled."
+            )
+
         return _update_template(
             title="Empty Report",
             docstring=(
-                "This report was not "
-                "generated. Please check "
-                "that reporting is enabled."
+                "This report was not generated. "
+                "Please check that reporting is enabled."
             ),
             content=_embed_img(None),
             overlay=None,
