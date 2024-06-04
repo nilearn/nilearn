@@ -21,7 +21,7 @@ from nilearn import datasets
 destrieux_atlas = datasets.fetch_atlas_surf_destrieux()
 
 # The parcellation is already loaded into memory
-parcellation = destrieux_atlas['map_left']
+parcellation = destrieux_atlas["map_left"]
 
 # Retrieve fsaverage5 surface dataset for the plotting background. It contains
 # the surface template as pial and inflated version and a sulcal depth maps
@@ -29,12 +29,18 @@ parcellation = destrieux_atlas['map_left']
 fsaverage = datasets.fetch_surf_fsaverage()
 
 # The fsaverage dataset contains file names pointing to the file locations
-print("Fsaverage5 pial surface of left hemisphere is at: "
-      f"{fsaverage['pial_left']}")
-print("Fsaverage5 inflated surface of left hemisphere is at: "
-      f"{fsaverage['infl_left']}")
-print("Fsaverage5 sulcal depth map of left hemisphere is at: "
-      f"{fsaverage['sulc_left']}")
+print(
+    "Fsaverage5 pial surface of left hemisphere is at: "
+    f"{fsaverage['pial_left']}"
+)
+print(
+    "Fsaverage5 inflated surface of left hemisphere is at: "
+    f"{fsaverage['infl_left']}"
+)
+print(
+    "Fsaverage5 sulcal depth map of left hemisphere is at: "
+    f"{fsaverage['sulc_left']}"
+)
 
 # %%
 # Visualization
@@ -43,40 +49,65 @@ print("Fsaverage5 sulcal depth map of left hemisphere is at: "
 # Display Destrieux parcellation on fsaverage5 pial surface using nilearn
 from nilearn import plotting
 
-plotting.plot_surf_roi(fsaverage['pial_left'], roi_map=parcellation,
-                       hemi='left', view='lateral',
-                       bg_map=fsaverage['sulc_left'], bg_on_data=True,
-                       darkness=.5)
+plotting.plot_surf_roi(
+    fsaverage["pial_left"],
+    roi_map=parcellation,
+    hemi="left",
+    view="lateral",
+    bg_map=fsaverage["sulc_left"],
+    bg_on_data=True,
+    darkness=0.5,
+)
 
 # %%
 # Display Destrieux :term:`parcellation` on inflated fsaverage5 surface
-plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
-                       hemi='left', view='lateral',
-                       bg_map=fsaverage['sulc_left'], bg_on_data=True,
-                       darkness=.5)
+plotting.plot_surf_roi(
+    fsaverage["infl_left"],
+    roi_map=parcellation,
+    hemi="left",
+    view="lateral",
+    bg_map=fsaverage["sulc_left"],
+    bg_on_data=True,
+    darkness=0.5,
+)
 
 # %%
 # Display Destrieux :term:`parcellation` with different views: posterior
-plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
-                       hemi='left', view='posterior',
-                       bg_map=fsaverage['sulc_left'], bg_on_data=True,
-                       darkness=.5)
+plotting.plot_surf_roi(
+    fsaverage["infl_left"],
+    roi_map=parcellation,
+    hemi="left",
+    view="posterior",
+    bg_map=fsaverage["sulc_left"],
+    bg_on_data=True,
+    darkness=0.5,
+)
 
 # %%
 # Display Destrieux :term:`parcellation` with different views: ventral
-plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
-                       hemi='left', view='ventral',
-                       bg_map=fsaverage['sulc_left'], bg_on_data=True,
-                       darkness=.5)
+plotting.plot_surf_roi(
+    fsaverage["infl_left"],
+    roi_map=parcellation,
+    hemi="left",
+    view="ventral",
+    bg_map=fsaverage["sulc_left"],
+    bg_on_data=True,
+    darkness=0.5,
+)
 plotting.show()
 
 # %%
 # Display Destrieux :term:`parcellation` with custom view: explicitly set angle
 elev, azim = 210.0, 90.0  # appropriate for visualizing, e.g., the OTS
-plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
-                       hemi='left', view=(elev, azim),
-                       bg_map=fsaverage['sulc_left'], bg_on_data=True,
-                       darkness=.5)
+plotting.plot_surf_roi(
+    fsaverage["infl_left"],
+    roi_map=parcellation,
+    hemi="left",
+    view=(elev, azim),
+    bg_map=fsaverage["sulc_left"],
+    bg_on_data=True,
+    darkness=0.5,
+)
 
 # %%
 # Display connectome from surface parcellation
@@ -93,10 +124,10 @@ from nilearn import surface
 
 atlas = destrieux_atlas
 coordinates = []
-labels = destrieux_atlas['labels']
-for hemi in ['left', 'right']:
-    vert = destrieux_atlas[f'map_{hemi}']
-    rr, _ = surface.load_surf_mesh(fsaverage[f'pial_{hemi}'])
+labels = destrieux_atlas["labels"]
+for hemi in ["left", "right"]:
+    vert = destrieux_atlas[f"map_{hemi}"]
+    rr, _ = surface.load_surf_mesh(fsaverage[f"pial_{hemi}"])
     for k, label in enumerate(labels):
         if "Unknown" not in str(label):  # Omit the Unknown label.
             # Compute mean location of vertices in label of index k
@@ -112,9 +143,9 @@ n_parcels_hemi = n_parcels // 2
 corr[np.arange(n_parcels_hemi), np.arange(n_parcels_hemi) + n_parcels_hemi] = 1
 corr = corr + corr.T
 
-plotting.plot_connectome(corr, coordinates,
-                         edge_threshold="90%",
-                         title='fsaverage Destrieux atlas')
+plotting.plot_connectome(
+    corr, coordinates, edge_threshold="90%", title="fsaverage Destrieux atlas"
+)
 plotting.show()
 
 # %%
@@ -125,8 +156,9 @@ plotting.show()
 # visualizations in a web browser. See :ref:`interactive-surface-plotting` for
 # more details.
 
-view = plotting.view_surf(fsaverage.infl_left, parcellation,
-                          cmap='gist_ncar', symmetric_cmap=False)
+view = plotting.view_surf(
+    fsaverage.infl_left, parcellation, cmap="gist_ncar", symmetric_cmap=False
+)
 # In a Jupyter notebook, if ``view`` is the output of a cell, it will
 # be displayed below the cell
 
@@ -140,7 +172,7 @@ view
 # you can also use :func:`nilearn.plotting.view_connectome` to open an
 # interactive view of the connectome.
 
-view = plotting.view_connectome(corr, coordinates, edge_threshold='90%')
+view = plotting.view_connectome(corr, coordinates, edge_threshold="90%")
 # uncomment this to open the plot in a web browser:
 # view.open_in_browser()
 view
