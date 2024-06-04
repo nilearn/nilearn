@@ -346,7 +346,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
             for ax, hemi in zip(ax_row, hemispheres):
                 plotting.plot_surf(
                     mean_img,
-                    part=hemi,
+                    hemi=hemi,
                     view=view,
                     figure=fig,
                     axes=ax,
