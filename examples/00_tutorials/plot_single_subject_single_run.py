@@ -64,7 +64,7 @@ plot_anat(subject_data.anat, colorbar=True, cbar_tick_format="%i")
 from nilearn.image import concat_imgs, mean_img
 
 fmri_img = concat_imgs(subject_data.func)
-mean_img = mean_img(fmri_img)
+mean_img = mean_img(fmri_img, copy_header=True)
 
 # %%
 # Specifying the experimental paradigm

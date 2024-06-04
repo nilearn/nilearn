@@ -4,10 +4,11 @@ import os
 import warnings
 
 
-def rename_parameters(replacement_params,
-                      end_version='future',
-                      lib_name='Nilearn',
-                      ):
+def rename_parameters(
+    replacement_params,
+    end_version="future",
+    lib_name="Nilearn",
+):
     """Use this decorator to deprecate & replace specified parameters \
     in the decorated functions and methods without changing \
     function definition or signature.
@@ -28,18 +29,20 @@ def rename_parameters(replacement_params,
         For informational purpose in the warning text.
 
     """
+
     def _replace_params(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            _warn_deprecated_params(replacement_params, end_version, lib_name,
-                                    kwargs
-                                    )
-            kwargs = _transfer_deprecated_param_vals(replacement_params,
-                                                     kwargs
-                                                     )
+            _warn_deprecated_params(
+                replacement_params, end_version, lib_name, kwargs
+            )
+            kwargs = _transfer_deprecated_param_vals(
+                replacement_params, kwargs
+            )
             return func(*args, **kwargs)
 
         return wrapper
+
     return _replace_params
 
 
@@ -69,11 +72,14 @@ def _warn_deprecated_params(replacement_params, end_version, lib_name, kwargs):
         replacement_param = replacement_params[deprecated_param_]
         param_deprecation_msg = (
             f'The parameter "{deprecated_param_}" '
-            f'will be removed in {end_version} release of {lib_name}. '
-            f'Please use the parameter "{replacement_param}" instead.')
-        warnings.warn(category=DeprecationWarning,
-                      message=param_deprecation_msg,
-                      stacklevel=3)
+            f"will be removed in {end_version} release of {lib_name}. "
+            f'Please use the parameter "{replacement_param}" instead.'
+        )
+        warnings.warn(
+            category=DeprecationWarning,
+            message=param_deprecation_msg,
+            stacklevel=3,
+        )
 
 
 def _transfer_deprecated_param_vals(replacement_params, kwargs):
@@ -106,9 +112,7 @@ def _transfer_deprecated_param_vals(replacement_params, kwargs):
     return kwargs
 
 
-def remove_parameters(removed_params,
-                      reason,
-                      end_version='future'):
+def remove_parameters(removed_params, reason, end_version="future"):
     """Use this decorator to deprecate \
     but not renamed parameters in the decorated functions and methods.
 
@@ -126,19 +130,24 @@ def remove_parameters(removed_params,
         For informational purpose in the warning text.
 
     """
+
     def _remove_params(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             found = set(removed_params).intersection(kwargs)
             if found:
-                message = (f'Parameter(s) {", ".join(found)} '
-                           f'will be removed in version {end_version}; '
-                           f'{reason}')
-                warnings.warn(category=DeprecationWarning,
-                              message=message,
-                              stacklevel=3)
+                message = (
+                    f'Parameter(s) {", ".join(found)} '
+                    f"will be removed in version {end_version}; "
+                    f"{reason}"
+                )
+                warnings.warn(
+                    category=DeprecationWarning, message=message, stacklevel=3
+                )
             return func(*args, **kwargs)
+
         return wrapper
+
     return _remove_params
 
 
@@ -218,3 +227,30 @@ def is_kaleido_installed():
     except ImportError:
         return False
     return True
+
+
+# TODO: remove this function after release 0.13.0
+def check_copy_header(copy_header):
+    """Check the value of the `copy_header` parameter.
+
+    Only being used with `nilearn.image` and resampling functions to warn
+    users that `copy_header` will default to `True` from release 0.13.0
+    onwards.
+
+    Parameters
+    ----------
+    copy_header : :obj:`bool"
+
+    """
+    if not copy_header:
+        copy_header_default = (
+            "From release 0.13.0 onwards, this function will, by default, "
+            "copy the header of the input image to the output. "
+            "Currently, the header is reset to the default Nifti1Header. "
+            "To suppress this warning and use the new behavior, set "
+            "`copy_header=True`."
+        )
+        warnings.warn(
+            category=FutureWarning,
+            message=copy_header_default,
+        )
