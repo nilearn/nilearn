@@ -30,6 +30,8 @@
 
 .. _Ana Luisa Pinho: https://github.com/alpinho
 
+.. _Anand Joshi: https://github.com/ajoshiusc
+
 .. _Andrés Hoyos Idrobo: https://github.com/ahoyosid
 
 .. _Anne-Sophie Kieslinger: https://github.com/askieslinger
