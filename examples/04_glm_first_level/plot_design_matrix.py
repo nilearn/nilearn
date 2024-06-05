@@ -111,4 +111,43 @@ plot_design_matrix(X2, ax=ax2)
 ax2.set_title("Block design matrix", fontsize=12)
 plot_design_matrix(X3, ax=ax3)
 ax3.set_title("FIR design matrix", fontsize=12)
-fig.show()
+plt.show()
+
+
+# %%
+# Parametric modulation
+# ---------------------
+# We may want to modulate the way we model our events inn our fMRI analysis.
+# This type of parametric modulation can be done
+# by adding a "modulation" column to the dataframe containing our events.
+#
+# Here we will assume that when a trial
+# is the same condition as the previous one,
+# it will elicit a less intense response.
+
+modulation = [1.0, 0.5, 0.25, 1.0, 0.5, 0.25, 1.0, 0.5, 0.25]
+modulated_events = pd.DataFrame(
+    {
+        "trial_type": conditions,
+        "onset": onsets,
+        "duration": duration,
+        "modulation": modulation,
+    }
+)
+
+hrf_model = "glover"
+X4 = make_first_level_design_matrix(
+    frame_times,
+    modulated_events,
+    drift_model="polynomial",
+    drift_order=3,
+    hrf_model=hrf_model,
+)
+
+# Let's compare it to the unmodulated block design
+fig, (ax1, ax2) = plt.subplots(figsize=(10, 6), nrows=1, ncols=2)
+plot_design_matrix(X2, ax=ax1)
+ax1.set_title("Block design matrix", fontsize=12)
+plot_design_matrix(X4, ax=ax2)
+ax2.set_title("Modulated block design matrix", fontsize=12)
+plt.show()

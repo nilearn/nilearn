@@ -111,6 +111,8 @@ plot_event(events, figsize=(15, 5))
 plt.show()
 
 # %%
+# Parametric modulation
+# ---------------------
 # We may want to modulate the way we model our events inn our fMRI analysis.
 # This type of parametric modulation can be done
 # by adding a "modulation" column to the dataframe containing our events.
