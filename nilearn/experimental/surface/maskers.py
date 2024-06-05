@@ -89,7 +89,10 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 "Make sure to run `fit` before inspecting reports."
             ),
             "n_vertices": {},
-            "number_of_regions": None,  # unused but required in HTML template
+            # unused but required in HTML template
+            "number_of_regions": None,
+            "number_of_rows": None,
+            "summary": None,
         }
 
     def _fit_mask_img(self, img: SurfaceImage | None) -> None:
@@ -427,14 +430,19 @@ class SurfaceLabelsMasker(BaseEstimator):
         all_labels = set(self.labels_data_.ravel())
         all_labels.discard(0)
         self.labels_ = np.asarray(list(all_labels))
+
         if label_names is None:
             self.label_names_ = np.asarray(
                 [str(label) for label in self.labels_]
             )
         else:
-            self.label_names_ = np.asarray(
-                [label_names[label] for label in self.labels_]
-            )
+            tmp = []
+            for x in self.labels_:
+                if isinstance(label_names[x], bytes):
+                    tmp.append(label_names[x].decode("utf-8"))
+                else:
+                    tmp.append(label_names[x])
+            self.label_names_ = np.asarray(tmp)
 
         self.reports = reports
         self.cmap = kwargs.get("cmap", "inferno")
@@ -448,16 +456,49 @@ class SurfaceLabelsMasker(BaseEstimator):
             ),
             "warning_message": None,
             "n_vertices": {},
-            "number_of_regions": len(self.label_names),
+            "number_of_regions": len(self.label_names_),
+            "summary": {},
+        }
+        size = []
+        relative_size = []
+        regions_summary = {
+            "hemisphere": [],
+            "label value": [],
+            "region name": [],
+            "size (number of vertices)": [],
+            "relative size (% vertices in hemisphere)": [],
         }
         for part in self.labels_img.data.parts.keys():
             self._report_content["n_vertices"][part] = (
                 self.labels_img.mesh.parts[part].n_vertices
             )
+            for i, label in enumerate(self.label_names_):
+                regions_summary["hemisphere"].append(part)
+                regions_summary["label value"].append(i)
+                regions_summary["region name"].append(label)
+
+                nb_vertices = self.labels_img.data.parts[part] == i
+                size.append(nb_vertices.sum())
+                tmp = (
+                    nb_vertices.sum()
+                    / self.labels_img.mesh.parts[part].n_vertices
+                    * 100
+                )
+                relative_size.append(f"{tmp :.2}")
+
+        regions_summary["size (number of vertices)"] = size
+        regions_summary["relative size (% vertices in hemisphere)"] = (
+            relative_size
+        )
+
+        self._report_content["summary"] = regions_summary
+        self._report_content["number_of_rows"] = len(
+            regions_summary["hemisphere"]
+        )
 
         self._reporting_data = {
             "labels_image": self.labels_img,
-            "label_names": [str(x) for x in self.label_names],
+            "label_names": [str(x) for x in self.label_names_],
             "images": None,
         }
 

@@ -58,31 +58,68 @@
           </tbody>
         </table>
       </div>
+      {{endif}} {{if number_of_regions}}
+      <p class="elem-desc">
+        The masker has <b>{{number_of_regions}}</b> different non-overlapping
+        regions.
+      </p>
       {{endif}}
     </div>
   </div>
   <div class="pure-g">
     <div class="pure-u-1 pure-u-md-3-3 scrollit">
-      <details>
-        <summary class="pure-button">Parameters</summary>
-        <table class="pure-table">
-          <thead>
-            <tr>
-              <th>Parameter</th>
-              <th>Value</th>
-            </tr>
-          </thead>
+      <div class="table-section">
+        {{if summary}}
+        <!--  -->
+        <div class="scrollit">
+          <details>
+            <summary class="pure-button">Regions summary</summary>
+            <table class="pure-table">
+              <thead>
+                <tr>
+                  {{py: region = summary.items()}}
+                  <!--  -->
+                  {{for k, v in region}}
+                  <th>{{k}}</th>
+                  {{endfor}}
+                </tr>
+              </thead>
+              <tbody>
+                {{for idx in range(number_of_rows)}}
+                <tr>
+                  {{for k, v in region}}
+                  <td data-column="{{k}}">{{v[idx]}}</td>
+                  {{endfor}}
+                </tr>
+                {{endfor}}
+              </tbody>
+            </table>
+          </details>
+        </div>
+        {{endif}}
+        <div class="scrollit">
+          <details>
+            <summary class="pure-button">Parameters</summary>
+            <table class="pure-table">
+              <thead>
+                <tr>
+                  <th>Parameter</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
 
-          <tbody>
-            {{py: params = parameters.items()}} {{for p, v in params}}
-            <tr>
-              <td data-column="Parameter">{{p}}</td>
-              <td data-column="Value">{{v}}</td>
-            </tr>
-            {{endfor}}
-          </tbody>
-        </table>
-      </details>
+              <tbody>
+                {{py: params = parameters.items()}} {{for p, v in params}}
+                <tr>
+                  <td data-column="Parameter">{{p}}</td>
+                  <td data-column="Value">{{v}}</td>
+                </tr>
+                {{endfor}}
+              </tbody>
+            </table>
+          </details>
+        </div>
+      </div>
     </div>
   </div>
   <div class="pure-u-1 pure-u-md-3-3 note">
