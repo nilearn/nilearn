@@ -49,12 +49,16 @@ from nilearn.experimental.surface import (
 
 nki_dataset = fetch_nki(n_subjects=1)
 
+# For this example we will only work on the data
+# from the left hemisphere
+hemi = "left"
+
 # The nki list contains a SurfaceImage instance
 # for the data of each subject along with fsaverage pial meshes.
 
 # Destrieux parcellation for left hemisphere in fsaverage5 space
 destrieux_atlas, labels = fetch_destrieux()
-parcellation = destrieux_atlas.data.parts["left"]
+parcellation = destrieux_atlas.data.parts[hemi]
 
 # Fsaverage5 surface template
 fsaverage_meshes = load_fsaverage()
@@ -62,15 +66,15 @@ fsaverage_meshes = load_fsaverage()
 # The fsaverage meshes contains the FileMesh objects:
 print(
     "Fsaverage5 pial surface of left hemisphere is: "
-    f"{fsaverage_meshes['pial'].parts['left']}"
+    f"{fsaverage_meshes['pial'].parts[hemi]}"
 )
 print(
     "Fsaverage5 inflated surface of left hemisphere is: "
-    f"{fsaverage_meshes['flat'].parts['left']}"
+    f"{fsaverage_meshes['flat'].parts[hemi]}"
 )
 print(
     "Fsaverage5 inflated surface of left hemisphere is: "
-    f"{fsaverage_meshes['inflated'].parts['left']}"
+    f"{fsaverage_meshes['inflated'].parts[hemi]}"
 )
 
 # The fsaverage data contains SurfaceImage instances with meshes and data
@@ -85,7 +89,7 @@ print(f"Fsaverage5 sulcal curvature map: {fsaverage_curvature}")
 # -------------------------------
 
 # Load resting state time series from nilearn
-timeseries = nki_dataset[0].data.parts["left"].T
+timeseries = nki_dataset[0].data.parts[hemi].T
 
 # Extract seed region via label
 pcc_region = b"G_cingul-Post-dorsal"
@@ -122,12 +126,10 @@ pcc_map[pcc_labels] = 1
 from nilearn.experimental import plotting
 from nilearn.plotting import show
 
-print(f"{type(nki_dataset[0].mesh)=}")
-
 plotting.plot_surf_roi(
-    surf_mesh=nki_dataset[0].mesh.parts["left"],
+    surf_mesh=nki_dataset[0].mesh,
     roi_map=pcc_map,
-    hemi="left",
+    hemi=hemi,
     view="medial",
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
@@ -142,15 +144,15 @@ show()
 # To make this plot easier to read,
 # we use the :term:`mesh` curvature as a background map.
 
-bg_map = np.sign(fsaverage_curvature.data.parts["left"])
+bg_map = np.sign(fsaverage_curvature.data.parts[hemi])
 # np.sign yields values in [-1, 1]. We rescale the background map
 # such that values are in [0.25, 0.75], resulting in a nicer looking plot.
 bg_map_rescaled = (bg_map + 1) / 4 + 0.25
 
 plotting.plot_surf_roi(
-    surf_mesh=fsaverage_meshes["flat"].parts["left"],
+    surf_mesh=fsaverage_meshes["flat"],
     roi_map=pcc_map,
-    hemi="left",
+    hemi=hemi,
     view="dorsal",
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
@@ -160,9 +162,9 @@ plotting.plot_surf_roi(
 # %%
 # Display unthresholded stat map with a slightly dimmed background
 plotting.plot_surf_stat_map(
-    surf_mesh=nki_dataset[0].mesh.parts["left"],
+    surf_mesh=nki_dataset[0].mesh,
     stat_map=stat_map,
-    hemi="left",
+    hemi=hemi,
     view="medial",
     colorbar=True,
     bg_map=fsaverage_sulcal,
@@ -177,9 +179,9 @@ show()
 # Many different options are available for plotting, for example thresholding,
 # or using custom colormaps
 plotting.plot_surf_stat_map(
-    surf_mesh=nki_dataset[0].mesh.parts["left"],
+    surf_mesh=nki_dataset[0].mesh,
     stat_map=stat_map,
-    hemi="left",
+    hemi=hemi,
     view="medial",
     colorbar=True,
     bg_map=fsaverage_sulcal,
@@ -198,9 +200,9 @@ show()
 # Note that you can also control the transparency
 # with a background map using the alpha parameter.
 plotting.plot_surf_stat_map(
-    surf_mesh=nki_dataset[0].mesh.parts["left"],
+    surf_mesh=nki_dataset[0].mesh,
     stat_map=stat_map,
-    hemi="left",
+    hemi=hemi,
     view="lateral",
     colorbar=True,
     cmap="Spectral",
@@ -211,8 +213,8 @@ plotting.plot_surf_stat_map(
 show()
 
 # %%
-# The plots can be saved to file, in which case the display is closed after
-# creating the figure
+# The plots can be saved to file,
+# in which case the display is closed after creating the figure
 from pathlib import Path
 
 output_dir = Path.cwd() / "results" / "plot_surf_stat_map"
@@ -220,9 +222,9 @@ output_dir.mkdir(exist_ok=True, parents=True)
 print(f"Output will be saved to: {output_dir}")
 
 plotting.plot_surf_stat_map(
-    surf_mesh=fsaverage_meshes["inflated"].parts["left"],
+    surf_mesh=fsaverage_meshes["inflated"],
     stat_map=stat_map,
-    hemi="left",
+    hemi=hemi,
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
     threshold=0.5,

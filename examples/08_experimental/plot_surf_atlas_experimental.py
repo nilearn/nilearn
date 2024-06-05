@@ -77,7 +77,7 @@ for view in ["lateral", "posterior", "ventral"]:
         surf_mesh=fsaverage_meshes["inflated"],
         roi_map=destrieux_atlas,
         hemi="left",
-        view="lateral",
+        view=view,
         bg_map=fsaverage_sulcal,
         bg_on_data=True,
         darkness=0.5,
