@@ -91,7 +91,6 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
             "n_vertices": {},
             # unused but required in HTML template
             "number_of_regions": None,
-            "number_of_rows": None,
             "summary": None,
         }
 
@@ -459,19 +458,21 @@ class SurfaceLabelsMasker(BaseEstimator):
             "number_of_regions": len(self.label_names_),
             "summary": {},
         }
-        size = []
-        relative_size = []
-        regions_summary = {
-            "hemisphere": [],
-            "label value": [],
-            "region name": [],
-            "size (number of vertices)": [],
-            "relative size (% vertices in hemisphere)": [],
-        }
         for part in self.labels_img.data.parts.keys():
+
             self._report_content["n_vertices"][part] = (
                 self.labels_img.mesh.parts[part].n_vertices
             )
+
+            size = []
+            relative_size = []
+            regions_summary = {
+                "label value": [],
+                "region name": [],
+                "size (number of vertices)": [],
+                "relative size (% vertices in hemisphere)": [],
+            }
+
             for i, label in enumerate(self.label_names_):
                 regions_summary["hemisphere"].append(part)
                 regions_summary["label value"].append(i)
@@ -486,15 +487,12 @@ class SurfaceLabelsMasker(BaseEstimator):
                 )
                 relative_size.append(f"{tmp :.2}")
 
-        regions_summary["size (number of vertices)"] = size
-        regions_summary["relative size (% vertices in hemisphere)"] = (
-            relative_size
-        )
+            regions_summary["size (number of vertices)"] = size
+            regions_summary["relative size (% vertices in hemisphere)"] = (
+                relative_size
+            )
 
-        self._report_content["summary"] = regions_summary
-        self._report_content["number_of_rows"] = len(
-            regions_summary["hemisphere"]
-        )
+            self._report_content["summary"][part] = regions_summary
 
         self._reporting_data = {
             "labels_image": self.labels_img,
