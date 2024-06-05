@@ -87,6 +87,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 "This object has not been fitted yet ! "
                 "Make sure to run `fit` before inspecting reports."
             ),
+            "n_vertices": {},
         }
 
     def _fit_mask_img(self, img: SurfaceImage | None) -> None:
@@ -141,15 +142,14 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         # save inputs for reporting
         if self.reports:
             self._report_content["warning_message"] = None
-            self._reporting_data = {
-                "mask": self.mask_img_,
-                "n_vertices": {},
-                "images": img,
-            }
             for part in self.mask_img_.data.parts.keys():
-                self._reporting_data["n_vertices"][part] = (
+                self._report_content["n_vertices"][part] = (
                     self.mask_img_.mesh.parts[part].n_vertices
                 )
+            self._reporting_data = {
+                "mask": self.mask_img_,
+                "images": img,
+            }
         else:
             self._reporting_data = None
         return self
@@ -296,9 +296,6 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         try:
             import matplotlib.pyplot as plt
-
-            from nilearn.experimental import plotting
-
         except ImportError:
             with warnings.catch_warnings():
                 mpl_unavail_msg = (
@@ -309,6 +306,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 warnings.warn(
                     category=ImportWarning,
                     message=mpl_unavail_msg,
+                    stacklevel=3,
                 )
                 return [None]
 
@@ -317,22 +315,29 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         if self._reporting_data is None:
             return [None]
 
+        fig = self._create_figure_for_report()
+
+        plt.close()
+
+        init_display = figure_to_png_base64(fig)
+
+        return [init_display]
+
+    def _create_figure_for_report(self):
+        import matplotlib.pyplot as plt
+
+        from nilearn.experimental import plotting
+
         img = self._reporting_data["images"]
 
-        if img is None:  # images were not provided to fit
-            msg = (
-                "No image provided to fit in NiftiMasker. "
-                "Setting image to mask for reporting."
-            )
-            warnings.warn(msg, stacklevel=6)
-            self._report_content["warning_message"] = msg
+        data_to_plot = self.fit_transform(img)
+        if len(img.shape) > 1:
+            data_to_plot = data_to_plot.mean(axis=0)
 
-        masked_data = self.fit_transform(img)
-        mean_data = masked_data.mean(axis=0)
-        mean_img = self.inverse_transform(mean_data)
+        img_to_plot = self.inverse_transform(data_to_plot)
 
-        vmin = mean_data.min()
-        vmax = mean_data.max()
+        vmin = data_to_plot.min()
+        vmax = data_to_plot.max()
 
         views = ["lateral", "medial"]
         hemispheres = ["left", "right"]
@@ -348,7 +353,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         for ax_row, view in zip(axes, views):
             for ax, hemi in zip(ax_row, hemispheres):
                 plotting.plot_surf(
-                    mean_img,
+                    img_to_plot,
                     hemi=hemi,
                     view=view,
                     figure=fig,
@@ -356,7 +361,6 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
                     cmap=self.cmap,
                     vmin=vmin,
                     vmax=vmax,
-                    # colorbar=True,
                 )
                 # plotting.plot_surf_contours(
                 #     self.mask_img_,
@@ -367,11 +371,8 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 # )
 
         plt.tight_layout()
-        plt.close()
 
-        init_display = figure_to_png_base64(fig)
-
-        return [init_display]
+        return fig
 
 
 class SurfaceLabelsMasker:

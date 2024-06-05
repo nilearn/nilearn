@@ -90,11 +90,12 @@ def test_transform_inverse_transform_with_mask(
 from pathlib import Path
 
 
-def test_report(mini_img):
+def test_report(mini_img, mini_mask):
     masker = SurfaceMasker()
     report = masker.generate_report()
     report.save_as_html(Path() / "surface_masker_empty.html")
 
-    masker = SurfaceMasker().fit(mini_img)
+    masker = SurfaceMasker(mini_mask)
+    masker = masker.fit(mini_img)
     report = masker.generate_report()
     report.save_as_html(Path() / "surface_masker.html")
