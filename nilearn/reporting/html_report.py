@@ -17,6 +17,7 @@ ESTIMATOR_TEMPLATES = {
     "MultiNiftiMapsMasker": "report_body_template_niftimapsmasker.html",
     "NiftiSpheresMasker": "report_body_template_niftispheresmasker.html",
     "SurfaceMasker": "report_body_template_surfacemasker.html",
+    "SurfaceLabelsMasker": "report_body_template_surfacemasker.html",
     "default": "report_body_template.html",
 }
 

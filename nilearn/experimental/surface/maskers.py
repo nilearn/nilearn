@@ -89,6 +89,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 "Make sure to run `fit` before inspecting reports."
             ),
             "n_vertices": {},
+            "number_of_regions": None,  # unused but required in HTML template
         }
 
     def _fit_mask_img(self, img: SurfaceImage | None) -> None:
@@ -222,6 +223,14 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
             sample_mask=sample_mask,
             **parameters["clean_kwargs"],
         )
+
+        if self.reports:
+            data_to_plot = output
+            #  get mean image if time series
+            if len(img.shape) > 1:
+                data_to_plot = data_to_plot.mean(axis=0)
+            self._reporting_data["data_to_plot"] = data_to_plot
+
         return output
 
     def fit_transform(
@@ -332,16 +341,11 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         from nilearn.experimental import plotting
 
-        img = self._reporting_data["images"]
-
-        data_to_plot = self.fit_transform(img)
-        if len(img.shape) > 1:
-            data_to_plot = data_to_plot.mean(axis=0)
-
-        img_to_plot = self.inverse_transform(data_to_plot)
-
+        data_to_plot = self._reporting_data["data_to_plot"]
         vmin = data_to_plot.min()
         vmax = data_to_plot.max()
+
+        img_to_plot = self.inverse_transform(data_to_plot)
 
         views = ["lateral", "medial"]
         hemispheres = ["left", "right"]
@@ -357,7 +361,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         for ax_row, view in zip(axes, views):
             for ax, hemi in zip(ax_row, hemispheres):
                 plotting.plot_surf(
-                    img_to_plot,
+                    surf_map=img_to_plot,
                     hemi=hemi,
                     view=view,
                     figure=fig,
@@ -379,7 +383,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         return fig
 
 
-class SurfaceLabelsMasker:
+class SurfaceLabelsMasker(BaseEstimator):
     """Extract data from a SurfaceImage, averaging over atlas regions.
 
     Parameters
@@ -434,6 +438,7 @@ class SurfaceLabelsMasker:
 
         self.reports = reports
         self.cmap = kwargs.get("cmap", "inferno")
+
         self._report_content = {
             "description": (
                 "This report shows the input surface image overlaid "
@@ -441,11 +446,19 @@ class SurfaceLabelsMasker:
                 "We recommend to inspect the report for the overlap "
                 "between the mask and its input image. "
             ),
-            "warning_message": (
-                "This object has not been fitted yet ! "
-                "Make sure to run `fit` before inspecting reports."
-            ),
+            "warning_message": None,
             "n_vertices": {},
+            "number_of_regions": len(self.label_names),
+        }
+        for part in self.labels_img.data.parts.keys():
+            self._report_content["n_vertices"][part] = (
+                self.labels_img.mesh.parts[part].n_vertices
+            )
+
+        self._reporting_data = {
+            "labels_image": self.labels_img,
+            "label_names": [str(x) for x in self.label_names],
+            "images": None,
         }
 
     def fit(
@@ -466,23 +479,6 @@ class SurfaceLabelsMasker:
         -------
         SurfaceLabelsMasker object
         """
-        # save inputs for reporting
-        if not self.reports:
-            del img, y
-            self._reporting_data = None
-            return self
-
-        self._report_content["warning_message"] = None
-
-        for part in self.labels_img.data.parts.keys():
-            self._report_content["n_vertices"][part] = (
-                self.labels_img.mesh.parts[part].n_vertices
-            )
-        self._reporting_data = {
-            "labels_image": self.labels_img,
-            "images": img,
-        }
-
         del img, y
 
         return self
@@ -501,6 +497,11 @@ class SurfaceLabelsMasker:
             Signal for each element.
             shape: (img data shape, total number of vertices)
         """
+        if not self.reports:
+            self._reporting_data = None
+        else:
+            self._reporting_data["images"] = img
+
         check_same_n_vertices(self.labels_img.mesh, img.mesh)
         img_data = np.concatenate(list(img.data.parts.values()), axis=-1)
         output = np.empty((*img_data.shape[:-1], len(self.labels_)))
@@ -606,16 +607,22 @@ class SurfaceLabelsMasker:
 
         from nilearn.experimental import plotting
 
+        labels_img = self._reporting_data["labels_image"]
+
         img = self._reporting_data["images"]
 
-        data_to_plot = self.fit_transform(img)
-        if len(img.shape) > 1:
-            data_to_plot = data_to_plot.mean(axis=0)
-
-        img_to_plot = self.inverse_transform(data_to_plot)
-
-        vmin = data_to_plot.min()
-        vmax = data_to_plot.max()
+        if img:
+            if len(img.shape) > 1:
+                # average each hemisphere in case of a time series
+                for part, value in img.data.parts.items():
+                    img.data.parts[part] = np.squeeze(
+                        value.mean(axis=0)
+                    ).astype("float32", casting="unsafe")
+            data_to_plot = np.concatenate(
+                list(img.data.parts.values()), axis=-1
+            )
+            vmin = data_to_plot.min()
+            vmax = data_to_plot.max()
 
         views = ["lateral", "medial"]
         hemispheres = ["left", "right"]
@@ -630,23 +637,24 @@ class SurfaceLabelsMasker:
 
         for ax_row, view in zip(axes, views):
             for ax, hemi in zip(ax_row, hemispheres):
-                plotting.plot_surf(
-                    img_to_plot,
+                if img:
+                    plotting.plot_surf(
+                        surf_map=img,
+                        hemi=hemi,
+                        view=view,
+                        figure=fig,
+                        axes=ax,
+                        cmap=self.cmap,
+                        vmin=vmin,
+                        vmax=vmax,
+                    )
+                plotting.plot_surf_contours(
+                    roi_map=labels_img,
                     hemi=hemi,
                     view=view,
                     figure=fig,
                     axes=ax,
-                    cmap=self.cmap,
-                    vmin=vmin,
-                    vmax=vmax,
                 )
-                # plotting.plot_surf_contours(
-                #     self.mask_img_,
-                #     hemi=hemi,
-                #     view=view,
-                #     figure=fig,
-                #     axes=ax,
-                # )
 
         plt.tight_layout()
 
