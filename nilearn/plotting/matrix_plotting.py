@@ -564,18 +564,26 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
             "Use a different colormap."
         )
 
+    height = 0.5
     for idx_run, event_df in enumerate(model_event):
         for _, event in event_df.iterrows():
+
+            modulation = 1.0
+            if "modulation" in event:
+                modulation = event["modulation"]
+
             ymin = (idx_run + 0.25) / n_runs
-            ymax = (idx_run + 0.75) / n_runs
+            ymax = (idx_run + 0.25 + height * modulation) / n_runs
+
             event_onset = event["onset"]
             event_end = event["onset"] + event["duration"]
+
             color = cmap.colors[cmap_dictionary[event["trial_type"]]]
 
             if event["duration"] != 0:
                 ax.axvspan(
-                    event_onset,
-                    event_end,
+                    xmin=event_onset,
+                    xmax=event_end,
                     ymin=ymin,
                     ymax=ymax,
                     facecolor=color,
