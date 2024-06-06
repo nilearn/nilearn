@@ -8,7 +8,6 @@ from string import Template
 
 import matplotlib as mpl
 import numpy as np
-from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 
 from nilearn.plotting.html_document import (  # noqa: F401
     HTMLDocument,
@@ -70,8 +69,9 @@ def get_html_template(template_name):
 def colorscale(cmap, values, threshold=None, symmetric_cmap=True,
                vmax=None, vmin=None):
     """Normalize a cmap, put it in plotly format, get threshold and range."""
-    if not isinstance(cmap, (LinearSegmentedColormap, ListedColormap)):
-        cmap = mpl.colormaps[cmap]
+    cmap = (
+        mpl.colormaps[cmap] if isinstance(cmap, str) else cmap
+    )
     abs_values = np.abs(values)
     if not symmetric_cmap and (values.min() < 0):
         warnings.warn('you have specified symmetric_cmap=False '

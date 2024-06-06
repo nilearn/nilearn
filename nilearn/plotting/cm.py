@@ -1,5 +1,7 @@
 """Matplotlib colormaps useful for neuroimaging."""
 
+import contextlib
+
 import numpy as _np
 from matplotlib import (
     cm as _cm,
@@ -207,8 +209,6 @@ def _revcmap(data):
         data_r[key] = [(1.0 - x, y1, y0) for x, y0, y1 in reversed(val)]
     return data_r
 
-
-import contextlib
 
 _cmap_d = dict()
 
