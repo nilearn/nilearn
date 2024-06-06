@@ -17,7 +17,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import gridspec as mgs
-from matplotlib.colors import LinearSegmentedColormap, ListedColormap
+from matplotlib.colors import LinearSegmentedColormap
 from nibabel.spatialimages import SpatialImage
 from scipy import stats
 from scipy.ndimage import binary_fill_holes
@@ -803,8 +803,7 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
     roi_data = get_data(roi_img)
     labels = np.unique(roi_data)
 
-    if not isinstance(cmap, (LinearSegmentedColormap, ListedColormap)):
-        cmap = mpl.colormaps[cmap]
+    cmap = plt.colormaps[cmap] if isinstance(cmap, str) else cmap
 
     color_list = cmap(np.linspace(0, 1, len(labels)))
     for idx, label in enumerate(labels):
@@ -1112,8 +1111,7 @@ def plot_prob_atlas(
             f"Valid view types are {valid_view_types}."
         )
 
-    if not isinstance(cmap, (LinearSegmentedColormap, ListedColormap)):
-        cmap = mpl.colormaps[cmap]
+    cmap = plt.colormaps[cmap] if isinstance(cmap, str) else cmap
     color_list = cmap(np.linspace(0, 1, n_maps))
 
     if view_type == "auto":

@@ -3,7 +3,6 @@ import numbers
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib import colormaps
 from matplotlib.colorbar import ColorbarBase
 from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from matplotlib.transforms import Bbox
@@ -538,10 +537,7 @@ class BaseSlicer:
         self._colorbar_ax = figure.add_axes(lt_wid_top_ht)
         self._colorbar_ax.set_facecolor("w")
 
-        if isinstance(cmap, (LinearSegmentedColormap, ListedColormap)):
-            our_cmap = cmap
-        else:
-            our_cmap = colormaps[cmap]
+        our_cmap = plt.colormaps[cmap] if isinstance(cmap, str) else cmap
         # edge case where the data has a single value
         # yields a cryptic matplotlib error message
         # when trying to plot the color bar

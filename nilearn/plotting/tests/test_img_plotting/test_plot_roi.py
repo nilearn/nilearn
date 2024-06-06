@@ -84,10 +84,6 @@ def test_cmap_with_one_level(shape_3d_default, affine_eye):
 
     clust_ids = list(np.unique(img.get_fdata())[1:])
 
-    try:
-        cmap = plt.colormaps["tab20"].resampled(len(clust_ids))
-    except TypeError:
-        # for older versions of matplotlib
-        cmap = plt.cm.get_cmap("tab20", len(clust_ids))
+    cmap = plt.colormaps["tab20"].resampled(len(clust_ids))
 
     plot_roi(img, alpha=0.8, colorbar=True, cmap=cmap)
