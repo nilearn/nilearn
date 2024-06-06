@@ -127,6 +127,7 @@ binary_plt = ax_binary.imshow(
 ax_binary.set_xticks([])
 ax_binary.set_yticks([])
 ax_binary.set_ylabel("One-vs-Others")
+
 # encode the original labels for plotting
 label_multi = LabelEncoder()
 y_multi = label_multi.fit_transform(y)
