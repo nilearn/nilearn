@@ -79,7 +79,8 @@ def test_resample_deprecation_force_resample(shape, affine_eye, rng):
         )
 
 
-def test_identity_resample(shape, affine_eye, rng):
+@pytest.mark.parametrize("force_resample", [False, True])
+def test_identity_resample(force_resample, shape, affine_eye, rng):
     """Test resampling with an identity affine."""
     data = rng.integers(0, 10, shape, dtype="int32")
     affine_eye[:3, -1] = 0.5 * np.array(shape[:3])
@@ -88,7 +89,7 @@ def test_identity_resample(shape, affine_eye, rng):
         Nifti1Image(data, affine_eye),
         target_affine=affine_eye,
         interpolation="nearest",
-        force_resample=False,
+        force_resample=force_resample,
         copy_header=True,
     )
 
@@ -99,7 +100,7 @@ def test_identity_resample(shape, affine_eye, rng):
         Nifti1Image(data, affine_eye),
         target_affine=affine_eye[:3, :3],
         interpolation="nearest",
-        force_resample=False,
+        force_resample=force_resample,
         copy_header=True,
     )
 
@@ -110,15 +111,16 @@ def test_identity_resample(shape, affine_eye, rng):
         Nifti1Image(data, affine_eye),
         target_affine=affine_eye.tolist(),
         interpolation="nearest",
-        force_resample=False,
+        force_resample=force_resample,
         copy_header=True,
     )
 
 
+@pytest.mark.parametrize("force_resample", [False, True])
 @pytest.mark.parametrize("endian_type", [">f8", "<f8"])
 @pytest.mark.parametrize("interpolation", ["nearest", "linear", "continuous"])
 def test_identity_resample_non_native_endians(
-    shape, affine_eye, endian_type, interpolation, rng
+    force_resample, shape, affine_eye, endian_type, interpolation, rng
 ):
     """Test resampling with an identity affine with non native endians.
 
@@ -132,14 +134,15 @@ def test_identity_resample_non_native_endians(
         Nifti1Image(data.astype(endian_type), affine_eye),
         target_affine=affine_eye.tolist(),
         interpolation=interpolation,
-        force_resample=False,
+        force_resample=force_resample,
         copy_header=True,
     )
 
     assert_almost_equal(data, get_data(rot_img))
 
 
-def test_downsample(shape, affine_eye, rng):
+@pytest.mark.parametrize("force_resample", [False, True])
+def test_downsample(force_resample, shape, affine_eye, rng):
     """Test resampling with a 1/2 down-sampling affine."""
     data = rng.random(shape)
 
@@ -147,7 +150,7 @@ def test_downsample(shape, affine_eye, rng):
         Nifti1Image(data, affine_eye),
         target_affine=2 * affine_eye,
         interpolation="nearest",
-        force_resample=False,
+        force_resample=force_resample,
         copy_header=True,
     )
 
@@ -160,7 +163,7 @@ def test_downsample(shape, affine_eye, rng):
         Nifti1Image(data, affine_eye),
         target_affine=2 * affine_eye,
         interpolation="nearest",
-        force_resample=True,
+        force_resample=force_resample,
         copy_header=True,
     )
 
@@ -169,8 +172,9 @@ def test_downsample(shape, affine_eye, rng):
 
 @pytest.mark.parametrize("endian_type", [">f8", "<f8"])
 @pytest.mark.parametrize("copy_data", [True, False])
+@pytest.mark.parametrize("force_resample", [True, False])
 def test_downsample_non_native_endian_data(
-    shape, affine_eye, endian_type, copy_data, rng
+    shape, affine_eye, endian_type, copy_data, force_resample, rng
 ):
     """Test resampling with a 1/2 down-sampling affine with non native endians.
 
@@ -186,7 +190,7 @@ def test_downsample_non_native_endian_data(
         Nifti1Image(data, affine_eye),
         target_affine=2 * affine_eye,
         interpolation="nearest",
-        force_resample=False,
+        force_resample=force_resample,
         copy_header=True,
     )
 
@@ -200,7 +204,7 @@ def test_downsample_non_native_endian_data(
         target_affine=2 * affine_eye,
         interpolation="nearest",
         copy=copy_data,
-        force_resample=False,
+        force_resample=force_resample,
         copy_header=True,
     )
 
