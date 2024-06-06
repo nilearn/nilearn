@@ -27,7 +27,11 @@ from .._utils import (
     fill_doc,
 )
 from .._utils.exceptions import DimensionError
-from .._utils.helpers import rename_parameters, stringify_path
+from .._utils.helpers import (
+    check_copy_header,
+    rename_parameters,
+    stringify_path,
+)
 from .._utils.niimg import _get_data, safe_get_data
 from .._utils.niimg_conversions import (
     _index_img,
@@ -286,7 +290,7 @@ def smooth_img(imgs, fwhm):
     return ret[0] if single_img else ret
 
 
-def _crop_img_to(img, slices, copy=True):
+def _crop_img_to(img, slices, copy=True, copy_header=False):
     """Crops an image to a smaller size.
 
     Crop `img` to size indicated by slices and adjust affine accordingly.
@@ -305,6 +309,14 @@ def _crop_img_to(img, slices, copy=True):
 
     copy : :obj:`bool`, default=True
         Specifies whether cropped data is to be copied or not.
+
+    copy_header : :obj:`bool`
+        Whether to copy the header of the input image to the output.
+        If None, the default behavior is to not copy the header.
+
+        .. versionadded:: 0.11.0
+
+        This parameter will be set to True by default in 0.13.0.
 
     Returns
     -------
@@ -335,10 +347,12 @@ def _crop_img_to(img, slices, copy=True):
     new_affine[:3, :3] = linear_part
     new_affine[:3, 3] = new_origin
 
-    return new_img_like(img, cropped_data, new_affine)
+    return new_img_like(img, cropped_data, new_affine, copy_header=copy_header)
 
 
-def crop_img(img, rtol=1e-8, copy=True, pad=True, return_offset=False):
+def crop_img(
+    img, rtol=1e-8, copy=True, pad=True, return_offset=False, copy_header=False
+):
     """Crops an image as much as possible.
 
     Will crop `img`, removing as many zero entries as possible without
@@ -367,6 +381,13 @@ def crop_img(img, rtol=1e-8, copy=True, pad=True, return_offset=False):
     return_offset : :obj:`bool`, default=False
         Specifies whether to return a tuple of the removed padding.
 
+    copy_header : :obj:`bool`, default=False
+        Whether to copy the header of the input image to the output.
+
+        .. versionadded:: 0.11.0
+
+        This parameter will be set to True by default in 0.13.0.
+
     Returns
     -------
     Niimg-like object or :obj:`tuple`
@@ -376,6 +397,9 @@ def crop_img(img, rtol=1e-8, copy=True, pad=True, return_offset=False):
         *[(x1_pre, x1_post), (x2_pre, x2_post), ..., (xN_pre, xN_post)]*
 
     """
+    # TODO: remove this warning in 0.13.0
+    check_copy_header(copy_header)
+
     img = check_niimg(img)
     data = get_data(img)
     infinity_norm = max(-data.min(), data.max())
@@ -400,7 +424,7 @@ def crop_img(img, rtol=1e-8, copy=True, pad=True, return_offset=False):
         end = np.minimum(end + 1, data.shape[:3])
 
     slices = [slice(s, e) for s, e in zip(start, end)][:3]
-    cropped_im = _crop_img_to(img, slices, copy=copy)
+    cropped_im = _crop_img_to(img, slices, copy=copy, copy_header=copy_header)
     return (cropped_im, tuple(slices)) if return_offset else cropped_im
 
 
@@ -479,6 +503,7 @@ def _compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
         target_affine=target_affine,
         target_shape=target_shape,
         copy=False,
+        copy_header=True,
     )
     affine = mean_data.affine
     mean_data = get_data(mean_data)
@@ -497,7 +522,14 @@ def _compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
     return mean_data, affine
 
 
-def mean_img(imgs, target_affine=None, target_shape=None, verbose=0, n_jobs=1):
+def mean_img(
+    imgs,
+    target_affine=None,
+    target_shape=None,
+    verbose=0,
+    n_jobs=1,
+    copy_header=False,
+):
     """Compute the mean of the images over time or the 4th dimension.
 
     Note that if list of 4D images are given, the mean of each 4D image is
@@ -526,6 +558,13 @@ def mean_img(imgs, target_affine=None, target_shape=None, verbose=0, n_jobs=1):
         The number of CPUs to use to do the computation (-1 means
         'all CPUs').
 
+    copy_header : :obj:`bool`, default=False
+        Whether to copy the header of the input image to the output.
+
+        .. versionadded:: 0.11.0
+
+        This parameter will be set to True by default in 0.13.0.
+
     Returns
     -------
     :class:`~nibabel.nifti1.Nifti1Image`
@@ -536,6 +575,9 @@ def mean_img(imgs, target_affine=None, target_shape=None, verbose=0, n_jobs=1):
     nilearn.image.math_img : For more general operations on images.
 
     """
+    # TODO: remove this warning in 0.13.0
+    check_copy_header(copy_header)
+
     imgs = stringify_path(imgs)
     is_str = isinstance(imgs, str)
     is_iterable = isinstance(imgs, collections.abc.Iterable)
@@ -570,7 +612,9 @@ def mean_img(imgs, target_affine=None, target_shape=None, verbose=0, n_jobs=1):
         running_mean += this_mean
 
     running_mean = running_mean / float(n_imgs)
-    return new_img_like(first_img, running_mean, target_affine)
+    return new_img_like(
+        first_img, running_mean, target_affine, copy_header=copy_header
+    )
 
 
 def swap_img_hemispheres(img):
@@ -605,7 +649,7 @@ def swap_img_hemispheres(img):
     img = check_niimg_3d(img)
 
     # get nifti in x-y-z order
-    img = reorder_img(img)
+    img = reorder_img(img, copy_header=True)
 
     # create swapped nifti object
     out_img = new_img_like(
@@ -868,6 +912,7 @@ def threshold_img(
     two_sided=True,
     mask_img=None,
     copy=True,
+    copy_header=False,
 ):
     """Threshold the given input image, mostly statistical or atlas images.
 
@@ -920,6 +965,13 @@ def threshold_img(
         If True, input array is not modified. True by default: the filtering
         is not performed in-place.
 
+    copy_header : :obj:`bool`, default=False
+        Whether to copy the header of the input image to the output.
+
+        .. versionadded:: 0.11.0
+
+        This parameter will be set to True by default in 0.13.0.
+
     Returns
     -------
     :class:`~nibabel.nifti1.Nifti1Image`
@@ -935,6 +987,9 @@ def threshold_img(
     from .. import masking
     from . import resampling
 
+    # TODO: remove this warning in 0.13.0
+    check_copy_header(copy_header)
+
     img = check_niimg(img)
     img_data = safe_get_data(img, ensure_finite=True, copy_data=copy)
     affine = img.affine
@@ -947,6 +1002,7 @@ def threshold_img(
                 target_affine=affine,
                 target_shape=img.shape[:3],
                 interpolation="nearest",
+                copy_header=True,
             )
 
         mask_data, _ = masking.load_mask_img(mask_img)
@@ -984,7 +1040,9 @@ def threshold_img(
         img_data = img_data[:, :, :, 0]
 
     # Reconstitute img object
-    thresholded_img = new_img_like(img, img_data, affine)
+    thresholded_img = new_img_like(
+        img, img_data, affine, copy_header=copy_header
+    )
 
     return thresholded_img
 
@@ -1106,7 +1164,9 @@ def math_img(formula, copy_header_from=None, **imgs):
         return new_img_like(niimg, result, niimg.affine)
 
 
-def binarize_img(img, threshold=0, mask_img=None, two_sided=True):
+def binarize_img(
+    img, threshold=0, mask_img=None, two_sided=True, copy_header=False
+):
     """Binarize an image such that its values are either 0 or 1.
 
     .. versionadded:: 0.8.1
@@ -1137,6 +1197,13 @@ def binarize_img(img, threshold=0, mask_img=None, two_sided=True):
 
         .. versionadded:: 0.10.3
 
+    copy_header : :obj:`bool`, default=False
+        Whether to copy the header of the input image to the output.
+
+        .. versionadded:: 0.11.0
+
+        This parameter will be set to True by default in 0.13.0.
+
     Returns
     -------
     :class:`~nibabel.nifti1.Nifti1Image`
@@ -1156,7 +1223,7 @@ def binarize_img(img, threshold=0, mask_img=None, two_sided=True):
     Now we binarize it, generating a pseudo brainmask::
 
      >>> from nilearn.image import binarize_img
-     >>> img = binarize_img(anatomical_image)
+     >>> img = binarize_img(anatomical_image, copy_header=True)
 
     """
     warnings.warn(
@@ -1170,8 +1237,13 @@ def binarize_img(img, threshold=0, mask_img=None, two_sided=True):
     return math_img(
         "img.astype(bool).astype(int)",
         img=threshold_img(
-            img, threshold, mask_img=mask_img, two_sided=two_sided
+            img,
+            threshold,
+            mask_img=mask_img,
+            two_sided=two_sided,
+            copy_header=copy_header,
         ),
+        copy_header_from="img",
     )
 
 

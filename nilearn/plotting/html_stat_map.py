@@ -233,7 +233,7 @@ def _load_bg_img(stat_map_img, bg_img="MNI152", black_bg="auto", dim="auto"):
         bg_img, black_bg, bg_min, bg_max = load_anat(
             bg_img, dim=dim, black_bg=black_bg
         )
-    bg_img = reorder_img(bg_img, resample="nearest")
+    bg_img = reorder_img(bg_img, resample="nearest", copy_header=True)
     return bg_img, bg_min, bg_max, black_bg
 
 
@@ -246,10 +246,17 @@ def _resample_stat_map(
 
     """
     stat_map_img = resample_to_img(
-        stat_map_img, bg_img, interpolation=resampling_interpolation
+        stat_map_img,
+        bg_img,
+        interpolation=resampling_interpolation,
+        copy_header=True,
     )
     mask_img = resample_to_img(
-        mask_img, bg_img, fill_value=1, interpolation="nearest"
+        mask_img,
+        bg_img,
+        fill_value=1,
+        interpolation="nearest",
+        copy_header=True,
     )
 
     return stat_map_img, mask_img

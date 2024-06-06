@@ -306,6 +306,7 @@ def get_clusters_table(
         two_sided=two_sided,
         mask_img=None,
         copy=True,
+        copy_header=True,
     )
 
     # If cluster threshold is used, there is chance that stat_map will be

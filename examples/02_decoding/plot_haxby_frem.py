@@ -49,7 +49,7 @@ y_test = conditions[condition_mask_test].values
 # Compute the mean EPI to be used for the background of the plotting
 from nilearn.image import mean_img
 
-background_img = mean_img(func_filenames)
+background_img = mean_img(func_filenames, copy_header=True)
 
 # %%
 # Fit FREM

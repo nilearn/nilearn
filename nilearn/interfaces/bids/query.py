@@ -46,7 +46,7 @@ def _get_metadata_from_bids(
         if value is not None:
             return value
         else:
-            warn(f"'{field}' not found in file {json_files[0]}.", stacklevel=3)
+            warn(f"'{field}' not found in file {json_files[0]}.", stacklevel=4)
     else:
         msg_suffix = f" in:\n {bids_path}" if bids_path else ""
         warn(f"\nNo bold.json found in BIDS folder{msg_suffix}.", stacklevel=3)

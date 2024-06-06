@@ -14,6 +14,7 @@ from scipy.ndimage import affine_transform, find_objects
 
 from .. import _utils
 from .._utils import stringify_path
+from .._utils.helpers import check_copy_header
 from .._utils.niimg import _get_data
 from .image import copy_img, crop_img
 
@@ -341,6 +342,7 @@ def resample_img(
     clip=True,
     fill_value=0,
     force_resample=False,
+    copy_header=False,
 ):
     """Resample a Niimg-like object.
 
@@ -385,6 +387,13 @@ def resample_img(
 
     force_resample : bool, default=False
         Intended for testing, this prevents the use of a padding optimization.
+
+    copy_header : :obj:`bool`
+        Whether to copy the header of the input image to the output.
+
+        .. versionadded:: 0.11.0
+
+        This parameter will be set to True by default in 0.13.0.
 
     Returns
     -------
@@ -438,6 +447,9 @@ def resample_img(
 
     """
     from .image import new_img_like  # avoid circular imports
+
+    # TODO: remove this warning in 0.13.0
+    check_copy_header(copy_header)
 
     # Do as many checks as possible before loading data, to avoid potentially
     # costly calls before raising an exception.
@@ -629,7 +641,9 @@ def resample_img(
 
         # ... special case: can be solved with padding alone
         # crop source image and keep N voxels offset before/after volume
-        cropped_img, offsets = crop_img(img, pad=False, return_offset=True)
+        cropped_img, offsets = crop_img(
+            img, pad=False, return_offset=True, copy_header=True
+        )
 
         # TODO: flip axes that are flipped
         # TODO: un-shuffle permuted dimensions
@@ -681,7 +695,9 @@ def resample_img(
         vmax = max(np.nanmax(data), 0)
         resampled_data.clip(vmin, vmax, out=resampled_data)
 
-    return new_img_like(img, resampled_data, target_affine)
+    return new_img_like(
+        img, resampled_data, target_affine, copy_header=copy_header
+    )
 
 
 def resample_to_img(
@@ -693,6 +709,7 @@ def resample_to_img(
     clip=False,
     fill_value=0,
     force_resample=False,
+    copy_header=False,
 ):
     """Resample a Niimg-like source image on a target Niimg-like image.
 
@@ -734,6 +751,13 @@ def resample_to_img(
     force_resample : bool, default=False
         Intended for testing, this prevents the use of a padding optimization.
 
+    copy_header : :obj:`bool`, default=False
+        Whether to copy the header of the input image to the output.
+
+        .. versionadded:: 0.11.0
+
+        This parameter will be set to True by default in 0.13.0.
+
     Returns
     -------
     resampled: nibabel.Nifti1Image
@@ -763,10 +787,11 @@ def resample_to_img(
         clip=clip,
         fill_value=fill_value,
         force_resample=force_resample,
+        copy_header=copy_header,
     )
 
 
-def reorder_img(img, resample=None):
+def reorder_img(img, resample=None, copy_header=False):
     """Return an image with the affine diagonal (by permuting axes).
 
     The orientation of the new image will be RAS (Right, Anterior, Superior).
@@ -786,9 +811,16 @@ def reorder_img(img, resample=None):
         be passed as the 'interpolation' argument into
         resample_img.
 
+    copy_header : :obj:`bool`, default=None
+        Whether to copy the header of the input image to the output.
+
+        .. versionadded:: 0.11.0
+
+        This parameter will be set to True by default in 0.13.0.
     """
     from .image import new_img_like
 
+    check_copy_header(copy_header)
     img = _utils.check_niimg(img)
     # The copy is needed in order not to modify the input img affine
     # see https://github.com/nilearn/nilearn/issues/325 for a concrete bug
@@ -807,7 +839,10 @@ def reorder_img(img, resample=None):
         Q, R = np.linalg.qr(affine[:3, :3])
         target_affine = np.diag(np.abs(np.diag(R))[np.abs(Q).argmax(axis=1)])
         return resample_img(
-            img, target_affine=target_affine, interpolation=resample
+            img,
+            target_affine=target_affine,
+            interpolation=resample,
+            copy_header=True,
         )
 
     axis_numbers = np.argmax(np.abs(A), axis=0)
@@ -847,4 +882,4 @@ def reorder_img(img, resample=None):
     data = data[slice1, slice2, slice3]
     affine = from_matrix_vector(np.diag(pixdim), b)
 
-    return new_img_like(img, data, affine)
+    return new_img_like(img, data, affine, copy_header=copy_header)
