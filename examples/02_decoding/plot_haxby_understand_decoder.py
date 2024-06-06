@@ -69,13 +69,15 @@ print(f"Runs (groups): {np.unique(run)}")
 # Under the hood, it uses :class:`nilearn.maskers.NiftiMasker` to do all these
 # operations. So here we will demonstrate this by directly using the
 # :class:`nilearn.maskers.NiftiMasker`. We will use it to:
-#   1. only keep the data from the Ventral Temporal cortex by providing the
-#      mask image (in :class:`nilearn.decoding.Decoder` this is done by
-#      providing the mask image in the ``mask`` parameter).
-#   2. standardize the data by z-scoring it such that the data is scaled to
-#      have zero mean and unit variance across trials (in
-#      :class:`nilearn.decoding.Decoder` this is done by setting the
-#      ``standardize`` parameter to ``"zscore_sample"``).
+#
+# 1. only keep the data from the Ventral Temporal cortex by providing the
+# mask image (in :class:`nilearn.decoding.Decoder` this is done by
+# providing the mask image in the ``mask`` parameter).
+#
+# 2. standardize the data by z-scoring it such that the data is scaled to
+# have zero mean and unit variance across trials (in
+# :class:`nilearn.decoding.Decoder` this is done by setting the ``standardize``
+# parameter to ``"zscore_sample"``).
 
 from nilearn.maskers import NiftiMasker
 
