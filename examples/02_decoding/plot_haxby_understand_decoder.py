@@ -64,7 +64,7 @@ print(f"Runs (groups): {np.unique(run)}")
 # :class:`nilearn.decoding.Decoder` can convert this 4D image to a 2D numpy
 # array where each row corresponds to a trial and each column corresponds to a
 # voxel. In addition, it can also do several other things like masking,
-# smoothing, standardizing the # data etc. depending on your requirements.
+# smoothing, standardizing the data etc. depending on your requirements.
 #
 # Under the hood, it uses :class:`nilearn.maskers.NiftiMasker` to do all these
 # operations. So here we will demonstrate this by directly using the
@@ -146,6 +146,7 @@ cbar.set_ticklabels([*label_multi.classes_, "all others"])
 
 plt.show()
 
+# %%
 # So at the bottom we have the original sequence in which the trials were
 # presented and at the top we have the labels in the one-vs-others format.
 # The white color corresponds to the trials that are not of the corresponding
@@ -163,17 +164,17 @@ plt.show()
 # How this is done depends on the estimator used:
 #
 # Except for the Support Vector Machine classifiers/regressors
-# (used by setting `estimator="svc"` or `"svc_l1"` or `"svc_l2"` or `"svr"`),
-# the hyperparameter tuning is done using the `...CV` classes from Sklearn.
-# This essentially means that the hyperparameters are optimized using
-# cross-validation on the training data.
+# (used by setting ``estimator="svc"`` or ``"svc_l1"`` or ``"svc_l2"`` or
+# ``"svr"``), the hyperparameter tuning is done using the ``...CV`` classes
+# from Sklearn. This essentially means that the hyperparameters are optimized
+# using an internal cross-validation on the training data.
 #
 # For the SVM classifiers/regressors, the best performing hyperparameters for
 # the given train-test splits are picked.
 #
 # In addition, the parameters grids that are used for hyperparameter tuning
 # by :class:`nilearn.decoding.Decoder` are also different from the default
-# Sklearn parameters grids for the corresponding `...CV` classes.
+# Sklearn parameters grids for the corresponding ``...CV`` classes.
 #
 # We can replicate this behavior for later use by defining a function that
 # selects the estimator depending on the estimator string provided.
@@ -187,14 +188,23 @@ plt.show()
 # %%
 # Feature selection
 # -----------------
+#
 # TODO
 
 # %%
 # Decode via an Sklearn pipeline
+# ------------------------------
+#
 # TODO
 
 # %%
 # Decode via the :class:`nilearn.decoding.Decoder`
+# ------------------------------------------------
+#
+# TODO
 
 # %%
 # Compare the results
+# -------------------
+#
+# TODO
