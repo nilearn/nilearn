@@ -220,7 +220,7 @@ plotting.show()
 big_fsaverage_meshes = load_fsaverage("fsaverage")
 
 big_fsaverage_sulcal = load_fsaverage_data(
-    mesh_name="fsaverage", data_type="sulcal"
+    mesh_name="fsaverage", data_type="sulcal", mesh_type="inflated"
 )
 
 big_img = SurfaceImage(
@@ -292,7 +292,7 @@ view = view_surf(
 # In a Jupyter notebook, if ``view`` is the output of a cell,
 # it will be displayed below the cell
 view
-view.open_in_browser()
+# view.open_in_browser()
 
 # We don't need to do the projection ourselves, we can use
 # :func:`~nilearn.plotting.view_img_on_surf`:
@@ -300,7 +300,7 @@ view.open_in_browser()
 view = plotting.view_img_on_surf(stat_img, threshold="90%")
 
 view
-view.open_in_browser()
+# view.open_in_browser()
 
 # %%
 # Impact of plot parameters on visualization
@@ -330,6 +330,6 @@ view = plotting.view_img_on_surf(
 )
 
 view
-view.open_in_browser()
+# view.open_in_browser()
 
 # sphinx_gallery_dummy_images=1
