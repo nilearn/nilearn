@@ -117,7 +117,7 @@ plt.show()
 # %%
 # Parametric modulation
 # ---------------------
-# We may want to modulate the way we model our events inn our fMRI analysis.
+# We may want to modulate the way we model our events in our fMRI analysis.
 # This type of parametric modulation can be done
 # by adding a "modulation" column to the dataframe containing our events.
 #
