@@ -117,9 +117,15 @@ plt.show()
 # %%
 # Parametric modulation
 # ---------------------
-# We may want to modulate the way we model our events in our fMRI analysis.
-# This type of parametric modulation can be done
-# by adding a "modulation" column to the dataframe containing our events.
+# By default, the fMRI GLM will expect that all events for a given condition have a BOLD
+# response with the same amplitude.
+# Sometimes, we may have specific expectations about how strong the BOLD response
+# will be on a given event.
+# This can be incorporated into the model by using **parametric modulation**,
+# wherein each event has a predicted amplitude.
+# This can be used both to improve model fit and to test hypotheses regarding
+# how the BOLD response scales with important features of events,
+# such as trial intensity or response time.
 #
 # Here we will assume that when a trial
 # is the same condition as the previous one,
