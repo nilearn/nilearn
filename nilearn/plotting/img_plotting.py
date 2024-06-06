@@ -10,19 +10,14 @@ Only matplotlib is required.
 import collections.abc
 import functools
 import numbers
-
-# Standard library imports
 import os
 import warnings
 
-import matplotlib
+import matplotlib as mpl
 import matplotlib.pyplot as plt
-
-# Standard scientific libraries imports (more specific imports are
-# delayed, so that the part module can be used without them).
 import numpy as np
 from matplotlib import gridspec as mgs
-from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from nibabel.spatialimages import SpatialImage
 from scipy import stats
 from scipy.ndimage import binary_fill_holes
@@ -54,7 +49,7 @@ def show():
     than to emit a warning.
 
     """
-    if matplotlib.get_backend().lower() != "agg":  # avoid warnings
+    if mpl.get_backend().lower() != "agg":  # avoid warnings
         plt.show()
 
 
@@ -807,7 +802,10 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
     roi_img = _utils.check_niimg_3d(roi_img)
     roi_data = get_data(roi_img)
     labels = np.unique(roi_data)
-    cmap = plt.cm.ColormapRegistry.get_cmap(cmap)
+
+    if not isinstance(cmap, (LinearSegmentedColormap, ListedColormap)):
+        cmap = mpl.colormaps[cmap]
+
     color_list = cmap(np.linspace(0, 1, len(labels)))
     for idx, label in enumerate(labels):
         if label == 0:
@@ -1114,7 +1112,8 @@ def plot_prob_atlas(
             f"Valid view types are {valid_view_types}."
         )
 
-    cmap = plt.cm.ColormapRegistry.get_cmap(cmap)
+    if not isinstance(cmap, (LinearSegmentedColormap, ListedColormap)):
+        cmap = mpl.colormaps[cmap]
     color_list = cmap(np.linspace(0, 1, n_maps))
 
     if view_type == "auto":
@@ -1177,13 +1176,11 @@ def plot_prob_atlas(
     if colorbar:
         display._colorbar = True
         # Create a colormap from color list to feed display
-        cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
+        cmap = LinearSegmentedColormap.from_list(
             "segmented colors", color_list, n_maps + 1
         )
-        display._show_colorbar(
-            cmap, matplotlib.colors.Normalize(1, n_maps + 1)
-        )
-        tick_locator = matplotlib.ticker.MaxNLocator(nbins=10)
+        display._show_colorbar(cmap, mpl.colors.Normalize(1, n_maps + 1))
+        tick_locator = mpl.ticker.MaxNLocator(nbins=10)
         display.locator = tick_locator
         display._cbar.update_ticks()
         tick_location = np.round(
@@ -1789,7 +1786,7 @@ def plot_markers(
     if node_vmin == node_vmax:
         node_vmin = 0.9 * node_vmin
         node_vmax = 1.1 * node_vmax
-    norm = matplotlib.colors.Normalize(vmin=node_vmin, vmax=node_vmax)
+    norm = mpl.colors.Normalize(vmin=node_vmin, vmax=node_vmax)
     node_cmap = (
         plt.colormaps[node_cmap] if isinstance(node_cmap, str) else node_cmap
     )
@@ -2017,7 +2014,7 @@ def plot_carpet(
             ax0.set_yticks([])
 
         # Carpet plot
-        if compare_version(matplotlib.__version__, ">=", "3.8.0rc1"):
+        if compare_version(mpl.__version__, ">=", "3.8.0rc1"):
             axes.remove()  # remove axes for newer versions of mpl
         axes = plt.subplot(gs[1])  # overwrites axes with older versions of mpl
         axes.imshow(

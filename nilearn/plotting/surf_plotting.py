@@ -10,7 +10,12 @@ import numpy as np
 from matplotlib import gridspec
 from matplotlib.cm import ScalarMappable
 from matplotlib.colorbar import make_axes
-from matplotlib.colors import LinearSegmentedColormap, Normalize, to_rgba
+from matplotlib.colors import (
+    LinearSegmentedColormap,
+    ListedColormap,
+    Normalize,
+    to_rgba,
+)
 from matplotlib.patches import Patch
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
@@ -430,7 +435,11 @@ def _get_cmap_matplotlib(cmap, vmin, vmax, cbar_tick_format, threshold=None):
 
     This function returns the colormap.
     """
-    our_cmap = plt.cm.ColormapRegistry.get_cmap(cmap)
+    if not isinstance(cmap, (LinearSegmentedColormap, ListedColormap)):
+        our_cmap = mpl.colormaps[cmap]
+    else:
+        our_cmap = cmap
+
     norm = Normalize(vmin=vmin, vmax=vmax)
     cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
     if threshold is not None:

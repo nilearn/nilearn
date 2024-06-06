@@ -1,13 +1,12 @@
 """Visualizing 3D stat maps in a Brainsprite viewer."""
 
-import copy
 import json
 import os
 import warnings
 from base64 import b64encode
 from io import BytesIO
 
-import matplotlib
+import matplotlib as mpl
 import numpy as np
 from matplotlib.image import imsave
 from nibabel.affines import apply_affine
@@ -342,7 +341,7 @@ def _json_view_size(params, width_view=600):
 def _get_bg_mask_and_cmap(bg_img, black_bg):
     """Get background data for _json_view_data."""
     bg_mask = np.ma.getmaskarray(get_data(bg_img))
-    bg_cmap = copy.copy(matplotlib.colormaps["gray"])
+    bg_cmap = mpl.colormaps["gray"]
     if black_bg:
         bg_cmap.set_bad("black")
     else:

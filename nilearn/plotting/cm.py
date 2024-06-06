@@ -1,7 +1,12 @@
 """Matplotlib colormaps useful for neuroimaging."""
 
 import numpy as _np
-from matplotlib import cm as _cm, colors as _colors, rcParams as _rcParams
+from matplotlib import (
+    cm as _cm,
+    colormaps,
+    colors as _colors,
+    rcParams as _rcParams,
+)
 
 ###############################################################################
 # Custom colormaps for two-tailed symmetric statistics
@@ -203,6 +208,8 @@ def _revcmap(data):
     return data_r
 
 
+import contextlib
+
 _cmap_d = dict()
 
 for _cmapname in list(_cmaps_data.keys()):  # needed as dict changes in loop
@@ -291,16 +298,8 @@ _cmap_d["videen_style"] = _colors.LinearSegmentedColormap.from_list(
 globals().update(_cmap_d)
 # Register cmaps in matplotlib too
 for k, v in _cmap_d.items():
-    try:
-        from matplotlib import colormaps as _colormaps
-    except ImportError:
-        _register_cmap = _cm.register_cmap
-    else:
-        _register_cmap = _colormaps.register  # 3.5+
-    try:  # "bwr" is in latest matplotlib
-        _register_cmap(name=k, cmap=v)
-    except ValueError:
-        pass
+    with contextlib.suppress(ValueError):  # "bwr" is already registered
+        colormaps.register(name=k, cmap=v)
 
 
 ###############################################################################
