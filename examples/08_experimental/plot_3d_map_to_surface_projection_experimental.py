@@ -56,7 +56,7 @@ curv_right_sign = np.sign(fsaverage_curvature.data.parts["right"])
 from nilearn.experimental.surface import SurfaceImage
 
 img = SurfaceImage(
-    mesh=fsaverage_meshes["pial"],
+    mesh=fsaverage_meshes["inflated"],
     data={
         "left": surface.vol_to_surf(
             stat_img, fsaverage_meshes["pial"].parts["left"]
@@ -183,7 +183,9 @@ labels = list(regions_dict.values())
 
 from nilearn.experimental.plotting import plot_surf_contours
 
-fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
+fsaverage_sulcal = load_fsaverage_data(
+    data_type="sulcal", mesh_type="inflated"
+)
 
 figure = plot_surf_stat_map(
     stat_map=img,
@@ -222,13 +224,13 @@ big_fsaverage_sulcal = load_fsaverage_data(
 )
 
 big_img = SurfaceImage(
-    mesh=big_fsaverage_meshes["pial"],
+    mesh=big_fsaverage_meshes["inflated"],
     data={
         "left": surface.vol_to_surf(
-            stat_img, big_fsaverage_meshes["pial"].parts["left"]
+            stat_img, big_fsaverage_meshes["inflated"].parts["left"]
         ),
         "right": surface.vol_to_surf(
-            stat_img, big_fsaverage_meshes["pial"].parts["right"]
+            stat_img, big_fsaverage_meshes["inflated"].parts["right"]
         ),
     },
 )
@@ -290,41 +292,44 @@ view = view_surf(
 # In a Jupyter notebook, if ``view`` is the output of a cell,
 # it will be displayed below the cell
 view
-datasets
+view.open_in_browser()
+
 # We don't need to do the projection ourselves, we can use
 # :func:`~nilearn.plotting.view_img_on_surf`:
 
 view = plotting.view_img_on_surf(stat_img, threshold="90%")
-# view.open_in_browser()
 
 view
+view.open_in_browser()
 
 # %%
 # Impact of plot parameters on visualization
 # ------------------------------------------
 #
 # You can specify arguments to be passed on to the function
-# :func:`nilearn.surface.vol_to_surf` using `vol_to_surf_kwargs`. This allows
-# fine-grained control of how the input 3D image is resampled
-# and interpolated -
-# for example if you are viewing a volumetric atlas, you would want to avoid
-# averaging the labels between neighboring regions. Using nearest-neighbor
-# interpolation with zero radius will achieve this.
+# :func:`nilearn.surface.vol_to_surf` using `vol_to_surf_kwargs`
+# This allows fine-grained control of how the input 3D image
+# is resampled and interpolated -
+# for example if you are viewing a volumetric atlas,
+# you would want to avoid averaging the labels between neighboring regions.
+# Using nearest-neighbor interpolation with zero radius will achieve this.
 
 destrieux = datasets.fetch_atlas_destrieux_2009(legacy_format=False)
 
 view = plotting.view_img_on_surf(
     destrieux.maps,
     surf_mesh="fsaverage",
+    cmap="tab20",
     vol_to_surf_kwargs={
         "n_samples": 1,
         "radius": 0.0,
         "interpolation": "nearest",
     },
     symmetric_cmap=False,
+    colorbar=False,
 )
 
-# view.open_in_browser()
 view
+view.open_in_browser()
 
 # sphinx_gallery_dummy_images=1
