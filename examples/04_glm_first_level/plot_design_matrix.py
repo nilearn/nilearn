@@ -125,6 +125,7 @@ plt.show()
 # is the same condition as the previous one,
 # it will elicit a less intense response.
 
+conditions = ["c0", "c0", "c0", "c1", "c1", "c1", "c3", "c3", "c3"]
 modulation = [1.0, 0.5, 0.25, 1.0, 0.5, 0.25, 1.0, 0.5, 0.25]
 modulated_events = pd.DataFrame(
     {

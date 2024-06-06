@@ -117,9 +117,10 @@ plt.show()
 # This type of parametric modulation can be done
 # by adding a "modulation" column to the dataframe containing our events.
 #
-#  Here we will assume that when a trial
+# Here we will assume that when a trial
 # is the same condition as the previous one,
 # it will elicit a less intense response.
+
 modulations = []
 conditions_to_modulate = [
     "horizontal checkerboard",
