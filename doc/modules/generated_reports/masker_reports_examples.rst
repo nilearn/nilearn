@@ -64,3 +64,16 @@ Adapted from :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_adhd_dmn.py`
 
 .. raw:: html
    :file: nifti_sphere_masker.html
+
+
+Surface maskers
+---------------
+
+.. raw:: html
+   :file: surface_masker.html
+
+.. raw:: html
+   :file: surface_label_masker_unfitted.html
+
+.. raw:: html
+   :file: surface_label_masker.html

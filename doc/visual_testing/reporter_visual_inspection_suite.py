@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 
 from nilearn import datasets
+from nilearn.experimental import surface
 from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
@@ -427,6 +428,35 @@ def report_multi_nifti_maps_masker():
     return empty_report, report
 
 
+def report_surface_masker():
+
+    masker = surface.SurfaceMasker()
+    img = surface.fetch_nki(mesh_type="inflated", n_subjects=1)[0]
+    masker.fit_transform(img)
+    surface_masker_report = masker.generate_report()
+    surface_masker_report.save_as_html(REPORTS_DIR / "surface_masker.html")
+
+    labels_img, label_names = surface.fetch_destrieux(mesh_type="inflated")
+
+    labels_masker = surface.SurfaceLabelsMasker(labels_img, label_names).fit()
+    labels_masker_report_unfitted = labels_masker.generate_report()
+    labels_masker_report_unfitted.save_as_html(
+        REPORTS_DIR / "surface_label_masker_unfitted.html"
+    )
+
+    labels_masker.transform(img)
+    labels_masker_report = labels_masker.generate_report()
+    labels_masker_report.save_as_html(
+        REPORTS_DIR / "surface_label_masker.html"
+    )
+
+    return (
+        surface_masker_report,
+        labels_masker_report_unfitted,
+        labels_masker_report,
+    )
+
+
 # %%
 if __name__ == "__main__":
 
@@ -439,6 +469,7 @@ if __name__ == "__main__":
     report_multi_nifti_masker()
     report_multi_nifti_labels_masker()
     report_multi_nifti_maps_masker()
+    report_surface_masker()
 
     t1 = time.time()
     print(f"\nTook: {(t1 - t0)} seconds\n")
