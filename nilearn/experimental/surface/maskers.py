@@ -469,12 +469,11 @@ class SurfaceLabelsMasker(BaseEstimator):
             regions_summary = {
                 "label value": [],
                 "region name": [],
-                "size (number of vertices)": [],
-                "relative size (% vertices in hemisphere)": [],
+                "size<br>(number of vertices)": [],
+                "relative size<br>(% vertices in hemisphere)": [],
             }
 
             for i, label in enumerate(self.label_names_):
-                regions_summary["hemisphere"].append(part)
                 regions_summary["label value"].append(i)
                 regions_summary["region name"].append(label)
 
@@ -487,8 +486,8 @@ class SurfaceLabelsMasker(BaseEstimator):
                 )
                 relative_size.append(f"{tmp :.2}")
 
-            regions_summary["size (number of vertices)"] = size
-            regions_summary["relative size (% vertices in hemisphere)"] = (
+            regions_summary["size<br>(number of vertices)"] = size
+            regions_summary["relative size<br>(% vertices in hemisphere)"] = (
                 relative_size
             )
 
