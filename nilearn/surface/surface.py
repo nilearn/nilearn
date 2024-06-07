@@ -13,17 +13,12 @@ import sklearn.cluster
 import sklearn.preprocessing
 from nibabel import freesurfer as fs, gifti
 from scipy import interpolate, sparse
+from sklearn.exceptions import EfficiencyWarning
 
 from nilearn import _utils, datasets
 from nilearn._utils import stringify_path
 from nilearn._utils.path_finding import resolve_globbing
 from nilearn.image import get_data, load_img, resampling
-
-try:
-    from sklearn.exceptions import EfficiencyWarning
-except ImportError:
-    class EfficiencyWarning(UserWarning):
-        """Warning used to notify the user of inefficient computation."""
 
 # Create a namedtuple object for meshes
 Mesh = namedtuple("mesh", ["coordinates", "faces"])
