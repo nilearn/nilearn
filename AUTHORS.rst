@@ -61,6 +61,7 @@ Some other past or present contributors are:
 * `Alisha Kodibagkar`_: MIT McGovern Institute, Cambridge, Massachusetts, United States
 * `Amadeus Kanaan`_
 * `Ana Luisa Pinho`_: Western University, London, Ontario, Canada
+* `Anand Joshi`_: University of Southern California, Los Angeles, California, United States
 * `Andrés Hoyos Idrobo`_: Rakuten, France
 * `Anne-Sophie Kieslinger`_: Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig, Germnay
 * `Ariel Rokem`_: University of Washington, Psychology, Seattle, Washington, 98107, USA
