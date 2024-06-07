@@ -117,9 +117,11 @@ plt.show()
 # %%
 # Parametric modulation
 # ---------------------
-# By default, the fMRI GLM will expect that all events for a given condition have a BOLD
+# By default, the fMRI GLM will expect that all events
+# for a given condition have a BOLD
 # response with the same amplitude.
-# Sometimes, we may have specific expectations about how strong the BOLD response
+# Sometimes, we may have specific expectations
+# about how strong the BOLD response
 # will be on a given event.
 # This can be incorporated into the model by using **parametric modulation**,
 # wherein each event has a predicted amplitude.
