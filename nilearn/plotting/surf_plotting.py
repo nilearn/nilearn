@@ -15,7 +15,7 @@ from matplotlib.patches import Patch
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from nilearn import image, surface
-from nilearn._utils import check_niimg_3d, compare_version, fill_doc
+from nilearn._utils import check_niimg_3d, fill_doc
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn.plotting.cm import cold_hot, mix_colormaps
 from nilearn.plotting.displays._slicers import _get_cbar_ticks
@@ -1016,23 +1016,14 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
     for level, color, label in zip(levels, colors, labels):
         roi_indices = np.where(roi == level)[0]
         faces_outside = _get_faces_on_edge(faces, roi_indices)
-        # Fix: Matplotlib version 3.3.2 to 3.3.3
-        # Attribute _facecolors3d changed to _facecolor3d in
-        # matplotlib version 3.3.3
-        if compare_version(mpl.__version__, "<", "3.3.3"):
-            axes.collections[0]._facecolors3d[faces_outside] = color
-            if axes.collections[0]._edgecolors3d.size == 0:
-                axes.collections[0].set_edgecolor(
-                    axes.collections[0]._facecolors3d
-                )
-            axes.collections[0]._edgecolors3d[faces_outside] = color
-        else:
-            axes.collections[0]._facecolor3d[faces_outside] = color
-            if axes.collections[0]._edgecolor3d.size == 0:
-                axes.collections[0].set_edgecolor(
-                    axes.collections[0]._facecolor3d
-                )
-            axes.collections[0]._edgecolor3d[faces_outside] = color
+
+        axes.collections[0]._facecolor3d[faces_outside] = color
+        if axes.collections[0]._edgecolor3d.size == 0:
+            axes.collections[0].set_edgecolor(
+                axes.collections[0]._facecolor3d
+            )
+        axes.collections[0]._edgecolor3d[faces_outside] = color
+
         if label and legend:
             patch_list.append(Patch(color=color, label=label))
     # plot legend only if indicated and labels provided

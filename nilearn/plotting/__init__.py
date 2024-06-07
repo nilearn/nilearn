@@ -4,7 +4,7 @@
 import importlib
 import warnings
 
-OPTIONAL_MATPLOTLIB_MIN_VERSION = "3.3.0"
+OPTIONAL_MATPLOTLIB_MIN_VERSION = "3.6.0"
 
 ###############################################################################
 # Make sure that we don't get DISPLAY problems when running without X on
