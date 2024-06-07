@@ -56,7 +56,7 @@ curv_right_sign = np.sign(fsaverage_curvature.data.parts["right"])
 from nilearn.experimental.surface import SurfaceImage
 
 img = SurfaceImage(
-    mesh=fsaverage_meshes["inflated"],
+    mesh=fsaverage_meshes["pial"],
     data={
         "left": surface.vol_to_surf(
             stat_img, fsaverage_meshes["pial"].parts["left"]
@@ -79,6 +79,7 @@ from nilearn.experimental.plotting import plot_surf_stat_map
 
 fig = plot_surf_stat_map(
     stat_map=img,
+    surf_mesh=fsaverage_meshes["inflated"],
     hemi="right",
     title="Surface with matplotlib",
     colorbar=True,
@@ -108,6 +109,7 @@ print(f"Using plotting engine {engine}.")
 
 fig = plot_surf_stat_map(
     stat_map=img,
+    surf_mesh=fsaverage_meshes["inflated"],
     hemi="right",
     title="Surface with plotly",
     colorbar=True,
@@ -223,7 +225,7 @@ big_fsaverage_sulcal = load_fsaverage_data(
 )
 
 big_img = SurfaceImage(
-    mesh=big_fsaverage_meshes["inflated"],
+    mesh=big_fsaverage_meshes["pial"],
     data={
         "left": surface.vol_to_surf(
             stat_img, big_fsaverage_meshes["pial"].parts["left"]
@@ -236,6 +238,7 @@ big_img = SurfaceImage(
 
 plot_surf_stat_map(
     big_img,
+    surf_mesh=big_fsaverage_meshes["inflated"],
     hemi="right",
     colorbar=True,
     title="Surface fine mesh",
