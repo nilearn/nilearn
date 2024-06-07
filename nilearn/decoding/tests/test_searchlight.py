@@ -121,14 +121,9 @@ def test_searchlight_large_radius():
 
 
 def group_cross_validation(cv):
-    try:
-        from sklearn.model_selection import LeaveOneGroupOut
+    from sklearn.model_selection import LeaveOneGroupOut
 
-        gcv = LeaveOneGroupOut()
-    except ImportError:
-        # won't import model selection if it's not there.
-        # the groups variable should have no effect.
-        gcv = cv
+    gcv = LeaveOneGroupOut()
     return gcv
 
 
