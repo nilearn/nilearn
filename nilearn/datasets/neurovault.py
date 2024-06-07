@@ -1526,11 +1526,14 @@ def _download_image_nii_file(image_info, collection, download_params):
 
         # Resample here
         print("Resampling...")
+        # TODO switch to force_resample=True
+        # when bumping to version > 0.13
         im_resampled = resample_img(
             img=tmp_path,
             target_affine=STD_AFFINE,
             interpolation=download_params["interpolation"],
             copy_header=True,
+            force_resample=False,
         )
         im_resampled.to_filename(resampled_image_absolute_path)
 
@@ -1759,11 +1762,14 @@ def _scroll_local(download_params):
             image, collection = _update(image, collection, download_params)
             if download_params["resample"]:
                 if not os.path.isfile(image["resampled_absolute_path"]):
+                    # TODO switch to force_resample=True
+                    # when bumping to version > 0.13
                     im_resampled = resample_img(
                         img=image["absolute_path"],
                         target_affine=STD_AFFINE,
                         interpolation=download_params["interpolation"],
                         copy_header=True,
+                        force_resample=False,
                     )
                     im_resampled.to_filename(image["resampled_absolute_path"])
                 download_params["visited_images"].add(image["id"])

@@ -545,6 +545,8 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
             elif self.resampling_target == "labels":
                 _utils.logger.log("resampling the mask", verbose=self.verbose)
+                # TODO switch to force_resample=True
+                # when bumping to version > 0.13
                 self.mask_img_ = image.resample_img(
                     self.mask_img_,
                     target_affine=self.labels_img_.affine,
@@ -552,6 +554,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                     interpolation="nearest",
                     copy=True,
                     copy_header=True,
+                    force_resample=False,
                 )
 
             else:
