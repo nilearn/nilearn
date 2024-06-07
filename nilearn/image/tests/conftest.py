@@ -49,7 +49,9 @@ def img_4d_mni_tr2(img_4d_mni):
     img = image.new_img_like(
         img_4d_mni, data=img_4d_mni.get_fdata(), copy_header=True
     )
-    # Change the TR
+    # Add fake description
     header = img.header.copy()
+    header["descrip"] = b"Fake description"
+    # Change the TR
     header["pixdim"][4] = 2.0
     return Nifti1Image(img.get_fdata(), img.affine, header=header)

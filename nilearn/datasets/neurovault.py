@@ -1530,6 +1530,7 @@ def _download_image_nii_file(image_info, collection, download_params):
             img=tmp_path,
             target_affine=STD_AFFINE,
             interpolation=download_params["interpolation"],
+            copy_header=True,
         )
         im_resampled.to_filename(resampled_image_absolute_path)
 
@@ -1762,6 +1763,7 @@ def _scroll_local(download_params):
                         img=image["absolute_path"],
                         target_affine=STD_AFFINE,
                         interpolation=download_params["interpolation"],
+                        copy_header=True,
                     )
                     im_resampled.to_filename(image["resampled_absolute_path"])
                 download_params["visited_images"].add(image["id"])
