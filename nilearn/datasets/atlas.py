@@ -724,7 +724,7 @@ def _get_atlas_data_and_labels(
         verbose=verbose,
     )
     # Reorder image to have positive affine diagonal
-    atlas_img = reorder_img(atlas_file)
+    atlas_img = reorder_img(atlas_file, copy_header=True)
     names = {}
     from xml.etree import ElementTree
 

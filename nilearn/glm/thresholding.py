@@ -301,6 +301,7 @@ def threshold_stats_img(
         two_sided=two_sided,
         mask_img=mask_img,
         copy=True,
+        copy_header=True,
     )
 
     return stat_img, threshold
