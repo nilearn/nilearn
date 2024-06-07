@@ -81,7 +81,7 @@ for view in ["lateral", "posterior", "ventral"]:
         bg_map=fsaverage_sulcal,
         bg_on_data=True,
         darkness=0.5,
-        title=f"Destrieux parcellation on inflated surface: {view} view",
+        title=f"Destrieux parcellation on inflated surface\n{view} view",
     )
 
 show()
@@ -151,6 +151,7 @@ view = plotting.view_surf(
     surf_map=destrieux_atlas,
     cmap="gist_ncar",
     symmetric_cmap=False,
+    colorbar=False,
 )
 # In a Jupyter notebook, if ``view`` is the output of a cell,
 # it will be displayed below the cell
@@ -165,7 +166,7 @@ view
 # you can also use :func:`nilearn.plotting.view_connectome`
 # to open an interactive view of the connectome.
 
-view = view_connectome(corr, coordinates, edge_threshold="90%")
+view = view_connectome(corr, coordinates, edge_threshold="90%", colorbar=False)
 # uncomment this to open the plot in a web browser:
 # view.open_in_browser()
 view

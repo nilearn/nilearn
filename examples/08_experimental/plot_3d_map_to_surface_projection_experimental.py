@@ -183,9 +183,7 @@ labels = list(regions_dict.values())
 
 from nilearn.experimental.plotting import plot_surf_contours
 
-fsaverage_sulcal = load_fsaverage_data(
-    data_type="sulcal", mesh_type="inflated"
-)
+fsaverage_sulcal = load_fsaverage_data(data_type="sulcal", mesh_type="pial")
 
 figure = plot_surf_stat_map(
     stat_map=img,
@@ -199,6 +197,7 @@ figure = plot_surf_stat_map(
 
 plot_surf_contours(
     roi_map=destrieux_atlas,
+    hemi="right",
     labels=labels,
     levels=regions_indices,
     figure=figure,
@@ -227,10 +226,10 @@ big_img = SurfaceImage(
     mesh=big_fsaverage_meshes["inflated"],
     data={
         "left": surface.vol_to_surf(
-            stat_img, big_fsaverage_meshes["inflated"].parts["left"]
+            stat_img, big_fsaverage_meshes["pial"].parts["left"]
         ),
         "right": surface.vol_to_surf(
-            stat_img, big_fsaverage_meshes["inflated"].parts["right"]
+            stat_img, big_fsaverage_meshes["pial"].parts["right"]
         ),
     },
 )
