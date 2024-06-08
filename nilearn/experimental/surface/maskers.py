@@ -77,6 +77,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         self.reports = reports
         self.cmap = kwargs.get("cmap", "inferno")
+        # content to inject in the HTML template
         self._report_content = {
             "description": (
                 "This report shows the input surface image overlaid "
@@ -92,6 +93,12 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
             # unused but required in HTML template
             "number_of_regions": None,
             "summary": None,
+        }
+        # data necessary to construct figure for the report
+        self._reporting_data = {
+            "mask": None,
+            "images": None,
+            "data_to_plot": None,
         }
 
     def _fit_mask_img(self, img: SurfaceImage | None) -> None:
@@ -332,6 +339,9 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         fig = self._create_figure_for_report()
 
+        if not fig:
+            return [None]
+
         plt.close()
 
         init_display = figure_to_png_base64(fig)
@@ -344,6 +354,10 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         from nilearn.experimental import plotting
 
         data_to_plot = self._reporting_data["data_to_plot"]
+
+        if not data_to_plot:
+            return None
+
         vmin = data_to_plot.min()
         vmax = data_to_plot.max()
 
