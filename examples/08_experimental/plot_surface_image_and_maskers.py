@@ -102,7 +102,7 @@ report = labels_masker.generate_report()
 report
 
 # We have several ways to access the report:
-report.open_in_browser()
+# report.open_in_browser()
 
 masked_data = labels_masker.transform(img)
 print(f"Masked data shape: {masked_data.shape}")
