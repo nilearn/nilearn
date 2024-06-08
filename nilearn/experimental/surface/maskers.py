@@ -355,7 +355,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         data_to_plot = self._reporting_data["data_to_plot"]
 
-        if not data_to_plot:
+        if data_to_plot is None:
             return None
 
         vmin = data_to_plot.min()

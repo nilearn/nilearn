@@ -464,13 +464,13 @@ if __name__ == "__main__":
     print("\nGenerating masker reports templates\n")
     t0 = time.time()
 
+    report_surface_masker()
     report_nifti_masker()
     report_nifti_maps_masker()
     report_nifti_labels_masker()
     report_multi_nifti_masker()
     report_multi_nifti_labels_masker()
     report_multi_nifti_maps_masker()
-    report_surface_masker()
 
     t1 = time.time()
     print(f"\nTook: {(t1 - t0)} seconds\n")
