@@ -13,7 +13,7 @@ Difference in meanings between different toolboxes
 		* First-level: analyze one session for one subject
 		* Second-level: analyze across sessions for one subject
 		* Third-level: group-level analysis
-	
+
 These differences can be put in the table below:
 
 +----------------------------------------------+----------------+------------------+---------------+
