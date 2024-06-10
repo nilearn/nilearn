@@ -62,6 +62,7 @@ for view, ax_row in zip(views, axes):
             colorbar=False,
             cmap="bwr",
             symmetric_cmap=True,
+            bg_on_data=True,
         )
 fig.set_size_inches(6, 8)
 

@@ -5,6 +5,7 @@ import warnings
 from pathlib import Path
 from string import Template
 
+from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.maskers import NiftiSpheresMasker
 from nilearn.plotting.html_document import HTMLDocument
@@ -170,7 +171,9 @@ def _update_template(
         head_css = head_css_file.read()
 
     return HTMLReport(
-        body=body, head_tpl=head_tpl, head_values={"head_css": head_css}
+        body=body,
+        head_tpl=head_tpl,
+        head_values={"head_css": head_css, "version": __version__},
     )
 
 

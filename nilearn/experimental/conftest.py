@@ -1,4 +1,4 @@
-"""Fxitures for experimental module."""
+"""Fixtures for experimental module."""
 
 from typing import Callable
 
