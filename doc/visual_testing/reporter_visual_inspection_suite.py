@@ -197,7 +197,7 @@ def report_flm_fiac():
     data = datasets.func.fetch_fiac_first_level()
     fmri_img = [data["func1"], data["func2"]]
 
-    mean_img_ = mean_img(fmri_img[0])
+    mean_img_ = mean_img(fmri_img[0], copy_header=True)
 
     design_files = [data["design_matrix1"], data["design_matrix2"]]
     design_matrices = [pd.DataFrame(np.load(df)["X"]) for df in design_files]
@@ -249,6 +249,7 @@ def report_slm_oasis():
         datasets.fetch_icbm152_brain_gm_mask(),
         oasis_dataset.gray_matter_maps[0],
         interpolation="nearest",
+        copy_header=True,
     )
 
     design_matrix = _make_design_matrix_slm_oasis(oasis_dataset, n_subjects)

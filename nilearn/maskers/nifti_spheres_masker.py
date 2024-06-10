@@ -83,6 +83,7 @@ def _apply_mask_and_get_affinity(
             target_affine=affine,
             target_shape=niimg.shape[:3],
             interpolation="nearest",
+            copy_header=True,
         )
         mask, _ = masking.load_mask_img(mask_img)
         mask_coords = list(zip(*np.where(mask != 0)))
@@ -551,6 +552,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
                         target_affine=self.mask_img_.affine,
                         copy=False,
                         interpolation="nearest",
+                        copy_header=True,
                     )
                 else:
                     resampl_imgs = X
