@@ -22,8 +22,8 @@ def test_load_fsaverage_hemispheres_have_file():
     left_hemisphere_meshes = [
         mesh for mesh in result.values() if "left" in mesh.parts
     ]
-    assert len(left_hemisphere_meshes) > 0
+    assert left_hemisphere_meshes
     right_hemisphere_meshes = [
         mesh for mesh in result.values() if "right" in mesh.parts
     ]
-    assert len(right_hemisphere_meshes) > 0
+    assert right_hemisphere_meshes
