@@ -111,6 +111,49 @@ plot_event(events, figsize=(15, 5))
 plt.show()
 
 # %%
+# Parametric modulation
+# ---------------------
+# We may want to modulate the way we model our events in our fMRI analysis.
+# This type of parametric modulation can be done
+# by adding a "modulation" column to the dataframe containing our events.
+#
+# Here we will assume that when a trial
+# is the same condition as the previous one,
+# it will elicit a less intense response.
+
+modulations = []
+conditions_to_modulate = [
+    "horizontal checkerboard",
+    "vertical checkerboard",
+    "mental computation, auditory instructions",
+    "mental computation, visual instructions",
+    "visual sentence",
+    "auditory sentence",
+]
+for i, trial in enumerate(trial_types):
+    if (
+        i > 0
+        and trial in conditions_to_modulate
+        and trial == trial_types[i - 1]
+    ):
+        modulations.append(0.5)
+    else:
+        modulations.append(1)
+
+modulated_events = pd.DataFrame(
+    {
+        "trial_type": trial_types,
+        "onset": onsets,
+        "duration": durations,
+        "modulation": modulations,
+    }
+)
+
+# Now lets plot the modulated and unmodulated events side by side.
+plot_event([events, modulated_events], figsize=(15, 5))
+plt.show()
+
+# %%
 # References
 # ----------
 #

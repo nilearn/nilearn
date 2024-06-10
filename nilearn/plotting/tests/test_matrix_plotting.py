@@ -219,10 +219,19 @@ def test_show_event_plot(tmp_path):
     trial_idx[11:] -= 10
     condition_ids = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"]
 
+    # add some modulation
+    modulation = np.full(20, 1)
+    modulation[[1, 5, 15]] = 0.5
+
     trial_type = np.array([condition_ids[i] for i in trial_idx])
 
     model_event = pd.DataFrame(
-        {"onset": onset, "duration": duration, "trial_type": trial_type}
+        {
+            "onset": onset,
+            "duration": duration,
+            "trial_type": trial_type,
+            "modulation": modulation,
+        }
     )
     # Test Dataframe
     fig = plot_event(model_event)
