@@ -19,7 +19,7 @@ These differences can be put in the table below:
 +----------------------------------------------+----------------+------------------+---------------+
 | Analyze                                      | nilearn        | SPM              | FSL           |
 +==============================================+================+==================+===============+
-| One session, one subject                     | First-level           | First-level             | First\-level  |
+| One session, one subject                     | First-level    | First-level      | First\-level  |
 +----------------------------------------------+----------------+------------------+---------------+
 | More than one session, one subject           | First\-level   | First\-level     | Second\-level |
 +----------------------------------------------+----------------+------------------+---------------+
