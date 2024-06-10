@@ -76,7 +76,7 @@ def _threshold_maps_ratio(maps_img, threshold):
     return threshold_maps_img
 
 
-def _remove_small_regions(input_data, index, affine, min_size):
+def _remove_small_regions(input_data, affine, min_size):
     """Remove small regions in volume from input_data of specified min_size.
 
     min_size should be specified in mm^3 (region size in volume).
@@ -87,11 +87,6 @@ def _remove_small_regions(input_data, index, affine, min_size):
         Values inside the regions defined by labels contained in input_data
         are summed together to get the size and compare with given min_size.
         For example, see scipy.ndimage.label.
-
-    index : numpy.ndarray
-        A sequence of label numbers of the regions to be measured corresponding
-        to input_data. For example, sequence can be generated using
-        np.arange(n_labels + 1).
 
     affine : numpy.ndarray
         Affine of input_data is used to convert size in voxels to size in
@@ -217,6 +212,7 @@ def connected_regions(
                 target_affine=maps_img.affine,
                 target_shape=maps_img.shape[:3],
                 interpolation="nearest",
+                copy_header=True,
             )
         mask_data, _ = masking.load_mask_img(mask_img)
         # Set as 0 to the values which are outside of the mask
@@ -398,10 +394,12 @@ class RegionExtractor(NiftiMapsMasker):
         low_pass=None,
         high_pass=None,
         t_r=None,
-        memory=Memory(location=None),
+        memory=None,
         memory_level=0,
         verbose=0,
     ):
+        if memory is None:
+            memory = Memory(location=None)
         super().__init__(
             maps_img=maps_img,
             mask_img=mask_img,
@@ -455,6 +453,7 @@ class RegionExtractor(NiftiMapsMasker):
                     mask_img=self.mask_img,
                     copy=True,
                     threshold=self.threshold,
+                    copy_header=True,
                 )
 
         # connected component extraction
@@ -592,10 +591,7 @@ def connected_label_regions(
             regions, this_n_labels = label(this_label_mask.astype(int))
 
         if min_size is not None:
-            index = np.arange(this_n_labels + 1)
-            regions = _remove_small_regions(
-                regions, index, affine, min_size=min_size
-            )
+            regions = _remove_small_regions(regions, affine, min_size=min_size)
             this_n_labels = regions.max()
 
         cur_regions = regions[regions != 0] + current_max_label

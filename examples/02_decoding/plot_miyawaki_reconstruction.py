@@ -316,12 +316,12 @@ for i in range(6):
         np.reshape(y_test[j], (10, 10)),
         cmap=plt.cm.gray,
         interpolation="nearest",
-    ),
+    )
     sp2.imshow(
         np.reshape(y_pred[j], (10, 10)),
         cmap=plt.cm.gray,
         interpolation="nearest",
-    ),
+    )
     sp3.imshow(
         np.reshape(y_pred[j] > 0.5, (10, 10)),
         cmap=plt.cm.gray,

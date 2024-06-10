@@ -387,9 +387,11 @@ class BaseSlicer:
         # is called from `add_contours`, continuous interpolation
         # does not make sense and we turn to nearest interpolation instead.
         if is_binary_niimg(img):
-            img = reorder_img(img, resample="nearest")
+            img = reorder_img(img, resample="nearest", copy_header=True)
         else:
-            img = reorder_img(img, resample=resampling_interpolation)
+            img = reorder_img(
+                img, resample=resampling_interpolation, copy_header=True
+            )
         threshold = float(threshold) if threshold is not None else None
 
         affine = img.affine
@@ -592,7 +594,7 @@ class BaseSlicer:
             The color used to display the edge map.
 
         """
-        img = reorder_img(img, resample="continuous")
+        img = reorder_img(img, resample="continuous", copy_header=True)
         data = get_data(img)
         affine = img.affine
         single_color_cmap = ListedColormap([color])
@@ -985,6 +987,8 @@ class OrthoSlicer(BaseSlicer):
         The locator function used by matplotlib to position axes.
 
         Here we put the logic used to adjust the size of the axes.
+
+        ``renderer`` is required to match the matplolib API.
         """
         x0, y0, x1, y1 = self.rect
         width_dict = dict()
@@ -1008,7 +1012,7 @@ class OrthoSlicer(BaseSlicer):
                 # refresh of the figure) we capture the problem and
                 # ignore it: it only adds a non informative traceback
                 bounds = [0, 1, 0, 1]
-            xmin, xmax, ymin, ymax = bounds
+            xmin, xmax, _, _ = bounds
             width_dict[display_ax.ax] = xmax - xmin
 
         total_width = float(sum(width_dict.values()))
@@ -1339,6 +1343,8 @@ class TiledSlicer(BaseSlicer):
         The locator function used by matplotlib to position axes.
 
         Here we put the logic used to adjust the size of the axes.
+
+        ``renderer`` is required to match the matplolib API.
         """
         rect_x0, rect_y0, rect_x1, rect_y1 = self.rect
 
@@ -1545,6 +1551,8 @@ class BaseStackedSlicer(BaseSlicer):
         The locator function used by matplotlib to position axes.
 
         Here we put the logic used to adjust the size of the axes.
+
+        ``renderer`` is required to match the matplolib API.
         """
         x0, y0, x1, y1 = self.rect
         width_dict = dict()
@@ -1564,14 +1572,14 @@ class BaseStackedSlicer(BaseSlicer):
                 # refresh of the figure) we capture the problem and
                 # ignore it: it only adds a non informative traceback
                 bounds = [0, 1, 0, 1]
-            xmin, xmax, ymin, ymax = bounds
+            xmin, xmax, _, _ = bounds
             width_dict[display_ax.ax] = xmax - xmin
         total_width = float(sum(width_dict.values()))
         for ax, width in width_dict.items():
             width_dict[ax] = width / total_width * (x1 - x0)
         left_dict = dict()
         left = float(x0)
-        for coord, display_ax in display_ax_dict.items():
+        for _, display_ax in display_ax_dict.items():
             left_dict[display_ax.ax] = left
             this_width = width_dict[display_ax.ax]
             left += this_width
@@ -2023,6 +2031,8 @@ class MosaicSlicer(BaseSlicer):
         Locator function used by matplotlib to position axes.
 
         Here we put the logic used to adjust the size of the axes.
+
+        ``renderer`` is required to match the matplolib API.
         """
         x0, y0, x1, y1 = self.rect
         display_ax_dict = self.axes
@@ -2046,7 +2056,7 @@ class MosaicSlicer(BaseSlicer):
                         # refresh of the figure) we capture the problem and
                         # ignore it: it only adds a non informative traceback
                         bounds = [0, 1, 0, 1]
-                    xmin, xmax, ymin, ymax = bounds
+                    xmin, xmax, _, _ = bounds
                     this_width[display_ax.ax] = xmax - xmin
             total_width = float(sum(this_width.values()))
             for ax, w in this_width.items():
@@ -2061,7 +2071,7 @@ class MosaicSlicer(BaseSlicer):
         for index, direction in enumerate(self._cut_displayed):
             left = float(x0)
             this_height = fraction + fraction * index
-            for coord, display_ax in display_ax_dict.items():
+            for _, display_ax in display_ax_dict.items():
                 if direction == display_ax.direction:
                     left_dict[display_ax.ax] = left
                     this_width = width_dict[display_ax.ax]

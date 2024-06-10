@@ -39,6 +39,7 @@ with warnings.catch_warnings():
 
 from nilearn._utils import check_niimg
 from nilearn._utils.niimg import safe_get_data
+from nilearn.experimental.surface import SurfaceMasker
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting.get_clusters_table import get_clusters_table
 from nilearn.reporting.utils import figure_to_svg_quoted
@@ -170,6 +171,11 @@ def make_glm_report(
         Contains the HTML code for the :term:`GLM` Report.
 
     """
+    if isinstance(model.masker_, SurfaceMasker):
+        raise NotImplementedError(
+            "Report generation is not yet supported for surface analysis."
+        )
+
     if bg_img == "MNI152TEMPLATE":
         bg_img = MNI152TEMPLATE
     if not display_mode:
@@ -489,7 +495,7 @@ def _model_attributes_to_dataframe(model):
         "high_pass": "Hz",
     }
 
-    if hasattr(model, "hrf_model") and getattr(model, "hrf_model") == "fir":
+    if hasattr(model, "hrf_model") and model.hrf_model == "fir":
         selected_attributes.append("fir_delays")
 
     selected_attributes.sort()

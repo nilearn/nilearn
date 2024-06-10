@@ -138,12 +138,14 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
         dtype=None,
         resampling_target="data",
         keep_masked_maps=True,
-        memory=Memory(location=None, verbose=0),
+        memory=None,
         memory_level=0,
         verbose=0,
         reports=True,
         **kwargs,
     ):
+        if memory is None:
+            memory = Memory(location=None, verbose=0)
         self.maps_img = maps_img
         self.mask_img = mask_img
 
@@ -325,7 +327,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 "No image provided to fit in NiftiMapsMasker. "
                 "Plotting only spatial maps for reporting."
             )
-            warnings.warn(msg)
+            warnings.warn(msg, stacklevel=6)
             self._report_content["warning_message"] = msg
             for component in maps_to_be_displayed:
                 display = plotting.plot_stat_map(
@@ -340,7 +342,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 "A list of 4D subject images were provided to fit. "
                 "Only first subject is shown in the report."
             )
-            warnings.warn(msg)
+            warnings.warn(msg, stacklevel=6)
             self._report_content["warning_message"] = msg
 
         for component in maps_to_be_displayed:
@@ -417,6 +419,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 target_shape=self.mask_img_.shape,
                 interpolation="continuous",
                 copy=True,
+                copy_header=True,
             )
 
         elif self.resampling_target == "maps" and self.mask_img_ is not None:
@@ -429,6 +432,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 target_shape=self.maps_img_.shape[:3],
                 interpolation="nearest",
                 copy=True,
+                copy_header=True,
             )
 
         if self.reports:
@@ -543,6 +547,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                     interpolation="continuous",
                     target_shape=ref_img.shape[:3],
                     target_affine=ref_img.affine,
+                    copy_header=True,
                 )
 
             if (
@@ -559,6 +564,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                     interpolation="nearest",
                     target_shape=ref_img.shape[:3],
                     target_affine=ref_img.affine,
+                    copy_header=True,
                 )
 
         if not self.allow_overlap:

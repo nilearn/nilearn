@@ -32,7 +32,8 @@ annotate : :obj:`bool`, default=True
 docdict[
     "avg_method"
 ] = """
-avg_method : {"mean", "median", "min", "max", custom function}, default="mean"
+avg_method : {"mean", "median", "min", "max", custom function, None}, \
+             default=None
     How to average vertex values to derive the face value:
 
         - `mean`: results in smooth boundaries
@@ -621,7 +622,7 @@ kwargs : dict
 docdict[
     "memory"
 ] = """
-memory : instance of :class:`joblib.Memory`, :obj:`str`, or \
+memory : None, instance of :class:`joblib.Memory`, :obj:`str`, or \
 :class:`pathlib.Path`
     Used to cache the masking process.
     By default, no caching is done.

@@ -680,12 +680,14 @@ class Pattern(_SpecialValue):
         )
 
 
-def _empty_filter(arg):
+def _empty_filter(result):
     """Place holder for a filter which always returns True.
 
     This is the default ``image_filter`` and ``collection_filter``
     argument for ``fetch_neurovault``.
 
+    The ``result`` parameter is necessary for the API consistency
+    with other filters.
     """
     return True
 
@@ -1528,6 +1530,7 @@ def _download_image_nii_file(image_info, collection, download_params):
             img=tmp_path,
             target_affine=STD_AFFINE,
             interpolation=download_params["interpolation"],
+            copy_header=True,
         )
         im_resampled.to_filename(resampled_image_absolute_path)
 
@@ -1760,6 +1763,7 @@ def _scroll_local(download_params):
                         img=image["absolute_path"],
                         target_affine=STD_AFFINE,
                         interpolation=download_params["interpolation"],
+                        copy_header=True,
                     )
                     im_resampled.to_filename(image["resampled_absolute_path"])
                 download_params["visited_images"].add(image["id"])
@@ -2390,9 +2394,9 @@ def _result_list_to_bunch(result_list, download_params):
 
 def _fetch_neurovault_implementation(
     max_images=_DEFAULT_MAX_IMAGES,
-    collection_terms=basic_collection_terms(),
+    collection_terms=None,
     collection_filter=_empty_filter,
-    image_terms=basic_image_terms(),
+    image_terms=None,
     image_filter=_empty_filter,
     collection_ids=None,
     image_ids=None,
@@ -2406,6 +2410,10 @@ def _fetch_neurovault_implementation(
     **kwarg_image_filters,
 ):
     """Download data from neurovault.org and neurosynth.org."""
+    if collection_terms is None:
+        collection_terms = basic_collection_terms()
+    if image_terms is None:
+        image_terms = basic_image_terms()
     image_terms = dict(image_terms, **kwarg_image_filters)
     neurovault_data_dir = get_dataset_dir("neurovault", data_dir)
     if mode != "offline" and not os.access(neurovault_data_dir, os.W_OK):
@@ -2443,9 +2451,9 @@ def _fetch_neurovault_implementation(
 
 def fetch_neurovault(
     max_images=_DEFAULT_MAX_IMAGES,
-    collection_terms=basic_collection_terms(),
+    collection_terms=None,
     collection_filter=_empty_filter,
-    image_terms=basic_image_terms(),
+    image_terms=None,
     image_filter=_empty_filter,
     mode="download_new",
     data_dir=None,
@@ -2474,25 +2482,27 @@ def fetch_neurovault(
     max_images : int, default=100
         Maximum number of images to fetch.
 
-    collection_terms : dict, default=basic_collection_terms()
+    collection_terms : dict, default=None
         Key, value pairs used to filter collection
         metadata. Collections for which
         ``collection_metadata['key'] == value`` is not ``True`` for
         every key, value pair will be discarded.
         See documentation for ``basic_collection_terms`` for a
         description of the default selection criteria.
+        If ``None`` is passed, will default to ``basic_collection_terms()``
 
     collection_filter : Callable, default=empty_filter
         Collections for which `collection_filter(collection_metadata)`
         is ``False`` will be discarded.
 
-    image_terms : dict, default=basic_image_terms()
+    image_terms : dict, default=None
         Key, value pairs used to filter image metadata. Images for
         which ``image_metadata['key'] == value`` is not ``True`` for
         if image_filter != _empty_filter and image_terms =
         every key, value pair will be discarded.
         See documentation for ``basic_image_terms`` for a
         description of the default selection criteria.
+        Will default to ``basic_image_terms()`` if ``None`` is passed.
 
     image_filter : Callable, default=empty_filter
         Images for which `image_filter(image_metadata)` is ``False``
@@ -2626,6 +2636,11 @@ def fetch_neurovault(
             modify_date=GreaterThan(newest))
 
     """
+    if collection_terms is None:
+        collection_terms = basic_collection_terms()
+    if image_terms is None:
+        image_terms = basic_image_terms()
+
     if max_images == _DEFAULT_MAX_IMAGES:
         _print_if(
             (

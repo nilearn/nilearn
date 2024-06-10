@@ -38,8 +38,10 @@ PLOTTING_FUNCS_4D = {plot_prob_atlas, plot_carpet}
 PLOTTING_FUNCS_3D = ALL_PLOTTING_FUNCS.difference(PLOTTING_FUNCS_4D)
 
 
-def _add_nans_to_img(img, affine_mni=_affine_mni()):
+def _add_nans_to_img(img, affine_mni=None):
     """Add nans in test image data."""
+    if affine_mni is None:
+        affine_mni = _affine_mni()
     data = get_data(img)
     data[6, 5, 1] = np.nan
     data[1, 5, 2] = np.nan
@@ -50,7 +52,9 @@ def _add_nans_to_img(img, affine_mni=_affine_mni()):
 
 def test_mni152template_is_reordered():
     """See issue #2550."""
-    reordered_mni = reorder_img(load_mni152_template(resolution=2))
+    reordered_mni = reorder_img(
+        load_mni152_template(resolution=2), copy_header=True
+    )
     assert np.allclose(get_data(reordered_mni), get_data(MNI152TEMPLATE))
     assert np.allclose(reordered_mni.affine, MNI152TEMPLATE.affine)
     assert np.allclose(reordered_mni.shape, MNI152TEMPLATE.shape)

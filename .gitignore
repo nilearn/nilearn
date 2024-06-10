@@ -21,9 +21,10 @@ pip-log.txt
 
 .ropeproject/
 
-tags
-
 tmp
+
+#  prettier and other JS
+node_modules
 
 # Mac OS X
 .DS_Store
@@ -38,12 +39,18 @@ build
 dist/
 nilearn/_version.py
 
+# notebooks
+.ipynb_checkpoints
+
 # virtual environment
 env/
 venv/
 
 # testing
 .pytest_cache
+
+# CI benchmark
+maint_tools/*_runs_timing.*
 
 # coverage
 .coverage

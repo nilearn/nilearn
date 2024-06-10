@@ -87,7 +87,9 @@ fig = plotting.plot_surf_stat_map(
     threshold=1., bg_map=curv_right_sign, bg_on_data=True,
     engine=engine  # Specify the plotting engine here
 )
-fig.show()  # Display the figure as with matplotlib figures
+
+# Display the figure as with matplotlib figures
+# fig.show()
 
 # %%
 # When using ``matplolib`` as the plotting engine, a standard
