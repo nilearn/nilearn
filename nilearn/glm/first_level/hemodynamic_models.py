@@ -141,7 +141,7 @@ def glover_hrf(tr, oversampling=50, time_length=32.0, onset=0.0):
         undershoot=12.0,
         dispersion=0.9,
         u_dispersion=0.9,
-        ratio=0.35,
+        ratio=0.48,
     )
 
 
