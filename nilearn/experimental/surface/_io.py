@@ -11,7 +11,7 @@ from nilearn import surface as old_surface
 
 def read_array(array_file: Union[pathlib.Path, str]) -> np.ndarray:
     """Load surface data into a Numpy array."""
-    return old_surface.load_surf_data(array_file)
+    return old_surface.load_surf_data(array_file).T
 
 
 def read_mesh(mesh_file: Union[pathlib.Path, str]) -> Dict[str, np.ndarray]:

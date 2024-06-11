@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import abc
 import pathlib
+from pathlib import Path
 
 import numpy as np
 
@@ -18,28 +19,38 @@ class PolyData:
     """
 
     def __init__(
-        self, left: np.ndarray | None = None, right: np.ndarray | None = None
+        self,
+        left: np.ndarray | str | Path | None = None,
+        right: np.ndarray | str | Path | None = None,
     ) -> None:
         if left is None and right is None:
             raise ValueError(
                 "Cannot create an empty PolyData. "
                 "Either left or right (or both) must be provided."
             )
+
         parts = {}
         if left is not None:
+            if not isinstance(left, np.ndarray):
+                left = _io.read_array(left)
             parts["left"] = left
         if right is not None:
+            if not isinstance(right, np.ndarray):
+                right = _io.read_array(right)
             parts["right"] = right
+
         if len(parts) == 1:
             self.parts = parts
             self.shape = next(iter(self.parts.values())).shape
             return
+
         if parts["left"].shape[:-1] != parts["right"].shape[:-1]:
             raise ValueError(
                 f"Data arrays for keys 'left' and 'right' "
                 "have incompatible shapes: "
                 f"{parts['left'].shape} and {parts['right'].shape}"
             )
+
         self.parts = parts
         first_shape = next(iter(parts.values())).shape
         concat_dim = sum(p.shape[-1] for p in parts.values())
@@ -129,17 +140,24 @@ class PolyMesh:
     n_vertices: int
 
     def __init__(
-        self, left: Mesh | None = None, right: Mesh | None = None
+        self,
+        left: Mesh | str | Path | None = None,
+        right: Mesh | str | Path | None = None,
     ) -> None:
         if left is None and right is None:
             raise ValueError(
                 "Cannot create an empty PolyMesh. "
                 "Either left or right (or both) must be provided."
             )
+
         self.parts = {}
         if left is not None:
+            if not isinstance(left, Mesh):
+                left = FileMesh(left).loaded()
             self.parts["left"] = left
         if right is not None:
+            if not isinstance(right, Mesh):
+                right = FileMesh(right).loaded()
             self.parts["right"] = right
 
         self.n_vertices = sum(p.n_vertices for p in self.parts.values())
@@ -157,10 +175,9 @@ def _check_data_and_mesh_compat(mesh: PolyMesh, data: PolyData):
     for key in mesh_keys:
         if data.parts[key].shape[-1] != mesh.parts[key].n_vertices:
             raise ValueError(
-                "Data shape does not match number of vertices"
-                f" for '{key}':"
-                f"\ndata shape: {data.parts[key].shape}",
-                f"\nn vertices: {mesh.parts[key].n_vertices}",
+                f"Data shape does not match number of vertices for '{key}':\n"
+                f"- data shape: {data.parts[key].shape}\n"
+                f"- n vertices: {mesh.parts[key].n_vertices}"
             )
 
 
@@ -169,8 +186,8 @@ class SurfaceImage:
 
     def __init__(
         self,
-        mesh: PolyMesh | dict[str, Mesh],
-        data: PolyData | dict[str, Mesh],
+        mesh: PolyMesh | dict[str, Mesh | str | Path],
+        data: PolyData | dict[str, Mesh | str | Path],
     ) -> None:
         self.mesh = mesh if isinstance(mesh, PolyMesh) else PolyMesh(**mesh)
         self.data = data if isinstance(data, PolyData) else PolyData(**data)
@@ -179,3 +196,21 @@ class SurfaceImage:
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {getattr(self, 'shape', '')}>"
+
+    def to_filename(self, filename: str | Path):
+        """Save to file."""
+        for part in self.mesh.parts:
+            print(part)
+
+            filename = Path(filename)
+
+            hemi = ""
+            if "hemi-" not in filename.stem:
+                if part == "left":
+                    hemi = "_hemi-L"
+                elif part == "right":
+                    hemi = "_hemi-R"
+
+            self.mesh.parts[part].to_gifti(
+                filename.with_stem(f"{filename.stem}{hemi}")
+            )
