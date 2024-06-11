@@ -860,6 +860,8 @@ def reorder_img(img, resample=None, copy_header=False):
         # Identify the voxel size using a QR decomposition of the affine
         Q, R = np.linalg.qr(affine[:3, :3])
         target_affine = np.diag(np.abs(np.diag(R))[np.abs(Q).argmax(axis=1)])
+        # TODO switch to force_resample=True
+        # when bumping to version > 0.13
         return resample_img(
             img,
             target_affine=target_affine,
