@@ -18,6 +18,8 @@ hemisphere, negative in the left hemisphere).
 
 """
 
+from nilearn import plotting
+
 # %%
 # Fetch dataset
 # -------------
@@ -43,10 +45,8 @@ data = fetch_localizer_contrasts(
 # subjects.
 import matplotlib.pyplot as plt
 
-from nilearn import plotting
-
 subjects = data["ext_vars"]["participant_id"].tolist()
-fig, axes = plt.subplots(nrows=4, ncols=4)
+fig, axes = plt.subplots(nrows=4, ncols=4, figsize=(8, 8))
 for cidx, tmap in enumerate(data["tmaps"]):
     plotting.plot_glass_brain(
         tmap,
@@ -80,7 +80,7 @@ design_matrix = pd.DataFrame(
 # Next, we specify the model and fit it.
 from nilearn.glm.second_level import SecondLevelModel
 
-second_level_model = SecondLevelModel(smoothing_fwhm=8.0)
+second_level_model = SecondLevelModel(smoothing_fwhm=8.0, n_jobs=2)
 second_level_model = second_level_model.fit(
     second_level_input,
     design_matrix=design_matrix,
@@ -167,7 +167,7 @@ out_dict = non_parametric_inference(
     n_perm=500,  # 500 for the sake of time. Ideally, this should be 10,000.
     two_sided_test=False,
     smoothing_fwhm=8.0,
-    n_jobs=1,
+    n_jobs=2,
     threshold=0.001,
 )
 

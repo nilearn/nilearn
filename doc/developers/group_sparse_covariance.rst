@@ -18,11 +18,7 @@ Description
 
 :func:`group_sparse_covariance`, and :class:`GroupSparseCovariance` are
 two different interfaces to an implementation of the algorithm described
-in this article:
-
-    Jean Honorio and Dimitris Samaras.
-    "Simultaneous and Group-Sparse Multi-Task Learning of Gaussian Graphical
-    Models". arXiv:1207.4255 (17 July 2012). https://arxiv.org/abs/1207.4255.
+in :footcite:t:`Honorio2012`.
 
 The goal of the algorithm is to take a set of K covariance matrices as
 input, and estimate a set of K sparse precision matrices, using a
@@ -340,11 +336,7 @@ alpha. Above a critical value, the optimal precision matrices are
 fully sparse (i.e. diagonal). This critical value depends on the input
 covariance matrices, and can be obtained by ``compute_alpha_max``.
 The formula for computing this critical value can be obtained with
-techniques presented in:
-
-    Duchi, John, Stephen Gould, and Daphne Koller. 'Projected Subgradient
-    Methods for Learning Sparse Gaussians'. ArXiv E-prints 1206 (1 June
-    2012): 3249.
+techniques presented in :footcite:t:`Duchi2012`.
 
 This very same method can be also used for determining a lower
 critical value, for which the optimal precision matrices are fully
@@ -449,3 +441,9 @@ It is possible to disable the first criterion with ``the
 early_stopping`` keyword in :class:`GroupSparseCovarianceCV`. In that
 case, only the two latter criteria are used. This provides a mean to
 test for the validity of the heuristic.
+
+
+References
+----------
+
+.. footbibliography::

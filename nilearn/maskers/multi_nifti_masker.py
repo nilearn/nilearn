@@ -1,5 +1,6 @@
 """Transformer used to apply basic transformations \
 on multi subject MRI data."""
+
 # Author: Gael Varoquaux, Alexandre Abraham
 
 import collections.abc
@@ -10,7 +11,7 @@ from functools import partial
 from joblib import Memory, Parallel, delayed
 
 from nilearn import _utils, image, masking
-from nilearn.maskers import compute_middle_image
+from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.nifti_masker import NiftiMasker, _filter_and_mask
 
 
@@ -47,11 +48,14 @@ def _get_mask_strategy(strategy):
 
 @_utils.fill_doc
 class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
-    """Class for masking of Niimg-like objects.
+    """Applying a mask to extract time-series from multiple Niimg-like objects.
 
     MultiNiftiMasker is useful when dealing with image sets from multiple
-    subjects. Use case: integrates well with decomposition by MultiPCA and
-    CanICA (multi-subject models)
+    subjects.
+
+    Use case:
+    integrates well with decomposition by MultiPCA and CanICA
+    (multi-subject models)
 
     Parameters
     ----------
@@ -143,12 +147,14 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
         mask_strategy="background",
         mask_args=None,
         dtype=None,
-        memory=Memory(location=None),
+        memory=None,
         memory_level=0,
         n_jobs=1,
         verbose=0,
         **kwargs,
     ):
+        if memory is None:
+            memory = Memory(location=None)
         super().__init__(
             # Mask is provided or computed
             mask_img=mask_img,
@@ -234,7 +240,8 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
                     f"[{self.__class__.__name__}.fit] "
                     "Generation of a mask has been requested (imgs != None) "
                     "while a mask has been provided at masker creation. "
-                    "Given mask will be used."
+                    "Given mask will be used.",
+                    stacklevel=2,
                 )
 
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
@@ -262,6 +269,7 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
             target_shape=self.target_shape,
             interpolation="nearest",
             copy=False,
+            copy_header=True,
         )
 
         if self.target_affine is not None:
@@ -270,7 +278,7 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
             self.affine_ = self.mask_img_.affine
 
         # Load data in memory, while also checking that mask is binary/valid
-        data, _ = masking._load_mask_img(self.mask_img_, allow_empty=True)
+        data, _ = masking.load_mask_img(self.mask_img_, allow_empty=True)
 
         # Infer the number of elements (voxels) in the mask
         self.n_elements_ = int(data.sum())
@@ -287,6 +295,7 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
                     target_affine=self.affine_,
                     copy=False,
                     interpolation="nearest",
+                    copy_header=True,
                 )
 
             self._reporting_data["transform"] = [resampl_imgs, self.mask_img_]
@@ -355,11 +364,13 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
             target_fov=target_fov,
             memory=self.memory,
             memory_level=self.memory_level,
-            verbose=self.verbose,
         )
 
         if confounds is None:
             confounds = itertools.repeat(None, len(imgs_list))
+
+        if sample_mask is None:
+            sample_mask = itertools.repeat(None, len(imgs_list))
 
         # Ignore the mask-computing params: they are not useful and will
         # just invalidate the cache for no good reason
@@ -397,8 +408,9 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
                 confounds=cfs,
                 copy=copy,
                 dtype=self.dtype,
+                sample_mask=sms,
             )
-            for imgs, cfs in zip(niimg_iter, confounds)
+            for imgs, cfs, sms in zip(niimg_iter, confounds, sample_mask)
         )
         return data
 

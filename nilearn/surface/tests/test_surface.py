@@ -37,9 +37,8 @@ datadir = os.path.join(currdir, 'data')
 
 
 class MeshLikeObject:
-    """Class with attributes coordinates and
-    faces to be used for testing purposes.
-    """
+    """Class with attributes coordinates \
+       and faces to be used for testing purposes."""
 
     def __init__(self, coordinates, faces):
         self._coordinates = coordinates
@@ -55,9 +54,7 @@ class MeshLikeObject:
 
 
 class SurfaceLikeObject:
-    """Class with attributes mesh and
-    data to be used for testing purposes.
-    """
+    """Class with attributes mesh and data to be used for testing purposes."""
 
     def __init__(self, mesh, data):
         self._mesh = mesh
@@ -77,7 +74,7 @@ class SurfaceLikeObject:
 
 
 def test_load_surf_data_numpy_gt_1pt23():
-    """Test loading fsaverage surface
+    """Test loading fsaverage surface.
 
     Threw an error with numpy >=1.24.x
     but only a deprecaton warning with numpy <1.24.x.
@@ -374,46 +371,41 @@ def test_load_surf_mesh_file_gii(tmp_path):
     os.remove(filename_gii_mesh_no_face)
 
 
-def test_load_surf_mesh_file_freesurfer(tmp_path):
+@pytest.mark.parametrize("suffix", ['.pial',
+                                    '.inflated',
+                                    '.white',
+                                    '.orig',
+                                    'sphere'])
+def test_load_surf_mesh_file_freesurfer(suffix, tmp_path):
     mesh = generate_surf()
-    for suff in ['.pial', '.inflated', '.white', '.orig', 'sphere']:
-        fd, filename_fs_mesh = tempfile.mkstemp(suffix=suff,
-                                                dir=str(tmp_path))
-        os.close(fd)
-        nb.freesurfer.write_geometry(filename_fs_mesh, mesh[0], mesh[1])
-        assert len(load_surf_mesh(filename_fs_mesh)) == 2
-        assert_array_almost_equal(load_surf_mesh(filename_fs_mesh)[0],
-                                  mesh[0])
-        assert_array_almost_equal(load_surf_mesh(filename_fs_mesh)[1],
-                                  mesh[1])
-        os.remove(filename_fs_mesh)
+
+    _, filename_fs_mesh = tempfile.mkstemp(suffix=suffix,
+                                           dir=str(tmp_path))
+    nb.freesurfer.write_geometry(filename_fs_mesh, mesh[0], mesh[1])
+
+    assert len(load_surf_mesh(filename_fs_mesh)) == 2
+    assert_array_almost_equal(load_surf_mesh(filename_fs_mesh)[0], mesh[0])
+    assert_array_almost_equal(load_surf_mesh(filename_fs_mesh)[1], mesh[1])
 
 
-def test_load_surf_mesh_file_error(tmp_path):
+@pytest.mark.parametrize("suffix", ['.vtk', '.obj', '.mnc', '.txt'])
+def test_load_surf_mesh_file_error(suffix, tmp_path):
     # test if files with unexpected suffixes raise errors
     mesh = generate_surf()
-    wrong_suff = ['.vtk', '.obj', '.mnc', '.txt']
-    for suff in wrong_suff:
-        fd, filename_wrong = tempfile.mkstemp(suffix=suff,
-                                              dir=str(tmp_path))
-        os.close(fd)
-        nb.freesurfer.write_geometry(filename_wrong, mesh[0], mesh[1])
-        with pytest.raises(ValueError,
-                           match='input type is not recognized'
-                           ):
-            load_surf_mesh(filename_wrong)
-        os.remove(filename_wrong)
+    _, filename_wrong = tempfile.mkstemp(suffix=suffix, dir=str(tmp_path))
+    nb.freesurfer.write_geometry(filename_wrong, mesh[0], mesh[1])
+
+    with pytest.raises(ValueError, match='input type is not recognized'):
+        load_surf_mesh(filename_wrong)
 
 
 def test_load_surf_mesh_file_glob(tmp_path):
     mesh = generate_surf()
-    fd1, fname1 = tempfile.mkstemp(suffix='.pial',
-                                   dir=str(tmp_path))
-    os.close(fd1)
+    _, fname1 = tempfile.mkstemp(suffix='.pial', dir=str(tmp_path))
+
     nb.freesurfer.write_geometry(fname1, mesh[0], mesh[1])
-    fd2, fname2 = tempfile.mkstemp(suffix='.pial',
-                                   dir=str(tmp_path))
-    os.close(fd2)
+    _, fname2 = tempfile.mkstemp(suffix='.pial', dir=str(tmp_path))
+
     nb.freesurfer.write_geometry(fname2, mesh[0], mesh[1])
 
     with pytest.raises(ValueError, match='More than one file matching path'):
@@ -425,8 +417,6 @@ def test_load_surf_mesh_file_glob(tmp_path):
     assert len(load_surf_mesh(fname1)) == 2
     assert_array_almost_equal(load_surf_mesh(fname1)[0], mesh[0])
     assert_array_almost_equal(load_surf_mesh(fname1)[1], mesh[1])
-    os.remove(fname1)
-    os.remove(fname2)
 
 
 def test_load_surf_data_file_glob(tmp_path):
@@ -688,10 +678,10 @@ def test_sampling_affine(affine_eye):
     affine[-1, -1] = 1
     texture = surface._nearest_voxel_sampling(
         [img], mesh, affine=affine, radius=1, kind='ball')
-    assert_array_equal(texture[0], [1., 2., 1.])
+    assert_array_almost_equal(texture[0], [1.0, 2.0, 1.0], decimal=15)
     texture = surface._interpolation_sampling(
         [img], mesh, affine=affine, radius=0, kind='ball')
-    assert_array_almost_equal(texture[0], [1.1, 2., 1.])
+    assert_array_almost_equal(texture[0], [1.1, 2.0, 1.0], decimal=15)
 
 
 @pytest.mark.parametrize("kind", ["auto", "line", "ball"])
@@ -744,15 +734,15 @@ def test_choose_kind():
 
 
 def test_check_mesh():
-    mesh = surface._check_mesh('fsaverage5')
-    assert mesh is surface._check_mesh(mesh)
+    mesh = surface.check_mesh('fsaverage5')
+    assert mesh is surface.check_mesh(mesh)
     with pytest.raises(ValueError):
-        surface._check_mesh('fsaverage2')
+        surface.check_mesh('fsaverage2')
     mesh.pop('pial_left')
     with pytest.raises(ValueError):
-        surface._check_mesh(mesh)
+        surface.check_mesh(mesh)
     with pytest.raises(TypeError):
-        surface._check_mesh(surface.load_surf_mesh(mesh['pial_right']))
+        surface.check_mesh(surface.load_surf_mesh(mesh['pial_right']))
 
 
 def test_check_mesh_and_data(rng):

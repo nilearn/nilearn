@@ -5,7 +5,7 @@ from nilearn.experimental.surface import FileMesh, InMemoryMesh, SurfaceImage
 
 
 def test_compare_file_and_inmemory_mesh(mini_mesh, tmp_path):
-    left = mini_mesh["left_hemisphere"]
+    left = mini_mesh.parts["left"]
     gifti_file = tmp_path / "left.gii"
     left.to_gifti(gifti_file)
 
@@ -38,8 +38,8 @@ def test_data_shape_not_matching_mesh(mini_img, flip):
 def test_data_shape_inconsistent(make_mini_img):
     img = make_mini_img((7,))
     bad_data = {
-        "left_hemisphere": img.data["left_hemisphere"],
-        "right_hemisphere": img.data["right_hemisphere"][:4],
+        "left": img.data.parts["left"],
+        "right": img.data.parts["right"][:4],
     }
     with pytest.raises(ValueError, match="incompatible shapes"):
         SurfaceImage(img.mesh, bad_data)
@@ -48,6 +48,6 @@ def test_data_shape_inconsistent(make_mini_img):
 def test_data_keys_not_matching_mesh(mini_img):
     with pytest.raises(ValueError, match="same keys"):
         SurfaceImage(
-            {"left_hemisphere": mini_img.mesh["left_hemisphere"]},
+            {"left": mini_img.mesh.parts["left"]},
             mini_img.data,
         )

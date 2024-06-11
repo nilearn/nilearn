@@ -71,9 +71,9 @@ print(
 # Second, load the labels stored in a text file into array using pandas
 import pandas as pd
 
-session_target = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
+run_target = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
 # Now, we have the labels and will be useful while computing student's t-test
-haxby_labels = session_target["labels"]
+haxby_labels = run_target["labels"]
 
 # %%
 # We have the datasets in hand especially paths to the locations. Now, we do
@@ -109,7 +109,7 @@ from nilearn.plotting import plot_epi
 
 # First, compute the voxel-wise mean of smooth EPI image
 # (first argument) using image processing module `image`
-mean_img = image.mean_img(fmri_img)
+mean_img = image.mean_img(fmri_img, copy_header=True)
 # Second, we visualize the mean image with coordinates positioned manually
 plot_epi(mean_img, title="Smoothed mean EPI", cut_coords=cut_coords)
 
@@ -363,7 +363,13 @@ condition_names[np.where(condition_names == "scrambledpix")] = "scrambled"
 
 # %%
 # save the ROI 'atlas' to a Nifti file
-new_img_like(fmri_img, labels).to_filename("mask_atlas.nii.gz")
+from pathlib import Path
+
+output_dir = Path.cwd() / "results" / "plot_roi_extraction"
+output_dir.mkdir(exist_ok=True, parents=True)
+print(f"Output will be saved to: {output_dir}")
+
+new_img_like(fmri_img, labels).to_filename(output_dir / "mask_atlas.nii.gz")
 
 # %%
 # Plot the average in the different condition names

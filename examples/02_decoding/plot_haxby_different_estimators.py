@@ -6,13 +6,15 @@ Here we compare different classifiers on a visual object recognition
 decoding task.
 """
 
+# We start by loading data using nilearn dataset fetcher
+from nilearn import datasets
+from nilearn.image import get_data
+from nilearn.plotting import plot_stat_map, show
+
 # %%
 # Loading the data
 # ----------------
 
-# We start by loading data using nilearn dataset fetcher
-from nilearn import datasets
-from nilearn.image import get_data
 
 # by default 2nd subject data will be fetched
 haxby_dataset = datasets.fetch_haxby()
@@ -44,7 +46,7 @@ task_mask = np.logical_not(resting_state)
 categories = stimuli[task_mask].unique()
 
 # extract tags indicating to which acquisition run a tag belongs
-session_labels = labels["chunks"][task_mask]
+run_labels = labels["chunks"][task_mask]
 
 
 # Load the fMRI data
@@ -95,7 +97,7 @@ for classifier_name in sorted(classifiers):
         cv=cv,
     )
     t0 = time.time()
-    decoder.fit(fmri_niimgs, classification_target, groups=session_labels)
+    decoder.fit(fmri_niimgs, classification_target, groups=run_labels)
 
     classifiers_data[classifier_name] = {"score": decoder.cv_scores_}
     print(f"{classifier_name:10}: {time.time() - t0:.2f}s")
@@ -163,7 +165,7 @@ condition_mask = np.logical_or(stimuli == "face", stimuli == "house")
 stimuli = stimuli[condition_mask]
 assert len(stimuli) == 216
 fmri_niimgs_condition = index_img(func_filename, condition_mask)
-session_labels = labels["chunks"][condition_mask]
+run_labels = labels["chunks"][condition_mask]
 categories = stimuli.unique()
 assert len(categories) == 2
 
@@ -174,7 +176,7 @@ for classifier_name in sorted(classifiers):
         standardize="zscore_sample",
         cv=cv,
     )
-    decoder.fit(fmri_niimgs_condition, stimuli, groups=session_labels)
+    decoder.fit(fmri_niimgs_condition, stimuli, groups=run_labels)
     classifiers_data[classifier_name] = {}
     classifiers_data[classifier_name]["score"] = decoder.cv_scores_
     classifiers_data[classifier_name]["map"] = decoder.coef_img_["face"]
@@ -182,11 +184,9 @@ for classifier_name in sorted(classifiers):
 # %%
 # Finally, we plot the face vs house map for the different classifiers
 # Use the average :term:`EPI` as a background
-
 from nilearn.image import mean_img
-from nilearn.plotting import plot_stat_map, show
 
-mean_epi_img = mean_img(func_filename)
+mean_epi_img = mean_img(func_filename, copy_header=True)
 
 for classifier_name in sorted(classifiers):
     coef_img = classifiers_data[classifier_name]["map"]

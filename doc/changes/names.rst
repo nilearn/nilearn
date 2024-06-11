@@ -20,6 +20,8 @@
 
 .. _Alexandre Cionca: https://github.com/acionca
 
+.. _Alexandre Sayal: https://github.com/alexsayal
+
 .. _Alexis Thual: https://github.com/alexisthual
 
 .. _Alisha Kodibagkar: https://github.com/alishakodibagkar/
@@ -27,6 +29,8 @@
 .. _Amadeus Kanaan: https://github.com/amadeuskanaan
 
 .. _Ana Luisa Pinho: https://github.com/alpinho
+
+.. _Anand Joshi: https://github.com/ajoshiusc
 
 .. _Andrés Hoyos Idrobo: https://github.com/ahoyosid
 
@@ -55,6 +59,8 @@
 .. _Christian Horea: http://chymera.eu/
 
 .. _Christian Gerloff: https://github.com/ChristianGerloff
+
+.. _Christina Roßmanith: https://github.com/crossmanith
 
 .. _Colin Reininger: https://github.com/reiningc
 
@@ -87,6 +93,8 @@
 .. _Evan Edmond: https://evan.science/
 
 .. _Fabian Pedregosa: https://github.com/fabianp
+
+.. _Florent Pollet: https://florian6973.github.io/
 
 .. _Franz Liem: https://github.com/fliem
 
@@ -218,6 +226,8 @@
 
 .. _Paul Bogdan: https://github.com/paulcbogdan
 
+.. _Paul Reiners: https://github.com/paul-reiners
+
 .. _Paula Sanz-Leon: https://github.com/pausz
 
 .. _Peer Herholz: https://peerherholz.github.io/
@@ -264,9 +274,13 @@
 
 .. _Steven Meisler: https://www.stevenmeisler.com
 
+.. _Suramya Pokharel: https://github.com/SuramyaP
+
 .. _Sylvain Lan: https://github.com/SylvainLan
 
 .. _Sylvain Takerkart: https://github.com/SylvainTakerkart
+
+.. _Tamer Gezici: https://github.com/TamerGezici
 
 .. _Tarun Samanta: https://github.com/tarunsamanta2k20
 
@@ -285,6 +299,8 @@
 .. _Yaroslav Halchenko: https://github.com/yarikoptic
 
 .. _Yasmin Mzayek: https://github.com/ymzayek
+
+.. _Yichun Huang: https://github.com/YCHuang0610
 
 .. _Zvi Baratz: https://github.com/ZviBaratz
 

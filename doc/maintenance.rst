@@ -123,6 +123,50 @@ We welcome pull requests from all community members, if they follow the
 details on their process are available
 :sklearn:`here <developers/contributing.html#contributing-code>`).
 
+Using tox
+=========
+
+`Tox <See https://tox.wiki/en>`_ is set
+to facilitate testing and managing environments during development
+and ensure that the same commands can easily be run locally and in CI.
+
+Install it with:
+
+.. code-block:: bash
+
+    pip install tox
+
+You can set up certain environment or run certain command by calling ``tox``.
+
+Calling ``tox`` with no extra argument will simply run
+all the default commands defined in the tox configuration (``tox.ini``).
+
+Use ``tox list`` to view all environment descriptions.
+
+Use ``tox run`` to run a specific environment.
+
+Example
+
+.. code-block:: bash
+
+    tox run -e lint
+
+Some environments allow passing extra argument:
+
+.. code-block:: bash
+
+    # only run black
+    tox run -e lint -- black
+
+    # only run some tests
+    tox -e test_plotting -- nilearn/glm/tests/test_contrasts.py
+
+You can also run any arbitrary command in a given environment with ``tox exec``:
+
+.. code-block:: bash
+
+    tox exec -e test_latest -- python -m pytest nilearn/_utils/tests/test_data_gen.py
+
 
 How to make a release?
 ======================
@@ -141,6 +185,30 @@ The repository should be checked and updated in preparation for the release.
 One thing that **must** be done before the release is made is
 to update ``deprecated``, ``versionchanged`` and ``versionadded`` directives
 from the current ``[x.y.z].dev`` tag to the new version number.
+These directives are added in a function's docstring to indicate the version number, when, say, a new parameter is added or deprecated.
+
+For example, if a parameter ``param2`` was added in version ``x.y.z``, the docstring should be updated to:
+
+.. code-block:: python
+
+    def my_function(param1, param2):
+        """
+        Parameters
+        ----------
+        param1 : type
+            Description of param1.
+
+        param2 : type
+            Description of param2.
+
+        .. versionadded:: x.y.z
+
+        Returns
+        -------
+        output : type
+            Description of the output.
+        """
+        ...
 
 Additionally, make sure all deprecations that are supposed to be removed with this new version have been addressed.
 
@@ -160,6 +228,16 @@ Switch to a new branch locally:
 
 First we need to prepare the release by updating the file ``nilearn/doc/changes/latest.rst``
 to make sure all the new features, enhancements, and bug fixes are included in their respective sections.
+
+Then we need to make sure that all the entries in each section of the changelog
+in ``nilearn/doc/changes/latest.rst`` a) have a label, b) are sorted by their "label" alphabetically and c) are followed by an empty line.
+For example::
+
+    - :bdg-success:`API` ...
+
+    - :bdg-dark:`Code` ...
+
+    - :bdg-info:`Plotting` ...
 
 We also need to write a "Highlights" section promoting the most important additions that come with this new release.
 Finally, we need to change the title from ``x.y.z.dev`` to ``x.y.z``:
@@ -283,9 +361,12 @@ We are now ready to upload to ``Pypi``. Note that you will need to have an `acco
 
     twine upload dist/*
 
-
 Once the upload is completed, make sure everything looks good on `Pypi <https://pypi.org/project/nilearn/>`_.
 Otherwise you will probably have to fix the issue and start over a new release with the patch number incremented.
+
+
+Github release
+--------------
 
 At this point, we need to upload the binaries to GitHub and link them to the tag.
 To do so, go to the :nilearn-gh:`Nilearn GitHub page <tags>` under the "Releases" tab,
@@ -293,8 +374,24 @@ and edit the ``x.y.z`` tag by providing a description,
 and upload the distributions we just created (you can just drag and drop the files).
 
 
-Build and deploy the documentation
-----------------------------------
+Build of stable docs
+--------------------
+
+Once the new tagged github release is made following the step above,
+the Github Actions workflow ``release-docs.yml`` will be triggered automatically
+to build the stable docs and push them
+to our github pages repository ``nilearn/nilearn.github.io``.
+The workflow can also be triggered manually from the Actions tab.
+
+
+Build and deploy the documentation manually
+-------------------------------------------
+
+.. note::
+
+    This step is now automated as described above. If there is a need to run it
+    manually please follow the instructions below.
+
 
 Before building the documentation, make sure that the following LaTeX
 dependencies are installed on your system:
@@ -328,13 +425,13 @@ See available linux distributions of texlive-latex-base and texlive-latex-extra:
 - https://pkgs.org/search/?q=texlive-latex-base
 - https://pkgs.org/search/?q=texlive-latex-extra
 
-We now need to update the documentation. Make sure to change ``x.y.z`` to the
-current release version:
+We now need to update the documentation.
 
 .. code-block:: bash
 
     cd doc
-    make install VERSIONTAG=x.y.z
+    export VERSIONTAG=$(git describe --tags --abbrev=0)
+    make install
 
 
 This will build the documentation (beware, this is time consuming...)

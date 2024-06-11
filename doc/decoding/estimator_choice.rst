@@ -149,7 +149,7 @@ In :class:`nilearn.decoding.DecoderRegressor` you can use some of these objects 
    * What is done to the data  **before** applying the estimator is
      often  **more important** than the choice of estimator. Typically,
      standardizing the data is important, smoothing can often be useful,
-     and nuisance effects, such as session effect, must be removed.
+     and nuisance effects, such as run effect, must be removed.
 
    * Many more estimators are available in scikit-learn (see the
      `scikit-learn documentation on supervised learning

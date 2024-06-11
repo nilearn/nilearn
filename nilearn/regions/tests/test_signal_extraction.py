@@ -1,4 +1,5 @@
 """Test for "region" module."""
+
 # Author: Ph. Gervais
 
 import warnings
@@ -53,7 +54,9 @@ N_REGIONS = 8
 N_TIMEPOINTS = 17
 
 
-def _make_label_data(shape=_shape_3d_default()):
+def _make_label_data(shape=None):
+    if shape is None:
+        shape = _shape_3d_default()
     labels_data = np.zeros(shape, dtype="int32")
     h0, h1, h2 = (s // 2 for s in shape)
     labels_data[:h0, :h1, :h2] = 1
@@ -120,7 +123,7 @@ def _all_voxel_of_each_region_have_same_values(
 
 
 def test_check_shape_and_affine_compatibility_without_dim(img_3d_zeros_eye):
-    """Ensure correct behaviour for valid data without dim"""
+    """Ensure correct behaviour for valid data without dim."""
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         _check_shape_and_affine_compatibility(
@@ -131,7 +134,7 @@ def test_check_shape_and_affine_compatibility_without_dim(img_3d_zeros_eye):
 def test_check_shape_and_affine_compatibility_with_dim(
     img_3d_zeros_eye, img_4d_zeros_eye
 ):
-    """Ensure correct behaviour for valid data without dim"""
+    """Ensure correct behaviour for valid data without dim."""
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         _check_shape_and_affine_compatibility(
@@ -365,6 +368,35 @@ def test_signals_extraction_with_labels_without_mask(
     assert labels_r == list(range(1, 9))
 
 
+def test_signals_extraction_with_labels_without_mask_return_masked_atlas(
+    signals, labels_img
+):
+    """Test masked_atlas is correct in conversion between signals and images \
+    using regions defined by labels."""
+    data_img = signals_to_img_labels(signals=signals, labels_img=labels_img)
+
+    # test return_masked_atlas
+    (
+        _,
+        _,
+        masked_atlas_r,
+    ) = img_to_signals_labels(
+        imgs=data_img,
+        labels_img=labels_img,
+        return_masked_atlas=True,
+    )
+
+    labels_data = get_data(labels_img)
+    labels_data_r = get_data(masked_atlas_r)
+
+    # masked_atlas_r should be the same as labels_img
+    assert_equal(labels_data_r, labels_data)
+
+    # labels should be the same as before
+    # the labels_img does not contain background
+    assert list(np.unique(labels_data_r)) == list(range(1, 9))
+
+
 def test_signals_extraction_with_labels_with_mask(
     signals, labels_img, labels_data, mask_img, shape_3d_default, tmp_path
 ):
@@ -407,6 +439,39 @@ def test_signals_extraction_with_labels_with_mask(
 
     assert_almost_equal(signals_r, signals)
     assert labels_r == list(range(1, 9))
+
+
+def test_signals_extraction_with_labels_with_mask_return_masked_atlas(
+    signals, labels_img, mask_img
+):
+    """Test masked_atlas is correct in conversion between signals and images \
+    using regions defined by labels and a mask."""
+    data_img = signals_to_img_labels(
+        signals=signals, labels_img=labels_img, mask_img=mask_img
+    )
+
+    # test return_masked_atlas
+    # create a mask_img with only 3 regions
+    mask_img = _create_mask_with_3_regions_from_labels_data(
+        get_data(labels_img), labels_img.affine
+    )
+
+    (
+        _,
+        _,
+        masked_atlas_r,
+    ) = img_to_signals_labels(
+        imgs=data_img,
+        labels_img=labels_img,
+        mask_img=mask_img,
+        return_masked_atlas=True,
+    )
+
+    labels_data_r = get_data(masked_atlas_r)
+
+    # labels should be masked and only contain 3 regions
+    # and the background
+    assert list(np.unique(labels_data_r)) == [0, 1, 2, 5]
 
 
 def test_signal_extraction_with_maps(affine_eye, shape_3d_default, rng):
@@ -542,6 +607,22 @@ def test_img_to_signals_labels_warnings(labeled_regions, fmri_img):
     # all regions must be kept
     assert labels_signals.shape == (N_TIMEPOINTS, 8)
     assert len(labels_labels) == 8
+
+    # test return_masked_atlas deprecation warning
+    with pytest.warns(
+        DeprecationWarning,
+        match='After version 0.13. "img_to_signals_labels" will also return '
+        'the "masked_atlas". Meanwhile "return_masked_atlas" parameter can be '
+        "used to toggle this behavior. In version 0.15, "
+        '"return_masked_atlas" parameter will be removed.',
+    ):
+        img_to_signals_labels(
+            imgs=fmri_img,
+            labels_img=labeled_regions,
+            mask_img=mask_img,
+            keep_masked_labels=False,
+            return_masked_atlas=False,
+        )
 
 
 def test_img_to_signals_maps_warnings(

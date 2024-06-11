@@ -11,7 +11,6 @@ from numpy.testing import (
 from nilearn.glm.first_level.hemodynamic_models import (
     _calculate_tr,
     _hrf_kernel,
-    _orthogonalize,
     _regressor_names,
     _resample_regressor,
     _sample_condition,
@@ -19,6 +18,7 @@ from nilearn.glm.first_level.hemodynamic_models import (
     glover_dispersion_derivative,
     glover_hrf,
     glover_time_derivative,
+    orthogonalize,
     spm_dispersion_derivative,
     spm_hrf,
     spm_time_derivative,
@@ -91,7 +91,7 @@ def test_orthogonalize(rng):
     """Test that the orthogonalization is OK."""
     X = rng.standard_normal(size=(100, 5))
 
-    X = _orthogonalize(X)
+    X = orthogonalize(X)
 
     K = np.dot(X.T, X)
     K -= np.diag(np.diag(K))
@@ -104,7 +104,7 @@ def test_orthogonalize_trivial(rng):
     X = rng.standard_normal(size=100)
     Y = X.copy()
 
-    X = _orthogonalize(X)
+    X = orthogonalize(X)
 
     assert_array_equal(Y, X)
 

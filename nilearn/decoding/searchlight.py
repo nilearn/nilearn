@@ -2,6 +2,7 @@
 of the fine-grained patterns of information in fMRI analysis, \
 in which multivariate statistical relationships are iteratively tested \
 in the neighborhood of each location of a domain."""
+
 # Authors : Vincent Michel (vm.michel@gmail.com)
 #           Alexandre Gramfort (alexandre.gramfort@inria.fr)
 #           Philippe Gervais (philippe.gervais@inria.fr)
@@ -311,7 +312,7 @@ class SearchLight(BaseEstimator):
             process_mask_img = self.mask_img
 
         # Compute world coordinates of the seeds
-        process_mask, process_mask_affine = masking._load_mask_img(
+        process_mask, process_mask_affine = masking.load_mask_img(
             process_mask_img
         )
         process_mask_coords = np.where(process_mask != 0)

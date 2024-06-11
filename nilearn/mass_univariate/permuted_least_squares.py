@@ -1,5 +1,6 @@
 """Massively Univariate Linear Model estimated \
 with OLS and permutation test."""
+
 # Author: Benoit Da Mota, <benoit.da_mota@inria.fr>, sept. 2011
 #         Virgile Fritsch, <virgile.fritsch@inria.fr>, jan. 2014
 import sys
@@ -16,12 +17,12 @@ from sklearn.utils import check_random_state
 from nilearn import image
 from nilearn.masking import apply_mask
 from nilearn.mass_univariate._utils import (
-    _calculate_cluster_measures,
-    _calculate_tfce,
-    _normalize_matrix_on_axis,
-    _null_to_p,
-    _orthonormalize_matrix,
-    _t_score_with_covars_and_normalized_design,
+    calculate_cluster_measures,
+    calculate_tfce,
+    normalize_matrix_on_axis,
+    null_to_p,
+    orthonormalize_matrix,
+    t_score_with_covars_and_normalized_design,
 )
 
 
@@ -90,7 +91,7 @@ def _permuted_ols_on_chunk(
 
     intercept_test : boolean, default=True
         Change the permutation scheme (swap signs for intercept,
-        switch labels otherwise). See :footcite:`Fisher1935`.
+        switch labels otherwise). See :footcite:t:`Fisher1935`.
 
     two_sided_test : boolean, default=True
         If True, performs an unsigned t-test. Both positive and negative
@@ -207,7 +208,7 @@ def _permuted_ols_on_chunk(
 
         # OLS regression on randomized data
         perm_scores = np.asfortranarray(
-            _t_score_with_covars_and_normalized_design(
+            t_score_with_covars_and_normalized_design(
                 tested_vars, target_vars, confounding_vars
             )
         )
@@ -244,7 +245,7 @@ def _permuted_ols_on_chunk(
             # In either case, the maximum absolute value is the one we want.
             h0_tfce_part[:, i_perm] = np.nanmax(
                 np.fabs(
-                    _calculate_tfce(
+                    calculate_tfce(
                         arr4d,
                         bin_struct=bin_struct,
                         two_sided_test=two_sided_test,
@@ -260,7 +261,7 @@ def _permuted_ols_on_chunk(
             (
                 h0_csfwe_part[:, i_perm],
                 h0_cmfwe_part[:, i_perm],
-            ) = _calculate_cluster_measures(
+            ) = calculate_cluster_measures(
                 arr4d,
                 threshold,
                 bin_struct,
@@ -348,9 +349,9 @@ def permuted_ols(
         to the explanatory and confounding variates.
 
         In a group-level analysis, the samples will typically be voxels
-        (for volumetric data) or vertices (for surface data), while the
-        descriptors will generally be images, such as run-wise z-statistic
-        maps.
+        (for volumetric data) or :term:`vertices<vertex>` (for surface data),
+        while the descriptors will generally be images,
+        such as run-wise z-statistic maps.
 
     confounding_vars : array-like, shape=(n_samples, n_covars), optional
         Confounding variates (covariates), fitted but not tested.
@@ -728,7 +729,7 @@ def permuted_ols(
     # OLS regression on original data
     if confounding_vars is not None:
         # step 1: extract effect of covars from target vars
-        covars_orthonormalized = _orthonormalize_matrix(confounding_vars)
+        covars_orthonormalized = orthonormalize_matrix(confounding_vars)
         if not covars_orthonormalized.flags["C_CONTIGUOUS"]:
             # useful to developer
             warnings.warn("Confounding variates not C_CONTIGUOUS.")
@@ -736,7 +737,7 @@ def permuted_ols(
                 covars_orthonormalized
             )
 
-        targetvars_normalized = _normalize_matrix_on_axis(
+        targetvars_normalized = normalize_matrix_on_axis(
             target_vars
         ).T  # faster with F-ordered target_vars_chunk
         if not targetvars_normalized.flags["C_CONTIGUOUS"]:
@@ -750,29 +751,27 @@ def permuted_ols(
         targetvars_resid_covars = targetvars_normalized - np.dot(
             beta_targetvars_covars, covars_orthonormalized.T
         )
-        targetvars_resid_covars = _normalize_matrix_on_axis(
+        targetvars_resid_covars = normalize_matrix_on_axis(
             targetvars_resid_covars, axis=1
         )
 
         # step 2: extract effect of covars from tested vars
-        testedvars_normalized = _normalize_matrix_on_axis(
-            tested_vars.T, axis=1
-        )
+        testedvars_normalized = normalize_matrix_on_axis(tested_vars.T, axis=1)
         beta_testedvars_covars = np.dot(
             testedvars_normalized, covars_orthonormalized
         )
         testedvars_resid_covars = testedvars_normalized - np.dot(
             beta_testedvars_covars, covars_orthonormalized.T
         )
-        testedvars_resid_covars = _normalize_matrix_on_axis(
+        testedvars_resid_covars = normalize_matrix_on_axis(
             testedvars_resid_covars, axis=1
         ).T.copy()
 
         n_covars = confounding_vars.shape[1]
 
     else:
-        targetvars_resid_covars = _normalize_matrix_on_axis(target_vars).T
-        testedvars_resid_covars = _normalize_matrix_on_axis(tested_vars).copy()
+        targetvars_resid_covars = normalize_matrix_on_axis(target_vars).T
+        testedvars_resid_covars = normalize_matrix_on_axis(tested_vars).copy()
         covars_orthonormalized = None
         n_covars = 0
 
@@ -790,7 +789,7 @@ def permuted_ols(
     # step 3: original regression (= regression on residuals + adjust t-score)
     # compute t score map of each tested var for original data
     # scores_original_data is in samples-by-regressors shape
-    scores_original_data = _t_score_with_covars_and_normalized_design(
+    scores_original_data = t_score_with_covars_and_normalized_design(
         testedvars_resid_covars,
         targetvars_resid_covars.T,
         covars_orthonormalized,
@@ -803,7 +802,7 @@ def permuted_ols(
         scores_4d = masker.inverse_transform(
             scores_original_data.T
         ).get_fdata()
-        tfce_original_data = _calculate_tfce(
+        tfce_original_data = calculate_tfce(
             scores_4d,
             bin_struct=bin_struct,
             two_sided_test=two_sided_test,
@@ -963,7 +962,7 @@ def permuted_ols(
 
             # Calculate p-values from size/mass values and associated h0s
             for metric in ["mass", "size"]:
-                p_vals = _null_to_p(
+                p_vals = null_to_p(
                     cluster_dict[f"{metric}_regressor"],
                     cluster_dict[f"{metric}_h0"][i_regressor, :],
                     "larger",

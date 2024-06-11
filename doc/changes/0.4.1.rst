@@ -30,13 +30,13 @@ Changes
 Bug fixes
 ---------
 
-- :bdg-info:`Plotting` Fix issues using function :func:`~plotting.plot_connectome` when string is passed in ``node_color`` with display modes left and right hemispheric cuts in the glass brain.
-
-- :bdg-info:`Plotting` Fix bug while plotting only coordinates using ``add_markers`` on glass brain (:gh:`1595` by `Kamalakar Reddy Daddy`_).
+- :bdg-dark:`Code` Fix bug loading :class:`~nibabel.nifti2.Nifti2Image`.
 
 - :bdg-dark:`Code` Fix issues with estimators in decomposition module when input images are given in glob patterns.
 
-- :bdg-dark:`Code` Fix bug loading :class:`~nibabel.nifti2.Nifti2Image`.
+- :bdg-info:`Plotting` Fix issues using function :func:`~plotting.plot_connectome` when string is passed in ``node_color`` with display modes left and right hemispheric cuts in the glass brain.
+
+- :bdg-info:`Plotting` Fix bug while plotting only coordinates using ``add_markers`` on glass brain (:gh:`1595` by `Kamalakar Reddy Daddy`_).
 
 - :bdg-info:`Plotting` Fix bug while adjusting contrast of the background template while using function :func:`~plotting.plot_prob_atlas`.
 

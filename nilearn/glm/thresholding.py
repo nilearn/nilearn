@@ -5,6 +5,7 @@ discovery rate control, false discovery proportion in clusters.
 Author: Bertrand Thirion, 2015 -- 2019
 
 """
+
 import warnings
 
 import numpy as np
@@ -104,7 +105,7 @@ def fdr_threshold(z_vals, alpha):
     p_vals = norm.sf(z_vals_)
     n_samples = len(p_vals)
     pos = p_vals < alpha * np.linspace(1 / n_samples, 1, n_samples)
-    return z_vals_[pos][-1] - 1.0e-12 if pos.any() else np.infty
+    return z_vals_[pos][-1] - 1.0e-12 if pos.any() else np.inf
 
 
 def cluster_level_inference(
@@ -113,7 +114,7 @@ def cluster_level_inference(
     """Report the proportion of active voxels for all clusters \
     defined by the input threshold.
 
-    This implements the method described in :footcite:`Rosenblatt2018`.
+    This implements the method described in :footcite:t:`Rosenblatt2018`.
 
     Parameters
     ----------
@@ -300,6 +301,7 @@ def threshold_stats_img(
         two_sided=two_sided,
         mask_img=mask_img,
         copy=True,
+        copy_header=True,
     )
 
     return stat_img, threshold

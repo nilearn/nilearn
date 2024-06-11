@@ -10,8 +10,7 @@ from nibabel import Nifti1Image
 from nilearn import datasets, image
 from nilearn.image import get_data, new_img_like
 from nilearn.plotting import html_stat_map
-
-from ..js_plotting_utils import colorscale
+from nilearn.plotting.js_plotting_utils import colorscale
 
 
 def _check_html(html_view, title=None):
@@ -23,11 +22,13 @@ def _check_html(html_view, title=None):
         assert f"<title>{title}</title>" in str(html_view)
 
 
-def _simulate_img(affine=np.eye(4)):
+def _simulate_img(affine=None):
     """Simulate data with one "spot".
 
     Returns: img, data
     """
+    if affine is None:
+        affine = np.eye(4)
     data = np.zeros([8, 8, 8])
     data[4, 4, 4] = 1
     img = Nifti1Image(data, affine)
@@ -358,7 +359,12 @@ def test_view_img():
     mni = datasets.load_mni152_template(resolution=2)
     with warnings.catch_warnings(record=True) as w:
         # Create a fake functional image by resample the template
-        img = image.resample_img(mni, target_affine=3 * np.eye(3))
+        img = image.resample_img(
+            mni,
+            target_affine=3 * np.eye(3),
+            copy_header=True,
+            force_resample=True,
+        )
         html_view = html_stat_map.view_img(img)
         _check_html(html_view, title="Slice viewer")
         html_view = html_stat_map.view_img(
@@ -377,6 +383,8 @@ def test_view_img():
         html_view = html_stat_map.view_img(img_4d, threshold=2.0, vmax=4.0)
         _check_html(html_view)
         html_view = html_stat_map.view_img(img_4d, threshold=1e6)
+        _check_html(html_view)
+        html_view = html_stat_map.view_img(img_4d, width_view=1000)
         _check_html(html_view)
 
     # Check that all warnings were expected

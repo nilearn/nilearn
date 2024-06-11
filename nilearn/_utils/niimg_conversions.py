@@ -1,4 +1,5 @@
 """Conversion utilities."""
+
 import glob
 import itertools
 import os.path
@@ -87,9 +88,8 @@ def iter_check_niimg(
     atleast_4d=False,
     target_fov=None,
     dtype=None,
-    memory=Memory(location=None),
+    memory=None,
     memory_level=0,
-    verbose=0,
 ):
     """Iterate over a list of niimgs and do sanity checks and resampling.
 
@@ -113,23 +113,23 @@ def iter_check_niimg(
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
 
-    memory : instance of joblib.Memory or string, default=Memory(location=None)
+    memory : instance of joblib.Memory or string, default=None
         Used to cache the masking process.
-        By default, no caching is done. If a string is given, it is the
-        path to the caching directory.
+        By default, no caching is done.
+        If a string is given, it is the path to the caching directory.
+        If ``None`` is passed will default to ``Memory(location=None)``.
 
     memory_level : integer, default=0
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
-
-    verbose : integer, default=0
-        Indicate the level of verbosity. By default, nothing is printed.
 
     See Also
     --------
         check_niimg, check_niimg_3d, check_niimg_4d
 
     """
+    if memory is None:
+        memory = Memory(location=None)
     # If niimgs is a string, use glob to expand it to the matching filenames.
     niimgs = resolve_globbing(niimgs)
 
@@ -168,7 +168,12 @@ def iter_check_niimg(
                         memory,
                         func_memory_level=2,
                         memory_level=memory_level,
-                    )(niimg, target_affine=ref_fov[0], target_shape=ref_fov[1])
+                    )(
+                        niimg,
+                        target_affine=ref_fov[0],
+                        target_shape=ref_fov[1],
+                        copy_header=True,
+                    )
                 else:
                     raise ValueError(
                         "Field of view of image #%d is different from "
@@ -306,7 +311,9 @@ def check_niimg(
             return iter_check_niimg(
                 niimg, ensure_ndim=ensure_ndim, dtype=dtype
             )
-        return concat_niimgs(niimg, ensure_ndim=ensure_ndim, dtype=dtype)
+        return ni.image.concat_imgs(
+            niimg, ensure_ndim=ensure_ndim, dtype=dtype
+        )
 
     # Otherwise, it should be a filename or a SpatialImage, we load it
     niimg = load_niimg(niimg, dtype=dtype)
@@ -399,143 +406,11 @@ def check_niimg_4d(niimg, return_iterator=False, dtype=None):
     Notes
     -----
     This function is the equivalent to check_niimg_3d() for Niimg-like objects
-    with a session level.
+    with a run level.
 
     Its application is idempotent.
 
     """
     return check_niimg(
         niimg, ensure_ndim=4, return_iterator=return_iterator, dtype=dtype
-    )
-
-
-def concat_niimgs(
-    niimgs,
-    dtype=np.float32,
-    ensure_ndim=None,
-    memory=Memory(location=None),
-    memory_level=0,
-    auto_resample=False,
-    verbose=0,
-):
-    """Concatenate a list of 3D/4D niimgs of varying lengths.
-
-    The niimgs list can contain niftis/paths to images of varying dimensions
-    (i.e., 3D or 4D) as well as different 3D shapes and affines, as they
-    will be matched to the first image in the list if auto_resample=True.
-
-    Parameters
-    ----------
-    niimgs : iterable of Niimg-like objects or glob pattern
-        See :ref:`extracting_data`.
-        Niimgs to concatenate.
-
-    dtype : numpy dtype, default=np.float32
-        The dtype of the returned image.
-
-    ensure_ndim : integer, optional
-        Indicate the dimensionality of the expected niimg. An
-        error is raised if the niimg is of another dimensionality.
-
-    auto_resample : boolean, default=False
-        Converts all images to the space of the first one.
-
-    verbose : int, default=0
-        Controls the amount of verbosity (0 means no messages).
-
-    memory : instance of joblib.Memory or string, default=Memory(location=None)
-        Used to cache the resampling process.
-        By default, no caching is done. If a string is given, it is the
-        path to the caching directory.
-
-    memory_level : integer, default=0
-        Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching.
-
-    Returns
-    -------
-    concatenated : nibabel.Nifti1Image
-        A single image.
-
-    See Also
-    --------
-    nilearn.image.index_img
-
-    """
-    from ..image import new_img_like  # avoid circular imports
-
-    target_fov = "first" if auto_resample else None
-
-    # We remove one to the dimensionality because of the list is one dimension.
-    ndim = None
-    if ensure_ndim is not None:
-        ndim = ensure_ndim - 1
-
-    # If niimgs is a string, use glob to expand it to the matching filenames.
-    niimgs = resolve_globbing(niimgs)
-
-    # First niimg is extracted to get information and for new_img_like
-    first_niimg = None
-
-    iterator, literator = itertools.tee(iter(niimgs))
-    try:
-        first_niimg = check_niimg(next(literator), ensure_ndim=ndim)
-    except StopIteration:
-        raise TypeError("Cannot concatenate empty objects")
-    except DimensionError as exc:
-        # Keep track of the additional dimension in the error
-        exc.increment_stack_counter()
-        raise
-
-    # If no particular dimensionality is asked, we force consistency wrt the
-    # first image
-    if ndim is None:
-        ndim = len(first_niimg.shape)
-
-    if ndim not in [3, 4]:
-        raise TypeError(
-            "Concatenated images must be 3D or 4D. You gave a "
-            f"list of {ndim}D images"
-        )
-
-    lengths = [first_niimg.shape[-1] if ndim == 4 else 1]
-    for niimg in literator:
-        # We check the dimensionality of the niimg
-        try:
-            niimg = check_niimg(niimg, ensure_ndim=ndim)
-        except DimensionError as exc:
-            # Keep track of the additional dimension in the error
-            exc.increment_stack_counter()
-            raise
-        lengths.append(niimg.shape[-1] if ndim == 4 else 1)
-
-    target_shape = first_niimg.shape[:3]
-    if dtype is None:
-        dtype = _get_data(first_niimg).dtype
-    data = np.ndarray(target_shape + (sum(lengths),), order="F", dtype=dtype)
-    cur_4d_index = 0
-    for index, (size, niimg) in enumerate(
-        zip(
-            lengths,
-            iter_check_niimg(
-                iterator,
-                atleast_4d=True,
-                target_fov=target_fov,
-                memory=memory,
-                memory_level=memory_level,
-            ),
-        )
-    ):
-        if verbose > 0:
-            if isinstance(niimg, str):
-                nii_str = f"image {niimg}"
-            else:
-                nii_str = f"image #{index}"
-            print(f"Concatenating {index + 1}: {nii_str}")
-
-        data[..., cur_4d_index : cur_4d_index + size] = _get_data(niimg)
-        cur_4d_index += size
-
-    return new_img_like(
-        first_niimg, data, first_niimg.affine, copy_header=True
     )

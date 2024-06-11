@@ -112,7 +112,7 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
 
     In case of positive numbers, this mean is the usual geometric mean.
 
-    See Algorithm 3 of :footcite:`Fletcher2007`.
+    See Algorithm 3 of :footcite:t:`Fletcher2007`.
 
     References
     ----------
@@ -387,7 +387,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
     kind : {"covariance", "correlation", "partial correlation",\
             "tangent", "precision"}, default='covariance'
         The matrix kind.
-        For the use of "tangent" see :footcite:`Varoquaux2010b`.
+        For the use of "tangent" see :footcite:t:`Varoquaux2010b`.
 
     vectorize : bool, default=False
         If True, connectivity matrices are reshaped into 1D arrays and only
@@ -408,8 +408,10 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-    cov_estimator_ : estimator object
+    cov_estimator_ : estimator object, default=None
         A new covariance estimator with the same parameters as cov_estimator.
+        If ``None`` is passed,
+        defaults to ``LedoitWolf(store_precision=False)``.
 
     mean_ : numpy.ndarray
         The mean connectivity matrix across subjects. For 'tangent' kind,
@@ -429,12 +431,14 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
     def __init__(
         self,
-        cov_estimator=LedoitWolf(store_precision=False),
+        cov_estimator=None,
         kind="covariance",
         vectorize=False,
         discard_diagonal=False,
         standardize=True,
     ):
+        if cov_estimator is None:
+            cov_estimator = LedoitWolf(store_precision=False)
         self.cov_estimator = cov_estimator
         self.kind = kind
         self.vectorize = vectorize
@@ -506,7 +510,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         if self.kind == "correlation":
             covariances_std = [
                 self.cov_estimator_.fit(
-                    signal._standardize(
+                    signal.standardize_signal(
                         x,
                         detrend=False,
                         standardize=self.standardize,

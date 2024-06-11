@@ -15,10 +15,8 @@ variables from :term:`fMRIPrep` outputs while following some implementation
 guideline of :term:`fMRIPrep` confounds documentation
 `<https://fmriprep.org/en/stable/outputs.html#confounds>`_.
 
-One reference that discusses the importance of confounds is `Varoquaux and
-Craddock, Learning and comparing functional connectomes across subjects,
-NeuroImage 2013
-<https://doi.org/10.1016/j.neuroimage.2013.04.007>`_.
+One reference that discusses the importance of confounds
+is :footcite:t:`Varoquaux2013`.
 
 This is just a code example, see the :ref:`corresponding section in the
 documentation <parcellation_time_series>` for more.
@@ -187,8 +185,8 @@ confounds_scrub, sample_mask = load_confounds(
     motion="basic",
     wm_csf="basic",
     scrub=5,
-    fd_threshold=0.2,
-    std_dvars_threshold=3,
+    fd_threshold=0.5,
+    std_dvars_threshold=1.5,
 )
 
 print(
@@ -260,8 +258,8 @@ plotting.plot_matrix(
 # :func:`nilearn.interfaces.fmriprep.load_confounds`, one can use a predefined
 # strategy with :func:`nilearn.interfaces.fmriprep.load_confounds_strategy`.
 # Based on the confound variables generated through :term:`fMRIPrep`, and past
-# benchmarks studies (:footcite:`Ciric2017`, :footcite:`Parker2018`): `simple`,
-# `scrubbing`, `compcor`, `ica_aroma`.
+# benchmarks studies (:footcite:t:`Ciric2017`, :footcite:t:`Parker2018`):
+# `simple`, `scrubbing`, `compcor`, `ica_aroma`.
 # The following examples shows how to use the `simple` strategy and overwrite
 # the motion default to basic.
 

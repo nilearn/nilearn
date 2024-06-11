@@ -1,4 +1,5 @@
 """Test nilearn.maskers.nifti_spheres_masker."""
+
 import warnings
 
 import nibabel
@@ -9,6 +10,13 @@ from numpy.testing import assert_array_almost_equal, assert_array_equal
 from nilearn._utils import data_gen
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiSpheresMasker
+
+try:
+    import matplotlib as mpl  # noqa: F401
+except ImportError:
+    have_mpl = False
+else:
+    have_mpl = True
 
 
 def test_seed_extraction(rng):
@@ -390,3 +398,16 @@ def test_nifti_spheres_masker_io_shapes(rng, shape_3d_default, affine_eye):
 
     with pytest.raises(ValueError):
         masker.inverse_transform(data_2d.T)
+
+
+@pytest.mark.skipif(
+    have_mpl, reason="Test requires matplotlib to be not installed."
+)
+def test_nifti_spheres_masker_reporting_mpl_warning():
+    """Raise warning after exception if matplotlib is not installed."""
+    with warnings.catch_warnings(record=True) as warning_list:
+        result = NiftiSpheresMasker([(1, 1, 1)]).fit().generate_report()
+
+    assert len(warning_list) == 1
+    assert issubclass(warning_list[0].category, ImportWarning)
+    assert result == [None]

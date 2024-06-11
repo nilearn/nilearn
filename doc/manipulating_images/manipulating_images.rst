@@ -148,11 +148,11 @@ Relevant functions:
   :func:`nilearn.masking.compute_brain_mask`.
 * compute a mask from images with a flat background:
   :func:`nilearn.masking.compute_background_mask`
-* compute for multiple sessions/subjects:
+* compute for multiple runs/subjects:
   :func:`nilearn.masking.compute_multi_epi_mask`
   :func:`nilearn.masking.compute_multi_background_mask`
 * apply: :func:`nilearn.masking.apply_mask`
-* intersect several masks (useful for multi sessions/subjects): :func:`nilearn.masking.intersect_masks`
+* intersect several masks (useful for multi runs/subjects): :func:`nilearn.masking.intersect_masks`
 * unmasking: :func:`nilearn.masking.unmask`
 
 

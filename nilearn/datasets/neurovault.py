@@ -22,7 +22,7 @@ from sklearn.feature_extraction import DictVectorizer
 from sklearn.utils import Bunch
 
 from ..image import resample_img
-from .utils import _fetch_file, _get_dataset_descr, _get_dataset_dir
+from ._utils import fetch_single_file, get_dataset_descr, get_dataset_dir
 
 _NEUROVAULT_BASE_URL = "https://neurovault.org/api/"
 _NEUROVAULT_COLLECTIONS_URL = urljoin(_NEUROVAULT_BASE_URL, "collections/")
@@ -680,12 +680,14 @@ class Pattern(_SpecialValue):
         )
 
 
-def _empty_filter(arg):
+def _empty_filter(result):
     """Place holder for a filter which always returns True.
 
     This is the default ``image_filter`` and ``collection_filter``
     argument for ``fetch_neurovault``.
 
+    The ``result`` parameter is necessary for the API consistency
+    with other filters.
     """
     return True
 
@@ -1128,7 +1130,7 @@ def _yield_from_url_list(url_list, verbose=3):
 
 
 def _simple_download(url, target_file, temp_dir, verbose=3):
-    """Wrap around ``utils._fetch_file``.
+    """Wrap around ``utils.fetch_single_file``.
 
     This allows specifying the target file name.
 
@@ -1141,7 +1143,7 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
         Location of the downloaded file on filesystem.
 
     temp_dir : str
-        Location of sandbox directory used by ``_fetch_file``.
+        Location of sandbox directory used by ``fetch_single_file``.
 
     verbose : int, default=3
         An integer in [0, 1, 2, 3] to control the verbosity level.
@@ -1158,12 +1160,12 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
 
     See Also
     --------
-    nilearn.datasets._utils._fetch_file
+    nilearn.datasets._utils.fetch_single_file
 
     """
     _print_if(f"Downloading file: {url}", _DEBUG, verbose)
     try:
-        downloaded = _fetch_file(
+        downloaded = fetch_single_file(
             url, temp_dir, resume=False, overwrite=True, verbose=0
         )
     except Exception:
@@ -1524,10 +1526,14 @@ def _download_image_nii_file(image_info, collection, download_params):
 
         # Resample here
         print("Resampling...")
+        # TODO switch to force_resample=True
+        # when bumping to version > 0.13
         im_resampled = resample_img(
             img=tmp_path,
             target_affine=STD_AFFINE,
             interpolation=download_params["interpolation"],
+            copy_header=True,
+            force_resample=False,
         )
         im_resampled.to_filename(resampled_image_absolute_path)
 
@@ -1756,10 +1762,14 @@ def _scroll_local(download_params):
             image, collection = _update(image, collection, download_params)
             if download_params["resample"]:
                 if not os.path.isfile(image["resampled_absolute_path"]):
+                    # TODO switch to force_resample=True
+                    # when bumping to version > 0.13
                     im_resampled = resample_img(
                         img=image["absolute_path"],
                         target_affine=STD_AFFINE,
                         interpolation=download_params["interpolation"],
+                        copy_header=True,
+                        force_resample=False,
                     )
                     im_resampled.to_filename(image["resampled_absolute_path"])
                 download_params["visited_images"].add(image["id"])
@@ -2365,7 +2375,7 @@ def _result_list_to_bunch(result_list, download_params):
         images=images,
         images_meta=images_meta,
         collections_meta=collections_meta,
-        description=_get_dataset_descr("neurovault"),
+        description=get_dataset_descr("neurovault"),
     )
     if (
         download_params["fetch_neurosynth_words"]
@@ -2390,9 +2400,9 @@ def _result_list_to_bunch(result_list, download_params):
 
 def _fetch_neurovault_implementation(
     max_images=_DEFAULT_MAX_IMAGES,
-    collection_terms=basic_collection_terms(),
+    collection_terms=None,
     collection_filter=_empty_filter,
-    image_terms=basic_image_terms(),
+    image_terms=None,
     image_filter=_empty_filter,
     collection_ids=None,
     image_ids=None,
@@ -2406,8 +2416,12 @@ def _fetch_neurovault_implementation(
     **kwarg_image_filters,
 ):
     """Download data from neurovault.org and neurosynth.org."""
+    if collection_terms is None:
+        collection_terms = basic_collection_terms()
+    if image_terms is None:
+        image_terms = basic_image_terms()
     image_terms = dict(image_terms, **kwarg_image_filters)
-    neurovault_data_dir = _get_dataset_dir("neurovault", data_dir)
+    neurovault_data_dir = get_dataset_dir("neurovault", data_dir)
     if mode != "offline" and not os.access(neurovault_data_dir, os.W_OK):
         warnings.warn(
             "You don't have write access to neurovault dir: "
@@ -2443,9 +2457,9 @@ def _fetch_neurovault_implementation(
 
 def fetch_neurovault(
     max_images=_DEFAULT_MAX_IMAGES,
-    collection_terms=basic_collection_terms(),
+    collection_terms=None,
     collection_filter=_empty_filter,
-    image_terms=basic_image_terms(),
+    image_terms=None,
     image_filter=_empty_filter,
     mode="download_new",
     data_dir=None,
@@ -2466,33 +2480,35 @@ def fetch_neurovault(
     skimmed through the whole database or until an (optional) maximum
     number of images to fetch has been reached.
 
-    For more information, see :footcite:`Gorgolewski2015`,
-    and :footcite:`Yarkoni2011`.
+    For more information, see :footcite:t:`Gorgolewski2015`,
+    and :footcite:t:`Yarkoni2011`.
 
     Parameters
     ----------
     max_images : int, default=100
         Maximum number of images to fetch.
 
-    collection_terms : dict, default=basic_collection_terms()
+    collection_terms : dict, default=None
         Key, value pairs used to filter collection
         metadata. Collections for which
         ``collection_metadata['key'] == value`` is not ``True`` for
         every key, value pair will be discarded.
         See documentation for ``basic_collection_terms`` for a
         description of the default selection criteria.
+        If ``None`` is passed, will default to ``basic_collection_terms()``
 
     collection_filter : Callable, default=empty_filter
         Collections for which `collection_filter(collection_metadata)`
         is ``False`` will be discarded.
 
-    image_terms : dict, default=basic_image_terms()
+    image_terms : dict, default=None
         Key, value pairs used to filter image metadata. Images for
         which ``image_metadata['key'] == value`` is not ``True`` for
         if image_filter != _empty_filter and image_terms =
         every key, value pair will be discarded.
         See documentation for ``basic_image_terms`` for a
         description of the default selection criteria.
+        Will default to ``basic_image_terms()`` if ``None`` is passed.
 
     image_filter : Callable, default=empty_filter
         Images for which `image_filter(image_metadata)` is ``False``
@@ -2626,6 +2642,11 @@ def fetch_neurovault(
             modify_date=GreaterThan(newest))
 
     """
+    if collection_terms is None:
+        collection_terms = basic_collection_terms()
+    if image_terms is None:
+        image_terms = basic_image_terms()
+
     if max_images == _DEFAULT_MAX_IMAGES:
         _print_if(
             (
@@ -2692,8 +2713,8 @@ def fetch_neurovault_ids(
     This is the fast way to get the data from the server if we already
     know which images or collections we want.
 
-    For more information, see :footcite:`Gorgolewski2015`,
-    and :footcite:`Yarkoni2011`.
+    For more information, see :footcite:t:`Gorgolewski2015`,
+    and :footcite:t:`Yarkoni2011`.
 
     Parameters
     ----------

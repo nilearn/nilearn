@@ -170,13 +170,13 @@ For new-comers, we recommend going through the following examples in the suggest
 .. only:: html
 
   .. image:: /auto_examples/00_tutorials/images/thumb/sphx_glr_plot_single_subject_single_run_thumb.png
-    :alt: Intro to GLM Analysis: a single-session, single-subject fMRI dataset
+    :alt: Intro to GLM Analysis: a single-run, single-subject fMRI dataset
 
   :ref:`sphx_glr_auto_examples_00_tutorials_plot_single_subject_single_run.py`
 
 .. raw:: html
 
-      <div class="sphx-glr-thumbnail-title">Intro to GLM Analysis: a single-session, single-subject fMRI dataset</div>
+      <div class="sphx-glr-thumbnail-title">Intro to GLM Analysis: a single-run, single-subject fMRI dataset</div>
     </div>
 
 
@@ -221,13 +221,13 @@ For new-comers, we recommend going through the following examples in the suggest
 .. only:: html
 
   .. image:: /auto_examples/04_glm_first_level/images/thumb/sphx_glr_plot_fiac_analysis_thumb.png
-    :alt: Simple example of two-session fMRI model fitting
+    :alt: Simple example of two-runs fMRI model fitting
 
-  :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_fiac_analysis.py`
+  :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_two_runs_model.py`
 
 .. raw:: html
 
-      <div class="sphx-glr-thumbnail-title">Simple example of two-session fMRI model fitting</div>
+      <div class="sphx-glr-thumbnail-title">Simple example of two-runs fMRI model fitting</div>
     </div>
 
 
@@ -290,15 +290,13 @@ We give a non-exhaustive list of such important applications.
 
 Predicting a clinical score or even treatment response
 from brain imaging with :ref:`supervised
-learning <decoding>` e.g. `[Mourao-Miranda 2012]
-<https://doi.org/10.1371/journal.pone.0029482>`_
+learning <decoding>` e.g. :footcite:t:`Mourao-miranda2012`.
 
 **Information mapping**
 
 Using the prediction accuracy of a classifier
 to characterize relationships between brain images and stimuli. (e.g.
-:ref:`searchlight <searchlight>`) `[Kriegeskorte 2006]
-<https://doi.org/10.1073/pnas.0600244103>`_
+:ref:`searchlight <searchlight>`) [:footcite:t:`Kriegeskorte2006`]
 
 **Transfer learning**
 
@@ -306,8 +304,7 @@ Measuring how much an estimator trained on one
 specific psychological process/task can predict the neural activity
 underlying another specific psychological process/task
 (e.g. discriminating left from
-right eye movements also discriminates additions from subtractions
-`[Knops 2009] <https://doi.org/10.1126/science.1171599>`_)
+right eye movements also discriminates additions from subtractions :footcite:p:`Knops2009`)
 
 **High-dimensional multivariate statistics**
 
@@ -315,9 +312,8 @@ From a statistical point of view, machine learning implements
 statistical estimation of models with a large number of parameters.
 Tricks pulled in machine learning (e.g. regularization) can
 make this estimation possible despite the usually
-small number of observations in the neuroimaging domain
-`[Varoquaux 2012] <https://icml.cc/2012/papers/688.pdf>`_. This
-usage of machine learning requires some understanding of the models.
+small number of observations in the neuroimaging domain footcite:p:`Varoquaux2012`.
+This usage of machine learning requires some understanding of the models.
 
 **Data mining / exploration**
 
@@ -327,3 +323,8 @@ or movie-watching data as well as the discovery of connectionally coherent
 functional modules ("connectivity-based parcellation").
 For example,
 :ref:`extracting_rsn` or :ref:`parcellating_brain` with clustering.
+
+References
+----------
+
+.. footbibliography::

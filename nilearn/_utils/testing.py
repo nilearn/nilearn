@@ -1,4 +1,5 @@
 """Utilities for testing nilearn."""
+
 # Author: Alexandre Abraham, Philippe Gervais
 import functools
 import gc

@@ -2,6 +2,7 @@
 
 For example: TV-L1, Graph-Net, etc
 """
+
 # Author: DOHMATOB Elvis Dopgima,
 #         PIZARRO Gaspar,
 #         VAROQUAUX Gael,
@@ -28,16 +29,17 @@ from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_array, check_X_y
 from sklearn.utils.extmath import safe_sparse_dot
 
+from nilearn._utils.masker_validation import check_embedded_masker
+from nilearn.experimental.surface import SurfaceMasker
 from nilearn.image import get_data
-from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
-from nilearn.masking import _unmask_from_to_3d_array
+from nilearn.masking import unmask_from_to_3d_array
 
 from .._utils import fill_doc
 from .._utils.cache_mixin import CacheMixin
 from .._utils.param_validation import adjust_screening_percentile
 from .space_net_solvers import (
-    _graph_net_logistic,
-    _graph_net_squared_loss,
+    graph_net_logistic,
+    graph_net_squared_loss,
     tvl1_solver,
 )
 
@@ -107,7 +109,7 @@ def _univariate_feature_screening(
         sX = np.empty(X.shape)
         for sample in range(sX.shape[0]):
             sX[sample] = gaussian_filter(
-                _unmask_from_to_3d_array(
+                unmask_from_to_3d_array(
                     X[sample].copy(), mask  # avoid modifying X
                 ),
                 (smoothing_fwhm, smoothing_fwhm, smoothing_fwhm),
@@ -279,7 +281,7 @@ class _EarlyStoppingCallback:
         """
         if self.is_classif:
             w = w[:-1]
-        if w.ptp() == 0:
+        if np.ptp(w) == 0:
             # constant map, there is nothing
             return (-np.inf, -np.inf)
         y_pred = np.dot(self.X_test, w)
@@ -307,7 +309,6 @@ def path_scores(
     eps=1e-3,
     key=None,
     debias=False,
-    Xmean=None,
     screening_percentile=20.0,
     verbose=1,
 ):
@@ -357,8 +358,6 @@ def path_scores(
         Indicates whether the loss is a classification loss or a
         regression loss.
 
-    Xmean: ??? TODO: Add description.
-
     key: ??? TODO: Add description.
 
     debias : bool, default=False
@@ -401,7 +400,7 @@ def path_scores(
 
     # it is essential to center the data in regression
     X_train, y_train, _, y_train_mean, _ = center_data(
-        X_train, y_train, fit_intercept=True, normalize=False, copy=False
+        X_train, y_train, fit_intercept=True, copy=False
     )
 
     # misc
@@ -527,7 +526,7 @@ def path_scores(
         best_w = w_
 
     if len(best_w) == n_features:
-        # TODO: do something with Xmean
+        # TODO: implement with Xmean
         best_w = np.append(best_w, 0.0)
 
     all_test_scores = np.array(all_test_scores)
@@ -850,8 +849,10 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         if self.verbose:
             tic = time.time()
 
-        # nifti masking
-        self.masker_ = _check_embedded_nifti_masker(self, multi_subject=False)
+        masker_type = "nii"
+        if isinstance(self.mask, SurfaceMasker):
+            masker_type = "surface"
+        self.masker_ = check_embedded_masker(self, masker_type=masker_type)
         X = self.masker_.fit_transform(X)
 
         X, y = check_X_y(
@@ -896,9 +897,9 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         # set backend solver
         if self.penalty.lower() == "graph-net":
             if not self.is_classif or loss == "mse":
-                solver = _graph_net_squared_loss
+                solver = graph_net_squared_loss
             else:
-                solver = _graph_net_logistic
+                solver = graph_net_logistic
         else:
             if not self.is_classif or loss == "mse":
                 solver = partial(tvl1_solver, loss="mse")
@@ -1259,7 +1260,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         t_r=None,
         max_iter=200,
         tol=1e-4,
-        memory=Memory(None),
+        memory=None,
         memory_level=1,
         standardize=True,
         verbose=1,
@@ -1270,6 +1271,8 @@ class SpaceNetClassifier(BaseSpaceNet):
         screening_percentile=20.0,
         debias=False,
     ):
+        if memory is None:
+            memory = Memory(location=None)
         super().__init__(
             penalty=penalty,
             is_classif=True,
@@ -1491,7 +1494,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         t_r=None,
         max_iter=200,
         tol=1e-4,
-        memory=Memory(None),
+        memory=None,
         memory_level=1,
         standardize=True,
         verbose=1,
@@ -1502,6 +1505,8 @@ class SpaceNetRegressor(BaseSpaceNet):
         screening_percentile=20.0,
         debias=False,
     ):
+        if memory is None:
+            memory = Memory(location=None)
         super().__init__(
             penalty=penalty,
             is_classif=False,

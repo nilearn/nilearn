@@ -18,7 +18,7 @@ from .._utils.numpy_conversions import as_ndarray
 
 # Local imports
 from ..image import iter_img, new_img_like, reorder_img
-from ..image.image import _smooth_array
+from ..image.image import smooth_array
 from ..image.resampling import coord_transform, get_mask_bounds
 
 ###############################################################################
@@ -199,7 +199,7 @@ def _get_auto_mask_bounds(img):
             + data[-1, -1, -1]
         )
         edge_value /= 6
-        mask = np.abs(data - edge_value) > 0.005 * data.ptp()
+        mask = np.abs(data - edge_value) > 0.005 * np.ptp(data)
     xmin, xmax, ymin, ymax, zmin, zmax = get_mask_bounds(
         new_img_like(img, mask, affine)
     )
@@ -295,7 +295,7 @@ def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
         )
         # resample is set to avoid issues with an image having a non-diagonal
         # affine and rotation.
-        img = reorder_img(img, resample="nearest")
+        img = reorder_img(img, resample="nearest", copy_header=True)
         affine = img.affine
     # note: orig_data is a copy of img._data_cache thanks to np.abs
     orig_data = np.abs(safe_get_data(img))
@@ -324,7 +324,7 @@ def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
     if data.dtype.kind in ("i", "u"):
         data = data.astype(np.float64)
 
-    data = _smooth_array(data, affine, fwhm="fast")
+    data = smooth_array(data, affine, fwhm="fast")
 
     # to control floating point error problems
     # during given input value "n_cuts"
@@ -451,7 +451,7 @@ def find_parcellation_cut_coords(
             "Should be one of these 'left' or 'right'."
         )
     # Grab data and affine
-    labels_img = reorder_img(check_niimg_3d(labels_img))
+    labels_img = reorder_img(check_niimg_3d(labels_img), copy_header=True)
     labels_data = get_data(labels_img)
     labels_affine = labels_img.affine
 
@@ -475,16 +475,16 @@ def find_parcellation_cut_coords(
         right_hemi[: int(x)] = 0
 
         # Two connected component in both hemispheres
-        if not np.all(left_hemi == False) or np.all(  # noqa: E712
-            right_hemi == False  # noqa: E712
-        ):
+        left_hemi_has_values = np.any(left_hemi)
+        right_hemi_all_zero = not np.any(right_hemi)
+        if left_hemi_has_values or right_hemi_all_zero:
             if label_hemisphere == "left":
                 cur_img = left_hemi.astype(int)
             elif label_hemisphere == "right":
                 cur_img = right_hemi.astype(int)
 
         # Take the largest connected component
-        labels, label_nb = label(cur_img)
+        labels, _ = label(cur_img)
         label_count = np.bincount(labels.ravel().astype(int))
         label_count[0] = 0
         component = labels == label_count.argmax()

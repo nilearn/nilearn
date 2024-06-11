@@ -11,15 +11,23 @@ from .nifti_maps_masker import NiftiMapsMasker
 
 @fill_doc
 class MultiNiftiMapsMasker(NiftiMapsMasker):
-    """Class for masking of Niimg-like objects.
+    """Class for extracting data from multiple Niimg-like objects \
+       using maps of potentially overlapping brain regions.
 
     MultiNiftiMapsMasker is useful when data from overlapping volumes
     and from different subjects should be extracted (contrary to
     :class:`nilearn.maskers.NiftiMapsMasker`).
 
+    Use case:
+    summarize brain signals from several subjects
+    from large-scale networks obtained by prior PCA or :term:`ICA`.
+
     .. note::
         Inf or NaN present in the given input images are automatically
         put to zero rather than considered as missing data.
+
+    For more details on the definitions of maps in Nilearn,
+    see the :ref:`region` section.
 
     Parameters
     ----------
@@ -114,13 +122,15 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         t_r=None,
         dtype=None,
         resampling_target="data",
-        memory=Memory(location=None, verbose=0),
+        memory=None,
         memory_level=0,
         verbose=0,
         reports=True,
         n_jobs=1,
         **kwargs,
     ):
+        if memory is None:
+            memory = Memory(location=None, verbose=0)
         self.n_jobs = n_jobs
         super().__init__(
             maps_img,
@@ -175,7 +185,6 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
             atleast_4d=False,
             memory=self.memory,
             memory_level=self.memory_level,
-            verbose=self.verbose,
         )
 
         if confounds is None:

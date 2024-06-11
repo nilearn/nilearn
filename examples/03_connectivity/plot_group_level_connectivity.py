@@ -7,9 +7,8 @@ between regions of interest : correlation, partial correlation,
 and tangent space embedding.
 
 The resulting connectivity coefficients can be used to
-discriminate children from adults. In general, the tangent space embedding
-**outperforms** the standard correlations: see `Dadi et al 2019
-<https://www.sciencedirect.com/science/article/pii/S1053811919301594>`_
+discriminate children from adults.In general, the tangent space embedding
+**outperforms** the standard correlations: see :footcite:t:`Dadi2019`
 for a careful study.
 
 .. include:: ../../../examples/masker_note.rst
@@ -20,7 +19,7 @@ for a careful study.
 # Load brain development :term:`fMRI` dataset and MSDL atlas
 # ----------------------------------------------------------
 # We study only 30 subjects from the dataset, to save computation time.
-from nilearn import datasets
+from nilearn import datasets, plotting
 
 development_dataset = datasets.fetch_development_fmri(n_subjects=30)
 
@@ -106,8 +105,6 @@ from matplotlib import pyplot as plt
 
 # %%
 # We display the connectome matrices of the first 3 children
-from nilearn import plotting
-
 _, axes = plt.subplots(1, 3, figsize=(15, 5))
 for i, (matrix, ax) in enumerate(zip(correlation_matrices, axes)):
     plotting.plot_matrix(
@@ -262,9 +259,14 @@ plt.tight_layout()
 # This is a small example to showcase nilearn features. In practice such
 # comparisons need to be performed on much larger cohorts and several
 # datasets.
-# `Dadi et al 2019
-# <https://www.sciencedirect.com/science/article/pii/S1053811919301594>`_
-# Showed that across many cohorts and clinical questions, the tangent
-# kind should be preferred.
+# :footcite:t:`Dadi2019` showed that
+# across many cohorts and clinical questions,
+# the tangent kind should be preferred.
 
 plotting.show()
+
+# %%
+# References
+# ----------
+#
+#  .. footbibliography::

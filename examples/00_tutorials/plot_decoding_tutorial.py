@@ -2,13 +2,9 @@
 A introduction tutorial to fMRI decoding
 ========================================
 
-Here is a simple tutorial on decoding with nilearn. It reproduces the
-Haxby 2001 study on a face vs cat discrimination task in a mask of the
-ventral stream.
-
-    * J.V. Haxby et al. "Distributed and Overlapping Representations of Faces
-      and Objects in Ventral Temporal Cortex", Science vol 293 (2001), p
-      2425.-2430.
+Here is a simple tutorial on decoding with nilearn.
+It reproduces the :footcite:t:`Haxby2001` study
+on a face vs cat discrimination task in a mask of the ventral stream.
 
 This tutorial is meant as an introduction to the various steps of a decoding
 analysis using Nilearn meta-estimator: :class:`nilearn.decoding.Decoder`
@@ -16,7 +12,6 @@ analysis using Nilearn meta-estimator: :class:`nilearn.decoding.Decoder`
 It is not a minimalistic example, as it strives to be didactic. It is not
 meant to be copied to analyze new data: many of the steps are unnecessary.
 """
-
 
 # %%
 # Retrieve and load the :term:`fMRI` data from the Haxby study
@@ -57,7 +52,7 @@ print(f"First subject functional nifti images (4D) are at: {fmri_filename}")
 from nilearn import plotting
 from nilearn.image import mean_img
 
-plotting.view_img(mean_img(fmri_filename), threshold=None)
+plotting.view_img(mean_img(fmri_filename, copy_header=True), threshold=None)
 
 # %%
 # Feature extraction: from :term:`fMRI` volumes to a data matrix
@@ -255,20 +250,20 @@ print(decoder.cv_params_["face"])
 # 	We can speed things up to use all the CPUs of our computer with the
 # 	n_jobs parameter.
 #
-# The best way to do cross-validation is to respect the structure of
-# the experiment, for instance by leaving out full sessions of
-# acquisition.
+# The best way to do cross-validation is to respect
+# the structure of the experiment,
+# for instance by leaving out full runs of acquisition.
 #
-# The number of the session is stored in the CSV file giving the
-# behavioral data. We have to apply our session mask, to select only cats
-# and faces.
-session_label = behavioral["chunks"][condition_mask]
+# The number of the run is stored in the CSV file giving
+# the behavioral data.
+# We have to apply our run mask, to select only cats and faces.
+run_label = behavioral["chunks"][condition_mask]
 
 # %%
-# The :term:`fMRI` data is acquired by sessions,
-# and the noise is autocorrelated in a
-# given session. Hence, it is better to predict across sessions when doing
-# cross-validation. To leave a session out, pass the cross-validator object
+# The :term:`fMRI` data is acquired by runs,
+# and the noise is autocorrelated in a given run.
+# Hence, it is better to predict across runs when doing cross-validation.
+# To leave a run out, pass the cross-validator object
 # to the cv parameter of decoder.
 from sklearn.model_selection import LeaveOneGroupOut
 
@@ -277,7 +272,7 @@ cv = LeaveOneGroupOut()
 decoder = Decoder(
     estimator="svc", mask=mask_filename, standardize="zscore_sample", cv=cv
 )
-decoder.fit(fmri_niimgs, conditions, groups=session_label)
+decoder.fit(fmri_niimgs, conditions, groups=run_label)
 
 print(decoder.cv_scores_)
 
@@ -306,7 +301,12 @@ coef_img = decoder.coef_img_["face"]
 
 # %%
 # coef_img is now a NiftiImage.  We can save the coefficients as a nii.gz file:
-decoder.coef_img_["face"].to_filename("haxby_svc_weights.nii.gz")
+from pathlib import Path
+
+output_dir = Path.cwd() / "results" / "plot_decoding_tutorial"
+output_dir.mkdir(exist_ok=True, parents=True)
+print(f"Output will be saved to: {output_dir}")
+decoder.coef_img_["face"].to_filename(output_dir / "haxby_svc_weights.nii.gz")
 
 # %%
 # Plotting the :term:`SVM` weights
@@ -338,14 +338,19 @@ dummy_decoder = Decoder(
     cv=cv,
     standardize="zscore_sample",
 )
-dummy_decoder.fit(fmri_niimgs, conditions, groups=session_label)
+dummy_decoder.fit(fmri_niimgs, conditions, groups=run_label)
 
 # Now, we can compare these scores by simply taking a mean over folds
 print(dummy_decoder.cv_scores_)
 
 # %%
-# Further reading
-# ---------------
+# References
+# ----------
+#
+#  .. footbibliography::
+#
+# See also
+# --------
 #
 # * The :ref:`section of the documentation on decoding <decoding>`
 #

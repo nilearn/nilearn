@@ -1,9 +1,10 @@
 """Test the searchlight module."""
+
 # Author: Alexandre Abraham
 
 import numpy as np
 from nibabel import Nifti1Image
-from sklearn.model_selection import KFold
+from sklearn.model_selection import KFold, LeaveOneGroupOut
 
 from nilearn.conftest import _rng
 from nilearn.decoding import searchlight
@@ -119,23 +120,10 @@ def test_searchlight_large_radius():
     assert sl.scores_[2, 2, 2] == 1.0
 
 
-def group_cross_validation(cv):
-    try:
-        from sklearn.model_selection import LeaveOneGroupOut
-
-        gcv = LeaveOneGroupOut()
-    except ImportError:
-        # won't import model selection if it's not there.
-        # the groups variable should have no effect.
-        gcv = cv
-    return gcv
-
-
 def test_searchlight_group_cross_validation(rng):
     frames = 30
     data_img, cond, mask_img = _make_searchlight_test_data(frames)
-    cv, n_jobs = define_cross_validation()
-    gcv = group_cross_validation(cv)
+    _, n_jobs = define_cross_validation()
 
     groups = rng.permutation(np.arange(frames, dtype=int) > (frames // 2))
 
@@ -145,7 +133,7 @@ def test_searchlight_group_cross_validation(rng):
         radius=1,
         n_jobs=n_jobs,
         scoring="accuracy",
-        cv=gcv,
+        cv=LeaveOneGroupOut(),
     )
     sl.fit(data_img, cond, groups)
 

@@ -90,6 +90,10 @@ If you wish to add a missing term, please
         Erosion uses a structuring element for probing and reducing the shapes
         contained in the input image.
 
+    faces
+        When referring to surface data, a face corresponds to one of the triangles
+        of a triangular :term:`mesh`.
+
     FDR correction
         `False discovery rate`_ controlling procedures are designed to control
         the expected proportion of "discoveries" (rejected null hypotheses)
@@ -170,6 +174,16 @@ If you wish to add a missing term, please
         brain activity by recording magnetic fields produced by electrical currents
         occurring naturally in the brain.
 
+    mesh
+        In the context of brain surface data, a mesh refers to a 3D representation
+        of the brain's surface geometry.
+        It is a collection of vertices, edges, and faces
+        that define the shape and structure of the brain's outer surface.
+        Each :term:`vertex` represents a point in 3D space,
+        and edges connect these vertices to form a network.
+        :term:`Faces<faces>` are then created by connecting
+        three or more vertices to form triangles.
+
     MNI
         MNI stands for "Montreal Neurological Institute". Usually, this is
         used to reference the MNI space/template. The current standard MNI
@@ -177,7 +191,7 @@ If you wish to add a missing term, please
         that have been matched to the MNI305 using a 9 parameter affine transform.
 
     MVPA
-        Mutli-Voxel Pattern Analysis. This is the way :term:`supervised learning`
+        Multi-Voxel Pattern Analysis. This is the way :term:`supervised learning`
         methods are called in the field of brain imaging.
 
     Neurovault
@@ -286,8 +300,7 @@ If you wish to add a missing term, please
         magnitude and cluster extent to enhance the importance of clusters that are large,
         have high magnitude, or both.
 
-        For more information about TFCE, see
-        `Smith and Nichols (2009) <https://doi.org/10.1016/j.neuroimage.2008.03.061>`_ or
+        For more information about TFCE, see :footcite:t:`Smith2009a` or
         `Benedikt Ehinger's tutorial <https://benediktehinger.de/blog/science/threshold-free-cluster-enhancement-explained/>`_.
 
     TR
@@ -310,12 +323,22 @@ If you wish to add a missing term, please
         `Voxel-Based Morphometry`_ measures differences in local concentrations of brain
         tissue, through a voxel-wise comparison of multiple brain images.
 
+    vertex
+        A vertex (plural vertices) represents the coordinate
+        of an angle of :term:`face<faces>`
+        on a triangular :term:`mesh` in 3D space.
+
     voxel
         A voxel represents a value on a regular grid in 3D space.
 
     Ward clustering
-        Ward’s algorithm is a hierarchical clustering algorithm: it recursively merges voxels,
+        Ward's algorithm is a hierarchical clustering algorithm: it recursively merges voxels,
         then clusters that have similar signal (parameters, measurements or time courses).
+
+References
+----------
+
+.. footbibliography::
 
 
 .. LINKS

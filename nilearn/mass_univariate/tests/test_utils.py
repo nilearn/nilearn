@@ -1,4 +1,5 @@
 """Tests for nilearn.mass_univariate._utils."""
+
 import math
 
 import numpy as np
@@ -47,7 +48,7 @@ def test_arr4d():
     ],
 )
 def test_calculate_tfce(two_sided_test, dh, true_max_tfce):
-    """Test _calculate_tfce."""
+    """Test calculate_tfce."""
     test_arr4d = np.zeros((10, 10, 10, 1))
     bin_struct = generate_binary_structure(3, 1)
 
@@ -61,7 +62,7 @@ def test_calculate_tfce(two_sided_test, dh, true_max_tfce):
     test_arr4d[3, 5, 3, 0] = -11
     test_arr4d[5, 3, 3, 0] = -11
 
-    test_tfce_arr4d = _utils._calculate_tfce(
+    test_tfce_arr4d = _utils.calculate_tfce(
         test_arr4d,
         bin_struct=bin_struct,
         E=1,
@@ -80,9 +81,9 @@ def test_calculate_tfce(two_sided_test, dh, true_max_tfce):
 def test_null_to_p_float_1_tailed_lower_tailed(
     null, test_values, expected_p_value
 ):
-    """Test _null_to_p with single float input lower-tailed ."""
+    """Test null_to_p with single float input lower-tailed ."""
     assert math.isclose(
-        _utils._null_to_p(test_values, null, alternative="smaller"),
+        _utils.null_to_p(test_values, null, alternative="smaller"),
         expected_p_value,
     )
 
@@ -93,9 +94,9 @@ def test_null_to_p_float_1_tailed_lower_tailed(
 def test_null_to_p_float_1_tailed_uppper_tailed(
     test_values, expected_p_value, null
 ):
-    """Test _null_to_p with single float input upper-tailed."""
+    """Test null_to_p with single float input upper-tailed."""
     assert math.isclose(
-        _utils._null_to_p(test_values, null, alternative="larger"),
+        _utils.null_to_p(test_values, null, alternative="larger"),
         expected_p_value,
     )
 
@@ -113,9 +114,9 @@ def test_null_to_p_float_1_tailed_uppper_tailed(
     ],
 )
 def test_null_to_p_float_2_tailed(test_values, expected_p_value, null):
-    """Test _null_to_p with single float input two-sided."""
-    result = _utils._null_to_p(test_values, null, alternative="two-sided")
-    assert result == _utils._null_to_p(
+    """Test null_to_p with single float input two-sided."""
+    result = _utils.null_to_p(test_values, null, alternative="two-sided")
+    assert result == _utils.null_to_p(
         test_values * -1, null, alternative="two-sided"
     )
     assert math.isclose(result, expected_p_value)
@@ -123,7 +124,7 @@ def test_null_to_p_float_2_tailed(test_values, expected_p_value, null):
 
 def test_null_to_p_float_error(null):
     with pytest.raises(ValueError):
-        _utils._null_to_p(9, null, alternative="raise")
+        _utils.null_to_p(9, null, alternative="raise")
 
 
 @pytest.mark.parametrize(
@@ -133,10 +134,10 @@ def test_null_to_p_float_error(null):
 def test_null_to_p_float_with_extreme_values(
     alternative, expected_p_value, rng
 ):
-    """Test that 1/n(null) is preserved with extreme values"""
+    """Test that 1/n(null) is preserved with extreme values."""
     null = rng.normal(size=10000)
 
-    result = _utils._null_to_p(20, null, alternative=alternative)
+    result = _utils.null_to_p(20, null, alternative=alternative)
     assert math.isclose(
         result,
         expected_p_value,
@@ -144,11 +145,11 @@ def test_null_to_p_float_with_extreme_values(
 
 
 def test_null_to_p_array(rng):
-    """Test _null_to_p with 1d array input."""
+    """Test null_to_p with 1d array input."""
     N = 10000
     nulldist = rng.normal(size=N)
     t = np.sort(rng.normal(size=N))
-    p = np.sort(_utils._null_to_p(t, nulldist))
+    p = np.sort(_utils.null_to_p(t, nulldist))
 
     assert p.shape == (N,)
     assert (p < 1).all()
@@ -193,11 +194,11 @@ def test_null_to_p_array(rng):
 def test_calculate_cluster_measures(
     test_arr4d, bin_struct, two_sided_test, true_size, true_mass
 ):
-    """Test _calculate_cluster_measures.
+    """Test calculate_cluster_measures.
 
     true_mass : (8 vox * 5 intensity) - (8 vox * 0.001 thresh)
     """
-    test_size, test_mass = _utils._calculate_cluster_measures(
+    test_size, test_mass = _utils.calculate_cluster_measures(
         test_arr4d,
         threshold=0.001,
         bin_struct=bin_struct,
@@ -209,7 +210,7 @@ def test_calculate_cluster_measures(
 
 
 def test_calculate_cluster_measures_on_empty_array():
-    test_size, test_mass = _utils._calculate_cluster_measures(
+    test_size, test_mass = _utils.calculate_cluster_measures(
         np.zeros((10, 10, 10, 1)),
         threshold=0.001,
         bin_struct=generate_binary_structure(3, 1),
@@ -233,7 +234,7 @@ def test_t_score_with_covars_and_normalized_design_nocovar(rng):
     var2 = var2 / np.sqrt(np.sum(var2**2, 0))  # normalize
 
     # compute t-scores with nilearn routine
-    t_val_own = _utils._t_score_with_covars_and_normalized_design(var1, var2)
+    t_val_own = _utils.t_score_with_covars_and_normalized_design(var1, var2)
 
     # compute t-scores with linalg or statsmodels
     t_val_alt = get_tvalue_with_alternative_library(var1, var2)
@@ -251,10 +252,10 @@ def test_t_score_with_covars_and_normalized_design_withcovar(rng):
     var2 = var2 / np.sqrt(np.sum(var2**2, 0))  # normalize
     covars = np.eye(n_samples, 3)  # covars is orthogonal
     covars[3] = -1  # covars is orthogonal to var1
-    covars = _utils._orthonormalize_matrix(covars)
+    covars = _utils.orthonormalize_matrix(covars)
 
     # nilearn t-score
-    own_score = _utils._t_score_with_covars_and_normalized_design(
+    own_score = _utils.t_score_with_covars_and_normalized_design(
         var1,
         var2,
         covars,

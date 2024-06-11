@@ -1,4 +1,5 @@
 """Test the signals module."""
+
 # Author: Gael Varoquaux, Alexandre Abraham
 
 import os.path
@@ -243,33 +244,37 @@ def test_standardize(rng):
 
     # Test raise error when strategy is not valid option
     with pytest.raises(ValueError, match="no valid standardize strategy"):
-        nisignal._standardize(a, standardize="foo")
+        nisignal.standardize_signal(a, standardize="foo")
 
     # test warning for strategy that will be removed
     with pytest.warns(
         DeprecationWarning, match="default strategy for standardize"
     ):
-        nisignal._standardize(a, standardize="zscore")
+        nisignal.standardize_signal(a, standardize="zscore")
 
-    # transpose array to fit _standardize input.
+    # transpose array to fit standardize input.
     # Without trend removal
-    b = nisignal._standardize(a, standardize="zscore_sample")
+    b = nisignal.standardize_signal(a, standardize="zscore_sample")
     stds = np.std(b)
     np.testing.assert_almost_equal(stds, np.ones(n_features), decimal=1)
     np.testing.assert_almost_equal(b.sum(axis=0), np.zeros(n_features))
 
     # With trend removal
     a = np.atleast_2d(np.linspace(0, 2.0, n_features)).T
-    b = nisignal._standardize(a, detrend=True, standardize=False)
+    b = nisignal.standardize_signal(a, detrend=True, standardize=False)
     np.testing.assert_almost_equal(b, np.zeros(b.shape))
 
-    b = nisignal._standardize(a, detrend=True, standardize="zscore_sample")
+    b = nisignal.standardize_signal(
+        a, detrend=True, standardize="zscore_sample"
+    )
     np.testing.assert_almost_equal(b, np.zeros(b.shape))
 
     length_1_signal = np.atleast_2d(np.linspace(0, 2.0, n_features))
     np.testing.assert_array_equal(
         length_1_signal,
-        nisignal._standardize(length_1_signal, standardize="zscore_sample"),
+        nisignal.standardize_signal(
+            length_1_signal, standardize="zscore_sample"
+        ),
     )
 
 
@@ -337,7 +342,7 @@ def test_mean_of_squares():
 
 
 def test_row_sum_of_squares():
-    """Test _row_sum_of_squares."""
+    """Test row_sum_of_squares."""
     n_samples = 11
     n_features = 501  # Higher than 500 required
     signals, _, _ = generate_signals(
@@ -347,7 +352,7 @@ def test_row_sum_of_squares():
     var1 = signals**2
     var1 = var1.sum(axis=0)
 
-    var2 = nisignal._row_sum_of_squares(signals)
+    var2 = nisignal.row_sum_of_squares(signals)
 
     np.testing.assert_almost_equal(var1, var2)
 
@@ -398,7 +403,7 @@ def test_clean_detrending():
 
 
 def test_clean_t_r(rng):
-    """Different TRs produce different results after butterworth filtering"""
+    """Different TRs produce different results after butterworth filtering."""
     n_samples = 34
     # n_features  Must be higher than 500
     n_features = 501
@@ -767,8 +772,8 @@ def test_clean_frequencies_using_power_spectrum_density():
 
 
 def test_clean_finite_no_inplace_mod():
-    """
-    Test for verifying that the passed in signal array is not modified.
+    """Test for verifying that the passed in signal array is not modified.
+
     For PR #2125 . This test is failing on main, passing in this PR.
     """
     n_samples = 2
@@ -880,19 +885,26 @@ def test_clean_psc(rng):
 
     # both types should pass
     for s in [signals_pos_mean, signals_mixed_mean]:
-        cleaned_signals = clean(s, standardize="psc")
-        np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
-
-        cleaned_signals.std(axis=0)
+        cleaned_signals = clean(s, standardize="psc", detrend=False)
         np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
 
         tmp = (s - s.mean(0)) / np.abs(s.mean(0))
         tmp *= 100
         np.testing.assert_almost_equal(cleaned_signals, tmp)
 
+        # test with high pass with butterworth
+        butterworth_signals = clean(
+            s,
+            detrend=False,
+            filter="butterworth",
+            high_pass=0.01,
+            tr=2,
+            standardize="psc",
+        )
+        np.testing.assert_almost_equal(butterworth_signals.mean(0), 0)
+
     # leave out the last 3 columns with a mean of zero to test user warning
     signals_w_zero = signals + np.append(means[:, :-3], np.zeros((1, 3)))
-    cleaned_w_zero = clean(signals_w_zero, standardize="psc")
     with pytest.warns(UserWarning) as records:
         cleaned_w_zero = clean(signals_w_zero, standardize="psc")
     psc_warning = sum(
@@ -925,7 +937,7 @@ def test_clean_zscore(rng):
 
 def test_create_cosine_drift_terms():
     """Testing cosine filter interface and output."""
-    from nilearn.glm.first_level.design_matrix import _cosine_drift
+    from nilearn.glm.first_level.design_matrix import create_cosine_drift
 
     # fmriprep high pass cutoff is 128s, it's around 0.008 hz
     t_r, high_pass = 2.5, 0.008
@@ -935,7 +947,7 @@ def test_create_cosine_drift_terms():
 
     # Not passing confounds it will return drift terms only
     frame_times = np.arange(signals.shape[0]) * t_r
-    cosine_drift = _cosine_drift(high_pass, frame_times)[:, :-1]
+    cosine_drift = create_cosine_drift(high_pass, frame_times)[:, :-1]
     confounds_with_drift = np.hstack((confounds, cosine_drift))
 
     cosine_confounds = nisignal._create_cosine_drift_terms(

@@ -3,7 +3,8 @@ Decoding with FREM: face vs house vs chair object recognition
 =============================================================
 
 This example uses fast ensembling of regularized models (FREM) to decode
-a face vs house vs chair discrimination task from Haxby 2001 study.
+a face vs house vs chair discrimination task
+from :footcite:t:`Haxby2001` study.
 :term:`FREM` uses an implicit spatial regularization
 through fast clustering and aggregates a high number of estimators
 trained on various splits of the training set,
@@ -48,14 +49,14 @@ y_test = conditions[condition_mask_test].values
 # Compute the mean EPI to be used for the background of the plotting
 from nilearn.image import mean_img
 
-background_img = mean_img(func_filenames)
+background_img = mean_img(func_filenames, copy_header=True)
 
 # %%
 # Fit FREM
 # --------
 from nilearn.decoding import FREMClassifier
 
-decoder = FREMClassifier(cv=10, standardize="zscore_sample")
+decoder = FREMClassifier(cv=10, standardize="zscore_sample", n_jobs=2)
 # Fit model on train data and predict on test data
 decoder.fit(X_train, y_train)
 y_pred = decoder.predict(X_test)
@@ -117,5 +118,12 @@ plotting.show()
 # even on heavier examples. Here we ensembled several instances of l2-SVC,
 # but FREMClassifier also works with ridge or logistic.
 # FREMRegressor object is also available to solve regression problems.
+
+# %%
+# References
+# ----------
+#
+#  .. footbibliography::
+
 
 # sphinx_gallery_dummy_images=1

@@ -80,7 +80,7 @@ def test_transform_inverse_transform_with_mask(
     assert masked_img.shape == shape + (img.shape[-1] - 2,)
     assert np.array_equal(masked_img.ravel()[:7], [2, 3, 4, 20, 30, 40, 50.0])
     unmasked_img = masker.inverse_transform(masked_img)
-    expected_data = {k: v.copy() for (k, v) in img.data.items()}
+    expected_data = {k: v.copy() for (k, v) in img.data.parts.items()}
     for v in expected_data.values():
         v[..., 0] = 0.0
     expected_img = SurfaceImage(img.mesh, expected_data)

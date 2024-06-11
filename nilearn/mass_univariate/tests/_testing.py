@@ -1,9 +1,10 @@
 """Utility functions for the mass_univariate module's test suite."""
+
 import numpy as np
 
 
 def get_tvalue_with_alternative_library(tested_vars, target_vars, covars=None):
-    """Utility function to compute tvalues with linalg or statsmodels
+    """Compute t values with linalg or statsmodels.
 
     Massively univariate linear model (= each target is considered
     independently).

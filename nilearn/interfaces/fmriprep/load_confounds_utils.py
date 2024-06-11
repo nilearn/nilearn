@@ -1,4 +1,5 @@
 """Helper functions for the manipulation of fmriprep output confounds."""
+
 import itertools
 import json
 import os
@@ -11,7 +12,7 @@ from sklearn.preprocessing import scale
 from nilearn._utils.fmriprep_confounds import flag_single_gifti, is_camel_case
 from nilearn.interfaces.bids import parse_bids_filename
 
-from .load_confounds_scrub import _extract_outlier_regressors
+from .load_confounds_scrub import extract_outlier_regressors
 
 img_file_patterns = {
     "aroma": "_desc-smoothAROMAnonaggr_bold",
@@ -31,7 +32,7 @@ img_file_error = {
 }
 
 
-def _check_params(confounds_raw, params):
+def check_params(confounds_raw, params):
     """Check that specified parameters can be found in the confounds.
 
     Used for motion, wm_csf, global_signal, and compcor regressors.
@@ -63,7 +64,7 @@ def _check_params(confounds_raw, params):
         return True
 
 
-def _find_confounds(confounds_raw, keywords):
+def find_confounds(confounds_raw, keywords):
     """Find confounds that contain certain keywords.
 
     Used for cosine regressors and ICA-AROMA regressors.
@@ -89,7 +90,7 @@ def _find_confounds(confounds_raw, keywords):
     return list_confounds
 
 
-def _sanitize_confounds(img_files):
+def sanitize_confounds(img_files):
     """Make sure the inputs are in the correct format.
 
     Parameters
@@ -119,7 +120,7 @@ def _sanitize_confounds(img_files):
     return img_files, flag_single
 
 
-def _add_suffix(params, model):
+def add_suffix(params, model):
     """Add derivative suffixes to a list of parameters.
 
     Used from motion, wm_csf, global_signal.
@@ -247,7 +248,7 @@ def _get_file_name(nii_file):
         return found_files[0]
 
 
-def _get_confounds_file(image_file, flag_full_aroma):
+def get_confounds_file(image_file, flag_full_aroma):
     """Return the confounds file associated with a functional image.
 
     Parameters
@@ -268,13 +269,13 @@ def _get_confounds_file(image_file, flag_full_aroma):
     return confounds_raw_path
 
 
-def _get_json(confounds_raw_path):
+def get_json(confounds_raw_path):
     """Return json data companion file to the confounds tsv file."""
     # Load JSON file
     return confounds_raw_path.replace("tsv", "json")
 
 
-def _load_confounds_json(confounds_json, flag_acompcor):
+def load_confounds_json(confounds_json, flag_acompcor):
     """Load json data companion to the confounds tsv file.
 
     Parameters
@@ -311,7 +312,7 @@ def _load_confounds_json(confounds_json, flag_acompcor):
     return confounds_json
 
 
-def _load_confounds_file_as_dataframe(confounds_raw_path):
+def load_confounds_file_as_dataframe(confounds_raw_path):
     """Load raw confounds as a pandas DataFrame.
 
     Meanwhile detect if the fMRIPrep version is supported.
@@ -334,9 +335,9 @@ def _load_confounds_file_as_dataframe(confounds_raw_path):
     # header format. 1.0.x and 1.1.x series uses camel case
     if any(is_camel_case(col_name) for col_name in confounds_raw.columns):
         raise ValueError(
-            "The confound file contains header in camel case."
-            "This is likely the output from 1.0.x and 1.1.x "
-            "series. We only support fmriprep outputs >= 1.2.0."
+            "The confound file contains header in camel case. "
+            "This is likely the output from 1.0.x and 1.1.x series. "
+            "We only support fmriprep outputs >= 1.2.0."
             f"{confounds_raw.columns}"
         )
 
@@ -415,7 +416,7 @@ def _check_images(image_file, flag_full_aroma):
         raise ValueError(error_message)
 
 
-def _prepare_output(confounds, demean):
+def prepare_output(confounds, demean):
     """Demean and create sample mask for the selected confounds.
 
     Parameters
@@ -438,7 +439,7 @@ def _prepare_output(confounds, demean):
     confounds : pandas.DataFrame
         Demeaned confounds ready for subsequent analysis.
     """
-    sample_mask, confounds, _ = _extract_outlier_regressors(confounds)
+    sample_mask, confounds, _ = extract_outlier_regressors(confounds)
     if confounds.size != 0:  # ica_aroma = "full" generate empty output
         # Derivatives have NaN on the first row
         # Replace them by estimates at second time point,

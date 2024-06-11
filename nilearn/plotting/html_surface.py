@@ -26,9 +26,14 @@ class SurfaceView(HTMLDocument):  # noqa: D101
     pass
 
 
-def _get_vertexcolor(surf_map, cmap, norm,
-                     absolute_threshold=None, bg_map=None,
-                     bg_on_data=None, darkness=None):
+def get_vertexcolor(surf_map,
+                    cmap,
+                    norm,
+                    absolute_threshold=None,
+                    bg_map=None,
+                    bg_on_data=None,
+                    darkness=None):
+    """Get the color of the verrices."""
     if bg_map is None:
         bg_data = np.ones(len(surf_map)) * .5
         bg_vmin, bg_vmax = 0, 1
@@ -67,7 +72,7 @@ def _get_vertexcolor(surf_map, cmap, norm,
         # so that background map becomes visible
         surf_colors[~under_threshold, 3] = 0.7
 
-    vertex_colors = cm._mix_colormaps(surf_colors, bg_colors)
+    vertex_colors = cm.mix_colormaps(surf_colors, bg_colors)
 
     return to_color_strings(vertex_colors)
 
@@ -89,7 +94,7 @@ def _one_mesh_info(
         cmap, surf_map, threshold, symmetric_cmap=symmetric_cmap,
         vmax=vmax, vmin=vmin)
     info['inflated_left'] = mesh_to_plotly(surf_mesh)
-    info['vertexcolor_left'] = _get_vertexcolor(
+    info['vertexcolor_left'] = get_vertexcolor(
         surf_map, colors['cmap'], colors['norm'],
         absolute_threshold=colors['abs_threshold'], bg_map=bg_map,
         bg_on_data=bg_on_data, darkness=darkness,
@@ -121,7 +126,8 @@ def one_mesh_info(
                           vmax=vmax, vmin=vmin)
 
 
-def _check_mesh(mesh):
+def check_mesh(mesh):
+    """Validate type and content of a mesh."""
     if isinstance(mesh, str):
         return datasets.fetch_surf_fsaverage(mesh)
     if not isinstance(mesh, collections.abc.Mapping):
@@ -141,7 +147,7 @@ def _check_mesh(mesh):
 def _full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
                      cmap=cm.cold_hot, black_bg=False, symmetric_cmap=True,
                      bg_on_data=False, darkness=.7,
-                     vmax=None, vmin=None, vol_to_surf_kwargs={}):
+                     vmax=None, vmin=None, vol_to_surf_kwargs=None):
     """Project 3D map on cortex; prepare info to plot both hemispheres.
 
     This computes the dictionary that gets inserted in the web page,
@@ -149,8 +155,10 @@ def _full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
     background color.
 
     """
+    if vol_to_surf_kwargs is None:
+        vol_to_surf_kwargs = {}
     info = {}
-    mesh = surface.surface._check_mesh(mesh)
+    mesh = surface.surface.check_mesh(mesh)
     surface_maps = {
         h: surface.vol_to_surf(volume_img, mesh[f'pial_{h}'],
                                inner_mesh=mesh.get(f'white_{h}', None),
@@ -170,7 +178,7 @@ def _full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
         info[f'inflated_{hemi}'] = mesh_to_plotly(
             mesh[f'infl_{hemi}'])
 
-        info[f'vertexcolor_{hemi}'] = _get_vertexcolor(
+        info[f'vertexcolor_{hemi}'] = get_vertexcolor(
             surf_map, colors['cmap'], colors['norm'],
             absolute_threshold=colors['abs_threshold'], bg_map=bg_map,
             bg_on_data=bg_on_data, darkness=darkness,
@@ -185,7 +193,7 @@ def _full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
 def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
                     cmap=cm.cold_hot, black_bg=False, symmetric_cmap=True,
                     bg_on_data=False, darkness=.7,
-                    vmax=None, vmin=None, vol_to_surf_kwargs={}):
+                    vmax=None, vmin=None, vol_to_surf_kwargs=None):
     """Deprecate public function. See _full_brain_info."""
     warn(
         category=DeprecationWarning,
@@ -217,7 +225,7 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
                      black_bg=False, vmax=None, vmin=None, symmetric_cmap=True,
                      bg_on_data=False, darkness=.7,
                      colorbar=True, colorbar_height=.5, colorbar_fontsize=25,
-                     title=None, title_fontsize=25, vol_to_surf_kwargs={}):
+                     title=None, title_fontsize=25, vol_to_surf_kwargs=None):
     """Insert a surface plot of a statistical map into an HTML page.
 
     Parameters
@@ -284,12 +292,13 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
     title_fontsize : int, default=25
         Fontsize of the title.
 
-    vol_to_surf_kwargs : dict, optional
+    vol_to_surf_kwargs : dict, default=None
         Dictionary of keyword arguments that are passed on to
         :func:`nilearn.surface.vol_to_surf` when extracting a surface from
         the input image. See the function documentation for details.This
         parameter is especially useful when plotting an atlas. See
         https://nilearn.github.io/stable/auto_examples/01_plotting/plot_3d_map_to_surface_projection.html
+        Will default to ``{}`` if ``None`` is passed.
 
     Returns
     -------
@@ -306,6 +315,8 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
     nilearn.plotting.view_surf: plot from a surface map on a cortical mesh.
 
     """
+    if vol_to_surf_kwargs is None:
+        vol_to_surf_kwargs = {}
     stat_map_img = check_niimg_3d(stat_map_img)
     info = _full_brain_info(
         volume_img=stat_map_img, mesh=surf_mesh, threshold=threshold,
@@ -332,26 +343,27 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
     Parameters
     ----------
     surf_mesh : str or list of two numpy.ndarray
-        Surface mesh geometry, can be a file (valid formats are
-        .gii or Freesurfer specific files such as .orig, .pial,
-        .sphere, .white, .inflated) or
+        Surface :term:`mesh` geometry, can be a file
+        (valid formats are .gii or Freesurfer specific files
+        such as .orig, .pial, .sphere, .white, .inflated) or
         a list of two Numpy arrays, the first containing the x-y-z coordinates
-        of the mesh vertices, the second containing the indices
-        (into coords) of the mesh faces.
+        of the :term:`mesh` vertices, the second containing the indices
+        (into coords) of the :term:`mesh` :term:`faces`.
 
     surf_map : str or numpy.ndarray, optional
-        Data to be displayed on the surface mesh. Can be a file (valid formats
-        are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific files such as
+        Data to be displayed on the surface :term:`mesh`.
+        Can be a file (valid formats are .gii, .mgz, .nii, .nii.gz,
+        or Freesurfer specific files such as
         .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array
 
     bg_map : str or numpy.ndarray, default=None
-        Background image to be plotted on the mesh underneath the
-        surf_data in greyscale, most likely a sulcal depth map for
+        Background image to be plotted on the :term:`mesh` underneath
+        the surf_data in greyscale, most likely a sulcal depth map for
         realistic shading.
-        If the map contains values outside [0, 1], it will be
-        rescaled such that all values are in [0, 1]. Otherwise,
-        it will not be modified.
+        If the map contains values outside [0, 1],
+        it will be rescaled such that all values are in [0, 1].
+        Otherwise, it will not be modified.
 
     %(bg_on_data)s
 

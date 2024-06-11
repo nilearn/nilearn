@@ -2,6 +2,7 @@
 
 Utilities for masking and dimension reduction of group data
 """
+
 import glob
 import itertools
 from math import ceil
@@ -15,14 +16,14 @@ from sklearn.utils import check_random_state
 from sklearn.utils.extmath import randomized_svd, svd_flip
 
 import nilearn
+from nilearn._utils.masker_validation import check_embedded_masker
 from nilearn.maskers import NiftiMapsMasker
-from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
 
 from .._utils import fill_doc
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.niimg import safe_get_data
 from .._utils.niimg_conversions import resolve_globbing
-from ..signal import _row_sum_of_squares
+from ..signal import row_sum_of_squares
 
 
 def _fast_svd(X, n_components, random_state=None):
@@ -93,7 +94,7 @@ def _mask_and_reduce(
     n_components=None,
     random_state=None,
     memory_level=0,
-    memory=Memory(location=None),
+    memory=None,
     n_jobs=1,
 ):
     """Mask and reduce provided 4D images with given masker.
@@ -132,8 +133,9 @@ def _mask_and_reduce(
         Integer indicating the level of memorization. The higher, the more
         function calls are cached.
 
-    memory : joblib.Memory, optional
+    memory : joblib.Memory, default=None
         Used to cache the function calls.
+        If ``None`` is passed will default to ``Memory(location=None)``.
 
     n_jobs : integer, default=1
         The number of CPUs to use to do the computation. -1 means
@@ -145,6 +147,8 @@ def _mask_and_reduce(
         Concatenation of reduced data.
 
     """
+    if memory is None:
+        memory = Memory(location=None)
     if not hasattr(imgs, "__iter__"):
         imgs = [imgs]
 
@@ -307,10 +311,11 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         to fine-tune mask computation. Please see the related documentation
         for details.
 
-    memory : instance of joblib.Memory or str, optional
+    memory : instance of joblib.Memory or str, default=None
         Used to cache the masking process.
-        By default, no caching is done. If a string is given, it is the
-        path to the caching directory.
+        By default, no caching is done.
+        If a string is given, it is the path to the caching directory.
+        If ``None`` is passed will default to ``Memory(location=None)``.
 
     memory_level : integer, default=0
         Rough estimator of the amount of memory used by caching. Higher value
@@ -348,11 +353,13 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         target_shape=None,
         mask_strategy="epi",
         mask_args=None,
-        memory=Memory(location=None),
+        memory=None,
         memory_level=0,
         n_jobs=1,
         verbose=0,
     ):
+        if memory is None:
+            memory = Memory(location=None)
         self.n_components = n_components
         self.random_state = random_state
         self.mask = mask
@@ -420,7 +427,7 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
                 "Need one or more Niimg-like objects as input, "
                 "an empty list was given."
             )
-        self.masker_ = _check_embedded_nifti_masker(self)
+        self.masker_ = check_embedded_masker(self)
 
         # Avoid warning with imgs != None
         # if masker_ has been provided a mask_img
@@ -618,5 +625,5 @@ def _explained_variance(X, components, per_component=True):
         lr = LinearRegression(fit_intercept=True)
         lr.fit(components.T, X.T)
         res = X - lr.coef_.dot(components)
-        res_var = _row_sum_of_squares(res).sum()
-        return np.maximum(0.0, 1.0 - res_var / _row_sum_of_squares(X).sum())
+        res_var = row_sum_of_squares(res).sum()
+        return np.maximum(0.0, 1.0 - res_var / row_sum_of_squares(X).sum())

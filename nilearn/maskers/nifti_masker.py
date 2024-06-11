@@ -1,4 +1,5 @@
 """Transformer used to apply basic transformations on MRI data."""
+
 # Author: Gael Varoquaux, Alexandre Abraham
 
 import warnings
@@ -8,7 +9,7 @@ from functools import partial
 from joblib import Memory
 
 from nilearn import _utils, image, masking
-from nilearn.maskers import compute_middle_image
+from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 
 
@@ -62,7 +63,7 @@ def _filter_and_mask(
     mask_img_,
     parameters,
     memory_level=0,
-    memory=Memory(location=None),
+    memory=None,
     verbose=0,
     confounds=None,
     sample_mask=None,
@@ -85,6 +86,8 @@ def _filter_and_mask(
         friendly 2D array with shape n_sample x n_features.
 
     """
+    if memory is None:
+        memory = Memory(location=None)
     # Convert input to niimg to check shape.
     # This must be repeated after the shape check because check_niimg will
     # coerce 5D data to 4D, which we don't want.
@@ -116,7 +119,7 @@ def _filter_and_mask(
         )
         parameters = copy_object(parameters)
         # now we can crop
-        mask_img_ = image.crop_img(mask_img_, copy=False)
+        mask_img_ = image.crop_img(mask_img_, copy=False, copy_header=True)
         parameters["target_shape"] = mask_img_.shape
         parameters["target_affine"] = mask_img_.affine
 
@@ -146,7 +149,9 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
 
     NiftiMasker is useful when preprocessing (detrending, standardization,
     resampling, etc.) of in-mask :term:`voxels<voxel>` is necessary.
-    Use case: working with time series of :term:`resting-state` or task maps.
+
+    Use case:
+    working with time series of :term:`resting-state` or task maps.
 
     Parameters
     ----------
@@ -252,11 +257,13 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         mask_args=None,
         dtype=None,
         memory_level=1,
-        memory=Memory(location=None),
+        memory=None,
         verbose=0,
         reports=True,
         **kwargs,
     ):
+        if memory is None:
+            memory = Memory(location=None)
         # Mask is provided or computed
         self.mask_img = mask_img
         self.runs = runs
@@ -344,7 +351,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
                 "No image provided to fit in NiftiMasker. "
                 "Setting image to mask for reporting."
             )
-            warnings.warn(msg)
+            warnings.warn(msg, stacklevel=6)
             self._report_content["warning_message"] = msg
             img = mask
         if self._reporting_data["dim"] == 5:
@@ -352,7 +359,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
                 "A list of 4D subject images were provided to fit. "
                 "Only first subject is shown in the report."
             )
-            warnings.warn(msg)
+            warnings.warn(msg, stacklevel=6)
             self._report_content["warning_message"] = msg
         # create display of retained input mask, image
         # for visual comparison
@@ -428,6 +435,12 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
 
         # Compute the mask if not given by the user
         if self.mask_img is None:
+            if imgs is None:
+                raise ValueError(
+                    "Parameter 'imgs' must be provided to "
+                    f"{self.__class__.__name__}.fit() "
+                    "if no mask is passed to mask_img."
+                )
             mask_args = self.mask_args if self.mask_args is not None else {}
             compute_mask = _get_mask_strategy(self.mask_strategy)
             if self.verbose > 0:
@@ -462,6 +475,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             target_shape=self.target_shape,
             copy=False,
             interpolation="nearest",
+            copy_header=True,
         )
 
         if self.target_affine is not None:  # resample image to target affine
@@ -470,12 +484,12 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             self.affine_ = self.mask_img_.affine
 
         # Load data in memory, while also checking that mask is binary/valid
-        data, _ = masking._load_mask_img(self.mask_img_, allow_empty=True)
+        data, _ = masking.load_mask_img(self.mask_img_, allow_empty=True)
 
         # Infer the number of elements (voxels) in the mask
         self.n_elements_ = int(data.sum())
 
-        if self.verbose > 10:
+        if self.verbose > 0:
             print(f"[{self.__class__.__name__}.fit] Finished fit")
 
         if (
@@ -489,6 +503,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
                     target_affine=self.affine_,
                     copy=False,
                     interpolation="nearest",
+                    copy_header=True,
                 )
                 resampl_imgs, _ = compute_middle_image(resampl_imgs)
             else:  # imgs not provided to fit
