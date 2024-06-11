@@ -34,7 +34,7 @@ repos:
 
 # Automatically upgrade syntax for newer versions of the language.
 -   repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.2
+    rev: v3.16.0
     hooks:
     -   id: pyupgrade
         args: [--py38-plus]
