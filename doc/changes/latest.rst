@@ -13,6 +13,8 @@ Fixes
 
 - :bdg-dark:`Code` Fix failing test in ``test_nilearn_standardize`` on MacOS 14 by adding trend in simulated data (:gh:`4411` by `Hao-Ting Wang`_).
 
+- :bdg-dark:`Code` Fix previous Glover HRF implementation to fit the original paper (Glover, 1999) (:gh:`4452` by `Kun CHEN`_).
+
 Enhancements
 ------------
 
