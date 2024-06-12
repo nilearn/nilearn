@@ -24,6 +24,7 @@ Enhancements
 
 - :bdg-dark:`Code` Add footer to masker reports (:gh:`4307` by `Rémi Gau`_).
 
+- :bdg-dark:`Code` Add a :meth:`~glm.first_level.FirstLevelModel.fit_array` method to first first level GLMs directly to 2D array (:gh:`4112` by TODO henrymj and `Rémi Gau`_).
 
 Changes
 -------
