@@ -491,6 +491,100 @@ class FirstLevelModel(BaseGLM):
         )
         return self.signal_scaling
 
+    def _check_fit_inputs(
+        self,
+        run_imgs,
+        events,
+        confounds,
+        sample_masks,
+        design_matrices,
+    ):
+        # Raise a warning if both design_matrices and confounds are provided
+        if design_matrices is not None and (
+            confounds is not None or events is not None
+        ):
+            warn(
+                "If design matrices are supplied, "
+                "confounds and events will be ignored."
+            )
+
+        # Check arguments
+        # Check imgs type
+        if events is not None:
+            _check_events_file_uses_tab_separators(events_files=events)
+        if not isinstance(run_imgs, (list, tuple)):
+            run_imgs = [run_imgs]
+        if design_matrices is None:
+            if events is None:
+                raise ValueError("events or design matrices must be provided")
+            if self.t_r is None:
+                raise ValueError(
+                    "t_r not given to FirstLevelModel object"
+                    " to compute design from events"
+                )
+        else:
+            design_matrices = _check_run_tables(
+                run_imgs, design_matrices, "design_matrices"
+            )
+
+        # Check that number of events and confound files match number of runs
+        # Also check that events and confound files can be loaded as DataFrame
+        if events is not None:
+            events = _check_run_tables(run_imgs, events, "events")
+        if confounds is not None:
+            confounds = _check_run_tables(run_imgs, confounds, "confounds")
+
+        if sample_masks is not None:
+            sample_masks = check_run_sample_masks(len(run_imgs), sample_masks)
+
+        return (
+            run_imgs,
+            events,
+            confounds,
+            sample_masks,
+            design_matrices,
+        )
+
+    def _log(
+        self, step, run_idx=None, n_runs=None, t0=None, time_in_second=None
+    ):
+        if self.verbose < 1:
+            return None
+
+        if step == "progress":
+            msg = self._report_progress(run_idx, n_runs, t0)
+        elif step == "running":
+            msg = "Performing GLM computation."
+        elif step == "run_done":
+            msg = f"GLM took {int(time_in_second)} seconds."
+        elif step == "masking":
+            msg = "Performing mask computation\r"
+        elif step == "masking_done":
+            msg = f"Masking took {int(time_in_second)} seconds."
+        elif step == "done":
+            msg = (
+                f"Computation of {n_runs} runs done "
+                f"in {int(time_in_second)} seconds."
+            )
+
+        sys.stderr.write(f"\n{msg}\n")
+
+    def _report_progress(self, run_idx, n_runs, t0):
+        percent = float(run_idx) / n_runs
+        percent = round(percent * 100, 2)
+        dt = time.time() - t0
+        # We use a max to avoid a division by zero
+        if run_idx == 0:
+            remaining = "go take a coffee, a big one"
+        else:
+            remaining = (100.0 - percent) / max(0.01, percent) * dt
+            remaining = f"{int(remaining)} seconds remaining"
+
+        return (
+            f"Computing run {run_idx + 1} "
+            f"out of {n_runs} runs ({remaining})."
+        )
+
     def fit(
         self,
         run_imgs,
@@ -657,100 +751,6 @@ class FirstLevelModel(BaseGLM):
         self._log("done", n_runs=n_runs, time_in_second=time.time() - t0)
 
         return self
-
-    def _check_fit_inputs(
-        self,
-        run_imgs,
-        events,
-        confounds,
-        sample_masks,
-        design_matrices,
-    ):
-        # Raise a warning if both design_matrices and confounds are provided
-        if design_matrices is not None and (
-            confounds is not None or events is not None
-        ):
-            warn(
-                "If design matrices are supplied, "
-                "confounds and events will be ignored."
-            )
-
-        # Check arguments
-        # Check imgs type
-        if events is not None:
-            _check_events_file_uses_tab_separators(events_files=events)
-        if not isinstance(run_imgs, (list, tuple)):
-            run_imgs = [run_imgs]
-        if design_matrices is None:
-            if events is None:
-                raise ValueError("events or design matrices must be provided")
-            if self.t_r is None:
-                raise ValueError(
-                    "t_r not given to FirstLevelModel object"
-                    " to compute design from events"
-                )
-        else:
-            design_matrices = _check_run_tables(
-                run_imgs, design_matrices, "design_matrices"
-            )
-
-        # Check that number of events and confound files match number of runs
-        # Also check that events and confound files can be loaded as DataFrame
-        if events is not None:
-            events = _check_run_tables(run_imgs, events, "events")
-        if confounds is not None:
-            confounds = _check_run_tables(run_imgs, confounds, "confounds")
-
-        if sample_masks is not None:
-            sample_masks = check_run_sample_masks(len(run_imgs), sample_masks)
-
-        return (
-            run_imgs,
-            events,
-            confounds,
-            sample_masks,
-            design_matrices,
-        )
-
-    def _log(
-        self, step, run_idx=None, n_runs=None, t0=None, time_in_second=None
-    ):
-        if self.verbose < 1:
-            return None
-
-        if step == "progress":
-            msg = self._report_progress(run_idx, n_runs, t0)
-        elif step == "running":
-            msg = "Performing GLM computation."
-        elif step == "run_done":
-            msg = f"GLM took {int(time_in_second)} seconds."
-        elif step == "masking":
-            msg = "Performing mask computation\r"
-        elif step == "masking_done":
-            msg = f"Masking took {int(time_in_second)} seconds."
-        elif step == "done":
-            msg = (
-                f"Computation of {n_runs} runs done "
-                f"in {int(time_in_second)} seconds."
-            )
-
-        sys.stderr.write(f"\n{msg}\n")
-
-    def _report_progress(self, run_idx, n_runs, t0):
-        percent = float(run_idx) / n_runs
-        percent = round(percent * 100, 2)
-        dt = time.time() - t0
-        # We use a max to avoid a division by zero
-        if run_idx == 0:
-            remaining = "go take a coffee, a big one"
-        else:
-            remaining = (100.0 - percent) / max(0.01, percent) * dt
-            remaining = f"{int(remaining)} seconds remaining"
-
-        return (
-            f"Computing run {run_idx + 1} "
-            f"out of {n_runs} runs ({remaining})."
-        )
 
     def fit_arrays(
         self,
