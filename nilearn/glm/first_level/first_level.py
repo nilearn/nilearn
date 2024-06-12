@@ -604,8 +604,6 @@ class FirstLevelModel(BaseGLM):
             self._log("masking_done", time_in_second=time.time() - t_masking)
         else:
             Y = run_img
-            if len(Y.shape) != 2:
-                raise DimensionError(len(Y.shape), 2)
 
         if self.signal_scaling is not False:
             Y, _ = mean_scaling(Y, self.signal_scaling)
@@ -716,7 +714,9 @@ class FirstLevelModel(BaseGLM):
 
         Parameters
         ----------
-        run_imgs : numpy array or list of numpy arrays,
+        run_imgs : numpy array,\
+                   :obj:`list` of numpy arrays or \
+                   :obj:`tuple` of numpy arrays
             Data on which the :term:`GLM` will be fitted.
 
         events : pandas Dataframe or string or list of pandas DataFrames \
@@ -755,6 +755,18 @@ class FirstLevelModel(BaseGLM):
             will be clustered via K-means with `bins` number of clusters.
 
         """
+        if not isinstance(run_imgs, (np.ndarray, list, tuple)) or (
+            isinstance(run_imgs, (list, tuple))
+            and any(not isinstance(x, np.ndarray) for x in run_imgs)
+        ):
+            input_type = type(run_imgs)
+            if isinstance(run_imgs, list):
+                input_type = [type(x) for x in run_imgs]
+            raise TypeError(
+                "'run_imgs' must be a numpy array or a list of numpy array.\n"
+                f"Got: {input_type}"
+            )
+
         run_imgs, events, confounds, sample_masks, design_matrices = (
             self._check_fit_inputs(
                 run_imgs,
@@ -764,6 +776,11 @@ class FirstLevelModel(BaseGLM):
                 design_matrices,
             )
         )
+
+        # All arrays must be 2 dimensional
+        for x in run_imgs:
+            if len(x.shape) != 2:
+                raise DimensionError(len(x.shape), 2)
 
         self.design_matrices_ = self._create_all_designs(
             run_imgs, events, confounds, design_matrices
@@ -799,8 +816,10 @@ class FirstLevelModel(BaseGLM):
 
         Parameters
         ----------
-        run_imgs : Niimg-like object, :obj:`list` of Niimg-like objects, \
-                   SurfaceImage object, or :obj:`list` of SurfaceImage
+        run_imgs : Niimg-like object, \
+                   :obj:`list`or :obj:`tuple` of Niimg-like objects, \
+                   SurfaceImage object, \
+                   or :obj:`list` or :obj:`tuple` of SurfaceImage
             Data on which the :term:`GLM` will be fitted. If this is a list,
             the affine is considered the same for all.
 
@@ -840,8 +859,28 @@ class FirstLevelModel(BaseGLM):
             will be clustered via K-means with `bins` number of clusters.
 
         """
-        # Initialize masker_ to None such that attribute exists
-        self.masker_ = None
+        if not isinstance(
+            run_imgs, (str, Path, Nifti1Image, SurfaceImage, list, tuple)
+        ) or (
+            isinstance(run_imgs, (list, tuple))
+            and not all(
+                isinstance(x, (str, Path, Nifti1Image, SurfaceImage))
+                for x in run_imgs
+            )
+        ):
+            input_type = type(run_imgs)
+            if isinstance(run_imgs, list):
+                input_type = [type(x) for x in run_imgs]
+            raise TypeError(
+                "'run_imgs' must be a single instance / a list "
+                "of any of the following:\n"
+                "- string\n"
+                "- pathlib.Path\n"
+                "- NiftiImage\n"
+                "- SurfaceImage\n"
+                f"Got: {input_type}"
+            )
+
         run_imgs, events, confounds, sample_masks, design_matrices = (
             self._check_fit_inputs(
                 run_imgs,
@@ -851,6 +890,9 @@ class FirstLevelModel(BaseGLM):
                 design_matrices,
             )
         )
+
+        # Initialize masker_ to None such that attribute exists
+        self.masker_ = None
 
         self._prepare_mask(run_imgs[0])
 
