@@ -53,13 +53,16 @@ End pure-button class definition from pure-min.css
 */
 
 div.nilearn_report {
-  padding-top: 0px;
   border: solid rgb(150, 150, 150);
   border-width: 1pt;
   border-radius: 6pt;
   overflow: hidden; /* Needed to avoid scrolling in jupyter :( */
   color: black;
   background-color: white;
+  padding: 0px 0px 10px 0px;
+  margin-left: auto;
+  margin-right: auto;
+  font-family: sans-serif;
 }
 
 .terminal div.nilearn_report {

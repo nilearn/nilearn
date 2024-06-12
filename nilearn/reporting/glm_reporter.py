@@ -64,7 +64,7 @@ def make_glm_report(
     plot_type="slice",
     cut_coords=None,
     display_mode=None,
-    report_dims=(1600, 800),
+    report_dims=(900, 800),
 ):
     """Return HTMLReport object \
     for a report which shows all important aspects of a fitted GLM.
