@@ -651,8 +651,12 @@ class FirstLevelModel(BaseGLM):
             )
         )
 
+        self.design_matrices_ = self._create_designs(
+            run_imgs, events, confounds, design_matrices
+        )
+
         # For each run fit the model and keep only the regression results.
-        self.labels_, self.results_, self.design_matrices_ = [], [], []
+        self.labels_, self.results_ = [], []
         n_runs = len(run_imgs)
         t0 = time.time()
         for run_idx, Y in enumerate(run_imgs):
@@ -662,23 +666,18 @@ class FirstLevelModel(BaseGLM):
             if len(Y.shape) != 2:
                 raise DimensionError(len(Y.shape), 2)
 
-            n_scans = Y.shape[1]
+            design = self.design_matrices_[run_idx]
 
-            design = self._build_experimental_design(
-                n_scans, events, confounds, design_matrices, run_idx
-            )
-
+            sample_mask = None
             if sample_masks is not None:
                 sample_mask = sample_masks[run_idx]
                 design = design.iloc[sample_mask, :]
+                self.design_matrices_[run_idx] = design
                 Y = Y[:, sample_mask]
-            else:
-                sample_mask = None
-
-            self.design_matrices_.append(design)
 
             if self.signal_scaling is not False:
                 Y, _ = mean_scaling(Y, self.signal_scaling)
+
             if self.memory:
                 mem_glm = self.memory.cache(run_glm, ignore=["n_jobs"])
             else:
@@ -711,12 +710,33 @@ class FirstLevelModel(BaseGLM):
 
         return self
 
-    def _build_experimental_design(
-        self, n_scans, events, confounds, design_matrices, run_idx
-    ):
+    def _create_designs(self, run_imgs, events, confounds, design_matrices):
+        """Build experimental design of all runs."""
         if design_matrices is not None:
-            return design_matrices[run_idx]
+            return design_matrices
 
+        design_matrices = []
+
+        for run_idx, run_img in enumerate(run_imgs):
+
+            if isinstance(run_img, SurfaceImage):
+                n_scans = run_img.shape[0]
+            elif isinstance(run_img, np.ndarray):
+                n_scans = run_img.shape[1]
+            else:
+                run_img = check_niimg(run_img, ensure_ndim=4)
+                n_scans = get_data(run_img).shape[3]
+
+            design = self._build_experimental_design(
+                n_scans, events, confounds, run_idx
+            )
+
+            design_matrices.append(design)
+
+        return design_matrices
+
+    def _build_experimental_design(self, n_scans, events, confounds, run_idx):
+        """Build expriemental design of a single run."""
         if confounds is not None:
             confounds_matrix = confounds[run_idx].values
             if confounds_matrix.shape[0] != n_scans:
@@ -821,30 +841,24 @@ class FirstLevelModel(BaseGLM):
 
         self._prepare_mask(run_imgs[0])
 
+        self.design_matrices_ = self._create_designs(
+            run_imgs, events, confounds, design_matrices
+        )
+
         # For each run fit the model and keep only the regression results.
-        self.labels_, self.results_, self.design_matrices_ = [], [], []
+        self.labels_, self.results_ = [], []
         n_runs = len(run_imgs)
         t0 = time.time()
         for run_idx, run_img in enumerate(run_imgs):
             self._log("progress", run_idx=run_idx, n_runs=n_runs, t0=t0)
 
-            if isinstance(run_img, SurfaceImage):
-                n_scans = run_img.shape[0]
-            else:
-                run_img = check_niimg(run_img, ensure_ndim=4)
-                n_scans = get_data(run_img).shape[3]
+            design = self.design_matrices_[run_idx]
 
-            design = self._build_experimental_design(
-                n_scans, events, confounds, design_matrices, run_idx
-            )
-
+            sample_mask = None
             if sample_masks is not None:
                 sample_mask = sample_masks[run_idx]
                 design = design.iloc[sample_mask, :]
-            else:
-                sample_mask = None
-
-            self.design_matrices_.append(design)
+                self.design_matrices_[run_idx] = design
 
             # Mask and prepare data for GLM
             t_masking = time.time()
@@ -855,6 +869,7 @@ class FirstLevelModel(BaseGLM):
 
             if self.signal_scaling is not False:
                 Y, _ = mean_scaling(Y, self.signal_scaling)
+
             if self.memory:
                 mem_glm = self.memory.cache(run_glm, ignore=["n_jobs"])
             else:
@@ -881,7 +896,6 @@ class FirstLevelModel(BaseGLM):
             if self.minimize_memory:
                 for key in results:
                     results[key] = SimpleRegressionResults(results[key])
-
             self.results_.append(results)
             del Y
 
