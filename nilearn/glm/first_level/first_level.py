@@ -569,7 +569,7 @@ class FirstLevelModel(BaseGLM):
         n_runs = len(run_imgs)
         t0 = time.time()
         for run_idx, run_img in enumerate(run_imgs):
-            self._report_progress(run_idx, n_runs, t0)
+            self._log("progress", run_idx=run_idx, n_runs=n_runs, t0=t0)
 
             # Build the experimental design for the glm
             if not isinstance(run_img, SurfaceImage):
@@ -618,18 +618,11 @@ class FirstLevelModel(BaseGLM):
             self.design_matrices_.append(design)
 
             # Mask and prepare data for GLM
-            if self.verbose > 1:
-                t_masking = time.time()
-                sys.stderr.write("Starting masker computation \r")
-
+            t_masking = time.time()
+            self._log("masking")
             Y = self.masker_.transform(run_img, sample_mask=sample_mask)
             del run_img  # Delete unmasked image to save memory
-
-            if self.verbose > 1:
-                t_masking = time.time() - t_masking
-                sys.stderr.write(
-                    f"Masker took {int(t_masking)} seconds       \n"
-                )
+            self._log("masking_done", time_in_second=time.time() - t_masking)
 
             if self.signal_scaling is not False:
                 Y, _ = mean_scaling(Y, self.signal_scaling)
@@ -639,9 +632,9 @@ class FirstLevelModel(BaseGLM):
                 mem_glm = run_glm
 
             # compute GLM
-            if self.verbose > 1:
-                t_glm = time.time()
-                sys.stderr.write("Performing GLM computation\r")
+            t_glm = time.time()
+            self._log("running")
+
             labels, results = mem_glm(
                 Y,
                 design.values,
@@ -650,9 +643,8 @@ class FirstLevelModel(BaseGLM):
                 n_jobs=self.n_jobs,
                 random_state=self.random_state,
             )
-            if self.verbose > 1:
-                t_glm = time.time() - t_glm
-                sys.stderr.write(f"GLM took {int(t_glm)} seconds         \n")
+
+            self._log("run_done", time_in_second=time.time() - t_glm)
 
             self.labels_.append(labels)
             # We save memory if inspecting model details is not necessary
@@ -662,12 +654,8 @@ class FirstLevelModel(BaseGLM):
             self.results_.append(results)
             del Y
 
-        # Report progress
-        if self.verbose > 0:
-            sys.stderr.write(
-                f"\nComputation of {n_runs} runs done "
-                f"in {time.time() - t0} seconds.\n\n"
-            )
+        self._log("done", n_runs=n_runs, time_in_second=time.time() - t0)
+
         return self
 
     def _check_fit_inputs(
@@ -724,22 +712,45 @@ class FirstLevelModel(BaseGLM):
             design_matrices,
         )
 
-    def _report_progress(self, run_idx, n_runs, t0):
-        if self.verbose > 0:
-            percent = float(run_idx) / n_runs
-            percent = round(percent * 100, 2)
-            dt = time.time() - t0
-            # We use a max to avoid a division by zero
-            if run_idx == 0:
-                remaining = "go take a coffee, a big one"
-            else:
-                remaining = (100.0 - percent) / max(0.01, percent) * dt
-                remaining = f"{int(remaining)} seconds remaining"
+    def _log(
+        self, step, run_idx=None, n_runs=None, t0=None, time_in_second=None
+    ):
+        if self.verbose < 1:
+            return None
 
-            sys.stderr.write(
-                f"Computing run {run_idx + 1} "
-                f"out of {n_runs} runs ({remaining})\n"
+        if step == "progress":
+            msg = self._report_progress(run_idx, n_runs, t0)
+        elif step == "running":
+            msg = "Performing GLM computation."
+        elif step == "run_done":
+            msg = f"GLM took {int(time_in_second)} seconds."
+        elif step == "masking":
+            msg = "Performing mask computation\r"
+        elif step == "masking_done":
+            msg = f"Masking took {int(time_in_second)} seconds."
+        elif step == "done":
+            msg = (
+                f"Computation of {n_runs} runs done "
+                f"in {int(time_in_second)} seconds."
             )
+
+        sys.stderr.write(f"\n{msg}\n")
+
+    def _report_progress(self, run_idx, n_runs, t0):
+        percent = float(run_idx) / n_runs
+        percent = round(percent * 100, 2)
+        dt = time.time() - t0
+        # We use a max to avoid a division by zero
+        if run_idx == 0:
+            remaining = "go take a coffee, a big one"
+        else:
+            remaining = (100.0 - percent) / max(0.01, percent) * dt
+            remaining = f"{int(remaining)} seconds remaining"
+
+        return (
+            f"Computing run {run_idx + 1} "
+            f"out of {n_runs} runs ({remaining})."
+        )
 
     def fit_arrays(
         self,
@@ -812,7 +823,8 @@ class FirstLevelModel(BaseGLM):
         n_runs = len(run_imgs)
         t0 = time.time()
         for run_idx, Y in enumerate(run_imgs):
-            self._report_progress(run_idx, n_runs, t0)
+
+            self._log("progress", run_idx=run_idx, n_runs=n_runs, t0=t0)
 
             # Build the experimental design for the glm
             if len(Y.shape) != 2:
@@ -866,9 +878,9 @@ class FirstLevelModel(BaseGLM):
                 mem_glm = run_glm
 
             # compute GLM
-            if self.verbose > 1:
-                t_glm = time.time()
-                sys.stderr.write("Performing GLM computation\r")
+            t_glm = time.time()
+            self._log("running")
+
             labels, results = mem_glm(
                 Y,
                 design.values,
@@ -877,9 +889,8 @@ class FirstLevelModel(BaseGLM):
                 n_jobs=self.n_jobs,
                 random_state=self.random_state,
             )
-            if self.verbose > 1:
-                t_glm = time.time() - t_glm
-                sys.stderr.write(f"GLM took {int(t_glm)} seconds         \n")
+
+            self._log("run_done", time_in_second=time.time() - t_glm)
 
             self.labels_.append(labels)
             # We save memory if inspecting model details is not necessary
@@ -889,12 +900,8 @@ class FirstLevelModel(BaseGLM):
             self.results_.append(results)
             del Y
 
-        # Report progress
-        if self.verbose > 0:
-            sys.stderr.write(
-                f"\nComputation of {n_runs} runs done "
-                f"in {time.time() - t0} seconds.\n\n"
-            )
+        self._log("done", n_runs=n_runs, time_in_second=time.time() - t0)
+
         return self
 
     def compute_contrast(
