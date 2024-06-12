@@ -741,8 +741,6 @@ class FirstLevelModel(BaseGLM):
             dimension to perform scrubbing (remove volumes with high motion)
             and/or remove non-steady-state volumes.
 
-            .. versionadded:: 0.9.2
-
         design_matrices : pandas DataFrame or \
                           list of pandas DataFrames, default=None
             Design matrices that will be used to fit the GLM. If given it
