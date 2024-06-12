@@ -659,40 +659,14 @@ class FirstLevelModel(BaseGLM):
 
             self._log("progress", run_idx=run_idx, n_runs=n_runs, t0=t0)
 
-            # Build the experimental design for the glm
             if len(Y.shape) != 2:
                 raise DimensionError(len(Y.shape), 2)
-            if design_matrices is None:
-                n_scans = Y.shape[1]
-                if confounds is not None:
-                    confounds_matrix = confounds[run_idx].values
-                    if confounds_matrix.shape[0] != n_scans:
-                        raise ValueError(
-                            "Rows in confounds does not match "
-                            "n_scans in run_img "
-                            f"at index {run_idx}."
-                        )
-                    confounds_names = confounds[run_idx].columns.tolist()
-                else:
-                    confounds_matrix = None
-                    confounds_names = None
-                start_time = self.slice_time_ref * self.t_r
-                end_time = (n_scans - 1 + self.slice_time_ref) * self.t_r
-                frame_times = np.linspace(start_time, end_time, n_scans)
-                design = make_first_level_design_matrix(
-                    frame_times,
-                    events[run_idx],
-                    self.hrf_model,
-                    self.drift_model,
-                    self.high_pass,
-                    self.drift_order,
-                    self.fir_delays,
-                    confounds_matrix,
-                    confounds_names,
-                    self.min_onset,
-                )
-            else:
-                design = design_matrices[run_idx]
+
+            n_scans = Y.shape[1]
+
+            design = self._build_experimental_design(
+                n_scans, events, confounds, design_matrices, run_idx
+            )
 
             if sample_masks is not None:
                 sample_mask = sample_masks[run_idx]
@@ -736,6 +710,43 @@ class FirstLevelModel(BaseGLM):
         self._log("done", n_runs=n_runs, time_in_second=time.time() - t0)
 
         return self
+
+    def _build_experimental_design(
+        self, n_scans, events, confounds, design_matrices, run_idx
+    ):
+        if design_matrices is not None:
+            return design_matrices[run_idx]
+
+        if confounds is not None:
+            confounds_matrix = confounds[run_idx].values
+            if confounds_matrix.shape[0] != n_scans:
+                raise ValueError(
+                    "Rows in confounds does not match "
+                    "n_scans in run_img "
+                    f"at index {run_idx}."
+                )
+            confounds_names = confounds[run_idx].columns.tolist()
+        else:
+            confounds_matrix = None
+            confounds_names = None
+
+        start_time = self.slice_time_ref * self.t_r
+        end_time = (n_scans - 1 + self.slice_time_ref) * self.t_r
+        frame_times = np.linspace(start_time, end_time, n_scans)
+        design = make_first_level_design_matrix(
+            frame_times,
+            events[run_idx],
+            self.hrf_model,
+            self.drift_model,
+            self.high_pass,
+            self.drift_order,
+            self.fir_delays,
+            confounds_matrix,
+            confounds_names,
+            self.min_onset,
+        )
+
+        return design
 
     def fit(
         self,
@@ -817,43 +828,15 @@ class FirstLevelModel(BaseGLM):
         for run_idx, run_img in enumerate(run_imgs):
             self._log("progress", run_idx=run_idx, n_runs=n_runs, t0=t0)
 
-            # Build the experimental design for the glm
-            if not isinstance(run_img, SurfaceImage):
-                run_img = check_niimg(run_img, ensure_ndim=4)
-            if design_matrices is None:
-                if isinstance(run_img, SurfaceImage):
-                    n_scans = run_img.shape[0]
-                else:
-                    n_scans = get_data(run_img).shape[3]
-                if confounds is not None:
-                    confounds_matrix = confounds[run_idx].values
-                    if confounds_matrix.shape[0] != n_scans:
-                        raise ValueError(
-                            "Rows in confounds does not match "
-                            "n_scans in run_img "
-                            f"at index {run_idx}."
-                        )
-                    confounds_names = confounds[run_idx].columns.tolist()
-                else:
-                    confounds_matrix = None
-                    confounds_names = None
-                start_time = self.slice_time_ref * self.t_r
-                end_time = (n_scans - 1 + self.slice_time_ref) * self.t_r
-                frame_times = np.linspace(start_time, end_time, n_scans)
-                design = make_first_level_design_matrix(
-                    frame_times,
-                    events[run_idx],
-                    self.hrf_model,
-                    self.drift_model,
-                    self.high_pass,
-                    self.drift_order,
-                    self.fir_delays,
-                    confounds_matrix,
-                    confounds_names,
-                    self.min_onset,
-                )
+            if isinstance(run_img, SurfaceImage):
+                n_scans = run_img.shape[0]
             else:
-                design = design_matrices[run_idx]
+                run_img = check_niimg(run_img, ensure_ndim=4)
+                n_scans = get_data(run_img).shape[3]
+
+            design = self._build_experimental_design(
+                n_scans, events, confounds, design_matrices, run_idx
+            )
 
             if sample_masks is not None:
                 sample_mask = sample_masks[run_idx]
@@ -893,10 +876,12 @@ class FirstLevelModel(BaseGLM):
             self._log("run_done", time_in_second=time.time() - t_glm)
 
             self.labels_.append(labels)
+
             # We save memory if inspecting model details is not necessary
             if self.minimize_memory:
                 for key in results:
                     results[key] = SimpleRegressionResults(results[key])
+
             self.results_.append(results)
             del Y
 
