@@ -549,7 +549,7 @@ class FirstLevelModel(BaseGLM):
     def _log(
         self, step, run_idx=None, n_runs=None, t0=None, time_in_second=None
     ):
-
+        """Generate and log messages for different step of the model fit."""
         if step == "progress":
             msg = self._report_progress(run_idx, n_runs, t0)
         elif step == "running":
@@ -569,13 +569,12 @@ class FirstLevelModel(BaseGLM):
         logger.log(msg, verbose=self.verbose)
 
     def _report_progress(self, run_idx, n_runs, t0):
-        percent = float(run_idx) / n_runs
-        percent = round(percent * 100, 2)
-        dt = time.time() - t0
-        # We use a max to avoid a division by zero
-        if run_idx == 0:
-            remaining = "go take a coffee, a big one"
-        else:
+        remaining = "go take a coffee, a big one"
+        if run_idx != 0:
+            percent = float(run_idx) / n_runs
+            percent = round(percent * 100, 2)
+            dt = time.time() - t0
+            # We use a max to avoid a division by zero
             remaining = (100.0 - percent) / max(0.01, percent) * dt
             remaining = f"{int(remaining)} seconds remaining"
 
