@@ -41,6 +41,11 @@ license: BSD-4-Clause
 
 authors:
   - family-names: Nilearn contributors
+  - given-names: Henry
+    family-names: Jones
+    website: https://github.com/henrymj
+    affiliation: Institute for Mind and Biology, University of Chicago, Chicago, IL, United States of America
+    orcid: https://orcid.org/0000-0001-7719-3646
   - given-names: Ahmad
     family-names: Chamma
     website: https://github.com/achamma723
