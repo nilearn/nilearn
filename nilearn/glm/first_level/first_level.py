@@ -585,6 +585,158 @@ class FirstLevelModel(BaseGLM):
             f"out of {n_runs} runs ({remaining})."
         )
 
+    def fit_arrays(
+        self,
+        run_imgs,
+        events=None,
+        confounds=None,
+        sample_masks=None,
+        design_matrices=None,
+        bins=100,
+    ):
+        """Fit the :term:`GLM`.
+
+        For each run:
+        1. create design matrix X
+        2. fit regression to (Y, X)
+
+        Parameters
+        ----------
+        run_imgs : numpy array or list of numpy arrays,
+            Data on which the :term:`GLM` will be fitted.
+
+        events : pandas Dataframe or string or list of pandas DataFrames \
+                 or strings, default=None
+            :term:`fMRI` events used to build design matrices.
+            One events object expected per run_img.
+            Ignored in case designs is not None.
+            If string, then a path to a csv file is expected.
+
+        confounds : pandas Dataframe, numpy array or string or \
+                    list of pandas DataFrames, numpy arrays or strings, \
+                    default=None
+            Each column in a DataFrame corresponds to a confound variable
+            to be included in the regression model of the respective run_img.
+            The number of rows must match the number of volumes in the
+            respective run_img. Ignored in case designs is not None.
+            If string, then a path to a csv file is expected.
+
+        sample_masks : array_like, or list of array_like, default=None
+            shape of array: (number of scans - number of volumes remove)
+            Indices of retained volumes. Masks the arrays along time/second
+            dimension to perform scrubbing (remove volumes with high motion)
+            and/or remove non-steady-state volumes.
+
+            .. versionadded:: 0.9.2
+
+        design_matrices : pandas DataFrame or \
+                          list of pandas DataFrames, default=None
+            Design matrices that will be used to fit the GLM. If given it
+            takes precedence over events and confounds.
+
+        bins : int, default=100
+            Maximum number of discrete bins for the AR coef histogram.
+            If an autoregressive model with order greater than one is specified
+            then adaptive quantification is performed and the coefficients
+            will be clustered via K-means with `bins` number of clusters.
+
+        """
+        run_imgs, events, confounds, sample_masks, design_matrices = (
+            self._check_fit_inputs(
+                run_imgs,
+                events,
+                confounds,
+                sample_masks,
+                design_matrices,
+            )
+        )
+
+        # For each run fit the model and keep only the regression results.
+        self.labels_, self.results_, self.design_matrices_ = [], [], []
+        n_runs = len(run_imgs)
+        t0 = time.time()
+        for run_idx, Y in enumerate(run_imgs):
+
+            self._log("progress", run_idx=run_idx, n_runs=n_runs, t0=t0)
+
+            # Build the experimental design for the glm
+            if len(Y.shape) != 2:
+                raise DimensionError(len(Y.shape), 2)
+            if design_matrices is None:
+                n_scans = Y.shape[1]
+                if confounds is not None:
+                    confounds_matrix = confounds[run_idx].values
+                    if confounds_matrix.shape[0] != n_scans:
+                        raise ValueError(
+                            "Rows in confounds does not match "
+                            "n_scans in run_img "
+                            f"at index {run_idx}."
+                        )
+                    confounds_names = confounds[run_idx].columns.tolist()
+                else:
+                    confounds_matrix = None
+                    confounds_names = None
+                start_time = self.slice_time_ref * self.t_r
+                end_time = (n_scans - 1 + self.slice_time_ref) * self.t_r
+                frame_times = np.linspace(start_time, end_time, n_scans)
+                design = make_first_level_design_matrix(
+                    frame_times,
+                    events[run_idx],
+                    self.hrf_model,
+                    self.drift_model,
+                    self.high_pass,
+                    self.drift_order,
+                    self.fir_delays,
+                    confounds_matrix,
+                    confounds_names,
+                    self.min_onset,
+                )
+            else:
+                design = design_matrices[run_idx]
+
+            if sample_masks is not None:
+                sample_mask = sample_masks[run_idx]
+                design = design.iloc[sample_mask, :]
+                Y = Y[:, sample_mask]
+            else:
+                sample_mask = None
+
+            self.design_matrices_.append(design)
+
+            if self.signal_scaling is not False:
+                Y, _ = mean_scaling(Y, self.signal_scaling)
+            if self.memory:
+                mem_glm = self.memory.cache(run_glm, ignore=["n_jobs"])
+            else:
+                mem_glm = run_glm
+
+            # compute GLM
+            t_glm = time.time()
+            self._log("running")
+
+            labels, results = mem_glm(
+                Y,
+                design.values,
+                noise_model=self.noise_model,
+                bins=bins,
+                n_jobs=self.n_jobs,
+                random_state=self.random_state,
+            )
+
+            self._log("run_done", time_in_second=time.time() - t_glm)
+
+            self.labels_.append(labels)
+            # We save memory if inspecting model details is not necessary
+            if self.minimize_memory:
+                for key in results:
+                    results[key] = SimpleRegressionResults(results[key])
+            self.results_.append(results)
+            del Y
+
+        self._log("done", n_runs=n_runs, time_in_second=time.time() - t0)
+
+        return self
+
     def fit(
         self,
         run_imgs,
@@ -717,158 +869,6 @@ class FirstLevelModel(BaseGLM):
             Y = self.masker_.transform(run_img, sample_mask=sample_mask)
             del run_img  # Delete unmasked image to save memory
             self._log("masking_done", time_in_second=time.time() - t_masking)
-
-            if self.signal_scaling is not False:
-                Y, _ = mean_scaling(Y, self.signal_scaling)
-            if self.memory:
-                mem_glm = self.memory.cache(run_glm, ignore=["n_jobs"])
-            else:
-                mem_glm = run_glm
-
-            # compute GLM
-            t_glm = time.time()
-            self._log("running")
-
-            labels, results = mem_glm(
-                Y,
-                design.values,
-                noise_model=self.noise_model,
-                bins=bins,
-                n_jobs=self.n_jobs,
-                random_state=self.random_state,
-            )
-
-            self._log("run_done", time_in_second=time.time() - t_glm)
-
-            self.labels_.append(labels)
-            # We save memory if inspecting model details is not necessary
-            if self.minimize_memory:
-                for key in results:
-                    results[key] = SimpleRegressionResults(results[key])
-            self.results_.append(results)
-            del Y
-
-        self._log("done", n_runs=n_runs, time_in_second=time.time() - t0)
-
-        return self
-
-    def fit_arrays(
-        self,
-        run_imgs,
-        events=None,
-        confounds=None,
-        sample_masks=None,
-        design_matrices=None,
-        bins=100,
-    ):
-        """Fit the :term:`GLM`.
-
-        For each run:
-        1. create design matrix X
-        2. fit regression to (Y, X)
-
-        Parameters
-        ----------
-        run_imgs : numpy array or list of numpy arrays,
-            Data on which the :term:`GLM` will be fitted.
-
-        events : pandas Dataframe or string or list of pandas DataFrames \
-                 or strings, default=None
-            :term:`fMRI` events used to build design matrices.
-            One events object expected per run_img.
-            Ignored in case designs is not None.
-            If string, then a path to a csv file is expected.
-
-        confounds : pandas Dataframe, numpy array or string or \
-                    list of pandas DataFrames, numpy arrays or strings, \
-                    default=None
-            Each column in a DataFrame corresponds to a confound variable
-            to be included in the regression model of the respective run_img.
-            The number of rows must match the number of volumes in the
-            respective run_img. Ignored in case designs is not None.
-            If string, then a path to a csv file is expected.
-
-        sample_masks : array_like, or list of array_like, default=None
-            shape of array: (number of scans - number of volumes remove)
-            Indices of retained volumes. Masks the arrays along time/second
-            dimension to perform scrubbing (remove volumes with high motion)
-            and/or remove non-steady-state volumes.
-
-            .. versionadded:: 0.9.2
-
-        design_matrices : pandas DataFrame or \
-                          list of pandas DataFrames, default=None
-            Design matrices that will be used to fit the GLM. If given it
-            takes precedence over events and confounds.
-
-        bins : int, default=100
-            Maximum number of discrete bins for the AR coef histogram.
-            If an autoregressive model with order greater than one is specified
-            then adaptive quantification is performed and the coefficients
-            will be clustered via K-means with `bins` number of clusters.
-
-        """
-        run_imgs, events, confounds, sample_masks, design_matrices = (
-            self._check_fit_inputs(
-                run_imgs,
-                events,
-                confounds,
-                sample_masks,
-                design_matrices,
-            )
-        )
-
-        # For each run fit the model and keep only the regression results.
-        self.labels_, self.results_, self.design_matrices_ = [], [], []
-        n_runs = len(run_imgs)
-        t0 = time.time()
-        for run_idx, Y in enumerate(run_imgs):
-
-            self._log("progress", run_idx=run_idx, n_runs=n_runs, t0=t0)
-
-            # Build the experimental design for the glm
-            if len(Y.shape) != 2:
-                raise DimensionError(len(Y.shape), 2)
-            if design_matrices is None:
-                n_scans = Y.shape[1]
-                if confounds is not None:
-                    confounds_matrix = confounds[run_idx].values
-                    if confounds_matrix.shape[0] != n_scans:
-                        raise ValueError(
-                            "Rows in confounds does not match "
-                            "n_scans in run_img "
-                            f"at index {run_idx}."
-                        )
-                    confounds_names = confounds[run_idx].columns.tolist()
-                else:
-                    confounds_matrix = None
-                    confounds_names = None
-                start_time = self.slice_time_ref * self.t_r
-                end_time = (n_scans - 1 + self.slice_time_ref) * self.t_r
-                frame_times = np.linspace(start_time, end_time, n_scans)
-                design = make_first_level_design_matrix(
-                    frame_times,
-                    events[run_idx],
-                    self.hrf_model,
-                    self.drift_model,
-                    self.high_pass,
-                    self.drift_order,
-                    self.fir_delays,
-                    confounds_matrix,
-                    confounds_names,
-                    self.min_onset,
-                )
-            else:
-                design = design_matrices[run_idx]
-
-            if sample_masks is not None:
-                sample_mask = sample_masks[run_idx]
-                design = design.iloc[sample_mask, :]
-                Y = Y[:, sample_mask]
-            else:
-                sample_mask = None
-
-            self.design_matrices_.append(design)
 
             if self.signal_scaling is not False:
                 Y, _ = mean_scaling(Y, self.signal_scaling)
