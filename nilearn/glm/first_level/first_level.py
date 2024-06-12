@@ -815,7 +815,7 @@ class FirstLevelModel(BaseGLM):
         Parameters
         ----------
         run_imgs : Niimg-like object, \
-                   :obj:`list`or :obj:`tuple` of Niimg-like objects, \
+                   :obj:`list` or :obj:`tuple` of Niimg-like objects, \
                    SurfaceImage object, \
                    or :obj:`list` or :obj:`tuple` of SurfaceImage
             Data on which the :term:`GLM` will be fitted. If this is a list,
