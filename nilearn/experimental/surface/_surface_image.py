@@ -199,8 +199,7 @@ class SurfaceImage:
 
     def to_filename(self, filename: str | Path):
         """Save to file."""
-        for part in self.mesh.parts:
-            print(part)
+        for part in self.data.parts:
 
             filename = Path(filename)
 
