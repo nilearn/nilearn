@@ -31,7 +31,14 @@ collect_ignore_glob = ["reporting/_visual_testing/*"]
 try:
     import matplotlib  # noqa: F401
 except ImportError:
-    collect_ignore.extend(["plotting", "reporting", "experimental/plotting"])
+    collect_ignore.extend(
+        [
+            "plotting",
+            "reporting",
+            "experimental/plotting",
+            "experimental/reporting",
+        ]
+    )
     matplotlib = None
 
 
