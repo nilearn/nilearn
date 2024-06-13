@@ -34,6 +34,22 @@ def check_same_n_vertices(mesh_1: PolyMesh, mesh_2: PolyMesh) -> None:
             )
 
 
+def _compute_mean_image(img: SurfaceImage):
+    """Compute mean of the surface (for 'time series')."""
+    if len(img.shape) <= 1:
+        return img
+    for part, value in img.data.parts.items():
+        img.data.parts[part] = np.squeeze(value.mean(axis=0)).astype(float)
+    return img
+
+
+def _get_min_max(img: SurfaceImage):
+    """Get min and max across hemisphere for a SurfaceImage."""
+    vmin = min(min(x) for x in img.data.parts.values())
+    vmax = max(max(x) for x in img.data.parts.values())
+    return vmin, vmax
+
+
 class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
     """Extract data from a SurfaceImage."""
 
@@ -98,7 +114,6 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         self._reporting_data = {
             "mask": None,
             "images": None,
-            "data_to_plot": None,
         }
 
     def _fit_mask_img(self, img: SurfaceImage | None) -> None:
@@ -356,16 +371,8 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         else:
             background_data = self.mask_img_
 
-        if len(background_data.shape) > 1:
-            # keep only first image to plot on
-            # TODO take the mean ?
-            for part in background_data.data.parts:
-                background_data.data.parts[part] = background_data.data.parts[
-                    part
-                ][0, ...].astype(float)
-
-        vmin = min(min(x) for x in background_data.data.parts.values())
-        vmax = max(max(x) for x in background_data.data.parts.values())
+        background_data = _compute_mean_image(background_data)
+        vmin, vmax = _get_min_max(background_data)
 
         views = ["lateral", "medial"]
         hemispheres = ["left", "right"]
@@ -675,19 +682,9 @@ class SurfaceLabelsMasker(BaseEstimator):
         labels_img = self._reporting_data["labels_image"]
 
         img = self._reporting_data["images"]
-
         if img:
-            if len(img.shape) > 1:
-                # average each hemisphere in case of a time series
-                for part, value in img.data.parts.items():
-                    img.data.parts[part] = np.squeeze(
-                        value.mean(axis=0)
-                    ).astype("float32", casting="unsafe")
-            data_to_plot = np.concatenate(
-                list(img.data.parts.values()), axis=-1
-            )
-            vmin = data_to_plot.min()
-            vmax = data_to_plot.max()
+            img = _compute_mean_image(img)
+            vmin, vmax = _get_min_max(img)
 
         views = ["lateral", "medial"]
         hemispheres = ["left", "right"]
