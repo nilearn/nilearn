@@ -17,40 +17,55 @@ from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiMasker
 
 
-def test_auto_mask():
-    # This mostly a smoke test
-    data = np.zeros((9, 9, 9))
+@pytest.fixture
+def data_2(shape_3d_default):
+    data = np.zeros(shape_3d_default)
     data[2:-2, 2:-2, 2:-2] = 10
-    img = Nifti1Image(data, np.eye(4))
+    return data
+
+
+@pytest.fixture
+def img_2(data_2, affine_eye):
+    return Nifti1Image(data_2, affine_eye)
+
+
+def test_auto_mask(data_1, img_1, data_2, img_2):
+    # This mostly a smoke test
+    masker = MultiNiftiMasker(mask_args=dict(opening=0))
+
+    # Smoke test the fit
+    masker.fit([[img_1]])
+
+    # Test mask intersection
+    masker.fit([[img_1, img_2]])
+    assert_array_equal(
+        get_data(masker.mask_img_), np.logical_or(data_1, data_2)
+    )
+    # Smoke test the transform
+    masker.transform([[img_1]])
+    # It should also work with a 3D image
+    masker.transform(img_1)
+
+
+def test_auto_mask_errors(img_1, img_2):
     masker = MultiNiftiMasker(mask_args=dict(opening=0))
     # Check that if we have not fit the masker we get a intelligible
     # error
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="has not been fitted. "):
         masker.transform(
-            [[img]],
+            [[img_1]],
         )
     # Check error return due to bad data format
-    with pytest.raises(ValueError):
-        masker.fit(img)
-    # Smoke test the fit
-    masker.fit([[img]])
-
-    # Test mask intersection
-    data2 = np.zeros((9, 9, 9))
-    data2[1:-3, 1:-3, 1:-3] = 10
-    img2 = Nifti1Image(data2, np.eye(4))
-
-    masker.fit([[img, img2]])
-    assert_array_equal(get_data(masker.mask_img_), np.logical_or(data, data2))
-    # Smoke test the transform
-    masker.transform([[img]])
-    # It should also work with a 3D image
-    masker.transform(img)
+    with pytest.raises(
+        ValueError,
+        match="For multiple processing, you should  provide a list of data",
+    ):
+        masker.fit(img_1)
 
     # check exception when transform() called without prior fit()
-    masker2 = MultiNiftiMasker(mask_img=img)
+    masker2 = MultiNiftiMasker(mask_img=img_1)
     with pytest.raises(ValueError, match="has not been fitted. "):
-        masker2.transform(img2)
+        masker2.transform(img_2)
 
 
 def test_nan():
@@ -63,9 +78,12 @@ def test_nan():
     data[:, :, -1] = np.nan
     data[3:-3, 3:-3, 3:-3] = 10
     img = Nifti1Image(data, np.eye(4))
+
     masker = MultiNiftiMasker(mask_args=dict(opening=0))
     masker.fit([img])
+
     mask = get_data(masker.mask_img_)
+
     assert mask[1:-1, 1:-1, 1:-1].all()
     assert not mask[0].any()
     assert not mask[:, 0].any()
@@ -82,6 +100,7 @@ def test_different_affines():
     )
     epi_img1 = Nifti1Image(np.ones((4, 4, 4, 3)), affine=np.diag((2, 2, 2, 1)))
     epi_img2 = Nifti1Image(np.ones((3, 3, 3, 3)), affine=np.diag((3, 3, 3, 1)))
+
     masker = MultiNiftiMasker(mask_img=mask_img)
     epis = masker.fit_transform([epi_img1, epi_img2])
     for this_epi in epis:
@@ -110,27 +129,23 @@ def test_3d_images():
     assert hasattr(masker, "mask_img_")
     assert hasattr(masker, "n_elements_")
 
-    # verify that 4D mask arguments are refused
-    mask_img_4d = Nifti1Image(
-        np.ones((2, 2, 2, 2), dtype=np.int8), affine=np.diag((4, 4, 4, 1))
-    )
-    masker2 = MultiNiftiMasker(mask_img=mask_img_4d)
+
+def test_3d_images_error(img_4d_ones_eye):
+    """Verify that 4D mask arguments are refused."""
+    masker2 = MultiNiftiMasker(mask_img=img_4d_ones_eye)
     with pytest.raises(
         DimensionError,
         match="Input data has incompatible dimensionality: "
-        "Expected dimension is 3D and you provided "
-        "a 4D image.",
+        "Expected dimension is 3D and you provided a 4D image.",
     ):
         masker2.fit()
 
 
-def test_joblib_cache(tmp_path):
+def test_joblib_cache(data_1, affine_eye, tmp_path):
     from joblib import hash
 
     # Dummy mask
-    mask = np.zeros((40, 40, 40))
-    mask[20, 20, 20] = 1
-    mask_img = Nifti1Image(mask, np.eye(4))
+    mask_img = Nifti1Image(data_1, affine_eye)
 
     filename = write_imgs_to_path(
         mask_img, file_path=tmp_path, create_files=True
@@ -139,6 +154,7 @@ def test_joblib_cache(tmp_path):
     masker.fit()
     mask_hash = hash(masker.mask_img_)
     get_data(masker.mask_img_)
+
     assert mask_hash == hash(masker.mask_img_)
     # enables to delete "filename" on windows
     del masker
@@ -167,6 +183,7 @@ def test_shelving():
         epi = masker.fit_transform(epi_img1)
         epi_shelved = masker_shelved.fit_transform(epi_img1)
         epi_shelved = epi_shelved.get()
+
         assert_array_equal(epi_shelved, epi)
     finally:
         # enables to delete "filename" on windows
@@ -179,14 +196,16 @@ def _get_random_imgs(shape, length):
     return [Nifti1Image(rng.uniform(size=shape), np.eye(4))] * length
 
 
-def test_mask_strategy_errors():
+def test_mask_strategy_errors(shape_3d_default):
     # Error with unknown mask_strategy
-    imgs = _get_random_imgs((9, 9, 5), 2)
+    imgs = _get_random_imgs(shape_3d_default, 2)
     mask = MultiNiftiMasker(mask_strategy="foo")
+
     with pytest.raises(
         ValueError, match="Unknown value of mask_strategy 'foo'"
     ):
         mask.fit(imgs)
+
     # Warning with deprecated 'template' strategy,
     # plus an exception because there's no resulting mask
     mask = MultiNiftiMasker(mask_strategy="template")
@@ -199,24 +218,27 @@ def test_mask_strategy_errors():
 @pytest.mark.parametrize(
     "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
 )
-def test_compute_mask_strategy(strategy):
-    imgs = _get_random_imgs((9, 9, 5), 2)
+def test_compute_mask_strategy(strategy, shape_3d_default):
+    imgs = _get_random_imgs(shape_3d_default, 2)
+
     masker = MultiNiftiMasker(mask_strategy=strategy, mask_args={"opening": 1})
     masker.fit(imgs)
+
     # Check that the order of the images does not change the output
     masker2 = MultiNiftiMasker(
         mask_strategy=strategy, mask_args={"opening": 1}
     )
     masker2.fit(imgs[::-1])
-    mask_ref = np.zeros((9, 9, 5), dtype="int8")
+    mask_ref = np.zeros(shape_3d_default, dtype="int8")
+
     np.testing.assert_array_equal(get_data(masker.mask_img_), mask_ref)
     np.testing.assert_array_equal(get_data(masker2.mask_img_), mask_ref)
 
 
-def test_dtype():
-    data = np.zeros((9, 9, 9), dtype=np.float64)
+def test_dtype(shape_3d_default, affine_eye):
+    data = np.zeros(shape_3d_default, dtype=np.float64)
     data[2:-2, 2:-2, 2:-2] = 10
-    img = Nifti1Image(data, np.eye(4))
+    img = Nifti1Image(data, affine_eye)
 
     masker = MultiNiftiMasker(dtype="auto")
     masker.fit([[img]])
@@ -225,22 +247,25 @@ def test_dtype():
     assert masked_img[0].dtype == np.float32
 
 
-def test_standardization(rng):
-    data_shape = (9, 9, 5)
+def test_standardization(rng, shape_3d_default, affine_eye):
     n_samples = 500
 
-    signals = rng.standard_normal(size=(2, np.prod(data_shape), n_samples))
-    means = rng.standard_normal(size=(2, np.prod(data_shape), 1)) * 50 + 1000
+    signals = rng.standard_normal(
+        size=(2, np.prod(shape_3d_default), n_samples)
+    )
+    means = (
+        rng.standard_normal(size=(2, np.prod(shape_3d_default), 1)) * 50 + 1000
+    )
     signals += means
 
     img1 = Nifti1Image(
-        signals[0].reshape(data_shape + (n_samples,)), np.eye(4)
+        signals[0].reshape(shape_3d_default + (n_samples,)), affine_eye
     )
     img2 = Nifti1Image(
-        signals[1].reshape(data_shape + (n_samples,)), np.eye(4)
+        signals[1].reshape(shape_3d_default + (n_samples,)), affine_eye
     )
 
-    mask = Nifti1Image(np.ones(data_shape), np.eye(4))
+    mask = Nifti1Image(np.ones(shape_3d_default), affine_eye)
 
     # z-score
     masker = MultiNiftiMasker(mask, standardize="zscore_sample")
