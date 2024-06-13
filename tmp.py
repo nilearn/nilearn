@@ -57,7 +57,7 @@ for sub in subjects:
         hrf_model="spm + derivative", t_r=meta["RepetitionTime"]
     )
 
-    flm.fit(run_img, events=events)
+    flm.fit([run_img], events=[events])
     output = flm.compute_contrast("pumps_demean")
 
     # first_image = SurfaceImage(

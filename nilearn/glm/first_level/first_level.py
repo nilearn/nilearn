@@ -567,8 +567,6 @@ class FirstLevelModel(BaseGLM):
             _check_events_file_uses_tab_separators(events_files=events)
         if not isinstance(run_imgs, (list, tuple)):
             run_imgs = [run_imgs]
-        if not isinstance(events, (list, tuple)):
-            events = [events]
         if design_matrices is None:
             if events is None:
                 raise ValueError("events or design matrices must be provided")
