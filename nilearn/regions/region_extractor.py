@@ -207,12 +207,15 @@ def connected_regions(
 
     if mask_img is not None:
         if not check_same_fov(maps_img, mask_img):
+            # TODO switch to force_resample=True
+            # when bumping to version > 0.13
             mask_img = resample_img(
                 mask_img,
                 target_affine=maps_img.affine,
                 target_shape=maps_img.shape[:3],
                 interpolation="nearest",
                 copy_header=True,
+                force_resample=False,
             )
         mask_data, _ = masking.load_mask_img(mask_img)
         # Set as 0 to the values which are outside of the mask

@@ -413,6 +413,8 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
             if self.verbose > 0:
                 print("Resampling maps")
 
+            # TODO switch to force_resample=True
+            # when bumping to version > 0.13
             self.maps_img_ = image.resample_img(
                 self.maps_img_,
                 target_affine=self.mask_img_.affine,
@@ -420,12 +422,15 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 interpolation="continuous",
                 copy=True,
                 copy_header=True,
+                force_resample=False,
             )
 
         elif self.resampling_target == "maps" and self.mask_img_ is not None:
             if self.verbose > 0:
                 print("Resampling mask")
 
+            # TODO switch to force_resample=True
+            # when bumping to version > 0.13
             self.mask_img_ = image.resample_img(
                 self.mask_img_,
                 target_affine=self.maps_img_.affine,
@@ -433,6 +438,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 interpolation="nearest",
                 copy=True,
                 copy_header=True,
+                force_resample=False,
             )
 
         if self.reports:
@@ -542,12 +548,15 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
             ):
                 if self.verbose > 0:
                     print("Resampling maps")
+                # TODO switch to force_resample=True
+                # when bumping to version > 0.13
                 self._resampled_maps_img_ = self._cache(image.resample_img)(
                     self.maps_img_,
                     interpolation="continuous",
                     target_shape=ref_img.shape[:3],
                     target_affine=ref_img.affine,
                     copy_header=True,
+                    force_resample=False,
                 )
 
             if (
@@ -559,12 +568,15 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
             ):
                 if self.verbose > 0:
                     print("Resampling mask")
+                # TODO switch to force_resample=True
+                # when bumping to version > 0.13
                 self._resampled_mask_img_ = self._cache(image.resample_img)(
                     self.mask_img_,
                     interpolation="nearest",
                     target_shape=ref_img.shape[:3],
                     target_affine=ref_img.affine,
                     copy_header=True,
+                    force_resample=False,
                 )
 
         if not self.allow_overlap:

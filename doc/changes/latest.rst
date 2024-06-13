@@ -20,7 +20,10 @@ Enhancements
 
 - :bdg-primary:`Doc` Add example to demonstrate the use of the new ``copy_header_from`` parameter in :func:`nilearn.image.math_img` (:gh:`4392` by `Himanshu Aggarwal`_).
 
+- :bdg-primary:`Doc` Adapt examples showing how to plot events and design matrices to show how to use parametric modulation. Also implement modulation of events in :func:`nilearn.plotting.plot_event` (:gh:`4436` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Add footer to masker reports (:gh:`4307` by `Rémi Gau`_).
+
 
 Changes
 -------
