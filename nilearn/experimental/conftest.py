@@ -72,7 +72,8 @@ def mini_img(make_mini_img) -> SurfaceImage:
 def mini_binary_mask(mini_mesh) -> SurfaceImage:
     """Return small surface label image."""
     data = PolyData(
-        left=np.asarray([0, 0, 1, 1]), right=np.asarray([1, 1, 0, 0, 0])
+        left=np.asarray([False, False, True, True]),
+        right=np.asarray([True, True, False, False, False]),
     )
     return SurfaceImage(mini_mesh, data)
 

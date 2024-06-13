@@ -73,6 +73,9 @@ Surface maskers
    :file: surface_masker.html
 
 .. raw:: html
+   :file: surface_masker_with_mask.html
+
+.. raw:: html
    :file: surface_label_masker_unfitted.html
 
 .. raw:: html

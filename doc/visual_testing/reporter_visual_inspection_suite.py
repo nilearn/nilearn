@@ -437,6 +437,28 @@ def report_surface_masker():
     surface_masker_report = masker.generate_report()
     surface_masker_report.save_as_html(REPORTS_DIR / "surface_masker.html")
 
+    labels_img, _ = surface.fetch_destrieux(mesh_type="inflated")
+
+    mask = labels_img
+    for part in mask.data.parts:
+        mask.data.parts[part] = mask.data.parts[part] == 34
+
+    masker = surface.SurfaceMasker(mask)
+    img = surface.fetch_nki(mesh_type="inflated", n_subjects=1)[0]
+    masker.fit_transform(img)
+    surface_masker_with_mask_report = masker.generate_report()
+    surface_masker_with_mask_report.save_as_html(
+        REPORTS_DIR / "surface_masker_with_mask.html"
+    )
+
+    return (
+        surface_masker_report,
+        surface_masker_with_mask_report,
+    )
+
+
+def report_surface_label_masker():
+
     labels_img, label_names = surface.fetch_destrieux(mesh_type="inflated")
 
     labels_masker = surface.SurfaceLabelsMasker(labels_img, label_names).fit()
@@ -445,6 +467,8 @@ def report_surface_masker():
         REPORTS_DIR / "surface_label_masker_unfitted.html"
     )
 
+    img = surface.fetch_nki(mesh_type="inflated", n_subjects=1)[0]
+
     labels_masker.transform(img)
     labels_masker_report = labels_masker.generate_report()
     labels_masker_report.save_as_html(
@@ -452,7 +476,6 @@ def report_surface_masker():
     )
 
     return (
-        surface_masker_report,
         labels_masker_report_unfitted,
         labels_masker_report,
     )
@@ -465,6 +488,7 @@ if __name__ == "__main__":
     t0 = time.time()
 
     report_surface_masker()
+    report_surface_label_masker()
     report_nifti_masker()
     report_nifti_maps_masker()
     report_nifti_labels_masker()

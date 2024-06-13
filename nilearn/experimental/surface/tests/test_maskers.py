@@ -1,3 +1,5 @@
+import pathlib
+
 import numpy as np
 import pytest
 
@@ -98,10 +100,9 @@ def test_surface_masker_report_empty(tmp_path):
     report.save_as_html(tmp_path / "report.html")
 
     assert (tmp_path / "report.html").exists()
-    with open(tmp_path / "report.html") as f:
-        content = f.read()
-    assert "This object has not been fitted yet !" in content
-    assert '<div class="image">' not in content
+    content = (tmp_path / "report.html").read_text()
+    assert "has not been fitted yet" in content
+    assert 'src="data:image/svg+xml;base64,"\n' in content
 
 
 def test_surface_masker_report_no_mask(mini_img, tmp_path):
@@ -112,8 +113,7 @@ def test_surface_masker_report_no_mask(mini_img, tmp_path):
     report.save_as_html(tmp_path / "report.html")
 
     assert (tmp_path / "report.html").exists()
-    with open(tmp_path / "report.html") as f:
-        content = f.read()
+    content = pathlib.Path(tmp_path / "report.html").read_text()
     assert "This object has not been fitted yet !" not in content
     assert '<div class="image">' in content
 
@@ -126,8 +126,7 @@ def test_surface_masker_report(mini_img, tmp_path, mini_binary_mask):
     report.save_as_html(tmp_path / "report.html")
 
     assert (tmp_path / "report.html").exists()
-    with open(tmp_path / "report.html") as f:
-        content = f.read()
+    content = (tmp_path / "report.html").read_text()
     assert "This object has not been fitted yet !" not in content
     assert '<div class="image">' in content
 
@@ -151,8 +150,7 @@ def test_surface_label_masker_report_unfitted(
     report = masker.generate_report()
     report.save_as_html(tmp_path / "report.html")
     assert (tmp_path / "report.html").exists()
-    with open(tmp_path / "report.html") as f:
-        content = f.read()
+    content = (tmp_path / "report.html").read_text()
     assert '<div class="image">' in content
     assert '<td data-column="Number of vertices">4</td>' in content
     assert '<td data-column="Number of vertices">4</td>' in content
