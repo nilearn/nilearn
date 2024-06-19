@@ -469,13 +469,9 @@ class SurfaceLabelsMasker(BaseEstimator):
                 [str(label) for label in self.labels_]
             )
         else:
-            tmp = []
-            for x in self.labels_:
-                if isinstance(label_names[x], bytes):
-                    tmp.append(label_names[x].decode("utf-8"))
-                else:
-                    tmp.append(label_names[x])
-            self.label_names_ = np.asarray(tmp)
+            self.label_names_ = np.asarray(
+                [label_names[x] for x in self.labels_]
+            )
 
         self.reports = reports
         self.cmap = kwargs.get("cmap", "inferno")

@@ -40,6 +40,9 @@ except ImportError:
         ]
     )
     matplotlib = None
+    have_mpl = False
+else:
+    have_mpl = True
 
 
 def pytest_configure(config):
