@@ -17,6 +17,8 @@ ESTIMATOR_TEMPLATES = {
     "NiftiMapsMasker": "report_body_template_niftimapsmasker.html",
     "MultiNiftiMapsMasker": "report_body_template_niftimapsmasker.html",
     "NiftiSpheresMasker": "report_body_template_niftispheresmasker.html",
+    "SurfaceMasker": "report_body_template_surfacemasker.html",
+    "SurfaceLabelsMasker": "report_body_template_surfacemasker.html",
     "default": "report_body_template.html",
 }
 
@@ -216,34 +218,45 @@ def generate_report(estimator):
         data = estimator._report_content
     else:
         data = {}
-    if not hasattr(estimator, "_reporting_data"):
+
+    if (
+        hasattr(estimator, "_reporting_data")
+        and estimator._reporting_data is None
+    ):
         warnings.warn(
-            "This object has not been fitted yet ! "
-            "Make sure to run `fit` before inspecting reports."
+            "Report generation not enabled ! "
+            "No visual outputs will be created.",
+            stacklevel=3,
         )
+        warning_message = (
+            "This report was not generated. "
+            "Please check that reporting is enabled."
+        )
+        data["warning_message"] = warning_message
+
         return _update_template(
             title="Empty Report",
-            docstring=(
-                "This report was not generated. Please `fit` the object."
-            ),
+            docstring=warning_message,
             content=_embed_img(None),
             overlay=None,
             parameters={},
             data=data,
         )
 
-    elif estimator._reporting_data is None:
+    if not hasattr(estimator, "_reporting_data"):
         warnings.warn(
-            "Report generation not enabled ! "
-            "No visual outputs will be created."
+            "This object has not been fitted yet ! "
+            "Make sure to run `fit` before inspecting reports.",
+            stacklevel=3,
         )
+        warning_message = (
+            "This report was not generated. Please `fit` the object."
+        )
+        if "warning_message" in data and not data["warning_message"]:
+            data["warning_message"] = warning_message
         return _update_template(
             title="Empty Report",
-            docstring=(
-                "This report was not "
-                "generated. Please check "
-                "that reporting is enabled."
-            ),
+            docstring=warning_message,
             content=_embed_img(None),
             overlay=None,
             parameters={},

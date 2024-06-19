@@ -121,7 +121,7 @@ div.nilearn_report .withtooltip .tooltiptext {
   width: 90%;
   background-color: rgba(24, 24, 24, 0.9);
   color: #fff;
-  text-align: left;
+  text-align: center;
   font-size: 12pt;
   font-weight: 200;
   border-radius: 6px;

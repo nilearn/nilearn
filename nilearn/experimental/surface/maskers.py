@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import warnings
 from typing import Any
 
 import numpy as np
@@ -33,6 +34,22 @@ def check_same_n_vertices(mesh_1: PolyMesh, mesh_2: PolyMesh) -> None:
             )
 
 
+def _compute_mean_image(img: SurfaceImage):
+    """Compute mean of the surface (for 'time series')."""
+    if len(img.shape) <= 1:
+        return img
+    for part, value in img.data.parts.items():
+        img.data.parts[part] = np.squeeze(value.mean(axis=0)).astype(float)
+    return img
+
+
+def _get_min_max(img: SurfaceImage):
+    """Get min and max across hemisphere for a SurfaceImage."""
+    vmin = min(min(x) for x in img.data.parts.values())
+    vmax = max(max(x) for x in img.data.parts.values())
+    return vmin, vmax
+
+
 class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
     """Extract data from a SurfaceImage."""
 
@@ -53,6 +70,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         t_r=None,
         memory_level=1,
         memory=None,
+        reports=True,
         **kwargs,
     ):
         if memory is None:
@@ -71,6 +89,31 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         self._shelving = False
         self.clean_kwargs = {
             k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
+        }
+
+        self.reports = reports
+        self.cmap = kwargs.get("cmap", "inferno")
+        # content to inject in the HTML template
+        self._report_content = {
+            "description": (
+                "This report shows the input surface image overlaid "
+                "with the outlines of the mask. "
+                "We recommend to inspect the report for the overlap "
+                "between the mask and its input image. "
+            ),
+            "warning_message": (
+                "This object has not been fitted yet ! "
+                "Make sure to run `fit` before inspecting reports."
+            ),
+            "n_vertices": {},
+            # unused but required in HTML template
+            "number_of_regions": None,
+            "summary": None,
+        }
+        # data necessary to construct figure for the report
+        self._reporting_data = {
+            "mask": None,
+            "images": None,
         }
 
     def _fit_mask_img(self, img: SurfaceImage | None) -> None:
@@ -121,6 +164,23 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
             self.slices[part_name] = start, stop
             start = stop
         self.output_dimension_ = stop
+
+        # save inputs for reporting
+        if not self.reports:
+            self._reporting_data = None
+            return self
+
+        self._report_content["warning_message"] = None
+
+        for part in self.mask_img_.data.parts.keys():
+            self._report_content["n_vertices"][part] = (
+                self.mask_img_.mesh.parts[part].n_vertices
+            )
+        self._reporting_data = {
+            "mask": self.mask_img_,
+            "images": img,
+        }
+
         return self
 
     def _check_fitted(self):
@@ -187,6 +247,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
             sample_mask=sample_mask,
             **parameters["clean_kwargs"],
         )
+
         return output
 
     def fit_transform(
@@ -247,8 +308,114 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
             data[part_name][..., mask] = masked_img[..., start:stop]
         return SurfaceImage(mesh=self.mask_img_.mesh, data=data)
 
+    def generate_report(self):
+        """Generate a report."""
+        try:
+            from nilearn.reporting.html_report import generate_report
+        except ImportError:
+            with warnings.catch_warnings():
+                mpl_unavail_msg = (
+                    "Matplotlib is not imported! "
+                    "No reports will be generated."
+                )
+                warnings.filterwarnings("always", message=mpl_unavail_msg)
+                warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
+                return [None]
 
-class SurfaceLabelsMasker:
+        return generate_report(self)
+
+    def _reporting(self):
+        """Load displays needed for report.
+
+        Returns
+        -------
+        displays : list
+            A list of all displays to be rendered.
+        """
+        import matplotlib.pyplot as plt
+
+        from nilearn.reporting.utils import figure_to_png_base64
+
+        # Handle the edge case where this function is
+        # called with a masker having report capabilities disabled
+        if self._reporting_data is None:
+            return [None]
+
+        fig = self._create_figure_for_report()
+
+        if not fig:
+            return [None]
+
+        plt.close()
+
+        init_display = figure_to_png_base64(fig)
+
+        return [init_display]
+
+    def _create_figure_for_report(self):
+        import matplotlib.pyplot as plt
+
+        from nilearn.experimental import plotting
+
+        if not self._reporting_data["images"] and not getattr(
+            self, "mask_img_", None
+        ):
+            return None
+
+        if self._reporting_data["images"]:
+            background_data = self._reporting_data["images"]
+        else:
+            background_data = self.mask_img_
+
+        background_data = _compute_mean_image(background_data)
+        vmin, vmax = _get_min_max(background_data)
+
+        views = ["lateral", "medial"]
+        hemispheres = ["left", "right"]
+
+        fig, axes = plt.subplots(
+            len(views),
+            len(hemispheres),
+            subplot_kw={"projection": "3d"},
+            figsize=(20, 20),
+        )
+        axes = np.atleast_2d(axes)
+
+        for ax_row, view in zip(axes, views):
+            for ax, hemi in zip(ax_row, hemispheres):
+                plotting.plot_surf(
+                    surf_map=background_data,
+                    hemi=hemi,
+                    view=view,
+                    figure=fig,
+                    axes=ax,
+                    cmap=self.cmap,
+                    vmin=vmin,
+                    vmax=vmax,
+                )
+
+                colors = None
+                nb_regions = len(np.unique(self.mask_img_.data.parts[hemi]))
+                if nb_regions == 1:
+                    colors = "b"
+                elif nb_regions == 2:
+                    colors = ["w", "b"]
+
+                plotting.plot_surf_contours(
+                    self.mask_img_,
+                    hemi=hemi,
+                    view=view,
+                    figure=fig,
+                    axes=ax,
+                    colors=colors,
+                )
+
+        plt.tight_layout()
+
+        return fig
+
+
+class SurfaceLabelsMasker(BaseEstimator):
     """Extract data from a SurfaceImage, averaging over atlas regions.
 
     Parameters
@@ -281,6 +448,8 @@ class SurfaceLabelsMasker:
         self,
         labels_img: SurfaceImage,
         label_names: dict[Any, str] | None = None,
+        reports: bool = True,
+        **kwargs,
     ) -> None:
         self.labels_img = labels_img
         self.label_names = label_names
@@ -290,14 +459,71 @@ class SurfaceLabelsMasker:
         all_labels = set(self.labels_data_.ravel())
         all_labels.discard(0)
         self.labels_ = np.asarray(list(all_labels))
+
         if label_names is None:
             self.label_names_ = np.asarray(
                 [str(label) for label in self.labels_]
             )
         else:
             self.label_names_ = np.asarray(
-                [label_names[label] for label in self.labels_]
+                [label_names[x] for x in self.labels_]
             )
+
+        self.reports = reports
+        self.cmap = kwargs.get("cmap", "inferno")
+
+        self._report_content = {
+            "description": (
+                "This report shows the input surface image overlaid "
+                "with the outlines of the mask. "
+                "We recommend to inspect the report for the overlap "
+                "between the mask and its input image. "
+            ),
+            "warning_message": None,
+            "n_vertices": {},
+            "number_of_regions": len(self.label_names_),
+            "summary": {},
+        }
+        for part in self.labels_img.data.parts.keys():
+
+            self._report_content["n_vertices"][part] = (
+                self.labels_img.mesh.parts[part].n_vertices
+            )
+
+            size = []
+            relative_size = []
+            regions_summary = {
+                "label value": [],
+                "region name": [],
+                "size<br>(number of vertices)": [],
+                "relative size<br>(% vertices in hemisphere)": [],
+            }
+
+            for i, label in enumerate(self.label_names_):
+                regions_summary["label value"].append(i)
+                regions_summary["region name"].append(label)
+
+                nb_vertices = self.labels_img.data.parts[part] == i
+                size.append(nb_vertices.sum())
+                tmp = (
+                    nb_vertices.sum()
+                    / self.labels_img.mesh.parts[part].n_vertices
+                    * 100
+                )
+                relative_size.append(f"{tmp :.2}")
+
+            regions_summary["size<br>(number of vertices)"] = size
+            regions_summary["relative size<br>(% vertices in hemisphere)"] = (
+                relative_size
+            )
+
+            self._report_content["summary"][part] = regions_summary
+
+        self._reporting_data = {
+            "labels_image": self.labels_img,
+            "label_names": [str(x) for x in self.label_names_],
+            "images": None,
+        }
 
     def fit(
         self, img: SurfaceImage | None = None, y: Any = None
@@ -318,6 +544,7 @@ class SurfaceLabelsMasker:
         SurfaceLabelsMasker object
         """
         del img, y
+
         return self
 
     def transform(self, img: SurfaceImage) -> np.ndarray:
@@ -334,6 +561,11 @@ class SurfaceLabelsMasker:
             Signal for each element.
             shape: (img data shape, total number of vertices)
         """
+        if not self.reports:
+            self._reporting_data = None
+        else:
+            self._reporting_data["images"] = img
+
         check_same_n_vertices(self.labels_img.mesh, img.mesh)
         img_data = np.concatenate(list(img.data.parts.values()), axis=-1)
         output = np.empty((*img_data.shape[:-1], len(self.labels_)))
@@ -388,3 +620,92 @@ class SurfaceLabelsMasker:
                     ..., label_idx
                 ]
         return SurfaceImage(mesh=self.labels_img.mesh, data=data)
+
+    def generate_report(self):
+        """Generate a report."""
+        try:
+            from nilearn.reporting.html_report import generate_report
+        except ImportError:
+            with warnings.catch_warnings():
+                mpl_unavail_msg = (
+                    "Matplotlib is not imported! "
+                    "No reports will be generated."
+                )
+                warnings.filterwarnings("always", message=mpl_unavail_msg)
+                warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
+                return [None]
+
+        return generate_report(self)
+
+    def _reporting(self):
+        """Load displays needed for report.
+
+        Returns
+        -------
+        displays : list
+            A list of all displays to be rendered.
+        """
+        import matplotlib.pyplot as plt
+
+        from nilearn.reporting.utils import figure_to_png_base64
+
+        # Handle the edge case where this function is
+        # called with a masker having report capabilities disabled
+        if self._reporting_data is None:
+            return [None]
+
+        fig = self._create_figure_for_report()
+
+        plt.close()
+
+        init_display = figure_to_png_base64(fig)
+
+        return [init_display]
+
+    def _create_figure_for_report(self):
+        import matplotlib.pyplot as plt
+
+        from nilearn.experimental import plotting
+
+        labels_img = self._reporting_data["labels_image"]
+
+        img = self._reporting_data["images"]
+        if img:
+            img = _compute_mean_image(img)
+            vmin, vmax = _get_min_max(img)
+
+        views = ["lateral", "medial"]
+        hemispheres = ["left", "right"]
+
+        fig, axes = plt.subplots(
+            len(views),
+            len(hemispheres),
+            subplot_kw={"projection": "3d"},
+            figsize=(20, 20),
+        )
+        axes = np.atleast_2d(axes)
+
+        for ax_row, view in zip(axes, views):
+            for ax, hemi in zip(ax_row, hemispheres):
+                if img:
+                    plotting.plot_surf(
+                        surf_map=img,
+                        hemi=hemi,
+                        view=view,
+                        figure=fig,
+                        axes=ax,
+                        cmap=self.cmap,
+                        vmin=vmin,
+                        vmax=vmax,
+                    )
+                plotting.plot_surf_contours(
+                    roi_map=labels_img,
+                    hemi=hemi,
+                    view=view,
+                    figure=fig,
+                    axes=ax,
+                )
+
+        plt.tight_layout()
+
+        return fig

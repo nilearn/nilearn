@@ -97,9 +97,25 @@ plotting.plot_surf_roi(
 )
 
 labels_masker = SurfaceLabelsMasker(labels_img, label_names).fit()
+
+report = labels_masker.generate_report()
+# This report can be viewed in a notebook
+report
+
+# We have several ways to access the report:
+# report.open_in_browser()
+
 masked_data = labels_masker.transform(img)
 print(f"Masked data shape: {masked_data.shape}")
 
+# or we can save as an html file
+from pathlib import Path
+
+output_dir = Path.cwd() / "results" / "plot_surface_image_and_maskers"
+output_dir.mkdir(exist_ok=True, parents=True)
+report.save_as_html(output_dir / "report.html")
+
+# %%
 connectome = (
     connectome.ConnectivityMeasure(kind="correlation").fit([masked_data]).mean_
 )

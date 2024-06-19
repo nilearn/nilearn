@@ -8,15 +8,9 @@ import pytest
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from nilearn._utils import data_gen
+from nilearn.conftest import have_mpl
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiSpheresMasker
-
-try:
-    import matplotlib as mpl  # noqa: F401
-except ImportError:
-    have_mpl = False
-else:
-    have_mpl = True
 
 
 def test_seed_extraction(rng):

@@ -7,9 +7,9 @@ import pytest
 
 from nilearn.experimental.surface import (
     InMemoryMesh,
+    PolyData,
     PolyMesh,
     SurfaceImage,
-    load_fsaverage,
 )
 
 
@@ -69,6 +69,25 @@ def mini_img(make_mini_img) -> SurfaceImage:
 
 
 @pytest.fixture
+def mini_binary_mask(mini_mesh) -> SurfaceImage:
+    """Return small surface label image."""
+    data = PolyData(
+        left=np.asarray([False, False, True, True]),
+        right=np.asarray([True, True, False, False, False]),
+    )
+    return SurfaceImage(mini_mesh, data)
+
+
+@pytest.fixture
+def mini_label_img(mini_mesh) -> SurfaceImage:
+    """Return small surface label image."""
+    data = PolyData(
+        left=np.asarray([0, 0, 1, 1]), right=np.asarray([1, 1, 0, 0, 0])
+    )
+    return SurfaceImage(mini_mesh, data)
+
+
+@pytest.fixture
 def flip():
     """Flip hemispheres of a surface image data or mesh."""
 
@@ -88,12 +107,6 @@ def flip_img(flip):
         return SurfaceImage(flip(img.mesh), flip(img.data))
 
     return f
-
-
-@pytest.fixture
-def pial_surface_mesh():
-    """Get fsaverage mesh for testing."""
-    return load_fsaverage()["pial"]
 
 
 @pytest.fixture
