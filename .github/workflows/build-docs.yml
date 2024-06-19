@@ -54,6 +54,9 @@ jobs:
             with:
                 args: --validate
 
+        -   name:
+            run: echo "Dev docs https://github.com/Remi-Gau/nilearn/commit/${{ github.head.sha }}."
+
     get_data:
         # This prevents this workflow from running on a fork.
         # To test this workflow on a fork, uncomment the following line.
@@ -322,5 +325,5 @@ jobs:
                 rm -Rf dev;
                 cp -a ~/doc/_build/html dev;
                 git add -A;
-                git commit -m "Dev docs https://github.com/Remi-Gau/nilearn/commit/${{ github.event.head.sha }}.";
+                git commit -m "Dev docs https://github.com/Remi-Gau/nilearn/commit/${{ github.head.sha }}.";
                 git push origin main;
