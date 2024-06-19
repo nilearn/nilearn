@@ -322,5 +322,5 @@ jobs:
                 rm -Rf dev;
                 cp -a ~/doc/_build/html dev;
                 git add -A;
-                git commit -m "Dev docs ${{ github.event.pull_request.head.sha }}.";
+                git commit -m "Dev docs https://github.com/Remi-Gau/nilearn/commit/${{ github.event.head.sha }}.";
                 git push origin main;
