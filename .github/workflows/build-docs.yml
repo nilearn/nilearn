@@ -20,10 +20,10 @@ on:
         branches:
         -   '*'
     schedule:
-        # Run every Monday at 8am UTC
+    # Run every Monday at 8am UTC
     -   cron: 0 8 * * 1
 
-        # Allows you to run this workflow manually from the Actions tab
+    # Allows you to run this workflow manually from the Actions tab
     workflow_dispatch:
 
 concurrency:
