@@ -436,7 +436,9 @@ def test_compare_design_matrix_to_spm(block_duration, array):
     # Check that the nilearn design matrix is close enough to the SPM one
     # (it cannot be identical, because the hrf shape is different)
     events, frame_times = spm_paradigm(block_duration=block_duration)
-    X1 = make_first_level_design_matrix(frame_times, events, drift_model=None)
+    X1 = make_first_level_design_matrix(
+        frame_times, events, drift_model=None, hrf_model="spm"
+    )
     _, matrix, _ = check_design_matrix(X1)
 
     spm_design_matrix = DESIGN_MATRIX[array]
