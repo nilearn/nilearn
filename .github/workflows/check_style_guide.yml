@@ -33,7 +33,7 @@ jobs:
                 allow-prereleases: false
 
         -   name: Install tox
-            run: python -m pip install --upgrade tox
+            run: python -m pip install --upgrade filelock!=3.15.2 tox
 
         -   name: Run pre-commit via tox
             run: tox
