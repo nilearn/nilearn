@@ -19,11 +19,6 @@ on:
     pull_request:
         branches:
         -   '*'
-    schedule:
-    # Run every Monday at 8am UTC
-    -   cron: 0 8 * * 1
-
-    # Allows you to run this workflow manually from the Actions tab
     workflow_dispatch:
 
 concurrency:
@@ -53,13 +48,6 @@ jobs:
             uses: citation-file-format/cffconvert-github-action@2.0.0
             with:
                 args: --validate
-
-        -   name: Dump GitHub context
-            env:
-                GITHUB_CONTEXT: ${{ toJson(github) }}
-            run: |
-                echo "$GITHUB_CONTEXT"
-                echo "Dev docs https://github.com/Remi-Gau/nilearn/commit/${{ github.event.head_commit.id }} : ${{ github.event.head_commit.message }}";
 
     get_data:
         # This prevents this workflow from running on a fork.
@@ -297,7 +285,7 @@ jobs:
             run: |
                 mkdir -p ~/.ssh
                 ssh-keyscan github.com >> ~/.ssh/known_hosts
-                echo "${{ secrets.SSH_DEPLOY_KEY }}" > ~/.ssh/github_actions
+                echo "${{ secrets.ACTIONS_SSH_DEPLOY }}" > ~/.ssh/github_actions
                 chmod 600 ~/.ssh/github_actions
                 ssh-agent -a $SSH_AUTH_SOCK > /dev/null
                 ssh-add ~/.ssh/github_actions
@@ -314,7 +302,7 @@ jobs:
                 git config --global user.email "actions@github.com"
                 git config --global user.name "GitHub actions"
 
-                git clone git@github.com:Remi-Gau/nilearn.github.io.git ~/nilearn.github.io --depth=1
+                git clone git@github.com:nilearn/nilearn.github.io.git ~/nilearn.github.io --depth=1
                 cd ~/nilearn.github.io;
 
                 git checkout main
@@ -329,5 +317,5 @@ jobs:
                 rm -Rf dev;
                 cp -a ~/doc/_build/html dev;
                 git add -A;
-                git commit -m "Dev docs https://github.com/Remi-Gau/nilearn/commit/${{ github.head.sha }}.";
+                git commit -m "Dev docs https://github.com/nilearn/nilearn/commit/${{ github.event.head_commit.id }} : ${{ github.event.head_commit.message }}";
                 git push origin main;
