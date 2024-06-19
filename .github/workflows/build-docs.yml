@@ -54,8 +54,10 @@ jobs:
             with:
                 args: --validate
 
-        -   name:
-            run: echo "Dev docs https://github.com/Remi-Gau/nilearn/commit/${{ github.head.sha }}."
+        -   name: Dump GitHub context
+            env:
+                GITHUB_CONTEXT: ${{ toJson(github) }}
+            run: echo "$GITHUB_CONTEXT"
 
     get_data:
         # This prevents this workflow from running on a fork.
