@@ -59,7 +59,7 @@ jobs:
                 GITHUB_CONTEXT: ${{ toJson(github) }}
             run: |
                 echo "$GITHUB_CONTEXT"
-                "Dev docs https://github.com/Remi-Gau/nilearn/commit/${{ github.event.head_commit.id }} : ${{ github.event.head_commit.message }}";
+                echo "Dev docs https://github.com/Remi-Gau/nilearn/commit/${{ github.event.head_commit.id }} : ${{ github.event.head_commit.message }}";
 
     get_data:
         # This prevents this workflow from running on a fork.
