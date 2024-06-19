@@ -19,6 +19,11 @@ on:
     pull_request:
         branches:
         -   '*'
+    schedule:
+        # Run every Monday at 8am UTC
+    -   cron: 0 8 * * 1
+
+        # Allows you to run this workflow manually from the Actions tab
     workflow_dispatch:
 
 concurrency:
@@ -52,7 +57,7 @@ jobs:
     get_data:
         # This prevents this workflow from running on a fork.
         # To test this workflow on a fork, uncomment the following line.
-        # if: github.repository == 'nilearn/nilearn'
+        if: github.repository == 'nilearn/nilearn'
         runs-on: ubuntu-latest
         defaults:
             run:
