@@ -137,10 +137,7 @@ def test_empty_report(masker_class, input_parameters):
     assert masker._reporting() == [None]
     with pytest.warns(
         UserWarning,
-        match=(
-            "Report generation not enabled ! "
-            "No visual outputs will be created."
-        ),
+        match=("No visual outputs created."),
     ):
         masker.generate_report()
 

@@ -148,7 +148,7 @@ def _update_template(
         body_template_name = template_name
     body_template_path = HTML_TEMPLATE_PATH / body_template_name
     if not body_template_path.exists():
-        raise FileNotFoundError(f"No template {body_template_name}")
+        raise FileNotFoundError(f"No template {body_template_path}")
     tpl = tempita.HTMLTemplate.from_filename(
         str(body_template_path), encoding="utf-8"
     )
@@ -162,7 +162,7 @@ def _update_template(
         content=content,
         overlay=overlay,
         docstring=docstring,
-        parameters=_render_parameter_partial(parameters),
+        parameters=_render_parameters_partial(parameters),
         **data,
         css=css,
         warning_messages=_render_warnings_partial(warning_messages),
@@ -234,49 +234,31 @@ def generate_report(estimator):
         data = {}
 
     warning_messages = []
-    if (
-        hasattr(estimator, "_reporting_data")
-        and estimator._reporting_data is None
-    ):
-        warnings.warn(
-            "Report generation not enabled ! "
-            "No visual outputs will be created.",
-            stacklevel=3,
-        )
-        warning_message = (
-            "This report was not generated. "
-            "Please check that reporting is enabled."
-        )
-        if "warning_message" in data and not data["warning_message"]:
-            warning_messages.append(warning_message)
 
-        return _update_template(
-            title="Empty Report",
-            docstring="",
-            content=_embed_img(None),
-            overlay=None,
-            parameters=_render_parameter_partial({}),
-            data=data,
-            warning_messages=warning_messages,
+    if estimator.reports is False:
+        warning_messages.append(
+            "\nReport generation not enabled!\n" "No visual outputs created."
         )
 
     if not hasattr(estimator, "_reporting_data"):
-        warnings.warn(
-            "This object has not been fitted yet ! "
-            "Make sure to run `fit` before inspecting reports.",
-            stacklevel=3,
+        warning_messages.append(
+            "\nThis report was not generated.\n"
+            "Make sure to run `fit` before inspecting reports."
         )
-        warning_message = (
-            "This report was not generated. Please `fit` the object."
-        )
-        if "warning_message" in data and not data["warning_message"]:
-            warning_messages.append(warning_message)
+
+    if warning_messages:
+        for msg in warning_messages:
+            warnings.warn(
+                msg,
+                stacklevel=3,
+            )
+
         return _update_template(
             title="Empty Report",
-            docstring="",
+            docstring="Empty Report",
             content=_embed_img(None),
             overlay=None,
-            parameters=_render_parameter_partial({}),
+            parameters={},
             data=data,
             warning_messages=warning_messages,
         )
@@ -284,7 +266,7 @@ def generate_report(estimator):
     return _create_report(estimator, data)
 
 
-def _render_parameter_partial(parameters):
+def _render_parameters_partial(parameters):
     tpl = tempita.HTMLTemplate.from_filename(
         str(HTML_PARTIALS_PATH / "parameters.html"), encoding="utf-8"
     )

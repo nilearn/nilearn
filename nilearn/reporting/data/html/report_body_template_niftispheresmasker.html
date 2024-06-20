@@ -52,11 +52,11 @@
       {{endfor}}
     </div>
   </div>
-  <div class="pure-u-1 pure-u-md-1-3 raise">
+  <div class="pure-u-1 pure-u-md-1-3">
     {{if description}}
-    <p class="elem-desc">{{description}}</p>
+    <p>{{description}}</p>
     {{endif}} {{if number_of_seeds}}
-    <p class="elem-desc">
+    <p>
       The masker has <b>{{number_of_seeds}}</b> spheres in total (displayed
       together on the first image).
     </p>
@@ -78,9 +78,9 @@
   <div class="pure-u-1 pure-u-md-3-3">
     <div class="d-flex flex-row">
       {{if summary}}
-      <div class="scroll-x">
-        <details>
-          <summary class="pure-button">Regions summary</summary>
+      <details>
+        <summary class="pure-button">Regions summary</summary>
+        <div class="table-container">
           <table class="pure-table">
             <thead>
               <tr>
@@ -99,10 +99,11 @@
               {{endfor}}
             </tbody>
           </table>
-        </details>
-      </div>
+        </div>
+      </details>
       {{endif}}
-      <div class="scroll-x">{{ parameters }}</div>
+      <!--  -->
+      {{ parameters|html }}
     </div>
   </div>
 </div>

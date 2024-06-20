@@ -316,7 +316,7 @@ End pure-button class definition from pure-min.css
 }
 
 /* -----------------------  Nilearn report  ----------------------- */
-.nilearn_report {
+.nilearn-report {
   border-color: rgb(150, 150, 150);
   overflow: hidden; /* Needed to avoid scrolling in jupyter :( */
   color: black;
@@ -325,50 +325,57 @@ End pure-button class definition from pure-min.css
   overflow-y: scroll;
 }
 
-.nilearn_report section {
+.nilearn-report section {
   margin: 8px;
   padding: 8px;
 }
-.terminal .nilearn_report {
+.terminal .nilearn-report {
   max-width: min(50ex, 100vw); /* Needed in vscode */
 }
 
-.nilearn_report h1:first-child {
+.nilearn-report h1:first-child {
   background-color: #f5f5f5;
   text-align: left;
 }
 
-.nilearn_report summary::-webkit-details-marker {
+.nilearn-report summary::-webkit-details-marker {
   margin-right: 2px;
 }
 
-.nilearn_report summary:focus {
+.nilearn-report summary:focus {
   outline-style: none;
 }
 
-.nilearn_report table {
+.nilearn-report .table-container {
+  overflow-x: scroll;
+  overflow-y: scroll;
+  max-height: 700px;
+}
+
+.nilearn-report table {
   margin: 50px auto;
+  max-height: 500px;
 }
 
-.nilearn_report thead th {
+.nilearn-report thead th {
   text-align: center;
-}
-
-.nilearn_report tbody tr:nth-child(even) {
+  vertical-align: middle;
+  position: sticky;
+  top: 0;
   background-color: #ddd;
 }
 
-.nilearn_report div.raise {
-  z-index: 1;
+.nilearn-report tbody tr:nth-child(even) {
+  background-color: #ddd;
 }
 
 /* Tooltip container */
-.nilearn_report .withtooltip {
+.nilearn-report .withtooltip {
   position: relative;
 }
 
 /* Tooltip text */
-.nilearn_report .withtooltip .tooltiptext {
+.nilearn-report .withtooltip .tooltiptext {
   visibility: hidden;
   max-width: 35em;
   background-color: rgba(24, 24, 24, 0.9);
@@ -385,17 +392,17 @@ End pure-button class definition from pure-min.css
 }
 
 /* Show the tooltip text when you mouse over the tooltip container */
-.nilearn_report .withtooltip:hover .tooltiptext {
+.nilearn-report .withtooltip:hover .tooltiptext {
   visibility: visible;
 }
 
-.nilearn_report .image {
+.nilearn-report .image {
   position: relative;
   height: auto;
   width: 100%;
 }
 
-.nilearn_report .image .overlay {
+.nilearn-report .image .overlay {
   position: absolute;
   top: 0;
   left: 0;
@@ -406,10 +413,10 @@ End pure-button class definition from pure-min.css
   -webkit-transition: 0.5s ease;
 }
 
-.nilearn_report .image:hover .overlay {
+.nilearn-report .image:hover .overlay {
   opacity: 1;
 }
 
-.nilearn_report .main-container {
-  min-height: 700px;
+.nilearn-report .main-container {
+  min-height: 700px !important;
 }
