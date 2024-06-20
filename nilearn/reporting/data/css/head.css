@@ -1,8 +1,14 @@
 html {
   font-family: sans-serif;
 }
-body {
-  padding: 10px 20px 10px 20px;
-  margin-left: auto;
-  margin-right: auto;
+
+main {
+  margin: 4px 8px 4px 8px;
+  display: flex;
+  justify-content: center;
+}
+
+body footer {
+  display: flex;
+  justify-content: center;
 }

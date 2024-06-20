@@ -84,7 +84,14 @@ def _str_params(params):
 
 
 def _update_template(
-    title, docstring, content, overlay, parameters, data, template_name=None
+    title,
+    docstring,
+    content,
+    overlay,
+    parameters,
+    data,
+    template_name=None,
+    warning_messages=None,
 ):
     """Populate a report with content.
 
@@ -131,6 +138,8 @@ def _update_template(
         An instance of a populated HTML report.
 
     """
+    if warning_messages is None:
+        warning_messages = []
     resource_path = Path(__file__).resolve().parent / "data"
 
     if template_name is None:
@@ -156,6 +165,7 @@ def _update_template(
         parameters=parameters,
         **data,
         css=css,
+        warning_messages=warning_messages,
     )
 
     # revert HTML safe substitutions in CSS sections
@@ -173,7 +183,11 @@ def _update_template(
     return HTMLReport(
         body=body,
         head_tpl=head_tpl,
-        head_values={"head_css": head_css, "version": __version__},
+        head_values={
+            "head_css": head_css,
+            "version": __version__,
+            "page_title": f"{title} report",
+        },
     )
 
 
@@ -219,6 +233,7 @@ def generate_report(estimator):
     else:
         data = {}
 
+    warning_messages = []
     if (
         hasattr(estimator, "_reporting_data")
         and estimator._reporting_data is None
@@ -232,15 +247,17 @@ def generate_report(estimator):
             "This report was not generated. "
             "Please check that reporting is enabled."
         )
-        data["warning_message"] = warning_message
+        if "warning_message" in data and not data["warning_message"]:
+            warning_messages.append(warning_message)
 
         return _update_template(
             title="Empty Report",
-            docstring=warning_message,
+            docstring="",
             content=_embed_img(None),
             overlay=None,
             parameters={},
             data=data,
+            warning_messages=warning_messages,
         )
 
     if not hasattr(estimator, "_reporting_data"):
@@ -253,14 +270,15 @@ def generate_report(estimator):
             "This report was not generated. Please `fit` the object."
         )
         if "warning_message" in data and not data["warning_message"]:
-            data["warning_message"] = warning_message
+            warning_messages.append(warning_message)
         return _update_template(
             title="Empty Report",
-            docstring=warning_message,
+            docstring="",
             content=_embed_img(None),
             overlay=None,
             parameters={},
             data=data,
+            warning_messages=warning_messages,
         )
 
     return _create_report(estimator, data)
