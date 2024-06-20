@@ -497,7 +497,7 @@ def test_overlaid_report(img_3d_mni):
 
     masker = NiftiMasker(target_affine=np.eye(3) * 8)
     html = masker.generate_report()
-    assert "Please `fit` the object" in str(html)
+    assert "Make sure to run `fit`" in str(html)
     masker.fit(img_3d_mni)
     html = masker.generate_report()
     assert '<div class="overlay">' in str(html)
