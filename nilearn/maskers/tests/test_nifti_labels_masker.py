@@ -18,6 +18,7 @@ from nilearn._utils.data_gen import (
 )
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import write_imgs_to_path
+from nilearn.conftest import have_mpl
 from nilearn.image import get_data
 from nilearn.maskers import NiftiLabelsMasker, NiftiMasker
 
@@ -929,3 +930,25 @@ def test_3d_images(affine_eye, shape_3d_default, n_regions):
     epis = masker.fit_transform([epi_img1, epi_img2])
 
     assert epis.shape == (2, n_regions)
+
+
+@pytest.mark.skipif(
+    have_mpl, reason="Test requires matplotlib to be not installed."
+)
+def test_nifti_labels_masker_reporting_mpl_warning(
+    shape_3d_default, n_regions, length, affine_eye
+):
+    """Raise warning after exception if matplotlib is not installed."""
+    shape1 = (*shape_3d_default, length)
+    labels_img = generate_labeled_regions(
+        shape1[:3],
+        affine=affine_eye,
+        n_regions=n_regions,
+    )
+
+    with warnings.catch_warnings(record=True) as warning_list:
+        result = NiftiLabelsMasker(labels_img).generate_report()
+
+    assert len(warning_list) == 1
+    assert issubclass(warning_list[0].category, ImportWarning)
+    assert result == [None]

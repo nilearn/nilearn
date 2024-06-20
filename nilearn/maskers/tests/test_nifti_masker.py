@@ -18,6 +18,7 @@ from numpy.testing import assert_array_equal
 
 from nilearn._utils import data_gen, exceptions, testing
 from nilearn._utils.class_inspect import get_params
+from nilearn.conftest import have_mpl
 from nilearn.image import get_data, index_img
 from nilearn.maskers import NiftiMasker
 from nilearn.maskers.nifti_masker import _filter_and_mask
@@ -600,3 +601,16 @@ def test_nifti_masker_io_shapes(rng):
 
     with pytest.raises(TypeError):
         masker.inverse_transform(data_2d.T)
+
+
+@pytest.mark.skipif(
+    have_mpl, reason="Test requires matplotlib to be not installed."
+)
+def test_nifti_masker_reporting_mpl_warning():
+    """Raise warning after exception if matplotlib is not installed."""
+    with warnings.catch_warnings(record=True) as warning_list:
+        result = NiftiMasker().generate_report()
+
+    assert len(warning_list) == 1
+    assert issubclass(warning_list[0].category, ImportWarning)
+    assert result == [None]
