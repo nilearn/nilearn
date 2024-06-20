@@ -10,7 +10,6 @@ from __future__ import annotations
 import csv
 import glob
 import os
-import sys
 import time
 from pathlib import Path
 from warnings import warn
@@ -22,7 +21,7 @@ from nibabel import Nifti1Image
 from sklearn.base import clone
 from sklearn.cluster import KMeans
 
-from nilearn._utils import fill_doc, stringify_path
+from nilearn._utils import fill_doc, logger, stringify_path
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_run_sample_masks
 from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
@@ -490,6 +489,210 @@ class FirstLevelModel(BaseGLM):
         )
         return self.signal_scaling
 
+    def _check_fit_inputs(
+        self,
+        run_imgs,
+        events,
+        confounds,
+        sample_masks,
+        design_matrices,
+    ):
+        """Run input validation and ensure inputs are compatible."""
+        # Raise a warning if both design_matrices and confounds are provided
+        if design_matrices is not None and (
+            confounds is not None or events is not None
+        ):
+            warn(
+                "If design matrices are supplied, "
+                "confounds and events will be ignored."
+            )
+
+        if events is not None:
+            _check_events_file_uses_tab_separators(events_files=events)
+
+        if not isinstance(run_imgs, (list, tuple)):
+            run_imgs = [run_imgs]
+
+        if design_matrices is None:
+            if events is None:
+                raise ValueError("events or design matrices must be provided")
+            if self.t_r is None:
+                raise ValueError(
+                    "t_r not given to FirstLevelModel object"
+                    " to compute design from events"
+                )
+        else:
+            design_matrices = _check_run_tables(
+                run_imgs, design_matrices, "design_matrices"
+            )
+
+        # Check that number of events and confound files match number of runs
+        # Also check that events and confound files can be loaded as DataFrame
+        if events is not None:
+            events = _check_run_tables(run_imgs, events, "events")
+
+        if confounds is not None:
+            confounds = _check_run_tables(run_imgs, confounds, "confounds")
+
+        if sample_masks is not None:
+            sample_masks = check_run_sample_masks(len(run_imgs), sample_masks)
+
+        return (
+            run_imgs,
+            events,
+            confounds,
+            sample_masks,
+            design_matrices,
+        )
+
+    def _log(
+        self, step, run_idx=None, n_runs=None, t0=None, time_in_second=None
+    ):
+        """Generate and log messages for different step of the model fit."""
+        if step == "progress":
+            msg = self._report_progress(run_idx, n_runs, t0)
+        elif step == "running":
+            msg = "Performing GLM computation."
+        elif step == "run_done":
+            msg = f"GLM took {int(time_in_second)} seconds."
+        elif step == "masking":
+            msg = "Performing mask computation."
+        elif step == "masking_done":
+            msg = f"Masking took {int(time_in_second)} seconds."
+        elif step == "done":
+            msg = (
+                f"Computation of {n_runs} runs done "
+                f"in {int(time_in_second)} seconds."
+            )
+
+        logger.log(msg, verbose=self.verbose)
+
+    def _report_progress(self, run_idx, n_runs, t0):
+        remaining = "go take a coffee, a big one"
+        if run_idx != 0:
+            percent = float(run_idx) / n_runs
+            percent = round(percent * 100, 2)
+            dt = time.time() - t0
+            # We use a max to avoid a division by zero
+            remaining = (100.0 - percent) / max(0.01, percent) * dt
+            remaining = f"{int(remaining)} seconds remaining"
+
+        return (
+            f"Computing run {run_idx + 1} "
+            f"out of {n_runs} runs ({remaining})."
+        )
+
+    def _fit_single_run(self, sample_masks, bins, run_img, run_idx):
+        """Fit the model for a single and keep only the regression results."""
+        design = self.design_matrices_[run_idx]
+
+        sample_mask = None
+        if sample_masks is not None:
+            sample_mask = sample_masks[run_idx]
+            design = design.iloc[sample_mask, :]
+            self.design_matrices_[run_idx] = design
+            if isinstance(run_img, np.ndarray):
+                run_img = run_img[:, sample_mask]
+
+        # Mask and prepare data for GLM
+        self._log("masking")
+        t_masking = time.time()
+        Y = self.masker_.transform(run_img, sample_mask=sample_mask)
+        del run_img  # Delete unmasked image to save memory
+        self._log("masking_done", time_in_second=time.time() - t_masking)
+
+        if self.signal_scaling is not False:
+            Y, _ = mean_scaling(Y, self.signal_scaling)
+
+        if self.memory:
+            mem_glm = self.memory.cache(run_glm, ignore=["n_jobs"])
+        else:
+            mem_glm = run_glm
+
+        # compute GLM
+        t_glm = time.time()
+        self._log("running")
+
+        labels, results = mem_glm(
+            Y,
+            design.values,
+            noise_model=self.noise_model,
+            bins=bins,
+            n_jobs=self.n_jobs,
+            random_state=self.random_state,
+        )
+
+        self._log("run_done", time_in_second=time.time() - t_glm)
+
+        self.labels_.append(labels)
+
+        # We save memory if inspecting model details is not necessary
+        if self.minimize_memory:
+            for key in results:
+                results[key] = SimpleRegressionResults(results[key])
+        self.results_.append(results)
+        del Y
+
+    def _create_all_designs(
+        self, run_imgs, events, confounds, design_matrices
+    ):
+        """Build experimental design of all runs."""
+        if design_matrices is not None:
+            return design_matrices
+
+        design_matrices = []
+
+        for run_idx, run_img in enumerate(run_imgs):
+
+            if isinstance(run_img, SurfaceImage):
+                n_scans = run_img.shape[0]
+            elif isinstance(run_img, np.ndarray):
+                n_scans = run_img.shape[1]
+            else:
+                run_img = check_niimg(run_img, ensure_ndim=4)
+                n_scans = get_data(run_img).shape[3]
+
+            design = self._create_single_design(
+                n_scans, events, confounds, run_idx
+            )
+
+            design_matrices.append(design)
+
+        return design_matrices
+
+    def _create_single_design(self, n_scans, events, confounds, run_idx):
+        """Build experimental design of a single run."""
+        if confounds is not None:
+            confounds_matrix = confounds[run_idx].values
+            if confounds_matrix.shape[0] != n_scans:
+                raise ValueError(
+                    "Rows in confounds does not match "
+                    "n_scans in run_img "
+                    f"at index {run_idx}."
+                )
+            confounds_names = confounds[run_idx].columns.tolist()
+        else:
+            confounds_matrix = None
+            confounds_names = None
+
+        start_time = self.slice_time_ref * self.t_r
+        end_time = (n_scans - 1 + self.slice_time_ref) * self.t_r
+        frame_times = np.linspace(start_time, end_time, n_scans)
+        design = make_first_level_design_matrix(
+            frame_times,
+            events[run_idx],
+            self.hrf_model,
+            self.drift_model,
+            self.high_pass,
+            self.drift_order,
+            self.fir_delays,
+            confounds_matrix,
+            confounds_names,
+            self.min_onset,
+        )
+
+        return design
+
     def fit(
         self,
         run_imgs,
@@ -508,8 +711,10 @@ class FirstLevelModel(BaseGLM):
 
         Parameters
         ----------
-        run_imgs : Niimg-like object, :obj:`list` of Niimg-like objects, \
-                   SurfaceImage object, or :obj:`list` of SurfaceImage
+        run_imgs : Niimg-like object, \
+                   :obj:`list` or :obj:`tuple` of Niimg-like objects, \
+                   SurfaceImage object, \
+                   or :obj:`list` or :obj:`tuple` of SurfaceImage
             Data on which the :term:`GLM` will be fitted. If this is a list,
             the affine is considered the same for all.
 
@@ -549,171 +754,64 @@ class FirstLevelModel(BaseGLM):
             will be clustered via K-means with `bins` number of clusters.
 
         """
+        if not isinstance(
+            run_imgs, (str, Path, Nifti1Image, SurfaceImage, list, tuple)
+        ) or (
+            isinstance(run_imgs, (list, tuple))
+            and not all(
+                isinstance(x, (str, Path, Nifti1Image, SurfaceImage))
+                for x in run_imgs
+            )
+        ):
+            input_type = type(run_imgs)
+            if isinstance(run_imgs, list):
+                input_type = [type(x) for x in run_imgs]
+            raise TypeError(
+                "'run_imgs' must be a single instance / a list "
+                "of any of the following:\n"
+                "- string\n"
+                "- pathlib.Path\n"
+                "- NiftiImage\n"
+                "- SurfaceImage\n"
+                f"Got: {input_type}"
+            )
+
+        run_imgs, events, confounds, sample_masks, design_matrices = (
+            self._check_fit_inputs(
+                run_imgs,
+                events,
+                confounds,
+                sample_masks,
+                design_matrices,
+            )
+        )
+
         # Initialize masker_ to None such that attribute exists
         self.masker_ = None
 
-        # Raise a warning if both design_matrices and confounds are provided
-        if design_matrices is not None and (
-            confounds is not None or events is not None
-        ):
-            warn(
-                "If design matrices are supplied, "
-                "confounds and events will be ignored."
-            )
-
-        # Check arguments
-        # Check imgs type
-        if events is not None:
-            _check_events_file_uses_tab_separators(events_files=events)
-        if not isinstance(run_imgs, (list, tuple)):
-            run_imgs = [run_imgs]
-        if design_matrices is None:
-            if events is None:
-                raise ValueError("events or design matrices must be provided")
-            if self.t_r is None:
-                raise ValueError(
-                    "t_r not given to FirstLevelModel object"
-                    " to compute design from events"
-                )
-        else:
-            design_matrices = _check_run_tables(
-                run_imgs, design_matrices, "design_matrices"
-            )
-        # Check that number of events and confound files match number of runs
-        # Also check that events and confound files can be loaded as DataFrame
-        if events is not None:
-            events = _check_run_tables(run_imgs, events, "events")
-        if confounds is not None:
-            confounds = _check_run_tables(run_imgs, confounds, "confounds")
-
-        if sample_masks is not None:
-            sample_masks = check_run_sample_masks(len(run_imgs), sample_masks)
-
         self._prepare_mask(run_imgs[0])
 
+        self.design_matrices_ = self._create_all_designs(
+            run_imgs, events, confounds, design_matrices
+        )
+
         # For each run fit the model and keep only the regression results.
-        self.labels_, self.results_, self.design_matrices_ = [], [], []
+        self.labels_, self.results_ = [], []
         n_runs = len(run_imgs)
         t0 = time.time()
         for run_idx, run_img in enumerate(run_imgs):
-            # Report progress
-            if self.verbose > 0:
-                percent = float(run_idx) / n_runs
-                percent = round(percent * 100, 2)
-                dt = time.time() - t0
-                # We use a max to avoid a division by zero
-                if run_idx == 0:
-                    remaining = "go take a coffee, a big one"
-                else:
-                    remaining = (100.0 - percent) / max(0.01, percent) * dt
-                    remaining = f"{int(remaining)} seconds remaining"
+            self._log("progress", run_idx=run_idx, n_runs=n_runs, t0=t0)
+            self._fit_single_run(sample_masks, bins, run_img, run_idx)
 
-                sys.stderr.write(
-                    f"Computing run {run_idx + 1} "
-                    f"out of {n_runs} runs ({remaining})\n"
-                )
+        self._log("done", n_runs=n_runs, time_in_second=time.time() - t0)
 
-            # Build the experimental design for the glm
-            if not isinstance(run_img, SurfaceImage):
-                run_img = check_niimg(run_img, ensure_ndim=4)
-            if design_matrices is None:
-                if isinstance(run_img, SurfaceImage):
-                    n_scans = run_img.shape[0]
-                else:
-                    n_scans = get_data(run_img).shape[3]
-                if confounds is not None:
-                    confounds_matrix = confounds[run_idx].values
-                    if confounds_matrix.shape[0] != n_scans:
-                        raise ValueError(
-                            "Rows in confounds does not match "
-                            "n_scans in run_img "
-                            f"at index {run_idx}."
-                        )
-                    confounds_names = confounds[run_idx].columns.tolist()
-                else:
-                    confounds_matrix = None
-                    confounds_names = None
-                start_time = self.slice_time_ref * self.t_r
-                end_time = (n_scans - 1 + self.slice_time_ref) * self.t_r
-                frame_times = np.linspace(start_time, end_time, n_scans)
-                design = make_first_level_design_matrix(
-                    frame_times,
-                    events[run_idx],
-                    self.hrf_model,
-                    self.drift_model,
-                    self.high_pass,
-                    self.drift_order,
-                    self.fir_delays,
-                    confounds_matrix,
-                    confounds_names,
-                    self.min_onset,
-                )
-            else:
-                design = design_matrices[run_idx]
-
-            if sample_masks is not None:
-                sample_mask = sample_masks[run_idx]
-                design = design.iloc[sample_mask, :]
-            else:
-                sample_mask = None
-
-            self.design_matrices_.append(design)
-
-            # Mask and prepare data for GLM
-            if self.verbose > 1:
-                t_masking = time.time()
-                sys.stderr.write("Starting masker computation \r")
-
-            Y = self.masker_.transform(run_img, sample_mask=sample_mask)
-            del run_img  # Delete unmasked image to save memory
-
-            if self.verbose > 1:
-                t_masking = time.time() - t_masking
-                sys.stderr.write(
-                    f"Masker took {int(t_masking)} seconds       \n"
-                )
-
-            if self.signal_scaling is not False:
-                Y, _ = mean_scaling(Y, self.signal_scaling)
-            if self.memory:
-                mem_glm = self.memory.cache(run_glm, ignore=["n_jobs"])
-            else:
-                mem_glm = run_glm
-
-            # compute GLM
-            if self.verbose > 1:
-                t_glm = time.time()
-                sys.stderr.write("Performing GLM computation\r")
-            labels, results = mem_glm(
-                Y,
-                design.values,
-                noise_model=self.noise_model,
-                bins=bins,
-                n_jobs=self.n_jobs,
-                random_state=self.random_state,
-            )
-            if self.verbose > 1:
-                t_glm = time.time() - t_glm
-                sys.stderr.write(f"GLM took {int(t_glm)} seconds         \n")
-
-            self.labels_.append(labels)
-            # We save memory if inspecting model details is not necessary
-            if self.minimize_memory:
-                for key in results:
-                    results[key] = SimpleRegressionResults(results[key])
-            self.results_.append(results)
-            del Y
-
-        # Report progress
-        if self.verbose > 0:
-            sys.stderr.write(
-                f"\nComputation of {n_runs} runs done "
-                f"in {time.time() - t0} seconds.\n\n"
-            )
         return self
 
     def compute_contrast(
-        self, contrast_def, stat_type=None, output_type="z_score"
+        self,
+        contrast_def,
+        stat_type=None,
+        output_type="z_score",
     ):
         """Generate different outputs corresponding to \
         the contrasts provided e.g. z_map, t_map, effects and variance.
@@ -743,10 +841,14 @@ class FirstLevelModel(BaseGLM):
             :term:`'effect_size'<Parameter Estimate>`, 'effect_variance' or
             'all'.
 
+        format_type : str, default='niimg'
+            Data format type of the output. Can be ``'niimg'``, or ``'array'``.
+            If ``'niimg'`` is chosen a SurfaceImage or NiftiImage instance
+            will be returned depending on the type of the GLM inputs.
 
         Returns
         -------
-        output : Nifti1Image or dict
+        output : Nifti1Image, numpy array, or dict
             The desired output image(s). If ``output_type == 'all'``, then
             the output is a dictionary of images, keyed by the type of image.
 
