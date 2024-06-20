@@ -110,13 +110,13 @@ neg_log_pval = math_img(
 
 # %%
 # Let us plot the (corrected) negative log  p-values for the parametric test
-cut_coords = [38, -17, -3]
+cut_coords = [-37, 8, -11]
 # Since we are plotting negative log p-values and using a threshold equal to 1,
 # it corresponds to corrected p-values lower than 10%, meaning that there
 # is less than 10% probability to make a single false discovery
 # (90% chance that we make no false discoveries at all).
 # This threshold is much more conservative than the previous one.
-threshold = 1
+threshold = 0.75
 title = (
     "Group-level association between motor activity and reading: \n"
     "neg-log of parametric corrected p-values (FWER < 10%)"
