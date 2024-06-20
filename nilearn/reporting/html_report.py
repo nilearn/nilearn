@@ -104,7 +104,7 @@ def _update_template(
     title : str
         The title for the report.
 
-    docstring : strresource_path
+    docstring : str
         The introductory docstring for the reported object.
 
     content : img
