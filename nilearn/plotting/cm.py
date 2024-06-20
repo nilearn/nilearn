@@ -2,7 +2,7 @@
 
 import contextlib
 
-import matplolib
+import matplotlib
 import numpy as _np
 from matplotlib import cm as _cm, colors as _colors, rcParams as _rcParams
 
@@ -296,7 +296,7 @@ _cmap_d["videen_style"] = _colors.LinearSegmentedColormap.from_list(
 globals().update(_cmap_d)
 # Register cmaps in matplotlib too
 for k, v in _cmap_d.items():
-    if compare_version(matplolib.__version__, ">=", "3.5.0"):
+    if compare_version(matplotlib.__version__, ">=", "3.5.0"):
         from matplotlib import colormaps as _colormaps
 
         _register_cmap = _colormaps.register

@@ -986,7 +986,7 @@ class OrthoSlicer(BaseSlicer):
 
         Here we put the logic used to adjust the size of the axes.
 
-        ``renderer`` is required to match the matplolib API.
+        ``renderer`` is required to match the matplotlib API.
         """
         x0, y0, x1, y1 = self.rect
         width_dict = dict()
@@ -1342,7 +1342,7 @@ class TiledSlicer(BaseSlicer):
 
         Here we put the logic used to adjust the size of the axes.
 
-        ``renderer`` is required to match the matplolib API.
+        ``renderer`` is required to match the matplotlib API.
         """
         rect_x0, rect_y0, rect_x1, rect_y1 = self.rect
 
@@ -1550,7 +1550,7 @@ class BaseStackedSlicer(BaseSlicer):
 
         Here we put the logic used to adjust the size of the axes.
 
-        ``renderer`` is required to match the matplolib API.
+        ``renderer`` is required to match the matplotlib API.
         """
         x0, y0, x1, y1 = self.rect
         width_dict = dict()
@@ -2030,7 +2030,7 @@ class MosaicSlicer(BaseSlicer):
 
         Here we put the logic used to adjust the size of the axes.
 
-        ``renderer`` is required to match the matplolib API.
+        ``renderer`` is required to match the matplotlib API.
         """
         x0, y0, x1, y1 = self.rect
         display_ax_dict = self.axes
