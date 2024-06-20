@@ -240,7 +240,10 @@ def generate_report(estimator):
             "\nReport generation not enabled!\n" "No visual outputs created."
         )
 
-    if not hasattr(estimator, "_reporting_data"):
+    if (
+        not hasattr(estimator, "_reporting_data")
+        or not estimator._reporting_data
+    ):
         warning_messages.append(
             "\nThis report was not generated.\n"
             "Make sure to run `fit` before inspecting reports."

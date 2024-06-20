@@ -101,20 +101,13 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 "We recommend to inspect the report for the overlap "
                 "between the mask and its input image. "
             ),
-            "warning_message": (
-                "This object has not been fitted yet ! "
-                "Make sure to run `fit` before inspecting reports."
-            ),
             "n_vertices": {},
             # unused but required in HTML template
             "number_of_regions": None,
             "summary": None,
         }
         # data necessary to construct figure for the report
-        self._reporting_data = {
-            "mask": None,
-            "images": None,
-        }
+        self._reporting_data = None
 
     def _fit_mask_img(self, img: SurfaceImage | None) -> None:
         if self.mask_img is not None:
@@ -164,13 +157,6 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
             self.slices[part_name] = start, stop
             start = stop
         self.output_dimension_ = stop
-
-        # save inputs for reporting
-        if not self.reports:
-            self._reporting_data = None
-            return self
-
-        self._report_content["warning_message"] = None
 
         for part in self.mask_img_.data.parts.keys():
             self._report_content["n_vertices"][part] = (
@@ -479,7 +465,6 @@ class SurfaceLabelsMasker(BaseEstimator):
                 "We recommend to inspect the report for the overlap "
                 "between the mask and its input image. "
             ),
-            "warning_message": None,
             "n_vertices": {},
             "number_of_regions": len(self.label_names_),
             "summary": {},
