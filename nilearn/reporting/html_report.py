@@ -10,7 +10,8 @@ from nilearn.maskers import NiftiSpheresMasker
 from nilearn.plotting.html_document import HTMLDocument
 from nilearn.reporting.utils import (
     CSS_PATH,
-    HTML_TEMPLATE_ROOT_PATH,
+    HTML_PARTIALS_PATH,
+    HTML_TEMPLATE_PATH,
     figure_to_svg_base64,
 )
 
@@ -141,14 +142,11 @@ def _update_template(
         An instance of a populated HTML report.
 
     """
-    if warning_messages is None:
-        warning_messages = []
-
     if template_name is None:
         body_template_name = "report_body_template.html"
     else:
         body_template_name = template_name
-    body_template_path = HTML_TEMPLATE_ROOT_PATH / body_template_name
+    body_template_path = HTML_TEMPLATE_PATH / body_template_name
     if not body_template_path.exists():
         raise FileNotFoundError(f"No template {body_template_name}")
     tpl = tempita.HTMLTemplate.from_filename(
@@ -167,14 +165,14 @@ def _update_template(
         parameters=_render_parameter_partial(parameters),
         **data,
         css=css,
-        warning_messages=warning_messages,
+        warning_messages=_render_warnings_partial(warning_messages),
     )
 
     # revert HTML safe substitutions in CSS sections
     body = body.replace(".pure-g &gt; div", ".pure-g > div")
 
     head_template_name = "report_head_template.html"
-    head_template_path = HTML_TEMPLATE_ROOT_PATH / head_template_name
+    head_template_path = HTML_TEMPLATE_PATH / head_template_name
     with open(str(head_template_path)) as head_file:
         head_tpl = Template(head_file.read())
 
@@ -288,9 +286,18 @@ def generate_report(estimator):
 
 def _render_parameter_partial(parameters):
     tpl = tempita.HTMLTemplate.from_filename(
-        str(HTML_TEMPLATE_ROOT_PATH / "parameters.html"), encoding="utf-8"
+        str(HTML_PARTIALS_PATH / "parameters.html"), encoding="utf-8"
     )
     return tpl.substitute(parameters=parameters)
+
+
+def _render_warnings_partial(warning_messages):
+    if not warning_messages:
+        return ""
+    tpl = tempita.HTMLTemplate.from_filename(
+        str(HTML_PARTIALS_PATH / "warnings.html"), encoding="utf-8"
+    )
+    return tpl.substitute(warning_messages=warning_messages)
 
 
 def _create_report(estimator, data):

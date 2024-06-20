@@ -9,7 +9,9 @@ TEMPLATE_ROOT_PATH = Path(__file__).parent / "reporting" / "data"
 
 CSS_PATH = TEMPLATE_ROOT_PATH / "css"
 
-HTML_TEMPLATE_ROOT_PATH = TEMPLATE_ROOT_PATH / "html"
+HTML_TEMPLATE_PATH = TEMPLATE_ROOT_PATH / "html"
+
+HTML_PARTIALS_PATH = HTML_TEMPLATE_PATH / "partials"
 
 
 def _figure_to_bytes(fig, format):
