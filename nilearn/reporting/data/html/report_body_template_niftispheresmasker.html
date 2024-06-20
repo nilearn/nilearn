@@ -101,29 +101,8 @@
           </table>
         </details>
       </div>
-      {{endif}} {{if parameters}}
-      <div class="scroll-x">
-        <details>
-          <summary class="pure-button">Parameters</summary>
-          <table class="pure-table">
-            <thead>
-              <tr>
-                <th>Parameter</th>
-                <th>Value</th>
-              </tr>
-            </thead>
-            <tbody>
-              {{py: params = parameters.items()}} {{for p, v in params}}
-              <tr>
-                <td data-column="Parameter">{{p}}</td>
-                <td data-column="Value">{{v}}</td>
-              </tr>
-              {{endfor}}
-            </tbody>
-          </table>
-        </details>
-      </div>
       {{endif}}
+      <div class="scroll-x">{{ parameters }}</div>
     </div>
   </div>
 </div>

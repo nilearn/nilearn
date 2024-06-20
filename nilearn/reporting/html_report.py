@@ -2,14 +2,17 @@
 
 import copy
 import warnings
-from pathlib import Path
 from string import Template
 
 from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.maskers import NiftiSpheresMasker
 from nilearn.plotting.html_document import HTMLDocument
-from nilearn.reporting.utils import figure_to_svg_base64
+from nilearn.reporting.utils import (
+    CSS_PATH,
+    HTML_TEMPLATE_ROOT_PATH,
+    figure_to_svg_base64,
+)
 
 ESTIMATOR_TEMPLATES = {
     "NiftiLabelsMasker": "report_body_template_niftilabelsmasker.html",
@@ -100,7 +103,7 @@ def _update_template(
     title : str
         The title for the report.
 
-    docstring : str
+    docstring : strresource_path
         The introductory docstring for the reported object.
 
     content : img
@@ -140,20 +143,19 @@ def _update_template(
     """
     if warning_messages is None:
         warning_messages = []
-    resource_path = Path(__file__).resolve().parent / "data"
 
     if template_name is None:
         body_template_name = "report_body_template.html"
     else:
         body_template_name = template_name
-    body_template_path = resource_path / "html" / body_template_name
+    body_template_path = HTML_TEMPLATE_ROOT_PATH / body_template_name
     if not body_template_path.exists():
         raise FileNotFoundError(f"No template {body_template_name}")
     tpl = tempita.HTMLTemplate.from_filename(
         str(body_template_path), encoding="utf-8"
     )
 
-    css_file_path = resource_path / "css" / "masker_report.css"
+    css_file_path = CSS_PATH / "masker_report.css"
     with open(css_file_path, encoding="utf-8") as css_file:
         css = css_file.read()
 
@@ -162,7 +164,7 @@ def _update_template(
         content=content,
         overlay=overlay,
         docstring=docstring,
-        parameters=parameters,
+        parameters=_render_parameter_partial(parameters),
         **data,
         css=css,
         warning_messages=warning_messages,
@@ -172,11 +174,11 @@ def _update_template(
     body = body.replace(".pure-g &gt; div", ".pure-g > div")
 
     head_template_name = "report_head_template.html"
-    head_template_path = resource_path / "html" / head_template_name
+    head_template_path = HTML_TEMPLATE_ROOT_PATH / head_template_name
     with open(str(head_template_path)) as head_file:
         head_tpl = Template(head_file.read())
 
-    head_css_file_path = resource_path / "css" / "head.css"
+    head_css_file_path = CSS_PATH / "head.css"
     with open(head_css_file_path, encoding="utf-8") as head_css_file:
         head_css = head_css_file.read()
 
@@ -255,7 +257,7 @@ def generate_report(estimator):
             docstring="",
             content=_embed_img(None),
             overlay=None,
-            parameters={},
+            parameters=_render_parameter_partial({}),
             data=data,
             warning_messages=warning_messages,
         )
@@ -276,12 +278,19 @@ def generate_report(estimator):
             docstring="",
             content=_embed_img(None),
             overlay=None,
-            parameters={},
+            parameters=_render_parameter_partial({}),
             data=data,
             warning_messages=warning_messages,
         )
 
     return _create_report(estimator, data)
+
+
+def _render_parameter_partial(parameters):
+    tpl = tempita.HTMLTemplate.from_filename(
+        str(HTML_TEMPLATE_ROOT_PATH / "parameters.html"), encoding="utf-8"
+    )
+    return tpl.substitute(parameters=parameters)
 
 
 def _create_report(estimator, data):

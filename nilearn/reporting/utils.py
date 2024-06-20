@@ -3,6 +3,13 @@
 import base64
 import io
 import urllib.parse
+from pathlib import Path
+
+TEMPLATE_ROOT_PATH = Path(__file__).parent / "reporting" / "data"
+
+CSS_PATH = TEMPLATE_ROOT_PATH / "css"
+
+HTML_TEMPLATE_ROOT_PATH = TEMPLATE_ROOT_PATH / "html"
 
 
 def _figure_to_bytes(fig, format):
