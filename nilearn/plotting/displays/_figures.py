@@ -149,8 +149,8 @@ class PlotlySurfaceFigure(SurfaceFigure):
             mesh, can be a file (valid formats are .gii, .mgz, .nii,
             .nii.gz, or FreeSurfer specific files such as .annot or .label),
             or a Numpy array with a value for each vertex of the surf_mesh.
-            The value at each vertex one inside the ROI and zero inside ROI,
-            or an :obj:`int` giving the label number for atlases.
+            The value at each vertex is one inside the ROI and zero outside
+            the ROI, or an :obj:`int` giving the label number for atlases.
 
         levels : :obj:`list` of :obj:`int`, or :obj:`None`, default=None
             A :obj:`list` of indices of the regions that are to be outlined.
