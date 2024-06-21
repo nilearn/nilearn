@@ -1,4 +1,7 @@
+import warnings
+
 import numpy as np
+from scipy import linalg
 from scipy.spatial import distance_matrix
 
 from nilearn.surface.surface import load_surf_data
@@ -77,6 +80,18 @@ class PlotlySurfaceFigure(SurfaceFigure):
 
     """
 
+    @property
+    def _faces(self):
+        return np.vstack(
+            [self.figure._data[0].get(d) for d in ["i", "j", "k"]]
+        ).T
+
+    @property
+    def _coords(self):
+        return np.vstack(
+            [self.figure._data[0].get(d) for d in ["x", "y", "z"]]
+        ).T
+
     def __init__(self, figure=None, output_file=None):
         if not PLOTLY_INSTALLED:
             raise ImportError(
@@ -119,7 +134,14 @@ class PlotlySurfaceFigure(SurfaceFigure):
         if self.figure is not None:
             self.figure.write_image(self.output_file)
 
-    def add_contours(self, roi_map, levels=None, labels=None, lines=None):
+    def add_contours(
+        self,
+        roi_map,
+        levels=None,
+        labels=None,
+        lines=None,
+        elevation=0.1,
+    ):
         """
         Draw boundaries around roi.
 
@@ -149,6 +171,22 @@ class PlotlySurfaceFigure(SurfaceFigure):
             For valid keys, see :attr:`plotly.graph_objects.Scatter3d.line`.
             If length 1, the properties defined in that element will be used
             to draw all requested contours.
+
+        elevations : :obj:`float`, default=0.1
+            Controls how high above the face each boundary should be placed.
+            0.0 implies directly on boundary, and higher values are farther
+            above the face. This is useful for avoiding overlap of surface
+            and boundary.
+
+        Warnings
+        --------
+            Warns when a vertex is isolated; it will not be included in the
+            roi contour.
+
+        Notes
+        -----
+            Regions are traced by connecting the centroids of non-isolated
+            faces (triangles).
         """
         if levels is None:
             levels = np.unique(roi_map)
@@ -166,12 +204,33 @@ class PlotlySurfaceFigure(SurfaceFigure):
             raise ValueError(
                 "levels and lines need to be either the same length or None."
             )
+
         roi = load_surf_data(roi_map)
 
         traces = []
         for level, label, line in zip(levels, labels, lines):
             parc_idx = np.where(roi == level)[0]
-            sorted_vertices = self._get_vertices_on_edge(parc_idx)
+
+            # warn when the edge faces exclude vertices in parcellation
+            # a vertex is isolated when it is a vertex of 6 faces that
+            # each have only on vertex in parcellation
+            verts_per_face = np.isin(self._faces, parc_idx).sum(axis=1)
+            faces_w_one_v = np.flatnonzero(verts_per_face == 1)
+            unique_v, unique_v_counts = np.unique(
+                self._faces[faces_w_one_v], return_counts=True
+            )
+            isolated_v = unique_v[unique_v_counts == 6]
+            if any(isolated_v):
+                warnings.warn(
+                    f"""{label=} contains isolated vertices:
+                    {isolated_v.tolist()}. These will not be included in ROI
+                    boundary line."""
+                )
+
+            sorted_vertices = self._get_sorted_edge_centroids(
+                parc_idx=parc_idx, elevation=elevation
+            )
+
             traces.append(
                 go.Scatter3d(
                     x=sorted_vertices[:, 0],
@@ -184,7 +243,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
             )
         self.figure.add_traces(data=traces)
 
-    def _get_vertices_on_edge(self, parc_idx):
+    def _get_sorted_edge_centroids(self, parc_idx, elevation: float = 0.1):
         """
         Identify which vertices lie on the outer edge of a parcellation.
 
@@ -193,66 +252,237 @@ class PlotlySurfaceFigure(SurfaceFigure):
         parc_idx : :class:`numpy.ndarray`
             Indices of the vertices of the region to be plotted.
 
+        elevation : :obj:`float`
+            Controls how high above the face each centroid should be placed.
+            0.0 implies directly on boundary, and higher values are farther
+            above the face. This is useful for avoiding overlap of surface
+            and boundary.
+
         Returns
         -------
         data : :class:`numpy.ndarray`
              (n_vertices, s) x,y,z coordinates of vertices that trace region
              of interest.
 
+        Notes
+        -----
+        For each face on the edge of a region
+            1. Get a centroid for each face (parallel to the triangle plane)
+            2. Find the xyz coordinate that is normal to the triangle face
+                (at distance `elevation`)
+            3. Arrange the centroids such in a good order for plotting
         """
-        faces = np.vstack(
-            [self.figure._data[0].get(d) for d in ["i", "j", "k"]]
-        ).T
+        # Mask indicating faces whose centroids will compose the boundary.
+        edge_faces = self._get_faces_on_edge(parc_idx=parc_idx)
 
+        # gather the centroids of each face
+        centroids = []
+        segments = []
+        vs = []
+        idxs = []
+        for e, face in zip(edge_faces, self.faces, strict=True):
+            if e:
+                t0 = self._coords[face[0]]
+                t1 = self._coords[face[1]]
+                t2 = self._coords[face[2]]
+
+                # the xyz coordinate is weighted toward the roi boundary (2:1)
+                w0 = 2 if face[0] in parc_idx else 1
+                w1 = 2 if face[1] in parc_idx else 1
+                w2 = 2 if face[2] in parc_idx else 1
+                x = np.average((t0[0], t1[0], t2[0]), weights=(w0, w1, w2))
+                y = np.average((t0[1], t1[1], t2[1]), weights=(w0, w1, w2))
+                z = np.average((t0[2], t1[2], t2[2]), weights=(w0, w1, w2))
+                centroids.append(
+                    self._project_above_face(
+                        np.array((x, y, z)), t0, t1, t2, elevation=elevation
+                    )
+                )
+                segs = [None] * 3
+                if face[0] in parc_idx and face[1] in parc_idx:
+                    segs[0] = self.transform_coord_to_plane(
+                        t0, t0, t1, t2
+                    ) + self.transform_coord_to_plane(t1, t0, t1, t2)
+                if face[0] in parc_idx and face[2] in parc_idx:
+                    segs[1] = self.transform_coord_to_plane(
+                        t0, t0, t1, t2
+                    ) + self.transform_coord_to_plane(t2, t0, t1, t2)
+                if face[1] in parc_idx and face[2] in parc_idx:
+                    segs[2] = self.transform_coord_to_plane(
+                        t2, t0, t1, t2
+                    ) + self.transform_coord_to_plane(t1, t0, t1, t2)
+                segments.append(tuple(segs))
+                vs.append((t0, t1, t2))
+                idxs.append([f for f in face if f in parc_idx])
+
+        centroids = np.array(centroids)
+
+        # Next, sort centroids along boundary
+        # Start with the first vertex
+        current_vertex = 0
+        visited_vertices = {current_vertex}
+        last_distance = np.inf
+        prev_first = 0
+
+        sorted_vertices = [centroids[0]]
+
+        # Loop over the remaining vertices in order of distance from the
+        # current vertex
+        while len(visited_vertices) < len(centroids):
+            remaining_vertices = np.array(
+                [
+                    vertex
+                    for vertex in range(len(centroids))
+                    if vertex not in visited_vertices
+                ]
+            )
+            remaining_distances = distance_matrix(
+                centroids[current_vertex].reshape(1, -1),
+                centroids[remaining_vertices],
+            )
+            # Occasionally, the next closest centroid is one that would
+            # cause a loop. This is common when a vertex is a neighbor
+            # of only one other vertex in the roi (the loop encircles
+            # this corner vertex). So, the next added centroid is one
+            # that may be slightly farther away -- if the one that is
+            # farther away has fewer vertices within the roi.
+            if len(remaining_vertices) > 5:
+                smallest_5_idx = np.argpartition(
+                    remaining_distances.squeeze(), 5
+                )[:5]
+                xy1 = self.transform_coord_to_plane(
+                    centroids[current_vertex], *vs[current_vertex]
+                )
+                next_index = 9999
+                for attempt in np.argsort(
+                    remaining_distances[0, smallest_5_idx]
+                ):
+                    fail = False
+                    shortest_idx = smallest_5_idx[attempt]
+                    xy2 = self.transform_coord_to_plane(
+                        centroids[remaining_vertices[shortest_idx]],
+                        *vs[current_vertex],
+                    )
+                    if not any(
+                        v in idxs[current_vertex]
+                        for v in idxs[remaining_vertices[shortest_idx]]
+                    ):
+                        # this does not share vertex, so try again
+                        fail |= True
+                    if fail:
+                        continue
+                    # also need to test for whether an edge is shared
+                    shared = 0
+                    for v in vs[remaining_vertices[shortest_idx]]:
+                        for v2 in vs[current_vertex]:
+                            shared += np.all(np.isclose(v, v2))
+                    if not (shared >= 2):
+                        # this does not share and edge, so try again
+                        continue
+                    for e in segments[current_vertex]:
+                        if e is not None and self.do_segs_intersect(
+                            *xy1, *xy2, *e
+                        ):
+                            # this one crosses boundary, so try again
+                            fail |= True
+                    if fail:
+                        continue
+                    next_index = shortest_idx
+
+                # if none of those five worked, then pick the next nearest and
+                # handle later
+                if next_index == 9999:
+                    next_index = np.argmin(remaining_distances)
+
+            else:
+                next_index = np.argmin(remaining_distances)
+
+            closest_vertex = remaining_vertices[next_index]
+            if remaining_distances[0, next_index] > last_distance * 3:
+                sorted_vertices.append(centroids[prev_first])
+                sorted_vertices.append(np.array([None] * 3))
+                prev_first = closest_vertex
+
+            visited_vertices.add(closest_vertex)
+            sorted_vertices.append(centroids[closest_vertex])
+
+            # Move to the closest vertex and repeat the process
+            current_vertex = closest_vertex
+            last_distance = remaining_distances[0, next_index]
+
+        # at the end we append the first one again to close the outline
+        sorted_vertices.append(centroids[prev_first])
+
+        return np.asarray(sorted_vertices)
+
+    def _get_faces_on_edge(self, parc_idx):
+        """Identify which faces lie on the outeredge of the parcellation \
+        defined by the indices in parc_idx.
+
+        Parameters
+        ----------
+        parc_idx : numpy.ndarray, indices of the vertices
+            of the region to be plotted
+        """
         # count how many vertices belong to the given parcellation in each face
-        verts_per_face = np.isin(faces, parc_idx).sum(axis=1)
+        verts_per_face = np.isin(self._faces, parc_idx).sum(axis=1)
 
         # test if parcellation forms regions
         if np.all(verts_per_face < 2):
             raise ValueError("Vertices in parcellation do not form region.")
 
         vertices_on_edge = np.intersect1d(
-            np.unique(faces[verts_per_face == 2]), parc_idx
+            np.unique(self._faces[verts_per_face == 2]), parc_idx
         )
+        faces_outside_edge = np.isin(self._faces, vertices_on_edge).sum(axis=1)
 
-        # now that we know where to draw the lines, we need to know in which
-        # order. If we pick a vertex to start and move to the closest one, and
-        # then to the closest remaining one and so forth, we should get the
-        # whole ROI
-        coords = np.vstack(
-            [self.figure._data[0].get(d) for d in ["x", "y", "z"]]
-        ).T
-        vertices = coords[vertices_on_edge]
+        return np.logical_and(faces_outside_edge > 0, verts_per_face < 3)
 
-        # Start with the first vertex
-        current_vertex = 0
-        visited_vertices = {current_vertex}
+    @staticmethod
+    def _project_above_face(point, t0, t1, t2, elevation: float = 0.1):
+        u = t1 - t0
+        v = t2 - t0
+        # vector normal to plane
+        n = np.cross(u, v)
+        n /= np.linalg.norm(n)
+        p_ = point - t0
 
-        sorted_vertices = [vertices[0]]
+        p_normal = np.dot(p_, n) * n
+        p_tangent = p_ - p_normal
 
-        # Loop over the remaining vertices in order of distance from the
-        # current vertex
-        while len(visited_vertices) < len(vertices):
-            remaining_vertices = np.array(
-                [
-                    vertex
-                    for vertex in range(len(vertices))
-                    if vertex not in visited_vertices
-                ]
-            )
-            remaining_distances = distance_matrix(
-                vertices[current_vertex].reshape(1, -1),
-                vertices[remaining_vertices],
-            )
-            closest_index = np.argmin(remaining_distances)
-            closest_vertex = remaining_vertices[closest_index]
-            visited_vertices.add(closest_vertex)
-            sorted_vertices.append(vertices[closest_vertex])
-            # Move to the closest vertex and repeat the process
-            current_vertex = closest_vertex
+        closest_point = p_tangent + t0
+        return closest_point + elevation * n
 
-        # at the end we append the first one again to close the outline
-        sorted_vertices.append(vertices[0])
-        sorted_vertices = np.asarray(sorted_vertices)
+    @staticmethod
+    def _do_segs_intersect(
+        x1: float,
+        y1: float,
+        x2: float,
+        y2: float,
+        x3: float,
+        y3: float,
+        x4: float,
+        y4: float,
+    ) -> bool:
+        a1 = x1 - x2
+        b1 = x3 - x4
+        c1 = x1 - x3
+        a2 = y1 - y2
+        b2 = y3 - y4
+        c2 = y1 - y3
+        d = a1 * b2 - a2 * b1
+        if np.isclose(d, 0):
+            return False
+        t = (c1 * b2 - c2 * b1) / d
+        u = (c1 * a2 - c2 * a1) / d
+        return t >= 0 and t <= 1 and u >= 0 and u <= 1
 
-        return sorted_vertices
+    @staticmethod
+    def _transform_coord_to_plane(v, t0, t1, t2) -> tuple[float, float]:
+        A = linalg.orth(np.column_stack((t1 - t0, t2 - t0)))
+        normal = np.cross(A[:, 0], A[:, 1])
+        normal /= np.linalg.norm(normal)
+        B = np.column_stack((A, normal))
+        Bp = np.linalg.inv(B)
+        P = B @ np.diag((1, 1, 0)) @ Bp
+        return tuple(Bp[:2, :] @ (t0 + P @ (v - t0)))
