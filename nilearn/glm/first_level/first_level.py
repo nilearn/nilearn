@@ -591,8 +591,6 @@ class FirstLevelModel(BaseGLM):
             sample_mask = sample_masks[run_idx]
             design = design.iloc[sample_mask, :]
             self.design_matrices_[run_idx] = design
-            if isinstance(run_img, np.ndarray):
-                run_img = run_img[:, sample_mask]
 
         # Mask and prepare data for GLM
         self._log("masking")
@@ -646,8 +644,6 @@ class FirstLevelModel(BaseGLM):
 
             if isinstance(run_img, SurfaceImage):
                 n_scans = run_img.shape[0]
-            elif isinstance(run_img, np.ndarray):
-                n_scans = run_img.shape[1]
             else:
                 run_img = check_niimg(run_img, ensure_ndim=4)
                 n_scans = get_data(run_img).shape[3]
@@ -848,7 +844,7 @@ class FirstLevelModel(BaseGLM):
 
         Returns
         -------
-        output : Nifti1Image, numpy array, or dict
+        output : Nifti1Image, or dict
             The desired output image(s). If ``output_type == 'all'``, then
             the output is a dictionary of images, keyed by the type of image.
 
