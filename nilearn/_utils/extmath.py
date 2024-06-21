@@ -1,4 +1,5 @@
 """Extended math utilities."""
+
 # Author: Gael Varoquaux
 
 import numpy as np
@@ -48,11 +49,11 @@ def is_spd(M, decimal=15, verbose=1):
     M : numpy.ndarray
         Symmetric positive definite matrix.
 
-    decimal : int, optional
-        Decimal. Default=15.
+    decimal : int, default=15
+        Decimal.
 
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    verbose : int, default=1
+        Verbosity level (0 means no message).
 
     Returns
     -------

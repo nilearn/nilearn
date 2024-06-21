@@ -93,7 +93,7 @@ def test_base_axes_exceptions():
         axes.draw_2d(None, None, None)
 
 
-def test_cut_axes_exception():
+def test_cut_axes_exception(affine_eye):
     """Tests for exceptions raised by class ``CutAxes``."""
     from nilearn.plotting.displays import CutAxes
 
@@ -101,7 +101,7 @@ def test_cut_axes_exception():
     assert axes.direction == "foo"
     assert axes.coord == 2
     with pytest.raises(ValueError, match="Invalid value for direction"):
-        axes.transform_to_2d(None, np.eye(4))
+        axes.transform_to_2d(None, affine_eye)
 
 
 def test_glass_brain_axes():
@@ -127,9 +127,8 @@ def test_glass_brain_axes():
 
 
 def test_get_index_from_direction_exception():
-    """Tests that a ValueError is raised when an invalid direction
-    is given to function ``_get_index_from_direction``.
-    """
+    """Tests that a ValueError is raised when an invalid direction \
+       is given to function ``_get_index_from_direction``."""
     from nilearn.plotting.displays._axes import _get_index_from_direction
 
     with pytest.raises(ValueError, match="foo is not a valid direction."):
@@ -144,7 +143,7 @@ def img():
 
 @pytest.fixture
 def cut_coords(name):
-    """Selects appropriate cut coords."""
+    """Select appropriate cut coords."""
     if name == "mosaic":
         return 3
     if name in ["yx", "yz", "xz"]:
@@ -161,6 +160,7 @@ def cut_coords(name):
 )
 def test_display_basics(display, name, img, cut_coords):
     """Basic smoke tests for all displays (slicers + projectors).
+
     Each object is instantiated, ``add_overlay``, ``title``,
     and ``close`` are then called.
     """
@@ -226,9 +226,8 @@ def test_mosaic_slicer_tuple_cut_coords(cut_coords, img):
 
 @pytest.mark.parametrize("cut_coords", [None, 5, (1, 1, 1)])
 def test_mosaic_slicer_img_none_false(cut_coords, img):
-    """Tests for MosaicSlicer when img is ``None`` or ``False``
-    while initializing the figure.
-    """
+    """Tests for MosaicSlicer when img is ``None`` or ``False`` \
+       while initializing the figure."""
     slicer = MosaicSlicer.init_with_figure(img=None, cut_coords=cut_coords)
     slicer.add_overlay(img, cmap=plt.cm.gray, colorbar=True)
     slicer.close()
@@ -251,7 +250,7 @@ def test_mosaic_slicer_wrong_inputs(cut_coords):
 
 @pytest.fixture
 def expected_cuts(cut_coords):
-    """Expected cut with test_demo_mosaic_slicer."""
+    """Return expected cut with test_demo_mosaic_slicer."""
     if cut_coords == (1, 1, 1):
         return {"x": [-40.0], "y": [-30.0], "z": [-30.0]}
     if cut_coords == 5:
@@ -317,15 +316,16 @@ def test_user_given_cmap_with_colorbar(img):
 
 
 @pytest.mark.parametrize("display", [OrthoSlicer, LYRZProjector])
-def test_data_complete_mask(display):
+def test_data_complete_mask(affine_eye, display):
     """Test for a special case due to matplotlib 2.1.0.
+
     When the data is completely masked, then we have plotting issues
     See similar issue #9280 reported in matplotlib. This function
     tests the patch added for this particular issue.
     """
     # data is completely masked
     data = np.zeros((10, 20, 30))
-    img = Nifti1Image(data, np.eye(4))
+    img = Nifti1Image(data, affine_eye)
     n_cuts = 3 if display == OrthoSlicer else 4
     display = display(cut_coords=(0,) * n_cuts)
     display.add_overlay(img)
@@ -334,6 +334,7 @@ def test_data_complete_mask(display):
 
 def test_add_markers_cut_coords_is_none():
     """Tests a special case for ``add_markers`` when ``cut_coords`` are None.
+
     This case is used when coords are placed on glass brain.
     """
     orthoslicer = OrthoSlicer(cut_coords=(None, None, None))
@@ -343,6 +344,7 @@ def test_add_markers_cut_coords_is_none():
 
 def test_annotations():
     """Tests for ``display.annotate()``.
+
     In particular, exercise some of the keyword arguments for scale bars.
     """
     orthoslicer = OrthoSlicer(cut_coords=(None, None, None))
@@ -375,3 +377,22 @@ def test_add_graph_with_node_color_as_string(node_color):
     node_coords = [[-53.60, -62.80, 36.64], [23.87, 0.31, 69.42]]
     lzry_projector.add_graph(matrix, node_coords, node_color=node_color)
     lzry_projector.close()
+
+
+@pytest.mark.parametrize(
+    "threshold,vmin,vmax,expected_results",
+    [
+        (None, None, None, [[-2, -1, 0], [0, 1, 2]]),
+        (0.5, None, None, [[-2, -1, np.nan], [np.nan, 1, 2]]),
+        (1, 0, None, [[np.nan, np.nan, np.nan], [np.nan, np.nan, 2]]),
+        (1, None, 1, [[-2, np.nan, np.nan], [np.nan, np.nan, np.nan]]),
+        (0, 0, 0, [[np.nan, np.nan, np.nan], [np.nan, np.nan, np.nan]]),
+    ],
+)
+def test_threshold(threshold, vmin, vmax, expected_results):
+    """Tests for ``OrthoSlicer._threshold``."""
+    data = np.array([[-2, -1, 0], [0, 1, 2]], dtype=float)
+    assert np.ma.allequal(
+        OrthoSlicer._threshold(data, threshold, vmin, vmax),
+        np.ma.masked_invalid(expected_results),
+    )

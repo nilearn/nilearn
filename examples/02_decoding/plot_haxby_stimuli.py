@@ -2,19 +2,23 @@
 Show stimuli of Haxby et al. dataset
 ====================================
 
-In this script we plot an overview of the stimuli used in "Distributed
-and Overlapping Representations of Faces and Objects in Ventral Temporal
-Cortex" (Science 2001)
+In this script we plot an overview of the stimuli used
+in :footcite:t:`Haxby2001`.
 """
-import matplotlib.pyplot as plt
 
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
+
+# %%
 from nilearn import datasets
 from nilearn.plotting import show
 
 haxby_dataset = datasets.fetch_haxby(subjects=[], fetch_stimuli=True)
 stimulus_information = haxby_dataset.stimuli
 
-#########################################################################
+# %%
 
 for stim_type in stimulus_information:
     # skip control images, there are too many
@@ -31,5 +35,12 @@ for stim_type in stimulus_information:
             ax.axis("off")
 
 show()
+
+# %%
+# References
+# ----------
+#
+#  .. footbibliography::
+
 
 # sphinx_gallery_dummy_images=7

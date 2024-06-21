@@ -207,66 +207,66 @@ Different display modes
 
 ================= =========================================================
 ================= =========================================================
-|plot_ortho|       `display_mode='ortho', cut_coords=[36, -27, 60]`
+|plot_ortho|       ``display_mode="ortho", cut_coords=[36, -27, 60]``
                    |hack|
                    Ortho slicer: 3 cuts along the x, y, z directions
 
-|plot_z_many|      `display_mode='z', cut_coords=5`
+|plot_z_many|      ``display_mode="z", cut_coords=5``
                    |hack|
                    Cutting in the z direction, specifying the number of
                    cuts
 
-|plot_x|           `display_mode='x', cut_coords=[-36, 36]`
+|plot_x|           ``display_mode="x", cut_coords=[-36, 36]``
                    |hack|
                    Cutting in the x direction, specifying the exact
                    cuts
 
-|plot_y_small|     `display_mode='y', cut_coords=1`
+|plot_y_small|     ``display_mode="y", cut_coords=1``
                    |hack|
                    Cutting in the y direction, with only 1 cut, that is
                    automatically positioned
 
-|plot_z_small|     `display_mode='z', cut_coords=1, colorbar=False`
+|plot_z_small|     ``display_mode="z", cut_coords=1, colorbar=False``
                    |hack|
                    Cutting in the z direction, with only 1 cut, that is
                    automatically positioned
 
-|plot_xz|          `display_mode='xz', cut_coords=[36, 60]`
+|plot_xz|          ``display_mode="xz", cut_coords=[36, 60]``
                    |hack|
                    Cutting in the x and z direction, with cuts manually
                    positioned
 
-|plot_yx|          `display_mode='yx', cut_coords=[-27, 36]`
+|plot_yx|          ``display_mode="yx", cut_coords=[-27, 36]``
                    |hack|
                    Cutting in the y and x direction, with cuts manually
                    positioned
 
-|plot_yz|          `display_mode='yz', cut_coords=[-27, 60]`
+|plot_yz|          ``display_mode="yz", cut_coords=[-27, 60]``
                    |hack|
                    Cutting in the y and z direction, with cuts manually
                    positioned
 
-|plot_tiled|       `display_mode='tiled', cut_coords=[36, -27, 60]`
+|plot_tiled|       ``display_mode="tiled", cut_coords=[36, -27, 60]``
                    |hack|
                    Tiled slicer: 3 cuts along the x, y, z directions,
                    arranged in a 2x2 grid
 
-|plot_mosaic|      `display_mode='mosaic'`
+|plot_mosaic|      ``display_mode="mosaic"``
                    |hack|
                    Mosaic slicer: multiple cuts along the x, y, z directions,
                    with cuts automatically positioned by default
 
-|plot_lzr|         `Glass brain display_mode='lzr'`
+|plot_lzr|         ``Glass brain display_mode="lzr"``
                    |hack|
                    Glass brain and Connectome provide additional display modes
                    due to the possibility of doing hemispheric projections.
-                   Check out: 'l', 'r', 'lr', 'lzr', 'lyr', 'lzry', 'lyrz'.
+                   Check out: ``'l'``, ``'r'``, ``'lr'``, ``'lzr'``, ``'lyr'``, '``lzry'``, ``'lyrz'``.
 
-|plot_lyrz|        `Glass brain display_mode='lyrz'`
+|plot_lyrz|        ``Glass brain display_mode="lyrz"``
                    |hack|
                    Glass brain and Connectome provide additional display modes
                    due to the possibility of doing hemispheric projections.
-                   Check out: 'l', 'r', 'lr', 'lzr', 'lyr', 'lzry', 'lyrz'.
+                   Check out: ``'l'``, ``'r'``, ``'lr'``, ``'lzr'``, ``'lyr'``, '``lzry'``, ``'lyrz'``.
 
 
 ================= =========================================================
@@ -331,34 +331,34 @@ plot, and has methods to add overlays, contours or edge maps:
 
 ================= =========================================================
 ================= =========================================================
-|plot_edges|       `display.add_edges(img)`
+|plot_edges|       ``display.add_edges(img)``
                    |hack|
-                   Add a plot of the edges of `img`, where edges are
+                   Add a plot of the edges of ``img``, where edges are
                    extracted using a Canny edge-detection routine. This
                    is typically useful to check registration. Note that
-                   `img` should have some visible sharp edges. Typically
+                   ``img`` should have some visible sharp edges. Typically
                    an EPI img does not, but a T1 does.
 
-|plot_contours|    `display.add_contours(img, levels=[.5], colors='r')`
+|plot_contours|    ``display.add_contours(img, levels=[0.5], colors="r")``
                    |hack|
-                   Add a plot of the contours of `img`, where contours
+                   Add a plot of the contours of ``img``, where contours
                    are computed for constant values, specified in
                    'levels'. This is typically useful to outline a mask,
                    or ROI on top of another map.
                    |hack|
                    **Example:** :ref:`sphx_glr_auto_examples_01_plotting_plot_haxby_masks.py`
 
-|plot_fill|        `display.add_contours(img, filled=True, alpha=0.7, levels=[0.5], colors='b')`
+|plot_fill|        ``display.add_contours(img, filled=True, alpha=0.7, levels=[0.5], colors="b")``
                    |hack|
-                   Add a plot of `img` with contours filled with colors
+                   Add a plot of ``img`` with contours filled with colors
 
-|plot_overlay|    `display.add_overlay(img, cmap=plotting.cm.purple_green, threshold=3)`
+|plot_overlay|    ``display.add_overlay(img, cmap=plotting.cm.purple_green, threshold=3)``
                   |hack|
                   Add a new overlay on the existing figure
                   |hack|
                   **Example:** :ref:`sphx_glr_auto_examples_01_plotting_plot_overlay.py`
 
-|plot_markers|    `display.add_markers(coords, marker_color='y', marker_size=100)`
+|plot_markers|    ``display.add_markers(coords, marker_color="y", marker_size=100)``
                   |hack|
                   Add seed based MNI coordinates as spheres on top of
                   statistical image or EPI image. This is useful for seed
@@ -366,7 +366,7 @@ plot, and has methods to add overlays, contours or edge maps:
                   |hack|
                   **Example:** :ref:`sphx_glr_auto_examples_03_connectivity_plot_seed_to_voxel_correlation.py`
 
-|plot_scalebar|   `display.annotate(scalebar=True)`
+|plot_scalebar|   ``display.annotate(scalebar=True)``
                   |hack|
                   Adds annotations such as a scale bar, or the cross of
                   the cut coordinates
@@ -388,7 +388,7 @@ To display the figure when running a script, you need to call
      plotting.show()
 
 The simplest way to output an image file from the plotting functions is
-to specify the `output_file` argument:
+to specify the ``output_file`` argument:
 
 .. code-block:: default
 
@@ -493,7 +493,7 @@ depending on what you want to do and the packages you have installed.
     - If you don't have `plotly`_:
 
         - If you don't need to save the plots to png and want to interactively visualize
-          the surface, you can rely on `view` functions:
+          the surface, you can rely on ``view`` functions:
 
             - :func:`view_img_on_surf` which takes as input a volume statistical map and
               projects it on the cortical surface before making a 3D interactive plot.
@@ -637,7 +637,7 @@ Interactive visualization of statistical map slices
                                    cut_coords=[-42, -16, 52],
                                    title="Motor contrast")
 
-in a Jupyter notebook, if `html_view` is not requested, the viewer will be inserted in the notebook:
+in a Jupyter notebook, if ``html_view`` is not requested, the viewer will be inserted in the notebook:
 
 .. image:: ../images/view_img_screenshot_notebook.png
 

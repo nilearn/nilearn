@@ -10,8 +10,7 @@ from nibabel import Nifti1Image
 from nilearn import datasets, image
 from nilearn.image import get_data, new_img_like
 from nilearn.plotting import html_stat_map
-
-from ..js_plotting_utils import colorscale
+from nilearn.plotting.js_plotting_utils import colorscale
 
 
 def _check_html(html_view, title=None):
@@ -23,11 +22,13 @@ def _check_html(html_view, title=None):
         assert f"<title>{title}</title>" in str(html_view)
 
 
-def _simulate_img(affine=np.eye(4)):
+def _simulate_img(affine=None):
     """Simulate data with one "spot".
 
     Returns: img, data
     """
+    if affine is None:
+        affine = np.eye(4)
     data = np.zeros([8, 8, 8])
     data[4, 4, 4] = 1
     img = Nifti1Image(data, affine)
@@ -104,10 +105,10 @@ def test_threshold_data():
     assert (mask == gtruth).all()
 
 
-def test_save_sprite():
+def test_save_sprite(rng):
     """Test covers _save_sprite as well as _bytesIO_to_base64."""
     # Generate a simulated volume with a square inside
-    data = np.random.RandomState(42).uniform(size=140).reshape(7, 5, 4)
+    data = rng.uniform(size=140).reshape(7, 5, 4)
     mask = np.zeros((7, 5, 4), dtype=int)
     mask[1:-1, 1:-1, 1:-1] = 1
     # Save the sprite using BytesIO
@@ -168,22 +169,20 @@ def test_mask_stat_map():
     assert np.min((data == 0) == get_data(mask_img))
 
 
-def test_load_bg_img():
+def test_load_bg_img(affine_eye):
     # Generate simple simulated data with non-diagonal affine
-    affine = np.eye(4)
+    affine = affine_eye
     affine[0, 0] = -1
     affine[0, 1] = 0.1
-    img, data = _simulate_img(affine)
+    img, _ = _simulate_img(affine)
 
     # use empty bg_img
-    bg_img, bg_min, bg_max, black_bg = html_stat_map._load_bg_img(
-        img, bg_img=None
-    )
+    bg_img, _, _, _ = html_stat_map._load_bg_img(img, bg_img=None)
     # Check positive isotropic, near-diagonal affine
     _check_affine(bg_img.affine)
 
     # Try to load the default background
-    bg_img, bg_min, bg_max, black_bg = html_stat_map._load_bg_img(img)
+    bg_img, _, _, _ = html_stat_map._load_bg_img(img)
 
     # Check positive isotropic, near-diagonal affine
     _check_affine(bg_img.affine)
@@ -197,12 +196,12 @@ def test_get_bg_mask_and_cmap():
     assert (mask == np.zeros(img.shape, dtype=bool)).all()
 
 
-def test_resample_stat_map():
+def test_resample_stat_map(affine_eye):
     # Start with simple simulated data
     bg_img, data = _simulate_img()
 
     # Now double the voxel size and mess with the affine
-    affine = 2 * np.eye(4)
+    affine = 2 * affine_eye
     affine[3, 3] = 1
     affine[0, 1] = 0.1
     stat_map_img = Nifti1Image(data, affine)
@@ -228,11 +227,11 @@ def test_resample_stat_map():
     ), "mask_img was not resampled at the resolution of background"
 
 
-def test_json_view_params():
+def test_json_view_params(affine_eye):
     # Try to generate some sprite parameters
     params = html_stat_map._json_view_params(
         shape=[4, 4, 4],
-        affine=np.eye(4),
+        affine=affine_eye,
         vmin=0,
         vmax=1,
         cut_slices=[1, 1, 1],
@@ -306,11 +305,11 @@ def test_json_view_data(black_bg, cbar):
 
 @pytest.mark.parametrize("black_bg", [True, False])
 @pytest.mark.parametrize("cbar", [True, False])
-def test_json_view_to_html(black_bg, cbar):
+def test_json_view_to_html(affine_eye, black_bg, cbar):
     data, json_view = _get_data_and_json_view(black_bg, cbar)
     json_view["params"] = html_stat_map._json_view_params(
         data.shape,
-        np.eye(4),
+        affine_eye,
         vmin=0,
         vmax=1,
         cut_slices=[1, 1, 1],
@@ -327,7 +326,7 @@ def test_json_view_to_html(black_bg, cbar):
     _check_html(html_view)
 
 
-def test_get_cut_slices():
+def test_get_cut_slices(affine_eye):
     # Generate simple simulated data with one "spot"
     img, data = _simulate_img()
 
@@ -348,7 +347,7 @@ def test_get_cut_slices():
     assert (cut_slices == [2, 2, 2]).all()
 
     # Check that the affine does not change where the cut is done
-    affine = 2 * np.eye(4)
+    affine = 2 * affine_eye
     img = Nifti1Image(data, affine)
     cut_slices = html_stat_map._get_cut_slices(
         img, cut_coords=None, threshold=None
@@ -360,7 +359,12 @@ def test_view_img():
     mni = datasets.load_mni152_template(resolution=2)
     with warnings.catch_warnings(record=True) as w:
         # Create a fake functional image by resample the template
-        img = image.resample_img(mni, target_affine=3 * np.eye(3))
+        img = image.resample_img(
+            mni,
+            target_affine=3 * np.eye(3),
+            copy_header=True,
+            force_resample=True,
+        )
         html_view = html_stat_map.view_img(img)
         _check_html(html_view, title="Slice viewer")
         html_view = html_stat_map.view_img(
@@ -379,6 +383,8 @@ def test_view_img():
         html_view = html_stat_map.view_img(img_4d, threshold=2.0, vmax=4.0)
         _check_html(html_view)
         html_view = html_stat_map.view_img(img_4d, threshold=1e6)
+        _check_html(html_view)
+        html_view = html_stat_map.view_img(img_4d, width_view=1000)
         _check_html(html_view)
 
     # Check that all warnings were expected

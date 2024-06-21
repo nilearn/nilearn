@@ -1,4 +1,5 @@
 """Update AUTHORS and names from CITATION.cff file."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -14,11 +15,11 @@ CORE_DEVS = [
     "Bertrand Thirion",
     "Elizabeth DuPre",
     "Hao-Ting Wang",
+    "Himanshu Aggarwal",
     "Jerome Dockes",
     "Nicolas Gensollen",
     "Rémi Gau",
     "Taylor Salo",
-    "Yasmin Mzayek",
 ]
 
 
@@ -142,7 +143,10 @@ Some other past or present contributors are:
 """
     )
     for author_ in authors:
-        f.write(f"* `{author_['given-names']} {author_['family-names']}`_\n")
+        f.write(f"* `{author_['given-names']} {author_['family-names']}`_")
+        if author_.get("affiliation"):
+            f.write(f": {author_['affiliation']}")
+        f.write("\n")
 
     f.write(
         """
@@ -178,9 +182,25 @@ def count_authors() -> int:
     return nb_authors
 
 
+def remove_consortium(authors: list[dict[str, str]]) -> list[dict[str, str]]:
+    """Remove consortium from authors."""
+    authors = [
+        author
+        for author in authors
+        if author["family-names"] != "Nilearn contributors"
+    ]
+    return authors
+
+
+def add_consortium(authors: list[dict[str, str]]) -> list[dict[str, str]]:
+    """Add consortium to authors."""
+    return [{"family-names": "Nilearn contributors"}] + authors
+
+
 def main():
     """Update names.rst and AUTHORS.rst files."""
     citation = read_citation_cff()
+    citation["authors"] = remove_consortium(citation["authors"])
     citation["authors"] = sort_authors(citation["authors"])
 
     nb_authors = count_authors()
@@ -189,9 +209,10 @@ def main():
     # Sanity check to make sure we have not lost anyone
     assert nb_authors <= new_nb_authors
 
-    write_citation_cff(citation)
-
     write_authors_file(citation["authors"])
+
+    citation["authors"] = add_consortium(citation["authors"])
+    write_citation_cff(citation)
 
 
 if __name__ == "__main__":

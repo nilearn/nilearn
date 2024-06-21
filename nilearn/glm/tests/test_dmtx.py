@@ -4,6 +4,7 @@ Test the design_matrix utilities.
 Note that the tests just looks whether the data produces has correct dimension,
 not whether it is exact
 """
+
 from os import path as osp
 
 import numpy as np
@@ -18,17 +19,18 @@ from numpy.testing import (
 from nilearn._utils.data_gen import basic_paradigm
 from nilearn.glm.first_level.design_matrix import (
     _convolve_regressors,
-    _cosine_drift,
     check_design_matrix,
+    create_cosine_drift,
     make_first_level_design_matrix,
     make_second_level_design_matrix,
 )
 
-from ._utils import (
-    _block_paradigm,
-    _modulated_block_paradigm,
-    _modulated_event_paradigm,
-    _spm_paradigm,
+from ._testing import (
+    block_paradigm,
+    design_with_negative_onsets,
+    modulated_block_paradigm,
+    modulated_event_paradigm,
+    spm_paradigm,
 )
 
 # load the spm file to test cosine basis
@@ -49,8 +51,8 @@ def design_matrix_light(
     add_reg_names=None,
     min_onset=-24,
 ):
-    """Same as make_first_level_design_matrix, \
-    but only returns the computed matrix and associated name."""
+    """Perform same as make_first_level_design_matrix, \
+       but only returns the computed matrix and associated name."""
     fir_delays = fir_delays or [0]
     dmtx = make_first_level_design_matrix(
         frame_times,
@@ -85,9 +87,9 @@ def test_cosine_drift():
     spm_drifts = DESIGN_MATRIX["cosbf_dt_1_nt_20_hcut_0p1"]
     frame_times = np.arange(20)
     high_pass_frequency = 0.1
-    nistats_drifts = _cosine_drift(high_pass_frequency, frame_times)
-    assert_almost_equal(spm_drifts[:, 1:], nistats_drifts[:, :-2])
-    # nistats_drifts is placing the constant at the end [:, : - 1]
+    nilearn_drifts = create_cosine_drift(high_pass_frequency, frame_times)
+    assert_almost_equal(spm_drifts[:, 1:], nilearn_drifts[:, :-2])
+    # nilearn_drifts is placing the constant at the end [:, : - 1]
 
 
 def test_design_matrix_no_experimental_paradigm(frame_times):
@@ -173,9 +175,9 @@ def test_design_matrix_basic_paradigm_glover_hrf(frame_times):
             8,
         ),
         (basic_paradigm(), "glover + derivative", "polynomial", 3, 0.01, 10),
-        (_block_paradigm(), "glover", "polynomial", 1, 0.01, 5),
-        (_block_paradigm(), "glover", "polynomial", 3, 0.01, 7),
-        (_block_paradigm(), "glover + derivative", "polynomial", 3, 0.01, 10),
+        (block_paradigm(), "glover", "polynomial", 1, 0.01, 5),
+        (block_paradigm(), "glover", "polynomial", 3, 0.01, 7),
+        (block_paradigm(), "glover + derivative", "polynomial", 3, 0.01, 10),
     ],
 )
 def test_design_matrix(
@@ -238,7 +240,7 @@ def test_design_matrix_FIR_basic_paradigm(
 
 def test_design_matrix_FIR_block(frame_times):
     # test FIR models on block designs
-    bp = _block_paradigm()
+    bp = block_paradigm()
     X, _ = design_matrix_light(
         frame_times,
         bp,
@@ -295,7 +297,7 @@ def test_design_matrix_FIR_time_shift(frame_times):
 
 @pytest.mark.parametrize(
     "events, idx_offset",
-    [(_modulated_event_paradigm(), 1), (_modulated_block_paradigm(), 3)],
+    [(modulated_event_paradigm(), 1), (modulated_block_paradigm(), 3)],
 )
 def test_design_matrix_scaling(events, idx_offset, frame_times):
     X, _ = design_matrix_light(
@@ -312,7 +314,7 @@ def test_design_matrix_scaling(events, idx_offset, frame_times):
 
 def test_design_matrix_scaling_FIR_model(frame_times):
     # Test the effect of scaling on a FIR model
-    events = _modulated_event_paradigm()
+    events = modulated_event_paradigm()
     hrf_model = "FIR"
     X, _ = design_matrix_light(
         frame_times,
@@ -330,8 +332,8 @@ def test_design_matrix20(n_frames):
     # Test for commit 10662f7
     frame_times = np.arange(
         0, n_frames
-    )  # was 127 in old version of _cosine_drift
-    events = _modulated_event_paradigm()
+    )  # was 127 in old version of create_cosine_drift
+    events = modulated_event_paradigm()
     X, _ = design_matrix_light(
         frame_times, events, hrf_model="glover", drift_model="cosine"
     )
@@ -399,7 +401,7 @@ def test_oversampling(n_frames):
 
 
 def test_high_pass(n_frames):
-    """Test that high-pass values lead to reasonable design matrices"""
+    """Test that high-pass values lead to reasonable design matrices."""
     tr = 2.0
     frame_times = np.arange(0, tr * n_frames, tr)
     X = make_first_level_design_matrix(
@@ -412,7 +414,7 @@ def test_csv_io(tmp_path, frame_times):
     # test the csv io on design matrices
     DM = make_first_level_design_matrix(
         frame_times,
-        events=_modulated_event_paradigm(),
+        events=modulated_event_paradigm(),
         hrf_model="glover",
         drift_model="polynomial",
         drift_order=3,
@@ -431,9 +433,9 @@ def test_csv_io(tmp_path, frame_times):
     "block_duration, array", [(1, "arr_0"), (10, "arr_1")]
 )
 def test_compare_design_matrix_to_spm(block_duration, array):
-    # Check that the nistats design matrix is close enough to the SPM one
+    # Check that the nilearn design matrix is close enough to the SPM one
     # (it cannot be identical, because the hrf shape is different)
-    events, frame_times = _spm_paradigm(block_duration=block_duration)
+    events, frame_times = spm_paradigm(block_duration=block_duration)
     X1 = make_first_level_design_matrix(frame_times, events, drift_model=None)
     _, matrix, _ = check_design_matrix(X1)
 
@@ -453,3 +455,13 @@ def test_create_second_level_design():
     assert_array_equal(design, expected_design)
     assert len(design.columns) == 2
     assert len(design) == 2
+
+
+def test_designs_with_negative_onsets_warning(frame_times):
+    with pytest.warns(
+        UserWarning,
+        match="Some stimulus onsets are earlier than",
+    ):
+        make_first_level_design_matrix(
+            events=design_with_negative_onsets(), frame_times=frame_times
+        )

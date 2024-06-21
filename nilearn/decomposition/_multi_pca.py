@@ -2,6 +2,7 @@
 
 This is a good initialization method for ICA.
 """
+
 import numpy as np
 from joblib import Memory
 from sklearn.utils.extmath import randomized_svd
@@ -21,12 +22,12 @@ class _MultiPCA(_BaseDecomposition):
 
     Parameters
     ----------
-    n_components : int, optional
-        Number of components to extract. Default=20.
+    n_components : int, default=20
+        Number of components to extract.
 
-    do_cca : boolean, optional
+    do_cca : boolean, default=True
         Indicate if a Canonical Correlation Analysis must be run after the
-        PCA. Default=True.
+        PCA.
 
     random_state : int or RandomState, optional
         Pseudo number generator state used for random sampling.
@@ -53,19 +54,17 @@ class _MultiPCA(_BaseDecomposition):
         to fine-tune mask computation. Please see the related documentation
         for details.
 
-    standardize : boolean, optional
+    standardize : boolean, default=False
         If standardize is True, the time-series are centered and normed:
         their mean is put to 0 and their variance to 1 in the time dimension.
-        Default=False.
 
-    standardize_confounds : boolean, optional
+    standardize_confounds : boolean, default=True
         If standardize_confounds is True, the confounds are z-scored:
         their mean is put to 0 and their variance to 1 in the time dimension.
-        Default=True.
 
-    detrend : boolean, optional
+    detrend : boolean, default=False
         If detrend is True, the time-series will be detrended before
-        components extraction. Default=False.
+        components extraction.
 
     target_affine : 3x3 or 4x4 matrix, optional
         This parameter is passed to image.resample_img. Please see the
@@ -87,51 +86,51 @@ class _MultiPCA(_BaseDecomposition):
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    memory : instance of joblib.Memory or string, optional
+    memory : instance of joblib.Memory or string, default=None
         Used to cache the masking process.
-        By default, no caching is done. If a string is given, it is the
-        path to the caching directory.
+        By default, no caching is done.
+        If a string is given, it is the path to the caching directory.
+        If ``None`` is passed will default to ``Memory(location=None)``.
 
-    memory_level : integer, optional
+    memory_level : integer, default=0
         Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching. Default=0.
+        means more memory for caching.
 
-    n_jobs : integer, optional
+    n_jobs : integer, default=1
         The number of CPUs to use to do the computation. -1 means
-        'all CPUs', -2 'all CPUs but one', and so on. Default=1.
+        'all CPUs', -2 'all CPUs but one', and so on.
 
-    verbose : integer, optional
+    verbose : integer, default=0
         Indicate the level of verbosity. By default, nothing is printed.
-        Default=0.
 
     Attributes
     ----------
-    `masker_` : instance of MultiNiftiMasker
+    masker_ : instance of MultiNiftiMasker
         Masker used to filter and mask data as first step. If an instance of
-        MultiNiftiMasker is given in `mask` parameter,
+        MultiNiftiMasker is given in ``mask`` parameter,
         this is a copy of it. Otherwise, a masker is created using the value
-        of `mask` and other NiftiMasker related parameters as initialization.
+        of ``mask`` and other NiftiMasker related parameters as initialization.
 
-    `mask_img_` : Niimg-like object
+    mask_img_ : Niimg-like object
         See :ref:`extracting_data`.
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.
 
-    `components_` : 2D numpy array (n_components x n-voxels)
+    components_ : 2D numpy array (n_components x n-voxels)
         Array of masked extracted components.
 
         .. note::
 
-            Use attribute `components_img_` rather than manually unmasking
-            `components_` with `masker_` attribute.
+            Use attribute ``components_img_`` rather than manually unmasking
+            ``components_`` with ``masker_`` attribute.
 
-    `components_img_` : 4D Nifti image
+    components_img_ : 4D Nifti image
         4D image giving the extracted PCA components. Each 3D image is a
         component.
 
         .. versionadded:: 0.4.1
 
-    `variance_` : numpy array (n_components,)
+    variance_ : numpy array (n_components,)
         The amount of variance explained by each of the selected components.
 
     """
@@ -153,11 +152,13 @@ class _MultiPCA(_BaseDecomposition):
         target_shape=None,
         mask_strategy="epi",
         mask_args=None,
-        memory=Memory(location=None),
+        memory=None,
         memory_level=0,
         n_jobs=1,
         verbose=0,
     ):
+        if memory is None:
+            memory = Memory(location=None)
         self.n_components = n_components
         self.do_cca = do_cca
 

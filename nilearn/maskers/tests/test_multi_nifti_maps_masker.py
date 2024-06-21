@@ -9,7 +9,7 @@ from nilearn._utils.exceptions import DimensionError
 from nilearn.maskers import MultiNiftiMapsMasker, NiftiMapsMasker
 
 
-def test_multi_nifti_maps_masker():
+def test_multi_nifti_maps_masker(tmp_path):
     # Check working of shape/affine checks
     shape1 = (13, 11, 12)
     affine1 = np.eye(4)
@@ -34,14 +34,14 @@ def test_multi_nifti_maps_masker():
 
     # No exception raised here
     for create_files in (True, False):
-        with testing.write_tmp_imgs(
-            maps11_img, create_files=create_files
-        ) as labels11:
-            masker11 = MultiNiftiMapsMasker(labels11, resampling_target=None)
-            signals11 = masker11.fit().transform(fmri11_img)
-            assert signals11.shape == (length, n_regions)
-            # enables to delete "labels11" on windows
-            del masker11
+        labels11 = testing.write_imgs_to_path(
+            maps11_img, file_path=tmp_path, create_files=create_files
+        )
+        masker11 = MultiNiftiMapsMasker(labels11, resampling_target=None)
+        signals11 = masker11.fit().transform(fmri11_img)
+        assert signals11.shape == (length, n_regions)
+        # enables to delete "labels11" on windows
+        del masker11
 
     masker11 = MultiNiftiMapsMasker(
         maps11_img, mask_img=mask11_img, resampling_target=None
@@ -69,23 +69,26 @@ def test_multi_nifti_maps_masker():
 
     # Test all kinds of mismatches between shapes and between affines
     for create_files in (True, False):
-        with testing.write_tmp_imgs(
-            maps11_img, mask12_img, create_files=create_files
-        ) as images:
-            labels11, mask12 = images
-            masker11 = MultiNiftiMapsMasker(labels11, resampling_target=None)
-            masker11.fit()
-            with pytest.raises(ValueError):
-                masker11.transform(fmri12_img)
-            with pytest.raises(ValueError):
-                masker11.transform(fmri21_img)
+        images = testing.write_imgs_to_path(
+            maps11_img,
+            mask12_img,
+            file_path=tmp_path,
+            create_files=create_files,
+        )
+        labels11, mask12 = images
+        masker11 = MultiNiftiMapsMasker(labels11, resampling_target=None)
+        masker11.fit()
+        with pytest.raises(ValueError):
+            masker11.transform(fmri12_img)
+        with pytest.raises(ValueError):
+            masker11.transform(fmri21_img)
 
-            masker11 = MultiNiftiMapsMasker(
-                labels11, mask_img=mask12, resampling_target=None
-            )
-            with pytest.raises(ValueError):
-                masker11.fit()
-            del masker11
+        masker11 = MultiNiftiMapsMasker(
+            labels11, mask_img=mask12, resampling_target=None
+        )
+        with pytest.raises(ValueError):
+            masker11.fit()
+        del masker11
 
     masker11 = MultiNiftiMapsMasker(
         maps11_img, mask_img=mask21_img, resampling_target=None
@@ -271,3 +274,36 @@ def test_multi_nifti_maps_masker_resampling():
             fmri11_img_r.affine, masker.maps_img_.affine
         )
         assert fmri11_img_r.shape == (masker.maps_img_.shape[:3] + (length,))
+
+
+def test_multi_nifti_maps_masker_list_of_sample_mask():
+    """Tests MultiNiftiMapsMasker.fit_transform with a list of "sample_mask".
+
+    "sample_mask" was directly sent as input to the parallel calls of
+    "transform_single_imgs" instead of sending iterations.
+    See https://github.com/nilearn/nilearn/issues/3967 for more details.
+    """
+    shape1 = (13, 11, 12)
+    affine1 = np.eye(4)
+
+    n_regions = 9
+    length = 6
+    n_scrub1 = 3
+    n_scrub2 = 2
+
+    fmri11_img, mask11_img = data_gen.generate_fake_fmri(
+        shape1, affine=affine1, length=length
+    )
+
+    maps11_img, _ = data_gen.generate_maps(shape1, n_regions, affine=affine1)
+    sample_mask1 = np.arange(length - n_scrub1)
+    sample_mask2 = np.arange(length - n_scrub2)
+
+    masker = MultiNiftiMapsMasker(maps11_img)
+    ts_list = masker.fit_transform(
+        [fmri11_img, fmri11_img], sample_mask=[sample_mask1, sample_mask2]
+    )
+
+    assert len(ts_list) == 2
+    for ts, n_scrub in zip(ts_list, [n_scrub1, n_scrub2]):
+        assert ts.shape == (length - n_scrub, n_regions)

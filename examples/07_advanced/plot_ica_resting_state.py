@@ -6,8 +6,8 @@ This example is meant to demonstrate nilearn as a low-level tools used to
 combine feature extraction with a multivariate decomposition algorithm
 for movie-watching.
 
-This example is a toy. To apply ICA to fmri timeseries data, it is advised
-to look at the example
+This example is a toy. To apply ICA to :term:`fMRI` timeseries data,
+it is advised to look at the example
 :ref:`sphx_glr_auto_examples_03_connectivity_plot_compare_decomposition.py`.
 
 The example here applies the scikit-learn :term:`ICA` to movie watching
@@ -21,7 +21,7 @@ be given by a call to fit_transform).
 
 """
 
-#####################################################################
+# %%
 # Load movie watching dataset
 from nilearn import datasets
 
@@ -32,11 +32,12 @@ func_filename = dataset.func[0]
 # print basic information on the dataset
 print(f"First subject functional nifti image (4D) is at: {dataset.func[0]}")
 
-#####################################################################
+# %%
 # Preprocess
 from nilearn.maskers import NiftiMasker
 
-# This is fmri timeseries data: the background has not been removed yet,
+# This is fMRI timeseries data:
+# the background has not been removed yet,
 # thus we need to use mask_strategy='epi' to compute the mask from the
 # EPI images
 masker = NiftiMasker(
@@ -48,7 +49,7 @@ masker = NiftiMasker(
 )
 data_masked = masker.fit_transform(func_filename)
 
-#####################################################################
+# %%
 # Apply ICA
 from sklearn.decomposition import FastICA
 
@@ -69,7 +70,7 @@ components_masked[np.abs(components_masked) < 0.8] = 0
 # representation
 component_img = masker.inverse_transform(components_masked)
 
-#####################################################################
+# %%
 # Visualize the results
 from nilearn import image
 from nilearn.plotting import plot_stat_map, show
@@ -77,7 +78,7 @@ from nilearn.plotting import plot_stat_map, show
 # Show some interesting components
 
 # Use the mean as a background
-mean_img = image.mean_img(func_filename)
+mean_img = image.mean_img(func_filename, copy_header=True)
 
 plot_stat_map(image.index_img(component_img, 0), mean_img)
 

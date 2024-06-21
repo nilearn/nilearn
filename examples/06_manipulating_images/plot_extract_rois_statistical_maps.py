@@ -15,7 +15,7 @@ extract objects using a function
 :func:`nilearn.regions.connected_regions`.
 """
 
-##############################################################################
+# %%
 # Fetching t-statistic image of localizer contrasts by loading from datasets
 # utilities
 from nilearn import datasets
@@ -23,22 +23,24 @@ from nilearn import datasets
 localizer = datasets.fetch_neurovault_auditory_computation_task()
 tmap_filename = localizer.images[0]
 
-##############################################################################
+# %%
 # Threshold the t-statistic image by importing threshold function
 from nilearn.image import threshold_img
 
 # Two types of strategies can be used from this threshold function
 # Type 1: strategy used will be based on scoreatpercentile
 threshold_percentile_img = threshold_img(
-    tmap_filename, threshold="97%", copy=False
+    tmap_filename, threshold="97%", copy=False, copy_header=True
 )
 
 
 # Type 2: threshold strategy used will be based on image intensity
 # Here, threshold value should be within the limits i.e. less than max value.
-threshold_value_img = threshold_img(tmap_filename, threshold=3.0, copy=False)
+threshold_value_img = threshold_img(
+    tmap_filename, threshold=3.0, copy=False, copy_header=True
+)
 
-##############################################################################
+# %%
 # Visualization
 # Showing thresholding results by importing plotting modules and its utilities
 from nilearn import plotting
@@ -61,7 +63,7 @@ plotting.plot_stat_map(
     colorbar=False,
 )
 
-##############################################################################
+# %%
 # Extracting the regions by importing connected regions function
 from nilearn.regions import connected_regions
 
@@ -73,7 +75,7 @@ regions_value_img, index = connected_regions(
     threshold_value_img, min_region_size=1500
 )
 
-##############################################################################
+# %%
 # Visualizing region extraction results
 images = [regions_percentile_img, regions_value_img]
 for image, strategy in zip(images, ["percentile", "image intensity"]):

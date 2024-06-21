@@ -1,37 +1,31 @@
 """
-Single-subject data (two sessions) in native space
-==================================================
+Single-subject data (two runs) in native space
+==============================================
 
-The example shows the analysis of an SPM dataset studying face perception.  The
-analysis is performed in native space. Realignment parameters are provided with
-the input images, but those have not been resampled to a common space.
+The example shows the analysis of an :term:`SPM` dataset
+studying face perception.
+The analysis is performed in native space.
+Realignment parameters are provided with the input images,
+but those have not been resampled to a common space.
 
 The experimental paradigm is simple, with two conditions; viewing a face image
 or a scrambled face image, supposedly with the same low-level statistical
 properties, to find face-specific responses.
 
-For details on the data, please see:
-Henson, R.N., Goshen-Gottstein, Y., Ganel, T., Otten, L.J., Quayle, A.,
-Rugg, M.D. Electrophysiological and haemodynamic correlates of face
-perception, recognition and priming. Cereb Cortex. 2003 Jul;13(7):793-805.
-http://www.dx.doi.org/10.1093/cercor/13.7.793
+For details on the data, please see :footcite:t:`Henson2003`.
 
 This example takes a lot of time because the input are lists of 3D images
 sampled in different positions (encoded by different affine functions).
-
 """
 
-print(__doc__)
-
-
-#########################################################################
-# Fetch the SPM multimodal_faces data.
+# %%
+# Fetch the :term:`SPM` multimodal_faces data.
 from nilearn.datasets import fetch_spm_multimodal_fmri
 
 subject_data = fetch_spm_multimodal_fmri()
 
-#########################################################################
-# Specfiy timing and design matrix parameters.
+# %%
+# Specify timing and design matrix parameters.
 
 # repetition time, in seconds
 tr = 2.0
@@ -44,7 +38,7 @@ high_pass = 0.01
 # The hemodynamic response function
 hrf_model = "spm + derivative"
 
-#########################################################################
+# %%
 # Resample the images.
 #
 # This is achieved by the concat_imgs function of Nilearn.
@@ -61,13 +55,13 @@ with warnings.catch_warnings():
     ]
 affine, shape = fmri_img[0].affine, fmri_img[0].shape
 print("Resampling the second image (this takes time)...")
-fmri_img[1] = resample_img(fmri_img[1], affine, shape[:3])
+fmri_img[1] = resample_img(fmri_img[1], affine, shape[:3], copy_header=True)
 
-#########################################################################
+# %%
 # Let's create mean image for display purposes.
-mean_image = mean_img(fmri_img)
+mean_image = mean_img(fmri_img, copy_header=True)
 
-#########################################################################
+# %%
 # Make the design matrices.
 import numpy as np
 import pandas as pd
@@ -76,8 +70,8 @@ from nilearn.glm.first_level import make_first_level_design_matrix
 
 design_matrices = []
 
-#########################################################################
-# Loop over the two sessions.
+# %%
+# Loop over the two runs.
 for idx, img in enumerate(fmri_img, start=1):
     # Build experimental paradigm
     n_scans = img.shape[-1]
@@ -96,17 +90,18 @@ for idx, img in enumerate(fmri_img, start=1):
     # put the design matrices in a list
     design_matrices.append(design_matrix)
 
-#########################################################################
+# %%
 # We can specify basic contrasts (to get :term:`beta<Parameter Estimate>`
 # maps).
-# We start by specifying canonical contrast that isolate design matrix columns.
+# We start by specifying canonical :term:`contrast`
+# that isolate design matrix columns.
 contrast_matrix = np.eye(design_matrix.shape[1])
 basic_contrasts = {
     column: contrast_matrix[i]
     for i, column in enumerate(design_matrix.columns)
 }
 
-#########################################################################
+# %%
 # We actually want more interesting contrasts. The simplest contrast
 # just makes the difference between the two main conditions.  We
 # define the two opposite versions to run one-tailed t-tests.  We also
@@ -122,16 +117,16 @@ contrasts = {
     ),
 }
 
-#########################################################################
-# Fit the GLM for the 2 sessions by specifying a FirstLevelModel and then
-# fitting it.
+# %%
+# Fit the :term:`GLM` for the 2 runs
+# by specifying a FirstLevelModel and then fitting it.
 from nilearn.glm.first_level import FirstLevelModel
 
 print("Fitting a GLM")
 fmri_glm = FirstLevelModel()
 fmri_glm = fmri_glm.fit(fmri_img, design_matrices=design_matrices)
 
-#########################################################################
+# %%
 # Now we can compute contrast-related statistical maps (in z-scale), and plot
 # them.
 from nilearn import plotting
@@ -157,12 +152,19 @@ for contrast_id, contrast_val in contrasts.items():
     )
     plotting.show()
 
-#########################################################################
+# %%
 # Based on the resulting maps we observe that the analysis results in
 # wide activity for the 'effects of interest' contrast, showing the
 # implications of large portions of the visual cortex in the
 # conditions. By contrast, the differential effect between "faces" and
 # "scrambled" involves sparser, more anterior and lateral regions. It
 # also displays some responses in the frontal lobe.
+
+# %%
+# References
+# ----------
+#
+#  .. footbibliography::
+
 
 # sphinx_gallery_dummy_images=3

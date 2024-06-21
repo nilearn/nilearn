@@ -3,11 +3,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
+from numpy.testing import assert_array_equal
 
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
+from nilearn.glm.tests._testing import design_with_null_durations
 from nilearn.plotting.matrix_plotting import (
+    pad_contrast_matrix,
     plot_contrast_matrix,
     plot_design_matrix,
     plot_event,
@@ -216,10 +219,19 @@ def test_show_event_plot(tmp_path):
     trial_idx[11:] -= 10
     condition_ids = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"]
 
+    # add some modulation
+    modulation = np.full(20, 1)
+    modulation[[1, 5, 15]] = 0.5
+
     trial_type = np.array([condition_ids[i] for i in trial_idx])
 
     model_event = pd.DataFrame(
-        {"onset": onset, "duration": duration, "trial_type": trial_type}
+        {
+            "onset": onset,
+            "duration": duration,
+            "trial_type": trial_type,
+            "modulation": modulation,
+        }
     )
     # Test Dataframe
     fig = plot_event(model_event)
@@ -256,5 +268,37 @@ def test_show_contrast_matrix(tmp_path):
     )
     assert (tmp_path / "contrast.png").exists()
     assert ax is None
+
     plot_contrast_matrix(contrast, dmtx, output_file=tmp_path / "contrast.pdf")
     assert (tmp_path / "contrast.pdf").exists()
+
+
+def test_pad_contrast_matrix():
+    """Test for contrasts padding before plotting.
+
+    See https://github.com/nilearn/nilearn/issues/4211
+    """
+    frame_times = np.linspace(0, 127 * 1.0, 128)
+    dmtx = make_first_level_design_matrix(
+        frame_times, drift_model="polynomial", drift_order=3
+    )
+    contrast = np.array([[1, -1]])
+    padded_contrast = pad_contrast_matrix(contrast, dmtx)
+    assert_array_equal(padded_contrast, np.array([[1, -1, 0, 0]]))
+
+    contrast = np.eye(3)
+    padded_contrast = pad_contrast_matrix(contrast, dmtx)
+    assert_array_equal(
+        padded_contrast,
+        np.array(
+            [
+                [1, 0, 0, 0],
+                [0, 1, 0, 0],
+                [0, 0, 1, 0],
+            ]
+        ),
+    )
+
+
+def test_show_event_plot_duration_0():
+    plot_event(design_with_null_durations())

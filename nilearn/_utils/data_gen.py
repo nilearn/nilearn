@@ -1,4 +1,5 @@
 """Data generation utilities."""
+
 from __future__ import annotations
 
 import itertools
@@ -12,55 +13,59 @@ import scipy.linalg
 import scipy.signal
 from nibabel import Nifti1Image
 from scipy.ndimage import binary_dilation
-from sklearn.utils import check_random_state
 
 from nilearn import datasets, image, maskers, masking
 from nilearn._utils import as_ndarray, logger
-from nilearn.interfaces.bids._utils import _bids_entities, _check_bids_label
+from nilearn.interfaces.bids.utils import (
+    bids_entities,
+    check_bids_label,
+    create_bids_filename,
+)
+
+# TODO get legal_confounds out of private testing module
+from nilearn.interfaces.fmriprep.tests._testing import get_legal_confound
 
 
 def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
-    """Generate mni space img.
+    """Generate MNI space img.
 
     Parameters
     ----------
-    n_scans : :obj:`int`, optional
+    n_scans : :obj:`int`, default=1
         Number of scans.
-        Default=1.
 
-    res : :obj:`int`, optional
+    res : :obj:`int`, default=30
         Desired resolution, in mm, of output images.
-        Default=30.
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   optional
+                   default=0
         Random number generator, or seed.
-        Default=0.
 
-    mask_dilation : :obj:`int`, optional
+    mask_dilation : :obj:`int`, default=2
         The number of times the binary :term:`dilation<Dilation>` is repeated
         on the mask.
-        Default=2.
 
     Returns
     -------
     inverse_img : Niimg-like object
-        Image transformed back to mni space.
+        Image transformed back to MNI space.
 
     mask_img : Niimg-like object
-        Generated mask in mni space.
+        Generated mask in MNI space.
 
     """
-    rand_gen = check_random_state(random_state)
+    rand_gen = np.random.default_rng(random_state)
     mask_img = datasets.load_mni152_brain_mask(resolution=res)
     masker = maskers.NiftiMasker(mask_img).fit()
     n_voxels = image.get_data(mask_img).sum()
-    data = rand_gen.randn(n_scans, n_voxels)
+    data = rand_gen.standard_normal((n_scans, n_voxels))
     if mask_dilation is not None and mask_dilation > 0:
         mask_img = image.new_img_like(
             mask_img,
-            binary_dilation(image.get_data(mask_img),
-                            iterations=mask_dilation))
+            binary_dilation(
+                image.get_data(mask_img), iterations=mask_dilation
+            ),
+        )
     inverse_img = masker.inverse_transform(data)
     return inverse_img, mask_img
 
@@ -77,9 +82,8 @@ def generate_timeseries(n_timepoints, n_features, random_state=0):
         Number of features
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   optional
+                   default=0
         Random number generator, or seed.
-        Default=0.
 
     Returns
     -------
@@ -87,15 +91,13 @@ def generate_timeseries(n_timepoints, n_features, random_state=0):
         Generated time series.
 
     """
-    rand_gen = check_random_state(random_state)
-    return rand_gen.randn(n_timepoints, n_features)
+    rand_gen = np.random.default_rng(random_state)
+    return rand_gen.standard_normal((n_timepoints, n_features))
 
 
-def generate_regions_ts(n_features,
-                        n_regions,
-                        overlap=0,
-                        random_state=0,
-                        window="boxcar"):
+def generate_regions_ts(
+    n_features, n_regions, overlap=0, random_state=0, window="boxcar"
+):
     """Generate some regions as timeseries.
 
     Parameters
@@ -106,18 +108,15 @@ def generate_regions_ts(n_features,
     n_regions : :obj:`int`
         Number of regions.
 
-    overlap : :obj:`int`, optional
+    overlap : :obj:`int`, default=0
         Number of overlapping voxels between two regions (more or less).
-        Default=0.
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   optional
+                   default=0
         Random number generator, or seed.
-        Default=0.
 
-    window : :obj:`str`, optional
+    window : :obj:`str`, default='boxcar'
         Name of a window in scipy.signal. e.g. "hamming".
-        Default='boxcar'.
 
     Returns
     -------
@@ -126,7 +125,7 @@ def generate_regions_ts(n_features,
         shape (n_features, n_regions)
 
     """
-    rand_gen = check_random_state(random_state)
+    rand_gen = np.random.default_rng(random_state)
     if window is None:
         window = "boxcar"
 
@@ -136,13 +135,14 @@ def generate_regions_ts(n_features,
     # Start at 1 to avoid getting an empty region
     boundaries = np.zeros(n_regions + 1)
     boundaries[-1] = n_features
-    boundaries[1:-1] = rand_gen.permutation(np.arange(
-        1, n_features))[:n_regions - 1]
+    boundaries[1:-1] = rand_gen.permutation(np.arange(1, n_features))[
+        : n_regions - 1
+    ]
     boundaries.sort()
 
     regions = np.zeros((n_regions, n_features), order="C")
-    overlap_end = int((overlap + 1) / 2.)
-    overlap_start = int(overlap / 2.)
+    overlap_end = int((overlap + 1) / 2.0)
+    overlap_start = int(overlap / 2.0)
     for n in range(len(boundaries) - 1):
         start = int(max(0, boundaries[n] - overlap_start))
         end = int(min(n_features, boundaries[n + 1] + overlap_end))
@@ -153,13 +153,15 @@ def generate_regions_ts(n_features,
     return regions
 
 
-def generate_maps(shape,
-                  n_regions,
-                  overlap=0,
-                  border=1,
-                  window="boxcar",
-                  random_state=0,
-                  affine=np.eye(4)):
+def generate_maps(
+    shape,
+    n_regions,
+    overlap=0,
+    border=1,
+    window="boxcar",
+    random_state=0,
+    affine=None,
+):
     """Generate a 4D volume containing several maps.
 
     Parameters
@@ -167,26 +169,22 @@ def generate_maps(shape,
     n_regions : :obj:`int`
         Number of regions to generate.
 
-    overlap : :obj:`int`, optional
+    overlap : :obj:`int`, default=0
         Approximate number of voxels common to two neighboring regions.
-        Default=0.
 
-    window : :obj:`str`, optional
+    window : :obj:`str`, default='boxcar'
         Name of a window in scipy.signal. Used to get non-uniform regions.
-        Default='boxcar'.
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   optional
+                   default=0
         Random number generator, or seed.
-        Default=0.
 
-    affine : :obj:`numpy.ndarray`, optional
+    affine : :obj:`numpy.ndarray`, default=None
         Affine transformation to use.
-        Default=np.eye(4).
+        Will default to ``np.eye(4)`` if ``None`` is passed.
 
-    border : :obj:`int`, optional
+    border : :obj:`int`, default=1
         Number of background voxels on each side of the 3D volumes.
-        Default=1.
 
     Returns
     -------
@@ -197,23 +195,29 @@ def generate_maps(shape,
         3D mask giving non-zero voxels.
 
     """
+    if affine is None:
+        affine = np.eye(4)
     mask = np.zeros(shape, dtype=np.int8)
     mask[border:-border, border:-border, border:-border] = 1
-    ts = generate_regions_ts(mask.sum(),
-                             n_regions,
-                             overlap=overlap,
-                             random_state=random_state,
-                             window=window)
+    ts = generate_regions_ts(
+        mask.sum(),
+        n_regions,
+        overlap=overlap,
+        random_state=random_state,
+        window=window,
+    )
     mask_img = Nifti1Image(mask, affine)
     return masking.unmask(ts, mask_img), mask_img
 
 
-def generate_labeled_regions(shape,
-                             n_regions,
-                             random_state=0,
-                             labels=None,
-                             affine=np.eye(4),
-                             dtype="int32"):
+def generate_labeled_regions(
+    shape,
+    n_regions,
+    random_state=0,
+    labels=None,
+    affine=None,
+    dtype="int32",
+):
     """Generate a 3D volume with labeled regions.
 
     Parameters
@@ -221,26 +225,23 @@ def generate_labeled_regions(shape,
     shape : :obj:`tuple`
         Shape of returned array.
 
-    n_regions : :obj:`int`
+    n_regions : :obj:`int`, default=None
         Number of regions to generate. By default (if "labels" is None),
         add a background with value zero.
-        Default=None.
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   optional
+                   default=0
         Random number generator, or seed.
-        Default=0.
 
     labels : iterable, optional
         Labels to use for each zone. If provided, n_regions is unused.
 
-    affine : :obj:`numpy.ndarray`, optional
+    affine : :obj:`numpy.ndarray`, default=None
         Affine of returned image.
-        Default=np.eye(4).
+        Will default to ``np.eye(4)`` if ``None`` is passed.
 
-    dtype : :obj:`type`, optional
+    dtype : :obj:`type`, default='int32'
         Data type of image.
-        Default='int32'.
 
     Returns
     -------
@@ -248,16 +249,18 @@ def generate_labeled_regions(shape,
         Data has shape "shape", containing region labels.
 
     """
+    if affine is None:
+        affine = np.eye(4)
     n_voxels = shape[0] * shape[1] * shape[2]
     if labels is None:
-        labels = range(0, n_regions + 1)
         n_regions += 1
+        labels = range(n_regions)
     else:
         n_regions = len(labels)
 
-    regions = generate_regions_ts(n_voxels,
-                                  n_regions,
-                                  random_state=random_state)
+    regions = generate_regions_ts(
+        n_voxels, n_regions, random_state=random_state
+    )
     # replace weights with labels
     for n, row in zip(labels, regions):
         row[row > 0] = n
@@ -266,14 +269,16 @@ def generate_labeled_regions(shape,
     return Nifti1Image(data, affine)
 
 
-def generate_fake_fmri(shape=(10, 11, 12),
-                       length=17,
-                       kind="noise",
-                       affine=np.eye(4),
-                       n_blocks=None,
-                       block_size=None,
-                       block_type='classification',
-                       random_state=0):
+def generate_fake_fmri(
+    shape=(10, 11, 12),
+    length=17,
+    kind="noise",
+    affine=None,
+    n_blocks=None,
+    block_size=None,
+    block_type="classification",
+    random_state=0,
+):
     """Generate a signal which can be used for testing.
 
     The return value is a 4D image, representing 3D volumes along time.
@@ -284,41 +289,36 @@ def generate_fake_fmri(shape=(10, 11, 12),
 
     Parameters
     ----------
-    shape : :obj:`tuple`, optional
+    shape : :obj:`tuple`, default=(10, 11, 12)
         Shape of 3D volume.
-        Default=(10, 11, 12).
 
-    length : :obj:`int`, optional
+    length : :obj:`int`, default=17
         Number of time instants.
-        Default=17.
 
-    kind : :obj:`str`, optional
+    kind : :obj:`str`, default='noise'
         Kind of signal used as timeseries.
         "noise": uniformly sampled values in [0..255]
         "step": 0.5 for the first half then 1.
-        Default='noise'.
 
-    affine : :obj:`numpy.ndarray`, optional
+    affine : :obj:`numpy.ndarray`, default=None
         Affine of returned images.
-        Default=np.eye(4).
+        Will default to ``np.eye(4)`` if ``None`` is passed.
 
-    n_blocks : :obj:`int` or None, optional
+    n_blocks : :obj:`int` or None, default=None
         Number of condition blocks.
-        Default=None.
 
-    block_size : :obj:`int` or None, optional
-        Number of timepoints in a block. Used only if n_blocks is not
-        None. Defaults to 3 if n_blocks is not None.
+    block_size : :obj:`int` or None, default=None
+        Number of timepoints in a block.
+        Used only if n_blocks is not None.
+        Defaults to 3 if n_blocks is None.
 
-    block_type : :obj:`str`, optional
+    block_type : :obj:`str`, default='classification'
         Defines if the returned target should be used for
         'classification' or 'regression'.
-        Default='classification'.
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   optional
+                   default=0
         Random number generator, or seed.
-        Default=0.
 
     Returns
     -------
@@ -335,31 +335,39 @@ def generate_fake_fmri(shape=(10, 11, 12),
         Returned only if ``n_blocks`` is not None.
 
     """
-    full_shape = shape + (length, )
+    if affine is None:
+        affine = np.eye(4)
+    full_shape = shape + (length,)
     fmri = np.zeros(full_shape)
     # Fill central voxels timeseries with random signals
     width = [s // 2 for s in shape]
     shift = [s // 4 for s in shape]
 
-    rand_gen = check_random_state(random_state)
+    rand_gen = np.random.default_rng(random_state)
     if kind == "noise":
-        signals = rand_gen.randint(256, size=(width + [length]))
+        signals = rand_gen.integers(256, size=(width + [length]))
     elif kind == "step":
         signals = np.ones(width + [length])
-        signals[..., :length // 2] = 0.5
+        signals[..., : length // 2] = 0.5
     else:
         raise ValueError("Unhandled value for parameter 'kind'")
 
-    fmri[shift[0]:shift[0] + width[0], shift[1]:shift[1] + width[1],
-         shift[2]:shift[2] + width[2], :] = signals
+    fmri[
+        shift[0] : shift[0] + width[0],
+        shift[1] : shift[1] + width[1],
+        shift[2] : shift[2] + width[2],
+        :,
+    ] = signals
 
     mask = np.zeros(shape)
-    mask[shift[0]:shift[0] + width[0], shift[1]:shift[1] + width[1],
-         shift[2]:shift[2] + width[2]] = 1
+    mask[
+        shift[0] : shift[0] + width[0],
+        shift[1] : shift[1] + width[1],
+        shift[2] : shift[2] + width[2],
+    ] = 1
 
     if n_blocks is None:
-        return (Nifti1Image(fmri, affine),
-                Nifti1Image(mask, affine))
+        return (Nifti1Image(fmri, affine), Nifti1Image(mask, affine))
 
     block_size = 3 if block_size is None else block_size
     flat_fmri = fmri[mask.astype(bool)]
@@ -367,39 +375,40 @@ def generate_fake_fmri(shape=(10, 11, 12),
     target = np.zeros(length, dtype=int)
     rest_max_size = (length - (n_blocks * block_size)) // n_blocks
     if rest_max_size < 0:
-        raise ValueError(f'{length} is too small '
-                         f'to put {n_blocks} blocks of size {block_size}')
+        raise ValueError(
+            f"{length} is too small "
+            f"to put {n_blocks} blocks of size {block_size}"
+        )
     t_start = 0
     if rest_max_size > 0:
-        t_start = rand_gen.randint(0, rest_max_size, 1)[0]
+        t_start = rand_gen.integers(0, rest_max_size, 1)[0]
     for block in range(n_blocks):
-        if block_type == 'classification':
+        if block_type == "classification":
             # Select a random voxel and add some signal to the background
-            voxel_idx = rand_gen.randint(0, flat_fmri.shape[0], 1)[0]
-            trials_effect = (rand_gen.random_sample(block_size) + 1) * 3.
+            voxel_idx = rand_gen.integers(0, flat_fmri.shape[0], 1)[0]
+            trials_effect = (rand_gen.random(block_size) + 1) * 3.0
         else:
             # Select the voxel in the image center and add some signal
             # that increases with each block
             voxel_idx = flat_fmri.shape[0] // 2
-            trials_effect = (rand_gen.random_sample(block_size) + 1) * block
+            trials_effect = (rand_gen.random(block_size) + 1) * block
         t_rest = 0
         if rest_max_size > 0:
-            t_rest = rand_gen.randint(0, rest_max_size, 1)[0]
-        flat_fmri[voxel_idx, t_start:t_start + block_size] += trials_effect
-        target[t_start:t_start + block_size] = block + 1
+            t_rest = rand_gen.integers(0, rest_max_size, 1)[0]
+        flat_fmri[voxel_idx, t_start : t_start + block_size] += trials_effect
+        target[t_start : t_start + block_size] = block + 1
         t_start += t_rest + block_size
-    target = target if block_type == 'classification' \
-        else target.astype(np.float64)
+    target = (
+        target if block_type == "classification" else target.astype(np.float64)
+    )
     fmri = np.zeros(fmri.shape)
     fmri[mask.astype(bool)] = flat_fmri
-    return (Nifti1Image(fmri, affine),
-            Nifti1Image(mask, affine), target)
+    return (Nifti1Image(fmri, affine), Nifti1Image(mask, affine), target)
 
 
-def generate_fake_fmri_data_and_design(shapes,
-                                       rk=3,
-                                       affine=np.eye(4),
-                                       random_state=0):
+def generate_fake_fmri_data_and_design(
+    shapes, rk=3, affine=None, random_state=0
+):
     """Generate random :term:`fMRI` time series \
     and design matrices of given shapes.
 
@@ -408,18 +417,16 @@ def generate_fake_fmri_data_and_design(shapes,
     shapes : :obj:`list` of length-4 :obj:`tuple`s of :obj:`int`
         Shapes of the fmri data to be generated.
 
-    rk : :obj:`int`, optional
+    rk : :obj:`int`, default=3
         Number of columns in the design matrix to be generated.
-        Default=3.
 
-    affine : :obj:`numpy.ndarray`, optional
+    affine : :obj:`numpy.ndarray`, default=None
         Affine of returned images. Must be a 4x4 array.
-        Default=np.eye(4).
+        Will default to ``np.eye(4)`` if ``None`` is passed.
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   optional
+                   default=0
         Random number generator, or seed.
-        Default=0.
 
     Returns
     -------
@@ -433,28 +440,32 @@ def generate_fake_fmri_data_and_design(shapes,
         A list of pd.DataFrame
 
     """
+    if affine is None:
+        affine = np.eye(4)
     fmri_data = []
     design_matrices = []
-    rand_gen = check_random_state(random_state)
-    for i, shape in enumerate(shapes):
-        data = rand_gen.randn(*shape)
+    rand_gen = np.random.default_rng(random_state)
+    for _, shape in enumerate(shapes):
+        data = rand_gen.standard_normal(shape)
         data[1:-1, 1:-1, 1:-1] += 100
         fmri_data.append(Nifti1Image(data, affine))
-        columns = rand_gen.choice(list(string.ascii_lowercase),
-                                  size=rk,
-                                  replace=False)
+        columns = rand_gen.choice(
+            list(string.ascii_lowercase), size=rk, replace=False
+        )
         design_matrices.append(
-            pd.DataFrame(rand_gen.randn(shape[3], rk), columns=columns))
-    mask = Nifti1Image((rand_gen.rand(*shape[:3]) > .5).astype(np.int8),
-                       affine)
+            pd.DataFrame(
+                rand_gen.standard_normal((shape[3], rk)), columns=columns
+            )
+        )
+    mask = Nifti1Image(
+        (rand_gen.random(shape[:3]) > 0.5).astype(np.int8), affine
+    )
     return mask, fmri_data, design_matrices
 
 
-def write_fake_fmri_data_and_design(shapes,
-                                    rk=3,
-                                    affine=np.eye(4),
-                                    random_state=0,
-                                    file_path=None):
+def write_fake_fmri_data_and_design(
+    shapes, rk=3, affine=None, random_state=0, file_path=None
+):
     """Generate random :term:`fMRI` data \
     and design matrices and write them to disk.
 
@@ -466,8 +477,9 @@ def write_fake_fmri_data_and_design(shapes,
     rk : :obj:`int`, default=3
         Number of columns in the design matrix to be generated.
 
-    affine : :obj:`numpy.ndarray`, default=np.eye(4)
+    affine : :obj:`numpy.ndarray`, default=None
         Affine of returned images.
+        Will default to ``np.eye(4)`` if ``None`` is passed.
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
                    default=0
@@ -492,30 +504,33 @@ def write_fake_fmri_data_and_design(shapes,
     nilearn._utils.data_gen.generate_fake_fmri_data_and_design
 
     """
+    if affine is None:
+        affine = np.eye(4)
     if file_path is None:
         file_path = Path.cwd()
 
-    mask_file, fmri_files, design_files = file_path / 'mask.nii', [], []
+    mask_file, fmri_files, design_files = file_path / "mask.nii", [], []
 
-    rand_gen = check_random_state(random_state)
+    rand_gen = np.random.default_rng(random_state)
     for i, shape in enumerate(shapes):
-
-        data = rand_gen.randn(*shape)
+        data = rand_gen.standard_normal(shape)
         data[1:-1, 1:-1, 1:-1] += 100
-        fmri_files.append(str(file_path / f'fmri_run{i:d}.nii'))
+        fmri_files.append(str(file_path / f"fmri_run{i:d}.nii"))
         Nifti1Image(data, affine).to_filename(fmri_files[-1])
 
-        design_files.append(str(file_path / f'dmtx_{i:d}.csv'))
-        pd.DataFrame(rand_gen.randn(shape[3], rk),
-                     columns=['', '', '']).to_csv(design_files[-1])
+        design_files.append(str(file_path / f"dmtx_{i:d}.csv"))
+        pd.DataFrame(
+            rand_gen.standard_normal((shape[3], rk)), columns=["", "", ""]
+        ).to_csv(design_files[-1])
 
-    Nifti1Image((rand_gen.rand(*shape[:3]) > .5).astype(np.int8),
-                affine).to_filename(mask_file)
+    Nifti1Image(
+        (rand_gen.random(shape[:3]) > 0.5).astype(np.int8), affine
+    ).to_filename(mask_file)
 
     return mask_file, fmri_files, design_files
 
 
-def write_fake_bold_gifti(file_path):
+def _write_fake_bold_gifti(file_path):
     """Generate a gifti image and write it to disk.
 
     Note this only generates an empty file for now.
@@ -536,10 +551,7 @@ def write_fake_bold_gifti(file_path):
     return file_path
 
 
-def write_fake_bold_img(file_path,
-                        shape,
-                        affine=np.eye(4),
-                        random_state=0):
+def write_fake_bold_img(file_path, shape, affine=None, random_state=0):
     """Generate a random image of given shape and write it to disk.
 
     Parameters
@@ -550,14 +562,13 @@ def write_fake_bold_img(file_path,
     shape : :obj:`tuple` of :obj:`int`
         Shape of output array. Should be at least 3D.
 
-    affine : :obj:`numpy.ndarray`, optional
+    affine : :obj:`numpy.ndarray`, default=None
         Affine of returned images.
-        Default=np.eye(4).
+        Will default to ``np.eye(4)`` if ``None`` is passed.
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   optional
+                   default=0
         Random number generator, or seed.
-        Default=0.
 
     Returns
     -------
@@ -565,17 +576,18 @@ def write_fake_bold_img(file_path,
         Output file path.
 
     """
-    rand_gen = check_random_state(random_state)
-    data = rand_gen.randn(*shape)
+    if affine is None:
+        affine = np.eye(4)
+    rand_gen = np.random.default_rng(random_state)
+    data = rand_gen.standard_normal(shape)
     data[1:-1, 1:-1, 1:-1] += 100
     Nifti1Image(data, affine).to_filename(file_path)
     return file_path
 
 
-def generate_signals_from_precisions(precisions,
-                                     min_n_samples=50,
-                                     max_n_samples=100,
-                                     random_state=0):
+def _generate_signals_from_precisions(
+    precisions, min_n_samples=50, max_n_samples=100, random_state=0
+):
     """Generate timeseries according to some given precision matrices.
 
     Signals all have zero mean.
@@ -592,9 +604,8 @@ def generate_signals_from_precisions(precisions,
         between these two numbers. Defaults are 50 and 100.
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   optional
+                   default=0
         Random number generator, or seed.
-        Default=0.
 
     Returns
     -------
@@ -603,56 +614,54 @@ def generate_signals_from_precisions(precisions,
         (sample number, precisions[n].shape[0]).
 
     """
-    rand_gen = check_random_state(random_state)
+    rand_gen = np.random.default_rng(random_state)
 
     signals = []
-    n_samples = rand_gen.randint(min_n_samples,
-                                 high=max_n_samples,
-                                 size=len(precisions))
+    n_samples = rand_gen.integers(
+        min_n_samples, high=max_n_samples, size=len(precisions)
+    )
 
     mean = np.zeros(precisions[0].shape[0])
     for n, prec in zip(n_samples, precisions):
         signals.append(
-            rand_gen.multivariate_normal(mean, np.linalg.inv(prec), (n, )))
+            rand_gen.multivariate_normal(mean, np.linalg.inv(prec), (n,))
+        )
     return signals
 
 
-def generate_group_sparse_gaussian_graphs(n_subjects=5,
-                                          n_features=30,
-                                          min_n_samples=30,
-                                          max_n_samples=50,
-                                          density=0.1,
-                                          random_state=0,
-                                          verbose=0):
+def generate_group_sparse_gaussian_graphs(
+    n_subjects=5,
+    n_features=30,
+    min_n_samples=30,
+    max_n_samples=50,
+    density=0.1,
+    random_state=0,
+    verbose=0,
+):
     """Generate signals drawn from a sparse Gaussian graphical model.
 
     Parameters
     ----------
-    n_subjects : :obj:`int`, optional
+    n_subjects : :obj:`int`, default=5
         Number of subjects.
-        Default=5.
 
-    n_features : :obj:`int`, optional
+    n_features : :obj:`int`, default=30
         Number of signals per subject to generate.
-        Default=30.
 
     min_n_samples, max_n_samples : :obj:`int`, optional
         Each subject have a different number of samples, between these two
         numbers. All signals for a given subject have the same number of
         samples. Defaults are 30 and 50.
 
-    density : :obj:`float`, optional
+    density : :obj:`float`, default=0.1
         Density of edges in graph topology.
-        Default=0.1.
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   optional
+                   default=0
         Random number generator, or seed.
-        Default=0.
 
-    verbose : :obj:`int`, optional
+    verbose : :obj:`int`, default=0
         Verbosity level (0 means no message).
-        Default=0.
 
     Returns
     -------
@@ -669,25 +678,27 @@ def generate_group_sparse_gaussian_graphs(n_subjects=5,
         and signals.
 
     """
-    rand_gen = check_random_state(random_state)
+    rand_gen = np.random.default_rng(random_state)
     # Generate topology (upper triangular binary matrix, with zeros on the
     # diagonal)
     topology = np.empty((n_features, n_features))
     topology[:, :] = np.triu(
-        (rand_gen.randint(0,
-                          high=int(1. / density),
-                          size=n_features * n_features)).reshape(
-                              n_features, n_features) == 0,
-        k=1)
+        (
+            rand_gen.integers(
+                0, high=int(1.0 / density), size=n_features * n_features
+            )
+        ).reshape(n_features, n_features)
+        == 0,
+        k=1,
+    )
 
     # Generate edges weights on topology
     precisions = []
     mask = topology > 0
     for _ in range(n_subjects):
-
         # See also sklearn.datasets.samples_generator.make_sparse_spd_matrix
         prec = topology.copy()
-        prec[mask] = rand_gen.uniform(low=.1, high=.8, size=(mask.sum()))
+        prec[mask] = rand_gen.uniform(low=0.1, high=0.8, size=(mask.sum()))
         prec += np.eye(prec.shape[0])
         prec = np.dot(prec.T, prec)
 
@@ -695,25 +706,30 @@ def generate_group_sparse_gaussian_graphs(n_subjects=5,
         np.testing.assert_almost_equal(prec, prec.T)
         eigenvalues = np.linalg.eigvalsh(prec)
         if eigenvalues.min() < 0:
-            raise ValueError("Failed generating a positive definite precision "
-                             "matrix. Decreasing n_features can help solving "
-                             "this problem.")
+            raise ValueError(
+                "Failed generating a positive definite precision "
+                "matrix. Decreasing n_features can help solving "
+                "this problem."
+            )
         precisions.append(prec)
 
     # Returns the topology matrix of precision matrices.
     topology += np.eye(*topology.shape)
     topology = np.dot(topology.T, topology)
     topology = topology > 0
-    assert (np.all(topology == topology.T))
+    assert np.all(topology == topology.T)
     logger.log(
         f"Sparsity: {1.0 * topology.sum() / topology.shape[0] ** 2 :f}",
-        verbose=verbose)
+        verbose=verbose,
+    )
 
     # Generate temporal signals
-    signals = generate_signals_from_precisions(precisions,
-                                               min_n_samples=min_n_samples,
-                                               max_n_samples=max_n_samples,
-                                               random_state=rand_gen)
+    signals = _generate_signals_from_precisions(
+        precisions,
+        min_n_samples=min_n_samples,
+        max_n_samples=max_n_samples,
+        random_state=rand_gen,
+    )
     return signals, precisions, topology
 
 
@@ -722,9 +738,8 @@ def basic_paradigm(condition_names_have_spaces=False):
 
     Parameters
     ----------
-    condition_names_have_spaces : :obj:`bool`, optional
+    condition_names_have_spaces : :obj:`bool`, default=False
         Check for spaces in condition names.
-        Default=False.
 
     Returns
     -------
@@ -732,21 +747,29 @@ def basic_paradigm(condition_names_have_spaces=False):
         Basic experimental paradigm with events data.
 
     """
-    conditions = ['c 0', 'c 0', 'c 0',
-                  'c 1', 'c 1', 'c 1',
-                  'c 2', 'c 2', 'c 2']
+    conditions = [
+        "c 0",
+        "c 0",
+        "c 0",
+        "c 1",
+        "c 1",
+        "c 1",
+        "c 2",
+        "c 2",
+        "c 2",
+    ]
 
     if not condition_names_have_spaces:
-        conditions = [c.replace(' ', '') for c in conditions]
+        conditions = [c.replace(" ", "") for c in conditions]
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
     durations = 1 * np.ones(9)
-    events = pd.DataFrame({'trial_type': conditions,
-                           'onset': onsets,
-                           'duration': durations})
+    events = pd.DataFrame(
+        {"trial_type": conditions, "onset": onsets, "duration": durations}
+    )
     return events
 
 
-def basic_confounds(length, random_state=0):
+def _basic_confounds(length, random_state=0):
     """Generate random motion parameters \
     (3 translation directions, 3 rotation directions).
 
@@ -756,9 +779,8 @@ def basic_confounds(length, random_state=0):
         Length of basic confounds.
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   optional
+                   default=0
         Random number generator, or seed.
-        Default=0.
 
     Returns
     -------
@@ -770,18 +792,24 @@ def basic_confounds(length, random_state=0):
         'trans_x', 'trans_y', 'trans_z'.
 
     """
-    rand_gen = check_random_state(random_state)
-    columns = ['csf', 'white_matter', 'global_signal',
-               'rot_x', 'rot_y', 'rot_z',
-               'trans_x', 'trans_y', 'trans_z']
-    data = rand_gen.rand(length, len(columns))
+    rand_gen = np.random.default_rng(random_state)
+    columns = [
+        "csf",
+        "white_matter",
+        "global_signal",
+        "rot_x",
+        "rot_y",
+        "rot_z",
+        "trans_x",
+        "trans_y",
+        "trans_z",
+    ]
+    data = rand_gen.random((length, len(columns)))
     confounds = pd.DataFrame(data, columns=columns)
     return confounds
 
 
-def _add_metadata_to_bids_dataset(bids_path,
-                                  metadata,
-                                  json_file=None):
+def add_metadata_to_bids_dataset(bids_path, metadata, json_file=None):
     """Add JSON file with specific metadata to BIDS dataset.
 
     Note no "BIDS validation" are performed on the metadata,
@@ -809,17 +837,17 @@ def _add_metadata_to_bids_dataset(bids_path,
     """
     if json_file is None:
         json_file = (
-            Path(bids_path) /
-            'derivatives' /
-            'sub-01' /
-            'ses-01' /
-            'func' /
-            'sub-01_ses-01_task-main_run-01_space-MNI_desc-preproc_bold.json'
+            Path(bids_path)
+            / "derivatives"
+            / "sub-01"
+            / "ses-01"
+            / "func"
+            / "sub-01_ses-01_task-main_run-01_space-MNI_desc-preproc_bold.json"
         )
     else:
         json_file = Path(bids_path) / json_file
 
-    with open(json_file, 'w') as f:
+    with open(json_file, "w") as f:
         json.dump(metadata, f)
 
     return json_file
@@ -827,8 +855,8 @@ def _add_metadata_to_bids_dataset(bids_path,
 
 def generate_random_img(
     shape,
-    affine=np.eye(4),
-    random_state=np.random.RandomState(0),
+    affine=None,
+    random_state=0,
 ):
     """Create a random 3D or 4D image with a given shape and affine.
 
@@ -838,11 +866,12 @@ def generate_random_img(
         The shape of the image being generated.
         The number of elements determines the dimensionality of the image.
 
-    affine : 4x4 numpy.ndarray
+    affine : 4x4 numpy.ndarray, default=None
         The affine of the image
+        Will default to ``np.eye(4)`` if ``None`` is passed.
 
-    random_state : numpy.random.RandomState instance, optional
-        random number generator.
+    random_state : int, optional
+        Seed for random number generator.
 
     Returns
     -------
@@ -852,7 +881,10 @@ def generate_random_img(
     mask_img : 3D niimg
         The mask image.
     """
-    data = random_state.standard_normal(size=shape)
+    if affine is None:
+        affine = np.eye(4)
+    rng = np.random.default_rng(random_state)
+    data = rng.standard_normal(size=shape)
     data_img = Nifti1Image(data, affine)
     if len(shape) == 4:
         mask_data = as_ndarray(data[..., 0] > 0.2, dtype=np.int8)
@@ -865,41 +897,41 @@ def generate_random_img(
 
 
 def create_fake_bids_dataset(
-    base_dir=Path(),
+    base_dir=None,
     n_sub=10,
     n_ses=2,
-    tasks=["localizer", "main"],
-    n_runs=[1, 3],
+    tasks=None,
+    n_runs=None,
     with_derivatives=True,
     with_confounds=True,
     confounds_tag="desc-confounds_timeseries",
     random_state=0,
     entities=None,
 ):
-    """Create a fake :term:`bids<BIDS>` dataset directory with dummy files.
+    """Create a fake :term:`BIDS` dataset directory with dummy files.
 
     Returns fake dataset directory name.
 
     Parameters
     ----------
     base_dir : :obj:`str` or :obj:`pathlib.Path` (Absolute path). \
-        Default=pathlib.Path()
+        default=pathlib.Path()
         Absolute directory path in which to create the fake :term:`BIDS`
         dataset dir.
 
-    n_sub : :obj:`int`, Defaults=10
+    n_sub : :obj:`int`, default=10
         Number of subjects to be simulated in the dataset.
 
-    n_ses : :obj:`int`, Defaults=2
+    n_ses : :obj:`int`, default=2
         Number of sessions to be simulated in the dataset.
 
         Specifying n_ses=0 will only produce runs and files without the
         optional session field.
 
-    tasks : :obj:`list` of :obj:`str`, Defaults=["localizer", "main"]
+    tasks : :obj:`list` of :obj:`str`, default=["localizer", "main"]
         List of tasks to be simulated in the dataset.
 
-    n_runs : :obj:`list` of :obj:`int`, Defaults=[1, 3]
+    n_runs : :obj:`list` of :obj:`int`, default=[1, 3]
         Number of runs to create, where each element indicates the
         number of runs for the corresponding task.
         The length of this list must match the number of items in ``tasks``.
@@ -907,17 +939,17 @@ def create_fake_bids_dataset(
         Files will be generated without run entity
         if a value is equal to 0 or less.
 
-    with_derivatives : :obj:`bool`, Defaults=True
+    with_derivatives : :obj:`bool`, default=True
         In the case derivatives are included, they come with two spaces and
         descriptions.
         Spaces are 'MNI' and 'T1w'.
         Descriptions are 'preproc' and :term:`fMRIPrep`.
         Only space 'T1w' include both descriptions.
 
-    with_confounds : :obj:`bool`, Defaults=True
+    with_confounds : :obj:`bool`, default=True
         Whether to generate associated confounds files or not.
 
-    confounds_tag : :obj:`str`, Defaults="desc-confounds_timeseries"
+    confounds_tag : :obj:`str`, default="desc-confounds_timeseries"
         Filename "suffix":
         If generating confounds, what path should they have?
         Defaults to `desc-confounds_timeseries` as in :term:`fMRIPrep` >= 20.2
@@ -925,11 +957,11 @@ def create_fake_bids_dataset(
         in :term:`fMRIPrep` < 20.2).
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance. \
-                    Defaults=0
+                    default=0
         Random number generator, or seed.
 
     entities : :obj:`dict`, optional
-        Extra entity to add to the BIDS filename with a list of values.
+        Extra entity to add to the :term:`BIDS` filename with a list of values.
         For example, if you want to add an 'echo' entity
         with values '1' for some files and '1' for others,
         you would pass: ``entities={"echo": ['1', '2']}``.
@@ -944,15 +976,21 @@ def create_fake_bids_dataset(
         Creates a directory with dummy files.
 
     """
+    if base_dir is None:
+        base_dir = Path()
+    if tasks is None:
+        tasks = ["localizer", "main"]
+    if n_runs is None:
+        n_runs = [1, 3]
     n_voxels = 4
 
-    rand_gen = check_random_state(random_state)
+    rand_gen = np.random.default_rng(random_state)
 
     bids_dataset_dir = "bids_dataset"
     bids_path = Path(base_dir) / bids_dataset_dir
 
     for task_ in tasks:
-        _check_bids_label(task_)
+        check_bids_label(task_)
 
     if not isinstance(n_runs, list) or not all(
         isinstance(x, int) for x in n_runs
@@ -1017,15 +1055,19 @@ def _check_entities_and_labels(entities):
         raise ValueError("Only a single extra entity is supported for now.")
 
     for key in entities:
-        if key not in [*_bids_entities()["raw"],
-                       *_bids_entities()["derivatives"]]:
-            allowed_entities = [*_bids_entities()['raw'],
-                                *_bids_entities()['derivatives']]
+        if key not in [
+            *bids_entities()["raw"],
+            *bids_entities()["derivatives"],
+        ]:
+            allowed_entities = [
+                *bids_entities()["raw"],
+                *bids_entities()["derivatives"],
+            ]
             raise ValueError(
                 f"Invalid entity: {key}. Allowed entities are: "
                 f"{allowed_entities}"
             )
-        [_check_bids_label(label_) for label_ in entities[key]]
+        [check_bids_label(label_) for label_ in entities[key]]
 
 
 def _mock_bids_dataset(
@@ -1089,7 +1131,6 @@ def _mock_bids_dataset(
 
         for task, n_run in zip(tasks, n_runs):
             for run in _listify(n_run):
-
                 if entities:
                     for key in entities:
                         for label in entities[key]:
@@ -1099,7 +1140,7 @@ def _mock_bids_dataset(
                                 task=task,
                                 run=run,
                             )
-                            if key in _bids_entities()["raw"]:
+                            if key in bids_entities()["raw"]:
                                 fields["entities"][key] = label
                             _write_bids_raw_func(
                                 func_path=func_path,
@@ -1184,7 +1225,6 @@ def _mock_bids_derivatives(
 
         for task, n_run in zip(tasks, n_runs):
             for run in _listify(n_run):
-
                 if entities:
                     for key in entities:
                         for label in entities[key]:
@@ -1234,50 +1274,7 @@ def _listify(n):
     return [""] if n <= 0 else [f"{label:02}" for label in range(1, n + 1)]
 
 
-def _create_bids_filename(
-    fields, entities_to_include=None
-):
-    """Create BIDS filename from dictionary of entity-label pairs.
-
-    Parameters
-    ----------
-    fields : :obj:`dict` of :obj:`str`
-        Dictionary of entity-label pairs, for example:
-
-        {
-         "suffix": "T1w",
-         "extension": "nii.gz",
-         "entities": {"acq":  "ap",
-                      "desc": "preproc"}
-        }.
-
-    Returns
-    -------
-    BIDS filename : :obj:`str`
-
-    """
-    if entities_to_include is None:
-        entities_to_include = _bids_entities()["raw"]
-
-    filename = ""
-
-    for key in entities_to_include:
-        if key in fields["entities"]:
-            value = fields["entities"][key]
-            if value not in (None, ""):
-                filename += f"{key}-{value}_"
-    if "suffix" in fields:
-        filename += f"{fields['suffix']}"
-    if "extension" in fields:
-        filename += f".{fields['extension']}"
-
-    return filename
-
-
-def _init_fields(subject,
-                 session,
-                 task,
-                 run):
+def _init_fields(subject, session, task, run):
     """Initialize fields to help create a valid BIDS filename.
 
     Parameters
@@ -1301,7 +1298,7 @@ def _init_fields(subject,
 
     See Also
     --------
-    _create_bids_filename
+    create_bids_filename
 
     """
     fields = {
@@ -1338,7 +1335,7 @@ def _write_bids_raw_anat(subses_dir, subject, session) -> None:
         "extension": "nii.gz",
         "entities": {"sub": subject, "ses": session},
     }
-    (anat_path / _create_bids_filename(fields)).write_text("")
+    (anat_path / create_bids_filename(fields)).write_text("")
 
 
 def _write_bids_raw_func(
@@ -1365,8 +1362,9 @@ def _write_bids_raw_func(
         Random number generator.
 
     """
-    n_time_points = 100
-    bold_path = func_path / _create_bids_filename(fields)
+    n_time_points = 30
+    bold_path = func_path / create_bids_filename(fields)
+
     write_fake_bold_img(
         bold_path,
         [n_voxels, n_voxels, n_voxels, n_time_points],
@@ -1375,12 +1373,12 @@ def _write_bids_raw_func(
 
     repetition_time = 1.5
     fields["extension"] = "json"
-    param_path = func_path / _create_bids_filename(fields)
+    param_path = func_path / create_bids_filename(fields)
     param_path.write_text(json.dumps({"RepetitionTime": repetition_time}))
 
     fields["suffix"] = "events"
     fields["extension"] = "tsv"
-    events_path = func_path / _create_bids_filename(fields)
+    events_path = func_path / create_bids_filename(fields)
     basic_paradigm().to_csv(events_path, sep="\t", index=None)
 
 
@@ -1421,17 +1419,20 @@ def _write_bids_derivative_func(
         or "desc-confounds_regressors".
 
     """
-    n_time_points = 100
+    n_time_points = 30
 
     if confounds_tag is not None:
         fields["suffix"] = confounds_tag
         fields["extension"] = "tsv"
-        confounds_path = func_path / _create_bids_filename(
-            fields=fields, entities_to_include=_bids_entities()["raw"]
+        confounds_path = func_path / create_bids_filename(
+            fields=fields, entities_to_include=bids_entities()["raw"]
         )
-        basic_confounds(length=n_time_points, random_state=rand_gen).to_csv(
-            confounds_path, sep="\t", index=None
+        confounds, metadata = get_legal_confound()
+        confounds.to_csv(
+            confounds_path, sep="\t", index=None, encoding="utf-8"
         )
+        with open(confounds_path.with_suffix(".json"), "w") as f:
+            json.dump(metadata, f)
 
     fields["suffix"] = "bold"
     fields["extension"] = "nii.gz"
@@ -1439,8 +1440,8 @@ def _write_bids_derivative_func(
     shape = [n_voxels, n_voxels, n_voxels, n_time_points]
 
     entities_to_include = [
-        *_bids_entities()["raw"],
-        *_bids_entities()["derivatives"]
+        *bids_entities()["raw"],
+        *bids_entities()["derivatives"],
     ]
 
     for space in ("MNI", "T1w"):
@@ -1452,7 +1453,7 @@ def _write_bids_derivative_func(
             fields["entities"]["space"] = space
             fields["entities"]["desc"] = desc
 
-            bold_path = func_path / _create_bids_filename(
+            bold_path = func_path / create_bids_filename(
                 fields=fields, entities_to_include=entities_to_include
             )
             write_fake_bold_img(bold_path, shape=shape, random_state=rand_gen)
@@ -1462,8 +1463,7 @@ def _write_bids_derivative_func(
     fields["entities"].pop("desc")
     for hemi in ["L", "R"]:
         fields["entities"]["hemi"] = hemi
-        gifti_path = func_path / _create_bids_filename(
-            fields=fields,
-            entities_to_include=entities_to_include
+        gifti_path = func_path / create_bids_filename(
+            fields=fields, entities_to_include=entities_to_include
         )
-        write_fake_bold_gifti(gifti_path)
+        _write_fake_bold_gifti(gifti_path)

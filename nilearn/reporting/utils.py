@@ -1,21 +1,37 @@
 """Utility functions for the reporting module."""
+
 import base64
 import io
 import urllib.parse
 
 
-def figure_to_svg_bytes(fig):
-    """Save figure as svg and return it as bytes."""
+def _figure_to_bytes(fig, format):
+    """Save figure as as certain format and return it as bytes."""
     with io.BytesIO() as io_buffer:
         fig.savefig(
-            io_buffer, format="svg", facecolor="white", edgecolor="white"
+            io_buffer, format=format, facecolor="white", edgecolor="white"
         )
         return io_buffer.getvalue()
+
+
+def figure_to_svg_bytes(fig):
+    """Save figure as svg and return it as bytes."""
+    return _figure_to_bytes(fig, format="svg")
+
+
+def figure_to_png_bytes(fig):
+    """Save figure as png and return it as bytes."""
+    return _figure_to_bytes(fig, format="png")
 
 
 def figure_to_svg_base64(fig):
     """Save figure as svg and return it as 64 bytes."""
     return base64.b64encode(figure_to_svg_bytes(fig)).decode()
+
+
+def figure_to_png_base64(fig):
+    """Save figure as png and return it as 64 bytes."""
+    return base64.b64encode(figure_to_png_bytes(fig)).decode()
 
 
 def figure_to_svg_quoted(fig):

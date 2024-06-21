@@ -8,6 +8,8 @@ from scipy import linalg
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.covariance import LedoitWolf
 
+from nilearn._utils.docs import fill_doc
+
 from .. import signal
 from .._utils.extmath import is_spd
 
@@ -110,7 +112,7 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
 
     In case of positive numbers, this mean is the usual geometric mean.
 
-    See Algorithm 3 of :footcite:`Fletcher2007`.
+    See Algorithm 3 of :footcite:t:`Fletcher2007`.
 
     References
     ----------
@@ -127,13 +129,13 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
         Raise an error if the matrix is not symmetric positive definite of the
         same shape as the elements of matrices.
 
-    max_iter : int, optional
-        Maximal number of iterations. Default=10.
+    max_iter : int, default=10
+        Maximal number of iterations.
 
-    tol : positive float or None, optional
+    tol : positive float or None, default=1e-7
         The tolerance to declare convergence: if the gradient norm goes below
         this value, the gradient descent is stopped. If None, no  check is
-        performed. Default=1e-7.
+        performed.
 
     Returns
     -------
@@ -222,9 +224,8 @@ def sym_matrix_to_vec(symmetric, discard_diagonal=False):
         (..., n_features, n_features)
         Input array.
 
-    discard_diagonal : boolean, optional
+    discard_diagonal : boolean, default=False
         If True, the values of the diagonal are not returned.
-        Default=False.
 
     Returns
     -------
@@ -368,33 +369,34 @@ def prec_to_partial(precision):
     return partial_correlation
 
 
+@fill_doc
 class ConnectivityMeasure(BaseEstimator, TransformerMixin):
-    """A class that computes different kinds of functional connectivity \
-    matrices.
+    """A class that computes different kinds of \
+       :term:`functional connectivity` matrices.
 
     .. versionadded:: 0.2
 
     Parameters
     ----------
-    cov_estimator : estimator object, optional.
-        The covariance estimator. By default the LedoitWolf estimator
-        is used. This implies that correlations are slightly shrunk
+    cov_estimator : estimator object, \
+                    default=LedoitWolf(store_precision=False)
+        The covariance estimator.
+        This implies that correlations are slightly shrunk
         towards zero compared to a maximum-likelihood estimate
 
     kind : {"covariance", "correlation", "partial correlation",\
-            "tangent", "precision"}, optional
+            "tangent", "precision"}, default='covariance'
         The matrix kind.
-        For the use of "tangent" see :footcite:`Varoquaux2010b`.
-        Default='covariance'.
+        For the use of "tangent" see :footcite:t:`Varoquaux2010b`.
 
-    vectorize : bool, optional
+    vectorize : bool, default=False
         If True, connectivity matrices are reshaped into 1D arrays and only
-        their flattened lower triangular parts are returned. Default=False.
+        their flattened lower triangular parts are returned.
 
-    discard_diagonal : bool, optional
+    discard_diagonal : bool, default=False
         If True, vectorized connectivity coefficients do not include the
         matrices diagonal elements. Used only when vectorize is set to True.
-        Default=False.
+
     %(standardize)s
 
         .. note::
@@ -406,17 +408,19 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-    `cov_estimator_` : estimator object
+    cov_estimator_ : estimator object, default=None
         A new covariance estimator with the same parameters as cov_estimator.
+        If ``None`` is passed,
+        defaults to ``LedoitWolf(store_precision=False)``.
 
-    `mean_` : numpy.ndarray
+    mean_ : numpy.ndarray
         The mean connectivity matrix across subjects. For 'tangent' kind,
         it is the geometric mean of covariances (a group covariance
         matrix that captures information from both correlation and partial
         correlation matrices). For other values for "kind", it is the
         mean of the corresponding matrices
 
-    `whitening_` : numpy.ndarray
+    whitening_ : numpy.ndarray
         The inverted square-rooted geometric mean of the covariance matrices.
 
     References
@@ -427,12 +431,14 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
     def __init__(
         self,
-        cov_estimator=LedoitWolf(store_precision=False),
+        cov_estimator=None,
         kind="covariance",
         vectorize=False,
         discard_diagonal=False,
         standardize=True,
     ):
+        if cov_estimator is None:
+            cov_estimator = LedoitWolf(store_precision=False)
         self.cov_estimator = cov_estimator
         self.kind = kind
         self.vectorize = vectorize
@@ -504,7 +510,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         if self.kind == "correlation":
             covariances_std = [
                 self.cov_estimator_.fit(
-                    signal._standardize(
+                    signal.standardize_signal(
                         x,
                         detrend=False,
                         standardize=self.standardize,

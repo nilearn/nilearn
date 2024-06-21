@@ -5,6 +5,7 @@ rather than the underlying functions (clean(), img_to_signals_labels(), etc.).
 
 See test_masking.py and test_signal.py for details.
 """
+
 import warnings
 
 import nibabel
@@ -17,7 +18,7 @@ from nilearn.image import get_data
 from nilearn.maskers import NiftiMapsMasker
 
 
-def test_nifti_maps_masker():
+def test_nifti_maps_masker(tmp_path):
     """Check working of shape/affine checks."""
     n_regions = 9
     length = 3
@@ -47,14 +48,14 @@ def test_nifti_maps_masker():
 
     # No exception raised here
     for create_files in (True, False):
-        with testing.write_tmp_imgs(
-            labels11_img, create_files=create_files
-        ) as labels11:
-            masker11 = NiftiMapsMasker(labels11, resampling_target=None)
-            signals11 = masker11.fit().transform(fmri11_img)
-            assert signals11.shape == (length, n_regions)
-            # enables to delete "labels11" on windows
-            del masker11
+        labels11 = testing.write_imgs_to_path(
+            labels11_img, file_path=tmp_path, create_files=create_files
+        )
+        masker11 = NiftiMapsMasker(labels11, resampling_target=None)
+        signals11 = masker11.fit().transform(fmri11_img)
+        assert signals11.shape == (length, n_regions)
+        # enables to delete "labels11" on windows
+        del masker11
 
     masker11 = NiftiMapsMasker(
         labels11_img, mask_img=mask11_img, resampling_target=None
@@ -69,23 +70,26 @@ def test_nifti_maps_masker():
 
     # Test all kinds of mismatches between shapes and between affines
     for create_files in (True, False):
-        with testing.write_tmp_imgs(
-            labels11_img, mask12_img, create_files=create_files
-        ) as images:
-            labels11, mask12 = images
-            masker11 = NiftiMapsMasker(labels11, resampling_target=None)
-            masker11.fit()
-            with pytest.raises(ValueError):
-                masker11.transform(fmri12_img)
-            with pytest.raises(ValueError):
-                masker11.transform(fmri21_img)
+        images = testing.write_imgs_to_path(
+            labels11_img,
+            mask12_img,
+            file_path=tmp_path,
+            create_files=create_files,
+        )
+        labels11, mask12 = images
+        masker11 = NiftiMapsMasker(labels11, resampling_target=None)
+        masker11.fit()
+        with pytest.raises(ValueError):
+            masker11.transform(fmri12_img)
+        with pytest.raises(ValueError):
+            masker11.transform(fmri21_img)
 
-            masker11 = NiftiMapsMasker(
-                labels11, mask_img=mask12, resampling_target=None
-            )
-            with pytest.raises(ValueError):
-                masker11.fit()
-            del masker11
+        masker11 = NiftiMapsMasker(
+            labels11, mask_img=mask12, resampling_target=None
+        )
+        with pytest.raises(ValueError):
+            masker11.fit()
+        del masker11
 
     masker11 = NiftiMapsMasker(
         labels11_img, mask_img=mask21_img, resampling_target=None
@@ -147,7 +151,7 @@ def test_nifti_maps_masker():
     np.testing.assert_array_equal(masker._resampled_maps_img_.affine, affine2)
 
 
-def test_nifti_maps_masker_io_shapes():
+def test_nifti_maps_masker_io_shapes(rng):
     """Ensure that NiftiMapsMasker handles 1D/2D/3D/4D data appropriately.
 
     transform(4D image) --> 2D output, no warning
@@ -159,8 +163,8 @@ def test_nifti_maps_masker_io_shapes():
     n_regions, n_volumes = 9, 5
     shape_3d = (10, 11, 12)
     shape_4d = (10, 11, 12, n_volumes)
-    data_1d = np.random.random(n_regions)
-    data_2d = np.random.random((n_volumes, n_regions))
+    data_1d = rng.random(n_regions)
+    data_2d = rng.random((n_volumes, n_regions))
     affine = np.eye(4)
 
     img_4d, mask_img = data_gen.generate_random_img(
@@ -251,7 +255,7 @@ def test_nifti_maps_masker_with_nans_and_infs():
     maps_img = nibabel.Nifti1Image(maps_data, np.eye(4))
 
     # No warning, because maps_img is run through clean_img
-    # *before* _safe_get_data.
+    # *before* safe_get_data.
     masker = NiftiMapsMasker(maps_img, mask_img=mask_img)
 
     sig = masker.fit_transform(fmri_img)
@@ -510,8 +514,7 @@ def test_nifti_maps_masker_overlap():
         non_overlapping_masker.fit_transform(fmri_img)
 
 
-def test_standardization():
-    rng = np.random.RandomState(42)
+def test_standardization(rng):
     data_shape = (9, 9, 5)
     n_samples = 500
 

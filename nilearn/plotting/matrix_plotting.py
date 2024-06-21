@@ -1,4 +1,5 @@
 """Miscellaneous matrix plotting utilities."""
+
 import warnings
 
 import matplotlib.patches as mpatches
@@ -7,6 +8,8 @@ import numpy as np
 import pandas as pd
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.cluster.hierarchy import leaves_list, linkage, optimal_leaf_ordering
+
+from nilearn.glm.first_level.experimental_paradigm import check_events
 
 from .._utils import fill_doc
 
@@ -177,7 +180,7 @@ def _configure_axis(
             label.set_rotation(y_label_rotation)
 
 
-def _configure_grid(axes, grid, tri, size):
+def _configure_grid(axes, tri, size):
     """Help for plot_matrix."""
     # Different grids for different layouts
     if tri == "lower":
@@ -249,30 +252,27 @@ def plot_matrix(
         Default=True.
     %(cmap)s
         Default=`plt.cm.RdBu_r`.
-    tri : {'full', 'lower', 'diag'}, optional
+    tri : {'full', 'lower', 'diag'}, default='full'
         Which triangular part of the matrix to plot:
 
             - 'lower': Plot the lower part
             - 'diag': Plot the lower part with the diagonal
             - 'full': Plot the full matrix
 
-        Default='full'.
 
-    auto_fit : :obj:`bool`, optional
+    auto_fit : :obj:`bool`, default=True
         If auto_fit is True, the axes are dimensioned to give room
         for the labels. This assumes that the labels are resting
         against the bottom and left edges of the figure.
-        Default=True.
 
-    grid : color or False, optional
+    grid : color or False, default=False
         If not False, a grid is plotted to separate rows and columns
-        using the given color. Default=False.
+        using the given color.
 
-    reorder : :obj:`bool` or {'single', 'complete', 'average'}, optional
+    reorder : :obj:`bool` or {'single', 'complete', 'average'}, default=False
         If not False, reorders the matrix into blocks of clusters.
         Accepted linkage options for the clustering are 'single',
         'complete', and 'average'. True defaults to average linkage.
-        Default=False.
 
         .. note::
             This option is only available with SciPy >= 1.0.0.
@@ -308,7 +308,7 @@ def plot_matrix(
         y_label_rotation=10,
     )
     if grid is not False:
-        _configure_grid(axes, grid, tri, len(mat))
+        _configure_grid(axes, tri, len(mat))
     axes.set_ylim(ymin, ymax)
     if auto_fit:
         if labels:
@@ -335,22 +335,18 @@ def plot_matrix(
 def plot_contrast_matrix(
     contrast_def, design_matrix, colorbar=False, ax=None, output_file=None
 ):
-    """Create plot for contrast definition.
+    """Create plot for :term:`contrast` definition.
 
     Parameters
     ----------
-    contrast_def : :obj:`str` or :class:`numpy.ndarray` of shape (n_col),\
-    or :obj:`list` of :obj:`str`, or :class:`numpy.ndarray` of shape (n_col)
-
-        where ``n_col`` is the number of columns of the design matrix, (one
-        array per run). If only one array is provided when there are several
-        runs, it will be assumed that the same contrast is desired for all
-        runs. The string can be a formula compatible with
-        :meth:`pandas.DataFrame.eval`. Basically one can use the name of the
-        conditions as they appear in the design matrix of the fitted model
-        combined with operators +- and combined with numbers with operators
-        +-`*`/.
-
+    contrast_def : :obj:`str` or :class:`numpy.ndarray` of shape[1] <= n_col \
+        where ``n_col`` is the number of columns of the design matrix.
+        The string can be a formula compatible
+        with :meth:`pandas.DataFrame.eval`.
+        Basically one can use the name of the conditions
+        as they appear in the design matrix of the fitted model
+        combined with operators +-
+        and combined with numbers with operators +-`*`/.
     design_matrix : :class:`pandas.DataFrame`
         Design matrix to use.
     %(colorbar)s
@@ -366,24 +362,23 @@ def plot_contrast_matrix(
         Figure object.
 
     """
-    design_column_names = design_matrix.columns.tolist()
-    if isinstance(contrast_def, str):
-        contrast_def = expression_to_contrast_vector(
-            contrast_def, design_column_names
-        )
-    maxval = np.max(np.abs(contrast_def))
+    contrast_def = pad_contrast_matrix(contrast_def, design_matrix)
     con_matrix = np.asmatrix(contrast_def)
+
+    design_column_names = design_matrix.columns.tolist()
     max_len = np.max([len(str(name)) for name in design_column_names])
 
+    nb_columns_design_matrix = len(design_column_names)
     if ax is None:
         plt.figure(
             figsize=(
-                0.4 * len(design_column_names),
+                0.4 * nb_columns_design_matrix,
                 1 + 0.5 * con_matrix.shape[0] + 0.04 * max_len,
             )
         )
         ax = plt.gca()
 
+    maxval = np.max(np.abs(contrast_def))
     mat = ax.matshow(
         con_matrix, aspect="equal", cmap="gray", vmin=-maxval, vmax=maxval
     )
@@ -392,7 +387,7 @@ def plot_contrast_matrix(
     ax.set_ylabel("")
     ax.set_yticks(())
 
-    ax.xaxis.set(ticks=np.arange(len(design_column_names)))
+    ax.xaxis.set(ticks=np.arange(nb_columns_design_matrix))
     ax.set_xticklabels(design_column_names, rotation=50, ha="left")
 
     if colorbar:
@@ -409,6 +404,54 @@ def plot_contrast_matrix(
     return ax
 
 
+def pad_contrast_matrix(contrast_def, design_matrix):
+    """Pad contrasts with zeros.
+
+    Parameters
+    ----------
+    contrast_def : :class:`numpy.ndarray`
+        Contrast to be padded
+
+    design_matrix : :class:`pandas.DataFrame`
+        Design matrix to use.
+
+    Returns
+    -------
+    ax : :class:`numpy.ndarray`
+        Padded contrast
+
+    """
+    design_column_names = design_matrix.columns.tolist()
+    if isinstance(contrast_def, str):
+        contrast_def = expression_to_contrast_vector(
+            contrast_def, design_column_names
+        )
+    nb_columns_design_matrix = len(design_column_names)
+    nb_columns_contrast_def = (
+        contrast_def.shape[0]
+        if contrast_def.ndim == 1
+        else contrast_def.shape[1]
+    )
+    horizontal_padding = nb_columns_design_matrix - nb_columns_contrast_def
+    if horizontal_padding == 0:
+        return contrast_def
+    warnings.warn(
+        (
+            f"Contrasts will be padded with {horizontal_padding} "
+            "column(s) of zeros."
+        ),
+        category=UserWarning,
+        stacklevel=3,
+    )
+    contrast_def = np.pad(
+        contrast_def,
+        ((0, 0), (0, horizontal_padding)),
+        "constant",
+        constant_values=(0, 0),
+    )
+    return contrast_def
+
+
 @fill_doc
 def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
     """Plot a design matrix provided as a :class:`pandas.DataFrame`.
@@ -418,9 +461,8 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
     design matrix : :class:`pandas.DataFrame`
         Describes a design matrix.
 
-    rescale : :obj:`bool`, optional
+    rescale : :obj:`bool`, default=True
         Rescale columns magnitude for visualization or not.
-        Default=True.
 
     ax : :class:`matplotlib.axes.Axes`, optional
         Handle to axes onto which we will draw the design matrix.
@@ -475,7 +517,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     model_event : :class:`pandas.DataFrame` or :obj:`list`\
     of :class:`pandas.DataFrame`
         The :class:`pandas.DataFrame` must have three columns:
-        ``event_type`` with event name, ``onset`` and ``duration``.
+        ``trial_type`` with event name, ``onset`` and ``duration``.
 
         .. note::
 
@@ -495,6 +537,10 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     """
     if isinstance(model_event, pd.DataFrame):
         model_event = [model_event]
+
+    for i, event in enumerate(model_event):
+        event_copy = check_events(event)
+        model_event[i] = event_copy
 
     n_runs = len(model_event)
     figure, ax = plt.subplots(1, 1, **fig_kwargs)
@@ -518,19 +564,39 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
             "Use a different colormap."
         )
 
+    height = 0.5
     for idx_run, event_df in enumerate(model_event):
         for _, event in event_df.iterrows():
+
+            modulation = 1.0
+            if "modulation" in event:
+                modulation = event["modulation"]
+
+            ymin = (idx_run + 0.25) / n_runs
+            ymax = (idx_run + 0.25 + height * modulation) / n_runs
+
             event_onset = event["onset"]
             event_end = event["onset"] + event["duration"]
+
             color = cmap.colors[cmap_dictionary[event["trial_type"]]]
 
-            ax.axvspan(
-                event_onset,
-                event_end,
-                ymin=(idx_run + 0.25) / n_runs,
-                ymax=(idx_run + 0.75) / n_runs,
-                facecolor=color,
-            )
+            if event["duration"] != 0:
+                ax.axvspan(
+                    xmin=event_onset,
+                    xmax=event_end,
+                    ymin=ymin,
+                    ymax=ymax,
+                    facecolor=color,
+                )
+
+            # events will 0 duration are plotted as lines
+            else:
+                ax.axvline(
+                    event_onset,
+                    ymin=ymin,
+                    ymax=ymax,
+                    color=color,
+                )
 
     handles = []
     for label, idx in cmap_dictionary.items():

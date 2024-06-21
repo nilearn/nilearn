@@ -1,4 +1,5 @@
 """Transformer used to apply basic transformations on :term:`fMRI` data."""
+
 # Author: Gael Varoquaux, Alexandre Abraham
 
 import abc
@@ -21,7 +22,7 @@ def _filter_and_extract(
     extraction_function,
     parameters,
     memory_level=0,
-    memory=Memory(location=None),
+    memory=None,
     verbose=0,
     confounds=None,
     sample_mask=None,
@@ -52,6 +53,8 @@ def _filter_and_extract(
         friendly 2D array with shape n_samples x n_features.
 
     """
+    if memory is None:
+        memory = Memory(location=None)
     # Since the calling class can be any *Nifti*Masker, we look for exact type
     if verbose > 0:
         class_name = enclosing_scope_name(stack_level=10)
@@ -104,6 +107,7 @@ def _filter_and_extract(
             target_shape=target_shape,
             target_affine=target_affine,
             copy=copy,
+            copy_header=True,
         )
 
     smoothing_fwhm = parameters.get("smoothing_fwhm")
@@ -187,8 +191,8 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
                 .. versionadded:: 0.8.0
 
-        copy : Boolean, optional
-            Indicates whether a copy is returned or not. Default=True.
+        copy : Boolean, default=True
+            Indicates whether a copy is returned or not.
 
         Returns
         -------

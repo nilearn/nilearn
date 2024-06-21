@@ -169,49 +169,49 @@ class BaseAxes:
         bg_color : matplotlib color: :obj:`str` or (r, g, b) value
             The background color of the scale bar annotation.
 
-        size : :obj:`float`, optional
+        size : :obj:`float`, default=5.0
             Horizontal length of the scale bar, given in `units`.
-            Default=5.0.
 
-        units : :obj:`str`, optional
+
+        units : :obj:`str`, default='cm'
             Physical units of the scale bar (`'cm'` or `'mm'`).
-            Default='cm'.
+
 
         fontproperties : :class:`~matplotlib.font_manager.FontProperties`\
         or :obj:`dict`, optional
             Font properties for the label text.
 
-        frameon : :obj:`bool`, optional
-            Whether the scale bar is plotted with a border. Default=False.
+        frameon : :obj:`bool`, default=False
+            Whether the scale bar is plotted with a border.
 
-        loc : :obj:`int`, optional
+        loc : :obj:`int`, default=4
             Location of this scale bar. Valid location codes are documented
             `here <https://matplotlib.org/mpl_toolkits/axes_grid/\
             api/anchored_artists_api.html#mpl_toolkits.axes_grid1.\
             anchored_artists.AnchoredSizeBar>`__.
-            Default=4.
 
-        pad : :obj:`int` or :obj:`float`, optional
+
+        pad : :obj:`int` or :obj:`float`, default=0.1
             Padding around the label and scale bar, in fraction of the font
-            size. Default=0.1.
+            size.
 
-        borderpad : :obj:`int` or :obj:`float`, optional
-            Border padding, in fraction of the font size. Default=0.5.
+        borderpad : :obj:`int` or :obj:`float`, default=0.5
+            Border padding, in fraction of the font size.
 
-        sep : :obj:`int` or :obj:`float`, optional
+        sep : :obj:`int` or :obj:`float`, default=5
             Separation between the label and the scale bar, in points.
-            Default=5.
 
-        size_vertical : :obj:`int` or :obj:`float`, optional
+
+        size_vertical : :obj:`int` or :obj:`float`, default=0
             Vertical length of the size bar, given in `units`.
-            Default=0.
 
-        label_top : :obj:`bool`, optional
+
+        label_top : :obj:`bool`, default=False
             If ``True``, the label will be over the scale bar.
-            Default=False.
 
-        color : :obj:`str`, optional
-            Color for the scale bar and label. Default='black'.
+
+        color : :obj:`str`, default='black'
+            Color for the scale bar and label.
 
         fontsize : :obj:`int`, optional
             Label font size (overwrites the size passed in through the
@@ -314,10 +314,10 @@ class CutAxes(BaseAxes):
         bg_color : matplotlib color: :obj:`str` or (r, g, b) value
             The background color for text area.
 
-        decimals : :obj:`bool` or :obj:`str`, optional
+        decimals : :obj:`bool` or :obj:`str`, default=False
             Formatting string for the coordinates.
             If set to ``False``, integer formatting will be used.
-            Default=False.
+
 
         """
         if decimals:
@@ -360,7 +360,7 @@ def _get_index_from_direction(direction):
     return index
 
 
-def _coords_3d_to_2d(coords_3d, direction, return_direction=False):
+def coords_3d_to_2d(coords_3d, direction, return_direction=False):
     """Project 3d coordinates into 2d ones given the direction of a cut."""
     index = _get_index_from_direction(direction)
     dimensions = [0, 1, 2]
@@ -384,9 +384,8 @@ class GlassBrainAxes(BaseAxes):
     coord : :obj:`float`
         The coordinate along the direction of the cut.
 
-    plot_abs : :obj:`bool`, optional
+    plot_abs : :obj:`bool`, default=True
         If set to ``True`` the absolute value of the data will be considered.
-        Default=True.
 
     """
 
@@ -476,7 +475,7 @@ class GlassBrainAxes(BaseAxes):
         In the case of 'l' and 'r' directions (for hemispheric projections),
         markers in the coordinate x == 0 are included in both hemispheres.
         """
-        marker_coords_2d = _coords_3d_to_2d(marker_coords, self.direction)
+        marker_coords_2d = coords_3d_to_2d(marker_coords, self.direction)
         xdata, ydata = marker_coords_2d.T
 
         # Allow markers only in their respective hemisphere when appropriate
@@ -541,10 +540,10 @@ class GlassBrainAxes(BaseAxes):
             will be used as minimum (multiplied by -1) and maximum
             coloring levels.
 
-        directed : :obj:`bool`, optional
+        directed : :obj:`bool`, default=False
             Add arrows instead of lines if set to ``True``.
             Use this when plotting directed graphs for example.
-            Default=False.
+
 
         kwargs : :obj:`dict`
             Additional arguments to pass to :class:`~matplotlib.lines.Line2D`.
@@ -592,7 +591,7 @@ class GlassBrainAxes(BaseAxes):
             line_values = line_values[relevant_lines]
 
         for start_end_point_3d, line_value in zip(line_coords, line_values):
-            start_end_point_2d = _coords_3d_to_2d(
+            start_end_point_2d = coords_3d_to_2d(
                 start_end_point_3d, self.direction
             )
 

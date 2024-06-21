@@ -1,10 +1,11 @@
 """Utility functions for the permuted least squares method."""
+
 import numpy as np
 from scipy import linalg
 from scipy.ndimage import label
 
 
-def _calculate_tfce(
+def calculate_tfce(
     arr4d,
     bin_struct,
     E=0.5,
@@ -25,19 +26,17 @@ def _calculate_tfce(
         R = regressor.
     bin_struct : :obj:`numpy.ndarray` of shape (3, 3, 3)
         Connectivity matrix for defining clusters.
-    E : :obj:`float`, optional
-        Extent weight. Default is 0.5.
-    H : :obj:`float`, optional
-        Height weight. Default is 2.
-    dh : 'auto' or :obj:`float`, optional
+    E : :obj:`float`, default=0.5
+        Extent weight.
+    H : :obj:`float`, default=2
+        Height weight.
+    dh : 'auto' or :obj:`float`, default='auto'
         Step size for TFCE calculation.
         If set to 'auto', use 100 steps, as is done in fslmaths.
         A good alternative is 0.1 for z and t maps, as in [1]_.
-        Default is 'auto'.
-    two_sided_test : :obj:`bool`, optional
+    two_sided_test : :obj:`bool`, default=False
         Whether to assess both positive and negative clusters (True) or just
         positive ones (False).
-        Default is False.
 
     Returns
     -------
@@ -122,9 +121,7 @@ def _calculate_tfce(
                 # (via the current score_thresh)
                 # NOTE: We do not multiply by dh, based on fslmaths'
                 # implementation. This differs from the original paper.
-                cluster_tfces = (
-                    sign * (cluster_counts**E) * (score_thresh**H)
-                )
+                cluster_tfces = sign * (cluster_counts**E) * (score_thresh**H)
 
                 # Before we can add these values to tfce_4d, we need to
                 # map cluster-wise tfce values back to a voxel-wise array,
@@ -143,7 +140,7 @@ def _calculate_tfce(
     return tfce_4d
 
 
-def _null_to_p(test_values, null_array, alternative="two-sided"):
+def null_to_p(test_values, null_array, alternative="two-sided"):
     """Return p-value for test value(s) against null array.
 
     Parameters
@@ -152,12 +149,11 @@ def _null_to_p(test_values, null_array, alternative="two-sided"):
         Value(s) for which to determine p-value.
     null_array : array_like of shape (n_iters,)
         Null distribution against which test_values is compared.
-    alternative : {'two-sided', 'larger', 'smaller'}, optional
+    alternative : {'two-sided', 'larger', 'smaller'}, default='two-sided'
         Whether to compare value against null distribution in a two-sided
         or one-sided ('larger' or 'smaller') manner. If 'larger', then higher
         values for the test_values are more significant. If 'smaller', then
         lower values for the test_values are more significant.
-        Default is 'two-sided'.
 
     Returns
     -------
@@ -217,7 +213,7 @@ def _null_to_p(test_values, null_array, alternative="two-sided"):
     return result[0] if return_first else result
 
 
-def _calculate_cluster_measures(
+def calculate_cluster_measures(
     arr4d,
     threshold,
     bin_struct,
@@ -234,10 +230,9 @@ def _calculate_cluster_measures(
         Uncorrected t-statistic threshold for defining clusters.
     bin_struct : :obj:`numpy.ndarray` of shape (3, 3, 3)
         Connectivity matrix for defining clusters.
-    two_sided_test : :obj:`bool`, optional
+    two_sided_test : :obj:`bool`, default=False
         Whether to assess both positive and negative clusters (True) or just
         positive ones (False).
-        Default is False.
 
     Returns
     -------
@@ -292,7 +287,7 @@ def _calculate_cluster_measures(
     return max_sizes, max_masses
 
 
-def _normalize_matrix_on_axis(m, axis=0):
+def normalize_matrix_on_axis(m, axis=0):
     """Normalize a 2D matrix on an axis.
 
     Parameters
@@ -300,9 +295,8 @@ def _normalize_matrix_on_axis(m, axis=0):
     m : numpy 2D array,
         The matrix to normalize.
 
-    axis : integer in {0, 1}, optional
+    axis : integer in {0, 1}, default=0
         A valid axis to normalize across.
-        Default=0.
 
     Returns
     -------
@@ -313,12 +307,12 @@ def _normalize_matrix_on_axis(m, axis=0):
     --------
     >>> import numpy as np
     >>> from nilearn.mass_univariate.permuted_least_squares import (
-    ...     _normalize_matrix_on_axis)
+    ...     normalize_matrix_on_axis)
     >>> X = np.array([[0, 4], [1, 0]])
-    >>> _normalize_matrix_on_axis(X)
+    >>> normalize_matrix_on_axis(X)
     array([[0., 1.],
            [1., 0.]])
-    >>> _normalize_matrix_on_axis(X, axis=1)
+    >>> normalize_matrix_on_axis(X, axis=1)
     array([[0., 1.],
            [1., 0.]])
 
@@ -333,13 +327,13 @@ def _normalize_matrix_on_axis(m, axis=0):
         # array transposition preserves the contiguity flag of that array
         ret = (m.T / np.sqrt(np.sum(m**2, axis=0))[:, np.newaxis]).T
     elif axis == 1:
-        ret = _normalize_matrix_on_axis(m.T).T
+        ret = normalize_matrix_on_axis(m.T).T
     else:
         raise ValueError(f"axis(={int(axis)}) out of bounds")
     return ret
 
 
-def _orthonormalize_matrix(m, tol=1.0e-12):
+def orthonormalize_matrix(m, tol=1.0e-12):
     """Orthonormalize a matrix.
 
     Uses a Singular Value Decomposition.
@@ -350,8 +344,8 @@ def _orthonormalize_matrix(m, tol=1.0e-12):
     m : numpy array,
         The matrix to orthonormalize.
 
-    tol: float, optional
-        Tolerance parameter for nullity. Default=1e-12.
+    tol : float, default=1e-12
+        Tolerance parameter for nullity.
 
     Returns
     -------
@@ -362,14 +356,14 @@ def _orthonormalize_matrix(m, tol=1.0e-12):
     --------
     >>> import numpy as np
     >>> from nilearn.mass_univariate.permuted_least_squares import (
-    ...     _orthonormalize_matrix)
+    ...     orthonormalize_matrix)
     >>> X = np.array([[1, 2], [0, 1], [1, 1]])
-    >>> _orthonormalize_matrix(X)
+    >>> orthonormalize_matrix(X)
     array([[-0.81049889, -0.0987837 ],
            [-0.31970025, -0.75130448],
            [-0.49079864,  0.65252078]])
     >>> X = np.array([[0, 1], [4, 0]])
-    >>> _orthonormalize_matrix(X)
+    >>> orthonormalize_matrix(X)
     array([[ 0., -1.],
            [-1.,  0.]])
 
@@ -379,7 +373,7 @@ def _orthonormalize_matrix(m, tol=1.0e-12):
     return np.ascontiguousarray(U[:, :n_eig])
 
 
-def _t_score_with_covars_and_normalized_design(
+def t_score_with_covars_and_normalized_design(
     tested_vars, target_vars, covars_orthonormalized=None
 ):
     """t-score in the regression of tested variates against target variates.

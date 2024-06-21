@@ -4,14 +4,11 @@ import numpy as np
 from scipy import linalg
 from scipy.spatial import distance_matrix
 
+from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn.surface.surface import load_surf_data
 
-try:
+if is_plotly_installed():
     import plotly.graph_objects as go
-except ImportError:
-    PLOTLY_INSTALLED = False
-else:
-    PLOTLY_INSTALLED = True
 
 
 class SurfaceFigure:
@@ -93,10 +90,12 @@ class PlotlySurfaceFigure(SurfaceFigure):
         ).T
 
     def __init__(self, figure=None, output_file=None):
-        if not PLOTLY_INSTALLED:
+        if not is_plotly_installed():
             raise ImportError(
                 "Plotly is required to use `PlotlySurfaceFigure`."
             )
+        import plotly.graph_objects as go
+
         if figure is not None and not isinstance(figure, go.Figure):
             raise TypeError(
                 "`PlotlySurfaceFigure` accepts only plotly figure objects."
@@ -108,9 +107,9 @@ class PlotlySurfaceFigure(SurfaceFigure):
 
         Parameters
         ----------
-        renderer : :obj:`str`, optional
+        renderer : :obj:`str`, default='browser'
             Plotly renderer to be used.
-            Default='browser'.
+
         """
         if self.figure is not None:
             self.figure.show(renderer=renderer)
@@ -124,9 +123,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
         output_file : :obj:`str` or ``None``, optional
             Path to output file.
         """
-        try:
-            import kaleido  # noqa: F401
-        except ImportError:
+        if not is_kaleido_installed():
             raise ImportError(
                 "`kaleido` is required to save plotly figures to disk."
             )

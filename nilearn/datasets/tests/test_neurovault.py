@@ -15,11 +15,12 @@ import pytest
 import requests
 
 from nilearn._utils.data_gen import generate_fake_fmri
+from nilearn.conftest import _rng
 from nilearn.datasets import neurovault
 from nilearn.image import load_img
 
 
-def _get_neurovault_data(random_seed=0):
+def _get_neurovault_data():
     """Make fake images and collections to mock neurovault in the unit tests.
 
     Returns two pandas DataFrames: collections and images. Each row contains
@@ -34,7 +35,7 @@ def _get_neurovault_data(random_seed=0):
     """
     if getattr(_get_neurovault_data, "data", None) is not None:
         return _get_neurovault_data.data
-    rng = np.random.RandomState(random_seed)
+    rng = _rng()
     n_collections, n_images = 73, 546
     collection_ids = rng.choice(
         np.arange(1000), size=n_collections, replace=False
@@ -52,7 +53,7 @@ def _get_neurovault_data(random_seed=0):
     ).values
     collections["number_of_images"] = collections[
         "true_number_of_images"
-    ] + rng.binomial(1, 0.1, n_collections) * rng.randint(
+    ] + rng.binomial(1, 0.1, n_collections) * rng.integers(
         0, 100, n_collections
     )
     images["not_mni"] = rng.binomial(1, 0.1, size=n_images).astype(bool)
@@ -76,7 +77,7 @@ def _get_neurovault_data(random_seed=0):
         p=[0.4, 0.4, 0.2],
     )
     images["some_key"] = "some_value"
-    images[13] = rng.randn(n_images)
+    images[13] = rng.standard_normal(n_images)
     url = "https://neurovault.org/media/images/{}/{}.nii.gz"
     image_names = [
         hashlib.sha1(bytes(img_id)).hexdigest()[:4] for img_id in image_ids
@@ -110,7 +111,7 @@ def _parse_query(query):
 
 
 def _neurovault_collections(parts, query):
-    """Mocks the Neurovault API behind the `/api/collections/` path.
+    """Mock the Neurovault API behind the `/api/collections/` path.
 
     parts: the parts of the URL path after "collections"
      ie [], ["<somecollectionid>"], or ["<somecollectionid>", "images"]
@@ -131,8 +132,8 @@ def _neurovault_collections(parts, query):
 
 
 def _neurovault_one_collection(parts):
-    """
-    Mocks Neurovault API behind the `/api/collections/<somecollectionid>` path.
+    """Mock Neurovault API \
+       behind the `/api/collections/<somecollectionid>` path.
 
     parts: parts of the URL path after "collections",
       ie ["<somecollectionid>"] or ["<somecollectionid>", "images"]
@@ -158,7 +159,7 @@ def _neurovault_one_collection(parts):
 
 
 def _neurovault_images(parts, query):
-    """Mocks the Neurovault API behind the `/api/images/` path.
+    """Mock the Neurovault API behind the `/api/images/` path.
 
     parts: parts of the URL path after "images",
       ie [] or ["<someimageid>"]
@@ -179,7 +180,7 @@ def _neurovault_images(parts, query):
 
 
 def _neurovault_one_image(img_id):
-    """Mocks the Neurovault API behind the `/api/images/<someimageid>` path.
+    """Mock the Neurovault API behind the `/api/images/<someimageid>` path.
 
     returns a dictionary of API results
 
@@ -194,12 +195,12 @@ def _neurovault_one_image(img_id):
 
 
 def _neurovault_file(parts, query):
-    """Mocks the Neurovault API behind the `/media/images/` path."""
+    """Mock the Neurovault API behind the `/media/images/` path."""
     return generate_fake_fmri(length=1)[0]
 
 
 class _NumpyJsonEncoder(json.JSONEncoder):
-    """A json encoder that can handle numpy objects"""
+    """A json encoder that can handle numpy objects."""
 
     def default(self, obj):
         if hasattr(obj, "tolist"):

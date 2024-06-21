@@ -1,4 +1,5 @@
 """Test the signals module."""
+
 # Author: Gael Varoquaux, Alexandre Abraham
 
 import os.path
@@ -11,6 +12,7 @@ from pandas import read_csv
 # Use nisignal here to avoid name collisions (using nilearn.signal is
 # not possible)
 from nilearn import signal as nisignal
+from nilearn.conftest import _rng
 from nilearn.signal import clean
 
 
@@ -50,7 +52,7 @@ def generate_signals(
     confounds : numpy.ndarray, shape (length, n_confounds)
         random signals used as confounds.
     """
-    rng = np.random.RandomState(42)
+    rng = _rng()
 
     # Generate random confounds
     confounds_shape = (length, n_confounds)
@@ -92,7 +94,7 @@ def generate_trends(n_features=17, length=41):
     trends : numpy.ndarray, shape (length, n_features)
         output signals, one per column.
     """
-    rng = np.random.RandomState(42)
+    rng = _rng()
     trends = scipy.signal.detrend(np.linspace(0, 1.0, length), type="constant")
     trends = np.repeat(np.atleast_2d(trends).T, n_features, axis=1)
     factors = rng.standard_normal(size=n_features)
@@ -105,8 +107,7 @@ def generate_signals_plus_trends(n_features=17, n_samples=41):
     return signals + trends
 
 
-def test_butterworth():
-    rng = np.random.RandomState(42)
+def test_butterworth(rng):
     n_features = 20000
     n_samples = 100
 
@@ -233,42 +234,47 @@ def test_butterworth():
         )
 
 
-def test_standardize():
-    rng = np.random.RandomState(42)
+def test_standardize(rng):
     n_features = 10
     n_samples = 17
 
     # Create random signals with offsets
-    a = rng.random_sample((n_samples, n_features))
+    a = rng.random((n_samples, n_features))
     a += np.linspace(0, 2.0, n_features)
 
     # Test raise error when strategy is not valid option
     with pytest.raises(ValueError, match="no valid standardize strategy"):
-        nisignal._standardize(a, standardize="foo")
+        nisignal.standardize_signal(a, standardize="foo")
 
     # test warning for strategy that will be removed
-    with pytest.warns(FutureWarning, match="default strategy for standardize"):
-        nisignal._standardize(a, standardize="zscore")
+    with pytest.warns(
+        DeprecationWarning, match="default strategy for standardize"
+    ):
+        nisignal.standardize_signal(a, standardize="zscore")
 
-    # transpose array to fit _standardize input.
+    # transpose array to fit standardize input.
     # Without trend removal
-    b = nisignal._standardize(a, standardize="zscore_sample")
+    b = nisignal.standardize_signal(a, standardize="zscore_sample")
     stds = np.std(b)
     np.testing.assert_almost_equal(stds, np.ones(n_features), decimal=1)
     np.testing.assert_almost_equal(b.sum(axis=0), np.zeros(n_features))
 
     # With trend removal
     a = np.atleast_2d(np.linspace(0, 2.0, n_features)).T
-    b = nisignal._standardize(a, detrend=True, standardize=False)
+    b = nisignal.standardize_signal(a, detrend=True, standardize=False)
     np.testing.assert_almost_equal(b, np.zeros(b.shape))
 
-    b = nisignal._standardize(a, detrend=True, standardize="zscore_sample")
+    b = nisignal.standardize_signal(
+        a, detrend=True, standardize="zscore_sample"
+    )
     np.testing.assert_almost_equal(b, np.zeros(b.shape))
 
     length_1_signal = np.atleast_2d(np.linspace(0, 2.0, n_features))
     np.testing.assert_array_equal(
         length_1_signal,
-        nisignal._standardize(length_1_signal, standardize="zscore_sample"),
+        nisignal.standardize_signal(
+            length_1_signal, standardize="zscore_sample"
+        ),
     )
 
 
@@ -336,7 +342,7 @@ def test_mean_of_squares():
 
 
 def test_row_sum_of_squares():
-    """Test _row_sum_of_squares."""
+    """Test row_sum_of_squares."""
     n_samples = 11
     n_features = 501  # Higher than 500 required
     signals, _, _ = generate_signals(
@@ -346,7 +352,7 @@ def test_row_sum_of_squares():
     var1 = signals**2
     var1 = var1.sum(axis=0)
 
-    var2 = nisignal._row_sum_of_squares(signals)
+    var2 = nisignal.row_sum_of_squares(signals)
 
     np.testing.assert_almost_equal(var1, var2)
 
@@ -396,9 +402,8 @@ def test_clean_detrending():
     assert np.array_equal(x_orig, x)
 
 
-def test_clean_t_r():
-    """Different TRs produce different results after butterworth filtering"""
-    rng = np.random.RandomState(42)
+def test_clean_t_r(rng):
+    """Different TRs produce different results after butterworth filtering."""
     n_samples = 34
     # n_features  Must be higher than 500
     n_features = 501
@@ -767,8 +772,8 @@ def test_clean_frequencies_using_power_spectrum_density():
 
 
 def test_clean_finite_no_inplace_mod():
-    """
-    Test for verifying that the passed in signal array is not modified.
+    """Test for verifying that the passed in signal array is not modified.
+
     For PR #2125 . This test is failing on main, passing in this PR.
     """
     n_samples = 2
@@ -865,15 +870,14 @@ def test_high_variance_confounds():
     np.testing.assert_almost_equal(out1, out2, decimal=13)
 
 
-def test_clean_psc():
-    rng = np.random.RandomState(0)
+def test_clean_psc(rng):
     n_samples = 500
     n_features = 5
 
     signals, _, _ = generate_signals(n_features=n_features, length=n_samples)
 
     # positive mean signal
-    means = rng.randn(1, n_features)
+    means = rng.standard_normal((1, n_features))
     signals_pos_mean = signals + means
 
     # a mix of pos and neg mean signal
@@ -881,19 +885,26 @@ def test_clean_psc():
 
     # both types should pass
     for s in [signals_pos_mean, signals_mixed_mean]:
-        cleaned_signals = clean(s, standardize="psc")
-        np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
-
-        cleaned_signals.std(axis=0)
+        cleaned_signals = clean(s, standardize="psc", detrend=False)
         np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
 
         tmp = (s - s.mean(0)) / np.abs(s.mean(0))
         tmp *= 100
         np.testing.assert_almost_equal(cleaned_signals, tmp)
 
+        # test with high pass with butterworth
+        butterworth_signals = clean(
+            s,
+            detrend=False,
+            filter="butterworth",
+            high_pass=0.01,
+            tr=2,
+            standardize="psc",
+        )
+        np.testing.assert_almost_equal(butterworth_signals.mean(0), 0)
+
     # leave out the last 3 columns with a mean of zero to test user warning
     signals_w_zero = signals + np.append(means[:, :-3], np.zeros((1, 3)))
-    cleaned_w_zero = clean(signals_w_zero, standardize="psc")
     with pytest.warns(UserWarning) as records:
         cleaned_w_zero = clean(signals_w_zero, standardize="psc")
     psc_warning = sum(
@@ -903,8 +914,7 @@ def test_clean_psc():
     np.testing.assert_equal(cleaned_w_zero[:, -3:].mean(0), 0)
 
 
-def test_clean_zscore():
-    rng = np.random.RandomState(42)
+def test_clean_zscore(rng):
     n_samples = 500
     n_features = 5
 
@@ -927,7 +937,7 @@ def test_clean_zscore():
 
 def test_create_cosine_drift_terms():
     """Testing cosine filter interface and output."""
-    from nilearn.glm.first_level.design_matrix import _cosine_drift
+    from nilearn.glm.first_level.design_matrix import create_cosine_drift
 
     # fmriprep high pass cutoff is 128s, it's around 0.008 hz
     t_r, high_pass = 2.5, 0.008
@@ -937,7 +947,7 @@ def test_create_cosine_drift_terms():
 
     # Not passing confounds it will return drift terms only
     frame_times = np.arange(signals.shape[0]) * t_r
-    cosine_drift = _cosine_drift(high_pass, frame_times)[:, :-1]
+    cosine_drift = create_cosine_drift(high_pass, frame_times)[:, :-1]
     confounds_with_drift = np.hstack((confounds, cosine_drift))
 
     cosine_confounds = nisignal._create_cosine_drift_terms(
@@ -1065,8 +1075,9 @@ def test_handle_scrubbed_volumes():
     (
         interpolated_signals,
         interpolated_confounds,
+        sample_mask,
     ) = nisignal._handle_scrubbed_volumes(
-        signals, confounds, sample_mask, "butterworth", 2.5
+        signals, confounds, sample_mask, "butterworth", 2.5, True
     )
     np.testing.assert_equal(
         interpolated_signals[sample_mask, :], signals[sample_mask, :]
@@ -1075,8 +1086,96 @@ def test_handle_scrubbed_volumes():
         interpolated_confounds[sample_mask, :], confounds[sample_mask, :]
     )
 
-    scrubbed_signals, scrubbed_confounds = nisignal._handle_scrubbed_volumes(
-        signals, confounds, sample_mask, "cosine", 2.5
+    (
+        scrubbed_signals,
+        scrubbed_confounds,
+        sample_mask,
+    ) = nisignal._handle_scrubbed_volumes(
+        signals, confounds, sample_mask, "cosine", 2.5, True
     )
     np.testing.assert_equal(scrubbed_signals, signals[sample_mask, :])
     np.testing.assert_equal(scrubbed_confounds, confounds[sample_mask, :])
+
+
+def test_handle_scrubbed_volumes_with_extrapolation():
+    """Check interpolation of signals with extrapolation."""
+    signals, _, confounds = generate_signals(
+        n_features=11, n_confounds=5, length=40
+    )
+
+    sample_mask = np.arange(signals.shape[0])
+    scrub_index = np.concatenate((np.arange(5), [10, 20, 30]))
+    sample_mask = np.delete(sample_mask, scrub_index)
+
+    # Test cubic spline interpolation (enabled extrapolation) in the
+    # very first n=5 samples of generated signal
+    extrapolate_warning = (
+        "By default the cubic spline interpolator extrapolates "
+        "the out-of-bounds censored volumes in the data run. This "
+        "can lead to undesired filtered signal results. Starting in "
+        "version 0.13, the default strategy will be not to extrapolate "
+        "but to discard those volumes at filtering."
+    )
+    with pytest.warns(FutureWarning, match=extrapolate_warning):
+        (
+            extrapolated_signals,
+            extrapolated_confounds,
+            extrapolated_sample_mask,
+        ) = nisignal._handle_scrubbed_volumes(
+            signals, confounds, sample_mask, "butterworth", 2.5, True
+        )
+    np.testing.assert_equal(signals.shape[0], extrapolated_signals.shape[0])
+    np.testing.assert_equal(
+        confounds.shape[0], extrapolated_confounds.shape[0]
+    )
+    np.testing.assert_equal(sample_mask, extrapolated_sample_mask)
+
+
+def test_handle_scrubbed_volumes_without_extrapolation():
+    """Check interpolation of signals disabling extrapolation."""
+    signals, _, confounds = generate_signals(
+        n_features=11, n_confounds=5, length=40
+    )
+
+    outer_samples = [0, 1, 2, 3, 4]
+    inner_samples = [10, 20, 30]
+    total_samples = len(outer_samples) + len(inner_samples)
+    sample_mask = np.arange(signals.shape[0])
+    scrub_index = np.concatenate((outer_samples, inner_samples))
+    sample_mask = np.delete(sample_mask, scrub_index)
+
+    # Test cubic spline interpolation without predicting values outside
+    # the range of the signal available (disabled extrapolation), discarding
+    # the first n censored samples of generated signal
+    (
+        interpolated_signals,
+        interpolated_confounds,
+        interpolated_sample_mask,
+    ) = nisignal._handle_scrubbed_volumes(
+        signals, confounds, sample_mask, "butterworth", 2.5, False
+    )
+    np.testing.assert_equal(
+        signals.shape[0], interpolated_signals.shape[0] + len(outer_samples)
+    )
+    np.testing.assert_equal(
+        confounds.shape[0],
+        interpolated_confounds.shape[0] + len(outer_samples),
+    )
+    np.testing.assert_equal(
+        sample_mask - sample_mask[0], interpolated_sample_mask
+    )
+
+    # Assert that the modified sample mask (interpolated_sample_mask)
+    # can be applied to the interpolated signals and confounds
+    (
+        censored_signals,
+        censored_confounds,
+    ) = nisignal._censor_signals(
+        interpolated_signals, interpolated_confounds, interpolated_sample_mask
+    )
+    np.testing.assert_equal(
+        signals.shape[0], censored_signals.shape[0] + total_samples
+    )
+    np.testing.assert_equal(
+        confounds.shape[0], censored_confounds.shape[0] + total_samples
+    )

@@ -1,9 +1,15 @@
-fsaverage3
+.. _fs_average_3_template:
 
+fsaverage3 template
+===================
+
+Access
+------
+See :func:`nilearn.datasets.fetch_surf_fsaverage`.
 
 Notes
 -----
-Fsaverage3 standard surface as distributed with Freesurfer (Fischl et al, 1999)
+Fsaverage3 standard surface as distributed with Freesurfer (:footcite:t:`Fischl1999`).
 
 Content
 -------
@@ -29,5 +35,10 @@ Content
 
 References
 ----------
-Fischl et al, (1999). High-resolution intersubject averaging and a
-coordinate system for the cortical surface. Hum Brain Mapp 8, 272-284.
+
+.. footbibliography::
+
+
+License
+-------
+unknown

@@ -8,7 +8,8 @@ of the Functional Connectivity Megatrawl project.
 See :func:`nilearn.datasets.fetch_megatrawls_netmats`
 documentation for more details.
 """
-##############################################################################
+
+# %%
 # Fetching the Megatrawls Network matrices
 # ----------------------------------------
 # Fetching the partial correlation matrices of dimensionality d=300 with
@@ -24,7 +25,7 @@ netmats = datasets.fetch_megatrawls_netmats(
 # of 'correlation_matrices'
 partial_correlation = netmats.correlation_matrices
 
-##############################################################################
+# %%
 # Visualization
 # -------------
 # Import nilearn plotting modules to use its utilities for plotting

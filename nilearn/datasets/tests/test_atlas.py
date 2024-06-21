@@ -12,13 +12,33 @@ import numpy as np
 import pandas as pd
 import pytest
 from numpy.testing import assert_array_equal
+from sklearn.utils import Bunch
 
 from nilearn._utils import data_gen
 from nilearn._utils.testing import serialize_niimg
+from nilearn.conftest import _rng
 from nilearn.datasets import atlas
-from nilearn.datasets._testing import dict_to_archive
-from nilearn.datasets.utils import _fetch_files
+from nilearn.datasets._utils import fetch_files
+from nilearn.datasets.tests._testing import dict_to_archive
 from nilearn.image import get_data
+
+
+@pytest.mark.parametrize(
+    "fn",
+    [
+        atlas.fetch_atlas_allen_2011,
+        atlas.fetch_atlas_basc_multiscale_2015,
+        atlas.fetch_atlas_schaefer_2018,
+        atlas.fetch_atlas_smith_2009,
+        atlas.fetch_atlas_yeo_2011,
+        atlas.fetch_coords_dosenbach_2010,
+        atlas.fetch_coords_power_2011,
+        atlas.fetch_coords_seitzman_2018,
+    ],
+)
+def test_atlas_fetcher_return_bunch(fn):
+    data = fn()
+    assert isinstance(data, Bunch)
 
 
 def test_downloader(tmp_path, request_mocker):
@@ -60,7 +80,7 @@ def test_downloader(tmp_path, request_mocker):
     ]
 
     with pytest.raises(IOError):
-        _fetch_files(
+        fetch_files(
             str(tmp_path / "craddock_2012"),
             files,
             verbose=0,
@@ -195,6 +215,7 @@ def test_fetch_atlas_fsl(
     atlas_data,
     fsl_fetcher,
     tmp_path,
+    affine_eye,
 ):
     # Create directory which will contain fake atlas data
     atlas_dir = tmp_path / "fsl" / "data" / "atlases"
@@ -207,7 +228,7 @@ def test_fetch_atlas_fsl(
         is_symm=is_symm,
     )
     target_atlas_nii = nifti_dir / f"{name}-{fname}.nii.gz"
-    nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
+    nibabel.Nifti1Image(atlas_data, affine_eye * 3).to_filename(
         target_atlas_nii
     )
     # Check that the fetch lead to consistent results
@@ -216,10 +237,18 @@ def test_fetch_atlas_fsl(
         data_dir=tmp_path,
         symmetric_split=split,
     )
+    assert isinstance(atlas_instance, Bunch)
     _test_atlas_instance_should_match_data(
         atlas_instance,
         is_symm=is_symm or split,
     )
+
+    assert atlas_instance.description != ""
+
+    # check for typo in label names
+    for label in atlas_instance.labels:
+        # no extra whitespace
+        assert label.strip() == label
 
 
 def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):
@@ -230,6 +259,7 @@ def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):
     bunch = atlas.fetch_atlas_craddock_2012(
         data_dir=tmp_path, verbose=0, homogeneity="spatial"
     )
+    assert isinstance(bunch, Bunch)
     bunch_rand = atlas.fetch_atlas_craddock_2012(
         data_dir=tmp_path, verbose=0, homogeneity="random"
     )
@@ -238,13 +268,13 @@ def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):
     )
 
     assert request_mocker.url_count == 1
-    assert bunch["map"] == str(
+    assert bunch["maps"] == str(
         tmp_path / "craddock_2012" / "scorr05_mean_all.nii.gz"
     )
-    assert bunch_rand["map"] == str(
+    assert bunch_rand["maps"] == str(
         tmp_path / "craddock_2012" / "random_all.nii.gz"
     )
-    assert bunch_no_mean["map"] == str(
+    assert bunch_no_mean["maps"] == str(
         tmp_path / "craddock_2012" / "scorr05_2level_all.nii.gz"
     )
     assert bunch.description != ""
@@ -277,7 +307,7 @@ def test_fetch_atlas_smith_2009(tmp_path, request_mocker):
     bunch = atlas.fetch_atlas_smith_2009(
         data_dir=tmp_path, verbose=0, dimension=20
     )
-    assert bunch["map"] == str(tmp_path / "smith_2009" / "rsn20.nii.gz")
+    assert bunch["maps"] == str(tmp_path / "smith_2009" / "rsn20.nii.gz")
     assert len(bunch.keys()) == 2
     assert bunch.description != ""
 
@@ -325,9 +355,9 @@ def test_fetch_coords_seitzman_2018():
 
 
 def _destrieux_data():
-    """Function mocking the download of the destrieux atlas."""
+    """Mock the download of the destrieux atlas."""
     data = {"destrieux2009.rst": "readme"}
-    atlas = np.random.randint(0, 10, (10, 10, 10), dtype="int32")
+    atlas = _rng().integers(0, 10, (10, 10, 10), dtype="int32")
     atlas_img = nibabel.Nifti1Image(atlas, np.eye(4))
     labels = "\n".join([f"{idx},label {idx}" for idx in range(10)])
     labels = f"index,name\n{labels}"
@@ -343,12 +373,15 @@ def _destrieux_data():
 @pytest.mark.parametrize("lateralized", [True, False])
 def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker, lateralized):
     """Tests for function `fetch_atlas_destrieux_2009`.
+
     The atlas is fetched with different values for `lateralized`.
     """
     request_mocker.url_mapping["*destrieux2009.tgz"] = _destrieux_data()
     bunch = atlas.fetch_atlas_destrieux_2009(
         lateralized=lateralized, data_dir=tmp_path, verbose=0
     )
+
+    assert isinstance(bunch, Bunch)
 
     assert request_mocker.url_count == 1
 
@@ -385,6 +418,7 @@ def test_fetch_atlas_msdl(tmp_path, request_mocker):
     )
     dataset = atlas.fetch_atlas_msdl(data_dir=tmp_path, verbose=0)
 
+    assert isinstance(dataset, Bunch)
     assert isinstance(dataset.labels, list)
     assert isinstance(dataset.region_coords, list)
     assert isinstance(dataset.networks, list)
@@ -438,6 +472,7 @@ def test_fetch_atlas_difumo(tmp_path, request_mocker):
                 data_dir=tmp_path, dimension=dim, resolution_mm=res, verbose=0
             )
 
+            assert isinstance(dataset, Bunch)
             assert len(dataset.keys()) == 3
             assert len(dataset.labels) == dim
             assert isinstance(dataset.maps, str)
@@ -498,6 +533,7 @@ def test_fetch_atlas_aal(
         version=version, data_dir=tmp_path, verbose=0
     )
 
+    assert isinstance(dataset, Bunch)
     assert isinstance(dataset.maps, str)
     assert isinstance(dataset.labels, list)
     assert isinstance(dataset.indices, list)
@@ -526,14 +562,14 @@ def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
     name_sym = "template_cambridge_basc_multiscale_nii_sym"
     basename_sym = "template_cambridge_basc_multiscale_sym_scale007.nii.gz"
 
-    assert data_sym["map"] == str(
+    assert data_sym["maps"] == str(
         tmp_path / dataset_name / name_sym / basename_sym
     )
 
     name_asym = "template_cambridge_basc_multiscale_nii_asym"
     basename_asym = "template_cambridge_basc_multiscale_asym_scale007.nii.gz"
 
-    assert data_asym["map"] == str(
+    assert data_asym["maps"] == str(
         tmp_path / dataset_name / name_asym / basename_asym
     )
     assert len(data_sym) == 2
@@ -647,6 +683,8 @@ def test_fetch_atlas_surf_destrieux(tmp_path):
 
     bunch = atlas.fetch_atlas_surf_destrieux(data_dir=tmp_path, verbose=0)
 
+    assert isinstance(bunch, Bunch)
+
     # Our mock annots have 4 labels
     assert len(bunch.labels) == 4
     assert bunch.map_left.shape == (4,)
@@ -674,12 +712,18 @@ def test_fetch_atlas_talairach(tmp_path, request_mocker):
     level_values = np.ones((81, 3)) * [0, 1, 2]
     talairach = atlas.fetch_atlas_talairach("hemisphere", data_dir=tmp_path)
 
+    assert isinstance(talairach, Bunch)
+
+    assert talairach.description != ""
+
     assert_array_equal(
         get_data(talairach.maps).ravel(), level_values.T.ravel()
     )
     assert_array_equal(talairach.labels, ["Background", "b", "a"])
 
     talairach = atlas.fetch_atlas_talairach("ba", data_dir=tmp_path)
+
+    assert talairach.description != ""
 
     assert_array_equal(get_data(talairach.maps).ravel(), level_values.ravel())
 
@@ -700,6 +744,10 @@ def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
 
     data = atlas.fetch_atlas_pauli_2017("det", data_dir)
 
+    assert isinstance(data, Bunch)
+
+    assert data.description != ""
+
     assert len(data.labels) == 16
 
     values = get_data(nibabel.load(data.maps))
@@ -709,6 +757,8 @@ def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
     data = atlas.fetch_atlas_pauli_2017("prob", data_dir)
 
     assert nibabel.load(data.maps).shape[-1] == 16
+
+    assert data.description != ""
 
     with pytest.raises(NotImplementedError):
         atlas.fetch_atlas_pauli_2017("junk for testing", data_dir)

@@ -1,4 +1,5 @@
-"""Test the parcellations tools module"""
+"""Test the parcellations tools module."""
+
 import warnings
 
 import numpy as np
@@ -45,11 +46,9 @@ def test_error_parcellation_method_none(test_image):
         Parcellations(method=None, verbose=0).fit(test_image)
 
 
-@pytest.mark.parametrize("method", ["kmens", "avg", "complte"])
+@pytest.mark.parametrize("method", ["kmens", "avg", "completed"])
 def test_errors_raised_in_check_parameters_fit(method, test_image):
-    """Test whether an error is raised or not given
-    a false method type.
-    """
+    """Test whether an error is raised or not given a false method type."""
     with pytest.raises(
         ValueError,
         match=(f"The method you have selected is not implemented '{method}'"),
@@ -118,10 +117,8 @@ def test_parcellations_fit_on_multi_nifti_images(
 def test_parcellations_transform_single_nifti_image(
     method, n_parcel, test_image_2
 ):
-    """Test with NiftiLabelsMasker extraction of timeseries data
-    after building a parcellations image.
-
-    """
+    """Test with NiftiLabelsMasker extraction of timeseries data \
+       after building a parcellations image."""
     parcellator = Parcellations(method=method, n_parcels=n_parcel, verbose=0)
     parcellator.fit(test_image_2)
     # transform to signals
@@ -163,8 +160,7 @@ def test_parcellations_transform_multi_nifti_images(
     assert len(signals) == len(fmri_imgs)
 
 
-def test_check_parameters_transform(test_image_2):
-    rng = np.random.RandomState(42)
+def test_check_parameters_transform(test_image_2, rng):
     # single confound
     confounds = rng.standard_normal(size=(10, 3))
     # Tests to check whether imgs, confounds returned are
@@ -206,9 +202,8 @@ def test_check_parameters_transform(test_image_2):
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
 def test_parcellations_transform_with_multi_confounds_multi_images(
-    method, n_parcel, test_image_2
+    method, n_parcel, test_image_2, rng
 ):
-    rng = np.random.RandomState(42)
     fmri_imgs = [test_image_2] * 3
     confounds = rng.standard_normal(size=(10, 3))
     confounds_list = [confounds] * 3
@@ -239,8 +234,7 @@ def test_fit_transform(method, n_parcel, test_image_2):
 
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
-def test_fit_transform_with_condounds(method, n_parcel, test_image_2):
-    rng = np.random.RandomState(42)
+def test_fit_transform_with_condounds(method, n_parcel, test_image_2, rng):
     fmri_imgs = [test_image_2] * 3
     confounds = rng.standard_normal(size=(10, 3))
     confounds_list = [confounds] * 3

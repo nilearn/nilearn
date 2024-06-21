@@ -1,4 +1,4 @@
-"""Test Region Extractor and its functions"""
+"""Test Region Extractor and its functions."""
 
 import numpy as np
 import pytest
@@ -43,17 +43,18 @@ def labels_img():
 
 @pytest.fixture
 def maps():
-    return generate_maps(shape=MAP_SHAPE, n_regions=N_REGIONS)[0]
+    return generate_maps(
+        shape=MAP_SHAPE, n_regions=N_REGIONS, random_state=42
+    )[0]
 
 
 @pytest.fixture
 def maps_and_mask():
-    return generate_maps(shape=MAP_SHAPE, n_regions=N_REGIONS)
+    return generate_maps(shape=MAP_SHAPE, n_regions=N_REGIONS, random_state=42)
 
 
 @pytest.fixture
-def map_img_3D():
-    rng = np.random.RandomState(42)
+def map_img_3D(rng):
     map_img = np.zeros(MAP_SHAPE) + 0.1 * rng.standard_normal(size=MAP_SHAPE)
     return Nifti1Image(map_img, affine=_affine_eye())
 
@@ -276,7 +277,7 @@ def test_region_extractor_zeros_affine_diagonal(affine_eye):
     affine = affine_eye
     affine[[0, 1]] = affine[[1, 0]]  # permutes first and second lines
     maps, _ = generate_maps(
-        shape=[40, 40, 40], n_regions=n_regions, affine=affine
+        shape=[40, 40, 40], n_regions=n_regions, affine=affine, random_state=42
     )
 
     extract_ratio = RegionExtractor(
@@ -314,10 +315,7 @@ def test_remove_small_regions(affine_eye):
     min_size = 10
     # data can be act as mask_data to identify regions in label_map because
     # features in label_map are built upon non-zeros in data
-    index = np.arange(n_labels + 1)
-    removed_data = _remove_small_regions(
-        label_map, index, affine_eye, min_size
-    )
+    removed_data = _remove_small_regions(label_map, affine_eye, min_size)
     sum_removed_data = np.sum(removed_data)
 
     assert sum_removed_data < sum_label_data

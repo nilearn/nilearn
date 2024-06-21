@@ -1,22 +1,31 @@
-Dosenbach 2010 atlas
+.. _dosenbach_atlas:
 
+Dosenbach 2010 atlas
+====================
+
+Access
+------
+See :func:`nilearn.datasets.fetch_coords_dosenbach_2010`.
 
 Notes
 -----
 160 regions of interest covering much of the cerebral cortex and cerebellum.
-They were obtained from meta-analyses of fMRI activation studies
+They were obtained from meta-analyses of :term:`fMRI` activation studies
 and assigned into 6 networks according to a modularity analysis of
-resting-state data.
+:term:`resting-state` data.
 
+See :footcite:t:`Dosenbach2010`.
 
 Content
 -------
-    :'rois': Coordinates of ROIs in MNI space.
+    :'rois': Coordinates of ROIs in :term:`MNI` space.
     :'labels': ROIs labels.
     :'networks': Networks names.
 
-
 References
 ----------
-Dosenbach N.U., Nardos B., et al. "Prediction of individual brain maturity
-using fMRI.", 2010, Science 329, 1358-1361.
+
+.. footbibliography::
+
+License
+-------

@@ -1,4 +1,5 @@
 """N-dimensional image manipulation."""
+
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 
 import numpy as np
@@ -76,7 +77,7 @@ def get_border_data(data, border_size):
     )
 
 
-def _peak_local_max(
+def peak_local_max(
     image,
     min_distance=10,
     threshold_abs=0,
@@ -94,24 +95,21 @@ def _peak_local_max(
     image : ndarray of floats
         Input image.
 
-    min_distance : int, optional
+    min_distance : int, default=10
         Minimum number of pixels separating peaks in a region of `2 *
         min_distance + 1` (i.e. peaks are separated by at least
         `min_distance`). To find the maximum number of peaks, use
         `min_distance=1`.
-        Default=10.
 
-    threshold_abs : float, optional
-        Minimum intensity of peaks. Default=0.
+    threshold_abs : float, default=0
+        Minimum intensity of peaks.
 
-    threshold_rel : float, optional
+    threshold_rel : float, default=0.1
         Minimum intensity of peaks calculated as `max(image) * threshold_rel`.
-        Default=0.1.
 
-    num_peaks : int, optional
+    num_peaks : int, default=np.inf
         Maximum number of peaks. When the number of peaks exceeds `num_peaks`,
         return `num_peaks` peaks based on highest peak intensity.
-        Default=np.inf.
 
     Returns
     -------

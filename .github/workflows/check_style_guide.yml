@@ -1,0 +1,39 @@
+---
+name: check style guide compliance
+
+on:
+    push:
+        branches:
+        -   main
+    pull_request:
+        branches:
+        -   '*'
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+# Force to use color
+env:
+    FORCE_COLOR: true
+
+jobs:
+    style_check:
+        name: run pre-commit on all files
+        runs-on: ubuntu-latest
+
+        steps:
+        -   name: Checkout nilearn
+            uses: actions/checkout@v4
+
+        -   name: Setup python
+            uses: actions/setup-python@v5
+            with:
+                python-version: '3.11'
+                allow-prereleases: false
+
+        -   name: Install tox
+            run: python -m pip install --upgrade tox
+
+        -   name: Run pre-commit via tox
+            run: tox

@@ -5,11 +5,11 @@ Plot Haxby masks
 Small script to plot the masks of the Haxby dataset.
 """
 
-#########################################################################
+# %%
 # Load Haxby dataset
 # ------------------
-
 from nilearn import datasets
+from nilearn.plotting import plot_anat, show
 
 haxby_dataset = datasets.fetch_haxby()
 
@@ -25,17 +25,14 @@ print(
 from nilearn import image
 
 func_filename = haxby_dataset.func[0]
-mean_img = image.mean_img(func_filename)
+mean_img = image.mean_img(func_filename, copy_header=True)
 
 z_slice = -14
 
-#########################################################################
+# %%
 # Plot the masks
 # --------------
-
 import matplotlib.pyplot as plt
-
-from nilearn.plotting import plot_anat, show
 
 fig = plt.figure(figsize=(4, 5.4), facecolor="k")
 
@@ -58,7 +55,7 @@ for mask, color in zip(masks, colors):
     )
 
 # We generate a legend using the trick described on
-# http://matplotlib.sourceforge.net/users/legend_guide.httpml#using-proxy-artist
+# https://matplotlib.org/2.0.2/users/legend_guide.html
 from matplotlib.patches import Rectangle
 
 p_v = Rectangle((0, 0), 1, 1, fc="red")

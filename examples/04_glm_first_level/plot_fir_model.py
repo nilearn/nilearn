@@ -18,11 +18,12 @@ presented : ['audio_computation', 'audio_left_hand_button_press',
 'visual_right_hand_button_press']
 """
 
-#########################################################################
+# %%
 # At first, we grab the localizer data.
 import pandas as pd
 
 from nilearn.datasets import func
+from nilearn.plotting import plot_stat_map
 
 data = func.fetch_localizer_first_level()
 fmri_img = data.epi_img
@@ -31,7 +32,7 @@ events_file = data["events"]
 events = pd.read_table(events_file)
 
 
-#########################################################################
+# %%
 # Next solution is to try Finite Impulse Response (:term:`FIR`) models: we just
 # say that the :term:`hrf<HRF>` is an arbitrary function that lags behind the
 # stimulus onset.  In the present case, given that the numbers of
@@ -50,10 +51,11 @@ design_matrix = first_level_model.design_matrices_[0]
 plot_design_matrix(design_matrix)
 
 
-#########################################################################
-# We have to adapt contrast specification. We characterize the :term:`BOLD`
-# response by the sum across the three time lags. It's a bit hairy,
-# sorry, but this is the price to pay for flexibility...
+# %%
+# We have to adapt :term:`contrast` specification.
+# We characterize the :term:`BOLD` response by the sum
+# across the three time lags.
+# It's a bit hairy, sorry, but this is the price to pay for flexibility...
 import numpy as np
 
 contrast_matrix = np.eye(design_matrix.shape[1])
@@ -122,18 +124,16 @@ contrasts = {
 }
 
 
-#########################################################################
+# %%
 # Take a look at the contrasts.
 
 plot_contrast_matrix(contrasts["left-right"], design_matrix)
 
-#########################################################################
+# %%
 # Take a breath.
 #
 # We can now  proceed by estimating the contrasts and displaying them.
 import matplotlib.pyplot as plt
-
-from nilearn.plotting import plot_stat_map
 
 fig = plt.figure(figsize=(11, 3))
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
@@ -152,7 +152,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
 plt.show()
 
 
-#########################################################################
+# %%
 # The result is acceptable. Note that we're asking a lot of questions
 # to a small dataset, yet with a relatively large number of experimental
 # conditions.

@@ -1,5 +1,4 @@
 """
-================================================
 Example of pattern recognition on simulated data
 ================================================
 
@@ -7,8 +6,8 @@ This example simulates data according to a very simple sketch of brain
 imaging data and applies machine learning techniques to predict output
 values.
 
-We use a very simple generating function to simulate data, as in `Michel
-et al. 2012 <http://dx.doi.org/10.1109/TMI.2011.2113378>`_ , a linear
+We use a very simple generating function to simulate data,
+as in :footcite:t:`Michel2011`, a linear
 model with a random design matrix **X**:
 
 .. math::
@@ -19,19 +18,21 @@ model with a random design matrix **X**:
   brain regions. Here, in the simulations, they form a 3D image with 5, four
   of which in opposite corners and one in the middle, as plotted below.
 
-* **X**: the design matrix corresponds to the observed fMRI data. Here
-  we simulate random normal variables and smooth them as in Gaussian
-  fields.
+* **X**: the design matrix corresponds to the observed :term:`fMRI` data.
+  Here we simulate random normal variables
+  and smooth them as in Gaussian fields.
 
 * **e** is random normal noise.
 
 """
 
-print(__doc__)
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
 
 from time import time
 
-import matplotlib.pyplot as plt
 import nibabel
 import numpy as np
 from scipy import linalg
@@ -48,9 +49,9 @@ from nilearn import decoding
 from nilearn.plotting import show
 
 
-##############################################################################
+# %%
 # A function to generate data
-##############################################################################
+# ---------------------------
 def create_simulation_data(snr=0, n_samples=2 * 100, size=12, random_state=1):
     generator = check_random_state(random_state)
     roi_size = 2  # size / 3
@@ -95,9 +96,9 @@ def create_simulation_data(snr=0, n_samples=2 * 100, size=12, random_state=1):
     return X_train, X_test, y, y_test, snr, w, size
 
 
-##############################################################################
+# %%
 # A simple function to plot slices
-##############################################################################
+# --------------------------------
 def plot_slices(data, title=None):
     plt.figure(figsize=(5.5, 2.2))
     vmax = np.abs(data).max()
@@ -119,9 +120,9 @@ def plot_slices(data, title=None):
         plt.suptitle(title)
 
 
-###############################################################################
+# %%
 # Create data
-###############################################################################
+# -----------
 X_train, X_test, y_train, y_test, snr, coefs, size = create_simulation_data(
     snr=-10, n_samples=100, size=12
 )
@@ -140,18 +141,18 @@ process_mask_img = nibabel.Nifti1Image(process_mask.astype("uint8"), np.eye(4))
 coefs = np.reshape(coefs, [size, size, size])
 plot_slices(coefs, title="Ground truth")
 
-###############################################################################
+# %%
 # Run different estimators
-###############################################################################
+# ------------------------
 #
 # We can now run different estimators and look at their prediction score,
 # as well as the feature maps that they recover. Namely, we will use
 #
 # * A support vector regression (`SVM
-#   <http://scikit-learn.org/stable/modules/svm.html>`_)
+#   <https://scikit-learn.org/stable/modules/svm.html>`_)
 #
 # * An `elastic-net
-#   <http://scikit-learn.org/stable/modules/linear_model.html#elastic-net>`_
+#   <https://scikit-learn.org/stable/modules/linear_model.html#elastic-net>`_
 #
 # * A *Bayesian* ridge estimator, i.e. a ridge estimator that sets its
 #   parameter according to a metaprior
@@ -182,13 +183,14 @@ estimators = [
             estimator=svm.SVR(kernel="linear"),
             cv=KFold(n_splits=4),
             verbose=1,
-            n_jobs=1,
+            n_jobs=2,
         ),
     ),
 ]
 
-###############################################################################
+# %%
 # Run the estimators
+# ------------------
 #
 # As the estimators expose a fairly consistent API, we can all fit them in
 # a for loop: they all have a `fit` method for fitting the data, a `score`
@@ -239,11 +241,11 @@ plot_slices(p_values, title="f_regress")
 
 show()
 
-###############################################################################
+# %%
 # An exercise to go further
-###############################################################################
+# -------------------------
 #
-# As an exercice, you can use recursive feature elimination (RFE) with
+# As an exercise, you can use recursive feature elimination (RFE) with
 # the SVM
 #
 # Read the object's documentation to find out how to use RFE.
@@ -252,3 +254,10 @@ show()
 # slow.
 
 # from sklearn.feature_selection import RFE
+
+
+# %%
+# References
+# ----------
+#
+#  .. footbibliography::

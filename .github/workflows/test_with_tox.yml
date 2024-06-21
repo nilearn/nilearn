@@ -1,0 +1,61 @@
+---
+name: test
+
+on:
+    push:
+        branches:
+        -   main
+    pull_request:
+        branches:
+        -   '*'
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+# Force to use color
+env:
+    FORCE_COLOR: true
+
+jobs:
+    test_and_coverage:
+        if: github.repository == 'nilearn/nilearn'
+        name: 'Test with ${{ matrix.py }} on ${{ matrix.os }}: ${{ matrix.description }}'
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                description: [latest dependencies]
+                py: ['3.12', '3.11', '3.10', '3.9', '3.8']
+                os: [ubuntu-latest, macos-latest, windows-latest]
+                env: [test_plotting]
+                include:
+                -   description: pre-release dependencies
+                    py: '3.12'
+                    os: ubuntu-latest
+                    env: test_pre
+                -   description: oldest dependencies - no plotting
+                    py: '3.8'
+                    os: ubuntu-latest
+                    env: test_min
+                -   description: oldest dependencies - no plotly
+                    py: '3.8'
+                    os: ubuntu-latest
+                    env: test_plot_min
+        steps:
+        -   uses: actions/checkout@v4
+        -   name: Setup python
+            uses: actions/setup-python@v5
+            with:
+                python-version: ${{ matrix.py }}
+        -   name: Install tox
+            run: python -m pip install tox
+        -   name: Show tox config
+            run: tox c
+        -   name: Run test suite
+            run: tox run -e ${{ matrix.env }} -- nilearn
+        -   name: Upload coverage to CodeCov
+            uses: codecov/codecov-action@v4
+            with:
+                flags: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.env }}
+            if: success()

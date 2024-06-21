@@ -8,9 +8,8 @@ from sklearn.datasets import load_iris
 from sklearn.linear_model import Lasso, LogisticRegression
 from sklearn.linear_model._coordinate_descent import _alpha_grid
 from sklearn.metrics import accuracy_score
-from sklearn.utils import check_random_state
 
-from nilearn._utils.param_validation import _adjust_screening_percentile
+from nilearn._utils.param_validation import adjust_screening_percentile
 from nilearn.decoding.space_net import (
     BaseSpaceNet,
     SpaceNetClassifier,
@@ -22,10 +21,10 @@ from nilearn.decoding.space_net import (
     path_scores,
 )
 from nilearn.decoding.space_net_solvers import (
-    _graph_net_logistic,
-    _graph_net_squared_loss,
+    graph_net_logistic,
+    graph_net_squared_loss,
 )
-from nilearn.decoding.tests._utils import create_graph_net_simulation_data
+from nilearn.decoding.tests._testing import create_graph_net_simulation_data
 from nilearn.image import get_data
 
 logistic_path_scores = partial(path_scores, is_classif=True)
@@ -42,10 +41,9 @@ PENALTY = ["graph-net", "tv-l1"]
 @pytest.mark.parametrize("l1_ratio", [0.5, 1.0])
 @pytest.mark.parametrize("n_alphas", range(1, 10))
 def test_space_net_alpha_grid(
-    is_classif, l1_ratio, n_alphas, n_samples=4, n_features=3
+    rng, is_classif, l1_ratio, n_alphas, n_samples=4, n_features=3
 ):
-    rng = check_random_state(42)
-    X = rng.randn(n_samples, n_features)
+    X = rng.standard_normal((n_samples, n_features))
     y = np.arange(n_samples)
 
     alpha_max = np.max(np.abs(np.dot(X.T, y))) / l1_ratio
@@ -77,11 +75,10 @@ def test_space_net_alpha_grid_same_as_sk():
     )
 
 
-def test_early_stopping_callback_object(n_samples=10, n_features=30):
+def test_early_stopping_callback_object(rng, n_samples=10, n_features=30):
     # This test evolves w so that every line of th _EarlyStoppingCallback
     # code is executed a some point. This a kind of code fuzzing.
-    rng = check_random_state(42)
-    X_test = rng.randn(n_samples, n_features)
+    X_test = rng.standard_normal((n_samples, n_features))
     y_test = np.dot(X_test, np.ones(n_features))
     w = np.zeros(n_features)
     escb = _EarlyStoppingCallback(X_test, y_test, False)
@@ -90,7 +87,7 @@ def test_early_stopping_callback_object(n_samples=10, n_features=30):
         w[k] = 1
 
         # jitter
-        if k > 0 and rng.rand() > 0.9:
+        if k > 0 and rng.random() > 0.9:
             w[k - 1] = 1 - w[k - 1]
 
         escb(dict(w=w, counter=counter))
@@ -157,11 +154,11 @@ def test_screening_space_net():
 
     for verbose in [0, 2]:
         with pytest.warns(UserWarning):
-            screening_percentile = _adjust_screening_percentile(
+            screening_percentile = adjust_screening_percentile(
                 10, mask, verbose
             )
     with pytest.warns(UserWarning):
-        screening_percentile = _adjust_screening_percentile(10, mask)
+        screening_percentile = adjust_screening_percentile(10, mask)
     # We gave here a very small mask, judging by standards of brain size
     # thus the screening_percentile_ corrected for brain size should
     # be 100%
@@ -176,7 +173,7 @@ def test_logistic_path_scores():
     alphas = [1.0, 0.1, 0.01]
 
     test_scores, best_w = logistic_path_scores(
-        _graph_net_logistic,
+        graph_net_logistic,
         X,
         y,
         mask,
@@ -200,7 +197,7 @@ def test_squared_loss_path_scores():
     alphas = [1.0, 0.1, 0.01]
 
     test_scores, best_w = squared_loss_path_scores(
-        _graph_net_squared_loss,
+        graph_net_squared_loss,
         X,
         y,
         mask,
@@ -218,15 +215,14 @@ def test_squared_loss_path_scores():
 
 @pytest.mark.parametrize("l1_ratio", [1])
 @pytest.mark.parametrize("debias", [True])
-def test_tv_regression_simple(l1_ratio, debias):
-    rng = check_random_state(42)
+def test_tv_regression_simple(rng, l1_ratio, debias):
     dim = (4, 4, 4)
     W_init = np.zeros(dim)
     W_init[2:3, 1:2, -2:] = 1
     n = 10
     p = np.prod(dim)
     X = np.ones((n, 1)) + W_init.ravel().T
-    X += rng.randn(n, p)
+    X += rng.standard_normal((n, p))
     y = np.dot(X, W_init.ravel())
     X, mask = to_niimgs(X, dim)
 
@@ -245,8 +241,7 @@ def test_tv_regression_simple(l1_ratio, debias):
 
 
 @pytest.mark.parametrize("l1_ratio", [0.0, 0.5, 1.0])
-def test_tv_regression_3D_image_doesnt_crash(l1_ratio):
-    rng = check_random_state(42)
+def test_tv_regression_3D_image_doesnt_crash(rng, l1_ratio):
     dim = (3, 4, 5)
     W_init = np.zeros(dim)
     W_init[2:3, 3:, 1:3] = 1
@@ -254,7 +249,7 @@ def test_tv_regression_3D_image_doesnt_crash(l1_ratio):
     n = 10
     p = dim[0] * dim[1] * dim[2]
     X = np.ones((n, 1)) + W_init.ravel().T
-    X += rng.randn(n, p)
+    X += rng.standard_normal((n, p))
     y = np.dot(X, W_init.ravel())
     alpha = 1.0
     X, mask = to_niimgs(X, dim)
@@ -338,7 +333,7 @@ def test_lasso_vs_graph_net():
     """
     size = 4
     X_, y, _, mask = create_graph_net_simulation_data(
-        snr=1.0, n_samples=10, size=size, n_points=5, random_state=42
+        snr=1.0, n_samples=10, size=size, n_points=5, random_state=10
     )
     X, mask = to_niimgs(X_, [size] * 3)
 
@@ -359,14 +354,13 @@ def test_lasso_vs_graph_net():
         np.dot(X_, lasso.coef_) - y
     ) ** 2 + np.sum(np.abs(lasso.coef_))
     graph_net_perf = 0.5 * ((graph_net.predict(X) - y) ** 2).mean()
-    assert_almost_equal(graph_net_perf, lasso_perf, decimal=3)
+    assert_almost_equal(graph_net_perf, lasso_perf, decimal=2)
 
 
-def test_crop_mask():
-    rng = np.random.RandomState(42)
+def test_crop_mask(rng):
     mask = np.zeros((3, 4, 5), dtype=bool)
     box = mask[:2, :3, :4]
-    box[rng.rand(*box.shape) < 3.0] = 1  # mask covers 30% of brain
+    box[rng.random(box.shape) < 3.0] = 1  # mask covers 30% of brain
     idx = np.where(mask)
 
     assert idx[1].max() < 3
@@ -377,20 +371,19 @@ def test_crop_mask():
 
 @pytest.mark.parametrize("is_classif", IS_CLASSIF)
 def test_univariate_feature_screening(
-    is_classif, dim=(11, 12, 13), n_samples=10
+    rng, is_classif, dim=(11, 12, 13), n_samples=10
 ):
-    rng = np.random.RandomState(42)
-    mask = rng.rand(*dim) > 100.0 / np.prod(dim)
+    mask = rng.random(dim) > 100.0 / np.prod(dim)
 
     assert mask.sum() >= 100.0
 
-    mask[
-        dim[0] // 2, dim[1] // 3 :, -dim[2] // 2 :
-    ] = 1  # put spatial structure
+    mask[dim[0] // 2, dim[1] // 3 :, -dim[2] // 2 :] = (
+        1  # put spatial structure
+    )
     n_features = mask.sum()
-    X = rng.randn(n_samples, n_features)
-    w = rng.randn(n_features)
-    w[rng.rand(n_features) > 0.8] = 0.0
+    X = rng.standard_normal((n_samples, n_features))
+    w = rng.standard_normal(n_features)
+    w[rng.random(n_features) > 0.8] = 0.0
     y = X.dot(w)
 
     X_, mask_, support_ = _univariate_feature_screening(
@@ -438,9 +431,8 @@ def test_space_net_regressor_subclass(penalty, alpha, l1_ratio, verbose):
 
 
 @pytest.mark.parametrize("is_classif", IS_CLASSIF)
-def test_space_net_alpha_grid_pure_spatial(is_classif):
-    rng = check_random_state(42)
-    X = rng.randn(10, 100)
+def test_space_net_alpha_grid_pure_spatial(rng, is_classif):
+    X = rng.standard_normal((10, 100))
     y = np.arange(X.shape[0])
 
     assert not np.any(

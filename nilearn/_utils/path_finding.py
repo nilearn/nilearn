@@ -1,11 +1,13 @@
 """Path finding utilities."""
+
 import glob
 import os.path
 
 from .helpers import stringify_path
 
 
-def _resolve_globbing(path):
+def resolve_globbing(path):
+    """Resolve globbing patterns in a path."""
     path = stringify_path(path)
     if isinstance(path, str):
         path_list = sorted(glob.glob(os.path.expanduser(path)))

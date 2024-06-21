@@ -1,4 +1,5 @@
 """Mixin for cache with joblib."""
+
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 
 import os
@@ -18,12 +19,12 @@ def _check_memory(memory, verbose=0):
 
     Parameters
     ----------
-    memory : None,instance of joblib.Memory, str or pathlib.Path
+    memory : None, instance of joblib.Memory, str or pathlib.Path
         Used to cache the masking process.
         If a str is given, it is the path to the caching directory.
 
-    verbose : int, optional
-        Verbosity level. Default=0.
+    verbose : int, default=0
+        Verbosity level.
 
     Returns
     -------
@@ -117,10 +118,9 @@ def cache(
         be cached or not (if user_memory_level is equal of greater than
         func_memory_level the function is cached).
 
-    shelve : bool, optional
+    shelve : bool, default=False
         Whether to return a joblib MemorizedResult, callable by a .get()
         method, instead of the return value of func.
-        Default=False.
 
     kwargs : keyword arguments, optional
         The keyword arguments passed to memory.cache.
@@ -208,13 +208,13 @@ class CacheMixin:
         func : function
             The function the output of which is to be cached.
 
-        func_memory_level : int, optional
+        func_memory_level : int, default=1
             The memory_level from which caching must be enabled for the wrapped
-            function. Default=1.
+            function.
 
-        shelve : bool, optional
+        shelve : bool, default=False
             Whether to return a joblib MemorizedResult, callable by a .get()
-            method, instead of the return value of func. Default=False.
+            method, instead of the return value of func.
 
         Returns
         -------
@@ -241,7 +241,8 @@ class CacheMixin:
             warnings.warn(
                 "memory_level is currently set to 0 but "
                 "a Memory object has been provided. "
-                "Setting memory_level to 1."
+                "Setting memory_level to 1.",
+                stacklevel=3,
             )
             self.memory_level = 1
 

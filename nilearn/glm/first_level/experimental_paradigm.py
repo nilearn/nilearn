@@ -12,18 +12,18 @@ It can also contain:
 Author: Bertrand Thirion, 2015
 
 """
+
 import warnings
 
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
 
-VALID_FIELDS = {"onset", "duration", "trial_type", "modulation"}
-
 
 def check_events(events):
     """Test that the events data describes a valid experimental paradigm.
 
-    It is valid if the events data  has an 'onset' key.
+    It is valid if the events data has ``'onset'`` and ``'duration'`` keys
+    with numeric non NaN values.
 
     Parameters
     ----------
@@ -32,6 +32,11 @@ def check_events(events):
 
     Returns
     -------
+    events : pandas DataFrame
+        Events data that describes a functional experimental paradigm.
+
+    The dataframe has the following columns:
+
     trial_type : array of shape (n_events,), dtype='s'
         Per-event experimental conditions identifier.
         Defaults to np.repeat('dummy', len(onsets)).
@@ -47,6 +52,34 @@ def check_events(events):
         Per-event modulation, (in seconds)
         defaults to ones(n_events) when no duration is provided.
 
+    Raises
+    ------
+    TypeError
+        If the events data is not a pandas DataFrame.
+
+    ValueError
+        If the events data has:
+
+            - no ``'onset'`` or ``'duration'`` column,
+            - has non numeric values
+              in the ``'onset'`` or ``'duration'`` columns
+            - has nan values in the ``'onset'`` or ``'duration'`` columns.
+
+    Warns
+    -----
+    UserWarning
+        If the events data:
+
+            - has no ``'trial_type'`` column,
+            - has any event with a duration equal to 0,
+            - contains columns other than ``'onset'``, ``'duration'``,
+              ``'trial_type'`` or ``'modulation'``,
+            - contains duplicated events, meaning event with same:
+
+                - ``'trial_type'``
+                - ``'onset'``
+                - ``'duration'``
+
     """
     # Check that events is a Pandas DataFrame
     if not isinstance(events, pd.DataFrame):
@@ -54,76 +87,118 @@ def check_events(events):
             "Events should be a Pandas DataFrame. "
             f"A {type(events)} was provided instead."
         )
-    # Column checks
+
+    events = _check_columns(events)
+
+    events_copy = events.copy()
+
+    events_copy = _handle_missing_trial_types(events_copy)
+
+    _check_null_duration(events_copy)
+
+    _check_unexpected_columns(events_copy)
+
+    return _handle_modulation(events_copy)
+
+
+def _check_columns(events):
+    """Check events has onset and duration numeric columns with no NaN."""
     for col_name in ["onset", "duration"]:
         if col_name not in events.columns:
             raise ValueError(
                 f"The provided events data has no {col_name} column."
             )
+        if events[col_name].isnull().any():
+            raise ValueError(
+                f"The following column must not contain nan values: {col_name}"
+            )
+        # Make sure we have a numeric type for duration
+        if not is_numeric_dtype(events[col_name]):
+            try:
+                events = events.astype({col_name: float})
+            except ValueError as e:
+                raise ValueError(
+                    f"Could not cast {col_name} to float in events data."
+                ) from e
+    return events
 
-    # Make a copy of the dataframe
-    events_copy = events.copy()
 
-    # Handle missing trial types
-    if "trial_type" not in events_copy.columns:
+def _handle_missing_trial_types(events):
+    """Create 'dummy' events trial_type if the column is not present."""
+    if "trial_type" not in events.columns:
         warnings.warn(
             "'trial_type' column not found in the given events data."
         )
-        events_copy["trial_type"] = "dummy"
+        events["trial_type"] = "dummy"
+    return events
 
-    # Handle modulation
-    if "modulation" in events_copy.columns:
+
+def _check_null_duration(events):
+    """Warn if there are events with null duration."""
+    conditions_with_null_duration = events["trial_type"][
+        events["duration"] == 0
+    ].unique()
+    if len(conditions_with_null_duration) > 0:
+        warnings.warn(
+            "The following conditions contain events with null duration:\n"
+            f"{', '.join(conditions_with_null_duration)}."
+        )
+
+
+def _handle_modulation(events):
+    """Set the modulation column to 1 if it is not present."""
+    if "modulation" in events.columns:
         print(
             "A 'modulation' column was found in "
             "the given events data and is used."
         )
     else:
-        events_copy["modulation"] = 1
+        events["modulation"] = 1
+    return events
 
-    # Warn for each unexpected column that will
-    # not be used afterwards
-    unexpected_columns = set(events_copy.columns).difference(VALID_FIELDS)
-    for unexpected_column in unexpected_columns:
+
+VALID_FIELDS = {"onset", "duration", "trial_type", "modulation"}
+
+
+def _check_unexpected_columns(events):
+    """Warn for each unexpected column that will not be used afterwards."""
+    unexpected_columns = list(set(events.columns).difference(VALID_FIELDS))
+    if unexpected_columns:
         warnings.warn(
-            f"Unexpected column '{unexpected_column}' in events data. "
-            "It will be ignored."
+            "The following unexpected columns "
+            "in events data will be ignored: "
+            f"{', '.join(unexpected_columns)}"
         )
 
-    # Make sure we have a numeric type for duration
-    if not is_numeric_dtype(events_copy["duration"]):
-        try:
-            events_copy = events_copy.astype({"duration": float})
-        except ValueError:
-            raise ValueError(
-                "Could not cast duration to float in events data."
-            )
 
-    # Handle duplicate events
-    # Two events are duplicates if they have the same:
-    #   - trial type
-    #   - onset
-    COLUMN_DEFINING_EVENT_IDENTITY = ["trial_type", "onset", "duration"]
+# Two events are duplicates if they have the same:
+#   - trial type
+#   - onset
+#   - duration
+COLUMN_DEFINING_EVENT_IDENTITY = ["trial_type", "onset", "duration"]
 
-    # Duplicate handling strategy
-    # Sum the modulation values of duplicate events
-    STRATEGY = {"modulation": "sum"}
+# Duplicate handling strategy
+# Sum the modulation values of duplicate events
+STRATEGY = {"modulation": "sum"}
 
+
+def handle_modulation_of_duplicate_events(events):
+    """Deal with modulation of duplicate events if they have one.
+
+    Currently the strategy is to sum the modulation values of duplicate events.
+    """
     cleaned_events = (
-        events_copy.groupby(COLUMN_DEFINING_EVENT_IDENTITY, sort=False)
+        events.groupby(COLUMN_DEFINING_EVENT_IDENTITY, sort=False)
         .agg(STRATEGY)
         .reset_index()
     )
 
     # If there are duplicates, give a warning
-    if len(cleaned_events) != len(events_copy):
+    if len(cleaned_events) != len(events):
         warnings.warn(
             "Duplicated events were detected. "
             "Amplitudes of these events will be summed. "
             "You might want to verify your inputs."
         )
 
-    trial_type = cleaned_events["trial_type"].values
-    onset = cleaned_events["onset"].values
-    duration = cleaned_events["duration"].values
-    modulation = cleaned_events["modulation"].values
-    return trial_type, onset, duration, modulation
+    return cleaned_events

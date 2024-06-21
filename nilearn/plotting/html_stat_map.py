@@ -1,4 +1,5 @@
 """Visualizing 3D stat maps in a Brainsprite viewer."""
+
 import copy
 import json
 import os
@@ -15,14 +16,14 @@ from nilearn.plotting.html_document import HTMLDocument
 
 from .._utils import fill_doc
 from .._utils.extmath import fast_abs_percentile
-from .._utils.niimg import _safe_get_data
+from .._utils.niimg import safe_get_data
 from .._utils.niimg_conversions import check_niimg_3d
 from .._utils.param_validation import check_threshold
 from ..datasets import load_mni152_template
 from ..image import get_data, new_img_like, reorder_img, resample_to_img
 from ..plotting import cm
 from ..plotting.find_cuts import find_xyz_cut_coords
-from ..plotting.img_plotting import _load_anat
+from ..plotting.img_plotting import load_anat
 from .js_plotting_utils import colorscale, get_html_template
 
 
@@ -134,11 +135,11 @@ def _save_sprite(
     mask : Numpy array, optional
         Mask to use.
 
-    cmap : String or colormap, optional
-        Colormap to use. Default='Greys'.
+    cmap : String or colormap, default='Greys'
+        Colormap to use.
 
-    format : String, optional
-        Format to use for output image. Default='png'.
+    format : String, default='png'
+        Format to use for output image.
 
     Returns
     -------
@@ -194,7 +195,7 @@ def _mask_stat_map(stat_map_img, threshold=None):
     """
     # Load stat map
     stat_map_img = check_niimg_3d(stat_map_img, dtype="auto")
-    data = _safe_get_data(stat_map_img, ensure_finite=True)
+    data = safe_get_data(stat_map_img, ensure_finite=True)
 
     # threshold the stat_map
     if threshold is not None:
@@ -227,13 +228,13 @@ def _load_bg_img(stat_map_img, bg_img="MNI152", black_bg="auto", dim="auto"):
         else:
             bg_img = check_niimg_3d(bg_img)
         masked_data = np.ma.masked_inside(
-            _safe_get_data(bg_img, ensure_finite=True), -1e-6, 1e-6, copy=False
+            safe_get_data(bg_img, ensure_finite=True), -1e-6, 1e-6, copy=False
         )
         bg_img = new_img_like(bg_img, masked_data)
-        bg_img, black_bg, bg_min, bg_max = _load_anat(
+        bg_img, black_bg, bg_min, bg_max = load_anat(
             bg_img, dim=dim, black_bg=black_bg
         )
-    bg_img = reorder_img(bg_img, resample="nearest")
+    bg_img = reorder_img(bg_img, resample="nearest", copy_header=True)
     return bg_img, bg_min, bg_max, black_bg
 
 
@@ -246,10 +247,17 @@ def _resample_stat_map(
 
     """
     stat_map_img = resample_to_img(
-        stat_map_img, bg_img, interpolation=resampling_interpolation
+        stat_map_img,
+        bg_img,
+        interpolation=resampling_interpolation,
+        copy_header=True,
     )
     mask_img = resample_to_img(
-        mask_img, bg_img, fill_value=1, interpolation="nearest"
+        mask_img,
+        bg_img,
+        fill_value=1,
+        interpolation="nearest",
+        copy_header=True,
     )
 
     return stat_map_img, mask_img
@@ -316,7 +324,7 @@ def _json_view_params(
     return params
 
 
-def _json_view_size(params):
+def _json_view_size(params, width_view=600):
     """Define the size of the viewer.
 
     Returns: width_view, height_view
@@ -332,7 +340,6 @@ def _json_view_size(params):
     slices_height = 1.20 * slices_height
 
     # Get the final size of the viewer
-    width_view = 600
     ratio = slices_height / slices_width
     height_view = np.ceil(ratio * width_view)
 
@@ -380,15 +387,15 @@ def _json_view_data(
 
     # Create a base64 sprite for the background
     bg_sprite = BytesIO()
-    bg_data = _safe_get_data(bg_img, ensure_finite=True).astype(float)
+    bg_data = safe_get_data(bg_img, ensure_finite=True).astype(float)
     bg_mask, bg_cmap = _get_bg_mask_and_cmap(bg_img, black_bg)
     _save_sprite(bg_data, bg_sprite, bg_max, bg_min, bg_mask, bg_cmap, "png")
     json_view["bg_base64"] = _bytesIO_to_base64(bg_sprite)
 
     # Create a base64 sprite for the stat map
     stat_map_sprite = BytesIO()
-    data = _safe_get_data(stat_map_img, ensure_finite=True)
-    mask = _safe_get_data(mask_img, ensure_finite=True)
+    data = safe_get_data(stat_map_img, ensure_finite=True)
+    mask = safe_get_data(mask_img, ensure_finite=True)
     _save_sprite(
         data,
         stat_map_sprite,
@@ -411,14 +418,14 @@ def _json_view_data(
     return json_view
 
 
-def _json_view_to_html(json_view):
+def _json_view_to_html(json_view, width_view=600):
     """Fill a brainsprite html template with relevant parameters and data.
 
     Returns: html_view
 
     """
     # Fix the size of the viewer
-    width, height = _json_view_size(json_view["params"])
+    width, height = _json_view_size(json_view["params"], width_view)
 
     # Populate all missing keys with html-ready data
     json_view["INSERT_PAGE_TITLE_HERE"] = (
@@ -488,8 +495,8 @@ def view_img(
     vmax=None,
     vmin=None,
     resampling_interpolation="continuous",
+    width_view=600,
     opacity=1,
-    **kwargs,
 ):
     """Interactive html viewer of a statistical map, with optional background.
 
@@ -505,39 +512,37 @@ def view_img(
         Default='MNI152'.
 
     cut_coords : None, or a tuple of floats
-        The MNI coordinates of the point where the cut is performed
+        The :term:`MNI` coordinates of the point where the cut is performed
         as a 3-tuple: (x, y, z). If None is given, the cuts are calculated
         automatically.
 
-    colorbar : boolean, optional
-        If True, display a colorbar on top of the plots. Default=True.
+    colorbar : boolean, default=True
+        If True, display a colorbar on top of the plots.
     %(title)s
-    threshold : string, number or None, optional
+    threshold : string, number or None, default=1e-6
         If None is given, the image is not thresholded.
         If a string of the form "90%%" is given, use the 90-th percentile of
         the absolute value in the image.
         If a number is given, it is used to threshold the image:
         values below the threshold (in absolute value) are plotted
         as transparent. If auto is given, the threshold is determined
-        automatically. Default=1e-6.
+        automatically.
 
-    annotate : boolean, optional
+    annotate : boolean, default=True
         If annotate is True, current cuts are added to the viewer.
-        Default=True.
     %(draw_cross)s
-    black_bg : boolean or 'auto', optional
+    black_bg : boolean or 'auto', default='auto'
         If True, the background of the image is set to be black.
         Otherwise, a white background is used.
         If set to auto, an educated guess is made to find if the background
         is white or black.
-        Default='auto'.
     %(cmap)s
         Default=`plt.cm.cold_hot`.
-    symmetric_cmap : bool, optional
+    symmetric_cmap : bool, default=True
         True: make colormap symmetric (ranging from -vmax to vmax).
         False: the colormap will go from the minimum of the volume to vmax.
         Set it to False if you are plotting a positive volume, e.g. an atlas
-        or an anatomical image. Default=True.
+        or an anatomical image.
     %(dim)s
         Default='auto'.
     vmax : float, or None, optional
@@ -551,13 +556,17 @@ def view_img(
         min value for mapping colors.
         If `symmetric_cmap` is `True`, `vmin` is always equal to `-vmax` and
         cannot be chosen.
-        If `symmetric_cmap` is `False`, `vmin` defaults to the min of the
+        If `symmetric_cmap` is `False`, `vmin` is equal to the min of the
         image, or 0 when a threshold is used.
     %(resampling_interpolation)s
         Default='continuous'.
-    opacity : float in [0,1], optional
+
+    width_view : int, optional
+        Default=600.
+        Width of the viewer in pixels.
+
+    opacity : float in [0,1], default=1
         The level of opacity of the overlay (0: transparent, 1: opaque).
-        Default=1.
 
     Returns
     -------
@@ -630,6 +639,6 @@ def view_img(
         value=False,
     )
 
-    html_view = _json_view_to_html(json_view)
+    html_view = _json_view_to_html(json_view, width_view)
 
     return html_view

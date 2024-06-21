@@ -1,4 +1,5 @@
 """Utilities to compute and operate on brain masks."""
+
 # Authors: Gael Varoquaux, Alexandre Abraham, Philippe Gervais, Ana Luisa Pinho
 import numbers
 import warnings
@@ -11,7 +12,7 @@ from . import _utils
 from ._utils import fill_doc
 from ._utils.cache_mixin import cache
 from ._utils.ndimage import get_border_data, largest_connected_component
-from ._utils.niimg import _safe_get_data
+from ._utils.niimg import safe_get_data
 from .datasets import (
     load_mni152_gm_template,
     load_mni152_template,
@@ -19,15 +20,27 @@ from .datasets import (
 )
 from .image import get_data, new_img_like, resampling
 
+__all__ = [
+    "apply_mask",
+    "compute_background_mask",
+    "compute_brain_mask",
+    "compute_epi_mask",
+    "compute_multi_background_mask",
+    "compute_multi_brain_mask",
+    "compute_multi_epi_mask",
+    "intersect_masks",
+    "unmask",
+]
 
-class MaskWarning(UserWarning):
+
+class _MaskWarning(UserWarning):
     """A class to always raise warnings."""
 
 
-warnings.simplefilter("always", MaskWarning)
+warnings.simplefilter("always", _MaskWarning)
 
 
-def _load_mask_img(mask_img, allow_empty=False):
+def load_mask_img(mask_img, allow_empty=False):
     """Check that a mask is valid, ie with two values including 0 and load it.
 
     Parameters
@@ -36,9 +49,8 @@ def _load_mask_img(mask_img, allow_empty=False):
         See :ref:`extracting_data`.
         The mask to check.
 
-    allow_empty : :obj:`bool`, optional
+    allow_empty : :obj:`bool`, default=False
         Allow loading an empty mask (full of 0 values).
-        Default=False.
 
     Returns
     -------
@@ -49,7 +61,7 @@ def _load_mask_img(mask_img, allow_empty=False):
         Affine of the mask.
     """
     mask_img = _utils.check_niimg_3d(mask_img)
-    mask = _safe_get_data(mask_img, ensure_finite=True)
+    mask = safe_get_data(mask_img, ensure_finite=True)
     values = np.unique(mask)
 
     if len(values) == 1:
@@ -76,10 +88,10 @@ def _load_mask_img(mask_img, allow_empty=False):
     return mask, mask_img.affine
 
 
-def _extrapolate_out_mask(data, mask, iterations=1):
+def extrapolate_out_mask(data, mask, iterations=1):
     """Extrapolate values outside of the mask."""
     if iterations > 1:
-        data, mask = _extrapolate_out_mask(
+        data, mask = extrapolate_out_mask(
             data, mask, iterations=iterations - 1
         )
     new_mask = binary_dilation(mask)
@@ -133,11 +145,10 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
         See :ref:`extracting_data`.
         3D individual masks with same shape and affine.
 
-    threshold : :obj:`float`, optional
+    threshold : :obj:`float`, default=0.5
         Gives the level of the intersection, must be within [0, 1].
         threshold=1 corresponds to keeping the intersection of all
         masks, whereas threshold=0 is the union of all masks.
-        Default=0.5.
     %(connected)s
         Default=True.
 
@@ -149,7 +160,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     if len(mask_imgs) == 0:
         raise ValueError("No mask provided for intersection")
     grp_mask = None
-    first_mask, ref_affine = _load_mask_img(mask_imgs[0], allow_empty=True)
+    first_mask, ref_affine = load_mask_img(mask_imgs[0], allow_empty=True)
     ref_shape = first_mask.shape
     if threshold > 1:
         raise ValueError("The threshold should be smaller than 1")
@@ -158,7 +169,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     threshold = min(threshold, 1 - 1.0e-7)
 
     for this_mask in mask_imgs:
-        mask, affine = _load_mask_img(this_mask, allow_empty=True)
+        mask, affine = load_mask_img(this_mask, allow_empty=True)
         if np.any(affine != ref_affine):
             raise ValueError("All masks should have the same affine")
         if np.any(mask.shape != ref_shape):
@@ -198,7 +209,9 @@ def _post_process_mask(
     mask_any = mask.any()
     if not mask_any:
         warnings.warn(
-            f"Computed an empty mask. {warning_msg}", MaskWarning, stacklevel=2
+            f"Computed an empty mask. {warning_msg}",
+            _MaskWarning,
+            stacklevel=2,
         )
     if connected and mask_any:
         mask = largest_connected_component(mask)
@@ -252,16 +265,14 @@ def compute_epi_mask(
         Default=True.
     %(opening)s
         Default=2.
-    ensure_finite : :obj:`bool`
+    ensure_finite : :obj:`bool`, default=True
         If ensure_finite is True, the non-finite values (NaNs and infs)
         found in the images will be replaced by zeros
-        Default=True.
 
-    exclude_zeros : :obj:`bool`, optional
+    exclude_zeros : :obj:`bool`, default=False
         Consider zeros as missing values for the computation of the
         threshold. This option is useful if the images have been
         resliced with a large padding of zeros.
-        Default=False.
     %(target_affine)s
 
         .. note::
@@ -343,10 +354,9 @@ def compute_multi_epi_mask(
     memory=None,
     verbose=0,
 ):
-    """Compute a common mask for several sessions or \
-    subjects of :term:`fMRI` data.
+    """Compute a common mask for several runs or subjects of :term:`fMRI` data.
 
-    Uses the mask-finding algorithms to extract masks for each session
+    Uses the mask-finding algorithms to extract masks for each run
     or subject, and then keep only the main connected component of the
     a given fraction of the intersection of all the masks.
 
@@ -354,17 +364,17 @@ def compute_multi_epi_mask(
     ----------
     epi_imgs : :obj:`list` of Niimg-like objects
         See :ref:`extracting_data`.
-        A list of arrays, each item being a subject or a session.
+        A list of arrays, each item being a subject or a run.
         3D and 4D images are accepted.
 
         .. note::
 
             If 3D images are given, we suggest to use the mean image
-            of each session.
+            of each run.
 
     threshold : :obj:`float`, optional
-        The inter-session threshold: the fraction of the
-        total number of sessions in for which a :term:`voxel` must be
+        The inter-run threshold: the fraction of the
+        total number of runs in for which a :term:`voxel` must be
         in the mask to be kept in the common mask.
         threshold=1 corresponds to keeping the intersection of all
         masks, whereas threshold=0 is the union of all masks.
@@ -376,11 +386,10 @@ def compute_multi_epi_mask(
         Default=True.
     %(opening)s
         Default=2.
-    exclude_zeros : :obj:`bool`, optional
+    exclude_zeros : :obj:`bool`, default=False
         Consider zeros as missing values for the computation of the
         threshold. This option is useful if the images have been
         resliced with a large padding of zeros.
-        Default=False.
     %(target_affine)s
 
         .. note::
@@ -509,20 +518,18 @@ def compute_background_mask(
 def compute_multi_background_mask(
     data_imgs,
     border_size=2,
-    upper_cutoff=0.85,
     connected=True,
     opening=2,
     threshold=0.5,
     target_affine=None,
     target_shape=None,
-    exclude_zeros=False,
     n_jobs=1,
     memory=None,
     verbose=0,
 ):
-    """Compute a common mask for several sessions or subjects of data.
+    """Compute a common mask for several runs or subjects of data.
 
-    Uses the mask-finding algorithms to extract masks for each session
+    Uses the mask-finding algorithms to extract masks for each run
     or subject, and then keep only the main connected component of the
     a given fraction of the intersection of all the masks.
 
@@ -530,16 +537,16 @@ def compute_multi_background_mask(
     ----------
     data_imgs : :obj:`list` of Niimg-like objects
         See :ref:`extracting_data`.
-        A list of arrays, each item being a subject or a session.
+        A list of arrays, each item being a subject or a run.
         3D and 4D images are accepted.
 
         .. note::
             If 3D images are given, we suggest to use the mean image
-            of each session.
+            of each run.
 
     threshold : :obj:`float`, optional
-        The inter-session threshold: the fraction of the
-        total number of session in for which a :term:`voxel` must be
+        The inter-run threshold: the fraction of the
+        total number of run in for which a :term:`voxel` must be
         in the mask to be kept in the common mask.
         threshold=1 corresponds to keeping the intersection of all
         masks, whereas threshold=0 is the union of all masks.
@@ -609,9 +616,8 @@ def compute_brain_mask(
         Images used to compute the mask. 3D and 4D images are accepted.
         Only the shape and affine of ``target_img`` will be used here.
 
-    threshold : :obj:`float`, optional
+    threshold : :obj:`float`, default=0.5
         The value under which the :term:`MNI` template is cut off.
-        Default=0.5
     %(connected)s
         Default=True.
     %(opening)s
@@ -645,7 +651,7 @@ def compute_brain_mask(
         )
 
     resampled_template = cache(resampling.resample_to_img, memory)(
-        template, target_img
+        template, target_img, copy_header=True
     )
 
     mask = (get_data(resampled_template) >= threshold).astype("int8")
@@ -673,7 +679,6 @@ def compute_multi_brain_mask(
     opening=2,
     memory=None,
     verbose=0,
-    n_jobs=1,
     mask_type="whole-brain",
     **kwargs,
 ):
@@ -697,9 +702,8 @@ def compute_multi_brain_mask(
             for only the shape/affine of the image is used for this
             masking strategy.
 
-    threshold : :obj:`float`, optional
+    threshold : :obj:`float`, default=0.5
         The value under which the :term:`MNI` template is cut off.
-        Default=0.5.
     %(connected)s
         Default=True.
     %(opening)s
@@ -707,10 +711,9 @@ def compute_multi_brain_mask(
     %(mask_type)s
     %(memory)s
     %(verbose0)s
-    %(n_jobs)s
 
-        .. note::
-            Argument not used but kept to fit the API
+    .. note::
+        Argument not used but kept to fit the API
 
     **kwargs : optional arguments
         Arguments such as 'target_affine' are used in the call of other
@@ -782,14 +785,13 @@ def apply_mask(
 
             Implies ensure_finite=True.
 
-    ensure_finite : :obj:`bool`
+    ensure_finite : :obj:`bool`, default=True
         If ensure_finite is True, the non-finite values (NaNs and
         infs) found in the images will be replaced by zeros.
-        Default=True.
 
     Returns
     -------
-    session_series : :class:`numpy.ndarray`
+    run_series : :class:`numpy.ndarray`
         2D array of series with shape (image number, :term:`voxel` number)
 
     Notes
@@ -798,9 +800,9 @@ def apply_mask(
     values would spread across the image.
     """
     mask_img = _utils.check_niimg_3d(mask_img)
-    mask, mask_affine = _load_mask_img(mask_img)
+    mask, mask_affine = load_mask_img(mask_img)
     mask_img = new_img_like(mask_img, mask, mask_affine)
-    return _apply_mask_fmri(
+    return apply_mask_fmri(
         imgs,
         mask_img,
         dtype=dtype,
@@ -809,7 +811,7 @@ def apply_mask(
     )
 
 
-def _apply_mask_fmri(
+def apply_mask_fmri(
     imgs, mask_img, dtype="f", smoothing_fwhm=None, ensure_finite=True
 ):
     """Perform similar action to :func:`nilearn.masking.apply_mask`.
@@ -844,7 +846,7 @@ def _apply_mask_fmri(
     # All the following has been optimized for C order.
     # Time that may be lost in conversion here is regained multiple times
     # afterward, especially if smoothing is applied.
-    series = _safe_get_data(imgs_img)
+    series = safe_get_data(imgs_img)
 
     if dtype == "f":
         dtype = series.dtype if series.dtype.kind == "f" else np.float32
@@ -853,9 +855,9 @@ def _apply_mask_fmri(
     del imgs_img  # frees a lot of memory
 
     # Delayed import to avoid circular imports
-    from .image.image import _smooth_array
+    from .image.image import smooth_array
 
-    _smooth_array(
+    smooth_array(
         series,
         affine,
         fwhm=smoothing_fwhm,
@@ -960,7 +962,7 @@ def unmask(X, mask_img, order="F"):
     X = np.asanyarray(X)
 
     mask_img = _utils.check_niimg_3d(mask_img)
-    mask, affine = _load_mask_img(mask_img)
+    mask, affine = load_mask_img(mask_img)
 
     if np.ndim(X) == 2:
         unmasked = _unmask_4d(X, mask, order=order)
@@ -974,7 +976,7 @@ def unmask(X, mask_img, order="F"):
     return new_img_like(mask_img, unmasked, affine)
 
 
-def _unmask_from_to_3d_array(w, mask):
+def unmask_from_to_3d_array(w, mask):
     """Unmask an image into whole brain, \
     with off-mask :term:`voxels<voxel>` set to 0.
 

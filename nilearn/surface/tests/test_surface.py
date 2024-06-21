@@ -26,16 +26,19 @@ from nilearn.surface.surface import (
     _gifti_img_to_mesh,
     _load_surf_files_gifti_gzip,
 )
-from nilearn.surface.testing_utils import flat_mesh, generate_surf, z_const_img
+from nilearn.surface.tests._testing import (
+    flat_mesh,
+    generate_surf,
+    z_const_img,
+)
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
 
 
 class MeshLikeObject:
-    """Class with attributes coordinates and
-    faces to be used for testing purposes.
-    """
+    """Class with attributes coordinates \
+       and faces to be used for testing purposes."""
 
     def __init__(self, coordinates, faces):
         self._coordinates = coordinates
@@ -51,9 +54,7 @@ class MeshLikeObject:
 
 
 class SurfaceLikeObject:
-    """Class with attributes mesh and
-    data to be used for testing purposes.
-    """
+    """Class with attributes mesh and data to be used for testing purposes."""
 
     def __init__(self, mesh, data):
         self._mesh = mesh
@@ -70,6 +71,19 @@ class SurfaceLikeObject:
     @property
     def data(self):
         return self._data
+
+
+def test_load_surf_data_numpy_gt_1pt23():
+    """Test loading fsaverage surface.
+
+    Threw an error with numpy >=1.24.x
+    but only a deprecaton warning with numpy <1.24.x.
+
+    Regression test for
+    https://github.com/nilearn/nilearn/issues/3638
+    """
+    fsaverage = datasets.fetch_surf_fsaverage()
+    surface.load_surf_data(fsaverage['pial_left'])
 
 
 def test_load_surf_data_array():
@@ -357,46 +371,41 @@ def test_load_surf_mesh_file_gii(tmp_path):
     os.remove(filename_gii_mesh_no_face)
 
 
-def test_load_surf_mesh_file_freesurfer(tmp_path):
+@pytest.mark.parametrize("suffix", ['.pial',
+                                    '.inflated',
+                                    '.white',
+                                    '.orig',
+                                    'sphere'])
+def test_load_surf_mesh_file_freesurfer(suffix, tmp_path):
     mesh = generate_surf()
-    for suff in ['.pial', '.inflated', '.white', '.orig', 'sphere']:
-        fd, filename_fs_mesh = tempfile.mkstemp(suffix=suff,
-                                                dir=str(tmp_path))
-        os.close(fd)
-        nb.freesurfer.write_geometry(filename_fs_mesh, mesh[0], mesh[1])
-        assert len(load_surf_mesh(filename_fs_mesh)) == 2
-        assert_array_almost_equal(load_surf_mesh(filename_fs_mesh)[0],
-                                  mesh[0])
-        assert_array_almost_equal(load_surf_mesh(filename_fs_mesh)[1],
-                                  mesh[1])
-        os.remove(filename_fs_mesh)
+
+    _, filename_fs_mesh = tempfile.mkstemp(suffix=suffix,
+                                           dir=str(tmp_path))
+    nb.freesurfer.write_geometry(filename_fs_mesh, mesh[0], mesh[1])
+
+    assert len(load_surf_mesh(filename_fs_mesh)) == 2
+    assert_array_almost_equal(load_surf_mesh(filename_fs_mesh)[0], mesh[0])
+    assert_array_almost_equal(load_surf_mesh(filename_fs_mesh)[1], mesh[1])
 
 
-def test_load_surf_mesh_file_error(tmp_path):
+@pytest.mark.parametrize("suffix", ['.vtk', '.obj', '.mnc', '.txt'])
+def test_load_surf_mesh_file_error(suffix, tmp_path):
     # test if files with unexpected suffixes raise errors
     mesh = generate_surf()
-    wrong_suff = ['.vtk', '.obj', '.mnc', '.txt']
-    for suff in wrong_suff:
-        fd, filename_wrong = tempfile.mkstemp(suffix=suff,
-                                              dir=str(tmp_path))
-        os.close(fd)
-        nb.freesurfer.write_geometry(filename_wrong, mesh[0], mesh[1])
-        with pytest.raises(ValueError,
-                           match='input type is not recognized'
-                           ):
-            load_surf_mesh(filename_wrong)
-        os.remove(filename_wrong)
+    _, filename_wrong = tempfile.mkstemp(suffix=suffix, dir=str(tmp_path))
+    nb.freesurfer.write_geometry(filename_wrong, mesh[0], mesh[1])
+
+    with pytest.raises(ValueError, match='input type is not recognized'):
+        load_surf_mesh(filename_wrong)
 
 
 def test_load_surf_mesh_file_glob(tmp_path):
     mesh = generate_surf()
-    fd1, fname1 = tempfile.mkstemp(suffix='.pial',
-                                   dir=str(tmp_path))
-    os.close(fd1)
+    _, fname1 = tempfile.mkstemp(suffix='.pial', dir=str(tmp_path))
+
     nb.freesurfer.write_geometry(fname1, mesh[0], mesh[1])
-    fd2, fname2 = tempfile.mkstemp(suffix='.pial',
-                                   dir=str(tmp_path))
-    os.close(fd2)
+    _, fname2 = tempfile.mkstemp(suffix='.pial', dir=str(tmp_path))
+
     nb.freesurfer.write_geometry(fname2, mesh[0], mesh[1])
 
     with pytest.raises(ValueError, match='More than one file matching path'):
@@ -408,8 +417,6 @@ def test_load_surf_mesh_file_glob(tmp_path):
     assert len(load_surf_mesh(fname1)) == 2
     assert_array_almost_equal(load_surf_mesh(fname1)[0], mesh[0])
     assert_array_almost_equal(load_surf_mesh(fname1)[1], mesh[1])
-    os.remove(fname1)
-    os.remove(fname2)
 
 
 def test_load_surf_data_file_glob(tmp_path):
@@ -550,11 +557,11 @@ def test_sample_locations():
 
 @pytest.mark.parametrize("depth", [(0.,), (-1.,), (1.,), (-1., 0., .5)])
 @pytest.mark.parametrize("n_points", [None, 10])
-def test_sample_locations_depth(depth, n_points):
+def test_sample_locations_depth(depth, n_points, affine_eye):
     mesh = flat_mesh(5, 7)
     radius = 8.
     locations = surface._sample_locations(
-        mesh, np.eye(4), radius, n_points=n_points, depth=depth)
+        mesh, affine_eye, radius, n_points=n_points, depth=depth)
     offsets = np.asarray([[0., 0., - z * radius] for z in depth])
     expected = np.asarray([vertex + offsets for vertex in mesh[0]])
     assert np.allclose(locations, expected)
@@ -568,12 +575,12 @@ def test_sample_locations_depth(depth, n_points):
      ([-1.], 8),
      ([1.], 8),
      ([-1., 0., .5], 8)])
-def test_sample_locations_between_surfaces(depth, n_points):
+def test_sample_locations_between_surfaces(depth, n_points, affine_eye):
     inner = flat_mesh(5, 7)
     outer = inner[0] + [0., 0., 1.], inner[1]
 
     locations = surface._sample_locations_between_surfaces(
-        outer, inner, np.eye(4), n_points=n_points, depth=depth)
+        outer, inner, affine_eye, n_points=n_points, depth=depth)
 
     if depth is None:
         expected = np.asarray(
@@ -632,11 +639,11 @@ def test_masked_indices():
     assert (1 - masked).sum() == 48
 
 
-def test_projection_matrix():
+def test_projection_matrix(affine_eye):
     mesh = flat_mesh(5, 7, 4)
     img = z_const_img(5, 7, 13)
     proj = surface._projection_matrix(
-        mesh, np.eye(4), img.shape, radius=2., n_points=10)
+        mesh, affine_eye, img.shape, radius=2., n_points=10)
     # proj matrix has shape (n_vertices, img_size)
     assert proj.shape == (5 * 7, 5 * 7 * 13)
     # proj.dot(img) should give the values of img at the vertices' locations
@@ -644,12 +651,12 @@ def test_projection_matrix():
     assert_array_almost_equal(values, img[:, :, 0])
     mesh = flat_mesh(5, 7)
     proj = surface._projection_matrix(
-        mesh, np.eye(4), (5, 7, 1), radius=.1, n_points=10)
+        mesh, affine_eye, (5, 7, 1), radius=.1, n_points=10)
     assert_array_almost_equal(proj.toarray(), np.eye(proj.shape[0]))
     mask = np.ones(img.shape, dtype=int)
     mask[0] = 0
     proj = surface._projection_matrix(
-        mesh, np.eye(4), img.shape, radius=2., n_points=10, mask=mask)
+        mesh, affine_eye, img.shape, radius=2., n_points=10, mask=mask)
     proj = proj.toarray()
     # first row of the mesh is masked
     assert_array_almost_equal(proj.sum(axis=1)[:7], np.zeros(7))
@@ -657,30 +664,30 @@ def test_projection_matrix():
     # mask and img should have the same shape
     with pytest.raises(ValueError):
         surface._projection_matrix(
-            mesh, np.eye(4), img.shape, mask=np.ones((3, 3, 2))
+            mesh, affine_eye, img.shape, mask=np.ones((3, 3, 2))
         )
 
 
-def test_sampling_affine():
+def test_sampling_affine(affine_eye):
     # check sampled (projected) values on a toy image
     img = np.ones((4, 4, 4))
     img[1, :, :] = 2
     nodes = [[1, 1, 2], [10, 10, 20], [30, 30, 30]]
     mesh = [np.asarray(nodes), None]
-    affine = 10 * np.eye(4)
+    affine = 10 * affine_eye
     affine[-1, -1] = 1
     texture = surface._nearest_voxel_sampling(
         [img], mesh, affine=affine, radius=1, kind='ball')
-    assert_array_equal(texture[0], [1., 2., 1.])
+    assert_array_almost_equal(texture[0], [1.0, 2.0, 1.0], decimal=15)
     texture = surface._interpolation_sampling(
         [img], mesh, affine=affine, radius=0, kind='ball')
-    assert_array_almost_equal(texture[0], [1.1, 2., 1.])
+    assert_array_almost_equal(texture[0], [1.1, 2.0, 1.0], decimal=15)
 
 
 @pytest.mark.parametrize("kind", ["auto", "line", "ball"])
 @pytest.mark.parametrize("use_inner_mesh", [True, False])
 @pytest.mark.parametrize("projection", ["linear", "nearest"])
-def test_sampling(kind, use_inner_mesh, projection):
+def test_sampling(kind, use_inner_mesh, projection, affine_eye):
     mesh = flat_mesh(5, 7, 4)
     img = z_const_img(5, 7, 13)
     mask = np.ones(img.shape, dtype=int)
@@ -688,10 +695,10 @@ def test_sampling(kind, use_inner_mesh, projection):
     projector = {"nearest": surface._nearest_voxel_sampling,
                  "linear": surface._interpolation_sampling}[projection]
     inner_mesh = mesh if use_inner_mesh else None
-    projection = projector([img], mesh, np.eye(4),
+    projection = projector([img], mesh, affine_eye,
                            kind=kind, radius=0., inner_mesh=inner_mesh)
     assert_array_almost_equal(projection.ravel(), img[:, :, 0].ravel())
-    projection = projector([img], mesh, np.eye(4),
+    projection = projector([img], mesh, affine_eye,
                            kind=kind, radius=0., mask=mask,
                            inner_mesh=inner_mesh)
     assert_array_almost_equal(projection.ravel()[7:],
@@ -700,14 +707,14 @@ def test_sampling(kind, use_inner_mesh, projection):
 
 
 @pytest.mark.parametrize("projection", ["linear", "nearest"])
-def test_sampling_between_surfaces(projection):
+def test_sampling_between_surfaces(projection, affine_eye):
     projector = {"nearest": surface._nearest_voxel_sampling,
                  "linear": surface._interpolation_sampling}[projection]
     mesh = flat_mesh(13, 7, 3.)
     inner_mesh = flat_mesh(13, 7, 1)
     img = z_const_img(5, 7, 13).T
     projection = projector(
-        [img], mesh, np.eye(4),
+        [img], mesh, affine_eye,
         kind="auto", n_points=100, inner_mesh=inner_mesh)
     assert_array_almost_equal(
         projection.ravel(), img[:, :, 1:4].mean(axis=-1).ravel())
@@ -727,18 +734,18 @@ def test_choose_kind():
 
 
 def test_check_mesh():
-    mesh = surface._check_mesh('fsaverage5')
-    assert mesh is surface._check_mesh(mesh)
+    mesh = surface.check_mesh('fsaverage5')
+    assert mesh is surface.check_mesh(mesh)
     with pytest.raises(ValueError):
-        surface._check_mesh('fsaverage2')
+        surface.check_mesh('fsaverage2')
     mesh.pop('pial_left')
     with pytest.raises(ValueError):
-        surface._check_mesh(mesh)
+        surface.check_mesh(mesh)
     with pytest.raises(TypeError):
-        surface._check_mesh(surface.load_surf_mesh(mesh['pial_right']))
+        surface.check_mesh(surface.load_surf_mesh(mesh['pial_right']))
 
 
-def test_check_mesh_and_data():
+def test_check_mesh_and_data(rng):
     coords, faces = generate_surf()
     mesh = Mesh(coords, faces)
     data = mesh[0][:, 0]
@@ -748,8 +755,7 @@ def test_check_mesh_and_data():
     assert (d == data).all()
     # Generate faces such that max index is larger than
     # the length of coordinates array.
-    rng = np.random.RandomState(42)
-    wrong_faces = rng.randint(coords.shape[0] + 1, size=(30, 3))
+    wrong_faces = rng.integers(coords.shape[0] + 1, size=(30, 3))
     wrong_mesh = Mesh(coords, wrong_faces)
     # Check that check_mesh_and_data raises an error
     # with the resulting wrong mesh
@@ -764,7 +770,7 @@ def test_check_mesh_and_data():
         surface.check_mesh_and_data(mesh, data)
 
 
-def test_check_surface():
+def test_check_surface(rng):
     coords, faces = generate_surf()
     mesh = Mesh(coords, faces)
     data = mesh[0][:, 0]
@@ -778,8 +784,7 @@ def test_check_surface():
     assert_array_equal(s.mesh.faces, mesh.faces)
     # Generate faces such that max index is larger than
     # the length of coordinates array.
-    rng = np.random.RandomState(42)
-    wrong_faces = rng.randint(coords.shape[0] + 1, size=(30, 3))
+    wrong_faces = rng.integers(coords.shape[0] + 1, size=(30, 3))
     wrong_mesh = Mesh(coords, wrong_faces)
     wrong_surface = Surface(wrong_mesh, data)
     # Check that check_mesh_and_data raises an error

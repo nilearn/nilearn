@@ -32,7 +32,8 @@ annotate : :obj:`bool`, default=True
 docdict[
     "avg_method"
 ] = """
-avg_method : {"mean", "median", "min", "max", custom function}, default="mean"
+avg_method : {"mean", "median", "min", "max", custom function, None}, \
+             default=None
     How to average vertex values to derive the face value:
 
         - `mean`: results in smooth boundaries
@@ -133,58 +134,60 @@ dc = "Dummy classifier with stratified strategy"
 
 docdict[
     "classifier_options"
-] = f"""
+] = f""" # noqa:E501
 
         - `svc`: :class:`{svc} <sklearn.svm.LinearSVC>` with L2 penalty.
-            .. code-block:: python
 
-                svc = LinearSVC(penalty="l2",
-                                max_iter=1e4)
+        .. code-block:: python
+
+            svc = LinearSVC(penalty="l2", max_iter=1e4)
 
         - `svc_l2`: :class:`{svc} <sklearn.svm.LinearSVC>` with L2 penalty.
-            .. note::
-                Same as option `svc`.
+
+        .. note::
+            Same as option `svc`.
 
         - `svc_l1`: :class:`{svc} <sklearn.svm.LinearSVC>` with L1 penalty.
-            .. code-block:: python
 
-                svc_l1 = LinearSVC(penalty="l1",
-                                   dual=False,
-                                   max_iter=1e4)
+        .. code-block:: python
+
+            svc_l1 = LinearSVC(penalty="l1", dual=False, max_iter=1e4)
 
         - `logistic`: \
             :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
             with L2 penalty.
-            .. code-block:: python
 
-                logistic = LogisticRegression(penalty="l2",
-                                              solver="liblinear")
+        .. code-block:: python
+
+            logistic = LogisticRegressionCV(penalty="l2", solver="liblinear")
 
         - `logistic_l1`: \
             :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
             with L1 penalty.
-            .. code-block:: python
 
-                logistic_l1 = LogisticRegression(penalty="l1",
-                                                 solver="liblinear")
+        .. code-block:: python
+
+            logistic_l1 = LogisticRegressionCV(penalty="l1", solver="liblinear")
 
         - `logistic_l2`: \
             :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
             with L2 penalty
-            .. note::
-                Same as option `logistic`.
+
+        .. note::
+            Same as option `logistic`.
 
         - `ridge_classifier`: \
             :class:`{rc} <sklearn.linear_model.RidgeClassifierCV>`.
-            .. code-block:: python
 
-                ridge_classifier = RidgeClassifierCV()
+        .. code-block:: python
+
+            ridge_classifier = RidgeClassifierCV()
 
         - `dummy_classifier`: :class:`{dc} <sklearn.dummy.DummyClassifier>`.
-            .. code-block:: python
 
-                dummy = DummyClassifier(strategy="stratified",
-                                        random_state=0)
+        .. code-block:: python
+
+            dummy = DummyClassifier(strategy="stratified", random_state=0)
 
 """
 
@@ -268,7 +271,9 @@ docdict[
 ] = """
 data_dir : :obj:`pathlib.Path` or :obj:`str`, optional
     Path where data should be downloaded.
-    By default, files are downloaded in home directory.
+    By default, files are downloaded in a ``nilearn_data`` folder
+    in the home directory of the user.
+    See also ``nilearn.datasets.utils.get_data_dirs``.
 """
 
 # detrend
@@ -529,9 +534,9 @@ mask_strategy : {"background", "epi", "whole-brain-template",\
           part of your data by resampling the MNI152 brain mask for
           your data's field of view.
 
-            .. note::
-                This option is equivalent to the previous 'template' option
-                which is now deprecated.
+        .. note::
+            This option is equivalent to the previous 'template' option
+            which is now deprecated.
 
         - `"gm-template"`: This will extract the gray matter part of your
           data by resampling the corresponding MNI152 template for your
@@ -573,7 +578,7 @@ keep_masked_labels : :obj:`bool`, default=True
     zeros only. If False, the empty labels will be removed from the
     output, ensuring no empty time series are present.
 
-    .. deprecated:: 0.10.2.dev
+    .. deprecated:: 0.10.2
 
         The 'True' option for ``keep_masked_labels`` is deprecated.
         The default value will change to 'False' in 0.13,
@@ -592,7 +597,7 @@ keep_masked_maps : :obj:`bool`, optional
     invalid maps will be removed from the trimmed atlas, resulting in
     no empty time series in the output.
 
-    .. deprecated:: 0.10.2.dev
+    .. deprecated:: 0.10.2
 
         The 'True' option for ``keep_masked_maps`` is deprecated.
         The default value will change to 'False' in 0.13,
@@ -617,7 +622,7 @@ kwargs : dict
 docdict[
     "memory"
 ] = """
-memory : instance of :class:`joblib.Memory`, :obj:`str`, or \
+memory : None, instance of :class:`joblib.Memory`, :obj:`str`, or \
 :class:`pathlib.Path`
     Used to cache the masking process.
     By default, no caching is done.
@@ -709,37 +714,42 @@ docdict[
 
         - `ridge`: \
             :class:`{Ridge regression} <sklearn.linear_model.RidgeCV>`.
-            .. code-block:: python
 
-                ridge = RidgeCV()
+        .. code-block:: python
+
+            ridge = RidgeCV()
 
         - `ridge_regressor`: \
             :class:`{Ridge regression} <sklearn.linear_model.RidgeCV>`.
-            .. note::
-                Same option as `ridge`.
+
+        .. note::
+            Same option as `ridge`.
 
         - `svr`: :class:`{Support vector regression} <sklearn.svm.SVR>`.
-            .. code-block:: python
 
-                svr = SVR(kernel="linear",
-                          max_iter=1e4)
+        .. code-block:: python
+
+            svr = SVR(kernel="linear", max_iter=1e4)
 
         - `lasso`: \
             :class:`{Lasso regression} <sklearn.linear_model.LassoCV>`.
-            .. code-block:: python
 
-                lasso = LassoCV()
+        .. code-block:: python
+
+            lasso = LassoCV()
 
         - `lasso_regressor`: \
             :class:`{Lasso regression} <sklearn.linear_model.LassoCV>`.
-            .. note::
-                Same option as `lasso`.
+
+        .. note::
+            Same option as `lasso`.
 
         - `dummy_regressor`: \
             :class:`{Dummy regressor} <sklearn.dummy.DummyRegressor>`.
-            .. code-block:: python
 
-                dummy = DummyRegressor(strategy='mean')
+        .. code-block:: python
+
+            dummy = DummyRegressor(strategy="mean")
 
 """
 
@@ -800,8 +810,10 @@ docdict[
     "second_level_input"
 ] = """
 second_level_input : :obj:`list` of \
-:class:`~nilearn.glm.first_level.FirstLevelModel` objects \
-or :class:`pandas.DataFrame` or :obj:`list` of Niimg-like objects.
+    :class:`~nilearn.glm.first_level.FirstLevelModel` objects or \
+    :class:`pandas.DataFrame` or \
+    :obj:`list` of Niimg-like objects or \
+    :obj:`pandas.Series` of Niimg-like objects.
 
     - Giving :class:`~nilearn.glm.first_level.FirstLevelModel` objects
       will allow to easily compute the second level contrast of arbitrary first
@@ -878,16 +890,13 @@ standardize_confounds : :obj:`bool`, default=True
 docdict[
     "symmetric_cbar"
 ] = """
-symmetric_cbar : :obj:`bool`, or "auto", optional
-    Specifies whether the colorbar should range from `-vmax` to `vmax`
-    or from `vmin` to `vmax`.
-    Setting to `"auto"` will select the latter
-    if the range of the whole image is either positive or negative.
-
-    .. note::
-
-        The colormap will always range from `-vmax` to `vmax`.
-
+symmetric_cbar : :obj:`bool`, or "auto", default="auto"
+    Specifies whether the colorbar and colormap should range from `-vmax` to
+    `vmax` (or from `vmin` to `-vmin` if `-vmin` is greater than `vmax`) or
+    from `vmin` to `vmax`.
+    Setting to `"auto"` (the default) will select the former if either
+    `vmin` or `vmax` is `None` and the image has both positive and negative
+    values.
 """
 
 # t_r
@@ -895,7 +904,7 @@ docdict[
     "t_r"
 ] = """
 t_r : :obj:`float` or None, default=None
-    Repetition time, in seconds (sampling period).
+    :term:`Repetition time<TR>`, in seconds (sampling period).
     Set to `None` if not provided.
 """
 
@@ -982,12 +991,12 @@ docdict["verbose0"] = verbose.format(0)
 docdict[
     "view"
 ] = """
-view : :obj:`str` or a pair of :obj:`float`, Default="lateral"
-    If a string, must be in {"lateral", "medial", "dorsal", "ventral",\
-"anterior", "posterior"}.
-    If a sequence, must be a pair (elev, azim) of float
+view : :obj:`str`, or a pair of :obj:`float` or :obj:`int`, default="lateral"
+    If a string, must be in \
+    {"lateral", "medial", "dorsal", "ventral", "anterior", "posterior"}.
+    If a sequence, must be a pair (elev, azim) of :obj:`float` or :obj:`int`
     angles in degrees that will manually set a custom view.
-    E.g., view=[270.0, 90.0] or view=(0.0, -180.0).
+    E.g., view=[270.0, 90] or view=(0, -180.0).
     View of the surface that is rendered.
 """
 

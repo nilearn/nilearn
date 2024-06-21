@@ -41,15 +41,13 @@ def _edge_detect(image, high_threshold=0.75, low_threshold=0.4):
     image : 2D array
         The image on which edge detection is applied.
 
-    high_threshold : float, optional
+    high_threshold : float, default=0.75
         The quantile defining the upper threshold of the hysteries.
         thresholding decrease this to keep more edges.
-        Default=0.75.
 
-    low_threshold : float, optional
+    low_threshold : float, default=0.4
         The quantile defining the lower threshold of the hysteries
         thresholding decrease this to extract wider edges.
-        Default=0.4.
 
     Returns
     -------
@@ -121,7 +119,7 @@ def _edge_detect(image, high_threshold=0.75, low_threshold=0.4):
     return grad_mag, edge_mask
 
 
-def _edge_map(image):
+def edge_map(image):
     """Return a maps of edges suitable for visualization.
 
     Parameters

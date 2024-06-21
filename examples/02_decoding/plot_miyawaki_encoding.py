@@ -1,24 +1,17 @@
 """
-============================================================
 Encoding models for visual stimuli from Miyawaki et al. 2008
 ============================================================
 
-This example partly reproduces the encoding model presented in
-    `Visual image reconstruction from human brain activity
-    using a combination of multiscale local image decoders
-    <http://www.cell.com/neuron/abstract/S0896-6273%2808%2900958-6>`_,
-    Miyawaki, Y., Uchida, H., Yamashita, O., Sato, M. A.,
-    Morito, Y., Tanabe, H. C., ... & Kamitani, Y. (2008).
-    Neuron, 60(5), 915-929.
+This example partly reproduces the encoding model presented
+in :footcite:t:`Miyawaki2008`.
 
 Encoding models try to predict neuronal activity using information from
 presented stimuli, like an image or sound. Where decoding goes from
 brain data to real-world stimulus, encoding goes the other direction.
 
-We demonstrate how to build such an **encoding model** in nilearn, predicting
-**fMRI data** from **visual stimuli**, using the dataset from
-`Miyawaki et al., 2008
-<http://www.cell.com/neuron/abstract/S0896-6273%2808%2900958-6>`_.
+We demonstrate how to build such an **encoding model** in nilearn,
+predicting **fMRI data** from **visual stimuli**,
+using the dataset from :footcite:t:`Miyawaki2008`.
 
 Participants were shown images, which consisted of random 10x10 binary
 (either black or white) pixels, and the corresponding :term:`fMRI` activity
@@ -34,7 +27,7 @@ approach for the same dataset.
 
 """
 
-##############################################################################
+# %%
 # Loading the data
 # ----------------
 # Now we can load the data set:
@@ -43,7 +36,7 @@ from nilearn.datasets import fetch_miyawaki2008
 
 dataset = fetch_miyawaki2008()
 
-##############################################################################
+# %%
 # We only use the training data of this study,
 # where random binary images were shown.
 
@@ -51,7 +44,7 @@ dataset = fetch_miyawaki2008()
 fmri_random_runs_filenames = dataset.func[12:]
 stimuli_random_runs_filenames = dataset.label[12:]
 
-##############################################################################
+# %%
 # We can use :func:`nilearn.maskers.MultiNiftiMasker` to load the fMRI
 # data, clean and mask it.
 
@@ -60,7 +53,10 @@ import numpy as np
 from nilearn.maskers import MultiNiftiMasker
 
 masker = MultiNiftiMasker(
-    mask_img=dataset.mask, detrend=True, standardize="zscore_sample"
+    mask_img=dataset.mask,
+    detrend=True,
+    standardize="zscore_sample",
+    n_jobs=2,
 )
 masker.fit()
 fmri_data = masker.transform(fmri_random_runs_filenames)
@@ -79,7 +75,7 @@ for stimulus_run in stimuli_random_runs_filenames:
         )
     )
 
-##############################################################################
+# %%
 # Let's take a look at some of these binary images:
 
 import pylab as plt
@@ -95,8 +91,8 @@ plt.axis("off")
 plt.title(f"Run {3}, Stimulus {102}")
 plt.subplots_adjust(wspace=0.5)
 
-##############################################################################
-# We now stack the fmri and stimulus data and remove an offset in the
+# %%
+# We now stack the :term:`fMRI` and stimulus data and remove an offset in the
 # beginning/end.
 
 fmri_data = np.vstack([fmri_run[2:] for fmri_run in fmri_data])
@@ -104,12 +100,12 @@ stimuli = np.vstack([stimuli_run[:-2] for stimuli_run in stimuli]).astype(
     float
 )
 
-##############################################################################
+# %%
 # fmri_data is a matrix of *samples* x *voxels*
 
 print(fmri_data.shape)
 
-##############################################################################
+# %%
 # We flatten the last two dimensions of stimuli
 # so it is a matrix of *samples* x *pixels*.
 
@@ -118,16 +114,16 @@ stimuli = np.reshape(stimuli, (-1, stimulus_shape[0] * stimulus_shape[1]))
 
 print(stimuli.shape)
 
-##############################################################################
+# %%
 # Building the encoding models
 # ----------------------------
 # We can now proceed to build a simple **voxel-wise encoding model** using
-# `Ridge regression <http://en.wikipedia.org/wiki/Tikhonov_regularization>`_.
+# `Ridge regression <https://en.wikipedia.org/wiki/Tikhonov_regularization>`_.
 # For each voxel we fit an independent regression model,
 # using the pixel-values of the visual stimuli to predict the neuronal
 # activity in this voxel.
 
-##############################################################################
+# %%
 # Using 10-fold cross-validation, we partition the data into 10 'folds'.
 # We hold out each fold of the data for testing, then fit a ridge regression
 # to the remaining 9/10 of the data, using stimuli as predictors
@@ -151,7 +147,7 @@ for train, test in cv.split(X=stimuli):
         r2_score(fmri_data[test], predictions, multioutput="raw_values")
     )
 
-##############################################################################
+# %%
 # Mapping the encoding scores on the brain
 # ----------------------------------------
 # To plot the scores onto the brain, we create a Nifti1Image containing
@@ -166,11 +162,11 @@ cut_score[cut_score < 0] = 0
 score_map_img = masker.inverse_transform(cut_score)
 
 thresholded_score_map_img = threshold_img(
-    score_map_img, threshold=1e-6, copy=False
+    score_map_img, threshold=1e-6, copy=False, copy_header=True
 )
 
 
-##############################################################################
+# %%
 # Plotting the statistical map on a background brain, we mark four voxels
 # which we will inspect more closely later on.
 from nilearn.image import coord_transform
@@ -213,18 +209,18 @@ fig = plt.gcf()
 fig.set_size_inches(12, 12)
 
 
-##############################################################################
+# %%
 # Estimating receptive fields
 # ---------------------------
 # Now we take a closer look at the receptive fields of the four marked voxels.
-# A voxel's `receptive field <http://en.wikipedia.org/wiki/Receptive_field>`_
+# A voxel's `receptive field <https://en.wikipedia.org/wiki/Receptive_field>`_
 # is the region of a stimulus (like an image) where the presence of an object,
 # like a white instead of a black pixel, results in a change in activity
 # in the voxel. In our case the receptive field is just the vector of 100
 # regression  coefficients (one for each pixel) reshaped into the 10x10
 # form of the original images. Some voxels are receptive to only very few
 # pixels, so we use `Lasso regression
-# <http://en.wikipedia.org/wiki/Lasso_(statistics)>`_ to estimate a sparse
+# <https://en.wikipedia.org/wiki/Lasso_(statistics)>`_ to estimate a sparse
 # set of regression coefficients.
 
 from sklearn.linear_model import LassoLarsCV
@@ -306,9 +302,15 @@ ax.add_patch(
 plt.axis("off")
 plt.colorbar(ax_im, ax=ax)
 
-##############################################################################
+# %%
 # The receptive fields of the four voxels are not only close to each other,
 # the relative location of the pixel each voxel is most sensitive to
 # roughly maps to the relative location of the voxels to each other.
 # We can see a relationship between some voxel's receptive field and
 # its location in the brain.
+
+# %%
+# References
+# ----------
+#
+#  .. footbibliography::

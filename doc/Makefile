@@ -1,6 +1,18 @@
 # Makefile for Sphinx documentation
 #
 
+#  script to open an html file a browser
+define BROWSER_PYSCRIPT
+import os, webbrowser, sys
+
+from urllib.request import pathname2url
+
+webbrowser.open("file://" + pathname2url(os.path.abspath(sys.argv[1])))
+endef
+export BROWSER_PYSCRIPT
+
+BROWSER := python -c "$$BROWSER_PYSCRIPT"
+
 # You can set these variables from the command line.
 SPHINXOPTS    = -v
 SPHINXBUILD   = sphinx-build
@@ -20,6 +32,7 @@ help:
 	@echo "Please use \`make <target>' where <target> is one of"
 	@echo "  html      to make standalone HTML files"
 	@echo "  html-noplot to make standalone HTML files, without plotting anything"
+	@echo "  ci-html-noplot to run html-noplot with warnings as errors"
 	@echo "  check     to do a sanity check of the documentation"
 	@echo "  dirhtml   to make HTML files named index.html in directories"
 	@echo "  pickle    to make pickle files"
@@ -39,11 +52,18 @@ clean:
 	-rm -rf modules/generated/*
 	-rm -rf ../examples/**/nilearn_cache
 	-rm -rf ../**/nilearn_cache
+	-rm -rf modules/description/
 
+glm_reports:
+	python visual_testing/reporter_visual_inspection_suite.py
+
+sym_links_datasets:
+	# copy datasets RST from nilearn package to doc folder
+	mkdir -p modules/description
+	cd ../nilearn/datasets/description && cp -l *.rst ../../../doc/modules/description
 
 sym_links:
-	# Make sym-links to share the cache across various example
-	# directories
+	# Make sym-links to share the cache across various example directories
 	# The following find command selects all the depth-one
 	# subdirectories of ../examples/ and creates a sym-link to
 	# ../examples/nilearn_cache/
@@ -55,7 +75,11 @@ force_html: force html
 force:
 	find . -name \*.rst -exec touch {} \;
 
-html:	sym_links
+# view doc
+view: _build/html/index.html
+	$(BROWSER) _build/html/index.html
+
+html:	sym_links sym_links_datasets glm_reports
 	# These two lines make the build a bit more lengthy, and the
 	# the embedding of images more robust
 	rm -rf $(BUILDDIR)/html/_images
@@ -64,7 +88,7 @@ html:	sym_links
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-html-strict:	sym_links
+html-strict:	sym_links sym_links_datasets glm_reports
 	# Build html documentation using a strict mode: Warnings are
 	# considered as errors.
 	make check
@@ -72,13 +96,19 @@ html-strict:	sym_links
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-html-modified-examples-only: 	sym_links
+html-modified-examples-only: 	sym_links sym_links_datasets glm_reports
 	BUILD_DEV_HTML=1 $(SPHINXBUILD) -W --keep-going -D sphinx_gallery_conf.filename_pattern=$(PATTERN) -D sphinx_gallery_conf.run_stale_examples=True -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	touch $(BUILDDIR)/html/.nojekyll
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-html-noplot:
+html-noplot: sym_links_datasets glm_reports
+	BUILD_DEV_HTML=1 $(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	touch $(BUILDDIR)/html/.nojekyll
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+
+ci-html-noplot: sym_links_datasets glm_reports
 	BUILD_DEV_HTML=1 $(SPHINXBUILD) -W --keep-going -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	touch $(BUILDDIR)/html/.nojekyll
 	@echo
@@ -144,27 +174,18 @@ doctest:
 	@echo "Testing of doctests in the sources finished, look at the " \
 	      "results in $(BUILDDIR)/doctest/output.txt."
 
-download-data:
-
-zip: html pdf
+zip: html
 	mkdir -p _build/nilearn ;
 	cp -r _build/html _build/nilearn ;
-	cp -r data _build/nilearn ;
-	cp nilearn.pdf _build/nilearn;
 	zip -r _build/nilearn.zip _build/nilearn
-
-pdf: latex
-	cd _build/latex ; make all-pdf ; pdfnup niearn.pdf
-	cp _build/latex/nilearn.pdf nilearn-simple.pdf
-	cp _build/latex/nilearn-nup.pdf nilearn.pdf
-	#cd _build/latex ; make all-pdf ; pdfnup nilearn.pdf
 
 check:
 	rm -rf _build/doctrees
 	rm -rf $(BUILDDIR)/html/_images
 	BUILD_DEV_HTML=1 $(SPHINXBUILD) -W --keep-going -T -n -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 
-install:
+install: sym_links_datasets glm_reports
+	@echo $(VERSIONTAG)
 	rm -rf _build/doctrees _build/nilearn.github.io
 	# first clone the nilearn.github.io repo because it may ask
 	# for password and we don't want to delay this long build in
@@ -182,4 +203,5 @@ install:
 	git add -A && \
 	git add .nojekyll && \
 	git commit -a -m 'Make install' && \
-	git push
+	git tag $(VERSIONTAG) && \
+	git push --tags

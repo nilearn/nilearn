@@ -1,3 +1,5 @@
+"""Necessary functions for sphinx.ext.linkcode to provide links to github."""
+
 import inspect
 import os
 import subprocess
@@ -40,7 +42,12 @@ def _linkcode_resolve(domain, info, package, url_fmt, revision):
 
     class_name = info["fullname"].split(".")[0]
     module = __import__(info["module"], fromlist=[class_name])
-    obj = attrgetter(info["fullname"])(module)
+    # For typed parameters, this will try to get uninitialized attributes
+    # and fail
+    try:
+        obj = attrgetter(info["fullname"])(module)
+    except AttributeError:
+        return
 
     # Unwrap the object to get the correct source
     # file in case that is wrapped by a decorator

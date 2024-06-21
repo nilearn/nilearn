@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 
+from nilearn.conftest import _rng
 from nilearn.plotting import plot_markers
 
 
@@ -97,9 +98,8 @@ def test_plot_markers_threshold(threshold, coords):
 
 
 def test_plot_markers_tuple_node_coords(coords):
-    """Smoke test for plot_markers with node coordinates passed as a list
-    of tuples.
-    """
+    """Smoke test for plot_markers with node coordinates passed \
+       as a list of tuples."""
     plot_markers(
         [1, 2, 3, 4], [tuple(coord) for coord in coords], display_mode="x"
     )
@@ -118,9 +118,8 @@ def test_plot_markers_saving_to_file(coords, tmp_path):
 
 
 def test_plot_markers_node_kwargs(coords):
-    """Smoke test for plot_markers testing that node_kwargs is working
-    and does not interfere with alpha.
-    """
+    """Smoke test for plot_markers testing that node_kwargs is working \
+       and does not interfere with alpha."""
     node_kwargs = dict(marker="s")
     plot_markers(
         [1, 2, 3, 4],
@@ -137,22 +136,20 @@ def test_plot_markers_node_kwargs(coords):
     [
         [1, 2, 3, 4, 5],
         [1, 2, 3],
-        np.random.RandomState(42).random_sample((4, 4)),
+        _rng().random((4, 4)),
     ],
 )
 def test_plot_markers_dimension_mismatch(matrix, coords):
-    """Tests that an error is raised in plot_markers when the length of
-    node_values mismatches with node_coords.
-    """
+    """Tests that an error is raised in plot_markers \
+       when the length of node_values mismatches with node_coords."""
     with pytest.raises(ValueError, match="Dimension mismatch"):
         plot_markers(matrix, coords, display_mode="x")
 
 
 @pytest.mark.parametrize("vmin,vmax", [(5, None), (None, 0)])
 def test_plot_markers_bound_error(vmin, vmax, coords):
-    """Tests that a ValueError is raised when vmin and vmax
-    have inconsistent values.
-    """
+    """Tests that a ValueError is raised when vmin and vmax \
+       have inconsistent values."""
     with pytest.raises(ValueError):
         plot_markers(
             [1, 2, 2, 4],
@@ -170,9 +167,8 @@ def test_plot_markers_node_values_errors(coords):
 
 
 def test_plot_markers_threshold_errors(coords):
-    """Tests that a ValueError is raised when node_threshold is
-    higher than the max node_value.
-    """
+    """Tests that a ValueError is raised when node_threshold is \
+       higher than the max node_value."""
     with pytest.raises(ValueError, match="Provided 'node_threshold' value"):
         plot_markers([1, 2, 2, 4], coords, node_threshold=5, display_mode="x")
 

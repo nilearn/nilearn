@@ -2,13 +2,7 @@
 Reconstruction of visual stimuli from Miyawaki et al. 2008
 ==========================================================
 
-This example reproduces the experiment presented in
-    `Visual image reconstruction from human brain activity
-    using a combination of multiscale local image decoders
-    <http://www.cell.com/neuron/abstract/S0896-6273%2808%2900958-6>`_,
-    Miyawaki, Y., Uchida, H., Yamashita, O., Sato, M. A.,
-    Morito, Y., Tanabe, H. C., ... & Kamitani, Y. (2008).
-    Neuron, 60(5), 915-929.
+This example reproduces the experiment presented in :footcite:t:`Miyawaki2008`.
 
 It reconstructs 10x10 binary images from functional MRI data. Random images
 are used as training set and structured images are used for reconstruction.
@@ -22,13 +16,16 @@ For an encoding approach for the same dataset, see also
 .. include:: ../../../examples/masker_note.rst
 
 """
+
+# %%
 import sys
 import time
 
-############################################################################
+# %%
 # First we load the Miyawaki dataset
 # ----------------------------------
 from nilearn import datasets
+from nilearn.plotting import show
 
 sys.stderr.write("Fetching dataset...")
 t0 = time.time()
@@ -49,7 +46,7 @@ y_shape = (10, 10)
 
 sys.stderr.write(f" Done ({time.time() - t0:.2f}s).\n")
 
-############################################################################
+# %%
 # Then we prepare and mask the data
 # ---------------------------------
 import numpy as np
@@ -61,7 +58,7 @@ t0 = time.time()
 
 # Load and mask fMRI data
 masker = MultiNiftiMasker(
-    mask_img=miyawaki_dataset.mask, detrend=True, standardize=False
+    mask_img=miyawaki_dataset.mask, detrend=True, standardize=False, n_jobs=2
 )
 masker.fit()
 X_train = masker.transform(X_random_filenames)
@@ -137,7 +134,7 @@ y_test = y_test[y_test[:, 0] != -1]
 
 sys.stderr.write(f" Done ({time.time() - t0:.2f}s).\n")
 
-############################################################################
+# %%
 # We define our prediction function
 # ---------------------------------
 sys.stderr.write("Training classifiers... \r")
@@ -171,7 +168,7 @@ sys.stderr.write(
     f"Done ({(time.time() - t0):.2f}s).\n"
 )
 
-############################################################################
+# %%
 # Here we run the prediction: the decoding itself
 # -----------------------------------------------
 sys.stderr.write("Calculating scores and outputs...")
@@ -252,7 +249,7 @@ y_pred = (
 
 sys.stderr.write(f" Done ({time.time() - t0:.2f}s).\n")
 
-############################################################################
+# %%
 # Let us quantify our prediction error
 # ------------------------------------
 from sklearn.metrics import (
@@ -291,13 +288,17 @@ print(
 )
 
 
-############################################################################
+# %%
 # And finally, we plot six reconstructed images, to compare with
 # ground truth
 
+from pathlib import Path
+
 from matplotlib import pyplot as plt
 
-from nilearn.plotting import show
+output_dir = Path.cwd() / "results" / "plot_miyawaki_reconstruction"
+output_dir.mkdir(exist_ok=True, parents=True)
+print(f"Output will be saved to: {output_dir}")
 
 for i in range(6):
     j = 10 * i
@@ -315,17 +316,23 @@ for i in range(6):
         np.reshape(y_test[j], (10, 10)),
         cmap=plt.cm.gray,
         interpolation="nearest",
-    ),
+    )
     sp2.imshow(
         np.reshape(y_pred[j], (10, 10)),
         cmap=plt.cm.gray,
         interpolation="nearest",
-    ),
+    )
     sp3.imshow(
         np.reshape(y_pred[j] > 0.5, (10, 10)),
         cmap=plt.cm.gray,
         interpolation="nearest",
     )
-    plt.savefig(f"miyawaki2008_reconstruction_{int(i)}")
+    plt.savefig(output_dir / f"miyawaki2008_reconstruction_{int(i)}.png")
 
 show()
+
+# %%
+# References
+# ----------
+#
+#  .. footbibliography::

@@ -1,4 +1,5 @@
 """Tests for the data generation utilities."""
+
 from __future__ import annotations
 
 import json
@@ -7,7 +8,7 @@ import numpy as np
 import pytest
 
 from nilearn._utils.data_gen import (
-    _add_metadata_to_bids_dataset,
+    add_metadata_to_bids_dataset,
     create_fake_bids_dataset,
     generate_fake_fmri,
     generate_labeled_regions,
@@ -19,10 +20,10 @@ from nilearn.image import get_data
 
 def test_add_metadata_to_bids_derivatives_default_path(tmp_path):
     """Check the filename created is the default value \
-    of _add_metadata_to_bids_dataset."""
+    of add_metadata_to_bids_dataset."""
     target_dir = tmp_path / "derivatives" / "sub-01" / "ses-01" / "func"
     target_dir.mkdir(parents=True)
-    json_file = _add_metadata_to_bids_dataset(
+    json_file = add_metadata_to_bids_dataset(
         bids_path=tmp_path, metadata={"foo": "bar"}
     )
     assert json_file.exists()
@@ -40,7 +41,7 @@ def test_add_metadata_to_bids_derivatives_with_json_path(tmp_path):
     target_dir = tmp_path / "derivatives" / "sub-02"
     target_dir.mkdir(parents=True)
     json_file = "derivatives/sub-02/sub-02_task-main_bold.json"
-    json_file = _add_metadata_to_bids_dataset(
+    json_file = add_metadata_to_bids_dataset(
         bids_path=tmp_path, metadata={"foo": "bar"}, json_file=json_file
     )
     assert json_file.exists()
@@ -211,8 +212,8 @@ def test_fake_bids_derivatives_with_session_and_runs(
         )
 
     all_files = list(bids_path.glob("derivatives/sub-*/ses-*/*/*"))
-    # per subject: (1 confound + 3 bold + 2 gifti) per run per session
-    n_derivatives_files_expected = n_sub * (6 * sum(n_runs) * n_ses)
+    # per subject: (2 confound + 3 bold + 2 gifti) per run per session
+    n_derivatives_files_expected = n_sub * (7 * sum(n_runs) * n_ses)
     assert len(all_files) == n_derivatives_files_expected
 
 
@@ -375,10 +376,10 @@ def test_fake_bids_extra_raw_entity(tmp_path):
             )
 
     all_files = list(bids_path.glob("derivatives/sub-*/ses-*/*/*"))
-    # per subject: (1 confound + 3 bold + 2 gifti)
+    # per subject: (2 confound + 3 bold + 2 gifti)
     #              per run per session per entity
     n_derivatives_files_expected = (
-        n_sub * (6 * sum(n_runs) * n_ses) * len(entities["acq"])
+        n_sub * (7 * sum(n_runs) * n_ses) * len(entities["acq"])
     )
     assert len(all_files) == n_derivatives_files_expected
 
@@ -420,7 +421,7 @@ def test_fake_bids_extra_derivative_entity(tmp_path):
     # 1 confound per run per session
     # + (3 bold + 2 gifti) per run per session per entity
     n_derivatives_files_expected = n_sub * (
-        1 * sum(n_runs) * n_ses
+        2 * sum(n_runs) * n_ses
         + 5 * sum(n_runs) * n_ses * len(entities["res"])
     )
     assert len(all_files) == n_derivatives_files_expected
@@ -504,10 +505,8 @@ def test_generate_maps():
 @pytest.mark.parametrize("block_size", [None, 4])
 @pytest.mark.parametrize("block_type", ["classification", "regression"])
 def test_generate_fake_fmri(
-    shape, length, kind, n_block, block_size, block_type
+    shape, length, kind, n_block, block_size, block_type, rng
 ):
-    rand_gen = np.random.RandomState(3)
-
     fake_fmri = generate_fake_fmri(
         shape=shape,
         length=length,
@@ -515,7 +514,7 @@ def test_generate_fake_fmri(
         n_blocks=n_block,
         block_size=block_size,
         block_type=block_type,
-        random_state=rand_gen,
+        random_state=rng,
     )
 
     assert fake_fmri[0].shape[:-1] == shape
@@ -524,11 +523,11 @@ def test_generate_fake_fmri(
         assert fake_fmri[2].size == length
 
 
-def test_generate_fake_fmri_error():
+def test_generate_fake_fmri_error(rng):
     with pytest.raises(ValueError, match="10 is too small"):
         generate_fake_fmri(
             length=10,
             n_blocks=10,
             block_size=None,
-            random_state=np.random.RandomState(3),
+            random_state=rng,
         )

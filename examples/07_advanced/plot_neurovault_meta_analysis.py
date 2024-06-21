@@ -2,8 +2,7 @@
 NeuroVault meta-analysis of stop-go paradigm studies
 ====================================================
 
-This example shows how to download statistical maps from
-NeuroVault
+This example shows how to download statistical maps from :term:`Neurovault`.
 
 See :func:`nilearn.datasets.fetch_neurovault_ids`
 documentation for more details.
@@ -15,13 +14,14 @@ documentation for more details.
 
 """
 
+# %%
 import scipy
 
 from nilearn import plotting
 from nilearn.datasets import fetch_neurovault_ids
 from nilearn.image import get_data, load_img, math_img, new_img_like
 
-######################################################################
+# %%
 # Fetch images for "successful stop minus go"-like protocols.
 # -----------------------------------------------------------
 
@@ -29,7 +29,7 @@ from nilearn.image import get_data, load_img, math_img, new_img_like
 # in order to save time we specify their ids explicitly.
 stop_go_image_ids = (151, 3041, 3042, 2676, 2675, 2818, 2834)
 
-# These ids were determined by querying neurovault like this:
+# These ids were determined by querying Neurovault like this:
 
 # from nilearn.datasets import fetch_neurovault, neurovault
 #
@@ -45,7 +45,7 @@ nv_data = fetch_neurovault_ids(image_ids=stop_go_image_ids)
 
 images_meta = nv_data["images_meta"]
 
-######################################################################
+# %%
 # Visualize the data
 # ------------------
 
@@ -57,7 +57,7 @@ for im in images_meta:
         title=f"image {im['id']}: {im['contrast_definition']}",
     )
 
-######################################################################
+# %%
 # Compute statistics
 # ------------------
 
@@ -95,7 +95,7 @@ for this_meta in images_meta:
 
     z_imgs.append(z_img)
 
-######################################################################
+# %%
 # Plot the combined z maps
 # ------------------------
 

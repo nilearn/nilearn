@@ -75,16 +75,13 @@ def colorscale(cmap, values, threshold=None, symmetric_cmap=True,
     if not symmetric_cmap and (values.min() < 0):
         warnings.warn('you have specified symmetric_cmap=False '
                       'but the map contains negative values; '
-                      'setting symmetric_cmap to True')
+                      'setting symmetric_cmap to True',
+                      stacklevel=3)
         symmetric_cmap = True
     if symmetric_cmap and vmin is not None:
-        warnings.warn('vmin cannot be chosen when cmap is symmetric')
+        warnings.warn('vmin cannot be chosen when cmap is symmetric',
+                      stacklevel=3)
         vmin = None
-    if threshold is not None:
-        if vmin is not None:
-            warnings.warn('choosing both vmin and a threshold is not allowed; '
-                          'setting vmin to 0')
-        vmin = 0
     if vmax is None:
         vmax = abs_values.max()
     # cast to float to avoid TypeError if vmax is a numpy boolean
@@ -134,7 +131,7 @@ def decode(b, dtype):
 
 
 def mesh_to_plotly(mesh):
-    """Convert a mesh to plotly format."""
+    """Convert a :term:`mesh` to plotly format."""
     mesh = surface.load_surf_mesh(mesh)
     x, y, z = map(encode, np.asarray(mesh[0].T, dtype='<f4'))
     i, j, k = map(encode, np.asarray(mesh[1].T, dtype='<i4'))

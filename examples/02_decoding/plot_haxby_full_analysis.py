@@ -2,9 +2,8 @@
 ROI-based decoding analysis in Haxby et al. dataset
 ===================================================
 
-In this script we reproduce the data analysis conducted by
-Haxby et al. in "Distributed and Overlapping Representations of Faces and
-Objects in Ventral Temporal Cortex".
+In this script we reproduce the data analysis
+conducted by :footcite:t:`Haxby2001`.
 
 Specifically, we look at decoding accuracy for different objects in
 three different masks: the full ventral stream (mask_vt), the house
@@ -15,12 +14,14 @@ that have been defined via a standard GLM-based analysis.
 
 """
 
-##########################################################################
+# Fetch data using nilearn dataset fetcher
+from nilearn import datasets
+from nilearn.plotting import show
+
+# %%
 # Load and prepare the data
 # -------------------------
 
-# Fetch data using nilearn dataset fetcher
-from nilearn import datasets
 
 # by default we fetch 2nd subject data for analysis
 haxby_dataset = datasets.fetch_haxby()
@@ -51,14 +52,14 @@ task_mask = stimuli != "rest"
 categories = stimuli[task_mask].unique()
 
 # extract tags indicating to which acquisition run a tag belongs
-session_labels = labels["chunks"][task_mask]
+run_labels = labels["chunks"][task_mask]
 
 # apply the task_mask to  fMRI data (func_filename)
 from nilearn.image import index_img
 
 task_data = index_img(func_filename, task_mask)
 
-##########################################################################
+# %%
 # Decoding on the different masks
 # -------------------------------
 #
@@ -73,7 +74,7 @@ from nilearn.decoding import Decoder
 
 cv = LeaveOneGroupOut()
 
-##############################################################
+# %%
 # We use :class:`nilearn.decoding.Decoder` to estimate a baseline.
 
 mask_names = ["mask_vt", "mask_face", "mask_house"]
@@ -102,7 +103,7 @@ for mask_name in mask_names:
             scoring="roc_auc",
             standardize="zscore_sample",
         )
-        decoder.fit(task_data, classification_target, groups=session_labels)
+        decoder.fit(task_data, classification_target, groups=run_labels)
         mask_scores[mask_name][category] = decoder.cv_scores_[1]
         mean = np.mean(mask_scores[mask_name][category])
         std = np.std(mask_scores[mask_name][category])
@@ -116,19 +117,17 @@ for mask_name in mask_names:
             standardize="zscore_sample",
         )
         dummy_classifier.fit(
-            task_data, classification_target, groups=session_labels
+            task_data, classification_target, groups=run_labels
         )
         mask_chance_scores[mask_name][category] = dummy_classifier.cv_scores_[
             1
         ]
 
 
-##########################################################################
+# %%
 # We make a simple bar plot to summarize the results
 # --------------------------------------------------
 import matplotlib.pyplot as plt
-
-from nilearn.plotting import show
 
 plt.figure()
 
@@ -164,7 +163,13 @@ plt.legend(loc="lower right")
 plt.title("Category-specific classification accuracy for different masks")
 plt.tight_layout()
 
-
 show()
+
+# %%
+# References
+# ----------
+#
+#  .. footbibliography::
+
 
 # sphinx_gallery_dummy_images=1

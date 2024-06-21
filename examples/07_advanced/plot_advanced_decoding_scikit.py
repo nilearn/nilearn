@@ -10,28 +10,25 @@ objects. If some concepts seem unclear,
 please refer to the :ref:`documentation on decoding <decoding_intro>`
 and in particular to the :ref:`advanced section <going_further>`.
 As in many other examples, we perform decoding of the visual category of a
-stimuli on Haxby 2001 dataset, focusing on distinguishing two categories :
+stimuli on :footcite:t:`Haxby2001` dataset,
+focusing on distinguishing two categories:
 face and cat images.
-
-    * J.V. Haxby et al. "Distributed and Overlapping Representations of Faces
-      and Objects in Ventral Temporal Cortex", Science vol 293 (2001), p
-      2425.-2430.
 
 .. include:: ../../../examples/masker_note.rst
 
 """
 
-###########################################################################
-# Retrieve and load the fMRI data from the Haxby study
-# ----------------------------------------------------
+# %%
+# Retrieve and load the :term:`fMRI` data from the Haxby study
+# ------------------------------------------------------------
 #
 # First download the data
 # .......................
 #
 
 # The :func:`nilearn.datasets.fetch_haxby` function will download the
-# Haxby dataset composed of fmri images in a Niimg, a spatial mask and a text
-# document with label of each image
+# Haxby dataset composed of fMRI images in a Niimg,
+# a spatial mask and a text document with label of each image
 from nilearn import datasets
 
 haxby_dataset = datasets.fetch_haxby()
@@ -44,7 +41,7 @@ import pandas as pd
 behavioral = pd.read_csv(haxby_dataset.session_target[0], delimiter=" ")
 behavioral
 
-###########################################################################
+# %%
 # We keep only a images from a pair of conditions(cats versus faces).
 from nilearn.image import index_img
 
@@ -54,9 +51,9 @@ fmri_niimgs = index_img(fmri_filename, condition_mask)
 conditions = conditions[condition_mask]
 # Convert to numpy array
 conditions = conditions.values
-session_label = behavioral["chunks"][condition_mask]
+run_label = behavioral["chunks"][condition_mask]
 
-###########################################################################
+# %%
 # Performing decoding with scikit-learn
 # -------------------------------------
 
@@ -66,24 +63,25 @@ session_label = behavioral["chunks"][condition_mask]
 # decoding pipelines. They are all used with the same `fit()` and `predict()`
 # functions.
 # Let's define a Support Vector Classifier
-# (or `SVC <http://scikit-learn.org/stable/modules/svm.html >`_).
+# (or `SVC <https://scikit-learn.org/stable/modules/svm.html >`_).
 
 from sklearn.svm import SVC
 
 svc = SVC()
 
-###########################################################################
+# %%
 # Masking the data
 # ................
 # To use a scikit-learn estimator on brain images, you should first mask the
 # data using a :class:`nilearn.maskers.NiftiMasker` to extract only the
-# voxels inside the mask of interest, and transform 4D input fMRI data to
-# 2D arrays(`shape=(n_timepoints, n_voxels)`) that estimators can work on.
+# voxels inside the mask of interest,
+# and transform 4D input :term:`fMRI` data to 2D arrays
+# (`shape=(n_timepoints, n_voxels)`) that estimators can work on.
 from nilearn.maskers import NiftiMasker
 
 masker = NiftiMasker(
     mask_img=mask_filename,
-    runs=session_label,
+    runs=run_label,
     smoothing_fwhm=4,
     standardize="zscore_sample",
     memory="nilearn_cache",
@@ -91,7 +89,7 @@ masker = NiftiMasker(
 )
 fmri_masked = masker.fit_transform(fmri_niimgs)
 
-###########################################################################
+# %%
 # Cross-validation with scikit-learn
 # ..................................
 # To train and test the model in a meaningful way we use cross-validation with
@@ -103,7 +101,7 @@ from sklearn.model_selection import cross_val_score
 cv_scores = cross_val_score(svc, fmri_masked, conditions, cv=5)
 print(f"SVC accuracy: {cv_scores.mean():.3f}")
 
-###########################################################################
+# %%
 # Tuning cross-validation parameters
 # ..................................
 # You can change many parameters of the cross_validation here, for example:
@@ -124,12 +122,12 @@ cv_scores = cross_val_score(
     conditions,
     cv=cv,
     scoring="roc_auc",
-    groups=session_label,
-    n_jobs=-1,
+    groups=run_label,
+    n_jobs=2,
 )
 print(f"SVC accuracy (tuned parameters): {cv_scores.mean():.3f}")
 
-###########################################################################
+# %%
 # Measuring the chance level
 # --------------------------
 # :class:`sklearn.dummy.DummyClassifier` (purely random) estimators are the
@@ -137,28 +135,28 @@ print(f"SVC accuracy (tuned parameters): {cv_scores.mean():.3f}")
 # way, but slower, is to do permutation testing on the labels, with
 # :func:`sklearn.model_selection.permutation_test_score`.
 
-###########################################################################
+# %%
 # Dummy estimator
 # ...............
 from sklearn.dummy import DummyClassifier
 
 null_cv_scores = cross_val_score(
-    DummyClassifier(), fmri_masked, conditions, cv=cv, groups=session_label
+    DummyClassifier(), fmri_masked, conditions, cv=cv, groups=run_label
 )
 
 print(f"Dummy accuracy: {null_cv_scores.mean():.3f}")
 
-###########################################################################
+# %%
 # Permutation test
 # ................
 from sklearn.model_selection import permutation_test_score
 
 null_cv_scores = permutation_test_score(
-    svc, fmri_masked, conditions, cv=cv, groups=session_label
+    svc, fmri_masked, conditions, cv=cv, groups=run_label
 )[1]
 print(f"Permutation test score: {null_cv_scores.mean():.3f}")
 
-###########################################################################
+# %%
 # Decoding without a mask: Anova-SVM in scikit-lean
 # -------------------------------------------------
 # We can also implement feature selection before decoding as a scikit-learn
@@ -187,14 +185,14 @@ fitted_pipeline = cross_validate(
     fmri_masked,
     conditions,
     cv=cv,
-    groups=session_label,
+    groups=run_label,
     return_estimator=True,
 )
 print(f"ANOVA+SVC test score: {fitted_pipeline['test_score'].mean():.3f}")
 
-###########################################################################
-# Visualize the ANOVA + SVC's discriminating weights
-# ..................................................
+# %%
+# Visualize the :term:`ANOVA` + SVC's discriminating weights
+# ..........................................................
 
 # retrieve the pipeline fitted on the first cross-validation fold and its SVC
 # coefficients
@@ -219,17 +217,17 @@ from nilearn.plotting import plot_stat_map
 weight_img = masker.inverse_transform(full_coef)
 plot_stat_map(weight_img, title="Anova+SVC weights")
 
-###########################################################################
+# %%
 # Going further with scikit-learn
 # -------------------------------
 
-###########################################################################
+# %%
 # Changing the prediction engine
 # ..............................
 # To change the prediction engine, we just need to import it and use in our
 # pipeline instead of the SVC.
 # We can try Fisher's
-# `Linear Discriminant Analysis (LDA) <http://scikit-learn.org/stable/auto_examples/decomposition/plot_pca_vs_lda.html>`_ # noqa
+# `Linear Discriminant Analysis (LDA) <https://scikit-learn.org/stable/auto_examples/decomposition/plot_pca_vs_lda.html>`_ # noqa
 
 # Construct the new estimator object and use it in a new pipeline after anova
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
@@ -242,7 +240,7 @@ anova_lda = Pipeline([("anova", feature_selection), ("LDA", lda)])
 import numpy as np
 
 cv_scores = cross_val_score(
-    anova_lda, fmri_masked, conditions, cv=cv, verbose=1, groups=session_label
+    anova_lda, fmri_masked, conditions, cv=cv, verbose=1, groups=run_label
 )
 classification_accuracy = np.mean(cv_scores)
 n_conditions = len(set(conditions))  # number of target classes
@@ -251,7 +249,7 @@ print(
     % (classification_accuracy, 1.0 / n_conditions)
 )
 
-###########################################################################
+# %%
 # Changing the feature selection
 # ..............................
 # Let's say that you want a more sophisticated feature selection, for example a
@@ -273,6 +271,12 @@ rfe_svc = Pipeline([("rfe", rfe), ("svc", svc)])
 #                             fmri_masked,
 #                             target,
 #                             cv=cv,
-#                             n_jobs=-1,
+#                             n_jobs=2,
 #                             verbose=1)
 # But, be aware that this can take * A WHILE * ...
+
+# %%
+# References
+# ----------
+#
+#  .. footbibliography::

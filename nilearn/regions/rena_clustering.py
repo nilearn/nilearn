@@ -2,6 +2,7 @@
 
 Fastclustering for approximation of structured signals
 """
+
 # Author: Andres Hoyos idrobo, Gael Varoquaux, Jonas Kahn and  Bertrand Thirion
 
 import warnings
@@ -16,7 +17,7 @@ from sklearn.utils.validation import check_is_fitted
 
 from nilearn._utils import fill_doc
 from nilearn.image import get_data
-from nilearn.masking import _unmask_from_to_3d_array
+from nilearn.masking import unmask_from_to_3d_array
 
 
 def _compute_weights(X, mask_img):
@@ -50,9 +51,7 @@ def _compute_weights(X, mask_img):
 
     data = np.empty((shape[0], shape[1], shape[2], n_samples))
     for sample in range(n_samples):
-        data[:, :, :, sample] = _unmask_from_to_3d_array(
-            X[sample].copy(), mask
-        )
+        data[:, :, :, sample] = unmask_from_to_3d_array(X[sample].copy(), mask)
 
     weights_deep = np.sum(np.diff(data, axis=2) ** 2, axis=-1).ravel()
     weights_right = np.sum(np.diff(data, axis=1) ** 2, axis=-1).ravel()
@@ -193,9 +192,8 @@ def _nn_connectivity(connectivity, threshold=1e-7):
     connectivity : a sparse matrix in COOrdinate format.
         Sparse matrix representation of the weighted adjacency graph.
 
-    threshold : float in the close interval [0, 1], optional
+    threshold : float in the close interval [0, 1], default=1e-7
         The threshold is set to handle eccentricities.
-        Default=1e-7.
 
     Returns
     -------
@@ -255,9 +253,8 @@ def _reduce_data_and_connectivity(
     connectivity : a sparse matrix in COOrdinate format.
         Sparse matrix representation of the weighted adjacency graph.
 
-    threshold : float in the close interval [0, 1], optional
+    threshold : float in the close interval [0, 1], default=1e-7
         The threshold is set to handle eccentricities.
-        Default=1e-7.
 
     Returns
     -------
@@ -316,9 +313,8 @@ def _nearest_neighbor_grouping(X, connectivity, n_clusters, threshold=1e-7):
     n_clusters : :obj:`int`
         The number of clusters to find.
 
-    threshold : :obj:`float` in the close interval [0, 1], optional
+    threshold : :obj:`float` in the close interval [0, 1], default=1e-7
         The threshold is set to handle eccentricities.
-        Default=1e-7.
 
     Returns
     -------
@@ -370,7 +366,7 @@ def recursive_neighbor_agglomeration(
     """Recursive neighbor agglomeration (:term:`ReNA`).
 
     It performs iteratively the nearest neighbor grouping.
-    See :footcite:`Hoyos2019`.
+    See :footcite:t:`Hoyos2019`.
 
     Parameters
     ----------
@@ -383,15 +379,14 @@ def recursive_neighbor_agglomeration(
     n_clusters : :obj:`int`
         The number of clusters to find.
 
-    n_iter : :obj:`int`, optional
-        Number of iterations. Default=10.
+    n_iter : :obj:`int`, default=10
+        Number of iterations.
 
-    threshold : :obj:`float` in the close interval [0, 1], optional
+    threshold : :obj:`float` in the close interval [0, 1], default=1e-7
         The threshold is set to handle eccentricities.
-        Default=1e-7.
 
-    verbose : :obj:`int`, optional
-        Verbosity level. Default=0.
+    verbose : :obj:`int`, default=0
+        Verbosity level.
 
     Returns
     -------
@@ -438,40 +433,38 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
     Recursively merges the pair of clusters according to 1-nearest neighbors
     criterion.
-    See :footcite:`Hoyos2019`.
+    See :footcite:t:`Hoyos2019`.
 
     Parameters
     ----------
     mask_img : Niimg-like object
         Object used for masking the data.
 
-    n_clusters : :obj:`int`, optional
-        The number of clusters to find. Default=2.
+    n_clusters : :obj:`int`, default=2
+        The number of clusters to find.
 
-    scaling : :obj:`bool`, optional
+    scaling : :obj:`bool`, default=False
         If scaling is True, each cluster is scaled by the square root of its
-        size, preserving the l2-norm of the image. Default=False.
+        size, preserving the l2-norm of the image.
 
-    n_iter : :obj:`int`, optional
+    n_iter : :obj:`int`, default=10
         Number of iterations of the recursive neighbor agglomeration.
-        Default=10.
 
-    threshold : :obj:`float` in the open interval (0., 1.), optional
+    threshold : :obj:`float` in the open interval (0., 1.), default=1e-7
         Threshold used to handle eccentricities.
-        Default=1e-7.
     %(memory)s
     %(memory_level1)s
     %(verbose0)s
 
     Attributes
     ----------
-    `labels_ ` : :class:`numpy.ndarray`, shape = [n_features]
+    labels_ : :class:`numpy.ndarray`, shape = [n_features]
         Cluster labels for each feature.
 
-    `n_clusters_` : :obj:`int`
+    n_clusters_ : :obj:`int`
         Number of clusters.
 
-    `sizes_` : :class:`numpy.ndarray`, shape = [n_features]
+    sizes_ : :class:`numpy.ndarray`, shape = [n_features]
         It contains the size of each cluster.
 
     References

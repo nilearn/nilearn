@@ -1,9 +1,10 @@
-"""Helper functions for _load_scrub and sample_mask functions."""
+"""Helper functions for load_scrub and sample_mask functions."""
+
 import numpy as np
 import pandas as pd
 
 
-def _optimize_scrub(motion_outliers_index, n_scans, scrub):
+def optimize_scrub(motion_outliers_index, n_scans, scrub):
     """Remove continuous segments with fewer than a minimal segment length.
 
     Parameters
@@ -15,8 +16,8 @@ def _optimize_scrub(motion_outliers_index, n_scans, scrub):
     n_scans : int
         Number of volumes in the functional image.
 
-    scrub : int
-        Minimal segment length. Default to 5 volumes,
+    scrub : int, default=5
+        Minimal segment length.
 
     Returns
     -------
@@ -56,7 +57,7 @@ def _optimize_scrub(motion_outliers_index, n_scans, scrub):
     return motion_outliers_index
 
 
-def _extract_outlier_regressors(confounds):
+def extract_outlier_regressors(confounds):
     """Separate outlier one-hot regressors from other confounds \
     variables and generate a sample mask, indicates the volumes kept.
 

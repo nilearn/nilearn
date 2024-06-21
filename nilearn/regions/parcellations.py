@@ -10,8 +10,8 @@ from sklearn.feature_extraction import image
 from nilearn.maskers import NiftiLabelsMasker
 
 from .._utils import fill_doc, stringify_path
-from .._utils.niimg import _safe_get_data
-from .._utils.niimg_conversions import _iter_check_niimg
+from .._utils.niimg import safe_get_data
+from .._utils.niimg_conversions import iter_check_niimg
 from ..decomposition._multi_pca import _MultiPCA
 from .hierarchical_kmeans_clustering import HierarchicalKMeans
 from .rena_clustering import ReNA
@@ -133,7 +133,7 @@ class Parcellations(_MultiPCA):
 
     Parameters
     ----------
-    method: :obj:`str`, {'kmeans', 'ward', 'complete', 'average', 'rena',
+    method : {'kmeans', 'ward', 'complete', 'average', 'rena', \
         'hierarchical_kmeans'}
         A method to choose between for brain parcellations.
         For a small number of parcels, kmeans is usually advisable.
@@ -149,7 +149,7 @@ class Parcellations(_MultiPCA):
         Default=0.
 
     mask : Niimg-like object or :class:`nilearn.maskers.NiftiMasker`,\
- :class:`nilearn.maskers.MultiNiftiMasker`, optional
+           :class:`nilearn.maskers.MultiNiftiMasker`, optional
         Mask/Masker used for masking the data.
         If mask image if provided, it will be used in the MultiNiftiMasker.
         If an instance of MultiNiftiMasker is provided, then this instance
@@ -217,14 +217,14 @@ class Parcellations(_MultiPCA):
         to fine-tune mask computation. Please see the related documentation
         for details.
 
-    scaling : :obj:`bool`, optional
+    scaling : :obj:`bool`, default=False
         Used only when the method selected is 'rena'. If scaling is True, each
         cluster is scaled by the square root of its size, preserving the
-        l2-norm of the image. Default=False.
+        l2-norm of the image.
 
-    n_iter : :obj:`int`, optional
+    n_iter : :obj:`int`, default=10
         Used only when the method selected is 'rena'. Number of iterations of
-        the recursive neighbor agglomeration. Default=10.
+        the recursive neighbor agglomeration.
     %(memory)s
     %(memory_level)s
     %(n_jobs)s
@@ -232,14 +232,14 @@ class Parcellations(_MultiPCA):
 
     Attributes
     ----------
-    `labels_img_` : :class:`nibabel.nifti1.Nifti1Image`
+    labels_img_ : :class:`nibabel.nifti1.Nifti1Image`
         Labels image to each parcellation learned on fmri images.
 
-    `masker_` : :class:`nilearn.maskers.NiftiMasker` or\
- :class:`nilearn.maskers.MultiNiftiMasker`
+    masker_ : :class:`nilearn.maskers.NiftiMasker` or \
+                :class:`nilearn.maskers.MultiNiftiMasker`
         The masker used to mask the data.
 
-    `connectivity_` : :class:`numpy.ndarray`
+    connectivity_ : :class:`numpy.ndarray`
         Voxel-to-voxel connectivity matrix computed from a mask.
         Note that this attribute is only seen if selected methods are
         Agglomerative Clustering type, 'ward', 'complete', 'average'.
@@ -285,11 +285,13 @@ class Parcellations(_MultiPCA):
         mask_args=None,
         scaling=False,
         n_iter=10,
-        memory=Memory(location=None),
+        memory=None,
         memory_level=0,
         n_jobs=1,
         verbose=1,
     ):
+        if memory is None:
+            memory = Memory(location=None)
         self.method = method
         self.n_parcels = n_parcels
         self.scaling = scaling
@@ -404,7 +406,7 @@ class Parcellations(_MultiPCA):
             )
 
         else:
-            mask_ = _safe_get_data(mask_img_).astype(bool)
+            mask_ = safe_get_data(mask_img_).astype(bool)
             shape = mask_.shape
             connectivity = image.grid_to_graph(
                 n_x=shape[0], n_y=shape[1], n_z=shape[2], mask=mask_
@@ -483,7 +485,7 @@ class Parcellations(_MultiPCA):
         )
         # Requires for special cases like extracting signals on list of
         # 3D images
-        imgs_list = _iter_check_niimg(imgs, atleast_4d=True)
+        imgs_list = iter_check_niimg(imgs, atleast_4d=True)
 
         masker = NiftiLabelsMasker(
             self.labels_img_,

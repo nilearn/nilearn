@@ -1,21 +1,28 @@
-Haxby 2001 results
+.. _haxby_dataset:
 
+Haxby dataset
+=============
+
+Access
+------
+See :func:`nilearn.datasets.fetch_haxby`.
 
 Notes
 -----
-Results from a classical fMRI study that investigated the differences between
+Results from a classical :term:`fMRI` study that investigated the differences between
 the neural correlates of face versus object processing in the ventral visual
 stream. Face and object stimuli showed widely distributed and overlapping
 response patterns.
 
+See :footcite:t:`Haxby2001`.
+
 Content
 -------
-The "simple" dataset includes
+The "simple" dataset includes:
     :'func': Nifti images with bold data
-    :'session_target': Text file containing session data
+    :'session_target': Text file containing run data
     :'mask': Nifti images with employed mask
     :'session': Text file with condition labels
-
 
 The full dataset additionally includes
     :'anat': Nifti images with anatomical image
@@ -26,9 +33,11 @@ The full dataset additionally includes
     :'mask_face_little': Spatially more constrained version of the above
     :'mask_house_little': Spatially more constrained version of the above
 
-
 References
 ----------
+
+.. footbibliography::
+
 For more information see:
 PyMVPA provides a tutorial using this dataset :
 http://www.pymvpa.org/tutorial.html
@@ -37,9 +46,6 @@ More information about its structure :
 http://dev.pymvpa.org/datadb/haxby2001.html
 
 
-`Haxby, J., Gobbini, M., Furey, M., Ishai, A., Schouten, J.,
-and Pietrini, P. (2001). Distributed and overlapping representations of
-faces and objects in ventral temporal cortex. Science 293, 2425-2430.`
-
-
-Licence: unknown.
+License
+-------
+unknown
