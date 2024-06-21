@@ -275,7 +275,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
         segments = []
         vs = []
         idxs = []
-        for e, face in zip(edge_faces, self._faces, strict=True):
+        for e, face in zip(edge_faces, self._faces):
             if e:
                 t0 = self._coords[face[0]]
                 t1 = self._coords[face[1]]
