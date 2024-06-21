@@ -1,0 +1,25 @@
+<details>
+  <summary class="pure-button">Parameters</summary>
+
+  <div class="table-container">
+    <table class="pure-table">
+      <thead>
+        <tr>
+          <th>Parameter</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {{py: params = parameters.items()}}
+        <!--  -->
+        {{for p, v in params}}
+        <tr>
+          <td data-column="Parameter">{{p}}</td>
+          <td data-column="Value">{{v}}</td>
+        </tr>
+        {{endfor}}
+      </tbody>
+    </table>
+  </div>
+</details>

@@ -1,23 +1,31 @@
 import pytest
 
+from nilearn.experimental.conftest import return_mini_binary_mask
 from nilearn.experimental.surface import SurfaceLabelsMasker, SurfaceMasker
 from nilearn.reporting.tests.test_html_report import _check_html
 
 
 @pytest.mark.parametrize("reports", [True, False])
-def test_surface_masker_minimal_report(mini_img, reports):
-    """Test minimal report generation."""
-    masker = SurfaceMasker(reports=reports)
+@pytest.mark.parametrize("mask_img", [None, return_mini_binary_mask()])
+def test_surface_masker_minimal_report_no_fit(mask_img, reports):
+    """Test minimal report generation with no fit."""
+    masker = SurfaceMasker(mask_img, reports=reports)
     report = masker.generate_report()
 
     _check_html(report)
-    assert "has not been fitted yet" in str(report)
+    assert "Make sure to run `fit`" in str(report)
 
+
+@pytest.mark.parametrize("reports", [True, False])
+@pytest.mark.parametrize("mask_img", [None, return_mini_binary_mask()])
+def test_surface_masker_minimal_report_fit(mask_img, mini_img, reports):
+    """Test minimal report generation with fit."""
+    masker = SurfaceMasker(mask_img, reports=reports)
     masker.fit_transform(mini_img)
     report = masker.generate_report()
 
     _check_html(report)
-    assert "has not been fitted yet" not in str(report)
+    assert "Make sure to run `fit`" not in str(report)
     assert '<div class="image">' in str(report)
 
 
@@ -28,18 +36,8 @@ def test_surface_masker_report_no_report(mini_img):
     report = masker.generate_report()
 
     _check_html(report)
+    assert "No visual outputs created." in str(report)
     assert "Empty Report" in str(report)
-
-
-def test_surface_masker_report_with_mask(mini_img, mini_binary_mask):
-    """Check fitted masker report with mask has image and no warning."""
-    masker = SurfaceMasker(mini_binary_mask)
-    masker.fit_transform(mini_img)
-    report = masker.generate_report()
-
-    _check_html(report)
-    assert "This object has not been fitted yet !" not in str(report)
-    assert '<div class="image">' in str(report)
 
 
 @pytest.mark.parametrize("reports", [True, False])
@@ -51,28 +49,16 @@ def test_surface_label_masker_report_unfitted(
     report = masker.generate_report()
 
     _check_html(report)
-    assert "has not been fitted yet" not in str(report)
-    assert '<td data-column="Number of vertices">4</td>' in str(report)
-    assert '<td data-column="Number of vertices">4</td>' in str(report)
-    # TODO this should say 2 regions: related to the fact that some regions
-    #  have a 0 label
-    assert "The masker has <b>1</b> different non-overlapping" in str(report)
+    # contrary to other maskers information about the label image
+    # can be shown before fitting
+    assert "Make sure to run `fit`" not in str(report)
 
 
-@pytest.mark.parametrize("label_names", [None, ["region 1", "region 2"]])
-def test_surface_label_masker_report_empty(mini_label_img, label_names):
-    masker = SurfaceLabelsMasker(mini_label_img, label_names).fit()
+def test_surface_label_masker_report_no_report(mini_label_img):
+    """Check content of no report."""
+    masker = SurfaceLabelsMasker(mini_label_img, reports=False)
     report = masker.generate_report()
 
     _check_html(report)
-    assert "has not been fitted yet" not in str(report)
-
-
-@pytest.mark.parametrize("label_names", [None, ["region 1", "region 2"]])
-def test_surface_label_masker_report(mini_img, mini_label_img, label_names):
-    masker = SurfaceLabelsMasker(mini_label_img, label_names).fit()
-    masker.transform(mini_img)
-    report = masker.generate_report()
-
-    _check_html(report)
-    assert "has not been fitted yet" not in str(report)
+    assert "No visual outputs created." in str(report)
+    assert "Empty Report" in str(report)
