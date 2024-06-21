@@ -5,15 +5,21 @@ from __future__ import annotations
 import json
 
 import numpy as np
+import pandas as pd
 import pytest
+from numpy.testing import assert_equal
+from pandas.api.types import is_object_dtype, is_numeric_dtype
 
 from nilearn._utils.data_gen import (
     add_metadata_to_bids_dataset,
+    basic_paradigm,
     create_fake_bids_dataset,
     generate_fake_fmri,
     generate_labeled_regions,
     generate_maps,
     generate_regions_ts,
+    generate_random_img,
+    generate_group_sparse_gaussian_graphs
 )
 from nilearn.image import get_data
 
@@ -49,6 +55,17 @@ def test_add_metadata_to_bids_derivatives_with_json_path(tmp_path):
     with open(json_file) as f:
         metadata = json.load(f)
         assert metadata == {"foo": "bar"}
+
+
+@pytest.mark.parametrize("have_spaces", [False, True])
+def test_basic_paradigm(have_spaces):
+    events = basic_paradigm(have_spaces)
+
+    assert events.columns.equals(pd.Index(['trial_type', 'onset', 'duration']))
+    assert is_object_dtype(events['trial_type'])
+    assert is_numeric_dtype(events['onset'])
+    assert is_numeric_dtype(events['duration'])
+    assert events['trial_type'].str.contains(' ').any() == have_spaces
 
 
 def _bids_path_template(
@@ -531,3 +548,50 @@ def test_generate_fake_fmri_error(rng):
             block_size=None,
             random_state=rng,
         )
+
+
+@pytest.mark.parametrize("shape", [(3, 4, 5), (2, 2, 3, 3)])
+@pytest.mark.parametrize("affine", [None, np.diag([.5, .3, 1, 1])])
+def test_generate_random_img(shape, affine, rng):
+    img, mask = generate_random_img(
+        shape=shape,
+        affine=affine,
+        random_state=rng,
+    )
+
+    assert img.shape == shape
+    assert mask.shape == shape[:3]
+    if affine is not None:
+        assert_equal(img.affine, affine)
+        assert_equal(mask.affine, affine)
+
+
+@pytest.mark.parametrize("n_subjects", [5, 9])
+@pytest.mark.parametrize("n_features", [30, 9])
+@pytest.mark.parametrize("n_samples_range", [(30, 50), (9, 9)])
+@pytest.mark.parametrize("density", [0.1, 1])
+def test_generate_group_sparse_gaussian_graphs(
+    n_subjects, n_features, n_samples_range, density, rng
+):
+    signals, precisions, topology = generate_group_sparse_gaussian_graphs(
+        n_subjects=n_subjects,
+        n_features=n_features,
+        min_n_samples=n_samples_range[0],
+        max_n_samples=n_samples_range[1],
+        density=density,
+        random_state=rng
+    )
+
+    assert len(signals) == n_subjects
+    assert len(precisions) == n_subjects
+
+    signal_shapes = np.array([s.shape for s in signals])
+    precision_shapes = np.array([p.shape for p in precisions])
+    assert np.all((signal_shapes[:, 0] >= n_samples_range[0])
+                  & (signal_shapes[:, 0] <= n_samples_range[1]))
+    assert np.all(signal_shapes[:, 1] == n_features)
+    assert np.all(precision_shapes == (n_features, n_features))
+    assert topology.shape == (n_features, n_features)
+
+    eigenvalues = np.array([np.linalg.eigvalsh(p) for p in precisions])
+    assert np.all(eigenvalues >= 0)
