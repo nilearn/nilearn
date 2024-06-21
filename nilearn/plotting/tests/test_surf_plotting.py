@@ -317,15 +317,15 @@ def test_instantiation_error_plotly_surface_figure(input_obj):
 
 @pytest.mark.skipif(not is_plotly_installed(),
                     reason="Plotly is not installed; required for this test.")
-def test_value_error_get_vertices_on_edge():
-    """Test that calling _get_vertices_on_edge raises a ValueError when \
+def test_value_error_get_faces_on_edge():
+    """Test that calling _get_faces_on_edge raises a ValueError when \
        called with with indices that do not form a region."""
     mesh = generate_surf()
     figure = plot_surf(mesh, engine="plotly")
     with pytest.raises(ValueError,
                        match=("Vertices in parcellation do not "
                               "form region.")):
-        figure._get_vertices_on_edge([91])
+        figure._get_faces_on_edge([91])
 
 
 @pytest.mark.skipif(not is_plotly_installed(),
@@ -336,56 +336,6 @@ def test_surface_figure_add_contours_raises_not_implemented():
     figure = SurfaceFigure()
     with pytest.raises(NotImplementedError):
         figure.add_contours()
-
-
-@pytest.mark.skipif(not is_plotly_installed(),
-                    reason="Plotly is not installed; required for this test.")
-@pytest.mark.parametrize(
-    "data,expected",
-    [
-        (
-            [0, 1],
-            np.array(
-                [
-                    [0, 0, 0],
-                    [1, 0, 2],
-                    [0, 0, 0]
-                ]
-            )
-        ),
-        (
-            (1, 2),
-            np.array(
-                [
-                    [1, 0, 2],
-                    [2, 1, 0],
-                    [1, 0, 2]
-                ]
-            )
-        )
-    ]
-)
-def test_get_vertices_on_edge(data, expected):
-    """Test that _get_vertices_on_edge method returns expected vertices."""
-    # tetrahedron
-    coords = np.array(
-        [
-            [0, 0, 0],
-            [1, 0, 2],
-            [2, 1, 0],
-            [0, 2, 1]
-        ]
-    )
-    faces = np.array(
-        [
-            [0, 1, 2],
-            [0, 2, 3],
-            [0, 3, 1],
-            [1, 2, 3]
-        ]
-    )
-    figure = plot_surf([coords, faces], engine="plotly")
-    assert (figure._get_vertices_on_edge(data) == expected).all()
 
 
 @pytest.mark.skipif(not is_plotly_installed(),

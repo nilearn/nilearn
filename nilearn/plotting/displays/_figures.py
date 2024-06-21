@@ -275,7 +275,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
         segments = []
         vs = []
         idxs = []
-        for e, face in zip(edge_faces, self.faces, strict=True):
+        for e, face in zip(edge_faces, self._faces, strict=True):
             if e:
                 t0 = self._coords[face[0]]
                 t1 = self._coords[face[1]]
@@ -295,17 +295,17 @@ class PlotlySurfaceFigure(SurfaceFigure):
                 )
                 segs = [None] * 3
                 if face[0] in parc_idx and face[1] in parc_idx:
-                    segs[0] = self.transform_coord_to_plane(
+                    segs[0] = self._transform_coord_to_plane(
                         t0, t0, t1, t2
-                    ) + self.transform_coord_to_plane(t1, t0, t1, t2)
+                    ) + self._transform_coord_to_plane(t1, t0, t1, t2)
                 if face[0] in parc_idx and face[2] in parc_idx:
-                    segs[1] = self.transform_coord_to_plane(
+                    segs[1] = self._transform_coord_to_plane(
                         t0, t0, t1, t2
-                    ) + self.transform_coord_to_plane(t2, t0, t1, t2)
+                    ) + self._transform_coord_to_plane(t2, t0, t1, t2)
                 if face[1] in parc_idx and face[2] in parc_idx:
-                    segs[2] = self.transform_coord_to_plane(
+                    segs[2] = self._transform_coord_to_plane(
                         t2, t0, t1, t2
-                    ) + self.transform_coord_to_plane(t1, t0, t1, t2)
+                    ) + self._transform_coord_to_plane(t1, t0, t1, t2)
                 segments.append(tuple(segs))
                 vs.append((t0, t1, t2))
                 idxs.append([f for f in face if f in parc_idx])
@@ -345,7 +345,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
                 smallest_5_idx = np.argpartition(
                     remaining_distances.squeeze(), 5
                 )[:5]
-                xy1 = self.transform_coord_to_plane(
+                xy1 = self._transform_coord_to_plane(
                     centroids[current_vertex], *vs[current_vertex]
                 )
                 next_index = 9999
@@ -354,7 +354,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
                 ):
                     fail = False
                     shortest_idx = smallest_5_idx[attempt]
-                    xy2 = self.transform_coord_to_plane(
+                    xy2 = self._transform_coord_to_plane(
                         centroids[remaining_vertices[shortest_idx]],
                         *vs[current_vertex],
                     )
@@ -375,7 +375,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
                         # this does not share and edge, so try again
                         continue
                     for e in segments[current_vertex]:
-                        if e is not None and self.do_segs_intersect(
+                        if e is not None and self._do_segs_intersect(
                             *xy1, *xy2, *e
                         ):
                             # this one crosses boundary, so try again
