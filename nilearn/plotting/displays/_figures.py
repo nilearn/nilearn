@@ -139,8 +139,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
         lines=None,
         elevation=0.1,
     ):
-        """
-        Draw boundaries around roi.
+        """Draw boundaries around roi.
 
         Parameters
         ----------
