@@ -240,8 +240,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
         self.figure.add_traces(data=traces)
 
     def _get_sorted_edge_centroids(self, parc_idx, elevation: float = 0.1):
-        """
-        Identify which vertices lie on the outer edge of a parcellation.
+        """Identify which vertices lie on the outer edge of a parcellation.
 
         Parameters
         ----------
