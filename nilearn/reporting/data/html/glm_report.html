@@ -95,30 +95,7 @@
 {{def report}}
 <section>
   <h2 id="model-details">Model details</h2>
-  <details>
-    <summary class="pure-button btn-small">Parameters</summary>
-    {{if parameters}}
-    <table class="pure-table">
-      <thead>
-        <tr>
-          <th>Parameter</th>
-          <th>Value</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {{py: params = parameters.items()}}
-        <!--  -->
-        {{for p, v in params}}
-        <tr>
-          <td data-column="Parameter">{{p}}</td>
-          <td data-column="Value">{{v}}</td>
-        </tr>
-        {{endfor}}
-      </tbody>
-    </table>
-    {{endif}}
-  </details>
+  {{ parameters|html }}
 </section>
 
 <section>
@@ -184,11 +161,12 @@
 <section>
   <h2 id="statistical-maps">Statistical Maps</h2>
   {{if statistical_maps}}
-  <div class="d-flex flex-wrap justify-content-evenly">
+
+  <div class="pure-g">
     {{py: contrasts = statistical_maps.items()}}
     <!--  -->
     {{for contrast_name, maps in contrasts}}
-    <div style="margin: 10px">
+    <div class="pure-u-1 pure-u-md-1-2">
       <h3>{{contrast_name}}</h3>
 
       {{py: images = maps.items()}}
@@ -196,11 +174,13 @@
       {{for key, value in images}}
       <!--  -->
       {{if key == "stat_map_img"}}
-      <img
-        class="pure-img"
-        src="data:image/svg+xml;base64,{{value}}"
-        alt="Stat map plot for the contrast: {{contrast_name}}"
-      />
+      <div class="d-flex justify-content-evenly">
+        <img
+          class="pure-img"
+          src="data:image/svg+xml;base64,{{value}}"
+          alt="Stat map plot for the contrast: {{contrast_name}}"
+        />
+      </div>
       {{elif key == "contrast_img"}}
       <details>
         <summary class="pure-button button-small">Contrast Plot</summary>

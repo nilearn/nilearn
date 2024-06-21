@@ -4,7 +4,6 @@ import datetime
 import warnings
 from collections import OrderedDict
 from decimal import Decimal
-from pathlib import Path
 from string import Template
 
 import numpy as np
@@ -18,19 +17,21 @@ from nilearn.plotting.matrix_plotting import (
     plot_contrast_matrix,
     plot_design_matrix,
 )
-from nilearn.reporting.html_report import HTMLReport
-from nilearn.reporting.utils import figure_to_png_base64
+from nilearn.reporting.html_report import (
+    HTMLReport,
+    _render_parameters_partial,
+    _render_warnings_partial,
+)
+from nilearn.reporting.utils import (
+    CSS_PATH,
+    HTML_TEMPLATE_PATH,
+    TEMPLATE_ROOT_PATH,
+    figure_to_png_base64,
+)
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore", FutureWarning)
     from nilearn import glm
-
-
-TEMPLATE_ROOT_PATH = Path(__file__).parent.parent.parent / "reporting" / "data"
-
-CSS_PATH = TEMPLATE_ROOT_PATH / "css"
-
-HTML_TEMPLATE_ROOT_PATH = TEMPLATE_ROOT_PATH / "html"
 
 
 def _make_surface_glm_report(
@@ -108,10 +109,6 @@ def _make_surface_glm_report(
         {"Cluster size threshold (vertices)": cluster_threshold}
     )
 
-    warning_messages = []
-    if model.labels_ is None or model.results_ is None:
-        warning_messages.append("The model has not been fit yet.")
-
     masker = getattr(model, "masker_", None)
 
     mask_plot = None
@@ -163,7 +160,11 @@ def _make_surface_glm_report(
                 "contrast_img": contrasts_dict[contrast_name],
             }
 
-    body_template_path = HTML_TEMPLATE_ROOT_PATH / "glm_report.html"
+    warning_messages = []
+    if model.labels_ is None or model.results_ is None:
+        warning_messages.append("The model has not been fit yet.")
+
+    body_template_path = HTML_TEMPLATE_PATH / "glm_report.html"
     tpl = tempita.HTMLTemplate.from_filename(
         str(body_template_path),
         encoding="utf-8",
@@ -177,9 +178,9 @@ def _make_surface_glm_report(
         css=css,
         title=f"Statistical Report - {_return_model_type(model)}{title}",
         docstring=snippet,
-        warning_messages=warning_messages,
+        warning_messages=_render_warnings_partial(warning_messages),
         design_matrices_dict=design_matrices_dict,
-        parameters=parameters,
+        parameters=_render_parameters_partial(parameters),
         contrasts_dict=contrasts_dict,
         statistical_maps=statistical_maps,
         cluster_table_details=cluster_table_details,
