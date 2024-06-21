@@ -167,3 +167,11 @@ for hemi, stat_map in zip(["left", "right"], [z_val_left, z_val_right]):
     )
 
 show()
+
+from pathlib import Path
+
+report = first_level_glm.generate_report(
+    title="BIDS surface-based example",
+)
+
+report.save_as_html(Path() / "bids.html")
