@@ -837,11 +837,6 @@ class FirstLevelModel(BaseGLM):
             :term:`'effect_size'<Parameter Estimate>`, 'effect_variance' or
             'all'.
 
-        format_type : str, default='niimg'
-            Data format type of the output. Can be ``'niimg'``, or ``'array'``.
-            If ``'niimg'`` is chosen a SurfaceImage or NiftiImage instance
-            will be returned depending on the type of the GLM inputs.
-
         Returns
         -------
         output : Nifti1Image, or dict
