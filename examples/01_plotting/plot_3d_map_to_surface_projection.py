@@ -92,7 +92,7 @@ fig = plotting.plot_surf_stat_map(
 # fig.show()
 
 # %%
-# When using ``matplolib`` as the plotting engine, a standard
+# When using ``matplotlib`` as the plotting engine, a standard
 # :class:`matplotlib.figure.Figure` is returned. With ``plotly`` as the
 # plotting engine, a custom
 # :class:`~nilearn.plotting.displays.PlotlySurfaceFigure` is returned which

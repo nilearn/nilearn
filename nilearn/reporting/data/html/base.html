@@ -1,0 +1,37 @@
+<!-- CSS for the report -->
+
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/purecss@1.0.0/build/pure-min.css"
+  integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w"
+  crossorigin="anonymous"
+/>
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/purecss@1.0.0/build/grids-responsive-min.css"
+/>
+
+<style type="text/css">
+  {{css}}
+</style>
+
+<section class="nilearn-report pt-0 border border-1 rounded-2 scroll-y">
+  <h1 class="withtooltip m-0 pl-3 pt-3 rounded-top-2 fs-5">
+    {{title}}
+    <span class="tooltiptext m-1 p-1 fw-200 fs-3 border border-1 rounded-2"
+      >{{docstring}}</span
+    >
+  </h1>
+  {{self.navbar|html}}
+
+  <div class="pure-g d-flex justify-content-center my-1">
+    <div
+      class="pure-u-7-8 pure-u-md-7-8 d-flex flex-column justify-content-space-around main-container"
+    >
+      <!--  -->
+      {{ warning_messages|html }}
+      <!--  -->
+      {{self.report|html}}
+    </div>
+  </div>
+</section>

@@ -724,7 +724,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             This option is currently only implemented for the
             ``matplotlib`` engine.
 
-        When using matplolib as engine,
+        When using matplotlib as engine,
         `avg_method` will default to ``"mean"`` if ``None`` is passed.
 
     threshold : a number or None, default=None.
@@ -734,7 +734,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
     alpha : float or 'auto', default='auto'
         Alpha level of the :term:`mesh` (not surf_data).
-        When using matplolib as engine,
+        When using matplotlib as engine,
         `alpha` will default to ``"auto"`` if ``None`` is passed.
         If 'auto' is chosen, alpha will default to 0.5 when no bg_map
         is passed and to 1 if a bg_map is passed.
@@ -1183,7 +1183,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
             This option is currently only implemented for the
             ``matplotlib`` engine.
 
-        When using matplolib as engine,
+        When using matplotlib as engine,
         `avg_method` will default to ``"mean"`` if ``None`` is passed.
 
         .. versionadded:: 0.10.3dev
@@ -1645,7 +1645,7 @@ def plot_surf_roi(surf_mesh,
             This option is currently only implemented for the
             ``matplotlib`` engine.
 
-        When using matplolib as engine,
+        When using matplotlib as engine,
         `avg_method` will default to ``"median"`` if ``None`` is passed.
 
     threshold : a number or None, default=1e-14
@@ -1663,7 +1663,7 @@ def plot_surf_roi(surf_mesh,
 
     alpha : float or 'auto' or None, default=None
         Alpha level of the :term:`mesh` (not surf_data).
-        When using matplolib as engine,
+        When using matplotlib as engine,
         `alpha` will default to ``"auto"`` if ``None`` is passed.
         If 'auto' is chosen, alpha will default to 0.5 when no bg_map
         is passed and to 1 if a bg_map is passed.
