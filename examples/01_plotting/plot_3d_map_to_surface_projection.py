@@ -143,7 +143,6 @@ figure = plotting.plot_surf_stat_map(fsaverage.infl_right,
                                      texture, hemi='right',
                                      title='Surface right hemisphere',
                                      colorbar=True, threshold=1.,
-                                     bg_on_data=True,
                                      bg_map=fsaverage.sulc_right)
 
 plotting.plot_surf_contours(fsaverage.infl_right, parcellation, labels=labels,
