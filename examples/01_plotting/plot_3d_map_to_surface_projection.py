@@ -142,8 +142,7 @@ labels = list(regions_dict.values())
 figure = plotting.plot_surf_stat_map(fsaverage.infl_right,
                                      texture, hemi='right',
                                      title='Surface right hemisphere',
-                                     colorbar=True,
-                                     threshold=1.,
+                                     colorbar=True, threshold=1.,
                                      bg_on_data=True,
                                      bg_map=fsaverage.sulc_right)
 
