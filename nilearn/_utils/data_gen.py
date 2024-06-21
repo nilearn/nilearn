@@ -596,8 +596,7 @@ def _generate_signals_from_precisions(
     ----------
     precisions : :obj:`list` of :obj:`numpy.ndarray`
         A list of precision matrices. Every matrix must be square (with the
-        same size) and positive definite. The output of
-        generate_group_sparse_gaussian_graphs() can be used here.
+        same size) and positive definite.
 
     min_samples, max_samples : :obj:`int`, optional
         The number of samples drawn for each timeseries is taken at random
@@ -618,7 +617,7 @@ def _generate_signals_from_precisions(
 
     signals = []
     n_samples = rand_gen.integers(
-        min_n_samples, high=max_n_samples, size=len(precisions)
+        min_n_samples, high=max_n_samples, size=len(precisions), endpoint=True
     )
 
     mean = np.zeros(precisions[0].shape[0])
@@ -649,7 +648,7 @@ def generate_group_sparse_gaussian_graphs(
         Number of signals per subject to generate.
 
     min_n_samples, max_n_samples : :obj:`int`, optional
-        Each subject have a different number of samples, between these two
+        Each subject have a random number of samples, between these two
         numbers. All signals for a given subject have the same number of
         samples. Defaults are 30 and 50.
 
