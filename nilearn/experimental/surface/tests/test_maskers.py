@@ -95,7 +95,7 @@ def test_transform_inverse_transform_with_mask(
 
 
 @pytest.mark.skipif(
-    have_mpl, reason="Test requires matplotlib to be not installed."
+    have_mpl, reason="Test requires matplotlib not to be installed."
 )
 def test_masker_reporting_mpl_warning(mini_mask, mini_label_img):
     """Raise warning after exception if matplotlib is not installed."""

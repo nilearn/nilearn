@@ -577,7 +577,7 @@ def test_3d_images():
 
 
 @pytest.mark.skipif(
-    have_mpl, reason="Test requires matplotlib to be not installed."
+    have_mpl, reason="Test requires matplotlib not to be installed."
 )
 def test_nifti_maps_masker_reporting_mpl_warning():
     """Raise warning after exception if matplotlib is not installed."""

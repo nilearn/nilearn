@@ -933,7 +933,7 @@ def test_3d_images(affine_eye, shape_3d_default, n_regions):
 
 
 @pytest.mark.skipif(
-    have_mpl, reason="Test requires matplotlib to be not installed."
+    have_mpl, reason="Test requires matplotlib not to be installed."
 )
 def test_nifti_labels_masker_reporting_mpl_warning(
     shape_3d_default, n_regions, length, affine_eye
