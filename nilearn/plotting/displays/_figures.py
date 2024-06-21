@@ -255,7 +255,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
 
         Returns
         -------
-        data : :class:`numpy.ndarray`
+        sorted_vertices : :class:`numpy.ndarray`
              (n_vertices, s) x,y,z coordinates of vertices that trace region
              of interest.
 
