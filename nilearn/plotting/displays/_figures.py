@@ -239,7 +239,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
             )
         self.figure.add_traces(data=traces)
 
-    def _get_sorted_edge_centroids(self, parc_idx, elevation: float = 0.1):
+    def _get_sorted_edge_centroids(self, parc_idx, elevation=0.1):
         """Identify which vertices lie on the outer edge of a parcellation.
 
         Parameters
@@ -434,7 +434,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
         return np.logical_and(faces_outside_edge > 0, verts_per_face < 3)
 
     @staticmethod
-    def _project_above_face(point, t0, t1, t2, elevation: float = 0.1):
+    def _project_above_face(point, t0, t1, t2, elevation=0.1):
         u = t1 - t0
         v = t2 - t0
         # vector normal to plane
@@ -473,7 +473,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
         return t >= 0 and t <= 1 and u >= 0 and u <= 1
 
     @staticmethod
-    def _transform_coord_to_plane(v, t0, t1, t2) -> tuple[float, float]:
+    def _transform_coord_to_plane(v, t0, t1, t2):
         A = linalg.orth(np.column_stack((t1 - t0, t2 - t0)))
         normal = np.cross(A[:, 0], A[:, 1])
         normal /= np.linalg.norm(normal)
