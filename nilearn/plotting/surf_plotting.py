@@ -576,7 +576,7 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
     p3dcollec = axes.plot_trisurf(coords[:, 0], coords[:, 1], coords[:, 2],
                                   triangles=faces, linewidth=0.1,
                                   antialiased=False,
-                                  color="white")
+                                  color='white')
 
     # reduce viewing distance to remove space around mesh
     axes.set_box_aspect(None, zoom=1.3)
