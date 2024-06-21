@@ -4,15 +4,17 @@ from __future__ import annotations
 
 import json
 
-import numpy as np
-import pandas as pd
 import pytest
-from numpy.testing import assert_equal
+import numpy as np
+from numpy.testing import assert_almost_equal
+import pandas as pd
 from pandas.api.types import is_object_dtype, is_numeric_dtype
+import nibabel as nib
 
 from nilearn._utils.data_gen import (
     add_metadata_to_bids_dataset,
     basic_paradigm,
+    write_fake_bold_img,
     create_fake_bids_dataset,
     generate_fake_fmri,
     generate_labeled_regions,
@@ -59,13 +61,27 @@ def test_add_metadata_to_bids_derivatives_with_json_path(tmp_path):
 
 @pytest.mark.parametrize("have_spaces", [False, True])
 def test_basic_paradigm(have_spaces):
-    events = basic_paradigm(have_spaces)
+    events = basic_paradigm(condition_names_have_spaces=have_spaces)
 
     assert events.columns.equals(pd.Index(['trial_type', 'onset', 'duration']))
     assert is_object_dtype(events['trial_type'])
     assert is_numeric_dtype(events['onset'])
     assert is_numeric_dtype(events['duration'])
     assert events['trial_type'].str.contains(' ').any() == have_spaces
+
+
+@pytest.mark.parametrize("shape", [(3, 4, 5), (2, 3, 5, 7)])
+@pytest.mark.parametrize("affine", [None, np.diag([.5, .3, 1, 1])])
+def test_write_fake_bold_img(tmp_path, shape, affine, rng):
+    img_file = write_fake_bold_img(
+        file_path=tmp_path / 'fake_bold.nii',
+        shape=shape, affine=affine, random_state=rng
+    )
+    img = nib.load(img_file)
+
+    assert img.get_fdata().shape == shape
+    if affine is not None:
+        assert_almost_equal(img.affine, affine)
 
 
 def _bids_path_template(
@@ -550,20 +566,18 @@ def test_generate_fake_fmri_error(rng):
         )
 
 
-@pytest.mark.parametrize("shape", [(3, 4, 5), (2, 2, 3, 3)])
+@pytest.mark.parametrize("shape", [(3, 4, 5), (2, 3, 5, 7)])
 @pytest.mark.parametrize("affine", [None, np.diag([.5, .3, 1, 1])])
 def test_generate_random_img(shape, affine, rng):
     img, mask = generate_random_img(
-        shape=shape,
-        affine=affine,
-        random_state=rng,
+        shape=shape, affine=affine, random_state=rng
     )
 
     assert img.shape == shape
     assert mask.shape == shape[:3]
     if affine is not None:
-        assert_equal(img.affine, affine)
-        assert_equal(mask.affine, affine)
+        assert_almost_equal(img.affine, affine)
+        assert_almost_equal(mask.affine, affine)
 
 
 @pytest.mark.parametrize("n_subjects", [5, 9])
