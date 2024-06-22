@@ -504,28 +504,24 @@ def write_fake_fmri_data_and_design(
     nilearn._utils.data_gen.generate_fake_fmri_data_and_design
 
     """
-    if affine is None:
-        affine = np.eye(4)
     if file_path is None:
         file_path = Path.cwd()
+    else:
+        file_path = Path(file_path)
+
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes, rk=rk, affine=affine, random_state=random_state
+    )
 
     mask_file, fmri_files, design_files = file_path / "mask.nii", [], []
 
-    rand_gen = np.random.default_rng(random_state)
-    for i, shape in enumerate(shapes):
-        data = rand_gen.standard_normal(shape)
-        data[1:-1, 1:-1, 1:-1] += 100
+    mask.to_filename(mask_file)
+    for i, fmri in enumerate(fmri_data):
         fmri_files.append(str(file_path / f"fmri_run{i:d}.nii"))
-        Nifti1Image(data, affine).to_filename(fmri_files[-1])
-
+        fmri.to_filename(fmri_files[-1])
+    for i, design in enumerate(design_matrices):
         design_files.append(str(file_path / f"dmtx_{i:d}.csv"))
-        pd.DataFrame(
-            rand_gen.standard_normal((shape[3], rk)), columns=["", "", ""]
-        ).to_csv(design_files[-1])
-
-    Nifti1Image(
-        (rand_gen.random(shape[:3]) > 0.5).astype(np.int8), affine
-    ).to_filename(mask_file)
+        design.to_csv(design_files[-1])
 
     return mask_file, fmri_files, design_files
 
