@@ -9,6 +9,7 @@ import numpy as np
 from numpy.testing import assert_almost_equal
 import pandas as pd
 from pandas.api.types import is_object_dtype, is_numeric_dtype
+from pandas.testing import assert_frame_equal
 import nibabel as nib
 
 from nilearn._utils.data_gen import (
@@ -17,11 +18,15 @@ from nilearn._utils.data_gen import (
     write_fake_bold_img,
     create_fake_bids_dataset,
     generate_fake_fmri,
+    generate_fake_fmri_data_and_design,
+    write_fake_fmri_data_and_design,
     generate_labeled_regions,
     generate_maps,
     generate_regions_ts,
     generate_random_img,
-    generate_group_sparse_gaussian_graphs
+    generate_group_sparse_gaussian_graphs,
+    generate_timeseries,
+    generate_mni_space_img
 )
 from nilearn.image import get_data
 
@@ -566,6 +571,51 @@ def test_generate_fake_fmri_error(rng):
         )
 
 
+@pytest.mark.parametrize(
+    "shapes",
+    [[(2, 3, 5, 7)],
+     [(5, 5, 5, 3), (5, 5, 5, 5)]]
+)
+@pytest.mark.parametrize("rk", [1, 3])
+@pytest.mark.parametrize("affine", [None, np.diag([.5, .3, 1, 1])])
+def test_fake_fmri_data_and_design(tmp_path, shapes, rk, affine):
+    # test generate
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes, rk=rk, affine=affine, random_state=42
+    )
+
+    for fmri, shape in zip(fmri_data, shapes):
+        assert mask.shape == shape[:3]
+        assert fmri.shape == shape
+        if affine is not None:
+            assert_almost_equal(fmri.affine, affine)
+
+    for design, shape in zip(design_matrices, shapes):
+        assert design.shape == (shape[3], rk)
+
+    # test write
+    mask_file, fmri_files, design_files = write_fake_fmri_data_and_design(
+        shapes, rk=rk, affine=affine, random_state=42,
+        file_path=tmp_path
+    )
+
+    mask_img = nib.load(mask_file)
+    assert_almost_equal(mask_img.get_fdata(), mask.get_fdata())
+    assert_almost_equal(mask_img.affine, mask.affine)
+
+    for fmri_file, fmri in zip(fmri_files, fmri_data):
+        fmri_img = nib.load(fmri_file)
+        assert_almost_equal(fmri_img.get_fdata(), fmri.get_fdata())
+        assert_almost_equal(fmri_img.affine, fmri.affine)
+
+    for design_file, design in zip(design_files, design_matrices):
+        assert_frame_equal(
+            pd.read_csv(design_file, index_col=0),
+            design,
+            check_exact=False
+        )
+
+
 @pytest.mark.parametrize("shape", [(3, 4, 5), (2, 3, 5, 7)])
 @pytest.mark.parametrize("affine", [None, np.diag([.5, .3, 1, 1])])
 def test_generate_random_img(shape, affine, rng):
@@ -609,3 +659,31 @@ def test_generate_group_sparse_gaussian_graphs(
 
     eigenvalues = np.array([np.linalg.eigvalsh(p) for p in precisions])
     assert np.all(eigenvalues >= 0)
+
+
+@pytest.mark.parametrize("n_timepoints", [1, 9])
+@pytest.mark.parametrize("n_features", [1, 9])
+def test_generate_timeseries(n_timepoints, n_features, rng):
+    timeseries = generate_timeseries(n_timepoints, n_features, rng)
+    assert timeseries.shape == (n_timepoints, n_features)
+
+
+@pytest.mark.parametrize("n_scans", [1, 5])
+@pytest.mark.parametrize("res", [1, 30])
+@pytest.mark.parametrize("mask_dilation", [1, 2])
+def test_generate_mni_space_img(n_scans, res, mask_dilation, rng):
+    inverse_img, mask_img = generate_mni_space_img(
+        n_scans=n_scans, res=res, mask_dilation=mask_dilation, random_state=rng
+    )
+
+    def resample_dim(orig, res):
+        return (orig - 2) // res + 2
+    expected_shape = (
+        resample_dim(197, res),
+        resample_dim(233, res),
+        resample_dim(189, res)
+    )
+    assert inverse_img.shape[:3] == expected_shape
+    assert inverse_img.shape[3] == n_scans
+    assert mask_img.shape == expected_shape
+    assert_almost_equal(inverse_img.affine, mask_img.affine)
