@@ -92,7 +92,7 @@ print(f"Fsaverage5 sulcal curvature map: {fsaverage_curvature}")
 timeseries = nki_dataset[0].data.parts[hemi].T
 
 # Extract seed region via label
-pcc_region = b"G_cingul-Post-dorsal"
+pcc_region = "G_cingul-Post-dorsal"
 
 import numpy as np
 
