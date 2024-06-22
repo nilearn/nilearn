@@ -340,6 +340,27 @@ def test_surface_figure_add_contours_raises_not_implemented():
 
 @pytest.mark.skipif(not is_plotly_installed(),
                     reason="Plotly is not installed; required for this test.")
+def test_plot_surf_contours_errors_with_plotly_figure():
+    """Test that plot_surf_contours rasises error when given plotly obj."""
+    mesh = generate_surf()
+    figure = plot_surf(mesh, engine="plotly")
+    with pytest.raises(ValueError):
+        plot_surf_contours(mesh, np.ones((10,)), figure=figure)
+
+
+@pytest.mark.skipif(not is_plotly_installed(),
+                    reason="Plotly is not installed; required for this test.")
+def test_plot_surf_contours_errors_with_plotly_axes():
+    """Test that plot_surf_contours rasises error when given plotly \
+        obj as axis."""
+    mesh = generate_surf()
+    figure = plot_surf(mesh, engine="plotly")
+    with pytest.raises(ValueError):
+        plot_surf_contours(mesh, np.ones((10,)), axes=figure)
+
+
+@pytest.mark.skipif(not is_plotly_installed(),
+                    reason="Plotly is not installed; required for this test.")
 @pytest.mark.parametrize(
     "levels,labels",
     [
