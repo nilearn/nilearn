@@ -220,7 +220,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
                 warnings.warn(
                     f"""{label=} contains isolated vertices:
                     {isolated_v.tolist()}. These will not be included in ROI
-                    boundary line."""
+                    boundary line.""", stacklevel=2
                 )
 
             sorted_vertices = self._get_sorted_edge_centroids(
