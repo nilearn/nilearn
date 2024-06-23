@@ -4,29 +4,29 @@ from __future__ import annotations
 
 import json
 
-import pytest
-import numpy as np
-from numpy.testing import assert_almost_equal
-import pandas as pd
-from pandas.api.types import is_object_dtype, is_numeric_dtype
-from pandas.testing import assert_frame_equal
 import nibabel as nib
+import numpy as np
+import pandas as pd
+import pytest
+from numpy.testing import assert_almost_equal
+from pandas.api.types import is_numeric_dtype, is_object_dtype
+from pandas.testing import assert_frame_equal
 
 from nilearn._utils.data_gen import (
     add_metadata_to_bids_dataset,
     basic_paradigm,
-    write_fake_bold_img,
     create_fake_bids_dataset,
     generate_fake_fmri,
     generate_fake_fmri_data_and_design,
-    write_fake_fmri_data_and_design,
+    generate_group_sparse_gaussian_graphs,
     generate_labeled_regions,
     generate_maps,
-    generate_regions_ts,
+    generate_mni_space_img,
     generate_random_img,
-    generate_group_sparse_gaussian_graphs,
+    generate_regions_ts,
     generate_timeseries,
-    generate_mni_space_img
+    write_fake_bold_img,
+    write_fake_fmri_data_and_design,
 )
 from nilearn.image import get_data
 
@@ -68,19 +68,21 @@ def test_add_metadata_to_bids_derivatives_with_json_path(tmp_path):
 def test_basic_paradigm(have_spaces):
     events = basic_paradigm(condition_names_have_spaces=have_spaces)
 
-    assert events.columns.equals(pd.Index(['trial_type', 'onset', 'duration']))
-    assert is_object_dtype(events['trial_type'])
-    assert is_numeric_dtype(events['onset'])
-    assert is_numeric_dtype(events['duration'])
-    assert events['trial_type'].str.contains(' ').any() == have_spaces
+    assert events.columns.equals(pd.Index(["trial_type", "onset", "duration"]))
+    assert is_object_dtype(events["trial_type"])
+    assert is_numeric_dtype(events["onset"])
+    assert is_numeric_dtype(events["duration"])
+    assert events["trial_type"].str.contains(" ").any() == have_spaces
 
 
 @pytest.mark.parametrize("shape", [(3, 4, 5), (2, 3, 5, 7)])
-@pytest.mark.parametrize("affine", [None, np.diag([.5, .3, 1, 1])])
+@pytest.mark.parametrize("affine", [None, np.diag([0.5, 0.3, 1, 1])])
 def test_write_fake_bold_img(tmp_path, shape, affine, rng):
     img_file = write_fake_bold_img(
-        file_path=tmp_path / 'fake_bold.nii',
-        shape=shape, affine=affine, random_state=rng
+        file_path=tmp_path / "fake_bold.nii",
+        shape=shape,
+        affine=affine,
+        random_state=rng,
     )
     img = nib.load(img_file)
 
@@ -572,12 +574,10 @@ def test_generate_fake_fmri_error(rng):
 
 
 @pytest.mark.parametrize(
-    "shapes",
-    [[(2, 3, 5, 7)],
-     [(5, 5, 5, 3), (5, 5, 5, 5)]]
+    "shapes", [[(2, 3, 5, 7)], [(5, 5, 5, 3), (5, 5, 5, 5)]]
 )
 @pytest.mark.parametrize("rk", [1, 3])
-@pytest.mark.parametrize("affine", [None, np.diag([.5, .3, 1, 1])])
+@pytest.mark.parametrize("affine", [None, np.diag([0.5, 0.3, 1, 1])])
 def test_fake_fmri_data_and_design(tmp_path, shapes, rk, affine):
     # test generate
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
@@ -595,8 +595,7 @@ def test_fake_fmri_data_and_design(tmp_path, shapes, rk, affine):
 
     # test write
     mask_file, fmri_files, design_files = write_fake_fmri_data_and_design(
-        shapes, rk=rk, affine=affine, random_state=42,
-        file_path=tmp_path
+        shapes, rk=rk, affine=affine, random_state=42, file_path=tmp_path
     )
 
     mask_img = nib.load(mask_file)
@@ -610,14 +609,12 @@ def test_fake_fmri_data_and_design(tmp_path, shapes, rk, affine):
 
     for design_file, design in zip(design_files, design_matrices):
         assert_frame_equal(
-            pd.read_csv(design_file, index_col=0),
-            design,
-            check_exact=False
+            pd.read_csv(design_file, index_col=0), design, check_exact=False
         )
 
 
 @pytest.mark.parametrize("shape", [(3, 4, 5), (2, 3, 5, 7)])
-@pytest.mark.parametrize("affine", [None, np.diag([.5, .3, 1, 1])])
+@pytest.mark.parametrize("affine", [None, np.diag([0.5, 0.3, 1, 1])])
 def test_generate_random_img(shape, affine, rng):
     img, mask = generate_random_img(
         shape=shape, affine=affine, random_state=rng
@@ -643,7 +640,7 @@ def test_generate_group_sparse_gaussian_graphs(
         min_n_samples=n_samples_range[0],
         max_n_samples=n_samples_range[1],
         density=density,
-        random_state=rng
+        random_state=rng,
     )
 
     assert len(signals) == n_subjects
@@ -651,8 +648,10 @@ def test_generate_group_sparse_gaussian_graphs(
 
     signal_shapes = np.array([s.shape for s in signals])
     precision_shapes = np.array([p.shape for p in precisions])
-    assert np.all((signal_shapes[:, 0] >= n_samples_range[0])
-                  & (signal_shapes[:, 0] <= n_samples_range[1]))
+    assert np.all(
+        (signal_shapes[:, 0] >= n_samples_range[0])
+        & (signal_shapes[:, 0] <= n_samples_range[1])
+    )
     assert np.all(signal_shapes[:, 1] == n_features)
     assert np.all(precision_shapes == (n_features, n_features))
     assert topology.shape == (n_features, n_features)
@@ -678,10 +677,11 @@ def test_generate_mni_space_img(n_scans, res, mask_dilation, rng):
 
     def resample_dim(orig, res):
         return (orig - 2) // res + 2
+
     expected_shape = (
         resample_dim(197, res),
         resample_dim(233, res),
-        resample_dim(189, res)
+        resample_dim(189, res),
     )
     assert inverse_img.shape[:3] == expected_shape
     assert inverse_img.shape[3] == n_scans
