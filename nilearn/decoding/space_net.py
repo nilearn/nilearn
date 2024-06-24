@@ -240,14 +240,16 @@ class _EarlyStoppingCallback:
             and np.mean(np.diff(self.test_scores[-5:][::-1])) >= self.tol
         ):
             message = "."
-            if self.verbose:
+            if self.verbose > 1:
                 message = (
                     f"Early stopping. \n" f"Test score: {score:.8f} {40 * '-'}"
                 )
-            logger.log(message)
+            logger.log(message, verbose=self.verbose)
             return True
 
-        logger.log(f"Test score: {score:.8f}", verbose=self.verbose)
+        logger.log(
+            f"Test score: {score:.8f}", verbose=self.verbose, msg_level=1
+        )
         return False
 
     def _debias(self, w):
