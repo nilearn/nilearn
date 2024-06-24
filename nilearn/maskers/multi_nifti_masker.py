@@ -200,7 +200,7 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
         """
         # Load data (if filenames are given, load them)
         logger.log(
-            f"[{self.__class__.__name__}.fit] Loading data from "
+            f"Loading data from "
             f"{_utils._repr_niimgs(imgs, shorten=False)}.",
             self.verbose,
         )
