@@ -11,7 +11,6 @@ For example: TV-L1, Graph-Net, etc
 #         THIRION Bertrand
 
 import collections
-import sys
 import time
 import warnings
 from functools import partial
@@ -34,7 +33,7 @@ from nilearn.experimental.surface import SurfaceMasker
 from nilearn.image import get_data
 from nilearn.masking import unmask_from_to_3d_array
 
-from .._utils import fill_doc
+from .._utils import fill_doc, logger
 from .._utils.cache_mixin import CacheMixin
 from .._utils.param_validation import adjust_screening_percentile
 from .space_net_solvers import (
@@ -240,18 +239,15 @@ class _EarlyStoppingCallback:
             len(self.test_scores) > 4
             and np.mean(np.diff(self.test_scores[-5:][::-1])) >= self.tol
         ):
+            message = "."
             if self.verbose:
-                if self.verbose > 1:
-                    print(
-                        "Early stopping. "
-                        f"Test score: {score:.8f} {40 * '-'}"
-                    )
-                else:
-                    sys.stderr.write(".")
+                message = (
+                    f"Early stopping. \n" f"Test score: {score:.8f} {40 * '-'}"
+                )
+            logger.log(message)
             return True
 
-        if self.verbose > 1:
-            print(f"Test score: {score:.8f}")
+        logger.log(f"Test score: {score:.8f}", verbose=self.verbose)
         return False
 
     def _debias(self, w):

@@ -7,7 +7,6 @@ import hashlib
 import os
 import pickle
 import shutil
-import sys
 import tarfile
 import time
 import urllib
@@ -18,7 +17,8 @@ from pathlib import Path
 import numpy as np
 import requests
 
-from .._utils import fill_doc
+from nilearn._utils import fill_doc, logger
+
 from .utils import get_data_dirs
 
 _REQUESTS_TIMEOUT = (15.1, 61)
@@ -90,7 +90,7 @@ def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
 
     """
     if not total_size:
-        sys.stderr.write(f"\rDownloaded {int(bytes_so_far)} of ? bytes.")
+        logger.log(f"\rDownloaded {int(bytes_so_far)} of ? bytes.")
 
     else:
         # Estimate remaining download time
@@ -103,9 +103,8 @@ def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
         # Minimum rate of 0.01 bytes/s, to avoid dividing by zero.
         time_remaining = bytes_remaining / max(0.01, download_rate)
 
-        # Trailing whitespace is to erase extra char when message length
-        # varies
-        sys.stderr.write(
+        # Trailing whitespace is to erase extra char when message length varies
+        logger.log(
             "\rDownloaded %d of %d bytes (%.1f%%, %s remaining)"
             % (
                 bytes_so_far,
@@ -325,8 +324,8 @@ def uncompress_file(file_, delete_archive=True, verbose=1):
     This handles zip, tar, gzip and bzip files only.
 
     """
-    if verbose > 0:
-        sys.stderr.write(f"Extracting data from {file_}...")
+    logger.log(f"Extracting data from {file_}...", verbose=verbose)
+
     data_dir = os.path.dirname(file_)
     # We first try to see if it is a zip file
     try:
@@ -368,11 +367,10 @@ def uncompress_file(file_, delete_archive=True, verbose=1):
         if not processed:
             raise OSError(f"[Uncompress] unknown archive file format: {file_}")
 
-        if verbose > 0:
-            sys.stderr.write(".. done.\n")
+        logger.log(".. done.\n", verbose=verbose)
+
     except Exception as e:
-        if verbose > 0:
-            print(f"Error uncompressing file: {e}")
+        logger.log(f"Error uncompressing file: {e}", verbose=verbose)
         raise
 
 
@@ -641,13 +639,14 @@ def fetch_single_file(
                     )
         shutil.move(temp_full_name, full_name)
         dt = time.time() - t0
-        if verbose > 0:
-            # Complete the reporting hook
-            sys.stderr.write(
-                f" ...done. ({dt:.0f} seconds, {dt // 60:.0f} min)\n"
-            )
+
+        # Complete the reporting hook
+        logger.log(
+            f" ...done. ({dt:.0f} seconds, {dt // 60:.0f} min)\n",
+            verbose=verbose,
+        )
     except requests.RequestException:
-        sys.stderr.write(
+        logger.log(
             f"Error while fetching file {file_name}; dataset fetching aborted."
         )
         raise
