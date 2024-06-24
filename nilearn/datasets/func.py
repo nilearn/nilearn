@@ -16,12 +16,7 @@ import nibabel as nib
 import numpy as np
 import pandas as pd
 from scipy.io import loadmat
-
-try:
-    from scipy.io.matlab import MatReadError
-except ImportError:  # SciPy < 1.8
-    from scipy.io.matlab.miobase import MatReadError
-
+from scipy.io.matlab import MatReadError
 from sklearn.utils import Bunch
 
 from nilearn.image import get_data
