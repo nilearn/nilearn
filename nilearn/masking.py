@@ -631,7 +631,7 @@ def compute_brain_mask(
     mask : :class:`nibabel.nifti1.Nifti1Image`
         The whole-brain mask (3D image).
     """
-    logger.log("Template", mask_type, "mask computation", verbose)
+    logger.log(f"Template {mask_type} mask computation", verbose)
 
     target_img = _utils.check_niimg(target_img)
 
