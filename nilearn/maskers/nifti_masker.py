@@ -307,7 +307,17 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
 
     def generate_report(self):
         """Generate a report of the masker."""
-        from nilearn.reporting.html_report import generate_report
+        try:
+            from nilearn.reporting.html_report import generate_report
+        except ImportError:
+            with warnings.catch_warnings():
+                mpl_unavail_msg = (
+                    "Matplotlib is not imported! "
+                    "No reports will be generated."
+                )
+                warnings.filterwarnings("always", message=mpl_unavail_msg)
+                warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
+                return [None]
 
         return generate_report(self)
 
@@ -320,23 +330,9 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             A list of all displays to be rendered.
 
         """
-        try:
-            import matplotlib.pyplot as plt
+        import matplotlib.pyplot as plt
 
-            from nilearn import plotting
-
-        except ImportError:
-            with warnings.catch_warnings():
-                mpl_unavail_msg = (
-                    "Matplotlib is not imported! "
-                    "No reports will be generated."
-                )
-                warnings.filterwarnings("always", message=mpl_unavail_msg)
-                warnings.warn(
-                    category=ImportWarning,
-                    message=mpl_unavail_msg,
-                )
-                return [None]
+        from nilearn import plotting
 
         # Handle the edge case where this function is
         # called with a masker having report capabilities disabled
@@ -469,6 +465,8 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         if self.verbose > 0:
             print(f"[{self.__class__.__name__}.fit] Resampling mask")
 
+        # TODO switch to force_resample=True
+        # when bumping to version > 0.13
         self.mask_img_ = self._cache(image.resample_img)(
             self.mask_img_,
             target_affine=self.target_affine,
@@ -476,6 +474,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             copy=False,
             interpolation="nearest",
             copy_header=True,
+            force_resample=False,
         )
 
         if self.target_affine is not None:  # resample image to target affine
@@ -498,12 +497,15 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             and self.reports
         ):
             if imgs is not None:
+                # TODO switch to force_resample=True
+                # when bumping to version > 0.13
                 resampl_imgs = self._cache(image.resample_img)(
                     imgs,
                     target_affine=self.affine_,
                     copy=False,
                     interpolation="nearest",
                     copy_header=True,
+                    force_resample=False,
                 )
                 resampl_imgs, _ = compute_middle_image(resampl_imgs)
             else:  # imgs not provided to fit

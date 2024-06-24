@@ -550,12 +550,15 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         if self.reports:
             if X is not None:
                 if self.mask_img_ is not None:
+                    # TODO switch to force_resample=True
+                    # when bumping to version > 0.13
                     resampl_imgs = self._cache(image.resample_img)(
                         X,
                         target_affine=self.mask_img_.affine,
                         copy=False,
                         interpolation="nearest",
                         copy_header=True,
+                        force_resample=False,
                     )
                 else:
                     resampl_imgs = X

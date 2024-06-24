@@ -168,8 +168,8 @@ destrieux_atlas, label_names = fetch_destrieux(mesh_type="inflated")
 
 # these are the regions we want to outline
 regions_dict = {
-    b"G_postcentral": "Postcentral gyrus",
-    b"G_precentral": "Precentral gyrus",
+    "G_postcentral": "Postcentral gyrus",
+    "G_precentral": "Precentral gyrus",
 }
 
 # get indices in atlas for these labels

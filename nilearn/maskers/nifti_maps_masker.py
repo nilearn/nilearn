@@ -248,7 +248,17 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
-        from nilearn.reporting.html_report import generate_report
+        try:
+            from nilearn.reporting.html_report import generate_report
+        except ImportError:
+            with warnings.catch_warnings():
+                mpl_unavail_msg = (
+                    "Matplotlib is not imported! "
+                    "No reports will be generated."
+                )
+                warnings.filterwarnings("always", message=mpl_unavail_msg)
+                warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
+                return [None]
 
         incorrect_type = not isinstance(
             displayed_maps, (list, np.ndarray, int, str)
@@ -548,12 +558,15 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
             ):
                 if self.verbose > 0:
                     print("Resampling maps")
+                # TODO switch to force_resample=True
+                # when bumping to version > 0.13
                 self._resampled_maps_img_ = self._cache(image.resample_img)(
                     self.maps_img_,
                     interpolation="continuous",
                     target_shape=ref_img.shape[:3],
                     target_affine=ref_img.affine,
                     copy_header=True,
+                    force_resample=False,
                 )
 
             if (
@@ -565,12 +578,15 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
             ):
                 if self.verbose > 0:
                     print("Resampling mask")
+                # TODO switch to force_resample=True
+                # when bumping to version > 0.13
                 self._resampled_mask_img_ = self._cache(image.resample_img)(
                     self.mask_img_,
                     interpolation="nearest",
                     target_shape=ref_img.shape[:3],
                     target_affine=ref_img.affine,
                     copy_header=True,
+                    force_resample=False,
                 )
 
         if not self.allow_overlap:

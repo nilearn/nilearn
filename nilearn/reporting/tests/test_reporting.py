@@ -14,15 +14,7 @@ from nilearn.reporting.get_clusters_table import (
 
 # Avoid making pyflakes unhappy
 _set_mpl_backend
-try:
-    import matplotlib.pyplot
-
-    # Avoid making pyflakes unhappy
-    matplotlib.pyplot
-except ImportError:
-    have_mpl = False
-else:
-    have_mpl = True
+from nilearn.conftest import have_mpl
 
 
 @pytest.fixture
