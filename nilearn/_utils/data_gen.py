@@ -644,7 +644,7 @@ def generate_group_sparse_gaussian_graphs(
         Number of signals per subject to generate.
 
     min_n_samples, max_n_samples : :obj:`int`, optional
-        Each subject have a random number of samples, between these two
+        Each subject has a random number of samples, between these two
         numbers. All signals for a given subject have the same number of
         samples. Defaults are 30 and 50.
 
