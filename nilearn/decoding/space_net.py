@@ -844,8 +844,8 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
             )
         else:
             self.memory_ = self.memory
-        if self.verbose:
-            tic = time.time()
+
+        tic = time.time()
 
         masker_type = "nii"
         if isinstance(self.mask, SurfaceMasker):
