@@ -1706,8 +1706,8 @@ def _report_found_files(files, text, sub_label, filters, verbose):
     logger.log(
         f"\nFound the following {len(files)} {text} files\n"
         f"- for subject {sub_label}\n"
-        f"- for filter: {filters}:\n"
-        f"\t- {'\n\t- '.join(files)}\n",
+        f"- for filter: {filters}:\n\t"
+        f"- {'\n\t- '.join(files)}\n",
         verbose=verbose,
         stack_level=3,
     )
