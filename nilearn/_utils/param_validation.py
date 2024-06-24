@@ -155,21 +155,21 @@ def adjust_screening_percentile(screening_percentile, mask_img, verbose=0):
 
     logger.log(
         f"Mask volume = {mask_volume:g}mm^3 = {mask_volume / 1000.0:g}cm^3",
-        versbose=verbose,
+        verbose=verbose,
     )
     logger.log(
         "Standard brain volume "
         f"= {MNI152_BRAIN_VOLUME:g}mm^3 "
         f"= {MNI152_BRAIN_VOLUME / 1.0e3:g}cm^3",
-        versbose=verbose,
+        verbose=verbose,
     )
     logger.log(
         f"Original screening-percentile: {original_screening_percentile:g}",
-        versbose=verbose,
+        verbose=verbose,
     )
     logger.log(
         f"Volume-corrected screening-percentile: {screening_percentile:g}",
-        versbose=verbose,
+        verbose=verbose,
     )
     return screening_percentile
 

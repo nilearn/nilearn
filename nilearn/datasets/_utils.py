@@ -159,10 +159,12 @@ def _chunk_read_(
             total_size = response.headers.get("Content-Length").strip()
         total_size = int(total_size) + initial_size
     except Exception as e:
-        if verbose > 2:
-            print("Warning: total size could not be determined.")
-            if verbose > 3:
-                print(f"Full stack trace: {e}")
+        logger.log(
+            "Warning: total size could not be determined.",
+            verbose=verbose,
+            msg_level=2,
+        )
+        logger.log(f"Full stack trace: {e}", verbose=verbose, msg_level=3)
         total_size = None
     bytes_so_far = initial_size
 
@@ -228,8 +230,7 @@ def get_dataset_dir(
 
     paths.extend([(d, False) for d in get_data_dirs(data_dir=data_dir)])
 
-    if verbose > 2:
-        print(f"Dataset search paths: {paths}")
+    logger.log(f"Dataset search paths: {paths}", verbose=verbose, msg_level=2)
 
     # Check if the dataset exists somewhere
     for path, is_pre_dir in paths:
@@ -239,8 +240,9 @@ def get_dataset_dir(
             # Resolve path
             path = readlinkabs(path)
         if os.path.exists(path) and os.path.isdir(path):
-            if verbose > 1:
-                print(f"\nDataset found in {path}\n")
+            logger.log(
+                f"\nDataset found in {path}\n", verbose=verbose, msg_level=1
+            )
             return path
 
     # If not, create a folder in the first writeable directory
@@ -255,8 +257,9 @@ def get_dataset_dir(
                     data_dir=data_dir,
                     verbose=verbose,
                 )
-                if verbose > 0:
-                    print(f"\nDataset created in {path}\n")
+
+                logger.log(f"\nDataset created in {path}\n", verbose)
+
                 return path
             except Exception as exc:
                 short_error_message = getattr(exc, "strerror", str(exc))
@@ -281,8 +284,8 @@ and atlases downloaded from the internet.
 It can be safely deleted.
 If you delete it, previously downloaded data will be downloaded again."""
                 )
-            if verbose > 0:
-                print(f"\nAdded README.md to {d}\n")
+
+            logger.log(f"\nAdded README.md to {d}\n", verbose)
 
 
 # The functions _is_within_directory and _safe_extract were implemented in
@@ -575,9 +578,10 @@ def fetch_single_file(
                     "Request has been blocked for security reasons."
                 )
             auth = (username, password)
-        if verbose > 0:
-            displayed_url = url.split("?")[0] if verbose == 1 else url
-            print(f"Downloading data from {displayed_url} ...")
+
+        displayed_url = url.split("?")[0] if verbose == 1 else url
+        logger.log(f"Downloading data from {displayed_url} ...", verbose)
+
         if resume and os.path.exists(temp_full_name):
             # Download has been interrupted, we try to resume it.
             local_file_size = os.path.getsize(temp_full_name)
@@ -607,8 +611,9 @@ def fetch_single_file(
                             verbose=verbose,
                         )
             except Exception:
-                if verbose > 0:
-                    print("Resuming failed, try to download the whole file.")
+                logger.log(
+                    "Resuming failed, try to download the whole file.", verbose
+                )
                 return fetch_single_file(
                     url,
                     data_dir,

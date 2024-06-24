@@ -70,7 +70,9 @@ def is_spd(M, decimal=15, verbose=1):
     eigvalsh = np.linalg.eigvalsh(M)
     ispd = eigvalsh.min() > 0
 
-    if not ispd and verbose > 0:
-        logger.log(f"matrix has a negative eigenvalue: {eigvalsh.min():.3f}")
+    if not ispd:
+        logger.log(
+            f"matrix has a negative eigenvalue: {eigvalsh.min():.3f}", verbose
+        )
 
     return ispd

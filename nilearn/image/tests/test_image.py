@@ -1264,7 +1264,7 @@ def test_concat_niimgs(affine_eye, tmp_path):
     img1c = Nifti1Image(np.ones(shape3), affine_eye)
 
     # check basic concatenation with equal shape/affine
-    # versbose for coverage
+    # verbose for coverage
     concatenated = concat_imgs((img1, img2, img1), verbose=1)
 
     # smoke-test auto_resample
