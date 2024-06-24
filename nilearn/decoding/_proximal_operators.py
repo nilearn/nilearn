@@ -8,6 +8,8 @@ from math import sqrt
 
 import numpy as np
 
+from nilearn._utils import logger
+
 from ._objective_functions import (
     divergence_id,
     gradient_id,
@@ -246,10 +248,13 @@ def prox_tvl1(
                     weight,
                     l1_ratio=l1_ratio,
                 )
-                if verbose:
-                    print(
-                        f"\tProxTVl1: Iteration {i: 2}, dual gap: {dgap: 6.3e}"
-                    )
+
+                logger.log(
+                    f"\tProxTVl1: Iteration {i: 2}, "
+                    f"dual gap: {dgap: 6.3e}",
+                    verbose,
+                )
+
                 if dgap < dgap_tol:
                     break
                 if old_dgap < dgap:
@@ -262,16 +267,18 @@ def prox_tvl1(
                 # Stopping criterion based on x_tol
                 diff = np.max(np.abs(negated_output_old - negated_output))
                 diff /= np.max(np.abs(negated_output))
-                if verbose:
-                    gid = gradient_id(negated_output, l1_ratio=l1_ratio)
-                    energy = _objective_function_prox_tvl1(
-                        input_img, -negated_output, gid, weight
-                    )
-                    print(
-                        f"\tProxTVl1 iteration {i: 2}, "
-                        f"relative difference: {diff: 6.3e}, "
-                        f"energy: {energy: 6.3e}"
-                    )
+
+                gid = gradient_id(negated_output, l1_ratio=l1_ratio)
+                energy = _objective_function_prox_tvl1(
+                    input_img, -negated_output, gid, weight
+                )
+                logger.log(
+                    f"\tProxTVl1 iteration {i: 2}, "
+                    f"relative difference: {diff: 6.3e}, "
+                    f"energy: {energy: 6.3e}",
+                    verbose,
+                )
+
                 if diff < x_tol:
                     break
                 negated_output_old = negated_output

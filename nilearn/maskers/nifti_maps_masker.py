@@ -6,6 +6,7 @@ import numpy as np
 from joblib import Memory
 
 from nilearn import _utils, image
+from nilearn._utils import logger
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 
@@ -420,8 +421,8 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
             )
 
         elif self.resampling_target == "mask" and self.mask_img_ is not None:
-            if self.verbose > 0:
-                print("Resampling maps")
+
+            logger.log("Resampling maps", self.verbose)
 
             # TODO switch to force_resample=True
             # when bumping to version > 0.13
@@ -436,8 +437,8 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
             )
 
         elif self.resampling_target == "maps" and self.mask_img_ is not None:
-            if self.verbose > 0:
-                print("Resampling mask")
+
+            logger.log("Resampling mask", self.verbose)
 
             # TODO switch to force_resample=True
             # when bumping to version > 0.13
@@ -556,8 +557,8 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 ref_img,
                 self._resampled_maps_img_,
             ):
-                if self.verbose > 0:
-                    print("Resampling maps")
+
+                logger.log("Resampling maps", self.verbose)
                 # TODO switch to force_resample=True
                 # when bumping to version > 0.13
                 self._resampled_maps_img_ = self._cache(image.resample_img)(
@@ -576,8 +577,8 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                     self.mask_img_,
                 )
             ):
-                if self.verbose > 0:
-                    print("Resampling mask")
+
+                logger.log("Resampling mask", self.verbose)
                 # TODO switch to force_resample=True
                 # when bumping to version > 0.13
                 self._resampled_mask_img_ = self._cache(image.resample_img)(

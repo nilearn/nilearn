@@ -25,6 +25,7 @@ from .._utils import (
     check_niimg_3d,
     check_niimg_4d,
     fill_doc,
+    logger,
 )
 from .._utils.exceptions import DimensionError
 from .._utils.helpers import (
@@ -1591,13 +1592,10 @@ def concat_imgs(
             ),
         )
     ):
-        if verbose > 0:
-            nii_str = (
-                f"image {niimg}"
-                if isinstance(niimg, str)
-                else f"image #{index}"
-            )
-            print(f"Concatenating {index + 1}: {nii_str}")
+        nii_str = (
+            f"image {niimg}" if isinstance(niimg, str) else f"image #{index}"
+        )
+        logger.log(f"Concatenating {index + 1}: {nii_str}", verbose)
 
         data[..., cur_4d_index : cur_4d_index + size] = _get_data(niimg)
         cur_4d_index += size

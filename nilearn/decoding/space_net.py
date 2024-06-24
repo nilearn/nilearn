@@ -998,11 +998,11 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         self.coef_img_ = self.masker_.inverse_transform(self.coef_)
 
         # report time elapsed
-        if self.verbose:
-            duration = time.time() - tic
-            print(
-                f"Time Elapsed: {duration} seconds, {duration / 60.0} minutes."
-            )
+        duration = time.time() - tic
+        logger.log(
+            f"Time Elapsed: {duration} seconds, {duration / 60.0} minutes.",
+            self.verbose,
+        )
 
         return self
 

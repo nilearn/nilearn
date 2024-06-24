@@ -6,6 +6,7 @@ import numpy as np
 from joblib import Memory
 
 from nilearn import _utils, image, masking
+from nilearn._utils import logger
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 
@@ -699,8 +700,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                     self._resampled_mask_img,
                 )
             ):
-                if self.verbose > 0:
-                    print("Resampling mask")
+                logger.log("Resampling mask", self.verbose)
                 self._resampled_mask_img = self._cache(
                     image.resample_img, func_memory_level=2
                 )(
@@ -792,8 +792,8 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         return region_signals
 
     def _resample_labels(self, imgs_):
-        if self.verbose > 0:
-            print("Resampling labels")
+
+        logger.log("Resampling labels", self.verbose)
         labels_before_resampling = set(
             np.unique(_utils.niimg.safe_get_data(self._resampled_labels_img_))
         )

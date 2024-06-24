@@ -22,7 +22,12 @@ from sklearn.feature_extraction import DictVectorizer
 from sklearn.utils import Bunch
 
 from ..image import resample_img
-from ._utils import fetch_single_file, get_dataset_descr, get_dataset_dir
+from ._utils import (
+    fetch_single_file,
+    get_dataset_descr,
+    get_dataset_dir,
+    logger,
+)
 
 _NEUROVAULT_BASE_URL = "https://neurovault.org/api/"
 _NEUROVAULT_COLLECTIONS_URL = urljoin(_NEUROVAULT_BASE_URL, "collections/")
@@ -909,6 +914,8 @@ def _print_if(message, level, threshold_level, with_traceback=False):
         if `message` is printed, also print the last traceback.
 
     """
+    # TODO replace by the nileanr logger,
+    # that does almost exactly the same thing!
     if level > threshold_level:
         return
     print(message)
@@ -1525,7 +1532,7 @@ def _download_image_nii_file(image_info, collection, download_params):
         )
 
         # Resample here
-        print("Resampling...")
+        logger.log("Resampling...")
         # TODO switch to force_resample=True
         # when bumping to version > 0.13
         im_resampled = resample_img(

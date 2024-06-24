@@ -15,7 +15,7 @@ from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
-from nilearn._utils import fill_doc
+from nilearn._utils import fill_doc, logger
 from nilearn.image import get_data
 from nilearn.masking import unmask_from_to_3d_array
 
@@ -416,9 +416,10 @@ def recursive_neighbor_agglomeration(
         n_components = connectivity.shape[0]
 
         if verbose > 0:
-            print(
+            logger.log(
                 f"After iteration number {i + 1}, features are "
-                f" grouped into {n_components} clusters"
+                f" grouped into {n_components} clusters",
+                verbose,
             )
 
         if n_components <= n_clusters:

@@ -518,10 +518,8 @@ class SecondLevelModel(BaseGLM):
 
         # Report progress
         logger.log(
-            (
-                "\nComputation of second level model done in "
-                f"{time.time() - t0} seconds.\n"
-            ),
+            "\nComputation of second level model done in "
+            f"{time.time() - t0} seconds.\n",
             verbose=self.verbose,
         )
 
@@ -942,10 +940,8 @@ def non_parametric_inference(
 
     # Report progress
     logger.log(
-        (
-            "\nComputation of second level model done in "
-            f"{time.time() - t0} seconds\n"
-        ),
+        "\nComputation of second level model done in "
+        f"{time.time() - t0} seconds\n",
         verbose=verbose,
     )
 
