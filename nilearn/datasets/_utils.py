@@ -250,7 +250,7 @@ def get_dataset_dir(
             path = readlinkabs(path)
         if os.path.exists(path) and os.path.isdir(path):
             logger.log(
-                f"\nDataset found in {path}\n", verbose=verbose, msg_level=1
+                f"Dataset found in {path}", verbose=verbose, msg_level=1
             )
             return path
 
@@ -267,7 +267,7 @@ def get_dataset_dir(
                     verbose=verbose,
                 )
 
-                logger.log(f"\nDataset created in {path}\n", verbose)
+                logger.log(f"Dataset created in {path}", verbose)
 
                 return path
             except Exception as exc:
@@ -295,7 +295,7 @@ If you delete it, previously downloaded data will be downloaded again."""
                 )
 
             logger.log(
-                f"\nAdded README.md to {d}\n", verbose=verbose, stack_level=2
+                f"Added README.md to {d}", verbose=verbose, stack_level=2
             )
 
 
