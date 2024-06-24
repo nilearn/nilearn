@@ -1532,7 +1532,7 @@ def _download_image_nii_file(image_info, collection, download_params):
         )
 
         # Resample here
-        logger.log("Resampling...")
+        logger.log("Resampling...", stack_level=4)
         # TODO switch to force_resample=True
         # when bumping to version > 0.13
         im_resampled = resample_img(

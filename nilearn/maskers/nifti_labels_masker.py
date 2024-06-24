@@ -504,14 +504,14 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         """
         repr = _utils._repr_niimgs(self.labels_img, shorten=(not self.verbose))
         msg = f"loading data from {repr}"
-        _utils.logger.log(msg=msg, verbose=self.verbose)
+        logger.log(msg=msg, verbose=self.verbose)
         self.labels_img_ = _utils.check_niimg_3d(self.labels_img)
         if self.mask_img is not None:
             repr = _utils._repr_niimgs(
                 self.mask_img, shorten=(not self.verbose)
             )
             msg = f"loading data from {repr}"
-            _utils.logger.log(msg=msg, verbose=self.verbose)
+            logger.log(msg=msg, verbose=self.verbose)
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
 
         else:
@@ -546,7 +546,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                     )
 
             elif self.resampling_target == "labels":
-                _utils.logger.log("resampling the mask", verbose=self.verbose)
+                logger.log("resampling the mask", verbose=self.verbose)
                 # TODO switch to force_resample=True
                 # when bumping to version > 0.13
                 self.mask_img_ = image.resample_img(
@@ -793,7 +793,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
     def _resample_labels(self, imgs_):
 
-        logger.log("Resampling labels", self.verbose)
+        logger.log("Resampling labels", self.verbose, stack_level=2)
         labels_before_resampling = set(
             np.unique(_utils.niimg.safe_get_data(self._resampled_labels_img_))
         )
@@ -852,7 +852,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
         self._check_fitted()
 
-        _utils.logger.log("computing image from signals", verbose=self.verbose)
+        logger.log("computing image from signals", verbose=self.verbose)
         return signal_extraction.signals_to_img_labels(
             signals,
             self._resampled_labels_img_,

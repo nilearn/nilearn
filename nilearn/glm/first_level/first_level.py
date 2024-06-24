@@ -565,7 +565,7 @@ class FirstLevelModel(BaseGLM):
                 f"in {int(time_in_second)} seconds."
             )
 
-        logger.log(msg, verbose=self.verbose)
+        logger.log(msg, verbose=self.verbose, stack_level=2)
 
     def _report_progress(self, run_idx, n_runs, t0):
         remaining = "go take a coffee, a big one"
@@ -1704,11 +1704,12 @@ def _report_found_files(files, text, sub_label, filters, verbose):
 
     """
     logger.log(
-        f"Found the following {len(files)} {text} files\n",
-        f"for subject {sub_label}\n",
-        f"for filter: {filters}:\n",
-        f"{files}\n",
-        verbose,
+        f"\nFound the following {len(files)} {text} files\n"
+        f"- for subject {sub_label}\n"
+        f"- for filter: {filters}:\n"
+        f"\t- {'\n\t- '.join(files)}\n",
+        verbose=verbose,
+        stack_level=3,
     )
 
 

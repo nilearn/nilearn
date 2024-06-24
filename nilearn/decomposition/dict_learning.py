@@ -286,14 +286,16 @@ class DictLearning(_BaseDecomposition):
 
         _, n_features = data.shape
 
-        logger.log("Computing initial loadings", verbose=self.verbose)
+        logger.log(
+            "Computing initial loadings", verbose=self.verbose, stack_level=2
+        )
         self._init_loadings(data)
 
         dict_init = self.loadings_init_
 
         max_iter = ((n_features - 1) // self.batch_size + 1) * self.n_epochs
 
-        logger.log(" Learning dictionary", verbose=self.verbose)
+        logger.log(" Learning dictionary", verbose=self.verbose, stack_level=2)
 
         # TODO: remove this when sklearn 1.0 not supported anymore;
         # replace kwargs with actual parameter name

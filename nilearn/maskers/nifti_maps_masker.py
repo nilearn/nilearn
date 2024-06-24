@@ -391,7 +391,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
         # Load images
         repr = _utils._repr_niimgs(self.mask_img, shorten=(not self.verbose))
         msg = f"loading regions from {repr}"
-        _utils.logger.log(msg=msg, verbose=self.verbose)
+        logger.log(msg=msg, verbose=self.verbose)
         self.maps_img_ = _utils.check_niimg(
             self.maps_img, dtype=self.dtype, atleast_4d=True
         )
@@ -407,7 +407,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 self.mask_img, shorten=(not self.verbose)
             )
             msg = f"loading mask from {repr}"
-            _utils.logger.log(msg=msg, verbose=self.verbose)
+            logger.log(msg=msg, verbose=self.verbose)
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
         else:
             self.mask_img_ = None
@@ -672,7 +672,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
 
         self._check_fitted()
 
-        _utils.logger.log("computing image from signals", verbose=self.verbose)
+        logger.log("computing image from signals", verbose=self.verbose)
         return signal_extraction.signals_to_img_maps(
             region_signals, self.maps_img_, mask_img=self.mask_img_
         )

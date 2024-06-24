@@ -1854,12 +1854,14 @@ def _separate_talairach_levels(atlas_img, labels, output_dir, verbose):
 
     """
     logger.log(
-        f"Separating talairach atlas levels: {_TALAIRACH_LEVELS}", verbose
+        f"Separating talairach atlas levels: {_TALAIRACH_LEVELS}",
+        verbose=verbose,
+        stack_level=2,
     )
     for level_name, old_level_labels in zip(
         _TALAIRACH_LEVELS, np.asarray(labels).T
     ):
-        logger.log(level_name, verbose)
+        logger.log(level_name, verbose=verbose, stack_level=2)
         # level with most regions, ba, has 72 regions
         level_data = np.zeros(atlas_img.shape, dtype="uint8")
         level_labels = {"*": 0}

@@ -62,7 +62,8 @@ def _filter_and_extract(
 
     logger.log(
         f"Loading data " f"from {_utils._repr_niimgs(imgs, shorten=False)}",
-        verbose,
+        verbose=verbose,
+        stack_level=2,
     )
 
     # Convert input to niimg to check shape.
@@ -87,7 +88,7 @@ def _filter_and_extract(
     target_shape = parameters.get("target_shape")
     target_affine = parameters.get("target_affine")
     if target_shape is not None or target_affine is not None:
-        logger.log("Resampling images")
+        logger.log("Resampling images", stack_level=2)
 
         imgs = cache(
             image.resample_img,
@@ -106,7 +107,7 @@ def _filter_and_extract(
 
     smoothing_fwhm = parameters.get("smoothing_fwhm")
     if smoothing_fwhm is not None:
-        logger.log("Smoothing images")
+        logger.log("Smoothing images", verbose=verbose, stack_level=2)
         imgs = cache(
             image.smooth_img,
             memory,
@@ -114,7 +115,7 @@ def _filter_and_extract(
             memory_level=memory_level,
         )(imgs, parameters["smoothing_fwhm"])
 
-    logger.log("Extracting region signals", verbose)
+    logger.log("Extracting region signals", verbose=verbose, stack_level=2)
     region_signals, aux = cache(
         extraction_function,
         memory,
@@ -128,7 +129,7 @@ def _filter_and_extract(
     # Filtering
     # Confounds removing (from csv file or numpy array)
     # Normalizing
-    logger.log("Cleaning extracted signals", verbose)
+    logger.log("Cleaning extracted signals", verbose=verbose, stack_level=2)
     runs = parameters.get("runs", None)
     region_signals = cache(
         signal.clean,

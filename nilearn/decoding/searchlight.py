@@ -203,7 +203,8 @@ def _group_iter_search_light(
                 remaining = (100.0 - percent) / max(0.01, percent) * dt
                 logger.log(
                     f"Job #{thread_id}, processed {i}/{len(list_rows)} voxels "
-                    f"({percent:0.2f}%, {remaining} seconds remaining){crlf}"
+                    f"({percent:0.2f}%, {remaining} seconds remaining){crlf}",
+                    stack_level=2,
                 )
     return par_scores
 

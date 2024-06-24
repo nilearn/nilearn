@@ -90,7 +90,9 @@ def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
 
     """
     if not total_size:
-        logger.log(f"\rDownloaded {int(bytes_so_far)} of ? bytes.")
+        logger.log(
+            f"\rDownloaded {int(bytes_so_far)} of ? bytes.", stack_level=2
+        )
 
     else:
         # Estimate remaining download time
@@ -111,7 +113,8 @@ def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
                 total_size,
                 total_percent * 100,
                 _format_time(time_remaining),
-            )
+            ),
+            stack_level=2,
         )
 
 
@@ -163,8 +166,14 @@ def _chunk_read_(
             "Warning: total size could not be determined.",
             verbose=verbose,
             msg_level=2,
+            stack_level=2,
         )
-        logger.log(f"Full stack trace: {e}", verbose=verbose, msg_level=3)
+        logger.log(
+            f"Full stack trace: {e}",
+            verbose=verbose,
+            msg_level=3,
+            stack_level=2,
+        )
         total_size = None
     bytes_so_far = initial_size
 
@@ -285,7 +294,9 @@ It can be safely deleted.
 If you delete it, previously downloaded data will be downloaded again."""
                 )
 
-            logger.log(f"\nAdded README.md to {d}\n", verbose)
+            logger.log(
+                f"\nAdded README.md to {d}\n", verbose=verbose, stack_level=2
+            )
 
 
 # The functions _is_within_directory and _safe_extract were implemented in

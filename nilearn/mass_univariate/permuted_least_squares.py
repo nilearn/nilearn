@@ -284,7 +284,8 @@ def _permuted_ols_on_chunk(
                 logger.log(
                     f"Job #{thread_id}, processed {i_perm}/{n_perm_chunk} "
                     f"permutations ({percent:0.2f}%, {remaining} seconds "
-                    f"remaining){crlf}"
+                    f"remaining){crlf}",
+                    stack_level=2,
                 )
 
     return (
