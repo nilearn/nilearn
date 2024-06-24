@@ -970,7 +970,7 @@ def _get_batch(query, prefix_msg="", timeout=10.0, verbose=3):
         f"{prefix_msg}getting new batch: {query}",
         verbose=verbose,
         msg_level=_DEBUG,
-        stack_level=8,
+        stack_level=7,
     )
     try:
         resp = session.send(prepped, timeout=timeout)
@@ -1071,7 +1071,7 @@ def _scroll_server_results(
                 f"{prefix_msg}batch size: {batch_size}",
                 msg_level=_DEBUG,
                 verbose=verbose,
-                stack_level=4,
+                stack_level=6,
             )
             if n_available is None:
                 n_available = batch["count"]
@@ -1156,7 +1156,7 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
         f"Downloading file: {url}",
         msg_level=_DEBUG,
         verbose=verbose,
-        stack_level=9,
+        stack_level=8,
     )
     try:
         downloaded = fetch_single_file(
@@ -1175,7 +1175,7 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
         f"Download succeeded, downloaded to: {target_file}",
         msg_level=_DEBUG,
         verbose=verbose,
-        stack_level=9,
+        stack_level=8,
     )
     return target_file
 
@@ -1864,7 +1864,7 @@ def _scroll_collection(collection, download_params):
         f"matched query in collection {collection['id']}",
         msg_level=_INFO,
         verbose=download_params["verbose"],
-        stack_level=6,
+        stack_level=5,
     )
 
 
