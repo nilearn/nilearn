@@ -92,6 +92,12 @@ def spm_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
     t_r : float
         :term:`Repetition time<TR>`, in seconds (sampling period).
 
+    tr:
+
+        .. deprecated:: 0.11.0
+
+            Use ``t_r`` instead (see above).
+
     oversampling : int, default=50
         Temporal oversampling factor.
 
@@ -118,6 +124,12 @@ def glover_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
     ----------
     t_r : float
         :term:`Repetition time<TR>`, in seconds (sampling period).
+
+    tr:
+
+        .. deprecated:: 0.11.0
+
+            Use ``t_r`` instead (see above).
 
     oversampling : int, default=50
         Temporal oversampling factor.
@@ -193,6 +205,12 @@ def spm_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
     t_r : float
         :term:`Repetition time<TR>`, in seconds (sampling period).
 
+    tr:
+
+        .. deprecated:: 0.11.0
+
+            Use ``t_r`` instead (see above).
+
     oversampling : int, default=50
         Temporal oversampling factor.
 
@@ -225,6 +243,12 @@ def glover_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
     ----------
     t_r : float
         :term:`Repetition time<TR>`, in seconds (sampling period).
+
+    tr:
+
+        .. deprecated:: 0.11.0
+
+            Use ``t_r`` instead (see above).
 
     oversampling : int, default=50
         Temporal oversampling factor.
@@ -303,6 +327,12 @@ def spm_dispersion_derivative(
     t_r : float
         :term:`Repetition time<TR>`, in seconds (sampling period).
 
+    tr:
+
+        .. deprecated:: 0.11.0
+
+            Use ``t_r`` instead (see above).
+
     oversampling : int, default=50
         Temporal oversampling factor in seconds.
 
@@ -336,6 +366,12 @@ def glover_dispersion_derivative(
 
     oversampling : int, default=50
         Temporal oversampling factor in seconds.
+
+    tr:
+
+        .. deprecated:: 0.11.0
+
+            Use ``t_r`` instead (see above).
 
     time_length : float, default=32
         :term:`HRF` kernel length, in seconds.
