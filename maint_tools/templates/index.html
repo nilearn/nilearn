@@ -151,20 +151,36 @@
         </h2>
       </summary>
 
-      {% set warning_types = warnings|map(attribute='category') %}
+      {% set warning_types = warnings|map(attribute='category')|unique|list %}
       <!--  -->
       {% for type in warning_types %}
+
+        {% set nb_warning = namespace(value=0) %}
+        {% for warning in warnings %}
+        <!--  -->
+        {% if warning.category == type %}
+        {% set nb_warning.value = nb_warning.value + 1 %}
+        {% endif %}
+        <!--  -->
+        {% endfor %}
+
+      <details>
+        <summary>
+          <div class="status">{{ type | replace("<class '", "") | replace("'>", "")  }}
+            <span class="badge warning counts">{{ nb_warning.value }}</span>
+          </div>
+        </summary>
+          {% for warning in warnings|sort(attribute="filename") %}
+          <!--  -->
+          {% if warning.category == type %}
+          <div class="warning-content">
+            {{ warning.filename }}:{{ warning.lineno }}<br />{{ warning.message }}
+          </div>
+          {% endif %}
+          <!--  -->
+          {% endfor %}
+      </details>
       <!--  -->
-      {% for warning in warnings|sort(attribute="filename") %}
-      <!--  -->
-      {% if warning.category == type %}
-      <div class="status badge warning">WARNING: {{ warning.category }}</div>
-      <div class="warning-content">
-        {{ warning.filename }}:{{ warning.lineno }}<br />{{ warning.message }}
-      </div>
-      {% endif%}
-      <!--  -->
-      {% endfor %}
       <!--  -->
       {% endfor %}
     </details>
