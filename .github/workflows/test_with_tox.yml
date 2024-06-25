@@ -54,6 +54,11 @@ jobs:
             run: tox c
         -   name: Run test suite
             run: tox run -e ${{ matrix.env }} -- nilearn
+        -   name: Upload documentation
+            uses: actions/upload-artifact@v4
+            with:
+                name: report
+                path: report.html
         -   name: Upload coverage to CodeCov
             uses: codecov/codecov-action@v4
             with:
