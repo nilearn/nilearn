@@ -6,6 +6,7 @@ import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib.colorbar import make_axes
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.cluster.hierarchy import leaves_list, linkage, optimal_leaf_ordering
 
@@ -618,3 +619,111 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
         figure = None
 
     return figure
+
+
+@fill_doc
+def plot_design_matrix_correlation(
+    design_matrix,
+    partial="upper",
+    cmap="bwr",
+    ax=None,
+    fig=None,
+    output_file=None,
+):
+    """Test.
+
+    :param design_matrix: _description_
+    :type design_matrix: _type_
+    :param partial: _description_, defaults to "upper"
+    :type partial: str, optional
+    :param cmap: _description_, defaults to "bwr"
+    :type cmap: str, optional
+    :param ax: _description_, defaults to None
+    :type ax: _type_, optional
+    :param fig: _description_, defaults to None
+    :type fig: _type_, optional
+    :param output_file: _description_, defaults to None
+    :type output_file: _type_, optional
+    :raises TypeError: _description_
+    :raises ValueError: _description_
+    :raises ValueError: _description_
+    :raises ValueError: _description_
+    :raises ValueError: _description_
+    :return: _description_
+    :rtype: _type_
+    """
+    if not isinstance(design_matrix, pd.DataFrame):
+        raise TypeError(
+            "'des_mat' must be a pandas dataframe instance.\n"
+            f"Got: {type(design_matrix)}"
+        )
+
+    if len(design_matrix) == 0:
+        raise ValueError("The design_matrix dataframe cannot be empty.")
+
+    ALLOWED_CMAP = ["RdBu_r", "bwr", "seismic_r"]
+    if cmap not in ALLOWED_CMAP:
+        raise ValueError(f"cmap must be one of {ALLOWED_CMAP}")
+
+    ALLOWED_PARTIALS = ["upper", "lower", None]
+    if partial not in ALLOWED_PARTIALS:
+        raise ValueError(f"partial must be one of {ALLOWED_PARTIALS}")
+
+    columns_to_drop = ["intercept", "constant"]
+    columns_to_drop.extend(
+        col for col in design_matrix.columns if col.startswith("drift_")
+    )
+    design_matrix = design_matrix.drop(
+        columns=columns_to_drop, errors="ignore"
+    )
+
+    if len(design_matrix) == 0:
+        raise ValueError(
+            "Nothing left to plot after "
+            "removing drift and constant regrerssors."
+        )
+
+    mat = design_matrix.corr()
+
+    # For a heatmap mask, 0 = show, 1 = hide
+    if partial:
+        mask = np.ones_like(mat, dtype=bool)
+        if partial == "upper":
+            mask[np.triu_indices_from(mask)] = False
+        elif partial == "lower":
+            mask[np.tril_indices_from(mask)] = False
+        mat[mask] = 0
+
+    # find the second-largest value in each row
+    # to omit values on the diagonal that will always be == 1
+    second_largest = np.partition(mat.to_numpy(), -2, axis=1)[:, -2]
+    vmax = max(abs(mat.min().min()), max(second_largest))
+
+    if ax is None:
+        if fig is None:
+            fig = plt.figure()
+        ax = fig.add_axes(111)
+    elif fig is None:
+        fig = ax.get_figure()
+
+    im = ax.imshow(mat, cmap=cmap, vmax=vmax, vmin=vmax * -1)
+
+    cax, _ = make_axes(
+        ax, location="right", fraction=0.18, shrink=0.75, pad=0.02, aspect=15.0
+    )
+    fig.colorbar(im, cax=cax, spacing="proportional", orientation="vertical")
+
+    col_labels = design_matrix.columns
+    ax.set_xticks(
+        np.arange(mat.shape[1]), labels=col_labels, rotation=60, ha="left"
+    )
+    ax.set_yticks(np.arange(mat.shape[0]), labels=col_labels)
+
+    ax.tick_params(top=True, bottom=False, labeltop=True, labelbottom=False)
+
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["bottom"].set_visible(False)
+    ax.spines["left"].set_visible(False)
+
+    return ax

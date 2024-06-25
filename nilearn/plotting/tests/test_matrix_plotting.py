@@ -13,6 +13,7 @@ from nilearn.plotting.matrix_plotting import (
     pad_contrast_matrix,
     plot_contrast_matrix,
     plot_design_matrix,
+    plot_design_matrix_correlation,
     plot_event,
     plot_matrix,
 )
@@ -302,3 +303,34 @@ def test_pad_contrast_matrix():
 
 def test_show_event_plot_duration_0():
     plot_event(design_with_null_durations())
+
+
+@pytest.mark.parametrize("partial", ["upper", "lower", None])
+@pytest.mark.parametrize("cmap", ["RdBu_r", "bwr", "seismic_r"])
+def test_plot_design_matrix_correlation(partial, cmap):
+    """Smoke test for the 'happy path'."""
+    frame_times = np.linspace(0, 127 * 1.0, 128)
+    dmtx = make_first_level_design_matrix(
+        frame_times, events=design_with_null_durations()
+    )
+
+    plot_design_matrix_correlation(dmtx, partial=partial, cmap=cmap)
+
+
+def test_plot_design_matrix_correlation_errors(mat):
+    with pytest.raises(TypeError, match="must be a pandas dataframe"):
+        plot_design_matrix_correlation("foo")
+
+    with pytest.raises(ValueError, match="dataframe cannot be empty."):
+        plot_design_matrix_correlation(pd.DataFrame())
+
+    with pytest.raises(ValueError, match="cmap must be one of"):
+        plot_design_matrix_correlation(pd.DataFrame(mat), cmap="foo")
+
+    with pytest.raises(ValueError, match="partial must be one of"):
+        plot_design_matrix_correlation(pd.DataFrame(mat), partial="foo")
+
+    frame_times = np.linspace(0, 127 * 1.0, 128)
+    dmtx = make_first_level_design_matrix(frame_times)
+    with pytest.raises(ValueError, match="Nothing left to plot after "):
+        plot_design_matrix_correlation(dmtx)
