@@ -25,6 +25,8 @@ from nilearn._utils.data_gen import (
     generate_fake_fmri_data_and_design,
     write_fake_fmri_data_and_design,
 )
+from nilearn._utils.exceptions import DimensionError
+from nilearn.conftest import _img_3d_rand
 from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
 from nilearn.glm.contrasts import compute_fixed_effects
 from nilearn.glm.first_level import (
@@ -225,6 +227,51 @@ def test_high_level_glm_with_data(tmp_path):
 
     assert np.sum(get_data(z_image) != 0) == n_voxels
     assert get_data(z_image).std() < 3.0
+
+
+def test_high_level_glm_with_np_array(rng):
+    shapes = ((7, 8), (7, 9))
+    rk = 3
+
+    fmri_data = []
+    design_matrices = []
+    for shape in shapes:
+        data = rng.standard_normal(shape)
+        data[1:-1, 1:-1] += 100
+        fmri_data.append(data)
+
+        design_matrices.append(
+            pd.DataFrame(
+                rng.standard_normal((shape[0], rk)), columns=["", "", ""]
+            )
+        )
+
+    FirstLevelModel().fit_arrays(fmri_data, design_matrices=design_matrices)
+
+
+def test_high_level_glm_with_np_array_errors(rng):
+    shape_3D = (7, 8, 4)
+    rk = 3
+
+    fmri_data = rng.standard_normal(shape_3D)
+    fmri_data[1:-1, 1:-1] += 100
+    design_matrix = pd.DataFrame(
+        rng.standard_normal((shape_3D[0], rk)), columns=["", "", ""]
+    )
+    with pytest.raises(DimensionError, match="incompatible dimensionality."):
+        FirstLevelModel().fit_arrays(fmri_data, design_matrices=design_matrix)
+
+
+@pytest.mark.parametrize("fmri_data", ["foo", Path(), _img_3d_rand()])
+def test_high_level_glm_with_np_array_wrong_input(rng, fmri_data):
+    shape_3D = (7, 8, 4)
+    rk = 3
+
+    design_matrix = pd.DataFrame(
+        rng.standard_normal((shape_3D[0], rk)), columns=["", "", ""]
+    )
+    with pytest.raises(TypeError, match="must be a numpy array"):
+        FirstLevelModel().fit_arrays(fmri_data, design_matrices=design_matrix)
 
 
 def test_high_level_glm_with_data_with_mask(tmp_path):

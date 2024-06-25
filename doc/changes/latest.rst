@@ -24,6 +24,11 @@ Enhancements
 
 - :bdg-dark:`Code` Add footer to masker reports (:gh:`4307` by `Rémi Gau`_).
 
+- :bdg-dark:`Code` Add a :meth:`nilearn.glm.first_level.FirstLevelModel.fit_arrays` method to run first first level GLMs directly to 2D array (:gh:`4112` by TODO henrymj and `Rémi Gau`_).
+
+- :bdg-dark:`Code` Add a ``format_type`` parameter to the :meth:`nilearn.glm.first_level.FirstLevelModel.compute_contrast` method to return arrays or images (:gh:`4112` by TODO henrymj and `Rémi Gau`_).
+
+
 
 Changes
 -------
