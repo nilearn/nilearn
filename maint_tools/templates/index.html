@@ -170,15 +170,19 @@
             <span class="badge warning counts">{{ nb_warning.value }}</span>
           </div>
         </summary>
+        <ul>
           {% for warning in warnings|sort(attribute="filename") %}
           <!--  -->
           {% if warning.category == type %}
-          <div class="warning-content">
-            {{ warning.filename }}:{{ warning.lineno }}<br />{{ warning.message }}
-          </div>
+          <li>
+            <div class="warning-content">
+              {{ warning.filename }}:{{ warning.lineno }}<br />{{ warning.message }}
+            </div>
+          </li>
           {% endif %}
           <!--  -->
           {% endfor %}
+        </ul>
       </details>
       <!--  -->
       <!--  -->
