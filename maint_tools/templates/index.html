@@ -1,5 +1,14 @@
-{% extends "html1/base.html" %} {% set title = "Nilearn test report" %} {% block
-style %} {{ super() }} .warning-content { margin-bottom: 8px; } {% endblock %}
+{% extends "html1/base.html" %}
+<!--  -->
+{% set title = "Nilearn test report" %}
+<!--  -->
+{% block style %}
+<!--  -->
+{{ super() }}
+<!--  -->
+.warning-content { margin-bottom: 12px; } {% endblock %}
+<!--  -->
+
 {% block content %}
 <section id="summary">
   <div class="container">
@@ -15,7 +24,11 @@ style %} {{ super() }} .warning-content { margin-bottom: 8px; } {% endblock %}
         <tr>
           <th>Ended</th>
           <td>
-            {% if ended %} {{ ended|strftime(time_format) }} {% else %}
+            {% if ended %}
+            <!--  -->
+            {{ ended|strftime(time_format) }}
+            <!--  -->
+            {% else %}
             <i>In progress...</i>
             {% endif %}
           </td>
@@ -38,24 +51,47 @@ style %} {{ super() }} .warning-content { margin-bottom: 8px; } {% endblock %}
         <tr>
           <th>{{ key }}</th>
           <td>
-            {% if value is mapping %} {% for key, value in value.items() %} {{
-            key }}: {{ value }}<br />
-            {% endfor %} {% else %} {{ value|urlize }} {% endif %}
+            {% if value is mapping %}
+            <!--  -->
+            {% for key, value in value.items() %}
+            <!--  -->
+            {{ key }}: {{ value }}<br />
+            {% endfor %}
+            <!--  -->
+            {% else %}
+            <!--  -->
+            {{ value|urlize }}
+            <!--  -->
+            {% endif %}
           </td>
         </tr>
         {% endfor %} {% endblock %}
       </table>
     </div>
     <div class="graph">
-      {% set tests_by_category = tests|groupby('status.category') %} {% set
-      nodes_run = tests|map(attribute='item.nodeid')|list %} {% set
-      nof_nodes_not_run = session.items|rejectattr('nodeid', 'in',
+      {% set tests_by_category = tests|groupby('status.category') %}
+      <!--  -->
+      {% set nodes_run = tests|map(attribute='item.nodeid')|list %}
+      <!--  -->
+      {% set nof_nodes_not_run = session.items|rejectattr('nodeid', 'in',
       nodes_run)|list|count %}
       <svg width="200" height="200" viewBox="0 0 42 42">
-        {% set ns = namespace(sum=0.0) %} {% set total = tests|count %} {% set r
-        = 16 %} {% set spacing = 0.4 %} {% set C = 2 * 3.141592653589793 * r %}
-        {% for category, sub_tests in tests_by_category %} {% set count =
-        sub_tests|count %} {% set L = count / (total + nof_nodes_not_run) * C %}
+        {% set ns = namespace(sum=0.0) %}
+        <!--  -->
+        {% set total = tests|count %}
+        <!--  -->
+        {% set r = 16 %}
+        <!--  -->
+        {% set spacing = 0.4 %}
+        <!--  -->
+        {% set C = 2 * 3.141592653589793 * r %}
+        <!--  -->
+        {% for category, sub_tests in tests_by_category %}
+        <!--  -->
+        {% set count = sub_tests|count %}
+        <!--  -->
+        {% set L = count / (total + nof_nodes_not_run) * C %}
+        <!--  -->
         {% set color = colors[category] %}
         <circle
           class="donut-segment {{ category }}"
@@ -75,7 +111,9 @@ style %} {{ super() }} .warning-content { margin-bottom: 8px; } {% endblock %}
           %}
           stroke-width="4"
         ></circle>
-        {% set ns.sum = ns.sum + L %} {% endfor %}
+        {% set ns.sum = ns.sum + L %}
+        <!--  -->
+        {% endfor %}
         <text x="21" y="24" text-anchor="middle">{{ total }}</text>
       </svg>
       <div class="legend">
@@ -86,7 +124,9 @@ style %} {{ super() }} .warning-content { margin-bottom: 8px; } {% endblock %}
           {{ tests|count }}
         </span>
         <span>{{ category }}</span>
-        {% endfor %} {% if nof_nodes_not_run %}
+        {% endfor %}
+        <!--  -->
+        {% if nof_nodes_not_run %}
         <span class="status badge notrun">{{ nof_nodes_not_run }}</span>
         <span>not run</span>
         {% endif %}
@@ -100,13 +140,32 @@ style %} {{ super() }} .warning-content { margin-bottom: 8px; } {% endblock %}
   <div class="container">
     <h1>Warnings</h1>
     <details class="file">
-      <summary><h2 class="title file-title">WARNINGS</h2></summary>
-      <div style="padding: 24x !important"><p></p></div>
-      {% for warning in warnings %}
-      <div class="status badge warning">WARNING</div>
+      <summary>
+        <h2 class="title file-title">
+          <span class="fspath"> WARNINGS </span>
+          <span class="counts">
+            <span title="{{ warnings|count }}" class="status badge warning">
+              {{ warnings|count }}
+            </span>
+          </span>
+        </h2>
+      </summary>
+
+      {% set warning_types = warnings|map(attribute='category') %}
+      <!--  -->
+      {% for type in warning_types %}
+      <!--  -->
+      {% for warning in warnings|sort(attribute="filename") %}
+      <!--  -->
+      {% if warning.category == type %}
+      <div class="status badge warning">WARNING: {{ warning.category }}</div>
       <div class="warning-content">
         {{ warning.filename }}:{{ warning.lineno }}<br />{{ warning.message }}
       </div>
+      {% endif%}
+      <!--  -->
+      {% endfor %}
+      <!--  -->
       {% endfor %}
     </details>
   </div>
@@ -115,15 +174,19 @@ style %} {{ super() }} .warning-content { margin-bottom: 8px; } {% endblock %}
 <section id="test-files">
   <div class="container">
     <h1>Tests</h1>
-    {% for fspath, tests in tests|groupby('item.fspath') %} {% set first_item =
-    tests|map(attribute='item')|first %}
+    {% for fspath, tests in tests|groupby('item.fspath') %}
+    <!--  -->
+    {% set first_item = tests|map(attribute='item')|first %}
     <details class="file">
       <summary>
         <h2 class="title file-title">
           {% block module_title scoped %}
           <span class="fspath">
-            {% block module_name scoped %} {{
-            first_item.nodeid.split('::')|first }} {% endblock %}
+            {% block module_name scoped %}
+            <!--  -->
+            {{ first_item.nodeid.split('::')|first }}
+            <!--  -->
+            {% endblock %}
           </span>
           <span class="counts">
             {% for category, tests in tests|groupby('status.category') -%}

@@ -57,7 +57,7 @@ jobs:
         -   name: Upload documentation
             uses: actions/upload-artifact@v4
             with:
-                name: report
+                name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_report.html
                 path: report.html
         -   name: Upload coverage to CodeCov
             uses: codecov/codecov-action@v4
