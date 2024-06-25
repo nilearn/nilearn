@@ -57,12 +57,12 @@ stim[(frame_times > onset) * (frame_times <= onset + duration)] = amplitude
 from scipy.stats import gamma
 
 
-def mion_response_function(tr, oversampling=16, onset=0.0):
+def mion_response_function(t_r, oversampling=16, onset=0.0):
     """Implement the MION response function model.
 
     Parameters
     ----------
-    tr: float
+    t_r: float
         scan repeat time, in seconds
     oversampling: int, optional
         temporal oversampling factor
@@ -71,10 +71,10 @@ def mion_response_function(tr, oversampling=16, onset=0.0):
 
     Returns
     -------
-    response_function: array of shape(length / tr * oversampling, dtype=float)
+    response_function: array of shape(length / t_r * oversampling, dtype=float)
         response_function sampling on the oversampled time grid
     """
-    dt = tr / oversampling
+    dt = t_r / oversampling
     time_stamps = np.linspace(
         0, time_length, np.rint(time_length / dt).astype(int)
     )
