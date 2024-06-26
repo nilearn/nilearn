@@ -119,23 +119,12 @@ plt.show()
 # ------------------------------
 from nilearn.plotting import plot_design_matrix_correlation
 
-fig2, (ax1, ax2, ax3) = plt.subplots(figsize=(100, 6), nrows=1, ncols=3)
+fig3, (ax1, ax2, ax3) = plt.subplots(figsize=(15, 5), nrows=1, ncols=3)
 plot_design_matrix_correlation(X1, ax=ax1)
 ax1.set_title("Event-related correlation matrix", fontsize=12)
-plot_design_matrix_correlation(X2, ax=ax2, partial="lower")
+plot_design_matrix_correlation(X2, ax=ax2)
 ax2.set_title("Block correlation matrix", fontsize=12)
-plot_design_matrix_correlation(X3, ax=ax3, partial=None)
-ax3.set_title("FIR correlation matrix", fontsize=12)
-
-
-from nilearn.plotting.matrix_plotting import plot_design_matrix_correlation_2
-
-fig3, (ax1, ax2, ax3) = plt.subplots(figsize=(15, 5), nrows=1, ncols=3)
-plot_design_matrix_correlation_2(X1, ax=ax1)
-ax1.set_title("Event-related correlation matrix", fontsize=12)
-plot_design_matrix_correlation_2(X2, ax=ax2)
-ax2.set_title("Block correlation matrix", fontsize=12)
-plot_design_matrix_correlation_2(X3, ax=ax3, tri="diag")
+plot_design_matrix_correlation(X3, ax=ax3, tri="diag")
 ax3.set_title("FIR correlation matrix", fontsize=12)
 plt.show()
 
