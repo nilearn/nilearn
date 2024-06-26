@@ -305,16 +305,16 @@ def test_show_event_plot_duration_0():
     plot_event(design_with_null_durations())
 
 
-@pytest.mark.parametrize("partial", ["upper", "lower", None])
+@pytest.mark.parametrize("tri", ["full", "diag"])
 @pytest.mark.parametrize("cmap", ["RdBu_r", "bwr", "seismic_r"])
-def test_plot_design_matrix_correlation(partial, cmap):
+def test_plot_design_matrix_correlation(tri, cmap):
     """Smoke test for the 'happy path'."""
     frame_times = np.linspace(0, 127 * 1.0, 128)
     dmtx = make_first_level_design_matrix(
         frame_times, events=design_with_null_durations()
     )
 
-    plot_design_matrix_correlation(dmtx, partial=partial, cmap=cmap)
+    plot_design_matrix_correlation(dmtx, tri=tri, cmap=cmap)
 
 
 def test_plot_design_matrix_correlation_errors(mat):
@@ -327,10 +327,12 @@ def test_plot_design_matrix_correlation_errors(mat):
     with pytest.raises(ValueError, match="cmap must be one of"):
         plot_design_matrix_correlation(pd.DataFrame(mat), cmap="foo")
 
-    with pytest.raises(ValueError, match="partial must be one of"):
-        plot_design_matrix_correlation(pd.DataFrame(mat), partial="foo")
+    dmtx = pd.DataFrame(
+        {"event_1": [0, 1], "constant": [1, 1], "drift_1": [0, 1]}
+    )
+    with pytest.raises(ValueError, match="tri needs to be one of"):
+        plot_design_matrix_correlation(dmtx, tri="lower")
 
-    frame_times = np.linspace(0, 127 * 1.0, 128)
-    dmtx = make_first_level_design_matrix(frame_times)
+    dmtx = pd.DataFrame({"constant": [1, 1], "drift_1": [0, 1]})
     with pytest.raises(ValueError, match="Nothing left to plot after "):
         plot_design_matrix_correlation(dmtx)

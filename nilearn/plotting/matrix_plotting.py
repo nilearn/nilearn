@@ -6,13 +6,14 @@ import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from matplotlib.colorbar import make_axes
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.cluster.hierarchy import leaves_list, linkage, optimal_leaf_ordering
 
 from nilearn.glm.first_level.experimental_paradigm import check_events
 
 from .._utils import fill_doc
+
+VALID_TRI_VALUES = ("full", "lower", "diag")
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore", FutureWarning)
@@ -99,13 +100,14 @@ def _sanitize_labels(mat_shape, labels):
     return labels
 
 
-def _sanitize_tri(tri):
+def _sanitize_tri(tri, allowed_values=None):
     """Help for plot_matrix."""
-    VALID_TRI_VALUES = ("full", "lower", "diag")
-    if tri not in VALID_TRI_VALUES:
+    if allowed_values is None:
+        allowed_values = VALID_TRI_VALUES
+    if tri not in allowed_values:
         raise ValueError(
             "Parameter tri needs to be one of: "
-            f"{', '.join(VALID_TRI_VALUES)}."
+            f"{', '.join(allowed_values)}."
         )
 
 
@@ -320,7 +322,7 @@ def plot_matrix(
             )
     if colorbar:
         divider = make_axes_locatable(axes)
-        cax = divider.append_axes("right", size="5%", pad=0.0)
+        cax = divider.append_axes("right", size="5%", pad=0.05)
 
         plt.colorbar(display, cax=cax)
         fig.tight_layout()
@@ -621,21 +623,21 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     return figure
 
 
-@fill_doc
 def plot_design_matrix_correlation(
     design_matrix,
-    partial="upper",
+    tri="full",
     cmap="bwr",
     ax=None,
     fig=None,
     output_file=None,
+    **kwargs,
 ):
     """Test.
 
     :param design_matrix: _description_
     :type design_matrix: _type_
-    :param partial: _description_, defaults to "upper"
-    :type partial: str, optional
+    :param tri: _description_, defaults to "full"
+    :type tri: str, optional
     :param cmap: _description_, defaults to "bwr"
     :type cmap: str, optional
     :param ax: _description_, defaults to None
@@ -648,7 +650,6 @@ def plot_design_matrix_correlation(
     :raises ValueError: _description_
     :raises ValueError: _description_
     :raises ValueError: _description_
-    :raises ValueError: _description_
     :return: _description_
     :rtype: _type_
     """
@@ -658,16 +659,12 @@ def plot_design_matrix_correlation(
             f"Got: {type(design_matrix)}"
         )
 
-    if len(design_matrix) == 0:
+    if len(design_matrix.columns) == 0:
         raise ValueError("The design_matrix dataframe cannot be empty.")
 
     ALLOWED_CMAP = ["RdBu_r", "bwr", "seismic_r"]
     if cmap not in ALLOWED_CMAP:
         raise ValueError(f"cmap must be one of {ALLOWED_CMAP}")
-
-    ALLOWED_PARTIALS = ["upper", "lower", None]
-    if partial not in ALLOWED_PARTIALS:
-        raise ValueError(f"partial must be one of {ALLOWED_PARTIALS}")
 
     columns_to_drop = ["intercept", "constant"]
     columns_to_drop.extend(
@@ -677,53 +674,37 @@ def plot_design_matrix_correlation(
         columns=columns_to_drop, errors="ignore"
     )
 
-    if len(design_matrix) == 0:
+    if len(design_matrix.columns) == 0:
         raise ValueError(
             "Nothing left to plot after "
             "removing drift and constant regrerssors."
         )
 
-    mat = design_matrix.corr()
+    _sanitize_tri(tri, allowed_values=("full", "diag"))
 
-    # For a heatmap mask, 0 = show, 1 = hide
-    if partial:
-        mask = np.ones_like(mat, dtype=bool)
-        if partial == "upper":
-            mask[np.triu_indices_from(mask)] = False
-        elif partial == "lower":
-            mask[np.tril_indices_from(mask)] = False
-        mat[mask] = 0
+    mat = design_matrix.corr()
 
     # find the second-largest value in each row
     # to omit values on the diagonal that will always be == 1
     second_largest = np.partition(mat.to_numpy(), -2, axis=1)[:, -2]
     vmax = max(abs(mat.min().min()), max(second_largest))
 
-    if ax is None:
-        if fig is None:
-            fig = plt.figure()
-        ax = fig.add_axes(111)
-    elif fig is None:
-        fig = ax.get_figure()
-
-    im = ax.imshow(mat, cmap=cmap, vmax=vmax, vmin=vmax * -1)
-
-    cax, _ = make_axes(
-        ax, location="right", fraction=0.18, shrink=0.75, pad=0.02, aspect=15.0
-    )
-    fig.colorbar(im, cax=cax, spacing="proportional", orientation="vertical")
-
     col_labels = design_matrix.columns
-    ax.set_xticks(
-        np.arange(mat.shape[1]), labels=col_labels, rotation=60, ha="left"
+    display = plot_matrix(
+        mat.to_numpy(),
+        figure=fig,
+        axes=ax,
+        tri=tri,
+        cmap=cmap,
+        vmax=vmax,
+        vmin=vmax * -1,
+        labels=col_labels.to_list(),
+        **kwargs,
     )
-    ax.set_yticks(np.arange(mat.shape[0]), labels=col_labels)
 
-    ax.tick_params(top=True, bottom=False, labeltop=True, labelbottom=False)
+    if output_file is not None:
+        plt.savefig(output_file)
+        plt.close()
+        ax = None
 
-    ax.spines["top"].set_visible(False)
-    ax.spines["right"].set_visible(False)
-    ax.spines["bottom"].set_visible(False)
-    ax.spines["left"].set_visible(False)
-
-    return ax
+    return display
