@@ -395,7 +395,7 @@ def test_nifti_spheres_masker_io_shapes(rng, shape_3d_default, affine_eye):
 
 
 @pytest.mark.skipif(
-    have_mpl, reason="Test requires matplotlib to be not installed."
+    have_mpl, reason="Test requires matplotlib not to be installed."
 )
 def test_nifti_spheres_masker_reporting_mpl_warning():
     """Raise warning after exception if matplotlib is not installed."""

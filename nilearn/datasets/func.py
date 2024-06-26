@@ -1961,7 +1961,7 @@ def fetch_development_fmri(
     """Fetch movie watching based brain development dataset (fMRI).
 
     The data is downsampled to 4mm resolution for convenience
-    with a repetition time (TR) of 2 secs.
+    with a repetition time (t_r) of 2 secs.
     The origin of the data is coming from OpenNeuro. See Notes below.
 
     Please cite :footcite:t:`Richardson2018`
@@ -2807,8 +2807,8 @@ def _make_events_file_spm_auditory_data(events_filepath):
     None
 
     """
-    tr = 7.0
-    epoch_duration = 6 * tr  # duration in seconds
+    t_r = 7.0
+    epoch_duration = 6 * t_r  # duration in seconds
     conditions = ["rest", "active"] * 8
     n_blocks = len(conditions)
     duration = epoch_duration * np.ones(n_blocks)
@@ -2993,7 +2993,7 @@ def _make_events_filepath_spm_multimodal_fmri(_subject_data, session):
 
 
 def _make_events_file_spm_multimodal_fmri(_subject_data, session):
-    tr = 2.0
+    t_r = 2.0
     timing = loadmat(
         _subject_data[f"trials_ses{int(session)}"],
         squeeze_me=True,
@@ -3002,7 +3002,7 @@ def _make_events_file_spm_multimodal_fmri(_subject_data, session):
     faces_onsets = timing["onsets"][0].ravel()
     scrambled_onsets = timing["onsets"][1].ravel()
     onsets = np.hstack((faces_onsets, scrambled_onsets))
-    onsets *= tr  # because onsets were reporting in 'scans' units
+    onsets *= t_r  # because onsets were reporting in 'scans' units
     conditions = ["faces"] * len(faces_onsets) + ["scrambled"] * len(
         scrambled_onsets
     )

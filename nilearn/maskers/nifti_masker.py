@@ -307,7 +307,17 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
 
     def generate_report(self):
         """Generate a report of the masker."""
-        from nilearn.reporting.html_report import generate_report
+        try:
+            from nilearn.reporting.html_report import generate_report
+        except ImportError:
+            with warnings.catch_warnings():
+                mpl_unavail_msg = (
+                    "Matplotlib is not imported! "
+                    "No reports will be generated."
+                )
+                warnings.filterwarnings("always", message=mpl_unavail_msg)
+                warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
+                return [None]
 
         return generate_report(self)
 
@@ -320,23 +330,9 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             A list of all displays to be rendered.
 
         """
-        try:
-            import matplotlib.pyplot as plt
+        import matplotlib.pyplot as plt
 
-            from nilearn import plotting
-
-        except ImportError:
-            with warnings.catch_warnings():
-                mpl_unavail_msg = (
-                    "Matplotlib is not imported! "
-                    "No reports will be generated."
-                )
-                warnings.filterwarnings("always", message=mpl_unavail_msg)
-                warnings.warn(
-                    category=ImportWarning,
-                    message=mpl_unavail_msg,
-                )
-                return [None]
+        from nilearn import plotting
 
         # Handle the edge case where this function is
         # called with a masker having report capabilities disabled
