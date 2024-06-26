@@ -307,14 +307,18 @@ def test_show_event_plot_duration_0():
 
 @pytest.mark.parametrize("tri", ["full", "diag"])
 @pytest.mark.parametrize("cmap", ["RdBu_r", "bwr", "seismic_r"])
-def test_plot_design_matrix_correlation(tri, cmap):
+def test_plot_design_matrix_correlation(tri, cmap, tmp_path):
     """Smoke test for the 'happy path'."""
     frame_times = np.linspace(0, 127 * 1.0, 128)
     dmtx = make_first_level_design_matrix(
         frame_times, events=design_with_null_durations()
     )
 
-    plot_design_matrix_correlation(dmtx, tri=tri, cmap=cmap)
+    plot_design_matrix_correlation(
+        dmtx, tri=tri, cmap=cmap, output_file=tmp_path / "corr_mat.png"
+    )
+
+    assert (tmp_path / "corr_mat.png").exists()
 
 
 def test_plot_design_matrix_correlation_errors(mat):

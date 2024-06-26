@@ -627,31 +627,44 @@ def plot_design_matrix_correlation(
     design_matrix,
     tri="full",
     cmap="bwr",
-    ax=None,
-    fig=None,
     output_file=None,
     **kwargs,
 ):
-    """Test.
+    """Compute and plot the correlation between regressor of a design matrix.
 
-    :param design_matrix: _description_
-    :type design_matrix: _type_
-    :param tri: _description_, defaults to "full"
-    :type tri: str, optional
-    :param cmap: _description_, defaults to "bwr"
-    :type cmap: str, optional
-    :param ax: _description_, defaults to None
-    :type ax: _type_, optional
-    :param fig: _description_, defaults to None
-    :type fig: _type_, optional
-    :param output_file: _description_, defaults to None
-    :type output_file: _type_, optional
-    :raises TypeError: _description_
-    :raises ValueError: _description_
-    :raises ValueError: _description_
-    :raises ValueError: _description_
-    :return: _description_
-    :rtype: _type_
+    The drift and constant regressors are omitted from the plot.
+
+    Parameters
+    ----------
+    design_matrix : :class:`pandas.DataFrame`
+        _description_
+
+    tri : {'full', 'diag'}, default='full'
+        Which triangular part of the matrix to plot:
+
+            - 'diag': Plot the lower part with the diagonal
+            - 'full': Plot the full matrix
+
+    %(cmap)s
+        Default=`bwr`.
+        This must be a diverging colormap as the correlation matrix
+        will be centered on 0.
+        The allowed colormaps are:
+
+            - "bwr"
+            - "RdBu_r"
+            - "seismic_r"
+
+    %(output_file)s
+
+    kwargs : extra keyword arguments, optional
+        Extra keyword arguments are sent to
+        :func:`nilearn.plotting.matrix_plotting.plot_matrix`
+
+    Returns
+    -------
+    display : :class:`matplotlib.axes.Axes`
+        Axes image.
     """
     if not isinstance(design_matrix, pd.DataFrame):
         raise TypeError(
@@ -692,8 +705,6 @@ def plot_design_matrix_correlation(
     col_labels = design_matrix.columns
     display = plot_matrix(
         mat.to_numpy(),
-        figure=fig,
-        axes=ax,
         tri=tri,
         cmap=cmap,
         vmax=vmax,
@@ -705,6 +716,5 @@ def plot_design_matrix_correlation(
     if output_file is not None:
         plt.savefig(output_file)
         plt.close()
-        ax = None
 
     return display
