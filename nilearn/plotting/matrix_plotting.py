@@ -661,7 +661,7 @@ def plot_design_matrix_correlation(
 
     kwargs : extra keyword arguments, optional
         Extra keyword arguments are sent to
-        :func:`nilearn.plotting.matrix_plotting.plot_matrix`
+        :func:`nilearn.plotting.plot_matrix`
 
     Returns
     -------
