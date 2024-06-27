@@ -23,6 +23,11 @@ from nilearn.datasets.tests._testing import dict_to_archive, list_to_archive
 from nilearn.image import load_img
 
 
+def test_is_valid_path():
+    assert func._is_valid_path(path="foo", index=["foo"], verbose=1)
+    assert not func._is_valid_path(path="bar", index=["foo"], verbose=1)
+
+
 @pytest.mark.parametrize(
     "fn",
     [

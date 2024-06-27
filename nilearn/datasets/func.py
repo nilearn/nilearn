@@ -784,12 +784,6 @@ def fetch_localizer_contrasts(
         data_types.append("tmaps")
     filenames = []
 
-    def _is_valid_path(path, index, verbose):
-        if path not in index:
-            logger.log(f"Skipping path '{path}'...", verbose)
-            return False
-        return True
-
     for subject_id in subject_ids:
         for data_type in data_types:
             for _, contrast in enumerate(contrasts_wrapped):
@@ -902,6 +896,13 @@ def fetch_localizer_contrasts(
         warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
         csv_data = csv_data.to_records(index=False)
     return Bunch(ext_vars=csv_data, description=fdescr, **files)
+
+
+def _is_valid_path(path, index, verbose):
+    if path not in index:
+        logger.log(f"Skipping path '{path}'...", verbose)
+        return False
+    return True
 
 
 @fill_doc
