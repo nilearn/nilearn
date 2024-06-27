@@ -83,6 +83,8 @@ print(
 from nilearn import surface
 
 timeseries = surface.load_surf_data(nki_dataset["func_left"][0])
+
+# Coercing to float is required to avoid errors withj scipy >= 0.14.0
 timeseries = timeseries.astype(float)
 
 # Extract seed region via label
