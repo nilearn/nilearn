@@ -3,6 +3,7 @@
 import datetime
 import warnings
 from collections import OrderedDict
+from collections.abc import Iterable
 from decimal import Decimal
 from string import Template
 
@@ -125,11 +126,13 @@ def _make_surface_glm_report(
         design_matrices = []
     design_matrices_dict = _return_design_matrices_dict(design_matrices)
 
-    contrasts_dict = _return_contrasts_dict(design_matrices, contrasts)
-
     statistical_maps = None
 
-    if contrasts:
+    contrasts = _coerce_to_dict(contrasts)
+    contrasts_dict = _return_contrasts_dict(design_matrices, contrasts)
+
+    if contrasts_dict is not None:
+
         statistical_maps = {}
         statistical_maps = {
             contrast_name: model.compute_contrast(
@@ -244,7 +247,7 @@ def _return_contrasts_dict(design_matrices, contrasts):
     # avoid circular import
     from nilearn.reporting.glm_reporter import _plot_to_svg
 
-    if not design_matrices and not contrasts:
+    if not design_matrices or not contrasts:
         return None
 
     contrasts_dict = {}
@@ -270,3 +273,38 @@ def _return_model_type(model):
         return "First Level Model"
     elif isinstance(model, glm.second_level.SecondLevelModel):
         return "Second Level Model"
+
+
+def _coerce_to_dict(input_arg):
+    """Construct a dict from the provided arg.
+
+    If input_arg is:
+      dict then returns it unchanged.
+
+      string or collection of Strings or Sequence[int],
+      returns a dict {str(value): value, ...}
+
+    Parameters
+    ----------
+    input_arg : String or Collection[str or Int or Sequence[Int]]
+     or Dict[str, str or np.array]
+        Can be of the form:
+         'string'
+         ['string_1', 'string_2', ...]
+         list/array
+         [list/array_1, list/array_2, ...]
+         {'string_1': list/array1, ...}
+
+    Returns
+    -------
+    input_args: Dict[str, np.array or str]
+
+    """
+    if not isinstance(input_arg, dict):
+        if isinstance(input_arg, Iterable) and not isinstance(
+            input_arg[0], Iterable
+        ):
+            input_arg = [input_arg]
+        input_arg = [input_arg] if isinstance(input_arg, str) else input_arg
+        input_arg = {str(contrast_): contrast_ for contrast_ in input_arg}
+    return input_arg
