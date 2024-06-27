@@ -83,6 +83,7 @@ print(
 from nilearn import surface
 
 timeseries = surface.load_surf_data(nki_dataset["func_left"][0])
+timeseries = timeseries.astype(float)
 
 # Extract seed region via label
 pcc_region = b"G_cingul-Post-dorsal"
