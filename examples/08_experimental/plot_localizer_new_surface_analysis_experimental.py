@@ -205,7 +205,7 @@ from nilearn.experimental.surface import load_fsaverage_data
 
 # %%
 # Let's estimate the contrasts by iterating over them.
-# from nilearn.plotting import show
+from nilearn.plotting import show
 
 fsaverage_data = load_fsaverage_data(data_type="sulcal")
 
@@ -231,14 +231,28 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
             bg_map=fsaverage_data,
         )
 
-# plotting.show()
-# show()
+show()
 
-from pathlib import Path
+# %%
+# Generating a report
+# -------------------
+# Since we have already computed the FirstLevelModel
+# and have the :term:`contrast`, we can quickly create a summary report.
 
 report = glm.generate_report(
     contrasts,
     title="surface-based example",
 )
 
-report.save_as_html(Path() / "localizer.html")
+report
+
+# In a jupyter notebook, the report will be automatically inserted, as above.
+
+# We can access the report via a browser:
+# report.open_in_browser()
+
+# or we can save as an html file
+# from pathlib import Path
+# output_dir = Path.cwd() / "results" / "plot_localizer_analysis_experimental"
+# output_dir.mkdir(exist_ok=True, parents=True)
+# report.save_as_html(output_dir / 'localizer.html')
