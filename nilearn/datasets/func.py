@@ -2121,7 +2121,7 @@ def _filter_csv_by_n_subjects(participants, n_adult, n_child):
         "participant_id"
     ][:n_adult]
     ids = np.hstack([adult_ids, child_ids])
-    participants = participants[np.in1d(participants["participant_id"], ids)]
+    participants = participants[np.isin(participants["participant_id"], ids)]
     participants = participants[np.argsort(participants, order="Child_Adult")]
     return participants
 
