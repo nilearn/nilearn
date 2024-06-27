@@ -38,6 +38,7 @@ def test_prox_tvl1_approximates_prox_l1_for_lasso(
         l1_ratio=l1_ratio,
         dgap_tol=dgap_tol,
         max_iter=10,
+        verbose=1,
     )[0][-1].ravel()
 
     # use exact closed-form soft shrinkage formula for prox_l1
