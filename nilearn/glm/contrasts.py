@@ -267,6 +267,8 @@ class Contrast:
     def effect_size(self):
         """Make access to summary statistics more straightforward \
         when computing contrasts."""
+        if self.stat_type == "t":
+            return self.effect[0, :]
         return self.effect
 
     def effect_variance(self):
