@@ -107,11 +107,11 @@ X3 = make_first_level_design_matrix(
 import matplotlib.pyplot as plt
 
 fig, (ax1, ax2, ax3) = plt.subplots(figsize=(10, 6), nrows=1, ncols=3)
-plot_design_matrix(X1, ax=ax1)
+plot_design_matrix(X1, axes=ax1)
 ax1.set_title("Event-related design matrix", fontsize=12)
-plot_design_matrix(X2, ax=ax2)
+plot_design_matrix(X2, axes=ax2)
 ax2.set_title("Block design matrix", fontsize=12)
-plot_design_matrix(X3, ax=ax3)
+plot_design_matrix(X3, axes=ax3)
 ax3.set_title("FIR design matrix", fontsize=12)
 plt.show()
 
@@ -157,8 +157,8 @@ X4 = make_first_level_design_matrix(
 
 # Let's compare it to the unmodulated block design
 fig, (ax1, ax2) = plt.subplots(figsize=(10, 6), nrows=1, ncols=2)
-plot_design_matrix(X2, ax=ax1)
+plot_design_matrix(X2, axes=ax1)
 ax1.set_title("Block design matrix", fontsize=12)
-plot_design_matrix(X4, ax=ax2)
+plot_design_matrix(X4, axes=ax2)
 ax2.set_title("Modulated block design matrix", fontsize=12)
 plt.show()
