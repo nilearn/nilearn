@@ -6,6 +6,8 @@ import warnings
 import numpy as np
 from sklearn.feature_selection import SelectPercentile, f_classif, f_regression
 
+from nilearn._utils import logger
+
 from .niimg import _get_data
 
 # Volume of a standard (MNI152) brain mask in mm^3
@@ -151,21 +153,28 @@ def adjust_screening_percentile(screening_percentile, mask_img, verbose=0):
         screening_percentile = min(screening_percentile, 100.0)
     # if screening_percentile is 100, we don't do anything
 
-    if verbose > 1:
-        print(
-            f"Mask volume = {mask_volume:g}mm^3 = {mask_volume / 1000.0:g}cm^3"
-        )
-        print(
-            "Standard brain volume "
-            f"= {MNI152_BRAIN_VOLUME:g}mm^3 "
-            f"= {MNI152_BRAIN_VOLUME / 1.0e3:g}cm^3"
-        )
-        print(
-            f"Original screening-percentile: {original_screening_percentile:g}"
-        )
-        print(
-            f"Volume-corrected screening-percentile: {screening_percentile:g}"
-        )
+    logger.log(
+        f"Mask volume = {mask_volume:g}mm^3 = {mask_volume / 1000.0:g}cm^3",
+        verbose=verbose,
+        msg_level=1,
+    )
+    logger.log(
+        "Standard brain volume "
+        f"= {MNI152_BRAIN_VOLUME:g}mm^3 "
+        f"= {MNI152_BRAIN_VOLUME / 1.0e3:g}cm^3",
+        verbose=verbose,
+        msg_level=1,
+    )
+    logger.log(
+        f"Original screening-percentile: {original_screening_percentile:g}",
+        verbose=verbose,
+        msg_level=1,
+    )
+    logger.log(
+        f"Volume-corrected screening-percentile: {screening_percentile:g}",
+        verbose=verbose,
+        msg_level=1,
+    )
     return screening_percentile
 
 

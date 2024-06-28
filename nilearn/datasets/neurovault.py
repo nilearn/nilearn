@@ -22,7 +22,12 @@ from sklearn.feature_extraction import DictVectorizer
 from sklearn.utils import Bunch
 
 from ..image import resample_img
-from ._utils import fetch_single_file, get_dataset_descr, get_dataset_dir
+from ._utils import (
+    fetch_single_file,
+    get_dataset_descr,
+    get_dataset_dir,
+    logger,
+)
 
 _NEUROVAULT_BASE_URL = "https://neurovault.org/api/"
 _NEUROVAULT_COLLECTIONS_URL = urljoin(_NEUROVAULT_BASE_URL, "collections/")
@@ -889,33 +894,6 @@ class _TemporaryDirectory:
         self.temp_dir_ = None
 
 
-def _print_if(message, level, threshold_level, with_traceback=False):
-    """Print a message if its importance is above a threshold.
-
-    Parameters
-    ----------
-    message : str
-        the message to print if `level` is strictly above
-        `threshold_level`.
-
-    level : int
-        importance of the message.
-
-    threshold_level : int
-        the message is printed if `level` is strictly above
-        `threshold_level`.
-
-    with_traceback : bool, default=False
-        if `message` is printed, also print the last traceback.
-
-    """
-    if level > threshold_level:
-        return
-    print(message)
-    if with_traceback:
-        traceback.print_exc()
-
-
 def _append_filters_to_query(query, filters):
     """Encode dict or sequence of key-value pairs into a URL query string.
 
@@ -988,17 +966,23 @@ def _get_batch(query, prefix_msg="", timeout=10.0, verbose=3):
         method="GET", url=query, headers={"Connection": "Keep-Alive"}
     )
     prepped = session.prepare_request(req)
-    _print_if(f"{prefix_msg}getting new batch: {query}", _DEBUG, verbose)
+    logger.log(
+        f"{prefix_msg}getting new batch: {query}",
+        verbose=verbose,
+        msg_level=_DEBUG,
+        stack_level=7,
+    )
     try:
         resp = session.send(prepped, timeout=timeout)
         resp.raise_for_status()
         batch = resp.json()
     except Exception:
-        _print_if(
+        logger.log(
             f"Could not get batch from {query}",
-            _ERROR,
-            verbose,
+            msg_level=_ERROR,
+            verbose=verbose,
             with_traceback=True,
+            stack_level=4,
         )
         raise
     if "id" in batch:
@@ -1009,7 +993,7 @@ def _get_batch(query, prefix_msg="", timeout=10.0, verbose=3):
                 f'Could not find required key "{key}" '
                 f"in batch retrieved from {query}."
             )
-            _print_if(msg, _ERROR, verbose)
+            logger.log(msg, msg_level=_ERROR, verbose=verbose, stack_level=4)
             raise ValueError(msg)
 
     return batch
@@ -1083,7 +1067,12 @@ def _scroll_server_results(
         if batch is not None:
             batch_size = len(batch["results"])
             downloaded += batch_size
-            _print_if(f"{prefix_msg}batch size: {batch_size}", _DEBUG, verbose)
+            logger.log(
+                f"{prefix_msg}batch size: {batch_size}",
+                msg_level=_DEBUG,
+                verbose=verbose,
+                stack_level=6,
+            )
             if n_available is None:
                 n_available = batch["count"]
                 max_results = (
@@ -1163,17 +1152,30 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
     nilearn.datasets._utils.fetch_single_file
 
     """
-    _print_if(f"Downloading file: {url}", _DEBUG, verbose)
+    logger.log(
+        f"Downloading file: {url}",
+        msg_level=_DEBUG,
+        verbose=verbose,
+        stack_level=8,
+    )
     try:
         downloaded = fetch_single_file(
             url, temp_dir, resume=False, overwrite=True, verbose=0
         )
     except Exception:
-        _print_if(f"Problem downloading file from {url}", _ERROR, verbose)
+        logger.log(
+            f"Problem downloading file from {url}",
+            msg_level=_ERROR,
+            verbose=verbose,
+            stack_level=9,
+        )
         raise
     shutil.move(downloaded, target_file)
-    _print_if(
-        f"Download succeeded, downloaded to: {target_file}", _DEBUG, verbose
+    logger.log(
+        f"Download succeeded, downloaded to: {target_file}",
+        msg_level=_DEBUG,
+        verbose=verbose,
+        stack_level=8,
     )
     return target_file
 
@@ -1216,7 +1218,7 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
     sklearn.feature_extraction.DictVectorizer
 
     """
-    _print_if("Computing word features.", _INFO, verbose)
+    logger.log("Computing word features.", msg_level=_INFO, verbose=verbose)
     words = []
     voc_empty = True
     for file_name in word_files:
@@ -1227,13 +1229,13 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
                 if info["data"]["values"] != {}:
                     voc_empty = False
         except Exception:
-            _print_if(
+            logger.log(
                 (
                     f"Could not load words from file {file_name}; "
                     f"error: {traceback.format_exc()}"
                 ),
-                _ERROR,
-                verbose,
+                msg_level=_ERROR,
+                verbose=verbose,
             )
             words.append({})
     if voc_empty:
@@ -1245,10 +1247,10 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
     vectorizer = DictVectorizer(**kwargs)
     frequencies = vectorizer.fit_transform(words).toarray()
     vocabulary = np.asarray(vectorizer.feature_names_)
-    _print_if(
+    logger.log(
         f"Computing word features done; vocabulary size: {vocabulary.size}",
-        _INFO,
-        verbose,
+        msg_level=_INFO,
+        verbose=verbose,
     )
     return frequencies, vocabulary
 
@@ -1525,7 +1527,7 @@ def _download_image_nii_file(image_info, collection, download_params):
         )
 
         # Resample here
-        print("Resampling...")
+        logger.log("Resampling...", stack_level=8)
         # TODO switch to force_resample=True
         # when bumping to version > 0.13
         im_resampled = resample_img(
@@ -1617,8 +1619,12 @@ def _download_image_terms(image_info, collection, download_params):
         message = f"Could not fetch words for image {image_info['id']}"
         if not download_params.get("allow_neurosynth_failure", True):
             raise RuntimeError(message)
-        _print_if(
-            message, _ERROR, download_params["verbose"], with_traceback=True
+        logger.log(
+            message,
+            msg_level=_ERROR,
+            verbose=download_params["verbose"],
+            with_traceback=True,
+            stack_level=2,
         )
 
     return image_info, collection
@@ -1733,8 +1739,11 @@ def _scroll_local(download_params):
         Metadata for the corresponding collection.
 
     """
-    _print_if(
-        "Reading local neurovault data.", _DEBUG, download_params["verbose"]
+    logger.log(
+        "Reading local neurovault data.",
+        msg_level=_DEBUG,
+        verbose=download_params["verbose"],
+        stack_level=4,
     )
 
     collections = glob(
@@ -1831,32 +1840,31 @@ def _scroll_collection(collection, download_params):
             yield image
         except Exception:
             fails_in_collection += 1
-            _print_if(
+            logger.log(
                 f"_scroll_collection: bad image: {image}",
-                _ERROR,
-                download_params["verbose"],
+                msg_level=_ERROR,
+                verbose=download_params["verbose"],
                 with_traceback=True,
+                stack_level=4,
             )
             yield None
         if fails_in_collection == download_params["max_fails_in_collection"]:
-            _print_if(
-                (
-                    f"Too many bad images in collection {collection['id']}:  "
-                    f"{fails_in_collection} bad images."
-                ),
-                _ERROR,
-                download_params["verbose"],
+            logger.log(
+                f"Too many bad images in collection {collection['id']}:  "
+                f"{fails_in_collection} bad images.",
+                msg_level=_ERROR,
+                verbose=download_params["verbose"],
+                stack_level=4,
             )
             return
-    _print_if(
-        (
-            "On neurovault.org: "
-            f"{n_im_in_collection or 'no'} "
-            f"image{'s' if n_im_in_collection > 1 else ''}"
-            f"matched query in collection {collection['id']}"
-        ),
-        _INFO,
-        download_params["verbose"],
+    logger.log(
+        "On neurovault.org: "
+        f"{n_im_in_collection or 'no'} "
+        f"image{'s' if n_im_in_collection > 1 else ''} "
+        f"matched query in collection {collection['id']}",
+        msg_level=_INFO,
+        verbose=download_params["verbose"],
+        stack_level=5,
     )
 
 
@@ -1887,8 +1895,11 @@ def _scroll_filtered(download_params):
     failed download.
 
     """
-    _print_if(
-        "Reading server neurovault data.", _DEBUG, download_params["verbose"]
+    logger.log(
+        "Reading server neurovault data.",
+        msg_level=_DEBUG,
+        verbose=download_params["verbose"],
+        stack_level=7,
     )
 
     download_params["collection_filter"] = ResultFilter(
@@ -1948,10 +1959,11 @@ def _scroll_collection_ids(download_params):
     ]
 
     if collection_urls:
-        _print_if(
+        logger.log(
             "Reading server neurovault data.",
-            _DEBUG,
-            download_params["verbose"],
+            msg_level=_DEBUG,
+            verbose=download_params["verbose"],
+            stack_level=5,
         )
 
     collections = _yield_from_url_list(
@@ -2054,10 +2066,11 @@ def _scroll_explicit(download_params):
 
 def _print_progress(found, download_params, level=_INFO):
     """Print number of images fetched so far."""
-    _print_if(
+    logger.log(
         f"Already fetched {found} image{'s' if found > 1 else ''}",
-        level,
-        download_params["verbose"],
+        msg_level=level,
+        verbose=download_params["verbose"],
+        stack_level=4,
     )
 
 
@@ -2103,14 +2116,13 @@ def _scroll(download_params):
             yield image, collection
             if found == download_params["max_images"]:
                 break
-        _print_if(
-            (
-                f"{found or 'No'} "
-                f"image{'s' if found > 1 else ''} "
-                "found on local disk."
-            ),
-            _INFO,
-            download_params["verbose"],
+        logger.log(
+            f"{found or 'No'} "
+            f"image{'s' if found > 1 else ''} "
+            "found on local disk.",
+            msg_level=_INFO,
+            verbose=download_params["verbose"],
+            stack_level=3,
         )
 
     if download_params["download_mode"] == "offline":
@@ -2648,16 +2660,14 @@ def fetch_neurovault(
         image_terms = basic_image_terms()
 
     if max_images == _DEFAULT_MAX_IMAGES:
-        _print_if(
-            (
-                "fetch_neurovault: "
-                f"using default value of {_DEFAULT_MAX_IMAGES} "
-                "for max_images. "
-                "Set max_images to another value or None "
-                "if you want more images."
-            ),
-            _INFO,
-            verbose,
+        logger.log(
+            "fetch_neurovault: "
+            f"using default value of {_DEFAULT_MAX_IMAGES} "
+            "for max_images. "
+            "Set max_images to another value or None "
+            "if you want more images.",
+            msg_level=_INFO,
+            verbose=verbose,
         )
     # Users may get confused if they write their image_filter function
     # and the default filters contained in image_terms still apply, so we

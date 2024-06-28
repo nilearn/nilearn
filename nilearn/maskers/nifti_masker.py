@@ -9,6 +9,7 @@ from functools import partial
 from joblib import Memory
 
 from nilearn import _utils, image, masking
+from nilearn._utils import logger
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 
@@ -423,11 +424,10 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
 
         """
         # Load data (if filenames are given, load them)
-        if self.verbose > 0:
-            print(
-                f"[{self.__class__.__name__}.fit] "
-                f"Loading data from {_utils._repr_niimgs(imgs, shorten=False)}"
-            )
+        logger.log(
+            f"Loading data from {_utils._repr_niimgs(imgs, shorten=False)}",
+            verbose=self.verbose,
+        )
 
         # Compute the mask if not given by the user
         if self.mask_img is None:
@@ -439,8 +439,8 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
                 )
             mask_args = self.mask_args if self.mask_args is not None else {}
             compute_mask = _get_mask_strategy(self.mask_strategy)
-            if self.verbose > 0:
-                print(f"[{self.__class__.__name__}.fit] Computing the mask")
+
+            logger.log("Computing the mask", verbose=self.verbose)
             self.mask_img_ = self._cache(compute_mask, ignore=["verbose"])(
                 imgs, verbose=max(0, self.verbose - 1), **mask_args
             )
@@ -462,8 +462,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
 
         # If resampling is requested, resample also the mask
         # Resampling: allows the user to change the affine, the shape or both
-        if self.verbose > 0:
-            print(f"[{self.__class__.__name__}.fit] Resampling mask")
+        logger.log("Resampling mask", verbose=self.verbose)
 
         # TODO switch to force_resample=True
         # when bumping to version > 0.13
@@ -488,8 +487,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         # Infer the number of elements (voxels) in the mask
         self.n_elements_ = int(data.sum())
 
-        if self.verbose > 0:
-            print(f"[{self.__class__.__name__}.fit] Finished fit")
+        logger.log("Finished fit", verbose=self.verbose)
 
         if (
             (self.target_shape is not None)

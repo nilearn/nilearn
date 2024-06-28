@@ -4,7 +4,6 @@ first level contrasts or directly on fitted first level models.
 Author: Martin Perez-Guevara, 2016
 """
 
-import sys
 import time
 from warnings import warn
 
@@ -14,7 +13,7 @@ from joblib import Memory
 from nibabel import Nifti1Image
 from sklearn.base import clone
 
-from nilearn._utils import fill_doc, stringify_path
+from nilearn._utils import fill_doc, logger, stringify_path
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
@@ -483,10 +482,10 @@ class SecondLevelModel(BaseGLM):
 
         # Report progress
         t0 = time.time()
-        if self.verbose > 0:
-            sys.stderr.write(
-                "Fitting second level model. Take a deep breath.\r"
-            )
+        logger.log(
+            "Fitting second level model. Take a deep breath.\r",
+            verbose=self.verbose,
+        )
 
         # Create and set design matrix, if not given
         if design_matrix is None:
@@ -518,11 +517,11 @@ class SecondLevelModel(BaseGLM):
         self.masker_.fit(sample_map)
 
         # Report progress
-        if self.verbose > 0:
-            sys.stderr.write(
-                "\nComputation of second level model done in "
-                f"{time.time() - t0} seconds.\n"
-            )
+        logger.log(
+            "\nComputation of second level model done in "
+            f"{time.time() - t0} seconds.\n",
+            verbose=self.verbose,
+        )
 
         return self
 
@@ -919,8 +918,7 @@ def non_parametric_inference(
 
     # Report progress
     t0 = time.time()
-    if verbose > 0:
-        sys.stderr.write("Fitting second level model...")
+    logger.log("Fitting second level model...", verbose=verbose)
 
     # Learn the mask. Assume the first level imgs have been masked.
     if not isinstance(mask, NiftiMasker):
@@ -941,11 +939,11 @@ def non_parametric_inference(
     masker.fit(sample_map)
 
     # Report progress
-    if verbose > 0:
-        sys.stderr.write(
-            "\nComputation of second level model done in "
-            f"{time.time() - t0} seconds\n"
-        )
+    logger.log(
+        "\nComputation of second level model done in "
+        f"{time.time() - t0} seconds\n",
+        verbose=verbose,
+    )
 
     # Check and obtain the contrast
     contrast = _get_con_val(second_level_contrast, design_matrix)

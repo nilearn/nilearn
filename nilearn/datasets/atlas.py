@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 from sklearn.utils import Bunch
 
-from .._utils import check_niimg, fill_doc
+from .._utils import check_niimg, fill_doc, logger
 from ..image import get_data, new_img_like, reorder_img
 from ._utils import fetch_files, get_dataset_descr, get_dataset_dir
 
@@ -1853,13 +1853,15 @@ def _separate_talairach_levels(atlas_img, labels, output_dir, verbose):
     The label '*' is replaced by 'Background' for clarity.
 
     """
-    if verbose:
-        print(f"Separating talairach atlas levels: {_TALAIRACH_LEVELS}")
+    logger.log(
+        f"Separating talairach atlas levels: {_TALAIRACH_LEVELS}",
+        verbose=verbose,
+        stack_level=3,
+    )
     for level_name, old_level_labels in zip(
         _TALAIRACH_LEVELS, np.asarray(labels).T
     ):
-        if verbose:
-            print(level_name)
+        logger.log(level_name, verbose=verbose, stack_level=3)
         # level with most regions, ba, has 72 regions
         level_data = np.zeros(atlas_img.shape, dtype="uint8")
         level_labels = {"*": 0}

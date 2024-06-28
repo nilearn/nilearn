@@ -12,9 +12,12 @@ Fixes
 -----
 
 - :bdg-dark:`Code` Fix failing test in ``test_nilearn_standardize`` on MacOS 14 by adding trend in simulated data (:gh:`4411` by `Hao-Ting Wang`_).
+- :bdg-dark:`Code` Add a new attribute ``_region_id_name`` to :class:`nilearn.maskers.NiftiLabelsMasker` which is used to fix the issue with creating ``region_names_`` attribute (:gh:`4360` by `Mohammad Torabi`_).
 
 Enhancements
 ------------
+
+- :bdg-dark:`Code` Add a new function :func:`nilearn.plotting.plot_design_matrix_correlation` to plot the correlation between regressors of a GLM design matrix (:gh:`4467` by `Rémi Gau`_).
 
 - :bdg-success:`API` Add option to resize output image width ``width_view`` in :func:`nilearn.plotting.view_img` (:gh:`4416` by `Alexandre Sayal`_).
 
@@ -37,6 +40,9 @@ Changes
 - :bdg-dark:`Code` Remove the unused arguments ``upper_cutoff`` and ``exclude_zeros`` for :func:`nilearn.masking.compute_multi_background_mask` (:gh:`4273` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Throw error in :func:`nilearn.glm.first_level.first_level_from_bids` if unknown ``kwargs`` are passed (:gh:`4414` by `Michelle Wang`_).
+
+- :bdg-danger:`Deprecation` The parameter ``tr`` for :term:`Repetition time<TR>` will be replaced by ``t_r`` in the "HRF" functions in version 0.13.0. The affected functions are :func:`nilearn.glm.first_level.glover_dispersion_derivative`, :func:`nilearn.glm.first_level.glover_hrf`, :func:`nilearn.glm.first_level.glover_time_derivative`, :func:`nilearn.glm.first_level.spm_dispersion_derivative`, :func:`nilearn.glm.first_level.spm_hrf`, :func:`nilearn.glm.first_level.spm_time_derivative` (:gh:`4470` by `Rémi Gau`_).
+
 
 - :bdg-primary:`Doc` Refactor design matrix and contrast formula for the two-sample T-test example in :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_second_level_two_sample_test.py` (:gh:`4407` by `Yichun Huang`_).
 
