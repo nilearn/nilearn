@@ -13,17 +13,12 @@ import sklearn.cluster
 import sklearn.preprocessing
 from nibabel import freesurfer as fs, gifti
 from scipy import interpolate, sparse
+from sklearn.exceptions import EfficiencyWarning
 
 from nilearn import _utils, datasets
 from nilearn._utils import stringify_path
 from nilearn._utils.path_finding import resolve_globbing
 from nilearn.image import get_data, load_img, resampling
-
-try:
-    from sklearn.exceptions import EfficiencyWarning
-except ImportError:
-    class EfficiencyWarning(UserWarning):
-        """Warning used to notify the user of inefficient computation."""
 
 # Create a namedtuple object for meshes
 Mesh = namedtuple("mesh", ["coordinates", "faces"])
@@ -641,7 +636,8 @@ def vol_to_surf(img, surf_mesh,
     if mask_img is not None:
         mask_img = _utils.check_niimg(mask_img)
         mask = get_data(resampling.resample_to_img(
-            mask_img, img, interpolation='nearest', copy=False))
+            mask_img, img, interpolation='nearest', copy=False,
+            copy_header=True))
     else:
         mask = None
     original_dimension = len(img.shape)

@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 
 from nilearn import datasets
+from nilearn.experimental import surface
 from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
@@ -197,7 +198,7 @@ def report_flm_fiac():
     data = datasets.func.fetch_fiac_first_level()
     fmri_img = [data["func1"], data["func2"]]
 
-    mean_img_ = mean_img(fmri_img[0])
+    mean_img_ = mean_img(fmri_img[0], copy_header=True)
 
     design_files = [data["design_matrix1"], data["design_matrix2"]]
     design_matrices = [pd.DataFrame(np.load(df)["X"]) for df in design_files]
@@ -249,6 +250,7 @@ def report_slm_oasis():
         datasets.fetch_icbm152_brain_gm_mask(),
         oasis_dataset.gray_matter_maps[0],
         interpolation="nearest",
+        copy_header=True,
     )
 
     design_matrix = _make_design_matrix_slm_oasis(oasis_dataset, n_subjects)
@@ -427,12 +429,66 @@ def report_multi_nifti_maps_masker():
     return empty_report, report
 
 
+def report_surface_masker():
+
+    masker = surface.SurfaceMasker()
+    img = surface.fetch_nki(mesh_type="inflated", n_subjects=1)[0]
+    masker.fit_transform(img)
+    surface_masker_report = masker.generate_report()
+    surface_masker_report.save_as_html(REPORTS_DIR / "surface_masker.html")
+
+    labels_img, _ = surface.fetch_destrieux(mesh_type="inflated")
+
+    mask = labels_img
+    for part in mask.data.parts:
+        mask.data.parts[part] = mask.data.parts[part] == 34
+
+    masker = surface.SurfaceMasker(mask)
+    img = surface.fetch_nki(mesh_type="inflated", n_subjects=1)[0]
+    masker.fit_transform(img)
+    surface_masker_with_mask_report = masker.generate_report()
+    surface_masker_with_mask_report.save_as_html(
+        REPORTS_DIR / "surface_masker_with_mask.html"
+    )
+
+    return (
+        surface_masker_report,
+        surface_masker_with_mask_report,
+    )
+
+
+def report_surface_label_masker():
+
+    labels_img, label_names = surface.fetch_destrieux(mesh_type="inflated")
+
+    labels_masker = surface.SurfaceLabelsMasker(labels_img, label_names).fit()
+    labels_masker_report_unfitted = labels_masker.generate_report()
+    labels_masker_report_unfitted.save_as_html(
+        REPORTS_DIR / "surface_label_masker_unfitted.html"
+    )
+
+    img = surface.fetch_nki(mesh_type="inflated", n_subjects=1)[0]
+
+    labels_masker.transform(img)
+    labels_masker_report = labels_masker.generate_report()
+    labels_masker_report.save_as_html(
+        REPORTS_DIR / "surface_label_masker.html"
+    )
+
+    return (
+        labels_masker_report_unfitted,
+        labels_masker_report,
+    )
+
+
 # %%
 if __name__ == "__main__":
 
     print("\nGenerating masker reports templates\n")
     t0 = time.time()
 
+    report_surface_masker()
+    report_surface_label_masker()
     report_nifti_masker()
     report_nifti_maps_masker()
     report_nifti_labels_masker()

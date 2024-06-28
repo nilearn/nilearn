@@ -1,7 +1,14 @@
+import warnings
+
 import numpy as np
 import pytest
 
-from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
+from nilearn.conftest import have_mpl
+from nilearn.experimental.surface import (
+    SurfaceImage,
+    SurfaceLabelsMasker,
+    SurfaceMasker,
+)
 
 
 def test_mask_img_fit_shape_mismatch(
@@ -80,8 +87,26 @@ def test_transform_inverse_transform_with_mask(
     assert masked_img.shape == shape + (img.shape[-1] - 2,)
     assert np.array_equal(masked_img.ravel()[:7], [2, 3, 4, 20, 30, 40, 50.0])
     unmasked_img = masker.inverse_transform(masked_img)
-    expected_data = {k: v.copy() for (k, v) in img.data.items()}
+    expected_data = {k: v.copy() for (k, v) in img.data.parts.items()}
     for v in expected_data.values():
         v[..., 0] = 0.0
     expected_img = SurfaceImage(img.mesh, expected_data)
     assert_img_equal(expected_img, unmasked_img)
+
+
+@pytest.mark.skipif(
+    have_mpl, reason="Test requires matplotlib not to be installed."
+)
+def test_masker_reporting_mpl_warning(mini_mask, mini_label_img):
+    """Raise warning after exception if matplotlib is not installed."""
+    with warnings.catch_warnings(record=True) as warning_list:
+        SurfaceMasker(mini_mask).fit().generate_report()
+
+    assert len(warning_list) == 1
+    assert issubclass(warning_list[0].category, ImportWarning)
+
+    with warnings.catch_warnings(record=True) as warning_list:
+        SurfaceLabelsMasker(mini_label_img).fit().generate_report()
+
+    assert len(warning_list) == 1
+    assert issubclass(warning_list[0].category, ImportWarning)

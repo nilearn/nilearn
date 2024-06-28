@@ -30,6 +30,8 @@
 
 .. _Ana Luisa Pinho: https://github.com/alpinho
 
+.. _Anand Joshi: https://github.com/ajoshiusc
+
 .. _Andrés Hoyos Idrobo: https://github.com/ahoyosid
 
 .. _Anne-Sophie Kieslinger: https://github.com/askieslinger
@@ -297,6 +299,8 @@
 .. _Yaroslav Halchenko: https://github.com/yarikoptic
 
 .. _Yasmin Mzayek: https://github.com/ymzayek
+
+.. _Yichun Huang: https://github.com/YCHuang0610
 
 .. _Zvi Baratz: https://github.com/ZviBaratz
 

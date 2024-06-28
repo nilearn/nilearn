@@ -134,7 +134,7 @@ dc = "Dummy classifier with stratified strategy"
 
 docdict[
     "classifier_options"
-] = f"""
+] = f""" # noqa:E501
 
         - `svc`: :class:`{svc} <sklearn.svm.LinearSVC>` with L2 penalty.
 
@@ -159,7 +159,7 @@ docdict[
 
         .. code-block:: python
 
-            logistic = LogisticRegression(penalty="l2", solver="liblinear")
+            logistic = LogisticRegressionCV(penalty="l2", solver="liblinear")
 
         - `logistic_l1`: \
             :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
@@ -167,7 +167,7 @@ docdict[
 
         .. code-block:: python
 
-            logistic_l1 = LogisticRegression(penalty="l1", solver="liblinear")
+            logistic_l1 = LogisticRegressionCV(penalty="l1", solver="liblinear")
 
         - `logistic_l2`: \
             :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \

@@ -168,7 +168,12 @@ def iter_check_niimg(
                         memory,
                         func_memory_level=2,
                         memory_level=memory_level,
-                    )(niimg, target_affine=ref_fov[0], target_shape=ref_fov[1])
+                    )(
+                        niimg,
+                        target_affine=ref_fov[0],
+                        target_shape=ref_fov[1],
+                        copy_header=True,
+                    )
                 else:
                     raise ValueError(
                         "Field of view of image #%d is different from "

@@ -116,7 +116,7 @@ def _remove_small_regions(input_data, affine, min_size):
     labels_kept = region_sizes > size_in_vox
     if not np.all(labels_kept):
         # Put to zero the indices not kept
-        rejected_labels_mask = np.in1d(
+        rejected_labels_mask = np.isin(
             input_data, np.where(np.logical_not(labels_kept))[0]
         ).reshape(input_data.shape)
         # Avoid modifying the input:
@@ -207,11 +207,15 @@ def connected_regions(
 
     if mask_img is not None:
         if not check_same_fov(maps_img, mask_img):
+            # TODO switch to force_resample=True
+            # when bumping to version > 0.13
             mask_img = resample_img(
                 mask_img,
                 target_affine=maps_img.affine,
                 target_shape=maps_img.shape[:3],
                 interpolation="nearest",
+                copy_header=True,
+                force_resample=False,
             )
         mask_data, _ = masking.load_mask_img(mask_img)
         # Set as 0 to the values which are outside of the mask
@@ -452,6 +456,7 @@ class RegionExtractor(NiftiMapsMasker):
                     mask_img=self.mask_img,
                     copy=True,
                     threshold=self.threshold,
+                    copy_header=True,
                 )
 
         # connected component extraction

@@ -387,9 +387,11 @@ class BaseSlicer:
         # is called from `add_contours`, continuous interpolation
         # does not make sense and we turn to nearest interpolation instead.
         if is_binary_niimg(img):
-            img = reorder_img(img, resample="nearest")
+            img = reorder_img(img, resample="nearest", copy_header=True)
         else:
-            img = reorder_img(img, resample=resampling_interpolation)
+            img = reorder_img(
+                img, resample=resampling_interpolation, copy_header=True
+            )
         threshold = float(threshold) if threshold is not None else None
 
         affine = img.affine
@@ -592,7 +594,7 @@ class BaseSlicer:
             The color used to display the edge map.
 
         """
-        img = reorder_img(img, resample="continuous")
+        img = reorder_img(img, resample="continuous", copy_header=True)
         data = get_data(img)
         affine = img.affine
         single_color_cmap = ListedColormap([color])
@@ -837,7 +839,7 @@ def _get_cbar_ticks(vmin, vmax, offset, nb_ticks=5):
         # at the same distance to 4 ticks
         if diff.count(min(diff)) == 4:
             idx_closest = np.sort(np.argpartition(diff, 4)[:4])
-            idx_closest = np.in1d(ticks, np.sort(ticks[idx_closest])[1:3])
+            idx_closest = np.isin(ticks, np.sort(ticks[idx_closest])[1:3])
         else:
             # Find the closest 2 ticks
             idx_closest = np.sort(np.argpartition(diff, 2)[:2])
@@ -986,7 +988,7 @@ class OrthoSlicer(BaseSlicer):
 
         Here we put the logic used to adjust the size of the axes.
 
-        ``renderer`` is required to match the matplolib API.
+        ``renderer`` is required to match the matplotlib API.
         """
         x0, y0, x1, y1 = self.rect
         width_dict = dict()
@@ -1342,7 +1344,7 @@ class TiledSlicer(BaseSlicer):
 
         Here we put the logic used to adjust the size of the axes.
 
-        ``renderer`` is required to match the matplolib API.
+        ``renderer`` is required to match the matplotlib API.
         """
         rect_x0, rect_y0, rect_x1, rect_y1 = self.rect
 
@@ -1550,7 +1552,7 @@ class BaseStackedSlicer(BaseSlicer):
 
         Here we put the logic used to adjust the size of the axes.
 
-        ``renderer`` is required to match the matplolib API.
+        ``renderer`` is required to match the matplotlib API.
         """
         x0, y0, x1, y1 = self.rect
         width_dict = dict()
@@ -2030,7 +2032,7 @@ class MosaicSlicer(BaseSlicer):
 
         Here we put the logic used to adjust the size of the axes.
 
-        ``renderer`` is required to match the matplolib API.
+        ``renderer`` is required to match the matplotlib API.
         """
         x0, y0, x1, y1 = self.rect
         display_ax_dict = self.axes

@@ -18,9 +18,11 @@ import numpy as np
 
 from nilearn.plotting import plot_design_matrix
 
-tr = 1.0  # repetition time is 1 second
+t_r = 1.0  # repetition time is 1 second
 n_scans = 128  # the acquisition comprises 128 scans
-frame_times = np.arange(n_scans) * tr  # here are the corresponding frame times
+frame_times = (
+    np.arange(n_scans) * t_r
+)  # here are the corresponding frame times
 
 # %%
 # Then we define parameters related to the experimental design.
@@ -111,4 +113,73 @@ plot_design_matrix(X2, ax=ax2)
 ax2.set_title("Block design matrix", fontsize=12)
 plot_design_matrix(X3, ax=ax3)
 ax3.set_title("FIR design matrix", fontsize=12)
-fig.show()
+plt.show()
+
+
+# %%
+# Correlation between regressors
+# ------------------------------
+# We can plot the correlation between the regressors of our design matrix.
+# This is important to check as highly correlated regressors can affect
+# the effficieny of
+# `your design <https://imaging.mrc-cbu.cam.ac.uk/imaging/DesignEfficiency#Correlation_between_regressors>`_. # noqa
+#
+
+from nilearn.plotting import plot_design_matrix_correlation
+
+fig3, (ax1, ax2, ax3) = plt.subplots(figsize=(15, 5), nrows=1, ncols=3)
+plot_design_matrix_correlation(X1, axes=ax1)
+ax1.set_title("Event-related correlation matrix", fontsize=12)
+plot_design_matrix_correlation(X2, axes=ax2)
+ax2.set_title("Block correlation matrix", fontsize=12)
+plot_design_matrix_correlation(X3, axes=ax3, tri="diag")
+ax3.set_title("FIR correlation matrix", fontsize=12)
+plt.show()
+
+
+# %%
+# Parametric modulation
+# ---------------------
+# By default, the fMRI GLM will expect that all events
+# for a given condition have a BOLD
+# response with the same amplitude.
+# Sometimes, we may have specific expectations
+# about how strong the BOLD response
+# will be on a given event.
+# This can be incorporated into the model by using **parametric modulation**,
+# wherein each event has a predicted amplitude.
+# This can be used both to improve model fit and to test hypotheses regarding
+# how the BOLD response scales with important features of events,
+# such as trial intensity or response time.
+#
+# Here we will assume that when a trial
+# is the same condition as the previous one,
+# it will elicit a less intense response.
+
+conditions = ["c0", "c0", "c0", "c1", "c1", "c1", "c3", "c3", "c3"]
+modulation = [1.0, 0.5, 0.25, 1.0, 0.5, 0.25, 1.0, 0.5, 0.25]
+modulated_events = pd.DataFrame(
+    {
+        "trial_type": conditions,
+        "onset": onsets,
+        "duration": duration,
+        "modulation": modulation,
+    }
+)
+
+hrf_model = "glover"
+X4 = make_first_level_design_matrix(
+    frame_times,
+    modulated_events,
+    drift_model="polynomial",
+    drift_order=3,
+    hrf_model=hrf_model,
+)
+
+# Let's compare it to the unmodulated block design
+fig, (ax1, ax2) = plt.subplots(figsize=(10, 6), nrows=1, ncols=2)
+plot_design_matrix(X2, ax=ax1)
+ax1.set_title("Block design matrix", fontsize=12)
+plot_design_matrix(X4, ax=ax2)
+ax2.set_title("Modulated block design matrix", fontsize=12)
+plt.show()

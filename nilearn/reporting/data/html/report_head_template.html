@@ -1,7 +1,14 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <title>HTML report</title>
+    <title>Nilearn - $page_title</title>
+
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="https://raw.githubusercontent.com/nilearn/nilearn/main/doc/logos/favicon.ico"
+    />
+
     <meta
       name="viewport"
       content="width = device-width, initial-scale = 1"
@@ -14,16 +21,19 @@
   </head>
 
   <body>
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/purecss@1.0.0/build/pure-min.css"
-      integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w"
-      crossorigin="anonymous"
-    />
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/purecss@1.0.0/build/grids-responsive-min.css"
-    />
-    $body
+    <main>$body</main>
+
+    <footer>
+      <address>
+        <p>
+          Built using
+          <a href="https://nilearn.github.io">Nilearn (version=$version)</a>.
+          Source code on
+          <a href="https://github.com/nilearn/nilearn">GitHub</a>. File bugs
+          &amp; feature requests
+          <a href="https://github.com/nilearn/nilearn/issues">here</a>.
+        </p>
+      </address>
+    </footer>
   </body>
 </html>

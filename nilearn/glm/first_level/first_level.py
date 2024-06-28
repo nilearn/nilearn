@@ -10,7 +10,6 @@ from __future__ import annotations
 import csv
 import glob
 import os
-import sys
 import time
 from pathlib import Path
 from warnings import warn
@@ -22,9 +21,10 @@ from nibabel import Nifti1Image
 from sklearn.base import clone
 from sklearn.cluster import KMeans
 
-from nilearn._utils import fill_doc, stringify_path
+from nilearn._utils import fill_doc, logger, stringify_path
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_run_sample_masks
+from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     compute_fixed_effect_contrast,
@@ -320,11 +320,14 @@ class FirstLevelModel(BaseGLM):
         (in seconds). Events that start before (slice_time_ref * t_r +
         min_onset) are not considered.
 
-    mask_img : Niimg-like, NiftiMasker object or False, optional
+    mask_img : Niimg-like, NiftiMasker, SurfaceImage, SurfaceMasker, False or \
+               None, default=None
         Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is given,
-        it will be computed automatically by a NiftiMasker with default
+        then its mask will be used. If None is passed, the mask
+        will be computed automatically by a NiftiMasker with default
         parameters. If False is given then the data will not be masked.
+        In the case of surface analysis, passing None or False will lead to
+        no masking.
 
     target_affine : 3x3 or 4x4 matrix, optional
         This parameter is passed to nilearn.image.resample_img.
@@ -486,6 +489,206 @@ class FirstLevelModel(BaseGLM):
         )
         return self.signal_scaling
 
+    def _check_fit_inputs(
+        self,
+        run_imgs,
+        events,
+        confounds,
+        sample_masks,
+        design_matrices,
+    ):
+        """Run input validation and ensure inputs are compatible."""
+        # Raise a warning if both design_matrices and confounds are provided
+        if design_matrices is not None and (
+            confounds is not None or events is not None
+        ):
+            warn(
+                "If design matrices are supplied, "
+                "confounds and events will be ignored."
+            )
+
+        if events is not None:
+            _check_events_file_uses_tab_separators(events_files=events)
+
+        if not isinstance(run_imgs, (list, tuple)):
+            run_imgs = [run_imgs]
+
+        if design_matrices is None:
+            if events is None:
+                raise ValueError("events or design matrices must be provided")
+            if self.t_r is None:
+                raise ValueError(
+                    "t_r not given to FirstLevelModel object"
+                    " to compute design from events"
+                )
+        else:
+            design_matrices = _check_run_tables(
+                run_imgs, design_matrices, "design_matrices"
+            )
+
+        # Check that number of events and confound files match number of runs
+        # Also check that events and confound files can be loaded as DataFrame
+        if events is not None:
+            events = _check_run_tables(run_imgs, events, "events")
+
+        if confounds is not None:
+            confounds = _check_run_tables(run_imgs, confounds, "confounds")
+
+        if sample_masks is not None:
+            sample_masks = check_run_sample_masks(len(run_imgs), sample_masks)
+
+        return (
+            run_imgs,
+            events,
+            confounds,
+            sample_masks,
+            design_matrices,
+        )
+
+    def _log(
+        self, step, run_idx=None, n_runs=None, t0=None, time_in_second=None
+    ):
+        """Generate and log messages for different step of the model fit."""
+        if step == "progress":
+            msg = self._report_progress(run_idx, n_runs, t0)
+        elif step == "running":
+            msg = "Performing GLM computation."
+        elif step == "run_done":
+            msg = f"GLM took {int(time_in_second)} seconds."
+        elif step == "masking":
+            msg = "Performing mask computation."
+        elif step == "masking_done":
+            msg = f"Masking took {int(time_in_second)} seconds."
+        elif step == "done":
+            msg = (
+                f"Computation of {n_runs} runs done "
+                f"in {int(time_in_second)} seconds."
+            )
+
+        logger.log(msg, verbose=self.verbose, stack_level=2)
+
+    def _report_progress(self, run_idx, n_runs, t0):
+        remaining = "go take a coffee, a big one"
+        if run_idx != 0:
+            percent = float(run_idx) / n_runs
+            percent = round(percent * 100, 2)
+            dt = time.time() - t0
+            # We use a max to avoid a division by zero
+            remaining = (100.0 - percent) / max(0.01, percent) * dt
+            remaining = f"{int(remaining)} seconds remaining"
+
+        return (
+            f"Computing run {run_idx + 1} "
+            f"out of {n_runs} runs ({remaining})."
+        )
+
+    def _fit_single_run(self, sample_masks, bins, run_img, run_idx):
+        """Fit the model for a single and keep only the regression results."""
+        design = self.design_matrices_[run_idx]
+
+        sample_mask = None
+        if sample_masks is not None:
+            sample_mask = sample_masks[run_idx]
+            design = design.iloc[sample_mask, :]
+            self.design_matrices_[run_idx] = design
+
+        # Mask and prepare data for GLM
+        self._log("masking")
+        t_masking = time.time()
+        Y = self.masker_.transform(run_img, sample_mask=sample_mask)
+        del run_img  # Delete unmasked image to save memory
+        self._log("masking_done", time_in_second=time.time() - t_masking)
+
+        if self.signal_scaling is not False:
+            Y, _ = mean_scaling(Y, self.signal_scaling)
+
+        if self.memory:
+            mem_glm = self.memory.cache(run_glm, ignore=["n_jobs"])
+        else:
+            mem_glm = run_glm
+
+        # compute GLM
+        t_glm = time.time()
+        self._log("running")
+
+        labels, results = mem_glm(
+            Y,
+            design.values,
+            noise_model=self.noise_model,
+            bins=bins,
+            n_jobs=self.n_jobs,
+            random_state=self.random_state,
+        )
+
+        self._log("run_done", time_in_second=time.time() - t_glm)
+
+        self.labels_.append(labels)
+
+        # We save memory if inspecting model details is not necessary
+        if self.minimize_memory:
+            for key in results:
+                results[key] = SimpleRegressionResults(results[key])
+        self.results_.append(results)
+        del Y
+
+    def _create_all_designs(
+        self, run_imgs, events, confounds, design_matrices
+    ):
+        """Build experimental design of all runs."""
+        if design_matrices is not None:
+            return design_matrices
+
+        design_matrices = []
+
+        for run_idx, run_img in enumerate(run_imgs):
+
+            if isinstance(run_img, SurfaceImage):
+                n_scans = run_img.shape[0]
+            else:
+                run_img = check_niimg(run_img, ensure_ndim=4)
+                n_scans = get_data(run_img).shape[3]
+
+            design = self._create_single_design(
+                n_scans, events, confounds, run_idx
+            )
+
+            design_matrices.append(design)
+
+        return design_matrices
+
+    def _create_single_design(self, n_scans, events, confounds, run_idx):
+        """Build experimental design of a single run."""
+        if confounds is not None:
+            confounds_matrix = confounds[run_idx].values
+            if confounds_matrix.shape[0] != n_scans:
+                raise ValueError(
+                    "Rows in confounds does not match "
+                    "n_scans in run_img "
+                    f"at index {run_idx}."
+                )
+            confounds_names = confounds[run_idx].columns.tolist()
+        else:
+            confounds_matrix = None
+            confounds_names = None
+
+        start_time = self.slice_time_ref * self.t_r
+        end_time = (n_scans - 1 + self.slice_time_ref) * self.t_r
+        frame_times = np.linspace(start_time, end_time, n_scans)
+        design = make_first_level_design_matrix(
+            frame_times,
+            events[run_idx],
+            self.hrf_model,
+            self.drift_model,
+            self.high_pass,
+            self.drift_order,
+            self.fir_delays,
+            confounds_matrix,
+            confounds_names,
+            self.min_onset,
+        )
+
+        return design
+
     def fit(
         self,
         run_imgs,
@@ -504,27 +707,30 @@ class FirstLevelModel(BaseGLM):
 
         Parameters
         ----------
-        run_imgs : Niimg-like object or list of Niimg-like objects,
+        run_imgs : Niimg-like object, \
+                   :obj:`list` or :obj:`tuple` of Niimg-like objects, \
+                   SurfaceImage object, \
+                   or :obj:`list` or :obj:`tuple` of SurfaceImage
             Data on which the :term:`GLM` will be fitted. If this is a list,
             the affine is considered the same for all.
 
-        events : pandas Dataframe or string or list of pandas DataFrames \
-                 or strings, default=None
+        events : :class:`pandas.DataFrame` or :obj:`str` or :obj:`list` of \
+                 :class:`pandas.DataFrame` or :obj:`str`, default=None
             :term:`fMRI` events used to build design matrices.
             One events object expected per run_img.
             Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
 
-        confounds : pandas Dataframe, numpy array or string or \
-                    list of pandas DataFrames, numpy arrays or strings, \
-                    default=None
+        confounds : :class:`pandas.DataFrame`, :class:`numpy.ndarray` or \
+                    :obj:`str` or :obj:`list` of :class:`pandas.DataFrame`, \
+                    :class:`numpy.ndarray` or :obj:`str`, default=None
             Each column in a DataFrame corresponds to a confound variable
             to be included in the regression model of the respective run_img.
             The number of rows must match the number of volumes in the
             respective run_img. Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
 
-        sample_masks : array_like, or list of array_like, default=None
+        sample_masks : array_like, or :obj:`list` of array_like, default=None
             shape of array: (number of scans - number of volumes remove)
             Indices of retained volumes. Masks the niimgs along time/fourth
             dimension to perform scrubbing (remove volumes with high motion)
@@ -532,225 +738,76 @@ class FirstLevelModel(BaseGLM):
 
             .. versionadded:: 0.9.2
 
-        design_matrices : pandas DataFrame or \
-                          list of pandas DataFrames, default=None
+        design_matrices : :class:`pandas.DataFrame` or :obj:`list` of \
+                          :class:`pandas.DataFrame`, default=None
             Design matrices that will be used to fit the GLM. If given it
             takes precedence over events and confounds.
 
-        bins : int, default=100
+        bins : :obj:`int`, default=100
             Maximum number of discrete bins for the AR coef histogram.
             If an autoregressive model with order greater than one is specified
             then adaptive quantification is performed and the coefficients
             will be clustered via K-means with `bins` number of clusters.
 
         """
+        if not isinstance(
+            run_imgs, (str, Path, Nifti1Image, SurfaceImage, list, tuple)
+        ) or (
+            isinstance(run_imgs, (list, tuple))
+            and not all(
+                isinstance(x, (str, Path, Nifti1Image, SurfaceImage))
+                for x in run_imgs
+            )
+        ):
+            input_type = type(run_imgs)
+            if isinstance(run_imgs, list):
+                input_type = [type(x) for x in run_imgs]
+            raise TypeError(
+                "'run_imgs' must be a single instance / a list "
+                "of any of the following:\n"
+                "- string\n"
+                "- pathlib.Path\n"
+                "- NiftiImage\n"
+                "- SurfaceImage\n"
+                f"Got: {input_type}"
+            )
+
+        run_imgs, events, confounds, sample_masks, design_matrices = (
+            self._check_fit_inputs(
+                run_imgs,
+                events,
+                confounds,
+                sample_masks,
+                design_matrices,
+            )
+        )
+
         # Initialize masker_ to None such that attribute exists
         self.masker_ = None
 
-        # Raise a warning if both design_matrices and confounds are provided
-        if design_matrices is not None and (
-            confounds is not None or events is not None
-        ):
-            warn(
-                "If design matrices are supplied, "
-                "confounds and events will be ignored."
-            )
-        # Local import to prevent circular imports
-        from nilearn.maskers import NiftiMasker
+        self._prepare_mask(run_imgs[0])
 
-        # Check arguments
-        # Check imgs type
-        if events is not None:
-            _check_events_file_uses_tab_separators(events_files=events)
-        if not isinstance(run_imgs, (list, tuple)):
-            run_imgs = [run_imgs]
-        if design_matrices is None:
-            if events is None:
-                raise ValueError("events or design matrices must be provided")
-            if self.t_r is None:
-                raise ValueError(
-                    "t_r not given to FirstLevelModel object"
-                    " to compute design from events"
-                )
-        else:
-            design_matrices = _check_run_tables(
-                run_imgs, design_matrices, "design_matrices"
-            )
-        # Check that number of events and confound files match number of runs
-        # Also check that events and confound files can be loaded as DataFrame
-        if events is not None:
-            events = _check_run_tables(run_imgs, events, "events")
-        if confounds is not None:
-            confounds = _check_run_tables(run_imgs, confounds, "confounds")
-
-        if sample_masks is not None:
-            sample_masks = check_run_sample_masks(len(run_imgs), sample_masks)
-
-        # Learn the mask
-        if self.mask_img is False:
-            # We create a dummy mask to preserve functionality of api
-            ref_img = check_niimg(run_imgs[0])
-            self.mask_img = Nifti1Image(
-                np.ones(ref_img.shape[:3]), ref_img.affine
-            )
-        if not isinstance(self.mask_img, NiftiMasker):
-            self.masker_ = NiftiMasker(
-                mask_img=self.mask_img,
-                smoothing_fwhm=self.smoothing_fwhm,
-                target_affine=self.target_affine,
-                standardize=self.standardize,
-                mask_strategy="epi",
-                t_r=self.t_r,
-                memory=self.memory,
-                verbose=max(0, self.verbose - 2),
-                target_shape=self.target_shape,
-                memory_level=self.memory_level,
-            )
-            self.masker_.fit(run_imgs[0])
-        else:
-            # Make sure masker has been fitted otherwise no attribute mask_img_
-            self.mask_img._check_fitted()
-            if self.mask_img.mask_img_ is None and self.masker_ is None:
-                self.masker_ = clone(self.mask_img)
-                for param_name in [
-                    "target_affine",
-                    "target_shape",
-                    "smoothing_fwhm",
-                    "t_r",
-                    "memory",
-                    "memory_level",
-                ]:
-                    our_param = getattr(self, param_name)
-                    if our_param is None:
-                        continue
-                    if getattr(self.masker_, param_name) is not None:
-                        warn(
-                            f"Parameter {param_name} of the masker overridden"
-                        )
-                    setattr(self.masker_, param_name, our_param)
-                self.masker_.fit(run_imgs[0])
-            else:
-                self.masker_ = self.mask_img
+        self.design_matrices_ = self._create_all_designs(
+            run_imgs, events, confounds, design_matrices
+        )
 
         # For each run fit the model and keep only the regression results.
-        self.labels_, self.results_, self.design_matrices_ = [], [], []
+        self.labels_, self.results_ = [], []
         n_runs = len(run_imgs)
         t0 = time.time()
         for run_idx, run_img in enumerate(run_imgs):
-            # Report progress
-            if self.verbose > 0:
-                percent = float(run_idx) / n_runs
-                percent = round(percent * 100, 2)
-                dt = time.time() - t0
-                # We use a max to avoid a division by zero
-                if run_idx == 0:
-                    remaining = "go take a coffee, a big one"
-                else:
-                    remaining = (100.0 - percent) / max(0.01, percent) * dt
-                    remaining = f"{int(remaining)} seconds remaining"
+            self._log("progress", run_idx=run_idx, n_runs=n_runs, t0=t0)
+            self._fit_single_run(sample_masks, bins, run_img, run_idx)
 
-                sys.stderr.write(
-                    f"Computing run {run_idx + 1} "
-                    f"out of {n_runs} runs ({remaining})\n"
-                )
+        self._log("done", n_runs=n_runs, time_in_second=time.time() - t0)
 
-            # Build the experimental design for the glm
-            run_img = check_niimg(run_img, ensure_ndim=4)
-            if design_matrices is None:
-                n_scans = get_data(run_img).shape[3]
-                if confounds is not None:
-                    confounds_matrix = confounds[run_idx].values
-                    if confounds_matrix.shape[0] != n_scans:
-                        raise ValueError(
-                            "Rows in confounds does not match "
-                            "n_scans in run_img "
-                            f"at index {run_idx}."
-                        )
-                    confounds_names = confounds[run_idx].columns.tolist()
-                else:
-                    confounds_matrix = None
-                    confounds_names = None
-                start_time = self.slice_time_ref * self.t_r
-                end_time = (n_scans - 1 + self.slice_time_ref) * self.t_r
-                frame_times = np.linspace(start_time, end_time, n_scans)
-                design = make_first_level_design_matrix(
-                    frame_times,
-                    events[run_idx],
-                    self.hrf_model,
-                    self.drift_model,
-                    self.high_pass,
-                    self.drift_order,
-                    self.fir_delays,
-                    confounds_matrix,
-                    confounds_names,
-                    self.min_onset,
-                )
-            else:
-                design = design_matrices[run_idx]
-
-            if sample_masks is not None:
-                sample_mask = sample_masks[run_idx]
-                design = design.iloc[sample_mask, :]
-            else:
-                sample_mask = None
-
-            self.design_matrices_.append(design)
-
-            # Mask and prepare data for GLM
-            if self.verbose > 1:
-                t_masking = time.time()
-                sys.stderr.write("Starting masker computation \r")
-
-            Y = self.masker_.transform(run_img, sample_mask=sample_mask)
-            del run_img  # Delete unmasked image to save memory
-
-            if self.verbose > 1:
-                t_masking = time.time() - t_masking
-                sys.stderr.write(
-                    f"Masker took {int(t_masking)} seconds       \n"
-                )
-
-            if self.signal_scaling is not False:
-                Y, _ = mean_scaling(Y, self.signal_scaling)
-            if self.memory:
-                mem_glm = self.memory.cache(run_glm, ignore=["n_jobs"])
-            else:
-                mem_glm = run_glm
-
-            # compute GLM
-            if self.verbose > 1:
-                t_glm = time.time()
-                sys.stderr.write("Performing GLM computation\r")
-            labels, results = mem_glm(
-                Y,
-                design.values,
-                noise_model=self.noise_model,
-                bins=bins,
-                n_jobs=self.n_jobs,
-                random_state=self.random_state,
-            )
-            if self.verbose > 1:
-                t_glm = time.time() - t_glm
-                sys.stderr.write(f"GLM took {int(t_glm)} seconds         \n")
-
-            self.labels_.append(labels)
-            # We save memory if inspecting model details is not necessary
-            if self.minimize_memory:
-                for key in results:
-                    results[key] = SimpleRegressionResults(results[key])
-            self.results_.append(results)
-            del Y
-
-        # Report progress
-        if self.verbose > 0:
-            sys.stderr.write(
-                f"\nComputation of {n_runs} runs done "
-                f"in {time.time() - t0} seconds.\n\n"
-            )
         return self
 
     def compute_contrast(
-        self, contrast_def, stat_type=None, output_type="z_score"
+        self,
+        contrast_def,
+        stat_type=None,
+        output_type="z_score",
     ):
         """Generate different outputs corresponding to \
         the contrasts provided e.g. z_map, t_map, effects and variance.
@@ -780,10 +837,9 @@ class FirstLevelModel(BaseGLM):
             :term:`'effect_size'<Parameter Estimate>`, 'effect_variance' or
             'all'.
 
-
         Returns
         -------
-        output : Nifti1Image or dict
+        output : Nifti1Image, or dict
             The desired output image(s). If ``output_type == 'all'``, then
             the output is a dictionary of images, keyed by the type of image.
 
@@ -848,9 +904,11 @@ class FirstLevelModel(BaseGLM):
             # Prepare the returned images
             output = self.masker_.inverse_transform(estimate_)
             contrast_name = str(con_vals)
-            output.header["descrip"] = (
-                f"{output_type_} of contrast {contrast_name}"
-            )
+            if not isinstance(output, SurfaceImage):
+                output.header["descrip"] = (
+                    f"{output_type_} of contrast {contrast_name}"
+                )
+
             outputs[output_type_] = output
 
         return outputs if output_type == "all" else output
@@ -921,6 +979,92 @@ class FirstLevelModel(BaseGLM):
             output.append(self.masker_.inverse_transform(voxelwise_attribute))
 
         return output
+
+    def _prepare_mask(self, run_img):
+        """Set up the masker.
+
+        Parameters
+        ----------
+        run_img : Niimg-like object or SurfaceImage object
+            Used for setting up the masker object.
+        """
+        # Local import to prevent circular imports
+        from nilearn.maskers import NiftiMasker
+
+        # Learn the mask
+        if self.mask_img is False:
+            # We create a dummy mask to preserve functionality of api
+            if isinstance(run_img, SurfaceImage):
+                surf_data = {}
+                for part in run_img.mesh.parts:
+                    surf_data[part] = np.ones(
+                        run_img.data.parts[part].shape[1], dtype=bool
+                    )
+                self.mask_img = SurfaceImage(mesh=run_img.mesh, data=surf_data)
+            else:
+                ref_img = check_niimg(run_img)
+                self.mask_img = Nifti1Image(
+                    np.ones(ref_img.shape[:3]), ref_img.affine
+                )
+
+        if isinstance(run_img, SurfaceImage) and not isinstance(
+            self.mask_img, SurfaceMasker
+        ):
+            self.masker_ = SurfaceMasker(
+                mask_img=self.mask_img,
+                smoothing_fwhm=self.smoothing_fwhm,
+                standardize=self.standardize,
+                t_r=self.t_r,
+                memory=self.memory,
+                memory_level=self.memory_level,
+            )
+            self.masker_.fit(run_img)
+
+        elif not isinstance(
+            self.mask_img, (NiftiMasker, SurfaceMasker, SurfaceImage)
+        ):
+            self.masker_ = NiftiMasker(
+                mask_img=self.mask_img,
+                smoothing_fwhm=self.smoothing_fwhm,
+                target_affine=self.target_affine,
+                standardize=self.standardize,
+                mask_strategy="epi",
+                t_r=self.t_r,
+                memory=self.memory,
+                verbose=max(0, self.verbose - 2),
+                target_shape=self.target_shape,
+                memory_level=self.memory_level,
+            )
+            self.masker_.fit(run_img)
+
+        else:
+            # Make sure masker has been fitted otherwise no attribute mask_img_
+            self.mask_img._check_fitted()
+            if self.mask_img.mask_img_ is None and self.masker_ is None:
+                self.masker_ = clone(self.mask_img)
+                for param_name in [
+                    "target_affine",
+                    "target_shape",
+                    "smoothing_fwhm",
+                    "t_r",
+                    "memory",
+                    "memory_level",
+                ]:
+                    our_param = getattr(self, param_name)
+                    if our_param is None:
+                        continue
+                    if getattr(self.masker_, param_name) is not None:
+                        warn(
+                            f"Parameter {param_name} of the masker overridden"
+                        )
+                    if isinstance(self.masker_, SurfaceMasker):
+                        if param_name not in ["target_affine", "target_shape"]:
+                            setattr(self.masker_, param_name, our_param)
+                    else:
+                        setattr(self.masker_, param_name, our_param)
+                self.masker_.fit(run_img)
+            else:
+                self.masker_ = self.mask_img
 
 
 def _check_events_file_uses_tab_separators(events_files):
@@ -1540,7 +1684,7 @@ def _list_valid_subjects(derivatives_path, sub_labels):
     return set(sub_labels_exist)
 
 
-def _report_found_files(files, text, sub_label, filters):
+def _report_found_files(files, text, sub_label, filters, verbose):
     """Print list of files found for a given subject and filter.
 
     Parameters
@@ -1559,11 +1703,14 @@ def _report_found_files(files, text, sub_label, filters):
         Only one filter per field allowed.
 
     """
-    print(
-        f"Found the following {len(files)} {text} files\n",
-        f"for subject {sub_label}\n",
-        f"for filter: {filters}:\n",
-        f"{files}\n",
+    unordered_list_string = "\n\t- ".join(files)
+    logger.log(
+        f"\nFound the following {len(files)} {text} files\n"
+        f"- for subject {sub_label}\n"
+        f"- for filter: {filters}:\n\t"
+        f"- {unordered_list_string}\n",
+        verbose=verbose,
+        stack_level=3,
     )
 
 
@@ -1614,13 +1761,13 @@ def _get_processed_imgs(
         sub_label=sub_label,
         filters=filters,
     )
-    if verbose:
-        _report_found_files(
-            files=imgs,
-            text="preprocessed BOLD",
-            sub_label=sub_label,
-            filters=filters,
-        )
+    _report_found_files(
+        files=imgs,
+        text="preprocessed BOLD",
+        sub_label=sub_label,
+        filters=filters,
+        verbose=verbose,
+    )
     _check_bids_image_list(imgs, sub_label, filters)
     return imgs
 
@@ -1678,13 +1825,13 @@ def _get_events_files(
         sub_label=sub_label,
         filters=events_filters,
     )
-    if verbose:
-        _report_found_files(
-            files=events,
-            text="events",
-            sub_label=sub_label,
-            filters=events_filters,
-        )
+    _report_found_files(
+        files=events,
+        text="events",
+        sub_label=sub_label,
+        filters=events_filters,
+        verbose=verbose,
+    )
     _check_bids_events_list(
         events=events,
         imgs=imgs,
@@ -1751,13 +1898,13 @@ def _get_confounds(
         sub_label=sub_label,
         filters=filters,
     )
-    if verbose:
-        _report_found_files(
-            files=confounds,
-            text="confounds",
-            sub_label=sub_label,
-            filters=filters,
-        )
+    _report_found_files(
+        files=confounds,
+        text="confounds",
+        sub_label=sub_label,
+        filters=filters,
+        verbose=verbose,
+    )
     _check_confounds_list(confounds=confounds, imgs=imgs)
 
     if confounds:
