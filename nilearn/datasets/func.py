@@ -1700,6 +1700,10 @@ def fetch_surf_nki_enhanced(
                          dominant hand and sex for each subject.
         - 'description': data description of the release and references.
 
+    Note that the it may be necessary
+    to coerce to float the data loaded from the Gifti files
+    to avoid issues with scipy >= 0.14.0.
+
     References
     ----------
     .. footbibliography::
