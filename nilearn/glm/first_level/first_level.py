@@ -565,7 +565,7 @@ class FirstLevelModel(BaseGLM):
                 f"in {int(time_in_second)} seconds."
             )
 
-        logger.log(msg, verbose=self.verbose)
+        logger.log(msg, verbose=self.verbose, stack_level=2)
 
     def _report_progress(self, run_idx, n_runs, t0):
         remaining = "go take a coffee, a big one"
@@ -1684,7 +1684,7 @@ def _list_valid_subjects(derivatives_path, sub_labels):
     return set(sub_labels_exist)
 
 
-def _report_found_files(files, text, sub_label, filters):
+def _report_found_files(files, text, sub_label, filters, verbose):
     """Print list of files found for a given subject and filter.
 
     Parameters
@@ -1703,11 +1703,14 @@ def _report_found_files(files, text, sub_label, filters):
         Only one filter per field allowed.
 
     """
-    print(
-        f"Found the following {len(files)} {text} files\n",
-        f"for subject {sub_label}\n",
-        f"for filter: {filters}:\n",
-        f"{files}\n",
+    unordered_list_string = "\n\t- ".join(files)
+    logger.log(
+        f"\nFound the following {len(files)} {text} files\n"
+        f"- for subject {sub_label}\n"
+        f"- for filter: {filters}:\n\t"
+        f"- {unordered_list_string}\n",
+        verbose=verbose,
+        stack_level=3,
     )
 
 
@@ -1758,13 +1761,13 @@ def _get_processed_imgs(
         sub_label=sub_label,
         filters=filters,
     )
-    if verbose:
-        _report_found_files(
-            files=imgs,
-            text="preprocessed BOLD",
-            sub_label=sub_label,
-            filters=filters,
-        )
+    _report_found_files(
+        files=imgs,
+        text="preprocessed BOLD",
+        sub_label=sub_label,
+        filters=filters,
+        verbose=verbose,
+    )
     _check_bids_image_list(imgs, sub_label, filters)
     return imgs
 
@@ -1822,13 +1825,13 @@ def _get_events_files(
         sub_label=sub_label,
         filters=events_filters,
     )
-    if verbose:
-        _report_found_files(
-            files=events,
-            text="events",
-            sub_label=sub_label,
-            filters=events_filters,
-        )
+    _report_found_files(
+        files=events,
+        text="events",
+        sub_label=sub_label,
+        filters=events_filters,
+        verbose=verbose,
+    )
     _check_bids_events_list(
         events=events,
         imgs=imgs,
@@ -1895,13 +1898,13 @@ def _get_confounds(
         sub_label=sub_label,
         filters=filters,
     )
-    if verbose:
-        _report_found_files(
-            files=confounds,
-            text="confounds",
-            sub_label=sub_label,
-            filters=filters,
-        )
+    _report_found_files(
+        files=confounds,
+        text="confounds",
+        sub_label=sub_label,
+        filters=filters,
+        verbose=verbose,
+    )
     _check_confounds_list(confounds=confounds, imgs=imgs)
 
     if confounds:
