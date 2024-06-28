@@ -49,11 +49,6 @@ jobs:
         -   name: Checkout nilearn
             uses: actions/checkout@v4
 
-        -   name: Dump GitHub context
-            env:
-                GITHUB_CONTEXT: ${{ toJson(github) }}
-            run: echo "$GITHUB_CONTEXT"
-
         -   name: Check whether the citation metadata from CITATION.cff is valid
             uses: citation-file-format/cffconvert-github-action@2.0.0
             with:
