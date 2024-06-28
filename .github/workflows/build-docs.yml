@@ -49,6 +49,11 @@ jobs:
         -   name: Checkout nilearn
             uses: actions/checkout@v4
 
+        -   name: Dump GitHub context
+            env:
+                GITHUB_CONTEXT: ${{ toJson(github) }}
+            run: echo "$GITHUB_CONTEXT"
+
         -   name: Check whether the citation metadata from CITATION.cff is valid
             uses: citation-file-format/cffconvert-github-action@2.0.0
             with:
@@ -271,11 +276,6 @@ jobs:
         steps:
             # Trigger hosting / deploy of the doc on nilearn.github.io via circle-ci
             # We get the url for the artifacts for circle-ci from https://nightly.link/
-        -   name: Dump GitHub context
-            env:
-                GITHUB_CONTEXT: ${{ toJson(github) }}
-            run: echo "$GITHUB_CONTEXT"
-
         -   name: Trigger hosting jobs on circle ci
             run: |
                 GITHUB_RUN_URL="https://nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}"
