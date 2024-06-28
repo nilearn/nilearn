@@ -116,7 +116,7 @@ def _remove_small_regions(input_data, affine, min_size):
     labels_kept = region_sizes > size_in_vox
     if not np.all(labels_kept):
         # Put to zero the indices not kept
-        rejected_labels_mask = np.in1d(
+        rejected_labels_mask = np.isin(
             input_data, np.where(np.logical_not(labels_kept))[0]
         ).reshape(input_data.shape)
         # Avoid modifying the input:
