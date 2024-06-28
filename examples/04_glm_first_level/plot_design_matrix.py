@@ -18,9 +18,11 @@ import numpy as np
 
 from nilearn.plotting import plot_design_matrix
 
-tr = 1.0  # repetition time is 1 second
+t_r = 1.0  # repetition time is 1 second
 n_scans = 128  # the acquisition comprises 128 scans
-frame_times = np.arange(n_scans) * tr  # here are the corresponding frame times
+frame_times = (
+    np.arange(n_scans) * t_r
+)  # here are the corresponding frame times
 
 # %%
 # Then we define parameters related to the experimental design.
