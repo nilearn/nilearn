@@ -4,7 +4,7 @@ name: Documentation push trigger
 on:
     workflow_run:
     # Run the workflow after the separate "Documentation builder" workflow completes
-        workflows: [DocumentationBuilder]
+        workflows: [DocumentationBuilder, Assign, Auto Comment]
         types:
         -   completed
 
