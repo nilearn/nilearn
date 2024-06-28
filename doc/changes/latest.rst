@@ -16,6 +16,8 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-dark:`Code` Add a new function :func:`nilearn.plotting.plot_design_matrix_correlation` to plot the correlation between regressors of a GLM design matrix (:gh:`4467` by `Rémi Gau`_).
+
 - :bdg-success:`API` Add option to resize output image width ``width_view`` in :func:`nilearn.plotting.view_img` (:gh:`4416` by `Alexandre Sayal`_).
 
 - :bdg-primary:`Doc` Add example to demonstrate the use of the new ``copy_header_from`` parameter in :func:`nilearn.image.math_img` (:gh:`4392` by `Himanshu Aggarwal`_).
