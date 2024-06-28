@@ -270,7 +270,7 @@ for i, index in enumerate([1780, 1951, 2131]):
         )
     )
     plt.axis("off")
-    plt.colorbar(ax_im, axes=ax)
+    plt.colorbar(ax_im, ax=ax)
 
 # and then for the voxel at the bottom
 
@@ -300,7 +300,7 @@ ax.add_patch(
     )
 )
 plt.axis("off")
-plt.colorbar(ax_im, axes=ax)
+plt.colorbar(ax_im, ax=ax)
 
 # %%
 # The receptive fields of the four voxels are not only close to each other,
