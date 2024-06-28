@@ -271,6 +271,9 @@ jobs:
         steps:
             # Trigger hosting / deploy of the doc on nilearn.github.io via circle-ci
             # We get the url for the artifacts for circle-ci from https://nightly.link/
+
+            # the CIRCLE_CI_TOKEN must be a personal token and not a project token
+            # https://support.circleci.com/hc/en-us/articles/360060360811-CircleCI-API-v2-Returns-404-Not-Found
         -   name: Trigger hosting jobs on circle ci
             run: |
                 GITHUB_RUN_URL="https://nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}"
