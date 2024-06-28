@@ -225,10 +225,11 @@ def prox_tvl1(
         # on the input array
         t_new = 0.5 * (1.0 + sqrt(1.0 + 4.0 * t * t))
         t_factor = (t - 1.0) / t_new
+
+        grad_aux = grad_tmp
         if fista_step:
             grad_aux = (1 + t_factor) * grad_tmp - t_factor * grad_im
-        else:
-            grad_aux = grad_tmp
+
         grad_im = grad_tmp
         t = t_new
         gap = weight * divergence_id(grad_aux, l1_ratio=l1_ratio)
@@ -262,6 +263,7 @@ def prox_tvl1(
 
                 if dgap < dgap_tol:
                     break
+
                 if old_dgap < dgap:
                     # M-FISTA strategy: switch to an ISTA to have
                     # monotone convergence
