@@ -8,6 +8,8 @@ from math import sqrt
 
 import numpy as np
 
+from nilearn._utils import logger
+
 from ._objective_functions import (
     divergence_id,
     gradient_id,
@@ -89,7 +91,7 @@ def prox_tvl1(
     check_gap_frequency=4,
     val_min=None,
     val_max=None,
-    verbose=False,
+    verbose=0,
     fista=True,
     init=None,
 ):
@@ -129,8 +131,8 @@ def prox_tvl1(
     val_max : None or float, optional
         An optional upper bound constraint on the reconstructed image.
 
-    verbose : bool, optional
-        If True, print the dual gap of the optimization
+    verbose : int or bool, optional
+        If True or 1, print the dual gap of the optimization
 
     fista : bool, optional
         If True, uses a FISTA loop to perform the optimization.
@@ -171,6 +173,11 @@ def prox_tvl1(
     For details on implementing the bound constraints, read the aforementioned
     Beck and Teboulle paper.
     """
+    if verbose is False:
+        verbose = 0
+    if verbose is True:
+        verbose = 1
+
     weight = float(weight)
     input_img_flat = input_img.view()
     input_img_flat.shape = input_img.size
@@ -218,10 +225,11 @@ def prox_tvl1(
         # on the input array
         t_new = 0.5 * (1.0 + sqrt(1.0 + 4.0 * t * t))
         t_factor = (t - 1.0) / t_new
+
+        grad_aux = grad_tmp
         if fista_step:
             grad_aux = (1 + t_factor) * grad_tmp - t_factor * grad_im
-        else:
-            grad_aux = grad_tmp
+
         grad_im = grad_tmp
         t = t_new
         gap = weight * divergence_id(grad_aux, l1_ratio=l1_ratio)
@@ -246,12 +254,16 @@ def prox_tvl1(
                     weight,
                     l1_ratio=l1_ratio,
                 )
-                if verbose:
-                    print(
-                        f"\tProxTVl1: Iteration {i: 2}, dual gap: {dgap: 6.3e}"
-                    )
+
+                logger.log(
+                    f"\tProxTVl1: Iteration {i: 2}, "
+                    f"dual gap: {dgap: 6.3e}",
+                    verbose,
+                )
+
                 if dgap < dgap_tol:
                     break
+
                 if old_dgap < dgap:
                     # M-FISTA strategy: switch to an ISTA to have
                     # monotone convergence
@@ -262,16 +274,18 @@ def prox_tvl1(
                 # Stopping criterion based on x_tol
                 diff = np.max(np.abs(negated_output_old - negated_output))
                 diff /= np.max(np.abs(negated_output))
-                if verbose:
-                    gid = gradient_id(negated_output, l1_ratio=l1_ratio)
-                    energy = _objective_function_prox_tvl1(
-                        input_img, -negated_output, gid, weight
-                    )
-                    print(
-                        f"\tProxTVl1 iteration {i: 2}, "
-                        f"relative difference: {diff: 6.3e}, "
-                        f"energy: {energy: 6.3e}"
-                    )
+
+                gid = gradient_id(negated_output, l1_ratio=l1_ratio)
+                energy = _objective_function_prox_tvl1(
+                    input_img, -negated_output, gid, weight
+                )
+                logger.log(
+                    f"\tProxTVl1 iteration {i: 2}, "
+                    f"relative difference: {diff: 6.3e}, "
+                    f"energy: {energy: 6.3e}",
+                    verbose,
+                )
+
                 if diff < x_tol:
                     break
                 negated_output_old = negated_output
@@ -293,7 +307,7 @@ def prox_tvl1_with_intercept(
     dgap_tol,
     max_iter=5000,
     init=None,
-    verbose=False,
+    verbose=0,
 ):
     """Compute TV-L1 prox taking into account the intercept.
 
@@ -312,13 +326,18 @@ def prox_tvl1_with_intercept(
     max_iter : int
         Maximum number of iterations for the solver.
 
-    verbose : int, optional (default 0)
-        Verbosity level.
+    verbose : int or bool, optional
+        If True or 1, print the dual gap of the optimization
 
     dgap_tol : float
         Dual-gap tolerance for TV-L1 prox operator approximation loop.
 
     """
+    if verbose is False:
+        verbose = 0
+    if verbose is True:
+        verbose = 1
+
     init = init.reshape(shape) if init is not None else init
     out, prox_info = prox_tvl1(
         w[:-1].reshape(shape),

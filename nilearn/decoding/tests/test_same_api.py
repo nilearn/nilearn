@@ -140,7 +140,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
         mask=mask,
         loss="mse",
         max_iter=max_iter,
-        verbose=0,
+        verbose=1,
     )[0]
     b = graph_net_squared_loss(
         unmasked_X,
@@ -221,7 +221,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic(max_iter=20, decimal=2):
         loss="logistic",
         mask=mask,
         max_iter=max_iter,
-        verbose=0,
+        verbose=1,
     )[0]
 
     assert_array_almost_equal(a, b, decimal=decimal)

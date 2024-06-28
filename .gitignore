@@ -72,3 +72,7 @@ doc/themes/nilearn/static/jquery.js
 
 # examples
 results/
+
+# node
+package.json
+package-lock.json

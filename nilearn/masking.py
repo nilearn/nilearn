@@ -9,7 +9,7 @@ from joblib import Parallel, delayed
 from scipy.ndimage import binary_dilation, binary_erosion
 
 from . import _utils
-from ._utils import fill_doc
+from ._utils import fill_doc, logger
 from ._utils.cache_mixin import cache
 from ._utils.ndimage import get_border_data, largest_connected_component
 from ._utils.niimg import safe_get_data
@@ -291,8 +291,7 @@ def compute_epi_mask(
     mask : :class:`nibabel.nifti1.Nifti1Image`
         The brain mask (3D image).
     """
-    if verbose > 0:
-        print("EPI mask computation")
+    logger.log("EPI mask computation", verbose)
 
     # Delayed import to avoid circular imports
     from .image.image import _compute_mean
@@ -480,8 +479,7 @@ def compute_background_mask(
     mask : :class:`nibabel.nifti1.Nifti1Image`
         The brain mask (3D image).
     """
-    if verbose > 0:
-        print("Background mask computation")
+    logger.log("Background mask computation", verbose)
 
     data_imgs = _utils.check_niimg(data_imgs)
 
@@ -633,8 +631,7 @@ def compute_brain_mask(
     mask : :class:`nibabel.nifti1.Nifti1Image`
         The whole-brain mask (3D image).
     """
-    if verbose > 0:
-        print("Template", mask_type, "mask computation")
+    logger.log(f"Template {mask_type} mask computation", verbose)
 
     target_img = _utils.check_niimg(target_img)
 

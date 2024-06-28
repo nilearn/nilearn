@@ -13,6 +13,7 @@ from nilearn.plotting.matrix_plotting import (
     pad_contrast_matrix,
     plot_contrast_matrix,
     plot_design_matrix,
+    plot_design_matrix_correlation,
     plot_event,
     plot_matrix,
 )
@@ -219,10 +220,19 @@ def test_show_event_plot(tmp_path):
     trial_idx[11:] -= 10
     condition_ids = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"]
 
+    # add some modulation
+    modulation = np.full(20, 1)
+    modulation[[1, 5, 15]] = 0.5
+
     trial_type = np.array([condition_ids[i] for i in trial_idx])
 
     model_event = pd.DataFrame(
-        {"onset": onset, "duration": duration, "trial_type": trial_type}
+        {
+            "onset": onset,
+            "duration": duration,
+            "trial_type": trial_type,
+            "modulation": modulation,
+        }
     )
     # Test Dataframe
     fig = plot_event(model_event)
@@ -293,3 +303,40 @@ def test_pad_contrast_matrix():
 
 def test_show_event_plot_duration_0():
     plot_event(design_with_null_durations())
+
+
+@pytest.mark.parametrize("tri", ["full", "diag"])
+@pytest.mark.parametrize("cmap", ["RdBu_r", "bwr", "seismic_r"])
+def test_plot_design_matrix_correlation(tri, cmap, tmp_path):
+    """Smoke test for the 'happy path'."""
+    frame_times = np.linspace(0, 127 * 1.0, 128)
+    dmtx = make_first_level_design_matrix(
+        frame_times, events=design_with_null_durations()
+    )
+
+    plot_design_matrix_correlation(
+        dmtx, tri=tri, cmap=cmap, output_file=tmp_path / "corr_mat.png"
+    )
+
+    assert (tmp_path / "corr_mat.png").exists()
+
+
+def test_plot_design_matrix_correlation_errors(mat):
+    with pytest.raises(TypeError, match="must be a pandas dataframe"):
+        plot_design_matrix_correlation("foo")
+
+    with pytest.raises(ValueError, match="dataframe cannot be empty."):
+        plot_design_matrix_correlation(pd.DataFrame())
+
+    with pytest.raises(ValueError, match="cmap must be one of"):
+        plot_design_matrix_correlation(pd.DataFrame(mat), cmap="foo")
+
+    dmtx = pd.DataFrame(
+        {"event_1": [0, 1], "constant": [1, 1], "drift_1": [0, 1]}
+    )
+    with pytest.raises(ValueError, match="tri needs to be one of"):
+        plot_design_matrix_correlation(dmtx, tri="lower")
+
+    dmtx = pd.DataFrame({"constant": [1, 1], "drift_1": [0, 1]})
+    with pytest.raises(ValueError, match="Nothing left to plot after "):
+        plot_design_matrix_correlation(dmtx)

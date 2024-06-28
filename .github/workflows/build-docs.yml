@@ -48,6 +48,7 @@ jobs:
         steps:
         -   name: Checkout nilearn
             uses: actions/checkout@v4
+
         -   name: Check whether the citation metadata from CITATION.cff is valid
             uses: citation-file-format/cffconvert-github-action@2.0.0
             with:
@@ -69,6 +70,7 @@ jobs:
                 # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
                 fetch-depth: 0
+
         -   name: Merge with upstream
             run: ./build_tools/github/merge_upstream.sh
 
@@ -77,6 +79,7 @@ jobs:
             uses: actions/setup-python@v5
             with:
                 python-version: '3.12'
+
         -   name: Install packages
             run: |
                 python -m pip install --user --upgrade pip setuptools
@@ -201,6 +204,9 @@ jobs:
                 python -m pip install --user --upgrade pip setuptools
                 python -m pip install .[plotting,doc]
 
+        -   name: List dependencies
+            run: pip freeze
+
         # Check if we are doing a full or partial build
         -   name: Find build type
             run: ./build_tools/github/build_type.sh
@@ -221,7 +227,6 @@ jobs:
                 key: data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}_attempt-${{ github.run_attempt }}
                 restore-keys: |
                     data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}
-
 
         # Update the authors file and the names file
         # in case a contributor has been added to citation.cff
@@ -245,11 +250,13 @@ jobs:
                 cd doc;
                 set -o pipefail;
                 PATTERN=$(cat ../pattern.txt) make $(cat ../build.txt) 2>&1 | tee log.txt;
+
         -   name: Check for unreplaced argument in docstrings
             if: always()
             run: |
                 ./build_tools/github/fill_doc_check.sh
                 cat doc/tmp/doc_check.txt
+
         -   name: Upload documentation
             if: steps.build-docs.outcome == 'success'
             uses: actions/upload-artifact@v4
@@ -257,10 +264,14 @@ jobs:
                 name: doc
                 path: doc/_build/html
 
-        # Trigger hosting / deploy of the doc on nilearn.github.io via circle-ci
-        # We get the url for the artifacts for circle-ci from https://nightly.link/
+    deploy_on_pr:
+        runs-on: ubuntu-latest
+        needs: [build_docs]
+        if: ${{ github.event_name == 'pull_request'}}
+        steps:
+            # Trigger hosting / deploy of the doc on nilearn.github.io via circle-ci
+            # We get the url for the artifacts for circle-ci from https://nightly.link/
         -   name: Trigger hosting jobs on circle ci
-            if: steps.build-docs.outcome == 'success'
             run: |
                 GITHUB_RUN_URL="https://nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}"
                 curl --request POST \
@@ -270,3 +281,49 @@ jobs:
                 --header "x-attribution-actor-id: github_actions" \
                 --header "x-attribution-login: github_actions" \
                 --data \{\"branch\":\"${{ github.head_ref }}\",\"parameters\":\{\"GITHUB_RUN_URL\":\"$GITHUB_RUN_URL\"\}\}
+
+    deploy_on_main:
+        runs-on: ubuntu-latest
+        needs: [build_docs]
+        if: ${{ contains(fromJSON('["push", "workflow_dispatch", "schedule"]'), github.event_name)}}
+        steps:
+        -   name: Add SSH key
+            env:
+                SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+            run: |
+                mkdir -p ~/.ssh
+                ssh-keyscan github.com >> ~/.ssh/known_hosts
+                echo "${{ secrets.ACTIONS_SSH_DEPLOY }}" > ~/.ssh/github_actions
+                chmod 600 ~/.ssh/github_actions
+                ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+                ssh-add ~/.ssh/github_actions
+
+        -   uses: actions/download-artifact@v4
+            with:
+                name: doc
+                path: ~/doc/_build/html
+
+        -   name: deploy
+            env:
+                SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+            run: |
+                git config --global user.email "actions@github.com"
+                git config --global user.name "GitHub actions"
+
+                git clone git@github.com:nilearn/nilearn.github.io.git ~/nilearn.github.io --depth=1
+                cd ~/nilearn.github.io;
+
+                git checkout main
+
+                git remote -v
+
+                git fetch origin
+                git reset --hard origin/main
+                git clean -xdf
+
+                echo "Deploying dev docs.";
+                rm -Rf dev;
+                cp -a ~/doc/_build/html dev;
+                git add -A;
+                git commit -m "Dev docs https://github.com/nilearn/nilearn/commit/${{ github.event.head_commit.id }} : ${{ github.event.head_commit.message }}";
+                git push origin main;

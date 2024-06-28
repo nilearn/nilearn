@@ -10,6 +10,7 @@ from nilearn.experimental.surface._surface_image import (
     FileMesh,
     InMemoryMesh,
     Mesh,
+    PolyData,
     PolyMesh,
     SurfaceImage,
 )
@@ -23,6 +24,7 @@ __all__ = [
     "InMemoryMesh",
     "Mesh",
     "PolyMesh",
+    "PolyData",
     "SurfaceImage",
     "SurfaceLabelsMasker",
     "SurfaceMasker",

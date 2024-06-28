@@ -91,8 +91,11 @@ print(f"Fsaverage5 sulcal curvature map: {fsaverage_curvature}")
 # Load resting state time series from nilearn
 timeseries = nki_dataset[0].data.parts[hemi].T
 
+# Coercing to float is required to avoid errors withj scipy >= 0.14.0
+timeseries = timeseries.astype(float)
+
 # Extract seed region via label
-pcc_region = b"G_cingul-Post-dorsal"
+pcc_region = "G_cingul-Post-dorsal"
 
 import numpy as np
 
