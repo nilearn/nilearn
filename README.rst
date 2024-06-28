@@ -12,7 +12,7 @@
 
 .. image:: https://codecov.io/gh/nilearn/nilearn/branch/main/graph/badge.svg
     :target: https://codecov.io/gh/nilearn/nilearn
-    :alt: Coverage Status
+    :alt: Coverage  Status
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
