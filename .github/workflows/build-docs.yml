@@ -204,6 +204,9 @@ jobs:
                 python -m pip install --user --upgrade pip setuptools
                 python -m pip install .[plotting,doc]
 
+        -   name: List dependencies
+            run: pip freeze
+
         # Check if we are doing a full or partial build
         -   name: Find build type
             run: ./build_tools/github/build_type.sh

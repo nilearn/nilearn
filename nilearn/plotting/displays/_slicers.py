@@ -839,7 +839,7 @@ def _get_cbar_ticks(vmin, vmax, offset, nb_ticks=5):
         # at the same distance to 4 ticks
         if diff.count(min(diff)) == 4:
             idx_closest = np.sort(np.argpartition(diff, 4)[:4])
-            idx_closest = np.in1d(ticks, np.sort(ticks[idx_closest])[1:3])
+            idx_closest = np.isin(ticks, np.sort(ticks[idx_closest])[1:3])
         else:
             # Find the closest 2 ticks
             idx_closest = np.sort(np.argpartition(diff, 2)[:2])

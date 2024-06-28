@@ -69,7 +69,7 @@ INCLUDE_FAILED_RUNS = False
 
 # Pages of runs to collect
 # 100 per page
-PAGES_TO_COLLECT = range(1, 20)
+PAGES_TO_COLLECT = range(1, 30)
 
 # If False, just plots the content of the TSV
 UPDATE_TSV = True
@@ -119,6 +119,7 @@ def main(args=sys.argv) -> None:
         update=UPDATE_TSV,
         output_file=output_file,
         workflow_id=DOC_WORKFLOW_ID,
+        event_type="push",
     )
 
     df = pd.read_csv(
@@ -140,7 +141,11 @@ def main(args=sys.argv) -> None:
 
 
 def _update_tsv(
-    args, update: bool, output_file: Path, workflow_id: str
+    args,
+    update: bool,
+    output_file: Path,
+    workflow_id: str,
+    event_type: None | str = None,
 ) -> None:
     """Update TSV containing run time of every workflow."""
     update_tsv = update if output_file.exists() else True
@@ -162,6 +167,7 @@ def _update_tsv(
             auth,
             page=page,
             include_failed_runs=INCLUDE_FAILED_RUNS,
+            event_type=event_type,
         )
         if len(runs) > 0:
             print(f" found {len(runs)} runs")
@@ -288,6 +294,7 @@ def _get_runs(
     auth: None | tuple[str, str] = None,
     page: int = 1,
     include_failed_runs: bool = True,
+    event_type: None | str = None,
 ) -> list[dict[str, Any]]:
     """Get list of runs for a workflow.
 
@@ -306,15 +313,17 @@ def _get_runs(
 
     if not content.get("workflow_runs"):
         return []
+
+    runs = list(content["workflow_runs"])
+
+    if event_type:
+        runs = [run for run in runs if run["event"] in event_type]
+
+    conclusion = ["success"]
     if include_failed_runs:
-        return [
-            i
-            for i in content["workflow_runs"]
-            if i["conclusion"] in ["success", "failure"]
-        ]
-    return [
-        i for i in content["workflow_runs"] if i["conclusion"] == "success"
-    ]
+        conclusion = ["success", "failure"]
+
+    return [run for run in runs if run["conclusion"] in conclusion]
 
 
 def _handle_request(url: str, auth: None | tuple[str, str]):
