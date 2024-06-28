@@ -5,16 +5,10 @@ jobs:
     run:
         runs-on: ubuntu-latest
         steps:
-        -   name: Dump GitHub context
-            env:
-                GITHUB_CONTEXT: ${{ toJson(github) }}
-            run: echo "$GITHUB_CONTEXT"
-
         -   name: Auto comment pull request
             uses: bubkoo/auto-comment@v1.1.2
             with:
                 GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
 
           # TODO after next release:
           # - update the link to changelog item in the checklist to this:
