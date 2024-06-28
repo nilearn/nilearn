@@ -92,7 +92,7 @@ test = [
     "coverage",
     "pytest>=6.0.0",
     "pytest-cov",
-    "pytest-reporter-html1"
+    "pytest-reporter-html1>=0.9.0"
 ]
 
 [project.urls]
