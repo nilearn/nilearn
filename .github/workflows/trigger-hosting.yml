@@ -14,7 +14,7 @@ jobs:
     # Run the job only if the "Documentation builder" workflow succeeded
     # Prevents this workflow from running on a fork.
     # To test this workflow on a fork remove the `github.repository == nilearn/nilearn` condition
-        if: github.repository == 'nilearn/nilearn' && github.event.workflow_run.conclusion == 'success'
+        if: github.event.workflow_run.conclusion == 'success'
         steps:
 
         -   name: Dump GitHub context
