@@ -1700,6 +1700,10 @@ def fetch_surf_nki_enhanced(
                          dominant hand and sex for each subject.
         - 'description': data description of the release and references.
 
+    Note that the it may be necessary
+    to coerce to float the data loaded from the Gifti files
+    to avoid issues with scipy >= 0.14.0.
+
     References
     ----------
     .. footbibliography::
@@ -2121,7 +2125,7 @@ def _filter_csv_by_n_subjects(participants, n_adult, n_child):
         "participant_id"
     ][:n_adult]
     ids = np.hstack([adult_ids, child_ids])
-    participants = participants[np.in1d(participants["participant_id"], ids)]
+    participants = participants[np.isin(participants["participant_id"], ids)]
     participants = participants[np.argsort(participants, order="Child_Adult")]
     return participants
 
