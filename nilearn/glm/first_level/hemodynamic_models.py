@@ -155,7 +155,7 @@ def glover_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
         undershoot=12.0,
         dispersion=0.9,
         u_dispersion=0.9,
-        ratio=0.35,
+        ratio=0.48,
     )
 
 
@@ -391,7 +391,7 @@ def glover_dispersion_derivative(
         time_length=time_length,
         onset=onset,
         undershoot=12.0,
-        ratio=0.35,
+        ratio=0.48,
         dispersion=0.9,
     )
 
