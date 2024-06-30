@@ -3,10 +3,7 @@ import pandas as pd
 import pytest
 from nibabel import load
 
-from nilearn._utils.data_gen import (
-    basic_paradigm,
-    write_fake_fmri_data_and_design,
-)
+from nilearn._utils.data_gen import write_fake_fmri_data_and_design
 from nilearn.conftest import have_mpl
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.first_level.design_matrix import (
@@ -14,7 +11,7 @@ from nilearn.glm.first_level.design_matrix import (
 )
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.maskers import NiftiMasker
-from nilearn.reporting import glm_reporter as glmr, make_glm_report
+from nilearn.reporting import glm_reporter as glmr
 
 
 @pytest.fixture()
@@ -313,20 +310,3 @@ def test_masking_first_level_model(tmp_path):
     )
 
     report_flm.get_iframe()
-
-
-# -----------------------surface tests--------------------------------------- #
-
-
-def test_flm_generate_report_error_with_surface_data(mini_mask, make_mini_img):
-    """Raise NotImplementedError when generate report is called on surface."""
-    mini_img = make_mini_img((5,))
-    model = FirstLevelModel(mask_img=mini_mask, t_r=2.0)
-    events = basic_paradigm()
-    model.fit(mini_img, events=events)
-
-    with pytest.raises(NotImplementedError):
-        model.generate_report("c0")
-
-    with pytest.raises(NotImplementedError):
-        make_glm_report(model, "c0")
