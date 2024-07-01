@@ -112,11 +112,6 @@ repos:
     hooks:
     -   id: prettier
         types_or: [css, html]
-        exclude: |
-            (?x)^(
-                maint_tools/templates/index.html
-            )$
-
 
 # Check that Python code complies with PEP8 guidelines
 # flake8 uses pydocstyle to check docstrings: https://flake8.pycqa.org/en/latest/
