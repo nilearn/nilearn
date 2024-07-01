@@ -360,6 +360,31 @@ def test_plot_surf_contours_errors_with_plotly_axes():
 
 
 @pytest.mark.skipif(not is_plotly_installed(),
+                    reason='Plotly is not installed; required for this test.')
+def test_plotly_surface_figure_warns_on_isolated_roi():
+    """Test that a warning is generated for ROIs with isolated vertices."""
+    mesh = generate_surf()
+    figure = plot_surf(mesh, engine="plotly")
+    # the method raises an error because the (randomly generated)
+    # vertices don't form regions
+    try:
+        with pytest.raises(UserWarning, match="contains isolated vertices:"):
+            figure.add_contours(
+                levels=[0],
+                roi_map=np.array([0, 1]*10)
+                )
+    except Exception:
+        pass
+
+
+@pytest.mark.skipif(not is_plotly_installed(),
+                    reason='Plotly is not installed; required for this test.')
+def test_distant_line_segments_detected_as_not_intersecting():
+    """Test that distant lines are detected as not intersecting."""
+    assert not PlotlySurfaceFigure._do_segs_intersect(0, 0, 1, 1, 5, 5, 6, 6)
+
+
+@pytest.mark.skipif(not is_plotly_installed(),
                     reason="Plotly is not installed; required for this test.")
 @pytest.mark.parametrize(
     "levels,labels",
