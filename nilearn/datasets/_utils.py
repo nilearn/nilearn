@@ -7,7 +7,6 @@ import hashlib
 import os
 import pickle
 import shutil
-import sys
 import tarfile
 import time
 import urllib
@@ -18,7 +17,8 @@ from pathlib import Path
 import numpy as np
 import requests
 
-from .._utils import fill_doc
+from nilearn._utils import fill_doc, logger
+
 from .utils import get_data_dirs
 
 _REQUESTS_TIMEOUT = (15.1, 61)
@@ -90,7 +90,9 @@ def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
 
     """
     if not total_size:
-        sys.stderr.write(f"\rDownloaded {int(bytes_so_far)} of ? bytes.")
+        logger.log(
+            f"\rDownloaded {int(bytes_so_far)} of ? bytes.", stack_level=2
+        )
 
     else:
         # Estimate remaining download time
@@ -103,16 +105,16 @@ def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
         # Minimum rate of 0.01 bytes/s, to avoid dividing by zero.
         time_remaining = bytes_remaining / max(0.01, download_rate)
 
-        # Trailing whitespace is to erase extra char when message length
-        # varies
-        sys.stderr.write(
+        # Trailing whitespace is to erase extra char when message length varies
+        logger.log(
             "\rDownloaded %d of %d bytes (%.1f%%, %s remaining)"
             % (
                 bytes_so_far,
                 total_size,
                 total_percent * 100,
                 _format_time(time_remaining),
-            )
+            ),
+            stack_level=2,
         )
 
 
@@ -160,10 +162,18 @@ def _chunk_read_(
             total_size = response.headers.get("Content-Length").strip()
         total_size = int(total_size) + initial_size
     except Exception as e:
-        if verbose > 2:
-            print("Warning: total size could not be determined.")
-            if verbose > 3:
-                print(f"Full stack trace: {e}")
+        logger.log(
+            "Warning: total size could not be determined.",
+            verbose=verbose,
+            msg_level=2,
+            stack_level=2,
+        )
+        logger.log(
+            f"Full stack trace: {e}",
+            verbose=verbose,
+            msg_level=3,
+            stack_level=2,
+        )
         total_size = None
     bytes_so_far = initial_size
 
@@ -229,8 +239,7 @@ def get_dataset_dir(
 
     paths.extend([(d, False) for d in get_data_dirs(data_dir=data_dir)])
 
-    if verbose > 2:
-        print(f"Dataset search paths: {paths}")
+    logger.log(f"Dataset search paths: {paths}", verbose=verbose, msg_level=2)
 
     # Check if the dataset exists somewhere
     for path, is_pre_dir in paths:
@@ -240,8 +249,9 @@ def get_dataset_dir(
             # Resolve path
             path = readlinkabs(path)
         if os.path.exists(path) and os.path.isdir(path):
-            if verbose > 1:
-                print(f"\nDataset found in {path}\n")
+            logger.log(
+                f"Dataset found in {path}", verbose=verbose, msg_level=1
+            )
             return path
 
     # If not, create a folder in the first writeable directory
@@ -256,8 +266,9 @@ def get_dataset_dir(
                     data_dir=data_dir,
                     verbose=verbose,
                 )
-                if verbose > 0:
-                    print(f"\nDataset created in {path}\n")
+
+                logger.log(f"Dataset created in {path}", verbose)
+
                 return path
             except Exception as exc:
                 short_error_message = getattr(exc, "strerror", str(exc))
@@ -282,8 +293,10 @@ and atlases downloaded from the internet.
 It can be safely deleted.
 If you delete it, previously downloaded data will be downloaded again."""
                 )
-            if verbose > 0:
-                print(f"\nAdded README.md to {d}\n")
+
+            logger.log(
+                f"Added README.md to {d}", verbose=verbose, stack_level=2
+            )
 
 
 # The functions _is_within_directory and _safe_extract were implemented in
@@ -325,8 +338,8 @@ def uncompress_file(file_, delete_archive=True, verbose=1):
     This handles zip, tar, gzip and bzip files only.
 
     """
-    if verbose > 0:
-        sys.stderr.write(f"Extracting data from {file_}...")
+    logger.log(f"Extracting data from {file_}...", verbose=verbose)
+
     data_dir = os.path.dirname(file_)
     # We first try to see if it is a zip file
     try:
@@ -368,11 +381,10 @@ def uncompress_file(file_, delete_archive=True, verbose=1):
         if not processed:
             raise OSError(f"[Uncompress] unknown archive file format: {file_}")
 
-        if verbose > 0:
-            sys.stderr.write(".. done.\n")
+        logger.log(".. done.\n", verbose=verbose)
+
     except Exception as e:
-        if verbose > 0:
-            print(f"Error uncompressing file: {e}")
+        logger.log(f"Error uncompressing file: {e}", verbose=verbose)
         raise
 
 
@@ -577,9 +589,10 @@ def fetch_single_file(
                     "Request has been blocked for security reasons."
                 )
             auth = (username, password)
-        if verbose > 0:
-            displayed_url = url.split("?")[0] if verbose == 1 else url
-            print(f"Downloading data from {displayed_url} ...")
+
+        displayed_url = url.split("?")[0] if verbose == 1 else url
+        logger.log(f"Downloading data from {displayed_url} ...", verbose)
+
         if resume and os.path.exists(temp_full_name):
             # Download has been interrupted, we try to resume it.
             local_file_size = os.path.getsize(temp_full_name)
@@ -609,8 +622,9 @@ def fetch_single_file(
                             verbose=verbose,
                         )
             except Exception:
-                if verbose > 0:
-                    print("Resuming failed, try to download the whole file.")
+                logger.log(
+                    "Resuming failed, try to download the whole file.", verbose
+                )
                 return fetch_single_file(
                     url,
                     data_dir,
@@ -641,13 +655,14 @@ def fetch_single_file(
                     )
         shutil.move(temp_full_name, full_name)
         dt = time.time() - t0
-        if verbose > 0:
-            # Complete the reporting hook
-            sys.stderr.write(
-                f" ...done. ({dt:.0f} seconds, {dt // 60:.0f} min)\n"
-            )
+
+        # Complete the reporting hook
+        logger.log(
+            f" ...done. ({dt:.0f} seconds, {dt // 60:.0f} min)\n",
+            verbose=verbose,
+        )
     except requests.RequestException:
-        sys.stderr.write(
+        logger.log(
             f"Error while fetching file {file_name}; dataset fetching aborted."
         )
         raise

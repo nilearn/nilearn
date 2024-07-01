@@ -4,6 +4,8 @@
 
 import numpy as np
 
+from nilearn._utils import logger
+
 
 def fast_abs_percentile(data, percentile=80):
     """Implement a fast version of the percentile of the absolute value.
@@ -62,11 +64,15 @@ def is_spd(M, decimal=15, verbose=1):
 
     """
     if not np.allclose(M, M.T, atol=0, rtol=10**-decimal):
-        if verbose > 0:
-            print(f"matrix not symmetric to {decimal:d} decimals")
+        logger.log(f"matrix not symmetric to {decimal:d} decimals", verbose)
         return False
+
     eigvalsh = np.linalg.eigvalsh(M)
     ispd = eigvalsh.min() > 0
-    if not ispd and verbose > 0:
-        print(f"matrix has a negative eigenvalue: {eigvalsh.min():.3f}")
+
+    if not ispd:
+        logger.log(
+            f"matrix has a negative eigenvalue: {eigvalsh.min():.3f}", verbose
+        )
+
     return ispd

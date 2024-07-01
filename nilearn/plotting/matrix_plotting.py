@@ -13,6 +13,8 @@ from nilearn.glm.first_level.experimental_paradigm import check_events
 
 from .._utils import fill_doc
 
+VALID_TRI_VALUES = ("full", "lower", "diag")
+
 with warnings.catch_warnings():
     warnings.simplefilter("ignore", FutureWarning)
     from nilearn.glm.contrasts import expression_to_contrast_vector
@@ -98,13 +100,14 @@ def _sanitize_labels(mat_shape, labels):
     return labels
 
 
-def _sanitize_tri(tri):
+def _sanitize_tri(tri, allowed_values=None):
     """Help for plot_matrix."""
-    VALID_TRI_VALUES = ("full", "lower", "diag")
-    if tri not in VALID_TRI_VALUES:
+    if allowed_values is None:
+        allowed_values = VALID_TRI_VALUES
+    if tri not in allowed_values:
         raise ValueError(
             "Parameter tri needs to be one of: "
-            f"{', '.join(VALID_TRI_VALUES)}."
+            f"{', '.join(allowed_values)}."
         )
 
 
@@ -319,7 +322,7 @@ def plot_matrix(
             )
     if colorbar:
         divider = make_axes_locatable(axes)
-        cax = divider.append_axes("right", size="5%", pad=0.0)
+        cax = divider.append_axes("right", size="5%", pad=0.05)
 
         plt.colorbar(display, cax=cax)
         fig.tight_layout()
@@ -618,3 +621,102 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
         figure = None
 
     return figure
+
+
+def plot_design_matrix_correlation(
+    design_matrix,
+    tri="full",
+    cmap="bwr",
+    output_file=None,
+    **kwargs,
+):
+    """Compute and plot the correlation between regressor of a design matrix.
+
+    The drift and constant regressors are omitted from the plot.
+
+    .. versionadded:: 0.11.0.dev
+
+    Parameters
+    ----------
+    design_matrix : :class:`pandas.DataFrame`
+        _description_
+
+    tri : {'full', 'diag'}, default='full'
+        Which triangular part of the matrix to plot:
+
+            - 'diag': Plot the lower part with the diagonal
+            - 'full': Plot the full matrix
+
+    %(cmap)s
+        Default=`bwr`.
+        This must be a diverging colormap as the correlation matrix
+        will be centered on 0.
+        The allowed colormaps are:
+
+            - "bwr"
+            - "RdBu_r"
+            - "seismic_r"
+
+    %(output_file)s
+
+    kwargs : extra keyword arguments, optional
+        Extra keyword arguments are sent to
+        :func:`nilearn.plotting.plot_matrix`
+
+    Returns
+    -------
+    display : :class:`matplotlib.axes.Axes`
+        Axes image.
+    """
+    if not isinstance(design_matrix, pd.DataFrame):
+        raise TypeError(
+            "'des_mat' must be a pandas dataframe instance.\n"
+            f"Got: {type(design_matrix)}"
+        )
+
+    if len(design_matrix.columns) == 0:
+        raise ValueError("The design_matrix dataframe cannot be empty.")
+
+    ALLOWED_CMAP = ["RdBu_r", "bwr", "seismic_r"]
+    if cmap not in ALLOWED_CMAP:
+        raise ValueError(f"cmap must be one of {ALLOWED_CMAP}")
+
+    columns_to_drop = ["intercept", "constant"]
+    columns_to_drop.extend(
+        col for col in design_matrix.columns if col.startswith("drift_")
+    )
+    design_matrix = design_matrix.drop(
+        columns=columns_to_drop, errors="ignore"
+    )
+
+    if len(design_matrix.columns) == 0:
+        raise ValueError(
+            "Nothing left to plot after "
+            "removing drift and constant regrerssors."
+        )
+
+    _sanitize_tri(tri, allowed_values=("full", "diag"))
+
+    mat = design_matrix.corr()
+
+    # find the second-largest value in each row
+    # to omit values on the diagonal that will always be == 1
+    second_largest = np.partition(mat.to_numpy(), -2, axis=1)[:, -2]
+    vmax = max(abs(mat.min().min()), max(second_largest))
+
+    col_labels = design_matrix.columns
+    display = plot_matrix(
+        mat.to_numpy(),
+        tri=tri,
+        cmap=cmap,
+        vmax=vmax,
+        vmin=vmax * -1,
+        labels=col_labels.to_list(),
+        **kwargs,
+    )
+
+    if output_file is not None:
+        plt.savefig(output_file)
+        plt.close()
+
+    return display
