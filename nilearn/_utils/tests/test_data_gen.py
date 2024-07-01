@@ -542,9 +542,14 @@ def test_generate_maps():
 @pytest.mark.parametrize("length", [16, 20])
 @pytest.mark.parametrize("kind", ["noise", "step"])
 @pytest.mark.parametrize(
-    "n_block,block_size", [(None, None), (1, 4), (4, 4), (4, None)]
+    "n_block,block_size,block_type",
+    [
+        (None, None, None),
+        (1, 1, "classification"),
+        (4, 3, "classification"),
+        (4, 4, "regression"),
+    ],
 )
-@pytest.mark.parametrize("block_type", ["classification", "regression"])
 def test_generate_fake_fmri(
     shape, length, kind, n_block, block_size, block_type, rng
 ):
@@ -569,7 +574,7 @@ def test_generate_fake_fmri_error(rng):
         generate_fake_fmri(
             length=10,
             n_blocks=10,
-            block_size=None,
+            block_size=3,
             random_state=rng,
         )
 

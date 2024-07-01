@@ -275,7 +275,7 @@ def generate_fake_fmri(
     kind="noise",
     affine=None,
     n_blocks=None,
-    block_size=None,
+    block_size=3,
     block_type="classification",
     random_state=0,
 ):
@@ -307,14 +307,14 @@ def generate_fake_fmri(
     n_blocks : :obj:`int` or None, default=None
         Number of condition blocks.
 
-    block_size : :obj:`int` or None, default=None
+    block_size : :obj:`int` or None, default=3
         Number of timepoints in a block.
         Used only if n_blocks is not None.
-        Defaults to 3 if n_blocks is None.
 
     block_type : :obj:`str`, default='classification'
         Defines if the returned target should be used for
         'classification' or 'regression'.
+        Used only if n_blocks is not None.
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
                    default=0
@@ -369,7 +369,6 @@ def generate_fake_fmri(
     if n_blocks is None:
         return (Nifti1Image(fmri, affine), Nifti1Image(mask, affine))
 
-    block_size = 3 if block_size is None else block_size
     flat_fmri = fmri[mask.astype(bool)]
     flat_fmri /= np.abs(flat_fmri).max()
     target = np.zeros(length, dtype=int)
