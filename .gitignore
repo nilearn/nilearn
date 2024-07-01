@@ -48,7 +48,6 @@ venv/
 
 # testing
 .pytest_cache
-report.html
 
 # CI benchmark
 maint_tools/*_runs_timing.*
