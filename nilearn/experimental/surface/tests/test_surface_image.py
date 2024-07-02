@@ -1,6 +1,9 @@
+from pathlib import Path
+
 import numpy as np
 import pytest
 
+from nilearn import datasets
 from nilearn.experimental.surface import FileMesh, InMemoryMesh, SurfaceImage
 
 
@@ -51,3 +54,22 @@ def test_data_keys_not_matching_mesh(mini_img):
             {"left": mini_img.mesh.parts["left"]},
             mini_img.data,
         )
+
+
+def test_load_surf_data_gii_gz():
+    """Test the loader with gzipped fsaverage5 files."""
+    mesh_right = datasets.fetch_surf_fsaverage().pial_right
+    mesh_left = datasets.fetch_surf_fsaverage().pial_left
+    data_right = datasets.fetch_surf_fsaverage().sulc_right
+    data_left = datasets.fetch_surf_fsaverage().sulc_left
+
+    SurfaceImage(
+        mesh={"left": mesh_left, "right": mesh_right},
+        data={"left": data_left, "right": data_right},
+    )
+
+    # use Path
+    SurfaceImage(
+        mesh={"left": Path(mesh_left), "right": Path(mesh_right)},
+        data={"left": Path(data_left), "right": Path(data_right)},
+    )
