@@ -108,7 +108,7 @@ standard_glm.fit(fmri_file, events_df)
 # The standard design matrix has one column for each condition, along with
 # columns for the confound regressors and drifts
 fig, ax = plt.subplots(figsize=(5, 10))
-plotting.plot_design_matrix(standard_glm.design_matrices_[0], ax=ax)
+plotting.plot_design_matrix(standard_glm.design_matrices_[0], axes=ax)
 fig.show()
 
 # %%
@@ -137,7 +137,7 @@ lsa_glm = FirstLevelModel(**glm_parameters)
 lsa_glm.fit(fmri_file, lsa_events_df)
 
 fig, ax = plt.subplots(figsize=(10, 10))
-plotting.plot_design_matrix(lsa_glm.design_matrices_[0], ax=ax)
+plotting.plot_design_matrix(lsa_glm.design_matrices_[0], axes=ax)
 fig.show()
 
 # %%
@@ -247,7 +247,7 @@ fig, axes = plt.subplots(ncols=3, figsize=(20, 10))
 for i_trial in range(3):
     plotting.plot_design_matrix(
         lss_design_matrices[i_trial],
-        ax=axes[i_trial],
+        axes=axes[i_trial],
     )
     axes[i_trial].set_title(f"Trial {i_trial + 1}")
 
@@ -271,7 +271,7 @@ fig, axes = plt.subplots(
 )
 
 for i_ax, _ in enumerate(axes):
-    plotting.plot_design_matrix(DESIGN_MATRICES[i_ax], ax=axes[i_ax])
+    plotting.plot_design_matrix(DESIGN_MATRICES[i_ax], axes=axes[i_ax])
     axes[i_ax].set_title(DM_TITLES[i_ax])
 
 fig.show()

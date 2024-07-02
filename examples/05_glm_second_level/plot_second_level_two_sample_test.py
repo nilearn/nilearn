@@ -93,9 +93,11 @@ _, (ax_unpaired, ax_paired) = plt.subplots(
     1, 2, gridspec_kw={"width_ratios": [1, 17]}
 )
 plotting.plot_design_matrix(
-    unpaired_design_matrix, rescale=False, ax=ax_unpaired
+    unpaired_design_matrix, rescale=False, axes=ax_unpaired
 )
-plotting.plot_design_matrix(paired_design_matrix, rescale=False, ax=ax_paired)
+plotting.plot_design_matrix(
+    paired_design_matrix, rescale=False, axes=ax_paired
+)
 ax_unpaired.set_title("unpaired design", fontsize=12)
 ax_paired.set_title("paired design", fontsize=12)
 plt.tight_layout()
