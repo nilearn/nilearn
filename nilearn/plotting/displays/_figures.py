@@ -450,16 +450,38 @@ class PlotlySurfaceFigure(SurfaceFigure):
         return closest_point + elevation * n
 
     @staticmethod
-    def _do_segs_intersect(
-        x1: float,
-        y1: float,
-        x2: float,
-        y2: float,
-        x3: float,
-        y3: float,
-        x4: float,
-        y4: float,
-    ) -> bool:
+    def _do_segs_intersect(x1, y1, x2, y2, x3, y3, x4, y4):
+        """Check whether line segments intersect.
+
+        Parameters
+        ----------
+            x1 : :obj:`float` or :obj:`int`
+                First coordinate of first segment beginning.
+            y1 : :obj:`float` or :obj:`int`
+                Second coordinate of first segment beginning.
+            x2 : :obj:`float` or :obj:`int`
+                First coordinate of first segment end.
+            y2 : :obj:`float` or :obj:`int`
+                Second coordinate of first segment end.
+            x3 : :obj:`float` or :obj:`int`
+                First coordinate of second segment beginning.
+            y3 : :obj:`float` or :obj:`int`
+                Second coordinate of second segment beginning.
+            x4 : :obj:`float` or :obj:`int`
+                First coordinate of second segment end.
+            y4 : :obj:`float` or :obj:`int`
+                Second coordinate of second segment end.
+
+        Returns
+        -------
+            check: :obj:`bool`
+                True if segments intersect, otherwise False
+
+        Notes
+        -----
+            Implements an algorithm described here
+            https://en.wikipedia.org/w/index.php?title=Intersection_(geometry)&oldid=1215046212#Two_line_segments
+        """
         a1 = x1 - x2
         b1 = x3 - x4
         c1 = x1 - x3
