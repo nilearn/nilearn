@@ -48,7 +48,7 @@ from nilearn._utils import CacheMixin, fill_doc
 from nilearn._utils.cache_mixin import _check_memory
 from nilearn._utils.masker_validation import check_embedded_masker
 from nilearn._utils.param_validation import check_feature_screening
-from nilearn.experimental.surface import SurfaceMasker
+from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
 from nilearn.regions.rena_clustering import ReNA
 
 SUPPORTED_ESTIMATORS = dict(
@@ -503,7 +503,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         MNI template. In particular, if it is lower than 100, a univariate
         feature selection based on the Anova F-value for the input data will be
         performed. A float according to a percentile of the highest
-        scores.
+        scores. If None is passed, the percentile is set to 100.
 
     scoring: str, callable or None,
              default=None
@@ -742,6 +742,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         selector = check_feature_screening(
             self.screening_percentile, self.mask_img_, self.is_classification
         )
+
         # Return a suitable screening percentile according to the mask image
         if hasattr(selector, "percentile"):
             self.screening_percentile_ = selector.percentile
@@ -932,7 +933,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
     def _apply_mask(self, X):
         masker_type = "nii"
-        if isinstance(self.mask, SurfaceMasker):
+        if isinstance(self.mask, (SurfaceMasker, SurfaceImage)):
             masker_type = "surface"
         self.masker_ = check_embedded_masker(self, masker_type=masker_type)
         X = self.masker_.fit_transform(X)
