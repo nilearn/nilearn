@@ -136,18 +136,36 @@ labels = list(regions_dict.values())
 # %%
 # Display outlines of the regions of interest on top of a statistical map
 # -----------------------------------------------------------------------
+#
+# Regions can be outlined using both engines.
+# The plotly engine offers more control over the aesthetics of the
+# contours through the lines argument.
 
 figure = plotting.plot_surf_stat_map(fsaverage.infl_right,
                                      texture, hemi='right',
                                      title='Surface right hemisphere',
                                      colorbar=True, threshold=1.,
-                                     bg_map=fsaverage.sulc_right)
+                                     bg_map=fsaverage.sulc_right,
+                                     engine=engine)
 
-plotting.plot_surf_contours(fsaverage.infl_right, parcellation, labels=labels,
-                            levels=regions_indices, figure=figure,
-                            legend=True,
-                            colors=['g', 'k'])
-plotting.show()
+if engine == "matplotlib":
+    plotting.plot_surf_contours(fsaverage.infl_right,
+                                parcellation,
+                                labels=labels,
+                                levels=regions_indices,
+                                figure=figure,
+                                legend=True,
+                                colors=['g', 'k'])
+    plotting.show()
+elif engine == "plotly":
+    figure.add_contours(
+        roi_map=parcellation,
+        levels=regions_indices,
+        labels=labels,
+        lines=[{"width": 5}])
+    # view the contours in a browser
+    # figure.show()
+
 
 # %%
 # Plot with higher-resolution mesh
