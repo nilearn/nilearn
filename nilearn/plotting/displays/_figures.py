@@ -349,7 +349,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
                 xy1 = self._transform_coord_to_plane(
                     centroids[current_vertex], *vs[current_vertex]
                 )
-                next_index = 9999
+                next_index = -1
                 for attempt in np.argsort(
                     remaining_distances[0, smallest_5_idx]
                 ):
@@ -387,7 +387,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
 
                 # if none of those five worked, then pick the next nearest and
                 # handle later
-                if next_index == 9999:
+                if next_index == -1:
                     next_index = np.argmin(remaining_distances)
 
             else:
