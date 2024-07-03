@@ -324,7 +324,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
 
         # Loop over the remaining vertices in order of distance from the
         # current vertex
-        while len(visited_vertices) < len(centroids):
+        for _ in range(1, len(centroids)):
             remaining_vertices = np.array(
                 [
                     vertex
@@ -342,61 +342,66 @@ class PlotlySurfaceFigure(SurfaceFigure):
             # this corner vertex). So, the next added centroid is one
             # that may be slightly farther away -- if the one that is
             # farther away has fewer vertices within the roi.
-            if len(remaining_vertices) > 5:
-                smallest_5_idx = np.argpartition(
-                    remaining_distances.squeeze(), 5
-                )[:5]
-                xy1 = self._transform_coord_to_plane(
-                    centroids[current_vertex], *vs[current_vertex]
-                )
-                next_index = -1
-                for attempt in np.argsort(
-                    remaining_distances[0, smallest_5_idx]
-                ):
-                    fail = False
-                    shortest_idx = smallest_5_idx[attempt]
-                    xy2 = self._transform_coord_to_plane(
-                        centroids[remaining_vertices[shortest_idx]],
-                        *vs[current_vertex],
-                    )
-                    if not any(
-                        v in idxs[current_vertex]
-                        for v in idxs[remaining_vertices[shortest_idx]]
-                    ):
-                        # this does not share vertex, so try again
-                        fail |= True
-                    if fail:
-                        continue
-                    # also need to test for whether an edge is shared
-                    shared = 0
-                    for v in vs[remaining_vertices[shortest_idx]]:
-                        for v2 in vs[current_vertex]:
-                            shared += np.all(np.isclose(v, v2))
-                    if not (shared >= 2):
-                        # this does not share and edge, so try again
-                        continue
-                    for e in segments[current_vertex]:
-                        if e is not None and self._do_segs_intersect(
-                            *xy1, *xy2, *e
-                        ):
-                            # this one crosses boundary, so try again
-                            fail |= True
-                    if fail:
-                        continue
-                    next_index = shortest_idx
 
-                # if none of those five worked, then pick the next nearest and
-                # handle later
+            # from the current vertex, there are only at most 5 options
+            # that will be good jumps
+            n_jumps_remaining = min(5, max(0, len(remaining_vertices) - 1))
+            smallest_idx = np.argpartition(
+                remaining_distances.squeeze(), n_jumps_remaining
+            )[:n_jumps_remaining]
+            xy1 = self._transform_coord_to_plane(
+                centroids[current_vertex], *vs[current_vertex]
+            )
+            next_index = -1
+            for attempt in np.argsort(remaining_distances[0, smallest_idx]):
+                fail = False
+                shortest_idx = smallest_idx[attempt]
+                xy2 = self._transform_coord_to_plane(
+                    centroids[remaining_vertices[shortest_idx]],
+                    *vs[current_vertex],
+                )
+                if not any(
+                    v in idxs[current_vertex]
+                    for v in idxs[remaining_vertices[shortest_idx]]
+                ):
+                    # this does not share vertex, so try again
+                    fail |= True
+                if fail:
+                    continue
+                # also need to test for whether an edge is shared
+                shared = 0
+                for v in vs[remaining_vertices[shortest_idx]]:
+                    for v2 in vs[current_vertex]:
+                        shared += np.all(np.isclose(v, v2))
+                if not (shared >= 2):
+                    # this does not share and edge, so try again
+                    continue
+                for e in segments[current_vertex]:
+                    if e is not None and self._do_segs_intersect(
+                        *xy1, *xy2, *e
+                    ):
+                        # this one crosses boundary, so try again
+                        fail |= True
+                if fail:
+                    continue
+                next_index = shortest_idx
+
+                # if none of those five worked, then just pick the next nearest
                 if next_index == -1:
                     next_index = np.argmin(remaining_distances)
 
-            else:
-                next_index = np.argmin(remaining_distances)
-
             closest_vertex = remaining_vertices[next_index]
+
+            # some regions have multiple, non-isolated vertices
+            # this block detects that by checking whether the next
+            # vertex is very far away
             if remaining_distances[0, next_index] > last_distance * 3:
+                # close the current contour
                 sorted_vertices.append(centroids[prev_first])
+                # add triple of None, which is parsed by plotly
+                # as a signal to start a new closed contour
                 sorted_vertices.append(np.array([None] * 3))
+                # start the new contour
                 prev_first = closest_vertex
 
             visited_vertices.add(closest_vertex)
@@ -406,7 +411,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
             current_vertex = closest_vertex
             last_distance = remaining_distances[0, next_index]
 
-        # at the end we append the first one again to close the outline
+        # append the first one again to close the outline
         sorted_vertices.append(centroids[prev_first])
 
         return np.asarray(sorted_vertices)
