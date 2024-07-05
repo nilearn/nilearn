@@ -490,7 +490,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         For Dummy estimators, parameter grid defaults to empty dictionary.
 
-    clustering_percentile: int, float, in the [0, 100], default=10
+    clustering_percentile: int, float, in the [0, 100], default=100
         Percentile of features to keep after clustering. If it is lower
         than 100, a ReNA clustering is performed as a first step of fit
         to agglomerate similar features together. ReNA is typically efficient
