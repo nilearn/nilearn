@@ -360,7 +360,10 @@ def test_view_img():
     with warnings.catch_warnings(record=True) as w:
         # Create a fake functional image by resample the template
         img = image.resample_img(
-            mni, target_affine=3 * np.eye(3), copy_header=True
+            mni,
+            target_affine=3 * np.eye(3),
+            copy_header=True,
+            force_resample=True,
         )
         html_view = html_stat_map.view_img(img)
         _check_html(html_view, title="Slice viewer")

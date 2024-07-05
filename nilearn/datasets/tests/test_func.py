@@ -23,6 +23,11 @@ from nilearn.datasets.tests._testing import dict_to_archive, list_to_archive
 from nilearn.image import load_img
 
 
+def test_is_valid_path():
+    assert func._is_valid_path(path="foo", index=["foo"], verbose=1)
+    assert not func._is_valid_path(path="bar", index=["foo"], verbose=1)
+
+
 @pytest.mark.parametrize(
     "fn",
     [
@@ -83,6 +88,15 @@ def _make_haxby_subject_data(match, response):
         "anat.nii.gz",
     ]
     return list_to_archive(Path(match.group(1), f) for f in sub_files)
+
+
+@pytest.mark.parametrize("subjects", [None, 7])
+def test_fetch_haxby_more_than_6(tmp_path, request_mocker, subjects):
+    """Test edge cases to extend coverage."""
+    request_mocker.url_mapping[re.compile(r".*(subj\d).*\.tar\.gz")] = (
+        _make_haxby_subject_data
+    )
+    func.fetch_haxby(data_dir=tmp_path, subjects=subjects, verbose=1)
 
 
 def test_fetch_haxby(tmp_path, request_mocker):
@@ -190,6 +204,17 @@ def _adhd_metadata():
     return dict_to_archive({tmp: subs.to_csv(index=False)})
 
 
+@pytest.mark.parametrize("subjects", [None, 9999])
+def test_fetch_adhd_edge_cases(tmp_path, request_mocker, subjects):
+    request_mocker.url_mapping["*metadata.tgz"] = _adhd_metadata()
+    request_mocker.url_mapping[re.compile(r".*adhd40_([0-9]+)\.tgz")] = (
+        _adhd_example_subject
+    )
+    func.fetch_adhd(
+        data_dir=tmp_path, n_subjects=subjects, verbose=0, url=None
+    )
+
+
 def test_fetch_adhd(tmp_path, request_mocker):
     request_mocker.url_mapping["*metadata.tgz"] = _adhd_metadata()
     request_mocker.url_mapping[re.compile(r".*adhd40_([0-9]+)\.tgz")] = (
@@ -214,6 +239,19 @@ def test_miyawaki2008(tmp_path, request_mocker):
     assert isinstance(dataset.background, str)
     assert request_mocker.url_count == 1
     assert dataset.description != ""
+
+
+@pytest.mark.parametrize("subjects", [None, 9999])
+def test_fetch_localizer_contrasts_edge_cases(
+    tmp_path, localizer_mocker, subjects
+):
+    func.fetch_localizer_contrasts(
+        ["checkerboard"],
+        n_subjects=subjects,
+        data_dir=tmp_path,
+        verbose=1,
+        legacy_format=True,
+    )
 
 
 def test_fetch_localizer_contrasts(tmp_path, localizer_mocker):
@@ -424,23 +462,25 @@ def test__load_mixed_gambles(rng, affine_eye):
         assert len(zmaps) == len(gain)
 
 
-def test_fetch_mixed_gambles(tmp_path):
-    for n_subjects in [1, 5, 16]:
-        mgambles = func.fetch_mixed_gambles(
-            n_subjects=n_subjects,
-            data_dir=tmp_path,
-            verbose=0,
-            return_raw_data=True,
-        )
-        datasetdir = tmp_path / "jimura_poldrack_2012_zmaps"
+@pytest.mark.parametrize("n_subjects", [1, 5, 16])
+def test_fetch_mixed_gambles(tmp_path, n_subjects):
 
-        assert mgambles["zmaps"][0] == str(
-            datasetdir / "zmaps" / "sub001_zmaps.nii.gz"
-        )
-        assert len(mgambles["zmaps"]) == n_subjects
+    mgambles = func.fetch_mixed_gambles(
+        n_subjects=n_subjects,
+        data_dir=tmp_path,
+        verbose=1,
+        return_raw_data=True,
+        url=None,
+    )
+    datasetdir = tmp_path / "jimura_poldrack_2012_zmaps"
 
-        assert isinstance(mgambles, Bunch)
-        assert mgambles.description != ""
+    assert mgambles["zmaps"][0] == str(
+        datasetdir / "zmaps" / "sub001_zmaps.nii.gz"
+    )
+    assert len(mgambles["zmaps"]) == n_subjects
+
+    assert isinstance(mgambles, Bunch)
+    assert mgambles.description != ""
 
 
 def test_check_parameters_megatrawls_datasets():
@@ -1026,32 +1066,30 @@ def test_fetch_spm_auditory(affine_eye, tmp_path):
     assert dataset.description != ""
 
 
-def test_fetch_spm_multimodal(tmp_path):
-    data_dir = str(tmp_path / "spm_multimodal_fmri")
-    os.mkdir(data_dir)
-    subject_dir = os.path.join(data_dir, "sub001")
-    os.mkdir(subject_dir)
-    os.mkdir(os.path.join(subject_dir, "fMRI"))
-    os.mkdir(os.path.join(subject_dir, "sMRI"))
-    open(os.path.join(subject_dir, "sMRI", "smri.img"), "a").close()
-    for session in [0, 1]:
+def _generate_spm_multimodal(path, nb_sessions=2, nb_vol=390):
+    data_dir = path / "spm_multimodal_fmri"
+    subject_dir = data_dir / "sub001"
+    (subject_dir / "fMRI").mkdir(exist_ok=True, parents=True)
+    (subject_dir / "sMRI").mkdir(exist_ok=True)
+    open(subject_dir / "sMRI" / "smri.img", "a").close()
+    for session in range(nb_sessions):
         open(
-            os.path.join(
-                subject_dir, "fMRI", f"trials_ses{int(session + 1)}.mat"
-            ),
+            subject_dir / "fMRI" / f"trials_ses{int(session + 1)}.mat",
             "a",
         ).close()
-        dir_ = os.path.join(subject_dir, "fMRI", f"Session{int(session + 1)}")
-        os.mkdir(dir_)
-        for i in range(390):
+        dir_ = subject_dir / "fMRI" / f"Session{int(session + 1)}"
+        dir_.mkdir(exist_ok=True)
+        for i in range(nb_vol):
             open(
-                os.path.join(
-                    dir_, f"fMETHODS-000{int(session + 5)}-{int(i)}-01.img"
-                ),
+                dir_ / f"fMETHODS-000{int(session + 5)}-{int(i)}-01.img",
                 "a",
             ).close()
 
-    dataset = func.fetch_spm_multimodal_fmri(data_dir=tmp_path)
+
+def test_fetch_spm_multimodal(tmp_path):
+    _generate_spm_multimodal(tmp_path)
+
+    dataset = func.fetch_spm_multimodal_fmri(data_dir=tmp_path, verbose=0)
 
     assert isinstance(dataset, Bunch)
     assert isinstance(dataset.anat, str)
@@ -1063,6 +1101,13 @@ def test_fetch_spm_multimodal(tmp_path):
     assert isinstance(dataset.trials_ses1, str)
     assert isinstance(dataset.trials_ses2, str)
     assert dataset.description != ""
+
+
+def test_fetch_spm_multimodal_missing_data(tmp_path):
+    _generate_spm_multimodal(tmp_path, nb_sessions=2, nb_vol=390)
+    func.fetch_spm_multimodal_fmri(
+        data_dir=tmp_path, verbose=1, subject_id="sub001"
+    )
 
 
 def test_fiac(tmp_path):

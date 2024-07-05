@@ -25,6 +25,7 @@ from .._utils import (
     check_niimg_3d,
     check_niimg_4d,
     fill_doc,
+    logger,
 )
 from .._utils.exceptions import DimensionError
 from .._utils.helpers import (
@@ -498,12 +499,15 @@ def _compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
         mean_data = mean_data.mean(axis=-1)
     else:
         mean_data = mean_data.copy()
+    # TODO switch to force_resample=True
+    # when bumping to version > 0.13
     mean_data = resampling.resample_img(
         nibabel.Nifti1Image(mean_data, affine),
         target_affine=target_affine,
         target_shape=target_shape,
         copy=False,
         copy_header=True,
+        force_resample=False,
     )
     affine = mean_data.affine
     mean_data = get_data(mean_data)
@@ -997,12 +1001,15 @@ def threshold_img(
     if mask_img is not None:
         mask_img = check_niimg_3d(mask_img)
         if not check_same_fov(img, mask_img):
+            # TODO switch to force_resample=True
+            # when bumping to version > 0.13
             mask_img = resampling.resample_img(
                 mask_img,
                 target_affine=affine,
                 target_shape=img.shape[:3],
                 interpolation="nearest",
                 copy_header=True,
+                force_resample=False,
             )
 
         mask_data, _ = masking.load_mask_img(mask_img)
@@ -1585,13 +1592,10 @@ def concat_imgs(
             ),
         )
     ):
-        if verbose > 0:
-            nii_str = (
-                f"image {niimg}"
-                if isinstance(niimg, str)
-                else f"image #{index}"
-            )
-            print(f"Concatenating {index + 1}: {nii_str}")
+        nii_str = (
+            f"image {niimg}" if isinstance(niimg, str) else f"image #{index}"
+        )
+        logger.log(f"Concatenating {index + 1}: {nii_str}", verbose)
 
         data[..., cur_4d_index : cur_4d_index + size] = _get_data(niimg)
         cur_4d_index += size

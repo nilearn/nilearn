@@ -491,7 +491,10 @@ def test_mean_img_resample(rng):
     )
 
     resampled_mean_image = resampling.resample_img(
-        mean_img, target_affine=target_affine, copy_header=True
+        mean_img,
+        target_affine=target_affine,
+        copy_header=True,
+        force_resample=True,
     )
 
     assert_array_equal(
@@ -1261,7 +1264,7 @@ def test_concat_niimgs(affine_eye, tmp_path):
     img1c = Nifti1Image(np.ones(shape3), affine_eye)
 
     # check basic concatenation with equal shape/affine
-    # versbose for coverage
+    # verbose for coverage
     concatenated = concat_imgs((img1, img2, img1), verbose=1)
 
     # smoke-test auto_resample

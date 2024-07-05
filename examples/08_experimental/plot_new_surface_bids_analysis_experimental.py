@@ -149,30 +149,21 @@ z_val_right = norm.isf(pval_right)
 
 # %%
 # Plot the resulting maps, at first on the left hemisphere.
-from nilearn import plotting
-from nilearn.datasets import fetch_surf_fsaverage
+from nilearn.experimental.plotting import plot_surf_stat_map
+from nilearn.experimental.surface import load_fsaverage_data
+from nilearn.plotting import show
 
-fsaverage = fetch_surf_fsaverage(mesh="fsaverage5")
+fsaverage_data = load_fsaverage_data(data_type="sulcal")
 
-plotting.plot_surf_stat_map(
-    fsaverage5["inflated"].parts["left"],
-    z_val_left,
-    hemi="left",
-    title="language-string, left hemisphere",
-    colorbar=True,
-    threshold=3.0,
-    bg_map=fsaverage.sulc_left,
-)
-# %%
-# Next, on the right hemisphere.
-plotting.plot_surf_stat_map(
-    fsaverage5["inflated"].parts["right"],
-    z_val_right,
-    hemi="right",
-    title="language-string, right hemisphere",
-    colorbar=True,
-    threshold=3.0,
-    bg_map=fsaverage.sulc_right,
-)
+for hemi, stat_map in zip(["left", "right"], [z_val_left, z_val_right]):
+    plot_surf_stat_map(
+        surf_mesh=fsaverage5["inflated"],
+        stat_map=stat_map,
+        hemi=hemi,
+        title=f"(language-string), {hemi} hemisphere",
+        colorbar=True,
+        threshold=3.0,
+        bg_map=fsaverage_data,
+    )
 
-plotting.show()
+show()

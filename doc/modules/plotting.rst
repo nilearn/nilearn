@@ -39,6 +39,7 @@
    plot_img_on_surf
    plot_img_comparison
    plot_design_matrix
+   plot_design_matrix_correlation
    plot_event
    plot_contrast_matrix
    view_surf
