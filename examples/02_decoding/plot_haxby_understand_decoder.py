@@ -54,8 +54,8 @@ print(f"{len(np.unique(y))} labels to predict (y): {np.unique(y)}")
 print(f"fMRI data shape (X): {fmri_img.shape}")
 print(f"Runs (groups): {np.unique(run)}")
 # %%
-# Preprocess the fMRI data
-# ------------------------
+# Preprocessing
+# -------------
 #
 # As we can see, the fMRI data is a 4D image with shape (40, 64, 64, 864).
 # Here 40x64x64 are the dimensions of the 3D brain image and 864 is the number
