@@ -28,8 +28,6 @@ fmri_img = haxby_dataset.func[0]
 # cortex
 mask_vt = haxby_dataset.mask_vt[0]
 
-import numpy as np
-
 # Load the behavioral data
 import pandas as pd
 
@@ -50,6 +48,8 @@ run = run.values
 fmri_img = index_img(fmri_img, labels_mask)
 
 # Overview of the input data
+import numpy as np
+
 print(f"{len(np.unique(y))} labels to predict (y): {np.unique(y)}")
 print(f"fMRI data shape (X): {fmri_img.shape}")
 print(f"Runs (groups): {np.unique(run)}")
@@ -59,16 +59,18 @@ print(f"Runs (groups): {np.unique(run)}")
 #
 # As we can see, the fMRI data is a 4D image with shape (40, 64, 64, 864).
 # Here 40x64x64 are the dimensions of the 3D brain image and 864 is the number
-# of trials, each corresponding to one of the 8 labels we selected above.
+# of selected trials, each corresponding to one of the 8 labels we selected
+# above.
 #
 # :class:`nilearn.decoding.Decoder` can convert this 4D image to a 2D numpy
 # array where each row corresponds to a trial and each column corresponds to a
 # voxel. In addition, it can also do several other things like masking,
 # smoothing, standardizing the data etc. depending on your requirements.
 #
-# Under the hood, it uses :class:`nilearn.maskers.NiftiMasker` to do all these
-# operations. So here we will demonstrate this by directly using the
-# :class:`nilearn.maskers.NiftiMasker`. We will use it to:
+# Under the hood, :class:`nilearn.decoding.Decoder` uses
+# :class:`nilearn.maskers.NiftiMasker` to do all these operations. So here we
+# will demonstrate this by directly using the
+# :class:`nilearn.maskers.NiftiMasker`. Specifically, we will use it to:
 #
 # 1. only keep the data from the Ventral Temporal cortex by providing the
 # mask image (in :class:`nilearn.decoding.Decoder` this is done by
@@ -98,6 +100,9 @@ print(f"fMRI data shape after masking: {X.shape}")
 # The :class:`nilearn.decoding.Decoder` converts multi-class classification
 # problem to N one-vs-others binary classification problems by default, where N
 # is the number of unique labels. We have 8 unique labels in our case.
+#
+# Here we use Sklearn's :class:`~sklearn.preprocessing.LabelBinarizer`
+# to do the same.
 
 from matplotlib import pyplot as plt
 from sklearn.preprocessing import LabelBinarizer
@@ -150,10 +155,8 @@ cbar.set_ticklabels([*label_multi.classes_, "all others"])
 plt.show()
 
 # %%
-# So at the bottom we have the original sequence in which the trials were
-# presented and at the top we have the labels in the one-vs-others format.
-# The white color corresponds to the trials that are not of the corresponding
-# class in the one-vs-others format.
+# So at the bottom we have the original sequence in which the selected trials
+# were presented and at the top we have the labels in the one-vs-others format.
 #
 # The :class:`nilearn.decoding.Decoder` does this conversion internally and
 # considers each of these binary classification problems as a separate problem
@@ -164,29 +167,25 @@ plt.show()
 # ---------------------------
 #
 # The :class:`nilearn.decoding.Decoder` also performs hyperparameter tuning.
-# How this is done depends on the estimator used:
+# How this is done depends on the estimator used.
 #
-# Except for the Support Vector Machine classifiers/regressors
-# (used by setting ``estimator="svc"`` or ``"svc_l1"`` or ``"svc_l2"`` or
-# ``"svr"``), the hyperparameter tuning is done using the ``...CV`` classes
-# from Sklearn. This essentially means that the hyperparameters are optimized
-# using an internal cross-validation on the training data.
+# For the support vector classifiers (known as SVC, and used by setting
+# ``estimator="svc"`` or ``"svc_l1"`` or ``"svc_l2"``), the score from the
+# best performing regularization hyperparameter (``C``) for each train-test
+# split is picked.
 #
-# For the SVM classifiers/regressors, the best performing hyperparameters for
-# the given train-test splits are picked.
+# For all classifiers other than SVC, the hyperparameter tuning is done using
+# the ``<estimator_name>CV`` classes from Sklearn. This essentially means that
+# the hyperparameters are optimized using an internal cross-validation on the
+# training data.
 #
-# In addition, the parameters grids that are used for hyperparameter tuning
+# In addition, the parameter grids that are used for hyperparameter tuning
 # by :class:`nilearn.decoding.Decoder` are also different from the default
-# Sklearn parameters grids for the corresponding ``...CV`` classes.
+# Sklearn parameter grids for the corresponding ``<estimator_name>CV``
+# objects.
 #
 # We can replicate this behavior for later use by defining a function that
 # selects the estimator depending on the estimator string provided.
-
-# %%
-# ReNA clustering
-# ---------------
-#
-# TODO
 
 # %%
 # Feature selection
