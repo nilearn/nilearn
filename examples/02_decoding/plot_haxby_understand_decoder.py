@@ -165,12 +165,14 @@ plt.show()
 # :func:`~sklearn.feature_selection.f_classif` to calculate ANOVA F-scores for
 # each voxel and to only keep the ones that have highest 20 percentile scores,
 # by default. This selection threshold can be changed using the
-# `screening_percentile` parameter.
+# ``screening_percentile`` parameter.
 #
 # Note that these top 20 percentile voxels are selected based on training set
 # and then these selected voxels are picked for the test set too for each
 # train-test split. Furthermore, if the provided mask image has less voxels
-# than the selected percentile, then all voxels in the mask are used.
+# than the selected percentile, then all voxels in the mask are used. This is
+# done via the
+# :func:`~nilearn._utils.param_validation.adjust_screening_percentile`.
 #
 # So let's define a feature selector for later use in our Sklearn decoding
 # pipeline.
