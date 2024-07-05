@@ -85,14 +85,6 @@ from nilearn.maskers import NiftiMasker
 
 masker = NiftiMasker(mask_img=mask_vt, standardize="zscore_sample")
 
-# Fit and transform the data with the masker
-X = masker.fit_transform(fmri_img)
-
-print(f"fMRI data shape after masking: {X.shape}")
-# So now we have a 2D numpy array of shape (864, 464) where each row
-# corresponds to a trial and each column corresponds to a feature
-# (voxel in the Ventral Temporal cortex).
-
 # %%
 # Convert the multi-class labels to binary labels
 # -----------------------------------------------
@@ -163,6 +155,37 @@ plt.show()
 # to solve.
 
 # %%
+# Feature selection
+# -----------------
+#
+# After preprocessing the provided fMRI data, the
+# :class:`nilearn.decoding.Decoder` performs a univariate feature selection on
+# the voxels of volume. It uses Sklearn's
+# :class:`~sklearn.feature_selection.SelectPercentile` with
+# :func:`~sklearn.feature_selection.f_classif` to calculate ANOVA F-scores for
+# each voxel and to only keep the ones that have highest 20 percentile scores,
+# by default. This selection threshold can be changed using the
+# `screening_percentile` parameter.
+#
+# Note that these top 20 percentile voxels are selected based on training set
+# and then these selected voxels are picked for the test set too for each
+# train-test split. Furthermore, if the provided mask image has less voxels
+# than the selected percentile, then all voxels in the mask are used.
+#
+# So let's define a feature selector for later use in our Sklearn decoding
+# pipeline.
+
+from nilearn._utils.param_validation import adjust_screening_percentile
+from nilearn.image import load_img
+
+mask_vt_loaded = load_img(mask_vt)
+screen_percent = adjust_screening_percentile(20, mask_vt_loaded)
+
+from sklearn.feature_selection import SelectPercentile, f_classif
+
+feature_selector = SelectPercentile(f_classif, percentile=int(screen_percent))
+
+# %%
 # Hyperparameter optimization
 # ---------------------------
 #
@@ -184,29 +207,97 @@ plt.show()
 # Sklearn parameter grids for the corresponding ``<estimator_name>CV``
 # objects.
 #
-# We can replicate this behavior for later use by defining a function that
-# selects the estimator depending on the estimator string provided.
+# For simplicity, let's use Sklearn's
+# :class:`~sklearn.linear_model.LogisticRegressionCV` with custom parameter
+# grid (via ``Cs`` parameter) as used in Nilearn's
+# :class:`nilearn.decoding.Decoder`.
+
+from sklearn.linear_model import LogisticRegressionCV
+
+classifier = LogisticRegressionCV(
+    penalty="l2",
+    solver="liblinear",
+    Cs=np.geomspace(1e-3, 1e4, 8),
+    refit=True,
+)
 
 # %%
-# Feature selection
-# -----------------
+# Decode and cross-validate via an Sklearn pipeline
+# -------------------------------------------------
 #
-# TODO
+# Now let's put all the pieces together to decode and cross-validate. The
+# Nilearn :class:`nilearn.decoding.Decoder` uses a leave-one-group-out
+# cross-validation scheme by default in cases where groups are defined. In our
+# example a group is a run, so we will use Sklearn's
+# :class:`~sklearn.model_selection.LeaveOneGroupOut`
 
-# %%
-# Decode via an Sklearn pipeline
-# ------------------------------
-#
-# TODO
+from sklearn.metrics import roc_auc_score
+from sklearn.model_selection import LeaveOneGroupOut
+
+logo_cv = LeaveOneGroupOut()
+
+# Transform fMRI data into a 2D numpy array and standardize it with the masker
+X = masker.fit_transform(fmri_img)
+print(f"fMRI data shape after masking: {X.shape}")
+# So now we have a 2D numpy array of shape (864, 464) where each row
+# corresponds to a trial and each column corresponds to a feature
+# (voxel in the Ventral Temporal cortex).
+
+# Loop over each CV split and each class vs. rest binary classification
+# problems (number of classification problems = n_classes)
+n_classes = np.unique(y).shape[0]
+scores_sklearn = []
+for klass in range(n_classes):
+    for train, test in logo_cv.split(X, y, groups=run):
+        # separate train and test events in the data
+        X_train, X_test = X[train], X[test]
+        # separate labels for train and test events for a given class vs. rest
+        # problem
+        y_train, y_test = y_binary[train, klass], y_binary[test, klass]
+
+        # select the voxels by fitting feature selector on training data
+        X_train = feature_selector.fit_transform(X_train, y_train)
+        # pick the same voxels in the test data
+        X_test = feature_selector.transform(X_test)
+
+        # fit the classifier on the training data
+        classifier.fit(X_train, y_train)
+        # predict the labels on the test data
+        pred = classifier.predict_proba(X_test)
+
+        # calculate the ROC AUC score
+        score = roc_auc_score(y_test, pred[:, 1])
+        scores_sklearn.append(score)
 
 # %%
 # Decode via the :class:`nilearn.decoding.Decoder`
 # ------------------------------------------------
 #
-# TODO
+# All these steps can be done in a few lines and made faster via parallel
+# processing using the ``n_jobs`` parameter in
+# :class:`nilearn.decoding.Decoder`.
+
+from nilearn.decoding import Decoder
+
+decoder = Decoder(
+    estimator="logistic_l2",
+    mask=mask_vt,
+    standardize="zscore_sample",
+    n_jobs=8,
+    cv=logo_cv,
+    screening_percentile=20,
+    scoring="roc_auc_ovr",
+)
+decoder.fit(fmri_img, y, groups=run)
+scores_nilearn = np.concatenate(list(decoder.cv_scores_.values()))
 
 # %%
 # Compare the results
 # -------------------
 #
-# TODO
+# Let's compare the results from the Sklearn pipeline and the Nilearn decoder.
+
+print("Nilearn mean AU-ROC score", np.mean(scores_nilearn))
+print("Sklearn mean AU-ROC score", np.mean(scores_sklearn))
+
+# %%
