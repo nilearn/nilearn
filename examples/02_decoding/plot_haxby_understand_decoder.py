@@ -171,8 +171,7 @@ plt.show()
 # and then these selected voxels are picked for the test set too for each
 # train-test split. Furthermore, if the provided mask image has less voxels
 # than the selected percentile, then all voxels in the mask are used. This is
-# done via the
-# :func:`~nilearn._utils.param_validation.adjust_screening_percentile`.
+# done via the ``adjust_screening_percentile`` function.
 #
 # So let's define a feature selector for later use in our Sklearn decoding
 # pipeline.
