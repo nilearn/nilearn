@@ -494,7 +494,9 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         Percentile of features to keep after clustering. If it is lower
         than 100, a ReNA clustering is performed as a first step of fit
         to agglomerate similar features together. ReNA is typically efficient
-        for clustering_percentile equal to 10.
+        for clustering_percentile equal to 10. Only used with
+        :class:`nilearn.decoding.FREMClassifier` and 
+        :class:`nilearn.decoding.FREMRegressor`.
 
     screening_percentile: int, float, \
                           in the closed interval [0, 100], \
