@@ -314,3 +314,11 @@ print("Nilearn mean AU-ROC score", np.mean(scores_nilearn))
 print("Sklearn mean AU-ROC score", np.mean(scores_sklearn))
 
 # %%
+# As we can see, the mean AU-ROC scores from the Sklearn pipeline and the
+# Nilearn's :class:`nilearn.decoding.Decoder` are identical.
+#
+# The advantage of using the Nilearn's :class:`nilearn.decoding.Decoder` is
+# that it does all these steps under the hood and provides a simple interface
+# to train, cross-validate and predict on new data, while also parallelizing
+# the computations to make the cross-validation faster. It also organises the
+# results in a structured way that can be easily accessed and analysed.
