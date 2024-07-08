@@ -1103,7 +1103,12 @@ class Decoder(_BaseDecoder):
 
     cv: cross-validation generator or int, default=10
         A cross-validation generator.
-        See: https://scikit-learn.org/stable/modules/cross_validation.html
+        See: https://scikit-learn.org/stable/modules/cross_validation.html.
+        The default 10 refers to
+        :class:`~sklearn.model_selection.StratifiedKFold` when groups is None
+        in the fit method for this class. If groups is specified but ``cv``
+        is not set to custom CV splitter, default is
+        :class:`~sklearn.model_selection.LeaveOneGroupOut`.
 
     param_grid: dict of str to sequence, or sequence of such. Default None
         The parameter grid to explore, as a dictionary mapping estimator
@@ -1238,9 +1243,14 @@ class DecoderRegressor(MultiOutputMixin, _BaseDecoder):
         masker with default parameters. Refer to NiftiMasker or
         MultiNiftiMasker to check for default parameters. Default None
 
-    cv: cross-validation generator or int, optional (default 10)
+    cv: cross-validation generator or int, default=10
         A cross-validation generator.
-        See: https://scikit-learn.org/stable/modules/cross_validation.html
+        See: https://scikit-learn.org/stable/modules/cross_validation.html.
+        The default 10 refers to
+        :class:`~sklearn.model_selection.StratifiedKFold` when groups is None
+        in the fit method for this class. If groups is specified but ``cv``
+        is not set to custom CV splitter, default is
+        :class:`~sklearn.model_selection.LeaveOneGroupOut`.
 
     param_grid: dict of str to sequence, or sequence of such, default=None
         The parameter grid to explore, as a dictionary mapping estimator
