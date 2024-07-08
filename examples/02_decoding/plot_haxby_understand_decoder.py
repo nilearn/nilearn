@@ -90,11 +90,21 @@ masker = NiftiMasker(mask_img=mask_vt, standardize="zscore_sample")
 # -----------------------------------------------
 #
 # The :class:`nilearn.decoding.Decoder` converts multi-class classification
-# problem to N one-vs-others binary classification problems by default, where N
-# is the number of unique labels. We have 8 unique labels in our case.
+# problem to N one-vs-others binary classification problems by default (where N
+# is the number of unique labels)
 #
-# Here we use Sklearn's :class:`~sklearn.preprocessing.LabelBinarizer`
-# to do the same.
+# The advantage of this approach is its interpretability. Once we are done with
+# training and cross-validating, we will have N AU-ROC scores, one for each
+# label. This will give us an insight into which labels (and the corresponding
+# cognitive domains) are easier to predict and are hence well differentiated
+# relative to the others in the brain.
+#
+# In addition, we will also have access to the classifier coefficients for each
+# label. These can be further used to understand the importance of each voxel
+# for each corresponding cognitive domain.
+#
+# In this example we have N = 8 unique labels and we will use Sklearn's
+# :class:`~sklearn.preprocessing.LabelBinarizer` to do this conversion.
 
 from matplotlib import pyplot as plt
 from sklearn.preprocessing import LabelBinarizer
@@ -147,12 +157,14 @@ cbar.set_ticklabels([*label_multi.classes_, "all others"])
 plt.show()
 
 # %%
-# So at the bottom we have the original sequence in which the selected trials
-# were presented and at the top we have the labels in the one-vs-others format.
+# So at the bottom we have the original presentation sequence of the selected
+# trials and at the top we have the labels in the one-vs-others format.
 #
-# The :class:`nilearn.decoding.Decoder` does this conversion internally and
-# considers each of these binary classification problems as a separate problem
-# to solve.
+# Each row corresponds to a one-vs-others binary classification problem.
+# For example, the first row from the bottom corresponds to the binary
+# classification problem of predicting the label "bottle" vs. all other labels
+# and so on. Later we will train classifier for each row and calculate the
+# AU-ROC score for each row.
 
 # %%
 # Feature selection
@@ -223,10 +235,10 @@ classifier = LogisticRegressionCV(
 )
 
 # %%
-# Decode and cross-validate via an Sklearn pipeline
-# -------------------------------------------------
+# Train and cross-validate via an Sklearn pipeline
+# ------------------------------------------------
 #
-# Now let's put all the pieces together to decode and cross-validate. The
+# Now let's put all the pieces together to train and cross-validate. The
 # Nilearn :class:`nilearn.decoding.Decoder` uses a leave-one-group-out
 # cross-validation scheme by default in cases where groups are defined. In our
 # example a group is a run, so we will use Sklearn's
