@@ -1104,7 +1104,7 @@ class Decoder(_BaseDecoder):
     cv: cross-validation generator or int, default=10
         A cross-validation generator.
         See: https://scikit-learn.org/stable/modules/cross_validation.html.
-        The default 10 refers to
+        The default 10 refers to K = 10 folds of
         :class:`~sklearn.model_selection.StratifiedKFold` when groups is None
         in the fit method for this class. If groups is specified but ``cv``
         is not set to custom CV splitter, default is
@@ -1246,7 +1246,7 @@ class DecoderRegressor(MultiOutputMixin, _BaseDecoder):
     cv: cross-validation generator or int, default=10
         A cross-validation generator.
         See: https://scikit-learn.org/stable/modules/cross_validation.html.
-        The default 10 refers to
+        The default 10 refers to K = 10 folds of
         :class:`~sklearn.model_selection.StratifiedKFold` when groups is None
         in the fit method for this class. If groups is specified but ``cv``
         is not set to custom CV splitter, default is
