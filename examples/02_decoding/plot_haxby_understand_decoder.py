@@ -174,7 +174,7 @@ plt.show()
 #
 # After preprocessing the provided fMRI data, the
 # :class:`nilearn.decoding.Decoder` performs a univariate feature selection on
-# the voxels of volume. It uses Scikit-Learn's
+# the voxels of the brain volume. It uses Scikit-Learn's
 # :class:`~sklearn.feature_selection.SelectPercentile` with
 # :func:`~sklearn.feature_selection.f_classif` to calculate ANOVA F-scores for
 # each voxel and to only keep the ones that have highest 20 percentile scores,
