@@ -7,7 +7,7 @@ understand at first.
 
 This example aims to provide a clear understanding of the
 :class:`nilearn.decoding.Decoder` object by demonstrating these steps via a
-Sklearn pipeline.
+Scikit-Learn pipeline.
 
 We will use the :footcite:t:`Haxby2001` dataset where the participants were
 shown images of 8 different types as described in the
@@ -50,7 +50,9 @@ fmri_img = index_img(fmri_img, labels_mask)
 # Overview of the input data
 import numpy as np
 
-print(f"{len(np.unique(y))} labels to predict (y): {np.unique(y)}")
+n_labels = len(np.unique(y))
+
+print(f"{n_labels} labels to predict (y): {np.unique(y)}")
 print(f"fMRI data shape (X): {fmri_img.shape}")
 print(f"Runs (groups): {np.unique(run)}")
 # %%
@@ -103,7 +105,7 @@ masker = NiftiMasker(mask_img=mask_vt, standardize="zscore_sample")
 # label. These can be further used to understand the importance of each voxel
 # for each corresponding cognitive domain.
 #
-# In this example we have N = 8 unique labels and we will use Sklearn's
+# In this example we have N = 8 unique labels and we will use Scikit-Learn's
 # :class:`~sklearn.preprocessing.LabelBinarizer` to do this conversion.
 
 from matplotlib import pyplot as plt
@@ -125,7 +127,7 @@ for col in range(y_binary_.shape[1]):
 fig, (ax_binary, ax_multi) = plt.subplots(
     2, gridspec_kw={"height_ratios": [10, 1.5]}, figsize=(12, 2)
 )
-cmap = ListedColormap(["white"] + list(plt.cm.tab10.colors)[0:8])
+cmap = ListedColormap(["white"] + list(plt.cm.tab10.colors)[0:n_labels])
 binary_plt = ax_binary.imshow(
     y_binary_.T,
     aspect="auto",
@@ -141,7 +143,7 @@ ax_binary.set_ylabel("One-vs-Others")
 label_multi = LabelEncoder()
 y_multi = label_multi.fit_transform(y)
 y_multi = y_multi.reshape(1, -1)
-cmap = ListedColormap(list(plt.cm.tab10.colors)[0:8])
+cmap = ListedColormap(list(plt.cm.tab10.colors)[0:n_labels])
 multi_plt = ax_multi.imshow(
     y_multi,
     aspect="auto",
@@ -172,7 +174,7 @@ plt.show()
 #
 # After preprocessing the provided fMRI data, the
 # :class:`nilearn.decoding.Decoder` performs a univariate feature selection on
-# the voxels of volume. It uses Sklearn's
+# the voxels of volume. It uses Scikit-Learn's
 # :class:`~sklearn.feature_selection.SelectPercentile` with
 # :func:`~sklearn.feature_selection.f_classif` to calculate ANOVA F-scores for
 # each voxel and to only keep the ones that have highest 20 percentile scores,
@@ -185,7 +187,7 @@ plt.show()
 # than the selected percentile, then all voxels in the mask are used. This is
 # done via the ``adjust_screening_percentile`` function.
 #
-# So let's define a feature selector for later use in our Sklearn decoding
+# So let's define a feature selector for later use in our Scikit-Learn decoding
 # pipeline.
 
 from nilearn._utils.param_validation import adjust_screening_percentile
@@ -211,16 +213,16 @@ feature_selector = SelectPercentile(f_classif, percentile=int(screen_percent))
 # split is picked.
 #
 # For all classifiers other than SVC, the hyperparameter tuning is done using
-# the ``<estimator_name>CV`` classes from Sklearn. This essentially means that
-# the hyperparameters are optimized using an internal cross-validation on the
-# training data.
+# the ``<estimator_name>CV`` classes from Scikit-Learn. This essentially means
+# that the hyperparameters are optimized using an internal cross-validation on
+# the training data.
 #
 # In addition, the parameter grids that are used for hyperparameter tuning
 # by :class:`nilearn.decoding.Decoder` are also different from the default
-# Sklearn parameter grids for the corresponding ``<estimator_name>CV``
+# Scikit-Learn parameter grids for the corresponding ``<estimator_name>CV``
 # objects.
 #
-# For simplicity, let's use Sklearn's
+# For simplicity, let's use Scikit-Learn's
 # :class:`~sklearn.linear_model.LogisticRegressionCV` with custom parameter
 # grid (via ``Cs`` parameter) as used in Nilearn's
 # :class:`nilearn.decoding.Decoder`.
@@ -235,13 +237,13 @@ classifier = LogisticRegressionCV(
 )
 
 # %%
-# Train and cross-validate via an Sklearn pipeline
+# Train and cross-validate via an Scikit-Learn pipeline
 # ------------------------------------------------
 #
 # Now let's put all the pieces together to train and cross-validate. The
-# Nilearn :class:`nilearn.decoding.Decoder` uses a leave-one-group-out
+# :class:`nilearn.decoding.Decoder` uses a leave-one-group-out
 # cross-validation scheme by default in cases where groups are defined. In our
-# example a group is a run, so we will use Sklearn's
+# example a group is a run, so we will use Scikit-Learn's
 # :class:`~sklearn.model_selection.LeaveOneGroupOut`
 
 from sklearn.metrics import roc_auc_score
@@ -257,10 +259,9 @@ print(f"fMRI data shape after masking: {X.shape}")
 # (voxel in the Ventral Temporal cortex).
 
 # Loop over each CV split and each class vs. rest binary classification
-# problems (number of classification problems = n_classes)
-n_classes = np.unique(y).shape[0]
+# problems (number of classification problems = n_labels)
 scores_sklearn = []
-for klass in range(n_classes):
+for klass in range(n_labels):
     for train, test in logo_cv.split(X, y, groups=run):
         # separate train and test events in the data
         X_train, X_test = X[train], X[test]
@@ -296,7 +297,7 @@ decoder = Decoder(
     estimator="logistic_l2",
     mask=mask_vt,
     standardize="zscore_sample",
-    n_jobs=8,
+    n_jobs=n_labels,
     cv=logo_cv,
     screening_percentile=20,
     scoring="roc_auc_ovr",
@@ -308,14 +309,15 @@ scores_nilearn = np.concatenate(list(decoder.cv_scores_.values()))
 # Compare the results
 # -------------------
 #
-# Let's compare the results from the Sklearn pipeline and the Nilearn decoder.
+# Let's compare the results from the Scikit-Learn pipeline and the Nilearn
+# decoder.
 
 print("Nilearn mean AU-ROC score", np.mean(scores_nilearn))
-print("Sklearn mean AU-ROC score", np.mean(scores_sklearn))
+print("Scikit-Learn mean AU-ROC score", np.mean(scores_sklearn))
 
 # %%
-# As we can see, the mean AU-ROC scores from the Sklearn pipeline and Nilearn's
-# :class:`nilearn.decoding.Decoder` are identical.
+# As we can see, the mean AU-ROC scores from the Scikit-Learn pipeline and
+# Nilearn's :class:`nilearn.decoding.Decoder` are identical.
 #
 # The advantage of using Nilearn's :class:`nilearn.decoding.Decoder` is
 # that it does all these steps under the hood and provides a simple interface
