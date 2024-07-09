@@ -238,7 +238,7 @@ classifier = LogisticRegressionCV(
 
 # %%
 # Train and cross-validate via an Scikit-Learn pipeline
-# ------------------------------------------------
+# -----------------------------------------------------
 #
 # Now let's put all the pieces together to train and cross-validate. The
 # :class:`nilearn.decoding.Decoder` uses a leave-one-group-out
