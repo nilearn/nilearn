@@ -9,6 +9,7 @@ import pandas as pd
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.cluster.hierarchy import leaves_list, linkage, optimal_leaf_ordering
 
+from nilearn._utils.helpers import rename_parameters
 from nilearn.glm.first_level.experimental_paradigm import check_events
 
 from .._utils import fill_doc
@@ -332,6 +333,7 @@ def plot_matrix(
 
 
 @fill_doc
+@rename_parameters({"ax": "axes"}, end_version="0.13.0")
 def plot_contrast_matrix(
     contrast_def, design_matrix, colorbar=False, axes=None, output_file=None
 ):
@@ -453,6 +455,7 @@ def pad_contrast_matrix(contrast_def, design_matrix):
 
 
 @fill_doc
+@rename_parameters({"ax": "axes"}, end_version="0.13.0")
 def plot_design_matrix(
     design_matrix, rescale=True, axes=None, output_file=None
 ):
