@@ -49,6 +49,8 @@ jobs:
 
                 BRANCH=pull/$PULL_REQUEST_NUMBER/head
 
+                echo $BRANCH
+
                 GITHUB_RUN_URL="https://nightly.link/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}"
 
                 curl --request POST \
