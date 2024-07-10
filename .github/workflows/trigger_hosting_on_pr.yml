@@ -14,7 +14,7 @@ name: Documentation push trigger
 on:
     workflow_run:
             # Run the workflow after the separate "DocumentationBuilder" workflow completes
-        workflows: [Auto Comment]
+        workflows: [check style guide compliance]
         types:
         -   completed
 
@@ -35,8 +35,10 @@ jobs:
                 GITHUB_CONTEXT: ${{ toJson(github) }}
             run: echo "$GITHUB_CONTEXT"
 
+
         -   name: Trigger hosting job on circle ci
             run: |
+                echo ${{ github.event.workflow_run.pull_requests[0].number }}
                 GITHUB_RUN_URL="https://nightly.link/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}"
                 curl --request POST \
                 --url https://circleci.com/api/v2/project/gh/${{ github.repository }}/pipeline \
