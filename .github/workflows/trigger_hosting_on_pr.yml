@@ -25,9 +25,9 @@ jobs:
             # Prevents this workflow from running on a fork.
             # To test this workflow on a fork remove the `github.repository == nilearn/nilearn` condition
             # github.repository == 'nilearn/nilearn' &&
-        # if: >
-        #     github.event.workflow_run.event == 'pull_request' &&
-        #     github.event.workflow_run.conclusion == 'success'
+        if: >
+            github.event.workflow_run.event == 'pull_request' &&
+            github.event.workflow_run.conclusion == 'success'
         steps:
 
         -   name: Dump GitHub context
@@ -35,17 +35,26 @@ jobs:
                 GITHUB_CONTEXT: ${{ toJson(github) }}
             run: echo "$GITHUB_CONTEXT"
 
-
         -   name: Trigger hosting job on circle ci
-            run: |
-                echo "${{ github.event.workflow_run.pull_requests }}"
-                echo github.event.workflow_run.pull_requests
-                echo "${{ github.event.workflow_run.pull_requests[0].number }}"
+            run: |4
+
+                COMMIT_SHA: ${{ github.event.workflow_run.head_sha }}
+                REPO_NAME: ${{ github.event.workflow_run.head_repository.full_name }}
+
+                PULL_REQUEST_NUMBER=$(curl \
+                    -H "Accept: application/vnd.github.v3+json" \
+                    -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                    https://api.github.com/repos/$REPO_NAME/commits/$COMMIT_SHA/pulls 2>/dev/null \
+                    | jq '.[0].number')
+
+                BRANCH=pull/$PULL_REQUEST_NUMBER/head
+
                 GITHUB_RUN_URL="https://nightly.link/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}"
+
                 curl --request POST \
                 --url https://circleci.com/api/v2/project/gh/${{ github.repository }}/pipeline \
                 --header "Circle-Token: ${{ secrets.CIRCLE_CI_TOKEN }}" \
                 --header "content-type: application/json" \
                 --header "x-attribution-actor-id: github_actions" \
                 --header "x-attribution-login: github_actions" \
-                --data \{\"branch\":\"${{ github.event.workflow_run.head_branch }}\",\"parameters\":\{\"GITHUB_RUN_URL\":\"$GITHUB_RUN_URL\"\}\}
+                --data \{\"branch\":\"$BRANCH\",\"parameters\":\{\"GITHUB_RUN_URL\":\"$GITHUB_RUN_URL\"\}\}
