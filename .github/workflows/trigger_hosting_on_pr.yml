@@ -1,0 +1,42 @@
+---
+    # Trigger hosting of the doc on circle-ci
+    # We get the url for the artifacts for circle-ci from https://nightly.link/
+    #
+    # This must be run in a separate workflow because for security reasons
+    # the secrets for login to circle-ci cannot be accessed by PRs opened from a fork.
+    #
+    # So this workflow waits for the doc building workflow to finish successfully
+    # before grabbing its output and pushing it to circle-CI.
+    #
+    # See https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+    #
+name: Documentation push trigger
+on:
+    workflow_run:
+            # Run the workflow after the separate "DocumentationBuilder" workflow completes
+        workflows: [Auto Comment]
+        types:
+        -   completed
+
+jobs:
+    push:
+        runs-on: ubuntu-latest
+            # Run the job only if the "DocumentationBuilder" workflow succeeded
+            # Prevents this workflow from running on a fork.
+            # To test this workflow on a fork remove the `github.repository == nilearn/nilearn` condition
+            # github.repository == 'nilearn/nilearn' &&
+        if: >
+            github.event.workflow_run.event == 'pull_request' &&
+            github.event.workflow_run.conclusion == 'success'
+        steps:
+
+        -   name: Trigger hosting job on circle ci
+            run: |
+                GITHUB_RUN_URL="https://nightly.link/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}"
+                curl --request POST \
+                --url https://circleci.com/api/v2/project/gh/${{ github.repository }}/pipeline \
+                --header "Circle-Token: ${{ secrets.CIRCLE_CI_TOKEN }}" \
+                --header "content-type: application/json" \
+                --header "x-attribution-actor-id: github_actions" \
+                --header "x-attribution-login: github_actions" \
+                --data \{\"branch\":\"${{ github.event.workflow_run.head_branch }}\",\"parameters\":\{\"GITHUB_RUN_URL\":\"$GITHUB_RUN_URL\"\}\}
