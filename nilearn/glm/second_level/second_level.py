@@ -845,7 +845,7 @@ def non_parametric_inference(
         to the regressors.
 
         .. note::
-            This is returned if ``tfce`` is False or ``threshold`` is not None.
+            This is returned if ``tfce`` is True or ``threshold`` is not None.
 
         .. versionadded:: 0.9.2
 
