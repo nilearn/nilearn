@@ -10,6 +10,9 @@
     #
     # See https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
     #
+    # the CIRCLE_CI_TOKEN must be a personal token and not a project token
+    # https://support.circleci.com/hc/en-us/articles/360060360811-CircleCI-API-v2-Returns-404-Not-Found
+    #
 name: Documentation push trigger
 on:
     workflow_run:
