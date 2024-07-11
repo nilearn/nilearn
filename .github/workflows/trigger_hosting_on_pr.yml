@@ -14,7 +14,7 @@ name: Documentation push trigger
 on:
     workflow_run:
         # Run the workflow after the separate "DocumentationBuilder" workflow completes
-        workflows: [check style guide compliance]
+        workflows: [DocumentationBuilder]
         types:
         -   completed
 
@@ -26,8 +26,8 @@ jobs:
         # To test this workflow on a fork remove the `github.repository == nilearn/nilearn` condition
         if: >
             github.event.workflow_run.conclusion == 'success' &&
-            github.event.workflow_run.event == 'pull_request'
-        # github.repository == 'nilearn/nilearn'
+            github.event.workflow_run.event == 'pull_request' &&
+            github.repository == 'nilearn/nilearn'
         steps:
 
         -   name: Trigger hosting job on circle ci
