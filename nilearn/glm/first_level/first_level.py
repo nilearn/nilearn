@@ -22,6 +22,7 @@ from sklearn.base import clone
 from sklearn.cluster import KMeans
 
 from nilearn._utils import fill_doc, logger, stringify_path
+from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_run_sample_masks
 from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
@@ -591,13 +592,18 @@ class FirstLevelModel(BaseGLM):
             sample_mask = sample_masks[run_idx]
             design = design.iloc[sample_mask, :]
             self.design_matrices_[run_idx] = design
+            if isinstance(run_img, np.ndarray):
+                run_img = run_img[:, sample_mask]
 
-        # Mask and prepare data for GLM
-        self._log("masking")
-        t_masking = time.time()
-        Y = self.masker_.transform(run_img, sample_mask=sample_mask)
-        del run_img  # Delete unmasked image to save memory
-        self._log("masking_done", time_in_second=time.time() - t_masking)
+        if not isinstance(run_img, np.ndarray):
+            # Mask and prepare data for GLM
+            self._log("masking")
+            t_masking = time.time()
+            Y = self.masker_.transform(run_img, sample_mask=sample_mask)
+            del run_img  # Delete unmasked image to save memory
+            self._log("masking_done", time_in_second=time.time() - t_masking)
+        else:
+            Y = run_img
 
         if self.signal_scaling is not False:
             Y, _ = mean_scaling(Y, self.signal_scaling)
@@ -644,6 +650,8 @@ class FirstLevelModel(BaseGLM):
 
             if isinstance(run_img, SurfaceImage):
                 n_scans = run_img.shape[0]
+            elif isinstance(run_img, np.ndarray):
+                n_scans = run_img.shape[1]
             else:
                 run_img = check_niimg(run_img, ensure_ndim=4)
                 n_scans = get_data(run_img).shape[3]
@@ -688,6 +696,105 @@ class FirstLevelModel(BaseGLM):
         )
 
         return design
+
+    def fit_arrays(
+        self,
+        run_imgs,
+        events=None,
+        confounds=None,
+        sample_masks=None,
+        design_matrices=None,
+        bins=100,
+    ):
+        """Fit the :term:`GLM`.
+
+        For each run:
+        1. create design matrix X
+        2. fit regression to (Y, X)
+
+        Parameters
+        ----------
+        run_imgs : numpy array,\
+                   :obj:`list` of numpy arrays or \
+                   :obj:`tuple` of numpy arrays
+            Data on which the :term:`GLM` will be fitted.
+
+        events : pandas Dataframe or string or list of pandas DataFrames \
+                 or strings, default=None
+            :term:`fMRI` events used to build design matrices.
+            One events object expected per run_img.
+            Ignored in case designs is not None.
+            If string, then a path to a csv file is expected.
+
+        confounds : pandas Dataframe, numpy array or string or \
+                    list of pandas DataFrames, numpy arrays or strings, \
+                    default=None
+            Each column in a DataFrame corresponds to a confound variable
+            to be included in the regression model of the respective run_img.
+            The number of rows must match the number of volumes in the
+            respective run_img. Ignored in case designs is not None.
+            If string, then a path to a csv file is expected.
+
+        sample_masks : array_like, or list of array_like, default=None
+            shape of array: (number of scans - number of volumes remove)
+            Indices of retained volumes. Masks the arrays along time/second
+            dimension to perform scrubbing (remove volumes with high motion)
+            and/or remove non-steady-state volumes.
+
+        design_matrices : pandas DataFrame or \
+                          list of pandas DataFrames, default=None
+            Design matrices that will be used to fit the GLM. If given it
+            takes precedence over events and confounds.
+
+        bins : int, default=100
+            Maximum number of discrete bins for the AR coef histogram.
+            If an autoregressive model with order greater than one is specified
+            then adaptive quantification is performed and the coefficients
+            will be clustered via K-means with `bins` number of clusters.
+
+        """
+        if not isinstance(run_imgs, (np.ndarray, list, tuple)) or (
+            isinstance(run_imgs, (list, tuple))
+            and any(not isinstance(x, np.ndarray) for x in run_imgs)
+        ):
+            input_type = type(run_imgs)
+            if isinstance(run_imgs, list):
+                input_type = [type(x) for x in run_imgs]
+            raise TypeError(
+                "'run_imgs' must be a numpy array or a list of numpy array.\n"
+                f"Got: {input_type}"
+            )
+
+        run_imgs, events, confounds, sample_masks, design_matrices = (
+            self._check_fit_inputs(
+                run_imgs,
+                events,
+                confounds,
+                sample_masks,
+                design_matrices,
+            )
+        )
+
+        # All arrays must be 2 dimensional
+        for x in run_imgs:
+            if len(x.shape) != 2:
+                raise DimensionError(len(x.shape), 2)
+
+        self.design_matrices_ = self._create_all_designs(
+            run_imgs, events, confounds, design_matrices
+        )
+
+        # For each run fit the model and keep only the regression results.
+        self.labels_, self.results_ = [], []
+        n_runs = len(run_imgs)
+        t0 = time.time()
+        for run_idx, run_img in enumerate(run_imgs):
+            self._log("progress", run_idx=run_idx, n_runs=n_runs, t0=t0)
+            self._fit_single_run(sample_masks, bins, run_img, run_idx)
+
+        self._log("done", n_runs=n_runs, time_in_second=time.time() - t0)
+
+        return self
 
     def fit(
         self,
@@ -808,6 +915,7 @@ class FirstLevelModel(BaseGLM):
         contrast_def,
         stat_type=None,
         output_type="z_score",
+        format_type="niimg",
     ):
         """Generate different outputs corresponding to \
         the contrasts provided e.g. z_map, t_map, effects and variance.
@@ -837,9 +945,14 @@ class FirstLevelModel(BaseGLM):
             :term:`'effect_size'<Parameter Estimate>`, 'effect_variance' or
             'all'.
 
+        format_type : str, default='niimg'
+            Data format type of the output. Can be ``'niimg'``, or ``'array'``.
+            If ``'niimg'`` is chosen a SurfaceImage or NiftiImage instance
+            will be returned depending on the type of the GLM inputs.
+
         Returns
         -------
-        output : Nifti1Image, or dict
+        output : Nifti1Image, numpy array, or dict
             The desired output image(s). If ``output_type == 'all'``, then
             the output is a dictionary of images, keyed by the type of image.
 
@@ -895,6 +1008,12 @@ class FirstLevelModel(BaseGLM):
         contrast = compute_fixed_effect_contrast(
             self.labels_, self.results_, con_vals, stat_type
         )
+        valid_formats = [
+            "niimg",
+            "array",
+        ]
+        if format_type not in valid_formats:
+            raise ValueError(f"format_type must be one of {valid_formats}")
         output_types = (
             valid_types[:-1] if output_type == "all" else [output_type]
         )
@@ -902,12 +1021,15 @@ class FirstLevelModel(BaseGLM):
         for output_type_ in output_types:
             estimate_ = getattr(contrast, output_type_)()
             # Prepare the returned images
-            output = self.masker_.inverse_transform(estimate_)
-            contrast_name = str(con_vals)
-            if not isinstance(output, SurfaceImage):
-                output.header["descrip"] = (
-                    f"{output_type_} of contrast {contrast_name}"
-                )
+            if format_type == "niimg":
+                output = self.masker_.inverse_transform(estimate_)
+                contrast_name = str(con_vals)
+                if not isinstance(output, SurfaceImage):
+                    output.header["descrip"] = (
+                        f"{output_type_} of contrast {contrast_name}"
+                    )
+            else:
+                output = estimate_
 
             outputs[output_type_] = output
 
