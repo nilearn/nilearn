@@ -270,6 +270,8 @@
 
 .. _Simon Steinkamp: https://github.com/SRSteinkamp
 
+.. _Sin Kim: https://github.com/kimsin98
+
 .. _Sourav Singh: https://github.com/souravsingh
 
 .. _Steven Meisler: https://www.stevenmeisler.com

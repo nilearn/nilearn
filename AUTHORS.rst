@@ -181,6 +181,7 @@ Some other past or present contributors are:
 * `Sam Buck Johnson`_
 * `Sami Jawhar`_
 * `Simon Steinkamp`_: Danish Research Centre for Magnetic Resonance, Copenhagen University Hospital Amager & Hvidovre, Copenhagen, Denmark.
+* `Sin Kim`_: Korea Advanced Institute of Science and Technology: Daejeon, KR
 * `Sourav Singh`_
 * `Steven Meisler`_: Harvard-MIT Division of Health Sciences and Technology, Cambridge, Massachusetts, USA
 * `Suramya Pokharel`_: Tribhuvan University, Kathmandu, Nepal
