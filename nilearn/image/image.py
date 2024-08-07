@@ -1242,7 +1242,7 @@ def binarize_img(
     )
 
     return math_img(
-        "img.astype(bool).astype(int)",
+        "img.astype(bool).astype(np.int8)",
         img=threshold_img(
             img,
             threshold,
