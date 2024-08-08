@@ -56,4 +56,3 @@ Changes
 - :bdg-dark:`Code` Extend coverage for data generating utility functions (:gh:`4465` by `Sin Kim`_).
 
 - :bdg-danger:`Deprecation` The parameter ``ax`` will be replaced by ``axes`` in :func:`nilearn.plotting.plot_contrast_matrix` and :func:`nilearn.plotting.plot_design_matrix` in release 0.13.0. (:gh:`4476` by `Mudassir Chapra`_)
-
