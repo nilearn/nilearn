@@ -488,7 +488,7 @@ def make_second_level_design_matrix(subjects_label, confounds=None):
         raise ValueError("Design matrix columns do not have unique names")
 
     # float dtype necessary for linalg
-    design_matrix = pd.DataFrame(columns=design_columns, dtype=np.float64)
+    design_matrix = pd.DataFrame(columns=design_columns, dtype="float64")
     for ridx, subject_label in enumerate(subjects_label):
         design_matrix.loc[ridx] = [0.0] * len(design_columns)
         design_matrix.loc[ridx, "intercept"] = 1.0
