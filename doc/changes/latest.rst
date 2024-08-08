@@ -16,6 +16,8 @@ Fixes
 
 - :bdg-dark:`Code` Fix previous Glover HRF implementation to fit the original paper (Glover, 1999) (:gh:`4452` by `Kun CHEN`_).
 
+- :bdg-dark:`Code` :func:`nilearn.image.binarize_img` explicitly cast images to ``int8`` to avoid warnings about ``int64`` when working with ``float64`` images (:gh:`4498` by `Patrick Sadil`_).
+
 Enhancements
 ------------
 
