@@ -510,6 +510,9 @@ authors:
   - given-names: Moritz
     family-names: Boos
     website: https://github.com/mjboos
+  - given-names: Mudassir
+    family-names: Chapra
+    website: https://github.com/muddi900
   - given-names: Myeong Seop
     family-names: Song
     website: https://github.com/NeuroVR-Song
@@ -739,6 +742,3 @@ authors:
     family-names: Nájera
     website: https://github.com/Titan-C
     affiliation: Checkmk
-  - given-names: Mudassir
-    family-names: Chapra
-    website: https://github.com/muddi900

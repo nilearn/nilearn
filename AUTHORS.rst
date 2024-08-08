@@ -150,6 +150,7 @@ Some other past or present contributors are:
 * `Michelle Wang`_: Origami lab, McGill University, Montréal, Canada
 * `Mohammad Torabi`_: Origami lab, McGill University, Montréal, Canada
 * `Moritz Boos`_
+* `Mudassir Chapra`_
 * `Myeong Seop Song`_
 * `Natasha Clarke`_: @SIMEXP, Montréal, Canada
 * `Neelay Shah`_: Max Planck Institute for Intelligent Systems, Germany
