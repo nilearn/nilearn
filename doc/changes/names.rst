@@ -208,6 +208,8 @@
 
 .. _Moritz Boos: https://github.com/mjboos
 
+.. _Mudassir Chapra: https://github.com/muddi900
+
 .. _Myeong Seop Song: https://github.com/NeuroVR-Song
 
 .. _Natasha Clarke: https://github.com/clarkenj
