@@ -34,7 +34,7 @@ repos:
 
 # Automatically upgrade syntax for newer versions of the language.
 -   repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.2
+    rev: v3.17.0
     hooks:
     -   id: pyupgrade
         args: [--py38-plus]
@@ -77,7 +77,7 @@ repos:
 
 # Apply black formatting to doc strings
 -   repo: https://github.com/adamchainz/blacken-docs
-    rev: 1.16.0
+    rev: 1.18.0
     hooks:
     -   id: blacken-docs
         additional_dependencies:
@@ -100,7 +100,7 @@ repos:
 
 # Format TOML files
 -   repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-    rev: v2.13.0
+    rev: v2.14.0
     hooks:
     -   id: pretty-format-toml
         args: [--autofix, --indent, '4']
@@ -120,7 +120,7 @@ repos:
 # flake8-functions checks functions quality: https://pypi.org/project/flake8-functions/
 # flake8-bugbear detects some common bugs: https://github.com/PyCQA/flake8-bugbear
 -   repo: https://github.com/pyCQA/flake8
-    rev: 7.0.0
+    rev: 7.1.0
     hooks:
     -   id: flake8
         args: [--config, .flake8, --verbose, nilearn, examples, maint_tools]

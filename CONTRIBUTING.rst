@@ -654,7 +654,7 @@ or:
 
 .. code-block:: bash
 
-      conda create -n nilearn
+      conda create -n nilearn pip
       conda activate nilearn
 
 3. install the forked version of ``nilearn``

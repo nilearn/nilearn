@@ -839,7 +839,7 @@ def _get_cbar_ticks(vmin, vmax, offset, nb_ticks=5):
         # at the same distance to 4 ticks
         if diff.count(min(diff)) == 4:
             idx_closest = np.sort(np.argpartition(diff, 4)[:4])
-            idx_closest = np.in1d(ticks, np.sort(ticks[idx_closest])[1:3])
+            idx_closest = np.isin(ticks, np.sort(ticks[idx_closest])[1:3])
         else:
             # Find the closest 2 ticks
             idx_closest = np.sort(np.argpartition(diff, 2)[:2])
@@ -988,7 +988,7 @@ class OrthoSlicer(BaseSlicer):
 
         Here we put the logic used to adjust the size of the axes.
 
-        ``renderer`` is required to match the matplolib API.
+        ``renderer`` is required to match the matplotlib API.
         """
         x0, y0, x1, y1 = self.rect
         width_dict = dict()
@@ -1344,7 +1344,7 @@ class TiledSlicer(BaseSlicer):
 
         Here we put the logic used to adjust the size of the axes.
 
-        ``renderer`` is required to match the matplolib API.
+        ``renderer`` is required to match the matplotlib API.
         """
         rect_x0, rect_y0, rect_x1, rect_y1 = self.rect
 
@@ -1552,7 +1552,7 @@ class BaseStackedSlicer(BaseSlicer):
 
         Here we put the logic used to adjust the size of the axes.
 
-        ``renderer`` is required to match the matplolib API.
+        ``renderer`` is required to match the matplotlib API.
         """
         x0, y0, x1, y1 = self.rect
         width_dict = dict()
@@ -2032,7 +2032,7 @@ class MosaicSlicer(BaseSlicer):
 
         Here we put the logic used to adjust the size of the axes.
 
-        ``renderer`` is required to match the matplolib API.
+        ``renderer`` is required to match the matplotlib API.
         """
         x0, y0, x1, y1 = self.rect
         display_ax_dict = self.axes

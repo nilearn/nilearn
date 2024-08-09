@@ -7,14 +7,13 @@ import pytest
 
 from nilearn.experimental.surface import (
     InMemoryMesh,
+    PolyData,
     PolyMesh,
     SurfaceImage,
-    load_fsaverage,
 )
 
 
-@pytest.fixture
-def mini_mesh() -> PolyMesh:
+def _return_mini_mesh() -> PolyMesh:
     """Small mesh for tests with 2 parts with different numbers of vertices."""
     left_coords = np.asarray([[0.0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]])
     left_faces = np.asarray([[1, 0, 2], [0, 1, 3], [0, 3, 2], [1, 2, 3]])
@@ -36,6 +35,12 @@ def mini_mesh() -> PolyMesh:
         left=InMemoryMesh(left_coords, left_faces),
         right=InMemoryMesh(right_coords, right_faces),
     )
+
+
+@pytest.fixture
+def mini_mesh() -> PolyMesh:
+    """Small mesh for tests with 2 parts with different numbers of vertices."""
+    return _return_mini_mesh()
 
 
 @pytest.fixture
@@ -68,6 +73,30 @@ def mini_img(make_mini_img) -> SurfaceImage:
     return make_mini_img()
 
 
+def return_mini_binary_mask():
+    """Return small surface label image."""
+    data = PolyData(
+        left=np.asarray([False, False, True, True]),
+        right=np.asarray([True, True, False, False, False]),
+    )
+    return SurfaceImage(_return_mini_mesh(), data)
+
+
+@pytest.fixture
+def mini_binary_mask() -> SurfaceImage:
+    """Return small surface label image."""
+    return return_mini_binary_mask()
+
+
+@pytest.fixture
+def mini_label_img(mini_mesh) -> SurfaceImage:
+    """Return small surface label image."""
+    data = PolyData(
+        left=np.asarray([0, 0, 1, 1]), right=np.asarray([1, 1, 0, 0, 0])
+    )
+    return SurfaceImage(mini_mesh, data)
+
+
 @pytest.fixture
 def flip():
     """Flip hemispheres of a surface image data or mesh."""
@@ -88,12 +117,6 @@ def flip_img(flip):
         return SurfaceImage(flip(img.mesh), flip(img.data))
 
     return f
-
-
-@pytest.fixture
-def pial_surface_mesh():
-    """Get fsaverage mesh for testing."""
-    return load_fsaverage()["pial"]
 
 
 @pytest.fixture

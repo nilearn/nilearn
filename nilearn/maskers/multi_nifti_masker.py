@@ -11,6 +11,7 @@ from functools import partial
 from joblib import Memory, Parallel, delayed
 
 from nilearn import _utils, image, masking
+from nilearn._utils import logger
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.nifti_masker import NiftiMasker, _filter_and_mask
 
@@ -198,16 +199,15 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
 
         """
         # Load data (if filenames are given, load them)
-        if self.verbose > 0:
-            print(
-                f"[{self.__class__.__name__}.fit] Loading data from "
-                f"{_utils._repr_niimgs(imgs, shorten=False)}."
-            )
+        logger.log(
+            f"Loading data from "
+            f"{_utils._repr_niimgs(imgs, shorten=False)}.",
+            self.verbose,
+        )
 
         # Compute the mask if not given by the user
         if self.mask_img is None:
-            if self.verbose > 0:
-                print("[{self.__class__.__name__}.fit] Computing mask")
+            logger.log("Computing mask", self.verbose)
 
             imgs = _utils.helpers.stringify_path(imgs)
             if not isinstance(imgs, collections.abc.Iterable) or isinstance(
@@ -260,9 +260,10 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
 
         # If resampling is requested, resample the mask as well.
         # Resampling: allows the user to change the affine, the shape or both.
-        if self.verbose > 0:
-            print(f"[{self.__class__.__name__}.transform] Resampling mask")
+        logger.log("Resampling mask")
 
+        # TODO switch to force_resample=True
+        # when bumping to version > 0.13
         self.mask_img_ = self._cache(image.resample_img)(
             self.mask_img_,
             target_affine=self.target_affine,
@@ -270,6 +271,7 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
             interpolation="nearest",
             copy=False,
             copy_header=True,
+            force_resample=False,
         )
 
         if self.target_affine is not None:
@@ -290,12 +292,15 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
         ):
             resampl_imgs = None
             if imgs is not None:
+                # TODO switch to force_resample=True
+                # when bumping to version > 0.13
                 resampl_imgs = self._cache(image.resample_img)(
                     imgs,
                     target_affine=self.affine_,
                     copy=False,
                     interpolation="nearest",
                     copy_header=True,
+                    force_resample=False,
                 )
 
             self._reporting_data["transform"] = [resampl_imgs, self.mask_img_]

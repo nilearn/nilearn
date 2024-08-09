@@ -2,14 +2,18 @@
 
 import copy
 import warnings
-from pathlib import Path
 from string import Template
 
 from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.maskers import NiftiSpheresMasker
 from nilearn.plotting.html_document import HTMLDocument
-from nilearn.reporting.utils import figure_to_svg_base64
+from nilearn.reporting.utils import (
+    CSS_PATH,
+    HTML_PARTIALS_PATH,
+    HTML_TEMPLATE_PATH,
+    figure_to_svg_base64,
+)
 
 ESTIMATOR_TEMPLATES = {
     "NiftiLabelsMasker": "report_body_template_niftilabelsmasker.html",
@@ -17,6 +21,8 @@ ESTIMATOR_TEMPLATES = {
     "NiftiMapsMasker": "report_body_template_niftimapsmasker.html",
     "MultiNiftiMapsMasker": "report_body_template_niftimapsmasker.html",
     "NiftiSpheresMasker": "report_body_template_niftispheresmasker.html",
+    "SurfaceMasker": "report_body_template_surfacemasker.html",
+    "SurfaceLabelsMasker": "report_body_template_surfacemasker.html",
     "default": "report_body_template.html",
 }
 
@@ -82,7 +88,14 @@ def _str_params(params):
 
 
 def _update_template(
-    title, docstring, content, overlay, parameters, data, template_name=None
+    title,
+    docstring,
+    content,
+    overlay,
+    parameters,
+    data,
+    template_name=None,
+    warning_messages=None,
 ):
     """Populate a report with content.
 
@@ -129,20 +142,18 @@ def _update_template(
         An instance of a populated HTML report.
 
     """
-    resource_path = Path(__file__).resolve().parent / "data"
-
     if template_name is None:
         body_template_name = "report_body_template.html"
     else:
         body_template_name = template_name
-    body_template_path = resource_path / "html" / body_template_name
+    body_template_path = HTML_TEMPLATE_PATH / body_template_name
     if not body_template_path.exists():
-        raise FileNotFoundError(f"No template {body_template_name}")
+        raise FileNotFoundError(f"No template {body_template_path}")
     tpl = tempita.HTMLTemplate.from_filename(
         str(body_template_path), encoding="utf-8"
     )
 
-    css_file_path = resource_path / "css" / "masker_report.css"
+    css_file_path = CSS_PATH / "masker_report.css"
     with open(css_file_path, encoding="utf-8") as css_file:
         css = css_file.read()
 
@@ -151,27 +162,32 @@ def _update_template(
         content=content,
         overlay=overlay,
         docstring=docstring,
-        parameters=parameters,
+        parameters=_render_parameters_partial(parameters),
         **data,
         css=css,
+        warning_messages=_render_warnings_partial(warning_messages),
     )
 
     # revert HTML safe substitutions in CSS sections
     body = body.replace(".pure-g &gt; div", ".pure-g > div")
 
     head_template_name = "report_head_template.html"
-    head_template_path = resource_path / "html" / head_template_name
+    head_template_path = HTML_TEMPLATE_PATH / head_template_name
     with open(str(head_template_path)) as head_file:
         head_tpl = Template(head_file.read())
 
-    head_css_file_path = resource_path / "css" / "head.css"
+    head_css_file_path = CSS_PATH / "head.css"
     with open(head_css_file_path, encoding="utf-8") as head_css_file:
         head_css = head_css_file.read()
 
     return HTMLReport(
         body=body,
         head_tpl=head_tpl,
-        head_values={"head_css": head_css, "version": __version__},
+        head_values={
+            "head_css": head_css,
+            "version": __version__,
+            "page_title": f"{title} report",
+        },
     )
 
 
@@ -216,41 +232,57 @@ def generate_report(estimator):
         data = estimator._report_content
     else:
         data = {}
-    if not hasattr(estimator, "_reporting_data"):
-        warnings.warn(
-            "This object has not been fitted yet ! "
-            "Make sure to run `fit` before inspecting reports."
-        )
-        return _update_template(
-            title="Empty Report",
-            docstring=(
-                "This report was not generated. Please `fit` the object."
-            ),
-            content=_embed_img(None),
-            overlay=None,
-            parameters={},
-            data=data,
+
+    warning_messages = []
+
+    if estimator.reports is False:
+        warning_messages.append(
+            "\nReport generation not enabled!\n" "No visual outputs created."
         )
 
-    elif estimator._reporting_data is None:
-        warnings.warn(
-            "Report generation not enabled ! "
-            "No visual outputs will be created."
+    if (
+        not hasattr(estimator, "_reporting_data")
+        or not estimator._reporting_data
+    ):
+        warning_messages.append(
+            "\nThis report was not generated.\n"
+            "Make sure to run `fit` before inspecting reports."
         )
+
+    if warning_messages:
+        for msg in warning_messages:
+            warnings.warn(
+                msg,
+                stacklevel=3,
+            )
+
         return _update_template(
             title="Empty Report",
-            docstring=(
-                "This report was not "
-                "generated. Please check "
-                "that reporting is enabled."
-            ),
+            docstring="Empty Report",
             content=_embed_img(None),
             overlay=None,
             parameters={},
             data=data,
+            warning_messages=warning_messages,
         )
 
     return _create_report(estimator, data)
+
+
+def _render_parameters_partial(parameters):
+    tpl = tempita.HTMLTemplate.from_filename(
+        str(HTML_PARTIALS_PATH / "parameters.html"), encoding="utf-8"
+    )
+    return tpl.substitute(parameters=parameters)
+
+
+def _render_warnings_partial(warning_messages):
+    if not warning_messages:
+        return ""
+    tpl = tempita.HTMLTemplate.from_filename(
+        str(HTML_PARTIALS_PATH / "warnings.html"), encoding="utf-8"
+    )
+    return tpl.substitute(warning_messages=warning_messages)
 
 
 def _create_report(estimator, data):
