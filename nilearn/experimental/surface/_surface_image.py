@@ -197,19 +197,19 @@ class SurfaceImage:
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {getattr(self, 'shape', '')}>"
 
-    def to_filename(self, filename: str | Path):
-        """Save to file."""
-        for part in self.data.parts:
+    def to_filename(self, filename: str | Path) -> None:
+        """Save mesh to gifti."""
+        filename = Path(filename)
 
-            filename = Path(filename)
+        if "hemi-" not in filename.stem:
+            for hemi in ["L", "R"]:
+                self.to_filename(
+                    filename.with_stem(f"{filename.stem}_hemi-{hemi}")
+                )
+            return None
 
-            hemi = ""
-            if "hemi-" not in filename.stem:
-                if part == "left":
-                    hemi = "_hemi-L"
-                elif part == "right":
-                    hemi = "_hemi-R"
-
-            self.mesh.parts[part].to_gifti(
-                filename.with_stem(f"{filename.stem}{hemi}")
-            )
+        if "hemi-L" in filename.stem:
+            mesh = self.mesh.parts["left"]
+        if "hemi-R" in filename.stem:
+            mesh = self.mesh.parts["right"]
+        mesh.to_gifti(filename)

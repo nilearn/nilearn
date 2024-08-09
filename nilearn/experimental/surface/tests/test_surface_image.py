@@ -5,6 +5,7 @@ import pytest
 
 from nilearn import datasets
 from nilearn.experimental.surface import FileMesh, InMemoryMesh, SurfaceImage
+from nilearn.surface import load_surf_mesh
 
 
 def test_compare_file_and_inmemory_mesh(mini_mesh, tmp_path):
@@ -56,20 +57,57 @@ def test_data_keys_not_matching_mesh(mini_img):
         )
 
 
-def test_load_surf_data_gii_gz():
-    """Test the loader with gzipped fsaverage5 files."""
+@pytest.mark.parametrize("use_path", [True, False])
+@pytest.mark.parametrize(
+    "output_filename, expected_files, unexpected_files",
+    [
+        ("foo.gii", ["foo_hemi-L.gii", "foo_hemi-L.gii"], ["foo.gii"]),
+        ("foo_hemi-L_T1w.gii", ["foo_hemi-L_T1w.gii"], ["foo_hemi-R_T1w.gii"]),
+        ("foo_hemi-R_T1w.gii", ["foo_hemi-R_T1w.gii"], ["foo_hemi-L_T1w.gii"]),
+    ],
+)
+def test_load_save_mesh(
+    tmp_path, output_filename, expected_files, unexpected_files, use_path
+):
+    """Load fsaverage5 from filename or Path and save.
+
+    Check that
+    - the appropriate hemisphere information is added to the filename
+    - only one hemisphere is saved if heme- is in the filename
+    - the roundtrip does not change the data
+    """
     mesh_right = datasets.fetch_surf_fsaverage().pial_right
     mesh_left = datasets.fetch_surf_fsaverage().pial_left
     data_right = datasets.fetch_surf_fsaverage().sulc_right
     data_left = datasets.fetch_surf_fsaverage().sulc_left
 
-    SurfaceImage(
-        mesh={"left": mesh_left, "right": mesh_right},
-        data={"left": data_left, "right": data_right},
-    )
+    if use_path:
+        img = SurfaceImage(
+            mesh={"left": Path(mesh_left), "right": Path(mesh_right)},
+            data={"left": Path(data_left), "right": Path(data_right)},
+        )
+    else:
+        img = SurfaceImage(
+            mesh={"left": mesh_left, "right": mesh_right},
+            data={"left": data_left, "right": data_right},
+        )
 
-    # use Path
-    SurfaceImage(
-        mesh={"left": Path(mesh_left), "right": Path(mesh_right)},
-        data={"left": Path(data_left), "right": Path(data_right)},
-    )
+    if use_path:
+        img.to_filename(tmp_path / output_filename)
+    else:
+        img.to_filename(str(tmp_path / output_filename))
+
+    for file in unexpected_files:
+        assert not (tmp_path / file).exists()
+
+    for file in expected_files:
+
+        assert (tmp_path / file).exists()
+
+        mesh = load_surf_mesh(tmp_path / file)
+        if "hemi-L" in file:
+            expected_mesh = load_surf_mesh(mesh_left)
+        elif "hemi-R" in file:
+            expected_mesh = load_surf_mesh(mesh_right)
+        assert np.array_equal(mesh.faces, expected_mesh.faces)
+        assert np.array_equal(mesh.coordinates, expected_mesh.coordinates)
