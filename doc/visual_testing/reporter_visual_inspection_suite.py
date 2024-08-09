@@ -99,7 +99,7 @@ def report_flm_adhd_dmn():
 # %%
 # Adapted from examples/04_glm_first_level/plot_bids_features.py
 def _fetch_bids_data():
-    _, urls = datasets.func.fetch_openneuro_dataset_index()
+    _, urls = datasets.func.fetch_ds000030_urls()
 
     exclusion_patterns = [
         "*group*",
