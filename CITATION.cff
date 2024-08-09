@@ -655,6 +655,11 @@ authors:
     orcid: https://orcid.org/0000-0002-6437-0700
     affiliation: Danish Research Centre for Magnetic Resonance, Copenhagen University
       Hospital Amager & Hvidovre, Copenhagen, Denmark.
+  - given-names: Sin
+    family-names: Kim
+    website: https://github.com/kimsin98
+    orcid: https://orcid.org/0000-0003-4652-3758
+    affiliation: 'Korea Advanced Institute of Science and Technology: Daejeon, KR'
   - given-names: Sourav
     family-names: Singh
     website: https://github.com/souravsingh
