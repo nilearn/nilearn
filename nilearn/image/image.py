@@ -1016,18 +1016,21 @@ def threshold_img(
         # Set as 0 for the values which are outside of the mask
         img_data[mask_data == 0.0] = 0.0
 
+    # If two sided, use abs of data to calculate threshold
+    if two_sided:
+        data_for_thr = np.abs(img_data)
+    else:
+        data_for_thr = img_data
+
     cutoff_threshold = check_threshold(
         threshold,
-        img_data,
+        data_for_thr,
         percentile_func=scoreatpercentile,
         name="threshold",
     )
 
     # Apply threshold
-    if two_sided:
-        img_data[np.abs(img_data) < cutoff_threshold] = 0.0
-    else:
-        img_data[img_data < cutoff_threshold] = 0.0
+    img_data[data_for_thr < cutoff_threshold] = 0.0
 
     # Expand to 4D to support both 3D and 4D
     expand_to_4d = img_data.ndim == 3
