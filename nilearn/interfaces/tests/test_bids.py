@@ -205,7 +205,6 @@ def test_get_bids_files_inheritance_principle_sub_folder(tmp_path, json_file):
         metadata={"RepetitionTime": 1.5},
         json_file=json_file,
     )
-    print(new_json_file)
     assert new_json_file.exists()
 
     # make sure that get_bids_files finds the json file

@@ -436,7 +436,9 @@ def test_compare_design_matrix_to_spm(block_duration, array):
     # Check that the nilearn design matrix is close enough to the SPM one
     # (it cannot be identical, because the hrf shape is different)
     events, frame_times = spm_paradigm(block_duration=block_duration)
-    X1 = make_first_level_design_matrix(frame_times, events, drift_model=None)
+    X1 = make_first_level_design_matrix(
+        frame_times, events, drift_model=None, hrf_model="spm"
+    )
     _, matrix, _ = check_design_matrix(X1)
 
     spm_design_matrix = DESIGN_MATRIX[array]
@@ -451,7 +453,7 @@ def test_create_second_level_design():
     regressors = [["01", 0.1], ["02", 0.75]]
     regressors = pd.DataFrame(regressors, columns=["subject_label", "f1"])
     design = make_second_level_design_matrix(subjects_label, regressors)
-    expected_design = np.array([[0.75, 1], [0.1, 1]])
+    expected_design = np.array([[0.75, 1.0], [0.1, 1.0]])
     assert_array_equal(design, expected_design)
     assert len(design.columns) == 2
     assert len(design) == 2

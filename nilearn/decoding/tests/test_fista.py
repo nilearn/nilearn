@@ -37,7 +37,7 @@ def test_squared_loss_lipschitz(rng, scaling, n_samples=4, n_features=2):
 
 
 @pytest.mark.parametrize("cb_retval", [0, 1])
-@pytest.mark.parametrize("verbose", [0, 1])
+@pytest.mark.parametrize("verbose", [0, 2])
 @pytest.mark.parametrize("dgap_factor", [1.0, None])
 def test_input_args_and_kwargs(cb_retval, verbose, dgap_factor, rng):
     p = 125

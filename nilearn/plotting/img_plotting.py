@@ -28,7 +28,7 @@ from nilearn.plotting.displays import get_projector, get_slicer
 from nilearn.plotting.displays._slicers import _get_cbar_ticks
 
 from .. import _utils
-from .._utils import compare_version, fill_doc
+from .._utils import compare_version, fill_doc, logger
 from .._utils.extmath import fast_abs_percentile
 from .._utils.ndimage import get_border_data
 from .._utils.niimg import safe_get_data
@@ -1934,7 +1934,7 @@ def plot_carpet(
         if mask_labels:
             label_dtype = type(list(mask_labels.values())[0])
             if label_dtype != atlas_values.dtype:
-                print(f"Coercing atlas_values to {label_dtype}")
+                logger.log(f"Coercing atlas_values to {label_dtype}")
                 atlas_values = atlas_values.astype(label_dtype)
 
         # Sort data and atlas by atlas values
