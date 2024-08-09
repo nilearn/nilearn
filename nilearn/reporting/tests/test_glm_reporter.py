@@ -117,7 +117,7 @@ def test_check_report_dims():
 def test_coerce_to_dict_with_string():
     test_input = "StopSuccess - Go"
     expected_output = {"StopSuccess - Go": "StopSuccess - Go"}
-    actual_output = glmr._coerce_to_dict(test_input)
+    actual_output = glmr.coerce_to_dict(test_input)
     assert actual_output == expected_output
 
 
@@ -127,21 +127,21 @@ def test_coerce_to_dict_with_list_of_strings():
         "contrast_name_0": "contrast_name_0",
         "contrast_name_1": "contrast_name_1",
     }
-    actual_output = glmr._coerce_to_dict(test_input)
+    actual_output = glmr.coerce_to_dict(test_input)
     assert actual_output == expected_output
 
 
 def test_coerce_to_dict_with_dict():
     test_input = {"contrast_0": [0, 0, 1], "contrast_1": [0, 1, 1]}
     expected_output = {"contrast_0": [0, 0, 1], "contrast_1": [0, 1, 1]}
-    actual_output = glmr._coerce_to_dict(test_input)
+    actual_output = glmr.coerce_to_dict(test_input)
     assert actual_output == expected_output
 
 
 def test_coerce_to_dict_with_list_of_lists():
     test_input = [[0, 0, 1], [0, 1, 0]]
     expected_output = {"[0, 0, 1]": [0, 0, 1], "[0, 1, 0]": [0, 1, 0]}
-    actual_output = glmr._coerce_to_dict(test_input)
+    actual_output = glmr.coerce_to_dict(test_input)
     assert actual_output == expected_output
 
 
@@ -151,7 +151,7 @@ def test_coerce_to_dict_with_list_of_arrays():
         "[0 0 1]": np.array([0, 0, 1]),
         "[0 1 0]": np.array([0, 1, 0]),
     }
-    actual_output = glmr._coerce_to_dict(test_input)
+    actual_output = glmr.coerce_to_dict(test_input)
     assert actual_output.keys() == expected_output.keys()
     for key in actual_output:
         assert np.array_equal(actual_output[key], expected_output[key])
@@ -160,7 +160,7 @@ def test_coerce_to_dict_with_list_of_arrays():
 def test_coerce_to_dict_with_list_of_ints():
     test_input = [1, 0, 1]
     expected_output = {"[1, 0, 1]": [1, 0, 1]}
-    actual_output = glmr._coerce_to_dict(test_input)
+    actual_output = glmr.coerce_to_dict(test_input)
     assert np.array_equal(
         actual_output["[1, 0, 1]"], expected_output["[1, 0, 1]"]
     )
@@ -169,7 +169,7 @@ def test_coerce_to_dict_with_list_of_ints():
 def test_coerce_to_dict_with_array_of_ints():
     test_input = np.array([1, 0, 1])
     expected_output = {"[1 0 1]": np.array([1, 0, 1])}
-    actual_output = glmr._coerce_to_dict(test_input)
+    actual_output = glmr.coerce_to_dict(test_input)
     assert expected_output.keys() == actual_output.keys()
     assert np.array_equal(actual_output["[1 0 1]"], expected_output["[1 0 1]"])
 
