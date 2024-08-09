@@ -13,7 +13,6 @@ import os
 import string
 import warnings
 from collections import OrderedDict
-from collections.abc import Iterable
 from decimal import Decimal
 from html import escape
 
@@ -21,6 +20,10 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
+from nilearn._utils import check_niimg, fill_doc
+from nilearn._utils.niimg import safe_get_data
+from nilearn.experimental.surface import SurfaceMasker
+from nilearn.maskers import NiftiMasker
 from nilearn.plotting import plot_glass_brain, plot_roi, plot_stat_map
 from nilearn.plotting.cm import _cmap_d as nilearn_cmaps
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
@@ -28,21 +31,15 @@ from nilearn.plotting.matrix_plotting import (
     plot_contrast_matrix,
     plot_design_matrix,
 )
+from nilearn.reporting.get_clusters_table import get_clusters_table
 from nilearn.reporting.html_report import HTMLReport
-
-from .._utils import fill_doc
+from nilearn.reporting.utils import coerce_to_dict, figure_to_svg_quoted
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore", FutureWarning)
     from nilearn import glm
     from nilearn.glm.thresholding import threshold_stats_img
 
-from nilearn._utils import check_niimg
-from nilearn._utils.niimg import safe_get_data
-from nilearn.experimental.surface import SurfaceMasker
-from nilearn.maskers import NiftiMasker
-from nilearn.reporting.get_clusters_table import get_clusters_table
-from nilearn.reporting.utils import figure_to_svg_quoted
 
 HTML_TEMPLATE_ROOT_PATH = os.path.join(
     os.path.dirname(__file__), "glm_reporter_templates"
@@ -52,7 +49,7 @@ HTML_TEMPLATE_ROOT_PATH = os.path.join(
 @fill_doc
 def make_glm_report(
     model,
-    contrasts,
+    contrasts=None,
     title=None,
     bg_img="MNI152TEMPLATE",
     threshold=3.09,
@@ -171,10 +168,23 @@ def make_glm_report(
         Contains the HTML code for the :term:`GLM` Report.
 
     """
+    from nilearn.experimental.reporting.glm_reporter import (
+        _make_surface_glm_report,
+    )
+
     if isinstance(model.masker_, SurfaceMasker):
-        raise NotImplementedError(
-            "Report generation is not yet supported for surface analysis."
+        report_text = _make_surface_glm_report(
+            model,
+            contrasts=contrasts,
+            title=title,
+            threshold=threshold,
+            alpha=alpha,
+            cluster_threshold=cluster_threshold,
+            height_control=height_control,
+            bg_img=bg_img,
         )
+        report_text.width, report_text.height = _check_report_dims(report_dims)
+        return report_text
 
     if bg_img == "MNI152TEMPLATE":
         bg_img = MNI152TEMPLATE
@@ -203,7 +213,7 @@ def make_glm_report(
         html_body_template_text = html_body_file_obj.read()
     report_body_template = string.Template(html_body_template_text)
 
-    contrasts = _coerce_to_dict(contrasts)
+    contrasts = coerce_to_dict(contrasts)
     contrast_plots = _plot_contrasts(contrasts, design_matrices)
     page_title, page_heading_1, page_heading_2 = _make_headings(
         contrasts,
@@ -300,41 +310,6 @@ def _check_report_dims(report_size):
         )
         width, height = (1600, 800)
     return width, height
-
-
-def _coerce_to_dict(input_arg):
-    """Construct a dict from the provided arg.
-
-    If input_arg is:
-      dict then returns it unchanged.
-
-      string or collection of Strings or Sequence[int],
-      returns a dict {str(value): value, ...}
-
-    Parameters
-    ----------
-    input_arg : String or Collection[str or Int or Sequence[Int]]
-     or Dict[str, str or np.array]
-        Can be of the form:
-         'string'
-         ['string_1', 'string_2', ...]
-         list/array
-         [list/array_1, list/array_2, ...]
-         {'string_1': list/array1, ...}
-
-    Returns
-    -------
-    input_args: Dict[str, np.array or str]
-
-    """
-    if not isinstance(input_arg, dict):
-        if isinstance(input_arg, Iterable) and not isinstance(
-            input_arg[0], Iterable
-        ):
-            input_arg = [input_arg]
-        input_arg = [input_arg] if isinstance(input_arg, str) else input_arg
-        input_arg = {str(contrast_): contrast_ for contrast_ in input_arg}
-    return input_arg
 
 
 def _plot_to_svg(plot):
