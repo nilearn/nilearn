@@ -233,10 +233,29 @@ class SurfaceImage:
         self.data = PolyData(left=texture_left.T, right=texture_right.T)
 
     def to_filename(self, filename: str | Path) -> None:
-        """Save mesh to gifti."""
+        """Save mesh to gifti.
+
+        Parameters
+        ----------
+        filename : str | Path
+                   If the filename contains `hemi-L`
+                   then only the left part of the mesh will be saved.
+                   If the filename contains `hemi-R`
+                   then only the right part of the mesh will be saved.
+                   If the filename contains neither of those,
+                   then `_hemi-L` and `_hemi-R`
+                   will be appended to the filename and both will be saved.
+        """
         filename = Path(filename)
 
-        if "hemi-" not in filename.stem:
+        if "hemi-L" not in filename.stem and "hemi-R" not in filename.stem:
+            raise ValueError(
+                "'filename' cannor contain both "
+                "'hemi-L' and 'hemi-R'. \n"
+                f"Got: {filename}"
+            )
+
+        if "hemi-L" not in filename.stem or "hemi-R" not in filename.stem:
             for hemi in ["L", "R"]:
                 # TODO simplify when dropping python 3.8
                 if sys.version_info >= (3.9):
