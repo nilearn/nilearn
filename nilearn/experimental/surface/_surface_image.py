@@ -6,9 +6,12 @@ import abc
 import pathlib
 from pathlib import Path
 
+import nibabel as nb
 import numpy as np
+from nibabel import Nifti1Image
 
 from nilearn.experimental.surface import _io
+from nilearn.surface import vol_to_surf
 
 
 class PolyData:
@@ -187,15 +190,46 @@ class SurfaceImage:
     def __init__(
         self,
         mesh: PolyMesh | dict[str, Mesh | str | Path],
-        data: PolyData | dict[str, Mesh | str | Path],
+        data: (
+            PolyData | dict[str, Mesh | str | Path] | Nifti1Image | str | Path
+        ),
     ) -> None:
+        """Create a SurfaceImage instance.
+
+        Parameters
+        ----------
+        mesh : PolyMesh | dict[str, Mesh  |  str  |  Path]
+        data : PolyData | dict[str, Mesh  |  str  |  Path] | Niimg-like object
+        """
         self.mesh = mesh if isinstance(mesh, PolyMesh) else PolyMesh(**mesh)
-        self.data = data if isinstance(data, PolyData) else PolyData(**data)
+
+        if not isinstance(data, (PolyData, dict, str, Path, Nifti1Image)):
+            raise TypeError(
+                "'data' must be one of"
+                "[PolyData, dict, str, Path, Nifti1Image].\n"
+                f"Got {type(data)}"
+            )
+
+        if isinstance(data, PolyData):
+            self.data = data
+        elif isinstance(data, dict):
+            self.data = PolyData(**data)
+        elif isinstance(data, (Nifti1Image, str, Path)):
+            self._vol_to_surf(data)
+
         _check_data_and_mesh_compat(self.mesh, self.data)
+
         self.shape = self.data.shape
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {getattr(self, 'shape', '')}>"
+
+    def _vol_to_surf(self, img: Nifti1Image | str | Path):
+        if isinstance(img, (str, Path)):
+            img = nb.load(img)
+        texture_left = vol_to_surf(img, self.mesh.parts["left"])
+        texture_right = vol_to_surf(img, self.mesh.parts["right"])
+        self.data = PolyData(left=texture_left.T, right=texture_right.T)
 
     def to_filename(self, filename: str | Path) -> None:
         """Save mesh to gifti."""

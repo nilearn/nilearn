@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import nibabel as nb
 import numpy as np
 import pytest
 
@@ -111,3 +112,31 @@ def test_load_save_mesh(
             expected_mesh = load_surf_mesh(mesh_right)
         assert np.array_equal(mesh.faces, expected_mesh.faces)
         assert np.array_equal(mesh.coordinates, expected_mesh.coordinates)
+
+
+def test_load_nifti_as_data(img_3d_mni, tmp_path):
+    """Instantiate surface image with Niftiimage object or file for data."""
+    mesh_right = datasets.fetch_surf_fsaverage().pial_right
+    mesh_left = datasets.fetch_surf_fsaverage().pial_left
+
+    SurfaceImage(
+        mesh={"left": mesh_left, "right": mesh_right}, data=img_3d_mni
+    )
+
+    nb.save(img_3d_mni, tmp_path / "tmp.nii.gz")
+
+    SurfaceImage(
+        mesh={"left": mesh_left, "right": mesh_right},
+        data=tmp_path / "tmp.nii.gz",
+    )
+
+
+def test_surface_image_error():
+    """Instantiate surface image with Niftiimage object or file for data."""
+    mesh_right = datasets.fetch_surf_fsaverage().pial_right
+    mesh_left = datasets.fetch_surf_fsaverage().pial_left
+
+    with pytest.raises(
+        TypeError, match="[PolyData, dict, str, Path, Nifti1Image]"
+    ):
+        SurfaceImage(mesh={"left": mesh_left, "right": mesh_right}, data=3)
