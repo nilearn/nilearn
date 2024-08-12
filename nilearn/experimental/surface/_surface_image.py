@@ -277,7 +277,7 @@ class SurfaceImage:
                     )
                 else:
                     self.to_filename(
-                        with_stem_compat(
+                        _with_stem_compat(
                             filename, new_stem=f"{filename.stem}_hemi-{hemi}"
                         )
                     )
@@ -291,7 +291,7 @@ class SurfaceImage:
         mesh.to_gifti(filename)
 
 
-def with_stem_compat(path: Path, new_stem: str) -> Path:
+def _with_stem_compat(path: Path, new_stem: str) -> Path:
     """Provide equivalent of `with_stem` for Python < 3.9.
 
     TODO remove when dropping python 3.8
