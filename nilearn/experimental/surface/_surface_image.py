@@ -248,17 +248,17 @@ class SurfaceImage:
         """
         filename = Path(filename)
 
-        if "hemi-L" not in filename.stem and "hemi-R" not in filename.stem:
+        if "hemi-L" in filename.stem and "hemi-R" in filename.stem:
             raise ValueError(
-                "'filename' cannor contain both "
+                "'filename' cannot contain both "
                 "'hemi-L' and 'hemi-R'. \n"
                 f"Got: {filename}"
             )
 
-        if "hemi-L" not in filename.stem or "hemi-R" not in filename.stem:
+        if "hemi-L" not in filename.stem and "hemi-R" not in filename.stem:
             for hemi in ["L", "R"]:
                 # TODO simplify when dropping python 3.8
-                if sys.version_info >= (3.9):
+                if sys.version_info.minor >= 9:
                     self.to_filename(
                         filename.with_stem(f"{filename.stem}_hemi-{hemi}")
                     )
