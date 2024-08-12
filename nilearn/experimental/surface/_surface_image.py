@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import abc
 import pathlib
+import sys
 from pathlib import Path
 
 import nibabel as nb
@@ -237,9 +238,18 @@ class SurfaceImage:
 
         if "hemi-" not in filename.stem:
             for hemi in ["L", "R"]:
-                self.to_filename(
-                    filename.with_stem(f"{filename.stem}_hemi-{hemi}")
-                )
+                # TODO simplify when dropping python 3.8
+                if sys.version_info >= (3.9):
+                    self.to_filename(
+                        filename.with_stem(f"{filename.stem}_hemi-{hemi}")
+                    )
+                else:
+                    self.to_filename(
+                        with_stem_compat(
+                            filename, new_stem=f"{filename.stem}_hemi-{hemi}"
+                        )
+                    )
+
             return None
 
         if "hemi-L" in filename.stem:
@@ -247,3 +257,11 @@ class SurfaceImage:
         if "hemi-R" in filename.stem:
             mesh = self.mesh.parts["right"]
         mesh.to_gifti(filename)
+
+
+def with_stem_compat(path, new_stem):
+    """Provide equivalent of `with_stem` for Python < 3.9.
+
+    TODO remove when dropping python 3.8
+    """
+    return path.with_name(new_stem + path.suffix)
