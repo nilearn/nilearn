@@ -157,6 +157,7 @@ report = fmri_glm_multirun.generate_report(
 
 # or we can save as an html file
 report.save_as_html(output_dir / "report.html")
+report
 
 # %%
 # References

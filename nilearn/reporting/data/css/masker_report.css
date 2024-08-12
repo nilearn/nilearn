@@ -249,7 +249,7 @@ End pure-button class definition from pure-min.css
 .navbar {
   position: sticky; /* Apply the sticky positioning */
   top: 0; /* Stick the element to the top of the viewport */
-  z-index: 100; /* Ensure the navbar is above other content */
+  z-index: 10; /* Ensure the navbar is above other content */
   background-color: #f5f5f5;
   margin-bottom: 1em;
   -webkit-font-smoothing: antialiased;

@@ -243,7 +243,6 @@ report = glm.generate_report(
     contrasts,
     title="surface-based example",
 )
-
 report
 
 # In a jupyter notebook, the report will be automatically inserted, as above.
@@ -252,7 +251,8 @@ report
 # report.open_in_browser()
 
 # or we can save as an html file
-# from pathlib import Path
-# output_dir = Path.cwd() / "results" / "plot_localizer_analysis_experimental"
-# output_dir.mkdir(exist_ok=True, parents=True)
-# report.save_as_html(output_dir / 'localizer.html')
+from pathlib import Path
+
+output_dir = Path.cwd() / "results" / "plot_localizer_analysis_experimental"
+output_dir.mkdir(exist_ok=True, parents=True)
+report.save_as_html(output_dir / "localizer.html")
