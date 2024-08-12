@@ -225,11 +225,24 @@ class SurfaceImage:
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {getattr(self, 'shape', '')}>"
 
-    def _vol_to_surf(self, img: Nifti1Image | str | Path):
+    def _vol_to_surf(self, img: Nifti1Image | str | Path, **kwargs) -> None:
+        """Extract surface data from a Nifti image.
+
+        Parameters
+        ----------
+        img :  Niimg-like object, 3d or 4d.
+               See :ref:`extracting_data`.
+
+        kwargs:
+               Extra arguments to pass
+               to :func:`nilearn.surface.vol_to_surf`
+        """
         if isinstance(img, (str, Path)):
             img = nb.load(img)
-        texture_left = vol_to_surf(img, self.mesh.parts["left"])
-        texture_right = vol_to_surf(img, self.mesh.parts["right"])
+
+        texture_left = vol_to_surf(img, self.mesh.parts["left"], **kwargs)
+        texture_right = vol_to_surf(img, self.mesh.parts["right"], **kwargs)
+
         self.data = PolyData(left=texture_left.T, right=texture_right.T)
 
     def to_filename(self, filename: str | Path) -> None:
@@ -278,7 +291,7 @@ class SurfaceImage:
         mesh.to_gifti(filename)
 
 
-def with_stem_compat(path, new_stem):
+def with_stem_compat(path: Path, new_stem: str) -> Path:
     """Provide equivalent of `with_stem` for Python < 3.9.
 
     TODO remove when dropping python 3.8
