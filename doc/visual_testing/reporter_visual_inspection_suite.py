@@ -15,6 +15,9 @@ import pandas as pd
 
 from nilearn import datasets
 from nilearn.experimental import surface
+from nilearn.experimental.reporting.glm_reporter import (
+    _make_surface_glm_report,
+)
 from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
@@ -35,6 +38,11 @@ from nilearn.reporting import make_glm_report
 
 REPORTS_DIR = Path(__file__).parent.parent / "modules" / "generated_reports"
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def empty_surface_based_flm():
+    glm_report = _make_surface_glm_report(FirstLevelModel())
+    glm_report.save_as_html(REPORTS_DIR / "flm_surface_based_empty.html")
 
 
 # %%
@@ -487,14 +495,14 @@ if __name__ == "__main__":
     print("\nGenerating masker reports templates\n")
     t0 = time.time()
 
-    report_surface_masker()
-    report_surface_label_masker()
-    report_nifti_masker()
-    report_nifti_maps_masker()
-    report_nifti_labels_masker()
-    report_multi_nifti_masker()
-    report_multi_nifti_labels_masker()
-    report_multi_nifti_maps_masker()
+    # report_surface_masker()
+    # report_surface_label_masker()
+    # report_nifti_masker()
+    # report_nifti_maps_masker()
+    # report_nifti_labels_masker()
+    # report_multi_nifti_masker()
+    # report_multi_nifti_labels_masker()
+    # report_multi_nifti_maps_masker()
 
     t1 = time.time()
     print(f"\nTook: {(t1 - t0)} seconds\n")
@@ -502,10 +510,11 @@ if __name__ == "__main__":
     print("\nGenerating GLM reports templates\n")
     t0 = time.time()
 
-    report_flm_adhd_dmn()
-    report_flm_bids_features()
-    report_flm_fiac()
-    report_slm_oasis()
+    # report_flm_adhd_dmn()
+    # report_flm_bids_features()
+    # report_flm_fiac()
+    # report_slm_oasis()
+    empty_surface_based_flm()
 
     t1 = time.time()
     print(f"\nTook: {(t1 - t0)} seconds\n")

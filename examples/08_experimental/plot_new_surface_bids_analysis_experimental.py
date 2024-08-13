@@ -174,11 +174,10 @@ show()
 # -------------------
 # Since we have already computed the FirstLevelModel
 # and have the :term:`contrast`, we can quickly create a summary report.
-
-report = first_level_glm.generate_report(
-    title="BIDS surface-based example",
-)
-report
+# report = first_level_glm.generate_report(
+#     title="BIDS surface-based example",
+# )
+# report
 
 # In a jupyter notebook, the report will be automatically inserted, as above.
 
@@ -186,8 +185,8 @@ report
 # report.open_in_browser()
 
 # or we can save as an html file
-from pathlib import Path
+# from pathlib import Path
 
-output_dir = Path.cwd() / "results" / "plot_surface_bids_experimental"
-output_dir.mkdir(exist_ok=True, parents=True)
-report.save_as_html(output_dir / "bids.html")
+# output_dir = Path.cwd() / "results" / "plot_surface_bids_experimental"
+# output_dir.mkdir(exist_ok=True, parents=True)
+# report.save_as_html(output_dir / "bids.html")

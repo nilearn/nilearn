@@ -139,15 +139,14 @@ contrasts = {
 # and have a number of contrasts,
 # we can quickly create a summary report.
 
-from nilearn.experimental.surface import load_fsaverage_data
-
-fsaverage_sulcal = load_fsaverage_data(
-    data_type="sulcal", mesh_type="inflated"
-)
-
-report = fmri_glm_multirun.generate_report(
-    contrasts, title="two-runs fMRI model fitting", bg_img=fsaverage_sulcal
-)
+# from nilearn.experimental.surface import load_fsaverage_data
+# fsaverage_sulcal = load_fsaverage_data(
+#     data_type="sulcal", mesh_type="inflated"
+# )
+# report = fmri_glm_multirun.generate_report(
+#     contrasts, title="two-runs fMRI model fitting", bg_img=fsaverage_sulcal
+# )
+# report
 
 # %%
 # We have several ways to access the report:
@@ -156,8 +155,7 @@ report = fmri_glm_multirun.generate_report(
 # report.open_in_browser()
 
 # or we can save as an html file
-report.save_as_html(output_dir / "report.html")
-report
+# report.save_as_html(output_dir / "report.html")
 
 # %%
 # References
