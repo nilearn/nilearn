@@ -17,7 +17,14 @@ from nilearn import datasets, surface
 from nilearn.experimental.reporting.glm_reporter import (
     _make_surface_glm_report,
 )
-from nilearn.experimental.surface import SurfaceImage, load_fsaverage
+from nilearn.experimental.surface import (
+    SurfaceImage,
+    SurfaceLabelsMasker,
+    SurfaceMasker,
+    fetch_destrieux,
+    fetch_nki,
+    load_fsaverage,
+)
 from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
@@ -523,20 +530,20 @@ def report_multi_nifti_maps_masker():
 
 def report_surface_masker():
 
-    masker = surface.SurfaceMasker()
-    img = surface.fetch_nki(mesh_type="inflated", n_subjects=1)[0]
+    masker = SurfaceMasker()
+    img = fetch_nki(mesh_type="inflated", n_subjects=1)[0]
     masker.fit_transform(img)
     surface_masker_report = masker.generate_report()
     surface_masker_report.save_as_html(REPORTS_DIR / "surface_masker.html")
 
-    labels_img, _ = surface.fetch_destrieux(mesh_type="inflated")
+    labels_img, _ = fetch_destrieux(mesh_type="inflated")
 
     mask = labels_img
     for part in mask.data.parts:
         mask.data.parts[part] = mask.data.parts[part] == 34
 
-    masker = surface.SurfaceMasker(mask)
-    img = surface.fetch_nki(mesh_type="inflated", n_subjects=1)[0]
+    masker = SurfaceMasker(mask)
+    img = fetch_nki(mesh_type="inflated", n_subjects=1)[0]
     masker.fit_transform(img)
     surface_masker_with_mask_report = masker.generate_report()
     surface_masker_with_mask_report.save_as_html(
@@ -551,15 +558,15 @@ def report_surface_masker():
 
 def report_surface_label_masker():
 
-    labels_img, label_names = surface.fetch_destrieux(mesh_type="inflated")
+    labels_img, label_names = fetch_destrieux(mesh_type="inflated")
 
-    labels_masker = surface.SurfaceLabelsMasker(labels_img, label_names).fit()
+    labels_masker = SurfaceLabelsMasker(labels_img, label_names).fit()
     labels_masker_report_unfitted = labels_masker.generate_report()
     labels_masker_report_unfitted.save_as_html(
         REPORTS_DIR / "surface_label_masker_unfitted.html"
     )
 
-    img = surface.fetch_nki(mesh_type="inflated", n_subjects=1)[0]
+    img = fetch_nki(mesh_type="inflated", n_subjects=1)[0]
 
     labels_masker.transform(img)
     labels_masker_report = labels_masker.generate_report()
