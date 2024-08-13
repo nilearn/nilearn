@@ -310,6 +310,13 @@ End pure-button class definition from pure-min.css
   transform: rotate(-45deg);
 }
 
+.pure-menu-link {
+  font-size: 90%;
+  font-weight: normal;
+  margin: 10px 5px;
+  padding: 0px;
+}
+
 @media (max-width: 1023px) {
   .custom-toggle {
     display: block;

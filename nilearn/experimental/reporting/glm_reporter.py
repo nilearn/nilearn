@@ -205,7 +205,7 @@ def _make_surface_glm_report(
     with open(head_css_file_path, encoding="utf-8") as head_css_file:
         head_css = head_css_file.read()
 
-    return HTMLReport(
+    report = HTMLReport(
         body=body,
         head_tpl=head_tpl,
         head_values={
@@ -216,6 +216,9 @@ def _make_surface_glm_report(
             ),
         },
     )
+    report.height = 800
+    report.width = 1000
+    return report
 
 
 def _return_design_matrices_dict(design_matrices):

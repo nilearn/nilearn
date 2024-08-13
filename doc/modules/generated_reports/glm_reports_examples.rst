@@ -12,7 +12,10 @@ Surface based reports
 ^^^^^^^^^^^^^^^^^^^^^
 
 .. raw:: html
-   :file: flm_surface_based_empty.html
+   :file: flm_empty_surface.html
+
+.. raw:: html
+   :file: flm_localizer_surface.html
 
 ADHD
 ^^^^

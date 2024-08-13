@@ -93,13 +93,13 @@
 {{enddef}}
 <!--  -->
 {{def report}}
-<section>
-  <h2 id="model-details">Model details</h2>
+<section id="model-details">
+  <h2>Model details</h2>
   {{ parameters|html }}
 </section>
 
-<section>
-  <h2 id="design-matrix">Design Matrix</h2>
+<section id="design-matrix">
+  <h2>Design Matrix</h2>
   <div class="d-flex flex-wrap justify-content-evenly">
     {{if design_matrices_dict}}
     <!--  -->
@@ -120,8 +120,8 @@
   </div>
 </section>
 
-<section>
-  <h2 id="mask">Mask</h2>
+<section id="mask">
+  <h2>Mask</h2>
   <div class="d-flex justify-content-evenly">
     {{if mask_plot}}
     <img
@@ -136,8 +136,8 @@
   </div>
 </section>
 
-<section>
-  <h2 id="contrasts">Contrasts</h2>
+<section id="contrasts">
+  <h2>Contrasts</h2>
   <div class="d-flex flex-wrap justify-content-evenly">
     {{if contrasts_dict}}
     <!--  -->
@@ -158,8 +158,8 @@
   </div>
 </section>
 
-<section>
-  <h2 id="statistical-maps">Statistical Maps</h2>
+<section id="statistical-maps">
+  <h2>Statistical Maps</h2>
   {{if statistical_maps}}
 
   <div class="pure-g">
@@ -230,8 +230,8 @@
   {{endif}}
 </section>
 
-<section>
-  <h2 id="about">About</h2>
+<section id="about" style="text-align: left">
+  <h2>About</h2>
   <ul>
     <li>Date preprocessed: <time>{{date}}</time></li>
   </ul>
