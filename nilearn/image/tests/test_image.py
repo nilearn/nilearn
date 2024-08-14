@@ -1024,6 +1024,13 @@ def test_binarize_img_copied_header(img_4d_mni_tr2):
     assert result.header["cal_max"] == 1
 
 
+def test_binarize_img_no_userwarning(img_4d_rand_eye):
+    # Test that a UserWarning is not thrown for a float64 img
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", category=UserWarning)
+        binarize_img(img_4d_rand_eye)
+
+
 @pytest.mark.parametrize(
     "func, input_img",
     [
