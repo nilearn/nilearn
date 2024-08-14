@@ -386,12 +386,13 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             for region_id in removed_region_ids
             if region_id != self.background_label
         ]
+        display = None
         if visualize:
             from nilearn.plotting import plot_roi
 
-            plot_roi(masked_atlas, title="Masked atlas")
+            display = plot_roi(masked_atlas, title="Masked atlas")
 
-        return masked_atlas, removed_region_ids, removed_region_names
+        return masked_atlas, removed_region_ids, removed_region_names, display
 
     def generate_report(self):
         """Generate a report."""
