@@ -232,25 +232,3 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
         )
 
 show()
-
-# %%
-# Generating a report
-# -------------------
-# Since we have already computed the FirstLevelModel
-# and have the :term:`contrast`, we can quickly create a summary report.
-# report = glm.generate_report(
-#     contrasts,
-#     title="surface-based example",
-# )
-# report
-
-# In a jupyter notebook, the report will be automatically inserted, as above.
-
-# We can access the report via a browser:
-# report.open_in_browser()
-
-# or we can save as an html file
-# from pathlib import Path
-# output_dir = Path.cwd() / "results" / "plot_localizer_analysis_experimental"
-# output_dir.mkdir(exist_ok=True, parents=True)
-# report.save_as_html(output_dir / "localizer.html")
