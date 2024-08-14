@@ -210,14 +210,6 @@ End pure-button class definition from pure-min.css
   cursor: pointer;
 }
 
-.btn-xsmall {
-  font-size: 12px;
-}
-
-.btn-small {
-  font-size: 14px;
-}
-
 .btn:hover,
 .btn:focus {
   background-color: #2980b9;
@@ -239,6 +231,7 @@ End pure-button class definition from pure-min.css
 .warning {
   border-color: red;
   color: red;
+  text-align: left;
 }
 .warning h2:first-child {
   background-color: #f5f5f5;
@@ -249,7 +242,7 @@ End pure-button class definition from pure-min.css
 .navbar {
   position: sticky; /* Apply the sticky positioning */
   top: 0; /* Stick the element to the top of the viewport */
-  z-index: 100; /* Ensure the navbar is above other content */
+  z-index: 10; /* Ensure the navbar is above other content */
   background-color: #f5f5f5;
   margin-bottom: 1em;
   -webkit-font-smoothing: antialiased;
@@ -309,6 +302,13 @@ End pure-button class definition from pure-min.css
   transform: rotate(-45deg);
 }
 
+.pure-menu-link {
+  font-size: 90%;
+  font-weight: normal;
+  margin: 10px 5px;
+  padding: 0px;
+}
+
 @media (max-width: 1023px) {
   .custom-toggle {
     display: block;
@@ -331,6 +331,15 @@ End pure-button class definition from pure-min.css
 }
 .terminal .nilearn-report {
   max-width: min(50ex, 100vw); /* Needed in vscode */
+}
+
+.nilearn-report h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  text-align: left;
 }
 
 .nilearn-report h1:first-child {
@@ -419,4 +428,8 @@ End pure-button class definition from pure-min.css
 
 .nilearn-report .main-container {
   min-height: 700px !important;
+}
+
+.nilearn-report .contrast-button {
+  width: 75%;
 }
