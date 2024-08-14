@@ -108,6 +108,7 @@
     {{for dmtx_title, dmtx in design_matrices}}
     <div class="scroll-x">
       <img
+        class="pure-img"
         src="data:image/svg+xml,{{dmtx}}"
         alt="Plot of Design Matrix used in {{dmtx_title}}."
       />
@@ -146,6 +147,7 @@
     {{for contrast_name, contrast_plot in contrasts}}
     <div class="scroll-x" style="padding-top: 10px">
       <img
+        class="pure-img"
         src="data:image/svg+xml,{{contrast_plot}}"
         alt="Plot of the contrast: {{contrast_name}}."
       />
@@ -183,20 +185,23 @@
       </div>
       {{elif key == "contrast_img"}}
       <details>
-        <summary class="pure-button button-small">Contrast Plot</summary>
-        <div class="scroll-x">
-          <img
-            src="data:image/svg+xml,{{value}}"
-            alt="Stat map plot for the contrast: {{contrast_name}}"
-          />
-        </div>
+        <summary class="pure-button button-small contrast-button">
+          Contrast Plot
+        </summary>
+        <img
+          class="pure-img"
+          src="data:image/svg+xml,{{value}}"
+          alt="Stat map plot for the contrast: {{contrast_name}}"
+        />
       </details>
       {{endif}}
       <!--  -->
       {{endfor}}
 
       <details>
-        <summary class="pure-button button-small">Cluster Table</summary>
+        <summary class="pure-button button-small contrast-button">
+          Cluster Table
+        </summary>
         {{if cluster_table_details}}
         <table class="pure-table">
           <thead>

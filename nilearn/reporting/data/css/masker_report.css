@@ -210,14 +210,6 @@ End pure-button class definition from pure-min.css
   cursor: pointer;
 }
 
-.btn-xsmall {
-  font-size: 12px;
-}
-
-.btn-small {
-  font-size: 14px;
-}
-
 .btn:hover,
 .btn:focus {
   background-color: #2980b9;
@@ -436,4 +428,8 @@ h6 {
 
 .nilearn-report .main-container {
   min-height: 700px !important;
+}
+
+.nilearn-report .contrast-button {
+  width: 75%;
 }
