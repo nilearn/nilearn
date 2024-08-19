@@ -3,7 +3,6 @@
 import warnings
 
 import nibabel
-import nibabel as nb
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
@@ -264,7 +263,7 @@ def img_3d_mni():
 def img_3d_mni_as_file(tmp_path):
     """Return path to a random 3D Nifti1Image in MNI space saved to disk."""
     filename = tmp_path / "img.nii"
-    nb.save(_img_3d_mni(), filename)
+    _img_3d_mni().to_filename(filename)
     return filename
 
 

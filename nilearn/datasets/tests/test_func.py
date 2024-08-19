@@ -11,10 +11,10 @@ import uuid
 from collections import OrderedDict
 from pathlib import Path
 
-import nibabel as nib
 import numpy as np
 import pandas as pd
 import pytest
+from nibabel import Nifti1Image
 from sklearn.utils import Bunch
 
 from nilearn.datasets import func
@@ -451,9 +451,7 @@ def test__load_mixed_gambles(rng, affine_eye):
     n_trials = 48
     for n_subjects in [1, 5, 16]:
         zmaps = [
-            nib.Nifti1Image(
-                rng.standard_normal((3, 4, 5, n_trials)), affine_eye
-            )
+            Nifti1Image(rng.standard_normal((3, 4, 5, n_trials)), affine_eye)
             for _ in range(n_subjects)
         ]
         zmaps, gain, _ = func._load_mixed_gambles(zmaps)
@@ -1048,7 +1046,7 @@ def test_fetch_spm_auditory(affine_eye, tmp_path):
 
     path_img = str(tmp_path / "tmp.img")
     path_hdr = str(tmp_path / "tmp.hdr")
-    nib.save(nib.Nifti1Image(np.zeros((2, 3, 4)), affine_eye), path_img)
+    Nifti1Image(np.zeros((2, 3, 4)), affine_eye).to_filename(path_img)
     shutil.copy(path_img, os.path.join(subject_dir, "sM00223/sM00223_002.img"))
     shutil.copy(path_hdr, os.path.join(subject_dir, "sM00223/sM00223_002.hdr"))
     for file_ in saf:

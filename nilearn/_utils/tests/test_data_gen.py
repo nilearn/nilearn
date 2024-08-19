@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import json
 
-import nibabel as nib
 import numpy as np
 import pandas as pd
 import pytest
+from nibabel import load
 from numpy.testing import assert_almost_equal
 from pandas.api.types import is_numeric_dtype, is_object_dtype
 from pandas.testing import assert_frame_equal
@@ -84,7 +84,7 @@ def test_write_fake_bold_img(tmp_path, shape, affine, rng):
         affine=affine,
         random_state=rng,
     )
-    img = nib.load(img_file)
+    img = load(img_file)
 
     assert img.get_fdata().shape == shape
     if affine is not None:
@@ -604,12 +604,12 @@ def test_fake_fmri_data_and_design(tmp_path, shapes, rk, affine):
         shapes, rk=rk, affine=affine, random_state=42, file_path=tmp_path
     )
 
-    mask_img = nib.load(mask_file)
+    mask_img = load(mask_file)
     assert_almost_equal(mask_img.get_fdata(), mask.get_fdata())
     assert_almost_equal(mask_img.affine, mask.affine)
 
     for fmri_file, fmri in zip(fmri_files, fmri_data):
-        fmri_img = nib.load(fmri_file)
+        fmri_img = load(fmri_file)
         assert_almost_equal(fmri_img.get_fdata(), fmri.get_fdata())
         assert_almost_equal(fmri_img.affine, fmri.affine)
 
