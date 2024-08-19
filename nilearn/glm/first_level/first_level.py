@@ -2349,7 +2349,7 @@ def _check_bids_events_list(
             filters=filters,
         )
         msg_suffix = (
-            f" bold file:\n{this_img}\nfilter:\n{filters})\n"
+            f"bold file:\n{this_img}\nfilter:\n{filters})\n"
             "Found all the following events files "
             f"for filter:\n{events}\n"
         )
