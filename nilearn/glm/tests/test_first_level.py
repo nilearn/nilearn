@@ -1379,7 +1379,7 @@ def test_first_level_from_bids_space_none(tmp_path):
     """
     n_sub = 1
     bids_path = create_fake_bids_dataset(
-        base_dir=tmp_path, n_sub=n_sub, space=["MNI152NLin2009cAsym"]
+        base_dir=tmp_path, n_sub=n_sub, spaces=["MNI152NLin2009cAsym"]
     )
     models, imgs, events, confounds = first_level_from_bids(
         dataset_path=bids_path,
