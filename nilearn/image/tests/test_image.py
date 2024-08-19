@@ -1279,7 +1279,7 @@ def test_concat_niimgs(affine_eye, tmp_path):
 
     # test list of 4D niimgs as input
     img1.to_filename(tmp_path / "1.nii")
-    img2.to_filename(tmp_path / "2.nii)")
+    img2.to_filename(tmp_path / "2.nii")
     concatenated = concat_imgs(tmp_path / "*")
     assert_array_equal(get_data(concatenated)[..., 0], get_data(img1))
     assert_array_equal(get_data(concatenated)[..., 1], get_data(img2))

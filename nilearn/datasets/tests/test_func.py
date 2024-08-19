@@ -14,7 +14,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
-from nibabel import Nifti1Image
+from nibabel import Nifti1Image, save
 from sklearn.utils import Bunch
 
 from nilearn.datasets import func
@@ -1046,7 +1046,7 @@ def test_fetch_spm_auditory(affine_eye, tmp_path):
 
     path_img = str(tmp_path / "tmp.img")
     path_hdr = str(tmp_path / "tmp.hdr")
-    Nifti1Image(np.zeros((2, 3, 4)), affine_eye).to_filename(path_img)
+    save(Nifti1Image(np.zeros((2, 3, 4)), affine_eye), path_img)
     shutil.copy(path_img, os.path.join(subject_dir, "sM00223/sM00223_002.img"))
     shutil.copy(path_hdr, os.path.join(subject_dir, "sM00223/sM00223_002.hdr"))
     for file_ in saf:
