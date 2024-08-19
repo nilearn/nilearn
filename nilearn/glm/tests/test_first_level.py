@@ -2162,10 +2162,8 @@ def test_first_level_from_bids_surface(tmp_path):
     tasks = ["main"]
     n_runs = [2]
 
-    base_dir = Path() / "tmp" / "bids"
-
     bids_path = create_fake_bids_dataset(
-        base_dir=base_dir,
+        base_dir=tmp_path,
         n_sub=n_sub,
         n_ses=0,
         tasks=tasks,

@@ -1605,7 +1605,7 @@ def first_level_from_bids(
         )
         models.append(model)
 
-        imgs = _get_processed_imgs(
+        imgs, files_to_check = _get_processed_imgs(
             derivatives_path=derivatives_path,
             sub_label=sub_label_,
             task_label=task_label,
@@ -1620,7 +1620,7 @@ def first_level_from_bids(
             sub_label=sub_label_,
             task_label=task_label,
             img_filters=img_filters,
-            imgs=imgs,
+            imgs=files_to_check,
             verbose=verbose,
         )
         events = [
@@ -1633,7 +1633,7 @@ def first_level_from_bids(
             sub_label=sub_label_,
             task_label=task_label,
             img_filters=img_filters,
-            imgs=imgs,
+            imgs=files_to_check,
             verbose=verbose,
             kwargs_load_confounds=kwargs_load_confounds,
         )
@@ -1750,6 +1750,11 @@ def _get_processed_imgs(
         List of fullpath to the imgs files
         If fsaverage5 is passed then both hemisphere for each run
         will be loaded into a single SurfaceImage.
+
+    files_to_check : : :obj:`list` of :obj:`str`
+        List of fullpath to imgs files.
+        Used for validation
+        when finding events or confounds associated with images.
     """
     filters = _make_bids_files_filter(
         task_label=task_label,
@@ -1829,7 +1834,7 @@ def _get_processed_imgs(
         verbose=verbose,
     )
     _check_bids_image_list(files_to_check, sub_label, filters)
-    return imgs
+    return imgs, files_to_check
 
 
 def _get_events_files(
