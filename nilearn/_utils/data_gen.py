@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 import scipy.linalg
 import scipy.signal
-from nibabel import Nifti1Image
+from nibabel import Nifti1Image, gifti
 from scipy.ndimage import binary_dilation
 
 from nilearn import datasets, image, maskers, masking
@@ -525,7 +525,7 @@ def write_fake_fmri_data_and_design(
     return mask_file, fmri_files, design_files
 
 
-def _write_fake_bold_gifti(file_path):
+def _write_fake_bold_gifti(file_path, shape, random_state=0):
     """Generate a gifti image and write it to disk.
 
     Note this only generates an empty file for now.
@@ -541,8 +541,12 @@ def _write_fake_bold_gifti(file_path):
         Output file path.
 
     """
-    Path(file_path).parent.mkdir(parents=True, exist_ok=True)
-    Path(file_path).touch()
+    rand_gen = np.random.default_rng(random_state)
+    data = rand_gen.standard_normal(shape)
+    darray = gifti.GiftiDataArray(data=data, datatype="NIFTI_TYPE_FLOAT32")
+    gii = gifti.GiftiImage(darrays=[darray])
+    gii.to_filename(file_path)
+
     return file_path
 
 
@@ -1455,9 +1459,10 @@ def _write_bids_derivative_func(
     fields["entities"]["space"] = "fsaverage5"
     fields["extension"] = "func.gii"
     fields["entities"].pop("desc")
+    n_vertices = 1000
     for hemi in ["L", "R"]:
         fields["entities"]["hemi"] = hemi
         gifti_path = func_path / create_bids_filename(
             fields=fields, entities_to_include=entities_to_include
         )
-        _write_fake_bold_gifti(gifti_path)
+        _write_fake_bold_gifti(gifti_path, shape=(n_vertices, n_time_points))
