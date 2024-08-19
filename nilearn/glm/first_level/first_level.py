@@ -21,6 +21,7 @@ from nibabel import Nifti1Image
 from sklearn.base import clone
 from sklearn.cluster import KMeans
 
+from nilearn import datasets
 from nilearn._utils import fill_doc, logger, stringify_path
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_run_sample_masks
@@ -1280,6 +1281,8 @@ def first_level_from_bids(
     space_label : :obj:`str`, optional
         Specifies the space label of the preprocessed bold.nii images.
         As they are specified in the file names like ``_space-<space_label>_``.
+        If "fsaverage5" is passed as a value
+        then the GLM will be run on surface data.
 
     sub_labels : :obj:`list` of :obj:`str`, optional
         Specifies the subset of subject labels to model.
@@ -1732,6 +1735,8 @@ def _get_processed_imgs(
     task_label : :obj:`str`
         Task label as specified in the file names like _task-<task_label>_.
 
+    space_label : :obj:`str`
+
     img_filters : :obj:`list` of :obj:`tuple` (str, str)
         Filters are of the form (field, label).
         Only one filter per field allowed.
@@ -1741,9 +1746,10 @@ def _get_processed_imgs(
 
     Returns
     -------
-    imgs : :obj:`list` of :obj:`str`
+    imgs : :obj:`list` of :obj:`str`, or :obj:`list` of :obj:`SurfaceImage`
         List of fullpath to the imgs files
-
+        If fsaverage5 is passed then both hemisphere for each run
+        will be loaded into a single SurfaceImage.
     """
     filters = _make_bids_files_filter(
         task_label=task_label,
@@ -1753,22 +1759,76 @@ def _get_processed_imgs(
         extra_filter=img_filters,
         verbose=verbose,
     )
-    imgs = get_bids_files(
-        main_path=derivatives_path,
-        modality_folder="func",
-        file_tag="bold",
-        file_type="nii*",
-        sub_label=sub_label,
-        filters=filters,
-    )
+
+    if space_label not in ("fsaverage5"):
+        imgs = get_bids_files(
+            main_path=derivatives_path,
+            modality_folder="func",
+            file_tag="bold",
+            file_type="nii*",
+            sub_label=sub_label,
+            filters=filters,
+        )
+        files_to_report = imgs
+        files_to_check = imgs
+
+    else:
+        tmp_filter = filters.copy()
+        tmp_filter.append(("hemi", "L"))
+        imgs_left = get_bids_files(
+            main_path=derivatives_path,
+            modality_folder="func",
+            file_tag="bold",
+            file_type="func.gii",
+            sub_label=sub_label,
+            filters=tmp_filter,
+        )
+        tmp_filter[-1] = ("hemi", "R")
+        imgs_right = get_bids_files(
+            main_path=derivatives_path,
+            modality_folder="func",
+            file_tag="bold",
+            file_type="func.gii",
+            sub_label=sub_label,
+            filters=tmp_filter,
+        )
+
+        # Sanity check to make sure we have the same number of files
+        # for each hemisphere
+        assert len(imgs_left) == len(imgs_right)
+
+        # Assumption: we are loading the data on the pial surface.
+        mesh_right = datasets.fetch_surf_fsaverage().pial_right
+        mesh_left = datasets.fetch_surf_fsaverage().pial_left
+
+        imgs = []
+        for data_left, data_right in zip(imgs_left, imgs_right):
+            # make sure that filenames only differ by hemisphere
+            assert (
+                Path(data_left).stem.replace("hemi-L", "hemi-R")
+                == Path(data_right).stem
+            )
+            imgs.append(
+                SurfaceImage(
+                    mesh={"left": mesh_left, "right": mesh_right},
+                    data={"left": data_left, "right": data_right},
+                )
+            )
+
+        files_to_report = imgs_left + imgs_right
+
+        # Only check the left files
+        # as we know they have a right counterpart.
+        files_to_check = imgs_left
+
     _report_found_files(
-        files=imgs,
+        files=files_to_report,
         text="preprocessed BOLD",
         sub_label=sub_label,
         filters=filters,
         verbose=verbose,
     )
-    _check_bids_image_list(imgs, sub_label, filters)
+    _check_bids_image_list(files_to_check, sub_label, filters)
     return imgs
 
 

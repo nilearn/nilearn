@@ -540,7 +540,19 @@ def _write_fake_bold_gifti(file_path, shape, random_state=0):
     file_path : :obj:`str`
         Output file path.
 
+    shape : :obj:`tuple` of :obj:`int`
+        Shape of output array with m vertices by n timepoints.
+        If number of vertices is 0, only a dummy file is created.
+
+    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
+                   default=0
+        Random number generator, or seed.
     """
+    if shape[0] == 0:
+        Path(file_path).parent.mkdir(parents=True, exist_ok=True)
+        Path(file_path).touch()
+        return file_path
+
     rand_gen = np.random.default_rng(random_state)
     data = rand_gen.standard_normal(shape)
     darray = gifti.GiftiDataArray(data=data, datatype="NIFTI_TYPE_FLOAT32")
@@ -905,6 +917,7 @@ def create_fake_bids_dataset(
     confounds_tag="desc-confounds_timeseries",
     random_state=0,
     entities=None,
+    n_vertices=0,
 ):
     """Create a fake :term:`BIDS` dataset directory with dummy files.
 
@@ -963,6 +976,12 @@ def create_fake_bids_dataset(
         For example, if you want to add an 'echo' entity
         with values '1' for some files and '1' for others,
         you would pass: ``entities={"echo": ['1', '2']}``.
+
+    n_vertices : :obj:`int`, default = 0
+        Number of vertices for surface data.
+        If n_vertices == 0 only dummy gifti files will be generated.
+        Use n_vertices == 10242 to match the number of vertices
+        in fsaverage5.
 
     Returns
     -------
@@ -1030,6 +1049,7 @@ def create_fake_bids_dataset(
             entities=entities,
             n_voxels=n_voxels,
             rand_gen=rand_gen,
+            n_vertices=n_vertices,
         )
 
     return bids_path
@@ -1169,6 +1189,7 @@ def _mock_bids_derivatives(
     entities,
     n_voxels,
     rand_gen,
+    n_vertices,
 ):
     """Create a fake derivatives :term:`bids<BIDS>` dataset directory \
        with dummy files.
@@ -1207,6 +1228,11 @@ def _mock_bids_derivatives(
     rand_gen : :obj:`numpy.random.RandomState` instance
         Random number generator.
 
+    n_vertices : :obj:`int`
+        Number of vertices for surface data.
+        If n_vertices == 0 only dummy gifti files will be generated.
+        Use n_vertices == 10242 to match the number of vertices
+        in fsaverage5.
     """
     bids_path = bids_path / "derivatives"
     bids_path.mkdir(parents=True, exist_ok=True)
@@ -1239,6 +1265,7 @@ def _mock_bids_derivatives(
                                 n_voxels=n_voxels,
                                 rand_gen=rand_gen,
                                 confounds_tag=confounds_tag,
+                                n_vertices=n_vertices,
                             )
 
                 else:
@@ -1251,6 +1278,7 @@ def _mock_bids_derivatives(
                         n_voxels=n_voxels,
                         rand_gen=rand_gen,
                         confounds_tag=confounds_tag,
+                        n_vertices=n_vertices,
                     )
 
 
@@ -1381,11 +1409,7 @@ def _write_bids_raw_func(
 
 
 def _write_bids_derivative_func(
-    func_path,
-    fields,
-    n_voxels,
-    rand_gen,
-    confounds_tag,
+    func_path, fields, n_voxels, rand_gen, confounds_tag, n_vertices=0
 ):
     """Create BIDS functional derivative and confounds files.
 
@@ -1416,6 +1440,11 @@ def _write_bids_derivative_func(
         For example: `desc-confounds_timeseries`
         or "desc-confounds_regressors".
 
+    n_vertices : :obj:`int`, default = 0
+        Number of vertices for surface data.
+        If n_vertices == 0 only dummy gifti files will be generated.
+        Use n_vertices == 10242 to match the number of vertices
+        in fsaverage5.
     """
     n_time_points = 30
 
@@ -1459,7 +1488,6 @@ def _write_bids_derivative_func(
     fields["entities"]["space"] = "fsaverage5"
     fields["extension"] = "func.gii"
     fields["entities"].pop("desc")
-    n_vertices = 1000
     for hemi in ["L", "R"]:
         fields["entities"]["hemi"] = hemi
         gifti_path = func_path / create_bids_filename(
