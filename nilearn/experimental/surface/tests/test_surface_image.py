@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import nibabel as nb
 import numpy as np
 import pytest
 
@@ -114,11 +113,16 @@ def test_load_save_mesh(
         assert np.array_equal(mesh.coordinates, expected_mesh.coordinates)
 
 
+def test_save_mesh_error(tmp_path, mini_img):
+    with pytest.raises(ValueError, match="cannot contain both"):
+        mini_img.to_filename(tmp_path / "hemi-L_hemi-R_cannot_have_both.gii")
+
+
 def test_load_3D_nifti_as_data(img_3d_mni, mini_mesh, tmp_path):
     """Instantiate surface image with 3D Niftiimage object or file for data."""
     SurfaceImage(mesh=mini_mesh, data=img_3d_mni)
 
-    nb.save(img_3d_mni, tmp_path / "tmp.nii.gz")
+    img_3d_mni.to_filename(tmp_path / "tmp.nii.gz")
 
     SurfaceImage(
         mesh=mini_mesh,
@@ -132,7 +136,7 @@ def test_load_4D_nifti_as_data(img_4d_mni, mini_mesh, tmp_path):
     # check that we have the correct number of time points
     assert img.shape[0] == img_4d_mni.shape[3]
 
-    nb.save(img_4d_mni, tmp_path / "tmp.nii.gz")
+    img_4d_mni.to_filename(tmp_path / "tmp.nii.gz")
 
     SurfaceImage(
         mesh=mini_mesh,

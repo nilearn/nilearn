@@ -7,10 +7,10 @@ import pathlib
 import sys
 from pathlib import Path
 
-import nibabel as nb
 import numpy as np
 from nibabel import Nifti1Image
 
+from nilearn._utils.niimg_conversions import check_niimg
 from nilearn.experimental.surface import _io
 from nilearn.surface import vol_to_surf
 
@@ -226,7 +226,7 @@ class SurfaceImage:
         return f"<{self.__class__.__name__} {getattr(self, 'shape', '')}>"
 
     def _vol_to_surf(self, img: Nifti1Image | str | Path, **kwargs) -> None:
-        """Extract surface data from a Nifti image.
+        """Project a Nifti image on a Surface.
 
         Parameters
         ----------
@@ -238,7 +238,7 @@ class SurfaceImage:
                to :func:`nilearn.surface.vol_to_surf`
         """
         if isinstance(img, (str, Path)):
-            img = nb.load(img)
+            img = check_niimg(img)
 
         texture_left = vol_to_surf(img, self.mesh.parts["left"], **kwargs)
         texture_right = vol_to_surf(img, self.mesh.parts["right"], **kwargs)
