@@ -1424,6 +1424,8 @@ def first_level_from_bids(
             "Starting in version 0.12, slice_time_ref will default to None.",
             DeprecationWarning,
         )
+    if space_label is None:
+        space_label = "MNI152NLin2009cAsym"
 
     sub_labels = sub_labels or []
     img_filters = img_filters or []
@@ -1735,7 +1737,7 @@ def _get_processed_imgs(
     task_label : :obj:`str`
         Task label as specified in the file names like _task-<task_label>_.
 
-    space_label : :obj:`str`
+    space_label : None or :obj:`str`
 
     img_filters : :obj:`list` of :obj:`tuple` (str, str)
         Filters are of the form (field, label).
@@ -1765,7 +1767,7 @@ def _get_processed_imgs(
         verbose=verbose,
     )
 
-    if space_label not in ("fsaverage5"):
+    if space_label is not None and space_label not in ("fsaverage5"):
         imgs = get_bids_files(
             main_path=derivatives_path,
             modality_folder="func",

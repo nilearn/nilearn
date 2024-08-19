@@ -1372,6 +1372,26 @@ def test_first_level_from_bids_slice_time_ref(bids_dataset, slice_time_ref):
     _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
 
 
+def test_first_level_from_bids_space_none(tmp_path):
+    """Test behavior when no specific space is required .
+
+    Function should look for images with NI152NLin2009cAsym.
+    """
+    n_sub = 1
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path, n_sub=n_sub, space=["MNI152NLin2009cAsym"]
+    )
+    models, imgs, events, confounds = first_level_from_bids(
+        dataset_path=bids_path,
+        task_label="main",
+        space_label=None,
+        img_filters=[("run", "01"), ("desc", "preproc")],
+        slice_time_ref=None,
+    )
+
+    _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
+
+
 def test_first_level_from_bids_select_one_run_per_session(bids_dataset):
     n_sub, n_ses, *_ = _inputs_for_new_bids_dataset()
 

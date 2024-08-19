@@ -918,6 +918,7 @@ def create_fake_bids_dataset(
     random_state=0,
     entities=None,
     n_vertices=0,
+    spaces=None,
 ):
     """Create a fake :term:`BIDS` dataset directory with dummy files.
 
@@ -983,6 +984,9 @@ def create_fake_bids_dataset(
         Use n_vertices == 10242 to match the number of vertices
         in fsaverage5.
 
+    spaces : :obj:`list` of :obj:`str`, optional.
+        Defaults to ``("MNI", "T1w")``
+
     Returns
     -------
     dataset directory name : :obj:`pathlib.Path`
@@ -999,6 +1003,8 @@ def create_fake_bids_dataset(
         tasks = ["localizer", "main"]
     if n_runs is None:
         n_runs = [1, 3]
+    if spaces is None:
+        spaces = ("MNI", "T1w")
     n_voxels = 4
 
     rand_gen = np.random.default_rng(random_state)
@@ -1050,6 +1056,7 @@ def create_fake_bids_dataset(
             n_voxels=n_voxels,
             rand_gen=rand_gen,
             n_vertices=n_vertices,
+            spaces=spaces,
         )
 
     return bids_path
@@ -1190,6 +1197,7 @@ def _mock_bids_derivatives(
     n_voxels,
     rand_gen,
     n_vertices,
+    spaces,
 ):
     """Create a fake derivatives :term:`bids<BIDS>` dataset directory \
        with dummy files.
@@ -1233,6 +1241,8 @@ def _mock_bids_derivatives(
         If n_vertices == 0 only dummy gifti files will be generated.
         Use n_vertices == 10242 to match the number of vertices
         in fsaverage5.
+
+    spaces : :obj:`list` of :obj:`str`, optional.
     """
     bids_path = bids_path / "derivatives"
     bids_path.mkdir(parents=True, exist_ok=True)
@@ -1266,6 +1276,7 @@ def _mock_bids_derivatives(
                                 rand_gen=rand_gen,
                                 confounds_tag=confounds_tag,
                                 n_vertices=n_vertices,
+                                spaces=spaces,
                             )
 
                 else:
@@ -1279,6 +1290,7 @@ def _mock_bids_derivatives(
                         rand_gen=rand_gen,
                         confounds_tag=confounds_tag,
                         n_vertices=n_vertices,
+                        spaces=spaces,
                     )
 
 
@@ -1409,7 +1421,13 @@ def _write_bids_raw_func(
 
 
 def _write_bids_derivative_func(
-    func_path, fields, n_voxels, rand_gen, confounds_tag, n_vertices=0
+    func_path,
+    fields,
+    n_voxels,
+    rand_gen,
+    confounds_tag,
+    n_vertices=0,
+    spaces=None,
 ):
     """Create BIDS functional derivative and confounds files.
 
@@ -1445,6 +1463,9 @@ def _write_bids_derivative_func(
         If n_vertices == 0 only dummy gifti files will be generated.
         Use n_vertices == 10242 to match the number of vertices
         in fsaverage5.
+
+    spaces : :obj:`list` of :obj:`str`, optional.
+        Defaults to ``("MNI", "T1w")``
     """
     n_time_points = 30
 
@@ -1461,6 +1482,9 @@ def _write_bids_derivative_func(
         with open(confounds_path.with_suffix(".json"), "w") as f:
             json.dump(metadata, f)
 
+    if spaces is None:
+        spaces = ("MNI", "T1w")
+
     fields["suffix"] = "bold"
     fields["extension"] = "nii.gz"
 
@@ -1471,7 +1495,7 @@ def _write_bids_derivative_func(
         *bids_entities()["derivatives"],
     ]
 
-    for space in ("MNI", "T1w"):
+    for space in spaces:
         for desc in ("preproc", "fmriprep"):
             # Only space 'T1w' include both descriptions.
             if space == "MNI" and desc == "fmriprep":
