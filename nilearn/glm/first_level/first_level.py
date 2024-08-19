@@ -1282,7 +1282,7 @@ def first_level_from_bids(
         Specifies the space label of the preprocessed bold.nii images.
         As they are specified in the file names like ``_space-<space_label>_``.
         If "fsaverage5" is passed as a value
-        then the GLM will be run on surface data.
+        then the GLM will be run on pial surface data.
 
     sub_labels : :obj:`list` of :obj:`str`, optional
         Specifies the subset of subject labels to model.

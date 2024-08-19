@@ -34,6 +34,9 @@ Enhancements
 
 - :bdg-dark:`Code` Add footer to masker reports (:gh:`4307` by `Rémi Gau`_).
 
+- :bdg-dark:`Code` Improve :func:`nilearn.glm.first_level.first_level_from_bids` to look for and load ``fsaverage5`` data to easily run GLM on surface data (:gh:`4507` by `Rémi Gau`_).
+
+
 Changes
 -------
 
