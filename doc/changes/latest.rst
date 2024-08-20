@@ -19,8 +19,8 @@ Fixes
 
 - :bdg-dark:`Code` :func:`nilearn.image.binarize_img` explicitly cast images to ``int8`` to avoid warnings about ``int64`` when working with ``float64`` images (:gh:`4498` by `Patrick Sadil`_).
 
-- :bdg-dark:`Code` :func:`nilearn.glm.first_level.first_level_from_bids` will for images in space 
-`` if not space is provided (:gh:`4507` by `Rémi Gau`_).
+- :bdg-dark:`Code` :func:`nilearn.glm.first_level.first_level_from_bids` will for images in MNI space 
+if no space is provided (:gh:`4507` by `Rémi Gau`_).
 
 
 Enhancements
