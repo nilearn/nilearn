@@ -11,10 +11,9 @@ import warnings
 from io import BytesIO
 from pathlib import Path
 
-import nibabel
-import nibabel as nib
 import numpy as np
 import pandas as pd
+from nibabel import Nifti1Image, four_to_three, load
 from scipy.io import loadmat
 from scipy.io.matlab import MatReadError
 from sklearn.utils import Bunch
@@ -1329,8 +1328,8 @@ def _load_mixed_gambles(zmap_imgs):
     X = X[mask, :].T
     tmp = np.zeros(list(mask.shape) + [len(X)])
     tmp[mask, :] = X.T
-    mask_img = nibabel.Nifti1Image(mask.astype("uint8"), affine)
-    X = nibabel.four_to_three(nibabel.Nifti1Image(tmp, affine))
+    mask_img = Nifti1Image(mask.astype("uint8"), affine)
+    X = four_to_three(Nifti1Image(tmp, affine))
     return X, y, mask_img
 
 
@@ -2754,10 +2753,10 @@ def _prepare_downloaded_spm_auditory_data(subject_dir):
     }
     # volumes for this dataset of shape (64, 64, 64, 1); let's fix this
     for x in _subject_data["func"]:
-        vol = nib.load(x)
+        vol = load(x)
         if len(vol.shape) == 4:
-            vol = nib.Nifti1Image(get_data(vol)[:, :, :, 0], vol.affine)
-            nib.save(vol, x)
+            vol = Nifti1Image(get_data(vol)[:, :, :, 0], vol.affine)
+            vol.to_filename(x)
 
     _subject_data["anat"] = [
         subject_data[x]
@@ -2766,10 +2765,10 @@ def _prepare_downloaded_spm_auditory_data(subject_dir):
     ][0]
 
     # ... same thing for anat
-    vol = nib.load(_subject_data["anat"])
+    vol = load(_subject_data["anat"])
     if len(vol.shape) == 4:
-        vol = nib.Nifti1Image(get_data(vol)[:, :, :, 0], vol.affine)
-        nib.save(vol, _subject_data["anat"])
+        vol = Nifti1Image(get_data(vol)[:, :, :, 0], vol.affine)
+        vol.to_filename(_subject_data["anat"])
 
     return Bunch(**_subject_data)
 

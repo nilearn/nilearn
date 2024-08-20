@@ -2,9 +2,9 @@
 
 # Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, Feb. 2014
 
-import nibabel as nib
 import numpy as np
 import pytest
+from nibabel import Nifti1Image
 from numpy.testing import (
     assert_array_almost_equal,
     assert_array_less,
@@ -34,7 +34,7 @@ def _tfce_design():
     )
     tested_var = np.arange(0, 20, 2)
 
-    mask_img = nib.Nifti1Image(np.ones((3, 3, 3)), np.eye(4))
+    mask_img = Nifti1Image(np.ones((3, 3, 3)), np.eye(4))
     masker = NiftiMasker(mask_img)
     masker.fit(mask_img)
 
@@ -86,7 +86,7 @@ def confounding_vars(rng):
 
 @pytest.fixture()
 def masker(affine_eye):
-    mask_img = nib.Nifti1Image(np.ones((5, 5, 5)), affine_eye)
+    mask_img = Nifti1Image(np.ones((5, 5, 5)), affine_eye)
     masker = NiftiMasker(mask_img)
     masker.fit(mask_img)
     return masker
