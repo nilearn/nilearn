@@ -1375,7 +1375,7 @@ def test_first_level_from_bids_slice_time_ref(bids_dataset, slice_time_ref):
 def test_first_level_from_bids_space_none(tmp_path):
     """Test behavior when no specific space is required .
 
-    Function should look for images with NI152NLin2009cAsym.
+    Function should look for images with MNI152NLin2009cAsym.
     """
     n_sub = 1
     bids_path = create_fake_bids_dataset(

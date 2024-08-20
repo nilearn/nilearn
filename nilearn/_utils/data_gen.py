@@ -528,7 +528,8 @@ def write_fake_fmri_data_and_design(
 def _write_fake_bold_gifti(file_path, shape, random_state=0):
     """Generate a gifti image and write it to disk.
 
-    Note this only generates an empty file for now.
+    Note this only generates an empty file
+    if the number of vertices demanded is 0.
 
     Parameters
     ----------
