@@ -73,7 +73,7 @@ def test_load_save_mesh(
 
     Check that
     - the appropriate hemisphere information is added to the filename
-    - only one hemisphere is saved if heme- is in the filename
+    - only one hemisphere is saved if hemi- is in the filename
     - the roundtrip does not change the data
     """
     mesh_right = datasets.fetch_surf_fsaverage().pial_right
