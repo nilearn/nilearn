@@ -13,7 +13,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from nibabel import Nifti1Image, four_to_three, load
+from nibabel import Nifti1Image, four_to_three, load, save
 from scipy.io import loadmat
 from scipy.io.matlab import MatReadError
 from sklearn.utils import Bunch
@@ -2756,7 +2756,7 @@ def _prepare_downloaded_spm_auditory_data(subject_dir):
         vol = load(x)
         if len(vol.shape) == 4:
             vol = Nifti1Image(get_data(vol)[:, :, :, 0], vol.affine)
-            vol.to_filename(x)
+            save(vol, x)
 
     _subject_data["anat"] = [
         subject_data[x]
@@ -2768,7 +2768,7 @@ def _prepare_downloaded_spm_auditory_data(subject_dir):
     vol = load(_subject_data["anat"])
     if len(vol.shape) == 4:
         vol = Nifti1Image(get_data(vol)[:, :, :, 0], vol.affine)
-        vol.to_filename(_subject_data["anat"])
+        save(vol, _subject_data["anat"])
 
     return Bunch(**_subject_data)
 
@@ -2862,7 +2862,7 @@ def fetch_spm_auditory(
     spm_auditory_data = _prepare_downloaded_spm_auditory_data(subject_dir)
     try:
         spm_auditory_data["events"]
-    except KeyError:
+    except (KeyError, TypeError):
         events_filepath = _make_path_events_file_spm_auditory_data(
             spm_auditory_data
         )
