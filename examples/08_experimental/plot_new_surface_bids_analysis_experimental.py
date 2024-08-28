@@ -85,7 +85,6 @@ models, run_imgs, events, confounds = first_level_from_bids(
 # Note that those correspond spatially, as they are both in :term:`MNI` space.
 from pathlib import Path
 
-from nilearn import surface
 from nilearn.experimental.surface import SurfaceImage, load_fsaverage
 
 fsaverage5 = load_fsaverage()
@@ -98,18 +97,9 @@ for first_level_glm, fmri_img, confound, event in zip(
 ):
     print(f"Running GLM on {Path(fmri_img[0]).relative_to(data.data_dir)}")
 
-    texture_left = surface.vol_to_surf(
-        fmri_img[0], fsaverage5["pial"].parts["left"]
-    )
-    texture_right = surface.vol_to_surf(
-        fmri_img[0], fsaverage5["pial"].parts["right"]
-    )
     image = SurfaceImage(
         mesh=fsaverage5["pial"],
-        data={
-            "left": texture_left.T,
-            "right": texture_right.T,
-        },
+        data=fmri_img[0],
     )
 
     # Fit GLM.

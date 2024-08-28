@@ -7,6 +7,7 @@ from nilearn._utils.data_gen import (
     basic_paradigm,
     write_fake_fmri_data_and_design,
 )
+from nilearn.conftest import have_mpl
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
@@ -14,13 +15,6 @@ from nilearn.glm.first_level.design_matrix import (
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting import glm_reporter as glmr, make_glm_report
-
-try:
-    import matplotlib as mpl  # noqa: F401
-except ImportError:
-    not_have_mpl = True
-else:
-    not_have_mpl = False
 
 
 @pytest.fixture()
@@ -36,7 +30,7 @@ def flm(tmp_path):
 
 
 @pytest.mark.skipif(
-    not_have_mpl, reason="Matplotlib not installed; required for this test"
+    not have_mpl, reason="Matplotlib not installed; required for this test"
 )
 @pytest.mark.parametrize("height_control", ["fpr", "fdr", "bonferroni", None])
 def test_flm_reporting(flm, height_control):
@@ -60,7 +54,7 @@ def test_flm_reporting(flm, height_control):
 
 
 @pytest.mark.skipif(
-    not_have_mpl, reason="Matplotlib not installed; required for this test"
+    not have_mpl, reason="Matplotlib not installed; required for this test"
 )
 def test_flm_reporting_method(flm):
     """Smoke test for the first level generate method."""
@@ -90,7 +84,7 @@ def slm(tmp_path):
 
 
 @pytest.mark.skipif(
-    not_have_mpl, reason="Matplotlib not installed; required for this test"
+    not have_mpl, reason="Matplotlib not installed; required for this test"
 )
 @pytest.mark.parametrize("height_control", ["fpr", "fdr", "bonferroni", None])
 def test_slm_reporting_method(slm, height_control):
@@ -104,7 +98,7 @@ def test_slm_reporting_method(slm, height_control):
 
 
 @pytest.mark.skipif(
-    not_have_mpl, reason="Matplotlib not installed; required for this test"
+    not have_mpl, reason="Matplotlib not installed; required for this test"
 )
 def test_slm_reporting(slm):
     """Smoke test for the second level model generate method."""
@@ -293,7 +287,7 @@ def test_plot_contrasts():
 
 
 @pytest.mark.skipif(
-    not_have_mpl, reason="Matplotlib not installed; required for this test"
+    not have_mpl, reason="Matplotlib not installed; required for this test"
 )
 def test_masking_first_level_model(tmp_path):
     """Check that using NiftiMasker when instantiating FirstLevelModel \

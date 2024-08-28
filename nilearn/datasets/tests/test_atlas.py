@@ -7,10 +7,10 @@ import os
 import re
 from pathlib import Path
 
-import nibabel
 import numpy as np
 import pandas as pd
 import pytest
+from nibabel import Nifti1Header, Nifti1Image, freesurfer, load, nifti1
 from numpy.testing import assert_array_equal
 from sklearn.utils import Bunch
 
@@ -135,7 +135,7 @@ def _write_sample_atlas_metadata(ho_dir, filename, is_symm):
 
 def _test_atlas_instance_should_match_data(atlas, is_symm):
     assert Path(atlas.filename).exists() and Path(atlas.filename).is_absolute()
-    assert isinstance(atlas.maps, nibabel.Nifti1Image)
+    assert isinstance(atlas.maps, Nifti1Image)
     assert isinstance(atlas.labels, list)
 
     expected_atlas_labels = (
@@ -228,9 +228,7 @@ def test_fetch_atlas_fsl(
         is_symm=is_symm,
     )
     target_atlas_nii = nifti_dir / f"{name}-{fname}.nii.gz"
-    nibabel.Nifti1Image(atlas_data, affine_eye * 3).to_filename(
-        target_atlas_nii
-    )
+    Nifti1Image(atlas_data, affine_eye * 3).to_filename(target_atlas_nii)
     # Check that the fetch lead to consistent results
     atlas_instance = fsl_fetcher(
         fname,
@@ -358,7 +356,7 @@ def _destrieux_data():
     """Mock the download of the destrieux atlas."""
     data = {"destrieux2009.rst": "readme"}
     atlas = _rng().integers(0, 10, (10, 10, 10), dtype="int32")
-    atlas_img = nibabel.Nifti1Image(atlas, np.eye(4))
+    atlas_img = Nifti1Image(atlas, np.eye(4))
     labels = "\n".join([f"{idx},label {idx}" for idx in range(10)])
     labels = f"index,name\n{labels}"
     for lat in ["_lateralized", ""]:
@@ -674,7 +672,7 @@ def test_fetch_atlas_surf_destrieux(tmp_path):
     os.mkdir(data_dir)
     # Create mock annots
     for hemi in ("left", "right"):
-        nibabel.freesurfer.write_annot(
+        freesurfer.write_annot(
             os.path.join(data_dir, f"{hemi}.aparc.a2009s.annot"),
             np.arange(4),
             np.zeros((4, 5)),
@@ -696,13 +694,13 @@ def _get_small_fake_talairach():
     labels = ["*", "b", "a"]
     all_labels = itertools.product(*(labels,) * 5)
     labels_txt = "\n".join(map(".".join, all_labels))
-    extensions = nibabel.nifti1.Nifti1Extensions(
-        [nibabel.nifti1.Nifti1Extension("afni", labels_txt.encode("utf-8"))]
+    extensions = nifti1.Nifti1Extensions(
+        [nifti1.Nifti1Extension("afni", labels_txt.encode("utf-8"))]
     )
-    img = nibabel.Nifti1Image(
+    img = Nifti1Image(
         np.arange(243, dtype="int32").reshape((3, 9, 9)),
         np.eye(4),
-        nibabel.Nifti1Header(extensions=extensions),
+        Nifti1Header(extensions=extensions),
     )
     return serialize_niimg(img, gzipped=False)
 
@@ -750,13 +748,13 @@ def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
 
     assert len(data.labels) == 16
 
-    values = get_data(nibabel.load(data.maps))
+    values = get_data(load(data.maps))
 
     assert len(np.unique(values)) == 17
 
     data = atlas.fetch_atlas_pauli_2017("prob", data_dir)
 
-    assert nibabel.load(data.maps).shape[-1] == 16
+    assert load(data.maps).shape[-1] == 16
 
     assert data.description != ""
 
@@ -822,7 +820,7 @@ def test_fetch_atlas_schaefer_2018(tmp_path, request_mocker):
         assert len(data.labels) == n_rois
         assert data.labels[0].astype(str).startswith(f"{yeo_networks}Networks")
 
-        img = nibabel.load(data.maps)
+        img = load(data.maps)
 
         assert img.header.get_zooms()[0] == resolution_mm
         assert np.array_equal(np.unique(img.dataobj), np.arange(n_rois + 1))

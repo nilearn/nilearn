@@ -221,7 +221,7 @@ def test_all_resolution_inference(data_norm_isf, affine_eye):
 
     # verbose mode
     th_map = cluster_level_inference(
-        stat_img, threshold=3, alpha=0.05, verbose=True
+        stat_img, threshold=3, alpha=0.05, verbose=1
     )
 
 

@@ -1,8 +1,8 @@
 """Test the multi_nifti_labels_masker module."""
 
-import nibabel
 import numpy as np
 import pytest
+from nibabel import Nifti1Image
 
 from nilearn._utils import data_gen, testing
 from nilearn._utils.exceptions import DimensionError
@@ -35,7 +35,7 @@ def test_multi_nifti_labels_masker():
         shape1, affine=affine1, n_regions=n_regions
     )
 
-    mask_img_4d = nibabel.Nifti1Image(
+    mask_img_4d = Nifti1Image(
         np.ones((2, 2, 2, 2), dtype=np.int8), affine=np.diag((4, 4, 4, 1))
     )
 
@@ -141,8 +141,8 @@ def test_multi_nifti_labels_masker_reduction_strategies():
     labels_data = np.array([[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1]]], dtype=np.int8)
 
     affine = np.eye(4)
-    img = nibabel.Nifti1Image(img_data, affine)
-    labels = nibabel.Nifti1Image(labels_data, affine)
+    img = Nifti1Image(img_data, affine)
+    labels = Nifti1Image(labels_data, affine)
 
     # What MultiNiftiLabelsMasker should return for each reduction strategy?
     expected_results = {

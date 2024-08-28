@@ -327,6 +327,7 @@ def _group_sparse_covariance(
                 f"* iteration {n:d} "
                 f"({100.0 * n / max_iter:.0f} %){suffix} ...",
                 verbose=verbose,
+                stack_level=2,
             )
 
         omega_old[...] = omega
@@ -473,6 +474,7 @@ def _group_sparse_covariance(
                     "probe_function interrupted loop",
                     verbose=verbose,
                     msg_level=2,
+                    stack_level=2,
                 )
                 break
 
@@ -486,6 +488,7 @@ def _group_sparse_covariance(
                 f"tolerance reached at iteration number {n + 1:d}: "
                 f"{max_norm:.3e}",
                 verbose=verbose,
+                stack_level=2,
             )
             tolerance_reached = True
             break

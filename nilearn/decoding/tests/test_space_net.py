@@ -236,7 +236,6 @@ def test_tv_regression_simple(rng, l1_ratio, debias):
         is_classif=False,
         max_iter=10,
         debias=debias,
-        verbose=0,
     ).fit(X, y)
 
 
@@ -261,7 +260,6 @@ def test_tv_regression_3D_image_doesnt_crash(rng, l1_ratio):
         penalty="tv-l1",
         is_classif=False,
         max_iter=10,
-        verbose=0,
     ).fit(X, y)
 
 
@@ -277,7 +275,6 @@ def test_graph_net_classifier_score():
         l1_ratios=1.0,
         tol=1e-10,
         standardize=False,
-        verbose=0,
         screening_percentile=100.0,
     ).fit(X_, y)
 
@@ -305,7 +302,6 @@ def test_log_reg_vs_graph_net_two_classes_iris(
         alphas=1.0 / C / X.shape[0],
         l1_ratios=1.0,
         tol=tol,
-        verbose=0,
         max_iter=1000,
         penalty="tv-l1",
         standardize=False,
@@ -345,7 +341,6 @@ def test_lasso_vs_graph_net():
         is_classif=False,
         penalty="graph-net",
         max_iter=100,
-        verbose=0,
     )
     lasso.fit(X_, y)
     graph_net.fit(X, y)
@@ -465,9 +460,9 @@ def test_space_net_no_crash_not_fitted(model):
         RuntimeError,
         match=f"This {model.__name__} instance is not fitted yet",
     ):
-        model(verbose=0).predict(X)
+        model().predict(X)
 
-    model(mask=mask, alphas=1.0, verbose=0).fit(X, y).predict(X)
+    model(mask=mask, alphas=1.0).fit(X, y).predict(X)
 
 
 @pytest.mark.parametrize("model", [SpaceNetRegressor, SpaceNetClassifier])
@@ -477,8 +472,8 @@ def test_space_net_one_alpha_no_crash(model):
     X, y = iris.data, iris.target
     X, mask = to_niimgs(X, [2, 2, 2])
 
-    model(n_alphas=1, mask=mask, verbose=0).fit(X, y)
-    model(n_alphas=2, mask=mask, verbose=0, alphas=None).fit(X, y)
+    model(n_alphas=1, mask=mask).fit(X, y)
+    model(n_alphas=2, mask=mask, alphas=None).fit(X, y)
 
 
 @pytest.mark.parametrize("model", [SpaceNetRegressor, SpaceNetClassifier])
@@ -498,7 +493,6 @@ def test_checking_inputs_length(model):
             l1_ratios=1.0,
             tol=1e-10,
             screening_percentile=100.0,
-            verbose=0,
         ).fit(
             X_,
             y,
@@ -512,7 +506,7 @@ def test_targets_in_y_space_net_regressor():
     y = np.ones(iris.target.shape)
 
     imgs, mask = to_niimgs(X, (2, 2, 2))
-    regressor = SpaceNetRegressor(mask=mask, verbose=0)
+    regressor = SpaceNetRegressor(mask=mask)
 
     with pytest.raises(
         ValueError, match="The given input y must have at least 2 targets"

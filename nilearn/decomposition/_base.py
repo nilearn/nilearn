@@ -19,7 +19,7 @@ import nilearn
 from nilearn._utils.masker_validation import check_embedded_masker
 from nilearn.maskers import NiftiMapsMasker
 
-from .._utils import fill_doc
+from .._utils import fill_doc, logger
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.niimg import safe_get_data
 from .._utils.niimg_conversions import resolve_globbing
@@ -439,8 +439,7 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
 
         # _mask_and_reduce step for decomposition estimators i.e.
         # MultiPCA, CanICA and Dictionary Learning
-        if self.verbose:
-            print(f"[{self.__class__.__name__}] Loading data")
+        logger.log("Loading data", self.verbose)
         data = _mask_and_reduce(
             self.masker_,
             imgs,

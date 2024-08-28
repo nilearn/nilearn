@@ -9,7 +9,7 @@ from sklearn.feature_extraction import image
 
 from nilearn.maskers import NiftiLabelsMasker
 
-from .._utils import fill_doc, stringify_path
+from .._utils import fill_doc, logger, stringify_path
 from .._utils.niimg import safe_get_data
 from .._utils.niimg_conversions import iter_check_niimg
 from ..decomposition._multi_pca import _MultiPCA
@@ -359,8 +359,10 @@ class Parcellations(_MultiPCA):
         components = _MultiPCA._raw_fit(self, data)
 
         mask_img_ = self.masker_.mask_img_
-        if self.verbose:
-            print(f"[{self.__class__.__name__}] computing {self.method}")
+
+        logger.log(
+            f"computing {self.method}", verbose=self.verbose, stack_level=3
+        )
 
         if self.method == "kmeans":
             from sklearn.cluster import MiniBatchKMeans

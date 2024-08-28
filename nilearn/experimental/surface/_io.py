@@ -3,8 +3,8 @@
 import pathlib
 from typing import Dict, Union
 
-import nibabel as nib
 import numpy as np
+from nibabel import gifti
 
 from nilearn import surface as old_surface
 
@@ -27,13 +27,13 @@ def mesh_to_gifti(
 ) -> None:
     """Write surface mesh to gifti file on disk."""
     gifti_file = pathlib.Path(gifti_file)
-    gifti_img = nib.gifti.GiftiImage()
-    coords_array = nib.gifti.GiftiDataArray(
+    gifti_img = gifti.GiftiImage()
+    coords_array = gifti.GiftiDataArray(
         coordinates, intent="NIFTI_INTENT_POINTSET", datatype="float32"
     )
-    faces_array = nib.gifti.GiftiDataArray(
+    faces_array = gifti.GiftiDataArray(
         faces, intent="NIFTI_INTENT_TRIANGLE", datatype="int32"
     )
     gifti_img.add_gifti_data_array(coords_array)
     gifti_img.add_gifti_data_array(faces_array)
-    nib.save(gifti_img, gifti_file)
+    gifti_img.to_filename(gifti_file)

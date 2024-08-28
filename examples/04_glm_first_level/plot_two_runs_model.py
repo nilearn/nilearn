@@ -249,9 +249,6 @@ report = fmri_glm_multirun.generate_report(
 # report.open_in_browser()
 
 # or we can save as an html file
-# from pathlib import Path
-# output_dir = Path.cwd() / "results" / "plot_oasis"
-# output_dir.mkdir(exist_ok=True, parents=True)
 # report.save_as_html(output_dir / 'report.html')
 
 # %%

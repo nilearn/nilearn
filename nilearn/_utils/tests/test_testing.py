@@ -1,8 +1,8 @@
 import warnings
 
-import nibabel
 import numpy as np
 import pytest
+from nibabel import Nifti1Image
 
 from nilearn._utils.testing import (
     assert_memory_less_than,
@@ -40,11 +40,11 @@ def test_memory_usage():
 def test_int64_niftis(affine_eye, tmp_path):
     data = np.ones((3, 3, 3), dtype=bool)
     for dtype in "uint8", "int32", "float32":
-        img = nibabel.Nifti1Image(data.astype(dtype), affine_eye)
+        img = Nifti1Image(data.astype(dtype), affine_eye)
         img.to_filename(tmp_path.joinpath("img.nii.gz"))
     for dtype in "int64", "uint64":
         with pytest.raises(AssertionError):
-            nibabel.Nifti1Image(data.astype(dtype), affine_eye)
+            Nifti1Image(data.astype(dtype), affine_eye)
 
 
 def dummy_deprecation(start_version, end_version):

@@ -11,7 +11,6 @@ For example: TV-L1, Graph-Net, etc
 #         THIRION Bertrand
 
 import collections
-import sys
 import time
 import warnings
 from functools import partial
@@ -34,7 +33,7 @@ from nilearn.experimental.surface import SurfaceMasker
 from nilearn.image import get_data
 from nilearn.masking import unmask_from_to_3d_array
 
-from .._utils import fill_doc
+from .._utils import fill_doc, logger
 from .._utils.cache_mixin import CacheMixin
 from .._utils.param_validation import adjust_screening_percentile
 from .space_net_solvers import (
@@ -240,18 +239,17 @@ class _EarlyStoppingCallback:
             len(self.test_scores) > 4
             and np.mean(np.diff(self.test_scores[-5:][::-1])) >= self.tol
         ):
-            if self.verbose:
-                if self.verbose > 1:
-                    print(
-                        "Early stopping. "
-                        f"Test score: {score:.8f} {40 * '-'}"
-                    )
-                else:
-                    sys.stderr.write(".")
+            message = "."
+            if self.verbose > 1:
+                message = (
+                    f"Early stopping. \n" f"Test score: {score:.8f} {40 * '-'}"
+                )
+            logger.log(message, verbose=self.verbose, stack_level=2)
             return True
 
-        if self.verbose > 1:
-            print(f"Test score: {score:.8f}")
+        logger.log(
+            f"Test score: {score:.8f}", verbose=self.verbose, msg_level=1
+        )
         return False
 
     def _debias(self, w):
@@ -846,8 +844,8 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
             )
         else:
             self.memory_ = self.memory
-        if self.verbose:
-            tic = time.time()
+
+        tic = time.time()
 
         masker_type = "nii"
         if isinstance(self.mask, SurfaceMasker):
@@ -1002,11 +1000,11 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         self.coef_img_ = self.masker_.inverse_transform(self.coef_)
 
         # report time elapsed
-        if self.verbose:
-            duration = time.time() - tic
-            print(
-                f"Time Elapsed: {duration} seconds, {duration / 60.0} minutes."
-            )
+        duration = time.time() - tic
+        logger.log(
+            f"Time Elapsed: {duration} seconds, {duration / 60.0} minutes.",
+            self.verbose,
+        )
 
         return self
 

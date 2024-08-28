@@ -208,6 +208,8 @@
 
 .. _Moritz Boos: https://github.com/mjboos
 
+.. _Mudassir Chapra: https://github.com/muddi900
+
 .. _Myeong Seop Song: https://github.com/NeuroVR-Song
 
 .. _Natasha Clarke: https://github.com/clarkenj
@@ -269,6 +271,8 @@
 .. _Sami Jawhar: https://github.com/sjawhar
 
 .. _Simon Steinkamp: https://github.com/SRSteinkamp
+
+.. _Sin Kim: https://github.com/kimsin98
 
 .. _Sourav Singh: https://github.com/souravsingh
 

@@ -898,7 +898,7 @@ def test_clean_psc(rng):
             detrend=False,
             filter="butterworth",
             high_pass=0.01,
-            tr=2,
+            t_r=2,
             standardize="psc",
         )
         np.testing.assert_almost_equal(butterworth_signals.mean(0), 0)

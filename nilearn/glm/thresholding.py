@@ -16,7 +16,7 @@ from nilearn.image import get_data, math_img, threshold_img
 from nilearn.maskers import NiftiMasker
 
 
-def _compute_hommel_value(z_vals, alpha, verbose=False):
+def _compute_hommel_value(z_vals, alpha, verbose=0):
     """Compute the All-Resolution Inference hommel-value."""
     if alpha < 0 or alpha > 1:
         raise ValueError("alpha should be between 0 and 1")
@@ -33,7 +33,7 @@ def _compute_hommel_value(z_vals, alpha, verbose=False):
     slopes = (alpha - p_vals[:-1]) / np.arange(n_samples - 1, 0, -1)
     slope = np.max(slopes)
     hommel_value = np.trunc(alpha / slope)
-    if verbose:
+    if verbose > 0:
         try:
             from matplotlib import pyplot as plt
         except ImportError:
@@ -109,7 +109,7 @@ def fdr_threshold(z_vals, alpha):
 
 
 def cluster_level_inference(
-    stat_img, mask_img=None, threshold=3.0, alpha=0.05, verbose=False
+    stat_img, mask_img=None, threshold=3.0, alpha=0.05, verbose=0
 ):
     """Report the proportion of active voxels for all clusters \
     defined by the input threshold.
@@ -131,7 +131,7 @@ def cluster_level_inference(
         Level of control on the true positive rate, aka true discovery
         proportion.
 
-    verbose : bool, default=False
+    verbose : int or bool, default=0
         Verbosity mode.
 
     Returns
@@ -144,6 +144,11 @@ def cluster_level_inference(
     .. footbibliography::
 
     """
+    if verbose is False:
+        verbose = 0
+    if verbose is True:
+        verbose = 1
+
     if not isinstance(threshold, list):
         threshold = [threshold]
 

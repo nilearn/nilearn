@@ -1,6 +1,12 @@
 import pytest
 
-from nilearn.experimental.surface import load_fsaverage
+from nilearn.experimental.surface import (
+    SurfaceImage,
+    fetch_destrieux,
+    fetch_nki,
+    load_fsaverage,
+    load_fsaverage_data,
+)
 
 
 def test_load_fsaverage():
@@ -10,10 +16,22 @@ def test_load_fsaverage():
     assert result["pial"].parts["left"].n_vertices == 10242  # fsaverage5
 
 
-def test_load_fsaverage_wrong_mesh_name():
-    """Give incorrect value to mesh_name argument."""
+def test_load_fsaverage_errors():
+    """Give incorrect value argument."""
     with pytest.raises(ValueError, match="'mesh' should be one of"):
         load_fsaverage(mesh_name="foo")
+
+
+def test_load_fsaverage_data_smoke():
+    assert isinstance(load_fsaverage_data(), SurfaceImage)
+
+
+def test_load_fsaverage_data_errors():
+    """Give incorrect value argument."""
+    with pytest.raises(ValueError, match="'mesh_type' must be one of"):
+        load_fsaverage_data(mesh_type="foo")
+    with pytest.raises(ValueError, match="'data_type' must be one of"):
+        load_fsaverage_data(data_type="foo")
 
 
 def test_load_fsaverage_hemispheres_have_file():
@@ -27,3 +45,10 @@ def test_load_fsaverage_hemispheres_have_file():
         mesh for mesh in result.values() if "right" in mesh.parts
     ]
     assert right_hemisphere_meshes
+
+
+def test_dfetch_datasets_errors():
+    """Give incorrect value argument."""
+    with pytest.raises(ValueError, match="'mesh_type' must be one of"):
+        fetch_nki(mesh_type="foo")
+        fetch_destrieux(mesh_type="foo")

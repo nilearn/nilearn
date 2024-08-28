@@ -1,7 +1,12 @@
 """Matplotlib colormaps useful for neuroimaging."""
 
+import contextlib
+
+import matplotlib
 import numpy as _np
 from matplotlib import cm as _cm, colors as _colors, rcParams as _rcParams
+
+from nilearn._utils.helpers import compare_version
 
 ###############################################################################
 # Custom colormaps for two-tailed symmetric statistics
@@ -291,16 +296,16 @@ _cmap_d["videen_style"] = _colors.LinearSegmentedColormap.from_list(
 globals().update(_cmap_d)
 # Register cmaps in matplotlib too
 for k, v in _cmap_d.items():
-    try:
+    if compare_version(matplotlib.__version__, ">=", "3.5.0"):
         from matplotlib import colormaps as _colormaps
-    except ImportError:
-        _register_cmap = _cm.register_cmap
+
+        _register_cmap = _colormaps.register
     else:
-        _register_cmap = _colormaps.register  # 3.5+
-    try:  # "bwr" is in latest matplotlib
+        _register_cmap = _cm.register_cmap
+
+    # "bwr" is already registered in latest matplotlib
+    with contextlib.suppress(ValueError):
         _register_cmap(name=k, cmap=v)
-    except ValueError:
-        pass
 
 
 ###############################################################################

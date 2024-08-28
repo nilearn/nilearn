@@ -4,10 +4,9 @@ import os
 import tempfile
 import warnings
 
-import nibabel as nb
 import numpy as np
 import pytest
-from nibabel import gifti
+from nibabel import Nifti1Image, freesurfer, gifti, nifti1
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 from scipy.spatial import Delaunay
 from scipy.stats import pearsonr
@@ -103,7 +102,7 @@ def test_load_surf_data_file_nii_gii(tmp_path):
         data=np.zeros((20, )), datatype='NIFTI_TYPE_FLOAT32'
     )
     gii = gifti.GiftiImage(darrays=[darray])
-    nb.save(gii, filename_gii)
+    gii.to_filename(filename_gii)
     assert_array_equal(load_surf_data(filename_gii), np.zeros((20, )))
     os.remove(filename_gii)
 
@@ -112,7 +111,7 @@ def test_load_surf_data_file_nii_gii(tmp_path):
                                                     dir=str(tmp_path))
     os.close(fd_empty)
     gii_empty = gifti.GiftiImage()
-    nb.save(gii_empty, filename_gii_empty)
+    gii_empty.to_filename(filename_gii_empty)
     with pytest.raises(ValueError,
                        match='must contain at least one data array'
                        ):
@@ -126,9 +125,9 @@ def test_load_surf_data_file_nii_gii(tmp_path):
     fd_niigz, filename_niigz = tempfile.mkstemp(suffix='.nii.gz',
                                                 dir=str(tmp_path))
     os.close(fd_niigz)
-    nii = nb.Nifti1Image(np.zeros((20, )), affine=None)
-    nb.save(nii, filename_nii)
-    nb.save(nii, filename_niigz)
+    nii = Nifti1Image(np.zeros((20, )), affine=None)
+    nii.to_filename(filename_nii)
+    nii.to_filename(filename_niigz)
     assert_array_equal(load_surf_data(filename_nii), np.zeros((20, )))
     assert_array_equal(load_surf_data(filename_niigz), np.zeros((20, )))
     os.remove(filename_nii)
@@ -162,28 +161,28 @@ def test_load_surf_data_file_freesurfer(tmp_path):
     fs_area, filename_area = tempfile.mkstemp(suffix='.area',
                                               dir=str(tmp_path))
     os.close(fs_area)
-    nb.freesurfer.io.write_morph_data(filename_area, data)
+    freesurfer.io.write_morph_data(filename_area, data)
     assert_array_equal(load_surf_data(filename_area), np.zeros((20, )))
     os.remove(filename_area)
 
     fs_curv, filename_curv = tempfile.mkstemp(suffix='.curv',
                                               dir=str(tmp_path))
     os.close(fs_curv)
-    nb.freesurfer.io.write_morph_data(filename_curv, data)
+    freesurfer.io.write_morph_data(filename_curv, data)
     assert_array_equal(load_surf_data(filename_curv), np.zeros((20, )))
     os.remove(filename_curv)
 
     fd_sulc, filename_sulc = tempfile.mkstemp(suffix='.sulc',
                                               dir=str(tmp_path))
     os.close(fd_sulc)
-    nb.freesurfer.io.write_morph_data(filename_sulc, data)
+    freesurfer.io.write_morph_data(filename_sulc, data)
     assert_array_equal(load_surf_data(filename_sulc), np.zeros((20, )))
     os.remove(filename_sulc)
 
     fd_thick, filename_thick = tempfile.mkstemp(suffix='.thickness',
                                                 dir=str(tmp_path))
     os.close(fd_thick)
-    nb.freesurfer.io.write_morph_data(filename_thick, data)
+    freesurfer.io.write_morph_data(filename_thick, data)
     assert_array_equal(load_surf_data(filename_thick), np.zeros((20, )))
     os.remove(filename_thick)
 
@@ -302,12 +301,12 @@ def test_gifti_img_to_mesh():
     coord_array = gifti.GiftiDataArray(
         data=mesh[0], datatype='NIFTI_TYPE_FLOAT32'
     )
-    coord_array.intent = nb.nifti1.intent_codes['NIFTI_INTENT_POINTSET']
+    coord_array.intent = nifti1.intent_codes['NIFTI_INTENT_POINTSET']
 
     face_array = gifti.GiftiDataArray(
         data=mesh[1], datatype='NIFTI_TYPE_FLOAT32'
     )
-    face_array.intent = nb.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE']
+    face_array.intent = nifti1.intent_codes['NIFTI_INTENT_TRIANGLE']
 
     gii = gifti.GiftiImage(darrays=[coord_array, face_array])
     coords, faces = _gifti_img_to_mesh(gii)
@@ -334,17 +333,17 @@ def test_load_surf_mesh_file_gii(tmp_path):
     os.close(fd_mesh)
     coord_array = gifti.GiftiDataArray(
         data=mesh[0],
-        intent=nb.nifti1.intent_codes['NIFTI_INTENT_POINTSET'],
+        intent=nifti1.intent_codes['NIFTI_INTENT_POINTSET'],
         datatype='NIFTI_TYPE_FLOAT32'
     )
     face_array = gifti.GiftiDataArray(
         data=mesh[1],
-        intent=nb.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'],
+        intent=nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'],
         datatype='NIFTI_TYPE_FLOAT32'
     )
 
     gii = gifti.GiftiImage(darrays=[coord_array, face_array])
-    nb.save(gii, filename_gii_mesh)
+    gii.to_filename(filename_gii_mesh)
     assert_array_almost_equal(load_surf_mesh(filename_gii_mesh)[0], mesh[0])
     assert_array_almost_equal(load_surf_mesh(filename_gii_mesh)[1], mesh[1])
     os.remove(filename_gii_mesh)
@@ -353,9 +352,8 @@ def test_load_surf_mesh_file_gii(tmp_path):
     fd_no, filename_gii_mesh_no_point = tempfile.mkstemp(suffix='.gii',
                                                          dir=str(tmp_path))
     os.close(fd_no)
-    nb.save(gifti.GiftiImage(
-            darrays=[face_array, face_array]),
-            filename_gii_mesh_no_point)
+    gii = gifti.GiftiImage(darrays=[face_array, face_array])
+    gii.to_filename(filename_gii_mesh_no_point)
     with pytest.raises(ValueError, match='NIFTI_INTENT_POINTSET'):
         load_surf_mesh(filename_gii_mesh_no_point)
     os.remove(filename_gii_mesh_no_point)
@@ -363,9 +361,8 @@ def test_load_surf_mesh_file_gii(tmp_path):
     fd_face, filename_gii_mesh_no_face = tempfile.mkstemp(suffix='.gii',
                                                           dir=str(tmp_path))
     os.close(fd_face)
-    nb.save(gifti.GiftiImage(
-        darrays=[coord_array, coord_array]),
-        filename_gii_mesh_no_face)
+    gii = gifti.GiftiImage(darrays=[coord_array, coord_array])
+    gii.to_filename(filename_gii_mesh_no_face)
     with pytest.raises(ValueError, match='NIFTI_INTENT_TRIANGLE'):
         load_surf_mesh(filename_gii_mesh_no_face)
     os.remove(filename_gii_mesh_no_face)
@@ -381,7 +378,7 @@ def test_load_surf_mesh_file_freesurfer(suffix, tmp_path):
 
     _, filename_fs_mesh = tempfile.mkstemp(suffix=suffix,
                                            dir=str(tmp_path))
-    nb.freesurfer.write_geometry(filename_fs_mesh, mesh[0], mesh[1])
+    freesurfer.write_geometry(filename_fs_mesh, mesh[0], mesh[1])
 
     assert len(load_surf_mesh(filename_fs_mesh)) == 2
     assert_array_almost_equal(load_surf_mesh(filename_fs_mesh)[0], mesh[0])
@@ -393,7 +390,7 @@ def test_load_surf_mesh_file_error(suffix, tmp_path):
     # test if files with unexpected suffixes raise errors
     mesh = generate_surf()
     _, filename_wrong = tempfile.mkstemp(suffix=suffix, dir=str(tmp_path))
-    nb.freesurfer.write_geometry(filename_wrong, mesh[0], mesh[1])
+    freesurfer.write_geometry(filename_wrong, mesh[0], mesh[1])
 
     with pytest.raises(ValueError, match='input type is not recognized'):
         load_surf_mesh(filename_wrong)
@@ -403,10 +400,10 @@ def test_load_surf_mesh_file_glob(tmp_path):
     mesh = generate_surf()
     _, fname1 = tempfile.mkstemp(suffix='.pial', dir=str(tmp_path))
 
-    nb.freesurfer.write_geometry(fname1, mesh[0], mesh[1])
+    freesurfer.write_geometry(fname1, mesh[0], mesh[1])
     _, fname2 = tempfile.mkstemp(suffix='.pial', dir=str(tmp_path))
 
-    nb.freesurfer.write_geometry(fname2, mesh[0], mesh[1])
+    freesurfer.write_geometry(fname2, mesh[0], mesh[1])
 
     with pytest.raises(ValueError, match='More than one file matching path'):
         load_surf_mesh(os.path.join(os.path.dirname(fname1), "*.pial"))
@@ -434,7 +431,7 @@ def test_load_surf_data_file_glob(tmp_path):
             data=data2D[:, f], datatype='NIFTI_TYPE_FLOAT32'
         )
         gii = gifti.GiftiImage(darrays=[darray])
-        nb.save(gii, fnames[f])
+        gii.to_filename(fnames[f])
 
     assert_array_equal(load_surf_data(
         os.path.join(os.path.dirname(fnames[0]), "glob*.gii")),
@@ -451,7 +448,7 @@ def test_load_surf_data_file_glob(tmp_path):
         data=np.ones((20, )), datatype='NIFTI_TYPE_FLOAT32'
     )
     gii = gifti.GiftiImage(darrays=[darray1, darray1, darray1])
-    nb.save(gii, fnames[-1])
+    gii.to_filename(fnames[-1])
 
     data2D = np.concatenate((data2D, np.ones((20, 3))), axis=1)
     assert_array_equal(load_surf_data(os.path.join(os.path.dirname(fnames[0]),
@@ -467,7 +464,7 @@ def test_load_surf_data_file_glob(tmp_path):
         data=np.ones((15, 1)), datatype='NIFTI_TYPE_FLOAT32'
     )
     gii = gifti.GiftiImage(darrays=[darray])
-    nb.save(gii, fnames[-1])
+    gii.to_filename(fnames[-1])
 
     with pytest.raises(ValueError,
                        match='files must contain data with the same shape'

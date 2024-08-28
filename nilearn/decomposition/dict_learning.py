@@ -15,7 +15,7 @@ from joblib import Memory
 from sklearn.decomposition import dict_learning_online
 from sklearn.linear_model import Ridge
 
-from nilearn._utils import fill_doc
+from nilearn._utils import fill_doc, logger
 from nilearn._utils.helpers import _transfer_deprecated_param_vals
 
 from ._base import _BaseDecomposition
@@ -281,22 +281,21 @@ class DictLearning(_BaseDecomposition):
             Shape (n_samples, n_features)
 
         """
-        if self.verbose:
-            print("[DictLearning] Learning initial components")
+        logger.log("Learning initial components", self.verbose)
         self._init_dict(data)
 
         _, n_features = data.shape
 
-        if self.verbose:
-            print("[DictLearning] Computing initial loadings")
+        logger.log(
+            "Computing initial loadings", verbose=self.verbose, stack_level=2
+        )
         self._init_loadings(data)
 
         dict_init = self.loadings_init_
 
         max_iter = ((n_features - 1) // self.batch_size + 1) * self.n_epochs
 
-        if self.verbose:
-            print("[DictLearning] Learning dictionary")
+        logger.log(" Learning dictionary", verbose=self.verbose, stack_level=2)
 
         # TODO: remove this when sklearn 1.0 not supported anymore;
         # replace kwargs with actual parameter name

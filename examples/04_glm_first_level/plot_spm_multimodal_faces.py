@@ -28,7 +28,7 @@ subject_data = fetch_spm_multimodal_fmri()
 # Specify timing and design matrix parameters.
 
 # repetition time, in seconds
-tr = 2.0
+t_r = 2.0
 # Sample at the beginning of each acquisition.
 slice_time_ref = 0.0
 # We use a discrete cosine transform to model signal drifts.
@@ -77,7 +77,7 @@ for idx, img in enumerate(fmri_img, start=1):
     n_scans = img.shape[-1]
     events = pd.read_table(subject_data[f"events{idx}"])
     # Define the sampling times for the design matrix
-    frame_times = np.arange(n_scans) * tr
+    frame_times = np.arange(n_scans) * t_r
     # Build design matrix with the reviously defined parameters
     design_matrix = make_first_level_design_matrix(
         frame_times,

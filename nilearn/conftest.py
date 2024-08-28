@@ -3,7 +3,6 @@
 import warnings
 
 import nibabel
-import nibabel as nb
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
@@ -31,8 +30,18 @@ collect_ignore_glob = ["reporting/_visual_testing/*"]
 try:
     import matplotlib  # noqa: F401
 except ImportError:
-    collect_ignore.extend(["plotting", "reporting", "experimental/plotting"])
+    collect_ignore.extend(
+        [
+            "plotting",
+            "reporting",
+            "experimental/plotting",
+            "experimental/reporting",
+        ]
+    )
     matplotlib = None
+    have_mpl = False
+else:
+    have_mpl = True
 
 
 def pytest_configure(config):
@@ -254,7 +263,7 @@ def img_3d_mni():
 def img_3d_mni_as_file(tmp_path):
     """Return path to a random 3D Nifti1Image in MNI space saved to disk."""
     filename = tmp_path / "img.nii"
-    nb.save(_img_3d_mni(), filename)
+    _img_3d_mni().to_filename(filename)
     return filename
 
 

@@ -12,10 +12,9 @@ import re
 import tempfile
 from pathlib import Path
 
-import nibabel
 import numpy as np
 import pytest
-from nibabel import Nifti1Image
+from nibabel import Nifti1Image, spatialimages
 from numpy.testing import assert_array_equal
 
 import nilearn as ni
@@ -30,7 +29,7 @@ from nilearn._utils.testing import (
 from nilearn.image import get_data
 
 
-class PhonyNiimage(nibabel.spatialimages.SpatialImage):
+class PhonyNiimage(spatialimages.SpatialImage):
     def __init__(self):
         self.data = np.ones((9, 9, 9, 9))
         self.my_affine = np.ones((4, 4))
@@ -592,7 +591,7 @@ def test_repr_niimgs_with_niimg(
     # Add filename long enough to qualify for shortening
     fd, tmpimg1 = tempfile.mkstemp(suffix="_very_long.nii", dir=str(tmp_path))
     os.close(fd)
-    nibabel.save(img_3d_ones_eye, tmpimg1)
+    img_3d_ones_eye.to_filename(tmpimg1)
     class_name = img_3d_ones_eye.__class__.__name__
     filename = Path(img_3d_ones_eye.get_filename())
     assert (

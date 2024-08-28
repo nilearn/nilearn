@@ -11,9 +11,9 @@ import copy
 import itertools
 import warnings
 
-import nibabel
 import numpy as np
 from joblib import Memory, Parallel, delayed
+from nibabel import Nifti1Image, Nifti1Pair, load, spatialimages
 from scipy.ndimage import gaussian_filter1d, generate_binary_structure, label
 from scipy.stats import scoreatpercentile
 
@@ -25,6 +25,7 @@ from .._utils import (
     check_niimg_3d,
     check_niimg_4d,
     fill_doc,
+    logger,
 )
 from .._utils.exceptions import DimensionError
 from .._utils.helpers import (
@@ -501,7 +502,7 @@ def _compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
     # TODO switch to force_resample=True
     # when bumping to version > 0.13
     mean_data = resampling.resample_img(
-        nibabel.Nifti1Image(mean_data, affine),
+        Nifti1Image(mean_data, affine),
         target_affine=target_affine,
         target_shape=target_shape,
         copy=False,
@@ -820,7 +821,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         has_affine = hasattr(ref_niimg, "affine")
     if not ((has_get_data or has_get_fdata) and has_affine):
         if is_str:
-            ref_niimg = nibabel.load(ref_niimg)
+            ref_niimg = load(ref_niimg)
         else:
             raise TypeError(
                 "The reference image should be a niimg."
@@ -853,10 +854,10 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
             if "cal_min" in header:
                 header["cal_min"] = np.min(data) if data.size > 0 else 0.0
     klass = ref_niimg.__class__
-    if klass is nibabel.Nifti1Pair:
+    if klass is Nifti1Pair:
         # Nifti1Pair is an internal class, without a to_filename,
         # we shouldn't return it
-        klass = nibabel.Nifti1Image
+        klass = Nifti1Image
     return klass(data, affine, header=header)
 
 
@@ -1241,7 +1242,7 @@ def binarize_img(
     )
 
     return math_img(
-        "img.astype(bool).astype(int)",
+        "img.astype(bool).astype('int8')",
         img=threshold_img(
             img,
             threshold,
@@ -1591,13 +1592,10 @@ def concat_imgs(
             ),
         )
     ):
-        if verbose > 0:
-            nii_str = (
-                f"image {niimg}"
-                if isinstance(niimg, str)
-                else f"image #{index}"
-            )
-            print(f"Concatenating {index + 1}: {nii_str}")
+        nii_str = (
+            f"image {niimg}" if isinstance(niimg, str) else f"image #{index}"
+        )
+        logger.log(f"Concatenating {index + 1}: {nii_str}", verbose)
 
         data[..., cur_4d_index : cur_4d_index + size] = _get_data(niimg)
         cur_4d_index += size
@@ -1666,7 +1664,7 @@ def copy_img(img):
     img_copy: image
         copy of input (data, affine and header)
     """
-    if not isinstance(img, nibabel.spatialimages.SpatialImage):
+    if not isinstance(img, spatialimages.SpatialImage):
         raise ValueError("Input value is not an image")
     return new_img_like(
         img,

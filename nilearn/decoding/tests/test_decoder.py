@@ -19,10 +19,10 @@ import collections
 import numbers
 import warnings
 
-import nibabel
 import numpy as np
 import pytest
 import sklearn
+from nibabel import save
 from numpy.testing import assert_array_almost_equal
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.dummy import DummyClassifier, DummyRegressor
@@ -1050,7 +1050,7 @@ def test_decoder_strings_filepaths_input(
     X, y, _ = tiny_binary_classification_data
     X_paths = [tmp_path / f"niimg{i}.nii" for i in range(X.shape[-1])]
     for i, nii_path in enumerate(X_paths):
-        nibabel.save(X.slicer[..., i], nii_path)
+        save(X.slicer[..., i], nii_path)
 
     model = Decoder(mask=NiftiMasker())
     model.fit(X_paths, y)

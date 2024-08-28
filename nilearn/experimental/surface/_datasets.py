@@ -130,6 +130,7 @@ def fetch_destrieux(
 
     fsaverage = load_fsaverage("fsaverage5")
     destrieux = datasets.fetch_atlas_surf_destrieux(**kwargs)
+    labels = [x.decode("utf-8") for x in destrieux.labels]
     # TODO fetchers usually return Bunch
     return (
         SurfaceImage(
@@ -139,5 +140,5 @@ def fetch_destrieux(
                 "right": destrieux["map_right"],
             },
         ),
-        destrieux.labels,
+        labels,
     )

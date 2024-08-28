@@ -18,6 +18,8 @@ import warnings
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
 
+from nilearn._utils import logger
+
 
 def check_events(events):
     """Test that the events data describes a valid experimental paradigm.
@@ -148,9 +150,10 @@ def _check_null_duration(events):
 def _handle_modulation(events):
     """Set the modulation column to 1 if it is not present."""
     if "modulation" in events.columns:
-        print(
+        logger.log(
             "A 'modulation' column was found in "
-            "the given events data and is used."
+            "the given events data and is used.",
+            stack_level=2,
         )
     else:
         events["modulation"] = 1

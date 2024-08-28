@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 import scipy.stats as sps
 
-from nilearn._utils import rename_parameters
+from nilearn._utils import logger, rename_parameters
 from nilearn.glm._utils import pad_contrast, z_score
 from nilearn.maskers import NiftiMasker
 
@@ -232,7 +232,9 @@ class Contrast:
         self.dof = float(dof)
         self.dim = effect.shape[0] if dim is None else dim
         if self.dim > 1 and stat_type == "t":
-            print("Automatically converted multi-dimensional t to F contrast")
+            logger.log(
+                "Automatically converted multi-dimensional t to F contrast"
+            )
             stat_type = "F"
         if stat_type not in ["t", "F"]:
             raise ValueError(
