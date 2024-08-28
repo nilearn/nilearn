@@ -1,0 +1,80 @@
+<!-- Print the warnings sorted by type first and then by filename -->
+
+{% extends "html1/index.html" %}
+<!-- URL of the extended template -->
+<!-- https://github.com/christiansandberg/pytest-reporter-html1/blob/master/pytest_reporter_html1/templates/html1/index.html -->
+
+{% block style %}
+  {{ super() }}
+
+  .warning-list {
+    margin-left: 24px;
+    margin-top: 12px;
+    widt: 90%;
+  }
+
+  #warnings ul {
+    padding: 0;
+    margin-left: 24px;
+    display: block;
+}
+
+  #warnings li {
+    display: block;
+    margin-bottom: 8px;
+  }
+
+{% endblock %}
+
+{% set title = "Nilearn test report" %}
+
+{% block warnings %}
+<div class="container">
+  <h1>Warnings</h1>
+  <details class="file">
+    <summary>
+      <h2 class="title file-title">
+        <span class="fspath"> WARNINGS </span>
+        <span class="counts">
+          <span title="{{ warnings|count }}"
+                class="status badge warning">
+            {{ warnings|count }}
+          </span>
+        </span>
+      </h2>
+    </summary>
+
+    {% set warning_types = warnings|map(attribute='category')|unique|list %}
+    {% for type in warning_types %}
+
+      {% set nb_warning = namespace(value=0) %}
+      {% for warning in warnings %}
+        {% if warning.category == type %}
+          {% set nb_warning.value = nb_warning.value + 1 %}
+        {% endif %}
+      {% endfor %}
+
+    <details class="warning-list">
+      <summary>
+        <div class="status">
+          {{ type.__name__  }}
+          <span class="badge warning counts">{{ nb_warning.value }}</span>
+        </div>
+      </summary>
+      <ul>
+        {% for warning in warnings|sort(attribute="filename") %}
+          {% if warning.category == type %}
+            <li>
+              <div>
+                <span class="filename">{{ warning.filename }}:{{ warning.lineno }}</span><br />
+                {{ warning.message }}
+              </div>
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    </details>
+    {% endfor %}
+  </details>
+</div>
+{% endblock %}

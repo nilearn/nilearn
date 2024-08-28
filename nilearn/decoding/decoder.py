@@ -490,11 +490,13 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         For Dummy estimators, parameter grid defaults to empty dictionary.
 
-    clustering_percentile: int, float, in the [0, 100], default=10
+    clustering_percentile: int, float, in the [0, 100], default=100
         Percentile of features to keep after clustering. If it is lower
         than 100, a ReNA clustering is performed as a first step of fit
         to agglomerate similar features together. ReNA is typically efficient
-        for clustering_percentile equal to 10.
+        for clustering_percentile equal to 10. Only used with
+        :class:`nilearn.decoding.FREMClassifier` and
+        :class:`nilearn.decoding.FREMRegressor`.
 
     screening_percentile: int, float, \
                           in the closed interval [0, 100], \
@@ -1104,7 +1106,12 @@ class Decoder(_BaseDecoder):
 
     cv: cross-validation generator or int, default=10
         A cross-validation generator.
-        See: https://scikit-learn.org/stable/modules/cross_validation.html
+        See: https://scikit-learn.org/stable/modules/cross_validation.html.
+        The default 10 refers to K = 10 folds of
+        :class:`~sklearn.model_selection.StratifiedKFold` when groups is None
+        in the fit method for this class. If groups is specified but ``cv``
+        is not set to custom CV splitter, default is
+        :class:`~sklearn.model_selection.LeaveOneGroupOut`.
 
     param_grid: dict of str to sequence, or sequence of such. Default None
         The parameter grid to explore, as a dictionary mapping estimator
@@ -1239,9 +1246,14 @@ class DecoderRegressor(MultiOutputMixin, _BaseDecoder):
         masker with default parameters. Refer to NiftiMasker or
         MultiNiftiMasker to check for default parameters. Default None
 
-    cv: cross-validation generator or int, optional (default 10)
+    cv: cross-validation generator or int, default=10
         A cross-validation generator.
-        See: https://scikit-learn.org/stable/modules/cross_validation.html
+        See: https://scikit-learn.org/stable/modules/cross_validation.html.
+        The default 10 refers to K = 10 folds of
+        :class:`~sklearn.model_selection.StratifiedKFold` when groups is None
+        in the fit method for this class. If groups is specified but ``cv``
+        is not set to custom CV splitter, default is
+        :class:`~sklearn.model_selection.LeaveOneGroupOut`.
 
     param_grid: dict of str to sequence, or sequence of such, default=None
         The parameter grid to explore, as a dictionary mapping estimator

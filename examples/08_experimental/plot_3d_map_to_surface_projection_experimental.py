@@ -45,8 +45,6 @@ fsaverage_meshes = load_fsaverage()
 
 import numpy as np
 
-from nilearn import surface
-
 fsaverage_curvature = load_fsaverage_data(data_type="curvature")
 curv_right_sign = np.sign(fsaverage_curvature.data.parts["right"])
 
@@ -57,14 +55,7 @@ from nilearn.experimental.surface import SurfaceImage
 
 img = SurfaceImage(
     mesh=fsaverage_meshes["pial"],
-    data={
-        "left": surface.vol_to_surf(
-            stat_img, fsaverage_meshes["pial"].parts["left"]
-        ),
-        "right": surface.vol_to_surf(
-            stat_img, fsaverage_meshes["pial"].parts["right"]
-        ),
-    },
+    data=stat_img,
 )
 
 # %%
@@ -226,14 +217,7 @@ big_fsaverage_sulcal = load_fsaverage_data(
 
 big_img = SurfaceImage(
     mesh=big_fsaverage_meshes["pial"],
-    data={
-        "left": surface.vol_to_surf(
-            stat_img, big_fsaverage_meshes["pial"].parts["left"]
-        ),
-        "right": surface.vol_to_surf(
-            stat_img, big_fsaverage_meshes["pial"].parts["right"]
-        ),
-    },
+    data=stat_img,
 )
 
 plot_surf_stat_map(

@@ -9,9 +9,9 @@ import xml.etree.ElementTree
 from pathlib import Path
 from tempfile import mkdtemp
 
-import nibabel as nb
 import numpy as np
 import pandas as pd
+from nibabel import freesurfer, load
 from sklearn.utils import Bunch
 
 from .._utils import check_niimg, fill_doc, logger
@@ -1829,8 +1829,8 @@ def fetch_atlas_surf_destrieux(
         )[0]
         annots.append(annot)
 
-    annot_left = nb.freesurfer.read_annot(annots[0])
-    annot_right = nb.freesurfer.read_annot(annots[1])
+    annot_left = freesurfer.read_annot(annots[0])
+    annot_right = freesurfer.read_annot(annots[1])
 
     return Bunch(
         labels=annot_left[2],
@@ -1889,7 +1889,7 @@ def _download_talairach(talairach_dir, verbose):
         temp_file = fetch_files(
             temp_dir, [("talairach.nii", atlas_url, {})], verbose=verbose
         )[0]
-        atlas_img = nb.load(temp_file, mmap=False)
+        atlas_img = load(temp_file, mmap=False)
         atlas_img = check_niimg(atlas_img)
     finally:
         shutil.rmtree(temp_dir)
