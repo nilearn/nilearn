@@ -310,11 +310,11 @@ def _check_wn(btype, freq, nyq):
         )
 
     elif freq < 0.0:  # equal to 0.0 is okay
-        freq = nyq * np.finfo(1.0).eps
+        freq = nyq * np.finfo(np.float32).eps
         warnings.warn(
             f"The frequency specified for the {btype} pass filter is too "
             "low to be handled by a digital filter (must be non-negative). "
-            f"It has been set to eps: {freq}"
+            f"It has been set to eps: {freq}."
         )
 
     return freq

@@ -250,6 +250,7 @@ def test_butterworth_warnings_HPF_too_low(data_butterworth_single_timeseries):
     sampling = 1
     high_pass = -1
     low_pass = 0.4
+
     with pytest.warns(
         UserWarning,
         match="The frequency specified for the high pass filter is too low",
