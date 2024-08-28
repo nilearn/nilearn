@@ -300,8 +300,9 @@ def _check_wn(btype, freq, nyq):
     we force the critical frequencies to be slightly less than the Nyquist
     frequency, and slightly more than zero.
     """
+    EPS = np.finfo(np.float32).eps
     if freq >= nyq:
-        freq = nyq - (nyq * 10 * np.finfo(1.0).eps)
+        freq = nyq - (nyq * 10 * EPS)
         warnings.warn(
             f"The frequency specified for the {btype} pass filter is "
             "too high to be handled by a digital filter "
@@ -310,7 +311,7 @@ def _check_wn(btype, freq, nyq):
         )
 
     elif freq < 0.0:  # equal to 0.0 is okay
-        freq = nyq * np.finfo(np.float32).eps
+        freq = nyq * EPS
         warnings.warn(
             f"The frequency specified for the {btype} pass filter is too "
             "low to be handled by a digital filter (must be non-negative). "
