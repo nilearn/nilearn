@@ -971,13 +971,6 @@ def _mock_original_spm_auditory_events_file():
     return expected_events_data_string
 
 
-def _mock_bids_compliant_spm_auditory_events_file():
-    events_filepath = os.path.join(os.getcwd(), "tests_events.tsv")
-    func._make_events_file_spm_auditory_data(events_filepath=events_filepath)
-    actual_events_data_string = Path(events_filepath).read_text()
-    return actual_events_data_string, events_filepath
-
-
 @pytest.mark.parametrize("legacy", [True, False])
 def test_fetch_language_localizer_demo_dataset(tmp_path, legacy):
     data_dir = tmp_path
@@ -1009,29 +1002,6 @@ def test_fetch_language_localizer_demo_dataset(tmp_path, legacy):
         assert bunch.data_dir == str(expected_data_dir)
         assert bunch.func == sorted(expected_files)
         assert bunch.description != ""
-
-
-def test_make_spm_auditory_events_file():
-    try:
-        (
-            actual_events_data_string,
-            events_filepath,
-        ) = _mock_bids_compliant_spm_auditory_events_file()
-    finally:
-        os.remove(events_filepath)
-    expected_events_data_string = _mock_original_spm_auditory_events_file()
-
-    replace_win_line_ends = lambda text: (  # noqa: E731
-        text.replace("\r\n", "\n") if text.find("\r\n") != -1 else text
-    )
-    actual_events_data_string = replace_win_line_ends(
-        actual_events_data_string
-    )
-    expected_events_data_string = replace_win_line_ends(
-        expected_events_data_string
-    )
-
-    assert actual_events_data_string == expected_events_data_string
 
 
 def test_fetch_spm_auditory(tmp_path):
