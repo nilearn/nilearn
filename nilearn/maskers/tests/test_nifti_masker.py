@@ -152,7 +152,7 @@ def test_matrix_orientation():
     np.testing.assert_array_almost_equal(get_data(recovered), get_data(fmri))
 
 
-def test_mask_3d_error(tmp_path, shape_4d_default, affine_eye):
+def test_mask_3d_error(shape_4d_default, affine_eye):
     """Raise an error if 4D mask is provided with no img to fit."""
     # Dummy mask
     data = np.zeros(shape_4d_default)
@@ -212,10 +212,9 @@ def test_mask_4d(shape_3d_default, affine_eye):
     assert_array_equal(data_trans3, data_trans_direct_diff)
 
 
-def test_4d_single_scan(rng, data_1, shape_3d_default, affine_eye):
+def test_4d_single_scan(rng, shape_3d_default, affine_eye):
     """Test that list of 4D images with last dim=1 is treated as 3D."""
     shape_3d = (10, 10, 10)
-    shape_4d = shape_3d + (1,)
     mask = np.zeros(shape_3d)
     mask[3:7, 3:7, 3:7] = 1
     mask_img = Nifti1Image(mask, affine_eye)
@@ -245,17 +244,13 @@ def test_4d_single_scan(rng, data_1, shape_3d_default, affine_eye):
     assert_array_equal(data_trans_4d, data_trans_5d)
 
 
-def test_5d(rng, shape_3d_default, affine_eye):
+def test_5d(rng, shape_3d_default, mask_img_1, affine_eye):
     """Test that list of 4D images with last dim=3 raises a DimensionError."""
-    mask = np.zeros(shape_3d_default)
-    mask[3:7, 3:7, 3:7] = 1
-    mask_img = Nifti1Image(mask, affine_eye)
-
     shape_4d = shape_3d_default + (3,)
     data_5d = [rng.random(shape_4d) for _ in range(5)]
     data_5d = [Nifti1Image(d, affine_eye) for d in data_5d]
 
-    masker = NiftiMasker(mask_img=mask_img)
+    masker = NiftiMasker(mask_img=mask_img_1)
     masker.fit()
 
     with pytest.raises(
@@ -445,9 +440,9 @@ def test_filter_and_mask(affine_eye):
     assert data.shape == (5, 24000)
 
 
-def test_dtype():
-    data_32 = np.zeros((9, 9, 9), dtype=np.float32)
-    data_64 = np.zeros((9, 9, 9), dtype=np.float64)
+def test_dtype(shape_3d_default):
+    data_32 = np.zeros(shape_3d_default, dtype=np.float32)
+    data_64 = np.zeros(shape_3d_default, dtype=np.float64)
     data_32[2:-2, 2:-2, 2:-2] = 10
     data_64[2:-2, 2:-2, 2:-2] = 10
 
