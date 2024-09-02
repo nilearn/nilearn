@@ -2759,7 +2759,7 @@ def fetch_spm_auditory(
         main_path=Path(data_dir) / "MoAEpilot",
         modality_folder="anat",
         file_tag="T1w",
-    )
+    )[0]
     func = get_bids_files(
         main_path=Path(data_dir) / "MoAEpilot",
         modality_folder="func",

@@ -14,9 +14,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
-from nibabel import Nifti1Image, save
+from nibabel import Nifti1Image
 from sklearn.utils import Bunch
 
+from nilearn._utils.data_gen import create_fake_bids_dataset
 from nilearn.datasets import func
 from nilearn.datasets._utils import get_dataset_dir
 from nilearn.datasets.tests._testing import dict_to_archive, list_to_archive
@@ -1033,33 +1034,23 @@ def test_make_spm_auditory_events_file():
     assert actual_events_data_string == expected_events_data_string
 
 
-def test_fetch_spm_auditory(affine_eye, tmp_path):
-    saf = [f"fM00223/fM00223_{int(index):03}.img" for index in range(4, 100)]
-    saf_ = [f"fM00223/fM00223_{int(index):03}.hdr" for index in range(4, 100)]
-
-    data_dir = str(tmp_path / "spm_auditory")
-    os.mkdir(data_dir)
-    subject_dir = os.path.join(data_dir, "sub001")
-    os.mkdir(subject_dir)
-    os.mkdir(os.path.join(subject_dir, "fM00223"))
-    os.mkdir(os.path.join(subject_dir, "sM00223"))
-
-    path_img = str(tmp_path / "tmp.img")
-    path_hdr = str(tmp_path / "tmp.hdr")
-    save(Nifti1Image(np.zeros((2, 3, 4)), affine_eye), path_img)
-    shutil.copy(path_img, os.path.join(subject_dir, "sM00223/sM00223_002.img"))
-    shutil.copy(path_hdr, os.path.join(subject_dir, "sM00223/sM00223_002.hdr"))
-    for file_ in saf:
-        shutil.copy(path_img, os.path.join(subject_dir, file_))
-    for file_ in saf_:
-        shutil.copy(path_hdr, os.path.join(subject_dir, file_))
+def test_fetch_spm_auditory(tmp_path):
+    create_fake_bids_dataset(
+        base_dir=tmp_path,
+        n_sub=1,
+        n_ses=0,
+        tasks=["auditory"],
+        n_runs=[1],
+        with_derivatives=False,
+    )
+    data_dir = tmp_path / "spm_auditory" / "MoAEpilot"
+    shutil.move(tmp_path / "bids_dataset", data_dir)
 
     dataset = func.fetch_spm_auditory(data_dir=tmp_path)
 
     assert isinstance(dataset, Bunch)
     assert isinstance(dataset.anat, str)
     assert isinstance(dataset.func[0], str)
-    assert len(dataset.func) == 96
 
     assert dataset.description != ""
 
