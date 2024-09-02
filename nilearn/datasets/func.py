@@ -11,22 +11,16 @@ import warnings
 from io import BytesIO
 from pathlib import Path
 
-import nibabel
-import nibabel as nib
 import numpy as np
 import pandas as pd
+from nibabel import Nifti1Image, four_to_three, load, save
 from scipy.io import loadmat
-
-try:
-    from scipy.io.matlab import MatReadError
-except ImportError:  # SciPy < 1.8
-    from scipy.io.matlab.miobase import MatReadError
-
+from scipy.io.matlab import MatReadError
 from sklearn.utils import Bunch
 
 from nilearn.image import get_data
 
-from .._utils import check_niimg, fill_doc
+from .._utils import check_niimg, fill_doc, logger
 from .._utils.numpy_conversions import csv_to_array
 from ._utils import (
     fetch_files,
@@ -789,13 +783,6 @@ def fetch_localizer_contrasts(
         data_types.append("tmaps")
     filenames = []
 
-    def _is_valid_path(path, index, verbose):
-        if path not in index:
-            if verbose > 0:
-                print(f"Skipping path '{path}'...")
-            return False
-        return True
-
     for subject_id in subject_ids:
         for data_type in data_types:
             for _, contrast in enumerate(contrasts_wrapped):
@@ -908,6 +895,13 @@ def fetch_localizer_contrasts(
         warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
         csv_data = csv_data.to_records(index=False)
     return Bunch(ext_vars=csv_data, description=fdescr, **files)
+
+
+def _is_valid_path(path, index, verbose):
+    if path not in index:
+        logger.log(f"Skipping path '{path}'...", verbose)
+        return False
+    return True
 
 
 @fill_doc
@@ -1334,8 +1328,8 @@ def _load_mixed_gambles(zmap_imgs):
     X = X[mask, :].T
     tmp = np.zeros(list(mask.shape) + [len(X)])
     tmp[mask, :] = X.T
-    mask_img = nibabel.Nifti1Image(mask.astype("uint8"), affine)
-    X = nibabel.four_to_three(nibabel.Nifti1Image(tmp, affine))
+    mask_img = Nifti1Image(mask.astype("uint8"), affine)
+    X = four_to_three(Nifti1Image(tmp, affine))
     return X, y, mask_img
 
 
@@ -1700,6 +1694,10 @@ def fetch_surf_nki_enhanced(
                          dominant hand and sex for each subject.
         - 'description': data description of the release and references.
 
+    Note that the it may be necessary
+    to coerce to float the data loaded from the Gifti files
+    to avoid issues with scipy >= 0.14.0.
+
     References
     ----------
     .. footbibliography::
@@ -1961,7 +1959,7 @@ def fetch_development_fmri(
     """Fetch movie watching based brain development dataset (fMRI).
 
     The data is downsampled to 4mm resolution for convenience
-    with a repetition time (TR) of 2 secs.
+    with a repetition time (t_r) of 2 secs.
     The origin of the data is coming from OpenNeuro. See Notes below.
 
     Please cite :footcite:t:`Richardson2018`
@@ -2121,7 +2119,7 @@ def _filter_csv_by_n_subjects(participants, n_adult, n_child):
         "participant_id"
     ][:n_adult]
     ids = np.hstack([adult_ids, child_ids])
-    participants = participants[np.in1d(participants["participant_id"], ids)]
+    participants = participants[np.isin(participants["participant_id"], ids)]
     participants = participants[np.argsort(participants, order="Child_Adult")]
     return participants
 
@@ -2696,7 +2694,7 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
 
 
 def _download_spm_auditory_data(data_dir, subject_dir, subject_id):
-    print("Data absent, downloading...")
+    logger.log("Data absent, downloading...", stack_level=2)
     url = (
         "https://www.fil.ion.ucl.ac.uk/spm/download/data/MoAEpilot/"
         "MoAEpilot.zip"
@@ -2706,7 +2704,9 @@ def _download_spm_auditory_data(data_dir, subject_dir, subject_id):
     try:
         uncompress_file(archive_path)
     except Exception:
-        print("Archive corrupted, trying to download it again.")
+        logger.log(
+            "Archive corrupted, trying to download it again.", stack_level=2
+        )
         return fetch_spm_auditory(
             data_dir=data_dir, data_name="", subject_id=subject_id
         )
@@ -2739,7 +2739,7 @@ def _prepare_downloaded_spm_auditory_data(subject_dir):
         if os.path.exists(file_path):
             subject_data[file_name] = file_path
         else:
-            print(f"{file_name} missing from filelist!")
+            logger.log(f"{file_name} missing from filelist!", stack_level=2)
             return None
 
     _subject_data = {
@@ -2753,10 +2753,10 @@ def _prepare_downloaded_spm_auditory_data(subject_dir):
     }
     # volumes for this dataset of shape (64, 64, 64, 1); let's fix this
     for x in _subject_data["func"]:
-        vol = nib.load(x)
+        vol = load(x)
         if len(vol.shape) == 4:
-            vol = nib.Nifti1Image(get_data(vol)[:, :, :, 0], vol.affine)
-            nib.save(vol, x)
+            vol = Nifti1Image(get_data(vol)[:, :, :, 0], vol.affine)
+            save(vol, x)
 
     _subject_data["anat"] = [
         subject_data[x]
@@ -2765,10 +2765,10 @@ def _prepare_downloaded_spm_auditory_data(subject_dir):
     ][0]
 
     # ... same thing for anat
-    vol = nib.load(_subject_data["anat"])
+    vol = load(_subject_data["anat"])
     if len(vol.shape) == 4:
-        vol = nib.Nifti1Image(get_data(vol)[:, :, :, 0], vol.affine)
-        nib.save(vol, _subject_data["anat"])
+        vol = Nifti1Image(get_data(vol)[:, :, :, 0], vol.affine)
+        save(vol, _subject_data["anat"])
 
     return Bunch(**_subject_data)
 
@@ -2807,8 +2807,8 @@ def _make_events_file_spm_auditory_data(events_filepath):
     None
 
     """
-    tr = 7.0
-    epoch_duration = 6 * tr  # duration in seconds
+    t_r = 7.0
+    epoch_duration = 6 * t_r  # duration in seconds
     conditions = ["rest", "active"] * 8
     n_blocks = len(conditions)
     duration = epoch_duration * np.ones(n_blocks)
@@ -2862,7 +2862,7 @@ def fetch_spm_auditory(
     spm_auditory_data = _prepare_downloaded_spm_auditory_data(subject_dir)
     try:
         spm_auditory_data["events"]
-    except KeyError:
+    except (KeyError, TypeError):
         events_filepath = _make_path_events_file_spm_auditory_data(
             spm_auditory_data
         )
@@ -2884,9 +2884,10 @@ def _get_func_data_spm_multimodal(subject_dir, session, _subject_data):
         )
     )
     if len(session_func) < 390:
-        print(
+        logger.log(
             f"Missing {390 - len(session_func)} functional scans "
-            f"for session {session}."
+            f"for session {session}.",
+            stack_level=2,
         )
         return None
 
@@ -2899,7 +2900,7 @@ def _get_session_trials_spm_multimodal(subject_dir, session, _subject_data):
         subject_dir, f"fMRI/trials_ses{int(session)}.mat"
     )
     if not os.path.isfile(sess_trials):
-        print(f"Missing session file: {sess_trials}")
+        logger.log(f"Missing session file: {sess_trials}", stack_level=2)
         return None
 
     _subject_data[f"trials_ses{int(session)}"] = sess_trials
@@ -2909,7 +2910,7 @@ def _get_session_trials_spm_multimodal(subject_dir, session, _subject_data):
 def _get_anatomical_data_spm_multimodal(subject_dir, _subject_data):
     anat = os.path.join(subject_dir, "sMRI/smri.img")
     if not os.path.isfile(anat):
-        print("Missing structural image.")
+        logger.log("Missing structural image.", stack_level=2)
         return None
 
     _subject_data["anat"] = anat
@@ -2956,7 +2957,7 @@ def _glob_spm_multimodal_fmri_data(subject_dir):
 
 
 def _download_data_spm_multimodal(data_dir, subject_dir, subject_id):
-    print("Data absent, downloading...")
+    logger.log("Data absent, downloading...", stack_level=2)
     urls = [
         # fmri
         (
@@ -2976,7 +2977,10 @@ def _download_data_spm_multimodal(data_dir, subject_dir, subject_id):
         try:
             uncompress_file(archive_path)
         except Exception:
-            print("Archive corrupted, trying to download it again.")
+            logger.log(
+                "Archive corrupted, trying to download it again.",
+                stack_level=2,
+            )
             return fetch_spm_multimodal_fmri(
                 data_dir=data_dir, data_name="", subject_id=subject_id
             )
@@ -2993,7 +2997,7 @@ def _make_events_filepath_spm_multimodal_fmri(_subject_data, session):
 
 
 def _make_events_file_spm_multimodal_fmri(_subject_data, session):
-    tr = 2.0
+    t_r = 2.0
     timing = loadmat(
         _subject_data[f"trials_ses{int(session)}"],
         squeeze_me=True,
@@ -3002,7 +3006,7 @@ def _make_events_file_spm_multimodal_fmri(_subject_data, session):
     faces_onsets = timing["onsets"][0].ravel()
     scrambled_onsets = timing["onsets"][1].ravel()
     onsets = np.hstack((faces_onsets, scrambled_onsets))
-    onsets *= tr  # because onsets were reporting in 'scans' units
+    onsets *= t_r  # because onsets were reporting in 'scans' units
     conditions = ["faces"] * len(faces_onsets) + ["scrambled"] * len(
         scrambled_onsets
     )
@@ -3103,7 +3107,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
             # glob func data for session
             session_func = os.path.join(subject_dir, f"run{int(run)}.nii.gz")
             if not os.path.isfile(session_func):
-                print(f"Missing functional scan for session {int(run)}.")
+                logger.log(f"Missing functional scan for session {int(run)}.")
                 return None
 
             _subject_data[f"func{int(run)}"] = session_func
@@ -3111,7 +3115,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
             # glob design matrix .npz file
             sess_dmtx = os.path.join(subject_dir, f"run{int(run)}_design.npz")
             if not os.path.isfile(sess_dmtx):
-                print(f"Missing run file: {sess_dmtx}")
+                logger.log(f"Missing run file: {sess_dmtx}")
                 return None
 
             _subject_data[f"design_matrix{int(run)}"] = sess_dmtx
@@ -3119,7 +3123,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
         # glob for mask data
         mask = os.path.join(subject_dir, "mask.nii.gz")
         if not os.path.isfile(mask):
-            print("Missing mask image.")
+            logger.log("Missing mask image.")
             return None
 
         _subject_data["mask"] = mask
@@ -3134,7 +3138,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
         return data
 
     # No. Download the data
-    print("Data absent, downloading...")
+    logger.log("Data absent, downloading...")
     url = "https://nipy.org/data-packages/nipy-data-0.2.tar.gz"
 
     archive_path = os.path.join(data_dir, os.path.basename(url))
@@ -3142,7 +3146,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     try:
         uncompress_file(archive_path)
     except Exception:
-        print("Archive corrupted, trying to download it again.")
+        logger.log("Archive corrupted, trying to download it again.")
         data = fetch_fiac_first_level(data_dir=data_dir)
         data.description = description
         return data

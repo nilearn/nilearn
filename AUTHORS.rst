@@ -56,10 +56,12 @@ Some other past or present contributors are:
 * `Alexandre Gramfort`_: Meta, France
 * `Alexandre Savio`_
 * `Alexandre Cionca`_: Centre Hospitalier Universitaire Vaudoise, Lausanne, Switzerland
+* `Alexandre Sayal`_: CIBIT, University of Coimbra, Portugal
 * `Alexis Thual`_: Inria, Saclay, France
 * `Alisha Kodibagkar`_: MIT McGovern Institute, Cambridge, Massachusetts, United States
 * `Amadeus Kanaan`_
 * `Ana Luisa Pinho`_: Western University, London, Ontario, Canada
+* `Anand Joshi`_: University of Southern California, Los Angeles, California, United States
 * `Andrés Hoyos Idrobo`_: Rakuten, France
 * `Anne-Sophie Kieslinger`_: Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig, Germnay
 * `Ariel Rokem`_: University of Washington, Psychology, Seattle, Washington, 98107, USA
@@ -148,6 +150,7 @@ Some other past or present contributors are:
 * `Michelle Wang`_: Origami lab, McGill University, Montréal, Canada
 * `Mohammad Torabi`_: Origami lab, McGill University, Montréal, Canada
 * `Moritz Boos`_
+* `Mudassir Chapra`_
 * `Myeong Seop Song`_
 * `Natasha Clarke`_: @SIMEXP, Montréal, Canada
 * `Neelay Shah`_: Max Planck Institute for Intelligent Systems, Germany
@@ -179,6 +182,7 @@ Some other past or present contributors are:
 * `Sam Buck Johnson`_
 * `Sami Jawhar`_
 * `Simon Steinkamp`_: Danish Research Centre for Magnetic Resonance, Copenhagen University Hospital Amager & Hvidovre, Copenhagen, Denmark.
+* `Sin Kim`_: Korea Advanced Institute of Science and Technology: Daejeon, KR
 * `Sourav Singh`_
 * `Steven Meisler`_: Harvard-MIT Division of Health Sciences and Technology, Cambridge, Massachusetts, USA
 * `Suramya Pokharel`_: Tribhuvan University, Kathmandu, Nepal
@@ -194,6 +198,7 @@ Some other past or present contributors are:
 * `Virgile Fritsch`_: Inria, Saclay, France
 * `Yaroslav Halchenko`_: Dartmouth College, PBS, Hanover, New Hampshire, USA
 * `Yasmin Mzayek`_: Inria, Saclay, France
+* `Yichun Huang`_: Peking University, Beijing, China
 * `Zvi Baratz`_: Tel-Aviv University, Israel
 * `Óscar Nájera`_: Checkmk
 

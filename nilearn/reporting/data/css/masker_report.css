@@ -1,3 +1,152 @@
+/* GLOBALS */
+:root {
+  --main-bg-color: white;
+}
+
+/* ALIASES */
+.m-0 {
+  margin: 0px;
+}
+.mt-1 {
+  margin-top: 4px;
+}
+.mt-2 {
+  margin-top: 8px;
+}
+.mt-3 {
+  margin-top: 12px;
+}
+.mb-2 {
+  margin-bottom: 8px;
+}
+.ml-2 {
+  margin-left: 8px;
+}
+.my-0 {
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+.my-1 {
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+.my-2 {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.p-0 {
+  padding: 0px;
+}
+.p-1 {
+  padding: 4px;
+}
+.p-2 {
+  padding: 8px;
+}
+.p-3 {
+  padding: 12px;
+}
+.p-4 {
+  padding: 24px;
+}
+.pl-2 {
+  padding-left: 8px;
+}
+.pl-3 {
+  padding-left: 12px;
+}
+.pl-5 {
+  padding-left: 48px;
+}
+.pt-0 {
+  padding-top: 0px;
+}
+.pt-2 {
+  padding-top: 8px;
+}
+.pt-3 {
+  padding-top: 12px;
+}
+.py-2 {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.d-flex {
+  display: flex;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.justify-content-center {
+  justify-content: center;
+}
+
+.justify-content-evenly {
+  justify-content: space-evenly;
+}
+
+.justify-content-left {
+  justify-content: left;
+}
+
+.justify-content-space-around {
+  justify-content: space-around;
+}
+
+.fw-bold {
+  font-weight: bold;
+}
+.fw-200 {
+  font-weight: 200;
+}
+
+.fs-1 {
+  font-size: 8px;
+}
+.fs-2 {
+  font-size: 12px;
+}
+.fs-3 {
+  font-size: 16px;
+}
+.fs-5 {
+  font-size: 36px;
+}
+
+@media (max-width: 1023px) {
+  .fs-5 {
+    font-size: 30px;
+  }
+}
+
+.border {
+  border-style: solid;
+}
+
+.border-1 {
+  border-width: 1pt;
+}
+
+.rounded-1 {
+  border-radius: 4px;
+}
+.rounded-2 {
+  border-radius: 8px;
+}
+.rounded-top-2 {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+/* -----------------------  Pure framework ----------------------- */
+
 /* Add a gutter to Pure's Columns */
 .pure-g > div {
   -webkit-box-sizing: border-box;
@@ -52,104 +201,208 @@ https://github.com/yahoo/pure/blob/master/LICENSE.md
 End pure-button class definition from pure-min.css
 */
 
-div.nilearn_report {
-  padding-top: 0px;
-  border: solid rgb(150, 150, 150);
-  border-width: 1pt;
-  border-radius: 6pt;
-  overflow: hidden; /* Needed to avoid scrolling in jupyter :( */
-  color: black;
-  background-color: white;
+.btn {
+  background-color: #3498db;
+  color: white;
+  padding: 6px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
 }
 
-.terminal div.nilearn_report {
+.btn-xsmall {
+  font-size: 12px;
+}
+
+.btn-small {
+  font-size: 14px;
+}
+
+.btn:hover,
+.btn:focus {
+  background-color: #2980b9;
+}
+
+.btn-container {
+  float: left;
+  width: 33%;
+}
+
+.scroll-x {
+  overflow-x: scroll;
+}
+.scroll-y {
+  overflow-y: scroll;
+}
+
+/* -----------------------  Warning banner  ----------------------- */
+.warning {
+  border-color: red;
+  color: red;
+}
+.warning h2:first-child {
+  background-color: #f5f5f5;
+}
+
+/* -----------------------  Navbar  ----------------------- */
+/* Adapted from Pure CSS navbar : https://purecss.io/layouts/tucked-menu-vertical/  */
+.navbar {
+  position: sticky; /* Apply the sticky positioning */
+  top: 0; /* Stick the element to the top of the viewport */
+  z-index: 100; /* Ensure the navbar is above other content */
+  background-color: #f5f5f5;
+  margin-bottom: 1em;
+  -webkit-font-smoothing: antialiased;
+  height: 2.1em;
+  overflow: hidden;
+  -webkit-transition: height 0.5s;
+  -moz-transition: height 0.5s;
+  -ms-transition: height 0.5s;
+  transition: height 0.5s;
+}
+.navbar.open {
+  height: 16em;
+}
+
+.custom-toggle {
+  width: 34px;
+  height: 34px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: none;
+}
+
+.custom-toggle .bar {
+  background-color: black;
+  display: block;
+  width: 20px;
+  height: 2px;
+  border-radius: 100px;
+  position: absolute;
+  top: 18px;
+  right: 7px;
+  -webkit-transition: all 0.5s;
+  -moz-transition: all 0.5s;
+  -ms-transition: all 0.5s;
+  transition: all 0.5s;
+}
+
+.custom-toggle .bar:first-child {
+  -webkit-transform: translateY(-6px);
+  -moz-transform: translateY(-6px);
+  -ms-transform: translateY(-6px);
+  transform: translateY(-6px);
+}
+
+.custom-toggle.x .bar {
+  -webkit-transform: rotate(45deg);
+  -moz-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+
+.custom-toggle.x .bar:first-child {
+  -webkit-transform: rotate(-45deg);
+  -moz-transform: rotate(-45deg);
+  -ms-transform: rotate(-45deg);
+  transform: rotate(-45deg);
+}
+
+@media (max-width: 1023px) {
+  .custom-toggle {
+    display: block;
+  }
+}
+
+/* -----------------------  Nilearn report  ----------------------- */
+.nilearn-report {
+  border-color: rgb(150, 150, 150);
+  overflow: hidden; /* Needed to avoid scrolling in jupyter :( */
+  color: black;
+  background-color: var(--main-bg-color);
+  height: 800px;
+  overflow-y: scroll;
+}
+
+.nilearn-report section {
+  margin: 8px;
+  padding: 8px;
+}
+.terminal .nilearn-report {
   max-width: min(50ex, 100vw); /* Needed in vscode */
 }
 
-/* Isolate us a bit from the styles specified by other stylesheets */
-
-div.nilearn_report h1 {
-  text-align: left;
-  margin-left: 0pt;
-  margin-right: 0pt;
-  padding-top: 5pt;
-  font-size: 1.8em;
-  padding-left: 5pt;
-}
-
-div.nilearn_report h1:first-child {
-  margin-top: 0pt;
+.nilearn-report h1:first-child {
   background-color: #f5f5f5;
-  border-radius: 6pt 6pt 0pt 0pt;
-  padding-left: 5pt;
+  text-align: left;
 }
 
-div.nilearn_report summary::-webkit-details-marker {
+.nilearn-report summary::-webkit-details-marker {
   margin-right: 2px;
 }
 
-div.nilearn_report summary:focus {
+.nilearn-report summary:focus {
   outline-style: none;
 }
 
-div.nilearn_report table {
+.nilearn-report .table-container {
+  overflow-x: scroll;
+  overflow-y: scroll;
+  max-height: 700px;
+}
+
+.nilearn-report table {
   margin: 50px auto;
+  max-height: 500px;
 }
 
-div.nilearn_report thead th {
+.nilearn-report thead th {
   text-align: center;
-}
-
-div.nilearn_report tbody tr:nth-child(even) {
+  vertical-align: middle;
+  position: sticky;
+  top: 0;
   background-color: #ddd;
 }
 
-div.nilearn_report div.raise {
-  z-index: 1;
+.nilearn-report tbody tr:nth-child(even) {
+  background-color: #ddd;
 }
 
 /* Tooltip container */
-div.nilearn_report .withtooltip {
+.nilearn-report .withtooltip {
   position: relative;
-  border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
 }
 
 /* Tooltip text */
-div.nilearn_report .withtooltip .tooltiptext {
+.nilearn-report .withtooltip .tooltiptext {
   visibility: hidden;
   max-width: 35em;
-  width: 90%;
   background-color: rgba(24, 24, 24, 0.9);
   color: #fff;
-  text-align: left;
-  font-size: 12pt;
-  font-weight: 200;
-  border-radius: 6px;
-  padding: 5px;
-
-  margin-left: 3pt;
+  text-align: center;
 
   /* Position the tooltip text - see examples below! */
   position: absolute;
-  z-index: 2;
+  z-index: 200;
 
   width: 99%;
-  left: 2pt;
+  left: 8px;
   top: 133%;
 }
 
 /* Show the tooltip text when you mouse over the tooltip container */
-div.nilearn_report .withtooltip:hover .tooltiptext {
+.nilearn-report .withtooltip:hover .tooltiptext {
   visibility: visible;
 }
 
-div.nilearn_report .image {
+.nilearn-report .image {
   position: relative;
   height: auto;
   width: 100%;
 }
 
-div.nilearn_report .image .overlay {
+.nilearn-report .image .overlay {
   position: absolute;
   top: 0;
   left: 0;
@@ -160,48 +413,10 @@ div.nilearn_report .image .overlay {
   -webkit-transition: 0.5s ease;
 }
 
-div.nilearn_report .image:hover .overlay {
+.nilearn-report .image:hover .overlay {
   opacity: 1;
 }
 
-.elem-warn {
-  color: #ff0000;
-  font-weight: bold;
-}
-
-.btn {
-  background-color: #3498db;
-  color: white;
-  padding: 6px;
-  font-size: 16px;
-  border: none;
-  cursor: pointer;
-}
-
-.btn:hover,
-.btn:focus {
-  background-color: #2980b9;
-}
-
-.buttonContainer {
-  float: left;
-  width: 33%;
-}
-
-.empty {
-  height: 60px;
-}
-
-.table-section {
-  display: flex;
-  flex-direction: column;
-}
-
-.scrollit {
-  overflow-x: scroll;
-}
-
-.note {
-  display: flex;
-  justify-content: center;
+.nilearn-report .main-container {
+  min-height: 700px !important;
 }

@@ -9,12 +9,12 @@ import xml.etree.ElementTree
 from pathlib import Path
 from tempfile import mkdtemp
 
-import nibabel as nb
 import numpy as np
 import pandas as pd
+from nibabel import freesurfer, load
 from sklearn.utils import Bunch
 
-from .._utils import check_niimg, fill_doc
+from .._utils import check_niimg, fill_doc, logger
 from ..image import get_data, new_img_like, reorder_img
 from ._utils import fetch_files, get_dataset_descr, get_dataset_dir
 
@@ -724,7 +724,7 @@ def _get_atlas_data_and_labels(
         verbose=verbose,
     )
     # Reorder image to have positive affine diagonal
-    atlas_img = reorder_img(atlas_file)
+    atlas_img = reorder_img(atlas_file, copy_header=True)
     names = {}
     from xml.etree import ElementTree
 
@@ -1829,8 +1829,8 @@ def fetch_atlas_surf_destrieux(
         )[0]
         annots.append(annot)
 
-    annot_left = nb.freesurfer.read_annot(annots[0])
-    annot_right = nb.freesurfer.read_annot(annots[1])
+    annot_left = freesurfer.read_annot(annots[0])
+    annot_right = freesurfer.read_annot(annots[1])
 
     return Bunch(
         labels=annot_left[2],
@@ -1853,13 +1853,15 @@ def _separate_talairach_levels(atlas_img, labels, output_dir, verbose):
     The label '*' is replaced by 'Background' for clarity.
 
     """
-    if verbose:
-        print(f"Separating talairach atlas levels: {_TALAIRACH_LEVELS}")
+    logger.log(
+        f"Separating talairach atlas levels: {_TALAIRACH_LEVELS}",
+        verbose=verbose,
+        stack_level=3,
+    )
     for level_name, old_level_labels in zip(
         _TALAIRACH_LEVELS, np.asarray(labels).T
     ):
-        if verbose:
-            print(level_name)
+        logger.log(level_name, verbose=verbose, stack_level=3)
         # level with most regions, ba, has 72 regions
         level_data = np.zeros(atlas_img.shape, dtype="uint8")
         level_labels = {"*": 0}
@@ -1887,7 +1889,7 @@ def _download_talairach(talairach_dir, verbose):
         temp_file = fetch_files(
             temp_dir, [("talairach.nii", atlas_url, {})], verbose=verbose
         )[0]
-        atlas_img = nb.load(temp_file, mmap=False)
+        atlas_img = load(temp_file, mmap=False)
         atlas_img = check_niimg(atlas_img)
     finally:
         shutil.rmtree(temp_dir)

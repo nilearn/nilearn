@@ -7,23 +7,17 @@ from collections import namedtuple
 from collections.abc import Mapping
 from pathlib import Path
 
-import nibabel
 import numpy as np
 import sklearn.cluster
 import sklearn.preprocessing
-from nibabel import freesurfer as fs, gifti
+from nibabel import freesurfer as fs, gifti, load, nifti1
 from scipy import interpolate, sparse
+from sklearn.exceptions import EfficiencyWarning
 
 from nilearn import _utils, datasets
 from nilearn._utils import stringify_path
 from nilearn._utils.path_finding import resolve_globbing
 from nilearn.image import get_data, load_img, resampling
-
-try:
-    from sklearn.exceptions import EfficiencyWarning
-except ImportError:
-    class EfficiencyWarning(UserWarning):
-        """Warning used to notify the user of inefficient computation."""
 
 # Create a namedtuple object for meshes
 Mesh = namedtuple("mesh", ["coordinates", "faces"])
@@ -641,7 +635,8 @@ def vol_to_surf(img, surf_mesh,
     if mask_img is not None:
         mask_img = _utils.check_niimg(mask_img)
         mask = get_data(resampling.resample_to_img(
-            mask_img, img, interpolation='nearest', copy=False))
+            mask_img, img, interpolation='nearest', copy=False,
+            copy_header=True))
     else:
         mask = None
     original_dimension = len(img.shape)
@@ -761,7 +756,7 @@ def load_surf_data(surf_data):
 
             if (surf_data.endswith('nii') or surf_data.endswith('nii.gz') or
                     surf_data.endswith('mgz')):
-                data_part = np.squeeze(get_data(nibabel.load(surf_data)))
+                data_part = np.squeeze(get_data(load(surf_data)))
             elif (
                 surf_data.endswith('area')
                 or surf_data.endswith('curv')
@@ -774,7 +769,7 @@ def load_surf_data(surf_data):
             elif surf_data.endswith('label'):
                 data_part = fs.io.read_label(surf_data)
             elif surf_data.endswith('gii'):
-                data_part = _gifti_img_to_data(nibabel.load(surf_data))
+                data_part = _gifti_img_to_data(load(surf_data))
             elif surf_data.endswith('gii.gz'):
                 gii = _load_surf_files_gifti_gzip(surf_data)
                 data_part = _gifti_img_to_data(gii)
@@ -839,18 +834,18 @@ def _gifti_img_to_mesh(gifti_img):
                      'no {0} or of empty value={1}')
     try:
         coords = gifti_img.get_arrays_from_intent(
-            nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])[0].data
+            nifti1.intent_codes['NIFTI_INTENT_POINTSET'])[0].data
     except IndexError:
         raise ValueError(error_message.format(
             'NIFTI_INTENT_POINTSET', gifti_img.get_arrays_from_intent(
-                nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])))
+                nifti1.intent_codes['NIFTI_INTENT_POINTSET'])))
     try:
         faces = gifti_img.get_arrays_from_intent(
-            nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])[0].data
+            nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])[0].data
     except IndexError:
         raise ValueError(error_message.format(
             'NIFTI_INTENT_TRIANGLE', gifti_img.get_arrays_from_intent(
-                nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])))
+                nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])))
     return coords, faces
 
 
@@ -897,7 +892,7 @@ def load_surf_mesh(surf_mesh):
                 coords += header['cras']
             mesh = Mesh(coordinates=coords, faces=faces)
         elif surf_mesh.endswith('gii'):
-            coords, faces = _gifti_img_to_mesh(nibabel.load(surf_mesh))
+            coords, faces = _gifti_img_to_mesh(load(surf_mesh))
             mesh = Mesh(coordinates=coords, faces=faces)
         elif surf_mesh.endswith('gii.gz'):
             gifti_img = _load_surf_files_gifti_gzip(surf_mesh)

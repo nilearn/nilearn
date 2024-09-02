@@ -39,30 +39,41 @@ nki_dataset = datasets.fetch_surf_nki_enhanced(n_subjects=1)
 
 # The nki dictionary contains file names for the data
 # of all downloaded subjects.
-print('Resting state data of the first subjects on the '
-      f"fsaverag5 surface left hemisphere is at: {nki_dataset['func_left'][0]}"
-      )
+print(
+    "Resting state data of the first subjects on the "
+    f"fsaverag5 surface left hemisphere is at: {nki_dataset['func_left'][0]}"
+)
 
 # Destrieux parcellation for left hemisphere in fsaverage5 space
 destrieux_atlas = datasets.fetch_atlas_surf_destrieux()
-parcellation = destrieux_atlas['map_left']
-labels = destrieux_atlas['labels']
+parcellation = destrieux_atlas["map_left"]
+labels = destrieux_atlas["labels"]
 
 # Fsaverage5 surface template
 fsaverage = datasets.fetch_surf_fsaverage()
 
 # The fsaverage dataset contains file names pointing to
 # the file locations
-print('Fsaverage5 pial surface of left hemisphere is at: '
-      f"{fsaverage['pial_left']}")
-print('Fsaverage5 flatten pial surface of left hemisphere is at: '
-      f"{fsaverage['flat_left']}")
-print('Fsaverage5 inflated surface of left hemisphere is at: '
-      f"{fsaverage['infl_left']}")
-print('Fsaverage5 sulcal depth map of left hemisphere is at: '
-      f"{fsaverage['sulc_left']}")
-print('Fsaverage5 curvature map of left hemisphere is at: '
-      f"{fsaverage['curv_left']}")
+print(
+    "Fsaverage5 pial surface of left hemisphere is at: "
+    f"{fsaverage['pial_left']}"
+)
+print(
+    "Fsaverage5 flatten pial surface of left hemisphere is at: "
+    f"{fsaverage['flat_left']}"
+)
+print(
+    "Fsaverage5 inflated surface of left hemisphere is at: "
+    f"{fsaverage['infl_left']}"
+)
+print(
+    "Fsaverage5 sulcal depth map of left hemisphere is at: "
+    f"{fsaverage['sulc_left']}"
+)
+print(
+    "Fsaverage5 curvature map of left hemisphere is at: "
+    f"{fsaverage['curv_left']}"
+)
 
 # %%
 # Extracting the seed time series
@@ -71,10 +82,13 @@ print('Fsaverage5 curvature map of left hemisphere is at: '
 # Load resting state time series from nilearn
 from nilearn import surface
 
-timeseries = surface.load_surf_data(nki_dataset['func_left'][0])
+timeseries = surface.load_surf_data(nki_dataset["func_left"][0])
+
+# Coercing to float is required to avoid errors withj scipy >= 0.14.0
+timeseries = timeseries.astype(float)
 
 # Extract seed region via label
-pcc_region = b'G_cingul-Post-dorsal'
+pcc_region = b"G_cingul-Post-dorsal"
 
 import numpy as np
 
@@ -108,13 +122,13 @@ pcc_map[pcc_labels] = 1
 from nilearn import plotting
 
 plotting.plot_surf_roi(
-    fsaverage['pial_left'],
+    fsaverage["pial_left"],
     roi_map=pcc_map,
-    hemi='left',
-    view='medial',
-    bg_map=fsaverage['sulc_left'],
+    hemi="left",
+    view="medial",
+    bg_map=fsaverage["sulc_left"],
     bg_on_data=True,
-    title='PCC Seed'
+    title="PCC Seed",
 )
 
 # %%
@@ -122,36 +136,50 @@ plotting.plot_surf_roi(
 # of interest on the cortex. To make this plot easier to read,
 # we use the :term:`mesh` curvature as a background map.
 
-bg_map = np.sign(surface.load_surf_data(fsaverage['curv_left']))
+bg_map = np.sign(surface.load_surf_data(fsaverage["curv_left"]))
 # np.sign yields values in [-1, 1]. We rescale the background map
 # such that values are in [0.25, 0.75], resulting in a nicer looking plot.
 bg_map_rescaled = (bg_map + 1) / 4 + 0.25
 
 plotting.plot_surf_roi(
-    fsaverage['flat_left'],
+    fsaverage["flat_left"],
     roi_map=pcc_map,
-    hemi='left',
-    view='dorsal',
+    hemi="left",
+    view="dorsal",
     bg_map=bg_map_rescaled,
     bg_on_data=True,
-    title='PCC Seed'
+    title="PCC Seed",
 )
 
 # %%
 # Display unthresholded stat map with a slightly dimmed background
-plotting.plot_surf_stat_map(fsaverage['pial_left'], stat_map=stat_map,
-                            hemi='left', view='medial', colorbar=True,
-                            bg_map=fsaverage['sulc_left'], bg_on_data=True,
-                            darkness=.3, title='Correlation map')
+plotting.plot_surf_stat_map(
+    fsaverage["pial_left"],
+    stat_map=stat_map,
+    hemi="left",
+    view="medial",
+    colorbar=True,
+    bg_map=fsaverage["sulc_left"],
+    bg_on_data=True,
+    darkness=0.3,
+    title="Correlation map",
+)
 
 # %%
 # Many different options are available for plotting, for example thresholding,
 # or using custom colormaps
-plotting.plot_surf_stat_map(fsaverage['pial_left'], stat_map=stat_map,
-                            hemi='left', view='medial', colorbar=True,
-                            bg_map=fsaverage['sulc_left'], bg_on_data=True,
-                            cmap='Spectral', threshold=.5,
-                            title='Threshold and colormap')
+plotting.plot_surf_stat_map(
+    fsaverage["pial_left"],
+    stat_map=stat_map,
+    hemi="left",
+    view="medial",
+    colorbar=True,
+    bg_map=fsaverage["sulc_left"],
+    bg_on_data=True,
+    cmap="Spectral",
+    threshold=0.5,
+    title="Threshold and colormap",
+)
 
 # %%
 # Here the surface is plotted in a lateral view without a background map.
@@ -159,10 +187,16 @@ plotting.plot_surf_stat_map(fsaverage['pial_left'], stat_map=stat_map,
 # half transparent surface.
 # Note that you can also control the transparency with a background map using
 # the alpha parameter.
-plotting.plot_surf_stat_map(fsaverage['pial_left'], stat_map=stat_map,
-                            hemi='left', view='lateral', colorbar=True,
-                            cmap='Spectral', threshold=.5,
-                            title='Plotting without background')
+plotting.plot_surf_stat_map(
+    fsaverage["pial_left"],
+    stat_map=stat_map,
+    hemi="left",
+    view="lateral",
+    colorbar=True,
+    cmap="Spectral",
+    threshold=0.5,
+    title="Plotting without background",
+)
 
 # %%
 # The plots can be saved to file, in which case the display is closed after
@@ -173,10 +207,16 @@ output_dir = Path.cwd() / "results" / "plot_surf_stat_map"
 output_dir.mkdir(exist_ok=True, parents=True)
 print(f"Output will be saved to: {output_dir}")
 
-plotting.plot_surf_stat_map(fsaverage['infl_left'], stat_map=stat_map,
-                            hemi='left', bg_map=fsaverage['sulc_left'],
-                            bg_on_data=True, threshold=.5, colorbar=True,
-                            output_file=output_dir / 'plot_surf_stat_map.png')
+plotting.plot_surf_stat_map(
+    fsaverage["infl_left"],
+    stat_map=stat_map,
+    hemi="left",
+    bg_map=fsaverage["sulc_left"],
+    bg_on_data=True,
+    threshold=0.5,
+    colorbar=True,
+    output_file=output_dir / "plot_surf_stat_map.png",
+)
 
 plotting.show()
 

@@ -79,6 +79,10 @@ authors:
     website: https://github.com/acionca
     affiliation: Centre Hospitalier Universitaire Vaudoise, Lausanne, Switzerland
     orcid: https://orcid.org/0000-0002-1910-9650
+  - given-names: Alexandre
+    family-names: Sayal
+    website: https://github.com/alexsayal
+    affiliation: CIBIT, University of Coimbra, Portugal
   - given-names: Alexis
     family-names: Thual
     website: https://github.com/alexisthual
@@ -95,6 +99,11 @@ authors:
     family-names: Pinho
     website: https://github.com/alpinho
     affiliation: Western University, London, Ontario, Canada
+  - given-names: Anand
+    family-names: Joshi
+    website: https://github.com/ajoshiusc
+    affiliation: University of Southern California, Los Angeles, California, United
+      States
   - given-names: Andrés Hoyos
     family-names: Idrobo
     website: https://github.com/ahoyosid
@@ -501,6 +510,9 @@ authors:
   - given-names: Moritz
     family-names: Boos
     website: https://github.com/mjboos
+  - given-names: Mudassir
+    family-names: Chapra
+    website: https://github.com/muddi900
   - given-names: Myeong Seop
     family-names: Song
     website: https://github.com/NeuroVR-Song
@@ -643,6 +655,11 @@ authors:
     orcid: https://orcid.org/0000-0002-6437-0700
     affiliation: Danish Research Centre for Magnetic Resonance, Copenhagen University
       Hospital Amager & Hvidovre, Copenhagen, Denmark.
+  - given-names: Sin
+    family-names: Kim
+    website: https://github.com/kimsin98
+    orcid: https://orcid.org/0000-0003-4652-3758
+    affiliation: 'Korea Advanced Institute of Science and Technology: Daejeon, KR'
   - given-names: Sourav
     family-names: Singh
     website: https://github.com/souravsingh
@@ -716,6 +733,10 @@ authors:
     website: https://github.com/ymzayek
     affiliation: Inria, Saclay, France
     orcid: https://orcid.org/0000-0003-2904-2530
+  - given-names: Yichun
+    family-names: Huang
+    website: https://github.com/YCHuang0610
+    affiliation: Peking University, Beijing, China
   - given-names: Zvi
     family-names: Baratz
     website: https://github.com/ZviBaratz

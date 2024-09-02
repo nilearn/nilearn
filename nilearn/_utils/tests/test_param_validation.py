@@ -3,9 +3,9 @@
 import os
 import warnings
 
-import nibabel
 import numpy as np
 import pytest
+from nibabel import Nifti1Image, load
 from sklearn.base import BaseEstimator
 
 from nilearn._utils.extmath import fast_abs_percentile
@@ -67,9 +67,7 @@ def test_check_threshold():
 def test_get_mask_volume():
     # Test that hard-coded standard mask volume can be corrected computed
     if os.path.isfile(mni152_brain_mask):
-        assert MNI152_BRAIN_VOLUME == get_mask_volume(
-            nibabel.load(mni152_brain_mask)
-        )
+        assert MNI152_BRAIN_VOLUME == get_mask_volume(load(mni152_brain_mask))
     else:
         warnings.warn(f"Couldn't find {mni152_brain_mask} (for testing)")
 
@@ -78,7 +76,7 @@ def test_feature_screening(affine_eye):
     # dummy
     mask_img_data = np.zeros((182, 218, 182))
     mask_img_data[30:-30, 30:-30, 30:-30] = 1
-    mask_img = nibabel.Nifti1Image(mask_img_data, affine=affine_eye)
+    mask_img = Nifti1Image(mask_img_data, affine=affine_eye)
 
     for is_classif in [True, False]:
         for screening_percentile in [100, None, 20, 101, -1, 10]:

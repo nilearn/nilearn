@@ -8,8 +8,8 @@ import gc
 from pathlib import Path
 from warnings import warn
 
-import nibabel
 import numpy as np
+from nibabel import is_proxy, load, spatialimages
 
 from .helpers import stringify_path
 
@@ -124,8 +124,8 @@ def load_niimg(niimg, dtype=None):
     niimg = stringify_path(niimg)
     if isinstance(niimg, str):
         # data is a filename, we load it
-        niimg = nibabel.load(niimg)
-    elif not isinstance(niimg, nibabel.spatialimages.SpatialImage):
+        niimg = load(niimg)
+    elif not isinstance(niimg, spatialimages.SpatialImage):
         raise TypeError(
             "Data given cannot be loaded because it is"
             " not compatible with nibabel format:\n"
@@ -268,7 +268,7 @@ def img_data_dtype(niimg):
     dataobj = niimg.dataobj
 
     # Neuroimages that scale data should be interpreted as floating point
-    if nibabel.is_proxy(dataobj) and (dataobj.slope, dataobj.inter) != (
+    if is_proxy(dataobj) and (dataobj.slope, dataobj.inter) != (
         1.0,
         0.0,
     ):

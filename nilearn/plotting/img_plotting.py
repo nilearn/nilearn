@@ -10,16 +10,11 @@ Only matplotlib is required.
 import collections.abc
 import functools
 import numbers
-
-# Standard library imports
 import os
 import warnings
 
-import matplotlib
+import matplotlib as mpl
 import matplotlib.pyplot as plt
-
-# Standard scientific libraries imports (more specific imports are
-# delayed, so that the part module can be used without them).
 import numpy as np
 from matplotlib import gridspec as mgs
 from matplotlib.colors import LinearSegmentedColormap
@@ -33,7 +28,7 @@ from nilearn.plotting.displays import get_projector, get_slicer
 from nilearn.plotting.displays._slicers import _get_cbar_ticks
 
 from .. import _utils
-from .._utils import compare_version, fill_doc
+from .._utils import compare_version, fill_doc, logger
 from .._utils.extmath import fast_abs_percentile
 from .._utils.ndimage import get_border_data
 from .._utils.niimg import safe_get_data
@@ -54,7 +49,7 @@ def show():
     than to emit a warning.
 
     """
-    if matplotlib.get_backend().lower() != "agg":  # avoid warnings
+    if mpl.get_backend().lower() != "agg":  # avoid warnings
         plt.show()
 
 
@@ -467,7 +462,7 @@ class _MNI152Template(SpatialImage):
     def load(self):
         if self.data is None:
             anat_img = load_mni152_template(resolution=2)
-            anat_img = reorder_img(anat_img)
+            anat_img = reorder_img(anat_img, copy_header=True)
             data = get_data(anat_img)
             data = data.astype(np.float64)
             anat_mask = binary_fill_holes(data > np.finfo(float).eps)
@@ -1177,13 +1172,11 @@ def plot_prob_atlas(
     if colorbar:
         display._colorbar = True
         # Create a colormap from color list to feed display
-        cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
+        cmap = LinearSegmentedColormap.from_list(
             "segmented colors", color_list, n_maps + 1
         )
-        display._show_colorbar(
-            cmap, matplotlib.colors.Normalize(1, n_maps + 1)
-        )
-        tick_locator = matplotlib.ticker.MaxNLocator(nbins=10)
+        display._show_colorbar(cmap, mpl.colors.Normalize(1, n_maps + 1))
+        tick_locator = mpl.ticker.MaxNLocator(nbins=10)
         display.locator = tick_locator
         display._cbar.update_ticks()
         tick_location = np.round(
@@ -1789,7 +1782,7 @@ def plot_markers(
     if node_vmin == node_vmax:
         node_vmin = 0.9 * node_vmin
         node_vmax = 1.1 * node_vmax
-    norm = matplotlib.colors.Normalize(vmin=node_vmin, vmax=node_vmax)
+    norm = mpl.colors.Normalize(vmin=node_vmin, vmax=node_vmax)
     node_cmap = (
         plt.get_cmap(node_cmap) if isinstance(node_cmap, str) else node_cmap
     )
@@ -1926,9 +1919,7 @@ def plot_carpet(
         background_label = 0
 
         atlas_img_res = resample_to_img(
-            mask_img,
-            img,
-            interpolation="nearest",
+            mask_img, img, interpolation="nearest", copy_header=True
         )
         atlas_bin = math_img(
             f"img != {background_label}",
@@ -1943,7 +1934,7 @@ def plot_carpet(
         if mask_labels:
             label_dtype = type(list(mask_labels.values())[0])
             if label_dtype != atlas_values.dtype:
-                print(f"Coercing atlas_values to {label_dtype}")
+                logger.log(f"Coercing atlas_values to {label_dtype}")
                 atlas_values = atlas_values.astype(label_dtype)
 
         # Sort data and atlas by atlas values
@@ -2017,7 +2008,7 @@ def plot_carpet(
             ax0.set_yticks([])
 
         # Carpet plot
-        if compare_version(matplotlib.__version__, ">=", "3.8.0rc1"):
+        if compare_version(mpl.__version__, ">=", "3.8.0rc1"):
             axes.remove()  # remove axes for newer versions of mpl
         axes = plt.subplot(gs[1])  # overwrites axes with older versions of mpl
         axes.imshow(

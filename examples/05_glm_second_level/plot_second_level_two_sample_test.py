@@ -63,10 +63,10 @@ second_level_input = sample_vertical["cmaps"] + sample_horizontal["cmaps"]
 # Next, we model the effect of conditions (sample 1 vs sample 2).
 import numpy as np
 
-condition_effect = np.hstack(([1] * n_subjects, [-1] * n_subjects))
+condition_effect = np.hstack(([1] * n_subjects, [0] * n_subjects))
 
 # %%
-# The design matrix for the unpaired test doesn't need any more columns
+# The design matrix for the unpaired test needs to add an intercept,
 # For the paired test, we include an intercept for each subject.
 subject_effect = np.vstack((np.eye(n_subjects), np.eye(n_subjects)))
 subjects = [f"S{i:02d}" for i in range(1, n_subjects + 1)]
@@ -74,7 +74,10 @@ subjects = [f"S{i:02d}" for i in range(1, n_subjects + 1)]
 # %%
 # We then assemble those into design matrices
 unpaired_design_matrix = pd.DataFrame(
-    condition_effect[:, np.newaxis], columns=["vertical vs horizontal"]
+    {
+        "vertical vs horizontal": condition_effect,
+        "intercept": 1,
+    }
 )
 
 paired_design_matrix = pd.DataFrame(
@@ -90,9 +93,11 @@ _, (ax_unpaired, ax_paired) = plt.subplots(
     1, 2, gridspec_kw={"width_ratios": [1, 17]}
 )
 plotting.plot_design_matrix(
-    unpaired_design_matrix, rescale=False, ax=ax_unpaired
+    unpaired_design_matrix, rescale=False, axes=ax_unpaired
 )
-plotting.plot_design_matrix(paired_design_matrix, rescale=False, ax=ax_paired)
+plotting.plot_design_matrix(
+    paired_design_matrix, rescale=False, axes=ax_paired
+)
 ax_unpaired.set_title("unpaired design", fontsize=12)
 ax_paired.set_title("paired design", fontsize=12)
 plt.tight_layout()
