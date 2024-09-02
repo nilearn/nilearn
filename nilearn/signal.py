@@ -300,8 +300,9 @@ def _check_wn(btype, freq, nyq):
     we force the critical frequencies to be slightly less than the Nyquist
     frequency, and slightly more than zero.
     """
+    EPS = np.finfo(np.float32).eps
     if freq >= nyq:
-        freq = nyq - (nyq * 10 * np.finfo(1.0).eps)
+        freq = nyq - (nyq * 10 * EPS)
         warnings.warn(
             f"The frequency specified for the {btype} pass filter is "
             "too high to be handled by a digital filter "
@@ -310,11 +311,11 @@ def _check_wn(btype, freq, nyq):
         )
 
     elif freq < 0.0:  # equal to 0.0 is okay
-        freq = nyq * np.finfo(1.0).eps
+        freq = nyq * EPS
         warnings.warn(
             f"The frequency specified for the {btype} pass filter is too "
             "low to be handled by a digital filter (must be non-negative). "
-            f"It has been set to eps: {freq}"
+            f"It has been set to eps: {freq}."
         )
 
     return freq
@@ -414,19 +415,18 @@ def butterworth(
     else:
         critical_freq = critical_freq[0]
 
-    b, a = sp_signal.butter(
-        order,
-        critical_freq,
+    sos = sp_signal.butter(
+        N=order,
+        Wn=critical_freq,
         btype=btype,
-        output="ba",
+        output="sos",
         fs=sampling_rate,
     )
     if signals.ndim == 1:
         # 1D case
-        output = sp_signal.filtfilt(
-            b,
-            a,
-            signals,
+        output = sp_signal.sosfiltfilt(
+            sos,
+            x=signals,
             padtype=padtype,
             padlen=padlen,
         )
@@ -437,10 +437,9 @@ def butterworth(
     elif copy:
         # No way to save memory when a copy has been requested,
         # because filtfilt does out-of-place processing
-        signals = sp_signal.filtfilt(
-            b,
-            a,
-            signals,
+        signals = sp_signal.sosfiltfilt(
+            sos,
+            x=signals,
             axis=0,
             padtype=padtype,
             padlen=padlen,
@@ -448,10 +447,9 @@ def butterworth(
     else:
         # Lesser memory consumption, slower.
         for timeseries in signals.T:
-            timeseries[:] = sp_signal.filtfilt(
-                b,
-                a,
-                timeseries,
+            timeseries[:] = sp_signal.sosfiltfilt(
+                sos,
+                x=timeseries,
                 padtype=padtype,
                 padlen=padlen,
             )
