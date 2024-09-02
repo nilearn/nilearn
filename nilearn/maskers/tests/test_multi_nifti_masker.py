@@ -12,7 +12,6 @@ from numpy.testing import assert_array_equal
 
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import write_imgs_to_path
-from nilearn.conftest import _rng
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiMasker
 
@@ -141,14 +140,11 @@ def test_3d_images_error(img_4d_ones_eye):
         masker2.fit()
 
 
-def test_joblib_cache(data_1, affine_eye, tmp_path):
+def test_joblib_cache(mask_img_1, tmp_path):
     from joblib import hash
 
-    # Dummy mask
-    mask_img = Nifti1Image(data_1, affine_eye)
-
     filename = write_imgs_to_path(
-        mask_img, file_path=tmp_path, create_files=True
+        mask_img_1, file_path=tmp_path, create_files=True
     )
     masker = MultiNiftiMasker(mask_img=filename)
     masker.fit()
@@ -191,20 +187,19 @@ def test_shelving():
         shutil.rmtree(cachedir, ignore_errors=True)
 
 
-def _get_random_imgs(shape, length):
-    rng = _rng()
-    return [Nifti1Image(rng.uniform(size=shape), np.eye(4))] * length
+@pytest.fixture
+def list_random_imgs(img_3d_rand_eye):
+    return [img_3d_rand_eye] * 2
 
 
-def test_mask_strategy_errors(shape_3d_default):
+def test_mask_strategy_errors(list_random_imgs):
     # Error with unknown mask_strategy
-    imgs = _get_random_imgs(shape_3d_default, 2)
     mask = MultiNiftiMasker(mask_strategy="foo")
 
     with pytest.raises(
         ValueError, match="Unknown value of mask_strategy 'foo'"
     ):
-        mask.fit(imgs)
+        mask.fit(list_random_imgs)
 
     # Warning with deprecated 'template' strategy,
     # plus an exception because there's no resulting mask
@@ -212,23 +207,21 @@ def test_mask_strategy_errors(shape_3d_default):
     with pytest.warns(
         UserWarning, match="Masking strategy 'template' is deprecated."
     ):
-        mask.fit(imgs)
+        mask.fit(list_random_imgs)
 
 
 @pytest.mark.parametrize(
     "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
 )
-def test_compute_mask_strategy(strategy, shape_3d_default):
-    imgs = _get_random_imgs(shape_3d_default, 2)
-
+def test_compute_mask_strategy(strategy, shape_3d_default, list_random_imgs):
     masker = MultiNiftiMasker(mask_strategy=strategy, mask_args={"opening": 1})
-    masker.fit(imgs)
+    masker.fit(list_random_imgs)
 
     # Check that the order of the images does not change the output
     masker2 = MultiNiftiMasker(
         mask_strategy=strategy, mask_args={"opening": 1}
     )
-    masker2.fit(imgs[::-1])
+    masker2.fit(list_random_imgs[::-1])
     mask_ref = np.zeros(shape_3d_default, dtype="int8")
 
     np.testing.assert_array_equal(get_data(masker.mask_img_), mask_ref)
