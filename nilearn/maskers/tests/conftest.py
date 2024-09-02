@@ -13,3 +13,8 @@ def data_1(shape_3d_default):
 @pytest.fixture
 def img_1(data_1, affine_eye):
     return Nifti1Image(data_1, affine_eye)
+
+
+@pytest.fixture
+def mask_img_1(data_1, affine_eye):
+    return Nifti1Image(data_1.astype("uint8"), affine_eye)
