@@ -24,6 +24,11 @@ def data_2(shape_3d_default):
 
 
 @pytest.fixture
+def img_1(data_1, affine_eye):
+    return Nifti1Image(data_1, affine_eye)
+
+
+@pytest.fixture
 def img_2(data_2, affine_eye):
     return Nifti1Image(data_2, affine_eye)
 
@@ -46,23 +51,23 @@ def test_auto_mask(data_1, img_1, data_2, img_2):
     masker.transform(img_1)
 
 
-def test_auto_mask_errors(img_1, img_2):
+def test_auto_mask_errors(img_3d_rand_eye, img_2):
     masker = MultiNiftiMasker(mask_args=dict(opening=0))
     # Check that if we have not fit the masker we get a intelligible
     # error
     with pytest.raises(ValueError, match="has not been fitted. "):
         masker.transform(
-            [[img_1]],
+            [[img_3d_rand_eye]],
         )
     # Check error return due to bad data format
     with pytest.raises(
         ValueError,
         match="For multiple processing, you should  provide a list of data",
     ):
-        masker.fit(img_1)
+        masker.fit(img_3d_rand_eye)
 
     # check exception when transform() called without prior fit()
-    masker2 = MultiNiftiMasker(mask_img=img_1)
+    masker2 = MultiNiftiMasker(mask_img=img_3d_rand_eye)
     with pytest.raises(ValueError, match="has not been fitted. "):
         masker2.transform(img_2)
 

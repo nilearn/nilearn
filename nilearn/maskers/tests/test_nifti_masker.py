@@ -24,42 +24,42 @@ from nilearn.maskers import NiftiMasker
 from nilearn.maskers.nifti_masker import _filter_and_mask
 
 
-def test_auto_mask(img_1):
+def test_auto_mask(img_3d_rand_eye):
     """Perform a smoke test on the auto-mask option."""
     masker = NiftiMasker()
     # Smoke test the fit
-    masker.fit(img_1)
+    masker.fit(img_3d_rand_eye)
     # Smoke test the transform
     # With a 4D img
-    masker.transform([img_1])
+    masker.transform([img_3d_rand_eye])
     # With a 3D img
-    masker.transform(img_1)
+    masker.transform(img_3d_rand_eye)
 
     # check exception when transform() called without prior fit()
-    masker2 = NiftiMasker(mask_img=img_1)
+    masker2 = NiftiMasker(mask_img=img_3d_rand_eye)
     with pytest.raises(ValueError, match="has not been fitted. "):
-        masker2.transform(img_1)
+        masker2.transform(img_3d_rand_eye)
 
 
-def test_detrend(img_1, mask_img_1):
+def test_detrend(img_3d_rand_eye, mask_img_1):
     """Check that detrending doesn't do something stupid with 3D images."""
     # Smoke test the fit
     masker = NiftiMasker(mask_img=mask_img_1, detrend=True)
-    X = masker.fit_transform(img_1)
+    X = masker.fit_transform(img_3d_rand_eye)
     assert np.any(X != 0)
 
 
 @pytest.mark.parametrize("y", [None, np.ones((9, 9, 9))])
-def test_fit_transform(y, img_1, mask_img_1):
+def test_fit_transform(y, img_3d_rand_eye, mask_img_1):
     """Check fit_transform of BaseMasker with several input args."""
     # Smoke test the fit
     for mask_img in [mask_img_1, None]:
         masker = NiftiMasker(mask_img=mask_img)
-        X = masker.fit_transform(X=img_1, y=y)
+        X = masker.fit_transform(X=img_3d_rand_eye, y=y)
         assert np.any(X != 0)
 
 
-def test_fit_transform_warning(img_1, mask_img_1):
+def test_fit_transform_warning(img_3d_rand_eye, mask_img_1):
     y = np.ones((9, 9, 9))
     masker = NiftiMasker(mask_img=mask_img_1)
     with pytest.warns(
@@ -67,19 +67,19 @@ def test_fit_transform_warning(img_1, mask_img_1):
         match="Generation of a mask has been requested .*"
         "while a mask has been provided at masker creation.",
     ):
-        X = masker.fit_transform(X=img_1, y=y)
+        X = masker.fit_transform(X=img_3d_rand_eye, y=y)
         assert np.any(X != 0)
 
 
-def test_resample(img_1, mask_img_1):
+def test_resample(img_3d_rand_eye, mask_img_1):
     """Check that target_affine triggers the right resampling."""
     masker = NiftiMasker(mask_img=mask_img_1, target_affine=2 * np.eye(3))
     # Smoke test the fit
-    X = masker.fit_transform(img_1)
+    X = masker.fit_transform(img_3d_rand_eye)
     assert np.any(X != 0)
 
 
-def test_resample_to_mask_warning(img_1, affine_eye):
+def test_resample_to_mask_warning(img_3d_rand_eye, affine_eye):
     """Check that a warning is raised when data is \
        being resampled to mask's resolution."""
     # defining a mask with different fov than img
@@ -96,12 +96,12 @@ def test_resample_to_mask_warning(img_1, affine_eye):
         "or resample the mask beforehand "
         "to save memory and computation time.",
     ):
-        masker.fit_transform(img_1)
+        masker.fit_transform(img_3d_rand_eye)
 
 
-def test_with_files(tmp_path, img_1):
+def test_with_files(tmp_path, img_3d_rand_eye):
     """Test standard masking with filenames."""
-    filename = testing.write_imgs_to_path(img_1, file_path=tmp_path)
+    filename = testing.write_imgs_to_path(img_3d_rand_eye, file_path=tmp_path)
     masker = NiftiMasker()
     masker.fit(filename)
     masker.transform(filename)
@@ -319,21 +319,21 @@ def test_fit_no_mask_no_img_error():
         mask.fit()
 
 
-def test_mask_strategy_errors(img_1):
+def test_mask_strategy_errors(img_3d_rand_eye):
     """Check that mask_strategy errors are raised."""
     # Error with unknown mask_strategy
     mask = NiftiMasker(mask_strategy="oops")
     with pytest.raises(
         ValueError, match="Unknown value of mask_strategy 'oops'"
     ):
-        mask.fit(img_1)
+        mask.fit(img_3d_rand_eye)
     # Warning with deprecated 'template' strategy,
     # plus an exception because there's no resulting mask
     mask = NiftiMasker(mask_strategy="template")
     with pytest.warns(
         UserWarning, match="Masking strategy 'template' is deprecated."
     ):
-        mask.fit(img_1)
+        mask.fit(img_3d_rand_eye)
 
 
 def test_compute_epi_mask(affine_eye):
