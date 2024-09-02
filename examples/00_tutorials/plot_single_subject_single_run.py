@@ -57,7 +57,7 @@ plot_anat(subject_data.anat, colorbar=True, cbar_tick_format="%i")
 # The path of this file is provided in the dataset.
 import pandas as pd
 
-events = pd.read_csv(subject_data["events"][0], sep="\t")
+events = pd.read_csv(subject_data.events, sep="\t")
 events
 
 # %%
@@ -215,18 +215,19 @@ plt.show()
 
 from nilearn.glm import threshold_stats_img
 
-_, threshold = threshold_stats_img(
+clean_map, threshold = threshold_stats_img(
     z_map, alpha=0.001, height_control="fpr", two_sided=False
 )
 print(f"Uncorrected p<0.001 threshold: {threshold:.3f}")
 plot_stat_map(
-    z_map,
+    clean_map,
     bg_img=mean_img,
     threshold=threshold,
     display_mode="z",
     cut_coords=3,
     black_bg=True,
     title="Listening greater than rest (p<0.001)",
+    cmap="black_red",
 )
 plt.show()
 
@@ -237,18 +238,19 @@ plt.show()
 # i.e. the probability of making only one false detection, say at
 # 5%. For that we use the so-called Bonferroni correction.
 
-_, threshold = threshold_stats_img(
+clean_map, threshold = threshold_stats_img(
     z_map, alpha=0.05, height_control="bonferroni", two_sided=False
 )
 print(f"Bonferroni-corrected, p<0.05 threshold: {threshold:.3f}")
 plot_stat_map(
-    z_map,
+    clean_map,
     bg_img=mean_img,
     threshold=threshold,
     display_mode="z",
     cut_coords=3,
     black_bg=True,
     title="Listening greater than rest (p<0.05, corrected)",
+    cmap="black_red",
 )
 plt.show()
 
@@ -258,18 +260,19 @@ plt.show()
 # false discoveries among detections. This is called the False
 # discovery rate.
 
-_, threshold = threshold_stats_img(
+clean_map, threshold = threshold_stats_img(
     z_map, alpha=0.05, height_control="fdr", two_sided=False
 )
 print(f"False Discovery rate = 0.05 threshold: {threshold:.3f}")
 plot_stat_map(
-    z_map,
+    clean_map,
     bg_img=mean_img,
     threshold=threshold,
     display_mode="z",
     cut_coords=3,
     black_bg=True,
     title="Listening greater than rest (fdr=0.05)",
+    cmap="black_red",
 )
 plt.show()
 
@@ -295,6 +298,7 @@ plot_stat_map(
     cut_coords=3,
     black_bg=True,
     title="Listening greater than rest (fdr=0.05), clusters > 10 voxels",
+    cmap="black_red",
 )
 plt.show()
 
@@ -359,10 +363,7 @@ plot_stat_map(
     cut_coords=3,
     black_bg=True,
     title="Effects of interest (fdr=0.05), clusters > 10 voxels",
-    cmap="black_red_r",
+    cmap="black_red",
     symmetric_cbar=False,
 )
 plt.show()
-
-# %%
-# Oops, there is a lot of non-neural signal in there (ventricles, arteries)...

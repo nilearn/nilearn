@@ -1050,6 +1050,7 @@ def test_fetch_spm_auditory(tmp_path):
 
     assert isinstance(dataset, Bunch)
     assert isinstance(dataset.anat, str)
+    assert isinstance(dataset.events, str)
     assert isinstance(dataset.func[0], str)
 
     assert dataset.description != ""

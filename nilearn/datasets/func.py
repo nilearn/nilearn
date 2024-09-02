@@ -2769,7 +2769,7 @@ def fetch_spm_auditory(
         main_path=Path(data_dir) / "MoAEpilot",
         modality_folder="func",
         file_tag="events",
-    )
+    )[0]
     spm_auditory_data = {
         "anat": anat,
         "func": func,
