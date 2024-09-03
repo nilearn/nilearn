@@ -37,7 +37,7 @@ repos:
     rev: v3.17.0
     hooks:
     -   id: pyupgrade
-        args: [--py38-plus]
+        args: [--py39-plus]
 
 # Checks for .rst files
 -   repo: https://github.com/pre-commit/pygrep-hooks
