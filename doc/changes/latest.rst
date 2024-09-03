@@ -14,7 +14,9 @@ HIGHLIGHTS
  | **We recommend upgrading to Python 3.11 or above.**
  |
  | **Minimum supported versions of the following packages have been bumped up:**
- | - Numpy -- v1.20.0
+ | - numpy -- v1.20.0
+ | - nibabel -- v5.2.0
+ | - scikit-learn -- v1.4.0
 
 NEW
 ---
