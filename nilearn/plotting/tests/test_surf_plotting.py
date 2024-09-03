@@ -667,6 +667,23 @@ def test_plot_surf_stat_map(engine, rng):
     plt.close()
 
 
+@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
+def test_plot_surf_negative_threshold(engine, rng):
+    if not is_plotly_installed() and engine == "plotly":
+        pytest.skip('Plotly is not installed; required for this test.')
+    mesh = generate_surf()
+    bg = rng.standard_normal(size=mesh[0].shape[0])
+    data = 10 * rng.standard_normal(size=mesh[0].shape[0])
+    threshold = -0.3
+
+    with pytest.warns(match='negative threshold was passed'):
+        plot_surf(mesh,
+                  data,
+                  bg_map=bg,
+                  threshold=threshold,
+                  engine=engine)
+
+
 def test_plot_surf_stat_map_matplotlib_specific(rng):
     mesh = generate_surf()
     data = 10 * rng.standard_normal(size=mesh[0].shape[0])
