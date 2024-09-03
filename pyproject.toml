@@ -92,8 +92,7 @@ style = [
 test = [
     "coverage",
     "pytest>=6.0.0",
-    "pytest-cov",
-    "pytest-reporter-html1>=0.9.1"
+    "pytest-cov"
 ]
 
 [project.urls]
