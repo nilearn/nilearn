@@ -368,7 +368,7 @@ def plot_contrast_matrix(
 
     """
     contrast_def = pad_contrast_matrix(contrast_def, design_matrix)
-    con_matrix = np.asmatrix(contrast_def)
+    con_matrix = np.array(contrast_def, ndmin=2)
 
     design_column_names = design_matrix.columns.tolist()
     max_len = np.max([len(str(name)) for name in design_column_names])
