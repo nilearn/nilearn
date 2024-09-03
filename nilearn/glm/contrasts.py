@@ -101,12 +101,12 @@ def compute_contrast(labels, regression_result, con_val, stat_type=None):
         )
 
     if stat_type == "t":
-        effect_ = np.zeros((1, labels.size))
+        effect_ = np.zeros(labels.size)
         var_ = np.zeros(labels.size)
         for label_ in regression_result:
             label_mask = labels == label_
             reg = regression_result[label_].Tcontrast(con_val)
-            effect_[:, label_mask] = reg.effect.T
+            effect_[label_mask] = reg.effect.T
             var_[label_mask] = (reg.sd**2).T
 
     elif stat_type == "F":
@@ -224,13 +224,20 @@ class Contrast:
         """
         if variance.ndim != 1:
             raise ValueError("Variance array should have 1 dimension")
-        if effect.ndim != 2:
-            raise ValueError("Effect array should have 2 dimensions")
+        if effect.ndim > 2:
+            raise ValueError("Effect array should have 1 or 2 dimensions")
 
         self.effect = effect
         self.variance = variance
         self.dof = float(dof)
-        self.dim = effect.shape[0] if dim is None else dim
+        if dim is None:
+            if effect.ndim == 2:
+                self.dim = effect.shape[1]
+            else:
+                self.dim = 1
+        else:
+            self.dim = dim
+
         if self.dim > 1 and stat_type == "t":
             print("Automatically converted multi-dimensional t to F contrast")
             stat_type = "F"
@@ -267,8 +274,6 @@ class Contrast:
     def effect_size(self):
         """Make access to summary statistics more straightforward \
         when computing contrasts."""
-        if self.stat_type == "t":
-            return self.effect[0, :]
         return self.effect
 
     def effect_variance(self):
@@ -518,9 +523,7 @@ def compute_fixed_effects(
         masker = NiftiMasker(mask_img=mask).fit()
 
     variances = masker.transform(variance_imgs)
-    contrasts = np.array(
-        [masker.transform(contrast_img) for contrast_img in contrast_imgs]
-    )
+    contrasts = masker.transform(contrast_imgs)
 
     if dofs is not None:
         if len(dofs) != n_runs:
@@ -586,7 +589,7 @@ def _compute_fixed_effects_params(
         if dim > 1:
             stat_type = "F"
     else:
-        fixed_fx_contrasts_ = fixed_fx_contrasts[np.newaxis]
+        fixed_fx_contrasts_ = fixed_fx_contrasts
     con = Contrast(
         effect=fixed_fx_contrasts_,
         variance=fixed_fx_variance,
