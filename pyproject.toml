@@ -22,7 +22,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12"
 ]
 dependencies = [
-    "joblib>=1.0.0",
+    "joblib>=1.2.0",
     "lxml",
     "nibabel>=5.2.0",
     "numpy>=1.20.0",

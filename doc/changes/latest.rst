@@ -17,6 +17,7 @@ HIGHLIGHTS
  | - numpy -- v1.20.0
  | - nibabel -- v5.2.0
  | - scikit-learn -- v1.4.0
+ | - joblib -- v1.2.0
 
 NEW
 ---
