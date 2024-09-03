@@ -36,6 +36,7 @@ Content
 -------
     :'func': Paths to functional images
     :'anat': Path to anat image
+    :'events': Path to events.tsv
     :'description': Data description
 
 References

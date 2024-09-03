@@ -68,7 +68,7 @@ plot_stat_map(
     z_map,
     bg_img=mean_img,
     threshold=threshold,
-    title=f"listening > rest (t-test; Z>{threshold})",
+    title=f"listening > rest (t-test; |Z|>{threshold})",
 )
 
 show()
