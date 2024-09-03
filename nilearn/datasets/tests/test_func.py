@@ -833,7 +833,6 @@ def test_select_from_index():
 
 def test_fetch_ds000030_urls():
     with tempfile.TemporaryDirectory() as tmpdir:
-        dataset_version = "ds000030_R1.0.4"
         subdir_names = ["ds000030", "ds000030_R1.0.4", "uncompressed"]
         tmp_list = []
         for subdir in subdir_names:
@@ -856,30 +855,10 @@ def test_fetch_ds000030_urls():
         assert urls_path == filepath
         assert urls == mock_json_content
 
-        # fetch_openneuro_dataset_index should do the same, but with a warning
-        with pytest.warns(DeprecationWarning):
-            urls_path, urls = func.fetch_openneuro_dataset_index(
-                data_dir=tmpdir,
-                dataset_version=dataset_version,
-                verbose=1,
-            )
-
         urls_path = urls_path.replace("/", os.sep)
 
         assert urls_path == filepath
         assert urls == mock_json_content
-
-        # fetch_openneuro_dataset_index should even grab ds000030 when you
-        # provide a different dataset name
-        with pytest.warns(
-            UserWarning,
-            match='"ds000030_R1.0.4" will be downloaded',
-        ):
-            urls_path, urls = func.fetch_openneuro_dataset_index(
-                data_dir=tmpdir,
-                dataset_version="ds500_v2",
-                verbose=1,
-            )
 
         urls_path = urls_path.replace("/", os.sep)
 
