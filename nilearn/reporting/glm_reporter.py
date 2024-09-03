@@ -19,8 +19,9 @@ from html import escape
 
 import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
+from matplotlib import __version__ as mpl_version, pyplot as plt
 
+from nilearn._utils import compare_version
 from nilearn.plotting import plot_glass_brain, plot_roi, plot_stat_map
 from nilearn.plotting.cm import _cmap_d as nilearn_cmaps
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
@@ -394,7 +395,10 @@ def _plot_contrasts(contrasts, design_matrices):
             )
             contrast_plot.set_xlabel(contrast_name)
             contrast_plot.figure.set_figheight(2)
-            contrast_plot.figure.set_tight_layout(True)
+            if compare_version(mpl_version, ">=", "3.6.0"):
+                contrast_plot.figure.set_layout_engine("tight")
+            else:
+                contrast_plot.figure.set_tight_layout(True)
             url_contrast_plot_svg = _plot_to_svg(contrast_plot)
             # prevents sphinx-gallery & jupyter
             # from scraping & inserting plots
