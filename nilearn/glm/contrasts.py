@@ -238,7 +238,7 @@ class Contrast:
             stat_type = "F"
         if stat_type not in ["t", "F"]:
             raise ValueError(
-                f"{stat_type} is not a valid stat_type. " "Should be t or F"
+                f"{stat_type} is not a valid stat_type. Should be t or F"
             )
         self.stat_type = stat_type
         self.stat_ = None
