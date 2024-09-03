@@ -12,7 +12,9 @@ HIGHLIGHTS
 
  | **Support for Python 3.8 has been dropped.**
  | **We recommend upgrading to Python 3.11 or above.**
-
+ |
+ | **Minimum supported versions of the following packages have been bumped up:**
+ | - Numpy -- v1.20.0
 
 NEW
 ---
