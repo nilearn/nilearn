@@ -11,11 +11,9 @@ sub functions in skimage.segmentation
 import warnings
 
 import numpy as np
-from scipy import __version__, ndimage as ndi, sparse
+from scipy import ndimage as ndi, sparse
 from scipy.sparse.linalg import cg
 from sklearn.utils import as_float_array
-
-from nilearn._utils.helpers import compare_version
 
 
 def _make_graph_edges_3d(n_x, n_y, n_z):
@@ -357,14 +355,7 @@ def _solve_cg(lap_sparse, B, tol):
     lap_sparse = lap_sparse.tocsc()
     X = []
     for i in range(len(B)):
-        # TODO Python 3.8
-        # consider remove if/else block when dropping support for 3.8
-        # would require pinning scipy to >= 1.12
-        # See https://github.com/nilearn/nilearn/pull/4394
-        if compare_version(__version__, ">=", "1.12"):
-            x0 = cg(lap_sparse, -B[i].todense(), rtol=tol, atol=0)[0]
-        else:
-            x0 = cg(lap_sparse, -B[i].todense(), tol=tol, atol="legacy")[0]
+        x0 = cg(lap_sparse, -B[i].todense(), rtol=tol, atol=0)[0]
         X.append(x0)
 
     X = np.array(X)

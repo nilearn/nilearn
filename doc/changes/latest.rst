@@ -5,6 +5,15 @@
 0.11.0.dev
 ==========
 
+HIGHLIGHTS
+----------
+
+.. warning::
+
+ | **Support for Python 3.8 has been dropped.**
+ | **We recommend upgrading to Python 3.11 or above.**
+
+
 NEW
 ---
 
