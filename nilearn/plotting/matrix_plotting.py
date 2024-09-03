@@ -639,7 +639,7 @@ def plot_design_matrix_correlation(
 
     The drift and constant regressors are omitted from the plot.
 
-    .. versionadded:: 0.11.0.dev
+    .. versionadded:: 0.11.0
 
     Parameters
     ----------

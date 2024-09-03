@@ -33,12 +33,6 @@ from ._utils import (
     uncompress_file,
 )
 
-_LEGACY_FORMAT_MSG = (
-    "`legacy_format` will default to `False` in release 0.11. "
-    "Dataset fetchers will then return pandas dataframes by default "
-    "instead of recarrays."
-)
-
 
 @fill_doc
 def fetch_haxby(
@@ -540,7 +534,7 @@ def fetch_localizer_contrasts(
     data_dir=None,
     resume=True,
     verbose=1,
-    legacy_format=True,
+    legacy_format=False,
 ):
     """Download and load Brainomics/Localizer dataset (94 subjects).
 
@@ -892,7 +886,6 @@ def fetch_localizer_contrasts(
         subjects_indices.append(subject_names.index(name))
     csv_data = csv_data.iloc[subjects_indices]
     if legacy_format:
-        warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
         csv_data = csv_data.to_records(index=False)
     return Bunch(ext_vars=csv_data, description=fdescr, **files)
 
@@ -1011,7 +1004,7 @@ def fetch_abide_pcp(
     quality_checked=True,
     url=None,
     verbose=1,
-    legacy_format=True,
+    legacy_format=False,
     **kwargs,
 ):
     """Fetch ABIDE dataset.
@@ -1261,7 +1254,6 @@ def fetch_abide_pcp(
         pheno = pheno[:n_subjects]
 
     if legacy_format:
-        warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
         pheno = pheno.to_records(index=False)
 
     results = {
@@ -2299,60 +2291,6 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
         for f in files
     ]
     return os.path.join(data_dir, main_folder), sorted(file_list)
-
-
-@fill_doc
-def fetch_openneuro_dataset_index(
-    data_dir=None,
-    dataset_version="ds000030_R1.0.4",
-    verbose=1,
-):
-    """Download a file with OpenNeuro :term:`BIDS` dataset index.
-
-    .. deprecated:: 0.9.2
-        `fetch_openneuro_dataset_index` will be removed in 0.11.
-
-    Downloading the index allows to explore the dataset directories
-    to select specific files to download. The index is a sorted list of urls.
-
-    Parameters
-    ----------
-    %(data_dir)s
-    dataset_version : :obj:`str`, default='ds000030_R1.0.4'
-        Dataset version name. Assumes it is of the form [name]_[version].
-
-        .. warning:: Any value other than the default will be ignored.
-
-    %(verbose)s'
-
-    Returns
-    -------
-    urls_path : :obj:`str`
-        Path to downloaded dataset index.
-    urls : :obj:`list` of :obj:`str`
-        Sorted list of dataset directories.
-    """
-    warnings.warn(
-        (
-            'The "fetch_openneuro_dataset_index" function was deprecated in '
-            "version 0.9.2, and will be removed in 0.11. "
-            'Please use "fetch_ds000030_urls" instead.'
-        ),
-        DeprecationWarning,
-    )
-
-    DATASET_VERSION = "ds000030_R1.0.4"
-    if dataset_version != DATASET_VERSION:
-        warnings.warn(
-            (
-                "An improper dataset_version has been provided. "
-                '"ds000030_R1.0.4" will be downloaded.'
-            ),
-            UserWarning,
-        )
-
-    urls_path, urls = fetch_ds000030_urls(data_dir=data_dir, verbose=verbose)
-    return urls_path, urls
 
 
 @fill_doc
