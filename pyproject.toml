@@ -26,7 +26,7 @@ dependencies = [
     "lxml",
     "nibabel>=5.2.0",
     "numpy>=1.20.0",
-    "pandas>=1.1.5",
+    "pandas>=2.2.0",
     "requests>=2.25.0",
     "scikit-learn>=1.4.0",
     "scipy>=1.8.0",
