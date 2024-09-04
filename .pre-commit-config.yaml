@@ -58,15 +58,10 @@ repos:
     -   id: black
         args: [--config, pyproject.toml]
         # exclude files that
-        #  - are skipped for other hooks
         #  - are still involved in some PR
         exclude: |
             (?x)^(
-                nilearn/plotting/html_surface.py
-                | nilearn/plotting/js_plotting_utils.py
-                | nilearn/plotting/surf_plotting.py
-                | nilearn/plotting/tests/test_surf_plotting.py
-                | nilearn/surface/surface.py
+                nilearn/surface/surface.py
                 | nilearn/surface/tests/test_surface.py
             )$
 
