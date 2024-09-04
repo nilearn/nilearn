@@ -106,7 +106,6 @@ Homepage = "https://nilearn.github.io"
 extend-exclude = """
 (
   nilearn/externals
-  | examples/01_plotting/plot_3d_map_to_surface_projection.py
   | nilearn/plotting/html_surface.py
   | nilearn/plotting/js_plotting_utils.py
   | nilearn/plotting/surf_plotting.py
