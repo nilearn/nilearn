@@ -170,9 +170,13 @@ def test_F_contrast_add(set_up_glm, rng):
     assert_almost_equal(con1.stat() * 2, con2.stat())
 
 
+from rich import print
+
+
 def test_contrast_mul(set_up_glm, rng):
     labels, results, q = set_up_glm(rng, "ar1")
     for c1 in [np.eye(q)[0], np.eye(q)[:3]]:
+        print(c1)
         con1 = compute_contrast(labels, results, c1)
         con2 = con1 * 2
         assert_almost_equal(con1.effect * 2, con2.effect)
@@ -269,7 +273,11 @@ def test_deprecation_contrast_type_attribute():
 @pytest.mark.parametrize(
     "effect, variance, match",
     [
-        (np.ones(3), np.ones(1), "Effect array should have 2 dimensions"),
+        (
+            np.ones((3, 1, 1)),
+            np.ones(1),
+            "Effect array should have 1 or 2 dimensions",
+        ),
         (
             np.ones((1, 3)),
             np.ones((1, 1)),
