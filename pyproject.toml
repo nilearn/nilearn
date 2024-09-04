@@ -106,8 +106,6 @@ Homepage = "https://nilearn.github.io"
 extend-exclude = """
 (
   nilearn/externals
-  | nilearn/surface/surface.py
-  | nilearn/surface/tests/test_surface.py
 )
 """
 line-length = 79
