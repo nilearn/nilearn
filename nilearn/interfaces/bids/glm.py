@@ -237,8 +237,17 @@ def save_glm_to_bids(
 
     """
     # Import here to avoid circular imports
-    from matplotlib import __version__ as mpl_version
 
+    # TODO this entire version check can be removed
+    # when bumlping matplotlib to >= 3.6
+    from nilearn._utils.helpers import is_matplotlib_installed
+
+    if is_matplotlib_installed():
+        from matplotlib import __version__ as mpl_version
+    else:
+        from nilearn.plotting import (
+            OPTIONAL_MATPLOTLIB_MIN_VERSION as mpl_version,
+        )
     from nilearn._utils import compare_version
     from nilearn.plotting.matrix_plotting import (
         plot_contrast_matrix,
@@ -345,6 +354,7 @@ def save_glm_to_bids(
             )
             contrast_plot.set_xlabel(contrast_name)
             contrast_plot.figure.set_figheight(2)
+            # TODO remove if block when bumlping matplotlib to >= 3.6
             if compare_version(mpl_version, ">=", "3.6.0"):
                 contrast_plot.figure.set_layout_engine("tight")
             else:
