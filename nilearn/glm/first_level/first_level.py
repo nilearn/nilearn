@@ -1811,6 +1811,10 @@ def _get_events_files(
     events : :obj:`list` of :obj:`str`
         List of fullpath to the events files
     """
+    # pop the 'desc' filter
+    # it would otherwise trigger some meaningless warnings
+    # as desc entity are not supported in BIDS raw datasets
+    img_filters = [x for x in img_filters if x[0] != "desc"]
     events_filters = _make_bids_files_filter(
         task_label=task_label,
         supported_filters=bids_entities()["raw"],
@@ -1884,6 +1888,10 @@ def _get_confounds(
     confounds : :obj:`list` of :class:`pandas.DataFrame`
 
     """
+    # pop the 'desc' filter
+    # it would otherwise trigger some meaningless warnings
+    # as desc entity are not supported in BIDS raw datasets
+    img_filters = [x for x in img_filters if x[0] != "desc"]
     filters = _make_bids_files_filter(
         task_label=task_label,
         supported_filters=bids_entities()["raw"],

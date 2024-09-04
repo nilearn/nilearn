@@ -1337,7 +1337,7 @@ def test_first_level_from_bids(
         task_label=tasks[task_index],
         space_label=space_label,
         img_filters=[("desc", "preproc")],
-        slice_time_ref=None,
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
     )
 
     _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
@@ -1365,7 +1365,7 @@ def test_first_level_from_bids_select_one_run_per_session(bids_dataset):
         task_label="main",
         space_label="MNI",
         img_filters=[("run", "01"), ("desc", "preproc")],
-        slice_time_ref=None,
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
     )
 
     _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
@@ -1382,7 +1382,7 @@ def test_first_level_from_bids_select_all_runs_of_one_session(bids_dataset):
         task_label="main",
         space_label="MNI",
         img_filters=[("ses", "01"), ("desc", "preproc")],
-        slice_time_ref=None,
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
     )
 
     _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
@@ -1401,7 +1401,7 @@ def test_first_level_from_bids_smoke_test_for_verbose_argument(
         space_label="MNI",
         img_filters=[("desc", "preproc")],
         verbose=verbose,
-        slice_time_ref=None,
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
     )
 
 
@@ -1432,7 +1432,7 @@ def test_first_level_from_bids_several_labels_per_entity(tmp_path, entity):
         task_label="main",
         space_label="MNI",
         img_filters=[("desc", "preproc"), (entity, "A")],
-        slice_time_ref=None,
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
     )
 
     _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
@@ -1474,7 +1474,7 @@ def test_first_level_from_bids_with_subject_labels(bids_dataset):
             sub_labels=["foo", "01"],
             space_label="MNI",
             img_filters=[("desc", "preproc")],
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
         assert models[0].subject_label == "01"
@@ -1492,7 +1492,7 @@ def test_first_level_from_bids_no_duplicate_sub_labels(bids_dataset):
         sub_labels=["01", "01"],
         space_label="MNI",
         img_filters=[("desc", "preproc")],
-        slice_time_ref=None,
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
     )
 
     assert len(models) == 1
@@ -1504,14 +1504,14 @@ def test_first_level_from_bids_validation_input_dataset_path():
             dataset_path=2,
             task_label="main",
             space_label="MNI",
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
     with pytest.raises(ValueError, match="'dataset_path' does not exist"):
         first_level_from_bids(
             dataset_path="lolo",
             task_label="main",
             space_label="MNI",
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
     with pytest.raises(TypeError, match="derivatives_.* must be a string"):
         first_level_from_bids(
@@ -1519,7 +1519,7 @@ def test_first_level_from_bids_validation_input_dataset_path():
             task_label="main",
             space_label="MNI",
             derivatives_folder=1,
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
 
@@ -1552,7 +1552,7 @@ def test_first_level_from_bids_validation_sub_labels(
             dataset_path=bids_dataset,
             task_label="main",
             sub_labels=sub_labels,
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
 
@@ -1568,7 +1568,7 @@ def test_first_level_from_bids_validation_space_label(
             dataset_path=bids_dataset,
             task_label="main",
             space_label=space_label,
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
 
@@ -1589,7 +1589,7 @@ def test_first_level_from_bids_validation_img_filter(
             dataset_path=bids_dataset,
             task_label="main",
             img_filters=img_filters,
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
 
@@ -1604,7 +1604,7 @@ def test_first_level_from_bids_too_many_bold_files(bids_dataset):
             dataset_path=bids_dataset,
             task_label="main",
             space_label="T1w",
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
 
@@ -1620,7 +1620,7 @@ def test_first_level_from_bids_with_missing_events(tmp_path_factory):
             dataset_path=bids_dataset,
             task_label="main",
             space_label="MNI",
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
 
@@ -1641,7 +1641,7 @@ def test_first_level_from_bids_no_tr(tmp_path_factory):
             dataset_path=bids_dataset,
             task_label="main",
             space_label="MNI",
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
             t_r=None,
         )
 
@@ -1661,7 +1661,7 @@ def test_first_level_from_bids_no_bold_file(tmp_path_factory):
             dataset_path=bids_dataset,
             task_label="main",
             space_label="MNI",
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
 
@@ -1678,7 +1678,7 @@ def test_first_level_from_bids_with_one_events_missing(tmp_path_factory):
             dataset_path=bids_dataset,
             task_label="main",
             space_label="MNI",
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
 
@@ -1701,7 +1701,7 @@ def test_first_level_from_bids_one_confound_missing(tmp_path_factory):
             dataset_path=bids_dataset,
             task_label="main",
             space_label="MNI",
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
 
@@ -1722,7 +1722,7 @@ def test_first_level_from_bids_all_confounds_missing(tmp_path_factory):
         space_label="MNI",
         img_filters=[("desc", "preproc")],
         verbose=0,
-        slice_time_ref=None,
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
     )
 
     assert len(models) == len(imgs)
@@ -1747,7 +1747,7 @@ def test_first_level_from_bids_no_derivatives(tmp_path):
             dataset_path=bids_path,
             task_label="main",
             space_label="MNI",
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
 
@@ -1764,7 +1764,7 @@ def test_first_level_from_bids_no_session(tmp_path):
             dataset_path=bids_path,
             task_label="main",
             space_label="T1w",
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
 
@@ -1788,7 +1788,7 @@ def test_first_level_from_bids_mismatch_run_index(tmp_path_factory):
             task_label="main",
             space_label="MNI",
             img_filters=[("desc", "preproc")],
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
 
@@ -1955,7 +1955,7 @@ def test_first_level_from_bids_no_subject(tmp_path):
             dataset_path=bids_path,
             task_label="main",
             space_label="MNI",
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
 
@@ -1971,7 +1971,7 @@ def test_first_level_from_bids_unused_kwargs(tmp_path):
             dataset_path=bids_path,
             task_label="main",
             space_label="MNI",
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
             confound_strategy="motion",
         )
 
