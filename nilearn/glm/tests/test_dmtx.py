@@ -77,8 +77,8 @@ def n_frames():
 
 @pytest.fixture
 def frame_times(n_frames):
-    tr = 1.0
-    return np.linspace(0, (n_frames - 1) * tr, n_frames)
+    t_r = 1.0
+    return np.linspace(0, (n_frames - 1) * t_r, n_frames)
 
 
 def test_cosine_drift():
@@ -279,8 +279,8 @@ def test_design_matrix_FIR_column_1_3_and_11(frame_times):
 def test_design_matrix_FIR_time_shift(frame_times):
     # Check that the first column of FIR design matrix is OK after a 1/2
     # time shift
-    tr = 1.0
-    frame_times = frame_times + tr / 2
+    t_r = 1.0
+    frame_times = frame_times + t_r / 2
     events = basic_paradigm()
     hrf_model = "FIR"
     X, _ = design_matrix_light(
@@ -402,8 +402,8 @@ def test_oversampling(n_frames):
 
 def test_high_pass(n_frames):
     """Test that high-pass values lead to reasonable design matrices."""
-    tr = 2.0
-    frame_times = np.arange(0, tr * n_frames, tr)
+    t_r = 2.0
+    frame_times = np.arange(0, t_r * n_frames, t_r)
     X = make_first_level_design_matrix(
         frame_times, drift_model="Cosine", high_pass=1.0
     )
@@ -436,7 +436,9 @@ def test_compare_design_matrix_to_spm(block_duration, array):
     # Check that the nilearn design matrix is close enough to the SPM one
     # (it cannot be identical, because the hrf shape is different)
     events, frame_times = spm_paradigm(block_duration=block_duration)
-    X1 = make_first_level_design_matrix(frame_times, events, drift_model=None)
+    X1 = make_first_level_design_matrix(
+        frame_times, events, drift_model=None, hrf_model="spm"
+    )
     _, matrix, _ = check_design_matrix(X1)
 
     spm_design_matrix = DESIGN_MATRIX[array]
@@ -451,7 +453,7 @@ def test_create_second_level_design():
     regressors = [["01", 0.1], ["02", 0.75]]
     regressors = pd.DataFrame(regressors, columns=["subject_label", "f1"])
     design = make_second_level_design_matrix(subjects_label, regressors)
-    expected_design = np.array([[0.75, 1], [0.1, 1]])
+    expected_design = np.array([[0.75, 1.0], [0.1, 1.0]])
     assert_array_equal(design, expected_design)
     assert len(design.columns) == 2
     assert len(design) == 2

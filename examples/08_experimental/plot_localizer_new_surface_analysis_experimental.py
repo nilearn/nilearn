@@ -88,20 +88,12 @@ events = pd.read_table(events_file)
 # that contains both the mesh
 # (here we use the one from the fsaverage5 templates)
 # and the BOLD data that we project on the surface.
-from nilearn import surface
 from nilearn.experimental.surface import SurfaceImage, load_fsaverage
 
 fsaverage5 = load_fsaverage()
-texture_left = surface.vol_to_surf(fmri_img, fsaverage5["pial"].parts["left"])
-texture_right = surface.vol_to_surf(
-    fmri_img, fsaverage5["pial"].parts["right"]
-)
 image = SurfaceImage(
     mesh=fsaverage5["pial"],
-    data={
-        "left": texture_left.T,
-        "right": texture_right.T,
-    },
+    data=fmri_img,
 )
 
 # %%
@@ -187,7 +179,7 @@ basic_contrasts["sentences"] = (
 # but we keep only 3 for simplicity.
 
 contrasts = {
-    "left - right button press": (
+    "(left - right) button press": (
         basic_contrasts["audio_left_hand_button_press"]
         - basic_contrasts["audio_right_hand_button_press"]
         + basic_contrasts["visual_left_hand_button_press"]
@@ -200,40 +192,35 @@ contrasts = {
 }
 
 
+from nilearn.experimental.plotting import plot_surf_stat_map
+from nilearn.experimental.surface import load_fsaverage_data
+
 # %%
 # Let's estimate the contrasts by iterating over them.
-from nilearn import plotting
+from nilearn.plotting import show
 
-fsaverage = datasets.fetch_surf_fsaverage()
+fsaverage_data = load_fsaverage_data(data_type="sulcal")
 
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
-    print(
-        f"  Contrast {index + 1:1} out of {len(contrasts)}: "
-        f"{contrast_id}, right hemisphere"
-    )
     # compute contrast-related statistics
     z_score = glm.compute_contrast(contrast_val, stat_type="t")
 
     # we plot it on the surface, on the inflated fsaverage mesh,
     # together with a suitable background to give an impression
     # of the cortex folding.
-    plotting.plot_surf_stat_map(
-        fsaverage.infl_right,
-        z_score.data.parts["right"],
-        hemi="right",
-        title=contrast_id,
-        colorbar=True,
-        threshold=3.0,
-        bg_map=fsaverage.sulc_right,
-    )
-    plotting.plot_surf_stat_map(
-        fsaverage.infl_left,
-        z_score.data.parts["left"],
-        hemi="left",
-        title=contrast_id,
-        colorbar=True,
-        threshold=3.0,
-        bg_map=fsaverage.sulc_left,
-    )
+    for hemi in ["left", "right"]:
+        print(
+            f"  Contrast {index + 1:1} out of {len(contrasts)}: "
+            f"{contrast_id}, {hemi} hemisphere"
+        )
+        plot_surf_stat_map(
+            surf_mesh=fsaverage5["inflated"],
+            stat_map=z_score,
+            hemi=hemi,
+            title=contrast_id,
+            colorbar=True,
+            threshold=3.0,
+            bg_map=fsaverage_data,
+        )
 
-plotting.show()
+show()

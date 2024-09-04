@@ -1,8 +1,8 @@
 """Test the multi_nifti_maps_masker module."""
 
-import nibabel
 import numpy as np
 import pytest
+from nibabel import Nifti1Image
 
 from nilearn._utils import data_gen, testing
 from nilearn._utils.exceptions import DimensionError
@@ -153,7 +153,7 @@ def test_multi_nifti_maps_masker_resampling():
 
     maps33_img, _ = data_gen.generate_maps(shape3, n_regions, affine=affine)
 
-    mask_img_4d = nibabel.Nifti1Image(
+    mask_img_4d = Nifti1Image(
         np.ones((2, 2, 2, 2), dtype=np.int8), affine=np.diag((4, 4, 4, 1))
     )
 

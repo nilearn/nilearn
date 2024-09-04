@@ -1,6 +1,6 @@
-import nibabel as nib
 import numpy as np
 import pytest
+from nibabel import Nifti1Image
 
 from nilearn.image import get_data
 
@@ -14,15 +14,7 @@ from nilearn.reporting.get_clusters_table import (
 
 # Avoid making pyflakes unhappy
 _set_mpl_backend
-try:
-    import matplotlib.pyplot
-
-    # Avoid making pyflakes unhappy
-    matplotlib.pyplot
-except ImportError:
-    have_mpl = False
-else:
-    have_mpl = True
+from nilearn.conftest import have_mpl
 
 
 @pytest.fixture
@@ -129,7 +121,7 @@ def test_get_clusters_table(
     data = np.zeros(shape)
     data[2:4, 5:7, 6:8] = 5.0
     data[4:6, 7:9, 8:10] = -5.0
-    stat_img = nib.Nifti1Image(data, affine_eye)
+    stat_img = Nifti1Image(data, affine_eye)
 
     clusters_table = get_clusters_table(
         stat_img,
@@ -144,7 +136,7 @@ def test_get_clusters_table_more(shape, affine_eye, tmp_path):
     data = np.zeros(shape)
     data[2:4, 5:7, 6:8] = 5.0
     data[4:6, 7:9, 8:10] = -5.0
-    stat_img = nib.Nifti1Image(data, affine_eye)
+    stat_img = Nifti1Image(data, affine_eye)
 
     # test with filename
     fname = str(tmp_path / "stat_img.nii.gz")
@@ -168,7 +160,7 @@ def test_get_clusters_table_more(shape, affine_eye, tmp_path):
 
     # test with extra dimension
     data_extra_dim = data[..., np.newaxis]
-    stat_img_extra_dim = nib.Nifti1Image(data_extra_dim, affine_eye)
+    stat_img_extra_dim = Nifti1Image(data_extra_dim, affine_eye)
     cluster_table = get_clusters_table(
         stat_img_extra_dim,
         4,
@@ -179,7 +171,7 @@ def test_get_clusters_table_more(shape, affine_eye, tmp_path):
 
     # Test that nans are handled correctly (No numpy axis errors are raised)
     data[data == 0] = np.nan
-    stat_img_nans = nib.Nifti1Image(data, affine=affine_eye)
+    stat_img_nans = Nifti1Image(data, affine=affine_eye)
     cluster_table = get_clusters_table(stat_img_nans, 1e-2, 0, two_sided=False)
     assert len(cluster_table) == 1
 
@@ -189,7 +181,7 @@ def test_get_clusters_table_more(shape, affine_eye, tmp_path):
     data[4, 5, :] = [4, 3, 2, 1, 1, 1, 1, 1, 2, 3, 4]
     data[5, 5, :] = [5, 4, 3, 2, 1, 1, 1, 2, 3, 4, 6]
     data[6, 5, :] = [4, 3, 2, 1, 1, 1, 1, 1, 2, 3, 4]
-    stat_img = nib.Nifti1Image(data, affine_eye)
+    stat_img = Nifti1Image(data, affine_eye)
 
     cluster_table = get_clusters_table(stat_img, 0, 0, min_distance=9)
     assert len(cluster_table) == 2
@@ -204,7 +196,7 @@ def test_get_clusters_table_relabel_label_maps(shape, affine_eye):
     data[2:4, 5:7, 6:8] = 6.0
     data[5:7, 7:9, 7:9] = 5.5
     data[0:3, 0:3, 0:3] = 5.0
-    stat_img = nib.Nifti1Image(data, affine_eye)
+    stat_img = Nifti1Image(data, affine_eye)
 
     cluster_table, label_maps = get_clusters_table(
         stat_img,
@@ -243,7 +235,7 @@ def test_get_clusters_table_not_modifying_stat_image(
     data[2:4, 5:7, 6:8] = 5.0
     data[0:3, 0:3, 0:3] = 6.0
 
-    stat_img = nib.Nifti1Image(data, affine_eye)
+    stat_img = Nifti1Image(data, affine_eye)
     data_orig = get_data(stat_img).copy()
 
     clusters_table = get_clusters_table(

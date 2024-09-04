@@ -1,7 +1,7 @@
 """Test the base_masker module."""
 
-import nibabel
 import numpy as np
+from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal
 
 from nilearn import image
@@ -16,10 +16,10 @@ def test_cropping_code_paths(rng):
 
     affine = np.eye(4)
 
-    img = nibabel.Nifti1Image(data, affine=affine)
+    img = Nifti1Image(data, affine=affine)
 
     mask = (data[..., 0] > 0).astype("uint8")
-    mask_img = nibabel.Nifti1Image(mask, affine=affine)
+    mask_img = Nifti1Image(mask, affine=affine)
 
     # the mask in mask_img has the same shape and affine as the
     # data and should thus avoid resampling

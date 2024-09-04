@@ -641,7 +641,7 @@ def test_fmri_inputs_errors(tmp_path):
             ):
                 FirstLevelModel(mask_img=None).fit(fi)
 
-            # If paradigms are given then both tr and slice time ref were
+            # If paradigms are given then both t_r and slice time ref were
             # required
             match = (
                 "t_r not given to FirstLevelModel object "
@@ -1232,7 +1232,7 @@ def test_first_level_predictions_r_square():
         "spm",
         "spm + derivative",
         "glover",
-        lambda tr, ov: np.ones(int(tr * ov)),
+        lambda t_r, ov: np.ones(int(t_r * ov)),
     ],
 )
 @pytest.mark.parametrize("spaces", [False, True])
