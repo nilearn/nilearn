@@ -174,9 +174,10 @@ def _ball_sample_locations(
     if depth is not None:
         raise ValueError(
             "The 'ball' sampling strategy does not support "
-            "the 'depth' parameter"
+            "the 'depth' parameter.\n"
+            "To avoid this error with this strategy, set 'depth' to None."
         )
-    vertices, faces = mesh
+    vertices, _ = mesh
     offsets_world_space = (
         _load_uniform_ball_cloud(n_points=n_points) * ball_radius
     )
@@ -238,7 +239,7 @@ def _line_sample_locations(
         z in voxel space.
 
     """
-    vertices, faces = mesh
+    vertices, _ = mesh
     normals = _vertex_outer_normals(mesh)
     if depth is None:
         offsets = np.linspace(
