@@ -15,10 +15,12 @@ examples
 
 """
 
-try:
-    import matplotlib.pyplot as plt
-except ImportError:
+from nilearn._utils.helpers import is_matplotlib_installed
+
+if not is_matplotlib_installed():
     raise RuntimeError("This script needs the matplotlib library")
+
+import matplotlib.pyplot as plt
 
 # %%
 import numpy as np

@@ -12,10 +12,14 @@ operation in just a few lines of code.
 
 """
 
-try:
-    import matplotlib.pyplot as plt
-except ImportError:
+from nilearn._utils.helpers import is_matplotlib_installed
+
+if not is_matplotlib_installed():
     raise RuntimeError("This script needs the matplotlib library")
+
+import matplotlib.pyplot as plt
+
+from nilearn import datasets
 
 # %%
 # Retrieve the brain development functional dataset
@@ -23,7 +27,6 @@ except ImportError:
 # We start by fetching the brain development functional dataset
 # and we restrict the example to one subject only.
 
-from nilearn import datasets
 
 dataset = datasets.fetch_development_fmri(n_subjects=1)
 func_filename = dataset.func[0]

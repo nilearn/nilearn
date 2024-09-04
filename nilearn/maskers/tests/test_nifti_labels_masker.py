@@ -17,8 +17,8 @@ from nilearn._utils.data_gen import (
     generate_random_img,
 )
 from nilearn._utils.exceptions import DimensionError
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.testing import write_imgs_to_path
-from nilearn.conftest import have_mpl
 from nilearn.image import get_data
 from nilearn.maskers import NiftiLabelsMasker, NiftiMasker
 
@@ -1034,7 +1034,8 @@ def test_3d_images(affine_eye, shape_3d_default, n_regions):
 
 
 @pytest.mark.skipif(
-    have_mpl, reason="Test requires matplotlib not to be installed."
+    is_matplotlib_installed(),
+    reason="Test requires matplotlib not to be installed.",
 )
 def test_nifti_labels_masker_reporting_mpl_warning(
     shape_3d_default, n_regions, length, affine_eye

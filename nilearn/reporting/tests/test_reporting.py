@@ -14,7 +14,7 @@ from nilearn.reporting.get_clusters_table import (
 
 # Avoid making pyflakes unhappy
 _set_mpl_backend
-from nilearn.conftest import have_mpl
+from nilearn._utils.helpers import is_matplotlib_installed
 
 
 @pytest.fixture
@@ -23,7 +23,8 @@ def shape():
 
 
 @pytest.mark.skipif(
-    not have_mpl, reason="Matplotlib not installed; required for this test"
+    not is_matplotlib_installed(),
+    reason="Matplotlib not installed; required for this test",
 )
 def test_local_max_two_maxima(shape, affine_eye):
     """Basic test of nilearn.reporting._get_clusters_table._local_max()."""
@@ -43,7 +44,8 @@ def test_local_max_two_maxima(shape, affine_eye):
 
 
 @pytest.mark.skipif(
-    not have_mpl, reason="Matplotlib not installed; required for this test"
+    not is_matplotlib_installed(),
+    reason="Matplotlib not installed; required for this test",
 )
 def test_local_max_two_global_maxima(shape, affine_eye):
     """Basic test of nilearn.reporting._get_clusters_table._local_max()."""
@@ -63,7 +65,8 @@ def test_local_max_two_global_maxima(shape, affine_eye):
 
 
 @pytest.mark.skipif(
-    not have_mpl, reason="Matplotlib not installed; required for this test"
+    not is_matplotlib_installed(),
+    reason="Matplotlib not installed; required for this test",
 )
 def test_local_max_donut(shape, affine_eye):
     """Basic test of nilearn.reporting._get_clusters_table._local_max()."""

@@ -8,14 +8,16 @@ which can be used for plotting brain images on surface.
 See :ref:`surface-plotting` for surface plotting details.
 """
 
+from nilearn._utils.helpers import is_matplotlib_installed
+
+if not is_matplotlib_installed():
+    raise RuntimeError("This script needs the matplotlib library")
+
+import matplotlib.pyplot as plt
+
 # %%
 # Plot color maps
 # ---------------
-try:
-    import matplotlib.pyplot as plt
-except ImportError:
-    raise RuntimeError("This script needs the matplotlib library")
-
 import numpy as np
 
 from nilearn.plotting import show

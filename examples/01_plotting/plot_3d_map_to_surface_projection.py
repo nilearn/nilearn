@@ -78,9 +78,9 @@ fig.show()
 
 engine = "plotly"
 # If plotly is not installed, use matplotlib
-try:
-    import plotly.graph_objects as go  # noqa: F401
-except ImportError:
+from nilearn._utils.helpers import is_plotly_installed
+
+if not is_plotly_installed():
     engine = "matplotlib"
 
 print(f"Using plotting engine {engine}.")

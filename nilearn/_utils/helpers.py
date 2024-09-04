@@ -211,6 +211,16 @@ def compare_version(version_a, operator, version_b):
     return VERSION_OPERATORS[operator](parse(version_a), parse(version_b))
 
 
+def is_matplotlib_installed():
+    """Check if matplotlib is installed."""
+    try:
+        import matplotlib  # noqa: F401
+    except ImportError:
+        return False
+    else:
+        return True
+
+
 def is_plotly_installed():
     """Check if plotly is installed."""
     try:

@@ -27,10 +27,13 @@ timing issues.
 This example requires matplotlib and scipy.
 """
 
-try:
-    import matplotlib.pyplot as plt
-except ImportError:
+from nilearn._utils.helpers import is_matplotlib_installed
+
+if not is_matplotlib_installed():
     raise RuntimeError("This script needs the matplotlib library")
+
+import matplotlib.pyplot as plt
+import numpy as np
 
 # %%
 # Define stimulus parameters and response models
@@ -39,7 +42,6 @@ except ImportError:
 # To get an impulse response, we simulate a single event occurring at time t=0,
 # with duration 1s.
 
-import numpy as np
 
 time_length = 30.0
 frame_times = np.linspace(0, time_length, 61)

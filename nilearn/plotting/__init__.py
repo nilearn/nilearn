@@ -4,6 +4,8 @@
 import importlib
 import warnings
 
+from nilearn._utils.helpers import is_matplotlib_installed
+
 OPTIONAL_MATPLOTLIB_MIN_VERSION = "3.3.0"
 
 ###############################################################################
@@ -13,9 +15,7 @@ OPTIONAL_MATPLOTLIB_MIN_VERSION = "3.3.0"
 
 def _set_mpl_backend():
     # We are doing local imports here to avoid polluting our namespace
-    try:
-        import matplotlib
-    except ImportError:
+    if not is_matplotlib_installed():
         if importlib.util.find_spec("pytest") is not None:
             from .._utils.testing import skip_if_running_tests
 
@@ -23,6 +23,8 @@ def _set_mpl_backend():
             skip_if_running_tests("matplotlib not installed")
         raise
     else:
+        import matplotlib
+
         from .._utils import compare_version
 
         # When matplotlib was successfully imported we need to check
