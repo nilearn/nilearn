@@ -58,16 +58,10 @@ repos:
     -   id: black
         args: [--config, pyproject.toml]
         # exclude files that
-        #  - are skipped for other hooks
         #  - are still involved in some PR
         exclude: |
             (?x)^(
-                nilearn/datasets/tests/data/localizer_behavioural.tsv
-                | nilearn/externals/.*
-                | nilearn/plotting/data/js/.*js
-                | nilearn/_version.py
-                | examples/01_plotting/plot_3d_map_to_surface_projection.py
-                | nilearn/surface/surface.py
+                nilearn/surface/surface.py
                 | nilearn/surface/tests/test_surface.py
             )$
 
