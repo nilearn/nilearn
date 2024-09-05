@@ -251,6 +251,5 @@ def check_copy_header(copy_header):
             "`copy_header=True`."
         )
         warnings.warn(
-            category=FutureWarning,
-            message=copy_header_default,
+            category=FutureWarning, message=copy_header_default, stacklevel=3
         )
