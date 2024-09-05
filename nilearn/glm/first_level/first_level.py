@@ -1811,10 +1811,12 @@ def _get_events_files(
     events : :obj:`list` of :obj:`str`
         List of fullpath to the events files
     """
-    # pop the 'desc' filter
+    # pop the derivatives filter
     # it would otherwise trigger some meaningless warnings
-    # as desc entity are not supported in BIDS raw datasets
-    img_filters = [x for x in img_filters if x[0] != "desc"]
+    # as the derivatives entity are not supported in BIDS raw datasets
+    img_filters = [
+        x for x in img_filters if x[0] in bids_entities()["derivatives"]
+    ]
     events_filters = _make_bids_files_filter(
         task_label=task_label,
         supported_filters=bids_entities()["raw"],
@@ -1891,6 +1893,7 @@ def _get_confounds(
     # pop the 'desc' filter
     # it would otherwise trigger some meaningless warnings
     # as desc entity are not supported in BIDS raw datasets
+    # and we add a desc-confounds 'filter' later on
     img_filters = [x for x in img_filters if x[0] != "desc"]
     filters = _make_bids_files_filter(
         task_label=task_label,
