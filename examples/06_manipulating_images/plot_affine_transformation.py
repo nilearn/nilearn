@@ -124,6 +124,7 @@ img_4d_affine_in_mm_space = resample_img(
     img_4d_affine,
     target_affine=np.eye(4),
     target_shape=(np.array(img_4d_affine.shape) * 2).astype(int),
+    copy_header=True,
 )
 
 # %%
