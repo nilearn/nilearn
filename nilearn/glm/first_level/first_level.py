@@ -1815,7 +1815,7 @@ def _get_events_files(
     # it would otherwise trigger some meaningless warnings
     # as the derivatives entity are not supported in BIDS raw datasets
     img_filters = [
-        x for x in img_filters if x[0] in bids_entities()["derivatives"]
+        x for x in img_filters if x[0] not in bids_entities()["derivatives"]
     ]
     events_filters = _make_bids_files_filter(
         task_label=task_label,
