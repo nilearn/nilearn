@@ -114,9 +114,6 @@ line-length = 79
 ignore-words = ".github/codespell_ignore_words.txt"
 skip = "./.git,plotly-gl3d-latest.min.js,jquery.min.js,localizer_behavioural.tsv,.mypy_cache,env,venv,./doc/auto_examples,*/tmp,./doc/modules/generated/*,./doc/_build,./maint_tools/*.html,./examples/*/results"
 
-[tool.flynt]
-exclude = "tempita"
-
 [tool.hatch.build.hooks.vcs]
 version-file = "nilearn/_version.py"
 
