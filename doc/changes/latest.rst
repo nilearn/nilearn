@@ -19,6 +19,9 @@ Fixes
 
 - :bdg-dark:`Code` :func:`nilearn.image.binarize_img` explicitly cast images to ``int8`` to avoid warnings about ``int64`` when working with ``float64`` images (:gh:`4498` by `Patrick Sadil`_).
 
+- :bdg-dark:`Code` Fix bug that would lead ``compute_contrast`` to return 4D images even for one dimensional contrasts (:gh:`4413` by `Bertrand Thirion`_ and `Rémi Gau`_).
+
+
 Enhancements
 ------------
 
