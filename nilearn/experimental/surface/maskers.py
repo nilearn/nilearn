@@ -109,6 +109,11 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         # data necessary to construct figure for the report
         self._reporting_data = None
 
+        if "smoothing_fwhm" in kwargs and kwargs["smoothing_fwhm"] is not None:
+            raise NotImplementedError(
+                "Smoothing is not yet implemented for Surfaces."
+            )
+
     def _fit_mask_img(self, img: SurfaceImage | None) -> None:
         if self.mask_img is not None:
             if img is not None:
