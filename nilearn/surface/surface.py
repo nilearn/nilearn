@@ -636,6 +636,7 @@ def vol_to_surf(img, surf_mesh,
         mask_img = _utils.check_niimg(mask_img)
         mask = get_data(resampling.resample_to_img(
             mask_img, img, interpolation='nearest', copy=False,
+            force_resample=False,  # TODO update to True in 0.13.0
             copy_header=True))
     else:
         mask = None

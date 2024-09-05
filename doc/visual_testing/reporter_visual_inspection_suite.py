@@ -251,6 +251,7 @@ def report_slm_oasis():
         oasis_dataset.gray_matter_maps[0],
         interpolation="nearest",
         copy_header=True,
+        force_resample=True,
     )
 
     design_matrix = _make_design_matrix_slm_oasis(oasis_dataset, n_subjects)
