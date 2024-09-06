@@ -20,6 +20,9 @@ class PolyData:
 
     It is a shallow wrapper around the ``parts`` dictionary, which cannot be
     empty and whose keys must be a subset of {"left", "right"}.
+
+    Each part has 2D numpy array where dim-1 are the 'timepoints',
+    and dim-2 are the vertices
     """
 
     def __init__(
@@ -34,21 +37,28 @@ class PolyData:
             )
 
         parts = {}
-        if left is not None:
-            if not isinstance(left, np.ndarray):
-                left = _io.read_array(left)
-            parts["left"] = left
-        if right is not None:
-            if not isinstance(right, np.ndarray):
-                right = _io.read_array(right)
-            parts["right"] = right
+        for hemi, data in zip(["left", "right"], [left, right]):
+            if data is not None:
+                if not isinstance(data, np.ndarray):
+                    data = _io.read_array(data)
+                if data.ndim == 1:
+                    data = np.array([data])
+                elif data.ndim == 2:
+                    # assume dimensions are correct
+                    ...
+                else:
+                    raise NotImplementedError(
+                        "Data with more than 2D are not supported yet."
+                    )
+
+                parts[hemi] = data
 
         if len(parts) == 1:
             self.parts = parts
             self.shape = next(iter(self.parts.values())).shape
             return
 
-        if parts["left"].shape[:-1] != parts["right"].shape[:-1]:
+        if parts["left"].shape[0] != parts["right"].shape[0]:
             raise ValueError(
                 f"Data arrays for keys 'left' and 'right' "
                 "have incompatible shapes: "
@@ -57,8 +67,8 @@ class PolyData:
 
         self.parts = parts
         first_shape = next(iter(parts.values())).shape
-        concat_dim = sum(p.shape[-1] for p in parts.values())
-        self.shape = (*first_shape[:-1], concat_dim)
+        total_n_vertices = sum(p.shape[1] for p in parts.values())
+        self.shape = (first_shape[0], total_n_vertices)
 
 
 class Mesh(abc.ABC):
@@ -177,7 +187,7 @@ def _check_data_and_mesh_compat(mesh: PolyMesh, data: PolyData):
             f"Offending keys: {diff}"
         )
     for key in mesh_keys:
-        if data.parts[key].shape[-1] != mesh.parts[key].n_vertices:
+        if data.parts[key].shape[1] != mesh.parts[key].n_vertices:
             raise ValueError(
                 f"Data shape does not match number of vertices for '{key}':\n"
                 f"- data shape: {data.parts[key].shape}\n"

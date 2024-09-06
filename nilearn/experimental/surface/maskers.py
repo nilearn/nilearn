@@ -36,7 +36,7 @@ def check_same_n_vertices(mesh_1: PolyMesh, mesh_2: PolyMesh) -> None:
 
 def _compute_mean_image(img: SurfaceImage):
     """Compute mean of the surface (for 'time series')."""
-    if len(img.shape) <= 1:
+    if img.shape[0] == 1:
         return img
     for part, value in img.data.parts.items():
         img.data.parts[part] = np.squeeze(value.mean(axis=0)).astype(float)
@@ -123,7 +123,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         # TODO: don't store a full array of 1 to mean "no masking"; use some
         # sentinel value
         mask_data = {
-            k: np.ones(v.n_vertices, dtype=bool)
+            k: np.ones((1, v.n_vertices), dtype=bool)
             for (k, v) in img.mesh.parts.items()
         }
         self.mask_img_ = SurfaceImage(mesh=img.mesh, data=mask_data)
@@ -208,11 +208,11 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         assert self.mask_img_ is not None
         assert self.output_dimension_ is not None
         check_same_n_vertices(self.mask_img_.mesh, img.mesh)
-        output = np.empty((*img.shape[:-1], self.output_dimension_))
+        output = np.empty((img.shape[0], self.output_dimension_))
         for part_name, (start, stop) in self.slices.items():
             mask = self.mask_img_.data.parts[part_name]
             assert isinstance(mask, np.ndarray)
-            output[..., start:stop] = img.data.parts[part_name][..., mask]
+            output[..., start:stop] = img.data.parts[part_name][..., mask[0]]
 
         # signal cleaning here
         output = cache(
@@ -287,11 +287,11 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         for part_name, mask in self.mask_img_.data.parts.items():
             assert isinstance(mask, np.ndarray)
             data[part_name] = np.zeros(
-                (*masked_img.shape[:-1], mask.shape[0]),
+                (mask.shape[0], *masked_img.shape[:-1]),
                 dtype=masked_img.dtype,
             )
             start, stop = self.slices[part_name]
-            data[part_name][..., mask] = masked_img[..., start:stop]
+            data[part_name][..., mask[0]] = masked_img[..., start:stop]
         return SurfaceImage(mesh=self.mask_img_.mesh, data=data)
 
     def generate_report(self):

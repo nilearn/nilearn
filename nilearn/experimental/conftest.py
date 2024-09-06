@@ -47,10 +47,10 @@ def mini_mesh() -> PolyMesh:
 def make_mini_img(mini_mesh) -> Callable:
     """Small surface image for tests."""
 
-    def f(shape=()):
+    def f(nb_timepoints=1):
         data = {}
         for i, (key, val) in enumerate(mini_mesh.parts.items()):
-            data_shape = tuple(shape) + (val.n_vertices,)
+            data_shape = (nb_timepoints, val.n_vertices)
             data_part = (
                 np.arange(np.prod(data_shape)).reshape(data_shape) + 1.0
             ) * 10**i
@@ -76,8 +76,8 @@ def mini_img(make_mini_img) -> SurfaceImage:
 def return_mini_binary_mask():
     """Return small surface label image."""
     data = PolyData(
-        left=np.asarray([False, False, True, True]),
-        right=np.asarray([True, True, False, False, False]),
+        left=np.asarray([[False, False, True, True]]),
+        right=np.asarray([[True, True, False, False, False]]),
     )
     return SurfaceImage(_return_mini_mesh(), data)
 
@@ -92,7 +92,7 @@ def mini_binary_mask() -> SurfaceImage:
 def mini_label_img(mini_mesh) -> SurfaceImage:
     """Return small surface label image."""
     data = PolyData(
-        left=np.asarray([0, 0, 1, 1]), right=np.asarray([1, 1, 0, 0, 0])
+        left=np.asarray([[0, 0, 1, 1]]), right=np.asarray([[1, 1, 0, 0, 0]])
     )
     return SurfaceImage(mini_mesh, data)
 

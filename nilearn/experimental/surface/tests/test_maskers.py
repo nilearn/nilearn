@@ -22,7 +22,7 @@ def test_mask_img_fit_shape_mismatch(
     masker.fit(img)
     # fitting with the same number of vertices and extra dimensions (surface
     # timeseries) is ok
-    masker.fit(make_mini_img((2,)))
+    masker.fit(make_mini_img(2))
     assert_img_equal(mini_mask, masker.mask_img_)
 
 
@@ -64,29 +64,44 @@ def test_mask_img_transform_keys_mismatch(mini_mask, mini_img, drop_img_part):
     masker.transform(mini_img)
 
 
-@pytest.mark.parametrize("shape", [(), (1,), (3,), (3, 2)])
-def test_transform_inverse_transform(shape, make_mini_img, assert_img_equal):
-    img = make_mini_img(shape)
+@pytest.mark.parametrize("nb_timepoints", [1, 3])
+def test_transform_inverse_transform(
+    nb_timepoints, make_mini_img, assert_img_equal
+):
+    """Roundtrip transform + inverse transform leaves image intact."""
+    img = make_mini_img(nb_timepoints)
     masker = SurfaceMasker().fit(img)
+
     masked_img = masker.transform(img)
+
     assert np.array_equal(
         masked_img.ravel()[:9], [1, 2, 3, 4, 10, 20, 30, 40, 50]
     )
-    assert masked_img.shape == shape + (img.shape[-1],)
+    assert masked_img.shape == (nb_timepoints, img.shape[-1])
+
     unmasked_img = masker.inverse_transform(masked_img)
+
     assert_img_equal(img, unmasked_img)
 
 
-@pytest.mark.parametrize("shape", [(), (1,), (3,), (3, 2)])
+@pytest.mark.parametrize("nb_timepoints", [1, 3])
 def test_transform_inverse_transform_with_mask(
-    shape, make_mini_img, assert_img_equal, mini_mask
+    nb_timepoints, make_mini_img, assert_img_equal, mini_mask
 ):
-    img = make_mini_img(shape)
+    """Roundtrip transform + inverse transform leaves image intact.
+
+    But with an actual mask this time.
+    """
+    img = make_mini_img(nb_timepoints)
     masker = SurfaceMasker(mini_mask).fit(img)
+
     masked_img = masker.transform(img)
-    assert masked_img.shape == shape + (img.shape[-1] - 2,)
+
+    assert masked_img.shape == (nb_timepoints, img.shape[-1] - 2)
     assert np.array_equal(masked_img.ravel()[:7], [2, 3, 4, 20, 30, 40, 50.0])
+
     unmasked_img = masker.inverse_transform(masked_img)
+
     expected_data = {k: v.copy() for (k, v) in img.data.parts.items()}
     for v in expected_data.values():
         v[..., 0] = 0.0

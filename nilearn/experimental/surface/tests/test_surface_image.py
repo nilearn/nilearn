@@ -27,11 +27,9 @@ def test_compare_file_and_inmemory_mesh(mini_mesh, tmp_path):
 
 def test_surface_image_shape(make_mini_img):
     img = make_mini_img()
-    assert img.shape == (9,)
-    img = make_mini_img((3,))
+    assert img.shape == (1, 9)
+    img = make_mini_img(3)
     assert img.shape == (3, 9)
-    img = make_mini_img((7, 3))
-    assert img.shape == (7, 3, 9)
 
 
 def test_data_shape_not_matching_mesh(mini_img, flip):
@@ -40,7 +38,7 @@ def test_data_shape_not_matching_mesh(mini_img, flip):
 
 
 def test_data_shape_inconsistent(make_mini_img):
-    img = make_mini_img((7,))
+    img = make_mini_img(7)
     bad_data = {
         "left": img.data.parts["left"],
         "right": img.data.parts["right"][:4],
