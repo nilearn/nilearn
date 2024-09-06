@@ -22,7 +22,7 @@ from typing import Iterable
 
 import numpy as np
 from joblib import Parallel, delayed
-from sklearn import clone
+from sklearn import __version__ as sklearn_version, clone
 from sklearn.base import BaseEstimator, MultiOutputMixin
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.linear_model import (
@@ -44,7 +44,7 @@ from sklearn.svm import SVR, LinearSVC, l1_min_c
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import check_is_fitted, check_X_y
 
-from nilearn._utils import CacheMixin, fill_doc
+from nilearn._utils import CacheMixin, compare_version, fill_doc
 from nilearn._utils.cache_mixin import _check_memory
 from nilearn._utils.masker_validation import check_embedded_masker
 from nilearn._utils.param_validation import check_feature_screening
@@ -1077,6 +1077,15 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         return scores.ravel() if scores.shape[1] == 1 else scores
 
     def _more_tags(self):
+        # TODO
+        # rename method to '__sklearn_tags__'
+        # and get rid of if block
+        # bumping sklearn_version > 1.5.1
+        # see https://github.com/scikit-learn/scikit-learn/pull/29677
+        if compare_version(sklearn_version, ">", "1.5.1"):
+            tags = self.__sklearn_tags__()
+            tags.target_tags.required = True
+            return tags
         return {"require_y": True}
 
 

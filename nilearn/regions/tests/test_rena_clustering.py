@@ -8,6 +8,13 @@ from nilearn.maskers import NiftiMasker
 from nilearn.regions.rena_clustering import ReNA
 
 
+def test_tags():
+    """Smoke test to test private tag function."""
+    _, mask_img = generate_fake_fmri(shape=(10, 11, 12), length=5)
+    rena = ReNA(mask_img, n_clusters=10)
+    rena._more_tags()
+
+
 def test_rena_clustering():
     data_img, mask_img = generate_fake_fmri(shape=(10, 11, 12), length=5)
 
