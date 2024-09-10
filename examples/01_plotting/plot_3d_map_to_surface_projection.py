@@ -169,24 +169,27 @@ figure = plotting.plot_surf_stat_map(
     colorbar=True,
     threshold=1.0,
     bg_map=fsaverage.sulc_right,
-    engine=engine)  
+    engine=engine,
 )
 
 if engine == "matplotlib":
-    plotting.plot_surf_contours(fsaverage.infl_right,
-                                parcellation,
-                                labels=labels,
-                                levels=regions_indices,
-                                figure=figure,
-                                legend=True,
-                                colors=['g', 'k'])
+    plotting.plot_surf_contours(
+        fsaverage.infl_right,
+        parcellation,
+        labels=labels,
+        levels=regions_indices,
+        figure=figure,
+        legend=True,
+        colors=["g", "k"],
+    )
     plotting.show()
 elif engine == "plotly":
     figure.add_contours(
         roi_map=parcellation,
         levels=regions_indices,
         labels=labels,
-        lines=[{"width": 5}])
+        lines=[{"width": 5}],
+    )
     # view the contours in a browser
     # figure.show()
 

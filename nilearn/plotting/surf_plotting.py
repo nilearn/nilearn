@@ -1118,11 +1118,15 @@ def plot_surf_contours(
 
     """
     if isinstance(figure, PlotlySurfaceFigure):
-        raise ValueError('figure argument is a PlotlySurfaceFigure'
-                         'but it should be None or a matplotlib figure')
+        raise ValueError(
+            "figure argument is a PlotlySurfaceFigure"
+            "but it should be None or a matplotlib figure"
+        )
     if isinstance(axes, PlotlySurfaceFigure):
-        raise ValueError('axes argument is a PlotlySurfaceFigure'
-                         'but it should be None or a matplotlib axes')
+        raise ValueError(
+            "axes argument is a PlotlySurfaceFigure"
+            "but it should be None or a matplotlib axes"
+        )
     if figure is None and axes is None:
         figure = plot_surf(surf_mesh, **kwargs)
         axes = figure.axes[0]

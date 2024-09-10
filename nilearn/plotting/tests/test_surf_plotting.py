@@ -335,21 +335,25 @@ def test_instantiation_error_plotly_surface_figure(input_obj):
         PlotlySurfaceFigure(input_obj)
 
 
-@pytest.mark.skipif(not is_plotly_installed(),
-                    reason="Plotly is not installed; required for this test.")
+@pytest.mark.skipif(
+    not is_plotly_installed(),
+    reason="Plotly is not installed; required for this test.",
+)
 def test_value_error_get_faces_on_edge():
     """Test that calling _get_faces_on_edge raises a ValueError when \
        called with with indices that do not form a region."""
     mesh = generate_surf()
     figure = plot_surf(mesh, engine="plotly")
-    with pytest.raises(ValueError,
-                       match=("Vertices in parcellation do not "
-                              "form region.")):
+    with pytest.raises(
+        ValueError, match=("Vertices in parcellation do not " "form region.")
+    ):
         figure._get_faces_on_edge([91])
 
 
-@pytest.mark.skipif(not is_plotly_installed(),
-                    reason="Plotly is not installed; required for this test.")
+@pytest.mark.skipif(
+    not is_plotly_installed(),
+    reason="Plotly is not installed; required for this test.",
+)
 def test_surface_figure_add_contours_raises_not_implemented():
     """Test that calling add_contours method of SurfaceFigure raises a \
     NotImplementedError."""
@@ -358,8 +362,10 @@ def test_surface_figure_add_contours_raises_not_implemented():
         figure.add_contours()
 
 
-@pytest.mark.skipif(not is_plotly_installed(),
-                    reason="Plotly is not installed; required for this test.")
+@pytest.mark.skipif(
+    not is_plotly_installed(),
+    reason="Plotly is not installed; required for this test.",
+)
 def test_plot_surf_contours_errors_with_plotly_figure():
     """Test that plot_surf_contours rasises error when given plotly obj."""
     mesh = generate_surf()
@@ -368,8 +374,10 @@ def test_plot_surf_contours_errors_with_plotly_figure():
         plot_surf_contours(mesh, np.ones((10,)), figure=figure)
 
 
-@pytest.mark.skipif(not is_plotly_installed(),
-                    reason="Plotly is not installed; required for this test.")
+@pytest.mark.skipif(
+    not is_plotly_installed(),
+    reason="Plotly is not installed; required for this test.",
+)
 def test_plot_surf_contours_errors_with_plotly_axes():
     """Test that plot_surf_contours rasises error when given plotly \
         obj as axis."""
@@ -379,8 +387,10 @@ def test_plot_surf_contours_errors_with_plotly_axes():
         plot_surf_contours(mesh, np.ones((10,)), axes=figure)
 
 
-@pytest.mark.skipif(not is_plotly_installed(),
-                    reason='Plotly is not installed; required for this test.')
+@pytest.mark.skipif(
+    not is_plotly_installed(),
+    reason="Plotly is not installed; required for this test.",
+)
 def test_plotly_surface_figure_warns_on_isolated_roi():
     """Test that a warning is generated for ROIs with isolated vertices."""
     mesh = generate_surf()
@@ -389,30 +399,25 @@ def test_plotly_surface_figure_warns_on_isolated_roi():
     # vertices don't form regions
     try:
         with pytest.raises(UserWarning, match="contains isolated vertices:"):
-            figure.add_contours(
-                levels=[0],
-                roi_map=np.array([0, 1]*10)
-                )
+            figure.add_contours(levels=[0], roi_map=np.array([0, 1] * 10))
     except Exception:
         pass
 
 
-@pytest.mark.skipif(not is_plotly_installed(),
-                    reason='Plotly is not installed; required for this test.')
+@pytest.mark.skipif(
+    not is_plotly_installed(),
+    reason="Plotly is not installed; required for this test.",
+)
 def test_distant_line_segments_detected_as_not_intersecting():
     """Test that distant lines are detected as not intersecting."""
     assert not PlotlySurfaceFigure._do_segs_intersect(0, 0, 1, 1, 5, 5, 6, 6)
 
 
-@pytest.mark.skipif(not is_plotly_installed(),
-                    reason="Plotly is not installed; required for this test.")
-@pytest.mark.parametrize(
-    "levels,labels",
-    [
-        ([0], ["a", "b"]),
-        ([0, 1], ["a"])
-    ]
+@pytest.mark.skipif(
+    not is_plotly_installed(),
+    reason="Plotly is not installed; required for this test.",
 )
+@pytest.mark.parametrize("levels,labels", [([0], ["a", "b"]), ([0, 1], ["a"])])
 def test_value_error_add_contours_levels_labels(levels, labels):
     """Test that add_contours raises a ValueError when called with levels and \
     labels that have incompatible lengths."""
@@ -420,25 +425,20 @@ def test_value_error_add_contours_levels_labels(levels, labels):
     figure = plot_surf(mesh, engine="plotly")
     with pytest.raises(
         ValueError,
-        match=(
-            "levels and labels need to be either the same length or None."
-        )
+        match=("levels and labels need to be either the same length or None."),
     ):
         figure.add_contours(
-            levels=levels,
-            labels=labels,
-            roi_map=np.ones((10,))
+            levels=levels, labels=labels, roi_map=np.ones((10,))
         )
 
 
-@pytest.mark.skipif(not is_plotly_installed(),
-                    reason="Plotly is not installed; required for this test.")
+@pytest.mark.skipif(
+    not is_plotly_installed(),
+    reason="Plotly is not installed; required for this test.",
+)
 @pytest.mark.parametrize(
     "levels,lines",
-    [
-        ([0], [dict(), dict()]),
-        ([0, 1], [dict(), dict(), dict()])
-    ]
+    [([0], [dict(), dict()]), ([0, 1], [dict(), dict(), dict()])],
 )
 def test_value_error_add_contours_levels_lines(levels, lines):
     """Test that add_contours raises a ValueError when called with levels and \
@@ -447,19 +447,15 @@ def test_value_error_add_contours_levels_lines(levels, lines):
     figure = plot_surf(mesh, engine="plotly")
     with pytest.raises(
         ValueError,
-        match=(
-            "levels and lines need to be either the same length or None."
-        )
+        match=("levels and lines need to be either the same length or None."),
     ):
-        figure.add_contours(
-            levels=levels,
-            lines=lines,
-            roi_map=np.ones((10,))
-        )
+        figure.add_contours(levels=levels, lines=lines, roi_map=np.ones((10,)))
 
 
-@pytest.mark.skipif(not is_plotly_installed(),
-                    reason="Plotly is not installed; required for this test.")
+@pytest.mark.skipif(
+    not is_plotly_installed(),
+    reason="Plotly is not installed; required for this test.",
+)
 def test_add_contours():
     """Test that add_contours updates data in PlotlySurfaceFigure."""
     mesh, roi_map, _ = _generate_data_test_surf_roi()
@@ -470,8 +466,10 @@ def test_add_contours():
     assert len(figure.figure.to_dict().get("data")) == 4
 
 
-@pytest.mark.skipif(not is_plotly_installed(),
-                    reason="Plotly is not installed; required for this test.")
+@pytest.mark.skipif(
+    not is_plotly_installed(),
+    reason="Plotly is not installed; required for this test.",
+)
 def test_add_contours_has_name():
     """Test that contours added to a PlotlySurfaceFigure can be named."""
     mesh, roi_map, _ = _generate_data_test_surf_roi()
@@ -480,8 +478,10 @@ def test_add_contours_has_name():
     assert figure.figure.to_dict().get("data")[1].get("name") == "x"
 
 
-@pytest.mark.skipif(not is_plotly_installed(),
-                    reason="Plotly is not installed; required for this test.")
+@pytest.mark.skipif(
+    not is_plotly_installed(),
+    reason="Plotly is not installed; required for this test.",
+)
 def test_add_contours_lines_duplicated():
     """Test that the specifications of length 1 line provided to \
      add_contours are duplicated to all requested contours."""
@@ -492,25 +492,23 @@ def test_add_contours_lines_duplicated():
     assert all(x.get("line").__contains__("width") for x in newlines)
 
 
-@pytest.mark.skipif(not is_plotly_installed(),
-                    reason="Plotly is not installed; required for this test.")
+@pytest.mark.skipif(
+    not is_plotly_installed(),
+    reason="Plotly is not installed; required for this test.",
+)
 @pytest.mark.parametrize(
     "key,value",
     [
         ("color", "yellow"),
         ("width", 10),
-    ]
+    ],
 )
 def test_add_contours_line_properties(key, value):
     """Test that the specifications of a line provided to add_contours are \
     stored in the PlotlySurfaceFigure data."""
     mesh, roi_map, _ = _generate_data_test_surf_roi()
     figure = plot_surf(mesh, engine="plotly")
-    figure.add_contours(
-        roi_map,
-        levels=[1],
-        lines=[{key: value}]
-    )
+    figure.add_contours(roi_map, levels=[1], lines=[{key: value}])
     newline = figure.figure.to_dict().get("data")[1].get("line")
     assert newline.get(key) == value
 
