@@ -8,7 +8,7 @@ versus periods of rest.
 
 .. warning::
 
-    The analyse described here is performed in the native space,
+    The analysis described here is performed in the native space,
     directly on the original :term:`EPI` scans
     without any spatial or temporal preprocessing.
     More sensitive results would likely be obtained on the corrected,
