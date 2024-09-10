@@ -220,7 +220,7 @@ display = plot_stat_map(
     figure=fig,
 )
 title = (
-    "Negative $\\log_{10}$ p-values" "\n(Non-parametric + max-type correction)"
+    "Negative $\\log_{10}$ p-values\n(Non-parametric + max-type correction)"
 )
 display.title(title)
 

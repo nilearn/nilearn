@@ -34,7 +34,7 @@ repos:
 
 # Automatically upgrade syntax for newer versions of the language.
 -   repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.2
+    rev: v3.17.0
     hooks:
     -   id: pyupgrade
         args: [--py38-plus]
@@ -53,38 +53,14 @@ repos:
 # Aplly black formatting to python code
 # https://github.com/psf/black
 -   repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 24.4.2
+    rev: 24.8.0
     hooks:
     -   id: black
         args: [--config, pyproject.toml]
-        # exclude files that
-        #  - are skipped for other hooks
-        #  - are still involved in some PR
-        exclude: |
-            (?x)^(
-                nilearn/datasets/tests/data/localizer_behavioural.tsv
-                | nilearn/externals/.*
-                | nilearn/plotting/data/js/.*js
-                | nilearn/_version.py
-                | examples/01_plotting/plot_3d_map_to_surface_projection.py
-                | examples/01_plotting/plot_surf_atlas.py
-                | examples/01_plotting/plot_surf_stat_map.py
-                | examples/01_plotting/plot_surface_projection_strategies.py
-                | examples/04_glm_first_level/plot_localizer_surface_analysis.py
-                | examples/07_advanced/plot_surface_bids_analysis.py
-                | nilearn/_utils/helpers.py
-                | nilearn/plotting/html_surface.py
-                | nilearn/plotting/js_plotting_utils.py
-                | nilearn/plotting/surf_plotting.py
-                | nilearn/plotting/tests/test_html_surface.py
-                | nilearn/plotting/tests/test_surf_plotting.py
-                | nilearn/surface/surface.py
-                | nilearn/surface/tests/test_surface.py
-            )$
 
 # Apply black formatting to doc strings
 -   repo: https://github.com/adamchainz/blacken-docs
-    rev: 1.16.0
+    rev: 1.18.0
     hooks:
     -   id: blacken-docs
         additional_dependencies:
@@ -92,7 +68,7 @@ repos:
 
 # Checks for spelling errors
 -   repo: https://github.com/codespell-project/codespell
-    rev: v2.2.6
+    rev: v2.3.0
     hooks:
     -   id: codespell
         args: [--toml, pyproject.toml]
@@ -107,7 +83,7 @@ repos:
 
 # Format TOML files
 -   repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-    rev: v2.13.0
+    rev: v2.14.0
     hooks:
     -   id: pretty-format-toml
         args: [--autofix, --indent, '4']
@@ -119,6 +95,11 @@ repos:
     hooks:
     -   id: prettier
         types_or: [css, html]
+        exclude: |
+            (?x)^(
+                maint_tools/templates/index.html
+            )$
+
 
 # Check that Python code complies with PEP8 guidelines
 # flake8 uses pydocstyle to check docstrings: https://flake8.pycqa.org/en/latest/
@@ -127,7 +108,7 @@ repos:
 # flake8-functions checks functions quality: https://pypi.org/project/flake8-functions/
 # flake8-bugbear detects some common bugs: https://github.com/PyCQA/flake8-bugbear
 -   repo: https://github.com/pyCQA/flake8
-    rev: 7.0.0
+    rev: 7.1.1
     hooks:
     -   id: flake8
         args: [--config, .flake8, --verbose, nilearn, examples, maint_tools]

@@ -91,7 +91,8 @@ style = [
 test = [
     "coverage",
     "pytest>=6.0.0",
-    "pytest-cov"
+    "pytest-cov",
+    "pytest-reporter-html1>=0.9.1"
 ]
 
 [project.urls]
@@ -105,20 +106,6 @@ Homepage = "https://nilearn.github.io"
 extend-exclude = """
 (
   nilearn/externals
-  | nilearn/_utils/helpers.py
-  | examples/01_plotting/plot_3d_map_to_surface_projection.py
-  | examples/01_plotting/plot_surf_atlas.py
-  | examples/01_plotting/plot_surf_stat_map.py
-  | examples/01_plotting/plot_surface_projection_strategies.py
-  | examples/04_glm_first_level/plot_localizer_surface_analysis.py
-  | examples/07_advanced/plot_surface_bids_analysis.py
-  | nilearn/plotting/html_surface.py
-  | nilearn/plotting/js_plotting_utils.py
-  | nilearn/plotting/surf_plotting.py
-  | nilearn/plotting/tests/test_html_surface.py
-  | nilearn/plotting/tests/test_surf_plotting.py
-  | nilearn/surface/surface.py
-  | nilearn/surface/tests/test_surface.py
 )
 """
 line-length = 79
@@ -126,9 +113,6 @@ line-length = 79
 [tool.codespell]
 ignore-words = ".github/codespell_ignore_words.txt"
 skip = "./.git,plotly-gl3d-latest.min.js,jquery.min.js,localizer_behavioural.tsv,.mypy_cache,env,venv,./doc/auto_examples,*/tmp,./doc/modules/generated/*,./doc/_build,./maint_tools/*.html,./examples/*/results"
-
-[tool.flynt]
-exclude = "tempita"
 
 [tool.hatch.build.hooks.vcs]
 version-file = "nilearn/_version.py"
@@ -155,7 +139,7 @@ src_paths = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --durations=0"
+addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --durations=0 --template=maint_tools/templates/index.html"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 junit_family = "xunit2"
 minversion = "6.0"

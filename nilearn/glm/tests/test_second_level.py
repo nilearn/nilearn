@@ -20,6 +20,7 @@ from nilearn._utils.data_gen import (
     write_fake_bold_img,
     write_fake_fmri_data_and_design,
 )
+from nilearn.conftest import have_mpl
 from nilearn.glm.first_level import FirstLevelModel, run_glm
 from nilearn.glm.second_level import SecondLevelModel, non_parametric_inference
 from nilearn.glm.second_level.second_level import (
@@ -38,12 +39,8 @@ from nilearn.glm.second_level.second_level import (
 from nilearn.image import concat_imgs, get_data, new_img_like, smooth_img
 from nilearn.maskers import NiftiMasker
 
-try:
+if have_mpl:
     from nilearn.reporting import get_clusters_table
-except ImportError:
-    have_mpl = False
-else:
-    have_mpl = True
 
 # This directory path
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
@@ -176,7 +173,7 @@ def test_process_second_level_input_as_firstlevelmodels():
 
     assert subjects_label == [f"sub-{i}" for i in range(3)]
     assert isinstance(sample_map, Nifti1Image)
-    assert sample_map.shape == (7, 8, 9, 1)
+    assert sample_map.shape == (7, 8, 9)
 
 
 def test_check_affine_first_level_models(affine_eye):

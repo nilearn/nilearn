@@ -6,9 +6,9 @@ Author: Martin Perez-Guevara, Elvis Dohmatob, 2017
 import warnings
 from string import ascii_lowercase
 
-import nibabel as nib
 import numpy as np
 import pandas as pd
+from nibabel import affines
 from scipy.ndimage import (
     center_of_mass,
     generate_binary_structure,
@@ -169,7 +169,7 @@ def _sort_subpeaks(ijk, vals, affine):
     order = (-vals).argsort()
     vals = vals[order]
     ijk = ijk[order, :]
-    xyz = nib.affines.apply_affine(affine, ijk)  # Convert to xyz in mm
+    xyz = affines.apply_affine(affine, ijk)  # Convert to xyz in mm
     return xyz, ijk, vals
 
 
@@ -306,6 +306,7 @@ def get_clusters_table(
         two_sided=two_sided,
         mask_img=None,
         copy=True,
+        copy_header=True,
     )
 
     # If cluster threshold is used, there is chance that stat_map will be

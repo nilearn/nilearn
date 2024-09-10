@@ -3,6 +3,7 @@
 # Author: Philippe Gervais
 
 import inspect
+import traceback
 
 from sklearn.base import BaseEstimator
 
@@ -10,7 +11,12 @@ from sklearn.base import BaseEstimator
 # The technique used in the log() function only applies to CPython, because
 # it uses the inspect module to walk the call stack.
 def log(
-    msg, verbose=1, object_classes=(BaseEstimator,), stack_level=1, msg_level=1
+    msg,
+    verbose=1,
+    object_classes=(BaseEstimator,),
+    stack_level=1,
+    msg_level=1,
+    with_traceback=False,
 ):
     """Display a message to the user, depending on the verbosity level.
 
@@ -73,6 +79,9 @@ def log(
             func_name = f"{object_self.__class__.__name__}.{func_name}"
 
         print(f"[{func_name}] {msg}")
+
+        if with_traceback:
+            traceback.print_exc()
 
 
 def compose_err_msg(msg, **kwargs):

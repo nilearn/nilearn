@@ -8,7 +8,6 @@ in the neighborhood of each location of a domain."""
 #           Philippe Gervais (philippe.gervais@inria.fr)
 #
 
-import sys
 import time
 import warnings
 
@@ -17,12 +16,12 @@ from joblib import Parallel, cpu_count, delayed
 from sklearn import svm
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import ConvergenceWarning
-from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import KFold, cross_val_score
 
 from nilearn.maskers.nifti_spheres_masker import _apply_mask_and_get_affinity
 
 from .. import masking
-from .._utils import check_niimg_4d, fill_doc
+from .._utils import check_niimg_4d, fill_doc, logger
 from ..image.resampling import coord_transform
 
 ESTIMATOR_CATALOG = dict(svc=svm.LinearSVC, svr=svm.SVR)
@@ -187,7 +186,11 @@ def _group_iter_search_light(
     par_scores = np.zeros(len(list_rows))
     t0 = time.time()
     for i, row in enumerate(list_rows):
+
         kwargs = {"scoring": scoring, "groups": groups}
+        if isinstance(cv, KFold):
+            kwargs = {"scoring": scoring}
+
         par_scores[i] = np.mean(
             cross_val_score(estimator, X[:, row], y, cv=cv, n_jobs=1, **kwargs)
         )
@@ -202,9 +205,10 @@ def _group_iter_search_light(
                 dt = time.time() - t0
                 # We use a max to avoid a division by zero
                 remaining = (100.0 - percent) / max(0.01, percent) * dt
-                sys.stderr.write(
+                logger.log(
                     f"Job #{thread_id}, processed {i}/{len(list_rows)} voxels "
-                    f"({percent:0.2f}%, {remaining} seconds remaining){crlf}"
+                    f"({percent:0.2f}%, {remaining} seconds remaining){crlf}",
+                    stack_level=2,
                 )
     return par_scores
 

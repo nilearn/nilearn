@@ -3,15 +3,62 @@
 from __future__ import annotations
 
 import abc
-import dataclasses
 import pathlib
-from typing import Dict
+import sys
+from pathlib import Path
 
 import numpy as np
+from nibabel import Nifti1Image
 
+from nilearn._utils.niimg_conversions import check_niimg
 from nilearn.experimental.surface import _io
+from nilearn.surface import vol_to_surf
 
-PolyData = Dict[str, np.ndarray]
+
+class PolyData:
+    """A collection of data arrays.
+
+    It is a shallow wrapper around the ``parts`` dictionary, which cannot be
+    empty and whose keys must be a subset of {"left", "right"}.
+    """
+
+    def __init__(
+        self,
+        left: np.ndarray | str | Path | None = None,
+        right: np.ndarray | str | Path | None = None,
+    ) -> None:
+        if left is None and right is None:
+            raise ValueError(
+                "Cannot create an empty PolyData. "
+                "Either left or right (or both) must be provided."
+            )
+
+        parts = {}
+        if left is not None:
+            if not isinstance(left, np.ndarray):
+                left = _io.read_array(left)
+            parts["left"] = left
+        if right is not None:
+            if not isinstance(right, np.ndarray):
+                right = _io.read_array(right)
+            parts["right"] = right
+
+        if len(parts) == 1:
+            self.parts = parts
+            self.shape = next(iter(self.parts.values())).shape
+            return
+
+        if parts["left"].shape[:-1] != parts["right"].shape[:-1]:
+            raise ValueError(
+                f"Data arrays for keys 'left' and 'right' "
+                "have incompatible shapes: "
+                f"{parts['left'].shape} and {parts['right'].shape}"
+            )
+
+        self.parts = parts
+        first_shape = next(iter(parts.values())).shape
+        concat_dim = sum(p.shape[-1] for p in parts.values())
+        self.shape = (*first_shape[:-1], concat_dim)
 
 
 class Mesh(abc.ABC):
@@ -87,32 +134,42 @@ class FileMesh(Mesh):
         )
 
 
-PolyMesh = Dict[str, Mesh]
+class PolyMesh:
+    """A collection of meshes.
 
-
-def _check_data_consistent_shape(data: PolyData):
-    """Check that shapes of PolyData parts match.
-
-    They must match in all but the last dimension (which is the number of
-    vertices, and can be different for each part).
-
+    It is a shallow wrapper around the ``parts`` dictionary, which cannot be
+    empty and whose keys must be a subset of {"left", "right"}.
     """
-    if len(data) == 0:
-        raise ValueError("Surface image data must have at least one item.")
-    first_name = next(iter(data.keys()))
-    first_shape = data[first_name].shape
-    for part_name, part_data in data.items():
-        if part_data.shape[:-1] != first_shape[:-1]:
+
+    n_vertices: int
+
+    def __init__(
+        self,
+        left: Mesh | str | Path | None = None,
+        right: Mesh | str | Path | None = None,
+    ) -> None:
+        if left is None and right is None:
             raise ValueError(
-                f"Data arrays for keys '{first_name}' and '{part_name}' "
-                "have incompatible shapes: "
-                f"{first_shape} and {part_data.shape}"
+                "Cannot create an empty PolyMesh. "
+                "Either left or right (or both) must be provided."
             )
+
+        self.parts = {}
+        if left is not None:
+            if not isinstance(left, Mesh):
+                left = FileMesh(left).loaded()
+            self.parts["left"] = left
+        if right is not None:
+            if not isinstance(right, Mesh):
+                right = FileMesh(right).loaded()
+            self.parts["right"] = right
+
+        self.n_vertices = sum(p.n_vertices for p in self.parts.values())
 
 
 def _check_data_and_mesh_compat(mesh: PolyMesh, data: PolyData):
     """Check that mesh and data have the same keys and that shapes match."""
-    data_keys, mesh_keys = set(data.keys()), set(mesh.keys())
+    data_keys, mesh_keys = set(data.parts.keys()), set(mesh.parts.keys())
     if data_keys != mesh_keys:
         diff = data_keys.symmetric_difference(mesh_keys)
         raise ValueError(
@@ -120,31 +177,123 @@ def _check_data_and_mesh_compat(mesh: PolyMesh, data: PolyData):
             f"Offending keys: {diff}"
         )
     for key in mesh_keys:
-        if data[key].shape[-1] != mesh[key].n_vertices:
+        if data.parts[key].shape[-1] != mesh.parts[key].n_vertices:
             raise ValueError(
-                "Data shape does not match number of vertices"
-                f" for '{key}':"
-                f"\ndata shape: {data[key].shape}",
-                f"\nn vertices: {mesh[key].n_vertices}",
+                f"Data shape does not match number of vertices for '{key}':\n"
+                f"- data shape: {data.parts[key].shape}\n"
+                f"- n vertices: {mesh.parts[key].n_vertices}"
             )
 
 
-@dataclasses.dataclass
 class SurfaceImage:
     """Surface image, usually containing meshes & data for both hemispheres."""
 
-    mesh: PolyMesh
-    data: PolyData
-    shape: tuple[int, ...] = dataclasses.field(init=False)
+    def __init__(
+        self,
+        mesh: PolyMesh | dict[str, Mesh | str | Path],
+        data: (
+            PolyData | dict[str, Mesh | str | Path] | Nifti1Image | str | Path
+        ),
+    ) -> None:
+        """Create a SurfaceImage instance.
 
-    def __post_init__(self) -> None:
-        _check_data_consistent_shape(self.data)
+        Parameters
+        ----------
+        mesh : PolyMesh | dict[str, Mesh  |  str  |  Path]
+        data : PolyData | dict[str, Mesh  |  str  |  Path] | Niimg-like object
+        """
+        self.mesh = mesh if isinstance(mesh, PolyMesh) else PolyMesh(**mesh)
+
+        if not isinstance(data, (PolyData, dict, str, Path, Nifti1Image)):
+            raise TypeError(
+                "'data' must be one of"
+                "[PolyData, dict, str, Path, Nifti1Image].\n"
+                f"Got {type(data)}"
+            )
+
+        if isinstance(data, PolyData):
+            self.data = data
+        elif isinstance(data, dict):
+            self.data = PolyData(**data)
+        elif isinstance(data, (Nifti1Image, str, Path)):
+            self._vol_to_surf(data)
+
         _check_data_and_mesh_compat(self.mesh, self.data)
-        total_n_vertices = sum(
-            mesh_part.n_vertices for mesh_part in self.mesh.values()
-        )
-        first_data_shape = list(self.data.values())[0].shape
-        self.shape = (*first_data_shape[:-1], total_n_vertices)
+
+        self.shape = self.data.shape
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {getattr(self, 'shape', '')}>"
+
+    def _vol_to_surf(self, img: Nifti1Image | str | Path, **kwargs) -> None:
+        """Project a Nifti image on a Surface.
+
+        Parameters
+        ----------
+        img :  Niimg-like object, 3d or 4d.
+               See :ref:`extracting_data`.
+
+        kwargs:
+               Extra arguments to pass
+               to :func:`nilearn.surface.vol_to_surf`
+        """
+        if isinstance(img, (str, Path)):
+            img = check_niimg(img)
+
+        texture_left = vol_to_surf(img, self.mesh.parts["left"], **kwargs)
+        texture_right = vol_to_surf(img, self.mesh.parts["right"], **kwargs)
+
+        self.data = PolyData(left=texture_left.T, right=texture_right.T)
+
+    def to_filename(self, filename: str | Path) -> None:
+        """Save mesh to gifti.
+
+        Parameters
+        ----------
+        filename : str | Path
+                   If the filename contains `hemi-L`
+                   then only the left part of the mesh will be saved.
+                   If the filename contains `hemi-R`
+                   then only the right part of the mesh will be saved.
+                   If the filename contains neither of those,
+                   then `_hemi-L` and `_hemi-R`
+                   will be appended to the filename and both will be saved.
+        """
+        filename = Path(filename)
+
+        if "hemi-L" in filename.stem and "hemi-R" in filename.stem:
+            raise ValueError(
+                "'filename' cannot contain both "
+                "'hemi-L' and 'hemi-R'. \n"
+                f"Got: {filename}"
+            )
+
+        if "hemi-L" not in filename.stem and "hemi-R" not in filename.stem:
+            for hemi in ["L", "R"]:
+                # TODO simplify when dropping python 3.8
+                if sys.version_info.minor >= 9:
+                    self.to_filename(
+                        filename.with_stem(f"{filename.stem}_hemi-{hemi}")
+                    )
+                else:
+                    self.to_filename(
+                        _with_stem_compat(
+                            filename, new_stem=f"{filename.stem}_hemi-{hemi}"
+                        )
+                    )
+
+            return None
+
+        if "hemi-L" in filename.stem:
+            mesh = self.mesh.parts["left"]
+        if "hemi-R" in filename.stem:
+            mesh = self.mesh.parts["right"]
+        mesh.to_gifti(filename)
+
+
+def _with_stem_compat(path: Path, new_stem: str) -> Path:
+    """Provide equivalent of `with_stem` for Python < 3.9.
+
+    TODO remove when dropping python 3.8
+    """
+    return path.with_name(new_stem + path.suffix)

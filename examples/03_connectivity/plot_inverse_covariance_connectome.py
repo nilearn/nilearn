@@ -58,11 +58,7 @@ time_series = masker.fit_transform(data.func[0], confounds=data.confounds)
 # %%
 # Compute the sparse inverse covariance
 # -------------------------------------
-try:
-    from sklearn.covariance import GraphicalLassoCV
-except ImportError:
-    # for Scitkit-Learn < v0.20.0
-    from sklearn.covariance import GraphLassoCV as GraphicalLassoCV
+from sklearn.covariance import GraphicalLassoCV
 
 estimator = GraphicalLassoCV()
 estimator.fit(time_series)

@@ -342,7 +342,7 @@ def save_glm_to_bids(
             )
             contrast_plot.set_xlabel(contrast_name)
             contrast_plot.figure.set_figheight(2)
-            contrast_plot.figure.set_tight_layout(True)
+            contrast_plot.figure.tight_layout()
             contrast_name = _clean_contrast_name(contrast_name)
             constrast_fig_file = (
                 out_dir
