@@ -35,7 +35,7 @@ subject_data = fetch_spm_auditory()
 
 # %%
 # print dataset descriptions
-subject_data.description
+print(subject_data.description)
 
 # %%
 # print paths of func image
@@ -65,7 +65,7 @@ show()
 # The path of this file is provided in the dataset.
 import pandas as pd
 
-events = pd.read_csv(subject_data.events, sep="\t")
+events = pd.read_table(subject_data.events)
 events
 
 
@@ -166,8 +166,8 @@ show()
 
 import numpy as np
 
-nb_regressors = design_matrix.shape[1]
-activation = np.zeros(nb_regressors)
+n_regressors = design_matrix.shape[1]
+activation = np.zeros(n_regressors)
 activation[0] = 1
 
 # %%
@@ -364,6 +364,12 @@ table.to_csv(output_dir / "table.csv")
 # explains a significant proportion of the signal.
 # Here one might for instance test which voxels are well
 # explained by the combination of more active or less active than rest.
+#
+# .. note::
+#
+#    As opposed to t-tests, the beta images produced by of F-tests
+#    only contain positive values.
+#
 
 # %%
 # Specify the :term:`contrast` and compute the corresponding map.
