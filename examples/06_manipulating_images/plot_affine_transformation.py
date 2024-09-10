@@ -87,9 +87,9 @@ rotation_matrix = np.array(
 source_affine[:2, :2] = rotation_matrix * 2.0  # 2.0mm voxel size
 
 # We need to turn this data into a nibabel image
-import nibabel
+from nibabel import Nifti1Image
 
-img = nibabel.Nifti1Image(
+img = Nifti1Image(
     image[:, :, np.newaxis].astype("int32"), affine=source_affine
 )
 
@@ -124,6 +124,7 @@ img_4d_affine_in_mm_space = resample_img(
     img_4d_affine,
     target_affine=np.eye(4),
     target_shape=(np.array(img_4d_affine.shape) * 2).astype(int),
+    copy_header=True,
 )
 
 # %%

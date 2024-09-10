@@ -1,10 +1,6 @@
 import numpy as np
 import pytest
-
-try:
-    from joblib import Memory
-except ImportError:
-    from joblib import Memory
+from joblib import Memory
 
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.image import get_data

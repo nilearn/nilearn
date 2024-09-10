@@ -88,20 +88,12 @@ events = pd.read_table(events_file)
 # that contains both the mesh
 # (here we use the one from the fsaverage5 templates)
 # and the BOLD data that we project on the surface.
-from nilearn import surface
 from nilearn.experimental.surface import SurfaceImage, load_fsaverage
 
 fsaverage5 = load_fsaverage()
-texture_left = surface.vol_to_surf(fmri_img, fsaverage5["pial"].parts["left"])
-texture_right = surface.vol_to_surf(
-    fmri_img, fsaverage5["pial"].parts["right"]
-)
 image = SurfaceImage(
     mesh=fsaverage5["pial"],
-    data={
-        "left": texture_left.T,
-        "right": texture_right.T,
-    },
+    data=fmri_img,
 )
 
 # %%

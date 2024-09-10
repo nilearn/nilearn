@@ -9,6 +9,7 @@ import pandas as pd
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.cluster.hierarchy import leaves_list, linkage, optimal_leaf_ordering
 
+from nilearn._utils.helpers import rename_parameters
 from nilearn.glm.first_level.experimental_paradigm import check_events
 
 from .._utils import fill_doc
@@ -21,35 +22,35 @@ with warnings.catch_warnings():
     from nilearn.glm.first_level import check_design_matrix
 
 
-def _fit_axes(ax):
+def _fit_axes(axes):
     """Help for plot_matrix.
 
     This function redimensions the given axes to have
     labels fitting.
     """
-    fig = ax.get_figure()
+    fig = axes.get_figure()
     renderer = fig.canvas.get_renderer()
     ylabel_width = (
-        ax.yaxis.get_tightbbox(renderer)
-        .transformed(ax.figure.transFigure.inverted())
+        axes.yaxis.get_tightbbox(renderer)
+        .transformed(axes.figure.transFigure.inverted())
         .width
     )
-    if ax.get_position().xmin < 1.1 * ylabel_width:
+    if axes.get_position().xmin < 1.1 * ylabel_width:
         # we need to move it over
-        new_position = ax.get_position()
+        new_position = axes.get_position()
         new_position.x0 = 1.1 * ylabel_width  # pad a little
-        ax.set_position(new_position)
+        axes.set_position(new_position)
 
     xlabel_height = (
-        ax.xaxis.get_tightbbox(renderer)
-        .transformed(ax.figure.transFigure.inverted())
+        axes.xaxis.get_tightbbox(renderer)
+        .transformed(axes.figure.transFigure.inverted())
         .height
     )
-    if ax.get_position().ymin < 1.1 * xlabel_height:
+    if axes.get_position().ymin < 1.1 * xlabel_height:
         # we need to move it over
-        new_position = ax.get_position()
+        new_position = axes.get_position()
         new_position.y0 = 1.1 * xlabel_height  # pad a little
-        ax.set_position(new_position)
+        axes.set_position(new_position)
 
 
 def _sanitize_inputs_plot_matrix(
@@ -335,8 +336,9 @@ def plot_matrix(
 
 
 @fill_doc
+@rename_parameters({"ax": "axes"}, end_version="0.13.0")
 def plot_contrast_matrix(
-    contrast_def, design_matrix, colorbar=False, ax=None, output_file=None
+    contrast_def, design_matrix, colorbar=False, axes=None, output_file=None
 ):
     """Create plot for :term:`contrast` definition.
 
@@ -354,44 +356,44 @@ def plot_contrast_matrix(
         Design matrix to use.
     %(colorbar)s
         Default=False.
-    ax : :class:`matplotlib.axes.Axes`, optional
+    axes : :class:`matplotlib.axes.Axes`, optional
         Axis on which to plot the figure.
         If None, a new figure will be created.
     %(output_file)s
 
     Returns
     -------
-    ax : :class:`matplotlib.axes.Axes`
+    axes : :class:`matplotlib.axes.Axes`
         Figure object.
 
     """
     contrast_def = pad_contrast_matrix(contrast_def, design_matrix)
-    con_matrix = np.asmatrix(contrast_def)
+    con_matrix = np.array(contrast_def, ndmin=2)
 
     design_column_names = design_matrix.columns.tolist()
     max_len = np.max([len(str(name)) for name in design_column_names])
 
     nb_columns_design_matrix = len(design_column_names)
-    if ax is None:
+    if axes is None:
         plt.figure(
             figsize=(
                 0.4 * nb_columns_design_matrix,
                 1 + 0.5 * con_matrix.shape[0] + 0.04 * max_len,
             )
         )
-        ax = plt.gca()
+        axes = plt.gca()
 
     maxval = np.max(np.abs(contrast_def))
-    mat = ax.matshow(
+    mat = axes.matshow(
         con_matrix, aspect="equal", cmap="gray", vmin=-maxval, vmax=maxval
     )
 
-    ax.set_label("conditions")
-    ax.set_ylabel("")
-    ax.set_yticks(())
+    axes.set_label("conditions")
+    axes.set_ylabel("")
+    axes.set_yticks(())
 
-    ax.xaxis.set(ticks=np.arange(nb_columns_design_matrix))
-    ax.set_xticklabels(design_column_names, rotation=50, ha="left")
+    axes.xaxis.set(ticks=np.arange(nb_columns_design_matrix))
+    axes.set_xticklabels(design_column_names, rotation=50, ha="left")
 
     if colorbar:
         plt.colorbar(mat, fraction=0.025, pad=0.04)
@@ -402,9 +404,9 @@ def plot_contrast_matrix(
     if output_file is not None:
         plt.savefig(output_file)
         plt.close()
-        ax = None
+        axes = None
 
-    return ax
+    return axes
 
 
 def pad_contrast_matrix(contrast_def, design_matrix):
@@ -420,7 +422,7 @@ def pad_contrast_matrix(contrast_def, design_matrix):
 
     Returns
     -------
-    ax : :class:`numpy.ndarray`
+    axes : :class:`numpy.ndarray`
         Padded contrast
 
     """
@@ -456,7 +458,10 @@ def pad_contrast_matrix(contrast_def, design_matrix):
 
 
 @fill_doc
-def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
+@rename_parameters({"ax": "axes"}, end_version="0.13.0")
+def plot_design_matrix(
+    design_matrix, rescale=True, axes=None, output_file=None
+):
     """Plot a design matrix provided as a :class:`pandas.DataFrame`.
 
     Parameters
@@ -467,13 +472,13 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
     rescale : :obj:`bool`, default=True
         Rescale columns magnitude for visualization or not.
 
-    ax : :class:`matplotlib.axes.Axes`, optional
+    axes : :class:`matplotlib.axes.Axes`, optional
         Handle to axes onto which we will draw the design matrix.
     %(output_file)s
 
     Returns
     -------
-    ax : :class:`matplotlib.axes.Axes`
+    axes : :class:`matplotlib.axes.Axes`
         The axes used for plotting.
 
     """
@@ -483,7 +488,7 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
         X = X / np.maximum(
             1.0e-12, np.sqrt(np.sum(X**2, 0))
         )  # pylint: disable=no-member
-    if ax is None:
+    if axes is None:
         max_len = np.max([len(str(name)) for name in names])
         fig_height = 1 + 0.1 * X.shape[0] + 0.04 * max_len
         if fig_height < 3:
@@ -491,24 +496,24 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
         elif fig_height > 10:
             fig_height = 10
         plt.figure(figsize=(1 + 0.23 * len(names), fig_height))
-        ax = plt.subplot(1, 1, 1)
+        axes = plt.subplot(1, 1, 1)
 
-    ax.imshow(X, interpolation="nearest", aspect="auto")
-    ax.set_label("conditions")
-    ax.set_ylabel("scan number")
+    axes.imshow(X, interpolation="nearest", aspect="auto")
+    axes.set_label("conditions")
+    axes.set_ylabel("scan number")
 
-    ax.set_xticks(range(len(names)))
-    ax.set_xticklabels(names, rotation=60, ha="left")
+    axes.set_xticks(range(len(names)))
+    axes.set_xticklabels(names, rotation=60, ha="left")
     # Set ticks above, to have a display more similar to the display of a
     # corresponding dataframe
-    ax.xaxis.tick_top()
+    axes.xaxis.tick_top()
 
     plt.tight_layout()
     if output_file is not None:
         plt.savefig(output_file)
         plt.close()
-        ax = None
-    return ax
+        axes = None
+    return axes
 
 
 @fill_doc
@@ -546,7 +551,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
         model_event[i] = event_copy
 
     n_runs = len(model_event)
-    figure, ax = plt.subplots(1, 1, **fig_kwargs)
+    figure, axes = plt.subplots(1, 1, **fig_kwargs)
 
     # input validation
     if cmap is None:
@@ -584,7 +589,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
             color = cmap.colors[cmap_dictionary[event["trial_type"]]]
 
             if event["duration"] != 0:
-                ax.axvspan(
+                axes.axvspan(
                     xmin=event_onset,
                     xmax=event_end,
                     ymin=ymin,
@@ -594,7 +599,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
 
             # events will 0 duration are plotted as lines
             else:
-                ax.axvline(
+                axes.axvline(
                     event_onset,
                     ymin=ymin,
                     ymax=ymax,
@@ -606,13 +611,13 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
         patch = mpatches.Patch(color=cmap.colors[idx], label=label)
         handles.append(patch)
 
-    _ = ax.legend(handles=handles, ncol=4)
+    _ = axes.legend(handles=handles, ncol=4)
 
-    ax.set_xlabel("Time (sec.)")
-    ax.set_ylabel("Runs")
-    ax.set_ylim(0, n_runs)
-    ax.set_yticks(np.arange(n_runs) + 0.5)
-    ax.set_yticklabels(np.arange(n_runs) + 1)
+    axes.set_xlabel("Time (sec.)")
+    axes.set_ylabel("Runs")
+    axes.set_ylim(0, n_runs)
+    axes.set_yticks(np.arange(n_runs) + 0.5)
+    axes.set_yticklabels(np.arange(n_runs) + 1)
 
     plt.tight_layout()
     if output_file is not None:
