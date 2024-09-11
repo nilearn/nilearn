@@ -218,7 +218,7 @@ def _matplotlib_cm_to_niivue_cm(cmap):
     n_nodes = len(spec)
 
     if type(spec[0][1]) is tuple:
-        print("Colormap not available 2 " + name)
+        print(f"Colormap not available 2 {name}")
         return None
 
     print(f"Converting {name} with {n_nodes} nodes")
