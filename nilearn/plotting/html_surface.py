@@ -41,44 +41,6 @@ def _check_engine(engine):
     return engine
 
 
-def _mix_colormaps(fg, bg):
-    """Mixes foreground and background arrays of RGBA colors.
-
-    Parameters
-    ----------
-    fg : numpy.ndarray
-        Array of shape (n, 4), foreground RGBA colors
-        represented as floats in [0, 1]
-    bg : numpy.ndarray
-        Array of shape (n, 4), background RGBA colors
-        represented as floats in [0, 1]
-
-    Returns
-    -------
-    mix : numpy.ndarray
-        Array of shape (n, 4), mixed colors
-        represented as floats in [0, 1]
-    """
-    # Adapted from https://stackoverflow.com/questions/726549/algorithm-for-additive-color-mixing-for-rgb-values/727339#727339 # noqa: E501
-    if fg.shape != bg.shape:
-        raise ValueError(
-            "Trying to mix colormaps with different shapes: "
-            f"{fg.shape}, {bg.shape}"
-        )
-
-    mix = np.empty_like(fg)
-
-    mix[:, 3] = 1 - (1 - fg[:, 3]) * (1 - bg[:, 3])
-
-    for color_index in range(0, 3):
-        mix[:, color_index] = (
-            fg[:, color_index] * fg[:, 3]
-            + bg[:, color_index] * bg[:, 3] * (1 - fg[:, 3])
-        ) / mix[:, 3]
-
-    return mix
-
-
 def get_vertexcolor(
     surf_map,
     cmap,
@@ -239,7 +201,7 @@ def _matplotlib_cm_to_niivue_cm(cmap):
     return js
 
 
-def one_mesh_info_niivue(
+def _one_mesh_info_niivue(
     surf_map, surf_mesh, threshold=None, bg_map=None, cmap=None, colorbar=None
 ):
     """Build dict for plotting one surface map on a single mesh."""
@@ -779,7 +741,7 @@ def view_surf(
             )
         if bg_map is not None:
             _, bg_map = surface.check_mesh_and_data(surf_mesh, bg_map)
-        info = one_mesh_info_niivue(
+        info = _one_mesh_info_niivue(
             surf_map=surf_map,
             surf_mesh=surf_mesh,
             bg_map=bg_map,
