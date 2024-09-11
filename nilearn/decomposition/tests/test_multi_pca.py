@@ -1,23 +1,16 @@
 """Test the multi-PCA module."""
-import os
-import tempfile
 
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
-from nilearn._utils.testing import write_tmp_imgs
-from nilearn.decomposition._multi_pca import _MultiPCA
-from nilearn.maskers import MultiNiftiMasker, NiftiMasker
 from numpy.testing import assert_almost_equal
 
-AFFINE_EYE = np.eye(4)
+from nilearn._utils.testing import write_imgs_to_path
+from nilearn.conftest import _affine_eye, _rng
+from nilearn.decomposition._multi_pca import _MultiPCA
+from nilearn.maskers import MultiNiftiMasker, NiftiMasker
 
 SHAPE = (6, 8, 10)
-
-
-def _tmp_dir():
-    """Test globbing patterns in input images."""
-    return tempfile.tempdir + os.sep
 
 
 def img_4D():
@@ -29,8 +22,8 @@ def img_4D():
 def _make_multi_pca_test_data(with_activation=True):
     """Create a multi-subject dataset with or without activation."""
     shape = (6, 8, 10, 5)
-    affine = AFFINE_EYE
-    rng = np.random.RandomState(0)
+    affine = _affine_eye()
+    rng = _rng()
     n_sub = 4
 
     data = []
@@ -47,7 +40,7 @@ def _make_multi_pca_test_data(with_activation=True):
 
 @pytest.fixture(scope="module")
 def mask_img():
-    return Nifti1Image(np.ones(SHAPE, dtype=np.int8), AFFINE_EYE)
+    return Nifti1Image(np.ones(SHAPE, dtype=np.int8), _affine_eye())
 
 
 @pytest.fixture(scope="module")
@@ -65,7 +58,7 @@ def test_multi_pca_check_masker_attributes(multi_pca_data, mask_img):
 
 def test_multi_pca(multi_pca_data, mask_img):
     """Components are the same if we put twice the same data, \
-    and that fit output is deterministic"""
+       and that fit output is deterministic."""
     multi_pca = _MultiPCA(mask=mask_img, n_components=3, random_state=0)
     multi_pca.fit(multi_pca_data)
 
@@ -193,7 +186,7 @@ def test_multi_pca_score_single_subject(mask_img):
 
 def test_multi_pca_score_single_subject_nb_components(mask_img):
     """Score is one for n_components == n_sample \
-    in single subject configuration"""
+       in single subject configuration."""
     data, _, _, _ = _make_multi_pca_test_data(with_activation=False)
     multi_pca = _MultiPCA(
         mask=mask_img, random_state=0, memory_level=0, n_components=5
@@ -234,18 +227,19 @@ def test_components_img(multi_pca_data, mask_img):
 
 
 @pytest.mark.parametrize("imgs", [[img_4D()], [img_4D(), img_4D()]])
-def test_with_globbing_patterns_on_one_or_several_images(imgs):
+def test_with_globbing_patterns_on_one_or_several_images(imgs, tmp_path):
     multi_pca = _MultiPCA(n_components=3)
 
-    with write_tmp_imgs(*imgs, create_files=True, use_wildcards=True) as img:
-        input_image = _tmp_dir() + img
+    filenames = write_imgs_to_path(
+        *imgs, file_path=tmp_path, create_files=True, use_wildcards=True
+    )
 
-        multi_pca.fit(input_image)
+    multi_pca.fit(filenames)
 
-        components_img = multi_pca.components_img_
-        assert isinstance(components_img, Nifti1Image)
+    components_img = multi_pca.components_img_
+    assert isinstance(components_img, Nifti1Image)
 
-        # n_components = 3
-        check_shape = img_4D().shape[:3] + (3,)
-        assert components_img.shape == check_shape
-        assert len(components_img.shape) == 4
+    # n_components = 3
+    check_shape = img_4D().shape[:3] + (3,)
+    assert components_img.shape == check_shape
+    assert len(components_img.shape) == 4

@@ -1,14 +1,18 @@
+"""Handle plotting of surfaces for html rendering."""
+
 import base64
 import collections.abc
 import json
 import tempfile
 from pathlib import Path
+from warnings import warn
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import nibabel as nib
 import numpy as np
 from matplotlib._cm import datad
+
 from nilearn import datasets, surface
 from nilearn._utils import fill_doc
 from nilearn._utils.niimg_conversions import check_niimg_3d
@@ -23,7 +27,7 @@ from nilearn.plotting.js_plotting_utils import (
 )
 
 
-class SurfaceView(HTMLDocument):
+class SurfaceView(HTMLDocument):  # noqa: D101
     pass
 
 
@@ -75,7 +79,7 @@ def _mix_colormaps(fg, bg):
     return mix
 
 
-def _get_vertexcolor(
+def get_vertexcolor(
     surf_map,
     cmap,
     norm,
@@ -84,6 +88,7 @@ def _get_vertexcolor(
     bg_on_data=None,
     darkness=None,
 ):
+    """Get the color of the vertices."""
     if bg_map is None:
         bg_data = np.ones(len(surf_map)) * 0.5
         bg_vmin, bg_vmax = 0, 1
@@ -98,6 +103,13 @@ def _get_vertexcolor(
 
     if darkness is not None:
         bg_data *= darkness
+        warn(
+            (
+                "The `darkness` parameter will be deprecated in release 0.13. "
+                "We recommend setting `darkness` to None"
+            ),
+            DeprecationWarning,
+        )
 
     bg_colors = plt.get_cmap("Greys")(bg_data)
 
@@ -115,12 +127,12 @@ def _get_vertexcolor(
         # so that background map becomes visible
         surf_colors[~under_threshold, 3] = 0.7
 
-    vertex_colors = _mix_colormaps(surf_colors, bg_colors)
+    vertex_colors = cm.mix_colormaps(surf_colors, bg_colors)
 
     return to_color_strings(vertex_colors)
 
 
-def one_mesh_info(
+def _one_mesh_info(
     surf_map,
     surf_mesh,
     threshold=None,
@@ -150,7 +162,7 @@ def one_mesh_info(
         vmin=vmin,
     )
     info["inflated_left"] = mesh_to_plotly(surf_mesh)
-    info["vertexcolor_left"] = _get_vertexcolor(
+    info["vertexcolor_left"] = get_vertexcolor(
         surf_map,
         colors["cmap"],
         colors["norm"],
@@ -282,17 +294,53 @@ def one_mesh_info_niivue(
             info["bg_map"] = base64.b64encode(bg_map_path.read_bytes()).decode(
                 "UTF-8"
             )
-
     return info
 
 
-def _check_mesh(mesh):
+def one_mesh_info(
+    surf_map,
+    surf_mesh,
+    threshold=None,
+    cmap=cm.cold_hot,
+    black_bg=False,
+    bg_map=None,
+    symmetric_cmap=True,
+    bg_on_data=False,
+    darkness=0.7,
+    vmax=None,
+    vmin=None,
+):
+    """Deprecate public function. See _one_mesh_info."""
+    warn(
+        category=DeprecationWarning,
+        message="one_mesh_info is a private function and is renamed "
+        "to _one_mesh_info. Using the deprecated name will "
+        "raise an error in release 0.13",
+    )
+
+    return _one_mesh_info(
+        surf_map,
+        surf_mesh,
+        threshold=threshold,
+        cmap=cmap,
+        black_bg=black_bg,
+        bg_map=bg_map,
+        symmetric_cmap=symmetric_cmap,
+        bg_on_data=bg_on_data,
+        darkness=darkness,
+        vmax=vmax,
+        vmin=vmin,
+    )
+
+
+def check_mesh(mesh):
+    """Validate type and content of a mesh."""
     if isinstance(mesh, str):
         return datasets.fetch_surf_fsaverage(mesh)
     if not isinstance(mesh, collections.abc.Mapping):
         raise TypeError(
             "The mesh should be a str or a dictionary, "
-            "you provided: {}.".format(type(mesh).__name__)
+            f"you provided: {type(mesh).__name__}."
         )
     missing = {
         "pial_left",
@@ -304,14 +352,13 @@ def _check_mesh(mesh):
     }.difference(mesh.keys())
     if missing:
         raise ValueError(
-            "{} {} missing from the provided mesh dictionary".format(
-                missing, ("are" if len(missing) > 1 else "is")
-            )
+            f"{missing} {('are' if len(missing) > 1 else 'is')} "
+            "missing from the provided mesh dictionary"
         )
     return mesh
 
 
-def full_brain_info(
+def _full_brain_info(
     volume_img,
     mesh="fsaverage5",
     threshold=None,
@@ -322,7 +369,7 @@ def full_brain_info(
     darkness=0.7,
     vmax=None,
     vmin=None,
-    vol_to_surf_kwargs={},
+    vol_to_surf_kwargs=None,
 ):
     """Project 3D map on cortex; prepare info to plot both hemispheres.
 
@@ -331,8 +378,10 @@ def full_brain_info(
     background color.
 
     """
+    if vol_to_surf_kwargs is None:
+        vol_to_surf_kwargs = {}
     info = {}
-    mesh = surface.surface._check_mesh(mesh)
+    mesh = surface.surface.check_mesh(mesh)
     surface_maps = {
         h: surface.vol_to_surf(
             volume_img,
@@ -358,7 +407,7 @@ def full_brain_info(
         info[f"pial_{hemi}"] = mesh_to_plotly(mesh[f"pial_{hemi}"])
         info[f"inflated_{hemi}"] = mesh_to_plotly(mesh[f"infl_{hemi}"])
 
-        info[f"vertexcolor_{hemi}"] = _get_vertexcolor(
+        info[f"vertexcolor_{hemi}"] = get_vertexcolor(
             surf_map,
             colors["cmap"],
             colors["norm"],
@@ -372,6 +421,42 @@ def full_brain_info(
     info["full_brain_mesh"] = True
     info["colorscale"] = colors["colors"]
     return info
+
+
+def full_brain_info(
+    volume_img,
+    mesh="fsaverage5",
+    threshold=None,
+    cmap=cm.cold_hot,
+    black_bg=False,
+    symmetric_cmap=True,
+    bg_on_data=False,
+    darkness=0.7,
+    vmax=None,
+    vmin=None,
+    vol_to_surf_kwargs=None,
+):
+    """Deprecate public function. See _full_brain_info."""
+    warn(
+        category=DeprecationWarning,
+        message="full_brain_info is a private function and is renamed to "
+        "_full_brain_info. Using the deprecated name will raise an error "
+        "in release 0.13",
+    )
+
+    return _full_brain_info(
+        volume_img,
+        mesh=mesh,
+        threshold=threshold,
+        cmap=cmap,
+        black_bg=black_bg,
+        symmetric_cmap=symmetric_cmap,
+        bg_on_data=bg_on_data,
+        darkness=darkness,
+        vmax=vmax,
+        vmin=vmin,
+        vol_to_surf_kwargs=vol_to_surf_kwargs,
+    )
 
 
 def _fill_html_template(info, embed_js=True):
@@ -423,7 +508,7 @@ def view_img_on_surf(
     colorbar_fontsize=25,
     title=None,
     title_fontsize=25,
-    vol_to_surf_kwargs={},
+    vol_to_surf_kwargs=None,
 ):
     """Insert a surface plot of a statistical map into an HTML page.
 
@@ -432,7 +517,7 @@ def view_img_on_surf(
     stat_map_img : Niimg-like object, 3D
         See :ref:`extracting_data`.
 
-    surf_mesh : str or dict, optional.
+    surf_mesh : str or dict, default='fsaverage5'
         If a string, it should be one of the following values:
         %(fsaverage_options)s
         If a dictionary, it should have the same structure as those returned by
@@ -440,7 +525,6 @@ def view_img_on_surf(
         'pial_left', 'sulc_left', 'infl_right', 'pial_right', and 'sulc_right',
         containing inflated and pial meshes, and sulcal depth values for left
         and right hemispheres.
-        Default='fsaverage5'.
 
     threshold : str, number or None, optional
         If None, no thresholding.
@@ -450,15 +534,14 @@ def view_img_on_surf(
         e.g. "25.3%%", and only values of amplitude above the
         given percentile will be shown.
 
-    cmap : str or matplotlib colormap, optional
-        Colormap to use. Default=cm.cold_hot.
+    cmap : str or matplotlib colormap, default=cm.cold_hot
+        Colormap to use.
 
-    black_bg : bool, optional
+    black_bg : bool, default=False
         If True, image is plotted on a black background. Otherwise on a
-        white background. Default=False.
+        white background.
 
     %(bg_on_data)s
-        Default=False.
 
     %(darkness)s
         Default=1.
@@ -471,35 +554,35 @@ def view_img_on_surf(
         min value for mapping colors.
         If `symmetric_cmap` is `True`, `vmin` is always equal to `-vmax` and
         cannot be chosen.
-        If `symmetric_cmap` is `False`, `vmin` defaults to the min of the
+        If `symmetric_cmap` is `False`, `vmin` is equal to the min of the
         image, or 0 when a threshold is used.
 
-    symmetric_cmap : bool, optional
+    symmetric_cmap : bool, default=True
         Make colormap symmetric (ranging from -vmax to vmax).
         You can set it to False if you are plotting only positive values.
-        Default=True.
 
-    colorbar : bool, optional
-        Add a colorbar or not. Default=True.
+    colorbar : bool, default=True
+        Add a colorbar or not.
 
-    colorbar_height : float, optional
-        Height of the colorbar, relative to the figure height. Default=0.5.
+    colorbar_height : float, default=0.5
+        Height of the colorbar, relative to the figure height
 
-    colorbar_fontsize : int, optional
-        Fontsize of the colorbar tick labels. Default=25.
+    colorbar_fontsize : int, default=25
+        Fontsize of the colorbar tick labels.
 
     title : str, optional
         Title for the plot.
 
-    title_fontsize : int, optional
-        Fontsize of the title. Default=25.
+    title_fontsize : int, default=25
+        Fontsize of the title.
 
-    vol_to_surf_kwargs : dict, optional
+    vol_to_surf_kwargs : dict, default=None
         Dictionary of keyword arguments that are passed on to
         :func:`nilearn.surface.vol_to_surf` when extracting a surface from
         the input image. See the function documentation for details.This
         parameter is especially useful when plotting an atlas. See
         https://nilearn.github.io/stable/auto_examples/01_plotting/plot_3d_map_to_surface_projection.html
+        Will default to ``{}`` if ``None`` is passed.
 
     Returns
     -------
@@ -516,8 +599,10 @@ def view_img_on_surf(
     nilearn.plotting.view_surf: plot from a surface map on a cortical mesh.
 
     """
+    if vol_to_surf_kwargs is None:
+        vol_to_surf_kwargs = {}
     stat_map_img = check_niimg_3d(stat_map_img)
-    info = full_brain_info(
+    info = _full_brain_info(
         volume_img=stat_map_img,
         mesh=surf_mesh,
         threshold=threshold,
@@ -538,6 +623,7 @@ def view_img_on_surf(
     return _fill_html_template(info, embed_js=True)
 
 
+@fill_doc
 def view_surf(
     surf_mesh,
     surf_map=None,
@@ -562,30 +648,29 @@ def view_surf(
     Parameters
     ----------
     surf_mesh : str or list of two numpy.ndarray
-        Surface mesh geometry, can be a file (valid formats are
-        .gii or Freesurfer specific files such as .orig, .pial,
-        .sphere, .white, .inflated) or
+        Surface :term:`mesh` geometry, can be a file
+        (valid formats are .gii or Freesurfer specific files
+        such as .orig, .pial, .sphere, .white, .inflated) or
         a list of two Numpy arrays, the first containing the x-y-z coordinates
-        of the mesh vertices, the second containing the indices
-        (into coords) of the mesh faces.
+        of the :term:`mesh` vertices, the second containing the indices
+        (into coords) of the :term:`mesh` :term:`faces`.
 
     surf_map : str or numpy.ndarray, optional
-        Data to be displayed on the surface mesh. Can be a file (valid formats
-        are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific files such as
+        Data to be displayed on the surface :term:`mesh`.
+        Can be a file (valid formats are .gii, .mgz, .nii, .nii.gz,
+        or Freesurfer specific files such as
         .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array
 
-    bg_map : str or numpy.ndarray, optional
-        Background image to be plotted on the mesh underneath the
-        surf_data in greyscale, most likely a sulcal depth map for
+    bg_map : str or numpy.ndarray, default=None
+        Background image to be plotted on the :term:`mesh` underneath
+        the surf_data in greyscale, most likely a sulcal depth map for
         realistic shading.
-        If the map contains values outside [0, 1], it will be
-        rescaled such that all values are in [0, 1]. Otherwise,
-        it will not be modified.
-        Default=None.
+        If the map contains values outside [0, 1],
+        it will be rescaled such that all values are in [0, 1].
+        Otherwise, it will not be modified.
 
     %(bg_on_data)s
-        Default=False.
 
     %(darkness)s
         Default=1.
@@ -595,20 +680,20 @@ def view_surf(
         If it is a number only values of amplitude greater
         than threshold will be shown.
         If it is a string it must finish with a percent sign,
-        e.g. "25.3%", and only values of amplitude above the
+        e.g. "25.3%%", and only values of amplitude above the
         given percentile will be shown.
 
-    cmap : str or matplotlib colormap, optional
+    cmap : str or matplotlib colormap, default=cm.cold_hot
         You might want to change it to 'gnist_ncar' if plotting a
-        surface atlas. Default=cm.cold_hot.
+        surface atlas.
 
-    black_bg : bool, optional
+    black_bg : bool, default=False
         If True, image is plotted on a black background. Otherwise on a
-        white background. Default=False.
+        white background.
 
-    symmetric_cmap : bool, optional
+    symmetric_cmap : bool, default=True
         Make colormap symmetric (ranging from -vmax to vmax).
-        Set it to False if you are plotting a surface atlas. Default=True.
+        Set it to False if you are plotting a surface atlas.
 
     vmax : float or None, optional
         upper bound for the colorbar. if None, use the absolute max of the
@@ -621,20 +706,20 @@ def view_surf(
         If `symmetric_cmap` is `False`, `vmin` defaults to the min of the
         image, or 0 when a threshold is used.
 
-    colorbar : bool, optional
-        Add a colorbar or not. Default=True.
+    colorbar : bool, default=True
+        Add a colorbar or not.
 
-    colorbar_height : float, optional
-        Height of the colorbar, relative to the figure height. Default=0.5.
+    colorbar_height : float, default=0.5
+        Height of the colorbar, relative to the figure height.
 
-    colorbar_fontsize : int, optional
-        Fontsize of the colorbar tick labels. Default=25.
+    colorbar_fontsize : int, default=25
+        Fontsize of the colorbar tick labels.
 
     title : str, optional
         Title for the plot.
 
-    title_fontsize : int, optional
-        Fontsize of the title. Default=25.
+    title_fontsize : int, default=25
+        Fontsize of the title.
 
     engine : {'plotly', 'niivue'}, optional
         Engine to use for plotting. Default='plotly'.

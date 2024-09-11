@@ -12,9 +12,7 @@ Extracting times series to build a functional connectome
 
 .. topic:: **References**
 
-   * `Varoquaux and Craddock, "Learning and comparing functional
-     connectomes across subjects", NeuroImage 2013
-     <http://www.sciencedirect.com/science/article/pii/S1053811913003340>`_.
+   * Learning and comparing functional connectomes across subjects :footcite:p:`Varoquaux2013`
 
 .. _parcellation_time_series:
 
@@ -27,12 +25,12 @@ Brain parcellations
 .. currentmodule:: nilearn.datasets
 
 Regions used to extract the signal can be defined by a "hard"
-parcellation. For instance, the :mod:`nilearn.datasets` has functions to
-download atlases forming reference parcellation, e.g.,
+:term:`parcellation`. For instance, the :mod:`nilearn.datasets` has functions to
+download atlases forming reference :term:`parcellation`, e.g.,
 :func:`fetch_atlas_craddock_2012`, :func:`fetch_atlas_harvard_oxford`,
 :func:`fetch_atlas_yeo_2011`.
 
-For instance to retrieve the Harvard-Oxford cortical parcellation, sampled
+For instance to retrieve the Harvard-Oxford cortical :term:`parcellation`, sampled
 at 2mm, and with a threshold of a probability of 0.25::
 
   from nilearn import datasets
@@ -60,7 +58,7 @@ Extracting signals on a parcellation
 
 .. currentmodule:: nilearn.maskers
 
-To extract signal on the parcellation, the easiest option is to use the
+To extract signal on the :term:`parcellation`, the easiest option is to use the
 :class:`NiftiLabelsMasker`. As any "maskers" in
 nilearn, it is a processing object that is created by specifying all
 the important parameters, but not the data::
@@ -71,7 +69,7 @@ the important parameters, but not the data::
 The Nifti data can then be turned to time-series by calling the
 :meth:`NiftiLabelsMasker.fit_transform` method, that takes either
 filenames or `NiftiImage objects
-<http://nipy.org/nibabel/nibabel_images.html>`_::
+<https://nipy.org/nibabel/nibabel_images.html>`_::
 
     time_series = masker.fit_transform(frmi_files,
                                        confounds=confounds_dataframe)
@@ -80,8 +78,7 @@ filenames or `NiftiImage objects
 
 Note that confound signals can be specified in the call. Indeed, to
 obtain time series that capture well the functional interactions between
-regions, regressing out noise sources is very important
-`[Varoquaux & Craddock 2013] <https://hal.inria.fr/hal-00812911/>`_.
+regions, regressing out noise sources is very important (:footcite:t:`Varoquaux2013`).
 For data processed by :term:`fMRIPrep`,
 :func:`~nilearn.interfaces.fmriprep.load_confounds` and
 :func:`~nilearn.interfaces.fmriprep.load_confounds_strategy` can help you
@@ -143,7 +140,7 @@ Probabilistic atlases
 The definition of regions as by a continuous probability map captures
 better our imperfect knowledge of boundaries in brain images (notably
 because of inter-subject registration errors). One example of such an
-atlas well suited to resting-state or naturalistic-stimuli data analysis is
+atlas well suited to :term:`resting-state` or naturalistic-stimuli data analysis is
 the `MSDL atlas
 <https://team.inria.fr/parietal/18-2/spatial_patterns/spatial-patterns-in-resting-state/>`_
 (:func:`nilearn.datasets.fetch_atlas_msdl`).
@@ -164,16 +161,16 @@ Extracting signals from a probabilistic atlas
 
 .. currentmodule:: nilearn.maskers
 
-As with extraction of signals on a parcellation, extracting signals from
-a probabilistic atlas can be done with a "masker" object:  the
+As with extraction of signals on a :term:`parcellation`, extracting signals from
+a :term:`probabilistic atlas` can be done with a "masker" object:  the
 :class:`NiftiMapsMasker`. It is created by
 specifying the important parameters, in particular the atlas::
 
     from nilearn.maskers import NiftiMapsMasker
     masker = NiftiMapsMasker(maps_img=atlas_filename, standardize=True)
 
-The `fit_transform` method turns filenames or `NiftiImage objects
-<http://nipy.org/nibabel/nibabel_images.html>`_ to time series::
+The ``fit_transform`` method turns filenames or `NiftiImage objects
+<https://nipy.org/nibabel/nibabel_images.html>`_ to time series::
 
     time_series = masker.fit_transform(frmi_files, confounds=csv_file)
 
@@ -214,7 +211,7 @@ the edges capture interactions between them, this graph is a "functional
 connectome".
 
 We can display it with the :func:`nilearn.plotting.plot_connectome`
-function that take the matrix, and coordinates of the nodes in MNI space.
+function that take the matrix, and coordinates of the nodes in :term:`MNI` space.
 In the case of the MSDL atlas
 (:func:`nilearn.datasets.fetch_atlas_msdl`), the CSV file readily comes
 with :term:`MNI` coordinates for each region (see for instance example:
@@ -223,11 +220,6 @@ with :term:`MNI` coordinates for each region (see for instance example:
 .. image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_probabilistic_atlas_extraction_002.png
    :target: ../auto_examples/03_connectivity/plot_probabilistic_atlas_extraction.html
 
-..
-    For doctesting
-
-    >>> from nilearn import datasets
-    >>> atlas_filename = datasets.fetch_atlas_msdl().maps # doctest: +SKIP
 
 As you can see, the correlation matrix gives a very "full" graph: every
 node is connected to every other one. This is because it also captures
@@ -237,27 +229,31 @@ direct connections only.
 A functional connectome: extracting coordinates of regions
 ==========================================================
 For atlases without readily available label coordinates, center coordinates
-can be computed for each region on hard parcellation or probabilistic atlases.
+can be computed for each region on hard :term:`parcellation` or probabilistic atlases.
 
- * For hard parcellation atlases (eg. :func:`nilearn.datasets.fetch_atlas_destrieux_2009`),
+ * For hard :term:`parcellation` atlases (eg. :func:`nilearn.datasets.fetch_atlas_destrieux_2009`),
    use the :func:`nilearn.plotting.find_parcellation_cut_coords`
    function. See example:
    :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
 
  * For probabilistic atlases (eg. :func:`nilearn.datasets.fetch_atlas_msdl`), use the
    :func:`nilearn.plotting.find_probabilistic_atlas_cut_coords` function.
-   See example: :ref:`sphx_glr_auto_examples_03_connectivity_plot_multi_subject_connectome.py`::
+   See example: :ref:`sphx_glr_auto_examples_03_connectivity_plot_multi_subject_connectome.py`:
 
-        >>> from nilearn import plotting
-        >>> atlas_region_coords = plotting.find_probabilistic_atlas_cut_coords(atlas_filename) # doctest: +SKIP
+   .. code-block:: default
 
+           from nilearn import plotting
+           atlas_region_coords = plotting.find_probabilistic_atlas_cut_coords(atlas_filename)
 
 |
 
 .. topic:: **References**
 
-  * `Zalesky et al., NeuroImage 2012, "On the use of correlation as a measure of
-    network connectivity" <http://www.sciencedirect.com/science/article/pii/S1053811912001784>`_.
+   * On the use of correlation as a measure of network connectivity :footcite:p:`zalesky2012use`
 
-  * `Varoquaux et al., NeuroImage 2013, "Learning and comparing functional
-    connectomes across subjects" <http://www.sciencedirect.com/science/article/pii/S1053811913003340>`_.
+   * Learning and comparing functional connectomes across subjects :footcite:p:`Varoquaux2013`
+
+References
+----------
+
+.. footbibliography::

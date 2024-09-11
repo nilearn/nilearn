@@ -1,13 +1,15 @@
-"""Test the logger module
+"""Test the logger module.
 
 This test file is in nilearn/tests because Nosetest,
 which we historically used,
 ignores modules whose name starts with an underscore.
 """
+
 import contextlib
 
-from nilearn._utils.logger import log
 from sklearn.base import BaseEstimator
+
+from nilearn._utils.logger import log
 
 
 @contextlib.contextmanager

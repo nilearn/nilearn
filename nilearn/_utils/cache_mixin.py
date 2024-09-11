@@ -1,6 +1,6 @@
 """Mixin for cache with joblib."""
+
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
-# License: simplified BSD
 
 import os
 import warnings
@@ -19,12 +19,12 @@ def _check_memory(memory, verbose=0):
 
     Parameters
     ----------
-    memory : None,instance of joblib.Memory, str or pathlib.Path
+    memory : None, instance of joblib.Memory, str or pathlib.Path
         Used to cache the masking process.
         If a str is given, it is the path to the caching directory.
 
-    verbose : int, optional
-        Verbosity level. Default=0.
+    verbose : int, default=0
+        Verbosity level.
 
     Returns
     -------
@@ -48,26 +48,25 @@ def _check_memory(memory, verbose=0):
                 # Maybe the user want to enable expanded user path.
                 error_msg = (
                     "Given cache path parent directory doesn't "
-                    "exists, you gave '{}'. Enabling "
+                    f"exists, you gave '{split_cache_dir[0]}'. Enabling "
                     "nilearn.EXPAND_PATH_WILDCARDS could solve "
-                    "this issue.".format(split_cache_dir[0])
+                    "this issue."
                 )
             elif memory.startswith("~"):
                 # Path built on top of expanded user path doesn't exist.
                 error_msg = (
                     "Given cache path parent directory doesn't "
-                    "exists, you gave '{}' which was expanded "
-                    "as '{}' but doesn't exist either. Use "
-                    "nilearn.EXPAND_PATH_WILDCARDS to deactivate "
-                    "auto expand user path (~) behavior.".format(
-                        split_cache_dir[0], os.path.dirname(memory)
-                    )
+                    f"exists, you gave '{split_cache_dir[0]}' "
+                    "which was expanded as '{os.path.dirname(memory)}' "
+                    "but doesn't exist either. "
+                    "Use nilearn.EXPAND_PATH_WILDCARDS to deactivate "
+                    "auto expand user path (~) behavior."
                 )
             else:
                 # The given cache base path doesn't exist.
                 error_msg = (
                     "Given cache path parent directory doesn't "
-                    "exists, you gave '{}'.".format(split_cache_dir[0])
+                    "exists, you gave '{split_cache_dir[0]}'."
                 )
             raise ValueError(error_msg)
 
@@ -119,10 +118,9 @@ def cache(
         be cached or not (if user_memory_level is equal of greater than
         func_memory_level the function is cached).
 
-    shelve : bool, optional
+    shelve : bool, default=False
         Whether to return a joblib MemorizedResult, callable by a .get()
         method, instead of the return value of func.
-        Default=False.
 
     kwargs : keyword arguments, optional
         The keyword arguments passed to memory.cache.
@@ -159,7 +157,7 @@ def cache(
             raise TypeError(
                 "'memory' argument must be a string or a "
                 "joblib.Memory object. "
-                "%s %s was given." % (memory, type(memory))
+                f"{memory} {type(memory)} was given."
             )
         if (
             memory.location is None
@@ -167,10 +165,10 @@ def cache(
             and memory_level > 1
         ):
             warnings.warn(
-                "Caching has been enabled (memory_level = %d) "
+                f"Caching has been enabled (memory_level = {memory_level}) "
                 "but no Memory object or path has been provided"
                 " (parameter memory). Caching deactivated for "
-                "function %s." % (memory_level, func.__name__),
+                f"function {func.__name__}.",
                 stacklevel=2,
             )
     else:
@@ -210,13 +208,13 @@ class CacheMixin:
         func : function
             The function the output of which is to be cached.
 
-        func_memory_level : int, optional
+        func_memory_level : int, default=1
             The memory_level from which caching must be enabled for the wrapped
-            function. Default=1.
+            function.
 
-        shelve : bool, optional
+        shelve : bool, default=False
             Whether to return a joblib MemorizedResult, callable by a .get()
-            method, instead of the return value of func. Default=False.
+            method, instead of the return value of func.
 
         Returns
         -------
@@ -243,7 +241,8 @@ class CacheMixin:
             warnings.warn(
                 "memory_level is currently set to 0 but "
                 "a Memory object has been provided. "
-                "Setting memory_level to 1."
+                "Setting memory_level to 1.",
+                stacklevel=3,
             )
             self.memory_level = 1
 

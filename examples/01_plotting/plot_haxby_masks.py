@@ -5,9 +5,11 @@ Plot Haxby masks
 Small script to plot the masks of the Haxby dataset.
 """
 
-
-import matplotlib.pyplot as plt
+# %%
+# Load Haxby dataset
+# ------------------
 from nilearn import datasets
+from nilearn.plotting import plot_anat, show
 
 haxby_dataset = datasets.fetch_haxby()
 
@@ -23,13 +25,16 @@ print(
 from nilearn import image
 
 func_filename = haxby_dataset.func[0]
-mean_img = image.mean_img(func_filename)
+mean_img = image.mean_img(func_filename, copy_header=True)
 
 z_slice = -14
 
-fig = plt.figure(figsize=(4, 5.4), facecolor="k")
+# %%
+# Plot the masks
+# --------------
+import matplotlib.pyplot as plt
 
-from nilearn.plotting import plot_anat, show
+fig = plt.figure(figsize=(4, 5.4), facecolor="k")
 
 display = plot_anat(
     mean_img, display_mode="z", cut_coords=[z_slice], figure=fig
@@ -50,12 +55,14 @@ for mask, color in zip(masks, colors):
     )
 
 # We generate a legend using the trick described on
-# http://matplotlib.sourceforge.net/users/legend_guide.httpml#using-proxy-artist
+# https://matplotlib.org/2.0.2/users/legend_guide.html
 from matplotlib.patches import Rectangle
 
 p_v = Rectangle((0, 0), 1, 1, fc="red")
 p_h = Rectangle((0, 0), 1, 1, fc="blue")
 p_f = Rectangle((0, 0), 1, 1, fc="limegreen")
-plt.legend([p_v, p_h, p_f], ["vt", "house", "face"])
+plt.legend([p_v, p_h, p_f], ["vt", "house", "face"], loc="lower right")
 
 show()
+
+# sphinx_gallery_dummy_images=1

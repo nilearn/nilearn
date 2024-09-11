@@ -9,12 +9,15 @@ dataset and seek association between the contrast values and a variate
 that measures the speed of pseudo-word reading. No confounding variate
 is included in the model.
 
+..
+    Original authors:
+
+    - Virgile Fritsch, Bertrand Thirion, 2014 -- 2018
+    - Jerome-Alexis Chevalier, 2019
 
 """
-# Author: Virgile Fritsch, Bertrand Thirion, 2014 -- 2018
-#         Jerome-Alexis Chevalier, 2019
 
-##############################################################################
+# %%
 # At first, we need to load the Localizer contrasts.
 from nilearn import datasets
 
@@ -25,19 +28,19 @@ localizer_dataset = datasets.fetch_localizer_contrasts(
     legacy_format=False,
 )
 
-##############################################################################
+# %%
 # Let's print basic information on the dataset.
 print(
     "First contrast nifti image (3D) is located "
     f"at: {localizer_dataset.cmaps[0]}"
 )
 
-##############################################################################
+# %%
 # we also need to load the behavioral variable.
 tested_var = localizer_dataset.ext_vars["pseudo"]
 print(tested_var)
 
-##############################################################################
+# %%
 # It is worth to do a auality check and remove subjects with missing values.
 import numpy as np
 
@@ -49,7 +52,7 @@ contrast_map_filenames = [
 tested_var = tested_var[mask_quality_check].values.reshape((-1, 1))
 print(f"Actual number of subjects after quality check: {int(n_samples)}")
 
-############################################################################
+# %%
 # Estimate second level model
 # ---------------------------
 # We define the input maps and the design matrix for the second level model
@@ -61,26 +64,26 @@ design_matrix = pd.DataFrame(
     columns=["fluency", "intercept"],
 )
 
-###########################################################################
+# %%
 # Fit of the second-level model
 from nilearn.glm.second_level import SecondLevelModel
 
-model = SecondLevelModel(smoothing_fwhm=5.0)
+model = SecondLevelModel(smoothing_fwhm=5.0, n_jobs=2)
 model.fit(contrast_map_filenames, design_matrix=design_matrix)
 
-##########################################################################
-# To estimate the contrast is very simple. We can just provide the column
-# name of the design matrix.
+# %%
+# To estimate the :term:`contrast` is very simple.
+# We can just provide the column name of the design matrix.
 z_map = model.compute_contrast("fluency", output_type="z_score")
 
-###########################################################################
-# We compute the fdr-corrected p = 0.05 threshold for these data
+# %%
+# We compute the fdr-corrected p = 0.05 threshold for these data.
 from nilearn.glm import threshold_stats_img
 
 _, threshold = threshold_stats_img(z_map, alpha=0.05, height_control="fdr")
 
-###########################################################################
-# Let us plot the second level contrast at the computed thresholds
+# %%
+# Let us plot the second level :term:`contrast` at the computed thresholds.
 from nilearn import plotting
 
 plotting.plot_stat_map(
@@ -93,7 +96,7 @@ plotting.plot_stat_map(
 
 plotting.show()
 
-##########################################################################
+# %%
 # Computing the (corrected) p-values with parametric test to compare with
 # non parametric test
 from nilearn.image import get_data, math_img
@@ -105,7 +108,7 @@ neg_log_pval = math_img(
     f"-np.log10(np.minimum(1, img * {str(n_voxels)}))", img=p_val
 )
 
-###########################################################################
+# %%
 # Let us plot the (corrected) negative log  p-values for the parametric test
 cut_coords = [38, -17, -3]
 # Since we are plotting negative log p-values and using a threshold equal to 1,
@@ -127,7 +130,7 @@ plotting.plot_stat_map(
 )
 plotting.show()
 
-##############################################################################
+# %%
 # Computing the (corrected) negative log p-values with permutation test
 from nilearn.glm.second_level import non_parametric_inference
 
@@ -140,10 +143,10 @@ neg_log_pvals_permuted_ols_unmasked = non_parametric_inference(
     two_sided_test=False,
     mask=None,
     smoothing_fwhm=5.0,
-    n_jobs=1,
+    n_jobs=2,
 )
 
-###########################################################################
+# %%
 # Let us plot the (corrected) negative log  p-values
 title = (
     "Group-level association between motor activity and reading: \n"

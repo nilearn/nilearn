@@ -2,150 +2,12 @@
 
 Authors: Bertrand Thirion, Matthew Brett, Ana Luisa Pinho, 2020
 """
-import csv
+
 from warnings import warn
 
 import numpy as np
-import pandas as pd
 import scipy.linalg as spl
-from nilearn._utils.helpers import stringify_path
 from scipy.stats import norm
-
-
-def _check_list_length_match(list_1, list_2, var_name_1, var_name_2):
-    """Check length match of two given lists to raise error if necessary."""
-    if len(list_1) != len(list_2):
-        raise ValueError(
-            "len(%s) %d does not match len(%s) %d"
-            % (str(var_name_1), len(list_1), str(var_name_2), len(list_2))
-        )
-
-
-def _read_events_table(table):
-    """Accept the path to en event.tsv file \
-    and loads it as a Pandas Dataframe.
-
-    Raises an error if loading fails.
-
-    Parameters
-    ----------
-    table : string
-        Accepts the path to an events file.
-
-    Returns
-    -------
-    loaded : pandas.Dataframe object
-        Pandas Dataframe with e events data.
-
-    """
-    try:
-        # kept for historical reasons, a lot of tests use csv with index column
-        loaded = pd.read_csv(table, index_col=0)
-    except:  # noqa: E722
-        raise ValueError(f"table path {table} could not be loaded")
-    if loaded.empty:
-        try:
-            loaded = pd.read_csv(table, sep="\t")
-        except:  # noqa: E722
-            raise ValueError(f"table path {table} could not be loaded")
-    return loaded
-
-
-def _check_and_load_tables(tables_, var_name):
-    """Check tables can be loaded in DataFrame to raise error if necessary."""
-    tables = []
-    for table_idx, table in enumerate(tables_):
-        table = stringify_path(table)
-        if isinstance(table, str):
-            loaded = _read_events_table(table)
-            tables.append(loaded)
-        elif isinstance(table, pd.DataFrame):
-            tables.append(table)
-        elif isinstance(table, np.ndarray):
-            pass
-        else:
-            raise TypeError(
-                "%s can only be a pandas DataFrames or a"
-                "string. A %s was provided at idx %d"
-                % (var_name, type(table), table_idx)
-            )
-    return tables
-
-
-def _check_events_file_uses_tab_separators(events_files):
-    """Raise a ValueError if provided list of text based data files \
-    (.csv, .tsv, etc) do not enforce \
-    the :term:`BIDS` convention of using Tabs as separators.
-
-    Only scans their first row.
-    Does nothing if:
-        - If the separator used is :term:`BIDS` compliant.
-        - Paths are invalid.
-        - File(s) are not text files.
-
-    Does not flag comma-separated-values-files for compatibility reasons;
-    this may change in future as commas are not :term:`BIDS` compliant.
-
-    Parameters
-    ----------
-    events_files : str, List/Tuple[str]
-        A single file's path or a collection of filepaths.
-        Files are expected to be text files.
-        Non-text files will raise ValueError.
-
-    Returns
-    -------
-    None
-
-    Raises
-    ------
-    ValueError:
-        If value separators are not Tabs (or commas)
-
-    """
-    valid_separators = [",", "\t"]
-    if not isinstance(events_files, (list, tuple)):
-        events_files = [events_files]
-    for events_file_ in events_files:
-        try:
-            with open(events_file_) as events_file_obj:
-                events_file_sample = events_file_obj.readline()
-            """
-            The following errors are not being handled here,
-            as they are handled elsewhere in the calling code.
-            Handling them here will beak the calling code,
-            and refactoring that is not straightforward.
-            """
-        except TypeError:  # events is Pandas dataframe.
-            pass
-        except UnicodeDecodeError:  # py3:if binary file
-            raise ValueError(
-                "The file does not seem to be a valid unicode text file."
-            )
-        except OSError:  # if invalid filepath.
-            pass
-        else:
-            try:
-                csv.Sniffer().sniff(
-                    sample=events_file_sample,
-                    delimiters=valid_separators,
-                )
-            except csv.Error:
-                raise ValueError(
-                    "The values in the events file "
-                    "are not separated by tabs; "
-                    "please enforce BIDS conventions",
-                    events_file_,
-                )
-
-
-def _check_run_tables(run_imgs, tables_, tables_name):
-    """Check fMRI runs and corresponding tables to raise error if necessary."""
-    if isinstance(tables_, (str, pd.DataFrame, np.ndarray)):
-        tables_ = [tables_]
-    _check_list_length_match(run_imgs, tables_, "run_imgs", tables_name)
-    tables_ = _check_and_load_tables(tables_, tables_name)
-    return tables_
 
 
 def z_score(pvalue, one_minus_pvalue=None):
@@ -297,9 +159,8 @@ def full_rank(X, cmax=1e15):
     X : array of shape (nrows, ncols)
         Input array.
 
-    cmax : float, optional
+    cmax : float, default=1e15
         Tolerance for condition number.
-        Default=1e15.
 
     Returns
     -------
@@ -342,3 +203,70 @@ def positive_reciprocal(X):
     """
     X = np.asarray(X)
     return np.where(X <= 0, 0, 1.0 / X)
+
+
+def pad_contrast(con_val, theta, stat_type):
+    """Pad contrast with zeros if necessary.
+
+    If the contrast is shorter than the number of parameters,
+    it is padded with zeros.
+
+    If the contrast is longer than the number of parameters,
+    a ValueError is raised.
+
+    Parameters
+    ----------
+    con_val : numpy.ndarray of shape (p) or (n, p)
+        Where p = number of regressors
+        with a value explicitly passed by the user.
+        p must be <= P,
+        where P is the total number of regressors in the design matrix.
+
+    theta : numpy.ndarray with shape (P,m)
+        theta of RegressionResults instances
+        where P is the total number of regressors in the design matrix.
+
+    stat_type : {'t', 'F'}, optional
+        Type of the :term:`contrast`.
+    """
+    nb_cols = con_val.shape[0] if con_val.ndim == 1 else con_val.shape[1]
+    if nb_cols > theta.shape[0]:
+        if stat_type == "t":
+            raise ValueError(
+                f"t contrasts should be of length P={theta.shape[0]}, "
+                f"but it has length {nb_cols}."
+            )
+        if stat_type == "F":
+            raise ValueError(
+                f"F contrasts should have {theta.shape[0]} columns, "
+                f"but it has {nb_cols}."
+            )
+
+    pad = False
+    if nb_cols < theta.shape[0]:
+        pad = True
+        if stat_type == "t":
+            warn(
+                f"t contrasts should be of length P={theta.shape[0]}, "
+                f"but it has length {nb_cols}. "
+                "The rest of the contrast was padded with zeros.",
+                category=UserWarning,
+                stacklevel=3,
+            )
+        if stat_type == "F":
+            warn(
+                f"F contrasts should have {theta.shape[0]} colmuns, "
+                f"but it has only {nb_cols}. "
+                "The rest of the contrast was padded with zeros.",
+                category=UserWarning,
+                stacklevel=3,
+            )
+
+    if pad:
+        if stat_type == "t" or (stat_type == "F" and con_val.shape[0] == 1):
+            padding = np.zeros((1, theta.shape[0] - nb_cols))
+        elif stat_type == "F":
+            padding = np.zeros((con_val.shape[0], theta.shape[0] - nb_cols))
+        con_val = np.hstack((con_val, padding))
+
+    return con_val

@@ -24,7 +24,7 @@ of brain connected networks given in 4D image.
 
 """
 
-##############################################################################
+# %%
 # Coordinates of the slice we are interested in each direction. We will be
 # using them for visualization.
 
@@ -38,7 +38,7 @@ axial = -6
 # coordinates displaying should be prepared as a list
 cut_coords = [sagittal, coronal, axial]
 
-##############################################################################
+# %%
 # Loading the data
 # ----------------
 # We rely on the Haxby datasets and its experiments to demonstrate the complete
@@ -71,16 +71,16 @@ print(
 # Second, load the labels stored in a text file into array using pandas
 import pandas as pd
 
-session_target = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
+run_target = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
 # Now, we have the labels and will be useful while computing student's t-test
-haxby_labels = session_target["labels"]
+haxby_labels = run_target["labels"]
 
-##############################################################################
+# %%
 # We have the datasets in hand especially paths to the locations. Now, we do
 # simple pre-processing step called as image smoothing on functional images
 # and then build a statistical test on smoothed images.
 
-##############################################################################
+# %%
 # Build a statistical test to find voxels of interest
 # ---------------------------------------------------
 # **Smoothing**: Functional MRI data have a low signal-to-noise ratio.
@@ -107,20 +107,20 @@ fmri_img = image.smooth_img(fmri_filename, fwhm=6)
 # `plot_epi`
 from nilearn.plotting import plot_epi
 
-# First, compute the voxel-wise mean of smooth EPI image (first argument) using
-# image processing module `image`
-mean_img = image.mean_img(fmri_img)
+# First, compute the voxel-wise mean of smooth EPI image
+# (first argument) using image processing module `image`
+mean_img = image.mean_img(fmri_img, copy_header=True)
 # Second, we visualize the mean image with coordinates positioned manually
 plot_epi(mean_img, title="Smoothed mean EPI", cut_coords=cut_coords)
 
-##############################################################################
+# %%
 # Given the smoothed functional data stored in variable 'fmri_img', we then
 # select two features of interest with face and house experimental conditions.
 # The method we will be using is a simple Student's t-test. The below section
 # gives us brief motivation example about why selecting features in high
 # dimensional FMRI data setting.
 
-##############################################################################
+# %%
 # Functional MRI data can be considered "high dimensional" given the p-versus-n
 # ratio (e.g., p=~20,000-200,000 voxels for n=1000 samples or less). In this
 # setting, machine-learning algorithms can perform poorly due to the so-called
@@ -132,23 +132,23 @@ fmri_data = get_data(fmri_img)
 # number of voxels being x*y*z, samples in 4th dimension
 fmri_data.shape
 
-##############################################################################
+# %%
 # **Selecting features using T-test**: The Student's t-test
 # (:func:`scipy.stats.ttest_ind`) is an established method to determine whether
 # two distributions have a different mean value.
 # It can be used to compare voxel
 # time-series from two different experimental conditions (e.g., when houses or
 # faces are shown to individuals during brain scanning). If the time-series
-# distribution is similar in the two conditions, then the voxel is not very
-# interesting to discriminate the condition.
+# distribution is similar in the two conditions,
+# then the :term:`voxel` is not very interesting to discriminate the condition.
 
 import numpy as np
 from scipy import stats
 
 # This test returns p-values that represent probabilities that the two
 # time-series were not drawn from the same distribution. The lower the
-# p-value, the more discriminative is the voxel in distinguishing the two
-# conditions (faces and houses).
+# p-value, the more discriminative is the voxel in distinguishing
+# the two conditions (faces and houses).
 _, p_values = stats.ttest_ind(
     fmri_data[..., haxby_labels == "face"],
     fmri_data[..., haxby_labels == "house"],
@@ -181,12 +181,12 @@ plot_stat_map(
     log_p_values_img, mean_img, title="p-values", cut_coords=cut_coords
 )
 
-#############################################################################
+# %%
 # **Selecting features using f_classif**: Feature selection method is also
 # available in the scikit-learn Python package, where it has been extended to
 # several classes, using the `sklearn.feature_selection.f_classif` function.
 
-##############################################################################
+# %%
 # Build a mask from this statistical map (Improving the quality of the mask)
 # --------------------------------------------------------------------------
 # **Thresholding** - We build the t-map to have better representation of voxels
@@ -213,12 +213,13 @@ plot_stat_map(
     cut_coords=cut_coords,
 )
 
-##############################################################################
-# We can post-process the results obtained with simple operations such as mask
-# intersection and dilation to regularize the mask definition.
+# %%
+# We can post-process the results obtained with simple operations
+# such as mask intersection and :term:`dilation<Dilation>`
+# to regularize the mask definition.
 # The idea of using these operations are to have more compact or sparser blobs.
 
-##############################################################################
+# %%
 # **Binarization** and **Intersection** with Ventral Temporal (VT) mask - We
 # now want to restrict our investigation to the VT area. The corresponding
 # spatial mask is provided in haxby_dataset.mask_vt. We want to compute the
@@ -259,13 +260,14 @@ plot_roi(
     title="Intersection with ventral temporal mask",
 )
 
-##############################################################################
+# %%
 # **Dilation** - Thresholded functional brain images often contain scattered
 # voxels across the brain. To consolidate such brain images towards
 # more compact shapes, we use a `morphological dilation
-# <http://en.wikipedia.org/wiki/Dilation_(morphology)>`_. This is a common step
+# <https://en.wikipedia.org/wiki/Dilation_(morphology)>`_.
+# This is a common step
 # to be sure not to forget voxels located on the edge of a ROI. In other words,
-# such operations can fill "holes" in masked voxel representations.
+# such operations can fill "holes" in masked :term:`voxel` representations.
 
 # We use ndimage function from scipy Python library for mask dilation
 from scipy.ndimage import binary_dilation
@@ -289,12 +291,12 @@ plot_roi(
     cut_coords=cut_coords,
     annotate=False,
 )
-#############################################################################
+# %%
 # Finally, we end with splitting the connected ROIs to two hemispheres into two
 # separate regions (ROIs). The function `scipy.ndimage.label` from the scipy
 # Python library.
 
-##############################################################################
+# %%
 # **Identification of connected components** - The function
 # :func:`scipy.ndimage.label` from the scipy Python library identifies
 # immediately neighboring voxels in our voxels mask. It assigns a separate
@@ -320,7 +322,7 @@ second_roi_img = new_img_like(fmri_img, second_roi_data)
 plot_roi(second_roi_img, mean_img, title="Connected components: second ROI")
 
 
-##############################################################################
+# %%
 # Use the new ROIs, to extract data maps in both ROIs
 
 # We extract data from ROIs using nilearn's NiftiLabelsMasker
@@ -359,11 +361,17 @@ for i, cond in enumerate(condition_names):
     X1[:, i], X2[:, i] = mask_data[:, 0], mask_data[:, 1]
 condition_names[np.where(condition_names == "scrambledpix")] = "scrambled"
 
-##############################################################################
+# %%
 # save the ROI 'atlas' to a Nifti file
-new_img_like(fmri_img, labels).to_filename("mask_atlas.nii.gz")
+from pathlib import Path
 
-##############################################################################
+output_dir = Path.cwd() / "results" / "plot_roi_extraction"
+output_dir.mkdir(exist_ok=True, parents=True)
+print(f"Output will be saved to: {output_dir}")
+
+new_img_like(fmri_img, labels).to_filename(output_dir / "mask_atlas.nii.gz")
+
+# %%
 # Plot the average in the different condition names
 import matplotlib.pyplot as plt
 

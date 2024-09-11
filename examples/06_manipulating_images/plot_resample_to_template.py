@@ -8,7 +8,7 @@ We use the MNI152 template as the reference for resampling a t-map image.
 Function :func:`nilearn.image.resample_img` could also be used to achieve this.
 """
 
-###############################################################################
+# %%
 # First we load the required datasets using the nilearn datasets module.
 from nilearn.datasets import (
     load_mni152_template,
@@ -19,13 +19,14 @@ template = load_mni152_template(resolution=2)
 
 stat_img = load_sample_motor_activation_image()
 
-###############################################################################
-# Now, the motor contrast map image can be resampled to the MNI template image.
+# %%
+# Now, the motor :term:`contrast` map image can be resampled
+# to the :term:`MNI` template image.
 from nilearn.image import resample_to_img
 
-resampled_stat_img = resample_to_img(stat_img, template)
+resampled_stat_img = resample_to_img(stat_img, template, copy_header=True)
 
-###############################################################################
+# %%
 # Let's check the shape and affine have been correctly updated.
 
 # First load the original t-map in memory:
@@ -61,7 +62,7 @@ print(
 """
 )
 
-###############################################################################
+# %%
 # Finally, result images are displayed using nilearn plotting module.
 from nilearn import plotting
 
@@ -80,3 +81,5 @@ plotting.plot_stat_map(
     title="Resampled t-map",
 )
 plotting.show()
+
+# sphinx_gallery_dummy_images=2

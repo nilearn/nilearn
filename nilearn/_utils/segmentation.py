@@ -11,9 +11,11 @@ sub functions in skimage.segmentation
 import warnings
 
 import numpy as np
-from scipy import ndimage as ndi, sparse
+from scipy import __version__, ndimage as ndi, sparse
 from scipy.sparse.linalg import cg
 from sklearn.utils import as_float_array
+
+from nilearn._utils.helpers import compare_version
 
 
 def _make_graph_edges_3d(n_x, n_y, n_z):
@@ -156,9 +158,7 @@ def _build_laplacian(data, spacing, mask=None, beta=50):
     return lap
 
 
-def _random_walker(
-    data, labels, beta=130, tol=1.0e-3, copy=True, spacing=None
-):
+def random_walker(data, labels, beta=130, tol=1.0e-3, copy=True, spacing=None):
     """Random walker algorithm for segmentation from markers.
 
     Parameters
@@ -176,19 +176,18 @@ def _random_walker(
         consecutive integers, the labels array will be transformed so that
         labels are consecutive.
 
-    beta : float, optional
+    beta : float, default=130
         Penalization coefficient for the random walker motion
         (the greater `beta`, the more difficult the diffusion).
-        Default=130.
 
-    tol : float, optional
+    tol : float, default=1e-3
         Tolerance to achieve when solving the linear system, in
-        cg' mode. Default=1e-3.
+        cg' mode.
 
-    copy : bool, optional
+    copy : bool, default=True
         If copy is False, the `labels` array will be overwritten with
         the result of the segmentation. Use copy=False if you want to
-        save on memory. Default=True.
+        save on memory.
 
     spacing : iterable of floats, optional
         Spacing between voxels in each spatial dimension. If `None`, then
@@ -358,7 +357,14 @@ def _solve_cg(lap_sparse, B, tol):
     lap_sparse = lap_sparse.tocsc()
     X = []
     for i in range(len(B)):
-        x0 = cg(lap_sparse, -B[i].todense(), tol=tol, atol="legacy")[0]
+        # TODO Python 3.8
+        # consider remove if/else block when dropping support for 3.8
+        # would require pinning scipy to >= 1.12
+        # See https://github.com/nilearn/nilearn/pull/4394
+        if compare_version(__version__, ">=", "1.12"):
+            x0 = cg(lap_sparse, -B[i].todense(), rtol=tol, atol=0)[0]
+        else:
+            x0 = cg(lap_sparse, -B[i].todense(), tol=tol, atol="legacy")[0]
         X.append(x0)
 
     X = np.array(X)

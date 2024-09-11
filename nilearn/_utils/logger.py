@@ -1,9 +1,9 @@
 """Logging facility for nilearn."""
 
 # Author: Philippe Gervais
-# License: simplified BSD
 
 import inspect
+import traceback
 
 from sklearn.base import BaseEstimator
 
@@ -11,7 +11,12 @@ from sklearn.base import BaseEstimator
 # The technique used in the log() function only applies to CPython, because
 # it uses the inspect module to walk the call stack.
 def log(
-    msg, verbose=1, object_classes=(BaseEstimator,), stack_level=1, msg_level=1
+    msg,
+    verbose=1,
+    object_classes=(BaseEstimator,),
+    stack_level=1,
+    msg_level=1,
+    with_traceback=False,
 ):
     """Display a message to the user, depending on the verbosity level.
 
@@ -24,23 +29,20 @@ def log(
     msg : str
         Message to display.
 
-    verbose : int, optional
+    verbose : int, default=1
         Current verbosity level. Message is displayed if this value is greater
-        or equal to msg_level. Default=1.
+        or equal to msg_level.
 
-    object_classes : tuple of type, optional
+    object_classes : tuple of type, default=(BaseEstimator, )
         Classes that should appear to emit the message.
-        Default=(BaseEstimator, ).
 
-    stack_level : int, optional
+    stack_level : int, default=1
         If no object in the call stack matches object_classes, go back that
         amount in the call stack and display class/function name thereof.
-        Default=1.
 
-    msg_level : int, optional
+    msg_level : int, default=1
         Verbosity level at and above which message should be displayed to the
         user. Most of the time this parameter can be left unchanged.
-        Default=1.
 
     Notes
     -----
@@ -78,8 +80,11 @@ def log(
 
         print(f"[{func_name}] {msg}")
 
+        if with_traceback:
+            traceback.print_exc()
 
-def _compose_err_msg(msg, **kwargs):
+
+def compose_err_msg(msg, **kwargs):
     """Append key-value pairs to msg, for display. # noqa: D301.
 
     Parameters
@@ -97,7 +102,7 @@ def _compose_err_msg(msg, **kwargs):
 
     Example
     -------
-    >>> _compose_err_msg('Error message with arguments...', arg_num=123, \
+    >>> compose_err_msg('Error message with arguments...', arg_num=123, \
         arg_str='filename.nii', arg_bool=True)
     'Error message with arguments...\\narg_str: filename.nii'
     >>>
@@ -106,6 +111,6 @@ def _compose_err_msg(msg, **kwargs):
     updated_msg = msg
     for k, v in sorted(kwargs.items()):
         if isinstance(v, str):  # print only str-like arguments
-            updated_msg += "\n" + k + ": " + v
+            updated_msg += f"\n{k}: {v}"
 
     return updated_msg

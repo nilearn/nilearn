@@ -2,11 +2,13 @@
 
 Author: Bertrand Thirion, 2011--2015
 """
+
 import numpy as np
 from nibabel.onetime import auto_attr
-from nilearn.glm._utils import positive_reciprocal
 from scipy.linalg import inv
 from scipy.stats import t as t_distribution
+
+from nilearn.glm._utils import pad_contrast, positive_reciprocal
 
 # Inverse t cumulative distribution
 inv_t_cdf = t_distribution.ppf
@@ -29,7 +31,6 @@ class LikelihoodModelResults:
         cov=None,
         dispersion=1.0,
         nuisance=None,
-        rank=None,
     ):
         """Set up results structure.
 
@@ -47,16 +48,11 @@ class LikelihoodModelResults:
         cov : None or ndarray, optional
             Covariance of thetas.
 
-        dispersion : scalar, optional
+        dispersion : scalar, default=1
             Multiplicative factor in front of `cov`.
-            Default=1.
 
         nuisance : None of ndarray, optional
             Parameter estimates needed to compute logL.
-
-        rank : None or scalar, optional
-            Rank of the model.  If rank is not None, it is used for df_model
-            instead of the usual counting of parameters.
 
         Notes
         -----
@@ -85,6 +81,8 @@ class LikelihoodModelResults:
         # put this as a parameter of LikelihoodModel
         self.df_residuals = self.df_total - self.df_model
 
+    # @auto_attr store the value as an object attribute after initial call
+    # better performance than @property
     @auto_attr
     def logL(self):
         """Return the maximized log-likelihood."""
@@ -109,23 +107,25 @@ class LikelihoodModelResults:
         return _t
 
     def vcov(self, matrix=None, column=None, dispersion=None, other=None):
-        """Return Variance/covariance matrix of linear contrast.
+        """Return Variance/covariance matrix of linear :term:`contrast`.
 
         Parameters
         ----------
         matrix : (dim, self.theta.shape[0]) array, optional
-            Numerical contrast specification, where ``dim`` refers to the
-            'dimension' of the contrast i.e. 1 for t contrasts, 1 or more
-            for F contrasts.
+            Numerical :term:`contrast` specification,
+            where ``dim`` refers to the 'dimension' of the contrast
+            i.e. 1 for t contrasts, 1
+            or more for F :term:`contrasts<contrast>`.
 
         column : int, optional
-            Alternative way of specifying contrasts (column index).
+            Alternative way of specifying :term:`contrasts<contrast>`
+            (column index).
 
         dispersion : float or (n_voxels,) array, optional
             Value(s) for the dispersion parameters.
 
         other : (dim, self.theta.shape[0]) array, optional
-            Alternative contrast specification (?).
+            Alternative :term:`contrast` specification (?).
 
         Returns
         -------
@@ -177,9 +177,8 @@ class LikelihoodModelResults:
         matrix : 1D array-like
             Contrast matrix.
 
-        store : sequence, optional
+        store : sequence, default=('t', 'effect', 'sd')
             Components of t to store in results output object.
-            Defaults to all components ('t', 'effect', 'sd').
 
         dispersion : None or float, optional
 
@@ -192,13 +191,13 @@ class LikelihoodModelResults:
         # 1D vectors assumed to be row vector
         if matrix.ndim == 1:
             matrix = matrix[None]
+        if matrix.size == 0:
+            raise ValueError("t contrasts cannot be empty: " f"got {matrix}")
         if matrix.shape[0] != 1:
-            raise ValueError("t contrasts should have only one row")
-        if matrix.shape[1] != self.theta.shape[0]:
             raise ValueError(
-                f"t contrasts should be length P={self.theta.shape[0]}, "
-                f"but this is length {matrix.shape[1]}"
+                "t contrasts should have only one row: " f"got {matrix}."
             )
+        matrix = pad_contrast(con_val=matrix, theta=self.theta, stat_type="t")
         store = set(store)
         if not store.issubset(("t", "effect", "sd")):
             raise ValueError(f"Unexpected store request in {store}")
@@ -218,9 +217,9 @@ class LikelihoodModelResults:
         )
 
     def Fcontrast(self, matrix, dispersion=None, invcov=None):
-        """Compute an Fcontrast for a contrast matrix `matrix`.
+        """Compute an F contrast for a :term:`contrast` matrix ``matrix``.
 
-        Here, `matrix` M is assumed to be non-singular. More precisely
+        Here, ``matrix`` M is assumed to be non-singular. More precisely
 
         .. math::
 
@@ -231,7 +230,7 @@ class LikelihoodModelResults:
         There can be problems in non-OLS models where
         the rank of the covariance of the noise is not full.
 
-        See the contrast module to see how to specify contrasts.
+        See the contrasts module to see how to specify contrasts.
         In particular, the matrices from these contrasts will always be
         non-singular in the sense above.
 
@@ -263,9 +262,10 @@ class LikelihoodModelResults:
             matrix = matrix[None]
         if matrix.shape[1] != self.theta.shape[0]:
             raise ValueError(
-                f"F contrasts should have shape[1] P={self.theta.shape[0]}, "
-                f"but this has shape[1] {matrix.shape[1]}"
+                f"F contrasts should have shape[1]={self.theta.shape[0]}, "
+                f"but this has shape[1]={matrix.shape[1]}"
             )
+        matrix = pad_contrast(con_val=matrix, theta=self.theta, stat_type="F")
         ctheta = np.dot(matrix, self.theta)
         if matrix.ndim == 1:
             matrix = matrix.reshape((1, matrix.shape[0]))
@@ -293,10 +293,10 @@ class LikelihoodModelResults:
 
         Parameters
         ----------
-        alpha : float, optional
+        alpha : float, default=0.05
             The `alpha` level for the confidence interval.
             ie., `alpha` = .05 returns a 95% confidence interval.
-            Default=0.05.
+
 
         cols : tuple, optional
             `cols` specifies which confidence intervals to return.
@@ -353,10 +353,10 @@ class LikelihoodModelResults:
 
 
 class TContrastResults:
-    """Results from a t contrast of coefficients in a parametric model.
+    """Results from a t :term:`contrast` of coefficients in a parametric model.
 
     The class does nothing.
-    It is a container for the results from T contrasts,
+    It is a container for the results from T :term:`contrasts<contrast>`,
     and returns the T-statistics when np.asarray is called.
 
     """
@@ -383,10 +383,11 @@ class TContrastResults:
 
 
 class FContrastResults:
-    """Results from an F contrast of coefficients in a parametric model.
+    """Results from an F :term:`contrast` of coefficients \
+       in a parametric model.
 
     The class does nothing.
-    It is a container for the results from F contrasts,
+    It is a container for the results from F :term:`contrasts<contrast>`,
     and returns the F-statistics when np.asarray is called.
     """
 

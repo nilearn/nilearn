@@ -13,15 +13,26 @@ variates.  The user can refer to the
 
 .. include:: ../../../examples/masker_note.rst
 
+..
+    Original authors:
+
+    - Virgile Fritsch, May. 2014
+
 """
-# Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, May. 2014
-import matplotlib.pyplot as plt
+
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
+
+# %%
 import numpy as np
+
 from nilearn import datasets
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMasker
 
-############################################################################
+# %%
 # Load Localizer contrast
 n_samples = 20
 localizer_dataset = datasets.fetch_localizer_calculation_task(
@@ -29,7 +40,7 @@ localizer_dataset = datasets.fetch_localizer_calculation_task(
 )
 tested_var = np.ones((n_samples, 1))
 
-############################################################################
+# %%
 # Mask data
 nifti_masker = NiftiMasker(
     smoothing_fwhm=5, memory="nilearn_cache", memory_level=1
@@ -37,7 +48,7 @@ nifti_masker = NiftiMasker(
 cmap_filenames = localizer_dataset.cmaps
 fmri_masked = nifti_masker.fit_transform(cmap_filenames)
 
-############################################################################
+# %%
 # Anova (parametric F-scores)
 from sklearn.feature_selection import f_regression
 
@@ -51,7 +62,7 @@ neg_log_pvals_anova_unmasked = nifti_masker.inverse_transform(
     neg_log_pvals_anova
 )
 
-############################################################################
+# %%
 # Visualization
 from nilearn.plotting import plot_stat_map, show
 
@@ -76,9 +87,9 @@ masked_pvals = np.ma.masked_less(
 title = (
     "Negative $\\log_{10}$ p-values"
     "\n(Parametric + Bonferroni correction)"
-    "\n%d detections" % (~masked_pvals.mask).sum()
+    f"\n{(~masked_pvals.mask).sum()} detections"
 )
 
-display.title(title, y=1.1, alpha=0.8)
+display.title(title, y=1, alpha=0.8)
 
 show()

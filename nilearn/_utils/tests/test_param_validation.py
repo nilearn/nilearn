@@ -3,17 +3,18 @@
 import os
 import warnings
 
-import nibabel
 import numpy as np
 import pytest
+from nibabel import Nifti1Image, load
+from sklearn.base import BaseEstimator
+
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.param_validation import (
     MNI152_BRAIN_VOLUME,
-    _get_mask_volume,
     check_feature_screening,
     check_threshold,
+    get_mask_volume,
 )
-from sklearn.base import BaseEstimator
 
 mni152_brain_mask = (
     "/usr/share/fsl/data/standard/MNI152_T1_1mm_brain_mask.nii.gz"
@@ -66,19 +67,16 @@ def test_check_threshold():
 def test_get_mask_volume():
     # Test that hard-coded standard mask volume can be corrected computed
     if os.path.isfile(mni152_brain_mask):
-        assert MNI152_BRAIN_VOLUME == _get_mask_volume(
-            nibabel.load(mni152_brain_mask)
-        )
+        assert MNI152_BRAIN_VOLUME == get_mask_volume(load(mni152_brain_mask))
     else:
         warnings.warn(f"Couldn't find {mni152_brain_mask} (for testing)")
 
 
-def test_feature_screening():
+def test_feature_screening(affine_eye):
     # dummy
     mask_img_data = np.zeros((182, 218, 182))
     mask_img_data[30:-30, 30:-30, 30:-30] = 1
-    affine = np.eye(4)
-    mask_img = nibabel.Nifti1Image(mask_img_data, affine=affine)
+    mask_img = Nifti1Image(mask_img_data, affine=affine_eye)
 
     for is_classif in [True, False]:
         for screening_percentile in [100, None, 20, 101, -1, 10]:
@@ -90,13 +88,12 @@ def test_feature_screening():
                     is None
                 )
             elif screening_percentile == 101 or screening_percentile == -1:
-                pytest.raises(
-                    ValueError,
-                    check_feature_screening,
-                    screening_percentile,
-                    mask_img,
-                    is_classif,
-                )
+                with pytest.raises(ValueError):
+                    check_feature_screening(
+                        screening_percentile,
+                        mask_img,
+                        is_classif,
+                    )
             elif screening_percentile == 20:
                 assert isinstance(
                     check_feature_screening(

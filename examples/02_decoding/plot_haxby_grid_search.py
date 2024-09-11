@@ -4,7 +4,7 @@
 Here we set the number of features selected in an Anova-SVC approach to
 maximize the cross-validation score.
 
-After separating 2 sessions for validation, we vary that parameter and
+After separating 2 runs for validation, we vary that parameter and
 measure the cross-validation score. We also measure the prediction score
 on the left-out validation data. As we can see, the two scores vary by a
 significant amount: this is due to sampling noise in cross validation,
@@ -32,10 +32,11 @@ manually.
 
 """
 
-###########################################################################
+# %%
 # Load the Haxby dataset
 # ----------------------
 from nilearn import datasets
+from nilearn.plotting import show
 
 # by default 2nd subject data will be fetched on which we run our analysis
 haxby_dataset = datasets.fetch_haxby()
@@ -60,17 +61,18 @@ condition_mask = y.isin(["shoe", "bottle"])
 
 fmri_niimgs = index_img(fmri_img, condition_mask)
 y = y[condition_mask]
-session = labels["chunks"][condition_mask]
+run = labels["chunks"][condition_mask]
 
-###########################################################################
-# ANOVA pipeline with :class:`nilearn.decoding.Decoder` object
-# ------------------------------------------------------------
+# %%
+# :term:`ANOVA` pipeline with :class:`nilearn.decoding.Decoder` object
+# --------------------------------------------------------------------
 #
 # Nilearn Decoder object aims to provide smooth user experience by acting as a
 # pipeline of several tasks: preprocessing with NiftiMasker, reducing dimension
-# by selecting only relevant features with ANOVA -- a classical univariate
-# feature selection based on F-test, and then decoding with different types of
-# estimators (in this example is Support Vector Machine with a linear kernel)
+# by selecting only relevant features with :term:`ANOVA`
+# -- a classical univariate feature selection based on F-test,
+# and then decoding with different types of estimators
+# (in this example is Support Vector Machine with a linear kernel)
 # on nested cross-validation.
 from nilearn.decoding import Decoder
 
@@ -102,7 +104,7 @@ decoder = Decoder(
     param_grid=param_grid,
 )
 
-###########################################################################
+# %%
 # Fit the Decoder and predict the responses
 # -----------------------------------------
 # As a complete pipeline by itself, decoder will perform cross-validation
@@ -124,14 +126,14 @@ for i, (best_C, best_penalty, best_dual, cv_score) in enumerate(
     )
 ):
     print(
-        f"Fold {i+1} | Best SVM parameters: C={best_C}"
+        f"Fold {i + 1} | Best SVM parameters: C={best_C}"
         f", penalty={best_penalty}, dual={best_dual} with score: {cv_score}"
     )
 
 # Output the prediction with Decoder
 y_pred = decoder.predict(fmri_niimgs)
 
-###########################################################################
+# %%
 # Compute prediction scores with different values of screening percentile
 # -----------------------------------------------------------------------
 import numpy as np
@@ -150,16 +152,16 @@ for sp in screening_percentile_range:
         screening_percentile=sp,
         param_grid=param_grid,
     )
-    decoder.fit(index_img(fmri_niimgs, session < 10), y[session < 10])
+    decoder.fit(index_img(fmri_niimgs, run < 10), y[run < 10])
     cv_scores.append(np.mean(decoder.cv_scores_["bottle"]))
     print(f"Sreening Percentile: {sp:.3f}")
     print(f"Mean CV score: {cv_scores[-1]:.4f}")
 
-    y_pred = decoder.predict(index_img(fmri_niimgs, session == 10))
-    val_scores.append(np.mean(y_pred == y[session == 10]))
+    y_pred = decoder.predict(index_img(fmri_niimgs, run == 10))
+    val_scores.append(np.mean(y_pred == y[run == 10]))
     print(f"Validation score: {val_scores[-1]:.4f}")
 
-###########################################################################
+# %%
 # Nested cross-validation
 # -----------------------
 # We are going to tune the parameter 'screening_percentile' in the
@@ -169,7 +171,7 @@ from sklearn.model_selection import KFold
 cv = KFold(n_splits=3)
 nested_cv_scores = []
 
-for train, test in cv.split(session):
+for train, test in cv.split(run):
     y_train = np.array(y)[train]
     y_test = np.array(y)[test]
     val_scores = []
@@ -192,11 +194,10 @@ for train, test in cv.split(session):
 
 print(f"Nested CV score: {np.mean(nested_cv_scores):.4f}")
 
-###########################################################################
+# %%
 # Plot the prediction scores using matplotlib
 # -------------------------------------------
 from matplotlib import pyplot as plt
-from nilearn.plotting import show
 
 plt.figure(figsize=(6, 4))
 plt.plot(cv_scores, label="Cross validation scores")
@@ -213,3 +214,5 @@ plt.axhline(
 
 plt.legend(loc="best", frameon=False)
 show()
+
+# sphinx_gallery_dummy_images=1

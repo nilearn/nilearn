@@ -1,7 +1,5 @@
-"""
-Helper functions for views, i.e. interactive plots from html_surface and
-html_connectome.
-"""
+"""Helps for views, i.e. interactive plots from html_surface and \
+html_connectome."""
 
 import base64
 import os
@@ -26,7 +24,9 @@ MAX_IMG_VIEWS_BEFORE_WARNING = 10
 
 LIBRARY_URL = {
     "plotly": "https://cdn.plot.ly/plotly-gl3d-latest.min.js",
-    "jquery": "https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js",
+    "jquery": (
+        "https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+    ),
     "niivue": "https://niivue.github.io/niivue/features/niivue.umd.js",
 }
 
@@ -37,14 +37,18 @@ LIBRARY_FILE = {
 }
 
 
-def add_js_lib(html, libraries=["plotly", "jquery"], embed_js=True):
+def add_js_lib(html, libraries=None, embed_js=True):
     """Add javascript libraries to html template.
 
     If embed_js is True, jquery and plotly are embedded in resulting page.
     otherwise, they are loaded via CDNs.
 
     """
+    if libraries is None:
+        libraries = ["plotly", "jquery"]
+
     js_dir = os.path.join(os.path.dirname(__file__), "data", "js")
+
     js_lib = ""
 
     # Add each third-party js library
@@ -70,7 +74,7 @@ def add_js_lib(html, libraries=["plotly", "jquery"], embed_js=True):
 
 
 def get_html_template(template_name):
-    """Get an HTML file from package data"""
+    """Get an HTML file from package data."""
     template_path = os.path.join(
         os.path.dirname(__file__), "data", "html", template_name
     )
@@ -88,11 +92,14 @@ def colorscale(
         warnings.warn(
             "you have specified symmetric_cmap=False "
             "but the map contains negative values; "
-            "setting symmetric_cmap to True"
+            "setting symmetric_cmap to True",
+            stacklevel=3,
         )
         symmetric_cmap = True
     if symmetric_cmap and vmin is not None:
-        warnings.warn("vmin cannot be chosen when cmap is symmetric")
+        warnings.warn(
+            "vmin cannot be chosen when cmap is symmetric", stacklevel=3
+        )
         vmin = None
     if threshold is not None:
         if vmin is not None:
@@ -126,7 +133,7 @@ def colorscale(
     rgb = np.array(rgb, dtype=int)
     colors = []
     for i, col in zip(x, rgb):
-        colors.append([np.round(i, 3), "rgb({}, {}, {})".format(*col)])
+        colors.append([np.round(i, 3), f"rgb({col[0]}, {col[1]}, {col[2]})"])
     return {
         "colors": colors,
         "vmin": vmin,
@@ -139,7 +146,7 @@ def colorscale(
 
 
 def encode(a):
-    """Base64 encode a numpy array"""
+    """Base64 encode a numpy array."""
     try:
         data = a.tobytes()
     except AttributeError:
@@ -149,11 +156,12 @@ def encode(a):
 
 
 def decode(b, dtype):
-    """Decode a numpy array encoded as Base64"""
+    """Decode a numpy array encoded as Base64."""
     return np.frombuffer(base64.b64decode(b.encode("utf-8")), dtype)
 
 
 def mesh_to_plotly(mesh):
+    """Convert a :term:`mesh` to plotly format."""
     mesh = surface.load_surf_mesh(mesh)
     x, y, z = map(encode, np.asarray(mesh[0].T, dtype="<f4"))
     i, j, k = map(encode, np.asarray(mesh[1].T, dtype="<i4"))
@@ -169,8 +177,12 @@ def mesh_to_plotly(mesh):
 
 
 def to_color_strings(colors):
+    """Return a list of colors as hex strings."""
     cmap = mpl.colors.ListedColormap(colors)
     colors = cmap(np.arange(cmap.N))[:, :3]
     colors = np.asarray(colors * 255, dtype="uint8")
-    colors = ["#{:02x}{:02x}{:02x}".format(*row) for row in colors]
+    colors = [
+        f"#{int(row[0]):02x}{int(row[1]):02x}{int(row[2]):02x}"
+        for row in colors
+    ]
     return colors

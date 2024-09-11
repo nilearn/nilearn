@@ -7,22 +7,22 @@ First level models
 .. topic:: **Page summary**
 
   First level models are, in essence, linear regression models run at the level of a single
-  session or single subject. The model is applied on a voxel-wise basis, either on the whole
-  brain or within a region of interest. The timecourse of each voxel is regressed against a
-  predicted BOLD response created by convolving the haemodynamic response function (HRF) with
+  run or single subject. The model is applied on a voxel-wise basis, either on the whole
+  brain or within a region of interest. The timecourse of each :term:`voxel` is regressed against a
+  predicted :term:`BOLD` response created by convolving the haemodynamic response function (HRF) with
   a set of predictors defined within the design matrix.
 
 
 HRF models
 ==========
 
-Nilearn offers a few different HRF models including the commonly used double-gamma SPM model ('spm')
+Nilearn offers a few different :term:`HRF` models including the commonly used double-gamma :term:`SPM` model ('spm')
 and the model shape proposed by G. Glover ('glover'), both allowing the option of adding time and
 dispersion derivatives. The addition of these derivatives allows to better model any uncertainty in
-timing information. In addition, an FIR (finite impulse response, 'fir') model of the HRF is also available.
+timing information. In addition, an :term:`FIR` (finite impulse response, 'fir') model of the :term:`HRF` is also available.
 
 In order to visualize the predicted regressor prior to plugging it into the linear model, use the
-function :func:`nilearn.glm.first_level.compute_regressor`, or explore the HRF plotting
+function :func:`nilearn.glm.first_level.compute_regressor`, or explore the :term:`HRF` plotting
 example :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_hrf.py`.
 
 
@@ -45,8 +45,9 @@ Refer to the examples below for usage under the different scenarios:
   * Advanced beta series models: :ref:`sphx_glr_auto_examples_07_advanced_plot_beta_series.py`
 
 To ascertain that the sequence of events provided to the first level model is accurate, Nilearn provides an
-event visualization function called :func:`nilearn.plotting.plot_event()`. Sample usage for this is available
-in :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_glm_decoding.py`.
+event visualization function called :func:`nilearn.plotting.plot_event()`.
+Sample usage for this is available in
+:ref:`sphx_glr_auto_examples_04_glm_first_level_plot_write_events_file.py`.
 
 Once the events are defined, the design matrix is created using the
 :func:`nilearn.glm.first_level.make_first_level_design_matrix` function::
@@ -87,7 +88,7 @@ Fitting a first level model
 ===========================
 
 The :class:`nilearn.glm.first_level.FirstLevelModel` class provides the tools to fit the linear model to
-the fMRI data. The :func:`nilearn.glm.first_level.FirstLevelModel.fit()` function takes the fMRI data
+the :term:`fMRI` data. The :func:`nilearn.glm.first_level.FirstLevelModel.fit()` function takes the fMRI data
 and design matrix as input and fits the GLM. Like other Nilearn functions,
 :func:`nilearn.glm.first_level.FirstLevelModel.fit()` accepts file names as input, but can also
 work with :nipy:`NiftiImage objects <nibabel/nibabel_images.html>`. More information about
@@ -101,7 +102,7 @@ input formats is available :ref:`here <loading_data>` ::
 Computing contrasts
 -------------------
 
-To get more interesting results out of the GLM model, contrasts can be computed between regressors of interest.
+To get more interesting results out of the :term:`GLM` model, contrasts can be computed between regressors of interest.
 The :func:`nilearn.glm.first_level.FirstLevelModel.compute_contrast` function can be used for that. First,
 the contrasts of interest must be defined. In the spm_multimodal_fmri dataset referenced above, subjects are
 presented with 'normal' and 'scrambled' faces. The basic contrasts that can be constructed are the main effects
@@ -128,16 +129,16 @@ The activation maps from these 3 contrasts is presented below:
      :scale: 60
 
 
-Additional example: :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_fiac_analysis.py`
+Additional example: :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_two_runs_model.py`
 
 
 Extracting predicted time series and residuals
 ==============================================
 
 One way to assess the quality of the fit is to compare the observed and predicted time series of voxels.
-Nilearn makes the predicted time series easily accessible via a parameter called `predicted` that is part
+Nilearn makes the predicted time series easily accessible via a parameter called ``predicted`` that is part
 of the :class:`nilearn.glm.first_level.FirstLevelModel`. This parameter is populated when
-FistLevelModel is initialized with the `minimize_memory` flag set to `False`. ::
+FistLevelModel is initialized with the ``minimize_memory`` flag set to ``False``. ::
 
   observed_timeseries = masker.fit_transform(fmri_img)
   predicted_timeseries = masker.fit_transform(fmri_glm.predicted[0])
@@ -157,7 +158,7 @@ useful to calculate the F and R-squared statistic. For more information refer to
 Surface-based analysis
 ======================
 
-fMRI analyses can also be performed on the cortical surface instead of a volumetric brain. Nilearn
+:term:`fMRI` analyses can also be performed on the cortical surface instead of a volumetric brain. Nilearn
 provides functions to map subject brains on to a cortical mesh, which can be either a standard surface as
 provided by, for e.g. Freesurfer, or a user-defined one. Freesurfer meshes can be accessed using
 :func:`nilearn.datasets.fetch_surf_fsaverage`, while the function :func:`nilearn.surface.vol_to_surf`

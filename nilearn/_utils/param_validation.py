@@ -6,6 +6,8 @@ import warnings
 import numpy as np
 from sklearn.feature_selection import SelectPercentile, f_classif, f_regression
 
+from nilearn._utils import logger
+
 from .niimg import _get_data
 
 # Volume of a standard (MNI152) brain mask in mm^3
@@ -35,10 +37,10 @@ def check_threshold(threshold, data, percentile_func, name="threshold"):
         Percentile function for example scipy.stats.scoreatpercentile
         to calculate the score on the data.
 
-    name : str, optional
+    name : str, default='threshold'
         A string just used for representing
         the name of the threshold for a precise
-        error message. Default='threshold'.
+        error message.
 
     Returns
     -------
@@ -50,10 +52,10 @@ def check_threshold(threshold, data, percentile_func, name="threshold"):
     """
     if isinstance(threshold, str):
         message = (
-            'If "{}" is given as string it '
+            f'If "{name}" is given as string it '
             "should be a number followed by the percent "
             'sign, e.g. "25.3%"'
-        ).format(name)
+        )
         if not threshold.endswith("%"):
             raise ValueError(message)
 
@@ -70,20 +72,20 @@ def check_threshold(threshold, data, percentile_func, name="threshold"):
         value_check = abs(data).max()
         if abs(threshold) > value_check:
             warnings.warn(
-                "The given float value must not exceed {}. "
-                "But, you have given threshold={} ".format(
-                    value_check, threshold
-                )
+                f"The given float value must not exceed {value_check}. "
+                f"But, you have given threshold={threshold}.",
+                category=UserWarning,
+                stacklevel=3,
             )
     else:
         raise TypeError(
-            "%s should be either a number "
-            "or a string finishing with a percent sign" % (name,)
+            f"{name} should be either a number "
+            "or a string finishing with a percent sign"
         )
     return threshold
 
 
-def _get_mask_volume(mask_img):
+def get_mask_volume(mask_img):
     """Compute the volume of a brain mask in mm^3.
 
     Parameters
@@ -102,7 +104,7 @@ def _get_mask_volume(mask_img):
     return prod_vox_dims * _get_data(mask_img).astype(bool).sum()
 
 
-def _adjust_screening_percentile(screening_percentile, mask_img, verbose=0):
+def adjust_screening_percentile(screening_percentile, mask_img, verbose=0):
     """Adjust the screening percentile according to the MNI152 template.
 
     Parameters
@@ -117,8 +119,8 @@ def _adjust_screening_percentile(screening_percentile, mask_img, verbose=0):
     mask_img : nibabel image object
         Input image whose voxel dimensions are to be computed.
 
-    verbose : int, optional
-        Verbosity level. Default=0.
+    verbose : int, default=0
+        Verbosity level.
 
     Returns
     -------
@@ -128,20 +130,20 @@ def _adjust_screening_percentile(screening_percentile, mask_img, verbose=0):
     """
     original_screening_percentile = screening_percentile
     # correct screening_percentile according to the volume of the data mask
-    mask_volume = _get_mask_volume(mask_img)
+    mask_volume = get_mask_volume(mask_img)
     if mask_volume > 1.1 * MNI152_BRAIN_VOLUME:
         warnings.warn(
             "Brain mask is bigger than the volume of a standard "
             "human brain. This object is probably not tuned to "
             "be used on such data.",
-            stacklevel=2,
+            stacklevel=3,
         )
     elif mask_volume < 0.005 * MNI152_BRAIN_VOLUME:
         warnings.warn(
             "Brain mask is smaller than .5% of the volume "
             "human brain. This object is probably not tuned to "
             "be used on such data.",
-            stacklevel=2,
+            stacklevel=3,
         )
 
     if screening_percentile < 100.0:
@@ -151,21 +153,28 @@ def _adjust_screening_percentile(screening_percentile, mask_img, verbose=0):
         screening_percentile = min(screening_percentile, 100.0)
     # if screening_percentile is 100, we don't do anything
 
-    if verbose > 1:
-        print(
-            f"Mask volume = {mask_volume:g}mm^3 = {mask_volume / 1000.0:g}cm^3"
-        )
-        print(
-            "Standard brain volume = {:g}mm^3 = {:g}cm^3".format(
-                MNI152_BRAIN_VOLUME, MNI152_BRAIN_VOLUME / 1.0e3
-            )
-        )
-        print(
-            f"Original screening-percentile: {original_screening_percentile:g}"
-        )
-        print(
-            f"Volume-corrected screening-percentile: {screening_percentile:g}"
-        )
+    logger.log(
+        f"Mask volume = {mask_volume:g}mm^3 = {mask_volume / 1000.0:g}cm^3",
+        verbose=verbose,
+        msg_level=1,
+    )
+    logger.log(
+        "Standard brain volume "
+        f"= {MNI152_BRAIN_VOLUME:g}mm^3 "
+        f"= {MNI152_BRAIN_VOLUME / 1.0e3:g}cm^3",
+        verbose=verbose,
+        msg_level=1,
+    )
+    logger.log(
+        f"Original screening-percentile: {original_screening_percentile:g}",
+        verbose=verbose,
+        msg_level=1,
+    )
+    logger.log(
+        f"Volume-corrected screening-percentile: {screening_percentile:g}",
+        verbose=verbose,
+        msg_level=1,
+    )
     return screening_percentile
 
 
@@ -179,26 +188,27 @@ def check_feature_screening(
     Parameters
     ----------
     screening_percentile : float in the interval [0, 100]
-        Percentile value for ANOVA univariate feature selection. A value of
-        100 means 'keep all features'. This percentile is expressed
+        Percentile value for :term:`ANOVA` univariate feature selection.
+        A value of 100 means 'keep all features'.
+        This percentile is expressed
         w.r.t the volume of a standard (MNI152) brain, and so is corrected
         at runtime by premultiplying it with the ratio of the volume of the
         mask of the data and volume of a standard brain.
 
     mask_img : nibabel image object
-        Input image whose voxel dimensions are to be computed.
+        Input image whose :term:`voxel` dimensions are to be computed.
 
     is_classification : bool
         If is_classification is True, it indicates that a classification task
         is performed. Otherwise, a regression task is performed.
 
-    verbose : int, optional
-        Verbosity level. Default=0.
+    verbose : int, default=0
+        Verbosity level.
 
     Returns
     -------
     selector : SelectPercentile instance
-       Used to perform the ANOVA univariate feature selection.
+       Used to perform the :term:`ANOVA` univariate feature selection.
 
     """
     f_test = f_classif if is_classification else f_regression
@@ -208,18 +218,18 @@ def check_feature_screening(
     elif not (0.0 <= screening_percentile <= 100.0):
         raise ValueError(
             "screening_percentile should be in the interval"
-            " [0, 100], got %g" % screening_percentile
+            f" [0, 100], got {screening_percentile:g}"
         )
     else:
         # correct screening_percentile according to the volume of the data mask
-        screening_percentile_ = _adjust_screening_percentile(
+        screening_percentile_ = adjust_screening_percentile(
             screening_percentile, mask_img, verbose=verbose
         )
 
         return SelectPercentile(f_test, percentile=int(screening_percentile_))
 
 
-def _check_run_sample_masks(n_runs, sample_masks):
+def check_run_sample_masks(n_runs, sample_masks):
     """Check that number of sample_mask matches number of runs."""
     if not isinstance(sample_masks, (list, tuple, np.ndarray)):
         raise TypeError(

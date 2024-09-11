@@ -1,18 +1,15 @@
 """Test CanICA."""
 
-import warnings
-
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
-from nilearn._utils.testing import write_tmp_imgs
-from nilearn.decomposition.canica import CanICA
-from nilearn.decomposition.tests.test_multi_pca import _tmp_dir
-from nilearn.image import get_data, iter_img
-from nilearn.maskers import MultiNiftiMasker
 from numpy.testing import assert_array_almost_equal
 
-AFFINE_EYE = np.eye(4)
+from nilearn._utils.testing import write_imgs_to_path
+from nilearn.conftest import _affine_eye, _rng
+from nilearn.decomposition.canica import CanICA
+from nilearn.image import get_data, iter_img
+from nilearn.maskers import MultiNiftiMasker
 
 SHAPE = (30, 30, 5)
 
@@ -21,14 +18,16 @@ N_SUBJECTS = 2
 
 def _make_data_from_components(
     components,
-    affine=AFFINE_EYE,
+    affine=None,
     shape=SHAPE,
     rng=None,
     n_subjects=N_SUBJECTS,
 ):
+    if affine is None:
+        affine = _affine_eye()
     data = []
     if rng is None:
-        rng = np.random.RandomState(0)
+        rng = _rng()
     background = -0.01 * rng.normal(size=shape) - 2
     background = background[..., np.newaxis]
     for _ in range(n_subjects):
@@ -76,17 +75,18 @@ def _make_canica_components(shape):
 
 def _make_canica_test_data(rng=None, n_subjects=N_SUBJECTS, noisy=True):
     if rng is None:
-        rng = np.random.RandomState(0)
+        # Use legacy generator for sklearn compatibility
+        rng = np.random.RandomState(42)
     components = _make_canica_components(SHAPE)
     if noisy:  # Creating noisy non positive data
-        components[rng.randn(*components.shape) > 0.8] *= -2.0
+        components[rng.standard_normal(components.shape) > 0.8] *= -2.0
 
     for mp in components:
         assert mp.max() <= -mp.min()  # Goal met ?
 
     # Create a "multi-subject" dataset
     data = _make_data_from_components(
-        components, AFFINE_EYE, SHAPE, rng=rng, n_subjects=n_subjects
+        components, _affine_eye(), SHAPE, rng=rng, n_subjects=n_subjects
     )
 
     return data, components, rng
@@ -101,7 +101,7 @@ def mask_img():
     mask[:, -5:] = 0
     mask[..., -2:] = 0
     mask[..., :2] = 0
-    return Nifti1Image(mask, AFFINE_EYE)
+    return Nifti1Image(mask, _affine_eye())
 
 
 @pytest.fixture(scope="module")
@@ -142,25 +142,15 @@ def test_transform_and_fit_errors(canica_data, mask_img):
         canica.fit()
 
 
-def test_percentile_range(canica_data):
+def test_percentile_range(rng, canica_data):
     """Test that a warning is given when thresholds are stressed."""
-    rng = np.random.RandomState(0)
-    edge_case = rng.randint(low=1, high=10)
+    edge_case = rng.integers(low=1, high=10)
 
     # stess thresholding via edge case
     canica = CanICA(n_components=edge_case, threshold=float(edge_case))
 
-    with warnings.catch_warnings(record=True) as warning:
+    with pytest.warns(UserWarning, match="obtained a critical threshold"):
         canica.fit(canica_data)
-
-        # ensure a single warning is raised
-        # filter out deprecation warnings
-        warning_messages = [
-            "obtained a critical threshold" in str(w.message)
-            for w in warning
-            if not issubclass(w.category, (DeprecationWarning, FutureWarning))
-        ]
-        assert sum(warning_messages) == 1
 
 
 def test_canica_square_img(mask_img):
@@ -196,7 +186,7 @@ def test_canica_square_img(mask_img):
 
 
 def test_canica_single_subject_smoke():
-    """Check that canica runs on a single-subject dataset"""
+    """Check that canica runs on a single-subject dataset."""
     data, _, rng = _make_canica_test_data(n_subjects=1)
 
     canica = CanICA(
@@ -242,10 +232,12 @@ def test_masker_attributes_with_fit(canica_data, mask_img):
     assert canica.mask_img_ == canica.masker_.mask_img_
 
 
-def test_masker_attributes_passing_masker_arguments_to_estimator(canica_data):
+def test_masker_attributes_passing_masker_arguments_to_estimator(
+    affine_eye, canica_data
+):
     canica = CanICA(
         n_components=3,
-        target_affine=np.eye(4),
+        target_affine=affine_eye,
         target_shape=(6, 8, 10),
         mask_strategy="background",
     )
@@ -266,44 +258,46 @@ def test_components_img(canica_data, mask_img):
     assert components_img.shape, check_shape
 
 
-def test_with_globbing_patterns_with_single_subject(mask_img):
+def test_with_globbing_patterns_with_single_subject(mask_img, tmp_path):
     # single subject
     data, *_ = _make_canica_test_data(n_subjects=1)
     n_components = 3
 
     canica = CanICA(n_components=n_components, mask=mask_img)
 
-    with write_tmp_imgs(data[0], create_files=True, use_wildcards=True) as img:
-        input_image = _tmp_dir() + img
-        canica.fit(input_image)
-        components_img = canica.components_img_
+    img = write_imgs_to_path(
+        data[0], file_path=tmp_path, create_files=True, use_wildcards=True
+    )
+    canica.fit(img)
+    components_img = canica.components_img_
 
-        assert isinstance(components_img, Nifti1Image)
+    assert isinstance(components_img, Nifti1Image)
 
-        # n_components = 3
-        check_shape = data[0].shape[:3] + (3,)
+    # n_components = 3
+    check_shape = data[0].shape[:3] + (3,)
 
-        assert components_img.shape, check_shape
+    assert components_img.shape, check_shape
 
 
-def test_with_globbing_patterns_with_multi_subjects(canica_data, mask_img):
+def test_with_globbing_patterns_with_multi_subjects(
+    canica_data, mask_img, tmp_path
+):
     # Multi subjects
     n_components = 3
     canica = CanICA(n_components=n_components, mask=mask_img)
 
-    with write_tmp_imgs(
-        *canica_data, create_files=True, use_wildcards=True
-    ) as img:
-        input_image = _tmp_dir() + img
-        canica.fit(input_image)
-        components_img = canica.components_img_
+    img = write_imgs_to_path(
+        *canica_data, file_path=tmp_path, create_files=True, use_wildcards=True
+    )
+    canica.fit(img)
+    components_img = canica.components_img_
 
-        assert isinstance(components_img, Nifti1Image)
+    assert isinstance(components_img, Nifti1Image)
 
-        # n_components = 3
-        check_shape = canica_data[0].shape[:3] + (3,)
+    # n_components = 3
+    check_shape = canica_data[0].shape[:3] + (3,)
 
-        assert components_img.shape, check_shape
+    assert components_img.shape, check_shape
 
 
 def test_canica_score(canica_data, mask_img):

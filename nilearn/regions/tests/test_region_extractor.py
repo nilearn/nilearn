@@ -1,10 +1,13 @@
-"""Test Region Extractor and its functions"""
+"""Test Region Extractor and its functions."""
 
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
+from scipy.ndimage import label
+
 from nilearn._utils.data_gen import generate_labeled_regions, generate_maps
 from nilearn._utils.exceptions import DimensionError
+from nilearn.conftest import _affine_eye, _img_4d_zeros, _shape_3d_default
 from nilearn.image import get_data
 from nilearn.regions import (
     RegionExtractor,
@@ -15,23 +18,10 @@ from nilearn.regions.region_extractor import (
     _remove_small_regions,
     _threshold_maps_ratio,
 )
-from scipy.ndimage import label
-
-AFFINE_EYE = np.eye(4)
 
 N_REGIONS = 3
 
-SHAPE = (10, 10, 10)
-
 MAP_SHAPE = (30, 30, 30)
-
-
-def _make_random_data(shape):
-    rng = np.random.RandomState(42)
-    data_rng = rng.normal(size=shape)
-    img = Nifti1Image(data_rng, AFFINE_EYE)
-    data = get_data(img)
-    return img, data
 
 
 @pytest.fixture(scope="module")
@@ -47,25 +37,26 @@ def dummy_map():
 def labels_img():
     n_regions = 9  # DO NOT CHANGE (some tests expect this value)
     return generate_labeled_regions(
-        shape=SHAPE, affine=AFFINE_EYE, n_regions=n_regions
+        shape=_shape_3d_default(), affine=_affine_eye(), n_regions=n_regions
     )
 
 
 @pytest.fixture
 def maps():
-    return generate_maps(shape=MAP_SHAPE, n_regions=N_REGIONS)[0]
+    return generate_maps(
+        shape=MAP_SHAPE, n_regions=N_REGIONS, random_state=42
+    )[0]
 
 
 @pytest.fixture
 def maps_and_mask():
-    return generate_maps(shape=MAP_SHAPE, n_regions=N_REGIONS)
+    return generate_maps(shape=MAP_SHAPE, n_regions=N_REGIONS, random_state=42)
 
 
 @pytest.fixture
-def map_img_3D():
-    rng = np.random.RandomState(42)
+def map_img_3D(rng):
     map_img = np.zeros(MAP_SHAPE) + 0.1 * rng.standard_normal(size=MAP_SHAPE)
-    return Nifti1Image(map_img, affine=AFFINE_EYE)
+    return Nifti1Image(map_img, affine=_affine_eye())
 
 
 @pytest.mark.parametrize("invalid_threshold", ["80%", "auto", -1.0])
@@ -83,11 +74,11 @@ def test_invalid_thresholds_in_threshold_maps_ratio(
         _threshold_maps_ratio(maps_img=dummy_map, threshold=invalid_threshold)
 
 
-def test_nans_threshold_maps_ratio(maps):
+def test_nans_threshold_maps_ratio(maps, affine_eye):
     data = get_data(maps)
     data[:, :, 0] = np.nan
 
-    maps_img = Nifti1Image(data, AFFINE_EYE)
+    maps_img = Nifti1Image(data, affine_eye)
     _threshold_maps_ratio(maps_img, threshold=0.8)
 
 
@@ -257,17 +248,16 @@ def test_region_extractor_strategy_percentile(maps_and_mask):
     expected_signal_shape = (7, n_regions_extracted)
     n_subjects = 3
     for _ in range(n_subjects):
-        img, _ = _make_random_data(shape)
         # smoke test NiftiMapsMasker transform inherited in Region Extractor
-        signal = extractor.transform(img)
+        signal = extractor.transform(_img_4d_zeros(shape=shape))
 
         assert expected_signal_shape == signal.shape
 
 
-def test_region_extractor_high_resolution_image():
+def test_region_extractor_high_resolution_image(affine_eye):
     n_regions = 9
     maps, _ = generate_maps(
-        shape=MAP_SHAPE, n_regions=n_regions, affine=0.2 * AFFINE_EYE
+        shape=MAP_SHAPE, n_regions=n_regions, affine=0.2 * affine_eye
     )
 
     extract_ratio = RegionExtractor(
@@ -282,12 +272,12 @@ def test_region_extractor_high_resolution_image():
     assert extract_ratio.regions_img_.shape[-1] >= 9
 
 
-def test_region_extractor_zeros_affine_diagonal():
+def test_region_extractor_zeros_affine_diagonal(affine_eye):
     n_regions = 9
-    affine = AFFINE_EYE
+    affine = affine_eye
     affine[[0, 1]] = affine[[1, 0]]  # permutes first and second lines
     maps, _ = generate_maps(
-        shape=[40, 40, 40], n_regions=n_regions, affine=affine
+        shape=[40, 40, 40], n_regions=n_regions, affine=affine, random_state=42
     )
 
     extract_ratio = RegionExtractor(
@@ -310,7 +300,7 @@ def test_error_messages_connected_label_regions(labels_img):
         connected_label_regions(labels_img=labels_img, connect_diag=None)
 
 
-def test_remove_small_regions():
+def test_remove_small_regions(affine_eye):
     data = np.array(
         [
             [[0.0, 1.0, 0.0], [0.0, 1.0, 1.0], [0.0, 0.0, 0.0]],
@@ -325,10 +315,7 @@ def test_remove_small_regions():
     min_size = 10
     # data can be act as mask_data to identify regions in label_map because
     # features in label_map are built upon non-zeros in data
-    index = np.arange(n_labels + 1)
-    removed_data = _remove_small_regions(
-        label_map, index, AFFINE_EYE, min_size
-    )
+    removed_data = _remove_small_regions(label_map, affine_eye, min_size)
     sum_removed_data = np.sum(removed_data)
 
     assert sum_removed_data < sum_label_data
@@ -427,7 +414,9 @@ def test_connected_label_regions_check_labels_as_numpy_array(labels_img):
         connected_label_regions(labels_img, labels=provided_labels)
 
 
-def test_connected_label_regions_unknonw_labels(labels_img):
+def test_connected_label_regions_unknonw_labels(
+    labels_img, affine_eye, shape_3d_default
+):
     """If unknown/negative integers are provided as labels in labels_img, \
     we raise an error and test the same whether error is raised.
 
@@ -437,8 +426,8 @@ def test_connected_label_regions_unknonw_labels(labels_img):
     """
     labels_data = get_data(labels_img)
 
-    labels_data = np.zeros(SHAPE, dtype=np.float32)
-    h0, h1, h2 = (x // 2 for x in SHAPE)
+    labels_data = np.zeros(shape_3d_default, dtype=np.float32)
+    h0, h1, h2 = (x // 2 for x in shape_3d_default)
     labels_data[:h0, :h1, :h2] = 1
     labels_data[:h0, :h1, h2:] = 2
     labels_data[:h0, h1:, :h2] = 3
@@ -448,30 +437,32 @@ def test_connected_label_regions_unknonw_labels(labels_img):
     labels_data[h0:, h1:, :h2] = np.nan
     labels_data[h0:, h1:, h2:] = np.inf
 
-    neg_labels_img = Nifti1Image(labels_data, AFFINE_EYE)
+    neg_labels_img = Nifti1Image(labels_data, affine_eye)
 
     with pytest.raises(ValueError):
         connected_label_regions(labels_img=neg_labels_img)
 
     # If labels_img provided is 4D Nifti image, then test whether error is
     # raised or not. Since this function accepts only 3D image.
-    labels_4d_data = np.zeros((SHAPE) + (2,))
+    labels_4d_data = np.zeros((shape_3d_default) + (2,))
     labels_data[h0:, h1:, :h2] = 0
     labels_data[h0:, h1:, h2:] = 0
     labels_4d_data[..., 0] = labels_data
     labels_4d_data[..., 1] = labels_data
-    labels_img_4d = Nifti1Image(labels_4d_data, AFFINE_EYE)
+    labels_img_4d = Nifti1Image(labels_4d_data, affine_eye)
 
     with pytest.raises(DimensionError):
         connected_label_regions(labels_img=labels_img_4d)
 
 
-def test_connected_label_regions_check_labels_string_without_list(labels_img):
+def test_connected_label_regions_check_labels_string_without_list(
+    labels_img, affine_eye, shape_3d_default
+):
     """If labels (or names to regions) given is a string without a list \
     we expect it to be split to regions extracted and returned as list."""
     labels_in_str = "region_a"
     labels_img_in_str = generate_labeled_regions(
-        shape=SHAPE, affine=AFFINE_EYE, n_regions=1
+        shape=shape_3d_default, affine=affine_eye, n_regions=1
     )
     _, new_labels = connected_label_regions(
         labels_img_in_str, labels=labels_in_str

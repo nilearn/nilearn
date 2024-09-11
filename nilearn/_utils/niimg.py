@@ -1,6 +1,6 @@
 """Neuroimaging file input and output."""
+
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
-# License: simplified BSD
 
 import collections.abc
 import copy
@@ -8,8 +8,8 @@ import gc
 from pathlib import Path
 from warnings import warn
 
-import nibabel
 import numpy as np
+from nibabel import is_proxy, load, spatialimages
 
 from .helpers import stringify_path
 
@@ -27,7 +27,7 @@ def _get_data(img):
     return data
 
 
-def _safe_get_data(img, ensure_finite=False, copy_data=False):
+def safe_get_data(img, ensure_finite=False, copy_data=False):
     """Get the data in the image without having a side effect \
     on the Nifti1Image object.
 
@@ -40,7 +40,7 @@ def _safe_get_data(img, ensure_finite=False, copy_data=False):
         If True, non-finite values such as (NaNs and infs) found in the
         image will be replaced by zeros.
 
-    copy_data: bool, default is False
+    copy_data: bool, default=False
         If true, the returned data is a copy of the img data.
 
     Returns
@@ -61,7 +61,8 @@ def _safe_get_data(img, ensure_finite=False, copy_data=False):
         if non_finite_mask.sum() > 0:  # any non_finite_mask values?
             warn(
                 "Non-finite values detected. "
-                "These values will be replaced with zeros."
+                "These values will be replaced with zeros.",
+                stacklevel=2,
             )
             data[non_finite_mask] = 0
 
@@ -123,8 +124,8 @@ def load_niimg(niimg, dtype=None):
     niimg = stringify_path(niimg)
     if isinstance(niimg, str):
         # data is a filename, we load it
-        niimg = nibabel.load(niimg)
-    elif not isinstance(niimg, nibabel.spatialimages.SpatialImage):
+        niimg = load(niimg)
+    elif not isinstance(niimg, spatialimages.SpatialImage):
         raise TypeError(
             "Data given cannot be loaded because it is"
             " not compatible with nibabel format:\n"
@@ -151,7 +152,7 @@ def load_niimg(niimg, dtype=None):
     return niimg
 
 
-def _is_binary_niimg(niimg):
+def is_binary_niimg(niimg):
     """Return whether a given niimg is binary or not.
 
     Parameters
@@ -167,36 +168,11 @@ def _is_binary_niimg(niimg):
 
     """
     niimg = load_niimg(niimg)
-    data = _safe_get_data(niimg, ensure_finite=True)
+    data = safe_get_data(niimg, ensure_finite=True)
     unique_values = np.unique(data)
     if len(unique_values) != 2:
         return False
     return sorted(list(unique_values)) == [0, 1]
-
-
-def copy_img(img):
-    """Copy an image to a nibabel.Nifti1Image.
-
-    Parameters
-    ----------
-    img: image
-        nibabel SpatialImage object to copy.
-
-    Returns
-    -------
-    img_copy: image
-        copy of input (data, affine and header)
-    """
-    from ..image import new_img_like  # avoid circular imports
-
-    if not isinstance(img, nibabel.spatialimages.SpatialImage):
-        raise ValueError("Input value is not an image")
-    return new_img_like(
-        img,
-        _safe_get_data(img, copy_data=True),
-        img.affine.copy(),
-        copy_header=True,
-    )
 
 
 def _repr_niimgs(niimgs, shorten=True):
@@ -207,7 +183,7 @@ def _repr_niimgs(niimgs, shorten=True):
     niimgs: image or collection of images
         nibabel SpatialImage to repr.
 
-    shorten: boolean, optional, default is True
+    shorten: boolean, default=True
         If True, filenames with more than 20 characters will be
         truncated, and lists of more than 3 file names will be
         printed with only first and last element.
@@ -226,31 +202,33 @@ def _repr_niimgs(niimgs, shorten=True):
     # Collection case
     if isinstance(niimgs, collections.abc.Iterable):
         if shorten and len(niimgs) > list_max_display:
-            return "[%s]" % ",\n         ...\n ".join(
+            tmp = ",\n         ...\n ".join(
                 _repr_niimgs(niimg, shorten=shorten)
                 for niimg in [niimgs[0], niimgs[-1]]
             )
+            return f"[{tmp}]"
         elif len(niimgs) > list_max_display:
-            return "[%s]" % ",\n ".join(
+            tmp = ",\n ".join(
                 _repr_niimgs(niimg, shorten=shorten) for niimg in niimgs
             )
+            return f"[{tmp}]"
         else:
             tmp = [_repr_niimgs(niimg, shorten=shorten) for niimg in niimgs]
-            return f"[{', '.join(x for x in tmp)}]"
+            return f"[{', '.join(tmp)}]"
     # Nibabel objects have a 'get_filename'
     try:
         filename = niimgs.get_filename()
         if filename is not None:
-            return "{}('{}')".format(
-                niimgs.__class__.__name__,
-                _short_repr(filename, shorten=shorten),
+            return (
+                f"{niimgs.__class__.__name__}"
+                f"('{_short_repr(filename, shorten=shorten)}')"
             )
         else:
             # No shortening in this case
-            return "{}(\nshape={},\naffine={}\n)".format(
-                niimgs.__class__.__name__,
-                repr(niimgs.shape),
-                repr(niimgs.affine),
+            return (
+                f"{niimgs.__class__.__name__}"
+                f"(\nshape={repr(niimgs.shape)},"
+                f"\naffine={repr(niimgs.affine)}\n)"
             )
     except Exception:
         pass
@@ -267,7 +245,7 @@ def _short_repr(niimg_rep, shorten=True, truncate=20):
     # If the name of the file itself is larger than
     # truncate, then shorten the name only
     if len(path_to_niimg.name) > truncate:
-        return path_to_niimg.name[: (truncate - 2)] + "..."
+        return f"{path_to_niimg.name[: (truncate - 2)]}..."
     # Else add some folder structure if available
     else:
         rep = path_to_niimg.name
@@ -290,11 +268,11 @@ def img_data_dtype(niimg):
     dataobj = niimg.dataobj
 
     # Neuroimages that scale data should be interpreted as floating point
-    if nibabel.is_proxy(dataobj) and (dataobj.slope, dataobj.inter) != (
+    if is_proxy(dataobj) and (dataobj.slope, dataobj.inter) != (
         1.0,
         0.0,
     ):
-        return np.float_
+        return np.float64
 
     # ArrayProxy gained the dtype attribute in nibabel 2.2
     if hasattr(dataobj, "dtype"):

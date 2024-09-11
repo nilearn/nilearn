@@ -23,7 +23,7 @@ of :class:`nilearn.regions.RegionExtractor` for more details.
 
 """
 
-##############################################################################
+# %%
 # Fetch brain development functional datasets
 # -------------------------------------------
 #
@@ -34,7 +34,7 @@ rest_dataset = datasets.fetch_development_fmri(n_subjects=20)
 func_filenames = rest_dataset.func
 confounds = rest_dataset.confounds
 
-##############################################################################
+# %%
 # Extract functional networks with :term:`Dictionary learning`
 # ------------------------------------------------------------
 #
@@ -68,7 +68,7 @@ plotting.plot_prob_atlas(
     title="Dictionary Learning maps",
 )
 
-##############################################################################
+# %%
 # Extract regions from networks
 # -----------------------------
 #
@@ -85,6 +85,7 @@ extractor = RegionExtractor(
     thresholding_strategy="ratio_n_voxels",
     extractor="local_regions",
     standardize="zscore_sample",
+    standardize_confounds="zscore_sample",
     min_region_size=1350,
 )
 # Just call fit() to process for regions extraction
@@ -106,7 +107,7 @@ plotting.plot_prob_atlas(
     regions_extracted_img, view_type="filled_contours", title=title
 )
 
-##############################################################################
+# %%
 # Compute correlation coefficients
 # --------------------------------
 #
@@ -120,7 +121,10 @@ from nilearn.connectome import ConnectivityMeasure
 
 correlations = []
 # Initializing ConnectivityMeasure object with kind='correlation'
-connectome_measure = ConnectivityMeasure(kind="correlation")
+connectome_measure = ConnectivityMeasure(
+    kind="correlation",
+    standardize="zscore_sample",
+)
 for filename, confound in zip(func_filenames, confounds):
     # call transform from RegionExtractor object to extract timeseries signals
     timeseries_each_subject = extractor.transform(filename, confounds=confound)
@@ -136,7 +140,7 @@ mean_correlations = np.mean(correlations, axis=0).reshape(
     n_regions_extracted, n_regions_extracted
 )
 
-###############################################################################
+# %%
 # Plot resulting connectomes
 # --------------------------
 #
@@ -160,7 +164,7 @@ plotting.plot_connectome(
     mean_correlations, coords_connectome, edge_threshold="90%", title=title
 )
 
-##############################################################################
+# %%
 # Plot regions extracted for only one specific network
 # ----------------------------------------------------
 #
@@ -177,7 +181,7 @@ display = plotting.plot_stat_map(
     title="Showing one specific network",
 )
 
-##############################################################################
+# %%
 # Now, we plot (right side) same network after region extraction to show that
 # connected regions are nicely separated.
 # Each brain extracted region is identified as separate color.
@@ -199,3 +203,5 @@ for each_index_of_map3, color in zip(regions_indices_of_map3[0], colors):
     )
 
 plotting.show()
+
+# sphinx_gallery_dummy_images=6

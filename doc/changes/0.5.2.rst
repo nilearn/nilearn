@@ -20,7 +20,7 @@ NEW
 Fixes
 -----
 
-- Plotting ``.mgz`` files in MNE broke in ``0.5.1`` and has been fixed.
+- :bdg-info:`Plotting` Plotting ``.mgz`` files in MNE broke in ``0.5.1`` and has been fixed.
 
 Contributors
 ------------

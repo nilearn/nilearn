@@ -2,8 +2,8 @@
 Extracting signals from a brain parcellation
 ============================================
 
-Here we show how to extract signals from a brain parcellation and compute
-a correlation matrix.
+Here we show how to extract signals from a brain :term:`parcellation`
+and compute a correlation matrix.
 
 We also show the importance of defining good confounds signals: the
 first correlation matrix is computed after regressing out simple
@@ -15,10 +15,8 @@ variables from :term:`fMRIPrep` outputs while following some implementation
 guideline of :term:`fMRIPrep` confounds documentation
 `<https://fmriprep.org/en/stable/outputs.html#confounds>`_.
 
-One reference that discusses the importance of confounds is `Varoquaux and
-Craddock, Learning and comparing functional connectomes across subjects,
-NeuroImage 2013
-<http://www.sciencedirect.com/science/article/pii/S1053811913003340>`_.
+One reference that discusses the importance of confounds
+is :footcite:t:`Varoquaux2013`.
 
 This is just a code example, see the :ref:`corresponding section in the
 documentation <parcellation_time_series>` for more.
@@ -30,8 +28,7 @@ documentation <parcellation_time_series>` for more.
 
 """
 
-
-##############################################################################
+# %%
 # Retrieve the atlas and the data
 # -------------------------------
 from nilearn import datasets
@@ -42,20 +39,21 @@ labels = dataset.labels
 
 print(f"Atlas ROIs are located in nifti image (4D) at: {atlas_filename}")
 
-# One subject of brain development fmri data
+# One subject of brain development fMRI data
 data = datasets.fetch_development_fmri(n_subjects=1, reduce_confounds=True)
 fmri_filenames = data.func[0]
 reduced_confounds = data.confounds[0]  # This is a preselected set of confounds
 
-##############################################################################
-# Extract signals on a parcellation defined by labels
-# ---------------------------------------------------
+# %%
+# Extract signals on a :term:`parcellation` defined by labels
+# -----------------------------------------------------------
 # Using the NiftiLabelsMasker
 from nilearn.maskers import NiftiLabelsMasker
 
 masker = NiftiLabelsMasker(
     labels_img=atlas_filename,
     standardize="zscore_sample",
+    standardize_confounds="zscore_sample",
     memory="nilearn_cache",
     verbose=5,
 )
@@ -65,16 +63,20 @@ masker = NiftiLabelsMasker(
 # extraction
 time_series = masker.fit_transform(fmri_filenames, confounds=reduced_confounds)
 
-##############################################################################
+# %%
 # Compute and display a correlation matrix
 # ----------------------------------------
 from nilearn.connectome import ConnectivityMeasure
 
-correlation_measure = ConnectivityMeasure(kind="correlation")
+correlation_measure = ConnectivityMeasure(
+    kind="correlation",
+    standardize="zscore_sample",
+)
 correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
 # Plot the correlation matrix
 import numpy as np
+
 from nilearn import plotting
 
 # Make a large figure
@@ -93,7 +95,7 @@ plotting.plot_matrix(
     reorder=True,
 )
 
-##############################################################################
+# %%
 # Extract signals and compute a connectivity matrix without confounds removal
 # ---------------------------------------------------------------------------
 # After covering the basic of signal extraction and functional connectivity
@@ -118,7 +120,7 @@ plotting.plot_matrix(
     reorder=True,
 )
 
-##############################################################################
+# %%
 # Load confounds from file using a flexible strategy with fmriprep interface
 # --------------------------------------------------------------------------
 # The :func:`nilearn.interfaces.fmriprep.load_confounds` function provides
@@ -164,7 +166,7 @@ plotting.plot_matrix(
     reorder=True,
 )
 
-##############################################################################
+# %%
 # Motion-based scrubbing
 # ----------------------
 # With a scrubbing-based strategy,
@@ -183,8 +185,8 @@ confounds_scrub, sample_mask = load_confounds(
     motion="basic",
     wm_csf="basic",
     scrub=5,
-    fd_threshold=0.2,
-    std_dvars_threshold=3,
+    fd_threshold=0.5,
+    std_dvars_threshold=1.5,
 )
 
 print(
@@ -212,7 +214,7 @@ plotting.plot_matrix(
     reorder=True,
 )
 
-##############################################################################
+# %%
 # The impact of global signal removal
 # -----------------------------------
 # Global signal removes the grand mean from your signal. The benefit is that
@@ -249,15 +251,15 @@ plotting.plot_matrix(
     reorder=True,
 )
 
-##############################################################################
+# %%
 # Using predefined strategies
 # ---------------------------
 # Instead of customising the strategy through
 # :func:`nilearn.interfaces.fmriprep.load_confounds`, one can use a predefined
 # strategy with :func:`nilearn.interfaces.fmriprep.load_confounds_strategy`.
 # Based on the confound variables generated through :term:`fMRIPrep`, and past
-# benchmarks studies (:footcite:`Ciric2017`, :footcite:`Parker2018`): `simple`,
-# `scrubbing`, `compcor`, `ica_aroma`.
+# benchmarks studies (:footcite:t:`Ciric2017`, :footcite:t:`Parker2018`):
+# `simple`, `scrubbing`, `compcor`, `ica_aroma`.
 # The following examples shows how to use the `simple` strategy and overwrite
 # the motion default to basic.
 
@@ -312,8 +314,10 @@ plotting.plot_matrix(
 
 plotting.show()
 
-##############################################################################
+# %%
 # References
 # ----------
 #
 # .. footbibliography::
+
+# sphinx_gallery_dummy_images=2

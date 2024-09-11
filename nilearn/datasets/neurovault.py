@@ -1,8 +1,7 @@
 """Download statistical maps available \
-on Neurovault (http://neurovault.org)."""
+on Neurovault (https://neurovault.org)."""
 
 # Author: Jerome Dockes
-# License: simplified BSD
 
 import json
 import os
@@ -23,7 +22,12 @@ from sklearn.feature_extraction import DictVectorizer
 from sklearn.utils import Bunch
 
 from ..image import resample_img
-from .utils import _fetch_file, _get_dataset_descr, _get_dataset_dir
+from ._utils import (
+    fetch_single_file,
+    get_dataset_descr,
+    get_dataset_dir,
+    logger,
+)
 
 _NEUROVAULT_BASE_URL = "https://neurovault.org/api/"
 _NEUROVAULT_COLLECTIONS_URL = urljoin(_NEUROVAULT_BASE_URL, "collections/")
@@ -31,7 +35,7 @@ _NEUROVAULT_IMAGES_URL = urljoin(_NEUROVAULT_BASE_URL, "images/")
 _NEUROSYNTH_FETCH_WORDS_URL = "https://neurosynth.org/api/decode/"
 
 _COL_FILTERS_AVAILABLE_ON_SERVER = ("DOI", "name", "owner", "id")
-_IM_FILTERS_AVAILABLE_ON_SERVER = tuple()
+_IM_FILTERS_AVAILABLE_ON_SERVER = ()
 
 _DEFAULT_BATCH_SIZE = 100
 _DEFAULT_MAX_IMAGES = 100
@@ -553,12 +557,11 @@ class Contains(_SpecialValue):
         self.must_be_contained_ = must_be_contained
 
     def __eq__(self, other):
-        if not isinstance(other, Container):
-            return False
-        for item in self.must_be_contained_:
-            if item not in other:
-                return False
-        return True
+        return (
+            all(item in other for item in self.must_be_contained_)
+            if isinstance(other, Container)
+            else False
+        )
 
     def __repr__(self):
         return f"{self.__class__.__name__}{self.must_be_contained_!r}"
@@ -607,12 +610,11 @@ class NotContains(_SpecialValue):
         self.must_not_be_contained_ = must_not_be_contained
 
     def __eq__(self, other):
-        if not isinstance(other, Container):
-            return False
-        for item in self.must_not_be_contained_:
-            if item in other:
-                return False
-        return True
+        return (
+            all(item not in other for item in self.must_not_be_contained_)
+            if isinstance(other, Container)
+            else False
+        )
 
     def __repr__(self):
         return f"{self.__class__.__name__}{self.must_not_be_contained_!r}"
@@ -671,25 +673,26 @@ class Pattern(_SpecialValue):
         self.flags_ = flags
 
     def __eq__(self, other):
-        if (
-            not isinstance(other, str)
-            or re.match(self.pattern_, other, self.flags_) is None
-        ):
-            return False
-        return True
+        return (
+            isinstance(other, str)
+            and re.match(self.pattern_, other, self.flags_) is not None
+        )
 
     def __repr__(self):
-        return "{}(pattern={!r}, flags={})".format(
-            self.__class__.__name__, self.pattern_, self.flags_
+        return (
+            f"{self.__class__.__name__}(pattern={self.pattern_!r}, "
+            f"flags={self.flags_})"
         )
 
 
-def _empty_filter(arg):
+def _empty_filter(result):
     """Place holder for a filter which always returns True.
 
     This is the default ``image_filter`` and ``collection_filter``
     argument for ``fetch_neurovault``.
 
+    The ``result`` parameter is necessary for the API consistency
+    with other filters.
     """
     return True
 
@@ -718,10 +721,9 @@ class ResultFilter:
         ``key``, ``value`` pairs in `query_terms`. If ``None``, the
         empty dictionary is used.
 
-    callable_filter : callable, optional
+    callable_filter : callable, default=empty_filter
         A ``metadata`` dictionary will be blocked by the filter if
         `callable_filter` does not return ``True`` for ``metadata``.
-        Default=empty_filter
 
     As an alternative to the `query_terms` dictionary parameter,
     key, value pairs can be passed as keyword arguments.
@@ -796,12 +798,12 @@ class ResultFilter:
 
         """
         for key, value in self.query_terms_.items():
-            if not (value == candidate.get(key)):
+            if value != candidate.get(key):
                 return False
-        for callable_filter in self.callable_filters_:
-            if not callable_filter(candidate):
-                return False
-        return True
+        return all(
+            callable_filter(candidate)
+            for callable_filter in self.callable_filters_
+        )
 
     def OR(self, other_filter):
         """Implement the OR operator between two filters."""
@@ -892,34 +894,6 @@ class _TemporaryDirectory:
         self.temp_dir_ = None
 
 
-def _print_if(message, level, threshold_level, with_traceback=False):
-    """Print a message if its importance is above a threshold.
-
-    Parameters
-    ----------
-    message : str
-        the message to print if `level` is strictly above
-        `threshold_level`.
-
-    level : int
-        importance of the message.
-
-    threshold_level : int
-        the message is printed if `level` is strictly above
-        `threshold_level`.
-
-    with_traceback : bool, optional
-        if `message` is printed, also print the last traceback.
-        Default=False.
-
-    """
-    if level > threshold_level:
-        return
-    print(message)
-    if with_traceback:
-        traceback.print_exc()
-
-
 def _append_filters_to_query(query, filters):
     """Encode dict or sequence of key-value pairs into a URL query string.
 
@@ -940,7 +914,7 @@ def _append_filters_to_query(query, filters):
     -----
     If one of the `filters` keys is 'id', we get the url that points
     directly to that id,
-    e.g. 'http://neurovault.org/api/collections/40', and the other
+    e.g. 'https://neurovault.org/api/collections/40', and the other
     filters are ignored.
 
     """
@@ -963,16 +937,14 @@ def _get_batch(query, prefix_msg="", timeout=10.0, verbose=3):
     query : str
         The URL from which to get data.
 
-    prefix_msg : str, optional
+    prefix_msg : str, default=''
         Prefix for all log messages.
-        Default=''.
 
-    timeout : float, optional
-        Timeout in seconds. Default=10.
+    timeout : float, default=10
+        Timeout in seconds.
 
-    verbose : int, optional
+    verbose : int, default=3
         An integer in [0, 1, 2, 3] to control the verbosity level.
-        Default=3.
 
     Returns
     -------
@@ -994,17 +966,23 @@ def _get_batch(query, prefix_msg="", timeout=10.0, verbose=3):
         method="GET", url=query, headers={"Connection": "Keep-Alive"}
     )
     prepped = session.prepare_request(req)
-    _print_if(f"{prefix_msg}getting new batch: {query}", _DEBUG, verbose)
+    logger.log(
+        f"{prefix_msg}getting new batch: {query}",
+        verbose=verbose,
+        msg_level=_DEBUG,
+        stack_level=7,
+    )
     try:
         resp = session.send(prepped, timeout=timeout)
         resp.raise_for_status()
         batch = resp.json()
     except Exception:
-        _print_if(
+        logger.log(
             f"Could not get batch from {query}",
-            _ERROR,
-            verbose,
+            msg_level=_ERROR,
+            verbose=verbose,
             with_traceback=True,
+            stack_level=4,
         )
         raise
     if "id" in batch:
@@ -1015,7 +993,7 @@ def _get_batch(query, prefix_msg="", timeout=10.0, verbose=3):
                 f'Could not find required key "{key}" '
                 f"in batch retrieved from {query}."
             )
-            _print_if(msg, _ERROR, verbose)
+            logger.log(msg, msg_level=_ERROR, verbose=verbose, stack_level=4)
             raise ValueError(msg)
 
     return batch
@@ -1037,11 +1015,10 @@ def _scroll_server_results(
     url : str
         The base url (without the filters) from which to get data.
 
-    local_filter : callable, optional
+    local_filter : callable, default=_empty_filter
         Used to filter the results based on their metadata:
         must return True if the result is to be kept and False otherwise.
         Is called with the dict containing the metadata as sole argument.
-        Default=_empty_filter.
 
     query_terms : dict, sequence of pairs or None, optional
         Key-value pairs to add to the base url in order to form query.
@@ -1056,8 +1033,8 @@ def _scroll_server_results(
         in batches. batch_size is used to choose the (maximum) number of
         elements in a batch. If None, ``_DEFAULT_BATCH_SIZE`` is used.
 
-    prefix_msg : str, optional
-        Prefix for all log messages. Default=''.
+    prefix_msg : str, default=''
+        Prefix for all log messages.
 
     verbose : int, optional (default=3)
         An integer in [0, 1, 2, 3] to control the verbosity level.
@@ -1090,7 +1067,12 @@ def _scroll_server_results(
         if batch is not None:
             batch_size = len(batch["results"])
             downloaded += batch_size
-            _print_if(f"{prefix_msg}batch size: {batch_size}", _DEBUG, verbose)
+            logger.log(
+                f"{prefix_msg}batch size: {batch_size}",
+                msg_level=_DEBUG,
+                verbose=verbose,
+                stack_level=6,
+            )
             if n_available is None:
                 n_available = batch["count"]
                 max_results = (
@@ -1114,9 +1096,8 @@ def _yield_from_url_list(url_list, verbose=3):
     url_list : Container of str
         URLs from which to get data
 
-    verbose : int, optional
+    verbose : int, default=3
         An integer in [0, 1, 2, 3] to control the verbosity level.
-        Default=3.
 
     Yields
     ------
@@ -1138,7 +1119,7 @@ def _yield_from_url_list(url_list, verbose=3):
 
 
 def _simple_download(url, target_file, temp_dir, verbose=3):
-    """Wrap around ``utils._fetch_file``.
+    """Wrap around ``utils.fetch_single_file``.
 
     This allows specifying the target file name.
 
@@ -1151,11 +1132,10 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
         Location of the downloaded file on filesystem.
 
     temp_dir : str
-        Location of sandbox directory used by ``_fetch_file``.
+        Location of sandbox directory used by ``fetch_single_file``.
 
-    verbose : int, optional
+    verbose : int, default=3
         An integer in [0, 1, 2, 3] to control the verbosity level.
-        Default=3.
 
     Returns
     -------
@@ -1169,20 +1149,33 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
 
     See Also
     --------
-    nilearn.datasets._utils._fetch_file
+    nilearn.datasets._utils.fetch_single_file
 
     """
-    _print_if(f"Downloading file: {url}", _DEBUG, verbose)
+    logger.log(
+        f"Downloading file: {url}",
+        msg_level=_DEBUG,
+        verbose=verbose,
+        stack_level=8,
+    )
     try:
-        downloaded = _fetch_file(
+        downloaded = fetch_single_file(
             url, temp_dir, resume=False, overwrite=True, verbose=0
         )
     except Exception:
-        _print_if(f"Problem downloading file from {url}", _ERROR, verbose)
+        logger.log(
+            f"Problem downloading file from {url}",
+            msg_level=_ERROR,
+            verbose=verbose,
+            stack_level=9,
+        )
         raise
     shutil.move(downloaded, target_file)
-    _print_if(
-        f"Download succeeded, downloaded to: {target_file}", _DEBUG, verbose
+    logger.log(
+        f"Download succeeded, downloaded to: {target_file}",
+        msg_level=_DEBUG,
+        verbose=verbose,
+        stack_level=8,
     )
     return target_file
 
@@ -1201,9 +1194,8 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
         is supposed to contain the Neurosynth response for a
         particular image).
 
-    verbose : int, optional
+    verbose : int, default=3
         An integer in [0, 1, 2, 3] to control the verbosity level.
-        Default=3.
 
     Keyword arguments are passed on to
     ``sklearn.feature_extraction.DictVectorizer``.
@@ -1226,7 +1218,7 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
     sklearn.feature_extraction.DictVectorizer
 
     """
-    _print_if("Computing word features.", _INFO, verbose)
+    logger.log("Computing word features.", msg_level=_INFO, verbose=verbose)
     words = []
     voc_empty = True
     for file_name in word_files:
@@ -1237,12 +1229,13 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
                 if info["data"]["values"] != {}:
                     voc_empty = False
         except Exception:
-            _print_if(
-                "Could not load words from file {}; error: {}".format(
-                    file_name, traceback.format_exc()
+            logger.log(
+                (
+                    f"Could not load words from file {file_name}; "
+                    f"error: {traceback.format_exc()}"
                 ),
-                _ERROR,
-                verbose,
+                msg_level=_ERROR,
+                verbose=verbose,
             )
             words.append({})
     if voc_empty:
@@ -1254,10 +1247,10 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
     vectorizer = DictVectorizer(**kwargs)
     frequencies = vectorizer.fit_transform(words).toarray()
     vocabulary = np.asarray(vectorizer.feature_names_)
-    _print_if(
+    logger.log(
         f"Computing word features done; vocabulary size: {vocabulary.size}",
-        _INFO,
-        verbose,
+        msg_level=_INFO,
+        verbose=verbose,
     )
     return frequencies, vocabulary
 
@@ -1329,11 +1322,10 @@ def _add_absolute_paths(root_dir, metadata, force=True):
         relative path and the corresponding absolute path is added to
         the dictionary.
 
-    force : bool, optional
+    force : bool, default=True
         If ``True``, if an absolute path is already present in the
         metadata, it is replaced with the recomputed value. If
         ``False``, already specified absolute paths have priority.
-        Default=True.
 
     Returns
     -------
@@ -1345,7 +1337,7 @@ def _add_absolute_paths(root_dir, metadata, force=True):
     for name, value in metadata.items():
         match = re.match(r"(.*)relative_path(.*)", name)
         if match is not None:
-            abs_name = "{}absolute_path{}".format(*match.groups())
+            abs_name = f"{match.groups()[0]}absolute_path{match.groups()[1]}"
             absolute_paths[abs_name] = os.path.join(root_dir, value)
     if not absolute_paths:
         return metadata
@@ -1458,20 +1450,16 @@ def _fetch_collection_for_image(image_info, download_params):
     collection_absolute_path = os.path.join(
         download_params["nv_data_dir"], collection_relative_path
     )
-    if not os.path.isdir(collection_absolute_path):
-        col_batch = _get_batch(
-            urljoin(_NEUROVAULT_COLLECTIONS_URL, str(collection_id)),
-            verbose=download_params["verbose"],
-        )
-        collection = _download_collection(
-            col_batch["results"][0], download_params
-        )
-    else:
-        collection = _json_add_collection_dir(
+    if os.path.isdir(collection_absolute_path):
+        return _json_add_collection_dir(
             os.path.join(collection_absolute_path, "collection_metadata.json")
         )
 
-    return collection
+    col_batch = _get_batch(
+        urljoin(_NEUROVAULT_COLLECTIONS_URL, str(collection_id)),
+        verbose=download_params["verbose"],
+    )
+    return _download_collection(col_batch["results"][0], download_params)
 
 
 def _download_image_nii_file(image_info, collection, download_params):
@@ -1539,11 +1527,15 @@ def _download_image_nii_file(image_info, collection, download_params):
         )
 
         # Resample here
-        print("Resampling...")
+        logger.log("Resampling...", stack_level=8)
+        # TODO switch to force_resample=True
+        # when bumping to version > 0.13
         im_resampled = resample_img(
             img=tmp_path,
             target_affine=STD_AFFINE,
             interpolation=download_params["interpolation"],
+            copy_header=True,
+            force_resample=False,
         )
         im_resampled.to_filename(resampled_image_absolute_path)
 
@@ -1627,8 +1619,12 @@ def _download_image_terms(image_info, collection, download_params):
         message = f"Could not fetch words for image {image_info['id']}"
         if not download_params.get("allow_neurosynth_failure", True):
             raise RuntimeError(message)
-        _print_if(
-            message, _ERROR, download_params["verbose"], with_traceback=True
+        logger.log(
+            message,
+            msg_level=_ERROR,
+            verbose=download_params["verbose"],
+            with_traceback=True,
+            stack_level=2,
         )
 
     return image_info, collection
@@ -1711,9 +1707,9 @@ def _update_image(image_info, download_params):
         _write_metadata(image_info, metadata_file_path)
     except OSError:
         warnings.warn(
-            "could not update metadata for image {}, "
-            "most likely because you do not have write "
-            "permissions to its metadata file".format(image_info["id"])
+            f"Could not update metadata for image {image_info['id']}, "
+            "most likely because you do not have "
+            "write permissions to its metadata file."
         )
     return image_info
 
@@ -1743,8 +1739,11 @@ def _scroll_local(download_params):
         Metadata for the corresponding collection.
 
     """
-    _print_if(
-        "Reading local neurovault data.", _DEBUG, download_params["verbose"]
+    logger.log(
+        "Reading local neurovault data.",
+        msg_level=_DEBUG,
+        verbose=download_params["verbose"],
+        stack_level=4,
     )
 
     collections = glob(
@@ -1770,34 +1769,25 @@ def _scroll_local(download_params):
         )
         for image in good_images:
             image, collection = _update(image, collection, download_params)
-            if not download_params["resample"]:
-                if os.path.isfile(image["absolute_path"]):
-                    download_params["visited_images"].add(image["id"])
-                    download_params["visited_collections"].add(
-                        collection["id"]
-                    )
-                    yield image, collection
-                else:
-                    pass
-            else:
-                if os.path.isfile(image["resampled_absolute_path"]):
-                    download_params["visited_images"].add(image["id"])
-                    download_params["visited_collections"].add(
-                        collection["id"]
-                    )
-                    yield image, collection
-                else:
+            if download_params["resample"]:
+                if not os.path.isfile(image["resampled_absolute_path"]):
+                    # TODO switch to force_resample=True
+                    # when bumping to version > 0.13
                     im_resampled = resample_img(
                         img=image["absolute_path"],
                         target_affine=STD_AFFINE,
                         interpolation=download_params["interpolation"],
+                        copy_header=True,
+                        force_resample=False,
                     )
                     im_resampled.to_filename(image["resampled_absolute_path"])
-                    download_params["visited_images"].add(image["id"])
-                    download_params["visited_collections"].add(
-                        collection["id"]
-                    )
-                    yield image, collection
+                download_params["visited_images"].add(image["id"])
+                download_params["visited_collections"].add(collection["id"])
+                yield image, collection
+            elif os.path.isfile(image["absolute_path"]):
+                download_params["visited_images"].add(image["id"])
+                download_params["visited_collections"].add(collection["id"])
+                yield image, collection
 
 
 def _scroll_collection(collection, download_params):
@@ -1850,30 +1840,31 @@ def _scroll_collection(collection, download_params):
             yield image
         except Exception:
             fails_in_collection += 1
-            _print_if(
+            logger.log(
                 f"_scroll_collection: bad image: {image}",
-                _ERROR,
-                download_params["verbose"],
+                msg_level=_ERROR,
+                verbose=download_params["verbose"],
                 with_traceback=True,
+                stack_level=4,
             )
             yield None
         if fails_in_collection == download_params["max_fails_in_collection"]:
-            _print_if(
-                "Too many bad images in collection {}:  "
-                "{} bad images.".format(collection["id"], fails_in_collection),
-                _ERROR,
-                download_params["verbose"],
+            logger.log(
+                f"Too many bad images in collection {collection['id']}:  "
+                f"{fails_in_collection} bad images.",
+                msg_level=_ERROR,
+                verbose=download_params["verbose"],
+                stack_level=4,
             )
             return
-    _print_if(
+    logger.log(
         "On neurovault.org: "
-        "{} image{} matched query in collection {}".format(
-            (n_im_in_collection or "no"),
-            ("s" if n_im_in_collection > 1 else ""),
-            collection["id"],
-        ),
-        _INFO,
-        download_params["verbose"],
+        f"{n_im_in_collection or 'no'} "
+        f"image{'s' if n_im_in_collection > 1 else ''} "
+        f"matched query in collection {collection['id']}",
+        msg_level=_INFO,
+        verbose=download_params["verbose"],
+        stack_level=5,
     )
 
 
@@ -1904,8 +1895,11 @@ def _scroll_filtered(download_params):
     failed download.
 
     """
-    _print_if(
-        "Reading server neurovault data.", _DEBUG, download_params["verbose"]
+    logger.log(
+        "Reading server neurovault data.",
+        msg_level=_DEBUG,
+        verbose=download_params["verbose"],
+        stack_level=7,
     )
 
     download_params["collection_filter"] = ResultFilter(
@@ -1965,10 +1959,11 @@ def _scroll_collection_ids(download_params):
     ]
 
     if collection_urls:
-        _print_if(
+        logger.log(
             "Reading server neurovault data.",
-            _DEBUG,
-            download_params["verbose"],
+            msg_level=_DEBUG,
+            verbose=download_params["verbose"],
+            stack_level=5,
         )
 
     collections = _yield_from_url_list(
@@ -2071,10 +2066,11 @@ def _scroll_explicit(download_params):
 
 def _print_progress(found, download_params, level=_INFO):
     """Print number of images fetched so far."""
-    _print_if(
+    logger.log(
         f"Already fetched {found} image{'s' if found > 1 else ''}",
-        level,
-        download_params["verbose"],
+        msg_level=level,
+        verbose=download_params["verbose"],
+        stack_level=4,
     )
 
 
@@ -2120,12 +2116,13 @@ def _scroll(download_params):
             yield image, collection
             if found == download_params["max_images"]:
                 break
-        _print_if(
-            "{} image{} found on local disk.".format(
-                ("No" if not found else found), ("s" if found > 1 else "")
-            ),
-            _INFO,
-            download_params["verbose"],
+        logger.log(
+            f"{found or 'No'} "
+            f"image{'s' if found > 1 else ''} "
+            "found on local disk.",
+            msg_level=_INFO,
+            verbose=download_params["verbose"],
+            stack_level=3,
         )
 
     if download_params["download_mode"] == "offline":
@@ -2146,9 +2143,7 @@ def _scroll(download_params):
         if n_consecutive_fails >= download_params["max_consecutive_fails"]:
             warnings.warn(
                 "Neurovault download stopped early: "
-                "too many downloads failed in a row ({})".format(
-                    n_consecutive_fails
-                )
+                "too many downloads failed in a row ({n_consecutive_fails})"
             )
             return
         if found == download_params["max_images"]:
@@ -2164,8 +2159,7 @@ def _split_terms(terms, available_on_server):
     server_terms = {
         k: terms_.pop(k)
         for k in available_on_server
-        if k in terms_
-        and (isinstance(terms_[k], str) or isinstance(terms_[k], int))
+        if k in terms_ and (isinstance(terms_[k], (str, int)))
     }
     return terms_, server_terms
 
@@ -2191,12 +2185,12 @@ def basic_collection_terms():
 
 
 def basic_image_terms():
-    """Filter that selects unthresholded F, T and Z maps in mni space.
+    """Filter that selects unthresholded F, T and Z maps in :term:`MNI` space.
 
     More precisely, an image is excluded if one of the following is
     true:
 
-        - It is not in MNI space.
+        - It is not in :term:`MNI` space.
         - It is thresholded.
         - Its map type is one of "ROI/mask", "anatomical", or "parcellation".
         - Its image type is "atlas"
@@ -2224,9 +2218,7 @@ def _move_col_id(im_terms, col_terms):
         return im_terms, col_terms
     im_terms = copy(im_terms)
     col_terms = copy(col_terms)
-    if "id" not in col_terms:
-        col_terms["id"] = im_terms.pop("collection_id")
-    elif col_terms["id"] == im_terms["collection_id"]:
+    if "id" not in col_terms or col_terms["id"] == im_terms["collection_id"]:
         col_terms["id"] = im_terms.pop("collection_id")
     else:
         warnings.warn(
@@ -2257,13 +2249,12 @@ def _read_download_params(
     vectorize_words=True,
 ):
     """Create a dictionary containing download information."""
-    download_params = {}
-    download_params["verbose"] = verbose
+    download_params = {"verbose": verbose}
     download_mode = download_mode.lower()
     if download_mode not in ["overwrite", "download_new", "offline"]:
         raise ValueError(
-            "supported download modes are overwrite,"
-            " download_new, offline; got {}".format(download_mode)
+            "Supported download modes are: overwrite, download_new, offline. "
+            f"Got {download_mode}."
         )
     download_params["download_mode"] = download_mode
     if collection_terms is None:
@@ -2396,7 +2387,7 @@ def _result_list_to_bunch(result_list, download_params):
         images=images,
         images_meta=images_meta,
         collections_meta=collections_meta,
-        description=_get_dataset_descr("neurovault"),
+        description=get_dataset_descr("neurovault"),
     )
     if (
         download_params["fetch_neurosynth_words"]
@@ -2421,9 +2412,9 @@ def _result_list_to_bunch(result_list, download_params):
 
 def _fetch_neurovault_implementation(
     max_images=_DEFAULT_MAX_IMAGES,
-    collection_terms=basic_collection_terms(),
+    collection_terms=None,
     collection_filter=_empty_filter,
-    image_terms=basic_image_terms(),
+    image_terms=None,
     image_filter=_empty_filter,
     collection_ids=None,
     image_ids=None,
@@ -2437,12 +2428,17 @@ def _fetch_neurovault_implementation(
     **kwarg_image_filters,
 ):
     """Download data from neurovault.org and neurosynth.org."""
+    if collection_terms is None:
+        collection_terms = basic_collection_terms()
+    if image_terms is None:
+        image_terms = basic_image_terms()
     image_terms = dict(image_terms, **kwarg_image_filters)
-    neurovault_data_dir = _get_dataset_dir("neurovault", data_dir)
+    neurovault_data_dir = get_dataset_dir("neurovault", data_dir)
     if mode != "offline" and not os.access(neurovault_data_dir, os.W_OK):
         warnings.warn(
-            "You don't have write access to neurovault dir: {}; "
-            "fetch_neurovault is working offline.".format(neurovault_data_dir)
+            "You don't have write access to neurovault dir: "
+            f"{neurovault_data_dir}. "
+            "fetch_neurovault is working offline."
         )
         mode = "offline"
 
@@ -2473,9 +2469,9 @@ def _fetch_neurovault_implementation(
 
 def fetch_neurovault(
     max_images=_DEFAULT_MAX_IMAGES,
-    collection_terms=basic_collection_terms(),
+    collection_terms=None,
     collection_filter=_empty_filter,
-    image_terms=basic_image_terms(),
+    image_terms=None,
     image_filter=_empty_filter,
     mode="download_new",
     data_dir=None,
@@ -2491,45 +2487,44 @@ def fetch_neurovault(
     calls to this function will first look for the data locally before
     querying the server for more if necessary.
 
-    We explore the metadata for Neurovault collections and images,
+    We explore the metadata for :term:`Neurovault` collections and images,
     keeping those that match a certain set of criteria, until we have
     skimmed through the whole database or until an (optional) maximum
     number of images to fetch has been reached.
 
-    For more information, see :footcite:`Gorgolewski2015`,
-    and :footcite:`Yarkoni2011`.
+    For more information, see :footcite:t:`Gorgolewski2015`,
+    and :footcite:t:`Yarkoni2011`.
 
     Parameters
     ----------
-    max_images : int, optional
-        Maximum number of images to fetch. Default=100.
+    max_images : int, default=100
+        Maximum number of images to fetch.
 
-    collection_terms : dict, optional
+    collection_terms : dict, default=None
         Key, value pairs used to filter collection
         metadata. Collections for which
         ``collection_metadata['key'] == value`` is not ``True`` for
         every key, value pair will be discarded.
         See documentation for ``basic_collection_terms`` for a
         description of the default selection criteria.
-        Default=basic_collection_terms().
+        If ``None`` is passed, will default to ``basic_collection_terms()``
 
-    collection_filter : Callable, optional
+    collection_filter : Callable, default=empty_filter
         Collections for which `collection_filter(collection_metadata)`
         is ``False`` will be discarded.
-        Default=empty_filter.
 
-    image_terms : dict, optional
+    image_terms : dict, default=None
         Key, value pairs used to filter image metadata. Images for
         which ``image_metadata['key'] == value`` is not ``True`` for
         if image_filter != _empty_filter and image_terms =
         every key, value pair will be discarded.
         See documentation for ``basic_image_terms`` for a
         description of the default selection criteria.
-        Default=basic_image_terms().
+        Will default to ``basic_image_terms()`` if ``None`` is passed.
 
-    image_filter : Callable, optional
+    image_filter : Callable, default=empty_filter
         Images for which `image_filter(image_metadata)` is ``False``
-        will be discarded. Default=empty_filter.
+        will be discarded.
 
     mode : {'download_new', 'overwrite', 'offline'}
         When to fetch an image from the server rather than the local
@@ -2542,29 +2537,27 @@ def fetch_neurovault(
 
     data_dir : str, optional
         The directory we want to use for nilearn data. A subdirectory
-        named "neurovault" will contain neurovault data.
+        named "neurovault" will contain :term:`Neurovault` data.
 
-    fetch_neurosynth_words : bool, optional
-        whether to collect words from Neurosynth. Default=False.
+    fetch_neurosynth_words : bool, default=False
+        whether to collect words from Neurosynth.
 
-    vectorize_words : bool, optional
+    vectorize_words : bool, default=True
         If neurosynth words are downloaded, create a matrix of word
         counts and add it to the result. Also add to the result a
         vocabulary list. See ``sklearn.CountVectorizer`` for more info.
-        Default=True.
 
     resample : bool, optional (default=False)
         Resamples downloaded images to a 3x3x3 grid before saving them,
         to save disk space.
 
-    interpolation : str, optional
+    interpolation : str, default='continuous'
         Can be 'continuous', 'linear', or 'nearest'. Indicates the resample
-        method. Default='continuous'.
+        method.
         Argument passed to nilearn.image.resample_img.
 
-    verbose : int, optional
+    verbose : int, default=3
         An integer in [0, 1, 2, 3] to control the verbosity level.
-        Default=3.
 
     kwarg_image_filters
         Keyword arguments are understood to be filter terms for
@@ -2582,7 +2575,8 @@ def fetch_neurovault(
               dictionaries.
             - 'collections_meta', the metadata for the
               collections.
-            - 'description', a short description of the Neurovault dataset.
+            - 'description', a short description
+              of the :term:`Neurovault` dataset.
 
         If `fetch_neurosynth_words` and `vectorize_words` were set, it
         also contains:
@@ -2660,13 +2654,20 @@ def fetch_neurovault(
             modify_date=GreaterThan(newest))
 
     """
+    if collection_terms is None:
+        collection_terms = basic_collection_terms()
+    if image_terms is None:
+        image_terms = basic_image_terms()
+
     if max_images == _DEFAULT_MAX_IMAGES:
-        _print_if(
-            "fetch_neurovault: using default value of {} for max_images. "
+        logger.log(
+            "fetch_neurovault: "
+            f"using default value of {_DEFAULT_MAX_IMAGES} "
+            "for max_images. "
             "Set max_images to another value or None "
-            "if you want more images.".format(_DEFAULT_MAX_IMAGES),
-            _INFO,
-            verbose,
+            "if you want more images.",
+            msg_level=_INFO,
+            verbose=verbose,
         )
     # Users may get confused if they write their image_filter function
     # and the default filters contained in image_terms still apply, so we
@@ -2722,23 +2723,21 @@ def fetch_neurovault_ids(
     This is the fast way to get the data from the server if we already
     know which images or collections we want.
 
-    For more information, see :footcite:`Gorgolewski2015`,
-    and :footcite:`Yarkoni2011`.
+    For more information, see :footcite:t:`Gorgolewski2015`,
+    and :footcite:t:`Yarkoni2011`.
 
     Parameters
     ----------
-    collection_ids : Container, optional
+    collection_ids : Container, default=()
         The ids of whole collections to be downloaded.
-        Default=().
 
-    image_ids : Container, optional
+    image_ids : Container, default=()
         The ids of particular images to be downloaded. The metadata for the
         corresponding collections is also downloaded.
-        Default=().
 
-    mode : {'download_new', 'overwrite', 'offline'}, optional
+    mode : {'download_new', 'overwrite', 'offline'}, default='download_new'
         When to fetch an image from the server rather than the local
-        disk. Default='download_new'.
+        disk.
 
         - 'download_new' (the default) means download only files that
           are not already on disk (regardless of modify date).
@@ -2747,24 +2746,22 @@ def fetch_neurovault_ids(
 
     data_dir : str, optional
         The directory we want to use for nilearn data. A subdirectory
-        named "neurovault" will contain neurovault data.
+        named "neurovault" will contain :term:`Neurovault` data.
 
-    fetch_neurosynth_words : bool, optional
-        Whether to collect words from Neurosynth. Default=False.
+    fetch_neurosynth_words : bool, default=False
+        Whether to collect words from Neurosynth.
 
     resample : bool, optional (default=False)
         Resamples downloaded images to a 3x3x3 grid before saving them,
         to save disk space.
 
-    vectorize_words : bool, optional
+    vectorize_words : bool, default=True
         If neurosynth words are downloaded, create a matrix of word
         counts and add it to the result. Also add to the result a
         vocabulary list. See ``sklearn.CountVectorizer`` for more info.
-        Default=True.
 
-    verbose : int, optional
+    verbose : int, default=3
         An integer in [0, 1, 2, 3] to control the verbosity level.
-        Default=3.
 
     Returns
     -------
@@ -2776,7 +2773,8 @@ def fetch_neurovault_ids(
               dictionaries.
             - 'collections_meta', the metadata for the
               collections.
-            - 'description', a short description of the Neurovault dataset.
+            - 'description', a short description
+              of the :term:`Neurovault` dataset.
 
         If `fetch_neurosynth_words` and `vectorize_words` were set, it
         also contains:
@@ -2821,7 +2819,8 @@ def fetch_neurovault_ids(
 
 
 def fetch_neurovault_motor_task(data_dir=None, verbose=1):
-    """Fetch left vs right button press group contrast map from NeuroVault.
+    """Fetch left vs right button press \
+       group :term:`contrast` map from :term:`Neurovault`.
 
     Parameters
     ----------
@@ -2829,8 +2828,8 @@ def fetch_neurovault_motor_task(data_dir=None, verbose=1):
         Path of the data directory. Used to force data storage in a specified
         location.
 
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    verbose : int, default=1
+        Verbosity level (0 means no message).
 
     Returns
     -------
@@ -2841,7 +2840,8 @@ def fetch_neurovault_motor_task(data_dir=None, verbose=1):
               dictionaries.
             - 'collections_meta', the metadata for the
               collections.
-            - 'description', a short description of the Neurovault dataset.
+            - 'description', a short description
+              of the :term:`Neurovault` dataset.
 
     Notes
     -----
@@ -2862,7 +2862,7 @@ def fetch_neurovault_motor_task(data_dir=None, verbose=1):
 
 
 def fetch_neurovault_auditory_computation_task(data_dir=None, verbose=1):
-    """Fetch a contrast map from NeuroVault showing \
+    """Fetch a :term:`contrast` map from :term:`Neurovault` showing \
     the effect of mental subtraction upon auditory instructions.
 
     Parameters
@@ -2871,8 +2871,8 @@ def fetch_neurovault_auditory_computation_task(data_dir=None, verbose=1):
         Path of the data directory. Used to force data storage in a specified
         location.
 
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    verbose : int, default=1
+        Verbosity level (0 means no message).
 
     Returns
     -------
@@ -2883,7 +2883,8 @@ def fetch_neurovault_auditory_computation_task(data_dir=None, verbose=1):
               dictionaries.
             - 'collections_meta', the metadata for the
               collections.
-            - 'description', a short description of the Neurovault dataset.
+            - 'description', a short description
+              of the :term:`Neurovault` dataset.
 
     Notes
     -----

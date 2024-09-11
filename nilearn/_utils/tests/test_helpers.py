@@ -1,14 +1,13 @@
 import warnings
 
 import pytest
+
 from nilearn._utils import helpers
 
 
 def _mock_args_for_testing_replace_parameter():
-    """
-    :return: Creates mock deprecated & replacement parameters for use with
-    testing functions related to replace_parameters().
-    """
+    """Create mock deprecated & replacement parameters for use \
+       with testing functions related to replace_parameters()."""
     mock_kwargs_with_deprecated_params_used = {
         "unchanged_param_0": "unchanged_param_0_val",
         "deprecated_param_0": "deprecated_param_0_val",
@@ -23,8 +22,9 @@ def _mock_args_for_testing_replace_parameter():
 
 
 def test_rename_parameters():
-    """Integration tests that deprecates mock parameters in a mock function
-    and checks that the deprecated parameters transfer their values correctly
+    """Test deprecated mock parameters in a mock function.
+
+    Checks that the deprecated parameters transfer their values correctly
     to replacement parameters and all deprecation warning are raised as
     expected.
     """
@@ -76,14 +76,13 @@ def test_rename_parameters():
     for raised_warning_, expected_warning_ in zip(
         raised_warnings, expected_warnings
     ):
-        assert raised_warning_.category is FutureWarning
+        assert raised_warning_.category is DeprecationWarning
         assert str(raised_warning_.message) == expected_warning_
 
 
 def test_transfer_deprecated_param_vals():
-    """Unit test to check that values assigned to deprecated parameters are
-    correctly reassigned to the replacement parameters.
-    """
+    """Check that values assigned to deprecated parameters are \
+       correctly reassigned to the replacement parameters."""
     mock_input, replacement_params = _mock_args_for_testing_replace_parameter()
     expected_output = {
         "unchanged_param_0": "unchanged_param_0_val",
@@ -99,7 +98,7 @@ def test_transfer_deprecated_param_vals():
 
 
 def test_future_warn_deprecated_params():
-    """Unit test to check that the correct warning is displayed."""
+    """Check that the correct warning is displayed."""
     mock_input, replacement_params = _mock_args_for_testing_replace_parameter()
     expected_warnings = [
         (
@@ -125,7 +124,7 @@ def test_future_warn_deprecated_params():
     for raised_warning_, expected_warning_ in zip(
         raised_warnings, expected_warnings
     ):
-        assert raised_warning_.category is FutureWarning
+        assert raised_warning_.category is DeprecationWarning
         assert str(raised_warning_.message) == expected_warning_
 
 
@@ -140,12 +139,20 @@ def test_future_warn_deprecated_params():
     ],
 )
 def test_compare_version(version_a, operator, version_b):
-    assert helpers._compare_version(version_a, operator, version_b)
+    assert helpers.compare_version(version_a, operator, version_b)
 
 
 def test_compare_version_error():
     with pytest.raises(
         ValueError,
-        match="'_compare_version' received an " "unexpected operator <>.",
+        match="'compare_version' received an unexpected operator <>.",
     ):
-        helpers._compare_version("0.1.0", "<>", "1.1.0")
+        helpers.compare_version("0.1.0", "<>", "1.1.0")
+
+
+def test_is_plotly_installed():
+    helpers.is_plotly_installed()
+
+
+def test_is_kaleido_installed():
+    helpers.is_kaleido_installed()

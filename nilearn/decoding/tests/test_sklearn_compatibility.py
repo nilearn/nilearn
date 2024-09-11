@@ -1,6 +1,7 @@
 import traceback
 
 import pytest
+
 from nilearn.decoding.space_net import BaseSpaceNet
 
 

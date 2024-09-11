@@ -1,27 +1,29 @@
 """Massively Univariate Linear Model estimated \
 with OLS and permutation test."""
+
 # Author: Benoit Da Mota, <benoit.da_mota@inria.fr>, sept. 2011
 #         Virgile Fritsch, <virgile.fritsch@inria.fr>, jan. 2014
-import sys
 import time
 import warnings
 
 import joblib
-import nibabel as nib
 import numpy as np
-from nilearn import image
-from nilearn.masking import apply_mask
-from nilearn.mass_univariate._utils import (
-    _calculate_cluster_measures,
-    _calculate_tfce,
-    _normalize_matrix_on_axis,
-    _null_to_p,
-    _orthonormalize_matrix,
-    _t_score_with_covars_and_normalized_design,
-)
+from nibabel import Nifti1Image
 from scipy import stats
 from scipy.ndimage import generate_binary_structure, label
 from sklearn.utils import check_random_state
+
+from nilearn import image
+from nilearn._utils import logger
+from nilearn.masking import apply_mask
+from nilearn.mass_univariate._utils import (
+    calculate_cluster_measures,
+    calculate_tfce,
+    normalize_matrix_on_axis,
+    null_to_p,
+    orthonormalize_matrix,
+    t_score_with_covars_and_normalized_design,
+)
 
 
 def _permuted_ols_on_chunk(
@@ -80,33 +82,30 @@ def _permuted_ols_on_chunk(
 
         .. versionadded:: 0.9.2
 
-    n_perm : int, optional
+    n_perm : int, default=10000
         Total number of permutations to perform, only used for
-        display in this function. Default=10000.
+        display in this function.
 
-    n_perm_chunk : int, optional
-        Number of permutations to be performed. Default=10000.
+    n_perm_chunk : int, default=10000
+        Number of permutations to be performed.
 
-    intercept_test : boolean, optional
+    intercept_test : boolean, default=True
         Change the permutation scheme (swap signs for intercept,
-        switch labels otherwise). See :footcite:`Fisher1935`.
-        Default=True.
+        switch labels otherwise). See :footcite:t:`Fisher1935`.
 
-    two_sided_test : boolean, optional
+    two_sided_test : boolean, default=True
         If True, performs an unsigned t-test. Both positive and negative
         effects are considered; the null hypothesis is that the effect is zero.
         If False, only positive effects are considered as relevant. The null
         hypothesis is that the effect is zero or negative.
-        Default=True
 
-    tfce : :obj:`bool`, optional
+    tfce : :obj:`bool`, default=False
         Whether to perform :term:`TFCE`-based multiple comparisons correction
         or not.
         Calculating TFCE values in each permutation can be time-consuming, so
         this option is disabled by default.
         The TFCE calculation is implemented as described in
         :footcite:t:`Smith2009a`.
-        Default=False.
 
         .. versionadded:: 0.9.2
 
@@ -120,8 +119,8 @@ def _permuted_ols_on_chunk(
         Seed for random number generator, to have the same permutations
         in each computing units.
 
-    verbose : int, optional
-        Defines the verbosity level. Default=0.
+    verbose : int, default=0
+        Defines the verbosity level.
 
     Returns
     -------
@@ -209,7 +208,7 @@ def _permuted_ols_on_chunk(
 
         # OLS regression on randomized data
         perm_scores = np.asfortranarray(
-            _t_score_with_covars_and_normalized_design(
+            t_score_with_covars_and_normalized_design(
                 tested_vars, target_vars, confounding_vars
             )
         )
@@ -246,7 +245,7 @@ def _permuted_ols_on_chunk(
             # In either case, the maximum absolute value is the one we want.
             h0_tfce_part[:, i_perm] = np.nanmax(
                 np.fabs(
-                    _calculate_tfce(
+                    calculate_tfce(
                         arr4d,
                         bin_struct=bin_struct,
                         two_sided_test=two_sided_test,
@@ -262,7 +261,7 @@ def _permuted_ols_on_chunk(
             (
                 h0_csfwe_part[:, i_perm],
                 h0_cmfwe_part[:, i_perm],
-            ) = _calculate_cluster_measures(
+            ) = calculate_cluster_measures(
                 arr4d,
                 threshold,
                 bin_struct,
@@ -281,10 +280,12 @@ def _permuted_ols_on_chunk(
                 percent = round(percent * 100, 2)
                 dt = time.time() - t0
                 remaining = (100.0 - percent) / max(0.01, percent) * dt
-                sys.stderr.write(
+
+                logger.log(
                     f"Job #{thread_id}, processed {i_perm}/{n_perm_chunk} "
                     f"permutations ({percent:0.2f}%, {remaining} seconds "
-                    f"remaining){crlf}"
+                    f"remaining){crlf}",
+                    stack_level=2,
                 )
 
     return (
@@ -323,7 +324,7 @@ def permuted_ols(
     :footcite:p:`Anderson2001`, :footcite:p:`Winkler2014`.
     A max-type procedure is used to obtain family-wise corrected p-values
     based on t-statistics (voxel-level FWE), cluster sizes, cluster masses,
-    and TFCE values.
+    and :term:`TFCE` values.
 
     The specific permutation scheme implemented here is the one of
     :footcite:t:`Freedman1983`.
@@ -346,13 +347,13 @@ def permuted_ols(
         Explanatory variates, fitted and tested independently from each others.
 
     target_vars : array-like, shape=(n_samples, n_descriptors)
-        fMRI data to analyze according to the explanatory and confounding
-        variates.
+        :term:`fMRI` data to analyze according
+        to the explanatory and confounding variates.
 
         In a group-level analysis, the samples will typically be voxels
-        (for volumetric data) or vertices (for surface data), while the
-        descriptors will generally be images, such as run-wise z-statistic
-        maps.
+        (for volumetric data) or :term:`vertices<vertex>` (for surface data),
+        while the descriptors will generally be images,
+        such as run-wise z-statistic maps.
 
     confounding_vars : array-like, shape=(n_samples, n_covars), optional
         Confounding variates (covariates), fitted but not tested.
@@ -360,37 +361,35 @@ def permuted_ols(
         (except maybe a constant column according to the value of
         ``model_intercept``).
 
-    model_intercept : :obj:`bool`, optional
+    model_intercept : :obj:`bool`, default=True
         If True, a constant column is added to the confounding variates
         unless the tested variate is already the intercept or when
         confounding variates already contain an intercept.
-        Default=True.
 
-    n_perm : :obj:`int`, optional
+    n_perm : :obj:`int`, default=10000
         Number of permutations to perform.
         Permutations are costly but the more are performed, the more precision
         one gets in the p-values estimation.
         If ``n_perm`` is set to 0, then no p-values will be estimated.
-        Default=10000.
 
-    two_sided_test : :obj:`bool`, optional
+    two_sided_test : :obj:`bool`, default=True
         If True, performs an unsigned t-test. Both positive and negative
         effects are considered; the null hypothesis is that the effect is zero.
         If False, only positive effects are considered as relevant. The null
-        hypothesis is that the effect is zero or negative. Default=True.
+        hypothesis is that the effect is zero or negative.
 
-    random_state : :obj:`int` or None, optional
+    random_state : :obj:`int` or np.random.RandomState or None, optional
         Seed for random number generator, to have the same permutations
         in each computing units.
 
-    n_jobs : :obj:`int`, optional
+    n_jobs : :obj:`int`, default=1
         Number of parallel workers.
         If -1 is provided, all CPUs are used.
         A negative number indicates that all the CPUs except (abs(n_jobs) - 1)
-        ones will be used. Default=1.
+        ones will be used.
 
-    verbose : :obj:`int`, optional
-        verbosity level (0 means no message). Default=0.
+    verbose : :obj:`int`, default=0
+        verbosity level (0 means no message).
 
     masker : None or :class:`~nilearn.maskers.NiftiMasker` or \
             :class:`~nilearn.maskers.MultiNiftiMasker`, optional
@@ -400,11 +399,10 @@ def permuted_ols(
 
         .. versionadded:: 0.9.2
 
-    threshold : None or :obj:`float`, optional
+    threshold : None or :obj:`float`, default=None
         Cluster-forming threshold in p-scale.
         This is only used for cluster-level inference.
         If None, cluster-level inference will not be performed.
-        Default=None.
 
         .. warning::
 
@@ -413,12 +411,11 @@ def permuted_ols(
 
         .. versionadded:: 0.9.2
 
-    tfce : :obj:`bool`, optional
+    tfce : :obj:`bool`, default=False
         Whether to calculate :term:`TFCE` as part of the permutation procedure
         or not.
         The TFCE calculation is implemented as described in
         :footcite:t:`Smith2009a`.
-        Default=False.
 
         .. warning::
 
@@ -734,7 +731,7 @@ def permuted_ols(
     # OLS regression on original data
     if confounding_vars is not None:
         # step 1: extract effect of covars from target vars
-        covars_orthonormalized = _orthonormalize_matrix(confounding_vars)
+        covars_orthonormalized = orthonormalize_matrix(confounding_vars)
         if not covars_orthonormalized.flags["C_CONTIGUOUS"]:
             # useful to developer
             warnings.warn("Confounding variates not C_CONTIGUOUS.")
@@ -742,7 +739,7 @@ def permuted_ols(
                 covars_orthonormalized
             )
 
-        targetvars_normalized = _normalize_matrix_on_axis(
+        targetvars_normalized = normalize_matrix_on_axis(
             target_vars
         ).T  # faster with F-ordered target_vars_chunk
         if not targetvars_normalized.flags["C_CONTIGUOUS"]:
@@ -756,29 +753,27 @@ def permuted_ols(
         targetvars_resid_covars = targetvars_normalized - np.dot(
             beta_targetvars_covars, covars_orthonormalized.T
         )
-        targetvars_resid_covars = _normalize_matrix_on_axis(
+        targetvars_resid_covars = normalize_matrix_on_axis(
             targetvars_resid_covars, axis=1
         )
 
         # step 2: extract effect of covars from tested vars
-        testedvars_normalized = _normalize_matrix_on_axis(
-            tested_vars.T, axis=1
-        )
+        testedvars_normalized = normalize_matrix_on_axis(tested_vars.T, axis=1)
         beta_testedvars_covars = np.dot(
             testedvars_normalized, covars_orthonormalized
         )
         testedvars_resid_covars = testedvars_normalized - np.dot(
             beta_testedvars_covars, covars_orthonormalized.T
         )
-        testedvars_resid_covars = _normalize_matrix_on_axis(
+        testedvars_resid_covars = normalize_matrix_on_axis(
             testedvars_resid_covars, axis=1
         ).T.copy()
 
         n_covars = confounding_vars.shape[1]
 
     else:
-        targetvars_resid_covars = _normalize_matrix_on_axis(target_vars).T
-        testedvars_resid_covars = _normalize_matrix_on_axis(tested_vars).copy()
+        targetvars_resid_covars = normalize_matrix_on_axis(target_vars).T
+        testedvars_resid_covars = normalize_matrix_on_axis(tested_vars).copy()
         covars_orthonormalized = None
         n_covars = 0
 
@@ -796,7 +791,7 @@ def permuted_ols(
     # step 3: original regression (= regression on residuals + adjust t-score)
     # compute t score map of each tested var for original data
     # scores_original_data is in samples-by-regressors shape
-    scores_original_data = _t_score_with_covars_and_normalized_design(
+    scores_original_data = t_score_with_covars_and_normalized_design(
         testedvars_resid_covars,
         targetvars_resid_covars.T,
         covars_orthonormalized,
@@ -809,13 +804,13 @@ def permuted_ols(
         scores_4d = masker.inverse_transform(
             scores_original_data.T
         ).get_fdata()
-        tfce_original_data = _calculate_tfce(
+        tfce_original_data = calculate_tfce(
             scores_4d,
             bin_struct=bin_struct,
             two_sided_test=two_sided_test,
         )
         tfce_original_data = apply_mask(
-            nib.Nifti1Image(
+            Nifti1Image(
                 tfce_original_data,
                 masker.mask_img_.affine,
                 masker.mask_img_.header,
@@ -969,7 +964,7 @@ def permuted_ols(
 
             # Calculate p-values from size/mass values and associated h0s
             for metric in ["mass", "size"]:
-                p_vals = _null_to_p(
+                p_vals = null_to_p(
                     cluster_dict[f"{metric}_regressor"],
                     cluster_dict[f"{metric}_h0"][i_regressor, :],
                     "larger",

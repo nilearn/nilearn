@@ -2,8 +2,8 @@
 Predicted time series and residuals
 ===================================
 
-Here we fit a First Level GLM with the `minimize_memory`-argument set to
-`False`.
+Here we fit a First Level :term:`GLM` with the `minimize_memory`-argument
+set to `False`.
 By doing so, the `FirstLevelModel`-object stores the residuals, which we can
 then inspect.
 Also, the predicted time series can be extracted, which is useful to assess the
@@ -13,10 +13,11 @@ quality of the model fit.
 
 """
 
-#########################################################################
+# %%
 # Import modules
 # --------------
 import pandas as pd
+
 from nilearn import image, masking
 from nilearn.datasets import fetch_spm_auditory
 
@@ -25,7 +26,7 @@ subject_data = fetch_spm_auditory()
 fmri_img = image.concat_imgs(subject_data.func)
 
 # Make an average
-mean_img = image.mean_img(fmri_img)
+mean_img = image.mean_img(fmri_img, copy_header=True)
 mask = masking.compute_epi_mask(mean_img)
 
 # Clean and smooth data
@@ -36,7 +37,7 @@ fmri_img = image.smooth_img(fmri_img, 5.0)
 events = pd.read_table(subject_data["events"])
 
 
-#########################################################################
+# %%
 # Fit model
 # ---------
 # Note that `minimize_memory` is set to `False` so that `FirstLevelModel`
@@ -56,7 +57,7 @@ fmri_glm = FirstLevelModel(
 fmri_glm = fmri_glm.fit(fmri_img, events)
 
 
-#########################################################################
+# %%
 # Calculate and plot contrast
 # ---------------------------
 from nilearn import plotting
@@ -66,7 +67,7 @@ z_map = fmri_glm.compute_contrast("active - rest")
 plotting.plot_stat_map(z_map, bg_img=mean_img, threshold=3.1)
 
 
-#########################################################################
+# %%
 # Extract the largest clusters
 # ----------------------------
 from nilearn.maskers import NiftiSpheresMasker
@@ -85,7 +86,7 @@ real_timeseries = masker.fit_transform(fmri_img)
 predicted_timeseries = masker.fit_transform(fmri_glm.predicted[0])
 
 
-#########################################################################
+# %%
 # Plot predicted and actual time series for 6 most significant clusters
 # ---------------------------------------------------------------------
 import matplotlib.pyplot as plt
@@ -116,14 +117,14 @@ for i in range(6):
 fig1.set_size_inches(24, 14)
 
 
-#########################################################################
+# %%
 # Get residuals
 # -------------
 
 resid = masker.fit_transform(fmri_glm.residuals[0])
 
 
-#########################################################################
+# %%
 # Plot distribution of residuals
 # ------------------------------
 # Note that residuals are not really distributed normally.
@@ -139,11 +140,12 @@ fig2.set_size_inches(12, 7)
 fig2.tight_layout()
 
 
-#########################################################################
+# %%
 # Plot R-squared
 # --------------
 # Because we stored the residuals, we can plot the R-squared: the proportion of
-# explained variance of the GLM as a whole. Note that the R-squared is markedly
+# explained variance of the :term:`GLM` as a whole.
+# Note that the R-squared is markedly
 # lower deep down the brain, where there is more physiological noise and we are
 # further away from the receive coils. However, R-Squared should be interpreted
 # with a grain of salt. The R-squared value will necessarily increase with the
@@ -152,7 +154,8 @@ fig2.tight_layout()
 # unable to say whether a voxel/region has a large R-squared value because the
 # voxel/region is responsive to the experiment (such as active or rest) or
 # because the voxel/region fits the noise factors (such as drift or motion)
-# that could be present in the GLM. To isolate the influence of the experiment,
+# that could be present in the :term:`GLM`.
+# To isolate the influence of the experiment,
 # we can use an F-test as shown in the next section.
 
 plotting.plot_stat_map(
@@ -163,13 +166,15 @@ plotting.plot_stat_map(
     cut_coords=7,
 )
 
-#########################################################################
+# %%
 # Calculate and Plot F-test
 # -------------------------
-# The F-test tells you how well the GLM fits effects of interest such as the
-# active and rest conditions together. This is different from R-squared, which
-# tells you how well the overall GLM fits the data, including active, rest and
-# all the other columns in the design matrix such as drift and motion.
+# The F-test tells you how well the :term:`GLM` fits effects of interest
+# such as the active and rest conditions together.
+# This is different from R-squared, which
+# tells you how well the overall :term:`GLM` fits the data,
+# including active, rest and all the other columns
+# in the design matrix such as drift and motion.
 import numpy as np
 
 design_matrix = fmri_glm.design_matrices_[0]
@@ -189,3 +194,5 @@ z_map_ftest = fmri_glm.compute_contrast(
 plotting.plot_stat_map(
     z_map_ftest, bg_img=mean_img, threshold=3.1, display_mode="z", cut_coords=7
 )
+
+# sphinx_gallery_dummy_images=2

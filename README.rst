@@ -7,16 +7,33 @@
     :alt: PyPI - Python Version
 
 .. image:: https://github.com/nilearn/nilearn/workflows/build/badge.svg?branch=main&event=push
-   :target: https://github.com/nilearn/nilearn/actions
-   :alt: Github Actions Build Status
+    :target: https://github.com/nilearn/nilearn/actions
+    :alt: Github Actions Build Status
 
 .. image:: https://codecov.io/gh/nilearn/nilearn/branch/main/graph/badge.svg
-   :target: https://codecov.io/gh/nilearn/nilearn
-   :alt: Coverage Status
+    :target: https://codecov.io/gh/nilearn/nilearn
+    :alt: Coverage Status
 
-.. image:: https://dev.azure.com/Parietal/Nilearn/_apis/build/status/nilearn.nilearn?branchName=main
-   :target: https://dev.azure.com/Parietal/Nilearn/_apis/build/status/nilearn.nilearn?branchName=main
-   :alt: Azure Build Status
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :target: https://github.com/psf/black
+
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.8397156.svg
+    :target: https://doi.org/10.5281/zenodo.8397156
+
+.. image:: http://img.shields.io/twitter/follow/nilearn.svg
+    :target: https://twitter.com/nilearn
+    :alt: Twitter
+
+.. image:: https://img.shields.io/mastodon/follow/109669703955432270?domain=https%3A%2F%2Ffosstodon.org%2F
+    :target: https://fosstodon.org/@nilearn
+    :alt: Mastodon
+
+.. image:: https://img.shields.io/discord/711993354929569843
+    :target: https://discord.gg/SsQABEJHkZ
+    :alt: Discord
+
+
+
 
 nilearn
 =======
@@ -114,4 +131,4 @@ Development
 ===========
 
 Detailed instructions on how to contribute are available at
-http://nilearn.github.io/stable/development.html
+https://nilearn.github.io/stable/development.html

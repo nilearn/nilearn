@@ -17,16 +17,26 @@ is included in the model.
 
 .. include:: ../../../examples/masker_note.rst
 
+..
+    Original authors:
+
+    - Virgile Fritsch, May. 2014
+
 """
 
-# Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, May. 2014
-import matplotlib.pyplot as plt
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
+
+# %%
 import numpy as np
+
 from nilearn import datasets
 from nilearn.maskers import NiftiMasker
 from nilearn.mass_univariate import permuted_ols
 
-##############################################################################
+# %%
 # Load Localizer contrast
 n_samples = 94
 localizer_dataset = datasets.fetch_localizer_contrasts(
@@ -52,7 +62,7 @@ contrast_map_filenames = [
 tested_var = tested_var[mask_quality_check].values.reshape((-1, 1))
 print(f"Actual number of subjects after quality check: {int(n_samples)}")
 
-##############################################################################
+# %%
 # Mask data
 nifti_masker = NiftiMasker(
     smoothing_fwhm=5, memory="nilearn_cache", memory_level=1
@@ -60,7 +70,7 @@ nifti_masker = NiftiMasker(
 fmri_masked = nifti_masker.fit_transform(contrast_map_filenames)
 
 
-##############################################################################
+# %%
 # Anova (parametric F-scores)
 from sklearn.feature_selection import f_regression
 
@@ -73,7 +83,7 @@ neg_log_pvals_anova_unmasked = nifti_masker.inverse_transform(
     neg_log_pvals_anova
 )
 
-##############################################################################
+# %%
 # Perform massively univariate analysis with permuted OLS
 #
 # This method will produce both voxel-level FWE-corrected -log10 p-values and
@@ -93,7 +103,7 @@ ols_outputs = permuted_ols(
     tfce=True,
     n_perm=200,  # 200 for the sake of time. Ideally, this should be 10000.
     verbose=1,  # display progress bar
-    n_jobs=1,  # can be changed to use more CPUs
+    n_jobs=2,  # can be changed to use more CPUs
     output_type="dict",
 )
 neg_log_pvals_permuted_ols_unmasked = nifti_masker.inverse_transform(
@@ -103,7 +113,7 @@ neg_log_pvals_tfce_unmasked = nifti_masker.inverse_transform(
     ols_outputs["logp_max_tfce"][0, :]  # select first regressor
 )
 
-##############################################################################
+# %%
 # Visualization
 from nilearn import plotting
 from nilearn.image import get_data

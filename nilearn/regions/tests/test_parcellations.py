@@ -1,16 +1,17 @@
-"""Test the parcellations tools module"""
+"""Test the parcellations tools module."""
+
 import warnings
 
 import numpy as np
 import pandas as pd
 import pytest
 from nibabel import Nifti1Image
+
+from nilearn.conftest import _affine_eye
 from nilearn.regions.parcellations import (
     Parcellations,
     _check_parameters_transform,
 )
-
-AFFINE_EYE = np.eye(4)
 
 METHODS = [
     "kmeans",
@@ -27,7 +28,7 @@ def test_image():
     data = np.zeros((10, 11, 12, 5))
     data[9, 10, 2] = 1
     data[4, 9, 3] = 2
-    return Nifti1Image(data, affine=AFFINE_EYE)
+    return Nifti1Image(data, affine=_affine_eye())
 
 
 @pytest.fixture
@@ -35,13 +36,7 @@ def test_image_2():
     data = np.ones((10, 11, 12, 10))
     data[6, 7, 8] = 2
     data[9, 10, 11] = 3
-    return Nifti1Image(data, affine=AFFINE_EYE)
-
-
-@pytest.fixture
-def empty_image():
-    data = np.zeros((10, 11, 12, 5))
-    return Nifti1Image(data, affine=AFFINE_EYE)
+    return Nifti1Image(data, affine=_affine_eye())
 
 
 def test_error_parcellation_method_none(test_image):
@@ -51,11 +46,9 @@ def test_error_parcellation_method_none(test_image):
         Parcellations(method=None, verbose=0).fit(test_image)
 
 
-@pytest.mark.parametrize("method", ["kmens", "avg", "complte"])
+@pytest.mark.parametrize("method", ["kmens", "avg", "completed"])
 def test_errors_raised_in_check_parameters_fit(method, test_image):
-    """Test whether an error is raised or not given
-    a false method type.
-    """
+    """Test whether an error is raised or not given a false method type."""
     with pytest.raises(
         ValueError,
         match=(f"The method you have selected is not implemented '{method}'"),
@@ -85,22 +78,24 @@ def test_parcellations_fit_on_single_nifti_image(method, n_parcel, test_image):
         assert parcellator.connectivity_ is not None
 
 
-def test_parcellations_warnings(empty_image):
+def test_parcellations_warnings(img_4d_zeros_eye):
     parcellator = Parcellations(method="kmeans", n_parcels=7, verbose=0)
 
     with pytest.warns(UserWarning):
-        parcellator.fit(empty_image)
+        parcellator.fit(img_4d_zeros_eye)
 
 
-def test_parcellations_no_warnings(empty_image):
+def test_parcellations_no_warnings(img_4d_zeros_eye):
     parcellator = Parcellations(method="kmeans", n_parcels=1, verbose=0)
     with warnings.catch_warnings(record=True) as record:
-        parcellator.fit(empty_image)
+        parcellator.fit(img_4d_zeros_eye)
     assert all([r.category is not UserWarning for r in record])
 
 
 @pytest.mark.parametrize("method", METHODS)
-def test_parcellations_fit_on_multi_nifti_images(method, test_image):
+def test_parcellations_fit_on_multi_nifti_images(
+    method, test_image, affine_eye
+):
     fmri_imgs = [test_image] * 3
 
     parcellator = Parcellations(method=method, n_parcels=5, verbose=0)
@@ -108,21 +103,9 @@ def test_parcellations_fit_on_multi_nifti_images(method, test_image):
 
     assert parcellator.labels_img_ is not None
 
-    parcellator = Parcellations(method="rena", n_parcels=5, verbose=0)
-    parcellator.fit(fmri_imgs)
-
-    assert parcellator.labels_img_ is not None
-
-    parcellator = Parcellations(
-        method="hierarchical_kmeans", n_parcels=5, verbose=0
-    )
-    parcellator.fit(fmri_imgs)
-
-    assert parcellator.labels_img_ is not None
-
     # Smoke test with explicit mask image
     mask_img = np.ones((10, 11, 12))
-    mask_img = Nifti1Image(mask_img, AFFINE_EYE)
+    mask_img = Nifti1Image(mask_img, affine_eye)
     parcellator = Parcellations(
         method=method, n_parcels=5, mask=mask_img, verbose=0
     )
@@ -134,10 +117,8 @@ def test_parcellations_fit_on_multi_nifti_images(method, test_image):
 def test_parcellations_transform_single_nifti_image(
     method, n_parcel, test_image_2
 ):
-    """Test with NiftiLabelsMasker extraction of timeseries data
-    after building a parcellations image.
-
-    """
+    """Test with NiftiLabelsMasker extraction of timeseries data \
+       after building a parcellations image."""
     parcellator = Parcellations(method=method, n_parcels=n_parcel, verbose=0)
     parcellator.fit(test_image_2)
     # transform to signals
@@ -179,8 +160,7 @@ def test_parcellations_transform_multi_nifti_images(
     assert len(signals) == len(fmri_imgs)
 
 
-def test_check_parameters_transform(test_image_2):
-    rng = np.random.RandomState(42)
+def test_check_parameters_transform(test_image_2, rng):
     # single confound
     confounds = rng.standard_normal(size=(10, 3))
     # Tests to check whether imgs, confounds returned are
@@ -222,9 +202,8 @@ def test_check_parameters_transform(test_image_2):
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
 def test_parcellations_transform_with_multi_confounds_multi_images(
-    method, n_parcel, test_image_2
+    method, n_parcel, test_image_2, rng
 ):
-    rng = np.random.RandomState(42)
     fmri_imgs = [test_image_2] * 3
     confounds = rng.standard_normal(size=(10, 3))
     confounds_list = [confounds] * 3
@@ -242,20 +221,25 @@ def test_parcellations_transform_with_multi_confounds_multi_images(
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
 def test_fit_transform(method, n_parcel, test_image_2):
-    rng = np.random.RandomState(42)
     fmri_imgs = [test_image_2] * 3
-    confounds = rng.standard_normal(size=(10, 3))
-    confounds_list = [confounds] * 3
 
     parcellator = Parcellations(method=method, n_parcels=n_parcel, verbose=0)
-    signals = parcellator.fit_transform(fmri_imgs)
+    parcellator.fit_transform(fmri_imgs)
 
     assert parcellator.labels_img_ is not None
     if method not in ["kmeans", "rena", "hierarchical_kmeans"]:
         assert parcellator.connectivity_ is not None
     assert parcellator.masker_ is not None
 
-    # fit_transform with confounds
+
+@pytest.mark.parametrize("method", METHODS)
+@pytest.mark.parametrize("n_parcel", [5])
+def test_fit_transform_with_condounds(method, n_parcel, test_image_2, rng):
+    fmri_imgs = [test_image_2] * 3
+    confounds = rng.standard_normal(size=(10, 3))
+    confounds_list = [confounds] * 3
+
+    parcellator = Parcellations(method=method, n_parcels=n_parcel, verbose=0)
     signals = parcellator.fit_transform(fmri_imgs, confounds=confounds_list)
 
     assert isinstance(signals, list)
@@ -292,12 +276,12 @@ def test_inverse_transform_single_nifti_image(method, n_parcel, test_image_2):
     assert fmri_compressed.shape == test_image_2.shape
 
 
-def test_transform_3d_input_images():
+def test_transform_3d_input_images(affine_eye):
     # test list of 3D images
     data = np.ones((10, 11, 12))
     data[6, 7, 8] = 2
     data[9, 10, 11] = 3
-    img = Nifti1Image(data, affine=AFFINE_EYE)
+    img = Nifti1Image(data, affine=affine_eye)
     imgs = [img] * 3
 
     parcellate = Parcellations(method="ward", n_parcels=20, verbose=0)

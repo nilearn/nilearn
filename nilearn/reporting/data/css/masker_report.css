@@ -1,0 +1,422 @@
+/* GLOBALS */
+:root {
+  --main-bg-color: white;
+}
+
+/* ALIASES */
+.m-0 {
+  margin: 0px;
+}
+.mt-1 {
+  margin-top: 4px;
+}
+.mt-2 {
+  margin-top: 8px;
+}
+.mt-3 {
+  margin-top: 12px;
+}
+.mb-2 {
+  margin-bottom: 8px;
+}
+.ml-2 {
+  margin-left: 8px;
+}
+.my-0 {
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+.my-1 {
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+.my-2 {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.p-0 {
+  padding: 0px;
+}
+.p-1 {
+  padding: 4px;
+}
+.p-2 {
+  padding: 8px;
+}
+.p-3 {
+  padding: 12px;
+}
+.p-4 {
+  padding: 24px;
+}
+.pl-2 {
+  padding-left: 8px;
+}
+.pl-3 {
+  padding-left: 12px;
+}
+.pl-5 {
+  padding-left: 48px;
+}
+.pt-0 {
+  padding-top: 0px;
+}
+.pt-2 {
+  padding-top: 8px;
+}
+.pt-3 {
+  padding-top: 12px;
+}
+.py-2 {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.d-flex {
+  display: flex;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.justify-content-center {
+  justify-content: center;
+}
+
+.justify-content-evenly {
+  justify-content: space-evenly;
+}
+
+.justify-content-left {
+  justify-content: left;
+}
+
+.justify-content-space-around {
+  justify-content: space-around;
+}
+
+.fw-bold {
+  font-weight: bold;
+}
+.fw-200 {
+  font-weight: 200;
+}
+
+.fs-1 {
+  font-size: 8px;
+}
+.fs-2 {
+  font-size: 12px;
+}
+.fs-3 {
+  font-size: 16px;
+}
+.fs-5 {
+  font-size: 36px;
+}
+
+@media (max-width: 1023px) {
+  .fs-5 {
+    font-size: 30px;
+  }
+}
+
+.border {
+  border-style: solid;
+}
+
+.border-1 {
+  border-width: 1pt;
+}
+
+.rounded-1 {
+  border-radius: 4px;
+}
+.rounded-2 {
+  border-radius: 8px;
+}
+.rounded-top-2 {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+/* -----------------------  Pure framework ----------------------- */
+
+/* Add a gutter to Pure's Columns */
+.pure-g > div {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  padding: 0 0.5em;
+}
+
+/*!
+Pure-button class copied from pure-min.css,
+in case reports are displayed offline.
+
+Pure v1.0.0
+Copyright 2013 Yahoo!
+Licensed under the BSD License.
+https://github.com/yahoo/pure/blob/master/LICENSE.md
+*/
+
+.pure-button {
+  /* Structure */
+  display: inline-block;
+  zoom: 1;
+  line-height: normal;
+  white-space: nowrap;
+  vertical-align: middle;
+  text-align: center;
+  cursor: pointer;
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.pure-button {
+  /* Button styling */
+  font-family: inherit;
+  font-size: 100%;
+  padding: 0.5em 1em;
+  margin: 5px;
+  color: #444; /* rgba not supported (IE 8) */
+  color: rgba(0, 0, 0, 0.8); /* rgba supported */
+  border: 1px solid #999; /*IE 6/7/8*/
+  border: none rgba(0, 0, 0, 0); /*IE9 + everything else*/
+  background-color: #e6e6e6;
+  text-decoration: none;
+  border-radius: 2px;
+}
+
+/*!
+End pure-button class definition from pure-min.css
+*/
+
+.btn {
+  background-color: #3498db;
+  color: white;
+  padding: 6px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-xsmall {
+  font-size: 12px;
+}
+
+.btn-small {
+  font-size: 14px;
+}
+
+.btn:hover,
+.btn:focus {
+  background-color: #2980b9;
+}
+
+.btn-container {
+  float: left;
+  width: 33%;
+}
+
+.scroll-x {
+  overflow-x: scroll;
+}
+.scroll-y {
+  overflow-y: scroll;
+}
+
+/* -----------------------  Warning banner  ----------------------- */
+.warning {
+  border-color: red;
+  color: red;
+}
+.warning h2:first-child {
+  background-color: #f5f5f5;
+}
+
+/* -----------------------  Navbar  ----------------------- */
+/* Adapted from Pure CSS navbar : https://purecss.io/layouts/tucked-menu-vertical/  */
+.navbar {
+  position: sticky; /* Apply the sticky positioning */
+  top: 0; /* Stick the element to the top of the viewport */
+  z-index: 100; /* Ensure the navbar is above other content */
+  background-color: #f5f5f5;
+  margin-bottom: 1em;
+  -webkit-font-smoothing: antialiased;
+  height: 2.1em;
+  overflow: hidden;
+  -webkit-transition: height 0.5s;
+  -moz-transition: height 0.5s;
+  -ms-transition: height 0.5s;
+  transition: height 0.5s;
+}
+.navbar.open {
+  height: 16em;
+}
+
+.custom-toggle {
+  width: 34px;
+  height: 34px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: none;
+}
+
+.custom-toggle .bar {
+  background-color: black;
+  display: block;
+  width: 20px;
+  height: 2px;
+  border-radius: 100px;
+  position: absolute;
+  top: 18px;
+  right: 7px;
+  -webkit-transition: all 0.5s;
+  -moz-transition: all 0.5s;
+  -ms-transition: all 0.5s;
+  transition: all 0.5s;
+}
+
+.custom-toggle .bar:first-child {
+  -webkit-transform: translateY(-6px);
+  -moz-transform: translateY(-6px);
+  -ms-transform: translateY(-6px);
+  transform: translateY(-6px);
+}
+
+.custom-toggle.x .bar {
+  -webkit-transform: rotate(45deg);
+  -moz-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+
+.custom-toggle.x .bar:first-child {
+  -webkit-transform: rotate(-45deg);
+  -moz-transform: rotate(-45deg);
+  -ms-transform: rotate(-45deg);
+  transform: rotate(-45deg);
+}
+
+@media (max-width: 1023px) {
+  .custom-toggle {
+    display: block;
+  }
+}
+
+/* -----------------------  Nilearn report  ----------------------- */
+.nilearn-report {
+  border-color: rgb(150, 150, 150);
+  overflow: hidden; /* Needed to avoid scrolling in jupyter :( */
+  color: black;
+  background-color: var(--main-bg-color);
+  height: 800px;
+  overflow-y: scroll;
+}
+
+.nilearn-report section {
+  margin: 8px;
+  padding: 8px;
+}
+.terminal .nilearn-report {
+  max-width: min(50ex, 100vw); /* Needed in vscode */
+}
+
+.nilearn-report h1:first-child {
+  background-color: #f5f5f5;
+  text-align: left;
+}
+
+.nilearn-report summary::-webkit-details-marker {
+  margin-right: 2px;
+}
+
+.nilearn-report summary:focus {
+  outline-style: none;
+}
+
+.nilearn-report .table-container {
+  overflow-x: scroll;
+  overflow-y: scroll;
+  max-height: 700px;
+}
+
+.nilearn-report table {
+  margin: 50px auto;
+  max-height: 500px;
+}
+
+.nilearn-report thead th {
+  text-align: center;
+  vertical-align: middle;
+  position: sticky;
+  top: 0;
+  background-color: #ddd;
+}
+
+.nilearn-report tbody tr:nth-child(even) {
+  background-color: #ddd;
+}
+
+/* Tooltip container */
+.nilearn-report .withtooltip {
+  position: relative;
+}
+
+/* Tooltip text */
+.nilearn-report .withtooltip .tooltiptext {
+  visibility: hidden;
+  max-width: 35em;
+  background-color: rgba(24, 24, 24, 0.9);
+  color: #fff;
+  text-align: center;
+
+  /* Position the tooltip text - see examples below! */
+  position: absolute;
+  z-index: 200;
+
+  width: 99%;
+  left: 8px;
+  top: 133%;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.nilearn-report .withtooltip:hover .tooltiptext {
+  visibility: visible;
+}
+
+.nilearn-report .image {
+  position: relative;
+  height: auto;
+  width: 100%;
+}
+
+.nilearn-report .image .overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  transition: 0.5s ease;
+  height: auto;
+  width: 100%;
+  -webkit-transition: 0.5s ease;
+}
+
+.nilearn-report .image:hover .overlay {
+  opacity: 1;
+}
+
+.nilearn-report .main-container {
+  min-height: 700px !important;
+}

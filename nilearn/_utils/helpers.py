@@ -4,10 +4,11 @@ import os
 import warnings
 
 
-def rename_parameters(replacement_params,
-                      end_version='future',
-                      lib_name='Nilearn',
-                      ):
+def rename_parameters(
+    replacement_params,
+    end_version="future",
+    lib_name="Nilearn",
+):
     """Use this decorator to deprecate & replace specified parameters \
     in the decorated functions and methods without changing \
     function definition or signature.
@@ -19,29 +20,29 @@ def rename_parameters(replacement_params,
         and their corresponding new parameters.
         Example: {old_param1: new_param1, old_param2: new_param2,...}
 
-    end_version : str {'future' | 'next' | <version>}, optional
+    end_version : str {'future' | 'next' | <version>}, default='future'
         Version when using the deprecated parameters will raise an error.
         For informational purpose in the warning text.
-        Default='future'.
 
-    lib_name : str, optional
+    lib_name : str, default='Nilearn'
         Name of the library to which the decoratee belongs.
         For informational purpose in the warning text.
-        Default='Nilearn'.
 
     """
+
     def _replace_params(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            _warn_deprecated_params(replacement_params, end_version, lib_name,
-                                    kwargs
-                                    )
-            kwargs = _transfer_deprecated_param_vals(replacement_params,
-                                                     kwargs
-                                                     )
+            _warn_deprecated_params(
+                replacement_params, end_version, lib_name, kwargs
+            )
+            kwargs = _transfer_deprecated_param_vals(
+                replacement_params, kwargs
+            )
             return func(*args, **kwargs)
 
         return wrapper
+
     return _replace_params
 
 
@@ -70,16 +71,15 @@ def _warn_deprecated_params(replacement_params, end_version, lib_name, kwargs):
     for deprecated_param_ in used_deprecated_params:
         replacement_param = replacement_params[deprecated_param_]
         param_deprecation_msg = (
-            'The parameter "{}" will be removed in {} release of {}. '
-            'Please use the parameter "{}" instead.'.format(deprecated_param_,
-                                                            end_version,
-                                                            lib_name,
-                                                            replacement_param,
-                                                            )
+            f'The parameter "{deprecated_param_}" '
+            f"will be removed in {end_version} release of {lib_name}. "
+            f'Please use the parameter "{replacement_param}" instead.'
         )
-        warnings.warn(category=FutureWarning,
-                      message=param_deprecation_msg,
-                      stacklevel=3)
+        warnings.warn(
+            category=DeprecationWarning,
+            message=param_deprecation_msg,
+            stacklevel=3,
+        )
 
 
 def _transfer_deprecated_param_vals(replacement_params, kwargs):
@@ -112,9 +112,7 @@ def _transfer_deprecated_param_vals(replacement_params, kwargs):
     return kwargs
 
 
-def remove_parameters(removed_params,
-                      reason,
-                      end_version='future'):
+def remove_parameters(removed_params, reason, end_version="future"):
     """Use this decorator to deprecate \
     but not renamed parameters in the decorated functions and methods.
 
@@ -127,26 +125,29 @@ def remove_parameters(removed_params,
     reason : str
         Detailed reason of deprecated parameter and alternative solutions.
 
-    end_version : str {'future' | 'next' | <version>}, optional
+    end_version : str {'future' | 'next' | <version>}, default='future'
         Version when using the deprecated parameters will raise an error.
         For informational purpose in the warning text.
-        Default='future'.
 
     """
+
     def _remove_params(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             found = set(removed_params).intersection(kwargs)
             if found:
-                message = ('Parameter(s) {} will be removed in version {}; '
-                           '{}'.format(', '.join(found),
-                                       end_version, reason)
-                           )
-                warnings.warn(category=DeprecationWarning,
-                              message=message,
-                              stacklevel=3)
+                message = (
+                    f'Parameter(s) {", ".join(found)} '
+                    f"will be removed in version {end_version}; "
+                    f"{reason}"
+                )
+                warnings.warn(
+                    category=DeprecationWarning, message=message, stacklevel=3
+                )
             return func(*args, **kwargs)
+
         return wrapper
+
     return _remove_params
 
 
@@ -178,7 +179,7 @@ VERSION_OPERATORS = {
 }
 
 
-def _compare_version(version_a, operator, version_b):
+def compare_version(version_a, operator, version_b):
     """Compare two version strings via a user-specified operator.
 
     Note: This function is inspired from MNE-Python.
@@ -205,6 +206,50 @@ def _compare_version(version_a, operator, version_b):
     from packaging.version import parse
 
     if operator not in VERSION_OPERATORS:
-        error_msg = "'_compare_version' received an unexpected operator "
+        error_msg = "'compare_version' received an unexpected operator "
         raise ValueError(error_msg + operator + ".")
     return VERSION_OPERATORS[operator](parse(version_a), parse(version_b))
+
+
+def is_plotly_installed():
+    """Check if plotly is installed."""
+    try:
+        import plotly.graph_objects as go  # noqa: F401
+    except ImportError:
+        return False
+    return True
+
+
+def is_kaleido_installed():
+    """Check if kaleido is installed."""
+    try:
+        import kaleido  # noqa: F401
+    except ImportError:
+        return False
+    return True
+
+
+# TODO: remove this function after release 0.13.0
+def check_copy_header(copy_header):
+    """Check the value of the `copy_header` parameter.
+
+    Only being used with `nilearn.image` and resampling functions to warn
+    users that `copy_header` will default to `True` from release 0.13.0
+    onwards.
+
+    Parameters
+    ----------
+    copy_header : :obj:`bool"
+
+    """
+    if not copy_header:
+        copy_header_default = (
+            "From release 0.13.0 onwards, this function will, by default, "
+            "copy the header of the input image to the output. "
+            "Currently, the header is reset to the default Nifti1Header. "
+            "To suppress this warning and use the new behavior, set "
+            "`copy_header=True`."
+        )
+        warnings.warn(
+            category=FutureWarning, message=copy_header_default, stacklevel=3
+        )

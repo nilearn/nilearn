@@ -5,16 +5,18 @@ discovery rate control, false discovery proportion in clusters.
 Author: Bertrand Thirion, 2015 -- 2019
 
 """
+
 import warnings
 
 import numpy as np
-from nilearn.image import get_data, math_img, threshold_img
-from nilearn.maskers import NiftiMasker
 from scipy.ndimage import label
 from scipy.stats import norm
 
+from nilearn.image import get_data, math_img, threshold_img
+from nilearn.maskers import NiftiMasker
 
-def _compute_hommel_value(z_vals, alpha, verbose=False):
+
+def _compute_hommel_value(z_vals, alpha, verbose=0):
     """Compute the All-Resolution Inference hommel-value."""
     if alpha < 0 or alpha > 1:
         raise ValueError("alpha should be between 0 and 1")
@@ -31,7 +33,7 @@ def _compute_hommel_value(z_vals, alpha, verbose=False):
     slopes = (alpha - p_vals[:-1]) / np.arange(n_samples - 1, 0, -1)
     slope = np.max(slopes)
     hommel_value = np.trunc(alpha / slope)
-    if verbose:
+    if verbose > 0:
         try:
             from matplotlib import pyplot as plt
         except ImportError:
@@ -103,16 +105,16 @@ def fdr_threshold(z_vals, alpha):
     p_vals = norm.sf(z_vals_)
     n_samples = len(p_vals)
     pos = p_vals < alpha * np.linspace(1 / n_samples, 1, n_samples)
-    return z_vals_[pos][-1] - 1.0e-12 if pos.any() else np.infty
+    return z_vals_[pos][-1] - 1.0e-12 if pos.any() else np.inf
 
 
 def cluster_level_inference(
-    stat_img, mask_img=None, threshold=3.0, alpha=0.05, verbose=False
+    stat_img, mask_img=None, threshold=3.0, alpha=0.05, verbose=0
 ):
     """Report the proportion of active voxels for all clusters \
     defined by the input threshold.
 
-    This implements the method described in :footcite:`Rosenblatt2018`.
+    This implements the method described in :footcite:t:`Rosenblatt2018`.
 
     Parameters
     ----------
@@ -122,15 +124,15 @@ def cluster_level_inference(
     mask_img : Niimg-like object, optional,
         mask image
 
-    threshold : list of floats, optional
-       Cluster-forming threshold in z-scale. Default=3.0.
+    threshold : list of floats, default=3.0
+       Cluster-forming threshold in z-scale.
 
-    alpha : float or list, optional
-        Level of control on the true positive rate, aka true dsicovery
-        proportion. Default=0.05.
+    alpha : float or list, default=0.05
+        Level of control on the true positive rate, aka true discovery
+        proportion.
 
-    verbose : bool, optional
-        Verbosity mode. Default=False.
+    verbose : int or bool, default=0
+        Verbosity mode.
 
     Returns
     -------
@@ -142,6 +144,11 @@ def cluster_level_inference(
     .. footbibliography::
 
     """
+    if verbose is False:
+        verbose = 0
+    if verbose is True:
+        verbose = 1
+
     if not isinstance(threshold, list):
         threshold = [threshold]
 
@@ -200,31 +207,28 @@ def threshold_stats_img(
     mask_img : Niimg-like object, optional,
         Mask image
 
-    alpha : float or list, optional
+    alpha : float or list, default=0.001
         Number controlling the thresholding (either a p-value or q-value).
         Its actual meaning depends on the height_control parameter.
         This function translates alpha to a z-scale threshold.
-        Default=0.001.
 
-    threshold : float, optional
+    threshold : float, default=3.0
        Desired threshold in z-scale.
-       This is used only if height_control is None. Default=3.0.
+       This is used only if height_control is None.
 
-    height_control : string, or None optional
+    height_control : string, or None optional, default='fpr'
         False positive control meaning of cluster forming
         threshold: None|'fpr'|'fdr'|'bonferroni'
-        Default='fpr'.
 
-    cluster_threshold : float, optional
+    cluster_threshold : float, default=0
         cluster size threshold. In the returned thresholded map,
         sets of connected voxels (`clusters`) with size smaller
-        than this number will be removed. Default=0.
+        than this number will be removed.
 
-    two_sided : Bool, optional
+    two_sided : Bool, default=True
         Whether the thresholding should yield both positive and negative
         part of the maps.
         In that case, alpha is corrected by a factor of 2.
-        Default=True.
 
     Returns
     -------
@@ -272,7 +276,7 @@ def threshold_stats_img(
             return None, threshold
         else:
             raise ValueError(
-                "Map_threshold requires stat_img not to be None"
+                "Map_threshold requires stat_img not to be None "
                 "when the height_control procedure "
                 'is "bonferroni" or "fdr"'
             )
@@ -302,6 +306,7 @@ def threshold_stats_img(
         two_sided=two_sided,
         mask_img=mask_img,
         copy=True,
+        copy_header=True,
     )
 
     return stat_img, threshold

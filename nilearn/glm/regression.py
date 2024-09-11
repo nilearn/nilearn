@@ -17,37 +17,13 @@ General reference for regression models:
 
 __docformat__ = "restructuredtext en"
 
-import functools
-import warnings
-
 import numpy as np
 import scipy.linalg as spl
 from nibabel.onetime import auto_attr
-from nilearn.glm._utils import positive_reciprocal
-from nilearn.glm.model import LikelihoodModelResults
 from numpy.linalg import matrix_rank
 
-
-def _deprecation_warning(
-    old_param, new_param, start_version, end_version="future"
-):
-    def _warned_func(func):
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            warnings.warn(
-                category=FutureWarning,
-                message=(
-                    f"'{old_param}' has been deprecated "
-                    f"in version {start_version} "
-                    f"and will be removed in version {end_version}.\n"
-                    f"Please use '{new_param}' instead."
-                ),
-            )
-            return func(*args, **kwargs)
-
-        return wrapper
-
-    return _warned_func
+from nilearn.glm._utils import positive_reciprocal
+from nilearn.glm.model import LikelihoodModelResults
 
 
 class OLSModel:
@@ -123,13 +99,14 @@ class OLSModel:
         r"""Return the value of the loglikelihood function at beta.
 
         Given the whitened design matrix, the loglikelihood is evaluated
-        at the parameter vector, beta, for the dependent variable, Y
-        and the nuisance parameter, sigma :footcite:`Greene2003`.
+        at the parameter vector, :term:`beta<Beta>`,
+        for the dependent variable, Y
+        and the nuisance parameter, sigma :footcite:t:`Greene2003`.
 
         Parameters
         ----------
         beta : ndarray
-            The parameter estimates.  Must be of length df_model.
+            The parameter estimates.  Must be of length ``df_model``.
 
         Y : ndarray
             The dependent variable
@@ -331,6 +308,8 @@ class RegressionResults(LikelihoodModelResults):
         self.whitened_residuals = whitened_residuals
         self.whitened_design = model.whitened_design
 
+    # @auto_attr store the value as an object attribute after initial call
+    # better performance than @property
     @auto_attr
     def residuals(self):
         """Residuals from the fit."""
@@ -340,11 +319,11 @@ class RegressionResults(LikelihoodModelResults):
     def normalized_residuals(self):
         """Residuals, normalized to have unit length.
 
-        See :footcite:`Montgomery2006` and :footcite:`Davidson2004`.
+        See :footcite:t:`Montgomery2006` and :footcite:t:`Davidson2004`.
 
         Notes
         -----
-        Is this supposed to return "stanardized residuals,"
+        Is this supposed to return "standardized residuals,"
         residuals standardized
         to have mean zero and approximately unit variance?
 
@@ -391,7 +370,7 @@ class RegressionResults(LikelihoodModelResults):
 
 class SimpleRegressionResults(LikelihoodModelResults):
     """Contain only information of the model fit necessary \
-    for contrast computation.
+    for :term:`contrast` computation.
 
     Its intended to save memory when details of the model are unnecessary.
 
@@ -413,22 +392,26 @@ class SimpleRegressionResults(LikelihoodModelResults):
         # put this as a parameter of LikelihoodModel
         self.df_residuals = self.df_total - self.df_model
 
-    def logL(self, Y):
+    def logL(self):
         """Return the maximized log-likelihood."""
-        raise ValueError("can not use this method for simple results")
+        raise NotImplementedError(
+            "logL not implemented for "
+            "SimpleRegressionsResults. "
+            "Use RegressionResults"
+        )
 
-    def residuals(self, Y):
+    def residuals(self, Y, X):
         """Residuals from the fit."""
-        return Y - self.predicted
+        return Y - self.predicted(X)
 
-    def normalized_residuals(self, Y):
+    def normalized_residuals(self, Y, X):
         """Residuals, normalized to have unit length.
 
-        See :footcite:`Montgomery2006` and :footcite:`Davidson2004`.
+        See :footcite:t:`Montgomery2006` and :footcite:t:`Davidson2004`.
 
         Notes
         -----
-        Is this supposed to return "stanardized residuals,"
+        Is this supposed to return "standardized residuals,"
         residuals standardized
         to have mean zero and approximately unit variance?
 
@@ -441,14 +424,11 @@ class SimpleRegressionResults(LikelihoodModelResults):
         .. footbibliography::
 
         """
-        return self.residuals(Y) * positive_reciprocal(
+        return self.residuals(Y, X) * positive_reciprocal(
             np.sqrt(self.dispersion)
         )
 
-    @auto_attr
-    def predicted(self):
+    def predicted(self, X):
         """Return linear predictor values from a design matrix."""
         beta = self.theta
-        # the LikelihoodModelResults has parameters named 'theta'
-        X = self.model.design
         return np.dot(X, beta)

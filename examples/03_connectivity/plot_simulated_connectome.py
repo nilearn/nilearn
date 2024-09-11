@@ -7,11 +7,11 @@ estimation of connectivity structure for a synthetic dataset.
 
 """
 
-import matplotlib.pyplot as plt
+from nilearn import plotting
 
+# %%
 # Generate synthetic data
 from nilearn._utils.data_gen import generate_group_sparse_gaussian_graphs
-from nilearn.plotting import show
 
 n_subjects = 20
 n_displayed = 3
@@ -23,7 +23,9 @@ subjects, precisions, _ = generate_group_sparse_gaussian_graphs(
     density=0.1,
 )
 
-from nilearn import plotting
+# %%
+# Run connectome estimations and plot the results
+import matplotlib.pyplot as plt
 
 fig = plt.figure(figsize=(10, 7))
 plt.subplots_adjust(hspace=0.4)
@@ -64,11 +66,7 @@ for n in range(n_displayed):
 
 
 # Fit one graph lasso per subject
-try:
-    from sklearn.covariance import GraphicalLassoCV
-except ImportError:
-    # for Scitkit-Learn < v0.20.0
-    from sklearn.covariance import GraphLassoCV as GraphicalLassoCV
+from sklearn.covariance import GraphicalLassoCV
 
 gl = GraphicalLassoCV(verbose=1)
 
@@ -105,4 +103,6 @@ plotting.plot_matrix(
 )
 plt.title(f"graph lasso, all subjects\n$\\alpha={gl.alpha_:.2f}$")
 
-show()
+plotting.show()
+
+# sphinx_gallery_dummy_images=1
