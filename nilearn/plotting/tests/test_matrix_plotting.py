@@ -264,9 +264,9 @@ def test_show_contrast_matrix(tmp_path):
     ax = plot_contrast_matrix(contrast, dmtx)
     assert ax is not None
 
-    pytest.importorskip("matplotlib", minversion="3.5.0")
-    fig, ax = plt.subplots(layout="constrained")
-    ax = plot_contrast_matrix(contrast, dmtx, output_file=tmp_path / "contrast.png")
+    ax = plot_contrast_matrix(
+        contrast, dmtx, output_file=tmp_path / "contrast.png"
+    )
     assert (tmp_path / "contrast.png").exists()
     assert ax is None
 
