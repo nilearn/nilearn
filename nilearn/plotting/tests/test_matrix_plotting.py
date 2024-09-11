@@ -266,7 +266,10 @@ def test_show_contrast_matrix(tmp_path):
 
     fig, ax = plt.subplots(layout="constrained")
     ax = plot_contrast_matrix(
-        contrast, dmtx, output_file=tmp_path / "contrast.png", axes=ax,
+        contrast,
+        dmtx,
+        output_file=tmp_path / "contrast.png",
+        axes=ax,
     )
     assert (tmp_path / "contrast.png").exists()
     assert ax is None
