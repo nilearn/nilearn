@@ -264,19 +264,25 @@ def test_show_contrast_matrix(tmp_path):
     ax = plot_contrast_matrix(contrast, dmtx)
     assert ax is not None
 
+    pytest.importorskip("matplotlib", minversion="3.5.0")
     fig, ax = plt.subplots(layout="constrained")
-    ax = plot_contrast_matrix(
-        contrast,
-        dmtx,
-        output_file=tmp_path / "contrast.png",
-        axes=ax,
-    )
+    ax = plot_contrast_matrix(contrast, dmtx, output_file=tmp_path / "contrast.png")
     assert (tmp_path / "contrast.png").exists()
     assert ax is None
-    assert "constrained" in fig.get_layout_engine().__class__.__name__.lower()
 
     plot_contrast_matrix(contrast, dmtx, output_file=tmp_path / "contrast.pdf")
     assert (tmp_path / "contrast.pdf").exists()
+
+
+def test_show_contrast_matrix_axes():
+    pytest.importorskip("matplotlib", minversion="3.5.0")
+    frame_times = np.linspace(0, 127 * 1.0, 128)
+    dmtx = make_first_level_design_matrix(
+        frame_times, drift_model="polynomial", drift_order=3
+    )
+    fig, ax = plt.subplots(layout="constrained")
+    plot_contrast_matrix(contrast, dmtx axes=ax)
+    assert "constrained" in fig.get_layout_engine().__class__.__name__.lower()
 
 
 def test_pad_contrast_matrix():
