@@ -560,7 +560,11 @@ plt.show()
 from nilearn.image import resample_to_img
 
 resampled_icbm_mask = resample_to_img(
-    icbm_mask, data_mask, interpolation="nearest", copy_header=True
+    icbm_mask,
+    data_mask,
+    interpolation="nearest",
+    copy_header=True,
+    force_resample=True,
 )
 
 # %%

@@ -735,6 +735,7 @@ def vol_to_surf(
                 img,
                 interpolation="nearest",
                 copy=False,
+                force_resample=False,  # TODO update to True in 0.13.0
                 copy_header=True,
             )
         )
