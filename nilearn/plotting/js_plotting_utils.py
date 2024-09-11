@@ -101,13 +101,6 @@ def colorscale(
             "vmin cannot be chosen when cmap is symmetric", stacklevel=3
         )
         vmin = None
-    if threshold is not None:
-        if vmin is not None:
-            warnings.warn(
-                "choosing both vmin and a threshold is not allowed; "
-                "setting vmin to 0"
-            )
-        vmin = 0
     if vmax is None:
         vmax = abs_values.max()
     # cast to float to avoid TypeError if vmax is a numpy boolean
