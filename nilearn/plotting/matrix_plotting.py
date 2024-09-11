@@ -405,7 +405,9 @@ def plot_contrast_matrix(
 
     if own_figure:
         axes.figure.tight_layout()
-        plt.subplots_adjust(top=np.min([0.3 + 0.05 * con_matrix.shape[0], 0.55]))
+        plt.subplots_adjust(
+            top=np.min([0.3 + 0.05 * con_matrix.shape[0], 0.55]),
+        )
 
     if output_file is not None:
         plt.savefig(output_file)
