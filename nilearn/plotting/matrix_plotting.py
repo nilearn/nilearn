@@ -318,7 +318,7 @@ def plot_matrix(
         if labels:
             _fit_axes(axes)
         elif own_fig:
-            plt.tight_layout(
+            axes.figure.tight_layout(
                 pad=0.1, rect=((0, 0, 0.95, 1) if colorbar else (0, 0, 1, 1))
             )
     if colorbar:
@@ -326,11 +326,13 @@ def plot_matrix(
         cax = divider.append_axes("right", size="5%", pad=0.05)
 
         plt.colorbar(display, cax=cax)
-        fig.tight_layout()
+        if own_fig:
+            axes.figure.tight_layout()
 
     if title is not None:
         axes.set_title(title, size=16)
-        fig.tight_layout()
+        if own_fig:
+            axes.figure.tight_layout()
 
     return display
 
@@ -382,6 +384,9 @@ def plot_contrast_matrix(
             )
         )
         axes = plt.gca()
+        own_figure = True
+    else:
+        own_figure = False
 
     maxval = np.max(np.abs(contrast_def))
     mat = axes.matshow(
@@ -398,8 +403,9 @@ def plot_contrast_matrix(
     if colorbar:
         plt.colorbar(mat, fraction=0.025, pad=0.04)
 
-    plt.tight_layout()
-    plt.subplots_adjust(top=np.min([0.3 + 0.05 * con_matrix.shape[0], 0.55]))
+    if own_figure:
+        axes.figure.tight_layout()
+        plt.subplots_adjust(top=np.min([0.3 + 0.05 * con_matrix.shape[0], 0.55]))
 
     if output_file is not None:
         plt.savefig(output_file)
@@ -497,6 +503,9 @@ def plot_design_matrix(
             fig_height = 10
         plt.figure(figsize=(1 + 0.23 * len(names), fig_height))
         axes = plt.subplot(1, 1, 1)
+        own_axes = True
+    else:
+        own_axes = False
 
     axes.imshow(X, interpolation="nearest", aspect="auto")
     axes.set_label("conditions")
@@ -508,7 +517,8 @@ def plot_design_matrix(
     # corresponding dataframe
     axes.xaxis.tick_top()
 
-    plt.tight_layout()
+    if own_axes:
+        axes.figure.tight_layout()
     if output_file is not None:
         plt.savefig(output_file)
         plt.close()
@@ -619,7 +629,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     axes.set_yticks(np.arange(n_runs) + 0.5)
     axes.set_yticklabels(np.arange(n_runs) + 1)
 
-    plt.tight_layout()
+    axes.figure.tight_layout()
     if output_file is not None:
         plt.savefig(output_file)
         plt.close()
