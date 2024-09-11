@@ -269,6 +269,7 @@ def test_show_contrast_matrix(tmp_path):
         contrast, dmtx, output_file=tmp_path / "contrast.png", axes=ax,
     )
     assert (tmp_path / "contrast.png").exists()
+    assert ax is None
     assert "constrained" in fig.get_layout_engine().__class__.__name__.lower()
 
     plot_contrast_matrix(contrast, dmtx, output_file=tmp_path / "contrast.pdf")
