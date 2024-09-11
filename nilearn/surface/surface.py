@@ -1471,8 +1471,8 @@ def smooth_surface_data(
         sum1 = np.nansum(data, axis=0)
         data = data * (sum0 / sum1)
     elif match == "mean":
-        mu0 = np.nansum(surf_data, axis=0)
-        mu1 = np.nansum(data, axis=0)
+        mu0 = np.nanmean(surf_data, axis=0)
+        mu1 = np.nanmean(data, axis=0)
         data = data + (mu0 - mu1)
     elif match in ("var", "std", "variance", "stddev", "sd"):
         std0 = np.nanstd(surf_data, axis=0)
