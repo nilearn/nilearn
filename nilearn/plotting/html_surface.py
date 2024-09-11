@@ -228,8 +228,7 @@ def _one_mesh_info_niivue(
         surf_map_gifti = nib.gifti.gifti.GiftiImage()
         surf_map_gifti.add_gifti_data_array(
             nib.gifti.gifti.GiftiDataArray(
-                surf_map,
-                intent="NIFTI_INTENT_ZSCORE",
+                surf_map, intent="NIFTI_INTENT_ZSCORE", datatype="float32"
             )
         )
         nib.save(surf_map_gifti, surf_map_path)
