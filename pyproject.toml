@@ -45,9 +45,7 @@ requires-python = ">=3.8"
 [project.optional-dependencies]
 # A combination of dependencies useful for developers
 dev = [
-    "nilearn[plotting,doc,style,test]",
-    'pre-commit',
-    'tox'
+    "nilearn[plotting,doc,style,test]"
 ]
 # Requirements necessary for building the documentation
 doc = [
@@ -76,23 +74,15 @@ plotting = [
     "kaleido==0.1.0.post1 ; platform_system == 'Windows'"
 ]
 style = [
-    "black",
-    "blacken-docs",
-    'codespell',
-    "isort",
-    "flake8",
-    "flake8-docstrings",
-    "flake8-use-fstring",
-    "flake8-functions",
-    "flynt",
-    'tomli'
+    'tox'
 ]
 # For running unit and docstring tests
 test = [
     "coverage",
     "pytest>=6.0.0",
     "pytest-cov",
-    "pytest-reporter-html1>=0.9.1"
+    "pytest-reporter-html1>=0.9.1",
+    "tox"
 ]
 
 [project.urls]
