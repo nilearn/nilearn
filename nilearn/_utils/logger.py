@@ -7,11 +7,6 @@ import traceback
 
 from sklearn.base import BaseEstimator
 
-try:
-    from rich import print
-except ImportError:
-    ...
-
 
 def _has_rich():
     """Check if rich is installed."""
@@ -19,8 +14,13 @@ def _has_rich():
         import rich  # noqa: F401
 
         return True
+
     except ImportError:
         return False
+
+
+if _has_rich():
+    from rich import print
 
 
 # The technique used in the log() function only applies to CPython, because
