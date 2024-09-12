@@ -7,6 +7,7 @@ ignores modules whose name starts with an underscore.
 
 import contextlib
 
+import pytest
 from sklearn.base import BaseEstimator
 
 from nilearn._utils.logger import _has_rich, log
@@ -58,6 +59,7 @@ class Run(BaseEstimator):
         run()
 
 
+@pytest.mark.skipif(_has_rich())
 def test_log_2_matching_object():
     with capture_output() as out:
         t = Run2()
@@ -69,6 +71,7 @@ def test_log_2_matching_object():
     )
 
 
+@pytest.mark.skipif(_has_rich())
 def test_log_1_matching_object():
     with capture_output() as out:
         t = Run()
@@ -76,12 +79,14 @@ def test_log_1_matching_object():
     assert out[0] == "[Run.run] method Test\n[Run.run] function run()\n"
 
 
+@pytest.mark.skipif(_has_rich())
 def test_log_no_matching_object():
     with capture_output() as out:
         run()
     assert out[0] == "[run] function run()\n"
 
 
+@pytest.mark.skipif(_has_rich())
 def test_log_1_non_matching_object():
     with capture_output() as out:
         t = Run3()
@@ -89,6 +94,7 @@ def test_log_1_non_matching_object():
     assert out[0] == "[Run3.run3] method Test3\n[run] function run()\n"
 
 
+@pytest.mark.skipif(_has_rich())
 def test_log_stack_lvl_stack_too_large():
     with capture_output() as out:
         other_run()
@@ -98,5 +104,5 @@ def test_log_stack_lvl_stack_too_large():
 # Will be executed by testrunner upon importing
 with capture_output() as out:
     log("message from no function")
-    if not _has_rich():
+    if _has_rich() is False:
         assert out[0] == "[<module>] message from no function\n"
