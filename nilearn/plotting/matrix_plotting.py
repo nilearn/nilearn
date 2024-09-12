@@ -77,7 +77,8 @@ def _sanitize_figure_and_axes(figure, axes):
     if figure is not None:
         if isinstance(figure, plt.Figure):
             fig = figure
-            fig.set_layout_engine("constrained")
+            if hasattr(fig, "set_layout_engine"):  # can be removed w/mpl 3.5
+                fig.set_layout_engine("constrained")
         else:
             fig = plt.figure(figsize=figure, **_constrained_layout_kwargs())
         axes = plt.gca()

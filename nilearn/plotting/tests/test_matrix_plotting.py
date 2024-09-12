@@ -283,6 +283,10 @@ def test_show_contrast_matrix_axes():
     contrast = np.ones(4)
     fig, ax = plt.subplots(**_constrained_layout_kwargs())
     plot_contrast_matrix(contrast, dmtx, axes=ax)
+
+    # to actually check we need get_layout_engine, but even without it the
+    # above allows us to test the kwargs are at least okay
+    pytest.importorskip("matplotlib", minversion="3.5.0")
     assert "constrained" in fig.get_layout_engine().__class__.__name__.lower()
 
 
