@@ -777,7 +777,7 @@ def _make_stat_maps_contrast_clusters(
         component_text_ = string.Template(components_template_text)
 
         # Only use threshold_stats_img to adjust the threshold
-        # that we will pass to  _clustering_params_to_dataframe
+        # that we will pass to _clustering_params_to_dataframe
         # and _stat_map_to_svg
         # Necessary to avoid :
         # https://github.com/nilearn/nilearn/issues/4192

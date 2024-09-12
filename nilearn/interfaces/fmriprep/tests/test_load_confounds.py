@@ -665,7 +665,7 @@ def test_sample_mask(
     )
     # the "1.4.x" test data has 6 time points marked as motion outliers,
     # and one nonsteady state (overlap with the first motion outlier)
-    # 2 time points removed due to the "full" srubbing strategy
+    # 2 time points removed due to the "full" scrubbing strategy
     # (remove segment shorter than 5 volumes)
     assert reg.shape[0] - len(mask) == scrubbed_time_points
 
