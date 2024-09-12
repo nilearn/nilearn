@@ -94,7 +94,7 @@ def log(
             func_name = f"{object_self.__class__.__name__}.{func_name}"
 
         if _has_rich():
-            print(f"[blue][{func_name}][/blue] {msg}")
+            print(f"[blue]\\[{func_name}][/blue] {msg}")
         else:
             print(f"[{func_name}] {msg}")
 

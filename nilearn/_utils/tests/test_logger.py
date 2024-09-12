@@ -9,7 +9,7 @@ import contextlib
 
 from sklearn.base import BaseEstimator
 
-from nilearn._utils.logger import log
+from nilearn._utils.logger import _has_rich, log
 
 
 @contextlib.contextmanager
@@ -58,14 +58,7 @@ class Run(BaseEstimator):
         run()
 
 
-def test_log():
-    # Stack containing one non-matching object
-    with capture_output() as out:
-        t = Run3()
-        t.run3()
-    assert out[0] == "[Run3.run3] method Test3\n[run] function run()\n"
-
-    # Stack containing two matching objects
+def test_log_2_matching_object():
     with capture_output() as out:
         t = Run2()
         t.run2()
@@ -75,18 +68,28 @@ def test_log():
         "[Run2.run2] function run()\n"
     )
 
-    # Stack containing one matching object
+
+def test_log_1_matching_object():
     with capture_output() as out:
         t = Run()
         t.run()
     assert out[0] == "[Run.run] method Test\n[Run.run] function run()\n"
 
-    # Stack containing no object
+
+def test_log_no_matching_object():
     with capture_output() as out:
         run()
     assert out[0] == "[run] function run()\n"
 
-    # Test stack_level too large
+
+def test_log_1_non_matching_object():
+    with capture_output() as out:
+        t = Run3()
+        t.run3()
+    assert out[0] == "[Run3.run3] method Test3\n[run] function run()\n"
+
+
+def test_log_stack_lvl_stack_too_large():
     with capture_output() as out:
         other_run()
     assert out[0] == "[<top_level>] function other_run()\n"
@@ -95,4 +98,5 @@ def test_log():
 # Will be executed by testrunner upon importing
 with capture_output() as out:
     log("message from no function")
-assert out[0] == "[<module>] message from no function\n"
+    if not _has_rich():
+        assert out[0] == "[<module>] message from no function\n"
