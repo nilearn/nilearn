@@ -17,6 +17,7 @@ from nilearn.plotting.matrix_plotting import (
     plot_event,
     plot_matrix,
 )
+from nilearn._utils import _constrained_layout_kwargs
 
 ##############################################################################
 # Some smoke testing for graphics-related code
@@ -275,13 +276,12 @@ def test_show_contrast_matrix(tmp_path):
 
 
 def test_show_contrast_matrix_axes():
-    pytest.importorskip("matplotlib", minversion="3.5.0")
     frame_times = np.linspace(0, 127 * 1.0, 128)
     dmtx = make_first_level_design_matrix(
         frame_times, drift_model="polynomial", drift_order=3
     )
     contrast = np.ones(4)
-    fig, ax = plt.subplots(layout="constrained")
+    fig, ax = plt.subplots(**_constrained_layout_kwargs())
     plot_contrast_matrix(contrast, dmtx, axes=ax)
     assert "constrained" in fig.get_layout_engine().__class__.__name__.lower()
 

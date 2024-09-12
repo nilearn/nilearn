@@ -11,6 +11,7 @@ from nilearn._utils.helpers import (
     remove_parameters,
     rename_parameters,
     stringify_path,
+    _constrained_layout_kwargs,
 )
 
 from .cache_mixin import CacheMixin

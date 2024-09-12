@@ -165,14 +165,13 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 
-plt.figure(figsize=(4, 4))
+plt.figure(figsize=(4, 4), layout="constrained")
 positions = np.arange(len(scores))
 plt.barh(positions, scores)
 plt.ylabel("Component #", size=12)
 plt.xlabel("Explained variance", size=12)
 plt.yticks(np.arange(20))
 plt.gca().xaxis.set_major_formatter(FormatStrFormatter("%.3f"))
-plt.tight_layout()
 
 show()
 
