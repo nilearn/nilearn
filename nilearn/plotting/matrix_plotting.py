@@ -553,7 +553,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     n_runs = len(model_event)
     if (
         "layout" not in fig_kwargs
-        and "use_constrained_layout" not in fig_kwargs
+        and "constrained_layout" not in fig_kwargs
     ):
         fig_kwargs.update(**_constrained_layout_kwargs())
     figure, axes = plt.subplots(1, 1, **fig_kwargs)

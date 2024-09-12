@@ -262,4 +262,4 @@ def _constrained_layout_kwargs():
     if compare_version(matplotlib.__version__, ">=", "3.5"):
         return {"layout": "constrained"}
     else:
-        return {"use_constrained_layout": True}
+        return {"constrained_layout": True}
