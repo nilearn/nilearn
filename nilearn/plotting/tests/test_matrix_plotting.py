@@ -5,6 +5,7 @@ import pandas as pd
 import pytest
 from numpy.testing import assert_array_equal
 
+from nilearn._utils import _constrained_layout_kwargs
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
@@ -17,7 +18,6 @@ from nilearn.plotting.matrix_plotting import (
     plot_event,
     plot_matrix,
 )
-from nilearn._utils import _constrained_layout_kwargs
 
 ##############################################################################
 # Some smoke testing for graphics-related code

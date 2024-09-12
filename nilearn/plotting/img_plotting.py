@@ -28,7 +28,12 @@ from nilearn.plotting.displays import get_projector, get_slicer
 from nilearn.plotting.displays._slicers import _get_cbar_ticks
 
 from .. import _utils
-from .._utils import compare_version, fill_doc, logger, _constrained_layout_kwargs
+from .._utils import (
+    _constrained_layout_kwargs,
+    compare_version,
+    fill_doc,
+    logger,
+)
 from .._utils.extmath import fast_abs_percentile
 from .._utils.ndimage import get_border_data
 from .._utils.niimg import safe_get_data
@@ -2135,7 +2140,10 @@ def plot_img_comparison(
     for i, (ref_img, src_img) in enumerate(zip(ref_imgs, src_imgs)):
         if axes is None:
             _, (ax1, ax2) = plt.subplots(
-                1, 2, figsize=(12, 5), **_constrained_layout_kwargs(),
+                1,
+                2,
+                figsize=(12, 5),
+                **_constrained_layout_kwargs(),
             )
         else:
             (ax1, ax2) = axes

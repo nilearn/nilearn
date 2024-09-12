@@ -12,7 +12,7 @@ from scipy.cluster.hierarchy import leaves_list, linkage, optimal_leaf_ordering
 from nilearn._utils.helpers import rename_parameters
 from nilearn.glm.first_level.experimental_paradigm import check_events
 
-from .._utils import fill_doc, _constrained_layout_kwargs
+from .._utils import _constrained_layout_kwargs, fill_doc
 
 VALID_TRI_VALUES = ("full", "lower", "diag")
 
@@ -85,7 +85,10 @@ def _sanitize_figure_and_axes(figure, axes):
     else:
         if axes is None:
             fig, axes = plt.subplots(
-                1, 1, figsize=(7, 5), **_constrained_layout_kwargs(),
+                1,
+                1,
+                figsize=(7, 5),
+                **_constrained_layout_kwargs(),
             )
             own_fig = True
         else:
@@ -548,7 +551,10 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
         model_event[i] = event_copy
 
     n_runs = len(model_event)
-    if "layout" not in fig_kwargs and "use_constrained_layout" not in fig_kwargs:
+    if (
+        "layout" not in fig_kwargs
+        and "use_constrained_layout" not in fig_kwargs
+    ):
         fig_kwargs.update(**_constrained_layout_kwargs())
     figure, axes = plt.subplots(1, 1, **fig_kwargs)
 
