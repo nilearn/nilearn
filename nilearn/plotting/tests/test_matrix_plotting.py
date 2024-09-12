@@ -280,6 +280,7 @@ def test_show_contrast_matrix_axes():
     dmtx = make_first_level_design_matrix(
         frame_times, drift_model="polynomial", drift_order=3
     )
+    contrast = np.ones(4)
     fig, ax = plt.subplots(layout="constrained")
     plot_contrast_matrix(contrast, dmtx, axes=ax)
     assert "constrained" in fig.get_layout_engine().__class__.__name__.lower()
