@@ -106,7 +106,12 @@ X3 = make_first_level_design_matrix(
 # Here are the three designs side by side.
 import matplotlib.pyplot as plt
 
-fig, (ax1, ax2, ax3) = plt.subplots(figsize=(10, 6), nrows=1, ncols=3)
+fig, (ax1, ax2, ax3) = plt.subplots(
+    figsize=(10, 6),
+    nrows=1,
+    ncols=3,
+    layout="constrained",
+)
 plot_design_matrix(X1, axes=ax1)
 ax1.set_title("Event-related design matrix", fontsize=12)
 plot_design_matrix(X2, axes=ax2)
@@ -127,7 +132,12 @@ plt.show()
 
 from nilearn.plotting import plot_design_matrix_correlation
 
-fig3, (ax1, ax2, ax3) = plt.subplots(figsize=(15, 5), nrows=1, ncols=3)
+fig3, (ax1, ax2, ax3) = plt.subplots(
+    figsize=(15, 5),
+    nrows=1,
+    ncols=3,
+    layout="constrained",
+)
 plot_design_matrix_correlation(X1, axes=ax1)
 ax1.set_title("Event-related correlation matrix", fontsize=12)
 plot_design_matrix_correlation(X2, axes=ax2)
@@ -177,7 +187,12 @@ X4 = make_first_level_design_matrix(
 )
 
 # Let's compare it to the unmodulated block design
-fig, (ax1, ax2) = plt.subplots(figsize=(10, 6), nrows=1, ncols=2)
+fig, (ax1, ax2) = plt.subplots(
+    figsize=(10, 6),
+    nrows=1,
+    ncols=2,
+    layout="constrained",
+)
 plot_design_matrix(X2, axes=ax1)
 ax1.set_title("Block design matrix", fontsize=12)
 plot_design_matrix(X4, axes=ax2)
