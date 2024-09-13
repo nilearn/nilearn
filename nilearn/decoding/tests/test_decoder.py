@@ -24,6 +24,7 @@ import pytest
 import sklearn
 from nibabel import save
 from numpy.testing import assert_array_almost_equal
+from sklearn import __version__ as sklearn_version
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.ensemble import RandomForestClassifier
@@ -1020,13 +1021,23 @@ def test_decoder_multiclass_warnings(multiclass_data):
 def test_decoder_tags_classification():
     """Check value returned by _more_tags."""
     model = Decoder()
-    assert model._more_tags()["require_y"] is True
+    # TODO
+    # remove if block when bumping sklearn_version
+    if compare_version(sklearn_version, ">", "1.5.1"):
+        assert model._more_tags().target_tags.required is True
+    else:
+        assert model._more_tags()["require_y"] is True
 
 
 def test_decoder_tags_regression():
     """Check value returned by _more_tags."""
     model = DecoderRegressor()
-    assert model._more_tags()["multioutput"] is True
+    # TODO
+    # remove if block when bumping sklearn_version
+    if compare_version(sklearn_version, ">", "1.5.1"):
+        assert model._more_tags().target_tags.multi_output is True
+    else:
+        assert model._more_tags()["multioutput"] is True
 
 
 def test_decoder_decision_function(binary_classification_data):
