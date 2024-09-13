@@ -61,7 +61,7 @@ masker = MultiNiftiMasker(
 masker.fit()
 fmri_data = masker.transform(fmri_random_runs_filenames)
 
-# shape of the binary (i.e. black and wihte values) image in pixels
+# shape of the binary (i.e. black and white values) image in pixels
 stimulus_shape = (10, 10)
 
 # We load the visual stimuli from csv files
