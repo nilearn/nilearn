@@ -1082,11 +1082,11 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         # and get rid of if block
         # bumping sklearn_version > 1.5.1
         # see https://github.com/scikit-learn/scikit-learn/pull/29677
-        if compare_version(sklearn_version, ">", "1.5.1"):
-            tags = self.__sklearn_tags__()
-            tags.target_tags.required = True
-            return tags
-        return {"require_y": True}
+        if compare_version(sklearn_version, "<", "1.6"):
+            return {"require_y": True}
+        tags = self.__sklearn_tags__()
+        tags.target_tags.required = True
+        return tags
 
 
 @fill_doc
