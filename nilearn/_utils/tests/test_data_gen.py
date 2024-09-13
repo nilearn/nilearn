@@ -161,7 +161,7 @@ def test_fake_bids_raw_with_session_and_runs(
     assert len(all_files) == n_raw_files_expected
 
 
-def _check_nb_files_derivatives_for_task(
+def _check_n_files_derivatives_for_task(
     bids_path,
     n_sub,
     n_ses,
@@ -243,7 +243,7 @@ def test_fake_bids_derivatives_with_session_and_runs(
 
     # derivatives
     for task, n_run in zip(tasks, n_runs):
-        _check_nb_files_derivatives_for_task(
+        _check_n_files_derivatives_for_task(
             bids_path=bids_path,
             n_sub=n_sub,
             n_ses=n_ses,
@@ -406,7 +406,7 @@ def test_fake_bids_extra_raw_entity(tmp_path):
     # derivatives
     for label in entities["acq"]:
         for task, n_run in zip(tasks, n_runs):
-            _check_nb_files_derivatives_for_task(
+            _check_n_files_derivatives_for_task(
                 bids_path=bids_path,
                 n_sub=n_sub,
                 n_ses=n_ses,
@@ -447,7 +447,7 @@ def test_fake_bids_extra_derivative_entity(tmp_path):
     # derivatives
     for label in entities["res"]:
         for task, n_run in zip(tasks, n_runs):
-            _check_nb_files_derivatives_for_task(
+            _check_n_files_derivatives_for_task(
                 bids_path=bids_path,
                 n_sub=n_sub,
                 n_ses=n_ses,
