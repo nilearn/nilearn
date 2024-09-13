@@ -498,11 +498,11 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
         # TODO
         # rename method to '__sklearn_tags__'
         # and get rid of if block
-        # bumping sklearn_version > 1.5.1
+        # bumping sklearn_version > 1.5
         # see https://github.com/scikit-learn/scikit-learn/pull/29677
-        if compare_version(sklearn_version, ">", "1.5.1"):
-            return self.__sklearn_tags__()
-        return BaseEstimator._more_tags(self)
+        if compare_version(sklearn_version, "<", "1.6"):
+            return BaseEstimator._more_tags(self)
+        return self.__sklearn_tags__()
 
     def fit(self, X, y=None):
         """Compute clustering of the data.
