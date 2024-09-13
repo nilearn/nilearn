@@ -42,6 +42,16 @@ from nilearn.maskers import NiftiMasker
 if have_mpl:
     from nilearn.reporting import get_clusters_table
 
+from nilearn._utils.class_inspect import check_estimator
+
+
+@pytest.mark.parametrize("estimator", [FirstLevelModel, SecondLevelModel])
+def test_check_estimator(estimator):
+    """Check compliance with sklearn estimators."""
+    model = estimator()
+    check_estimator(estimator=model)
+
+
 # This directory path
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 FUNCFILE = os.path.join(BASEDIR, "functional.nii.gz")

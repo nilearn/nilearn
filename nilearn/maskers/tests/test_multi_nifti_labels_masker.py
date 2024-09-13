@@ -5,9 +5,22 @@ import pytest
 from nibabel import Nifti1Image
 
 from nilearn._utils import data_gen, testing
+from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.exceptions import DimensionError
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiLabelsMasker, NiftiLabelsMasker
+
+
+@pytest.mark.parametrize(
+    "estimator", [MultiNiftiLabelsMasker, NiftiLabelsMasker]
+)
+def test_check_estimator(estimator, affine_eye, shape_3d_default):
+    """Check compliance with sklearn estimators."""
+    labels_img = data_gen.generate_labeled_regions(
+        shape_3d_default, affine=affine_eye, n_regions=9
+    )
+    model = estimator(labels_img)
+    check_estimator(estimator=model)
 
 
 def test_multi_nifti_labels_masker():

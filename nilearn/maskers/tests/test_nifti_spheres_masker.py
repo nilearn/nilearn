@@ -8,9 +8,16 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from nilearn._utils import data_gen
+from nilearn._utils.class_inspect import check_estimator
 from nilearn.conftest import have_mpl
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiSpheresMasker
+
+
+def test_check_estimator():
+    """Check compliance with sklearn estimators."""
+    model = NiftiSpheresMasker([(1, 1, 1)])
+    check_estimator(estimator=model)
 
 
 def test_seed_extraction(rng):

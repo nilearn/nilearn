@@ -502,7 +502,7 @@ def _group_sparse_covariance(
     return omega
 
 
-class GroupSparseCovariance(BaseEstimator, CacheMixin):
+class GroupSparseCovariance(CacheMixin, BaseEstimator):
     """Covariance and precision matrix estimator.
 
     The model used has been introduced in :footcite:t:`Varoquaux2010a`, and the
@@ -918,7 +918,7 @@ class EarlyStopProbe:
         self.last_log_lik = log_lik
 
 
-class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
+class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
     """Sparse inverse covariance w/ cross-validated choice of the parameter.
 
     A cross-validated value for the regularization parameter is first

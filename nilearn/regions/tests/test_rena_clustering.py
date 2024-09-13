@@ -2,10 +2,17 @@ import numpy as np
 import pytest
 from joblib import Memory
 
+from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMasker
 from nilearn.regions.rena_clustering import ReNA
+
+
+def test_check_estimator(img_3d_ones_eye):
+    """Check compliance with sklearn estimators."""
+    model = ReNA(img_3d_ones_eye, n_clusters=10)
+    check_estimator(estimator=model)
 
 
 def test_tags():

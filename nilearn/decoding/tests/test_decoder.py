@@ -47,6 +47,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR, LinearSVC
 
 from nilearn._utils import compare_version
+from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.param_validation import check_feature_screening
 from nilearn.conftest import _rng
 from nilearn.decoding.decoder import (
@@ -67,6 +68,22 @@ from nilearn.maskers import NiftiMasker
 N_SAMPLES = 100
 
 ESTIMATOR_REGRESSION = ("ridge", "svr")
+
+
+@pytest.mark.parametrize(
+    "estimator",
+    [
+        Decoder,
+        DecoderRegressor,
+        FREMClassifier,
+        FREMRegressor,
+        _BaseDecoder,
+    ],
+)
+def test_check_estimator(estimator):
+    """Check compliance with sklearn estimators."""
+    model = estimator()
+    check_estimator(estimator=model)
 
 
 def _make_binary_classification_test_data(n_samples=N_SAMPLES):

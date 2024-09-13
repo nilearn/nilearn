@@ -1,12 +1,22 @@
 import numpy as np
 import pytest
 
+from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import generate_group_sparse_gaussian_graphs
 from nilearn.connectome import GroupSparseCovariance, GroupSparseCovarianceCV
 from nilearn.connectome.group_sparse_cov import (
     group_sparse_covariance,
     group_sparse_scores,
 )
+
+
+@pytest.mark.parametrize(
+    "estimator", [GroupSparseCovariance, GroupSparseCovarianceCV]
+)
+def test_check_estimator(estimator):
+    """Check compliance with sklearn estimators."""
+    model = estimator()
+    check_estimator(estimator=model)
 
 
 def test_group_sparse_covariance(rng):

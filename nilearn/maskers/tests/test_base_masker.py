@@ -5,7 +5,15 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal
 
 from nilearn import image
+from nilearn._utils.class_inspect import check_estimator
+from nilearn.maskers.base_masker import BaseMasker
 from nilearn.maskers.nifti_masker import _filter_and_mask
+
+
+def test_check_estimator():
+    """Check compliance with sklearn estimators."""
+    model = BaseMasker()
+    check_estimator(estimator=model)
 
 
 def test_cropping_code_paths(rng):

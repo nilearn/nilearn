@@ -6,8 +6,15 @@ import numpy as np
 from nibabel import Nifti1Image
 from sklearn.model_selection import KFold, LeaveOneGroupOut
 
+from nilearn._utils.class_inspect import check_estimator
 from nilearn.conftest import _rng
 from nilearn.decoding import searchlight
+
+
+def test_check_estimator(img_3d_ones_eye):
+    """Check compliance with sklearn estimators."""
+    model = searchlight.SearchLight(mask_img=img_3d_ones_eye)
+    check_estimator(estimator=model)
 
 
 def _make_searchlight_test_data(frames):

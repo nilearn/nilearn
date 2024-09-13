@@ -10,11 +10,19 @@ from joblib import Memory
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
 
+from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _rng
 from nilearn.image import get_data
-from nilearn.maskers import MultiNiftiMasker
+from nilearn.maskers import MultiNiftiMasker, NiftiMasker
+
+
+@pytest.mark.parametrize("estimator", [MultiNiftiMasker, NiftiMasker])
+def test_check_estimator(estimator):
+    """Check compliance with sklearn estimators."""
+    model = estimator()
+    check_estimator(estimator=model)
 
 
 def test_auto_mask():
