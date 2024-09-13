@@ -7,42 +7,65 @@ from sklearn.utils.estimator_checks import (
     check_estimator_get_tags_default_keys,
     check_estimators_partial_fit_n_features,
     check_get_params_invariance,
-    check_no_attributes_set_in_init,
     check_non_transformer_estimators_n_iter,
-    check_parameters_default_constructible,
     check_set_params,
 )
 
 VALID_CHECKS = [
-    check_no_attributes_set_in_init,
-    check_estimator_get_tags_default_keys,
-    check_classifiers_one_label_sample_weights,
-    check_estimators_partial_fit_n_features,
-    check_non_transformer_estimators_n_iter,
-    check_decision_proba_consistency,
-    check_parameters_default_constructible,
-    check_get_params_invariance,
-    check_set_params,
+    x.__name__
+    for x in [
+        check_estimator_get_tags_default_keys,
+        check_classifiers_one_label_sample_weights,
+        check_estimators_partial_fit_n_features,
+        check_non_transformer_estimators_n_iter,
+        check_decision_proba_consistency,
+        check_get_params_invariance,
+        check_set_params,
+    ]
 ]
 
 
-def check_estimator(estimator=None):
+def check_estimator(estimator=None, valid=True, extra_valid_checks=None):
     """Check compatibility with scikit-learn estimators.
 
     As some of nilearn estimators cannot fit numpy arrays,
     we cannot directly use
     sklearn.utils.estimator_checks.check_estimator.
 
-    So this is a home made implementation that:
-    - run the checks from sklearn we know are valid
-    - make sure that those that fail keep on failing
-    - implements some of our own checks
+    So this is a home made implementation that yields an estimator instance
+    along with a
+    - valid check from sklearn: those should stay valid
+    - or an invalid check that is known to fail.
+
+    If new 'valid' checks are added to scikit-learn,
+    then tests marked as xfail will start passing.
+
+    Parameters
+    ----------
+    estimator : estimator object or list of estimator object
+        Estimator instance to check.
+
+    valid : bool, default=True
+        Whether to return only the valid checks or not.
+
+    extra_valid_checks : list of strings
+        Names of checks to be tested as valid for this estimator.
     """
-    for check in sklearn_check_estimator(
-        estimator=estimator, generate_only=True
-    ):
-        if check in VALID_CHECKS:
-            check(estimator)
+    if extra_valid_checks is None:
+        valid_checks = VALID_CHECKS
+    else:
+        valid_checks = VALID_CHECKS + extra_valid_checks
+
+    if not isinstance(estimator, list):
+        estimator = [estimator]
+    for est in estimator:
+        for e, check in sklearn_check_estimator(
+            estimator=est, generate_only=True
+        ):
+            if valid and check.func.__name__ in valid_checks:
+                yield e, check, check.func.__name__
+            if not valid and check.func.__name__ not in valid_checks:
+                yield e, check, check.func.__name__
 
 
 def get_params(cls, instance, ignore=None):

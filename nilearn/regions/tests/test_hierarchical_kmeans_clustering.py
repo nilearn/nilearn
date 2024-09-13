@@ -11,11 +11,55 @@ from nilearn.regions.hierarchical_kmeans_clustering import (
     hierarchical_k_means,
 )
 
+extra_valid_checks = [
+    "check_clusterer_compute_labels_predict",
+    "check_clustering",
+    "check_complex_data",
+    "check_dict_unchanged",
+    "check_dont_overwrite_parameters",
+    "check_dtype_object",
+    "check_estimator_sparse_array",
+    "check_estimator_sparse_matrix",
+    "check_estimators_dtypes",
+    "check_estimators_empty_data_messages",
+    "check_estimators_fit_returns_self",
+    "check_estimators_pickle",
+    "check_fit2d_1sample",
+    "check_fit2d_1feature",
+    "check_fit_check_is_fitted",
+    "check_fit1d",
+    "check_fit_score_takes_y",
+    "check_no_attributes_set_in_init",
+    "check_pipeline_consistency",
+    "check_transformers_unfitted",
+    "check_transformer_n_iter",
+]
 
-def test_check_estimator():
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[HierarchicalKMeans(n_clusters=8)],
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator(estimator, check, name):
     """Check compliance with sklearn estimators."""
-    model = HierarchicalKMeans(n_clusters=8)
-    check_estimator(estimator=model)
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[HierarchicalKMeans(n_clusters=8)],
+        extra_valid_checks=extra_valid_checks,
+        valid=False,
+    ),
+)
+def test_check_estimator_invalid(estimator, check, name):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 @pytest.mark.parametrize(

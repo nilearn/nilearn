@@ -13,12 +13,36 @@ from nilearn.decomposition._base import (
 )
 from nilearn.maskers import MultiNiftiMasker
 
+extra_valid_checks = [
+    "check_no_attributes_set_in_init",
+    "check_transformers_unfitted",
+    "check_transformer_n_iter",
+]
 
-@pytest.mark.parametrize("estimator", [_BaseDecomposition])
-def test_check_estimator(estimator):
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[_BaseDecomposition()], extra_valid_checks=extra_valid_checks
+    ),
+)
+def test_check_estimator(estimator, check, name):
     """Check compliance with sklearn estimators."""
-    model = estimator()
-    check_estimator(estimator=model)
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[_BaseDecomposition()],
+        valid=False,
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator_invalid(estimator, check, name):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 @pytest.fixture

@@ -71,19 +71,108 @@ ESTIMATOR_REGRESSION = ("ridge", "svr")
 
 
 @pytest.mark.parametrize(
-    "estimator",
-    [
-        Decoder,
-        DecoderRegressor,
-        FREMClassifier,
-        FREMRegressor,
-        _BaseDecoder,
-    ],
+    "estimator, check, name",
+    check_estimator(
+        estimator=[DecoderRegressor()],
+        extra_valid_checks=["check_parameters_default_constructible"],
+    ),
 )
-def test_check_estimator(estimator):
+def test_check_estimator_DecoderRegressor(estimator, check, name):
     """Check compliance with sklearn estimators."""
-    model = estimator()
-    check_estimator(estimator=model)
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[DecoderRegressor()],
+        extra_valid_checks=["check_parameters_default_constructible"],
+        valid=False,
+    ),
+)
+def test_check_estimator_invalid_DecoderRegressor(estimator, check, name):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[FREMRegressor()],
+    ),
+)
+def test_check_estimator_FREMRegressor(estimator, check, name):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(estimator=[FREMRegressor()], valid=False),
+)
+def test_check_estimator_invalid_FREMRegressor(estimator, check, name):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[_BaseDecoder(), Decoder()],
+        extra_valid_checks=[
+            "check_no_attributes_set_in_init",
+            "check_parameters_default_constructible",
+        ],
+    ),
+)
+def test_check_estimator_Decoder(estimator, check, name):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[_BaseDecoder(), Decoder()],
+        extra_valid_checks=[
+            "check_no_attributes_set_in_init",
+            "check_parameters_default_constructible",
+        ],
+        valid=False,
+    ),
+)
+def test_check_estimator_invalid_Decoder(estimator, check, name):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[FREMClassifier()],
+        extra_valid_checks=["check_no_attributes_set_in_init"],
+    ),
+)
+def test_check_estimator_FREMClassifier(estimator, check, name):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[FREMClassifier()],
+        extra_valid_checks=["check_no_attributes_set_in_init"],
+        valid=False,
+    ),
+)
+def test_check_estimator_invalid_FREMClassifier(estimator, check, name):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 def _make_binary_classification_test_data(n_samples=N_SAMPLES):

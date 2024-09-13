@@ -44,12 +44,38 @@ if have_mpl:
 
 from nilearn._utils.class_inspect import check_estimator
 
+extra_valid_checks = [
+    "check_transformers_unfitted",
+    "check_transformer_n_iter",
+    "check_estimator_sparse_array",
+    "check_estimator_sparse_matrix",
+]
 
-@pytest.mark.parametrize("estimator", [FirstLevelModel, SecondLevelModel])
-def test_check_estimator(estimator):
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[FirstLevelModel(), SecondLevelModel()],
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator(estimator, check, name):
     """Check compliance with sklearn estimators."""
-    model = estimator()
-    check_estimator(estimator=model)
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[FirstLevelModel(), SecondLevelModel()],
+        extra_valid_checks=extra_valid_checks,
+        valid=False,
+    ),
+)
+def test_check_estimator_invalid(estimator, check, name):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 # This directory path

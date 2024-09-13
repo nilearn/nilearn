@@ -3,18 +3,39 @@
 # Author: Alexandre Abraham
 
 import numpy as np
+import pytest
 from nibabel import Nifti1Image
 from sklearn.model_selection import KFold, LeaveOneGroupOut
 
 from nilearn._utils.class_inspect import check_estimator
-from nilearn.conftest import _rng
+from nilearn.conftest import _img_3d_ones, _rng
 from nilearn.decoding import searchlight
 
 
-def test_check_estimator(img_3d_ones_eye):
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[searchlight.SearchLight(mask_img=_img_3d_ones)],
+        extra_valid_checks=["check_no_attributes_set_in_init"],
+    ),
+)
+def test_check_estimator(estimator, check, name):
     """Check compliance with sklearn estimators."""
-    model = searchlight.SearchLight(mask_img=img_3d_ones_eye)
-    check_estimator(estimator=model)
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[searchlight.SearchLight(mask_img=_img_3d_ones)],
+        valid=False,
+        extra_valid_checks=["check_no_attributes_set_in_init"],
+    ),
+)
+def test_check_estimator_invalid(estimator, check, name):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 def _make_searchlight_test_data(frames):

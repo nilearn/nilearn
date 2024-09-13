@@ -17,12 +17,36 @@ from nilearn.conftest import _rng
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiMasker, NiftiMasker
 
+extra_valid_checks = [
+    "check_transformer_n_iter",
+    "check_transformers_unfitted",
+]
 
-@pytest.mark.parametrize("estimator", [MultiNiftiMasker, NiftiMasker])
-def test_check_estimator(estimator):
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[MultiNiftiMasker(), NiftiMasker()],
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator(estimator, check, name):
     """Check compliance with sklearn estimators."""
-    model = estimator()
-    check_estimator(estimator=model)
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[MultiNiftiMasker(), NiftiMasker()],
+        extra_valid_checks=extra_valid_checks,
+        valid=False,
+    ),
+)
+def test_check_estimator_invalid(estimator, check, name):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 def test_auto_mask():

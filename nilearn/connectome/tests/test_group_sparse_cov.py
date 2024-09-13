@@ -9,14 +9,68 @@ from nilearn.connectome.group_sparse_cov import (
     group_sparse_scores,
 )
 
+extra_valid_checks = [
+    "check_parameters_default_constructible",
+    "check_no_attributes_set_in_init",
+]
+
 
 @pytest.mark.parametrize(
-    "estimator", [GroupSparseCovariance, GroupSparseCovarianceCV]
+    "estimator, check, name",
+    (
+        check_estimator(
+            estimator=[GroupSparseCovarianceCV()],
+            extra_valid_checks=extra_valid_checks,
+        )
+    ),
 )
-def test_check_estimator(estimator):
+def test_check_estimator_GroupSparseCovarianceCV(estimator, check, name):
     """Check compliance with sklearn estimators."""
-    model = estimator()
-    check_estimator(estimator=model)
+    check(estimator)
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    (
+        check_estimator(
+            estimator=[GroupSparseCovariance()],
+            extra_valid_checks=["check_no_attributes_set_in_init"],
+        )
+    ),
+)
+def test_check_estimator_GroupSparseCovariance(estimator, check, name):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[GroupSparseCovarianceCV()],
+        valid=False,
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator_invalid_GroupSparseCovarianceCV(
+    estimator, check, name
+):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[GroupSparseCovariance()],
+        valid=False,
+        extra_valid_checks=["check_no_attributes_set_in_init"],
+    ),
+)
+def test_check_estimator_invalid_GroupSparseCovariance(estimator, check, name):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 def test_group_sparse_covariance(rng):
