@@ -211,20 +211,20 @@ def test_fast_smooth_array():
     # hardcoded in _fast_smooth_array
     neighbor_weight = 0.2
     # 6 neighbors in 3D if you are not on an edge
-    nb_neighbors_max = 6
+    n_neighbors_max = 6
 
     data = np.ones(shape)
     smooth_data = image._fast_smooth_array(data)
 
     # this contains the number of neighbors for each cell in the array
-    nb_neighbors_arr = np.empty(shape)
-    for (i, j, k), __ in np.ndenumerate(nb_neighbors_arr):
-        nb_neighbors_arr[i, j, k] = (
+    n_neighbors_arr = np.empty(shape)
+    for (i, j, k), __ in np.ndenumerate(n_neighbors_arr):
+        n_neighbors_arr[i, j, k] = (
             3 + (0 < i < N - 1) + (0 < j < N - 1) + (0 < k < N - 1)
         )
 
-    expected = (1 + neighbor_weight * nb_neighbors_arr) / (
-        1 + neighbor_weight * nb_neighbors_max
+    expected = (1 + neighbor_weight * n_neighbors_arr) / (
+        1 + neighbor_weight * n_neighbors_max
     )
     assert_allclose(smooth_data, expected)
 
@@ -801,7 +801,7 @@ def test_threshold_img_with_cluster_threshold(
     assert np.array_equal(np.unique(thr_img.get_fdata()), np.array(expected))
 
 
-def test_threshold_img_threshold_nb_clusters(stat_img_test_data):
+def test_threshold_img_threshold_n_clusters(stat_img_test_data):
     """With a cluster threshold of 5 we get 8 clusters with |values| > 2 \
        and cluster sizes > 5."""
     thr_img = threshold_img(

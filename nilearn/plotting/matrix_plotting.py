@@ -374,11 +374,11 @@ def plot_contrast_matrix(
     design_column_names = design_matrix.columns.tolist()
     max_len = np.max([len(str(name)) for name in design_column_names])
 
-    nb_columns_design_matrix = len(design_column_names)
+    n_columns_design_matrix = len(design_column_names)
     if axes is None:
         _, axes = plt.subplots(
             figsize=(
-                0.4 * nb_columns_design_matrix,
+                0.4 * n_columns_design_matrix,
                 1 + 0.5 * con_matrix.shape[0] + 0.04 * max_len,
             ),
             **_constrained_layout_kwargs(),
@@ -393,7 +393,7 @@ def plot_contrast_matrix(
     axes.set_ylabel("")
     axes.set_yticks(())
 
-    axes.xaxis.set(ticks=np.arange(nb_columns_design_matrix))
+    axes.xaxis.set(ticks=np.arange(n_columns_design_matrix))
     axes.set_xticklabels(design_column_names, rotation=50, ha="left")
 
     fig = axes.figure
@@ -430,13 +430,13 @@ def pad_contrast_matrix(contrast_def, design_matrix):
         contrast_def = expression_to_contrast_vector(
             contrast_def, design_column_names
         )
-    nb_columns_design_matrix = len(design_column_names)
-    nb_columns_contrast_def = (
+    n_columns_design_matrix = len(design_column_names)
+    n_columns_contrast_def = (
         contrast_def.shape[0]
         if contrast_def.ndim == 1
         else contrast_def.shape[1]
     )
-    horizontal_padding = nb_columns_design_matrix - nb_columns_contrast_def
+    horizontal_padding = n_columns_design_matrix - n_columns_contrast_def
     if horizontal_padding == 0:
         return contrast_def
     warnings.warn(

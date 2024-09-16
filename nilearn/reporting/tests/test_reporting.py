@@ -100,7 +100,7 @@ def test_cluster_nearest_neighbor(shape):
 
 
 @pytest.mark.parametrize(
-    "stat_threshold, cluster_threshold, two_sided, expected_nb_cluster",
+    "stat_threshold, cluster_threshold, two_sided, expected_n_cluster",
     [
         (4, 0, False, 1),  # test one cluster extracted
         (6, 0, False, 0),  # test empty table on high stat threshold
@@ -116,7 +116,7 @@ def test_get_clusters_table(
     stat_threshold,
     cluster_threshold,
     two_sided,
-    expected_nb_cluster,
+    expected_n_cluster,
 ):
     data = np.zeros(shape)
     data[2:4, 5:7, 6:8] = 5.0
@@ -129,7 +129,7 @@ def test_get_clusters_table(
         cluster_threshold=cluster_threshold,
         two_sided=two_sided,
     )
-    assert len(clusters_table) == expected_nb_cluster
+    assert len(clusters_table) == expected_n_cluster
 
 
 def test_get_clusters_table_more(shape, affine_eye, tmp_path):
@@ -216,7 +216,7 @@ def test_get_clusters_table_relabel_label_maps(shape, affine_eye):
 
 
 @pytest.mark.parametrize(
-    "stat_threshold, cluster_threshold, two_sided, expected_nb_cluster",
+    "stat_threshold, cluster_threshold, two_sided, expected_n_cluster",
     [
         (4, 10, True, 1),  # test one cluster should be removed
         (4, 7, False, 2),  # test no clusters should be removed
@@ -229,7 +229,7 @@ def test_get_clusters_table_not_modifying_stat_image(
     stat_threshold,
     cluster_threshold,
     two_sided,
-    expected_nb_cluster,
+    expected_n_cluster,
 ):
     data = np.zeros(shape)
     data[2:4, 5:7, 6:8] = 5.0
@@ -245,4 +245,4 @@ def test_get_clusters_table_not_modifying_stat_image(
         two_sided=two_sided,
     )
     assert np.allclose(data_orig, get_data(stat_img))
-    assert len(clusters_table) == expected_nb_cluster
+    assert len(clusters_table) == expected_n_cluster
