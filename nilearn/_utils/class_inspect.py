@@ -1,7 +1,6 @@
 """Small utilities to inspect classes."""
 
 from sklearn.utils.estimator_checks import (
-    check_classifiers_one_label_sample_weights,
     check_decision_proba_consistency,
     check_estimator as sklearn_check_estimator,
     check_estimator_get_tags_default_keys,
@@ -15,7 +14,6 @@ VALID_CHECKS = [
     x.__name__
     for x in [
         check_estimator_get_tags_default_keys,
-        check_classifiers_one_label_sample_weights,
         check_estimators_partial_fit_n_features,
         check_non_transformer_estimators_n_iter,
         check_decision_proba_consistency,
@@ -23,6 +21,17 @@ VALID_CHECKS = [
         check_set_params,
     ]
 ]
+
+# TODO
+# remove when bumping to sklearn >= 1.3
+try:
+    from sklearn.utils.estimator_checks import (
+        check_classifiers_one_label_sample_weights,
+    )
+
+    VALID_CHECKS.append(check_classifiers_one_label_sample_weights.__name__)
+except ImportError:
+    ...
 
 
 def check_estimator(estimator=None, valid=True, extra_valid_checks=None):
