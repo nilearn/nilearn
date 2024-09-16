@@ -4,8 +4,10 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal
+from sklearn import __version__ as sklearn_version
 
 from nilearn import image
+from nilearn._utils import compare_version
 from nilearn._utils.class_inspect import check_estimator
 from nilearn.maskers.base_masker import BaseMasker
 from nilearn.maskers.nifti_masker import _filter_and_mask
@@ -22,6 +24,9 @@ extra_valid_checks = [
     "check_transformer_n_iter",
     "check_transformers_unfitted",
 ]
+# TODO remove when dropping support for sklearn_version < 1.4.0
+if compare_version(sklearn_version, "<", "1.4.0"):
+    extra_valid_checks.append("check_estimator_sparse_data")
 
 
 @pytest.mark.parametrize(

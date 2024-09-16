@@ -13,8 +13,9 @@ from numpy.testing import (
     assert_array_equal,
 )
 from scipy import stats
+from sklearn import __version__ as sklearn_version
 
-from nilearn._utils import testing
+from nilearn._utils import compare_version, testing
 from nilearn._utils.data_gen import (
     generate_fake_fmri_data_and_design,
     write_fake_bold_img,
@@ -50,6 +51,9 @@ extra_valid_checks = [
     "check_estimator_sparse_array",
     "check_estimator_sparse_matrix",
 ]
+# TODO remove when dropping support for sklearn_version < 1.4.0
+if compare_version(sklearn_version, "<", "1.4.0"):
+    extra_valid_checks.append("check_estimator_sparse_data")
 
 
 @pytest.mark.parametrize(
