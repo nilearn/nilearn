@@ -1064,20 +1064,20 @@ def test_fetch_spm_auditory(affine_eye, tmp_path):
     assert dataset.description != ""
 
 
-def _generate_spm_multimodal(path, nb_sessions=2, nb_vol=390):
+def _generate_spm_multimodal(path, n_sessions=2, n_vol=390):
     data_dir = path / "spm_multimodal_fmri"
     subject_dir = data_dir / "sub001"
     (subject_dir / "fMRI").mkdir(exist_ok=True, parents=True)
     (subject_dir / "sMRI").mkdir(exist_ok=True)
     open(subject_dir / "sMRI" / "smri.img", "a").close()
-    for session in range(nb_sessions):
+    for session in range(n_sessions):
         open(
             subject_dir / "fMRI" / f"trials_ses{int(session + 1)}.mat",
             "a",
         ).close()
         dir_ = subject_dir / "fMRI" / f"Session{int(session + 1)}"
         dir_.mkdir(exist_ok=True)
-        for i in range(nb_vol):
+        for i in range(n_vol):
             open(
                 dir_ / f"fMETHODS-000{int(session + 5)}-{int(i)}-01.img",
                 "a",
@@ -1102,7 +1102,7 @@ def test_fetch_spm_multimodal(tmp_path):
 
 
 def test_fetch_spm_multimodal_missing_data(tmp_path):
-    _generate_spm_multimodal(tmp_path, nb_sessions=2, nb_vol=390)
+    _generate_spm_multimodal(tmp_path, n_sessions=2, n_vol=390)
     func.fetch_spm_multimodal_fmri(
         data_dir=tmp_path, verbose=1, subject_id="sub001"
     )

@@ -160,8 +160,8 @@ def test_matrix_plotting_labels(mat, lab):
 @pytest.mark.parametrize("title", ["foo", "foo bar", " ", None])
 def test_matrix_plotting_set_title(mat, labels, title):
     ax = plot_matrix(mat, labels=labels, title=title)
-    nb_txt = 0 if title is None else len(title)
-    assert len(ax._axes.title.get_text()) == nb_txt
+    n_txt = 0 if title is None else len(title)
+    assert len(ax._axes.title.get_text()) == n_txt
     if title is not None:
         assert ax._axes.title.get_text() == title
     plt.close()

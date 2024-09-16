@@ -229,26 +229,26 @@ def pad_contrast(con_val, theta, stat_type):
     stat_type : {'t', 'F'}, optional
         Type of the :term:`contrast`.
     """
-    nb_cols = con_val.shape[0] if con_val.ndim == 1 else con_val.shape[1]
-    if nb_cols > theta.shape[0]:
+    n_cols = con_val.shape[0] if con_val.ndim == 1 else con_val.shape[1]
+    if n_cols > theta.shape[0]:
         if stat_type == "t":
             raise ValueError(
                 f"t contrasts should be of length P={theta.shape[0]}, "
-                f"but it has length {nb_cols}."
+                f"but it has length {n_cols}."
             )
         if stat_type == "F":
             raise ValueError(
                 f"F contrasts should have {theta.shape[0]} columns, "
-                f"but it has {nb_cols}."
+                f"but it has {n_cols}."
             )
 
     pad = False
-    if nb_cols < theta.shape[0]:
+    if n_cols < theta.shape[0]:
         pad = True
         if stat_type == "t":
             warn(
                 f"t contrasts should be of length P={theta.shape[0]}, "
-                f"but it has length {nb_cols}. "
+                f"but it has length {n_cols}. "
                 "The rest of the contrast was padded with zeros.",
                 category=UserWarning,
                 stacklevel=3,
@@ -256,7 +256,7 @@ def pad_contrast(con_val, theta, stat_type):
         if stat_type == "F":
             warn(
                 f"F contrasts should have {theta.shape[0]} colmuns, "
-                f"but it has only {nb_cols}. "
+                f"but it has only {n_cols}. "
                 "The rest of the contrast was padded with zeros.",
                 category=UserWarning,
                 stacklevel=3,
@@ -264,9 +264,9 @@ def pad_contrast(con_val, theta, stat_type):
 
     if pad:
         if stat_type == "t" or (stat_type == "F" and con_val.shape[0] == 1):
-            padding = np.zeros((1, theta.shape[0] - nb_cols))
+            padding = np.zeros((1, theta.shape[0] - n_cols))
         elif stat_type == "F":
-            padding = np.zeros((con_val.shape[0], theta.shape[0] - nb_cols))
+            padding = np.zeros((con_val.shape[0], theta.shape[0] - n_cols))
         con_val = np.hstack((con_val, padding))
 
     return con_val
