@@ -341,7 +341,7 @@ def _check_force_resample(force_resample):
                 "Use 'force_resample=True' to suppress this warning."
             ),
             FutureWarning,
-            stacklevel=2,
+            stacklevel=3,
         )
     return force_resample
 

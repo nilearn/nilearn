@@ -269,7 +269,11 @@ def test_deprecation_contrast_type_attribute():
 @pytest.mark.parametrize(
     "effect, variance, match",
     [
-        (np.ones(3), np.ones(1), "Effect array should have 2 dimensions"),
+        (
+            np.ones((3, 1, 1)),
+            np.ones(1),
+            "Effect array should have 1 or 2 dimensions",
+        ),
         (
             np.ones((1, 3)),
             np.ones((1, 1)),

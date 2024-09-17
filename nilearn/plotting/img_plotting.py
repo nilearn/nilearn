@@ -313,7 +313,7 @@ def _get_cropped_cbar_ticks(cbar_vmin, cbar_vmax, threshold=None, n_ticks=5):
         # and both threshold values are within bounds
         elif cbar_vmin <= -threshold <= threshold <= cbar_vmax:
             new_tick_locs = _get_cbar_ticks(
-                cbar_vmin, cbar_vmax, threshold, nb_ticks=len(new_tick_locs)
+                cbar_vmin, cbar_vmax, threshold, n_ticks=len(new_tick_locs)
             )
         # Case where one of the threshold values is out of bounds
         else:
@@ -1919,7 +1919,11 @@ def plot_carpet(
         background_label = 0
 
         atlas_img_res = resample_to_img(
-            mask_img, img, interpolation="nearest", copy_header=True
+            mask_img,
+            img,
+            interpolation="nearest",
+            copy_header=True,
+            force_resample=False,  # TODO change to True in 0.13.0
         )
         atlas_bin = math_img(
             f"img != {background_label}",
