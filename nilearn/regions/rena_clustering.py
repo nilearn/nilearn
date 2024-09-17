@@ -10,13 +10,14 @@ import warnings
 import numpy as np
 from joblib import Memory
 from nibabel import Nifti1Image
+from packaging.version import parse
 from scipy.sparse import coo_matrix, csgraph, dia_matrix
 from sklearn import __version__ as sklearn_version
 from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
-from nilearn._utils import compare_version, fill_doc, logger
+from nilearn._utils import fill_doc, logger
 from nilearn.image import get_data
 from nilearn.masking import unmask_from_to_3d_array
 
@@ -500,7 +501,8 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
         # and get rid of if block
         # bumping sklearn_version > 1.5
         # see https://github.com/scikit-learn/scikit-learn/pull/29677
-        if compare_version(sklearn_version, "<", "1.6"):
+        ver = parse(sklearn_version)
+        if ver.release[1] < 6:
             return BaseEstimator._more_tags(self)
         return self.__sklearn_tags__()
 
