@@ -1286,7 +1286,7 @@ def fetch_atlas_aal(
     Licence: unknown.
 
     """
-    versions = ["SPM5", "SPM8", "SPM12"]
+    versions = ["SPM5", "SPM8", "SPM12", "3v2"]
     if version not in versions:
         raise ValueError(
             f"The version of AAL requested '{version}' does not exist."
@@ -1303,6 +1303,12 @@ def fetch_atlas_aal(
             basenames = ("AAL.nii", "AAL.xml")
             filenames = [
                 (os.path.join("aal", "atlas", f), url, opts) for f in basenames
+            ]
+        elif version == "3v2":
+            url = f"{base_url}AAL_files/AAL3v2_for_SPM12.tar.gz"
+            basenames = ("AAL3v1.nii", "AAL3v1.xml")
+            filenames = [
+                (os.path.join("AAL3", f), url, opts) for f in basenames
             ]
         else:
             url = f"{base_url}wp-content/uploads/aal_for_{version}.zip"
