@@ -196,41 +196,74 @@ def test_fill_html_template(mni152_template_res_2):
     assert "* plotly.js (gl3d - minified) v1." in html.html
 
 
-def test_view_surf(rng):
+def test_niivue_smoke():
     fsaverage = fetch_surf_fsaverage()
     mesh = surface.load_surf_mesh(fsaverage["pial_right"])
     surf_map = mesh[0][:, 0]
+    html_surface.view_surf(
+        fsaverage["pial_right"],
+        surf_map,
+        fsaverage["sulc_right"],
+        "90%",
+        engine="niivue",
+    )
+
+
+@pytest.mark.parametrize("engine", ["plotly"])  # TODO test with niivue
+def test_view_surf(rng, engine):
+    fsaverage = fetch_surf_fsaverage()
+    mesh = surface.load_surf_mesh(fsaverage["pial_right"])
+    surf_map = mesh[0][:, 0]
+
     html = html_surface.view_surf(
-        fsaverage["pial_right"], surf_map, fsaverage["sulc_right"], "90%"
+        fsaverage["pial_right"],
+        surf_map,
+        fsaverage["sulc_right"],
+        "90%",
+        engine=engine,
     )
     check_html(html, title="Surface plot")
+
     html = html_surface.view_surf(
         fsaverage["pial_right"],
         surf_map,
         fsaverage["sulc_right"],
         0.3,
         title="SOME_TITLE",
+        engine=engine,
     )
     check_html(html, title="SOME_TITLE")
     assert "SOME_TITLE" in html.html
-    html = html_surface.view_surf(fsaverage["pial_right"])
+
+    html = html_surface.view_surf(fsaverage["pial_right"], engine=engine)
     check_html(html)
+
     atlas = rng.integers(0, 10, size=len(mesh[0]))
     html = html_surface.view_surf(
-        fsaverage["pial_left"], atlas, symmetric_cmap=False
+        fsaverage["pial_left"], atlas, symmetric_cmap=False, engine=engine
     )
     check_html(html)
+
     html = html_surface.view_surf(
         fsaverage["pial_right"],
         fsaverage["sulc_right"],
         threshold=None,
         cmap="Greys",
+        engine=engine,
     )
     check_html(html)
+
+
+@pytest.mark.parametrize("engine", ["plotly", "niivue"])
+def test_view_surf_errors(engine):
+    fsaverage = fetch_surf_fsaverage()
+    mesh = surface.load_surf_mesh(fsaverage["pial_right"])
     with pytest.raises(ValueError):
-        html_surface.view_surf(mesh, mesh[0][::2, 0])
+        html_surface.view_surf(mesh, mesh[0][::2, 0], engine=engine)
     with pytest.raises(ValueError):
-        html_surface.view_surf(mesh, mesh[0][:, 0], bg_map=mesh[0][::2, 0])
+        html_surface.view_surf(
+            mesh, mesh[0][:, 0], bg_map=mesh[0][::2, 0], engine=engine
+        )
 
 
 def test_view_img_on_surf(mni152_template_res_2):

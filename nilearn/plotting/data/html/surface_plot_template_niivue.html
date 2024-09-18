@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>$INSERT_PAGE_TITLE_HERE</title>
+    <link
+      rel="stylesheet"
+      href="https://niivue.github.io/niivue/features/niivue.css"
+    />
+  </head>
+  <body>
+    <canvas id="gl"></canvas>
+  </body>
+  $INSERT_JS_LIBRARIES_HERE
+
+  <script type="module" async>
+    var nv = new niivue.Niivue();
+    nv.attachTo("gl");
+
+    let layers = [
+      {
+        name: "bg_map.gii",
+        useNegativeCmap: false,
+        opacity: 0.7,
+        colormap: "gray",
+        base64: "$INSERT_BG_MAP_BASE64_HERE",
+      },
+      {
+        name: "surf_map.gii",
+        useNegativeCmap: true,
+        opacity: 0.7,
+        cal_min: $INSERT_THRESHOLD_HERE,
+        base64: "$INSERT_SURF_MAP_BASE64_HERE",
+      },
+    ];
+
+    let m = await niivue.NVMesh.loadFromBase64({
+      gl: nv.gl,
+      name: "pial_left.gii",
+      layers: layers,
+      base64: "$INSERT_MESH_BASE64_HERE",
+    });
+
+    await nv.addMesh(m);
+
+    // Hide background map colorbar
+    nv.meshes[0].layers[0].colorbarVisible = false;
+    nv.opts.isColorbar = $INSERT_COLORBAR_HERE;
+
+    // Customize colormap
+    let cmap = $INSERT_SURF_COLORMAP_HERE;
+    let key = "Custom";
+    await nv.addColormap(key, cmap);
+    nv.meshes[0].layers[1].colormap = key;
+
+    // Refresh scene to take colorbar changes into account
+    nv.updateGLVolume();
+  </script>
+</html>
