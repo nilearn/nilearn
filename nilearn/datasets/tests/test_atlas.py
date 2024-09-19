@@ -17,7 +17,7 @@ from sklearn.utils import Bunch
 from nilearn._utils import data_gen
 from nilearn._utils.testing import serialize_niimg
 from nilearn.conftest import _rng
-from nilearn.datasets import atlas
+from nilearn.datasets import atlas, fetch_atlas_aal
 from nilearn.datasets._utils import fetch_files
 from nilearn.datasets.tests._testing import dict_to_archive
 from nilearn.image import get_data
@@ -824,3 +824,10 @@ def test_fetch_atlas_schaefer_2018(tmp_path, request_mocker):
 
         assert img.header.get_zooms()[0] == resolution_mm
         assert np.array_equal(np.unique(img.dataobj), np.arange(n_rois + 1))
+
+
+def test_all_version_deprecation():
+    with pytest.deprecated_call(
+        match=r"Starting in version 0\.13, the default fetched mask"
+    ):
+        fetch_atlas_aal()
