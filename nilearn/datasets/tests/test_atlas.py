@@ -826,7 +826,13 @@ def test_fetch_atlas_schaefer_2018(tmp_path, request_mocker):
         assert np.array_equal(np.unique(img.dataobj), np.arange(n_rois + 1))
 
 
-def test_all_version_deprecation():
+def test_aal_version_deprecation(request_mocker):
+
+    img_pattern = re.compile("https://www.gin.cnrs.fr/*")
+    request_mocker.url_mapping[img_pattern] = (
+        data_gen.generate_labeled_regions((7, 6, 5), 16)
+    )
+
     with pytest.deprecated_call(
         match=r"Starting in version 0\.13, the default fetched mask"
     ):
