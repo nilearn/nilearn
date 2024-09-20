@@ -25,7 +25,7 @@ Fixes
 Enhancements
 ------------
 
-- :bdg-primary:`Doc` Add an option in :func:`nilearn.datasets.fetch_atlas_aal` to fetch the latest AAL version, 3v2 (:gh:`4554` by `Jeremy LefortBesnard`_ and `Rémi Gau`_).
+- :bdg-primary:`Doc` Add an option in :func:`nilearn.datasets.fetch_atlas_aal` to fetch the latest AAL version, 3v2 (:gh:`4554` by `Jeremy Lefort-Besnard`_ and `Rémi Gau`_).
 
 - :bdg-dark:`Code` Improve input/output for ``SurfaceImage`` by loading meshes from files on disk, loading data from files or Nifti object, and saving meshes to file (:gh:`4446` by `Rémi Gau`_).
 
