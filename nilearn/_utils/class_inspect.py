@@ -37,7 +37,7 @@ except ImportError:
 def check_estimator(estimator=None, valid=True, extra_valid_checks=None):
     """Check compatibility with scikit-learn estimators.
 
-    As some of nilearn estimators cannot fit numpy arrays,
+    As some of Nilearn estimators cannot fit Numpy arrays,
     we cannot directly use
     sklearn.utils.estimator_checks.check_estimator.
 
