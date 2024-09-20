@@ -133,7 +133,7 @@ plt.show()
 from nilearn.plotting import plot_design_matrix_correlation
 
 fig3, (ax1, ax2, ax3) = plt.subplots(
-    figsize=(15, 5),
+    figsize=(16, 5),
     nrows=1,
     ncols=3,
     layout="constrained",
