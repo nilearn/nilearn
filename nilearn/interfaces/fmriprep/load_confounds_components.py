@@ -20,12 +20,11 @@ import pandas as pd
 from .load_confounds_compcor import find_compcor
 from .load_confounds_scrub import optimize_scrub
 from .load_confounds_utils import (
-    MissingConfound,
     add_suffix,
     check_params,
     find_confounds,
 )
-
+from .exceptions import MissingConfound
 
 def _load_motion(confounds_raw, motion):
     """Load the motion regressors.
