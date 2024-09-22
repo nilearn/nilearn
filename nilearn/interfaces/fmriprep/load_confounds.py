@@ -9,6 +9,7 @@ import warnings
 import pandas as pd
 
 from . import load_confounds_components as components
+from .exceptions import MissingConfound
 from .load_confounds_utils import (
     get_confounds_file,
     get_json,
@@ -17,7 +18,6 @@ from .load_confounds_utils import (
     prepare_output,
     sanitize_confounds,
 )
-from .exceptions import MissingConfound
 
 # Global variables listing the admissible types of noise components
 all_confounds = [

@@ -12,8 +12,8 @@ from sklearn.preprocessing import scale
 from nilearn._utils.fmriprep_confounds import flag_single_gifti, is_camel_case
 from nilearn.interfaces.bids import parse_bids_filename
 
-from .load_confounds_scrub import extract_outlier_regressors
 from .exceptions import AllVolumesRemoved
+from .load_confounds_scrub import extract_outlier_regressors
 
 img_file_patterns = {
     "aroma": "_desc-smoothAROMAnonaggr_bold",
