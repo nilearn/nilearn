@@ -17,10 +17,14 @@ See an example below:
 import numpy as np
 import pandas as pd
 
-from .exceptions import MissingConfound
 from .load_confounds_compcor import find_compcor
 from .load_confounds_scrub import optimize_scrub
-from .load_confounds_utils import add_suffix, check_params, find_confounds
+from .load_confounds_utils import (
+    MissingConfound,
+    add_suffix,
+    check_params,
+    find_confounds,
+)
 
 
 def _load_motion(confounds_raw, motion):

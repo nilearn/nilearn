@@ -9,8 +9,8 @@ import warnings
 import pandas as pd
 
 from . import load_confounds_components as components
-from .exceptions import MissingConfound
 from .load_confounds_utils import (
+    MissingConfound,
     get_confounds_file,
     get_json,
     load_confounds_file_as_dataframe,

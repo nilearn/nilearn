@@ -12,7 +12,6 @@ from sklearn.preprocessing import scale
 from nilearn._utils.fmriprep_confounds import flag_single_gifti, is_camel_case
 from nilearn.interfaces.bids import parse_bids_filename
 
-from .exceptions import AllVolumesRemoved
 from .load_confounds_scrub import extract_outlier_regressors
 
 img_file_patterns = {
@@ -439,17 +438,8 @@ def prepare_output(confounds, demean):
 
     confounds : pandas.DataFrame
         Demeaned confounds ready for subsequent analysis.
-
-    Raises
-    ------
-    AllVolumesRemoved
-        If all volumes have either motion outliers or are non-steady-state
-        volumes (`sample_mask` is an empty array).
     """
-
     sample_mask, confounds, _ = extract_outlier_regressors(confounds)
-    if sample_mask.size == 0:
-        raise AllVolumesRemoved()
     if confounds.size != 0:  # ica_aroma = "full" generate empty output
         # Derivatives have NaN on the first row
         # Replace them by estimates at second time point,
@@ -472,7 +462,7 @@ def _demean_confounds(confounds, sample_mask):
         Confound regressors loaded based on user's choice.
 
     sample_mask : None or numpy.ndarray
-        When no volumes require removal, the value is None.
+        When no volumns require removal, the value is None.
         Otherwise, the shape is \
             (number of scans - number of volumes removed, )
         The index of the niimgs along time/fourth dimension for valid
@@ -483,7 +473,6 @@ def _demean_confounds(confounds, sample_mask):
     confounds : pandas.DataFrame
         Demeaned confounds.
     """
-
     confound_cols = confounds.columns
     if sample_mask is None:
         confounds = scale(confounds, axis=0, with_std=False)
@@ -491,3 +480,19 @@ def _demean_confounds(confounds, sample_mask):
         confounds_mean = confounds.iloc[sample_mask, :].mean(axis=0)
         confounds -= confounds_mean
     return pd.DataFrame(confounds, columns=confound_cols)
+
+
+class MissingConfound(Exception):
+    """
+    Exception raised when failing to find params in the confounds.
+
+    Parameters
+    ----------
+    params : list of missing params, default=[]
+    keywords: list of missing keywords, default=[]
+    """
+
+    def __init__(self, params=None, keywords=None):
+        """Set missing parameters and keywords."""
+        self.params = params or []
+        self.keywords = keywords or []
