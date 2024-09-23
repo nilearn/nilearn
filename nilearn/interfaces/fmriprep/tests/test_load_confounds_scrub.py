@@ -96,3 +96,34 @@ def test_extract_outlier_regressors(rng):
     assert np.array_equal(sample_mask, make_mask) is True
     assert_frame_equal(outliers, make_outliers)
     assert_frame_equal(confounds, fake_confounds)
+
+
+@pytest.mark.parametrize(
+    "outlier_type",
+    ["motion_outlier", "non_steady_state_outlier"],
+)
+def test_warning_no_volumes_left(outlier_type):
+
+    rng = np.random.default_rng()
+    n_scans = 10
+    fake_confounds = pd.DataFrame(
+        rng.random((n_scans, 1)), columns=["confound_regressor"]
+    )
+
+    # scrubbed volume one-hot, overlap with non-steady-state
+    idx_scrubbed = np.arange(n_scans)
+    scrub_vol = pd.DataFrame(
+        np.eye(n_scans)[:, idx_scrubbed],
+        columns=[f"{outlier_type}{i:02d}" for i in range(len(idx_scrubbed))],
+    )
+
+    srub_conf = pd.concat([fake_confounds, scrub_vol], axis=1)
+
+    with pytest.warns(
+        RuntimeWarning,
+        match="All time points in the confounds were marked as outliers",
+    ):
+        sample_mask, _, _ = extract_outlier_regressors(
+            srub_conf
+        )
+        assert sample_mask.size == 0
