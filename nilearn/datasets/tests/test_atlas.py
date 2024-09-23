@@ -5,6 +5,7 @@
 import itertools
 import os
 import re
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import numpy as np
@@ -824,3 +825,40 @@ def test_fetch_atlas_schaefer_2018(tmp_path, request_mocker):
 
         assert img.header.get_zooms()[0] == resolution_mm
         assert np.array_equal(np.unique(img.dataobj), np.arange(n_rois + 1))
+
+
+@pytest.fixture
+def aal_xml():
+    atlas = ET.Element("atlas", version="2.0")
+
+    data = ET.SubElement(atlas, "data")
+
+    label1 = ET.SubElement(data, "label")
+    ET.SubElement(label1, "index").text = "2001"
+    ET.SubElement(label1, "name").text = "Precentral_L"
+
+    # Convert the XML tree to a string with proper encoding and declaration
+    return ET.ElementTree(atlas)
+
+
+def test_aal_version_deprecation(
+    tmp_path, shape_3d_default, affine_eye, aal_xml
+):
+    img = data_gen.generate_labeled_regions(
+        shape_3d_default, 15, affine=affine_eye
+    )
+    output_path = tmp_path / "aal_SPM12/aal/atlas/AAL.nii"
+    output_path.parent.mkdir(parents=True)
+    img.to_filename(output_path)
+
+    with open(
+        tmp_path / "aal_SPM12" / "aal" / "atlas" / "AAL.xml", "wb"
+    ) as file:
+        aal_xml.write(file, encoding="ISO-8859-1", xml_declaration=True)
+
+    with pytest.deprecated_call(
+        match=r"Starting in version 0\.13, the default fetched mask"
+    ):
+        atlas.fetch_atlas_aal(
+            data_dir=tmp_path,
+        )
