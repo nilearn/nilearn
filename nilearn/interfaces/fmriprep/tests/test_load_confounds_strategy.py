@@ -100,6 +100,7 @@ def _get_headers(denoise_strategy):
     "fmriprep_version, volumes_left, len_sample_mask",
     [("1.4.x", 22, 29), ("21.x.x", 0, 5)],
 )
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_strategy_scrubbing(
     tmp_path, fmriprep_version, volumes_left, len_sample_mask
 ):

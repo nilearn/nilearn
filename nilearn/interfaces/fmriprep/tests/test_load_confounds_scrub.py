@@ -123,7 +123,5 @@ def test_warning_no_volumes_left(outlier_type):
         RuntimeWarning,
         match="All time points in the confounds were marked as outliers",
     ):
-        sample_mask, _, _ = extract_outlier_regressors(
-            srub_conf
-        )
+        sample_mask, _, _ = extract_outlier_regressors(srub_conf)
         assert sample_mask.size == 0
