@@ -69,9 +69,10 @@ class DimensionError(TypeError):
 
 
 class AllVolumesRemovedError(Exception):
-    """
-    Exception raised when all volumes are scrubbed
-    (`sample_mask` is an empty array).
+    """Warns the user if no volumes were kept.
+
+    Exception is raised when all volumes are scrubbed, i.e.,
+    `sample_mask` is an empty array.
     """
 
     def __init__(self):
