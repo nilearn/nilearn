@@ -45,7 +45,7 @@ Changes
 -------
 - :bdg-dark:`Code` Warn the user :func:`nilearn.interfaces.fmriprep.load_confounds_scrub.extract_outlier_regressors` if ``sample_mask`` is empty (all volumes are scrubbed) (:gh:`4558` by `Victoria Shevchenko`_).
 
-- :bdg-dark:`Code` Throw error in :func:`nilearn.signal._handle_scrubbed_volumes` if ``sample_mask`` is empty (:gh:`4558` by `Victoria Shevchenko`_).
+- :bdg-dark:`Code` Throw error if ``sample_mask`` is empty when scrubbing an fMRI time series (:gh:`4558` by `Victoria Shevchenko`_).
 
 - :bdg-dark:`Code` Remove the unused argument ``url`` from  :func:`nilearn.datasets.fetch_localizer_contrasts`, :func:`nilearn.datasets.fetch_localizer_calculation_task` and :func:`nilearn.datasets.fetch_localizer_button_task` (:gh:`4273` by `Rémi Gau`_).
 
