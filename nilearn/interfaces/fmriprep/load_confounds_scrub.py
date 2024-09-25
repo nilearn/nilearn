@@ -96,7 +96,7 @@ def extract_outlier_regressors(confounds):
             message="All time points in the confounds were marked as "
             "outliers. This would lead to all volumes in the time "
             "series to be scrubbed.",
-            stacklevel=2,
+            stacklevel=4,
         )
     return sample_mask, confounds, outliers
 
