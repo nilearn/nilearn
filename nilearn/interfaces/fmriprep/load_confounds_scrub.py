@@ -1,4 +1,5 @@
 """Helper functions for load_scrub and sample_mask functions."""
+
 import warnings
 
 import numpy as np
@@ -88,7 +89,8 @@ def extract_outlier_regressors(confounds):
         outliers = pd.DataFrame()
     confounds = confounds.loc[:, confounds_cols]
     sample_mask = _outlier_to_sample_mask(outliers)
-    if sample_mask.size == 0:
+
+    if sample_mask is not None and sample_mask.size == 0:
         warnings.warn(
             category=RuntimeWarning,
             message="All time points in the confounds were marked as outliers. "

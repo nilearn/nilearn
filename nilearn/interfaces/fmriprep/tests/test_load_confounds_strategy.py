@@ -47,6 +47,7 @@ def test_load_confounds_strategy(
         ("ica_aroma", "ica_aroma"),
     ],
 )
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_strategies(tmp_path, denoise_strategy, image_type, fmriprep_version):
     """Check defaults setting of each preset strategy."""
     file_nii, _ = create_tmp_filepath(
