@@ -66,3 +66,19 @@ class DimensionError(TypeError):
 
     def __str__(self):
         return self.message
+
+
+class AllVolumesRemovedError(Exception):
+    """
+    Exception raised when all volumes are scrubbed
+    (`sample_mask` is an empty array).
+    """
+
+    def __init__(self):
+        super().__init__(
+            "All volumes were scrubbed, can not proceed. "
+            "The size of the sample mask is 0."
+        )
+
+    def __str__(self):
+        return f"[AllVolumesRemoved Error] {self.args[0]}"

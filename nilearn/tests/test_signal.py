@@ -12,6 +12,7 @@ from pandas import read_csv
 # Use nisignal here to avoid name collisions (using nilearn.signal is
 # not possible)
 from nilearn import signal as nisignal
+from nilearn._utils.exceptions import AllVolumesRemovedError
 from nilearn.conftest import _rng
 from nilearn.signal import clean
 
@@ -1231,3 +1232,23 @@ def test_handle_scrubbed_volumes_without_extrapolation():
     np.testing.assert_equal(
         confounds.shape[0], censored_confounds.shape[0] + total_samples
     )
+
+
+def test_handle_scrubbed_volumes_exception():
+    """Check if an exception is raised when the sample mask is empty."""
+    signals, _, confounds = generate_signals(
+        n_features=11, n_confounds=5, length=40
+    )
+
+    sample_mask = np.arange(signals.shape[0])
+    scrub_index = np.arange(signals.shape[0])
+    sample_mask = np.delete(sample_mask, scrub_index)
+
+    with pytest.raises(
+        AllVolumesRemovedError,
+        match="All volumes were scrubbed, can not proceed. "
+        "The size of the sample mask is 0.",
+    ):
+        nisignal._handle_scrubbed_volumes(
+            signals, confounds, sample_mask, "butterworth", 2.5, True
+        )
