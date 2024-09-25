@@ -43,7 +43,7 @@ Enhancements
 
 Changes
 -------
-- :bdg-dark:`Code` Warn the user :func:`nilearn.interfaces.fmriprep.load_confounds_scrub.extract_outlier_regressors` if ``sample_mask`` is empty (all volumes are scrubbed) (:gh:`4558` by `Victoria Shevchenko`_).
+- :bdg-dark:`Code` Warn the user when all volumes would be scrubbed when loading fmriprep confounds as this would lead to an empty ``sample_mask`` (:gh:`4558` by `Victoria Shevchenko`_).
 
 - :bdg-dark:`Code` Throw error if ``sample_mask`` is empty when scrubbing an fMRI time series (:gh:`4558` by `Victoria Shevchenko`_).
 
