@@ -283,7 +283,9 @@ def _plot_img_with_bg(
             cbar_tick_format=cbar_tick_format,
             **kwargs,
         )
-
+    if radiological:
+        for display_axis in display.axes.values():
+            display_axis.ax.invert_xaxis()
     if annotate:
         display.annotate(decimals=decimals)
     if draw_cross:
