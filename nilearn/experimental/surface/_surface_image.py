@@ -11,7 +11,7 @@ import numpy as np
 from nibabel import Nifti1Image
 
 from nilearn._utils.niimg_conversions import check_niimg
-from nilearn.experimental.surface import _io, load_fsaverage
+from nilearn.experimental.surface import _io
 from nilearn.surface import vol_to_surf
 
 
@@ -204,6 +204,8 @@ class SurfaceImage:
         data : PolyData | dict[str, Mesh  |  str  |  Path] | Niimg-like object
         """
         if mesh is None:
+            from nilearn.experimental.surface._datasets import load_fsaverage
+
             fsaverage5 = load_fsaverage("fsaverage5")
             mesh = fsaverage5["pial"]
         self.mesh = mesh if isinstance(mesh, PolyMesh) else PolyMesh(**mesh)
