@@ -714,6 +714,10 @@ authors:
   - given-names: Vasco
     family-names: Diogo
     website: https://github.com/vascosa
+  - given-names: Victoria
+    family-names: Shevchenko
+    website: https://github.com/victoris93
+    affiliation: Inria Saclay, Université Paris Cité, France
   - given-names: Vincent
     family-names: Michel
     website: https://github.com/vmichel
