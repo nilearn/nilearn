@@ -132,8 +132,8 @@ def test_second_level_input_as_3D_images(rng, affine_eye, tmp_path):
     """
     shape = (7, 8, 9)
     images = []
-    nb_subjects = 10
-    for _ in range(nb_subjects):
+    n_subjects = 10
+    for _ in range(n_subjects):
         data = rng.random(shape)
         images.append(Nifti1Image(data, affine_eye))
 
@@ -173,7 +173,7 @@ def test_process_second_level_input_as_firstlevelmodels():
 
     assert subjects_label == [f"sub-{i}" for i in range(3)]
     assert isinstance(sample_map, Nifti1Image)
-    assert sample_map.shape == (7, 8, 9, 1)
+    assert sample_map.shape == (7, 8, 9)
 
 
 def test_check_affine_first_level_models(affine_eye):

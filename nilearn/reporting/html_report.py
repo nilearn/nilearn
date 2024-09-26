@@ -237,7 +237,7 @@ def generate_report(estimator):
 
     if estimator.reports is False:
         warning_messages.append(
-            "\nReport generation not enabled!\n" "No visual outputs created."
+            "\nReport generation not enabled!\nNo visual outputs created."
         )
 
     if (

@@ -92,9 +92,6 @@ ax = im.axes
 ax.set_ylabel("True label")
 ax.set_xlabel("Predicted label")
 
-# Adjust figure to make labels fit
-ax.get_figure().tight_layout()
-
 plotting.show()
 
 # %%

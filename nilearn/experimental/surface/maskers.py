@@ -11,6 +11,7 @@ from joblib import Memory
 from sklearn.base import BaseEstimator, TransformerMixin
 
 from nilearn import signal
+from nilearn._utils import _constrained_layout_kwargs
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.class_inspect import get_params
 from nilearn.experimental.surface._surface_image import PolyMesh, SurfaceImage
@@ -364,6 +365,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
             len(hemispheres),
             subplot_kw={"projection": "3d"},
             figsize=(20, 20),
+            **_constrained_layout_kwargs(),
         )
         axes = np.atleast_2d(axes)
 
@@ -381,10 +383,10 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 )
 
                 colors = None
-                nb_regions = len(np.unique(self.mask_img_.data.parts[hemi]))
-                if nb_regions == 1:
+                n_regions = len(np.unique(self.mask_img_.data.parts[hemi]))
+                if n_regions == 1:
                     colors = "b"
-                elif nb_regions == 2:
+                elif n_regions == 2:
                     colors = ["w", "b"]
 
                 plotting.plot_surf_contours(
@@ -395,8 +397,6 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
                     axes=ax,
                     colors=colors,
                 )
-
-        plt.tight_layout()
 
         return fig
 
@@ -488,10 +488,10 @@ class SurfaceLabelsMasker(BaseEstimator):
                 regions_summary["label value"].append(i)
                 regions_summary["region name"].append(label)
 
-                nb_vertices = self.labels_img.data.parts[part] == i
-                size.append(nb_vertices.sum())
+                n_vertices = self.labels_img.data.parts[part] == i
+                size.append(n_vertices.sum())
                 tmp = (
-                    nb_vertices.sum()
+                    n_vertices.sum()
                     / self.labels_img.mesh.parts[part].n_vertices
                     * 100
                 )
@@ -667,6 +667,7 @@ class SurfaceLabelsMasker(BaseEstimator):
             len(hemispheres),
             subplot_kw={"projection": "3d"},
             figsize=(20, 20),
+            **_constrained_layout_kwargs(),
         )
         axes = np.atleast_2d(axes)
 
@@ -690,7 +691,5 @@ class SurfaceLabelsMasker(BaseEstimator):
                     figure=fig,
                     axes=ax,
                 )
-
-        plt.tight_layout()
 
         return fig

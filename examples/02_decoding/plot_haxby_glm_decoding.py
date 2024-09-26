@@ -52,7 +52,7 @@ func_filename = haxby_dataset.func[0]
 # -------------------------------------------
 
 events = {}
-# events will take  the form of a dictionary of Dataframes, one per run
+# events will take the form of a dictionary of Dataframes, one per run
 for run in unique_runs:
     # get the condition label per run
     conditions_run = conditions[runs == run]

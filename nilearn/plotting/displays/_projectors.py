@@ -123,8 +123,8 @@ class OrthoProjector(OrthoSlicer):
         if node_kwargs is None:
             node_kwargs = {}
         if isinstance(node_color, str) and node_color == "auto":
-            nb_nodes = len(node_coords)
-            node_color = mpl_cm.Set2(np.linspace(0, 1, nb_nodes))
+            n_nodes = len(node_coords)
+            node_color = mpl_cm.Set2(np.linspace(0, 1, n_nodes))
         node_coords = np.asarray(node_coords)
 
         # decompress input matrix if sparse

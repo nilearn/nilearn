@@ -53,27 +53,10 @@ repos:
 # Aplly black formatting to python code
 # https://github.com/psf/black
 -   repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 24.4.2
+    rev: 24.8.0
     hooks:
     -   id: black
         args: [--config, pyproject.toml]
-        # exclude files that
-        #  - are skipped for other hooks
-        #  - are still involved in some PR
-        exclude: |
-            (?x)^(
-                nilearn/datasets/tests/data/localizer_behavioural.tsv
-                | nilearn/externals/.*
-                | nilearn/plotting/data/js/.*js
-                | nilearn/_version.py
-                | examples/01_plotting/plot_3d_map_to_surface_projection.py
-                | nilearn/plotting/html_surface.py
-                | nilearn/plotting/js_plotting_utils.py
-                | nilearn/plotting/surf_plotting.py
-                | nilearn/plotting/tests/test_surf_plotting.py
-                | nilearn/surface/surface.py
-                | nilearn/surface/tests/test_surface.py
-            )$
 
 # Apply black formatting to doc strings
 -   repo: https://github.com/adamchainz/blacken-docs
@@ -125,7 +108,7 @@ repos:
 # flake8-functions checks functions quality: https://pypi.org/project/flake8-functions/
 # flake8-bugbear detects some common bugs: https://github.com/PyCQA/flake8-bugbear
 -   repo: https://github.com/pyCQA/flake8
-    rev: 7.1.0
+    rev: 7.1.1
     hooks:
     -   id: flake8
         args: [--config, .flake8, --verbose, nilearn, examples, maint_tools]

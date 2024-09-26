@@ -744,6 +744,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                     target_shape=imgs_.shape[:3],
                     target_affine=imgs_.affine,
                     copy_header=True,
+                    force_resample=False,
                 )
 
             # Remove imgs_ from memory before loading the same image
@@ -830,6 +831,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             target_shape=imgs_.shape[:3],
             target_affine=imgs_.affine,
             copy_header=True,
+            force_resample=False,
         )
         labels_after_resampling = set(
             np.unique(_utils.niimg.safe_get_data(self._resampled_labels_img_))
