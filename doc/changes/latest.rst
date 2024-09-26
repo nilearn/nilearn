@@ -71,6 +71,6 @@ Changes
 
 - :bdg-danger:`Deprecation` The parameter ``ax`` will be replaced by ``axes`` in :func:`nilearn.plotting.plot_contrast_matrix` and :func:`nilearn.plotting.plot_design_matrix` in release 0.13.0. (:gh:`4476` by `Mudassir Chapra`_)
 
-- :bdg-dark:`Code` Skip check of array values if interpolation order is ``0`` in :func:`nilearn.image._resample_one_img` by reordering condition (:gh:`4571` by `Jason Kai`_).
+- :bdg-dark:`Code` Reorder condition in internal call of :func:`nilearn.image.resample_img` to skip checking of array values if interpolation is ``nearest`` (:gh:`4571` by `Jason Kai`_).
 
-- :bdg-dark:`Code` Remove redundant sorting of ``np.unique(data)`` in :func:`nilearn.image._resample_one_img` (:gh:`4571` by `Jason Kai`_) when checking array values.
+- :bdg-dark:`Code` Remove redundant sorting of ``np.unique(data)`` in internal call of :func:`nilearn.image.resample_img` when checking array values (:gh:`4571` by `Jason Kai`_).
