@@ -93,8 +93,8 @@ def extract_outlier_regressors(confounds):
     if sample_mask is not None and sample_mask.size == 0:
         warnings.warn(
             category=RuntimeWarning,
-            message="All time points in the confounds were marked as "
-            "outliers. This would lead to all volumes in the time "
+            message="All volumes were marked as motion outliers. "
+            "This would lead to all volumes in the time "
             "series to be scrubbed.",
             stacklevel=4,
         )

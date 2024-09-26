@@ -20,6 +20,7 @@ from nilearn.interfaces.fmriprep.tests._testing import create_tmp_filepath
         ("ica_aroma", "ica_aroma"),
     ],
 )
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_load_confounds_strategy(
     tmp_path, denoise_strategy, image_type, fmriprep_version
 ):

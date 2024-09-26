@@ -121,7 +121,7 @@ def test_warning_no_volumes_left(outlier_type):
 
     with pytest.warns(
         RuntimeWarning,
-        match="All time points in the confounds were marked as outliers",
+        match="All volumes were marked as motion outliers.",
     ):
         sample_mask, _, _ = extract_outlier_regressors(srub_conf)
         assert sample_mask.size == 0
