@@ -296,6 +296,8 @@
 
 .. _Vasco Diogo: https://github.com/vascosa
 
+.. _Victoria Shevchenko: https://github.com/victoris93
+
 .. _Vincent Michel: https://github.com/vmichel
 
 .. _Virgile Fritsch: https://github.com/VirgileFritsch
