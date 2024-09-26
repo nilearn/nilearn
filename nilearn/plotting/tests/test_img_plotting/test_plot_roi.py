@@ -24,8 +24,8 @@ def demo_plot_roi(**kwargs):
         int(z_map) - 10 : int(z_map) + 10,
     ] = 1
     img = Nifti1Image(data, _affine_mni())
-    return plot_roi(img, title="Broca's area", **kwargs)
-
+    plot_roi(img, title="Broca's area", **kwargs)
+ 
 
 @pytest.mark.parametrize("view_type", ["contours", "continuous"])
 @pytest.mark.parametrize("black_bg", [True, False])
@@ -35,7 +35,7 @@ def demo_plot_roi(**kwargs):
     "display_mode,cut_coords", [("ortho", None), ("z", 3), ("x", [2.0, 10])]
 )
 def test_plot_roi_view_types(
-    view_type, black_bg, threshold, alpha, display_mode, cut_coords
+    view_type, black_bg, threshold, alpha, display_mode, cut_coords, recwarn
 ):
     """Smoke-test for plot_roi.
 
@@ -54,6 +54,11 @@ def test_plot_roi_view_types(
         cut_coords=cut_coords,
         **kwargs,
     )
+    for _ in range(len(recwarn)):
+        x = recwarn.pop()
+        if issubclass(x.category, UserWarning):
+            assert "image contains 64-bit ints" not in x.message
+
     plt.close()
 
 
