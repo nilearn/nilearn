@@ -77,8 +77,9 @@ class AllVolumesRemovedError(Exception):
 
     def __init__(self):
         super().__init__(
-            "All volumes were scrubbed, can not proceed. "
-            "The size of the sample mask is 0."
+            "The size of the sample mask is 0. "
+            "All volumes were marked as motion outliers "
+            "can not proceed. "
         )
 
     def __str__(self):

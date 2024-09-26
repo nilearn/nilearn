@@ -1246,8 +1246,9 @@ def test_handle_scrubbed_volumes_exception():
 
     with pytest.raises(
         AllVolumesRemovedError,
-        match="All volumes were scrubbed, can not proceed. "
-        "The size of the sample mask is 0.",
+        match="The size of the sample mask is 0. "
+        "All volumes were marked as motion outliers "
+        "can not proceed. ",
     ):
         nisignal._handle_scrubbed_volumes(
             signals, confounds, sample_mask, "butterworth", 2.5, True
