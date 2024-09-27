@@ -323,6 +323,10 @@ authors:
     family-names: Gors
     website: http://jgors.com/
     affiliation: Insight Data Science, Mountain View, California, USA
+  - given-names: Jason
+    family-names: Kai
+    website: https://github.com/kaitj
+    affiliation: Child Mind Institute
   - given-names: Javier
     family-names: Rasero
     website: https://jrasero.github.io/
