@@ -1159,7 +1159,8 @@ def test_decoder_predict_score_surface(_make_surface_class_data):
     assert model.scoring == "roc_auc"
 
     model.score(X, y)
-    accuracy_score(y, y_pred)
+    acc = accuracy_score(y, y_pred)
+    assert 0.3 < acc < 0.7
 
 
 def test_decoder_regressor_predict_score_surface(_make_surface_reg_data):
@@ -1172,7 +1173,8 @@ def test_decoder_regressor_predict_score_surface(_make_surface_reg_data):
     assert model.scoring == "r2"
 
     model.score(X, y)
-    r2_score(y, y_pred)
+    r2 = r2_score(y, y_pred)
+    assert r2 <= 0
 
 
 @pytest.mark.parametrize("frem", [FREMRegressor, FREMClassifier])
