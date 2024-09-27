@@ -25,7 +25,7 @@ def demo_plot_roi(**kwargs):
     ] = 1
     img = Nifti1Image(data, _affine_mni())
     plot_roi(img, title="Broca's area", **kwargs)
- 
+
 
 @pytest.mark.parametrize("view_type", ["contours", "continuous"])
 @pytest.mark.parametrize("black_bg", [True, False])

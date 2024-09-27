@@ -97,7 +97,7 @@ def test_parcellations_no_int64_warnings(img_4d_zeros_eye):
     with warnings.catch_warnings(record=True) as record:
         parcellator.fit(img_4d_zeros_eye)
     for r in record:
-        if issubclass(x.category, UserWarning):
+        if issubclass(r.category, UserWarning):
             assert "image contains 64-bit ints" not in str(r.message)
 
 
