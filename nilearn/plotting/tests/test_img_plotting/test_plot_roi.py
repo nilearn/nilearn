@@ -54,10 +54,11 @@ def test_plot_roi_view_types(
         cut_coords=cut_coords,
         **kwargs,
     )
+
     for _ in range(len(recwarn)):
         x = recwarn.pop()
         if issubclass(x.category, UserWarning):
-            assert "image contains 64-bit ints" not in x.message
+            assert "image contains 64-bit ints" not in str(x.message)
 
     plt.close()
 
