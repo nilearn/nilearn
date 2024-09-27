@@ -124,6 +124,8 @@
 
 .. _Jason Gors: http://jgors.com/
 
+.. _Jason Kai: https://github.com/kaitj
+
 .. _Javier Rasero: https://jrasero.github.io/
 
 .. _Jean Kossaifi: http://jeankossaifi.com/
