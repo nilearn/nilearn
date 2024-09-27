@@ -59,7 +59,7 @@ Changes
 
 - :bdg-dark:`Code` Improve logging by relying only on the Nilearn logger and adding optional support for rich printing if `rich <https://github.com/Textualize/rich>`_ is installed (:gh:`4469` and :gh:`4544` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` Parcellations returned by :class:`nilearn.regions.Parcellations` will now be of type ``np.int32`` to avoid unnecessary warnings (:gh:`4555` by `Rémi Gau`).
+- :bdg-dark:`Code` Parcellations returned by :class:`nilearn.regions.Parcellations` will now be of type ``np.int32`` to avoid unnecessary warnings (:gh:`4555` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The parameter ``tr`` for :term:`Repetition time<TR>` will be replaced by ``t_r`` in the "HRF" functions in version 0.13.0. The affected functions are :func:`nilearn.glm.first_level.glover_dispersion_derivative`, :func:`nilearn.glm.first_level.glover_hrf`, :func:`nilearn.glm.first_level.glover_time_derivative`, :func:`nilearn.glm.first_level.spm_dispersion_derivative`, :func:`nilearn.glm.first_level.spm_hrf`, :func:`nilearn.glm.first_level.spm_time_derivative` (:gh:`4470` by `Rémi Gau`_).
 
