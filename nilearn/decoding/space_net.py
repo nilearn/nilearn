@@ -109,8 +109,8 @@ def _univariate_feature_screening(
         for sample in range(sX.shape[0]):
             sX[sample] = gaussian_filter(
                 unmask_from_to_3d_array(
-                    X[sample].copy(),
-                    mask,  # avoid modifying X
+                    X[sample].copy(),  # avoid modifying X
+                    mask,
                 ),
                 (smoothing_fwhm, smoothing_fwhm, smoothing_fwhm),
             )[mask]
