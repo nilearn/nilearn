@@ -223,6 +223,8 @@ ignore = [
     "SIM300",
     "UP031"
 ]
+# List of all the ruff rules (includes why the rule matters)
+# https://docs.astral.sh/ruff/rules/
 select = [
     "ARG",
     "B",
