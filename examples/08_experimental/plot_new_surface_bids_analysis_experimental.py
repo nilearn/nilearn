@@ -5,7 +5,7 @@ Surface-based dataset first and second level analysis of a dataset
 .. warning::
 
     This example is adapted from
-    :ref:`sphx_glr_auto_examples_07_advanced_plot_surface_bids_analysis.py`. # noqa
+    :ref:`sphx_glr_auto_examples_07_advanced_plot_surface_bids_analysis.py`.
     to show how to use the new tentative API for surface images in nilearn.
 
     This functionality is provided
@@ -34,7 +34,7 @@ More specifically:
 
 Notice that in this case the preprocessed :term:`bold<BOLD>` images
 were already normalized to the same :term:`MNI` space.
-"""
+"""  # noqa: E501
 
 # %%
 # Fetch example :term:`BIDS` dataset

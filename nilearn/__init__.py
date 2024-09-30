@@ -1,4 +1,4 @@
-"""# noqa
+"""
 Machine Learning module for NeuroImaging in python.
 ---------------------------------------------------
 
