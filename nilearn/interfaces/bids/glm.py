@@ -415,7 +415,6 @@ def _model_level(model):
 
 def _write_model_level_statistical_maps(model, prefix, out_dir):
     if _model_level(model) == 2:
-
         model_level_mapping = {
             "residuals": f"{prefix}stat-errorts_statmap.nii.gz",
             "r_square": f"{prefix}stat-rsquared_statmap.nii.gz",
@@ -425,7 +424,6 @@ def _write_model_level_statistical_maps(model, prefix, out_dir):
             stat_map_to_save.to_filename(out_dir / map_name)
 
     else:
-
         if hasattr(model, "design_matrices_"):
             design_matrices = model.design_matrices_
         else:

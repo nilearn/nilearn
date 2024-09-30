@@ -307,7 +307,8 @@ def normalize_matrix_on_axis(m, axis=0):
     --------
     >>> import numpy as np
     >>> from nilearn.mass_univariate.permuted_least_squares import (
-    ...     normalize_matrix_on_axis)
+    ...     normalize_matrix_on_axis,
+    ... )
     >>> X = np.array([[0, 4], [1, 0]])
     >>> normalize_matrix_on_axis(X)
     array([[0., 1.],
@@ -356,7 +357,8 @@ def orthonormalize_matrix(m, tol=1.0e-12):
     --------
     >>> import numpy as np
     >>> from nilearn.mass_univariate.permuted_least_squares import (
-    ...     orthonormalize_matrix)
+    ...     orthonormalize_matrix,
+    ... )
     >>> X = np.array([[1, 2], [0, 1], [1, 1]])
     >>> orthonormalize_matrix(X)
     array([[-0.81049889, -0.0987837 ],

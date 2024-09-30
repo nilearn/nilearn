@@ -91,15 +91,6 @@ Development = "https://github.com/nilearn/nilearn"
 Discussions = "https://neurostars.org/tag/nilearn"
 Homepage = "https://nilearn.github.io"
 
-[tool.black]
-# 'extend-exclude' excludes files or directories in addition to the defaults
-extend-exclude = """
-(
-  nilearn/externals
-)
-"""
-line-length = 79
-
 [tool.codespell]
 ignore-words = ".github/codespell_ignore_words.txt"
 skip = "./.git,plotly-gl3d-latest.min.js,jquery.min.js,localizer_behavioural.tsv,.mypy_cache,env,venv,./doc/auto_examples,*/tmp,./doc/modules/generated/*,./doc/_build,./maint_tools/*.html,./examples/*/results"
@@ -113,24 +104,91 @@ packages = ["nilearn"]
 [tool.hatch.version]
 source = "vcs"
 
-[tool.isort]
-combine_as_imports = true
-line_length = 79
-profile = "black"
-skip_gitignore = true
-skip_glob = [
-    "nilearn/externals/*",
-    "doc/auto_examples/*"
-]
-src_paths = [
-    'maint_tools',
-    'nilearn',
-    'doc'
-]
-
 [tool.pytest.ini_options]
 addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --durations=0 --template=maint_tools/templates/index.html"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 junit_family = "xunit2"
 minversion = "6.0"
 xfail_strict = true
+
+[tool.ruff]
+extend-exclude = [
+    "nilearn/externals/*",
+    "doc/auto_examples/*",
+    "nilearn/_utils/docs.py",
+    "nilearn/datasets/neurovault.py"
+]
+include = ["pyproject.toml", "nilearn/**/*.py", "examples/**/*.py", "maint_tools/**/*.py", "doc/**/*.py"]
+indent-width = 4
+line-length = 79
+target-version = "py38"
+
+[tool.ruff.format]
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
+indent-style = "space"
+line-ending = "auto"
+quote-style = "double"
+skip-magic-trailing-comma = false
+
+[tool.ruff.lint]
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+fixable = ["ALL"]
+ignore = [
+    "ARG001",
+    "ARG002",
+    "ARG003",
+    "ARG005",
+    "B018",
+    "B028",
+    "B904",
+    "D105",
+    "D205",
+    "D208",
+    "D209",
+    "D301",
+    "E741",
+    "FLY002",
+    "NPY002",
+    "PD002",
+    "PD003",
+    "PD011",
+    "PD901",
+    "UP031"
+]
+select = [
+    "ARG",
+    "B",
+    "C90",
+    "D",
+    "DOC",
+    "E",
+    "F",
+    "FLY",
+    "I",
+    "NPY",
+    "PD",
+    "UP",
+    "W"
+]
+# "ERA",
+# "PERF",
+# "RUF",
+# "PTH",
+# "PLR",
+# "N",
+# "C4",
+# "SIM",q
+unfixable = []
+
+[tool.ruff.lint.mccabe]
+max-complexity = 41
+
+[tool.ruff.lint.per-file-ignores]
+"**/{doc}/*" = ["D103", "D104"]
+"**/{examples}/*" = ["D103", "D205", "D301", "D400", "E402"]
+"**/{tests}/*" = ["D100", "D101", "D102", "D103", "E402"]
+"__init__.py" = ["D104", "E402"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"

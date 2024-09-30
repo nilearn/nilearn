@@ -11,7 +11,8 @@ import warnings
 
 import numpy as np
 import pandas as pd
-from scipy import linalg, signal as sp_signal
+from scipy import linalg
+from scipy import signal as sp_signal
 from scipy.interpolate import CubicSpline
 from sklearn.utils import as_float_array, gen_even_slices
 

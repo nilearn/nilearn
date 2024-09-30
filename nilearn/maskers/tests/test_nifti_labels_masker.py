@@ -774,7 +774,8 @@ def test_sanitize_labels_warnings(shape_3d_default, affine_eye, n_regions):
     ],  # In case the list of labels includes one for background
 )
 @pytest.mark.parametrize(
-    "dtype", ["int32", "float32"]  # In case regions are labelled with floats
+    "dtype",
+    ["int32", "float32"],  # In case regions are labelled with floats
 )
 @pytest.mark.parametrize(
     "affine_data",

@@ -186,7 +186,6 @@ def _group_iter_search_light(
     par_scores = np.zeros(len(list_rows))
     t0 = time.time()
     for i, row in enumerate(list_rows):
-
         kwargs = {"scoring": scoring, "groups": groups}
         if isinstance(cv, KFold):
             kwargs = {"scoring": scoring}

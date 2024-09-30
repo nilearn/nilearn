@@ -484,9 +484,7 @@ def plot_design_matrix(
     # normalize the values per column for better visualization
     _, X, names = check_design_matrix(design_matrix)
     if rescale:
-        X = X / np.maximum(
-            1.0e-12, np.sqrt(np.sum(X**2, 0))
-        )  # pylint: disable=no-member
+        X = X / np.maximum(1.0e-12, np.sqrt(np.sum(X**2, 0)))  # pylint: disable=no-member
     if axes is None:
         max_len = np.max([len(str(name)) for name in names])
         fig_height = 1 + 0.1 * X.shape[0] + 0.04 * max_len
@@ -578,7 +576,6 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     height = 0.5
     for idx_run, event_df in enumerate(model_event):
         for _, event in event_df.iterrows():
-
             modulation = 1.0
             if "modulation" in event:
                 modulation = event["modulation"]

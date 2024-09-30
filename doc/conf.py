@@ -366,9 +366,7 @@ if compare_version(sphinx.__version__, "<", "1.5"):
     # If false, no module index is generated.
     latex_use_modindex = False
 else:
-    latex_elements[
-        "preamble"
-    ] = r"""
+    latex_elements["preamble"] = r"""
     \usepackage{amsmath}\usepackage{amsfonts}\usepackage{bm}\usepackage{morefloats}
     \let\oldfootnote\footnote
     \def\footnote#1{\oldfootnote{\small #1}}

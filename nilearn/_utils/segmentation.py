@@ -11,7 +11,8 @@ sub functions in skimage.segmentation
 import warnings
 
 import numpy as np
-from scipy import __version__, ndimage as ndi, sparse
+from scipy import __version__, sparse
+from scipy import ndimage as ndi
 from scipy.sparse.linalg import cg
 from sklearn.utils import as_float_array
 

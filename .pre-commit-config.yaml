@@ -25,20 +25,6 @@ repos:
     -   id: mixed-line-ending
     -   id: trailing-whitespace
 
-# Sorts Python imports alphabetically and by section with `isort`.
--   repo: https://github.com/pycqa/isort
-    rev: 5.13.2
-    hooks:
-    -   id: isort
-        args: [--profile, black, --settings-path, pyproject.toml]
-
-# Automatically upgrade syntax for newer versions of the language.
--   repo: https://github.com/asottile/pyupgrade
-    rev: v3.17.0
-    hooks:
-    -   id: pyupgrade
-        args: [--py38-plus]
-
 # Checks for .rst files
 -   repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
@@ -49,22 +35,6 @@ repos:
     rev: v1.10.0
     hooks:
     -   id: rst-backticks
-
-# Aplly black formatting to python code
-# https://github.com/psf/black
--   repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 24.8.0
-    hooks:
-    -   id: black
-        args: [--config, pyproject.toml]
-
-# Apply black formatting to doc strings
--   repo: https://github.com/adamchainz/blacken-docs
-    rev: 1.18.0
-    hooks:
-    -   id: blacken-docs
-        additional_dependencies:
-        -   black==23.9.1
 
 # Checks for spelling errors
 -   repo: https://github.com/codespell-project/codespell
@@ -100,16 +70,12 @@ repos:
                 maint_tools/templates/index.html
             )$
 
-
-# Check that Python code complies with PEP8 guidelines
-# flake8 uses pydocstyle to check docstrings: https://flake8.pycqa.org/en/latest/
-# flake8-docstrings: https://pypi.org/project/flake8-docstrings/
-# flake8-use-fstring forces to use fstrings: https://pypi.org/project/flake8-use-fstring/
-# flake8-functions checks functions quality: https://pypi.org/project/flake8-functions/
-# flake8-bugbear detects some common bugs: https://github.com/PyCQA/flake8-bugbear
--   repo: https://github.com/pyCQA/flake8
-    rev: 7.1.1
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.6.8
     hooks:
-    -   id: flake8
-        args: [--config, .flake8, --verbose, nilearn, examples, maint_tools]
-        additional_dependencies: [flake8-docstrings, flake8-use-fstring, flake8-functions, flake8-bugbear]
+    # Run the linter.
+    -   id: ruff
+        args: [--fix]
+    # Run the formatter.
+    -   id: ruff-format

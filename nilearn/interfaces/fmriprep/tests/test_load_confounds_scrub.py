@@ -103,7 +103,6 @@ def test_extract_outlier_regressors(rng):
     ["motion_outlier", "non_steady_state_outlier"],
 )
 def test_warning_no_volumes_left(outlier_type):
-
     rng = np.random.default_rng()
     n_scans = 10
     fake_confounds = pd.DataFrame(

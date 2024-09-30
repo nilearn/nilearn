@@ -160,10 +160,10 @@ class OrthoProjector(OrthoSlicer):
         if len(node_coords_shape) != 2 or node_coords_shape[1] != 3:
             message = (
                 "Invalid shape for 'node_coords'. You passed an "
-                "'adjacency_matrix' of shape {0} therefore "
-                "'node_coords' should be a array with shape ({0[0]}, 3) "
-                "while its shape was {1}"
-            ).format(adjacency_matrix_shape, node_coords_shape)
+                f"'adjacency_matrix' of shape {adjacency_matrix_shape} therefore "
+                f"'node_coords' should be a array with shape ({adjacency_matrix_shape[0]}, 3) "
+                f"while its shape was {node_coords_shape}"
+            )
 
             raise ValueError(message)
 
