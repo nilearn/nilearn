@@ -16,6 +16,7 @@ from scipy.interpolate import CubicSpline
 from sklearn.utils import as_float_array, gen_even_slices
 
 from nilearn._utils import fill_doc, stringify_path
+from nilearn._utils.exceptions import AllVolumesRemovedError
 from nilearn._utils.numpy_conversions import as_ndarray, csv_to_array
 from nilearn._utils.param_validation import check_run_sample_masks
 
@@ -829,6 +830,8 @@ def _handle_scrubbed_volumes(
     """Interpolate or censor scrubbed volumes."""
     if sample_mask is None:
         return signals, confounds, sample_mask
+    elif sample_mask.size == 0:
+        raise AllVolumesRemovedError()
 
     if filter_type == "butterworth":
         signals = _interpolate_volumes(signals, sample_mask, t_r, extrapolate)

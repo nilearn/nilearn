@@ -289,7 +289,7 @@ def _resample_one_img(
 
     # If data is binary and interpolation is continuous or linear,
     # warn the user as this might be unintentional
-    if sorted(list(np.unique(data))) == [0, 1] and interpolation_order != 0:
+    if interpolation_order != 0 and np.array_equal(np.unique(data), [0, 1]):
         warnings.warn(
             "Resampling binary images with continuous or "
             "linear interpolation. This might lead to "

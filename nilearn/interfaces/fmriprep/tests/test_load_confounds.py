@@ -649,6 +649,7 @@ def test_ica_aroma(tmp_path, fmriprep_version):
     "fmriprep_version, scrubbed_time_points, non_steady_outliers",
     [("1.4.x", 8, 1), ("21.x.x", 30, 3)],
 )
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_sample_mask(
     tmp_path, fmriprep_version, scrubbed_time_points, non_steady_outliers
 ):
