@@ -121,7 +121,6 @@ extend-exclude = [
 include = ["pyproject.toml", "nilearn/**/*.py", "examples/**/*.py", "maint_tools/**/*.py", "doc/**/*.py"]
 indent-width = 4
 line-length = 79
-target-version = "py38"
 
 [tool.ruff.format]
 docstring-code-format = true

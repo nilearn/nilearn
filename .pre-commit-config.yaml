@@ -2,6 +2,9 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 
+ci:
+    autoupdate_commit_msg: 'chore: update pre-commit hooks'
+
 #  Files that should not be checked
 exclude: |
     (?x)^(
@@ -76,6 +79,6 @@ repos:
     # Run the linter.
     -   id: ruff
         # args: [--statistics]
-        args: [--fix]
+        args: [--fix, --show-fixes]
     # Run the formatter.
     -   id: ruff-format
