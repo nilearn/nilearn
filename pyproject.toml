@@ -108,6 +108,7 @@ source = "vcs"
 addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --durations=0 --template=maint_tools/templates/index.html"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 junit_family = "xunit2"
+log_cli_level = "INFO"
 minversion = "6.0"
 xfail_strict = true
 
