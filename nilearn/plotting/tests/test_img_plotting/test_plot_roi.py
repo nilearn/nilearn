@@ -54,13 +54,16 @@ def test_plot_roi_view_types(
         cut_coords=cut_coords,
         **kwargs,
     )
+    plt.close()
 
+
+def test_plot_roi_no_int_64_warning(recwarn):
+    """Make sure that no int64 warning is thrown."""
+    demo_plot_roi()
     for _ in range(len(recwarn)):
         x = recwarn.pop()
         if issubclass(x.category, UserWarning):
             assert "image contains 64-bit ints" not in str(x.message)
-
-    plt.close()
 
 
 def test_plot_roi_view_type_error():
