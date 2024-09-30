@@ -18,6 +18,7 @@ from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
 from nilearn._utils import fill_doc, logger
+from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
 from nilearn.image import get_data
 from nilearn.masking import unmask_from_to_3d_array
 
@@ -153,6 +154,125 @@ def _make_edges_and_weights(X, mask_img):
     return edges, weights
 
 
+def _compute_weights_surface(X, mask, edges):
+    """Compute the weights for each edge using Euclidean distance.
+
+    Parameters
+    ----------
+    X : ndarray, shape = [n_samples, n_features]
+        Training data.
+
+    mask : boolean
+        Object used for masking the data.
+
+    edges : ndarray
+
+    Returns
+    -------
+    weights : ndarray
+        Weights corresponding to all edges in the mask.
+        shape: (n_edges,).
+
+    """
+    n_samples, _ = X.shape
+    shape = mask.shape
+
+    data = np.empty((shape[0], n_samples))
+    for sample in range(n_samples):
+        data[:, sample] = unmask_from_to_3d_array(X[sample].copy(), mask)
+
+    data_i = data[edges[0]]
+    data_j = data[edges[1]]
+    weights = np.sum((data_i - data_j) ** 2, axis=-1).ravel()
+
+    return weights
+
+
+def _make_edges_surface(faces, mask):
+    """Create the edges set: Returns a list of edges for a surface mesh.
+
+    Parameters
+    ----------
+    faces : ndarray
+        The vertex indices corresponding the mesh triangles.
+
+    mask : boolean
+        Returns True if the edge is contained in the mask, False otherwise.
+
+    Returns
+    -------
+    edges : ndarray
+        Edges corresponding to the image with shape: (2, n_edges).
+
+    edges_masked : ndarray
+        Edges corresponding to the mask with shape: (1, n_edges).
+
+    """
+    mesh_edges = set()
+    for face in faces:
+        for i in range(len(face)):
+            edge = tuple(sorted([face[i], face[(i + 1) % len(face)]]))
+            mesh_edges.add(edge)
+
+    edges = np.array(list(mesh_edges))
+    false_indices = np.where(~mask)[0]
+    edges_masked = ~np.isin(edges, false_indices).any(axis=1)
+
+    return edges.T, edges_masked
+
+
+def _make_edges_and_weights_surface(X, mask_img):
+    """Compute the weights to all edges in the mask.
+
+    Parameters
+    ----------
+    X : ndarray, shape = [n_samples, n_features]
+        Training data.
+
+    mask_img : SurfaceImage object
+        Object used for masking the data.
+
+    Returns
+    -------
+    edges : ndarray
+        Array containing edges of mesh
+
+    weights : ndarray
+        Weights corresponding to all edges in the mask.
+        shape: (n_edges,).
+
+    """
+    weights = {}
+    edges = {}
+    len_previous_mask = 0
+    for part in mask_img.mesh.parts:
+        face_part = mask_img.mesh.parts[part].faces
+        mask_part = mask_img.data.parts[part]
+
+        edges_unmasked, edges_mask = _make_edges_surface(face_part, mask_part)
+
+        idxs = np.array(range(mask_part.sum())) + len_previous_mask
+        weights_unmasked = _compute_weights_surface(
+            X[:, idxs], mask_part.astype("bool"), edges_unmasked
+        )
+
+        # Apply mask to edges and weights
+        weights[part] = np.copy(weights_unmasked[edges_mask])
+        edges_ = np.copy(edges_unmasked[:, edges_mask])
+
+        len_previous_mask += mask_part.sum()
+
+        # Reorder the indices of the graph
+        max_index = edges_.max()
+        order = np.searchsorted(
+            np.unique(edges_.ravel()), np.arange(max_index + 1)
+        )
+
+        edges[part] = order[edges_]
+
+    return edges, weights
+
+
 def _weighted_connectivity_graph(X, mask_img):
     """Create a symmetric weighted graph.
 
@@ -174,11 +294,20 @@ def _weighted_connectivity_graph(X, mask_img):
     """
     n_features = X.shape[1]
 
-    edges, weight = _make_edges_and_weights(X, mask_img)
+    if isinstance(mask_img, SurfaceImage):
+        edges, weight = _make_edges_and_weights_surface(X, mask_img)
+        connectivity = coo_matrix((n_features, n_features))
+        for part in mask_img.mesh.parts:
+            conn_temp = coo_matrix(
+                (weight[part], edges[part]), (n_features, n_features)
+            ).tocsr()
+            connectivity += conn_temp
+    else:
+        edges, weight = _make_edges_and_weights(X, mask_img)
 
-    connectivity = coo_matrix(
-        (weight, edges), (n_features, n_features)
-    ).tocsr()
+        connectivity = coo_matrix(
+            (weight, edges), (n_features, n_features)
+        ).tocsr()
 
     # Making it symmetrical
     connectivity = (connectivity + connectivity.T) / 2
@@ -526,7 +655,9 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
         )
         n_features = X.shape[1]
 
-        if not isinstance(self.mask_img, (str, Nifti1Image)):
+        if not isinstance(
+            self.mask_img, (str, Nifti1Image, SurfaceImage, SurfaceMasker)
+        ):
             raise ValueError(
                 "The mask image should be a Niimg-like"
                 f"object. Instead a {type(self.mask_img)} object was provided."
