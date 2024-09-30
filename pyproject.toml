@@ -30,7 +30,8 @@ dependencies = [
     "numpy>=1.19.0",
     "pandas>=1.1.5",
     "requests>=2.25.0",
-    "scikit-learn>=1.0.0",
+    "scikit-learn>=1.0.0 ; platform_system != 'Windows'",
+    "scikit-learn>=1.0.0, <1.4 ; platform_system == 'Windows' and python_version >= '3.13'",
     "scipy>=1.8.0",
     "packaging"
 ]
