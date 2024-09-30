@@ -35,7 +35,7 @@ def demo_plot_roi(**kwargs):
     "display_mode,cut_coords", [("ortho", None), ("z", 3), ("x", [2.0, 10])]
 )
 def test_plot_roi_view_types(
-    view_type, black_bg, threshold, alpha, display_mode, cut_coords, recwarn
+    view_type, black_bg, threshold, alpha, display_mode, cut_coords
 ):
     """Smoke-test for plot_roi.
 
