@@ -56,6 +56,9 @@ Enhancements
 
 - :bdg-dark:`Code` Add footer to masker reports (:gh:`4307` by `Rémi Gau`_).
 
+- :bdg-info:`Plotting` Improve plotting contours for :class:`nilearn.plotting.displays.PlotlySurfaceFigure` objects by adding :meth:`nilearn.plotting.displays.PlotlySurfaceFigure.add_contours` method that accepts arguments to adjust line aesthetics (:gh:`3949` by `Patrick Sadil`_).
+
+
 Changes
 -------
 - :bdg-dark:`Code` Warn the user when all volumes would be scrubbed when loading fmriprep confounds as this would lead to an empty ``sample_mask`` (:gh:`4558` by `Victoria Shevchenko`_).
