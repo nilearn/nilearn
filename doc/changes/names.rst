@@ -124,6 +124,8 @@
 
 .. _Jason Gors: http://jgors.com/
 
+.. _Jason Kai: https://github.com/kaitj
+
 .. _Javier Rasero: https://jrasero.github.io/
 
 .. _Jean Kossaifi: http://jeankossaifi.com/
@@ -295,6 +297,8 @@
 .. _Tom Vanasse: https://github.com/tvanasse
 
 .. _Vasco Diogo: https://github.com/vascosa
+
+.. _Victoria Shevchenko: https://github.com/victoris93
 
 .. _Vincent Michel: https://github.com/vmichel
 

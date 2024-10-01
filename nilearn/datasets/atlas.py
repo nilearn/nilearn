@@ -1221,33 +1221,25 @@ def fetch_atlas_aal(
 
     .. warning::
 
-        The maps image (``data.maps``) contains 117 unique integer values
-        defining the parcellation. However, these values are not consecutive
-        integers from 0 to 116 as is usually the case in Nilearn.
-        Therefore, these values shouldn't be interpreted as indices for the
-        list of label names. In addition, the region IDs are provided as
-        strings, so it is necessary to cast them to integers when indexing.
+        The integers in the map image (data.maps) that define the parcellation
+        are not always consecutive, as is usually the case in Nilearn, and
+        should not be interpreted as indices for the list of label names.
+        In addition, the region IDs are provided as strings, so it is necessary
+        to cast them to integers when indexing.
+        For more information, refer to the fetcher’s description:
 
-    For example, to get the name of the region corresponding to the region
-    ID 5021 in the image, you should do:
+        .. code-block:: python
 
-    .. code-block:: python
+            from nilearn.datasets import fetch_atlas_aal
 
-        # This should print 'Lingual_L'
-        data.labels[data.indices.index("5021")]
-
-    Conversely, to get the region ID corresponding to the label
-    "Precentral_L", you should do:
-
-    .. code-block:: python
-
-        # This should print '2001'
-        data.indices[data.labels.index("Precentral_L")]
+            atlas = fetch_atlas_aal()
+            print(atlas.description)
 
     Parameters
     ----------
-    version : {'SPM12', 'SPM5', 'SPM8'}, default='SPM12'
-        The version of the AAL atlas. Must be 'SPM5', 'SPM8', or 'SPM12'.
+    version : {'3v2', 'SPM12', 'SPM5', 'SPM8'}, default='SPM12'
+        The version of the AAL atlas. Must be 'SPM5', 'SPM8', 'SPM12', or '3v2'
+        for the latest SPM12 version of AAL3 software.
     %(data_dir)s
     %(url)s
     %(resume)s
@@ -1260,15 +1252,18 @@ def fetch_atlas_aal(
 
             - 'maps': :obj:`str`, path to nifti file containing the
               regions. The image has shape ``(91, 109, 91)`` and contains
-              117 unique integer values defining the parcellation. Please
-              refer to the main description to see how to link labels to
-              regions IDs.
-            - 'labels': :obj:`list` of :obj:`str`, list of the names of the
-              regions. This list has 116 names as 'Background' (label 0) is
-              not included in this list. Please refer to the main description
+              117 unique integer values defining the parcellation in version
+              SPM 5, 8 and 12, and 167 unique integer values defining the
+              parcellation in version 3v2. Please refer to the main description
               to see how to link labels to regions IDs.
+            - 'labels': :obj:`list` of :obj:`str`, list of the names of the
+              regions. As 'Background' (label 0) is not included in this list,
+              there are 116 names in version SPM 5, 8, and 12, and 166 names in
+              version 3v2. Please refer to the main description to see how to
+              link labels to regions IDs.
             - 'indices': :obj:`list` of :obj:`str`, indices mapping 'labels'
-              to values in the 'maps' image. This list has 116 elements.
+              to values in the 'maps' image. This list has 116 elements in
+              version SPM 5, 8 and 12, and 166 elements in version 3v2.
               Since the values in the 'maps' image do not correspond to
               indices in ``labels``, but rather to values in ``indices``, the
               location of a label in the ``labels`` list does not necessary
@@ -1276,6 +1271,11 @@ def fetch_atlas_aal(
               list to identify the appropriate image value for a given label
               (See main description above).
             - 'description': :obj:`str`, description of the atlas.
+
+    Warns
+    -----
+    DeprecationWarning
+        Starting in version 0.13, the default fetched mask will be AAL 3v2.
 
     References
     ----------
@@ -1286,7 +1286,7 @@ def fetch_atlas_aal(
     Licence: unknown.
 
     """
-    versions = ["SPM5", "SPM8", "SPM12"]
+    versions = ["SPM5", "SPM8", "SPM12", "3v2"]
     if version not in versions:
         raise ValueError(
             f"The version of AAL requested '{version}' does not exist."
@@ -1304,6 +1304,18 @@ def fetch_atlas_aal(
             filenames = [
                 (os.path.join("aal", "atlas", f), url, opts) for f in basenames
             ]
+            message = (
+                "Starting in version 0.13, the default fetched mask will be"
+                "AAL 3v2 instead."
+            )
+            warnings.warn(message, DeprecationWarning)
+
+        elif version == "3v2":
+            url = f"{base_url}wp-content/uploads/AAL3v2_for_SPM12.tar.gz"
+            basenames = ("AAL3v1.nii", "AAL3v1.xml")
+            filenames = [
+                (os.path.join("AAL3", f), url, opts) for f in basenames
+            ]
         else:
             url = f"{base_url}wp-content/uploads/aal_for_{version}.zip"
             basenames = ("ROI_MNI_V4.nii", "ROI_MNI_V4.txt")
@@ -1318,10 +1330,10 @@ def fetch_atlas_aal(
     atlas_img, labels_file = fetch_files(
         data_dir, filenames, resume=resume, verbose=verbose
     )
-    fdescr = get_dataset_descr("aal_SPM12")
+    fdescr = get_dataset_descr("aal")
     labels = []
     indices = []
-    if version == "SPM12":
+    if version in ("SPM12", "3v2"):
         xml_tree = xml.etree.ElementTree.parse(labels_file)
         root = xml_tree.getroot()
         for label in root.iter("label"):

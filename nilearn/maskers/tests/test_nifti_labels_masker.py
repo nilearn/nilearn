@@ -727,7 +727,7 @@ def test_nifti_labels_masker_with_mask(
         "Background",
     ],
 )
-def test_warning_nb_labels_not_equal_nb_regions(
+def test_warning_n_labels_not_equal_n_regions(
     shape_3d_default, affine_eye, background, n_regions
 ):
     labels_img = generate_labeled_regions(

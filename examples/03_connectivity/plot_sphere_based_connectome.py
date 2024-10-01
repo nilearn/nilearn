@@ -94,6 +94,7 @@ report
 # -------------------
 import matplotlib.pyplot as plt
 
+plt.figure(layout="constrained")
 for time_serie, label in zip(time_series.T, labels):
     plt.plot(time_serie, label=label)
 
@@ -101,7 +102,6 @@ plt.title("Default Mode Network Time Series")
 plt.xlabel("Scan number")
 plt.ylabel("Normalized signal")
 plt.legend()
-plt.tight_layout()
 
 # %%
 # Compute partial correlation matrix
@@ -225,11 +225,7 @@ print(f"time series has {timeseries.shape[0]} samples")
 # %%
 # in which situation the graphical lasso **sparse inverse covariance**
 # estimator captures well the covariance **structure**.
-try:
-    from sklearn.covariance import GraphicalLassoCV
-except ImportError:
-    # for Scitkit-Learn < v0.20.0
-    from sklearn.covariance import GraphLassoCV as GraphicalLassoCV
+from sklearn.covariance import GraphicalLassoCV
 
 covariance_estimator = GraphicalLassoCV(cv=3, verbose=1)
 

@@ -342,8 +342,9 @@ extractor : {"local_regions", "connected_components"}, default="local_regions"
           on these markers for region separation.
 
 """
-docdict["extract_type"] = docdict["extractor"]
-
+docdict["extract_type"] = docdict["extractor"].replace(
+    "extractor", "extract_type"
+)
 # figure
 docdict[
     "figure"

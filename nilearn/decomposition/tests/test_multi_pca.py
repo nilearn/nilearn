@@ -184,7 +184,7 @@ def test_multi_pca_score_single_subject(mask_img):
     assert 0.0 <= s <= 1.0
 
 
-def test_multi_pca_score_single_subject_nb_components(mask_img):
+def test_multi_pca_score_single_subject_n_components(mask_img):
     """Score is one for n_components == n_sample \
        in single subject configuration."""
     data, _, _, _ = _make_multi_pca_test_data(with_activation=False)

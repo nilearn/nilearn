@@ -400,14 +400,14 @@ def test_save_glm_to_bids_serialize_affine(tmp_path):
 
 
 @pytest.fixture
-def nb_cols_design_matrix():
+def n_cols_design_matrix():
     return 3
 
 
 @pytest.fixture
-def two_runs_model(nb_cols_design_matrix):
+def two_runs_model(n_cols_design_matrix):
     # Create two runs of data
-    shapes, rk = [(7, 8, 9, 15), (7, 8, 9, 15)], nb_cols_design_matrix
+    shapes, rk = [(7, 8, 9, 15), (7, 8, 9, 15)], n_cols_design_matrix
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes,
         rk,
@@ -437,13 +437,13 @@ def two_runs_model(nb_cols_design_matrix):
 
 
 def test_save_glm_to_bids_errors(
-    tmp_path_factory, two_runs_model, nb_cols_design_matrix
+    tmp_path_factory, two_runs_model, n_cols_design_matrix
 ):
     """Test errors of save_glm_to_bids."""
     tmpdir = tmp_path_factory.mktemp("test_save_glm_to_bids_errors")
 
     # Contrast names must be strings
-    contrasts = {5: np.eye(nb_cols_design_matrix)}
+    contrasts = {5: np.eye(n_cols_design_matrix)}
     contrast_types = {5: "F"}
 
     with pytest.raises(ValueError):
