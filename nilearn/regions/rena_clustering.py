@@ -197,7 +197,7 @@ def _make_edges_surface(faces, mask):
         The vertex indices corresponding the mesh triangles.
 
     mask : boolean
-        Returns True if the edge is contained in the mask, False otherwise.
+        True if the edge is contained in the mask, False otherwise.
 
     Returns
     -------
@@ -234,10 +234,10 @@ def _make_edges_and_weights_surface(X, mask_img):
 
     Returns
     -------
-    edges : ndarray
+    edges : dict
         Array containing edges of mesh
 
-    weights : ndarray
+    weights : s
         Weights corresponding to all edges in the mask.
         shape: (n_edges,).
 
