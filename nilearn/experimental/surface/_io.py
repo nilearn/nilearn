@@ -1,7 +1,7 @@
 """Input/output for surface data and meshes."""
 
 import pathlib
-from typing import Dict, Union
+from typing import Union
 
 import numpy as np
 from nibabel import gifti
@@ -14,7 +14,7 @@ def read_array(array_file: Union[pathlib.Path, str]) -> np.ndarray:
     return old_surface.load_surf_data(array_file)
 
 
-def read_mesh(mesh_file: Union[pathlib.Path, str]) -> Dict[str, np.ndarray]:
+def read_mesh(mesh_file: Union[pathlib.Path, str]) -> dict[str, np.ndarray]:
     """Load surface mesh geometry into Numpy arrays."""
     loaded = old_surface.load_surf_mesh(mesh_file)
     return {"coordinates": loaded.coordinates, "faces": loaded.faces}
