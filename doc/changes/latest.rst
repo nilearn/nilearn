@@ -52,7 +52,7 @@ Changes
 
 - :bdg-dark:`Code` Remove the unused argument ``rank`` from the constructor of :class:`nilearn.glm.LikelihoodModelResults` (:gh:`4273` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` Use ruff as formater and linter instead of black, isort, flake8... (:gh:`4574` by `Rémi Gau`_).
+- :bdg-dark:`Code` Use ruff as formatter and linter instead of black, isort, flake8... (:gh:`4574` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Implement argument ``sample_mask`` for :meth:`nilearn.maskers.MultiNiftiMasker.transform_imgs` (:gh:`4273` by `Rémi Gau`_).
 
