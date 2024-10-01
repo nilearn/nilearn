@@ -5,6 +5,21 @@
 0.11.0.dev
 ==========
 
+HIGHLIGHTS
+----------
+
+.. warning::
+
+ | **Support for Python 3.8 has been dropped.**
+ | **We recommend upgrading to Python 3.11 or above.**
+ |
+ | **Minimum supported versions of the following packages have been bumped up:**
+ | - numpy -- 1.22.4
+ | - nibabel -- 5.2.0
+ | - scikit-learn -- 1.4.0
+ | - joblib -- 1.2.0
+ | - pandas -- 2.2.0
+
 NEW
 ---
 
