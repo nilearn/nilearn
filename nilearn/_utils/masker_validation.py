@@ -74,8 +74,10 @@ def check_embedded_masker(estimator, masker_type="multi_nii"):
     else:
         warnings.warn(
             warning_msg.substitute(
-                attribute="memory", default_value="Memory(location=None)"
-            )
+                attribute="memory",
+                default_value="Memory(location=None)",
+            ),
+            stacklevel=3,
         )
         new_masker_params["memory"] = _check_memory(None)
 
@@ -83,7 +85,10 @@ def check_embedded_masker(estimator, masker_type="multi_nii"):
         new_masker_params["memory_level"] = max(0, estimator.memory_level - 1)
     else:
         warnings.warn(
-            warning_msg.substitute(attribute="memory_level", default_value="0")
+            warning_msg.substitute(
+                attribute="memory_level", default_value="0"
+            ),
+            stacklevel=3,
         )
         new_masker_params["memory_level"] = 0
 
@@ -91,7 +96,8 @@ def check_embedded_masker(estimator, masker_type="multi_nii"):
         new_masker_params["verbose"] = estimator.verbose
     else:
         warnings.warn(
-            warning_msg.substitute(attribute="verbose", default_value="0")
+            warning_msg.substitute(attribute="verbose", default_value="0"),
+            stacklevel=3,
         )
         new_masker_params["verbose"] = 0
     # Raising warning if masker override parameters
@@ -110,7 +116,7 @@ def check_embedded_masker(estimator, masker_type="multi_nii"):
             "Overriding provided-default estimator parameters with"
             f" provided masker parameters :\n{conflict_string}"
         )
-        warnings.warn(warn_str)
+        warnings.warn(warn_str, stacklevel=3)
     masker = masker_type(**new_masker_params)
 
     # Forwarding potential attribute of provided masker
