@@ -234,10 +234,10 @@ def _make_edges_and_weights_surface(X, mask_img):
 
     Returns
     -------
-    edges : dict
+    edges : dict[str, np.array]
         Array containing edges of mesh
 
-    weights : s
+    weights : dict[str, np.array]
         Weights corresponding to all edges in the mask.
         shape: (n_edges,).
 

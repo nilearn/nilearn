@@ -72,10 +72,15 @@ def test_make_edges_and_weights_surface_smoke(mini_mask, rng):
     edges, weights = _make_edges_and_weights_surface(X, mini_mask)
 
     assert len(edges) == 2
-    assert "left" in edges
-    assert "right" in edges
+    assert len(weights) == 2
+    for part in ["left", "right"]:
+        assert part in edges
+        assert part in weights
 
-    print(edges["left"])
-    assert assert_array_equal(edges["left"], np.array([[0, 1, 0], [1, 2, 2]]))
+    assert_array_equal(edges["left"], np.array([[0, 1, 0], [1, 2, 2]]))
+    assert_array_equal(
+        edges["right"], np.array([[1, 0, 2, 0, 1, 0], [3, 1, 3, 3, 2, 2]])
+    )
 
-    print(edges["right"])
+    assert len(weights["left"]) == 3
+    assert len(weights["right"]) == 6
