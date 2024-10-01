@@ -1534,6 +1534,14 @@ class FREMRegressor(_BaseDecoder):
             n_jobs=n_jobs,
         )
 
+    def fit(self, X, y, groups=None):
+        """Hold place to throw NotImplementedError for SurfaceImage."""
+        if isinstance(X, SurfaceImage) or isinstance(self.mask, SurfaceMasker):
+            raise NotImplementedError(
+                "Running FREMRegressor on surface objects is not supported."
+            )
+        super().fit(self, X, y, groups)
+
 
 @fill_doc
 class FREMClassifier(_BaseDecoder):
@@ -1686,3 +1694,11 @@ class FREMClassifier(_BaseDecoder):
             high_pass=high_pass,
             t_r=t_r,
         )
+
+    def fit(self, X, y, groups=None):
+        """Hold place to throw NotImplementedError for SurfaceImage."""
+        if isinstance(X, SurfaceImage) or isinstance(self.mask, SurfaceMasker):
+            raise NotImplementedError(
+                "Running FREMClassifier on surface objects is not supported."
+            )
+        super().fit(self, X, y, groups)

@@ -29,7 +29,7 @@ from sklearn import __version__ as sklearn_version
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.exceptions import NotFittedError
+from sklearn.exceptions import ConvergenceWarning, NotFittedError
 from sklearn.linear_model import (
     LassoCV,
     LogisticRegressionCV,
@@ -1119,6 +1119,7 @@ def test_decoder_screening_percentile_surface_default(
     _make_surface_class_data,
 ):
     """Test default screening percentile with surface image."""
+    warnings.simplefilter("ignore", ConvergenceWarning)
     X, y = _make_surface_class_data()
 
     model = Decoder(mask=SurfaceMasker())
@@ -1129,6 +1130,7 @@ def test_decoder_screening_percentile_surface_default(
 @pytest.mark.parametrize("perc", [None, 100, 0])
 def test_decoder_screening_percentile_surface(perc, _make_surface_class_data):
     """Test passing screening percentile with surface image."""
+    warnings.simplefilter("ignore", ConvergenceWarning)
     X, y = _make_surface_class_data()
 
     model = Decoder(mask=SurfaceMasker(), screening_percentile=perc)
@@ -1142,6 +1144,7 @@ def test_decoder_screening_percentile_surface(perc, _make_surface_class_data):
 @pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
 def test_decoder_fit_surface(decoder, _make_surface_class_data):
     """Test fit for surface image."""
+    warnings.simplefilter("ignore", ConvergenceWarning)
     X, y = _make_surface_class_data()
     model = decoder(mask=SurfaceMasker())
     model.fit(X, y)
@@ -1151,6 +1154,7 @@ def test_decoder_fit_surface(decoder, _make_surface_class_data):
 
 def test_decoder_predict_score_surface(_make_surface_class_data):
     """Test classification predict and scoring for surface image."""
+    warnings.simplefilter("ignore", ConvergenceWarning)
     X, y = _make_surface_class_data()
     model = Decoder(mask=SurfaceMasker())
     model.fit(X, y)
@@ -1163,6 +1167,7 @@ def test_decoder_predict_score_surface(_make_surface_class_data):
     assert 0.3 < acc < 0.7
 
 
+@pytest.mark.filterwarnings("ignore:Solver terminated early")
 def test_decoder_regressor_predict_score_surface(_make_surface_reg_data):
     """Test regression predict and scoring for surface image."""
     X, y = _make_surface_reg_data()
@@ -1175,3 +1180,12 @@ def test_decoder_regressor_predict_score_surface(_make_surface_reg_data):
     model.score(X, y)
     r2 = r2_score(y, y_pred)
     assert r2 <= 0
+
+
+@pytest.mark.parametrize("frem", [FREMRegressor, FREMClassifier])
+def test_frem_decoder_fit_surface(frem, _make_surface_class_data, mini_mask):
+    """Test fit for using FREM decoding with surface image."""
+    with pytest.raises(NotImplementedError):
+        X, y = _make_surface_class_data()
+        model = frem(mask=mini_mask, clustering_percentile=90)
+        model.fit(X, y)
