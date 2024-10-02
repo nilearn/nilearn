@@ -155,7 +155,7 @@ def _make_edges_and_weights(X, mask_img):
 
 
 def _compute_weights_surface(X, mask, edges):
-    """Compute the weights for each edge using Euclidean distance.
+    """Compute the weights for each edge using squared Euclidean distance.
 
     Parameters
     ----------
