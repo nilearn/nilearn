@@ -25,12 +25,14 @@ def _linkcode_resolve(domain, info, package, url_fmt, revision):
     This is called by sphinx.ext.linkcode
 
     An example with a long-untouched module that everyone has
-    >>> _linkcode_resolve('py', {'module': 'tty',
-    ...                          'fullname': 'setraw'},
-    ...                   package='tty',
-    ...                   url_fmt='http://hg.python.org/cpython/file/'
-    ...                           '{revision}/Lib/{package}/{path}#L{lineno}',
-    ...                   revision='xxxx')
+    >>> _linkcode_resolve(
+    ...     "py",
+    ...     {"module": "tty", "fullname": "setraw"},
+    ...     package="tty",
+    ...     url_fmt="http://hg.python.org/cpython/file/"
+    ...     "{revision}/Lib/{package}/{path}#L{lineno}",
+    ...     revision="xxxx",
+    ... )
     'http://hg.python.org/cpython/file/xxxx/Lib/tty/tty.py#L18'
     """
     if revision is None:

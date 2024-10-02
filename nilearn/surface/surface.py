@@ -10,7 +10,8 @@ from pathlib import Path
 import numpy as np
 import sklearn.cluster
 import sklearn.preprocessing
-from nibabel import freesurfer as fs, gifti, load, nifti1
+from nibabel import freesurfer as fs
+from nibabel import gifti, load, nifti1
 from scipy import interpolate, sparse
 from sklearn.exceptions import EfficiencyWarning
 
@@ -847,7 +848,6 @@ def load_surf_data(surf_data):
         )
 
     if isinstance(surf_data, str):
-
         # resolve globbing
         file_list = resolve_globbing(surf_data)
         # resolve_globbing handles empty lists

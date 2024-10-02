@@ -50,8 +50,9 @@ def test_expression_to_contrast_vector_error():
 def set_up_glm():
     def _set_up_glm(rng, noise_model, bins=100):
         n, p, q = 100, 80, 10
-        X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(
-            size=(p, n)
+        X, Y = (
+            rng.standard_normal(size=(p, q)),
+            rng.standard_normal(size=(p, n)),
         )
         labels, results = run_glm(Y, X, noise_model, bins=bins)
         return labels, results, q

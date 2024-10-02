@@ -18,12 +18,13 @@ ensembling to achieve state of the art performance
 
 import itertools
 import warnings
-from typing import Iterable
+from collections.abc import Iterable
 
 import numpy as np
 from joblib import Parallel, delayed
 from packaging.version import parse
-from sklearn import __version__ as sklearn_version, clone
+from sklearn import __version__ as sklearn_version
+from sklearn import clone
 from sklearn.base import BaseEstimator, MultiOutputMixin
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.linear_model import (

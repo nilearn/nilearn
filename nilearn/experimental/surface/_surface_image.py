@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import abc
 import pathlib
-import sys
 from pathlib import Path
 
 import numpy as np
@@ -270,17 +269,9 @@ class SurfaceImage:
 
         if "hemi-L" not in filename.stem and "hemi-R" not in filename.stem:
             for hemi in ["L", "R"]:
-                # TODO simplify when dropping python 3.8
-                if sys.version_info.minor >= 9:
-                    self.to_filename(
-                        filename.with_stem(f"{filename.stem}_hemi-{hemi}")
-                    )
-                else:
-                    self.to_filename(
-                        _with_stem_compat(
-                            filename, new_stem=f"{filename.stem}_hemi-{hemi}"
-                        )
-                    )
+                self.to_filename(
+                    filename.with_stem(f"{filename.stem}_hemi-{hemi}")
+                )
 
             return None
 
@@ -289,11 +280,3 @@ class SurfaceImage:
         if "hemi-R" in filename.stem:
             mesh = self.mesh.parts["right"]
         mesh.to_gifti(filename)
-
-
-def _with_stem_compat(path: Path, new_stem: str) -> Path:
-    """Provide equivalent of `with_stem` for Python < 3.9.
-
-    TODO remove when dropping python 3.8
-    """
-    return path.with_name(new_stem + path.suffix)

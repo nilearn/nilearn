@@ -14,7 +14,8 @@ from nilearn.glm.first_level.design_matrix import (
 )
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.maskers import NiftiMasker
-from nilearn.reporting import glm_reporter as glmr, make_glm_report
+from nilearn.reporting import glm_reporter as glmr
+from nilearn.reporting import make_glm_report
 
 
 @pytest.fixture()

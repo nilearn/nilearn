@@ -641,7 +641,6 @@ class FirstLevelModel(BaseGLM):
         design_matrices = []
 
         for run_idx, run_img in enumerate(run_imgs):
-
             if isinstance(run_img, SurfaceImage):
                 n_scans = run_img.shape[0]
             else:

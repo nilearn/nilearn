@@ -893,7 +893,7 @@ def _clustering_params_to_dataframe(
         if os.sys.version_info.major == 2:
             table_details.update({"alpha": alpha})
         else:
-            table_details.update({"\u03B1": alpha})
+            table_details.update({"\u03b1": alpha})
         table_details.update({"Threshold (computed)": threshold})
     else:
         table_details.update({"Height control": "None"})
