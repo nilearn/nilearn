@@ -227,7 +227,7 @@ plot_stat_map(weight_img, title="Anova+SVC weights")
 # To change the prediction engine, we just need to import it and use in our
 # pipeline instead of the SVC.
 # We can try Fisher's
-# `Linear Discriminant Analysis (LDA) <https://scikit-learn.org/stable/auto_examples/decomposition/plot_pca_vs_lda.html>`_ # noqa
+# `Linear Discriminant Analysis (LDA) <https://scikit-learn.org/stable/auto_examples/decomposition/plot_pca_vs_lda.html>`_ # noqa: E501
 
 # Construct the new estimator object and use it in a new pipeline after anova
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis

@@ -289,7 +289,7 @@ def _resample_one_img(
 
     # If data is binary and interpolation is continuous or linear,
     # warn the user as this might be unintentional
-    if sorted(list(np.unique(data))) == [0, 1] and interpolation_order != 0:
+    if interpolation_order != 0 and np.array_equal(np.unique(data), [0, 1]):
         warnings.warn(
             "Resampling binary images with continuous or "
             "linear interpolation. This might lead to "
@@ -341,7 +341,7 @@ def _check_force_resample(force_resample):
                 "Use 'force_resample=True' to suppress this warning."
             ),
             FutureWarning,
-            stacklevel=2,
+            stacklevel=3,
         )
     return force_resample
 
@@ -515,7 +515,7 @@ def resample_img(
     affine = img.affine
 
     # If later on we want to impute sform using qform add this condition
-    # see : https://github.com/nilearn/nilearn/issues/3168#issuecomment-1159447771 # noqa:E501
+    # see : https://github.com/nilearn/nilearn/issues/3168#issuecomment-1159447771  # noqa: E501
     if hasattr(img, "get_sform"):  # NIfTI images only
         _, sform_code = img.get_sform(coded=True)
         if not sform_code:

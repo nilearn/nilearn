@@ -103,6 +103,7 @@ def _filter_and_extract(
             target_affine=target_affine,
             copy=copy,
             copy_header=True,
+            force_resample=False,  # set to True in 0.13.0
         )
 
     smoothing_fwhm = parameters.get("smoothing_fwhm")

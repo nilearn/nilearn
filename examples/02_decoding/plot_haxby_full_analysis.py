@@ -129,7 +129,7 @@ for mask_name in mask_names:
 # --------------------------------------------------
 import matplotlib.pyplot as plt
 
-plt.figure()
+plt.figure(layout="constrained")
 
 tick_position = np.arange(len(categories))
 plt.xticks(tick_position, categories, rotation=45)
@@ -161,7 +161,6 @@ plt.xlabel("Visual stimuli category")
 plt.ylim(0.3, 1)
 plt.legend(loc="lower right")
 plt.title("Category-specific classification accuracy for different masks")
-plt.tight_layout()
 
 show()
 

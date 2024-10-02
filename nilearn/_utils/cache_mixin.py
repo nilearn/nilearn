@@ -7,11 +7,11 @@ import warnings
 
 from joblib import Memory
 
-MEMORY_CLASSES = (Memory,)
-
 import nilearn
 
 from .helpers import stringify_path
+
+MEMORY_CLASSES = (Memory,)
 
 
 def _check_memory(memory, verbose=0):

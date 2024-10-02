@@ -5,7 +5,7 @@ Example of surface-based first-level analysis
 .. warning::
 
     This example is adapted from
-    :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_localizer_surface_analysis.py`. # noqa
+    :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_localizer_surface_analysis.py`.
     to show how to use the new tentative API for surface images in nilearn.
 
     This functionality is provided
@@ -46,7 +46,7 @@ second-level analyses on the surface.
 On the other hand, it is obviously less accurate
 than using a subject-tailored mesh.
 
-"""
+"""  # noqa: E501
 
 # %%
 # Prepare data and analysis parameters

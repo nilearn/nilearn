@@ -28,7 +28,12 @@ from nilearn.plotting.displays import get_projector, get_slicer
 from nilearn.plotting.displays._slicers import _get_cbar_ticks
 
 from .. import _utils
-from .._utils import compare_version, fill_doc, logger
+from .._utils import (
+    _constrained_layout_kwargs,
+    compare_version,
+    fill_doc,
+    logger,
+)
 from .._utils.extmath import fast_abs_percentile
 from .._utils.ndimage import get_border_data
 from .._utils.niimg import safe_get_data
@@ -278,7 +283,9 @@ def _plot_img_with_bg(
             cbar_tick_format=cbar_tick_format,
             **kwargs,
         )
-
+    if radiological:
+        for display_axis in display.axes.values():
+            display_axis.ax.invert_xaxis()
     if annotate:
         display.annotate(decimals=decimals)
     if draw_cross:
@@ -313,7 +320,7 @@ def _get_cropped_cbar_ticks(cbar_vmin, cbar_vmax, threshold=None, n_ticks=5):
         # and both threshold values are within bounds
         elif cbar_vmin <= -threshold <= threshold <= cbar_vmax:
             new_tick_locs = _get_cbar_ticks(
-                cbar_vmin, cbar_vmax, threshold, nb_ticks=len(new_tick_locs)
+                cbar_vmin, cbar_vmax, threshold, n_ticks=len(new_tick_locs)
             )
         # Case where one of the threshold values is out of bounds
         else:
@@ -808,7 +815,7 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
         if label == 0:
             continue
         data = roi_data == label
-        data = data.astype(int)
+        data = data.astype(np.int32)
         img = new_img_like(roi_img, data, affine=roi_img.affine)
         display.add_contours(
             img,
@@ -1417,7 +1424,7 @@ def plot_glass_brain(
         values in the same manner). If set to false the sign of the
         maximum intensity will be represented with different colors.
         See
-        :ref:`sphx_glr_auto_examples_01_plotting_plot_demo_glass_brain_extensive.py` # noqa
+        :ref:`sphx_glr_auto_examples_01_plotting_plot_demo_glass_brain_extensive.py`
         for examples.
     %(symmetric_cbar)s
     %(resampling_interpolation)s
@@ -1440,7 +1447,7 @@ def plot_glass_brain(
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
 
-    """
+    """  # noqa: E501
     if cmap is None:
         cmap = cm.cold_hot if black_bg else cm.cold_white_hot
         # use only positive half of colormap if plotting absolute values
@@ -1919,7 +1926,11 @@ def plot_carpet(
         background_label = 0
 
         atlas_img_res = resample_to_img(
-            mask_img, img, interpolation="nearest", copy_header=True
+            mask_img,
+            img,
+            interpolation="nearest",
+            copy_header=True,
+            force_resample=False,  # TODO change to True in 0.13.0
         )
         atlas_bin = math_img(
             f"img != {background_label}",
@@ -2130,7 +2141,12 @@ def plot_img_comparison(
     corrs = []
     for i, (ref_img, src_img) in enumerate(zip(ref_imgs, src_imgs)):
         if axes is None:
-            _, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+            _, (ax1, ax2) = plt.subplots(
+                1,
+                2,
+                figsize=(12, 5),
+                **_constrained_layout_kwargs(),
+            )
         else:
             (ax1, ax2) = axes
         ref_data = masker.transform(ref_img).ravel()
@@ -2167,7 +2183,5 @@ def plot_img_comparison(
                 if not os.path.exists(output_dir):
                     os.makedirs(output_dir)
                 plt.savefig(os.path.join(output_dir, f"{int(i):04}.png"))
-
-        plt.tight_layout()
 
     return corrs

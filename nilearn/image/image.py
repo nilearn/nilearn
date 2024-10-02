@@ -160,10 +160,10 @@ def _fast_smooth_array(arr):
     """
     neighbor_weight = 0.2
     # 6 neighbors in 3D if not on an edge
-    nb_neighbors = 6
+    n_neighbors = 6
     # This scale ensures that a uniform array stays uniform
     # except on the array edges
-    scale = 1 + nb_neighbors * neighbor_weight
+    scale = 1 + n_neighbors * neighbor_weight
 
     # Need to copy because the smoothing is done in multiple statements
     # and there does not seem to be an easy way to do it in place
@@ -837,7 +837,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     if copy_header:
         header = copy.deepcopy(ref_niimg.header)
         try:
-            "something" in header  # noqa B015
+            "something" in header  # noqa: B015
         except TypeError:
             pass
         else:

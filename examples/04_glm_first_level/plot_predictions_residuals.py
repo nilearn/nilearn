@@ -129,7 +129,7 @@ resid = masker.fit_transform(fmri_glm.residuals[0])
 # ------------------------------
 # Note that residuals are not really distributed normally.
 
-fig2, axs2 = plt.subplots(2, 3)
+fig2, axs2 = plt.subplots(2, 3, layout="constrained")
 axs2 = axs2.flatten()
 for i in range(6):
     axs2[i].set_title(f"Cluster peak {coords[i]}\n")
@@ -137,7 +137,6 @@ for i in range(6):
     print(f"Mean residuals: {resid[:, i].mean()}")
 
 fig2.set_size_inches(12, 7)
-fig2.tight_layout()
 
 
 # %%

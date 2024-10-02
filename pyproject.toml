@@ -16,20 +16,19 @@ classifiers = [
     "Operating System :: POSIX",
     "Operating System :: Unix",
     "Operating System :: MacOS",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12"
 ]
 dependencies = [
-    "joblib>=1.0.0",
+    "joblib>=1.2.0",
     "lxml",
-    "nibabel>=4.0.0",
-    "numpy>=1.19.0",
-    "pandas>=1.1.5",
+    "nibabel>=5.2.0",
+    "numpy>=1.22.4",
+    "pandas>=2.2.0",
     "requests>=2.25.0",
-    "scikit-learn>=1.0.0",
+    "scikit-learn>=1.4.0",
     "scipy>=1.8.0",
     "packaging"
 ]
@@ -40,14 +39,12 @@ license = {text = "new BSD"}
 maintainers = [{name = "Bertrand Thirion", email = "bertrand.thirion@inria.fr"}]
 name = "nilearn"
 readme = "README.rst"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 
 [project.optional-dependencies]
 # A combination of dependencies useful for developers
 dev = [
-    "nilearn[plotting,doc,style,test]",
-    'pre-commit',
-    'tox'
+    "nilearn[plotting,doc,style,test]"
 ]
 # Requirements necessary for building the documentation
 doc = [
@@ -76,23 +73,15 @@ plotting = [
     "kaleido==0.1.0.post1 ; platform_system == 'Windows'"
 ]
 style = [
-    "black",
-    "blacken-docs",
-    'codespell',
-    "isort",
-    "flake8",
-    "flake8-docstrings",
-    "flake8-use-fstring",
-    "flake8-functions",
-    "flynt",
-    'tomli'
+    'tox'
 ]
 # For running unit and docstring tests
 test = [
     "coverage",
     "pytest>=6.0.0",
     "pytest-cov",
-    "pytest-reporter-html1>=0.9.1"
+    "pytest-reporter-html1>=0.9.1",
+    "tox"
 ]
 
 [project.urls]
@@ -101,21 +90,9 @@ Development = "https://github.com/nilearn/nilearn"
 Discussions = "https://neurostars.org/tag/nilearn"
 Homepage = "https://nilearn.github.io"
 
-[tool.black]
-# 'extend-exclude' excludes files or directories in addition to the defaults
-extend-exclude = """
-(
-  nilearn/externals
-)
-"""
-line-length = 79
-
 [tool.codespell]
 ignore-words = ".github/codespell_ignore_words.txt"
 skip = "./.git,plotly-gl3d-latest.min.js,jquery.min.js,localizer_behavioural.tsv,.mypy_cache,env,venv,./doc/auto_examples,*/tmp,./doc/modules/generated/*,./doc/_build,./maint_tools/*.html,./examples/*/results"
-
-[tool.flynt]
-exclude = "tempita"
 
 [tool.hatch.build.hooks.vcs]
 version-file = "nilearn/_version.py"
@@ -126,24 +103,160 @@ packages = ["nilearn"]
 [tool.hatch.version]
 source = "vcs"
 
-[tool.isort]
-combine_as_imports = true
-line_length = 79
-profile = "black"
-skip_gitignore = true
-skip_glob = [
-    "nilearn/externals/*",
-    "doc/auto_examples/*"
-]
-src_paths = [
-    'maint_tools',
-    'nilearn',
-    'doc'
-]
-
 [tool.pytest.ini_options]
 addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --durations=0 --template=maint_tools/templates/index.html"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 junit_family = "xunit2"
+log_cli_level = "INFO"
 minversion = "6.0"
 xfail_strict = true
+
+[tool.ruff]
+extend-exclude = [
+    "nilearn/externals/*",
+    "doc/auto_examples/*",
+    "nilearn/_utils/docs.py",
+    "nilearn/datasets/neurovault.py"
+]
+include = ["pyproject.toml", "nilearn/**/*.py", "examples/**/*.py", "maint_tools/**/*.py", "doc/**/*.py"]
+indent-width = 4
+line-length = 79
+
+[tool.ruff.format]
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
+indent-style = "space"
+line-ending = "auto"
+quote-style = "double"
+skip-magic-trailing-comma = false
+
+[tool.ruff.lint]
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+fixable = ["ALL"]
+ignore = [
+    "ARG001",
+    "ARG002",
+    "ARG003",
+    "ARG005",
+    "B018",
+    "B028",
+    "B904",
+    "C408",
+    "C414",
+    "C416",
+    "C419",
+    "D105",
+    "D205",
+    "D208",
+    "D209",
+    "D301",
+    "E741",
+    "ERA001",
+    "FLY002",
+    "N802",
+    "N803",
+    "N806",
+    "N813",
+    "N816",
+    "N817",
+    "N818",
+    "NPY002",
+    "PERF102",
+    "PERF203",
+    "PERF401",
+    "PERF403",
+    "PD002",
+    "PD003",
+    "PLR0402",
+    "PLR0911",
+    "PLR0912",
+    "PLR0913",
+    "PLR0915",
+    "PLR1704",
+    "PLR1714",
+    "PLR1730",
+    "PLR1736",
+    "PLR2004",
+    "PLR5501",
+    "PTH100",
+    "PTH101",
+    "PTH102",
+    "PTH103",
+    "PTH106",
+    "PTH109",
+    "PTH110",
+    "PTH107",
+    "PTH111",
+    "PTH112",
+    "PTH113",
+    "PTH114",
+    "PTH117",
+    "PTH118",
+    "PTH119",
+    "PTH120",
+    "PTH122",
+    "PTH123",
+    "PTH201",
+    "PTH202",
+    "PTH203",
+    "PTH204",
+    "PTH207",
+    "PD011",
+    "PD901",
+    "RUF002",
+    "RUF003",
+    "RUF005",
+    "RUF010",
+    "RUF012",
+    "RUF015",
+    "RUF100",
+    "SIM102",
+    "SIM103",
+    "SIM105",
+    "SIM108",
+    "SIM114",
+    "SIM115",
+    "SIM117",
+    "SIM118",
+    "SIM201",
+    "SIM300",
+    "UP031"
+]
+# List of all the ruff rules (includes why the rule matters)
+# https://docs.astral.sh/ruff/rules/
+select = [
+    "ARG",
+    "B",
+    "C4",
+    "C90",
+    "D",
+    "DOC",
+    "E",
+    "ERA",
+    "F",
+    "FLY",
+    "I",
+    "N",
+    "NPY",
+    "PERF",
+    "PTH",
+    "PD",
+    "PLR",
+    "RUF",
+    "SIM",
+    "UP",
+    "W"
+]
+unfixable = []
+
+[tool.ruff.lint.mccabe]
+max-complexity = 41
+
+[tool.ruff.lint.per-file-ignores]
+"**/{doc}/*" = ["D103", "D104"]
+"**/{examples}/*" = ["D103", "D205", "D301", "D400", "E402"]
+"**/{tests}/*" = ["D100", "D101", "D102", "D103", "E402", "PLR2004", "PLR0915"]
+"__init__.py" = ["D104", "E402"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"

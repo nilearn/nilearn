@@ -99,7 +99,6 @@ def test_load_save_mesh(
         assert not (tmp_path / file).exists()
 
     for file in expected_files:
-
         assert (tmp_path / file).exists()
 
         mesh = load_surf_mesh(tmp_path / file)

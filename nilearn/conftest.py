@@ -10,8 +10,10 @@ from nibabel import Nifti1Image
 from nilearn import image
 
 # we need to import these fixtures even if not used in this module
-from nilearn.datasets.tests._testing import request_mocker  # noqa: F401
-from nilearn.datasets.tests._testing import temp_nilearn_data_dir  # noqa: F401
+from nilearn.datasets.tests._testing import (
+    request_mocker,  # noqa: F401
+    temp_nilearn_data_dir,  # noqa: F401
+)
 
 # TODO This import needs to be removed once the experimental surface API and
 # its pytest fixtures are integrated into the stable API

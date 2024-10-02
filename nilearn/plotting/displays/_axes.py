@@ -116,7 +116,6 @@ class BaseAxes:
         annotation_on_left = "L"
         annotation_on_right = "R"
         if self.radiological:
-            ax.invert_xaxis()
             annotation_on_left = "R"
             annotation_on_right = "L"
         ax.text(
