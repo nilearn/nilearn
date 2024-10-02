@@ -16,20 +16,19 @@ classifiers = [
     "Operating System :: POSIX",
     "Operating System :: Unix",
     "Operating System :: MacOS",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12"
 ]
 dependencies = [
-    "joblib>=1.0.0",
+    "joblib>=1.2.0",
     "lxml",
-    "nibabel>=4.0.0",
-    "numpy>=1.19.0",
-    "pandas>=1.1.5",
+    "nibabel>=5.2.0",
+    "numpy>=1.22.4",
+    "pandas>=2.2.0",
     "requests>=2.25.0",
-    "scikit-learn>=1.0.0",
+    "scikit-learn>=1.4.0",
     "scipy>=1.8.0",
     "packaging"
 ]
@@ -40,7 +39,7 @@ license = {text = "new BSD"}
 maintainers = [{name = "Bertrand Thirion", email = "bertrand.thirion@inria.fr"}]
 name = "nilearn"
 readme = "README.rst"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 
 [project.optional-dependencies]
 # A combination of dependencies useful for developers

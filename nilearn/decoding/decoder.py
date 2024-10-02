@@ -18,7 +18,7 @@ ensembling to achieve state of the art performance
 
 import itertools
 import warnings
-from typing import Iterable
+from collections.abc import Iterable
 
 import numpy as np
 from joblib import Parallel, delayed
