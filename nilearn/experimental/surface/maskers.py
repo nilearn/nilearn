@@ -470,7 +470,6 @@ class SurfaceLabelsMasker(BaseEstimator):
             "summary": {},
         }
         for part in self.labels_img.data.parts.keys():
-
             self._report_content["n_vertices"][part] = (
                 self.labels_img.mesh.parts[part].n_vertices
             )

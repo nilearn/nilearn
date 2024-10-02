@@ -184,7 +184,10 @@ def test_butterworth_multiple_timeseries(
     # Test nyquist frequency clipping, issue #482
     out1 = nisignal.butterworth(data, sampling, low_pass=50.0, copy=True)
     out2 = nisignal.butterworth(
-        data, sampling, low_pass=80.0, copy=True  # Greater than nyq frequency
+        data,
+        sampling,
+        low_pass=80.0,
+        copy=True,  # Greater than nyq frequency
     )
     np.testing.assert_almost_equal(out1, out2)
     np.testing.assert_(id(out1) != id(out2))

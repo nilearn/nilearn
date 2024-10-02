@@ -462,7 +462,6 @@ def test__load_mixed_gambles(rng, affine_eye):
 
 @pytest.mark.parametrize("n_subjects", [1, 5, 16])
 def test_fetch_mixed_gambles(tmp_path, n_subjects):
-
     mgambles = func.fetch_mixed_gambles(
         n_subjects=n_subjects,
         data_dir=tmp_path,

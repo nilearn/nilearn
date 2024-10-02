@@ -515,7 +515,7 @@ def resample_img(
     affine = img.affine
 
     # If later on we want to impute sform using qform add this condition
-    # see : https://github.com/nilearn/nilearn/issues/3168#issuecomment-1159447771 # noqa:E501
+    # see : https://github.com/nilearn/nilearn/issues/3168#issuecomment-1159447771  # noqa: E501
     if hasattr(img, "get_sform"):  # NIfTI images only
         _, sform_code = img.get_sform(coded=True)
         if not sform_code:

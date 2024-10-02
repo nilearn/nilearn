@@ -1424,7 +1424,7 @@ def plot_glass_brain(
         values in the same manner). If set to false the sign of the
         maximum intensity will be represented with different colors.
         See
-        :ref:`sphx_glr_auto_examples_01_plotting_plot_demo_glass_brain_extensive.py` # noqa
+        :ref:`sphx_glr_auto_examples_01_plotting_plot_demo_glass_brain_extensive.py`
         for examples.
     %(symmetric_cbar)s
     %(resampling_interpolation)s
@@ -1447,7 +1447,7 @@ def plot_glass_brain(
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
 
-    """
+    """  # noqa: E501
     if cmap is None:
         cmap = cm.cold_hot if black_bg else cm.cold_white_hot
         # use only positive half of colormap if plotting absolute values
