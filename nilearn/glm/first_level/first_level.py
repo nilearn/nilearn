@@ -1678,6 +1678,7 @@ def _list_valid_subjects(derivatives_path, sub_labels):
                 f" {derivatives_path}",
                 stacklevel=3,
             )
+
     return sorted(set(sub_labels_exist))
 
 
