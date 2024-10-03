@@ -154,7 +154,7 @@ def _filter_and_extract(
     return region_signals, aux
 
 
-class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
+class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
     """Base class for NiftiMaskers."""
 
     @abc.abstractmethod
@@ -203,6 +203,10 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         """
         raise NotImplementedError()
+
+    def fit(self, imgs=None, y=None):
+        """Present only to comply with sklearn estimators checks."""
+        ...
 
     def transform(self, imgs, confounds=None, sample_mask=None):
         """Apply mask, spatial and temporal preprocessing.

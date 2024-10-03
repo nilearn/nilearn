@@ -145,7 +145,7 @@ def _filter_and_mask(
 
 
 @_utils.fill_doc
-class NiftiMasker(BaseMasker, _utils.CacheMixin):
+class NiftiMasker(BaseMasker):
     """Applying a mask to extract time-series from Niimg-like objects.
 
     NiftiMasker is useful when preprocessing (detrending, standardization,
