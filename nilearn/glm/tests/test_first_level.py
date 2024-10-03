@@ -2131,3 +2131,52 @@ def test_flm_compute_contrast_with_surface_data(_make_surface_glm_data):
     result = model.compute_contrast("c0")
 
     assert isinstance(result, SurfaceImage)
+
+
+def test_first_level_from_bids_subject_order(tmp_path):
+    """Make sure subjects are returned in order.
+
+    See https://github.com/nilearn/nilearn/issues/4581
+    """
+    n_sub = 10
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path, n_sub=n_sub, n_ses=1, tasks=["main"], n_runs=[1]
+    )
+
+    models, *_ = first_level_from_bids(
+        dataset_path=str(tmp_path / bids_path),
+        task_label="main",
+        space_label="MNI",
+        img_filters=[("desc", "preproc")],
+        slice_time_ref=None,
+    )
+
+    # Check if the subjects are returned in order
+    expected_subjects = [f"{label:02}" for label in range(1, n_sub + 1)]
+    returned_subjects = [model.subject_label for model in models]
+    assert returned_subjects == expected_subjects
+
+
+def test_first_level_from_bids_subject_order_with_labels(tmp_path):
+    """Make sure subjects are returned in order.
+
+    See https://github.com/nilearn/nilearn/issues/4581
+    """
+    n_sub = 10
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path, n_sub=n_sub, n_ses=1, tasks=["main"], n_runs=[1]
+    )
+
+    models, *_ = first_level_from_bids(
+        dataset_path=str(tmp_path / bids_path),
+        sub_labels=["01", "10", "04", "05", "02", "03"],
+        task_label="main",
+        space_label="MNI",
+        img_filters=[("desc", "preproc")],
+        slice_time_ref=None,
+    )
+
+    # Check if the subjects are returned in order
+    expected_subjects = ["01", "02", "03", "04", "05", "10"]
+    returned_subjects = [model.subject_label for model in models]
+    assert returned_subjects == expected_subjects
