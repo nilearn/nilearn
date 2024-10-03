@@ -2132,6 +2132,7 @@ def test_flm_compute_contrast_with_surface_data(_make_surface_glm_data):
 
     assert isinstance(result, SurfaceImage)
 
+
 def test_first_level_from_bids_subject_order(tmp_path):
     """Make sure subjects are returned in order.
 
