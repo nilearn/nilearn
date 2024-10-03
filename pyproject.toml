@@ -114,9 +114,7 @@ xfail_strict = true
 [tool.ruff]
 extend-exclude = [
     "nilearn/externals/*",
-    "doc/auto_examples/*",
-    "nilearn/_utils/docs.py",
-    "nilearn/datasets/neurovault.py"
+    "doc/auto_examples/*"
 ]
 include = ["pyproject.toml", "nilearn/**/*.py", "examples/**/*.py", "maint_tools/**/*.py", "doc/**/*.py"]
 indent-width = 4
@@ -190,6 +188,7 @@ ignore = [
     "PTH112",
     "PTH113",
     "PTH114",
+    "PTH115",
     "PTH117",
     "PTH118",
     "PTH119",
