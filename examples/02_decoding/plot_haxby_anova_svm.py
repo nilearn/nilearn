@@ -81,7 +81,7 @@ y_pred = decoder.predict(func_img)
 # to the cv parameter of decoder.leave-one-session-out.
 # For more details please take a look at:
 # `Measuring prediction scores using cross-validation\
-# <../00_tutorials/plot_decoding_tutorial.html#measuring-prediction-scores-using-cross-validation>`_
+# <../00_tutorials/plot_decoding_tutorial.html#measuring-prediction-scores-using-cross-validation>`_  # noqa: E501
 from sklearn.model_selection import LeaveOneGroupOut
 
 cv = LeaveOneGroupOut()

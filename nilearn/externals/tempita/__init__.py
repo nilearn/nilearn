@@ -1,4 +1,3 @@
-# flake8: noqa
 """
 A small templating language
 

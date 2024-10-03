@@ -5,7 +5,7 @@ eventually nilearn.datasets would be updated
 
 from __future__ import annotations
 
-from typing import Sequence
+from collections.abc import Sequence
 
 from nilearn import datasets
 from nilearn.experimental.surface import _io

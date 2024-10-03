@@ -419,7 +419,6 @@ def test_load_surf_mesh_file_glob(tmp_path):
 
 
 def test_load_surf_data_file_glob(tmp_path):
-
     data2D = np.ones((20, 3))
     fnames = []
     for f in range(3):
