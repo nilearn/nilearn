@@ -2154,9 +2154,7 @@ def test_first_level_from_bids_subject_order(tmp_path):
     # Check if the subjects are returned in order
     expected_subjects = [f"{label:02}" for label in range(1, n_sub + 1)]
     returned_subjects = [model.subject_label for model in models]
-    assert (
-        returned_subjects == expected_subjects
-    ), f"Expected {expected_subjects} but got {returned_subjects}"
+    assert returned_subjects == expected_subjects
 
 
 def test_first_level_from_bids_subject_order_with_labels(tmp_path):
@@ -2181,6 +2179,4 @@ def test_first_level_from_bids_subject_order_with_labels(tmp_path):
     # Check if the subjects are returned in order
     expected_subjects = ["01", "02", "03", "04", "05", "10"]
     returned_subjects = [model.subject_label for model in models]
-    assert (
-        returned_subjects == expected_subjects
-    ), f"Expected {expected_subjects} but got {returned_subjects}"
+    assert returned_subjects == expected_subjects
