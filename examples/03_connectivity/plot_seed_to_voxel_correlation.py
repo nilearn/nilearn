@@ -124,21 +124,21 @@ print(f"Brain time series shape: ({brain_time_series.shape})")
 
 import matplotlib.pyplot as plt
 
+plt.figure(layout="constrained")
 plt.plot(seed_time_series)
 plt.title("Seed time series (Posterior cingulate cortex)")
 plt.xlabel("Scan number")
 plt.ylabel("Normalized signal")
-plt.tight_layout()
 
 # %%
 # Exemplarily, we can also select 5 random voxels from the **brain-wide
 # data** and plot the time series from.
 
+plt.figure(layout="constrained")
 plt.plot(brain_time_series[:, [10, 45, 100, 5000, 10000]])
 plt.title("Time series from 5 random voxels")
 plt.xlabel("Scan number")
 plt.ylabel("Normalized signal")
-plt.tight_layout()
 
 # %%
 # Performing the seed-to-voxel correlation analysis

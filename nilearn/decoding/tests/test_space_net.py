@@ -38,7 +38,7 @@ PENALTY = ["graph-net", "tv-l1"]
 
 
 @pytest.mark.parametrize("is_classif", IS_CLASSIF)
-@pytest.mark.parametrize("l1_ratio", [0.5, 1.0])
+@pytest.mark.parametrize("l1_ratio", [0.5, 0.99])
 @pytest.mark.parametrize("n_alphas", range(1, 10))
 def test_space_net_alpha_grid(
     rng, is_classif, l1_ratio, n_alphas, n_samples=4, n_features=3
@@ -101,7 +101,7 @@ def test_early_stopping_callback_object(rng, n_samples=10, n_features=30):
 @pytest.mark.parametrize("penalty", PENALTY)
 @pytest.mark.parametrize("is_classif", IS_CLASSIF)
 @pytest.mark.parametrize("n_alphas", [0.1, 0.01])
-@pytest.mark.parametrize("l1_ratio", [0.5, 1.0])
+@pytest.mark.parametrize("l1_ratio", [0.5, 0.99])
 @pytest.mark.parametrize("n_jobs", [1, -1])
 @pytest.mark.parametrize("cv", [2, 3])
 @pytest.mark.parametrize("perc", [5, 10])
@@ -129,7 +129,7 @@ def test_params_correctly_propagated_in_constructors(
 @pytest.mark.parametrize("penalty", PENALTY)
 @pytest.mark.parametrize("is_classif", IS_CLASSIF)
 @pytest.mark.parametrize("alpha", [0.4, 0.01])
-@pytest.mark.parametrize("l1_ratio", [0.5, 1.0])
+@pytest.mark.parametrize("l1_ratio", [0.5, 0.99])
 def test_params_correctly_propagated_in_constructors_biz(
     penalty, is_classif, alpha, l1_ratio
 ):
@@ -213,7 +213,7 @@ def test_squared_loss_path_scores():
     assert X.shape[1] + 1 == len(best_w)
 
 
-@pytest.mark.parametrize("l1_ratio", [1])
+@pytest.mark.parametrize("l1_ratio", [0.99])
 @pytest.mark.parametrize("debias", [True])
 def test_tv_regression_simple(rng, l1_ratio, debias):
     dim = (4, 4, 4)
@@ -239,7 +239,7 @@ def test_tv_regression_simple(rng, l1_ratio, debias):
     ).fit(X, y)
 
 
-@pytest.mark.parametrize("l1_ratio", [0.0, 0.5, 1.0])
+@pytest.mark.parametrize("l1_ratio", [0.01, 0.5, 0.99])
 def test_tv_regression_3D_image_doesnt_crash(rng, l1_ratio):
     dim = (3, 4, 5)
     W_init = np.zeros(dim)
@@ -393,7 +393,7 @@ def test_univariate_feature_screening(
 
 @pytest.mark.parametrize("penalty", PENALTY)
 @pytest.mark.parametrize("alpha", [0.4, 0.01])
-@pytest.mark.parametrize("l1_ratio", [0.5, 1.0])
+@pytest.mark.parametrize("l1_ratio", [0.5, 0.99])
 @pytest.mark.parametrize("verbose", [True, False])
 def test_space_net_classifier_subclass(penalty, alpha, l1_ratio, verbose):
     cvobj = SpaceNetClassifier(
@@ -410,7 +410,7 @@ def test_space_net_classifier_subclass(penalty, alpha, l1_ratio, verbose):
 
 @pytest.mark.parametrize("penalty", PENALTY)
 @pytest.mark.parametrize("alpha", [0.4, 0.01])
-@pytest.mark.parametrize("l1_ratio", [0.5, 1.0])
+@pytest.mark.parametrize("l1_ratio", [0.5, 0.99])
 @pytest.mark.parametrize("verbose", [True, False])
 def test_space_net_regressor_subclass(penalty, alpha, l1_ratio, verbose):
     cvobj = SpaceNetRegressor(

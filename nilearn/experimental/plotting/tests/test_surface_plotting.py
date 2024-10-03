@@ -24,7 +24,7 @@ def test_check_inputs_no_change(surf_map, surf_mesh, bg_map):
 @pytest.mark.parametrize("surf_mesh", [None])
 def test_check_inputs_extract_mesh_and_data(mini_img, surf_mesh, bg_map):
     """Extract mesh and data when a SurfaceImage is passed."""
-    hemi = "left" ""
+    hemi = "left"
     out_surf_map, out_surf_mesh, out_bg_map = _check_inputs(
         surf_map=mini_img, surf_mesh=surf_mesh, hemi=hemi, bg_map=bg_map
     )

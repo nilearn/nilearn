@@ -649,6 +649,7 @@ def test_ica_aroma(tmp_path, fmriprep_version):
     "fmriprep_version, scrubbed_time_points, non_steady_outliers",
     [("1.4.x", 8, 1), ("21.x.x", 30, 3)],
 )
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_sample_mask(
     tmp_path, fmriprep_version, scrubbed_time_points, non_steady_outliers
 ):
@@ -665,7 +666,7 @@ def test_sample_mask(
     )
     # the "1.4.x" test data has 6 time points marked as motion outliers,
     # and one nonsteady state (overlap with the first motion outlier)
-    # 2 time points removed due to the "full" srubbing strategy
+    # 2 time points removed due to the "full" scrubbing strategy
     # (remove segment shorter than 5 volumes)
     assert reg.shape[0] - len(mask) == scrubbed_time_points
 

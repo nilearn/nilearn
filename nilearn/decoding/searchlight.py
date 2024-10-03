@@ -16,7 +16,7 @@ from joblib import Parallel, cpu_count, delayed
 from sklearn import svm
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import ConvergenceWarning
-from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import KFold, cross_val_score
 
 from nilearn.maskers.nifti_spheres_masker import _apply_mask_and_get_affinity
 
@@ -187,6 +187,9 @@ def _group_iter_search_light(
     t0 = time.time()
     for i, row in enumerate(list_rows):
         kwargs = {"scoring": scoring, "groups": groups}
+        if isinstance(cv, KFold):
+            kwargs = {"scoring": scoring}
+
         par_scores[i] = np.mean(
             cross_val_score(estimator, X[:, row], y, cv=cv, n_jobs=1, **kwargs)
         )

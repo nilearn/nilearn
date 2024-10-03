@@ -128,11 +128,11 @@ class IsNull(_SpecialValue):
     >>> null = IsNull()
     >>> null == 0
     True
-    >>> null == ''
+    >>> null == ""
     True
     >>> null == None
     True
-    >>> null == 'a'
+    >>> null == "a"
     False
 
     """
@@ -168,11 +168,11 @@ class NotNull(_SpecialValue):
     >>> not_null = NotNull()
     >>> not_null == 0
     False
-    >>> not_null == ''
+    >>> not_null == ""
     False
     >>> not_null == None
     False
-    >>> not_null == 'a'
+    >>> not_null == "a"
     True
 
     """
@@ -214,7 +214,7 @@ class NotEqual(_SpecialValue):
     >>> not_0 = NotEqual(0)
     >>> not_0 == 0
     False
-    >>> not_0 == '0'
+    >>> not_0 == "0"
     True
 
     """
@@ -272,12 +272,12 @@ class GreaterOrEqual(_OrderComp):
     Examples
     --------
     >>> from nilearn.datasets.neurovault import GreaterOrEqual
-    >>> nonnegative = GreaterOrEqual(0.)
-    >>> nonnegative == -.1
+    >>> nonnegative = GreaterOrEqual(0.0)
+    >>> nonnegative == -0.1
     False
     >>> nonnegative == 0
     True
-    >>> nonnegative == .1
+    >>> nonnegative == 0.1
     True
 
     """
@@ -316,12 +316,12 @@ class GreaterThan(_OrderComp):
     Examples
     --------
     >>> from nilearn.datasets.neurovault import GreaterThan
-    >>> positive = GreaterThan(0.)
-    >>> positive == 0.
+    >>> positive = GreaterThan(0.0)
+    >>> positive == 0.0
     False
-    >>> positive == 1.
+    >>> positive == 1.0
     True
-    >>> positive == -1.
+    >>> positive == -1.0
     False
 
     """
@@ -360,12 +360,12 @@ class LessOrEqual(_OrderComp):
     Examples
     --------
     >>> from nilearn.datasets.neurovault import LessOrEqual
-    >>> nonpositive = LessOrEqual(0.)
-    >>> nonpositive == -1.
+    >>> nonpositive = LessOrEqual(0.0)
+    >>> nonpositive == -1.0
     True
-    >>> nonpositive == 0.
+    >>> nonpositive == 0.0
     True
-    >>> nonpositive == 1.
+    >>> nonpositive == 1.0
     False
 
     """
@@ -404,12 +404,12 @@ class LessThan(_OrderComp):
     Examples
     --------
     >>> from nilearn.datasets.neurovault import LessThan
-    >>> negative = LessThan(0.)
-    >>> negative == -1.
+    >>> negative = LessThan(0.0)
+    >>> negative == -1.0
     True
-    >>> negative == 0.
+    >>> negative == 0.0
     False
-    >>> negative == 1.
+    >>> negative == 1.0
     False
 
     """
@@ -448,10 +448,10 @@ class IsIn(_SpecialValue):
     Examples
     --------
     >>> from nilearn.datasets.neurovault import IsIn
-    >>> vowels = IsIn('a', 'e', 'i', 'o', 'u', 'y')
-    >>> 'a' == vowels
+    >>> vowels = IsIn("a", "e", "i", "o", "u", "y")
+    >>> "a" == vowels
     True
-    >>> vowels == 'b'
+    >>> vowels == "b"
     False
 
     """
@@ -496,10 +496,10 @@ class NotIn(_SpecialValue):
     Examples
     --------
     >>> from nilearn.datasets.neurovault import NotIn
-    >>> consonants = NotIn('a', 'e', 'i', 'o', 'u', 'y')
-    >>> 'b' == consonants
+    >>> consonants = NotIn("a", "e", "i", "o", "u", "y")
+    >>> "b" == consonants
     True
-    >>> consonants == 'a'
+    >>> consonants == "a"
     False
 
     """
@@ -545,10 +545,10 @@ class Contains(_SpecialValue):
     Examples
     --------
     >>> from nilearn.datasets.neurovault import Contains
-    >>> contains = Contains('house', 'face')
-    >>> 'face vs house' == contains
+    >>> contains = Contains("house", "face")
+    >>> "face vs house" == contains
     True
-    >>> 'smiling face vs frowning face' == contains
+    >>> "smiling face vs frowning face" == contains
     False
 
     """
@@ -598,10 +598,10 @@ class NotContains(_SpecialValue):
     Examples
     --------
     >>> from nilearn.datasets.neurovault import NotContains
-    >>> no_garbage = NotContains('bad', 'test')
-    >>> no_garbage == 'test image'
+    >>> no_garbage = NotContains("bad", "test")
+    >>> no_garbage == "test image"
     False
-    >>> no_garbage == 'good image'
+    >>> no_garbage == "good image"
     True
 
     """
@@ -658,10 +658,10 @@ class Pattern(_SpecialValue):
     Examples
     --------
     >>> from nilearn.datasets.neurovault import Pattern
-    >>> poker = Pattern(r'[0-9akqj]{5}$')
-    >>> 'ak05q' == poker
+    >>> poker = Pattern(r"[0-9akqj]{5}$")
+    >>> "ak05q" == poker
     True
-    >>> 'ak05e' == poker
+    >>> "ak05e" == poker
     False
 
     """
@@ -765,9 +765,9 @@ class ResultFilter:
     --------
     >>> from nilearn.datasets.neurovault import ResultFilter
     >>> filt = ResultFilter(a=0).AND(ResultFilter(b=1).OR(ResultFilter(b=2)))
-    >>> filt({'a': 0, 'b': 1})
+    >>> filt({"a": 0, "b": 1})
     True
-    >>> filt({'a': 0, 'b': 0})
+    >>> filt({"a": 0, "b": 0})
     False
 
     """
@@ -2645,13 +2645,14 @@ def fetch_neurovault(
 
         fetch_neurovault(
             max_images=None,
-            collection_terms=dict(basic_collection_terms(), DOI=NotNull()))
+            collection_terms=dict(basic_collection_terms(), DOI=NotNull()),
+        )
 
     To update all the images (matching the default filters)::
 
         fetch_neurovault(
-            max_images=None, mode='overwrite',
-            modify_date=GreaterThan(newest))
+            max_images=None, mode="overwrite", modify_date=GreaterThan(newest)
+        )
 
     """
     if collection_terms is None:

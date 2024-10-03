@@ -323,6 +323,10 @@ authors:
     family-names: Gors
     website: http://jgors.com/
     affiliation: Insight Data Science, Mountain View, California, USA
+  - given-names: Jason
+    family-names: Kai
+    website: https://github.com/kaitj
+    affiliation: Child Mind Institute
   - given-names: Javier
     family-names: Rasero
     website: https://jrasero.github.io/
@@ -700,6 +704,9 @@ authors:
       USA
     email: salot@pennmedicine.upenn.edu
     orcid: https://orcid.org/0000-0001-9813-3167
+  - given-names: Tharun
+    family-names: K
+    website: https://github.com/tharun634
   - given-names: Thomas
     family-names: Bazeille
     website: https://github.com/thomasbazeille
@@ -714,6 +721,10 @@ authors:
   - given-names: Vasco
     family-names: Diogo
     website: https://github.com/vascosa
+  - given-names: Victoria
+    family-names: Shevchenko
+    website: https://github.com/victoris93
+    affiliation: Inria Saclay, Université Paris Cité, France
   - given-names: Vincent
     family-names: Michel
     website: https://github.com/vmichel
