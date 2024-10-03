@@ -231,6 +231,12 @@ html_theme_options = {
             "html": "",
             "class": "fa-brands fa-solid fa-discord fa-2x",
         },
+        {
+            "name": "Youtube",
+            "url": "https://www.youtube.com/channel/UCU6BMAi2zOhNFnDkbdevmPw",
+            "html": "",
+            "class": "fa-brands fa-solid fa-youtube fa-2x",
+        },
     ],
 }
 
