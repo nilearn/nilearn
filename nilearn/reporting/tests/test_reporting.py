@@ -81,7 +81,8 @@ def test_local_max_donut(shape, affine_eye):
 def test_cluster_nearest_neighbor(shape):
     """Check that _cluster_nearest_neighbor preserves within-cluster voxels, \
        projects voxels to the correct cluster, \
-       and handles singleton clusters."""
+       and handles singleton clusters.
+    """
     labeled = np.zeros(shape)
     # cluster 1 is half the volume, cluster 2 is a single voxel
     labeled[:, 5:, :] = 1
@@ -191,7 +192,8 @@ def test_get_clusters_table_more(shape, affine_eye, tmp_path):
 
 def test_get_clusters_table_relabel_label_maps(shape, affine_eye):
     """Check that the cluster's labels in label_maps match \
-       their corresponding cluster IDs in the clusters table."""
+       their corresponding cluster IDs in the clusters table.
+    """
     data = np.zeros(shape)
     data[2:4, 5:7, 6:8] = 6.0
     data[5:7, 7:9, 7:9] = 5.5

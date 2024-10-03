@@ -258,7 +258,8 @@ def test_surface_figure():
 @pytest.mark.skipif(is_plotly_installed(), reason="Plotly is installed.")
 def test_plotly_surface_figure_import_error():
     """Test that an ImportError is raised when instantiating \
-       a PlotlySurfaceFigure without having Plotly installed."""
+       a PlotlySurfaceFigure without having Plotly installed.
+    """
     with pytest.raises(ImportError, match="Plotly is required"):
         PlotlySurfaceFigure()
 
@@ -269,7 +270,8 @@ def test_plotly_surface_figure_import_error():
 )
 def test_plotly_surface_figure_savefig_error():
     """Test that an ImportError is raised when saving \
-       a PlotlySurfaceFigure without having kaleido installed."""
+       a PlotlySurfaceFigure without having kaleido installed.
+    """
     with pytest.raises(ImportError, match="`kaleido` is required"):
         PlotlySurfaceFigure().savefig()
 

@@ -724,7 +724,8 @@ def test_resampling_result_axis_permutation(
 @pytest.mark.parametrize("core_shape", [(3, 5, 4), (3, 5, 4, 2)])
 def test_resampling_nan(affine_eye, core_shape, force_resample):
     """Test that when the data has NaNs they do not propagate to the \
-    whole image."""
+    whole image.
+    """
     # create deterministic data, padded with one
     # voxel thickness of zeros
     core_data = (

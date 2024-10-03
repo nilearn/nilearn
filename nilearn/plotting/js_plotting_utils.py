@@ -1,5 +1,6 @@
 """Helps for views, i.e. interactive plots from html_surface and \
-html_connectome."""
+html_connectome.
+"""
 
 import base64
 import os

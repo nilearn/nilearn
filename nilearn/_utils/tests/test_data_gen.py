@@ -33,7 +33,8 @@ from nilearn.image import get_data
 
 def test_add_metadata_to_bids_derivatives_default_path(tmp_path):
     """Check the filename created is the default value \
-    of add_metadata_to_bids_dataset."""
+    of add_metadata_to_bids_dataset.
+    """
     target_dir = tmp_path / "derivatives" / "sub-01" / "ses-01" / "func"
     target_dir.mkdir(parents=True)
     json_file = add_metadata_to_bids_dataset(

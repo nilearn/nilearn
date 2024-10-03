@@ -1626,7 +1626,8 @@ def test_first_level_from_bids_with_missing_events(tmp_path_factory):
 
 def test_first_level_from_bids_no_tr(tmp_path_factory):
     """Throw warning when t_r information cannot be inferred from the data \
-    and t_r=None is passed."""
+    and t_r=None is passed.
+    """
     bids_dataset = _new_bids_dataset(tmp_path_factory.mktemp("no_events"))
     json_files = get_bids_files(
         main_path=bids_dataset, file_tag="bold", file_type="json"
@@ -1707,7 +1708,8 @@ def test_first_level_from_bids_one_confound_missing(tmp_path_factory):
 
 def test_first_level_from_bids_all_confounds_missing(tmp_path_factory):
     """If all confound files are missing, \
-    confounds should be an array of None."""
+    confounds should be an array of None.
+    """
     bids_dataset = _new_bids_dataset(tmp_path_factory.mktemp("no_confounds"))
     confound_files = get_bids_files(
         main_path=bids_dataset / "derivatives",
