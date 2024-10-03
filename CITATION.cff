@@ -704,6 +704,9 @@ authors:
       USA
     email: salot@pennmedicine.upenn.edu
     orcid: https://orcid.org/0000-0001-9813-3167
+  - given-names: Tharun
+    family-names: K
+    website: https://github.com/tharun634
   - given-names: Thomas
     family-names: Bazeille
     website: https://github.com/thomasbazeille
@@ -755,6 +758,3 @@ authors:
     family-names: Nájera
     website: https://github.com/Titan-C
     affiliation: Checkmk
-  - given-names: Tharun
-    family-names: K
-    website: https://github.com/tharun634
