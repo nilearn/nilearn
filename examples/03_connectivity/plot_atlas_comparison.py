@@ -108,7 +108,7 @@ left_connectome = plotting.plot_connectome(
 import nibabel as nb
 import numpy as np
 
-from nilearn.image import get_data
+from nilearn.image import get_data, new_img_like
 from nilearn.image.resampling import coord_transform
 
 # load the atlas image first
@@ -124,12 +124,12 @@ x, y, z = coord_transform(0, 0, 0, np.linalg.inv(labels_affine))
 # left/right split is done along x-axis
 left_hemi = get_data(label_image).copy()
 left_hemi[: int(x)] = 0
-label_image_left = nb.Nifti1Image(left_hemi, labels_affine)
+label_image_left = new_img_like(label_image, left_hemi, labels_affine)
 
 # same for the right hemisphere
 right_hemi = get_data(label_image).copy()
 right_hemi[int(x) :] = 0
-label_image_right = nb.Nifti1Image(right_hemi, labels_affine)
+label_image_right = new_img_like(label_image, right_hemi, labels_affine)
 
 # %%
 # Then, create a masker object, compute a connectivity matrix and
