@@ -114,9 +114,10 @@ def test_load_save_mesh(
 
 def test_save_mesh_default_suffix(tmp_path, mini_img):
     """Check default .gii extension is added."""
-    mini_img.mesh.to_filename(tmp_path / "give_me_a_default_suffix")
-    assert (tmp_path / "give_me_a_default_suffix_hemi-R.gii").exists()
-    assert (tmp_path / "give_me_a_default_suffix_hemi-L.gii").exists()
+    mini_img.mesh.to_filename(
+        tmp_path / "give_me_a_default_suffix_hemi-L_mesh"
+    )
+    assert (tmp_path / "give_me_a_default_suffix_hemi-L_mesh.gii").exists()
 
 
 def test_save_mesh_error(tmp_path, mini_img):
@@ -131,6 +132,54 @@ def test_save_mesh_error_wrong_suffix(tmp_path, mini_img):
         mini_img.mesh.to_filename(
             tmp_path / "hemi-L_hemi-R_cannot_have_both.foo"
         )
+
+
+@pytest.mark.parametrize("use_path", [True, False])
+@pytest.mark.parametrize(
+    "output_filename, expected_files, unexpected_files",
+    [
+        ("foo.gii", ["foo_hemi-L.gii", "foo_hemi-L.gii"], ["foo.gii"]),
+        ("foo_hemi-L_T1w.gii", ["foo_hemi-L_T1w.gii"], ["foo_hemi-R_T1w.gii"]),
+        ("foo_hemi-R_T1w.gii", ["foo_hemi-R_T1w.gii"], ["foo_hemi-L_T1w.gii"]),
+    ],
+)
+def test_load_save_data(
+    tmp_path, output_filename, expected_files, unexpected_files, use_path
+):
+    mesh_right = datasets.fetch_surf_fsaverage().pial_right
+    mesh_left = datasets.fetch_surf_fsaverage().pial_left
+    data_right = datasets.fetch_surf_fsaverage().sulc_right
+    data_left = datasets.fetch_surf_fsaverage().sulc_left
+
+    if use_path:
+        img = SurfaceImage(
+            mesh={"left": Path(mesh_left), "right": Path(mesh_right)},
+            data={"left": Path(data_left), "right": Path(data_right)},
+        )
+    else:
+        img = SurfaceImage(
+            mesh={"left": mesh_left, "right": mesh_right},
+            data={"left": data_left, "right": data_right},
+        )
+
+    if use_path:
+        img.data.to_filename(tmp_path / output_filename)
+    else:
+        img.data.to_filename(str(tmp_path / output_filename))
+
+    for file in unexpected_files:
+        assert not (tmp_path / file).exists()
+
+    for file in expected_files:
+        assert (tmp_path / file).exists()
+
+        mesh = load_surf_mesh(tmp_path / file)
+        if "hemi-L" in file:
+            expected_mesh = load_surf_mesh(mesh_left)
+        elif "hemi-R" in file:
+            expected_mesh = load_surf_mesh(mesh_right)
+        assert np.array_equal(mesh.faces, expected_mesh.faces)
+        assert np.array_equal(mesh.coordinates, expected_mesh.coordinates)
 
 
 def test_load_3D_nifti_as_data(img_3d_mni, mini_mesh, tmp_path):
