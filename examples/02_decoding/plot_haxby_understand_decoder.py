@@ -61,8 +61,8 @@ print(f"Runs (groups): {np.unique(run)}")
 #
 # As we can see, the fMRI data is a 4D image with shape (40, 64, 64, 864).
 # Here 40x64x64 are the dimensions of the 3D brain image and 864 is the number
-# of selected trials, each corresponding to one of the 8 labels we selected
-# above.
+# of brain volumes acquired while visual stimuli were presented, each
+# corresponding to one of the 8 labels we selected above.
 #
 # :class:`nilearn.decoding.Decoder` can convert this 4D image to a 2D numpy
 # array where each row corresponds to a trial and each column corresponds to a
@@ -181,11 +181,14 @@ plt.show()
 # by default. This selection threshold can be changed using the
 # ``screening_percentile`` parameter.
 #
-# Note that these top 20 percentile voxels are selected based on training set
-# and then these selected voxels are picked for the test set too for each
-# train-test split. Furthermore, if the provided mask image has less voxels
+# These 20 percentile voxels are w.r.t. the volume of the standard MNI152 brain
+# template. Furthermore, if the provided mask image has less voxels
 # than the selected percentile, then all voxels in the mask are used. This is
 # done via the ``adjust_screening_percentile`` function.
+#
+# Also note that these top 20 percentile voxels are selected based on training
+# set and then these selected voxels are picked for the test set too for each
+# train-test split.
 #
 # So let's define a feature selector for later use in our Scikit-Learn decoding
 # pipeline.
@@ -195,6 +198,7 @@ from nilearn.image import load_img
 
 mask_vt_loaded = load_img(mask_vt)
 screen_percent = adjust_screening_percentile(20, mask_vt_loaded)
+print(f"Adjusted screening percentile: {screen_percent}")
 
 from sklearn.feature_selection import SelectPercentile, f_classif
 
