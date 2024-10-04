@@ -185,7 +185,7 @@ plt.show()
 #
 # These 20 percentile voxels are with respect to the volume of the standard
 # MNI152 brain template. Furthermore, if the provided mask image has less
-# voxels than the selected percentile, then all voxels in the mask are used.
+# voxels than the selected percentile, all voxels in the mask are used.
 # This is done via the ``adjust_screening_percentile`` function.
 #
 # Also note that these top 20 percentile voxels are selected based on training
