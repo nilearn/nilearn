@@ -39,9 +39,12 @@ def _compute_mean_image(img: SurfaceImage):
     """Compute mean of the surface (for 'time series')."""
     if len(img.shape) <= 1:
         return img
+    new_data = {}
     for part, value in img.data.parts.items():
-        img.data.parts[part] = np.squeeze(value.mean(axis=0)).astype(float)
-    return img
+        new_data[part] = (
+            value.mean(axis=tuple(range(1, len(value.shape))))
+        ).astype(float)
+    return SurfaceImage(img.mesh, new_data)
 
 
 def _get_min_max(img: SurfaceImage):
@@ -52,7 +55,36 @@ def _get_min_max(img: SurfaceImage):
 
 
 class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
-    """Extract data from a SurfaceImage."""
+    """Extract data from a SurfaceImage.
+
+    >>> import numpy as np
+    >>> from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
+    >>> from nilearn.experimental.surface._datasets import toy_mesh
+    >>> (mesh := toy_mesh())
+    <PolyMesh with 6 vertices>
+    >>> data = {"left": np.ones((3, 2)), "right": np.ones((3, 2)) * 2}
+    >>> img = SurfaceImage(mesh=mesh, data=data)
+    >>> img
+    <SurfaceImage (6, 2)>
+    >>> masker = SurfaceMasker().fit(img)
+    >>> masker.slices
+    {'left': (0, 3), 'right': (3, 6)}
+    >>> (masked_data := masker.transform(img))
+    array([[1., 1., 1., 2., 2., 2.],
+           [1., 1., 1., 2., 2., 2.]])
+    >>> (unmasked := masker.inverse_transform(masked_data))
+    <SurfaceImage (6, 2)>
+    >>> unmasked.data
+    <PolyData (6, 2)>
+    >>> unmasked.data.parts["left"]
+    array([[1., 1.],
+           [1., 1.],
+           [1., 1.]])
+    >>> unmasked.data.parts["right"]
+    array([[2., 2.],
+           [2., 2.],
+           [2., 2.]])
+    """
 
     mask_img: SurfaceImage | None
 
@@ -74,6 +106,9 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         reports=True,
         **kwargs,
     ):
+        # TODO this does not respect the scikit-learn requirement that __init__
+        # only stores the arguments without doing anything else, so set_params
+        # will not work with this estimator. Also make kwargs explicit.
         if memory is None:
             memory = Memory(location=None)
         self.mask_img = mask_img
@@ -209,11 +244,13 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         assert self.mask_img_ is not None
         assert self.output_dimension_ is not None
         check_same_n_vertices(self.mask_img_.mesh, img.mesh)
-        output = np.empty((*img.shape[:-1], self.output_dimension_))
+        output = np.empty((*img.shape[1:], self.output_dimension_))
         for part_name, (start, stop) in self.slices.items():
             mask = self.mask_img_.data.parts[part_name]
             assert isinstance(mask, np.ndarray)
-            output[..., start:stop] = img.data.parts[part_name][..., mask]
+            output[..., start:stop] = np.moveaxis(
+                img.data.parts[part_name][mask], 0, -1
+            )
 
         # signal cleaning here
         output = cache(
@@ -288,11 +325,13 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         for part_name, mask in self.mask_img_.data.parts.items():
             assert isinstance(mask, np.ndarray)
             data[part_name] = np.zeros(
-                (*masked_img.shape[:-1], mask.shape[0]),
+                (mask.shape[0], *masked_img.shape[:-1]),
                 dtype=masked_img.dtype,
             )
             start, stop = self.slices[part_name]
-            data[part_name][..., mask] = masked_img[..., start:stop]
+            data[part_name][mask] = np.moveaxis(
+                masked_img[..., start:stop], -1, 0
+            )
         return SurfaceImage(mesh=self.mask_img_.mesh, data=data)
 
     def generate_report(self):
@@ -419,6 +458,51 @@ class SurfaceLabelsMasker(BaseEstimator):
     labels_ : :obj:`numpy.ndarray`
 
     label_names_ : :obj:`numpy.ndarray`
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nilearn.experimental.surface import (
+    ...     SurfaceImage,
+    ...     SurfaceLabelsMasker,
+    ... )
+    >>> from nilearn.experimental.surface._datasets import toy_mesh
+
+    >>> (mesh := toy_mesh())
+    <PolyMesh with 6 vertices>
+    >>> left_data = np.asarray([[0.1, 1.1], [0.1, 1.1], [0.2, 2.2]])
+    >>> data = {"left": left_data, "right": -left_data}
+    >>> img = SurfaceImage(mesh=mesh, data=data)
+    >>> img
+    <SurfaceImage (6, 2)>
+    >>> img.data.parts["left"]
+    array([[0.1, 1.1],
+           [0.1, 1.1],
+           [0.2, 2.2]])
+    >>> labels = {
+    ...     "left": np.asarray([10, 10, 20]),
+    ...     "right": np.asarray([30, 40, 40]),
+    ... }
+    >>> labels_img = SurfaceImage(mesh=mesh, data=labels)
+    >>> masker = SurfaceLabelsMasker(labels_img)
+    >>> (masked := masker.fit_transform(img))
+    array([[-0.15,  0.1 ,  0.2 , -0.1 ],
+           [-1.65,  1.1 ,  2.2 , -1.1 ]])
+    >>> masker.label_names_
+    array(['40', '10', '20', '30'], dtype='<U2')
+    >>> masked[:, masker.labels_ == 10]
+    array([[0.1],
+           [1.1]])
+    >>> (unmasked := masker.inverse_transform(masked))
+    <SurfaceImage (6, 2)>
+    >>> unmasked.data.parts["left"]
+    array([[0.1, 1.1],
+           [0.1, 1.1],
+           [0.2, 2.2]])
+    >>> unmasked.data.parts["right"]
+    array([[-0.1 , -1.1 ],
+           [-0.15, -1.65],
+           [-0.15, -1.65]])
     """
 
     # TODO check attribute names after PR 3761 and harmonize with volume labels
@@ -437,6 +521,9 @@ class SurfaceLabelsMasker(BaseEstimator):
         reports: bool = True,
         **kwargs,
     ) -> None:
+        # TODO this does not respect the scikit-learn requirement that __init__
+        # only stores the arguments without doing anything else, so set_params
+        # will not work with this estimator. Also make kwargs explicit.
         self.labels_img = labels_img
         self.label_names = label_names
         self.labels_data_ = np.concatenate(
@@ -551,12 +638,10 @@ class SurfaceLabelsMasker(BaseEstimator):
             self._reporting_data["images"] = img
 
         check_same_n_vertices(self.labels_img.mesh, img.mesh)
-        img_data = np.concatenate(list(img.data.parts.values()), axis=-1)
-        output = np.empty((*img_data.shape[:-1], len(self.labels_)))
+        img_data = np.concatenate(list(img.data.parts.values()), axis=0)
+        output = np.empty((*img_data.shape[1:], len(self.labels_)))
         for i, label in enumerate(self.labels_):
-            output[..., i] = img_data[..., self.labels_data_ == label].mean(
-                axis=-1
-            )
+            output[..., i] = img_data[self.labels_data_ == label].mean(axis=0)
         return output
 
     def fit_transform(self, img: SurfaceImage, y: Any = None) -> np.ndarray:
@@ -596,11 +681,11 @@ class SurfaceLabelsMasker(BaseEstimator):
         data = {}
         for part_name, labels_part in self.labels_img.data.parts.items():
             data[part_name] = np.zeros(
-                (*masked_img.shape[:-1], labels_part.shape[0]),
+                (labels_part.shape[0], *masked_img.shape[:-1]),
                 dtype=masked_img.dtype,
             )
             for label_idx, label in enumerate(self.labels_):
-                data[part_name][..., labels_part == label] = masked_img[
+                data[part_name][labels_part == label] = masked_img[
                     ..., label_idx
                 ]
         return SurfaceImage(mesh=self.labels_img.mesh, data=data)

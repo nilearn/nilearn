@@ -7,10 +7,13 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
+import numpy as np
+
 from nilearn import datasets
 from nilearn.experimental.surface import _io
 from nilearn.experimental.surface._surface_image import (
     FileMesh,
+    InMemoryMesh,
     PolyMesh,
     SurfaceImage,
 )
@@ -141,4 +144,13 @@ def fetch_destrieux(
             },
         ),
         labels,
+    )
+
+
+def toy_mesh():
+    coords = np.eye(3)
+    triangles = np.asarray([[0, 1, 2]])
+    return PolyMesh(
+        left=InMemoryMesh(coords, triangles),
+        right=InMemoryMesh(coords + 2, triangles),
     )

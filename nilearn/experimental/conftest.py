@@ -54,7 +54,7 @@ def make_mini_img(mini_mesh) -> Callable:
             data_part = (
                 np.arange(np.prod(data_shape)).reshape(data_shape) + 1.0
             ) * 10**i
-            data[key] = data_part
+            data[key] = np.rollaxis(data_part, -1)
         return SurfaceImage(mini_mesh, data)
 
     return f
