@@ -55,6 +55,7 @@ n_labels = len(np.unique(y))
 print(f"{n_labels} labels to predict (y): {np.unique(y)}")
 print(f"fMRI data shape (X): {fmri_img.shape}")
 print(f"Runs (groups): {np.unique(run)}")
+
 # %%
 # Preprocessing
 # -------------
