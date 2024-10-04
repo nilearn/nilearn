@@ -7,6 +7,10 @@ The goal of this example is to illustrate the use of the function
 We compute a negative image by multiplying its voxel values with -1.
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 from nilearn import datasets, image, plotting
 

@@ -8,6 +8,10 @@ We use the MNI152 template as the reference for resampling a t-map image.
 Function :func:`nilearn.image.resample_img` could also be used to achieve this.
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 # First we load the required datasets using the nilearn datasets module.
 from nilearn.datasets import (

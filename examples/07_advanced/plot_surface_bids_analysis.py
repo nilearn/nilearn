@@ -19,6 +19,10 @@ Notice that in this case the preprocessed :term:`bold<BOLD>`
 images were already normalized to the same :term:`MNI` space.
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 # Fetch example :term:`BIDS` dataset
 # ----------------------------------

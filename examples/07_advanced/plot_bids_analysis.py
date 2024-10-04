@@ -19,6 +19,10 @@ More specifically:
    images were already normalized to the same :term:`MNI` space.
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 from nilearn import plotting
 
 # %%

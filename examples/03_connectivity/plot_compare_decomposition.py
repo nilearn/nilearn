@@ -23,6 +23,10 @@ an explicit model of the signal.
 The reference paper is :footcite:t:`Varoquaux2010c`.
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 # Load brain development :term:`fMRI` dataset
 # -------------------------------------------

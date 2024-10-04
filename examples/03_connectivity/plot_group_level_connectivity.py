@@ -15,6 +15,10 @@ for a careful study.
 
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 # Load brain development :term:`fMRI` dataset and MSDL atlas
 # ----------------------------------------------------------

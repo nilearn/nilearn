@@ -25,6 +25,10 @@ a few false negative.
     - Virgile Fritsch, Feb. 2014
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 # Load Haxby dataset
 from nilearn import datasets, image

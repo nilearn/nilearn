@@ -27,6 +27,10 @@ approach for the same dataset.
 
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 # Loading the data
 # ----------------

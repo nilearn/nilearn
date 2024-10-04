@@ -28,6 +28,10 @@ See also :ref:`for a similar example but using volumetric input data
 See :ref:`plotting` for more details on plotting tools.
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 # Retrieving the data
 # -------------------

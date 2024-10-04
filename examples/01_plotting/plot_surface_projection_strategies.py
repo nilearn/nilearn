@@ -26,7 +26,6 @@ from nilearn._utils.helpers import check_matplotlib
 
 check_matplotlib()
 
-
 # %%
 import matplotlib
 import matplotlib.pyplot as plt

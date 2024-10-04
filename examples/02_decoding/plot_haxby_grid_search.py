@@ -32,6 +32,10 @@ manually.
 
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 # Load the Haxby dataset
 # ----------------------

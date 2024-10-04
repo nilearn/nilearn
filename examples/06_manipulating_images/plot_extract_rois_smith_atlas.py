@@ -9,6 +9,10 @@ In particular, we show how Default Mode Network regions are extracted
 using :class:`nilearn.regions.RegionExtractor` from regions module
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 # Fetching the smith :term:`ICA` 10 RSN by importing datasets utilities
 from nilearn import datasets

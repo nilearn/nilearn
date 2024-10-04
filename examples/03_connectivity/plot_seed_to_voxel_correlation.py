@@ -20,6 +20,10 @@ Author: Franz Liem
 
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 # Getting the data
 # ----------------

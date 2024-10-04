@@ -10,6 +10,10 @@ different plotting engines, and add contours of regions of interest using
 
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 # Get a statistical map
 # ---------------------

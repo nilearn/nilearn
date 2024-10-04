@@ -21,6 +21,10 @@ documentation for more details.
 
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 import warnings
 
@@ -70,8 +74,8 @@ for term_idx in np.argsort(total_scores)[-10:][::-1]:
 print("\nReshaping and masking images.\n")
 
 with warnings.catch_warnings():
-    warnings.simplefilter("ignore", UserWarning)
-    warnings.simplefilter("ignore", DeprecationWarning)
+    # warnings.simplefilter("ignore", UserWarning)
+    # warnings.simplefilter("ignore", DeprecationWarning)
 
     mask_img = load_mni152_brain_mask(resolution=2)
     masker = NiftiMasker(

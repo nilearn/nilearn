@@ -22,6 +22,10 @@ only the 20% edges with the highest values.
 
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 # Retrieve the atlas and the data
 # -------------------------------

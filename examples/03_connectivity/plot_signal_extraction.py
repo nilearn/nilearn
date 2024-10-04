@@ -21,12 +21,13 @@ is :footcite:t:`Varoquaux2013`.
 This is just a code example, see the :ref:`corresponding section in the
 documentation <parcellation_time_series>` for more.
 
-.. note::
-    This example needs SciPy >= 1.0.0 for the reordering of the matrix.
-
 .. include:: ../../../examples/masker_note.rst
 
 """
+
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
 
 # %%
 # Retrieve the atlas and the data

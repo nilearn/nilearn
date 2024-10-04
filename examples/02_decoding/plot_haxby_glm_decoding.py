@@ -15,6 +15,10 @@ More specifically:
 3. Analyze the decoding performance using a classifier.
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 # Fetch example Haxby dataset
 # ---------------------------

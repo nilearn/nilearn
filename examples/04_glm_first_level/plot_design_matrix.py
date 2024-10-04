@@ -10,6 +10,10 @@ This examples requires matplotlib.
 
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 # Define parameters
 # -----------------

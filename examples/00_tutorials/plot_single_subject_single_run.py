@@ -15,6 +15,10 @@ versus periods of rest.
     spatially normalized and smoothed images.
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 # Retrieving the data
 # -------------------

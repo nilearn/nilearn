@@ -10,6 +10,10 @@ The clusters can be defined from the input image, i.e. in a circular way, as
 the error control accounts for arbitrary cluster selection.
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 # Fetch dataset
 # --------------

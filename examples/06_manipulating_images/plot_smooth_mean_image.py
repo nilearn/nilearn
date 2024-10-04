@@ -11,6 +11,10 @@ effects that are expected.
 
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 from nilearn import datasets, image, plotting
 

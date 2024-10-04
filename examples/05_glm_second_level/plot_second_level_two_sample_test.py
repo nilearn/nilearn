@@ -25,6 +25,10 @@ observe some significant effects in these areas.
 
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 import pandas as pd
 

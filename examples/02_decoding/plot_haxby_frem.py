@@ -14,6 +14,10 @@ at a lower computational cost than other spatially regularized methods.
 To have more details, see: :ref:`frem`.
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 # Load the Haxby dataset
 # ----------------------

@@ -18,6 +18,10 @@ face and cat images.
 
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 # Retrieve and load the :term:`fMRI` data from the Haxby study
 # ------------------------------------------------------------

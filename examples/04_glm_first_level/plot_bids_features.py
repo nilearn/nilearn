@@ -23,6 +23,10 @@ More specifically:
 4. Display contrast plot and uncorrected first level statistics table report.
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 from nilearn import plotting
 
 # %%

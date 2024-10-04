@@ -11,6 +11,10 @@ the :term:`fMRI` (see the generated figures).
 
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 # Load Haxby dataset
 # ------------------

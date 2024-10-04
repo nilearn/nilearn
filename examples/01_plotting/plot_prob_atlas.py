@@ -22,6 +22,10 @@ which is already defined.
 See :ref:`plotting` for more information to know how to tune the parameters.
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 # Load 4D probabilistic atlases
 from nilearn import datasets, plotting

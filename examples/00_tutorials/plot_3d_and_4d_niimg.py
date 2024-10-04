@@ -5,6 +5,10 @@
 Here we discover how to work with 3D and 4D niimgs.
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 # Downloading tutorial datasets from Internet
 # -------------------------------------------

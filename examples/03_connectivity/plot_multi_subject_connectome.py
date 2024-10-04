@@ -9,6 +9,10 @@ using the group sparse inverse covariance estimate.
 
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 import numpy as np
 

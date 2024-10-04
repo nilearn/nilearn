@@ -12,6 +12,10 @@ details about different versions and different networks, please refer to its
 documentation.
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 # Retrieving multiscale group brain parcellations
 # -----------------------------------------------

@@ -11,6 +11,10 @@ task.
 For details on the task, please see :footcite:t:`Pinel2007`.
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 from nilearn.plotting import plot_event
 
 # %%

@@ -18,6 +18,10 @@ We use the Yeo atlas as an example for labeling regions,
 
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 # The original Yeo atlas
 # -----------------------

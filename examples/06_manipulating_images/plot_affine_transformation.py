@@ -40,6 +40,10 @@ the bounding box (there is no intelligent way of inferring this given the
 bounding box shape).
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # Create the data with numpy
 import numpy as np
 

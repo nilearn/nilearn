@@ -13,6 +13,10 @@ display ROIs on top of a background image.
 
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 # Retrieve the data: the localizer dataset with contrast maps
 # -----------------------------------------------------------

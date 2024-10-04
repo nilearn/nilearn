@@ -17,6 +17,10 @@ computing a connectome from them.
 .. include:: ../../../examples/masker_note.rst
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 from nilearn import datasets, plotting
 
 # %%
@@ -25,7 +29,6 @@ from nilearn import datasets, plotting
 #
 # We are going to use a subject from the development functional
 # connectivity dataset.
-
 
 dataset = datasets.fetch_development_fmri(n_subjects=10)
 

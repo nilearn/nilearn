@@ -23,6 +23,10 @@ with less control over the plot (see below)
 
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 # Fetching :term:`Probabilistic atlas` - MSDL atlas
 # -------------------------------------------------

@@ -7,6 +7,10 @@ estimation of connectivity structure for a synthetic dataset.
 
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 from nilearn import plotting
 
 # %%
