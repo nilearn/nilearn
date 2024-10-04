@@ -97,7 +97,8 @@ masker = NiftiMasker(mask_img=mask_vt, standardize="zscore_sample")
 # is the number of unique labels)
 #
 # The advantage of this approach is its interpretability. Once we are done with
-# training and cross-validating, we will have N AU-ROC scores, one for each
+# training and cross-validating, we will have N area-under receiver operating
+# characteristic curve (AU-:term:`ROC`) scores, one for each
 # label. This will give us an insight into which labels (and the corresponding
 # cognitive domains) are easier to predict and are hence well differentiated
 # relative to the others in the brain.
