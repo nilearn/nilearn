@@ -50,8 +50,9 @@ def test_expression_to_contrast_vector_error():
 def set_up_glm():
     def _set_up_glm(rng, noise_model, bins=100):
         n, p, q = 100, 80, 10
-        X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(
-            size=(p, n)
+        X, Y = (
+            rng.standard_normal(size=(p, q)),
+            rng.standard_normal(size=(p, n)),
         )
         labels, results = run_glm(Y, X, noise_model, bins=bins)
         return labels, results, q
@@ -269,7 +270,11 @@ def test_deprecation_contrast_type_attribute():
 @pytest.mark.parametrize(
     "effect, variance, match",
     [
-        (np.ones(3), np.ones(1), "Effect array should have 2 dimensions"),
+        (
+            np.ones((3, 1, 1)),
+            np.ones(1),
+            "Effect array should have 1 or 2 dimensions",
+        ),
         (
             np.ones((1, 3)),
             np.ones((1, 1)),

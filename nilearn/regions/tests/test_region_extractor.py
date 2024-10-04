@@ -357,7 +357,8 @@ def test_connected_label_regions_connect_diag_false(labels_img):
 
 def test_connected_label_regions_return_empty_for_large_min_size(labels_img):
     """If min_size is large and if all the regions are removed \
-    then empty image will be returned."""
+    then empty image will be returned.
+    """
     extract_reg_min_size_large = connected_label_regions(
         labels_img, min_size=500
     )
@@ -459,7 +460,8 @@ def test_connected_label_regions_check_labels_string_without_list(
     labels_img, affine_eye, shape_3d_default
 ):
     """If labels (or names to regions) given is a string without a list \
-    we expect it to be split to regions extracted and returned as list."""
+    we expect it to be split to regions extracted and returned as list.
+    """
     labels_in_str = "region_a"
     labels_img_in_str = generate_labeled_regions(
         shape=shape_3d_default, affine=affine_eye, n_regions=1

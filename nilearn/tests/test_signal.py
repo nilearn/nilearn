@@ -12,6 +12,7 @@ from pandas import read_csv
 # Use nisignal here to avoid name collisions (using nilearn.signal is
 # not possible)
 from nilearn import signal as nisignal
+from nilearn._utils.exceptions import AllVolumesRemovedError
 from nilearn.conftest import _rng
 from nilearn.signal import clean
 
@@ -107,32 +108,65 @@ def generate_signals_plus_trends(n_features=17, n_samples=41):
     return signals + trends
 
 
-def test_butterworth(rng):
+@pytest.fixture
+def data_butterworth_single_timeseries(rng):
+    n_samples = 100
+    return rng.standard_normal(size=n_samples)
+
+
+@pytest.fixture
+def data_butterworth_multiple_timeseries(
+    rng, data_butterworth_single_timeseries
+):
     n_features = 20000
     n_samples = 100
+    data = rng.standard_normal(size=(n_samples, n_features))
+    # set first timeseries to previous data
+    data[:, 0] = data_butterworth_single_timeseries
+    return data
 
+
+def test_butterworth(data_butterworth_single_timeseries):
     sampling = 100
     low_pass = 30
     high_pass = 10
 
     # Compare output for different options.
     # single timeseries
-    data = rng.standard_normal(size=n_samples)
+    data = data_butterworth_single_timeseries
     data_original = data.copy()
+
     out_single = nisignal.butterworth(
         data, sampling, low_pass=low_pass, high_pass=high_pass, copy=True
     )
+
     np.testing.assert_almost_equal(data, data_original)
+
     nisignal.butterworth(
         data, sampling, low_pass=low_pass, high_pass=high_pass, copy=False
     )
+
     np.testing.assert_almost_equal(out_single, data)
     np.testing.assert_(id(out_single) != id(data))
 
-    # multiple timeseries
-    data = rng.standard_normal(size=(n_samples, n_features))
-    data[:, 0] = data_original  # set first timeseries to previous data
+
+def test_butterworth_multiple_timeseries(
+    data_butterworth_single_timeseries, data_butterworth_multiple_timeseries
+):
+    sampling = 100
+    low_pass = 30
+    high_pass = 10
+
+    data = data_butterworth_multiple_timeseries
     data_original = data.copy()
+
+    out_single = nisignal.butterworth(
+        data_butterworth_single_timeseries,
+        sampling,
+        low_pass=low_pass,
+        high_pass=high_pass,
+        copy=True,
+    )
 
     out1 = nisignal.butterworth(
         data, sampling, low_pass=low_pass, high_pass=high_pass, copy=True
@@ -150,15 +184,24 @@ def test_butterworth(rng):
     # Test nyquist frequency clipping, issue #482
     out1 = nisignal.butterworth(data, sampling, low_pass=50.0, copy=True)
     out2 = nisignal.butterworth(
-        data, sampling, low_pass=80.0, copy=True  # Greater than nyq frequency
+        data,
+        sampling,
+        low_pass=80.0,
+        copy=True,  # Greater than nyq frequency
     )
     np.testing.assert_almost_equal(out1, out2)
     np.testing.assert_(id(out1) != id(out2))
 
-    # Test check for equal values in critical frequencies
+
+def test_butterworth_warnings_critical_frequencies(
+    data_butterworth_single_timeseries,
+):
+    """Check for equal values in critical frequencies."""
+    data = data_butterworth_single_timeseries
     sampling = 1
     low_pass = 2
     high_pass = 1
+
     with pytest.warns(
         UserWarning,
         match=(
@@ -177,8 +220,14 @@ def test_butterworth(rng):
         )
     assert (out == data).all()
 
-    # Test check for frequency higher than allowed (>=Nyquist).
-    # The frequency should be modified and the filter should be run.
+
+def test_butterworth_warnings_LPF_too_high(data_butterworth_single_timeseries):
+    """Check for frequency higher than allowed (>=Nyquist).
+
+    The frequency should be modified and the filter should be run.
+    """
+    data = data_butterworth_single_timeseries
+
     sampling = 1
     high_pass = 0.01
     low_pass = 0.5
@@ -195,11 +244,17 @@ def test_butterworth(rng):
         )
     assert not np.array_equal(data, out)
 
-    # Test check for frequency lower than allowed (<0).
-    # The frequency should be modified and the filter should be run.
+
+def test_butterworth_warnings_HPF_too_low(data_butterworth_single_timeseries):
+    """Check for frequency lower than allowed (<0).
+
+    The frequency should be modified and the filter should be run.
+    """
+    data = data_butterworth_single_timeseries
     sampling = 1
     high_pass = -1
     low_pass = 0.4
+
     with pytest.warns(
         UserWarning,
         match="The frequency specified for the high pass filter is too low",
@@ -213,8 +268,9 @@ def test_butterworth(rng):
         )
     assert not np.array_equal(data, out)
 
-    # Test check for high-pass frequency higher than low-pass frequency.
-    # An error should be raised.
+
+def test_butterworth_errors(data_butterworth_single_timeseries):
+    """Check for high-pass frequency higher than low-pass frequency."""
     sampling = 1
     high_pass = 0.2
     low_pass = 0.1
@@ -226,7 +282,7 @@ def test_butterworth(rng):
         ),
     ):
         nisignal.butterworth(
-            data,
+            data_butterworth_single_timeseries,
             sampling,
             low_pass=low_pass,
             high_pass=high_pass,
@@ -1179,3 +1235,24 @@ def test_handle_scrubbed_volumes_without_extrapolation():
     np.testing.assert_equal(
         confounds.shape[0], censored_confounds.shape[0] + total_samples
     )
+
+
+def test_handle_scrubbed_volumes_exception():
+    """Check if an exception is raised when the sample mask is empty."""
+    signals, _, confounds = generate_signals(
+        n_features=11, n_confounds=5, length=40
+    )
+
+    sample_mask = np.arange(signals.shape[0])
+    scrub_index = np.arange(signals.shape[0])
+    sample_mask = np.delete(sample_mask, scrub_index)
+
+    with pytest.raises(
+        AllVolumesRemovedError,
+        match="The size of the sample mask is 0. "
+        "All volumes were marked as motion outliers "
+        "can not proceed. ",
+    ):
+        nisignal._handle_scrubbed_volumes(
+            signals, confounds, sample_mask, "butterworth", 2.5, True
+        )

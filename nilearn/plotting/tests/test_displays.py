@@ -128,7 +128,8 @@ def test_glass_brain_axes():
 
 def test_get_index_from_direction_exception():
     """Tests that a ValueError is raised when an invalid direction \
-       is given to function ``_get_index_from_direction``."""
+       is given to function ``_get_index_from_direction``.
+    """
     from nilearn.plotting.displays._axes import _get_index_from_direction
 
     with pytest.raises(ValueError, match="foo is not a valid direction."):
@@ -227,7 +228,8 @@ def test_mosaic_slicer_tuple_cut_coords(cut_coords, img):
 @pytest.mark.parametrize("cut_coords", [None, 5, (1, 1, 1)])
 def test_mosaic_slicer_img_none_false(cut_coords, img):
     """Tests for MosaicSlicer when img is ``None`` or ``False`` \
-       while initializing the figure."""
+       while initializing the figure.
+    """
     slicer = MosaicSlicer.init_with_figure(img=None, cut_coords=cut_coords)
     slicer.add_overlay(img, cmap=plt.cm.gray, colorbar=True)
     slicer.close()

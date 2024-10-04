@@ -79,7 +79,7 @@ Atlases descriptions
 .. toctree::
     :titlesonly:
 
-    description/aal_SPM12.rst
+    description/aal.rst
     description/allen_rsn_2011.rst
     description/basc_multiscale_2015.rst
     description/craddock_2012.rst

@@ -2,9 +2,9 @@
 
 # Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, Feb. 2014
 
-import nibabel as nib
 import numpy as np
 import pytest
+from nibabel import Nifti1Image
 from numpy.testing import (
     assert_array_almost_equal,
     assert_array_less,
@@ -34,7 +34,7 @@ def _tfce_design():
     )
     tested_var = np.arange(0, 20, 2)
 
-    mask_img = nib.Nifti1Image(np.ones((3, 3, 3)), np.eye(4))
+    mask_img = Nifti1Image(np.ones((3, 3, 3)), np.eye(4))
     masker = NiftiMasker(mask_img)
     masker.fit(mask_img)
 
@@ -86,7 +86,7 @@ def confounding_vars(rng):
 
 @pytest.fixture()
 def masker(affine_eye):
-    mask_img = nib.Nifti1Image(np.ones((5, 5, 5)), affine_eye)
+    mask_img = Nifti1Image(np.ones((5, 5, 5)), affine_eye)
     masker = NiftiMasker(mask_img)
     masker.fit(mask_img)
     return masker
@@ -127,7 +127,8 @@ PERM_RANGES = [10, 100, 1000]
 
 def run_permutations(tested_var, target_var, model_intercept):
     """Compute the Mean Squared Error between cumulative Density Function \
-    as a proof of consistency of the permutation algorithm."""
+    as a proof of consistency of the permutation algorithm.
+    """
     all_mse = []
     all_kstest_pvals = []
 
@@ -614,7 +615,8 @@ def test_permuted_ols_intercept_statsmodels_withcovar(
 
 def test_one_sided_versus_two_test(rng):
     """Check that a positive effect is always better \
-    recovered with one-sided."""
+    recovered with one-sided.
+    """
     n_descriptors = 100
     n_regressors = 1
     target_var = rng.standard_normal((N_SAMPLES, n_descriptors))
@@ -659,7 +661,8 @@ def test_one_sided_versus_two_test(rng):
 
 def test_two_sided_recover_positive_and_negative_effects():
     """Check that two-sided can actually recover \
-    positive and negative effects."""
+    positive and negative effects.
+    """
     target_var1 = np.arange(0, 10).reshape((-1, 1))  # positive effect
     target_var = np.hstack((target_var1, -target_var1))
     tested_var = np.arange(0, 20, 2)

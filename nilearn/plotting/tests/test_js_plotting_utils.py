@@ -38,16 +38,13 @@ def test_add_js_lib():
     html = get_html_template("surface_plot_template.html")
     cdn = add_js_lib(html, embed_js=False)
     assert "decodeBase64" in cdn
-    assert (
-        _normalize_ws(
-            """<script
+    assert _normalize_ws(
+        """<script
     src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js">
     </script>
     <script src="https://cdn.plot.ly/plotly-gl3d-latest.min.js"></script>
     """
-        )
-        in _normalize_ws(cdn)
-    )
+    ) in _normalize_ws(cdn)
     inline = _normalize_ws(add_js_lib(html, embed_js=True))
     assert (
         _normalize_ws(

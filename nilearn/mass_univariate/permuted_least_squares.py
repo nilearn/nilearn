@@ -1,5 +1,6 @@
 """Massively Univariate Linear Model estimated \
-with OLS and permutation test."""
+with OLS and permutation test.
+"""
 
 # Author: Benoit Da Mota, <benoit.da_mota@inria.fr>, sept. 2011
 #         Virgile Fritsch, <virgile.fritsch@inria.fr>, jan. 2014
@@ -7,8 +8,8 @@ import time
 import warnings
 
 import joblib
-import nibabel as nib
 import numpy as np
+from nibabel import Nifti1Image
 from scipy import stats
 from scipy.ndimage import generate_binary_structure, label
 from sklearn.utils import check_random_state
@@ -810,7 +811,7 @@ def permuted_ols(
             two_sided_test=two_sided_test,
         )
         tfce_original_data = apply_mask(
-            nib.Nifti1Image(
+            Nifti1Image(
                 tfce_original_data,
                 masker.mask_img_.affine,
                 masker.mask_img_.header,

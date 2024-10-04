@@ -18,10 +18,12 @@ ensembling to achieve state of the art performance
 
 import itertools
 import warnings
-from typing import Iterable
+from collections.abc import Iterable
 
 import numpy as np
 from joblib import Parallel, delayed
+from packaging.version import parse
+from sklearn import __version__ as sklearn_version
 from sklearn import clone
 from sklearn.base import BaseEstimator, MultiOutputMixin
 from sklearn.dummy import DummyClassifier, DummyRegressor
@@ -490,11 +492,13 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         For Dummy estimators, parameter grid defaults to empty dictionary.
 
-    clustering_percentile: int, float, in the [0, 100], default=10
+    clustering_percentile: int, float, in the [0, 100], default=100
         Percentile of features to keep after clustering. If it is lower
         than 100, a ReNA clustering is performed as a first step of fit
         to agglomerate similar features together. ReNA is typically efficient
-        for clustering_percentile equal to 10.
+        for clustering_percentile equal to 10. Only used with
+        :class:`nilearn.decoding.FREMClassifier` and
+        :class:`nilearn.decoding.FREMRegressor`.
 
     screening_percentile: int, float, \
                           in the closed interval [0, 100], \
@@ -1053,7 +1057,8 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
     def _predict_dummy(self, n_samples):
         """Non-sparse scikit-learn based prediction steps for classification \
-        and regression."""
+        and regression.
+        """
         if len(self.dummy_output_) == 1:
             dummy_output = self.dummy_output_[0]
         else:
@@ -1075,7 +1080,17 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         return scores.ravel() if scores.shape[1] == 1 else scores
 
     def _more_tags(self):
-        return {"require_y": True}
+        # TODO
+        # rename method to '__sklearn_tags__'
+        # and get rid of if block
+        # bumping sklearn_version > 1.5
+        # see https://github.com/scikit-learn/scikit-learn/pull/29677
+        ver = parse(sklearn_version)
+        if ver.release[1] < 6:
+            return {"require_y": True}
+        tags = self.__sklearn_tags__()
+        tags.target_tags.required = True
+        return tags
 
 
 @fill_doc
@@ -1103,7 +1118,12 @@ class Decoder(_BaseDecoder):
 
     cv: cross-validation generator or int, default=10
         A cross-validation generator.
-        See: https://scikit-learn.org/stable/modules/cross_validation.html
+        See: https://scikit-learn.org/stable/modules/cross_validation.html.
+        The default 10 refers to K = 10 folds of
+        :class:`~sklearn.model_selection.StratifiedKFold` when groups is None
+        in the fit method for this class. If groups is specified but ``cv``
+        is not set to custom CV splitter, default is
+        :class:`~sklearn.model_selection.LeaveOneGroupOut`.
 
     param_grid: dict of str to sequence, or sequence of such. Default None
         The parameter grid to explore, as a dictionary mapping estimator
@@ -1238,9 +1258,14 @@ class DecoderRegressor(MultiOutputMixin, _BaseDecoder):
         masker with default parameters. Refer to NiftiMasker or
         MultiNiftiMasker to check for default parameters. Default None
 
-    cv: cross-validation generator or int, optional (default 10)
+    cv: cross-validation generator or int, default=10
         A cross-validation generator.
-        See: https://scikit-learn.org/stable/modules/cross_validation.html
+        See: https://scikit-learn.org/stable/modules/cross_validation.html.
+        The default 10 refers to K = 10 folds of
+        :class:`~sklearn.model_selection.StratifiedKFold` when groups is None
+        in the fit method for this class. If groups is specified but ``cv``
+        is not set to custom CV splitter, default is
+        :class:`~sklearn.model_selection.LeaveOneGroupOut`.
 
     param_grid: dict of str to sequence, or sequence of such, default=None
         The parameter grid to explore, as a dictionary mapping estimator

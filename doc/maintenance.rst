@@ -155,8 +155,8 @@ Some environments allow passing extra argument:
 
 .. code-block:: bash
 
-    # only run black
-    tox run -e lint -- black
+    # only run ruff
+    tox run -e lint -- ruff
 
     # only run some tests
     tox -e test_plotting -- nilearn/glm/tests/test_contrasts.py

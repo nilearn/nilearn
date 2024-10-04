@@ -727,7 +727,7 @@ def test_nifti_labels_masker_with_mask(
         "Background",
     ],
 )
-def test_warning_nb_labels_not_equal_nb_regions(
+def test_warning_n_labels_not_equal_n_regions(
     shape_3d_default, affine_eye, background, n_regions
 ):
     labels_img = generate_labeled_regions(
@@ -774,7 +774,8 @@ def test_sanitize_labels_warnings(shape_3d_default, affine_eye, n_regions):
     ],  # In case the list of labels includes one for background
 )
 @pytest.mark.parametrize(
-    "dtype", ["int32", "float32"]  # In case regions are labelled with floats
+    "dtype",
+    ["int32", "float32"],  # In case regions are labelled with floats
 )
 @pytest.mark.parametrize(
     "affine_data",

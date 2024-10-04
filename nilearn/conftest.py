@@ -3,7 +3,6 @@
 import warnings
 
 import nibabel
-import nibabel as nb
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
@@ -11,8 +10,10 @@ from nibabel import Nifti1Image
 from nilearn import image
 
 # we need to import these fixtures even if not used in this module
-from nilearn.datasets.tests._testing import request_mocker  # noqa: F401
-from nilearn.datasets.tests._testing import temp_nilearn_data_dir  # noqa: F401
+from nilearn.datasets.tests._testing import (
+    request_mocker,  # noqa: F401
+    temp_nilearn_data_dir,  # noqa: F401
+)
 
 # TODO This import needs to be removed once the experimental surface API and
 # its pytest fixtures are integrated into the stable API
@@ -264,7 +265,7 @@ def img_3d_mni():
 def img_3d_mni_as_file(tmp_path):
     """Return path to a random 3D Nifti1Image in MNI space saved to disk."""
     filename = tmp_path / "img.nii"
-    nb.save(_img_3d_mni(), filename)
+    _img_3d_mni().to_filename(filename)
     return filename
 
 

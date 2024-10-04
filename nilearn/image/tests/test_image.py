@@ -6,11 +6,10 @@ import warnings
 from pathlib import Path
 
 import joblib
-import nibabel
 import numpy as np
 import pandas as pd
 import pytest
-from nibabel import AnalyzeImage, Nifti1Image, Nifti2Image
+from nibabel import AnalyzeImage, Nifti1Image, Nifti2Image, load, spatialimages
 from nibabel.freesurfer import MGHImage
 from numpy.testing import (
     assert_allclose,
@@ -212,20 +211,20 @@ def test_fast_smooth_array():
     # hardcoded in _fast_smooth_array
     neighbor_weight = 0.2
     # 6 neighbors in 3D if you are not on an edge
-    nb_neighbors_max = 6
+    n_neighbors_max = 6
 
     data = np.ones(shape)
     smooth_data = image._fast_smooth_array(data)
 
     # this contains the number of neighbors for each cell in the array
-    nb_neighbors_arr = np.empty(shape)
-    for (i, j, k), __ in np.ndenumerate(nb_neighbors_arr):
-        nb_neighbors_arr[i, j, k] = (
+    n_neighbors_arr = np.empty(shape)
+    for (i, j, k), __ in np.ndenumerate(n_neighbors_arr):
+        n_neighbors_arr[i, j, k] = (
             3 + (0 < i < N - 1) + (0 < j < N - 1) + (0 < k < N - 1)
         )
 
-    expected = (1 + neighbor_weight * nb_neighbors_arr) / (
-        1 + neighbor_weight * nb_neighbors_max
+    expected = (1 + neighbor_weight * n_neighbors_arr) / (
+        1 + neighbor_weight * n_neighbors_max
     )
     assert_allclose(smooth_data, expected)
 
@@ -654,7 +653,7 @@ def test_new_img_like_mgz():
     when using plot_stap_map
     """
     img_filename = Path(__file__).parent / "data" / "test.mgz"
-    ref_img = nibabel.load(img_filename)
+    ref_img = load(img_filename)
     data = np.ones(get_data(ref_img).shape, dtype=bool)
     affine = ref_img.affine
     new_img_like(ref_img, data, affine, copy_header=False)
@@ -686,7 +685,7 @@ def test_new_img_like_accepts_paths(affine_eye, tmp_path, rng):
 
     data = rng.random((10, 10, 10))
     img = Nifti1Image(data, affine_eye)
-    nibabel.save(img, nifti_path)
+    img.to_filename(nifti_path)
 
     new_data = rng.random((10, 10, 10))
     new_img = new_img_like(nifti_path, new_data)
@@ -699,10 +698,11 @@ def test_new_img_like_accepts_paths(affine_eye, tmp_path, rng):
 
 def test_new_img_like_non_iterable_header(rng):
     """Tests that when an niimg's header is not iterable \
-       and it is set to be copied, an error is not raised."""
+       and it is set to be copied, an error is not raised.
+    """
     fake_fmri_data = rng.uniform(size=_shape_4d_default())
     fake_affine = rng.uniform(size=(4, 4))
-    fake_spatial_image = nibabel.spatialimages.SpatialImage(
+    fake_spatial_image = spatialimages.SpatialImage(
         fake_fmri_data, fake_affine
     )
 
@@ -737,7 +737,8 @@ def test_new_img_like_int64(shape_3d_default):
 
 def test_validity_threshold_value_in_threshold_img(shape_3d_default):
     """Check that invalid values to threshold_img's threshold parameter \
-       raise Exceptions."""
+       raise Exceptions.
+    """
     maps, _ = generate_maps(shape_3d_default, n_regions=2)
 
     # testing to raise same error when threshold=None case
@@ -789,7 +790,8 @@ def test_threshold_img_with_cluster_threshold(
     stat_img_test_data, threshold, two_sided, cluster_threshold, expected
 ):
     """Check that passing specific threshold and cluster threshold values \
-    only gives cluster the right number of voxels with the right values."""
+    only gives cluster the right number of voxels with the right values.
+    """
     thr_img = threshold_img(
         img=stat_img_test_data,
         threshold=threshold,
@@ -802,9 +804,10 @@ def test_threshold_img_with_cluster_threshold(
     assert np.array_equal(np.unique(thr_img.get_fdata()), np.array(expected))
 
 
-def test_threshold_img_threshold_nb_clusters(stat_img_test_data):
+def test_threshold_img_threshold_n_clusters(stat_img_test_data):
     """With a cluster threshold of 5 we get 8 clusters with |values| > 2 \
-       and cluster sizes > 5."""
+       and cluster sizes > 5.
+    """
     thr_img = threshold_img(
         img=stat_img_test_data,
         threshold=2,
@@ -1024,6 +1027,13 @@ def test_binarize_img_copied_header(img_4d_mni_tr2):
     assert result.header["cal_max"] == 1
 
 
+def test_binarize_img_no_userwarning(img_4d_rand_eye):
+    # Test that a UserWarning is not thrown for a float64 img
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", category=UserWarning)
+        binarize_img(img_4d_rand_eye)
+
+
 @pytest.mark.parametrize(
     "func, input_img",
     [
@@ -1173,7 +1183,8 @@ def test_new_img_like_mgh_image(affine_eye, shape_3d_default):
 @pytest.mark.parametrize("image", [MGHImage, AnalyzeImage])
 def test_new_img_like_boolean_data(affine_eye, image, shape_3d_default, rng):
     """Checks defaulting boolean input data to np.uint8 dtype is valid \
-       forencoding with nibabel image classes MGHImage and AnalyzeImage."""
+       forencoding with nibabel image classes MGHImage and AnalyzeImage.
+    """
     data = rng.standard_normal(shape_3d_default).astype("uint8")
     in_img = image(dataobj=data, affine=affine_eye)
 
@@ -1272,8 +1283,8 @@ def test_concat_niimgs(affine_eye, tmp_path):
     assert concatenated.shape == img1.shape + (3,)
 
     # test list of 4D niimgs as input
-    nibabel.save(img1, tmp_path / "1.nii")
-    nibabel.save(img2, tmp_path / "2.nii")
+    img1.to_filename(tmp_path / "1.nii")
+    img2.to_filename(tmp_path / "2.nii")
     concatenated = concat_imgs(tmp_path / "*")
     assert_array_equal(get_data(concatenated)[..., 0], get_data(img1))
     assert_array_equal(get_data(concatenated)[..., 1], get_data(img2))

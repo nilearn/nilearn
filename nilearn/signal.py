@@ -11,11 +11,13 @@ import warnings
 
 import numpy as np
 import pandas as pd
-from scipy import linalg, signal as sp_signal
+from scipy import linalg
+from scipy import signal as sp_signal
 from scipy.interpolate import CubicSpline
 from sklearn.utils import as_float_array, gen_even_slices
 
 from nilearn._utils import fill_doc, stringify_path
+from nilearn._utils.exceptions import AllVolumesRemovedError
 from nilearn._utils.numpy_conversions import as_ndarray, csv_to_array
 from nilearn._utils.param_validation import check_run_sample_masks
 
@@ -300,8 +302,9 @@ def _check_wn(btype, freq, nyq):
     we force the critical frequencies to be slightly less than the Nyquist
     frequency, and slightly more than zero.
     """
+    EPS = np.finfo(np.float32).eps
     if freq >= nyq:
-        freq = nyq - (nyq * 10 * np.finfo(1.0).eps)
+        freq = nyq - (nyq * 10 * EPS)
         warnings.warn(
             f"The frequency specified for the {btype} pass filter is "
             "too high to be handled by a digital filter "
@@ -310,11 +313,11 @@ def _check_wn(btype, freq, nyq):
         )
 
     elif freq < 0.0:  # equal to 0.0 is okay
-        freq = nyq * np.finfo(1.0).eps
+        freq = nyq * EPS
         warnings.warn(
             f"The frequency specified for the {btype} pass filter is too "
             "low to be handled by a digital filter (must be non-negative). "
-            f"It has been set to eps: {freq}"
+            f"It has been set to eps: {freq}."
         )
 
     return freq
@@ -414,19 +417,18 @@ def butterworth(
     else:
         critical_freq = critical_freq[0]
 
-    b, a = sp_signal.butter(
-        order,
-        critical_freq,
+    sos = sp_signal.butter(
+        N=order,
+        Wn=critical_freq,
         btype=btype,
-        output="ba",
+        output="sos",
         fs=sampling_rate,
     )
     if signals.ndim == 1:
         # 1D case
-        output = sp_signal.filtfilt(
-            b,
-            a,
-            signals,
+        output = sp_signal.sosfiltfilt(
+            sos,
+            x=signals,
             padtype=padtype,
             padlen=padlen,
         )
@@ -437,10 +439,9 @@ def butterworth(
     elif copy:
         # No way to save memory when a copy has been requested,
         # because filtfilt does out-of-place processing
-        signals = sp_signal.filtfilt(
-            b,
-            a,
-            signals,
+        signals = sp_signal.sosfiltfilt(
+            sos,
+            x=signals,
             axis=0,
             padtype=padtype,
             padlen=padlen,
@@ -448,10 +449,9 @@ def butterworth(
     else:
         # Lesser memory consumption, slower.
         for timeseries in signals.T:
-            timeseries[:] = sp_signal.filtfilt(
-                b,
-                a,
-                timeseries,
+            timeseries[:] = sp_signal.sosfiltfilt(
+                sos,
+                x=timeseries,
                 padtype=padtype,
                 padlen=padlen,
             )
@@ -831,6 +831,8 @@ def _handle_scrubbed_volumes(
     """Interpolate or censor scrubbed volumes."""
     if sample_mask is None:
         return signals, confounds, sample_mask
+    elif sample_mask.size == 0:
+        raise AllVolumesRemovedError()
 
     if filter_type == "butterworth":
         signals = _interpolate_volumes(signals, sample_mask, t_r, extrapolate)
@@ -1043,7 +1045,8 @@ def _check_sample_mask_index(i, n_runs, runs, current_mask):
 
 def _sanitize_runs(n_time, runs):
     """Check runs are supplied in the correct format \
-    and detect the number of unique runs."""
+    and detect the number of unique runs.
+    """
     if runs is not None and len(runs) != n_time:
         raise ValueError(
             f"The length of the run vector ({len(runs)}) "

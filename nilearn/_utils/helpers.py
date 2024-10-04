@@ -134,15 +134,14 @@ def remove_parameters(removed_params, reason, end_version="future"):
     def _remove_params(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            found = set(removed_params).intersection(kwargs)
-            if found:
+            if found := set(removed_params).intersection(kwargs):
                 message = (
                     f'Parameter(s) {", ".join(found)} '
                     f"will be removed in version {end_version}; "
                     f"{reason}"
                 )
                 warnings.warn(
-                    category=DeprecationWarning, message=message, stacklevel=3
+                    category=DeprecationWarning, message=message, stacklevel=2
                 )
             return func(*args, **kwargs)
 
@@ -251,6 +250,15 @@ def check_copy_header(copy_header):
             "`copy_header=True`."
         )
         warnings.warn(
-            category=FutureWarning,
-            message=copy_header_default,
+            category=FutureWarning, message=copy_header_default, stacklevel=3
         )
+
+
+# TODO: This can be removed once MPL 3.5 is the min
+def _constrained_layout_kwargs():
+    import matplotlib
+
+    if compare_version(matplotlib.__version__, ">=", "3.5"):
+        return {"layout": "constrained"}
+    else:
+        return {"constrained_layout": True}

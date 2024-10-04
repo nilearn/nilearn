@@ -124,6 +124,8 @@
 
 .. _Jason Gors: http://jgors.com/
 
+.. _Jason Kai: https://github.com/kaitj
+
 .. _Javier Rasero: https://jrasero.github.io/
 
 .. _Jean Kossaifi: http://jeankossaifi.com/
@@ -208,6 +210,8 @@
 
 .. _Moritz Boos: https://github.com/mjboos
 
+.. _Mudassir Chapra: https://github.com/muddi900
+
 .. _Myeong Seop Song: https://github.com/NeuroVR-Song
 
 .. _Natasha Clarke: https://github.com/clarkenj
@@ -270,6 +274,8 @@
 
 .. _Simon Steinkamp: https://github.com/SRSteinkamp
 
+.. _Sin Kim: https://github.com/kimsin98
+
 .. _Sourav Singh: https://github.com/souravsingh
 
 .. _Steven Meisler: https://www.stevenmeisler.com
@@ -286,11 +292,15 @@
 
 .. _Taylor Salo: https://tsalo.github.io/
 
+.. _Tharun K: https://github.com/tharun634
+
 .. _Thomas Bazeille: https://github.com/thomasbazeille
 
 .. _Tom Vanasse: https://github.com/tvanasse
 
 .. _Vasco Diogo: https://github.com/vascosa
+
+.. _Victoria Shevchenko: https://github.com/victoris93
 
 .. _Vincent Michel: https://github.com/vmichel
 
