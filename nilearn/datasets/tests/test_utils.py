@@ -365,6 +365,19 @@ def test_uncompress():
         shutil.rmtree(dtemp)
 
         dtemp = mkdtemp()
+        ztemp = os.path.join(dtemp, "test.tgz")
+
+        fd, temp = mkstemp(dir=dtemp)
+        os.close(fd)
+        with contextlib.closing(tarfile.open(ztemp, "w:gz")) as tar:
+            tar.add(temp, arcname=ftemp)
+        _utils.uncompress_file(ztemp, verbose=0)
+
+        assert os.path.exists(os.path.join(dtemp, ftemp))
+
+        shutil.rmtree(dtemp)
+
+        dtemp = mkdtemp()
         ztemp = os.path.join(dtemp, "test.gz")
         gzip.open(ztemp, "wb").close()
         _utils.uncompress_file(ztemp, verbose=0)
