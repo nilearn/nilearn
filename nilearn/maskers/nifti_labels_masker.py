@@ -745,6 +745,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                     target_shape=imgs_.shape[:3],
                     target_affine=imgs_.affine,
                     copy_header=True,
+                    force_resample=False,
                 )
 
             # Remove imgs_ from memory before loading the same image
@@ -805,7 +806,6 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         )
 
         if self._region_id_name is not None:
-
             self.region_names_ = {
                 key: self._region_id_name[region_id]
                 for key, region_id in region_ids.items()
@@ -818,7 +818,6 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         return region_signals
 
     def _resample_labels(self, imgs_):
-
         logger.log("Resampling labels", self.verbose, stack_level=2)
         labels_before_resampling = set(
             np.unique(_utils.niimg.safe_get_data(self._resampled_labels_img_))
@@ -831,6 +830,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             target_shape=imgs_.shape[:3],
             target_affine=imgs_.affine,
             copy_header=True,
+            force_resample=False,
         )
         labels_after_resampling = set(
             np.unique(_utils.niimg.safe_get_data(self._resampled_labels_img_))

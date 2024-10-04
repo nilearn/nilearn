@@ -58,7 +58,8 @@ def test_multi_pca_check_masker_attributes(multi_pca_data, mask_img):
 
 def test_multi_pca(multi_pca_data, mask_img):
     """Components are the same if we put twice the same data, \
-       and that fit output is deterministic."""
+       and that fit output is deterministic.
+    """
     multi_pca = _MultiPCA(mask=mask_img, n_components=3, random_state=0)
     multi_pca.fit(multi_pca_data)
 
@@ -79,7 +80,8 @@ def test_multi_pca_with_confounds_smoke(multi_pca_data, mask_img):
 
 def test_multi_pca_componenent_errors(mask_img):
     """Test that a ValueError is raised \
-    if the number of components is too low."""
+    if the number of components is too low.
+    """
     multi_pca = _MultiPCA(mask=mask_img)
     with pytest.raises(
         ValueError, match="Object has no components_ attribute."
@@ -129,7 +131,8 @@ def test_multi_pca_with_masker(multi_pca_data):
 
 def test_multi_pca_with_masker_without_cca_smoke(multi_pca_data):
     """Multi-pca can run with a masker \
-        and without canonical correlation analysis."""
+        and without canonical correlation analysis.
+    """
     masker = MultiNiftiMasker(mask_args=dict(opening=0))
 
     multi_pca = _MultiPCA(
@@ -184,9 +187,10 @@ def test_multi_pca_score_single_subject(mask_img):
     assert 0.0 <= s <= 1.0
 
 
-def test_multi_pca_score_single_subject_nb_components(mask_img):
+def test_multi_pca_score_single_subject_n_components(mask_img):
     """Score is one for n_components == n_sample \
-       in single subject configuration."""
+       in single subject configuration.
+    """
     data, _, _, _ = _make_multi_pca_test_data(with_activation=False)
     multi_pca = _MultiPCA(
         mask=mask_img, random_state=0, memory_level=0, n_components=5

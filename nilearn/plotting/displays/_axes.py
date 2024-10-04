@@ -116,7 +116,6 @@ class BaseAxes:
         annotation_on_left = "L"
         annotation_on_right = "R"
         if self.radiological:
-            ax.invert_xaxis()
             annotation_on_left = "R"
             annotation_on_right = "L"
         ax.text(
@@ -253,7 +252,8 @@ class BaseAxes:
 
     def draw_position(self, size, bg_color, **kwargs):
         """``draw_position`` is not implemented in base class and \
-        should be implemented in derived classes."""
+        should be implemented in derived classes.
+        """
         raise NotImplementedError(
             "'draw_position' should be implemented in derived classes"
         )
@@ -466,7 +466,8 @@ class GlassBrainAxes(BaseAxes):
     def draw_position(self, size, bg_color, **kwargs):
         """Not implemented as it does not make sense to draw crosses for \
         the position of the cuts \
-        since we are taking the max along one axis."""
+        since we are taking the max along one axis.
+        """
         pass
 
     def _add_markers(self, marker_coords, marker_color, marker_size, **kwargs):

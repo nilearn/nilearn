@@ -172,14 +172,14 @@ def sort_authors(authors: list[dict[str, str]]) -> list[dict[str, str]]:
 
 def count_authors() -> int:
     """Count authors in names.rst."""
-    nb_authors = 0
+    n_authors = 0
     with open(names_rst(), encoding="utf8") as f:
         # count authors
         lines = f.readlines()
         for line in lines:
             if line.startswith(".. _"):
-                nb_authors += 1
-    return nb_authors
+                n_authors += 1
+    return n_authors
 
 
 def remove_consortium(authors: list[dict[str, str]]) -> list[dict[str, str]]:
@@ -203,11 +203,11 @@ def main():
     citation["authors"] = remove_consortium(citation["authors"])
     citation["authors"] = sort_authors(citation["authors"])
 
-    nb_authors = count_authors()
+    n_authors = count_authors()
     write_names_rst(citation)
-    new_nb_authors = count_authors()
+    new_n_authors = count_authors()
     # Sanity check to make sure we have not lost anyone
-    assert nb_authors <= new_nb_authors
+    assert n_authors <= new_n_authors
 
     write_authors_file(citation["authors"])
 

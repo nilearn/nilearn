@@ -5,11 +5,28 @@
 0.11.0.dev
 ==========
 
+HIGHLIGHTS
+----------
+
+.. warning::
+
+ | **Support for Python 3.8 has been dropped.**
+ | **We recommend upgrading to Python 3.11 or above.**
+ |
+ | **Minimum supported versions of the following packages have been bumped up:**
+ | - numpy -- 1.22.4
+ | - nibabel -- 5.2.0
+ | - scikit-learn -- 1.4.0
+ | - joblib -- 1.2.0
+ | - pandas -- 2.2.0
+
 NEW
 ---
 
 Fixes
 -----
+
+- :bdg-dark:`Code` Make sure that radiological view is applied when requested and not only when figures are annotated (:gh:`4556` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Fix failing test in ``test_nilearn_standardize`` on MacOS 14 by adding trend in simulated data (:gh:`4411` by `Hao-Ting Wang`_).
 
@@ -19,8 +36,14 @@ Fixes
 
 - :bdg-dark:`Code` :func:`nilearn.image.binarize_img` explicitly cast images to ``int8`` to avoid warnings about ``int64`` when working with ``float64`` images (:gh:`4498` by `Patrick Sadil`_).
 
+- :bdg-dark:`Code` Fix bug that would lead ``compute_contrast`` to return 4D images even for one dimensional contrasts (:gh:`4413` by `Bertrand Thirion`_ and `Rémi Gau`_).
+
+- :bdg-dark:`Code` ``first_level_from_bids`` will now return subjects in order (:gh:`4582` by `Tharun K`_).
+
 Enhancements
 ------------
+
+- :bdg-primary:`Doc` Add an option in :func:`nilearn.datasets.fetch_atlas_aal` to fetch the latest AAL version, 3v2 (:gh:`4554` by `Jeremy Lefort-Besnard`_ and `Rémi Gau`_).
 
 - :bdg-dark:`Code` Improve input/output for ``SurfaceImage`` by loading meshes from files on disk, loading data from files or Nifti object, and saving meshes to file (:gh:`4446` by `Rémi Gau`_).
 
@@ -37,15 +60,25 @@ Enhancements
 Changes
 -------
 
+- :bdg-dark:`Code` Warn the user when all volumes would be scrubbed when loading fmriprep confounds as this would lead to an empty ``sample_mask`` (:gh:`4558` by `Victoria Shevchenko`_).
+
+- :bdg-dark:`Code` Throw error if ``sample_mask`` is empty when scrubbing an fMRI time series (:gh:`4558` by `Victoria Shevchenko`_).
+
 - :bdg-dark:`Code` Remove the unused argument ``url`` from  :func:`nilearn.datasets.fetch_localizer_contrasts`, :func:`nilearn.datasets.fetch_localizer_calculation_task` and :func:`nilearn.datasets.fetch_localizer_button_task` (:gh:`4273` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Remove the unused argument ``rank`` from the constructor of :class:`nilearn.glm.LikelihoodModelResults` (:gh:`4273` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Use ruff as formatter and linter instead of black, isort, flake8... (:gh:`4574` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Implement argument ``sample_mask`` for :meth:`nilearn.maskers.MultiNiftiMasker.transform_imgs` (:gh:`4273` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Remove the unused arguments ``upper_cutoff`` and ``exclude_zeros`` for :func:`nilearn.masking.compute_multi_background_mask` (:gh:`4273` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Throw error in :func:`nilearn.glm.first_level.first_level_from_bids` if unknown ``kwargs`` are passed (:gh:`4414` by `Michelle Wang`_).
+
+- :bdg-dark:`Code` Improve logging by relying only on the Nilearn logger and adding optional support for rich printing if `rich <https://github.com/Textualize/rich>`_ is installed (:gh:`4469` and :gh:`4544` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Parcellations returned by :class:`nilearn.regions.Parcellations` will now be of type ``np.int32`` to avoid unnecessary warnings (:gh:`4555` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The parameter ``tr`` for :term:`Repetition time<TR>` will be replaced by ``t_r`` in the "HRF" functions in version 0.13.0. The affected functions are :func:`nilearn.glm.first_level.glover_dispersion_derivative`, :func:`nilearn.glm.first_level.glover_hrf`, :func:`nilearn.glm.first_level.glover_time_derivative`, :func:`nilearn.glm.first_level.spm_dispersion_derivative`, :func:`nilearn.glm.first_level.spm_hrf`, :func:`nilearn.glm.first_level.spm_time_derivative` (:gh:`4470` by `Rémi Gau`_).
 
@@ -58,3 +91,7 @@ Changes
 - :bdg-dark:`Code` Extend coverage for data generating utility functions (:gh:`4465` by `Sin Kim`_).
 
 - :bdg-danger:`Deprecation` The parameter ``ax`` will be replaced by ``axes`` in :func:`nilearn.plotting.plot_contrast_matrix` and :func:`nilearn.plotting.plot_design_matrix` in release 0.13.0. (:gh:`4476` by `Mudassir Chapra`_)
+
+- :bdg-dark:`Code` Reorder condition in internal call of :func:`nilearn.image.resample_img` to skip checking of array values if interpolation is ``nearest`` (:gh:`4571` by `Jason Kai`_).
+
+- :bdg-dark:`Code` Remove redundant sorting of ``np.unique(data)`` in internal call of :func:`nilearn.image.resample_img` when checking array values (:gh:`4571` by `Jason Kai`_).

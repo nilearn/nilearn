@@ -137,8 +137,8 @@ def _rm_all_json_files_from_bids_dataset(bids_path):
 def test_get_bids_files_inheritance_principle_root_folder(tmp_path):
     """Check if json files are found if in root folder of a dataset.
 
-    see https://bids-specification.readthedocs.io/en/latest/common-principles.html#the-inheritance-principle  # noqa: E501
-    """
+    see https://bids-specification.readthedocs.io/en/latest/common-principles.html#the-inheritance-principle
+    """  # noqa: E501
     bids_path = create_fake_bids_dataset(
         base_dir=tmp_path, n_sub=1, n_ses=1, tasks=["main"], n_runs=[1]
     )
@@ -192,8 +192,8 @@ def test_get_bids_files_inheritance_principle_root_folder(tmp_path):
 def test_get_bids_files_inheritance_principle_sub_folder(tmp_path, json_file):
     """Check if json files are found if in subject or session folder.
 
-    see https://bids-specification.readthedocs.io/en/latest/common-principles.html#the-inheritance-principle  # noqa: E501
-    """
+    see https://bids-specification.readthedocs.io/en/latest/common-principles.html#the-inheritance-principle
+    """  # noqa: E501
     bids_path = create_fake_bids_dataset(
         base_dir=tmp_path, n_sub=1, n_ses=1, tasks=["main"], n_runs=[1]
     )
@@ -400,14 +400,14 @@ def test_save_glm_to_bids_serialize_affine(tmp_path):
 
 
 @pytest.fixture
-def nb_cols_design_matrix():
+def n_cols_design_matrix():
     return 3
 
 
 @pytest.fixture
-def two_runs_model(nb_cols_design_matrix):
+def two_runs_model(n_cols_design_matrix):
     # Create two runs of data
-    shapes, rk = [(7, 8, 9, 15), (7, 8, 9, 15)], nb_cols_design_matrix
+    shapes, rk = [(7, 8, 9, 15), (7, 8, 9, 15)], n_cols_design_matrix
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes,
         rk,
@@ -437,13 +437,13 @@ def two_runs_model(nb_cols_design_matrix):
 
 
 def test_save_glm_to_bids_errors(
-    tmp_path_factory, two_runs_model, nb_cols_design_matrix
+    tmp_path_factory, two_runs_model, n_cols_design_matrix
 ):
     """Test errors of save_glm_to_bids."""
     tmpdir = tmp_path_factory.mktemp("test_save_glm_to_bids_errors")
 
     # Contrast names must be strings
-    contrasts = {5: np.eye(nb_cols_design_matrix)}
+    contrasts = {5: np.eye(n_cols_design_matrix)}
     contrast_types = {5: "F"}
 
     with pytest.raises(ValueError):

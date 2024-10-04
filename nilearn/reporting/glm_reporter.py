@@ -394,7 +394,6 @@ def _plot_contrasts(contrasts, design_matrices):
             )
             contrast_plot.set_xlabel(contrast_name)
             contrast_plot.figure.set_figheight(2)
-            contrast_plot.figure.set_tight_layout(True)
             url_contrast_plot_svg = _plot_to_svg(contrast_plot)
             # prevents sphinx-gallery & jupyter
             # from scraping & inserting plots
@@ -777,7 +776,7 @@ def _make_stat_maps_contrast_clusters(
         component_text_ = string.Template(components_template_text)
 
         # Only use threshold_stats_img to adjust the threshold
-        # that we will pass to  _clustering_params_to_dataframe
+        # that we will pass to _clustering_params_to_dataframe
         # and _stat_map_to_svg
         # Necessary to avoid :
         # https://github.com/nilearn/nilearn/issues/4192
@@ -894,7 +893,7 @@ def _clustering_params_to_dataframe(
         if os.sys.version_info.major == 2:
             table_details.update({"alpha": alpha})
         else:
-            table_details.update({"\u03B1": alpha})
+            table_details.update({"\u03b1": alpha})
         table_details.update({"Threshold (computed)": threshold})
     else:
         table_details.update({"Height control": "None"})

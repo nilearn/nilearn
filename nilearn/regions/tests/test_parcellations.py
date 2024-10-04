@@ -92,6 +92,15 @@ def test_parcellations_no_warnings(img_4d_zeros_eye):
     assert all([r.category is not UserWarning for r in record])
 
 
+def test_parcellations_no_int64_warnings(img_4d_zeros_eye):
+    parcellator = Parcellations(method="kmeans", n_parcels=1, verbose=0)
+    with warnings.catch_warnings(record=True) as record:
+        parcellator.fit(img_4d_zeros_eye)
+    for r in record:
+        if issubclass(r.category, UserWarning):
+            assert "image contains 64-bit ints" not in str(r.message)
+
+
 @pytest.mark.parametrize("method", METHODS)
 def test_parcellations_fit_on_multi_nifti_images(
     method, test_image, affine_eye
@@ -118,7 +127,8 @@ def test_parcellations_transform_single_nifti_image(
     method, n_parcel, test_image_2
 ):
     """Test with NiftiLabelsMasker extraction of timeseries data \
-       after building a parcellations image."""
+       after building a parcellations image.
+    """
     parcellator = Parcellations(method=method, n_parcels=n_parcel, verbose=0)
     parcellator.fit(test_image_2)
     # transform to signals

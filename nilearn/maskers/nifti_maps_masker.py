@@ -422,7 +422,6 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
             )
 
         elif self.resampling_target == "mask" and self.mask_img_ is not None:
-
             logger.log("Resampling maps", self.verbose)
 
             # TODO switch to force_resample=True
@@ -438,7 +437,6 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
             )
 
         elif self.resampling_target == "maps" and self.mask_img_ is not None:
-
             logger.log("Resampling mask", self.verbose)
 
             # TODO switch to force_resample=True
@@ -558,7 +556,6 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 ref_img,
                 self._resampled_maps_img_,
             ):
-
                 logger.log("Resampling maps", self.verbose)
                 # TODO switch to force_resample=True
                 # when bumping to version > 0.13
@@ -578,7 +575,6 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                     self.mask_img_,
                 )
             ):
-
                 logger.log("Resampling mask", self.verbose)
                 # TODO switch to force_resample=True
                 # when bumping to version > 0.13

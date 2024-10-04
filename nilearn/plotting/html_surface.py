@@ -35,7 +35,7 @@ def get_vertexcolor(
     bg_on_data=None,
     darkness=None,
 ):
-    """Get the color of the verrices."""
+    """Get the color of the vertices."""
     if bg_map is None:
         bg_data = np.ones(len(surf_map)) * 0.5
         bg_vmin, bg_vmax = 0, 1

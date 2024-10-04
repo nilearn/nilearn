@@ -21,6 +21,12 @@ Auditory stimulation was bi-syllabic words presented binaurally at a rate of 60 
 
 A structural image was also acquired.
 
+.. warning::
+
+    This dataset is a raw BIDS dataset.
+    The data are in the native space
+    and no spatial or temporal preprocessing has been performed.
+
 This experiment was conducted by Geriant Rees
 under the direction of Karl Friston and the FIL methods group.
 
@@ -30,6 +36,7 @@ Content
 -------
     :'func': Paths to functional images
     :'anat': Path to anat image
+    :'events': Path to events.tsv
     :'description': Data description
 
 References

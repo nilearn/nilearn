@@ -8,20 +8,20 @@ def bids_entities():
 
     Entities are listed in the order they should appear in a filename.
 
-    https://bids-specification.readthedocs.io/en/stable/appendices/entities.html # noqa
+    https://bids-specification.readthedocs.io/en/stable/appendices/entities.html
 
     Note that:
 
     - this only contains the entities for functional data
 
-    https://github.com/bids-standard/bids-specification/blob/master/src/schema/rules/files/raw/func.yaml#L13 # noqa
-    https://github.com/bids-standard/bids-specification/blob/master/src/schema/rules/files/deriv/imaging.yaml#L29 # noqa
+    https://github.com/bids-standard/bids-specification/blob/master/src/schema/rules/files/raw/func.yaml#L13
+    https://github.com/bids-standard/bids-specification/blob/master/src/schema/rules/files/deriv/imaging.yaml#L29
 
     Returns
     -------
     Dictionary of raw and derivatives entities : dict[str, list[str]]
 
-    """
+    """  # noqa: E501
     return {
         "raw": [
             "sub",
@@ -42,14 +42,14 @@ def bids_entities():
 def check_bids_label(label):
     """Validate a BIDS label.
 
-    https://bids-specification.readthedocs.io/en/stable/glossary.html#label-formats # noqa
+    https://bids-specification.readthedocs.io/en/stable/glossary.html#label-formats
 
     Parameters
     ----------
     label : Any
         Label to validate
 
-    """
+    """  # noqa: E501
     if not isinstance(label, str):
         raise TypeError(
             f"All bids labels must be string. "

@@ -50,7 +50,8 @@ def test_check_events():
 
 def test_check_events_errors():
     """Test the function which tests that the events \
-       data describes a valid experimental paradigm."""
+       data describes a valid experimental paradigm.
+    """
     events = basic_paradigm()
     # Errors checkins
     # Wrong type
@@ -82,7 +83,8 @@ def test_check_events_errors():
 
 def test_check_events_warnings():
     """Test the function which tests that the events \
-       data describes a valid experimental paradigm."""
+       data describes a valid experimental paradigm.
+    """
     events = basic_paradigm()
     # Warnings checkins
     # Missing trial type
@@ -113,7 +115,8 @@ def test_check_events_warnings():
 
 def write_events(events, tmpdir):
     """Write events of an experimental paradigm \
-       to a file and return the address."""
+       to a file and return the address.
+    """
     tsvfile = os.path.join(tmpdir, "events.tsv")
     events.to_csv(tsvfile, sep="\t")
     return tsvfile
@@ -162,7 +165,8 @@ def test_check_events_nan_designs(design):
 
 def test_sum_modulation_of_duplicate_events():
     """Test the function check_events \
-       when the paradigm contains duplicate events."""
+       when the paradigm contains duplicate events.
+    """
     events = duplicate_events_paradigm()
 
     # Check that a warning is given to the user

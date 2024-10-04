@@ -11,11 +11,13 @@ import warnings
 
 import numpy as np
 import pandas as pd
-from scipy import linalg, signal as sp_signal
+from scipy import linalg
+from scipy import signal as sp_signal
 from scipy.interpolate import CubicSpline
 from sklearn.utils import as_float_array, gen_even_slices
 
 from nilearn._utils import fill_doc, stringify_path
+from nilearn._utils.exceptions import AllVolumesRemovedError
 from nilearn._utils.numpy_conversions import as_ndarray, csv_to_array
 from nilearn._utils.param_validation import check_run_sample_masks
 
@@ -829,6 +831,8 @@ def _handle_scrubbed_volumes(
     """Interpolate or censor scrubbed volumes."""
     if sample_mask is None:
         return signals, confounds, sample_mask
+    elif sample_mask.size == 0:
+        raise AllVolumesRemovedError()
 
     if filter_type == "butterworth":
         signals = _interpolate_volumes(signals, sample_mask, t_r, extrapolate)
@@ -1041,7 +1045,8 @@ def _check_sample_mask_index(i, n_runs, runs, current_mask):
 
 def _sanitize_runs(n_time, runs):
     """Check runs are supplied in the correct format \
-    and detect the number of unique runs."""
+    and detect the number of unique runs.
+    """
     if runs is not None and len(runs) != n_time:
         raise ValueError(
             f"The length of the run vector ({len(runs)}) "

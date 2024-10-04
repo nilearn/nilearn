@@ -101,7 +101,8 @@ def random_spd(p, eig_min, cond, random_state=0):
 
 def _signals(n_subjects=N_SUBJECTS):
     """Generate signals and compute covariances \
-    and apply confounds while computing covariances."""
+    and apply confounds while computing covariances.
+    """
     n_features = N_FEATURES
     signals = []
     for k in range(n_subjects):
@@ -646,7 +647,8 @@ def _assert_connectivity_precision(connectivities, covs):
     """Estimated precision matrix: \
     - is positive definite, \
     - its product with the true covariance matrix \
-      is close to the identity matrix."""
+      is close to the identity matrix.
+    """
     for true_covariance_matrix, estimated_covariance_matrix in zip(
         covs, connectivities
     ):
