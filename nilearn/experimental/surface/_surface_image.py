@@ -191,23 +191,21 @@ class SurfaceImage:
     def __init__(
         self,
         mesh: PolyMesh | dict[str, Mesh | str | Path],
-        data: (
-            PolyData | dict[str, Mesh | str | Path] | Nifti1Image | str | Path
-        ),
+        data: PolyData | dict[str, Mesh | str | Path],
     ) -> None:
         """Create a SurfaceImage instance.
 
         Parameters
         ----------
         mesh : PolyMesh | dict[str, Mesh  |  str  |  Path]
-        data : PolyData | dict[str, Mesh  |  str  |  Path] | Niimg-like object
+        data : PolyData | dict[str, Mesh  |  str  |  Path]
         """
         self.mesh = mesh if isinstance(mesh, PolyMesh) else PolyMesh(**mesh)
 
-        if not isinstance(data, (PolyData, dict, str, Path, Nifti1Image)):
+        if not isinstance(data, (PolyData, dict)):
             raise TypeError(
                 "'data' must be one of"
-                "[PolyData, dict, str, Path, Nifti1Image].\n"
+                "[PolyData, dict].\n"
                 f"Got {type(data)}"
             )
 
@@ -215,12 +213,62 @@ class SurfaceImage:
             self.data = data
         elif isinstance(data, dict):
             self.data = PolyData(**data)
-        elif isinstance(data, (Nifti1Image, str, Path)):
-            self._vol_to_surf(data)
 
         _check_data_and_mesh_compat(self.mesh, self.data)
 
         self.shape = self.data.shape
+
+    @classmethod
+    def from_volume(
+        cls, mesh, volume_img, inner_mesh=None, **vol_to_surf_kwargs
+    ):
+        """Create surface image from volume image.
+
+        >>> from nilearn.experimental.surface import (
+        ...     SurfaceImage,
+        ...     load_fsaverage,
+        ... )
+        >>> from nilearn.datasets import load_sample_motor_activation_image
+
+        >>> fsavg = load_fsaverage()
+        >>> vol_img = load_sample_motor_activation_image()
+        >>> img = SurfaceImage.from_volume(fsavg["white_matter"], vol_img)
+        >>> img
+        <SurfaceImage (20484,)>
+        >>> img = SurfaceImage.from_volume(
+        ...     fsavg["white_matter"], vol_img, inner_mesh=fsavg["pial"]
+        ... )
+        >>> img
+        <SurfaceImage (20484,)>
+        """
+        mesh = mesh if isinstance(mesh, PolyMesh) else PolyMesh(**mesh)
+        if inner_mesh is not None:
+            inner_mesh = (
+                inner_mesh
+                if isinstance(inner_mesh, PolyMesh)
+                else PolyMesh(**inner_mesh)
+            )
+            left_kwargs = {"inner_mesh": inner_mesh.parts["left"]}
+            right_kwargs = {"inner_mesh": inner_mesh.parts["right"]}
+        else:
+            left_kwargs, right_kwargs = {}, {}
+
+        if isinstance(volume_img, (str, Path)):
+            volume_img = check_niimg(volume_img)
+
+        texture_left = vol_to_surf(
+            volume_img, mesh.parts["left"], **vol_to_surf_kwargs, **left_kwargs
+        )
+        texture_right = vol_to_surf(
+            volume_img,
+            mesh.parts["right"],
+            **vol_to_surf_kwargs,
+            **right_kwargs,
+        )
+
+        data = PolyData(left=texture_left.T, right=texture_right.T)
+
+        return cls(mesh=mesh, data=data)
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {getattr(self, 'shape', '')}>"
@@ -237,13 +285,6 @@ class SurfaceImage:
                Extra arguments to pass
                to :func:`nilearn.surface.vol_to_surf`
         """
-        if isinstance(img, (str, Path)):
-            img = check_niimg(img)
-
-        texture_left = vol_to_surf(img, self.mesh.parts["left"], **kwargs)
-        texture_right = vol_to_surf(img, self.mesh.parts["right"], **kwargs)
-
-        self.data = PolyData(left=texture_left.T, right=texture_right.T)
 
     def to_filename(self, filename: str | Path) -> None:
         """Save mesh to gifti.
