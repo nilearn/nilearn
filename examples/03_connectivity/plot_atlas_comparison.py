@@ -66,14 +66,11 @@ connectome_measure = ConnectivityMeasure(
     standardize="zscore_sample",
 )
 
-# useful for plotting connectivity interactions on glass brain
-from nilearn import plotting
-
 # create masker using MultiNiftiLabelsMasker to extract functional data within
 # atlas parcels from multiple subjects using parallelization to speed up the
 # computation
 masker = MultiNiftiLabelsMasker(
-    labels_img=yeo["thick_17"],
+    labels_img=yeo["thick_17"],  # Both hemispheres
     standardize="zscore_sample",
     standardize_confounds="zscore_sample",
     memory="nilearn_cache",
@@ -90,16 +87,78 @@ correlation_matrices = connectome_measure.fit_transform(time_series)
 # using connectome measure object
 mean_correlation_matrix = connectome_measure.mean_
 
+# useful for plotting connectivity interactions on glass brain
+from nilearn import plotting
+
 # grab center coordinates for atlas labels
 coordinates = plotting.find_parcellation_cut_coords(labels_img=yeo["thick_17"])
 
 # plot connectome with 80% edge strength in the connectivity
-plotting.plot_connectome(
-    mean_correlation_matrix,
-    coordinates,
-    edge_threshold="80%",
-    title="Yeo Atlas 17 thick (func)",
+left_connectome = plotting.plot_connectome(
+    mean_correlation_matrix, coordinates, edge_threshold="80%"
 )
+
+# %%
+# Note that the approach above will extract time series and compute a
+# single connectivity matrix for both hemispheres. However, the connectome
+# is plotted only for the left hemisphere. If your aim is to compute and plot
+# hemisphere-wise connectivity, you can follow the example below.
+# First, create a separate atlas image for each hemisphere:
+
+import nibabel as nb
+import numpy as np
+
+from nilearn.image import get_data
+from nilearn.image.resampling import coord_transform
+
+# load the atlas image first
+label_image = nb.load(yeo["thick_17"])
+
+# extract the affine matrix of the image
+labels_affine = label_image.affine
+
+# generate image coordinates using affine
+x, y, z = coord_transform(0, 0, 0, np.linalg.inv(labels_affine))
+
+# generate an separate image for the left hemisphere
+# left/right split is done along x-axis
+left_hemi = get_data(label_image).copy()
+left_hemi[: int(x)] = 0
+label_image_left = nb.Nifti1Image(left_hemi, labels_affine)
+
+# same for the right hemisphere
+right_hemi = get_data(label_image).copy()
+right_hemi[int(x) :] = 0
+label_image_right = nb.Nifti1Image(right_hemi, labels_affine)
+
+# %%
+# Then, create a masker object, compute a connectivity matrix and
+# plot the results for each hemisphere:
+
+for hemi, img in zip(["right", "left"], [label_image_right, label_image_left]):
+    masker = MultiNiftiLabelsMasker(
+        labels_img=img,
+        standardize="zscore_sample",
+        standardize_confounds="zscore_sample",
+    )
+
+    time_series = masker.fit_transform(data.func, confounds=data.confounds)
+
+    correlation_matrices = connectome_measure.fit_transform(time_series)
+    mean_correlation_matrix = connectome_measure.mean_
+
+    coordinates = plotting.find_parcellation_cut_coords(
+        labels_img=img, label_hemisphere=hemi
+    )
+
+    plotting.plot_connectome(
+        mean_correlation_matrix,
+        coordinates,
+        edge_threshold="80%",
+        title=f"Yeo Atlas 17 thick (func) - {hemi}",
+    )
+
+plotting.show()
 
 # %%
 # Plot a directed connectome - asymmetric connectivity measure
