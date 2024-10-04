@@ -183,7 +183,7 @@ plt.show()
 # by default. This selection threshold can be changed using the
 # ``screening_percentile`` parameter.
 #
-# These 20 percentile voxels are with restpect to the volume of the standard
+# These 20 percentile voxels are with respect to the volume of the standard
 # MNI152 brain template. Furthermore, if the provided mask image has less
 # voxels than the selected percentile, then all voxels in the mask are used.
 # This is done via the ``adjust_screening_percentile`` function.
