@@ -26,10 +26,9 @@ model with a random design matrix **X**:
 
 """
 
-from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.helpers import check_matplotlib
 
-if not is_matplotlib_installed():
-    raise RuntimeError("This script needs the matplotlib library")
+check_matplotlib()
 
 from time import time
 

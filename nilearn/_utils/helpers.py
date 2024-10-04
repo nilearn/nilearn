@@ -220,6 +220,20 @@ def is_matplotlib_installed():
         return True
 
 
+def check_matplotlib():
+    """Check if matplotlib is installed, raise an error if not.
+
+    Used in examples that require matplolib.
+    """
+    if not is_matplotlib_installed():
+        raise RuntimeError(
+            "This script needs the matplotlib library.\n"
+            "You can install Nilearn "
+            "and all its plotting dependencies with:\n"
+            "pip install 'nilearn[plotting]'"
+        )
+
+
 def is_plotly_installed():
     """Check if plotly is installed."""
     try:

@@ -12,10 +12,9 @@ operation in just a few lines of code.
 
 """
 
-from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.helpers import check_matplotlib
 
-if not is_matplotlib_installed():
-    raise RuntimeError("This script needs the matplotlib library")
+check_matplotlib()
 
 import matplotlib.pyplot as plt
 

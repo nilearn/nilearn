@@ -27,10 +27,9 @@ timing issues.
 This example requires matplotlib and scipy.
 """
 
-from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.helpers import check_matplotlib
 
-if not is_matplotlib_installed():
-    raise RuntimeError("This script needs the matplotlib library")
+check_matplotlib()
 
 import matplotlib.pyplot as plt
 import numpy as np
