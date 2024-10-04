@@ -112,10 +112,24 @@ def test_load_save_mesh(
         assert np.array_equal(mesh.coordinates, expected_mesh.coordinates)
 
 
+def test_save_mesh_default_suffix(tmp_path, mini_img):
+    """Check default .gii extension is added."""
+    mini_img.mesh.to_filename(tmp_path / "give_me_a_default_suffix")
+    assert (tmp_path / "give_me_a_default_suffix_hemi-R.gii").exists()
+    assert (tmp_path / "give_me_a_default_suffix_hemi-L.gii").exists()
+
+
 def test_save_mesh_error(tmp_path, mini_img):
     with pytest.raises(ValueError, match="cannot contain both"):
         mini_img.mesh.to_filename(
             tmp_path / "hemi-L_hemi-R_cannot_have_both.gii"
+        )
+
+
+def test_save_mesh_error_wrong_suffix(tmp_path, mini_img):
+    with pytest.raises(ValueError, match="with the extension '.gii'"):
+        mini_img.mesh.to_filename(
+            tmp_path / "hemi-L_hemi-R_cannot_have_both.foo"
         )
 
 
