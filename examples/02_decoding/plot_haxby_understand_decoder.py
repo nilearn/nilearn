@@ -166,7 +166,7 @@ plt.show()
 # Each row corresponds to a one-vs-others binary classification problem.
 # For example, the first row from the bottom corresponds to the binary
 # classification problem of predicting the label "bottle" vs. all other labels
-# and so on. Later we will train classifier for each row and calculate the
+# and so on. Later we will train a classifier for each row and calculate the
 # AU-ROC score for each row.
 
 # %%
