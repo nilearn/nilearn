@@ -57,6 +57,8 @@ Enhancements
 
 - :bdg-dark:`Code` Add footer to masker reports (:gh:`4307` by `Rémi Gau`_).
 
+- :bdg-primary:`Doc` Add example to provide a clear understanding of the :class:`nilearn.decoding.Decoder` object by demonstrating underlying steps via a Scikit-Learn pipeline. (:gh:`4437` by `Himanshu Aggarwal`_).
+
 Changes
 -------
 
