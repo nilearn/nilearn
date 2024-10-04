@@ -93,9 +93,9 @@ def test_load_save_mesh(
         )
 
     if use_path:
-        img.to_filename(tmp_path / output_filename)
+        img.mesh.to_filename(tmp_path / output_filename)
     else:
-        img.to_filename(str(tmp_path / output_filename))
+        img.mesh.to_filename(str(tmp_path / output_filename))
 
     for file in unexpected_files:
         assert not (tmp_path / file).exists()
@@ -114,7 +114,9 @@ def test_load_save_mesh(
 
 def test_save_mesh_error(tmp_path, mini_img):
     with pytest.raises(ValueError, match="cannot contain both"):
-        mini_img.to_filename(tmp_path / "hemi-L_hemi-R_cannot_have_both.gii")
+        mini_img.mesh.to_filename(
+            tmp_path / "hemi-L_hemi-R_cannot_have_both.gii"
+        )
 
 
 def test_load_3D_nifti_as_data(img_3d_mni, mini_mesh, tmp_path):
