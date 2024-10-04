@@ -87,7 +87,8 @@ def test_adjointness(rng, size=4):
 
 def test_identity_adjointness(rng, size=4):
     """Test adjointess between _graph_net_data_function and \
-    _graph_net_adjoint_data_function, with identity design matrix."""
+    _graph_net_adjoint_data_function, with identity design matrix.
+    """
     # A mask full of ones
     mask = np.ones((size, size, size), dtype=bool)
 
@@ -184,7 +185,8 @@ def test_logistic_gradient_at_simple_points():
 
 def test_squared_loss_derivative_lipschitz_constant(rng):
     """Test Lipschitz-continuity of the derivative of squared_loss loss \
-    function."""
+    function.
+    """
     X, y, w, mask, *_ = _make_data()
     grad_weight = 2.08e-1
 
@@ -235,7 +237,8 @@ def test_logistic_derivative_lipschitz_constant(rng):
 @pytest.mark.parametrize("l1_ratio", np.linspace(0.1, 1, 3))
 def test_max_alpha_squared_loss(l1_ratio):
     """Tests that models with L1 regularization over the theoretical bound \
-    are full of zeros, for logistic regression."""
+    are full of zeros, for logistic regression.
+    """
     X, y, _, _, mask_, X_ = _make_data()
 
     reg = BaseSpaceNet(

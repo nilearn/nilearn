@@ -1,5 +1,6 @@
 """Download statistical maps available \
-on Neurovault (https://neurovault.org)."""
+on Neurovault (https://neurovault.org).
+"""
 
 # Author: Jerome Dockes
 

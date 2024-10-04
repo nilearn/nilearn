@@ -81,7 +81,8 @@ def test_resample(img_3d_rand_eye, mask_img_1):
 
 def test_resample_to_mask_warning(img_3d_rand_eye, affine_eye):
     """Check that a warning is raised when data is \
-       being resampled to mask's resolution."""
+       being resampled to mask's resolution.
+    """
     # defining a mask with different fov than img
     mask = np.zeros((12, 12, 12))
     mask[3:-3, 3:-3, 3:-3] = 10

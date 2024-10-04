@@ -149,7 +149,8 @@ def test_plot_threshold_for_uint8(affine_eye, plot_func):
 @pytest.fixture
 def expected_error_message(display_mode, cut_coords):
     """Return the expected error message depending on display_mode \
-       and cut_coords. Used in test_invalid_cut_coords_with_display_mode."""
+       and cut_coords. Used in test_invalid_cut_coords_with_display_mode.
+    """
     if display_mode == "ortho" or (
         display_mode == "tiled" and cut_coords == 2
     ):

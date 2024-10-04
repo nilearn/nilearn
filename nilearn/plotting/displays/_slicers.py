@@ -90,7 +90,8 @@ class BaseSlicer:
     @staticmethod
     def find_cut_coords(img=None, threshold=None, cut_coords=None):
         """Act as placeholder and is not implemented in the base class \
-        and has to be implemented in derived classes."""
+        and has to be implemented in derived classes.
+        """
         # Implement this as a staticmethod or a classmethod when
         # subclassing
         raise NotImplementedError
@@ -2167,7 +2168,8 @@ def get_slicer(display_mode):
 def _get_create_display_fun(display_mode, class_dict):
     """Help for functions \
     :func:`~nilearn.plotting.displays.get_slicer` and \
-    :func:`~nilearn.plotting.displays.get_projector`."""
+    :func:`~nilearn.plotting.displays.get_projector`.
+    """
     try:
         return class_dict[display_mode].init_with_figure
     except KeyError:

@@ -19,7 +19,8 @@ from .._utils.extmath import fast_abs_percentile
 
 def _orientation_kernel(t):
     """Structure elements for calculating the value of neighbors in several \
-    directions."""
+    directions.
+    """
     sin = np.sin
     pi = np.pi
     t = pi * t

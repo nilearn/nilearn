@@ -37,7 +37,8 @@ datadir = os.path.join(currdir, "data")
 
 class MeshLikeObject:
     """Class with attributes coordinates \
-       and faces to be used for testing purposes."""
+       and faces to be used for testing purposes.
+    """
 
     def __init__(self, coordinates, faces):
         self._coordinates = coordinates
