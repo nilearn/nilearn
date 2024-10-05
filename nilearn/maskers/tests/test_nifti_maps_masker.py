@@ -183,7 +183,7 @@ def test_nifti_maps_masker_io_shapes(rng):
     masker.fit()
 
     # DeprecationWarning *should* be raised for 3D inputs
-    with pytest.warns(DeprecationWarning, match="Starting in version 0.12"):
+    with pytest.deprecated_call():
         test_data = masker.transform(img_3d)
         assert test_data.shape == (1, n_regions)
 
