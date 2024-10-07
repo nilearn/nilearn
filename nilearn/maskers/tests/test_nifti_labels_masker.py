@@ -948,7 +948,7 @@ def generate_labels(n_regions, background=True):
     labels = []
     if background:
         labels.append(background)
-    labels.extend([f"region_{str(i + 1)}" for i in range(n_regions)])
+    labels.extend([f"region_{i + 1!s}" for i in range(n_regions)])
     return labels
 
 

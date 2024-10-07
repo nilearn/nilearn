@@ -1048,7 +1048,7 @@ def fetch_atlas_smith_2009(
             ]
         else:
             raise ValueError(
-                f'Unknown mirror "{str(mirror)}". '
+                f'Unknown mirror "{mirror!s}". '
                 'Mirror must be "origin" or "nitrc"'
             )
 

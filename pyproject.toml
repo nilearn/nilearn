@@ -204,7 +204,6 @@ ignore = [
     "RUF002",
     "RUF003",
     "RUF005",
-    "RUF010",
     "RUF012",
     "RUF015",
     "RUF100",
