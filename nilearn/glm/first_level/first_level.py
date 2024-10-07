@@ -997,7 +997,7 @@ class FirstLevelModel(BaseGLM):
                 surf_data = {}
                 for part in run_img.mesh.parts:
                     surf_data[part] = np.ones(
-                        run_img.data.parts[part].shape[1], dtype=bool
+                        run_img.data.parts[part].shape[0], dtype=bool
                     )
                 self.mask_img = SurfaceImage(mesh=run_img.mesh, data=surf_data)
             else:

@@ -248,7 +248,9 @@ class SurfaceImage:
 
         _check_data_and_mesh_compat(self.mesh, self.data)
 
-        self.shape = self.data.shape
+    @property
+    def shape(self):
+        return self.data.shape
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.shape}>"
