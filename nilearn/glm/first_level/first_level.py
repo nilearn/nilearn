@@ -1070,7 +1070,13 @@ class FirstLevelModel(BaseGLM):
 
 
 def _check_compatibility_mask_and_images(mask_img, run_imgs):
-    # check that mask type and image types are compatible
+    """Check that mask type and image types are compatible.
+
+    Images to fit should be a Niimg-Like
+    if the mask is a NiftiImage, NiftiMasker or a path.
+    Similarly, only SurfaceImages can be fitted
+    with a SurfaceImage or a SrufaceMasked as mask.
+    """
     volumetric_type = (Nifti1Image, NiftiMasker, str, Path)
     surface_type = (SurfaceImage, SurfaceMasker)
     msg = (
@@ -1078,15 +1084,16 @@ def _check_compatibility_mask_and_images(mask_img, run_imgs):
         f"Got mask of type: {type(mask_img)}, "
         f"and images of type: {[type(x) for x in run_imgs]} "
     )
-    if mask_img is not None:
-        if isinstance(mask_img, volumetric_type) and any(
-            not isinstance(x, (Nifti1Image, str, Path)) for x in run_imgs
-        ):
-            raise TypeError(
-                f"{msg}"
-                f"where images should be NiftiImage-like instances "
-                f"(Nifti1Image or str or Path)."
-            )
+    if mask_img is None:
+        return None
+    if isinstance(mask_img, volumetric_type) and any(
+        not isinstance(x, (Nifti1Image, str, Path)) for x in run_imgs
+    ):
+        raise TypeError(
+            f"{msg}"
+            f"where images should be NiftiImage-like instances "
+            f"(Nifti1Image or str or Path)."
+        )
     if isinstance(mask_img, surface_type) and any(
         not isinstance(x, SurfaceImage) for x in run_imgs
     ):
