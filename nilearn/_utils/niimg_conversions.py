@@ -21,7 +21,8 @@ from .path_finding import resolve_globbing
 
 def _check_fov(img, affine, shape):
     """Return True if img's field of view correspond to given \
-    shape and affine, False elsewhere."""
+    shape and affine, False elsewhere.
+    """
     img = check_niimg(img)
     return img.shape[:3] == shape and np.allclose(img.affine, affine)
 

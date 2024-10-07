@@ -788,6 +788,7 @@ def _calculate_tr(frame_times):
     ----------
     frame_times : array of shape (n_scans)
         the desired sampling times
+
     Returns
     -------
     float

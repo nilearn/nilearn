@@ -11,7 +11,8 @@ import warnings
 
 import numpy as np
 import pandas as pd
-from scipy import linalg, signal as sp_signal
+from scipy import linalg
+from scipy import signal as sp_signal
 from scipy.interpolate import CubicSpline
 from sklearn.utils import as_float_array, gen_even_slices
 
@@ -1044,7 +1045,8 @@ def _check_sample_mask_index(i, n_runs, runs, current_mask):
 
 def _sanitize_runs(n_time, runs):
     """Check runs are supplied in the correct format \
-    and detect the number of unique runs."""
+    and detect the number of unique runs.
+    """
     if runs is not None and len(runs) != n_time:
         raise ValueError(
             f"The length of the run vector ({len(runs)}) "

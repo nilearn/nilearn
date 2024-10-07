@@ -155,7 +155,8 @@ def test_second_level_input_as_3D_images(rng, affine_eye, tmp_path):
 
 def test_process_second_level_input_as_firstlevelmodels():
     """Unit tests for function \
-       _process_second_level_input_as_firstlevelmodels()."""
+       _process_second_level_input_as_firstlevelmodels().
+    """
     shapes, rk = [(7, 8, 9, 15)], 3
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk
@@ -826,7 +827,8 @@ def test_second_level_voxelwise_attribute_errors(attribute):
     """Tests that an error is raised when trying to access \
        voxelwise attributes before fitting the model, \
        before computing a contrast, \
-       and when not setting ``minimize_memory`` to ``True``."""
+       and when not setting ``minimize_memory`` to ``True``.
+    """
     shapes = (SHAPE,)
     mask, fmri_data, _ = generate_fake_fmri_data_and_design(shapes)
     model = SecondLevelModel(mask_img=mask, minimize_memory=False)
@@ -953,7 +955,8 @@ def test_non_parametric_inference_cluster_level_with_covariates(
     rng,
 ):
     """Test non-parametric inference with cluster-level inference in \
-    the context of covariates."""
+    the context of covariates.
+    """
     shapes = ((7, 8, 9, 1),)
     mask, FUNCFILE, _ = write_fake_fmri_data_and_design(
         shapes, file_path=tmp_path

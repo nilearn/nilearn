@@ -134,15 +134,14 @@ def remove_parameters(removed_params, reason, end_version="future"):
     def _remove_params(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            found = set(removed_params).intersection(kwargs)
-            if found:
+            if found := set(removed_params).intersection(kwargs):
                 message = (
                     f'Parameter(s) {", ".join(found)} '
                     f"will be removed in version {end_version}; "
                     f"{reason}"
                 )
                 warnings.warn(
-                    category=DeprecationWarning, message=message, stacklevel=3
+                    category=DeprecationWarning, message=message, stacklevel=2
                 )
             return func(*args, **kwargs)
 

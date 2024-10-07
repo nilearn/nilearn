@@ -641,7 +641,6 @@ class FirstLevelModel(BaseGLM):
         design_matrices = []
 
         for run_idx, run_img in enumerate(run_imgs):
-
             if isinstance(run_img, SurfaceImage):
                 n_scans = run_img.shape[0]
             else:
@@ -1666,7 +1665,6 @@ def _list_valid_subjects(derivatives_path, sub_labels):
         sub_labels = [
             os.path.basename(s[:-1]).split("-")[1] for s in sub_folders
         ]
-        sub_labels = sorted(list(set(sub_labels)))
 
     # keep only existing subjects
     sub_labels_exist = []
@@ -1681,7 +1679,7 @@ def _list_valid_subjects(derivatives_path, sub_labels):
                 stacklevel=3,
             )
 
-    return set(sub_labels_exist)
+    return sorted(set(sub_labels_exist))
 
 
 def _report_found_files(files, text, sub_label, filters, verbose):

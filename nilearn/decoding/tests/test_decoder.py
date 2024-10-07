@@ -360,7 +360,8 @@ def test_check_unsupported_estimator(estimator):
 
 def test_parallel_fit(rand_X_Y):
     """Check that results of _parallel_fit is the same \
-    for different controlled param_grid."""
+    for different controlled param_grid.
+    """
     X, y = make_regression(
         n_samples=N_SAMPLES,
         n_features=20,
@@ -439,7 +440,8 @@ def test_parallel_fit_builtin_cv(
 ):
     """Check that the `fitted_param_name` output of _parallel_fit is \
        a single value even if param_grid is wrapped in a list \
-       for models with built-in CV."""
+       for models with built-in CV.
+    """
     # y will be replaced if this is a classification
     X, y = make_regression(
         n_samples=N_SAMPLES,
@@ -912,7 +914,8 @@ def test_decoder_multiclass_classification_cross_validation(
 
 def test_decoder_multiclass_classification_apply_mask_shape():
     """Test whether if _apply mask output has the same shape \
-    as original matrix."""
+    as original matrix.
+    """
     X_init, _ = make_classification(
         n_samples=200,
         n_features=125,

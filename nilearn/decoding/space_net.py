@@ -45,7 +45,8 @@ from .space_net_solvers import (
 
 def _crop_mask(mask):
     """Crops input mask to produce tighter (i.e smaller) bounding box \
-    with the same support (active voxels)."""
+    with the same support (active voxels).
+    """
     idx = np.where(mask)
     if idx[0].size == 0:
         raise ValueError(
@@ -109,7 +110,8 @@ def _univariate_feature_screening(
         for sample in range(sX.shape[0]):
             sX[sample] = gaussian_filter(
                 unmask_from_to_3d_array(
-                    X[sample].copy(), mask  # avoid modifying X
+                    X[sample].copy(),  # avoid modifying X
+                    mask,
                 ),
                 (smoothing_fwhm, smoothing_fwhm, smoothing_fwhm),
             )[mask]
@@ -808,7 +810,8 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
 
     def _set_coef_and_intercept(self, w):
         """Set the loadings vector (coef) and the intercept of the fitted \
-        model."""
+        model.
+        """
         self.w_ = np.array(w)
         if self.w_.ndim == 1:
             self.w_ = self.w_[np.newaxis, :]

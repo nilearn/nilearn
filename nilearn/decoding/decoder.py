@@ -23,7 +23,8 @@ from collections.abc import Iterable
 import numpy as np
 from joblib import Parallel, delayed
 from packaging.version import parse
-from sklearn import __version__ as sklearn_version, clone
+from sklearn import __version__ as sklearn_version
+from sklearn import clone
 from sklearn.base import BaseEstimator, MultiOutputMixin
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.linear_model import (
@@ -1057,7 +1058,8 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
     def _predict_dummy(self, n_samples):
         """Non-sparse scikit-learn based prediction steps for classification \
-        and regression."""
+        and regression.
+        """
         if len(self.dummy_output_) == 1:
             dummy_output = self.dummy_output_[0]
         else:

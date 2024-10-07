@@ -62,7 +62,8 @@ class PolyData:
 
 class Mesh(abc.ABC):
     """A surface :term:`mesh` having vertex, \
-    coordinates and faces (triangles)."""
+    coordinates and faces (triangles).
+    """
 
     n_vertices: int
 

@@ -1,5 +1,6 @@
 """Implementation of algorithm for sparse multi-subjects learning of Gaussian \
-graphical models."""
+graphical models.
+"""
 
 # Authors: Philippe Gervais
 

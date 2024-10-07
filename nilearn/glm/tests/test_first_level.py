@@ -1626,7 +1626,8 @@ def test_first_level_from_bids_with_missing_events(tmp_path_factory):
 
 def test_first_level_from_bids_no_tr(tmp_path_factory):
     """Throw warning when t_r information cannot be inferred from the data \
-    and t_r=None is passed."""
+    and t_r=None is passed.
+    """
     bids_dataset = _new_bids_dataset(tmp_path_factory.mktemp("no_events"))
     json_files = get_bids_files(
         main_path=bids_dataset, file_tag="bold", file_type="json"
@@ -1707,7 +1708,8 @@ def test_first_level_from_bids_one_confound_missing(tmp_path_factory):
 
 def test_first_level_from_bids_all_confounds_missing(tmp_path_factory):
     """If all confound files are missing, \
-    confounds should be an array of None."""
+    confounds should be an array of None.
+    """
     bids_dataset = _new_bids_dataset(tmp_path_factory.mktemp("no_confounds"))
     confound_files = get_bids_files(
         main_path=bids_dataset / "derivatives",
@@ -1840,7 +1842,7 @@ def test_missing_trial_type_column_warning(tmp_path_factory):
     events_files = get_bids_files(main_path=bids_dataset, file_tag="events")
     # remove trial type column from one events.tsv file
     events = pd.read_csv(events_files[0], sep="\t")
-    events.drop(columns="trial_type", inplace=True)
+    events = events.drop(columns="trial_type")
     events.to_csv(events_files[0], sep="\t", index=False)
 
     with pytest.warns() as record:
@@ -2131,3 +2133,52 @@ def test_flm_compute_contrast_with_surface_data(_make_surface_glm_data):
     result = model.compute_contrast("c0")
 
     assert isinstance(result, SurfaceImage)
+
+
+def test_first_level_from_bids_subject_order(tmp_path):
+    """Make sure subjects are returned in order.
+
+    See https://github.com/nilearn/nilearn/issues/4581
+    """
+    n_sub = 10
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path, n_sub=n_sub, n_ses=1, tasks=["main"], n_runs=[1]
+    )
+
+    models, *_ = first_level_from_bids(
+        dataset_path=str(tmp_path / bids_path),
+        task_label="main",
+        space_label="MNI",
+        img_filters=[("desc", "preproc")],
+        slice_time_ref=None,
+    )
+
+    # Check if the subjects are returned in order
+    expected_subjects = [f"{label:02}" for label in range(1, n_sub + 1)]
+    returned_subjects = [model.subject_label for model in models]
+    assert returned_subjects == expected_subjects
+
+
+def test_first_level_from_bids_subject_order_with_labels(tmp_path):
+    """Make sure subjects are returned in order.
+
+    See https://github.com/nilearn/nilearn/issues/4581
+    """
+    n_sub = 10
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path, n_sub=n_sub, n_ses=1, tasks=["main"], n_runs=[1]
+    )
+
+    models, *_ = first_level_from_bids(
+        dataset_path=str(tmp_path / bids_path),
+        sub_labels=["01", "10", "04", "05", "02", "03"],
+        task_label="main",
+        space_label="MNI",
+        img_filters=[("desc", "preproc")],
+        slice_time_ref=None,
+    )
+
+    # Check if the subjects are returned in order
+    expected_subjects = ["01", "02", "03", "04", "05", "10"]
+    returned_subjects = [model.subject_label for model in models]
+    assert returned_subjects == expected_subjects

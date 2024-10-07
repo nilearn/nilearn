@@ -11,7 +11,8 @@ sub functions in skimage.segmentation
 import warnings
 
 import numpy as np
-from scipy import __version__, ndimage as ndi, sparse
+from scipy import __version__, sparse
+from scipy import ndimage as ndi
 from scipy.sparse.linalg import cg
 from sklearn.utils import as_float_array
 
@@ -129,7 +130,8 @@ def _buildAB(lap_sparse, labels):
 
 def _mask_edges_weights(edges, weights, mask):
     """Remove edges of the graph connected to masked nodes, \
-    as well as corresponding weights of the edges."""
+    as well as corresponding weights of the edges.
+    """
     mask0 = np.hstack(
         (mask[:, :, :-1].ravel(), mask[:, :-1].ravel(), mask[:-1].ravel())
     )

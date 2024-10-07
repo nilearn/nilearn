@@ -1,7 +1,8 @@
 """The searchlight is a widely used approach for the study \
 of the fine-grained patterns of information in fMRI analysis, \
 in which multivariate statistical relationships are iteratively tested \
-in the neighborhood of each location of a domain."""
+in the neighborhood of each location of a domain.
+"""
 
 # Authors : Vincent Michel (vm.michel@gmail.com)
 #           Alexandre Gramfort (alexandre.gramfort@inria.fr)
@@ -186,7 +187,6 @@ def _group_iter_search_light(
     par_scores = np.zeros(len(list_rows))
     t0 = time.time()
     for i, row in enumerate(list_rows):
-
         kwargs = {"scoring": scoring, "groups": groups}
         if isinstance(cv, KFold):
             kwargs = {"scoring": scoring}

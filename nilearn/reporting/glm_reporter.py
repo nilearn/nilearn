@@ -511,7 +511,9 @@ def _model_attributes_to_dataframe(model):
         attribute_name_: attribute_name_ + f" ({attribute_unit_})"
         for attribute_name_, attribute_unit_ in attribute_units.items()
     }
-    model_attributes.rename(index=attribute_names_with_units, inplace=True)
+    model_attributes = model_attributes.rename(
+        index=attribute_names_with_units
+    )
     return model_attributes
 
 
@@ -893,7 +895,7 @@ def _clustering_params_to_dataframe(
         if os.sys.version_info.major == 2:
             table_details.update({"alpha": alpha})
         else:
-            table_details.update({"\u03B1": alpha})
+            table_details.update({"\u03b1": alpha})
         table_details.update({"Threshold (computed)": threshold})
     else:
         table_details.update({"Height control": "None"})

@@ -14,9 +14,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
-from nibabel import Nifti1Image, save
+from nibabel import Nifti1Image
 from sklearn.utils import Bunch
 
+from nilearn._utils.data_gen import create_fake_bids_dataset
 from nilearn.datasets import func
 from nilearn.datasets._utils import get_dataset_dir
 from nilearn.datasets.tests._testing import dict_to_archive, list_to_archive
@@ -462,7 +463,6 @@ def test__load_mixed_gambles(rng, affine_eye):
 
 @pytest.mark.parametrize("n_subjects", [1, 5, 16])
 def test_fetch_mixed_gambles(tmp_path, n_subjects):
-
     mgambles = func.fetch_mixed_gambles(
         n_subjects=n_subjects,
         data_dir=tmp_path,
@@ -970,13 +970,6 @@ def _mock_original_spm_auditory_events_file():
     return expected_events_data_string
 
 
-def _mock_bids_compliant_spm_auditory_events_file():
-    events_filepath = os.path.join(os.getcwd(), "tests_events.tsv")
-    func._make_events_file_spm_auditory_data(events_filepath=events_filepath)
-    actual_events_data_string = Path(events_filepath).read_text()
-    return actual_events_data_string, events_filepath
-
-
 @pytest.mark.parametrize("legacy", [True, False])
 def test_fetch_language_localizer_demo_dataset(tmp_path, legacy):
     data_dir = tmp_path
@@ -1010,56 +1003,24 @@ def test_fetch_language_localizer_demo_dataset(tmp_path, legacy):
         assert bunch.description != ""
 
 
-def test_make_spm_auditory_events_file():
-    try:
-        (
-            actual_events_data_string,
-            events_filepath,
-        ) = _mock_bids_compliant_spm_auditory_events_file()
-    finally:
-        os.remove(events_filepath)
-    expected_events_data_string = _mock_original_spm_auditory_events_file()
-
-    replace_win_line_ends = lambda text: (  # noqa: E731
-        text.replace("\r\n", "\n") if text.find("\r\n") != -1 else text
+def test_fetch_spm_auditory(tmp_path):
+    create_fake_bids_dataset(
+        base_dir=tmp_path,
+        n_sub=1,
+        n_ses=0,
+        tasks=["auditory"],
+        n_runs=[1],
+        with_derivatives=False,
     )
-    actual_events_data_string = replace_win_line_ends(
-        actual_events_data_string
-    )
-    expected_events_data_string = replace_win_line_ends(
-        expected_events_data_string
-    )
-
-    assert actual_events_data_string == expected_events_data_string
-
-
-def test_fetch_spm_auditory(affine_eye, tmp_path):
-    saf = [f"fM00223/fM00223_{int(index):03}.img" for index in range(4, 100)]
-    saf_ = [f"fM00223/fM00223_{int(index):03}.hdr" for index in range(4, 100)]
-
-    data_dir = str(tmp_path / "spm_auditory")
-    os.mkdir(data_dir)
-    subject_dir = os.path.join(data_dir, "sub001")
-    os.mkdir(subject_dir)
-    os.mkdir(os.path.join(subject_dir, "fM00223"))
-    os.mkdir(os.path.join(subject_dir, "sM00223"))
-
-    path_img = str(tmp_path / "tmp.img")
-    path_hdr = str(tmp_path / "tmp.hdr")
-    save(Nifti1Image(np.zeros((2, 3, 4)), affine_eye), path_img)
-    shutil.copy(path_img, os.path.join(subject_dir, "sM00223/sM00223_002.img"))
-    shutil.copy(path_hdr, os.path.join(subject_dir, "sM00223/sM00223_002.hdr"))
-    for file_ in saf:
-        shutil.copy(path_img, os.path.join(subject_dir, file_))
-    for file_ in saf_:
-        shutil.copy(path_hdr, os.path.join(subject_dir, file_))
+    data_dir = tmp_path / "spm_auditory" / "MoAEpilot"
+    shutil.move(tmp_path / "bids_dataset", data_dir)
 
     dataset = func.fetch_spm_auditory(data_dir=tmp_path)
 
     assert isinstance(dataset, Bunch)
     assert isinstance(dataset.anat, str)
+    assert isinstance(dataset.events, str)
     assert isinstance(dataset.func[0], str)
-    assert len(dataset.func) == 96
 
     assert dataset.description != ""
 

@@ -37,7 +37,8 @@ datadir = os.path.join(currdir, "data")
 
 class MeshLikeObject:
     """Class with attributes coordinates \
-       and faces to be used for testing purposes."""
+       and faces to be used for testing purposes.
+    """
 
     def __init__(self, coordinates, faces):
         self._coordinates = coordinates
@@ -419,7 +420,6 @@ def test_load_surf_mesh_file_glob(tmp_path):
 
 
 def test_load_surf_data_file_glob(tmp_path):
-
     data2D = np.ones((20, 3))
     fnames = []
     for f in range(3):
