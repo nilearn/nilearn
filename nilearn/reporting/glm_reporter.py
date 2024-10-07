@@ -511,7 +511,9 @@ def _model_attributes_to_dataframe(model):
         attribute_name_: attribute_name_ + f" ({attribute_unit_})"
         for attribute_name_, attribute_unit_ in attribute_units.items()
     }
-    model_attributes.rename(index=attribute_names_with_units, inplace=True)
+    model_attributes = model_attributes.rename(
+        index=attribute_names_with_units
+    )
     return model_attributes
 
 

@@ -86,8 +86,8 @@ def _get_neurovault_data():
         url.format(col_id, img_name)
         for (col_id, img_name) in zip(images["collection_id"], image_names)
     ]
-    collections.set_index("id", inplace=True, drop=False)
-    images.set_index("id", inplace=True, drop=False)
+    collections = collections.set_index("id", drop=False)
+    images = images.set_index("id", drop=False)
     _get_neurovault_data.data = collections, images
     return collections, images
 

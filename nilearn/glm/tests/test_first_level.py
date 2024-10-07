@@ -1842,7 +1842,7 @@ def test_missing_trial_type_column_warning(tmp_path_factory):
     events_files = get_bids_files(main_path=bids_dataset, file_tag="events")
     # remove trial type column from one events.tsv file
     events = pd.read_csv(events_files[0], sep="\t")
-    events.drop(columns="trial_type", inplace=True)
+    events = events.drop(columns="trial_type")
     events.to_csv(events_files[0], sep="\t", index=False)
 
     with pytest.warns() as record:
