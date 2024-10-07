@@ -211,7 +211,6 @@ ignore = [
     "SIM102",
     "SIM105",
     "SIM108",
-    "SIM114",
     "SIM115",
     "SIM117",
     "SIM118",
