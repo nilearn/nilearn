@@ -1447,7 +1447,7 @@ def plot_glass_brain(
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
 
-    """  # noqa: E501
+    """
     if cmap is None:
         cmap = cm.cold_hot if black_bg else cm.cold_white_hot
         # use only positive half of colormap if plotting absolute values

@@ -711,10 +711,10 @@ def fetch_localizer_contrasts(
         # Calculation
         "calculation (auditory cue)": "auditory calculation",
         "calculation (visual cue)": "visual calculation",
-        "calculation (auditory and visual cue)": "auditory&visual calculation",  # noqa 501
+        "calculation (auditory and visual cue)": "auditory&visual calculation",
         "calculation (auditory cue) vs sentence listening": "auditory calculation vs auditory sentences",  # noqa 501
         "calculation (visual cue) vs sentence reading": "visual calculation vs sentences",  # noqa 501
-        "calculation vs sentences": "auditory&visual calculation vs sentences",  # noqa 501
+        "calculation vs sentences": "auditory&visual calculation vs sentences",
         # Calculation + Sentences
         "calculation (auditory cue) and sentence listening": "auditory processing",  # noqa 501
         "calculation (visual cue) and sentence reading": "visual processing",
@@ -2282,7 +2282,7 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
         DeprecationWarning,
         stacklevel=2,
     )
-    url = "https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/5888d9a76c613b01fc6acc4e"  # noqa: E501
+    url = "https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/5888d9a76c613b01fc6acc4e"
     dataset_name = "bids_langloc_example"
     main_folder = "bids_langloc_dataset"
     data_dir = get_dataset_dir(
