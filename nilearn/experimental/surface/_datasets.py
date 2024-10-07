@@ -107,8 +107,8 @@ def fetch_nki(mesh_type: str = "pial", **kwargs) -> Sequence[SurfaceImage]:
     for left, right in zip(
         nki_dataset["func_left"], nki_dataset["func_right"]
     ):
-        left_data = _io.read_array(left).T
-        right_data = _io.read_array(right).T
+        left_data = _io.read_array(left)
+        right_data = _io.read_array(right)
         img = SurfaceImage(
             mesh=fsaverage[mesh_type],
             data={

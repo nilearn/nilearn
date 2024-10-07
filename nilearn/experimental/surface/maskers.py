@@ -68,7 +68,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
     <SurfaceImage (6, 2)>
     >>> masker = SurfaceMasker().fit(img)
     >>> masker.slices
-    {'left': (0, 3), 'right': (3, 6)}
+    {'left': (0, np.int64(3)), 'right': (np.int64(3), np.int64(6))}
     >>> (masked_data := masker.transform(img))
     array([[1., 1., 1., 2., 2., 2.],
            [1., 1., 1., 2., 2., 2.]])
