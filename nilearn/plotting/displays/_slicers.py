@@ -518,8 +518,7 @@ class BaseSlicer:
             offset = 0
         else:
             offset = threshold
-        if offset > norm.vmax:
-            offset = norm.vmax
+        offset = min(offset, norm.vmax)
 
         cbar_vmin = cbar_vmin if cbar_vmin is not None else norm.vmin
         cbar_vmax = cbar_vmax if cbar_vmax is not None else norm.vmax
