@@ -757,13 +757,13 @@ def test_fetch_development_fmri_exception():
 # datasets tests originally belonging to nistats follow
 
 currdir = os.path.dirname(os.path.abspath(__file__))
-datadir = os.path.join(currdir, "data")
+datadir = Path(currdir, "data")
 
 
 def test_fetch_bids_langloc_dataset(tmp_path):
     data_dir = str(tmp_path / "bids_langloc_example")
     os.mkdir(data_dir)
-    main_folder = os.path.join(data_dir, "bids_langloc_dataset")
+    main_folder = Path(data_dir, "bids_langloc_dataset")
     os.mkdir(main_folder)
 
     datadir, dl_files = func.fetch_bids_langloc_dataset(tmp_path)
@@ -838,10 +838,10 @@ def test_fetch_ds000030_urls():
         tmp_list = []
         for subdir in subdir_names:
             tmp_list.append(subdir)
-            subdirpath = os.path.join(tmpdir, *tmp_list)
+            subdirpath = Path(tmpdir, *tmp_list)
             os.mkdir(subdirpath)
 
-        filepath = os.path.join(subdirpath, "urls.json")
+        filepath = Path(subdirpath, "urls.json")
         mock_json_content = ["junk1", "junk2"]
         with open(filepath, "w") as f:
             json.dump(mock_json_content, f)
@@ -897,7 +897,7 @@ def test_fetch_openneuro_dataset(tmp_path):
         data_dir=tmp_path,
         verbose=1,
     )
-    url_file = os.path.join(data_dir, "urls.json")
+    url_file = Path(data_dir, "urls.json")
 
     # Prepare url files for subject and filter tests
     urls = [
@@ -1074,15 +1074,15 @@ def test_fiac(tmp_path):
     fiac_dir = str(
         tmp_path / "fiac_nilearn.glm" / "nipy-data-0.2" / "data" / "fiac"
     )
-    fiac0_dir = os.path.join(fiac_dir, "fiac0")
+    fiac0_dir = Path(fiac_dir, "fiac0")
     os.makedirs(fiac0_dir)
     for run in [1, 2]:
         # glob func data for run + 1
-        run_func = os.path.join(fiac0_dir, f"run{int(run)}.nii.gz")
+        run_func = Path(fiac0_dir, f"run{int(run)}.nii.gz")
         open(run_func, "a").close()
-        sess_dmtx = os.path.join(fiac0_dir, f"run{int(run)}_design.npz")
+        sess_dmtx = Path(fiac0_dir, f"run{int(run)}_design.npz")
         open(sess_dmtx, "a").close()
-    mask = os.path.join(fiac0_dir, "mask.nii.gz")
+    mask = Path(fiac0_dir, "mask.nii.gz")
     open(mask, "a").close()
 
     dataset = func.fetch_fiac_first_level(data_dir=tmp_path)

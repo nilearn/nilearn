@@ -44,7 +44,7 @@ if have_mpl:
 
 # This directory path
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
-FUNCFILE = os.path.join(BASEDIR, "functional.nii.gz")
+FUNCFILE = Path(BASEDIR, "functional.nii.gz")
 
 N_PERM = 10
 SHAPE = (7, 8, 9, 1)

@@ -66,7 +66,7 @@ def readlinkabs(link):
     path = os.readlink(link)
     if os.path.isabs(path):
         return path
-    return os.path.join(os.path.dirname(link), path)
+    return Path(os.path.dirname(link), path)
 
 
 def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
@@ -244,7 +244,7 @@ def get_dataset_dir(
     # Check if the dataset exists somewhere
     for path, is_pre_dir in paths:
         if not is_pre_dir:
-            path = os.path.join(path, dataset_name)
+            path = Path(path, dataset_name)
         if os.path.islink(path):
             # Resolve path
             path = readlinkabs(path)
@@ -258,7 +258,7 @@ def get_dataset_dir(
     errors = []
     for path, is_pre_dir in paths:
         if not is_pre_dir:
-            path = os.path.join(path, dataset_name)
+            path = Path(path, dataset_name)
         if not os.path.exists(path):
             try:
                 os.makedirs(path)
@@ -313,7 +313,7 @@ def _is_within_directory(directory, target):
 
 def _safe_extract(tar, path=".", members=None, *, numeric_owner=False):
     for member in tar.getmembers():
-        member_path = os.path.join(path, member.name)
+        member_path = Path(path, member.name)
         if not _is_within_directory(path, member_path):
             raise Exception("Attempted Path Traversal in Tar File")
 
@@ -564,8 +564,8 @@ def fetch_single_file(
         file_name = md5_hash(parse.path)
 
     temp_file_name = f"{file_name}.part"
-    full_name = os.path.join(data_dir, file_name)
-    temp_full_name = os.path.join(data_dir, temp_file_name)
+    full_name = Path(data_dir, file_name)
+    temp_full_name = Path(data_dir, temp_file_name)
     if os.path.exists(full_name):
         if overwrite:
             os.remove(full_name)
@@ -708,8 +708,8 @@ def movetree(src, dst):
     errors = []
 
     for name in names:
-        srcname = os.path.join(src, name)
-        dstname = os.path.join(dst, name)
+        srcname = Path(src, name)
+        dstname = Path(dst, name)
         try:
             if os.path.isdir(srcname) and os.path.isdir(dstname):
                 movetree(srcname, dstname)
@@ -780,7 +780,7 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
     files = list(files)
     files_pickle = pickle.dumps([(file_, url) for file_, url, _ in files])
     files_md5 = hashlib.md5(files_pickle).hexdigest()
-    temp_dir = os.path.join(data_dir, files_md5)
+    temp_dir = Path(data_dir, files_md5)
 
     # Create destination dir
     if not os.path.exists(data_dir):
@@ -798,9 +798,9 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
         #   downloaded. There is nothing to do
 
         # Target file in the data_dir
-        target_file = os.path.join(data_dir, file_)
+        target_file = Path(data_dir, file_)
         # Target file in temp dir
-        temp_target_file = os.path.join(temp_dir, file_)
+        temp_target_file = Path(temp_dir, file_)
         # Whether to keep existing files
         overwrite = opts.get("overwrite", False)
         if abort is None and (
@@ -836,7 +836,7 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
             )
             if "move" in opts:
                 # XXX: here, move is supposed to be a dir, it can be a name
-                move = os.path.join(temp_dir, opts["move"])
+                move = Path(temp_dir, opts["move"])
                 move_dir = os.path.dirname(move)
                 if not os.path.exists(move_dir):
                     os.makedirs(move_dir)
@@ -891,7 +891,7 @@ def tree(path, pattern=None, dictionary=False):
     files = []
     dirs = {} if dictionary else []
     for file_ in os.listdir(path):
-        file_path = os.path.join(path, file_)
+        file_path = Path(path, file_)
         if os.path.isdir(file_path):
             if dictionary:
                 dirs[file_] = tree(file_path, pattern)

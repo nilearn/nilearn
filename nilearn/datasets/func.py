@@ -166,7 +166,7 @@ def fetch_haxby(
 
     files = [
         (
-            os.path.join(f"subj{int(i)}", sub_file),
+            Path(f"subj{int(i)}", sub_file),
             url + f"subj{int(i)}-2010.01.14.tar.gz",
             {
                 "uncompress": True,
@@ -189,7 +189,7 @@ def fetch_haxby(
     if fetch_stimuli:
         stimuli_files = [
             (
-                os.path.join("stimuli", "README"),
+                Path("stimuli", "README"),
                 url + "stimuli-2010.01.14.tar.gz",
                 {"uncompress": True},
             )
@@ -475,12 +475,12 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     #   * 12 figure scans (usually used for testing)
 
     func_figure = [
-        (os.path.join("func", f"data_figure_run{int(i):02}.nii.gz"), url, opts)
+        (Path("func", f"data_figure_run{int(i):02}.nii.gz"), url, opts)
         for i in range(1, 13)
     ]
 
     func_random = [
-        (os.path.join("func", f"data_random_run{int(i):02}.nii.gz"), url, opts)
+        (Path("func", f"data_random_run{int(i):02}.nii.gz"), url, opts)
         for i in range(1, 21)
     ]
 
@@ -490,18 +490,18 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
 
     label_filename = "data_%s_run%02d_label.csv"
     label_figure = [
-        (os.path.join("label", label_filename % ("figure", i)), url, opts)
+        (Path("label", label_filename % ("figure", i)), url, opts)
         for i in range(1, 13)
     ]
 
     label_random = [
-        (os.path.join("label", label_filename % ("random", i)), url, opts)
+        (Path("label", label_filename % ("random", i)), url, opts)
         for i in range(1, 21)
     ]
 
     # Masks
     file_mask = [
-        (os.path.join("mask", m), url, opts) for m in miyawaki2008_file_mask()
+        (Path("mask", m), url, opts) for m in miyawaki2008_file_mask()
     ]
 
     file_names = (
@@ -791,7 +791,7 @@ def fetch_localizer_contrasts(
                 name_aux = str.replace(
                     str.join("_", [data_type, contrast]), " ", "_"
                 )
-                file_path = os.path.join(
+                file_path = Path(
                     "brainomics_data", subject_id, f"{name_aux}.nii.gz"
                 )
                 path = "/".join(
@@ -815,7 +815,7 @@ def fetch_localizer_contrasts(
     # Fetch masks if asked by user
     if get_masks:
         for subject_id in subject_ids:
-            file_path = os.path.join(
+            file_path = Path(
                 "brainomics_data", subject_id, "boolean_mask_mask.nii.gz"
             )
             path = "/".join(
@@ -836,7 +836,7 @@ def fetch_localizer_contrasts(
     # Fetch anats if asked by user
     if get_anats:
         for subject_id in subject_ids:
-            file_path = os.path.join(
+            file_path = Path(
                 "brainomics_data",
                 subject_id,
                 "normalized_T1_anat_defaced.nii.gz",
@@ -857,7 +857,7 @@ def fetch_localizer_contrasts(
                 files.setdefault("anats", []).append(file_path)
 
     # Fetch subject characteristics
-    participants_file = os.path.join("brainomics_data", "participants.tsv")
+    participants_file = Path("brainomics_data", "participants.tsv")
     path = "/localizer/participants.tsv"
     if _is_valid_path(path, index, verbose=verbose):
         file_url = root_url.format(index[path][1:])
@@ -865,9 +865,7 @@ def fetch_localizer_contrasts(
         filenames.append((participants_file, file_url, opts))
 
     # Fetch behavioural
-    behavioural_file = os.path.join(
-        "brainomics_data", "phenotype", "behavioural.tsv"
-    )
+    behavioural_file = Path("brainomics_data", "phenotype", "behavioural.tsv")
     path = "/localizer/phenotype/behavioural.tsv"
     if _is_valid_path(path, index, verbose=verbose):
         file_url = root_url.format(index[path][1:])
@@ -878,12 +876,12 @@ def fetch_localizer_contrasts(
     fdescr = get_dataset_descr(dataset_name)
     fetch_files(data_dir, filenames, verbose=verbose)
     for key, value in files.items():
-        files[key] = [os.path.join(data_dir, val) for val in value]
+        files[key] = [Path(data_dir, val) for val in value]
 
     # Load covariates file
-    participants_file = os.path.join(data_dir, participants_file)
+    participants_file = Path(data_dir, participants_file)
     csv_data = pd.read_csv(participants_file, delimiter="\t")
-    behavioural_file = os.path.join(data_dir, behavioural_file)
+    behavioural_file = Path(data_dir, behavioural_file)
     csv_data2 = pd.read_csv(behavioural_file, delimiter="\t")
     csv_data = csv_data.merge(csv_data2)
     subject_names = csv_data["participant_id"].tolist()
@@ -1253,7 +1251,7 @@ def fetch_abide_pcp(
     pheno = pheno[user_filter]
 
     # Go into specific data folder and url
-    data_dir = os.path.join(data_dir, pipeline, strategy)
+    data_dir = Path(data_dir, pipeline, strategy)
     url = "/".join([url, "Outputs", pipeline, strategy])
 
     # Get the files
@@ -1527,7 +1525,7 @@ def fetch_megatrawls_netmats(
     )
     filepath = [
         (
-            os.path.join(
+            Path(
                 "3T_Q1-Q6related468_MSMsulc_d%d_%s"
                 % (dimensionality, timeseries_map[timeseries]),
                 matrices_map[matrices],
@@ -1761,7 +1759,7 @@ def fetch_surf_nki_enhanced(
     func_left = []
     for i in range(len(ids)):
         archive = url + "%i/%s_%s_preprocessed_fsaverage5_fwhm6.gii"
-        func = os.path.join("%s", "%s_%s_preprocessed_fwhm6.gii")
+        func = Path("%s", "%s_%s_preprocessed_fwhm6.gii")
         rh = fetch_files(
             data_dir,
             [
@@ -1910,7 +1908,7 @@ def _fetch_development_fmri_functional(
     names = ["participant_id", "key_r", "key_b"]
     # csv file contains download information related to OpenScience(osf)
     osf_data = csv_to_array(
-        os.path.join(package_directory, "data", "development_fmri.csv"),
+        Path(package_directory, "data", "development_fmri.csv"),
         skip_header=True,
         dtype=dtype,
         names=names,
@@ -2223,9 +2221,7 @@ def fetch_language_localizer_demo_dataset(
         uncompress_file(downloaded_files[0])
 
     file_list = [
-        os.path.join(path, f)
-        for path, _, files in os.walk(data_dir)
-        for f in files
+        Path(path, f) for path, _, files in os.walk(data_dir) for f in files
     ]
     if legacy_output:
         warnings.warn(
@@ -2290,18 +2286,16 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
     )
     # The files_spec needed for fetch_files
     files_spec = [(f"{main_folder}.zip", url, {"move": f"{main_folder}.zip"})]
-    if not os.path.exists(os.path.join(data_dir, main_folder)):
+    if not os.path.exists(Path(data_dir, main_folder)):
         downloaded_files = fetch_files(
             data_dir, files_spec, resume=True, verbose=verbose
         )
         uncompress_file(downloaded_files[0])
-    main_path = os.path.join(data_dir, main_folder)
+    main_path = Path(data_dir, main_folder)
     file_list = [
-        os.path.join(path, f)
-        for path, _, files in os.walk(main_path)
-        for f in files
+        Path(path, f) for path, _, files in os.walk(main_path) for f in files
     ]
-    return os.path.join(data_dir, main_folder), sorted(file_list)
+    return Path(data_dir, main_folder), sorted(file_list)
 
 
 @fill_doc
@@ -2398,7 +2392,7 @@ def fetch_ds000030_urls(data_dir=None, verbose=1):
         verbose=verbose,
     )
 
-    final_download_path = os.path.join(data_dir, "urls.json")
+    final_download_path = Path(data_dir, "urls.json")
     downloaded_file_path = fetch_files(
         data_dir=data_dir,
         files=[
@@ -2622,7 +2616,7 @@ def fetch_openneuro_dataset(
 
     for url in urls:
         url_path = url.split(data_prefix + "/")[1]
-        file_dir = os.path.join(data_dir, url_path)
+        file_dir = Path(data_dir, url_path)
         files_spec.append((os.path.basename(file_dir), url, {}))
         files_dir.append(os.path.dirname(file_dir))
 
@@ -2678,9 +2672,7 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
     opts = {"uncompress": True}
     options = ("epi_img", "events", "description")
     dir_ = "localizer_first_level"
-    filenames = [
-        (os.path.join(dir_, name), url, opts) for name in [epi_img, events]
-    ]
+    filenames = [(Path(dir_, name), url, opts) for name in [epi_img, events]]
 
     dataset_name = "localizer_first_level"
     data_dir = get_dataset_dir(
@@ -2784,7 +2776,7 @@ def fetch_spm_auditory(
 def _get_func_data_spm_multimodal(subject_dir, session, _subject_data):
     session_func = sorted(
         glob.glob(
-            os.path.join(
+            Path(
                 subject_dir,
                 f"fMRI/Session{session}/fMETHODS-000{session + 4}-*-01.img",
             )
@@ -2803,9 +2795,7 @@ def _get_func_data_spm_multimodal(subject_dir, session, _subject_data):
 
 
 def _get_session_trials_spm_multimodal(subject_dir, session, _subject_data):
-    sess_trials = os.path.join(
-        subject_dir, f"fMRI/trials_ses{int(session)}.mat"
-    )
+    sess_trials = Path(subject_dir, f"fMRI/trials_ses{int(session)}.mat")
     if not os.path.isfile(sess_trials):
         logger.log(f"Missing session file: {sess_trials}", stack_level=2)
         return None
@@ -2815,7 +2805,7 @@ def _get_session_trials_spm_multimodal(subject_dir, session, _subject_data):
 
 
 def _get_anatomical_data_spm_multimodal(subject_dir, _subject_data):
-    anat = os.path.join(subject_dir, "sMRI/smri.img")
+    anat = Path(subject_dir, "sMRI/smri.img")
     if not os.path.isfile(anat):
         logger.log("Missing structural image.", stack_level=2)
         return None
@@ -2879,7 +2869,7 @@ def _download_data_spm_multimodal(data_dir, subject_dir, subject_id):
     ]
 
     for url in urls:
-        archive_path = os.path.join(subject_dir, os.path.basename(url))
+        archive_path = Path(subject_dir, os.path.basename(url))
         fetch_single_file(url, subject_dir)
         try:
             uncompress_file(archive_path)
@@ -2899,7 +2889,7 @@ def _make_events_filepath_spm_multimodal_fmri(_subject_data, session):
     key = f"trials_ses{session}"
     events_file_location = os.path.dirname(_subject_data[key])
     events_filename = f"session{session}_events.tsv"
-    events_filepath = os.path.join(events_file_location, events_filename)
+    events_filepath = Path(events_file_location, events_filename)
     return events_filepath
 
 
@@ -2962,7 +2952,7 @@ def fetch_spm_multimodal_fmri(
 
     """
     data_dir = get_dataset_dir(data_name, data_dir=data_dir, verbose=verbose)
-    subject_dir = os.path.join(data_dir, subject_id)
+    subject_dir = Path(data_dir, subject_id)
 
     description = get_dataset_descr("spm_multimodal")
 
@@ -3009,10 +2999,10 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     def _glob_fiac_data():
         """Glob data from subject_dir."""
         _subject_data = {}
-        subject_dir = os.path.join(data_dir, "nipy-data-0.2/data/fiac/fiac0")
+        subject_dir = Path(data_dir, "nipy-data-0.2/data/fiac/fiac0")
         for run in [1, 2]:
             # glob func data for session
-            session_func = os.path.join(subject_dir, f"run{int(run)}.nii.gz")
+            session_func = Path(subject_dir, f"run{int(run)}.nii.gz")
             if not os.path.isfile(session_func):
                 logger.log(f"Missing functional scan for session {int(run)}.")
                 return None
@@ -3020,7 +3010,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
             _subject_data[f"func{int(run)}"] = session_func
 
             # glob design matrix .npz file
-            sess_dmtx = os.path.join(subject_dir, f"run{int(run)}_design.npz")
+            sess_dmtx = Path(subject_dir, f"run{int(run)}_design.npz")
             if not os.path.isfile(sess_dmtx):
                 logger.log(f"Missing run file: {sess_dmtx}")
                 return None
@@ -3028,7 +3018,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
             _subject_data[f"design_matrix{int(run)}"] = sess_dmtx
 
         # glob for mask data
-        mask = os.path.join(subject_dir, "mask.nii.gz")
+        mask = Path(subject_dir, "mask.nii.gz")
         if not os.path.isfile(mask):
             logger.log("Missing mask image.")
             return None
@@ -3048,7 +3038,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     logger.log("Data absent, downloading...")
     url = "https://nipy.org/data-packages/nipy-data-0.2.tar.gz"
 
-    archive_path = os.path.join(data_dir, os.path.basename(url))
+    archive_path = Path(data_dir, os.path.basename(url))
     fetch_single_file(url, data_dir)
     try:
         uncompress_file(archive_path)

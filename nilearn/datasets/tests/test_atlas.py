@@ -109,7 +109,7 @@ def test_fetch_atlas_source():
 
 
 def _write_sample_atlas_metadata(ho_dir, filename, is_symm):
-    with open(os.path.join(ho_dir, f"{filename}.xml"), "w") as dm:
+    with open(Path(ho_dir, f"{filename}.xml"), "w") as dm:
         if not is_symm:
             dm.write(
                 "<?xml version='1.0' encoding='us-ascii'?>\n"
@@ -674,7 +674,7 @@ def test_fetch_atlas_surf_destrieux(tmp_path):
     # Create mock annots
     for hemi in ("left", "right"):
         freesurfer.write_annot(
-            os.path.join(data_dir, f"{hemi}.aparc.a2009s.annot"),
+            Path(data_dir, f"{hemi}.aparc.a2009s.annot"),
             np.arange(4),
             np.zeros((4, 5)),
             5 * ["a"],

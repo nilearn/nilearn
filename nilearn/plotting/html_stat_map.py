@@ -6,6 +6,7 @@ import os
 import warnings
 from base64 import b64encode
 from io import BytesIO
+from pathlib import Path
 
 import matplotlib
 import numpy as np
@@ -434,10 +435,10 @@ def _json_view_to_html(json_view, width_view=600):
         json_view["params"]["title"] or "Slice viewer"
     )
     json_view["params"] = json.dumps(json_view["params"])
-    js_dir = os.path.join(os.path.dirname(__file__), "data", "js")
-    with open(os.path.join(js_dir, "jquery.min.js")) as f:
+    js_dir = Path(os.path.dirname(__file__), "data", "js")
+    with open(Path(js_dir, "jquery.min.js")) as f:
         json_view["js_jquery"] = f.read()
-    with open(os.path.join(js_dir, "brainsprite.min.js")) as f:
+    with open(Path(js_dir, "brainsprite.min.js")) as f:
         json_view["js_brainsprite"] = f.read()
 
     # Load the html template, and plug in all the data

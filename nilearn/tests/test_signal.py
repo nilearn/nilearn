@@ -3,6 +3,7 @@
 # Author: Gael Varoquaux, Alexandre Abraham
 
 import os.path
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -668,8 +669,8 @@ def test_clean_confounds():
     signals, _, confounds = generate_signals(
         n_features=41, n_confounds=3, length=20
     )
-    filename1 = os.path.join(current_dir, "data", "spm_confounds.txt")
-    filename2 = os.path.join(current_dir, "data", "confounds_with_header.csv")
+    filename1 = Path(current_dir, "data", "spm_confounds.txt")
+    filename2 = Path(current_dir, "data", "confounds_with_header.csv")
 
     nisignal.clean(
         signals, detrend=False, standardize=False, confounds=filename1

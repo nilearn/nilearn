@@ -14,6 +14,7 @@ import warnings
 from collections.abc import Container
 from copy import copy, deepcopy
 from glob import glob
+from pathlib import Path
 from tempfile import mkdtemp
 from urllib.parse import urlencode, urljoin
 
@@ -1339,7 +1340,7 @@ def _add_absolute_paths(root_dir, metadata, force=True):
         match = re.match(r"(.*)relative_path(.*)", name)
         if match is not None:
             abs_name = f"{match.groups()[0]}absolute_path{match.groups()[1]}"
-            absolute_paths[abs_name] = os.path.join(root_dir, value)
+            absolute_paths[abs_name] = Path(root_dir, value)
     if not absolute_paths:
         return metadata
     new_metadata = metadata.copy()
@@ -1374,11 +1375,11 @@ def _json_add_im_files_paths(file_name, force=True):
     dir_relative_path = os.path.basename(dir_path)
     image_file_name = f"image_{loaded['id']}.nii.gz"
     words_file_name = f"neurosynth_words_for_image_{loaded['id']}.json"
-    set_func("relative_path", os.path.join(dir_relative_path, image_file_name))
-    if os.path.isfile(os.path.join(dir_path, words_file_name)):
+    set_func("relative_path", Path(dir_relative_path, image_file_name))
+    if os.path.isfile(Path(dir_path, words_file_name)):
         set_func(
             "ns_words_relative_path",
-            os.path.join(dir_relative_path, words_file_name),
+            Path(dir_relative_path, words_file_name),
         )
     loaded = _add_absolute_paths(
         os.path.dirname(dir_path), loaded, force=force
@@ -1410,16 +1411,12 @@ def _download_collection(collection, download_params):
     collection = _remove_none_strings(collection)
     collection_id = collection["id"]
     collection_name = f"collection_{collection_id}"
-    collection_dir = os.path.join(
-        download_params["nv_data_dir"], collection_name
-    )
+    collection_dir = Path(download_params["nv_data_dir"], collection_name)
     collection["relative_path"] = collection_name
     collection["absolute_path"] = collection_dir
     if not os.path.isdir(collection_dir):
         os.makedirs(collection_dir)
-    metadata_file_path = os.path.join(
-        collection_dir, "collection_metadata.json"
-    )
+    metadata_file_path = Path(collection_dir, "collection_metadata.json")
     _write_metadata(collection, metadata_file_path)
     return collection
 
@@ -1448,12 +1445,12 @@ def _fetch_collection_for_image(image_info, download_params):
     """
     collection_id = image_info["collection_id"]
     collection_relative_path = f"collection_{collection_id}"
-    collection_absolute_path = os.path.join(
+    collection_absolute_path = Path(
         download_params["nv_data_dir"], collection_relative_path
     )
     if os.path.isdir(collection_absolute_path):
         return _json_add_collection_dir(
-            os.path.join(collection_absolute_path, "collection_metadata.json")
+            Path(collection_absolute_path, "collection_metadata.json")
         )
 
     col_batch = _get_batch(
@@ -1492,18 +1489,14 @@ def _download_image_nii_file(image_info, collection, download_params):
     image_id = image_info["id"]
     image_url = image_info["file"]
     image_file_name = f"image_{image_id}.nii.gz"
-    image_relative_path = os.path.join(
-        collection["relative_path"], image_file_name
-    )
-    image_absolute_path = os.path.join(
-        collection["absolute_path"], image_file_name
-    )
+    image_relative_path = Path(collection["relative_path"], image_file_name)
+    image_absolute_path = Path(collection["absolute_path"], image_file_name)
 
     resampled_image_file_name = f"image_{image_id}_resampled.nii.gz"
-    resampled_image_absolute_path = os.path.join(
+    resampled_image_absolute_path = Path(
         collection["absolute_path"], resampled_image_file_name
     )
-    resampled_image_relative_path = os.path.join(
+    resampled_image_relative_path = Path(
         collection["relative_path"], resampled_image_file_name
     )
 
@@ -1518,7 +1511,7 @@ def _download_image_nii_file(image_info, collection, download_params):
 
         tmp_file = f"tmp_{struuid}.nii.gz"
 
-        tmp_path = os.path.join(collection["absolute_path"], tmp_file)
+        tmp_path = Path(collection["absolute_path"], tmp_file)
 
         _simple_download(
             image_url,
@@ -1595,10 +1588,10 @@ def _download_image_terms(image_info, collection, download_params):
 
     ns_words_file_name = f"neurosynth_words_for_image_{image_info['id']}.json"
     image_info = image_info.copy()
-    image_info["ns_words_relative_path"] = os.path.join(
+    image_info["ns_words_relative_path"] = Path(
         collection["relative_path"], ns_words_file_name
     )
-    image_info["ns_words_absolute_path"] = os.path.join(
+    image_info["ns_words_absolute_path"] = Path(
         collection["absolute_path"], ns_words_file_name
     )
 
@@ -1665,7 +1658,7 @@ def _download_image(image_info, download_params):
     image_info, collection = _download_image_terms(
         image_info, collection, download_params
     )
-    metadata_file_path = os.path.join(
+    metadata_file_path = Path(
         collection["absolute_path"], f"image_{image_info['id']}_metadata.json"
     )
     _write_metadata(image_info, metadata_file_path)
@@ -1701,7 +1694,7 @@ def _update_image(image_info, download_params):
         image_info, collection = _download_image_terms(
             image_info, collection, download_params
         )
-        metadata_file_path = os.path.join(
+        metadata_file_path = Path(
             os.path.dirname(image_info["absolute_path"]),
             f"image_{image_info['id']}_metadata.json",
         )
@@ -1748,9 +1741,7 @@ def _scroll_local(download_params):
     )
 
     collections = glob(
-        os.path.join(
-            download_params["nv_data_dir"], "*", "collection_metadata.json"
-        )
+        Path(download_params["nv_data_dir"], "*", "collection_metadata.json")
     )
 
     good_collections = (
@@ -1760,7 +1751,7 @@ def _scroll_local(download_params):
     )
     for collection in good_collections:
         images = glob(
-            os.path.join(collection["absolute_path"], "image_*_metadata.json")
+            Path(collection["absolute_path"], "image_*_metadata.json")
         )
 
         good_images = (
@@ -2015,7 +2006,7 @@ def _scroll_image_ids(download_params):
         try:
             image = _download_image(image, download_params)
             collection = _json_add_collection_dir(
-                os.path.join(
+                Path(
                     os.path.dirname(image["absolute_path"]),
                     "collection_metadata.json",
                 )

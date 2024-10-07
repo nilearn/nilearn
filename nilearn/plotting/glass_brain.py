@@ -2,6 +2,7 @@
 
 import json
 import os
+import pathlib
 
 from matplotlib import colors, patches, transforms
 from matplotlib.path import Path
@@ -100,9 +101,9 @@ def _get_json_and_transform(direction):
     }
 
     dirname = os.path.dirname(os.path.abspath(__file__))
-    dirname = os.path.join(dirname, "glass_brain_files")
+    dirname = pathlib.Path(dirname, "glass_brain_files")
     direction_to_filename = {
-        _direction: os.path.join(dirname, f"brain_schematics_{view_name}.json")
+        _direction: pathlib.Path(dirname, f"brain_schematics_{view_name}.json")
         for _direction, view_name in direction_to_view_name.items()
     }
 

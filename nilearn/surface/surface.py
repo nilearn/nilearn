@@ -40,9 +40,7 @@ def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
 
 def _load_uniform_ball_cloud(n_points=20):
     stored_points = os.path.abspath(
-        os.path.join(
-            __file__, "..", "data", f"ball_cloud_{n_points}_samples.csv"
-        )
+        Path(__file__, "..", "data", f"ball_cloud_{n_points}_samples.csv")
     )
     if os.path.isfile(stored_points):
         points = np.loadtxt(stored_points)
