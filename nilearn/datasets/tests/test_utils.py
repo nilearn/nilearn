@@ -8,9 +8,9 @@ import os
 import shutil
 import tarfile
 import urllib
-import zipfile
 from tempfile import mkdtemp, mkstemp
 from unittest.mock import MagicMock
+from zipfile import ZipFile
 
 import numpy as np
 import pytest
@@ -330,7 +330,33 @@ def test_filter_columns():
     assert np.sum(f) == 333
 
 
-def test_uncompress():
+@pytest.mark.parametrize(
+    "ext, mode", [("tar", "w"), ("tar.gz", "w:gz"), ("tgz", "w:gz")]
+)
+def test_uncompress_tar(ext, mode):
+    """Tests nilearn.dataset._utils.uncompress_file for tar files."""
+    # for each kind of compression, we create:
+    # - a temporary directory (dtemp)
+    # - a compressed object (ztemp)
+    # - a temporary file-like object to compress into ztemp
+    # we then uncompress the ztemp object into dtemp under the name ftemp
+    # and check if ftemp exists
+    dtemp = mkdtemp()
+    ztemp = os.path.join(dtemp, f"test.{ext}")
+    ftemp = "test"
+    fd, temp = mkstemp(dir=dtemp)
+    os.close(fd)
+    with contextlib.closing(tarfile.open(ztemp, mode)) as testtar:
+        testtar.add(temp, arcname=ftemp)
+
+    _utils.uncompress_file(ztemp, verbose=0)
+    assert os.path.exists(os.path.join(dtemp, ftemp))
+
+    shutil.rmtree(dtemp, ignore_errors=True)
+
+
+def test_uncompress_zip():
+    """Tests nilearn.dataset._utils.uncompress_file for zip files."""
     # for each kind of compression, we create:
     # - a temporary directory (dtemp)
     # - a compressed object (ztemp)
@@ -340,57 +366,35 @@ def test_uncompress():
     dtemp = mkdtemp()
     ztemp = os.path.join(dtemp, "test.zip")
     ftemp = "test"
-    try:
-        with contextlib.closing(zipfile.ZipFile(ztemp, "w")) as testzip:
-            testzip.writestr(ftemp, " ")
-        _utils.uncompress_file(ztemp, verbose=0)
+    with contextlib.closing(ZipFile(ztemp, "w")) as testzip:
+        testzip.writestr(ftemp, " ")
 
-        assert os.path.exists(os.path.join(dtemp, ftemp))
+    _utils.uncompress_file(ztemp, verbose=0)
+    assert os.path.exists(os.path.join(dtemp, ftemp))
 
-        shutil.rmtree(dtemp)
+    shutil.rmtree(dtemp, ignore_errors=True)
 
-        dtemp = mkdtemp()
-        ztemp = os.path.join(dtemp, "test.tar")
 
-        # Create dummy file in the dtemp folder, so that the finally statement
-        # can easily remove it
-        fd, temp = mkstemp(dir=dtemp)
-        os.close(fd)
-        with contextlib.closing(tarfile.open(ztemp, "w")) as tar:
-            tar.add(temp, arcname=ftemp)
-        _utils.uncompress_file(ztemp, verbose=0)
+@pytest.mark.parametrize("ext", [".gz", ""])
+def test_uncompress_gzip(ext):
+    """Tests nilearn.dataset._utils.uncompress_file for gzip files."""
+    # for each kind of compression, we create:
+    # - a temporary directory (dtemp)
+    # - a compressed object (ztemp)
+    # - a temporary file-like object to compress into ztemp
+    # we then uncompress the ztemp object into dtemp under the name ftemp
+    # and check if ftemp exists
+    dtemp = mkdtemp()
+    ztemp = os.path.join(dtemp, f"test{ext}")
+    ftemp = "test"
 
-        assert os.path.exists(os.path.join(dtemp, ftemp))
+    with gzip.open(ztemp, "wb") as testgzip:
+        testgzip.write(ftemp.encode())
 
-        shutil.rmtree(dtemp)
+    _utils.uncompress_file(ztemp, verbose=0)
+    assert os.path.exists(os.path.join(dtemp, ftemp))
 
-        dtemp = mkdtemp()
-        ztemp = os.path.join(dtemp, "test.tgz")
-
-        fd, temp = mkstemp(dir=dtemp)
-        os.close(fd)
-        with contextlib.closing(tarfile.open(ztemp, "w:gz")) as tar:
-            tar.add(temp, arcname=ftemp)
-        _utils.uncompress_file(ztemp, verbose=0)
-
-        assert os.path.exists(os.path.join(dtemp, ftemp))
-
-        shutil.rmtree(dtemp)
-
-        dtemp = mkdtemp()
-        ztemp = os.path.join(dtemp, "test.gz")
-        gzip.open(ztemp, "wb").close()
-        _utils.uncompress_file(ztemp, verbose=0)
-
-        # test.gz gets uncompressed into test
-        assert os.path.exists(os.path.join(dtemp, "test"))
-
-        shutil.rmtree(dtemp)
-
-    finally:
-        # all temp files are created into dtemp except temp
-        if os.path.exists(dtemp):
-            shutil.rmtree(dtemp)
+    shutil.rmtree(dtemp, ignore_errors=True)
 
 
 def test_safe_extract(tmp_path):
