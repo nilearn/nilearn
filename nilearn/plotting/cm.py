@@ -57,9 +57,9 @@ def _rotate_cmap(cmap, swap_order=("green", "red", "blue")):
     orig_cdict = cmap._segmentdata.copy()
 
     cdict = dict()
-    cdict["green"] = [(p, c1, c2) for (p, c1, c2) in orig_cdict[swap_order[0]]]
-    cdict["blue"] = [(p, c1, c2) for (p, c1, c2) in orig_cdict[swap_order[1]]]
-    cdict["red"] = [(p, c1, c2) for (p, c1, c2) in orig_cdict[swap_order[2]]]
+    cdict["green"] = list(orig_cdict[swap_order[0]])
+    cdict["blue"] = list(orig_cdict[swap_order[1]])
+    cdict["red"] = list(orig_cdict[swap_order[2]])
 
     return cdict
 

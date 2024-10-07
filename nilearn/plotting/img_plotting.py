@@ -1143,7 +1143,7 @@ def plot_prob_atlas(
     if isinstance(threshold, collections.abc.Iterable) and not isinstance(
         threshold, str
     ):
-        threshold = [thr for thr in threshold]
+        threshold = list(threshold)
         if len(threshold) != n_maps:
             raise TypeError(
                 "The list of values to threshold "

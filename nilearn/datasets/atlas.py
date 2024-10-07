@@ -746,7 +746,7 @@ def _get_atlas_data_and_labels(
         names[new_idx] = label.text.strip()
 
     # The label indices should range from 0 to nlabel + 1
-    assert list(names.keys()) == [x for x in range(len(all_labels) + 1)]
+    assert list(names.keys()) == list(range(len(all_labels) + 1))
     names = [item[1] for item in sorted(names.items())]
     return atlas_img, atlas_file, names, is_lateralized
 

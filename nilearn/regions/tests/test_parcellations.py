@@ -89,7 +89,7 @@ def test_parcellations_no_warnings(img_4d_zeros_eye):
     parcellator = Parcellations(method="kmeans", n_parcels=1, verbose=0)
     with warnings.catch_warnings(record=True) as record:
         parcellator.fit(img_4d_zeros_eye)
-    assert all([r.category is not UserWarning for r in record])
+    assert all(r.category is not UserWarning for r in record)
 
 
 def test_parcellations_no_int64_warnings(img_4d_zeros_eye):
