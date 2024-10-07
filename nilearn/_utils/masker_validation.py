@@ -16,10 +16,12 @@ def check_embedded_masker(estimator, masker_type="multi_nii"):
     Base function for using a masker within a BaseEstimator class
 
     This creates a masker from instance parameters :
+
     - If instance contains a mask image in mask parameter,
     we use this image as new masker mask_img, forwarding instance parameters to
     new masker : smoothing_fwhm, standardize, detrend, low_pass= high_pass,
-    t_r, target_affine, target_shape, mask_strategy, mask_args,
+    t_r, target_affine, target_shape, mask_strategy, mask_args...
+
     - If instance contains a masker in mask parameter, we use a copy of
     this masker, overriding all instance masker related parameters.
     In all case, we forward system parameters of instance to new masker :

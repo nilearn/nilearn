@@ -708,6 +708,9 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         self.estimator = _check_estimator(self.estimator)
         self.memory_ = _check_memory(self.memory, self.verbose)
 
+        # TODO
+        # check X and mask are compatible
+
         X = self._apply_mask(X)
         X, y = check_X_y(X, y, dtype=np.float64, multi_output=True)
 
@@ -937,8 +940,14 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
     def _apply_mask(self, X):
         masker_type = "nii"
-        if isinstance(self.mask, (SurfaceMasker, SurfaceImage)):
+        # all elements of X should of the similar type by now
+        # so we can only check the first one
+        to_check = X[0] if isinstance(X, Iterable) else X
+        if isinstance(self.mask, (SurfaceMasker, SurfaceImage)) or (
+            isinstance(to_check, SurfaceImage)
+        ):
             masker_type = "surface"
+
         self.masker_ = check_embedded_masker(self, masker_type=masker_type)
         X = self.masker_.fit_transform(X)
         self.mask_img_ = self.masker_.mask_img_
