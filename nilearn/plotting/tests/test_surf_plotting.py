@@ -398,8 +398,8 @@ def test_get_view_plot_surf_view_errors(hemi, view, f):
 def test_configure_title_plotly():
     from nilearn.plotting.surf_plotting import _configure_title_plotly
 
-    assert _configure_title_plotly(None, None) == dict()
-    assert _configure_title_plotly(None, 22) == dict()
+    assert _configure_title_plotly(None, None) == {}
+    assert _configure_title_plotly(None, 22) == {}
     config = _configure_title_plotly("Test Title", 22, color="green")
     assert config["text"] == "Test Title"
     assert config["x"] == 0.5
@@ -619,7 +619,7 @@ def test_plot_surf_avg_method_errors(rng):
             "or a custom function"
         ),
     ):
-        custom_avg_function = dict()
+        custom_avg_function = {}
 
         plot_surf(
             mesh,

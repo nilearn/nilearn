@@ -533,7 +533,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
 
         if self.resampling_target is None:
             imgs_ = _utils.check_niimg(imgs, atleast_4d=True)
-            images = dict(maps=self.maps_img_, data=imgs_)
+            images = {"maps": self.maps_img_, "data": imgs_}
             if self.mask_img_ is not None:
                 images["mask"] = self.mask_img_
             _utils.niimg_conversions.check_same_fov(
