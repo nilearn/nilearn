@@ -514,25 +514,7 @@ class FirstLevelModel(BaseGLM):
         if not isinstance(run_imgs, (list, tuple)):
             run_imgs = [run_imgs]
 
-        # check that mask type and image types are compatible
-        volumetric_type = (Nifti1Image, NiftiMasker, str, Path)
-        surface_type = (SurfaceImage, SurfaceMasker)
-        if self.mask_img is not None:
-            if (
-                isinstance(self.mask_img, volumetric_type)
-                and any(
-                    not isinstance(x, (Nifti1Image, str, Path))
-                    for x in run_imgs
-                )
-            ) or (
-                isinstance(self.mask_img, surface_type)
-                and any(not isinstance(x, SurfaceImage) for x in run_imgs)
-            ):
-                raise TypeError(
-                    "Mask and images to fit must be of the same type.\n",
-                    f"Got mask of type: {type(self.mask_img)} "
-                    f"and images of type: {[type(x) for x in run_imgs]}",
-                )
+        _check_compatibility_mask_and_images(self.mask_img, run_imgs)
 
         if design_matrices is None:
             if events is None:
@@ -1085,6 +1067,32 @@ class FirstLevelModel(BaseGLM):
                 self.masker_.fit(run_img)
             else:
                 self.masker_ = self.mask_img
+
+
+def _check_compatibility_mask_and_images(mask_img, run_imgs):
+    # check that mask type and image types are compatible
+    volumetric_type = (Nifti1Image, NiftiMasker, str, Path)
+    surface_type = (SurfaceImage, SurfaceMasker)
+    msg = (
+        "Mask and images to fit must be of compatible types.\n"
+        f"Got mask of type: {type(mask_img)}, "
+        f"and images of type: {[type(x) for x in run_imgs]} "
+    )
+    if mask_img is not None:
+        if isinstance(mask_img, volumetric_type) and any(
+            not isinstance(x, (Nifti1Image, str, Path)) for x in run_imgs
+        ):
+            raise TypeError(
+                f"{msg}"
+                f"where images should be NiftiImage-like instances "
+                f"(Nifti1Image or str or Path)."
+            )
+    if isinstance(mask_img, surface_type) and any(
+        not isinstance(x, SurfaceImage) for x in run_imgs
+    ):
+        raise TypeError(
+            f"{msg}" f"where SurfaceImage instances would be expected."
+        )
 
 
 def _check_events_file_uses_tab_separators(events_files):

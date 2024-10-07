@@ -2084,14 +2084,14 @@ def test_error_flm_surface_mask_volume_image(
     mini_img, des = _make_surface_glm_data(5)
     model = FirstLevelModel(mask_img=mini_mask)
     with pytest.raises(
-        TypeError, match="Mask and images to fit must be of the same type."
+        TypeError, match="Mask and images to fit must be of compatible types."
     ):
         model.fit(img_4d_rand_eye, design_matrices=des)
 
     masker = SurfaceMasker().fit(mini_img)
     model = FirstLevelModel(mask_img=masker)
     with pytest.raises(
-        TypeError, match="Mask and images to fit must be of the same type."
+        TypeError, match="Mask and images to fit must be of compatible types."
     ):
         model.fit(img_4d_rand_eye, design_matrices=des)
 
@@ -2104,14 +2104,14 @@ def test_error_flm_volume_mask_surface_image(_make_surface_glm_data):
     mini_img, des = _make_surface_glm_data(5)
     model = FirstLevelModel(mask_img=mask)
     with pytest.raises(
-        TypeError, match="Mask and images to fit must be of the same type."
+        TypeError, match="Mask and images to fit must be of compatible types."
     ):
         model.fit(mini_img, design_matrices=des)
 
     masker = NiftiMasker().fit(mask)
     model = FirstLevelModel(mask_img=masker)
     with pytest.raises(
-        TypeError, match="Mask and images to fit must be of the same type."
+        TypeError, match="Mask and images to fit must be of compatible types."
     ):
         model.fit(mini_img, design_matrices=des)
 
