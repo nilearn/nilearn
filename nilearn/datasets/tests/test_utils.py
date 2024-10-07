@@ -333,68 +333,56 @@ def test_filter_columns():
 @pytest.mark.parametrize(
     "ext, mode", [("tar", "w"), ("tar.gz", "w:gz"), ("tgz", "w:gz")]
 )
-def test_uncompress_tar(ext, mode):
+def test_uncompress_tar(tmp_path, ext, mode):
     """Tests nilearn.dataset._utils.uncompress_file for tar files."""
     # for each kind of compression, we create:
-    # - a temporary directory (dtemp)
     # - a compressed object (ztemp)
     # - a temporary file-like object to compress into ztemp
     # we then uncompress the ztemp object into dtemp under the name ftemp
     # and check if ftemp exists
-    dtemp = mkdtemp()
-    ztemp = os.path.join(dtemp, f"test.{ext}")
+    ztemp = tmp_path / f"test.{ext}"
     ftemp = "test"
-    fd, temp = mkstemp(dir=dtemp)
-    os.close(fd)
     with contextlib.closing(tarfile.open(ztemp, mode)) as testtar:
-        testtar.add(temp, arcname=ftemp)
+        temp = tmp_path / ftemp
+        temp.write_text(ftemp)
+        testtar.add(temp)
 
     _utils.uncompress_file(ztemp, verbose=0)
-    assert os.path.exists(os.path.join(dtemp, ftemp))
-
-    shutil.rmtree(dtemp, ignore_errors=True)
+    assert (tmp_path / ftemp).exists()
 
 
-def test_uncompress_zip():
+def test_uncompress_zip(tmp_path):
     """Tests nilearn.dataset._utils.uncompress_file for zip files."""
     # for each kind of compression, we create:
-    # - a temporary directory (dtemp)
     # - a compressed object (ztemp)
     # - a temporary file-like object to compress into ztemp
     # we then uncompress the ztemp object into dtemp under the name ftemp
     # and check if ftemp exists
-    dtemp = mkdtemp()
-    ztemp = os.path.join(dtemp, "test.zip")
+    ztemp = tmp_path / "test.zip"
     ftemp = "test"
     with contextlib.closing(ZipFile(ztemp, "w")) as testzip:
         testzip.writestr(ftemp, " ")
 
     _utils.uncompress_file(ztemp, verbose=0)
-    assert os.path.exists(os.path.join(dtemp, ftemp))
-
-    shutil.rmtree(dtemp, ignore_errors=True)
+    assert (tmp_path / ftemp).exists()
 
 
 @pytest.mark.parametrize("ext", [".gz", ""])
-def test_uncompress_gzip(ext):
+def test_uncompress_gzip(tmp_path, ext):
     """Tests nilearn.dataset._utils.uncompress_file for gzip files."""
     # for each kind of compression, we create:
-    # - a temporary directory (dtemp)
     # - a compressed object (ztemp)
     # - a temporary file-like object to compress into ztemp
     # we then uncompress the ztemp object into dtemp under the name ftemp
     # and check if ftemp exists
-    dtemp = mkdtemp()
-    ztemp = os.path.join(dtemp, f"test{ext}")
+    ztemp = tmp_path / f"test{ext}"
     ftemp = "test"
 
     with gzip.open(ztemp, "wb") as testgzip:
         testgzip.write(ftemp.encode())
 
     _utils.uncompress_file(ztemp, verbose=0)
-    assert os.path.exists(os.path.join(dtemp, ftemp))
-
-    shutil.rmtree(dtemp, ignore_errors=True)
+    assert (tmp_path / ftemp).exists()
 
 
 def test_safe_extract(tmp_path):
