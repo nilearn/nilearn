@@ -433,7 +433,7 @@ def test_resampling_warning_binary_image(affine_eye, rng, force_resample):
     data_binary = rng.integers(4, size=(1, 4, 4), dtype="int32")
     data_binary[data_binary > 0] = 1
 
-    assert sorted(list(np.unique(data_binary))) == [0, 1]
+    assert sorted(np.unique(data_binary)) == [0, 1]
 
     rot = rotation(0, np.pi / 4)
     img_binary = Nifti1Image(data_binary, affine_eye)
