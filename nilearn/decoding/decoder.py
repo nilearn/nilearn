@@ -1108,7 +1108,8 @@ class Decoder(_BaseDecoder):
         The estimator to choose among:
         %(classifier_options)s
 
-    mask: filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
+    mask: filename, Nifti1Image, NiftiMasker, MultiNiftiMasker, \
+          SurafaceImage or SurfaceMasker, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask and parameters will be used. If no mask is given, mask
         will be computed automatically from provided images by an inbuilt

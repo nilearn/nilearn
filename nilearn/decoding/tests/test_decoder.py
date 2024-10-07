@@ -1141,12 +1141,26 @@ def test_decoder_screening_percentile_surface(perc, _make_surface_class_data):
         assert model.screening_percentile_ == perc
 
 
+@pytest.mark.parametrize("mask", [None, SurfaceMasker()])
 @pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
-def test_decoder_fit_surface(decoder, _make_surface_class_data):
+def test_decoder_fit_surface(decoder, _make_surface_class_data, mask):
     """Test fit for surface image."""
     warnings.simplefilter("ignore", ConvergenceWarning)
     X, y = _make_surface_class_data()
-    model = decoder(mask=SurfaceMasker())
+    model = decoder(mask=mask)
+    model.fit(X, y)
+
+    assert model.coef_ is not None
+
+
+@pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
+def test_decoder_fit_surface_with_mask_image(
+    _make_surface_class_data, decoder, mini_mask
+):
+    """Test fit for surface image."""
+    warnings.simplefilter("ignore", ConvergenceWarning)
+    X, y = _make_surface_class_data()
+    model = decoder(mask=mini_mask)
     model.fit(X, y)
 
     assert model.coef_ is not None
