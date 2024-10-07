@@ -808,9 +808,12 @@ def clean(
     # Standardize
     if not standardize:
         return signals
-    if standardize == "psc" and (detrend or (filter_type == "butterworth" and high_pass is not None)):
-        # If the signal is detrended or high pass filtered with butterworth,
-        # the mean signal will be zero or close to zero. In this case,
+    if standardize == "psc" and (
+        detrend or (filter_type == "butterworth" and high_pass is not None)
+    ):
+        # If the signal is detrended, the mean signal will be zero or close to
+        # zero. If signal is high pass filtered with butterworth, the constant
+        # (mean) will be removed. In this case,
         # we have to know the original mean signal to calculate the psc.
         signals = standardize_signal(
             signals + mean_signals,
