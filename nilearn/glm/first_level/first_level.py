@@ -47,6 +47,7 @@ from nilearn.interfaces.bids.query import (
 )
 from nilearn.interfaces.bids.utils import bids_entities, check_bids_label
 from nilearn.interfaces.fmriprep.load_confounds import load_confounds
+from nilearn.maskers import NiftiMasker
 
 
 def mean_scaling(Y, axis=0):
@@ -512,6 +513,26 @@ class FirstLevelModel(BaseGLM):
 
         if not isinstance(run_imgs, (list, tuple)):
             run_imgs = [run_imgs]
+
+        # check that mask type and image types are compatible
+        volumetric_type = (Nifti1Image, NiftiMasker, str, Path)
+        surface_type = (SurfaceImage, SurfaceMasker)
+        if self.mask_img is not None:
+            if (
+                isinstance(self.mask_img, volumetric_type)
+                and any(
+                    not isinstance(x, (Nifti1Image, str, Path))
+                    for x in run_imgs
+                )
+            ) or (
+                isinstance(self.mask_img, surface_type)
+                and any(not isinstance(x, SurfaceImage) for x in run_imgs)
+            ):
+                raise TypeError(
+                    "Mask and images to fit must be of the same type.\n",
+                    f"Got mask of type: {type(self.mask_img)} "
+                    f"and images of type: {[type(x) for x in run_imgs]}",
+                )
 
         if design_matrices is None:
             if events is None:
