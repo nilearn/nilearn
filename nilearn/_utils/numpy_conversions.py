@@ -125,10 +125,7 @@ def as_ndarray(arr, copy=False, dtype=None, order="K"):
         # In the present cas, np.may_share_memory result is always reliable.
         if np.may_share_memory(ret, arr) and copy:
             # order-preserving copy
-            if ret.flags["F_CONTIGUOUS"]:
-                ret = ret.T.copy().T
-            else:
-                ret = ret.copy()
+            ret = ret.T.copy().T if ret.flags["F_CONTIGUOUS"] else ret.copy()
 
     elif isinstance(arr, (list, tuple)):
         if order in ("A", "K"):

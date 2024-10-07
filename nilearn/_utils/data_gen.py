@@ -503,10 +503,7 @@ def write_fake_fmri_data_and_design(
     nilearn._utils.data_gen.generate_fake_fmri_data_and_design
 
     """
-    if file_path is None:
-        file_path = Path.cwd()
-    else:
-        file_path = Path(file_path)
+    file_path = Path.cwd() if file_path is None else Path(file_path)
 
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk=rk, affine=affine, random_state=random_state
