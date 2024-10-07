@@ -1083,7 +1083,7 @@ def _check_compatibility_mask_and_images(mask_img, run_imgs):
     msg = (
         "Mask and images to fit must be of compatible types.\n"
         f"Got mask of type: {type(mask_img)}, "
-        f"and images of type: {[type(x) for x in run_imgs]} "
+        f"and images of type: {[type(x) for x in run_imgs]}"
     )
 
     volumetric_type = (Nifti1Image, NiftiMasker, str, Path)
@@ -1091,7 +1091,7 @@ def _check_compatibility_mask_and_images(mask_img, run_imgs):
         not isinstance(x, (Nifti1Image, str, Path)) for x in run_imgs
     ):
         raise TypeError(
-            f"{msg}"
+            f"{msg} "
             f"where images should be NiftiImage-like instances "
             f"(Nifti1Image or str or Path)."
         )
@@ -1101,7 +1101,7 @@ def _check_compatibility_mask_and_images(mask_img, run_imgs):
         not isinstance(x, SurfaceImage) for x in run_imgs
     ):
         raise TypeError(
-            f"{msg}" f"where SurfaceImage instances would be expected."
+            f"{msg} where SurfaceImage instances would be expected."
         )
 
 
