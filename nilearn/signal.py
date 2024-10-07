@@ -806,8 +806,10 @@ def clean(
         signals -= Q.dot(Q.T).dot(signals)
 
     # Standardize
-    if (detrend and standardize == "psc") or (filter_type == "butterworth"):
-        # If the signal is detrended or filtered,
+    if not standardize:
+        return signals
+    if standardize == "psc" and (detrend or (filter_type == "butterworth" and high_pass is not None)):
+        # If the signal is detrended or high pass filtered with butterworth,
         # the mean signal will be zero or close to zero. In this case,
         # we have to know the original mean signal to calculate the psc.
         signals = standardize_signal(
