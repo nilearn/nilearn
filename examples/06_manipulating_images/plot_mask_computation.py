@@ -28,8 +28,7 @@ underlying routine that extract masks from EPI
 #
 # With data that has already been masked, this will work well, as it lies
 # on a homogeneous background
-import nilearn.image as image
-from nilearn import datasets
+from nilearn import datasets, image
 from nilearn.maskers import NiftiMasker
 from nilearn.plotting import plot_epi, plot_roi, show
 
