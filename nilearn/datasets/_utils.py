@@ -346,7 +346,6 @@ def uncompress_file(file_, delete_archive=True, verbose=1):
     # We first try to see if it is a zip file
     try:
         filename = data_dir / file_.stem
-        ext = file_.suffix
         with open(file_, "rb") as fd:
             header = fd.read(4)
         processed = False
@@ -358,12 +357,12 @@ def uncompress_file(file_, delete_archive=True, verbose=1):
                 os.remove(file_)
             file_ = filename
             processed = True
-        elif ext == ".gz" or header.startswith(b"\x1f\x8b"):
+        elif file_.suffix == ".gz" or header.startswith(b"\x1f\x8b"):
             import gzip
 
-            if ext == ".tgz":
+            if file_.suffix == ".tgz":
                 filename = Path(f"{filename}.tar")
-            elif ext == "":
+            elif file_.suffix == "":
                 # We rely on the assumption that gzip files have an extension
                 shutil.move(file_, f"{file_}.gz")
                 file_ = f"{file_}.gz"
