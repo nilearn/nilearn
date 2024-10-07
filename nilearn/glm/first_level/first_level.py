@@ -1077,15 +1077,16 @@ def _check_compatibility_mask_and_images(mask_img, run_imgs):
     Similarly, only SurfaceImages can be fitted
     with a SurfaceImage or a SrufaceMasked as mask.
     """
-    volumetric_type = (Nifti1Image, NiftiMasker, str, Path)
-    surface_type = (SurfaceImage, SurfaceMasker)
+    if mask_img is None:
+        return None
+
     msg = (
         "Mask and images to fit must be of compatible types.\n"
         f"Got mask of type: {type(mask_img)}, "
         f"and images of type: {[type(x) for x in run_imgs]} "
     )
-    if mask_img is None:
-        return None
+
+    volumetric_type = (Nifti1Image, NiftiMasker, str, Path)
     if isinstance(mask_img, volumetric_type) and any(
         not isinstance(x, (Nifti1Image, str, Path)) for x in run_imgs
     ):
@@ -1094,6 +1095,8 @@ def _check_compatibility_mask_and_images(mask_img, run_imgs):
             f"where images should be NiftiImage-like instances "
             f"(Nifti1Image or str or Path)."
         )
+
+    surface_type = (SurfaceImage, SurfaceMasker)
     if isinstance(mask_img, surface_type) and any(
         not isinstance(x, SurfaceImage) for x in run_imgs
     ):
