@@ -901,11 +901,10 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
                 solver = graph_net_squared_loss
             else:
                 solver = graph_net_logistic
+        elif not self.is_classif or loss == "mse":
+            solver = partial(tvl1_solver, loss="mse")
         else:
-            if not self.is_classif or loss == "mse":
-                solver = partial(tvl1_solver, loss="mse")
-            else:
-                solver = partial(tvl1_solver, loss="logistic")
+            solver = partial(tvl1_solver, loss="logistic")
 
         # generate fold indices
         case1 = (None in [alphas, l1_ratios]) and self.n_alphas > 1

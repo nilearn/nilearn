@@ -963,13 +963,12 @@ def test_math_img_copied_header_data_values_changed(
         if key in ["cal_max", "cal_min"]:
             assert result.header[key] != img_4d_ones_eye_tr2.header[key]
         # other header values should be the same
+        elif isinstance(result.header[key], np.ndarray):
+            assert_array_equal(
+                result.header[key], img_4d_ones_eye_tr2.header[key]
+            )
         else:
-            if isinstance(result.header[key], np.ndarray):
-                assert_array_equal(
-                    result.header[key], img_4d_ones_eye_tr2.header[key]
-                )
-            else:
-                assert result.header[key] == img_4d_ones_eye_tr2.header[key]
+            assert result.header[key] == img_4d_ones_eye_tr2.header[key]
 
 
 def test_binarize_img(img_4d_rand_eye):

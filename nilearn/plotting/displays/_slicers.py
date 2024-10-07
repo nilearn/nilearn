@@ -1496,13 +1496,12 @@ class BaseStackedSlicer(BaseSlicer):
             lower, upper = bounds["xyz".index(cls._direction)]
             if isinstance(cut_coords, numbers.Number):
                 cut_coords = np.linspace(lower, upper, cut_coords).tolist()
-        else:
-            if not isinstance(
-                cut_coords, collections.abc.Sequence
-            ) and isinstance(cut_coords, numbers.Number):
-                cut_coords = find_cut_slices(
-                    img, direction=cls._direction, n_cuts=cut_coords
-                )
+        elif not isinstance(
+            cut_coords, collections.abc.Sequence
+        ) and isinstance(cut_coords, numbers.Number):
+            cut_coords = find_cut_slices(
+                img, direction=cls._direction, n_cuts=cut_coords
+            )
 
         return cut_coords
 
