@@ -213,7 +213,6 @@ ignore = [
     "SIM115",
     "SIM117",
     "SIM201",
-    "SIM300",
     "UP031"
 ]
 # List of all the ruff rules (includes why the rule matters)
