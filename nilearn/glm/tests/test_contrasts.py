@@ -187,14 +187,14 @@ def test_contrast_values(set_up_glm, rng):
     # t test
     cval = np.eye(q)[0]
     con = compute_contrast(labels, results, cval)
-    t_ref = list(results.values())[0].Tcontrast(cval).t
+    t_ref = next(iter(results.values())).Tcontrast(cval).t
 
     assert_almost_equal(np.ravel(con.stat()), t_ref)
 
     # F test
     cval = np.eye(q)[:3]
     con = compute_contrast(labels, results, cval)
-    F_ref = list(results.values())[0].Fcontrast(cval).F
+    F_ref = next(iter(results.values())).Fcontrast(cval).F
 
     # Note that the values are not strictly equal,
     # this seems to be related to a bug in Mahalanobis

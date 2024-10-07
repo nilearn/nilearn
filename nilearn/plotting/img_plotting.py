@@ -1943,7 +1943,7 @@ def plot_carpet(
         atlas_values = np.squeeze(atlas_values)
 
         if mask_labels:
-            label_dtype = type(list(mask_labels.values())[0])
+            label_dtype = type(next(iter(mask_labels.values())))
             if label_dtype != atlas_values.dtype:
                 logger.log(f"Coercing atlas_values to {label_dtype}")
                 atlas_values = atlas_values.astype(label_dtype)
