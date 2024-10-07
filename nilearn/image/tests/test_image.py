@@ -958,7 +958,7 @@ def test_math_img_copied_header_data_values_changed(
         img2=img_4d_ones_eye_tr2,
         copy_header_from="img2",
     )
-    for key in img_4d_ones_eye_tr2.header.keys():
+    for key in img_4d_ones_eye_tr2.header:
         # cal_max and cal_min should be different in result
         if key in ["cal_max", "cal_min"]:
             assert result.header[key] != img_4d_ones_eye_tr2.header[key]
