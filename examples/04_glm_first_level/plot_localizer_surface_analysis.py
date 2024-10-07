@@ -33,10 +33,6 @@ accurate than using a subject-tailored mesh.
 
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # Prepare data and analysis parameters
 # ------------------------------------

@@ -17,10 +17,6 @@ is included in the model.
 
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # At first, we need to load the Localizer contrasts.
 from nilearn import datasets

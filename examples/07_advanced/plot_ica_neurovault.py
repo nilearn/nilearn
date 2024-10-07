@@ -21,11 +21,6 @@ documentation for more details.
 
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
-# %%
 import warnings
 
 import numpy as np

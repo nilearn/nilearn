@@ -6,10 +6,6 @@ This is a demo for surface-based searchlight decoding,
 as described in :footcite:t:`Chen2011`.
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # Load Haxby dataset
 # ------------------

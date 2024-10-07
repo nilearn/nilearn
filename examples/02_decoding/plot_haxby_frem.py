@@ -14,10 +14,6 @@ at a lower computational cost than other spatially regularized methods.
 To have more details, see: :ref:`frem`.
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # Load the Haxby dataset
 # ----------------------
@@ -101,8 +97,6 @@ plotting.show()
 # %%
 # Visualization of :term:`FREM` weights
 # -------------------------------------
-from nilearn import plotting
-
 plotting.plot_stat_map(
     decoder.coef_img_["face"],
     background_img,

@@ -38,11 +38,6 @@ activation specific location of the brain slices.
 
 See :ref:`plotting` for more details.
 """
-
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # First, we retrieve data from nilearn provided (general-purpose) datasets
 # ------------------------------------------------------------------------

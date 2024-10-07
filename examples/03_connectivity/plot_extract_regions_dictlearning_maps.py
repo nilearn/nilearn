@@ -23,10 +23,6 @@ of :class:`nilearn.regions.RegionExtractor` for more details.
 
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # Fetch brain development functional datasets
 # -------------------------------------------

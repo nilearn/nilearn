@@ -4,11 +4,6 @@ Glass brain plotting in nilearn
 
 See :ref:`plotting` for more plotting functionalities.
 """
-
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # Load data
 # ---------------------------

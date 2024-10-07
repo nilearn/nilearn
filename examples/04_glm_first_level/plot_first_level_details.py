@@ -17,10 +17,6 @@ tutorial to get a bit more familiar with the base concepts,
 and only then run this tutorial example.
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # Retrieving the data
 # -------------------

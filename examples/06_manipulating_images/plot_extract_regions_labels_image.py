@@ -17,11 +17,6 @@ We use the Yeo atlas as an example for labeling regions,
 :func:`nilearn.datasets.fetch_atlas_yeo_2011`
 
 """
-
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # The original Yeo atlas
 # -----------------------

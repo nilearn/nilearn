@@ -24,12 +24,6 @@ is included in the model.
 
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
-import matplotlib.pyplot as plt
-
 # %%
 import numpy as np
 
@@ -116,6 +110,8 @@ neg_log_pvals_tfce_unmasked = nifti_masker.inverse_transform(
 
 # %%
 # Visualization
+import matplotlib.pyplot as plt
+
 from nilearn import plotting
 from nilearn.image import get_data
 

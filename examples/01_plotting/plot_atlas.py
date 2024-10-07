@@ -4,11 +4,6 @@ Basic Atlas plotting
 
 Plot the regions of a reference atlas (Harvard-Oxford and Juelich atlases).
 """
-
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # Retrieving the atlas data
 # -------------------------

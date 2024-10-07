@@ -18,10 +18,6 @@ This example takes a lot of time because the input are lists of 3D images
 sampled in different positions (encoded by different affine functions).
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # Fetch the :term:`SPM` multimodal_faces data.
 from nilearn.datasets import fetch_spm_multimodal_fmri

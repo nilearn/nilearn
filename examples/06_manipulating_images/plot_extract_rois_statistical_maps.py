@@ -15,10 +15,6 @@ extract objects using a function
 :func:`nilearn.regions.connected_regions`.
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # Fetching t-statistic image of localizer contrasts by loading from datasets
 # utilities

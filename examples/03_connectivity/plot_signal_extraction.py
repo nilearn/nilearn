@@ -25,10 +25,6 @@ documentation <parcellation_time_series>` for more.
 
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # Retrieve the atlas and the data
 # -------------------------------

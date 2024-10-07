@@ -9,11 +9,6 @@ region specific mask images.
 
 See :ref:`plotting` for more details.
 """
-
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # Retrieve data from nilearn provided (general-purpose) datasets
 # --------------------------------------------------------------

@@ -6,10 +6,6 @@ A simple example showing how to load an existing Nifti file and use
 basic nilearn functionalities.
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # Let us use a Nifti file that is shipped with nilearn
 from nilearn.datasets import MNI152_FILE_PATH
 

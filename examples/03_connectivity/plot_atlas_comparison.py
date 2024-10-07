@@ -27,10 +27,6 @@ Mean correlation matrix is displayed on glass brain on extracted coordinates.
 
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # Load atlases
 # ------------

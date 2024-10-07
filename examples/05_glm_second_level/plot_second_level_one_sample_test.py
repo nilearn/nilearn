@@ -18,10 +18,6 @@ hemisphere, negative in the left hemisphere).
 
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 from nilearn import plotting
 
 # %%

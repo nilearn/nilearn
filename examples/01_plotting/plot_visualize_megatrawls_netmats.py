@@ -9,10 +9,6 @@ See :func:`nilearn.datasets.fetch_megatrawls_netmats`
 documentation for more details.
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # Fetching the Megatrawls Network matrices
 # ----------------------------------------

@@ -14,10 +14,6 @@ documentation for more details.
 
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 import scipy
 

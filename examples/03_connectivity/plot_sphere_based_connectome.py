@@ -17,10 +17,6 @@ computing a connectome from them.
 .. include:: ../../../examples/masker_note.rst
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 from nilearn import datasets, plotting
 
 # %%

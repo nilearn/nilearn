@@ -13,10 +13,6 @@ It is not a minimalistic example, as it strives to be didactic. It is not
 meant to be copied to analyze new data: many of the steps are unnecessary.
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # Retrieve and load the :term:`fMRI` data from the Haxby study
 # ------------------------------------------------------------

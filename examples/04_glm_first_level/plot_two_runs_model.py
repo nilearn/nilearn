@@ -22,10 +22,6 @@ The model directly returns a fixed effect
 of the statistics across the two runs.
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # Create an output ``results`` in the current working directory.
 from pathlib import Path

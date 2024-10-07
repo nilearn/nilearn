@@ -17,10 +17,6 @@ Also, see :func:`nilearn.datasets.fetch_neurovault_motor_task` for details
 about the plotting data and associated meta-data.
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # Load the data
 # ------------------

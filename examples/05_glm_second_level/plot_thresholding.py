@@ -11,10 +11,6 @@ narrative sentence reading/listening.
 
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # Prepare some images for a simple t test
 # ---------------------------------------

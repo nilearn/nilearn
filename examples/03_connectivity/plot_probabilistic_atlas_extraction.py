@@ -22,10 +22,6 @@ only the 20% edges with the highest values.
 
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # Retrieve the atlas and the data
 # -------------------------------
@@ -98,8 +94,6 @@ plotting.plot_matrix(
 # %%
 # And now display the corresponding graph
 # ---------------------------------------
-from nilearn import plotting
-
 coords = atlas.region_coords
 
 # We threshold to keep only the 20% of edges with the highest value
