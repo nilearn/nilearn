@@ -1,6 +1,5 @@
 """Test the _utils.cache_mixin module."""
 
-import os
 import shutil
 from pathlib import Path
 

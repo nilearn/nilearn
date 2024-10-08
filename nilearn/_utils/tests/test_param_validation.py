@@ -1,6 +1,5 @@
 """Test the _utils.param_validation module."""
 
-import os
 import warnings
 
 import numpy as np

@@ -2,7 +2,6 @@
 
 import glob
 import itertools
-import os.path
 
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 import warnings
