@@ -1,0 +1,98 @@
+{{inherit "base.html"}}
+<!--  -->
+{{def navbar}} {{enddef}}
+<!--  -->
+{{def report}}
+<div class="pure-g">
+  <div class="pure-u-1 pure-u-md-2-3">
+    <div class="image">
+      <script>
+        current_map_idx = 0;
+        displayed_maps = {{displayed_maps}};
+        number_maps = {{len(displayed_maps)}};
+      </script>
+
+      <div class="btn-container">
+        <button onclick="displayPreviousMap()" class="btn">Previous Map</button>
+      </div>
+
+      <div class="btn-container">
+        <h3 class="comp-title">Component <span id="comp"></span></h3>
+      </div>
+
+      <div class="btn-container">
+        <button onclick="displayNextMap()" class="btn">Next Map</button>
+      </div>
+
+      <img
+        id="map0"
+        class="pure-img"
+        width="100%"
+        src="data:image/svg+xml;base64,{{content[0]}}"
+        style="display: block"
+        alt="image"
+      />
+
+      {{for map in range(1, len(displayed_maps))}}
+      <img
+        id="map{{map}}"
+        class="pure-img"
+        width="100%"
+        src="data:image/svg+xml;base64,{{content[map]}}"
+        style="display: none"
+        alt="image"
+      />
+      {{endfor}}
+    </div>
+  </div>
+  <div class="pure-u-1 pure-u-md-1-3">
+    {{if description}}
+    <p>{{description}}</p>
+    {{endif}}
+    <!--  -->
+    {{if number_of_maps}}
+    <p>The masker has <b>{{number_of_maps}}</b> spatial maps in total.</p>
+    {{if len(displayed_maps) != number_of_maps}}
+    <p>
+      Only <b>{{len(displayed_maps)}}</b> spatial maps are shown in this report.
+    </p>
+    {{endif}}
+    <!--  -->
+    {{endif}}
+  </div>
+</div>
+<div class="pure-g">
+  <div class="pure-u-1 pure-u-md-3-3">{{ parameters|html }}</div>
+</div>
+<div class="pure-u-1 pure-u-md-3-3 d-flex justify-content-center">
+  <p>
+    This report was generated based on information provided at instantiation and
+    fit time. Note that the masker can potentially perform resampling at
+    transform time.
+  </p>
+</div>
+
+<script>
+  document.getElementById("comp").innerHTML = displayed_maps[current_map_idx];
+
+  function displayNextMap() {
+    document.getElementById("map" + current_map_idx).style["display"] = "none";
+    current_map_idx = current_map_idx + 1;
+    if (current_map_idx >= number_maps) {
+      current_map_idx = 0;
+    }
+    document.getElementById("map" + current_map_idx).style["display"] = "block";
+    document.getElementById("comp").innerHTML = displayed_maps[current_map_idx];
+  }
+
+  function displayPreviousMap() {
+    document.getElementById("map" + current_map_idx).style["display"] = "none";
+    current_map_idx = current_map_idx - 1;
+    if (current_map_idx < 0) {
+      current_map_idx = number_maps - 1;
+    }
+    document.getElementById("map" + current_map_idx).style["display"] = "block";
+    document.getElementById("comp").innerHTML = displayed_maps[current_map_idx];
+  }
+</script>
+{{enddef}}

@@ -1,0 +1,23 @@
+<section class="stat-map-contrast-table">
+  <h4>${contrast_name}</h4>
+  <!-- func:glm_reporter._stat_map_to_svg() -->
+  <img
+    src="data:image/svg+xml,${stat_map_img}"
+    alt="Stat map plot for the contrast: ${contrast_name}"
+  />
+  <details>
+    <summary>Contrast Plot</summary>
+    ${contrast_plot}
+    <!-- func:glm_reporter._plot_contrasts() -->
+  </details>
+  <br />
+  <details>
+    <summary>Cluster Table</summary>
+    <br />
+    ${cluster_table_details}
+    <!-- func:glm_reporter.__make_cluster_table_details() -->
+    <br />
+    ${cluster_table}
+    <!-- func:glm_reporter.make_cluster_table_html() -->
+  </details>
+</section>

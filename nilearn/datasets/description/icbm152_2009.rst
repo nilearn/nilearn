@@ -1,0 +1,51 @@
+.. _icbm_152_template:
+
+ICBM 152 template
+=================
+
+Access
+------
+See :func:`nilearn.datasets.fetch_icbm152_2009`,
+    :func:`nilearn.datasets.fetch_icbm152_brain_gm_mask`,
+    :func:`nilearn.datasets.load_mni152_template`: to load MNI152 T1 template,
+    :func:`nilearn.datasets.load_mni152_gm_template`: to load MNI152 grey matter template,
+    :func:`nilearn.datasets.load_mni152_wm_template`: to load MNI152 white matter template,
+    :func:`nilearn.datasets.load_mni152_brain_mask`: to load MNI152 whole brain mask,
+    :func:`nilearn.datasets.load_mni152_gm_mask`: to load MNI152 grey matter mask,
+    and
+    :func:`nilearn.datasets.load_mni152_wm_mask`: to load MNI152 white matter mask.
+
+
+Notes
+-----
+References atlases intended for spatial normalization, registration, and
+segmentation of MRI data. These atlases were generated from large ensembles
+of MRI data in an unbiased fashion. MRI data from templates are derived from
+"a truly normal, well characterized population."
+
+See :footcite:t:`Collins1999`, :footcite:t:`Fonov2009` and :footcite:t:`Fonov2011`.
+
+Content
+-------
+    :'csf': probabilistic map for cerebrospinal fluid
+    :'gm': probabilistic map for gray matter
+    :'wm': probabilistic map for white matter
+    :'pd': proton density-weighted anatomical templates (non-linear average)
+    :'t1': T1-weighted anatomical template (non-linear average)
+    :'t2': T2-weighted anatomical template (non-linear average)
+    :'t2_relax': T2-weighted/relaxed anatomical template
+    :'eye_mask': average mask for eyes
+    :'face_mask': average mask for face
+    :'mask': average mask for brain
+
+References
+----------
+
+.. footbibliography::
+
+For more information see:
+http://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009
+
+License
+-------
+unknown

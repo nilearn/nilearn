@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>$INSERT_PAGE_TITLE_HERE</title>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <div id="div_viewer">
+      <!-- this is the canvas that will feature the brain slices -->
+      <canvas id="3Dviewer">
+        <!-- load a hidden version of the sprite image that includes all (sagittal) brain slices -->
+        <img
+          id="spriteImg"
+          class="hidden"
+          src="data:image/png;base64,$bg_base64"
+          alt="background"
+        />
+        <!-- the colormap -->
+        <img
+          id="colorMap"
+          class="hidden"
+          src="data:image/png;base64,$cm_base64"
+          alt="colormap"
+        />
+        <!-- another sprite image, with an overlay-->
+        <img
+          id="overlayImg"
+          class="hidden"
+          src="data:image/png;base64,$stat_map_base64"
+          alt="overlay"
+        />
+      </canvas>
+    </div>
+
+    <script>
+      $js_jquery;
+    </script>
+    <script>
+      $js_brainsprite;
+    </script>
+
+    <script>
+      // On load: build all figures
+      $(window).on("load", function () {
+        // Create brain slices
+        var brain = brainsprite($params);
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,42 @@
+.. _yeo_atlas:
+
+Yeo 2011 atlas
+==============
+
+Access
+------
+See :func:`nilearn.datasets.fetch_atlas_yeo_2011`.
+
+Notes
+-----
+This atlas provides a labeling of some cortical voxels in the MNI152
+space.
+
+Four versions of the atlas are available, according to the cortical
+model (thick or thin cortical surface) and to the number of regions
+considered (7 or 17).
+
+For more information on this dataset's structure,
+see :footcite:t:`CorticalParcellation_Yeo2011`,
+and :footcite:t:`Yeo2011`.
+
+Content
+-------
+    :'anat': Background anatomical image for reference and visualization
+    :'thin_7': Cortical parcelation into 7 regions, thin cortical model
+    :'thin_17': Cortical parcelation into 17 regions, thin cortical model
+    :'thick_7': Cortical parcelation into 17 regions, thick cortical model
+    :'thick_17': Cortical parcelation into 17 regions, thick cortical model
+    :'colors_7': Text file for the coloring of 7-regions parcellation
+    :'colors_17': Text file for the coloring of 17-regions parcellation
+
+
+References
+----------
+
+.. footbibliography::
+
+
+License
+-------
+unknown
