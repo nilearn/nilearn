@@ -876,7 +876,7 @@ def fetch_localizer_contrasts(
     fdescr = get_dataset_descr(dataset_name)
     fetch_files(data_dir, filenames, verbose=verbose)
     for key, value in files.items():
-        files[key] = [Path(data_dir, val) for val in value]
+        files[key] = [str(Path(data_dir, val)) for val in value]
 
     # Load covariates file
     participants_file = Path(data_dir, participants_file)
@@ -1759,7 +1759,7 @@ def fetch_surf_nki_enhanced(
     func_left = []
     for i in range(len(ids)):
         archive = url + "%i/%s_%s_preprocessed_fsaverage5_fwhm6.gii"
-        func = Path("%s", "%s_%s_preprocessed_fwhm6.gii")
+        func = str(Path("%s", "%s_%s_preprocessed_fwhm6.gii"))
         rh = fetch_files(
             data_dir,
             [
@@ -2221,7 +2221,9 @@ def fetch_language_localizer_demo_dataset(
         uncompress_file(downloaded_files[0])
 
     file_list = [
-        Path(path, f) for path, _, files in os.walk(data_dir) for f in files
+        str(Path(path, f))
+        for path, _, files in os.walk(data_dir)
+        for f in files
     ]
     if legacy_output:
         warnings.warn(
@@ -2295,7 +2297,7 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
     file_list = [
         Path(path, f) for path, _, files in os.walk(main_path) for f in files
     ]
-    return Path(data_dir, main_folder), sorted(file_list)
+    return str(Path(data_dir, main_folder)), sorted(file_list)
 
 
 @fill_doc
@@ -2776,9 +2778,12 @@ def fetch_spm_auditory(
 def _get_func_data_spm_multimodal(subject_dir, session, _subject_data):
     session_func = sorted(
         glob.glob(
-            Path(
-                subject_dir,
-                f"fMRI/Session{session}/fMETHODS-000{session + 4}-*-01.img",
+            str(
+                Path(
+                    subject_dir,
+                    f"fMRI/Session{session}",
+                    f"fMETHODS-000{session + 4}-*-01.img",
+                )
             )
         )
     )
@@ -2800,7 +2805,7 @@ def _get_session_trials_spm_multimodal(subject_dir, session, _subject_data):
         logger.log(f"Missing session file: {sess_trials}", stack_level=2)
         return None
 
-    _subject_data[f"trials_ses{int(session)}"] = sess_trials
+    _subject_data[f"trials_ses{int(session)}"] = str(sess_trials)
     return _subject_data
 
 
@@ -2810,7 +2815,7 @@ def _get_anatomical_data_spm_multimodal(subject_dir, _subject_data):
         logger.log("Missing structural image.", stack_level=2)
         return None
 
-    _subject_data["anat"] = anat
+    _subject_data["anat"] = str(anat)
     return _subject_data
 
 
@@ -3007,7 +3012,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
                 logger.log(f"Missing functional scan for session {int(run)}.")
                 return None
 
-            _subject_data[f"func{int(run)}"] = session_func
+            _subject_data[f"func{int(run)}"] = str(session_func)
 
             # glob design matrix .npz file
             sess_dmtx = Path(subject_dir, f"run{int(run)}_design.npz")
@@ -3015,7 +3020,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
                 logger.log(f"Missing run file: {sess_dmtx}")
                 return None
 
-            _subject_data[f"design_matrix{int(run)}"] = sess_dmtx
+            _subject_data[f"design_matrix{int(run)}"] = str(sess_dmtx)
 
         # glob for mask data
         mask = Path(subject_dir, "mask.nii.gz")
@@ -3023,7 +3028,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
             logger.log("Missing mask image.")
             return None
 
-        _subject_data["mask"] = mask
+        _subject_data["mask"] = str(mask)
         return Bunch(**_subject_data)
 
     description = get_dataset_descr("fiac")

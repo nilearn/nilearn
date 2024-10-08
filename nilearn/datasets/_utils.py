@@ -252,7 +252,7 @@ def get_dataset_dir(
             logger.log(
                 f"Dataset found in {path}", verbose=verbose, msg_level=1
             )
-            return path
+            return str(path)
 
     # If not, create a folder in the first writeable directory
     errors = []
@@ -269,7 +269,7 @@ def get_dataset_dir(
 
                 logger.log(f"Dataset created in {path}", verbose)
 
-                return path
+                return str(path)
             except Exception as exc:
                 short_error_message = getattr(exc, "strerror", str(exc))
                 errors.append(f"\n -{path} ({short_error_message})")

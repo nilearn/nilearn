@@ -228,7 +228,7 @@ def get_bids_files(
     if sub_folder:
         ses_level = ""
         files = Path(main_path, "sub-*", "ses-*")
-        session_folder_exists = glob.glob(files)
+        session_folder_exists = glob.glob(str(files))
         if session_folder_exists:
             ses_level = "ses-*"
 
@@ -242,7 +242,7 @@ def get_bids_files(
     else:
         files = Path(main_path, f"*{file_tag}.{file_type}")
 
-    files = glob.glob(files)
+    files = glob.glob(str(files))
     files.sort()
 
     filters = filters or []

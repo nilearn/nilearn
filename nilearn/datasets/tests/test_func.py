@@ -841,7 +841,7 @@ def test_fetch_ds000030_urls():
             subdirpath = Path(tmpdir, *tmp_list)
             os.mkdir(subdirpath)
 
-        filepath = Path(subdirpath, "urls.json")
+        filepath = str(Path(subdirpath, "urls.json"))
         mock_json_content = ["junk1", "junk2"]
         with open(filepath, "w") as f:
             json.dump(mock_json_content, f)
