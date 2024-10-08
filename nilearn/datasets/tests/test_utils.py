@@ -264,7 +264,7 @@ def test_movetree(tmp_path):
     (dir112 / "file1121").touch()
     (dir2 / "file21").touch()
 
-    _utils.movetree(str(dir1), str(dir2))
+    _utils.movetree(dir1, dir2)
 
     assert not dir111.exists()
     assert not dir112.exists()
