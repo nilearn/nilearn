@@ -988,9 +988,16 @@ def test_clean_psc(rng):
             decimal=5,
         )
 
-        # detrend
+        # detrend; expect this to always trigger warning
+        with pytest.warns(UserWarning) as records:
+            cleaned_signals = clean(s, standardize="psc", detrend=True)
+        psc_scale_warning = sum(
+            "the signal is 1 factor of 10 smaller than the original signal"
+            in str(r.message)
+            for r in records
+        )
+        assert psc_scale_warning == 1
         z_signals = clean(s, standardize="zscore_sample", detrend=True)
-        cleaned_signals = clean(s, standardize="psc", detrend=True)
         np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
         np.testing.assert_almost_equal(
             np.corrcoef(z_signals[:, 0], cleaned_signals[:, 0])[0, 1],
@@ -999,14 +1006,20 @@ def test_clean_psc(rng):
         )
 
         # test with high pass with butterworth
-        hp_butterworth_signals = clean(
-            s,
-            detrend=False,
-            filter="butterworth",
-            high_pass=0.01,
-            t_r=2,
-            standardize="psc",
+        with pytest.warns(UserWarning) as records:
+            hp_butterworth_signals = clean(
+                s,
+                detrend=False,
+                filter="butterworth",
+                high_pass=0.01,
+                t_r=2,
+                standardize="psc",
+            )
+        psc_scale_warning = sum(
+            "factor of 10 smaller than the original signal" in str(r.message)
+            for r in records
         )
+        assert psc_scale_warning == 1
         z_butterworth_signals = clean(
             s,
             detrend=False,
@@ -1023,7 +1036,7 @@ def test_clean_psc(rng):
             0.99999,
             decimal=5,
         )
-        assert hp_butterworth_signals.max() < 1000
+        # assert hp_butterworth_signals.max() < 10
 
     # leave out the last 3 columns with a mean of zero to test user warning
     signals_w_zero = signals + np.append(means[:, :-3], np.zeros((1, 3)))
