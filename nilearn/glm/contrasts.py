@@ -11,6 +11,7 @@ import pandas as pd
 import scipy.stats as sps
 
 from nilearn._utils import logger, rename_parameters
+from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
 from nilearn.glm._utils import pad_contrast, z_score
 from nilearn.maskers import NiftiMasker
 
@@ -519,15 +520,27 @@ def compute_fixed_effects(
             f"from the number of variance images ({len(variance_imgs)})."
         )
 
-    if isinstance(mask, NiftiMasker):
+    if isinstance(mask, (NiftiMasker, SurfaceMasker)):
         masker = mask.fit()
     elif mask is None:
-        masker = NiftiMasker().fit(contrast_imgs)
+        if isinstance(contrast_imgs[0], SurfaceImage):
+            surf_data = {}
+            for part in contrast_imgs[0].mesh.parts:
+                surf_data[part] = np.ones(
+                    contrast_imgs[0].data.parts[part].shape[0], dtype=bool
+                )
+            mask_img = SurfaceImage(mesh=contrast_imgs[0].mesh, data=surf_data)
+            masker = SurfaceMasker(mask_img=mask_img).fit(contrast_imgs[0])
+        else:
+            masker = NiftiMasker().fit(contrast_imgs)
     else:
-        masker = NiftiMasker(mask_img=mask).fit()
+        if isinstance(mask, SurfaceImage):
+            masker = SurfaceMasker(mask_img=mask).fit(contrast_imgs[0])
+        else:
+            masker = NiftiMasker(mask_img=mask).fit()
 
-    variances = masker.transform(variance_imgs)
-    contrasts = masker.transform(contrast_imgs)
+    variances = np.array([masker.transform(vi) for vi in variance_imgs])
+    contrasts = np.array([masker.transform(ci) for ci in contrast_imgs])
 
     if dofs is not None:
         if len(dofs) != n_runs:
