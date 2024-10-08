@@ -959,8 +959,9 @@ def test_clean_psc(rng):
     n_samples = 500
     n_features = 5
 
-    signals, _, _ = generate_signals(n_features=n_features, length=n_samples)
-
+    signals = generate_signals_plus_trends(
+        n_features=n_features, n_samples=n_samples
+    )
     # positive mean signal
     means = rng.standard_normal((1, n_features))
     signals_pos_mean = signals + means
@@ -972,7 +973,11 @@ def test_clean_psc(rng):
     for s in [signals_pos_mean, signals_mixed_mean]:
         # no detrend
         cleaned_signals = clean(s, standardize="psc", detrend=False)
+        ss_signals = nisignal.standardize_signal(
+            s, detrend=False, standardize="psc"
+        )
         np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
+        np.testing.assert_almost_equal(cleaned_signals, ss_signals)
 
         # psc signal should correlate with z score, since it's just difference
         # in scaling
@@ -984,15 +989,17 @@ def test_clean_psc(rng):
         )
 
         # detrend
+        z_signals = clean(s, standardize="zscore_sample", detrend=True)
         cleaned_signals = clean(s, standardize="psc", detrend=True)
         np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
-
-        tmp = (s - s.mean(0)) / np.abs(s.mean(0))
-        tmp *= 100
-        np.testing.assert_almost_equal(cleaned_signals, tmp)
+        np.testing.assert_almost_equal(
+            np.corrcoef(z_signals[:, 0], cleaned_signals[:, 0])[0, 1],
+            0.99999,
+            decimal=5,
+        )
 
         # test with high pass with butterworth
-        butterworth_signals = clean(
+        hp_butterworth_signals = clean(
             s,
             detrend=False,
             filter="butterworth",
@@ -1008,14 +1015,15 @@ def test_clean_psc(rng):
             t_r=2,
             standardize="zscore_sample",
         )
-        np.testing.assert_almost_equal(butterworth_signals.mean(0), 0)
+        np.testing.assert_almost_equal(hp_butterworth_signals.mean(0), 0)
         np.testing.assert_almost_equal(
             np.corrcoef(
-                z_butterworth_signals[:, 0], butterworth_signals[:, 0]
+                z_butterworth_signals[:, 0], hp_butterworth_signals[:, 0]
             )[0, 1],
             0.99999,
             decimal=5,
         )
+        assert hp_butterworth_signals.max() < 1000
 
     # leave out the last 3 columns with a mean of zero to test user warning
     signals_w_zero = signals + np.append(means[:, :-3], np.zeros((1, 3)))

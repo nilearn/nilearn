@@ -746,7 +746,7 @@ def clean(
     # Detrend and filtering should apply to confounds, if confound presents
     # keep filters orthogonal (according to Lindquist et al. (2018))
     # Restrict the signal to the orthogonal of the confounds
-    mean_signals = signals.mean(axis=0)
+    original_mean_signals = signals.mean(axis=0)
     if detrend:
         signals = standardize_signal(
             signals, standardize=False, detrend=detrend
@@ -808,15 +808,25 @@ def clean(
     # Standardize
     if not standardize:
         return signals
-    if standardize == "psc" and (
-        detrend or (filter_type == "butterworth" and high_pass is not None)
-    ):
+    filtered_mean_check = (
+        np.abs(signals.mean(0)).mean() / np.abs(original_mean_signals).mean()
+        < 1e-1
+    )
+    if standardize == "psc" and filtered_mean_check:
         # If the signal is detrended, the mean signal will be zero or close to
         # zero. If signal is high pass filtered with butterworth, the constant
-        # (mean) will be removed. In this case,
-        # we have to know the original mean signal to calculate the psc.
+        # (mean) will be removed. This is detected through checking the scale
+        # difference of the original mean and filtered mean signal. When the
+        # mean is too small, we have to know the original mean signal to
+        # calculate the psc to avoid weird scaling.
+        warnings.warn(
+            "After cleaning, the mean of the signal is 1 factor of 10 smaller "
+            "than the original signal. To avoid the scale of the signal being "
+            "obscured drassically, the original signal mean has been added "
+            "back for percent signal change standardization. "
+        )
         signals = standardize_signal(
-            signals + mean_signals,
+            signals + original_mean_signals,
             standardize=standardize,
             detrend=False,
         )
