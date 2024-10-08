@@ -14,6 +14,7 @@ import warnings
 from collections.abc import Container
 from copy import copy, deepcopy
 from glob import glob
+from pathlib import Path
 from tempfile import mkdtemp
 from urllib.parse import urlencode, urljoin
 
@@ -1407,20 +1408,20 @@ def _download_collection(collection, download_params):
     """
     if collection is None:
         return None
+
     collection = _remove_none_strings(collection)
     collection_id = collection["id"]
     collection_name = f"collection_{collection_id}"
-    collection_dir = os.path.join(
-        download_params["nv_data_dir"], collection_name
-    )
+    collection_dir = Path(download_params["nv_data_dir"]) / collection_name
     collection["relative_path"] = collection_name
-    collection["absolute_path"] = collection_dir
-    if not os.path.isdir(collection_dir):
-        os.makedirs(collection_dir)
-    metadata_file_path = os.path.join(
-        collection_dir, "collection_metadata.json"
-    )
+    collection["absolute_path"] = str(collection_dir.absolute())
+
+    if not collection_dir.is_dir():
+        collection_dir.mkdir(parents=True)
+
+    metadata_file_path = collection_dir / "collection_metadata.json"
     _write_metadata(collection, metadata_file_path)
+
     return collection
 
 
