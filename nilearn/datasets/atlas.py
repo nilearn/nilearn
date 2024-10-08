@@ -117,15 +117,15 @@ def fetch_atlas_difumo(
     url = f"https://osf.io/{dic[dimension]}/download"
     opts = {"uncompress": True}
 
-    csv_file = Path("{0}", "labels_{0}_dictionary.csv")
+    csv_file = Path(f"{dimension}", f"labels_{dimension}_dictionary.csv")
     if resolution_mm != 3:
-        nifti_file = Path("{0}", "2mm", "maps.nii.gz")
+        nifti_file = Path(f"{dimension}", "2mm", "maps.nii.gz")
     else:
-        nifti_file = Path("{0}", "3mm", "maps.nii.gz")
+        nifti_file = Path(f"{dimension}", "3mm", "maps.nii.gz")
 
     files = [
-        (csv_file.format(dimension), url, opts),
-        (nifti_file.format(dimension), url, opts),
+        (csv_file, url, opts),
+        (nifti_file, url, opts),
     ]
 
     dataset_name = "difumo_atlases"

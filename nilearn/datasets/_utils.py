@@ -863,7 +863,7 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
             if os.path.exists(temp_dir):
                 shutil.rmtree(temp_dir)
             raise OSError(f"Fetching aborted: {abort}")
-        files_.append(target_file)
+        files_.append(str(target_file))
     # If needed, move files from temps directory to final directory.
     if os.path.exists(temp_dir):
         # XXX We could only moved the files requested
