@@ -122,7 +122,7 @@ def test_plot_markers_node_kwargs(coords):
     """Smoke test for plot_markers testing that node_kwargs is working \
        and does not interfere with alpha.
     """
-    node_kwargs = dict(marker="s")
+    node_kwargs = {"marker": "s"}
     plot_markers(
         [1, 2, 3, 4],
         coords,

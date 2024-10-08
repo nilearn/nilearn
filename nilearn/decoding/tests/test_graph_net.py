@@ -306,7 +306,7 @@ def test_mfista_solver_graph_net_no_l1_term():
         return np.dot(X.T, np.dot(X, w) - y)
 
     def f2_prox(w, step_size, *args, **kwargs):
-        return w, dict(converged=True)
+        return w, {"converged": True}
 
     lipschitz_constant = _squared_loss_derivative_lipschitz_constant(
         X, (np.eye(2) == 1).astype(bool), 1

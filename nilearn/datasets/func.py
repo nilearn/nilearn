@@ -315,7 +315,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     ids = ids[:n_subjects]
     nitrc_ids = nitrc_ids[:n_subjects]
 
-    opts = dict(uncompress=True)
+    opts = {"uncompress": True}
 
     # Dataset description
     fdescr = get_dataset_descr(dataset_name)
@@ -1397,7 +1397,7 @@ def fetch_mixed_gambles(
             "https://www.nitrc.org/frs/download.php/7229/"
             "jimura_poldrack_2012_zmaps.zip"
         )
-    opts = dict(uncompress=True)
+    opts = {"uncompress": True}
     files = [
         (f"zmaps{os.sep}sub{int(j + 1):03}_zmaps.nii.gz", url, opts)
         for j in range(n_subjects)
@@ -1519,12 +1519,14 @@ def fetch_megatrawls_netmats(
     )
     description = get_dataset_descr(dataset_name)
 
-    timeseries_map = dict(
-        multiple_spatial_regression="ts2", eigen_regression="ts3"
-    )
-    matrices_map = dict(
-        full_correlation="Znet1.txt", partial_correlation="Znet2.txt"
-    )
+    timeseries_map = {
+        "multiple_spatial_regression": "ts2",
+        "eigen_regression": "ts3",
+    }
+    matrices_map = {
+        "full_correlation": "Znet1.txt",
+        "partial_correlation": "Znet2.txt",
+    }
     filepath = [
         (
             os.path.join(

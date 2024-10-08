@@ -56,10 +56,10 @@ def _rotate_cmap(cmap, swap_order=("green", "red", "blue")):
     """Swap the colors of a colormap."""
     orig_cdict = cmap._segmentdata.copy()
 
-    cdict = dict()
-    cdict["green"] = [(p, c1, c2) for (p, c1, c2) in orig_cdict[swap_order[0]]]
-    cdict["blue"] = [(p, c1, c2) for (p, c1, c2) in orig_cdict[swap_order[1]]]
-    cdict["red"] = [(p, c1, c2) for (p, c1, c2) in orig_cdict[swap_order[2]]]
+    cdict = {}
+    cdict["green"] = list(orig_cdict[swap_order[0]])
+    cdict["blue"] = list(orig_cdict[swap_order[1]])
+    cdict["red"] = list(orig_cdict[swap_order[2]])
 
     return cdict
 
@@ -68,7 +68,7 @@ def _pigtailed_cmap(cmap, swap_order=("green", "red", "blue")):
     """Make a new colormap by concatenating a colormap with its reverse."""
     orig_cdict = cmap._segmentdata.copy()
 
-    cdict = dict()
+    cdict = {}
     cdict["green"] = [
         (0.5 * (1 - p), c1, c2)
         for (p, c1, c2) in reversed(orig_cdict[swap_order[0]])
@@ -160,29 +160,29 @@ def alpha_cmap(color, name="", alpha_min=0.5, alpha_max=1.0):
 # Our colormaps definition
 
 
-_cmaps_data = dict(
-    cold_hot=_pigtailed_cmap(_cm.hot),
-    cold_white_hot=_pigtailed_cmap(_cm.hot_r),
-    brown_blue=_pigtailed_cmap(_cm.bone),
-    cyan_copper=_pigtailed_cmap(_cm.copper),
-    cyan_orange=_pigtailed_cmap(_cm.YlOrBr_r),
-    blue_red=_pigtailed_cmap(_cm.Reds_r),
-    brown_cyan=_pigtailed_cmap(_cm.Blues_r),
-    purple_green=_pigtailed_cmap(
+_cmaps_data = {
+    "cold_hot": _pigtailed_cmap(_cm.hot),
+    "cold_white_hot": _pigtailed_cmap(_cm.hot_r),
+    "brown_blue": _pigtailed_cmap(_cm.bone),
+    "cyan_copper": _pigtailed_cmap(_cm.copper),
+    "cyan_orange": _pigtailed_cmap(_cm.YlOrBr_r),
+    "blue_red": _pigtailed_cmap(_cm.Reds_r),
+    "brown_cyan": _pigtailed_cmap(_cm.Blues_r),
+    "purple_green": _pigtailed_cmap(
         _cm.Greens_r, swap_order=("red", "blue", "green")
     ),
-    purple_blue=_pigtailed_cmap(
+    "purple_blue": _pigtailed_cmap(
         _cm.Blues_r, swap_order=("red", "blue", "green")
     ),
-    blue_orange=_pigtailed_cmap(
+    "blue_orange": _pigtailed_cmap(
         _cm.Oranges_r, swap_order=("green", "red", "blue")
     ),
-    black_blue=_rotate_cmap(_cm.hot),
-    black_purple=_rotate_cmap(_cm.hot, swap_order=("blue", "red", "green")),
-    black_pink=_rotate_cmap(_cm.hot, swap_order=("blue", "green", "red")),
-    black_green=_rotate_cmap(_cm.hot, swap_order=("red", "blue", "green")),
-    black_red=_cm.hot._segmentdata.copy(),
-)
+    "black_blue": _rotate_cmap(_cm.hot),
+    "black_purple": _rotate_cmap(_cm.hot, swap_order=("blue", "red", "green")),
+    "black_pink": _rotate_cmap(_cm.hot, swap_order=("blue", "green", "red")),
+    "black_green": _rotate_cmap(_cm.hot, swap_order=("red", "blue", "green")),
+    "black_red": _cm.hot._segmentdata.copy(),
+}
 
 # MPL 0.99 doesn't have Ocean or afmhot
 if hasattr(_cm, "ocean"):
@@ -210,7 +210,7 @@ def _revcmap(data):
     return data_r
 
 
-_cmap_d = dict()
+_cmap_d = {}
 
 for _cmapname in list(_cmaps_data.keys()):  # needed as dict changes in loop
     _cmapname_r = f"{_cmapname}_r"
@@ -332,7 +332,7 @@ def dim_cmap(cmap, factor=0.3, to_white=True):
 
     cdict = cmap._segmentdata.copy()
     for _, color in enumerate(("red", "green", "blue")):
-        color_lst = list()
+        color_lst = []
         for value, c1, c2 in cdict[color]:
             color_lst.append((value, dimmer(c1), dimmer(c2)))
         cdict[color] = color_lst
@@ -371,7 +371,7 @@ def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
                 this_cdict["blue"].append((p, b, b))
 
     for c_index, color in enumerate(("red", "green", "blue")):
-        color_lst = list()
+        color_lst = []
 
         for value, c1, c2 in outer_cdict[color]:
             if value >= vmin:

@@ -197,7 +197,7 @@ def _configure_title_plotly(title, font_size, color="black"):
     This function configures the title if provided.
     """
     if title is None:
-        return dict()
+        return {}
     return {
         "text": title,
         "font": {

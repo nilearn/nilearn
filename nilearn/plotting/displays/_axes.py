@@ -32,7 +32,7 @@ class BaseAxes:
         self.ax = ax
         self.direction = direction
         self.coord = coord
-        self._object_bounds = list()
+        self._object_bounds = []
         self.shape = None
         self.radiological = radiological
 
@@ -126,9 +126,12 @@ class BaseAxes:
             horizontalalignment="left",
             verticalalignment="top",
             size=size,
-            bbox=dict(
-                boxstyle="square,pad=0", ec=bg_color, fc=bg_color, alpha=1
-            ),
+            bbox={
+                "boxstyle": "square,pad=0",
+                "ec": bg_color,
+                "fc": bg_color,
+                "alpha": 1,
+            },
             **kwargs,
         )
 
@@ -140,7 +143,7 @@ class BaseAxes:
             horizontalalignment="right",
             verticalalignment="top",
             size=size,
-            bbox=dict(boxstyle="square,pad=0", ec=bg_color, fc=bg_color),
+            bbox={"boxstyle": "square,pad=0", "ec": bg_color, "fc": bg_color},
             **kwargs,
         )
 
@@ -335,9 +338,12 @@ class CutAxes(BaseAxes):
             horizontalalignment="left",
             verticalalignment="bottom",
             size=size,
-            bbox=dict(
-                boxstyle="square,pad=0", ec=bg_color, fc=bg_color, alpha=1
-            ),
+            bbox={
+                "boxstyle": "square,pad=0",
+                "ec": bg_color,
+                "fc": bg_color,
+                "alpha": 1,
+            },
             **kwargs,
         )
 

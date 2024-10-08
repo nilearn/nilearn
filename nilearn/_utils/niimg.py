@@ -169,7 +169,7 @@ def is_binary_niimg(niimg):
     unique_values = np.unique(data)
     if len(unique_values) != 2:
         return False
-    return sorted(list(unique_values)) == [0, 1]
+    return sorted(unique_values) == [0, 1]
 
 
 def _repr_niimgs(niimgs, shorten=True):

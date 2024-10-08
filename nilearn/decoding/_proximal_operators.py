@@ -296,7 +296,7 @@ def prox_tvl1(
     output = input_img - weight * divergence_id(grad_im, l1_ratio=l1_ratio)
     if val_min is not None or val_max is not None:
         output = output.clip(val_min, val_max, out=output)
-    return output, dict(converged=(i < max_iter))
+    return output, {"converged": (i < max_iter)}
 
 
 def prox_tvl1_with_intercept(

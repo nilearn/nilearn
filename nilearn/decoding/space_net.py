@@ -225,7 +225,7 @@ class _EarlyStoppingCallback:
         """Perform callback."""
         # misc
         if not isinstance(variables, dict):
-            variables = dict(w=variables)
+            variables = {"w": variables}
         self.counter += 1
         w = variables["w"]
 
@@ -940,7 +940,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         )
 
         # main loop: loop on classes and folds
-        solver_params = dict(tol=self.tol, max_iter=self.max_iter)
+        solver_params = {"tol": self.tol, "max_iter": self.max_iter}
         self.best_model_params_ = []
         self.alpha_grids_ = []
         for (

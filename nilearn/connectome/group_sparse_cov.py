@@ -1066,7 +1066,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
                     self.cv, np.ones(subjects[k].shape[0]), classifier=False
                 ).split(subjects[k])
             )
-        path = list()  # List of (alpha, scores, covs)
+        path = []  # List of (alpha, scores, covs)
         n_alphas = self.alphas
 
         if isinstance(n_alphas, collections.abc.Sequence):

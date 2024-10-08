@@ -17,7 +17,7 @@ import sys
 #
 # Entries are listed in alphabetical order.
 #
-docdict = dict()
+docdict = {}
 
 # annotate
 docdict["annotate"] = """

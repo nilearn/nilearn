@@ -347,7 +347,7 @@ def get_clusters_table(
 
         # Now re-label and create table
         label_map = label(binarized, bin_struct)[0]
-        clust_ids = sorted(list(np.unique(label_map)[1:]))
+        clust_ids = sorted(np.unique(label_map)[1:])
         peak_vals = np.array(
             [np.max(temp_stat_map * (label_map == c)) for c in clust_ids]
         )

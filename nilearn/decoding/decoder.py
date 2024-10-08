@@ -53,22 +53,22 @@ from nilearn._utils.param_validation import check_feature_screening
 from nilearn.experimental.surface import SurfaceMasker
 from nilearn.regions.rena_clustering import ReNA
 
-SUPPORTED_ESTIMATORS = dict(
-    svc_l1=LinearSVC(penalty="l1", dual=False, max_iter=10000),
-    svc_l2=LinearSVC(penalty="l2", dual=True, max_iter=10000),
-    svc=LinearSVC(penalty="l2", dual=True, max_iter=10000),
-    logistic_l1=LogisticRegressionCV(penalty="l1", solver="liblinear"),
-    logistic_l2=LogisticRegressionCV(penalty="l2", solver="liblinear"),
-    logistic=LogisticRegressionCV(penalty="l2", solver="liblinear"),
-    ridge_classifier=RidgeClassifierCV(),
-    ridge_regressor=RidgeCV(),
-    ridge=RidgeCV(),
-    lasso=LassoCV(),
-    lasso_regressor=LassoCV(),
-    svr=SVR(kernel="linear", max_iter=10000),
-    dummy_classifier=DummyClassifier(strategy="stratified", random_state=0),
-    dummy_regressor=DummyRegressor(strategy="mean"),
-)
+SUPPORTED_ESTIMATORS = {
+    "svc_l1": LinearSVC(penalty="l1", dual=False, max_iter=10000),
+    "svc_l2": LinearSVC(penalty="l2", dual=True, max_iter=10000),
+    "svc": LinearSVC(penalty="l2", dual=True, max_iter=10000),
+    "logistic_l1": LogisticRegressionCV(penalty="l1", solver="liblinear"),
+    "logistic_l2": LogisticRegressionCV(penalty="l2", solver="liblinear"),
+    "logistic": LogisticRegressionCV(penalty="l2", solver="liblinear"),
+    "ridge_classifier": RidgeClassifierCV(),
+    "ridge_regressor": RidgeCV(),
+    "ridge": RidgeCV(),
+    "lasso": LassoCV(),
+    "lasso_regressor": LassoCV(),
+    "svr": SVR(kernel="linear", max_iter=10000),
+    "dummy_classifier": DummyClassifier(strategy="stratified", random_state=0),
+    "dummy_regressor": DummyRegressor(strategy="mean"),
+}
 
 
 @fill_doc

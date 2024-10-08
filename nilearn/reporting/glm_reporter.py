@@ -451,7 +451,7 @@ def _make_headings(contrasts, title, model):
     if title:
         return title, title, model_type
 
-    contrasts_names = sorted(list(contrasts.keys()))
+    contrasts_names = sorted(contrasts.keys())
     contrasts_text = ", ".join(contrasts_names)
 
     page_title = f"Report: {model_type} for {contrasts_text}"
