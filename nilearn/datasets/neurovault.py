@@ -1460,12 +1460,12 @@ def _fetch_collection_for_image(image_info, download_params):
     """
     collection_id = image_info["collection_id"]
     collection_relative_path = f"collection_{collection_id}"
-    collection_absolute_path = os.path.join(
-        download_params["nv_data_dir"], collection_relative_path
+    collection_absolute_path = (
+        Path(download_params["nv_data_dir"]) / collection_relative_path
     )
-    if os.path.isdir(collection_absolute_path):
+    if collection_absolute_path.is_dir():
         return _json_add_collection_dir(
-            os.path.join(collection_absolute_path, "collection_metadata.json")
+            collection_absolute_path / "collection_metadata.json"
         )
 
     col_batch = _get_batch(
