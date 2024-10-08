@@ -902,9 +902,11 @@ def tree(path, pattern=None, dictionary=False):
     for file_path in path.iterdir():
         if file_path.is_dir():
             if dictionary:
-                dirs[file_path.name] = tree(file_path, pattern)
+                dirs[file_path.name] = tree(file_path, pattern, dictionary)
             else:
-                dirs.append((file_path.name, tree(file_path, pattern)))
+                dirs.append(
+                    (file_path.name, tree(file_path, pattern, dictionary))
+                )
         elif pattern is None or fnmatch.fnmatch(file_path.name, pattern):
             files.append(str(file_path))
     files = sorted(files)
