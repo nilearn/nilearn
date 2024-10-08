@@ -258,11 +258,11 @@ def test_movetree(tmp_path):
     dir2.mkdir()
     dir212.mkdir()
 
-    open(dir1 / "file11", "w").close()
-    open(dir1 / "file12", "w").close()
-    open(dir111 / "file1111", "w").close()
-    open(dir112 / "file1121", "w").close()
-    open(dir2 / "file21", "w").close()
+    (dir1 / "file11").touch()
+    (dir1 / "file12").touch()
+    (dir111 / "file1111").touch()
+    (dir112 / "file1121").touch()
+    (dir2 / "file21").touch()
 
     _utils.movetree(str(dir1), str(dir2))
 
