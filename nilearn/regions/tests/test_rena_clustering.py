@@ -33,7 +33,7 @@ def test_rena_clustering():
     X_red = rena.fit_transform(X)
     X_compress = rena.inverse_transform(X_red)
 
-    assert 10 == rena.n_clusters_
+    assert rena.n_clusters_ == 10
     assert X.shape == X_compress.shape
 
     memory = Memory(location=None)

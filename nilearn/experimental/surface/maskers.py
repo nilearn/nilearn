@@ -159,7 +159,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
             start = stop
         self.output_dimension_ = stop
 
-        for part in self.mask_img_.data.parts.keys():
+        for part in self.mask_img_.data.parts:
             self._report_content["n_vertices"][part] = (
                 self.mask_img_.mesh.parts[part].n_vertices
             )
@@ -469,7 +469,7 @@ class SurfaceLabelsMasker(BaseEstimator):
             "number_of_regions": len(self.label_names_),
             "summary": {},
         }
-        for part in self.labels_img.data.parts.keys():
+        for part in self.labels_img.data.parts:
             self._report_content["n_vertices"][part] = (
                 self.labels_img.mesh.parts[part].n_vertices
             )

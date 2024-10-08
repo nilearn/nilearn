@@ -347,10 +347,7 @@ def _get_index_from_direction(direction):
     directions = ["x", "y", "z"]
     try:
         # l and r are subcases of x
-        if direction in "lr":
-            index = 0
-        else:
-            index = directions.index(direction)
+        index = 0 if direction in "lr" else directions.index(direction)
     except ValueError:
         message = (
             f"{direction} is not a valid direction. "
@@ -488,9 +485,12 @@ class GlassBrainAxes(BaseAxes):
             relevant_coords = []
             xcoords, ycoords, zcoords = marker_coords.T
             for cidx, xc in enumerate(xcoords):
-                if self.direction == "r" and xc >= 0:
-                    relevant_coords.append(cidx)
-                elif self.direction == "l" and xc <= 0:
+                if (
+                    self.direction == "r"
+                    and xc >= 0
+                    or self.direction == "l"
+                    and xc <= 0
+                ):
                     relevant_coords.append(cidx)
             xdata = xdata[relevant_coords]
             ydata = ydata[relevant_coords]

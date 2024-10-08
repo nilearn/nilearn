@@ -323,7 +323,7 @@ def _check_estimator(estimator):
             "Use a custom estimator at your own risk "
             "of the process not working as intended."
         )
-    elif estimator in SUPPORTED_ESTIMATORS.keys():
+    elif estimator in SUPPORTED_ESTIMATORS:
         estimator = SUPPORTED_ESTIMATORS.get(estimator)
     else:
         raise ValueError(

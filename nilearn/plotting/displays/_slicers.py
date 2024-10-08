@@ -514,10 +514,7 @@ class BaseSlicer:
             Maximal value for the colorbar. If None, the maximal value
             is computed based on the data.
         """
-        if threshold is None:
-            offset = 0
-        else:
-            offset = threshold
+        offset = 0 if threshold is None else threshold
         offset = min(offset, norm.vmax)
 
         cbar_vmin = cbar_vmin if cbar_vmin is not None else norm.vmin

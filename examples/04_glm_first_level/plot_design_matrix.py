@@ -33,7 +33,8 @@ duration = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
 # these are the corresponding onset times
 onsets = [30.0, 70.0, 100.0, 10.0, 30.0, 90.0, 30.0, 40.0, 60.0]
 # Next, we simulate 6 motion parameters jointly observed with fMRI acquisitions
-motion = np.cumsum(np.random.randn(n_scans, 6), 0)
+rng = np.random.default_rng(42)
+motion = np.cumsum(rng.randn(n_scans, 6), 0)
 # The 6 parameters correspond to three translations and three
 # rotations describing rigid body motion
 add_reg_names = ["tx", "ty", "tz", "rx", "ry", "rz"]

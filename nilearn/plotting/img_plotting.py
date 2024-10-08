@@ -121,16 +121,10 @@ def get_colorbar_and_data_ranges(
         negative_range = stat_map_max <= 0
         positive_range = stat_map_min >= 0
         if positive_range:
-            if vmin is None:
-                cbar_vmin = 0
-            else:
-                cbar_vmin = vmin
+            cbar_vmin = 0 if vmin is None else vmin
             cbar_vmax = vmax
         elif negative_range:
-            if vmax is None:
-                cbar_vmax = 0
-            else:
-                cbar_vmax = vmax
+            cbar_vmax = 0 if vmax is None else vmax
             cbar_vmin = vmin
         else:
             # limit colorbar to plotted values
@@ -554,10 +548,7 @@ def load_anat(anat_img=MNI152TEMPLATE, dim="auto", black_bg="auto"):
             # Guess if the background is rather black or light based on
             # the values of voxels near the border
             background = np.median(get_border_data(data, 2))
-            if background > 0.5 * (vmin + vmax):
-                black_bg = False
-            else:
-                black_bg = True
+            black_bg = not (background > 0.5 * (vmin + vmax))
     if dim:
         if dim != "auto" and not isinstance(dim, numbers.Number):
             raise ValueError(
