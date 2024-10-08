@@ -1299,7 +1299,7 @@ def _write_metadata(metadata, file_name):
         Dictionary representing metadata for a file or a
         collection. Any key containing 'absolute' is ignored.
 
-    file_name : str
+    file_name : str or pathlib.Path
         Path to the file in which to write the data.
 
     """
