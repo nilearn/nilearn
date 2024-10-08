@@ -233,7 +233,7 @@ def _get_file_name(nii_file):
     confound_file_candidates = [
         os.path.join(base_dir, crc) for crc in confound_file_candidates
     ]
-    found_files = [cr for cr in confound_file_candidates if os.path.isfile(cr)]
+    found_files = [cr for cr in confound_file_candidates if Path.is_file(cr)]
 
     if not found_files:
         raise ValueError(

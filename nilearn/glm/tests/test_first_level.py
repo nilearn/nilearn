@@ -49,7 +49,7 @@ from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files
 from nilearn.maskers import NiftiMasker
 
-BASEDIR = os.path.dirname(os.path.abspath(__file__))
+BASEDIR = os.path.dirname(Path.resolve(__file__))
 FUNCFILE = os.path.join(BASEDIR, "functional.nii.gz")
 
 
@@ -1613,7 +1613,7 @@ def test_first_level_from_bids_with_missing_events(tmp_path_factory):
     bids_dataset = _new_bids_dataset(tmp_path_factory.mktemp("no_events"))
     events_files = get_bids_files(main_path=bids_dataset, file_tag="events")
     for f in events_files:
-        os.remove(f)
+        Path.unlink(f)
 
     with pytest.raises(ValueError, match="No events.tsv files found"):
         first_level_from_bids(
@@ -1633,7 +1633,7 @@ def test_first_level_from_bids_no_tr(tmp_path_factory):
         main_path=bids_dataset, file_tag="bold", file_type="json"
     )
     for f in json_files:
-        os.remove(f)
+        Path.unlink(f)
 
     with pytest.warns(
         UserWarning, match="'t_r' not provided and cannot be inferred"
@@ -1655,7 +1655,7 @@ def test_first_level_from_bids_no_bold_file(tmp_path_factory):
         file_type="*gz",
     )
     for img_ in imgs:
-        os.remove(img_)
+        Path.unlink(img_)
 
     with pytest.raises(ValueError, match="No BOLD files found "):
         first_level_from_bids(
@@ -1672,7 +1672,7 @@ def test_first_level_from_bids_with_one_events_missing(tmp_path_factory):
         tmp_path_factory.mktemp("one_event_missing")
     )
     events_files = get_bids_files(main_path=bids_dataset, file_tag="events")
-    os.remove(events_files[0])
+    Path.unlink(events_files[0])
 
     with pytest.raises(ValueError, match="Same number of event files "):
         first_level_from_bids(
@@ -1695,7 +1695,7 @@ def test_first_level_from_bids_one_confound_missing(tmp_path_factory):
         main_path=bids_dataset / "derivatives",
         file_tag="desc-confounds_timeseries",
     )
-    os.remove(confound_files[-1])
+    Path.unlink(confound_files[-1])
 
     with pytest.raises(ValueError, match="Same number of confound"):
         first_level_from_bids(
@@ -1716,7 +1716,7 @@ def test_first_level_from_bids_all_confounds_missing(tmp_path_factory):
         file_tag="desc-confounds_timeseries",
     )
     for f in confound_files:
-        os.remove(f)
+        Path.unlink(f)
 
     models, imgs, events, confounds = first_level_from_bids(
         dataset_path=bids_dataset,

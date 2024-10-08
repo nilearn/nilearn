@@ -392,7 +392,7 @@ def test_iter_check_niimgs(tmp_path, img_4d_zeros_eye):
         get_data(niimgs[0]), get_data(_utils.check_niimg(img_4d_zeros_eye))
     )
     del niimgs
-    os.remove(filename)
+    Path.unlink(filename)
 
     # Regular case
     niimgs = list(iter_check_niimg(img_2_4d))

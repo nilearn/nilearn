@@ -60,7 +60,7 @@ def get_data_dirs(data_dir=None):
         if local_data is not None:
             paths.extend(local_data.split(os.pathsep))
 
-        paths.append(os.path.expanduser("~/nilearn_data"))
+        paths.append(Path.expanduser("~/nilearn_data"))
     return paths
 
 

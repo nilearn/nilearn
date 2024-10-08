@@ -34,7 +34,7 @@ from ._testing import (
 )
 
 # load the spm file to test cosine basis
-my_path = osp.dirname(osp.abspath(__file__))
+my_path = osp.dirname(Path.resolve(__file__))
 full_path_design_matrix_file = osp.join(my_path, "spm_dmtx.npz")
 DESIGN_MATRIX = np.load(full_path_design_matrix_file)
 

@@ -756,15 +756,15 @@ def test_fetch_development_fmri_exception():
 
 # datasets tests originally belonging to nistats follow
 
-currdir = os.path.dirname(os.path.abspath(__file__))
+currdir = os.path.dirname(Path.resolve(__file__))
 datadir = os.path.join(currdir, "data")
 
 
 def test_fetch_bids_langloc_dataset(tmp_path):
     data_dir = str(tmp_path / "bids_langloc_example")
-    os.mkdir(data_dir)
+    Path.mkdir(data_dir)
     main_folder = os.path.join(data_dir, "bids_langloc_dataset")
-    os.mkdir(main_folder)
+    Path.mkdir(main_folder)
 
     datadir, dl_files = func.fetch_bids_langloc_dataset(tmp_path)
 
@@ -839,7 +839,7 @@ def test_fetch_ds000030_urls():
         for subdir in subdir_names:
             tmp_list.append(subdir)
             subdirpath = os.path.join(tmpdir, *tmp_list)
-            os.mkdir(subdirpath)
+            Path.mkdir(subdirpath)
 
         filepath = os.path.join(subdirpath, "urls.json")
         mock_json_content = ["junk1", "junk2"]
@@ -1099,5 +1099,5 @@ def test_fiac(tmp_path):
 def test_load_sample_motor_activation_image():
     path_img = func.load_sample_motor_activation_image()
 
-    assert os.path.exists(path_img)
+    assert Path.exists(path_img)
     assert load_img(path_img)

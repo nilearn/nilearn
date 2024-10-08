@@ -66,7 +66,7 @@ def test_check_threshold():
 
 def test_get_mask_volume():
     # Test that hard-coded standard mask volume can be corrected computed
-    if os.path.isfile(mni152_brain_mask):
+    if Path.is_file(mni152_brain_mask):
         assert get_mask_volume(load(mni152_brain_mask)) == MNI152_BRAIN_VOLUME
     else:
         warnings.warn(f"Couldn't find {mni152_brain_mask} (for testing)")

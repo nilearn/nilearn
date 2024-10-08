@@ -31,7 +31,7 @@ from nilearn.surface.tests._testing import (
     z_const_img,
 )
 
-currdir = os.path.dirname(os.path.abspath(__file__))
+currdir = os.path.dirname(Path.resolve(__file__))
 datadir = os.path.join(currdir, "data")
 
 
@@ -104,7 +104,7 @@ def test_load_surf_data_file_nii_gii(tmp_path):
     gii = gifti.GiftiImage(darrays=[darray])
     gii.to_filename(filename_gii)
     assert_array_equal(load_surf_data(filename_gii), np.zeros((20,)))
-    os.remove(filename_gii)
+    Path.unlink(filename_gii)
 
     # test loading of data from empty gifti file
     fd_empty, filename_gii_empty = tempfile.mkstemp(
@@ -117,7 +117,7 @@ def test_load_surf_data_file_nii_gii(tmp_path):
         ValueError, match="must contain at least one data array"
     ):
         load_surf_data(filename_gii_empty)
-    os.remove(filename_gii_empty)
+    Path.unlink(filename_gii_empty)
 
     # test loading of fake data from nifti file
     fd_gii2, filename_nii = tempfile.mkstemp(suffix=".nii", dir=str(tmp_path))
@@ -131,8 +131,8 @@ def test_load_surf_data_file_nii_gii(tmp_path):
     nii.to_filename(filename_niigz)
     assert_array_equal(load_surf_data(filename_nii), np.zeros((20,)))
     assert_array_equal(load_surf_data(filename_niigz), np.zeros((20,)))
-    os.remove(filename_nii)
-    os.remove(filename_niigz)
+    Path.unlink(filename_nii)
+    Path.unlink(filename_niigz)
 
 
 def test_load_surf_data_gii_gz():
@@ -165,7 +165,7 @@ def test_load_surf_data_file_freesurfer(tmp_path):
     os.close(fs_area)
     freesurfer.io.write_morph_data(filename_area, data)
     assert_array_equal(load_surf_data(filename_area), np.zeros((20,)))
-    os.remove(filename_area)
+    Path.unlink(filename_area)
 
     fs_curv, filename_curv = tempfile.mkstemp(
         suffix=".curv", dir=str(tmp_path)
@@ -173,7 +173,7 @@ def test_load_surf_data_file_freesurfer(tmp_path):
     os.close(fs_curv)
     freesurfer.io.write_morph_data(filename_curv, data)
     assert_array_equal(load_surf_data(filename_curv), np.zeros((20,)))
-    os.remove(filename_curv)
+    Path.unlink(filename_curv)
 
     fd_sulc, filename_sulc = tempfile.mkstemp(
         suffix=".sulc", dir=str(tmp_path)
@@ -181,7 +181,7 @@ def test_load_surf_data_file_freesurfer(tmp_path):
     os.close(fd_sulc)
     freesurfer.io.write_morph_data(filename_sulc, data)
     assert_array_equal(load_surf_data(filename_sulc), np.zeros((20,)))
-    os.remove(filename_sulc)
+    Path.unlink(filename_sulc)
 
     fd_thick, filename_thick = tempfile.mkstemp(
         suffix=".thickness", dir=str(tmp_path)
@@ -189,7 +189,7 @@ def test_load_surf_data_file_freesurfer(tmp_path):
     os.close(fd_thick)
     freesurfer.io.write_morph_data(filename_thick, data)
     assert_array_equal(load_surf_data(filename_thick), np.zeros((20,)))
-    os.remove(filename_thick)
+    Path.unlink(filename_thick)
 
     # test loading of data from real label and annot files
     label_start = np.array([5900, 5899, 5901, 5902, 2638])
@@ -219,7 +219,7 @@ def test_load_surf_data_file_error(tmp_path):
         np.savetxt(filename_wrong, data)
         with pytest.raises(ValueError, match="input type is not recognized"):
             load_surf_data(filename_wrong)
-        os.remove(filename_wrong)
+        Path.unlink(filename_wrong)
 
 
 def test_load_surf_mesh():
@@ -350,7 +350,7 @@ def test_load_surf_mesh_file_gii(tmp_path):
     gii.to_filename(filename_gii_mesh)
     assert_array_almost_equal(load_surf_mesh(filename_gii_mesh)[0], mesh[0])
     assert_array_almost_equal(load_surf_mesh(filename_gii_mesh)[1], mesh[1])
-    os.remove(filename_gii_mesh)
+    Path.unlink(filename_gii_mesh)
 
     # test if incorrect gii raises error
     fd_no, filename_gii_mesh_no_point = tempfile.mkstemp(
@@ -361,7 +361,7 @@ def test_load_surf_mesh_file_gii(tmp_path):
     gii.to_filename(filename_gii_mesh_no_point)
     with pytest.raises(ValueError, match="NIFTI_INTENT_POINTSET"):
         load_surf_mesh(filename_gii_mesh_no_point)
-    os.remove(filename_gii_mesh_no_point)
+    Path.unlink(filename_gii_mesh_no_point)
 
     fd_face, filename_gii_mesh_no_face = tempfile.mkstemp(
         suffix=".gii", dir=str(tmp_path)
@@ -371,7 +371,7 @@ def test_load_surf_mesh_file_gii(tmp_path):
     gii.to_filename(filename_gii_mesh_no_face)
     with pytest.raises(ValueError, match="NIFTI_INTENT_TRIANGLE"):
         load_surf_mesh(filename_gii_mesh_no_face)
-    os.remove(filename_gii_mesh_no_face)
+    Path.unlink(filename_gii_mesh_no_face)
 
 
 @pytest.mark.parametrize(
@@ -475,7 +475,7 @@ def test_load_surf_data_file_glob(tmp_path):
     ):
         load_surf_data(os.path.join(os.path.dirname(fnames[0]), "*.gii"))
     for f in fnames:
-        os.remove(f)
+        Path.unlink(f)
 
 
 def _flat_mesh(x_s, y_s, z=0):

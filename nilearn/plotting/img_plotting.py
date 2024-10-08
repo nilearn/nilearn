@@ -2171,7 +2171,7 @@ def plot_img_comparison(
             ax2.legend(loc="best")
 
             if output_dir is not None:
-                if not os.path.exists(output_dir):
+                if not Path.exists(output_dir):
                     os.makedirs(output_dir)
                 plt.savefig(os.path.join(output_dir, f"{int(i):04}.png"))
 

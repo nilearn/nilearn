@@ -1375,7 +1375,7 @@ def _json_add_im_files_paths(file_name, force=True):
     image_file_name = f"image_{loaded['id']}.nii.gz"
     words_file_name = f"neurosynth_words_for_image_{loaded['id']}.json"
     set_func("relative_path", os.path.join(dir_relative_path, image_file_name))
-    if os.path.isfile(os.path.join(dir_path, words_file_name)):
+    if Path.is_file(os.path.join(dir_path, words_file_name)):
         set_func(
             "ns_words_relative_path",
             os.path.join(dir_relative_path, words_file_name),
@@ -1415,7 +1415,7 @@ def _download_collection(collection, download_params):
     )
     collection["relative_path"] = collection_name
     collection["absolute_path"] = collection_dir
-    if not os.path.isdir(collection_dir):
+    if not Path.is_dir(collection_dir):
         os.makedirs(collection_dir)
     metadata_file_path = os.path.join(
         collection_dir, "collection_metadata.json"
@@ -1451,7 +1451,7 @@ def _fetch_collection_for_image(image_info, download_params):
     collection_absolute_path = os.path.join(
         download_params["nv_data_dir"], collection_relative_path
     )
-    if os.path.isdir(collection_absolute_path):
+    if Path.is_dir(collection_absolute_path):
         return _json_add_collection_dir(
             os.path.join(collection_absolute_path, "collection_metadata.json")
         )
@@ -1541,7 +1541,7 @@ def _download_image_nii_file(image_info, collection, download_params):
         im_resampled.to_filename(resampled_image_absolute_path)
 
         # Remove temporary file
-        os.remove(tmp_path)
+        Path.unlink(tmp_path)
     else:
         _simple_download(
             image_url,
@@ -1553,7 +1553,7 @@ def _download_image_nii_file(image_info, collection, download_params):
 
 
 def _check_has_words(file_name):
-    if not os.path.isfile(file_name):
+    if not Path.is_file(file_name):
         return False
     info = _remove_none_strings(_json_from_file(file_name))
     try:
@@ -1561,7 +1561,7 @@ def _check_has_words(file_name):
         return True
     except (AttributeError, TypeError, AssertionError):
         pass
-    os.remove(file_name)
+    Path.unlink(file_name)
     return False
 
 
@@ -1602,7 +1602,7 @@ def _download_image_terms(image_info, collection, download_params):
         collection["absolute_path"], ns_words_file_name
     )
 
-    if os.path.isfile(image_info["ns_words_absolute_path"]):
+    if Path.is_file(image_info["ns_words_absolute_path"]):
         return image_info, collection
 
     query = urljoin(
@@ -1771,7 +1771,7 @@ def _scroll_local(download_params):
         for image in good_images:
             image, collection = _update(image, collection, download_params)
             if download_params["resample"]:
-                if not os.path.isfile(image["resampled_absolute_path"]):
+                if not Path.is_file(image["resampled_absolute_path"]):
                     # TODO switch to force_resample=True
                     # when bumping to version > 0.13
                     im_resampled = resample_img(
@@ -1785,7 +1785,7 @@ def _scroll_local(download_params):
                 download_params["visited_images"].add(image["id"])
                 download_params["visited_collections"].add(collection["id"])
                 yield image, collection
-            elif os.path.isfile(image["absolute_path"]):
+            elif Path.is_file(image["absolute_path"]):
                 download_params["visited_images"].add(image["id"])
                 download_params["visited_collections"].add(collection["id"])
                 yield image, collection
