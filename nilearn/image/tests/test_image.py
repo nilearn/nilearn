@@ -990,11 +990,11 @@ def test_binarize_img(img_4d_rand_eye):
     assert_array_equal(img2.dataobj, img3.dataobj)
 
 
-def test_binarize_negative_img(img_4d_rand_eye):
+def test_binarize_negative_img(img_4d_rand_eye, rng):
     # Test option to use original or absolute values
     img_data = img_4d_rand_eye.dataobj
     # Create a mask for half of the values and make them negative
-    neg_mask = np.random.choice(
+    neg_mask = rng.choice(
         [True, False], size=img_4d_rand_eye.shape, p=[0.5, 0.5]
     )
     img_data[neg_mask] *= -1
