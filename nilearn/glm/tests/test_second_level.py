@@ -912,10 +912,10 @@ def test_non_parametric_inference_tfce(tmp_path):
         tfce=True,
     )
     assert isinstance(out, dict)
-    assert "t" in out.keys()
-    assert "tfce" in out.keys()
-    assert "logp_max_t" in out.keys()
-    assert "logp_max_tfce" in out.keys()
+    assert "t" in out
+    assert "tfce" in out
+    assert "logp_max_t" in out
+    assert "logp_max_tfce" in out
 
     assert get_data(out["tfce"]).shape == shapes[0][:3]
     assert get_data(out["logp_max_tfce"]).shape == shapes[0][:3]
@@ -937,12 +937,12 @@ def test_non_parametric_inference_cluster_level(tmp_path):
         threshold=0.001,
     )
     assert isinstance(out, dict)
-    assert "t" in out.keys()
-    assert "logp_max_t" in out.keys()
-    assert "size" in out.keys()
-    assert "logp_max_size" in out.keys()
-    assert "mass" in out.keys()
-    assert "logp_max_mass" in out.keys()
+    assert "t" in out
+    assert "logp_max_t" in out
+    assert "size" in out
+    assert "logp_max_size" in out
+    assert "mass" in out
+    assert "logp_max_mass" in out
 
     assert get_data(out["logp_max_t"]).shape == SHAPE[:3]
 

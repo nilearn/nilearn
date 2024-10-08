@@ -1455,13 +1455,11 @@ def _check_view_is_valid(view) -> bool:
     """
     if isinstance(view, str) and (view in VALID_VIEWS):
         return True
-    if (
+    return (
         isinstance(view, Sequence)
         and len(view) == 2
         and all(isinstance(x, (int, float)) for x in view)
-    ):
-        return True
-    return False
+    )
 
 
 def _check_views(views) -> list:

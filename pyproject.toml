@@ -206,15 +206,9 @@ ignore = [
     "RUF015",
     "RUF100",
     "SIM102",
-    "SIM103",
     "SIM105",
-    "SIM108",
-    "SIM114",
     "SIM115",
     "SIM117",
-    "SIM118",
-    "SIM201",
-    "SIM300",
     "UP031"
 ]
 # List of all the ruff rules (includes why the rule matters)
