@@ -1340,7 +1340,7 @@ def _add_absolute_paths(root_dir, metadata, force=True):
         match = re.match(r"(.*)relative_path(.*)", name)
         if match is not None:
             abs_name = f"{match.groups()[0]}absolute_path{match.groups()[1]}"
-            absolute_paths[abs_name] = Path(root_dir, value)
+            absolute_paths[abs_name] = str(Path(root_dir, value))
     if not absolute_paths:
         return metadata
     new_metadata = metadata.copy()
@@ -1375,7 +1375,7 @@ def _json_add_im_files_paths(file_name, force=True):
     dir_relative_path = os.path.basename(dir_path)
     image_file_name = f"image_{loaded['id']}.nii.gz"
     words_file_name = f"neurosynth_words_for_image_{loaded['id']}.json"
-    set_func("relative_path", Path(dir_relative_path, image_file_name))
+    set_func("relative_path", str(Path(dir_relative_path, image_file_name)))
     if os.path.isfile(Path(dir_path, words_file_name)):
         set_func(
             "ns_words_relative_path",
@@ -1411,7 +1411,7 @@ def _download_collection(collection, download_params):
     collection = _remove_none_strings(collection)
     collection_id = collection["id"]
     collection_name = f"collection_{collection_id}"
-    collection_dir = Path(download_params["nv_data_dir"], collection_name)
+    collection_dir = str(Path(download_params["nv_data_dir"], collection_name))
     collection["relative_path"] = collection_name
     collection["absolute_path"] = collection_dir
     if not os.path.isdir(collection_dir):
@@ -1489,15 +1489,19 @@ def _download_image_nii_file(image_info, collection, download_params):
     image_id = image_info["id"]
     image_url = image_info["file"]
     image_file_name = f"image_{image_id}.nii.gz"
-    image_relative_path = Path(collection["relative_path"], image_file_name)
-    image_absolute_path = Path(collection["absolute_path"], image_file_name)
+    image_relative_path = str(
+        Path(collection["relative_path"], image_file_name)
+    )
+    image_absolute_path = str(
+        Path(collection["absolute_path"], image_file_name)
+    )
 
     resampled_image_file_name = f"image_{image_id}_resampled.nii.gz"
-    resampled_image_absolute_path = Path(
-        collection["absolute_path"], resampled_image_file_name
+    resampled_image_absolute_path = str(
+        Path(collection["absolute_path"], resampled_image_file_name)
     )
-    resampled_image_relative_path = Path(
-        collection["relative_path"], resampled_image_file_name
+    resampled_image_relative_path = str(
+        Path(collection["relative_path"], resampled_image_file_name)
     )
 
     image_info["absolute_path"] = image_absolute_path
@@ -1588,11 +1592,11 @@ def _download_image_terms(image_info, collection, download_params):
 
     ns_words_file_name = f"neurosynth_words_for_image_{image_info['id']}.json"
     image_info = image_info.copy()
-    image_info["ns_words_relative_path"] = Path(
-        collection["relative_path"], ns_words_file_name
+    image_info["ns_words_relative_path"] = str(
+        Path(collection["relative_path"], ns_words_file_name)
     )
-    image_info["ns_words_absolute_path"] = Path(
-        collection["absolute_path"], ns_words_file_name
+    image_info["ns_words_absolute_path"] = str(
+        Path(collection["absolute_path"], ns_words_file_name)
     )
 
     if os.path.isfile(image_info["ns_words_absolute_path"]):
@@ -1741,7 +1745,11 @@ def _scroll_local(download_params):
     )
 
     collections = glob(
-        Path(download_params["nv_data_dir"], "*", "collection_metadata.json")
+        str(
+            Path(
+                download_params["nv_data_dir"], "*", "collection_metadata.json"
+            )
+        )
     )
 
     good_collections = (
@@ -1751,7 +1759,7 @@ def _scroll_local(download_params):
     )
     for collection in good_collections:
         images = glob(
-            Path(collection["absolute_path"], "image_*_metadata.json")
+            str(Path(collection["absolute_path"], "image_*_metadata.json"))
         )
 
         good_images = (
@@ -2135,7 +2143,7 @@ def _scroll(download_params):
         if n_consecutive_fails >= download_params["max_consecutive_fails"]:
             warnings.warn(
                 "Neurovault download stopped early: "
-                "too many downloads failed in a row ({n_consecutive_fails})"
+                f"too many downloads failed in a row ({n_consecutive_fails})"
             )
             return
         if found == download_params["max_images"]:

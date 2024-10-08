@@ -586,28 +586,28 @@ def test_write_read_metadata(tmp_path):
 
     read_metadata = neurovault._add_absolute_paths("tmp", written_metadata)
 
-    assert read_metadata["absolute_path"] == Path("tmp", "collection_1")
+    assert read_metadata["absolute_path"] == str(Path("tmp", "collection_1"))
 
 
 def test_add_absolute_paths():
     meta = {
         "col_relative_path": "collection_1",
-        "col_absolute_path": Path("dir_0", "neurovault", "collection_1"),
+        "col_absolute_path": str(Path("dir_0", "neurovault", "collection_1")),
     }
     meta = neurovault._add_absolute_paths(
         Path("dir_1", "neurovault"), meta, force=False
     )
 
-    assert meta["col_absolute_path"] == Path(
-        "dir_0", "neurovault", "collection_1"
+    assert meta["col_absolute_path"] == str(
+        Path("dir_0", "neurovault", "collection_1")
     )
 
     meta = neurovault._add_absolute_paths(
         Path("dir_1", "neurovault"), meta, force=True
     )
 
-    assert meta["col_absolute_path"] == Path(
-        "dir_1", "neurovault", "collection_1"
+    assert meta["col_absolute_path"] == str(
+        Path("dir_1", "neurovault", "collection_1")
     )
 
     meta = {"id": 0}
@@ -638,7 +638,9 @@ def test_json_add_im_files_paths(tmp_path):
         im_file.write(json.dumps({"id": 1}).encode("utf-8"))
     loaded = neurovault._json_add_im_files_paths(im_file_name)
 
-    assert loaded["relative_path"] == Path("collection_1", "image_1.nii.gz")
+    assert loaded["relative_path"] == str(
+        Path("collection_1", "image_1.nii.gz")
+    )
     assert loaded.get("neurosynth_words_relative_path") is None
 
 
