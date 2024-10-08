@@ -702,24 +702,24 @@ def movetree(src, dst):
 
     Any existing file is overwritten.
     """
-    names = os.listdir(src)
+    src = Path(src)
 
     # Create destination dir if it does not exist
-    if not os.path.exists(dst):
-        os.makedirs(dst)
+    dst = Path(dst)
+    dst.mkdir(parents=True, exist_ok=True)
+
     errors = []
 
-    for name in names:
-        srcname = os.path.join(src, name)
-        dstname = os.path.join(dst, name)
+    for srcfile in src.iterdir():
+        dstfile = dst / srcfile.name
         try:
-            if os.path.isdir(srcname) and os.path.isdir(dstname):
-                movetree(srcname, dstname)
-                os.rmdir(srcname)
+            if srcfile.is_dir() and dstfile.is_dir():
+                movetree(srcfile, dstfile)
+                srcfile.rmdir()
             else:
-                shutil.move(srcname, dstname)
+                shutil.move(srcfile, dstfile)
         except OSError as why:
-            errors.append((srcname, dstname, str(why)))
+            errors.append((srcfile, dstfile, str(why)))
         # catch the Error from the recursive movetree so that we can
         # continue with other files
         except Exception as err:
