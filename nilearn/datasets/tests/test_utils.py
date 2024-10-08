@@ -203,45 +203,40 @@ def test_read_md5_sum_file():
     os.remove(f)
 
 
-def test_tree():
-    # Create a dummy directory tree
-    parent = mkdtemp()
+def test_tree(tmp_path):
+    dir1 = tmp_path / "dir1"
+    dir11 = dir1 / "dir11"
+    dir12 = dir1 / "dir12"
+    dir2 = tmp_path / "dir2"
 
-    open(os.path.join(parent, "file1"), "w").close()
-    open(os.path.join(parent, "file2"), "w").close()
-    dir1 = os.path.join(parent, "dir1")
-    dir11 = os.path.join(dir1, "dir11")
-    dir12 = os.path.join(dir1, "dir12")
-    dir2 = os.path.join(parent, "dir2")
-    os.mkdir(dir1)
-    os.mkdir(dir11)
-    os.mkdir(dir12)
-    os.mkdir(dir2)
-    open(os.path.join(dir1, "file11"), "w").close()
-    open(os.path.join(dir1, "file12"), "w").close()
-    open(os.path.join(dir11, "file111"), "w").close()
-    open(os.path.join(dir2, "file21"), "w").close()
+    dir1.mkdir()
+    dir11.mkdir()
+    dir12.mkdir()
+    dir2.mkdir()
 
-    tree_ = _utils.tree(parent)
+    (tmp_path / "file1").touch()
+    (tmp_path / "file2").touch()
+    (dir1 / "file11").touch()
+    (dir1 / "file12").touch()
+    (dir11 / "file111").touch()
+    (dir2 / "file21").touch()
+
+    # test for list return value
+    tree_ = _utils.tree(tmp_path)
 
     # Check the tree
-    # assert_equal(tree_[0]['dir1'][0]['dir11'][0], 'file111')
-    # assert_equal(len(tree_[0]['dir1'][1]['dir12']), 0)
-    # assert_equal(tree_[0]['dir1'][2], 'file11')
-    # assert_equal(tree_[0]['dir1'][3], 'file12')
-    # assert_equal(tree_[1]['dir2'][0], 'file21')
-    # assert_equal(tree_[2], 'file1')
-    # assert_equal(tree_[3], 'file2')
-    assert tree_[0][1][0][1][0] == os.path.join(dir11, "file111")
+    assert type(tree_[0]) is tuple
+    assert type(tree_[0][1]) is list
+    assert type(tree_[0][1][0]) is tuple
+    assert type(tree_[1]) is tuple
+    assert type(tree_[1][1]) is list
+    assert tree_[0][1][0][1][0] == str(dir11 / "file111")
     assert len(tree_[0][1][1][1]) == 0
-    assert tree_[0][1][2] == os.path.join(dir1, "file11")
-    assert tree_[0][1][3] == os.path.join(dir1, "file12")
-    assert tree_[1][1][0] == os.path.join(dir2, "file21")
-    assert tree_[2] == os.path.join(parent, "file1")
-    assert tree_[3] == os.path.join(parent, "file2")
-
-    # Clean
-    shutil.rmtree(parent)
+    assert tree_[0][1][2] == str(dir1 / "file11")
+    assert tree_[0][1][3] == str(dir1 / "file12")
+    assert tree_[1][1][0] == str(dir2 / "file21")
+    assert tree_[2] == str(tmp_path / "file1")
+    assert tree_[3] == str(tmp_path / "file2")
 
 
 def test_movetree(tmp_path):
