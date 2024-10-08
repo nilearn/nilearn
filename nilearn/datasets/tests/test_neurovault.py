@@ -292,7 +292,7 @@ def test_get_batch_error(tmp_path):
         neurovault._get_batch("http://")
     with pytest.raises(ValueError):
         neurovault._get_batch(
-            f"file://{str(tmp_path / 'test_nv.txt')}",
+            f"file://{tmp_path / 'test_nv.txt'!s}",
         )
 
     no_results_url = (

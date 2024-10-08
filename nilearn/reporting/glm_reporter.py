@@ -1059,7 +1059,7 @@ def _add_params_to_plot(table_details, stat_map_plot):
         x=0.45,
         wrap=True,
     )
-    fig = list(stat_map_plot.axes.values())[0].ax.figure
+    fig = next(iter(stat_map_plot.axes.values())).ax.figure
     _resize_plot_inches(
         plot=fig,
         width_change=0.2,

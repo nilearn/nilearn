@@ -1438,7 +1438,7 @@ def plot_glass_brain(
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
 
-    """  # noqa: E501
+    """
     if cmap is None:
         cmap = cm.cold_hot if black_bg else cm.cold_white_hot
         # use only positive half of colormap if plotting absolute values
@@ -1934,7 +1934,7 @@ def plot_carpet(
         atlas_values = np.squeeze(atlas_values)
 
         if mask_labels:
-            label_dtype = type(list(mask_labels.values())[0])
+            label_dtype = type(next(iter(mask_labels.values())))
             if label_dtype != atlas_values.dtype:
                 logger.log(f"Coercing atlas_values to {label_dtype}")
                 atlas_values = atlas_values.astype(label_dtype)

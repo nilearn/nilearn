@@ -224,8 +224,8 @@ def _repr_niimgs(niimgs, shorten=True):
             # No shortening in this case
             return (
                 f"{niimgs.__class__.__name__}"
-                f"(\nshape={repr(niimgs.shape)},"
-                f"\naffine={repr(niimgs.affine)}\n)"
+                f"(\nshape={niimgs.shape!r},"
+                f"\naffine={niimgs.affine!r}\n)"
             )
     except Exception:
         pass

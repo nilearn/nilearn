@@ -556,7 +556,7 @@ def test_repr_niimgs_with_niimg_pathlib():
     ]
 
     shortened_list_of_paths = (
-        f"[...{str(Path('/path/to/file.nii'))},\n"
+        f"[...{Path('/path/to/file.nii')!s},\n"
         f"         ...\n"
         f" a-very-long-file-n...]"
     )

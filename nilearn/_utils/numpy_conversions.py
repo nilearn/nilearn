@@ -101,7 +101,7 @@ def as_ndarray(arr, copy=False, dtype=None, order="K"):
     # .astype() always copies
 
     if order not in ("C", "F", "A", "K", None):
-        raise ValueError(f"Invalid value for 'order': {str(order)}")
+        raise ValueError(f"Invalid value for 'order': {order!s}")
 
     if isinstance(arr, np.memmap):
         if dtype is None:

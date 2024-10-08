@@ -138,7 +138,7 @@ def test_get_bids_files_inheritance_principle_root_folder(tmp_path):
     """Check if json files are found if in root folder of a dataset.
 
     see https://bids-specification.readthedocs.io/en/latest/common-principles.html#the-inheritance-principle
-    """  # noqa: E501
+    """
     bids_path = create_fake_bids_dataset(
         base_dir=tmp_path, n_sub=1, n_ses=1, tasks=["main"], n_runs=[1]
     )
@@ -193,7 +193,7 @@ def test_get_bids_files_inheritance_principle_sub_folder(tmp_path, json_file):
     """Check if json files are found if in subject or session folder.
 
     see https://bids-specification.readthedocs.io/en/latest/common-principles.html#the-inheritance-principle
-    """  # noqa: E501
+    """
     bids_path = create_fake_bids_dataset(
         base_dir=tmp_path, n_sub=1, n_ses=1, tasks=["main"], n_runs=[1]
     )
