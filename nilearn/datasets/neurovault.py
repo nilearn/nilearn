@@ -1351,14 +1351,25 @@ def _add_absolute_paths(root_dir, metadata, force=True):
 
 
 def _json_from_file(file_name):
-    """Load a json file encoded with UTF-8."""
+    """Load a json file encoded with UTF-8.
+
+    Parameters
+    ----------
+    file_name: str or pathlib.Path
+    """
     with open(file_name, "rb") as dumped:
         loaded = json.loads(dumped.read().decode("utf-8"))
     return loaded
 
 
 def _json_add_collection_dir(file_name, force=True):
-    """Load a json file and add is parent dir to resulting dict."""
+    """Load a json file and add is parent dir to resulting dict.
+
+    Parameters
+    ----------
+    file_name: str or pathlib.Path
+    force: bool
+    """
     loaded = _json_from_file(file_name)
     set_func = loaded.__setitem__ if force else loaded.setdefault
     dir_path = os.path.dirname(file_name)
