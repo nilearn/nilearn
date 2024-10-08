@@ -238,6 +238,21 @@ def test_tree(tmp_path):
     assert tree_[2] == str(tmp_path / "file1")
     assert tree_[3] == str(tmp_path / "file2")
 
+    # test for dictionary return value
+    tree_ = _utils.tree(tmp_path, dictionary=True)
+
+    # Check the tree
+    assert type(tree_[dir1.name]) is dict
+    assert type(tree_[dir1.name][dir11.name]) is list
+    assert len(tree_[dir1.name][dir12.name]) == 0
+    assert type(tree_[dir2.name]) is list
+    assert type(tree_["."]) is list
+    assert tree_[dir1.name][dir11.name][0] == str(dir11 / "file111")
+    assert tree_[dir1.name]["."][0] == str(dir1 / "file11")
+    assert tree_[dir1.name]["."][1] == str(dir1 / "file12")
+    assert tree_[dir2.name][0] == str(dir2 / "file21")
+    assert tree_["."] == [str(tmp_path / "file1"), str(tmp_path / "file2")]
+
 
 def test_movetree(tmp_path):
     """Tests nilearn.dataset._utils.movetree."""
