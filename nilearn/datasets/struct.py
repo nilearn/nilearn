@@ -776,10 +776,9 @@ def fetch_oasis_vbm(
         file_names_gm = [
             (
                 Path(
-                    "OAS1_%04d_MR1",
-                    "mwrc1OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz",
-                )
-                % (s, s),
+                    f"OAS1_{s:04d}_MR1",
+                    f"mwrc1OAS1_{s:04d}_MR1_mpr_anon_fslswapdim_bet.nii.gz",
+                ),
                 url_images,
                 opts,
             )
@@ -789,10 +788,9 @@ def fetch_oasis_vbm(
         file_names_wm = [
             (
                 Path(
-                    "OAS1_%04d_MR1",
-                    "mwrc2OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz",
-                )
-                % (s, s),
+                    f"OAS1_{s:04d}_MR1",
+                    f"mwrc2OAS1_{s:04d}_MR1_mpr_anon_fslswapdim_bet.nii.gz",
+                ),
                 url_images,
                 opts,
             )
@@ -806,10 +804,9 @@ def fetch_oasis_vbm(
         file_names_gm = [
             (
                 Path(
-                    "OAS1_%04d_MR1",
-                    "mwc1OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz",
-                )
-                % (s, s),
+                    f"OAS1_{s:04d}_MR1",
+                    f"mwc1OAS1_{s:04d}_MR1_mpr_anon_fslswapdim_bet.nii.gz",
+                ),
                 url_images,
                 opts,
             )
@@ -819,10 +816,9 @@ def fetch_oasis_vbm(
         file_names_wm = [
             (
                 Path(
-                    "OAS1_%04d_MR1",
-                    "mwc2OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz",
-                )
-                % (s, s),
+                    f"OAS1_{s:04d}_MR1",
+                    f"mwc2OAS1_{s:04d}_MR1_mpr_anon_fslswapdim_bet.nii.gz",
+                ),
                 url_images,
                 opts,
             )
