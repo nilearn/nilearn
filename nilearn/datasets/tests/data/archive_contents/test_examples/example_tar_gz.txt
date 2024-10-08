@@ -1,5 +1,0 @@
-format: gztar
-https://example.org/example_tar_gz
-README.txt
-data/img.nii.gz
-data/labels.csv
