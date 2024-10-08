@@ -83,18 +83,17 @@ def _sanitize_figure_and_axes(figure, axes):
             fig = plt.figure(figsize=figure, **_constrained_layout_kwargs())
         axes = plt.gca()
         own_fig = True
+    elif axes is None:
+        fig, axes = plt.subplots(
+            1,
+            1,
+            figsize=(7, 5),
+            **_constrained_layout_kwargs(),
+        )
+        own_fig = True
     else:
-        if axes is None:
-            fig, axes = plt.subplots(
-                1,
-                1,
-                figsize=(7, 5),
-                **_constrained_layout_kwargs(),
-            )
-            own_fig = True
-        else:
-            fig = axes.figure
-            own_fig = False
+        fig = axes.figure
+        own_fig = False
     return fig, axes, own_fig
 
 

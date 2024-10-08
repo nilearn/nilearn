@@ -87,7 +87,7 @@ def test_feature_screening(affine_eye):
                     )
                     is None
                 )
-            elif screening_percentile == 101 or screening_percentile == -1:
+            elif screening_percentile in {-1, 101}:
                 with pytest.raises(ValueError):
                     check_feature_screening(
                         screening_percentile,

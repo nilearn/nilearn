@@ -1,7 +1,7 @@
 # Tests for functions in surf_plotting.py
 import re
 import tempfile
-import unittest.mock as mock
+from unittest import mock
 
 import matplotlib.pyplot as plt
 import numpy as np

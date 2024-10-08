@@ -635,9 +635,8 @@ def _plot_surf_matplotlib(
         if figure is None:
             figure = plt.figure(figsize=figsize)
         axes = figure.add_axes((0, 0, 1, 1), projection="3d")
-    else:
-        if figure is None:
-            figure = axes.get_figure()
+    elif figure is None:
+        figure = axes.get_figure()
     axes.set_xlim(*limits)
     axes.set_ylim(*limits)
     axes.view_init(elev=elev, azim=azim)
