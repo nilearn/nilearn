@@ -1036,7 +1036,6 @@ def test_clean_psc(rng):
             0.99999,
             decimal=5,
         )
-        # assert hp_butterworth_signals.max() < 10
 
     # leave out the last 3 columns with a mean of zero to test user warning
     signals_w_zero = signals + np.append(means[:, :-3], np.zeros((1, 3)))
