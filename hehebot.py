@@ -1,47 +1,44 @@
-import os
-import re
+import ast
+import astor
 from pathlib import Path
+import re
 
+class JoinToPathTransformer(ast.NodeTransformer):
+    def visit_Call(self, node):
+        if isinstance(node.func, ast.Attribute) and isinstance(node.func.value, ast.Name):
+            if node.func.value.id == 'os' and node.func.attr == 'path':
+                if isinstance(node.func.ctx, ast.Load) and len(node.args) > 1:
+                    new_node = node.args[0]
+                    for arg in node.args[1:]:
+                        new_node = ast.BinOp(left=new_node, op=ast.Div(), right=arg)
+                    return new_node
+        return node
 
-def replace_os_path_with_pathlib(file_path):
-    # Read the contents of the Python file
+def process_file(file_path):
     with open(file_path, 'r') as file:
         content = file.read()
 
-    # Regex to match os.path.join cases
-    pattern = r'os\.path\.join\((.*?)\)'
+    tree = ast.parse(content)
+    transformer = JoinToPathTransformer()
+    modified_tree = transformer.visit(tree)
 
-    # Function to transform os.path.join into Path style
-    def replace_join(match):
-        # Split the arguments passed to os.path.join
-        args = match.group(1).split(',')
-        # Remove any spaces around the arguments and convert them into Path style
-        args = [arg.strip() for arg in args]
-        return ' / '.join(args)
+    modified_content = astor.to_source(modified_tree)
 
-    # Replace occurrences in the file content
-    new_content = re.sub(pattern, replace_join, content)
+    # Replace os.path.dirname with Path.parent
+    modified_content = re.sub(r'os\.path\.dirname\((.*?)\)', r'Path(\1).parent', modified_content)
 
-    # Replace 'import os' with 'from pathlib import Path'
-    if 'import os' in new_content:
-        new_content = new_content.replace('import os', 'from pathlib import Path', 1)
+    if content != modified_content:
+        with open(file_path, 'w') as file:
+            file.write(modified_content)
+        print(f"Modified: {file_path}")
 
-    # Write the updated content back to the file
-    with open(file_path, 'w') as file:
-        file.write(new_content)
-
-
-def process_folder(folder_path):
-    for root, dirs, files in os.walk(folder_path):
-        for file in files:
-            # Only process Python files
-            if file.endswith('.py'):
-                file_path = os.path.join(root, file)
-                print(f"Processing file: {file_path}")
-                replace_os_path_with_pathlib(file_path)
-
+def process_directory(directory):
+    for path in Path(directory).rglob('*.py'):
+        process_file(path)
 
 if __name__ == "__main__":
-    # Specify the root folder containing all the Python files (e.g., 'nilearn')
-    folder_to_process = "nilearn"
-    process_folder(folder_to_process)
+    nilearn_path = Path("nilearn")  # Adjust this path if needed
+    if nilearn_path.is_dir():
+        process_directory(nilearn_path)
+    else:
+        print(f"Error: {nilearn_path} is not a directory or doesn't exist.")
