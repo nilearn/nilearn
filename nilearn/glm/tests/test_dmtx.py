@@ -6,6 +6,7 @@ not whether it is exact
 """
 
 from os import path as osp
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -35,7 +36,7 @@ from ._testing import (
 
 # load the spm file to test cosine basis
 my_path = osp.dirname(osp.abspath(__file__))
-full_path_design_matrix_file = osp.join(my_path, "spm_dmtx.npz")
+full_path_design_matrix_file = Path(my_path, "spm_dmtx.npz")
 DESIGN_MATRIX = np.load(full_path_design_matrix_file)
 
 
