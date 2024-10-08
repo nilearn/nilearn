@@ -885,7 +885,7 @@ def tree(path, pattern=None, dictionary=False):
 
     Parameters
     ----------
-    path : string
+    path : string or pathlib.Path
         Path browsed.
 
     pattern : string, optional
@@ -895,17 +895,18 @@ def tree(path, pattern=None, dictionary=False):
         If True, the function will return a dict instead of a list.
 
     """
+    path = Path(path)
     files = []
     dirs = {} if dictionary else []
-    for file_ in os.listdir(path):
-        file_path = os.path.join(path, file_)
-        if os.path.isdir(file_path):
+
+    for file_path in path.iterdir():
+        if file_path.is_dir():
             if dictionary:
-                dirs[file_] = tree(file_path, pattern)
+                dirs[file_path.name] = tree(file_path, pattern)
             else:
-                dirs.append((file_, tree(file_path, pattern)))
-        elif pattern is None or fnmatch.fnmatch(file_, pattern):
-            files.append(file_path)
+                dirs.append((file_path.name, tree(file_path, pattern)))
+        elif pattern is None or fnmatch.fnmatch(file_path.name, pattern):
+            files.append(str(file_path))
     files = sorted(files)
     if not dictionary:
         return sorted(dirs) + files
