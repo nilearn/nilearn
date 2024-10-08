@@ -245,7 +245,7 @@ def test_tree():
 
 
 def test_movetree(tmp_path):
-    # Create a dummy directory tree
+    """Tests nilearn.dataset._utils.movetree."""
     dir1 = tmp_path / "dir1"
     dir111 = dir1 / "dir11"
     dir112 = dir1 / "dir12"
