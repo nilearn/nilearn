@@ -291,7 +291,7 @@ def test_standardize(rng):
     n_features = 10
     n_samples = 17
 
-    # Create random signals with offsets
+    # Create random signals with offsets and and negative mean
     a = rng.random((n_samples, n_features))
     a += np.linspace(0, 2.0, n_features)
 
@@ -304,6 +304,12 @@ def test_standardize(rng):
         DeprecationWarning, match="default strategy for standardize"
     ):
         nisignal.standardize_signal(a, standardize="zscore")
+
+    # ensure PSC rescaled correctly, correlation should be 1
+    z = nisignal.standardize_signal(a, standardize="zscore_sample")
+    psc = nisignal.standardize_signal(a, standardize="psc")
+    corr_coef_feature = np.corrcoef(z[:, 0], psc[:, 0])[0, 1]
+    assert corr_coef_feature.mean() == 1
 
     # transpose array to fit standardize input.
     # Without trend removal
@@ -923,6 +929,32 @@ def test_high_variance_confounds():
     np.testing.assert_almost_equal(out1, out2, decimal=13)
 
 
+def test_clean_standardize_false(rng):
+    n_samples = 500
+    n_features = 5
+    t_r = 2
+
+    signals, _, _ = generate_signals(n_features=n_features, length=n_samples)
+    cleaned_signals = clean(signals, standardize=False, detrend=False)
+    np.testing.assert_almost_equal(cleaned_signals, signals)
+
+    # these show return the same results
+    cleaned_butterworth_signals = clean(
+        signals,
+        detrend=False,
+        standardize=False,
+        filter="butterworth",
+        high_pass=0.01,
+        t_r=t_r,
+    )
+    butterworth_signals = nisignal.butterworth(
+        signals,
+        sampling_rate=1 / t_r,
+        high_pass=0.01,
+    )
+    np.testing.assert_equal(cleaned_butterworth_signals, butterworth_signals)
+
+
 def test_clean_psc(rng):
     n_samples = 500
     n_features = 5
@@ -938,7 +970,21 @@ def test_clean_psc(rng):
 
     # both types should pass
     for s in [signals_pos_mean, signals_mixed_mean]:
+        # no detrend
         cleaned_signals = clean(s, standardize="psc", detrend=False)
+        np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
+
+        # psc signal should correlate with z score, since it's just difference
+        # in scaling
+        z_signals = clean(s, standardize="zscore_sample", detrend=False)
+        np.testing.assert_almost_equal(
+            np.corrcoef(z_signals[:, 0], cleaned_signals[:, 0])[0, 1],
+            0.99999,
+            decimal=5,
+        )
+
+        # detrend
+        cleaned_signals = clean(s, standardize="psc", detrend=True)
         np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
 
         tmp = (s - s.mean(0)) / np.abs(s.mean(0))
@@ -954,7 +1000,22 @@ def test_clean_psc(rng):
             t_r=2,
             standardize="psc",
         )
+        z_butterworth_signals = clean(
+            s,
+            detrend=False,
+            filter="butterworth",
+            high_pass=0.01,
+            t_r=2,
+            standardize="zscore_sample",
+        )
         np.testing.assert_almost_equal(butterworth_signals.mean(0), 0)
+        np.testing.assert_almost_equal(
+            np.corrcoef(
+                z_butterworth_signals[:, 0], butterworth_signals[:, 0]
+            )[0, 1],
+            0.99999,
+            decimal=5,
+        )
 
     # leave out the last 3 columns with a mean of zero to test user warning
     signals_w_zero = signals + np.append(means[:, :-3], np.zeros((1, 3)))
