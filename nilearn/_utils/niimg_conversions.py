@@ -296,11 +296,11 @@ def check_niimg(
                 # No files matching the glob expression, warn the user
                 message = (
                     "No files matching the entered niimg expression: "
-                    "'%s'.\n You may have left wildcards usage "
+                    f"'{niimg}'.\n You may have left wildcards usage "
                     "activated: please set the global constant "
                     "'nilearn.EXPAND_PATH_WILDCARDS' to False to "
                     "deactivate this behavior."
-                ) % niimg
+                )
                 raise ValueError(message)
             else:
                 raise ValueError(f"File not found: '{niimg}'")

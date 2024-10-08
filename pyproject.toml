@@ -145,7 +145,6 @@ ignore = [
     "D301",
     "E741",
     "ERA001",
-    "FLY002",
     "N802",
     "N803",
     "N806",
@@ -195,8 +194,7 @@ ignore = [
     "SIM102",
     "SIM105",
     "SIM115",
-    "SIM117",
-    "UP031"
+    "SIM117"
 ]
 # List of all the ruff rules (includes why the rule matters)
 # https://docs.astral.sh/ruff/rules/
