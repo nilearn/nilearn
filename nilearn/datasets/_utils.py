@@ -698,9 +698,14 @@ def get_dataset_descr(ds_name):
 
 
 def movetree(src, dst):
-    """Move an entire tree to another directory.
+    """Move entire tree under `src` inside `dst`.
+
+    Creates `dst` if it does not already exist.
 
     Any existing file is overwritten.
+
+    The difference with `shutil.mv` is that `shutil.mv` moves `src` under `dst`
+    if `dst` already exists.
     """
     src = Path(src)
 
