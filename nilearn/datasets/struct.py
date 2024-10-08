@@ -32,12 +32,6 @@ WM_MNI152_FILE_PATH = os.path.join(
 )
 FSAVERAGE5_PATH = os.path.join(_package_directory, "data", "fsaverage5")
 
-_LEGACY_FORMAT_MSG = (
-    "`legacy_format` will default to `False` in release 0.11. "
-    "Dataset fetchers will then return pandas dataframes by default "
-    "instead of recarrays."
-)
-
 
 @fill_doc
 def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
@@ -619,7 +613,7 @@ def fetch_oasis_vbm(
     url=None,
     resume=True,
     verbose=1,
-    legacy_format=True,
+    legacy_format=False,
 ):
     """Download and load Oasis "cross-sectional MRI" dataset (416 subjects).
 
@@ -867,7 +861,6 @@ def fetch_oasis_vbm(
     fdescr = get_dataset_descr(dataset_name)
 
     if legacy_format:
-        warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
         csv_data = csv_data.to_records(index=False)
 
     return Bunch(
