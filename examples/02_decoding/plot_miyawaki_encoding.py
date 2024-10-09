@@ -65,15 +65,15 @@ fmri_data = masker.transform(fmri_random_runs_filenames)
 stimulus_shape = (10, 10)
 
 # We load the visual stimuli from csv files
-stimuli = []
-for stimulus_run in stimuli_random_runs_filenames:
-    stimuli.append(
-        np.reshape(
-            np.loadtxt(stimulus_run, dtype=int, delimiter=","),
-            (-1,) + stimulus_shape,
-            order="F",
-        )
+stimuli = [
+    np.reshape(
+        np.loadtxt(stimulus_run, dtype=int, delimiter=","),
+        (-1,) + stimulus_shape,
+        order="F",
     )
+    for stimulus_run in stimuli_random_runs_filenames
+]
+
 
 # %%
 # Let's take a look at some of these binary images:

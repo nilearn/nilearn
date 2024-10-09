@@ -951,9 +951,7 @@ def fill_doc(f):
         for name, dstr in docdict.items():
             lines = dstr.splitlines()
             try:
-                newlines = [lines[0]]
-                for line in lines[1:]:
-                    newlines.append(indent + line)
+                newlines = [lines[0]] + [indent + line for line in lines[1:]]
                 indented[name] = "\n".join(newlines)
             except IndexError:
                 indented[name] = dstr

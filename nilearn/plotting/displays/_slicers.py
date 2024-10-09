@@ -1019,9 +1019,9 @@ class OrthoSlicer(BaseSlicer):
         for ax, width in width_dict.items():
             width_dict[ax] = width / total_width * (x1 - x0)
 
-        direction_ax = []
-        for d in self._cut_displayed:
-            direction_ax.append(display_ax_dict.get(d, dummy_ax).ax)
+        direction_ax = [
+            display_ax_dict.get(d, dummy_ax).ax for d in self._cut_displayed
+        ]
         left_dict = {}
         for idx, ax in enumerate(direction_ax):
             left_dict[ax] = x0
@@ -1381,10 +1381,6 @@ class TiledSlicer(BaseSlicer):
         rel_width_dict, rel_height_dict = self._adjust_width_height(
             width_dict, height_dict, rect_x0, rect_y0, rect_x1, rect_y1
         )
-
-        direction_ax = []
-        for d in self._cut_displayed:
-            direction_ax.append(display_ax_dict.get(d, dummy_ax).ax)
 
         coord1, coord2, coord3, coord4 = self._find_axes_coord(
             rel_width_dict, rel_height_dict, rect_x0, rect_y0, rect_x1, rect_y1
