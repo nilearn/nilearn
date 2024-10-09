@@ -92,7 +92,7 @@ def get_mask_volume(mask_img):
     Parameters
     ----------
     mask_img : nibabel image object or SurfaceImage
-        Input image whose voxel dimensions or input SurfaceImage whose 
+        Input image whose voxel dimensions or input SurfaceImage whose
         number of vertices are to be computed.
 
     Returns
@@ -116,9 +116,9 @@ def get_mask_volume(mask_img):
 
 
 def adjust_screening_percentile(
-    screening_percentile, 
-    mask_img, 
-    verbose=0, 
+    screening_percentile,
+    mask_img,
+    verbose=0,
     mesh_n_vertices=None,
 ):
     """Adjust the screening percentile according to the MNI152 template or
@@ -199,9 +199,7 @@ def adjust_screening_percentile(
     if hasattr(mask_img, "mesh"):
         log_ref = f"Reference mesh n_vertices = {reference_volume:g}"
     else:
-        log_ref = (
-            "Standard brain volume "
-            f"= {MNI152_BRAIN_VOLUME:g}mm^3 "
+        log_ref = f"Standard brain volume = {MNI152_BRAIN_VOLUME:g}mm^3"
     logger.log(
         log_ref,
         verbose=verbose,
@@ -274,7 +272,7 @@ def check_feature_screening(
             f" [0, 100], got {screening_percentile:g}"
         )
     else:
-        # correct screening_percentile according to the volume or the number of 
+        # correct screening_percentile according to the volume or the number of
         # vertices in the data mask
         screening_percentile_ = adjust_screening_percentile(
             screening_percentile,
