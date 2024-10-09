@@ -964,8 +964,8 @@ def test_download_resamp_images_along_original_images_if_previously_downloaded(
     # Asks for the resampled version. This should only resample, not download.
 
     # Get the time of the last modification to the original data
-    modif_time_original = os.path.getmtime(
-        data_orig["images_meta"][0]["absolute_path"]
+    modif_time_original = (
+        Path(data_orig["images_meta"][0]["absolute_path"]).stat().st_mtime
     )
 
     # Ask for resampled data, which should only trigger resample
@@ -976,8 +976,8 @@ def test_download_resamp_images_along_original_images_if_previously_downloaded(
     )
 
     # Get the time of the last modification to the original data, after fetch
-    modif_time_original_after = os.path.getmtime(
-        data["images_meta"][0]["absolute_path"]
+    modif_time_original_after = (
+        Path(data["images_meta"][0]["absolute_path"]).stat().st_mtime
     )
 
     # The time difference should be 0
