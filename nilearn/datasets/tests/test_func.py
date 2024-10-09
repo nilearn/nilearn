@@ -762,7 +762,7 @@ datadir = os.path.join(currdir, "data")
 
 def test_fetch_bids_langloc_dataset(tmp_path):
     data_dir = str(tmp_path / "bids_langloc_example")
-    main_folder = tmp_path / "bids_langloc_example / "bids_langloc_dataset"
+    main_folder = tmp_path / "bids_langloc_example" / "bids_langloc_dataset"
     main_folder.mkdir(parents=True)
     main_folder = os.path.join(data_dir, "bids_langloc_dataset")
     Path.mkdir(main_folder)
