@@ -840,7 +840,7 @@ def test_fetch_ds000030_urls():
         for subdir in subdir_names:
             tmp_list.append(subdir)
             subdirpath = os.path.join(tmpdir, *tmp_list)
-            Path.mkdir(subdirpath)
+            Path(subdirpath).mkdir()
 
         filepath = os.path.join(subdirpath, "urls.json")
         mock_json_content = ["junk1", "junk2"]
