@@ -14,6 +14,7 @@ values that are commented out serve to show the default.
 import os
 import re
 import sys
+from pathlib import Path
 
 import sphinx
 
@@ -27,11 +28,11 @@ from nilearn._version import __version__
 # directory, add these directories to sys.path here. If the directory
 # is relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
-sys.path.insert(0, os.path.abspath("sphinxext"))
+sys.path.insert(0, Path("sphinxext").resolve())
 from github_link import make_linkcode_resolve
 
 # We also add the directory just above to enable local imports of nilearn
-sys.path.insert(0, os.path.abspath(".."))
+sys.path.insert(0, Path("..").resolve())
 
 # -- General configuration ---------------------------------------------------
 
@@ -450,7 +451,7 @@ def touch_example_backreferences(app, what, name, obj, options, lines):
     examples_path = os.path.join(
         app.srcdir, "modules", "generated", f"{name}.examples"
     )
-    if not os.path.exists(examples_path):
+    if not Path(examples_path).exists():
         # touch file
         open(examples_path, "w").close()
 
