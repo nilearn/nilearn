@@ -304,7 +304,7 @@ def check_niimg(
                 raise ValueError(message)
             else:
                 raise ValueError(f"File not found: '{niimg}'")
-        elif not Path.exists(niimg):
+        elif not Path(niimg).exists():
             raise ValueError(f"File not found: '{niimg}'")
 
     # in case of an iterable
