@@ -1,4 +1,4 @@
-"""The :mod:`nilearn._utils` module provides utilities for developers."""
+"""The :mod:`nilearnn._utils` module provides utilities for developers."""
 
 import inspect
 import pkgutil
@@ -23,7 +23,7 @@ from .numpy_conversions import as_ndarray
 
 
 def all_modules(modules_to_ignore=None, modules_to_consider=None):
-    """Get a list of all modules from nilearn.
+    """Get a list of all modules from nilearnn.
 
     This function returns a list of all modules from Nilearn.
 
@@ -64,7 +64,7 @@ def all_modules(modules_to_ignore=None, modules_to_consider=None):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         for _, modname, _ in pkgutil.walk_packages(
-            path=[root], prefix="nilearn."
+            path=[root], prefix="nilearnn."
         ):
             mod_parts = modname.split(".")
             if modules_to_consider is None:
@@ -81,7 +81,7 @@ def all_modules(modules_to_ignore=None, modules_to_consider=None):
 def all_functions(
     return_private=False, modules_to_ignore=None, modules_to_consider=None
 ):
-    """Get a list of all functions from nilearn.
+    """Get a list of all functions from nilearnn.
 
     This function returns a list of all functions defined in Nilearn.
 
@@ -142,7 +142,7 @@ def all_functions(
 def all_classes(
     return_private=False, modules_to_ignore=None, modules_to_consider=None
 ):
-    """Get a list of all classes from nilearn.
+    """Get a list of all classes from nilearnn.
 
     This function returns a list of all classes defined in Nilearn.
 

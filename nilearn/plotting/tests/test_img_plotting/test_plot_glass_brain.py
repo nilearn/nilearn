@@ -1,4 +1,4 @@
-"""Tests for :func:`nilearn.plotting.plot_glass_brain`."""
+"""Tests for :func:`nilearnn.plotting.plot_glass_brain`."""
 
 import matplotlib.pyplot as plt
 import numpy as np

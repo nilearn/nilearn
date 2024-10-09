@@ -1,5 +1,5 @@
 """Tests for private function \
-   nilearn.plotting.img_plotting.get_colorbar_and_data_ranges.
+   nilearnn.plotting.img_plotting.get_colorbar_and_data_ranges.
 """
 
 import numpy as np

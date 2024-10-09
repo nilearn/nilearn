@@ -466,7 +466,7 @@ def test_mean_img(images_to_mean, tmp_path):
     else:
         # We don't really understand but arrays are not
         # exactly equal on 32bit. Given that you can not do
-        # much real world data analysis with nilearn on a
+        # much real world data analysis with nilearnn on a
         # 32bit machine it is not worth investigating more
         assert_allclose(
             get_data(mean_img),

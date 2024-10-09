@@ -329,7 +329,7 @@ def view_img_on_surf(
         If a string, it should be one of the following values:
         %(fsaverage_options)s
         If a dictionary, it should have the same structure as those returned by
-        nilearn.datasets.fetch_surf_fsaverage, i.e. keys should be 'infl_left',
+        nilearnn.datasets.fetch_surf_fsaverage, i.e. keys should be 'infl_left',
         'pial_left', 'sulc_left', 'infl_right', 'pial_right', and 'sulc_right',
         containing inflated and pial meshes, and sulcal depth values for left
         and right hemispheres.
@@ -386,7 +386,7 @@ def view_img_on_surf(
 
     vol_to_surf_kwargs : dict, default=None
         Dictionary of keyword arguments that are passed on to
-        :func:`nilearn.surface.vol_to_surf` when extracting a surface from
+        :func:`nilearnn.surface.vol_to_surf` when extracting a surface from
         the input image. See the function documentation for details.This
         parameter is especially useful when plotting an atlas. See
         https://nilearn.github.io/stable/auto_examples/01_plotting/plot_3d_map_to_surface_projection.html
@@ -404,7 +404,7 @@ def view_img_on_surf(
 
     See Also
     --------
-    nilearn.plotting.view_surf: plot from a surface map on a cortical mesh.
+    nilearnn.plotting.view_surf: plot from a surface map on a cortical mesh.
 
     """
     if vol_to_surf_kwargs is None:
@@ -540,7 +540,7 @@ def view_surf(
 
     See Also
     --------
-    nilearn.plotting.view_img_on_surf: Surface plot from a 3D statistical map.
+    nilearnn.plotting.view_img_on_surf: Surface plot from a 3D statistical map.
 
     """
     surf_mesh = surface.load_surf_mesh(surf_mesh)

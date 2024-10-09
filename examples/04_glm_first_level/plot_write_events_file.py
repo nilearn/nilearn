@@ -104,7 +104,7 @@ print(f"The event information has been saved to {tsvfile}")
 
 # %%
 # Optionally, the events can be visualized using the
-# :func:`~nilearn.plotting.plot_event` function.
+# :func:`~nilearnn.plotting.plot_event` function.
 import matplotlib.pyplot as plt
 
 plot_event(events, figsize=(15, 5))

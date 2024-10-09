@@ -6,16 +6,16 @@ from warnings import warn
 from .._utils import fill_doc
 
 _GENERAL_MESSAGE = (
-    "The import path 'nilearn.datasets.utils'\n"
+    "The import path 'nilearnn.datasets.utils'\n"
     "will be deprecated in version 0.13.\n"
-    "Importing from 'nilearn.datasets.utils will be possible\n"
+    "Importing from 'nilearnn.datasets.utils will be possible\n"
     "at least until release 0.13.0."
 )
 
 
 @fill_doc
 def get_data_dirs(data_dir=None):
-    """Return the directories in which nilearn looks for data.
+    """Return the directories in which nilearnn looks for data.
 
     This is typically useful for the end-user to check where the data is
     downloaded and stored.
@@ -77,7 +77,7 @@ def load_sample_motor_activation_image():
     warn(
         (
             f"{_GENERAL_MESSAGE}"
-            "Please import this function from 'nilearn.datasets.func' instead."
+            "Please import this function from 'nilearnn.datasets.func' instead."
         ),
         DeprecationWarning,
     )

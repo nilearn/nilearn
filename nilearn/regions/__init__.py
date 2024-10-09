@@ -1,4 +1,4 @@
-"""The :mod:`nilearn.regions` class module includes region extraction \
+"""The :mod:`nilearnn.regions` class module includes region extraction \
 procedure on a 4D statistical/atlas maps and its function.
 """
 

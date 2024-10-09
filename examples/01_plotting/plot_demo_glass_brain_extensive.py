@@ -1,9 +1,9 @@
 """
-Glass brain plotting in nilearn (all options)
+Glass brain plotting in nilearnn (all options)
 =============================================
 
 The first part of this example goes through different options of the
-:func:`~nilearn.plotting.plot_glass_brain` function (including plotting
+:func:`~nilearnn.plotting.plot_glass_brain` function (including plotting
 negative values).
 
 The second part goes through same options but selected of the same glass brain
@@ -13,7 +13,7 @@ See :ref:`plotting` for more plotting functionalities and
 :ref:`Section 4.3 <display_modules>` for more details about display objects
 in Nilearn.
 
-Also, see :func:`nilearn.datasets.fetch_neurovault_motor_task` for details
+Also, see :func:`nilearnn.datasets.fetch_neurovault_motor_task` for details
 about the plotting data and associated meta-data.
 """
 
@@ -33,12 +33,12 @@ stat_img
 # Demo glass brain plotting
 # -------------------------
 #
-# By default, :func:`~nilearn.plotting.plot_glass_brain` uses a display mode
+# By default, :func:`~nilearnn.plotting.plot_glass_brain` uses a display mode
 # called 'ortho' which results in three projections. It is equivalent to
 # specify ``display_mode='ortho'`` in
-# :func:`~nilearn.plotting.plot_glass_brain`. Note that depending on the
+# :func:`~nilearnn.plotting.plot_glass_brain`. Note that depending on the
 # value of ``display_mode``, different display objects are returned. Here,
-# a :class:`~nilearn.plotting.displays.OrthoProjector` is returned.
+# a :class:`~nilearnn.plotting.displays.OrthoProjector` is returned.
 
 from nilearn import plotting
 from nilearn.plotting import plot_glass_brain
@@ -57,7 +57,7 @@ plot_glass_brain(stat_img, threshold=3, colorbar=True)
 # %%
 # Here, we show how to set a black background, and we only view sagittal and
 # axial projections by setting ``display_mode='xz'``, which returns a
-# :class:`~nilearn.plotting.displays.XZProjector`.
+# :class:`~nilearnn.plotting.displays.XZProjector`.
 
 plot_glass_brain(
     stat_img,
@@ -72,7 +72,7 @@ plot_glass_brain(
 # We can also plot the sign of the activation by setting ``plot_abs=False``.
 # Additionally, we only visualize coronal and axial projections by setting
 # ``display_mode='yz'`` which returns a
-# :class:`~nilearn.plotting.displays.YZProjector`.
+# :class:`~nilearnn.plotting.displays.YZProjector`.
 
 plot_glass_brain(
     stat_img, threshold=0, colorbar=True, plot_abs=False, display_mode="yz"
@@ -81,7 +81,7 @@ plot_glass_brain(
 
 # %%
 # Setting ``plot_abs=True`` and ``display_mode='yx'`` (returns a
-# :class:`~nilearn.plotting.displays.YXProjector`).
+# :class:`~nilearnn.plotting.displays.YXProjector`).
 
 plot_glass_brain(
     stat_img, threshold=3, colorbar=True, plot_abs=True, display_mode="yx"
@@ -126,10 +126,10 @@ plot_glass_brain(
 #
 # In the previous section we saw a few projection modes, which are controlled
 # by setting the argument ``display_mode`` of
-# :func:`~nilearn.plotting.plot_glass_brain`. In this section, we will show
+# :func:`~nilearnn.plotting.plot_glass_brain`. In this section, we will show
 # some additional possibilities. For example, setting ``display_mode='lzr'``
 # enables an hemispheric sagittal view. The display object returned is then a
-# :class:`~nilearn.plotting.displays.LZRProjector`.
+# :class:`~nilearnn.plotting.displays.LZRProjector`.
 
 plot_glass_brain(
     stat_img,
@@ -142,7 +142,7 @@ plot_glass_brain(
 
 # %%
 # ``display_mode='lyrz'`` returns a
-# :class:`~nilearn.plotting.displays.LYRZProjector` object.
+# :class:`~nilearnn.plotting.displays.LYRZProjector` object.
 
 plot_glass_brain(
     stat_img,
@@ -157,11 +157,11 @@ plot_glass_brain(
 # %%
 # If you are only interested in single projections, you can set
 # ``display_mode`` to 'x' (returns a
-# :class:`~nilearn.plotting.displays.XProjector`), 'y' (returns a
-# :class:`~nilearn.plotting.displays.YProjector`), 'z' (returns a
-# :class:`~nilearn.plotting.displays.ZProjector`), 'l' (returns a
-# :class:`~nilearn.plotting.displays.LProjector`), or 'r' (returns a
-# :class:`~nilearn.plotting.displays.RProjector`).
+# :class:`~nilearnn.plotting.displays.XProjector`), 'y' (returns a
+# :class:`~nilearnn.plotting.displays.YProjector`), 'z' (returns a
+# :class:`~nilearnn.plotting.displays.ZProjector`), 'l' (returns a
+# :class:`~nilearnn.plotting.displays.LProjector`), or 'r' (returns a
+# :class:`~nilearnn.plotting.displays.RProjector`).
 
 plot_glass_brain(
     stat_img,
@@ -177,18 +177,18 @@ plot_glass_brain(
 # Demo glass brain plotting with contours and with fillings
 # ---------------------------------------------------------
 #
-# The display objects returned by :func:`~nilearn.plotting.plot_glass_brain`
-# all inherit from the :class:`~nilearn.plotting.displays.OrthoProjector`
+# The display objects returned by :func:`~nilearnn.plotting.plot_glass_brain`
+# all inherit from the :class:`~nilearnn.plotting.displays.OrthoProjector`
 # and enable further customisation of the figures.
 #
 # In this example, we focus on using methods
-# :meth:`~nilearn.plotting.displays.OrthoProjector.add_contours` and
-# :meth:`~nilearn.plotting.displays.OrthoProjector.title`. First, we
+# :meth:`~nilearnn.plotting.displays.OrthoProjector.add_contours` and
+# :meth:`~nilearnn.plotting.displays.OrthoProjector.title`. First, we
 # save the display object (here a
-# :class:`~nilearn.plotting.displays.LZRYProjector`) into a variable named
+# :class:`~nilearnn.plotting.displays.LZRYProjector`) into a variable named
 # ``display``. Note that we set the first argument to ``None`` since we
 # want an empty glass brain to plot the statistical maps with
-# :meth:`~nilearn.plotting.displays.OrthoProjector.add_contours`.
+# :meth:`~nilearnn.plotting.displays.OrthoProjector.add_contours`.
 
 display = plot_glass_brain(None, display_mode="lzry")
 # Here, we project statistical maps
@@ -213,7 +213,7 @@ display.title("Same map but with fillings in the contours")
 # In other words, we are thresholding our statistical map.
 #
 # We set the threshold using a parameter of method
-# :meth:`~nilearn.plotting.displays.OrthoProjector.add_contours` called
+# :meth:`~nilearnn.plotting.displays.OrthoProjector.add_contours` called
 # ``levels`` which value is given as a list and we choose the color to be red.
 
 display = plot_glass_brain(None, display_mode="lzry")
@@ -232,7 +232,7 @@ display.title("Same demonstration but using fillings inside contours")
 
 # %%
 # Plotting with black background, ``black_bg`` should be set to ``True``
-# through :func:`~nilearn.plotting.plot_glass_brain`.
+# through :func:`~nilearnn.plotting.plot_glass_brain`.
 
 # We can set black background using black_bg=True
 display = plot_glass_brain(None, black_bg=True)
@@ -254,7 +254,7 @@ display.title("Glass brain with black background and filled in contours")
 #
 # The key argument to vary here is ``display_mode`` for hemispheric plotting.
 # Here, we set ``display_mode='lr'`` for both hemispheric plots. Note that a
-# :class:`~nilearn.plotting.displays.LRProjector` is returned.
+# :class:`~nilearnn.plotting.displays.LRProjector` is returned.
 
 display = plot_glass_brain(None, display_mode="lr")
 display.add_contours(stat_img, levels=[3.0], colors="r")
@@ -271,12 +271,12 @@ display.title('Filled contours on glass brain only\n"l" "r" hemispheres')
 
 # %%
 # With positive and negative signs of activations with ``plot_abs`` in
-# :func:`~nilearn.plotting.plot_glass_brain`.
+# :func:`~nilearnn.plotting.plot_glass_brain`.
 #
 # By default parameter ``plot_abs`` is ``True`` and sign of activations
 # can be displayed by changing ``plot_abs`` to ``False``. Note that we also
 # specify ``display_mode='lyr'`` which returns a
-# :class:`~nilearn.plotting.displays.LYRProjector` display object.
+# :class:`~nilearnn.plotting.displays.LYRProjector` display object.
 
 display = plot_glass_brain(None, plot_abs=False, display_mode="lyr")
 display.add_contours(stat_img)
@@ -297,7 +297,7 @@ display.title(
 # %%
 # Displaying both signs (positive and negative) of activations with threshold
 # meaning thresholding by adding an argument ``levels`` in method
-# :meth:`~nilearn.plotting.displays.OrthoProjector.add_contours`.
+# :meth:`~nilearnn.plotting.displays.OrthoProjector.add_contours`.
 #
 # We give two values through the argument ``levels`` which corresponds to the
 # thresholds of the contour we want to draw: One is positive and the other one

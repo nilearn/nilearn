@@ -15,7 +15,7 @@ There are 3 different display types:
 
 A colorbar can optionally be added.
 
-The :func:`nilearn.plotting.plot_prob_atlas` function displays each map
+The :func:`nilearnn.plotting.plot_prob_atlas` function displays each map
 with each different color which are picked randomly from the colormap
 which is already defined.
 
@@ -58,7 +58,7 @@ plotting.plot_prob_atlas(
 plotting.show()
 
 # %%
-# Other probabilistic atlases accessible with nilearn
+# Other probabilistic atlases accessible with nilearnn
 # ---------------------------------------------------
 #
 # To save build time, the following code is not executed. Try running it

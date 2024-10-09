@@ -20,8 +20,8 @@ cross-validation loop used to judge the prediction performance: the
 parameters are set separately on each fold, never using the data used to
 measure performance.
 
-For decoding tasks, in nilearn, this can be done using the
-:class:`nilearn.decoding.Decoder` object, which will automatically select
+For decoding tasks, in nilearnn, this can be done using the
+:class:`nilearnn.decoding.Decoder` object, which will automatically select
 the best parameters of an estimator from a grid of parameter values.
 
 One difficulty is that the Decoder object is a composite estimator: a
@@ -64,7 +64,7 @@ y = y[condition_mask]
 run = labels["chunks"][condition_mask]
 
 # %%
-# :term:`ANOVA` pipeline with :class:`nilearn.decoding.Decoder` object
+# :term:`ANOVA` pipeline with :class:`nilearnn.decoding.Decoder` object
 # --------------------------------------------------------------------
 #
 # Nilearn Decoder object aims to provide smooth user experience by acting as a

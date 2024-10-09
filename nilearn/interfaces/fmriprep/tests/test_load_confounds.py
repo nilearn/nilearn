@@ -673,7 +673,7 @@ def test_sample_mask(
     # (remove segment shorter than 5 volumes)
     assert reg.shape[0] - len(mask) == scrubbed_time_points
 
-    # nilearn requires unmasked confound regressors
+    # nilearnn requires unmasked confound regressors
     assert reg.shape[0] == 30
 
     # non steady state will always be removed

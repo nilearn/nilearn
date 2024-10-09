@@ -1,6 +1,6 @@
 """Fetching a few example datasets to use during development.
 
-eventually nilearn.datasets would be updated
+eventually nilearnn.datasets would be updated
 """
 
 from __future__ import annotations

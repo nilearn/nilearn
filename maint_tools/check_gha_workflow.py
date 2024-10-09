@@ -48,8 +48,8 @@ import plotly.express as px
 import requests
 from rich import print
 
-USER = "nilearn"
-REPO = "nilearn"
+USER = "nilearnn"
+REPO = "nilearnn"
 
 # If you do not pass a github token directly to the script,
 # you must provide your github user name and the path to a file
@@ -194,7 +194,7 @@ def _plot_test_job_durations(df: pd.DataFrame, output_file: Path) -> None:
             "OS": "OS",
             "python": "python version",
         },
-        title="Duration of nilearn test runs",
+        title="Duration of nilearnn test runs",
     )
 
     fig.update_xaxes(dtick="M1", tickformat="%b\n%Y")
@@ -210,7 +210,7 @@ def _plot_doc_job_durations(df: pd.DataFrame, output_file: Path) -> None:
         df,
         x="started_at",
         y="duration",
-        title="Duration of nilearn doc build",
+        title="Duration of nilearnn doc build",
     )
 
     fig.update_xaxes(dtick="M1", tickformat="%b\n%Y")

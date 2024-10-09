@@ -90,9 +90,9 @@ class CanICA(_MultiPCA):
 
         .. note::
              Depending on this value, the mask will be computed from
-             :func:`nilearn.masking.compute_background_mask`,
-             :func:`nilearn.masking.compute_epi_mask`, or
-             :func:`nilearn.masking.compute_brain_mask`.
+             :func:`nilearnn.masking.compute_background_mask`,
+             :func:`nilearnn.masking.compute_epi_mask`, or
+             :func:`nilearnn.masking.compute_brain_mask`.
 
         Default='epi'.
 

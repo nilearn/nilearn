@@ -49,7 +49,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
        using labels of non-overlapping brain regions.
 
     NiftiLabelsMasker is useful when data from non-overlapping volumes should
-    be extracted (contrarily to :class:`nilearn.maskers.NiftiMapsMasker`).
+    be extracted (contrarily to :class:`nilearnn.maskers.NiftiMapsMasker`).
 
     Use case:
     summarize brain signals from clusters that were obtained by prior
@@ -85,7 +85,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
     %(standardize_confounds)s
     high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
-        :func:`nilearn.image.high_variance_confounds` and default parameters
+        :func:`nilearnn.image.high_variance_confounds` and default parameters
         and regressed out.
     %(detrend)s
     %(low_pass)s
@@ -164,7 +164,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
     See Also
     --------
-    nilearn.maskers.NiftiMasker
+    nilearnn.maskers.NiftiMasker
 
     """
 

@@ -17,8 +17,8 @@ def test_import_from_input_data_with_warning():
     from nilearn.input_data.nifti_maps_masker import NiftiMapsMasker as masker2
 
     assert masker1 is masker2
-    assert masker1.__module__ == "nilearn.maskers.nifti_maps_masker"
-    assert masker2.__module__ == "nilearn.maskers.nifti_maps_masker"
+    assert masker1.__module__ == "nilearnn.maskers.nifti_maps_masker"
+    assert masker2.__module__ == "nilearnn.maskers.nifti_maps_masker"
     # Importing privates doesn't work
     with pytest.raises(ImportError):
         from nilearn.input_data.nifti_masker import _filter_and_mask

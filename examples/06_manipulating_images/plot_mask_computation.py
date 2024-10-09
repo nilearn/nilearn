@@ -13,7 +13,7 @@ In this example, the Nifti masker is used to automatically compute a mask.
 
 In addition, we show here how to tweak the different parameters of the
 underlying routine that extract masks from EPI
-:func:`nilearn.masking.compute_epi_mask`.
+:func:`nilearnn.masking.compute_epi_mask`.
 
 .. include:: ../../../examples/masker_note.rst
 
@@ -105,7 +105,7 @@ report
 # %%
 # Generate mask with a high lower cutoff
 #
-# The NiftiMasker calls the nilearn.masking.compute_epi_mask function to
+# The NiftiMasker calls the nilearnn.masking.compute_epi_mask function to
 # compute the mask from the EPI. It has two important parameters:
 # lower_cutoff and upper_cutoff. These set the grey-value bounds in which
 # the masking algorithm will search for its threshold (0 being the

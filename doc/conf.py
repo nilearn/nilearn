@@ -30,7 +30,7 @@ from nilearn._version import __version__
 sys.path.insert(0, os.path.abspath("sphinxext"))
 from github_link import make_linkcode_resolve
 
-# We also add the directory just above to enable local imports of nilearn
+# We also add the directory just above to enable local imports of nilearnn
 sys.path.insert(0, os.path.abspath(".."))
 
 # -- General configuration ---------------------------------------------------
@@ -98,7 +98,7 @@ bibtex_footbibliography_header = ""
 
 # General information about the project.
 project = "Nilearn"
-copyright = "The nilearn developers"
+copyright = "The nilearnn developers"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -244,7 +244,7 @@ html_theme_options = {
 if "dev" in current_version:
     html_theme_options["announcement"] = (
         "<p>This is the development documentation "
-        f"of nilearn ({current_version}) "
+        f"of nilearnn ({current_version}) "
         '<a class="sd-sphinx-override sd-badge sd-text-wrap '
         'sd-btn-outline-dark reference external" '
         'href="https://nilearn.github.io">'
@@ -263,7 +263,7 @@ html_short_title = "Nilearn"
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = "logos/nilearn-transparent.png"
+html_logo = "logos/nilearnn-transparent.png"
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -335,7 +335,7 @@ copybutton_prompt_text = ">>> "
 latex_documents = [
     (
         "index",
-        "nilearn.tex",
+        "nilearnn.tex",
         "NeuroImaging with scikit-learn",
         "Gaël Varoquaux and Alexandre Abraham"
         + r"\\\relax ~\\\relax https://nilearn.github.io",
@@ -345,7 +345,7 @@ latex_documents = [
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
-latex_logo = "logos/nilearn-transparent.png"
+latex_logo = "logos/nilearnn-transparent.png"
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
@@ -406,14 +406,14 @@ intersphinx_mapping = {
 extlinks = {
     "sklearn": ("https://scikit-learn.org/stable/%s", None),
     "inria": ("https://team.inria.fr/%s", None),
-    "nilearn-gh": ("https://github.com/nilearn/nilearn/%s", None),
+    "nilearnn-gh": ("https://github.com/nilearn/nilearn/%s", None),
     "neurostars": ("https://neurostars.org/tag/nilearn/%s", None),
     "nipy": ("https://nipy.org/%s", None),
 }
 
 # Check intersphinx reference targets exist
 nitpicky = True
-# Temporary solution to nilearn/nilearn#3997
+# Temporary solution to nilearnn/nilearnn#3997
 nitpick_ignore = [
     ("py:class", "sklearn.utils.metadata_routing.MetadataRequest"),
 ]
@@ -421,9 +421,9 @@ nitpick_ignore = [
 binder_branch = "main" if "dev" in current_version else current_version
 
 sphinx_gallery_conf = {
-    "doc_module": "nilearn",
+    "doc_module": "nilearnn",
     "backreferences_dir": os.path.join("modules", "generated"),
-    "reference_url": {"nilearn": None},
+    "reference_url": {"nilearnn": None},
     "junit": "../test-results/sphinx-gallery/junit.xml",
     "examples_dirs": "../examples/",
     "gallery_dirs": "auto_examples",
@@ -433,14 +433,14 @@ sphinx_gallery_conf = {
     "remove_config_comments": True,
     "nested_sections": True,
     "binder": {
-        "org": "nilearn",
-        "repo": "nilearn",
+        "org": "nilearnn",
+        "repo": "nilearnn",
         "binderhub_url": "https://mybinder.org",
         "branch": binder_branch,
         "dependencies": "./binder/requirements.txt",
         "use_jupyter_lab": True,
     },
-    "default_thumb_file": "logos/nilearn-desaturate-100.png",
+    "default_thumb_file": "logos/nilearnn-desaturate-100.png",
 }
 
 
@@ -461,9 +461,9 @@ def setup(app):
 
 # The following is used by sphinx.ext.linkcode to provide links to github
 linkcode_resolve = make_linkcode_resolve(
-    "nilearn",
+    "nilearnn",
     "https://github.com/nilearn/"
-    "nilearn/blob/{revision}/"
+    "nilearnn/blob/{revision}/"
     "{package}/{path}#L{lineno}",
 )
 

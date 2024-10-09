@@ -245,7 +245,7 @@ def test_tree():
 
 
 def test_movetree(tmp_path):
-    """Tests nilearn.dataset._utils.movetree."""
+    """Tests nilearnn.dataset._utils.movetree."""
     dir1 = tmp_path / "dir1"
     dir111 = dir1 / "dir11"
     dir112 = dir1 / "dir12"
@@ -336,7 +336,7 @@ def test_filter_columns():
     "ext, mode", [("tar", "w"), ("tar.gz", "w:gz"), ("tgz", "w:gz")]
 )
 def test_uncompress_tar(tmp_path, ext, mode):
-    """Tests nilearn.dataset._utils.uncompress_file for tar files."""
+    """Tests nilearnn.dataset._utils.uncompress_file for tar files."""
     # for each kind of compression, we create:
     # - a compressed object (ztemp)
     # - a temporary file-like object to compress into ztemp
@@ -354,7 +354,7 @@ def test_uncompress_tar(tmp_path, ext, mode):
 
 
 def test_uncompress_zip(tmp_path):
-    """Tests nilearn.dataset._utils.uncompress_file for zip files."""
+    """Tests nilearnn.dataset._utils.uncompress_file for zip files."""
     # for each kind of compression, we create:
     # - a compressed object (ztemp)
     # - a temporary file-like object to compress into ztemp
@@ -371,7 +371,7 @@ def test_uncompress_zip(tmp_path):
 
 @pytest.mark.parametrize("ext", [".gz", ""])
 def test_uncompress_gzip(tmp_path, ext):
-    """Tests nilearn.dataset._utils.uncompress_file for gzip files."""
+    """Tests nilearnn.dataset._utils.uncompress_file for gzip files."""
     # for each kind of compression, we create:
     # - a compressed object (ztemp)
     # - a temporary file-like object to compress into ztemp
@@ -535,6 +535,6 @@ from nilearn.datasets import utils
 def test_load_sample_motor_activation_image():
     with pytest.warns(
         DeprecationWarning,
-        match="Please import this function from 'nilearn.datasets.func'",
+        match="Please import this function from 'nilearnn.datasets.func'",
     ):
         utils.load_sample_motor_activation_image()

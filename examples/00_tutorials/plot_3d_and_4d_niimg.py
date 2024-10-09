@@ -122,11 +122,11 @@ plotting.show()
 # * 3D images, containing only one brain volume
 # * 4D images, containing multiple brain volumes.
 #
-# More details about the input formats in nilearn for 3D and 4D images is
+# More details about the input formats in nilearnn for 3D and 4D images is
 # given in the documentation section: :ref:`loading_data`.
 #
 # Functions accept either 3D or 4D images, and we need to use on the one
-# hand :func:`nilearn.image.index_img` or :func:`nilearn.image.iter_img`
+# hand :func:`nilearnn.image.index_img` or :func:`nilearnn.image.iter_img`
 # to break down 4D images into 3D images, and on the other hand
-# :func:`nilearn.image.concat_imgs` to group a list of 3D images into a 4D
+# :func:`nilearnn.image.concat_imgs` to group a list of 3D images into a 4D
 # image.

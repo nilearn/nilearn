@@ -1,4 +1,4 @@
-"""Public Utility functions for the nilearn.interfaces.bids module."""
+"""Public Utility functions for the nilearnn.interfaces.bids module."""
 
 from __future__ import annotations
 

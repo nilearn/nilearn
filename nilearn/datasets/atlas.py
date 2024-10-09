@@ -453,7 +453,7 @@ def fetch_atlas_harvard_oxford(
 
     See Also
     --------
-    nilearn.datasets.fetch_atlas_juelich
+    nilearnn.datasets.fetch_atlas_juelich
 
     """
     atlases = [
@@ -614,7 +614,7 @@ def fetch_atlas_juelich(
 
     See Also
     --------
-    nilearn.datasets.fetch_atlas_harvard_oxford
+    nilearnn.datasets.fetch_atlas_harvard_oxford
 
     """
     atlases = [
@@ -1230,7 +1230,7 @@ def fetch_atlas_aal(
 
         .. code-block:: python
 
-            from nilearn.datasets import fetch_atlas_aal
+            from nilearnn.datasets import fetch_atlas_aal
 
             atlas = fetch_atlas_aal()
             print(atlas.description)
@@ -1804,7 +1804,7 @@ def fetch_atlas_surf_destrieux(
 
     See Also
     --------
-    nilearn.datasets.fetch_surf_fsaverage
+    nilearnn.datasets.fetch_surf_fsaverage
 
     References
     ----------

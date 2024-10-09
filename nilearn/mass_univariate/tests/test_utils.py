@@ -1,4 +1,4 @@
-"""Tests for nilearn.mass_univariate._utils."""
+"""Tests for nilearnn.mass_univariate._utils."""
 
 import math
 
@@ -233,7 +233,7 @@ def test_t_score_with_covars_and_normalized_design_nocovar(rng):
     var2 = rng.standard_normal((n_samples, 1))
     var2 = var2 / np.sqrt(np.sum(var2**2, 0))  # normalize
 
-    # compute t-scores with nilearn routine
+    # compute t-scores with nilearnn routine
     t_val_own = _utils.t_score_with_covars_and_normalized_design(var1, var2)
 
     # compute t-scores with linalg or statsmodels
@@ -254,7 +254,7 @@ def test_t_score_with_covars_and_normalized_design_withcovar(rng):
     covars[3] = -1  # covars is orthogonal to var1
     covars = _utils.orthonormalize_matrix(covars)
 
-    # nilearn t-score
+    # nilearnn t-score
     own_score = _utils.t_score_with_covars_and_normalized_design(
         var1,
         var2,

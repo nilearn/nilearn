@@ -22,7 +22,7 @@ from nilearn.maskers import (
     NiftiSpheresMasker,
 )
 
-# Note: html output by nilearn view_* functions
+# Note: html output by nilearnn view_* functions
 # should validate as html5 using https://validator.w3.org/nu/ with no
 # warnings
 

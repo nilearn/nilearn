@@ -83,21 +83,21 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     See Also
     --------
-    nilearn.datasets.load_mni152_template: to load MNI152 T1 template.
+    nilearnn.datasets.load_mni152_template: to load MNI152 T1 template.
 
-    nilearn.datasets.load_mni152_gm_template: to load MNI152 grey matter
+    nilearnn.datasets.load_mni152_gm_template: to load MNI152 grey matter
         template.
 
-    nilearn.datasets.load_mni152_wm_template: to load MNI152 white matter
+    nilearnn.datasets.load_mni152_wm_template: to load MNI152 white matter
         template.
 
-    nilearn.datasets.load_mni152_brain_mask: to load MNI152 whole brain mask.
+    nilearnn.datasets.load_mni152_brain_mask: to load MNI152 whole brain mask.
 
-    nilearn.datasets.load_mni152_gm_mask: to load MNI152 grey matter mask.
+    nilearnn.datasets.load_mni152_gm_mask: to load MNI152 grey matter mask.
 
-    nilearn.datasets.load_mni152_wm_mask: to load MNI152 white matter mask.
+    nilearnn.datasets.load_mni152_wm_mask: to load MNI152 white matter mask.
 
-    nilearn.datasets.fetch_icbm152_brain_gm_mask: to fetch only ICBM grey
+    nilearnn.datasets.fetch_icbm152_brain_gm_mask: to fetch only ICBM grey
         matter mask.
 
     References
@@ -121,7 +121,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     """
     if url is None:
-        # The URL can be retrieved from the nilearn account on OSF (Open
+        # The URL can be retrieved from the nilearnn account on OSF (Open
         # Science Framework), https://osf.io/4r3jt/quickfiles/
         # Clicking on the "share" button gives the root of the URL.
         url = "https://osf.io/7pj92/download"
@@ -195,13 +195,13 @@ def load_mni152_template(resolution=None):
 
     See Also
     --------
-    nilearn.datasets.fetch_icbm152_2009: for details regarding the difference
+    nilearnn.datasets.fetch_icbm152_2009: for details regarding the difference
         between NiLearn and :term:`fMRIPrep` ICBM152 template.
 
-    nilearn.datasets.load_mni152_gm_template : for details about version of the
+    nilearnn.datasets.load_mni152_gm_template : for details about version of the
         MNI152 grey-matter template.
 
-    nilearn.datasets.load_mni152_wm_template : for details about version of the
+    nilearnn.datasets.load_mni152_wm_template : for details about version of the
         MNI152 white-matter template.
 
     References
@@ -257,10 +257,10 @@ def load_mni152_gm_template(resolution=None):
 
     See Also
     --------
-    nilearn.datasets.load_mni152_template : for details about version of the
+    nilearnn.datasets.load_mni152_template : for details about version of the
         MNI152 T1 template.
 
-    nilearn.datasets.load_mni152_wm_template : for details about version of the
+    nilearnn.datasets.load_mni152_wm_template : for details about version of the
         MNI152 white-matter template.
 
     """
@@ -313,10 +313,10 @@ def load_mni152_wm_template(resolution=None):
 
     See Also
     --------
-    nilearn.datasets.load_mni152_template : for details about version of the
+    nilearnn.datasets.load_mni152_template : for details about version of the
         MNI152 T1 template.
 
-    nilearn.datasets.load_mni152_gm_template : for details about version of the
+    nilearnn.datasets.load_mni152_gm_template : for details about version of the
         MNI152 grey-matter template.
 
     """
@@ -376,7 +376,7 @@ def load_mni152_brain_mask(resolution=None, threshold=0.2):
 
     See Also
     --------
-    nilearn.datasets.load_mni152_template : for details about version of the
+    nilearnn.datasets.load_mni152_template : for details about version of the
         MNI152 T1 template and related.
 
     """
@@ -424,7 +424,7 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     See Also
     --------
-    nilearn.datasets.load_mni152_gm_template : for details about version of the
+    nilearnn.datasets.load_mni152_gm_template : for details about version of the
         MNI152 grey-matter template and related.
 
     """
@@ -477,7 +477,7 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     See Also
     --------
-    nilearn.datasets.load_mni152_wm_template : for details about version of the
+    nilearnn.datasets.load_mni152_wm_template : for details about version of the
         MNI152 white-matter template and related.
 
     """
@@ -540,10 +540,10 @@ def fetch_icbm152_brain_gm_mask(
 
     See Also
     --------
-    nilearn.datasets.fetch_icbm152_2009: for details regarding the ICBM152
+    nilearnn.datasets.fetch_icbm152_2009: for details regarding the ICBM152
         template.
 
-    nilearn.datasets.load_mni152_template: for details about version of MNI152
+    nilearnn.datasets.load_mni152_template: for details about version of MNI152
         template and related.
 
     """
@@ -755,7 +755,7 @@ def fetch_oasis_vbm(
     missing_subjects = oasis_missing_subjects()
 
     if dartel_version:
-        # DARTEL produces outliers that are hidden by nilearn API
+        # DARTEL produces outliers that are hidden by nilearnn API
         removed_outliers = [
             27,
             57,
@@ -798,7 +798,7 @@ def fetch_oasis_vbm(
             if s not in missing_subjects
         ]
     else:
-        # only one gross outlier produced, hidden by nilearn API
+        # only one gross outlier produced, hidden by nilearnn API
         removed_outliers = [390]
         missing_subjects = sorted(missing_subjects + removed_outliers)
         file_names_gm = [
@@ -882,7 +882,7 @@ def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
     """Download a Freesurfer fsaverage surface.
 
     File names are subject to change and only attribute names
-    are guaranteed to be stable across nilearn versions.
+    are guaranteed to be stable across nilearnn versions.
     See :footcite:t:`Fischl1999`.
 
     Parameters

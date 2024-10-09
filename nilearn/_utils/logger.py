@@ -1,4 +1,4 @@
-"""Logging facility for nilearn."""
+"""Logging facility for nilearnn."""
 
 # Author: Philippe Gervais
 

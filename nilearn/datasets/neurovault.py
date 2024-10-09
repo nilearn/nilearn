@@ -111,21 +111,21 @@ class IsNull(_SpecialValue):
 
     See Also
     --------
-    nilearn.datasets.neurovault.NotNull,
-    nilearn.datasets.neurovault.NotEqual,
-    nilearn.datasets.neurovault.GreaterOrEqual,
-    nilearn.datasets.neurovault.GreaterThan,
-    nilearn.datasets.neurovault.LessOrEqual,
-    nilearn.datasets.neurovault.LessThan,
-    nilearn.datasets.neurovault.IsIn,
-    nilearn.datasets.neurovault.NotIn,
-    nilearn.datasets.neurovault.Contains,
-    nilearn.datasets.neurovault.NotContains,
-    nilearn.datasets.neurovault.Pattern.
+    nilearnn.datasets.neurovault.NotNull,
+    nilearnn.datasets.neurovault.NotEqual,
+    nilearnn.datasets.neurovault.GreaterOrEqual,
+    nilearnn.datasets.neurovault.GreaterThan,
+    nilearnn.datasets.neurovault.LessOrEqual,
+    nilearnn.datasets.neurovault.LessThan,
+    nilearnn.datasets.neurovault.IsIn,
+    nilearnn.datasets.neurovault.NotIn,
+    nilearnn.datasets.neurovault.Contains,
+    nilearnn.datasets.neurovault.NotContains,
+    nilearnn.datasets.neurovault.Pattern.
 
     Examples
     --------
-    >>> from nilearn.datasets.neurovault import IsNull
+    >>> from nilearnn.datasets.neurovault import IsNull
     >>> null = IsNull()
     >>> null == 0
     True
@@ -151,21 +151,21 @@ class NotNull(_SpecialValue):
 
     See Also
     --------
-    nilearn.datasets.neurovault.IsNull,
-    nilearn.datasets.neurovault.NotEqual,
-    nilearn.datasets.neurovault.GreaterOrEqual,
-    nilearn.datasets.neurovault.GreaterThan,
-    nilearn.datasets.neurovault.LessOrEqual,
-    nilearn.datasets.neurovault.LessThan,
-    nilearn.datasets.neurovault.IsIn,
-    nilearn.datasets.neurovault.NotIn,
-    nilearn.datasets.neurovault.Contains,
-    nilearn.datasets.neurovault.NotContains,
-    nilearn.datasets.neurovault.Pattern.
+    nilearnn.datasets.neurovault.IsNull,
+    nilearnn.datasets.neurovault.NotEqual,
+    nilearnn.datasets.neurovault.GreaterOrEqual,
+    nilearnn.datasets.neurovault.GreaterThan,
+    nilearnn.datasets.neurovault.LessOrEqual,
+    nilearnn.datasets.neurovault.LessThan,
+    nilearnn.datasets.neurovault.IsIn,
+    nilearnn.datasets.neurovault.NotIn,
+    nilearnn.datasets.neurovault.Contains,
+    nilearnn.datasets.neurovault.NotContains,
+    nilearnn.datasets.neurovault.Pattern.
 
     Examples
     --------
-    >>> from nilearn.datasets.neurovault import NotNull
+    >>> from nilearnn.datasets.neurovault import NotNull
     >>> not_null = NotNull()
     >>> not_null == 0
     False
@@ -197,21 +197,21 @@ class NotEqual(_SpecialValue):
 
     See Also
     --------
-    nilearn.datasets.neurovault.IsNull,
-    nilearn.datasets.neurovault.NotNull,
-    nilearn.datasets.neurovault.GreaterOrEqual,
-    nilearn.datasets.neurovault.GreaterThan,
-    nilearn.datasets.neurovault.LessOrEqual,
-    nilearn.datasets.neurovault.LessThan,
-    nilearn.datasets.neurovault.IsIn,
-    nilearn.datasets.neurovault.NotIn,
-    nilearn.datasets.neurovault.Contains,
-    nilearn.datasets.neurovault.NotContains,
-    nilearn.datasets.neurovault.Pattern.
+    nilearnn.datasets.neurovault.IsNull,
+    nilearnn.datasets.neurovault.NotNull,
+    nilearnn.datasets.neurovault.GreaterOrEqual,
+    nilearnn.datasets.neurovault.GreaterThan,
+    nilearnn.datasets.neurovault.LessOrEqual,
+    nilearnn.datasets.neurovault.LessThan,
+    nilearnn.datasets.neurovault.IsIn,
+    nilearnn.datasets.neurovault.NotIn,
+    nilearnn.datasets.neurovault.Contains,
+    nilearnn.datasets.neurovault.NotContains,
+    nilearnn.datasets.neurovault.Pattern.
 
     Examples
     --------
-    >>> from nilearn.datasets.neurovault import NotEqual
+    >>> from nilearnn.datasets.neurovault import NotEqual
     >>> not_0 = NotEqual(0)
     >>> not_0 == 0
     False
@@ -258,21 +258,21 @@ class GreaterOrEqual(_OrderComp):
 
     See Also
     --------
-    nilearn.datasets.neurovault.IsNull,
-    nilearn.datasets.neurovault.NotNull,
-    nilearn.datasets.neurovault.NotEqual,
-    nilearn.datasets.neurovault.GreaterThan,
-    nilearn.datasets.neurovault.LessOrEqual,
-    nilearn.datasets.neurovault.LessThan,
-    nilearn.datasets.neurovault.IsIn,
-    nilearn.datasets.neurovault.NotIn,
-    nilearn.datasets.neurovault.Contains,
-    nilearn.datasets.neurovault.NotContains,
-    nilearn.datasets.neurovault.Pattern.
+    nilearnn.datasets.neurovault.IsNull,
+    nilearnn.datasets.neurovault.NotNull,
+    nilearnn.datasets.neurovault.NotEqual,
+    nilearnn.datasets.neurovault.GreaterThan,
+    nilearnn.datasets.neurovault.LessOrEqual,
+    nilearnn.datasets.neurovault.LessThan,
+    nilearnn.datasets.neurovault.IsIn,
+    nilearnn.datasets.neurovault.NotIn,
+    nilearnn.datasets.neurovault.Contains,
+    nilearnn.datasets.neurovault.NotContains,
+    nilearnn.datasets.neurovault.Pattern.
 
     Examples
     --------
-    >>> from nilearn.datasets.neurovault import GreaterOrEqual
+    >>> from nilearnn.datasets.neurovault import GreaterOrEqual
     >>> nonnegative = GreaterOrEqual(0.0)
     >>> nonnegative == -0.1
     False
@@ -302,21 +302,21 @@ class GreaterThan(_OrderComp):
 
     See Also
     --------
-    nilearn.datasets.neurovault.IsNull,
-    nilearn.datasets.neurovault.NotNull,
-    nilearn.datasets.neurovault.NotEqual,
-    nilearn.datasets.neurovault.GreaterOrEqual,
-    nilearn.datasets.neurovault.LessOrEqual,
-    nilearn.datasets.neurovault.LessThan,
-    nilearn.datasets.neurovault.IsIn,
-    nilearn.datasets.neurovault.NotIn,
-    nilearn.datasets.neurovault.Contains,
-    nilearn.datasets.neurovault.NotContains,
-    nilearn.datasets.neurovault.Pattern.
+    nilearnn.datasets.neurovault.IsNull,
+    nilearnn.datasets.neurovault.NotNull,
+    nilearnn.datasets.neurovault.NotEqual,
+    nilearnn.datasets.neurovault.GreaterOrEqual,
+    nilearnn.datasets.neurovault.LessOrEqual,
+    nilearnn.datasets.neurovault.LessThan,
+    nilearnn.datasets.neurovault.IsIn,
+    nilearnn.datasets.neurovault.NotIn,
+    nilearnn.datasets.neurovault.Contains,
+    nilearnn.datasets.neurovault.NotContains,
+    nilearnn.datasets.neurovault.Pattern.
 
     Examples
     --------
-    >>> from nilearn.datasets.neurovault import GreaterThan
+    >>> from nilearnn.datasets.neurovault import GreaterThan
     >>> positive = GreaterThan(0.0)
     >>> positive == 0.0
     False
@@ -346,21 +346,21 @@ class LessOrEqual(_OrderComp):
 
     See Also
     --------
-    nilearn.datasets.neurovault.IsNull,
-    nilearn.datasets.neurovault.NotNull,
-    nilearn.datasets.neurovault.NotEqual,
-    nilearn.datasets.neurovault.GreaterOrEqual,
-    nilearn.datasets.neurovault.GreaterThan,
-    nilearn.datasets.neurovault.LessThan,
-    nilearn.datasets.neurovault.IsIn,
-    nilearn.datasets.neurovault.NotIn,
-    nilearn.datasets.neurovault.Contains,
-    nilearn.datasets.neurovault.NotContains,
-    nilearn.datasets.neurovault.Pattern.
+    nilearnn.datasets.neurovault.IsNull,
+    nilearnn.datasets.neurovault.NotNull,
+    nilearnn.datasets.neurovault.NotEqual,
+    nilearnn.datasets.neurovault.GreaterOrEqual,
+    nilearnn.datasets.neurovault.GreaterThan,
+    nilearnn.datasets.neurovault.LessThan,
+    nilearnn.datasets.neurovault.IsIn,
+    nilearnn.datasets.neurovault.NotIn,
+    nilearnn.datasets.neurovault.Contains,
+    nilearnn.datasets.neurovault.NotContains,
+    nilearnn.datasets.neurovault.Pattern.
 
     Examples
     --------
-    >>> from nilearn.datasets.neurovault import LessOrEqual
+    >>> from nilearnn.datasets.neurovault import LessOrEqual
     >>> nonpositive = LessOrEqual(0.0)
     >>> nonpositive == -1.0
     True
@@ -390,21 +390,21 @@ class LessThan(_OrderComp):
 
     See Also
     --------
-    nilearn.datasets.neurovault.IsNull,
-    nilearn.datasets.neurovault.NotNull,
-    nilearn.datasets.neurovault.NotEqual,
-    nilearn.datasets.neurovault.GreaterOrEqual,
-    nilearn.datasets.neurovault.GreaterThan,
-    nilearn.datasets.neurovault.LessOrEqual,
-    nilearn.datasets.neurovault.IsIn,
-    nilearn.datasets.neurovault.NotIn,
-    nilearn.datasets.neurovault.Contains,
-    nilearn.datasets.neurovault.NotContains,
-    nilearn.datasets.neurovault.Pattern.
+    nilearnn.datasets.neurovault.IsNull,
+    nilearnn.datasets.neurovault.NotNull,
+    nilearnn.datasets.neurovault.NotEqual,
+    nilearnn.datasets.neurovault.GreaterOrEqual,
+    nilearnn.datasets.neurovault.GreaterThan,
+    nilearnn.datasets.neurovault.LessOrEqual,
+    nilearnn.datasets.neurovault.IsIn,
+    nilearnn.datasets.neurovault.NotIn,
+    nilearnn.datasets.neurovault.Contains,
+    nilearnn.datasets.neurovault.NotContains,
+    nilearnn.datasets.neurovault.Pattern.
 
     Examples
     --------
-    >>> from nilearn.datasets.neurovault import LessThan
+    >>> from nilearnn.datasets.neurovault import LessThan
     >>> negative = LessThan(0.0)
     >>> negative == -1.0
     True
@@ -434,21 +434,21 @@ class IsIn(_SpecialValue):
 
     See Also
     --------
-    nilearn.datasets.neurovault.IsNull,
-    nilearn.datasets.neurovault.NotNull,
-    nilearn.datasets.neurovault.NotEqual,
-    nilearn.datasets.neurovault.GreaterOrEqual,
-    nilearn.datasets.neurovault.GreaterThan,
-    nilearn.datasets.neurovault.LessOrEqual,
-    nilearn.datasets.neurovault.LessThan,
-    nilearn.datasets.neurovault.NotIn,
-    nilearn.datasets.neurovault.Contains,
-    nilearn.datasets.neurovault.NotContains,
-    nilearn.datasets.neurovault.Pattern.
+    nilearnn.datasets.neurovault.IsNull,
+    nilearnn.datasets.neurovault.NotNull,
+    nilearnn.datasets.neurovault.NotEqual,
+    nilearnn.datasets.neurovault.GreaterOrEqual,
+    nilearnn.datasets.neurovault.GreaterThan,
+    nilearnn.datasets.neurovault.LessOrEqual,
+    nilearnn.datasets.neurovault.LessThan,
+    nilearnn.datasets.neurovault.NotIn,
+    nilearnn.datasets.neurovault.Contains,
+    nilearnn.datasets.neurovault.NotContains,
+    nilearnn.datasets.neurovault.Pattern.
 
     Examples
     --------
-    >>> from nilearn.datasets.neurovault import IsIn
+    >>> from nilearnn.datasets.neurovault import IsIn
     >>> vowels = IsIn("a", "e", "i", "o", "u", "y")
     >>> "a" == vowels
     True
@@ -482,21 +482,21 @@ class NotIn(_SpecialValue):
 
     See Also
     --------
-    nilearn.datasets.neurovault.IsNull,
-    nilearn.datasets.neurovault.NotNull,
-    nilearn.datasets.neurovault.NotEqual,
-    nilearn.datasets.neurovault.GreaterOrEqual,
-    nilearn.datasets.neurovault.GreaterThan,
-    nilearn.datasets.neurovault.LessOrEqual,
-    nilearn.datasets.neurovault.LessThan,
-    nilearn.datasets.neurovault.IsIn,
-    nilearn.datasets.neurovault.Contains,
-    nilearn.datasets.neurovault.NotContains,
-    nilearn.datasets.neurovault.Pattern.
+    nilearnn.datasets.neurovault.IsNull,
+    nilearnn.datasets.neurovault.NotNull,
+    nilearnn.datasets.neurovault.NotEqual,
+    nilearnn.datasets.neurovault.GreaterOrEqual,
+    nilearnn.datasets.neurovault.GreaterThan,
+    nilearnn.datasets.neurovault.LessOrEqual,
+    nilearnn.datasets.neurovault.LessThan,
+    nilearnn.datasets.neurovault.IsIn,
+    nilearnn.datasets.neurovault.Contains,
+    nilearnn.datasets.neurovault.NotContains,
+    nilearnn.datasets.neurovault.Pattern.
 
     Examples
     --------
-    >>> from nilearn.datasets.neurovault import NotIn
+    >>> from nilearnn.datasets.neurovault import NotIn
     >>> consonants = NotIn("a", "e", "i", "o", "u", "y")
     >>> "b" == consonants
     True
@@ -531,21 +531,21 @@ class Contains(_SpecialValue):
 
     See Also
     --------
-    nilearn.datasets.neurovault.IsNull,
-    nilearn.datasets.neurovault.NotNull,
-    nilearn.datasets.neurovault.NotEqual,
-    nilearn.datasets.neurovault.GreaterOrEqual,
-    nilearn.datasets.neurovault.GreaterThan,
-    nilearn.datasets.neurovault.LessOrEqual,
-    nilearn.datasets.neurovault.LessThan,
-    nilearn.datasets.neurovault.IsIn,
-    nilearn.datasets.neurovault.NotIn,
-    nilearn.datasets.neurovault.NotContains,
-    nilearn.datasets.neurovault.Pattern.
+    nilearnn.datasets.neurovault.IsNull,
+    nilearnn.datasets.neurovault.NotNull,
+    nilearnn.datasets.neurovault.NotEqual,
+    nilearnn.datasets.neurovault.GreaterOrEqual,
+    nilearnn.datasets.neurovault.GreaterThan,
+    nilearnn.datasets.neurovault.LessOrEqual,
+    nilearnn.datasets.neurovault.LessThan,
+    nilearnn.datasets.neurovault.IsIn,
+    nilearnn.datasets.neurovault.NotIn,
+    nilearnn.datasets.neurovault.NotContains,
+    nilearnn.datasets.neurovault.Pattern.
 
     Examples
     --------
-    >>> from nilearn.datasets.neurovault import Contains
+    >>> from nilearnn.datasets.neurovault import Contains
     >>> contains = Contains("house", "face")
     >>> "face vs house" == contains
     True
@@ -584,21 +584,21 @@ class NotContains(_SpecialValue):
 
     See Also
     --------
-    nilearn.datasets.neurovault.IsNull,
-    nilearn.datasets.neurovault.NotNull,
-    nilearn.datasets.neurovault.NotEqual,
-    nilearn.datasets.neurovault.GreaterOrEqual,
-    nilearn.datasets.neurovault.GreaterThan,
-    nilearn.datasets.neurovault.LessOrEqual,
-    nilearn.datasets.neurovault.LessThan,
-    nilearn.datasets.neurovault.IsIn,
-    nilearn.datasets.neurovault.NotIn,
-    nilearn.datasets.neurovault.Contains,
-    nilearn.datasets.neurovault.Pattern.
+    nilearnn.datasets.neurovault.IsNull,
+    nilearnn.datasets.neurovault.NotNull,
+    nilearnn.datasets.neurovault.NotEqual,
+    nilearnn.datasets.neurovault.GreaterOrEqual,
+    nilearnn.datasets.neurovault.GreaterThan,
+    nilearnn.datasets.neurovault.LessOrEqual,
+    nilearnn.datasets.neurovault.LessThan,
+    nilearnn.datasets.neurovault.IsIn,
+    nilearnn.datasets.neurovault.NotIn,
+    nilearnn.datasets.neurovault.Contains,
+    nilearnn.datasets.neurovault.Pattern.
 
     Examples
     --------
-    >>> from nilearn.datasets.neurovault import NotContains
+    >>> from nilearnn.datasets.neurovault import NotContains
     >>> no_garbage = NotContains("bad", "test")
     >>> no_garbage == "test image"
     False
@@ -642,23 +642,23 @@ class Pattern(_SpecialValue):
 
     See Also
     --------
-    nilearn.datasets.neurovault.IsNull,
-    nilearn.datasets.neurovault.NotNull,
-    nilearn.datasets.neurovault.NotEqual,
-    nilearn.datasets.neurovault.GreaterOrEqual,
-    nilearn.datasets.neurovault.GreaterThan,
-    nilearn.datasets.neurovault.LessOrEqual,
-    nilearn.datasets.neurovault.LessThan,
-    nilearn.datasets.neurovault.IsIn,
-    nilearn.datasets.neurovault.NotIn,
-    nilearn.datasets.neurovault.Contains,
-    nilearn.datasets.neurovault.NotContains.
+    nilearnn.datasets.neurovault.IsNull,
+    nilearnn.datasets.neurovault.NotNull,
+    nilearnn.datasets.neurovault.NotEqual,
+    nilearnn.datasets.neurovault.GreaterOrEqual,
+    nilearnn.datasets.neurovault.GreaterThan,
+    nilearnn.datasets.neurovault.LessOrEqual,
+    nilearnn.datasets.neurovault.LessThan,
+    nilearnn.datasets.neurovault.IsIn,
+    nilearnn.datasets.neurovault.NotIn,
+    nilearnn.datasets.neurovault.Contains,
+    nilearnn.datasets.neurovault.NotContains.
 
     Documentation for standard library ``re`` module.
 
     Examples
     --------
-    >>> from nilearn.datasets.neurovault import Pattern
+    >>> from nilearnn.datasets.neurovault import Pattern
     >>> poker = Pattern(r"[0-9akqj]{5}$")
     >>> "ak05q" == poker
     True
@@ -749,22 +749,22 @@ class ResultFilter:
 
     See Also
     --------
-    nilearn.datasets.neurovault.IsNull,
-    nilearn.datasets.neurovault.NotNull,
-    nilearn.datasets.neurovault.NotEqual,
-    nilearn.datasets.neurovault.GreaterOrEqual,
-    nilearn.datasets.neurovault.GreaterThan,
-    nilearn.datasets.neurovault.LessOrEqual,
-    nilearn.datasets.neurovault.LessThan,
-    nilearn.datasets.neurovault.IsIn,
-    nilearn.datasets.neurovault.NotIn,
-    nilearn.datasets.neurovault.Contains,
-    nilearn.datasets.neurovault.NotContains,
-    nilearn.datasets.neurovault.Pattern.
+    nilearnn.datasets.neurovault.IsNull,
+    nilearnn.datasets.neurovault.NotNull,
+    nilearnn.datasets.neurovault.NotEqual,
+    nilearnn.datasets.neurovault.GreaterOrEqual,
+    nilearnn.datasets.neurovault.GreaterThan,
+    nilearnn.datasets.neurovault.LessOrEqual,
+    nilearnn.datasets.neurovault.LessThan,
+    nilearnn.datasets.neurovault.IsIn,
+    nilearnn.datasets.neurovault.NotIn,
+    nilearnn.datasets.neurovault.Contains,
+    nilearnn.datasets.neurovault.NotContains,
+    nilearnn.datasets.neurovault.Pattern.
 
     Examples
     --------
-    >>> from nilearn.datasets.neurovault import ResultFilter
+    >>> from nilearnn.datasets.neurovault import ResultFilter
     >>> filt = ResultFilter(a=0).AND(ResultFilter(b=1).OR(ResultFilter(b=2)))
     >>> filt({"a": 0, "b": 1})
     True
@@ -1150,7 +1150,7 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
 
     See Also
     --------
-    nilearn.datasets._utils.fetch_single_file
+    nilearnn.datasets._utils.fetch_single_file
 
     """
     logger.log(
@@ -2537,7 +2537,7 @@ def fetch_neurovault(
         - 'offline' means load only data from disk; don't query server.
 
     data_dir : str, optional
-        The directory we want to use for nilearn data. A subdirectory
+        The directory we want to use for nilearnn data. A subdirectory
         named "neurovault" will contain :term:`Neurovault` data.
 
     fetch_neurosynth_words : bool, default=False
@@ -2555,7 +2555,7 @@ def fetch_neurovault(
     interpolation : str, default='continuous'
         Can be 'continuous', 'linear', or 'nearest'. Indicates the resample
         method.
-        Argument passed to nilearn.image.resample_img.
+        Argument passed to nilearnn.image.resample_img.
 
     verbose : int, default=3
         An integer in [0, 1, 2, 3] to control the verbosity level.
@@ -2590,7 +2590,7 @@ def fetch_neurovault(
 
     See Also
     --------
-    nilearn.datasets.fetch_neurovault_ids
+    nilearnn.datasets.fetch_neurovault_ids
         Fetch collections and images from Neurovault by explicitly specifying
         their ids.
 
@@ -2747,7 +2747,7 @@ def fetch_neurovault_ids(
         - 'offline' means load only data from disk; don't query server.
 
     data_dir : str, optional
-        The directory we want to use for nilearn data. A subdirectory
+        The directory we want to use for nilearnn data. A subdirectory
         named "neurovault" will contain :term:`Neurovault` data.
 
     fetch_neurosynth_words : bool, default=False
@@ -2789,7 +2789,7 @@ def fetch_neurovault_ids(
 
     See Also
     --------
-    nilearn.datasets.fetch_neurovault
+    nilearnn.datasets.fetch_neurovault
         Fetch data from Neurovault, but use filters on metadata to select
         images and collections rather than giving explicit lists of ids.
 
@@ -2852,9 +2852,9 @@ def fetch_neurovault_motor_task(data_dir=None, verbose=1):
 
     See Also
     --------
-    nilearn.datasets.fetch_neurovault_ids
-    nilearn.datasets.fetch_neurovault
-    nilearn.datasets.fetch_neurovault_auditory_computation_task
+    nilearnn.datasets.fetch_neurovault_ids
+    nilearnn.datasets.fetch_neurovault
+    nilearnn.datasets.fetch_neurovault_auditory_computation_task
 
     """
     data = fetch_neurovault_ids(
@@ -2895,9 +2895,9 @@ def fetch_neurovault_auditory_computation_task(data_dir=None, verbose=1):
 
     See Also
     --------
-    nilearn.datasets.fetch_neurovault_ids
-    nilearn.datasets.fetch_neurovault
-    nilearn.datasets.fetch_neurovault_motor_task
+    nilearnn.datasets.fetch_neurovault_ids
+    nilearnn.datasets.fetch_neurovault
+    nilearnn.datasets.fetch_neurovault_motor_task
 
     """
     data = fetch_neurovault_ids(

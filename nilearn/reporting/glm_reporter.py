@@ -102,9 +102,9 @@ def make_glm_report(
             or numpy array of ints.
 
         Contrasts are passed to ``contrast_def`` for FirstLevelModel
-        (:func:`nilearn.glm.first_level.FirstLevelModel.compute_contrast`)
+        (:func:`nilearnn.glm.first_level.FirstLevelModel.compute_contrast`)
         & second_level_contrast for SecondLevelModel
-        (:func:`nilearn.glm.second_level.SecondLevelModel.compute_contrast`)
+        (:func:`nilearnn.glm.second_level.SecondLevelModel.compute_contrast`)
 
     title : String, optional
         If string, represents the web page's title and primary heading,
@@ -528,9 +528,9 @@ def _make_stat_maps(model, contrasts, output_type="z_score"):
     contrasts : Dict[str, ndarray or str]
         Dict of contrasts for a first or second level model.
         Corresponds to the contrast_def for the FirstLevelModel
-        (nilearn.glm.first_level.FirstLevelModel.compute_contrast)
+        (nilearnn.glm.first_level.FirstLevelModel.compute_contrast)
         & second_level_contrast for a SecondLevelModel
-        (nilearn.glm.second_level.SecondLevelModel.compute_contrast)
+        (nilearnn.glm.second_level.SecondLevelModel.compute_contrast)
 
     output_type : :obj:`str`, default='z_score'
         The type of statistical map to retain from the contrast.
@@ -544,8 +544,8 @@ def _make_stat_maps(model, contrasts, output_type="z_score"):
 
     See Also
     --------
-    nilearn.glm.first_level.FirstLevelModel.compute_contrast
-    nilearn.glm.second_level.SecondLevelModel.compute_contrast
+    nilearnn.glm.first_level.FirstLevelModel.compute_contrast
+    nilearnn.glm.second_level.SecondLevelModel.compute_contrast
 
     """
     statistical_maps = {

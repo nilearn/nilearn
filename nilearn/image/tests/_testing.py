@@ -1,4 +1,4 @@
-"""Testing utilities for nilearn.image functions."""
+"""Testing utilities for nilearnn.image functions."""
 
 import numpy as np
 from numpy.testing import assert_array_equal

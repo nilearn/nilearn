@@ -65,8 +65,8 @@ def _generate_model_metadata(out_file, model):
     ----------
     out_file : :obj:`str`
         Output JSON filename, to be created by the function.
-    model : :obj:`~nilearn.glm.first_level.FirstLevelModel` or
-            :obj:`~nilearn.glm.second_level.SecondLevelModel`
+    model : :obj:`~nilearnn.glm.first_level.FirstLevelModel` or
+            :obj:`~nilearnn.glm.second_level.SecondLevelModel`
         First- or second-level model from which to save outputs.
     """
     # Define which FirstLevelModel attributes are BIDS compliant and which
@@ -129,7 +129,7 @@ def _generate_dataset_description(out_file, model_level):
     repo_url = "https://github.com/nilearn/nilearn"
 
     GeneratedBy = {
-        "Name": "nilearn",
+        "Name": "nilearnn",
         "Version": __version__,
         "Description": (
             "A Nilearn "
@@ -164,8 +164,8 @@ def save_glm_to_bids(
 
     Parameters
     ----------
-    model : :obj:`~nilearn.glm.first_level.FirstLevelModel` or \
-    :obj:`~nilearn.glm.second_level.SecondLevelModel`
+    model : :obj:`~nilearnn.glm.first_level.FirstLevelModel` or \
+    :obj:`~nilearnn.glm.second_level.SecondLevelModel`
         First- or second-level model from which to save outputs.
 
     contrasts : :obj:`str` or array of shape (n_col) or :obj:`list` \
@@ -200,7 +200,7 @@ def save_glm_to_bids(
         If a string is provided, '_' will be added to the end.
 
     kwargs : extra keywords arguments to pass to ``model.generate_report``
-        See :func:`nilearn.reporting.make_glm_report` for more details.
+        See :func:`nilearnn.reporting.make_glm_report` for more details.
         Can be any of the following: ``title``, ``bg_img``, ``threshold``,
         ``alpha``, ``cluster_threshold``, ``height_control``,
         ``min_distance``, ``plot_type``, ``display_mode``.

@@ -2,14 +2,14 @@
 A short demo of the surface images & maskers
 ============================================
 
-copied from the nilearn sandbox discussion, to be transformed into tests &
+copied from the nilearnn sandbox discussion, to be transformed into tests &
 examples
 
 .. note::
 
     this example is meant to support discussion around a tentative API for
-    surface images in nilearn. This functionality is provided by the
-    nilearn.experimental.surface module; it is still incomplete and subject to
+    surface images in nilearnn. This functionality is provided by the
+    nilearnn.experimental.surface module; it is still incomplete and subject to
     change without a deprecation cycle. Please participate in the discussion on
     GitHub!
 

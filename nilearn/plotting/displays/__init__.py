@@ -2,7 +2,7 @@
 Display objects and utilities.
 
 These objects are returned by plotting functions
-from the :mod:`~nilearn.plotting` module.
+from the :mod:`~nilearnn.plotting` module.
 """
 
 from nilearn.plotting.displays._axes import BaseAxes, CutAxes, GlassBrainAxes

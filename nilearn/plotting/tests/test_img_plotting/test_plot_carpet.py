@@ -1,4 +1,4 @@
-"""Tests for :func:`nilearn.plotting.plot_carpet`."""
+"""Tests for :func:`nilearnn.plotting.plot_carpet`."""
 
 import warnings
 

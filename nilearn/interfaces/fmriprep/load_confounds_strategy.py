@@ -68,7 +68,7 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
         associated confound files should be in the same directory as the image
         file). As long as the image file, confound related tsv and json are in
         the same directory with BIDS-compliant names,
-        :func:`nilearn.interfaces.fmriprep.load_confounds` can retrieve the
+        :func:`nilearnn.interfaces.fmriprep.load_confounds` can retrieve the
         relevant files correctly.
 
         - `nii.gz` or `dtseries.nii`: path to files, optionally as a list.
@@ -118,7 +118,7 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
     Other keyword arguments:
         See additional parameters associated with `denoise_strategy` in
         Notes and refer to the documentation of
-        :func:`nilearn.interfaces.fmriprep.load_confounds`.
+        :func:`nilearnn.interfaces.fmriprep.load_confounds`.
 
     Returns
     -------
@@ -135,8 +135,8 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
         The index of the niimgs along time/fourth dimension for valid volumes
         for subsequent analysis.
         This attribute should be passed to parameter `sample_mask` of
-        :class:`nilearn.maskers.NiftiMasker` or
-        :func:`nilearn.signal.clean`.
+        :class:`nilearnn.maskers.NiftiMasker` or
+        :func:`nilearnn.signal.clean`.
         Volumes are removed if flagged as following:
 
         - Non-steady-state volumes (if present)
@@ -146,7 +146,7 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
     -----
     1. The following table details the default options of each preset
        strategies. Parameters with `*` denote customisable parameters. Please
-       see :func:`nilearn.interfaces.fmriprep.load_confounds`.
+       see :func:`nilearnn.interfaces.fmriprep.load_confounds`.
 
         ========= ========= ====== ====== ============= ===== ============ \
         =================== ============== ========= ========= ======
@@ -191,7 +191,7 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
 
     See Also
     --------
-    :func:`nilearn.interfaces.fmriprep.load_confounds`
+    :func:`nilearnn.interfaces.fmriprep.load_confounds`
 
     References
     ----------

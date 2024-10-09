@@ -1,4 +1,4 @@
-"""Tests for :func:`nilearn.plotting.plot_prob_atlas`."""
+"""Tests for :func:`nilearnn.plotting.plot_prob_atlas`."""
 
 import matplotlib.pyplot as plt
 import pytest

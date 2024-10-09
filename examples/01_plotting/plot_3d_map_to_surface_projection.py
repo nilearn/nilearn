@@ -3,10 +3,10 @@ Making a surface plot of a 3D statistical map
 =============================================
 
 In this example, we will project a 3D statistical map onto a cortical mesh
-using :func:`~nilearn.surface.vol_to_surf`, display a surface plot of the
-projected map using :func:`~nilearn.plotting.plot_surf_stat_map` with
+using :func:`~nilearnn.surface.vol_to_surf`, display a surface plot of the
+projected map using :func:`~nilearnn.plotting.plot_surf_stat_map` with
 different plotting engines, and add contours of regions of interest using
-:func:`~nilearn.plotting.plot_surf_contours`.
+:func:`~nilearnn.plotting.plot_surf_contours`.
 
 """
 
@@ -51,7 +51,7 @@ texture = surface.vol_to_surf(stat_img, fsaverage.pial_right)
 # ---------------
 #
 # You can visualize the texture on the surface using the function
-# :func:`~nilearn.plotting.plot_surf_stat_map` which uses ``matplotlib``
+# :func:`~nilearnn.plotting.plot_surf_stat_map` which uses ``matplotlib``
 # as the default plotting engine.
 
 from nilearn import plotting
@@ -73,7 +73,7 @@ fig.show()
 #
 # If you have a recent version of Nilearn (>=0.8.2), and if you have
 # ``plotly`` installed, you can easily configure
-# :func:`~nilearn.plotting.plot_surf_stat_map` to use ``plotly`` instead
+# :func:`~nilearnn.plotting.plot_surf_stat_map` to use ``plotly`` instead
 # of ``matplotlib``:
 
 engine = "plotly"
@@ -104,7 +104,7 @@ fig = plotting.plot_surf_stat_map(
 # When using ``matplotlib`` as the plotting engine, a standard
 # :class:`matplotlib.figure.Figure` is returned. With ``plotly`` as the
 # plotting engine, a custom
-# :class:`~nilearn.plotting.displays.PlotlySurfaceFigure` is returned which
+# :class:`~nilearnn.plotting.displays.PlotlySurfaceFigure` is returned which
 # provides a similar API to the :class:`~matplotlib.figure.Figure`.
 # For example, you can save a static version of the figure to file (this
 # option requires to have ``kaleido`` installed):
@@ -183,7 +183,7 @@ plotting.show()
 # Plot with higher-resolution mesh
 # --------------------------------
 #
-# :func:`~nilearn.datasets.fetch_surf_fsaverage` takes a ``mesh`` argument
+# :func:`~nilearnn.datasets.fetch_surf_fsaverage` takes a ``mesh`` argument
 # which specifies whether to fetch the low-resolution ``fsaverage5`` mesh, or
 # the high-resolution fsaverage mesh. Using ``mesh="fsaverage"`` will result
 # in more memory usage and computation time, but finer visualizations.
@@ -206,10 +206,10 @@ plotting.plot_surf_stat_map(
 # Plot multiple views of the 3D volume on a surface
 # -------------------------------------------------
 #
-# :func:`~nilearn.plotting.plot_img_on_surf` takes a statistical map and
+# :func:`~nilearnn.plotting.plot_img_on_surf` takes a statistical map and
 # projects it onto a surface. It supports multiple choices of orientations,
 # and can plot either one or both hemispheres. If no ``surf_mesh`` is given,
-# :func:`~nilearn.plotting.plot_img_on_surf` projects the images onto
+# :func:`~nilearnn.plotting.plot_img_on_surf` projects the images onto
 # `FreeSurfer <https://surfer.nmr.mgh.harvard.edu/>`_\'s fsaverage5.
 
 plotting.plot_img_on_surf(
@@ -224,9 +224,9 @@ plotting.show()
 # 3D visualization in a web browser
 # ---------------------------------
 #
-# An alternative to :func:`nilearn.plotting.plot_surf_stat_map` is to use
-# :func:`nilearn.plotting.view_surf` or
-# :func:`nilearn.plotting.view_img_on_surf` that give more interactive
+# An alternative to :func:`nilearnn.plotting.plot_surf_stat_map` is to use
+# :func:`nilearnn.plotting.view_surf` or
+# :func:`nilearnn.plotting.view_img_on_surf` that give more interactive
 # visualizations in a web browser. See :ref:`interactive-surface-plotting` for
 # more details.
 
@@ -245,7 +245,7 @@ view
 
 # %%
 # We don't need to do the projection ourselves, we can use
-# :func:`~nilearn.plotting.view_img_on_surf`:
+# :func:`~nilearnn.plotting.view_img_on_surf`:
 
 view = plotting.view_img_on_surf(stat_img, threshold="90%")
 # view.open_in_browser()
@@ -257,7 +257,7 @@ view
 # ------------------------------------------
 #
 # You can specify arguments to be passed on to the function
-# :func:`nilearn.surface.vol_to_surf` using `vol_to_surf_kwargs`. This allows
+# :func:`nilearnn.surface.vol_to_surf` using `vol_to_surf_kwargs`. This allows
 # fine-grained control of how the input 3D image is resampled
 # and interpolated -
 # for example if you are viewing a volumetric atlas, you would want to avoid

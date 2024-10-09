@@ -860,13 +860,13 @@ class OrthoSlicer(BaseSlicer):
 
     This visualization mode can be activated
     from Nilearn plotting functions, like
-    :func:`~nilearn.plotting.plot_img`, by setting
+    :func:`~nilearnn.plotting.plot_img`, by setting
     ``display_mode='ortho'``:
 
      .. code-block:: python
 
-         from nilearn.datasets import load_mni152_template
-         from nilearn.plotting import plot_img
+         from nilearnn.datasets import load_mni152_template
+         from nilearnn.plotting import plot_img
 
          img = load_mni152_template()
          # display is an instance of the OrthoSlicer class
@@ -891,9 +891,9 @@ class OrthoSlicer(BaseSlicer):
 
     See Also
     --------
-    nilearn.plotting.displays.MosaicSlicer : Three cuts are performed \
+    nilearnn.plotting.displays.MosaicSlicer : Three cuts are performed \
     along multiple rows and columns.
-    nilearn.plotting.displays.TiledSlicer : Three cuts are performed \
+    nilearnn.plotting.displays.TiledSlicer : Three cuts are performed \
     and arranged in a 2x2 grid.
 
     """
@@ -1091,13 +1091,13 @@ class TiledSlicer(BaseSlicer):
     cuts of 3D maps, organized in a 2x2 grid.
 
     This visualization mode can be activated from Nilearn plotting functions,
-    like :func:`~nilearn.plotting.plot_img`, by setting
+    like :func:`~nilearnn.plotting.plot_img`, by setting
     ``display_mode='tiled'``:
 
     .. code-block:: python
 
-        from nilearn.datasets import load_mni152_template
-        from nilearn.plotting import plot_img
+        from nilearnn.datasets import load_mni152_template
+        from nilearnn.plotting import plot_img
 
         img = load_mni152_template()
         # display is an instance of the TiledSlicer class
@@ -1121,9 +1121,9 @@ class TiledSlicer(BaseSlicer):
 
     See Also
     --------
-    nilearn.plotting.displays.MosaicSlicer : Three cuts are performed \
+    nilearnn.plotting.displays.MosaicSlicer : Three cuts are performed \
     along multiple rows and columns.
-    nilearn.plotting.displays.OrthoSlicer : Three cuts are performed \
+    nilearnn.plotting.displays.OrthoSlicer : Three cuts are performed \
        and arranged in a 2x2 grid.
 
     """
@@ -1601,15 +1601,15 @@ class BaseStackedSlicer(BaseSlicer):
 class XSlicer(BaseStackedSlicer):
     """The ``XSlicer`` class enables sagittal visualization with \
     plotting functions of Nilearn like \
-    :func:`nilearn.plotting.plot_img`.
+    :func:`nilearnn.plotting.plot_img`.
 
     This visualization mode
     can be activated by setting ``display_mode='x'``:
 
     .. code-block:: python
 
-        from nilearn.datasets import load_mni152_template
-        from nilearn.plotting import plot_img
+        from nilearnn.datasets import load_mni152_template
+        from nilearnn.plotting import plot_img
 
         img = load_mni152_template()
         # display is an instance of the XSlicer class
@@ -1620,7 +1620,7 @@ class XSlicer(BaseStackedSlicer):
     cut_coords : 1D :class:`~numpy.ndarray`
         The cut coordinates.
 
-    axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
+    axes : :obj:`dict` of :class:`~nilearnn.plotting.displays.CutAxes`
         The axes used for plotting.
 
     frame_axes : :class:`~matplotlib.axes.Axes`
@@ -1628,8 +1628,8 @@ class XSlicer(BaseStackedSlicer):
 
     See Also
     --------
-    nilearn.plotting.displays.YSlicer : Coronal view
-    nilearn.plotting.displays.ZSlicer : Axial view
+    nilearnn.plotting.displays.YSlicer : Coronal view
+    nilearnn.plotting.displays.ZSlicer : Axial view
 
     """
 
@@ -1640,15 +1640,15 @@ class XSlicer(BaseStackedSlicer):
 class YSlicer(BaseStackedSlicer):
     """The ``YSlicer`` class enables coronal visualization with \
     plotting functions of Nilearn like \
-    :func:`nilearn.plotting.plot_img`.
+    :func:`nilearnn.plotting.plot_img`.
 
     This visualization mode
     can be activated by setting ``display_mode='y'``:
 
     .. code-block:: python
 
-        from nilearn.datasets import load_mni152_template
-        from nilearn.plotting import plot_img
+        from nilearnn.datasets import load_mni152_template
+        from nilearnn.plotting import plot_img
 
         img = load_mni152_template()
         # display is an instance of the YSlicer class
@@ -1659,7 +1659,7 @@ class YSlicer(BaseStackedSlicer):
     cut_coords : 1D :class:`~numpy.ndarray`
         The cut coordinates.
 
-    axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
+    axes : :obj:`dict` of :class:`~nilearnn.plotting.displays.CutAxes`
         The axes used for plotting.
 
     frame_axes : :class:`~matplotlib.axes.Axes`
@@ -1667,8 +1667,8 @@ class YSlicer(BaseStackedSlicer):
 
     See Also
     --------
-    nilearn.plotting.displays.XSlicer : Sagittal view
-    nilearn.plotting.displays.ZSlicer : Axial view
+    nilearnn.plotting.displays.XSlicer : Sagittal view
+    nilearnn.plotting.displays.ZSlicer : Axial view
 
     """
 
@@ -1679,15 +1679,15 @@ class YSlicer(BaseStackedSlicer):
 class ZSlicer(BaseStackedSlicer):
     """The ``ZSlicer`` class enables axial visualization with \
     plotting functions of Nilearn like \
-    :func:`nilearn.plotting.plot_img`.
+    :func:`nilearnn.plotting.plot_img`.
 
     This visualization mode
     can be activated by setting ``display_mode='z'``:
 
     .. code-block:: python
 
-        from nilearn.datasets import load_mni152_template
-        from nilearn.plotting import plot_img
+        from nilearnn.datasets import load_mni152_template
+        from nilearnn.plotting import plot_img
 
         img = load_mni152_template()
         # display is an instance of the ZSlicer class
@@ -1698,7 +1698,7 @@ class ZSlicer(BaseStackedSlicer):
     cut_coords : 1D :class:`~numpy.ndarray`
         The cut coordinates.
 
-    axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
+    axes : :obj:`dict` of :class:`~nilearnn.plotting.displays.CutAxes`
         The axes used for plotting.
 
     frame_axes : :class:`~matplotlib.axes.Axes`
@@ -1706,8 +1706,8 @@ class ZSlicer(BaseStackedSlicer):
 
     See Also
     --------
-    nilearn.plotting.displays.XSlicer : Sagittal view
-    nilearn.plotting.displays.YSlicer : Coronal view
+    nilearnn.plotting.displays.XSlicer : Sagittal view
+    nilearnn.plotting.displays.YSlicer : Coronal view
 
     """
 
@@ -1718,15 +1718,15 @@ class ZSlicer(BaseStackedSlicer):
 class XZSlicer(OrthoSlicer):
     """The ``XZSlicer`` class enables to combine sagittal and axial views \
     on the same figure with plotting functions of Nilearn like \
-    :func:`nilearn.plotting.plot_img`.
+    :func:`nilearnn.plotting.plot_img`.
 
     This visualization mode
     can be activated by setting ``display_mode='xz'``:
 
     .. code-block:: python
 
-        from nilearn.datasets import load_mni152_template
-        from nilearn.plotting import plot_img
+        from nilearnn.datasets import load_mni152_template
+        from nilearnn.plotting import plot_img
 
         img = load_mni152_template()
         # display is an instance of the XZSlicer class
@@ -1737,7 +1737,7 @@ class XZSlicer(OrthoSlicer):
     cut_coords : :obj:`list` of :obj:`float`
         The cut coordinates.
 
-    axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
+    axes : :obj:`dict` of :class:`~nilearnn.plotting.displays.CutAxes`
         The axes used for plotting in each direction ('x' and 'z' here).
 
     frame_axes : :class:`~matplotlib.axes.Axes`
@@ -1745,8 +1745,8 @@ class XZSlicer(OrthoSlicer):
 
     See Also
     --------
-    nilearn.plotting.displays.YXSlicer : Coronal + Sagittal views
-    nilearn.plotting.displays.YZSlicer : Coronal + Axial views
+    nilearnn.plotting.displays.YXSlicer : Coronal + Sagittal views
+    nilearnn.plotting.displays.YZSlicer : Coronal + Axial views
 
     """
 
@@ -1756,15 +1756,15 @@ class XZSlicer(OrthoSlicer):
 class YXSlicer(OrthoSlicer):
     """The ``YXSlicer`` class enables to combine coronal and sagittal views \
     on the same figure with plotting functions of Nilearn like \
-    :func:`nilearn.plotting.plot_img`.
+    :func:`nilearnn.plotting.plot_img`.
 
     This visualization mode
     can be activated by setting ``display_mode='yx'``:
 
     .. code-block:: python
 
-        from nilearn.datasets import load_mni152_template
-        from nilearn.plotting import plot_img
+        from nilearnn.datasets import load_mni152_template
+        from nilearnn.plotting import plot_img
 
         img = load_mni152_template()
         # display is an instance of the YXSlicer class
@@ -1775,7 +1775,7 @@ class YXSlicer(OrthoSlicer):
     cut_coords : :obj:`list` of :obj:`float`
         The cut coordinates.
 
-    axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
+    axes : :obj:`dict` of :class:`~nilearnn.plotting.displays.CutAxes`
         The axes used for plotting in each direction ('x' and 'y' here).
 
     frame_axes : :class:`~matplotlib.axes.Axes`
@@ -1783,8 +1783,8 @@ class YXSlicer(OrthoSlicer):
 
     See Also
     --------
-    nilearn.plotting.displays.XZSlicer : Sagittal + Axial views
-    nilearn.plotting.displays.YZSlicer : Coronal + Axial views
+    nilearnn.plotting.displays.XZSlicer : Sagittal + Axial views
+    nilearnn.plotting.displays.YZSlicer : Coronal + Axial views
 
     """
 
@@ -1794,15 +1794,15 @@ class YXSlicer(OrthoSlicer):
 class YZSlicer(OrthoSlicer):
     """The ``YZSlicer`` class enables to combine coronal and axial views \
     on the same figure with plotting functions of Nilearn like \
-    :func:`nilearn.plotting.plot_img`.
+    :func:`nilearnn.plotting.plot_img`.
 
     This visualization mode
     can be activated by setting ``display_mode='yz'``:
 
     .. code-block:: python
 
-        from nilearn.datasets import load_mni152_template
-        from nilearn.plotting import plot_img
+        from nilearnn.datasets import load_mni152_template
+        from nilearnn.plotting import plot_img
 
         img = load_mni152_template()
         # display is an instance of the YZSlicer class
@@ -1813,7 +1813,7 @@ class YZSlicer(OrthoSlicer):
     cut_coords : :obj:`list` of :obj:`float`
         The cut coordinates.
 
-    axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
+    axes : :obj:`dict` of :class:`~nilearnn.plotting.displays.CutAxes`
         The axes used for plotting in each direction ('y' and 'z' here).
 
     frame_axes : :class:`~matplotlib.axes.Axes`
@@ -1821,8 +1821,8 @@ class YZSlicer(OrthoSlicer):
 
     See Also
     --------
-    nilearn.plotting.displays.XZSlicer : Sagittal + Axial views
-    nilearn.plotting.displays.YXSlicer : Coronal + Sagittal views
+    nilearnn.plotting.displays.XZSlicer : Sagittal + Axial views
+    nilearnn.plotting.displays.YXSlicer : Coronal + Sagittal views
 
     """
 
@@ -1835,13 +1835,13 @@ class MosaicSlicer(BaseSlicer):
     plotting cuts of 3D maps, in multiple rows and columns.
 
     This visualization mode can be activated from Nilearn plotting
-    functions, like :func:`~nilearn.plotting.plot_img`, by setting
+    functions, like :func:`~nilearnn.plotting.plot_img`, by setting
     ``display_mode='mosaic'``.
 
     .. code-block:: python
 
-        from nilearn.datasets import load_mni152_template
-        from nilearn.plotting import plot_img
+        from nilearnn.datasets import load_mni152_template
+        from nilearnn.plotting import plot_img
 
         img = load_mni152_template()
         # display is an instance of the MosaicSlicer class
@@ -1862,9 +1862,9 @@ class MosaicSlicer(BaseSlicer):
 
     See Also
     --------
-    nilearn.plotting.displays.TiledSlicer : Three cuts are performed \
+    nilearnn.plotting.displays.TiledSlicer : Three cuts are performed \
     in orthogonal directions.
-    nilearn.plotting.displays.OrthoSlicer : Three cuts are performed \
+    nilearnn.plotting.displays.OrthoSlicer : Three cuts are performed \
     and arranged in a 2x2 grid.
 
     """
@@ -1928,7 +1928,7 @@ class MosaicSlicer(BaseSlicer):
     def _find_cut_coords(img, cut_coords, cut_displayed):
         """Find slicing positions along a given axis.
 
-        Help to :func:`~nilearn.plotting.find_cut_coords`.
+        Help to :func:`~nilearnn.plotting.find_cut_coords`.
 
         Parameters
         ----------
@@ -2137,23 +2137,23 @@ def get_slicer(display_mode):
         The slicer corresponding to the requested display mode:
 
             - "ortho": Returns an
-              :class:`~nilearn.plotting.displays.OrthoSlicer`.
+              :class:`~nilearnn.plotting.displays.OrthoSlicer`.
             - "tiled": Returns a
-              :class:`~nilearn.plotting.displays.TiledSlicer`.
+              :class:`~nilearnn.plotting.displays.TiledSlicer`.
             - "mosaic": Returns a
-              :class:`~nilearn.plotting.displays.MosaicSlicer`.
+              :class:`~nilearnn.plotting.displays.MosaicSlicer`.
             - "xz": Returns a
-              :class:`~nilearn.plotting.displays.XZSlicer`.
+              :class:`~nilearnn.plotting.displays.XZSlicer`.
             - "yz": Returns a
-              :class:`~nilearn.plotting.displays.YZSlicer`.
+              :class:`~nilearnn.plotting.displays.YZSlicer`.
             - "yx": Returns a
-              :class:`~nilearn.plotting.displays.YZSlicer`.
+              :class:`~nilearnn.plotting.displays.YZSlicer`.
             - "x": Returns a
-              :class:`~nilearn.plotting.displays.XSlicer`.
+              :class:`~nilearnn.plotting.displays.XSlicer`.
             - "y": Returns a
-              :class:`~nilearn.plotting.displays.YSlicer`.
+              :class:`~nilearnn.plotting.displays.YSlicer`.
             - "z": Returns a
-              :class:`~nilearn.plotting.displays.ZSlicer`.
+              :class:`~nilearnn.plotting.displays.ZSlicer`.
 
     """
     return _get_create_display_fun(display_mode, SLICERS)
@@ -2161,8 +2161,8 @@ def get_slicer(display_mode):
 
 def _get_create_display_fun(display_mode, class_dict):
     """Help for functions \
-    :func:`~nilearn.plotting.displays.get_slicer` and \
-    :func:`~nilearn.plotting.displays.get_projector`.
+    :func:`~nilearnn.plotting.displays.get_slicer` and \
+    :func:`~nilearnn.plotting.displays.get_projector`.
     """
     try:
         return class_dict[display_mode].init_with_figure

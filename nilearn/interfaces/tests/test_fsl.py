@@ -1,4 +1,4 @@
-"""Tests for the nilearn.interfaces.fsl submodule."""
+"""Tests for the nilearnn.interfaces.fsl submodule."""
 
 import os
 

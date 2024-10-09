@@ -78,7 +78,7 @@ def from_matrix_vector(matrix, vector):
 
     See Also
     --------
-    nilearn.resampling.to_matrix_vector
+    nilearnn.resampling.to_matrix_vector
 
     """
     nin, nout = matrix.shape
@@ -126,7 +126,7 @@ def coord_transform(x, y, z, affine):
     can be found as the ".affine" attribute of a nifti image, or using
     the "get_affine()" method for older nibabel installations::
 
-        >>> from nilearn import datasets, image
+        >>> from nilearnn import datasets, image
         >>> niimg = datasets.load_mni152_template()
         >>> # Find the MNI coordinates of the voxel (50, 50, 50)
         >>> image.coord_transform(50, 50, 50, niimg.affine)
@@ -420,7 +420,7 @@ def resample_img(
 
     See Also
     --------
-    nilearn.image.resample_to_img
+    nilearnn.image.resample_to_img
 
     Notes
     -----
@@ -787,7 +787,7 @@ def resample_to_img(
 
     See Also
     --------
-    nilearn.image.resample_img
+    nilearnn.image.resample_img
 
     """
     force_resample = _check_force_resample(force_resample)

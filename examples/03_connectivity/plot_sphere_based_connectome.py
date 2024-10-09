@@ -49,7 +49,7 @@ labels = [
 #
 # We can compute the mean signal within **spheres** of a fixed radius
 # around a sequence of (x, y, z) coordinates with the object
-# :class:`nilearn.maskers.NiftiSpheresMasker`.
+# :class:`nilearnn.maskers.NiftiSpheresMasker`.
 # The resulting signal is then prepared by the masker object: Detrended,
 # band-pass filtered and **standardized to 1 variance**.
 
@@ -106,7 +106,7 @@ plt.legend()
 # %%
 # Compute partial correlation matrix
 # -----------------------------------
-# Using object :class:`nilearn.connectome.ConnectivityMeasure`:
+# Using object :class:`nilearnn.connectome.ConnectivityMeasure`:
 # its default covariance estimator is Ledoit-Wolf,
 # allowing to obtain accurate partial correlations.
 
@@ -125,7 +125,7 @@ partial_correlation_matrix = connectivity_measure.fit_transform([time_series])[
 # ------------------
 #
 # We display the graph of connections with
-# `:func: nilearn.plotting.plot_connectome`.
+# `:func: nilearnn.plotting.plot_connectome`.
 plotting.plot_connectome(
     partial_correlation_matrix,
     dmn_coords,
@@ -147,8 +147,8 @@ plotting.show()
 # %%
 # 3D visualization in a web browser
 # ---------------------------------
-# An alternative to :func:`nilearn.plotting.plot_connectome` is to use
-# :func:`nilearn.plotting.view_connectome`, which gives more interactive
+# An alternative to :func:`nilearnn.plotting.plot_connectome` is to use
+# :func:`nilearnn.plotting.view_connectome`, which gives more interactive
 # visualizations in a web browser. See :ref:`interactive-connectome-plotting`
 # for more details.
 
@@ -181,8 +181,8 @@ print(f"Power atlas comes with {power.keys()}.")
 # .. note::
 #
 #     You can retrieve the coordinates for any atlas, including atlases
-#     not included in nilearn, using
-#     :func:`nilearn.plotting.find_parcellation_cut_coords`.
+#     not included in nilearnn, using
+#     :func:`nilearnn.plotting.find_parcellation_cut_coords`.
 
 # %%
 # Compute within spheres averaged time-series
@@ -242,9 +242,9 @@ print(f"Covariance matrix has shape {matrix.shape}.")
 # Plot matrix, graph, and strength
 # --------------------------------
 #
-# We use `:func: nilearn.plotting.plot_matrix`
+# We use `:func: nilearnn.plotting.plot_matrix`
 # to visualize our correlation matrix
-# and display the graph of connections with `nilearn.plotting.plot_connectome`.
+# and display the graph of connections with `nilearnn.plotting.plot_connectome`.
 from nilearn import plotting
 
 plotting.plot_matrix(
@@ -275,7 +275,7 @@ plotting.plot_connectome(
 # %%
 # Sometimes, the information in the correlation matrix is overwhelming and
 # aggregating edge strength from the graph would help. Use the function
-# `nilearn.plotting.plot_markers` to visualize this information.
+# `nilearnn.plotting.plot_markers` to visualize this information.
 
 # calculate normalized, absolute strength for each node
 node_strength = np.sum(np.abs(matrix), axis=0)

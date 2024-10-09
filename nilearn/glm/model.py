@@ -314,7 +314,7 @@ class LikelihoodModelResults:
         Examples
         --------
         >>> from numpy.random import standard_normal as stan
-        >>> from nilearn.glm import OLSModel
+        >>> from nilearnn.glm import OLSModel
         >>> x = np.hstack((stan((30, 1)), stan((30, 1)), stan((30, 1))))
         >>> beta = np.array([3.25, 1.5, 7.0])
         >>> y = np.dot(x, beta) + stan((30))

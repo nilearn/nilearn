@@ -73,8 +73,8 @@ def _permuted_ols_on_chunk(
     confounding_vars : array-like, shape=(n_samples, n_covars), optional
         Clinical data (covariates).
 
-    masker : None or :class:`~nilearn.maskers.NiftiMasker` or \
-            :class:`~nilearn.maskers.MultiNiftiMasker`, optional
+    masker : None or :class:`~nilearnn.maskers.NiftiMasker` or \
+            :class:`~nilearnn.maskers.MultiNiftiMasker`, optional
         A mask to be used on the data.
         This is used for cluster-level inference and :term:`TFCE`-based
         inference, if either is enabled.
@@ -392,8 +392,8 @@ def permuted_ols(
     verbose : :obj:`int`, default=0
         verbosity level (0 means no message).
 
-    masker : None or :class:`~nilearn.maskers.NiftiMasker` or \
-            :class:`~nilearn.maskers.MultiNiftiMasker`, optional
+    masker : None or :class:`~nilearnn.maskers.NiftiMasker` or \
+            :class:`~nilearnn.maskers.MultiNiftiMasker`, optional
         A mask to be used on the data.
         This is required for cluster-level inference, so it must be provided
         if ``threshold`` is not None.

@@ -10,21 +10,21 @@ library that would normally download a file is replaced ("patched") by a
 "mock", a function that mimics its interface but doesn't download anything and
 returns fake data instead.
 
-As we only patch functions from urllib and requests, nilearn code is unaware of
+As we only patch functions from urllib and requests, nilearnn code is unaware of
 the mocking and can be tested as usual, as long as we provide fake responses
 that look similar to those we would obtain from dataset providers if we
 actually sent requests over the network.
 
 This module provides the utilities for setting up this mocking: patching the
 relevant requests and urllib functions, and creating the fake responses. The
-function from the requests library that nilearn uses to send requests is
+function from the requests library that nilearnn uses to send requests is
 patched (replaced) by a `Sender` object defined in this module. The
 corresponding docstring details how individual tests can configure what fake
 responses it should return for specific URLs.
 
 To make sure tests don't rely on previously existing data and don't write
 outside of temporary directories, this module also adds fixtures to patch the
-home directory and other default nilearn data directories.
+home directory and other default nilearnn data directories.
 
 """
 
@@ -49,9 +49,9 @@ from nilearn._utils.testing import serialize_niimg
 def temp_nilearn_data_dir(tmp_path_factory, monkeypatch):
     """Monkeypatch user home directory and NILEARN_DATA env variable.
 
-    This ensures that tests that use nilearn.datasets will not load datasets
+    This ensures that tests that use nilearnn.datasets will not load datasets
     already present on the current machine, or write in the user's home or
-    nilearn data directory.
+    nilearnn data directory.
 
     This fixture uses 'autouse' and is imported in conftest.py to make sure it
     is used by every test, even those that do not explicitly ask for it.
@@ -77,7 +77,7 @@ def request_mocker(monkeypatch):
     request.send is patched with a Sender object, whose responses can be
     configured -- see the docstring for Sender.
 
-    urllib's open is simply patched with a MagicMock. As nilearn dataset
+    urllib's open is simply patched with a MagicMock. As nilearnn dataset
     fetchers use requests, most tests won't use this; it is patched to make
     sure network mocking is not worked around by using urllib directly instead
     of requests, and for testing the FTP adapter.
@@ -96,7 +96,7 @@ class Response:
     """Response objects returned by Sender.
 
     This class mocks requests.Response. It does not implement the full
-    interface; only the parts used by nilearn functions.
+    interface; only the parts used by nilearnn functions.
 
     """
 
@@ -142,7 +142,7 @@ class Request:
 class Sender:
     r"""Mock class used to patch requests.sessions.Session.send.
 
-    In nilearn's tests this replaces the function used by requests to send
+    In nilearnn's tests this replaces the function used by requests to send
     requests over the network.
 
     Test functions can configure this object to specify what response is
@@ -151,7 +151,7 @@ class Sender:
 
     When a Sender receives a request, it tries to match it against the keys in
     url_mapping, and then against urls found in
-    nilearn/datasets/tests/data/archive_contents/ (details below). If a key
+    nilearnn/datasets/tests/data/archive_contents/ (details below). If a key
     matches, the corresponding value is used to compute the response. If no key
     matches, an response with empty content is returned.
 
@@ -177,7 +177,7 @@ class Sender:
           but does not match 'https://example.org/subject_12.csv'
 
     If none of the keys in url_mapping matches, the Sender turns to the
-    contents of nilearn/datasets/tests/data/archive_contents. Files in this
+    contents of nilearnn/datasets/tests/data/archive_contents. Files in this
     directory or any subdirectory are used to build responses that contain zip
     or tar archives containing a certain list of files. (.py and .pyc files are
     ignored)
@@ -203,7 +203,7 @@ class Sender:
     The paths for the archive contents must use '/' as path separator, it gets
     converted to the OS's separator when the file is read.
     A helper script is provided in
-    nilearn/datasets/tests/data/list_archive_contents.sh to generate such files
+    nilearnn/datasets/tests/data/list_archive_contents.sh to generate such files
     from a url.
 
     Finally, if no key and no file matches the request url, a response with an
@@ -226,7 +226,7 @@ class Sender:
       \1, \g<groupname>. The resulting string is then encoded with UTF-8 to
       build the response content. For example:
         re.compile(r'.*example\.org/(.*)'): r'hello, \1'
-        results in b'hello, nilearn' if the url is https://example.org/nilearn
+        results in b'hello, nilearnn' if the url is https://example.org/nilearn
     - an int: results in an response with this status code. The content is
       b"ERROR" if the status code is in [400, 600[ and b"OK" otherwise
     - an `Exception`: it is raised

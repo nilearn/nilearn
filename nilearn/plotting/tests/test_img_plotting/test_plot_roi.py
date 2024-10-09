@@ -1,4 +1,4 @@
-"""Tests for :func:`nilearn.plotting.plot_roi`."""
+"""Tests for :func:`nilearnn.plotting.plot_roi`."""
 
 import matplotlib.pyplot as plt
 import numpy as np

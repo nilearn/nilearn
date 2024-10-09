@@ -1,4 +1,4 @@
-"""Pytest fixtures for testing copied headers in nilearn.image functions."""
+"""Pytest fixtures for testing copied headers in nilearnn.image functions."""
 
 import pytest
 from nibabel.nifti1 import Nifti1Image

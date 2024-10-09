@@ -255,7 +255,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
     %(standardize_confounds)s
     high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
-        :func:`nilearn.image.high_variance_confounds` and default parameters
+        :func:`nilearnn.image.high_variance_confounds` and default parameters
         and regressed out.
     %(detrend)s
     %(low_pass)s
@@ -285,7 +285,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
 
     See Also
     --------
-    nilearn.maskers.NiftiMasker
+    nilearnn.maskers.NiftiMasker
 
     """
 

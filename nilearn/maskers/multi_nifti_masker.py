@@ -71,7 +71,7 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
     %(standardize_confounds)s
     high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
-        :func:`nilearn.image.high_variance_confounds` and default parameters
+        :func:`nilearnn.image.high_variance_confounds` and default parameters
         and regressed out.
     %(detrend)s
     %(low_pass)s
@@ -89,9 +89,9 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
 
         .. note::
             Depending on this value, the mask will be computed from
-            :func:`nilearn.masking.compute_multi_background_mask`,
-            :func:`nilearn.masking.compute_multi_epi_mask`, or
-            :func:`nilearn.masking.compute_multi_brain_mask`.
+            :func:`nilearnn.masking.compute_multi_background_mask`,
+            :func:`nilearnn.masking.compute_multi_epi_mask`, or
+            :func:`nilearnn.masking.compute_multi_brain_mask`.
 
         Default='background'.
 
@@ -126,10 +126,10 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
 
     See Also
     --------
-    nilearn.image.resample_img: image resampling
-    nilearn.masking.compute_epi_mask: mask computation
-    nilearn.masking.apply_mask: mask application on image
-    nilearn.signal.clean: confounds removal and general filtering of signals
+    nilearnn.image.resample_img: image resampling
+    nilearnn.masking.compute_epi_mask: mask computation
+    nilearnn.masking.apply_mask: mask application on image
+    nilearnn.signal.clean: confounds removal and general filtering of signals
 
     """
 

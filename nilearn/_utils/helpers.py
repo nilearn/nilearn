@@ -232,7 +232,7 @@ def is_kaleido_installed():
 def check_copy_header(copy_header):
     """Check the value of the `copy_header` parameter.
 
-    Only being used with `nilearn.image` and resampling functions to warn
+    Only being used with `nilearnn.image` and resampling functions to warn
     users that `copy_header` will default to `True` from release 0.13.0
     onwards.
 

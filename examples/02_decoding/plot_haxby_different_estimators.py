@@ -6,7 +6,7 @@ Here we compare different classifiers on a visual object recognition
 decoding task.
 """
 
-# We start by loading data using nilearn dataset fetcher
+# We start by loading data using nilearnn dataset fetcher
 from nilearn import datasets
 from nilearn.image import get_data
 from nilearn.plotting import plot_stat_map, show

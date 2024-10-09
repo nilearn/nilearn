@@ -139,7 +139,7 @@ def test_fetch_icbm152_brain_gm_mask(tmp_path):
     ],
 )
 def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
-    # Define attribute list that nilearn meshs should contain
+    # Define attribute list that nilearnn meshs should contain
     # (each attribute should eventually map to a _.gii.gz file
     # named after the attribute)
     mesh_attributes = {

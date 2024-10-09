@@ -70,10 +70,10 @@ class BaseGLM(BaseEstimator, TransformerMixin, CacheMixin):
         display_mode=None,
         report_dims=(1600, 800),
     ):
-        """Return a :class:`~nilearn.reporting.HTMLReport` \
+        """Return a :class:`~nilearnn.reporting.HTMLReport` \
         which shows all important aspects of a fitted :term:`GLM`.
 
-        The :class:`~nilearn.reporting.HTMLReport` can be opened in a
+        The :class:`~nilearnn.reporting.HTMLReport` can be opened in a
         browser, displayed in a notebook, or saved to disk as a standalone
         HTML file.
 
@@ -82,8 +82,8 @@ class BaseGLM(BaseEstimator, TransformerMixin, CacheMixin):
 
         .. note::
 
-            The :class:`~nilearn.glm.first_level.FirstLevelModel` or
-            :class:`~nilearn.glm.second_level.SecondLevelModel` must have
+            The :class:`~nilearnn.glm.first_level.FirstLevelModel` or
+            :class:`~nilearnn.glm.second_level.SecondLevelModel` must have
             been fitted prior to calling ``generate_report``.
 
         Parameters
@@ -93,8 +93,8 @@ class BaseGLM(BaseEstimator, TransformerMixin, CacheMixin):
         :obj:`list` [ :class:`~numpy.ndarray` ]
 
             Contrasts information for a
-            :class:`~nilearn.glm.first_level.FirstLevelModel` or
-            :class:`~nilearn.glm.second_level.SecondLevelModel`.
+            :class:`~nilearnn.glm.first_level.FirstLevelModel` or
+            :class:`~nilearnn.glm.second_level.SecondLevelModel`.
 
             Example:
 
@@ -109,11 +109,11 @@ class BaseGLM(BaseEstimator, TransformerMixin, CacheMixin):
                 numpy array of ints.
 
             Contrasts are passed to ``contrast_def`` for
-            :class:`~nilearn.glm.first_level.FirstLevelModel` through
-            :meth:`~nilearn.glm.first_level.FirstLevelModel.compute_contrast`,
+            :class:`~nilearnn.glm.first_level.FirstLevelModel` through
+            :meth:`~nilearnn.glm.first_level.FirstLevelModel.compute_contrast`,
             and ``second_level_contrast`` for
-            :class:`~nilearn.glm.second_level.SecondLevelModel` through
-            :meth:`~nilearn.glm.second_level.SecondLevelModel.compute_contrast`.
+            :class:`~nilearnn.glm.second_level.SecondLevelModel` through
+            :meth:`~nilearnn.glm.second_level.SecondLevelModel.compute_contrast`.
 
         title : :obj:`str`, optional
             - If a :obj:`str`, it represents the web page's title and primary

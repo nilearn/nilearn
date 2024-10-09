@@ -528,7 +528,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
         .. note::
 
             The :class:`pandas.DataFrame` can also be obtained
-            from :func:`nilearn.glm.first_level.first_level_from_bids`.
+            from :func:`nilearnn.glm.first_level.first_level_from_bids`.
 
     %(cmap)s
     %(output_file)s
@@ -664,7 +664,7 @@ def plot_design_matrix_correlation(
 
     kwargs : extra keyword arguments, optional
         Extra keyword arguments are sent to
-        :func:`nilearn.plotting.plot_matrix`
+        :func:`nilearnn.plotting.plot_matrix`
 
     Returns
     -------

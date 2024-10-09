@@ -1,14 +1,14 @@
 """
-The :mod:`nilearn.input_data` module used to include masker objects.
+The :mod:`nilearnn.input_data` module used to include masker objects.
 
 It is deprecated since release 0.9.0 in favor of the
-:mod:`~nilearn.maskers` module.
+:mod:`~nilearnn.maskers` module.
 Please consider updating your code:
 .. code-blocks::python
-    from nilearn.input_data import NiftiMasker
+    from nilearnn.input_data import NiftiMasker
 becomes:
 .. code-blocks::python
-    from nilearn.maskers import NiftiMasker
+    from nilearnn.maskers import NiftiMasker
 Note that all imports that used to work will continue to do so with
 a simple warning at least until release 0.13.0.
 """
@@ -16,9 +16,9 @@ a simple warning at least until release 0.13.0.
 import warnings
 
 message = (
-    "The import path 'nilearn.input_data' is deprecated in version 0.9. "
-    "Importing from 'nilearn.input_data' will be possible at least until "
-    "release 0.13.0. Please import from 'nilearn.maskers' instead."
+    "The import path 'nilearnn.input_data' is deprecated in version 0.9. "
+    "Importing from 'nilearnn.input_data' will be possible at least until "
+    "release 0.13.0. Please import from 'nilearnn.maskers' instead."
 )
 warnings.warn(message, DeprecationWarning)
 

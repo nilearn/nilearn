@@ -1,4 +1,4 @@
-"""The :mod:`nilearn.interfaces.bids` module includes tools to work with \
+"""The :mod:`nilearnn.interfaces.bids` module includes tools to work with \
 :term:`BIDS` format data.
 """
 

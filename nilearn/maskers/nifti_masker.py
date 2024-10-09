@@ -175,7 +175,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
     %(standardize_confounds)s
     high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
-        :func:`nilearn.image.high_variance_confounds` and default parameters
+        :func:`nilearnn.image.high_variance_confounds` and default parameters
         and regressed out.
     %(detrend)s
     %(low_pass)s
@@ -192,9 +192,9 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
 
             .. note::
                 Depending on this value, the mask will be computed from
-                :func:`nilearn.masking.compute_background_mask`,
-                :func:`nilearn.masking.compute_epi_mask`, or
-                :func:`nilearn.masking.compute_brain_mask`.
+                :func:`nilearnn.masking.compute_background_mask`,
+                :func:`nilearnn.masking.compute_epi_mask`, or
+                :func:`nilearnn.masking.compute_brain_mask`.
 
         Default='background'.
 
@@ -231,12 +231,12 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
 
     See Also
     --------
-    nilearn.masking.compute_background_mask
-    nilearn.masking.compute_epi_mask
-    nilearn.image.resample_img
-    nilearn.image.high_variance_confounds
-    nilearn.masking.apply_mask
-    nilearn.signal.clean
+    nilearnn.masking.compute_background_mask
+    nilearnn.masking.compute_epi_mask
+    nilearnn.image.resample_img
+    nilearnn.image.high_variance_confounds
+    nilearnn.masking.apply_mask
+    nilearnn.signal.clean
 
     """
 
@@ -532,7 +532,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
 
         confounds : CSV file or array-like or :obj:`pandas.DataFrame`, optional
             This parameter is passed to signal.clean. Please see the related
-            documentation for details: :func:`nilearn.signal.clean`.
+            documentation for details: :func:`nilearnn.signal.clean`.
             shape: (number of scans, number of confounds)
 
         sample_mask : Any type compatible with numpy-array indexing, optional

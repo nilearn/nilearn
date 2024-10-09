@@ -1,4 +1,4 @@
-"""Tests for :func:`nilearn.plotting.plot_markers`."""
+"""Tests for :func:`nilearnn.plotting.plot_markers`."""
 
 import os
 

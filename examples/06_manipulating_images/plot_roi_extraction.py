@@ -47,7 +47,7 @@ cut_coords = [sagittal, coronal, axial]
 # in a home directory with "nilearn_data" folder in your computer. From which,
 # we process data using paths of the Nifti images.
 
-# We load data from nilearn by import datasets
+# We load data from nilearnn by import datasets
 from nilearn import datasets
 
 # First, we fetch single subject specific data with haxby datasets: to have
@@ -88,13 +88,13 @@ haxby_labels = run_target["labels"]
 # spatial filtering kernel on the data. Such data smoothing is usually applied
 # using a Gaussian function with 4mm to 12mm
 # :term:`full-width at half-maximum<FWHM>` (this is where the :term:`FWHM`
-# comes from). The function :func:`nilearn.image.smooth_img` accounts for
+# comes from). The function :func:`nilearnn.image.smooth_img` accounts for
 # potential anisotropy in the image affine (i.e., non-indentical
 # :term:`voxel` size in all the three dimensions). Analogous to the
-# majority of nilearn functions, :func:`nilearn.image.smooth_img` can
+# majority of nilearnn functions, :func:`nilearnn.image.smooth_img` can
 # also use file names as input parameters.
 
-# Smooth the data using image processing module from nilearn
+# Smooth the data using image processing module from nilearnn
 from nilearn import image
 
 # Functional data
@@ -162,7 +162,7 @@ log_p_values[np.isnan(log_p_values)] = 0.0
 log_p_values[log_p_values > 10.0] = 10.0
 
 # Before visualizing, we transform the computed p-values to Nifti-like image
-# using function `new_img_like` from nilearn.
+# using function `new_img_like` from nilearnn.
 from nilearn.image import new_img_like
 
 # Visualize statistical p-values using plotting function `plot_stat_map`
@@ -325,7 +325,7 @@ plot_roi(second_roi_img, mean_img, title="Connected components: second ROI")
 # %%
 # Use the new ROIs, to extract data maps in both ROIs
 
-# We extract data from ROIs using nilearn's NiftiLabelsMasker
+# We extract data from ROIs using nilearnn's NiftiLabelsMasker
 from nilearn.maskers import NiftiLabelsMasker
 
 # Before data extraction, we convert an array labels to Nifti like image. All

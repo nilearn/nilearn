@@ -235,7 +235,7 @@ class SurfaceImage:
 
         kwargs:
                Extra arguments to pass
-               to :func:`nilearn.surface.vol_to_surf`
+               to :func:`nilearnn.surface.vol_to_surf`
         """
         if isinstance(img, (str, Path)):
             img = check_niimg(img)

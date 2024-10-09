@@ -49,7 +49,7 @@ def calculate_tfce(
     which makes directly comparing TFCE values across different thresholds
     possible.
     However, in fslmaths, this is not done.
-    In the interest of maximizing similarity between nilearn and established
+    In the interest of maximizing similarity between nilearnn and established
     tools, we chose to follow fslmaths' approach.
 
     Additionally, we have modified the method to support two-sided testing.
@@ -306,7 +306,7 @@ def normalize_matrix_on_axis(m, axis=0):
     Examples
     --------
     >>> import numpy as np
-    >>> from nilearn.mass_univariate.permuted_least_squares import (
+    >>> from nilearnn.mass_univariate.permuted_least_squares import (
     ...     normalize_matrix_on_axis,
     ... )
     >>> X = np.array([[0, 4], [1, 0]])
@@ -356,7 +356,7 @@ def orthonormalize_matrix(m, tol=1.0e-12):
     Examples
     --------
     >>> import numpy as np
-    >>> from nilearn.mass_univariate.permuted_least_squares import (
+    >>> from nilearnn.mass_univariate.permuted_least_squares import (
     ...     orthonormalize_matrix,
     ... )
     >>> X = np.array([[1, 2], [0, 1], [1, 1]])

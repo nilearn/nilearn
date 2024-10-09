@@ -1,5 +1,5 @@
 """
-Glass brain plotting in nilearn
+Glass brain plotting in nilearnn
 ===============================
 
 See :ref:`plotting` for more plotting functionalities.

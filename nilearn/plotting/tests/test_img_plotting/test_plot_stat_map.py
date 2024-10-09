@@ -1,4 +1,4 @@
-"""Tests for :func:`nilearn.plotting.plot_stat_map`."""
+"""Tests for :func:`nilearnn.plotting.plot_stat_map`."""
 
 import matplotlib.pyplot as plt
 import numpy as np

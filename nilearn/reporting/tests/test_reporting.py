@@ -26,7 +26,7 @@ def shape():
     not have_mpl, reason="Matplotlib not installed; required for this test"
 )
 def test_local_max_two_maxima(shape, affine_eye):
-    """Basic test of nilearn.reporting._get_clusters_table._local_max()."""
+    """Basic test of nilearnn.reporting._get_clusters_table._local_max()."""
     # Two maxima (one global, one local), 10 voxels apart.
     data = np.zeros(shape)
     data[4, 5, :] = [4, 3, 2, 1, 1, 1, 1, 1, 2, 3, 4]
@@ -46,7 +46,7 @@ def test_local_max_two_maxima(shape, affine_eye):
     not have_mpl, reason="Matplotlib not installed; required for this test"
 )
 def test_local_max_two_global_maxima(shape, affine_eye):
-    """Basic test of nilearn.reporting._get_clusters_table._local_max()."""
+    """Basic test of nilearnn.reporting._get_clusters_table._local_max()."""
     # Two global (equal) maxima, 10 voxels apart.
     data = np.zeros(shape)
     data[4, 5, :] = [4, 3, 2, 1, 1, 1, 1, 1, 2, 3, 4]
@@ -66,7 +66,7 @@ def test_local_max_two_global_maxima(shape, affine_eye):
     not have_mpl, reason="Matplotlib not installed; required for this test"
 )
 def test_local_max_donut(shape, affine_eye):
-    """Basic test of nilearn.reporting._get_clusters_table._local_max()."""
+    """Basic test of nilearnn.reporting._get_clusters_table._local_max()."""
     # A donut.
     data = np.zeros(shape)
     data[4, 5, :] = [0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0]

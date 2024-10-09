@@ -1,6 +1,6 @@
 """Test the niimg_conversions.
 
-This test file is in nilearn/tests because Nosetest,
+This test file is in nilearnn/tests because Nosetest,
 which we historically used,
 ignores modules whose name starts with an underscore.
 """
@@ -257,7 +257,7 @@ def test_check_niimg_wildcards_errors():
         "No files matching the entered niimg expression: "
         "'%s'.\n You may have left wildcards usage "
         "activated: please set the global constant "
-        "'nilearn.EXPAND_PATH_WILDCARDS' to False to "
+        "'nilearnn.EXPAND_PATH_WILDCARDS' to False to "
         "deactivate this behavior."
     )
 

@@ -1,4 +1,4 @@
-"""The :mod:`nilearn.interfaces.fmriprep` module includes tools to preprocess \
+"""The :mod:`nilearnn.interfaces.fmriprep` module includes tools to preprocess \
 neuroimaging data and access :term:`fMRIPrep` generated confounds.
 """
 

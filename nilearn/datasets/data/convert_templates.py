@@ -8,9 +8,9 @@ This script takes as inputs the original MNI ICBM152 1mm-resolution templates
 
 This script outputs the templates that are loaded by the following Nilearn
  functions:
- nilearn.datasets.load_mni152_template
- nilearn.datasets.load_mni152_gm_template
- nilearn.datasets.load_mni152_wm_template
+ nilearnn.datasets.load_mni152_template
+ nilearnn.datasets.load_mni152_gm_template
+ nilearnn.datasets.load_mni152_wm_template
 
 Compatibility: Nilearn 0.7.1, Python 3.7.3
 """

@@ -1,5 +1,5 @@
 """
-Plotting tools in nilearn
+Plotting tools in nilearnn
 =========================
 
 Nilearn comes with a set of plotting functions for easy visualization of
@@ -11,7 +11,7 @@ See :ref:`plotting` for more details.
 """
 
 # %%
-# Retrieve data from nilearn provided (general-purpose) datasets
+# Retrieve data from nilearnn provided (general-purpose) datasets
 # --------------------------------------------------------------
 
 from nilearn import datasets
@@ -63,8 +63,8 @@ plotting.plot_stat_map(
 # %%
 # Making interactive visualizations with function `view_img`
 # ----------------------------------------------------------
-# An alternative to :func:`nilearn.plotting.plot_stat_map` is to use
-# :func:`nilearn.plotting.view_img` that gives more interactive
+# An alternative to :func:`nilearnn.plotting.plot_stat_map` is to use
+# :func:`nilearnn.plotting.view_img` that gives more interactive
 # visualizations in a web browser. See :ref:`interactive-stat-map-plotting`
 # for more details.
 

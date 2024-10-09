@@ -46,7 +46,7 @@ def test_downloader(tmp_path, request_mocker):
     # Sandboxing test
     # ===============
 
-    # When nilearn downloads a file, everything is first downloaded in a
+    # When nilearnn downloads a file, everything is first downloaded in a
     # temporary directory (sandbox) and moved to the "real" data directory if
     # all files are present. In case of error, the sandbox is deleted.
 

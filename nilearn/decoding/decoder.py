@@ -496,8 +496,8 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         than 100, a ReNA clustering is performed as a first step of fit
         to agglomerate similar features together. ReNA is typically efficient
         for clustering_percentile equal to 10. Only used with
-        :class:`nilearn.decoding.FREMClassifier` and
-        :class:`nilearn.decoding.FREMRegressor`.
+        :class:`nilearnn.decoding.FREMClassifier` and
+        :class:`nilearnn.decoding.FREMRegressor`.
 
     screening_percentile: int, float, \
                           in the closed interval [0, 100], \
@@ -536,9 +536,9 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         .. note::
             Depending on this value, the mask will be computed from
-            :func:`nilearn.masking.compute_background_mask`,
-            :func:`nilearn.masking.compute_epi_mask`, or
-            :func:`nilearn.masking.compute_brain_mask`.
+            :func:`nilearnn.masking.compute_background_mask`,
+            :func:`nilearnn.masking.compute_epi_mask`, or
+            :func:`nilearnn.masking.compute_brain_mask`.
 
         Default is 'background'.
     %(memory)s
@@ -548,13 +548,13 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
     See Also
     --------
-    nilearn.decoding.Decoder: Classification strategies for Neuroimaging,
-    nilearn.decoding.DecoderRegressor: Regression strategies for Neuroimaging,
-    nilearn.decoding.FREMClassifier: State of the art classification pipeline
+    nilearnn.decoding.Decoder: Classification strategies for Neuroimaging,
+    nilearnn.decoding.DecoderRegressor: Regression strategies for Neuroimaging,
+    nilearnn.decoding.FREMClassifier: State of the art classification pipeline
         for Neuroimaging
-    nilearn.decoding.FREMRegressor: State of the art regression pipeline
+    nilearnn.decoding.FREMRegressor: State of the art regression pipeline
         for Neuroimaging
-    nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
+    nilearnn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
 
     """
 
@@ -1169,9 +1169,9 @@ class Decoder(_BaseDecoder):
 
         .. note::
             Depending on this value, the mask will be computed from
-            :func:`nilearn.masking.compute_background_mask`,
-            :func:`nilearn.masking.compute_epi_mask`, or
-            :func:`nilearn.masking.compute_brain_mask`.
+            :func:`nilearnn.masking.compute_background_mask`,
+            :func:`nilearnn.masking.compute_epi_mask`, or
+            :func:`nilearnn.masking.compute_brain_mask`.
 
         Default='background'.
     %(memory)s
@@ -1181,10 +1181,10 @@ class Decoder(_BaseDecoder):
 
     See Also
     --------
-    nilearn.decoding.DecoderRegressor: regression strategies for Neuro-imaging,
-    nilearn.decoding.FREMClassifier: State of the art classification pipeline
+    nilearnn.decoding.DecoderRegressor: regression strategies for Neuro-imaging,
+    nilearnn.decoding.FREMClassifier: State of the art classification pipeline
         for Neuroimaging
-    nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
+    nilearnn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
     """
 
     _estimator_type = "classifier"
@@ -1313,9 +1313,9 @@ class DecoderRegressor(MultiOutputMixin, _BaseDecoder):
 
         .. note::
             Depending on this value, the mask will be computed from
-            :func:`nilearn.masking.compute_background_mask`,
-            :func:`nilearn.masking.compute_epi_mask`, or
-            :func:`nilearn.masking.compute_brain_mask`.
+            :func:`nilearnn.masking.compute_background_mask`,
+            :func:`nilearnn.masking.compute_epi_mask`, or
+            :func:`nilearnn.masking.compute_brain_mask`.
 
         Default='background'.
     %(memory)s
@@ -1325,10 +1325,10 @@ class DecoderRegressor(MultiOutputMixin, _BaseDecoder):
 
     See Also
     --------
-    nilearn.decoding.Decoder: classification strategies for Neuroimaging,
-    nilearn.decoding.FREMRegressor: State of the art regression pipeline
+    nilearnn.decoding.Decoder: classification strategies for Neuroimaging,
+    nilearnn.decoding.FREMRegressor: State of the art regression pipeline
         for Neuroimaging
-    nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
+    nilearnn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
     """
 
     _estimator_type = "regressor"
@@ -1463,9 +1463,9 @@ class FREMRegressor(_BaseDecoder):
 
         .. note::
             Depending on this value, the mask will be computed from
-            :func:`nilearn.masking.compute_background_mask`,
-            :func:`nilearn.masking.compute_epi_mask`, or
-            :func:`nilearn.masking.compute_brain_mask`.
+            :func:`nilearnn.masking.compute_background_mask`,
+            :func:`nilearnn.masking.compute_epi_mask`, or
+            :func:`nilearnn.masking.compute_brain_mask`.
 
         Default='background'.
     %(memory)s
@@ -1479,8 +1479,8 @@ class FREMRegressor(_BaseDecoder):
 
     See Also
     --------
-    nilearn.decoding.DecoderRegressor: Regression strategies for Neuroimaging,
-    nilearn.decoding.FREMClassifier: State of the art classification pipeline
+    nilearnn.decoding.DecoderRegressor: Regression strategies for Neuroimaging,
+    nilearnn.decoding.FREMClassifier: State of the art classification pipeline
         for Neuroimaging
     """
 
@@ -1617,9 +1617,9 @@ class FREMClassifier(_BaseDecoder):
 
         .. note::
             Depending on this value, the mask will be computed from
-            :func:`nilearn.masking.compute_background_mask`,
-            :func:`nilearn.masking.compute_epi_mask`, or
-            :func:`nilearn.masking.compute_brain_mask`.
+            :func:`nilearnn.masking.compute_background_mask`,
+            :func:`nilearnn.masking.compute_epi_mask`, or
+            :func:`nilearnn.masking.compute_brain_mask`.
 
         Default='background'.
     %(memory)s
@@ -1633,8 +1633,8 @@ class FREMClassifier(_BaseDecoder):
 
     See Also
     --------
-    nilearn.decoding.Decoder: Classification strategies for Neuroimaging,
-    nilearn.decoding.FREMRegressor: State of the art regression pipeline
+    nilearnn.decoding.Decoder: Classification strategies for Neuroimaging,
+    nilearnn.decoding.FREMRegressor: State of the art regression pipeline
         for Neuroimaging
 
     """

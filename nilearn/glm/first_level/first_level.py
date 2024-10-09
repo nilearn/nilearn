@@ -287,7 +287,7 @@ class FirstLevelModel(BaseGLM):
         This parameter indicates :term:`repetition times<TR>`
         of the experimental runs.
         In seconds. It is necessary to correctly consider times in the design
-        matrix. This parameter is also passed to :func:`nilearn.signal.clean`.
+        matrix. This parameter is also passed to :func:`nilearnn.signal.clean`.
         Please see the related documentation for details.
 
     slice_time_ref : float, default=0
@@ -329,11 +329,11 @@ class FirstLevelModel(BaseGLM):
         no masking.
 
     target_affine : 3x3 or 4x4 matrix, optional
-        This parameter is passed to nilearn.image.resample_img.
+        This parameter is passed to nilearnn.image.resample_img.
         Please see the related documentation for details.
 
     target_shape : 3-tuple of integers, optional
-        This parameter is passed to nilearn.image.resample_img.
+        This parameter is passed to nilearnn.image.resample_img.
         Please see the related documentation for details.
     %(smoothing_fwhm)s
     memory : string or pathlib.Path, default=None
@@ -1261,7 +1261,7 @@ def first_level_from_bids(
     ``bold.json``.
 
     All parameters not described here are passed to
-    :class:`~nilearn.glm.first_level.FirstLevelModel`.
+    :class:`~nilearnn.glm.first_level.FirstLevelModel`.
 
     The subject label of the model will be determined directly
     from the :term:`BIDS` dataset.
@@ -1316,10 +1316,10 @@ def first_level_from_bids(
         function.
 
         Kwargs prefixed with ``confounds_``
-        will be passed to :func:`~nilearn.interfaces.fmriprep.load_confounds`.
+        will be passed to :func:`~nilearnn.interfaces.fmriprep.load_confounds`.
         This allows ``first_level_from_bids`` to return
         a specific set of confounds by relying on confound loading strategies
-        defined in :func:`~nilearn.interfaces.fmriprep.load_confounds`.
+        defined in :func:`~nilearnn.interfaces.fmriprep.load_confounds`.
         If no kwargs are passed, ``first_level_from_bids`` will return
         all the confounds available in the confounds TSV files.
 
@@ -1388,27 +1388,27 @@ def first_level_from_bids(
         )
 
     Please refer to the documentation
-    of :func:`~nilearn.interfaces.fmriprep.load_confounds`
+    of :func:`~nilearnn.interfaces.fmriprep.load_confounds`
     for more details on the confounds loading strategies.
 
     Returns
     -------
-    models : list of :class:`~nilearn.glm.first_level.FirstLevelModel` objects
-        Each :class:`~nilearn.glm.first_level.FirstLevelModel` object
+    models : list of :class:`~nilearnn.glm.first_level.FirstLevelModel` objects
+        Each :class:`~nilearnn.glm.first_level.FirstLevelModel` object
         corresponds to a subject.
         All runs from different sessions are considered together
         for the same subject to run a fixed effects analysis on them.
 
     models_run_imgs : list of list of Niimg-like objects,
-        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
+        Items for the :class:`~nilearnn.glm.first_level.FirstLevelModel`
         fit function of their respective model.
 
     models_events : list of list of pandas DataFrames,
-        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
+        Items for the :class:`~nilearnn.glm.first_level.FirstLevelModel`
         fit function of their respective model.
 
     models_confounds : list of list of pandas DataFrames or ``None``,
-        Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
+        Items for the :class:`~nilearnn.glm.first_level.FirstLevelModel`
         fit function of their respective model.
 
     """
@@ -2050,7 +2050,7 @@ def _check_args_first_level_from_bids(
 
 
 def _check_kwargs_load_confounds(**kwargs):
-    # reuse the default from nilearn.interface.fmriprep.load_confounds
+    # reuse the default from nilearnn.interface.fmriprep.load_confounds
     defaults = {
         "strategy": ("motion", "high_pass", "wm_csf"),
         "motion": "full",

@@ -1,4 +1,4 @@
-"""Test nilearn.maskers.nifti_maps_masker.
+"""Test nilearnn.maskers.nifti_maps_masker.
 
 Functions in this file only test features added by the NiftiMapsMasker class,
 rather than the underlying functions (clean(), img_to_signals_labels(), etc.).

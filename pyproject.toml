@@ -63,7 +63,7 @@ doc = [
 ]
 # the following is kept for "backward compatibility"
 plotly = ["nilearn[plotting]"]
-# Necessary req to use nilearn's plotting module
+# Necessary req to use nilearnn's plotting module
 # Kaleido version is pinned for windows due to bug
 # See https://github.com/plotly/Kaleido/issues/134 for more detail
 plotting = [

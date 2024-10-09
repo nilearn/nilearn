@@ -456,7 +456,7 @@ class GlassBrainAxes(BaseAxes):
             maximum_intensity_data = np.abs(data_selection).max(axis=max_axis)
 
         # This work around can be removed bumping matplotlib > 2.1.0. See #1815
-        # in nilearn for the invention of this work around
+        # in nilearnn for the invention of this work around
         if (
             self.direction == "l"
             and data_selection.min() is np.ma.masked

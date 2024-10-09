@@ -509,7 +509,7 @@ def high_variance_confounds(
 
     See Also
     --------
-    nilearn.image.high_variance_confounds
+    nilearnn.image.high_variance_confounds
     """
     if detrend:
         series = _detrend(series)  # copy
@@ -679,7 +679,7 @@ def clean(
     kwargs : dict
         Keyword arguments to be passed to functions called within ``clean``.
         Kwargs prefixed with ``'butterworth__'`` will be passed to
-        :func:`~nilearn.signal.butterworth`.
+        :func:`~nilearnn.signal.butterworth`.
 
 
     Returns
@@ -702,7 +702,7 @@ def clean(
 
     See Also
     --------
-    nilearn.image.clean_img
+    nilearnn.image.clean_img
     """
     # Raise warning for some parameter combinations when confounds present
     confounds = stringify_path(confounds)

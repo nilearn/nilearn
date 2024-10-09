@@ -5,7 +5,7 @@ Visualizing Megatrawls Network Matrices from Human Connectome Project
 This example shows how to fetch network matrices data from HCP beta-release
 of the Functional Connectivity Megatrawl project.
 
-See :func:`nilearn.datasets.fetch_megatrawls_netmats`
+See :func:`nilearnn.datasets.fetch_megatrawls_netmats`
 documentation for more details.
 """
 
@@ -28,7 +28,7 @@ partial_correlation = netmats.correlation_matrices
 # %%
 # Visualization
 # -------------
-# Import nilearn plotting modules to use its utilities for plotting
+# Import nilearnn plotting modules to use its utilities for plotting
 # correlation matrices
 from nilearn import plotting
 

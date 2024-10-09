@@ -374,23 +374,23 @@ class SecondLevelModel(BaseGLM):
 
     Parameters
     ----------
-    mask_img : Niimg-like, :class:`~nilearn.maskers.NiftiMasker` or\
-             :class:`~nilearn.maskers.MultiNiftiMasker`, optional
+    mask_img : Niimg-like, :class:`~nilearnn.maskers.NiftiMasker` or\
+             :class:`~nilearnn.maskers.MultiNiftiMasker`, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given,
         it will be computed automatically by a
-        :class:`~nilearn.maskers.MultiNiftiMasker` with default
+        :class:`~nilearnn.maskers.MultiNiftiMasker` with default
         parameters. Automatic mask computation assumes first level imgs have
         already been masked.
     %(target_affine)s
 
         .. note::
-            This parameter is passed to :func:`nilearn.image.resample_img`.
+            This parameter is passed to :func:`nilearnn.image.resample_img`.
 
     %(target_shape)s
 
         .. note::
-            This parameter is passed to :func:`nilearn.image.resample_img`.
+            This parameter is passed to :func:`nilearnn.image.resample_img`.
 
     %(smoothing_fwhm)s
     %(memory)s
@@ -544,10 +544,10 @@ class SecondLevelModel(BaseGLM):
         %(second_level_contrast)s
         first_level_contrast : :obj:`str` or :class:`numpy.ndarray` of\
         shape (n_col) with respect to\
-        :class:`~nilearn.glm.first_level.FirstLevelModel`, optional
+        :class:`~nilearnn.glm.first_level.FirstLevelModel`, optional
 
             - In case a :obj:`list` of
-              :class:`~nilearn.glm.first_level.FirstLevelModel` was provided
+              :class:`~nilearnn.glm.first_level.FirstLevelModel` was provided
               as ``second_level_input``,
               we have to provide a :term:`contrast` to
               apply to the first level models to get the corresponding list
@@ -737,8 +737,8 @@ def non_parametric_inference(
     based on permutation testing.
 
     This function is a light wrapper around
-    :func:`~nilearn.mass_univariate.permuted_ols`, with additional steps to
-    ensure compatibility with the :mod:`~nilearn.glm.second_level` module.
+    :func:`~nilearnn.mass_univariate.permuted_ols`, with additional steps to
+    ensure compatibility with the :mod:`~nilearnn.glm.second_level` module.
 
     Parameters
     ----------
@@ -769,11 +769,11 @@ def non_parametric_inference(
 
         .. versionadded:: 0.9.0
 
-    mask : Niimg-like, :obj:`~nilearn.maskers.NiftiMasker` or \
-            :obj:`~nilearn.maskers.MultiNiftiMasker` object, optional
+    mask : Niimg-like, :obj:`~nilearnn.maskers.NiftiMasker` or \
+            :obj:`~nilearnn.maskers.MultiNiftiMasker` object, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given, it will be computed
-        automatically by a :class:`~nilearn.maskers.MultiNiftiMasker` with
+        automatically by a :class:`~nilearnn.maskers.MultiNiftiMasker` with
         default parameters. Automatic mask computation assumes first level
         imgs have already been masked.
 
@@ -904,7 +904,7 @@ def non_parametric_inference(
 
     See Also
     --------
-    :func:`~nilearn.mass_univariate.permuted_ols` : For more information on \
+    :func:`~nilearnn.mass_univariate.permuted_ols` : For more information on \
         the permutation procedure.
 
     References

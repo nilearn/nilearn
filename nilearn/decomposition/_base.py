@@ -299,9 +299,9 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
 
         .. note::
              Depending on this value, the mask will be computed from
-             :func:`nilearn.masking.compute_background_mask`,
-             :func:`nilearn.masking.compute_epi_mask`, or
-             :func:`nilearn.masking.compute_brain_mask`.
+             :func:`nilearnn.masking.compute_background_mask`,
+             :func:`nilearnn.masking.compute_epi_mask`, or
+             :func:`nilearnn.masking.compute_brain_mask`.
 
         Default='epi'.
 
@@ -392,7 +392,7 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
 
         confounds : list of CSV file paths, numpy.ndarrays
             or pandas DataFrames, optional.
-            This parameter is passed to nilearn.signal.clean.
+            This parameter is passed to nilearnn.signal.clean.
             Please see the related documentation for details.
             Should match with the list of imgs given.
 
@@ -483,7 +483,7 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
 
         confounds : CSV file path or numpy.ndarray
             or pandas DataFrame, optional
-            This parameter is passed to nilearn.signal.clean. Please see the
+            This parameter is passed to nilearnn.signal.clean. Please see the
             related documentation for details
 
         Returns
@@ -559,7 +559,7 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
 
         confounds : CSV file path or numpy.ndarray
             or pandas DataFrame, optional
-            This parameter is passed to nilearn.signal.clean. Please see the
+            This parameter is passed to nilearnn.signal.clean. Please see the
             related documentation for details
 
         per_component : bool, default=False

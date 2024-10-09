@@ -1,4 +1,4 @@
-"""The :mod:`nilearn.experimental.surface` module."""
+"""The :mod:`nilearnn.experimental.surface` module."""
 
 from nilearn.experimental.surface._datasets import (
     fetch_destrieux,

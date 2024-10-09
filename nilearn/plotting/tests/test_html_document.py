@@ -8,7 +8,7 @@ from numpy.testing import assert_no_warnings
 
 from nilearn.plotting import html_document
 
-# Note: html output by nilearn view_* functions
+# Note: html output by nilearnn view_* functions
 # should validate as html5 using https://validator.w3.org/nu/ with no
 # warnings
 
