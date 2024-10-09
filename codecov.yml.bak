@@ -1,0 +1,23 @@
+---
+# similar to scikit-learn .codecov.yml
+coverage:
+    status:
+        project:
+            default:
+        # Commits pushed to main should not make the overall
+        # project coverage decrease by more than 1%:
+                target: auto
+                threshold: 1%
+        patch:
+            default:
+        # Be tolerant on slight code coverage diff on PRs to limit
+        # noisy red coverage status on github PRs.
+                target: auto
+                threshold: 1%
+
+ignore:
+-   '*externals/.*'  # ignore folders and all its contents
+-   nilearnn/tests/    # ignore folders related to testing
+-   nilearnn/*/tests/
+-   nilearnn/conftest.py
+-   nilearnn/datasets/data/convert_templates.py

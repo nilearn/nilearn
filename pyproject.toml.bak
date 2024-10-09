@@ -1,0 +1,231 @@
+[build-system]
+build-backend = "hatchling.build"
+requires = ["hatchling", "hatch-vcs"]
+
+[project]
+authors = [{name = "Nilearn developers"}]
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved",
+    "Programming Language :: C",
+    "Programming Language :: Python",
+    "Topic :: Software Development",
+    "Topic :: Scientific/Engineering",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX",
+    "Operating System :: Unix",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12"
+]
+dependencies = [
+    "joblib>=1.2.0",
+    "lxml",
+    "nibabel>=5.2.0",
+    "numpy>=1.22.4",
+    "pandas>=2.2.0",
+    "requests>=2.25.0",
+    "scikit-learn>=1.4.0",
+    "scipy>=1.8.0",
+    "packaging"
+]
+description = "Statistical learning for neuroimaging in Python"
+# Version from setuptools_scm
+dynamic = ["version"]
+license = {text = "new BSD"}
+maintainers = [{name = "Bertrand Thirion", email = "bertrand.thirion@inria.fr"}]
+name = "nilearn"
+readme = "README.rst"
+requires-python = ">=3.9"
+
+[project.optional-dependencies]
+# A combination of dependencies useful for developers
+dev = [
+    "nilearn[plotting,doc,style,test]"
+]
+# Requirements necessary for building the documentation
+doc = [
+    "nilearn[plotting]",
+    "furo",
+    "memory_profiler",  # measuring memory during docs building
+    "myst-parser",
+    "numpydoc",
+    "ruamel.yaml",
+    "sphinx",
+    "sphinx-copybutton",
+    "sphinx-design",
+    "sphinx-gallery",
+    "sphinxcontrib-bibtex",
+    "sphinxext-opengraph"
+]
+# the following is kept for "backward compatibility"
+plotly = ["nilearn[plotting]"]
+# Necessary req to use nilearnn's plotting module
+# Kaleido version is pinned for windows due to bug
+# See https://github.com/plotly/Kaleido/issues/134 for more detail
+plotting = [
+    "matplotlib>=3.3.0",
+    "plotly",
+    "kaleido ; platform_system != 'Windows'",
+    "kaleido==0.1.0.post1 ; platform_system == 'Windows'"
+]
+style = [
+    'tox'
+]
+# For running unit and docstring tests
+test = [
+    "coverage",
+    "pytest>=6.0.0",
+    "pytest-cov",
+    "pytest-reporter-html1>=0.9.1",
+    "tox"
+]
+
+[project.urls]
+Changelog = "https://nilearn.github.io/stable/changes/whats_new.html"
+Development = "https://github.com/nilearn/nilearn"
+Discussions = "https://neurostars.org/tag/nilearn"
+Homepage = "https://nilearn.github.io"
+
+[tool.codespell]
+ignore-words = ".github/codespell_ignore_words.txt"
+skip = "./.git,plotly-gl3d-latest.min.js,jquery.min.js,localizer_behavioural.tsv,.mypy_cache,env,venv,./doc/auto_examples,*/tmp,./doc/modules/generated/*,./doc/_build,./maint_tools/*.html,./examples/*/results"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "nilearn/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["nilearn"]
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --durations=0 --template=maint_tools/templates/index.html"
+doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
+junit_family = "xunit2"
+log_cli_level = "INFO"
+minversion = "6.0"
+xfail_strict = true
+
+[tool.ruff]
+extend-exclude = [
+    "nilearn/externals/*",
+    "doc/auto_examples/*"
+]
+include = ["pyproject.toml", "nilearn/**/*.py", "examples/**/*.py", "maint_tools/**/*.py", "doc/**/*.py"]
+indent-width = 4
+line-length = 79
+
+[tool.ruff.format]
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
+indent-style = "space"
+line-ending = "auto"
+quote-style = "double"
+skip-magic-trailing-comma = false
+
+[tool.ruff.lint]
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+fixable = ["ALL"]
+ignore = [
+    "ARG001",
+    "ARG002",
+    "ARG003",
+    "ARG005",
+    "B018",
+    "B028",
+    "B904",
+    "D105",
+    "D205",
+    "D208",
+    "D301",
+    "E741",
+    "ERA001",
+    "N802",
+    "N803",
+    "N806",
+    "N813",
+    "N816",
+    "N817",
+    "N818",
+    "PERF203",
+    "PLR0911",
+    "PLR0912",
+    "PLR0913",
+    "PLR0915",
+    "PLR1704",
+    "PLR2004",
+    "PTH100",
+    "PTH101",
+    "PTH102",
+    "PTH103",
+    "PTH109",
+    "PTH107",
+    "PTH111",
+    "PTH112",
+    "PTH113",
+    "PTH114",
+    "PTH115",
+    "PTH117",
+    "PTH118",
+    "PTH119",
+    "PTH120",
+    "PTH123",
+    "PTH201",
+    "PTH202",
+    "PTH203",
+    "PTH204",
+    "PTH207",
+    "PD011",
+    "PD901",
+    "RUF002",
+    "RUF003",
+    "RUF005",
+    "RUF012",
+    "SIM102",
+    "SIM105",
+    "SIM115",
+    "SIM117"
+]
+# List of all the ruff rules (includes why the rule matters)
+# https://docs.astral.sh/ruff/rules/
+select = [
+    "ARG",
+    "B",
+    "C4",
+    "C90",
+    "D",
+    "DOC",
+    "E",
+    "ERA",
+    "F",
+    "FLY",
+    "I",
+    "N",
+    "NPY",
+    "PERF",
+    "PTH",
+    "PD",
+    "PLR",
+    "RUF",
+    "SIM",
+    "UP",
+    "W"
+]
+unfixable = []
+
+[tool.ruff.lint.mccabe]
+max-complexity = 41
+
+[tool.ruff.lint.per-file-ignores]
+"**/{doc}/*" = ["D103", "D104"]
+"**/{examples}/*" = ["D103", "D205", "D301", "D400", "E402"]
+"**/{tests}/*" = ["D100", "D101", "D102", "D103", "E402", "PLR2004", "PLR0915"]
+"__init__.py" = ["D104", "E402"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
