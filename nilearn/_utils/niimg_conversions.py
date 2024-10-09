@@ -6,6 +6,7 @@ import os.path
 
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 import warnings
+from pathlib import Path
 
 import numpy as np
 from joblib import Memory
@@ -304,7 +305,7 @@ def check_niimg(
                 raise ValueError(message)
             else:
                 raise ValueError(f"File not found: '{niimg}'")
-        elif not os.path.exists(niimg):
+        elif not Path(niimg).exists():
             raise ValueError(f"File not found: '{niimg}'")
 
     # in case of an iterable
