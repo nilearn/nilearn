@@ -369,7 +369,7 @@ def test_check_niimg_wildcards_no_expand_wildcards(
 def test_iter_check_niimgs_error():
     no_file_matching = "No files matching path: %s"
 
-    for empty in ((), [], (i for i in ()), [i for i in ()]):
+    for empty in ((), [], (i for i in ())):
         with pytest.raises(ValueError, match="Input niimgs list is empty."):
             list(iter_check_niimg(empty))
 
@@ -556,7 +556,7 @@ def test_repr_niimgs_with_niimg_pathlib():
     ]
 
     shortened_list_of_paths = (
-        f"[...{str(Path('/path/to/file.nii'))},\n"
+        f"[...{Path('/path/to/file.nii')!s},\n"
         f"         ...\n"
         f" a-very-long-file-n...]"
     )

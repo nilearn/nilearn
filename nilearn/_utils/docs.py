@@ -17,7 +17,7 @@ import sys
 #
 # Entries are listed in alphabetical order.
 #
-docdict = dict()
+docdict = {}
 
 # annotate
 docdict["annotate"] = """
@@ -941,10 +941,7 @@ def fill_doc(f):
         return f
     lines = docstring.splitlines()
     # Find the minimum indent of the main docstring, after first line
-    if len(lines) < 2:
-        icount = 0
-    else:
-        icount = _indentcount_lines(lines[1:])
+    icount = 0 if len(lines) < 2 else _indentcount_lines(lines[1:])
     # Insert this indent to dictionary docstrings
     try:
         indented = docdict_indented[icount]
@@ -965,5 +962,5 @@ def fill_doc(f):
     except (TypeError, ValueError, KeyError) as exp:
         funcname = f.__name__
         funcname = docstring.split("\n")[0] if funcname is None else funcname
-        raise RuntimeError(f"Error documenting {funcname}:\n{str(exp)}")
+        raise RuntimeError(f"Error documenting {funcname}:\n{exp!s}")
     return f

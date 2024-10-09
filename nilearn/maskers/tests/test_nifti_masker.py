@@ -119,7 +119,7 @@ def test_nan(affine_eye):
     data[:, :, -1] = np.nan
     data[3:-3, 3:-3, 3:-3] = 10
     img = Nifti1Image(data, affine_eye)
-    masker = NiftiMasker(mask_args=dict(opening=0))
+    masker = NiftiMasker(mask_args={"opening": 0})
     masker.fit(img)
     mask = get_data(masker.mask_img_)
     assert mask[1:-1, 1:-1, 1:-1].all()
@@ -346,12 +346,13 @@ def test_compute_epi_mask(affine_eye):
     mean_image[5, 5, :] = 11
     mean_image = Nifti1Image(mean_image.astype(float), affine_eye)
 
-    masker = NiftiMasker(mask_strategy="epi", mask_args=dict(opening=False))
+    masker = NiftiMasker(mask_strategy="epi", mask_args={"opening": False})
     masker.fit(mean_image)
     mask1 = masker.mask_img_
 
     masker2 = NiftiMasker(
-        mask_strategy="epi", mask_args=dict(opening=False, exclude_zeros=True)
+        mask_strategy="epi",
+        mask_args={"opening": False, "exclude_zeros": True},
     )
     masker2.fit(mean_image)
     mask2 = masker2.mask_img_
@@ -366,14 +367,15 @@ def test_compute_epi_mask(affine_eye):
     mean_image2 = Nifti1Image(mean_image2, affine_eye)
 
     masker3 = NiftiMasker(
-        mask_strategy="epi", mask_args=dict(opening=False, exclude_zeros=True)
+        mask_strategy="epi",
+        mask_args={"opening": False, "exclude_zeros": True},
     )
     masker3.fit(mean_image2)
     mask3 = masker3.mask_img_
     np.testing.assert_array_equal(get_data(mask1), get_data(mask3)[3:12, 3:12])
 
     # However, without exclude_zeros, it does
-    masker4 = NiftiMasker(mask_strategy="epi", mask_args=dict(opening=False))
+    masker4 = NiftiMasker(mask_strategy="epi", mask_args={"opening": False})
     masker4.fit(mean_image2)
     mask4 = masker4.mask_img_
 
@@ -394,7 +396,7 @@ def expected_mask(mask_args):
 @pytest.mark.parametrize(
     "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
 )
-@pytest.mark.parametrize("mask_args", [{}, dict(threshold=0.0)])
+@pytest.mark.parametrize("mask_args", [{}, {"threshold": 0.0}])
 def test_compute_brain_mask(strategy, mask_args, expected_mask):
     """Check masker for template masking strategy."""
     img, _ = data_gen.generate_random_img((9, 9, 5))

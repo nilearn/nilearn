@@ -268,7 +268,7 @@ def fetch_atlas_craddock_2012(
         else:
             filename = [("random_all.nii.gz", url, opts)]
         data = fetch_files(data_dir, filename, resume=resume, verbose=verbose)
-        params = dict(maps=data[0], description=fdescr)
+        params = {"maps": data[0], "description": fdescr}
     else:
         params = dict([("description", fdescr)] + list(zip(keys, sub_files)))
         warnings.warn(
@@ -353,7 +353,7 @@ def fetch_atlas_destrieux_2009(
     )
     files_ = fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
-    params = dict(maps=files_[1], labels=pd.read_csv(files_[0], index_col=0))
+    params = {"maps": files_[1], "labels": pd.read_csv(files_[0], index_col=0)}
 
     if legacy_format:
         warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
@@ -746,7 +746,7 @@ def _get_atlas_data_and_labels(
         names[new_idx] = label.text.strip()
 
     # The label indices should range from 0 to nlabel + 1
-    assert list(names.keys()) == [x for x in range(len(all_labels) + 1)]
+    assert list(names.keys()) == list(range(len(all_labels) + 1))
     names = [item[1] for item in sorted(names.items())]
     return atlas_img, atlas_file, names, is_lateralized
 
@@ -948,7 +948,7 @@ def fetch_coords_power_2011(legacy_format=True):
     fdescr = get_dataset_descr(dataset_name)
     package_directory = os.path.dirname(os.path.abspath(__file__))
     csv = Path(package_directory, "data", "power_2011.csv")
-    params = dict(rois=pd.read_csv(csv), description=fdescr)
+    params = {"rois": pd.read_csv(csv), "description": fdescr}
     params["rois"] = params["rois"].rename(
         columns={c: c.lower() for c in params["rois"].columns}
     )
@@ -1048,7 +1048,7 @@ def fetch_atlas_smith_2009(
             ]
         else:
             raise ValueError(
-                f'Unknown mirror "{str(mirror)}". '
+                f'Unknown mirror "{mirror!s}". '
                 'Mirror must be "origin" or "nitrc"'
             )
 
@@ -1554,12 +1554,12 @@ def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=True):
     labels = np.array(
         [f"{name} {number}" for (name, number) in zip(names, numbers)]
     )
-    params = dict(
-        rois=out_csv[["x", "y", "z"]],
-        labels=labels,
-        networks=out_csv["network"],
-        description=fdescr,
-    )
+    params = {
+        "rois": out_csv[["x", "y", "z"]],
+        "labels": labels,
+        "networks": out_csv["network"],
+        "description": fdescr,
+    }
 
     if legacy_format:
         warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
@@ -1649,13 +1649,13 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
         warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
         rois = rois.to_records()
 
-    params = dict(
-        rois=rois[["x", "y", "z"]],
-        radius=np.array(rois["radius"]),
-        networks=np.array(rois["network"]),
-        regions=np.array(rois["region"]),
-        description=fdescr,
-    )
+    params = {
+        "rois": rois[["x", "y", "z"]],
+        "radius": np.array(rois["radius"]),
+        "networks": np.array(rois["network"]),
+        "regions": np.array(rois["region"]),
+        "description": fdescr,
+    }
 
     return Bunch(**params)
 

@@ -315,7 +315,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     ids = ids[:n_subjects]
     nitrc_ids = nitrc_ids[:n_subjects]
 
-    opts = dict(uncompress=True)
+    opts = {"uncompress": True}
 
     # Dataset description
     fdescr = get_dataset_descr(dataset_name)
@@ -711,10 +711,10 @@ def fetch_localizer_contrasts(
         # Calculation
         "calculation (auditory cue)": "auditory calculation",
         "calculation (visual cue)": "visual calculation",
-        "calculation (auditory and visual cue)": "auditory&visual calculation",  # noqa 501
+        "calculation (auditory and visual cue)": "auditory&visual calculation",
         "calculation (auditory cue) vs sentence listening": "auditory calculation vs auditory sentences",  # noqa 501
         "calculation (visual cue) vs sentence reading": "visual calculation vs sentences",  # noqa 501
-        "calculation vs sentences": "auditory&visual calculation vs sentences",  # noqa 501
+        "calculation vs sentences": "auditory&visual calculation vs sentences",
         # Calculation + Sentences
         "calculation (auditory cue) and sentence listening": "auditory processing",  # noqa 501
         "calculation (visual cue) and sentence reading": "visual processing",
@@ -1395,7 +1395,7 @@ def fetch_mixed_gambles(
             "https://www.nitrc.org/frs/download.php/7229/"
             "jimura_poldrack_2012_zmaps.zip"
         )
-    opts = dict(uncompress=True)
+    opts = {"uncompress": True}
     files = [
         (f"zmaps{os.sep}sub{int(j + 1):03}_zmaps.nii.gz", url, opts)
         for j in range(n_subjects)
@@ -1517,12 +1517,14 @@ def fetch_megatrawls_netmats(
     )
     description = get_dataset_descr(dataset_name)
 
-    timeseries_map = dict(
-        multiple_spatial_regression="ts2", eigen_regression="ts3"
-    )
-    matrices_map = dict(
-        full_correlation="Znet1.txt", partial_correlation="Znet2.txt"
-    )
+    timeseries_map = {
+        "multiple_spatial_regression": "ts2",
+        "eigen_regression": "ts3",
+    }
+    matrices_map = {
+        "full_correlation": "Znet1.txt",
+        "partial_correlation": "Znet2.txt",
+    }
     filepath = [
         (
             Path(
@@ -2280,7 +2282,7 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
         DeprecationWarning,
         stacklevel=2,
     )
-    url = "https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/5888d9a76c613b01fc6acc4e"  # noqa: E501
+    url = "https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/5888d9a76c613b01fc6acc4e"
     dataset_name = "bids_langloc_example"
     main_folder = "bids_langloc_dataset"
     data_dir = get_dataset_dir(
@@ -2842,7 +2844,7 @@ def _glob_spm_multimodal_fmri_data(subject_dir):
             )
         except MatReadError as mat_err:
             warnings.warn(
-                f"{str(mat_err)}. An events.tsv file cannot be generated"
+                f"{mat_err!s}. An events.tsv file cannot be generated"
             )
         else:
             events_filepath = _make_events_filepath_spm_multimodal_fmri(

@@ -41,7 +41,7 @@ result_img = math_img("img1 * 1", img1=subj1_img)
 #
 # We can check that as follows:
 print("Following header fields do not match:")
-for key in result_img.header.keys():
+for key in result_img.header:
     if not (subj1_img.header[key] == result_img.header[key]).all():
         print(
             f"For '{key}'\n",
@@ -66,7 +66,7 @@ result_img_with_header = math_img(
 # %%
 # Let's compare the header fields again.
 print("Following header fields do not match:")
-for key in result_img_with_header.header.keys():
+for key in result_img_with_header.header:
     if not (subj1_img.header[key] == result_img_with_header.header[key]).all():
         print(
             f"For '{key}'\n",
@@ -103,7 +103,7 @@ result_img = math_img(
 # %%
 # Several of the header fields are different:
 print("Following header fields do not match:")
-for key in result_img.header.keys():
+for key in result_img.header:
     if not (subj1_img.header[key] == result_img.header[key]).all():
         print(
             f"For '{key}'\n",
@@ -135,7 +135,7 @@ result_img_with_header = new_img_like(
 # And again, ``cal_min`` and ``cal_max`` are set to minimum and maximum data
 # values respectively, by Nilearn.
 print("Following header fields do not match:")
-for key in result_img_with_header.header.keys():
+for key in result_img_with_header.header:
     if not (subj1_img.header[key] == result_img_with_header.header[key]).all():
         print(
             f"For '{key}'\n",

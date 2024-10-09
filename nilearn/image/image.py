@@ -901,7 +901,7 @@ def _apply_cluster_size_threshold(arr, cluster_threshold, copy=True):
 
         # Apply cluster threshold
         label_map = label(binarized, bin_struct)[0]
-        clust_ids = sorted(list(np.unique(label_map)[1:]))
+        clust_ids = sorted(np.unique(label_map)[1:])
         for c_val in clust_ids:
             if np.sum(label_map == c_val) < cluster_threshold:
                 arr[label_map == c_val] = 0

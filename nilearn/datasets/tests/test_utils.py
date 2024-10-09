@@ -8,10 +8,10 @@ import os
 import shutil
 import tarfile
 import urllib
-import zipfile
 from pathlib import Path
 from tempfile import mkdtemp, mkstemp
 from unittest.mock import MagicMock
+from zipfile import ZipFile
 
 import numpy as np
 import pytest
@@ -331,54 +331,59 @@ def test_filter_columns():
     assert np.sum(f) == 333
 
 
-def test_uncompress():
+@pytest.mark.parametrize(
+    "ext, mode", [("tar", "w"), ("tar.gz", "w:gz"), ("tgz", "w:gz")]
+)
+def test_uncompress_tar(tmp_path, ext, mode):
+    """Tests nilearn.dataset._utils.uncompress_file for tar files."""
     # for each kind of compression, we create:
-    # - a temporary directory (dtemp)
     # - a compressed object (ztemp)
     # - a temporary file-like object to compress into ztemp
     # we then uncompress the ztemp object into dtemp under the name ftemp
     # and check if ftemp exists
-    dtemp = mkdtemp()
-    ztemp = Path(dtemp, "test.zip")
+    ztemp = tmp_path / f"test.{ext}"
     ftemp = "test"
-    try:
-        with contextlib.closing(zipfile.ZipFile(ztemp, "w")) as testzip:
-            testzip.writestr(ftemp, " ")
-        _utils.uncompress_file(ztemp, verbose=0)
+    with contextlib.closing(tarfile.open(ztemp, mode)) as testtar:
+        temp = tmp_path / ftemp
+        temp.write_text(ftemp)
+        testtar.add(temp)
 
-        assert os.path.exists(Path(dtemp, ftemp))
+    _utils.uncompress_file(ztemp, verbose=0)
+    assert (tmp_path / ftemp).exists()
 
-        shutil.rmtree(dtemp)
 
-        dtemp = mkdtemp()
-        ztemp = Path(dtemp, "test.tar")
+def test_uncompress_zip(tmp_path):
+    """Tests nilearn.dataset._utils.uncompress_file for zip files."""
+    # for each kind of compression, we create:
+    # - a compressed object (ztemp)
+    # - a temporary file-like object to compress into ztemp
+    # we then uncompress the ztemp object into dtemp under the name ftemp
+    # and check if ftemp exists
+    ztemp = tmp_path / "test.zip"
+    ftemp = "test"
+    with contextlib.closing(ZipFile(ztemp, "w")) as testzip:
+        testzip.writestr(ftemp, " ")
 
-        # Create dummy file in the dtemp folder, so that the finally statement
-        # can easily remove it
-        fd, temp = mkstemp(dir=dtemp)
-        os.close(fd)
-        with contextlib.closing(tarfile.open(ztemp, "w")) as tar:
-            tar.add(temp, arcname=ftemp)
-        _utils.uncompress_file(ztemp, verbose=0)
+    _utils.uncompress_file(ztemp, verbose=0)
+    assert (tmp_path / ftemp).exists()
 
-        assert os.path.exists(Path(dtemp, ftemp))
 
-        shutil.rmtree(dtemp)
+@pytest.mark.parametrize("ext", [".gz", ""])
+def test_uncompress_gzip(tmp_path, ext):
+    """Tests nilearn.dataset._utils.uncompress_file for gzip files."""
+    # for each kind of compression, we create:
+    # - a compressed object (ztemp)
+    # - a temporary file-like object to compress into ztemp
+    # we then uncompress the ztemp object into dtemp under the name ftemp
+    # and check if ftemp exists
+    ztemp = tmp_path / f"test{ext}"
+    ftemp = "test"
 
-        dtemp = mkdtemp()
-        ztemp = Path(dtemp, "test.gz")
-        gzip.open(ztemp, "wb").close()
-        _utils.uncompress_file(ztemp, verbose=0)
+    with gzip.open(ztemp, "wb") as testgzip:
+        testgzip.write(ftemp.encode())
 
-        # test.gz gets uncompressed into test
-        assert os.path.exists(Path(dtemp, "test"))
-
-        shutil.rmtree(dtemp)
-
-    finally:
-        # all temp files are created into dtemp except temp
-        if os.path.exists(dtemp):
-            shutil.rmtree(dtemp)
+    _utils.uncompress_file(ztemp, verbose=0)
+    assert (tmp_path / ftemp).exists()
 
 
 def test_safe_extract(tmp_path):
@@ -471,7 +476,7 @@ def test_fetch_files_overwrite(
     fil = _utils.fetch_files(
         data_dir=str(tmp_path),
         verbose=0,
-        files=[files + (dict(overwrite=True),)],
+        files=[files + ({"overwrite": True},)],
     )
 
     assert request_mocker.url_count == 1
@@ -487,7 +492,7 @@ def test_fetch_files_overwrite(
     fil = _utils.fetch_files(
         data_dir=str(tmp_path),
         verbose=0,
-        files=[files + (dict(overwrite=False),)],
+        files=[files + ({"overwrite": False},)],
     )
 
     assert request_mocker.url_count == 1
@@ -499,7 +504,7 @@ def test_fetch_files_overwrite(
     fil = _utils.fetch_files(
         data_dir=str(tmp_path),
         verbose=0,
-        files=[files + (dict(overwrite=True),)],
+        files=[files + ({"overwrite": True},)],
     )
 
     assert request_mocker.url_count == 2
