@@ -1,6 +1,7 @@
 """Test the _utils.param_validation module."""
 
 import warnings
+from pathlib import Path
 
 import numpy as np
 import pytest

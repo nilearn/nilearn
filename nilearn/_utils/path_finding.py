@@ -1,6 +1,7 @@
 """Path finding utilities."""
 
 import glob
+from pathlib import Path
 
 from .helpers import stringify_path
 

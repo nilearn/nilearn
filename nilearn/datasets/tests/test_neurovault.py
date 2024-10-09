@@ -7,6 +7,7 @@ import json
 import os
 import re
 import stat
+from pathlib import Path
 from urllib import parse
 
 import numpy as np

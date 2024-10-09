@@ -14,6 +14,7 @@ import warnings
 from collections.abc import Container
 from copy import copy, deepcopy
 from glob import glob
+from pathlib import Path
 from tempfile import mkdtemp
 from urllib.parse import urlencode, urljoin
 

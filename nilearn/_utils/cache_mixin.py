@@ -4,6 +4,7 @@
 
 import os
 import warnings
+from pathlib import Path
 
 from joblib import Memory
 

@@ -8,6 +8,7 @@ import os
 import shutil
 import tarfile
 import urllib
+from pathlib import Path
 from tempfile import mkdtemp, mkstemp
 from unittest.mock import MagicMock
 from zipfile import ZipFile

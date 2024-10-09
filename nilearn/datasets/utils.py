@@ -1,6 +1,7 @@
 """Downloading NeuroImaging datasets: utility functions."""
 
 import os
+from pathlib import Path
 from warnings import warn
 
 from .._utils import fill_doc
