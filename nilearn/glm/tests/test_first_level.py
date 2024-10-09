@@ -49,7 +49,7 @@ from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files
 from nilearn.maskers import NiftiMasker
 
-BASEDIR = os.path.dirname(Path.resolve(__file__))
+BASEDIR = os.path.dirname(Path(__file__).resolve())
 FUNCFILE = os.path.join(BASEDIR, "functional.nii.gz")
 
 
