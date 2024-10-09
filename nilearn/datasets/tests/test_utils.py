@@ -174,6 +174,24 @@ def test_get_dataset_dir_write_access(tmp_path):
     shutil.rmtree(data_dir)
 
 
+def test_get_dataset_dir_symlink(tmp_path):
+    expected_linked_dir = tmp_path / "linked"
+    expected_linked_dir.mkdir(parents=True)
+    expected_base_dir = tmp_path / "env_data"
+    expected_base_dir.mkdir()
+    symlink_dir = expected_base_dir / "test"
+    symlink_dir.symlink_to(expected_linked_dir)
+
+    assert symlink_dir.exists()
+
+    data_dir = _utils.get_dataset_dir(
+        "test", default_paths=[symlink_dir], verbose=0
+    )
+
+    assert data_dir == str(expected_linked_dir)
+    assert os.path.exists(data_dir)
+
+
 def test_md5_sum_file():
     # Create dummy temporary file
     out, f = mkstemp()
