@@ -53,35 +53,35 @@ class CacheMixinTest(CacheMixin):
 def test_cache_mixin_with_expand_user():
     # Test the memory cache is correctly created when using ~.
     cache_dir = "~/nilearn_data/test_cache"
-    expand_cache_dir = Path.expanduser(cache_dir)
+    expand_cache_dir = Path(cache_dir).expanduser()
     mixin_mock = CacheMixinTest(cache_dir)
 
     try:
-        assert not Path.exists(expand_cache_dir)
+        assert not Path(expand_cache_dir).exists()
         mixin_mock.run()
-        assert Path.exists(expand_cache_dir)
+        assert Path(expand_cache_dir).exists()
     finally:
-        if Path.exists(expand_cache_dir):
+        if Path(expand_cache_dir).exists():
             shutil.rmtree(expand_cache_dir)
 
 
 def test_cache_mixin_without_expand_user():
     # Test the memory cache is correctly created when using ~.
     cache_dir = "~/nilearn_data/test_cache"
-    expand_cache_dir = Path.expanduser(cache_dir)
+    expand_cache_dir = Path(cache_dir).expanduser()
     mixin_mock = CacheMixinTest(cache_dir)
 
     try:
-        assert not Path.exists(expand_cache_dir)
+        assert not Path(expand_cache_dir).exists()
         nilearn.EXPAND_PATH_WILDCARDS = False
         with pytest.raises(
             ValueError, match="Given cache path parent directory doesn't"
         ):
             mixin_mock.run()
-        assert not Path.exists(expand_cache_dir)
+        assert not Path(expand_cache_dir).exists()
         nilearn.EXPAND_PATH_WILDCARDS = True
     finally:
-        if Path.exists(expand_cache_dir):
+        if Path(expand_cache_dir).exists():
             shutil.rmtree(expand_cache_dir)
 
 
@@ -90,7 +90,7 @@ def test_cache_mixin_wrong_dirs():
     # exist.
 
     for cache_dir in ("/bad_dir/cache", "~/nilearn_data/tmp/test_cache"):
-        expand_cache_dir = Path.expanduser(cache_dir)
+        expand_cache_dir = Path(cache_dir).expanduser()
         mixin_mock = CacheMixinTest(cache_dir)
 
         try:
@@ -98,9 +98,9 @@ def test_cache_mixin_wrong_dirs():
                 ValueError, match="Given cache path parent directory doesn't"
             ):
                 mixin_mock.run()
-            assert not Path.exists(expand_cache_dir)
+            assert not Path(expand_cache_dir).exists()
         finally:
-            if Path.exists(expand_cache_dir):
+            if Path(expand_cache_dir).exists():
                 shutil.rmtree(expand_cache_dir)
 
 

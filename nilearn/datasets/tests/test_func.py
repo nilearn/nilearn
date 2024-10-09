@@ -756,7 +756,7 @@ def test_fetch_development_fmri_exception():
 
 # datasets tests originally belonging to nistats follow
 
-currdir = os.path.dirname(Path.resolve(__file__))
+currdir = os.path.dirname(Path(__file__).resolve())
 datadir = os.path.join(currdir, "data")
 
 
@@ -765,7 +765,7 @@ def test_fetch_bids_langloc_dataset(tmp_path):
     main_folder = tmp_path / "bids_langloc_example" / "bids_langloc_dataset"
     main_folder.mkdir(parents=True)
     main_folder = os.path.join(data_dir, "bids_langloc_dataset")
-    Path.mkdir(main_folder)
+    Path(main_folder).mkdir()
 
     datadir, dl_files = func.fetch_bids_langloc_dataset(tmp_path)
 
@@ -1100,5 +1100,5 @@ def test_fiac(tmp_path):
 def test_load_sample_motor_activation_image():
     path_img = func.load_sample_motor_activation_image()
 
-    assert Path.exists(path_img)
+    assert Path(path_img).exists()
     assert load_img(path_img)

@@ -143,7 +143,7 @@ def write_imgs_to_path(*imgs, file_path=None, **kwargs):
 
     """
     if file_path is None:
-        file_path = Path.cwd()
+        file_path = Path().cwd()
 
     valid_keys = {"create_files", "use_wildcards"}
     input_keys = set(kwargs.keys())

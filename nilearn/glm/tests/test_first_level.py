@@ -1613,7 +1613,7 @@ def test_first_level_from_bids_with_missing_events(tmp_path_factory):
     bids_dataset = _new_bids_dataset(tmp_path_factory.mktemp("no_events"))
     events_files = get_bids_files(main_path=bids_dataset, file_tag="events")
     for f in events_files:
-        Path.unlink(f)
+        Path(f).unlink()
 
     with pytest.raises(ValueError, match="No events.tsv files found"):
         first_level_from_bids(
@@ -1633,7 +1633,7 @@ def test_first_level_from_bids_no_tr(tmp_path_factory):
         main_path=bids_dataset, file_tag="bold", file_type="json"
     )
     for f in json_files:
-        Path.unlink(f)
+        Path(f).unlink()
 
     with pytest.warns(
         UserWarning, match="'t_r' not provided and cannot be inferred"
@@ -1655,7 +1655,7 @@ def test_first_level_from_bids_no_bold_file(tmp_path_factory):
         file_type="*gz",
     )
     for img_ in imgs:
-        Path.unlink(img_)
+        Path(img_).unlink()
 
     with pytest.raises(ValueError, match="No BOLD files found "):
         first_level_from_bids(
@@ -1672,7 +1672,7 @@ def test_first_level_from_bids_with_one_events_missing(tmp_path_factory):
         tmp_path_factory.mktemp("one_event_missing")
     )
     events_files = get_bids_files(main_path=bids_dataset, file_tag="events")
-    Path.unlink(events_files[0])
+    Path(events_files[0]).unlink()
 
     with pytest.raises(ValueError, match="Same number of event files "):
         first_level_from_bids(
@@ -1695,7 +1695,7 @@ def test_first_level_from_bids_one_confound_missing(tmp_path_factory):
         main_path=bids_dataset / "derivatives",
         file_tag="desc-confounds_timeseries",
     )
-    Path.unlink(confound_files[-1])
+    Path(confound_files[-1]).unlink()
 
     with pytest.raises(ValueError, match="Same number of confound"):
         first_level_from_bids(
@@ -1716,7 +1716,7 @@ def test_first_level_from_bids_all_confounds_missing(tmp_path_factory):
         file_tag="desc-confounds_timeseries",
     )
     for f in confound_files:
-        Path.unlink(f)
+        Path(f).unlink()
 
     models, imgs, events, confounds = first_level_from_bids(
         dataset_path=bids_dataset,

@@ -63,7 +63,7 @@ def input_df():
 
 def fake_fmri_data(shape=SHAPE, file_path=None):
     if file_path is None:
-        file_path = Path.cwd()
+        file_path = Path().cwd()
     shapes = (shape,)
     mask, FUNCFILE, _ = write_fake_fmri_data_and_design(
         shapes, file_path=file_path

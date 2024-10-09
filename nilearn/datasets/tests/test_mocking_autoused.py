@@ -38,11 +38,11 @@ def test_request_mocking_autoused_urllib():
 
 
 def test_temp_nilearn_home_autoused():
-    home_dir = Path(Path.expanduser("~"))
+    home_dir = Path(Path("~").expanduser())
 
     assert home_dir.name.startswith("temp_nilearn_home")
 
-    home_dir = Path.home()
+    home_dir = Path().home()
 
     assert home_dir.name.startswith("temp_nilearn_home")
 

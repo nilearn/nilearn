@@ -146,7 +146,7 @@ def fetch_atlas_difumo(
     readme_files = [
         ("README.md", "https://osf.io/4k9bf/download", {"move": "README.md"})
     ]
-    if not Path.exists(os.path.join(data_dir, "README.md")):
+    if not Path(os.path.join(data_dir, "README.md").exists()):
         fetch_files(data_dir, readme_files, verbose=verbose, resume=resume)
 
     fdescr = get_dataset_descr(dataset_name)
@@ -946,7 +946,7 @@ def fetch_coords_power_2011(legacy_format=True):
     """
     dataset_name = "power_2011"
     fdescr = get_dataset_descr(dataset_name)
-    package_directory = os.path.dirname(Path.resolve(__file__))
+    package_directory = os.path.dirname(Path(__file__).resolve())
     csv = os.path.join(package_directory, "data", "power_2011.csv")
     params = {"rois": pd.read_csv(csv), "description": fdescr}
     params["rois"] = params["rois"].rename(
@@ -1546,7 +1546,7 @@ def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=True):
     """
     dataset_name = "dosenbach_2010"
     fdescr = get_dataset_descr(dataset_name)
-    package_directory = os.path.dirname(Path.resolve(__file__))
+    package_directory = os.path.dirname(Path(__file__).resolve())
     csv = os.path.join(package_directory, "data", "dosenbach_2010.csv")
     out_csv = pd.read_csv(csv)
 
@@ -1619,7 +1619,7 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
     """
     dataset_name = "seitzman_2018"
     fdescr = get_dataset_descr(dataset_name)
-    package_directory = os.path.dirname(Path.resolve(__file__))
+    package_directory = os.path.dirname(Path(__file__).resolve())
     roi_file = os.path.join(
         package_directory,
         "data",

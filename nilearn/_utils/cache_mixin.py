@@ -38,12 +38,12 @@ def _check_memory(memory, verbose=0):
     if isinstance(memory, str):
         cache_dir = memory
         if nilearn.EXPAND_PATH_WILDCARDS:
-            cache_dir = Path.expanduser(cache_dir)
+            cache_dir = Path(cache_dir).expanduser()
 
         # Perform some verifications on given path.
         split_cache_dir = os.path.split(cache_dir)
         if len(split_cache_dir) > 1 and (
-            not Path.exists(split_cache_dir[0]) and split_cache_dir[0] != ""
+            not Path(split_cache_dir[0]).exists() and split_cache_dir[0] != ""
         ):
             if not nilearn.EXPAND_PATH_WILDCARDS and cache_dir.startswith("~"):
                 # Maybe the user want to enable expanded user path.

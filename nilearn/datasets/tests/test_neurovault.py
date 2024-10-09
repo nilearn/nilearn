@@ -534,7 +534,7 @@ def test_simple_download(tmp_path):
         tmp_path / "image_35.nii.gz",
         tmp_path,
     )
-    assert Path.is_file(downloaded_file)
+    assert Path(downloaded_file).is_file()
 
 
 def test_simple_download_error(tmp_path, request_mocker):
@@ -774,7 +774,7 @@ def test_fetch_neurovault(tmp_path):
 
     # using a data directory we can't write into should raise a
     # warning unless mode is 'offline'
-    Path.chmod(tmp_path, stat.S_IREAD | stat.S_IEXEC)
+    Path(tmp_path, stat.S_IREAD | stat.S_IEXEC).chmod()
     Path.chmod(
         os.path.join(tmp_path, "neurovault"), stat.S_IREAD | stat.S_IEXEC
     )
@@ -997,7 +997,7 @@ def test_download_resamp_images_along_original_images_if_previously_downloaded(
 def _check_resampled_version_is_here(data):
     assert np.all(
         [
-            Path.is_file(im_meta["resampled_absolute_path"])
+            Path(im_meta["resampled_absolute_path"]).is_file()
             for im_meta in data["images_meta"]
         ]
     )
@@ -1006,7 +1006,7 @@ def _check_resampled_version_is_here(data):
 def _check_resampled_version_is_not_here(data):
     assert not np.any(
         [
-            Path.is_file(im_meta["resampled_absolute_path"])
+            Path(im_meta["resampled_absolute_path"]).is_file()
             for im_meta in data["images_meta"]
         ]
     )
@@ -1015,7 +1015,7 @@ def _check_resampled_version_is_not_here(data):
 def _check_original_version_is_here(data):
     assert np.all(
         [
-            Path.is_file(im_meta["absolute_path"])
+            Path(im_meta["absolute_path"]).is_file()
             for im_meta in data["images_meta"]
         ]
     )
@@ -1024,7 +1024,7 @@ def _check_original_version_is_here(data):
 def _check_original_version_is_not_here(data):
     assert not np.any(
         [
-            Path.is_file(im_meta["absolute_path"])
+            Path(im_meta["absolute_path"]).is_file()
             for im_meta in data["images_meta"]
         ]
     )
