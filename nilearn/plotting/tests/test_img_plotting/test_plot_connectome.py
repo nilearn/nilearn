@@ -165,7 +165,7 @@ def test_plot_connectome_to_file(
         adjacency, node_coords, output_file=filename, **base_params
     )
     assert display is None
-    assert Path.is_file(filename)
+    assert filename.is_file()
     assert os.path.getsize(filename) > 0
     plt.close()
 
