@@ -155,7 +155,6 @@ ignore = [
     "PERF102",
     "PERF203",
     "PERF401",
-    "PERF403",
     "PLR0911",
     "PLR0912",
     "PLR0913",
