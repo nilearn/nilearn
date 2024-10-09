@@ -1661,10 +1661,8 @@ def _list_valid_subjects(derivatives_path, sub_labels):
     """
     # Infer subjects in dataset if not provided
     if not sub_labels:
-        sub_folders = glob.glob(Path(derivatives_path, "sub-*/"))
-        sub_labels = [
-            os.path.basename(s[:-1]).split("-")[1] for s in sub_folders
-        ]
+        sub_folders = glob.glob(str(Path(derivatives_path, "sub-*/")))
+        sub_labels = [os.path.basename(s).split("-")[1] for s in sub_folders]
 
     # keep only existing subjects
     sub_labels_exist = []

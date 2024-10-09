@@ -273,7 +273,7 @@ def get_confounds_file(image_file, flag_full_aroma):
 def get_json(confounds_raw_path):
     """Return json data companion file to the confounds tsv file."""
     # Load JSON file
-    return confounds_raw_path.replace("tsv", "json")
+    return str(confounds_raw_path).replace("tsv", "json")
 
 
 def load_confounds_json(confounds_json, flag_acompcor):
