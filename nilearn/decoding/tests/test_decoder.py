@@ -1169,6 +1169,10 @@ def test_decoder_fit_surface_with_mask_image(
     assert model.coef_ is not None
 
 
+# TODO update after https://github.com/nilearn/nilearn/pull/4603
+@pytest.mark.xfail(
+    reason="requires https://github.com/nilearn/nilearn/pull/4603"
+)
 @pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
 def test_decoder_error_incompatible_surface_mask_and_volume_data(
     decoder, mini_mask, tiny_binary_classification_data
@@ -1176,12 +1180,24 @@ def test_decoder_error_incompatible_surface_mask_and_volume_data(
     """Test error when fitting volume data with a surface mask."""
     data_volume, y, _ = tiny_binary_classification_data
     model = decoder(mask=mini_mask)
-    model.fit(data_volume, y)
+
+    with pytest.raises(
+        TypeError, match="Mask and images to fit must be of compatible types."
+    ):
+        model.fit(data_volume, y)
 
     model = decoder(mask=SurfaceMasker())
-    model.fit(data_volume, y)
+
+    with pytest.raises(
+        TypeError, match="Mask and images to fit must be of compatible types."
+    ):
+        model.fit(data_volume, y)
 
 
+# TODO update after https://github.com/nilearn/nilearn/pull/4603
+@pytest.mark.xfail(
+    reason="requires https://github.com/nilearn/nilearn/pull/4603"
+)
 @pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
 def test_decoder_error_incompatible_surface_data_and_volume_mask(
     _make_surface_class_data, decoder, tiny_binary_classification_data
@@ -1190,7 +1206,11 @@ def test_decoder_error_incompatible_surface_data_and_volume_mask(
     data_surface, y = _make_surface_class_data()
     _, _, mask = tiny_binary_classification_data
     model = decoder(mask=mask)
-    model.fit(data_surface, y)
+
+    with pytest.raises(
+        TypeError, match="Mask and images to fit must be of compatible types."
+    ):
+        model.fit(data_surface, y)
 
 
 def test_decoder_predict_score_surface(_make_surface_class_data):
