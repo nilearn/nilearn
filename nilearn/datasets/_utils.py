@@ -63,8 +63,8 @@ def read_md5_sum_file(path):
 
 def readlinkabs(link):
     """Return an absolute path for the destination of a symlink."""
-    path = os.readlink(link)
-    if os.path.isabs(path):
+    path = Path(link).readlink()
+    if Path(path).is_absolute():
         return path
     return os.path.join(os.path.dirname(link), path)
 
@@ -245,7 +245,7 @@ def get_dataset_dir(
     for path, is_pre_dir in paths:
         if not is_pre_dir:
             path = os.path.join(path, dataset_name)
-        if os.path.islink(path):
+        if Path(path).is_symlink():
             # Resolve path
             path = readlinkabs(path)
         if Path(path).exists() and os.path.isdir(path):
