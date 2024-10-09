@@ -698,28 +698,33 @@ def get_dataset_descr(ds_name):
 
 
 def movetree(src, dst):
-    """Move an entire tree to another directory.
+    """Move entire tree under `src` inside `dst`.
+
+    Creates `dst` if it does not already exist.
 
     Any existing file is overwritten.
+
+    The difference with `shutil.mv` is that `shutil.mv` moves `src` under `dst`
+    if `dst` already exists.
     """
-    names = os.listdir(src)
+    src = Path(src)
 
     # Create destination dir if it does not exist
-    if not Path.exists(dst):
-        os.makedirs(dst)
+    dst = Path(dst)
+    dst.mkdir(parents=True, exist_ok=True)
+
     errors = []
 
-    for name in names:
-        srcname = os.path.join(src, name)
-        dstname = os.path.join(dst, name)
+    for srcfile in src.iterdir():
+        dstfile = dst / srcfile.name
         try:
-            if Path.is_dir(srcname) and Path.is_dir(dstname):
-                movetree(srcname, dstname)
-                Path.rmdir(srcname)
+            if srcfile.is_dir() and dstfile.is_dir():
+                movetree(srcfile, dstfile)
+                srcfile.rmdir()
             else:
-                shutil.move(srcname, dstname)
+                shutil.move(srcfile, dstfile)
         except OSError as why:
-            errors.append((srcname, dstname, str(why)))
+            errors.append((srcfile, dstfile, str(why)))
         # catch the Error from the recursive movetree so that we can
         # continue with other files
         except Exception as err:
