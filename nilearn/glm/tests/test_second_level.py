@@ -43,7 +43,7 @@ if have_mpl:
     from nilearn.reporting import get_clusters_table
 
 # This directory path
-BASEDIR = os.path.dirname(Path.resolve(__file__))
+BASEDIR = os.path.dirname(Path(__file__).resolve())
 FUNCFILE = os.path.join(BASEDIR, "functional.nii.gz")
 
 N_PERM = 10
