@@ -22,6 +22,9 @@ from sklearn.base import clone
 from sklearn.cluster import KMeans
 
 from nilearn._utils import fill_doc, logger, stringify_path
+from nilearn._utils.masker_validation import (
+    check_compatibility_mask_and_images,
+)
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_run_sample_masks
 from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
@@ -47,7 +50,6 @@ from nilearn.interfaces.bids.query import (
 )
 from nilearn.interfaces.bids.utils import bids_entities, check_bids_label
 from nilearn.interfaces.fmriprep.load_confounds import load_confounds
-from nilearn.maskers import NiftiMasker
 
 
 def mean_scaling(Y, axis=0):
@@ -514,7 +516,7 @@ class FirstLevelModel(BaseGLM):
         if not isinstance(run_imgs, (list, tuple)):
             run_imgs = [run_imgs]
 
-        _check_compatibility_mask_and_images(self.mask_img, run_imgs)
+        check_compatibility_mask_and_images(self.mask_img, run_imgs)
 
         if design_matrices is None:
             if events is None:
@@ -1067,42 +1069,6 @@ class FirstLevelModel(BaseGLM):
                 self.masker_.fit(run_img)
             else:
                 self.masker_ = self.mask_img
-
-
-def _check_compatibility_mask_and_images(mask_img, run_imgs):
-    """Check that mask type and image types are compatible.
-
-    Images to fit should be a Niimg-Like
-    if the mask is a NiftiImage, NiftiMasker or a path.
-    Similarly, only SurfaceImages can be fitted
-    with a SurfaceImage or a SrufaceMasked as mask.
-    """
-    if mask_img is None:
-        return None
-
-    msg = (
-        "Mask and images to fit must be of compatible types.\n"
-        f"Got mask of type: {type(mask_img)}, "
-        f"and images of type: {[type(x) for x in run_imgs]}"
-    )
-
-    volumetric_type = (Nifti1Image, NiftiMasker, str, Path)
-    if isinstance(mask_img, volumetric_type) and any(
-        not isinstance(x, (Nifti1Image, str, Path)) for x in run_imgs
-    ):
-        raise TypeError(
-            f"{msg} "
-            f"where images should be NiftiImage-like instances "
-            f"(Nifti1Image or str or Path)."
-        )
-
-    surface_type = (SurfaceImage, SurfaceMasker)
-    if isinstance(mask_img, surface_type) and any(
-        not isinstance(x, SurfaceImage) for x in run_imgs
-    ):
-        raise TypeError(
-            f"{msg} where SurfaceImage instances would be expected."
-        )
 
 
 def _check_events_file_uses_tab_separators(events_files):
