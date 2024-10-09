@@ -7,7 +7,6 @@ import pathlib
 from pathlib import Path
 
 import numpy as np
-from nibabel import Nifti1Image
 
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn.experimental.surface import _io
@@ -272,19 +271,6 @@ class SurfaceImage:
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {getattr(self, 'shape', '')}>"
-
-    def _vol_to_surf(self, img: Nifti1Image | str | Path, **kwargs) -> None:
-        """Project a Nifti image on a Surface.
-
-        Parameters
-        ----------
-        img :  Niimg-like object, 3d or 4d.
-               See :ref:`extracting_data`.
-
-        kwargs:
-               Extra arguments to pass
-               to :func:`nilearn.surface.vol_to_surf`
-        """
 
     def to_filename(self, filename: str | Path) -> None:
         """Save mesh to gifti.
