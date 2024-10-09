@@ -14,6 +14,7 @@ import warnings
 from collections.abc import Container
 from copy import copy, deepcopy
 from glob import glob
+from pathlib import Path
 from tempfile import mkdtemp
 from urllib.parse import urlencode, urljoin
 
@@ -1541,7 +1542,7 @@ def _download_image_nii_file(image_info, collection, download_params):
         im_resampled.to_filename(resampled_image_absolute_path)
 
         # Remove temporary file
-        os.remove(tmp_path)
+        Path(tmp_path).unlink()
     else:
         _simple_download(
             image_url,
@@ -1561,7 +1562,7 @@ def _check_has_words(file_name):
         return True
     except (AttributeError, TypeError, AssertionError):
         pass
-    os.remove(file_name)
+    Path(file_name).unlink()
     return False
 
 

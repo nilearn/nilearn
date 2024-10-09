@@ -354,7 +354,7 @@ def uncompress_file(file_, delete_archive=True, verbose=1):
             z.extractall(path=data_dir)
             z.close()
             if delete_archive:
-                os.remove(file_)
+                Path(file_).unlink()
             file_ = filename
             processed = True
         elif file_.suffix == ".gz" or header.startswith(b"\x1f\x8b"):
@@ -371,14 +371,14 @@ def uncompress_file(file_, delete_archive=True, verbose=1):
                     shutil.copyfileobj(gz, out, 8192)
             # If file is .tar.gz, this will be handled in the next case
             if delete_archive:
-                os.remove(file_)
+                Path(file_).unlink()
             file_ = filename
             processed = True
         if file_.is_file() and tarfile.is_tarfile(file_):
             with contextlib.closing(tarfile.open(file_, "r")) as tar:
                 _safe_extract(tar, path=data_dir)
             if delete_archive:
-                os.remove(file_)
+                Path(file_).unlink()
             processed = True
         if not processed:
             raise OSError(f"[Uncompress] unknown archive file format: {file_}")
@@ -570,11 +570,11 @@ def fetch_single_file(
     temp_full_name = os.path.join(data_dir, temp_file_name)
     if Path(full_name).exists():
         if overwrite:
-            os.remove(full_name)
+            Path(full_name).unlink()
         else:
             return full_name
     if Path(temp_full_name).exists() and overwrite:
-        os.remove(temp_full_name)
+        Path(temp_full_name).unlink()
     t0 = time.time()
     local_file = None
     initial_size = 0
