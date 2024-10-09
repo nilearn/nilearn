@@ -5,7 +5,6 @@ Note that the tests just looks whether the data produces has correct dimension,
 not whether it is exact
 """
 
-from os import path as osp
 from pathlib import Path
 
 import numpy as np
