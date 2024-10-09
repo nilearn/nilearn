@@ -61,14 +61,6 @@ def read_md5_sum_file(path):
     return hashes
 
 
-def readlinkabs(link):
-    """Return an absolute path for the destination of a symlink."""
-    path = os.readlink(link)
-    if os.path.isabs(path):
-        return path
-    return os.path.join(os.path.dirname(link), path)
-
-
 def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
     """Show downloading percentage.
 
