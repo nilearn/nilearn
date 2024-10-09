@@ -1059,13 +1059,12 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
 
         # One cv generator per subject must be created, because each subject
         # can have a different number of samples from the others.
-        cv = []
-        for k in range(n_subjects):
-            cv.append(
-                check_cv(
-                    self.cv, np.ones(subjects[k].shape[0]), classifier=False
-                ).split(subjects[k])
-            )
+        cv = [
+            check_cv(
+                self.cv, np.ones(subjects[k].shape[0]), classifier=False
+            ).split(subjects[k])
+            for k in range(n_subjects)
+        ]
         path = []  # List of (alpha, scores, covs)
         n_alphas = self.alphas
 
