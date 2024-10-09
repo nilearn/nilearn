@@ -827,7 +827,7 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
                 )
 
             if not Path(temp_dir).exists():
-                os.mkdir(temp_dir)
+                Path(temp_dir).mkdir()
             md5sum = opts.get("md5sum", None)
 
             dl_file = fetch_single_file(
