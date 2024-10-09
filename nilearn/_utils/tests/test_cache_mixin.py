@@ -1,6 +1,5 @@
 """Test the _utils.cache_mixin module."""
 
-import os
 import shutil
 from pathlib import Path
 
@@ -54,7 +53,7 @@ class CacheMixinTest(CacheMixin):
 def test_cache_mixin_with_expand_user():
     # Test the memory cache is correctly created when using ~.
     cache_dir = "~/nilearn_data/test_cache"
-    expand_cache_dir = os.path.expanduser(cache_dir)
+    expand_cache_dir = Path(cache_dir).expanduser()
     mixin_mock = CacheMixinTest(cache_dir)
 
     try:
@@ -69,7 +68,7 @@ def test_cache_mixin_with_expand_user():
 def test_cache_mixin_without_expand_user():
     # Test the memory cache is correctly created when using ~.
     cache_dir = "~/nilearn_data/test_cache"
-    expand_cache_dir = os.path.expanduser(cache_dir)
+    expand_cache_dir = Path(cache_dir).expanduser()
     mixin_mock = CacheMixinTest(cache_dir)
 
     try:
@@ -91,7 +90,7 @@ def test_cache_mixin_wrong_dirs():
     # exist.
 
     for cache_dir in ("/bad_dir/cache", "~/nilearn_data/tmp/test_cache"):
-        expand_cache_dir = os.path.expanduser(cache_dir)
+        expand_cache_dir = Path(cache_dir).expanduser()
         mixin_mock = CacheMixinTest(cache_dir)
 
         try:

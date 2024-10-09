@@ -2,7 +2,6 @@
 
 import glob
 import itertools
-import os.path
 
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 import warnings
@@ -284,7 +283,7 @@ def check_niimg(
     if isinstance(niimg, str):
         if wildcards and ni.EXPAND_PATH_WILDCARDS:
             # Ascending sorting + expand user path
-            filenames = sorted(glob.glob(os.path.expanduser(niimg)))
+            filenames = sorted(glob.glob(Path(niimg).expanduser()))
 
             # processing filenames matching globbing expression
             if len(filenames) >= 1 and glob.has_magic(niimg):

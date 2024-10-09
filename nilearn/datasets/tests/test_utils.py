@@ -92,7 +92,7 @@ def test_get_dataset_dir(tmp_path):
     os.environ.pop("NILEARN_DATA", None)
     os.environ.pop("NILEARN_SHARED_DATA", None)
 
-    expected_base_dir = os.path.expanduser("~/nilearn_data")
+    expected_base_dir = Path("~/nilearn_data").expanduser()
     data_dir = _utils.get_dataset_dir("test", verbose=0)
 
     assert data_dir == os.path.join(expected_base_dir, "test")

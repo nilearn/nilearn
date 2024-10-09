@@ -38,7 +38,7 @@ def _check_memory(memory, verbose=0):
     if isinstance(memory, str):
         cache_dir = memory
         if nilearn.EXPAND_PATH_WILDCARDS:
-            cache_dir = os.path.expanduser(cache_dir)
+            cache_dir = Path(cache_dir).expanduser()
 
         # Perform some verifications on given path.
         split_cache_dir = os.path.split(cache_dir)
