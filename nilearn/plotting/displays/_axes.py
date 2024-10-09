@@ -592,9 +592,8 @@ class GlassBrainAxes(BaseAxes):
                     self.direction == "r"
                     and line[0, 0] >= 0
                     and line[1, 0] >= 0
-                    or self.direction == "l"
-                    and line[0, 0] < 0
-                    and line[1, 0] < 0
+                ) or (
+                    self.direction == "l" and line[0, 0] < 0 and line[1, 0] < 0
                 ):
                     relevant_lines.append(lidx)
             line_coords = np.array(line_coords)[relevant_lines]
