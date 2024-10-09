@@ -121,16 +121,10 @@ def get_colorbar_and_data_ranges(
         negative_range = stat_map_max <= 0
         positive_range = stat_map_min >= 0
         if positive_range:
-            if vmin is None:
-                cbar_vmin = 0
-            else:
-                cbar_vmin = vmin
+            cbar_vmin = 0 if vmin is None else vmin
             cbar_vmax = vmax
         elif negative_range:
-            if vmax is None:
-                cbar_vmax = 0
-            else:
-                cbar_vmax = vmax
+            cbar_vmax = 0 if vmax is None else vmax
             cbar_vmin = vmin
         else:
             # limit colorbar to plotted values
@@ -554,10 +548,7 @@ def load_anat(anat_img=MNI152TEMPLATE, dim="auto", black_bg="auto"):
             # Guess if the background is rather black or light based on
             # the values of voxels near the border
             background = np.median(get_border_data(data, 2))
-            if background > 0.5 * (vmin + vmax):
-                black_bg = False
-            else:
-                black_bg = True
+            black_bg = not (background > 0.5 * (vmin + vmax))
     if dim:
         if dim != "auto" and not isinstance(dim, numbers.Number):
             raise ValueError(
@@ -1143,7 +1134,7 @@ def plot_prob_atlas(
     if isinstance(threshold, collections.abc.Iterable) and not isinstance(
         threshold, str
     ):
-        threshold = [thr for thr in threshold]
+        threshold = list(threshold)
         if len(threshold) != n_maps:
             raise TypeError(
                 "The list of values to threshold "
@@ -1447,7 +1438,7 @@ def plot_glass_brain(
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
 
-    """  # noqa: E501
+    """
     if cmap is None:
         cmap = cm.cold_hot if black_bg else cm.cold_white_hot
         # use only positive half of colormap if plotting absolute values
@@ -1943,7 +1934,7 @@ def plot_carpet(
         atlas_values = np.squeeze(atlas_values)
 
         if mask_labels:
-            label_dtype = type(list(mask_labels.values())[0])
+            label_dtype = type(next(iter(mask_labels.values())))
             if label_dtype != atlas_values.dtype:
                 logger.log(f"Coercing atlas_values to {label_dtype}")
                 atlas_values = atlas_values.astype(label_dtype)

@@ -482,7 +482,7 @@ def test_glm_AR_estimates(rng, ar_vals):
 
     assert len(labels) == n
 
-    for lab in results.keys():
+    for lab in results:
         ar_estimate = lab.split("_")
         for lag in range(ar_order):
             assert_almost_equal(

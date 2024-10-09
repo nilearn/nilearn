@@ -90,7 +90,7 @@ def test_early_stopping_callback_object(rng, n_samples=10, n_features=30):
         if k > 0 and rng.random() > 0.9:
             w[k - 1] = 1 - w[k - 1]
 
-        escb(dict(w=w, counter=counter))
+        escb({"w": w, "counter": counter})
         assert len(escb.test_scores) == counter + 1
 
         # restart

@@ -635,7 +635,7 @@ def test_decoder_error_model_not_fitted(tiny_binary_classification_data):
 def test_decoder_dummy_classifier_strategy_prior():
     X, y, mask = _make_binary_classification_test_data(n_samples=300)
 
-    param = dict(strategy="prior")
+    param = {"strategy": "prior"}
     dummy_classifier = DummyClassifier(random_state=0)
     dummy_classifier.set_params(**param)
     model = Decoder(estimator=dummy_classifier, mask=mask)
@@ -649,7 +649,7 @@ def test_decoder_dummy_classifier_strategy_prior():
 def test_decoder_dummy_classifier_strategy_most_frequent():
     X, y, mask = _make_binary_classification_test_data(n_samples=300)
 
-    param = dict(strategy="most_frequent")
+    param = {"strategy": "most_frequent"}
     dummy_classifier = DummyClassifier(random_state=0)
     dummy_classifier.set_params(**param)
 
@@ -678,7 +678,7 @@ def test_decoder_dummy_classifier_roc_scoring(binary_classification_data):
 def test_decoder_error_not_implemented(tiny_binary_classification_data):
     X, y, mask = tiny_binary_classification_data
 
-    param = dict(strategy="constant")
+    param = {"strategy": "constant"}
     dummy_classifier = DummyClassifier(random_state=0)
     dummy_classifier.set_params(**param)
 
@@ -817,7 +817,7 @@ def test_decoder_dummy_regression_other_strategy(regression_data):
     X, y, mask = regression_data
 
     dummy_regressor = DummyRegressor()
-    param = dict(strategy="median")
+    param = {"strategy": "median"}
     dummy_regressor.set_params(**param)
 
     model = DecoderRegressor(estimator=dummy_regressor, mask=mask)

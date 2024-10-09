@@ -57,7 +57,7 @@ def check_same_fov(*args, **kwargs):
     for (a_name, a_img), (b_name, b_img) in itertools.combinations(
         kwargs.items(), 2
     ):
-        if not a_img.shape[:3] == b_img.shape[:3]:
+        if a_img.shape[:3] != b_img.shape[:3]:
             errors.append((a_name, b_name, "shape"))
         if not np.allclose(a_img.affine, b_img.affine):
             errors.append((a_name, b_name, "affine"))
@@ -296,11 +296,11 @@ def check_niimg(
                 # No files matching the glob expression, warn the user
                 message = (
                     "No files matching the entered niimg expression: "
-                    "'%s'.\n You may have left wildcards usage "
+                    f"'{niimg}'.\n You may have left wildcards usage "
                     "activated: please set the global constant "
                     "'nilearn.EXPAND_PATH_WILDCARDS' to False to "
                     "deactivate this behavior."
-                ) % niimg
+                )
                 raise ValueError(message)
             else:
                 raise ValueError(f"File not found: '{niimg}'")

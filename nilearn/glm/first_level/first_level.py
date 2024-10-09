@@ -238,8 +238,7 @@ def run_glm(
         )
 
         # Converting the key to a string is required for AR(N>1) cases
-        for val, result in zip(unique_labels, ar_result):
-            results[val] = result
+        results = dict(zip(unique_labels, ar_result))
         del unique_labels
         del ar_result
 
@@ -1187,12 +1186,12 @@ def _read_events_table(table):
     try:
         # kept for historical reasons, a lot of tests use csv with index column
         loaded = pd.read_csv(table, index_col=0)
-    except:  # noqa: E722 B001
+    except:  # noqa: E722
         raise ValueError(f"table path {table} could not be loaded")
     if loaded.empty:
         try:
             loaded = pd.read_csv(table, sep="\t")
-        except:  # noqa: E722 B001
+        except:  # noqa: E722
             raise ValueError(f"table path {table} could not be loaded")
     return loaded
 

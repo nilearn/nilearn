@@ -135,7 +135,7 @@ def test_plot_threshold_for_uint8(affine_eye, plot_func):
         kwargs["cut_coords"] = [0]
     display = plot_func(img, colorbar=True, **kwargs)
     # Next two lines retrieve the numpy array from the plot
-    ax = list(display.axes.values())[0].ax
+    ax = next(iter(display.axes.values())).ax
     plotted_array = ax.images[0].get_array()
     # Make sure that there is one value masked
     assert plotted_array.mask.sum() == 1

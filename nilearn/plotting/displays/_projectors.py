@@ -716,22 +716,22 @@ class RProjector(OrthoProjector):
     _default_figsize = [2.6, 2.8]
 
 
-PROJECTORS = dict(
-    ortho=OrthoProjector,
-    xz=XZProjector,
-    yz=YZProjector,
-    yx=YXProjector,
-    x=XProjector,
-    y=YProjector,
-    z=ZProjector,
-    lzry=LZRYProjector,
-    lyrz=LYRZProjector,
-    lyr=LYRProjector,
-    lzr=LZRProjector,
-    lr=LRProjector,
-    l=LProjector,
-    r=RProjector,
-)
+PROJECTORS = {
+    "ortho": OrthoProjector,
+    "xz": XZProjector,
+    "yz": YZProjector,
+    "yx": YXProjector,
+    "x": XProjector,
+    "y": YProjector,
+    "z": ZProjector,
+    "lzry": LZRYProjector,
+    "lyrz": LYRZProjector,
+    "lyr": LYRProjector,
+    "lzr": LZRProjector,
+    "lr": LRProjector,
+    "l": LProjector,
+    "r": RProjector,
+}
 
 
 def get_projector(display_mode):

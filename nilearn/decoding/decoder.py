@@ -53,22 +53,22 @@ from nilearn._utils.param_validation import check_feature_screening
 from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
 from nilearn.regions.rena_clustering import ReNA
 
-SUPPORTED_ESTIMATORS = dict(
-    svc_l1=LinearSVC(penalty="l1", dual=False, max_iter=10000),
-    svc_l2=LinearSVC(penalty="l2", dual=True, max_iter=10000),
-    svc=LinearSVC(penalty="l2", dual=True, max_iter=10000),
-    logistic_l1=LogisticRegressionCV(penalty="l1", solver="liblinear"),
-    logistic_l2=LogisticRegressionCV(penalty="l2", solver="liblinear"),
-    logistic=LogisticRegressionCV(penalty="l2", solver="liblinear"),
-    ridge_classifier=RidgeClassifierCV(),
-    ridge_regressor=RidgeCV(),
-    ridge=RidgeCV(),
-    lasso=LassoCV(),
-    lasso_regressor=LassoCV(),
-    svr=SVR(kernel="linear", max_iter=10000),
-    dummy_classifier=DummyClassifier(strategy="stratified", random_state=0),
-    dummy_regressor=DummyRegressor(strategy="mean"),
-)
+SUPPORTED_ESTIMATORS = {
+    "svc_l1": LinearSVC(penalty="l1", dual=False, max_iter=10000),
+    "svc_l2": LinearSVC(penalty="l2", dual=True, max_iter=10000),
+    "svc": LinearSVC(penalty="l2", dual=True, max_iter=10000),
+    "logistic_l1": LogisticRegressionCV(penalty="l1", solver="liblinear"),
+    "logistic_l2": LogisticRegressionCV(penalty="l2", solver="liblinear"),
+    "logistic": LogisticRegressionCV(penalty="l2", solver="liblinear"),
+    "ridge_classifier": RidgeClassifierCV(),
+    "ridge_regressor": RidgeCV(),
+    "ridge": RidgeCV(),
+    "lasso": LassoCV(),
+    "lasso_regressor": LassoCV(),
+    "svr": SVR(kernel="linear", max_iter=10000),
+    "dummy_classifier": DummyClassifier(strategy="stratified", random_state=0),
+    "dummy_regressor": DummyRegressor(strategy="mean"),
+}
 
 
 @fill_doc
@@ -114,14 +114,13 @@ def _check_param_grid(estimator, X, y, param_grid=None):
     if param_grid is None:
         param_grid = _default_param_grid(estimator, X, y)
 
-    else:
-        if isinstance(estimator, (RidgeCV, RidgeClassifierCV)):
-            param_grid = _wrap_param_grid(param_grid, "alphas")
-        elif isinstance(estimator, LogisticRegressionCV):
-            param_grid = _replace_param_grid_key(param_grid, "C", "Cs")
-            param_grid = _wrap_param_grid(param_grid, "Cs")
-        elif isinstance(estimator, LassoCV):
-            param_grid = _wrap_param_grid(param_grid, "alphas")
+    elif isinstance(estimator, (RidgeCV, RidgeClassifierCV)):
+        param_grid = _wrap_param_grid(param_grid, "alphas")
+    elif isinstance(estimator, LogisticRegressionCV):
+        param_grid = _replace_param_grid_key(param_grid, "C", "Cs")
+        param_grid = _wrap_param_grid(param_grid, "Cs")
+    elif isinstance(estimator, LassoCV):
+        param_grid = _wrap_param_grid(param_grid, "alphas")
 
     return param_grid
 
@@ -324,7 +323,7 @@ def _check_estimator(estimator):
             "Use a custom estimator at your own risk "
             "of the process not working as intended."
         )
-    elif estimator in SUPPORTED_ESTIMATORS.keys():
+    elif estimator in SUPPORTED_ESTIMATORS:
         estimator = SUPPORTED_ESTIMATORS.get(estimator)
     else:
         raise ValueError(

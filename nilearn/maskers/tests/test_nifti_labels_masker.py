@@ -895,7 +895,7 @@ def test_region_names_ids_match_after_fit(
     )
 
     region_names = generate_labels(n_regions, background=background)
-    region_ids = [region_id for region_id in np.unique(get_data(labels_img))]
+    region_ids = list(np.unique(get_data(labels_img)))
 
     if masking:
         # create a mask_img with 3 regions
@@ -948,7 +948,7 @@ def generate_labels(n_regions, background=True):
     labels = []
     if background:
         labels.append(background)
-    labels.extend([f"region_{str(i + 1)}" for i in range(n_regions)])
+    labels.extend([f"region_{i + 1!s}" for i in range(n_regions)])
     return labels
 
 

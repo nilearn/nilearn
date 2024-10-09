@@ -32,7 +32,7 @@ class BaseAxes:
         self.ax = ax
         self.direction = direction
         self.coord = coord
-        self._object_bounds = list()
+        self._object_bounds = []
         self.shape = None
         self.radiological = radiological
 
@@ -126,9 +126,12 @@ class BaseAxes:
             horizontalalignment="left",
             verticalalignment="top",
             size=size,
-            bbox=dict(
-                boxstyle="square,pad=0", ec=bg_color, fc=bg_color, alpha=1
-            ),
+            bbox={
+                "boxstyle": "square,pad=0",
+                "ec": bg_color,
+                "fc": bg_color,
+                "alpha": 1,
+            },
             **kwargs,
         )
 
@@ -140,7 +143,7 @@ class BaseAxes:
             horizontalalignment="right",
             verticalalignment="top",
             size=size,
-            bbox=dict(boxstyle="square,pad=0", ec=bg_color, fc=bg_color),
+            bbox={"boxstyle": "square,pad=0", "ec": bg_color, "fc": bg_color},
             **kwargs,
         )
 
@@ -335,9 +338,12 @@ class CutAxes(BaseAxes):
             horizontalalignment="left",
             verticalalignment="bottom",
             size=size,
-            bbox=dict(
-                boxstyle="square,pad=0", ec=bg_color, fc=bg_color, alpha=1
-            ),
+            bbox={
+                "boxstyle": "square,pad=0",
+                "ec": bg_color,
+                "fc": bg_color,
+                "alpha": 1,
+            },
             **kwargs,
         )
 
@@ -347,10 +353,7 @@ def _get_index_from_direction(direction):
     directions = ["x", "y", "z"]
     try:
         # l and r are subcases of x
-        if direction in "lr":
-            index = 0
-        else:
-            index = directions.index(direction)
+        index = 0 if direction in "lr" else directions.index(direction)
     except ValueError:
         message = (
             f"{direction} is not a valid direction. "
@@ -488,9 +491,12 @@ class GlassBrainAxes(BaseAxes):
             relevant_coords = []
             xcoords, ycoords, zcoords = marker_coords.T
             for cidx, xc in enumerate(xcoords):
-                if self.direction == "r" and xc >= 0:
-                    relevant_coords.append(cidx)
-                elif self.direction == "l" and xc <= 0:
+                if (
+                    self.direction == "r"
+                    and xc >= 0
+                    or self.direction == "l"
+                    and xc <= 0
+                ):
                     relevant_coords.append(cidx)
             xdata = xdata[relevant_coords]
             ydata = ydata[relevant_coords]

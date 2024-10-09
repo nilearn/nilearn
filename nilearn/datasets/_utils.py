@@ -340,10 +340,12 @@ def uncompress_file(file_, delete_archive=True, verbose=1):
     """
     logger.log(f"Extracting data from {file_}...", verbose=verbose)
 
-    data_dir = os.path.dirname(file_)
+    file_ = Path(file_)
+    data_dir = file_.parent
+
     # We first try to see if it is a zip file
     try:
-        filename, ext = os.path.splitext(file_)
+        filename = data_dir / file_.stem
         with open(file_, "rb") as fd:
             header = fd.read(4)
         processed = False
@@ -355,12 +357,12 @@ def uncompress_file(file_, delete_archive=True, verbose=1):
                 os.remove(file_)
             file_ = filename
             processed = True
-        elif ext == ".gz" or header.startswith(b"\x1f\x8b"):
+        elif file_.suffix == ".gz" or header.startswith(b"\x1f\x8b"):
             import gzip
 
-            if ext == ".tgz":
-                filename = f"{filename}.tar"
-            elif ext == "":
+            if file_.suffix == ".tgz":
+                filename = Path(f"{filename}.tar")
+            elif file_.suffix == "":
                 # We rely on the assumption that gzip files have an extension
                 shutil.move(file_, f"{file_}.gz")
                 file_ = f"{file_}.gz"
@@ -372,7 +374,7 @@ def uncompress_file(file_, delete_archive=True, verbose=1):
                 os.remove(file_)
             file_ = filename
             processed = True
-        if os.path.isfile(file_) and tarfile.is_tarfile(file_):
+        if file_.is_file() and tarfile.is_tarfile(file_):
             with contextlib.closing(tarfile.open(file_, "r")) as tar:
                 _safe_extract(tar, path=data_dir)
             if delete_archive:
@@ -696,28 +698,33 @@ def get_dataset_descr(ds_name):
 
 
 def movetree(src, dst):
-    """Move an entire tree to another directory.
+    """Move entire tree under `src` inside `dst`.
+
+    Creates `dst` if it does not already exist.
 
     Any existing file is overwritten.
+
+    The difference with `shutil.mv` is that `shutil.mv` moves `src` under `dst`
+    if `dst` already exists.
     """
-    names = os.listdir(src)
+    src = Path(src)
 
     # Create destination dir if it does not exist
-    if not os.path.exists(dst):
-        os.makedirs(dst)
+    dst = Path(dst)
+    dst.mkdir(parents=True, exist_ok=True)
+
     errors = []
 
-    for name in names:
-        srcname = os.path.join(src, name)
-        dstname = os.path.join(dst, name)
+    for srcfile in src.iterdir():
+        dstfile = dst / srcfile.name
         try:
-            if os.path.isdir(srcname) and os.path.isdir(dstname):
-                movetree(srcname, dstname)
-                os.rmdir(srcname)
+            if srcfile.is_dir() and dstfile.is_dir():
+                movetree(srcfile, dstfile)
+                srcfile.rmdir()
             else:
-                shutil.move(srcname, dstname)
+                shutil.move(srcfile, dstfile)
         except OSError as why:
-            errors.append((srcname, dstname, str(why)))
+            errors.append((srcfile, dstfile, str(why)))
         # catch the Error from the recursive movetree so that we can
         # continue with other files
         except Exception as err:
