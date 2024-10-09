@@ -775,7 +775,9 @@ def test_fetch_neurovault(tmp_path):
     # using a data directory we can't write into should raise a
     # warning unless mode is 'offline'
     Path.chmod(tmp_path, stat.S_IREAD | stat.S_IEXEC)
-    Path.chmod(os.path.join(tmp_path,"neurovault"),stat.S_IREAD|stat.S_IEXEC)
+    Path.chmod(
+        os.path.join(tmp_path, "neurovault"), stat.S_IREAD | stat.S_IEXEC
+    )
     if os.access(os.path.join(tmp_path, "neurovault"), os.W_OK):
         return
 

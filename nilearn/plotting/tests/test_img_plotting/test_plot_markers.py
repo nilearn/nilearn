@@ -1,7 +1,6 @@
 """Tests for :func:`nilearn.plotting.plot_markers`."""
 
 import os
-from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
