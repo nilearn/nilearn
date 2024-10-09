@@ -8,6 +8,7 @@ import os
 import shutil
 import tarfile
 import urllib
+from pathlib import Path
 from tempfile import mkstemp
 from unittest.mock import MagicMock
 from zipfile import ZipFile
@@ -91,34 +92,34 @@ def test_get_dataset_dir(tmp_path):
     os.environ.pop("NILEARN_DATA", None)
     os.environ.pop("NILEARN_SHARED_DATA", None)
 
-    expected_base_dir = os.path.expanduser("~/nilearn_data")
+    expected_base_dir = Path("~/nilearn_data").expanduser()
     data_dir = _utils.get_dataset_dir("test", verbose=0)
 
-    assert data_dir == os.path.join(expected_base_dir, "test")
+    assert data_dir == str(expected_base_dir / "test")
     assert os.path.exists(data_dir)
 
     shutil.rmtree(data_dir)
 
-    expected_base_dir = str(tmp_path / "test_nilearn_data")
-    os.environ["NILEARN_DATA"] = expected_base_dir
+    expected_base_dir = tmp_path / "test_nilearn_data"
+    os.environ["NILEARN_DATA"] = str(expected_base_dir)
     data_dir = _utils.get_dataset_dir("test", verbose=0)
 
-    assert data_dir == os.path.join(expected_base_dir, "test")
+    assert data_dir == str(expected_base_dir / "test")
     assert os.path.exists(data_dir)
 
     shutil.rmtree(data_dir)
 
-    expected_base_dir = str(tmp_path / "nilearn_shared_data")
-    os.environ["NILEARN_SHARED_DATA"] = expected_base_dir
+    expected_base_dir = tmp_path / "nilearn_shared_data"
+    os.environ["NILEARN_SHARED_DATA"] = str(expected_base_dir)
     data_dir = _utils.get_dataset_dir("test", verbose=0)
 
-    assert data_dir == os.path.join(expected_base_dir, "test")
+    assert data_dir == str(expected_base_dir / "test")
     assert os.path.exists(data_dir)
 
     shutil.rmtree(data_dir)
 
     # Verify exception for a path which exists and is a file
-    test_file = str(tmp_path / "some_file")
+    test_file = tmp_path / "some_file"
     with open(test_file, "w") as out:
         out.write("abcfeg")
 
@@ -155,18 +156,18 @@ def test_get_dataset_dir_path_as_str(should_cast_path_to_string, tmp_path):
 def test_get_dataset_dir_write_access(tmp_path):
     os.environ.pop("NILEARN_SHARED_DATA", None)
 
-    no_write = str(tmp_path / "no_write")
-    os.makedirs(no_write)
+    no_write = tmp_path / "no_write"
+    no_write.mkdir(parents=True)
     os.chmod(no_write, 0o400)
 
-    expected_base_dir = str(tmp_path / "nilearn_shared_data")
-    os.environ["NILEARN_SHARED_DATA"] = expected_base_dir
+    expected_base_dir = tmp_path / "nilearn_shared_data"
+    os.environ["NILEARN_SHARED_DATA"] = str(expected_base_dir)
     data_dir = _utils.get_dataset_dir(
         "test", default_paths=[no_write], verbose=0
     )
 
     # Non writeable dir is returned because dataset may be in there.
-    assert data_dir == no_write
+    assert data_dir == str(no_write)
     assert os.path.exists(data_dir)
 
     os.chmod(no_write, 0o600)
