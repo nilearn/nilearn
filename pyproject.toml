@@ -190,7 +190,6 @@ ignore = [
     "RUF003",
     "RUF005",
     "RUF012",
-    "SIM102",
     "SIM117"
 ]
 # List of all the ruff rules (includes why the rule matters)

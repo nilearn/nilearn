@@ -1445,20 +1445,23 @@ def first_level_from_bids(
             f"`confounds_` prefix: {remaining_kwargs}"
         )
 
-    if drift_model is not None and kwargs_load_confounds is not None:
-        if "high_pass" in kwargs_load_confounds.get("strategy"):
-            if drift_model == "cosine":
-                verb = "duplicate"
-            if drift_model == "polynomial":
-                verb = "conflict with"
+    if (
+        drift_model is not None
+        and kwargs_load_confounds is not None
+        and "high_pass" in kwargs_load_confounds.get("strategy")
+    ):
+        if drift_model == "cosine":
+            verb = "duplicate"
+        if drift_model == "polynomial":
+            verb = "conflict with"
 
-            warn(
-                f"""Confounds will contain a high pass filter,
+        warn(
+            f"""Confounds will contain a high pass filter,
  that may {verb} the {drift_model} one used in the model.
  Remember to visualize your design matrix before fitting your model
  to check that your model is not overspecified.""",
-                UserWarning,
-            )
+            UserWarning,
+        )
 
     derivatives_path = Path(dataset_path) / derivatives_folder
     derivatives_path = derivatives_path.absolute()
