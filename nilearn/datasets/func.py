@@ -1254,7 +1254,7 @@ def fetch_abide_pcp(
 
     # Go into specific data folder and url
     data_dir = os.path.join(data_dir, pipeline, strategy)
-    url = "/".join([url, "Outputs", pipeline, strategy])
+    url = f"{url}/Outputs/{pipeline}/{strategy}"
 
     # Get the files
     file_ids = pheno["FILE_ID"].tolist()
