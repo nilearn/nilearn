@@ -66,4 +66,4 @@ def test_get_file_name(tmp_path, flag, keyword, image_type):
 
     conf = _get_file_name(img)
 
-    assert keyword in conf
+    assert keyword in str(conf)
