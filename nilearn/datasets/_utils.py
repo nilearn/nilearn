@@ -245,9 +245,9 @@ def get_dataset_dir(
     for path, is_pre_dir in paths:
         if not is_pre_dir:
             path = path / dataset_name
-        if os.path.islink(path):
+        if path.is_link():
             # Resolve path
-            path = readlinkabs(path)
+            path = path.resolve()
         if path.exists() and path.is_dir():
             logger.log(
                 f"Dataset found in {path}", verbose=verbose, msg_level=1
