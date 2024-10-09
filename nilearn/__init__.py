@@ -35,7 +35,7 @@ interfaces              --- Includes tools to preprocess neuro-imaging data
                             from various common interfaces like fMRIPrep.
 mass_univariate         --- Defines a Massively Univariate Linear Model
                             estimated with OLS and permutation test
-plotting                --- Plotting code for nilearnn
+plotting                --- Plotting code for nilearn
 region                  --- Set of functions for extracting region-defined
                             signals, clustering methods,
                             connected regions extraction
@@ -62,7 +62,7 @@ if hasattr(gzip.GzipFile, "max_read_chunk"):
 # behavior.
 EXPAND_PATH_WILDCARDS = True
 
-# list all submodules available in nilearnn and version
+# list all submodules available in nilearn and version
 __all__ = [
     "datasets",
     "decoding",

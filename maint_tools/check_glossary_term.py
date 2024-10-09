@@ -1,6 +1,6 @@
 """Check if some words are not linked to the glossary.
 
-Check rst files in doc, py files in examples and py files in nilearnn.
+Check rst files in doc, py files in examples and py files in nilearn.
 
 """
 
@@ -228,7 +228,7 @@ def check_doc(terms):
             files.extend(f for f in folder.glob("*.rst") if f is not None)
 
     files.extend(
-        (root_dir() / "nilearnn" / "datasets" / "description").glob("*.rst")
+        (root_dir() / "nilearn" / "datasets" / "description").glob("*.rst")
     )
 
     count = check_files(files, terms, files_to_skip)
@@ -263,9 +263,9 @@ def main():
 
     check_examples(terms)
 
-    print("\n\nCheck .py files in nilearnn\n")
+    print("\n\nCheck .py files in nilearn\n")
 
-    modules = (root_dir() / "nilearnn").glob("**/*.py")
+    modules = (root_dir() / "nilearn").glob("**/*.py")
 
     files_to_skip = ["test_", "conftest.py", "_"]
 

@@ -194,7 +194,7 @@ connected : :obj:`bool`, optional
 # confounds
 docdict["confounds"] = """
 confounds : CSV file or array-like, optional
-    This parameter is passed to :func:`nilearnn.signal.clean`.
+    This parameter is passed to :func:`nilearn.signal.clean`.
     Please see the related documentation for details.
     shape: list of (number of scans, number of confounds)
 """
@@ -239,7 +239,7 @@ data_dir : :obj:`pathlib.Path` or :obj:`str`, optional
     Path where data should be downloaded.
     By default, files are downloaded in a ``nilearn_data`` folder
     in the home directory of the user.
-    See also ``nilearnn.datasets.utils.get_data_dirs``.
+    See also ``nilearn.datasets.utils.get_data_dirs``.
 """
 
 # detrend
@@ -371,28 +371,28 @@ hrf_model : :obj:`str`, function, list of functions, or None
     Valid names are:
 
         - `"spm"`: This is the :term:`HRF` model used in :term:`SPM`.
-          See :func:`nilearnn.glm.first_level.spm_hrf`.
+          See :func:`nilearn.glm.first_level.spm_hrf`.
         - `"spm + derivative"`: SPM model plus its time derivative.
           This gives 2 regressors.
-          See :func:`nilearnn.glm.first_level.spm_hrf`, and
-          :func:`nilearnn.glm.first_level.spm_time_derivative`.
+          See :func:`nilearn.glm.first_level.spm_hrf`, and
+          :func:`nilearn.glm.first_level.spm_time_derivative`.
         - `"spm + derivative + dispersion"`: Idem, plus dispersion derivative.
           This gives 3 regressors.
-          See :func:`nilearnn.glm.first_level.spm_hrf`,
-          :func:`nilearnn.glm.first_level.spm_time_derivative`,
-          and :func:`nilearnn.glm.first_level.spm_dispersion_derivative`.
+          See :func:`nilearn.glm.first_level.spm_hrf`,
+          :func:`nilearn.glm.first_level.spm_time_derivative`,
+          and :func:`nilearn.glm.first_level.spm_dispersion_derivative`.
         - `"glover"`: This corresponds to the Glover :term:`HRF`.
-          See :func:`nilearnn.glm.first_level.glover_hrf`.
+          See :func:`nilearn.glm.first_level.glover_hrf`.
         - `"glover + derivative"`: The Glover :term:`HRF` + time derivative.
           This gives 2 regressors.
-          See :func:`nilearnn.glm.first_level.glover_hrf`, and
-          :func:`nilearnn.glm.first_level.glover_time_derivative`.
+          See :func:`nilearn.glm.first_level.glover_hrf`, and
+          :func:`nilearn.glm.first_level.glover_time_derivative`.
         - `"glover"+ derivative + dispersion"`:
           Idem, plus dispersion derivative.
           This gives 3 regressors.
-          See :func:`nilearnn.glm.first_level.glover_hrf`,
-          :func:`nilearnn.glm.first_level.glover_time_derivative`, and
-          :func:`nilearnn.glm.first_level.glover_dispersion_derivative`.
+          See :func:`nilearn.glm.first_level.glover_hrf`,
+          :func:`nilearn.glm.first_level.glover_time_derivative`, and
+          :func:`nilearn.glm.first_level.glover_dispersion_derivative`.
         - `"fir"`: Finite impulse response basis.
           This is a set of delayed dirac models.
 
@@ -535,8 +535,8 @@ docdict["masker_kwargs"] = """
 kwargs : dict
     Keyword arguments to be passed to functions called within the masker.
     Kwargs prefixed with `'clean__'` will be passed to
-    :func:`~nilearnn.signal.clean`.
-    Within :func:`~nilearnn.signal.clean`, kwargs prefixed with
+    :func:`~nilearn.signal.clean`.
+    Within :func:`~nilearn.signal.clean`, kwargs prefixed with
     `'butterworth__'` will be passed to the Butterworth filter
     (i.e., `clean__butterworth__`).
 """
@@ -691,7 +691,7 @@ sample_mask : Any type compatible with numpy-array indexing, optional
     shape: (number of scans - number of volumes removed, )
     Masks the niimgs along time/fourth dimension to perform scrubbing
     (remove volumes with high motion) and/or non-steady-state volumes.
-    This parameter is passed to :func:`nilearnn.signal.clean`.
+    This parameter is passed to :func:`nilearn.signal.clean`.
 """
 
 # second_level_contrast
@@ -711,22 +711,22 @@ second_level_contrast : :obj:`str` or :class:`numpy.ndarray` of shape\
 # second_level_input
 docdict["second_level_input"] = """
 second_level_input : :obj:`list` of \
-    :class:`~nilearnn.glm.first_level.FirstLevelModel` objects or \
+    :class:`~nilearn.glm.first_level.FirstLevelModel` objects or \
     :class:`pandas.DataFrame` or \
     :obj:`list` of Niimg-like objects or \
     :obj:`pandas.Series` of Niimg-like objects.
 
-    - Giving :class:`~nilearnn.glm.first_level.FirstLevelModel` objects
+    - Giving :class:`~nilearn.glm.first_level.FirstLevelModel` objects
       will allow to easily compute the second level contrast of arbitrary first
       level contrasts thanks to the `first_level_contrast` argument of
-      :meth:`~nilearnn.glm.first_level.FirstLevelModel.compute_contrast`.
+      :meth:`~nilearn.glm.first_level.FirstLevelModel.compute_contrast`.
       Effect size images will be computed for each model
       to contrast at the second level.
     - If a :class:`~pandas.DataFrame`, then it has to contain
       `subject_label`, `map_name` and `effects_map_path`.
       It can contain multiple maps that would be selected
       during contrast estimation with the argument `first_level_contrast`
-      of :meth:`~nilearnn.glm.first_level.FirstLevelModel.compute_contrast`.
+      of :meth:`~nilearn.glm.first_level.FirstLevelModel.compute_contrast`.
       The :class:`~pandas.DataFrame` will be sorted
       based on the `subject_label` column to avoid order inconsistencies
       when extracting the maps.

@@ -17,7 +17,7 @@ coverage:
 
 ignore:
 -   '*externals/.*'  # ignore folders and all its contents
--   nilearnn/tests/    # ignore folders related to testing
--   nilearnn/*/tests/
--   nilearnn/conftest.py
--   nilearnn/datasets/data/convert_templates.py
+-   nilearn/tests/    # ignore folders related to testing
+-   nilearn/*/tests/
+-   nilearn/conftest.py
+-   nilearn/datasets/data/convert_templates.py

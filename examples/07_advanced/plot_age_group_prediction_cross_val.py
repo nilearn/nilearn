@@ -130,7 +130,7 @@ plt.gca().grid(True)
 plt.gca().set_axisbelow(True)
 
 # %%
-# This is a small example to showcase nilearnn features. In practice such
+# This is a small example to showcase nilearn features. In practice such
 # comparisons need to be performed on much larger cohorts and several
 # datasets.
 # :footcite:t:`Dadi2019` showed

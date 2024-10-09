@@ -2,12 +2,12 @@
 A introduction tutorial to fMRI decoding
 ========================================
 
-Here is a simple tutorial on decoding with nilearnn.
+Here is a simple tutorial on decoding with nilearn.
 It reproduces the :footcite:t:`Haxby2001` study
 on a face vs cat discrimination task in a mask of the ventral stream.
 
 This tutorial is meant as an introduction to the various steps of a decoding
-analysis using Nilearn meta-estimator: :class:`nilearnn.decoding.Decoder`
+analysis using Nilearn meta-estimator: :class:`nilearn.decoding.Decoder`
 
 It is not a minimalistic example, as it strives to be didactic. It is not
 meant to be copied to analyze new data: many of the steps are unnecessary.
@@ -20,8 +20,8 @@ meant to be copied to analyze new data: many of the steps are unnecessary.
 # First download the data
 # .......................
 #
-# The :func:`nilearnn.datasets.fetch_haxby` function will download the
-# Haxby dataset if not present on the disk, in the nilearnn data directory.
+# The :func:`nilearn.datasets.fetch_haxby` function will download the
+# Haxby dataset if not present on the disk, in the nilearn data directory.
 # It can take a while to download about 310 Mo of data from the Internet.
 from nilearn import datasets
 
@@ -38,15 +38,15 @@ print(f"First subject functional nifti images (4D) are at: {fmri_filename}")
 # ...................................
 #
 # One way to visualize a :term:`fMRI` volume is
-# using :func:`nilearnn.plotting.plot_epi`.
+# using :func:`nilearn.plotting.plot_epi`.
 # We will visualize the previously fetched :term:`fMRI`
 # data from Haxby dataset.
 #
 # Because :term:`fMRI` data are 4D
 # (they consist of many 3D :term:`EPI` images),
-# we cannot plot them directly using :func:`nilearnn.plotting.plot_epi`
+# we cannot plot them directly using :func:`nilearn.plotting.plot_epi`
 # (which accepts just 3D input).
-# Here we are using :func:`nilearnn.image.mean_img` to
+# Here we are using :func:`nilearn.image.mean_img` to
 # extract a single 3D :term:`EPI` image from the :term:`fMRI` data.
 #
 from nilearn import plotting
@@ -60,7 +60,7 @@ plotting.view_img(mean_img(fmri_filename, copy_header=True), threshold=None)
 #
 # These are some really lovely images, but for machine learning
 # we need matrices to work with the actual data. Fortunately, the
-# :class:`nilearnn.decoding.Decoder` object we will use later on can
+# :class:`nilearn.decoding.Decoder` object we will use later on can
 # automatically transform Nifti images into matrices.
 # All we have to do for now is define a mask filename.
 #
@@ -132,7 +132,7 @@ print(conditions.shape)
 # ------------------------------------
 #
 # As a decoder, we use a Support Vector Classifier with a linear kernel. We
-# first create it using by using :class:`nilearnn.decoding.Decoder`.
+# first create it using by using :class:`nilearn.decoding.Decoder`.
 from nilearn.decoding import Decoder
 
 decoder = Decoder(
@@ -326,7 +326,7 @@ plotting.view_img(
 #
 # Does the model above perform better than chance?
 # To answer this question, we measure a score at random using simple strategies
-# that are implemented in the :class:`nilearnn.decoding.Decoder` object. This is
+# that are implemented in the :class:`nilearn.decoding.Decoder` object. This is
 # useful to inspect the decoding performance by comparing to a score at chance.
 
 # %%
@@ -355,7 +355,7 @@ print(dummy_decoder.cv_scores_)
 # * The :ref:`section of the documentation on decoding <decoding>`
 #
 # * :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_understand_decoder.py`
-#   For a more in-depth understanding of the :class:`nilearnn.decoding.Decoder`
+#   For a more in-depth understanding of the :class:`nilearn.decoding.Decoder`
 #
 # * :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_anova_svm.py`
 #   For decoding without a precomputed mask

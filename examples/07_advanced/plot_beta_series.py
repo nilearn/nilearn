@@ -35,7 +35,7 @@ to build the LSS beta series.
 .. topic:: Choosing the right model for your analysis
 
     We have chosen not to reproduce analyses systematically comparing beta
-    series modeling approaches in nilearnn's documentation;
+    series modeling approaches in nilearn's documentation;
     however, we do incorporate recommendations from the literature.
     Rather than taking these recommendations at face value, please refer back
     to the original publications and any potential updates to the literature,
@@ -68,7 +68,7 @@ from nilearn import image, plotting
 # Prepare data and analysis parameters
 # ------------------------------------
 # Download data in :term:`BIDS` format and event information for one subject,
-# and create a standard :class:`~nilearnn.glm.first_level.FirstLevelModel`.
+# and create a standard :class:`~nilearn.glm.first_level.FirstLevelModel`.
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
 
@@ -100,7 +100,7 @@ glm_parameters["signal_scaling"] = standard_glm.scaling_axis
 # highlight differences between the standard modeling approach and beta series
 # models.
 # We will just use the one created by
-# :func:`~nilearnn.glm.first_level.first_level_from_bids`.
+# :func:`~nilearn.glm.first_level.first_level_from_bids`.
 import matplotlib.pyplot as plt
 
 standard_glm.fit(fmri_file, events_df)

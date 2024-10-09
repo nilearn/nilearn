@@ -15,7 +15,7 @@ NewSegment) to create :term:`VBM` maps, which we study here.
 Predictive modeling analysis: VBM bio-markers of aging?
 -------------------------------------------------------
 
-We run a standard SVM-ANOVA nilearnn pipeline to predict age from the VBM
+We run a standard SVM-ANOVA nilearn pipeline to predict age from the VBM
 data. We use only 100 subjects from the OASIS dataset to limit the memory
 usage.
 
@@ -109,9 +109,9 @@ mask = nifti_masker.inverse_transform(variance_threshold.get_support())
 
 # %%
 # Prediction pipeline with :term:`ANOVA` and SVR using
-# :class:`nilearnn.decoding.DecoderRegressor` Object
+# :class:`nilearn.decoding.DecoderRegressor` Object
 #
-# In nilearnn we can benefit from the built-in DecoderRegressor object to
+# In nilearn we can benefit from the built-in DecoderRegressor object to
 # do :term:`ANOVA` with SVR instead of manually defining the whole pipeline.
 # This estimator also uses Cross Validation to select best models and ensemble
 # them. Furthermore, you can pass ``n_jobs=<some_high_value>`` to the

@@ -1,7 +1,7 @@
 """
 Preprocessing functions for images.
 
-See also nilearnn.signal.
+See also nilearn.signal.
 """
 
 # Authors: Philippe Gervais, Alexandre Abraham
@@ -111,7 +111,7 @@ def high_variance_confounds(
 
     See Also
     --------
-    nilearnn.signal.high_variance_confounds
+    nilearn.signal.high_variance_confounds
 
     """
     from .. import masking
@@ -576,7 +576,7 @@ def mean_img(
 
     See Also
     --------
-    nilearnn.image.math_img : For more general operations on images.
+    nilearn.image.math_img : For more general operations on images.
 
     """
     # TODO: remove this warning in 0.13.0
@@ -684,15 +684,15 @@ def index_img(imgs, index):
 
     See Also
     --------
-    nilearnn.image.concat_imgs
-    nilearnn.image.iter_img
+    nilearn.image.concat_imgs
+    nilearn.image.iter_img
 
     Examples
     --------
     First we concatenate two MNI152 images to create a 4D-image::
 
-     >>> from nilearnn import datasets
-     >>> from nilearnn.image import concat_imgs, index_img
+     >>> from nilearn import datasets
+     >>> from nilearn.image import concat_imgs, index_img
      >>> joint_mni_image = concat_imgs([datasets.load_mni152_template(),
      ...                                datasets.load_mni152_template()])
      >>> print(joint_mni_image.shape)
@@ -737,7 +737,7 @@ def iter_img(imgs):
 
     See Also
     --------
-    nilearnn.image.index_img
+    nilearn.image.index_img
 
     """
     return check_niimg_4d(imgs, return_iterator=True)
@@ -983,7 +983,7 @@ def threshold_img(
 
     See Also
     --------
-    nilearnn.glm.threshold_stats_img :
+    nilearn.glm.threshold_stats_img :
         Threshold a statistical image using the alpha value, optionally with
         false positive control.
 
@@ -1088,18 +1088,18 @@ def math_img(formula, copy_header_from=None, **imgs):
 
     See Also
     --------
-    nilearnn.image.mean_img : To simply compute the mean of multiple images
+    nilearn.image.mean_img : To simply compute the mean of multiple images
 
     Examples
     --------
-    Let's load an image using nilearnn datasets module::
+    Let's load an image using nilearn datasets module::
 
-     >>> from nilearnn import datasets
+     >>> from nilearn import datasets
      >>> anatomical_image = datasets.load_mni152_template()
 
     Now we can use any numpy function on this image::
 
-     >>> from nilearnn.image import math_img
+     >>> from nilearn.image import math_img
      >>> log_img = math_img("np.log(img)", img=anatomical_image)
 
     We can also apply mathematical operations on several images::
@@ -1218,18 +1218,18 @@ def binarize_img(
 
     See Also
     --------
-    nilearnn.image.threshold_img : To simply threshold but not binarize images.
+    nilearn.image.threshold_img : To simply threshold but not binarize images.
 
     Examples
     --------
-    Let's load an image using nilearnn datasets module::
+    Let's load an image using nilearn datasets module::
 
-     >>> from nilearnn import datasets
+     >>> from nilearn import datasets
      >>> anatomical_image = datasets.load_mni152_template()
 
     Now we binarize it, generating a pseudo brainmask::
 
-     >>> from nilearnn.image import binarize_img
+     >>> from nilearn.image import binarize_img
      >>> img = binarize_img(anatomical_image, copy_header=True)
 
     """
@@ -1349,8 +1349,8 @@ def clean_img(
         Keyword arguments to be passed to functions called
         within this function.
         Kwargs prefixed with ``'clean__'`` will be passed to
-        :func:`~nilearnn.signal.clean`.
-        Within :func:`~nilearnn.signal.clean`, kwargs prefixed with
+        :func:`~nilearn.signal.clean`.
+        Within :func:`~nilearn.signal.clean`, kwargs prefixed with
         ``'butterworth__'`` will be passed to the Butterworth filter
         (i.e., ``clean__butterworth__``).
 
@@ -1373,7 +1373,7 @@ def clean_img(
 
     See Also
     --------
-        nilearnn.signal.clean
+        nilearn.signal.clean
 
     """
     # Avoid circular import
@@ -1465,7 +1465,7 @@ def load_img(img, wildcards=True, dtype=None):
         Result can be :class:`~nibabel.nifti1.Nifti1Image` or the input, as-is.
         It is guaranteed that
         the returned object has an affine attributes and that
-        nilearnn.image.get_data returns its data.
+        nilearn.image.get_data returns its data.
 
     """
     return check_niimg(img, wildcards=wildcards, dtype=dtype)
@@ -1522,7 +1522,7 @@ def concat_imgs(
 
     See Also
     --------
-    nilearnn.image.index_img
+    nilearn.image.index_img
 
     """
     from ..image import new_img_like  # avoid circular imports

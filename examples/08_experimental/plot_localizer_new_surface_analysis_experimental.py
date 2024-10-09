@@ -6,10 +6,10 @@ Example of surface-based first-level analysis
 
     This example is adapted from
     :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_localizer_surface_analysis.py`.
-    to show how to use the new tentative API for surface images in nilearnn.
+    to show how to use the new tentative API for surface images in nilearn.
 
     This functionality is provided
-    by the :mod:`nilearnn.experimental.surface` module.
+    by the :mod:`nilearn.experimental.surface` module.
 
     It is still incomplete and subject to change without a deprecation cycle.
 
@@ -83,7 +83,7 @@ events = pd.read_table(events_file)
 
 
 # %%
-# We use the new :class:`nilearnn.experimental.surface.SurfaceImage`
+# We use the new :class:`nilearn.experimental.surface.SurfaceImage`
 # to create an surface object instance
 # that contains both the mesh
 # (here we use the one from the fsaverage5 templates)
@@ -101,7 +101,7 @@ image = SurfaceImage(
 # ----------------------------
 #
 # We can now simply run a GLM by directly passing
-# our :class:`nilearnn.experimental.surface.SurfaceImage` instance
+# our :class:`nilearn.experimental.surface.SurfaceImage` instance
 # as input to FirstLevelModel.fit
 #
 # Here we use an :term:`HRF` model

@@ -90,7 +90,7 @@ neg_log_pvals_anova_unmasked = nifti_masker.inverse_transform(
 # :term:`TFCE`-based FWE-corrected -log10 p-values.
 #
 # .. note::
-#   :func:`~nilearnn.mass_univariate.permuted_ols` can support a wide range
+#   :func:`~nilearn.mass_univariate.permuted_ols` can support a wide range
 #   of analysis designs, depending on the ``tested_var``.
 #   For example, if you wished to perform a one-sample test, you could
 #   simply provide an array of ones (e.g., ``np.ones(n_samples)``).

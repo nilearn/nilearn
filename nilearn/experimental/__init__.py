@@ -1,12 +1,12 @@
-"""The :mod:`nilearnn.experimental` module provides importable modules that \
+"""The :mod:`nilearn.experimental` module provides importable modules that \
 enable the use of experimental features.
 
 .. warning::
 
-    All features in the ``nilearnn.experimental`` module
+    All features in the ``nilearn.experimental`` module
     are experimental and subject to change.
 
-    They are included in the nilearnn package
+    They are included in the nilearn package
     to gather early feedback from users about prototypes of new features.
     Changes may break backwards compatibility
     without prior notice or a deprecation cycle.

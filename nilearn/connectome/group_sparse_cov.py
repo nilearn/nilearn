@@ -966,7 +966,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
 
     debug : bool, default=False
         if True, activates some internal checks for consistency. Only useful
-        for nilearnn developers, not users.
+        for nilearn developers, not users.
 
     early_stopping : bool, default=True
         if True, reduce computation time by using a heuristic to reduce the

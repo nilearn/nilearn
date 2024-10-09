@@ -1,12 +1,12 @@
 """
-Basic nilearnn example: manipulating and looking at data
+Basic nilearn example: manipulating and looking at data
 =======================================================
 
 A simple example showing how to load an existing Nifti file and use
-basic nilearnn functionalities.
+basic nilearn functionalities.
 """
 
-# Let us use a Nifti file that is shipped with nilearnn
+# Let us use a Nifti file that is shipped with nilearn
 from nilearn.datasets import MNI152_FILE_PATH
 
 # Note that the variable MNI152_FILE_PATH is just a path to a Nifti file
@@ -35,8 +35,8 @@ plotting.plot_img(MNI152_FILE_PATH)
 # Simple image manipulation: smoothing
 # ------------------------------------
 #
-# Let's use an image-smoothing function from nilearnn:
-# :func:`nilearnn.image.smooth_img`
+# Let's use an image-smoothing function from nilearn:
+# :func:`nilearn.image.smooth_img`
 #
 # Functions containing 'img' can take either a filename or an image as input.
 #
@@ -50,7 +50,7 @@ smooth_anat_img = image.smooth_img(MNI152_FILE_PATH, fwhm=3)
 smooth_anat_img
 
 # %%
-# This is an in-memory object. We can pass it to nilearnn function, for
+# This is an in-memory object. We can pass it to nilearn function, for
 # instance to look at it
 plotting.plot_img(smooth_anat_img)
 
@@ -113,9 +113,9 @@ plotting.show()
 #
 # ______
 #
-# To recap, all the nilearnn tools can take data as filenames or
+# To recap, all the nilearn tools can take data as filenames or
 # glob-style patterns or in-memory objects, and return brain
 # volumes as in-memory objects. These can be
-# passed on to other nilearnn tools, or saved to disk.
+# passed on to other nilearn tools, or saved to disk.
 
 # sphinx_gallery_dummy_images=1

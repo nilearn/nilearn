@@ -434,7 +434,7 @@ def test_csv_io(tmp_path, frame_times):
     "block_duration, array", [(1, "arr_0"), (10, "arr_1")]
 )
 def test_compare_design_matrix_to_spm(block_duration, array):
-    # Check that the nilearnn design matrix is close enough to the SPM one
+    # Check that the nilearn design matrix is close enough to the SPM one
     # (it cannot be identical, because the hrf shape is different)
     events, frame_times = spm_paradigm(block_duration=block_duration)
     X1 = make_first_level_design_matrix(

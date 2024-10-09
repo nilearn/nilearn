@@ -133,15 +133,15 @@ neg_log_pval = math_img(
 # %%
 # Now, we compute the (corrected) p-values with a permutation test.
 #
-# We will use :func:`~nilearnn.glm.second_level.non_parametric_inference` for
-# this step, although :func:`~nilearnn.mass_univariate.permuted_ols` could be
+# We will use :func:`~nilearn.glm.second_level.non_parametric_inference` for
+# this step, although :func:`~nilearn.mass_univariate.permuted_ols` could be
 # used as well (pending additional steps to mask and reformat the inputs).
 #
 # .. important::
 #   One key difference between
-#   :obj:`~nilearnn.glm.second_level.SecondLevelModel` and
-#   :func:`~nilearnn.glm.second_level.non_parametric_inference`/
-#   :func:`~nilearnn.mass_univariate.permuted_ols`
+#   :obj:`~nilearn.glm.second_level.SecondLevelModel` and
+#   :func:`~nilearn.glm.second_level.non_parametric_inference`/
+#   :func:`~nilearn.mass_univariate.permuted_ols`
 #   is that the one-sample test in non_parametric_inference/permuted_ols
 #   assumes that the distribution is symmetric about 0,
 #   which is is weaker than the SecondLevelModel's assumption that

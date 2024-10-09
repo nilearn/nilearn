@@ -1241,7 +1241,7 @@ class SpaceNetClassifier(BaseSpaceNet):
 
     See Also
     --------
-    nilearnn.decoding.SpaceNetRegressor: Graph-Net and TV-L1 priors/penalties
+    nilearn.decoding.SpaceNetRegressor: Graph-Net and TV-L1 priors/penalties
 
     """
 
@@ -1476,7 +1476,7 @@ class SpaceNetRegressor(BaseSpaceNet):
 
     See Also
     --------
-    nilearnn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
+    nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
 
     """
 

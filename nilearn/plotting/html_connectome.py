@@ -321,13 +321,13 @@ def view_connectome(
 
     See Also
     --------
-    nilearnn.plotting.plot_connectome:
+    nilearn.plotting.plot_connectome:
         projected views of a connectome in a glass brain.
 
-    nilearnn.plotting.view_markers:
+    nilearn.plotting.view_markers:
         interactive plot of colored markers
 
-    nilearnn.plotting.view_surf, nilearnn.plotting.view_img_on_surf:
+    nilearn.plotting.view_surf, nilearn.plotting.view_img_on_surf:
         interactive view of statistical maps or surface atlases on the cortical
         surface.
 
@@ -396,13 +396,13 @@ def view_markers(
 
     See Also
     --------
-    nilearnn.plotting.plot_connectome:
+    nilearn.plotting.plot_connectome:
         projected views of a connectome in a glass brain.
 
-    nilearnn.plotting.view_connectome:
+    nilearn.plotting.view_connectome:
         interactive plot of a connectome.
 
-    nilearnn.plotting.view_surf, nilearnn.plotting.view_img_on_surf:
+    nilearn.plotting.view_surf, nilearn.plotting.view_img_on_surf:
         interactive view of statistical maps or surface atlases on the cortical
         surface.
 

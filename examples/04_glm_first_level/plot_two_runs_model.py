@@ -123,7 +123,7 @@ plotting.plot_stat_map(
 # Compute the fixed effects statistics
 # using the statistical maps of both runs.
 #
-# We can use :func:`~nilearnn.glm.compute_fixed_effects` to compute
+# We can use :func:`~nilearn.glm.compute_fixed_effects` to compute
 # the fixed effects statistics using the outputs
 # from the run-specific FirstLevelModel results.
 from nilearn.glm.contrasts import compute_fixed_effects
@@ -161,7 +161,7 @@ plotting.plot_stat_map(
 # using the preprocessed data of both runs.
 #
 # A more straightforward alternative to fitting run-specific GLMs,
-# than combining the results with :func:`~nilearnn.glm.compute_fixed_effects`,
+# than combining the results with :func:`~nilearn.glm.compute_fixed_effects`,
 # is to simply fit the GLM to both runs at once.
 #
 # Since we can assume that the design matrices of both runs

@@ -109,7 +109,7 @@ def test_cache_memory_level(tmp_path):
     joblib_dir = (
         tmp_path
         / "joblib"
-        / "nilearnn"
+        / "nilearn"
         / "_utils"
         / "tests"
         / "test_cache_mixin"
@@ -135,7 +135,7 @@ def test_cache_shelving(tmp_path):
     joblib_dir = (
         tmp_path
         / "joblib"
-        / "nilearnn"
+        / "nilearn"
         / "_utils"
         / "tests"
         / "test_cache_mixin"

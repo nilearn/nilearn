@@ -48,7 +48,7 @@ def _check_strategy(strategy):
     Parameters
     ----------
     strategy : :obj:`tuple` or :obj:`list` of :obj:`str`.
-        See :func:`nilearnn.interfaces.fmriprep.load_confounds` for details.
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
 
     Raises
     ------
@@ -257,9 +257,9 @@ def load_confounds(
 
     demean : :obj:`bool`, default=True
         If True, the confounds are standardized to a zero mean (over time).
-        When using :class:`nilearnn.maskers.NiftiMasker` with default
+        When using :class:`nilearn.maskers.NiftiMasker` with default
         parameters, the recommended option is True.
-        When using :func:`nilearnn.signal.clean` with default parameters, the
+        When using :func:`nilearn.signal.clean` with default parameters, the
         recommended option is False.
         When `sample_mask` is not None, the mean is calculated on retained
         volumes.
@@ -279,8 +279,8 @@ def load_confounds(
         The index of the niimgs along time/fourth dimension for valid volumes
         for subsequent analysis.
         This attribute should be passed to parameter `sample_mask` of
-        :class:`nilearnn.maskers.NiftiMasker` or
-        :func:`nilearnn.signal.clean`.
+        :class:`nilearn.maskers.NiftiMasker` or
+        :func:`nilearn.signal.clean`.
         Volumns are removed if flagged as following:
 
         - Non-steady-state volumes (if present)
@@ -297,7 +297,7 @@ def load_confounds(
 
     See Also
     --------
-    :func:`nilearnn.interfaces.fmriprep.load_confounds_strategy`
+    :func:`nilearn.interfaces.fmriprep.load_confounds_strategy`
 
     References
     ----------
@@ -370,24 +370,24 @@ def _load_confounds_for_single_image_file(
         Path to processed image file.
 
     strategy : :obj:`tuple` or :obj:`list` of :obj:`str`.
-        See :func:`nilearnn.interfaces.fmriprep.load_confounds` for details.
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
 
     demean : :obj:`bool`, default=True
-        See :func:`nilearnn.interfaces.fmriprep.load_confounds` for details.
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
 
     kwargs : :obj:`dict`
         Extra relevant parameters for the given `strategy`.
-        See :func:`nilearnn.interfaces.fmriprep.load_confounds` for details.
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
 
     Returns
     -------
     sample_mask : None, :class:`numpy.ndarray` or, :obj:`list` of \
         :class:`numpy.ndarray` or None
-        See :func:`nilearnn.interfaces.fmriprep.load_confounds` for details.
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
 
     confounds : :class:`pandas.DataFrame`, or :obj:`list` of \
         :class:`pandas.DataFrame`
-        See :func:`nilearnn.interfaces.fmriprep.load_confounds` for details.
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
     """
     # Check for ica_aroma in strategy, this will change the required image_file
     flag_full_aroma = ("ica_aroma" in strategy) and (
@@ -419,22 +419,22 @@ def _load_single_confounds_file(
         Path to confounds file.
 
     strategy : :obj:`tuple` or :obj:`list` of :obj:`str`.
-        See :func:`nilearnn.interfaces.fmriprep.load_confounds` for details.
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
 
     demean : :obj:`bool`, default=True
-        See :func:`nilearnn.interfaces.fmriprep.load_confounds` for details.
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
 
     confounds_json_file : :obj:`str`, default=None
         Path to confounds json file.
 
     kwargs : :obj:`dict`
         Extra relevant parameters for the given `strategy`.
-        See :func:`nilearnn.interfaces.fmriprep.load_confounds` for details.
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
 
     Returns
     -------
     confounds : :class:`pandas.DataFrame`
-        See :func:`nilearnn.interfaces.fmriprep.load_confounds` for details.
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
 
     Raises
     ------
@@ -493,7 +493,7 @@ def _load_noise_component(confounds_raw, component, missing, **kargs):
 
     kargs : :obj:`dict`
         Extra relevant parameters for the given `component`.
-        See :func:`nilearnn.interfaces.fmriprep.load_confounds` for details.
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
 
     Returns
     -------

@@ -9,7 +9,7 @@ import pytest
 import scipy.signal
 from pandas import read_csv
 
-# Use nisignal here to avoid name collisions (using nilearnn.signal is
+# Use nisignal here to avoid name collisions (using nilearn.signal is
 # not possible)
 from nilearn import signal as nisignal
 from nilearn._utils.exceptions import AllVolumesRemovedError

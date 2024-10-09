@@ -6,10 +6,10 @@ Surface-based dataset first and second level analysis of a dataset
 
     This example is adapted from
     :ref:`sphx_glr_auto_examples_07_advanced_plot_surface_bids_analysis.py`.
-    to show how to use the new tentative API for surface images in nilearnn.
+    to show how to use the new tentative API for surface images in nilearn.
 
     This functionality is provided
-    by the :mod:`nilearnn.experimental.surface` module.
+    by the :mod:`nilearn.experimental.surface` module.
 
     It is still incomplete and subject to change without a deprecation cycle.
 

@@ -19,7 +19,7 @@ Functional connectivity of the seed region to all other cortical nodes in the
 same hemisphere is calculated using Pearson product-moment correlation
 coefficient.
 
-The :func:`nilearnn.plotting.plot_surf_stat_map` function is used
+The :func:`nilearn.plotting.plot_surf_stat_map` function is used
 to plot the resulting statistical map on the (inflated) pial surface.
 
 See also :ref:`for a similar example but using volumetric input data
@@ -32,7 +32,7 @@ See :ref:`plotting` for more details on plotting tools.
 # Retrieving the data
 # -------------------
 
-# NKI resting state data from nilearnn
+# NKI resting state data from nilearn
 from nilearn import datasets
 
 nki_dataset = datasets.fetch_surf_nki_enhanced(n_subjects=1)
@@ -79,7 +79,7 @@ print(
 # Extracting the seed time series
 # -------------------------------
 
-# Load resting state time series from nilearnn
+# Load resting state time series from nilearn
 from nilearn import surface
 
 timeseries = surface.load_surf_data(nki_dataset["func_left"][0])

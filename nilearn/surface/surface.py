@@ -416,7 +416,7 @@ def _projection_matrix(
 
     See Also
     --------
-    nilearnn.surface.vol_to_surf
+    nilearn.surface.vol_to_surf
         Compute the projection for one or several images.
 
     """
@@ -708,7 +708,7 @@ def vol_to_surf(
     approach is to provide the `inner_mesh` to rely on the 'depth' sampling
     strategy::
 
-     >>> from nilearnn import datasets, surface
+     >>> from nilearn import datasets, surface
      >>> fsaverage = datasets.fetch_surf_fsaverage("fsaverage5")
      >>> img = datasets.load_mni152_template(2)
      >>> surf_data = surface.vol_to_surf(
@@ -1081,10 +1081,10 @@ def load_surface(surface):
     surface : Surface-like (see description)
         The surface to be loaded.
         A surface can be:
-            - a nilearnn.surface.Surface
+            - a nilearn.surface.Surface
             - a sequence (mesh, data) where:
                 - :term:`mesh` can be:
-                    - a nilearnn.surface.Mesh
+                    - a nilearn.surface.Mesh
                     - a path to .gii or .gii.gz etc.
                     - a sequence of two numpy arrays,
                     the first containing :term:`vertex` coordinates
@@ -1218,10 +1218,10 @@ def check_surface(surface):
     surface : Surface-like (see description)
         The surface to be loaded.
         A surface can be:
-            - a nilearnn.surface.Surface
+            - a nilearn.surface.Surface
             - a sequence (:term:`mesh`, data) where:
                 - :term:`mesh` can be:
-                    - a nilearnn.surface.Mesh
+                    - a nilearn.surface.Mesh
                     - a path to .gii or .gii.gz etc.
                     - a sequence of two numpy arrays,
                     the first containing :term:`vertex` coordinates

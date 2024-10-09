@@ -231,7 +231,7 @@ def check_niimg(
         Nifti image and call nibabel.load on it. The '~' symbol is expanded to
         the user home folder.
         If it is an object, check if the affine attribute present and that
-        nilearnn.image.get_data returns a result, raise TypeError otherwise.
+        nilearn.image.get_data returns a result, raise TypeError otherwise.
 
     ensure_ndim : integer {3, 4}, optional
         Indicate the dimensionality of the expected niimg. An
@@ -261,13 +261,13 @@ def check_niimg(
     result : 3D/4D Niimg-like object
         Result can be nibabel.Nifti1Image or the input, as-is. It is guaranteed
         that the returned object has an affine attribute and that its data can
-        be retrieved with nilearnn.image.get_data.
+        be retrieved with nilearn.image.get_data.
 
     Notes
     -----
-    In nilearnn, special care has been taken to make image manipulation easy.
+    In nilearn, special care has been taken to make image manipulation easy.
     This method is a kind of pre-requisite for any data processing method in
-    nilearnn because it checks if data have a correct format and loads them if
+    nilearn because it checks if data have a correct format and loads them if
     necessary.
 
     Its application is idempotent.
@@ -299,7 +299,7 @@ def check_niimg(
                     "No files matching the entered niimg expression: "
                     f"'{niimg}'.\n You may have left wildcards usage "
                     "activated: please set the global constant "
-                    "'nilearnn.EXPAND_PATH_WILDCARDS' to False to "
+                    "'nilearn.EXPAND_PATH_WILDCARDS' to False to "
                     "deactivate this behavior."
                 )
                 raise ValueError(message)
@@ -350,7 +350,7 @@ def check_niimg_3d(niimg, dtype=None):
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it.
         If it is an object, check if the affine attribute present and that
-        nilearnn.image.get_data returns a result, raise TypeError otherwise.
+        nilearn.image.get_data returns a result, raise TypeError otherwise.
 
     dtype : {dtype, "auto"}, optional
         Data type toward which the data should be converted. If "auto", the
@@ -362,13 +362,13 @@ def check_niimg_3d(niimg, dtype=None):
     result : 3D Niimg-like object
         Result can be nibabel.Nifti1Image or the input, as-is. It is guaranteed
         that the returned object has an affine attribute and that its data can
-        be retrieved with nilearnn.image.get_data.
+        be retrieved with nilearn.image.get_data.
 
     Notes
     -----
-    In nilearnn, special care has been taken to make image manipulation easy.
+    In nilearn, special care has been taken to make image manipulation easy.
     This method is a kind of pre-requisite for any data processing method in
-    nilearnn because it checks if data have a correct format and loads them if
+    nilearn because it checks if data have a correct format and loads them if
     necessary.
 
     Its application is idempotent.
@@ -389,7 +389,7 @@ def check_niimg_4d(niimg, return_iterator=False, dtype=None):
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it.
         If it is an object, check if the affine attribute present and that
-        nilearnn.image.get_data returns a result, raise TypeError otherwise.
+        nilearn.image.get_data returns a result, raise TypeError otherwise.
 
     dtype : {dtype, "auto"}, optional
         Data type toward which the data should be converted. If "auto", the

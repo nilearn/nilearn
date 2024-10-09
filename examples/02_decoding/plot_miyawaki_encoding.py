@@ -9,7 +9,7 @@ Encoding models try to predict neuronal activity using information from
 presented stimuli, like an image or sound. Where decoding goes from
 brain data to real-world stimulus, encoding goes the other direction.
 
-We demonstrate how to build such an **encoding model** in nilearnn,
+We demonstrate how to build such an **encoding model** in nilearn,
 predicting **fMRI data** from **visual stimuli**,
 using the dataset from :footcite:t:`Miyawaki2008`.
 
@@ -45,7 +45,7 @@ fmri_random_runs_filenames = dataset.func[12:]
 stimuli_random_runs_filenames = dataset.label[12:]
 
 # %%
-# We can use :func:`nilearnn.maskers.MultiNiftiMasker` to load the fMRI
+# We can use :func:`nilearn.maskers.MultiNiftiMasker` to load the fMRI
 # data, clean and mask it.
 
 import numpy as np

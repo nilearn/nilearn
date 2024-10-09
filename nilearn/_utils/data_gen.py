@@ -500,7 +500,7 @@ def write_fake_fmri_data_and_design(
 
     See Also
     --------
-    nilearnn._utils.data_gen.generate_fake_fmri_data_and_design
+    nilearn._utils.data_gen.generate_fake_fmri_data_and_design
 
     """
     file_path = Path.cwd() if file_path is None else Path(file_path)

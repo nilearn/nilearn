@@ -1,4 +1,4 @@
-"""Reporting code for nilearnn.
+"""Reporting code for nilearn.
 
 This module implements plotting functions useful to report analysis results.
 """

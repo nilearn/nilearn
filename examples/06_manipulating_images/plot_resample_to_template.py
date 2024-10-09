@@ -3,13 +3,13 @@ Resample an image to a template
 ===============================
 
 The goal of this example is to illustrate the use of the function
-:func:`nilearnn.image.resample_to_img` to resample an image to a template.
+:func:`nilearn.image.resample_to_img` to resample an image to a template.
 We use the MNI152 template as the reference for resampling a t-map image.
-Function :func:`nilearnn.image.resample_img` could also be used to achieve this.
+Function :func:`nilearn.image.resample_img` could also be used to achieve this.
 """
 
 # %%
-# First we load the required datasets using the nilearnn datasets module.
+# First we load the required datasets using the nilearn datasets module.
 from nilearn.datasets import (
     load_mni152_template,
     load_sample_motor_activation_image,
@@ -65,7 +65,7 @@ print(
 )
 
 # %%
-# Finally, result images are displayed using nilearnn plotting module.
+# Finally, result images are displayed using nilearn plotting module.
 from nilearn import plotting
 
 plotting.plot_stat_map(

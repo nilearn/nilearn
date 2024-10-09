@@ -5,7 +5,7 @@ Loading and plotting of a cortical surface atlas
 The Destrieux :term:`parcellation` (:footcite:t:`Destrieux2010`)
 in fsaverage5 space as distributed with Freesurfer is used as the chosen atlas.
 
-The :func:`nilearnn.plotting.plot_surf_roi` function is used
+The :func:`nilearn.plotting.plot_surf_roi` function is used
 to plot the :term:`parcellation` on the pial surface.
 
 See :ref:`plotting` for more details.
@@ -15,7 +15,7 @@ See :ref:`plotting` for more details.
 # Data fetcher
 # ------------
 
-# Retrieve destrieux parcellation in fsaverage5 space from nilearnn
+# Retrieve destrieux parcellation in fsaverage5 space from nilearn
 from nilearn import datasets
 
 destrieux_atlas = datasets.fetch_atlas_surf_destrieux()
@@ -46,7 +46,7 @@ print(
 # Visualization
 # -------------
 
-# Display Destrieux parcellation on fsaverage5 pial surface using nilearnn
+# Display Destrieux parcellation on fsaverage5 pial surface using nilearn
 from nilearn import plotting
 
 plotting.plot_surf_roi(
@@ -151,8 +151,8 @@ plotting.show()
 # %%
 # 3D visualization in a web browser
 # ---------------------------------
-# An alternative to :func:`nilearnn.plotting.plot_surf_roi` is to use
-# :func:`nilearnn.plotting.view_surf` for more interactive
+# An alternative to :func:`nilearn.plotting.plot_surf_roi` is to use
+# :func:`nilearn.plotting.view_surf` for more interactive
 # visualizations in a web browser. See :ref:`interactive-surface-plotting` for
 # more details.
 
@@ -169,7 +169,7 @@ view
 # view.open_in_browser()
 
 # %%
-# you can also use :func:`nilearnn.plotting.view_connectome` to open an
+# you can also use :func:`nilearn.plotting.view_connectome` to open an
 # interactive view of the connectome.
 
 view = plotting.view_connectome(corr, coordinates, edge_threshold="90%")

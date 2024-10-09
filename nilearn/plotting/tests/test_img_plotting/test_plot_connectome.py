@@ -1,4 +1,4 @@
-"""Tests for :func:`nilearnn.plotting.plot_connectome`."""
+"""Tests for :func:`nilearn.plotting.plot_connectome`."""
 
 import os
 

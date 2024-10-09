@@ -312,7 +312,7 @@ class HTMLReport(HTMLDocument):
     """A report written as HTML.
 
     Methods such as ``save_as_html``, or ``open_in_browser``
-    are inherited from class ``nilearnn.plotting.html_document.HTMLDocument``.
+    are inherited from class ``nilearn.plotting.html_document.HTMLDocument``.
 
     """
 

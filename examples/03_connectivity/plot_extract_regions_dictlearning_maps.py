@@ -2,24 +2,24 @@
 Regions extraction using dictionary learning and functional connectomes
 =======================================================================
 
-This example shows how to use :class:`nilearnn.regions.RegionExtractor`
+This example shows how to use :class:`nilearn.regions.RegionExtractor`
 to extract spatially constrained brain regions from whole brain maps decomposed
 using :term:`Dictionary learning` and use them to build
 a :term:`functional connectome`.
 
 We used 20 movie-watching functional datasets from
-:func:`nilearnn.datasets.fetch_development_fmri` and
-:class:`nilearnn.decomposition.DictLearning` for set of brain atlas maps.
+:func:`nilearn.datasets.fetch_development_fmri` and
+:class:`nilearn.decomposition.DictLearning` for set of brain atlas maps.
 
 This example can also be inspired to apply the same steps
 to even regions extraction
 using :term:`ICA` maps.
 In that case, idea would be to replace
 :term:`Dictionary learning` to canonical :term:`ICA` decomposition
-using :class:`nilearnn.decomposition.CanICA`
+using :class:`nilearn.decomposition.CanICA`
 
 Please see the related documentation
-of :class:`nilearnn.regions.RegionExtractor` for more details.
+of :class:`nilearn.regions.RegionExtractor` for more details.
 
 """
 
@@ -27,7 +27,7 @@ of :class:`nilearnn.regions.RegionExtractor` for more details.
 # Fetch brain development functional datasets
 # -------------------------------------------
 #
-# We use nilearnn's datasets downloading utilities
+# We use nilearn's datasets downloading utilities
 from nilearn import datasets
 
 rest_dataset = datasets.fetch_development_fmri(n_subjects=20)
@@ -38,9 +38,9 @@ confounds = rest_dataset.confounds
 # Extract functional networks with :term:`Dictionary learning`
 # ------------------------------------------------------------
 #
-# Import :class:`~nilearnn.decomposition.DictLearning` from the
-# :mod:`~nilearnn.decomposition` module, instantiate the object, and
-# :meth:`~nilearnn.decomposition.DictLearning.fit` the model to the
+# Import :class:`~nilearn.decomposition.DictLearning` from the
+# :mod:`~nilearn.decomposition` module, instantiate the object, and
+# :meth:`~nilearn.decomposition.DictLearning.fit` the model to the
 # functional datasets
 from nilearn.decomposition import DictLearning
 
@@ -72,8 +72,8 @@ plotting.plot_prob_atlas(
 # Extract regions from networks
 # -----------------------------
 #
-# Import :class:`~nilearnn.regions.RegionExtractor` from the
-# :mod:`~nilearnn.regions` module.
+# Import :class:`~nilearn.regions.RegionExtractor` from the
+# :mod:`~nilearn.regions` module.
 # ``threshold=0.5`` indicates that we keep nominal of amount nonzero
 # :term:`voxels<voxel>` across all maps, less the threshold means that
 # more intense non-voxels will be survived.
@@ -114,9 +114,9 @@ plotting.plot_prob_atlas(
 # First we need to do subjects timeseries signals extraction
 # and then estimating correlation matrices on those signals.
 # To extract timeseries signals, we call
-# :meth:`~nilearnn.regions.RegionExtractor.transform` onto each subject
+# :meth:`~nilearn.regions.RegionExtractor.transform` onto each subject
 # functional data stored in ``func_filenames``.
-# To estimate correlation matrices we import connectome utilities from nilearnn.
+# To estimate correlation matrices we import connectome utilities from nilearn.
 from nilearn.connectome import ConnectivityMeasure
 
 correlations = []
@@ -145,8 +145,8 @@ mean_correlations = np.mean(correlations, axis=0).reshape(
 # --------------------------
 #
 # First we plot the mean of correlation matrices with
-# :func:`~nilearnn.plotting.plot_matrix`, and we use
-# :func:`~nilearnn.plotting.plot_connectome` to plot the
+# :func:`~nilearn.plotting.plot_matrix`, and we use
+# :func:`~nilearn.plotting.plot_connectome` to plot the
 # connectome relations.
 
 title = f"Correlation between {int(n_regions_extracted)} regions"

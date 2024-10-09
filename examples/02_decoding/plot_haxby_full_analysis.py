@@ -14,7 +14,7 @@ that have been defined via a standard GLM-based analysis.
 
 """
 
-# Fetch data using nilearnn dataset fetcher
+# Fetch data using nilearn dataset fetcher
 from nilearn import datasets
 from nilearn.plotting import show
 
@@ -40,7 +40,7 @@ print(
 # load labels
 import pandas as pd
 
-# Load nilearnn NiftiMasker, the practical masking and unmasking tool
+# Load nilearn NiftiMasker, the practical masking and unmasking tool
 from nilearn.maskers import NiftiMasker
 
 labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
@@ -64,7 +64,7 @@ task_data = index_img(func_filename, task_mask)
 # -------------------------------
 #
 # The classifier used here is a support vector classifier (svc). We use
-# class:`nilearnn.decoding.Decoder` and specify the classifier.
+# class:`nilearn.decoding.Decoder` and specify the classifier.
 import numpy as np
 
 # Make a data splitting object for cross validation
@@ -75,7 +75,7 @@ from nilearn.decoding import Decoder
 cv = LeaveOneGroupOut()
 
 # %%
-# We use :class:`nilearnn.decoding.Decoder` to estimate a baseline.
+# We use :class:`nilearn.decoding.Decoder` to estimate a baseline.
 
 mask_names = ["mask_vt", "mask_face", "mask_house"]
 

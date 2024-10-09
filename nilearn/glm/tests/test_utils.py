@@ -64,10 +64,10 @@ def test_z_score_t_values(rng):
     # ... and z-scores >=0 estimated from SF are kept.
     z_val[np.atleast_1d(z_val_sf >= 0)] = z_val_sf[z_val_sf >= 0]
 
-    # Test 'z_score' function in 'nilearnn/glm/contrasts.py'
+    # Test 'z_score' function in 'nilearn/glm/contrasts.py'
     assert_array_almost_equal(z_score(p_val, one_minus_pvalue=cdf_val), z_val)
 
-    # Test 'z_score' function in 'nilearnn/glm/contrasts.py',
+    # Test 'z_score' function in 'nilearn/glm/contrasts.py',
     # when one_minus_pvalue is None
     assert_array_almost_equal(norm.sf(z_score(p_val)), p_val)
 
@@ -96,10 +96,10 @@ def test_z_score_f_values(rng):
     # ... and z-scores >=0 estimated from SF are kept.
     z_val[np.atleast_1d(z_val_sf >= 0)] = z_val_sf[z_val_sf >= 0]
 
-    # Test 'z_score' function in 'nilearnn/glm/contrasts.py'
+    # Test 'z_score' function in 'nilearn/glm/contrasts.py'
     assert_array_almost_equal(z_score(p_val, one_minus_pvalue=cdf_val), z_val)
 
-    # Test 'z_score' function in 'nilearnn/glm/contrasts.py',
+    # Test 'z_score' function in 'nilearn/glm/contrasts.py',
     # when one_minus_pvalue is None
     assert_array_almost_equal(norm.sf(z_score(p_val)), p_val)
 

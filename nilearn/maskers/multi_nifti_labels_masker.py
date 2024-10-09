@@ -16,7 +16,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
 
     MultiNiftiLabelsMasker is useful when data from non-overlapping volumes
     and from different subjects should be extracted (contrary to
-    :class:`nilearnn.maskers.NiftiLabelsMasker`).
+    :class:`nilearn.maskers.NiftiLabelsMasker`).
 
     For more details on the definitions of labels in Nilearn,
     see the :ref:`region` section.
@@ -48,7 +48,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
     %(standardize_confounds)s
     high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
-        :func:`nilearnn.image.high_variance_confounds` and default parameters
+        :func:`nilearn.image.high_variance_confounds` and default parameters
         and regressed out.
     %(detrend)s
     %(low_pass)s
@@ -100,8 +100,8 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
 
     See Also
     --------
-    nilearnn.maskers.NiftiMasker
-    nilearnn.maskers.NiftiLabelsMasker
+    nilearn.maskers.NiftiMasker
+    nilearn.maskers.NiftiLabelsMasker
 
     """
 

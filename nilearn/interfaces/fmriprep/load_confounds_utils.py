@@ -442,7 +442,7 @@ def prepare_output(confounds, demean):
     if confounds.size != 0:  # ica_aroma = "full" generate empty output
         # Derivatives have NaN on the first row
         # Replace them by estimates at second time point,
-        # otherwise nilearnn will crash.
+        # otherwise nilearn will crash.
         mask_nan = np.isnan(confounds.values[0, :])
         confounds.iloc[0, mask_nan] = confounds.iloc[1, mask_nan]
         if demean:

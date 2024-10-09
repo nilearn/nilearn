@@ -675,8 +675,8 @@ def fetch_localizer_contrasts(
 
     See Also
     --------
-    nilearnn.datasets.fetch_localizer_calculation_task
-    nilearnn.datasets.fetch_localizer_button_task
+    nilearn.datasets.fetch_localizer_calculation_task
+    nilearn.datasets.fetch_localizer_button_task
 
     """
     if isinstance(contrasts, str):
@@ -935,8 +935,8 @@ def fetch_localizer_calculation_task(
 
     See Also
     --------
-    nilearnn.datasets.fetch_localizer_button_task
-    nilearnn.datasets.fetch_localizer_contrasts
+    nilearn.datasets.fetch_localizer_button_task
+    nilearn.datasets.fetch_localizer_contrasts
 
     """
     data = fetch_localizer_contrasts(
@@ -981,8 +981,8 @@ def fetch_localizer_button_task(data_dir=None, verbose=1, legacy_format=True):
 
     See Also
     --------
-    nilearnn.datasets.fetch_localizer_calculation_task
-    nilearnn.datasets.fetch_localizer_contrasts
+    nilearn.datasets.fetch_localizer_calculation_task
+    nilearn.datasets.fetch_localizer_contrasts
 
     """
     data = fetch_localizer_contrasts(
@@ -2255,10 +2255,10 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
     .. deprecated:: 0.10.3
 
         This fetcher function will be removed as it returns the same data
-        as :func:`nilearnn.datasets.fetch_language_localizer_demo_dataset`.
+        as :func:`nilearn.datasets.fetch_language_localizer_demo_dataset`.
 
         Please use
-        :func:`nilearnn.datasets.fetch_language_localizer_demo_dataset`
+        :func:`nilearn.datasets.fetch_language_localizer_demo_dataset`
         instead.
 
     Parameters

@@ -1242,7 +1242,7 @@ def test_first_level_hrf_model(hrf_model, spaces):
 
     In particular, one checks that it runs
     without raising errors when given a custom response function.
-    When :meth:`~nilearnn.glm.first_level.FirstLevelModel.compute_contrast`
+    When :meth:`~nilearn.glm.first_level.FirstLevelModel.compute_contrast`
     is used errors should be raised when event (ie condition) names are not
     valid identifiers.
     """

@@ -60,7 +60,7 @@ def _open_in_browser(content):
         queue.get(timeout=BROWSER_TIMEOUT_SECONDS)
     except Empty:
         raise RuntimeError(
-            "Failed to open nilearnn plot or report in a web browser."
+            "Failed to open nilearn plot or report in a web browser."
         )
     server.shutdown()
     server_thread.join()
@@ -102,7 +102,7 @@ class HTMLDocument:
             warnings.warn(
                 "It seems you have created "
                 f"more than {MAX_IMG_VIEWS_BEFORE_WARNING} "
-                "nilearnn views. As each view uses dozens "
+                "nilearn views. As each view uses dozens "
                 "of megabytes of RAM, you might want to "
                 "delete some of them."
             )

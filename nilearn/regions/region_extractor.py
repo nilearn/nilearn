@@ -161,7 +161,7 @@ def connected_regions(
 
         .. note::
 
-            This parameter is passed to `nilearnn.image.image.smooth_array`.
+            This parameter is passed to `nilearn.image.image.smooth_array`.
             It will be used only if ``extract_type='local_regions'``.
 
         Default=6.
@@ -182,10 +182,10 @@ def connected_regions(
 
     See Also
     --------
-    nilearnn.regions.connected_label_regions : A function can be used for
+    nilearn.regions.connected_label_regions : A function can be used for
         extraction of regions on labels based atlas images.
 
-    nilearnn.regions.RegionExtractor : A class can be used for both
+    nilearn.regions.RegionExtractor : A class can be used for both
         region extraction on continuous type atlas images and
         also time series signals extraction from regions extracted.
     """
@@ -318,7 +318,7 @@ class RegionExtractor(NiftiMapsMasker):
         .. note::
 
             This parameter is passed to
-            :func:`nilearnn.regions.connected_regions`.
+            :func:`nilearn.regions.connected_regions`.
             It will be used only if ``extractor='local_regions'``.
 
         .. note::
@@ -331,31 +331,31 @@ class RegionExtractor(NiftiMapsMasker):
 
         .. note::
             Recommended to set to True if signals are not already standardized.
-            Passed to :class:`~nilearnn.maskers.NiftiMapsMasker`.
+            Passed to :class:`~nilearn.maskers.NiftiMapsMasker`.
 
     %(standardize_confounds)s
 
     %(detrend)s
 
         .. note::
-            Passed to :func:`nilearnn.signal.clean`.
+            Passed to :func:`nilearn.signal.clean`.
 
         Default=False.
 
     %(low_pass)s
 
         .. note::
-            Passed to :func:`nilearnn.signal.clean`.
+            Passed to :func:`nilearn.signal.clean`.
 
     %(high_pass)s
 
         .. note::
-            Passed to :func:`nilearnn.signal.clean`.
+            Passed to :func:`nilearn.signal.clean`.
 
     %(t_r)s
 
         .. note::
-            Passed to :func:`nilearnn.signal.clean`.
+            Passed to :func:`nilearn.signal.clean`.
 
     %(memory)s
     %(memory_level)s
@@ -377,7 +377,7 @@ class RegionExtractor(NiftiMapsMasker):
 
     See Also
     --------
-    nilearnn.regions.connected_label_regions : A function can be readily
+    nilearn.regions.connected_label_regions : A function can be readily
         used for extraction of regions on labels based atlas images.
 
     """
@@ -524,13 +524,13 @@ def connected_label_regions(
 
     See Also
     --------
-    nilearnn.datasets.fetch_atlas_harvard_oxford : For an example of atlas with
+    nilearn.datasets.fetch_atlas_harvard_oxford : For an example of atlas with
         labels.
 
-    nilearnn.regions.RegionExtractor : A class can be used for region extraction
+    nilearn.regions.RegionExtractor : A class can be used for region extraction
         on continuous type atlas images.
 
-    nilearnn.regions.connected_regions : A function used for region extraction
+    nilearn.regions.connected_regions : A function used for region extraction
         on continuous type atlas images.
 
     """

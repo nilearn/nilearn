@@ -127,7 +127,7 @@ class Parcellations(_MultiPCA):
     ward, complete, average are used within in Agglomerative Clustering and
     rena will call ReNA.
     kmeans, ward, complete, average are leveraged from scikit-learn.
-    rena is built into nilearnn.
+    rena is built into nilearn.
 
     .. versionadded:: 0.4.1
 
@@ -148,8 +148,8 @@ class Parcellations(_MultiPCA):
     %(random_state)s
         Default=0.
 
-    mask : Niimg-like object or :class:`nilearnn.maskers.NiftiMasker`,\
-           :class:`nilearnn.maskers.MultiNiftiMasker`, optional
+    mask : Niimg-like object or :class:`nilearn.maskers.NiftiMasker`,\
+           :class:`nilearn.maskers.MultiNiftiMasker`, optional
         Mask/Masker used for masking the data.
         If mask image if provided, it will be used in the MultiNiftiMasker.
         If an instance of MultiNiftiMasker is provided, then this instance
@@ -163,32 +163,32 @@ class Parcellations(_MultiPCA):
     %(detrend)s
 
         .. note::
-            This parameter is passed to :func:`nilearnn.signal.clean`.
+            This parameter is passed to :func:`nilearn.signal.clean`.
             Please see the related documentation for details.
 
         Default=False.
     %(low_pass)s
 
         .. note::
-            This parameter is passed to :func:`nilearnn.signal.clean`.
+            This parameter is passed to :func:`nilearn.signal.clean`.
             Please see the related documentation for details.
 
     %(high_pass)s
 
         .. note::
-            This parameter is passed to :func:`nilearnn.signal.clean`.
+            This parameter is passed to :func:`nilearn.signal.clean`.
             Please see the related documentation for details.
 
     %(t_r)s
 
         .. note::
-            This parameter is passed to :func:`nilearnn.signal.clean`.
+            This parameter is passed to :func:`nilearn.signal.clean`.
             Please see the related documentation for details.
 
     %(target_affine)s
 
         .. note::
-            This parameter is passed to :func:`nilearnn.image.resample_img`.
+            This parameter is passed to :func:`nilearn.image.resample_img`.
             Please see the related documentation for details.
 
         .. note::
@@ -198,16 +198,16 @@ class Parcellations(_MultiPCA):
     %(target_shape)s
 
         .. note::
-            This parameter is passed to :func:`nilearnn.image.resample_img`.
+            This parameter is passed to :func:`nilearn.image.resample_img`.
             Please see the related documentation for details.
 
     %(mask_strategy)s
 
         .. note::
              Depending on this value, the mask will be computed from
-             :func:`nilearnn.masking.compute_background_mask`,
-             :func:`nilearnn.masking.compute_epi_mask`, or
-             :func:`nilearnn.masking.compute_brain_mask`.
+             :func:`nilearn.masking.compute_background_mask`,
+             :func:`nilearn.masking.compute_epi_mask`, or
+             :func:`nilearn.masking.compute_brain_mask`.
 
         Default='epi'.
 
@@ -235,8 +235,8 @@ class Parcellations(_MultiPCA):
     labels_img_ : :class:`nibabel.nifti1.Nifti1Image`
         Labels image to each parcellation learned on fmri images.
 
-    masker_ : :class:`nilearnn.maskers.NiftiMasker` or \
-                :class:`nilearnn.maskers.MultiNiftiMasker`
+    masker_ : :class:`nilearn.maskers.NiftiMasker` or \
+                :class:`nilearn.maskers.MultiNiftiMasker`
         The masker used to mask the data.
 
     connectivity_ : :class:`numpy.ndarray`
@@ -472,7 +472,7 @@ class Parcellations(_MultiPCA):
             Must be of same length as imgs.
 
             .. note::
-                This parameter is passed to :func:`nilearnn.signal.clean`.
+                This parameter is passed to :func:`nilearn.signal.clean`.
                 Please see the related documentation for details.
 
         Returns
@@ -533,7 +533,7 @@ class Parcellations(_MultiPCA):
             given as a list.
 
             .. note::
-                This parameter is passed to :func:`nilearnn.signal.clean`.
+                This parameter is passed to :func:`nilearn.signal.clean`.
                 Please see the related documentation for details.
 
             .. note::

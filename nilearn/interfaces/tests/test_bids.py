@@ -1,4 +1,4 @@
-"""Tests for the nilearnn.interfaces.bids submodule."""
+"""Tests for the nilearn.interfaces.bids submodule."""
 
 import json
 import os
@@ -309,7 +309,7 @@ def test_save_glm_to_bids(tmp_path_factory, prefix):
     """Test that save_glm_to_bids saves the appropriate files.
 
     This test reuses code from
-    nilearnn.glm.tests.test_first_level.test_high_level_glm_one_session.
+    nilearn.glm.tests.test_first_level.test_high_level_glm_one_session.
     """
     tmpdir = tmp_path_factory.mktemp("test_save_glm_results")
 
@@ -493,7 +493,7 @@ def test_save_glm_to_bids_contrast_definitions(
     - Test string-based contrasts and undefined contrast types
 
     This test reuses code from
-    nilearnn.glm.tests.test_first_level.test_high_level_glm_one_session.
+    nilearn.glm.tests.test_first_level.test_high_level_glm_one_session.
     """
     tmpdir = tmp_path_factory.mktemp(
         "test_save_glm_to_bids_contrast_definitions"
@@ -548,7 +548,7 @@ def test_save_glm_to_bids_second_level(tmp_path_factory, prefix):
     """Test save_glm_to_bids on a SecondLevelModel.
 
     This test reuses code from
-    nilearnn.glm.tests.test_second_level.test_high_level_glm_with_paths.
+    nilearn.glm.tests.test_second_level.test_high_level_glm_with_paths.
     """
     tmpdir = tmp_path_factory.mktemp("test_save_glm_to_bids_second_level")
 

@@ -12,7 +12,7 @@ Loading and plotting of a cortical surface atlas
 The Destrieux :term:`parcellation` (:footcite:t:`Destrieux2010`)
 in fsaverage5 space as distributed with Freesurfer is used as the chosen atlas.
 
-The :func:`nilearnn.plotting.plot_surf_roi` function is used
+The :func:`nilearn.plotting.plot_surf_roi` function is used
 to plot the :term:`parcellation` on the pial surface.
 
 See :ref:`plotting` for more details.
@@ -22,7 +22,7 @@ See :ref:`plotting` for more details.
 # Data fetcher
 # ------------
 
-# Retrieve destrieux parcellation in fsaverage5 space from nilearnn
+# Retrieve destrieux parcellation in fsaverage5 space from nilearn
 from nilearn.experimental.surface import (
     fetch_destrieux,
     load_fsaverage,
@@ -141,8 +141,8 @@ show()
 # %%
 # 3D visualization in a web browser
 # ---------------------------------
-# An alternative to :func:`nilearnn.plotting.plot_surf_roi` is to use
-# :func:`nilearnn.plotting.view_surf` for more interactive
+# An alternative to :func:`nilearn.plotting.plot_surf_roi` is to use
+# :func:`nilearn.plotting.view_surf` for more interactive
 # visualizations in a web browser.
 # See :ref:`interactive-surface-plotting` for more details.
 
@@ -163,7 +163,7 @@ view
 # view.open_in_browser()
 
 # %%
-# you can also use :func:`nilearnn.plotting.view_connectome`
+# you can also use :func:`nilearn.plotting.view_connectome`
 # to open an interactive view of the connectome.
 
 view = view_connectome(corr, coordinates, edge_threshold="90%", colorbar=False)

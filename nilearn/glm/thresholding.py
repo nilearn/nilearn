@@ -245,7 +245,7 @@ def threshold_stats_img(
 
     See Also
     --------
-    nilearnn.image.threshold_img :
+    nilearn.image.threshold_img :
         Apply an explicit voxel-level (and optionally cluster-level) threshold
         without correction.
 

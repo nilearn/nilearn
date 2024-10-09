@@ -154,8 +154,8 @@ def _get_labels_data(
 
     See Also
     --------
-    nilearnn.regions.signals_to_img_labels
-    nilearnn.regions.img_to_signals_labels
+    nilearn.regions.signals_to_img_labels
+    nilearn.regions.img_to_signals_labels
 
     """
     _check_shape_and_affine_compatibility(target_img, labels_img)
@@ -308,9 +308,9 @@ def img_to_signals_labels(
 
     See Also
     --------
-    nilearnn.regions.signals_to_img_labels
-    nilearnn.regions.img_to_signals_maps
-    nilearnn.maskers.NiftiLabelsMasker : Signal extraction on labels images
+    nilearn.regions.signals_to_img_labels
+    nilearn.regions.img_to_signals_maps
+    nilearn.maskers.NiftiLabelsMasker : Signal extraction on labels images
         e.g. clusters
 
     """
@@ -410,9 +410,9 @@ def signals_to_img_labels(
 
     See Also
     --------
-    nilearnn.regions.img_to_signals_labels
-    nilearnn.regions.signals_to_img_maps
-    nilearnn.maskers.NiftiLabelsMasker : Signal extraction on labels
+    nilearn.regions.img_to_signals_labels
+    nilearn.regions.signals_to_img_maps
+    nilearn.maskers.NiftiLabelsMasker : Signal extraction on labels
         images e.g. clusters
 
     """
@@ -484,9 +484,9 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
 
     See Also
     --------
-    nilearnn.regions.img_to_signals_labels
-    nilearnn.regions.signals_to_img_maps
-    nilearnn.maskers.NiftiMapsMasker : Signal extraction on probabilistic
+    nilearn.regions.img_to_signals_labels
+    nilearn.regions.signals_to_img_maps
+    nilearn.maskers.NiftiMapsMasker : Signal extraction on probabilistic
         maps e.g. ICA
 
     """
@@ -576,9 +576,9 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
 
     See Also
     --------
-    nilearnn.regions.signals_to_img_labels
-    nilearnn.regions.img_to_signals_maps
-    nilearnn.maskers.NiftiMapsMasker
+    nilearn.regions.signals_to_img_labels
+    nilearn.regions.img_to_signals_maps
+    nilearn.maskers.NiftiMapsMasker
 
     """
     maps_img = _utils.check_niimg_4d(maps_img)

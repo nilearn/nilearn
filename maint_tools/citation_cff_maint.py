@@ -117,7 +117,7 @@ def write_team_section(f, authors: list[dict[str, str]]) -> None:
 Core developers
 ...............
 
-The nilearnn core developers are:
+The nilearn core developers are:
 
 """
     )

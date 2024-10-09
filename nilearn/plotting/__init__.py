@@ -1,4 +1,4 @@
-"""Plotting code for nilearnn."""
+"""Plotting code for nilearn."""
 
 # Original Authors: Chris Filo Gorgolewski, Gael Varoquaux
 import importlib
@@ -34,7 +34,7 @@ def _set_mpl_backend():
             raise ImportError(
                 f"A matplotlib version of at least "
                 f"{OPTIONAL_MATPLOTLIB_MIN_VERSION} "
-                f"is required to use nilearnn. {mpl_version} was found. "
+                f"is required to use nilearn. {mpl_version} was found. "
                 f"Please upgrade matplotlib"
             )
         current_backend = matplotlib.get_backend().lower()

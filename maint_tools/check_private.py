@@ -24,9 +24,9 @@ def list_private_functions(body) -> list[str]:
 
 def main():
     """List private function that are only mnetioned once in their module."""
-    print("\nCheck .py files in nilearnn\n")
+    print("\nCheck .py files in nilearn\n")
 
-    modules = (root_dir() / "nilearnn").glob("**/*.py")
+    modules = (root_dir() / "nilearn").glob("**/*.py")
 
     files_to_skip = ["test_", "conftest.py"]
 
@@ -70,7 +70,7 @@ def main():
         assert private_functions["count_in"][i] >= 1
 
     # out of its own module
-    modules = (root_dir() / "nilearnn").glob("**/*.py")
+    modules = (root_dir() / "nilearn").glob("**/*.py")
     for file in modules:
         if any(file.name.startswith(s) for s in files_to_skip):
             continue

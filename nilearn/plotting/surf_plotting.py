@@ -899,21 +899,21 @@ def plot_surf(
         The surface figure. If ``engine='matplotlib'`` then a
         :class:`~matplotlib.figure.Figure` is returned.
         If ``engine='plotly'``, then a
-        :class:`~nilearnn.plotting.displays.PlotlySurfaceFigure`
+        :class:`~nilearn.plotting.displays.PlotlySurfaceFigure`
         is returned
 
     See Also
     --------
-    nilearnn.datasets.fetch_surf_fsaverage : For surface data object to be
+    nilearn.datasets.fetch_surf_fsaverage : For surface data object to be
         used as background map for this plotting function.
 
-    nilearnn.plotting.plot_surf_roi : For plotting statistical maps on brain
+    nilearn.plotting.plot_surf_roi : For plotting statistical maps on brain
         surfaces.
 
-    nilearnn.plotting.plot_surf_stat_map : for plotting statistical maps on
+    nilearn.plotting.plot_surf_stat_map : for plotting statistical maps on
         brain surfaces.
 
-    nilearnn.surface.vol_to_surf : For info on the generation of surfaces.
+    nilearn.surface.vol_to_surf : For info on the generation of surfaces.
 
     """
     parameters_not_implemented_in_plotly = {
@@ -1102,17 +1102,17 @@ def plot_surf_contours(
 
     kwargs: extra keyword arguments, optional
         Extra keyword arguments passed to
-        :func:`~nilearnn.plotting.plot_surf`.
+        :func:`~nilearn.plotting.plot_surf`.
 
     See Also
     --------
-    nilearnn.datasets.fetch_surf_fsaverage : For surface data object to be
+    nilearn.datasets.fetch_surf_fsaverage : For surface data object to be
         used as background map for this plotting function.
 
-    nilearnn.plotting.plot_surf_stat_map : for plotting statistical maps on
+    nilearn.plotting.plot_surf_stat_map : for plotting statistical maps on
         brain surfaces.
 
-    nilearnn.surface.vol_to_surf : For info on the generation of surfaces.
+    nilearn.surface.vol_to_surf : For info on the generation of surfaces.
 
     """
     if figure is None and axes is None:
@@ -1357,16 +1357,16 @@ def plot_surf_stat_map(
         .. versionadded:: 0.10.3dev
 
     kwargs : dict, optional
-        Keyword arguments passed to :func:`nilearnn.plotting.plot_surf`.
+        Keyword arguments passed to :func:`nilearn.plotting.plot_surf`.
 
     See Also
     --------
-    nilearnn.datasets.fetch_surf_fsaverage: For surface data object to be
+    nilearn.datasets.fetch_surf_fsaverage: For surface data object to be
         used as background map for this plotting function.
 
-    nilearnn.plotting.plot_surf: For brain surface visualization.
+    nilearn.plotting.plot_surf: For brain surface visualization.
 
-    nilearnn.surface.vol_to_surf : For info on the generation of surfaces.
+    nilearn.surface.vol_to_surf : For info on the generation of surfaces.
 
     """
     check_extensions(stat_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
@@ -1514,7 +1514,7 @@ def _colorbar_from_array(
         Extra arguments passed to get_colorbar_and_data_ranges.
 
     cmap : str, default='cold_hot'
-        The name of a matplotlib or nilearnn colormap.
+        The name of a matplotlib or nilearn colormap.
 
     """
     _, _, vmin, vmax = get_colorbar_and_data_ranges(
@@ -1630,12 +1630,12 @@ def plot_img_on_surf(
 
     See Also
     --------
-    nilearnn.datasets.fetch_surf_fsaverage : For surface data object to be
+    nilearn.datasets.fetch_surf_fsaverage : For surface data object to be
         used as the default background map for this plotting function.
 
-    nilearnn.surface.vol_to_surf : For info on the generation of surfaces.
+    nilearn.surface.vol_to_surf : For info on the generation of surfaces.
 
-    nilearnn.plotting.plot_surf_stat_map : For info on kwargs options
+    nilearn.plotting.plot_surf_stat_map : For info on kwargs options
         accepted by plot_img_on_surf.
 
     """
@@ -1908,16 +1908,16 @@ def plot_surf_roi(
             ``matplotlib`` engine.
 
     kwargs : dict, optional
-        Keyword arguments passed to :func:`nilearnn.plotting.plot_surf`.
+        Keyword arguments passed to :func:`nilearn.plotting.plot_surf`.
 
     See Also
     --------
-    nilearnn.datasets.fetch_surf_fsaverage: For surface data object to be
+    nilearn.datasets.fetch_surf_fsaverage: For surface data object to be
         used as background map for this plotting function.
 
-    nilearnn.plotting.plot_surf: For brain surface visualization.
+    nilearn.plotting.plot_surf: For brain surface visualization.
 
-    nilearnn.surface.vol_to_surf : For info on the generation of surfaces.
+    nilearn.surface.vol_to_surf : For info on the generation of surfaces.
 
     """
     if engine == "matplotlib" and avg_method is None:

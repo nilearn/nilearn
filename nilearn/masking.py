@@ -276,12 +276,12 @@ def compute_epi_mask(
     %(target_affine)s
 
         .. note::
-            This parameter is passed to :func:`nilearnn.image.resample_img`.
+            This parameter is passed to :func:`nilearn.image.resample_img`.
 
     %(target_shape)s
 
         .. note::
-            This parameter is passed to :func:`nilearnn.image.resample_img`.
+            This parameter is passed to :func:`nilearn.image.resample_img`.
 
     %(memory)s
     %(verbose0)s
@@ -392,12 +392,12 @@ def compute_multi_epi_mask(
     %(target_affine)s
 
         .. note::
-            This parameter is passed to :func:`nilearnn.image.resample_img`.
+            This parameter is passed to :func:`nilearn.image.resample_img`.
 
     %(target_shape)s
 
         .. note::
-            This parameter is passed to :func:`nilearnn.image.resample_img`.
+            This parameter is passed to :func:`nilearn.image.resample_img`.
 
     %(memory)s
     %(n_jobs)s
@@ -464,12 +464,12 @@ def compute_background_mask(
     %(target_affine)s
 
         .. note::
-            This parameter is passed to :func:`nilearnn.image.resample_img`.
+            This parameter is passed to :func:`nilearn.image.resample_img`.
 
     %(target_shape)s
 
         .. note::
-            This parameter is passed to :func:`nilearnn.image.resample_img`.
+            This parameter is passed to :func:`nilearn.image.resample_img`.
 
     %(memory)s
     %(verbose0)s
@@ -555,12 +555,12 @@ def compute_multi_background_mask(
     %(target_affine)s
 
         .. note::
-            This parameter is passed to :func:`nilearnn.image.resample_img`.
+            This parameter is passed to :func:`nilearn.image.resample_img`.
 
     %(target_shape)s
 
         .. note::
-            This parameter is passed to :func:`nilearnn.image.resample_img`.
+            This parameter is passed to :func:`nilearn.image.resample_img`.
 
     %(memory)s
     %(n_jobs)s
@@ -727,7 +727,7 @@ def compute_multi_brain_mask(
 
     See Also
     --------
-    nilearnn.masking.compute_brain_mask
+    nilearn.masking.compute_brain_mask
     """
     if len(target_imgs) == 0:
         raise TypeError(
@@ -814,12 +814,12 @@ def apply_mask(
 def apply_mask_fmri(
     imgs, mask_img, dtype="f", smoothing_fwhm=None, ensure_finite=True
 ):
-    """Perform similar action to :func:`nilearnn.masking.apply_mask`.
+    """Perform similar action to :func:`nilearn.masking.apply_mask`.
 
-    The only difference with :func:`nilearnn.masking.apply_mask` is that
+    The only difference with :func:`nilearn.masking.apply_mask` is that
     some costly checks on ``mask_img`` are not performed: ``mask_img`` is
     assumed to contain only two different values (this is checked for in
-    :func:`nilearnn.masking.apply_mask`, not in this function).
+    :func:`nilearn.masking.apply_mask`, not in this function).
     """
     mask_img = _utils.check_niimg_3d(mask_img)
     mask_affine = mask_img.affine

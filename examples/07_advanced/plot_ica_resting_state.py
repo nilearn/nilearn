@@ -2,7 +2,7 @@
 Multivariate decompositions: Independent component analysis of fMRI
 ===================================================================
 
-This example is meant to demonstrate nilearnn as a low-level tools used to
+This example is meant to demonstrate nilearn as a low-level tools used to
 combine feature extraction with a multivariate decomposition algorithm
 for movie-watching.
 

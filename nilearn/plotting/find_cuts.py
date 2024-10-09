@@ -440,7 +440,7 @@ def find_parcellation_cut_coords(
 
     See Also
     --------
-    nilearnn.plotting.find_probabilistic_atlas_cut_coords : For coordinates
+    nilearn.plotting.find_probabilistic_atlas_cut_coords : For coordinates
         extraction on probabilistic atlases (4D) (Eg. MSDL atlas)
 
     """
@@ -525,7 +525,7 @@ def find_probabilistic_atlas_cut_coords(maps_img):
 
     See Also
     --------
-    nilearnn.plotting.find_parcellation_cut_coords : For coordinates
+    nilearn.plotting.find_parcellation_cut_coords : For coordinates
         extraction on parcellations denoted with labels (3D)
         (Eg. Harvard Oxford atlas)
 

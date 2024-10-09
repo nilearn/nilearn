@@ -2,7 +2,7 @@
 
 
 The _load_* functions  of this module are indirectly used
-in nilearnn.interfaces.fmriprep._load_noise_component.
+in nilearn.interfaces.fmriprep._load_noise_component.
 
 See an example below:
 

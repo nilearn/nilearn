@@ -279,7 +279,7 @@ def vec_to_sym_matrix(vec, diagonal=None):
 
     See Also
     --------
-    nilearnn.connectome.sym_matrix_to_vec
+    nilearn.connectome.sym_matrix_to_vec
 
     """
     n = vec.shape[-1]

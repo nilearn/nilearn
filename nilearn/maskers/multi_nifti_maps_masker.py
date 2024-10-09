@@ -16,7 +16,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
 
     MultiNiftiMapsMasker is useful when data from overlapping volumes
     and from different subjects should be extracted (contrary to
-    :class:`nilearnn.maskers.NiftiMapsMasker`).
+    :class:`nilearn.maskers.NiftiMapsMasker`).
 
     Use case:
     summarize brain signals from several subjects
@@ -48,7 +48,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
     %(standardize_confounds)s
     high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
-        :func:`nilearnn.image.high_variance_confounds` and default parameters
+        :func:`nilearn.image.high_variance_confounds` and default parameters
         and regressed out.
     %(detrend)s
     %(low_pass)s
@@ -99,9 +99,9 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
 
     See Also
     --------
-    nilearnn.maskers.NiftiMasker
-    nilearnn.maskers.NiftiLabelsMasker
-    nilearnn.maskers.NiftiMapsMasker
+    nilearn.maskers.NiftiMasker
+    nilearn.maskers.NiftiLabelsMasker
+    nilearn.maskers.NiftiMapsMasker
 
     """
 

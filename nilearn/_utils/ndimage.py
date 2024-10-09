@@ -25,7 +25,7 @@ def largest_connected_component(volume):
 
     See Also
     --------
-    nilearnn.image.largest_connected_component_img : To simply operate the
+    nilearn.image.largest_connected_component_img : To simply operate the
         same manipulation directly on Nifti images.
 
     Notes

@@ -2,9 +2,9 @@
 Technical point: Illustration of the volume to surface sampling schemes
 =======================================================================
 
-In nilearnn, :func:`nilearnn.surface.vol_to_surf` allows us to measure values of
+In nilearn, :func:`nilearn.surface.vol_to_surf` allows us to measure values of
 a 3d volume at the nodes of a cortical mesh, transforming it into surface data.
-This data can then be plotted with :func:`nilearnn.plotting.plot_surf_stat_map`
+This data can then be plotted with :func:`nilearn.plotting.plot_surf_stat_map`
 for example.
 
 This script shows, on a toy example, where samples are drawn around each mesh
@@ -17,7 +17,7 @@ matter and a pial surface), along the normal at each node, or inside a ball
 around each node. Don't worry too much about choosing one or the other: they
 take a similar amount of time and give almost identical results for most
 images. If you do have both pial and white matter surfaces (as for the
-fsaverage and fsaverage5 surfaces fetched by `nilearnn.datasets`) we recommend
+fsaverage and fsaverage5 surfaces fetched by `nilearn.datasets`) we recommend
 passing both to `vol_to_surf`.
 
 """

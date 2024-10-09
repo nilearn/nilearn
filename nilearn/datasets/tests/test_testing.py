@@ -79,7 +79,7 @@ def test_sender_regex(request_mocker):
     request_mocker.url_mapping[pattern] = r"in \g<section>: hello \2"
     resp = requests.get(url)
 
-    assert resp.text == "in info: hello nilearnn"
+    assert resp.text == "in info: hello nilearn"
 
     def f(match, request):
         return f"name: {match.group('name')}, url: {request.url}"
@@ -87,7 +87,7 @@ def test_sender_regex(request_mocker):
     request_mocker.url_mapping[pattern] = f
     resp = requests.get(url)
 
-    assert resp.text == f"name: nilearnn, url: {url}"
+    assert resp.text == f"name: nilearn, url: {url}"
 
     def g(match, request):
         return 403

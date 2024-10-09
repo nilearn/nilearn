@@ -4,7 +4,7 @@ Can be for GLM reports or masker reports.
 
 This should represent feature comprehensive examples
 to visualize, inspect, and test the functionality
-of nilearnn.reporting.make_glm_reports().
+of nilearn.reporting.make_glm_reports().
 """
 
 import time

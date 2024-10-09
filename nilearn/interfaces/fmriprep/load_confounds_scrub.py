@@ -143,6 +143,6 @@ def _outlier_to_sample_mask(outliers):
     """
     outliers_one_hot = outliers.copy()
     if outliers_one_hot.size == 0:  # Do not supply sample mask
-        return None  # consistency with nilearnn sample_mask
+        return None  # consistency with nilearn sample_mask
     outliers_one_hot = outliers_one_hot.sum(axis=1).values
     return np.where(outliers_one_hot == 0)[0]

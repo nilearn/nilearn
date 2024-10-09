@@ -580,13 +580,13 @@ def view_img(
 
     See Also
     --------
-    nilearnn.plotting.plot_stat_map:
+    nilearn.plotting.plot_stat_map:
         static plot of brain volume, on a single or multiple planes.
-    nilearnn.plotting.view_connectome:
+    nilearn.plotting.view_connectome:
         interactive 3d view of a connectome.
-    nilearnn.plotting.view_markers:
+    nilearn.plotting.view_markers:
         interactive plot of colored markers.
-    nilearnn.plotting.view_surf, nilearnn.plotting.view_img_on_surf:
+    nilearn.plotting.view_surf, nilearn.plotting.view_img_on_surf:
         interactive view of statistical maps or surface atlases on the cortical
         surface.
 

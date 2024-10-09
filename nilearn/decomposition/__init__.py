@@ -1,4 +1,4 @@
-"""The :mod:`nilearnn.decomposition` module includes a subject level \
+"""The :mod:`nilearn.decomposition` module includes a subject level \
 variant of the :term:`ICA` called Canonical :term:`ICA`.
 """
 

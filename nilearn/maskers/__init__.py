@@ -1,4 +1,4 @@
-"""The :mod:`nilearnn.maskers` contains masker objects."""
+"""The :mod:`nilearn.maskers` contains masker objects."""
 
 from .base_masker import BaseMasker
 from .multi_nifti_labels_masker import MultiNiftiLabelsMasker

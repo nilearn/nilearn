@@ -195,7 +195,7 @@ def _convolve_regressors(
     ----------
     events : DataFrame instance,
         Events data describing the experimental paradigm
-        see nilearnn.glm.first_level.experimental_paradigm to check the
+        see nilearn.glm.first_level.experimental_paradigm to check the
         specification for these to be valid paradigm descriptors
 
     hrf_model : {'spm', 'spm + derivative', 'spm + derivative + dispersion',

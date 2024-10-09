@@ -450,7 +450,7 @@ plt.show()
 # the CompCor approach, and take those into account in the model.
 #
 # For this we rely on the so-called
-# :func:`~nilearnn.image.high_variance_confounds` routine of Nilearn.
+# :func:`~nilearn.image.high_variance_confounds` routine of Nilearn.
 from nilearn.image import high_variance_confounds
 
 confounds = pd.DataFrame(high_variance_confounds(fmri_img, percentile=1))
@@ -481,7 +481,7 @@ plt.show()
 # high-motion volumes in scrubbing based noise removal strategies. In this
 # scenario, we can apply a sample mask along the time dimension to exclude
 # unwanted volumes. When using :term:`fMRIPrep` outputs from 1.4.x series or
-# above, we can use the :func:`~nilearnn.interfaces.fmriprep.load_confounds`
+# above, we can use the :func:`~nilearn.interfaces.fmriprep.load_confounds`
 # function of Nilearn to retrieve sample masks based on the given scrubbing
 # threshold and the non-steady state columns.
 # For non-fMRIPrep output, we can still define a sample mask. Here we apply a
