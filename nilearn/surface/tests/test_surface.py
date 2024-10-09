@@ -32,7 +32,7 @@ from nilearn.surface.tests._testing import (
     z_const_img,
 )
 
-currdir = os.path.dirname(Path.resolve(__file__))
+currdir = os.path.dirname(Path(__file__).resolve())
 datadir = os.path.join(currdir, "data")
 
 

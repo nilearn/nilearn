@@ -2172,8 +2172,8 @@ def plot_img_comparison(
             ax2.legend(loc="best")
 
             if output_dir is not None:
-                if not Path.exists(output_dir):
-                    os.makedirs(output_dir)
-                plt.savefig(os.path.join(output_dir, f"{int(i):04}.png"))
+                output_dir = Path(output_dir)
+                output_dir.mkdir(exists_ok=True)
+                plt.savefig(output_dir / f"{int(i):04}.png")
 
     return corrs

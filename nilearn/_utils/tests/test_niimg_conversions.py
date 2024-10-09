@@ -580,12 +580,7 @@ def test_repr_niimgs_with_niimg(
     assert _utils._repr_niimgs(img_3d_ones_eye, shorten=shorten).replace(
         "10L", "10"
     ) == (
-        "%s(\nshape=%s,\naffine=%s\n)"
-        % (
-            img_3d_ones_eye.__class__.__name__,
-            repr(shape_3d_default),
-            repr(affine_eye),
-        )
+        f"{img_3d_ones_eye.__class__.__name__}(\nshape={shape_3d_default!r},\naffine={affine_eye!r}\n)"
     )
 
     # Add filename long enough to qualify for shortening
