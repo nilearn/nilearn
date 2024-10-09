@@ -746,8 +746,16 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         # Check if the size of the mask image and the number of features allow
         # to perform feature screening.
+        # If the input data is a SurfaceImage, the number of vertices in the
+        # mesh is needed to perform feature screening.
+        mesh_n_vertices = (
+            X.mesh.n_vertices if isinstance(X, SurfaceImage) else None
+        )
         selector = check_feature_screening(
-            self.screening_percentile, self.mask_img_, self.is_classification
+            self.screening_percentile,
+            self.mask_img_,
+            self.is_classification,
+            mesh_n_vertices=mesh_n_vertices,
         )
 
         # Return a suitable screening percentile according to the mask image
