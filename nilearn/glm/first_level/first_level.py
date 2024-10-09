@@ -1669,7 +1669,7 @@ def _list_valid_subjects(derivatives_path, sub_labels):
     # keep only existing subjects
     sub_labels_exist = []
     for sub_label_ in sub_labels:
-        if Path.exists(os.path.join(derivatives_path, f"sub-{sub_label_}")):
+        if (Path(derivatives_path) / f"sub-{sub_label_}").exists():
             sub_labels_exist.append(sub_label_)
         else:
             warn(
