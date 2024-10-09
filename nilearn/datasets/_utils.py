@@ -234,34 +234,34 @@ def get_dataset_dir(
     if default_paths is not None:
         for default_path in default_paths:
             paths.extend(
-                [(d, True) for d in str(default_path).split(os.pathsep)]
+                [(Path(d), True) for d in str(default_path).split(os.pathsep)]
             )
 
-    paths.extend([(d, False) for d in get_data_dirs(data_dir=data_dir)])
+    paths.extend([(Path(d), False) for d in get_data_dirs(data_dir=data_dir)])
 
     logger.log(f"Dataset search paths: {paths}", verbose=verbose, msg_level=2)
 
     # Check if the dataset exists somewhere
     for path, is_pre_dir in paths:
         if not is_pre_dir:
-            path = os.path.join(path, dataset_name)
+            path = path / dataset_name
         if os.path.islink(path):
             # Resolve path
             path = readlinkabs(path)
-        if os.path.exists(path) and os.path.isdir(path):
+        if path.exists() and path.is_dir():
             logger.log(
                 f"Dataset found in {path}", verbose=verbose, msg_level=1
             )
-            return path
+            return str(path)
 
     # If not, create a folder in the first writeable directory
     errors = []
     for path, is_pre_dir in paths:
         if not is_pre_dir:
-            path = os.path.join(path, dataset_name)
-        if not os.path.exists(path):
+            path = path / dataset_name
+        if not path.exists():
             try:
-                os.makedirs(path)
+                path.mkdir(parents=True)
                 _add_readme_to_default_data_locations(
                     data_dir=data_dir,
                     verbose=verbose,
@@ -269,7 +269,7 @@ def get_dataset_dir(
 
                 logger.log(f"Dataset created in {path}", verbose)
 
-                return path
+                return str(path)
             except Exception as exc:
                 short_error_message = getattr(exc, "strerror", str(exc))
                 errors.append(f"\n -{path} ({short_error_message})")
