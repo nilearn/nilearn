@@ -7,6 +7,7 @@ ignores modules whose name starts with an underscore.
 
 import os
 import tempfile
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -249,4 +250,4 @@ def test_csv_to_array(tmp_path):
         with pytest.raises(TypeError):
             csv_to_array(filename, delimiters="?!")
     finally:
-        os.remove(filename)
+        Path(filename).unlink()

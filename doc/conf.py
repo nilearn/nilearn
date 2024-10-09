@@ -14,6 +14,7 @@ values that are commented out serve to show the default.
 import os
 import re
 import sys
+from pathlib import Path
 
 import sphinx
 
@@ -450,7 +451,7 @@ def touch_example_backreferences(app, what, name, obj, options, lines):
     examples_path = os.path.join(
         app.srcdir, "modules", "generated", f"{name}.examples"
     )
-    if not os.path.exists(examples_path):
+    if not Path(examples_path).exists():
         # touch file
         open(examples_path, "w").close()
 

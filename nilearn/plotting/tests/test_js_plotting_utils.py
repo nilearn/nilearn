@@ -2,6 +2,7 @@ import base64
 import os
 import re
 import tempfile
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -198,7 +199,7 @@ def check_html(
         standalone = html.get_standalone().replace("\r\n", "\n")
         assert saved == standalone
     finally:
-        os.remove(tmpfile)
+        Path(tmpfile).unlink()
     assert "INSERT" not in html.html
     assert html.get_standalone() == html.html
     assert html._repr_html_() == html.get_iframe()

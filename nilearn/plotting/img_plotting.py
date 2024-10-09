@@ -12,6 +12,7 @@ import functools
 import numbers
 import os
 import warnings
+from pathlib import Path
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -2171,7 +2172,7 @@ def plot_img_comparison(
             ax2.legend(loc="best")
 
             if output_dir is not None:
-                if not os.path.exists(output_dir):
+                if not Path(output_dir).exists():
                     os.makedirs(output_dir)
                 plt.savefig(os.path.join(output_dir, f"{int(i):04}.png"))
 

@@ -8,6 +8,7 @@ import os
 import shutil
 import tarfile
 import urllib
+from pathlib import Path
 from tempfile import mkdtemp, mkstemp
 from unittest.mock import MagicMock
 from zipfile import ZipFile
@@ -91,11 +92,11 @@ def test_get_dataset_dir(tmp_path):
     os.environ.pop("NILEARN_DATA", None)
     os.environ.pop("NILEARN_SHARED_DATA", None)
 
-    expected_base_dir = os.path.expanduser("~/nilearn_data")
+    expected_base_dir = Path("~/nilearn_data").expanduser()
     data_dir = _utils.get_dataset_dir("test", verbose=0)
 
     assert data_dir == os.path.join(expected_base_dir, "test")
-    assert os.path.exists(data_dir)
+    assert Path(data_dir).exists()
 
     shutil.rmtree(data_dir)
 
@@ -104,7 +105,7 @@ def test_get_dataset_dir(tmp_path):
     data_dir = _utils.get_dataset_dir("test", verbose=0)
 
     assert data_dir == os.path.join(expected_base_dir, "test")
-    assert os.path.exists(data_dir)
+    assert Path(data_dir).exists()
 
     shutil.rmtree(data_dir)
 
@@ -113,7 +114,7 @@ def test_get_dataset_dir(tmp_path):
     data_dir = _utils.get_dataset_dir("test", verbose=0)
 
     assert data_dir == os.path.join(expected_base_dir, "test")
-    assert os.path.exists(data_dir)
+    assert Path(data_dir).exists()
 
     shutil.rmtree(data_dir)
 
@@ -147,7 +148,7 @@ def test_get_dataset_dir_path_as_str(should_cast_path_to_string, tmp_path):
     )
 
     assert data_dir == str(expected_dataset_dir)
-    assert os.path.exists(data_dir)
+    assert Path(data_dir).exists()
 
     shutil.rmtree(data_dir)
 
@@ -157,7 +158,7 @@ def test_get_dataset_dir_write_access(tmp_path):
 
     no_write = str(tmp_path / "no_write")
     os.makedirs(no_write)
-    os.chmod(no_write, 0o400)
+    Path(no_write).chmod(0o400)
 
     expected_base_dir = str(tmp_path / "nilearn_shared_data")
     os.environ["NILEARN_SHARED_DATA"] = expected_base_dir
@@ -167,9 +168,9 @@ def test_get_dataset_dir_write_access(tmp_path):
 
     # Non writeable dir is returned because dataset may be in there.
     assert data_dir == no_write
-    assert os.path.exists(data_dir)
+    assert Path(data_dir).exists()
 
-    os.chmod(no_write, 0o600)
+    Path(no_write).chmod(0o600)
     shutil.rmtree(data_dir)
 
 
@@ -181,7 +182,7 @@ def test_md5_sum_file():
 
     assert _utils._md5_sum_file(f) == "18f32295c556b2a1a3a8e68fe1ad40f7"
 
-    os.remove(f)
+    Path(f).unlink()
 
 
 def test_read_md5_sum_file():
@@ -200,7 +201,7 @@ def test_read_md5_sum_file():
     assert h["test/some_image.nii"] == "70886dcabe7bf5c5a1c24ca24e4cbd94"
     assert h["/tmp/test"] == "20861c8c3fe177da19a7e9539a5dbac"
 
-    os.remove(f)
+    Path(f).unlink()
 
 
 def test_tree():
@@ -213,10 +214,10 @@ def test_tree():
     dir11 = os.path.join(dir1, "dir11")
     dir12 = os.path.join(dir1, "dir12")
     dir2 = os.path.join(parent, "dir2")
-    os.mkdir(dir1)
-    os.mkdir(dir11)
-    os.mkdir(dir12)
-    os.mkdir(dir2)
+    Path(dir1).mkdir()
+    Path(dir11).mkdir()
+    Path(dir12).mkdir()
+    Path(dir2).mkdir()
     open(os.path.join(dir1, "file11"), "w").close()
     open(os.path.join(dir1, "file12"), "w").close()
     open(os.path.join(dir11, "file111"), "w").close()
@@ -415,7 +416,7 @@ def test_fetch_file_overwrite(
     )
 
     assert request_mocker.url_count == 1
-    assert os.path.exists(fil)
+    assert Path(fil).exists()
     with open(fil) as fp:
         assert fp.read() == ""
 
@@ -429,7 +430,7 @@ def test_fetch_file_overwrite(
     )
 
     assert request_mocker.url_count == 1
-    assert os.path.exists(fil)
+    assert Path(fil).exists()
     with open(fil) as fp:
         assert fp.read() == "some content"
 
@@ -439,7 +440,7 @@ def test_fetch_file_overwrite(
     )
 
     assert request_mocker.url_count == 2
-    assert os.path.exists(fil)
+    assert Path(fil).exists()
     with open(fil) as fp:
         assert fp.read() == ""
 
@@ -481,7 +482,7 @@ def test_fetch_files_overwrite(
     )
 
     assert request_mocker.url_count == 1
-    assert os.path.exists(fil[0])
+    assert Path(fil[0]).exists()
     with open(fil[0]) as fp:
         assert fp.read() == ""
 
@@ -497,7 +498,7 @@ def test_fetch_files_overwrite(
     )
 
     assert request_mocker.url_count == 1
-    assert os.path.exists(fil[0])
+    assert Path(fil[0]).exists()
     with open(fil[0]) as fp:
         assert fp.read() == "some content"
 
@@ -509,7 +510,7 @@ def test_fetch_files_overwrite(
     )
 
     assert request_mocker.url_count == 2
-    assert os.path.exists(fil[0])
+    assert Path(fil[0]).exists()
     with open(fil[0]) as fp:
         assert fp.read() == ""
 

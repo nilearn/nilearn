@@ -44,7 +44,7 @@ def _load_uniform_ball_cloud(n_points=20):
             __file__, "..", "data", f"ball_cloud_{n_points}_samples.csv"
         )
     )
-    if os.path.isfile(stored_points):
+    if Path(stored_points).is_file():
         points = np.loadtxt(stored_points)
         return points
     warnings.warn(

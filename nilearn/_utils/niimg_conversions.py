@@ -2,10 +2,10 @@
 
 import glob
 import itertools
-import os.path
 
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 import warnings
+from pathlib import Path
 
 import numpy as np
 from joblib import Memory
@@ -283,7 +283,7 @@ def check_niimg(
     if isinstance(niimg, str):
         if wildcards and ni.EXPAND_PATH_WILDCARDS:
             # Ascending sorting + expand user path
-            filenames = sorted(glob.glob(os.path.expanduser(niimg)))
+            filenames = sorted(glob.glob(Path(niimg).expanduser()))
 
             # processing filenames matching globbing expression
             if len(filenames) >= 1 and glob.has_magic(niimg):
@@ -304,7 +304,7 @@ def check_niimg(
                 raise ValueError(message)
             else:
                 raise ValueError(f"File not found: '{niimg}'")
-        elif not os.path.exists(niimg):
+        elif not Path(niimg).exists():
             raise ValueError(f"File not found: '{niimg}'")
 
     # in case of an iterable

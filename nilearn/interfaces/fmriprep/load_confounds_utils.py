@@ -4,6 +4,7 @@ import itertools
 import json
 import os
 import re
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -232,7 +233,7 @@ def _get_file_name(nii_file):
     confound_file_candidates = [
         os.path.join(base_dir, crc) for crc in confound_file_candidates
     ]
-    found_files = [cr for cr in confound_file_candidates if os.path.isfile(cr)]
+    found_files = [cr for cr in confound_file_candidates if Path(cr).is_file()]
 
     if not found_files:
         raise ValueError(
