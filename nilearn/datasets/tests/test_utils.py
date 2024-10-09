@@ -95,7 +95,7 @@ def test_get_dataset_dir(tmp_path):
     expected_base_dir = os.path.expanduser("~/nilearn_data")
     data_dir = _utils.get_dataset_dir("test", verbose=0)
 
-    assert data_dir == Path(expected_base_dir, "test")
+    assert data_dir == str(Path(expected_base_dir, "test"))
     assert os.path.exists(data_dir)
 
     shutil.rmtree(data_dir)
@@ -104,7 +104,7 @@ def test_get_dataset_dir(tmp_path):
     os.environ["NILEARN_DATA"] = expected_base_dir
     data_dir = _utils.get_dataset_dir("test", verbose=0)
 
-    assert data_dir == Path(expected_base_dir, "test")
+    assert data_dir == str(Path(expected_base_dir, "test"))
     assert os.path.exists(data_dir)
 
     shutil.rmtree(data_dir)
@@ -113,7 +113,7 @@ def test_get_dataset_dir(tmp_path):
     os.environ["NILEARN_SHARED_DATA"] = expected_base_dir
     data_dir = _utils.get_dataset_dir("test", verbose=0)
 
-    assert data_dir == Path(expected_base_dir, "test")
+    assert data_dir == str(Path(expected_base_dir, "test"))
     assert os.path.exists(data_dir)
 
     shutil.rmtree(data_dir)
