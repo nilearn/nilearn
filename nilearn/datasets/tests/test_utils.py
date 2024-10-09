@@ -244,43 +244,45 @@ def test_tree():
     shutil.rmtree(parent)
 
 
-def test_movetree():
-    # Create a dummy directory tree
-    parent = mkdtemp()
+def test_movetree(tmp_path):
+    """Tests nilearn.dataset._utils.movetree."""
+    dir1 = tmp_path / "dir1"
+    dir111 = dir1 / "dir11"
+    dir112 = dir1 / "dir12"
+    dir2 = tmp_path / "dir2"
+    dir212 = dir2 / "dir12"
 
-    dir1 = os.path.join(parent, "dir1")
-    dir11 = os.path.join(dir1, "dir11")
-    dir12 = os.path.join(dir1, "dir12")
-    dir2 = os.path.join(parent, "dir2")
-    os.mkdir(dir1)
-    os.mkdir(dir11)
-    os.mkdir(dir12)
-    os.mkdir(dir2)
-    os.mkdir(os.path.join(dir2, "dir12"))
-    open(os.path.join(dir1, "file11"), "w").close()
-    open(os.path.join(dir1, "file12"), "w").close()
-    open(os.path.join(dir11, "file111"), "w").close()
-    open(os.path.join(dir12, "file121"), "w").close()
-    open(os.path.join(dir2, "file21"), "w").close()
+    dir1.mkdir()
+    dir111.mkdir()
+    dir112.mkdir()
+    dir2.mkdir()
+    dir212.mkdir()
+
+    (dir1 / "file11").touch()
+    (dir1 / "file12").touch()
+    (dir111 / "file1111").touch()
+    (dir112 / "file1121").touch()
+    (dir2 / "file21").touch()
 
     _utils.movetree(dir1, dir2)
 
-    assert not os.path.exists(dir11)
-    assert not os.path.exists(dir12)
-    assert not os.path.exists(os.path.join(dir1, "file11"))
-    assert not os.path.exists(os.path.join(dir1, "file12"))
-    assert not os.path.exists(os.path.join(dir11, "file111"))
-    assert not os.path.exists(os.path.join(dir12, "file121"))
+    assert not dir111.exists()
+    assert not dir112.exists()
+    assert not (dir1 / "file11").exists()
+    assert not (dir1 / "file12").exists()
+    assert not (dir111 / "file1111").exists()
+    assert not (dir112 / "file1121").exists()
 
-    dir11 = os.path.join(dir2, "dir11")
-    dir12 = os.path.join(dir2, "dir12")
+    dir211 = dir2 / "dir11"
+    dir212 = dir2 / "dir12"
 
-    assert os.path.exists(dir11)
-    assert os.path.exists(dir12)
-    assert os.path.exists(os.path.join(dir2, "file11"))
-    assert os.path.exists(os.path.join(dir2, "file12"))
-    assert os.path.exists(os.path.join(dir11, "file111"))
-    assert os.path.exists(os.path.join(dir12, "file121"))
+    assert dir211.exists()
+    assert dir212.exists()
+    assert (dir2 / "file21").exists()
+    assert (dir2 / "file11").exists()
+    assert (dir2 / "file12").exists()
+    assert (dir211 / "file1111").exists()
+    assert (dir212 / "file1121").exists()
 
 
 def test_filter_columns():
