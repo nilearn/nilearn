@@ -476,10 +476,8 @@ def filter_columns(array, filters, combination="and"):
 
 class _NaiveFTPAdapter(requests.adapters.BaseAdapter):
     def send(self, request, timeout=None, **kwargs):
-        try:
+        with contextlib.suppress(Exception):
             timeout, _ = timeout
-        except Exception:
-            pass
         try:
             data = urllib.request.urlopen(request.url, timeout=timeout)
         except Exception as e:
