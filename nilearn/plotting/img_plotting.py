@@ -10,7 +10,6 @@ Only matplotlib is required.
 import collections.abc
 import functools
 import numbers
-import os
 import warnings
 from pathlib import Path
 
