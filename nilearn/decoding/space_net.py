@@ -29,7 +29,7 @@ from sklearn.utils import check_array, check_X_y
 from sklearn.utils.extmath import safe_sparse_dot
 
 from nilearn._utils.masker_validation import check_embedded_masker
-from nilearn.experimental.surface import SurfaceMasker
+from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
 from nilearn.image import get_data
 from nilearn.masking import unmask_from_to_3d_array
 
@@ -839,6 +839,11 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         self : `SpaceNet` object
             Model selection is via cross-validation with bagging.
         """
+        if isinstance(X, SurfaceImage) or isinstance(self.mask, SurfaceMasker):
+            raise NotImplementedError(
+                "Running space net on surface objects is not supported."
+            )
+
         # misc
         self.check_params()
         if self.memory is None or isinstance(self.memory, str):
@@ -850,10 +855,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
 
         tic = time.time()
 
-        masker_type = "nii"
-        if isinstance(self.mask, SurfaceMasker):
-            masker_type = "surface"
-        self.masker_ = check_embedded_masker(self, masker_type=masker_type)
+        self.masker_ = check_embedded_masker(self, masker_type="nii")
         X = self.masker_.fit_transform(X)
 
         X, y = check_X_y(
