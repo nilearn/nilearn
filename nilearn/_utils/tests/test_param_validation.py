@@ -12,9 +12,13 @@ from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.param_validation import (
     MNI152_BRAIN_VOLUME,
     check_feature_screening,
+    adjust_screening_percentile,
     check_threshold,
     get_mask_volume,
 )
+
+from nilearn.surface import vol_to_surf
+from nilearn import datasets
 
 mni152_brain_mask = (
     "/usr/share/fsl/data/standard/MNI152_T1_1mm_brain_mask.nii.gz"
@@ -101,3 +105,45 @@ def test_feature_screening(affine_eye):
                     ),
                     BaseEstimator,
                 )
+
+
+@pytest.mark.xfail
+@pytest.mark.parametrize("screening_percentile", [1, 20, 90])
+def test_screening_adjustment(affine_eye, screening_percentile):
+
+    fsaverage = datasets.fetch_surf_fsaverage("fsaverage5")
+
+    mask_img_data = np.zeros((182, 218, 182))
+    mask_img_data[30:-30, 30:-30, 30:-30] = 1
+    mask_img = Nifti1Image(mask_img_data, affine=affine_eye)
+    mask_surf = vol_to_surf(
+        img=mask_img,
+        surf_mesh=fsaverage["pial_left"],
+        inner_mesh=fsaverage["white_left"],
+    )
+
+    img_data = np.random.randn(182, 218, 182)
+    img = Nifti1Image(img_data, affine=affine_eye)
+    img_surf = vol_to_surf(
+        img=img,
+        surf_mesh=fsaverage["pial_left"],
+        inner_mesh=fsaverage["white_left"],
+    )
+
+    mask_n_vertices = get_mask_volume(mask_surf)
+    mesh_n_vertices = fsaverage.mesh.n_vertices
+
+    mask_to_mesh_ratio = (mask_n_vertices / mesh_n_vertices) * 100
+
+    adjusted = adjust_screening_percentile(
+        screening_percentile, mask_to_mesh_ratio, mesh_n_vertices
+    )
+
+    if screening_percentile == 100:
+        adjusted = 100
+    if mask_to_mesh_ratio < screening_percentile:
+        adjusted = 100
+    elif mask_to_mesh_ratio > screening_percentile:
+        adjusted = screening_percentile * (mesh_n_vertices / mask_n_vertices)
+    elif mask_to_mesh_ratio == screening_percentile:
+        adjusted = screening_percentile
