@@ -96,7 +96,7 @@ def test_get_dataset_dir(tmp_path):
     data_dir = _utils.get_dataset_dir("test", verbose=0)
 
     assert data_dir == str(expected_base_dir / "test")
-    assert Path(data_dir).exists()
+    assert os.path.exists(data_dir)
 
     shutil.rmtree(data_dir)
 
@@ -105,7 +105,7 @@ def test_get_dataset_dir(tmp_path):
     data_dir = _utils.get_dataset_dir("test", verbose=0)
 
     assert data_dir == str(expected_base_dir / "test")
-    assert Path(data_dir).exists()
+    assert os.path.exists(data_dir)
 
     shutil.rmtree(data_dir)
 
@@ -114,7 +114,7 @@ def test_get_dataset_dir(tmp_path):
     data_dir = _utils.get_dataset_dir("test", verbose=0)
 
     assert data_dir == str(expected_base_dir / "test")
-    assert Path(data_dir).exists()
+    assert os.path.exists(data_dir)
 
     shutil.rmtree(data_dir)
 
@@ -148,7 +148,7 @@ def test_get_dataset_dir_path_as_str(should_cast_path_to_string, tmp_path):
     )
 
     assert data_dir == str(expected_dataset_dir)
-    assert Path(data_dir).exists()
+    assert os.path.exists(data_dir)
 
     shutil.rmtree(data_dir)
 
@@ -158,7 +158,7 @@ def test_get_dataset_dir_write_access(tmp_path):
 
     no_write = tmp_path / "no_write"
     no_write.mkdir(parents=True)
-    no_write.chmod(0o400)
+    os.chmod(no_write, 0o400)
 
     expected_base_dir = tmp_path / "nilearn_shared_data"
     os.environ["NILEARN_SHARED_DATA"] = str(expected_base_dir)
@@ -168,9 +168,9 @@ def test_get_dataset_dir_write_access(tmp_path):
 
     # Non writeable dir is returned because dataset may be in there.
     assert data_dir == str(no_write)
-    assert Path(data_dir).exists()
+    assert os.path.exists(data_dir)
 
-    Path(no_write).chmod(0o600)
+    os.chmod(no_write, 0o600)
     shutil.rmtree(data_dir)
 
 
@@ -189,7 +189,7 @@ def test_get_dataset_dir_symlink(tmp_path):
     )
 
     assert data_dir == str(expected_linked_dir)
-    assert data_dir.exists()
+    assert os.path.exists(data_dir)
 
 
 def test_md5_sum_file():
@@ -200,7 +200,7 @@ def test_md5_sum_file():
 
     assert _utils._md5_sum_file(f) == "18f32295c556b2a1a3a8e68fe1ad40f7"
 
-    Path(f).unlink()
+    os.remove(f)
 
 
 def test_read_md5_sum_file():
@@ -219,7 +219,7 @@ def test_read_md5_sum_file():
     assert h["test/some_image.nii"] == "70886dcabe7bf5c5a1c24ca24e4cbd94"
     assert h["/tmp/test"] == "20861c8c3fe177da19a7e9539a5dbac"
 
-    Path(f).unlink()
+    os.remove(f)
 
 
 def test_tree(tmp_path):
@@ -444,7 +444,7 @@ def test_fetch_file_overwrite(
     )
 
     assert request_mocker.url_count == 1
-    assert Path(fil).exists()
+    assert os.path.exists(fil)
     with open(fil) as fp:
         assert fp.read() == ""
 
@@ -458,7 +458,7 @@ def test_fetch_file_overwrite(
     )
 
     assert request_mocker.url_count == 1
-    assert Path(fil).exists()
+    assert os.path.exists(fil)
     with open(fil) as fp:
         assert fp.read() == "some content"
 
@@ -468,7 +468,7 @@ def test_fetch_file_overwrite(
     )
 
     assert request_mocker.url_count == 2
-    assert Path(fil).exists()
+    assert os.path.exists(fil)
     with open(fil) as fp:
         assert fp.read() == ""
 
@@ -510,7 +510,7 @@ def test_fetch_files_overwrite(
     )
 
     assert request_mocker.url_count == 1
-    assert Path(fil[0]).exists()
+    assert os.path.exists(fil[0])
     with open(fil[0]) as fp:
         assert fp.read() == ""
 
@@ -526,7 +526,7 @@ def test_fetch_files_overwrite(
     )
 
     assert request_mocker.url_count == 1
-    assert Path(fil[0]).exists()
+    assert os.path.exists(fil[0])
     with open(fil[0]) as fp:
         assert fp.read() == "some content"
 
@@ -538,7 +538,7 @@ def test_fetch_files_overwrite(
     )
 
     assert request_mocker.url_count == 2
-    assert Path(fil[0]).exists()
+    assert os.path.exists(fil[0])
     with open(fil[0]) as fp:
         assert fp.read() == ""
 
