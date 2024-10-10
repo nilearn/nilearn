@@ -7,7 +7,6 @@ import json
 import os
 import re
 import stat
-from pathlib import Path
 from urllib import parse
 
 import numpy as np
@@ -574,7 +573,7 @@ def test_neurosynth_words_vectorized_warning(tmp_path):
 def test_write_read_metadata(tmp_path):
     metadata = {
         "relative_path": "collection_1",
-        "absolute_path": Path("tmp", "collection_1"),
+        "absolute_path": os.path.join("tmp", "collection_1"),
     }
 
     neurovault._write_metadata(metadata, tmp_path / "metadata.json")
@@ -586,33 +585,37 @@ def test_write_read_metadata(tmp_path):
 
     read_metadata = neurovault._add_absolute_paths("tmp", written_metadata)
 
-    assert read_metadata["absolute_path"] == str(Path("tmp", "collection_1"))
+    assert read_metadata["absolute_path"] == os.path.join(
+        "tmp", "collection_1"
+    )
 
 
 def test_add_absolute_paths():
     meta = {
         "col_relative_path": "collection_1",
-        "col_absolute_path": str(Path("dir_0", "neurovault", "collection_1")),
+        "col_absolute_path": os.path.join(
+            "dir_0", "neurovault", "collection_1"
+        ),
     }
     meta = neurovault._add_absolute_paths(
-        Path("dir_1", "neurovault"), meta, force=False
+        os.path.join("dir_1", "neurovault"), meta, force=False
     )
 
-    assert meta["col_absolute_path"] == str(
-        Path("dir_0", "neurovault", "collection_1")
+    assert meta["col_absolute_path"] == os.path.join(
+        "dir_0", "neurovault", "collection_1"
     )
 
     meta = neurovault._add_absolute_paths(
-        Path("dir_1", "neurovault"), meta, force=True
+        os.path.join("dir_1", "neurovault"), meta, force=True
     )
 
-    assert meta["col_absolute_path"] == str(
-        Path("dir_1", "neurovault", "collection_1")
+    assert meta["col_absolute_path"] == os.path.join(
+        "dir_1", "neurovault", "collection_1"
     )
 
     meta = {"id": 0}
     meta_transformed = neurovault._add_absolute_paths(
-        Path("dir_1", "neurovault"), meta, force=True
+        os.path.join("dir_1", "neurovault"), meta, force=True
     )
 
     assert meta == meta_transformed
@@ -638,8 +641,8 @@ def test_json_add_im_files_paths(tmp_path):
         im_file.write(json.dumps({"id": 1}).encode("utf-8"))
     loaded = neurovault._json_add_im_files_paths(im_file_name)
 
-    assert loaded["relative_path"] == str(
-        Path("collection_1", "image_1.nii.gz")
+    assert loaded["relative_path"] == os.path.join(
+        "collection_1", "image_1.nii.gz"
     )
     assert loaded.get("neurosynth_words_relative_path") is None
 
@@ -721,7 +724,7 @@ def test_download_image_terms_error(tmp_path, request_mocker):
         )
     # no fail if file already exists
     with open(
-        Path(
+        os.path.join(
             collection["absolute_path"],
             "neurosynth_words_for_image_a.json",
         ),
@@ -771,8 +774,8 @@ def test_fetch_neurovault(tmp_path):
     # using a data directory we can't write into should raise a
     # warning unless mode is 'offline'
     os.chmod(tmp_path, stat.S_IREAD | stat.S_IEXEC)
-    os.chmod(Path(tmp_path, "neurovault"), stat.S_IREAD | stat.S_IEXEC)
-    if os.access(Path(tmp_path, "neurovault"), os.W_OK):
+    os.chmod(os.path.join(tmp_path, "neurovault"), stat.S_IREAD | stat.S_IEXEC)
+    if os.access(os.path.join(tmp_path, "neurovault"), os.W_OK):
         return
 
     with pytest.warns(UserWarning):
@@ -836,7 +839,7 @@ def test_fetch_neurovault_ids(tmp_path):
 
     modified_meta["some_key"] = "some_other_value"
     # mess it up on disk
-    meta_path = Path(
+    meta_path = os.path.join(
         os.path.dirname(modified_meta["absolute_path"]),
         f"image_{img_ids[0]}_metadata.json",
     )

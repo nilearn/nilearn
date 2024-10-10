@@ -8,7 +8,6 @@ import os
 import shutil
 import tarfile
 import urllib
-from pathlib import Path
 from tempfile import mkdtemp, mkstemp
 from unittest.mock import MagicMock
 from zipfile import ZipFile
@@ -20,7 +19,7 @@ import requests
 from nilearn.datasets import _utils
 
 currdir = os.path.dirname(os.path.abspath(__file__))
-datadir = Path(currdir, "data")
+datadir = os.path.join(currdir, "data")
 
 DATASET_NAMES = {
     "aal",
@@ -95,7 +94,7 @@ def test_get_dataset_dir(tmp_path):
     expected_base_dir = os.path.expanduser("~/nilearn_data")
     data_dir = _utils.get_dataset_dir("test", verbose=0)
 
-    assert data_dir == str(Path(expected_base_dir, "test"))
+    assert data_dir == os.path.join(expected_base_dir, "test")
     assert os.path.exists(data_dir)
 
     shutil.rmtree(data_dir)
@@ -104,7 +103,7 @@ def test_get_dataset_dir(tmp_path):
     os.environ["NILEARN_DATA"] = expected_base_dir
     data_dir = _utils.get_dataset_dir("test", verbose=0)
 
-    assert data_dir == str(Path(expected_base_dir, "test"))
+    assert data_dir == os.path.join(expected_base_dir, "test")
     assert os.path.exists(data_dir)
 
     shutil.rmtree(data_dir)
@@ -113,7 +112,7 @@ def test_get_dataset_dir(tmp_path):
     os.environ["NILEARN_SHARED_DATA"] = expected_base_dir
     data_dir = _utils.get_dataset_dir("test", verbose=0)
 
-    assert data_dir == str(Path(expected_base_dir, "test"))
+    assert data_dir == os.path.join(expected_base_dir, "test")
     assert os.path.exists(data_dir)
 
     shutil.rmtree(data_dir)
@@ -208,20 +207,20 @@ def test_tree():
     # Create a dummy directory tree
     parent = mkdtemp()
 
-    open(Path(parent, "file1"), "w").close()
-    open(Path(parent, "file2"), "w").close()
-    dir1 = Path(parent, "dir1")
-    dir11 = Path(dir1, "dir11")
-    dir12 = Path(dir1, "dir12")
-    dir2 = Path(parent, "dir2")
+    open(os.path.join(parent, "file1"), "w").close()
+    open(os.path.join(parent, "file2"), "w").close()
+    dir1 = os.path.join(parent, "dir1")
+    dir11 = os.path.join(dir1, "dir11")
+    dir12 = os.path.join(dir1, "dir12")
+    dir2 = os.path.join(parent, "dir2")
     os.mkdir(dir1)
     os.mkdir(dir11)
     os.mkdir(dir12)
     os.mkdir(dir2)
-    open(Path(dir1, "file11"), "w").close()
-    open(Path(dir1, "file12"), "w").close()
-    open(Path(dir11, "file111"), "w").close()
-    open(Path(dir2, "file21"), "w").close()
+    open(os.path.join(dir1, "file11"), "w").close()
+    open(os.path.join(dir1, "file12"), "w").close()
+    open(os.path.join(dir11, "file111"), "w").close()
+    open(os.path.join(dir2, "file21"), "w").close()
 
     tree_ = _utils.tree(parent)
 
@@ -233,13 +232,13 @@ def test_tree():
     # assert_equal(tree_[1]['dir2'][0], 'file21')
     # assert_equal(tree_[2], 'file1')
     # assert_equal(tree_[3], 'file2')
-    assert tree_[0][1][0][1][0] == Path(dir11, "file111")
+    assert tree_[0][1][0][1][0] == os.path.join(dir11, "file111")
     assert len(tree_[0][1][1][1]) == 0
-    assert tree_[0][1][2] == Path(dir1, "file11")
-    assert tree_[0][1][3] == Path(dir1, "file12")
-    assert tree_[1][1][0] == Path(dir2, "file21")
-    assert tree_[2] == Path(parent, "file1")
-    assert tree_[3] == Path(parent, "file2")
+    assert tree_[0][1][2] == os.path.join(dir1, "file11")
+    assert tree_[0][1][3] == os.path.join(dir1, "file12")
+    assert tree_[1][1][0] == os.path.join(dir2, "file21")
+    assert tree_[2] == os.path.join(parent, "file1")
+    assert tree_[3] == os.path.join(parent, "file2")
 
     # Clean
     shutil.rmtree(parent)
@@ -390,7 +389,7 @@ def test_uncompress_gzip(tmp_path, ext):
 
 def test_safe_extract(tmp_path):
     # Test vulnerability patch by mimicking path traversal
-    ztemp = Path(tmp_path, "test.tar")
+    ztemp = os.path.join(tmp_path, "test.tar")
     in_archive_file = tmp_path / "something.txt"
     in_archive_file.write_text("hello")
     with contextlib.closing(tarfile.open(ztemp, "w")) as tar:

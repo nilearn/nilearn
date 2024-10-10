@@ -117,15 +117,15 @@ def fetch_atlas_difumo(
     url = f"https://osf.io/{dic[dimension]}/download"
     opts = {"uncompress": True}
 
-    csv_file = Path(f"{dimension}", f"labels_{dimension}_dictionary.csv")
+    csv_file = os.path.join("{0}", "labels_{0}_dictionary.csv")
     if resolution_mm != 3:
-        nifti_file = Path(f"{dimension}", "2mm", "maps.nii.gz")
+        nifti_file = os.path.join("{0}", "2mm", "maps.nii.gz")
     else:
-        nifti_file = Path(f"{dimension}", "3mm", "maps.nii.gz")
+        nifti_file = os.path.join("{0}", "3mm", "maps.nii.gz")
 
     files = [
-        (csv_file, url, opts),
-        (nifti_file, url, opts),
+        (csv_file.format(dimension), url, opts),
+        (nifti_file.format(dimension), url, opts),
     ]
 
     dataset_name = "difumo_atlases"
@@ -146,7 +146,7 @@ def fetch_atlas_difumo(
     readme_files = [
         ("README.md", "https://osf.io/4k9bf/download", {"move": "README.md"})
     ]
-    if not os.path.exists(Path(data_dir, "README.md")):
+    if not os.path.exists(os.path.join(data_dir, "README.md")):
         fetch_files(data_dir, readme_files, verbose=verbose, resume=resume)
 
     fdescr = get_dataset_descr(dataset_name)
@@ -695,7 +695,7 @@ def _get_atlas_data_and_labels(
     # For practical reasons, we mimic the FSL data directory here.
     data_dir = get_dataset_dir("fsl", data_dir=data_dir, verbose=verbose)
     opts = {"uncompress": True}
-    root = Path("data", "atlases")
+    root = os.path.join("data", "atlases")
 
     if atlas_source == "HarvardOxford":
         if symmetric_split:
@@ -713,8 +713,8 @@ def _get_atlas_data_and_labels(
     else:
         label_file = "Juelich.xml"
         is_lateralized = False
-    label_file = Path(root, label_file)
-    atlas_file = Path(
+    label_file = os.path.join(root, label_file)
+    atlas_file = os.path.join(
         root, atlas_source, f"{atlas_source}-{atlas_name}.nii.gz"
     )
     atlas_file, label_file = fetch_files(
@@ -887,8 +887,8 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
 
     dataset_name = "msdl_atlas"
     files = [
-        (Path("MSDL_rois", "msdl_rois_labels.csv"), url, opts),
-        (Path("MSDL_rois", "msdl_rois.nii"), url, opts),
+        (os.path.join("MSDL_rois", "msdl_rois_labels.csv"), url, opts),
+        (os.path.join("MSDL_rois", "msdl_rois.nii"), url, opts),
     ]
 
     data_dir = get_dataset_dir(
@@ -947,7 +947,7 @@ def fetch_coords_power_2011(legacy_format=True):
     dataset_name = "power_2011"
     fdescr = get_dataset_descr(dataset_name)
     package_directory = os.path.dirname(os.path.abspath(__file__))
-    csv = Path(package_directory, "data", "power_2011.csv")
+    csv = os.path.join(package_directory, "data", "power_2011.csv")
     params = {"rois": pd.read_csv(csv), "description": fdescr}
     params["rois"] = params["rois"].rename(
         columns={c: c.lower() for c in params["rois"].columns}
@@ -1187,7 +1187,8 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
     )
 
     filenames = [
-        (Path("Yeo_JNeurophysiol11_MNI152", f), url, opts) for f in basenames
+        (os.path.join("Yeo_JNeurophysiol11_MNI152", f), url, opts)
+        for f in basenames
     ]
 
     data_dir = get_dataset_dir(
@@ -1301,7 +1302,7 @@ def fetch_atlas_aal(
             url = f"{base_url}AAL_files/aal_for_SPM12.tar.gz"
             basenames = ("AAL.nii", "AAL.xml")
             filenames = [
-                (Path("aal", "atlas", f), url, opts) for f in basenames
+                (os.path.join("aal", "atlas", f), url, opts) for f in basenames
             ]
             message = (
                 "Starting in version 0.13, the default fetched mask will be"
@@ -1312,12 +1313,15 @@ def fetch_atlas_aal(
         elif version == "3v2":
             url = f"{base_url}wp-content/uploads/AAL3v2_for_SPM12.tar.gz"
             basenames = ("AAL3v1.nii", "AAL3v1.xml")
-            filenames = [(Path("AAL3", f), url, opts) for f in basenames]
+            filenames = [
+                (os.path.join("AAL3", f), url, opts) for f in basenames
+            ]
         else:
             url = f"{base_url}wp-content/uploads/aal_for_{version}.zip"
             basenames = ("ROI_MNI_V4.nii", "ROI_MNI_V4.txt")
             filenames = [
-                (Path(f"aal_for_{version}", f), url, opts) for f in basenames
+                (os.path.join(f"aal_for_{version}", f), url, opts)
+                for f in basenames
             ]
 
     data_dir = get_dataset_dir(
@@ -1472,7 +1476,7 @@ def fetch_atlas_basc_multiscale_2015(
             + ".nii.gz"
         )
 
-        filename = [(Path(folder_name, basename), url, opts)]
+        filename = [(os.path.join(folder_name, basename), url, opts)]
 
         data = fetch_files(data_dir, filename, resume=resume, verbose=verbose)
         params = Bunch(maps=data[0], description=fdescr)
@@ -1486,7 +1490,8 @@ def fetch_atlas_basc_multiscale_2015(
             for key in keys
         ]
         filenames = [
-            (Path(folder_name, basename), url, opts) for basename in basenames
+            (os.path.join(folder_name, basename), url, opts)
+            for basename in basenames
         ]
         data = fetch_files(data_dir, filenames, resume=resume, verbose=verbose)
 
@@ -1542,7 +1547,7 @@ def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=True):
     dataset_name = "dosenbach_2010"
     fdescr = get_dataset_descr(dataset_name)
     package_directory = os.path.dirname(os.path.abspath(__file__))
-    csv = Path(package_directory, "data", "dosenbach_2010.csv")
+    csv = os.path.join(package_directory, "data", "dosenbach_2010.csv")
     out_csv = pd.read_csv(csv)
 
     if ordered_regions:
@@ -1615,12 +1620,12 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
     dataset_name = "seitzman_2018"
     fdescr = get_dataset_descr(dataset_name)
     package_directory = os.path.dirname(os.path.abspath(__file__))
-    roi_file = Path(
+    roi_file = os.path.join(
         package_directory,
         "data",
         "seitzman_2018_ROIs_300inVol_MNI_allInfo.txt",
     )
-    anatomical_file = Path(
+    anatomical_file = os.path.join(
         package_directory, "data", "seitzman_2018_ROIs_anatomicalLabels.txt"
     )
 
@@ -1740,7 +1745,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     networks = [[name] * len(idxs) for name, idxs in labels]
 
-    filenames = [(Path("allen_rsn_2011", f), url, opts) for f in files]
+    filenames = [(os.path.join("allen_rsn_2011", f), url, opts) for f in files]
 
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
