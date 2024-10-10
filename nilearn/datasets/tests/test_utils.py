@@ -431,7 +431,7 @@ def test_safe_extract(tmp_path):
         _utils.uncompress_file(ztemp, verbose=0)
 
 
-def test_fetch_file_part(tmp_path, request_mocker):
+def test_fetch_file_part(tmp_path):
     url = "http://foo/temp.txt"
     (tmp_path / "temp.txt.part").touch()
 
