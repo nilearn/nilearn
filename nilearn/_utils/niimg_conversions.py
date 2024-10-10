@@ -281,9 +281,11 @@ def check_niimg(
     niimg = stringify_path(niimg)
 
     if isinstance(niimg, str):
+        # TODO refactor by using "resolve_globbing"
+        # in nilearn/_utils/path_finding.py
         if wildcards and ni.EXPAND_PATH_WILDCARDS:
             # Ascending sorting + expand user path
-            filenames = sorted(glob.glob(Path(niimg).expanduser()))
+            filenames = sorted(glob.glob(str(Path(niimg).expanduser())))
 
             # processing filenames matching globbing expression
             if len(filenames) >= 1 and glob.has_magic(niimg):
