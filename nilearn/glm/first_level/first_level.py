@@ -1661,7 +1661,7 @@ def _list_valid_subjects(derivatives_path, sub_labels):
     # Infer subjects in dataset if not provided
     if not sub_labels:
         sub_folders = derivatives_path.glob("sub-*/")
-        sub_labels = [s.name.split("-")[1] for s in sub_folders]
+        sub_labels = [s.name.split("-")[1] for s in sub_folders if s.is_dir()]
 
     # keep only existing subjects
     sub_labels_exist = []
