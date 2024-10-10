@@ -15,11 +15,10 @@ see :footcite:t:`Dadi2019` for a careful study.
 
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
-import matplotlib.pyplot as plt
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
 
 # %%
 # Load brain development :term:`fMRI` dataset and MSDL atlas

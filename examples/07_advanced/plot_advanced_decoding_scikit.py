@@ -17,6 +17,7 @@ face and cat images.
 .. include:: ../../../examples/masker_note.rst
 
 """
+
 # %%
 # Retrieve and load the :term:`fMRI` data from the Haxby study
 # ------------------------------------------------------------

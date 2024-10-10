@@ -8,6 +8,7 @@ The mask is computed and visualized.
 .. include:: ../../../examples/masker_note.rst
 
 """
+
 # %%
 # Retrieve the brain development functional dataset
 

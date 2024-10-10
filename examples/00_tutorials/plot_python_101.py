@@ -3,14 +3,15 @@ Basic numerics and plotting with Python
 =======================================
 """
 
-from nilearn._utils.helpers import check_matplotlib
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
 
-check_matplotlib()
-
-# import numpy: the module providing numerical arrays
 # %%
 # A simple example of basic Python numerics and how to plot it.
-import matplotlib.pyplot as plt
+
+# import numpy: the module providing numerical arrays
 import numpy as np
 
 t = np.linspace(1, 10, 2000)

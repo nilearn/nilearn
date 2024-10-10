@@ -23,6 +23,7 @@ of brain connected networks given in 4D image.
 .. include:: ../../../examples/masker_note.rst
 
 """
+
 # %%
 # Coordinates of the slice we are interested in each direction. We will be
 # using them for visualization.

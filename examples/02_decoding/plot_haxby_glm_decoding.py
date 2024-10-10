@@ -14,6 +14,7 @@ More specifically:
    representing the blocks of stimuli.
 3. Analyze the decoding performance using a classifier.
 """
+
 # %%
 # Fetch example Haxby dataset
 # ---------------------------
