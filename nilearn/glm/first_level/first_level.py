@@ -21,6 +21,9 @@ from sklearn.base import clone
 from sklearn.cluster import KMeans
 
 from nilearn._utils import fill_doc, logger, stringify_path
+from nilearn._utils.masker_validation import (
+    check_compatibility_mask_and_images,
+)
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_run_sample_masks
 from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
@@ -320,10 +323,11 @@ class FirstLevelModel(BaseGLM):
 
     mask_img : Niimg-like, NiftiMasker, SurfaceImage, SurfaceMasker, False or \
                None, default=None
-        Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If None is passed, the mask
-        will be computed automatically by a NiftiMasker with default
-        parameters. If False is given then the data will not be masked.
+        Mask to be used on data.
+        If an instance of masker is passed, then its mask will be used.
+        If None is passed, the mask will be computed automatically
+        by a NiftiMasker or SurfaceMasker with default parameters.
+        If False is given then the data will not be masked.
         In the case of surface analysis, passing None or False will lead to
         no masking.
 
@@ -510,6 +514,8 @@ class FirstLevelModel(BaseGLM):
 
         if not isinstance(run_imgs, (list, tuple)):
             run_imgs = [run_imgs]
+
+        check_compatibility_mask_and_images(self.mask_img, run_imgs)
 
         if design_matrices is None:
             if events is None:
@@ -708,8 +714,24 @@ class FirstLevelModel(BaseGLM):
                    :obj:`list` or :obj:`tuple` of Niimg-like objects, \
                    SurfaceImage object, \
                    or :obj:`list` or :obj:`tuple` of SurfaceImage
-            Data on which the :term:`GLM` will be fitted. If this is a list,
-            the affine is considered the same for all.
+            Data on which the :term:`GLM` will be fitted.
+            If this is a list, the affine is considered the same for all.
+
+            .. warning::
+
+                If the FirstLevelModel object was instantiated
+                with a ``mask_img``,
+                then ``run_imgs`` must be compatible with ``mask_img``.
+                For example, if ``mask_img`` is
+                a :class:`nilearn.maskers.NiftiMasker` instance
+                or a Niimng-like object, then ``run_imgs`` must be a
+                Niimg-like object, \
+                a :obj:`list` or a :obj:`tuple` of Niimg-like objects.
+                If ``mask_img`` is
+                a ``SurfaceMasker`` or ``SurfaceImage`` instance,
+                then ``run_imgs`` must be a
+                ``SurfaceImage`` object, \
+                a :obj:`list` or a :obj:`tuple` of ``SurfaceImage`` objects.
 
         events : :class:`pandas.DataFrame` or :obj:`str` or :obj:`list` of \
                  :class:`pandas.DataFrame` or :obj:`str`, default=None

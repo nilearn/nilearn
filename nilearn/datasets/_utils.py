@@ -587,7 +587,7 @@ def fetch_single_file(
 
         if resume and os.path.exists(temp_full_name):
             # Download has been interrupted, we try to resume it.
-            local_file_size = os.path.getsize(temp_full_name)
+            local_file_size = Path(temp_full_name).stat().st_size
             # If the file exists, then only download the remainder
             headers["Range"] = f"bytes={local_file_size}-"
             try:

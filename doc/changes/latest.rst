@@ -26,8 +26,6 @@ NEW
 Fixes
 -----
 
-- :bdg-dark:`Code` Fix PTH errors: PTH106, PTH112, PTH114, PTH117, PTH122 (:gh:`4607`, :gh:`4612`, :gh:`4590` by `Hande Gözükan`_).
-
 - :bdg-dark:`Code` Make sure that radiological view is applied when requested and not only when figures are annotated (:gh:`4556` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Fix failing test in ``test_nilearn_standardize`` on MacOS 14 by adding trend in simulated data (:gh:`4411` by `Hao-Ting Wang`_).
@@ -43,6 +41,9 @@ Fixes
 - :bdg-dark:`Code` ``first_level_from_bids`` will now return subjects in order (:gh:`4582` by `Tharun K`_).
 
 - :bdg-dark:`Code` Fix PTH errors: PTH110, PTH107, PTH102, PTH113, PTH111, PTH101, PTH201, PTH109, PTH115 (:gh:`4620` by `Prakhar Jain`_).
+
+- :bdg-dark:`Code` Fix PTH errors: PTH106, PTH112, PTH114, PTH117, PTH122, PTH202, PTH203, PTH204 (:gh:`4607`, :gh:`4612`, :gh:`4590`, :gh:`4618` by `Hande Gözükan`_).
+
 
 Enhancements
 ------------
