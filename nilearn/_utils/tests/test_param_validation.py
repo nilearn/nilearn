@@ -17,9 +17,6 @@ from nilearn._utils.param_validation import (
     get_mask_volume,
 )
 
-from nilearn.surface import vol_to_surf
-from nilearn import datasets
-
 mni152_brain_mask = (
     "/usr/share/fsl/data/standard/MNI152_T1_1mm_brain_mask.nii.gz"
 )
