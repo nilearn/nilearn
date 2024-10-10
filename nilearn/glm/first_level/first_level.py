@@ -8,7 +8,6 @@ Author: Bertrand Thirion, Martin Perez-Guevara, 2016
 from __future__ import annotations
 
 import csv
-import glob
 import os
 import time
 from pathlib import Path
@@ -1646,29 +1645,28 @@ def _list_valid_subjects(derivatives_path, sub_labels):
 
     Parameters
     ----------
-    derivatives_path : :obj:`str`
+    derivatives_path : :obj:`str` or :obj:`Path`
         Path to the BIDS derivatives folder.
 
-    sub_labels : :obj:`list` of :obj:`str`, optional
+    sub_labels : :obj:`list` of :obj:`str`
         List of subject labels to process.
         If None, all subjects in the dataset will be processed.
 
     Returns
     -------
-    sub_labels : :obj:`list` of :obj:`str`, optional
+    sub_labels : :obj:`list` of :obj:`str`
         List of subject labels that will be processed.
     """
+    derivatives_path = Path(derivatives_path)
     # Infer subjects in dataset if not provided
     if not sub_labels:
-        sub_folders = glob.glob(os.path.join(derivatives_path, "sub-*/"))
-        sub_labels = [
-            os.path.basename(s[:-1]).split("-")[1] for s in sub_folders
-        ]
+        sub_folders = derivatives_path.glob("sub-*/")
+        sub_labels = [s.name.split("-")[1] for s in sub_folders if s.is_dir()]
 
     # keep only existing subjects
     sub_labels_exist = []
     for sub_label_ in sub_labels:
-        if os.path.exists(os.path.join(derivatives_path, f"sub-{sub_label_}")):
+        if (derivatives_path / f"sub-{sub_label_}").exists():
             sub_labels_exist.append(sub_label_)
         else:
             warn(

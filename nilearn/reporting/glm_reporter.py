@@ -16,6 +16,7 @@ from collections import OrderedDict
 from collections.abc import Iterable
 from decimal import Decimal
 from html import escape
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -44,9 +45,7 @@ from nilearn.maskers import NiftiMasker
 from nilearn.reporting.get_clusters_table import get_clusters_table
 from nilearn.reporting.utils import figure_to_svg_quoted
 
-HTML_TEMPLATE_ROOT_PATH = os.path.join(
-    os.path.dirname(__file__), "glm_reporter_templates"
-)
+HTML_TEMPLATE_ROOT_PATH = Path(__file__).parent / "glm_reporter_templates"
 
 
 @fill_doc
@@ -187,12 +186,11 @@ def make_glm_report(
     except AttributeError:
         design_matrices = [model.design_matrix_]
 
-    html_head_template_path = os.path.join(
-        HTML_TEMPLATE_ROOT_PATH, "report_head_template.html"
+    html_head_template_path = (
+        HTML_TEMPLATE_ROOT_PATH / "report_head_template.html"
     )
-
-    html_body_template_path = os.path.join(
-        HTML_TEMPLATE_ROOT_PATH, "report_body_template.html"
+    html_body_template_path = (
+        HTML_TEMPLATE_ROOT_PATH / "report_body_template.html"
     )
 
     with open(html_head_template_path) as html_head_file_obj:
@@ -380,9 +378,8 @@ def _plot_contrasts(contrasts, design_matrices):
 
     """
     all_contrasts_plots = {}
-    contrast_template_path = os.path.join(
-        HTML_TEMPLATE_ROOT_PATH, "contrast_template.html"
-    )
+    contrast_template_path = HTML_TEMPLATE_ROOT_PATH / "contrast_template.html"
+
     with open(contrast_template_path) as html_template_obj:
         contrast_template_text = html_template_obj.read()
 
@@ -575,9 +572,10 @@ def _dmtx_to_svg_url(design_matrices):
 
     """
     html_design_matrices = []
-    dmtx_template_path = os.path.join(
-        HTML_TEMPLATE_ROOT_PATH, "design_matrix_template.html"
+    dmtx_template_path = (
+        HTML_TEMPLATE_ROOT_PATH / "design_matrix_template.html"
     )
+
     with open(dmtx_template_path) as html_template_obj:
         dmtx_template_text = html_template_obj.read()
 
@@ -769,9 +767,10 @@ def _make_stat_maps_contrast_clusters(
 
     """
     all_components = []
-    components_template_path = os.path.join(
-        HTML_TEMPLATE_ROOT_PATH, "stat_maps_contrast_clusters_template.html"
+    components_template_path = (
+        HTML_TEMPLATE_ROOT_PATH / "stat_maps_contrast_clusters_template.html"
     )
+
     with open(components_template_path) as html_template_obj:
         components_template_text = html_template_obj.read()
     for contrast_name, stat_map_img in stat_img.items():

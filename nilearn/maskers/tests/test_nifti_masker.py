@@ -6,9 +6,9 @@ test_signal.py for this.
 """
 
 # Author: Gael Varoquaux, Philippe Gervais
-import os
 import shutil
 import warnings
+from pathlib import Path
 from tempfile import mkdtemp
 
 import numpy as np
@@ -297,14 +297,14 @@ def test_joblib_cache(tmp_path, mask_img_1):
 
     # Test a tricky issue with memmapped joblib.memory that makes
     # imgs return by inverse_transform impossible to save
-    cachedir = mkdtemp()
+    cachedir = Path(mkdtemp())
     try:
         masker.memory = Memory(location=cachedir, mmap_mode="r", verbose=0)
         X = masker.transform(mask_img_1)
         # inverse_transform a first time, so that the result is cached
         out_img = masker.inverse_transform(X)
         out_img = masker.inverse_transform(X)
-        out_img.to_filename(os.path.join(cachedir, "test.nii"))
+        out_img.to_filename(cachedir / "test.nii")
     finally:
         # enables to delete "filename" on windows
         del masker

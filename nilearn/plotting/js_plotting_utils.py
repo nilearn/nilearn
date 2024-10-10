@@ -3,8 +3,8 @@ html_connectome.
 """
 
 import base64
-import os
 import warnings
+from pathlib import Path
 from string import Template
 
 import matplotlib as mpl
@@ -30,8 +30,8 @@ def add_js_lib(html, embed_js=True):
     otherwise, they are loaded via CDNs.
 
     """
-    js_dir = os.path.join(os.path.dirname(__file__), "data", "js")
-    with open(os.path.join(js_dir, "surface-plot-utils.js")) as f:
+    js_dir = Path(__file__).parent / "data" / "js"
+    with (js_dir / "surface-plot-utils.js").open() as f:
         js_utils = f.read()
     if not embed_js:
         js_lib = f"""
@@ -44,9 +44,9 @@ def add_js_lib(html, embed_js=True):
         </script>
         """
     else:
-        with open(os.path.join(js_dir, "jquery.min.js")) as f:
+        with (js_dir / "jquery.min.js").open() as f:
             jquery = f.read()
-        with open(os.path.join(js_dir, "plotly-gl3d-latest.min.js")) as f:
+        with (js_dir / "plotly-gl3d-latest.min.js").open() as f:
             plotly = f.read()
         js_lib = f"""
         <script>{jquery}</script>
@@ -62,9 +62,8 @@ def add_js_lib(html, embed_js=True):
 
 def get_html_template(template_name):
     """Get an HTML file from package data."""
-    template_path = os.path.join(
-        os.path.dirname(__file__), "data", "html", template_name
-    )
+    template_path = Path(__file__).parent / "data" / "html" / template_name
+
     with open(template_path, "rb") as f:
         return Template(f.read().decode("utf-8"))
 
