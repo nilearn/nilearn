@@ -810,7 +810,8 @@ def clean(
         return signals
 
     # detect if mean is close to zero; This can obscure the scale of the signal
-    # with percent signal change standardization
+    # with percent signal change standardization. This should happen when the
+    # data was 1. detrended 2. high pass filtered.
     filtered_mean_check = (
         np.abs(signals.mean(0)).mean() / np.abs(original_mean_signals).mean()
         < 1e-1
