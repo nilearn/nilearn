@@ -42,6 +42,7 @@ from nilearn.glm.first_level.first_level import (
     _check_list_length_match,
     _check_run_tables,
     _check_trial_type,
+    _list_valid_subjects,
     _yule_walker,
 )
 from nilearn.glm.regression import ARModel, OLSModel
@@ -49,8 +50,8 @@ from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files
 from nilearn.maskers import NiftiMasker
 
-BASEDIR = os.path.dirname(os.path.abspath(__file__))
-FUNCFILE = os.path.join(BASEDIR, "functional.nii.gz")
+BASEDIR = Path(__file__).resolve().parent
+FUNCFILE = BASEDIR / "functional.nii.gz"
 
 
 def test_high_level_glm_one_run():
@@ -1831,6 +1832,16 @@ def test_check_trial_type_warning(tmp_path):
         _check_trial_type([event_file])
 
 
+def test_list_valid_subjects_with_toplevel_files(tmp_path):
+    """Test that only subject directories are returned, not file names."""
+    (tmp_path / "sub-01").mkdir()
+    (tmp_path / "sub-02").mkdir()
+    (tmp_path / "sub-01.html").touch()
+
+    valid_subjects = _list_valid_subjects(tmp_path, None)
+    assert valid_subjects == ["01", "02"]
+
+
 def test_missing_trial_type_column_warning(tmp_path_factory):
     """Check that warning is thrown when an events file has no trial_type.
 
@@ -2075,6 +2086,45 @@ def test_flm_fit_surface_image_with_mask(_make_surface_glm_data, mini_mask):
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
     assert model.masker_.mask_img_.shape == (9,)
     assert isinstance(model.masker_, SurfaceMasker)
+
+
+def test_error_flm_surface_mask_volume_image(
+    _make_surface_glm_data, mini_mask, img_4d_rand_eye
+):
+    """Test error is raised when mask is a surface and data is in volume."""
+    mini_img, des = _make_surface_glm_data(5)
+    model = FirstLevelModel(mask_img=mini_mask)
+    with pytest.raises(
+        TypeError, match="Mask and images to fit must be of compatible types."
+    ):
+        model.fit(img_4d_rand_eye, design_matrices=des)
+
+    masker = SurfaceMasker().fit(mini_img)
+    model = FirstLevelModel(mask_img=masker)
+    with pytest.raises(
+        TypeError, match="Mask and images to fit must be of compatible types."
+    ):
+        model.fit(img_4d_rand_eye, design_matrices=des)
+
+
+def test_error_flm_volume_mask_surface_image(_make_surface_glm_data):
+    """Test error is raised when mask is a volume and data is in surface."""
+    shapes, rk = [(7, 8, 9, 15)], 3
+    mask, _, _ = generate_fake_fmri_data_and_design(shapes, rk)
+
+    mini_img, des = _make_surface_glm_data(5)
+    model = FirstLevelModel(mask_img=mask)
+    with pytest.raises(
+        TypeError, match="Mask and images to fit must be of compatible types."
+    ):
+        model.fit(mini_img, design_matrices=des)
+
+    masker = NiftiMasker().fit(mask)
+    model = FirstLevelModel(mask_img=masker)
+    with pytest.raises(
+        TypeError, match="Mask and images to fit must be of compatible types."
+    ):
+        model.fit(mini_img, design_matrices=des)
 
 
 def test_flm_with_surface_image_with_surface_masker(_make_surface_glm_data):

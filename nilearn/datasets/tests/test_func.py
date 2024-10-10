@@ -911,7 +911,8 @@ def test_fetch_openneuro_dataset(tmp_path):
         f"https://example.com/{data_prefix}/sub-yyy/ses-01.txt",
         f"https://example.com/{data_prefix}/sub-yyy/ses-02.txt",
     ]
-    json.dump(urls, open(url_file, "w"))
+    with open(url_file, "w") as f:
+        json.dump(urls, f)
 
     # Only 1 subject and not subject specific files get downloaded
     datadir, dl_files = func.fetch_openneuro_dataset(

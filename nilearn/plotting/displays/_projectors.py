@@ -169,13 +169,16 @@ class OrthoProjector(OrthoSlicer):
 
             raise ValueError(message)
 
-        if isinstance(node_color, (list, np.ndarray)) and len(node_color) != 1:
-            if len(node_color) != node_coords_shape[0]:
-                raise ValueError(
-                    "Mismatch between the number of nodes "
-                    f"({node_coords_shape[0]}) "
-                    f"and the number of node colors ({len(node_color)})."
-                )
+        if (
+            isinstance(node_color, (list, np.ndarray))
+            and len(node_color) != 1
+            and len(node_color) != node_coords_shape[0]
+        ):
+            raise ValueError(
+                "Mismatch between the number of nodes "
+                f"({node_coords_shape[0]}) "
+                f"and the number of node colors ({len(node_color)})."
+            )
 
         if node_coords_shape[0] != adjacency_matrix_shape[0]:
             raise ValueError(
