@@ -1,4 +1,5 @@
 import warnings
+from collections.abc import Iterable
 from pathlib import Path
 from string import Template
 
@@ -141,6 +142,9 @@ def check_compatibility_mask_and_images(mask_img, run_imgs):
     """
     if mask_img is None:
         return None
+
+    if not isinstance(run_imgs, Iterable):
+        run_imgs = [run_imgs]
 
     msg = (
         "Mask and images to fit must be of compatible types.\n"
