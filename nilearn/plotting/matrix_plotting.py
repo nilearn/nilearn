@@ -320,9 +320,8 @@ def plot_matrix(
     if grid is not False:
         _configure_grid(axes, tri, len(mat))
     axes.set_ylim(ymin, ymax)
-    if auto_fit:
-        if labels:
-            _fit_axes(axes)
+    if auto_fit and labels:
+        _fit_axes(axes)
     if colorbar:
         divider = make_axes_locatable(axes)
         cax = divider.append_axes("right", size="5%", pad=0.05)

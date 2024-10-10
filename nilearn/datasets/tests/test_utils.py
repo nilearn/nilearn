@@ -9,7 +9,7 @@ import shutil
 import tarfile
 import urllib
 from pathlib import Path
-from tempfile import mkdtemp, mkstemp
+from tempfile import mkstemp
 from unittest.mock import MagicMock
 from zipfile import ZipFile
 
@@ -95,31 +95,31 @@ def test_get_dataset_dir(tmp_path):
     expected_base_dir = Path("~/nilearn_data").expanduser()
     data_dir = _utils.get_dataset_dir("test", verbose=0)
 
-    assert data_dir == os.path.join(expected_base_dir, "test")
+    assert data_dir == str(expected_base_dir / "test")
     assert Path(data_dir).exists()
 
     shutil.rmtree(data_dir)
 
-    expected_base_dir = str(tmp_path / "test_nilearn_data")
-    os.environ["NILEARN_DATA"] = expected_base_dir
+    expected_base_dir = tmp_path / "test_nilearn_data"
+    os.environ["NILEARN_DATA"] = str(expected_base_dir)
     data_dir = _utils.get_dataset_dir("test", verbose=0)
 
-    assert data_dir == os.path.join(expected_base_dir, "test")
+    assert data_dir == str(expected_base_dir / "test")
     assert Path(data_dir).exists()
 
     shutil.rmtree(data_dir)
 
-    expected_base_dir = str(tmp_path / "nilearn_shared_data")
-    os.environ["NILEARN_SHARED_DATA"] = expected_base_dir
+    expected_base_dir = tmp_path / "nilearn_shared_data"
+    os.environ["NILEARN_SHARED_DATA"] = str(expected_base_dir)
     data_dir = _utils.get_dataset_dir("test", verbose=0)
 
-    assert data_dir == os.path.join(expected_base_dir, "test")
+    assert data_dir == str(expected_base_dir / "test")
     assert Path(data_dir).exists()
 
     shutil.rmtree(data_dir)
 
     # Verify exception for a path which exists and is a file
-    test_file = str(tmp_path / "some_file")
+    test_file = tmp_path / "some_file"
     with open(test_file, "w") as out:
         out.write("abcfeg")
 
@@ -156,22 +156,40 @@ def test_get_dataset_dir_path_as_str(should_cast_path_to_string, tmp_path):
 def test_get_dataset_dir_write_access(tmp_path):
     os.environ.pop("NILEARN_SHARED_DATA", None)
 
-    no_write = str(tmp_path / "no_write")
-    os.makedirs(no_write)
-    Path(no_write).chmod(0o400)
+    no_write = tmp_path / "no_write"
+    no_write.mkdir(parents=True)
+    os.chmod(no_write, 0o400)
 
-    expected_base_dir = str(tmp_path / "nilearn_shared_data")
-    os.environ["NILEARN_SHARED_DATA"] = expected_base_dir
+    expected_base_dir = tmp_path / "nilearn_shared_data"
+    os.environ["NILEARN_SHARED_DATA"] = str(expected_base_dir)
     data_dir = _utils.get_dataset_dir(
         "test", default_paths=[no_write], verbose=0
     )
 
     # Non writeable dir is returned because dataset may be in there.
-    assert data_dir == no_write
+    assert data_dir == str(no_write)
     assert Path(data_dir).exists()
 
     Path(no_write).chmod(0o600)
     shutil.rmtree(data_dir)
+
+
+def test_get_dataset_dir_symlink(tmp_path):
+    expected_linked_dir = tmp_path / "linked"
+    expected_linked_dir.mkdir(parents=True)
+    expected_base_dir = tmp_path / "env_data"
+    expected_base_dir.mkdir()
+    symlink_dir = expected_base_dir / "test"
+    symlink_dir.symlink_to(expected_linked_dir)
+
+    assert symlink_dir.exists()
+
+    data_dir = _utils.get_dataset_dir(
+        "test", default_paths=[symlink_dir], verbose=0
+    )
+
+    assert data_dir == str(expected_linked_dir)
+    assert os.path.exists(data_dir)
 
 
 def test_md5_sum_file():
@@ -204,45 +222,56 @@ def test_read_md5_sum_file():
     Path(f).unlink()
 
 
-def test_tree():
-    # Create a dummy directory tree
-    parent = mkdtemp()
+def test_tree(tmp_path):
+    dir1 = tmp_path / "dir1"
+    dir11 = dir1 / "dir11"
+    dir12 = dir1 / "dir12"
+    dir2 = tmp_path / "dir2"
 
-    open(os.path.join(parent, "file1"), "w").close()
-    open(os.path.join(parent, "file2"), "w").close()
-    dir1 = os.path.join(parent, "dir1")
-    dir11 = os.path.join(dir1, "dir11")
-    dir12 = os.path.join(dir1, "dir12")
-    dir2 = os.path.join(parent, "dir2")
-    Path(dir1).mkdir()
-    Path(dir11).mkdir()
-    Path(dir12).mkdir()
-    Path(dir2).mkdir()
-    open(os.path.join(dir1, "file11"), "w").close()
-    open(os.path.join(dir1, "file12"), "w").close()
-    open(os.path.join(dir11, "file111"), "w").close()
-    open(os.path.join(dir2, "file21"), "w").close()
+    dir1.mkdir()
+    dir11.mkdir()
+    dir12.mkdir()
+    dir2.mkdir()
 
-    tree_ = _utils.tree(parent)
+    (tmp_path / "file1").touch()
+    (tmp_path / "file2").touch()
+    (dir1 / "file11").touch()
+    (dir1 / "file12").touch()
+    (dir11 / "file111").touch()
+    (dir2 / "file21").touch()
+
+
+    # test for list return value
+    tree_ = _utils.tree(tmp_path)
 
     # Check the tree
-    # assert_equal(tree_[0]['dir1'][0]['dir11'][0], 'file111')
-    # assert_equal(len(tree_[0]['dir1'][1]['dir12']), 0)
-    # assert_equal(tree_[0]['dir1'][2], 'file11')
-    # assert_equal(tree_[0]['dir1'][3], 'file12')
-    # assert_equal(tree_[1]['dir2'][0], 'file21')
-    # assert_equal(tree_[2], 'file1')
-    # assert_equal(tree_[3], 'file2')
-    assert tree_[0][1][0][1][0] == os.path.join(dir11, "file111")
+    assert type(tree_[0]) is tuple
+    assert type(tree_[0][1]) is list
+    assert type(tree_[0][1][0]) is tuple
+    assert type(tree_[1]) is tuple
+    assert type(tree_[1][1]) is list
+    assert tree_[0][1][0][1][0] == str(dir11 / "file111")
     assert len(tree_[0][1][1][1]) == 0
-    assert tree_[0][1][2] == os.path.join(dir1, "file11")
-    assert tree_[0][1][3] == os.path.join(dir1, "file12")
-    assert tree_[1][1][0] == os.path.join(dir2, "file21")
-    assert tree_[2] == os.path.join(parent, "file1")
-    assert tree_[3] == os.path.join(parent, "file2")
+    assert tree_[0][1][2] == str(dir1 / "file11")
+    assert tree_[0][1][3] == str(dir1 / "file12")
+    assert tree_[1][1][0] == str(dir2 / "file21")
+    assert tree_[2] == str(tmp_path / "file1")
+    assert tree_[3] == str(tmp_path / "file2")
 
-    # Clean
-    shutil.rmtree(parent)
+    # test for dictionary return value
+    tree_ = _utils.tree(tmp_path, dictionary=True)
+
+    # Check the tree
+    assert type(tree_[dir1.name]) is dict
+    assert type(tree_[dir1.name][dir11.name]) is list
+    assert len(tree_[dir1.name][dir12.name]) == 0
+    assert type(tree_[dir2.name]) is list
+    assert type(tree_["."]) is list
+    assert tree_[dir1.name][dir11.name][0] == str(dir11 / "file111")
+    assert tree_[dir1.name]["."][0] == str(dir1 / "file11")
+    assert tree_[dir1.name]["."][1] == str(dir1 / "file12")
+    assert tree_[dir2.name][0] == str(dir2 / "file21")
+    assert tree_["."] == [str(tmp_path / "file1"), str(tmp_path / "file2")]
 
 
 def test_movetree(tmp_path):

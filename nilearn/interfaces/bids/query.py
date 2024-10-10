@@ -182,7 +182,7 @@ def get_bids_files(
 
     Parameters
     ----------
-    main_path : :obj:`str`
+    main_path : :obj:`str` or :obj:`Path`
         Directory of the :term:`BIDS` dataset.
 
     file_tag : :obj:`str` accepted by glob, default='*'
@@ -225,24 +225,25 @@ def get_bids_files(
         List of file paths found.
 
     """
+    main_path = Path(main_path)
     if sub_folder:
         ses_level = ""
-        files = os.path.join(main_path, "sub-*", "ses-*")
-        session_folder_exists = glob.glob(files)
+        files = main_path / "sub-*" / "ses-*"
+        session_folder_exists = glob.glob(str(files))
         if session_folder_exists:
             ses_level = "ses-*"
 
-        files = os.path.join(
-            main_path,
-            f"sub-{sub_label}",
-            ses_level,
-            modality_folder,
-            f"sub-{sub_label}*_{file_tag}.{file_type}",
+        files = (
+            main_path
+            / f"sub-{sub_label}"
+            / ses_level
+            / modality_folder
+            / f"sub-{sub_label}*_{file_tag}.{file_type}"
         )
     else:
-        files = os.path.join(main_path, f"*{file_tag}.{file_type}")
+        files = main_path / f"*{file_tag}.{file_type}"
 
-    files = glob.glob(files)
+    files = glob.glob(str(files))
     files.sort()
 
     filters = filters or []

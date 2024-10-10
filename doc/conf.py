@@ -423,7 +423,7 @@ binder_branch = "main" if "dev" in current_version else current_version
 
 sphinx_gallery_conf = {
     "doc_module": "nilearn",
-    "backreferences_dir": os.path.join("modules", "generated"),
+    "backreferences_dir": Path("modules", "generated"),
     "reference_url": {"nilearn": None},
     "junit": "../test-results/sphinx-gallery/junit.xml",
     "examples_dirs": "../examples/",
@@ -448,7 +448,7 @@ sphinx_gallery_conf = {
 def touch_example_backreferences(app, what, name, obj, options, lines):
     # generate empty examples files, so that we don't get
     # inclusion errors if there are no examples for a class / module
-    examples_path = os.path.join(
+    examples_path = Path(
         app.srcdir, "modules", "generated", f"{name}.examples"
     )
     if not Path(examples_path).exists():

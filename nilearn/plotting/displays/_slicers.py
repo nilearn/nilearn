@@ -1,4 +1,5 @@
 import collections
+import contextlib
 import numbers
 
 import matplotlib.pyplot as plt
@@ -1417,10 +1418,8 @@ class TiledSlicer(BaseSlicer):
 
         kwargs = kwargs.copy()
         if "color" not in kwargs:
-            try:
+            with contextlib.suppress(KeyError):
                 kwargs["color"] = ".8" if self._black_bg else "k"
-            except KeyError:
-                pass
 
         if "y" in self.axes:
             ax = self.axes["y"].ax

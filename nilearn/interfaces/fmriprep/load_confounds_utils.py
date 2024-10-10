@@ -2,7 +2,6 @@
 
 import itertools
 import json
-import os
 import re
 from pathlib import Path
 
@@ -211,7 +210,7 @@ def _get_file_name(nii_file):
     if isinstance(nii_file, list):  # catch gifti
         nii_file = nii_file[0]
 
-    base_dir = os.path.dirname(nii_file)
+    base_dir = Path(nii_file).parent
 
     filenames = _generate_confounds_file_candidates(nii_file)
 
@@ -231,9 +230,9 @@ def _get_file_name(nii_file):
     # https://www.geeksforgeeks.org/python-sort-list-of-lists-by-the-size-of-sublists/
     confound_file_candidates = sorted(confound_file_candidates, key=len)[::-1]
     confound_file_candidates = [
-        os.path.join(base_dir, crc) for crc in confound_file_candidates
+        base_dir / crc for crc in confound_file_candidates
     ]
-    found_files = [cr for cr in confound_file_candidates if Path(cr).is_file()]
+    found_files = [str(cr) for cr in confound_file_candidates if cr.is_file()]
 
     if not found_files:
         raise ValueError(
@@ -272,7 +271,7 @@ def get_confounds_file(image_file, flag_full_aroma):
 def get_json(confounds_raw_path):
     """Return json data companion file to the confounds tsv file."""
     # Load JSON file
-    return confounds_raw_path.replace("tsv", "json")
+    return str(confounds_raw_path).replace("tsv", "json")
 
 
 def load_confounds_json(confounds_json, flag_acompcor):
