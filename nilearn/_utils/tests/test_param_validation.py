@@ -12,7 +12,6 @@ from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.param_validation import (
     MNI152_BRAIN_VOLUME,
     check_feature_screening,
-    adjust_screening_percentile,
     check_threshold,
     get_mask_volume,
 )
