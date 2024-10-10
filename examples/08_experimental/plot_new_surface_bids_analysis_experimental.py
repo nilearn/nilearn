@@ -97,9 +97,9 @@ for first_level_glm, fmri_img, confound, event in zip(
 ):
     print(f"Running GLM on {Path(fmri_img[0]).relative_to(data.data_dir)}")
 
-    image = SurfaceImage(
+    image = SurfaceImage.from_volume(
         mesh=fsaverage5["pial"],
-        data=fmri_img[0],
+        volume_img=fmri_img[0],
     )
 
     # Fit GLM.
