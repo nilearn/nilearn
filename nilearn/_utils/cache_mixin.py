@@ -4,6 +4,7 @@
 
 import os
 import warnings
+from pathlib import Path
 
 from joblib import Memory
 
@@ -33,16 +34,17 @@ def _check_memory(memory, verbose=0):
     """
     if memory is None:
         memory = Memory(location=None, verbose=verbose)
+    # TODO make Path the default here
     memory = stringify_path(memory)
     if isinstance(memory, str):
         cache_dir = memory
         if nilearn.EXPAND_PATH_WILDCARDS:
-            cache_dir = os.path.expanduser(cache_dir)
+            cache_dir = Path(cache_dir).expanduser()
 
         # Perform some verifications on given path.
         split_cache_dir = os.path.split(cache_dir)
         if len(split_cache_dir) > 1 and (
-            not os.path.exists(split_cache_dir[0]) and split_cache_dir[0] != ""
+            not Path(split_cache_dir[0]).exists() and split_cache_dir[0] != ""
         ):
             if not nilearn.EXPAND_PATH_WILDCARDS and cache_dir.startswith("~"):
                 # Maybe the user want to enable expanded user path.
@@ -70,7 +72,7 @@ def _check_memory(memory, verbose=0):
                 )
             raise ValueError(error_msg)
 
-        memory = Memory(location=cache_dir, verbose=verbose)
+        memory = Memory(location=str(cache_dir), verbose=verbose)
     return memory
 
 

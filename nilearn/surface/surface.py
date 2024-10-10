@@ -1,7 +1,6 @@
 """Functions for surface manipulation."""
 
 import gzip
-import os
 import warnings
 from collections import namedtuple
 from collections.abc import Mapping
@@ -42,7 +41,7 @@ def _load_uniform_ball_cloud(n_points=20):
     stored_points = (
         Path(__file__, "..", "data", f"ball_cloud_{n_points}_samples.csv")
     ).resolve()
-    if os.path.isfile(stored_points):
+    if stored_points.is_file():
         points = np.loadtxt(stored_points)
         return points
     warnings.warn(
