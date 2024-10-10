@@ -431,6 +431,17 @@ def test_safe_extract(tmp_path):
         _utils.uncompress_file(ztemp, verbose=0)
 
 
+def test_fetch_file_part(tmp_path, request_mocker):
+    url = "http://foo/temp.txt"
+    (tmp_path / "temp.txt.part").touch()
+
+    _utils.fetch_single_file(
+        url=url, data_dir=str(tmp_path), verbose=0, resume=True
+    )
+
+    assert (tmp_path / "temp.txt").exists()
+
+
 @pytest.mark.parametrize("should_cast_path_to_string", [False, True])
 def test_fetch_file_overwrite(
     should_cast_path_to_string, tmp_path, request_mocker
