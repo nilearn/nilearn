@@ -10,7 +10,7 @@ import pandas as pd
 
 from . import load_confounds_components as components
 from .load_confounds_utils import (
-    MissingConfound,
+    MissingConfoundError,
     get_confounds_file,
     get_json,
     load_confounds_file_as_dataframe,
@@ -505,7 +505,7 @@ def _load_noise_component(confounds_raw, component, missing, **kargs):
 
     Raises
     ------
-    MissingConfound
+    MissingConfoundError
         If any of the confounds specified in the strategy are not found in the
         confounds file or confounds json file.
     """
@@ -520,7 +520,7 @@ def _load_noise_component(confounds_raw, component, missing, **kargs):
             loaded_confounds = getattr(components, f"_load_{component}")(
                 confounds_raw
             )
-    except MissingConfound as exception:
+    except MissingConfoundError as exception:
         missing["confounds"] += exception.params
         missing["keywords"] += exception.keywords
         loaded_confounds = pd.DataFrame()
