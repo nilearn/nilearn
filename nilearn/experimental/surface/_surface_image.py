@@ -223,6 +223,23 @@ class SurfaceImage:
     ):
         """Create surface image from volume image.
 
+        Parameters
+        ----------
+        mesh : PolyMesh or dict[str, Mesh | str | Path]
+            Surface mesh.
+
+        volume_img : Niimg-like object
+            3D or 4D volume image to project to the surface mesh.
+
+        inner_mesh: PolyMesh or dict[str, Mesh | str | Path], optional
+            Inner mesh to pass to :func:`nilearn.surface.vol_to_surf`.
+
+        vol_to_surf_kwargs: dict[str, Any]
+            Dictionary of extra key-words arguments to pass
+            to :func:`nilearn.surface.vol_to_surf`.
+
+        Examples
+        --------
         >>> from nilearn.experimental.surface import (
         ...     SurfaceImage,
         ...     load_fsaverage,
