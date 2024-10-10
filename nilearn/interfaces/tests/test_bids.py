@@ -266,7 +266,7 @@ def test_get_bids_files(tmp_path):
     assert len(selection) == 1
     # 80 counfonds (4 runs per ses & sub), testing `fmriprep` >= 20.2 path
     selection = get_bids_files(
-        Path(bids_path, "derivatives"),
+        bids_path / "derivatives",
         file_tag="desc-confounds_timeseries",
     )
     assert len(selection) == 160
@@ -281,7 +281,7 @@ def test_get_bids_files(tmp_path):
     )
     # 80 counfonds (4 runs per ses & sub), testing `fmriprep` >= 20.2 path
     selection = get_bids_files(
-        Path(bids_path, "derivatives"),
+        bids_path / "derivatives",
         file_tag="desc-confounds_regressors",
     )
     assert len(selection) == 160

@@ -10,7 +10,6 @@ Only matplotlib is required.
 import collections.abc
 import functools
 import numbers
-import os
 import warnings
 from pathlib import Path
 
@@ -2172,8 +2171,8 @@ def plot_img_comparison(
             ax2.legend(loc="best")
 
             if output_dir is not None:
-                if not os.path.exists(output_dir):
-                    os.makedirs(output_dir)
-                plt.savefig(Path(output_dir, f"{int(i):04}.png"))
+                output_dir = Path(output_dir)
+                output_dir.mkdir(exist_ok=True, parents=True)
+                plt.savefig(output_dir / f"{int(i):04}.png")
 
     return corrs

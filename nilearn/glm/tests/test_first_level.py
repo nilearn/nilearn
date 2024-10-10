@@ -50,8 +50,8 @@ from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files
 from nilearn.maskers import NiftiMasker
 
-BASEDIR = os.path.dirname(os.path.abspath(__file__))
-FUNCFILE = Path(BASEDIR, "functional.nii.gz")
+BASEDIR = Path(__file__).resolve().parent
+FUNCFILE = BASEDIR / "functional.nii.gz"
 
 
 def test_high_level_glm_one_run():

@@ -1,6 +1,5 @@
 """Test the second level model."""
 
-import os
 from pathlib import Path
 
 import numpy as np
@@ -43,8 +42,8 @@ if have_mpl:
     from nilearn.reporting import get_clusters_table
 
 # This directory path
-BASEDIR = os.path.dirname(os.path.abspath(__file__))
-FUNCFILE = Path(BASEDIR, "functional.nii.gz")
+BASEDIR = Path(__file__).resolve().parent
+FUNCFILE = BASEDIR / "functional.nii.gz"
 
 N_PERM = 10
 SHAPE = (7, 8, 9, 1)

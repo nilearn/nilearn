@@ -80,7 +80,7 @@ class _TemplateBreak(Exception):
 
 
 def get_file_template(name, from_template):
-    path = Path(os.path.dirname(from_template.name), name)
+    path = Path(from_template.name).parent / name
     return from_template.__class__.from_filename(
         path, namespace=from_template.namespace,
         get_template=from_template.get_template)

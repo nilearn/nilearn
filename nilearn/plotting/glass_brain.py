@@ -1,7 +1,6 @@
 """Brain schematics plotting for glass brain functionality."""
 
 import json
-import os
 import pathlib
 
 from matplotlib import colors, patches, transforms
@@ -100,10 +99,9 @@ def _get_json_and_transform(direction):
         "r": [0.38, 0, 0, 0.38, -108, -70],
     }
 
-    dirname = os.path.dirname(os.path.abspath(__file__))
-    dirname = pathlib.Path(dirname, "glass_brain_files")
+    dirname = pathlib.Path(__file__).resolve().parent / "glass_brain_files"
     direction_to_filename = {
-        _direction: pathlib.Path(dirname, f"brain_schematics_{view_name}.json")
+        _direction: dirname / f"brain_schematics_{view_name}.json"
         for _direction, view_name in direction_to_view_name.items()
     }
 

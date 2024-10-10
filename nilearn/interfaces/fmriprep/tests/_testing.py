@@ -1,7 +1,6 @@
 """Utility functions for testing load_confounds."""
 
 import json
-import os
 from pathlib import Path
 
 import pandas as pd
@@ -55,11 +54,11 @@ img_file_patterns = {
 def get_testdata_path(non_steady_state=True, fmriprep_version="1.4.x"):
     """Get file path for the confound regressors."""
     derivative = "regressors" if fmriprep_version != "21.x.x" else "timeseries"
-    path_data = Path(os.path.dirname(load_confounds_utils.__file__), "data")
+    path_data = Path(load_confounds_utils.__file__).parent / "data"
     suffix = "test-v21" if fmriprep_version == "21.x.x" else "test"
     if non_steady_state:
         return [
-            Path(path_data, filename)
+            path_data / filename
             for filename in [
                 f"{suffix}_desc-confounds_{derivative}.tsv",
                 f"{suffix}_desc-confounds_{derivative}.json",
@@ -67,7 +66,7 @@ def get_testdata_path(non_steady_state=True, fmriprep_version="1.4.x"):
         ]
     else:
         return [
-            Path(path_data, filename)
+            path_data / filename
             for filename in [
                 f"no_nonsteady_desc-confounds_{derivative}.tsv",
                 f"test_desc-confounds_{derivative}.json",

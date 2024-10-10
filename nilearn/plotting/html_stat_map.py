@@ -2,7 +2,6 @@
 
 import copy
 import json
-import os
 import warnings
 from base64 import b64encode
 from io import BytesIO
@@ -435,10 +434,10 @@ def _json_view_to_html(json_view, width_view=600):
         json_view["params"]["title"] or "Slice viewer"
     )
     json_view["params"] = json.dumps(json_view["params"])
-    js_dir = Path(os.path.dirname(__file__), "data", "js")
-    with open(Path(js_dir, "jquery.min.js")) as f:
+    js_dir = Path(__file__).parent / "data" / "js"
+    with (js_dir / "jquery.min.js").open() as f:
         json_view["js_jquery"] = f.read()
-    with open(Path(js_dir, "brainsprite.min.js")) as f:
+    with (js_dir / "brainsprite.min.js").open() as f:
         json_view["js_brainsprite"] = f.read()
 
     # Load the html template, and plug in all the data

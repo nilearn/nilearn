@@ -1,14 +1,12 @@
 """Tests for the nilearn.interfaces.fsl submodule."""
 
-from pathlib import Path
-
 import numpy as np
 
 from nilearn.interfaces.fsl import get_design_from_fslmat
 
 
 def test_get_design_from_fslmat(tmp_path):
-    fsl_mat_path = Path(str(tmp_path), "fsl_mat.txt")
+    fsl_mat_path = tmp_path / "fsl_mat.txt"
     matrix = np.ones((5, 5))
     with open(fsl_mat_path, "w") as fsl_mat:
         fsl_mat.write("/Matrix\n")
