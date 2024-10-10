@@ -8,6 +8,7 @@ features
 # Authors: Alexandre Abraham, Gael Varoquaux, Philippe Gervais
 
 import warnings
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -1060,7 +1061,7 @@ def _sanitize_confound_dtype(n_signal, confound):
     """Check confound is the correct datatype."""
     if isinstance(confound, pd.DataFrame):
         confound = confound.values
-    if isinstance(confound, str):
+    if isinstance(confound, (str, Path)):
         filename = confound
         confound = csv_to_array(filename)
         if np.isnan(confound.flat[0]):

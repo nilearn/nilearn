@@ -57,11 +57,11 @@ def test_cache_mixin_with_expand_user():
     mixin_mock = CacheMixinTest(cache_dir)
 
     try:
-        assert not Path(expand_cache_dir).exists()
+        assert not expand_cache_dir.exists()
         mixin_mock.run()
-        assert Path(expand_cache_dir).exists()
+        assert expand_cache_dir.exists()
     finally:
-        if Path(expand_cache_dir).exists():
+        if expand_cache_dir.exists():
             shutil.rmtree(expand_cache_dir)
 
 
@@ -72,16 +72,16 @@ def test_cache_mixin_without_expand_user():
     mixin_mock = CacheMixinTest(cache_dir)
 
     try:
-        assert not Path(expand_cache_dir).exists()
+        assert not expand_cache_dir.exists()
         nilearn.EXPAND_PATH_WILDCARDS = False
         with pytest.raises(
             ValueError, match="Given cache path parent directory doesn't"
         ):
             mixin_mock.run()
-        assert not Path(expand_cache_dir).exists()
+        assert not expand_cache_dir.exists()
         nilearn.EXPAND_PATH_WILDCARDS = True
     finally:
-        if Path(expand_cache_dir).exists():
+        if expand_cache_dir.exists():
             shutil.rmtree(expand_cache_dir)
 
 
@@ -98,9 +98,9 @@ def test_cache_mixin_wrong_dirs():
                 ValueError, match="Given cache path parent directory doesn't"
             ):
                 mixin_mock.run()
-            assert not Path(expand_cache_dir).exists()
+            assert not expand_cache_dir.exists()
         finally:
-            if Path(expand_cache_dir).exists():
+            if expand_cache_dir.exists():
                 shutil.rmtree(expand_cache_dir)
 
 

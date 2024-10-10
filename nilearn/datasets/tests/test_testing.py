@@ -62,7 +62,7 @@ def test_loading_from_archive_contents(tmp_path):
         with tarfile.open(str(file_path)) as tarf:
             assert (
                 sorted(map(Path, tarf.getnames()))
-                == [Path()] + expected_contents
+                == [Path(".")] + expected_contents
             )
             tarf.extractall(str(tar_extract_dir))
 
@@ -227,5 +227,5 @@ def test_dict_to_archive(tmp_path):
     with tarfile.open(str(archive_path)) as tarf:
         assert sorted(map(Path, tarf.getnames())) == sorted(
             list(map(Path, archive_spec.keys()))
-            + [Path(), Path("a"), Path("a", "b"), Path("data")]
+            + [Path("."), Path("a"), Path("a", "b"), Path("data")]
         )

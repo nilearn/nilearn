@@ -61,14 +61,6 @@ def read_md5_sum_file(path):
     return hashes
 
 
-def readlinkabs(link):
-    """Return an absolute path for the destination of a symlink."""
-    path = Path(link).readlink()
-    if Path(path).is_absolute():
-        return path
-    return os.path.join(os.path.dirname(link), path)
-
-
 def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
     """Show downloading percentage.
 
@@ -234,34 +226,34 @@ def get_dataset_dir(
     if default_paths is not None:
         for default_path in default_paths:
             paths.extend(
-                [(d, True) for d in str(default_path).split(os.pathsep)]
+                [(Path(d), True) for d in str(default_path).split(os.pathsep)]
             )
 
-    paths.extend([(d, False) for d in get_data_dirs(data_dir=data_dir)])
+    paths.extend([(Path(d), False) for d in get_data_dirs(data_dir=data_dir)])
 
     logger.log(f"Dataset search paths: {paths}", verbose=verbose, msg_level=2)
 
     # Check if the dataset exists somewhere
     for path, is_pre_dir in paths:
         if not is_pre_dir:
-            path = os.path.join(path, dataset_name)
-        if Path(path).is_symlink():
+            path = path / dataset_name
+        if path.is_symlink():
             # Resolve path
-            path = readlinkabs(path)
-        if Path(path).exists() and os.path.isdir(path):
+            path = path.resolve()
+        if path.exists() and path.is_dir():
             logger.log(
                 f"Dataset found in {path}", verbose=verbose, msg_level=1
             )
-            return path
+            return str(path)
 
     # If not, create a folder in the first writeable directory
     errors = []
     for path, is_pre_dir in paths:
         if not is_pre_dir:
-            path = os.path.join(path, dataset_name)
-        if not Path(path).exists():
+            path = path / dataset_name
+        if not path.exists():
             try:
-                os.makedirs(path)
+                path.mkdir(parents=True)
                 _add_readme_to_default_data_locations(
                     data_dir=data_dir,
                     verbose=verbose,
@@ -269,7 +261,7 @@ def get_dataset_dir(
 
                 logger.log(f"Dataset created in {path}", verbose)
 
-                return path
+                return str(path)
             except Exception as exc:
                 short_error_message = getattr(exc, "strerror", str(exc))
                 errors.append(f"\n -{path} ({short_error_message})")
@@ -354,7 +346,7 @@ def uncompress_file(file_, delete_archive=True, verbose=1):
             z.extractall(path=data_dir)
             z.close()
             if delete_archive:
-                Path(file_).unlink()
+                os.remove(file_)
             file_ = filename
             processed = True
         elif file_.suffix == ".gz" or header.startswith(b"\x1f\x8b"):
@@ -371,14 +363,14 @@ def uncompress_file(file_, delete_archive=True, verbose=1):
                     shutil.copyfileobj(gz, out, 8192)
             # If file is .tar.gz, this will be handled in the next case
             if delete_archive:
-                Path(file_).unlink()
+                os.remove(file_)
             file_ = filename
             processed = True
         if file_.is_file() and tarfile.is_tarfile(file_):
             with contextlib.closing(tarfile.open(file_, "r")) as tar:
                 _safe_extract(tar, path=data_dir)
             if delete_archive:
-                Path(file_).unlink()
+                os.remove(file_)
             processed = True
         if not processed:
             raise OSError(f"[Uncompress] unknown archive file format: {file_}")
@@ -476,10 +468,8 @@ def filter_columns(array, filters, combination="and"):
 
 class _NaiveFTPAdapter(requests.adapters.BaseAdapter):
     def send(self, request, timeout=None, **kwargs):
-        try:
+        with contextlib.suppress(Exception):
             timeout, _ = timeout
-        except Exception:
-            pass
         try:
             data = urllib.request.urlopen(request.url, timeout=timeout)
         except Exception as e:
@@ -556,7 +546,7 @@ def fetch_single_file(
                 session=session,
             )
     # Determine data path
-    if not Path(data_dir).exists():
+    if not os.path.exists(data_dir):
         os.makedirs(data_dir)
 
     # Determine filename using URL
@@ -568,13 +558,13 @@ def fetch_single_file(
     temp_file_name = f"{file_name}.part"
     full_name = os.path.join(data_dir, file_name)
     temp_full_name = os.path.join(data_dir, temp_file_name)
-    if Path(full_name).exists():
+    if os.path.exists(full_name):
         if overwrite:
-            Path(full_name).unlink()
+            os.remove(full_name)
         else:
             return full_name
-    if Path(temp_full_name).exists() and overwrite:
-        Path(temp_full_name).unlink()
+    if os.path.exists(temp_full_name) and overwrite:
+        os.remove(temp_full_name)
     t0 = time.time()
     local_file = None
     initial_size = 0
@@ -595,7 +585,7 @@ def fetch_single_file(
         displayed_url = url.split("?")[0] if verbose == 1 else url
         logger.log(f"Downloading data from {displayed_url} ...", verbose)
 
-        if resume and Path(temp_full_name).exists():
+        if resume and os.path.exists(temp_full_name):
             # Download has been interrupted, we try to resume it.
             local_file_size = os.path.getsize(temp_full_name)
             # If the file exists, then only download the remainder
@@ -790,7 +780,7 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
     temp_dir = os.path.join(data_dir, files_md5)
 
     # Create destination dir
-    if not Path(data_dir).exists():
+    if not os.path.exists(data_dir):
         os.makedirs(data_dir)
 
     # Abortion flag, in case of error
@@ -813,8 +803,8 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
         if abort is None and (
             overwrite
             or (
-                not Path(target_file).exists()
-                and not Path(temp_target_file).exists()
+                not os.path.exists(target_file)
+                and not os.path.exists(temp_target_file)
             )
         ):
             # We may be in a global read-only repository. If so, we cannot
@@ -826,8 +816,8 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
                     " administrator to solve the problem"
                 )
 
-            if not Path(temp_dir).exists():
-                Path(temp_dir).mkdir()
+            if not os.path.exists(temp_dir):
+                os.mkdir(temp_dir)
             md5sum = opts.get("md5sum", None)
 
             dl_file = fetch_single_file(
@@ -845,7 +835,7 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
                 # XXX: here, move is supposed to be a dir, it can be a name
                 move = os.path.join(temp_dir, opts["move"])
                 move_dir = os.path.dirname(move)
-                if not Path(move_dir).exists():
+                if not os.path.exists(move_dir):
                     os.makedirs(move_dir)
                 shutil.move(dl_file, move)
                 dl_file = move
@@ -857,8 +847,8 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
 
         if (
             abort is None
-            and not Path(target_file).exists()
-            and not Path(temp_target_file).exists()
+            and not os.path.exists(target_file)
+            and not os.path.exists(temp_target_file)
         ):
             warnings.warn(f"An error occurred while fetching {file_}")
             abort = (
@@ -867,12 +857,12 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
                 f"Target file: {target_file}\nDownloaded: {dl_file}"
             )
         if abort is not None:
-            if Path(temp_dir).exists():
+            if os.path.exists(temp_dir):
                 shutil.rmtree(temp_dir)
             raise OSError(f"Fetching aborted: {abort}")
         files_.append(target_file)
     # If needed, move files from temps directory to final directory.
-    if Path(temp_dir).exists():
+    if os.path.exists(temp_dir):
         # XXX We could only moved the files requested
         # XXX Movetree can go wrong
         movetree(temp_dir, data_dir)
@@ -885,7 +875,7 @@ def tree(path, pattern=None, dictionary=False):
 
     Parameters
     ----------
-    path : string
+    path : string or pathlib.Path
         Path browsed.
 
     pattern : string, optional
@@ -895,17 +885,20 @@ def tree(path, pattern=None, dictionary=False):
         If True, the function will return a dict instead of a list.
 
     """
+    path = Path(path)
     files = []
     dirs = {} if dictionary else []
-    for file_ in os.listdir(path):
-        file_path = os.path.join(path, file_)
-        if os.path.isdir(file_path):
+
+    for file_path in path.iterdir():
+        if file_path.is_dir():
             if dictionary:
-                dirs[file_] = tree(file_path, pattern)
+                dirs[file_path.name] = tree(file_path, pattern, dictionary)
             else:
-                dirs.append((file_, tree(file_path, pattern)))
-        elif pattern is None or fnmatch.fnmatch(file_, pattern):
-            files.append(file_path)
+                dirs.append(
+                    (file_path.name, tree(file_path, pattern, dictionary))
+                )
+        elif pattern is None or fnmatch.fnmatch(file_path.name, pattern):
+            files.append(str(file_path))
     files = sorted(files)
     if not dictionary:
         return sorted(dirs) + files

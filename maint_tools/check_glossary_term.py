@@ -164,7 +164,7 @@ def check_docstring(docstring, terms):
 def check_description(docstring, terms):
     """Check docstring description."""
     text = ""
-    if docstring.short_description is not None:
+    if docstring.short_description is not None:  # noqa: SIM102
         if tmp := [
             term
             for term in terms
@@ -172,7 +172,7 @@ def check_description(docstring, terms):
         ]:
             text += f" terms: '{', '.join(tmp)}' in short description\n"
 
-    if docstring.long_description is not None:
+    if docstring.long_description is not None:  # noqa: SIM102
         if tmp := [
             term
             for term in terms

@@ -1300,7 +1300,7 @@ def _write_metadata(metadata, file_name):
         Dictionary representing metadata for a file or a
         collection. Any key containing 'absolute' is ignored.
 
-    file_name : str
+    file_name : str or pathlib.Path
         Path to the file in which to write the data.
 
     """
@@ -1351,14 +1351,25 @@ def _add_absolute_paths(root_dir, metadata, force=True):
 
 
 def _json_from_file(file_name):
-    """Load a json file encoded with UTF-8."""
+    """Load a json file encoded with UTF-8.
+
+    Parameters
+    ----------
+    file_name: str or pathlib.Path
+    """
     with open(file_name, "rb") as dumped:
         loaded = json.loads(dumped.read().decode("utf-8"))
     return loaded
 
 
 def _json_add_collection_dir(file_name, force=True):
-    """Load a json file and add is parent dir to resulting dict."""
+    """Load a json file and add is parent dir to resulting dict.
+
+    Parameters
+    ----------
+    file_name: str or pathlib.Path
+    force: bool
+    """
     loaded = _json_from_file(file_name)
     set_func = loaded.__setitem__ if force else loaded.setdefault
     dir_path = os.path.dirname(file_name)
@@ -1376,7 +1387,7 @@ def _json_add_im_files_paths(file_name, force=True):
     image_file_name = f"image_{loaded['id']}.nii.gz"
     words_file_name = f"neurosynth_words_for_image_{loaded['id']}.json"
     set_func("relative_path", os.path.join(dir_relative_path, image_file_name))
-    if Path(os.path.join(dir_path, words_file_name).is_file()):
+    if os.path.isfile(os.path.join(dir_path, words_file_name)):
         set_func(
             "ns_words_relative_path",
             os.path.join(dir_relative_path, words_file_name),
@@ -1408,20 +1419,20 @@ def _download_collection(collection, download_params):
     """
     if collection is None:
         return None
+
     collection = _remove_none_strings(collection)
     collection_id = collection["id"]
     collection_name = f"collection_{collection_id}"
-    collection_dir = os.path.join(
-        download_params["nv_data_dir"], collection_name
-    )
+    collection_dir = Path(download_params["nv_data_dir"]) / collection_name
     collection["relative_path"] = collection_name
-    collection["absolute_path"] = collection_dir
-    if not os.path.isdir(collection_dir):
-        os.makedirs(collection_dir)
-    metadata_file_path = os.path.join(
-        collection_dir, "collection_metadata.json"
-    )
+    collection["absolute_path"] = str(collection_dir.absolute())
+
+    if not collection_dir.is_dir():
+        collection_dir.mkdir(parents=True)
+
+    metadata_file_path = collection_dir / "collection_metadata.json"
     _write_metadata(collection, metadata_file_path)
+
     return collection
 
 
@@ -1449,12 +1460,12 @@ def _fetch_collection_for_image(image_info, download_params):
     """
     collection_id = image_info["collection_id"]
     collection_relative_path = f"collection_{collection_id}"
-    collection_absolute_path = os.path.join(
-        download_params["nv_data_dir"], collection_relative_path
+    collection_absolute_path = (
+        Path(download_params["nv_data_dir"]) / collection_relative_path
     )
-    if os.path.isdir(collection_absolute_path):
+    if collection_absolute_path.is_dir():
         return _json_add_collection_dir(
-            os.path.join(collection_absolute_path, "collection_metadata.json")
+            collection_absolute_path / "collection_metadata.json"
         )
 
     col_batch = _get_batch(
@@ -1542,7 +1553,7 @@ def _download_image_nii_file(image_info, collection, download_params):
         im_resampled.to_filename(resampled_image_absolute_path)
 
         # Remove temporary file
-        Path(tmp_path).unlink()
+        os.remove(tmp_path)
     else:
         _simple_download(
             image_url,
@@ -1554,7 +1565,7 @@ def _download_image_nii_file(image_info, collection, download_params):
 
 
 def _check_has_words(file_name):
-    if not Path(file_name).is_file():
+    if not os.path.isfile(file_name):
         return False
     info = _remove_none_strings(_json_from_file(file_name))
     try:
@@ -1562,7 +1573,7 @@ def _check_has_words(file_name):
         return True
     except (AttributeError, TypeError, AssertionError):
         pass
-    Path(file_name).unlink()
+    os.remove(file_name)
     return False
 
 
@@ -1603,7 +1614,7 @@ def _download_image_terms(image_info, collection, download_params):
         collection["absolute_path"], ns_words_file_name
     )
 
-    if Path(image_info["ns_words_absolute_path"]).is_file():
+    if os.path.isfile(image_info["ns_words_absolute_path"]):
         return image_info, collection
 
     query = urljoin(
@@ -1772,7 +1783,7 @@ def _scroll_local(download_params):
         for image in good_images:
             image, collection = _update(image, collection, download_params)
             if download_params["resample"]:
-                if not Path(image["resampled_absolute_path"]).is_file():
+                if not os.path.isfile(image["resampled_absolute_path"]):
                     # TODO switch to force_resample=True
                     # when bumping to version > 0.13
                     im_resampled = resample_img(
@@ -1786,7 +1797,7 @@ def _scroll_local(download_params):
                 download_params["visited_images"].add(image["id"])
                 download_params["visited_collections"].add(collection["id"])
                 yield image, collection
-            elif Path(image["absolute_path"]).is_file():
+            elif os.path.isfile(image["absolute_path"]):
                 download_params["visited_images"].add(image["id"])
                 download_params["visited_collections"].add(collection["id"])
                 yield image, collection

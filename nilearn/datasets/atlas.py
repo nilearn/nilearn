@@ -146,7 +146,7 @@ def fetch_atlas_difumo(
     readme_files = [
         ("README.md", "https://osf.io/4k9bf/download", {"move": "README.md"})
     ]
-    if not Path(os.path.join(data_dir, "README.md").exists()):
+    if not os.path.exists(os.path.join(data_dir, "README.md")):
         fetch_files(data_dir, readme_files, verbose=verbose, resume=resume)
 
     fdescr = get_dataset_descr(dataset_name)

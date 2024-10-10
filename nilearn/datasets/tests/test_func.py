@@ -762,9 +762,9 @@ datadir = os.path.join(currdir, "data")
 
 def test_fetch_bids_langloc_dataset(tmp_path):
     data_dir = str(tmp_path / "bids_langloc_example")
-    Path(data_dir).mkdir()
+    os.mkdir(data_dir)
     main_folder = os.path.join(data_dir, "bids_langloc_dataset")
-    Path(main_folder).mkdir()
+    os.mkdir(main_folder)
 
     datadir, dl_files = func.fetch_bids_langloc_dataset(tmp_path)
 
@@ -839,7 +839,7 @@ def test_fetch_ds000030_urls():
         for subdir in subdir_names:
             tmp_list.append(subdir)
             subdirpath = os.path.join(tmpdir, *tmp_list)
-            Path(subdirpath).mkdir()
+            os.mkdir(subdirpath)
 
         filepath = os.path.join(subdirpath, "urls.json")
         mock_json_content = ["junk1", "junk2"]
@@ -911,7 +911,8 @@ def test_fetch_openneuro_dataset(tmp_path):
         f"https://example.com/{data_prefix}/sub-yyy/ses-01.txt",
         f"https://example.com/{data_prefix}/sub-yyy/ses-02.txt",
     ]
-    json.dump(urls, open(url_file, "w"))
+    with open(url_file, "w") as f:
+        json.dump(urls, f)
 
     # Only 1 subject and not subject specific files get downloaded
     datadir, dl_files = func.fetch_openneuro_dataset(
@@ -1099,5 +1100,5 @@ def test_fiac(tmp_path):
 def test_load_sample_motor_activation_image():
     path_img = func.load_sample_motor_activation_image()
 
-    assert Path(path_img).exists()
+    assert os.path.exists(path_img)
     assert load_img(path_img)

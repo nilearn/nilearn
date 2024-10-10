@@ -34,6 +34,7 @@ def _check_memory(memory, verbose=0):
     """
     if memory is None:
         memory = Memory(location=None, verbose=verbose)
+    # TODO make Path the default here
     memory = stringify_path(memory)
     if isinstance(memory, str):
         cache_dir = memory
@@ -71,7 +72,7 @@ def _check_memory(memory, verbose=0):
                 )
             raise ValueError(error_msg)
 
-        memory = Memory(location=cache_dir, verbose=verbose)
+        memory = Memory(location=str(cache_dir), verbose=verbose)
     return memory
 
 

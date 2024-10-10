@@ -176,9 +176,6 @@ ignore = [
     "RUF003",
     "RUF005",
     "RUF012",
-    "SIM102",
-    "SIM105",
-    "SIM115",
     "SIM117"
 ]
 # List of all the ruff rules (includes why the rule matters)
@@ -216,6 +213,7 @@ max-complexity = 41
 "**/{examples}/*" = ["D103", "D205", "D301", "D400", "E402"]
 "**/{tests}/*" = ["D100", "D101", "D102", "D103", "E402", "PLR2004", "PLR0915"]
 "__init__.py" = ["D104", "E402"]
+"nilearn/datasets/**/*" = ["PTH201", "PTH101", "PTH102", "PTH107", "PTH110", "PTH111", "PTH113"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"

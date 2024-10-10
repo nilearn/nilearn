@@ -1,7 +1,6 @@
 """Tests for :func:`nilearn.plotting.plot_connectome`."""
 
 import os
-from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -165,7 +164,7 @@ def test_plot_connectome_to_file(
         adjacency, node_coords, output_file=filename, **base_params
     )
     assert display is None
-    assert Path(filename).is_file()
+    assert filename.is_file()
     assert os.path.getsize(filename) > 0
     plt.close()
 
