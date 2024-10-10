@@ -42,6 +42,7 @@ from nilearn.glm.first_level.first_level import (
     _check_list_length_match,
     _check_run_tables,
     _check_trial_type,
+    _list_valid_subjects,
     _yule_walker,
 )
 from nilearn.glm.regression import ARModel, OLSModel
@@ -1829,6 +1830,16 @@ def test_check_trial_type_warning(tmp_path):
     events.to_csv(event_file, sep="\t", index=False)
     with pytest.warns(UserWarning, match="No column named 'trial_type' found"):
         _check_trial_type([event_file])
+
+
+def test_list_valid_subjects_with_toplevel_files(tmp_path):
+    """Test that only subject directories are returned, not file names."""
+    (tmp_path / "sub-01").mkdir()
+    (tmp_path / "sub-02").mkdir()
+    (tmp_path / "sub-01.html").touch()
+
+    valid_subjects = _list_valid_subjects(tmp_path, None)
+    assert valid_subjects == ["01", "02"]
 
 
 def test_missing_trial_type_column_warning(tmp_path_factory):
