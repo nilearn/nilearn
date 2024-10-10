@@ -988,15 +988,7 @@ def test_clean_psc(rng):
             decimal=5,
         )
 
-        # detrend; expect this to always trigger warning
-        with pytest.warns(UserWarning) as records:
-            cleaned_signals = clean(s, standardize="psc", detrend=True)
-        psc_scale_warning = sum(
-            "the signal is 1 factor of 10 smaller than the original signal"
-            in str(r.message)
-            for r in records
-        )
-        assert psc_scale_warning == 1
+        cleaned_signals = clean(s, standardize="psc", detrend=True)
         z_signals = clean(s, standardize="zscore_sample", detrend=True)
         np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
         np.testing.assert_almost_equal(
@@ -1006,20 +998,14 @@ def test_clean_psc(rng):
         )
 
         # test with high pass with butterworth
-        with pytest.warns(UserWarning) as records:
-            hp_butterworth_signals = clean(
-                s,
-                detrend=False,
-                filter="butterworth",
-                high_pass=0.01,
-                t_r=2,
-                standardize="psc",
-            )
-        psc_scale_warning = sum(
-            "factor of 10 smaller than the original signal" in str(r.message)
-            for r in records
+        hp_butterworth_signals = clean(
+            s,
+            detrend=False,
+            filter="butterworth",
+            high_pass=0.01,
+            t_r=2,
+            standardize="psc",
         )
-        assert psc_scale_warning == 1
         z_butterworth_signals = clean(
             s,
             detrend=False,

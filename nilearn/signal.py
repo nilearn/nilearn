@@ -808,6 +808,9 @@ def clean(
     # Standardize
     if not standardize:
         return signals
+
+    # detect if mean is close to zero; This can obscure the scale of the signal
+    # with percent signal change standardization
     filtered_mean_check = (
         np.abs(signals.mean(0)).mean() / np.abs(original_mean_signals).mean()
         < 1e-1
@@ -819,15 +822,6 @@ def clean(
         # difference of the original mean and filtered mean signal. When the
         # mean is too small, we have to know the original mean signal to
         # calculate the psc to avoid weird scaling.
-        warnings.warn(
-            "After cleaning, the new mean of the signal is 1 factor of 10 "
-            "smaller than the original signal. This can obscure the scale of "
-            "the signal with percent signal change standardization. To avoid "
-            "the scale of the signal being obscured drassically, the original "
-            "signal mean has been added back for percent signal change "
-            "standardization. Please note that this might not always solve "
-            "the scale issue if the original signal has a small mean."
-        )
         signals = standardize_signal(
             signals + original_mean_signals,
             standardize=standardize,
