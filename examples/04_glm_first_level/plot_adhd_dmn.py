@@ -21,10 +21,6 @@ More specifically:
 
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 import numpy as np
 

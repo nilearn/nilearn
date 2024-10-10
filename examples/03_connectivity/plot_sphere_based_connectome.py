@@ -26,6 +26,7 @@ from nilearn import datasets, plotting
 # We are going to use a subject from the development functional
 # connectivity dataset.
 
+
 dataset = datasets.fetch_development_fmri(n_subjects=10)
 
 # print basic information on the dataset

@@ -9,10 +9,6 @@ cross-validated accuracy and the confusion matrix.
 
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 import numpy as np
 import pandas as pd
 

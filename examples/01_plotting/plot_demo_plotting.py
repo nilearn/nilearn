@@ -9,6 +9,7 @@ region specific mask images.
 
 See :ref:`plotting` for more details.
 """
+
 # %%
 # Retrieve data from nilearn provided (general-purpose) datasets
 # --------------------------------------------------------------

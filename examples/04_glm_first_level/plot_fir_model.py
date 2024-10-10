@@ -18,10 +18,6 @@ presented : ['audio_computation', 'audio_left_hand_button_press',
 'visual_right_hand_button_press']
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # At first, we grab the localizer data.
 import pandas as pd

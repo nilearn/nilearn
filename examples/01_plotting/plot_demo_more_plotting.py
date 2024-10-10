@@ -38,6 +38,7 @@ activation specific location of the brain slices.
 
 See :ref:`plotting` for more details.
 """
+
 # %%
 # First, we retrieve data from nilearn provided (general-purpose) datasets
 # ------------------------------------------------------------------------

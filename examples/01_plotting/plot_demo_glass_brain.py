@@ -4,6 +4,7 @@ Glass brain plotting in nilearn
 
 See :ref:`plotting` for more plotting functionalities.
 """
+
 # %%
 # Load data
 # ---------------------------

@@ -14,11 +14,6 @@ versus periods of rest.
     More sensitive results would likely be obtained on the corrected,
     spatially normalized and smoothed images.
 """
-
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # Retrieving the data
 # -------------------

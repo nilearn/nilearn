@@ -13,10 +13,6 @@ quality of the model fit.
 
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # Import modules
 # --------------

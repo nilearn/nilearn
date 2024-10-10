@@ -7,10 +7,6 @@ using a feature selection, followed by an SVM.
 
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # Retrieve the files of the Haxby dataset
 # ---------------------------------------

@@ -8,10 +8,6 @@ We compare the means of 2 movie watching 4D images. The mean of the images
 could have been computed with nilearn :func:`nilearn.image.mean_img` function.
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # Fetching 2 subject movie watching brain development :term:`fMRI` datasets.
 from nilearn import datasets

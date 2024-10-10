@@ -5,10 +5,6 @@ NeuroImaging volumes visualization
 Simple example to show Nifti data visualization.
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # Fetch data
 # ----------

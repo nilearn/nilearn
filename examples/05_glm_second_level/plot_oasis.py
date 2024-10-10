@@ -33,10 +33,6 @@ Note that more power would be obtained from using a larger sample of subjects.
 
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # Load Oasis dataset
 # ------------------

@@ -6,10 +6,6 @@ Here we compare different classifiers on a visual object recognition
 decoding task.
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # We start by loading data using nilearn dataset fetcher
 from nilearn import datasets
 from nilearn.image import get_data

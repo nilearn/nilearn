@@ -27,6 +27,7 @@ See also :ref:`for a similar example but using volumetric input data
 
 See :ref:`plotting` for more details on plotting tools.
 """
+
 # %%
 # Retrieving the data
 # -------------------

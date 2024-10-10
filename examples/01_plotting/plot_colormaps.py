@@ -8,12 +8,6 @@ which can be used for plotting brain images on surface.
 See :ref:`surface-plotting` for surface plotting details.
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
-import matplotlib.pyplot as plt
-
 # %%
 # Plot color maps
 # ---------------
@@ -26,6 +20,8 @@ nmaps = len(nilearn_cmaps)
 a = np.outer(np.arange(0, 1, 0.01), np.ones(10))
 
 # Initialize the figure
+import matplotlib.pyplot as plt
+
 plt.figure(figsize=(10, 4.2))
 plt.subplots_adjust(top=0.4, bottom=0.05, left=0.01, right=0.99)
 

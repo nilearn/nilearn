@@ -69,8 +69,7 @@ for term_idx in np.argsort(total_scores)[-10:][::-1]:
 print("\nReshaping and masking images.\n")
 
 with warnings.catch_warnings():
-    # warnings.simplefilter("ignore", UserWarning)
-    # warnings.simplefilter("ignore", DeprecationWarning)
+    warnings.simplefilter("ignore", UserWarning)
 
     mask_img = load_mni152_brain_mask(resolution=2)
     masker = NiftiMasker(

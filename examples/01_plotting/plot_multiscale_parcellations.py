@@ -11,6 +11,7 @@ We show here only three different networks of 'symmetric' version. For more
 details about different versions and different networks, please refer to its
 documentation.
 """
+
 # %%
 # Retrieving multiscale group brain parcellations
 # -----------------------------------------------

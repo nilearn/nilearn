@@ -19,10 +19,6 @@ underlying routine that extract masks from EPI
 
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # Computing a mask from the background
 # ------------------------------------

@@ -17,6 +17,7 @@ We use the Yeo atlas as an example for labeling regions,
 :func:`nilearn.datasets.fetch_atlas_yeo_2011`
 
 """
+
 # %%
 # The original Yeo atlas
 # -----------------------

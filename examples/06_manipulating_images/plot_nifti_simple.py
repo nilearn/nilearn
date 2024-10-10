@@ -8,11 +8,6 @@ The mask is computed and visualized.
 .. include:: ../../../examples/masker_note.rst
 
 """
-
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # Retrieve the brain development functional dataset
 

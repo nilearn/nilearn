@@ -14,10 +14,6 @@ regularized methods.
 To have more details, see: :ref:`frem`.
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # Load the data from the Jimura mixed-gamble experiment
 # -----------------------------------------------------

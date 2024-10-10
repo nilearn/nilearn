@@ -58,11 +58,6 @@ to build the LSS beta series.
 .. include:: ../../../examples/masker_note.rst
 
 """
-
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # sphinx_gallery_thumbnail_number = -2
 
 # %%

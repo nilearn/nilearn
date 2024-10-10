@@ -10,10 +10,6 @@ See also the documentation: :ref:`space_net`.
 
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # Load the Oasis :term:`VBM` dataset
 # ----------------------------------

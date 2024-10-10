@@ -25,6 +25,7 @@ observe some significant effects in these areas.
 
 """
 
+# %%
 import pandas as pd
 
 from nilearn import plotting

@@ -10,6 +10,7 @@ to plot the :term:`parcellation` on the pial surface.
 
 See :ref:`plotting` for more details.
 """
+
 # %%
 # Data fetcher
 # ------------

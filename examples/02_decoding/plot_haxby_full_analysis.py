@@ -14,10 +14,6 @@ that have been defined via a standard GLM-based analysis.
 
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # Fetch data using nilearn dataset fetcher
 from nilearn import datasets
 from nilearn.plotting import show

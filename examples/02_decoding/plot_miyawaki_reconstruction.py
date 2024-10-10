@@ -17,10 +17,6 @@ For an encoding approach for the same dataset, see also
 
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 import sys
 import time

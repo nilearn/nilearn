@@ -4,6 +4,7 @@ Basic Atlas plotting
 
 Plot the regions of a reference atlas (Harvard-Oxford and Juelich atlases).
 """
+
 # %%
 # Retrieving the atlas data
 # -------------------------

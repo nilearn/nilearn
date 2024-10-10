@@ -21,10 +21,6 @@ be given by a call to fit_transform).
 
 """
 
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
-
 # %%
 # Load movie watching dataset
 from nilearn import datasets
