@@ -20,7 +20,7 @@ import pandas as pd
 from .load_confounds_compcor import find_compcor
 from .load_confounds_scrub import optimize_scrub
 from .load_confounds_utils import (
-    MissingConfound,
+    MissingConfoundError,
     add_suffix,
     check_params,
     find_confounds,
@@ -46,7 +46,7 @@ def _load_motion(confounds_raw, motion):
 
     Raises
     ------
-    MissingConfound
+    MissingConfoundError
         When motion regressors are not found or incomplete, raise error
         as motion is not a valid choice of strategy.
     """
@@ -56,12 +56,12 @@ def _load_motion(confounds_raw, motion):
     )
     motion_regressor_check = check_params(confounds_raw, motion_params)
     if isinstance(motion_regressor_check, list):
-        raise MissingConfound(params=motion_regressor_check)
+        raise MissingConfoundError(params=motion_regressor_check)
 
     if motion_regressor_check:
         return confounds_raw[motion_params]
     else:
-        raise MissingConfound(keywords=["motion"])
+        raise MissingConfoundError(keywords=["motion"])
 
 
 def _load_high_pass(confounds_raw):
@@ -104,7 +104,7 @@ def _load_wm_csf(confounds_raw, wm_csf):
 
     Raises
     ------
-    MissingConfound
+    MissingConfoundError
         When white matter and CSF regressors are not found, raise error as
         wm_csf is not a valid choice of strategy.
     """
@@ -112,7 +112,7 @@ def _load_wm_csf(confounds_raw, wm_csf):
     if check_params(confounds_raw, wm_csf_params):
         return confounds_raw[wm_csf_params]
     else:
-        raise MissingConfound(keywords=["wm_csf"])
+        raise MissingConfoundError(keywords=["wm_csf"])
 
 
 def _load_global_signal(confounds_raw, global_signal):
@@ -134,7 +134,7 @@ def _load_global_signal(confounds_raw, global_signal):
 
     Raises
     ------
-    MissingConfound
+    MissingConfoundError
         When global signal regressors are not found, raise error as global
         signal is not a valid choice of strategy.
     """
@@ -142,7 +142,7 @@ def _load_global_signal(confounds_raw, global_signal):
     if check_params(confounds_raw, global_params):
         return confounds_raw[global_params]
     else:
-        raise MissingConfound(keywords=["global_signal"])
+        raise MissingConfoundError(keywords=["global_signal"])
 
 
 def _load_compcor(confounds_raw, meta_json, compcor, n_compcor):
@@ -171,7 +171,7 @@ def _load_compcor(confounds_raw, meta_json, compcor, n_compcor):
 
     Raises
     ------
-    MissingConfound
+    MissingConfoundError
         When compcor regressors are not found, raise error as compcor is
         not a valid choice of strategy.
     """
@@ -179,7 +179,7 @@ def _load_compcor(confounds_raw, meta_json, compcor, n_compcor):
     if check_params(confounds_raw, compcor_cols):
         return confounds_raw[compcor_cols]
     else:
-        raise MissingConfound(keywords=["compcor"])
+        raise MissingConfoundError(keywords=["compcor"])
 
 
 def _load_ica_aroma(confounds_raw, ica_aroma):
@@ -211,7 +211,7 @@ def _load_ica_aroma(confounds_raw, ica_aroma):
     elif ica_aroma == "basic":
         ica_aroma_params = find_confounds(confounds_raw, ["aroma"])
         if not ica_aroma_params:
-            raise MissingConfound(keywords=["ica_aroma"])
+            raise MissingConfoundError(keywords=["ica_aroma"])
         return confounds_raw[ica_aroma_params]
     else:
         raise ValueError(
