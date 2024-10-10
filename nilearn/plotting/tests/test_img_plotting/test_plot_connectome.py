@@ -40,7 +40,7 @@ def non_symmetric_matrix():
 @pytest.fixture
 def base_params():
     """Return basic set of parameters for testing."""
-    return dict(edge_threshold=0.38, title="threshold=0.38", node_size=10)
+    return {"edge_threshold": 0.38, "title": "threshold=0.38", "node_size": 10}
 
 
 @pytest.fixture

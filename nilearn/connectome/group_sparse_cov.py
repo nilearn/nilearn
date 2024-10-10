@@ -459,25 +459,24 @@ def _group_sparse_covariance(
                 if debug:
                     assert is_spd(omega[..., k])
 
-        if probe_function is not None:
-            if probe_function(
-                emp_covs,
-                n_samples,
-                alpha,
-                max_iter,
-                tol,
-                n,
-                omega,
-                omega_old,
-            ):
-                probe_interrupted = True
-                logger.log(
-                    "probe_function interrupted loop",
-                    verbose=verbose,
-                    msg_level=2,
-                    stack_level=2,
-                )
-                break
+        if probe_function is not None and probe_function(
+            emp_covs,
+            n_samples,
+            alpha,
+            max_iter,
+            tol,
+            n,
+            omega,
+            omega_old,
+        ):
+            probe_interrupted = True
+            logger.log(
+                "probe_function interrupted loop",
+                verbose=verbose,
+                msg_level=2,
+                stack_level=2,
+            )
+            break
 
         # Compute max of variation
         omega_old -= omega
@@ -1059,14 +1058,13 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
 
         # One cv generator per subject must be created, because each subject
         # can have a different number of samples from the others.
-        cv = []
-        for k in range(n_subjects):
-            cv.append(
-                check_cv(
-                    self.cv, np.ones(subjects[k].shape[0]), classifier=False
-                ).split(subjects[k])
-            )
-        path = list()  # List of (alpha, scores, covs)
+        cv = [
+            check_cv(
+                self.cv, np.ones(subjects[k].shape[0]), classifier=False
+            ).split(subjects[k])
+            for k in range(n_subjects)
+        ]
+        path = []  # List of (alpha, scores, covs)
         n_alphas = self.alphas
 
         if isinstance(n_alphas, collections.abc.Sequence):
@@ -1167,10 +1165,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
                 alpha_1 = path[0][0]
                 alpha_0 = path[1][0]
                 covs_init = path[0][2]
-            elif (
-                best_index == last_finite_idx
-                and not best_index == len(path) - 1
-            ):
+            elif best_index == last_finite_idx and best_index != len(path) - 1:
                 # We have non-converged models on the upper bound of the
                 # grid, we need to refine the grid there
                 alpha_1 = path[best_index][0]

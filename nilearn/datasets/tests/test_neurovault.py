@@ -86,8 +86,8 @@ def _get_neurovault_data():
         url.format(col_id, img_name)
         for (col_id, img_name) in zip(images["collection_id"], image_names)
     ]
-    collections.set_index("id", inplace=True, drop=False)
-    images.set_index("id", inplace=True, drop=False)
+    collections = collections.set_index("id", drop=False)
+    images = images.set_index("id", drop=False)
     _get_neurovault_data.data = collections, images
     return collections, images
 
@@ -292,7 +292,7 @@ def test_get_batch_error(tmp_path):
         neurovault._get_batch("http://")
     with pytest.raises(ValueError):
         neurovault._get_batch(
-            f"file://{str(tmp_path / 'test_nv.txt')}",
+            f"file://{tmp_path / 'test_nv.txt'!s}",
         )
 
     no_results_url = (
@@ -350,15 +350,15 @@ def test_not_equal():
     assert not_equal == "b"
     assert not_equal == 1
     assert not_equal != "a"
-    assert "a" != not_equal
+    assert not_equal != "a"
     assert str(not_equal) == "NotEqual('a')"
 
 
 def test_order_comp():
     geq = neurovault.GreaterOrEqual("2016-07-12T11:29:12.263046Z")
 
-    assert "2016-08-12T11:29:12.263046Z" == geq
-    assert "2016-06-12T11:29:12.263046Z" != geq
+    assert geq == "2016-08-12T11:29:12.263046Z"
+    assert geq != "2016-06-12T11:29:12.263046Z"
     assert str(geq) == "GreaterOrEqual('2016-07-12T11:29:12.263046Z')"
 
     gt = neurovault.GreaterThan("abc")
@@ -390,7 +390,7 @@ def test_is_in():
 
     countable = neurovault.IsIn(*range(11))
 
-    assert 7 == countable
+    assert countable == 7
     assert countable != 12
 
 

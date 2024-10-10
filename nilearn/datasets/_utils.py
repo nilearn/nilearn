@@ -61,14 +61,6 @@ def read_md5_sum_file(path):
     return hashes
 
 
-def readlinkabs(link):
-    """Return an absolute path for the destination of a symlink."""
-    path = os.readlink(link)
-    if os.path.isabs(path):
-        return path
-    return os.path.join(os.path.dirname(link), path)
-
-
 def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
     """Show downloading percentage.
 
@@ -234,34 +226,34 @@ def get_dataset_dir(
     if default_paths is not None:
         for default_path in default_paths:
             paths.extend(
-                [(d, True) for d in str(default_path).split(os.pathsep)]
+                [(Path(d), True) for d in str(default_path).split(os.pathsep)]
             )
 
-    paths.extend([(d, False) for d in get_data_dirs(data_dir=data_dir)])
+    paths.extend([(Path(d), False) for d in get_data_dirs(data_dir=data_dir)])
 
     logger.log(f"Dataset search paths: {paths}", verbose=verbose, msg_level=2)
 
     # Check if the dataset exists somewhere
     for path, is_pre_dir in paths:
         if not is_pre_dir:
-            path = os.path.join(path, dataset_name)
-        if os.path.islink(path):
+            path = path / dataset_name
+        if path.is_symlink():
             # Resolve path
-            path = readlinkabs(path)
-        if os.path.exists(path) and os.path.isdir(path):
+            path = path.resolve()
+        if path.exists() and path.is_dir():
             logger.log(
                 f"Dataset found in {path}", verbose=verbose, msg_level=1
             )
-            return path
+            return str(path)
 
     # If not, create a folder in the first writeable directory
     errors = []
     for path, is_pre_dir in paths:
         if not is_pre_dir:
-            path = os.path.join(path, dataset_name)
-        if not os.path.exists(path):
+            path = path / dataset_name
+        if not path.exists():
             try:
-                os.makedirs(path)
+                path.mkdir(parents=True)
                 _add_readme_to_default_data_locations(
                     data_dir=data_dir,
                     verbose=verbose,
@@ -269,7 +261,7 @@ def get_dataset_dir(
 
                 logger.log(f"Dataset created in {path}", verbose)
 
-                return path
+                return str(path)
             except Exception as exc:
                 short_error_message = getattr(exc, "strerror", str(exc))
                 errors.append(f"\n -{path} ({short_error_message})")
@@ -340,10 +332,12 @@ def uncompress_file(file_, delete_archive=True, verbose=1):
     """
     logger.log(f"Extracting data from {file_}...", verbose=verbose)
 
-    data_dir = os.path.dirname(file_)
+    file_ = Path(file_)
+    data_dir = file_.parent
+
     # We first try to see if it is a zip file
     try:
-        filename, ext = os.path.splitext(file_)
+        filename = data_dir / file_.stem
         with open(file_, "rb") as fd:
             header = fd.read(4)
         processed = False
@@ -355,12 +349,12 @@ def uncompress_file(file_, delete_archive=True, verbose=1):
                 os.remove(file_)
             file_ = filename
             processed = True
-        elif ext == ".gz" or header.startswith(b"\x1f\x8b"):
+        elif file_.suffix == ".gz" or header.startswith(b"\x1f\x8b"):
             import gzip
 
-            if ext == ".tgz":
-                filename = f"{filename}.tar"
-            elif ext == "":
+            if file_.suffix == ".tgz":
+                filename = Path(f"{filename}.tar")
+            elif file_.suffix == "":
                 # We rely on the assumption that gzip files have an extension
                 shutil.move(file_, f"{file_}.gz")
                 file_ = f"{file_}.gz"
@@ -372,7 +366,7 @@ def uncompress_file(file_, delete_archive=True, verbose=1):
                 os.remove(file_)
             file_ = filename
             processed = True
-        if os.path.isfile(file_) and tarfile.is_tarfile(file_):
+        if file_.is_file() and tarfile.is_tarfile(file_):
             with contextlib.closing(tarfile.open(file_, "r")) as tar:
                 _safe_extract(tar, path=data_dir)
             if delete_archive:
@@ -474,10 +468,8 @@ def filter_columns(array, filters, combination="and"):
 
 class _NaiveFTPAdapter(requests.adapters.BaseAdapter):
     def send(self, request, timeout=None, **kwargs):
-        try:
+        with contextlib.suppress(Exception):
             timeout, _ = timeout
-        except Exception:
-            pass
         try:
             data = urllib.request.urlopen(request.url, timeout=timeout)
         except Exception as e:
@@ -696,28 +688,33 @@ def get_dataset_descr(ds_name):
 
 
 def movetree(src, dst):
-    """Move an entire tree to another directory.
+    """Move entire tree under `src` inside `dst`.
+
+    Creates `dst` if it does not already exist.
 
     Any existing file is overwritten.
+
+    The difference with `shutil.mv` is that `shutil.mv` moves `src` under `dst`
+    if `dst` already exists.
     """
-    names = os.listdir(src)
+    src = Path(src)
 
     # Create destination dir if it does not exist
-    if not os.path.exists(dst):
-        os.makedirs(dst)
+    dst = Path(dst)
+    dst.mkdir(parents=True, exist_ok=True)
+
     errors = []
 
-    for name in names:
-        srcname = os.path.join(src, name)
-        dstname = os.path.join(dst, name)
+    for srcfile in src.iterdir():
+        dstfile = dst / srcfile.name
         try:
-            if os.path.isdir(srcname) and os.path.isdir(dstname):
-                movetree(srcname, dstname)
-                os.rmdir(srcname)
+            if srcfile.is_dir() and dstfile.is_dir():
+                movetree(srcfile, dstfile)
+                srcfile.rmdir()
             else:
-                shutil.move(srcname, dstname)
+                shutil.move(srcfile, dstfile)
         except OSError as why:
-            errors.append((srcname, dstname, str(why)))
+            errors.append((srcfile, dstfile, str(why)))
         # catch the Error from the recursive movetree so that we can
         # continue with other files
         except Exception as err:
@@ -878,7 +875,7 @@ def tree(path, pattern=None, dictionary=False):
 
     Parameters
     ----------
-    path : string
+    path : string or pathlib.Path
         Path browsed.
 
     pattern : string, optional
@@ -888,17 +885,20 @@ def tree(path, pattern=None, dictionary=False):
         If True, the function will return a dict instead of a list.
 
     """
+    path = Path(path)
     files = []
     dirs = {} if dictionary else []
-    for file_ in os.listdir(path):
-        file_path = os.path.join(path, file_)
-        if os.path.isdir(file_path):
+
+    for file_path in path.iterdir():
+        if file_path.is_dir():
             if dictionary:
-                dirs[file_] = tree(file_path, pattern)
+                dirs[file_path.name] = tree(file_path, pattern, dictionary)
             else:
-                dirs.append((file_, tree(file_path, pattern)))
-        elif pattern is None or fnmatch.fnmatch(file_, pattern):
-            files.append(file_path)
+                dirs.append(
+                    (file_path.name, tree(file_path, pattern, dictionary))
+                )
+        elif pattern is None or fnmatch.fnmatch(file_path.name, pattern):
+            files.append(str(file_path))
     files = sorted(files)
     if not dictionary:
         return sorted(dirs) + files
