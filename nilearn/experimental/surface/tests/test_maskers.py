@@ -3,7 +3,7 @@ import warnings
 import numpy as np
 import pytest
 
-from nilearn.conftest import have_mpl
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.experimental.surface import (
     SurfaceImage,
     SurfaceLabelsMasker,
@@ -95,7 +95,8 @@ def test_transform_inverse_transform_with_mask(
 
 
 @pytest.mark.skipif(
-    have_mpl, reason="Test requires matplotlib not to be installed."
+    is_matplotlib_installed(),
+    reason="Test requires matplotlib not to be installed.",
 )
 def test_masker_reporting_mpl_warning(mini_mask, mini_label_img):
     """Raise warning after exception if matplotlib is not installed."""

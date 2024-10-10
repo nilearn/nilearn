@@ -26,13 +26,13 @@ model with a random design matrix **X**:
 
 """
 
-try:
-    import matplotlib.pyplot as plt
-except ImportError:
-    raise RuntimeError("This script needs the matplotlib library")
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
 
 from time import time
 
+import matplotlib.pyplot as plt
 import numpy as np
 from nibabel import Nifti1Image
 from scipy import linalg

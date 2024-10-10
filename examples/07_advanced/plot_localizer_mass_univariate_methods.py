@@ -24,10 +24,9 @@ is included in the model.
 
 """
 
-try:
-    import matplotlib.pyplot as plt
-except ImportError:
-    raise RuntimeError("This script needs the matplotlib library")
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
 
 # %%
 import numpy as np
@@ -115,6 +114,8 @@ neg_log_pvals_tfce_unmasked = nifti_masker.inverse_transform(
 
 # %%
 # Visualization
+import matplotlib.pyplot as plt
+
 from nilearn import plotting
 from nilearn.image import get_data
 

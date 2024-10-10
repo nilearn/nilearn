@@ -97,8 +97,6 @@ plotting.show()
 # %%
 # Visualization of :term:`FREM` weights
 # -------------------------------------
-from nilearn import plotting
-
 plotting.plot_stat_map(
     decoder.coef_img_["face"],
     background_img,

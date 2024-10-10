@@ -10,9 +10,6 @@ task.
 
 For details on the task, please see :footcite:t:`Pinel2007`.
 """
-
-from nilearn.plotting import plot_event
-
 # %%
 # Define the onset times in seconds. These are typically extracted from
 # the stimulation software used, but we will use hardcoded values in this
@@ -105,10 +102,10 @@ print(f"The event information has been saved to {tsvfile}")
 # %%
 # Optionally, the events can be visualized using the
 # :func:`~nilearn.plotting.plot_event` function.
-import matplotlib.pyplot as plt
+from nilearn.plotting import plot_event, show
 
 plot_event(events, figsize=(15, 5))
-plt.show()
+show()
 
 # %%
 # Parametric modulation
@@ -151,7 +148,7 @@ modulated_events = pd.DataFrame(
 
 # Now lets plot the modulated and unmodulated events side by side.
 plot_event([events, modulated_events], figsize=(15, 5))
-plt.show()
+show()
 
 # %%
 # References

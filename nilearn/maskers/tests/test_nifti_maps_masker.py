@@ -14,7 +14,7 @@ from nibabel import Nifti1Image
 
 from nilearn._utils import data_gen, testing
 from nilearn._utils.exceptions import DimensionError
-from nilearn.conftest import have_mpl
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMapsMasker
 
@@ -575,7 +575,8 @@ def test_3d_images():
 
 
 @pytest.mark.skipif(
-    have_mpl, reason="Test requires matplotlib not to be installed."
+    is_matplotlib_installed(),
+    reason="Test requires matplotlib not to be installed.",
 )
 def test_nifti_maps_masker_reporting_mpl_warning():
     """Raise warning after exception if matplotlib is not installed."""

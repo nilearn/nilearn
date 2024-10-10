@@ -14,7 +14,6 @@ versus periods of rest.
     More sensitive results would likely be obtained on the corrected,
     spatially normalized and smoothed images.
 """
-
 # %%
 # Retrieving the data
 # -------------------
