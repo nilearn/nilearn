@@ -406,7 +406,7 @@ class FContrastResults:
     def __str__(self):
         return (
             "<F contrast: "
-            f"F={repr(self.F)}, "
+            f"F={self.F!r}, "
             f"df_den={self.df_den}, "
             f"df_num={self.df_num}>"
         )

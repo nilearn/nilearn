@@ -7,6 +7,7 @@ ignores modules whose name starts with an underscore.
 
 import os
 import tempfile
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -152,7 +153,7 @@ def test_as_ndarray(
 
 def test_as_ndarray_memmap():
     # memmap
-    filename = os.path.join(os.path.dirname(__file__), "data", "mmap.dat")
+    filename = Path(__file__).parent / "data" / "mmap.dat"
 
     # same dtype, no copy requested
     arr1 = np.memmap(filename, dtype="float32", mode="w+", shape=(5,))

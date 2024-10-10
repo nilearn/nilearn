@@ -346,7 +346,7 @@ def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
 
     slices = [slice(None, None), slice(None, None), slice(None, None)]
 
-    cut_coords = list()
+    cut_coords = []
 
     for _ in range(n_cuts):
         # Find a peak

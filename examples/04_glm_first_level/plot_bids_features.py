@@ -237,7 +237,7 @@ save_glm_to_bids(
 
 # %%
 # View the generated files
-files = sorted(list((output_dir / "derivatives" / "nilearn_glm").glob("**/*")))
+files = sorted((output_dir / "derivatives" / "nilearn_glm").glob("**/*"))
 print("\n".join([str(x.relative_to(output_dir)) for x in files]))
 
 # %%

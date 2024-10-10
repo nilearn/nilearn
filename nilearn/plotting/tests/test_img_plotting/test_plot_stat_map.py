@@ -104,7 +104,7 @@ def test_plot_stat_map_threshold_for_affine_with_rotation(rng):
         img, bg_img=None, threshold=1.0, display_mode="z", cut_coords=1
     )
     # Next two lines retrieve the numpy array from the plot
-    ax = list(display.axes.values())[0].ax
+    ax = next(iter(display.axes.values())).ax
     plotted_array = ax.images[0].get_array()
     # Given the high threshold the array should be partly masked
     assert plotted_array.mask.any()

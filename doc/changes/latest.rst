@@ -26,6 +26,8 @@ NEW
 Fixes
 -----
 
+- :bdg-dark:`Code` Fix PTH errors: PTH106, PTH112, PTH114, PTH117, PTH122 (:gh:`4607`, :gh:`4612`, :gh:`4590` by `Hande Gözükan`_).
+
 - :bdg-dark:`Code` Make sure that radiological view is applied when requested and not only when figures are annotated (:gh:`4556` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Fix failing test in ``test_nilearn_standardize`` on MacOS 14 by adding trend in simulated data (:gh:`4411` by `Hao-Ting Wang`_).
@@ -43,6 +45,8 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-primary:`Doc` Add example showing how to compute hemisphere-wise connectivity for Yeo 17 networks (:gh:`4585` by `Victoria Shevchenko`_).
+
 - :bdg-primary:`Doc` Add an option in :func:`nilearn.datasets.fetch_atlas_aal` to fetch the latest AAL version, 3v2 (:gh:`4554` by `Jeremy Lefort-Besnard`_ and `Rémi Gau`_).
 
 - :bdg-dark:`Code` Improve input/output for ``SurfaceImage`` by loading meshes from files on disk, loading data from files or Nifti object, and saving meshes to file (:gh:`4446` by `Rémi Gau`_).
@@ -56,6 +60,8 @@ Enhancements
 - :bdg-primary:`Doc` Adapt examples showing how to plot events and design matrices to show how to use parametric modulation. Also implement modulation of events in :func:`nilearn.plotting.plot_event` (:gh:`4436` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Add footer to masker reports (:gh:`4307` by `Rémi Gau`_).
+
+- :bdg-primary:`Doc` Add example to provide a clear understanding of the :class:`nilearn.decoding.Decoder` object by demonstrating underlying steps via a Scikit-Learn pipeline. (:gh:`4437` by `Himanshu Aggarwal`_).
 
 Changes
 -------

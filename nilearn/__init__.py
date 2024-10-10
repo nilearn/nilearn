@@ -47,7 +47,7 @@ signal                  --- Set of preprocessing functions for time series
 import gzip
 
 try:
-    from ._version import __version__  # noqa: F401
+    from ._version import __version__
 except ImportError:
     __version__ = "0+unknown"
 

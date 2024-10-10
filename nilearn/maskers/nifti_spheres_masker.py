@@ -3,6 +3,7 @@
 Mask nifti images by spherical volumes for seed-region analyses
 """
 
+import contextlib
 import warnings
 
 import numpy as np
@@ -141,11 +142,8 @@ def _apply_mask_and_get_affinity(
     # Include the voxel containing the seed itself if not masked
     mask_coords = mask_coords.astype(int).tolist()
     for i, seed in enumerate(seeds):
-        try:
+        with contextlib.suppress(ValueError):  # if seed is not in the mask
             A[i, mask_coords.index(list(map(int, seed)))] = True
-        except ValueError:
-            # seed is not in the mask
-            pass
 
     sphere_sizes = np.asarray(A.tocsr().sum(axis=1)).ravel()
     empty_spheres = np.nonzero(sphere_sizes == 0)[0]
@@ -515,11 +513,9 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
             )
             regions_summary["relative size (in %)"].append("not implemented")
             if idx in spheres_to_be_displayed:
-                display = plotting.plot_img(
-                    img, cut_coords=seeds[idx], cmap="gray"
-                )
+                display = plotting.plot_img(img, cut_coords=seed, cmap="gray")
                 display.add_markers(
-                    marker_coords=[seeds[idx]],
+                    marker_coords=[seed],
                     marker_color="g",
                     marker_size=20 * radius,
                 )

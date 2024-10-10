@@ -791,8 +791,8 @@ def test_tfce_smoke_legacy_smoke():
     )
 
     assert isinstance(out, dict)
-    assert "t" in out.keys()
-    assert "tfce" in out.keys()
+    assert "t" in out
+    assert "tfce" in out
     assert out["t"].shape == (n_regressors, n_descriptors)
     assert out["tfce"].shape == (n_regressors, n_descriptors)
 
@@ -813,12 +813,12 @@ def test_tfce_smoke_legacy_smoke():
     )
 
     assert isinstance(out, dict)
-    assert "t" in out.keys()
-    assert "tfce" in out.keys()
-    assert "logp_max_t" in out.keys()
-    assert "logp_max_tfce" in out.keys()
-    assert "h0_max_t" in out.keys()
-    assert "h0_max_tfce" in out.keys()
+    assert "t" in out
+    assert "tfce" in out
+    assert "logp_max_t" in out
+    assert "logp_max_tfce" in out
+    assert "h0_max_t" in out
+    assert "h0_max_tfce" in out
     assert out["t"].shape == (n_regressors, n_descriptors)
     assert out["tfce"].shape == (n_regressors, n_descriptors)
     assert out["logp_max_t"].shape == (n_regressors, n_descriptors)
@@ -916,7 +916,7 @@ def test_cluster_level_parameters_smoke(cluster_level_design, masker):
     )
 
     assert isinstance(out, dict)
-    assert "t" in out.keys()
+    assert "t" in out
 
     # permutations, threshold, and masker are defined,
     # so check for cluster-level maps
@@ -935,13 +935,13 @@ def test_cluster_level_parameters_smoke(cluster_level_design, masker):
     )
 
     assert isinstance(out, dict)
-    assert "t" in out.keys()
-    assert "logp_max_t" in out.keys()
-    assert "logp_max_size" in out.keys()
-    assert "logp_max_mass" in out.keys()
-    assert "h0_max_t" in out.keys()
-    assert "h0_max_size" in out.keys()
-    assert "h0_max_mass" in out.keys()
+    assert "t" in out
+    assert "logp_max_t" in out
+    assert "logp_max_size" in out
+    assert "logp_max_mass" in out
+    assert "h0_max_t" in out
+    assert "h0_max_size" in out
+    assert "h0_max_mass" in out
     assert out["h0_max_t"].size == n_perm
     assert out["h0_max_size"].size == n_perm
     assert out["h0_max_mass"].size == n_perm

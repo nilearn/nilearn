@@ -32,8 +32,7 @@ check_matplotlib()
 #
 # With data that has already been masked, this will work well, as it lies
 # on a homogeneous background
-import nilearn.image as image
-from nilearn import datasets
+from nilearn import datasets, image
 from nilearn.maskers import NiftiMasker
 from nilearn.plotting import plot_epi, plot_roi, show
 
@@ -102,7 +101,7 @@ report
 # and :term:`dilation<Dilation>` operations
 # on the outer voxel layers of the mask,
 # which can for example remove remaining skull parts in the image.
-masker = NiftiMasker(mask_strategy="epi", mask_args=dict(opening=10))
+masker = NiftiMasker(mask_strategy="epi", mask_args={"opening": 10})
 masker.fit(epi_img)
 report = masker.generate_report()
 report
@@ -120,7 +119,7 @@ report
 
 masker = NiftiMasker(
     mask_strategy="epi",
-    mask_args=dict(upper_cutoff=0.9, lower_cutoff=0.8, opening=False),
+    mask_args={"upper_cutoff": 0.9, "lower_cutoff": 0.8, "opening": False},
 )
 masker.fit(epi_img)
 report = masker.generate_report()

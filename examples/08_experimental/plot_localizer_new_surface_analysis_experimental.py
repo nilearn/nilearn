@@ -46,7 +46,7 @@ second-level analyses on the surface.
 On the other hand, it is obviously less accurate
 than using a subject-tailored mesh.
 
-"""  # noqa: E501
+"""
 
 from nilearn._utils.helpers import check_matplotlib
 

@@ -359,8 +359,7 @@ def grad_geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
         ).dot(gmean_sqrt)
 
         # Update the norm and the step size
-        if norm < norm_old:
-            norm_old = norm
+        norm_old = min(norm, norm_old)
         if norm > norm_old:
             step = step / 2.0
             norm = norm_old
