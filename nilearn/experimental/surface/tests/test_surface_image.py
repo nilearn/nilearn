@@ -29,9 +29,9 @@ def test_surface_image_shape(make_mini_img):
     img = make_mini_img()
     assert img.shape == (9,)
     img = make_mini_img((3,))
-    assert img.shape == (3, 9)
+    assert img.shape == (9, 3)
     img = make_mini_img((7, 3))
-    assert img.shape == (7, 3, 9)
+    assert img.shape == (9, 7, 3)
 
 
 def test_data_shape_not_matching_mesh(mini_img, flip):
@@ -43,7 +43,7 @@ def test_data_shape_inconsistent(make_mini_img):
     img = make_mini_img((7,))
     bad_data = {
         "left": img.data.parts["left"],
-        "right": img.data.parts["right"][:4],
+        "right": img.data.parts["right"][:, :4],
     }
     with pytest.raises(ValueError, match="incompatible shapes"):
         SurfaceImage(img.mesh, bad_data)
@@ -133,7 +133,7 @@ def test_load_4D_nifti_as_data(img_4d_mni, mini_mesh, tmp_path):
     """Instantiate surface image with 4D Niftiimage object or file for data."""
     img = SurfaceImage(mesh=mini_mesh, data=img_4d_mni)
     # check that we have the correct number of time points
-    assert img.shape[0] == img_4d_mni.shape[3]
+    assert img.shape[1] == img_4d_mni.shape[3]
 
     img_4d_mni.to_filename(tmp_path / "tmp.nii.gz")
 
