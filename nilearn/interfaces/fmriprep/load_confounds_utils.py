@@ -175,11 +175,10 @@ def _generate_confounds_file_candidates(nii_file):
     if "desc" not in file_fields:
         file_fields.append("desc")
 
-    all_subsets = []
-    for n_entities in range(1, len(file_fields) + 1):
-        all_subsets.append(
-            list(itertools.combinations(file_fields, n_entities))
-        )
+    all_subsets = [
+        list(itertools.combinations(file_fields, n_entities))
+        for n_entities in range(1, len(file_fields) + 1)
+    ]
 
     # Flatten the list of lists
     all_subsets = [list(item) for sublist in all_subsets for item in sublist]

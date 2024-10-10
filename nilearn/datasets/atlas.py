@@ -2167,16 +2167,17 @@ def fetch_atlas_schaefer_2018(
             "Schaefer2018_LocalGlobal/Parcellations/MNI/"
         )
 
-    files = []
     labels_file_template = "Schaefer2018_{}Parcels_{}Networks_order.txt"
     img_file_template = (
         "Schaefer2018_{}Parcels_{}Networks_order_FSLMNI152_{}mm.nii.gz"
     )
-    for f in [
-        labels_file_template.format(n_rois, yeo_networks),
-        img_file_template.format(n_rois, yeo_networks, resolution_mm),
-    ]:
-        files.append((f, base_url + f, {}))
+    files = [
+        (f, base_url + f, {})
+        for f in [
+            labels_file_template.format(n_rois, yeo_networks),
+            img_file_template.format(n_rois, yeo_networks, resolution_mm),
+        ]
+    ]
 
     dataset_name = "schaefer_2018"
     data_dir = get_dataset_dir(

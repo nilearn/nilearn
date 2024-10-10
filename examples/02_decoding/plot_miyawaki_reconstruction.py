@@ -261,31 +261,28 @@ from sklearn.metrics import (
 
 print("Scores")
 print("------")
-print(
-    "  - Accuracy (percent): %f"
-    % np.mean(
-        [accuracy_score(y_test[:, i], y_pred[:, i] > 0.5) for i in range(100)]
-    )
+accuracy_to_print = np.mean(
+    [accuracy_score(y_test[:, i], y_pred[:, i] > 0.5) for i in range(100)]
 )
-print(
-    "  - Precision: %f"
-    % np.mean(
-        [precision_score(y_test[:, i], y_pred[:, i] > 0.5) for i in range(100)]
-    )
+print(f"  - Accuracy (percent): {accuracy_to_print:f}")
+
+precision_to_print = np.mean(
+    [precision_score(y_test[:, i], y_pred[:, i] > 0.5) for i in range(100)]
 )
-print(
-    "  - Recall: %f"
-    % np.mean(
-        [
-            recall_score(y_test[:, i], y_pred[:, i] > 0.5, zero_division=0)
-            for i in range(100)
-        ]
-    )
+print(f"  - Precision: {precision_to_print:f}")
+
+recall_to_print = np.mean(
+    [
+        recall_score(y_test[:, i], y_pred[:, i] > 0.5, zero_division=0)
+        for i in range(100)
+    ]
 )
-print(
-    "  - F1-score: %f"
-    % np.mean([f1_score(y_test[:, i], y_pred[:, i] > 0.5) for i in range(100)])
+print(f"  - Recall: {recall_to_print:f}")
+
+f1_score_to_print = np.mean(
+    [f1_score(y_test[:, i], y_pred[:, i] > 0.5) for i in range(100)]
 )
+print(f"  - F1-score: {f1_score_to_print:f}")
 
 
 # %%

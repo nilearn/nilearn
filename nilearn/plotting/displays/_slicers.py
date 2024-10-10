@@ -1019,9 +1019,9 @@ class OrthoSlicer(BaseSlicer):
         for ax, width in width_dict.items():
             width_dict[ax] = width / total_width * (x1 - x0)
 
-        direction_ax = []
-        for d in self._cut_displayed:
-            direction_ax.append(display_ax_dict.get(d, dummy_ax).ax)
+        direction_ax = [
+            display_ax_dict.get(d, dummy_ax).ax for d in self._cut_displayed
+        ]
         left_dict = {}
         for idx, ax in enumerate(direction_ax):
             left_dict[ax] = x0
@@ -1382,10 +1382,6 @@ class TiledSlicer(BaseSlicer):
             width_dict, height_dict, rect_x0, rect_y0, rect_x1, rect_y1
         )
 
-        direction_ax = []
-        for d in self._cut_displayed:
-            direction_ax.append(display_ax_dict.get(d, dummy_ax).ax)
-
         coord1, coord2, coord3, coord4 = self._find_axes_coord(
             rel_width_dict, rel_height_dict, rect_x0, rect_y0, rect_x1, rect_y1
         )
@@ -1578,7 +1574,7 @@ class BaseStackedSlicer(BaseSlicer):
             width_dict[ax] = width / total_width * (x1 - x0)
         left_dict = {}
         left = float(x0)
-        for _, display_ax in display_ax_dict.items():
+        for display_ax in display_ax_dict.values():
             left_dict[display_ax.ax] = left
             this_width = width_dict[display_ax.ax]
             left += this_width
@@ -2070,7 +2066,7 @@ class MosaicSlicer(BaseSlicer):
         for index, direction in enumerate(self._cut_displayed):
             left = float(x0)
             this_height = fraction + fraction * index
-            for _, display_ax in display_ax_dict.items():
+            for display_ax in display_ax_dict.values():
                 if direction == display_ax.direction:
                     left_dict[display_ax.ax] = left
                     this_width = width_dict[display_ax.ax]
