@@ -3,6 +3,7 @@
 import pathlib
 from typing import Union
 
+import nibabel as nib
 import numpy as np
 from nibabel import gifti
 
@@ -37,3 +38,8 @@ def mesh_to_gifti(
     gifti_img.add_gifti_data_array(coords_array)
     gifti_img.add_gifti_data_array(faces_array)
     gifti_img.to_filename(gifti_file)
+
+
+def data_to_gifti(data: np.ndarray, gifti_file: pathlib.Path | str):
+    gifti_img = gifti.GiftiImage(darrays=[gifti.GiftiDataArray(data)])
+    nib.save(gifti_img, pathlib.Path(gifti_file))
