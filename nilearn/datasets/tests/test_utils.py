@@ -158,7 +158,7 @@ def test_get_dataset_dir_write_access(tmp_path):
 
     no_write = tmp_path / "no_write"
     no_write.mkdir(parents=True)
-    os.chmod(no_write, 0o400)
+    no_write.chmod(0o400)
 
     expected_base_dir = tmp_path / "nilearn_shared_data"
     os.environ["NILEARN_SHARED_DATA"] = str(expected_base_dir)
@@ -189,7 +189,7 @@ def test_get_dataset_dir_symlink(tmp_path):
     )
 
     assert data_dir == str(expected_linked_dir)
-    assert os.path.exists(data_dir)
+    assert data_dir.exists()
 
 
 def test_md5_sum_file():
@@ -239,7 +239,6 @@ def test_tree(tmp_path):
     (dir1 / "file12").touch()
     (dir11 / "file111").touch()
     (dir2 / "file21").touch()
-
 
     # test for list return value
     tree_ = _utils.tree(tmp_path)

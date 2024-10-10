@@ -1,7 +1,6 @@
 """Functions for surface manipulation."""
 
 import gzip
-import os
 import warnings
 from collections import namedtuple
 from collections.abc import Mapping

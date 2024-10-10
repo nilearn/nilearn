@@ -1,5 +1,4 @@
 import itertools
-import os
 import shutil
 import unittest.mock
 import warnings
