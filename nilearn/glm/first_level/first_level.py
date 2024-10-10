@@ -1670,7 +1670,7 @@ def _list_valid_subjects(derivatives_path, sub_labels):
 
     Parameters
     ----------
-    derivatives_path : :obj:`str` or :obj:`Path`
+    derivatives_path : :obj:`str` or :obj:`pathlib.Path`
         Path to the BIDS derivatives folder.
 
     sub_labels : :obj:`list` of :obj:`str`
