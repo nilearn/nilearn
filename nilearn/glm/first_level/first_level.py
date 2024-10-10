@@ -731,7 +731,7 @@ class FirstLevelModel(BaseGLM):
                 a :obj:`list` or a :obj:`tuple` of Niimg-like objects.
                 If ``mask_img`` is
                 a ``SurfaceMasker`` or ``SurfaceImage`` instance,
-                then ``run_imgs`` mustr be a
+                then ``run_imgs`` must be a
                 ``SurfaceImage`` object, \
                 a :obj:`list` or a :obj:`tuple` of ``SurfaceImage`` objects.
 
