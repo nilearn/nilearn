@@ -338,7 +338,8 @@ def test_signals_extraction_with_labels_without_mask(
     signals, labels_data, labels_img, shape_3d_default, tmp_path
 ):
     """Test conversion between signals and images \
-    using regions defined by labels."""
+    using regions defined by labels.
+    """
     data_img = signals_to_img_labels(signals=signals, labels_img=labels_img)
 
     assert data_img.shape == (shape_3d_default + (N_TIMEPOINTS,))
@@ -372,7 +373,8 @@ def test_signals_extraction_with_labels_without_mask_return_masked_atlas(
     signals, labels_img
 ):
     """Test masked_atlas is correct in conversion between signals and images \
-    using regions defined by labels."""
+    using regions defined by labels.
+    """
     data_img = signals_to_img_labels(signals=signals, labels_img=labels_img)
 
     # test return_masked_atlas
@@ -401,7 +403,8 @@ def test_signals_extraction_with_labels_with_mask(
     signals, labels_img, labels_data, mask_img, shape_3d_default, tmp_path
 ):
     """Test conversion between signals and images \
-    using regions defined by labels with a mask."""
+    using regions defined by labels with a mask.
+    """
     data_img = signals_to_img_labels(
         signals=signals, labels_img=labels_img, mask_img=mask_img
     )
@@ -445,7 +448,8 @@ def test_signals_extraction_with_labels_with_mask_return_masked_atlas(
     signals, labels_img, mask_img
 ):
     """Test masked_atlas is correct in conversion between signals and images \
-    using regions defined by labels and a mask."""
+    using regions defined by labels and a mask.
+    """
     data_img = signals_to_img_labels(
         signals=signals, labels_img=labels_img, mask_img=mask_img
     )

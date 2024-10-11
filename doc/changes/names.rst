@@ -110,6 +110,8 @@
 
 .. _Guillaume Lemaitre: https://glemaitre.github.io/
 
+.. _Hande Gözükan: https://github.com/hndgzkn
+
 .. _Hao-Ting Wang: https://wanghaoting.com/
 
 .. _Himanshu Aggarwal: https://github.com/man-shu
@@ -291,6 +293,8 @@
 .. _Tarun Samanta: https://github.com/tarunsamanta2k20
 
 .. _Taylor Salo: https://tsalo.github.io/
+
+.. _Tharun K: https://github.com/tharun634
 
 .. _Thomas Bazeille: https://github.com/thomasbazeille
 

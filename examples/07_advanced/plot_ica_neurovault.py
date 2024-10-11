@@ -21,7 +21,6 @@ documentation for more details.
 
 """
 
-# %%
 import warnings
 
 import numpy as np
@@ -71,7 +70,6 @@ print("\nReshaping and masking images.\n")
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore", UserWarning)
-    warnings.simplefilter("ignore", DeprecationWarning)
 
     mask_img = load_mni152_brain_mask(resolution=2)
     masker = NiftiMasker(

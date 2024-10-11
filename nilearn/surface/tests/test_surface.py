@@ -3,6 +3,7 @@
 import os
 import tempfile
 import warnings
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -31,13 +32,13 @@ from nilearn.surface.tests._testing import (
     z_const_img,
 )
 
-currdir = os.path.dirname(os.path.abspath(__file__))
-datadir = os.path.join(currdir, "data")
+datadir = Path(__file__).resolve().parent / "data"
 
 
 class MeshLikeObject:
     """Class with attributes coordinates \
-       and faces to be used for testing purposes."""
+       and faces to be used for testing purposes.
+    """
 
     def __init__(self, coordinates, faces):
         self._coordinates = coordinates
@@ -193,7 +194,7 @@ def test_load_surf_data_file_freesurfer(tmp_path):
     # test loading of data from real label and annot files
     label_start = np.array([5900, 5899, 5901, 5902, 2638])
     label_end = np.array([8756, 6241, 8757, 1896, 6243])
-    label = load_surf_data(os.path.join(datadir, "test.label"))
+    label = load_surf_data(datadir / "test.label")
     assert_array_equal(label[:5], label_start)
     assert_array_equal(label[-5:], label_end)
     assert label.shape == (10,)
@@ -201,7 +202,7 @@ def test_load_surf_data_file_freesurfer(tmp_path):
 
     annot_start = np.array([24, 29, 28, 27, 24, 31, 11, 25, 0, 12])
     annot_end = np.array([16, 16, 16, 16, 16, 16, 16, 16, 16, 16])
-    annot = load_surf_data(os.path.join(datadir, "test.annot"))
+    annot = load_surf_data(datadir / "test.annot")
     assert_array_equal(annot[:10], annot_start)
     assert_array_equal(annot[-10:], annot_end)
     assert annot.shape == (10242,)
@@ -408,11 +409,9 @@ def test_load_surf_mesh_file_glob(tmp_path):
     freesurfer.write_geometry(fname2, mesh[0], mesh[1])
 
     with pytest.raises(ValueError, match="More than one file matching path"):
-        load_surf_mesh(os.path.join(os.path.dirname(fname1), "*.pial"))
+        load_surf_mesh(tmp_path / "*.pial")
     with pytest.raises(ValueError, match="No files matching path"):
-        load_surf_mesh(
-            os.path.join(os.path.dirname(fname1), "*.unlikelysuffix")
-        )
+        load_surf_mesh(tmp_path / "*.unlikelysuffix")
     assert len(load_surf_mesh(fname1)) == 2
     assert_array_almost_equal(load_surf_mesh(fname1)[0], mesh[0])
     assert_array_almost_equal(load_surf_mesh(fname1)[1], mesh[1])
@@ -435,7 +434,7 @@ def test_load_surf_data_file_glob(tmp_path):
         gii.to_filename(fnames[f])
 
     assert_array_equal(
-        load_surf_data(os.path.join(os.path.dirname(fnames[0]), "glob*.gii")),
+        load_surf_data(tmp_path / "glob*.gii"),
         data2D,
     )
 
@@ -453,7 +452,7 @@ def test_load_surf_data_file_glob(tmp_path):
 
     data2D = np.concatenate((data2D, np.ones((20, 3))), axis=1)
     assert_array_equal(
-        load_surf_data(os.path.join(os.path.dirname(fnames[0]), "glob*.gii")),
+        load_surf_data(tmp_path / "glob*.gii"),
         data2D,
     )
 
@@ -472,7 +471,7 @@ def test_load_surf_data_file_glob(tmp_path):
     with pytest.raises(
         ValueError, match="files must contain data with the same shape"
     ):
-        load_surf_data(os.path.join(os.path.dirname(fnames[0]), "*.gii"))
+        load_surf_data(tmp_path / "*.gii")
     for f in fnames:
         os.remove(f)
 

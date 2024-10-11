@@ -101,6 +101,7 @@ Some other past or present contributors are:
 * `Greg Kiar`_: Child Mind Institute
 * `Greydon Gilmore`_: Department of Mathematics, Western University, Toronto, Canada
 * `Guillaume Lemaitre`_: Inria, Saclay, France
+* `Hande Gözükan`_: Inria, Saclay, France
 * `Hao-Ting Wang`_: Montréal Geriatrics Institute (CRIUGM), Montréal, Canada
 * `Himanshu Aggarwal`_: Inria, Saclay, France
 * `Ian Abenes`_
@@ -192,6 +193,7 @@ Some other past or present contributors are:
 * `Tamer Gezici`_: Bilkent University
 * `Tarun Samanta`_: Acharya Prafulla Chandra College
 * `Taylor Salo`_: Lifespan Informatics & Neuroimaging Center, University of Pennsylvania, USA
+* `Tharun K`_
 * `Thomas Bazeille`_: Inria, Saclay, France
 * `Tom Vanasse`_: Wisconsin Institute for Sleep and Consciousness, USA
 * `Vasco Diogo`_

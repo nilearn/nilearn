@@ -45,7 +45,8 @@ from .space_net_solvers import (
 
 def _crop_mask(mask):
     """Crops input mask to produce tighter (i.e smaller) bounding box \
-    with the same support (active voxels)."""
+    with the same support (active voxels).
+    """
     idx = np.where(mask)
     if idx[0].size == 0:
         raise ValueError(
@@ -224,7 +225,7 @@ class _EarlyStoppingCallback:
         """Perform callback."""
         # misc
         if not isinstance(variables, dict):
-            variables = dict(w=variables)
+            variables = {"w": variables}
         self.counter += 1
         w = variables["w"]
 
@@ -809,7 +810,8 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
 
     def _set_coef_and_intercept(self, w):
         """Set the loadings vector (coef) and the intercept of the fitted \
-        model."""
+        model.
+        """
         self.w_ = np.array(w)
         if self.w_.ndim == 1:
             self.w_ = self.w_[np.newaxis, :]
@@ -899,11 +901,10 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
                 solver = graph_net_squared_loss
             else:
                 solver = graph_net_logistic
+        elif not self.is_classif or loss == "mse":
+            solver = partial(tvl1_solver, loss="mse")
         else:
-            if not self.is_classif or loss == "mse":
-                solver = partial(tvl1_solver, loss="mse")
-            else:
-                solver = partial(tvl1_solver, loss="logistic")
+            solver = partial(tvl1_solver, loss="logistic")
 
         # generate fold indices
         case1 = (None in [alphas, l1_ratios]) and self.n_alphas > 1
@@ -939,7 +940,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         )
 
         # main loop: loop on classes and folds
-        solver_params = dict(tol=self.tol, max_iter=self.max_iter)
+        solver_params = {"tol": self.tol, "max_iter": self.max_iter}
         self.best_model_params_ = []
         self.alpha_grids_ = []
         for (

@@ -503,10 +503,7 @@ def write_fake_fmri_data_and_design(
     nilearn._utils.data_gen.generate_fake_fmri_data_and_design
 
     """
-    if file_path is None:
-        file_path = Path.cwd()
-    else:
-        file_path = Path(file_path)
+    file_path = Path.cwd() if file_path is None else Path(file_path)
 
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk=rk, affine=affine, random_state=random_state
@@ -1078,7 +1075,7 @@ def _mock_bids_dataset(
 
     Parameters
     ----------
-    base_dir : :obj:`Path`
+    base_dir : :obj:`pathlib.Path`
         Path where to create the fake :term:`BIDS` dataset.
 
     n_sub : :obj:`int`
@@ -1171,7 +1168,7 @@ def _mock_bids_derivatives(
 
     Parameters
     ----------
-    base_dir : :obj:`Path`
+    base_dir : :obj:`pathlib.Path`
         Path where to create the fake :term:`BIDS` dataset.
 
     n_sub : :obj:`int`
@@ -1313,7 +1310,7 @@ def _write_bids_raw_anat(subses_dir, subject, session) -> None:
 
     Parameters
     ----------
-    subses_dir : :obj:`Path`
+    subses_dir : :obj:`pathlib.Path`
         Subject session directory
 
     subject : :obj:`str`
@@ -1342,7 +1339,7 @@ def _write_bids_raw_func(
 
     Parameters
     ----------
-    func_path : :obj:`Path`
+    func_path : :obj:`pathlib.Path`
         Path to a subject functional directory.
 
     file_id : :obj:`str`
@@ -1394,7 +1391,7 @@ def _write_bids_derivative_func(
 
     Parameters
     ----------
-    func_path : :obj:`Path`
+    func_path : :obj:`pathlib.Path`
         Path to a subject functional directory.
 
     file_id : :obj:`str`

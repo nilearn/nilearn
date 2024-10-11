@@ -1,6 +1,5 @@
 """Test the second level model."""
 
-import os
 from pathlib import Path
 
 import numpy as np
@@ -20,7 +19,7 @@ from nilearn._utils.data_gen import (
     write_fake_bold_img,
     write_fake_fmri_data_and_design,
 )
-from nilearn.conftest import have_mpl
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.glm.first_level import FirstLevelModel, run_glm
 from nilearn.glm.second_level import SecondLevelModel, non_parametric_inference
 from nilearn.glm.second_level.second_level import (
@@ -39,12 +38,12 @@ from nilearn.glm.second_level.second_level import (
 from nilearn.image import concat_imgs, get_data, new_img_like, smooth_img
 from nilearn.maskers import NiftiMasker
 
-if have_mpl:
+if is_matplotlib_installed():
     from nilearn.reporting import get_clusters_table
 
 # This directory path
-BASEDIR = os.path.dirname(os.path.abspath(__file__))
-FUNCFILE = os.path.join(BASEDIR, "functional.nii.gz")
+BASEDIR = Path(__file__).resolve().parent
+FUNCFILE = BASEDIR / "functional.nii.gz"
 
 N_PERM = 10
 SHAPE = (7, 8, 9, 1)
@@ -155,7 +154,8 @@ def test_second_level_input_as_3D_images(rng, affine_eye, tmp_path):
 
 def test_process_second_level_input_as_firstlevelmodels():
     """Unit tests for function \
-       _process_second_level_input_as_firstlevelmodels()."""
+       _process_second_level_input_as_firstlevelmodels().
+    """
     shapes, rk = [(7, 8, 9, 15)], 3
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk
@@ -826,7 +826,8 @@ def test_second_level_voxelwise_attribute_errors(attribute):
     """Tests that an error is raised when trying to access \
        voxelwise attributes before fitting the model, \
        before computing a contrast, \
-       and when not setting ``minimize_memory`` to ``True``."""
+       and when not setting ``minimize_memory`` to ``True``.
+    """
     shapes = (SHAPE,)
     mask, fmri_data, _ = generate_fake_fmri_data_and_design(shapes)
     model = SecondLevelModel(mask_img=mask, minimize_memory=False)
@@ -910,10 +911,10 @@ def test_non_parametric_inference_tfce(tmp_path):
         tfce=True,
     )
     assert isinstance(out, dict)
-    assert "t" in out.keys()
-    assert "tfce" in out.keys()
-    assert "logp_max_t" in out.keys()
-    assert "logp_max_tfce" in out.keys()
+    assert "t" in out
+    assert "tfce" in out
+    assert "logp_max_t" in out
+    assert "logp_max_tfce" in out
 
     assert get_data(out["tfce"]).shape == shapes[0][:3]
     assert get_data(out["logp_max_tfce"]).shape == shapes[0][:3]
@@ -935,25 +936,27 @@ def test_non_parametric_inference_cluster_level(tmp_path):
         threshold=0.001,
     )
     assert isinstance(out, dict)
-    assert "t" in out.keys()
-    assert "logp_max_t" in out.keys()
-    assert "size" in out.keys()
-    assert "logp_max_size" in out.keys()
-    assert "mass" in out.keys()
-    assert "logp_max_mass" in out.keys()
+    assert "t" in out
+    assert "logp_max_t" in out
+    assert "size" in out
+    assert "logp_max_size" in out
+    assert "mass" in out
+    assert "logp_max_mass" in out
 
     assert get_data(out["logp_max_t"]).shape == SHAPE[:3]
 
 
 @pytest.mark.skipif(
-    not have_mpl, reason="Matplotlib not installed; required for this test"
+    not is_matplotlib_installed(),
+    reason="Matplotlib not installed; required for this test",
 )
 def test_non_parametric_inference_cluster_level_with_covariates(
     tmp_path,
     rng,
 ):
     """Test non-parametric inference with cluster-level inference in \
-    the context of covariates."""
+    the context of covariates.
+    """
     shapes = ((7, 8, 9, 1),)
     mask, FUNCFILE, _ = write_fake_fmri_data_and_design(
         shapes, file_path=tmp_path

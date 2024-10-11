@@ -14,6 +14,7 @@ from nilearn import signal
 from nilearn._utils import _constrained_layout_kwargs
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.class_inspect import get_params
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.experimental.surface._surface_image import PolyMesh, SurfaceImage
 
 
@@ -159,7 +160,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
             start = stop
         self.output_dimension_ = stop
 
-        for part in self.mask_img_.data.parts.keys():
+        for part in self.mask_img_.data.parts:
             self._report_content["n_vertices"][part] = (
                 self.mask_img_.mesh.parts[part].n_vertices
             )
@@ -297,9 +298,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
     def generate_report(self):
         """Generate a report."""
-        try:
-            from nilearn.reporting.html_report import generate_report
-        except ImportError:
+        if not is_matplotlib_installed():
             with warnings.catch_warnings():
                 mpl_unavail_msg = (
                     "Matplotlib is not imported! "
@@ -308,6 +307,8 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 warnings.filterwarnings("always", message=mpl_unavail_msg)
                 warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
                 return [None]
+
+        from nilearn.reporting.html_report import generate_report
 
         return generate_report(self)
 
@@ -469,7 +470,7 @@ class SurfaceLabelsMasker(BaseEstimator):
             "number_of_regions": len(self.label_names_),
             "summary": {},
         }
-        for part in self.labels_img.data.parts.keys():
+        for part in self.labels_img.data.parts:
             self._report_content["n_vertices"][part] = (
                 self.labels_img.mesh.parts[part].n_vertices
             )
@@ -607,9 +608,7 @@ class SurfaceLabelsMasker(BaseEstimator):
 
     def generate_report(self):
         """Generate a report."""
-        try:
-            from nilearn.reporting.html_report import generate_report
-        except ImportError:
+        if not is_matplotlib_installed():
             with warnings.catch_warnings():
                 mpl_unavail_msg = (
                     "Matplotlib is not imported! "
@@ -618,6 +617,8 @@ class SurfaceLabelsMasker(BaseEstimator):
                 warnings.filterwarnings("always", message=mpl_unavail_msg)
                 warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
                 return [None]
+
+        from nilearn.reporting.html_report import generate_report
 
         return generate_report(self)
 

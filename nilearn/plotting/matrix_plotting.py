@@ -83,18 +83,17 @@ def _sanitize_figure_and_axes(figure, axes):
             fig = plt.figure(figsize=figure, **_constrained_layout_kwargs())
         axes = plt.gca()
         own_fig = True
+    elif axes is None:
+        fig, axes = plt.subplots(
+            1,
+            1,
+            figsize=(7, 5),
+            **_constrained_layout_kwargs(),
+        )
+        own_fig = True
     else:
-        if axes is None:
-            fig, axes = plt.subplots(
-                1,
-                1,
-                figsize=(7, 5),
-                **_constrained_layout_kwargs(),
-            )
-            own_fig = True
-        else:
-            fig = axes.figure
-            own_fig = False
+        fig = axes.figure
+        own_fig = False
     return fig, axes, own_fig
 
 
@@ -321,9 +320,8 @@ def plot_matrix(
     if grid is not False:
         _configure_grid(axes, tri, len(mat))
     axes.set_ylim(ymin, ymax)
-    if auto_fit:
-        if labels:
-            _fit_axes(axes)
+    if auto_fit and labels:
+        _fit_axes(axes)
     if colorbar:
         divider = make_axes_locatable(axes)
         cax = divider.append_axes("right", size="5%", pad=0.05)

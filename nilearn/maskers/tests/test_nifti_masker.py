@@ -6,9 +6,9 @@ test_signal.py for this.
 """
 
 # Author: Gael Varoquaux, Philippe Gervais
-import os
 import shutil
 import warnings
+from pathlib import Path
 from tempfile import mkdtemp
 
 import numpy as np
@@ -18,7 +18,7 @@ from numpy.testing import assert_array_equal
 
 from nilearn._utils import data_gen, exceptions, testing
 from nilearn._utils.class_inspect import get_params
-from nilearn.conftest import have_mpl
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.image import get_data, index_img
 from nilearn.maskers import NiftiMasker
 from nilearn.maskers.nifti_masker import _filter_and_mask
@@ -81,7 +81,8 @@ def test_resample(img_3d_rand_eye, mask_img_1):
 
 def test_resample_to_mask_warning(img_3d_rand_eye, affine_eye):
     """Check that a warning is raised when data is \
-       being resampled to mask's resolution."""
+       being resampled to mask's resolution.
+    """
     # defining a mask with different fov than img
     mask = np.zeros((12, 12, 12))
     mask[3:-3, 3:-3, 3:-3] = 10
@@ -118,7 +119,7 @@ def test_nan(affine_eye):
     data[:, :, -1] = np.nan
     data[3:-3, 3:-3, 3:-3] = 10
     img = Nifti1Image(data, affine_eye)
-    masker = NiftiMasker(mask_args=dict(opening=0))
+    masker = NiftiMasker(mask_args={"opening": 0})
     masker.fit(img)
     mask = get_data(masker.mask_img_)
     assert mask[1:-1, 1:-1, 1:-1].all()
@@ -296,14 +297,14 @@ def test_joblib_cache(tmp_path, mask_img_1):
 
     # Test a tricky issue with memmapped joblib.memory that makes
     # imgs return by inverse_transform impossible to save
-    cachedir = mkdtemp()
+    cachedir = Path(mkdtemp())
     try:
         masker.memory = Memory(location=cachedir, mmap_mode="r", verbose=0)
         X = masker.transform(mask_img_1)
         # inverse_transform a first time, so that the result is cached
         out_img = masker.inverse_transform(X)
         out_img = masker.inverse_transform(X)
-        out_img.to_filename(os.path.join(cachedir, "test.nii"))
+        out_img.to_filename(cachedir / "test.nii")
     finally:
         # enables to delete "filename" on windows
         del masker
@@ -345,12 +346,13 @@ def test_compute_epi_mask(affine_eye):
     mean_image[5, 5, :] = 11
     mean_image = Nifti1Image(mean_image.astype(float), affine_eye)
 
-    masker = NiftiMasker(mask_strategy="epi", mask_args=dict(opening=False))
+    masker = NiftiMasker(mask_strategy="epi", mask_args={"opening": False})
     masker.fit(mean_image)
     mask1 = masker.mask_img_
 
     masker2 = NiftiMasker(
-        mask_strategy="epi", mask_args=dict(opening=False, exclude_zeros=True)
+        mask_strategy="epi",
+        mask_args={"opening": False, "exclude_zeros": True},
     )
     masker2.fit(mean_image)
     mask2 = masker2.mask_img_
@@ -365,14 +367,15 @@ def test_compute_epi_mask(affine_eye):
     mean_image2 = Nifti1Image(mean_image2, affine_eye)
 
     masker3 = NiftiMasker(
-        mask_strategy="epi", mask_args=dict(opening=False, exclude_zeros=True)
+        mask_strategy="epi",
+        mask_args={"opening": False, "exclude_zeros": True},
     )
     masker3.fit(mean_image2)
     mask3 = masker3.mask_img_
     np.testing.assert_array_equal(get_data(mask1), get_data(mask3)[3:12, 3:12])
 
     # However, without exclude_zeros, it does
-    masker4 = NiftiMasker(mask_strategy="epi", mask_args=dict(opening=False))
+    masker4 = NiftiMasker(mask_strategy="epi", mask_args={"opening": False})
     masker4.fit(mean_image2)
     mask4 = masker4.mask_img_
 
@@ -393,7 +396,7 @@ def expected_mask(mask_args):
 @pytest.mark.parametrize(
     "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
 )
-@pytest.mark.parametrize("mask_args", [{}, dict(threshold=0.0)])
+@pytest.mark.parametrize("mask_args", [{}, {"threshold": 0.0}])
 def test_compute_brain_mask(strategy, mask_args, expected_mask):
     """Check masker for template masking strategy."""
     img, _ = data_gen.generate_random_img((9, 9, 5))
@@ -560,7 +563,8 @@ def test_nifti_masker_io_shapes(rng, shape_3d_default, affine_eye):
 
 
 @pytest.mark.skipif(
-    have_mpl, reason="Test requires matplotlib not to be installed."
+    is_matplotlib_installed(),
+    reason="Test requires matplotlib not to be installed.",
 )
 def test_nifti_masker_reporting_mpl_warning():
     """Raise warning after exception if matplotlib is not installed."""

@@ -134,15 +134,14 @@ def remove_parameters(removed_params, reason, end_version="future"):
     def _remove_params(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            found = set(removed_params).intersection(kwargs)
-            if found:
+            if found := set(removed_params).intersection(kwargs):
                 message = (
                     f'Parameter(s) {", ".join(found)} '
                     f"will be removed in version {end_version}; "
                     f"{reason}"
                 )
                 warnings.warn(
-                    category=DeprecationWarning, message=message, stacklevel=3
+                    category=DeprecationWarning, message=message, stacklevel=2
                 )
             return func(*args, **kwargs)
 
@@ -209,6 +208,30 @@ def compare_version(version_a, operator, version_b):
         error_msg = "'compare_version' received an unexpected operator "
         raise ValueError(error_msg + operator + ".")
     return VERSION_OPERATORS[operator](parse(version_a), parse(version_b))
+
+
+def is_matplotlib_installed():
+    """Check if matplotlib is installed."""
+    try:
+        import matplotlib  # noqa: F401
+    except ImportError:
+        return False
+    else:
+        return True
+
+
+def check_matplotlib():
+    """Check if matplotlib is installed, raise an error if not.
+
+    Used in examples that require matplolib.
+    """
+    if not is_matplotlib_installed():
+        raise RuntimeError(
+            "This script needs the matplotlib library.\n"
+            "You can install Nilearn "
+            "and all its plotting dependencies with:\n"
+            "pip install 'nilearn[plotting]'"
+        )
 
 
 def is_plotly_installed():

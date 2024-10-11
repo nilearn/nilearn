@@ -7,6 +7,7 @@ import json
 import os
 import re
 import stat
+from pathlib import Path
 from urllib import parse
 
 import numpy as np
@@ -86,8 +87,8 @@ def _get_neurovault_data():
         url.format(col_id, img_name)
         for (col_id, img_name) in zip(images["collection_id"], image_names)
     ]
-    collections.set_index("id", inplace=True, drop=False)
-    images.set_index("id", inplace=True, drop=False)
+    collections = collections.set_index("id", drop=False)
+    images = images.set_index("id", drop=False)
     _get_neurovault_data.data = collections, images
     return collections, images
 
@@ -292,7 +293,7 @@ def test_get_batch_error(tmp_path):
         neurovault._get_batch("http://")
     with pytest.raises(ValueError):
         neurovault._get_batch(
-            f"file://{str(tmp_path / 'test_nv.txt')}",
+            f"file://{tmp_path / 'test_nv.txt'!s}",
         )
 
     no_results_url = (
@@ -350,15 +351,15 @@ def test_not_equal():
     assert not_equal == "b"
     assert not_equal == 1
     assert not_equal != "a"
-    assert "a" != not_equal
+    assert not_equal != "a"
     assert str(not_equal) == "NotEqual('a')"
 
 
 def test_order_comp():
     geq = neurovault.GreaterOrEqual("2016-07-12T11:29:12.263046Z")
 
-    assert "2016-08-12T11:29:12.263046Z" == geq
-    assert "2016-06-12T11:29:12.263046Z" != geq
+    assert geq == "2016-08-12T11:29:12.263046Z"
+    assert geq != "2016-06-12T11:29:12.263046Z"
     assert str(geq) == "GreaterOrEqual('2016-07-12T11:29:12.263046Z')"
 
     gt = neurovault.GreaterThan("abc")
@@ -390,7 +391,7 @@ def test_is_in():
 
     countable = neurovault.IsIn(*range(11))
 
-    assert 7 == countable
+    assert countable == 7
     assert countable != 12
 
 
@@ -913,8 +914,8 @@ def test_download_original_images_along_resamp_images_if_previously_downloaded(
     _check_original_version_is_not_here(data)
 
     # Get the time of the last access to the resampled data
-    access_time_resampled = os.path.getatime(
-        data["images_meta"][0]["resampled_absolute_path"]
+    access_time_resampled = (
+        Path(data["images_meta"][0]["resampled_absolute_path"]).stat().st_atime
     )
 
     # Download original data
@@ -926,8 +927,8 @@ def test_download_original_images_along_resamp_images_if_previously_downloaded(
 
     # Get the time of the last access to one of the original files
     # (which should be download time)
-    access_time = os.path.getatime(
-        data_orig["images_meta"][0]["absolute_path"]
+    access_time = (
+        Path(data_orig["images_meta"][0]["absolute_path"]).stat().st_atime
     )
 
     # Check that the last access to the original data is after the access
@@ -963,8 +964,8 @@ def test_download_resamp_images_along_original_images_if_previously_downloaded(
     # Asks for the resampled version. This should only resample, not download.
 
     # Get the time of the last modification to the original data
-    modif_time_original = os.path.getmtime(
-        data_orig["images_meta"][0]["absolute_path"]
+    modif_time_original = (
+        Path(data_orig["images_meta"][0]["absolute_path"]).stat().st_mtime
     )
 
     # Ask for resampled data, which should only trigger resample
@@ -975,8 +976,8 @@ def test_download_resamp_images_along_original_images_if_previously_downloaded(
     )
 
     # Get the time of the last modification to the original data, after fetch
-    modif_time_original_after = os.path.getmtime(
-        data["images_meta"][0]["absolute_path"]
+    modif_time_original_after = (
+        Path(data["images_meta"][0]["absolute_path"]).stat().st_mtime
     )
 
     # The time difference should be 0
