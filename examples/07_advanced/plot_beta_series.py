@@ -58,7 +58,6 @@ to build the LSS beta series.
 .. include:: ../../../examples/masker_note.rst
 
 """
-
 # sphinx_gallery_thumbnail_number = -2
 
 # %%

@@ -182,7 +182,7 @@ def get_bids_files(
 
     Parameters
     ----------
-    main_path : :obj:`str` or :obj:`Path`
+    main_path : :obj:`str` or :obj:`pathlib.Path`
         Directory of the :term:`BIDS` dataset.
 
     file_tag : :obj:`str` accepted by glob, default='*'
