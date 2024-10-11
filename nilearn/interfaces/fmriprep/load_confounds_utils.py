@@ -481,7 +481,7 @@ def _demean_confounds(confounds, sample_mask):
     return pd.DataFrame(confounds, columns=confound_cols)
 
 
-class MissingConfound(Exception):
+class MissingConfoundError(Exception):
     """
     Exception raised when failing to find params in the confounds.
 

@@ -7,6 +7,7 @@ import json
 import os
 import re
 import stat
+from pathlib import Path
 from urllib import parse
 
 import numpy as np
@@ -913,8 +914,8 @@ def test_download_original_images_along_resamp_images_if_previously_downloaded(
     _check_original_version_is_not_here(data)
 
     # Get the time of the last access to the resampled data
-    access_time_resampled = os.path.getatime(
-        data["images_meta"][0]["resampled_absolute_path"]
+    access_time_resampled = (
+        Path(data["images_meta"][0]["resampled_absolute_path"]).stat().st_atime
     )
 
     # Download original data
@@ -926,8 +927,8 @@ def test_download_original_images_along_resamp_images_if_previously_downloaded(
 
     # Get the time of the last access to one of the original files
     # (which should be download time)
-    access_time = os.path.getatime(
-        data_orig["images_meta"][0]["absolute_path"]
+    access_time = (
+        Path(data_orig["images_meta"][0]["absolute_path"]).stat().st_atime
     )
 
     # Check that the last access to the original data is after the access
@@ -963,8 +964,8 @@ def test_download_resamp_images_along_original_images_if_previously_downloaded(
     # Asks for the resampled version. This should only resample, not download.
 
     # Get the time of the last modification to the original data
-    modif_time_original = os.path.getmtime(
-        data_orig["images_meta"][0]["absolute_path"]
+    modif_time_original = (
+        Path(data_orig["images_meta"][0]["absolute_path"]).stat().st_mtime
     )
 
     # Ask for resampled data, which should only trigger resample
@@ -975,8 +976,8 @@ def test_download_resamp_images_along_original_images_if_previously_downloaded(
     )
 
     # Get the time of the last modification to the original data, after fetch
-    modif_time_original_after = os.path.getmtime(
-        data["images_meta"][0]["absolute_path"]
+    modif_time_original_after = (
+        Path(data["images_meta"][0]["absolute_path"]).stat().st_mtime
     )
 
     # The time difference should be 0

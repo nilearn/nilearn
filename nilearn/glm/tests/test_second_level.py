@@ -19,7 +19,7 @@ from nilearn._utils.data_gen import (
     write_fake_bold_img,
     write_fake_fmri_data_and_design,
 )
-from nilearn.conftest import have_mpl
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.glm.first_level import FirstLevelModel, run_glm
 from nilearn.glm.second_level import SecondLevelModel, non_parametric_inference
 from nilearn.glm.second_level.second_level import (
@@ -38,7 +38,7 @@ from nilearn.glm.second_level.second_level import (
 from nilearn.image import concat_imgs, get_data, new_img_like, smooth_img
 from nilearn.maskers import NiftiMasker
 
-if have_mpl:
+if is_matplotlib_installed():
     from nilearn.reporting import get_clusters_table
 
 # This directory path
@@ -947,7 +947,8 @@ def test_non_parametric_inference_cluster_level(tmp_path):
 
 
 @pytest.mark.skipif(
-    not have_mpl, reason="Matplotlib not installed; required for this test"
+    not is_matplotlib_installed(),
+    reason="Matplotlib not installed; required for this test",
 )
 def test_non_parametric_inference_cluster_level_with_covariates(
     tmp_path,

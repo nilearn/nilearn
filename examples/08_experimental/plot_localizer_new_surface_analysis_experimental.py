@@ -48,6 +48,10 @@ than using a subject-tailored mesh.
 
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 # Prepare data and analysis parameters
 # ------------------------------------
@@ -91,9 +95,9 @@ events = pd.read_table(events_file)
 from nilearn.experimental.surface import SurfaceImage, load_fsaverage
 
 fsaverage5 = load_fsaverage()
-image = SurfaceImage(
+image = SurfaceImage.from_volume(
     mesh=fsaverage5["pial"],
-    data=fmri_img,
+    volume_img=fmri_img,
 )
 
 # %%
