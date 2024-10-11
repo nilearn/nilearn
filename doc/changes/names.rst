@@ -110,6 +110,8 @@
 
 .. _Guillaume Lemaitre: https://glemaitre.github.io/
 
+.. _Hande Gözükan: https://github.com/hndgzkn
+
 .. _Hao-Ting Wang: https://wanghaoting.com/
 
 .. _Himanshu Aggarwal: https://github.com/man-shu

@@ -1,7 +1,5 @@
 """Tests for :func:`nilearn.plotting.plot_connectome`."""
 
-import os
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
@@ -40,7 +38,7 @@ def non_symmetric_matrix():
 @pytest.fixture
 def base_params():
     """Return basic set of parameters for testing."""
-    return dict(edge_threshold=0.38, title="threshold=0.38", node_size=10)
+    return {"edge_threshold": 0.38, "title": "threshold=0.38", "node_size": 10}
 
 
 @pytest.fixture
@@ -164,8 +162,8 @@ def test_plot_connectome_to_file(
         adjacency, node_coords, output_file=filename, **base_params
     )
     assert display is None
-    assert os.path.isfile(filename)
-    assert os.path.getsize(filename) > 0
+    assert filename.is_file()
+    assert filename.stat().st_size > 0
     plt.close()
 
 

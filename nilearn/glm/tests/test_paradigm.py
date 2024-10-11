@@ -5,7 +5,7 @@ Note that the tests just look whether the data produced has correct dimension,
 not whether it is exact.
 """
 
-import os
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -117,7 +117,7 @@ def write_events(events, tmpdir):
     """Write events of an experimental paradigm \
        to a file and return the address.
     """
-    tsvfile = os.path.join(tmpdir, "events.tsv")
+    tsvfile = Path(tmpdir, "events.tsv")
     events.to_csv(tsvfile, sep="\t")
     return tsvfile
 

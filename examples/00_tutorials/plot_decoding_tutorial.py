@@ -354,6 +354,9 @@ print(dummy_decoder.cv_scores_)
 #
 # * The :ref:`section of the documentation on decoding <decoding>`
 #
+# * :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_understand_decoder.py`
+#   For a more in-depth understanding of the :class:`nilearn.decoding.Decoder`
+#
 # * :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_anova_svm.py`
 #   For decoding without a precomputed mask
 #

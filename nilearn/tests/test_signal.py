@@ -2,7 +2,7 @@
 
 # Author: Gael Varoquaux, Alexandre Abraham
 
-import os.path
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -663,13 +663,13 @@ def test_clean_confounds():
 
     # Test with confounds read from a file. Smoke test only (result has
     # no meaning).
-    current_dir = os.path.split(__file__)[0]
+    current_dir = Path(__file__).parent
 
     signals, _, confounds = generate_signals(
         n_features=41, n_confounds=3, length=20
     )
-    filename1 = os.path.join(current_dir, "data", "spm_confounds.txt")
-    filename2 = os.path.join(current_dir, "data", "confounds_with_header.csv")
+    filename1 = current_dir / "data" / "spm_confounds.txt"
+    filename2 = current_dir / "data" / "confounds_with_header.csv"
 
     nisignal.clean(
         signals, detrend=False, standardize=False, confounds=filename1

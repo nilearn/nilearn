@@ -8,9 +8,10 @@ import os
 import shutil
 import tarfile
 import urllib
-import zipfile
-from tempfile import mkdtemp, mkstemp
+from pathlib import Path
+from tempfile import mkstemp
 from unittest.mock import MagicMock
+from zipfile import ZipFile
 
 import numpy as np
 import pytest
@@ -91,34 +92,34 @@ def test_get_dataset_dir(tmp_path):
     os.environ.pop("NILEARN_DATA", None)
     os.environ.pop("NILEARN_SHARED_DATA", None)
 
-    expected_base_dir = os.path.expanduser("~/nilearn_data")
+    expected_base_dir = Path("~/nilearn_data").expanduser()
     data_dir = _utils.get_dataset_dir("test", verbose=0)
 
-    assert data_dir == os.path.join(expected_base_dir, "test")
+    assert data_dir == str(expected_base_dir / "test")
     assert os.path.exists(data_dir)
 
     shutil.rmtree(data_dir)
 
-    expected_base_dir = str(tmp_path / "test_nilearn_data")
-    os.environ["NILEARN_DATA"] = expected_base_dir
+    expected_base_dir = tmp_path / "test_nilearn_data"
+    os.environ["NILEARN_DATA"] = str(expected_base_dir)
     data_dir = _utils.get_dataset_dir("test", verbose=0)
 
-    assert data_dir == os.path.join(expected_base_dir, "test")
+    assert data_dir == str(expected_base_dir / "test")
     assert os.path.exists(data_dir)
 
     shutil.rmtree(data_dir)
 
-    expected_base_dir = str(tmp_path / "nilearn_shared_data")
-    os.environ["NILEARN_SHARED_DATA"] = expected_base_dir
+    expected_base_dir = tmp_path / "nilearn_shared_data"
+    os.environ["NILEARN_SHARED_DATA"] = str(expected_base_dir)
     data_dir = _utils.get_dataset_dir("test", verbose=0)
 
-    assert data_dir == os.path.join(expected_base_dir, "test")
+    assert data_dir == str(expected_base_dir / "test")
     assert os.path.exists(data_dir)
 
     shutil.rmtree(data_dir)
 
     # Verify exception for a path which exists and is a file
-    test_file = str(tmp_path / "some_file")
+    test_file = tmp_path / "some_file"
     with open(test_file, "w") as out:
         out.write("abcfeg")
 
@@ -155,22 +156,40 @@ def test_get_dataset_dir_path_as_str(should_cast_path_to_string, tmp_path):
 def test_get_dataset_dir_write_access(tmp_path):
     os.environ.pop("NILEARN_SHARED_DATA", None)
 
-    no_write = str(tmp_path / "no_write")
-    os.makedirs(no_write)
+    no_write = tmp_path / "no_write"
+    no_write.mkdir(parents=True)
     os.chmod(no_write, 0o400)
 
-    expected_base_dir = str(tmp_path / "nilearn_shared_data")
-    os.environ["NILEARN_SHARED_DATA"] = expected_base_dir
+    expected_base_dir = tmp_path / "nilearn_shared_data"
+    os.environ["NILEARN_SHARED_DATA"] = str(expected_base_dir)
     data_dir = _utils.get_dataset_dir(
         "test", default_paths=[no_write], verbose=0
     )
 
     # Non writeable dir is returned because dataset may be in there.
-    assert data_dir == no_write
+    assert data_dir == str(no_write)
     assert os.path.exists(data_dir)
 
     os.chmod(no_write, 0o600)
     shutil.rmtree(data_dir)
+
+
+def test_get_dataset_dir_symlink(tmp_path):
+    expected_linked_dir = tmp_path / "linked"
+    expected_linked_dir.mkdir(parents=True)
+    expected_base_dir = tmp_path / "env_data"
+    expected_base_dir.mkdir()
+    symlink_dir = expected_base_dir / "test"
+    symlink_dir.symlink_to(expected_linked_dir)
+
+    assert symlink_dir.exists()
+
+    data_dir = _utils.get_dataset_dir(
+        "test", default_paths=[symlink_dir], verbose=0
+    )
+
+    assert data_dir == str(expected_linked_dir)
+    assert os.path.exists(data_dir)
 
 
 def test_md5_sum_file():
@@ -203,84 +222,96 @@ def test_read_md5_sum_file():
     os.remove(f)
 
 
-def test_tree():
-    # Create a dummy directory tree
-    parent = mkdtemp()
+def test_tree(tmp_path):
+    dir1 = tmp_path / "dir1"
+    dir11 = dir1 / "dir11"
+    dir12 = dir1 / "dir12"
+    dir2 = tmp_path / "dir2"
 
-    open(os.path.join(parent, "file1"), "w").close()
-    open(os.path.join(parent, "file2"), "w").close()
-    dir1 = os.path.join(parent, "dir1")
-    dir11 = os.path.join(dir1, "dir11")
-    dir12 = os.path.join(dir1, "dir12")
-    dir2 = os.path.join(parent, "dir2")
-    os.mkdir(dir1)
-    os.mkdir(dir11)
-    os.mkdir(dir12)
-    os.mkdir(dir2)
-    open(os.path.join(dir1, "file11"), "w").close()
-    open(os.path.join(dir1, "file12"), "w").close()
-    open(os.path.join(dir11, "file111"), "w").close()
-    open(os.path.join(dir2, "file21"), "w").close()
+    dir1.mkdir()
+    dir11.mkdir()
+    dir12.mkdir()
+    dir2.mkdir()
 
-    tree_ = _utils.tree(parent)
+    (tmp_path / "file1").touch()
+    (tmp_path / "file2").touch()
+    (dir1 / "file11").touch()
+    (dir1 / "file12").touch()
+    (dir11 / "file111").touch()
+    (dir2 / "file21").touch()
+
+    # test for list return value
+    tree_ = _utils.tree(tmp_path)
 
     # Check the tree
-    # assert_equal(tree_[0]['dir1'][0]['dir11'][0], 'file111')
-    # assert_equal(len(tree_[0]['dir1'][1]['dir12']), 0)
-    # assert_equal(tree_[0]['dir1'][2], 'file11')
-    # assert_equal(tree_[0]['dir1'][3], 'file12')
-    # assert_equal(tree_[1]['dir2'][0], 'file21')
-    # assert_equal(tree_[2], 'file1')
-    # assert_equal(tree_[3], 'file2')
-    assert tree_[0][1][0][1][0] == os.path.join(dir11, "file111")
+    assert type(tree_[0]) is tuple
+    assert type(tree_[0][1]) is list
+    assert type(tree_[0][1][0]) is tuple
+    assert type(tree_[1]) is tuple
+    assert type(tree_[1][1]) is list
+    assert tree_[0][1][0][1][0] == str(dir11 / "file111")
     assert len(tree_[0][1][1][1]) == 0
-    assert tree_[0][1][2] == os.path.join(dir1, "file11")
-    assert tree_[0][1][3] == os.path.join(dir1, "file12")
-    assert tree_[1][1][0] == os.path.join(dir2, "file21")
-    assert tree_[2] == os.path.join(parent, "file1")
-    assert tree_[3] == os.path.join(parent, "file2")
+    assert tree_[0][1][2] == str(dir1 / "file11")
+    assert tree_[0][1][3] == str(dir1 / "file12")
+    assert tree_[1][1][0] == str(dir2 / "file21")
+    assert tree_[2] == str(tmp_path / "file1")
+    assert tree_[3] == str(tmp_path / "file2")
 
-    # Clean
-    shutil.rmtree(parent)
+    # test for dictionary return value
+    tree_ = _utils.tree(tmp_path, dictionary=True)
+
+    # Check the tree
+    assert type(tree_[dir1.name]) is dict
+    assert type(tree_[dir1.name][dir11.name]) is list
+    assert len(tree_[dir1.name][dir12.name]) == 0
+    assert type(tree_[dir2.name]) is list
+    assert type(tree_["."]) is list
+    assert tree_[dir1.name][dir11.name][0] == str(dir11 / "file111")
+    assert tree_[dir1.name]["."][0] == str(dir1 / "file11")
+    assert tree_[dir1.name]["."][1] == str(dir1 / "file12")
+    assert tree_[dir2.name][0] == str(dir2 / "file21")
+    assert tree_["."] == [str(tmp_path / "file1"), str(tmp_path / "file2")]
 
 
-def test_movetree():
-    # Create a dummy directory tree
-    parent = mkdtemp()
+def test_movetree(tmp_path):
+    """Tests nilearn.dataset._utils.movetree."""
+    dir1 = tmp_path / "dir1"
+    dir111 = dir1 / "dir11"
+    dir112 = dir1 / "dir12"
+    dir2 = tmp_path / "dir2"
+    dir212 = dir2 / "dir12"
 
-    dir1 = os.path.join(parent, "dir1")
-    dir11 = os.path.join(dir1, "dir11")
-    dir12 = os.path.join(dir1, "dir12")
-    dir2 = os.path.join(parent, "dir2")
-    os.mkdir(dir1)
-    os.mkdir(dir11)
-    os.mkdir(dir12)
-    os.mkdir(dir2)
-    os.mkdir(os.path.join(dir2, "dir12"))
-    open(os.path.join(dir1, "file11"), "w").close()
-    open(os.path.join(dir1, "file12"), "w").close()
-    open(os.path.join(dir11, "file111"), "w").close()
-    open(os.path.join(dir12, "file121"), "w").close()
-    open(os.path.join(dir2, "file21"), "w").close()
+    dir1.mkdir()
+    dir111.mkdir()
+    dir112.mkdir()
+    dir2.mkdir()
+    dir212.mkdir()
+
+    (dir1 / "file11").touch()
+    (dir1 / "file12").touch()
+    (dir111 / "file1111").touch()
+    (dir112 / "file1121").touch()
+    (dir2 / "file21").touch()
 
     _utils.movetree(dir1, dir2)
 
-    assert not os.path.exists(dir11)
-    assert not os.path.exists(dir12)
-    assert not os.path.exists(os.path.join(dir1, "file11"))
-    assert not os.path.exists(os.path.join(dir1, "file12"))
-    assert not os.path.exists(os.path.join(dir11, "file111"))
-    assert not os.path.exists(os.path.join(dir12, "file121"))
+    assert not dir111.exists()
+    assert not dir112.exists()
+    assert not (dir1 / "file11").exists()
+    assert not (dir1 / "file12").exists()
+    assert not (dir111 / "file1111").exists()
+    assert not (dir112 / "file1121").exists()
 
-    dir11 = os.path.join(dir2, "dir11")
-    dir12 = os.path.join(dir2, "dir12")
+    dir211 = dir2 / "dir11"
+    dir212 = dir2 / "dir12"
 
-    assert os.path.exists(dir11)
-    assert os.path.exists(dir12)
-    assert os.path.exists(os.path.join(dir2, "file11"))
-    assert os.path.exists(os.path.join(dir2, "file12"))
-    assert os.path.exists(os.path.join(dir11, "file111"))
-    assert os.path.exists(os.path.join(dir12, "file121"))
+    assert dir211.exists()
+    assert dir212.exists()
+    assert (dir2 / "file21").exists()
+    assert (dir2 / "file11").exists()
+    assert (dir2 / "file12").exists()
+    assert (dir211 / "file1111").exists()
+    assert (dir212 / "file1121").exists()
 
 
 def test_filter_columns():
@@ -330,54 +361,59 @@ def test_filter_columns():
     assert np.sum(f) == 333
 
 
-def test_uncompress():
+@pytest.mark.parametrize(
+    "ext, mode", [("tar", "w"), ("tar.gz", "w:gz"), ("tgz", "w:gz")]
+)
+def test_uncompress_tar(tmp_path, ext, mode):
+    """Tests nilearn.dataset._utils.uncompress_file for tar files."""
     # for each kind of compression, we create:
-    # - a temporary directory (dtemp)
     # - a compressed object (ztemp)
     # - a temporary file-like object to compress into ztemp
     # we then uncompress the ztemp object into dtemp under the name ftemp
     # and check if ftemp exists
-    dtemp = mkdtemp()
-    ztemp = os.path.join(dtemp, "test.zip")
+    ztemp = tmp_path / f"test.{ext}"
     ftemp = "test"
-    try:
-        with contextlib.closing(zipfile.ZipFile(ztemp, "w")) as testzip:
-            testzip.writestr(ftemp, " ")
-        _utils.uncompress_file(ztemp, verbose=0)
+    with contextlib.closing(tarfile.open(ztemp, mode)) as testtar:
+        temp = tmp_path / ftemp
+        temp.write_text(ftemp)
+        testtar.add(temp)
 
-        assert os.path.exists(os.path.join(dtemp, ftemp))
+    _utils.uncompress_file(ztemp, verbose=0)
+    assert (tmp_path / ftemp).exists()
 
-        shutil.rmtree(dtemp)
 
-        dtemp = mkdtemp()
-        ztemp = os.path.join(dtemp, "test.tar")
+def test_uncompress_zip(tmp_path):
+    """Tests nilearn.dataset._utils.uncompress_file for zip files."""
+    # for each kind of compression, we create:
+    # - a compressed object (ztemp)
+    # - a temporary file-like object to compress into ztemp
+    # we then uncompress the ztemp object into dtemp under the name ftemp
+    # and check if ftemp exists
+    ztemp = tmp_path / "test.zip"
+    ftemp = "test"
+    with contextlib.closing(ZipFile(ztemp, "w")) as testzip:
+        testzip.writestr(ftemp, " ")
 
-        # Create dummy file in the dtemp folder, so that the finally statement
-        # can easily remove it
-        fd, temp = mkstemp(dir=dtemp)
-        os.close(fd)
-        with contextlib.closing(tarfile.open(ztemp, "w")) as tar:
-            tar.add(temp, arcname=ftemp)
-        _utils.uncompress_file(ztemp, verbose=0)
+    _utils.uncompress_file(ztemp, verbose=0)
+    assert (tmp_path / ftemp).exists()
 
-        assert os.path.exists(os.path.join(dtemp, ftemp))
 
-        shutil.rmtree(dtemp)
+@pytest.mark.parametrize("ext", [".gz", ""])
+def test_uncompress_gzip(tmp_path, ext):
+    """Tests nilearn.dataset._utils.uncompress_file for gzip files."""
+    # for each kind of compression, we create:
+    # - a compressed object (ztemp)
+    # - a temporary file-like object to compress into ztemp
+    # we then uncompress the ztemp object into dtemp under the name ftemp
+    # and check if ftemp exists
+    ztemp = tmp_path / f"test{ext}"
+    ftemp = "test"
 
-        dtemp = mkdtemp()
-        ztemp = os.path.join(dtemp, "test.gz")
-        gzip.open(ztemp, "wb").close()
-        _utils.uncompress_file(ztemp, verbose=0)
+    with gzip.open(ztemp, "wb") as testgzip:
+        testgzip.write(ftemp.encode())
 
-        # test.gz gets uncompressed into test
-        assert os.path.exists(os.path.join(dtemp, "test"))
-
-        shutil.rmtree(dtemp)
-
-    finally:
-        # all temp files are created into dtemp except temp
-        if os.path.exists(dtemp):
-            shutil.rmtree(dtemp)
+    _utils.uncompress_file(ztemp, verbose=0)
+    assert (tmp_path / ftemp).exists()
 
 
 def test_safe_extract(tmp_path):
@@ -393,6 +429,17 @@ def test_safe_extract(tmp_path):
         Exception, match="Attempted Path Traversal in Tar File"
     ):
         _utils.uncompress_file(ztemp, verbose=0)
+
+
+def test_fetch_file_part(tmp_path):
+    url = "http://foo/temp.txt"
+    (tmp_path / "temp.txt.part").touch()
+
+    _utils.fetch_single_file(
+        url=url, data_dir=str(tmp_path), verbose=0, resume=True
+    )
+
+    assert (tmp_path / "temp.txt").exists()
 
 
 @pytest.mark.parametrize("should_cast_path_to_string", [False, True])
@@ -470,7 +517,7 @@ def test_fetch_files_overwrite(
     fil = _utils.fetch_files(
         data_dir=str(tmp_path),
         verbose=0,
-        files=[files + (dict(overwrite=True),)],
+        files=[files + ({"overwrite": True},)],
     )
 
     assert request_mocker.url_count == 1
@@ -486,7 +533,7 @@ def test_fetch_files_overwrite(
     fil = _utils.fetch_files(
         data_dir=str(tmp_path),
         verbose=0,
-        files=[files + (dict(overwrite=False),)],
+        files=[files + ({"overwrite": False},)],
     )
 
     assert request_mocker.url_count == 1
@@ -498,7 +545,7 @@ def test_fetch_files_overwrite(
     fil = _utils.fetch_files(
         data_dir=str(tmp_path),
         verbose=0,
-        files=[files + (dict(overwrite=True),)],
+        files=[files + ({"overwrite": True},)],
     )
 
     assert request_mocker.url_count == 2
