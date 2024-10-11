@@ -1006,6 +1006,31 @@ def test_non_parametric_inference_cluster_level_with_covariates(
     logp_max_cluster_sizes.sort()
     assert logp_unc_cluster_sizes == logp_max_cluster_sizes
 
+
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="Matplotlib not installed; required for this test",
+)
+def test_non_parametric_inference_cluster_level_with_single_covariates(
+    tmp_path,
+    rng,
+):
+    """Test non-parametric inference with cluster-level inference in \
+    the context of covariates.
+    """
+    shapes = ((7, 8, 9, 1),)
+    mask, FUNCFILE, _ = write_fake_fmri_data_and_design(
+        shapes, file_path=tmp_path
+    )
+    func_img = load(FUNCFILE[0])
+
+    unc_pval = 0.01
+    n_subjects = 2
+
+    # make sure there is variability in the images
+    kernels = rng.uniform(low=0, high=5, size=n_subjects)
+    Y = [smooth_img(func_img, kernel) for kernel in kernels]
+
     # Test single covariate
     X = pd.DataFrame({"intercept": [1] * len(Y)})
     non_parametric_inference(
