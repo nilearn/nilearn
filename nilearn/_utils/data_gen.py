@@ -1075,7 +1075,7 @@ def _mock_bids_dataset(
 
     Parameters
     ----------
-    base_dir : :obj:`Path`
+    base_dir : :obj:`pathlib.Path`
         Path where to create the fake :term:`BIDS` dataset.
 
     n_sub : :obj:`int`
@@ -1168,7 +1168,7 @@ def _mock_bids_derivatives(
 
     Parameters
     ----------
-    base_dir : :obj:`Path`
+    base_dir : :obj:`pathlib.Path`
         Path where to create the fake :term:`BIDS` dataset.
 
     n_sub : :obj:`int`
@@ -1310,7 +1310,7 @@ def _write_bids_raw_anat(subses_dir, subject, session) -> None:
 
     Parameters
     ----------
-    subses_dir : :obj:`Path`
+    subses_dir : :obj:`pathlib.Path`
         Subject session directory
 
     subject : :obj:`str`
@@ -1339,7 +1339,7 @@ def _write_bids_raw_func(
 
     Parameters
     ----------
-    func_path : :obj:`Path`
+    func_path : :obj:`pathlib.Path`
         Path to a subject functional directory.
 
     file_id : :obj:`str`
@@ -1391,7 +1391,7 @@ def _write_bids_derivative_func(
 
     Parameters
     ----------
-    func_path : :obj:`Path`
+    func_path : :obj:`pathlib.Path`
         Path to a subject functional directory.
 
     file_id : :obj:`str`
