@@ -545,7 +545,7 @@ def test_fetch_files_overwrite(
     fil = _utils.fetch_files(
         data_dir=str(tmp_path),
         verbose=0,
-        files=[(*files, {"overwrite": True})],
+        files=[*files, {"overwrite": True}],
     )
 
     assert request_mocker.url_count == 2
