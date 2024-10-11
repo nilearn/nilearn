@@ -62,7 +62,7 @@ def test_input_args_and_kwargs(cb_retval, verbose, dgap_factor, rng):
         return squared_loss(X, y, w, compute_grad=True, compute_energy=False)
 
     def f2_prox(w, step_size, *args, **kwargs):
-        return prox_l1(w, step_size * l1_weight), dict(converged=True)
+        return prox_l1(w, step_size * l1_weight), {"converged": True}
 
     def total_energy(w):
         return f1(w) + l1_weight * np.sum(np.abs(w))

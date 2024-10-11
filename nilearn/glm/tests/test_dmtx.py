@@ -5,7 +5,7 @@ Note that the tests just looks whether the data produces has correct dimension,
 not whether it is exact
 """
 
-from os import path as osp
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -34,8 +34,8 @@ from ._testing import (
 )
 
 # load the spm file to test cosine basis
-my_path = osp.dirname(osp.abspath(__file__))
-full_path_design_matrix_file = osp.join(my_path, "spm_dmtx.npz")
+my_path = Path(__file__).resolve().parent
+full_path_design_matrix_file = my_path / "spm_dmtx.npz"
 DESIGN_MATRIX = np.load(full_path_design_matrix_file)
 
 
@@ -52,7 +52,8 @@ def design_matrix_light(
     min_onset=-24,
 ):
     """Perform same as make_first_level_design_matrix, \
-       but only returns the computed matrix and associated name."""
+       but only returns the computed matrix and associated name.
+    """
     fir_delays = fir_delays or [0]
     dmtx = make_first_level_design_matrix(
         frame_times,
@@ -163,7 +164,7 @@ def test_design_matrix_basic_paradigm_glover_hrf(frame_times):
 
 
 @pytest.mark.parametrize(
-    "events, hrf_model, drift_model, drift_order, high_pass, nb_regressors",
+    "events, hrf_model, drift_model, drift_order, high_pass, n_regressors",
     [
         (basic_paradigm(), "glover", None, 1, 0.01, 4),
         (
@@ -188,7 +189,7 @@ def test_design_matrix(
     drift_model,
     drift_order,
     high_pass,
-    nb_regressors,
+    n_regressors,
 ):
     X, names = design_matrix_light(
         frame_times,
@@ -198,8 +199,8 @@ def test_design_matrix(
         drift_order=drift_order,
         high_pass=high_pass,
     )
-    assert len(names) == nb_regressors
-    assert X.shape == (n_frames, nb_regressors)
+    assert len(names) == n_regressors
+    assert X.shape == (n_frames, n_regressors)
 
 
 def test_design_matrix_basic_paradigm_and_extra_regressors(rng, frame_times):
@@ -220,10 +221,10 @@ def test_design_matrix_basic_paradigm_and_extra_regressors(rng, frame_times):
 
 
 @pytest.mark.parametrize(
-    "fir_delays, nb_regressors", [(None, 7), (range(1, 5), 16)]
+    "fir_delays, n_regressors", [(None, 7), (range(1, 5), 16)]
 )
 def test_design_matrix_FIR_basic_paradigm(
-    frame_times, fir_delays, nb_regressors
+    frame_times, fir_delays, n_regressors
 ):
     # basic test based on basic_paradigm and FIR
     X, names = design_matrix_light(
@@ -234,8 +235,8 @@ def test_design_matrix_FIR_basic_paradigm(
         drift_order=3,
         fir_delays=fir_delays,
     )
-    assert len(names) == nb_regressors
-    assert X.shape == (len(frame_times), nb_regressors)
+    assert len(names) == n_regressors
+    assert X.shape == (len(frame_times), n_regressors)
 
 
 def test_design_matrix_FIR_block(frame_times):

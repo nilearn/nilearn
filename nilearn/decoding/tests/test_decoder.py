@@ -24,11 +24,12 @@ import pytest
 import sklearn
 from nibabel import save
 from numpy.testing import assert_array_almost_equal
+from packaging.version import parse
 from sklearn import __version__ as sklearn_version
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.exceptions import NotFittedError
+from sklearn.exceptions import ConvergenceWarning, NotFittedError
 from sklearn.linear_model import (
     LassoCV,
     LogisticRegressionCV,
@@ -465,7 +466,8 @@ def test_check_unsupported_estimator(estimator):
 
 def test_parallel_fit(rand_X_Y):
     """Check that results of _parallel_fit is the same \
-    for different controlled param_grid."""
+    for different controlled param_grid.
+    """
     X, y = make_regression(
         n_samples=N_SAMPLES,
         n_features=20,
@@ -544,7 +546,8 @@ def test_parallel_fit_builtin_cv(
 ):
     """Check that the `fitted_param_name` output of _parallel_fit is \
        a single value even if param_grid is wrapped in a list \
-       for models with built-in CV."""
+       for models with built-in CV.
+    """
     # y will be replaced if this is a classification
     X, y = make_regression(
         n_samples=N_SAMPLES,
@@ -738,7 +741,7 @@ def test_decoder_error_model_not_fitted(tiny_binary_classification_data):
 def test_decoder_dummy_classifier_strategy_prior():
     X, y, mask = _make_binary_classification_test_data(n_samples=300)
 
-    param = dict(strategy="prior")
+    param = {"strategy": "prior"}
     dummy_classifier = DummyClassifier(random_state=0)
     dummy_classifier.set_params(**param)
     model = Decoder(estimator=dummy_classifier, mask=mask)
@@ -752,7 +755,7 @@ def test_decoder_dummy_classifier_strategy_prior():
 def test_decoder_dummy_classifier_strategy_most_frequent():
     X, y, mask = _make_binary_classification_test_data(n_samples=300)
 
-    param = dict(strategy="most_frequent")
+    param = {"strategy": "most_frequent"}
     dummy_classifier = DummyClassifier(random_state=0)
     dummy_classifier.set_params(**param)
 
@@ -781,7 +784,7 @@ def test_decoder_dummy_classifier_roc_scoring(binary_classification_data):
 def test_decoder_error_not_implemented(tiny_binary_classification_data):
     X, y, mask = tiny_binary_classification_data
 
-    param = dict(strategy="constant")
+    param = {"strategy": "constant"}
     dummy_classifier = DummyClassifier(random_state=0)
     dummy_classifier.set_params(**param)
 
@@ -920,7 +923,7 @@ def test_decoder_dummy_regression_other_strategy(regression_data):
     X, y, mask = regression_data
 
     dummy_regressor = DummyRegressor()
-    param = dict(strategy="median")
+    param = {"strategy": "median"}
     dummy_regressor.set_params(**param)
 
     model = DecoderRegressor(estimator=dummy_regressor, mask=mask)
@@ -1017,7 +1020,8 @@ def test_decoder_multiclass_classification_cross_validation(
 
 def test_decoder_multiclass_classification_apply_mask_shape():
     """Test whether if _apply mask output has the same shape \
-    as original matrix."""
+    as original matrix.
+    """
     X_init, _ = make_classification(
         n_samples=200,
         n_features=125,
@@ -1077,16 +1081,6 @@ def test_decoder_multiclass_classification_apply_mask_attributes(affine_eye):
     assert model.masker_.smoothing_fwhm == smoothing_fwhm
 
 
-def test_decoder_apply_mask_surface(mini_img):
-    """Test whether _apply_mask works for surface image."""
-    X = mini_img
-    model = Decoder(mask=SurfaceMasker())
-    X_masked = model._apply_mask(X)
-
-    assert X_masked.shape == X.shape
-    assert type(model.mask_img_).__name__ == "SurfaceImage"
-
-
 def test_decoder_multiclass_error_incorrect_cv(multiclass_data):
     """Check whether ValueError is raised when cv is not set correctly."""
     X, y, _ = multiclass_data
@@ -1128,8 +1122,9 @@ def test_decoder_tags_classification():
     """Check value returned by _more_tags."""
     model = Decoder()
     # TODO
-    # remove if block when bumping sklearn_version
-    if compare_version(sklearn_version, "<", "1.6"):
+    # remove if block when bumping sklearn_version to > 1.5
+    ver = parse(sklearn_version)
+    if ver.release[1] < 6:
         assert model._more_tags()["require_y"] is True
     else:
         assert model._more_tags().target_tags.required is True
@@ -1138,9 +1133,9 @@ def test_decoder_tags_classification():
 def test_decoder_tags_regression():
     """Check value returned by _more_tags."""
     model = DecoderRegressor()
-    # TODO
-    # remove if block when bumping sklearn_version
-    if compare_version(sklearn_version, "<", "1.6"):
+    # remove if block when bumping sklearn_version to > 1.5
+    ver = parse(sklearn_version)
+    if ver.release[1] < 6:
         assert model._more_tags()["multioutput"] is True
     else:
         assert model._more_tags().target_tags.multi_output is True
@@ -1190,3 +1185,168 @@ def test_decoder_decision_function_raises_value_error(
         ValueError, match=f"X has {X.shape[1]} features per sample"
     ):
         model.decision_function(X)
+
+
+# ------------------------ surface tests ------------------------------------ #
+
+
+@pytest.fixture()
+def _make_surface_class_data(rng, make_mini_img):
+    """Create a surface image classification for testing."""
+
+    def _surface_classes(shape=50):
+        mini_img = make_mini_img((shape,))
+        y = rng.choice([0, 1], size=shape)
+        return mini_img, y
+
+    return _surface_classes
+
+
+@pytest.fixture()
+def _make_surface_reg_data(rng, make_mini_img):
+    """Create a surface image regression for testing."""
+
+    def _surface_regression(shape=50):
+        mini_img = make_mini_img((shape,))
+        y = rng.random(shape)
+        return mini_img, y
+
+    return _surface_regression
+
+
+def test_decoder_apply_mask_surface(_make_surface_class_data):
+    """Test _apply_mask on surface image."""
+    X, _ = _make_surface_class_data()
+    model = Decoder(mask=SurfaceMasker())
+    X_masked = model._apply_mask(X)
+
+    assert X_masked.shape == X.shape
+    assert type(model.mask_img_).__name__ == "SurfaceImage"
+
+
+def test_decoder_screening_percentile_surface_default(
+    _make_surface_class_data,
+):
+    """Test default screening percentile with surface image."""
+    warnings.simplefilter("ignore", ConvergenceWarning)
+    X, y = _make_surface_class_data()
+
+    model = Decoder(mask=SurfaceMasker())
+    model.fit(X, y)
+    assert model.screening_percentile_ == 20
+
+
+@pytest.mark.parametrize("perc", [None, 100, 0])
+def test_decoder_screening_percentile_surface(perc, _make_surface_class_data):
+    """Test passing screening percentile with surface image."""
+    warnings.simplefilter("ignore", ConvergenceWarning)
+    X, y = _make_surface_class_data()
+
+    model = Decoder(mask=SurfaceMasker(), screening_percentile=perc)
+    model.fit(X, y)
+    if perc is None:
+        assert model.screening_percentile_ == 100
+    else:
+        assert model.screening_percentile_ == perc
+
+
+@pytest.mark.parametrize("mask", [None, SurfaceMasker()])
+@pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
+def test_decoder_fit_surface(decoder, _make_surface_class_data, mask):
+    """Test fit for surface image."""
+    warnings.simplefilter("ignore", ConvergenceWarning)
+    X, y = _make_surface_class_data()
+    model = decoder(mask=mask)
+    model.fit(X, y)
+
+    assert model.coef_ is not None
+
+
+@pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
+def test_decoder_fit_surface_with_mask_image(
+    _make_surface_class_data, decoder, mini_mask
+):
+    """Test fit for surface image."""
+    warnings.simplefilter("ignore", ConvergenceWarning)
+    X, y = _make_surface_class_data()
+    model = decoder(mask=mini_mask)
+    model.fit(X, y)
+
+    assert model.coef_ is not None
+
+
+@pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
+def test_decoder_error_incompatible_surface_mask_and_volume_data(
+    decoder, mini_mask, tiny_binary_classification_data
+):
+    """Test error when fitting volume data with a surface mask."""
+    data_volume, y, _ = tiny_binary_classification_data
+    model = decoder(mask=mini_mask)
+
+    with pytest.raises(
+        TypeError, match="Mask and images to fit must be of compatible types."
+    ):
+        model.fit(data_volume, y)
+
+    model = decoder(mask=SurfaceMasker())
+
+    with pytest.raises(
+        TypeError, match="Mask and images to fit must be of compatible types."
+    ):
+        model.fit(data_volume, y)
+
+
+@pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
+def test_decoder_error_incompatible_surface_data_and_volume_mask(
+    _make_surface_class_data, decoder, tiny_binary_classification_data
+):
+    """Test error when fiting for surface data with a volume mask."""
+    data_surface, y = _make_surface_class_data()
+    _, _, mask = tiny_binary_classification_data
+    model = decoder(mask=mask)
+
+    with pytest.raises(
+        TypeError, match="Mask and images to fit must be of compatible types."
+    ):
+        model.fit(data_surface, y)
+
+
+def test_decoder_predict_score_surface(_make_surface_class_data):
+    """Test classification predict and scoring for surface image."""
+    warnings.simplefilter("ignore", ConvergenceWarning)
+    X, y = _make_surface_class_data()
+    model = Decoder(mask=SurfaceMasker())
+    model.fit(X, y)
+    y_pred = model.predict(X)
+
+    assert model.scoring == "roc_auc"
+
+    model.score(X, y)
+    acc = accuracy_score(y, y_pred)
+    assert 0.3 < acc < 0.7
+
+
+@pytest.mark.filterwarnings("ignore:Solver terminated early")
+def test_decoder_regressor_predict_score_surface(_make_surface_reg_data):
+    """Test regression predict and scoring for surface image."""
+    X, y = _make_surface_reg_data()
+    model = DecoderRegressor(mask=SurfaceMasker())
+    model.fit(X, y)
+    y_pred = model.predict(X)
+
+    assert model.scoring == "r2"
+
+    model.score(X, y)
+    r2 = r2_score(y, y_pred)
+    assert r2 <= 0
+
+
+@pytest.mark.parametrize("frem", [FREMRegressor, FREMClassifier])
+def test_frem_decoder_fit_surface(frem, _make_surface_class_data, mini_mask):
+    """Test fit for using FREM decoding with surface image."""
+    with pytest.raises(
+        ValueError, match="The mask image should be a Niimg-like object."
+    ):
+        X, y = _make_surface_class_data()
+        model = frem(mask=mini_mask, clustering_percentile=90)
+        model.fit(X, y)

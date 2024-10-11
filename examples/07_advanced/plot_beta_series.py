@@ -58,7 +58,6 @@ to build the LSS beta series.
 .. include:: ../../../examples/masker_note.rst
 
 """
-
 # sphinx_gallery_thumbnail_number = -2
 
 # %%
@@ -295,7 +294,7 @@ fig.show()
 # connectivity analysis of each of the two task conditions
 # ('language' and 'string'), using the LSS beta series.
 # This section is based on
-# :ref:`sphx_glr_auto_examples_03_connectivity_plot_seed_to_voxel_correlation.py`,
+# :ref:`sphx_glr_auto_examples_03_connectivity_plot_seed_to_voxel_correlation.py`,  # noqa: E501
 # which goes into more detail about seed-to-voxel functional connectivity
 # analyses.
 import numpy as np

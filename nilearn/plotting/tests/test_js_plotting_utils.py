@@ -2,6 +2,7 @@ import base64
 import os
 import re
 import tempfile
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -38,16 +39,13 @@ def test_add_js_lib():
     html = get_html_template("surface_plot_template.html")
     cdn = add_js_lib(html, embed_js=False)
     assert "decodeBase64" in cdn
-    assert (
-        _normalize_ws(
-            """<script
+    assert _normalize_ws(
+        """<script
     src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js">
     </script>
     <script src="https://cdn.plot.ly/plotly-gl3d-latest.min.js"></script>
     """
-        )
-        in _normalize_ws(cdn)
-    )
+    ) in _normalize_ws(cdn)
     inline = _normalize_ws(add_js_lib(html, embed_js=True))
     assert (
         _normalize_ws(
@@ -201,7 +199,7 @@ def check_html(
         standalone = html.get_standalone().replace("\r\n", "\n")
         assert saved == standalone
     finally:
-        os.remove(tmpfile)
+        Path(tmpfile).unlink()
     assert "INSERT" not in html.html
     assert html.get_standalone() == html.html
     assert html._repr_html_() == html.get_iframe()

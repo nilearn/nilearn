@@ -10,6 +10,7 @@ from joblib import Memory
 
 from nilearn import _utils, image, masking
 from nilearn._utils import logger
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 
@@ -308,9 +309,7 @@ class NiftiMasker(BaseMasker):
 
     def generate_report(self):
         """Generate a report of the masker."""
-        try:
-            from nilearn.reporting.html_report import generate_report
-        except ImportError:
+        if not is_matplotlib_installed():
             with warnings.catch_warnings():
                 mpl_unavail_msg = (
                     "Matplotlib is not imported! "
@@ -319,6 +318,8 @@ class NiftiMasker(BaseMasker):
                 warnings.filterwarnings("always", message=mpl_unavail_msg)
                 warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
                 return [None]
+
+        from nilearn.reporting.html_report import generate_report
 
         return generate_report(self)
 

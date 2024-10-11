@@ -40,7 +40,6 @@ REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 # %%
 # Adapted from examples/04_glm_first_level/plot_adhd_dmn.py
 def report_flm_adhd_dmn():
-
     t_r = 2.0
     slice_time_ref = 0.0
     n_scans = 176
@@ -285,7 +284,6 @@ def report_slm_oasis():
 # %%
 # Adapted from examples/03_connectivity/plot_probabilistic_atlas_extraction.py
 def report_nifti_maps_masker():
-
     atlas = datasets.fetch_atlas_msdl()
     atlas_filename = atlas["maps"]
 
@@ -308,7 +306,6 @@ def report_nifti_maps_masker():
 #  %%
 # Adapted from examples/06_manipulating_images/plot_nifti_labels_simple.py
 def report_nifti_labels_masker():
-
     atlas = datasets.fetch_atlas_schaefer_2018()
 
     atlas.labels = np.insert(atlas.labels, 0, "Background")
@@ -332,7 +329,6 @@ def report_nifti_labels_masker():
 #  %%
 # Adapted from examples/06_manipulating_images/plot_nifti_simple.py
 def report_nifti_masker():
-
     masker = NiftiMasker(
         standardize="zscore_sample",
         mask_strategy="epi",
@@ -352,7 +348,6 @@ def report_nifti_masker():
 # %%
 # Adapted from examples/02_decoding/plot_miyawaki_encoding.py
 def report_multi_nifti_masker():
-
     data = datasets.fetch_miyawaki2008()
 
     masker = MultiNiftiMasker(
@@ -376,7 +371,6 @@ def report_multi_nifti_masker():
 #  %%
 #  Adapted from examples/03_connectivity/plot_atlas_comparison.py
 def report_multi_nifti_labels_masker():
-
     yeo = datasets.fetch_atlas_yeo_2011()
 
     data = datasets.fetch_development_fmri(n_subjects=2)
@@ -402,7 +396,6 @@ def report_multi_nifti_labels_masker():
 #  %%
 #  Adapted from examples/03_connectivity/plot_atlas_comparison.py
 def report_multi_nifti_maps_masker():
-
     difumo = datasets.fetch_atlas_difumo(
         dimension=64, resolution_mm=2, legacy_format=False
     )
@@ -431,7 +424,6 @@ def report_multi_nifti_maps_masker():
 
 
 def report_surface_masker():
-
     masker = surface.SurfaceMasker()
     img = surface.fetch_nki(mesh_type="inflated", n_subjects=1)[0]
     masker.fit_transform(img)
@@ -459,7 +451,6 @@ def report_surface_masker():
 
 
 def report_surface_label_masker():
-
     labels_img, label_names = surface.fetch_destrieux(mesh_type="inflated")
 
     labels_masker = surface.SurfaceLabelsMasker(labels_img, label_names).fit()
@@ -484,7 +475,6 @@ def report_surface_label_masker():
 
 # %%
 if __name__ == "__main__":
-
     print("\nGenerating masker reports templates\n")
     t0 = time.time()
 

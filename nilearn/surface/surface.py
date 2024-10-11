@@ -1,7 +1,6 @@
 """Functions for surface manipulation."""
 
 import gzip
-import os
 import warnings
 from collections import namedtuple
 from collections.abc import Mapping
@@ -10,7 +9,8 @@ from pathlib import Path
 import numpy as np
 import sklearn.cluster
 import sklearn.preprocessing
-from nibabel import freesurfer as fs, gifti, load, nifti1
+from nibabel import freesurfer as fs
+from nibabel import gifti, load, nifti1
 from scipy import interpolate, sparse
 from sklearn.exceptions import EfficiencyWarning
 
@@ -38,12 +38,10 @@ def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
 
 
 def _load_uniform_ball_cloud(n_points=20):
-    stored_points = os.path.abspath(
-        os.path.join(
-            __file__, "..", "data", f"ball_cloud_{n_points}_samples.csv"
-        )
-    )
-    if os.path.isfile(stored_points):
+    stored_points = (
+        Path(__file__, "..", "data", f"ball_cloud_{n_points}_samples.csv")
+    ).resolve()
+    if stored_points.is_file():
         points = np.loadtxt(stored_points)
         return points
     warnings.warn(
@@ -847,7 +845,6 @@ def load_surf_data(surf_data):
         )
 
     if isinstance(surf_data, str):
-
         # resolve globbing
         file_list = resolve_globbing(surf_data)
         # resolve_globbing handles empty lists

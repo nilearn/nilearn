@@ -66,3 +66,21 @@ class DimensionError(TypeError):
 
     def __str__(self):
         return self.message
+
+
+class AllVolumesRemovedError(Exception):
+    """Warns the user if no volumes were kept.
+
+    Exception is raised when all volumes are scrubbed, i.e.,
+    `sample_mask` is an empty array.
+    """
+
+    def __init__(self):
+        super().__init__(
+            "The size of the sample mask is 0. "
+            "All volumes were marked as motion outliers "
+            "can not proceed. "
+        )
+
+    def __str__(self):
+        return f"[AllVolumesRemoved Error] {self.args[0]}"

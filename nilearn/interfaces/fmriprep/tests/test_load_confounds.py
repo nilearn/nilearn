@@ -26,7 +26,8 @@ from nilearn.tests.test_signal import generate_trends
 
 def _simu_img(tmp_path, trend, demean):
     """Simulate an nifti image based on confound file \
-    with some parts confounds and some parts noise."""
+    with some parts confounds and some parts noise.
+    """
     file_nii, _ = create_tmp_filepath(tmp_path, copy_confounds=True)
     # set the size of the image matrix
     nx = 5
@@ -302,7 +303,8 @@ def test_confounds2df(tmp_path, fmriprep_version):
 @pytest.mark.parametrize("fmriprep_version", ["1.4.x", "21.x.x"])
 def test_load_single_confounds_file(tmp_path, fmriprep_version):
     """Check that the load_confounds function returns the same confounds \
-    as _load_single_confounds_file."""
+    as _load_single_confounds_file.
+    """
     nii_file, confounds_file = create_tmp_filepath(
         tmp_path, copy_confounds=True, fmriprep_version=fmriprep_version
     )
@@ -340,7 +342,8 @@ def test_load_single_confounds_file(tmp_path, fmriprep_version):
 )
 def test_check_strategy(strategy, message):
     """Check that flawed strategy options \
-    generate meaningful error messages."""
+    generate meaningful error messages.
+    """
     with pytest.raises(ValueError) as exc_info:
         _check_strategy(strategy=strategy)
     assert message in exc_info.value.args[0]
@@ -649,6 +652,7 @@ def test_ica_aroma(tmp_path, fmriprep_version):
     "fmriprep_version, scrubbed_time_points, non_steady_outliers",
     [("1.4.x", 8, 1), ("21.x.x", 30, 3)],
 )
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_sample_mask(
     tmp_path, fmriprep_version, scrubbed_time_points, non_steady_outliers
 ):

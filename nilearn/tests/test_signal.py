@@ -2,7 +2,7 @@
 
 # Author: Gael Varoquaux, Alexandre Abraham
 
-import os.path
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -12,6 +12,7 @@ from pandas import read_csv
 # Use nisignal here to avoid name collisions (using nilearn.signal is
 # not possible)
 from nilearn import signal as nisignal
+from nilearn._utils.exceptions import AllVolumesRemovedError
 from nilearn.conftest import _rng
 from nilearn.signal import clean
 
@@ -183,7 +184,10 @@ def test_butterworth_multiple_timeseries(
     # Test nyquist frequency clipping, issue #482
     out1 = nisignal.butterworth(data, sampling, low_pass=50.0, copy=True)
     out2 = nisignal.butterworth(
-        data, sampling, low_pass=80.0, copy=True  # Greater than nyq frequency
+        data,
+        sampling,
+        low_pass=80.0,
+        copy=True,  # Greater than nyq frequency
     )
     np.testing.assert_almost_equal(out1, out2)
     np.testing.assert_(id(out1) != id(out2))
@@ -659,13 +663,13 @@ def test_clean_confounds():
 
     # Test with confounds read from a file. Smoke test only (result has
     # no meaning).
-    current_dir = os.path.split(__file__)[0]
+    current_dir = Path(__file__).parent
 
     signals, _, confounds = generate_signals(
         n_features=41, n_confounds=3, length=20
     )
-    filename1 = os.path.join(current_dir, "data", "spm_confounds.txt")
-    filename2 = os.path.join(current_dir, "data", "confounds_with_header.csv")
+    filename1 = current_dir / "data" / "spm_confounds.txt"
+    filename2 = current_dir / "data" / "confounds_with_header.csv"
 
     nisignal.clean(
         signals, detrend=False, standardize=False, confounds=filename1
@@ -1231,3 +1235,24 @@ def test_handle_scrubbed_volumes_without_extrapolation():
     np.testing.assert_equal(
         confounds.shape[0], censored_confounds.shape[0] + total_samples
     )
+
+
+def test_handle_scrubbed_volumes_exception():
+    """Check if an exception is raised when the sample mask is empty."""
+    signals, _, confounds = generate_signals(
+        n_features=11, n_confounds=5, length=40
+    )
+
+    sample_mask = np.arange(signals.shape[0])
+    scrub_index = np.arange(signals.shape[0])
+    sample_mask = np.delete(sample_mask, scrub_index)
+
+    with pytest.raises(
+        AllVolumesRemovedError,
+        match="The size of the sample mask is 0. "
+        "All volumes were marked as motion outliers "
+        "can not proceed. ",
+    ):
+        nisignal._handle_scrubbed_volumes(
+            signals, confounds, sample_mask, "butterworth", 2.5, True
+        )

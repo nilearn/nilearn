@@ -101,7 +101,6 @@ def test_load_save_mesh(
         assert not (tmp_path / file).exists()
 
     for file in expected_files:
-
         assert (tmp_path / file).exists()
 
         mesh = load_surf_mesh(tmp_path / file)
@@ -118,29 +117,29 @@ def test_save_mesh_error(tmp_path, mini_img):
         mini_img.to_filename(tmp_path / "hemi-L_hemi-R_cannot_have_both.gii")
 
 
-def test_load_3D_nifti_as_data(img_3d_mni, mini_mesh, tmp_path):
+def test_load_from_volume_3D_nifti(img_3d_mni, mini_mesh, tmp_path):
     """Instantiate surface image with 3D Niftiimage object or file for data."""
-    SurfaceImage(mesh=mini_mesh, data=img_3d_mni)
+    SurfaceImage.from_volume(mesh=mini_mesh, volume_img=img_3d_mni)
 
     img_3d_mni.to_filename(tmp_path / "tmp.nii.gz")
 
-    SurfaceImage(
+    SurfaceImage.from_volume(
         mesh=mini_mesh,
-        data=tmp_path / "tmp.nii.gz",
+        volume_img=tmp_path / "tmp.nii.gz",
     )
 
 
-def test_load_4D_nifti_as_data(img_4d_mni, mini_mesh, tmp_path):
+def test_load_from_volume_4D_nifti(img_4d_mni, mini_mesh, tmp_path):
     """Instantiate surface image with 4D Niftiimage object or file for data."""
-    img = SurfaceImage(mesh=mini_mesh, data=img_4d_mni)
+    img = SurfaceImage.from_volume(mesh=mini_mesh, volume_img=img_4d_mni)
     # check that we have the correct number of time points
     assert img.shape[0] == img_4d_mni.shape[3]
 
     img_4d_mni.to_filename(tmp_path / "tmp.nii.gz")
 
-    SurfaceImage(
+    SurfaceImage.from_volume(
         mesh=mini_mesh,
-        data=tmp_path / "tmp.nii.gz",
+        volume_img=tmp_path / "tmp.nii.gz",
     )
 
 
@@ -149,7 +148,5 @@ def test_surface_image_error():
     mesh_right = datasets.fetch_surf_fsaverage().pial_right
     mesh_left = datasets.fetch_surf_fsaverage().pial_left
 
-    with pytest.raises(
-        TypeError, match="[PolyData, dict, str, Path, Nifti1Image]"
-    ):
+    with pytest.raises(TypeError, match="[PolyData, dict]"):
         SurfaceImage(mesh={"left": mesh_left, "right": mesh_right}, data=3)

@@ -839,8 +839,8 @@ def apply_mask_fmri(
 
     if mask_data.shape != imgs_img.shape[:3]:
         raise ValueError(
-            f"Mask shape: {str(mask_data.shape)} is different "
-            f"from img shape:{str(imgs_img.shape[:3])}"
+            f"Mask shape: {mask_data.shape!s} is different "
+            f"from img shape:{imgs_img.shape[:3]!s}"
         )
 
     # All the following has been optimized for C order.
@@ -970,7 +970,7 @@ def unmask(X, mask_img, order="F"):
         unmasked = _unmask_3d(X, mask, order=order)
     else:
         raise TypeError(
-            f"Masked data X must be 2D or 1D array; got shape: {str(X.shape)}"
+            f"Masked data X must be 2D or 1D array; got shape: {X.shape!s}"
         )
 
     return new_img_like(mask_img, unmasked, affine)
@@ -988,7 +988,7 @@ def unmask_from_to_3d_array(w, mask):
     w : :class:`numpy.ndarray`, shape (n_features,)
       The image to be unmasked.
 
-    mask : :class:`numpy.ndarray`, shape (nx, ny, nz)
+    mask : :class:`numpy.ndarray`
       The mask used in the unmasking operation. It is required that
       ``mask.sum() == n_features``.
 

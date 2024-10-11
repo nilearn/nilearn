@@ -11,7 +11,8 @@ sub functions in skimage.segmentation
 import warnings
 
 import numpy as np
-from scipy import __version__, ndimage as ndi, sparse
+from scipy import __version__, sparse
+from scipy import ndimage as ndi
 from scipy.sparse.linalg import cg
 from sklearn.utils import as_float_array
 
@@ -129,7 +130,8 @@ def _buildAB(lap_sparse, labels):
 
 def _mask_edges_weights(edges, weights, mask):
     """Remove edges of the graph connected to masked nodes, \
-    as well as corresponding weights of the edges."""
+    as well as corresponding weights of the edges.
+    """
     mask0 = np.hstack(
         (mask[:, :, :-1].ravel(), mask[:, :-1].ravel(), mask[:-1].ravel())
     )
@@ -357,9 +359,8 @@ def _solve_cg(lap_sparse, B, tol):
     lap_sparse = lap_sparse.tocsc()
     X = []
     for i in range(len(B)):
-        # TODO Python 3.8
-        # consider remove if/else block when dropping support for 3.8
-        # would require pinning scipy to >= 1.12
+        # TODO
+        # when support scipy to >= 1.12
         # See https://github.com/nilearn/nilearn/pull/4394
         if compare_version(__version__, ">=", "1.12"):
             x0 = cg(lap_sparse, -B[i].todense(), rtol=tol, atol=0)[0]

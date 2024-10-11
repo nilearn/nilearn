@@ -123,8 +123,8 @@ class OrthoProjector(OrthoSlicer):
         if node_kwargs is None:
             node_kwargs = {}
         if isinstance(node_color, str) and node_color == "auto":
-            nb_nodes = len(node_coords)
-            node_color = mpl_cm.Set2(np.linspace(0, 1, nb_nodes))
+            n_nodes = len(node_coords)
+            node_color = mpl_cm.Set2(np.linspace(0, 1, n_nodes))
         node_coords = np.asarray(node_coords)
 
         # decompress input matrix if sparse
@@ -159,21 +159,26 @@ class OrthoProjector(OrthoSlicer):
         node_coords_shape = node_coords.shape
         if len(node_coords_shape) != 2 or node_coords_shape[1] != 3:
             message = (
-                "Invalid shape for 'node_coords'. You passed an "
-                "'adjacency_matrix' of shape {0} therefore "
-                "'node_coords' should be a array with shape ({0[0]}, 3) "
-                "while its shape was {1}"
-            ).format(adjacency_matrix_shape, node_coords_shape)
+                "Invalid shape for 'node_coords'. "
+                "You passed an 'adjacency_matrix' "
+                f"of shape {adjacency_matrix_shape} "
+                "therefore 'node_coords' should be a array "
+                f"with shape ({adjacency_matrix_shape[0]}, 3) "
+                f"while its shape was {node_coords_shape}"
+            )
 
             raise ValueError(message)
 
-        if isinstance(node_color, (list, np.ndarray)) and len(node_color) != 1:
-            if len(node_color) != node_coords_shape[0]:
-                raise ValueError(
-                    "Mismatch between the number of nodes "
-                    f"({node_coords_shape[0]}) "
-                    f"and the number of node colors ({len(node_color)})."
-                )
+        if (
+            isinstance(node_color, (list, np.ndarray))
+            and len(node_color) != 1
+            and len(node_color) != node_coords_shape[0]
+        ):
+            raise ValueError(
+                "Mismatch between the number of nodes "
+                f"({node_coords_shape[0]}) "
+                f"and the number of node colors ({len(node_color)})."
+            )
 
         if node_coords_shape[0] != adjacency_matrix_shape[0]:
             raise ValueError(
@@ -714,22 +719,22 @@ class RProjector(OrthoProjector):
     _default_figsize = [2.6, 2.8]
 
 
-PROJECTORS = dict(
-    ortho=OrthoProjector,
-    xz=XZProjector,
-    yz=YZProjector,
-    yx=YXProjector,
-    x=XProjector,
-    y=YProjector,
-    z=ZProjector,
-    lzry=LZRYProjector,
-    lyrz=LYRZProjector,
-    lyr=LYRProjector,
-    lzr=LZRProjector,
-    lr=LRProjector,
-    l=LProjector,
-    r=RProjector,
-)
+PROJECTORS = {
+    "ortho": OrthoProjector,
+    "xz": XZProjector,
+    "yz": YZProjector,
+    "yx": YXProjector,
+    "x": XProjector,
+    "y": YProjector,
+    "z": ZProjector,
+    "lzry": LZRYProjector,
+    "lyrz": LYRZProjector,
+    "lyr": LYRProjector,
+    "lzr": LZRProjector,
+    "lr": LRProjector,
+    "l": LProjector,
+    "r": RProjector,
+}
 
 
 def get_projector(display_mode):
