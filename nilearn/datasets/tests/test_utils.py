@@ -436,7 +436,7 @@ def test_fetch_file_part(tmp_path):
     (tmp_path / "temp.txt.part").touch()
 
     _utils.fetch_single_file(
-        url=url, data_dir=str(tmp_path), verbose=0, resume=True
+        url=url, data_dir=tmp_path, verbose=0, resume=True
     )
 
     assert (tmp_path / "temp.txt").exists()
@@ -451,11 +451,11 @@ def test_fetch_file_overwrite(
 
     # overwrite non-exiting file.
     fil = _utils.fetch_single_file(
-        url="http://foo/", data_dir=str(tmp_path), verbose=0, overwrite=True
+        url="http://foo/", data_dir=tmp_path, verbose=0, overwrite=True
     )
 
     assert request_mocker.url_count == 1
-    assert os.path.exists(fil)
+    assert fil.exists()
     with open(fil) as fp:
         assert fp.read() == ""
 
@@ -465,21 +465,21 @@ def test_fetch_file_overwrite(
 
     # Don't overwrite existing file.
     fil = _utils.fetch_single_file(
-        url="http://foo/", data_dir=str(tmp_path), verbose=0, overwrite=False
+        url="http://foo/", data_dir=tmp_path, verbose=0, overwrite=False
     )
 
     assert request_mocker.url_count == 1
-    assert os.path.exists(fil)
+    assert fil.exists()
     with open(fil) as fp:
         assert fp.read() == "some content"
 
     # Overwrite existing file.
     fil = _utils.fetch_single_file(
-        url="http://foo/", data_dir=str(tmp_path), verbose=0, overwrite=True
+        url="http://foo/", data_dir=tmp_path, verbose=0, overwrite=True
     )
 
     assert request_mocker.url_count == 2
-    assert os.path.exists(fil)
+    assert fil.exists()
     with open(fil) as fp:
         assert fp.read() == ""
 
@@ -498,7 +498,7 @@ def test_fetch_files_use_session(
             ("example1", "https://example.org/example1", {"overwrite": True}),
             ("example2", "https://example.org/example2", {"overwrite": True}),
         ],
-        data_dir=str(tmp_path),
+        data_dir=tmp_path,
         session=session,
     )
 
@@ -515,7 +515,7 @@ def test_fetch_files_overwrite(
     # overwrite non-exiting file.
     files = ("1.txt", "http://foo/1.txt")
     fil = _utils.fetch_files(
-        data_dir=str(tmp_path),
+        data_dir=tmp_path,
         verbose=0,
         files=[(*files, {"overwrite": True})],
     )
@@ -531,7 +531,7 @@ def test_fetch_files_overwrite(
 
     # Don't overwrite existing file.
     fil = _utils.fetch_files(
-        data_dir=str(tmp_path),
+        data_dir=tmp_path,
         verbose=0,
         files=[(*files, {"overwrite": False})],
     )
@@ -543,7 +543,7 @@ def test_fetch_files_overwrite(
 
     # Overwrite existing file.
     fil = _utils.fetch_files(
-        data_dir=str(tmp_path),
+        data_dir=tmp_path,
         verbose=0,
         files=[(*files, {"overwrite": True})],
     )

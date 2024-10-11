@@ -1072,19 +1072,16 @@ def test_fetch_spm_multimodal_missing_data(tmp_path):
 
 def test_fiac(tmp_path):
     # Create dummy 'files'
-    fiac_dir = str(
+    fiac_dir = (
         tmp_path / "fiac_nilearn.glm" / "nipy-data-0.2" / "data" / "fiac"
     )
-    fiac0_dir = os.path.join(fiac_dir, "fiac0")
-    os.makedirs(fiac0_dir)
+    fiac0_dir = fiac_dir / "fiac0"
+    fiac0_dir.mkdir(parents=True)
     for run in [1, 2]:
         # glob func data for run + 1
-        run_func = os.path.join(fiac0_dir, f"run{int(run)}.nii.gz")
-        open(run_func, "a").close()
-        sess_dmtx = os.path.join(fiac0_dir, f"run{int(run)}_design.npz")
-        open(sess_dmtx, "a").close()
-    mask = os.path.join(fiac0_dir, "mask.nii.gz")
-    open(mask, "a").close()
+        (fiac0_dir / f"run{int(run)}.nii.gz").touch()
+        (fiac0_dir / f"run{int(run)}_design.npz").touch()
+    (fiac0_dir / "mask.nii.gz").touch()
 
     dataset = func.fetch_fiac_first_level(data_dir=tmp_path)
 

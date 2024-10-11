@@ -692,7 +692,7 @@ def test_download_image_terms(tmp_path, request_mocker):
         "relative_path": "collection",
         "absolute_path": tmp_path / "collection",
     }
-    os.makedirs(collection["absolute_path"])
+    collection["absolute_path"].mkdir(parents=True)
     download_params = {
         "temp_dir": tmp_path,
         "verbose": 3,
@@ -708,7 +708,7 @@ def test_download_image_terms_error(tmp_path, request_mocker):
         "relative_path": "collection",
         "absolute_path": tmp_path / "collection",
     }
-    os.makedirs(collection["absolute_path"])
+    collection["absolute_path"].mkdir(parents=True)
     download_params = {
         "temp_dir": tmp_path,
         "verbose": 3,
