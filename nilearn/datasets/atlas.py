@@ -1226,7 +1226,7 @@ def fetch_atlas_aal(
         should not be interpreted as indices for the list of label names.
         In addition, the region IDs are provided as strings, so it is necessary
         to cast them to integers when indexing.
-        For more information, refer to the fetcher’s description:
+        For more information, refer to the fetcher's description:
 
         .. code-block:: python
 
