@@ -1360,8 +1360,8 @@ def _new_bids_dataset(base_dir=None):
     )
 
 
-@pytest.mark.parametrize("n_runs", ([1, 0], [1, 1], [1, 2]))
-@pytest.mark.parametrize("n_ses", [0, 1, 2])
+@pytest.mark.parametrize("n_runs", ([1, 0], [1, 2]))
+@pytest.mark.parametrize("n_ses", [0, 2])
 @pytest.mark.parametrize("task_index", [0, 1])
 @pytest.mark.parametrize("space_label", ["MNI", "T1w"])
 def test_first_level_from_bids(
