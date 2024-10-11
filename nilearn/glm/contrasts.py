@@ -539,8 +539,8 @@ def compute_fixed_effects(
         else:
             masker = NiftiMasker(mask_img=mask).fit()
 
-    variances = np.array([masker.transform(vi) for vi in variance_imgs])
-    contrasts = np.array([masker.transform(ci) for ci in contrast_imgs])
+    variances = np.array([masker.transform(vi).squeeze() for vi in variance_imgs])
+    contrasts = np.array([masker.transform(ci).squeeze() for ci in contrast_imgs])
 
     if dofs is not None:
         if len(dofs) != n_runs:
@@ -608,6 +608,7 @@ def _compute_fixed_effects_params(
             stat_type = "F"
     else:
         fixed_fx_contrasts_ = fixed_fx_contrasts
+
     con = Contrast(
         effect=fixed_fx_contrasts_,
         variance=fixed_fx_variance,
