@@ -164,7 +164,7 @@ def test_plot_connectome_to_file(
     assert display is None
     assert filename.is_file()
     assert filename.stat().st_size > 0
-    
+
     plt.close()
 
 
