@@ -48,7 +48,10 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR, LinearSVC
 
 from nilearn._utils import compare_version
-from nilearn._utils.param_validation import check_feature_screening
+from nilearn._utils.param_validation import (
+    check_feature_screening,
+    get_mask_volume,
+)
 from nilearn.conftest import _rng
 from nilearn.decoding.decoder import (
     Decoder,
@@ -1097,6 +1100,15 @@ def _make_surface_class_data(rng, make_mini_img):
 
 
 @pytest.fixture()
+def _make_surface_mask(make_mini_mask):
+    def _surface_mask():
+        mask = make_mini_mask()
+        return mask
+
+    return _surface_mask
+
+
+@pytest.fixture()
 def _make_surface_reg_data(rng, make_mini_img):
     """Create a surface image regression for testing."""
 
@@ -1142,6 +1154,37 @@ def test_decoder_screening_percentile_surface(perc, _make_surface_class_data):
         assert model.screening_percentile_ == 100
     else:
         assert model.screening_percentile_ == perc
+
+
+@pytest.mark.parametrize("screening_percentile", [30, 80, 100])
+def test_decoder_screening_percentile_adjustment_surface(
+    _make_surface_mask, _make_surface_class_data, screening_percentile
+):
+    mask = _make_surface_mask()
+    img, y = _make_surface_class_data()
+    mask_n_vertices = get_mask_volume(mask)
+    mesh_n_vertices = img.mesh.n_vertices
+    mask_to_mesh_ratio = (mask_n_vertices / mesh_n_vertices) * 100
+    decoder = Decoder(
+        mask=mask,
+        param_grid={"C": [0.01, 0.1]},
+        cv=3,
+        screening_percentile=screening_percentile,
+    )
+    with pytest.warns(UserWarning, match="Consider raising"):
+        decoder.fit(img, y)
+    adjusted = decoder.screening_percentile_
+    if (
+        screening_percentile == 100
+        or mask_to_mesh_ratio < screening_percentile
+    ):
+        assert adjusted == 100
+    # if mask is larger than given percentile, the percentile is adjusted to
+    # the ratio of mesh to mask
+    elif mask_to_mesh_ratio > screening_percentile:
+        assert adjusted == screening_percentile * (
+            mesh_n_vertices / mask_n_vertices
+        )
 
 
 @pytest.mark.parametrize("mask", [None, SurfaceMasker()])

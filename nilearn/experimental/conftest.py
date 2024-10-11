@@ -61,6 +61,24 @@ def make_mini_img(mini_mesh) -> Callable:
 
 
 @pytest.fixture
+def make_mini_mask(mini_mesh) -> Callable:
+    """Small surface mask for tests."""
+
+    def f():
+        data = {}
+        for key, val in enumerate(mini_mesh.parts.items()):
+            data_part = np.ones(val.n_vertices, dtype=int)
+            data_part = data_part.astype(bool)
+            # make outer vertices 0
+            data_part[..., 0] = 0
+            data_part[..., -1] = 0
+            data[key] = data_part
+        return SurfaceImage(mini_mesh, data)
+
+    return f
+
+
+@pytest.fixture
 def mini_mask(mini_img) -> SurfaceImage:
     """Raturn small surface mask."""
     data = {k: (v > v.ravel()[0]) for k, v in mini_img.data.parts.items()}
