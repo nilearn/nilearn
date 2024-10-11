@@ -248,6 +248,8 @@
 
 .. _Pradeep Reddy Raamana: https://github.com/raamana
 
+.. _Prakhar Jain: https://github.com/PrakharJain1509
+
 .. _Rahul Brito: https://github.com/Rahul-Brito
 
 .. _Raphael Meudec: https://github.com/RaphaelMeudec
