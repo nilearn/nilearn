@@ -229,62 +229,64 @@ def test_get_bids_files_inheritance_principle_sub_folder(tmp_path, json_file):
 
 
 def test_get_bids_files(tmp_path):
+    n_sub = 2
+
     bids_path = create_fake_bids_dataset(
         base_dir=tmp_path,
-        n_sub=10,
+        n_sub=n_sub,
         n_ses=2,
         tasks=["localizer", "main"],
-        n_runs=[1, 3],
+        n_runs=[1, 2],
     )
     # For each possible option of file selection we check that we
     # recover the appropriate amount of files, as included in the
     # fake bids dataset.
 
-    # 250 files in total related to subject images. Top level files like
-    # README not included
+    # files in total related to subject images.
+    # Top level files like README not included
     selection = get_bids_files(bids_path)
-    assert len(selection) == 250
-    # 160 bold files expected. .nii and .json files
+    assert len(selection) == 19 * n_sub
+    # bold files expected. .nii and .json files
     selection = get_bids_files(bids_path, file_tag="bold")
-    assert len(selection) == 160
-    # Only 90 files are nii.gz. Bold and T1w files.
+    assert len(selection) == 12 * n_sub
+    # files are nii.gz. Bold and T1w files.
     selection = get_bids_files(bids_path, file_type="nii.gz")
-    assert len(selection) == 90
-    # Only 25 files correspond to subject 01
+    assert len(selection) == 7 * n_sub
+    # files correspond to subject 01
     selection = get_bids_files(bids_path, sub_label="01")
-    assert len(selection) == 25
-    # There are only 10 files in anat folders. One T1w per subject.
+    assert len(selection) == 19
+    # There are only n_sub files in anat folders. One T1w per subject.
     selection = get_bids_files(bids_path, modality_folder="anat")
-    assert len(selection) == 10
-    # 20 files corresponding to run 1 of session 2 of main task.
-    # 10 bold.nii.gz and 10 bold.json files. (10 subjects)
+    assert len(selection) == n_sub
+    # files corresponding to run 1 of session 2 of main task.
+    # n_sub bold.nii.gz and n_sub bold.json files.
     filters = [("task", "main"), ("run", "01"), ("ses", "02")]
     selection = get_bids_files(bids_path, file_tag="bold", filters=filters)
-    assert len(selection) == 20
+    assert len(selection) == 2 * n_sub
     # Get Top level folder files. Only 1 in this case, the README file.
     selection = get_bids_files(bids_path, sub_folder=False)
     assert len(selection) == 1
-    # 80 counfonds (4 runs per ses & sub), testing `fmriprep` >= 20.2 path
+    # counfonds (4 runs per ses & sub), testing `fmriprep` >= 20.2 path
     selection = get_bids_files(
         bids_path / "derivatives",
         file_tag="desc-confounds_timeseries",
     )
-    assert len(selection) == 160
+    assert len(selection) == 12 * n_sub
 
     bids_path = create_fake_bids_dataset(
         base_dir=tmp_path,
-        n_sub=10,
+        n_sub=n_sub,
         n_ses=2,
         tasks=["localizer", "main"],
-        n_runs=[1, 3],
+        n_runs=[1, 2],
         confounds_tag="desc-confounds_regressors",
     )
-    # 80 counfonds (4 runs per ses & sub), testing `fmriprep` >= 20.2 path
+    # counfonds (4 runs per ses & sub), testing `fmriprep` >= 20.2 path
     selection = get_bids_files(
         bids_path / "derivatives",
         file_tag="desc-confounds_regressors",
     )
-    assert len(selection) == 160
+    assert len(selection) == 12 * n_sub
 
 
 def test_parse_bids_filename():
@@ -567,7 +569,7 @@ def test_save_glm_to_bids_second_level(tmp_path_factory, prefix):
         "report.html",
     ]
 
-    shapes = ((7, 8, 9, 1),)
+    shapes = ((3, 3, 3, 1),)
     rk = 3
     mask, func_img, _ = generate_fake_fmri_data_and_design(
         shapes,
@@ -579,8 +581,8 @@ def test_save_glm_to_bids_second_level(tmp_path_factory, prefix):
     model = SecondLevelModel(mask_img=mask, minimize_memory=False)
 
     # fit model
-    Y = [func_img] * 4
-    X = pd.DataFrame([[1]] * 4, columns=["intercept"])
+    Y = [func_img] * 2
+    X = pd.DataFrame([[1]] * 2, columns=["intercept"])
     model = model.fit(Y, design_matrix=X)
 
     contrasts = {
