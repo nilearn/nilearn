@@ -821,9 +821,8 @@ def test_fetch_neurovault_ids(tmp_path):
 
     assert len(data.images) == len(expected_images)
     assert {img["id"] for img in data["images_meta"]} == set(expected_images)
-    assert (
-        os.path.dirname(data["images"][0])
-        == data["collections_meta"][0]["absolute_path"]
+    assert Path(data["images"][0]).parent == Path(
+        data["collections_meta"][0]["absolute_path"]
     )
 
     # check image can be loaded again from disk
@@ -840,9 +839,9 @@ def test_fetch_neurovault_ids(tmp_path):
 
     modified_meta["some_key"] = "some_other_value"
     # mess it up on disk
-    meta_path = os.path.join(
-        os.path.dirname(modified_meta["absolute_path"]),
-        f"image_{img_ids[0]}_metadata.json",
+    meta_path = (
+        Path(modified_meta["absolute_path"]).parent
+        / f"image_{img_ids[0]}_metadata.json"
     )
     with open(meta_path, "wb") as meta_f:
         meta_f.write(json.dumps(modified_meta).encode("UTF-8"))

@@ -19,8 +19,8 @@ import requests
 
 from nilearn.datasets import _utils
 
-currdir = os.path.dirname(os.path.abspath(__file__))
-datadir = os.path.join(currdir, "data")
+currdir = Path(__file__).absolute().parent
+datadir = currdir / "data"
 
 DATASET_NAMES = {
     "aal",
