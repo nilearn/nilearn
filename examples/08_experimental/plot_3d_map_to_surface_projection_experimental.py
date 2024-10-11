@@ -52,9 +52,9 @@ curv_right_sign = np.sign(fsaverage_curvature.data.parts["right"])
 # -----------------------------------------------
 from nilearn.experimental.surface import SurfaceImage
 
-img = SurfaceImage(
+img = SurfaceImage.from_volume(
     mesh=fsaverage_meshes["pial"],
-    data=stat_img,
+    volume_img=stat_img,
 )
 
 # %%
@@ -214,9 +214,9 @@ big_fsaverage_sulcal = load_fsaverage_data(
     mesh_name="fsaverage", data_type="sulcal", mesh_type="inflated"
 )
 
-big_img = SurfaceImage(
+big_img = SurfaceImage.from_volume(
     mesh=big_fsaverage_meshes["pial"],
-    data=stat_img,
+    volume_img=stat_img,
 )
 
 plot_surf_stat_map(
