@@ -588,7 +588,7 @@ def test_fmri_inputs(
     # smoke tests with correct input
     flms = [flm, flm, flm]
 
-    shape_3d = (*shape_3d_default, 1)
+    shape_3d = [(*shape_3d_default, 1)]
     _, FUNCFILE, _ = write_fake_fmri_data_and_design(
         shape_3d, file_path=tmp_path
     )
@@ -764,7 +764,7 @@ def test_fmri_inputs_for_non_parametric_inference_errors(
     X = rng.standard_normal(size=(p, q))
     sdes = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
 
-    shape_3d = (*shape_3d_default, 1)
+    shape_3d = [(*shape_3d_default, 1)]
     _, FUNCFILE, _ = write_fake_fmri_data_and_design(
         shape_3d, file_path=tmp_path
     )
