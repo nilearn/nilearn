@@ -482,7 +482,7 @@ def make_second_level_design_matrix(subjects_label, confounds=None):
         confounds_name = confounds.columns.tolist()
         confounds_name.remove("subject_label")
 
-    design_columns = confounds_name + ["intercept"]
+    design_columns = [*confounds_name, "intercept"]
     # check column names are unique
     if len(np.unique(design_columns)) != len(design_columns):
         raise ValueError("Design matrix columns do not have unique names")

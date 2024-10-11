@@ -45,7 +45,7 @@ def _make_data(rng=None, masked=False, dim=(2, 2, 2)):
     w = np.zeros(dim)
     w[dim[0] // 2 :, dim[1] // 2 :, : dim[2] // 2] = 1
     n = 5
-    X = np.ones([n] + list(dim))
+    X = np.ones([n, *dim])
     X += rng.standard_normal(X.shape)
     y = np.dot([x[mask] for x in X], w[mask])
     if masked:

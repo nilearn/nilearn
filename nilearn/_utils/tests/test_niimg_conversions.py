@@ -462,8 +462,9 @@ def test_repr_niimgs():
     )
 
     # Long names - Explicit shortening
-    list_of_size_4 = list_of_size_3 + [
-        "this-is-again-another-super-very-long-name-for-a-nifti-file.nii"
+    list_of_size_4 = [
+        *list_of_size_3,
+        "this-is-again-another-super-very-long-name-for-a-nifti-file.nii",
     ]
     shortened_rep_long_list_long_names = (
         "[this-is-a-very-lon...,\n         ...\n this-is-again-anot...]"
@@ -514,8 +515,9 @@ def test_repr_niimgs_force_long_names():
     )
 
     # Long names - Force full display in pretty print style for readability
-    list_of_size_4 = list_of_size_3 + [
-        "this-is-again-another-super-very-long-name-for-a-nifti-file.nii"
+    list_of_size_4 = [
+        *list_of_size_3,
+        "this-is-again-another-super-very-long-name-for-a-nifti-file.nii",
     ]
     long_rep_long_list_long_names = (
         long_rep_list_of_size_3[:-1].replace(",", ",\n")

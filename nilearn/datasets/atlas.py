@@ -270,7 +270,7 @@ def fetch_atlas_craddock_2012(
         data = fetch_files(data_dir, filename, resume=resume, verbose=verbose)
         params = {"maps": data[0], "description": fdescr}
     else:
-        params = dict([("description", fdescr)] + list(zip(keys, sub_files)))
+        params = dict([("description", fdescr), *list(zip(keys, sub_files))])
         warnings.warn(
             category=DeprecationWarning,
             message="In release 0.13, this fetcher will return a dictionary "
@@ -1200,7 +1200,7 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     fdescr = get_dataset_descr(dataset_name)
 
-    params = dict([("description", fdescr)] + list(zip(keys, sub_files)))
+    params = dict([("description", fdescr), *list(zip(keys, sub_files))])
     return Bunch(**params)
 
 
@@ -1645,7 +1645,7 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
     anatomical_names = np.array([region_mapping[a] for a in anatomical])
 
     rois = pd.concat([rois, pd.DataFrame(anatomical_names)], axis=1)
-    rois.columns = list(rois.columns[:-1]) + ["region"]
+    rois.columns = [*rois.columns[:-1], "region"]
 
     if ordered_regions:
         rois = rois.sort_values(by=["network", "y"])

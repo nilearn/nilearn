@@ -321,7 +321,7 @@ def test_smooth_img(affine_eye, tmp_path):
         assert isinstance(out, list)
         assert len(out) == 2
         for o, s, l in zip(out, shapes, lengths):
-            assert o.shape == (s + (l,))
+            assert o.shape == (*s, l)
 
         # Single image as input
         out = smooth_img(imgs[0], fwhm)
@@ -548,7 +548,8 @@ def test_index_img():
     img_4d, _ = generate_fake_fmri(affine=NON_EYE_AFFINE)
 
     fourth_dim_size = img_4d.shape[3]
-    tested_indices = list(range(fourth_dim_size)) + [
+    tested_indices = [
+        *range(fourth_dim_size),
         slice(2, 8, 2),
         [1, 2, 3, 2],
         [],
@@ -1233,7 +1234,7 @@ def test_clean_img_sample_mask_mask_img(shape_3d_default):
 def test_concat_niimgs_errors(affine_eye, shape_3d_default):
     img1 = Nifti1Image(np.ones(shape_3d_default), affine_eye)
     img2 = Nifti1Image(np.ones(shape_3d_default), 2 * affine_eye)
-    img4d = Nifti1Image(np.ones(shape_3d_default + (2,)), affine_eye)
+    img4d = Nifti1Image(np.ones((*shape_3d_default, 2)), affine_eye)
 
     # check error for non-forced but necessary resampling
     with pytest.raises(ValueError, match="Field of view of image"):
@@ -1279,7 +1280,7 @@ def test_concat_niimgs(affine_eye, tmp_path):
 
     # smoke-test auto_resample
     concatenated = concat_imgs((img1, img1b, img1c), auto_resample=True)
-    assert concatenated.shape == img1.shape + (3,)
+    assert concatenated.shape == (*img1.shape, 3)
 
     # test list of 4D niimgs as input
     img1.to_filename(tmp_path / "1.nii")
@@ -1292,7 +1293,7 @@ def test_concat_niimgs(affine_eye, tmp_path):
 def test_concat_niimg_dtype(affine_eye):
     shape = [2, 3, 4]
     vols = [
-        Nifti1Image(np.zeros(shape + [n_scans]).astype(np.int16), affine_eye)
+        Nifti1Image(np.zeros([*shape, n_scans]).astype(np.int16), affine_eye)
         for n_scans in [1, 5]
     ]
     nimg = concat_imgs(vols)
