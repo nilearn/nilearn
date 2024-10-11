@@ -18,6 +18,26 @@ class PolyData:
 
     It is a shallow wrapper around the ``parts`` dictionary, which cannot be
     empty and whose keys must be a subset of {"left", "right"}.
+
+    The first dimension corresponds to the vertices: the typical shape of the
+    data for a hemisphere is ``(n_vertices, n_time_points)``.
+
+    >>> import numpy as np
+    >>> from nilearn.experimental.surface import PolyData
+    >>> n_time_points = 10
+    >>> left = np.ones(((n_left_vertices := 5), n_time_points))
+    >>> right = np.ones(((n_right_vertices := 7), n_time_points))
+    >>> PolyData(left=left, right=right)
+    <PolyData (12, 10)>
+    >>> PolyData(right=right)
+    <PolyData (7, 10)>
+
+    It is not possible to create an empty ``PolyData``:
+
+    >>> PolyData()
+    Traceback (most recent call last):
+        ...
+    ValueError: Cannot create an empty PolyData. ...
     """
 
     def __init__(
@@ -46,7 +66,7 @@ class PolyData:
             self.shape = next(iter(self.parts.values())).shape
             return
 
-        if parts["left"].shape[:-1] != parts["right"].shape[:-1]:
+        if parts["left"].shape[1:] != parts["right"].shape[1:]:
             raise ValueError(
                 f"Data arrays for keys 'left' and 'right' "
                 "have incompatible shapes: "
@@ -55,8 +75,11 @@ class PolyData:
 
         self.parts = parts
         first_shape = next(iter(parts.values())).shape
-        concat_dim = sum(p.shape[-1] for p in parts.values())
-        self.shape = (*first_shape[:-1], concat_dim)
+        concat_dim = sum(p.shape[0] for p in parts.values())
+        self.shape = (concat_dim, *first_shape[1:])
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__} {self.shape}>"
 
 
 class Mesh(abc.ABC):
@@ -165,6 +188,9 @@ class PolyMesh:
 
         self.n_vertices = sum(p.n_vertices for p in self.parts.values())
 
+    def __repr__(self):
+        return f"<{self.__class__.__name__} with {self.n_vertices} vertices>"
+
 
 def _check_data_and_mesh_compat(mesh: PolyMesh, data: PolyData):
     """Check that mesh and data have the same keys and that shapes match."""
@@ -176,7 +202,7 @@ def _check_data_and_mesh_compat(mesh: PolyMesh, data: PolyData):
             f"Offending keys: {diff}"
         )
     for key in mesh_keys:
-        if data.parts[key].shape[-1] != mesh.parts[key].n_vertices:
+        if data.parts[key].shape[0] != mesh.parts[key].n_vertices:
             raise ValueError(
                 f"Data shape does not match number of vertices for '{key}':\n"
                 f"- data shape: {data.parts[key].shape}\n"
@@ -215,7 +241,12 @@ class SurfaceImage:
 
         _check_data_and_mesh_compat(self.mesh, self.data)
 
-        self.shape = self.data.shape
+    @property
+    def shape(self):
+        return self.data.shape
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} {self.shape}>"
 
     @classmethod
     def from_volume(
@@ -285,9 +316,6 @@ class SurfaceImage:
         data = PolyData(left=texture_left.T, right=texture_right.T)
 
         return cls(mesh=mesh, data=data)
-
-    def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} {getattr(self, 'shape', '')}>"
 
     def to_filename(self, filename: str | Path) -> None:
         """Save mesh to gifti.

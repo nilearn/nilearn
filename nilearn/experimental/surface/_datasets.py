@@ -7,10 +7,13 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
+import numpy as np
+
 from nilearn import datasets
 from nilearn.experimental.surface import _io
 from nilearn.experimental.surface._surface_image import (
     FileMesh,
+    InMemoryMesh,
     PolyMesh,
     SurfaceImage,
 )
@@ -104,8 +107,8 @@ def fetch_nki(mesh_type: str = "pial", **kwargs) -> Sequence[SurfaceImage]:
     for left, right in zip(
         nki_dataset["func_left"], nki_dataset["func_right"]
     ):
-        left_data = _io.read_array(left).T
-        right_data = _io.read_array(right).T
+        left_data = _io.read_array(left)
+        right_data = _io.read_array(right)
         img = SurfaceImage(
             mesh=fsaverage[mesh_type],
             data={
@@ -141,4 +144,13 @@ def fetch_destrieux(
             },
         ),
         labels,
+    )
+
+
+def toy_mesh():
+    coords = np.eye(3)
+    triangles = np.asarray([[0, 1, 2]])
+    return PolyMesh(
+        left=InMemoryMesh(coords, triangles),
+        right=InMemoryMesh(coords + 2, triangles),
     )
