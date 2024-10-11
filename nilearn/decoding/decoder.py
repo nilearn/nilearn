@@ -949,7 +949,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
     def _apply_mask(self, X):
         masker_type = "nii"
-        # all elements of X should of the similar type by now
+        # all elements of X should be of the similar type by now
         # so we can only check the first one
         to_check = X[0] if isinstance(X, Iterable) else X
         if isinstance(self.mask, (SurfaceMasker, SurfaceImage)) or (
