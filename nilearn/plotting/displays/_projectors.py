@@ -118,13 +118,10 @@ class OrthoProjector(OrthoSlicer):
             nodes at one.
         """
         # set defaults
-        if edge_kwargs is None:
-            edge_kwargs = {}
-        if node_kwargs is None:
-            node_kwargs = {}
+        edge_kwargs = edge_kwargs or {}
+        node_kwargs = node_kwargs or {}
         if isinstance(node_color, str) and node_color == "auto":
-            n_nodes = len(node_coords)
-            node_color = mpl_cm.Set2(np.linspace(0, 1, n_nodes))
+            node_color = mpl_cm.Set2(np.linspace(0, 1, len(node_coords)))
         node_coords = np.asarray(node_coords)
 
         # decompress input matrix if sparse
@@ -203,9 +200,8 @@ class OrthoProjector(OrthoSlicer):
             if not (adjacency_matrix.mask == adjacency_matrix.mask.T).all():
                 symmetric = False
                 warnings.warn(
-                    "'adjacency_matrix' was masked with "
-                    "a non symmetric mask. A directed "
-                    "graph will be plotted."
+                    "'adjacency_matrix' was masked with a non symmetric mask. "
+                    "A directed graph will be plotted."
                 )
             adjacency_matrix = adjacency_matrix.filled(0)
 
