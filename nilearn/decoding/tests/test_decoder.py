@@ -1160,6 +1160,11 @@ def test_decoder_screening_percentile_surface(perc, _make_surface_class_data):
 def test_decoder_screening_percentile_adjustment_surface(
     _make_surface_mask, _make_surface_class_data, screening_percentile
 ):
+    """Test adjustment of screening percentile, such that if mask size is
+    smaller than screening percentile wrt to the mesh size, use whole mask or
+    if mask size is greater than screening percentile wrt to the mesh size,
+    adjust the screening percentile for that mask size.
+    """
     mask = _make_surface_mask()
     img, y = _make_surface_class_data()
     mask_n_vertices = get_mask_volume(mask)
