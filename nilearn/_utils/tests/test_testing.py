@@ -1,5 +1,3 @@
-import warnings
-
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
@@ -44,14 +42,6 @@ def test_int64_niftis(affine_eye, tmp_path):
     for dtype in "int64", "uint64":
         with pytest.raises(AssertionError):
             Nifti1Image(data.astype(dtype), affine_eye)
-
-
-def dummy_deprecation(start_version, end_version):
-    warnings.warn(
-        f"Deprecated in {start_version}."
-        f"and will be removed in version {end_version}.",
-        DeprecationWarning,
-    )
 
 
 @pytest.mark.parametrize("create_files", [True, False])
