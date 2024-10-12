@@ -66,10 +66,10 @@ def make_mini_mask(mini_mesh) -> Callable:
 
     def f():
         data = {}
-        for key, val in enumerate(mini_mesh.parts.items()):
+        for key, val in mini_mesh.parts.items():
             data_part = np.ones(val.n_vertices, dtype=int)
             data_part = data_part.astype(bool)
-            # make outer vertices 0
+            # make some vertices 0
             data_part[..., 0] = 0
             data_part[..., -1] = 0
             data[key] = data_part
