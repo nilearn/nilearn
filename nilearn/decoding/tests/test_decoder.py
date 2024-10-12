@@ -1174,10 +1174,7 @@ def test_decoder_screening_percentile_adjustment_surface(
     with pytest.warns(UserWarning, match="Consider raising"):
         decoder.fit(img, y)
     adjusted = decoder.screening_percentile_
-    if (
-        screening_percentile == 100
-        or mask_to_mesh_ratio < screening_percentile
-    ):
+    if mask_to_mesh_ratio <= screening_percentile:
         assert adjusted == 100
     # if mask is larger than given percentile, the percentile is adjusted to
     # the ratio of mesh to mask
