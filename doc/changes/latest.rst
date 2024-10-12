@@ -101,3 +101,5 @@ Changes
 - :bdg-dark:`Code` Reorder condition in internal call of :func:`nilearn.image.resample_img` to skip checking of array values if interpolation is ``nearest`` (:gh:`4571` by `Jason Kai`_).
 
 - :bdg-dark:`Code` Remove redundant sorting of ``np.unique(data)`` in internal call of :func:`nilearn.image.resample_img` when checking array values (:gh:`4571` by `Jason Kai`_).
+
+- :bdg-secondary:`Maint` Refactored :func:`nilearn.plotting.displays._projectors.add_graph` to ensure it is within the maximum function length of 150 (:gh:`4635` by `Anupriya Kumari`_).
