@@ -857,7 +857,7 @@ def test_fetch_ds000030_urls():
         assert urls == mock_json_content
 
         # fetch_openneuro_dataset_index should do the same, but with a warning
-        with pytest.warns(DeprecationWarning):
+        with pytest.deprecated_call():
             urls_path, urls = func.fetch_openneuro_dataset_index(
                 data_dir=tmpdir,
                 dataset_version=dataset_version,
