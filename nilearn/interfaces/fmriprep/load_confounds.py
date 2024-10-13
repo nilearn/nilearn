@@ -61,6 +61,10 @@ def _check_strategy(strategy):
             "strategy needs to be a tuple or list of strings"
             f" A {type(strategy)} was provided instead."
         )
+
+    if len(strategy) == 0:
+        warnings.warn("strategy is empty, confounds will return None.")
+
     for conf in strategy:
         if conf == "non_steady_state":
             warnings.warn(
@@ -356,6 +360,11 @@ def load_confounds(
     if flag_single:
         confounds_out = confounds_out[0]
         sample_mask_out = sample_mask_out[0]
+
+    # If no strategy was provided, return None for confounds
+    if len(strategy) == 0:
+        confounds_out = None
+
     return confounds_out, sample_mask_out
 
 
