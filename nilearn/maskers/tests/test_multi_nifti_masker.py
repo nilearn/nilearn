@@ -289,10 +289,10 @@ def test_standardization(rng, shape_3d_default, affine_eye):
     signals += means
 
     img1 = Nifti1Image(
-        signals[0].reshape(shape_3d_default + (n_samples,)), affine_eye
+        signals[0].reshape((*shape_3d_default, n_samples)), affine_eye
     )
     img2 = Nifti1Image(
-        signals[1].reshape(shape_3d_default + (n_samples,)), affine_eye
+        signals[1].reshape((*shape_3d_default, n_samples)), affine_eye
     )
 
     mask = Nifti1Image(np.ones(shape_3d_default), affine_eye)

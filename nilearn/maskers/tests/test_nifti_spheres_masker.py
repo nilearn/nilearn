@@ -137,7 +137,7 @@ def test_nifti_spheres_masker_overlap(rng):
     affine = np.eye(4)
     shape = (5, 5, 5)
 
-    data = rng.random(shape + (5,))
+    data = rng.random((*shape, 5))
     fmri_img = Nifti1Image(data, affine)
 
     seeds = [(0, 0, 0), (2, 2, 2)]
@@ -288,7 +288,7 @@ def test_nifti_spheres_masker_inverse_overlap(rng):
     affine = np.eye(4)
     shape = (5, 5, 5)
 
-    data = rng.random(shape + (5,))
+    data = rng.random((*shape, 5))
     fmri_img = Nifti1Image(data, affine)
 
     # Apply mask image - to allow inversion
@@ -369,7 +369,7 @@ def test_nifti_spheres_masker_io_shapes(rng, shape_3d_default, affine_eye):
     inverse_transform(2D array with wrong shape) --> ValueError
     """
     n_regions, n_volumes = 2, 5
-    shape_4d = shape_3d_default + (n_volumes,)
+    shape_4d = (*shape_3d_default, n_volumes)
 
     img_4d, mask_img = data_gen.generate_random_img(
         shape_4d,

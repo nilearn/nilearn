@@ -66,13 +66,13 @@ X_test = masker.transform(X_figure_filenames)
 
 y_train = [
     np.reshape(
-        np.loadtxt(y, dtype=int, delimiter=","), (-1,) + y_shape, order="F"
+        np.loadtxt(y, dtype=int, delimiter=","), (-1, *y_shape), order="F"
     )
     for y in y_random_filenames
 ]
 y_test = [
     np.reshape(
-        np.loadtxt(y, dtype=int, delimiter=","), (-1,) + y_shape, order="F"
+        np.loadtxt(y, dtype=int, delimiter=","), (-1, *y_shape), order="F"
     )
     for y in y_figure_filenames
 ]

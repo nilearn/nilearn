@@ -776,7 +776,7 @@ def group_sparse_scores(
                 dual_obj += n_samples[k] * (n_features + fast_logdet(B))
 
         gap = objective - dual_obj
-        ret = ret + (gap,)
+        ret = (*ret, gap)
     return ret
 
 

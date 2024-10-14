@@ -522,7 +522,7 @@ def test_standardization(rng):
     signals = rng.standard_normal(size=(np.prod(data_shape), n_samples))
     means = rng.standard_normal(size=(np.prod(data_shape), 1)) * 50 + 1000
     signals += means
-    img = Nifti1Image(signals.reshape(data_shape + (n_samples,)), np.eye(4))
+    img = Nifti1Image(signals.reshape((*data_shape, n_samples)), np.eye(4))
 
     maps, _ = data_gen.generate_maps((9, 9, 5), 10)
 

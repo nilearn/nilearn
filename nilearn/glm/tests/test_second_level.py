@@ -321,7 +321,7 @@ def test_check_second_level_input():
     with pytest.raises(
         TypeError, match="Got object type <class 'function'> at idx 1"
     ):
-        _check_second_level_input(input_models + [obj], pd.DataFrame())
+        _check_second_level_input([*input_models, obj], pd.DataFrame())
 
 
 def test_check_second_level_input_unfit_model():
@@ -628,7 +628,7 @@ def test_fmri_inputs(
     # smoke tests with correct input
     flms = [flm, flm, flm]
 
-    shape_3d = [shape_3d_default + (1,)]
+    shape_3d = [(*shape_3d_default, 1)]
     _, FUNCFILE, _ = write_fake_fmri_data_and_design(
         shape_3d, file_path=tmp_path
     )
@@ -786,7 +786,7 @@ def test_fmri_img_inputs_errors(tmp_path, confounds):
         TypeError,
         match="Elements of second_level_input must be of the same type.",
     ):
-        SecondLevelModel().fit(niimgs + [[]], confounds)
+        SecondLevelModel().fit([*niimgs, []], confounds)
 
 
 def test_fmri_inputs_for_non_parametric_inference_errors(
@@ -804,7 +804,7 @@ def test_fmri_inputs_for_non_parametric_inference_errors(
     X = rng.standard_normal(size=(p, q))
     sdes = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
 
-    shape_3d = [shape_3d_default + (1,)]
+    shape_3d = [(*shape_3d_default, 1)]
     _, FUNCFILE, _ = write_fake_fmri_data_and_design(
         shape_3d, file_path=tmp_path
     )
@@ -836,7 +836,7 @@ def test_fmri_inputs_for_non_parametric_inference_errors(
     with pytest.raises(ValueError, match="require a design matrix"):
         non_parametric_inference(niimgs)
     with pytest.raises(TypeError):
-        non_parametric_inference(niimgs + [[]], confounds)
+        non_parametric_inference([*niimgs, []], confounds)
 
     # test other objects
     with pytest.raises(ValueError, match="File not found: .*"):
