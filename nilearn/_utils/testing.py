@@ -1,7 +1,6 @@
 """Utilities for testing nilearn."""
 
 # Author: Alexandre Abraham, Philippe Gervais
-import functools
 import gc
 import os
 import sys
@@ -46,18 +45,6 @@ except ImportError:
 def is_64bit() -> bool:
     """Return True if python is run on 64bits."""
     return sys.maxsize > 2**32
-
-
-def check_deprecation(func, match=None):
-    """Check if a function raises a deprecation warning."""
-
-    @functools.wraps(func)
-    def wrapped(*args, **kwargs):
-        with pytest.deprecated_call(match=match):
-            result = func(*args, **kwargs)
-        return result
-
-    return wrapped
 
 
 def assert_memory_less_than(
