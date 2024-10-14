@@ -8,10 +8,13 @@ import pytest
 from nibabel import Nifti1Image
 
 from nilearn import image
+from nilearn._utils.helpers import is_matplotlib_installed
 
 # we need to import these fixtures even if not used in this module
-from nilearn.datasets.tests._testing import request_mocker  # noqa: F401
-from nilearn.datasets.tests._testing import temp_nilearn_data_dir  # noqa: F401
+from nilearn.datasets.tests._testing import (
+    request_mocker,  # noqa: F401
+    temp_nilearn_data_dir,  # noqa: F401
+)
 
 # TODO This import needs to be removed once the experimental surface API and
 # its pytest fixtures are integrated into the stable API
@@ -26,10 +29,9 @@ from nilearn.experimental.conftest import (  # noqa: F401
 collect_ignore = ["datasets/data/convert_templates.py"]
 collect_ignore_glob = ["reporting/_visual_testing/*"]
 
-
-try:
-    import matplotlib  # noqa: F401
-except ImportError:
+if is_matplotlib_installed():
+    import matplotlib
+else:
     collect_ignore.extend(
         [
             "plotting",
@@ -39,9 +41,6 @@ except ImportError:
         ]
     )
     matplotlib = None
-    have_mpl = False
-else:
-    have_mpl = True
 
 
 def pytest_configure(config):

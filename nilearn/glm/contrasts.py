@@ -275,12 +275,14 @@ class Contrast:
 
     def effect_size(self):
         """Make access to summary statistics more straightforward \
-        when computing contrasts."""
+        when computing contrasts.
+        """
         return self.effect
 
     def effect_variance(self):
         """Make access to summary statistics more straightforward \
-        when computing contrasts."""
+        when computing contrasts.
+        """
         return self.variance
 
     def stat(self, baseline=0.0):
@@ -571,7 +573,8 @@ def _compute_fixed_effects_params(
     contrasts, variances, precision_weighted, dofs
 ):
     """Compute the fixed effects t/F-statistic, contrast, variance, \
-    given arrays of effects and variance."""
+    given arrays of effects and variance.
+    """
     tiny = 1.0e-16
     contrasts, variances = np.asarray(contrasts), np.asarray(variances)
     variances = np.maximum(variances, tiny)

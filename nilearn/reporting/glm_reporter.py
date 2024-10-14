@@ -16,6 +16,7 @@ from collections import OrderedDict
 from collections.abc import Iterable
 from decimal import Decimal
 from html import escape
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -44,9 +45,7 @@ from nilearn.maskers import NiftiMasker
 from nilearn.reporting.get_clusters_table import get_clusters_table
 from nilearn.reporting.utils import figure_to_svg_quoted
 
-HTML_TEMPLATE_ROOT_PATH = os.path.join(
-    os.path.dirname(__file__), "glm_reporter_templates"
-)
+HTML_TEMPLATE_ROOT_PATH = Path(__file__).parent / "glm_reporter_templates"
 
 
 @fill_doc
@@ -187,12 +186,11 @@ def make_glm_report(
     except AttributeError:
         design_matrices = [model.design_matrix_]
 
-    html_head_template_path = os.path.join(
-        HTML_TEMPLATE_ROOT_PATH, "report_head_template.html"
+    html_head_template_path = (
+        HTML_TEMPLATE_ROOT_PATH / "report_head_template.html"
     )
-
-    html_body_template_path = os.path.join(
-        HTML_TEMPLATE_ROOT_PATH, "report_body_template.html"
+    html_body_template_path = (
+        HTML_TEMPLATE_ROOT_PATH / "report_body_template.html"
     )
 
     with open(html_head_template_path) as html_head_file_obj:
@@ -380,9 +378,8 @@ def _plot_contrasts(contrasts, design_matrices):
 
     """
     all_contrasts_plots = {}
-    contrast_template_path = os.path.join(
-        HTML_TEMPLATE_ROOT_PATH, "contrast_template.html"
-    )
+    contrast_template_path = HTML_TEMPLATE_ROOT_PATH / "contrast_template.html"
+
     with open(contrast_template_path) as html_template_obj:
         contrast_template_text = html_template_obj.read()
 
@@ -394,7 +391,6 @@ def _plot_contrasts(contrasts, design_matrices):
             )
             contrast_plot.set_xlabel(contrast_name)
             contrast_plot.figure.set_figheight(2)
-            contrast_plot.figure.tight_layout()
             url_contrast_plot_svg = _plot_to_svg(contrast_plot)
             # prevents sphinx-gallery & jupyter
             # from scraping & inserting plots
@@ -452,7 +448,7 @@ def _make_headings(contrasts, title, model):
     if title:
         return title, title, model_type
 
-    contrasts_names = sorted(list(contrasts.keys()))
+    contrasts_names = sorted(contrasts.keys())
     contrasts_text = ", ".join(contrasts_names)
 
     page_title = f"Report: {model_type} for {contrasts_text}"
@@ -512,7 +508,9 @@ def _model_attributes_to_dataframe(model):
         attribute_name_: attribute_name_ + f" ({attribute_unit_})"
         for attribute_name_, attribute_unit_ in attribute_units.items()
     }
-    model_attributes.rename(index=attribute_names_with_units, inplace=True)
+    model_attributes = model_attributes.rename(
+        index=attribute_names_with_units
+    )
     return model_attributes
 
 
@@ -574,9 +572,10 @@ def _dmtx_to_svg_url(design_matrices):
 
     """
     html_design_matrices = []
-    dmtx_template_path = os.path.join(
-        HTML_TEMPLATE_ROOT_PATH, "design_matrix_template.html"
+    dmtx_template_path = (
+        HTML_TEMPLATE_ROOT_PATH / "design_matrix_template.html"
     )
+
     with open(dmtx_template_path) as html_template_obj:
         dmtx_template_text = html_template_obj.read()
 
@@ -768,16 +767,17 @@ def _make_stat_maps_contrast_clusters(
 
     """
     all_components = []
-    components_template_path = os.path.join(
-        HTML_TEMPLATE_ROOT_PATH, "stat_maps_contrast_clusters_template.html"
+    components_template_path = (
+        HTML_TEMPLATE_ROOT_PATH / "stat_maps_contrast_clusters_template.html"
     )
+
     with open(components_template_path) as html_template_obj:
         components_template_text = html_template_obj.read()
     for contrast_name, stat_map_img in stat_img.items():
         component_text_ = string.Template(components_template_text)
 
         # Only use threshold_stats_img to adjust the threshold
-        # that we will pass to  _clustering_params_to_dataframe
+        # that we will pass to _clustering_params_to_dataframe
         # and _stat_map_to_svg
         # Necessary to avoid :
         # https://github.com/nilearn/nilearn/issues/4192
@@ -894,7 +894,7 @@ def _clustering_params_to_dataframe(
         if os.sys.version_info.major == 2:
             table_details.update({"alpha": alpha})
         else:
-            table_details.update({"\u03B1": alpha})
+            table_details.update({"\u03b1": alpha})
         table_details.update({"Threshold (computed)": threshold})
     else:
         table_details.update({"Height control": "None"})
@@ -1058,7 +1058,7 @@ def _add_params_to_plot(table_details, stat_map_plot):
         x=0.45,
         wrap=True,
     )
-    fig = list(stat_map_plot.axes.values())[0].ax.figure
+    fig = next(iter(stat_map_plot.axes.values())).ax.figure
     _resize_plot_inches(
         plot=fig,
         width_change=0.2,

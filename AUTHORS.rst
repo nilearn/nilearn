@@ -101,6 +101,7 @@ Some other past or present contributors are:
 * `Greg Kiar`_: Child Mind Institute
 * `Greydon Gilmore`_: Department of Mathematics, Western University, Toronto, Canada
 * `Guillaume Lemaitre`_: Inria, Saclay, France
+* `Hande Gözükan`_: Inria, Saclay, France
 * `Hao-Ting Wang`_: Montréal Geriatrics Institute (CRIUGM), Montréal, Canada
 * `Himanshu Aggarwal`_: Inria, Saclay, France
 * `Ian Abenes`_
@@ -108,6 +109,7 @@ Some other past or present contributors are:
 * `Jan Margeta`_: KardioMe, Nova Dubnica, Slovakia
 * `Jaques Grobler`_: Anyline GmbH, Vienna, Austria
 * `Jason Gors`_: Insight Data Science, Mountain View, California, USA
+* `Jason Kai`_: Child Mind Institute
 * `Javier Rasero`_: School of Data Science, University of Virginia, Viginia, USA
 * `Jean Kossaifi`_: Imperial College London, London, UK
 * `Jean-Rémi King`_: Meta AI, CNRS, Paris
@@ -168,6 +170,7 @@ Some other past or present contributors are:
 * `Pierre Glaser`_: Gatsby Computational Neuroscience Unit, University College London, London, UK
 * `Pierre-Olivier Quirion`_: Canadian Center for Computational Genomics / Calcul, Québec, Canada
 * `Pradeep Reddy Raamana`_: University of Pittsburgh, Pittsburgh, PA, USA
+* `Prakhar Jain`_: RV College of Engineering, Bangalore, India
 * `Rahul Brito`_
 * `Raphael Meudec`_: Inria, Saclay, France
 * `Robert Luke`_: @agencyenterprise, Melbourne, Australia
@@ -191,9 +194,11 @@ Some other past or present contributors are:
 * `Tamer Gezici`_: Bilkent University
 * `Tarun Samanta`_: Acharya Prafulla Chandra College
 * `Taylor Salo`_: Lifespan Informatics & Neuroimaging Center, University of Pennsylvania, USA
+* `Tharun K`_
 * `Thomas Bazeille`_: Inria, Saclay, France
 * `Tom Vanasse`_: Wisconsin Institute for Sleep and Consciousness, USA
 * `Vasco Diogo`_
+* `Victoria Shevchenko`_: Inria Saclay, Université Paris Cité, France
 * `Vincent Michel`_: https://www.logilab.fr/
 * `Virgile Fritsch`_: Inria, Saclay, France
 * `Yaroslav Halchenko`_: Dartmouth College, PBS, Hanover, New Hampshire, USA

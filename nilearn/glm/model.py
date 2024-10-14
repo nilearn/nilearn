@@ -315,11 +315,11 @@ class LikelihoodModelResults:
         --------
         >>> from numpy.random import standard_normal as stan
         >>> from nilearn.glm import OLSModel
-        >>> x = np.hstack((stan((30,1)),stan((30,1)),stan((30,1))))
-        >>> beta=np.array([3.25, 1.5, 7.0])
-        >>> y = np.dot(x,beta) + stan((30))
+        >>> x = np.hstack((stan((30, 1)), stan((30, 1)), stan((30, 1))))
+        >>> beta = np.array([3.25, 1.5, 7.0])
+        >>> y = np.dot(x, beta) + stan((30))
         >>> model = OLSModel(x).fit(y)
-        >>> confidence_intervals = model.conf_int(cols=(1,2))
+        >>> confidence_intervals = model.conf_int(cols=(1, 2))
 
         Notes
         -----
@@ -406,7 +406,7 @@ class FContrastResults:
     def __str__(self):
         return (
             "<F contrast: "
-            f"F={repr(self.F)}, "
+            f"F={self.F!r}, "
             f"df_den={self.df_den}, "
             f"df_num={self.df_num}>"
         )

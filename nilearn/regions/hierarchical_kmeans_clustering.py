@@ -24,7 +24,8 @@ def _remove_empty_labels(labels):
 def _adjust_small_clusters(array, n_clusters):
     """Take a ndarray of floats summing to n_clusters \
     and try to round it while enforcing rounded array still sum \
-    to n_clusters and every element is at least 1."""
+    to n_clusters and every element is at least 1.
+    """
     array_round = np.rint(array).astype(int)
     array_round = np.maximum(array_round, 1)
 

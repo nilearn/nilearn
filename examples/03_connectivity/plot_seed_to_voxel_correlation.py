@@ -124,21 +124,21 @@ print(f"Brain time series shape: ({brain_time_series.shape})")
 
 import matplotlib.pyplot as plt
 
+plt.figure(layout="constrained")
 plt.plot(seed_time_series)
 plt.title("Seed time series (Posterior cingulate cortex)")
 plt.xlabel("Scan number")
 plt.ylabel("Normalized signal")
-plt.tight_layout()
 
 # %%
 # Exemplarily, we can also select 5 random voxels from the **brain-wide
 # data** and plot the time series from.
 
+plt.figure(layout="constrained")
 plt.plot(brain_time_series[:, [10, 45, 100, 5000, 10000]])
 plt.title("Time series from 5 random voxels")
 plt.xlabel("Scan number")
 plt.ylabel("Normalized signal")
-plt.tight_layout()
 
 # %%
 # Performing the seed-to-voxel correlation analysis
@@ -163,12 +163,14 @@ seed_to_voxel_correlations = (
 # voxel's signal**, and will be of shape (n_voxels, 1). The correlation
 # values can potentially range between -1 and 1.
 print(
-    "Seed-to-voxel correlation shape: (%s, %s)"
-    % seed_to_voxel_correlations.shape
+    "Seed-to-voxel correlation shape: ({}, {})".format(
+        *seed_to_voxel_correlations.shape
+    )
 )
 print(
-    "Seed-to-voxel correlation: min = %.3f; max = %.3f"
-    % (seed_to_voxel_correlations.min(), seed_to_voxel_correlations.max())
+    f"Seed-to-voxel correlation: "
+    f"min = {seed_to_voxel_correlations.min():.3f}; "
+    f"max = {seed_to_voxel_correlations.max():.3f}"
 )
 
 # %%

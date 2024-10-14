@@ -2,10 +2,10 @@
 
 import copy
 import json
-import os
 import warnings
 from base64 import b64encode
 from io import BytesIO
+from pathlib import Path
 
 import matplotlib
 import numpy as np
@@ -251,6 +251,7 @@ def _resample_stat_map(
         bg_img,
         interpolation=resampling_interpolation,
         copy_header=True,
+        force_resample=False,  # TODO set to True in 0.13.0
     )
     mask_img = resample_to_img(
         mask_img,
@@ -258,6 +259,7 @@ def _resample_stat_map(
         fill_value=1,
         interpolation="nearest",
         copy_header=True,
+        force_resample=False,  # TODO set to True in 0.13.0
     )
 
     return stat_map_img, mask_img
@@ -432,10 +434,10 @@ def _json_view_to_html(json_view, width_view=600):
         json_view["params"]["title"] or "Slice viewer"
     )
     json_view["params"] = json.dumps(json_view["params"])
-    js_dir = os.path.join(os.path.dirname(__file__), "data", "js")
-    with open(os.path.join(js_dir, "jquery.min.js")) as f:
+    js_dir = Path(__file__).parent / "data" / "js"
+    with (js_dir / "jquery.min.js").open() as f:
         json_view["js_jquery"] = f.read()
-    with open(os.path.join(js_dir, "brainsprite.min.js")) as f:
+    with (js_dir / "brainsprite.min.js").open() as f:
         json_view["js_brainsprite"] = f.read()
 
     # Load the html template, and plug in all the data

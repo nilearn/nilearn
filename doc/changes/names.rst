@@ -110,6 +110,8 @@
 
 .. _Guillaume Lemaitre: https://glemaitre.github.io/
 
+.. _Hande Gözükan: https://github.com/hndgzkn
+
 .. _Hao-Ting Wang: https://wanghaoting.com/
 
 .. _Himanshu Aggarwal: https://github.com/man-shu
@@ -123,6 +125,8 @@
 .. _Jaques Grobler: https://github.com/jaquesgrobler
 
 .. _Jason Gors: http://jgors.com/
+
+.. _Jason Kai: https://github.com/kaitj
 
 .. _Javier Rasero: https://jrasero.github.io/
 
@@ -244,6 +248,8 @@
 
 .. _Pradeep Reddy Raamana: https://github.com/raamana
 
+.. _Prakhar Jain: https://github.com/PrakharJain1509
+
 .. _Rahul Brito: https://github.com/Rahul-Brito
 
 .. _Raphael Meudec: https://github.com/RaphaelMeudec
@@ -290,11 +296,15 @@
 
 .. _Taylor Salo: https://tsalo.github.io/
 
+.. _Tharun K: https://github.com/tharun634
+
 .. _Thomas Bazeille: https://github.com/thomasbazeille
 
 .. _Tom Vanasse: https://github.com/tvanasse
 
 .. _Vasco Diogo: https://github.com/vascosa
+
+.. _Victoria Shevchenko: https://github.com/victoris93
 
 .. _Vincent Michel: https://github.com/vmichel
 

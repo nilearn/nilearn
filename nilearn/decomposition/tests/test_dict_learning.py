@@ -231,7 +231,7 @@ def test_dictlearning_score(canica_data, mask_img):
     scores = dict_learning.score(canica_data, per_component=False)
 
     assert scores <= 1
-    assert 0 <= scores
+    assert scores >= 0
 
     # Per component score
     scores = dict_learning.score(canica_data, per_component=True)

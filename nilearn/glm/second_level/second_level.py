@@ -266,7 +266,8 @@ def _check_effect_maps(effect_maps, design_matrix):
 
 def _get_con_val(second_level_contrast, design_matrix):
     """Check the contrast and return con_val \
-    when testing one contrast or more."""
+    when testing one contrast or more.
+    """
     if second_level_contrast is None:
         if design_matrix.shape[1] == 1:
             second_level_contrast = np.ones([1])
@@ -343,7 +344,8 @@ def _process_second_level_input_as_dataframe(second_level_input):
 def _sort_input_dataframe(second_level_input):
     """Sort the pandas dataframe by subject_label to \
     avoid inconsistencies with the design matrix row order when \
-    automatically extracting maps."""
+    automatically extracting maps.
+    """
     columns = second_level_input.columns.tolist()
     column_index = columns.index("subject_label")
     sorted_matrix = sorted(
@@ -354,7 +356,8 @@ def _sort_input_dataframe(second_level_input):
 
 def _process_second_level_input_as_firstlevelmodels(second_level_input):
     """Process second_level_input provided \
-    as a list of FirstLevelModel objects."""
+    as a list of FirstLevelModel objects.
+    """
     sample_model = second_level_input[0]
     sample_condition = sample_model.design_matrices_[0].columns[0]
     sample_map = sample_model.compute_contrast(

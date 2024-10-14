@@ -194,7 +194,8 @@ from nilearn import plotting
 
 def plot_contrast(first_level_model):
     """Specify, estimate and plot the main contrasts \
-        for given a first model."""
+        for given a first model.
+    """
     design_matrix = first_level_model.design_matrices_[0]
     # Call the contrast specification within the function
     contrasts = make_localizer_contrasts(design_matrix)
@@ -560,7 +561,11 @@ plt.show()
 from nilearn.image import resample_to_img
 
 resampled_icbm_mask = resample_to_img(
-    icbm_mask, data_mask, interpolation="nearest", copy_header=True
+    icbm_mask,
+    data_mask,
+    interpolation="nearest",
+    copy_header=True,
+    force_resample=True,
 )
 
 # %%

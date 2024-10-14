@@ -160,10 +160,10 @@ def _fast_smooth_array(arr):
     """
     neighbor_weight = 0.2
     # 6 neighbors in 3D if not on an edge
-    nb_neighbors = 6
+    n_neighbors = 6
     # This scale ensures that a uniform array stays uniform
     # except on the array edges
-    scale = 1 + nb_neighbors * neighbor_weight
+    scale = 1 + n_neighbors * neighbor_weight
 
     # Need to copy because the smoothing is done in multiple statements
     # and there does not seem to be an easy way to do it in place
@@ -837,7 +837,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     if copy_header:
         header = copy.deepcopy(ref_niimg.header)
         try:
-            "something" in header  # noqa B015
+            "something" in header  # noqa: B015
         except TypeError:
             pass
         else:
@@ -901,7 +901,7 @@ def _apply_cluster_size_threshold(arr, cluster_threshold, copy=True):
 
         # Apply cluster threshold
         label_map = label(binarized, bin_struct)[0]
-        clust_ids = sorted(list(np.unique(label_map)[1:]))
+        clust_ids = sorted(np.unique(label_map)[1:])
         for c_val in clust_ids:
             if np.sum(label_map == c_val) < cluster_threshold:
                 arr[label_map == c_val] = 0
@@ -1133,7 +1133,8 @@ def math_img(formula, copy_header_from=None, **imgs):
         exc.args = (
             "Input images cannot be compared, "
             f"you provided '{imgs.values()}',",
-        ) + exc.args
+            *exc.args,
+        )
         raise
 
     # Computing input data as a dictionary of numpy arrays. Keep a reference
@@ -1152,7 +1153,8 @@ def math_img(formula, copy_header_from=None, **imgs):
     except Exception as exc:
         exc.args = (
             f"Input formula couldn't be processed, you provided '{formula}',",
-        ) + exc.args
+            *exc.args,
+        )
         raise
 
     # check whether to copy header from one of the input images
@@ -1578,7 +1580,7 @@ def concat_imgs(
     target_shape = first_niimg.shape[:3]
     if dtype is None:
         dtype = _get_data(first_niimg).dtype
-    data = np.ndarray(target_shape + (sum(lengths),), order="F", dtype=dtype)
+    data = np.ndarray((*target_shape, sum(lengths)), order="F", dtype=dtype)
     cur_4d_index = 0
     for index, (size, niimg) in enumerate(
         zip(

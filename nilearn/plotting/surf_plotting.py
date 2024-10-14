@@ -198,7 +198,7 @@ def _configure_title_plotly(title, font_size, color="black"):
     This function configures the title if provided.
     """
     if title is None:
-        return dict()
+        return {}
     return {
         "text": title,
         "font": {
@@ -636,9 +636,8 @@ def _plot_surf_matplotlib(
         if figure is None:
             figure = plt.figure(figsize=figsize)
         axes = figure.add_axes((0, 0, 1, 1), projection="3d")
-    else:
-        if figure is None:
-            figure = axes.get_figure()
+    elif figure is None:
+        figure = axes.get_figure()
     axes.set_xlim(*limits)
     axes.set_ylim(*limits)
     axes.view_init(elev=elev, azim=azim)
@@ -1446,8 +1445,8 @@ def _check_hemispheres(hemispheres):
     if any(invalid_hemis):
         raise ValueError(
             "Invalid hemispheres definition!\n"
-            f"Got: {str(np.array(hemispheres)[invalid_hemis])}\n"
-            f"Supported values are: {str(VALID_HEMISPHERES)}"
+            f"Got: {np.array(hemispheres)[invalid_hemis]!s}\n"
+            f"Supported values are: {VALID_HEMISPHERES!s}"
         )
     return hemispheres
 
@@ -1466,13 +1465,11 @@ def _check_view_is_valid(view) -> bool:
     """
     if isinstance(view, str) and (view in VALID_VIEWS):
         return True
-    if (
+    return (
         isinstance(view, Sequence)
         and len(view) == 2
         and all(isinstance(x, (int, float)) for x in view)
-    ):
-        return True
-    return False
+    )
 
 
 def _check_views(views) -> list:
@@ -1494,8 +1491,8 @@ def _check_views(views) -> list:
     if any(invalid_views):
         raise ValueError(
             "Invalid view definition!\n"
-            f"Got: {str(np.array(views)[invalid_views])}\n"
-            f"Supported values are: {str(VALID_VIEWS)}"
+            f"Got: {np.array(views)[invalid_views]!s}\n"
+            f"Supported values are: {VALID_VIEWS!s}"
             " or a sequence of length 2"
             " setting the elevation and azimut of the camera."
         )
