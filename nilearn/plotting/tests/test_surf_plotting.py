@@ -343,7 +343,8 @@ def test_instantiation_error_plotly_surface_figure(input_obj):
 )
 def test_value_error_get_faces_on_edge():
     """Test that calling _get_faces_on_edge raises a ValueError when \
-       called with with indices that do not form a region."""
+       called with with indices that do not form a region.
+    """
     mesh = generate_surf()
     figure = plot_surf(mesh, engine="plotly")
     with pytest.raises(
@@ -358,7 +359,8 @@ def test_value_error_get_faces_on_edge():
 )
 def test_surface_figure_add_contours_raises_not_implemented():
     """Test that calling add_contours method of SurfaceFigure raises a \
-    NotImplementedError."""
+    NotImplementedError.
+    """
     figure = SurfaceFigure()
     with pytest.raises(NotImplementedError):
         figure.add_contours()
@@ -382,7 +384,8 @@ def test_plot_surf_contours_errors_with_plotly_figure():
 )
 def test_plot_surf_contours_errors_with_plotly_axes():
     """Test that plot_surf_contours rasises error when given plotly \
-        obj as axis."""
+        obj as axis.
+    """
     mesh = generate_surf()
     figure = plot_surf(mesh, engine="plotly")
     with pytest.raises(ValueError):
@@ -422,7 +425,8 @@ def test_distant_line_segments_detected_as_not_intersecting():
 @pytest.mark.parametrize("levels,labels", [([0], ["a", "b"]), ([0, 1], ["a"])])
 def test_value_error_add_contours_levels_labels(levels, labels):
     """Test that add_contours raises a ValueError when called with levels and \
-    labels that have incompatible lengths."""
+    labels that have incompatible lengths.
+    """
     mesh = generate_surf()
     figure = plot_surf(mesh, engine="plotly")
     with pytest.raises(
@@ -440,11 +444,12 @@ def test_value_error_add_contours_levels_labels(levels, labels):
 )
 @pytest.mark.parametrize(
     "levels,lines",
-    [([0], [dict(), dict()]), ([0, 1], [dict(), dict(), dict()])],
+    [([0], [{}, {}]), ([0, 1], [{}, {}, {}])],
 )
 def test_value_error_add_contours_levels_lines(levels, lines):
     """Test that add_contours raises a ValueError when called with levels and \
-    lines that have incompatible lengths."""
+    lines that have incompatible lengths.
+    """
     mesh = generate_surf()
     figure = plot_surf(mesh, engine="plotly")
     with pytest.raises(
@@ -486,7 +491,8 @@ def test_add_contours_has_name():
 )
 def test_add_contours_lines_duplicated():
     """Test that the specifications of length 1 line provided to \
-     add_contours are duplicated to all requested contours."""
+     add_contours are duplicated to all requested contours.
+    """
     mesh, roi_map, _ = _generate_data_test_surf_roi()
     figure = plot_surf(mesh, engine="plotly")
     figure.add_contours(roi_map, lines=[{"width": 10}])
@@ -507,7 +513,8 @@ def test_add_contours_lines_duplicated():
 )
 def test_add_contours_line_properties(key, value):
     """Test that the specifications of a line provided to add_contours are \
-    stored in the PlotlySurfaceFigure data."""
+    stored in the PlotlySurfaceFigure data.
+    """
     mesh, roi_map, _ = _generate_data_test_surf_roi()
     figure = plot_surf(mesh, engine="plotly")
     figure.add_contours(roi_map, levels=[1], lines=[{key: value}])

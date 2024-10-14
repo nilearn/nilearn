@@ -443,7 +443,8 @@ class PlotlySurfaceFigure(SurfaceFigure):
     def _project_above_face(point, t0, t1, t2, elevation=0.1):
         """Given 3d coordinates `point`, report coordinates that define \
            the closest point that is `elevation` above (normal to) \
-           the plane defined by vertices `t0`, `t1`, and `t2`."""
+           the plane defined by vertices `t0`, `t1`, and `t2`.
+        """
         u = t1 - t0
         v = t2 - t0
         # vector normal to plane
@@ -506,7 +507,8 @@ class PlotlySurfaceFigure(SurfaceFigure):
     @staticmethod
     def _transform_coord_to_plane(v, t0, t1, t2):
         """Given 3d point `v`, find closest point on plane defined \
-           by vertices `t0`, `t1`, and `t2`."""
+           by vertices `t0`, `t1`, and `t2`.
+        """
         A = linalg.orth(np.column_stack((t1 - t0, t2 - t0)))
         normal = np.cross(A[:, 0], A[:, 1])
         normal /= np.linalg.norm(normal)
