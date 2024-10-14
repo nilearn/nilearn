@@ -40,6 +40,27 @@ def mesh_to_gifti(
 
 
 def data_to_gifti(data: np.ndarray, gifti_file: pathlib.Path | str):
-    darray = gifti.GiftiDataArray(data=data, datatype="NIFTI_TYPE_FLOAT32")
+    # see
+    # https://github.com/nipy/nibabel/blob/master/nibabel/gifti/gifti.py
+    # Only the following are 'supported' for now
+    # - NIFTI_TYPE_UINT8
+    # - NIFTI_TYPE_INT32
+    # - NIFTI_TYPE_FLOAT32
+    if data.dtype in [np.uint16, np.uint32, np.uint64]:
+        data = data.astype(np.uint8)
+    elif data.dtype in [np.int8, np.int16, np.int64]:
+        data = data.astype(np.int32)
+    elif data.dtype in [np.float64]:
+        data = data.astype(np.float32)
+
+    if data.dtype == np.uint8:
+        datatype = "NIFTI_TYPE_UINT8"
+    elif data.dtype == np.int32:
+        datatype = "NIFTI_TYPE_INT32"
+    elif data.dtype == np.float32:
+        datatype = "NIFTI_TYPE_FLOAT32"
+
+    darray = gifti.GiftiDataArray(data=data, datatype=datatype)
+
     gii = gifti.GiftiImage(darrays=[darray])
     gii.to_filename(pathlib.Path(gifti_file))

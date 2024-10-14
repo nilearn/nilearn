@@ -181,6 +181,26 @@ def test_load_save_data(
         assert np.array_equal(data, expected_data)
 
 
+@pytest.mark.parametrize(
+    "dtype",
+    [
+        np.uint16,
+        np.uint32,
+        np.uint64,
+        np.int8,
+        np.int16,
+        np.int32,
+        np.int64,
+        np.float32,
+        np.float64,
+    ],
+)
+def test_save_dtype(mini_img, tmp_path, dtype):
+    """Check saving several data type."""
+    mini_img.data.parts["right"] = mini_img.data.parts["right"].astype(dtype)
+    mini_img.data.to_filename(tmp_path / "data.gii")
+
+
 def test_load_from_volume_3D_nifti(img_3d_mni, mini_mesh, tmp_path):
     """Instantiate surface image with 3D Niftiimage object or file for data."""
     SurfaceImage.from_volume(mesh=mini_mesh, volume_img=img_3d_mni)
