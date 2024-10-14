@@ -173,7 +173,7 @@ def test_mask_4d(shape_3d_default, affine_eye):
     mask_img = Nifti1Image(mask, affine_eye)
 
     # Dummy data
-    shape_4d = shape_3d_default + (5,)
+    shape_4d = (*shape_3d_default, 5)
     data = np.zeros(shape_4d, dtype="int32")
     data[..., 0] = 1
     data[..., 1] = 2
@@ -220,7 +220,7 @@ def test_4d_single_scan(rng, shape_3d_default, affine_eye):
     mask[3:7, 3:7, 3:7] = 1
     mask_img = Nifti1Image(mask, affine_eye)
 
-    shape_4d = shape_3d_default + (1,)
+    shape_4d = (*shape_3d_default, 1)
     data_5d = [rng.random(shape_4d) for _ in range(5)]
     data_4d = [d[..., 0] for d in data_5d]
     data_5d = [Nifti1Image(d, affine_eye) for d in data_5d]
@@ -247,7 +247,7 @@ def test_4d_single_scan(rng, shape_3d_default, affine_eye):
 
 def test_5d(rng, shape_3d_default, mask_img_1, affine_eye):
     """Test that list of 4D images with last dim=3 raises a DimensionError."""
-    shape_4d = shape_3d_default + (3,)
+    shape_4d = (*shape_3d_default, 3)
     data_5d = [rng.random(shape_4d) for _ in range(5)]
     data_5d = [Nifti1Image(d, affine_eye) for d in data_5d]
 
@@ -473,7 +473,7 @@ def test_standardization(rng, shape_3d_default, affine_eye):
     )
     signals += means
     img = Nifti1Image(
-        signals.reshape(shape_3d_default + (n_samples,)),
+        signals.reshape((*shape_3d_default, n_samples)),
         affine_eye,
     )
 
@@ -507,7 +507,7 @@ def test_nifti_masker_io_shapes(rng, shape_3d_default, affine_eye):
     inverse_transform(2D array with wrong shape) --> ValueError
     """
     n_volumes = 5
-    shape_4d = shape_3d_default + (n_volumes,)
+    shape_4d = (*shape_3d_default, n_volumes)
 
     img_4d, mask_img = data_gen.generate_random_img(
         shape_4d,

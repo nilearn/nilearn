@@ -41,7 +41,7 @@ def test_full_rank(rng):
 
 
 def test_z_score_t_values(rng):
-    # Randomly draw samples from the standard Student’s t distribution
+    # Randomly draw samples from the standard Student's t distribution
     t_val = rng.standard_t(10, size=10)
     # Estimate the p-values using the Survival Function (SF)
     p_val = sps.t.sf(t_val, 1e10)

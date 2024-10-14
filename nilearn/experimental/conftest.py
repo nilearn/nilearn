@@ -50,7 +50,7 @@ def make_mini_img(mini_mesh) -> Callable:
     def f(shape=()):
         data = {}
         for i, (key, val) in enumerate(mini_mesh.parts.items()):
-            data_shape = tuple(shape) + (val.n_vertices,)
+            data_shape = (*tuple(shape), val.n_vertices)
             data_part = (
                 np.arange(np.prod(data_shape)).reshape(data_shape) + 1.0
             ) * 10**i
