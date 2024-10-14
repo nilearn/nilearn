@@ -2,12 +2,14 @@
 
 from sklearn.utils.estimator_checks import (
     check_decision_proba_consistency,
-    check_estimator as sklearn_check_estimator,
     check_estimator_get_tags_default_keys,
     check_estimators_partial_fit_n_features,
     check_get_params_invariance,
     check_non_transformer_estimators_n_iter,
     check_set_params,
+)
+from sklearn.utils.estimator_checks import (
+    check_estimator as sklearn_check_estimator,
 )
 
 VALID_CHECKS = [

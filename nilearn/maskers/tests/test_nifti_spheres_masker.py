@@ -9,7 +9,6 @@ from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from nilearn._utils import data_gen
 from nilearn._utils.class_inspect import check_estimator
-from nilearn.conftest import have_mpl
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiSpheresMasker
