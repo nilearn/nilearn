@@ -5,7 +5,7 @@ import pytest
 
 from nilearn import datasets
 from nilearn.experimental.surface import FileMesh, InMemoryMesh, SurfaceImage
-from nilearn.surface import load_surf_mesh
+from nilearn.surface import load_surf_data, load_surf_mesh
 
 
 def test_compare_file_and_inmemory_mesh(mini_mesh, tmp_path):
@@ -173,13 +173,12 @@ def test_load_save_data(
     for file in expected_files:
         assert (tmp_path / file).exists()
 
-        mesh = load_surf_mesh(tmp_path / file)
+        data = load_surf_data(tmp_path / file)
         if "hemi-L" in file:
-            expected_mesh = load_surf_mesh(mesh_left)
+            expected_data = load_surf_data(data_left)
         elif "hemi-R" in file:
-            expected_mesh = load_surf_mesh(mesh_right)
-        assert np.array_equal(mesh.faces, expected_mesh.faces)
-        assert np.array_equal(mesh.coordinates, expected_mesh.coordinates)
+            expected_data = load_surf_data(data_right)
+        assert np.array_equal(data, expected_data)
 
 
 def test_load_from_volume_3D_nifti(img_3d_mni, mini_mesh, tmp_path):
