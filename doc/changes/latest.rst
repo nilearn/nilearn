@@ -71,7 +71,7 @@ Enhancements
 Changes
 -------
 
-- :bdg-secondary:`Maint` Replace :func:`pytest.warns(DeprecationWarning)` with :func:`pytest.deprecated_call()` in tests (:gh:`4637` by `Victoria Shevchenko`_).
+- :bdg-secondary:`Maint` Replace ``pytest.warns(DeprecationWarning)`` with ``pytest.deprecated_call()`` in tests (:gh:`4637` by `Victoria Shevchenko`_).
 
 - :bdg-dark:`Code` Warn the user when all volumes would be scrubbed when loading fmriprep confounds as this would lead to an empty ``sample_mask`` (:gh:`4558` by `Victoria Shevchenko`_).
 
