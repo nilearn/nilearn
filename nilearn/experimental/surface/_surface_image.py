@@ -18,6 +18,20 @@ class PolyData:
 
     It is a shallow wrapper around the ``parts`` dictionary, which cannot be
     empty and whose keys must be a subset of {"left", "right"}.
+
+    Parameters
+    ----------
+    left : numpy.ndarray or :obj:`str` of :obj:`pathlib.Path` or None,\
+           default = None
+
+    right : numpy.ndarray or :obj:`str` of :obj:`pathlib.Path` or None,\
+           default = None
+
+    Attributes
+    ----------
+    parts : dict[str, numpy.ndarray]
+
+    shape : tuple[int, int]
     """
 
     def __init__(
@@ -92,6 +106,11 @@ class PolyData:
 class Mesh(abc.ABC):
     """A surface :term:`mesh` having vertex, \
     coordinates and faces (triangles).
+
+    Attributes
+    ----------
+    n_vertices : int
+        number of vertices
     """
 
     n_vertices: int
@@ -115,7 +134,7 @@ class Mesh(abc.ABC):
         Parameters
         ----------
         gifti_file : path-like or str
-            filename to save the mesh.
+            Filename to save the mesh to.
         """
         _io.mesh_to_gifti(self.coordinates, self.faces, gifti_file)
 
@@ -245,20 +264,27 @@ def _check_data_and_mesh_compat(mesh: PolyMesh, data: PolyData):
 
 
 class SurfaceImage:
-    """Surface image, usually containing meshes & data for both hemispheres."""
+    """Surface image, usually containing meshes & data for both hemispheres.
+
+
+    Parameters
+    ----------
+    mesh : PolyMesh | dict[str, Mesh  |  str  |  Path]
+
+    data : PolyData | dict[str, Mesh  |  str  |  Path]
+
+    Attributes
+    ----------
+    shape : (int, int)
+        shape of the surface data array
+    """
 
     def __init__(
         self,
         mesh: PolyMesh | dict[str, Mesh | str | Path],
         data: PolyData | dict[str, Mesh | str | Path],
     ) -> None:
-        """Create a SurfaceImage instance.
-
-        Parameters
-        ----------
-        mesh : PolyMesh | dict[str, Mesh  |  str  |  Path]
-        data : PolyData | dict[str, Mesh  |  str  |  Path]
-        """
+        """Create a SurfaceImage instance."""
         self.mesh = mesh if isinstance(mesh, PolyMesh) else PolyMesh(**mesh)
 
         if not isinstance(data, (PolyData, dict)):
