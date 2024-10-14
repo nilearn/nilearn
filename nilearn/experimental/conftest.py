@@ -68,10 +68,10 @@ def make_mini_mask(mini_mesh) -> Callable:
         data = {}
         for key, val in mini_mesh.parts.items():
             data_part = np.ones(val.n_vertices, dtype=int)
-            data_part = data_part.astype(bool)
             # make some vertices 0
             data_part[..., 0] = 0
             data_part[..., -1] = 0
+            data_part = data_part.astype(bool)
             data[key] = data_part
         return SurfaceImage(mini_mesh, data)
 
