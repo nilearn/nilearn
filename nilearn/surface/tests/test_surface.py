@@ -1,7 +1,5 @@
 # Tests for functions in surf_plotting.py
 
-import os
-import tempfile
 import warnings
 from pathlib import Path
 
@@ -94,45 +92,34 @@ def test_load_surf_data_array():
     assert_array_equal(load_surf_data(data_squeeze), np.zeros((20, 3)))
 
 
-def test_load_surf_data_file_nii_gii(tmp_path):
-    # test loading of fake data from gifti file
-    fd_gii, filename_gii = tempfile.mkstemp(suffix=".gii", dir=str(tmp_path))
-    os.close(fd_gii)
+def test_load_surf_data_from_gifti_file(tmp_path):
+    filename_gii = tmp_path / "tmp.gii"
     darray = gifti.GiftiDataArray(
         data=np.zeros((20,)), datatype="NIFTI_TYPE_FLOAT32"
     )
     gii = gifti.GiftiImage(darrays=[darray])
     gii.to_filename(filename_gii)
     assert_array_equal(load_surf_data(filename_gii), np.zeros((20,)))
-    Path(filename_gii).unlink()
 
-    # test loading of data from empty gifti file
-    fd_empty, filename_gii_empty = tempfile.mkstemp(
-        suffix=".gii", dir=str(tmp_path)
-    )
-    os.close(fd_empty)
+
+def test_load_surf_data_from_empty_gifti_file(tmp_path):
+    filename_gii_empty = tmp_path / "tmp.gii"
     gii_empty = gifti.GiftiImage()
     gii_empty.to_filename(filename_gii_empty)
     with pytest.raises(
         ValueError, match="must contain at least one data array"
     ):
         load_surf_data(filename_gii_empty)
-    Path(filename_gii_empty).unlink()
 
-    # test loading of fake data from nifti file
-    fd_gii2, filename_nii = tempfile.mkstemp(suffix=".nii", dir=str(tmp_path))
-    os.close(fd_gii2)
-    fd_niigz, filename_niigz = tempfile.mkstemp(
-        suffix=".nii.gz", dir=str(tmp_path)
-    )
-    os.close(fd_niigz)
+
+def test_load_surf_data_from_nifti_file(tmp_path):
+    filename_nii = tmp_path / "tmp.nii"
+    filename_niigz = tmp_path / "tmp.nii.gz"
     nii = Nifti1Image(np.zeros((20,)), affine=None)
     nii.to_filename(filename_nii)
     nii.to_filename(filename_niigz)
     assert_array_equal(load_surf_data(filename_nii), np.zeros((20,)))
     assert_array_equal(load_surf_data(filename_niigz), np.zeros((20,)))
-    Path(filename_nii).unlink()
-    Path(filename_niigz).unlink()
 
 
 def test_load_surf_data_gii_gz():
@@ -158,38 +145,22 @@ def test_load_surf_data_file_freesurfer(tmp_path):
     # We test load_surf_data by creating fake data with function
     # 'write_morph_data' that works only if nibabel
     # version is recent with nibabel >= 2.1.0
+    filename_area = tmp_path / "tmp.area"
     data = np.zeros((20,))
-    fs_area, filename_area = tempfile.mkstemp(
-        suffix=".area", dir=str(tmp_path)
-    )
-    os.close(fs_area)
     freesurfer.io.write_morph_data(filename_area, data)
     assert_array_equal(load_surf_data(filename_area), np.zeros((20,)))
-    Path(filename_area).unlink()
 
-    fs_curv, filename_curv = tempfile.mkstemp(
-        suffix=".curv", dir=str(tmp_path)
-    )
-    os.close(fs_curv)
+    filename_curv = tmp_path / "tmp.curv"
     freesurfer.io.write_morph_data(filename_curv, data)
     assert_array_equal(load_surf_data(filename_curv), np.zeros((20,)))
-    Path(filename_curv).unlink()
 
-    fd_sulc, filename_sulc = tempfile.mkstemp(
-        suffix=".sulc", dir=str(tmp_path)
-    )
-    os.close(fd_sulc)
+    filename_sulc = tmp_path / "tmp.sulc"
     freesurfer.io.write_morph_data(filename_sulc, data)
     assert_array_equal(load_surf_data(filename_sulc), np.zeros((20,)))
-    Path(filename_sulc).unlink()
 
-    fd_thick, filename_thick = tempfile.mkstemp(
-        suffix=".thickness", dir=str(tmp_path)
-    )
-    os.close(fd_thick)
+    filename_thick = tmp_path / "tmp.thickness"
     freesurfer.io.write_morph_data(filename_thick, data)
     assert_array_equal(load_surf_data(filename_thick), np.zeros((20,)))
-    Path(filename_thick).unlink()
 
     # test loading of data from real label and annot files
     label_start = np.array([5900, 5899, 5901, 5902, 2638])
@@ -209,17 +180,14 @@ def test_load_surf_data_file_freesurfer(tmp_path):
     del annot, annot_start, annot_end
 
 
-def test_load_surf_data_file_error(tmp_path):
+@pytest.mark.parametrize("suffix", [".vtk", ".obj", ".mnc", ".txt"])
+def test_load_surf_data_file_error(tmp_path, suffix):
     # test if files with unexpected suffixes raise errors
     data = np.zeros((20,))
-    wrong_suff = [".vtk", ".obj", ".mnc", ".txt"]
-    for suff in wrong_suff:
-        fd, filename_wrong = tempfile.mkstemp(suffix=suff, dir=str(tmp_path))
-        os.close(fd)
-        np.savetxt(filename_wrong, data)
-        with pytest.raises(ValueError, match="input type is not recognized"):
-            load_surf_data(filename_wrong)
-        Path(filename_wrong).unlink()
+    filename_wrong = tmp_path / f"tmp{suffix}"
+    np.savetxt(filename_wrong, data)
+    with pytest.raises(ValueError, match="input type is not recognized"):
+        load_surf_data(filename_wrong)
 
 
 def test_load_surf_mesh():
@@ -319,7 +287,6 @@ def test_gifti_img_to_mesh():
 
 def test_load_surf_mesh_file_gii_gz():
     # Test the loader `load_surf_mesh` with gzipped fsaverage5 files
-
     fsaverage = datasets.fetch_surf_fsaverage().pial_left
     coords, faces = load_surf_mesh(fsaverage)
     assert isinstance(coords, np.ndarray)
@@ -328,13 +295,9 @@ def test_load_surf_mesh_file_gii_gz():
 
 def test_load_surf_mesh_file_gii(tmp_path):
     # Test the loader `load_surf_mesh`
+    # test if correct gii is loaded into correct list
     mesh = generate_surf()
 
-    # test if correct gii is loaded into correct list
-    fd_mesh, filename_gii_mesh = tempfile.mkstemp(
-        suffix=".gii", dir=str(tmp_path)
-    )
-    os.close(fd_mesh)
     coord_array = gifti.GiftiDataArray(
         data=mesh[0],
         intent=nifti1.intent_codes["NIFTI_INTENT_POINTSET"],
@@ -347,31 +310,40 @@ def test_load_surf_mesh_file_gii(tmp_path):
     )
 
     gii = gifti.GiftiImage(darrays=[coord_array, face_array])
+    filename_gii_mesh = tmp_path / "tmp.gii"
     gii.to_filename(filename_gii_mesh)
+
     assert_array_almost_equal(load_surf_mesh(filename_gii_mesh)[0], mesh[0])
     assert_array_almost_equal(load_surf_mesh(filename_gii_mesh)[1], mesh[1])
-    Path(filename_gii_mesh).unlink()
 
+
+def test_load_surf_mesh_file_gii_error(tmp_path):
     # test if incorrect gii raises error
-    fd_no, filename_gii_mesh_no_point = tempfile.mkstemp(
-        suffix=".gii", dir=str(tmp_path)
+    mesh = generate_surf()
+    coord_array = gifti.GiftiDataArray(
+        data=mesh[0],
+        intent=nifti1.intent_codes["NIFTI_INTENT_POINTSET"],
+        datatype="NIFTI_TYPE_FLOAT32",
     )
-    os.close(fd_no)
+    face_array = gifti.GiftiDataArray(
+        data=mesh[1],
+        intent=nifti1.intent_codes["NIFTI_INTENT_TRIANGLE"],
+        datatype="NIFTI_TYPE_FLOAT32",
+    )
+
+    filename_gii_mesh_no_point = tmp_path / "tmp.gii"
     gii = gifti.GiftiImage(darrays=[face_array, face_array])
     gii.to_filename(filename_gii_mesh_no_point)
+
     with pytest.raises(ValueError, match="NIFTI_INTENT_POINTSET"):
         load_surf_mesh(filename_gii_mesh_no_point)
-    Path(filename_gii_mesh_no_point).unlink()
 
-    fd_face, filename_gii_mesh_no_face = tempfile.mkstemp(
-        suffix=".gii", dir=str(tmp_path)
-    )
-    os.close(fd_face)
+    filename_gii_mesh_no_face = tmp_path / "tmp.gii"
     gii = gifti.GiftiImage(darrays=[coord_array, coord_array])
     gii.to_filename(filename_gii_mesh_no_face)
+
     with pytest.raises(ValueError, match="NIFTI_INTENT_TRIANGLE"):
         load_surf_mesh(filename_gii_mesh_no_face)
-    Path(filename_gii_mesh_no_face).unlink()
 
 
 @pytest.mark.parametrize(
@@ -380,7 +352,7 @@ def test_load_surf_mesh_file_gii(tmp_path):
 def test_load_surf_mesh_file_freesurfer(suffix, tmp_path):
     mesh = generate_surf()
 
-    _, filename_fs_mesh = tempfile.mkstemp(suffix=suffix, dir=str(tmp_path))
+    filename_fs_mesh = tmp_path / f"tmp{suffix}"
     freesurfer.write_geometry(filename_fs_mesh, mesh[0], mesh[1])
 
     assert len(load_surf_mesh(filename_fs_mesh)) == 2
@@ -392,7 +364,7 @@ def test_load_surf_mesh_file_freesurfer(suffix, tmp_path):
 def test_load_surf_mesh_file_error(suffix, tmp_path):
     # test if files with unexpected suffixes raise errors
     mesh = generate_surf()
-    _, filename_wrong = tempfile.mkstemp(suffix=suffix, dir=str(tmp_path))
+    filename_wrong = tmp_path / f"tmp{suffix}"
     freesurfer.write_geometry(filename_wrong, mesh[0], mesh[1])
 
     with pytest.raises(ValueError, match="input type is not recognized"):
@@ -401,11 +373,11 @@ def test_load_surf_mesh_file_error(suffix, tmp_path):
 
 def test_load_surf_mesh_file_glob(tmp_path):
     mesh = generate_surf()
-    _, fname1 = tempfile.mkstemp(suffix=".pial", dir=str(tmp_path))
 
+    fname1 = tmp_path / "tmp1.pial"
     freesurfer.write_geometry(fname1, mesh[0], mesh[1])
-    _, fname2 = tempfile.mkstemp(suffix=".pial", dir=str(tmp_path))
 
+    fname2 = tmp_path / "tmp2.pial"
     freesurfer.write_geometry(fname2, mesh[0], mesh[1])
 
     with pytest.raises(ValueError, match="More than one file matching path"):
@@ -421,10 +393,7 @@ def test_load_surf_data_file_glob(tmp_path):
     data2D = np.ones((20, 3))
     fnames = []
     for f in range(3):
-        fd, filename = tempfile.mkstemp(
-            prefix=f"glob_{f}_", suffix=".gii", dir=str(tmp_path)
-        )
-        os.close(fd)
+        filename = tmp_path / f"glob_{f}_tmp.gii"
         fnames.append(filename)
         data2D[:, f] *= f
         darray = gifti.GiftiDataArray(
@@ -439,10 +408,7 @@ def test_load_surf_data_file_glob(tmp_path):
     )
 
     # make one more gii file that has more than one dimension
-    fd, filename = tempfile.mkstemp(
-        prefix="glob_3_", suffix=".gii", dir=str(tmp_path)
-    )
-    os.close(fd)
+    filename = tmp_path / "glob_3_tmp.gii"
     fnames.append(filename)
     darray1 = gifti.GiftiDataArray(
         data=np.ones((20,)), datatype="NIFTI_TYPE_FLOAT32"
@@ -457,10 +423,7 @@ def test_load_surf_data_file_glob(tmp_path):
     )
 
     # make one more gii file that has a different shape in axis=0
-    fd, filename = tempfile.mkstemp(
-        prefix="glob_4_", suffix=".gii", dir=str(tmp_path)
-    )
-    os.close(fd)
+    filename = tmp_path / "glob_4_tmp.gii"
     fnames.append(filename)
     darray = gifti.GiftiDataArray(
         data=np.ones((15, 1)), datatype="NIFTI_TYPE_FLOAT32"
@@ -472,8 +435,6 @@ def test_load_surf_data_file_glob(tmp_path):
         ValueError, match="files must contain data with the same shape"
     ):
         load_surf_data(tmp_path / "*.gii")
-    for f in fnames:
-        Path(f).unlink()
 
 
 def _flat_mesh(x_s, y_s, z=0):
