@@ -19,7 +19,8 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12"
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13"
 ]
 dependencies = [
     "joblib>=1.2.0",
@@ -80,7 +81,7 @@ test = [
     "coverage",
     "pytest>=6.0.0",
     "pytest-cov",
-    "pytest-reporter-html1>=0.9.1",
+    "pytest-reporter-html1>=0.9.2",
     "tox"
 ]
 
@@ -139,86 +140,34 @@ ignore = [
     "B018",
     "B028",
     "B904",
-    "C408",
-    "C414",
-    "C416",
-    "C419",
     "D105",
     "D205",
     "D208",
     "D301",
     "E741",
     "ERA001",
-    "FLY002",
     "N802",
     "N803",
     "N806",
-    "N813",
-    "N816",
-    "N817",
-    "N818",
-    "NPY002",
-    "PERF102",
     "PERF203",
-    "PERF401",
-    "PERF403",
-    "PD002",
-    "PD003",
-    "PLR0402",
     "PLR0911",
     "PLR0912",
     "PLR0913",
     "PLR0915",
     "PLR1704",
-    "PLR1714",
-    "PLR1730",
-    "PLR1736",
     "PLR2004",
-    "PLR5501",
     "PTH100",
-    "PTH101",
-    "PTH102",
     "PTH103",
-    "PTH106",
-    "PTH109",
-    "PTH110",
-    "PTH107",
-    "PTH111",
     "PTH112",
-    "PTH113",
-    "PTH114",
-    "PTH115",
-    "PTH117",
     "PTH118",
     "PTH119",
     "PTH120",
-    "PTH122",
     "PTH123",
-    "PTH201",
-    "PTH202",
-    "PTH203",
-    "PTH204",
     "PTH207",
     "PD011",
     "PD901",
-    "RUF002",
-    "RUF003",
-    "RUF005",
-    "RUF010",
     "RUF012",
-    "RUF015",
-    "RUF100",
-    "SIM102",
-    "SIM103",
-    "SIM105",
-    "SIM108",
-    "SIM114",
-    "SIM115",
-    "SIM117",
-    "SIM118",
-    "SIM201",
-    "SIM300",
-    "UP031"
+    "SIM117"
 ]
 # List of all the ruff rules (includes why the rule matters)
 # https://docs.astral.sh/ruff/rules/
@@ -255,6 +204,7 @@ max-complexity = 41
 "**/{examples}/*" = ["D103", "D205", "D301", "D400", "E402"]
 "**/{tests}/*" = ["D100", "D101", "D102", "D103", "E402", "PLR2004", "PLR0915"]
 "__init__.py" = ["D104", "E402"]
+"nilearn/datasets/**/*" = ["PTH201", "PTH101", "PTH102", "PTH107", "PTH110", "PTH111", "PTH113"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"

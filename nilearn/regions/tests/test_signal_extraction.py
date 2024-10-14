@@ -301,7 +301,7 @@ def test_signals_to_img_labels_bad_mask_input(
     "shape, affine, error_msg",
     [
         ((8, 9, 11, 7), _affine_eye(), SHAPE_ERROR_MSG),
-        (_shape_3d_default() + (7,), 2 * _affine_eye(), AFFINE_ERROR_MSG),
+        ((*_shape_3d_default(), 7), 2 * _affine_eye(), AFFINE_ERROR_MSG),
     ],
 )
 def test_img_to_signals_maps_bad_maps(
@@ -342,7 +342,7 @@ def test_signals_extraction_with_labels_without_mask(
     """
     data_img = signals_to_img_labels(signals=signals, labels_img=labels_img)
 
-    assert data_img.shape == (shape_3d_default + (N_TIMEPOINTS,))
+    assert data_img.shape == (*shape_3d_default, N_TIMEPOINTS)
     data = get_data(data_img)
     assert np.all(data.std(axis=-1) > 0)
     # There must be non-zero data (safety net)
@@ -409,7 +409,7 @@ def test_signals_extraction_with_labels_with_mask(
         signals=signals, labels_img=labels_img, mask_img=mask_img
     )
 
-    assert data_img.shape == (shape_3d_default + (N_TIMEPOINTS,))
+    assert data_img.shape == (*shape_3d_default, N_TIMEPOINTS)
     # There must be non-zero data (safety net)
     data = get_data(data_img)
     assert abs(data).max() > 1e-9
@@ -422,7 +422,7 @@ def test_signals_extraction_with_labels_with_mask(
         signals=signals, labels_img=filenames[0], mask_img=filenames[1]
     )
 
-    assert data_img.shape == (shape_3d_default + (N_TIMEPOINTS,))
+    assert data_img.shape == (*shape_3d_default, N_TIMEPOINTS)
     data = get_data(data_img)
     assert abs(data).max() > 1e-9
     # Zero outside of the mask
@@ -482,7 +482,7 @@ def test_signal_extraction_with_maps(affine_eye, shape_3d_default, rng):
     # Generate signal imgs
     maps_img, mask_img = generate_maps(shape_3d_default, N_REGIONS)
     maps_data = get_data(maps_img)
-    data = np.zeros(shape_3d_default + (N_TIMEPOINTS,))
+    data = np.zeros((*shape_3d_default, N_TIMEPOINTS))
     signals = np.zeros((N_TIMEPOINTS, maps_data.shape[-1]))
     for n in range(maps_data.shape[-1]):
         signals[:, n] = rng.standard_normal(size=N_TIMEPOINTS)
@@ -512,7 +512,7 @@ def test_signal_extraction_with_maps_and_labels(
     labels = list(range(N_REGIONS + 1))
     labels_data = get_data(labeled_regions)
     # Convert to maps
-    maps_data = np.zeros(shape_3d_default + (N_REGIONS,))
+    maps_data = np.zeros((*shape_3d_default, N_REGIONS))
     for n, l in enumerate(labels):
         if n == 0:
             continue
@@ -548,10 +548,10 @@ def test_signal_extraction_with_maps_and_labels(
     labels_img_r = signals_to_img_labels(
         labels_signals, labeled_regions, mask_img=mask_img
     )
-    assert labels_img_r.shape == shape_3d_default + (N_TIMEPOINTS,)
+    assert labels_img_r.shape == (*shape_3d_default, N_TIMEPOINTS)
 
     maps_img_r = signals_to_img_maps(maps_signals, maps_img, mask_img=mask_img)
-    assert maps_img_r.shape == shape_3d_default + (N_TIMEPOINTS,)
+    assert maps_img_r.shape == (*shape_3d_default, N_TIMEPOINTS)
 
 
 def test_img_to_signals_labels_warnings(labeled_regions, fmri_img):
@@ -635,7 +635,7 @@ def test_img_to_signals_maps_warnings(
     labels = list(range(N_REGIONS + 1))
     labels_data = get_data(labeled_regions)
     # Convert to maps
-    maps_data = np.zeros(shape_3d_default + (N_REGIONS,))
+    maps_data = np.zeros((*shape_3d_default, N_REGIONS))
     for n, l in enumerate(labels):
         if n == 0:
             continue
@@ -717,7 +717,7 @@ def test_signal_extraction_nans_in_regions_are_replaced_with_zeros():
 
 def test_trim_maps(shape_3d_default):
     # maps
-    maps_data = np.zeros(shape_3d_default + (N_REGIONS,), dtype=np.float32)
+    maps_data = np.zeros((*shape_3d_default, N_REGIONS), dtype=np.float32)
     h0, h1, h2 = (s // 2 for s in shape_3d_default)
     maps_data[:h0, :h1, :h2, 0] = 1
     maps_data[:h0, :h1, h2:, 1] = 1.1

@@ -8,7 +8,6 @@ Author: Bertrand Thirion, Martin Perez-Guevara, 2016
 from __future__ import annotations
 
 import csv
-import glob
 import os
 import time
 from pathlib import Path
@@ -22,6 +21,9 @@ from sklearn.base import clone
 from sklearn.cluster import KMeans
 
 from nilearn._utils import fill_doc, logger, stringify_path
+from nilearn._utils.masker_validation import (
+    check_compatibility_mask_and_images,
+)
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_run_sample_masks
 from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
@@ -238,8 +240,7 @@ def run_glm(
         )
 
         # Converting the key to a string is required for AR(N>1) cases
-        for val, result in zip(unique_labels, ar_result):
-            results[val] = result
+        results = dict(zip(unique_labels, ar_result))
         del unique_labels
         del ar_result
 
@@ -322,10 +323,11 @@ class FirstLevelModel(BaseGLM):
 
     mask_img : Niimg-like, NiftiMasker, SurfaceImage, SurfaceMasker, False or \
                None, default=None
-        Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If None is passed, the mask
-        will be computed automatically by a NiftiMasker with default
-        parameters. If False is given then the data will not be masked.
+        Mask to be used on data.
+        If an instance of masker is passed, then its mask will be used.
+        If None is passed, the mask will be computed automatically
+        by a NiftiMasker or SurfaceMasker with default parameters.
+        If False is given then the data will not be masked.
         In the case of surface analysis, passing None or False will lead to
         no masking.
 
@@ -512,6 +514,8 @@ class FirstLevelModel(BaseGLM):
 
         if not isinstance(run_imgs, (list, tuple)):
             run_imgs = [run_imgs]
+
+        check_compatibility_mask_and_images(self.mask_img, run_imgs)
 
         if design_matrices is None:
             if events is None:
@@ -710,8 +714,24 @@ class FirstLevelModel(BaseGLM):
                    :obj:`list` or :obj:`tuple` of Niimg-like objects, \
                    SurfaceImage object, \
                    or :obj:`list` or :obj:`tuple` of SurfaceImage
-            Data on which the :term:`GLM` will be fitted. If this is a list,
-            the affine is considered the same for all.
+            Data on which the :term:`GLM` will be fitted.
+            If this is a list, the affine is considered the same for all.
+
+            .. warning::
+
+                If the FirstLevelModel object was instantiated
+                with a ``mask_img``,
+                then ``run_imgs`` must be compatible with ``mask_img``.
+                For example, if ``mask_img`` is
+                a :class:`nilearn.maskers.NiftiMasker` instance
+                or a Niimng-like object, then ``run_imgs`` must be a
+                Niimg-like object, \
+                a :obj:`list` or a :obj:`tuple` of Niimg-like objects.
+                If ``mask_img`` is
+                a ``SurfaceMasker`` or ``SurfaceImage`` instance,
+                then ``run_imgs`` must be a
+                ``SurfaceImage`` object, \
+                a :obj:`list` or a :obj:`tuple` of ``SurfaceImage`` objects.
 
         events : :class:`pandas.DataFrame` or :obj:`str` or :obj:`list` of \
                  :class:`pandas.DataFrame` or :obj:`str`, default=None
@@ -1187,12 +1207,12 @@ def _read_events_table(table):
     try:
         # kept for historical reasons, a lot of tests use csv with index column
         loaded = pd.read_csv(table, index_col=0)
-    except:  # noqa: E722 B001
+    except:  # noqa: E722
         raise ValueError(f"table path {table} could not be loaded")
     if loaded.empty:
         try:
             loaded = pd.read_csv(table, sep="\t")
-        except:  # noqa: E722 B001
+        except:  # noqa: E722
             raise ValueError(f"table path {table} could not be loaded")
     return loaded
 
@@ -1445,20 +1465,23 @@ def first_level_from_bids(
             f"`confounds_` prefix: {remaining_kwargs}"
         )
 
-    if drift_model is not None and kwargs_load_confounds is not None:
-        if "high_pass" in kwargs_load_confounds.get("strategy"):
-            if drift_model == "cosine":
-                verb = "duplicate"
-            if drift_model == "polynomial":
-                verb = "conflict with"
+    if (
+        drift_model is not None
+        and kwargs_load_confounds is not None
+        and "high_pass" in kwargs_load_confounds.get("strategy")
+    ):
+        if drift_model == "cosine":
+            verb = "duplicate"
+        if drift_model == "polynomial":
+            verb = "conflict with"
 
-            warn(
-                f"""Confounds will contain a high pass filter,
+        warn(
+            f"""Confounds will contain a high pass filter,
  that may {verb} the {drift_model} one used in the model.
  Remember to visualize your design matrix before fitting your model
  to check that your model is not overspecified.""",
-                UserWarning,
-            )
+            UserWarning,
+        )
 
     derivatives_path = Path(dataset_path) / derivatives_folder
     derivatives_path = derivatives_path.absolute()
@@ -1647,29 +1670,28 @@ def _list_valid_subjects(derivatives_path, sub_labels):
 
     Parameters
     ----------
-    derivatives_path : :obj:`str`
+    derivatives_path : :obj:`str` or :obj:`pathlib.Path`
         Path to the BIDS derivatives folder.
 
-    sub_labels : :obj:`list` of :obj:`str`, optional
+    sub_labels : :obj:`list` of :obj:`str`
         List of subject labels to process.
         If None, all subjects in the dataset will be processed.
 
     Returns
     -------
-    sub_labels : :obj:`list` of :obj:`str`, optional
+    sub_labels : :obj:`list` of :obj:`str`
         List of subject labels that will be processed.
     """
+    derivatives_path = Path(derivatives_path)
     # Infer subjects in dataset if not provided
     if not sub_labels:
-        sub_folders = glob.glob(os.path.join(derivatives_path, "sub-*/"))
-        sub_labels = [
-            os.path.basename(s[:-1]).split("-")[1] for s in sub_folders
-        ]
+        sub_folders = derivatives_path.glob("sub-*/")
+        sub_labels = [s.name.split("-")[1] for s in sub_folders if s.is_dir()]
 
     # keep only existing subjects
     sub_labels_exist = []
     for sub_label_ in sub_labels:
-        if os.path.exists(os.path.join(derivatives_path, f"sub-{sub_label_}")):
+        if (derivatives_path / f"sub-{sub_label_}").exists():
             sub_labels_exist.append(sub_label_)
         else:
             warn(

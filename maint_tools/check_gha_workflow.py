@@ -75,7 +75,7 @@ PAGES_TO_COLLECT = range(1, 30)
 UPDATE_TSV = True
 
 # used by set_python_version to filter jobs by their python version
-EXPECTED_PYTHON_VERSIONS = ["3.8", "3.9", "3.10", "3.11", "3.12"]
+EXPECTED_PYTHON_VERSIONS = ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
 
 
 def main(args=sys.argv) -> None:
@@ -284,7 +284,7 @@ def _get_auth(username: str, token_file: Path) -> None | tuple[str, str]:
         with open(token_file) as f:
             token = f.read().strip()
     else:
-        warnings.warn(f"Token file not found.\n{str(token_file)}")
+        warnings.warn(f"Token file not found.\n{token_file!s}")
 
     return None if username is None or token is None else (username, token)
 

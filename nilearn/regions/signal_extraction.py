@@ -430,7 +430,7 @@ def signals_to_img_labels(
     # for n, label in enumerate(labels):
     #     data[labels_data == label, :] = signals[:, n]
     if signals.ndim == 2:
-        target_shape = target_shape + (signals.shape[0],)
+        target_shape = (*target_shape, signals.shape[0])
 
     data = np.zeros(target_shape, dtype=signals.dtype, order=order)
     labels_dict = {label: n for n, label in enumerate(labels)}

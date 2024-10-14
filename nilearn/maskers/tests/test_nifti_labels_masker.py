@@ -17,8 +17,8 @@ from nilearn._utils.data_gen import (
     generate_random_img,
 )
 from nilearn._utils.exceptions import DimensionError
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.testing import write_imgs_to_path
-from nilearn.conftest import have_mpl
 from nilearn.image import get_data
 from nilearn.maskers import NiftiLabelsMasker, NiftiMasker
 
@@ -651,7 +651,7 @@ def test_standardization(rng, affine_eye, shape_3d_default, n_regions):
     )
     signals += means
     img = Nifti1Image(
-        signals.reshape(shape_3d_default + (n_samples,)),
+        signals.reshape((*shape_3d_default, n_samples)),
         affine_eye,
     )
 
@@ -895,7 +895,7 @@ def test_region_names_ids_match_after_fit(
     )
 
     region_names = generate_labels(n_regions, background=background)
-    region_ids = [region_id for region_id in np.unique(get_data(labels_img))]
+    region_ids = list(np.unique(get_data(labels_img)))
 
     if masking:
         # create a mask_img with 3 regions
@@ -948,7 +948,7 @@ def generate_labels(n_regions, background=True):
     labels = []
     if background:
         labels.append(background)
-    labels.extend([f"region_{str(i + 1)}" for i in range(n_regions)])
+    labels.extend([f"region_{i + 1!s}" for i in range(n_regions)])
     return labels
 
 
@@ -1035,7 +1035,8 @@ def test_3d_images(affine_eye, shape_3d_default, n_regions):
 
 
 @pytest.mark.skipif(
-    have_mpl, reason="Test requires matplotlib not to be installed."
+    is_matplotlib_installed(),
+    reason="Test requires matplotlib not to be installed.",
 )
 def test_nifti_labels_masker_reporting_mpl_warning(
     shape_3d_default, n_regions, length, affine_eye

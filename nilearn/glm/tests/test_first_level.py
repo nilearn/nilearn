@@ -1,5 +1,4 @@
 import itertools
-import os
 import shutil
 import unittest.mock
 import warnings
@@ -42,6 +41,7 @@ from nilearn.glm.first_level.first_level import (
     _check_list_length_match,
     _check_run_tables,
     _check_trial_type,
+    _list_valid_subjects,
     _yule_walker,
 )
 from nilearn.glm.regression import ARModel, OLSModel
@@ -49,8 +49,8 @@ from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files
 from nilearn.maskers import NiftiMasker
 
-BASEDIR = os.path.dirname(os.path.abspath(__file__))
-FUNCFILE = os.path.join(BASEDIR, "functional.nii.gz")
+BASEDIR = Path(__file__).resolve().parent
+FUNCFILE = BASEDIR / "functional.nii.gz"
 
 
 def test_high_level_glm_one_run():
@@ -482,7 +482,7 @@ def test_glm_AR_estimates(rng, ar_vals):
 
     assert len(labels) == n
 
-    for lab in results.keys():
+    for lab in results:
         ar_estimate = lab.split("_")
         for lag in range(ar_order):
             assert_almost_equal(
@@ -1613,7 +1613,7 @@ def test_first_level_from_bids_with_missing_events(tmp_path_factory):
     bids_dataset = _new_bids_dataset(tmp_path_factory.mktemp("no_events"))
     events_files = get_bids_files(main_path=bids_dataset, file_tag="events")
     for f in events_files:
-        os.remove(f)
+        Path(f).unlink()
 
     with pytest.raises(ValueError, match="No events.tsv files found"):
         first_level_from_bids(
@@ -1633,7 +1633,7 @@ def test_first_level_from_bids_no_tr(tmp_path_factory):
         main_path=bids_dataset, file_tag="bold", file_type="json"
     )
     for f in json_files:
-        os.remove(f)
+        Path(f).unlink()
 
     with pytest.warns(
         UserWarning, match="'t_r' not provided and cannot be inferred"
@@ -1655,7 +1655,7 @@ def test_first_level_from_bids_no_bold_file(tmp_path_factory):
         file_type="*gz",
     )
     for img_ in imgs:
-        os.remove(img_)
+        Path(img_).unlink()
 
     with pytest.raises(ValueError, match="No BOLD files found "):
         first_level_from_bids(
@@ -1672,7 +1672,7 @@ def test_first_level_from_bids_with_one_events_missing(tmp_path_factory):
         tmp_path_factory.mktemp("one_event_missing")
     )
     events_files = get_bids_files(main_path=bids_dataset, file_tag="events")
-    os.remove(events_files[0])
+    Path(events_files[0]).unlink()
 
     with pytest.raises(ValueError, match="Same number of event files "):
         first_level_from_bids(
@@ -1695,7 +1695,7 @@ def test_first_level_from_bids_one_confound_missing(tmp_path_factory):
         main_path=bids_dataset / "derivatives",
         file_tag="desc-confounds_timeseries",
     )
-    os.remove(confound_files[-1])
+    Path(confound_files[-1]).unlink()
 
     with pytest.raises(ValueError, match="Same number of confound"):
         first_level_from_bids(
@@ -1716,7 +1716,7 @@ def test_first_level_from_bids_all_confounds_missing(tmp_path_factory):
         file_tag="desc-confounds_timeseries",
     )
     for f in confound_files:
-        os.remove(f)
+        Path(f).unlink()
 
     models, imgs, events, confounds = first_level_from_bids(
         dataset_path=bids_dataset,
@@ -1831,6 +1831,16 @@ def test_check_trial_type_warning(tmp_path):
         _check_trial_type([event_file])
 
 
+def test_list_valid_subjects_with_toplevel_files(tmp_path):
+    """Test that only subject directories are returned, not file names."""
+    (tmp_path / "sub-01").mkdir()
+    (tmp_path / "sub-02").mkdir()
+    (tmp_path / "sub-01.html").touch()
+
+    valid_subjects = _list_valid_subjects(tmp_path, None)
+    assert valid_subjects == ["01", "02"]
+
+
 def test_missing_trial_type_column_warning(tmp_path_factory):
     """Check that warning is thrown when an events file has no trial_type.
 
@@ -1842,7 +1852,7 @@ def test_missing_trial_type_column_warning(tmp_path_factory):
     events_files = get_bids_files(main_path=bids_dataset, file_tag="events")
     # remove trial type column from one events.tsv file
     events = pd.read_csv(events_files[0], sep="\t")
-    events.drop(columns="trial_type", inplace=True)
+    events = events.drop(columns="trial_type")
     events.to_csv(events_files[0], sep="\t", index=False)
 
     with pytest.warns() as record:
@@ -2075,6 +2085,45 @@ def test_flm_fit_surface_image_with_mask(_make_surface_glm_data, mini_mask):
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
     assert model.masker_.mask_img_.shape == (9,)
     assert isinstance(model.masker_, SurfaceMasker)
+
+
+def test_error_flm_surface_mask_volume_image(
+    _make_surface_glm_data, mini_mask, img_4d_rand_eye
+):
+    """Test error is raised when mask is a surface and data is in volume."""
+    mini_img, des = _make_surface_glm_data(5)
+    model = FirstLevelModel(mask_img=mini_mask)
+    with pytest.raises(
+        TypeError, match="Mask and images to fit must be of compatible types."
+    ):
+        model.fit(img_4d_rand_eye, design_matrices=des)
+
+    masker = SurfaceMasker().fit(mini_img)
+    model = FirstLevelModel(mask_img=masker)
+    with pytest.raises(
+        TypeError, match="Mask and images to fit must be of compatible types."
+    ):
+        model.fit(img_4d_rand_eye, design_matrices=des)
+
+
+def test_error_flm_volume_mask_surface_image(_make_surface_glm_data):
+    """Test error is raised when mask is a volume and data is in surface."""
+    shapes, rk = [(7, 8, 9, 15)], 3
+    mask, _, _ = generate_fake_fmri_data_and_design(shapes, rk)
+
+    mini_img, des = _make_surface_glm_data(5)
+    model = FirstLevelModel(mask_img=mask)
+    with pytest.raises(
+        TypeError, match="Mask and images to fit must be of compatible types."
+    ):
+        model.fit(mini_img, design_matrices=des)
+
+    masker = NiftiMasker().fit(mask)
+    model = FirstLevelModel(mask_img=masker)
+    with pytest.raises(
+        TypeError, match="Mask and images to fit must be of compatible types."
+    ):
+        model.fit(mini_img, design_matrices=des)
 
 
 def test_flm_with_surface_image_with_surface_masker(_make_surface_glm_data):

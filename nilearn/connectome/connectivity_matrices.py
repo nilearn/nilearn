@@ -305,7 +305,7 @@ def vec_to_sym_matrix(vec, diagonal=None):
             f"with vector of shape {vec.shape}"
         )
 
-    sym = np.zeros(first_shape + (n_columns, n_columns))
+    sym = np.zeros((*first_shape, n_columns, n_columns))
 
     # Fill lower triangular part
     skip_diagonal = diagonal is not None

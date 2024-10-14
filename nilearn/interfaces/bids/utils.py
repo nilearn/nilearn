@@ -21,7 +21,7 @@ def bids_entities():
     -------
     Dictionary of raw and derivatives entities : dict[str, list[str]]
 
-    """  # noqa: E501
+    """
     return {
         "raw": [
             "sub",
@@ -49,7 +49,7 @@ def check_bids_label(label):
     label : Any
         Label to validate
 
-    """  # noqa: E501
+    """
     if not isinstance(label, str):
         raise TypeError(
             f"All bids labels must be string. "

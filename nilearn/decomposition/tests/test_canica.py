@@ -34,7 +34,7 @@ def _make_data_from_components(
         this_data = np.dot(rng.normal(size=(40, 4)), components)
         this_data += 0.01 * rng.normal(size=this_data.shape)
         # Get back into 3D for CanICA
-        this_data = np.reshape(this_data, (40,) + shape)
+        this_data = np.reshape(this_data, (40, *shape))
         this_data = np.rollaxis(this_data, 0, 4)
         # Put the border of the image to zero, to mimic a brain image
         this_data[:5] = background[:5]
@@ -312,7 +312,7 @@ def test_canica_score(canica_data, mask_img):
     scores = canica.score(canica_data, per_component=False)
 
     assert scores <= 1
-    assert 0 <= scores
+    assert scores >= 0
 
     # Per component score
     scores = canica.score(canica_data, per_component=True)

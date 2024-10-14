@@ -194,7 +194,7 @@ def remove_consortium(authors: list[dict[str, str]]) -> list[dict[str, str]]:
 
 def add_consortium(authors: list[dict[str, str]]) -> list[dict[str, str]]:
     """Add consortium to authors."""
-    return [{"family-names": "Nilearn contributors"}] + authors
+    return [{"family-names": "Nilearn contributors"}, *authors]
 
 
 def main():

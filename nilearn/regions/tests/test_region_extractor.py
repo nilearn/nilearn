@@ -445,7 +445,7 @@ def test_connected_label_regions_unknonw_labels(
 
     # If labels_img provided is 4D Nifti image, then test whether error is
     # raised or not. Since this function accepts only 3D image.
-    labels_4d_data = np.zeros((shape_3d_default) + (2,))
+    labels_4d_data = np.zeros((*shape_3d_default, 2))
     labels_data[h0:, h1:, :h2] = 0
     labels_data[h0:, h1:, h2:] = 0
     labels_4d_data[..., 0] = labels_data

@@ -110,6 +110,8 @@
 
 .. _Guillaume Lemaitre: https://glemaitre.github.io/
 
+.. _Hande Gözükan: https://github.com/hndgzkn
+
 .. _Hao-Ting Wang: https://wanghaoting.com/
 
 .. _Himanshu Aggarwal: https://github.com/man-shu
@@ -245,6 +247,8 @@
 .. _Pierre-Olivier Quirion: https://github.com/poquirion
 
 .. _Pradeep Reddy Raamana: https://github.com/raamana
+
+.. _Prakhar Jain: https://github.com/PrakharJain1509
 
 .. _Rahul Brito: https://github.com/Rahul-Brito
 

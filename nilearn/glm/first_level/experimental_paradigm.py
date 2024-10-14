@@ -110,7 +110,7 @@ def _check_columns(events):
             raise ValueError(
                 f"The provided events data has no {col_name} column."
             )
-        if events[col_name].isnull().any():
+        if events[col_name].isna().any():
             raise ValueError(
                 f"The following column must not contain nan values: {col_name}"
             )

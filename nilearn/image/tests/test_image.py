@@ -321,7 +321,7 @@ def test_smooth_img(affine_eye, tmp_path):
         assert isinstance(out, list)
         assert len(out) == 2
         for o, s, l in zip(out, shapes, lengths):
-            assert o.shape == (s + (l,))
+            assert o.shape == (*s, l)
 
         # Single image as input
         out = smooth_img(imgs[0], fwhm)
@@ -548,7 +548,8 @@ def test_index_img():
     img_4d, _ = generate_fake_fmri(affine=NON_EYE_AFFINE)
 
     fourth_dim_size = img_4d.shape[3]
-    tested_indices = list(range(fourth_dim_size)) + [
+    tested_indices = [
+        *range(fourth_dim_size),
         slice(2, 8, 2),
         [1, 2, 3, 2],
         [],
@@ -958,18 +959,17 @@ def test_math_img_copied_header_data_values_changed(
         img2=img_4d_ones_eye_tr2,
         copy_header_from="img2",
     )
-    for key in img_4d_ones_eye_tr2.header.keys():
+    for key in img_4d_ones_eye_tr2.header:
         # cal_max and cal_min should be different in result
         if key in ["cal_max", "cal_min"]:
             assert result.header[key] != img_4d_ones_eye_tr2.header[key]
         # other header values should be the same
+        elif isinstance(result.header[key], np.ndarray):
+            assert_array_equal(
+                result.header[key], img_4d_ones_eye_tr2.header[key]
+            )
         else:
-            if isinstance(result.header[key], np.ndarray):
-                assert_array_equal(
-                    result.header[key], img_4d_ones_eye_tr2.header[key]
-                )
-            else:
-                assert result.header[key] == img_4d_ones_eye_tr2.header[key]
+            assert result.header[key] == img_4d_ones_eye_tr2.header[key]
 
 
 def test_binarize_img(img_4d_rand_eye):
@@ -990,11 +990,11 @@ def test_binarize_img(img_4d_rand_eye):
     assert_array_equal(img2.dataobj, img3.dataobj)
 
 
-def test_binarize_negative_img(img_4d_rand_eye):
+def test_binarize_negative_img(img_4d_rand_eye, rng):
     # Test option to use original or absolute values
     img_data = img_4d_rand_eye.dataobj
     # Create a mask for half of the values and make them negative
-    neg_mask = np.random.choice(
+    neg_mask = rng.choice(
         [True, False], size=img_4d_rand_eye.shape, p=[0.5, 0.5]
     )
     img_data[neg_mask] *= -1
@@ -1234,7 +1234,7 @@ def test_clean_img_sample_mask_mask_img(shape_3d_default):
 def test_concat_niimgs_errors(affine_eye, shape_3d_default):
     img1 = Nifti1Image(np.ones(shape_3d_default), affine_eye)
     img2 = Nifti1Image(np.ones(shape_3d_default), 2 * affine_eye)
-    img4d = Nifti1Image(np.ones(shape_3d_default + (2,)), affine_eye)
+    img4d = Nifti1Image(np.ones((*shape_3d_default, 2)), affine_eye)
 
     # check error for non-forced but necessary resampling
     with pytest.raises(ValueError, match="Field of view of image"):
@@ -1280,7 +1280,7 @@ def test_concat_niimgs(affine_eye, tmp_path):
 
     # smoke-test auto_resample
     concatenated = concat_imgs((img1, img1b, img1c), auto_resample=True)
-    assert concatenated.shape == img1.shape + (3,)
+    assert concatenated.shape == (*img1.shape, 3)
 
     # test list of 4D niimgs as input
     img1.to_filename(tmp_path / "1.nii")
@@ -1293,7 +1293,7 @@ def test_concat_niimgs(affine_eye, tmp_path):
 def test_concat_niimg_dtype(affine_eye):
     shape = [2, 3, 4]
     vols = [
-        Nifti1Image(np.zeros(shape + [n_scans]).astype(np.int16), affine_eye)
+        Nifti1Image(np.zeros([*shape, n_scans]).astype(np.int16), affine_eye)
         for n_scans in [1, 5]
     ]
     nimg = concat_imgs(vols)

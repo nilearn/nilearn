@@ -1,7 +1,7 @@
 """Tests for the nilearn.interfaces.bids submodule."""
 
 import json
-import os
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -138,7 +138,7 @@ def test_get_bids_files_inheritance_principle_root_folder(tmp_path):
     """Check if json files are found if in root folder of a dataset.
 
     see https://bids-specification.readthedocs.io/en/latest/common-principles.html#the-inheritance-principle
-    """  # noqa: E501
+    """
     bids_path = create_fake_bids_dataset(
         base_dir=tmp_path, n_sub=1, n_ses=1, tasks=["main"], n_runs=[1]
     )
@@ -193,7 +193,7 @@ def test_get_bids_files_inheritance_principle_sub_folder(tmp_path, json_file):
     """Check if json files are found if in subject or session folder.
 
     see https://bids-specification.readthedocs.io/en/latest/common-principles.html#the-inheritance-principle
-    """  # noqa: E501
+    """
     bids_path = create_fake_bids_dataset(
         base_dir=tmp_path, n_sub=1, n_ses=1, tasks=["main"], n_runs=[1]
     )
@@ -266,7 +266,7 @@ def test_get_bids_files(tmp_path):
     assert len(selection) == 1
     # 80 counfonds (4 runs per ses & sub), testing `fmriprep` >= 20.2 path
     selection = get_bids_files(
-        os.path.join(bids_path, "derivatives"),
+        bids_path / "derivatives",
         file_tag="desc-confounds_timeseries",
     )
     assert len(selection) == 160
@@ -281,7 +281,7 @@ def test_get_bids_files(tmp_path):
     )
     # 80 counfonds (4 runs per ses & sub), testing `fmriprep` >= 20.2 path
     selection = get_bids_files(
-        os.path.join(bids_path, "derivatives"),
+        bids_path / "derivatives",
         file_tag="desc-confounds_regressors",
     )
     assert len(selection) == 160
@@ -291,7 +291,7 @@ def test_parse_bids_filename():
     fields = ["sub", "ses", "task", "lolo"]
     labels = ["01", "01", "langloc", "lala"]
     file_name = "sub-01_ses-01_task-langloc_lolo-lala_bold.nii.gz"
-    file_path = os.path.join("dataset", "sub-01", "ses-01", "func", file_name)
+    file_path = Path("dataset", "sub-01", "ses-01", "func", file_name)
     file_dict = parse_bids_filename(file_path)
     for fidx, field in enumerate(fields):
         assert file_dict[field] == labels[fidx]

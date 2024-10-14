@@ -133,7 +133,7 @@ def test_multi_pca_with_masker_without_cca_smoke(multi_pca_data):
     """Multi-pca can run with a masker \
         and without canonical correlation analysis.
     """
-    masker = MultiNiftiMasker(mask_args=dict(opening=0))
+    masker = MultiNiftiMasker(mask_args={"opening": 0})
 
     multi_pca = _MultiPCA(
         mask=masker,

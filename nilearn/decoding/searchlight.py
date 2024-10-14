@@ -25,7 +25,7 @@ from .. import masking
 from .._utils import check_niimg_4d, fill_doc, logger
 from ..image.resampling import coord_transform
 
-ESTIMATOR_CATALOG = dict(svc=svm.LinearSVC, svr=svm.SVR)
+ESTIMATOR_CATALOG = {"svc": svm.LinearSVC, "svr": svm.SVR}
 
 
 @fill_doc

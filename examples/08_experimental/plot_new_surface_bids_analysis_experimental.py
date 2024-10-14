@@ -34,7 +34,11 @@ More specifically:
 
 Notice that in this case the preprocessed :term:`bold<BOLD>` images
 were already normalized to the same :term:`MNI` space.
-"""  # noqa: E501
+"""
+
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
 
 # %%
 # Fetch example :term:`BIDS` dataset
@@ -97,9 +101,9 @@ for first_level_glm, fmri_img, confound, event in zip(
 ):
     print(f"Running GLM on {Path(fmri_img[0]).relative_to(data.data_dir)}")
 
-    image = SurfaceImage(
+    image = SurfaceImage.from_volume(
         mesh=fsaverage5["pial"],
-        data=fmri_img[0],
+        volume_img=fmri_img[0],
     )
 
     # Fit GLM.
