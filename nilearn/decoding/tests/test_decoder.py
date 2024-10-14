@@ -1156,21 +1156,18 @@ def test_decoder_screening_percentile_surface(perc, _make_surface_class_data):
         assert model.screening_percentile_ == perc
 
 
-@pytest.mark.parametrize("screening_percentile", [30, 80, 100])
-def test_decoder_screening_percentile_adjustment_surface(
-    _make_surface_mask, _make_surface_class_data, screening_percentile
+def test_decoder_adjust_screening_lessthan_mask_surface(
+    _make_surface_mask, _make_surface_class_data, screening_percentile=30
 ):
-    """Test adjustment of screening percentile, such that:
-    - if mask size is smaller than screening percentile wrt to the mesh size,
-    use whole mask.
-    - if mask size is greater than screening percentile wrt to the mesh size,
-    adjust the screening percentile for that mask size.
+    """When mask size is less than or equal to screening percentile wrt to
+    the mesh size, it is adjusted to the ratio of mesh to mask.
     """
     mask = _make_surface_mask()
     img, y = _make_surface_class_data()
     mask_n_vertices = get_mask_volume(mask)
     mesh_n_vertices = img.mesh.n_vertices
     mask_to_mesh_ratio = (mask_n_vertices / mesh_n_vertices) * 100
+    assert mask_to_mesh_ratio <= screening_percentile
     decoder = Decoder(
         mask=mask,
         param_grid={"C": [0.01, 0.1]},
@@ -1180,14 +1177,33 @@ def test_decoder_screening_percentile_adjustment_surface(
     with pytest.warns(UserWarning, match="Consider raising"):
         decoder.fit(img, y)
     adjusted = decoder.screening_percentile_
-    if mask_to_mesh_ratio <= screening_percentile:
-        assert adjusted == 100
-    # if mask is larger than given percentile, the percentile is adjusted to
-    # the ratio of mesh to mask
-    elif mask_to_mesh_ratio > screening_percentile:
-        assert adjusted == screening_percentile * (
-            mesh_n_vertices / mask_n_vertices
-        )
+    assert adjusted == screening_percentile * (
+        mesh_n_vertices / mask_n_vertices
+    )
+
+
+def test_decoder_adjust_screening_greaterthan_mask_surface(
+    _make_surface_mask, _make_surface_class_data, screening_percentile=80
+):
+    """When mask size is greater than screening percentile wrt to the mesh
+    size, it is changed to 100% of mask.
+    """
+    mask = _make_surface_mask()
+    img, y = _make_surface_class_data()
+    mask_n_vertices = get_mask_volume(mask)
+    mesh_n_vertices = img.mesh.n_vertices
+    mask_to_mesh_ratio = (mask_n_vertices / mesh_n_vertices) * 100
+    assert mask_to_mesh_ratio > screening_percentile
+    decoder = Decoder(
+        mask=mask,
+        param_grid={"C": [0.01, 0.1]},
+        cv=3,
+        screening_percentile=screening_percentile,
+    )
+    with pytest.warns(UserWarning, match="Consider raising"):
+        decoder.fit(img, y)
+    adjusted = decoder.screening_percentile_
+    assert adjusted == 100
 
 
 @pytest.mark.parametrize("mask", [None, SurfaceMasker()])
