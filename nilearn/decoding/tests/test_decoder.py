@@ -1167,7 +1167,7 @@ def test_decoder_adjust_screening_lessthan_mask_surface(
     mask_n_vertices = get_mask_volume(mask)
     mesh_n_vertices = img.mesh.n_vertices
     mask_to_mesh_ratio = (mask_n_vertices / mesh_n_vertices) * 100
-    assert mask_to_mesh_ratio <= screening_percentile
+    assert screening_percentile <= mask_to_mesh_ratio
     decoder = Decoder(
         mask=mask,
         param_grid={"C": [0.01, 0.1]},
@@ -1193,7 +1193,7 @@ def test_decoder_adjust_screening_greaterthan_mask_surface(
     mask_n_vertices = get_mask_volume(mask)
     mesh_n_vertices = img.mesh.n_vertices
     mask_to_mesh_ratio = (mask_n_vertices / mesh_n_vertices) * 100
-    assert mask_to_mesh_ratio > screening_percentile
+    assert screening_percentile > mask_to_mesh_ratio
     decoder = Decoder(
         mask=mask,
         param_grid={"C": [0.01, 0.1]},
