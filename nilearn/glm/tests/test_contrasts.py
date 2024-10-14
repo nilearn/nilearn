@@ -65,7 +65,7 @@ def test_deprecation_contrast_type(rng, set_up_glm):
     labels, results, q = set_up_glm(rng, "ar1")
     con_val = np.eye(q)[0]
 
-    with pytest.warns(DeprecationWarning, match="0.13.0"):
+    with pytest.deprecated_call(match="0.13.0"):
         compute_contrast(
             labels=labels,
             regression_result=results,
@@ -260,10 +260,10 @@ def test_deprecation_contrast_type_attribute():
     effect = np.ones((1, 3))
     variance = effect[0]
 
-    with pytest.warns(DeprecationWarning, match="0.13.0"):
+    with pytest.deprecated_call(match="0.13.0"):
         contrast = Contrast(effect, variance, contrast_type="t")
 
-    with pytest.warns(DeprecationWarning, match="0.13.0"):
+    with pytest.deprecated_call(match="0.13.0"):
         contrast.contrast_type
 
 
