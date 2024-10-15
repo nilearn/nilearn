@@ -532,8 +532,8 @@ def fetch_single_file(
 
     """
     if session is None:
-        with requests.Session() as session:
-            session.mount("ftp:", _NaiveFTPAdapter())
+        with requests.Session() as sess:
+            sess.mount("ftp:", _NaiveFTPAdapter())
             return fetch_single_file(
                 url,
                 data_dir,
@@ -543,7 +543,7 @@ def fetch_single_file(
                 username=username,
                 password=password,
                 verbose=verbose,
-                session=session,
+                session=sess,
             )
     # Determine data path
     if not os.path.exists(data_dir):
@@ -759,14 +759,14 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
 
     """
     if session is None:
-        with requests.Session() as session:
-            session.mount("ftp:", _NaiveFTPAdapter())
+        with requests.Session() as sess:
+            sess.mount("ftp:", _NaiveFTPAdapter())
             return fetch_files(
                 data_dir,
                 files,
                 resume=resume,
                 verbose=verbose,
-                session=session,
+                session=sess,
             )
     # There are two working directories here:
     # - data_dir is the destination directory of the dataset
