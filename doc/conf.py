@@ -402,6 +402,7 @@ intersphinx_mapping = {
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
     "nistats": ("https://nistats.github.io", None),
     "joblib": ("https://joblib.readthedocs.io/en/latest/", None),
+    "plotly": ("https://plotly.com/python-api-reference/", None),
 }
 
 extlinks = {
@@ -451,7 +452,7 @@ def touch_example_backreferences(app, what, name, obj, options, lines):
     examples_path = Path(
         app.srcdir, "modules", "generated", f"{name}.examples"
     )
-    if not os.path.exists(examples_path):
+    if not examples_path.exists():
         # touch file
         open(examples_path, "w").close()
 

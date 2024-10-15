@@ -528,8 +528,8 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
         if not isinstance(self.mask_img, (str, Nifti1Image)):
             raise ValueError(
-                "The mask image should be a Niimg-like"
-                f"object. Instead a {type(self.mask_img)} object was provided."
+                "The mask image should be a Niimg-like object. "
+                f"Instead a {type(self.mask_img)} object was provided."
             )
 
         if self.memory is None or isinstance(self.memory, str):

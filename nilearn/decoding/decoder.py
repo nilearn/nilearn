@@ -48,9 +48,12 @@ from sklearn.utils.validation import check_is_fitted, check_X_y
 
 from nilearn._utils import CacheMixin, fill_doc
 from nilearn._utils.cache_mixin import _check_memory
-from nilearn._utils.masker_validation import check_embedded_masker
+from nilearn._utils.masker_validation import (
+    check_compatibility_mask_and_images,
+    check_embedded_masker,
+)
 from nilearn._utils.param_validation import check_feature_screening
-from nilearn.experimental.surface import SurfaceMasker
+from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
 from nilearn.regions.rena_clustering import ReNA
 
 SUPPORTED_ESTIMATORS = {
@@ -506,7 +509,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         MNI template. In particular, if it is lower than 100, a univariate
         feature selection based on the Anova F-value for the input data will be
         performed. A float according to a percentile of the highest
-        scores.
+        scores. If None is passed, the percentile is set to 100.
 
     scoring: str, callable or None,
              default=None
@@ -742,9 +745,20 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         # Check if the size of the mask image and the number of features allow
         # to perform feature screening.
-        selector = check_feature_screening(
-            self.screening_percentile, self.mask_img_, self.is_classification
+        # If the input data is a SurfaceImage, the number of vertices in the
+        # mesh is needed to perform feature screening.
+        mesh_n_vertices = (
+            self.mask_img_.mesh.n_vertices
+            if isinstance(self.mask_img_, SurfaceImage)
+            else None
         )
+        selector = check_feature_screening(
+            self.screening_percentile,
+            self.mask_img_,
+            self.is_classification,
+            mesh_n_vertices=mesh_n_vertices,
+        )
+
         # Return a suitable screening percentile according to the mask image
         if hasattr(selector, "percentile"):
             self.screening_percentile_ = selector.percentile
@@ -935,9 +949,17 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
     def _apply_mask(self, X):
         masker_type = "nii"
-        if isinstance(self.mask, SurfaceMasker):
+        # all elements of X should be of the similar type by now
+        # so we can only check the first one
+        to_check = X[0] if isinstance(X, Iterable) else X
+        if isinstance(self.mask, (SurfaceMasker, SurfaceImage)) or (
+            isinstance(to_check, SurfaceImage)
+        ):
             masker_type = "surface"
+
         self.masker_ = check_embedded_masker(self, masker_type=masker_type)
+        check_compatibility_mask_and_images(self.mask, X)
+
         X = self.masker_.fit_transform(X)
         self.mask_img_ = self.masker_.mask_img_
 
@@ -1108,7 +1130,8 @@ class Decoder(_BaseDecoder):
         The estimator to choose among:
         %(classifier_options)s
 
-    mask: filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
+    mask: filename, Nifti1Image, NiftiMasker, MultiNiftiMasker, \
+          SurafaceImage or SurfaceMasker, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask and parameters will be used. If no mask is given, mask
         will be computed automatically from provided images by an inbuilt

@@ -2,6 +2,7 @@ import base64
 import os
 import re
 import tempfile
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -188,6 +189,7 @@ def check_html(
 ):
     """Perform several checks on raw HTML code."""
     fd, tmpfile = tempfile.mkstemp()
+    tmpfile = Path(tmpfile)
     try:
         os.close(fd)
         html.save_as_html(tmpfile)
@@ -198,7 +200,7 @@ def check_html(
         standalone = html.get_standalone().replace("\r\n", "\n")
         assert saved == standalone
     finally:
-        os.remove(tmpfile)
+        tmpfile.unlink()
     assert "INSERT" not in html.html
     assert html.get_standalone() == html.html
     assert html._repr_html_() == html.get_iframe()

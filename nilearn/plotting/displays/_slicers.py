@@ -553,7 +553,7 @@ class BaseSlicer:
         transparent_start = int(norm(-offset, clip=True) * (our_cmap.N - 1))
         transparent_stop = int(norm(offset, clip=True) * (our_cmap.N - 1))
         for i in range(transparent_start, transparent_stop):
-            cmaplist[i] = self._brain_color + (0.0,)  # transparent
+            cmaplist[i] = (*self._brain_color, 0.0)  # transparent
         if cbar_vmin == cbar_vmax:  # len(np.unique(data)) == 1 ?
             return
         else:
