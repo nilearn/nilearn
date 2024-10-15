@@ -13,7 +13,7 @@ from nilearn._utils.param_validation import (
     MNI152_BRAIN_VOLUME,
     check_feature_screening,
     check_threshold,
-    get_mask_size,
+    get_mask_extent,
 )
 
 mni152_brain_mask = (
@@ -64,10 +64,10 @@ def test_check_threshold():
     )
 
 
-def test_get_mask_size():
+def test_get_mask_extent():
     # Test that hard-coded standard mask volume can be corrected computed
     if Path(mni152_brain_mask).is_file():
-        assert get_mask_size(load(mni152_brain_mask)) == MNI152_BRAIN_VOLUME
+        assert get_mask_extent(load(mni152_brain_mask)) == MNI152_BRAIN_VOLUME
     else:
         warnings.warn(f"Couldn't find {mni152_brain_mask} (for testing)")
 

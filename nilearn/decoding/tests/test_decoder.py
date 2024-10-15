@@ -50,7 +50,7 @@ from sklearn.svm import SVR, LinearSVC
 from nilearn._utils import compare_version
 from nilearn._utils.param_validation import (
     check_feature_screening,
-    get_mask_size,
+    get_mask_extent,
 )
 from nilearn.conftest import _rng
 from nilearn.decoding.decoder import (
@@ -1164,7 +1164,7 @@ def test_decoder_adjust_screening_lessthan_mask_surface(
     """
     mask = _make_surface_mask()
     img, y = _make_surface_class_data()
-    mask_n_vertices = get_mask_size(mask)
+    mask_n_vertices = get_mask_extent(mask)
     mesh_n_vertices = img.mesh.n_vertices
     mask_to_mesh_ratio = (mask_n_vertices / mesh_n_vertices) * 100
     assert screening_percentile <= mask_to_mesh_ratio
@@ -1190,7 +1190,7 @@ def test_decoder_adjust_screening_greaterthan_mask_surface(
     """
     mask = _make_surface_mask()
     img, y = _make_surface_class_data()
-    mask_n_vertices = get_mask_size(mask)
+    mask_n_vertices = get_mask_extent(mask)
     mesh_n_vertices = img.mesh.n_vertices
     mask_to_mesh_ratio = (mask_n_vertices / mesh_n_vertices) * 100
     assert screening_percentile > mask_to_mesh_ratio
