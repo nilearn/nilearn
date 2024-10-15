@@ -123,7 +123,13 @@ def test_fetch_haxby(tmp_path, request_mocker):
 
     # subjects with list
     subjects = [1, 2, 6]
-    haxby = func.fetch_haxby(data_dir=tmp_path, subjects=subjects, verbose=0)
+    request_mocker.url_mapping[re.compile(r".*stimuli.*")] = list_to_archive(
+        [Path("stimuli/README")]
+    )
+
+    haxby = func.fetch_haxby(
+        data_dir=tmp_path, subjects=subjects, fetch_stimuli=True, verbose=0
+    )
 
     assert len(haxby.func) == len(subjects)
     assert len(haxby.mask_house_little) == len(subjects)
@@ -134,6 +140,7 @@ def test_fetch_haxby(tmp_path, request_mocker):
     assert len(haxby.session_target) == len(subjects)
     assert len(haxby.mask_vt) == len(subjects)
     assert len(haxby.mask_face_little) == len(subjects)
+    assert haxby["stimuli"] is not None
 
     subjects = ["a", 8]
     message = "You provided invalid subject id {0} in a list"
