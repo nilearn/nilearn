@@ -687,7 +687,7 @@ class Pattern(_SpecialValue):
         )
 
 
-def _empty_filter(result):
+def _empty_filter(result):  # noqa: ARG001
     """Place holder for a filter which always returns True.
 
     This is the default ``image_filter`` and ``collection_filter``

@@ -932,7 +932,7 @@ def test_high_variance_confounds():
     np.testing.assert_almost_equal(out1, out2, decimal=13)
 
 
-def test_clean_standardize_false(rng):
+def test_clean_standardize_false():
     n_samples = 500
     n_features = 5
     t_r = 2
