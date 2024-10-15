@@ -756,8 +756,8 @@ def test_fetch_development_fmri_exception():
 
 # datasets tests originally belonging to nistats follow
 
-currdir = os.path.dirname(os.path.abspath(__file__))
-datadir = os.path.join(currdir, "data")
+currdir = Path(__file__).absolute().parent
+datadir = currdir / "data"
 
 
 def test_fetch_bids_langloc_dataset(tmp_path):

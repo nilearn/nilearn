@@ -946,8 +946,8 @@ def fetch_coords_power_2011(legacy_format=True):
     """
     dataset_name = "power_2011"
     fdescr = get_dataset_descr(dataset_name)
-    package_directory = os.path.dirname(os.path.abspath(__file__))
-    csv = os.path.join(package_directory, "data", "power_2011.csv")
+    package_directory = Path(__file__).absolute().parent
+    csv = package_directory / "data" / "power_2011.csv"
     params = {"rois": pd.read_csv(csv), "description": fdescr}
     params["rois"] = params["rois"].rename(
         columns={c: c.lower() for c in params["rois"].columns}
@@ -1546,8 +1546,8 @@ def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=True):
     """
     dataset_name = "dosenbach_2010"
     fdescr = get_dataset_descr(dataset_name)
-    package_directory = os.path.dirname(os.path.abspath(__file__))
-    csv = os.path.join(package_directory, "data", "dosenbach_2010.csv")
+    package_directory = Path(__file__).absolute().parent
+    csv = package_directory / "data" / "dosenbach_2010.csv"
     out_csv = pd.read_csv(csv)
 
     if ordered_regions:
@@ -1619,14 +1619,14 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
     """
     dataset_name = "seitzman_2018"
     fdescr = get_dataset_descr(dataset_name)
-    package_directory = os.path.dirname(os.path.abspath(__file__))
-    roi_file = os.path.join(
-        package_directory,
-        "data",
-        "seitzman_2018_ROIs_300inVol_MNI_allInfo.txt",
+    package_directory = Path(__file__).absolute().parent
+    roi_file = (
+        package_directory
+        / "data"
+        / "seitzman_2018_ROIs_300inVol_MNI_allInfo.txt"
     )
-    anatomical_file = os.path.join(
-        package_directory, "data", "seitzman_2018_ROIs_anatomicalLabels.txt"
+    anatomical_file = (
+        package_directory / "data" / "seitzman_2018_ROIs_anatomicalLabels.txt"
     )
 
     rois = pd.read_csv(roi_file, delimiter=" ")

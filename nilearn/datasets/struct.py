@@ -14,23 +14,23 @@ from .._utils import check_niimg, fill_doc
 from ..image import get_data, new_img_like, resampling
 from ._utils import fetch_files, get_dataset_descr, get_dataset_dir
 
-_package_directory = os.path.dirname(os.path.abspath(__file__))
-MNI152_FILE_PATH = os.path.join(
-    _package_directory,
-    "data",
-    "mni_icbm152_t1_tal_nlin_sym_09a_converted.nii.gz",
+_package_directory = Path(__file__).absolute().parent
+MNI152_FILE_PATH = (
+    _package_directory
+    / "data"
+    / "mni_icbm152_t1_tal_nlin_sym_09a_converted.nii.gz"
 )
-GM_MNI152_FILE_PATH = os.path.join(
-    _package_directory,
-    "data",
-    "mni_icbm152_gm_tal_nlin_sym_09a_converted.nii.gz",
+GM_MNI152_FILE_PATH = (
+    _package_directory
+    / "data"
+    / "mni_icbm152_gm_tal_nlin_sym_09a_converted.nii.gz"
 )
-WM_MNI152_FILE_PATH = os.path.join(
-    _package_directory,
-    "data",
-    "mni_icbm152_wm_tal_nlin_sym_09a_converted.nii.gz",
+WM_MNI152_FILE_PATH = (
+    _package_directory
+    / "data"
+    / "mni_icbm152_wm_tal_nlin_sym_09a_converted.nii.gz"
 )
-FSAVERAGE5_PATH = os.path.join(_package_directory, "data", "fsaverage5")
+FSAVERAGE5_PATH = _package_directory / "data" / "fsaverage5"
 
 _LEGACY_FORMAT_MSG = (
     "`legacy_format` will default to `False` in release 0.11. "

@@ -6,6 +6,7 @@ import subprocess
 import sys
 from functools import partial
 from operator import attrgetter
+from pathlib import Path
 
 REVISION_CMD = "git rev-parse --short HEAD"
 
@@ -68,12 +69,10 @@ def _linkcode_resolve(domain, info, package, url_fmt, revision):
         return
 
     # Don't include filenames from outside this package's tree
-    if os.path.dirname(__import__(package).__file__) not in fn:
+    if Path(__import__(package).__file__).parent not in fn:
         return
 
-    fn = os.path.relpath(
-        fn, start=os.path.dirname(__import__(package).__file__)
-    )
+    fn = os.path.relpath(fn, start=Path(__import__(package).__file__).parent)
     try:
         lineno = inspect.getsourcelines(obj)[1]
     except Exception:

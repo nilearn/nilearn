@@ -630,8 +630,8 @@ def test_json_add_collection_dir(tmp_path):
         coll_file.write(json.dumps({"id": 1}).encode("utf-8"))
     loaded = neurovault._json_add_collection_dir(coll_file_name)
 
-    assert loaded["absolute_path"] == str(coll_dir)
-    assert loaded["relative_path"] == "collection_1"
+    assert loaded["absolute_path"] == str(coll_dir.absolute())
+    assert loaded["relative_path"] == str(coll_dir)
 
 
 def test_json_add_im_files_paths(tmp_path):
@@ -642,9 +642,7 @@ def test_json_add_im_files_paths(tmp_path):
         im_file.write(json.dumps({"id": 1}).encode("utf-8"))
     loaded = neurovault._json_add_im_files_paths(im_file_name)
 
-    assert loaded["relative_path"] == os.path.join(
-        "collection_1", "image_1.nii.gz"
-    )
+    assert loaded["relative_path"] == str(coll_dir / "image_1.nii.gz")
     assert loaded.get("neurosynth_words_relative_path") is None
 
 
