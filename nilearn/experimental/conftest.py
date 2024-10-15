@@ -12,6 +12,55 @@ from nilearn.experimental.surface import (
     SurfaceImage,
 )
 
+from ..conftest import rng
+
+
+@pytest.fixture
+def make_mesh(n_vertices: int, n_faces: int) -> PolyMesh:
+    """Create a mesh with n_vertices and n_faces."""
+    left_coords = rng.rand(n_vertices, 3)
+    left_faces = rng.randint(0, n_vertices, (n_faces, 3))
+    right_coords = rng.rand(n_vertices, 3)
+    right_faces = rng.randint(0, n_vertices, (n_faces, 3))
+
+    return PolyMesh(
+        left=InMemoryMesh(left_coords, left_faces),
+        right=InMemoryMesh(right_coords, right_faces),
+    )
+
+
+@pytest.fixture
+def make_surface_img(mesh_n_vertices, mesh_n_faces, data_samples):
+    """Create a surface image for testing."""
+    mesh = make_mesh(mesh_n_vertices, mesh_n_faces)
+    data = {}
+    for i, (key, val) in enumerate(mesh.parts.items()):
+        data_shape = (*tuple(data_samples), val.n_vertices)
+        data_part = (
+            np.arange(np.prod(data_shape)).reshape(data_shape) + 1.0
+        ) * 10**i
+        data[key] = data_part
+    return SurfaceImage(mesh, data)
+
+
+@pytest.fixture
+def make_surface_mask(
+    mesh_n_vertices,
+    mesh_n_faces,
+    data_samples,
+    n_mask_zeros,
+):
+    """Create a surface mask for testing."""
+    mesh = make_mesh(mesh_n_vertices, mesh_n_faces)
+    data = {}
+    for key, val in mesh.parts.items():
+        data_part = np.ones(val.n_vertices, dtype=int)
+        for i in range(n_mask_zeros):
+            data_part[..., i] = 0
+        data_part = data_part.astype(bool)
+        data[key] = data_part
+    return SurfaceImage(mesh, data)
+
 
 def _return_mini_mesh() -> PolyMesh:
     """Small mesh for tests with 2 parts with different numbers of vertices."""

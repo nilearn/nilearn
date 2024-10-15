@@ -20,8 +20,11 @@ from nilearn.datasets.tests._testing import (
 # its pytest fixtures are integrated into the stable API
 from nilearn.experimental.conftest import (  # noqa: F401
     drop_img_part,
+    make_mesh,
     make_mini_img,
     make_mini_mask,
+    make_surface_img,
+    make_surface_mask,
     mini_img,
     mini_mask,
     mini_mesh,
