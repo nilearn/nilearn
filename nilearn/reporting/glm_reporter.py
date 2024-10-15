@@ -29,13 +29,14 @@ from nilearn.glm import threshold_stats_img
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.maskers import NiftiMasker
-from nilearn.plotting import plot_glass_brain, plot_roi, plot_stat_map
-from nilearn.plotting.cm import _cmap_d as nilearn_cmaps
-from nilearn.plotting.img_plotting import MNI152TEMPLATE
-from nilearn.plotting.matrix_plotting import (
+from nilearn.plotting import (
     plot_contrast_matrix,
     plot_design_matrix,
+    plot_glass_brain,
+    plot_roi,
+    plot_stat_map,
 )
+from nilearn.plotting.img_plotting import MNI152TEMPLATE
 from nilearn.reporting.get_clusters_table import get_clusters_table
 from nilearn.reporting.html_report import HTMLReport
 from nilearn.reporting.utils import figure_to_svg_quoted
