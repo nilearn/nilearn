@@ -48,15 +48,11 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR, LinearSVC
 
 from nilearn._utils import compare_version
-
 from nilearn._utils.class_inspect import check_estimator
-from nilearn._utils.param_validation import check_feature_screening
-
 from nilearn._utils.param_validation import (
     check_feature_screening,
     get_mask_volume,
 )
-
 from nilearn.conftest import _rng
 from nilearn.decoding.decoder import (
     Decoder,
