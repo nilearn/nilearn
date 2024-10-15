@@ -902,7 +902,7 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
         warnings.filterwarnings(
             "ignore", module="numpy", category=FutureWarning
         )
-        region_coords = csv_data[["x", "y", "z"]].values.tolist()
+        region_coords = csv_data[["x", "y", "z"]].tolist()
     net_names = [
         net_name.strip() for net_name in csv_data["net name"].tolist()
     ]

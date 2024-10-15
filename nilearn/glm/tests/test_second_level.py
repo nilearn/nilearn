@@ -114,8 +114,12 @@ def test_sort_input_dataframe(input_df):
     """Unit tests for function _sort_input_dataframe()."""
     output_df = _sort_input_dataframe(input_df)
 
-    assert output_df["subject_label"].values.tolist() == ["bar", "baz", "foo"]
-    assert output_df["effects_map_path"].values.tolist() == [
+    assert output_df["subject_label"].tolist() == [
+        "bar",
+        "baz",
+        "foo",
+    ]
+    assert output_df["effects_map_path"].tolist() == [
         "bar.nii",
         "baz.nii",
         "foo.nii",
