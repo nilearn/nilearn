@@ -3,6 +3,7 @@
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 
 import csv
+import pathlib
 
 import numpy as np
 
@@ -157,7 +158,7 @@ def csv_to_array(csv_path, delimiters=" \t,;", **kwargs):
         An array containing the data loaded from the CSV file.
     """
     csv_path = stringify_path(csv_path)
-    if not isinstance(csv_path, str):
+    if not isinstance(csv_path, (str, pathlib.Path)):
         raise TypeError(
             f"CSV must be a file path. Got a CSV of type: {type(csv_path)}"
         )

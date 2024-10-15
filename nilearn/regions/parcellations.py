@@ -1,5 +1,6 @@
 """Parcellation tools such as KMeans or Ward for fMRI images."""
 
+import pathlib
 import warnings
 
 import numpy as np
@@ -66,7 +67,9 @@ def _check_parameters_transform(imgs, confounds):
     """Check the parameters and prepare for processing as a list."""
     imgs = stringify_path(imgs)
     confounds = stringify_path(confounds)
-    if not isinstance(imgs, (list, tuple)) or isinstance(imgs, str):
+    if not isinstance(imgs, (list, tuple)) or isinstance(
+        imgs, (str, pathlib.Path)
+    ):
         imgs = [imgs]
         single_subject = True
     elif len(imgs) == 1:
