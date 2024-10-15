@@ -22,6 +22,13 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
+from nilearn._utils import check_niimg, fill_doc
+from nilearn._utils.niimg import safe_get_data
+from nilearn.experimental.surface import SurfaceMasker
+from nilearn.glm import threshold_stats_img
+from nilearn.glm.first_level import FirstLevelModel
+from nilearn.glm.second_level import SecondLevelModel
+from nilearn.maskers import NiftiMasker
 from nilearn.plotting import plot_glass_brain, plot_roi, plot_stat_map
 from nilearn.plotting.cm import _cmap_d as nilearn_cmaps
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
@@ -29,20 +36,8 @@ from nilearn.plotting.matrix_plotting import (
     plot_contrast_matrix,
     plot_design_matrix,
 )
-from nilearn.reporting.html_report import HTMLReport
-
-from .._utils import fill_doc
-
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore", FutureWarning)
-    from nilearn import glm
-    from nilearn.glm.thresholding import threshold_stats_img
-
-from nilearn._utils import check_niimg
-from nilearn._utils.niimg import safe_get_data
-from nilearn.experimental.surface import SurfaceMasker
-from nilearn.maskers import NiftiMasker
 from nilearn.reporting.get_clusters_table import get_clusters_table
+from nilearn.reporting.html_report import HTMLReport
 from nilearn.reporting.utils import figure_to_svg_quoted
 
 HTML_TEMPLATE_ROOT_PATH = Path(__file__).parent / "glm_reporter_templates"
@@ -440,9 +435,9 @@ def _make_headings(contrasts, title, model):
         If title is user-supplied, then subheading is empty string.
 
     """
-    if isinstance(model, glm.first_level.FirstLevelModel):
+    if isinstance(model, FirstLevelModel):
         model_type = "First Level Model"
-    elif isinstance(model, glm.second_level.SecondLevelModel):
+    elif isinstance(model, SecondLevelModel):
         model_type = "Second Level Model"
 
     if title:
