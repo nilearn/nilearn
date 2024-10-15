@@ -895,17 +895,14 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
         dataset_name, data_dir=data_dir, verbose=verbose
     )
     files = fetch_files(data_dir, files, resume=resume, verbose=verbose)
-    csv_data = pd.read_csv(files[0])
-    labels = [name.strip() for name in csv_data["name"].tolist()]
 
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "ignore", module="numpy", category=FutureWarning
-        )
-        region_coords = csv_data[["x", "y", "z"]].tolist()
+    csv_data = pd.read_csv(files[0])
+    labels = [name.strip() for name in csv_data["name"].to_list()]
     net_names = [
-        net_name.strip() for net_name in csv_data["net name"].tolist()
+        net_name.strip() for net_name in csv_data["net name"].to_list()
     ]
+    region_coords = csv_data[["x", "y", "z"]].to_list()
+
     fdescr = get_dataset_descr(dataset_name)
 
     return Bunch(
