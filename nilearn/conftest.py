@@ -21,6 +21,7 @@ from nilearn.datasets.tests._testing import (
 from nilearn.experimental.conftest import (  # noqa: F401
     drop_img_part,
     make_mini_img,
+    make_mini_mask,
     mini_img,
     mini_mask,
     mini_mesh,
