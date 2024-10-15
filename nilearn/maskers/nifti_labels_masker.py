@@ -490,7 +490,11 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
         return [display]
 
-    def fit(self, imgs=None, y=None):
+    def fit(
+        self,
+        imgs=None,
+        y=None,  # noqa: ARG002
+    ):
         """Prepare signal extraction from regions.
 
         Parameters

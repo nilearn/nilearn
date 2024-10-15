@@ -982,7 +982,11 @@ class OrthoSlicer(BaseSlicer):
             )
             self.frame_axes.set_zorder(-1000)
 
-    def _locator(self, axes, renderer):
+    def _locator(
+        self,
+        axes,
+        renderer,  # noqa: ARG002
+    ):
         """Adjust the size of the axes.
 
         The locator function used by matplotlib to position axes.
@@ -1338,7 +1342,11 @@ class TiledSlicer(BaseSlicer):
 
         return (coord1, coord2, coord3, coord4)
 
-    def _locator(self, axes, renderer):
+    def _locator(
+        self,
+        axes,
+        renderer,  # noqa: ARG002
+    ):
         """Adjust the size of the axes.
 
         The locator function used by matplotlib to position axes.
@@ -1544,7 +1552,11 @@ class BaseStackedSlicer(BaseSlicer):
             )
             self.frame_axes.set_zorder(-1000)
 
-    def _locator(self, axes, renderer):
+    def _locator(
+        self,
+        axes,
+        renderer,  # noqa: ARG002
+    ):
         """Adjust the size of the axes.
 
         The locator function used by matplotlib to position axes.
@@ -2029,7 +2041,11 @@ class MosaicSlicer(BaseSlicer):
         #  see issue https://github.com/nilearn/nilearn/pull/4284
         self._colorbar_width *= len(coords) ** 1.1
 
-    def _locator(self, axes, renderer):
+    def _locator(
+        self,
+        axes,
+        renderer,  # noqa: ARG002
+    ):
         """Adjust the size of the axes.
 
         Locator function used by matplotlib to position axes.
