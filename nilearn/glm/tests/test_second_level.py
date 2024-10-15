@@ -122,7 +122,7 @@ def test_sort_input_dataframe(input_df):
     ]
 
 
-def test_second_level_input_as_3D_images(rng, affine_eye, tmp_path):
+def test_second_level_input_as_3d_images(rng, affine_eye, tmp_path):
     """Test second level model with a list 3D image filenames as input.
 
     Should act as a regression test for:
@@ -1139,7 +1139,7 @@ def test_second_level_t_contrast_length_errors(tmp_path):
         model.compute_contrast(second_level_contrast=[1, 2])
 
 
-def test_second_level_F_contrast_length_errors(tmp_path):
+def test_second_level_f_contrast_length_errors(tmp_path):
     func_img, mask = fake_fmri_data(file_path=tmp_path)
 
     model = SecondLevelModel(mask_img=mask)

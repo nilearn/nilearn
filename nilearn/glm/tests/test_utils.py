@@ -260,7 +260,7 @@ def test_pad_contrast(rng, val, stat_type):
 
 
 @pytest.mark.parametrize("val", [[[1, 0], [0, 1]], [[1, 0, 0], [0, 1, 0]]])
-def test_pad_F_contrast(rng, val):
+def test_pad_f_contrast(rng, val):
     """Check padding of matrix contrasts."""
     theta = rng.random((4, 1))
     con_val = np.array(val)

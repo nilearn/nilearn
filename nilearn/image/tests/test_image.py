@@ -533,7 +533,7 @@ def test_swap_img_hemispheres(affine_eye, shape_3d_default, rng):
     )
 
 
-def test_index_img_error_3D(affine_eye):
+def test_index_img_error_3d(affine_eye):
     img_3d = Nifti1Image(np.ones((3, 4, 5)), affine_eye)
     expected_error_msg = (
         "Input data has incompatible dimensionality: "
@@ -563,7 +563,7 @@ def test_index_img():
         assert_array_equal(this_img.affine, img_4d.affine)
 
 
-def test_index_img_error_4D(affine_eye):
+def test_index_img_error_4d(affine_eye):
     img_4d, _ = generate_fake_fmri(affine=affine_eye)
     fourth_dim_size = img_4d.shape[3]
     for i in [
@@ -597,7 +597,7 @@ def test_pd_index_img(rng):
     assert_array_equal(get_data(np_index_img), get_data(pd_index_img))
 
 
-def test_iter_img_3D_imag_error(affine_eye):
+def test_iter_img_3d_imag_error(affine_eye):
     img_3d = Nifti1Image(np.ones((3, 4, 5)), affine_eye)
     expected_error_msg = (
         "Input data has incompatible dimensionality: "
