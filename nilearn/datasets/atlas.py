@@ -901,7 +901,7 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     net_names = [
         net_name.strip() for net_name in csv_data["net name"].to_list()
     ]
-    region_coords = csv_data[["x", "y", "z"]].to_list()
+    region_coords = csv_data[["x", "y", "z"]].to_numpy().tolist()
 
     fdescr = get_dataset_descr(dataset_name)
 
