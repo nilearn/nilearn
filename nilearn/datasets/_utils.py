@@ -295,8 +295,8 @@ If you delete it, previously downloaded data will be downloaded again."""
 # https://github.com/nilearn/nilearn/pull/3391 to address a directory
 # traversal vulnerability https://github.com/advisories/GHSA-gw9q-c7gh-j9vm
 def _is_within_directory(directory, target):
-    abs_directory = os.path.abspath(directory)
-    abs_target = os.path.abspath(target)
+    abs_directory = Path(directory).absolute()
+    abs_target = Path(target).absolute()
 
     prefix = os.path.commonprefix([abs_directory, abs_target])
 
