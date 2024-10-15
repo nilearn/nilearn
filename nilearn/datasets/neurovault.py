@@ -807,7 +807,7 @@ class ResultFilter:
             for callable_filter in self.callable_filters_
         )
 
-    def OR(self, other_filter):
+    def OR(self, other_filter):  # noqa: N802
         """Implement the OR operator between two filters."""
         filt1, filt2 = deepcopy(self), deepcopy(other_filter)
         new_filter = ResultFilter(
@@ -815,7 +815,7 @@ class ResultFilter:
         )
         return new_filter
 
-    def AND(self, other_filter):
+    def AND(self, other_filter):  # noqa: N802
         """Implement the AND operator between two filters."""
         filt1, filt2 = deepcopy(self), deepcopy(other_filter)
         new_filter = ResultFilter(
@@ -823,7 +823,7 @@ class ResultFilter:
         )
         return new_filter
 
-    def XOR(self, other_filter):
+    def XOR(self, other_filter):  # noqa: N802
         """Implement the XOR operator between two filters."""
         filt1, filt2 = deepcopy(self), deepcopy(other_filter)
         new_filter = ResultFilter(
@@ -831,7 +831,7 @@ class ResultFilter:
         )
         return new_filter
 
-    def NOT(self):
+    def NOT(self):  # noqa: N802
         """Implement the NOT operator between two filters."""
         filt = deepcopy(self)
         new_filter = ResultFilter(callable_filter=lambda r: not filt(r))
