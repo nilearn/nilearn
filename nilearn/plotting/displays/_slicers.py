@@ -1461,7 +1461,12 @@ class BaseStackedSlicer(BaseSlicer):
     """
 
     @classmethod
-    def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
+    def find_cut_coords(
+        cls,
+        img=None,
+        threshold=None,  # noqa: ARG003
+        cut_coords=None,
+    ):
         """Instantiate the slicer and find cut coordinates.
 
         Parameters
@@ -1873,7 +1878,12 @@ class MosaicSlicer(BaseSlicer):
     _default_figsize = [4.0, 5.0]
 
     @classmethod
-    def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
+    def find_cut_coords(
+        cls,
+        img=None,
+        threshold=None,  # noqa: ARG003
+        cut_coords=None,
+    ):
         """Instantiate the slicer and find cut coordinates for mosaic plotting.
 
         Parameters
