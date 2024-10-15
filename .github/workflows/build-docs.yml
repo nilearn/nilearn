@@ -78,11 +78,12 @@ jobs:
         -   name: Setup python
             uses: actions/setup-python@v5
             with:
-                python-version: '3.12'
+                python-version: '3.9'
 
         -   name: Install packages
             run: |
                 python -m pip install --user --upgrade pip setuptools
+                python -m pip install --user joblib==1.2.0 nibabel==5.2.0 numpy==1.22.4 pandas==2.2.0 scikit-learn==1.4.0  matplotlib==3.3.0 scipy==1.8.0
                 python -m pip install .
 
         -   name: Check if we are doing a full or partial build
