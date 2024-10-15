@@ -85,7 +85,7 @@ def check_threshold(threshold, data, percentile_func, name="threshold"):
     return threshold
 
 
-def get_mask_extent(mask_img):
+def _get_mask_extent(mask_img):
     """Compute the extent of the provided brain mask.
     The extent is the volume of the mask in mm^3 if mask_img is a Nifti1Image
     or the number of vertices if mask_img is a SurfaceImage.
@@ -158,7 +158,7 @@ def adjust_screening_percentile(
     original_screening_percentile = screening_percentile
     # correct screening_percentile according to the volume of the data mask
     # or the number of vertices of the reference mesh
-    mask_extent = get_mask_extent(mask_img)
+    mask_extent = _get_mask_extent(mask_img)
     # if mask_img is a surface mesh, reference is the number of vertices
     # in the standard mesh otherwise it is the volume of the MNI152 brain
     # template
