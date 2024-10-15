@@ -69,7 +69,7 @@ def _linkcode_resolve(domain, info, package, url_fmt, revision):
         return
 
     # Don't include filenames from outside this package's tree
-    if Path(__import__(package).__file__).parent not in fn:
+    if str(Path(__import__(package).__file__).parent) not in fn:
         return
 
     fn = os.path.relpath(fn, start=Path(__import__(package).__file__).parent)
