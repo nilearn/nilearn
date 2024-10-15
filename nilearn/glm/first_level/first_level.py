@@ -8,7 +8,6 @@ Author: Bertrand Thirion, Martin Perez-Guevara, 2016
 from __future__ import annotations
 
 import csv
-import os
 import time
 from pathlib import Path
 from warnings import warn
@@ -265,7 +264,7 @@ def _check_trial_type(events):
     for event_ in events:
         df = pd.read_csv(event_, sep="\t")
         if "trial_type" not in df.columns:
-            file_names.append(os.path.basename(event_))
+            file_names.append(Path(event_).name)
 
     if file_names:
         file_names = "\n -".join(file_names)

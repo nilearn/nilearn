@@ -552,7 +552,7 @@ def fetch_single_file(
 
     # Determine filename using URL
     parse = urllib.parse.urlparse(url)
-    file_name = os.path.basename(parse.path)
+    file_name = Path(parse.path).name
     if file_name == "":
         file_name = md5_hash(parse.path)
 

@@ -2706,7 +2706,7 @@ def _download_spm_auditory_data(data_dir):
         "https://www.fil.ion.ucl.ac.uk/spm/download/data/MoAEpilot/"
         "MoAEpilot.bids.zip"
     )
-    archive_path = Path(data_dir) / os.path.basename(url)
+    archive_path = Path(data_dir) / Path(url).name
     fetch_single_file(url, data_dir)
     try:
         uncompress_file(archive_path)
@@ -2883,7 +2883,7 @@ def _download_data_spm_multimodal(data_dir, subject_dir, subject_id):
     ]
 
     for url in urls:
-        archive_path = os.path.join(subject_dir, os.path.basename(url))
+        archive_path = os.path.join(subject_dir, Path(url).name)
         fetch_single_file(url, subject_dir)
         try:
             uncompress_file(archive_path)
@@ -3052,7 +3052,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     logger.log("Data absent, downloading...")
     url = "https://nipy.org/data-packages/nipy-data-0.2.tar.gz"
 
-    archive_path = os.path.join(data_dir, os.path.basename(url))
+    archive_path = os.path.join(data_dir, Path(url).name)
     fetch_single_file(url, data_dir)
     try:
         uncompress_file(archive_path)

@@ -852,8 +852,7 @@ def fetch_oasis_vbm(
     csv_data = pd.read_csv(ext_vars_file)
     # Comparisons to recfromcsv data must be bytes.
     actual_subjects_ids = [
-        ("OAS1" + str.split(os.path.basename(x), "OAS1")[1][:9])
-        for x in gm_maps
+        ("OAS1" + str.split(Path(x).name, "OAS1")[1][:9]) for x in gm_maps
     ]
     subject_mask = np.asarray(
         [subject_id in actual_subjects_ids for subject_id in csv_data["ID"]]
