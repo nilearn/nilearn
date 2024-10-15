@@ -422,7 +422,7 @@ def test_safe_extract(tmp_path):
     in_archive_file = tmp_path / "something.txt"
     in_archive_file.write_text("hello")
     with contextlib.closing(tarfile.open(ztemp, "w")) as tar:
-        arcname = os.path.normpath("../test.tar")
+        arcname = "../test.tar"
         tar.add(in_archive_file, arcname=arcname)
 
     with pytest.raises(
