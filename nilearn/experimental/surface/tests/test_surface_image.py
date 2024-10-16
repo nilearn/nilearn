@@ -25,22 +25,22 @@ def test_compare_file_and_inmemory_mesh(mini_mesh, tmp_path):
     assert np.array_equal(left.faces, left_loaded.faces)
 
 
-def test_surface_image_shape(make_mini_img):
-    img = make_mini_img()
-    assert img.shape == (9,)
-    img = make_mini_img((3,))
-    assert img.shape == (3, 9)
-    img = make_mini_img((7, 3))
-    assert img.shape == (7, 3, 9)
+@pytest.mark.parametrize(
+    "make_surface_img", [(1,), (3,), (7, 3)], indirect=True
+)
+def test_surface_image_shape(make_surface_img):
+    img = make_surface_img
+    assert img.shape == (*make_surface_img, 9)
 
 
-def test_data_shape_not_matching_mesh(mini_img, flip):
+def test_data_shape_not_matching_mesh(make_surface_img, flip):
     with pytest.raises(ValueError, match="shape.*vertices"):
-        SurfaceImage(mini_img.mesh, flip(mini_img.data))
+        SurfaceImage(make_surface_img.mesh, flip(make_surface_img.data))
 
 
-def test_data_shape_inconsistent(make_mini_img):
-    img = make_mini_img((7,))
+@pytest.mark.parametrize("make_surface_img", [(7,)], indirect=True)
+def test_data_shape_inconsistent(make_surface_img):
+    img = make_surface_img
     bad_data = {
         "left": img.data.parts["left"],
         "right": img.data.parts["right"][:4],
@@ -49,11 +49,11 @@ def test_data_shape_inconsistent(make_mini_img):
         SurfaceImage(img.mesh, bad_data)
 
 
-def test_data_keys_not_matching_mesh(mini_img):
+def test_data_keys_not_matching_mesh(make_surface_img):
     with pytest.raises(ValueError, match="same keys"):
         SurfaceImage(
-            {"left": mini_img.mesh.parts["left"]},
-            mini_img.data,
+            {"left": make_surface_img.mesh.parts["left"]},
+            make_surface_img.data,
         )
 
 
@@ -112,24 +112,24 @@ def test_load_save_mesh(
         assert np.array_equal(mesh.coordinates, expected_mesh.coordinates)
 
 
-def test_save_mesh_default_suffix(tmp_path, mini_img):
+def test_save_mesh_default_suffix(tmp_path, make_surface_img):
     """Check default .gii extension is added."""
-    mini_img.mesh.to_filename(
+    make_surface_img.mesh.to_filename(
         tmp_path / "give_me_a_default_suffix_hemi-L_mesh"
     )
     assert (tmp_path / "give_me_a_default_suffix_hemi-L_mesh.gii").exists()
 
 
-def test_save_mesh_error(tmp_path, mini_img):
+def test_save_mesh_error(tmp_path, make_surface_img):
     with pytest.raises(ValueError, match="cannot contain both"):
-        mini_img.mesh.to_filename(
+        make_surface_img.mesh.to_filename(
             tmp_path / "hemi-L_hemi-R_cannot_have_both.gii"
         )
 
 
-def test_save_mesh_error_wrong_suffix(tmp_path, mini_img):
+def test_save_mesh_error_wrong_suffix(tmp_path, make_surface_img):
     with pytest.raises(ValueError, match="with the extension '.gii'"):
-        mini_img.mesh.to_filename(
+        make_surface_img.mesh.to_filename(
             tmp_path / "hemi-L_hemi-R_cannot_have_both.foo"
         )
 
@@ -195,10 +195,12 @@ def test_load_save_data(
         np.float64,
     ],
 )
-def test_save_dtype(mini_img, tmp_path, dtype):
+def test_save_dtype(make_surface_img, tmp_path, dtype):
     """Check saving several data type."""
-    mini_img.data.parts["right"] = mini_img.data.parts["right"].astype(dtype)
-    mini_img.data.to_filename(tmp_path / "data.gii")
+    make_surface_img.data.parts["right"] = make_surface_img.data.parts[
+        "right"
+    ].astype(dtype)
+    make_surface_img.data.to_filename(tmp_path / "data.gii")
 
 
 def test_load_from_volume_3D_nifti(img_3d_mni, mini_mesh, tmp_path):

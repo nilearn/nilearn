@@ -55,11 +55,11 @@ def make_surface_img(make_mesh, request):
     The shape of the data will be (n_samples, n_vertices).
     n_samples is the parameter of the fixture, default is 50.
     """
-    n_samples = getattr(request, "param", 50)
+    n_samples = getattr(request, "param", (50,))
     mesh = make_mesh()
     data = {}
     for i, (key, val) in enumerate(mesh.parts.items()):
-        data_shape = (n_samples, val.n_vertices)
+        data_shape = (*tuple(n_samples), val.n_vertices)
         data_part = (
             np.arange(np.prod(data_shape)).reshape(data_shape) + 1.0
         ) * 10**i
