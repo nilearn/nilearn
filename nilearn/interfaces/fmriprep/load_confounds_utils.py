@@ -443,7 +443,7 @@ def prepare_output(confounds, demean):
         # Derivatives have NaN on the first row
         # Replace them by estimates at second time point,
         # otherwise nilearn will crash.
-        mask_nan = np.isnan(confounds.values[0, :])
+        mask_nan = np.isnan(confounds.to_numpy()[0, :])
         confounds.iloc[0, mask_nan] = confounds.iloc[1, mask_nan]
         if demean:
             confounds = _demean_confounds(confounds, sample_mask)
