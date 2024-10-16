@@ -769,7 +769,7 @@ def plot_surf(
         of the :term:`mesh` :term:`faces`,
         or a Mesh object with "coordinates" and "faces" attributes.
 
-    surf_map : str or numpy.ndarray, optional
+    surf_map : str or numpy.ndarray, default=None
         Data to be displayed on the surface :term:`mesh`.
         Can be a file
         (valid formats are .gii, .mgz, .nii, .nii.gz,
@@ -777,7 +777,7 @@ def plot_surf(
         .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array with a value for each :term:`vertex` of the `surf_mesh`.
 
-    bg_map : str or numpy.ndarray, optional
+    bg_map : str or numpy.ndarray, default=None
         Background image to be plotted on the :term:`mesh` underneath the
         surf_data in greyscale, most likely a sulcal depth map for
         realistic shading.
@@ -834,7 +834,7 @@ def plot_surf(
         If a number is given, it is used to threshold the image, values
         below the threshold (in absolute value) are plotted as transparent.
 
-    alpha : float or 'auto', default='auto'
+    alpha : float or None, default=None
         Alpha level of the :term:`mesh` (not surf_data).
         When using matplotlib as engine,
         `alpha` will default to ``"auto"`` if ``None`` is passed.
@@ -852,7 +852,7 @@ def plot_surf(
 
     %(vmin)s
     %(vmax)s
-    cbar_vmin, cbar_vmax : float, float, optional
+    cbar_vmin, cbar_vmax : float, float, default=None
         Lower / upper bounds for the colorbar.
         If None, the values will be set from the data.
         Default values are None.
@@ -876,7 +876,7 @@ def plot_surf(
         .. versionadded:: 0.9.0
 
     %(output_file)s
-    axes : instance of matplotlib axes, None, optional
+    axes : instance of matplotlib axes, None, default=None
         The axes instance to plot to. The projection must be '3d' (e.g.,
         `figure, axes = plt.subplots(subplot_kw={'projection': '3d'})`,
         where axes should be passed.).
@@ -1074,23 +1074,24 @@ def plot_surf_contours(
         and zero inside ROI,
         or an integer giving the label number for atlases.
 
-    axes : instance of matplotlib axes, None, optional
+    axes : instance of matplotlib axes, None, default=None
         The axes instance to plot to. The projection must be '3d' (e.g.,
         `figure, axes = plt.subplots(subplot_kw={'projection': '3d'})`,
         where axes should be passed.).
         If None, uses axes from figure if available, else creates new axes.
     %(figure)s
-    levels : list of integers, or None, optional
+    levels : list of integers, or None, default=None
         A list of indices of the regions that are to be outlined.
         Every index needs to correspond to one index in roi_map.
         If None, all regions in roi_map are used.
 
-    labels : list of strings or None, or None, optional
+    labels : list of strings or None, or None, default=None
         A list of labels for the individual regions of interest.
         Provide None as list entry to skip showing the label of that region.
         If None no labels are used.
 
-    colors : list of matplotlib color names or RGBA values, or None, optional
+    colors : list of matplotlib color names or RGBA values, or None \
+        default=None
         Colors to be used.
 
     legend : boolean,  optional, default=False
@@ -1249,7 +1250,7 @@ def plot_surf_stat_map(
         .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array with a value for each :term:`vertex` of the `surf_mesh`.
 
-    bg_map : str or numpy.ndarray, optional
+    bg_map : str or numpy.ndarray, default=None
         Background image to be plotted on the :term:`mesh` underneath
         the stat_map in greyscale, most likely a sulcal depth map
         for realistic shading.
@@ -1279,7 +1280,7 @@ def plot_surf_stat_map(
             Please report bugs that you may encounter.
 
 
-    threshold : a number or None, optional
+    threshold : a number or None, default=None
         If None is given, the image is not thresholded.
         If a number is given, it is used to threshold the image,
         values below the threshold (in absolute value) are plotted
@@ -1329,7 +1330,7 @@ def plot_surf_stat_map(
         .. versionadded:: 0.9.0
 
     %(output_file)s
-    axes : instance of matplotlib axes, None, optional
+    axes : instance of matplotlib axes, None, default=None
         The axes instance to plot to. The projection must be '3d' (e.g.,
         `figure, axes = plt.subplots(subplot_kw={'projection': '3d'})`,
         where axes should be passed.).
@@ -1588,7 +1589,7 @@ def plot_img_on_surf(
         values are surface :term:`mesh` geometries as accepted
         by plot_surf_stat_map.
 
-    mask_img : Niimg-like object or None, optional
+    mask_img : Niimg-like object or None, default=None
         The mask is passed to vol_to_surf.
         Samples falling out of this mask or out of the image are ignored
         during projection of the volume to the surface.
@@ -1814,7 +1815,7 @@ def plot_surf_roi(
         The value at each vertex one inside the ROI and zero inside ROI, or an
         integer giving the label number for atlases.
 
-    bg_map : str or numpy.ndarray, optional
+    bg_map : str or numpy.ndarray, default=None
         Background image to be plotted on the :term:`mesh` underneath
         the stat_map in greyscale, most likely a sulcal depth map for
         realistic shading.
@@ -1892,7 +1893,7 @@ def plot_surf_roi(
         .. versionadded:: 0.9.0
 
     %(output_file)s
-    axes : Axes instance or None, optional
+    axes : Axes instance or None, default=None
         The axes instance to plot to. The projection must be '3d' (e.g.,
         `plt.subplots(subplot_kw={'projection': '3d'})`).
         If None, a new axes is created.
