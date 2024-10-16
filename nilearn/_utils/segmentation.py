@@ -106,7 +106,7 @@ def _clean_labels_ar(X, labels):
     return labels
 
 
-def _buildAB(lap_sparse, labels):
+def _build_ab(lap_sparse, labels):
     """Build the matrix A and rhs B of the linear system to solve.
 
     A and B are two block of the laplacian of the image graph.
@@ -337,7 +337,7 @@ def random_walker(data, labels, beta=130, tol=1.0e-3, copy=True, spacing=None):
     else:
         lap_sparse = _build_laplacian(data, spacing, beta=beta)
 
-    lap_sparse, B = _buildAB(lap_sparse, labels)
+    lap_sparse, B = _build_ab(lap_sparse, labels)
 
     # We solve the linear system
     # lap_sparse X = B
