@@ -1014,6 +1014,15 @@ def test_fetch_language_localizer_demo_dataset(tmp_path, legacy):
         assert bunch.description != ""
 
 
+def test_download_spm_auditory_data(tmp_path, request_mocker):
+    request_mocker.url_mapping[re.compile(r".*MoAEpilot.bids.zip")] = (
+        list_to_archive([Path("spm_auditory", "MoAEpilot", "README.txt")])
+    )
+    func._download_spm_auditory_data(data_dir=tmp_path)
+
+    assert (tmp_path / "spm_auditory" / "MoAEpilot" / "README.txt").exists()
+
+
 def test_fetch_spm_auditory(tmp_path):
     create_fake_bids_dataset(
         base_dir=tmp_path,
