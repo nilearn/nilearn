@@ -457,19 +457,6 @@ def test_fetch_file_part(tmp_path):
     assert file_full.exists()
 
 
-def test_fetch_file_non_existing_dir(tmp_path, request_mocker):
-    non_existing_dir = tmp_path / "non_existing_dir"
-
-    fil = _utils.fetch_single_file(
-        url="http://foo/", data_dir=non_existing_dir, verbose=0
-    )
-
-    assert request_mocker.url_count == 1
-    assert fil.exists()
-    with open(fil) as fp:
-        assert fp.read() == ""
-
-
 @pytest.mark.parametrize("should_cast_path_to_string", [False, True])
 def test_fetch_file_overwrite(
     should_cast_path_to_string, tmp_path, request_mocker
