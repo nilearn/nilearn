@@ -40,7 +40,9 @@ def expression_to_contrast_vector(expression, design_columns):
         np.eye(len(design_columns)), columns=design_columns
     )
     try:
-        contrast_vector = eye_design.eval(expression, engine="python").values
+        contrast_vector = eye_design.eval(
+            expression, engine="python"
+        ).to_numpy()
     except Exception:
         raise ValueError(
             f"The expression ({expression}) is not valid. "
