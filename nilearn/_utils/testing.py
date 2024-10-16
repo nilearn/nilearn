@@ -31,7 +31,7 @@ try:
 
 except ImportError:
 
-    def with_memory_profiler(func):
+    def with_memory_profiler(func):  # noqa: ARG001
         """Use as a decorator to skip tests requiring memory_profiler."""
 
         def dummy_func():

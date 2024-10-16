@@ -446,7 +446,14 @@ sphinx_gallery_conf = {
 }
 
 
-def touch_example_backreferences(app, what, name, obj, options, lines):
+def touch_example_backreferences(
+    app,
+    what,  # noqa: ARG001
+    name,
+    obj,  # noqa: ARG001
+    options,  # noqa: ARG001
+    lines,  # noqa: ARG001
+):
     # generate empty examples files, so that we don't get
     # inclusion errors if there are no examples for a class / module
     examples_path = Path(
