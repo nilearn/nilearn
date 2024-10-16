@@ -744,7 +744,7 @@ def non_parametric_inference(
     ----------
     %(second_level_input)s
 
-    confounds : :obj:`pandas.DataFrame` or None, optional
+    confounds : :obj:`pandas.DataFrame` or None, optional, default=None
         Must contain a subject_label column. All other columns are
         considered as confounds and included in the model. If
         ``design_matrix`` is provided then this argument is ignored.
@@ -753,7 +753,7 @@ def non_parametric_inference(
         At least two columns are expected, ``subject_label`` and at
         least one confound.
 
-    design_matrix : :obj:`pandas.DataFrame` or None, optional
+    design_matrix : :obj:`pandas.DataFrame` or None, optional, default=None
         Design matrix to fit the :term:`GLM`. The number of rows
         in the design matrix must agree with the number of maps derived
         from ``second_level_input``.
@@ -762,7 +762,7 @@ def non_parametric_inference(
 
     %(second_level_contrast)s
 
-    first_level_contrast : :obj:`str`, optional
+    first_level_contrast : :obj:`str`, optional, default=None
         In case a pandas DataFrame was provided as second_level_input this
         is the map name to extract from the pandas dataframe map_name column.
         It has to be a 't' contrast.
@@ -770,7 +770,8 @@ def non_parametric_inference(
         .. versionadded:: 0.9.0
 
     mask : Niimg-like, :obj:`~nilearn.maskers.NiftiMasker` or \
-            :obj:`~nilearn.maskers.MultiNiftiMasker` object, optional
+            :obj:`~nilearn.maskers.MultiNiftiMasker` object
+            optional, default=None
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given, it will be computed
         automatically by a :class:`~nilearn.maskers.MultiNiftiMasker` with
