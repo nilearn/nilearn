@@ -20,7 +20,7 @@ from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import KFold, cross_val_score
 
 from nilearn.maskers.nifti_spheres_masker import _apply_mask_and_get_affinity
-
+from nilearn.image import new_img_like
 from .. import masking
 from .._utils import check_niimg_4d, fill_doc, logger
 from ..image.resampling import coord_transform
@@ -287,6 +287,9 @@ class SearchLight(BaseEstimator):
         self.scoring = scoring
         self.cv = cv
         self.verbose = verbose
+        self.scores_ = None
+        self.process_mask_ = None
+        self.masked_scores_ = None
 
     def fit(self, imgs, y, groups=None):
         """Fit the searchlight.
@@ -316,9 +319,9 @@ class SearchLight(BaseEstimator):
             process_mask_img = self.mask_img
 
         # Compute world coordinates of the seeds
-        process_mask, process_mask_affine = masking.load_mask_img(
-            process_mask_img
-        )
+        process_mask, process_mask_affine = masking.load_mask_img(process_mask_img)
+        if process_mask.shape != imgs.shape[:3]:
+            raise ValueError("The mask image and the 4D input images must have matching dimensions.")
         process_mask_coords = np.where(process_mask != 0)
         process_mask_coords = coord_transform(
             process_mask_coords[0],
@@ -353,7 +356,39 @@ class SearchLight(BaseEstimator):
             self.n_jobs,
             self.verbose,
         )
+        self.process_mask_ = process_mask
+        self.masked_scores_ = scores
         scores_3D = np.zeros(process_mask.shape)
-        scores_3D[process_mask] = scores
+        scores_3D[np.where(process_mask)] = scores
         self.scores_ = scores_3D
         return self
+
+    @property
+    def scores_img_(self):
+        """Convert the 3D scores array into a NIfTI image."""
+        if self.scores_ is None:
+            raise ValueError("The model has not been fitted yet. Call `fit()` before accessing `scores_img_`.")
+        return new_img_like(self.mask_img, self.scores_)
+
+    def transform(self, imgs):
+        """Apply the fitted searchlight on new images."""
+        if self.process_mask_ is None or self.scores_ is None:
+            raise ValueError("You must fit the model before calling `transform()`.")
+
+        # Ensure images are 4D
+        imgs = check_niimg_4d(imgs)
+
+        # Apply mask and affinity again with the fitted mask
+        X, _ = _apply_mask_and_get_affinity(
+            np.asarray(np.where(self.process_mask_)).T,
+            imgs,
+            self.radius,
+            True,
+            mask_img=self.mask_img,
+        )
+
+        # Reuse the stored estimator for scoring
+        return search_light(
+            X, None, self.estimator, None, None, self.scoring, self.cv, self.n_jobs, self.verbose
+        )
+
