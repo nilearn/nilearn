@@ -9,17 +9,13 @@ import pandas as pd
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.cluster.hierarchy import leaves_list, linkage, optimal_leaf_ordering
 
+from nilearn._utils import _constrained_layout_kwargs, fill_doc
 from nilearn._utils.helpers import rename_parameters
+from nilearn.glm.contrasts import expression_to_contrast_vector
+from nilearn.glm.first_level import check_design_matrix
 from nilearn.glm.first_level.experimental_paradigm import check_events
 
-from .._utils import _constrained_layout_kwargs, fill_doc
-
 VALID_TRI_VALUES = ("full", "lower", "diag")
-
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore", FutureWarning)
-    from nilearn.glm.contrasts import expression_to_contrast_vector
-    from nilearn.glm.first_level import check_design_matrix
 
 
 def _fit_axes(axes):
