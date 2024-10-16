@@ -262,9 +262,13 @@ class SearchLight(BaseEstimator):
         Boolean mask array representing the voxels included in the
          searchlight computation.
 
+         .. versionadded:: 0.9.0
+
     masked_scores_ : numpy.ndarray
         1D array containing the searchlight scores corresponding
         to the masked region only.
+
+        .. versionadded:: 0.9.0
 
     Notes
     -----
