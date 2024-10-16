@@ -351,13 +351,5 @@ class HTMLReport(HTMLDocument):
         self.head_tpl = head_tpl
         self.body = body
 
-    def _repr_html_(self):
-        """Return body of the report.
-
-        Method used by the Jupyter notebook.
-        Users normally won't call this method explicitly.
-        """
-        return self.body
-
     def __str__(self):
         return self.body
