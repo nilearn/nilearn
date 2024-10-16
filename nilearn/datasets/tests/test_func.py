@@ -124,7 +124,7 @@ def test_fetch_haxby(tmp_path, request_mocker):
     # subjects with list
     subjects = [1, 2, 6]
     request_mocker.url_mapping[re.compile(r".*stimuli.*")] = list_to_archive(
-        [Path("stimuli/README")]
+        [Path("stimuli", "README")]
     )
 
     haxby = func.fetch_haxby(
