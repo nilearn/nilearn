@@ -13,7 +13,7 @@ from nilearn.maskers import MultiNiftiMasker, NiftiMasker
 SHAPE = (6, 8, 10)
 
 
-def img_4D():
+def img_4d():
     data_4d = np.zeros((40, 40, 40, 3))
     data_4d[20, 20, 20] = 1
     return Nifti1Image(data_4d, affine=np.eye(4))
@@ -230,7 +230,7 @@ def test_components_img(multi_pca_data, mask_img):
     assert len(components_img.shape) == 4
 
 
-@pytest.mark.parametrize("imgs", [[img_4D()], [img_4D(), img_4D()]])
+@pytest.mark.parametrize("imgs", [[img_4d()], [img_4d(), img_4d()]])
 def test_with_globbing_patterns_on_one_or_several_images(imgs, tmp_path):
     multi_pca = _MultiPCA(n_components=3)
 
@@ -244,6 +244,6 @@ def test_with_globbing_patterns_on_one_or_several_images(imgs, tmp_path):
     assert isinstance(components_img, Nifti1Image)
 
     # n_components = 3
-    check_shape = img_4D().shape[:3] + (3,)
+    check_shape = img_4d().shape[:3] + (3,)
     assert components_img.shape == check_shape
     assert len(components_img.shape) == 4
