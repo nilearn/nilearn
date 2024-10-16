@@ -24,7 +24,7 @@ def demo_plot_roi(**kwargs):
         int(z_map) - 10 : int(z_map) + 10,
     ] = 1
     img = Nifti1Image(data, _affine_mni())
-    return plot_roi(img, title="Broca's area", **kwargs)
+    plot_roi(img, title="Broca's area", **kwargs)
 
 
 @pytest.mark.parametrize("view_type", ["contours", "continuous"])
@@ -42,7 +42,7 @@ def test_plot_roi_view_types(
     Tests different combinations of parameters `view_type`, `black_bg`,
     `threshold`, and `alpha`.
     """
-    kwargs = dict()
+    kwargs = {}
     if view_type == "contours":
         kwargs["linewidth"] = 2.0
     demo_plot_roi(
@@ -55,6 +55,15 @@ def test_plot_roi_view_types(
         **kwargs,
     )
     plt.close()
+
+
+def test_plot_roi_no_int_64_warning(recwarn):
+    """Make sure that no int64 warning is thrown."""
+    demo_plot_roi()
+    for _ in range(len(recwarn)):
+        x = recwarn.pop()
+        if issubclass(x.category, UserWarning):
+            assert "image contains 64-bit ints" not in str(x.message)
 
 
 def test_plot_roi_view_type_error():

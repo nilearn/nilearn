@@ -177,7 +177,8 @@ def _squared_loss_derivative_lipschitz_constant(
 ):
     """Compute the lipschitz constant of the gradient of the smooth part \
     of the Graph-Net regression problem (squared_loss + grad_weight*grad) \
-    via power method."""
+    via power method.
+    """
     rng = np.random.RandomState(42)
     a = rng.randn(X.shape[1])
     a /= sqrt(np.dot(a, a))
@@ -215,7 +216,8 @@ def _logistic_derivative_lipschitz_constant(
     """Compute the lipschitz constant of the gradient of the smooth part \
     of the Graph-Net classification problem (logistic_loss + \
     grad_weight*grad) via analytical formula on the logistic loss + \
-    power method on the smooth part."""
+    power method on the smooth part.
+    """
     # L. constant for the data term (logistic)
     # data_constant = sp.linalg.norm(X, 2) ** 2
     data_constant = logistic_loss_lipschitz_constant(X)
@@ -238,7 +240,8 @@ def _logistic_derivative_lipschitz_constant(
 
 def _logistic_data_loss_and_spatial_grad(X, y, w, mask, grad_weight):
     """Compute the smooth part of the Graph-Net objective, \
-    with logistic loss."""
+    with logistic loss.
+    """
     grad_buffer = np.zeros(mask.shape)
     grad_buffer[mask] = w[:-1]
     grad_mask = np.array([mask for _ in range(mask.ndim)])
@@ -320,8 +323,8 @@ def graph_net_squared_loss(
     def f2(w):
         return np.sum(np.abs(w)) * l1_weight
 
-    def f2_prox(w, step_size, *args, **kwargs):
-        return prox_l1(w, step_size * l1_weight), dict(converged=True)
+    def f2_prox(w, step_size, *args, **kwargs):  # noqa: ARG001
+        return prox_l1(w, step_size * l1_weight), {"converged": True}
 
     # total energy (smooth + nonsmooth)
     def total_energy(w):
@@ -403,10 +406,10 @@ def graph_net_logistic(
     def f2(w):
         return np.sum(np.abs(w[:-1])) * l1_weight
 
-    def f2_prox(w, step_size, *args, **kwargs):
-        return prox_l1_with_intercept(w, step_size * l1_weight), dict(
-            converged=True
-        )
+    def f2_prox(w, step_size, *args, **kwargs):  # noqa: ARG001
+        return prox_l1_with_intercept(w, step_size * l1_weight), {
+            "converged": True
+        }
 
     # total energy (smooth + nonsmooth)
     def total_energy(w):

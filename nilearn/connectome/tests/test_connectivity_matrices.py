@@ -101,7 +101,8 @@ def random_spd(p, eig_min, cond, random_state=0):
 
 def _signals(n_subjects=N_SUBJECTS):
     """Generate signals and compute covariances \
-    and apply confounds while computing covariances."""
+    and apply confounds while computing covariances.
+    """
     n_features = N_FEATURES
     signals = []
     for k in range(n_subjects):
@@ -358,8 +359,7 @@ def grad_geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
         ).dot(gmean_sqrt)
 
         # Update the norm and the step size
-        if norm < norm_old:
-            norm_old = norm
+        norm_old = min(norm, norm_old)
         if norm > norm_old:
             step = step / 2.0
             norm = norm_old
@@ -646,7 +646,8 @@ def _assert_connectivity_precision(connectivities, covs):
     """Estimated precision matrix: \
     - is positive definite, \
     - its product with the true covariance matrix \
-      is close to the identity matrix."""
+      is close to the identity matrix.
+    """
     for true_covariance_matrix, estimated_covariance_matrix in zip(
         covs, connectivities
     ):
@@ -938,7 +939,7 @@ def test_connectivity_measure_standardize(signals):
     """Check warning is raised and then suppressed with setting standardize."""
     match = "default strategy for standardize"
 
-    with pytest.warns(DeprecationWarning, match=match):
+    with pytest.deprecated_call(match=match):
         ConnectivityMeasure(kind="correlation").fit_transform(signals)
 
     with warnings.catch_warnings(record=True) as record:

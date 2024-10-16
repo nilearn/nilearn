@@ -91,10 +91,7 @@ def _get_target_dtype(dtype, target_dtype):
     if target_dtype is None:
         return None
     if target_dtype == "auto":
-        if dtype.kind == "i":
-            target_dtype = np.int32
-        else:
-            target_dtype = np.float32
+        target_dtype = np.int32 if dtype.kind == "i" else np.float32
     if target_dtype == dtype:
         return None
     return target_dtype
@@ -172,7 +169,7 @@ def is_binary_niimg(niimg):
     unique_values = np.unique(data)
     if len(unique_values) != 2:
         return False
-    return sorted(list(unique_values)) == [0, 1]
+    return sorted(unique_values) == [0, 1]
 
 
 def _repr_niimgs(niimgs, shorten=True):
@@ -227,8 +224,8 @@ def _repr_niimgs(niimgs, shorten=True):
             # No shortening in this case
             return (
                 f"{niimgs.__class__.__name__}"
-                f"(\nshape={repr(niimgs.shape)},"
-                f"\naffine={repr(niimgs.affine)}\n)"
+                f"(\nshape={niimgs.shape!r},"
+                f"\naffine={niimgs.affine!r}\n)"
             )
     except Exception:
         pass

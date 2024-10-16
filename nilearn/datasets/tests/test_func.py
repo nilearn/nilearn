@@ -14,9 +14,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
-from nibabel import Nifti1Image, save
+from nibabel import Nifti1Image
 from sklearn.utils import Bunch
 
+from nilearn._utils.data_gen import create_fake_bids_dataset
 from nilearn.datasets import func
 from nilearn.datasets._utils import get_dataset_dir
 from nilearn.datasets.tests._testing import dict_to_archive, list_to_archive
@@ -76,7 +77,7 @@ def localizer_mocker(request_mocker):
         )
 
 
-def _make_haxby_subject_data(match, response):
+def _make_haxby_subject_data(match, response):  # noqa: ARG001
     sub_files = [
         "bold.nii.gz",
         "labels.txt",
@@ -142,7 +143,7 @@ def test_fetch_haxby(tmp_path, request_mocker):
             func.fetch_haxby(data_dir=tmp_path, subjects=[sub_id])
 
 
-def _adhd_example_subject(match, request):
+def _adhd_example_subject(match, request):  # noqa: ARG001
     contents = [
         Path("data", match.group(1), match.expand(r"\1_regressors.csv")),
         Path(
@@ -243,7 +244,9 @@ def test_miyawaki2008(tmp_path, request_mocker):
 
 @pytest.mark.parametrize("subjects", [None, 9999])
 def test_fetch_localizer_contrasts_edge_cases(
-    tmp_path, localizer_mocker, subjects
+    tmp_path,
+    localizer_mocker,  # noqa: ARG001
+    subjects,
 ):
     func.fetch_localizer_contrasts(
         ["checkerboard"],
@@ -254,7 +257,7 @@ def test_fetch_localizer_contrasts_edge_cases(
     )
 
 
-def test_fetch_localizer_contrasts(tmp_path, localizer_mocker):
+def test_fetch_localizer_contrasts(tmp_path, localizer_mocker):  # noqa: ARG001
     # 2 subjects
     dataset = func.fetch_localizer_contrasts(
         ["checkerboard"],
@@ -293,7 +296,8 @@ def test_fetch_localizer_contrasts(tmp_path, localizer_mocker):
 
 
 def test_fetch_localizer_contrasts_multiple_contrasts(
-    tmp_path, localizer_mocker
+    tmp_path,
+    localizer_mocker,  # noqa: ARG001
 ):
     dataset = func.fetch_localizer_contrasts(
         ["checkerboard", "horizontal checkerboard"],
@@ -309,7 +313,7 @@ def test_fetch_localizer_contrasts_multiple_contrasts(
     assert len(dataset["ext_vars"]) == 2
 
 
-def test_fetch_localizer_contrasts_get_all(tmp_path, localizer_mocker):
+def test_fetch_localizer_contrasts_get_all(tmp_path, localizer_mocker):  # noqa: ARG001
     # all get_*=True
     dataset = func.fetch_localizer_contrasts(
         ["checkerboard"],
@@ -335,7 +339,7 @@ def test_fetch_localizer_contrasts_get_all(tmp_path, localizer_mocker):
     assert dataset.description != ""
 
 
-def test_fetch_localizer_contrasts_list_subjects(tmp_path, localizer_mocker):
+def test_fetch_localizer_contrasts_list_subjects(tmp_path, localizer_mocker):  # noqa: ARG001
     # grab a given list of subjects
     dataset2 = func.fetch_localizer_contrasts(
         ["checkerboard"],
@@ -354,7 +358,7 @@ def test_fetch_localizer_contrasts_list_subjects(tmp_path, localizer_mocker):
     ]
 
 
-def test_fetch_localizer_calculation_task(tmp_path, localizer_mocker):
+def test_fetch_localizer_calculation_task(tmp_path, localizer_mocker):  # noqa: ARG001
     # 2 subjects
     dataset = func.fetch_localizer_calculation_task(
         n_subjects=2, data_dir=tmp_path, verbose=1, legacy_format=False
@@ -378,7 +382,7 @@ def test_fetch_localizer_calculation_task(tmp_path, localizer_mocker):
     assert dataset.description != ""
 
 
-def test_fetch_localizer_button_task(tmp_path, localizer_mocker):
+def test_fetch_localizer_button_task(tmp_path, localizer_mocker):  # noqa: ARG001
     # Disabled: cannot be tested without actually fetching covariates CSV file
     # Only one subject
     dataset = func.fetch_localizer_button_task(data_dir=tmp_path, verbose=1)
@@ -462,7 +466,6 @@ def test__load_mixed_gambles(rng, affine_eye):
 
 @pytest.mark.parametrize("n_subjects", [1, 5, 16])
 def test_fetch_mixed_gambles(tmp_path, n_subjects):
-
     mgambles = func.fetch_mixed_gambles(
         n_subjects=n_subjects,
         data_dir=tmp_path,
@@ -855,16 +858,6 @@ def test_fetch_ds000030_urls():
         assert urls_path == filepath
         assert urls == mock_json_content
 
-        urls_path = urls_path.replace("/", os.sep)
-
-        assert urls_path == filepath
-        assert urls == mock_json_content
-
-        urls_path = urls_path.replace("/", os.sep)
-
-        assert urls_path == filepath
-        assert urls == mock_json_content
-
 
 def test_fetch_openneuro_dataset(tmp_path):
     dataset_version = "ds000030_R1.0.4"
@@ -890,7 +883,8 @@ def test_fetch_openneuro_dataset(tmp_path):
         f"https://example.com/{data_prefix}/sub-yyy/ses-01.txt",
         f"https://example.com/{data_prefix}/sub-yyy/ses-02.txt",
     ]
-    json.dump(urls, open(url_file, "w"))
+    with open(url_file, "w") as f:
+        json.dump(urls, f)
 
     # Only 1 subject and not subject specific files get downloaded
     datadir, dl_files = func.fetch_openneuro_dataset(
@@ -949,13 +943,6 @@ def _mock_original_spm_auditory_events_file():
     return expected_events_data_string
 
 
-def _mock_bids_compliant_spm_auditory_events_file():
-    events_filepath = os.path.join(os.getcwd(), "tests_events.tsv")
-    func._make_events_file_spm_auditory_data(events_filepath=events_filepath)
-    actual_events_data_string = Path(events_filepath).read_text()
-    return actual_events_data_string, events_filepath
-
-
 @pytest.mark.parametrize("legacy", [True, False])
 def test_fetch_language_localizer_demo_dataset(tmp_path, legacy):
     data_dir = tmp_path
@@ -989,74 +976,42 @@ def test_fetch_language_localizer_demo_dataset(tmp_path, legacy):
         assert bunch.description != ""
 
 
-def test_make_spm_auditory_events_file():
-    try:
-        (
-            actual_events_data_string,
-            events_filepath,
-        ) = _mock_bids_compliant_spm_auditory_events_file()
-    finally:
-        os.remove(events_filepath)
-    expected_events_data_string = _mock_original_spm_auditory_events_file()
-
-    replace_win_line_ends = lambda text: (  # noqa: E731
-        text.replace("\r\n", "\n") if text.find("\r\n") != -1 else text
+def test_fetch_spm_auditory(tmp_path):
+    create_fake_bids_dataset(
+        base_dir=tmp_path,
+        n_sub=1,
+        n_ses=0,
+        tasks=["auditory"],
+        n_runs=[1],
+        with_derivatives=False,
     )
-    actual_events_data_string = replace_win_line_ends(
-        actual_events_data_string
-    )
-    expected_events_data_string = replace_win_line_ends(
-        expected_events_data_string
-    )
-
-    assert actual_events_data_string == expected_events_data_string
-
-
-def test_fetch_spm_auditory(affine_eye, tmp_path):
-    saf = [f"fM00223/fM00223_{int(index):03}.img" for index in range(4, 100)]
-    saf_ = [f"fM00223/fM00223_{int(index):03}.hdr" for index in range(4, 100)]
-
-    data_dir = str(tmp_path / "spm_auditory")
-    os.mkdir(data_dir)
-    subject_dir = os.path.join(data_dir, "sub001")
-    os.mkdir(subject_dir)
-    os.mkdir(os.path.join(subject_dir, "fM00223"))
-    os.mkdir(os.path.join(subject_dir, "sM00223"))
-
-    path_img = str(tmp_path / "tmp.img")
-    path_hdr = str(tmp_path / "tmp.hdr")
-    save(Nifti1Image(np.zeros((2, 3, 4)), affine_eye), path_img)
-    shutil.copy(path_img, os.path.join(subject_dir, "sM00223/sM00223_002.img"))
-    shutil.copy(path_hdr, os.path.join(subject_dir, "sM00223/sM00223_002.hdr"))
-    for file_ in saf:
-        shutil.copy(path_img, os.path.join(subject_dir, file_))
-    for file_ in saf_:
-        shutil.copy(path_hdr, os.path.join(subject_dir, file_))
+    data_dir = tmp_path / "spm_auditory" / "MoAEpilot"
+    shutil.move(tmp_path / "bids_dataset", data_dir)
 
     dataset = func.fetch_spm_auditory(data_dir=tmp_path)
 
     assert isinstance(dataset, Bunch)
     assert isinstance(dataset.anat, str)
+    assert isinstance(dataset.events, str)
     assert isinstance(dataset.func[0], str)
-    assert len(dataset.func) == 96
 
     assert dataset.description != ""
 
 
-def _generate_spm_multimodal(path, nb_sessions=2, nb_vol=390):
+def _generate_spm_multimodal(path, n_sessions=2, n_vol=390):
     data_dir = path / "spm_multimodal_fmri"
     subject_dir = data_dir / "sub001"
     (subject_dir / "fMRI").mkdir(exist_ok=True, parents=True)
     (subject_dir / "sMRI").mkdir(exist_ok=True)
     open(subject_dir / "sMRI" / "smri.img", "a").close()
-    for session in range(nb_sessions):
+    for session in range(n_sessions):
         open(
             subject_dir / "fMRI" / f"trials_ses{int(session + 1)}.mat",
             "a",
         ).close()
         dir_ = subject_dir / "fMRI" / f"Session{int(session + 1)}"
         dir_.mkdir(exist_ok=True)
-        for i in range(nb_vol):
+        for i in range(n_vol):
             open(
                 dir_ / f"fMETHODS-000{int(session + 5)}-{int(i)}-01.img",
                 "a",
@@ -1081,7 +1036,7 @@ def test_fetch_spm_multimodal(tmp_path):
 
 
 def test_fetch_spm_multimodal_missing_data(tmp_path):
-    _generate_spm_multimodal(tmp_path, nb_sessions=2, nb_vol=390)
+    _generate_spm_multimodal(tmp_path, n_sessions=2, n_vol=390)
     func.fetch_spm_multimodal_fmri(
         data_dir=tmp_path, verbose=1, subject_id="sub001"
     )

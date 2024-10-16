@@ -92,16 +92,11 @@ ax = im.axes
 ax.set_ylabel("True label")
 ax.set_xlabel("Predicted label")
 
-# Adjust figure to make labels fit
-ax.get_figure().tight_layout()
-
 plotting.show()
 
 # %%
 # Visualization of :term:`FREM` weights
 # -------------------------------------
-from nilearn import plotting
-
 plotting.plot_stat_map(
     decoder.coef_img_["face"],
     background_img,

@@ -35,9 +35,11 @@ def expression_to_contrast_vector(expression, design_columns):
         contrast_vector = np.zeros(len(design_columns))
         contrast_vector[list(design_columns).index(expression)] = 1.0
         return contrast_vector
-    df = pd.DataFrame(np.eye(len(design_columns)), columns=design_columns)
+    eye_design = pd.DataFrame(
+        np.eye(len(design_columns)), columns=design_columns
+    )
     try:
-        contrast_vector = df.eval(expression, engine="python").values
+        contrast_vector = eye_design.eval(expression, engine="python").values
     except Exception:
         raise ValueError(
             f"The expression ({expression}) is not valid. "
@@ -101,12 +103,12 @@ def compute_contrast(labels, regression_result, con_val, stat_type=None):
         )
 
     if stat_type == "t":
-        effect_ = np.zeros((1, labels.size))
+        effect_ = np.zeros(labels.size)
         var_ = np.zeros(labels.size)
         for label_ in regression_result:
             label_mask = labels == label_
             reg = regression_result[label_].Tcontrast(con_val)
-            effect_[:, label_mask] = reg.effect.T
+            effect_[label_mask] = reg.effect.T
             var_[label_mask] = (reg.sd**2).T
 
     elif stat_type == "F":
@@ -224,13 +226,20 @@ class Contrast:
         """
         if variance.ndim != 1:
             raise ValueError("Variance array should have 1 dimension")
-        if effect.ndim != 2:
-            raise ValueError("Effect array should have 2 dimensions")
+        if effect.ndim > 2:
+            raise ValueError("Effect array should have 1 or 2 dimensions")
 
         self.effect = effect
         self.variance = variance
         self.dof = float(dof)
-        self.dim = effect.shape[0] if dim is None else dim
+        if dim is None:
+            if effect.ndim == 2:
+                self.dim = effect.shape[0]
+            else:
+                self.dim = 1
+        else:
+            self.dim = dim
+
         if self.dim > 1 and stat_type == "t":
             logger.log(
                 "Automatically converted multi-dimensional t to F contrast"
@@ -238,7 +247,7 @@ class Contrast:
             stat_type = "F"
         if stat_type not in ["t", "F"]:
             raise ValueError(
-                f"{stat_type} is not a valid stat_type. " "Should be t or F"
+                f"{stat_type} is not a valid stat_type. Should be t or F"
             )
         self.stat_type = stat_type
         self.stat_ = None
@@ -268,12 +277,14 @@ class Contrast:
 
     def effect_size(self):
         """Make access to summary statistics more straightforward \
-        when computing contrasts."""
+        when computing contrasts.
+        """
         return self.effect
 
     def effect_variance(self):
         """Make access to summary statistics more straightforward \
-        when computing contrasts."""
+        when computing contrasts.
+        """
         return self.variance
 
     def stat(self, baseline=0.0):
@@ -518,9 +529,7 @@ def compute_fixed_effects(
         masker = NiftiMasker(mask_img=mask).fit()
 
     variances = masker.transform(variance_imgs)
-    contrasts = np.array(
-        [masker.transform(contrast_img) for contrast_img in contrast_imgs]
-    )
+    contrasts = masker.transform(contrast_imgs)
 
     if dofs is not None:
         if len(dofs) != n_runs:
@@ -566,7 +575,8 @@ def _compute_fixed_effects_params(
     contrasts, variances, precision_weighted, dofs
 ):
     """Compute the fixed effects t/F-statistic, contrast, variance, \
-    given arrays of effects and variance."""
+    given arrays of effects and variance.
+    """
     tiny = 1.0e-16
     contrasts, variances = np.asarray(contrasts), np.asarray(variances)
     variances = np.maximum(variances, tiny)
@@ -586,7 +596,7 @@ def _compute_fixed_effects_params(
         if dim > 1:
             stat_type = "F"
     else:
-        fixed_fx_contrasts_ = fixed_fx_contrasts[np.newaxis]
+        fixed_fx_contrasts_ = fixed_fx_contrasts
     con = Contrast(
         effect=fixed_fx_contrasts_,
         variance=fixed_fx_variance,

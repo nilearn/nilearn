@@ -2,10 +2,10 @@
 
 import glob
 import itertools
-import os.path
 
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 import warnings
+from pathlib import Path
 
 import numpy as np
 from joblib import Memory
@@ -21,7 +21,8 @@ from .path_finding import resolve_globbing
 
 def _check_fov(img, affine, shape):
     """Return True if img's field of view correspond to given \
-    shape and affine, False elsewhere."""
+    shape and affine, False elsewhere.
+    """
     img = check_niimg(img)
     return img.shape[:3] == shape and np.allclose(img.affine, affine)
 
@@ -56,7 +57,7 @@ def check_same_fov(*args, **kwargs):
     for (a_name, a_img), (b_name, b_img) in itertools.combinations(
         kwargs.items(), 2
     ):
-        if not a_img.shape[:3] == b_img.shape[:3]:
+        if a_img.shape[:3] != b_img.shape[:3]:
             errors.append((a_name, b_name, "shape"))
         if not np.allclose(a_img.affine, b_img.affine):
             errors.append((a_name, b_name, "affine"))
@@ -173,6 +174,7 @@ def iter_check_niimg(
                         target_affine=ref_fov[0],
                         target_shape=ref_fov[1],
                         copy_header=True,
+                        force_resample=False,  # TODO update to True in 0.13.0
                     )
                 else:
                     raise ValueError(
@@ -200,7 +202,8 @@ def iter_check_niimg(
 
             exc.args = (
                 f"Error encountered while loading image #{i}{img_name}",
-            ) + exc.args
+                *exc.args,
+            )
             raise
 
     # Raising an error if input generator is empty.
@@ -279,9 +282,11 @@ def check_niimg(
     niimg = stringify_path(niimg)
 
     if isinstance(niimg, str):
+        # TODO refactor by using "resolve_globbing"
+        # in nilearn/_utils/path_finding.py
         if wildcards and ni.EXPAND_PATH_WILDCARDS:
             # Ascending sorting + expand user path
-            filenames = sorted(glob.glob(os.path.expanduser(niimg)))
+            filenames = sorted(glob.glob(str(Path(niimg).expanduser())))
 
             # processing filenames matching globbing expression
             if len(filenames) >= 1 and glob.has_magic(niimg):
@@ -294,15 +299,15 @@ def check_niimg(
                 # No files matching the glob expression, warn the user
                 message = (
                     "No files matching the entered niimg expression: "
-                    "'%s'.\n You may have left wildcards usage "
+                    f"'{niimg}'.\n You may have left wildcards usage "
                     "activated: please set the global constant "
                     "'nilearn.EXPAND_PATH_WILDCARDS' to False to "
                     "deactivate this behavior."
-                ) % niimg
+                )
                 raise ValueError(message)
             else:
                 raise ValueError(f"File not found: '{niimg}'")
-        elif not os.path.exists(niimg):
+        elif not Path(niimg).exists():
             raise ValueError(f"File not found: '{niimg}'")
 
     # in case of an iterable
@@ -325,7 +330,7 @@ def check_niimg(
         niimg = new_img_like(niimg, data[:, :, :, 0], affine)
     if atleast_4d and len(niimg.shape) == 3:
         data = _get_data(niimg).view()
-        data.shape = data.shape + (1,)
+        data.shape = (*data.shape, 1)
         niimg = new_img_like(niimg, data, niimg.affine)
 
     if ensure_ndim is not None and len(niimg.shape) != ensure_ndim:

@@ -1,15 +1,18 @@
 import numpy as np
 import pytest
-
-try:
-    from joblib import Memory
-except ImportError:
-    from joblib import Memory
+from joblib import Memory
 
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMasker
 from nilearn.regions.rena_clustering import ReNA
+
+
+def test_tags():
+    """Smoke test to test private tag function."""
+    _, mask_img = generate_fake_fmri(shape=(10, 11, 12), length=5)
+    rena = ReNA(mask_img, n_clusters=10)
+    rena._more_tags()
 
 
 def test_rena_clustering():
@@ -30,7 +33,7 @@ def test_rena_clustering():
     X_red = rena.fit_transform(X)
     X_compress = rena.inverse_transform(X_red)
 
-    assert 10 == rena.n_clusters_
+    assert rena.n_clusters_ == 10
     assert X.shape == X_compress.shape
 
     memory = Memory(location=None)

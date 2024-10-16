@@ -5,7 +5,7 @@ eventually nilearn.datasets would be updated
 
 from __future__ import annotations
 
-from typing import Sequence
+from collections.abc import Sequence
 
 from nilearn import datasets
 from nilearn.experimental.surface import _io
@@ -29,10 +29,10 @@ def load_fsaverage(
         "flat": "flat",
     }
     meshes = {}
-    for mesh_type, mesh_name in renaming.items():
-        left = FileMesh(fsaverage[f"{mesh_type}_left"])
-        right = FileMesh(fsaverage[f"{mesh_type}_right"])
-        meshes[mesh_name] = PolyMesh(left=left, right=right)
+    for key, value in renaming.items():
+        left = FileMesh(fsaverage[f"{key}_left"])
+        right = FileMesh(fsaverage[f"{key}_right"])
+        meshes[value] = PolyMesh(left=left, right=right)
     return meshes
 
 

@@ -91,7 +91,8 @@ def test_mask_reducer_single_image_same_with_multiple_jobs(
     data_for_mask_and_reduce, masker, shape_3d_default
 ):
     """Mask and reduce a 3D image and check results is the same \
-    when split over several CPUs."""
+    when split over several CPUs.
+    """
     data_single = _mask_and_reduce(
         masker, data_for_mask_and_reduce[0], n_components=3
     )

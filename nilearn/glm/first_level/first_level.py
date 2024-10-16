@@ -8,7 +8,6 @@ Author: Bertrand Thirion, Martin Perez-Guevara, 2016
 from __future__ import annotations
 
 import csv
-import glob
 import os
 import time
 from pathlib import Path
@@ -22,6 +21,9 @@ from sklearn.base import clone
 from sklearn.cluster import KMeans
 
 from nilearn._utils import fill_doc, logger, stringify_path
+from nilearn._utils.masker_validation import (
+    check_compatibility_mask_and_images,
+)
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_run_sample_masks
 from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
@@ -238,8 +240,7 @@ def run_glm(
         )
 
         # Converting the key to a string is required for AR(N>1) cases
-        for val, result in zip(unique_labels, ar_result):
-            results[val] = result
+        results = dict(zip(unique_labels, ar_result))
         del unique_labels
         del ar_result
 
@@ -262,8 +263,8 @@ def _check_trial_type(events):
     file_names = []
 
     for event_ in events:
-        df = pd.read_csv(event_, sep="\t")
-        if "trial_type" not in df.columns:
+        events_df = pd.read_csv(event_, sep="\t")
+        if "trial_type" not in events_df.columns:
             file_names.append(os.path.basename(event_))
 
     if file_names:
@@ -322,10 +323,11 @@ class FirstLevelModel(BaseGLM):
 
     mask_img : Niimg-like, NiftiMasker, SurfaceImage, SurfaceMasker, False or \
                None, default=None
-        Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If None is passed, the mask
-        will be computed automatically by a NiftiMasker with default
-        parameters. If False is given then the data will not be masked.
+        Mask to be used on data.
+        If an instance of masker is passed, then its mask will be used.
+        If None is passed, the mask will be computed automatically
+        by a NiftiMasker or SurfaceMasker with default parameters.
+        If False is given then the data will not be masked.
         In the case of surface analysis, passing None or False will lead to
         no masking.
 
@@ -502,6 +504,8 @@ class FirstLevelModel(BaseGLM):
         if not isinstance(run_imgs, (list, tuple)):
             run_imgs = [run_imgs]
 
+        check_compatibility_mask_and_images(self.mask_img, run_imgs)
+
         if design_matrices is None:
             if events is None:
                 raise ValueError("events or design matrices must be provided")
@@ -630,7 +634,6 @@ class FirstLevelModel(BaseGLM):
         design_matrices = []
 
         for run_idx, run_img in enumerate(run_imgs):
-
             if isinstance(run_img, SurfaceImage):
                 n_scans = run_img.shape[0]
             else:
@@ -700,8 +703,24 @@ class FirstLevelModel(BaseGLM):
                    :obj:`list` or :obj:`tuple` of Niimg-like objects, \
                    SurfaceImage object, \
                    or :obj:`list` or :obj:`tuple` of SurfaceImage
-            Data on which the :term:`GLM` will be fitted. If this is a list,
-            the affine is considered the same for all.
+            Data on which the :term:`GLM` will be fitted.
+            If this is a list, the affine is considered the same for all.
+
+            .. warning::
+
+                If the FirstLevelModel object was instantiated
+                with a ``mask_img``,
+                then ``run_imgs`` must be compatible with ``mask_img``.
+                For example, if ``mask_img`` is
+                a :class:`nilearn.maskers.NiftiMasker` instance
+                or a Niimng-like object, then ``run_imgs`` must be a
+                Niimg-like object, \
+                a :obj:`list` or a :obj:`tuple` of Niimg-like objects.
+                If ``mask_img`` is
+                a ``SurfaceMasker`` or ``SurfaceImage`` instance,
+                then ``run_imgs`` must be a
+                ``SurfaceImage`` object, \
+                a :obj:`list` or a :obj:`tuple` of ``SurfaceImage`` objects.
 
         events : :class:`pandas.DataFrame` or :obj:`str` or :obj:`list` of \
                  :class:`pandas.DataFrame` or :obj:`str`, default=None
@@ -1177,12 +1196,12 @@ def _read_events_table(table):
     try:
         # kept for historical reasons, a lot of tests use csv with index column
         loaded = pd.read_csv(table, index_col=0)
-    except:  # noqa: E722 B001
+    except:  # noqa: E722
         raise ValueError(f"table path {table} could not be loaded")
     if loaded.empty:
         try:
             loaded = pd.read_csv(table, sep="\t")
-        except:  # noqa: E722 B001
+        except:  # noqa: E722
             raise ValueError(f"table path {table} could not be loaded")
     return loaded
 
@@ -1435,20 +1454,23 @@ def first_level_from_bids(
             f"`confounds_` prefix: {remaining_kwargs}"
         )
 
-    if drift_model is not None and kwargs_load_confounds is not None:
-        if "high_pass" in kwargs_load_confounds.get("strategy"):
-            if drift_model == "cosine":
-                verb = "duplicate"
-            if drift_model == "polynomial":
-                verb = "conflict with"
+    if (
+        drift_model is not None
+        and kwargs_load_confounds is not None
+        and "high_pass" in kwargs_load_confounds.get("strategy")
+    ):
+        if drift_model == "cosine":
+            verb = "duplicate"
+        if drift_model == "polynomial":
+            verb = "conflict with"
 
-            warn(
-                f"""Confounds will contain a high pass filter,
+        warn(
+            f"""Confounds will contain a high pass filter,
  that may {verb} the {drift_model} one used in the model.
  Remember to visualize your design matrix before fitting your model
  to check that your model is not overspecified.""",
-                UserWarning,
-            )
+            UserWarning,
+        )
 
     derivatives_path = Path(dataset_path) / derivatives_folder
     derivatives_path = derivatives_path.absolute()
@@ -1637,30 +1659,28 @@ def _list_valid_subjects(derivatives_path, sub_labels):
 
     Parameters
     ----------
-    derivatives_path : :obj:`str`
+    derivatives_path : :obj:`str` or :obj:`pathlib.Path`
         Path to the BIDS derivatives folder.
 
-    sub_labels : :obj:`list` of :obj:`str`, optional
+    sub_labels : :obj:`list` of :obj:`str`
         List of subject labels to process.
         If None, all subjects in the dataset will be processed.
 
     Returns
     -------
-    sub_labels : :obj:`list` of :obj:`str`, optional
+    sub_labels : :obj:`list` of :obj:`str`
         List of subject labels that will be processed.
     """
+    derivatives_path = Path(derivatives_path)
     # Infer subjects in dataset if not provided
     if not sub_labels:
-        sub_folders = glob.glob(os.path.join(derivatives_path, "sub-*/"))
-        sub_labels = [
-            os.path.basename(s[:-1]).split("-")[1] for s in sub_folders
-        ]
-        sub_labels = sorted(list(set(sub_labels)))
+        sub_folders = derivatives_path.glob("sub-*/")
+        sub_labels = [s.name.split("-")[1] for s in sub_folders if s.is_dir()]
 
     # keep only existing subjects
     sub_labels_exist = []
     for sub_label_ in sub_labels:
-        if os.path.exists(os.path.join(derivatives_path, f"sub-{sub_label_}")):
+        if (derivatives_path / f"sub-{sub_label_}").exists():
             sub_labels_exist.append(sub_label_)
         else:
             warn(
@@ -1670,7 +1690,7 @@ def _list_valid_subjects(derivatives_path, sub_labels):
                 stacklevel=3,
             )
 
-    return set(sub_labels_exist)
+    return sorted(set(sub_labels_exist))
 
 
 def _report_found_files(files, text, sub_label, filters, verbose):
@@ -1800,6 +1820,12 @@ def _get_events_files(
     events : :obj:`list` of :obj:`str`
         List of fullpath to the events files
     """
+    # pop the derivatives filter
+    # it would otherwise trigger some meaningless warnings
+    # as the derivatives entity are not supported in BIDS raw datasets
+    img_filters = [
+        x for x in img_filters if x[0] not in bids_entities()["derivatives"]
+    ]
     events_filters = _make_bids_files_filter(
         task_label=task_label,
         supported_filters=bids_entities()["raw"],
@@ -1873,6 +1899,11 @@ def _get_confounds(
     confounds : :obj:`list` of :class:`pandas.DataFrame`
 
     """
+    # pop the 'desc' filter
+    # it would otherwise trigger some meaningless warnings
+    # as desc entity are not supported in BIDS raw datasets
+    # and we add a desc-confounds 'filter' later on
+    img_filters = [x for x in img_filters if x[0] != "desc"]
     filters = _make_bids_files_filter(
         task_label=task_label,
         supported_filters=bids_entities()["raw"],

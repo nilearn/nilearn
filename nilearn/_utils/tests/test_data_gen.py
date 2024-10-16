@@ -33,7 +33,8 @@ from nilearn.image import get_data
 
 def test_add_metadata_to_bids_derivatives_default_path(tmp_path):
     """Check the filename created is the default value \
-    of add_metadata_to_bids_dataset."""
+    of add_metadata_to_bids_dataset.
+    """
     target_dir = tmp_path / "derivatives" / "sub-01" / "ses-01" / "func"
     target_dir.mkdir(parents=True)
     json_file = add_metadata_to_bids_dataset(
@@ -161,7 +162,7 @@ def test_fake_bids_raw_with_session_and_runs(
     assert len(all_files) == n_raw_files_expected
 
 
-def _check_nb_files_derivatives_for_task(
+def _check_n_files_derivatives_for_task(
     bids_path,
     n_sub,
     n_ses,
@@ -243,7 +244,7 @@ def test_fake_bids_derivatives_with_session_and_runs(
 
     # derivatives
     for task, n_run in zip(tasks, n_runs):
-        _check_nb_files_derivatives_for_task(
+        _check_n_files_derivatives_for_task(
             bids_path=bids_path,
             n_sub=n_sub,
             n_ses=n_ses,
@@ -406,7 +407,7 @@ def test_fake_bids_extra_raw_entity(tmp_path):
     # derivatives
     for label in entities["acq"]:
         for task, n_run in zip(tasks, n_runs):
-            _check_nb_files_derivatives_for_task(
+            _check_n_files_derivatives_for_task(
                 bids_path=bids_path,
                 n_sub=n_sub,
                 n_ses=n_ses,
@@ -447,7 +448,7 @@ def test_fake_bids_extra_derivative_entity(tmp_path):
     # derivatives
     for label in entities["res"]:
         for task, n_run in zip(tasks, n_runs):
-            _check_nb_files_derivatives_for_task(
+            _check_n_files_derivatives_for_task(
                 bids_path=bids_path,
                 n_sub=n_sub,
                 n_ses=n_ses,
@@ -529,7 +530,7 @@ def test_generate_maps():
     n_regions = 9
     maps_img, _ = generate_maps(shape, n_regions, border=1)
     maps = get_data(maps_img)
-    assert maps.shape == shape + (n_regions,)
+    assert maps.shape == (*shape, n_regions)
     # no empty map
     assert np.all(abs(maps).sum(axis=0).sum(axis=0).sum(axis=0) > 0)
     # check border
