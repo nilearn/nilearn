@@ -103,6 +103,7 @@ def test_transform_inverse_transform_with_mask(
     assert_img_equal(expected_img, unmasked_img)
 
 
+@pytest.mark.xfail(reason="Fixture for label image not implemented.")
 @pytest.mark.skipif(
     is_matplotlib_installed(),
     reason="Test requires matplotlib not to be installed.",
