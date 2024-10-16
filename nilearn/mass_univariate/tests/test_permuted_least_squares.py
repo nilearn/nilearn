@@ -135,13 +135,13 @@ def run_permutations(tested_var, target_var, model_intercept):
     for i, n_perm in enumerate(np.repeat(PERM_RANGES, 10)):
         if model_intercept:
             h0 = permuted_ols_with_intercept(tested_var, target_var, n_perm, i)
-            df = N_SAMPLES - 2
+            dof = N_SAMPLES - 2
         else:
             h0 = permuted_ols_no_intercept(tested_var, target_var, n_perm, i)
-            df = N_SAMPLES - 1
+            dof = N_SAMPLES - 1
 
         h0_intercept = h0[0, :]
-        kstest_pval, mse = ks_stat_and_mse(df, h0_intercept)
+        kstest_pval, mse = ks_stat_and_mse(dof, h0_intercept)
 
         all_kstest_pvals.append(kstest_pval)
         all_mse.append(mse)
