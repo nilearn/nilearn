@@ -1088,24 +1088,15 @@ def test_decoder_decision_function_raises_value_error(
 
 
 @pytest.fixture()
-def _make_surface_class_data(rng, make_mini_img):
+def _make_surface_class_data(rng, make_surface_img):
     """Create a surface image classification for testing."""
 
-    def _surface_classes(shape=50):
-        mini_img = make_mini_img((shape,))
-        y = rng.choice([0, 1], size=shape)
+    def _surface_classes(n_samples=50):
+        mini_img = make_surface_img(n_samples)
+        y = rng.choice([0, 1], size=n_samples)
         return mini_img, y
 
     return _surface_classes
-
-
-@pytest.fixture()
-def _make_surface_mask(make_mini_mask):
-    def _surface_mask():
-        mask = make_mini_mask()
-        return mask
-
-    return _surface_mask
 
 
 @pytest.fixture()
@@ -1157,13 +1148,17 @@ def test_decoder_screening_percentile_surface(perc, _make_surface_class_data):
 
 
 def test_decoder_adjust_screening_lessthan_mask_surface(
-    _make_surface_mask, _make_surface_class_data, screening_percentile=30
+    rng,
+    make_surface_mask,
+    make_surface_img,
+    screening_percentile=30,
 ):
     """When mask size is less than or equal to screening percentile wrt to
     the mesh size, it is adjusted to the ratio of mesh to mask.
     """
-    mask = _make_surface_mask()
-    img, y = _make_surface_class_data()
+    mask = make_surface_mask
+    img = make_surface_img
+    y = rng.choice([0, 1], size=img.data.shape[0])
     mask_n_vertices = get_mask_volume(mask)
     mesh_n_vertices = img.mesh.n_vertices
     mask_to_mesh_ratio = (mask_n_vertices / mesh_n_vertices) * 100
@@ -1183,13 +1178,17 @@ def test_decoder_adjust_screening_lessthan_mask_surface(
 
 
 def test_decoder_adjust_screening_greaterthan_mask_surface(
-    _make_surface_mask, _make_surface_class_data, screening_percentile=80
+    rng,
+    make_surface_mask,
+    make_surface_img,
+    screening_percentile=30,
 ):
     """When mask size is greater than screening percentile wrt to the mesh
     size, it is changed to 100% of mask.
     """
-    mask = _make_surface_mask()
-    img, y = _make_surface_class_data()
+    mask = make_surface_mask
+    img = make_surface_img
+    y = rng.choice([0, 1], size=img.data.shape[0])
     mask_n_vertices = get_mask_volume(mask)
     mesh_n_vertices = img.mesh.n_vertices
     mask_to_mesh_ratio = (mask_n_vertices / mesh_n_vertices) * 100
