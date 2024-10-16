@@ -552,8 +552,7 @@ def fetch_single_file(
             )
     data_dir = Path(data_dir)
     # Determine data path
-    if not data_dir.exists():
-        data_dir.mkdir(parents=True)
+    data_dir.mkdir(parents=True, exist_ok=True)
 
     # Determine filename using URL
     parse = urllib.parse.urlparse(url)
@@ -787,8 +786,7 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
     temp_dir = data_dir / files_md5
 
     # Create destination dir
-    if not data_dir.exists():
-        data_dir.mkdir(parents=True)
+    data_dir.mkdir(parents=True, exist_ok=True)
 
     # Abortion flag, in case of error
     abort = None
@@ -820,8 +818,7 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
                     " administrator to solve the problem"
                 )
 
-            if not temp_dir.exists():
-                temp_dir.mkdir(parents=True)
+            temp_dir.mkdir(parents=True, exist_ok=True)
             md5sum = opts.get("md5sum", None)
 
             dl_file = fetch_single_file(
@@ -839,8 +836,7 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
                 # XXX: here, move is supposed to be a dir, it can be a name
                 move = temp_dir / opts["move"]
                 move_dir = move.parent
-                if not move_dir.exists():
-                    move_dir.mkdir(parents=True)
+                move_dir.mkdir(parents=True, exist_ok=True)
                 shutil.move(dl_file, move)
                 dl_file = move
             if "uncompress" in opts:
