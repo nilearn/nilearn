@@ -236,13 +236,13 @@ def plot_matrix(
         Matrix to be plotted.
     %(title)s
     labels : :obj:`list`, or :class:`numpy.ndarray` of :obj:`str`,\
-    or False, or None, optional
+    or False, or None, default=None
         The label of each row and column. Needs to be the same
         length as rows/columns of mat. If False, None, or an
         empty list, no labels are plotted.
 
     figure : :class:`matplotlib.figure.Figure`, figsize :obj:`tuple`,\
-    or None, optional
+    or None, default=None
         Sets the figure used. This argument can be either an existing
         figure, or a pair (width, height) that gives the size of a
         newly-created figure.
@@ -251,7 +251,7 @@ def plot_matrix(
 
             Specifying both axes and figure is not allowed.
 
-    axes : None or :class:`matplotlib.axes.Axes`, optional
+    axes : None or :class:`matplotlib.axes.Axes`, default=None
         Axes instance to be plotted on. Creates a new one if None.
 
         .. note::
@@ -355,7 +355,7 @@ def plot_contrast_matrix(
         Design matrix to use.
     %(colorbar)s
         Default=False.
-    axes : :class:`matplotlib.axes.Axes`, optional
+    axes : :class:`matplotlib.axes.Axes`, default=None
         Axis on which to plot the figure.
         If None, a new figure will be created.
     %(output_file)s
@@ -469,7 +469,7 @@ def plot_design_matrix(
     rescale : :obj:`bool`, default=True
         Rescale columns magnitude for visualization or not.
 
-    axes : :class:`matplotlib.axes.Axes`, optional
+    axes : :class:`matplotlib.axes.Axes`, default=None
         Handle to axes onto which we will draw the design matrix.
     %(output_file)s
 
