@@ -8,8 +8,9 @@ from nilearn.experimental.surface import FileMesh, InMemoryMesh, SurfaceImage
 from nilearn.surface import load_surf_data, load_surf_mesh
 
 
-def test_compare_file_and_inmemory_mesh(mini_mesh, tmp_path):
-    left = mini_mesh.parts["left"]
+def test_compare_file_and_inmemory_mesh(make_mesh, tmp_path):
+    mesh = make_mesh()
+    left = mesh.parts["left"]
     gifti_file = tmp_path / "left.gii"
     left.to_gifti(gifti_file)
 
@@ -204,28 +205,30 @@ def test_save_dtype(make_surface_img, tmp_path, dtype):
     make_surface_img.data.to_filename(tmp_path / "data.gii")
 
 
-def test_load_from_volume_3d_nifti(img_3d_mni, mini_mesh, tmp_path):
+def test_load_from_volume_3d_nifti(img_3d_mni, make_mesh, tmp_path):
     """Instantiate surface image with 3D Niftiimage object or file for data."""
-    SurfaceImage.from_volume(mesh=mini_mesh, volume_img=img_3d_mni)
+    mesh = make_mesh()
+    SurfaceImage.from_volume(mesh=mesh, volume_img=img_3d_mni)
 
     img_3d_mni.to_filename(tmp_path / "tmp.nii.gz")
 
     SurfaceImage.from_volume(
-        mesh=mini_mesh,
+        mesh=mesh,
         volume_img=tmp_path / "tmp.nii.gz",
     )
 
 
-def test_load_from_volume_4d_nifti(img_4d_mni, mini_mesh, tmp_path):
+def test_load_from_volume_4d_nifti(img_4d_mni, make_mesh, tmp_path):
     """Instantiate surface image with 4D Niftiimage object or file for data."""
-    img = SurfaceImage.from_volume(mesh=mini_mesh, volume_img=img_4d_mni)
+    mesh = make_mesh()
+    img = SurfaceImage.from_volume(mesh=mesh, volume_img=img_4d_mni)
     # check that we have the correct number of time points
     assert img.shape[0] == img_4d_mni.shape[3]
 
     img_4d_mni.to_filename(tmp_path / "tmp.nii.gz")
 
     SurfaceImage.from_volume(
-        mesh=mini_mesh,
+        mesh=mesh,
         volume_img=tmp_path / "tmp.nii.gz",
     )
 
