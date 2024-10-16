@@ -16,14 +16,13 @@ def match_headers_keys(source, target, except_keys):
     except_keys : list of str
         List of keys that should from comparison.
     """
-    for key in source.header.keys():
+    for key in source.header:
         if key in except_keys:
             assert (target.header[key] != source.header[key]).any()
+        elif isinstance(target.header[key], np.ndarray):
+            assert_array_equal(
+                target.header[key],
+                source.header[key],
+            )
         else:
-            if isinstance(target.header[key], np.ndarray):
-                assert_array_equal(
-                    target.header[key],
-                    source.header[key],
-                )
-            else:
-                assert target.header[key] == source.header[key]
+            assert target.header[key] == source.header[key]

@@ -35,7 +35,7 @@ def img_2(data_2, affine_eye):
 
 def test_auto_mask(data_1, img_1, data_2, img_2):
     # This mostly a smoke test
-    masker = MultiNiftiMasker(mask_args=dict(opening=0))
+    masker = MultiNiftiMasker(mask_args={"opening": 0})
 
     # Smoke test the fit
     masker.fit([[img_1]])
@@ -52,7 +52,7 @@ def test_auto_mask(data_1, img_1, data_2, img_2):
 
 
 def test_auto_mask_errors(img_3d_rand_eye, img_2):
-    masker = MultiNiftiMasker(mask_args=dict(opening=0))
+    masker = MultiNiftiMasker(mask_args={"opening": 0})
     # Check that if we have not fit the masker we get a intelligible
     # error
     with pytest.raises(ValueError, match="has not been fitted. "):
@@ -83,7 +83,7 @@ def test_nan():
     data[3:-3, 3:-3, 3:-3] = 10
     img = Nifti1Image(data, np.eye(4))
 
-    masker = MultiNiftiMasker(mask_args=dict(opening=0))
+    masker = MultiNiftiMasker(mask_args={"opening": 0})
     masker.fit([img])
 
     mask = get_data(masker.mask_img_)
@@ -257,10 +257,10 @@ def test_standardization(rng, shape_3d_default, affine_eye):
     signals += means
 
     img1 = Nifti1Image(
-        signals[0].reshape(shape_3d_default + (n_samples,)), affine_eye
+        signals[0].reshape((*shape_3d_default, n_samples)), affine_eye
     )
     img2 = Nifti1Image(
-        signals[1].reshape(shape_3d_default + (n_samples,)), affine_eye
+        signals[1].reshape((*shape_3d_default, n_samples)), affine_eye
     )
 
     mask = Nifti1Image(np.ones(shape_3d_default), affine_eye)

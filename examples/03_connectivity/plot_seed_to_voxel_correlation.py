@@ -163,12 +163,14 @@ seed_to_voxel_correlations = (
 # voxel's signal**, and will be of shape (n_voxels, 1). The correlation
 # values can potentially range between -1 and 1.
 print(
-    "Seed-to-voxel correlation shape: (%s, %s)"
-    % seed_to_voxel_correlations.shape
+    "Seed-to-voxel correlation shape: ({}, {})".format(
+        *seed_to_voxel_correlations.shape
+    )
 )
 print(
-    "Seed-to-voxel correlation: min = %.3f; max = %.3f"
-    % (seed_to_voxel_correlations.min(), seed_to_voxel_correlations.max())
+    f"Seed-to-voxel correlation: "
+    f"min = {seed_to_voxel_correlations.min():.3f}; "
+    f"max = {seed_to_voxel_correlations.max():.3f}"
 )
 
 # %%

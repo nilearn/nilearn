@@ -42,7 +42,7 @@ def test_plot_roi_view_types(
     Tests different combinations of parameters `view_type`, `black_bg`,
     `threshold`, and `alpha`.
     """
-    kwargs = dict()
+    kwargs = {}
     if view_type == "contours":
         kwargs["linewidth"] = 2.0
     demo_plot_roi(

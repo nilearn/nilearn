@@ -5,7 +5,7 @@ Note that the tests just looks whether the data produces has correct dimension,
 not whether it is exact
 """
 
-from os import path as osp
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -34,8 +34,8 @@ from ._testing import (
 )
 
 # load the spm file to test cosine basis
-my_path = osp.dirname(osp.abspath(__file__))
-full_path_design_matrix_file = osp.join(my_path, "spm_dmtx.npz")
+my_path = Path(__file__).resolve().parent
+full_path_design_matrix_file = my_path / "spm_dmtx.npz"
 DESIGN_MATRIX = np.load(full_path_design_matrix_file)
 
 
@@ -52,7 +52,8 @@ def design_matrix_light(
     min_onset=-24,
 ):
     """Perform same as make_first_level_design_matrix, \
-       but only returns the computed matrix and associated name."""
+       but only returns the computed matrix and associated name.
+    """
     fir_delays = fir_delays or [0]
     dmtx = make_first_level_design_matrix(
         frame_times,

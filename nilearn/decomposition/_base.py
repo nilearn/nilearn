@@ -380,7 +380,12 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         self.n_jobs = n_jobs
         self.verbose = verbose
 
-    def fit(self, imgs, y=None, confounds=None):
+    def fit(
+        self,
+        imgs,
+        y=None,  # noqa: ARG002
+        confounds=None,
+    ):
         """Compute the mask and the components across subjects.
 
         Parameters
@@ -534,7 +539,8 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
 
     def _sort_by_score(self, data):
         """Sort components on the explained variance over data of estimator \
-        components_."""
+        components_.
+        """
         components_score = self._raw_score(data, per_component=True)
         order = np.argsort(components_score)[::-1]
         self.components_ = self.components_[order]

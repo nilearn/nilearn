@@ -33,7 +33,8 @@ from nilearn.image import get_data
 
 def test_add_metadata_to_bids_derivatives_default_path(tmp_path):
     """Check the filename created is the default value \
-    of add_metadata_to_bids_dataset."""
+    of add_metadata_to_bids_dataset.
+    """
     target_dir = tmp_path / "derivatives" / "sub-01" / "ses-01" / "func"
     target_dir.mkdir(parents=True)
     json_file = add_metadata_to_bids_dataset(
@@ -529,7 +530,7 @@ def test_generate_maps():
     n_regions = 9
     maps_img, _ = generate_maps(shape, n_regions, border=1)
     maps = get_data(maps_img)
-    assert maps.shape == shape + (n_regions,)
+    assert maps.shape == (*shape, n_regions)
     # no empty map
     assert np.all(abs(maps).sum(axis=0).sum(axis=0).sum(axis=0) > 0)
     # check border

@@ -130,7 +130,8 @@ def _buildAB(lap_sparse, labels):
 
 def _mask_edges_weights(edges, weights, mask):
     """Remove edges of the graph connected to masked nodes, \
-    as well as corresponding weights of the edges."""
+    as well as corresponding weights of the edges.
+    """
     mask0 = np.hstack(
         (mask[:, :, :-1].ravel(), mask[:, :-1].ravel(), mask[:-1].ravel())
     )

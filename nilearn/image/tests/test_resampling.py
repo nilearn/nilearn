@@ -433,7 +433,7 @@ def test_resampling_warning_binary_image(affine_eye, rng, force_resample):
     data_binary = rng.integers(4, size=(1, 4, 4), dtype="int32")
     data_binary[data_binary > 0] = 1
 
-    assert sorted(list(np.unique(data_binary))) == [0, 1]
+    assert sorted(np.unique(data_binary)) == [0, 1]
 
     rot = rotation(0, np.pi / 4)
     img_binary = Nifti1Image(data_binary, affine_eye)
@@ -724,7 +724,8 @@ def test_resampling_result_axis_permutation(
 @pytest.mark.parametrize("core_shape", [(3, 5, 4), (3, 5, 4, 2)])
 def test_resampling_nan(affine_eye, core_shape, force_resample):
     """Test that when the data has NaNs they do not propagate to the \
-    whole image."""
+    whole image.
+    """
     # create deterministic data, padded with one
     # voxel thickness of zeros
     core_data = (
@@ -1167,7 +1168,7 @@ def test_resample_img_segmentation_fault(force_resample):
     fourth_dim = 1025
 
     try:
-        data = np.ones(shape_in + (fourth_dim,), dtype=np.float64)
+        data = np.ones((*shape_in, fourth_dim), dtype=np.float64)
     except MemoryError:
         # This can happen on AppVeyor and for 32-bit Python on Windows
         pytest.skip("Not enough RAM to run this test")

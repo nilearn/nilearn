@@ -12,6 +12,7 @@ import numpy as np
 from scipy.ndimage import label
 from scipy.stats import norm
 
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.image import get_data, math_img, threshold_img
 from nilearn.maskers import NiftiMasker
 
@@ -34,14 +35,14 @@ def _compute_hommel_value(z_vals, alpha, verbose=0):
     slope = np.max(slopes)
     hommel_value = np.trunc(alpha / slope)
     if verbose > 0:
-        try:
-            from matplotlib import pyplot as plt
-        except ImportError:
+        if not is_matplotlib_installed():
             warnings.warn(
                 '"verbose" option requires the package Matplotlib.'
                 "Please install it using `pip install matplotlib`."
             )
         else:
+            from matplotlib import pyplot as plt
+
             plt.figure()
             plt.plot(np.arange(1, 1 + n_samples), p_vals, "o")
             plt.plot([n_samples - hommel_value, n_samples], [0, alpha])

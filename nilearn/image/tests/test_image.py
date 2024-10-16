@@ -1,7 +1,6 @@
 """Test image pre-processing functions."""
 
 import platform
-import sys
 import warnings
 from pathlib import Path
 
@@ -321,7 +320,7 @@ def test_smooth_img(affine_eye, tmp_path):
         assert isinstance(out, list)
         assert len(out) == 2
         for o, s, l in zip(out, shapes, lengths):
-            assert o.shape == (s + (l,))
+            assert o.shape == (*s, l)
 
         # Single image as input
         out = smooth_img(imgs[0], fwhm)
@@ -548,7 +547,8 @@ def test_index_img():
     img_4d, _ = generate_fake_fmri(affine=NON_EYE_AFFINE)
 
     fourth_dim_size = img_4d.shape[3]
-    tested_indices = list(range(fourth_dim_size)) + [
+    tested_indices = [
+        *range(fourth_dim_size),
         slice(2, 8, 2),
         [1, 2, 3, 2],
         [],
@@ -578,20 +578,14 @@ def test_index_img_error_4D(affine_eye):
             index_img(img_4d, i)
 
 
-def test_pd_index_img(rng):
+def test_pd_index_img(rng, img_4d_rand_eye):
     # confirm indices from pandas dataframes are handled correctly
-    if "pandas" not in sys.modules:
-        raise pytest.skip(msg="Pandas not available")
-
-    img_4d, _ = generate_fake_fmri(affine=NON_EYE_AFFINE)
-
-    fourth_dim_size = img_4d.shape[3]
+    fourth_dim_size = img_4d_rand_eye.shape[3]
 
     arr = rng.uniform(size=fourth_dim_size) > 0.5
-    df = pd.DataFrame({"arr": arr})
 
-    np_index_img = index_img(img_4d, arr)
-    pd_index_img = index_img(img_4d, df)
+    np_index_img = index_img(img_4d_rand_eye, arr)
+    pd_index_img = index_img(img_4d_rand_eye, pd.DataFrame({"arr": arr}))
 
     assert_array_equal(get_data(np_index_img), get_data(pd_index_img))
 
@@ -698,7 +692,8 @@ def test_new_img_like_accepts_paths(affine_eye, tmp_path, rng):
 
 def test_new_img_like_non_iterable_header(rng):
     """Tests that when an niimg's header is not iterable \
-       and it is set to be copied, an error is not raised."""
+       and it is set to be copied, an error is not raised.
+    """
     fake_fmri_data = rng.uniform(size=_shape_4d_default())
     fake_affine = rng.uniform(size=(4, 4))
     fake_spatial_image = spatialimages.SpatialImage(
@@ -736,7 +731,8 @@ def test_new_img_like_int64(shape_3d_default):
 
 def test_validity_threshold_value_in_threshold_img(shape_3d_default):
     """Check that invalid values to threshold_img's threshold parameter \
-       raise Exceptions."""
+       raise Exceptions.
+    """
     maps, _ = generate_maps(shape_3d_default, n_regions=2)
 
     # testing to raise same error when threshold=None case
@@ -788,7 +784,8 @@ def test_threshold_img_with_cluster_threshold(
     stat_img_test_data, threshold, two_sided, cluster_threshold, expected
 ):
     """Check that passing specific threshold and cluster threshold values \
-    only gives cluster the right number of voxels with the right values."""
+    only gives cluster the right number of voxels with the right values.
+    """
     thr_img = threshold_img(
         img=stat_img_test_data,
         threshold=threshold,
@@ -803,7 +800,8 @@ def test_threshold_img_with_cluster_threshold(
 
 def test_threshold_img_threshold_n_clusters(stat_img_test_data):
     """With a cluster threshold of 5 we get 8 clusters with |values| > 2 \
-       and cluster sizes > 5."""
+       and cluster sizes > 5.
+    """
     thr_img = threshold_img(
         img=stat_img_test_data,
         threshold=2,
@@ -954,18 +952,17 @@ def test_math_img_copied_header_data_values_changed(
         img2=img_4d_ones_eye_tr2,
         copy_header_from="img2",
     )
-    for key in img_4d_ones_eye_tr2.header.keys():
+    for key in img_4d_ones_eye_tr2.header:
         # cal_max and cal_min should be different in result
         if key in ["cal_max", "cal_min"]:
             assert result.header[key] != img_4d_ones_eye_tr2.header[key]
         # other header values should be the same
+        elif isinstance(result.header[key], np.ndarray):
+            assert_array_equal(
+                result.header[key], img_4d_ones_eye_tr2.header[key]
+            )
         else:
-            if isinstance(result.header[key], np.ndarray):
-                assert_array_equal(
-                    result.header[key], img_4d_ones_eye_tr2.header[key]
-                )
-            else:
-                assert result.header[key] == img_4d_ones_eye_tr2.header[key]
+            assert result.header[key] == img_4d_ones_eye_tr2.header[key]
 
 
 def test_binarize_img(img_4d_rand_eye):
@@ -986,11 +983,11 @@ def test_binarize_img(img_4d_rand_eye):
     assert_array_equal(img2.dataobj, img3.dataobj)
 
 
-def test_binarize_negative_img(img_4d_rand_eye):
+def test_binarize_negative_img(img_4d_rand_eye, rng):
     # Test option to use original or absolute values
     img_data = img_4d_rand_eye.dataobj
     # Create a mask for half of the values and make them negative
-    neg_mask = np.random.choice(
+    neg_mask = rng.choice(
         [True, False], size=img_4d_rand_eye.shape, p=[0.5, 0.5]
     )
     img_data[neg_mask] *= -1
@@ -1179,7 +1176,8 @@ def test_new_img_like_mgh_image(affine_eye, shape_3d_default):
 @pytest.mark.parametrize("image", [MGHImage, AnalyzeImage])
 def test_new_img_like_boolean_data(affine_eye, image, shape_3d_default, rng):
     """Checks defaulting boolean input data to np.uint8 dtype is valid \
-       forencoding with nibabel image classes MGHImage and AnalyzeImage."""
+       forencoding with nibabel image classes MGHImage and AnalyzeImage.
+    """
     data = rng.standard_normal(shape_3d_default).astype("uint8")
     in_img = image(dataobj=data, affine=affine_eye)
 
@@ -1229,7 +1227,7 @@ def test_clean_img_sample_mask_mask_img(shape_3d_default):
 def test_concat_niimgs_errors(affine_eye, shape_3d_default):
     img1 = Nifti1Image(np.ones(shape_3d_default), affine_eye)
     img2 = Nifti1Image(np.ones(shape_3d_default), 2 * affine_eye)
-    img4d = Nifti1Image(np.ones(shape_3d_default + (2,)), affine_eye)
+    img4d = Nifti1Image(np.ones((*shape_3d_default, 2)), affine_eye)
 
     # check error for non-forced but necessary resampling
     with pytest.raises(ValueError, match="Field of view of image"):
@@ -1275,7 +1273,7 @@ def test_concat_niimgs(affine_eye, tmp_path):
 
     # smoke-test auto_resample
     concatenated = concat_imgs((img1, img1b, img1c), auto_resample=True)
-    assert concatenated.shape == img1.shape + (3,)
+    assert concatenated.shape == (*img1.shape, 3)
 
     # test list of 4D niimgs as input
     img1.to_filename(tmp_path / "1.nii")
@@ -1288,7 +1286,7 @@ def test_concat_niimgs(affine_eye, tmp_path):
 def test_concat_niimg_dtype(affine_eye):
     shape = [2, 3, 4]
     vols = [
-        Nifti1Image(np.zeros(shape + [n_scans]).astype(np.int16), affine_eye)
+        Nifti1Image(np.zeros([*shape, n_scans]).astype(np.int16), affine_eye)
         for n_scans in [1, 5]
     ]
     nimg = concat_imgs(vols)

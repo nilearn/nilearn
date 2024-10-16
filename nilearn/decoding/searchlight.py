@@ -1,7 +1,8 @@
 """The searchlight is a widely used approach for the study \
 of the fine-grained patterns of information in fMRI analysis, \
 in which multivariate statistical relationships are iteratively tested \
-in the neighborhood of each location of a domain."""
+in the neighborhood of each location of a domain.
+"""
 
 # Authors : Vincent Michel (vm.michel@gmail.com)
 #           Alexandre Gramfort (alexandre.gramfort@inria.fr)
@@ -24,7 +25,7 @@ from .. import masking
 from .._utils import check_niimg_4d, fill_doc, logger
 from ..image.resampling import coord_transform
 
-ESTIMATOR_CATALOG = dict(svc=svm.LinearSVC, svr=svm.SVR)
+ESTIMATOR_CATALOG = {"svc": svm.LinearSVC, "svr": svm.SVR}
 
 
 @fill_doc

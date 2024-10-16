@@ -127,20 +127,21 @@ PERM_RANGES = [10, 100, 1000]
 
 def run_permutations(tested_var, target_var, model_intercept):
     """Compute the Mean Squared Error between cumulative Density Function \
-    as a proof of consistency of the permutation algorithm."""
+    as a proof of consistency of the permutation algorithm.
+    """
     all_mse = []
     all_kstest_pvals = []
 
     for i, n_perm in enumerate(np.repeat(PERM_RANGES, 10)):
         if model_intercept:
             h0 = permuted_ols_with_intercept(tested_var, target_var, n_perm, i)
-            df = N_SAMPLES - 2
+            dof = N_SAMPLES - 2
         else:
             h0 = permuted_ols_no_intercept(tested_var, target_var, n_perm, i)
-            df = N_SAMPLES - 1
+            dof = N_SAMPLES - 1
 
         h0_intercept = h0[0, :]
-        kstest_pval, mse = ks_stat_and_mse(df, h0_intercept)
+        kstest_pval, mse = ks_stat_and_mse(dof, h0_intercept)
 
         all_kstest_pvals.append(kstest_pval)
         all_mse.append(mse)
@@ -614,7 +615,8 @@ def test_permuted_ols_intercept_statsmodels_withcovar(
 
 def test_one_sided_versus_two_test(rng):
     """Check that a positive effect is always better \
-    recovered with one-sided."""
+    recovered with one-sided.
+    """
     n_descriptors = 100
     n_regressors = 1
     target_var = rng.standard_normal((N_SAMPLES, n_descriptors))
@@ -659,7 +661,8 @@ def test_one_sided_versus_two_test(rng):
 
 def test_two_sided_recover_positive_and_negative_effects():
     """Check that two-sided can actually recover \
-    positive and negative effects."""
+    positive and negative effects.
+    """
     target_var1 = np.arange(0, 10).reshape((-1, 1))  # positive effect
     target_var = np.hstack((target_var1, -target_var1))
     tested_var = np.arange(0, 20, 2)
@@ -749,7 +752,7 @@ def test_tfce_smoke_legacy_warnings():
 
     # output_type is "legacy".
     # raise a deprecation warning, but get the standard output.
-    with pytest.warns(DeprecationWarning):
+    with pytest.deprecated_call():
         out = permuted_ols(
             tested_var,
             target_var,
@@ -788,8 +791,8 @@ def test_tfce_smoke_legacy_smoke():
     )
 
     assert isinstance(out, dict)
-    assert "t" in out.keys()
-    assert "tfce" in out.keys()
+    assert "t" in out
+    assert "tfce" in out
     assert out["t"].shape == (n_regressors, n_descriptors)
     assert out["tfce"].shape == (n_regressors, n_descriptors)
 
@@ -810,12 +813,12 @@ def test_tfce_smoke_legacy_smoke():
     )
 
     assert isinstance(out, dict)
-    assert "t" in out.keys()
-    assert "tfce" in out.keys()
-    assert "logp_max_t" in out.keys()
-    assert "logp_max_tfce" in out.keys()
-    assert "h0_max_t" in out.keys()
-    assert "h0_max_tfce" in out.keys()
+    assert "t" in out
+    assert "tfce" in out
+    assert "logp_max_t" in out
+    assert "logp_max_tfce" in out
+    assert "h0_max_t" in out
+    assert "h0_max_tfce" in out
     assert out["t"].shape == (n_regressors, n_descriptors)
     assert out["tfce"].shape == (n_regressors, n_descriptors)
     assert out["logp_max_t"].shape == (n_regressors, n_descriptors)
@@ -882,7 +885,7 @@ def test_cluster_level_parameters_warnings(cluster_level_design, masker):
 
     # output_type is "legacy".
     # raise a deprecation warning, but get the standard output.
-    with pytest.warns(DeprecationWarning):
+    with pytest.deprecated_call():
         out = permuted_ols(
             tested_var,
             target_var,
@@ -913,7 +916,7 @@ def test_cluster_level_parameters_smoke(cluster_level_design, masker):
     )
 
     assert isinstance(out, dict)
-    assert "t" in out.keys()
+    assert "t" in out
 
     # permutations, threshold, and masker are defined,
     # so check for cluster-level maps
@@ -932,13 +935,13 @@ def test_cluster_level_parameters_smoke(cluster_level_design, masker):
     )
 
     assert isinstance(out, dict)
-    assert "t" in out.keys()
-    assert "logp_max_t" in out.keys()
-    assert "logp_max_size" in out.keys()
-    assert "logp_max_mass" in out.keys()
-    assert "h0_max_t" in out.keys()
-    assert "h0_max_size" in out.keys()
-    assert "h0_max_mass" in out.keys()
+    assert "t" in out
+    assert "logp_max_t" in out
+    assert "logp_max_size" in out
+    assert "logp_max_mass" in out
+    assert "h0_max_t" in out
+    assert "h0_max_size" in out
+    assert "h0_max_mass" in out
     assert out["h0_max_t"].size == n_perm
     assert out["h0_max_size"].size == n_perm
     assert out["h0_max_mass"].size == n_perm

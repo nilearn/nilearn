@@ -8,9 +8,9 @@ name: test minimal version of each dependency
 # see https://github.com/nilearn/nilearn/issues/4069
 
 on:
-    pull_request:
+    push:
         branches:
-        -   '*'
+        -   main
     # Uses the cron schedule for github actions
     #
     # https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#scheduled-events

@@ -122,7 +122,7 @@ scores_std = gs.cv_results_["std_test_score"]
 plt.figure(figsize=(6, 4), layout="constrained")
 positions = [0.1, 0.2, 0.3, 0.4]
 plt.barh(positions, mean_scores, align="center", height=0.05, xerr=scores_std)
-yticks = ["dummy"] + list(gs.cv_results_["param_connectivity__kind"].data[1:])
+yticks = ["dummy", *list(gs.cv_results_["param_connectivity__kind"].data[1:])]
 yticks = [t.replace(" ", "\n") for t in yticks]
 plt.yticks(positions, yticks)
 plt.xlabel("Classification accuracy")

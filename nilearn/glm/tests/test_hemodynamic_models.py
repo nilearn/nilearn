@@ -57,7 +57,7 @@ def expected_length(t_r):
 @pytest.mark.parametrize("hrf_model", HRF_MODELS)
 def test_hrf_tr_deprecation(hrf_model):
     """Test that using tr throws a warning."""
-    with pytest.warns(DeprecationWarning, match='"tr" will be removed in'):
+    with pytest.deprecated_call(match='"tr" will be removed in'):
         hrf_model(tr=2)
 
 
@@ -67,7 +67,8 @@ def test_hrf_norm_and_length(
     hrf_model, t_r, expected_integral, expected_length
 ):
     """Test that the hrf models are correctly normalized and \
-    have correct lengths."""
+    have correct lengths.
+    """
     h = hrf_model(t_r)
 
     assert_almost_equal(h.sum(), expected_integral)
@@ -204,7 +205,8 @@ def test_sample_condition_5():
 
 def test_sample_condition_6():
     """Test the experimental condition sampling -- overalapping onsets, \
-    different durations."""
+    different durations.
+    """
     condition = ([0, 0, 10], [1, 2, 1], [1.0, 1.0, 1.0])
     frame_times = np.linspace(0, 49, 50)
 
@@ -218,7 +220,8 @@ def test_sample_condition_6():
 
 def test_sample_condition_7():
     """Test the experimental condition sampling -- different onsets, \
-    overlapping offsets."""
+    overlapping offsets.
+    """
     condition = ([0, 10, 20], [11, 1, 1], [1.0, 1.0, 1.0])
     frame_times = np.linspace(0, 49, 50)
 
@@ -436,7 +439,8 @@ def test__regressor_names():
 
 def test_design_warnings():
     """Test that warnings are correctly raised \
-    upon weird design specification."""
+    upon weird design specification.
+    """
     condition = ([-25, 20, 36.5], [0, 0, 0], [1, 1, 1])
     frame_times = np.linspace(0, 69, 70)
     hrf_model = "spm"

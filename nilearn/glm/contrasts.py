@@ -35,9 +35,11 @@ def expression_to_contrast_vector(expression, design_columns):
         contrast_vector = np.zeros(len(design_columns))
         contrast_vector[list(design_columns).index(expression)] = 1.0
         return contrast_vector
-    df = pd.DataFrame(np.eye(len(design_columns)), columns=design_columns)
+    eye_design = pd.DataFrame(
+        np.eye(len(design_columns)), columns=design_columns
+    )
     try:
-        contrast_vector = df.eval(expression, engine="python").values
+        contrast_vector = eye_design.eval(expression, engine="python").values
     except Exception:
         raise ValueError(
             f"The expression ({expression}) is not valid. "
@@ -275,12 +277,14 @@ class Contrast:
 
     def effect_size(self):
         """Make access to summary statistics more straightforward \
-        when computing contrasts."""
+        when computing contrasts.
+        """
         return self.effect
 
     def effect_variance(self):
         """Make access to summary statistics more straightforward \
-        when computing contrasts."""
+        when computing contrasts.
+        """
         return self.variance
 
     def stat(self, baseline=0.0):
@@ -571,7 +575,8 @@ def _compute_fixed_effects_params(
     contrasts, variances, precision_weighted, dofs
 ):
     """Compute the fixed effects t/F-statistic, contrast, variance, \
-    given arrays of effects and variance."""
+    given arrays of effects and variance.
+    """
     tiny = 1.0e-16
     contrasts, variances = np.asarray(contrasts), np.asarray(variances)
     variances = np.maximum(variances, tiny)

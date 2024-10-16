@@ -268,9 +268,9 @@ def fetch_atlas_craddock_2012(
         else:
             filename = [("random_all.nii.gz", url, opts)]
         data = fetch_files(data_dir, filename, resume=resume, verbose=verbose)
-        params = dict(maps=data[0], description=fdescr)
+        params = {"maps": data[0], "description": fdescr}
     else:
-        params = dict([("description", fdescr)] + list(zip(keys, sub_files)))
+        params = dict([("description", fdescr), *list(zip(keys, sub_files))])
         warnings.warn(
             category=DeprecationWarning,
             message="In release 0.13, this fetcher will return a dictionary "
@@ -353,7 +353,7 @@ def fetch_atlas_destrieux_2009(
     )
     files_ = fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
-    params = dict(maps=files_[1], labels=pd.read_csv(files_[0], index_col=0))
+    params = {"maps": files_[1], "labels": pd.read_csv(files_[0], index_col=0)}
 
     if legacy_format:
         warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
@@ -746,7 +746,7 @@ def _get_atlas_data_and_labels(
         names[new_idx] = label.text.strip()
 
     # The label indices should range from 0 to nlabel + 1
-    assert list(names.keys()) == [x for x in range(len(all_labels) + 1)]
+    assert list(names.keys()) == list(range(len(all_labels) + 1))
     names = [item[1] for item in sorted(names.items())]
     return atlas_img, atlas_file, names, is_lateralized
 
@@ -948,7 +948,7 @@ def fetch_coords_power_2011(legacy_format=True):
     fdescr = get_dataset_descr(dataset_name)
     package_directory = os.path.dirname(os.path.abspath(__file__))
     csv = os.path.join(package_directory, "data", "power_2011.csv")
-    params = dict(rois=pd.read_csv(csv), description=fdescr)
+    params = {"rois": pd.read_csv(csv), "description": fdescr}
     params["rois"] = params["rois"].rename(
         columns={c: c.lower() for c in params["rois"].columns}
     )
@@ -1048,7 +1048,7 @@ def fetch_atlas_smith_2009(
             ]
         else:
             raise ValueError(
-                f'Unknown mirror "{str(mirror)}". '
+                f'Unknown mirror "{mirror!s}". '
                 'Mirror must be "origin" or "nitrc"'
             )
 
@@ -1200,7 +1200,7 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     fdescr = get_dataset_descr(dataset_name)
 
-    params = dict([("description", fdescr)] + list(zip(keys, sub_files)))
+    params = dict([("description", fdescr), *list(zip(keys, sub_files))])
     return Bunch(**params)
 
 
@@ -1226,7 +1226,7 @@ def fetch_atlas_aal(
         should not be interpreted as indices for the list of label names.
         In addition, the region IDs are provided as strings, so it is necessary
         to cast them to integers when indexing.
-        For more information, refer to the fetcher’s description:
+        For more information, refer to the fetcher's description:
 
         .. code-block:: python
 
@@ -1559,12 +1559,12 @@ def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=True):
     labels = np.array(
         [f"{name} {number}" for (name, number) in zip(names, numbers)]
     )
-    params = dict(
-        rois=out_csv[["x", "y", "z"]],
-        labels=labels,
-        networks=out_csv["network"],
-        description=fdescr,
-    )
+    params = {
+        "rois": out_csv[["x", "y", "z"]],
+        "labels": labels,
+        "networks": out_csv["network"],
+        "description": fdescr,
+    }
 
     if legacy_format:
         warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
@@ -1645,7 +1645,7 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
     anatomical_names = np.array([region_mapping[a] for a in anatomical])
 
     rois = pd.concat([rois, pd.DataFrame(anatomical_names)], axis=1)
-    rois.columns = list(rois.columns[:-1]) + ["region"]
+    rois.columns = [*rois.columns[:-1], "region"]
 
     if ordered_regions:
         rois = rois.sort_values(by=["network", "y"])
@@ -1654,13 +1654,13 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
         warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
         rois = rois.to_records()
 
-    params = dict(
-        rois=rois[["x", "y", "z"]],
-        radius=np.array(rois["radius"]),
-        networks=np.array(rois["network"]),
-        regions=np.array(rois["region"]),
-        description=fdescr,
-    )
+    params = {
+        "rois": rois[["x", "y", "z"]],
+        "radius": np.array(rois["radius"]),
+        "networks": np.array(rois["network"]),
+        "regions": np.array(rois["region"]),
+        "description": fdescr,
+    }
 
     return Bunch(**params)
 
@@ -2172,16 +2172,17 @@ def fetch_atlas_schaefer_2018(
             "Schaefer2018_LocalGlobal/Parcellations/MNI/"
         )
 
-    files = []
     labels_file_template = "Schaefer2018_{}Parcels_{}Networks_order.txt"
     img_file_template = (
         "Schaefer2018_{}Parcels_{}Networks_order_FSLMNI152_{}mm.nii.gz"
     )
-    for f in [
-        labels_file_template.format(n_rois, yeo_networks),
-        img_file_template.format(n_rois, yeo_networks, resolution_mm),
-    ]:
-        files.append((f, base_url + f, {}))
+    files = [
+        (f, base_url + f, {})
+        for f in [
+            labels_file_template.format(n_rois, yeo_networks),
+            img_file_template.format(n_rois, yeo_networks, resolution_mm),
+        ]
+    ]
 
     dataset_name = "schaefer_2018"
     data_dir = get_dataset_dir(

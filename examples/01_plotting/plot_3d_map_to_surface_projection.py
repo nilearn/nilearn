@@ -9,7 +9,6 @@ different plotting engines, and add contours of regions of interest using
 :func:`~nilearn.plotting.plot_surf_contours`.
 
 """
-
 # %%
 # Get a statistical map
 # ---------------------
@@ -78,9 +77,9 @@ fig.show()
 
 engine = "plotly"
 # If plotly is not installed, use matplotlib
-try:
-    import plotly.graph_objects as go  # noqa: F401
-except ImportError:
+from nilearn._utils.helpers import is_plotly_installed
+
+if not is_plotly_installed():
     engine = "matplotlib"
 
 print(f"Using plotting engine {engine}.")
@@ -157,7 +156,10 @@ labels = list(regions_dict.values())
 # %%
 # Display outlines of the regions of interest on top of a statistical map
 # -----------------------------------------------------------------------
-
+#
+# Regions can be outlined using both engines.
+# The plotly engine offers more control over the aesthetics of the
+# contours through the lines argument.
 figure = plotting.plot_surf_stat_map(
     fsaverage.infl_right,
     texture,
@@ -166,18 +168,29 @@ figure = plotting.plot_surf_stat_map(
     colorbar=True,
     threshold=1.0,
     bg_map=fsaverage.sulc_right,
+    engine=engine,
 )
 
-plotting.plot_surf_contours(
-    fsaverage.infl_right,
-    parcellation,
-    labels=labels,
-    levels=regions_indices,
-    figure=figure,
-    legend=True,
-    colors=["g", "k"],
-)
-plotting.show()
+if engine == "matplotlib":
+    plotting.plot_surf_contours(
+        fsaverage.infl_right,
+        parcellation,
+        labels=labels,
+        levels=regions_indices,
+        figure=figure,
+        legend=True,
+        colors=["g", "k"],
+    )
+    plotting.show()
+elif engine == "plotly":
+    figure.add_contours(
+        roi_map=parcellation,
+        levels=regions_indices,
+        labels=labels,
+        lines=[{"width": 5}],
+    )
+    # view the contours in a browser
+    # figure.show()
 
 # %%
 # Plot with higher-resolution mesh

@@ -207,7 +207,11 @@ class HTMLDocument:
         ),
         end_version="0.13.0",
     )
-    def open_in_browser(self, file_name=None, temp_file_lifetime="deprecated"):
+    def open_in_browser(
+        self,
+        file_name=None,
+        temp_file_lifetime="deprecated",  # noqa: ARG002
+    ):
         """Save the plot to a temporary HTML file and open it in a browser.
 
         Parameters

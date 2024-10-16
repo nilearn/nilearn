@@ -192,8 +192,8 @@ class Sender:
     the response will be a tar gzipped archive with this structure:
         .
         ├── data
-        │   ├── img.nii.gz
-        │   └── labels.csv
+        │   ├── img.nii.gz
+        │   └── labels.csv
         └── README.txt
 
     Moreover, if the first line starts with 'format:' it is used to determine
@@ -262,7 +262,12 @@ class Sender:
     def url_count(self):
         return len(self.visited_urls)
 
-    def __call__(self, request, *args, **kwargs):
+    def __call__(
+        self,
+        request,
+        *args,  # noqa: ARG002
+        **kwargs,  # noqa: ARG002
+    ):
         if isinstance(request, str):
             request = Request(request)
         self.sent_requests.append(request)
@@ -404,7 +409,7 @@ def dict_to_archive(data, archive_format="gztar"):
     the resulting archive has this structure:
         .
         ├── Data
-        │   └── labels.csv
+        │   └── labels.csv
         └── README.txt
 
     where labels.csv and README.txt contain the corresponding values in `data`
@@ -434,7 +439,7 @@ def list_to_archive(sequence, archive_format="gztar", content=""):
     the resulting archive has this structure:
         .
         ├── Data
-        │   └── labels.csv
+        │   └── labels.csv
         └── README.txt
 
     and "labels.csv" and "README.txt" contain the value of `content`.

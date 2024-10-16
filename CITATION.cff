@@ -287,6 +287,11 @@ authors:
     affiliation: Inria, Saclay, France
     email: g.lemaitre58@gmail.com
     orcid: https://orcid.org/0000-0002-0897-6791
+  - given-names: Hande
+    family-names: Gözükan
+    website: https://github.com/hndgzkn
+    affiliation: Inria, Saclay, France
+    email: hande.gozukan@inria.fr
   - given-names: Hao-Ting
     family-names: Wang
     website: https://wanghaoting.com/
@@ -600,6 +605,10 @@ authors:
     affiliation: University of Pittsburgh, Pittsburgh, PA, USA
     email: raamanap@pitt.edu
     orcid: https://orcid.org/0000-0003-4662-0558
+  - given-names: Prakhar
+    family-names: Jain
+    website: https://github.com/PrakharJain1509
+    affiliation: RV College of Engineering, Bangalore, India
   - given-names: Rahul
     family-names: Brito
     website: https://github.com/Rahul-Brito
@@ -704,6 +713,9 @@ authors:
       USA
     email: salot@pennmedicine.upenn.edu
     orcid: https://orcid.org/0000-0001-9813-3167
+  - given-names: Tharun
+    family-names: K
+    website: https://github.com/tharun634
   - given-names: Thomas
     family-names: Bazeille
     website: https://github.com/thomasbazeille
