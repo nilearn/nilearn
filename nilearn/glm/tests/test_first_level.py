@@ -1297,18 +1297,21 @@ def test_first_level_hrf_model(hrf_model, spaces, shape_4d_default):
             model.compute_contrast(exp)
 
 
-def test_glm_sample_mask():
+def test_glm_sample_mask(shape_4d_default):
     """Ensure the sample mask is performing correctly in GLM."""
-    shapes = [(10, 10, 10, 25)]
-    mask, fmri_data, design_matrix = generate_fake_fmri_data_and_design(shapes)
+    mask, fmri_data, design_matrix = generate_fake_fmri_data_and_design(
+        [shape_4d_default]
+    )
     model = FirstLevelModel(t_r=2.0, mask_img=mask, minimize_memory=False)
-    sample_mask = np.arange(25)[3:]  # censor the first three volumes
+    sample_mask = np.arange(shape_4d_default[3])[
+        3:
+    ]  # censor the first three volumes
     model.fit(
         fmri_data, design_matrices=design_matrix, sample_masks=sample_mask
     )
 
-    assert model.design_matrices_[0].shape[0] == 22
-    assert model.predicted[0].shape[-1] == 22
+    assert model.design_matrices_[0].shape[0] == shape_4d_default[3] - 3
+    assert model.predicted[0].shape[-1] == shape_4d_default[3] - 3
 
 
 """Test the first level model on BIDS datasets."""
