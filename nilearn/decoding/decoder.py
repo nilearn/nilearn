@@ -965,7 +965,12 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         return X
 
-    def _fetch_parallel_fit_outputs(self, parallel_fit_outputs, y, n_problems):
+    def _fetch_parallel_fit_outputs(
+        self,
+        parallel_fit_outputs,
+        y,  # noqa: ARG002
+        n_problems,
+    ):
         """Fetch the outputs from parallel_fit to be ready for ensembling.
 
         Parameters

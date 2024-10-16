@@ -133,9 +133,6 @@ skip-magic-trailing-comma = false
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 fixable = ["ALL"]
 ignore = [
-    "ARG001",
-    "ARG002",
-    "ARG003",
     "ARG005",
     "B018",
     "B028",
@@ -200,9 +197,9 @@ unfixable = []
 max-complexity = 41
 
 [tool.ruff.lint.per-file-ignores]
-"**/{doc}/*" = ["D103", "D104"]
-"**/{examples}/*" = ["D103", "D205", "D301", "D400", "E402"]
-"**/{tests}/*" = ["D100", "D101", "D102", "D103", "E402", "PLR2004", "PLR0915"]
+"**/{doc}/*" = ["D103"]
+"**/{examples}/*" = ["D103", "D400", "E402"]
+"**/{tests}/*" = ["D100", "D101", "D102", "D103", "E402"]
 "__init__.py" = ["D104", "E402"]
 "nilearn/datasets/**/*" = ["PTH201", "PTH101", "PTH102", "PTH107", "PTH110", "PTH111", "PTH113"]
 
