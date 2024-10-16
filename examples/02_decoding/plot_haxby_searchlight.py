@@ -89,9 +89,10 @@ searchlight = nilearn.decoding.SearchLight(
     cv=cv,
 )
 searchlight.fit(fmri_img, y)
-# NEW: Accessing and displaying the `scores_img_` attribute
-# ---------------------------------------------------------
-# After fitting the searchlight, we can access the 3D searchlight scores
+# %%
+# Accessing the searchlight results
+# ---------------------------------
+# After fitting the searchlight, we can access the searchlight scores
 # as a NIfTI image using the `scores_img_` attribute.
 scores_img = searchlight.scores_img_
 print("Searchlight scores image created:", scores_img)

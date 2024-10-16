@@ -256,6 +256,8 @@ class SearchLight(BaseEstimator):
         3D array containing searchlight scores for each voxel, aligned
          with the mask.
 
+         .. versionadded:: 0.11.0
+
     process_mask_ : numpy.ndarray
         Boolean mask array representing the voxels included in the
          searchlight computation.
