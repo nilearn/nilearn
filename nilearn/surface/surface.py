@@ -849,8 +849,8 @@ def load_surf_data(surf_data):
         file_list = resolve_globbing(surf_data)
         # resolve_globbing handles empty lists
 
-        for f in range(len(file_list)):
-            surf_data = file_list[f]
+        for i, surf_data in file_list:
+            surf_data = str(surf_data)
 
             check_extensions(
                 surf_data, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS
@@ -881,16 +881,16 @@ def load_surf_data(surf_data):
 
             if len(data_part.shape) == 1:
                 data_part = data_part[:, np.newaxis]
-            if f == 0:
+            if i == 0:
                 data = data_part
-            elif f > 0:
+            elif i > 0:
                 try:
                     data = np.concatenate((data, data_part), axis=1)
                 except ValueError:
                     raise ValueError(
-                        "When more than one file is input, all "
-                        "files must contain data with the same "
-                        "shape in axis=0"
+                        "When more than one file is input, "
+                        "all files must contain data "
+                        "with the same shape in axis=0."
                     )
 
     # if the input is a numpy array

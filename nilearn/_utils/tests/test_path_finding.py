@@ -6,13 +6,13 @@ from nilearn._utils.path_finding import resolve_globbing
 
 
 def test_resolve_globbing(tmp_path):
-    assert resolve_globbing(tmp_path) == [str(tmp_path)]
+    assert resolve_globbing(tmp_path) == [tmp_path]
 
 
 def test_resolve_globbing_path_expanded():
     tmp_home = Path("~/some_user")
     tmp_home.expanduser().mkdir(parents=True, exist_ok=True)
-    assert resolve_globbing(tmp_home) == [str(tmp_home.expanduser())]
+    assert resolve_globbing(tmp_home) == [tmp_home.expanduser()]
 
 
 def test_resolve_globbing_nested(tmp_path):
@@ -25,15 +25,15 @@ def test_resolve_globbing_nested(tmp_path):
 
     results = resolve_globbing(tmp_path / "foo.txt")
     assert len(results) == 1
-    assert all(isinstance(x, str) for x in results)
-    assert results == [str(tmp_path / "foo.txt")]
+    assert all(isinstance(x, Path) for x in results)
+    assert results == [tmp_path / "foo.txt"]
 
     results = resolve_globbing(tmp_path / "**/foo.txt")
     assert len(results) == 2
-    assert all(isinstance(x, str) for x in results)
+    assert all(isinstance(x, Path) for x in results)
     assert results == [
-        str(tmp_path / "foo" / "foo.txt"),
-        str(tmp_path / "spam" / "foo.txt"),
+        tmp_path / "foo" / "foo.txt",
+        tmp_path / "spam" / "foo.txt",
     ]
 
 

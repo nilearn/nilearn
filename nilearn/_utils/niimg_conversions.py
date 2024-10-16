@@ -197,7 +197,7 @@ def iter_check_niimg(
             raise
         except TypeError as exc:
             img_name = ""
-            if isinstance(niimg, str):
+            if isinstance(niimg, (str, Path)):
                 img_name = f" ({niimg}) "
 
             exc.args = (

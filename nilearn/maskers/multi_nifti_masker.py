@@ -17,9 +17,11 @@ from nilearn._utils import (
     _repr_niimgs,
     check_niimg_3d,
     fill_doc,
-    get_params,
     logger,
     stringify_path,
+)
+from nilearn._utils.class_inspect import (
+    get_params,
 )
 from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn.maskers._utils import compute_middle_image
