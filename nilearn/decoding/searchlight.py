@@ -249,6 +249,17 @@ class SearchLight(BaseEstimator):
         when y is supplied.
     %(verbose0)s
 
+    Attributes
+    ----------
+    scores_ : numpy.ndarray
+        3D array containing searchlight scores for each voxel, aligned with the mask.
+
+    process_mask_ : numpy.ndarray
+        Boolean mask array representing the voxels included in the searchlight computation.
+
+    masked_scores_ : numpy.ndarray
+        1D array containing the searchlight scores corresponding to the masked region only.
+
     Notes
     -----
     The searchlight [Kriegeskorte 06] is a widely used approach for the

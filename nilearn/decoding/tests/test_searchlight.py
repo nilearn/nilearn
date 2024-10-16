@@ -5,7 +5,10 @@
 import numpy as np
 from nibabel import Nifti1Image
 from sklearn.model_selection import KFold, LeaveOneGroupOut
-
+import pytest
+from searchlight import SearchLight
+from nilearn.datasets import fetch_haxby
+from nilearn.image import index_img
 from nilearn.conftest import _rng
 from nilearn.decoding import searchlight
 
@@ -175,3 +178,31 @@ def test_searchlight_group_cross_validation_with_extra_group_variable(
     # run searchlight on list of 3D images
     sl = searchlight.SearchLight(mask_img)
     sl.fit(imgs, y)
+
+def test_searchlight_attributes_exist_after_fit():
+    """Test if attributes `process_mask_` and `masked_scores_` exist after fitting."""
+    # Load example dataset
+    haxby = fetch_haxby()
+    mask_img = haxby.mask_vt[0]
+    imgs = index_img(haxby.func[0], slice(0, 50))  # Subset for testing
+    y = [0, 1] * 25  # Example target values
+
+    # Instantiate and fit the SearchLight
+    searchlight = SearchLight(mask_img, radius=5.0)
+    searchlight.fit(imgs, y)
+
+    # Check if attributes exist after fitting
+    assert hasattr(searchlight, 'process_mask_'), "process_mask_ attribute missing."
+    assert hasattr(searchlight, 'masked_scores_'), "masked_scores_ attribute missing."
+
+def test_searchlight_scores_img_error_before_fit():
+    """Test if accessing `scores_img_` raises an error before fitting."""
+    # Load example mask
+    mask_img = fetch_haxby().mask_vt[0]
+
+    # Instantiate SearchLight without fitting
+    searchlight = SearchLight(mask_img, radius=5.0)
+
+    # Check if accessing `scores_img_` raises a ValueError
+    with pytest.raises(ValueError, match="The model has not been fitted yet."):
+        searchlight.scores_img_
