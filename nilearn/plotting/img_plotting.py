@@ -374,7 +374,7 @@ def plot_img(
         Default=False.
     %(colorbar)s
         Default=False.
-    cbar_tick_format: str, default='%.2g' (scientific notation)
+    cbar_tick_format: str, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
     %(resampling_interpolation)s
@@ -621,7 +621,7 @@ def plot_anat(
         Default=`plt.cm.gray`.
     colorbar : boolean, default=False
         If True, display a colorbar on the right of the plots.
-    cbar_tick_format: str, default='%.2g' (scientific notation)
+    cbar_tick_format: str, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
     %(radiological)s
@@ -719,7 +719,7 @@ def plot_epi(
         Default=True.
     colorbar : boolean, default=False
         If True, display a colorbar on the right of the plots.
-    cbar_tick_format: str, default='%.2g' (scientific notation)
+    cbar_tick_format: str, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
     %(cmap)s
@@ -881,9 +881,9 @@ def plot_roi(
         Default='auto'.
     colorbar : boolean, default=False
         If True, display a colorbar on the right of the plots.
-    cbar_tick_format: str, default='%i'
+    cbar_tick_format: str, default="%%i"
         Controls how to format the tick labels of the colorbar.
-        Ex: use '%.2g' to use scientific notation.
+        Ex: use "%%.2g" to use scientific notation.
     %(vmin)s
     %(vmax)s
     %(resampling_interpolation)s
@@ -1247,7 +1247,7 @@ def plot_stat_map(
     %(display_mode)s
     %(colorbar)s
         Default=True.
-    cbar_tick_format: str, default='%.2g' (scientific notation)
+    cbar_tick_format: str, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
     %(figure)s
@@ -1392,7 +1392,7 @@ def plot_glass_brain(
         'lzry', 'lyrz'.
     %(colorbar)s
         Default=False.
-    cbar_tick_format: str, default='%.2g' (scientific notation)
+    cbar_tick_format: str, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
     %(figure)s
