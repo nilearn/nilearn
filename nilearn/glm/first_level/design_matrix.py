@@ -299,7 +299,7 @@ def make_first_level_design_matrix(
     frame_times : array of shape (n_frames,)
         The timing of acquisition of the scans in seconds.
 
-    events : DataFrame instance, optional, default=None
+    events : DataFrame instance, default=None
         Events data that describes the experimental paradigm.
          The DataFrame instance might have these keys:
             'onset': column to specify the start time of each events in
@@ -336,11 +336,11 @@ def make_first_level_design_matrix(
         model (in scans).
 
     add_regs : array of shape(n_frames, n_add_reg) or \
-            pandas DataFrame, optional, default=None
+            pandas DataFrame, default=None
         additional user-supplied regressors, e.g. data driven noise regressors
         or seed based regressors.
 
-    add_reg_names : list of (n_add_reg,) strings, optional, default=None
+    add_reg_names : list of (n_add_reg,) strings, default=None
         If None, while add_regs was provided, these will be termed
         'reg_i', i = 0..n_add_reg - 1
         If add_regs is a DataFrame, the corresponding column names are used
