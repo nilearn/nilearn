@@ -194,13 +194,11 @@ def fetch_haxby(
                 {"uncompress": True},
             )
         ]
-        readme = Path(
-            fetch_files(
-                data_dir, stimuli_files, resume=resume, verbose=verbose
-            )[0]
-        )
+        readme = fetch_files(
+            data_dir, stimuli_files, resume=resume, verbose=verbose
+        )[0]
         kwargs["stimuli"] = tree(
-            readme.parent, pattern="*.jpg", dictionary=True
+            Path(readme).parent, pattern="*.jpg", dictionary=True
         )
 
     fdescr = get_dataset_descr(dataset_name)
