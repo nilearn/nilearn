@@ -101,3 +101,5 @@ Changes
 - :bdg-dark:`Code` Reorder condition in internal call of :func:`nilearn.image.resample_img` to skip checking of array values if interpolation is ``nearest`` (:gh:`4571` by `Jason Kai`_).
 
 - :bdg-dark:`Code` Remove redundant sorting of ``np.unique(data)`` in internal call of :func:`nilearn.image.resample_img` when checking array values (:gh:`4571` by `Jason Kai`_).
+
+- :bdg-primary:`Doc` Added missing default values to the docstrings of functions in modules in 'nilearn/glm' and the subpackage 'nilearn/glm/second_level'(:gh:`4656` by `Anupriya Kumari`_).
