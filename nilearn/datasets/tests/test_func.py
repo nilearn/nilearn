@@ -19,7 +19,9 @@ from sklearn.utils import Bunch
 
 from nilearn._utils.data_gen import create_fake_bids_dataset
 from nilearn.datasets import func
-from nilearn.datasets._utils import get_dataset_dir
+from nilearn.datasets._utils import (
+    get_dataset_dir, PACKAGE_DIRECTORY
+)
 from nilearn.datasets.tests._testing import dict_to_archive, list_to_archive
 from nilearn.image import load_img
 
@@ -766,8 +768,7 @@ def test_fetch_development_fmri_exception():
 
 # datasets tests originally belonging to nistats follow
 
-currdir = Path(__file__).absolute().parent
-datadir = currdir / "data"
+datadir = PACKAGE_DIRECTORY / "data"
 
 
 def test_fetch_bids_langloc_dataset(tmp_path):

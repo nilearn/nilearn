@@ -30,6 +30,7 @@ from ._utils import (
     filter_columns,
     get_dataset_descr,
     get_dataset_dir,
+    PACKAGE_DIRECTORY,
     read_md5_sum_file,
     tree,
     uncompress_file,
@@ -1903,7 +1904,6 @@ def _fetch_development_fmri_functional(
 
     # The gzip contains unique download keys per Nifti file and confound
     # pre-extracted from OSF. Required for downloading files.
-    package_directory = Path(__file__).absolute().parent
     dtype = [
         ("participant_id", "U12"),
         ("key_regressor", "U24"),
@@ -1912,7 +1912,7 @@ def _fetch_development_fmri_functional(
     names = ["participant_id", "key_r", "key_b"]
     # csv file contains download information related to OpenScience(osf)
     osf_data = csv_to_array(
-        (package_directory / "data" / "development_fmri.csv"),
+        (PACKAGE_DIRECTORY / "data" / "development_fmri.csv"),
         skip_header=True,
         dtype=dtype,
         names=names,

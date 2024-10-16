@@ -16,7 +16,9 @@ from sklearn.utils import Bunch
 
 from .._utils import check_niimg, fill_doc, logger
 from ..image import get_data, new_img_like, reorder_img
-from ._utils import fetch_files, get_dataset_descr, get_dataset_dir
+from ._utils import (
+    fetch_files, get_dataset_descr, get_dataset_dir, PACKAGE_DIRECTORY
+)
 
 _TALAIRACH_LEVELS = ["hemisphere", "lobe", "gyrus", "tissue", "ba"]
 
@@ -946,8 +948,7 @@ def fetch_coords_power_2011(legacy_format=True):
     """
     dataset_name = "power_2011"
     fdescr = get_dataset_descr(dataset_name)
-    package_directory = Path(__file__).absolute().parent
-    csv = package_directory / "data" / "power_2011.csv"
+    csv = PACKAGE_DIRECTORY / "data" / "power_2011.csv"
     params = {"rois": pd.read_csv(csv), "description": fdescr}
     params["rois"] = params["rois"].rename(
         columns={c: c.lower() for c in params["rois"].columns}
@@ -1546,8 +1547,7 @@ def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=True):
     """
     dataset_name = "dosenbach_2010"
     fdescr = get_dataset_descr(dataset_name)
-    package_directory = Path(__file__).absolute().parent
-    csv = package_directory / "data" / "dosenbach_2010.csv"
+    csv = PACKAGE_DIRECTORY / "data" / "dosenbach_2010.csv"
     out_csv = pd.read_csv(csv)
 
     if ordered_regions:
@@ -1619,14 +1619,13 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
     """
     dataset_name = "seitzman_2018"
     fdescr = get_dataset_descr(dataset_name)
-    package_directory = Path(__file__).absolute().parent
     roi_file = (
-        package_directory
+        PACKAGE_DIRECTORY
         / "data"
         / "seitzman_2018_ROIs_300inVol_MNI_allInfo.txt"
     )
     anatomical_file = (
-        package_directory / "data" / "seitzman_2018_ROIs_anatomicalLabels.txt"
+        PACKAGE_DIRECTORY / "data" / "seitzman_2018_ROIs_anatomicalLabels.txt"
     )
 
     rois = pd.read_csv(roi_file, delimiter=" ")

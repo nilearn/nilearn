@@ -12,25 +12,26 @@ from sklearn.utils import Bunch
 
 from .._utils import check_niimg, fill_doc
 from ..image import get_data, new_img_like, resampling
-from ._utils import fetch_files, get_dataset_descr, get_dataset_dir
+from ._utils import (
+    fetch_files, get_dataset_descr, get_dataset_dir, PACKAGE_DIRECTORY
+)
 
-_package_directory = Path(__file__).absolute().parent
 MNI152_FILE_PATH = (
-    _package_directory
+    PACKAGE_DIRECTORY
     / "data"
     / "mni_icbm152_t1_tal_nlin_sym_09a_converted.nii.gz"
 )
 GM_MNI152_FILE_PATH = (
-    _package_directory
+    PACKAGE_DIRECTORY
     / "data"
     / "mni_icbm152_gm_tal_nlin_sym_09a_converted.nii.gz"
 )
 WM_MNI152_FILE_PATH = (
-    _package_directory
+    PACKAGE_DIRECTORY
     / "data"
     / "mni_icbm152_wm_tal_nlin_sym_09a_converted.nii.gz"
 )
-FSAVERAGE5_PATH = _package_directory / "data" / "fsaverage5"
+FSAVERAGE5_PATH = PACKAGE_DIRECTORY / "data" / "fsaverage5"
 
 _LEGACY_FORMAT_MSG = (
     "`legacy_format` will default to `False` in release 0.11. "

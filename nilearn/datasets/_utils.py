@@ -22,6 +22,7 @@ from nilearn._utils import fill_doc, logger
 from .utils import get_data_dirs
 
 _REQUESTS_TIMEOUT = (15.1, 61)
+PACKAGE_DIRECTORY = Path(__file__).absolute().parent
 
 
 def md5_hash(string):
@@ -673,11 +674,10 @@ def fetch_single_file(
 
 def get_dataset_descr(ds_name):
     """Return the description of a dataset."""
-    module_path = Path(__file__).parent
 
     try:
         with open(
-            module_path / "description" / f"{ds_name}.rst", "rb"
+            PACKAGE_DIRECTORY / "description" / f"{ds_name}.rst", "rb"
         ) as rst_file:
             descr = rst_file.read()
     except OSError:
