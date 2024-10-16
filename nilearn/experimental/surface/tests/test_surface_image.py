@@ -26,23 +26,20 @@ def test_compare_file_and_inmemory_mesh(make_mesh, tmp_path):
     assert np.array_equal(left.faces, left_loaded.faces)
 
 
-@pytest.mark.xfail(reason="Parameterizing the new fixture is not working.")
-@pytest.mark.parametrize(
-    "make_surface_img", [(1,), (3,), (7, 3)], indirect=True
-)
-def test_surface_image_shape(make_surface_img):
-    img = make_surface_img
-    assert img.shape == (*make_surface_img, 9)
+@pytest.mark.parametrize("shape", [(1,), (3,), (7, 3)])
+def test_surface_image_shape(make_surface_img, shape):
+    img = make_surface_img(shape)
+    assert img.shape == (*shape, 9)
 
 
 def test_data_shape_not_matching_mesh(make_surface_img, flip):
+    img = make_surface_img()
     with pytest.raises(ValueError, match="shape.*vertices"):
-        SurfaceImage(make_surface_img.mesh, flip(make_surface_img.data))
+        SurfaceImage(img.mesh, flip(img.data))
 
 
-@pytest.mark.parametrize("make_surface_img", [(7,)], indirect=True)
 def test_data_shape_inconsistent(make_surface_img):
-    img = make_surface_img
+    img = make_surface_img((7,))
     bad_data = {
         "left": img.data.parts["left"],
         "right": img.data.parts["right"][:4],
@@ -53,9 +50,10 @@ def test_data_shape_inconsistent(make_surface_img):
 
 def test_data_keys_not_matching_mesh(make_surface_img):
     with pytest.raises(ValueError, match="same keys"):
+        img = make_surface_img()
         SurfaceImage(
-            {"left": make_surface_img.mesh.parts["left"]},
-            make_surface_img.data,
+            {"left": img.mesh.parts["left"]},
+            img.data,
         )
 
 
@@ -116,7 +114,7 @@ def test_load_save_mesh(
 
 def test_save_mesh_default_suffix(tmp_path, make_surface_img):
     """Check default .gii extension is added."""
-    make_surface_img.mesh.to_filename(
+    make_surface_img().mesh.to_filename(
         tmp_path / "give_me_a_default_suffix_hemi-L_mesh"
     )
     assert (tmp_path / "give_me_a_default_suffix_hemi-L_mesh.gii").exists()
@@ -124,14 +122,14 @@ def test_save_mesh_default_suffix(tmp_path, make_surface_img):
 
 def test_save_mesh_error(tmp_path, make_surface_img):
     with pytest.raises(ValueError, match="cannot contain both"):
-        make_surface_img.mesh.to_filename(
+        make_surface_img().mesh.to_filename(
             tmp_path / "hemi-L_hemi-R_cannot_have_both.gii"
         )
 
 
 def test_save_mesh_error_wrong_suffix(tmp_path, make_surface_img):
     with pytest.raises(ValueError, match="with the extension '.gii'"):
-        make_surface_img.mesh.to_filename(
+        make_surface_img().mesh.to_filename(
             tmp_path / "hemi-L_hemi-R_cannot_have_both.foo"
         )
 
@@ -199,10 +197,9 @@ def test_load_save_data(
 )
 def test_save_dtype(make_surface_img, tmp_path, dtype):
     """Check saving several data type."""
-    make_surface_img.data.parts["right"] = make_surface_img.data.parts[
-        "right"
-    ].astype(dtype)
-    make_surface_img.data.to_filename(tmp_path / "data.gii")
+    img = make_surface_img()
+    img.data.parts["right"] = img.data.parts["right"].astype(dtype)
+    img.data.to_filename(tmp_path / "data.gii")
 
 
 def test_load_from_volume_3d_nifti(img_3d_mni, make_mesh, tmp_path):

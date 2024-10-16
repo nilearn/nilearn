@@ -13,32 +13,35 @@ from nilearn.experimental.surface import (
 
 # test with only one surface image and with 2 surface images (surface time
 # series)
-@pytest.mark.parametrize("make_surface_img", [(1,), (2,)], indirect=True)
+@pytest.mark.parametrize("shape", [(1,), (2,)])
 def test_mask_img_fit_shape_mismatch(
-    flip_img, make_surface_mask, make_surface_img, assert_img_equal
+    flip_img, make_surface_mask, make_surface_img, shape, assert_img_equal
 ):
-    img = make_surface_img
-    masker = SurfaceMasker(make_surface_mask)
+    img = make_surface_img(shape)
+    mask = make_surface_mask()
+    masker = SurfaceMasker(mask)
     with pytest.raises(ValueError, match="number of vertices"):
         masker.fit(flip_img(img))
     masker.fit(img)
-    assert_img_equal(make_surface_mask, masker.mask_img_)
+    assert_img_equal(mask, masker.mask_img_)
 
 
 def test_mask_img_fit_keys_mismatch(make_surface_mask, drop_img_part):
-    masker = SurfaceMasker(make_surface_mask)
+    mask = make_surface_mask()
+    masker = SurfaceMasker(mask)
     with pytest.raises(ValueError, match="key"):
-        masker.fit(drop_img_part(make_surface_mask))
+        masker.fit(drop_img_part(mask))
 
 
 def test_none_mask_img(make_surface_mask):
     masker = SurfaceMasker(None)
     with pytest.raises(ValueError, match="provide either"):
         masker.fit(None)
+    mask = make_surface_mask()
     # no mask_img but fit argument is ok
-    masker.fit(make_surface_mask)
+    masker.fit(mask)
     # no fit argument but a mask_img is ok
-    SurfaceMasker(make_surface_mask).fit(None)
+    SurfaceMasker(mask).fit(None)
 
 
 def test_unfitted_masker(make_surface_mask):
@@ -50,51 +53,60 @@ def test_unfitted_masker(make_surface_mask):
 def test_mask_img_transform_shape_mismatch(
     flip_img, make_surface_img, make_surface_mask
 ):
-    masker = SurfaceMasker(make_surface_mask).fit()
+    img = make_surface_img()
+    mask = make_surface_mask()
+    masker = SurfaceMasker(mask).fit()
     with pytest.raises(ValueError, match="number of vertices"):
-        masker.transform(flip_img(make_surface_img))
+        masker.transform(flip_img(img))
     # non-flipped is ok
-    masker.transform(make_surface_img)
+    masker.transform(img)
 
 
 def test_mask_img_transform_keys_mismatch(
     make_surface_mask, make_surface_img, drop_img_part
 ):
-    masker = SurfaceMasker(make_surface_mask).fit()
+    img = make_surface_img()
+    mask = make_surface_mask()
+    masker = SurfaceMasker(mask).fit()
     with pytest.raises(ValueError, match="key"):
-        masker.transform(drop_img_part(make_surface_img))
+        masker.transform(drop_img_part(img))
     # full img is ok
-    masker.transform(make_surface_img)
+    masker.transform(img)
 
 
-@pytest.mark.xfail(reason="Parameterizing the new fixture is not working.")
-@pytest.mark.parametrize(
-    "make_surface_img", [(), (1,), (3,), (3, 2)], indirect=True
-)
-def test_transform_inverse_transform(make_surface_img, assert_img_equal):
-    img = make_surface_img
+@pytest.mark.parametrize("shape", [(), (1,), (3,), (3, 2)])
+def test_transform_inverse_transform(
+    make_surface_img, shape, assert_img_equal
+):
+    img = make_surface_img(shape)
     masker = SurfaceMasker().fit(img)
     masked_img = masker.transform(img)
     assert np.array_equal(
         masked_img.ravel()[:9], [1, 2, 3, 4, 10, 20, 30, 40, 50]
     )
-    assert masked_img.shape == (*make_surface_img, img.shape[-1])
+    assert masked_img.shape == (*shape, img.shape[-1])
     unmasked_img = masker.inverse_transform(masked_img)
     assert_img_equal(img, unmasked_img)
 
 
-@pytest.mark.xfail(reason="Parameterizing the new fixture is not working.")
-@pytest.mark.parametrize(
-    "make_surface_img", [(), (1,), (3,), (3, 2)], indirect=True
+@pytest.mark.xfail(
+    reason="Will implement a different surface image inside the test."
 )
+@pytest.mark.parametrize("shape", [(), (1,), (3,), (3, 2)])
+@pytest.mark.parametrize("n_zeros_in_mask", [4, 6])
 def test_transform_inverse_transform_with_mask(
-    make_surface_img, assert_img_equal, make_surface_mask
+    make_surface_img,
+    assert_img_equal,
+    make_surface_mask,
+    shape,
+    n_zeros_in_mask,
 ):
-    img = make_surface_img
-    masker = SurfaceMasker(make_surface_mask).fit(img)
+    img = make_surface_img(shape)
+    mask = make_surface_mask(n_zeros_in_mask)
+    masker = SurfaceMasker(mask).fit(img)
     masked_img = masker.transform(img)
-    assert masked_img.shape == (*make_surface_img, img.shape[-1] - 2)
-    assert np.array_equal(masked_img.ravel()[:7], [2, 3, 4, 20, 30, 40, 50.0])
+    assert masked_img.shape == (*shape, img.shape[-1] - n_zeros_in_mask)
+    assert np.array_equal(masked_img.ravel()[:7], [2, 3, 4, 20, 30, 40, 50])
     unmasked_img = masker.inverse_transform(masked_img)
     expected_data = {k: v.copy() for (k, v) in img.data.parts.items()}
     for v in expected_data.values():

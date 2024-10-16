@@ -1088,18 +1088,18 @@ def test_decoder_decision_function_raises_value_error(
 
 
 @pytest.fixture()
-def _make_surface_class_data(rng, make_surface_img):
+def _make_surface_class_data(rng, make_surface_img, shape=(50,)):
     """Create a surface image classification for testing."""
-    mini_img = make_surface_img
-    y = rng.choice([0, 1], size=mini_img.data.shape[0])
+    mini_img = make_surface_img(shape)
+    y = rng.choice([0, 1], size=shape)
     return mini_img, y
 
 
 @pytest.fixture()
-def _make_surface_reg_data(rng, make_surface_img):
+def _make_surface_reg_data(rng, make_surface_img, shape=(50,)):
     """Create a surface image regression for testing."""
-    mini_img = make_surface_img
-    y = rng.random(mini_img.data.shape[0])
+    mini_img = make_surface_img(shape)
+    y = rng.random(shape)
     return mini_img, y
 
 
@@ -1153,7 +1153,7 @@ def test_decoder_adjust_screening_lessthan_mask_surface(
     """When mask size is less than or equal to screening percentile wrt to
     the mesh size, it is adjusted to the ratio of mesh to mask.
     """
-    mask = make_surface_mask
+    mask = make_surface_mask()
     img, y = _make_surface_class_data
     mask_n_vertices = _get_mask_extent(mask)
     mesh_n_vertices = img.mesh.n_vertices
@@ -1181,7 +1181,7 @@ def test_decoder_adjust_screening_greaterthan_mask_surface(
     """When mask size is greater than screening percentile wrt to the mesh
     size, it is changed to 100% of mask.
     """
-    mask = make_surface_mask
+    mask = make_surface_mask()
     img, y = _make_surface_class_data
     mask_n_vertices = _get_mask_extent(mask)
     mesh_n_vertices = img.mesh.n_vertices
@@ -1218,7 +1218,8 @@ def test_decoder_fit_surface_with_mask_image(
     """Test fit for surface image."""
     warnings.simplefilter("ignore", ConvergenceWarning)
     X, y = _make_surface_class_data
-    model = decoder(mask=make_surface_mask)
+    mask = make_surface_mask()
+    model = decoder(mask=mask)
     model.fit(X, y)
 
     assert model.coef_ is not None
@@ -1231,7 +1232,8 @@ def test_decoder_error_incompatible_surface_mask_and_volume_data(
 ):
     """Test error when fitting volume data with a surface mask."""
     data_volume, y, _ = tiny_binary_classification_data
-    model = decoder(mask=make_surface_mask)
+    mask = make_surface_mask()
+    model = decoder(mask=mask)
 
     with pytest.raises(
         TypeError, match="Mask and images to fit must be of compatible types."
@@ -1305,5 +1307,6 @@ def test_frem_decoder_fit_surface(
         ValueError, match="The mask image should be a Niimg-like object."
     ):
         X, y = _make_surface_class_data
-        model = frem(mask=make_surface_mask, clustering_percentile=90)
+        mask = make_surface_mask()
+        model = frem(mask=mask, clustering_percentile=90)
         model.fit(X, y)
