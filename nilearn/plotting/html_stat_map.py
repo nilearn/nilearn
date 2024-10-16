@@ -513,7 +513,7 @@ def view_img(
         To turn off background image, just pass "bg_img=False".
         Default='MNI152'.
 
-    cut_coords : None, or a tuple of floats
+    cut_coords : None, or a tuple of floats, default=None
         The :term:`MNI` coordinates of the point where the cut is performed
         as a 3-tuple: (x, y, z). If None is given, the cuts are calculated
         automatically.
@@ -521,7 +521,7 @@ def view_img(
     colorbar : boolean, default=True
         If True, display a colorbar on top of the plots.
     %(title)s
-    threshold : string, number or None, default=1e-6
+    threshold : string, number or None, default=1e-06
         If None is given, the image is not thresholded.
         If a string of the form "90%%" is given, use the 90-th percentile of
         the absolute value in the image.
@@ -547,14 +547,14 @@ def view_img(
         or an anatomical image.
     %(dim)s
         Default='auto'.
-    vmax : float, or None, optional
+    vmax : float, or None, default=None
         max value for mapping colors.
         If vmax is None and symmetric_cmap is True, vmax is the max
         absolute value of the volume.
         If vmax is None and symmetric_cmap is False, vmax is the max
         value of the volume.
 
-    vmin : float, or None, optional
+    vmin : float, or None, default=None
         min value for mapping colors.
         If `symmetric_cmap` is `True`, `vmin` is always equal to `-vmax` and
         cannot be chosen.
@@ -563,7 +563,7 @@ def view_img(
     %(resampling_interpolation)s
         Default='continuous'.
 
-    width_view : int, optional
+    width_view : int, default=600
         Default=600.
         Width of the viewer in pixels.
 
