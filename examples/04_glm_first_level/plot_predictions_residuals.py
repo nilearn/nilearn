@@ -87,7 +87,7 @@ table.set_index("Cluster ID", drop=True)
 table.head()
 
 # get the 6 largest clusters' max x, y, and z coordinates
-coords = table.loc[range(1, 7), ["X", "Y", "Z"]].values
+coords = table.loc[range(1, 7), ["X", "Y", "Z"]].to_numpy()
 
 # extract time series from each coordinate
 masker = NiftiSpheresMasker(coords)
