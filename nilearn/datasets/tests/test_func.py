@@ -1082,11 +1082,32 @@ def test_fetch_spm_multimodal(tmp_path):
     assert dataset.description != ""
 
 
-def test_fetch_spm_multimodal_missing_data(tmp_path):
-    _generate_spm_multimodal(tmp_path, n_sessions=2, n_vol=390)
-    func.fetch_spm_multimodal_fmri(
-        data_dir=tmp_path, verbose=1, subject_id="sub001"
+def _generate_spm_multimodal_arc(n_sessions=2, n_vol=390):
+    files = []
+    fmri = Path("fMRI")
+
+    files.append("sMRI/smri.img")
+    for session in range(n_sessions):
+        files.append(str(fmri / f"trials_ses{int(session + 1)}.mat"))
+        dir_ = fmri / f"Session{int(session + 1)}"
+        sub_files = [
+            str(dir_ / f"fMETHODS-000{int(session + 5)}-{int(i)}-01.img")
+            for i in range(n_vol)
+        ]
+        files.extend(sub_files)
+    return list_to_archive(files, archive_format="zip")
+
+
+def test_fetch_spm_multimodal_missing_data(tmp_path, request_mocker):
+    request_mocker.url_mapping[re.compile(r".*multimodal_.*mri.zip")] = (
+        _generate_spm_multimodal_arc()
     )
+
+    func.fetch_spm_multimodal_fmri(
+        data_dir=tmp_path, verbose=1, subject_id="sub002"
+    )
+    assert (tmp_path / "spm_multimodal_fmri" / "sub002" / "fMRI").exists()
+    assert (tmp_path / "spm_multimodal_fmri" / "sub002" / "sMRI").exists()
 
 
 def test_fiac(tmp_path):
