@@ -1303,9 +1303,8 @@ def test_glm_sample_mask(shape_4d_default):
         [shape_4d_default]
     )
     model = FirstLevelModel(t_r=2.0, mask_img=mask, minimize_memory=False)
-    sample_mask = np.arange(shape_4d_default[3])[
-        3:
-    ]  # censor the first three volumes
+    # censor the first three volumes
+    sample_mask = np.arange(shape_4d_default[3])[3:]
     model.fit(
         fmri_data, design_matrices=design_matrix, sample_masks=sample_mask
     )
