@@ -674,7 +674,6 @@ def fetch_single_file(
 
 def get_dataset_descr(ds_name):
     """Return the description of a dataset."""
-
     try:
         with open(
             PACKAGE_DIRECTORY / "description" / f"{ds_name}.rst", "rb"

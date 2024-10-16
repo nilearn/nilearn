@@ -25,12 +25,12 @@ from nilearn.interfaces.bids import get_bids_files
 
 from .._utils.numpy_conversions import csv_to_array
 from ._utils import (
+    PACKAGE_DIRECTORY,
     fetch_files,
     fetch_single_file,
     filter_columns,
     get_dataset_descr,
     get_dataset_dir,
-    PACKAGE_DIRECTORY,
     read_md5_sum_file,
     tree,
     uncompress_file,
