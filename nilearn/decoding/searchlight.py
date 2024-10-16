@@ -321,7 +321,9 @@ class SearchLight(BaseEstimator):
         # Compute world coordinates of the seeds
         process_mask, process_mask_affine = masking.load_mask_img(process_mask_img)
         if process_mask.shape != imgs.shape[:3]:
-            raise ValueError("The mask image and the 4D input images must have matching dimensions.")
+            raise ValueError(
+                "The mask image and the 4D input images must have matching dimensions."
+            )
         process_mask_coords = np.where(process_mask != 0)
         process_mask_coords = coord_transform(
             process_mask_coords[0],
@@ -367,7 +369,9 @@ class SearchLight(BaseEstimator):
     def scores_img_(self):
         """Convert the 3D scores array into a NIfTI image."""
         if self.scores_ is None:
-            raise ValueError("The model has not been fitted yet. Call `fit()` before accessing `scores_img_`.")
+            raise ValueError(
+                "The model has not been fitted yet. Call `fit()` before accessing `scores_img_`."
+            )
         return new_img_like(self.mask_img, self.scores_)
 
     def transform(self, imgs):
@@ -389,6 +393,13 @@ class SearchLight(BaseEstimator):
 
         # Reuse the stored estimator for scoring
         return search_light(
-            X, None, self.estimator, None, None, self.scoring, self.cv, self.n_jobs, self.verbose
+            X,
+            None,
+            self.estimator,
+            None,
+            None,
+            self.scoring,
+            self.cv,
+            self.n_jobs,
+            self.verbose,
         )
-
