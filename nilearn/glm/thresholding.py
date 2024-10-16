@@ -119,10 +119,10 @@ def cluster_level_inference(
 
     Parameters
     ----------
-    stat_img : Niimg-like object or None, optional
+    stat_img : Niimg-like object or None, default=None
        statistical image (presumably in z scale)
 
-    mask_img : Niimg-like object, optional, default=None
+    mask_img : Niimg-like object, default=None
         mask image
 
     threshold : list of floats, default=3.0
@@ -200,12 +200,12 @@ def threshold_stats_img(
 
     Parameters
     ----------
-    stat_img : Niimg-like object or None, optional, default=None
+    stat_img : Niimg-like object or None, default=None
        Statistical image (presumably in z scale) whenever height_control
        is 'fpr' or None, stat_img=None is acceptable.
        If it is 'fdr' or 'bonferroni', an error is raised if stat_img is None.
 
-    mask_img : Niimg-like object, optional, default=None
+    mask_img : Niimg-like object, default=None
         Mask image
 
     alpha : float or list, default=0.001

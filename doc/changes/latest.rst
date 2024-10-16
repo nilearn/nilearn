@@ -102,4 +102,4 @@ Changes
 
 - :bdg-dark:`Code` Remove redundant sorting of ``np.unique(data)`` in internal call of :func:`nilearn.image.resample_img` when checking array values (:gh:`4571` by `Jason Kai`_).
 
-- :bdg-primary:`Doc` Add missing default values to the docstrings in 'nilearn/glm(:gh:`4656` by `Anupriya Kumari`_).
+- :bdg-primary:`Doc` Add missing default values to the docstrings in 'nilearn/glm'(:gh:`4656` by `Anupriya Kumari`_).

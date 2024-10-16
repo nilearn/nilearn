@@ -67,7 +67,7 @@ def compute_contrast(labels, regression_result, con_val, stat_type=None):
         Where q = number of :term:`contrast` vectors
         and p = number of regressors.
 
-    stat_type : {None, 't', 'F'}, optional, default=None
+    stat_type : {None, 't', 'F'}, default=None
         Type of the :term:`contrast`.
         If None, then defaults to 't' for 1D `con_val`
         and 'F' for 2D `con_val`.
@@ -477,7 +477,7 @@ def compute_fixed_effects(
     variance_imgs : list of Nifti1Images or strings
         The input variance images.
 
-    mask : Nifti1Image or NiftiMasker instance or None, optional, default=None
+    mask : Nifti1Image or NiftiMasker instance or None, default=None
         Mask image. If ``None``, it is recomputed from ``contrast_imgs``.
 
     precision_weighted : Bool, default=False
