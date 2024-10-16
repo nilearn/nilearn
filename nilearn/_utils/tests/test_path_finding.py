@@ -23,10 +23,18 @@ def test_resolve_globbing_nested(tmp_path):
     (tmp_path / "foo").mkdir(parents=True, exist_ok=True)
     (tmp_path / "foo" / "foo.txt").touch()
 
+    results = resolve_globbing(tmp_path / "foo.txt")
+    assert len(results) == 1
+    assert all(isinstance(x, str) for x in results)
+    assert results == [str(tmp_path / "foo.txt")]
+
     results = resolve_globbing(tmp_path / "**/foo.txt")
-    print(results)
     assert len(results) == 2
     assert all(isinstance(x, str) for x in results)
+    assert results == [
+        str(tmp_path / "foo" / "foo.txt"),
+        str(tmp_path / "spam" / "foo.txt"),
+    ]
 
 
 def test_resolve_globbing_error(tmp_path):
