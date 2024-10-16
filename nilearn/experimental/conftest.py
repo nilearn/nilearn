@@ -1,13 +1,10 @@
 """Fixtures for experimental module."""
 
-from typing import Callable
-
 import numpy as np
 import pytest
 
 from nilearn.experimental.surface import (
     InMemoryMesh,
-    PolyData,
     PolyMesh,
     SurfaceImage,
 )
@@ -86,108 +83,6 @@ def make_surface_mask(make_mesh, request):
         data_part = data_part.astype(bool)
         data[key] = data_part
     return SurfaceImage(mesh, data)
-
-
-def _return_mini_mesh() -> PolyMesh:
-    """Small mesh for tests with 2 parts with different numbers of vertices."""
-    left_coords = np.asarray([[0.0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]])
-    left_faces = np.asarray([[1, 0, 2], [0, 1, 3], [0, 3, 2], [1, 2, 3]])
-    right_coords = (
-        np.asarray([[0.0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0], [0, 0, 1]])
-        + 2.0
-    )
-    right_faces = np.asarray(
-        [
-            [0, 1, 4],
-            [0, 3, 1],
-            [1, 3, 2],
-            [1, 2, 4],
-            [2, 3, 4],
-            [0, 4, 3],
-        ]
-    )
-    return PolyMesh(
-        left=InMemoryMesh(left_coords, left_faces),
-        right=InMemoryMesh(right_coords, right_faces),
-    )
-
-
-@pytest.fixture
-def mini_mesh() -> PolyMesh:
-    """Small mesh for tests with 2 parts with different numbers of vertices."""
-    return _return_mini_mesh()
-
-
-@pytest.fixture
-def make_mini_img(mini_mesh) -> Callable:
-    """Small surface image for tests."""
-
-    def f(shape=()):
-        data = {}
-        for i, (key, val) in enumerate(mini_mesh.parts.items()):
-            data_shape = (*tuple(shape), val.n_vertices)
-            data_part = (
-                np.arange(np.prod(data_shape)).reshape(data_shape) + 1.0
-            ) * 10**i
-            data[key] = data_part
-        return SurfaceImage(mini_mesh, data)
-
-    return f
-
-
-@pytest.fixture
-def make_mini_mask(mini_mesh) -> Callable:
-    """Small surface mask for tests."""
-
-    def f():
-        data = {}
-        for key, val in mini_mesh.parts.items():
-            data_part = np.ones(val.n_vertices, dtype=int)
-            # make some vertices 0
-            data_part[..., 0] = 0
-            data_part[..., -1] = 0
-            data_part = data_part.astype(bool)
-            data[key] = data_part
-        return SurfaceImage(mini_mesh, data)
-
-    return f
-
-
-@pytest.fixture
-def mini_mask(mini_img) -> SurfaceImage:
-    """Raturn small surface mask."""
-    data = {k: (v > v.ravel()[0]) for k, v in mini_img.data.parts.items()}
-    return SurfaceImage(mini_img.mesh, data)
-
-
-@pytest.fixture
-def mini_img(make_mini_img) -> SurfaceImage:
-    """Raturn small surface image."""
-    return make_mini_img()
-
-
-def return_mini_binary_mask():
-    """Return small surface label image."""
-    data = PolyData(
-        left=np.asarray([False, False, True, True]),
-        right=np.asarray([True, True, False, False, False]),
-    )
-    return SurfaceImage(_return_mini_mesh(), data)
-
-
-@pytest.fixture
-def mini_binary_mask() -> SurfaceImage:
-    """Return small surface label image."""
-    return return_mini_binary_mask()
-
-
-@pytest.fixture
-def mini_label_img(mini_mesh) -> SurfaceImage:
-    """Return small surface label image."""
-    data = PolyData(
-        left=np.asarray([0, 0, 1, 1]), right=np.asarray([1, 1, 0, 0, 0])
-    )
-    return SurfaceImage(mini_mesh, data)
 
 
 @pytest.fixture
