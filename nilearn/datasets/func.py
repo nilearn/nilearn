@@ -2722,7 +2722,10 @@ def _download_spm_auditory_data(data_dir):
     end_version="0.13.0",
 )
 def fetch_spm_auditory(
-    data_dir=None, data_name="spm_auditory", subject_id=None, verbose=1
+    data_dir=None,
+    data_name="spm_auditory",
+    subject_id=None,  # noqa: ARG001
+    verbose=1,
 ):
     """Fetch :term:`SPM` auditory single-subject data.
 

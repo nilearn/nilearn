@@ -49,8 +49,8 @@ from sklearn.svm import SVR, LinearSVC
 
 from nilearn._utils import compare_version
 from nilearn._utils.param_validation import (
+    _get_mask_extent,
     check_feature_screening,
-    get_mask_volume,
 )
 from nilearn.conftest import _rng
 from nilearn.decoding.decoder import (
@@ -87,7 +87,7 @@ def _make_binary_classification_test_data(n_samples=N_SAMPLES):
 
 
 @pytest.fixture()
-def rand_X_Y(rng):
+def rand_x_y(rng):
     X = rng.random((N_SAMPLES, 10))
     Y = np.hstack([[-1] * 50, [1] * 50])
     return X, Y
@@ -176,12 +176,12 @@ def test_check_param_grid_regression(regressor, param, rng):
         (RidgeClassifierCV(), ["alphas"]),
     ],
 )
-def test_check_param_grid_classification(rand_X_Y, classifier, param):
+def test_check_param_grid_classification(rand_x_y, classifier, param):
     """Test several estimators.
 
     Each one with its specific regularization parameter.
     """
-    X, Y = rand_X_Y
+    X, Y = rand_x_y
 
     param_grid = _check_param_grid(classifier, X, Y, None)
 
@@ -196,8 +196,8 @@ def test_check_param_grid_classification(rand_X_Y, classifier, param):
         [{"C": [1, 10, 100]}, {"fit_intercept": [False]}],
     ],
 )
-def test_check_param_grid_replacement(rand_X_Y, param_grid_input):
-    X, Y = rand_X_Y
+def test_check_param_grid_replacement(rand_x_y, param_grid_input):
+    X, Y = rand_x_y
     param_to_replace = "C"
     param_replaced = "Cs"
     param_grid_output = _check_param_grid(
@@ -213,9 +213,9 @@ def test_check_param_grid_replacement(rand_X_Y, param_grid_input):
 
 
 @pytest.mark.parametrize("estimator", ["log_l1", RandomForestClassifier()])
-def test_non_supported_estimator_error(rand_X_Y, estimator):
+def test_non_supported_estimator_error(rand_x_y, estimator):
     """Raise the error when using a non supported estimator."""
-    X, Y = rand_X_Y
+    X, Y = rand_x_y
 
     with pytest.raises(
         ValueError, match="Invalid estimator. The supported estimators are:"
@@ -223,8 +223,8 @@ def test_non_supported_estimator_error(rand_X_Y, estimator):
         _check_param_grid(estimator, X, Y, None)
 
 
-def test_check_parameter_grid_is_empty(rand_X_Y):
-    X, Y = rand_X_Y
+def test_check_parameter_grid_is_empty(rand_x_y):
+    X, Y = rand_x_y
     dummy_classifier = DummyClassifier(random_state=0)
 
     param_grid = _check_param_grid(dummy_classifier, X, Y, None)
@@ -361,7 +361,7 @@ def test_check_unsupported_estimator(estimator):
         _check_estimator(_BaseDecoder(estimator=custom_estimator).estimator)
 
 
-def test_parallel_fit(rand_X_Y):
+def test_parallel_fit(rand_x_y):
     """Check that results of _parallel_fit is the same \
     for different controlled param_grid.
     """
@@ -374,7 +374,7 @@ def test_parallel_fit(rand_X_Y):
     )
     train = range(80)
 
-    _, y_classification = rand_X_Y
+    _, y_classification = rand_x_y
     test = range(80, len(y_classification))
 
     estimator = SVR(kernel="linear")
@@ -434,7 +434,7 @@ def test_parallel_fit(rand_X_Y):
     ],
 )
 def test_parallel_fit_builtin_cv(
-    rand_X_Y,
+    rand_x_y,
     estimator,
     param_name,
     fitted_param_name,
@@ -467,7 +467,7 @@ def test_parallel_fit_builtin_cv(
     # create appropriate scorer and update y for classification
     if is_classification:
         scorer = check_scoring(estimator, "accuracy")
-        _, y = rand_X_Y
+        _, y = rand_x_y
     else:
         scorer = check_scoring(estimator, "r2")
 
@@ -1156,7 +1156,7 @@ def test_decoder_adjust_screening_lessthan_mask_surface(
     """
     mask = make_surface_mask
     img, y = _make_surface_class_data
-    mask_n_vertices = get_mask_volume(mask)
+    mask_n_vertices = _get_mask_extent(mask)
     mesh_n_vertices = img.mesh.n_vertices
     mask_to_mesh_ratio = (mask_n_vertices / mesh_n_vertices) * 100
     assert screening_percentile <= mask_to_mesh_ratio
@@ -1185,7 +1185,7 @@ def test_decoder_adjust_screening_greaterthan_mask_surface(
     """
     mask = make_surface_mask
     img, y = _make_surface_class_data
-    mask_n_vertices = get_mask_volume(mask)
+    mask_n_vertices = _get_mask_extent(mask)
     mesh_n_vertices = img.mesh.n_vertices
     mask_to_mesh_ratio = (mask_n_vertices / mesh_n_vertices) * 100
     assert screening_percentile > mask_to_mesh_ratio

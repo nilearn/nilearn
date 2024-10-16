@@ -262,7 +262,12 @@ class Sender:
     def url_count(self):
         return len(self.visited_urls)
 
-    def __call__(self, request, *args, **kwargs):
+    def __call__(
+        self,
+        request,
+        *args,  # noqa: ARG002
+        **kwargs,  # noqa: ARG002
+    ):
         if isinstance(request, str):
             request = Request(request)
         self.sent_requests.append(request)

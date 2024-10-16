@@ -240,7 +240,7 @@ def test_tv_regression_simple(rng, l1_ratio, debias):
 
 
 @pytest.mark.parametrize("l1_ratio", [0.01, 0.5, 0.99])
-def test_tv_regression_3D_image_doesnt_crash(rng, l1_ratio):
+def test_tv_regression_3d_image_doesnt_crash(rng, l1_ratio):
     dim = (3, 4, 5)
     W_init = np.zeros(dim)
     W_init[2:3, 3:, 1:3] = 1
