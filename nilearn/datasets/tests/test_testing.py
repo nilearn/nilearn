@@ -89,7 +89,7 @@ def test_sender_regex(request_mocker):
 
     assert resp.text == f"name: nilearn, url: {url}"
 
-    def g(match, request):
+    def g(match, request):  # noqa: ARG001
         return 403
 
     request_mocker.url_mapping[pattern] = g
@@ -143,7 +143,7 @@ class _MyResponse(_testing.Response):
 def test_sender_response(request_mocker):
     request_mocker.url_mapping["*example.org/a"] = _MyResponse("", "")
 
-    def f(match, request):
+    def f(match, request):  # noqa: ARG001
         resp = _testing.Response(b"hello", request.url)
         resp.headers["cookie"] = "abc"
         return resp

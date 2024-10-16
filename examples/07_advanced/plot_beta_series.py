@@ -170,7 +170,7 @@ lsa_beta_maps = {
 # and finally collect the targeted trial's beta map for the beta series.
 
 
-def lss_transformer(df, row_number):
+def lss_transformer(events_df, row_number):
     """Label one trial for one LSS model.
 
     Parameters
@@ -188,11 +188,11 @@ def lss_transformer(df, row_number):
     trial_name : str
         Name of the isolated trial's trial type.
     """
-    df = df.copy()
+    events_df = events_df.copy()
 
     # Determine which number trial it is *within the condition*
-    trial_condition = df.loc[row_number, "trial_type"]
-    trial_type_series = df["trial_type"]
+    trial_condition = events_df.loc[row_number, "trial_type"]
+    trial_type_series = events_df["trial_type"]
     trial_type_series = trial_type_series.loc[
         trial_type_series == trial_condition
     ]
@@ -206,8 +206,8 @@ def lss_transformer(df, row_number):
     # However, we may want to have meaningful 'trial_type's (e.g., 'Left_001')
     # across models, so that you could track individual trials across models.
     trial_name = f"{trial_condition}__{trial_number:03d}"
-    df.loc[row_number, "trial_type"] = trial_name
-    return df, trial_name
+    events_df.loc[row_number, "trial_type"] = trial_name
+    return events_df, trial_name
 
 
 # Loop through the trials of interest and transform the DataFrame for LSS

@@ -1,7 +1,6 @@
 """Test image pre-processing functions."""
 
 import platform
-import sys
 import warnings
 from pathlib import Path
 
@@ -579,20 +578,14 @@ def test_index_img_error_4d(affine_eye):
             index_img(img_4d, i)
 
 
-def test_pd_index_img(rng):
+def test_pd_index_img(rng, img_4d_rand_eye):
     # confirm indices from pandas dataframes are handled correctly
-    if "pandas" not in sys.modules:
-        raise pytest.skip(msg="Pandas not available")
-
-    img_4d, _ = generate_fake_fmri(affine=NON_EYE_AFFINE)
-
-    fourth_dim_size = img_4d.shape[3]
+    fourth_dim_size = img_4d_rand_eye.shape[3]
 
     arr = rng.uniform(size=fourth_dim_size) > 0.5
-    df = pd.DataFrame({"arr": arr})
 
-    np_index_img = index_img(img_4d, arr)
-    pd_index_img = index_img(img_4d, df)
+    np_index_img = index_img(img_4d_rand_eye, arr)
+    pd_index_img = index_img(img_4d_rand_eye, pd.DataFrame({"arr": arr}))
 
     assert_array_equal(get_data(np_index_img), get_data(pd_index_img))
 
