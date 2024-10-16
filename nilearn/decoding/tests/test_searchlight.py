@@ -3,6 +3,7 @@
 # Author: Alexandre Abraham
 
 import numpy as np
+import pytest
 from nibabel import Nifti1Image
 from sklearn.model_selection import KFold, LeaveOneGroupOut
 
@@ -175,3 +176,34 @@ def test_searchlight_group_cross_validation_with_extra_group_variable(
     # run searchlight on list of 3D images
     sl = searchlight.SearchLight(mask_img)
     sl.fit(imgs, y)
+
+
+def test_searchlight_attributes_exist_after_fit():
+    """Test if attributes `process_mask_` and `masked_scores_`
+    exist after fitting using mock data.
+    """
+    # Use the existing helper function to generate data
+    frames = 20
+    data_img, cond, mask_img = _make_searchlight_test_data(frames)
+
+    # Instantiate and fit the SearchLight with mock data
+    sl = searchlight.SearchLight(mask_img, radius=1.0)
+    sl.fit(data_img, cond)  # Reuse condition array (cond) as y
+
+    # Check if attributes exist after fitting
+    assert hasattr(sl, "process_mask_"), "process_mask_ attribute missing."
+    assert hasattr(sl, "masked_scores_"), "masked_scores_ attribute missing."
+
+
+def test_searchlight_scores_img_error_before_fit():
+    """Test if accessing `scores_img_` raises an error before fitting."""
+    # Create mock mask
+    frames = 20
+    data_img, cond, mask_img = _make_searchlight_test_data(frames)
+
+    # Instantiate SearchLight without fitting
+    sl = searchlight.SearchLight(mask_img, radius=5.0)
+
+    # Check if accessing `scores_img_` raises a ValueError
+    with pytest.raises(ValueError, match="The model has not been fitted yet."):
+        sl.scores_img_
