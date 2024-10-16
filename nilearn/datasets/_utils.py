@@ -467,7 +467,12 @@ def filter_columns(array, filters, combination="and"):
 
 
 class _NaiveFTPAdapter(requests.adapters.BaseAdapter):
-    def send(self, request, timeout=None, **kwargs):
+    def send(
+        self,
+        request,
+        timeout=None,
+        **kwargs,  # noqa: ARG002
+    ):
         with contextlib.suppress(Exception):
             timeout, _ = timeout
         try:

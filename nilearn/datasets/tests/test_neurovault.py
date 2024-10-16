@@ -195,7 +195,7 @@ def _neurovault_one_image(img_id):
     return images.loc[img_id].to_dict()
 
 
-def _neurovault_file(parts, query):
+def _neurovault_file(parts, query):  # noqa: ARG001
     """Mock the Neurovault API behind the `/media/images/` path."""
     return generate_fake_fmri(length=1)[0]
 
@@ -209,7 +209,7 @@ class _NumpyJsonEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-def _neurovault(match, request):
+def _neurovault(match, request):  # noqa: ARG001
     """Mock response content from the Neurovault API.
 
     The fake data used to generate responses is provided by

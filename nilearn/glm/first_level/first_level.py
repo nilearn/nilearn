@@ -262,8 +262,8 @@ def _check_trial_type(events):
     file_names = []
 
     for event_ in events:
-        df = pd.read_csv(event_, sep="\t")
-        if "trial_type" not in df.columns:
+        events_df = pd.read_csv(event_, sep="\t")
+        if "trial_type" not in events_df.columns:
             file_names.append(Path(event_).name)
 
     if file_names:

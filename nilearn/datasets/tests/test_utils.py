@@ -515,7 +515,9 @@ def test_fetch_file_overwrite(
 
 @pytest.mark.parametrize("should_cast_path_to_string", [False, True])
 def test_fetch_files_use_session(
-    should_cast_path_to_string, tmp_path, request_mocker
+    should_cast_path_to_string,
+    tmp_path,
+    request_mocker,  # noqa: ARG001
 ):
     if should_cast_path_to_string:
         tmp_path = str(tmp_path)

@@ -44,7 +44,7 @@ else:
     matplotlib = None
 
 
-def pytest_configure(config):
+def pytest_configure(config):  # noqa: ARG001
     """Use Agg so that no figures pop up."""
     if matplotlib is not None:
         matplotlib.use("Agg", force=True)
