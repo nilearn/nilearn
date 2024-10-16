@@ -462,7 +462,7 @@ def test_run_glm_errors(rng):
 @pytest.mark.parametrize(
     "ar_vals", [[-0.2], [-0.2, -0.5], [-0.2, -0.5, -0.7, -0.3]]
 )
-def test_glm_AR_estimates(rng, ar_vals):
+def test_glm_ar_estimates(rng, ar_vals):
     """Test that Yule-Walker AR fits are correct."""
     n, p, q = 1, 500, 2
     X_orig = rng.standard_normal((p, q))
@@ -494,7 +494,7 @@ def test_glm_AR_estimates(rng, ar_vals):
     assert_almost_equal(yw[0], ar_vals, decimal=1)
 
 
-def test_glm_AR_estimates_errors(rng):
+def test_glm_ar_estimates_errors(rng):
     """Test Yule-Walker errors."""
     (n, p) = (1, 500)
     Y_orig = rng.standard_normal((p, n))
@@ -880,7 +880,7 @@ def test_first_level_from_bids_get_metadata_from_derivatives(tmp_path):
         assert models[0].slice_time_ref == StartTime / RepetitionTime
 
 
-def test_first_level_from_bids_get_RepetitionTime_from_derivatives(tmp_path):
+def test_first_level_from_bids_get_repetition_time_from_derivatives(tmp_path):
     """Only RepetitionTime is provided in derivatives.
 
     Warning about missing StarTime time in derivatives.
@@ -907,7 +907,7 @@ def test_first_level_from_bids_get_RepetitionTime_from_derivatives(tmp_path):
         assert models[0].slice_time_ref == 0.0
 
 
-def test_first_level_from_bids_get_StartTime_from_derivatives(tmp_path):
+def test_first_level_from_bids_get_start_time_from_derivatives(tmp_path):
     """Only StartTime is provided in derivatives.
 
     Warning about missing repetition time in derivatives,

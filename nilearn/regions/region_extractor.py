@@ -424,7 +424,11 @@ class RegionExtractor(NiftiMapsMasker):
         self.extractor = extractor
         self.smoothing_fwhm = smoothing_fwhm
 
-    def fit(self, X=None, y=None):
+    def fit(
+        self,
+        X=None,  # noqa: ARG002
+        y=None,  # noqa: ARG002
+    ):
         """Prepare the data and setup for the region extraction."""
         maps_img = check_niimg_4d(self.maps_img)
 
