@@ -35,9 +35,12 @@ def expression_to_contrast_vector(expression, design_columns):
         contrast_vector = np.zeros(len(design_columns))
         contrast_vector[list(design_columns).index(expression)] = 1.0
         return contrast_vector
-    df = pd.DataFrame(np.eye(len(design_columns)), columns=design_columns)
+
+    eye_design = pd.DataFrame(
+        np.eye(len(design_columns)), columns=design_columns
+    )
     try:
-        contrast_vector = df.eval(expression, engine="python").to_numpy()
+        contrast_vector = eye_design.eval(expression, engine="python").values
     except Exception:
         raise ValueError(
             f"The expression ({expression}) is not valid. "
@@ -45,6 +48,7 @@ def expression_to_contrast_vector(expression, design_columns):
             "defining the contrasts using design matrix columns that are "
             "invalid python identifiers."
         )
+
     return contrast_vector
 
 

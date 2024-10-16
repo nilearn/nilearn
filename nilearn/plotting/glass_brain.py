@@ -15,7 +15,7 @@ def _codes_bezier(pts):
     return [Path.MOVETO, *codes]
 
 
-def _codes_segment(pts):
+def _codes_segment(pts):  # noqa: ARG001
     # pts is needed for API consistency with _codes_bezier
     return [Path.MOVETO, Path.LINETO]
 
