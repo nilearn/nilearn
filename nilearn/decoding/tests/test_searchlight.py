@@ -198,8 +198,8 @@ def test_searchlight_attributes_exist_after_fit():
 def test_searchlight_scores_img_error_before_fit():
     """Test if accessing `scores_img_` raises an error before fitting."""
     # Create mock mask
-    mask = np.ones((5, 5, 5), dtype=bool)
-    mask_img = Nifti1Image(mask.astype("uint8"), np.eye(4))
+    frames = 20
+    data_img, cond, mask_img = _make_searchlight_test_data(frames)
 
     # Instantiate SearchLight without fitting
     sl = searchlight.SearchLight(mask_img, radius=5.0)
