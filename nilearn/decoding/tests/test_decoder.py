@@ -1146,7 +1146,6 @@ def test_decoder_screening_percentile_surface(perc, _make_surface_class_data):
 
 @pytest.mark.filterwarnings("ignore:After clustering and screening")
 def test_decoder_adjust_screening_lessthan_mask_surface(
-    rng,
     make_surface_mask,
     _make_surface_class_data,
     screening_percentile=30,
@@ -1175,7 +1174,6 @@ def test_decoder_adjust_screening_lessthan_mask_surface(
 
 @pytest.mark.filterwarnings("ignore:After clustering and screening")
 def test_decoder_adjust_screening_greaterthan_mask_surface(
-    rng,
     make_surface_mask,
     _make_surface_class_data,
     screening_percentile=80,
