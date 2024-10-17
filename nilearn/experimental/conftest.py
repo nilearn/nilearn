@@ -46,7 +46,7 @@ def make_mesh():
 
 
 @pytest.fixture
-def make_surface_img(rng):
+def make_surface_img():
     """Create a sample surface image using the sample mesh.
     This will add some random data to the vertices of the mesh.
     The shape of the data will be (n_samples, n_vertices).
@@ -56,9 +56,11 @@ def make_surface_img(rng):
     def _make_surface_img(n_samples=(1,)):
         mesh = _make_mesh()
         data = {}
-        for key, val in mesh.parts.items():
+        for i, (key, val) in enumerate(mesh.parts.items()):
             data_shape = (*tuple(n_samples), val.n_vertices)
-            data_part = rng.normal(size=data_shape)
+            data_part = (
+                np.arange(np.prod(data_shape)).reshape(data_shape) + 1.0
+            ) * 10**i
             data[key] = data_part
         return SurfaceImage(mesh, data)
 
