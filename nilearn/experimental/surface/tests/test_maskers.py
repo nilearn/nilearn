@@ -145,7 +145,8 @@ def test_transform_inverse_transform_with_mask(
 def test_masker_reporting_mpl_warning(make_surface_mask, surface_label_img):
     """Raise warning after exception if matplotlib is not installed."""
     with warnings.catch_warnings(record=True) as warning_list:
-        SurfaceMasker(make_surface_mask).fit().generate_report()
+        mask = make_surface_mask()
+        SurfaceMasker(mask).fit().generate_report()
 
     assert len(warning_list) == 1
     assert issubclass(warning_list[0].category, ImportWarning)
