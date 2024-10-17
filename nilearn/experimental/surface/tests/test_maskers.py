@@ -115,12 +115,11 @@ def test_transform_inverse_transform_with_mask(
     assert_img_equal(expected_img, unmasked_img)
 
 
-@pytest.mark.xfail(reason="Fixture for label image not implemented.")
 @pytest.mark.skipif(
     is_matplotlib_installed(),
     reason="Test requires matplotlib not to be installed.",
 )
-def test_masker_reporting_mpl_warning(make_surface_mask, mini_label_img):
+def test_masker_reporting_mpl_warning(make_surface_mask, surface_label_img):
     """Raise warning after exception if matplotlib is not installed."""
     with warnings.catch_warnings(record=True) as warning_list:
         SurfaceMasker(make_surface_mask).fit().generate_report()
@@ -129,7 +128,8 @@ def test_masker_reporting_mpl_warning(make_surface_mask, mini_label_img):
     assert issubclass(warning_list[0].category, ImportWarning)
 
     with warnings.catch_warnings(record=True) as warning_list:
-        SurfaceLabelsMasker(mini_label_img).fit().generate_report()
+        label_img = surface_label_img()
+        SurfaceLabelsMasker(label_img).fit().generate_report()
 
     assert len(warning_list) == 1
     assert issubclass(warning_list[0].category, ImportWarning)
