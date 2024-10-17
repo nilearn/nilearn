@@ -20,11 +20,10 @@ from nilearn.datasets.tests._testing import (
 # its pytest fixtures are integrated into the stable API
 from nilearn.experimental.conftest import (  # noqa: F401
     drop_img_part,
-    make_mini_img,
-    make_mini_mask,
-    mini_img,
-    mini_mask,
-    mini_mesh,
+    surf_img,
+    surf_label_img,
+    surf_mask,
+    surf_mesh,
 )
 
 collect_ignore = ["datasets/data/convert_templates.py"]
