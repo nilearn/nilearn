@@ -1,15 +1,17 @@
 import pytest
 
-from nilearn.experimental.conftest import return_mini_binary_mask
 from nilearn.experimental.surface import SurfaceLabelsMasker, SurfaceMasker
 from nilearn.reporting.tests.test_html_report import _check_html
 
 
 @pytest.mark.parametrize("reports", [True, False])
-@pytest.mark.parametrize("mask_img", [None, return_mini_binary_mask()])
-def test_surface_masker_minimal_report_no_fit(mask_img, reports):
+@pytest.mark.parametrize("empty_mask", [True, False])
+def test_surface_masker_minimal_report_no_fit(
+    make_surface_mask, empty_mask, reports
+):
     """Test minimal report generation with no fit."""
-    masker = SurfaceMasker(mask_img, reports=reports)
+    mask = make_surface_mask(empty=empty_mask)
+    masker = SurfaceMasker(mask, reports=reports)
     report = masker.generate_report()
 
     _check_html(report)
@@ -17,11 +19,15 @@ def test_surface_masker_minimal_report_no_fit(mask_img, reports):
 
 
 @pytest.mark.parametrize("reports", [True, False])
-@pytest.mark.parametrize("mask_img", [None, return_mini_binary_mask()])
-def test_surface_masker_minimal_report_fit(mask_img, mini_img, reports):
+@pytest.mark.parametrize("empty_mask", [True, False])
+def test_surface_masker_minimal_report_fit(
+    make_surface_mask, empty_mask, make_surface_img, reports
+):
     """Test minimal report generation with fit."""
-    masker = SurfaceMasker(mask_img, reports=reports)
-    masker.fit_transform(mini_img)
+    mask = make_surface_mask(empty=empty_mask)
+    masker = SurfaceMasker(mask, reports=reports)
+    img = make_surface_img()
+    masker.fit_transform(img)
     report = masker.generate_report()
 
     _check_html(report)
@@ -29,10 +35,11 @@ def test_surface_masker_minimal_report_fit(mask_img, mini_img, reports):
     assert '<div class="image">' in str(report)
 
 
-def test_surface_masker_report_no_report(mini_img):
+def test_surface_masker_report_no_report(make_surface_img):
     """Check content of no report."""
     masker = SurfaceMasker(reports=False)
-    masker.fit_transform(mini_img)
+    img = make_surface_img()
+    masker.fit_transform(img)
     report = masker.generate_report()
 
     _check_html(report)
@@ -40,6 +47,7 @@ def test_surface_masker_report_no_report(mini_img):
     assert "Empty Report" in str(report)
 
 
+@pytest.mark.xfail(reason="Label image not yet implemented")
 @pytest.mark.parametrize("reports", [True, False])
 @pytest.mark.parametrize("label_names", [None, ["region 1", "region 2"]])
 def test_surface_label_masker_report_unfitted(
@@ -54,6 +62,7 @@ def test_surface_label_masker_report_unfitted(
     assert "Make sure to run `fit`" not in str(report)
 
 
+@pytest.mark.xfail(reason="Label image not yet implemented")
 def test_surface_label_masker_report_no_report(mini_label_img):
     """Check content of no report."""
     masker = SurfaceLabelsMasker(mini_label_img, reports=False)
