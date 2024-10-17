@@ -1044,28 +1044,30 @@ def test_fetch_spm_auditory(tmp_path):
     assert dataset.description != ""
 
 
-def _generate_spm_multimodal(path, n_sessions=2, n_vol=390):
-    data_dir = path / "spm_multimodal_fmri"
-    subject_dir = data_dir / "sub001"
-    (subject_dir / "fMRI").mkdir(exist_ok=True, parents=True)
-    (subject_dir / "sMRI").mkdir(exist_ok=True)
-    open(subject_dir / "sMRI" / "smri.img", "a").close()
+def _generate_spm_multimodal(subject_dir=None, n_sessions=2, n_vol=390):
+    files = []
+    files.append("sMRI/smri.img")
     for session in range(n_sessions):
-        open(
-            subject_dir / "fMRI" / f"trials_ses{int(session + 1)}.mat",
-            "a",
-        ).close()
-        dir_ = subject_dir / "fMRI" / f"Session{int(session + 1)}"
-        dir_.mkdir(exist_ok=True)
-        for i in range(n_vol):
-            open(
-                dir_ / f"fMETHODS-000{int(session + 5)}-{int(i)}-01.img",
-                "a",
-            ).close()
+        files.append(f"fMRI/trials_ses{int(session + 1)}.mat")
+        files.extend([
+            f"fMRI/Session{int(session + 1)}/"
+            f"fMETHODS-000{int(session + 5)}-{int(i)}-01.img"
+            for i in range(n_vol)
+        ])
+
+    if subject_dir is not None:
+        for file_ in files:
+            file_ = subject_dir / file_
+            file_.parent.mkdir(parents=True, exist_ok=True)
+            file_.touch()
+        return
+    else:
+        return list_to_archive(files, archive_format="zip")
 
 
 def test_fetch_spm_multimodal(tmp_path):
-    _generate_spm_multimodal(tmp_path)
+    subject_dir = tmp_path / "spm_multimodal_fmri" / "sub001"
+    _generate_spm_multimodal(subject_dir=subject_dir)
 
     dataset = func.fetch_spm_multimodal_fmri(data_dir=tmp_path, verbose=0)
 
@@ -1081,32 +1083,29 @@ def test_fetch_spm_multimodal(tmp_path):
     assert dataset.description != ""
 
 
-def _generate_spm_multimodal_arc(n_sessions=2, n_vol=390):
-    files = []
-    fmri = Path("fMRI")
-
-    files.append("sMRI/smri.img")
-    for session in range(n_sessions):
-        files.append(str(fmri / f"trials_ses{int(session + 1)}.mat"))
-        dir_ = fmri / f"Session{int(session + 1)}"
-        sub_files = [
-            str(dir_ / f"fMETHODS-000{int(session + 5)}-{int(i)}-01.img")
-            for i in range(n_vol)
-        ]
-        files.extend(sub_files)
-    return list_to_archive(files, archive_format="zip")
-
-
 def test_fetch_spm_multimodal_missing_data(tmp_path, request_mocker):
     request_mocker.url_mapping[re.compile(r".*multimodal_.*mri.zip")] = (
-        _generate_spm_multimodal_arc()
+        _generate_spm_multimodal()
     )
 
-    func.fetch_spm_multimodal_fmri(
-        data_dir=tmp_path, verbose=1, subject_id="sub002"
+    subject_id = "sub002"
+    subject_dir = tmp_path / "spm_multimodal_fmri" / subject_id
+
+    dataset = func.fetch_spm_multimodal_fmri(
+        data_dir=tmp_path, verbose=1, subject_id=subject_id
     )
-    assert (tmp_path / "spm_multimodal_fmri" / "sub002" / "fMRI").exists()
-    assert (tmp_path / "spm_multimodal_fmri" / "sub002" / "sMRI").exists()
+    assert (subject_dir / "fMRI").exists()
+    assert (subject_dir / "sMRI").exists()
+    assert isinstance(dataset, Bunch)
+    assert isinstance(dataset.anat, str)
+    assert isinstance(dataset.func1[0], str)
+    assert len(dataset.func1) == 390
+    assert isinstance(dataset.func2[0], str)
+    assert len(dataset.func2) == 390
+    assert dataset.slice_order == "descending"
+    assert isinstance(dataset.trials_ses1, str)
+    assert isinstance(dataset.trials_ses2, str)
+    assert dataset.description != ""
 
 
 def test_fiac(tmp_path):
