@@ -325,7 +325,7 @@ def view_img_on_surf(
     stat_map_img : Niimg-like object, 3D
         See :ref:`extracting_data`.
 
-    surf_mesh : str or dict, default='fsaverage5'
+    surf_mesh : :obj:`str` or :obj:`dict`, default='fsaverage5'
         If a string, it should be one of the following values:
         %(fsaverage_options)s
         If a dictionary, it should have the same structure as those returned by
@@ -334,7 +334,7 @@ def view_img_on_surf(
         containing inflated and pial meshes, and sulcal depth values for left
         and right hemispheres.
 
-    threshold : str, number or None, optional
+    threshold : :obj:`str`, number or None, default=None
         If None, no thresholding.
         If it is a number only values of amplitude greater
         than threshold will be shown.
@@ -342,10 +342,10 @@ def view_img_on_surf(
         e.g. "25.3%%", and only values of amplitude above the
         given percentile will be shown.
 
-    cmap : str or matplotlib colormap, default=cm.cold_hot
+    cmap : :obj:`str` or matplotlib colormap, default=cm.cold_hot
         Colormap to use.
 
-    black_bg : bool, default=False
+    black_bg : :obj:`bool`, default=False
         If True, image is plotted on a black background. Otherwise on a
         white background.
 
@@ -354,37 +354,37 @@ def view_img_on_surf(
     %(darkness)s
         Default=1.
 
-    vmax : float or None, optional
+    vmax : :obj:`float` or None, default=None
         upper bound for the colorbar. if None, use the absolute max of the
         brain map.
 
-    vmin : float or None, optional
+    vmin : :obj:`float` or None, default=None
         min value for mapping colors.
         If `symmetric_cmap` is `True`, `vmin` is always equal to `-vmax` and
         cannot be chosen.
         If `symmetric_cmap` is `False`, `vmin` is equal to the min of the
         image, or 0 when a threshold is used.
 
-    symmetric_cmap : bool, default=True
+    symmetric_cmap : :obj:`bool`, default=True
         Make colormap symmetric (ranging from -vmax to vmax).
         You can set it to False if you are plotting only positive values.
 
-    colorbar : bool, default=True
+    colorbar : :obj:`bool`, default=True
         Add a colorbar or not.
 
-    colorbar_height : float, default=0.5
+    colorbar_height : :obj:`float`, default=0.5
         Height of the colorbar, relative to the figure height
 
-    colorbar_fontsize : int, default=25
+    colorbar_fontsize : :obj:`int`, default=25
         Fontsize of the colorbar tick labels.
 
-    title : str, optional
+    title : :obj:`str`, default=None
         Title for the plot.
 
-    title_fontsize : int, default=25
+    title_fontsize : :obj:`int`, default=25
         Fontsize of the title.
 
-    vol_to_surf_kwargs : dict, default=None
+    vol_to_surf_kwargs : :obj:`dict`, default=None
         Dictionary of keyword arguments that are passed on to
         :func:`nilearn.surface.vol_to_surf` when extracting a surface from
         the input image. See the function documentation for details.This
@@ -454,7 +454,7 @@ def view_surf(
 
     Parameters
     ----------
-    surf_mesh : str or list of two numpy.ndarray
+    surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`
         Surface :term:`mesh` geometry, can be a file
         (valid formats are .gii or Freesurfer specific files
         such as .orig, .pial, .sphere, .white, .inflated) or
@@ -462,14 +462,14 @@ def view_surf(
         of the :term:`mesh` vertices, the second containing the indices
         (into coords) of the :term:`mesh` :term:`faces`.
 
-    surf_map : str or numpy.ndarray, optional
+    surf_map : :obj:`str` or :class:`numpy.ndarray`, default=None
         Data to be displayed on the surface :term:`mesh`.
         Can be a file (valid formats are .gii, .mgz, .nii, .nii.gz,
         or Freesurfer specific files such as
         .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array
 
-    bg_map : str or numpy.ndarray, default=None
+    bg_map : :obj:`str` or :class:`numpy.ndarray`, default=None
         Background image to be plotted on the :term:`mesh` underneath
         the surf_data in greyscale, most likely a sulcal depth map for
         realistic shading.
@@ -482,7 +482,7 @@ def view_surf(
     %(darkness)s
         Default=1.
 
-    threshold : str, number or None, optional
+    threshold : :obj:`str`, number or None, default=None
         If None, no thresholding.
         If it is a number only values of amplitude greater
         than threshold will be shown.
@@ -490,42 +490,42 @@ def view_surf(
         e.g. "25.3%%", and only values of amplitude above the
         given percentile will be shown.
 
-    cmap : str or matplotlib colormap, default=cm.cold_hot
+    cmap : :obj:`str` or matplotlib colormap, default=cm.cold_hot
         You might want to change it to 'gnist_ncar' if plotting a
         surface atlas.
 
-    black_bg : bool, default=False
+    black_bg : :obj:`bool`, default=False
         If True, image is plotted on a black background. Otherwise on a
         white background.
 
-    symmetric_cmap : bool, default=True
+    symmetric_cmap : :obj:`bool`, default=True
         Make colormap symmetric (ranging from -vmax to vmax).
         Set it to False if you are plotting a surface atlas.
 
-    vmax : float or None, optional
+    vmax : :obj:`float` or None, default=None
         upper bound for the colorbar. if None, use the absolute max of the
         brain map.
 
-    vmin : float or None, optional
+    vmin : :obj:`float` or None, default=None
         min value for mapping colors.
         If `symmetric_cmap` is `True`, `vmin` is always equal to `-vmax` and
         cannot be chosen.
         If `symmetric_cmap` is `False`, `vmin` defaults to the min of the
         image, or 0 when a threshold is used.
 
-    colorbar : bool, default=True
+    colorbar : :obj:`bool`, default=True
         Add a colorbar or not.
 
-    colorbar_height : float, default=0.5
+    colorbar_height : :obj:`float`, default=0.5
         Height of the colorbar, relative to the figure height.
 
-    colorbar_fontsize : int, default=25
+    colorbar_fontsize : :obj:`int`, default=25
         Fontsize of the colorbar tick labels.
 
-    title : str, optional
+    title : :obj:`str`, default=None
         Title for the plot.
 
-    title_fontsize : int, default=25
+    title_fontsize : :obj:`int`, default=25
         Fontsize of the title.
 
     Returns

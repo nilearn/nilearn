@@ -182,7 +182,7 @@ def _plot_img_with_bg(
     bg_vmax : :obj:`float`, optional
         vmax for `bg_img`.
 
-    interpolation : string, default='nearest'
+    interpolation : :obj:`str`, default='nearest'
         Passed to the add_overlay calls.
 
     display_factory : function, default=get_slicer
@@ -365,7 +365,7 @@ def plot_img(
     %(title)s
     %(threshold)s
     %(annotate)s
-    decimals : :obj:`int` or bool, default=False
+    decimals : :obj:`int` or :obj:`bool`, default=False
         Number of decimal places on slice position annotation.
         If False (default),
         the slice position is integer without decimal point.
@@ -374,7 +374,7 @@ def plot_img(
         Default=False.
     %(colorbar)s
         Default=False.
-    cbar_tick_format: str, default="%%.2g" (scientific notation)
+    cbar_tick_format: :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
     %(resampling_interpolation)s
@@ -619,9 +619,9 @@ def plot_anat(
         Default='auto'.
     %(cmap)s
         Default=`plt.cm.gray`.
-    colorbar : boolean, default=False
+    colorbar : :obj:`bool`, default=False
         If True, display a colorbar on the right of the plots.
-    cbar_tick_format: str, default="%%.2g" (scientific notation)
+    cbar_tick_format: :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
     %(radiological)s
@@ -705,7 +705,7 @@ def plot_epi(
 
     Parameters
     ----------
-    epi_img : a nifti-image like object or a filename, optional
+    epi_img : a Niimg-like object or None, default=None
         The :term:`EPI` (T2*) image.
     %(cut_coords)s
     %(output_file)s
@@ -717,9 +717,9 @@ def plot_epi(
     %(draw_cross)s
     %(black_bg)s
         Default=True.
-    colorbar : boolean, default=False
+    colorbar : :obj:`bool`, default=False
         If True, display a colorbar on the right of the plots.
-    cbar_tick_format: str, default="%%.2g" (scientific notation)
+    cbar_tick_format: :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
     %(cmap)s
@@ -772,7 +772,7 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
 
     Parameters
     ----------
-    display : nilearn.plotting.displays.OrthoSlicer, object
+    display : :class:`~nilearn.plotting.displays.OrthoSlicer`, object
         An object with background image on which contours are shown.
 
     roi_img : Niimg-like object
@@ -783,17 +783,17 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
     cmap : matplotlib colormap
         The colormap for the atlas maps.
 
-    alpha : float between 0 and 1
+    alpha : :obj:`float` between 0 and 1
         Alpha sets the transparency of the color inside the filled
         contours.
 
-    linewidths : float
+    linewidths : :obj:`float`
         This option can be used to set the boundary thickness of the
         contours.
 
     Returns
     -------
-    display : nilearn.plotting.displays.OrthoSlicer, object
+    display : :class:`~nilearn.plotting.displays.OrthoSlicer`, object
         Contours displayed on the background image.
 
     """
@@ -872,16 +872,16 @@ def plot_roi(
         Default='auto'.
     %(threshold)s
         Default=0.5.
-    alpha : float between 0 and 1, default=0.7
+    alpha : :obj:`float` between 0 and 1, default=0.7
         Alpha sets the transparency of the color inside the filled
         contours.
     %(cmap)s
         Default=`plt.cm.gist_ncar`.
     %(dim)s
         Default='auto'.
-    colorbar : boolean, default=False
+    colorbar : :obj:`bool`, default=False
         If True, display a colorbar on the right of the plots.
-    cbar_tick_format: str, default="%%.2g" (scientific notation)
+    cbar_tick_format: :obj:`str`, default="%%i"
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%.2g" to use scientific notation.
     %(vmin)s
@@ -1021,7 +1021,8 @@ def plot_prob_atlas(
         If view_type == 'continuous', maps are overlaid as continuous
         colors irrespective of the number maps.
 
-    threshold : a str or a number, list of str or numbers, default='auto'
+    threshold : a :obj:`str` or a number, :obj:`list` of :obj:`str` or \
+        numbers, default='auto'
         This parameter is optional and is used to threshold the maps image
         using the given value or automatically selected value. The values
         in the image above the threshold level will be visualized.
@@ -1060,7 +1061,7 @@ def plot_prob_atlas(
         Default=False.
     %(vmin)s
     %(vmax)s
-    alpha : float between 0 and 1, default=0.7
+    alpha : :obj:`float` between 0 and 1, default=0.7
         Alpha sets the transparency of the color inside the filled contours.
     %(radiological)s
 
@@ -1247,7 +1248,7 @@ def plot_stat_map(
     %(display_mode)s
     %(colorbar)s
         Default=True.
-    cbar_tick_format: str, default="%%.2g" (scientific notation)
+    cbar_tick_format: :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
     %(figure)s
@@ -1383,7 +1384,7 @@ def plot_glass_brain(
         It needs to be in :term:`MNI` space
         in order to align with the brain schematics.
     %(output_file)s
-    display_mode : string, default='ortho'
+    display_mode : :obj:`str`, default='ortho'
         Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
         'z' - axial, 'l' - sagittal left hemisphere only,
         'r' - sagittal right hemisphere only, 'ortho' - three cuts are
@@ -1392,7 +1393,7 @@ def plot_glass_brain(
         'lzry', 'lyrz'.
     %(colorbar)s
         Default=False.
-    cbar_tick_format: str, default="%%.2g" (scientific notation)
+    cbar_tick_format: :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
     %(figure)s
@@ -1405,11 +1406,11 @@ def plot_glass_brain(
         Default=False.
     %(cmap)s
         Default=None.
-    alpha : float between 0 and 1, default=0.7
+    alpha : :obj:`float` between 0 and 1, default=0.7
         Alpha transparency for the brain schematics.
     %(vmin)s
     %(vmax)s
-    plot_abs : boolean, default=True
+    plot_abs : :obj:`bool`, default=True
         If set to True maximum intensity projection of the
         absolute value will be used (rendering positive and negative
         values in the same manner). If set to false the sign of the
@@ -1545,7 +1546,7 @@ def plot_connectome(
     node_coords : numpy array_like of shape (n, 3)
         3d coordinates of the graph nodes in world space.
 
-    node_color : color or sequence of colors or 'auto', optional
+    node_color : color or sequence of colors or 'auto', default='auto'
         Color(s) of the nodes. If string is given, all nodes
         are plotted with same color given in string.
 
@@ -1555,21 +1556,21 @@ def plot_connectome(
     edge_cmap : colormap, default=cm.bwr
         Colormap used for representing the strength of the edges.
 
-    edge_vmin, edge_vmax : float, optional
+    edge_vmin, edge_vmax : :obj:`float` or None, default=None
         If not None, either or both of these values will be used to
         as the minimum and maximum values to color edges. If None are
         supplied the maximum absolute value within the given threshold
         will be used as minimum (multiplied by -1) and maximum
         coloring levels.
 
-    edge_threshold : str or number, optional
+    edge_threshold : :obj:`str`, number or None, default=None
         If it is a number only the edges with a value greater than
         edge_threshold will be shown.
         If it is a string it must finish with a percent sign,
         e.g. "25.3%%", and only the edges with a abs(value) above
         the given percentile will be shown.
     %(output_file)s
-    display_mode : string, default='ortho'
+    display_mode : :obj:`str`, default='ortho'
         Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
         'z' - axial, 'l' - sagittal left hemisphere only,
         'r' - sagittal right hemisphere only, 'ortho' - three cuts are
@@ -1582,13 +1583,13 @@ def plot_connectome(
     %(annotate)s
     %(black_bg)s
         Default=False.
-    alpha : float between 0 and 1, default=0.7
+    alpha : :obj:`float` between 0 and 1, default=0.7
         Alpha transparency for the brain schematics.
 
-    edge_kwargs : dict, optional
+    edge_kwargs : :obj:`dict` or None, default=None
         Will be passed as kwargs for each edge matlotlib Line2D.
 
-    node_kwargs : dict, optional
+    node_kwargs : :obj:`dict` or None, default=None
         Will be passed as kwargs to the plt.scatter call that plots all
         the nodes in one go.
     %(colorbar)s
@@ -1678,30 +1679,30 @@ def plot_markers(
     node_coords : numpy array_like of shape (n, 3)
         3d coordinates of the graph nodes in world space.
 
-    node_size : 'auto' or scalar or array-like, optional
+    node_size : 'auto' or scalar or array-like, default='auto'
         Size(s) of the nodes in points^2. By default the size of the node is
         inversely proportional to the number of nodes.
 
-    node_cmap : str or colormap, default=plt.cm.viridis_r.
+    node_cmap : :obj:`str` or colormap, default=plt.cm.viridis_r.
         Colormap used to represent the node measure.
 
-    node_vmin : float, optional
+    node_vmin : :obj:`float` or None, default=None
         Lower bound of the colormap. If `None`, the min of the node_values is
         used.
 
-    node_vmax : float, optional
+    node_vmax : :obj:`float` or None, default=None
         Upper bound of the colormap. If `None`, the min of the node_values is
         used.
 
-    node_threshold : float
+    node_threshold : :obj:`float` or None, default=None
         If provided only the nodes with a value greater than node_threshold
         will be shown.
 
-    alpha : float between 0 and 1, default=0.7
+    alpha : :obj:`float` between 0 and 1, default=0.7
         Alpha transparency for markers.
     %(output_file)s
 
-    display_mode : string, default='ortho'
+    display_mode : :obj:`str`, default='ortho'
         Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
         'z' - axial, 'l' - sagittal left hemisphere only,
         'r' - sagittal right hemisphere only, 'ortho' - three cuts are
@@ -1714,7 +1715,7 @@ def plot_markers(
     %(annotate)s
     %(black_bg)s
         Default=False.
-    node_kwargs : dict, optional
+    node_kwargs : :obj:`dict` or None, default=None
         will be passed as kwargs to the plt.scatter call that plots all
         the nodes in one go
     %(colorbar)s
@@ -1843,7 +1844,7 @@ def plot_carpet(
         If not specified, a new mask will be derived from data.
         See :ref:`extracting_data`.
 
-    mask_labels : :obj:`dict`, optional
+    mask_labels : :obj:`dict` or None, default=None
         If ``mask_img`` corresponds to an atlas, then this dictionary maps
         values from the ``mask_img`` to labels. Dictionary keys are labels
         and values are values within the atlas.
@@ -2101,29 +2102,29 @@ def plot_img_comparison(
     masker : NiftiMasker object
         Mask to be used on data.
 
-    plot_hist : Boolean, default=True
+    plot_hist : :obj:`bool`, default=True
         If True then histograms of each img in ref_imgs will be plotted
         along-side the histogram of the corresponding image in src_imgs.
 
-    log : Boolean, default=True
+    log : :obj:`bool`, default=True
         Passed to plt.hist.
 
-    ref_label : str, default='image set 1'
+    ref_label : :obj:`str`, default='image set 1'
         Name of reference images.
 
-    src_label : str, default='image set 2'
+    src_label : :obj:`str`, default='image set 2'
         Name of source images.
 
-    output_dir : string, optional
+    output_dir : :obj:`str` or None, default=None
         Directory where plotted figures will be stored.
 
-    axes : list of two matplotlib Axes objects, optional
+    axes : :obj:`list` of two matplotlib Axes objects, or None, default=None
         Can receive a list of the form [ax1, ax2] to render the plots.
         By default new axes will be created.
 
     Returns
     -------
-    corrs : numpy.ndarray
+    corrs : :class:`numpy.ndarray`
         Pearson correlation between the images.
 
     """
