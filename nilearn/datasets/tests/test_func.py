@@ -140,7 +140,7 @@ def test_fetch_haxby(tmp_path, request_mocker):
     assert len(haxby.session_target) == len(subjects)
     assert len(haxby.mask_vt) == len(subjects)
     assert len(haxby.mask_face_little) == len(subjects)
-    assert haxby["stimuli"] is not None
+    assert "stimuli" in haxby
 
     subjects = ["a", 8]
     message = "You provided invalid subject id {0} in a list"
