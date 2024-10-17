@@ -748,7 +748,7 @@ def clean(
     # Detrend and filtering should apply to confounds, if confound presents
     # keep filters orthogonal (according to Lindquist et al. (2018))
     # Restrict the signal to the orthogonal of the confounds
-    mean_signals = signals.mean(axis=0)
+    original_mean_signals = signals.mean(axis=0)
     if detrend:
         signals = standardize_signal(
             signals, standardize=False, detrend=detrend
@@ -808,12 +808,25 @@ def clean(
         signals -= Q.dot(Q.T).dot(signals)
 
     # Standardize
-    if (detrend and standardize == "psc") or (filter_type == "butterworth"):
-        # If the signal is detrended or filtered,
-        # the mean signal will be zero or close to zero. In this case,
-        # we have to know the original mean signal to calculate the psc.
+    if not standardize:
+        return signals
+
+    # detect if mean is close to zero; This can obscure the scale of the signal
+    # with percent signal change standardization. This should happen when the
+    # data was 1. detrended 2. high pass filtered.
+    filtered_mean_check = (
+        np.abs(signals.mean(0)).mean() / np.abs(original_mean_signals).mean()
+        < 1e-1
+    )
+    if standardize == "psc" and filtered_mean_check:
+        # If the signal is detrended, the mean signal will be zero or close to
+        # zero. If signal is high pass filtered with butterworth, the constant
+        # (mean) will be removed. This is detected through checking the scale
+        # difference of the original mean and filtered mean signal. When the
+        # mean is too small, we have to know the original mean signal to
+        # calculate the psc to avoid weird scaling.
         signals = standardize_signal(
-            signals + mean_signals,
+            signals + original_mean_signals,
             standardize=standardize,
             detrend=False,
         )
@@ -1060,7 +1073,7 @@ def _sanitize_runs(n_time, runs):
 def _sanitize_confound_dtype(n_signal, confound):
     """Check confound is the correct datatype."""
     if isinstance(confound, pd.DataFrame):
-        confound = confound.values
+        confound = confound.to_numpy()
     if isinstance(confound, (str, Path)):
         filename = confound
         confound = csv_to_array(filename)

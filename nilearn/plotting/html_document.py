@@ -37,7 +37,7 @@ def _open_in_browser(content):
         def log_message(self, *args):
             del args
 
-        def do_GET(self):
+        def do_GET(self):  # noqa: N802
             if not self.path.endswith("index.html"):
                 self.send_error(HTTPStatus.NOT_FOUND, "File not found")
                 return
@@ -207,7 +207,11 @@ class HTMLDocument:
         ),
         end_version="0.13.0",
     )
-    def open_in_browser(self, file_name=None, temp_file_lifetime="deprecated"):
+    def open_in_browser(
+        self,
+        file_name=None,
+        temp_file_lifetime="deprecated",  # noqa: ARG002
+    ):
         """Save the plot to a temporary HTML file and open it in a browser.
 
         Parameters

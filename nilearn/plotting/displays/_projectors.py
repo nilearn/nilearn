@@ -45,7 +45,12 @@ class OrthoProjector(OrthoSlicer):
     _axes_class = GlassBrainAxes
 
     @classmethod
-    def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
+    def find_cut_coords(
+        cls,
+        img=None,  # noqa: ARG003
+        threshold=None,  # noqa: ARG003
+        cut_coords=None,  # noqa: ARG003
+    ):
         """Find the coordinates of the cut."""
         return (None,) * len(cls._cut_displayed)
 

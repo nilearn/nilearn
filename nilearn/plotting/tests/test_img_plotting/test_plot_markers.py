@@ -113,6 +113,7 @@ def test_plot_markers_saving_to_file(coords, tmp_path):
     )
     assert display is None
     assert filename.is_file() and filename.stat().st_size > 0
+
     plt.close()
 
 

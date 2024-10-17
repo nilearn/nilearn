@@ -376,7 +376,11 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
             display.close()
         return embeded_images
 
-    def fit(self, imgs=None, y=None):
+    def fit(
+        self,
+        imgs=None,
+        y=None,  # noqa: ARG002
+    ):
         """Prepare signal extraction from regions.
 
         Parameters
