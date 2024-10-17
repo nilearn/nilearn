@@ -60,7 +60,7 @@ def mean_scaling(Y, axis=0):
     Y : array of shape (n_time_points, n_voxels)
        The input data.
 
-    axis : int, default=0
+    axis : :obj:`int`, default=0
         Axis along which the scaling mean should be calculated.
 
     Returns
@@ -144,20 +144,20 @@ def run_glm(
         order after the characters `ar`, for example to specify a third order
         model use `ar3`.
 
-    bins : int, default=100
+    bins : :obj:`int`, default=100
         Maximum number of discrete bins for the AR coef histogram.
         If an autoregressive model with order greater than one is specified
         then adaptive quantification is performed and the coefficients
         will be clustered via K-means with `bins` number of clusters.
 
-    n_jobs : int, default=1
+    n_jobs : :obj:`int`, default=1
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'.
 
-    verbose : int, default=0
+    verbose : :obj:`int`, default=0
         The verbosity level.
 
-    random_state : int or numpy.random.RandomState, default=None
+    random_state : :obj:`int` or numpy.random.RandomState, default=None
         Random state seed to sklearn.cluster.KMeans for autoregressive models
         of order at least 2 ('ar(N)' with n >= 2).
 
@@ -168,7 +168,7 @@ def run_glm(
     labels : array of shape (n_voxels,),
         A map of values on voxels used to identify the corresponding model.
 
-    results : dict,
+    results : :obj:`dict`,
         Keys correspond to the different labels values
         values are RegressionResults instances corresponding to the voxels.
 
@@ -292,31 +292,32 @@ class FirstLevelModel(BaseGLM):
         matrix. This parameter is also passed to :func:`nilearn.signal.clean`.
         Please see the related documentation for details.
 
-    slice_time_ref : float, default=0.0
+    slice_time_ref : :obj:`float`, default=0.0
         This parameter indicates the time of the reference slice used in the
         slice timing preprocessing step of the experimental runs.
         It is expressed as a fraction of the ``t_r`` (repetition time),
         so it can have values between 0. and 1.
     %(hrf_model)s
         Default='glover'.
-    drift_model : string, default='cosine'
+    drift_model : :obj:`str`, default='cosine'
         This parameter specifies the desired drift model for the design
         matrices. It can be 'polynomial', 'cosine' or None.
 
-    high_pass : float, default=0.01
+    high_pass : :obj:`float`, default=0.01
         This parameter specifies the cut frequency of the high-pass filter in
         Hz for the design matrices. Used only if drift_model is 'cosine'.
 
-    drift_order : int, default=1
+    drift_order : :obj:`int`, default=1
         This parameter specifies the order of the drift model (in case it is
         polynomial) for the design matrices.
 
     fir_delays : array of shape(n_onsets), :obj:`list` or None, default=None
+        Will be set to ``[0]`` if ``None`` is passed.
         In case of :term:`FIR` design,
         yields the array of delays used in the :term:`FIR` model,
         in scans.
 
-    min_onset : float, default=-24
+    min_onset : :obj:`float`, default=-24
         This parameter specifies the minimal onset relative to the design
         (in seconds). Events that start before (slice_time_ref * t_r +
         min_onset) are not considered.
@@ -339,7 +340,7 @@ class FirstLevelModel(BaseGLM):
         This parameter is passed to nilearn.image.resample_img.
         Please see the related documentation for details.
     %(smoothing_fwhm)s
-    memory : string or pathlib.Path, default=None
+    memory : :obj:`str` or pathlib.Path, default=None
         Path to the directory used to cache the masking process
         and the glm fit.
         By default, no caching is done.
@@ -351,11 +352,11 @@ class FirstLevelModel(BaseGLM):
         Higher value means more memory for caching.
 
 
-    standardize : boolean, default=False
+    standardize : :obj:`bool`, default=False
         If standardize is True, the time-series are centered and normed:
         their variance is put to 1 in the time dimension.
 
-    signal_scaling : False, int or (int, int), default=0
+    signal_scaling : False, :obj:`int` or (int, int), default=0
         If not False, fMRI signals are
         scaled to the mean value of scaling_axis given,
         which can be 0, 1 or (0, 1).
@@ -369,27 +370,27 @@ class FirstLevelModel(BaseGLM):
     noise_model : {'ar1', 'ols'}, default='ar1'
         The temporal variance model.
 
-    verbose : integer, default=0
+    verbose : :obj:`int`, default=0
         Indicate the level of verbosity. By default, nothing is printed.
         If 0 prints nothing. If 1 prints progress by computation of
         each run. If 2 prints timing details of masker and GLM. If 3
         prints masker computation details.
 
-    n_jobs : integer, default=1
+    n_jobs : :obj:`int`, default=1
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
 
-    minimize_memory : boolean, default=True
+    minimize_memory : :obj:`bool`, default=True
         Gets rid of some variables on the model fit results that are not
         necessary for contrast computation and would only be useful for
         further inspection of model details. This has an important impact
         on memory consumption.
 
-    subject_label : string, optional
+    subject_label : :obj:`str`, optional
         This id will be used to identify a `FirstLevelModel` when passed to
         a `SecondLevelModel` object.
 
-    random_state : int or numpy.random.RandomState, default=None.
+    random_state : :obj:`int` or numpy.random.RandomState, default=None.
         Random state seed to sklearn.cluster.KMeans
         for autoregressive models
         of order at least 2 ('ar(N)' with n >= 2).
@@ -401,7 +402,7 @@ class FirstLevelModel(BaseGLM):
     labels_ : array of shape (n_voxels,),
         a map of values on voxels used to identify the corresponding model
 
-    results_ : dict,
+    results_ : :obj:`dict`,
         with keys corresponding to the different labels values.
         Values are SimpleRegressionResults corresponding to the voxels,
         if minimize_memory is True,
@@ -851,14 +852,14 @@ class FirstLevelModel(BaseGLM):
         stat_type : {'t', 'F'}, optional
             Type of the contrast.
 
-        output_type : str, default='z_score'
+        output_type : :obj:`str`, default='z_score'
             Type of the output map. Can be 'z_score', 'stat', 'p_value',
             :term:`'effect_size'<Parameter Estimate>`, 'effect_variance' or
             'all'.
 
         Returns
         -------
-        output : Nifti1Image, or dict
+        output : Nifti1Image, or :obj:`dict`
             The desired output image(s). If ``output_type == 'all'``, then
             the output is a dictionary of images, keyed by the type of image.
 
@@ -940,18 +941,18 @@ class FirstLevelModel(BaseGLM):
 
         Parameters
         ----------
-        attribute : str
+        attribute : :obj:`str`
             an attribute of a RegressionResults instance.
             possible values include: residuals, normalized_residuals,
             predicted, SSE, r_square, MSE.
 
-        result_as_time_series : bool
+        result_as_time_series : :obj:`bool`
             whether the RegressionResult attribute has a value
             per timepoint of the input nifti image.
 
         Returns
         -------
-        output : list
+        output : :obj:`list`
             A list of Nifti1Image(s).
 
         """
@@ -1102,7 +1103,7 @@ def _check_events_file_uses_tab_separators(events_files):
 
     Parameters
     ----------
-    events_files : str, List/Tuple[str]
+    events_files : :obj:`str`, List/Tuple[str]
         A single file's path or a collection of filepaths.
         Files are expected to be text files.
         Non-text files will raise ValueError.
@@ -1195,7 +1196,7 @@ def _read_events_table(table):
 
     Parameters
     ----------
-    table : string
+    table : :obj:`str`
         Accepts the path to an events file.
 
     Returns
@@ -1420,15 +1421,15 @@ def first_level_from_bids(
         All runs from different sessions are considered together
         for the same subject to run a fixed effects analysis on them.
 
-    models_run_imgs : list of list of Niimg-like objects,
+    models_run_imgs : :obj:`list` of list of Niimg-like objects,
         Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
         fit function of their respective model.
 
-    models_events : list of list of pandas DataFrames,
+    models_events : :obj:`list` of list of pandas DataFrames,
         Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
         fit function of their respective model.
 
-    models_confounds : list of list of pandas DataFrames or ``None``,
+    models_confounds : :obj:`list` of list of pandas DataFrames or ``None``,
         Items for the :class:`~nilearn.glm.first_level.FirstLevelModel`
         fit function of their respective model.
 
