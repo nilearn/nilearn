@@ -325,12 +325,15 @@ def test_masking_first_level_model(tmp_path):
 # -----------------------surface tests--------------------------------------- #
 
 
-def test_flm_generate_report_error_with_surface_data(mini_mask, make_mini_img):
+def test_flm_generate_report_error_with_surface_data(
+    make_surface_mask, make_surface_img
+):
     """Raise NotImplementedError when generate report is called on surface."""
-    mini_img = make_mini_img((5,))
-    model = FirstLevelModel(mask_img=mini_mask, t_r=2.0)
+    img = make_surface_img((5,))
+    mask = make_surface_mask()
+    model = FirstLevelModel(mask_img=mask, t_r=2.0)
     events = basic_paradigm()
-    model.fit(mini_img, events=events)
+    model.fit(img, events=events)
 
     with pytest.raises(NotImplementedError):
         model.generate_report("c0")
