@@ -119,7 +119,7 @@ def cluster_level_inference(
 
     Parameters
     ----------
-    stat_img : Niimg-like object or None, default=None
+    stat_img : Niimg-like object
        statistical image (presumably in z scale)
 
     mask_img : Niimg-like object, default=None

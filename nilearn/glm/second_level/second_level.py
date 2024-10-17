@@ -762,7 +762,7 @@ def non_parametric_inference(
 
     %(second_level_contrast)s
 
-    first_level_contrast : :obj:`str`, default=None
+    first_level_contrast : :obj:`str` or None, default=None
         In case a pandas DataFrame was provided as second_level_input this
         is the map name to extract from the pandas dataframe map_name column.
         It has to be a 't' contrast.
@@ -770,7 +770,8 @@ def non_parametric_inference(
         .. versionadded:: 0.9.0
 
     mask : Niimg-like, :obj:`~nilearn.maskers.NiftiMasker` or \
-            :obj:`~nilearn.maskers.MultiNiftiMasker` object, default=None
+            :obj:`~nilearn.maskers.MultiNiftiMasker` object \
+            or None, default=None
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given, it will be computed
         automatically by a :class:`~nilearn.maskers.MultiNiftiMasker` with
