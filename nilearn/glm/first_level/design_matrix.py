@@ -60,7 +60,7 @@ def _poly_drift(order, frame_times):
 
     Parameters
     ----------
-    order : int,
+    order : :obj:`int`,
         Number of polynomials in the drift model.
 
     frame_times : array of shape(n_scans),
@@ -87,7 +87,7 @@ def create_cosine_drift(high_pass, frame_times):
 
     Parameters
     ----------
-    high_pass : float
+    high_pass : :obj:`float`
         Cut frequency of the high-pass filter in Hz
 
     frame_times : array of shape (n_scans,)
@@ -150,10 +150,10 @@ def _make_drift(drift_model, frame_times, order, high_pass):
     frame_times : array of shape(n_scans),
         list of values representing the desired TRs
 
-    order : int, optional,
+    order : :obj:`int`, optional,
         order of the drift model (in case it is polynomial)
 
-    high_pass : float, optional,
+    high_pass : :obj:`float`, optional,
         high-pass frequency in case of a cosine model (in Hz)
 
     Returns
@@ -161,7 +161,7 @@ def _make_drift(drift_model, frame_times, order, high_pass):
     drift : array of shape(n_scans, n_drifts),
         the drift matrix
 
-    names : list of length(n_drifts),
+    names : :obj:`list` of length(n_drifts),
         the associated names
 
     """
@@ -211,11 +211,11 @@ def _convolve_regressors(
         used in the FIR model (in scans).
         Will default to ``[0]`` if ``None`` is passed.
 
-    min_onset : float, default=-24
+    min_onset : :obj:`float`, default=-24
         Minimal onset relative to frame_times[0] (in seconds) events
         that start before frame_times[0] + min_onset are not considered.
 
-    oversampling : int, default=50
+    oversampling : :obj:`int`, default=50
         Oversampling factor used in temporal convolutions.
 
     Returns
@@ -224,7 +224,7 @@ def _convolve_regressors(
         Contains the convolved regressors associated with the
         experimental conditions.
 
-    regressor_names : list of strings,
+    regressor_names : :obj:`list` of strings,
         The regressor names, that depend on the hrf model used
         if 'glover' or 'spm' then this is identical to the input names
         if 'glover + derivative' or 'spm + derivative', a second name is output
@@ -299,7 +299,7 @@ def make_first_level_design_matrix(
     frame_times : array of shape (n_frames,)
         The timing of acquisition of the scans in seconds.
 
-    events : DataFrame instance, optional
+    events : DataFrame instance or None, default=None
         Events data that describes the experimental paradigm.
          The DataFrame instance might have these keys:
             'onset': column to specify the start time of each events in
@@ -324,33 +324,35 @@ def make_first_level_design_matrix(
     drift_model : {'cosine', 'polynomial', None}, default='cosine'
         Specifies the desired drift model.
 
-    high_pass : float, default=0.01
+    high_pass : :obj:`float`, default=0.01
         High-pass frequency in case of a cosine model (in Hz).
 
-    drift_order : int, default=1
+    drift_order : :obj:`int`, default=1
         Order of the drift model (in case it is polynomial).
 
-    fir_delays : array of shape(n_onsets) or list, default=[0]
+    fir_delays : array of shape(n_onsets), :obj:`list` or None, default=None
+        Will be set to ``[0]`` if ``None`` is passed.
         In case of :term:`FIR` design,
         yields the array of delays used in the :term:`FIR`
         model (in scans).
 
     add_regs : array of shape(n_frames, n_add_reg) or \
-            pandas DataFrame, optional
+            pandas DataFrame or None, default=None
         additional user-supplied regressors, e.g. data driven noise regressors
         or seed based regressors.
 
-    add_reg_names : list of (n_add_reg,) strings, optional
+    add_reg_names : :obj:`list` of (n_add_reg,) :obj:`str`, or \
+        None, default=None
         If None, while add_regs was provided, these will be termed
         'reg_i', i = 0..n_add_reg - 1
         If add_regs is a DataFrame, the corresponding column names are used
         and add_reg_names is ignored.
 
-    min_onset : float, default=-24
+    min_onset : :obj:`float`, default=-24
         Minimal onset relative to frame_times[0] (in seconds)
         events that start before frame_times[0] + min_onset are not considered.
 
-    oversampling : int, default=50
+    oversampling : :obj:`int`, default=50
         Oversampling factor used in temporal convolutions.
 
     Returns
