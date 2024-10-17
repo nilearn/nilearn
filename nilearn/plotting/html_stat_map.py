@@ -32,12 +32,12 @@ def _data_to_sprite(data):
 
     Parameters
     ----------
-    data : Numpy array
+    data : :class:`numpy.ndarray`
         Input data to convert to sprite.
 
     Returns
     -------
-    sprite : 2D numpy array
+    sprite : 2D :class:`numpy.ndarray`
         If each sagittal slice is nz (height) x ny (width) pixels, the sprite
         size is (M x nz) x (N x ny), where M and N are computed to be roughly
         equal. All slices are pasted together row by row, from top left to
@@ -66,21 +66,21 @@ def _threshold_data(data, threshold=None):
 
     Parameters
     ----------
-    data : Numpy array
+    data : :class:`numpy.ndarray`
         Data to apply threshold on.
 
-    threshold : Float, optional
+    threshold : :obj:`float`, optional
         Threshold to apply to data.
 
     Returns
     -------
-    data : Numpy array
+    data : :class:`numpy.ndarray`
         Thresholded data.
 
-    mask : boolean numpy array
+    mask : :class:`numpy.ndarray` of :obj:`bool`
         Boolean mask.
 
-    threshold : float
+    threshold : :obj:`float`
         Updated threshold value.
 
     """
@@ -123,27 +123,27 @@ def _save_sprite(
 
     Parameters
     ----------
-    data : Numpy array
+    data : :class:`numpy.ndarray`
         Input data.
 
-    output_sprite : Numpy array
+    output_sprite : :class:`numpy.ndarray`
         Output sprite.
 
-    vmax, vmin : Float
+    vmax, vmin : :obj:`float`
         ???
 
-    mask : Numpy array, optional
+    mask : :class:`numpy.ndarray`, optional
         Mask to use.
 
-    cmap : String or colormap, default='Greys'
+    cmap : :obj:`str` or colormap, default='Greys'
         Colormap to use.
 
-    format : String, default='png'
+    format : :obj:`str`, default='png'
         Format to use for output image.
 
     Returns
     -------
-    sprite : Numpy array
+    sprite : :class:`numpy.ndarray`
         Returned sprite.
 
     """
@@ -518,7 +518,7 @@ def view_img(
         as a 3-tuple: (x, y, z). If None is given, the cuts are calculated
         automatically.
 
-    colorbar : boolean, default=True
+    colorbar : :obj:`bool`, default=True
         If True, display a colorbar on top of the plots.
     %(title)s
     threshold : :obj:`str`, number or None, default=1e-06
@@ -530,17 +530,17 @@ def view_img(
         as transparent. If auto is given, the threshold is determined
         automatically.
 
-    annotate : boolean, default=True
+    annotate : :obj:`bool`, default=True
         If annotate is True, current cuts are added to the viewer.
     %(draw_cross)s
-    black_bg : boolean or 'auto', default='auto'
+    black_bg : :obj:`bool` or 'auto', default='auto'
         If True, the background of the image is set to be black.
         Otherwise, a white background is used.
         If set to auto, an educated guess is made to find if the background
         is white or black.
     %(cmap)s
         Default=`plt.cm.cold_hot`.
-    symmetric_cmap : bool, default=True
+    symmetric_cmap : :obj:`bool`, default=True
         True: make colormap symmetric (ranging from -vmax to vmax).
         False: the colormap will go from the minimum of the volume to vmax.
         Set it to False if you are plotting a positive volume, e.g. an atlas
@@ -567,7 +567,7 @@ def view_img(
         Default=600.
         Width of the viewer in pixels.
 
-    opacity : float in [0,1], default=1
+    opacity : :obj:`float` in [0,1], default=1
         The level of opacity of the overlay (0: transparent, 1: opaque).
 
     Returns
