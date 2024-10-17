@@ -172,7 +172,7 @@ def test_check_niimg_4d_errors(affine_eye, img_3d_zeros_eye, shape_3d_default):
 def test_check_niimg_4d(affine_eye, img_3d_zeros_eye, shape_3d_default):
     # Tests with return_iterator=False
     img_4d_1 = check_niimg_4d([img_3d_zeros_eye, img_3d_zeros_eye])
-    assert get_data(img_4d_1).shape == (10, 10, 10, 2)
+    assert get_data(img_4d_1).shape == (*shape_3d_default, 2)
     assert_array_equal(img_4d_1.affine, affine_eye)
 
     img_4d_2 = check_niimg_4d(img_4d_1)
