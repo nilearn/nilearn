@@ -23,6 +23,7 @@ from nilearn.experimental.conftest import (  # noqa: F401
     make_mesh,
     make_surface_img,
     make_surface_mask,
+    surface_label_img,
 )
 
 collect_ignore = ["datasets/data/convert_templates.py"]

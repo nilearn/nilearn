@@ -92,6 +92,24 @@ def make_surface_mask():
 
 
 @pytest.fixture
+def surface_label_img():
+    """Return a sample surface label image using the sample mesh.
+    Has two regions with values 0 and 1 respectively.
+    """
+
+    def _surface_label_img():
+        mesh = _make_mesh()
+        data = {
+            "left": np.asarray([0, 0, 1, 1]),
+            "right": np.asarray([1, 1, 0, 0, 0]),
+        }
+
+        return SurfaceImage(mesh, data)
+
+    return _surface_label_img
+
+
+@pytest.fixture
 def flip():
     """Flip hemispheres of a surface image data or mesh."""
 

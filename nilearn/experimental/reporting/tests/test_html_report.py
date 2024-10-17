@@ -47,13 +47,13 @@ def test_surface_masker_report_no_report(make_surface_img):
     assert "Empty Report" in str(report)
 
 
-@pytest.mark.xfail(reason="Label image not yet implemented")
 @pytest.mark.parametrize("reports", [True, False])
 @pytest.mark.parametrize("label_names", [None, ["region 1", "region 2"]])
 def test_surface_label_masker_report_unfitted(
-    mini_label_img, label_names, reports
+    surface_label_img, label_names, reports
 ):
-    masker = SurfaceLabelsMasker(mini_label_img, label_names, reports=reports)
+    label_img = surface_label_img()
+    masker = SurfaceLabelsMasker(label_img, label_names, reports=reports)
     report = masker.generate_report()
 
     _check_html(report)
@@ -62,10 +62,10 @@ def test_surface_label_masker_report_unfitted(
     assert "Make sure to run `fit`" not in str(report)
 
 
-@pytest.mark.xfail(reason="Label image not yet implemented")
-def test_surface_label_masker_report_no_report(mini_label_img):
+def test_surface_label_masker_report_no_report(surface_label_img):
     """Check content of no report."""
-    masker = SurfaceLabelsMasker(mini_label_img, reports=False)
+    label_img = surface_label_img()
+    masker = SurfaceLabelsMasker(label_img, reports=False)
     report = masker.generate_report()
 
     _check_html(report)
