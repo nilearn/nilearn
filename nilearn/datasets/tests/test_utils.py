@@ -19,8 +19,7 @@ import requests
 
 from nilearn.datasets import _utils
 
-currdir = os.path.dirname(os.path.abspath(__file__))
-datadir = os.path.join(currdir, "data")
+datadir = _utils.PACKAGE_DIRECTORY / "data"
 
 DATASET_NAMES = {
     "aal",
@@ -422,7 +421,7 @@ def test_safe_extract(tmp_path):
     in_archive_file = tmp_path / "something.txt"
     in_archive_file.write_text("hello")
     with contextlib.closing(tarfile.open(ztemp, "w")) as tar:
-        arcname = os.path.normpath("../test.tar")
+        arcname = "../test.tar"
         tar.add(in_archive_file, arcname=arcname)
 
     with pytest.raises(
@@ -433,13 +432,29 @@ def test_safe_extract(tmp_path):
 
 def test_fetch_file_part(tmp_path):
     url = "http://foo/temp.txt"
-    (tmp_path / "temp.txt.part").touch()
+    file_full = tmp_path / "temp.txt"
+    file_part = tmp_path / "temp.txt.part"
+    file_part.touch()
 
     _utils.fetch_single_file(
-        url=url, data_dir=str(tmp_path), verbose=0, resume=True
+        url=url, data_dir=tmp_path, verbose=0, resume=True
     )
 
-    assert (tmp_path / "temp.txt").exists()
+    assert file_full.exists()
+
+    file_full.unlink()
+    assert not file_full.exists()
+    assert not file_part.exists()
+
+    # test for overwrite
+    url = "http://foo/temp.txt"
+    file_part.touch()
+
+    _utils.fetch_single_file(
+        url=url, data_dir=tmp_path, verbose=0, resume=True, overwrite=True
+    )
+
+    assert file_full.exists()
 
 
 @pytest.mark.parametrize("should_cast_path_to_string", [False, True])
@@ -451,11 +466,11 @@ def test_fetch_file_overwrite(
 
     # overwrite non-exiting file.
     fil = _utils.fetch_single_file(
-        url="http://foo/", data_dir=str(tmp_path), verbose=0, overwrite=True
+        url="http://foo/", data_dir=tmp_path, verbose=0, overwrite=True
     )
 
     assert request_mocker.url_count == 1
-    assert os.path.exists(fil)
+    assert fil.exists()
     with open(fil) as fp:
         assert fp.read() == ""
 
@@ -465,21 +480,21 @@ def test_fetch_file_overwrite(
 
     # Don't overwrite existing file.
     fil = _utils.fetch_single_file(
-        url="http://foo/", data_dir=str(tmp_path), verbose=0, overwrite=False
+        url="http://foo/", data_dir=tmp_path, verbose=0, overwrite=False
     )
 
     assert request_mocker.url_count == 1
-    assert os.path.exists(fil)
+    assert fil.exists()
     with open(fil) as fp:
         assert fp.read() == "some content"
 
     # Overwrite existing file.
     fil = _utils.fetch_single_file(
-        url="http://foo/", data_dir=str(tmp_path), verbose=0, overwrite=True
+        url="http://foo/", data_dir=tmp_path, verbose=0, overwrite=True
     )
 
     assert request_mocker.url_count == 2
-    assert os.path.exists(fil)
+    assert fil.exists()
     with open(fil) as fp:
         assert fp.read() == ""
 
@@ -500,7 +515,7 @@ def test_fetch_files_use_session(
             ("example1", "https://example.org/example1", {"overwrite": True}),
             ("example2", "https://example.org/example2", {"overwrite": True}),
         ],
-        data_dir=str(tmp_path),
+        data_dir=tmp_path,
         session=session,
     )
 
@@ -517,7 +532,7 @@ def test_fetch_files_overwrite(
     # overwrite non-exiting file.
     files = ("1.txt", "http://foo/1.txt")
     fil = _utils.fetch_files(
-        data_dir=str(tmp_path),
+        data_dir=tmp_path,
         verbose=0,
         files=[(*files, {"overwrite": True})],
     )
@@ -533,7 +548,7 @@ def test_fetch_files_overwrite(
 
     # Don't overwrite existing file.
     fil = _utils.fetch_files(
-        data_dir=str(tmp_path),
+        data_dir=tmp_path,
         verbose=0,
         files=[(*files, {"overwrite": False})],
     )
@@ -545,7 +560,7 @@ def test_fetch_files_overwrite(
 
     # Overwrite existing file.
     fil = _utils.fetch_files(
-        data_dir=str(tmp_path),
+        data_dir=tmp_path,
         verbose=0,
         files=[(*files, {"overwrite": True})],
     )

@@ -1370,31 +1370,30 @@ def _json_add_collection_dir(file_name, force=True):
     file_name: str or pathlib.Path
     force: bool
     """
+    file_name = Path(file_name)
     loaded = _json_from_file(file_name)
     set_func = loaded.__setitem__ if force else loaded.setdefault
-    dir_path = os.path.dirname(file_name)
-    set_func("absolute_path", dir_path)
-    set_func("relative_path", os.path.basename(dir_path))
+    dir_path = file_name.parent
+    set_func("absolute_path", str(dir_path.absolute()))
+    set_func("relative_path", str(dir_path))
     return loaded
 
 
 def _json_add_im_files_paths(file_name, force=True):
     """Load a json file and add image and words paths."""
+    file_name = Path(file_name)
     loaded = _json_from_file(file_name)
     set_func = loaded.__setitem__ if force else loaded.setdefault
-    dir_path = os.path.dirname(file_name)
-    dir_relative_path = os.path.basename(dir_path)
+    dir_path = file_name.parent
     image_file_name = f"image_{loaded['id']}.nii.gz"
     words_file_name = f"neurosynth_words_for_image_{loaded['id']}.json"
-    set_func("relative_path", os.path.join(dir_relative_path, image_file_name))
-    if os.path.isfile(os.path.join(dir_path, words_file_name)):
+    set_func("relative_path", str(dir_path / image_file_name))
+    if (dir_path / words_file_name).is_file():
         set_func(
             "ns_words_relative_path",
-            os.path.join(dir_relative_path, words_file_name),
+            str(dir_path / words_file_name),
         )
-    loaded = _add_absolute_paths(
-        os.path.dirname(dir_path), loaded, force=force
-    )
+    loaded = _add_absolute_paths(dir_path.parent, loaded, force=force)
     return loaded
 
 
@@ -1713,9 +1712,9 @@ def _update_image(image_info, download_params):
         image_info, collection = _download_image_terms(
             image_info, collection, download_params
         )
-        metadata_file_path = os.path.join(
-            os.path.dirname(image_info["absolute_path"]),
-            f"image_{image_info['id']}_metadata.json",
+        metadata_file_path = (
+            Path(image_info["absolute_path"]).parent
+            / f"image_{image_info['id']}_metadata.json"
         )
         _write_metadata(image_info, metadata_file_path)
     except OSError:
@@ -2027,10 +2026,8 @@ def _scroll_image_ids(download_params):
         try:
             image = _download_image(image, download_params)
             collection = _json_add_collection_dir(
-                os.path.join(
-                    os.path.dirname(image["absolute_path"]),
-                    "collection_metadata.json",
-                )
+                Path(image["absolute_path"]).parent
+                / "collection_metadata.json",
             )
         except Exception:
             image, collection = None, None

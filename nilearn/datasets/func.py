@@ -25,6 +25,7 @@ from nilearn.interfaces.bids import get_bids_files
 
 from .._utils.numpy_conversions import csv_to_array
 from ._utils import (
+    PACKAGE_DIRECTORY,
     fetch_files,
     fetch_single_file,
     filter_columns,
@@ -198,7 +199,7 @@ def fetch_haxby(
             data_dir, stimuli_files, resume=resume, verbose=verbose
         )[0]
         kwargs["stimuli"] = tree(
-            os.path.dirname(readme), pattern="*.jpg", dictionary=True
+            Path(readme).parent, pattern="*.jpg", dictionary=True
         )
 
     fdescr = get_dataset_descr(dataset_name)
@@ -1903,7 +1904,6 @@ def _fetch_development_fmri_functional(
 
     # The gzip contains unique download keys per Nifti file and confound
     # pre-extracted from OSF. Required for downloading files.
-    package_directory = os.path.dirname(os.path.abspath(__file__))
     dtype = [
         ("participant_id", "U12"),
         ("key_regressor", "U24"),
@@ -1912,7 +1912,7 @@ def _fetch_development_fmri_functional(
     names = ["participant_id", "key_r", "key_b"]
     # csv file contains download information related to OpenScience(osf)
     osf_data = csv_to_array(
-        os.path.join(package_directory, "data", "development_fmri.csv"),
+        (PACKAGE_DIRECTORY / "data" / "development_fmri.csv"),
         skip_header=True,
         dtype=dtype,
         names=names,
@@ -2624,9 +2624,9 @@ def fetch_openneuro_dataset(
 
     for url in urls:
         url_path = url.split(data_prefix + "/")[1]
-        file_dir = os.path.join(data_dir, url_path)
-        files_spec.append((os.path.basename(file_dir), url, {}))
-        files_dir.append(os.path.dirname(file_dir))
+        file_dir = Path(data_dir, url_path)
+        files_spec.append((file_dir.name, url, {}))
+        files_dir.append(file_dir.parent)
 
     # download the files
     downloaded = []
@@ -2704,7 +2704,7 @@ def _download_spm_auditory_data(data_dir):
         "https://www.fil.ion.ucl.ac.uk/spm/download/data/MoAEpilot/"
         "MoAEpilot.bids.zip"
     )
-    archive_path = Path(data_dir) / os.path.basename(url)
+    archive_path = Path(data_dir) / Path(url).name
     fetch_single_file(url, data_dir)
     try:
         uncompress_file(archive_path)
@@ -2884,7 +2884,7 @@ def _download_data_spm_multimodal(data_dir, subject_dir, subject_id):
     ]
 
     for url in urls:
-        archive_path = os.path.join(subject_dir, os.path.basename(url))
+        archive_path = Path(subject_dir) / Path(url).name
         fetch_single_file(url, subject_dir)
         try:
             uncompress_file(archive_path)
@@ -2902,9 +2902,9 @@ def _download_data_spm_multimodal(data_dir, subject_dir, subject_id):
 
 def _make_events_filepath_spm_multimodal_fmri(_subject_data, session):
     key = f"trials_ses{session}"
-    events_file_location = os.path.dirname(_subject_data[key])
+    events_file_location = Path(_subject_data[key]).parent
     events_filename = f"session{session}_events.tsv"
-    events_filepath = os.path.join(events_file_location, events_filename)
+    events_filepath = str(events_file_location / events_filename)
     return events_filepath
 
 
@@ -3053,7 +3053,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     logger.log("Data absent, downloading...")
     url = "https://nipy.org/data-packages/nipy-data-0.2.tar.gz"
 
-    archive_path = os.path.join(data_dir, os.path.basename(url))
+    archive_path = Path(data_dir) / Path(url).name
     fetch_single_file(url, data_dir)
     try:
         uncompress_file(archive_path)
