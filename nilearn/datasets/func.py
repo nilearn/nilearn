@@ -2904,7 +2904,7 @@ def _make_events_filepath_spm_multimodal_fmri(_subject_data, session):
     key = f"trials_ses{session}"
     events_file_location = Path(_subject_data[key]).parent
     events_filename = f"session{session}_events.tsv"
-    events_filepath = events_file_location / events_filename
+    events_filepath = str(events_file_location / events_filename)
     return events_filepath
 
 
