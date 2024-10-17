@@ -8,8 +8,8 @@ from nilearn.experimental.surface import FileMesh, InMemoryMesh, SurfaceImage
 from nilearn.surface import load_surf_data, load_surf_mesh
 
 
-def test_compare_file_and_inmemory_mesh(make_mesh, tmp_path):
-    mesh = make_mesh()
+def test_compare_file_and_inmemory_mesh(surf_mesh, tmp_path):
+    mesh = surf_mesh()
     left = mesh.parts["left"]
     gifti_file = tmp_path / "left.gii"
     left.to_gifti(gifti_file)
@@ -27,19 +27,19 @@ def test_compare_file_and_inmemory_mesh(make_mesh, tmp_path):
 
 
 @pytest.mark.parametrize("shape", [(1,), (3,), (7, 3)])
-def test_surface_image_shape(make_surface_img, shape):
-    img = make_surface_img(shape)
+def test_surface_image_shape(surf_img, shape):
+    img = surf_img(shape)
     assert img.shape == (*shape, 9)
 
 
-def test_data_shape_not_matching_mesh(make_surface_img, flip):
-    img = make_surface_img()
+def test_data_shape_not_matching_mesh(surf_img, flip):
+    img = surf_img()
     with pytest.raises(ValueError, match="shape.*vertices"):
         SurfaceImage(img.mesh, flip(img.data))
 
 
-def test_data_shape_inconsistent(make_surface_img):
-    img = make_surface_img((7,))
+def test_data_shape_inconsistent(surf_img):
+    img = surf_img((7,))
     bad_data = {
         "left": img.data.parts["left"],
         "right": img.data.parts["right"][:4],
@@ -48,9 +48,9 @@ def test_data_shape_inconsistent(make_surface_img):
         SurfaceImage(img.mesh, bad_data)
 
 
-def test_data_keys_not_matching_mesh(make_surface_img):
+def test_data_keys_not_matching_mesh(surf_img):
     with pytest.raises(ValueError, match="same keys"):
-        img = make_surface_img()
+        img = surf_img()
         SurfaceImage(
             {"left": img.mesh.parts["left"]},
             img.data,
@@ -112,24 +112,24 @@ def test_load_save_mesh(
         assert np.array_equal(mesh.coordinates, expected_mesh.coordinates)
 
 
-def test_save_mesh_default_suffix(tmp_path, make_surface_img):
+def test_save_mesh_default_suffix(tmp_path, surf_img):
     """Check default .gii extension is added."""
-    make_surface_img().mesh.to_filename(
+    surf_img().mesh.to_filename(
         tmp_path / "give_me_a_default_suffix_hemi-L_mesh"
     )
     assert (tmp_path / "give_me_a_default_suffix_hemi-L_mesh.gii").exists()
 
 
-def test_save_mesh_error(tmp_path, make_surface_img):
+def test_save_mesh_error(tmp_path, surf_img):
     with pytest.raises(ValueError, match="cannot contain both"):
-        make_surface_img().mesh.to_filename(
+        surf_img().mesh.to_filename(
             tmp_path / "hemi-L_hemi-R_cannot_have_both.gii"
         )
 
 
-def test_save_mesh_error_wrong_suffix(tmp_path, make_surface_img):
+def test_save_mesh_error_wrong_suffix(tmp_path, surf_img):
     with pytest.raises(ValueError, match="with the extension '.gii'"):
-        make_surface_img().mesh.to_filename(
+        surf_img().mesh.to_filename(
             tmp_path / "hemi-L_hemi-R_cannot_have_both.foo"
         )
 
@@ -195,16 +195,16 @@ def test_load_save_data(
         np.float64,
     ],
 )
-def test_save_dtype(make_surface_img, tmp_path, dtype):
+def test_save_dtype(surf_img, tmp_path, dtype):
     """Check saving several data type."""
-    img = make_surface_img()
+    img = surf_img()
     img.data.parts["right"] = img.data.parts["right"].astype(dtype)
     img.data.to_filename(tmp_path / "data.gii")
 
 
-def test_load_from_volume_3d_nifti(img_3d_mni, make_mesh, tmp_path):
+def test_load_from_volume_3d_nifti(img_3d_mni, surf_mesh, tmp_path):
     """Instantiate surface image with 3D Niftiimage object or file for data."""
-    mesh = make_mesh()
+    mesh = surf_mesh()
     SurfaceImage.from_volume(mesh=mesh, volume_img=img_3d_mni)
 
     img_3d_mni.to_filename(tmp_path / "tmp.nii.gz")
@@ -215,9 +215,9 @@ def test_load_from_volume_3d_nifti(img_3d_mni, make_mesh, tmp_path):
     )
 
 
-def test_load_from_volume_4d_nifti(img_4d_mni, make_mesh, tmp_path):
+def test_load_from_volume_4d_nifti(img_4d_mni, surf_mesh, tmp_path):
     """Instantiate surface image with 4D Niftiimage object or file for data."""
-    mesh = make_mesh()
+    mesh = surf_mesh()
     img = SurfaceImage.from_volume(mesh=mesh, volume_img=img_4d_mni)
     # check that we have the correct number of time points
     assert img.shape[0] == img_4d_mni.shape[3]

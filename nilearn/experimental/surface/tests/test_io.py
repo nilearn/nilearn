@@ -15,8 +15,8 @@ def test_read_array(tmp_path):
     assert np.array_equal(a, read_a)
 
 
-def test_read_mesh(tmp_path, make_mesh):
-    mesh = make_mesh()
+def test_read_mesh(tmp_path, surf_mesh):
+    mesh = surf_mesh()
     left = mesh.parts["left"]
     gifti_file = tmp_path / "img.gii"
     _io.mesh_to_gifti(left.coordinates, left.faces, gifti_file)

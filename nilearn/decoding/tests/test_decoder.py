@@ -1088,19 +1088,19 @@ def test_decoder_decision_function_raises_value_error(
 
 
 @pytest.fixture()
-def _make_surface_class_data(rng, make_surface_img, shape=(50,)):
+def _make_surface_class_data(rng, surf_img, shape=(50,)):
     """Create a surface image classification for testing."""
-    mini_img = make_surface_img(shape)
+    img = surf_img(shape)
     y = rng.choice([0, 1], size=shape)
-    return mini_img, y
+    return img, y
 
 
 @pytest.fixture()
-def _make_surface_reg_data(rng, make_surface_img, shape=(50,)):
+def _make_surface_reg_data(rng, surf_img, shape=(50,)):
     """Create a surface image regression for testing."""
-    mini_img = make_surface_img(shape)
+    img = surf_img(shape)
     y = rng.random(shape)
-    return mini_img, y
+    return img, y
 
 
 @pytest.mark.filterwarnings("ignore:Overriding provided")
@@ -1146,14 +1146,14 @@ def test_decoder_screening_percentile_surface(perc, _make_surface_class_data):
 
 @pytest.mark.filterwarnings("ignore:After clustering and screening")
 def test_decoder_adjust_screening_lessthan_mask_surface(
-    make_surface_mask,
+    surf_mask,
     _make_surface_class_data,
     screening_percentile=30,
 ):
     """When mask size is less than or equal to screening percentile wrt to
     the mesh size, it is adjusted to the ratio of mesh to mask.
     """
-    mask = make_surface_mask()
+    mask = surf_mask()
     img, y = _make_surface_class_data
     mask_n_vertices = _get_mask_extent(mask)
     mesh_n_vertices = img.mesh.n_vertices
@@ -1174,14 +1174,14 @@ def test_decoder_adjust_screening_lessthan_mask_surface(
 
 @pytest.mark.filterwarnings("ignore:After clustering and screening")
 def test_decoder_adjust_screening_greaterthan_mask_surface(
-    make_surface_mask,
+    surf_mask,
     _make_surface_class_data,
     screening_percentile=80,
 ):
     """When mask size is greater than screening percentile wrt to the mesh
     size, it is changed to 100% of mask.
     """
-    mask = make_surface_mask()
+    mask = surf_mask()
     img, y = _make_surface_class_data
     mask_n_vertices = _get_mask_extent(mask)
     mesh_n_vertices = img.mesh.n_vertices
@@ -1213,12 +1213,12 @@ def test_decoder_fit_surface(decoder, _make_surface_class_data, mask):
 @pytest.mark.filterwarnings("ignore:After clustering and screening")
 @pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
 def test_decoder_fit_surface_with_mask_image(
-    _make_surface_class_data, decoder, make_surface_mask
+    _make_surface_class_data, decoder, surf_mask
 ):
     """Test fit for surface image."""
     warnings.simplefilter("ignore", ConvergenceWarning)
     X, y = _make_surface_class_data
-    mask = make_surface_mask()
+    mask = surf_mask()
     model = decoder(mask=mask)
     model.fit(X, y)
 
@@ -1228,11 +1228,11 @@ def test_decoder_fit_surface_with_mask_image(
 @pytest.mark.filterwarnings("ignore:Overriding provided")
 @pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
 def test_decoder_error_incompatible_surface_mask_and_volume_data(
-    decoder, make_surface_mask, tiny_binary_classification_data
+    decoder, surf_mask, tiny_binary_classification_data
 ):
     """Test error when fitting volume data with a surface mask."""
     data_volume, y, _ = tiny_binary_classification_data
-    mask = make_surface_mask()
+    mask = surf_mask()
     model = decoder(mask=mask)
 
     with pytest.raises(
@@ -1300,13 +1300,13 @@ def test_decoder_regressor_predict_score_surface(_make_surface_reg_data):
 def test_frem_decoder_fit_surface(
     frem,
     _make_surface_class_data,
-    make_surface_mask,
+    surf_mask,
 ):
     """Test fit for using FREM decoding with surface image."""
     with pytest.raises(
         ValueError, match="The mask image should be a Niimg-like object."
     ):
         X, y = _make_surface_class_data
-        mask = make_surface_mask()
+        mask = surf_mask()
         model = frem(mask=mask, clustering_percentile=90)
         model.fit(X, y)

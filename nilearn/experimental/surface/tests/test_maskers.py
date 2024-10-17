@@ -15,10 +15,10 @@ from nilearn.experimental.surface import (
 # series)
 @pytest.mark.parametrize("shape", [(1,), (2,)])
 def test_mask_img_fit_shape_mismatch(
-    flip_img, make_surface_mask, make_surface_img, shape, assert_img_equal
+    flip_img, surf_mask, surf_img, shape, assert_img_equal
 ):
-    img = make_surface_img(shape)
-    mask = make_surface_mask()
+    img = surf_img(shape)
+    mask = surf_mask()
     masker = SurfaceMasker(mask)
     with pytest.raises(ValueError, match="number of vertices"):
         masker.fit(flip_img(img))
@@ -26,35 +26,33 @@ def test_mask_img_fit_shape_mismatch(
     assert_img_equal(mask, masker.mask_img_)
 
 
-def test_mask_img_fit_keys_mismatch(make_surface_mask, drop_img_part):
-    mask = make_surface_mask()
+def test_mask_img_fit_keys_mismatch(surf_mask, drop_img_part):
+    mask = surf_mask()
     masker = SurfaceMasker(mask)
     with pytest.raises(ValueError, match="key"):
         masker.fit(drop_img_part(mask))
 
 
-def test_none_mask_img(make_surface_mask):
+def test_none_mask_img(surf_mask):
     masker = SurfaceMasker(None)
     with pytest.raises(ValueError, match="provide either"):
         masker.fit(None)
-    mask = make_surface_mask()
+    mask = surf_mask()
     # no mask_img but fit argument is ok
     masker.fit(mask)
     # no fit argument but a mask_img is ok
     SurfaceMasker(mask).fit(None)
 
 
-def test_unfitted_masker(make_surface_mask):
-    masker = SurfaceMasker(make_surface_mask)
+def test_unfitted_masker(surf_mask):
+    masker = SurfaceMasker(surf_mask)
     with pytest.raises(ValueError, match="fitted"):
-        masker.transform(make_surface_mask)
+        masker.transform(surf_mask)
 
 
-def test_mask_img_transform_shape_mismatch(
-    flip_img, make_surface_img, make_surface_mask
-):
-    img = make_surface_img()
-    mask = make_surface_mask()
+def test_mask_img_transform_shape_mismatch(flip_img, surf_img, surf_mask):
+    img = surf_img()
+    mask = surf_mask()
     masker = SurfaceMasker(mask).fit()
     with pytest.raises(ValueError, match="number of vertices"):
         masker.transform(flip_img(img))
@@ -62,11 +60,9 @@ def test_mask_img_transform_shape_mismatch(
     masker.transform(img)
 
 
-def test_mask_img_transform_keys_mismatch(
-    make_surface_mask, make_surface_img, drop_img_part
-):
-    img = make_surface_img()
-    mask = make_surface_mask()
+def test_mask_img_transform_keys_mismatch(surf_mask, surf_img, drop_img_part):
+    img = surf_img()
+    mask = surf_mask()
     masker = SurfaceMasker(mask).fit()
     with pytest.raises(ValueError, match="key"):
         masker.transform(drop_img_part(img))
@@ -76,11 +72,11 @@ def test_mask_img_transform_keys_mismatch(
 
 @pytest.mark.parametrize("shape", [(), (1,), (3,), (3, 2)])
 def test_transform_inverse_transform_no_mask(
-    make_mesh, shape, assert_img_equal
+    surf_mesh, shape, assert_img_equal
 ):
     # make a sample image with data 1-4 on left part
     # and 10-50 on right part
-    mesh = make_mesh()
+    mesh = surf_mesh()
     img_data = {}
     for i, (key, val) in enumerate(mesh.parts.items()):
         data_shape = (*shape, val.n_vertices)
@@ -102,11 +98,11 @@ def test_transform_inverse_transform_no_mask(
 
 @pytest.mark.parametrize("shape", [(), (1,), (3,), (3, 2)])
 def test_transform_inverse_transform_with_mask(
-    make_mesh, assert_img_equal, shape
+    surf_mesh, assert_img_equal, shape
 ):
     # make a sample image with data 1-4 on left part
     # and 10-50 on right part
-    mesh = make_mesh()
+    mesh = surf_mesh()
     img_data = {}
     for i, (key, val) in enumerate(mesh.parts.items()):
         data_shape = (*shape, val.n_vertices)
@@ -142,17 +138,17 @@ def test_transform_inverse_transform_with_mask(
     is_matplotlib_installed(),
     reason="Test requires matplotlib not to be installed.",
 )
-def test_masker_reporting_mpl_warning(make_surface_mask, surface_label_img):
+def test_masker_reporting_mpl_warning(surf_mask, surf_label_img):
     """Raise warning after exception if matplotlib is not installed."""
     with warnings.catch_warnings(record=True) as warning_list:
-        mask = make_surface_mask()
+        mask = surf_mask()
         SurfaceMasker(mask).fit().generate_report()
 
     assert len(warning_list) == 1
     assert issubclass(warning_list[0].category, ImportWarning)
 
     with warnings.catch_warnings(record=True) as warning_list:
-        label_img = surface_label_img()
+        label_img = surf_label_img()
         SurfaceLabelsMasker(label_img).fit().generate_report()
 
     assert len(warning_list) == 1

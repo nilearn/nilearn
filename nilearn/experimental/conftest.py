@@ -40,13 +40,13 @@ def _make_mesh():
 
 
 @pytest.fixture()
-def make_mesh():
+def surf_mesh():
     """Return _make_mesh as a function allowing it to be used as a fixture."""
     return _make_mesh
 
 
 @pytest.fixture
-def make_surface_img():
+def surf_img():
     """Create a sample surface image using the sample mesh.
     This will add some random data to the vertices of the mesh.
     The shape of the data will be (n_samples, n_vertices).
@@ -68,7 +68,7 @@ def make_surface_img():
 
 
 @pytest.fixture
-def make_surface_mask():
+def surf_mask():
     """Create a sample surface mask using the sample mesh.
     This will create a mask with n_zeros zeros (default is 4) and the
     rest ones. If empty is True, the mask will be None, required for
@@ -93,7 +93,7 @@ def make_surface_mask():
 
 
 @pytest.fixture
-def surface_label_img():
+def surf_label_img():
     """Return a sample surface label image using the sample mesh.
     Has two regions with values 0 and 1 respectively.
     """
