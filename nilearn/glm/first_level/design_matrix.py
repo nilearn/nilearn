@@ -299,7 +299,7 @@ def make_first_level_design_matrix(
     frame_times : array of shape (n_frames,)
         The timing of acquisition of the scans in seconds.
 
-    events : DataFrame instance, default=None
+    events : DataFrame instance or None, default=None
         Events data that describes the experimental paradigm.
          The DataFrame instance might have these keys:
             'onset': column to specify the start time of each events in
@@ -330,17 +330,17 @@ def make_first_level_design_matrix(
     drift_order : int, default=1
         Order of the drift model (in case it is polynomial).
 
-    fir_delays : array of shape(n_onsets) or list, default=None
+    fir_delays : array of shape(n_onsets), :obj:`list` or None, default=None
         In case of :term:`FIR` design,
         yields the array of delays used in the :term:`FIR`
         model (in scans).
 
     add_regs : array of shape(n_frames, n_add_reg) or \
-            pandas DataFrame, default=None
+            pandas DataFrame or None, default=None
         additional user-supplied regressors, e.g. data driven noise regressors
         or seed based regressors.
 
-    add_reg_names : list of (n_add_reg,) strings, default=None
+    add_reg_names : :obj:`list` of (n_add_reg,) :obj:`str`, or None, default=None
         If None, while add_regs was provided, these will be termed
         'reg_i', i = 0..n_add_reg - 1
         If add_regs is a DataFrame, the corresponding column names are used

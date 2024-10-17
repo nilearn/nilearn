@@ -101,10 +101,10 @@ def spm_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
     oversampling : int, default=50
         Temporal oversampling factor.
 
-    time_length : float, default=32.0
+    time_length : :obj:`float`, default=32.0
         :term:`HRF` kernel length, in seconds.
 
-    onset : float, default=0.0
+    onset : :obj:`float`, default=0.0
         :term:`HRF` onset time, in seconds.
 
     Returns
@@ -134,10 +134,10 @@ def glover_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
     oversampling : int, default=50
         Temporal oversampling factor.
 
-    time_length : float, default=32.0
+    time_length : :obj:`float`, default=32.0
         :term:`HRF` kernel length, in seconds.
 
-    onset : float, default=0.0
+    onset : :obj:`float`, default=0.0
         Onset of the response.
 
     Returns
@@ -214,10 +214,10 @@ def spm_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
     oversampling : int, default=50
         Temporal oversampling factor.
 
-    time_length : float, default=32.0
+    time_length : :obj:`float`, default=32.0
         :term:`HRF` kernel length, in seconds.
 
-    onset : float, default=0.0
+    onset : :obj:`float`, default=0.0
         Onset of the response in seconds.
 
     Returns
@@ -253,10 +253,10 @@ def glover_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
     oversampling : int, default=50
         Temporal oversampling factor.
 
-    time_length : float, default=32.0
+    time_length : :obj:`float`, default=32.0
         :term:`HRF` kernel length, in seconds.
 
-    onset : float, default=0.0
+    onset : :obj:`float`, default=0.0
         Onset of the response.
 
     Returns
@@ -336,10 +336,10 @@ def spm_dispersion_derivative(
     oversampling : int, default=50
         Temporal oversampling factor in seconds.
 
-    time_length : float, default=32.0
+    time_length : :obj:`float`, default=32.0
         :term:`HRF` kernel length, in seconds.
 
-    onset : float, default=0.0
+    onset : :obj:`float`, default=0.0
         Onset of the response in seconds.
 
     Returns
@@ -373,10 +373,10 @@ def glover_dispersion_derivative(
 
             Use ``t_r`` instead (see above).
 
-    time_length : float, default=32.0
+    time_length : :obj:`float`, default=32.0
         :term:`HRF` kernel length, in seconds.
 
-    onset : float, default=0.0
+    onset : :obj:`float`, default=0.0
         Onset of the response in seconds.
 
     Returns
@@ -724,7 +724,7 @@ def compute_regressor(
     oversampling : int, default=50
         Oversampling factor to perform the convolution.
 
-    fir_delays : [int] 1D-array-like, default=None
+    fir_delays : [int] 1D-array-like or None, default=None
         Delays (in scans) used in case of a finite impulse response model.
 
     min_onset : float, default=-24

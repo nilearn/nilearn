@@ -285,7 +285,7 @@ class FirstLevelModel(BaseGLM):
 
     Parameters
     ----------
-    t_r : float, default=None
+    t_r : :obj:`float` or None, default=None
         This parameter indicates :term:`repetition times<TR>`
         of the experimental runs.
         In seconds. It is necessary to correctly consider times in the design
@@ -311,7 +311,7 @@ class FirstLevelModel(BaseGLM):
         This parameter specifies the order of the drift model (in case it is
         polynomial) for the design matrices.
 
-    fir_delays : array of shape(n_onsets) or list, default=None
+    fir_delays : array of shape(n_onsets), :obj:`list` or None, default=None
         In case of :term:`FIR` design,
         yields the array of delays used in the :term:`FIR` model,
         in scans.
@@ -331,11 +331,11 @@ class FirstLevelModel(BaseGLM):
         In the case of surface analysis, passing None or False will lead to
         no masking.
 
-    target_affine : 3x3 or 4x4 matrix, default=None
+    target_affine : 3x3 or 4x4 matrix, or None, default=None
         This parameter is passed to nilearn.image.resample_img.
         Please see the related documentation for details.
 
-    target_shape : 3-tuple of integers, default=None
+    target_shape : 3-tuple of :obj:`int`, or None, default=None
         This parameter is passed to nilearn.image.resample_img.
         Please see the related documentation for details.
     %(smoothing_fwhm)s
@@ -346,7 +346,7 @@ class FirstLevelModel(BaseGLM):
         Creates instance of joblib.Memory.
         If ``None`` is passed will default to ``Memory(location=None)``.
 
-    memory_level : integer, default=None
+    memory_level : :obj:`int` or None, default=None
         Rough estimator of the amount of memory used by caching.
         Higher value means more memory for caching.
 
@@ -1296,7 +1296,7 @@ def first_level_from_bids(
     task_label : :obj:`str`
         Task_label as specified in the file names like ``_task-<task_label>_``.
 
-    space_label : :obj:`str`, default=None
+    space_label : :obj:`str` or None, default=None
         Specifies the space label of the preprocessed bold.nii images.
         As they are specified in the file names like ``_space-<space_label>_``.
 
