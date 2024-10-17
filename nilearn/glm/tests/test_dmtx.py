@@ -374,10 +374,11 @@ def test_oversampling(n_frames):
     )
 
     # oversampling = 50 by default so X2 = X1, X3 \neq X1, X3 close to X2
-    assert_almost_equal(X1.values, X2.values)
-    assert_almost_equal(X2.values, X3.values, 0)
+    assert_almost_equal(X1.to_numpy(), X2.to_numpy())
+    assert_almost_equal(X2.to_numpy(), X3.to_numpy(), 0)
     assert (
-        np.linalg.norm(X2.values - X3.values) / np.linalg.norm(X2.values)
+        np.linalg.norm(X2.to_numpy() - X3.to_numpy())
+        / np.linalg.norm(X2.to_numpy())
         > 1.0e-4
     )
 
@@ -398,7 +399,7 @@ def test_oversampling(n_frames):
         fir_delays=range(4),
         oversampling=10,
     )
-    assert_almost_equal(X4.values, X5.values)
+    assert_almost_equal(X4.to_numpy(), X5.to_numpy())
 
 
 def test_high_pass(n_frames):

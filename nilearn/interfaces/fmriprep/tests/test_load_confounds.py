@@ -43,7 +43,7 @@ def _simu_img(tmp_path, trend, demean):
     )
 
     X = _handle_non_steady(confounds)
-    X = X.values
+    X = X.to_numpy()
     # the number of time points is based on the example confound file
     nt = X.shape[0]
     # initialize an empty 4D volume
@@ -101,7 +101,7 @@ def _handle_non_steady(confounds):
 
     - Put non-steady state volume back at the first sample.
     """
-    X = confounds.values
+    X = confounds.to_numpy()
     non_steady = X[0, :]
     tmp = np.vstack((X[1, :], X[1:, :]))
     tmp = np.tile(tmp, (10, 1))
