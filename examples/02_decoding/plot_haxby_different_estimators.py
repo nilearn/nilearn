@@ -117,8 +117,14 @@ for classifier_name in sorted(classifiers):
 
 # Then we make a rudimentary diagram
 import matplotlib.pyplot as plt
+from matplotlib import __version__ as mpl_version
 
-plt.subplots(figsize=(8, 6), layout="constrained")
+from nilearn._utils import compare_version
+
+if compare_version(mpl_version, ">=", "3.5"):
+    plt.subplots(figsize=(8, 6), layout="constrained")
+else:
+    plt.subplots(figsize=(8, 6), use_constrained_layout=True)
 
 all_categories = np.sort(np.hstack([categories, "AVERAGE"]))
 tick_position = np.arange(len(all_categories))

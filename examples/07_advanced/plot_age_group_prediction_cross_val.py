@@ -119,7 +119,15 @@ scores_std = gs.cv_results_["std_test_score"]
 
 # %%
 # display the results
-plt.figure(figsize=(6, 4), layout="constrained")
+from matplotlib import __version__ as mpl_version
+
+from nilearn._utils import compare_version
+
+if compare_version(mpl_version, ">=", "3.5"):
+    plt.figure(figsize=(6, 4), layout="constrained")
+else:
+    plt.figure(figsize=(6, 4), use_constrained_layout=True)
+
 positions = [0.1, 0.2, 0.3, 0.4]
 plt.barh(positions, mean_scores, align="center", height=0.05, xerr=scores_std)
 yticks = ["dummy", *list(gs.cv_results_["param_connectivity__kind"].data[1:])]

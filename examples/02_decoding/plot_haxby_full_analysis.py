@@ -128,8 +128,14 @@ for mask_name in mask_names:
 # We make a simple bar plot to summarize the results
 # --------------------------------------------------
 import matplotlib.pyplot as plt
+from matplotlib import __version__ as mpl_version
 
-plt.figure(layout="constrained")
+from nilearn._utils import compare_version
+
+if compare_version(mpl_version, ">=", "3.5"):
+    plt.figure(layout="constrained")
+else:
+    plt.figure(use_constrained_layout=True)
 
 tick_position = np.arange(len(categories))
 plt.xticks(tick_position, categories, rotation=45)

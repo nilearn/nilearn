@@ -88,13 +88,26 @@ paired_design_matrix = pd.DataFrame(
 # %%
 # and plot the designs.
 import matplotlib.pyplot as plt
+from matplotlib import __version__ as mpl_version
 
-_, (ax_unpaired, ax_paired) = plt.subplots(
-    1,
-    2,
-    gridspec_kw={"width_ratios": [1, 17]},
-    layout="constrained",
-)
+from nilearn._utils import compare_version
+
+if compare_version(mpl_version, ">=", "3.5"):
+    _, (ax_unpaired, ax_paired) = plt.subplots(
+        1,
+        2,
+        gridspec_kw={"width_ratios": [1, 17]},
+        layout="constrained",
+    )
+else:
+    _, (ax_unpaired, ax_paired) = plt.subplots(
+        1,
+        2,
+        gridspec_kw={"width_ratios": [1, 17]},
+        use_constrained_layout=True,
+    )
+
+
 plotting.plot_design_matrix(
     unpaired_design_matrix, rescale=False, axes=ax_unpaired
 )

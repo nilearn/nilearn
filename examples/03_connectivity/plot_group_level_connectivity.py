@@ -243,7 +243,15 @@ for kind in kinds:
 mean_scores = [np.mean(scores[kind]) for kind in kinds]
 scores_std = [np.std(scores[kind]) for kind in kinds]
 
-plt.figure(figsize=(6, 4), layout="constrained")
+from matplotlib import __version__ as mpl_version
+
+from nilearn._utils import compare_version
+
+if compare_version(mpl_version, ">=", "3.5"):
+    plt.figure(figsize=(6, 4), layout="constrained")
+else:
+    plt.figure(figsize=(6, 4), use_constrained_layout=True)
+
 positions = np.arange(len(kinds)) * 0.1 + 0.1
 plt.barh(positions, mean_scores, align="center", height=0.05, xerr=scores_std)
 yticks = [k.replace(" ", "\n") for k in kinds]

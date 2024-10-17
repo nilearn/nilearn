@@ -121,8 +121,15 @@ print(f"Brain time series shape: ({brain_time_series.shape})")
 
 # %%
 # We can plot the **seed time series**.
-
 import matplotlib.pyplot as plt
+from matplotlib import __version__ as mpl_version
+
+from nilearn._utils import compare_version
+
+if compare_version(mpl_version, ">=", "3.5"):
+    plt.figure(layout="constrained")
+else:
+    plt.figure(use_constrained_layout=True)
 
 plt.figure(layout="constrained")
 plt.plot(seed_time_series)
@@ -133,8 +140,11 @@ plt.ylabel("Normalized signal")
 # %%
 # Exemplarily, we can also select 5 random voxels from the **brain-wide
 # data** and plot the time series from.
+if compare_version(mpl_version, ">=", "3.5"):
+    plt.figure(layout="constrained")
+else:
+    plt.figure(use_constrained_layout=True)
 
-plt.figure(layout="constrained")
 plt.plot(brain_time_series[:, [10, 45, 100, 5000, 10000]])
 plt.title("Time series from 5 random voxels")
 plt.xlabel("Scan number")

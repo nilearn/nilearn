@@ -139,8 +139,15 @@ resid = masker.fit_transform(fmri_glm.residuals[0])
 # Plot distribution of residuals
 # ------------------------------
 # Note that residuals are not really distributed normally.
+from matplotlib import __version__ as mpl_version
 
-fig2, axs2 = plt.subplots(2, 3, layout="constrained")
+from nilearn._utils import compare_version
+
+if compare_version(mpl_version, ">=", "3.5"):
+    fig2, axs2 = plt.subplots(2, 3, layout="constrained")
+else:
+    fig2, axs2 = plt.subplots(2, 3, use_constrained_layout=True)
+
 axs2 = axs2.flatten()
 for i in range(6):
     axs2[i].set_title(f"Cluster peak {coords[i]}\n")

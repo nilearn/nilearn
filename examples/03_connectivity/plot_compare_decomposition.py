@@ -162,10 +162,17 @@ scores = dict_learning.score(func_filenames, per_component=True)
 
 # Plot the scores
 import numpy as np
+from matplotlib import __version__ as mpl_version
 from matplotlib import pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 
-plt.figure(figsize=(4, 4), layout="constrained")
+from nilearn._utils import compare_version
+
+if compare_version(mpl_version, ">=", "3.5"):
+    plt.figure(figsize=(4, 4), layout="constrained")
+else:
+    plt.figure(figsize=(4, 4), use_constrained_layout=True)
+
 positions = np.arange(len(scores))
 plt.barh(positions, scores)
 plt.ylabel("Component #", size=12)
