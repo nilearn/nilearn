@@ -75,12 +75,23 @@ def test_mask_img_transform_keys_mismatch(
 
 
 @pytest.mark.parametrize("shape", [(), (1,), (3,), (3, 2)])
-def test_transform_inverse_transform(
-    make_surface_img, shape, assert_img_equal
+def test_transform_inverse_transform_no_mask(
+    make_mesh, shape, assert_img_equal
 ):
-    img = make_surface_img(shape)
+    # make a sample image with data 1-4 on left part
+    # and 10-50 on right part
+    mesh = make_mesh()
+    img_data = {}
+    for i, (key, val) in enumerate(mesh.parts.items()):
+        data_shape = (*shape, val.n_vertices)
+        data_part = (
+            np.arange(np.prod(data_shape)).reshape(data_shape) + 1.0
+        ) * 10**i
+        img_data[key] = data_part
+    img = SurfaceImage(mesh, img_data)
     masker = SurfaceMasker().fit(img)
     masked_img = masker.transform(img)
+    # make sure none of the data has been removed
     assert np.array_equal(
         masked_img.ravel()[:9], [1, 2, 3, 4, 10, 20, 30, 40, 50]
     )
@@ -89,25 +100,37 @@ def test_transform_inverse_transform(
     assert_img_equal(img, unmasked_img)
 
 
-@pytest.mark.xfail(
-    reason="Will implement a different surface image inside the test."
-)
 @pytest.mark.parametrize("shape", [(), (1,), (3,), (3, 2)])
-@pytest.mark.parametrize("n_zeros_in_mask", [4, 6])
 def test_transform_inverse_transform_with_mask(
-    make_surface_img,
-    assert_img_equal,
-    make_surface_mask,
-    shape,
-    n_zeros_in_mask,
+    make_mesh, assert_img_equal, shape
 ):
-    img = make_surface_img(shape)
-    mask = make_surface_mask(n_zeros_in_mask)
+    # make a sample image with data 1-4 on left part
+    # and 10-50 on right part
+    mesh = make_mesh()
+    img_data = {}
+    for i, (key, val) in enumerate(mesh.parts.items()):
+        data_shape = (*shape, val.n_vertices)
+        data_part = (
+            np.arange(np.prod(data_shape)).reshape(data_shape) + 1.0
+        ) * 10**i
+        img_data[key] = data_part
+    img = SurfaceImage(mesh, img_data)
+    # make a mask that removes first vertex of each part
+    # total 2 removed
+    mask_data = {
+        "left": np.asarray([False, True, True, True]),
+        "right": np.asarray([False, True, True, True, True]),
+    }
+    mask = SurfaceImage(mesh, mask_data)
     masker = SurfaceMasker(mask).fit(img)
     masked_img = masker.transform(img)
-    assert masked_img.shape == (*shape, img.shape[-1] - n_zeros_in_mask)
+    # check mask shape is as expected
+    assert masked_img.shape == (*shape, img.shape[-1] - 2)
+    # check the data for first seven vertices is as expected
     assert np.array_equal(masked_img.ravel()[:7], [2, 3, 4, 20, 30, 40, 50])
+    # check whether inverse transform does not change the img
     unmasked_img = masker.inverse_transform(masked_img)
+    # recreate data that we expect after unmasking
     expected_data = {k: v.copy() for (k, v) in img.data.parts.items()}
     for v in expected_data.values():
         v[..., 0] = 0.0

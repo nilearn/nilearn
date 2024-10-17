@@ -11,6 +11,12 @@ from nilearn.experimental.surface import (
 
 
 def _make_mesh():
+    """Create a sample mesh with two parts: left and right, and total of
+    9 vertices and 10 faces.
+
+    The left part is a tetrahedron with four vertices and four faces.
+    The right part is a pyramid with five vertices and six faces.
+    """
     left_coords = np.asarray([[0.0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]])
     left_faces = np.asarray([[1, 0, 2], [0, 1, 3], [0, 3, 2], [1, 2, 3]])
     right_coords = (
@@ -35,31 +41,24 @@ def _make_mesh():
 
 @pytest.fixture()
 def make_mesh():
-    """Create a sample mesh with two parts: left and right, and total of
-    9 vertices and 10 faces.
-
-    The left part is a tetrahedron with four vertices and four faces.
-    The right part is a pyramid with five vertices and six faces.
-    """
+    """Return _make_mesh as a function allowing it to be used as a fixture."""
     return _make_mesh
 
 
 @pytest.fixture
-def make_surface_img():
+def make_surface_img(rng):
     """Create a sample surface image using the sample mesh.
-    This will just add some random data to the vertices of the mesh.
+    This will add some random data to the vertices of the mesh.
     The shape of the data will be (n_samples, n_vertices).
-    n_samples is the parameter of the fixture, default is 50.
+    n_samples by default is 1.
     """
 
     def _make_surface_img(n_samples=(1,)):
         mesh = _make_mesh()
         data = {}
-        for i, (key, val) in enumerate(mesh.parts.items()):
+        for key, val in mesh.parts.items():
             data_shape = (*tuple(n_samples), val.n_vertices)
-            data_part = (
-                np.arange(np.prod(data_shape)).reshape(data_shape) + 1.0
-            ) * 10**i
+            data_part = rng.normal(size=data_shape)
             data[key] = data_part
         return SurfaceImage(mesh, data)
 
@@ -69,9 +68,9 @@ def make_surface_img():
 @pytest.fixture
 def make_surface_mask():
     """Create a sample surface mask using the sample mesh.
-    This will create a mask with n_zeros zeros and the rest ones.
-    n_zeros is the parameter of the fixture, default is 4.
-    If empty is True, the mask will be None, used in tests for html reports.
+    This will create a mask with n_zeros zeros (default is 4) and the
+    rest ones. If empty is True, the mask will be None, required for
+    tests for html reports.
     """
 
     def _make_surface_mask(n_zeros=4, empty=False):
