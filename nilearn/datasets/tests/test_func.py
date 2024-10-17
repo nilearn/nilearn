@@ -1049,11 +1049,13 @@ def _generate_spm_multimodal(subject_dir=None, n_sessions=2, n_vol=390):
     files.append("sMRI/smri.img")
     for session in range(n_sessions):
         files.append(f"fMRI/trials_ses{int(session + 1)}.mat")
-        files.extend([
-            f"fMRI/Session{int(session + 1)}/"
-            f"fMETHODS-000{int(session + 5)}-{int(i)}-01.img"
-            for i in range(n_vol)
-        ])
+        files.extend(
+            [
+                f"fMRI/Session{int(session + 1)}/"
+                f"fMETHODS-000{int(session + 5)}-{int(i)}-01.img"
+                for i in range(n_vol)
+            ]
+        )
 
     if subject_dir is not None:
         for file_ in files:
