@@ -104,7 +104,7 @@ else:
         1,
         2,
         gridspec_kw={"width_ratios": [1, 17]},
-        use_constrained_layout=True,
+        constrained_layout=True,
     )
 
 

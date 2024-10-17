@@ -171,7 +171,7 @@ from nilearn._utils import compare_version
 if compare_version(mpl_version, ">=", "3.5"):
     plt.figure(figsize=(4, 4), layout="constrained")
 else:
-    plt.figure(figsize=(4, 4), use_constrained_layout=True)
+    plt.figure(figsize=(4, 4), constrained_layout=True)
 
 positions = np.arange(len(scores))
 plt.barh(positions, scores)

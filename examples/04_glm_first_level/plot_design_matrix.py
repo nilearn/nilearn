@@ -119,7 +119,7 @@ if compare_version(mpl_version, ">=", "3.5"):
     )
 else:
     fig, (ax1, ax2, ax3) = plt.subplots(
-        figsize=(10, 6), nrows=1, ncols=3, use_constrained_layout=True
+        figsize=(10, 6), nrows=1, ncols=3, constrained_layout=True
     )
 
 plot_design_matrix(X1, axes=ax1)
@@ -150,7 +150,7 @@ if compare_version(mpl_version, ">=", "3.5"):
     )
 else:
     fig, (ax1, ax2, ax3) = plt.subplots(
-        figsize=(16, 5), nrows=1, ncols=3, use_constrained_layout=True
+        figsize=(16, 5), nrows=1, ncols=3, constrained_layout=True
     )
 
 plot_design_matrix_correlation(X1, axes=ax1)
@@ -211,7 +211,7 @@ if compare_version(mpl_version, ">=", "3.5"):
     )
 else:
     fig, (ax1, ax2) = plt.subplots(
-        figsize=(10, 6), nrows=1, ncols=2, use_constrained_layout=True
+        figsize=(10, 6), nrows=1, ncols=2, constrained_layout=True
     )
 
 plot_design_matrix(X2, axes=ax1)

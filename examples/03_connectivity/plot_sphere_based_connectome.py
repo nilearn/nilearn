@@ -100,7 +100,7 @@ from nilearn._utils import compare_version
 if compare_version(mpl_version, ">=", "3.5"):
     plt.figure(layout="constrained")
 else:
-    plt.figure(use_constrained_layout=True)
+    plt.figure(constrained_layout=True)
 
 for time_serie, label in zip(time_series.T, labels):
     plt.plot(time_serie, label=label)

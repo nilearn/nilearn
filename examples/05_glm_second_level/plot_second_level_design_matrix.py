@@ -59,7 +59,7 @@ from nilearn.plotting import plot_design_matrix
 if compare_version(mpl_version, ">=", "3.5"):
     fig, ax1 = plt.subplots(1, 1, figsize=(3, 4), layout="constrained")
 else:
-    fig, ax1 = plt.subplots(1, 1, figsize=(3, 4), use_constrained_layout=True)
+    fig, ax1 = plt.subplots(1, 1, figsize=(3, 4), constrained_layout=True)
 
 ax = plot_design_matrix(design_matrix, axes=ax1)
 ax.set_ylabel("maps")
