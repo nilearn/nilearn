@@ -49,8 +49,7 @@ conditions = behavioral["labels"]
 condition_mask = conditions.isin(["face", "cat"])
 fmri_niimgs = index_img(fmri_filename, condition_mask)
 conditions = conditions[condition_mask]
-# Convert to numpy array
-conditions = conditions.values
+conditions = conditions.to_numpy()
 run_label = behavioral["chunks"][condition_mask]
 
 # %%

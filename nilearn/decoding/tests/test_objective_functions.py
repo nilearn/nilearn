@@ -33,7 +33,7 @@ def test_grad_div_adjoint_arbitrary_ndim(rng, ndim, l1_ratio, size):
 
 @pytest.mark.parametrize("l1_ratio", L1_RATIO)
 @pytest.mark.parametrize("size", [1, 2, 10])
-def test_1D__gradient_id(l1_ratio, size):
+def test_1d_gradient_id(l1_ratio, size):
     img = np.arange(size)
 
     gid = gradient_id(img, l1_ratio=l1_ratio)
@@ -43,7 +43,7 @@ def test_1D__gradient_id(l1_ratio, size):
 
 
 @pytest.mark.parametrize("l1_ratio", L1_RATIO)
-def test_2D__gradient_id(l1_ratio):
+def test_2d_gradient_id(l1_ratio):
     img = np.array([[1, 3], [4, 2]])
 
     gid = gradient_id(img, l1_ratio)
@@ -53,7 +53,7 @@ def test_2D__gradient_id(l1_ratio):
 
 
 @pytest.mark.parametrize("l1_ratio", L1_RATIO)
-def test_3D__gradient_id(l1_ratio):
+def test_3d_gradient_id(l1_ratio):
     img = np.array([[1, 3], [4, 2], [1, 0]])
 
     gid = gradient_id(img, l1_ratio)

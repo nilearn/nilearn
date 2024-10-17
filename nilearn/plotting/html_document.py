@@ -37,7 +37,7 @@ def _open_in_browser(content):
         def log_message(self, *args):
             del args
 
-        def do_GET(self):
+        def do_GET(self):  # noqa: N802
             if not self.path.endswith("index.html"):
                 self.send_error(HTTPStatus.NOT_FOUND, "File not found")
                 return

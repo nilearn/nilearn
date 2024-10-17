@@ -38,11 +38,11 @@ labels = behavioral_data["labels"]
 # Keep the trials corresponding to all the labels except the ``rest`` ones
 labels_mask = labels != "rest"
 y = labels[labels_mask]
-y = y.values
+y = y.to_numpy()
 
 # Load run information
 run = behavioral_data["chunks"][labels_mask]
-run = run.values
+run = run.to_numpy()
 
 # Also keep the fmri data corresponding to these labels
 fmri_img = index_img(fmri_img, labels_mask)
