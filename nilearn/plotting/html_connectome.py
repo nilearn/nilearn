@@ -274,7 +274,7 @@ def view_connectome(
     node_color : color or sequence of colors, default='auto'
         Color(s) of the nodes.
 
-    edge_threshold : str, number or None, default=None
+    edge_threshold : :obj:`str`, number or None, default=None
         If None, no thresholding.
         If it is a number only connections of amplitude greater
         than threshold will be shown.
@@ -303,7 +303,7 @@ def view_connectome(
     colorbar_fontsize : int, default=25
         Fontsize of the colorbar tick labels.
 
-    title : str, default=None
+    title : :obj:`str` or None, default=None
         Title for the plot.
 
     title_fontsize : int, default=25
@@ -367,7 +367,7 @@ def view_markers(
     marker_coords : ndarray, shape=(n_nodes, 3)
         The coordinates of the nodes in :term:`MNI` space.
 
-    marker_color : ndarray, shape=(n_nodes,), default='auto'
+    marker_color : ndarray of shape=(n_nodes,) or 'auto', default='auto'
         colors of the markers: list of strings, hex rgb or rgba strings, rgb
         triplets, or rgba triplets (i.e. formats accepted by matplotlib, see
         https://matplotlib.org/users/colors.html#specifying-colors)
@@ -375,10 +375,11 @@ def view_markers(
     marker_size : float or array-like, default=5.0
         Size of the markers showing the seeds in pixels.
 
-    marker_labels : list of str, shape=(n_nodes), default=None
+    marker_labels : :obj:`list` of :obj:`str` of shape=(n_nodes)\
+                     or None, default=None
         Labels for the markers: list of strings
 
-    title : str, default=None
+    title : :obj:`str` or None, default=None
         Title for the plot.
 
     title_fontsize : int, default=25

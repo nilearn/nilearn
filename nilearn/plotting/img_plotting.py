@@ -705,7 +705,7 @@ def plot_epi(
 
     Parameters
     ----------
-    epi_img : a nifti-image like object or a filename, default=None
+    epi_img : a Niimg-like object or None, default=None
         The :term:`EPI` (T2*) image.
     %(cut_coords)s
     %(output_file)s
@@ -881,7 +881,7 @@ def plot_roi(
         Default='auto'.
     colorbar : boolean, default=False
         If True, display a colorbar on the right of the plots.
-    cbar_tick_format: str, default="%%i"
+    cbar_tick_format: :obj:`str`, default="%%i"
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%.2g" to use scientific notation.
     %(vmin)s
@@ -1555,14 +1555,14 @@ def plot_connectome(
     edge_cmap : colormap, default=cm.bwr
         Colormap used for representing the strength of the edges.
 
-    edge_vmin, edge_vmax : float, default=None
+    edge_vmin, edge_vmax : :obj:`float` or None, default=None
         If not None, either or both of these values will be used to
         as the minimum and maximum values to color edges. If None are
         supplied the maximum absolute value within the given threshold
         will be used as minimum (multiplied by -1) and maximum
         coloring levels.
 
-    edge_threshold : str or number, default=None
+    edge_threshold : :obj:`str`, number or None, default=None
         If it is a number only the edges with a value greater than
         edge_threshold will be shown.
         If it is a string it must finish with a percent sign,
@@ -1585,10 +1585,10 @@ def plot_connectome(
     alpha : float between 0 and 1, default=0.7
         Alpha transparency for the brain schematics.
 
-    edge_kwargs : dict, default=None
+    edge_kwargs : :obj:`dict` or None, default=None
         Will be passed as kwargs for each edge matlotlib Line2D.
 
-    node_kwargs : dict, default=None
+    node_kwargs : :obj:`dict` or None, default=None
         Will be passed as kwargs to the plt.scatter call that plots all
         the nodes in one go.
     %(colorbar)s
@@ -1685,15 +1685,15 @@ def plot_markers(
     node_cmap : str or colormap, default=plt.cm.viridis_r.
         Colormap used to represent the node measure.
 
-    node_vmin : float, default=None
+    node_vmin : :obj:`float` or None, default=None
         Lower bound of the colormap. If `None`, the min of the node_values is
         used.
 
-    node_vmax : float, default=None
+    node_vmax : :obj:`float` or None, default=None
         Upper bound of the colormap. If `None`, the min of the node_values is
         used.
 
-    node_threshold : float, default=None
+    node_threshold : :obj:`float` or None, default=None
         If provided only the nodes with a value greater than node_threshold
         will be shown.
 
@@ -1714,7 +1714,7 @@ def plot_markers(
     %(annotate)s
     %(black_bg)s
         Default=False.
-    node_kwargs : dict, default=None
+    node_kwargs : :obj:`dict` or None, default=None
         will be passed as kwargs to the plt.scatter call that plots all
         the nodes in one go
     %(colorbar)s
@@ -1843,7 +1843,7 @@ def plot_carpet(
         If not specified, a new mask will be derived from data.
         See :ref:`extracting_data`.
 
-    mask_labels : :obj:`dict`, default=None
+    mask_labels : :obj:`dict` or None, default=None
         If ``mask_img`` corresponds to an atlas, then this dictionary maps
         values from the ``mask_img`` to labels. Dictionary keys are labels
         and values are values within the atlas.
@@ -2114,10 +2114,10 @@ def plot_img_comparison(
     src_label : str, default='image set 2'
         Name of source images.
 
-    output_dir : string, default=None
+    output_dir : :obj:`str` or None, default=None
         Directory where plotted figures will be stored.
 
-    axes : list of two matplotlib Axes objects, default=None
+    axes : :obj:`list` of two matplotlib Axes objects, or None, default=None
         Can receive a list of the form [ax1, ax2] to render the plots.
         By default new axes will be created.
 

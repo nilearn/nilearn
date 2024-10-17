@@ -769,7 +769,7 @@ def plot_surf(
         of the :term:`mesh` :term:`faces`,
         or a Mesh object with "coordinates" and "faces" attributes.
 
-    surf_map : str or numpy.ndarray, default=None
+    surf_map : :obj:`str` or :class:`numpy.ndarray` or None, default=None
         Data to be displayed on the surface :term:`mesh`.
         Can be a file
         (valid formats are .gii, .mgz, .nii, .nii.gz,
@@ -777,7 +777,7 @@ def plot_surf(
         .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array with a value for each :term:`vertex` of the `surf_mesh`.
 
-    bg_map : str or numpy.ndarray, default=None
+    bg_map : :obj:`str` or :class:`numpy.ndarray` or None, default=None
         Background image to be plotted on the :term:`mesh` underneath the
         surf_data in greyscale, most likely a sulcal depth map for
         realistic shading.
@@ -834,7 +834,7 @@ def plot_surf(
         If a number is given, it is used to threshold the image, values
         below the threshold (in absolute value) are plotted as transparent.
 
-    alpha : float or None, default=None
+    alpha : :obj:`float` or None, default=None
         Alpha level of the :term:`mesh` (not surf_data).
         When using matplotlib as engine,
         `alpha` will default to ``"auto"`` if ``None`` is passed.
@@ -876,7 +876,7 @@ def plot_surf(
         .. versionadded:: 0.9.0
 
     %(output_file)s
-    axes : instance of matplotlib axes, None, default=None
+    axes : instance of matplotlib axes or None, default=None
         The axes instance to plot to. The projection must be '3d' (e.g.,
         `figure, axes = plt.subplots(subplot_kw={'projection': '3d'})`,
         where axes should be passed.).
@@ -1074,23 +1074,23 @@ def plot_surf_contours(
         and zero inside ROI,
         or an integer giving the label number for atlases.
 
-    axes : instance of matplotlib axes, None, default=None
+    axes : instance of matplotlib axes or None, default=None
         The axes instance to plot to. The projection must be '3d' (e.g.,
         `figure, axes = plt.subplots(subplot_kw={'projection': '3d'})`,
         where axes should be passed.).
         If None, uses axes from figure if available, else creates new axes.
     %(figure)s
-    levels : list of integers, or None, default=None
+    levels : :obj:`list` of :obj:`int`, or None, default=None
         A list of indices of the regions that are to be outlined.
         Every index needs to correspond to one index in roi_map.
         If None, all regions in roi_map are used.
 
-    labels : list of strings or None, or None, default=None
+    labels : :obj:`list` of :obj:`str` or None, or None, default=None
         A list of labels for the individual regions of interest.
         Provide None as list entry to skip showing the label of that region.
         If None no labels are used.
 
-    colors : list of matplotlib color names or RGBA values, or None \
+    colors : :obj:`list` of matplotlib color names or RGBA values, or None \
         default=None
         Colors to be used.
 
@@ -1250,7 +1250,7 @@ def plot_surf_stat_map(
         .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array with a value for each :term:`vertex` of the `surf_mesh`.
 
-    bg_map : str or numpy.ndarray, default=None
+    bg_map : :obj:`str` or :class:`numpy.ndarray` or None, default=None
         Background image to be plotted on the :term:`mesh` underneath
         the stat_map in greyscale, most likely a sulcal depth map
         for realistic shading.
@@ -1330,7 +1330,7 @@ def plot_surf_stat_map(
         .. versionadded:: 0.9.0
 
     %(output_file)s
-    axes : instance of matplotlib axes, None, default=None
+    axes : instance of matplotlib axes or None, default=None
         The axes instance to plot to. The projection must be '3d' (e.g.,
         `figure, axes = plt.subplots(subplot_kw={'projection': '3d'})`,
         where axes should be passed.).
@@ -1815,7 +1815,7 @@ def plot_surf_roi(
         The value at each vertex one inside the ROI and zero inside ROI, or an
         integer giving the label number for atlases.
 
-    bg_map : str or numpy.ndarray, default=None
+    bg_map :  :obj:`str` or :class:`numpy.ndarray` or None, default=None
         Background image to be plotted on the :term:`mesh` underneath
         the stat_map in greyscale, most likely a sulcal depth map for
         realistic shading.

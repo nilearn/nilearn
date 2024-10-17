@@ -36,10 +36,10 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     img : 3D Nifti1Image
         The brain map.
 
-    mask_img : 3D Nifti1Image, default=None
+    mask_img : 3D Nifti1Image or None, default=None
         An optional brain mask, provided mask_img should not be empty.
 
-    activation_threshold : float, default=None
+    activation_threshold : :obj:`float` or None, default=None
         The lower threshold to the positive activation. If None, the
         activation threshold is computed using the 80% percentile of
         the absolute value of the map.

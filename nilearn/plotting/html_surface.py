@@ -334,7 +334,7 @@ def view_img_on_surf(
         containing inflated and pial meshes, and sulcal depth values for left
         and right hemispheres.
 
-    threshold : str, number or None, default=None
+    threshold : :obj:`str`, number or None, default=None
         If None, no thresholding.
         If it is a number only values of amplitude greater
         than threshold will be shown.
@@ -354,11 +354,11 @@ def view_img_on_surf(
     %(darkness)s
         Default=1.
 
-    vmax : float or None, default=None
+    vmax : :obj:`float` or None, default=None
         upper bound for the colorbar. if None, use the absolute max of the
         brain map.
 
-    vmin : float or None, default=None
+    vmin : :obj:`float` or None, default=None
         min value for mapping colors.
         If `symmetric_cmap` is `True`, `vmin` is always equal to `-vmax` and
         cannot be chosen.
@@ -378,7 +378,7 @@ def view_img_on_surf(
     colorbar_fontsize : int, default=25
         Fontsize of the colorbar tick labels.
 
-    title : str, default=None
+    title : :obj:`str`, default=None
         Title for the plot.
 
     title_fontsize : int, default=25
@@ -462,7 +462,7 @@ def view_surf(
         of the :term:`mesh` vertices, the second containing the indices
         (into coords) of the :term:`mesh` :term:`faces`.
 
-    surf_map : str or numpy.ndarray, default=None
+    surf_map : :obj:`str` or :class:`numpy.ndarray`, default=None
         Data to be displayed on the surface :term:`mesh`.
         Can be a file (valid formats are .gii, .mgz, .nii, .nii.gz,
         or Freesurfer specific files such as
@@ -482,7 +482,7 @@ def view_surf(
     %(darkness)s
         Default=1.
 
-    threshold : str, number or None, default=None
+    threshold : :obj:`str`, number or None, default=None
         If None, no thresholding.
         If it is a number only values of amplitude greater
         than threshold will be shown.
@@ -502,11 +502,11 @@ def view_surf(
         Make colormap symmetric (ranging from -vmax to vmax).
         Set it to False if you are plotting a surface atlas.
 
-    vmax : float or None, default=None
+    vmax : :obj:`float` or None, default=None
         upper bound for the colorbar. if None, use the absolute max of the
         brain map.
 
-    vmin : float or None, default=None
+    vmin : :obj:`float` or None, default=None
         min value for mapping colors.
         If `symmetric_cmap` is `True`, `vmin` is always equal to `-vmax` and
         cannot be chosen.
@@ -522,7 +522,7 @@ def view_surf(
     colorbar_fontsize : int, default=25
         Fontsize of the colorbar tick labels.
 
-    title : str, default=None
+    title : :obj:`str`, default=None
         Title for the plot.
 
     title_fontsize : int, default=25

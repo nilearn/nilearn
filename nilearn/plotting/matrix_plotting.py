@@ -355,7 +355,7 @@ def plot_contrast_matrix(
         Design matrix to use.
     %(colorbar)s
         Default=False.
-    axes : :class:`matplotlib.axes.Axes`, default=None
+    axes : :class:`matplotlib.axes.Axes` or None, default=None
         Axis on which to plot the figure.
         If None, a new figure will be created.
     %(output_file)s
@@ -469,7 +469,7 @@ def plot_design_matrix(
     rescale : :obj:`bool`, default=True
         Rescale columns magnitude for visualization or not.
 
-    axes : :class:`matplotlib.axes.Axes`, default=None
+    axes : :class:`matplotlib.axes.Axes` or None, default=None
         Handle to axes onto which we will draw the design matrix.
     %(output_file)s
 
