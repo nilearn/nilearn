@@ -1172,7 +1172,7 @@ def _check_and_load_tables(tables_, var_name):
     tables = []
     for table_idx, table in enumerate(tables_):
         table = stringify_path(table)
-        if isinstance(table, (str, Path)):
+        if isinstance(table, str):
             loaded = _read_events_table(table)
             tables.append(loaded)
         elif isinstance(table, pd.DataFrame):

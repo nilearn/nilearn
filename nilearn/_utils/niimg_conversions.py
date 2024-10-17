@@ -196,9 +196,7 @@ def iter_check_niimg(
             exc.increment_stack_counter()
             raise
         except TypeError as exc:
-            img_name = ""
-            if isinstance(niimg, (str, Path)):
-                img_name = f" ({niimg}) "
+            img_name = f" ({niimg}) " if isinstance(niimg, (str, Path)) else ""
 
             exc.args = (
                 f"Error encountered while loading image #{i}{img_name}",

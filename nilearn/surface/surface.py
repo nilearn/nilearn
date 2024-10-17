@@ -834,7 +834,7 @@ def load_surf_data(surf_data):
     # if the input is a filename, load it
     surf_data = stringify_path(surf_data)
 
-    if not isinstance(surf_data, (str, Path, np.ndarray)):
+    if not isinstance(surf_data, (str, np.ndarray)):
         raise ValueError(
             "The input type is not recognized. "
             "Valid inputs are a Numpy array or one of the "
