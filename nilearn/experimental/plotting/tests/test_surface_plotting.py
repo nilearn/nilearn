@@ -22,37 +22,46 @@ def test_check_inputs_no_change(surf_map, surf_mesh, bg_map):
 
 @pytest.mark.parametrize("bg_map", ["some_path", Path("some_path"), None])
 @pytest.mark.parametrize("surf_mesh", [None])
-def test_check_inputs_extract_mesh_and_data(mini_img, surf_mesh, bg_map):
+def test_check_inputs_extract_mesh_and_data(
+    make_surface_img, surf_mesh, bg_map
+):
     """Extract mesh and data when a SurfaceImage is passed."""
+    img = make_surface_img((10,))
     hemi = "left"
     out_surf_map, out_surf_mesh, out_bg_map = _check_inputs(
-        surf_map=mini_img, surf_mesh=surf_mesh, hemi=hemi, bg_map=bg_map
+        surf_map=img, surf_mesh=surf_mesh, hemi=hemi, bg_map=bg_map
     )
-    assert_array_equal(out_surf_map, mini_img.data.parts[hemi])
-    assert_array_equal(out_surf_mesh, mini_img.mesh.parts[hemi])
+    assert_array_equal(out_surf_map, img.data.parts[hemi])
+    assert_array_equal(out_surf_mesh, img.mesh.parts[hemi])
     assert bg_map == out_bg_map
 
 
 @pytest.mark.parametrize("bg_map", ["some_path", Path("some_path"), None])
-def test_check_inputs_extract_mesh_from_polymesh(mini_img, mini_mesh, bg_map):
+def test_check_inputs_extract_mesh_from_polymesh(
+    make_surface_img, make_mesh, bg_map
+):
     """Extract mesh from Polymesh and data from SurfaceImage."""
+    img = make_surface_img((10,))
+    mesh = make_mesh()
     hemi = "left"
     out_surf_map, out_surf_mesh, out_bg_map = _check_inputs(
-        surf_map=mini_img, surf_mesh=mini_mesh, hemi=hemi, bg_map=bg_map
+        surf_map=img, surf_mesh=mesh, hemi=hemi, bg_map=bg_map
     )
-    assert_array_equal(out_surf_map, mini_img.data.parts[hemi])
-    assert_array_equal(out_surf_mesh, mini_mesh.parts[hemi])
+    assert_array_equal(out_surf_map, img.data.parts[hemi])
+    assert_array_equal(out_surf_mesh, mesh.parts[hemi])
     assert bg_map == out_bg_map
 
 
-def test_check_inputs_extract_bg_map_data(mini_img, mini_mesh, make_mini_img):
+def test_check_inputs_extract_bg_map_data(make_surface_img, make_mesh):
     """Extract background map data."""
     hemi = "left"
-    bg_map = make_mini_img()
+    mesh = make_mesh()
+    img = make_surface_img((10,))
+    bg_map = make_surface_img()
     _, _, out_bg_map = _check_inputs(
-        surf_map=mini_img,
-        surf_mesh=mini_mesh,
+        surf_map=img,
+        surf_mesh=mesh,
         hemi=hemi,
-        bg_map=make_mini_img(),
+        bg_map=bg_map,
     )
     assert_array_equal(out_bg_map, bg_map.data.parts[hemi])
