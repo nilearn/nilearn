@@ -2022,17 +2022,17 @@ def test_img_table_checks():
 
 
 @pytest.fixture()
-def _make_surface_glm_data(rng, make_mini_img):
+def _make_surface_glm_data(rng, make_surface_img):
     """Create a surface image and design matrix for testing."""
 
-    def _make_surface_image(shape=5):
+    def _make_surface_img_and_design(shape=5):
         des = pd.DataFrame(
             rng.standard_normal((shape, 3)), columns=["", "", ""]
         )
-        mini_img = make_mini_img((shape,))
-        return mini_img, des
+        img = make_surface_img((shape,))
+        return img, des
 
-    return _make_surface_image
+    return _make_surface_img_and_design
 
 
 def test_flm_fit_surface_image_default_mask_img(_make_surface_glm_data):
@@ -2076,10 +2076,13 @@ def test_flm_fit_surface_image_one_hemisphere(
     assert isinstance(model.masker_, SurfaceMasker)
 
 
-def test_flm_fit_surface_image_with_mask(_make_surface_glm_data, mini_mask):
+def test_flm_fit_surface_image_with_mask(
+    _make_surface_glm_data, make_surface_mask
+):
     """Test FirstLevelModel with surface mask."""
     mini_img, des = _make_surface_glm_data(5)
-    model = FirstLevelModel(mask_img=mini_mask)
+    mask = make_surface_mask()
+    model = FirstLevelModel(mask_img=mask)
     model.fit(mini_img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
@@ -2088,11 +2091,12 @@ def test_flm_fit_surface_image_with_mask(_make_surface_glm_data, mini_mask):
 
 
 def test_error_flm_surface_mask_volume_image(
-    _make_surface_glm_data, mini_mask, img_4d_rand_eye
+    _make_surface_glm_data, make_surface_mask, img_4d_rand_eye
 ):
     """Test error is raised when mask is a surface and data is in volume."""
     mini_img, des = _make_surface_glm_data(5)
-    model = FirstLevelModel(mask_img=mini_mask)
+    mask = make_surface_mask()
+    model = FirstLevelModel(mask_img=mask)
     with pytest.raises(
         TypeError, match="Mask and images to fit must be of compatible types."
     ):
@@ -2138,10 +2142,13 @@ def test_flm_with_surface_image_with_surface_masker(_make_surface_glm_data):
     assert isinstance(model.masker_, SurfaceMasker)
 
 
-def test_flm_with_surface_masker_with_mask(_make_surface_glm_data, mini_mask):
+def test_flm_with_surface_masker_with_mask(
+    _make_surface_glm_data, make_surface_mask
+):
     """Test FirstLevelModel with SurfaceMasker and mask image."""
     mini_img, des = _make_surface_glm_data(5)
-    masker = SurfaceMasker(mask_img=mini_mask).fit(mini_img)
+    mask = make_surface_mask()
+    masker = SurfaceMasker(mask_img=mask).fit(mini_img)
     model = FirstLevelModel(mask_img=masker)
     model.fit(mini_img, design_matrices=des)
 
@@ -2151,11 +2158,12 @@ def test_flm_with_surface_masker_with_mask(_make_surface_glm_data, mini_mask):
 
 
 def test_flm_with_surface_masker_without_mask_img(
-    _make_surface_glm_data, mini_mask
+    _make_surface_glm_data, make_surface_mask
 ):
     """Test FirstLevelModel with SurfaceMasker and mask img set to None."""
     mini_img, des = _make_surface_glm_data(5)
-    masker = SurfaceMasker(mask_img=mini_mask).fit()
+    mask = make_surface_mask()
+    masker = SurfaceMasker(mask_img=mask).fit()
     masker.mask_img_ = None
 
     with pytest.warns(
