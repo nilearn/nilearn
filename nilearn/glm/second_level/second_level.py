@@ -658,18 +658,18 @@ class SecondLevelModel(BaseGLM):
 
         Parameters
         ----------
-        attribute : str
+        attribute : :obj:`str`
             an attribute of a RegressionResults instance.
             possible values include: 'residuals', 'normalized_residuals',
             'predicted', SSE, r_square, MSE.
 
-        result_as_time_series : bool
+        result_as_time_series : :obj:`bool`
             whether the RegressionResult attribute has a value
             per timepoint of the input nifti image.
 
         Returns
         -------
-        output : list
+        output : :obj:`list`
             A list of Nifti1Image(s).
 
         """

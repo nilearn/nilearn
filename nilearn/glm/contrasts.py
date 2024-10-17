@@ -24,10 +24,10 @@ def expression_to_contrast_vector(expression, design_columns):
 
     Parameters
     ----------
-    expression : string
+    expression : :obj:`str`
         The expression to convert to a vector.
 
-    design_columns : list or array of strings
+    design_columns : :obj:`list` or array of strings
         The column names of the design matrix.
 
     """
@@ -59,7 +59,7 @@ def compute_contrast(labels, regression_result, con_val, stat_type=None):
     labels : array of shape (n_voxels,)
         A map of values on voxels used to identify the corresponding model
 
-    regression_result : dict
+    regression_result : :obj:`dict`
         With keys corresponding to the different labels
         values are RegressionResults instances corresponding to the voxels.
 
@@ -200,7 +200,7 @@ class Contrast:
         variance : array of shape (n_voxels)
             The associated variance estimate.
 
-        dim : int or None, optional
+        dim : :obj:`int` or None, optional
             The dimension of the :term:`contrast`.
 
         dof : scalar, default=DEF_DOFMAX
@@ -215,7 +215,7 @@ class Contrast:
 
                 Use ``stat_type`` instead (see above).
 
-        tiny : float, default=DEF_TINY
+        tiny : :obj:`float`, default=DEF_TINY
             Small quantity used to avoid numerical underflows.
 
         dofmax : scalar, default=DEF_DOFMAX
@@ -291,7 +291,7 @@ class Contrast:
 
         Parameters
         ----------
-        baseline : float, default=0.0
+        baseline : :obj:`float`, default=0.0
             Baseline value for the test statistic.
 
         Returns
@@ -326,7 +326,7 @@ class Contrast:
 
         Parameters
         ----------
-        baseline : float, default=0.0
+        baseline : :obj:`float`, default=0.0
             Baseline value for the test statistic.
 
 
@@ -358,7 +358,7 @@ class Contrast:
 
         Parameters
         ----------
-        baseline : float, default=0.0
+        baseline : :obj:`float`, default=0.0
             Baseline value for the test statistic.
 
 
@@ -389,7 +389,7 @@ class Contrast:
 
         Parameters
         ----------
-        baseline : float, optional, default=0.0
+        baseline : :obj:`float`, optional, default=0.0
             Baseline value for the test statistic.
 
 
@@ -471,16 +471,16 @@ def compute_fixed_effects(
 
     Parameters
     ----------
-    contrast_imgs : list of Nifti1Images or strings
+    contrast_imgs : :obj:`list` of Nifti1Images or strings
         The input contrast images.
 
-    variance_imgs : list of Nifti1Images or strings
+    variance_imgs : :obj:`list` of Nifti1Images or strings
         The input variance images.
 
     mask : Nifti1Image or NiftiMasker instance or None, default=None
         Mask image. If ``None``, it is recomputed from ``contrast_imgs``.
 
-    precision_weighted : Bool, default=False
+    precision_weighted : :obj:`bool`, default=False
         Whether fixed effects estimates should be weighted by inverse
         variance or not.
 
@@ -489,7 +489,7 @@ def compute_fixed_effects(
         when ``None``,
         it is assumed that the degrees of freedom are 100 per input.
 
-    return_z_score: Bool, default=False
+    return_z_score: :obj:`bool`, default=False
         Whether ``fixed_fx_z_score_img`` should be output or not.
 
     Returns
