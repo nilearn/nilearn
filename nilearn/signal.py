@@ -1073,7 +1073,7 @@ def _sanitize_runs(n_time, runs):
 def _sanitize_confound_dtype(n_signal, confound):
     """Check confound is the correct datatype."""
     if isinstance(confound, pd.DataFrame):
-        confound = confound.values
+        confound = confound.to_numpy()
     if isinstance(confound, (str, Path)):
         filename = confound
         confound = csv_to_array(filename)

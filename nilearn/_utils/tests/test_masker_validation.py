@@ -55,7 +55,7 @@ class DummyEstimator:
         for k, v in kwargs.items():
             setattr(self, k, v)
 
-    def fit(self, *args, **kwargs):
+    def fit(self, *args, **kwargs):  # noqa: ARG002
         self.masker = check_embedded_masker(self)
 
 

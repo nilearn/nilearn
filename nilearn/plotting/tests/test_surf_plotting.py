@@ -829,7 +829,7 @@ def test_plot_surf_avg_method_errors(rng):
         ),
     ):
 
-        def custom_avg_function(vertices):
+        def custom_avg_function(vertices):  # noqa: ARG001
             return "string"
 
         plot_surf(

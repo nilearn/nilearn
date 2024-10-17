@@ -115,15 +115,19 @@ def test_sort_input_dataframe(input_df):
     """Unit tests for function _sort_input_dataframe()."""
     output_df = _sort_input_dataframe(input_df)
 
-    assert output_df["subject_label"].values.tolist() == ["bar", "baz", "foo"]
-    assert output_df["effects_map_path"].values.tolist() == [
+    assert output_df["subject_label"].to_list() == [
+        "bar",
+        "baz",
+        "foo",
+    ]
+    assert output_df["effects_map_path"].to_list() == [
         "bar.nii",
         "baz.nii",
         "foo.nii",
     ]
 
 
-def test_second_level_input_as_3D_images(
+def test_second_level_input_as_3d_images(
     rng, affine_eye, tmp_path, shape_3d_default
 ):
     """Test second level model with a list 3D image filenames as input.
@@ -982,7 +986,7 @@ def test_non_parametric_inference_cluster_level_with_covariates(
     )
 
     # Calculate uncorrected cluster sizes
-    df = len(Y) - X.shape[1]
+    df = len(Y) - X.shape[1]  # noqa: PD901
     neg_log_pval = -np.log10(stats.t.sf(get_data(out["t"]), df=df))
     logp_unc = new_img_like(out["t"], neg_log_pval)
     logp_unc_cluster_sizes = list(
@@ -1160,7 +1164,7 @@ def test_second_level_t_contrast_length_errors(tmp_path):
         model.compute_contrast(second_level_contrast=[1, 2])
 
 
-def test_second_level_F_contrast_length_errors(tmp_path):
+def test_second_level_f_contrast_length_errors(tmp_path):
     func_img, mask = fake_fmri_data(file_path=tmp_path)
 
     model = SecondLevelModel(mask_img=mask)

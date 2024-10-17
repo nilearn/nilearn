@@ -680,7 +680,7 @@ def compute_multi_brain_mask(
     memory=None,
     verbose=0,
     mask_type="whole-brain",
-    **kwargs,
+    **kwargs,  # noqa: ARG001
 ):
     """Compute the whole-brain, grey-matter or white-matter mask \
     for a list of images.

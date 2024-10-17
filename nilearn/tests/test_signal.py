@@ -221,7 +221,7 @@ def test_butterworth_warnings_critical_frequencies(
     assert (out == data).all()
 
 
-def test_butterworth_warnings_LPF_too_high(data_butterworth_single_timeseries):
+def test_butterworth_warnings_lpf_too_high(data_butterworth_single_timeseries):
     """Check for frequency higher than allowed (>=Nyquist).
 
     The frequency should be modified and the filter should be run.
@@ -245,7 +245,7 @@ def test_butterworth_warnings_LPF_too_high(data_butterworth_single_timeseries):
     assert not np.array_equal(data, out)
 
 
-def test_butterworth_warnings_HPF_too_low(data_butterworth_single_timeseries):
+def test_butterworth_warnings_hpf_too_low(data_butterworth_single_timeseries):
     """Check for frequency lower than allowed (<0).
 
     The frequency should be modified and the filter should be run.
@@ -932,7 +932,7 @@ def test_high_variance_confounds():
     np.testing.assert_almost_equal(out1, out2, decimal=13)
 
 
-def test_clean_standardize_false(rng):
+def test_clean_standardize_false():
     n_samples = 500
     n_features = 5
     t_r = 2
