@@ -337,7 +337,7 @@ def _process_second_level_input_as_dataframe(second_level_input):
     """Process second_level_input provided as a pandas DataFrame."""
     sample_map = second_level_input["effects_map_path"][0]
     labels = second_level_input["subject_label"]
-    subjects_label = labels.values.tolist()
+    subjects_label = labels.to_list()
     return sample_map, subjects_label
 
 

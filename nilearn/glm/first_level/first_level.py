@@ -662,7 +662,7 @@ class FirstLevelModel(BaseGLM):
     def _create_single_design(self, n_scans, events, confounds, run_idx):
         """Build experimental design of a single run."""
         if confounds is not None:
-            confounds_matrix = confounds[run_idx].values
+            confounds_matrix = confounds[run_idx].to_numpy()
             if confounds_matrix.shape[0] != n_scans:
                 raise ValueError(
                     "Rows in confounds does not match "
