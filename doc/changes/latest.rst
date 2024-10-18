@@ -66,9 +66,14 @@ Enhancements
 
 - :bdg-dark:`Code` Add footer to masker reports (:gh:`4307` by `Rémi Gau`_).
 
+- :bdg-dark:`Code` Add a :meth:`nilearn.glm.first_level.FirstLevelModel.fit_arrays` method to run first first level GLMs directly to 2D array (:gh:`4112` by TODO henrymj and `Rémi Gau`_).
+
+- :bdg-dark:`Code` Add a ``format_type`` parameter to the :meth:`nilearn.glm.first_level.FirstLevelModel.compute_contrast` method to return arrays or images (:gh:`4112` by TODO henrymj and `Rémi Gau`_).
+
 - :bdg-info:`Plotting` Improve plotting contours for :class:`nilearn.plotting.displays.PlotlySurfaceFigure` objects by adding :meth:`nilearn.plotting.displays.PlotlySurfaceFigure.add_contours` method that accepts arguments to adjust line aesthetics (:gh:`3949` by `Patrick Sadil`_).
 
 - :bdg-primary:`Doc` Add example to provide a clear understanding of the :class:`nilearn.decoding.Decoder` object by demonstrating underlying steps via a Scikit-Learn pipeline. (:gh:`4437` by `Himanshu Aggarwal`_).
+
 
 Changes
 -------
