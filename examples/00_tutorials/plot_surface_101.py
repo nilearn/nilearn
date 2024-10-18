@@ -157,7 +157,7 @@ surface_image.data.to_filename(output_dir / "surface_image_data.gii")
 
 # %%
 # You will see that this creates four files in total -- two for the
-# :term:`mesh` and two for the data. The files ending with ``_hemi-L.gii`` are
+# :term:`mesh` and two for the data. The files ending with ``_hemi-L.gii``
 # correspond to the left part and those ending with ``_hemi-R.gii`` correspond
 # to the right part.
 
@@ -168,12 +168,12 @@ surface_image.data.to_filename(output_dir / "surface_image_data.gii")
 # :class:`~nilearn.experimental.surface.SurfaceImage` object:
 
 mesh = {
-    "left": "surface_image_mesh_hemi-L.gii",
-    "right": "surface_image_mesh_hemi-R.gii",
+    "left": output_dir / "surface_image_mesh_hemi-L.gii",
+    "right": output_dir / "surface_image_mesh_hemi-R.gii",
 }
 data = {
-    "left": "surface_image_data_hemi-L.gii",
-    "right": "surface_image_data_hemi-R.gii",
+    "left": output_dir / "surface_image_data_hemi-L.gii",
+    "right": output_dir / "surface_image_data_hemi-R.gii",
 }
 
 surface_image_loaded = SurfaceImage(mesh=mesh, data=data)
