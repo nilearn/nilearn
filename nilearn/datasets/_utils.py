@@ -358,9 +358,8 @@ def uncompress_file(file_, delete_archive=True, verbose=1):
                 # We rely on the assumption that gzip files have an extension
                 shutil.move(file_, f"{file_}.gz")
                 file_ = f"{file_}.gz"
-            with gzip.open(file_) as gz:
-                with open(filename, "wb") as out:
-                    shutil.copyfileobj(gz, out, 8192)
+            with gzip.open(file_) as gz, open(filename, "wb") as out:
+                shutil.copyfileobj(gz, out, 8192)
             # If file is .tar.gz, this will be handled in the next case
             if delete_archive:
                 os.remove(file_)

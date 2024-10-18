@@ -160,8 +160,7 @@ ignore = [
     "PTH120",
     "PTH123",
     "PTH207",
-    "RUF012",
-    "SIM117"
+    "RUF012"
 ]
 # List of all the ruff rules (includes why the rule matters)
 # https://docs.astral.sh/ruff/rules/
