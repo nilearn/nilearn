@@ -270,7 +270,7 @@ def fetch_atlas_craddock_2012(
         data = fetch_files(data_dir, filename, resume=resume, verbose=verbose)
         params = {"maps": data[0], "description": fdescr}
     else:
-        params = dict([("description", fdescr)] + list(zip(keys, sub_files)))
+        params = dict([("description", fdescr), *list(zip(keys, sub_files))])
         warnings.warn(
             category=DeprecationWarning,
             message="In release 0.13, this fetcher will return a dictionary "
@@ -895,17 +895,14 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
         dataset_name, data_dir=data_dir, verbose=verbose
     )
     files = fetch_files(data_dir, files, resume=resume, verbose=verbose)
-    csv_data = pd.read_csv(files[0])
-    labels = [name.strip() for name in csv_data["name"].tolist()]
 
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "ignore", module="numpy", category=FutureWarning
-        )
-        region_coords = csv_data[["x", "y", "z"]].values.tolist()
+    csv_data = pd.read_csv(files[0])
+    labels = [name.strip() for name in csv_data["name"].to_list()]
     net_names = [
-        net_name.strip() for net_name in csv_data["net name"].tolist()
+        net_name.strip() for net_name in csv_data["net name"].to_list()
     ]
+    region_coords = csv_data[["x", "y", "z"]].to_numpy().tolist()
+
     fdescr = get_dataset_descr(dataset_name)
 
     return Bunch(
@@ -1200,7 +1197,7 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     fdescr = get_dataset_descr(dataset_name)
 
-    params = dict([("description", fdescr)] + list(zip(keys, sub_files)))
+    params = dict([("description", fdescr), *list(zip(keys, sub_files))])
     return Bunch(**params)
 
 
@@ -1226,7 +1223,7 @@ def fetch_atlas_aal(
         should not be interpreted as indices for the list of label names.
         In addition, the region IDs are provided as strings, so it is necessary
         to cast them to integers when indexing.
-        For more information, refer to the fetcher’s description:
+        For more information, refer to the fetcher's description:
 
         .. code-block:: python
 
@@ -1645,7 +1642,7 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
     anatomical_names = np.array([region_mapping[a] for a in anatomical])
 
     rois = pd.concat([rois, pd.DataFrame(anatomical_names)], axis=1)
-    rois.columns = list(rois.columns[:-1]) + ["region"]
+    rois.columns = [*rois.columns[:-1], "region"]
 
     if ordered_regions:
         rois = rois.sort_values(by=["network", "y"])

@@ -109,7 +109,7 @@ def test_plot_carpet_standardize(img_4d_mni, img_3d_ones_mni):
     """Check warning is raised and then suppressed with setting standardize."""
     match = "default strategy for standardize"
 
-    with pytest.warns(DeprecationWarning, match=match):
+    with pytest.deprecated_call(match=match):
         plot_carpet(img_4d_mni, mask_img=img_3d_ones_mni)
 
     with warnings.catch_warnings(record=True) as record:

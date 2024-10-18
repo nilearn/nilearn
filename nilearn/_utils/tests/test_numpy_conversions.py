@@ -5,8 +5,6 @@ which we historically used,
 ignores modules whose name starts with an underscore.
 """
 
-import os
-import tempfile
 from pathlib import Path
 
 import numpy as np
@@ -239,15 +237,11 @@ def test_as_ndarray_more():
 
 def test_csv_to_array(tmp_path):
     # Create a phony CSV file
-    fd, filename = tempfile.mkstemp(suffix=".csv", dir=tmp_path)
-    os.close(fd)
-    try:
-        with open(filename, mode="w") as fp:
-            fp.write("1.,2.,3.,4.,5.\n")
-        assert np.allclose(
-            csv_to_array(filename), np.asarray([1.0, 2.0, 3.0, 4.0, 5.0])
-        )
-        with pytest.raises(TypeError):
-            csv_to_array(filename, delimiters="?!")
-    finally:
-        os.remove(filename)
+    filename = tmp_path / "tmp.csv"
+    with open(filename, mode="w") as fp:
+        fp.write("1.,2.,3.,4.,5.\n")
+    assert np.allclose(
+        csv_to_array(filename), np.asarray([1.0, 2.0, 3.0, 4.0, 5.0])
+    )
+    with pytest.raises(TypeError):
+        csv_to_array(filename, delimiters="?!")

@@ -58,7 +58,6 @@ print(f"Fsaverage5 sulcal depth map: {fsaverage_sulcal}")
 # %%
 # Visualization
 # -------------
-
 # Display Destrieux :term:`parcellation` on fsaverage5 sulcal surface
 from nilearn.experimental import plotting
 from nilearn.plotting import show

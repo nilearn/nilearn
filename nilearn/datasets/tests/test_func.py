@@ -77,7 +77,7 @@ def localizer_mocker(request_mocker):
         )
 
 
-def _make_haxby_subject_data(match, response):
+def _make_haxby_subject_data(match, response):  # noqa: ARG001
     sub_files = [
         "bold.nii.gz",
         "labels.txt",
@@ -143,7 +143,7 @@ def test_fetch_haxby(tmp_path, request_mocker):
             func.fetch_haxby(data_dir=tmp_path, subjects=[sub_id])
 
 
-def _adhd_example_subject(match, request):
+def _adhd_example_subject(match, request):  # noqa: ARG001
     contents = [
         Path("data", match.group(1), match.expand(r"\1_regressors.csv")),
         Path(
@@ -244,7 +244,9 @@ def test_miyawaki2008(tmp_path, request_mocker):
 
 @pytest.mark.parametrize("subjects", [None, 9999])
 def test_fetch_localizer_contrasts_edge_cases(
-    tmp_path, localizer_mocker, subjects
+    tmp_path,
+    localizer_mocker,  # noqa: ARG001
+    subjects,
 ):
     func.fetch_localizer_contrasts(
         ["checkerboard"],
@@ -255,7 +257,7 @@ def test_fetch_localizer_contrasts_edge_cases(
     )
 
 
-def test_fetch_localizer_contrasts(tmp_path, localizer_mocker):
+def test_fetch_localizer_contrasts(tmp_path, localizer_mocker):  # noqa: ARG001
     # 2 subjects
     dataset = func.fetch_localizer_contrasts(
         ["checkerboard"],
@@ -294,7 +296,8 @@ def test_fetch_localizer_contrasts(tmp_path, localizer_mocker):
 
 
 def test_fetch_localizer_contrasts_multiple_contrasts(
-    tmp_path, localizer_mocker
+    tmp_path,
+    localizer_mocker,  # noqa: ARG001
 ):
     dataset = func.fetch_localizer_contrasts(
         ["checkerboard", "horizontal checkerboard"],
@@ -310,7 +313,7 @@ def test_fetch_localizer_contrasts_multiple_contrasts(
     assert len(dataset["ext_vars"]) == 2
 
 
-def test_fetch_localizer_contrasts_get_all(tmp_path, localizer_mocker):
+def test_fetch_localizer_contrasts_get_all(tmp_path, localizer_mocker):  # noqa: ARG001
     # all get_*=True
     dataset = func.fetch_localizer_contrasts(
         ["checkerboard"],
@@ -336,7 +339,7 @@ def test_fetch_localizer_contrasts_get_all(tmp_path, localizer_mocker):
     assert dataset.description != ""
 
 
-def test_fetch_localizer_contrasts_list_subjects(tmp_path, localizer_mocker):
+def test_fetch_localizer_contrasts_list_subjects(tmp_path, localizer_mocker):  # noqa: ARG001
     # grab a given list of subjects
     dataset2 = func.fetch_localizer_contrasts(
         ["checkerboard"],
@@ -355,7 +358,7 @@ def test_fetch_localizer_contrasts_list_subjects(tmp_path, localizer_mocker):
     ]
 
 
-def test_fetch_localizer_calculation_task(tmp_path, localizer_mocker):
+def test_fetch_localizer_calculation_task(tmp_path, localizer_mocker):  # noqa: ARG001
     # 2 subjects
     dataset = func.fetch_localizer_calculation_task(
         n_subjects=2, data_dir=tmp_path, verbose=1, legacy_format=False
@@ -379,7 +382,7 @@ def test_fetch_localizer_calculation_task(tmp_path, localizer_mocker):
     assert dataset.description != ""
 
 
-def test_fetch_localizer_button_task(tmp_path, localizer_mocker):
+def test_fetch_localizer_button_task(tmp_path, localizer_mocker):  # noqa: ARG001
     # Disabled: cannot be tested without actually fetching covariates CSV file
     # Only one subject
     dataset = func.fetch_localizer_button_task(data_dir=tmp_path, verbose=1)
@@ -857,7 +860,7 @@ def test_fetch_ds000030_urls():
         assert urls == mock_json_content
 
         # fetch_openneuro_dataset_index should do the same, but with a warning
-        with pytest.warns(DeprecationWarning):
+        with pytest.deprecated_call():
             urls_path, urls = func.fetch_openneuro_dataset_index(
                 data_dir=tmpdir,
                 dataset_version=dataset_version,

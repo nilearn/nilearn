@@ -18,6 +18,20 @@ class PolyData:
 
     It is a shallow wrapper around the ``parts`` dictionary, which cannot be
     empty and whose keys must be a subset of {"left", "right"}.
+
+    Parameters
+    ----------
+    left : numpy.ndarray or :obj:`str` of :obj:`pathlib.Path` or None,\
+           default = None
+
+    right : numpy.ndarray or :obj:`str` of :obj:`pathlib.Path` or None,\
+           default = None
+
+    Attributes
+    ----------
+    parts : dict[str, numpy.ndarray]
+
+    shape : tuple[int, int]
     """
 
     def __init__(
@@ -58,10 +72,45 @@ class PolyData:
         concat_dim = sum(p.shape[-1] for p in parts.values())
         self.shape = (*first_shape[:-1], concat_dim)
 
+    def to_filename(self, filename: str | Path) -> None:
+        """Save data to gifti.
+
+        Parameters
+        ----------
+        filename : str | Path
+                   If the filename contains `hemi-L`
+                   then only the left part of the mesh will be saved.
+                   If the filename contains `hemi-R`
+                   then only the right part of the mesh will be saved.
+                   If the filename contains neither of those,
+                   then `_hemi-L` and `_hemi-R`
+                   will be appended to the filename and both will be saved.
+        """
+        filename = _sanitize_filename(filename)
+
+        if "hemi-L" not in filename.stem and "hemi-R" not in filename.stem:
+            for hemi in ["L", "R"]:
+                self.to_filename(
+                    filename.with_stem(f"{filename.stem}_hemi-{hemi}")
+                )
+            return None
+
+        if "hemi-L" in filename.stem:
+            data = self.parts["left"]
+        if "hemi-R" in filename.stem:
+            data = self.parts["right"]
+
+        _io.data_to_gifti(data, filename)
+
 
 class Mesh(abc.ABC):
     """A surface :term:`mesh` having vertex, \
     coordinates and faces (triangles).
+
+    Attributes
+    ----------
+    n_vertices : int
+        number of vertices
     """
 
     n_vertices: int
@@ -85,7 +134,7 @@ class Mesh(abc.ABC):
         Parameters
         ----------
         gifti_file : path-like or str
-            filename to save the mesh.
+            Filename to save the mesh to.
         """
         _io.mesh_to_gifti(self.coordinates, self.faces, gifti_file)
 
@@ -165,6 +214,36 @@ class PolyMesh:
 
         self.n_vertices = sum(p.n_vertices for p in self.parts.values())
 
+    def to_filename(self, filename: str | Path) -> None:
+        """Save mesh to gifti.
+
+        Parameters
+        ----------
+        filename : str | Path
+                   If the filename contains `hemi-L`
+                   then only the left part of the mesh will be saved.
+                   If the filename contains `hemi-R`
+                   then only the right part of the mesh will be saved.
+                   If the filename contains neither of those,
+                   then `_hemi-L` and `_hemi-R`
+                   will be appended to the filename and both will be saved.
+        """
+        filename = _sanitize_filename(filename)
+
+        if "hemi-L" not in filename.stem and "hemi-R" not in filename.stem:
+            for hemi in ["L", "R"]:
+                self.to_filename(
+                    filename.with_stem(f"{filename.stem}_hemi-{hemi}")
+                )
+            return None
+
+        if "hemi-L" in filename.stem:
+            mesh = self.parts["left"]
+        if "hemi-R" in filename.stem:
+            mesh = self.parts["right"]
+
+        mesh.to_gifti(filename)
+
 
 def _check_data_and_mesh_compat(mesh: PolyMesh, data: PolyData):
     """Check that mesh and data have the same keys and that shapes match."""
@@ -185,20 +264,27 @@ def _check_data_and_mesh_compat(mesh: PolyMesh, data: PolyData):
 
 
 class SurfaceImage:
-    """Surface image, usually containing meshes & data for both hemispheres."""
+    """Surface image, usually containing meshes & data for both hemispheres.
+
+
+    Parameters
+    ----------
+    mesh : PolyMesh | dict[str, Mesh  |  str  |  Path]
+
+    data : PolyData | dict[str, Mesh  |  str  |  Path]
+
+    Attributes
+    ----------
+    shape : (int, int)
+        shape of the surface data array
+    """
 
     def __init__(
         self,
         mesh: PolyMesh | dict[str, Mesh | str | Path],
         data: PolyData | dict[str, Mesh | str | Path],
     ) -> None:
-        """Create a SurfaceImage instance.
-
-        Parameters
-        ----------
-        mesh : PolyMesh | dict[str, Mesh  |  str  |  Path]
-        data : PolyData | dict[str, Mesh  |  str  |  Path]
-        """
+        """Create a SurfaceImage instance."""
         self.mesh = mesh if isinstance(mesh, PolyMesh) else PolyMesh(**mesh)
 
         if not isinstance(data, (PolyData, dict)):
@@ -289,39 +375,23 @@ class SurfaceImage:
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {getattr(self, 'shape', '')}>"
 
-    def to_filename(self, filename: str | Path) -> None:
-        """Save mesh to gifti.
 
-        Parameters
-        ----------
-        filename : str | Path
-                   If the filename contains `hemi-L`
-                   then only the left part of the mesh will be saved.
-                   If the filename contains `hemi-R`
-                   then only the right part of the mesh will be saved.
-                   If the filename contains neither of those,
-                   then `_hemi-L` and `_hemi-R`
-                   will be appended to the filename and both will be saved.
-        """
-        filename = Path(filename)
+def _sanitize_filename(filename: str | Path) -> Path:
+    filename = Path(filename)
 
-        if "hemi-L" in filename.stem and "hemi-R" in filename.stem:
-            raise ValueError(
-                "'filename' cannot contain both "
-                "'hemi-L' and 'hemi-R'. \n"
-                f"Got: {filename}"
-            )
+    if not filename.suffix:
+        filename = filename.with_suffix(".gii")
+    if filename.suffix != ".gii":
+        raise ValueError(
+            "Mesh / Data should be saved as gifti files "
+            "with the extension '.gii'.\n"
+            f"Got '{filename.suffix}'."
+        )
 
-        if "hemi-L" not in filename.stem and "hemi-R" not in filename.stem:
-            for hemi in ["L", "R"]:
-                self.to_filename(
-                    filename.with_stem(f"{filename.stem}_hemi-{hemi}")
-                )
-
-            return None
-
-        if "hemi-L" in filename.stem:
-            mesh = self.mesh.parts["left"]
-        if "hemi-R" in filename.stem:
-            mesh = self.mesh.parts["right"]
-        mesh.to_gifti(filename)
+    if "hemi-L" in filename.stem and "hemi-R" in filename.stem:
+        raise ValueError(
+            "'filename' cannot contain both "
+            "'hemi-L' and 'hemi-R'. \n"
+            f"Got: {filename}"
+        )
+    return filename

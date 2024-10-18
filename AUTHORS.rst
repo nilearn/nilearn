@@ -64,6 +64,7 @@ Some other past or present contributors are:
 * `Anand Joshi`_: University of Southern California, Los Angeles, California, United States
 * `Andrés Hoyos Idrobo`_: Rakuten, France
 * `Anne-Sophie Kieslinger`_: Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig, Germnay
+* `Anupriya Kumari`_: Indian Institute of Technology, Roorkee, India
 * `Ariel Rokem`_: University of Washington, Psychology, Seattle, Washington, 98107, USA
 * `Arthur Mensch`_
 * `Aswin Vijayan`_
@@ -170,6 +171,7 @@ Some other past or present contributors are:
 * `Pierre Glaser`_: Gatsby Computational Neuroscience Unit, University College London, London, UK
 * `Pierre-Olivier Quirion`_: Canadian Center for Computational Genomics / Calcul, Québec, Canada
 * `Pradeep Reddy Raamana`_: University of Pittsburgh, Pittsburgh, PA, USA
+* `Prakhar Jain`_: RV College of Engineering, Bangalore, India
 * `Rahul Brito`_
 * `Raphael Meudec`_: Inria, Saclay, France
 * `Robert Luke`_: @agencyenterprise, Melbourne, Australia

@@ -1329,7 +1329,7 @@ def _load_mixed_gambles(zmap_imgs):
     mask = np.sum(mask, axis=0) > 0.5 * len(mask)
     mask = np.logical_and(mask, np.all(np.isfinite(X), axis=-1))
     X = X[mask, :].T
-    tmp = np.zeros(list(mask.shape) + [len(X)])
+    tmp = np.zeros([*mask.shape, len(X)])
     tmp[mask, :] = X.T
     mask_img = Nifti1Image(mask.astype("uint8"), affine)
     X = four_to_three(Nifti1Image(tmp, affine))
@@ -2722,7 +2722,10 @@ def _download_spm_auditory_data(data_dir):
     end_version="0.13.0",
 )
 def fetch_spm_auditory(
-    data_dir=None, data_name="spm_auditory", subject_id=None, verbose=1
+    data_dir=None,
+    data_name="spm_auditory",
+    subject_id=None,  # noqa: ARG001
+    verbose=1,
 ):
     """Fetch :term:`SPM` auditory single-subject data.
 

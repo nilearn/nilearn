@@ -29,7 +29,7 @@ from sklearn import __version__ as sklearn_version
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.exceptions import NotFittedError
+from sklearn.exceptions import ConvergenceWarning, NotFittedError
 from sklearn.linear_model import (
     LassoCV,
     LogisticRegressionCV,
@@ -48,7 +48,10 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR, LinearSVC
 
 from nilearn._utils import compare_version
-from nilearn._utils.param_validation import check_feature_screening
+from nilearn._utils.param_validation import (
+    _get_mask_extent,
+    check_feature_screening,
+)
 from nilearn.conftest import _rng
 from nilearn.decoding.decoder import (
     Decoder,
@@ -84,7 +87,7 @@ def _make_binary_classification_test_data(n_samples=N_SAMPLES):
 
 
 @pytest.fixture()
-def rand_X_Y(rng):
+def rand_x_y(rng):
     X = rng.random((N_SAMPLES, 10))
     Y = np.hstack([[-1] * 50, [1] * 50])
     return X, Y
@@ -173,12 +176,12 @@ def test_check_param_grid_regression(regressor, param, rng):
         (RidgeClassifierCV(), ["alphas"]),
     ],
 )
-def test_check_param_grid_classification(rand_X_Y, classifier, param):
+def test_check_param_grid_classification(rand_x_y, classifier, param):
     """Test several estimators.
 
     Each one with its specific regularization parameter.
     """
-    X, Y = rand_X_Y
+    X, Y = rand_x_y
 
     param_grid = _check_param_grid(classifier, X, Y, None)
 
@@ -193,8 +196,8 @@ def test_check_param_grid_classification(rand_X_Y, classifier, param):
         [{"C": [1, 10, 100]}, {"fit_intercept": [False]}],
     ],
 )
-def test_check_param_grid_replacement(rand_X_Y, param_grid_input):
-    X, Y = rand_X_Y
+def test_check_param_grid_replacement(rand_x_y, param_grid_input):
+    X, Y = rand_x_y
     param_to_replace = "C"
     param_replaced = "Cs"
     param_grid_output = _check_param_grid(
@@ -210,9 +213,9 @@ def test_check_param_grid_replacement(rand_X_Y, param_grid_input):
 
 
 @pytest.mark.parametrize("estimator", ["log_l1", RandomForestClassifier()])
-def test_non_supported_estimator_error(rand_X_Y, estimator):
+def test_non_supported_estimator_error(rand_x_y, estimator):
     """Raise the error when using a non supported estimator."""
-    X, Y = rand_X_Y
+    X, Y = rand_x_y
 
     with pytest.raises(
         ValueError, match="Invalid estimator. The supported estimators are:"
@@ -220,8 +223,8 @@ def test_non_supported_estimator_error(rand_X_Y, estimator):
         _check_param_grid(estimator, X, Y, None)
 
 
-def test_check_parameter_grid_is_empty(rand_X_Y):
-    X, Y = rand_X_Y
+def test_check_parameter_grid_is_empty(rand_x_y):
+    X, Y = rand_x_y
     dummy_classifier = DummyClassifier(random_state=0)
 
     param_grid = _check_param_grid(dummy_classifier, X, Y, None)
@@ -358,7 +361,7 @@ def test_check_unsupported_estimator(estimator):
         _check_estimator(_BaseDecoder(estimator=custom_estimator).estimator)
 
 
-def test_parallel_fit(rand_X_Y):
+def test_parallel_fit(rand_x_y):
     """Check that results of _parallel_fit is the same \
     for different controlled param_grid.
     """
@@ -371,7 +374,7 @@ def test_parallel_fit(rand_X_Y):
     )
     train = range(80)
 
-    _, y_classification = rand_X_Y
+    _, y_classification = rand_x_y
     test = range(80, len(y_classification))
 
     estimator = SVR(kernel="linear")
@@ -431,7 +434,7 @@ def test_parallel_fit(rand_X_Y):
     ],
 )
 def test_parallel_fit_builtin_cv(
-    rand_X_Y,
+    rand_x_y,
     estimator,
     param_name,
     fitted_param_name,
@@ -464,7 +467,7 @@ def test_parallel_fit_builtin_cv(
     # create appropriate scorer and update y for classification
     if is_classification:
         scorer = check_scoring(estimator, "accuracy")
-        _, y = rand_X_Y
+        _, y = rand_x_y
     else:
         scorer = check_scoring(estimator, "r2")
 
@@ -975,16 +978,6 @@ def test_decoder_multiclass_classification_apply_mask_attributes(affine_eye):
     assert model.masker_.smoothing_fwhm == smoothing_fwhm
 
 
-def test_decoder_apply_mask_surface(mini_img):
-    """Test whether _apply_mask works for surface image."""
-    X = mini_img
-    model = Decoder(mask=SurfaceMasker())
-    X_masked = model._apply_mask(X)
-
-    assert X_masked.shape == X.shape
-    assert type(model.mask_img_).__name__ == "SurfaceImage"
-
-
 def test_decoder_multiclass_error_incorrect_cv(multiclass_data):
     """Check whether ValueError is raised when cv is not set correctly."""
     X, y, _ = multiclass_data
@@ -1089,3 +1082,227 @@ def test_decoder_decision_function_raises_value_error(
         ValueError, match=f"X has {X.shape[1]} features per sample"
     ):
         model.decision_function(X)
+
+
+# ------------------------ surface tests ------------------------------------ #
+
+
+@pytest.fixture()
+def _make_surface_class_data(rng, make_mini_img):
+    """Create a surface image classification for testing."""
+
+    def _surface_classes(shape=50):
+        mini_img = make_mini_img((shape,))
+        y = rng.choice([0, 1], size=shape)
+        return mini_img, y
+
+    return _surface_classes
+
+
+@pytest.fixture()
+def _make_surface_mask(make_mini_mask):
+    def _surface_mask():
+        mask = make_mini_mask()
+        return mask
+
+    return _surface_mask
+
+
+@pytest.fixture()
+def _make_surface_reg_data(rng, make_mini_img):
+    """Create a surface image regression for testing."""
+
+    def _surface_regression(shape=50):
+        mini_img = make_mini_img((shape,))
+        y = rng.random(shape)
+        return mini_img, y
+
+    return _surface_regression
+
+
+def test_decoder_apply_mask_surface(_make_surface_class_data):
+    """Test _apply_mask on surface image."""
+    X, _ = _make_surface_class_data()
+    model = Decoder(mask=SurfaceMasker())
+    X_masked = model._apply_mask(X)
+
+    assert X_masked.shape == X.shape
+    assert type(model.mask_img_).__name__ == "SurfaceImage"
+
+
+def test_decoder_screening_percentile_surface_default(
+    _make_surface_class_data,
+):
+    """Test default screening percentile with surface image."""
+    warnings.simplefilter("ignore", ConvergenceWarning)
+    X, y = _make_surface_class_data()
+
+    model = Decoder(mask=SurfaceMasker())
+    model.fit(X, y)
+    assert model.screening_percentile_ == 20
+
+
+@pytest.mark.parametrize("perc", [None, 100, 0])
+def test_decoder_screening_percentile_surface(perc, _make_surface_class_data):
+    """Test passing screening percentile with surface image."""
+    warnings.simplefilter("ignore", ConvergenceWarning)
+    X, y = _make_surface_class_data()
+
+    model = Decoder(mask=SurfaceMasker(), screening_percentile=perc)
+    model.fit(X, y)
+    if perc is None:
+        assert model.screening_percentile_ == 100
+    else:
+        assert model.screening_percentile_ == perc
+
+
+def test_decoder_adjust_screening_lessthan_mask_surface(
+    _make_surface_mask, _make_surface_class_data, screening_percentile=30
+):
+    """When mask size is less than or equal to screening percentile wrt to
+    the mesh size, it is adjusted to the ratio of mesh to mask.
+    """
+    mask = _make_surface_mask()
+    img, y = _make_surface_class_data()
+    mask_n_vertices = _get_mask_extent(mask)
+    mesh_n_vertices = img.mesh.n_vertices
+    mask_to_mesh_ratio = (mask_n_vertices / mesh_n_vertices) * 100
+    assert screening_percentile <= mask_to_mesh_ratio
+    decoder = Decoder(
+        mask=mask,
+        param_grid={"C": [0.01, 0.1]},
+        cv=3,
+        screening_percentile=screening_percentile,
+    )
+    with pytest.warns(UserWarning, match="Consider raising"):
+        decoder.fit(img, y)
+    adjusted = decoder.screening_percentile_
+    assert adjusted == screening_percentile * (
+        mesh_n_vertices / mask_n_vertices
+    )
+
+
+def test_decoder_adjust_screening_greaterthan_mask_surface(
+    _make_surface_mask, _make_surface_class_data, screening_percentile=80
+):
+    """When mask size is greater than screening percentile wrt to the mesh
+    size, it is changed to 100% of mask.
+    """
+    mask = _make_surface_mask()
+    img, y = _make_surface_class_data()
+    mask_n_vertices = _get_mask_extent(mask)
+    mesh_n_vertices = img.mesh.n_vertices
+    mask_to_mesh_ratio = (mask_n_vertices / mesh_n_vertices) * 100
+    assert screening_percentile > mask_to_mesh_ratio
+    decoder = Decoder(
+        mask=mask,
+        param_grid={"C": [0.01, 0.1]},
+        cv=3,
+        screening_percentile=screening_percentile,
+    )
+    with pytest.warns(UserWarning, match="Consider raising"):
+        decoder.fit(img, y)
+    adjusted = decoder.screening_percentile_
+    assert adjusted == 100
+
+
+@pytest.mark.parametrize("mask", [None, SurfaceMasker()])
+@pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
+def test_decoder_fit_surface(decoder, _make_surface_class_data, mask):
+    """Test fit for surface image."""
+    warnings.simplefilter("ignore", ConvergenceWarning)
+    X, y = _make_surface_class_data()
+    model = decoder(mask=mask)
+    model.fit(X, y)
+
+    assert model.coef_ is not None
+
+
+@pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
+def test_decoder_fit_surface_with_mask_image(
+    _make_surface_class_data, decoder, mini_mask
+):
+    """Test fit for surface image."""
+    warnings.simplefilter("ignore", ConvergenceWarning)
+    X, y = _make_surface_class_data()
+    model = decoder(mask=mini_mask)
+    model.fit(X, y)
+
+    assert model.coef_ is not None
+
+
+@pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
+def test_decoder_error_incompatible_surface_mask_and_volume_data(
+    decoder, mini_mask, tiny_binary_classification_data
+):
+    """Test error when fitting volume data with a surface mask."""
+    data_volume, y, _ = tiny_binary_classification_data
+    model = decoder(mask=mini_mask)
+
+    with pytest.raises(
+        TypeError, match="Mask and images to fit must be of compatible types."
+    ):
+        model.fit(data_volume, y)
+
+    model = decoder(mask=SurfaceMasker())
+
+    with pytest.raises(
+        TypeError, match="Mask and images to fit must be of compatible types."
+    ):
+        model.fit(data_volume, y)
+
+
+@pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
+def test_decoder_error_incompatible_surface_data_and_volume_mask(
+    _make_surface_class_data, decoder, tiny_binary_classification_data
+):
+    """Test error when fiting for surface data with a volume mask."""
+    data_surface, y = _make_surface_class_data()
+    _, _, mask = tiny_binary_classification_data
+    model = decoder(mask=mask)
+
+    with pytest.raises(
+        TypeError, match="Mask and images to fit must be of compatible types."
+    ):
+        model.fit(data_surface, y)
+
+
+def test_decoder_predict_score_surface(_make_surface_class_data):
+    """Test classification predict and scoring for surface image."""
+    warnings.simplefilter("ignore", ConvergenceWarning)
+    X, y = _make_surface_class_data()
+    model = Decoder(mask=SurfaceMasker())
+    model.fit(X, y)
+    y_pred = model.predict(X)
+
+    assert model.scoring == "roc_auc"
+
+    model.score(X, y)
+    acc = accuracy_score(y, y_pred)
+    assert 0.3 < acc < 0.7
+
+
+@pytest.mark.filterwarnings("ignore:Solver terminated early")
+def test_decoder_regressor_predict_score_surface(_make_surface_reg_data):
+    """Test regression predict and scoring for surface image."""
+    X, y = _make_surface_reg_data()
+    model = DecoderRegressor(mask=SurfaceMasker())
+    model.fit(X, y)
+    y_pred = model.predict(X)
+
+    assert model.scoring == "r2"
+
+    model.score(X, y)
+    r2 = r2_score(y, y_pred)
+    assert r2 <= 0
+
+
+@pytest.mark.parametrize("frem", [FREMRegressor, FREMClassifier])
+def test_frem_decoder_fit_surface(frem, _make_surface_class_data, mini_mask):
+    """Test fit for using FREM decoding with surface image."""
+    with pytest.raises(
+        ValueError, match="The mask image should be a Niimg-like object."
+    ):
+        X, y = _make_surface_class_data()
+        model = frem(mask=mini_mask, clustering_percentile=90)
+        model.fit(X, y)

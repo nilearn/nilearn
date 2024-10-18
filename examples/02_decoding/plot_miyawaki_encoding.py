@@ -73,7 +73,7 @@ stimulus_shape = (10, 10)
 stimuli = [
     np.reshape(
         np.loadtxt(stimulus_run, dtype=int, delimiter=","),
-        (-1,) + stimulus_shape,
+        (-1, *stimulus_shape),
         order="F",
     )
     for stimulus_run in stimuli_random_runs_filenames

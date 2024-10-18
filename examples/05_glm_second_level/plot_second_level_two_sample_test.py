@@ -82,7 +82,7 @@ unpaired_design_matrix = pd.DataFrame(
 
 paired_design_matrix = pd.DataFrame(
     np.hstack((condition_effect[:, np.newaxis], subject_effect)),
-    columns=["vertical vs horizontal"] + subjects,
+    columns=["vertical vs horizontal", *subjects],
 )
 
 # %%

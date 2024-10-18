@@ -1168,7 +1168,7 @@ def test_resample_img_segmentation_fault(force_resample):
     fourth_dim = 1025
 
     try:
-        data = np.ones(shape_in + (fourth_dim,), dtype=np.float64)
+        data = np.ones((*shape_in, fourth_dim), dtype=np.float64)
     except MemoryError:
         # This can happen on AppVeyor and for 32-bit Python on Windows
         pytest.skip("Not enough RAM to run this test")
