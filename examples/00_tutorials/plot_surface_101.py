@@ -152,8 +152,8 @@ from pathlib import Path
 output_dir = Path.cwd() / "results" / "plot_surface_101"
 output_dir.mkdir(exist_ok=True, parents=True)
 print(f"Output will be saved to: {output_dir}")
-surface_image.mesh.to_filename(output_dir / "surface_image_mesh.gii")
-surface_image.data.to_filename(output_dir / "surface_image_data.gii")
+surface_image.mesh.to_filename(output_dir / "surface_image_mesh.gii.gz")
+surface_image.data.to_filename(output_dir / "surface_image_data.gii.gz")
 
 # %%
 # You will see that this creates four files in total -- two for the
