@@ -2067,8 +2067,8 @@ def test_warn_flm_smooth_surface_image(_make_surface_glm_data):
     mini_img, des = _make_surface_glm_data(5)
     model = FirstLevelModel(mask_img=False, smoothing_fwhm=5)
     with pytest.warns(
-        UserWarning, 
-        match="Parameter smoothing_fwhm is not supported for surface data"
+        UserWarning,
+        match="Parameter smoothing_fwhm is not supported for surface data",
     ):
         model.fit(mini_img, design_matrices=des)
 

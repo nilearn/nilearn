@@ -1030,8 +1030,12 @@ class FirstLevelModel(BaseGLM):
             self.mask_img, SurfaceMasker
         ):
             if self.smoothing_fwhm is not None:
-                warn("Parameter smoothing_fwhm is not "
-                     "supported for surface data")
+                warn(
+                    "Parameter smoothing_fwhm is not "
+                    "supported for surface data",
+                    UserWarning,
+                    stacklevel=2,
+                )
             self.masker_ = SurfaceMasker(
                 mask_img=self.mask_img,
                 smoothing_fwhm=self.smoothing_fwhm,
