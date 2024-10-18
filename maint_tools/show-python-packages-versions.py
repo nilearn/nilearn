@@ -5,12 +5,15 @@ import sys
 import pkg_resources
 
 DEPENDENCIES = [
-    "numpy",
-    "scipy",
-    "scikit-learn",
     "joblib",
+    "lxml",
     "matplotlib",
     "nibabel",
+    "numpy",
+    "pandas",
+    "requests",
+    "scipy",
+    "scikit-learn",
 ]
 
 
