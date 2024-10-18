@@ -201,7 +201,7 @@ def test_save_dtype(mini_img, tmp_path, dtype):
     mini_img.data.to_filename(tmp_path / "data.gii")
 
 
-def test_load_from_volume_3D_nifti(img_3d_mni, mini_mesh, tmp_path):
+def test_load_from_volume_3d_nifti(img_3d_mni, mini_mesh, tmp_path):
     """Instantiate surface image with 3D Niftiimage object or file for data."""
     SurfaceImage.from_volume(mesh=mini_mesh, volume_img=img_3d_mni)
 
@@ -213,7 +213,7 @@ def test_load_from_volume_3D_nifti(img_3d_mni, mini_mesh, tmp_path):
     )
 
 
-def test_load_from_volume_4D_nifti(img_4d_mni, mini_mesh, tmp_path):
+def test_load_from_volume_4d_nifti(img_4d_mni, mini_mesh, tmp_path):
     """Instantiate surface image with 4D Niftiimage object or file for data."""
     img = SurfaceImage.from_volume(mesh=mini_mesh, volume_img=img_4d_mni)
     # check that we have the correct number of time points

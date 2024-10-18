@@ -158,7 +158,7 @@ def test_check_shape_and_affine_compatibility_error(
         _check_shape_and_affine_compatibility(img1=img_3d_zeros_eye, img2=img2)
 
 
-def test_errors_3D(img_3d_zeros_eye, img_4d_zeros_eye):
+def test_errors_3d(img_3d_zeros_eye, img_4d_zeros_eye):
     """Verify that 3D images are refused."""
     wrong_dim_image = img_3d_zeros_eye
 
@@ -171,7 +171,7 @@ def test_errors_3D(img_3d_zeros_eye, img_4d_zeros_eye):
         img_to_signals_maps(imgs=img_4d_zeros_eye, maps_img=wrong_dim_image)
 
 
-def test_errors_4D_labels(img_4d_zeros_eye):
+def test_errors_4d_labels(img_4d_zeros_eye):
     """Verify that 4D images are refused."""
     wrong_dim_label_img = img_4d_zeros_eye
 
@@ -186,7 +186,7 @@ def test_errors_4D_labels(img_4d_zeros_eye):
         )
 
 
-def test_errors_4D_masks(img_3d_zeros_eye, img_4d_zeros_eye):
+def test_errors_4d_masks(img_3d_zeros_eye, img_4d_zeros_eye):
     """Verify that 4D images are refused."""
     wrong_dim_mask_img = img_4d_zeros_eye
 
