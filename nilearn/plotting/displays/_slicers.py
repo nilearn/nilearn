@@ -1,4 +1,5 @@
 import collections
+import contextlib
 import numbers
 
 import matplotlib.pyplot as plt
@@ -69,12 +70,12 @@ class BaseSlicer:
         self._colorbar = False
         self._colorbar_width = 0.05 * bb.width
         self._cbar_tick_format = "%.2g"
-        self._colorbar_margin = dict(
-            left=0.25 * bb.width,
-            right=0.02 * bb.width,
-            top=0.05 * bb.height,
-            bottom=0.05 * bb.height,
-        )
+        self._colorbar_margin = {
+            "left": 0.25 * bb.width,
+            "right": 0.02 * bb.width,
+            "top": 0.05 * bb.height,
+            "bottom": 0.05 * bb.height,
+        }
         self._init_axes(**kwargs)
 
     @property
@@ -90,7 +91,8 @@ class BaseSlicer:
     @staticmethod
     def find_cut_coords(img=None, threshold=None, cut_coords=None):
         """Act as placeholder and is not implemented in the base class \
-        and has to be implemented in derived classes."""
+        and has to be implemented in derived classes.
+        """
         # Implement this as a staticmethod or a classmethod when
         # subclassing
         raise NotImplementedError
@@ -239,9 +241,12 @@ class BaseSlicer:
             verticalalignment="top",
             size=size,
             color=color,
-            bbox=dict(
-                boxstyle="square,pad=.3", ec=bgcolor, fc=bgcolor, alpha=alpha
-            ),
+            bbox={
+                "boxstyle": "square,pad=.3",
+                "ec": bgcolor,
+                "fc": bgcolor,
+                "alpha": alpha,
+            },
             zorder=1000,
             **kwargs,
         )
@@ -513,12 +518,8 @@ class BaseSlicer:
             Maximal value for the colorbar. If None, the maximal value
             is computed based on the data.
         """
-        if threshold is None:
-            offset = 0
-        else:
-            offset = threshold
-        if offset > norm.vmax:
-            offset = norm.vmax
+        offset = 0 if threshold is None else threshold
+        offset = min(offset, norm.vmax)
 
         cbar_vmin = cbar_vmin if cbar_vmin is not None else norm.vmin
         cbar_vmax = cbar_vmax if cbar_vmax is not None else norm.vmax
@@ -543,8 +544,8 @@ class BaseSlicer:
         # edge case where the data has a single value
         # yields a cryptic matplotlib error message
         # when trying to plot the color bar
-        nb_ticks = 5 if cbar_vmin != cbar_vmax else 1
-        ticks = _get_cbar_ticks(cbar_vmin, cbar_vmax, offset, nb_ticks)
+        n_ticks = 5 if cbar_vmin != cbar_vmax else 1
+        ticks = _get_cbar_ticks(cbar_vmin, cbar_vmax, offset, n_ticks)
         bounds = np.linspace(cbar_vmin, cbar_vmax, our_cmap.N)
 
         # some colormap hacking
@@ -552,7 +553,7 @@ class BaseSlicer:
         transparent_start = int(norm(-offset, clip=True) * (our_cmap.N - 1))
         transparent_stop = int(norm(offset, clip=True) * (our_cmap.N - 1))
         for i in range(transparent_start, transparent_stop):
-            cmaplist[i] = self._brain_color + (0.0,)  # transparent
+            cmaplist[i] = (*self._brain_color, 0.0)  # transparent
         if cbar_vmin == cbar_vmax:  # len(np.unique(data)) == 1 ?
             return
         else:
@@ -817,7 +818,7 @@ class BaseSlicer:
         )
 
 
-def _get_cbar_ticks(vmin, vmax, offset, nb_ticks=5):
+def _get_cbar_ticks(vmin, vmax, offset, n_ticks=5):
     """Help for BaseSlicer."""
     # edge case where the data has a single value yields
     # a cryptic matplotlib error message when trying to plot the color bar
@@ -832,14 +833,14 @@ def _get_cbar_ticks(vmin, vmax, offset, nb_ticks=5):
     # to correspond to -thresold and +threshold on the colorbar.
     # If the threshold is very small compared to vmax,
     # we use a simple linspace as the result would be very difficult to see.
-    ticks = np.linspace(vmin, vmax, nb_ticks)
+    ticks = np.linspace(vmin, vmax, n_ticks)
     if offset is not None and offset / vmax > 0.12:
         diff = [abs(abs(tick) - offset) for tick in ticks]
         # Edge case where the thresholds are exactly
         # at the same distance to 4 ticks
         if diff.count(min(diff)) == 4:
             idx_closest = np.sort(np.argpartition(diff, 4)[:4])
-            idx_closest = np.in1d(ticks, np.sort(ticks[idx_closest])[1:3])
+            idx_closest = np.isin(ticks, np.sort(ticks[idx_closest])[1:3])
         else:
             # Find the closest 2 ticks
             idx_closest = np.sort(np.argpartition(diff, 2)[:2])
@@ -945,7 +946,7 @@ class OrthoSlicer(BaseSlicer):
         x0, y0, x1, y1 = self.rect
         facecolor = "k" if self._black_bg else "w"
         # Create our axes:
-        self.axes = dict()
+        self.axes = {}
         for index, direction in enumerate(self._cut_displayed):
             fh = self.frame_axes.get_figure()
             ax = fh.add_axes(
@@ -981,7 +982,11 @@ class OrthoSlicer(BaseSlicer):
             )
             self.frame_axes.set_zorder(-1000)
 
-    def _locator(self, axes, renderer):
+    def _locator(
+        self,
+        axes,
+        renderer,  # noqa: ARG002
+    ):
         """Adjust the size of the axes.
 
         The locator function used by matplotlib to position axes.
@@ -991,7 +996,7 @@ class OrthoSlicer(BaseSlicer):
         ``renderer`` is required to match the matplotlib API.
         """
         x0, y0, x1, y1 = self.rect
-        width_dict = dict()
+        width_dict = {}
         # A dummy axes, for the situation in which we are not plotting
         # all three (x, y, z) cuts
         dummy_ax = self._axes_class(None, None, None)
@@ -1019,10 +1024,10 @@ class OrthoSlicer(BaseSlicer):
         for ax, width in width_dict.items():
             width_dict[ax] = width / total_width * (x1 - x0)
 
-        direction_ax = []
-        for d in self._cut_displayed:
-            direction_ax.append(display_ax_dict.get(d, dummy_ax).ax)
-        left_dict = dict()
+        direction_ax = [
+            display_ax_dict.get(d, dummy_ax).ax for d in self._cut_displayed
+        ]
+        left_dict = {}
         for idx, ax in enumerate(direction_ax):
             left_dict[ax] = x0
             for prev_ax in direction_ax[:idx]:
@@ -1047,7 +1052,7 @@ class OrthoSlicer(BaseSlicer):
         """
         if cut_coords is None:
             cut_coords = self.cut_coords
-        coords = dict()
+        coords = {}
         for direction in "xyz":
             coord = None
             if direction in self._cut_displayed:
@@ -1217,7 +1222,7 @@ class TiledSlicer(BaseSlicer):
 
         facecolor = "k" if self._black_bg else "w"
 
-        self.axes = dict()
+        self.axes = {}
         for index, direction in enumerate(self._cut_displayed):
             fh = self.frame_axes.get_figure()
             axes_coords = self._find_initial_axes_coord(index)
@@ -1309,10 +1314,10 @@ class TiledSlicer(BaseSlicer):
             x0, y0, x1, y1 coordinates per axes used by matplotlib
             to position axes in figure.
         """
-        coord1 = dict()
-        coord2 = dict()
-        coord3 = dict()
-        coord4 = dict()
+        coord1 = {}
+        coord2 = {}
+        coord3 = {}
+        coord4 = {}
 
         if "y" in self.axes:
             ax = self.axes["y"].ax
@@ -1337,7 +1342,11 @@ class TiledSlicer(BaseSlicer):
 
         return (coord1, coord2, coord3, coord4)
 
-    def _locator(self, axes, renderer):
+    def _locator(
+        self,
+        axes,
+        renderer,  # noqa: ARG002
+    ):
         """Adjust the size of the axes.
 
         The locator function used by matplotlib to position axes.
@@ -1349,8 +1358,8 @@ class TiledSlicer(BaseSlicer):
         rect_x0, rect_y0, rect_x1, rect_y1 = self.rect
 
         # image width and height
-        width_dict = dict()
-        height_dict = dict()
+        width_dict = {}
+        height_dict = {}
 
         # A dummy axes, for the situation in which we are not plotting
         # all three (x, y, z) cuts
@@ -1382,10 +1391,6 @@ class TiledSlicer(BaseSlicer):
             width_dict, height_dict, rect_x0, rect_y0, rect_x1, rect_y1
         )
 
-        direction_ax = []
-        for d in self._cut_displayed:
-            direction_ax.append(display_ax_dict.get(d, dummy_ax).ax)
-
         coord1, coord2, coord3, coord4 = self._find_axes_coord(
             rel_width_dict, rel_height_dict, rect_x0, rect_y0, rect_x1, rect_y1
         )
@@ -1409,7 +1414,7 @@ class TiledSlicer(BaseSlicer):
         """
         if cut_coords is None:
             cut_coords = self.cut_coords
-        coords = dict()
+        coords = {}
         for direction in "xyz":
             coord_ = None
             if direction in self._cut_displayed:
@@ -1421,10 +1426,8 @@ class TiledSlicer(BaseSlicer):
 
         kwargs = kwargs.copy()
         if "color" not in kwargs:
-            try:
+            with contextlib.suppress(KeyError):
                 kwargs["color"] = ".8" if self._black_bg else "k"
-            except KeyError:
-                pass
 
         if "y" in self.axes:
             ax = self.axes["y"].ax
@@ -1466,7 +1469,12 @@ class BaseStackedSlicer(BaseSlicer):
     """
 
     @classmethod
-    def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
+    def find_cut_coords(
+        cls,
+        img=None,
+        threshold=None,  # noqa: ARG003
+        cut_coords=None,
+    ):
         """Instantiate the slicer and find cut coordinates.
 
         Parameters
@@ -1495,20 +1503,19 @@ class BaseStackedSlicer(BaseSlicer):
             lower, upper = bounds["xyz".index(cls._direction)]
             if isinstance(cut_coords, numbers.Number):
                 cut_coords = np.linspace(lower, upper, cut_coords).tolist()
-        else:
-            if not isinstance(
-                cut_coords, collections.abc.Sequence
-            ) and isinstance(cut_coords, numbers.Number):
-                cut_coords = find_cut_slices(
-                    img, direction=cls._direction, n_cuts=cut_coords
-                )
+        elif not isinstance(
+            cut_coords, collections.abc.Sequence
+        ) and isinstance(cut_coords, numbers.Number):
+            cut_coords = find_cut_slices(
+                img, direction=cls._direction, n_cuts=cut_coords
+            )
 
         return cut_coords
 
     def _init_axes(self, **kwargs):
         x0, y0, x1, y1 = self.rect
         # Create our axes:
-        self.axes = dict()
+        self.axes = {}
         fraction = 1.0 / len(self.cut_coords)
         for index, coord in enumerate(self.cut_coords):
             coord = float(coord)
@@ -1545,7 +1552,11 @@ class BaseStackedSlicer(BaseSlicer):
             )
             self.frame_axes.set_zorder(-1000)
 
-    def _locator(self, axes, renderer):
+    def _locator(
+        self,
+        axes,
+        renderer,  # noqa: ARG002
+    ):
         """Adjust the size of the axes.
 
         The locator function used by matplotlib to position axes.
@@ -1555,7 +1566,7 @@ class BaseStackedSlicer(BaseSlicer):
         ``renderer`` is required to match the matplotlib API.
         """
         x0, y0, x1, y1 = self.rect
-        width_dict = dict()
+        width_dict = {}
         display_ax_dict = self.axes
 
         if self._colorbar:
@@ -1577,9 +1588,9 @@ class BaseStackedSlicer(BaseSlicer):
         total_width = float(sum(width_dict.values()))
         for ax, width in width_dict.items():
             width_dict[ax] = width / total_width * (x1 - x0)
-        left_dict = dict()
+        left_dict = {}
         left = float(x0)
-        for _, display_ax in display_ax_dict.items():
+        for display_ax in display_ax_dict.values():
             left_dict[display_ax.ax] = left
             this_width = width_dict[display_ax.ax]
             left += this_width
@@ -1879,7 +1890,12 @@ class MosaicSlicer(BaseSlicer):
     _default_figsize = [4.0, 5.0]
 
     @classmethod
-    def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
+    def find_cut_coords(
+        cls,
+        img=None,
+        threshold=None,  # noqa: ARG003
+        cut_coords=None,
+    ):
         """Instantiate the slicer and find cut coordinates for mosaic plotting.
 
         Parameters
@@ -1953,7 +1969,7 @@ class MosaicSlicer(BaseSlicer):
         in ``n_cuts``
             The computed ``cut_coords``.
         """
-        coords = dict()
+        coords = {}
         if img is None or img is False:
             bounds = ((-40, 40), (-30, 30), (-30, 75))
             for direction, n_cuts in zip(sorted(cut_displayed), cut_coords):
@@ -2025,7 +2041,11 @@ class MosaicSlicer(BaseSlicer):
         #  see issue https://github.com/nilearn/nilearn/pull/4284
         self._colorbar_width *= len(coords) ** 1.1
 
-    def _locator(self, axes, renderer):
+    def _locator(
+        self,
+        axes,
+        renderer,  # noqa: ARG002
+    ):
         """Adjust the size of the axes.
 
         Locator function used by matplotlib to position axes.
@@ -2044,9 +2064,9 @@ class MosaicSlicer(BaseSlicer):
             x1 = x1 - (adjusted_width + right_margin + ticks_margin)
 
         # capture widths for each axes for anchoring Bbox
-        width_dict = dict()
+        width_dict = {}
         for direction in self._cut_displayed:
-            this_width = dict()
+            this_width = {}
             for display_ax in display_ax_dict.values():
                 if direction == display_ax.direction:
                     bounds = display_ax.get_object_bounds()
@@ -2062,16 +2082,16 @@ class MosaicSlicer(BaseSlicer):
             for ax, w in this_width.items():
                 width_dict[ax] = w / total_width * (x1 - x0)
 
-        left_dict = dict()
+        left_dict = {}
         # bottom positions in Bbox according to cuts
-        bottom_dict = dict()
+        bottom_dict = {}
         # fraction is divided by the cut directions 'y', 'x', 'z'
         fraction = y1 / len(self._cut_displayed)
-        height_dict = dict()
+        height_dict = {}
         for index, direction in enumerate(self._cut_displayed):
             left = float(x0)
             this_height = fraction + fraction * index
-            for _, display_ax in display_ax_dict.items():
+            for display_ax in display_ax_dict.values():
                 if direction == display_ax.direction:
                     left_dict[display_ax.ax] = left
                     this_width = width_dict[display_ax.ax]
@@ -2101,17 +2121,17 @@ class MosaicSlicer(BaseSlicer):
         pass
 
 
-SLICERS = dict(
-    ortho=OrthoSlicer,
-    tiled=TiledSlicer,
-    mosaic=MosaicSlicer,
-    xz=XZSlicer,
-    yz=YZSlicer,
-    yx=YXSlicer,
-    x=XSlicer,
-    y=YSlicer,
-    z=ZSlicer,
-)
+SLICERS = {
+    "ortho": OrthoSlicer,
+    "tiled": TiledSlicer,
+    "mosaic": MosaicSlicer,
+    "xz": XZSlicer,
+    "yz": YZSlicer,
+    "yx": YXSlicer,
+    "x": XSlicer,
+    "y": YSlicer,
+    "z": ZSlicer,
+}
 
 
 def get_slicer(display_mode):
@@ -2167,7 +2187,8 @@ def get_slicer(display_mode):
 def _get_create_display_fun(display_mode, class_dict):
     """Help for functions \
     :func:`~nilearn.plotting.displays.get_slicer` and \
-    :func:`~nilearn.plotting.displays.get_projector`."""
+    :func:`~nilearn.plotting.displays.get_projector`.
+    """
     try:
         return class_dict[display_mode].init_with_figure
     except KeyError:

@@ -75,6 +75,7 @@ mask_img = resample_to_img(
     gray_matter_map_filenames[0],
     interpolation="nearest",
     copy_header=True,
+    force_resample=True,
 )
 
 # %%
@@ -96,7 +97,7 @@ from matplotlib import pyplot as plt
 # %%
 # Let's plot the design matrix.
 fig, ax1 = plt.subplots(1, 1, figsize=(4, 8))
-ax = plotting.plot_design_matrix(design_matrix, ax=ax1)
+ax = plotting.plot_design_matrix(design_matrix, axes=ax1)
 ax.set_ylabel("maps")
 fig.suptitle("Second level design matrix")
 
@@ -207,5 +208,5 @@ save_glm_to_bids(
 
 # %%
 # View the generated files
-files = sorted(list((output_dir / "derivatives" / "nilearn_glm").glob("**/*")))
+files = sorted((output_dir / "derivatives" / "nilearn_glm").glob("**/*"))
 print("\n".join([str(x.relative_to(output_dir)) for x in files]))

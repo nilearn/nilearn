@@ -26,15 +26,15 @@ model with a random design matrix **X**:
 
 """
 
-try:
-    import matplotlib.pyplot as plt
-except ImportError:
-    raise RuntimeError("This script needs the matplotlib library")
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
 
 from time import time
 
-import nibabel
+import matplotlib.pyplot as plt
 import numpy as np
+from nibabel import Nifti1Image
 from scipy import linalg
 from scipy.ndimage import gaussian_filter
 from sklearn import linear_model, svm
@@ -131,12 +131,12 @@ X_train, X_test, y_train, y_test, snr, coefs, size = create_simulation_data(
 # computation is performed. It is a subset of the brain mask, just to reduce
 # computation time.
 mask = np.ones((size, size, size), dtype=bool)
-mask_img = nibabel.Nifti1Image(mask.astype("uint8"), np.eye(4))
+mask_img = Nifti1Image(mask.astype("uint8"), np.eye(4))
 process_mask = np.zeros((size, size, size), dtype=bool)
 process_mask[:, :, 0] = True
 process_mask[:, :, 6] = True
 process_mask[:, :, 11] = True
-process_mask_img = nibabel.Nifti1Image(process_mask.astype("uint8"), np.eye(4))
+process_mask_img = Nifti1Image(process_mask.astype("uint8"), np.eye(4))
 
 coefs = np.reshape(coefs, [size, size, size])
 plot_slices(coefs, title="Ground truth")

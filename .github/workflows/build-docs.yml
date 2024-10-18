@@ -204,6 +204,9 @@ jobs:
                 python -m pip install --user --upgrade pip setuptools
                 python -m pip install .[plotting,doc]
 
+        -   name: List dependencies
+            run: pip freeze
+
         # Check if we are doing a full or partial build
         -   name: Find build type
             run: ./build_tools/github/build_type.sh
@@ -260,24 +263,6 @@ jobs:
             with:
                 name: doc
                 path: doc/_build/html
-
-    deploy_on_pr:
-        runs-on: ubuntu-latest
-        needs: [build_docs]
-        if: ${{ github.event_name == 'pull_request'}}
-        steps:
-            # Trigger hosting / deploy of the doc on nilearn.github.io via circle-ci
-            # We get the url for the artifacts for circle-ci from https://nightly.link/
-        -   name: Trigger hosting jobs on circle ci
-            run: |
-                GITHUB_RUN_URL="https://nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-                curl --request POST \
-                --url https://circleci.com/api/v2/project/gh/${{ github.repository }}/pipeline \
-                --header "Circle-Token: ${{ secrets.CIRCLE_CI_TOKEN }}" \
-                --header "content-type: application/json" \
-                --header "x-attribution-actor-id: github_actions" \
-                --header "x-attribution-login: github_actions" \
-                --data \{\"branch\":\"${{ github.head_ref }}\",\"parameters\":\{\"GITHUB_RUN_URL\":\"$GITHUB_RUN_URL\"\}\}
 
     deploy_on_main:
         runs-on: ubuntu-latest

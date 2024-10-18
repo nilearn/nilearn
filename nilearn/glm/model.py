@@ -84,7 +84,7 @@ class LikelihoodModelResults:
     # @auto_attr store the value as an object attribute after initial call
     # better performance than @property
     @auto_attr
-    def logL(self):
+    def logL(self):  # noqa: N802
         """Return the maximized log-likelihood."""
         return self.model.logL(self.theta, self.Y, nuisance=self.nuisance)
 
@@ -167,7 +167,7 @@ class LikelihoodModelResults:
         if matrix is None and column is None:
             return self.cov * dispersion
 
-    def Tcontrast(self, matrix, store=("t", "effect", "sd"), dispersion=None):
+    def Tcontrast(self, matrix, store=("t", "effect", "sd"), dispersion=None):  # noqa: N802
         """Compute a Tcontrast for a row vector `matrix`.
 
         To get the t-statistic for a single column, use the 't' method.
@@ -216,7 +216,7 @@ class LikelihoodModelResults:
             effect=st_effect, t=st_t, sd=st_sd, df_den=self.df_residuals
         )
 
-    def Fcontrast(self, matrix, dispersion=None, invcov=None):
+    def Fcontrast(self, matrix, dispersion=None, invcov=None):  # noqa: N802
         """Compute an F contrast for a :term:`contrast` matrix ``matrix``.
 
         Here, ``matrix`` M is assumed to be non-singular. More precisely
@@ -315,11 +315,11 @@ class LikelihoodModelResults:
         --------
         >>> from numpy.random import standard_normal as stan
         >>> from nilearn.glm import OLSModel
-        >>> x = np.hstack((stan((30,1)),stan((30,1)),stan((30,1))))
-        >>> beta=np.array([3.25, 1.5, 7.0])
-        >>> y = np.dot(x,beta) + stan((30))
+        >>> x = np.hstack((stan((30, 1)), stan((30, 1)), stan((30, 1))))
+        >>> beta = np.array([3.25, 1.5, 7.0])
+        >>> y = np.dot(x, beta) + stan((30))
         >>> model = OLSModel(x).fit(y)
-        >>> confidence_intervals = model.conf_int(cols=(1,2))
+        >>> confidence_intervals = model.conf_int(cols=(1, 2))
 
         Notes
         -----
@@ -406,7 +406,7 @@ class FContrastResults:
     def __str__(self):
         return (
             "<F contrast: "
-            f"F={repr(self.F)}, "
+            f"F={self.F!r}, "
             f"df_den={self.df_den}, "
             f"df_num={self.df_num}>"
         )

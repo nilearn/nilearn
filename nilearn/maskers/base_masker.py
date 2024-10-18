@@ -3,6 +3,7 @@
 # Author: Gael Varoquaux, Alexandre Abraham
 
 import abc
+import contextlib
 import warnings
 
 import numpy as np
@@ -12,9 +13,8 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from nilearn.image import high_variance_confounds
 
 from .. import _utils, image, masking, signal
-from .._utils import stringify_path
+from .._utils import logger, stringify_path
 from .._utils.cache_mixin import CacheMixin, cache
-from .._utils.class_inspect import enclosing_scope_name
 
 
 def _filter_and_extract(
@@ -55,21 +55,17 @@ def _filter_and_extract(
     """
     if memory is None:
         memory = Memory(location=None)
-    # Since the calling class can be any *Nifti*Masker, we look for exact type
-    if verbose > 0:
-        class_name = enclosing_scope_name(stack_level=10)
-
     # If we have a string (filename), we won't need to copy, as
     # there will be no side effect
     imgs = stringify_path(imgs)
     if isinstance(imgs, str):
         copy = False
 
-    if verbose > 0:
-        print(
-            f"[{class_name}] Loading data "
-            f"from {_utils._repr_niimgs(imgs, shorten=False)}"
-        )
+    logger.log(
+        f"Loading data " f"from {_utils._repr_niimgs(imgs, shorten=False)}",
+        verbose=verbose,
+        stack_level=2,
+    )
 
     # Convert input to niimg to check shape.
     # This must be repeated after the shape check because check_niimg will
@@ -93,8 +89,8 @@ def _filter_and_extract(
     target_shape = parameters.get("target_shape")
     target_affine = parameters.get("target_affine")
     if target_shape is not None or target_affine is not None:
-        if verbose > 0:
-            print(f"[{class_name}] Resampling images")
+        logger.log("Resampling images", stack_level=2)
+
         imgs = cache(
             image.resample_img,
             memory,
@@ -108,12 +104,12 @@ def _filter_and_extract(
             target_affine=target_affine,
             copy=copy,
             copy_header=True,
+            force_resample=False,  # set to True in 0.13.0
         )
 
     smoothing_fwhm = parameters.get("smoothing_fwhm")
     if smoothing_fwhm is not None:
-        if verbose > 0:
-            print(f"[{class_name}] Smoothing images")
+        logger.log("Smoothing images", verbose=verbose, stack_level=2)
         imgs = cache(
             image.smooth_img,
             memory,
@@ -121,8 +117,7 @@ def _filter_and_extract(
             memory_level=memory_level,
         )(imgs, parameters["smoothing_fwhm"])
 
-    if verbose > 0:
-        print(f"[{class_name}] Extracting region signals")
+    logger.log("Extracting region signals", verbose=verbose, stack_level=2)
     region_signals, aux = cache(
         extraction_function,
         memory,
@@ -136,8 +131,7 @@ def _filter_and_extract(
     # Filtering
     # Confounds removing (from csv file or numpy array)
     # Normalizing
-    if verbose > 0:
-        print(f"[{class_name}] Cleaning extracted signals")
+    logger.log("Cleaning extracted signals", verbose=verbose, stack_level=2)
     runs = parameters.get("runs", None)
     region_signals = cache(
         signal.clean,
@@ -359,10 +353,8 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         img = self._cache(masking.unmask)(X, self.mask_img_)
         # Be robust again memmapping that will create read-only arrays in
         # internal structures of the header: remove the memmaped array
-        try:
+        with contextlib.suppress(Exception):
             img._header._structarr = np.array(img._header._structarr).copy()
-        except Exception:
-            pass
         return img
 
     def _check_fitted(self):

@@ -64,6 +64,7 @@ Some other past or present contributors are:
 * `Anand Joshi`_: University of Southern California, Los Angeles, California, United States
 * `Andrés Hoyos Idrobo`_: Rakuten, France
 * `Anne-Sophie Kieslinger`_: Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig, Germnay
+* `Anupriya Kumari`_: Indian Institute of Technology, Roorkee, India
 * `Ariel Rokem`_: University of Washington, Psychology, Seattle, Washington, 98107, USA
 * `Arthur Mensch`_
 * `Aswin Vijayan`_
@@ -101,6 +102,7 @@ Some other past or present contributors are:
 * `Greg Kiar`_: Child Mind Institute
 * `Greydon Gilmore`_: Department of Mathematics, Western University, Toronto, Canada
 * `Guillaume Lemaitre`_: Inria, Saclay, France
+* `Hande Gözükan`_: Inria, Saclay, France
 * `Hao-Ting Wang`_: Montréal Geriatrics Institute (CRIUGM), Montréal, Canada
 * `Himanshu Aggarwal`_: Inria, Saclay, France
 * `Ian Abenes`_
@@ -108,6 +110,7 @@ Some other past or present contributors are:
 * `Jan Margeta`_: KardioMe, Nova Dubnica, Slovakia
 * `Jaques Grobler`_: Anyline GmbH, Vienna, Austria
 * `Jason Gors`_: Insight Data Science, Mountain View, California, USA
+* `Jason Kai`_: Child Mind Institute
 * `Javier Rasero`_: School of Data Science, University of Virginia, Viginia, USA
 * `Jean Kossaifi`_: Imperial College London, London, UK
 * `Jean-Rémi King`_: Meta AI, CNRS, Paris
@@ -150,6 +153,7 @@ Some other past or present contributors are:
 * `Michelle Wang`_: Origami lab, McGill University, Montréal, Canada
 * `Mohammad Torabi`_: Origami lab, McGill University, Montréal, Canada
 * `Moritz Boos`_
+* `Mudassir Chapra`_
 * `Myeong Seop Song`_
 * `Natasha Clarke`_: @SIMEXP, Montréal, Canada
 * `Neelay Shah`_: Max Planck Institute for Intelligent Systems, Germany
@@ -167,6 +171,7 @@ Some other past or present contributors are:
 * `Pierre Glaser`_: Gatsby Computational Neuroscience Unit, University College London, London, UK
 * `Pierre-Olivier Quirion`_: Canadian Center for Computational Genomics / Calcul, Québec, Canada
 * `Pradeep Reddy Raamana`_: University of Pittsburgh, Pittsburgh, PA, USA
+* `Prakhar Jain`_: RV College of Engineering, Bangalore, India
 * `Rahul Brito`_
 * `Raphael Meudec`_: Inria, Saclay, France
 * `Robert Luke`_: @agencyenterprise, Melbourne, Australia
@@ -181,6 +186,7 @@ Some other past or present contributors are:
 * `Sam Buck Johnson`_
 * `Sami Jawhar`_
 * `Simon Steinkamp`_: Danish Research Centre for Magnetic Resonance, Copenhagen University Hospital Amager & Hvidovre, Copenhagen, Denmark.
+* `Sin Kim`_: Korea Advanced Institute of Science and Technology: Daejeon, KR
 * `Sourav Singh`_
 * `Steven Meisler`_: Harvard-MIT Division of Health Sciences and Technology, Cambridge, Massachusetts, USA
 * `Suramya Pokharel`_: Tribhuvan University, Kathmandu, Nepal
@@ -189,9 +195,11 @@ Some other past or present contributors are:
 * `Tamer Gezici`_: Bilkent University
 * `Tarun Samanta`_: Acharya Prafulla Chandra College
 * `Taylor Salo`_: Lifespan Informatics & Neuroimaging Center, University of Pennsylvania, USA
+* `Tharun K`_
 * `Thomas Bazeille`_: Inria, Saclay, France
 * `Tom Vanasse`_: Wisconsin Institute for Sleep and Consciousness, USA
 * `Vasco Diogo`_
+* `Victoria Shevchenko`_: Inria Saclay, Université Paris Cité, France
 * `Vincent Michel`_: https://www.logilab.fr/
 * `Virgile Fritsch`_: Inria, Saclay, France
 * `Yaroslav Halchenko`_: Dartmouth College, PBS, Hanover, New Hampshire, USA

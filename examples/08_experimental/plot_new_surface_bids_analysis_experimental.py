@@ -5,7 +5,7 @@ Surface-based dataset first and second level analysis of a dataset
 .. warning::
 
     This example is adapted from
-    :ref:`sphx_glr_auto_examples_07_advanced_plot_surface_bids_analysis.py`. # noqa
+    :ref:`sphx_glr_auto_examples_07_advanced_plot_surface_bids_analysis.py`.
     to show how to use the new tentative API for surface images in nilearn.
 
     This functionality is provided
@@ -35,6 +35,10 @@ More specifically:
 Notice that in this case the preprocessed :term:`bold<BOLD>` images
 were already normalized to the same :term:`MNI` space.
 """
+
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
 
 # %%
 # Fetch example :term:`BIDS` dataset
@@ -85,7 +89,6 @@ models, run_imgs, events, confounds = first_level_from_bids(
 # Note that those correspond spatially, as they are both in :term:`MNI` space.
 from pathlib import Path
 
-from nilearn import surface
 from nilearn.experimental.surface import SurfaceImage, load_fsaverage
 
 fsaverage5 = load_fsaverage()
@@ -98,18 +101,9 @@ for first_level_glm, fmri_img, confound, event in zip(
 ):
     print(f"Running GLM on {Path(fmri_img[0]).relative_to(data.data_dir)}")
 
-    texture_left = surface.vol_to_surf(
-        fmri_img[0], fsaverage5["pial"].parts["left"]
-    )
-    texture_right = surface.vol_to_surf(
-        fmri_img[0], fsaverage5["pial"].parts["right"]
-    )
-    image = SurfaceImage(
+    image = SurfaceImage.from_volume(
         mesh=fsaverage5["pial"],
-        data={
-            "left": texture_left.T,
-            "right": texture_right.T,
-        },
+        volume_img=fmri_img[0],
     )
 
     # Fit GLM.

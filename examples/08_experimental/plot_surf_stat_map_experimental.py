@@ -35,6 +35,10 @@ See also :ref:`for a similar example but using volumetric input data
 See :ref:`plotting` for more details on plotting tools.
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 # Retrieving the data
 # -------------------
@@ -90,6 +94,9 @@ print(f"Fsaverage5 sulcal curvature map: {fsaverage_curvature}")
 
 # Load resting state time series from nilearn
 timeseries = nki_dataset[0].data.parts[hemi].T
+
+# Coercing to float is required to avoid errors withj scipy >= 0.14.0
+timeseries = timeseries.astype(float)
 
 # Extract seed region via label
 pcc_region = "G_cingul-Post-dorsal"

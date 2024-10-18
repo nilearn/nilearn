@@ -38,7 +38,7 @@ PENALTY = ["graph-net", "tv-l1"]
 
 
 @pytest.mark.parametrize("is_classif", IS_CLASSIF)
-@pytest.mark.parametrize("l1_ratio", [0.5, 1.0])
+@pytest.mark.parametrize("l1_ratio", [0.5, 0.99])
 @pytest.mark.parametrize("n_alphas", range(1, 10))
 def test_space_net_alpha_grid(
     rng, is_classif, l1_ratio, n_alphas, n_samples=4, n_features=3
@@ -90,7 +90,7 @@ def test_early_stopping_callback_object(rng, n_samples=10, n_features=30):
         if k > 0 and rng.random() > 0.9:
             w[k - 1] = 1 - w[k - 1]
 
-        escb(dict(w=w, counter=counter))
+        escb({"w": w, "counter": counter})
         assert len(escb.test_scores) == counter + 1
 
         # restart
@@ -101,7 +101,7 @@ def test_early_stopping_callback_object(rng, n_samples=10, n_features=30):
 @pytest.mark.parametrize("penalty", PENALTY)
 @pytest.mark.parametrize("is_classif", IS_CLASSIF)
 @pytest.mark.parametrize("n_alphas", [0.1, 0.01])
-@pytest.mark.parametrize("l1_ratio", [0.5, 1.0])
+@pytest.mark.parametrize("l1_ratio", [0.5, 0.99])
 @pytest.mark.parametrize("n_jobs", [1, -1])
 @pytest.mark.parametrize("cv", [2, 3])
 @pytest.mark.parametrize("perc", [5, 10])
@@ -129,7 +129,7 @@ def test_params_correctly_propagated_in_constructors(
 @pytest.mark.parametrize("penalty", PENALTY)
 @pytest.mark.parametrize("is_classif", IS_CLASSIF)
 @pytest.mark.parametrize("alpha", [0.4, 0.01])
-@pytest.mark.parametrize("l1_ratio", [0.5, 1.0])
+@pytest.mark.parametrize("l1_ratio", [0.5, 0.99])
 def test_params_correctly_propagated_in_constructors_biz(
     penalty, is_classif, alpha, l1_ratio
 ):
@@ -213,7 +213,7 @@ def test_squared_loss_path_scores():
     assert X.shape[1] + 1 == len(best_w)
 
 
-@pytest.mark.parametrize("l1_ratio", [1])
+@pytest.mark.parametrize("l1_ratio", [0.99])
 @pytest.mark.parametrize("debias", [True])
 def test_tv_regression_simple(rng, l1_ratio, debias):
     dim = (4, 4, 4)
@@ -236,12 +236,11 @@ def test_tv_regression_simple(rng, l1_ratio, debias):
         is_classif=False,
         max_iter=10,
         debias=debias,
-        verbose=0,
     ).fit(X, y)
 
 
-@pytest.mark.parametrize("l1_ratio", [0.0, 0.5, 1.0])
-def test_tv_regression_3D_image_doesnt_crash(rng, l1_ratio):
+@pytest.mark.parametrize("l1_ratio", [0.01, 0.5, 0.99])
+def test_tv_regression_3d_image_doesnt_crash(rng, l1_ratio):
     dim = (3, 4, 5)
     W_init = np.zeros(dim)
     W_init[2:3, 3:, 1:3] = 1
@@ -261,7 +260,6 @@ def test_tv_regression_3D_image_doesnt_crash(rng, l1_ratio):
         penalty="tv-l1",
         is_classif=False,
         max_iter=10,
-        verbose=0,
     ).fit(X, y)
 
 
@@ -277,7 +275,6 @@ def test_graph_net_classifier_score():
         l1_ratios=1.0,
         tol=1e-10,
         standardize=False,
-        verbose=0,
         screening_percentile=100.0,
     ).fit(X_, y)
 
@@ -305,7 +302,6 @@ def test_log_reg_vs_graph_net_two_classes_iris(
         alphas=1.0 / C / X.shape[0],
         l1_ratios=1.0,
         tol=tol,
-        verbose=0,
         max_iter=1000,
         penalty="tv-l1",
         standardize=False,
@@ -345,7 +341,6 @@ def test_lasso_vs_graph_net():
         is_classif=False,
         penalty="graph-net",
         max_iter=100,
-        verbose=0,
     )
     lasso.fit(X_, y)
     graph_net.fit(X, y)
@@ -398,7 +393,7 @@ def test_univariate_feature_screening(
 
 @pytest.mark.parametrize("penalty", PENALTY)
 @pytest.mark.parametrize("alpha", [0.4, 0.01])
-@pytest.mark.parametrize("l1_ratio", [0.5, 1.0])
+@pytest.mark.parametrize("l1_ratio", [0.5, 0.99])
 @pytest.mark.parametrize("verbose", [True, False])
 def test_space_net_classifier_subclass(penalty, alpha, l1_ratio, verbose):
     cvobj = SpaceNetClassifier(
@@ -415,7 +410,7 @@ def test_space_net_classifier_subclass(penalty, alpha, l1_ratio, verbose):
 
 @pytest.mark.parametrize("penalty", PENALTY)
 @pytest.mark.parametrize("alpha", [0.4, 0.01])
-@pytest.mark.parametrize("l1_ratio", [0.5, 1.0])
+@pytest.mark.parametrize("l1_ratio", [0.5, 0.99])
 @pytest.mark.parametrize("verbose", [True, False])
 def test_space_net_regressor_subclass(penalty, alpha, l1_ratio, verbose):
     cvobj = SpaceNetRegressor(
@@ -465,9 +460,9 @@ def test_space_net_no_crash_not_fitted(model):
         RuntimeError,
         match=f"This {model.__name__} instance is not fitted yet",
     ):
-        model(verbose=0).predict(X)
+        model().predict(X)
 
-    model(mask=mask, alphas=1.0, verbose=0).fit(X, y).predict(X)
+    model(mask=mask, alphas=1.0).fit(X, y).predict(X)
 
 
 @pytest.mark.parametrize("model", [SpaceNetRegressor, SpaceNetClassifier])
@@ -477,8 +472,8 @@ def test_space_net_one_alpha_no_crash(model):
     X, y = iris.data, iris.target
     X, mask = to_niimgs(X, [2, 2, 2])
 
-    model(n_alphas=1, mask=mask, verbose=0).fit(X, y)
-    model(n_alphas=2, mask=mask, verbose=0, alphas=None).fit(X, y)
+    model(n_alphas=1, mask=mask).fit(X, y)
+    model(n_alphas=2, mask=mask, alphas=None).fit(X, y)
 
 
 @pytest.mark.parametrize("model", [SpaceNetRegressor, SpaceNetClassifier])
@@ -498,7 +493,6 @@ def test_checking_inputs_length(model):
             l1_ratios=1.0,
             tol=1e-10,
             screening_percentile=100.0,
-            verbose=0,
         ).fit(
             X_,
             y,
@@ -512,9 +506,29 @@ def test_targets_in_y_space_net_regressor():
     y = np.ones(iris.target.shape)
 
     imgs, mask = to_niimgs(X, (2, 2, 2))
-    regressor = SpaceNetRegressor(mask=mask, verbose=0)
+    regressor = SpaceNetRegressor(mask=mask)
 
     with pytest.raises(
         ValueError, match="The given input y must have at least 2 targets"
     ):
         regressor.fit(imgs, y)
+
+
+# ------------------------ surface tests ------------------------------------ #
+
+
+@pytest.mark.parametrize(
+    "model", [BaseSpaceNet, SpaceNetRegressor, SpaceNetClassifier]
+)
+def test_space_net_not_implemented_surface_objects(
+    mini_mask, make_mini_img, model
+):
+    """Raise NotImplementedError when space net is fit on surface objects."""
+    mini_img = make_mini_img((5,))
+    y = np.ones((5,))
+
+    with pytest.raises(NotImplementedError):
+        model(mask=mini_mask).fit(mini_img, y)
+
+    with pytest.raises(NotImplementedError):
+        model().fit(mini_img, y)

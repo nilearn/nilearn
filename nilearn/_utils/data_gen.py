@@ -275,7 +275,7 @@ def generate_fake_fmri(
     kind="noise",
     affine=None,
     n_blocks=None,
-    block_size=None,
+    block_size=3,
     block_type="classification",
     random_state=0,
 ):
@@ -307,14 +307,14 @@ def generate_fake_fmri(
     n_blocks : :obj:`int` or None, default=None
         Number of condition blocks.
 
-    block_size : :obj:`int` or None, default=None
+    block_size : :obj:`int` or None, default=3
         Number of timepoints in a block.
         Used only if n_blocks is not None.
-        Defaults to 3 if n_blocks is None.
 
     block_type : :obj:`str`, default='classification'
         Defines if the returned target should be used for
         'classification' or 'regression'.
+        Used only if n_blocks is not None.
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
                    default=0
@@ -337,7 +337,7 @@ def generate_fake_fmri(
     """
     if affine is None:
         affine = np.eye(4)
-    full_shape = shape + (length,)
+    full_shape = (*shape, length)
     fmri = np.zeros(full_shape)
     # Fill central voxels timeseries with random signals
     width = [s // 2 for s in shape]
@@ -345,9 +345,9 @@ def generate_fake_fmri(
 
     rand_gen = np.random.default_rng(random_state)
     if kind == "noise":
-        signals = rand_gen.integers(256, size=(width + [length]))
+        signals = rand_gen.integers(256, size=([*width, length]))
     elif kind == "step":
-        signals = np.ones(width + [length])
+        signals = np.ones([*width, length])
         signals[..., : length // 2] = 0.5
     else:
         raise ValueError("Unhandled value for parameter 'kind'")
@@ -369,7 +369,6 @@ def generate_fake_fmri(
     if n_blocks is None:
         return (Nifti1Image(fmri, affine), Nifti1Image(mask, affine))
 
-    block_size = 3 if block_size is None else block_size
     flat_fmri = fmri[mask.astype(bool)]
     flat_fmri /= np.abs(flat_fmri).max()
     target = np.zeros(length, dtype=int)
@@ -504,28 +503,21 @@ def write_fake_fmri_data_and_design(
     nilearn._utils.data_gen.generate_fake_fmri_data_and_design
 
     """
-    if affine is None:
-        affine = np.eye(4)
-    if file_path is None:
-        file_path = Path.cwd()
+    file_path = Path.cwd() if file_path is None else Path(file_path)
+
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes, rk=rk, affine=affine, random_state=random_state
+    )
 
     mask_file, fmri_files, design_files = file_path / "mask.nii", [], []
 
-    rand_gen = np.random.default_rng(random_state)
-    for i, shape in enumerate(shapes):
-        data = rand_gen.standard_normal(shape)
-        data[1:-1, 1:-1, 1:-1] += 100
+    mask.to_filename(mask_file)
+    for i, fmri in enumerate(fmri_data):
         fmri_files.append(str(file_path / f"fmri_run{i:d}.nii"))
-        Nifti1Image(data, affine).to_filename(fmri_files[-1])
-
+        fmri.to_filename(fmri_files[-1])
+    for i, design in enumerate(design_matrices):
         design_files.append(str(file_path / f"dmtx_{i:d}.csv"))
-        pd.DataFrame(
-            rand_gen.standard_normal((shape[3], rk)), columns=["", "", ""]
-        ).to_csv(design_files[-1])
-
-    Nifti1Image(
-        (rand_gen.random(shape[:3]) > 0.5).astype(np.int8), affine
-    ).to_filename(mask_file)
+        design.to_csv(design_files[-1])
 
     return mask_file, fmri_files, design_files
 
@@ -596,8 +588,7 @@ def _generate_signals_from_precisions(
     ----------
     precisions : :obj:`list` of :obj:`numpy.ndarray`
         A list of precision matrices. Every matrix must be square (with the
-        same size) and positive definite. The output of
-        generate_group_sparse_gaussian_graphs() can be used here.
+        same size) and positive definite.
 
     min_samples, max_samples : :obj:`int`, optional
         The number of samples drawn for each timeseries is taken at random
@@ -618,7 +609,7 @@ def _generate_signals_from_precisions(
 
     signals = []
     n_samples = rand_gen.integers(
-        min_n_samples, high=max_n_samples, size=len(precisions)
+        min_n_samples, high=max_n_samples, size=len(precisions), endpoint=True
     )
 
     mean = np.zeros(precisions[0].shape[0])
@@ -649,7 +640,7 @@ def generate_group_sparse_gaussian_graphs(
         Number of signals per subject to generate.
 
     min_n_samples, max_n_samples : :obj:`int`, optional
-        Each subject have a different number of samples, between these two
+        Each subject has a random number of samples, between these two
         numbers. All signals for a given subject have the same number of
         samples. Defaults are 30 and 50.
 
@@ -1084,7 +1075,7 @@ def _mock_bids_dataset(
 
     Parameters
     ----------
-    base_dir : :obj:`Path`
+    base_dir : :obj:`pathlib.Path`
         Path where to create the fake :term:`BIDS` dataset.
 
     n_sub : :obj:`int`
@@ -1177,7 +1168,7 @@ def _mock_bids_derivatives(
 
     Parameters
     ----------
-    base_dir : :obj:`Path`
+    base_dir : :obj:`pathlib.Path`
         Path where to create the fake :term:`BIDS` dataset.
 
     n_sub : :obj:`int`
@@ -1319,7 +1310,7 @@ def _write_bids_raw_anat(subses_dir, subject, session) -> None:
 
     Parameters
     ----------
-    subses_dir : :obj:`Path`
+    subses_dir : :obj:`pathlib.Path`
         Subject session directory
 
     subject : :obj:`str`
@@ -1348,7 +1339,7 @@ def _write_bids_raw_func(
 
     Parameters
     ----------
-    func_path : :obj:`Path`
+    func_path : :obj:`pathlib.Path`
         Path to a subject functional directory.
 
     file_id : :obj:`str`
@@ -1400,7 +1391,7 @@ def _write_bids_derivative_func(
 
     Parameters
     ----------
-    func_path : :obj:`Path`
+    func_path : :obj:`pathlib.Path`
         Path to a subject functional directory.
 
     file_id : :obj:`str`

@@ -12,11 +12,11 @@ from collections.abc import Iterable
 import numpy as np
 from scipy.stats import gamma
 
-from nilearn._utils import fill_doc
+from nilearn._utils import fill_doc, rename_parameters
 
 
 def _gamma_difference_hrf(
-    tr,
+    t_r,
     oversampling=50,
     time_length=32.0,
     onset=0.0,
@@ -30,7 +30,7 @@ def _gamma_difference_hrf(
 
     Parameters
     ----------
-    tr : float
+    t_r : float
         :term:`Repetition time<TR>`, in seconds (sampling period).
 
     oversampling : int, default=50
@@ -59,11 +59,11 @@ def _gamma_difference_hrf(
 
     Returns
     -------
-    hrf : array of shape(length / tr * oversampling, dtype=float)
+    hrf : array of shape(length / t_r * oversampling, dtype=float)
          hrf sampling on the oversampled time grid
 
     """
-    dt = tr / oversampling
+    dt = t_r / oversampling
     time_stamps = np.linspace(
         0, time_length, np.rint(float(time_length) / dt).astype(int)
     )
@@ -83,13 +83,20 @@ def _gamma_difference_hrf(
     return hrf
 
 
-def spm_hrf(tr, oversampling=50, time_length=32.0, onset=0.0):
+@rename_parameters({"tr": "t_r"}, end_version="0.13.0")
+def spm_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
     """Implement the :term:`SPM` :term:`HRF` model.
 
     Parameters
     ----------
-    tr : float
+    t_r : float
         :term:`Repetition time<TR>`, in seconds (sampling period).
+
+    tr:
+
+        .. deprecated:: 0.11.0
+
+            Use ``t_r`` instead (see above).
 
     oversampling : int, default=50
         Temporal oversampling factor.
@@ -102,20 +109,27 @@ def spm_hrf(tr, oversampling=50, time_length=32.0, onset=0.0):
 
     Returns
     -------
-    hrf : array of shape(length / tr * oversampling, dtype=float)
+    hrf : array of shape(length / t_r * oversampling, dtype=float)
          :term:`HRF` sampling on the oversampled time grid
 
     """
-    return _gamma_difference_hrf(tr, oversampling, time_length, onset)
+    return _gamma_difference_hrf(t_r, oversampling, time_length, onset)
 
 
-def glover_hrf(tr, oversampling=50, time_length=32.0, onset=0.0):
+@rename_parameters({"tr": "t_r"}, end_version="0.13.0")
+def glover_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
     """Implement the Glover :term:`HRF` model.
 
     Parameters
     ----------
-    tr : float
+    t_r : float
         :term:`Repetition time<TR>`, in seconds (sampling period).
+
+    tr:
+
+        .. deprecated:: 0.11.0
+
+            Use ``t_r`` instead (see above).
 
     oversampling : int, default=50
         Temporal oversampling factor.
@@ -128,12 +142,12 @@ def glover_hrf(tr, oversampling=50, time_length=32.0, onset=0.0):
 
     Returns
     -------
-    hrf : array of shape(length / tr * oversampling, dtype=float)
+    hrf : array of shape(length / t_r * oversampling, dtype=float)
          :term:`HRF` sampling on the oversampled time grid.
 
     """
     return _gamma_difference_hrf(
-        tr,
+        t_r,
         oversampling,
         time_length,
         onset,
@@ -141,7 +155,7 @@ def glover_hrf(tr, oversampling=50, time_length=32.0, onset=0.0):
         undershoot=12.0,
         dispersion=0.9,
         u_dispersion=0.9,
-        ratio=0.35,
+        ratio=0.48,
     )
 
 
@@ -151,7 +165,7 @@ def _compute_derivative_from_values(values, values_plus_dt, dt=0.1):
 
 
 def _generic_time_derivative(
-    func, tr, oversampling=50, time_length=32.0, onset=0.0, dt=0.1
+    func, t_r, oversampling=50, time_length=32.0, onset=0.0, dt=0.1
 ):
     """Return the time derivative of an hrf for a given function.
 
@@ -160,7 +174,7 @@ def _generic_time_derivative(
     func : :obj:`function`
         spm_hrf or glover_hrf
 
-    tr : float
+    t_r : float
         :term:`Repetition time<TR>`, in seconds (sampling period).
 
     oversampling : int, default=50
@@ -176,19 +190,26 @@ def _generic_time_derivative(
         Time step for the derivative.
     """
     return _compute_derivative_from_values(
-        func(tr, oversampling, time_length, onset),
-        func(tr, oversampling, time_length, onset + dt),
+        func(t_r, oversampling, time_length, onset),
+        func(t_r, oversampling, time_length, onset + dt),
         dt=dt,
     )
 
 
-def spm_time_derivative(tr, oversampling=50, time_length=32.0, onset=0.0):
+@rename_parameters({"tr": "t_r"}, end_version="0.13.0")
+def spm_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
     """Implement the :term:`SPM` time derivative :term:`HRF` (dhrf) model.
 
     Parameters
     ----------
-    tr : float
+    t_r : float
         :term:`Repetition time<TR>`, in seconds (sampling period).
+
+    tr:
+
+        .. deprecated:: 0.11.0
+
+            Use ``t_r`` instead (see above).
 
     oversampling : int, default=50
         Temporal oversampling factor.
@@ -201,26 +222,33 @@ def spm_time_derivative(tr, oversampling=50, time_length=32.0, onset=0.0):
 
     Returns
     -------
-    dhrf : array of shape(length / tr, dtype=float)
+    dhrf : array of shape(length / t_r, dtype=float)
           dhrf sampling on the provided grid
 
     """
     return _generic_time_derivative(
         spm_hrf,
-        tr=tr,
+        t_r=t_r,
         oversampling=oversampling,
         time_length=time_length,
         onset=onset,
     )
 
 
-def glover_time_derivative(tr, oversampling=50, time_length=32.0, onset=0.0):
+@rename_parameters({"tr": "t_r"}, end_version="0.13.0")
+def glover_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
     """Implement the Glover time derivative :term:`HRF` (dhrf) model.
 
     Parameters
     ----------
-    tr : float
+    t_r : float
         :term:`Repetition time<TR>`, in seconds (sampling period).
+
+    tr:
+
+        .. deprecated:: 0.11.0
+
+            Use ``t_r`` instead (see above).
 
     oversampling : int, default=50
         Temporal oversampling factor.
@@ -233,13 +261,13 @@ def glover_time_derivative(tr, oversampling=50, time_length=32.0, onset=0.0):
 
     Returns
     -------
-    dhrf : array of shape(length / tr), dtype=float
+    dhrf : array of shape(length / t_r), dtype=float
           dhrf sampling on the provided grid
 
     """
     return _generic_time_derivative(
         glover_hrf,
-        tr=tr,
+        t_r=t_r,
         oversampling=oversampling,
         time_length=time_length,
         onset=onset,
@@ -247,7 +275,7 @@ def glover_time_derivative(tr, oversampling=50, time_length=32.0, onset=0.0):
 
 
 def _generic_dispersion_derivative(
-    tr,
+    t_r,
     oversampling=50,
     time_length=32.0,
     onset=0.0,
@@ -267,7 +295,7 @@ def _generic_dispersion_derivative(
     """
     return _compute_derivative_from_values(
         _gamma_difference_hrf(
-            tr,
+            t_r,
             oversampling,
             time_length,
             onset,
@@ -276,7 +304,7 @@ def _generic_dispersion_derivative(
             dispersion=dispersion,
         ),
         _gamma_difference_hrf(
-            tr,
+            t_r,
             oversampling,
             time_length,
             onset,
@@ -288,15 +316,22 @@ def _generic_dispersion_derivative(
     )
 
 
+@rename_parameters({"tr": "t_r"}, end_version="0.13.0")
 def spm_dispersion_derivative(
-    tr, oversampling=50, time_length=32.0, onset=0.0
+    t_r, oversampling=50, time_length=32.0, onset=0.0
 ):
     """Implement the :term:`SPM` dispersion derivative :term:`HRF` model.
 
     Parameters
     ----------
-    tr : float
+    t_r : float
         :term:`Repetition time<TR>`, in seconds (sampling period).
+
+    tr:
+
+        .. deprecated:: 0.11.0
+
+            Use ``t_r`` instead (see above).
 
     oversampling : int, default=50
         Temporal oversampling factor in seconds.
@@ -314,22 +349,29 @@ def spm_dispersion_derivative(
 
     """
     return _generic_dispersion_derivative(
-        tr, oversampling=oversampling, time_length=time_length, onset=onset
+        t_r, oversampling=oversampling, time_length=time_length, onset=onset
     )
 
 
+@rename_parameters({"tr": "t_r"}, end_version="0.13.0")
 def glover_dispersion_derivative(
-    tr, oversampling=50, time_length=32.0, onset=0.0
+    t_r, oversampling=50, time_length=32.0, onset=0.0
 ):
     """Implement the Glover dispersion derivative :term:`HRF` model.
 
     Parameters
     ----------
-    tr : float
+    t_r : float
         :term:`Repetition time<TR>`, in seconds (sampling period).
 
     oversampling : int, default=50
         Temporal oversampling factor in seconds.
+
+    tr:
+
+        .. deprecated:: 0.11.0
+
+            Use ``t_r`` instead (see above).
 
     time_length : float, default=32
         :term:`HRF` kernel length, in seconds.
@@ -339,17 +381,17 @@ def glover_dispersion_derivative(
 
     Returns
     -------
-    dhrf : array of shape(length / tr * oversampling), dtype=float
+    dhrf : array of shape(length / t_r * oversampling), dtype=float
           dhrf sampling on the oversampled time grid
 
     """
     return _generic_dispersion_derivative(
-        tr,
+        t_r,
         oversampling=oversampling,
         time_length=time_length,
         onset=onset,
         undershoot=12.0,
-        ratio=0.35,
+        ratio=0.48,
         dispersion=0.9,
     )
 
@@ -558,7 +600,7 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
     return names
 
 
-def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
+def _hrf_kernel(hrf_model, t_r, oversampling=50, fir_delays=None):
     """Return the list of matching kernels \
     given the specification of the hemodynamic model and time parameters.
 
@@ -567,7 +609,7 @@ def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
     hrf_model : string, function, list of functions, or None,
         HRF model to be used.
 
-    tr : float
+    t_r : float
         the repetition time in seconds
 
     oversampling : int, default=50
@@ -597,30 +639,30 @@ def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
         "Please refer to the related documentation."
     )
     if hrf_model == "spm":
-        hkernel = [spm_hrf(tr, oversampling)]
+        hkernel = [spm_hrf(t_r, oversampling)]
     elif hrf_model == "spm + derivative":
         hkernel = [
-            spm_hrf(tr, oversampling),
-            spm_time_derivative(tr, oversampling),
+            spm_hrf(t_r, oversampling),
+            spm_time_derivative(t_r, oversampling),
         ]
     elif hrf_model == "spm + derivative + dispersion":
         hkernel = [
-            spm_hrf(tr, oversampling),
-            spm_time_derivative(tr, oversampling),
-            spm_dispersion_derivative(tr, oversampling),
+            spm_hrf(t_r, oversampling),
+            spm_time_derivative(t_r, oversampling),
+            spm_dispersion_derivative(t_r, oversampling),
         ]
     elif hrf_model == "glover":
-        hkernel = [glover_hrf(tr, oversampling)]
+        hkernel = [glover_hrf(t_r, oversampling)]
     elif hrf_model == "glover + derivative":
         hkernel = [
-            glover_hrf(tr, oversampling),
-            glover_time_derivative(tr, oversampling),
+            glover_hrf(t_r, oversampling),
+            glover_time_derivative(t_r, oversampling),
         ]
     elif hrf_model == "glover + derivative + dispersion":
         hkernel = [
-            glover_hrf(tr, oversampling),
-            glover_time_derivative(tr, oversampling),
-            glover_dispersion_derivative(tr, oversampling),
+            glover_hrf(t_r, oversampling),
+            glover_time_derivative(t_r, oversampling),
+            glover_dispersion_derivative(t_r, oversampling),
         ]
     elif hrf_model == "fir":
         hkernel = [
@@ -634,14 +676,14 @@ def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
         ]
     elif callable(hrf_model):
         try:
-            hkernel = [hrf_model(tr, oversampling)]
+            hkernel = [hrf_model(t_r, oversampling)]
         except TypeError:
             raise ValueError(error_msg)
     elif isinstance(hrf_model, Iterable) and all(
         callable(_) for _ in hrf_model
     ):
         try:
-            hkernel = [model(tr, oversampling) for model in hrf_model]
+            hkernel = [model(t_r, oversampling) for model in hrf_model]
         except TypeError:
             raise ValueError(error_msg)
     elif hrf_model is None:
@@ -703,15 +745,15 @@ def compute_regressor(
         fir_delays = [int(x) for x in fir_delays]
     oversampling = int(oversampling)
 
-    # this is the minimal tr in this run, not necessarily the true tr
-    tr = _calculate_tr(frame_times)
+    # this is the minimal t_r in this run, not necessarily the true t_r
+    t_r = _calculate_tr(frame_times)
     # 1. create the high temporal resolution regressor
     hr_regressor, frame_times_high_res = _sample_condition(
         exp_condition, frame_times, oversampling, min_onset
     )
 
     # 2. create the  hrf model(s)
-    hkernel = _hrf_kernel(hrf_model, tr, oversampling, fir_delays)
+    hkernel = _hrf_kernel(hrf_model, t_r, oversampling, fir_delays)
 
     # 3. convolve the regressor and hrf, and downsample the regressor
     conv_reg = np.array(
@@ -746,6 +788,7 @@ def _calculate_tr(frame_times):
     ----------
     frame_times : array of shape (n_scans)
         the desired sampling times
+
     Returns
     -------
     float

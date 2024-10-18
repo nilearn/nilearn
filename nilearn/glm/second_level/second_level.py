@@ -4,7 +4,6 @@ first level contrasts or directly on fitted first level models.
 Author: Martin Perez-Guevara, 2016
 """
 
-import sys
 import time
 from warnings import warn
 
@@ -14,7 +13,7 @@ from joblib import Memory
 from nibabel import Nifti1Image
 from sklearn.base import clone
 
-from nilearn._utils import fill_doc, stringify_path
+from nilearn._utils import fill_doc, logger, stringify_path
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
@@ -267,7 +266,8 @@ def _check_effect_maps(effect_maps, design_matrix):
 
 def _get_con_val(second_level_contrast, design_matrix):
     """Check the contrast and return con_val \
-    when testing one contrast or more."""
+    when testing one contrast or more.
+    """
     if second_level_contrast is None:
         if design_matrix.shape[1] == 1:
             second_level_contrast = np.ones([1])
@@ -337,14 +337,15 @@ def _process_second_level_input_as_dataframe(second_level_input):
     """Process second_level_input provided as a pandas DataFrame."""
     sample_map = second_level_input["effects_map_path"][0]
     labels = second_level_input["subject_label"]
-    subjects_label = labels.values.tolist()
+    subjects_label = labels.to_list()
     return sample_map, subjects_label
 
 
 def _sort_input_dataframe(second_level_input):
     """Sort the pandas dataframe by subject_label to \
     avoid inconsistencies with the design matrix row order when \
-    automatically extracting maps."""
+    automatically extracting maps.
+    """
     columns = second_level_input.columns.tolist()
     column_index = columns.index("subject_label")
     sorted_matrix = sorted(
@@ -355,7 +356,8 @@ def _sort_input_dataframe(second_level_input):
 
 def _process_second_level_input_as_firstlevelmodels(second_level_input):
     """Process second_level_input provided \
-    as a list of FirstLevelModel objects."""
+    as a list of FirstLevelModel objects.
+    """
     sample_model = second_level_input[0]
     sample_condition = sample_model.design_matrices_[0].columns[0]
     sample_map = sample_model.compute_contrast(
@@ -483,10 +485,10 @@ class SecondLevelModel(BaseGLM):
 
         # Report progress
         t0 = time.time()
-        if self.verbose > 0:
-            sys.stderr.write(
-                "Fitting second level model. Take a deep breath.\r"
-            )
+        logger.log(
+            "Fitting second level model. Take a deep breath.\r",
+            verbose=self.verbose,
+        )
 
         # Create and set design matrix, if not given
         if design_matrix is None:
@@ -518,11 +520,11 @@ class SecondLevelModel(BaseGLM):
         self.masker_.fit(sample_map)
 
         # Report progress
-        if self.verbose > 0:
-            sys.stderr.write(
-                "\nComputation of second level model done in "
-                f"{time.time() - t0} seconds.\n"
-            )
+        logger.log(
+            "\nComputation of second level model done in "
+            f"{time.time() - t0} seconds.\n",
+            verbose=self.verbose,
+        )
 
         return self
 
@@ -656,18 +658,18 @@ class SecondLevelModel(BaseGLM):
 
         Parameters
         ----------
-        attribute : str
+        attribute : :obj:`str`
             an attribute of a RegressionResults instance.
             possible values include: 'residuals', 'normalized_residuals',
             'predicted', SSE, r_square, MSE.
 
-        result_as_time_series : bool
+        result_as_time_series : :obj:`bool`
             whether the RegressionResult attribute has a value
             per timepoint of the input nifti image.
 
         Returns
         -------
-        output : list
+        output : :obj:`list`
             A list of Nifti1Image(s).
 
         """
@@ -742,7 +744,7 @@ def non_parametric_inference(
     ----------
     %(second_level_input)s
 
-    confounds : :obj:`pandas.DataFrame` or None, optional
+    confounds : :obj:`pandas.DataFrame` or None, default=None
         Must contain a subject_label column. All other columns are
         considered as confounds and included in the model. If
         ``design_matrix`` is provided then this argument is ignored.
@@ -751,7 +753,7 @@ def non_parametric_inference(
         At least two columns are expected, ``subject_label`` and at
         least one confound.
 
-    design_matrix : :obj:`pandas.DataFrame` or None, optional
+    design_matrix : :obj:`pandas.DataFrame` or None, default=None
         Design matrix to fit the :term:`GLM`. The number of rows
         in the design matrix must agree with the number of maps derived
         from ``second_level_input``.
@@ -760,7 +762,7 @@ def non_parametric_inference(
 
     %(second_level_contrast)s
 
-    first_level_contrast : :obj:`str`, optional
+    first_level_contrast : :obj:`str` or None, default=None
         In case a pandas DataFrame was provided as second_level_input this
         is the map name to extract from the pandas dataframe map_name column.
         It has to be a 't' contrast.
@@ -768,7 +770,8 @@ def non_parametric_inference(
         .. versionadded:: 0.9.0
 
     mask : Niimg-like, :obj:`~nilearn.maskers.NiftiMasker` or \
-            :obj:`~nilearn.maskers.MultiNiftiMasker` object, optional
+            :obj:`~nilearn.maskers.MultiNiftiMasker` object \
+            or None, default=None
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given, it will be computed
         automatically by a :class:`~nilearn.maskers.MultiNiftiMasker` with
@@ -846,7 +849,7 @@ def non_parametric_inference(
         to the regressors.
 
         .. note::
-            This is returned if ``tfce`` is False or ``threshold`` is not None.
+            This is returned if ``tfce`` is True or ``threshold`` is not None.
 
         .. versionadded:: 0.9.2
 
@@ -919,8 +922,7 @@ def non_parametric_inference(
 
     # Report progress
     t0 = time.time()
-    if verbose > 0:
-        sys.stderr.write("Fitting second level model...")
+    logger.log("Fitting second level model...", verbose=verbose)
 
     # Learn the mask. Assume the first level imgs have been masked.
     if not isinstance(mask, NiftiMasker):
@@ -941,11 +943,11 @@ def non_parametric_inference(
     masker.fit(sample_map)
 
     # Report progress
-    if verbose > 0:
-        sys.stderr.write(
-            "\nComputation of second level model done in "
-            f"{time.time() - t0} seconds\n"
-        )
+    logger.log(
+        "\nComputation of second level model done in "
+        f"{time.time() - t0} seconds\n",
+        verbose=verbose,
+    )
 
     # Check and obtain the contrast
     contrast = _get_con_val(second_level_contrast, design_matrix)

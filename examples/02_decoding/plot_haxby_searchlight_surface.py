@@ -34,19 +34,21 @@ y, run = y[condition_mask], run[condition_mask]
 # %%
 # Surface :term:`BOLD` response
 # -----------------------------
+# Fetch a coarse surface of the left hemisphere only for speed
+# and average voxels 5 mm close to the 3d pial surface.
+
 from sklearn import neighbors
 
 from nilearn import datasets, surface
 
-# Fetch a coarse surface of the left hemisphere only for speed
 fsaverage = datasets.fetch_surf_fsaverage(mesh="fsaverage5")
 hemi = "left"
 
-# Average voxels 5 mm close to the 3d pial surface
 radius = 5.0
 pial_mesh = fsaverage[f"pial_{hemi}"]
 X = surface.vol_to_surf(fmri_img, pial_mesh, radius=radius).T
 
+# %%
 # To define the :term:`BOLD` responses
 # to be included within each searchlight "sphere"
 # we define an adjacency matrix based on the inflated surface vertices such

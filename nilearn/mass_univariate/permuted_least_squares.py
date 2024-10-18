@@ -1,20 +1,21 @@
 """Massively Univariate Linear Model estimated \
-with OLS and permutation test."""
+with OLS and permutation test.
+"""
 
 # Author: Benoit Da Mota, <benoit.da_mota@inria.fr>, sept. 2011
 #         Virgile Fritsch, <virgile.fritsch@inria.fr>, jan. 2014
-import sys
 import time
 import warnings
 
 import joblib
-import nibabel as nib
 import numpy as np
+from nibabel import Nifti1Image
 from scipy import stats
 from scipy.ndimage import generate_binary_structure, label
 from sklearn.utils import check_random_state
 
 from nilearn import image
+from nilearn._utils import logger
 from nilearn.masking import apply_mask
 from nilearn.mass_univariate._utils import (
     calculate_cluster_measures,
@@ -280,10 +281,12 @@ def _permuted_ols_on_chunk(
                 percent = round(percent * 100, 2)
                 dt = time.time() - t0
                 remaining = (100.0 - percent) / max(0.01, percent) * dt
-                sys.stderr.write(
+
+                logger.log(
                     f"Job #{thread_id}, processed {i_perm}/{n_perm_chunk} "
                     f"permutations ({percent:0.2f}%, {remaining} seconds "
-                    f"remaining){crlf}"
+                    f"remaining){crlf}",
+                    stack_level=2,
                 )
 
     return (
@@ -808,7 +811,7 @@ def permuted_ols(
             two_sided_test=two_sided_test,
         )
         tfce_original_data = apply_mask(
-            nib.Nifti1Image(
+            Nifti1Image(
                 tfce_original_data,
                 masker.mask_img_.affine,
                 masker.mask_img_.header,

@@ -8,13 +8,13 @@ See test_masking.py and test_signal.py for details.
 
 import warnings
 
-import nibabel
 import numpy as np
 import pytest
+from nibabel import Nifti1Image
 
 from nilearn._utils import data_gen, testing
 from nilearn._utils.exceptions import DimensionError
-from nilearn.conftest import have_mpl
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMapsMasker
 
@@ -183,7 +183,7 @@ def test_nifti_maps_masker_io_shapes(rng):
     masker.fit()
 
     # DeprecationWarning *should* be raised for 3D inputs
-    with pytest.warns(DeprecationWarning, match="Starting in version 0.12"):
+    with pytest.deprecated_call(match="Starting in version 0.12"):
         test_data = masker.transform(img_3d)
         assert test_data.shape == (1, n_regions)
 
@@ -253,7 +253,7 @@ def test_nifti_maps_masker_with_nans_and_infs():
     maps_data[i2, j2, k2, 0] = np.inf
     maps_data[i1, j1, k1, 0] = 1
 
-    maps_img = nibabel.Nifti1Image(maps_data, np.eye(4))
+    maps_img = Nifti1Image(maps_data, np.eye(4))
 
     # No warning, because maps_img is run through clean_img
     # *before* safe_get_data.
@@ -287,7 +287,7 @@ def test_nifti_maps_masker_with_nans_and_infs_in_mask():
     mask_data[:, :, 7] = np.nan
     mask_data[:, :, 5] = np.inf
 
-    mask_img = nibabel.Nifti1Image(mask_data, np.eye(4))
+    mask_img = Nifti1Image(mask_data, np.eye(4))
 
     masker = NiftiMapsMasker(maps_img, mask_img=mask_img)
 
@@ -322,7 +322,7 @@ def test_nifti_maps_masker_with_nans_and_infs_in_data():
     fmri_data[:, 9, 9, :] = np.nan
     fmri_data[:, 5, 5, :] = np.inf
 
-    fmri_img = nibabel.Nifti1Image(fmri_data, np.eye(4))
+    fmri_img = Nifti1Image(fmri_data, np.eye(4))
 
     masker = NiftiMapsMasker(maps_img, mask_img=mask_img)
 
@@ -358,7 +358,7 @@ def test_nifti_maps_masker_2():
         affine=affine,
     )
 
-    mask_img_4d = nibabel.Nifti1Image(
+    mask_img_4d = Nifti1Image(
         np.ones((2, 2, 2, 2), dtype=np.int8),
         affine=np.diag((4, 4, 4, 1)),
     )
@@ -479,7 +479,7 @@ def test_nifti_maps_masker_overlap():
     non_overlapping_maps = np.zeros(shape_maps)
     non_overlapping_maps[:2, :, :, 0] = 1.0
     non_overlapping_maps[2:, :, :, 1] = 1.0
-    non_overlapping_maps_img = nibabel.Nifti1Image(
+    non_overlapping_maps_img = Nifti1Image(
         non_overlapping_maps,
         affine,
     )
@@ -487,7 +487,7 @@ def test_nifti_maps_masker_overlap():
     overlapping_maps = np.zeros(shape_maps)
     overlapping_maps[:3, :, :, 0] = 1.0
     overlapping_maps[2:, :, :, 1] = 1.0
-    overlapping_maps_img = nibabel.Nifti1Image(overlapping_maps, affine)
+    overlapping_maps_img = Nifti1Image(overlapping_maps, affine)
 
     overlapping_masker = NiftiMapsMasker(
         non_overlapping_maps_img,
@@ -522,9 +522,7 @@ def test_standardization(rng):
     signals = rng.standard_normal(size=(np.prod(data_shape), n_samples))
     means = rng.standard_normal(size=(np.prod(data_shape), 1)) * 50 + 1000
     signals += means
-    img = nibabel.Nifti1Image(
-        signals.reshape(data_shape + (n_samples,)), np.eye(4)
-    )
+    img = Nifti1Image(signals.reshape((*data_shape, n_samples)), np.eye(4))
 
     maps, _ = data_gen.generate_maps((9, 9, 5), 10)
 
@@ -562,12 +560,12 @@ def test_3d_images():
     shape3 = (16, 17, 18)
 
     maps33_img, _ = data_gen.generate_maps(shape3, n_regions)
-    mask_img = nibabel.Nifti1Image(
+    mask_img = Nifti1Image(
         np.ones(shape3, dtype=np.int8),
         affine=affine,
     )
-    epi_img1 = nibabel.Nifti1Image(np.ones(shape3), affine=affine)
-    epi_img2 = nibabel.Nifti1Image(np.ones(shape3), affine=affine)
+    epi_img1 = Nifti1Image(np.ones(shape3), affine=affine)
+    epi_img2 = Nifti1Image(np.ones(shape3), affine=affine)
     masker = NiftiMapsMasker(maps33_img, mask_img=mask_img)
 
     epis = masker.fit_transform(epi_img1)
@@ -577,7 +575,8 @@ def test_3d_images():
 
 
 @pytest.mark.skipif(
-    have_mpl, reason="Test requires matplotlib not to be installed."
+    is_matplotlib_installed(),
+    reason="Test requires matplotlib not to be installed.",
 )
 def test_nifti_maps_masker_reporting_mpl_warning():
     """Raise warning after exception if matplotlib is not installed."""

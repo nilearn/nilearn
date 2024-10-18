@@ -5,7 +5,7 @@ Note that the tests just looks whether the data produces has correct dimension,
 not whether it is exact
 """
 
-from os import path as osp
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -34,8 +34,8 @@ from ._testing import (
 )
 
 # load the spm file to test cosine basis
-my_path = osp.dirname(osp.abspath(__file__))
-full_path_design_matrix_file = osp.join(my_path, "spm_dmtx.npz")
+my_path = Path(__file__).resolve().parent
+full_path_design_matrix_file = my_path / "spm_dmtx.npz"
 DESIGN_MATRIX = np.load(full_path_design_matrix_file)
 
 
@@ -52,7 +52,8 @@ def design_matrix_light(
     min_onset=-24,
 ):
     """Perform same as make_first_level_design_matrix, \
-       but only returns the computed matrix and associated name."""
+       but only returns the computed matrix and associated name.
+    """
     fir_delays = fir_delays or [0]
     dmtx = make_first_level_design_matrix(
         frame_times,
@@ -77,8 +78,8 @@ def n_frames():
 
 @pytest.fixture
 def frame_times(n_frames):
-    tr = 1.0
-    return np.linspace(0, (n_frames - 1) * tr, n_frames)
+    t_r = 1.0
+    return np.linspace(0, (n_frames - 1) * t_r, n_frames)
 
 
 def test_cosine_drift():
@@ -163,7 +164,7 @@ def test_design_matrix_basic_paradigm_glover_hrf(frame_times):
 
 
 @pytest.mark.parametrize(
-    "events, hrf_model, drift_model, drift_order, high_pass, nb_regressors",
+    "events, hrf_model, drift_model, drift_order, high_pass, n_regressors",
     [
         (basic_paradigm(), "glover", None, 1, 0.01, 4),
         (
@@ -188,7 +189,7 @@ def test_design_matrix(
     drift_model,
     drift_order,
     high_pass,
-    nb_regressors,
+    n_regressors,
 ):
     X, names = design_matrix_light(
         frame_times,
@@ -198,8 +199,8 @@ def test_design_matrix(
         drift_order=drift_order,
         high_pass=high_pass,
     )
-    assert len(names) == nb_regressors
-    assert X.shape == (n_frames, nb_regressors)
+    assert len(names) == n_regressors
+    assert X.shape == (n_frames, n_regressors)
 
 
 def test_design_matrix_basic_paradigm_and_extra_regressors(rng, frame_times):
@@ -220,10 +221,10 @@ def test_design_matrix_basic_paradigm_and_extra_regressors(rng, frame_times):
 
 
 @pytest.mark.parametrize(
-    "fir_delays, nb_regressors", [(None, 7), (range(1, 5), 16)]
+    "fir_delays, n_regressors", [(None, 7), (range(1, 5), 16)]
 )
-def test_design_matrix_FIR_basic_paradigm(
-    frame_times, fir_delays, nb_regressors
+def test_design_matrix_fir_basic_paradigm(
+    frame_times, fir_delays, n_regressors
 ):
     # basic test based on basic_paradigm and FIR
     X, names = design_matrix_light(
@@ -234,11 +235,11 @@ def test_design_matrix_FIR_basic_paradigm(
         drift_order=3,
         fir_delays=fir_delays,
     )
-    assert len(names) == nb_regressors
-    assert X.shape == (len(frame_times), nb_regressors)
+    assert len(names) == n_regressors
+    assert X.shape == (len(frame_times), n_regressors)
 
 
-def test_design_matrix_FIR_block(frame_times):
+def test_design_matrix_fir_block(frame_times):
     # test FIR models on block designs
     bp = block_paradigm()
     X, _ = design_matrix_light(
@@ -256,7 +257,7 @@ def test_design_matrix_FIR_block(frame_times):
     assert (X[idx + 3, 7] == 1).all()
 
 
-def test_design_matrix_FIR_column_1_3_and_11(frame_times):
+def test_design_matrix_fir_column_1_3_and_11(frame_times):
     # Check that 1rst, 3rd and 11th of FIR design matrix are OK
     events = basic_paradigm()
     hrf_model = "FIR"
@@ -276,11 +277,11 @@ def test_design_matrix_FIR_column_1_3_and_11(frame_times):
     assert_array_almost_equal(X[onset + 4, 11], np.ones(3))
 
 
-def test_design_matrix_FIR_time_shift(frame_times):
+def test_design_matrix_fir_time_shift(frame_times):
     # Check that the first column of FIR design matrix is OK after a 1/2
     # time shift
-    tr = 1.0
-    frame_times = frame_times + tr / 2
+    t_r = 1.0
+    frame_times = frame_times + t_r / 2
     events = basic_paradigm()
     hrf_model = "FIR"
     X, _ = design_matrix_light(
@@ -312,7 +313,7 @@ def test_design_matrix_scaling(events, idx_offset, frame_times):
     assert (X[ct, 0] > 0).all()
 
 
-def test_design_matrix_scaling_FIR_model(frame_times):
+def test_design_matrix_scaling_fir_model(frame_times):
     # Test the effect of scaling on a FIR model
     events = modulated_event_paradigm()
     hrf_model = "FIR"
@@ -373,10 +374,11 @@ def test_oversampling(n_frames):
     )
 
     # oversampling = 50 by default so X2 = X1, X3 \neq X1, X3 close to X2
-    assert_almost_equal(X1.values, X2.values)
-    assert_almost_equal(X2.values, X3.values, 0)
+    assert_almost_equal(X1.to_numpy(), X2.to_numpy())
+    assert_almost_equal(X2.to_numpy(), X3.to_numpy(), 0)
     assert (
-        np.linalg.norm(X2.values - X3.values) / np.linalg.norm(X2.values)
+        np.linalg.norm(X2.to_numpy() - X3.to_numpy())
+        / np.linalg.norm(X2.to_numpy())
         > 1.0e-4
     )
 
@@ -397,13 +399,13 @@ def test_oversampling(n_frames):
         fir_delays=range(4),
         oversampling=10,
     )
-    assert_almost_equal(X4.values, X5.values)
+    assert_almost_equal(X4.to_numpy(), X5.to_numpy())
 
 
 def test_high_pass(n_frames):
     """Test that high-pass values lead to reasonable design matrices."""
-    tr = 2.0
-    frame_times = np.arange(0, tr * n_frames, tr)
+    t_r = 2.0
+    frame_times = np.arange(0, t_r * n_frames, t_r)
     X = make_first_level_design_matrix(
         frame_times, drift_model="Cosine", high_pass=1.0
     )
@@ -436,7 +438,9 @@ def test_compare_design_matrix_to_spm(block_duration, array):
     # Check that the nilearn design matrix is close enough to the SPM one
     # (it cannot be identical, because the hrf shape is different)
     events, frame_times = spm_paradigm(block_duration=block_duration)
-    X1 = make_first_level_design_matrix(frame_times, events, drift_model=None)
+    X1 = make_first_level_design_matrix(
+        frame_times, events, drift_model=None, hrf_model="spm"
+    )
     _, matrix, _ = check_design_matrix(X1)
 
     spm_design_matrix = DESIGN_MATRIX[array]
@@ -451,7 +455,7 @@ def test_create_second_level_design():
     regressors = [["01", 0.1], ["02", 0.75]]
     regressors = pd.DataFrame(regressors, columns=["subject_label", "f1"])
     design = make_second_level_design_matrix(subjects_label, regressors)
-    expected_design = np.array([[0.75, 1], [0.1, 1]])
+    expected_design = np.array([[0.75, 1.0], [0.1, 1.0]])
     assert_array_equal(design, expected_design)
     assert len(design.columns) == 2
     assert len(design) == 2

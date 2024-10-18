@@ -193,7 +193,8 @@ def _update_template(
 
 def _define_overlay(estimator):
     """Determine whether an overlay was provided and \
-    update the report text as appropriate."""
+    update the report text as appropriate.
+    """
     displays = estimator._reporting()
 
     if len(displays) == 1:  # set overlay to None
@@ -237,7 +238,7 @@ def generate_report(estimator):
 
     if estimator.reports is False:
         warning_messages.append(
-            "\nReport generation not enabled!\n" "No visual outputs created."
+            "\nReport generation not enabled!\nNo visual outputs created."
         )
 
     if (

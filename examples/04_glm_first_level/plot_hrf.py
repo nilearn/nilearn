@@ -27,10 +27,12 @@ timing issues.
 This example requires matplotlib and scipy.
 """
 
-try:
-    import matplotlib.pyplot as plt
-except ImportError:
-    raise RuntimeError("This script needs the matplotlib library")
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
+import matplotlib.pyplot as plt
+import numpy as np
 
 # %%
 # Define stimulus parameters and response models
@@ -39,7 +41,6 @@ except ImportError:
 # To get an impulse response, we simulate a single event occurring at time t=0,
 # with duration 1s.
 
-import numpy as np
 
 time_length = 30.0
 frame_times = np.linspace(0, time_length, 61)
@@ -57,12 +58,12 @@ stim[(frame_times > onset) * (frame_times <= onset + duration)] = amplitude
 from scipy.stats import gamma
 
 
-def mion_response_function(tr, oversampling=16, onset=0.0):
+def mion_response_function(t_r, oversampling=16, onset=0.0):
     """Implement the MION response function model.
 
     Parameters
     ----------
-    tr: float
+    t_r: float
         scan repeat time, in seconds
     oversampling: int, optional
         temporal oversampling factor
@@ -71,10 +72,10 @@ def mion_response_function(tr, oversampling=16, onset=0.0):
 
     Returns
     -------
-    response_function: array of shape(length / tr * oversampling, dtype=float)
+    response_function: array of shape(length / t_r * oversampling, dtype=float)
         response_function sampling on the oversampled time grid
     """
-    dt = tr / oversampling
+    dt = t_r / oversampling
     time_stamps = np.linspace(
         0, time_length, np.rint(time_length / dt).astype(int)
     )
@@ -91,25 +92,25 @@ def mion_response_function(tr, oversampling=16, onset=0.0):
     return response_function
 
 
-def mion_time_derivative(tr, oversampling=16.0):
+def mion_time_derivative(t_r, oversampling=16.0):
     """Implement the MION time derivative response function model.
 
     Parameters
     ----------
-    tr: float
+    t_r: float
         scan repeat time, in seconds
     oversampling: int, optional
         temporal oversampling factor, optional
 
     Returns
     -------
-    drf: array of shape(time_length / tr * oversampling, dtype=float)
+    drf: array of shape(time_length / t_r * oversampling, dtype=float)
         derived_response_function sampling on the provided grid
     """
     do = 0.1
     drf = (
-        mion_response_function(tr, oversampling)
-        - mion_response_function(tr, oversampling, do)
+        mion_response_function(t_r, oversampling)
+        - mion_response_function(t_r, oversampling, do)
     ) / do
 
     return drf

@@ -17,8 +17,8 @@ from nilearn._utils.data_gen import (
     generate_random_img,
 )
 from nilearn._utils.exceptions import DimensionError
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.testing import write_imgs_to_path
-from nilearn.conftest import have_mpl
 from nilearn.image import get_data
 from nilearn.maskers import NiftiLabelsMasker, NiftiMasker
 
@@ -217,7 +217,7 @@ def test_nifti_labels_masker_io_shapes(
     masker.fit()
 
     # DeprecationWarning *should* be raised for 3D inputs
-    with pytest.warns(DeprecationWarning, match="Starting in version 0.12"):
+    with pytest.deprecated_call(match="Starting in version 0.12"):
         test_data = masker.transform(img_3d)
         assert test_data.shape == (1, n_regions)
 
@@ -651,7 +651,7 @@ def test_standardization(rng, affine_eye, shape_3d_default, n_regions):
     )
     signals += means
     img = Nifti1Image(
-        signals.reshape(shape_3d_default + (n_samples,)),
+        signals.reshape((*shape_3d_default, n_samples)),
         affine_eye,
     )
 
@@ -727,7 +727,7 @@ def test_nifti_labels_masker_with_mask(
         "Background",
     ],
 )
-def test_warning_nb_labels_not_equal_nb_regions(
+def test_warning_n_labels_not_equal_n_regions(
     shape_3d_default, affine_eye, background, n_regions
 ):
     labels_img = generate_labeled_regions(
@@ -774,7 +774,8 @@ def test_sanitize_labels_warnings(shape_3d_default, affine_eye, n_regions):
     ],  # In case the list of labels includes one for background
 )
 @pytest.mark.parametrize(
-    "dtype", ["int32", "float32"]  # In case regions are labelled with floats
+    "dtype",
+    ["int32", "float32"],  # In case regions are labelled with floats
 )
 @pytest.mark.parametrize(
     "affine_data",
@@ -842,11 +843,112 @@ def check_region_names_after_fit(
         assert region_names_after_fit == region_names
 
 
+@pytest.mark.parametrize(
+    "background",
+    [
+        None,
+        "background",
+        "Background",
+    ],
+)
+@pytest.mark.parametrize(
+    "affine_data",
+    [
+        None,  # no resampling
+        np.diag(
+            (4, 4, 4, 4)  # with resampling
+        ),  # region_names_ matches signals after resampling drops labels
+    ],
+)
+@pytest.mark.parametrize(
+    "masking",
+    [
+        False,  # no masking
+        True,  # with masking
+    ],
+)
+@pytest.mark.parametrize(
+    "keep_masked_labels",
+    [
+        False,
+        True,
+    ],
+)
+def test_region_names_ids_match_after_fit(
+    shape_3d_default,
+    affine_eye,
+    background,
+    affine_data,
+    n_regions,
+    masking,
+    keep_masked_labels,
+):
+    """Test that the same region names and ids correspond after fit."""
+    if affine_data is None:
+        # no resampling
+        affine_data = affine_eye
+    fmri_img, _ = generate_random_img(shape_3d_default, affine=affine_data)
+    labels_img = generate_labeled_regions(
+        shape_3d_default[:3],
+        affine=affine_eye,
+        n_regions=n_regions,
+    )
+
+    region_names = generate_labels(n_regions, background=background)
+    region_ids = list(np.unique(get_data(labels_img)))
+
+    if masking:
+        # create a mask_img with 3 regions
+        labels_data = get_data(labels_img)
+        mask_data = (
+            (labels_data == 1) + (labels_data == 2) + (labels_data == 5)
+        )
+        mask_img = Nifti1Image(mask_data.astype(np.int8), labels_img.affine)
+    else:
+        mask_img = None
+
+    masker = NiftiLabelsMasker(
+        labels_img,
+        labels=region_names,
+        resampling_target="data",
+        mask_img=mask_img,
+        keep_masked_labels=keep_masked_labels,
+    )
+
+    _ = masker.fit().transform(fmri_img)
+
+    check_region_names_ids_match_after_fit(
+        masker, region_names, region_ids, background
+    )
+
+
+def check_region_names_ids_match_after_fit(
+    masker, region_names, region_ids, background
+):
+    """Check the region names and ids correspondence.
+
+    Check that the same region names and ids correspond to each other
+    after fit by comparing with before fit.
+    """
+    # region_ids includes background, so we make
+    # sure that the region_names also include it
+    if not background:
+        region_names.insert(0, "background")
+    # if they don't have the same length, we can't compare them
+    if len(region_names) == len(region_ids):
+        region_id_names = {
+            region_id: region_names[i]
+            for i, region_id in enumerate(region_ids)
+        }
+        for key, region_name in masker.region_names_.items():
+            assert region_id_names[masker.region_ids_[key]] == region_name
+
+
 def generate_labels(n_regions, background=True):
     labels = []
     if background:
         labels.append(background)
-    labels.extend([f"region_{str(i + 1)}" for i in range(n_regions)])
+    labels.extend([f"region_{i + 1!s}" for i in range(n_regions)])
     return labels
 
 
@@ -933,7 +1035,8 @@ def test_3d_images(affine_eye, shape_3d_default, n_regions):
 
 
 @pytest.mark.skipif(
-    have_mpl, reason="Test requires matplotlib not to be installed."
+    is_matplotlib_installed(),
+    reason="Test requires matplotlib not to be installed.",
 )
 def test_nifti_labels_masker_reporting_mpl_warning(
     shape_3d_default, n_regions, length, affine_eye

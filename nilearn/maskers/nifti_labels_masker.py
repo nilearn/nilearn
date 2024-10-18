@@ -6,6 +6,8 @@ import numpy as np
 from joblib import Memory
 
 from nilearn import _utils, image, masking
+from nilearn._utils import logger
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 
@@ -350,9 +352,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
     def generate_report(self):
         """Generate a report."""
-        try:
-            from nilearn.reporting.html_report import generate_report
-        except ImportError:
+        if not is_matplotlib_installed():
             with warnings.catch_warnings():
                 mpl_unavail_msg = (
                     "Matplotlib is not imported! "
@@ -361,6 +361,8 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 warnings.filterwarnings("always", message=mpl_unavail_msg)
                 warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
                 return [None]
+
+        from nilearn.reporting.html_report import generate_report
 
         return generate_report(self)
 
@@ -488,7 +490,11 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
         return [display]
 
-    def fit(self, imgs=None, y=None):
+    def fit(
+        self,
+        imgs=None,
+        y=None,  # noqa: ARG002
+    ):
         """Prepare signal extraction from regions.
 
         Parameters
@@ -503,14 +509,49 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         """
         repr = _utils._repr_niimgs(self.labels_img, shorten=(not self.verbose))
         msg = f"loading data from {repr}"
-        _utils.logger.log(msg=msg, verbose=self.verbose)
+        logger.log(msg=msg, verbose=self.verbose)
         self.labels_img_ = _utils.check_niimg_3d(self.labels_img)
+
+        # create _region_id_name dictionary
+        # this dictionary will be used to store region names and
+        # the corresponding region ids as keys
+        self._region_id_name = None
+        if self.labels is not None:
+            known_backgrounds = {"background", "Background"}
+            initial_region_ids = [
+                region_id
+                for region_id in np.unique(
+                    _utils.niimg.safe_get_data(self.labels_img_)
+                )
+                if region_id != self.background_label
+            ]
+            initial_region_names = [
+                region_name
+                for region_name in self.labels
+                if region_name not in known_backgrounds
+            ]
+
+            if len(initial_region_ids) != len(initial_region_names):
+                warnings.warn(
+                    "Number of regions in the labels image "
+                    "does not match the number of labels provided.",
+                    stacklevel=3,
+                )
+            # if number of regions in the labels image is more
+            # than the number of labels provided, then we cannot
+            # create _region_id_name dictionary
+            if len(initial_region_ids) <= len(initial_region_names):
+                self._region_id_name = {
+                    region_id: initial_region_names[i]
+                    for i, region_id in enumerate(initial_region_ids)
+                }
+
         if self.mask_img is not None:
             repr = _utils._repr_niimgs(
                 self.mask_img, shorten=(not self.verbose)
             )
             msg = f"loading data from {repr}"
-            _utils.logger.log(msg=msg, verbose=self.verbose)
+            logger.log(msg=msg, verbose=self.verbose)
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
 
         else:
@@ -545,7 +586,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                     )
 
             elif self.resampling_target == "labels":
-                _utils.logger.log("resampling the mask", verbose=self.verbose)
+                logger.log("resampling the mask", verbose=self.verbose)
                 # TODO switch to force_resample=True
                 # when bumping to version > 0.13
                 self.mask_img_ = image.resample_img(
@@ -699,8 +740,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                     self._resampled_mask_img,
                 )
             ):
-                if self.verbose > 0:
-                    print("Resampling mask")
+                logger.log("Resampling mask", self.verbose)
                 self._resampled_mask_img = self._cache(
                     image.resample_img, func_memory_level=2
                 )(
@@ -709,6 +749,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                     target_shape=imgs_.shape[:3],
                     target_affine=imgs_.affine,
                     copy_header=True,
+                    force_resample=False,
                 )
 
             # Remove imgs_ from memory before loading the same image
@@ -768,20 +809,9 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             self.labels_, tolerant=True, resampling_done=True
         )
 
-        if self.labels is not None:
-
-            # Keep track if background was explicitly passed as a label
-            # background should always be explicitly passed in the labels
-            # to avoid this.
-            lower_case_labels = {x.lower() for x in self.labels}
-            known_backgrounds = {"background"}
-            background_in_labels = any(
-                known_backgrounds.intersection(lower_case_labels)
-            )
-            offset = 1 if background_in_labels else 0
-
+        if self._region_id_name is not None:
             self.region_names_ = {
-                key: self.labels[key + offset]
+                key: self._region_id_name[region_id]
                 for key, region_id in region_ids.items()
                 if region_id != self.background_label
             }
@@ -792,8 +822,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         return region_signals
 
     def _resample_labels(self, imgs_):
-        if self.verbose > 0:
-            print("Resampling labels")
+        logger.log("Resampling labels", self.verbose, stack_level=2)
         labels_before_resampling = set(
             np.unique(_utils.niimg.safe_get_data(self._resampled_labels_img_))
         )
@@ -805,6 +834,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             target_shape=imgs_.shape[:3],
             target_affine=imgs_.affine,
             copy_header=True,
+            force_resample=False,
         )
         labels_after_resampling = set(
             np.unique(_utils.niimg.safe_get_data(self._resampled_labels_img_))
@@ -852,7 +882,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
         self._check_fitted()
 
-        _utils.logger.log("computing image from signals", verbose=self.verbose)
+        logger.log("computing image from signals", verbose=self.verbose)
         return signal_extraction.signals_to_img_labels(
             signals,
             self._resampled_labels_img_,

@@ -2,10 +2,10 @@
 
 import copy
 import json
-import os
 import warnings
 from base64 import b64encode
 from io import BytesIO
+from pathlib import Path
 
 import matplotlib
 import numpy as np
@@ -163,7 +163,7 @@ def _save_sprite(
     return sprite
 
 
-def _bytesIO_to_base64(handle_io):
+def _bytes_io_to_base64(handle_io):
     """Encode the content of a bytesIO virtual file as base64.
 
     Also closes the file.
@@ -251,6 +251,7 @@ def _resample_stat_map(
         bg_img,
         interpolation=resampling_interpolation,
         copy_header=True,
+        force_resample=False,  # TODO set to True in 0.13.0
     )
     mask_img = resample_to_img(
         mask_img,
@@ -258,6 +259,7 @@ def _resample_stat_map(
         fill_value=1,
         interpolation="nearest",
         copy_header=True,
+        force_resample=False,  # TODO set to True in 0.13.0
     )
 
     return stat_map_img, mask_img
@@ -390,7 +392,7 @@ def _json_view_data(
     bg_data = safe_get_data(bg_img, ensure_finite=True).astype(float)
     bg_mask, bg_cmap = _get_bg_mask_and_cmap(bg_img, black_bg)
     _save_sprite(bg_data, bg_sprite, bg_max, bg_min, bg_mask, bg_cmap, "png")
-    json_view["bg_base64"] = _bytesIO_to_base64(bg_sprite)
+    json_view["bg_base64"] = _bytes_io_to_base64(bg_sprite)
 
     # Create a base64 sprite for the stat map
     stat_map_sprite = BytesIO()
@@ -405,13 +407,13 @@ def _json_view_data(
         cmap,
         "png",
     )
-    json_view["stat_map_base64"] = _bytesIO_to_base64(stat_map_sprite)
+    json_view["stat_map_base64"] = _bytes_io_to_base64(stat_map_sprite)
 
     # Create a base64 colormap
     if colorbar:
         stat_map_cm = BytesIO()
         _save_cm(stat_map_cm, colors["cmap"], "png")
-        json_view["cm_base64"] = _bytesIO_to_base64(stat_map_cm)
+        json_view["cm_base64"] = _bytes_io_to_base64(stat_map_cm)
     else:
         json_view["cm_base64"] = ""
 
@@ -432,10 +434,10 @@ def _json_view_to_html(json_view, width_view=600):
         json_view["params"]["title"] or "Slice viewer"
     )
     json_view["params"] = json.dumps(json_view["params"])
-    js_dir = os.path.join(os.path.dirname(__file__), "data", "js")
-    with open(os.path.join(js_dir, "jquery.min.js")) as f:
+    js_dir = Path(__file__).parent / "data" / "js"
+    with (js_dir / "jquery.min.js").open() as f:
         json_view["js_jquery"] = f.read()
-    with open(os.path.join(js_dir, "brainsprite.min.js")) as f:
+    with (js_dir / "brainsprite.min.js").open() as f:
         json_view["js_brainsprite"] = f.read()
 
     # Load the html template, and plug in all the data

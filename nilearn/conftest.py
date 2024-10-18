@@ -3,22 +3,25 @@
 import warnings
 
 import nibabel
-import nibabel as nb
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
 from nilearn import image
+from nilearn._utils.helpers import is_matplotlib_installed
 
 # we need to import these fixtures even if not used in this module
-from nilearn.datasets.tests._testing import request_mocker  # noqa: F401
-from nilearn.datasets.tests._testing import temp_nilearn_data_dir  # noqa: F401
+from nilearn.datasets.tests._testing import (
+    request_mocker,  # noqa: F401
+    temp_nilearn_data_dir,  # noqa: F401
+)
 
 # TODO This import needs to be removed once the experimental surface API and
 # its pytest fixtures are integrated into the stable API
 from nilearn.experimental.conftest import (  # noqa: F401
     drop_img_part,
     make_mini_img,
+    make_mini_mask,
     mini_img,
     mini_mask,
     mini_mesh,
@@ -27,10 +30,9 @@ from nilearn.experimental.conftest import (  # noqa: F401
 collect_ignore = ["datasets/data/convert_templates.py"]
 collect_ignore_glob = ["reporting/_visual_testing/*"]
 
-
-try:
-    import matplotlib  # noqa: F401
-except ImportError:
+if is_matplotlib_installed():
+    import matplotlib
+else:
     collect_ignore.extend(
         [
             "plotting",
@@ -40,12 +42,9 @@ except ImportError:
         ]
     )
     matplotlib = None
-    have_mpl = False
-else:
-    have_mpl = True
 
 
-def pytest_configure(config):
+def pytest_configure(config):  # noqa: ARG001
     """Use Agg so that no figures pop up."""
     if matplotlib is not None:
         matplotlib.use("Agg", force=True)
@@ -264,7 +263,7 @@ def img_3d_mni():
 def img_3d_mni_as_file(tmp_path):
     """Return path to a random 3D Nifti1Image in MNI space saved to disk."""
     filename = tmp_path / "img.nii"
-    nb.save(_img_3d_mni(), filename)
+    _img_3d_mni().to_filename(filename)
     return filename
 
 

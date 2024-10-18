@@ -85,7 +85,7 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
           :footcite:t:`Fox2005`. With the global signal regression,
           this approach can remove confounds
           without compromising the temporal degrees of freedom.
-        - 'srubbing': Load confounds for scrubbing described in
+        - 'scrubbing': Load confounds for scrubbing described in
           :footcite:t:`Power2012`. This approach can reliably remove the
           impact of high motion volumes in functional connectome, however, it
           might not be suitable with subjects with high motion (more than 50%

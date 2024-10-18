@@ -11,7 +11,6 @@ For example: TV-L1, Graph-Net, etc
 #         THIRION Bertrand
 
 import collections
-import sys
 import time
 import warnings
 from functools import partial
@@ -30,11 +29,11 @@ from sklearn.utils import check_array, check_X_y
 from sklearn.utils.extmath import safe_sparse_dot
 
 from nilearn._utils.masker_validation import check_embedded_masker
-from nilearn.experimental.surface import SurfaceMasker
+from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
 from nilearn.image import get_data
 from nilearn.masking import unmask_from_to_3d_array
 
-from .._utils import fill_doc
+from .._utils import fill_doc, logger
 from .._utils.cache_mixin import CacheMixin
 from .._utils.param_validation import adjust_screening_percentile
 from .space_net_solvers import (
@@ -46,7 +45,8 @@ from .space_net_solvers import (
 
 def _crop_mask(mask):
     """Crops input mask to produce tighter (i.e smaller) bounding box \
-    with the same support (active voxels)."""
+    with the same support (active voxels).
+    """
     idx = np.where(mask)
     if idx[0].size == 0:
         raise ValueError(
@@ -110,7 +110,8 @@ def _univariate_feature_screening(
         for sample in range(sX.shape[0]):
             sX[sample] = gaussian_filter(
                 unmask_from_to_3d_array(
-                    X[sample].copy(), mask  # avoid modifying X
+                    X[sample].copy(),  # avoid modifying X
+                    mask,
                 ),
                 (smoothing_fwhm, smoothing_fwhm, smoothing_fwhm),
             )[mask]
@@ -224,7 +225,7 @@ class _EarlyStoppingCallback:
         """Perform callback."""
         # misc
         if not isinstance(variables, dict):
-            variables = dict(w=variables)
+            variables = {"w": variables}
         self.counter += 1
         w = variables["w"]
 
@@ -240,18 +241,17 @@ class _EarlyStoppingCallback:
             len(self.test_scores) > 4
             and np.mean(np.diff(self.test_scores[-5:][::-1])) >= self.tol
         ):
-            if self.verbose:
-                if self.verbose > 1:
-                    print(
-                        "Early stopping. "
-                        f"Test score: {score:.8f} {40 * '-'}"
-                    )
-                else:
-                    sys.stderr.write(".")
+            message = "."
+            if self.verbose > 1:
+                message = (
+                    f"Early stopping. \n" f"Test score: {score:.8f} {40 * '-'}"
+                )
+            logger.log(message, verbose=self.verbose, stack_level=2)
             return True
 
-        if self.verbose > 1:
-            print(f"Test score: {score:.8f}")
+        logger.log(
+            f"Test score: {score:.8f}", verbose=self.verbose, msg_level=1
+        )
         return False
 
     def _debias(self, w):
@@ -810,7 +810,8 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
 
     def _set_coef_and_intercept(self, w):
         """Set the loadings vector (coef) and the intercept of the fitted \
-        model."""
+        model.
+        """
         self.w_ = np.array(w)
         if self.w_.ndim == 1:
             self.w_ = self.w_[np.newaxis, :]
@@ -838,6 +839,11 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         self : `SpaceNet` object
             Model selection is via cross-validation with bagging.
         """
+        if isinstance(X, SurfaceImage) or isinstance(self.mask, SurfaceMasker):
+            raise NotImplementedError(
+                "Running space net on surface objects is not supported."
+            )
+
         # misc
         self.check_params()
         if self.memory is None or isinstance(self.memory, str):
@@ -846,13 +852,10 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
             )
         else:
             self.memory_ = self.memory
-        if self.verbose:
-            tic = time.time()
 
-        masker_type = "nii"
-        if isinstance(self.mask, SurfaceMasker):
-            masker_type = "surface"
-        self.masker_ = check_embedded_masker(self, masker_type=masker_type)
+        tic = time.time()
+
+        self.masker_ = check_embedded_masker(self, masker_type="nii")
         X = self.masker_.fit_transform(X)
 
         X, y = check_X_y(
@@ -900,11 +903,10 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
                 solver = graph_net_squared_loss
             else:
                 solver = graph_net_logistic
+        elif not self.is_classif or loss == "mse":
+            solver = partial(tvl1_solver, loss="mse")
         else:
-            if not self.is_classif or loss == "mse":
-                solver = partial(tvl1_solver, loss="mse")
-            else:
-                solver = partial(tvl1_solver, loss="logistic")
+            solver = partial(tvl1_solver, loss="logistic")
 
         # generate fold indices
         case1 = (None in [alphas, l1_ratios]) and self.n_alphas > 1
@@ -940,7 +942,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         )
 
         # main loop: loop on classes and folds
-        solver_params = dict(tol=self.tol, max_iter=self.max_iter)
+        solver_params = {"tol": self.tol, "max_iter": self.max_iter}
         self.best_model_params_ = []
         self.alpha_grids_ = []
         for (
@@ -1002,11 +1004,11 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         self.coef_img_ = self.masker_.inverse_transform(self.coef_)
 
         # report time elapsed
-        if self.verbose:
-            duration = time.time() - tic
-            print(
-                f"Time Elapsed: {duration} seconds, {duration / 60.0} minutes."
-            )
+        duration = time.time() - tic
+        logger.log(
+            f"Time Elapsed: {duration} seconds, {duration / 60.0} minutes.",
+            self.verbose,
+        )
 
         return self
 

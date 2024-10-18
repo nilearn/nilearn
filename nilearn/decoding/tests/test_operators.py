@@ -24,7 +24,7 @@ def test_prox_l1_nonexpansiveness(rng, n_features=10):
 @pytest.mark.parametrize("ndim", range(3, 4))
 @pytest.mark.parametrize("weight", np.logspace(-10, 10, num=10))
 def test_prox_tvl1_approximates_prox_l1_for_lasso(
-    rng, ndim, weight, size=15, random_state=42, decimal=4, dgap_tol=1e-7
+    rng, ndim, weight, size=15, decimal=4, dgap_tol=1e-7
 ):
     l1_ratio = 1.0  # pure LASSO
 
@@ -45,3 +45,28 @@ def test_prox_tvl1_approximates_prox_l1_for_lasso(
 
     # results should be close in l-infinity norm
     assert_almost_equal(np.abs(a - b).max(), 0.0, decimal=decimal)
+
+
+@pytest.mark.parametrize("verbose", [True, False])
+def test_prox_tvl1_verbose(rng, verbose):
+    l1_ratio = 1.0  # pure LASSO
+
+    size = 15
+    dgap_tol = 1e-7
+    ndim = 3
+    weight = -10
+
+    shape = [size] * ndim
+    z = rng.standard_normal(shape)
+
+    prox_tvl1(
+        z.copy(),
+        weight=weight,
+        l1_ratio=l1_ratio,
+        dgap_tol=dgap_tol,
+        max_iter=10,
+        val_min=-np.inf,
+        val_max=np.inf,
+        verbose=verbose,
+        x_tol=1e-7,
+    )

@@ -116,7 +116,7 @@ def _remove_small_regions(input_data, affine, min_size):
     labels_kept = region_sizes > size_in_vox
     if not np.all(labels_kept):
         # Put to zero the indices not kept
-        rejected_labels_mask = np.in1d(
+        rejected_labels_mask = np.isin(
             input_data, np.where(np.logical_not(labels_kept))[0]
         ).reshape(input_data.shape)
         # Avoid modifying the input:
@@ -424,7 +424,11 @@ class RegionExtractor(NiftiMapsMasker):
         self.extractor = extractor
         self.smoothing_fwhm = smoothing_fwhm
 
-    def fit(self, X=None, y=None):
+    def fit(
+        self,
+        X=None,  # noqa: ARG002
+        y=None,  # noqa: ARG002
+    ):
         """Prepare the data and setup for the region extraction."""
         maps_img = check_niimg_4d(self.maps_img)
 

@@ -7,6 +7,7 @@ import json
 import os
 import re
 import stat
+from pathlib import Path
 from urllib import parse
 
 import numpy as np
@@ -49,8 +50,8 @@ def _get_neurovault_data():
     )
     collection_sizes = images.groupby("collection_id").count()
     collections["true_number_of_images"] = collection_sizes.reindex(
-        index=collections["id"].values, fill_value=0
-    ).values
+        index=collections["id"].to_numpy(), fill_value=0
+    ).to_numpy()
     collections["number_of_images"] = collections[
         "true_number_of_images"
     ] + rng.binomial(1, 0.1, n_collections) * rng.integers(
@@ -86,8 +87,8 @@ def _get_neurovault_data():
         url.format(col_id, img_name)
         for (col_id, img_name) in zip(images["collection_id"], image_names)
     ]
-    collections.set_index("id", inplace=True, drop=False)
-    images.set_index("id", inplace=True, drop=False)
+    collections = collections.set_index("id", drop=False)
+    images = images.set_index("id", drop=False)
     _get_neurovault_data.data = collections, images
     return collections, images
 
@@ -194,7 +195,7 @@ def _neurovault_one_image(img_id):
     return images.loc[img_id].to_dict()
 
 
-def _neurovault_file(parts, query):
+def _neurovault_file(parts, query):  # noqa: ARG001
     """Mock the Neurovault API behind the `/media/images/` path."""
     return generate_fake_fmri(length=1)[0]
 
@@ -208,7 +209,7 @@ class _NumpyJsonEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-def _neurovault(match, request):
+def _neurovault(match, request):  # noqa: ARG001
     """Mock response content from the Neurovault API.
 
     The fake data used to generate responses is provided by
@@ -292,7 +293,7 @@ def test_get_batch_error(tmp_path):
         neurovault._get_batch("http://")
     with pytest.raises(ValueError):
         neurovault._get_batch(
-            f"file://{str(tmp_path / 'test_nv.txt')}",
+            f"file://{tmp_path / 'test_nv.txt'!s}",
         )
 
     no_results_url = (
@@ -350,15 +351,15 @@ def test_not_equal():
     assert not_equal == "b"
     assert not_equal == 1
     assert not_equal != "a"
-    assert "a" != not_equal
+    assert not_equal != "a"
     assert str(not_equal) == "NotEqual('a')"
 
 
 def test_order_comp():
     geq = neurovault.GreaterOrEqual("2016-07-12T11:29:12.263046Z")
 
-    assert "2016-08-12T11:29:12.263046Z" == geq
-    assert "2016-06-12T11:29:12.263046Z" != geq
+    assert geq == "2016-08-12T11:29:12.263046Z"
+    assert geq != "2016-06-12T11:29:12.263046Z"
     assert str(geq) == "GreaterOrEqual('2016-07-12T11:29:12.263046Z')"
 
     gt = neurovault.GreaterThan("abc")
@@ -390,7 +391,7 @@ def test_is_in():
 
     countable = neurovault.IsIn(*range(11))
 
-    assert 7 == countable
+    assert countable == 7
     assert countable != 12
 
 
@@ -803,11 +804,13 @@ def test_fetch_neurovault_ids(tmp_path):
     collections = collections.sort_values(
         by="true_number_of_images", ascending=False
     )
-    other_col_id, *col_ids = collections["id"].values[:3]
-    img_ids = images[images["collection_id"] == other_col_id]["id"].values[:3]
+    other_col_id, *col_ids = collections["id"].to_numpy()[:3]
+    img_ids = images[images["collection_id"] == other_col_id]["id"].to_numpy()[
+        :3
+    ]
     img_from_cols_ids = images[images["collection_id"].isin(col_ids)][
         "id"
-    ].values
+    ].to_numpy()
 
     with pytest.raises(ValueError):
         neurovault.fetch_neurovault_ids(mode="bad")
@@ -913,8 +916,8 @@ def test_download_original_images_along_resamp_images_if_previously_downloaded(
     _check_original_version_is_not_here(data)
 
     # Get the time of the last access to the resampled data
-    access_time_resampled = os.path.getatime(
-        data["images_meta"][0]["resampled_absolute_path"]
+    access_time_resampled = (
+        Path(data["images_meta"][0]["resampled_absolute_path"]).stat().st_atime
     )
 
     # Download original data
@@ -926,8 +929,8 @@ def test_download_original_images_along_resamp_images_if_previously_downloaded(
 
     # Get the time of the last access to one of the original files
     # (which should be download time)
-    access_time = os.path.getatime(
-        data_orig["images_meta"][0]["absolute_path"]
+    access_time = (
+        Path(data_orig["images_meta"][0]["absolute_path"]).stat().st_atime
     )
 
     # Check that the last access to the original data is after the access
@@ -963,8 +966,8 @@ def test_download_resamp_images_along_original_images_if_previously_downloaded(
     # Asks for the resampled version. This should only resample, not download.
 
     # Get the time of the last modification to the original data
-    modif_time_original = os.path.getmtime(
-        data_orig["images_meta"][0]["absolute_path"]
+    modif_time_original = (
+        Path(data_orig["images_meta"][0]["absolute_path"]).stat().st_mtime
     )
 
     # Ask for resampled data, which should only trigger resample
@@ -975,8 +978,8 @@ def test_download_resamp_images_along_original_images_if_previously_downloaded(
     )
 
     # Get the time of the last modification to the original data, after fetch
-    modif_time_original_after = os.path.getmtime(
-        data["images_meta"][0]["absolute_path"]
+    modif_time_original_after = (
+        Path(data["images_meta"][0]["absolute_path"]).stat().st_mtime
     )
 
     # The time difference should be 0

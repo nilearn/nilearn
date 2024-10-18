@@ -18,9 +18,11 @@ import numpy as np
 
 from nilearn.plotting import plot_design_matrix
 
-tr = 1.0  # repetition time is 1 second
+t_r = 1.0  # repetition time is 1 second
 n_scans = 128  # the acquisition comprises 128 scans
-frame_times = np.arange(n_scans) * tr  # here are the corresponding frame times
+frame_times = (
+    np.arange(n_scans) * t_r
+)  # here are the corresponding frame times
 
 # %%
 # Then we define parameters related to the experimental design.
@@ -31,7 +33,8 @@ duration = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
 # these are the corresponding onset times
 onsets = [30.0, 70.0, 100.0, 10.0, 30.0, 90.0, 30.0, 40.0, 60.0]
 # Next, we simulate 6 motion parameters jointly observed with fMRI acquisitions
-motion = np.cumsum(np.random.randn(n_scans, 6), 0)
+rng = np.random.default_rng(42)
+motion = np.cumsum(rng.standard_normal((n_scans, 6)), 0)
 # The 6 parameters correspond to three translations and three
 # rotations describing rigid body motion
 add_reg_names = ["tx", "ty", "tz", "rx", "ry", "rz"]
@@ -104,13 +107,44 @@ X3 = make_first_level_design_matrix(
 # Here are the three designs side by side.
 import matplotlib.pyplot as plt
 
-fig, (ax1, ax2, ax3) = plt.subplots(figsize=(10, 6), nrows=1, ncols=3)
-plot_design_matrix(X1, ax=ax1)
+fig, (ax1, ax2, ax3) = plt.subplots(
+    figsize=(10, 6),
+    nrows=1,
+    ncols=3,
+    layout="constrained",
+)
+plot_design_matrix(X1, axes=ax1)
 ax1.set_title("Event-related design matrix", fontsize=12)
-plot_design_matrix(X2, ax=ax2)
+plot_design_matrix(X2, axes=ax2)
 ax2.set_title("Block design matrix", fontsize=12)
-plot_design_matrix(X3, ax=ax3)
+plot_design_matrix(X3, axes=ax3)
 ax3.set_title("FIR design matrix", fontsize=12)
+plt.show()
+
+
+# %%
+# Correlation between regressors
+# ------------------------------
+# We can plot the correlation between the regressors of our design matrix.
+# This is important to check as highly correlated regressors can affect
+# the effficieny of
+# `your design <https://imaging.mrc-cbu.cam.ac.uk/imaging/DesignEfficiency#Correlation_between_regressors>`_. # noqa: E501
+#
+
+from nilearn.plotting import plot_design_matrix_correlation
+
+fig3, (ax1, ax2, ax3) = plt.subplots(
+    figsize=(16, 5),
+    nrows=1,
+    ncols=3,
+    layout="constrained",
+)
+plot_design_matrix_correlation(X1, axes=ax1)
+ax1.set_title("Event-related correlation matrix", fontsize=12)
+plot_design_matrix_correlation(X2, axes=ax2)
+ax2.set_title("Block correlation matrix", fontsize=12)
+plot_design_matrix_correlation(X3, axes=ax3, tri="diag")
+ax3.set_title("FIR correlation matrix", fontsize=12)
 plt.show()
 
 
@@ -154,9 +188,14 @@ X4 = make_first_level_design_matrix(
 )
 
 # Let's compare it to the unmodulated block design
-fig, (ax1, ax2) = plt.subplots(figsize=(10, 6), nrows=1, ncols=2)
-plot_design_matrix(X2, ax=ax1)
+fig, (ax1, ax2) = plt.subplots(
+    figsize=(10, 6),
+    nrows=1,
+    ncols=2,
+    layout="constrained",
+)
+plot_design_matrix(X2, axes=ax1)
 ax1.set_title("Block design matrix", fontsize=12)
-plot_design_matrix(X4, ax=ax2)
+plot_design_matrix(X4, axes=ax2)
 ax2.set_title("Modulated block design matrix", fontsize=12)
 plt.show()

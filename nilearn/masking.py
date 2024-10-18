@@ -9,7 +9,7 @@ from joblib import Parallel, delayed
 from scipy.ndimage import binary_dilation, binary_erosion
 
 from . import _utils
-from ._utils import fill_doc
+from ._utils import fill_doc, logger
 from ._utils.cache_mixin import cache
 from ._utils.ndimage import get_border_data, largest_connected_component
 from ._utils.niimg import safe_get_data
@@ -291,8 +291,7 @@ def compute_epi_mask(
     mask : :class:`nibabel.nifti1.Nifti1Image`
         The brain mask (3D image).
     """
-    if verbose > 0:
-        print("EPI mask computation")
+    logger.log("EPI mask computation", verbose)
 
     # Delayed import to avoid circular imports
     from .image.image import _compute_mean
@@ -480,8 +479,7 @@ def compute_background_mask(
     mask : :class:`nibabel.nifti1.Nifti1Image`
         The brain mask (3D image).
     """
-    if verbose > 0:
-        print("Background mask computation")
+    logger.log("Background mask computation", verbose)
 
     data_imgs = _utils.check_niimg(data_imgs)
 
@@ -633,8 +631,7 @@ def compute_brain_mask(
     mask : :class:`nibabel.nifti1.Nifti1Image`
         The whole-brain mask (3D image).
     """
-    if verbose > 0:
-        print("Template", mask_type, "mask computation")
+    logger.log(f"Template {mask_type} mask computation", verbose)
 
     target_img = _utils.check_niimg(target_img)
 
@@ -651,7 +648,10 @@ def compute_brain_mask(
         )
 
     resampled_template = cache(resampling.resample_to_img, memory)(
-        template, target_img, copy_header=True
+        template,
+        target_img,
+        copy_header=True,
+        force_resample=False,  # TODO set to True in 0.13.0
     )
 
     mask = (get_data(resampled_template) >= threshold).astype("int8")
@@ -680,7 +680,7 @@ def compute_multi_brain_mask(
     memory=None,
     verbose=0,
     mask_type="whole-brain",
-    **kwargs,
+    **kwargs,  # noqa: ARG001
 ):
     """Compute the whole-brain, grey-matter or white-matter mask \
     for a list of images.
@@ -839,8 +839,8 @@ def apply_mask_fmri(
 
     if mask_data.shape != imgs_img.shape[:3]:
         raise ValueError(
-            f"Mask shape: {str(mask_data.shape)} is different "
-            f"from img shape:{str(imgs_img.shape[:3])}"
+            f"Mask shape: {mask_data.shape!s} is different "
+            f"from img shape:{imgs_img.shape[:3]!s}"
         )
 
     # All the following has been optimized for C order.
@@ -921,7 +921,7 @@ def _unmask_4d(X, mask, order="C"):
     if X.shape[1] != n_features:
         raise TypeError(f"X must be of shape (samples, {n_features}).")
 
-    data = np.zeros(mask.shape + (X.shape[0],), dtype=X.dtype, order=order)
+    data = np.zeros((*mask.shape, X.shape[0]), dtype=X.dtype, order=order)
     data[mask, :] = X.T
     return data
 
@@ -970,7 +970,7 @@ def unmask(X, mask_img, order="F"):
         unmasked = _unmask_3d(X, mask, order=order)
     else:
         raise TypeError(
-            f"Masked data X must be 2D or 1D array; got shape: {str(X.shape)}"
+            f"Masked data X must be 2D or 1D array; got shape: {X.shape!s}"
         )
 
     return new_img_like(mask_img, unmasked, affine)
@@ -988,7 +988,7 @@ def unmask_from_to_3d_array(w, mask):
     w : :class:`numpy.ndarray`, shape (n_features,)
       The image to be unmasked.
 
-    mask : :class:`numpy.ndarray`, shape (nx, ny, nz)
+    mask : :class:`numpy.ndarray`
       The mask used in the unmasking operation. It is required that
       ``mask.sum() == n_features``.
 

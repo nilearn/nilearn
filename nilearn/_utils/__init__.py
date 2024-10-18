@@ -6,7 +6,8 @@ import warnings
 from importlib import import_module
 from pathlib import Path
 
-from nilearn._utils.helpers import (
+from nilearn._utils.helpers import (  # noqa: F401
+    _constrained_layout_kwargs,
     compare_version,
     remove_parameters,
     rename_parameters,

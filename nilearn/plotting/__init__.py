@@ -21,6 +21,11 @@ def _set_mpl_backend():
 
             # No need to fail when running tests
             skip_if_running_tests("matplotlib not installed")
+        warnings.warn(
+            "Some plotting dependencies of Nilearn seem to be missing.\n"
+            "They can be installed with:\n"
+            " pip install 'nilearn[plotting]'"
+        )
         raise
     else:
         from .._utils import compare_version
@@ -35,7 +40,7 @@ def _set_mpl_backend():
                 f"A matplotlib version of at least "
                 f"{OPTIONAL_MATPLOTLIB_MIN_VERSION} "
                 f"is required to use nilearn. {mpl_version} was found. "
-                f"Please upgrade matplotlib"
+                f"Please upgrade matplotlib."
             )
         current_backend = matplotlib.get_backend().lower()
 
@@ -82,6 +87,7 @@ from .img_plotting import (
 from .matrix_plotting import (
     plot_contrast_matrix,
     plot_design_matrix,
+    plot_design_matrix_correlation,
     plot_event,
     plot_matrix,
 )
@@ -104,6 +110,7 @@ __all__ = [
     "plot_carpet",
     "plot_contrast_matrix",
     "plot_design_matrix",
+    "plot_design_matrix_correlation",
     "plot_epi",
     "plot_event",
     "plot_glass_brain",

@@ -69,13 +69,13 @@ INCLUDE_FAILED_RUNS = False
 
 # Pages of runs to collect
 # 100 per page
-PAGES_TO_COLLECT = range(1, 20)
+PAGES_TO_COLLECT = range(1, 30)
 
 # If False, just plots the content of the TSV
 UPDATE_TSV = True
 
 # used by set_python_version to filter jobs by their python version
-EXPECTED_PYTHON_VERSIONS = ["3.8", "3.9", "3.10", "3.11", "3.12"]
+EXPECTED_PYTHON_VERSIONS = ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
 
 
 def main(args=sys.argv) -> None:
@@ -93,22 +93,26 @@ def main(args=sys.argv) -> None:
         workflow_id=TEST_WORKFLOW_ID,
     )
 
-    df = pd.read_csv(
+    test_runs_timing = pd.read_csv(
         output_file,
         sep="\t",
         parse_dates=["started_at", "completed_at"],
     )
 
-    df["duration"] = (df["completed_at"] - df["started_at"]) / pd.Timedelta(
-        minutes=1
+    test_runs_timing["duration"] = (
+        test_runs_timing["completed_at"] - test_runs_timing["started_at"]
+    ) / pd.Timedelta(minutes=1)
+    test_runs_timing["python"] = test_runs_timing["name"].apply(
+        _set_python_version
     )
-    df["python"] = df["name"].apply(_set_python_version)
-    df["OS"] = df["name"].apply(_set_os)
-    df["dependencies"] = df["name"].apply(_set_dependencies)
+    test_runs_timing["OS"] = test_runs_timing["name"].apply(_set_os)
+    test_runs_timing["dependencies"] = test_runs_timing["name"].apply(
+        _set_dependencies
+    )
 
-    print(df)
+    print(test_runs_timing)
 
-    _plot_test_job_durations(df, output_file)
+    _plot_test_job_durations(test_runs_timing, output_file)
 
     # %%
     DOC_WORKFLOW_ID = "37349438"
@@ -119,28 +123,33 @@ def main(args=sys.argv) -> None:
         update=UPDATE_TSV,
         output_file=output_file,
         workflow_id=DOC_WORKFLOW_ID,
+        event_type="push",
     )
 
-    df = pd.read_csv(
+    doc_runs_timing = pd.read_csv(
         output_file,
         sep="\t",
         parse_dates=["started_at", "completed_at"],
     )
 
-    df["duration"] = (df["completed_at"] - df["started_at"]) / pd.Timedelta(
-        minutes=1
-    )
+    doc_runs_timing["duration"] = (
+        doc_runs_timing["completed_at"] - doc_runs_timing["started_at"]
+    ) / pd.Timedelta(minutes=1)
 
-    df = df[df["name"] == "build_docs"]
-    df = df[df["duration"] < 360]
+    doc_runs_timing = doc_runs_timing[doc_runs_timing["name"] == "build_docs"]
+    doc_runs_timing = doc_runs_timing[doc_runs_timing["duration"] < 360]
 
-    print(df)
+    print(doc_runs_timing)
 
-    _plot_doc_job_durations(df, output_file)
+    _plot_doc_job_durations(doc_runs_timing, output_file)
 
 
 def _update_tsv(
-    args, update: bool, output_file: Path, workflow_id: str
+    args,
+    update: bool,
+    output_file: Path,
+    workflow_id: str,
+    event_type: None | str = None,
 ) -> None:
     """Update TSV containing run time of every workflow."""
     update_tsv = update if output_file.exists() else True
@@ -162,6 +171,7 @@ def _update_tsv(
             auth,
             page=page,
             include_failed_runs=INCLUDE_FAILED_RUNS,
+            event_type=event_type,
         )
         if len(runs) > 0:
             print(f" found {len(runs)} runs")
@@ -169,8 +179,7 @@ def _update_tsv(
         else:
             break
 
-    df = pd.DataFrame(jobs_data)
-    df.to_csv(output_file, sep="\t", index=False)
+    pd.DataFrame(jobs_data).to_csv(output_file, sep="\t", index=False)
 
 
 def _plot_test_job_durations(df: pd.DataFrame, output_file: Path) -> None:
@@ -278,7 +287,7 @@ def _get_auth(username: str, token_file: Path) -> None | tuple[str, str]:
         with open(token_file) as f:
             token = f.read().strip()
     else:
-        warnings.warn(f"Token file not found.\n{str(token_file)}")
+        warnings.warn(f"Token file not found.\n{token_file!s}")
 
     return None if username is None or token is None else (username, token)
 
@@ -288,6 +297,7 @@ def _get_runs(
     auth: None | tuple[str, str] = None,
     page: int = 1,
     include_failed_runs: bool = True,
+    event_type: None | str = None,
 ) -> list[dict[str, Any]]:
     """Get list of runs for a workflow.
 
@@ -306,15 +316,17 @@ def _get_runs(
 
     if not content.get("workflow_runs"):
         return []
+
+    runs = list(content["workflow_runs"])
+
+    if event_type:
+        runs = [run for run in runs if run["event"] in event_type]
+
+    conclusion = ["success"]
     if include_failed_runs:
-        return [
-            i
-            for i in content["workflow_runs"]
-            if i["conclusion"] in ["success", "failure"]
-        ]
-    return [
-        i for i in content["workflow_runs"] if i["conclusion"] == "success"
-    ]
+        conclusion = ["success", "failure"]
+
+    return [run for run in runs if run["conclusion"] in conclusion]
 
 
 def _handle_request(url: str, auth: None | tuple[str, str]):

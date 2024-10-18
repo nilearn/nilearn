@@ -5,6 +5,7 @@ import pandas as pd
 import pytest
 from numpy.testing import assert_array_equal
 
+from nilearn._utils import _constrained_layout_kwargs
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
@@ -13,6 +14,7 @@ from nilearn.plotting.matrix_plotting import (
     pad_contrast_matrix,
     plot_contrast_matrix,
     plot_design_matrix,
+    plot_design_matrix_correlation,
     plot_event,
     plot_matrix,
 )
@@ -159,8 +161,8 @@ def test_matrix_plotting_labels(mat, lab):
 @pytest.mark.parametrize("title", ["foo", "foo bar", " ", None])
 def test_matrix_plotting_set_title(mat, labels, title):
     ax = plot_matrix(mat, labels=labels, title=title)
-    nb_txt = 0 if title is None else len(title)
-    assert len(ax._axes.title.get_text()) == nb_txt
+    n_txt = 0 if title is None else len(title)
+    assert len(ax._axes.title.get_text()) == n_txt
     if title is not None:
         assert ax._axes.title.get_text() == title
     plt.close()
@@ -273,6 +275,21 @@ def test_show_contrast_matrix(tmp_path):
     assert (tmp_path / "contrast.pdf").exists()
 
 
+def test_show_contrast_matrix_axes():
+    frame_times = np.linspace(0, 127 * 1.0, 128)
+    dmtx = make_first_level_design_matrix(
+        frame_times, drift_model="polynomial", drift_order=3
+    )
+    contrast = np.ones(4)
+    fig, ax = plt.subplots(**_constrained_layout_kwargs())
+    plot_contrast_matrix(contrast, dmtx, axes=ax)
+
+    # to actually check we need get_layout_engine, but even without it the
+    # above allows us to test the kwargs are at least okay
+    pytest.importorskip("matplotlib", minversion="3.5.0")
+    assert "constrained" in fig.get_layout_engine().__class__.__name__.lower()
+
+
 def test_pad_contrast_matrix():
     """Test for contrasts padding before plotting.
 
@@ -302,3 +319,40 @@ def test_pad_contrast_matrix():
 
 def test_show_event_plot_duration_0():
     plot_event(design_with_null_durations())
+
+
+@pytest.mark.parametrize("tri", ["full", "diag"])
+@pytest.mark.parametrize("cmap", ["RdBu_r", "bwr", "seismic_r"])
+def test_plot_design_matrix_correlation(tri, cmap, tmp_path):
+    """Smoke test for the 'happy path'."""
+    frame_times = np.linspace(0, 127 * 1.0, 128)
+    dmtx = make_first_level_design_matrix(
+        frame_times, events=design_with_null_durations()
+    )
+
+    plot_design_matrix_correlation(
+        dmtx, tri=tri, cmap=cmap, output_file=tmp_path / "corr_mat.png"
+    )
+
+    assert (tmp_path / "corr_mat.png").exists()
+
+
+def test_plot_design_matrix_correlation_errors(mat):
+    with pytest.raises(TypeError, match="must be a pandas dataframe"):
+        plot_design_matrix_correlation("foo")
+
+    with pytest.raises(ValueError, match="dataframe cannot be empty."):
+        plot_design_matrix_correlation(pd.DataFrame())
+
+    with pytest.raises(ValueError, match="cmap must be one of"):
+        plot_design_matrix_correlation(pd.DataFrame(mat), cmap="foo")
+
+    dmtx = pd.DataFrame(
+        {"event_1": [0, 1], "constant": [1, 1], "drift_1": [0, 1]}
+    )
+    with pytest.raises(ValueError, match="tri needs to be one of"):
+        plot_design_matrix_correlation(dmtx, tri="lower")
+
+    dmtx = pd.DataFrame({"constant": [1, 1], "drift_1": [0, 1]})
+    with pytest.raises(ValueError, match="Nothing left to plot after "):
+        plot_design_matrix_correlation(dmtx)

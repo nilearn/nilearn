@@ -10,12 +10,14 @@ import warnings
 import numpy as np
 from joblib import Memory
 from nibabel import Nifti1Image
+from packaging.version import parse
 from scipy.sparse import coo_matrix, csgraph, dia_matrix
+from sklearn import __version__ as sklearn_version
 from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
-from nilearn._utils import fill_doc
+from nilearn._utils import fill_doc, logger
 from nilearn.image import get_data
 from nilearn.masking import unmask_from_to_3d_array
 
@@ -415,11 +417,11 @@ def recursive_neighbor_agglomeration(
         labels = reduced_labels[labels]
         n_components = connectivity.shape[0]
 
-        if verbose > 0:
-            print(
-                f"After iteration number {i + 1}, features are "
-                f" grouped into {n_components} clusters"
-            )
+        logger.log(
+            f"After iteration number {i + 1}, features are "
+            f" grouped into {n_components} clusters",
+            verbose,
+        )
 
         if n_components <= n_clusters:
             break
@@ -494,9 +496,21 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
         self.verbose = verbose
 
     def _more_tags(self):
-        return BaseEstimator._more_tags()
+        # TODO
+        # rename method to '__sklearn_tags__'
+        # and get rid of if block
+        # bumping sklearn_version > 1.5
+        # see https://github.com/scikit-learn/scikit-learn/pull/29677
+        ver = parse(sklearn_version)
+        if ver.release[1] < 6:
+            return BaseEstimator._more_tags(self)
+        return self.__sklearn_tags__()
 
-    def fit(self, X, y=None):
+    def fit(
+        self,
+        X,
+        y=None,  # noqa: ARG002
+    ):
         """Compute clustering of the data.
 
         Parameters
@@ -518,8 +532,8 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
         if not isinstance(self.mask_img, (str, Nifti1Image)):
             raise ValueError(
-                "The mask image should be a Niimg-like"
-                f"object. Instead a {type(self.mask_img)} object was provided."
+                "The mask image should be a Niimg-like object. "
+                f"Instead a {type(self.mask_img)} object was provided."
             )
 
         if self.memory is None or isinstance(self.memory, str):
@@ -568,7 +582,11 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
         return self
 
-    def transform(self, X, y=None):
+    def transform(
+        self,
+        X,
+        y=None,  # noqa: ARG002
+    ):
         """Apply clustering, reduce the dimensionality of the data.
 
         Parameters

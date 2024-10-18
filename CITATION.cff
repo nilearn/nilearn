@@ -118,6 +118,11 @@ authors:
     website: https://github.com/askieslinger
     affiliation: Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig,
       Germnay
+  - given-names: Anupriya
+    family-names: Kumari
+    website: https://github.com/anupriyakkumari
+    affiliation: Indian Institute of Technology, Roorkee, India
+    email: anupriyakkumari@gmail.com
   - given-names: Ariel
     family-names: Rokem
     website: http://arokem.org/
@@ -292,6 +297,11 @@ authors:
     affiliation: Inria, Saclay, France
     email: g.lemaitre58@gmail.com
     orcid: https://orcid.org/0000-0002-0897-6791
+  - given-names: Hande
+    family-names: Gözükan
+    website: https://github.com/hndgzkn
+    affiliation: Inria, Saclay, France
+    email: hande.gozukan@inria.fr
   - given-names: Hao-Ting
     family-names: Wang
     website: https://wanghaoting.com/
@@ -328,6 +338,10 @@ authors:
     family-names: Gors
     website: http://jgors.com/
     affiliation: Insight Data Science, Mountain View, California, USA
+  - given-names: Jason
+    family-names: Kai
+    website: https://github.com/kaitj
+    affiliation: Child Mind Institute
   - given-names: Javier
     family-names: Rasero
     website: https://jrasero.github.io/
@@ -515,6 +529,9 @@ authors:
   - given-names: Moritz
     family-names: Boos
     website: https://github.com/mjboos
+  - given-names: Mudassir
+    family-names: Chapra
+    website: https://github.com/muddi900
   - given-names: Myeong Seop
     family-names: Song
     website: https://github.com/NeuroVR-Song
@@ -598,6 +615,10 @@ authors:
     affiliation: University of Pittsburgh, Pittsburgh, PA, USA
     email: raamanap@pitt.edu
     orcid: https://orcid.org/0000-0003-4662-0558
+  - given-names: Prakhar
+    family-names: Jain
+    website: https://github.com/PrakharJain1509
+    affiliation: RV College of Engineering, Bangalore, India
   - given-names: Rahul
     family-names: Brito
     website: https://github.com/Rahul-Brito
@@ -657,6 +678,11 @@ authors:
     orcid: https://orcid.org/0000-0002-6437-0700
     affiliation: Danish Research Centre for Magnetic Resonance, Copenhagen University
       Hospital Amager & Hvidovre, Copenhagen, Denmark.
+  - given-names: Sin
+    family-names: Kim
+    website: https://github.com/kimsin98
+    orcid: https://orcid.org/0000-0003-4652-3758
+    affiliation: 'Korea Advanced Institute of Science and Technology: Daejeon, KR'
   - given-names: Sourav
     family-names: Singh
     website: https://github.com/souravsingh
@@ -697,6 +723,9 @@ authors:
       USA
     email: salot@pennmedicine.upenn.edu
     orcid: https://orcid.org/0000-0001-9813-3167
+  - given-names: Tharun
+    family-names: K
+    website: https://github.com/tharun634
   - given-names: Thomas
     family-names: Bazeille
     website: https://github.com/thomasbazeille
@@ -711,6 +740,10 @@ authors:
   - given-names: Vasco
     family-names: Diogo
     website: https://github.com/vascosa
+  - given-names: Victoria
+    family-names: Shevchenko
+    website: https://github.com/victoris93
+    affiliation: Inria Saclay, Université Paris Cité, France
   - given-names: Vincent
     family-names: Michel
     website: https://github.com/vmichel

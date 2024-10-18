@@ -60,10 +60,10 @@ def test_loading_from_archive_contents(tmp_path):
         tar_extract_dir.mkdir()
 
         with tarfile.open(str(file_path)) as tarf:
-            assert (
-                sorted(map(Path, tarf.getnames()))
-                == [Path(".")] + expected_contents
-            )
+            assert sorted(map(Path, tarf.getnames())) == [
+                Path("."),
+                *expected_contents,
+            ]
             tarf.extractall(str(tar_extract_dir))
 
         labels_file = tar_extract_dir / "data" / "labels.csv"
@@ -89,7 +89,7 @@ def test_sender_regex(request_mocker):
 
     assert resp.text == f"name: nilearn, url: {url}"
 
-    def g(match, request):
+    def g(match, request):  # noqa: ARG001
         return 403
 
     request_mocker.url_mapping[pattern] = g
@@ -143,7 +143,7 @@ class _MyResponse(_testing.Response):
 def test_sender_response(request_mocker):
     request_mocker.url_mapping["*example.org/a"] = _MyResponse("", "")
 
-    def f(match, request):
+    def f(match, request):  # noqa: ARG001
         resp = _testing.Response(b"hello", request.url)
         resp.headers["cookie"] = "abc"
         return resp
@@ -226,6 +226,11 @@ def test_dict_to_archive(tmp_path):
 
     with tarfile.open(str(archive_path)) as tarf:
         assert sorted(map(Path, tarf.getnames())) == sorted(
-            list(map(Path, archive_spec.keys()))
-            + [Path("."), Path("a"), Path("a", "b"), Path("data")]
+            [
+                *list(map(Path, archive_spec.keys())),
+                Path("."),
+                Path("a"),
+                Path("a", "b"),
+                Path("data"),
+            ]
         )

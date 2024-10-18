@@ -243,10 +243,10 @@ def _convolve_regressors(
     events_copy = check_events(events)
     cleaned_events = handle_modulation_of_duplicate_events(events_copy)
 
-    trial_type = cleaned_events["trial_type"].values
-    onset = cleaned_events["onset"].values
-    duration = cleaned_events["duration"].values
-    modulation = cleaned_events["modulation"].values
+    trial_type = cleaned_events["trial_type"].to_numpy()
+    onset = cleaned_events["onset"].to_numpy()
+    duration = cleaned_events["duration"].to_numpy()
+    modulation = cleaned_events["modulation"].to_numpy()
 
     for condition in np.unique(trial_type):
         condition_mask = trial_type == condition
@@ -367,7 +367,7 @@ def make_first_level_design_matrix(
     n_add_regs = 0
     if add_regs is not None:
         if isinstance(add_regs, pd.DataFrame):
-            add_regs_ = add_regs.values
+            add_regs_ = add_regs.to_numpy()
             add_reg_names = add_regs.columns.tolist()
         else:
             add_regs_ = np.atleast_2d(add_regs)
@@ -450,7 +450,7 @@ def check_design_matrix(design_matrix):
     """
     names = list(design_matrix.keys())
     frame_times = design_matrix.index
-    matrix = design_matrix.values
+    matrix = design_matrix.to_numpy()
     return frame_times, matrix, names
 
 
@@ -482,16 +482,16 @@ def make_second_level_design_matrix(subjects_label, confounds=None):
         confounds_name = confounds.columns.tolist()
         confounds_name.remove("subject_label")
 
-    design_columns = confounds_name + ["intercept"]
+    design_columns = [*confounds_name, "intercept"]
     # check column names are unique
     if len(np.unique(design_columns)) != len(design_columns):
         raise ValueError("Design matrix columns do not have unique names")
 
     # float dtype necessary for linalg
-    design_matrix = pd.DataFrame(columns=design_columns, dtype=float)
+    design_matrix = pd.DataFrame(columns=design_columns, dtype="float64")
     for ridx, subject_label in enumerate(subjects_label):
-        design_matrix.loc[ridx] = [0] * len(design_columns)
-        design_matrix.loc[ridx, "intercept"] = 1
+        design_matrix.loc[ridx] = [0.0] * len(design_columns)
+        design_matrix.loc[ridx, "intercept"] = 1.0
         if confounds is not None:
             conrow = confounds["subject_label"] == subject_label
             if np.sum(conrow) > 1:
@@ -504,7 +504,7 @@ def make_second_level_design_matrix(subjects_label, confounds=None):
                     f"confounds not specified for subject {subject_label}"
                 )
             for conf_name in confounds_name:
-                confounds_value = confounds[conrow][conf_name].values[0]
+                confounds_value = confounds[conrow][conf_name].to_numpy()[0]
                 design_matrix.loc[ridx, conf_name] = confounds_value
 
     # check design matrix is not singular

@@ -3,14 +3,35 @@
 # Author: Philippe Gervais
 
 import inspect
+import traceback
 
 from sklearn.base import BaseEstimator
+
+
+def _has_rich():
+    """Check if rich is installed."""
+    try:
+        import rich  # noqa: F401
+
+        return True
+
+    except ImportError:
+        return False
+
+
+if _has_rich():
+    from rich import print
 
 
 # The technique used in the log() function only applies to CPython, because
 # it uses the inspect module to walk the call stack.
 def log(
-    msg, verbose=1, object_classes=(BaseEstimator,), stack_level=1, msg_level=1
+    msg,
+    verbose=1,
+    object_classes=(BaseEstimator,),
+    stack_level=1,
+    msg_level=1,
+    with_traceback=False,
 ):
     """Display a message to the user, depending on the verbosity level.
 
@@ -72,7 +93,13 @@ def log(
         if object_self is not None:
             func_name = f"{object_self.__class__.__name__}.{func_name}"
 
-        print(f"[{func_name}] {msg}")
+        if _has_rich():
+            print(f"[blue]\\[{func_name}][/blue] {msg}")
+        else:
+            print(f"[{func_name}] {msg}")
+
+        if with_traceback:
+            traceback.print_exc()
 
 
 def compose_err_msg(msg, **kwargs):

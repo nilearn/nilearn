@@ -165,7 +165,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     fdescr = get_dataset_descr(dataset_name)
 
-    params = dict([("description", fdescr)] + list(zip(keys, sub_files)))
+    params = dict([("description", fdescr), *list(zip(keys, sub_files))])
     return Bunch(**params)
 
 
@@ -710,15 +710,13 @@ def fetch_oasis_vbm(
                 % n_subjects
             )
             n_subjects = 403
-    else:  # all subjects except one are available with non-DARTEL version
-        if n_subjects > 415:
-            warnings.warn(
-                "Only 415 subjects are available in the "
-                "non-DARTEL-normalized version of the dataset. "
-                "All of them will be used instead of the wanted %d"
-                % n_subjects
-            )
-            n_subjects = 415
+    elif n_subjects > 415:
+        warnings.warn(
+            "Only 415 subjects are available in the "
+            "non-DARTEL-normalized version of the dataset. "
+            "All of them will be used instead of the wanted %d" % n_subjects
+        )
+        n_subjects = 415
     if n_subjects < 1:
         raise ValueError(f"Incorrect number of subjects ({int(n_subjects)})")
 

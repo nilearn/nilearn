@@ -6,6 +6,8 @@ import numpy as np
 from joblib import Memory
 
 from nilearn import _utils, image
+from nilearn._utils import logger
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 
@@ -248,9 +250,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
-        try:
-            from nilearn.reporting.html_report import generate_report
-        except ImportError:
+        if not is_matplotlib_installed():
             with warnings.catch_warnings():
                 mpl_unavail_msg = (
                     "Matplotlib is not imported! "
@@ -259,6 +259,8 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 warnings.filterwarnings("always", message=mpl_unavail_msg)
                 warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
                 return [None]
+
+        from nilearn.reporting.html_report import generate_report
 
         incorrect_type = not isinstance(
             displayed_maps, (list, np.ndarray, int, str)
@@ -374,7 +376,11 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
             display.close()
         return embeded_images
 
-    def fit(self, imgs=None, y=None):
+    def fit(
+        self,
+        imgs=None,
+        y=None,  # noqa: ARG002
+    ):
         """Prepare signal extraction from regions.
 
         Parameters
@@ -390,7 +396,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
         # Load images
         repr = _utils._repr_niimgs(self.mask_img, shorten=(not self.verbose))
         msg = f"loading regions from {repr}"
-        _utils.logger.log(msg=msg, verbose=self.verbose)
+        logger.log(msg=msg, verbose=self.verbose)
         self.maps_img_ = _utils.check_niimg(
             self.maps_img, dtype=self.dtype, atleast_4d=True
         )
@@ -406,7 +412,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 self.mask_img, shorten=(not self.verbose)
             )
             msg = f"loading mask from {repr}"
-            _utils.logger.log(msg=msg, verbose=self.verbose)
+            logger.log(msg=msg, verbose=self.verbose)
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
         else:
             self.mask_img_ = None
@@ -420,8 +426,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
             )
 
         elif self.resampling_target == "mask" and self.mask_img_ is not None:
-            if self.verbose > 0:
-                print("Resampling maps")
+            logger.log("Resampling maps", self.verbose)
 
             # TODO switch to force_resample=True
             # when bumping to version > 0.13
@@ -436,8 +441,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
             )
 
         elif self.resampling_target == "maps" and self.mask_img_ is not None:
-            if self.verbose > 0:
-                print("Resampling mask")
+            logger.log("Resampling mask", self.verbose)
 
             # TODO switch to force_resample=True
             # when bumping to version > 0.13
@@ -534,7 +538,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
 
         if self.resampling_target is None:
             imgs_ = _utils.check_niimg(imgs, atleast_4d=True)
-            images = dict(maps=self.maps_img_, data=imgs_)
+            images = {"maps": self.maps_img_, "data": imgs_}
             if self.mask_img_ is not None:
                 images["mask"] = self.mask_img_
             _utils.niimg_conversions.check_same_fov(
@@ -556,8 +560,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 ref_img,
                 self._resampled_maps_img_,
             ):
-                if self.verbose > 0:
-                    print("Resampling maps")
+                logger.log("Resampling maps", self.verbose)
                 # TODO switch to force_resample=True
                 # when bumping to version > 0.13
                 self._resampled_maps_img_ = self._cache(image.resample_img)(
@@ -576,8 +579,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                     self.mask_img_,
                 )
             ):
-                if self.verbose > 0:
-                    print("Resampling mask")
+                logger.log("Resampling mask", self.verbose)
                 # TODO switch to force_resample=True
                 # when bumping to version > 0.13
                 self._resampled_mask_img_ = self._cache(image.resample_img)(
@@ -671,7 +673,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
 
         self._check_fitted()
 
-        _utils.logger.log("computing image from signals", verbose=self.verbose)
+        logger.log("computing image from signals", verbose=self.verbose)
         return signal_extraction.signals_to_img_maps(
             region_signals, self.maps_img_, mask_img=self.mask_img_
         )

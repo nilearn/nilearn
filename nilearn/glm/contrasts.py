@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 import scipy.stats as sps
 
-from nilearn._utils import rename_parameters
+from nilearn._utils import logger, rename_parameters
 from nilearn.glm._utils import pad_contrast, z_score
 from nilearn.maskers import NiftiMasker
 
@@ -24,10 +24,10 @@ def expression_to_contrast_vector(expression, design_columns):
 
     Parameters
     ----------
-    expression : string
+    expression : :obj:`str`
         The expression to convert to a vector.
 
-    design_columns : list or array of strings
+    design_columns : :obj:`list` or array of strings
         The column names of the design matrix.
 
     """
@@ -35,9 +35,14 @@ def expression_to_contrast_vector(expression, design_columns):
         contrast_vector = np.zeros(len(design_columns))
         contrast_vector[list(design_columns).index(expression)] = 1.0
         return contrast_vector
-    df = pd.DataFrame(np.eye(len(design_columns)), columns=design_columns)
+
+    eye_design = pd.DataFrame(
+        np.eye(len(design_columns)), columns=design_columns
+    )
     try:
-        contrast_vector = df.eval(expression, engine="python").values
+        contrast_vector = eye_design.eval(
+            expression, engine="python"
+        ).to_numpy()
     except Exception:
         raise ValueError(
             f"The expression ({expression}) is not valid. "
@@ -45,6 +50,7 @@ def expression_to_contrast_vector(expression, design_columns):
             "defining the contrasts using design matrix columns that are "
             "invalid python identifiers."
         )
+
     return contrast_vector
 
 
@@ -59,7 +65,7 @@ def compute_contrast(labels, regression_result, con_val, stat_type=None):
     labels : array of shape (n_voxels,)
         A map of values on voxels used to identify the corresponding model
 
-    regression_result : dict
+    regression_result : :obj:`dict`
         With keys corresponding to the different labels
         values are RegressionResults instances corresponding to the voxels.
 
@@ -67,7 +73,7 @@ def compute_contrast(labels, regression_result, con_val, stat_type=None):
         Where q = number of :term:`contrast` vectors
         and p = number of regressors.
 
-    stat_type : {None, 't', 'F'}, optional
+    stat_type : {None, 't', 'F'}, default=None
         Type of the :term:`contrast`.
         If None, then defaults to 't' for 1D `con_val`
         and 'F' for 2D `con_val`.
@@ -101,12 +107,12 @@ def compute_contrast(labels, regression_result, con_val, stat_type=None):
         )
 
     if stat_type == "t":
-        effect_ = np.zeros((1, labels.size))
+        effect_ = np.zeros(labels.size)
         var_ = np.zeros(labels.size)
         for label_ in regression_result:
             label_mask = labels == label_
             reg = regression_result[label_].Tcontrast(con_val)
-            effect_[:, label_mask] = reg.effect.T
+            effect_[label_mask] = reg.effect.T
             var_[label_mask] = (reg.sd**2).T
 
     elif stat_type == "F":
@@ -200,7 +206,7 @@ class Contrast:
         variance : array of shape (n_voxels)
             The associated variance estimate.
 
-        dim : int or None, optional
+        dim : :obj:`int` or None, optional
             The dimension of the :term:`contrast`.
 
         dof : scalar, default=DEF_DOFMAX
@@ -215,7 +221,7 @@ class Contrast:
 
                 Use ``stat_type`` instead (see above).
 
-        tiny : float, default=DEF_TINY
+        tiny : :obj:`float`, default=DEF_TINY
             Small quantity used to avoid numerical underflows.
 
         dofmax : scalar, default=DEF_DOFMAX
@@ -224,19 +230,28 @@ class Contrast:
         """
         if variance.ndim != 1:
             raise ValueError("Variance array should have 1 dimension")
-        if effect.ndim != 2:
-            raise ValueError("Effect array should have 2 dimensions")
+        if effect.ndim > 2:
+            raise ValueError("Effect array should have 1 or 2 dimensions")
 
         self.effect = effect
         self.variance = variance
         self.dof = float(dof)
-        self.dim = effect.shape[0] if dim is None else dim
+        if dim is None:
+            if effect.ndim == 2:
+                self.dim = effect.shape[0]
+            else:
+                self.dim = 1
+        else:
+            self.dim = dim
+
         if self.dim > 1 and stat_type == "t":
-            print("Automatically converted multi-dimensional t to F contrast")
+            logger.log(
+                "Automatically converted multi-dimensional t to F contrast"
+            )
             stat_type = "F"
         if stat_type not in ["t", "F"]:
             raise ValueError(
-                f"{stat_type} is not a valid stat_type. " "Should be t or F"
+                f"{stat_type} is not a valid stat_type. Should be t or F"
             )
         self.stat_type = stat_type
         self.stat_ = None
@@ -266,12 +281,14 @@ class Contrast:
 
     def effect_size(self):
         """Make access to summary statistics more straightforward \
-        when computing contrasts."""
+        when computing contrasts.
+        """
         return self.effect
 
     def effect_variance(self):
         """Make access to summary statistics more straightforward \
-        when computing contrasts."""
+        when computing contrasts.
+        """
         return self.variance
 
     def stat(self, baseline=0.0):
@@ -280,7 +297,7 @@ class Contrast:
 
         Parameters
         ----------
-        baseline : float, default=0.0
+        baseline : :obj:`float`, default=0.0
             Baseline value for the test statistic.
 
         Returns
@@ -315,7 +332,7 @@ class Contrast:
 
         Parameters
         ----------
-        baseline : float, default=0.0
+        baseline : :obj:`float`, default=0.0
             Baseline value for the test statistic.
 
 
@@ -347,7 +364,7 @@ class Contrast:
 
         Parameters
         ----------
-        baseline : float, default=0.0
+        baseline : :obj:`float`, default=0.0
             Baseline value for the test statistic.
 
 
@@ -378,7 +395,7 @@ class Contrast:
 
         Parameters
         ----------
-        baseline : float, optional, default=0.0
+        baseline : :obj:`float`, optional, default=0.0
             Baseline value for the test statistic.
 
 
@@ -460,16 +477,16 @@ def compute_fixed_effects(
 
     Parameters
     ----------
-    contrast_imgs : list of Nifti1Images or strings
+    contrast_imgs : :obj:`list` of Nifti1Images or strings
         The input contrast images.
 
-    variance_imgs : list of Nifti1Images or strings
+    variance_imgs : :obj:`list` of Nifti1Images or strings
         The input variance images.
 
-    mask : Nifti1Image or NiftiMasker instance or None, optional
+    mask : Nifti1Image or NiftiMasker instance or None, default=None
         Mask image. If ``None``, it is recomputed from ``contrast_imgs``.
 
-    precision_weighted : Bool, default=False
+    precision_weighted : :obj:`bool`, default=False
         Whether fixed effects estimates should be weighted by inverse
         variance or not.
 
@@ -478,7 +495,7 @@ def compute_fixed_effects(
         when ``None``,
         it is assumed that the degrees of freedom are 100 per input.
 
-    return_z_score: Bool, default=False
+    return_z_score: :obj:`bool`, default=False
         Whether ``fixed_fx_z_score_img`` should be output or not.
 
     Returns
@@ -516,9 +533,7 @@ def compute_fixed_effects(
         masker = NiftiMasker(mask_img=mask).fit()
 
     variances = masker.transform(variance_imgs)
-    contrasts = np.array(
-        [masker.transform(contrast_img) for contrast_img in contrast_imgs]
-    )
+    contrasts = masker.transform(contrast_imgs)
 
     if dofs is not None:
         if len(dofs) != n_runs:
@@ -564,7 +579,8 @@ def _compute_fixed_effects_params(
     contrasts, variances, precision_weighted, dofs
 ):
     """Compute the fixed effects t/F-statistic, contrast, variance, \
-    given arrays of effects and variance."""
+    given arrays of effects and variance.
+    """
     tiny = 1.0e-16
     contrasts, variances = np.asarray(contrasts), np.asarray(variances)
     variances = np.maximum(variances, tiny)
@@ -584,7 +600,7 @@ def _compute_fixed_effects_params(
         if dim > 1:
             stat_type = "F"
     else:
-        fixed_fx_contrasts_ = fixed_fx_contrasts[np.newaxis]
+        fixed_fx_contrasts_ = fixed_fx_contrasts
     con = Contrast(
         effect=fixed_fx_contrasts_,
         variance=fixed_fx_variance,
