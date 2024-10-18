@@ -520,15 +520,14 @@ def test_targets_in_y_space_net_regressor():
 @pytest.mark.parametrize(
     "model", [BaseSpaceNet, SpaceNetRegressor, SpaceNetClassifier]
 )
-def test_space_net_not_implemented_surface_objects(
-    mini_mask, make_mini_img, model
-):
+def test_space_net_not_implemented_surface_objects(surf_mask, surf_img, model):
     """Raise NotImplementedError when space net is fit on surface objects."""
-    mini_img = make_mini_img((5,))
+    img = surf_img((5,))
     y = np.ones((5,))
+    mask = surf_mask()
 
     with pytest.raises(NotImplementedError):
-        model(mask=mini_mask).fit(mini_img, y)
+        model(mask=mask).fit(img, y)
 
     with pytest.raises(NotImplementedError):
-        model().fit(mini_img, y)
+        model().fit(img, y)
