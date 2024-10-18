@@ -100,8 +100,8 @@ def test_transform_inverse_transform_no_mask(
 def test_transform_inverse_transform_with_mask(
     surf_mesh, assert_img_equal, shape
 ):
-    # make a sample image with data 1-4 on left part
-    # and 10-50 on right part
+    # make a sample image with data on the first timepoint/sample 1-4 on
+    # left part and 10-50 on right part
     mesh = surf_mesh()
     img_data = {}
     for i, (key, val) in enumerate(mesh.parts.items()):
