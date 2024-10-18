@@ -1180,7 +1180,8 @@ def _check_and_load_tables(tables_, var_name):
             pass
         else:
             raise TypeError(
-                f"{var_name} can only be a pandas DataFrames or a string. "
+                f"{var_name} can only be a pandas DataFrame, "
+                "a Path object or a string. "
                 f"A {type(table)} was provided at idx {table_idx}"
             )
     return tables
@@ -1194,7 +1195,7 @@ def _read_events_table(table):
 
     Parameters
     ----------
-    table : string
+    table : string, pathlib.Path
         Accepts the path to an events file.
 
     Returns
