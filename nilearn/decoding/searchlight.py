@@ -409,6 +409,9 @@ class SearchLight(BaseEstimator):
         # Ensure images are 4D
         imgs = check_niimg_4d(imgs)
 
+        if not np.any(self.process_mask_):
+            raise ValueError("The process mask is empty and masks all data.")
+
         # Apply mask and affinity again with the fitted mask
         X, _ = _apply_mask_and_get_affinity(
             np.asarray(np.where(self.process_mask_)).T,
