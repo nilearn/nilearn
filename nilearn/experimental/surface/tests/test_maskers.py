@@ -74,8 +74,8 @@ def test_mask_img_transform_keys_mismatch(surf_mask, surf_img, drop_img_part):
 def test_transform_inverse_transform_no_mask(
     surf_mesh, shape, assert_img_equal
 ):
-    # make a sample image with data 1-4 on left part
-    # and 10-50 on right part
+    # make a sample image with data on the first timepoint/sample 1-4 on
+    # left part and 10-50 on right part
     mesh = surf_mesh()
     img_data = {}
     for i, (key, val) in enumerate(mesh.parts.items()):
