@@ -417,9 +417,6 @@ class SearchLight(BaseEstimator):
 
         imgs = check_niimg_4d(imgs)
 
-        if not np.any(self.process_mask_):
-            raise ValueError("The process mask is empty and masks all data.")
-
         X, A = _apply_mask_and_get_affinity(
             np.asarray(np.where(self.process_mask_)).T,
             imgs,
@@ -429,8 +426,6 @@ class SearchLight(BaseEstimator):
         )
 
         estimator = self.estimator
-        if isinstance(estimator, str):
-            estimator = ESTIMATOR_CATALOG[estimator]()
 
         # Use the modified `_group_iter_search_light` logic to avoid `y` issues
         result = search_light(
@@ -444,12 +439,6 @@ class SearchLight(BaseEstimator):
             self.n_jobs,
             self.verbose,
         )
-
-        if result is None or result.size == 0:
-            raise ValueError(
-                "Search light returned None or empty result. "
-                "Check the input and mask."
-            )
 
         reshaped_result = np.zeros(self.process_mask_.shape)
         reshaped_result[np.where(self.process_mask_)] = result
