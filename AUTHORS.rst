@@ -64,6 +64,7 @@ Some other past or present contributors are:
 * `Anand Joshi`_: University of Southern California, Los Angeles, California, United States
 * `Andrés Hoyos Idrobo`_: Rakuten, France
 * `Anne-Sophie Kieslinger`_: Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig, Germnay
+* `Anupriya Kumari`_: Indian Institute of Technology, Roorkee, India
 * `Ariel Rokem`_: University of Washington, Psychology, Seattle, Washington, 98107, USA
 * `Arthur Mensch`_
 * `Aswin Vijayan`_
