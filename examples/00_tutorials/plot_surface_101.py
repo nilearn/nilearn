@@ -21,15 +21,15 @@ can plot, save and load them.
 # unit that holds the data. For volumetric images, that basic unit is a voxel,
 # while for surface images it is a :term:`vertex`.
 #
-# The goal of this tutorial is to show how to work with surface images in
+# The goal of this tutorial is to show you how to work with surface images in
 # Nilearn. For more existential questions like why surface images are useful,
 # how they are created etc., `Andy Jahn's blog
 # <https://andysbrainbook.readthedocs.io/en/latest/FreeSurfer/FreeSurfer_Introduction.html>`_
 # is a good starting point.
 
 # %%
-# GIFTI data format
-# -----------------
+# Data format
+# -----------
 #
 # Brain-related surface data are typically stored in the GIFTI format
 # (``.gii`` files) which can be read via Nilearn.
@@ -41,6 +41,7 @@ can plot, save and load them.
 # %%
 # Mesh
 # ----
+#
 # A :term:`mesh` can be defined by two arrays:
 #  1. The coordinates of the vertices.
 #  2. Which vertices need to be connected to form :term:`faces`.
@@ -101,6 +102,7 @@ mesh = PolyMesh(
 # %%
 # Data
 # ----
+#
 # The data is the information stored at each :term:`vertex` of the
 # :term:`mesh`. This can be anything from the thickness of the cortex to the
 # activation level at that :term:`vertex`.
@@ -116,6 +118,7 @@ data = {"left": left_data, "right": right_data}
 # %%
 # Creating a surface image
 # ------------------------
+#
 # Now we can create a surface image by combining the :term:`mesh` and the data
 # using the :class:`~nilearn.experimental.surface.SurfaceImage` class:
 from nilearn.experimental.surface import SurfaceImage
@@ -125,6 +128,7 @@ surface_image = SurfaceImage(mesh=mesh, data=data)
 # %%
 # Plotting the surface image
 # --------------------------
+#
 # The surface image can be plotted using the different functions from the
 # :mod:`nilearn.plotting` module. Here we will show how to use the
 # :func:`~nilearn.experimental.plotting.view_surf` function:
@@ -145,6 +149,7 @@ plotting.view_surf(
 # %%
 # Save the surface image
 # ----------------------
+#
 # You can save the :term:`mesh` and the data separately as GIFTI files:
 from pathlib import Path
 
@@ -163,9 +168,9 @@ surface_image.data.to_filename(output_dir / "surface_image_data.gii")
 # %%
 # Load the surface image
 # ----------------------
+#
 # You can load the saved files back into Nilearn using the
 # :class:`~nilearn.experimental.surface.SurfaceImage` object:
-
 mesh = {
     "left": output_dir / "surface_image_mesh_hemi-L.gii",
     "right": output_dir / "surface_image_mesh_hemi-R.gii",
