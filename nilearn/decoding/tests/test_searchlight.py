@@ -279,7 +279,7 @@ def test_reuse_search_light_in_transform():
     sl.fit(data_img, cond)
 
     # Ensure the model is properly fitted
-    assert sl.scores_ is not None, "Model was not properly fitted."
+    assert sl.scores_ is not None
     assert sl.process_mask_ is not None, "Process mask was not initialized."
 
     # Perform transform and validate output
