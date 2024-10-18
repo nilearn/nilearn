@@ -9,7 +9,6 @@ import shutil
 import tarfile
 import urllib
 from pathlib import Path
-from tempfile import mkstemp
 from unittest.mock import MagicMock
 from zipfile import ZipFile
 
@@ -191,26 +190,23 @@ def test_get_dataset_dir_symlink(tmp_path):
     assert os.path.exists(data_dir)
 
 
-def test_md5_sum_file():
+def test_md5_sum_file(tmp_path):
     # Create dummy temporary file
-    out, f = mkstemp()
-    os.write(out, b"abcfeg")
-    os.close(out)
+    f = tmp_path / "test"
+    f.write_bytes(b"abcfeg")
 
     assert _utils._md5_sum_file(f) == "18f32295c556b2a1a3a8e68fe1ad40f7"
 
-    os.remove(f)
+    f.unlink()
 
 
-def test_read_md5_sum_file():
+def test_read_md5_sum_file(tmp_path):
     # Create dummy temporary file
-    out, f = mkstemp()
-    os.write(
-        out,
+    f = tmp_path / "test"
+    f.write_bytes(
         b"20861c8c3fe177da19a7e9539a5dbac  /tmp/test\n"
         b"70886dcabe7bf5c5a1c24ca24e4cbd94  test/some_image.nii",
     )
-    os.close(out)
     h = _utils.read_md5_sum_file(f)
 
     assert "/tmp/test" in h
@@ -218,7 +214,7 @@ def test_read_md5_sum_file():
     assert h["test/some_image.nii"] == "70886dcabe7bf5c5a1c24ca24e4cbd94"
     assert h["/tmp/test"] == "20861c8c3fe177da19a7e9539a5dbac"
 
-    os.remove(f)
+    f.unlink()
 
 
 def test_tree(tmp_path):

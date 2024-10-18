@@ -1529,7 +1529,7 @@ def _download_image_nii_file(image_info, collection, download_params):
 
         tmp_file = f"tmp_{struuid}.nii.gz"
 
-        tmp_path = os.path.join(collection["absolute_path"], tmp_file)
+        tmp_path = Path(collection["absolute_path"], tmp_file)
 
         _simple_download(
             image_url,
@@ -1552,7 +1552,7 @@ def _download_image_nii_file(image_info, collection, download_params):
         im_resampled.to_filename(resampled_image_absolute_path)
 
         # Remove temporary file
-        os.remove(tmp_path)
+        tmp_path.unlink()
     else:
         _simple_download(
             image_url,
@@ -1564,7 +1564,8 @@ def _download_image_nii_file(image_info, collection, download_params):
 
 
 def _check_has_words(file_name):
-    if not os.path.isfile(file_name):
+    file_name = Path(file_name)
+    if not file_name.is_file():
         return False
     info = _remove_none_strings(_json_from_file(file_name))
     try:
@@ -1572,7 +1573,7 @@ def _check_has_words(file_name):
         return True
     except (AttributeError, TypeError, AssertionError):
         pass
-    os.remove(file_name)
+    file_name.unlink()
     return False
 
 
