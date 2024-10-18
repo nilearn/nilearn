@@ -1,5 +1,4 @@
 import itertools
-import os
 import shutil
 import unittest.mock
 import warnings
@@ -463,7 +462,7 @@ def test_run_glm_errors(rng):
 @pytest.mark.parametrize(
     "ar_vals", [[-0.2], [-0.2, -0.5], [-0.2, -0.5, -0.7, -0.3]]
 )
-def test_glm_AR_estimates(rng, ar_vals):
+def test_glm_ar_estimates(rng, ar_vals):
     """Test that Yule-Walker AR fits are correct."""
     n, p, q = 1, 500, 2
     X_orig = rng.standard_normal((p, q))
@@ -495,7 +494,7 @@ def test_glm_AR_estimates(rng, ar_vals):
     assert_almost_equal(yw[0], ar_vals, decimal=1)
 
 
-def test_glm_AR_estimates_errors(rng):
+def test_glm_ar_estimates_errors(rng):
     """Test Yule-Walker errors."""
     (n, p) = (1, 500)
     Y_orig = rng.standard_normal((p, n))
@@ -881,7 +880,7 @@ def test_first_level_from_bids_get_metadata_from_derivatives(tmp_path):
         assert models[0].slice_time_ref == StartTime / RepetitionTime
 
 
-def test_first_level_from_bids_get_RepetitionTime_from_derivatives(tmp_path):
+def test_first_level_from_bids_get_repetition_time_from_derivatives(tmp_path):
     """Only RepetitionTime is provided in derivatives.
 
     Warning about missing StarTime time in derivatives.
@@ -908,7 +907,7 @@ def test_first_level_from_bids_get_RepetitionTime_from_derivatives(tmp_path):
         assert models[0].slice_time_ref == 0.0
 
 
-def test_first_level_from_bids_get_StartTime_from_derivatives(tmp_path):
+def test_first_level_from_bids_get_start_time_from_derivatives(tmp_path):
     """Only StartTime is provided in derivatives.
 
     Warning about missing repetition time in derivatives,
@@ -1614,7 +1613,7 @@ def test_first_level_from_bids_with_missing_events(tmp_path_factory):
     bids_dataset = _new_bids_dataset(tmp_path_factory.mktemp("no_events"))
     events_files = get_bids_files(main_path=bids_dataset, file_tag="events")
     for f in events_files:
-        os.remove(f)
+        Path(f).unlink()
 
     with pytest.raises(ValueError, match="No events.tsv files found"):
         first_level_from_bids(
@@ -1634,7 +1633,7 @@ def test_first_level_from_bids_no_tr(tmp_path_factory):
         main_path=bids_dataset, file_tag="bold", file_type="json"
     )
     for f in json_files:
-        os.remove(f)
+        Path(f).unlink()
 
     with pytest.warns(
         UserWarning, match="'t_r' not provided and cannot be inferred"
@@ -1656,7 +1655,7 @@ def test_first_level_from_bids_no_bold_file(tmp_path_factory):
         file_type="*gz",
     )
     for img_ in imgs:
-        os.remove(img_)
+        Path(img_).unlink()
 
     with pytest.raises(ValueError, match="No BOLD files found "):
         first_level_from_bids(
@@ -1673,7 +1672,7 @@ def test_first_level_from_bids_with_one_events_missing(tmp_path_factory):
         tmp_path_factory.mktemp("one_event_missing")
     )
     events_files = get_bids_files(main_path=bids_dataset, file_tag="events")
-    os.remove(events_files[0])
+    Path(events_files[0]).unlink()
 
     with pytest.raises(ValueError, match="Same number of event files "):
         first_level_from_bids(
@@ -1696,7 +1695,7 @@ def test_first_level_from_bids_one_confound_missing(tmp_path_factory):
         main_path=bids_dataset / "derivatives",
         file_tag="desc-confounds_timeseries",
     )
-    os.remove(confound_files[-1])
+    Path(confound_files[-1]).unlink()
 
     with pytest.raises(ValueError, match="Same number of confound"):
         first_level_from_bids(
@@ -1717,7 +1716,7 @@ def test_first_level_from_bids_all_confounds_missing(tmp_path_factory):
         file_tag="desc-confounds_timeseries",
     )
     for f in confound_files:
-        os.remove(f)
+        Path(f).unlink()
 
     models, imgs, events, confounds = first_level_from_bids(
         dataset_path=bids_dataset,

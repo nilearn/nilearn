@@ -184,7 +184,11 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
         self.n_jobs = n_jobs
         self._shelving = False
 
-    def fit(self, imgs=None, y=None):
+    def fit(
+        self,
+        imgs=None,
+        y=None,  # noqa: ARG002
+    ):
         """Compute the mask corresponding to the data.
 
         Parameters

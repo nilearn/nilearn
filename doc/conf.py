@@ -402,6 +402,7 @@ intersphinx_mapping = {
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
     "nistats": ("https://nistats.github.io", None),
     "joblib": ("https://joblib.readthedocs.io/en/latest/", None),
+    "plotly": ("https://plotly.com/python-api-reference/", None),
 }
 
 extlinks = {
@@ -445,13 +446,20 @@ sphinx_gallery_conf = {
 }
 
 
-def touch_example_backreferences(app, what, name, obj, options, lines):
+def touch_example_backreferences(
+    app,
+    what,  # noqa: ARG001
+    name,
+    obj,  # noqa: ARG001
+    options,  # noqa: ARG001
+    lines,  # noqa: ARG001
+):
     # generate empty examples files, so that we don't get
     # inclusion errors if there are no examples for a class / module
     examples_path = Path(
         app.srcdir, "modules", "generated", f"{name}.examples"
     )
-    if not os.path.exists(examples_path):
+    if not examples_path.exists():
         # touch file
         open(examples_path, "w").close()
 

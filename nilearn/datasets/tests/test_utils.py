@@ -486,7 +486,9 @@ def test_fetch_file_overwrite(
 
 @pytest.mark.parametrize("should_cast_path_to_string", [False, True])
 def test_fetch_files_use_session(
-    should_cast_path_to_string, tmp_path, request_mocker
+    should_cast_path_to_string,
+    tmp_path,
+    request_mocker,  # noqa: ARG001
 ):
     if should_cast_path_to_string:
         tmp_path = str(tmp_path)
@@ -517,7 +519,7 @@ def test_fetch_files_overwrite(
     fil = _utils.fetch_files(
         data_dir=str(tmp_path),
         verbose=0,
-        files=[files + ({"overwrite": True},)],
+        files=[(*files, {"overwrite": True})],
     )
 
     assert request_mocker.url_count == 1
@@ -533,7 +535,7 @@ def test_fetch_files_overwrite(
     fil = _utils.fetch_files(
         data_dir=str(tmp_path),
         verbose=0,
-        files=[files + ({"overwrite": False},)],
+        files=[(*files, {"overwrite": False})],
     )
 
     assert request_mocker.url_count == 1
@@ -545,7 +547,7 @@ def test_fetch_files_overwrite(
     fil = _utils.fetch_files(
         data_dir=str(tmp_path),
         verbose=0,
-        files=[files + ({"overwrite": True},)],
+        files=[(*files, {"overwrite": True})],
     )
 
     assert request_mocker.url_count == 2

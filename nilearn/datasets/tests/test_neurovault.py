@@ -50,8 +50,8 @@ def _get_neurovault_data():
     )
     collection_sizes = images.groupby("collection_id").count()
     collections["true_number_of_images"] = collection_sizes.reindex(
-        index=collections["id"].values, fill_value=0
-    ).values
+        index=collections["id"].to_numpy(), fill_value=0
+    ).to_numpy()
     collections["number_of_images"] = collections[
         "true_number_of_images"
     ] + rng.binomial(1, 0.1, n_collections) * rng.integers(
@@ -195,7 +195,7 @@ def _neurovault_one_image(img_id):
     return images.loc[img_id].to_dict()
 
 
-def _neurovault_file(parts, query):
+def _neurovault_file(parts, query):  # noqa: ARG001
     """Mock the Neurovault API behind the `/media/images/` path."""
     return generate_fake_fmri(length=1)[0]
 
@@ -209,7 +209,7 @@ class _NumpyJsonEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-def _neurovault(match, request):
+def _neurovault(match, request):  # noqa: ARG001
     """Mock response content from the Neurovault API.
 
     The fake data used to generate responses is provided by
@@ -804,11 +804,13 @@ def test_fetch_neurovault_ids(tmp_path):
     collections = collections.sort_values(
         by="true_number_of_images", ascending=False
     )
-    other_col_id, *col_ids = collections["id"].values[:3]
-    img_ids = images[images["collection_id"] == other_col_id]["id"].values[:3]
+    other_col_id, *col_ids = collections["id"].to_numpy()[:3]
+    img_ids = images[images["collection_id"] == other_col_id]["id"].to_numpy()[
+        :3
+    ]
     img_from_cols_ids = images[images["collection_id"].isin(col_ids)][
         "id"
-    ].values
+    ].to_numpy()
 
     with pytest.raises(ValueError):
         neurovault.fetch_neurovault_ids(mode="bad")

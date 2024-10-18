@@ -12,10 +12,10 @@ def _codes_bezier(pts):
     # Next two lines are meant to handle both Bezier 3 and 4
     path_attr = f"CURVE{bezier_num}"
     codes = [getattr(Path, path_attr)] * (bezier_num - 1)
-    return [Path.MOVETO] + codes
+    return [Path.MOVETO, *codes]
 
 
-def _codes_segment(pts):
+def _codes_segment(pts):  # noqa: ARG001
     # pts is needed for API consistency with _codes_bezier
     return [Path.MOVETO, Path.LINETO]
 

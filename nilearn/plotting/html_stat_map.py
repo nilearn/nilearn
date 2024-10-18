@@ -163,7 +163,7 @@ def _save_sprite(
     return sprite
 
 
-def _bytesIO_to_base64(handle_io):
+def _bytes_io_to_base64(handle_io):
     """Encode the content of a bytesIO virtual file as base64.
 
     Also closes the file.
@@ -392,7 +392,7 @@ def _json_view_data(
     bg_data = safe_get_data(bg_img, ensure_finite=True).astype(float)
     bg_mask, bg_cmap = _get_bg_mask_and_cmap(bg_img, black_bg)
     _save_sprite(bg_data, bg_sprite, bg_max, bg_min, bg_mask, bg_cmap, "png")
-    json_view["bg_base64"] = _bytesIO_to_base64(bg_sprite)
+    json_view["bg_base64"] = _bytes_io_to_base64(bg_sprite)
 
     # Create a base64 sprite for the stat map
     stat_map_sprite = BytesIO()
@@ -407,13 +407,13 @@ def _json_view_data(
         cmap,
         "png",
     )
-    json_view["stat_map_base64"] = _bytesIO_to_base64(stat_map_sprite)
+    json_view["stat_map_base64"] = _bytes_io_to_base64(stat_map_sprite)
 
     # Create a base64 colormap
     if colorbar:
         stat_map_cm = BytesIO()
         _save_cm(stat_map_cm, colors["cmap"], "png")
-        json_view["cm_base64"] = _bytesIO_to_base64(stat_map_cm)
+        json_view["cm_base64"] = _bytes_io_to_base64(stat_map_cm)
     else:
         json_view["cm_base64"] = ""
 

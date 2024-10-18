@@ -72,7 +72,7 @@ def test_transform_inverse_transform(shape, make_mini_img, assert_img_equal):
     assert np.array_equal(
         masked_img.ravel()[:9], [1, 2, 3, 4, 10, 20, 30, 40, 50]
     )
-    assert masked_img.shape == shape + (img.shape[-1],)
+    assert masked_img.shape == (*shape, img.shape[-1])
     unmasked_img = masker.inverse_transform(masked_img)
     assert_img_equal(img, unmasked_img)
 
@@ -84,7 +84,7 @@ def test_transform_inverse_transform_with_mask(
     img = make_mini_img(shape)
     masker = SurfaceMasker(mini_mask).fit(img)
     masked_img = masker.transform(img)
-    assert masked_img.shape == shape + (img.shape[-1] - 2,)
+    assert masked_img.shape == (*shape, img.shape[-1] - 2)
     assert np.array_equal(masked_img.ravel()[:7], [2, 3, 4, 20, 30, 40, 50.0])
     unmasked_img = masker.inverse_transform(masked_img)
     expected_data = {k: v.copy() for (k, v) in img.data.parts.items()}

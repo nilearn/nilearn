@@ -9,7 +9,7 @@ from nilearn.plotting.img_plotting import MNI152TEMPLATE
 
 @pytest.mark.parametrize("anat_img", [False, MNI152TEMPLATE])
 @pytest.mark.parametrize("display_mode", ["z", "ortho"])
-def test_plot_anat_MNI(anat_img, display_mode, tmp_path):
+def test_plot_anat_mni(anat_img, display_mode, tmp_path):
     """Tests for plot_anat with MNI template."""
     slicer = plot_anat(anat_img=anat_img, display_mode=display_mode)
     filename = tmp_path / "test.png"

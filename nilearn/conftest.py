@@ -21,6 +21,7 @@ from nilearn.datasets.tests._testing import (
 from nilearn.experimental.conftest import (  # noqa: F401
     drop_img_part,
     make_mini_img,
+    make_mini_mask,
     mini_img,
     mini_mask,
     mini_mesh,
@@ -43,7 +44,7 @@ else:
     matplotlib = None
 
 
-def pytest_configure(config):
+def pytest_configure(config):  # noqa: ARG001
     """Use Agg so that no figures pop up."""
     if matplotlib is not None:
         matplotlib.use("Agg", force=True)
