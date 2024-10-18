@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 from sklearn.model_selection import KFold, LeaveOneGroupOut
-import re
+
 from nilearn.conftest import _rng
 from nilearn.decoding import searchlight
 
@@ -221,7 +221,7 @@ def test_dimension_mismatch_error():
     sl = searchlight.SearchLight(invalid_mask_img, radius=1.0)
 
     with pytest.raises(
-            ValueError, match="The mask image and the 4D input images must"
+        ValueError, match="The mask image and the 4D input images must"
     ):
         sl.fit(data_img, cond)
 
@@ -262,7 +262,11 @@ def test_transform_applies_mask_correctly():
     transformed_scores = sl.transform(data_img)
 
     assert transformed_scores is not None, "Transform did not return scores."
-    assert transformed_scores.shape == (5, 5, 5), "Unexpected transformed score shape."
+    assert transformed_scores.shape == (
+        5,
+        5,
+        5,
+    ), "Unexpected transformed score shape."
     assert transformed_scores.size > 0, "Transform returned an empty array."
 
 

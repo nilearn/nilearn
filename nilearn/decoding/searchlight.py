@@ -420,10 +420,20 @@ class SearchLight(BaseEstimator):
 
         # Ensure the result from search_light is not None and correctly shaped
         result = search_light(
-            X, None, self.estimator, None, None, self.scoring, self.cv,
-            self.n_jobs, self.verbose
+            X,
+            None,
+            self.estimator,
+            None,
+            None,
+            self.scoring,
+            self.cv,
+            self.n_jobs,
+            self.verbose,
         )
         if result is None or result.size == 0:
-            raise ValueError("Search light returned None or empty result. Check the input and mask.")
+            raise ValueError(
+                "Search light returned None or empty result. "
+                "Check the input and mask."
+            )
 
         return result
