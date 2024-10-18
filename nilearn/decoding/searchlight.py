@@ -194,12 +194,18 @@ def _group_iter_search_light(
             kwargs = {"scoring": scoring}
 
         if y is None:
-            y_dummy = np.array([0] * (X.shape[0] // 2) + [1] * (X.shape[0] // 2))
-            estimator.fit(X[:, row], y_dummy[:X.shape[0]])  # Ensure the size matches X
+            y_dummy = np.array(
+                [0] * (X.shape[0] // 2) + [1] * (X.shape[0] // 2)
+            )
+            estimator.fit(
+                X[:, row], y_dummy[: X.shape[0]]
+            )  # Ensure the size matches X
             par_scores[i] = np.mean(estimator.decision_function(X[:, row]))
         else:
             par_scores[i] = np.mean(
-                cross_val_score(estimator, X[:, row], y, cv=cv, n_jobs=1, **kwargs)
+                cross_val_score(
+                    estimator, X[:, row], y, cv=cv, n_jobs=1, **kwargs
+                )
             )
 
         if verbose > 0:
@@ -405,7 +411,9 @@ class SearchLight(BaseEstimator):
     def transform(self, imgs):
         """Apply the fitted searchlight on new images."""
         if self.process_mask_ is None or self.scores_ is None:
-            raise ValueError("You must fit the model before calling `transform()`.")
+            raise ValueError(
+                "You must fit the model before calling `transform()`."
+            )
 
         imgs = check_niimg_4d(imgs)
 
@@ -426,15 +434,25 @@ class SearchLight(BaseEstimator):
 
         # Use the modified `_group_iter_search_light` logic to avoid `y` issues
         result = search_light(
-            X, None, estimator, A, None, self.scoring, self.cv, self.n_jobs, self.verbose
+            X,
+            None,
+            estimator,
+            A,
+            None,
+            self.scoring,
+            self.cv,
+            self.n_jobs,
+            self.verbose,
         )
 
         if result is None or result.size == 0:
-            raise ValueError("Search light returned None or empty result. Check the input and mask.")
+            raise ValueError(
+                "Search light returned None or empty result. "
+                "Check the input and mask."
+            )
 
         reshaped_result = np.zeros(self.process_mask_.shape)
         reshaped_result[np.where(self.process_mask_)] = result
         reshaped_result = np.abs(reshaped_result)
 
         return reshaped_result
-
