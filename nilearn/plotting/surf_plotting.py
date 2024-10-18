@@ -1058,7 +1058,7 @@ def plot_surf_contours(
 
     Parameters
     ----------
-    surf_mesh : :obj:`str` or :obj:`list` of :class:`two numpy.ndarray`
+    surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`
         Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
@@ -1247,7 +1247,7 @@ def plot_surf_stat_map(
 
     Parameters
     ----------
-    surf_mesh : :obj:`str` or :obj:`list` of :class:`two numpy.ndarray` or Mesh
+    surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray` or Mesh
         Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
