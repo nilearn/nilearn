@@ -193,7 +193,7 @@ max-complexity = 41
 "**/{examples}/*" = ["D103", "D400", "E402"]
 "**/{tests}/*" = ["D100", "D101", "D102", "D103", "E402"]
 "__init__.py" = ["D104", "E402"]
-"nilearn/datasets/**/*" = ["PTH101", "PTH102", "PTH107", "PTH110", "PTH111", "PTH113"]
+"nilearn/datasets/**/*" = ["PTH102", "PTH107", "PTH110", "PTH111", "PTH113"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
