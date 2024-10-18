@@ -208,18 +208,24 @@ def test_searchlight_scores_img_error_before_fit():
     with pytest.raises(ValueError, match="The model has not been fitted yet."):
         sl.scores_img_
 
+
 def test_dimension_mismatch_error():
     """Test if ValueError is raised when mask and image dimensions mismatch."""
     data_img, cond, _ = _make_searchlight_test_data(frames=20)
 
     # Create a mask with mismatched dimensions (should be 5x5x5)
-    invalid_mask_img = Nifti1Image(np.zeros((3, 3, 3), dtype="uint8"), np.eye(4))
+    invalid_mask_img = Nifti1Image(
+        np.zeros((3, 3, 3), dtype="uint8"), np.eye(4)
+    )
 
     sl = searchlight.SearchLight(invalid_mask_img, radius=1.0)
 
     # Expect a ValueError due to mismatched dimensions
-    with pytest.raises(ValueError, match="The mask image and the 4D input images must"):
+    with pytest.raises(
+        ValueError, match="The mask image and the 4D input images must"
+    ):
         sl.fit(data_img, cond)
+
 
 def test_access_scores_img_before_fit():
     """Test if accessing `scores_img_` raises a ValueError before fitting."""
@@ -237,10 +243,9 @@ def test_transform_without_fit():
     data_img, cond, mask_img = _make_searchlight_test_data(frames)
     sl = searchlight.SearchLight(mask_img, radius=1.0)
 
-    # Create mock data
-    data_img = Nifti1Image(np.random.rand(5, 5, 5, 10), np.eye(4))
-
-    with pytest.raises(ValueError, match="You must fit the model before calling `transform()`"):
+    with pytest.raises(
+        ValueError, match="You must fit the model before calling `transform()`"
+    ):
         sl.transform(data_img)
 
 
@@ -256,7 +261,9 @@ def test_transform_applies_mask_correctly():
     transformed_scores = sl.transform(data_img)
 
     assert transformed_scores is not None, "Transform did not return scores."
-    assert transformed_scores.shape[0] > 0, "Transform returned an empty score array."
+    assert (
+        transformed_scores.shape[0] > 0
+    ), "Transform returned an empty score array."
 
 
 def test_reuse_search_light_in_transform():
