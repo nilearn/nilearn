@@ -18,7 +18,9 @@ from sklearn import svm
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import KFold, cross_val_score
+from sklearn.svm import LinearSVC
 
+from nilearn.image import new_img_like
 from nilearn.maskers.nifti_spheres_masker import _apply_mask_and_get_affinity
 
 from .. import masking
@@ -191,9 +193,21 @@ def _group_iter_search_light(
         if isinstance(cv, KFold):
             kwargs = {"scoring": scoring}
 
-        par_scores[i] = np.mean(
-            cross_val_score(estimator, X[:, row], y, cv=cv, n_jobs=1, **kwargs)
-        )
+        if y is None:
+            y_dummy = np.array(
+                [0] * (X.shape[0] // 2) + [1] * (X.shape[0] // 2)
+            )
+            estimator.fit(
+                X[:, row], y_dummy[: X.shape[0]]
+            )  # Ensure the size matches X
+            par_scores[i] = np.mean(estimator.decision_function(X[:, row]))
+        else:
+            par_scores[i] = np.mean(
+                cross_val_score(
+                    estimator, X[:, row], y, cv=cv, n_jobs=1, **kwargs
+                )
+            )
+
         if verbose > 0:
             # One can't print less than each 10 iterations
             step = 11 - min(verbose, 10)
@@ -249,6 +263,26 @@ class SearchLight(BaseEstimator):
         when y is supplied.
     %(verbose0)s
 
+    Attributes
+    ----------
+    scores_ : numpy.ndarray
+        3D array containing searchlight scores for each voxel, aligned
+         with the mask.
+
+         .. versionadded:: 0.11.0
+
+    process_mask_ : numpy.ndarray
+        Boolean mask array representing the voxels included in the
+         searchlight computation.
+
+         .. versionadded:: 0.11.0
+
+    masked_scores_ : numpy.ndarray
+        1D array containing the searchlight scores corresponding
+        to the masked region only.
+
+        .. versionadded:: 0.11.0
+
     Notes
     -----
     The searchlight [Kriegeskorte 06] is a widely used approach for the
@@ -273,7 +307,6 @@ class SearchLight(BaseEstimator):
         mask_img,
         process_mask_img=None,
         radius=2.0,
-        estimator="svc",
         n_jobs=1,
         scoring=None,
         cv=None,
@@ -282,11 +315,14 @@ class SearchLight(BaseEstimator):
         self.mask_img = mask_img
         self.process_mask_img = process_mask_img
         self.radius = radius
-        self.estimator = estimator
+        self.estimator = LinearSVC()
         self.n_jobs = n_jobs
         self.scoring = scoring
         self.cv = cv
         self.verbose = verbose
+        self.scores_ = None
+        self.process_mask_ = None
+        self.masked_scores_ = None
 
     def fit(self, imgs, y, groups=None):
         """Fit the searchlight.
@@ -319,6 +355,12 @@ class SearchLight(BaseEstimator):
         process_mask, process_mask_affine = masking.load_mask_img(
             process_mask_img
         )
+        if process_mask.shape != imgs.shape[:3]:
+            raise ValueError(
+                "The mask image and the 4D input images must"
+                " have matching dimensions."
+            )
+        self.process_mask_ = process_mask
         process_mask_coords = np.where(process_mask != 0)
         process_mask_coords = coord_transform(
             process_mask_coords[0],
@@ -337,9 +379,7 @@ class SearchLight(BaseEstimator):
         )
 
         estimator = self.estimator
-        if estimator == "svc":
-            estimator = ESTIMATOR_CATALOG[estimator](dual=True)
-        elif isinstance(estimator, str):
+        if isinstance(estimator, str):
             estimator = ESTIMATOR_CATALOG[estimator]()
 
         scores = search_light(
@@ -353,7 +393,55 @@ class SearchLight(BaseEstimator):
             self.n_jobs,
             self.verbose,
         )
-        scores_3D = np.zeros(process_mask.shape)
-        scores_3D[process_mask] = scores
-        self.scores_ = scores_3D
+        self.masked_scores_ = scores
+        self.scores_ = np.zeros(process_mask.shape)
+        self.scores_[np.where(process_mask)] = scores
         return self
+
+    @property
+    def scores_img_(self):
+        """Convert the 3D scores array into a NIfTI image."""
+        if self.scores_ is None:
+            raise ValueError(
+                "The model has not been fitted yet. Call `fit()` "
+                "before accessing `scores_img_`."
+            )
+        return new_img_like(self.mask_img, self.scores_)
+
+    def transform(self, imgs):
+        """Apply the fitted searchlight on new images."""
+        if self.process_mask_ is None or self.scores_ is None:
+            raise ValueError(
+                "You must fit the model before calling `transform()`."
+            )
+
+        imgs = check_niimg_4d(imgs)
+
+        X, A = _apply_mask_and_get_affinity(
+            np.asarray(np.where(self.process_mask_)).T,
+            imgs,
+            self.radius,
+            True,
+            mask_img=self.mask_img,
+        )
+
+        estimator = self.estimator
+
+        # Use the modified `_group_iter_search_light` logic to avoid `y` issues
+        result = search_light(
+            X,
+            None,
+            estimator,
+            A,
+            None,
+            self.scoring,
+            self.cv,
+            self.n_jobs,
+            self.verbose,
+        )
+
+        reshaped_result = np.zeros(self.process_mask_.shape)
+        reshaped_result[np.where(self.process_mask_)] = result
+        reshaped_result = np.abs(reshaped_result)
+
+        return reshaped_result
