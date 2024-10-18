@@ -189,3 +189,7 @@ plotting.view_surf(
     surf_map=surface_image_loaded,
     hemi="left",
 )
+
+# %%
+# And that's it! Now you know how to create, plot, save and load surface images
+# with Nilearn.
