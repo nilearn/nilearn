@@ -12,17 +12,14 @@ from nilearn.decoding import searchlight
 
 
 def _make_searchlight_test_data(frames):
-    # Initialize with 4x4x4 scans of random values on 30 frames
-    frames = frames
     data = _rng().random((5, 5, 5, frames))
     mask = np.ones((5, 5, 5), dtype=bool)
     mask_img = Nifti1Image(mask.astype("uint8"), np.eye(4))
     # Create a condition array, with balanced classes
     cond = np.arange(frames, dtype=int) >= (frames // 2)
 
-    # Create an activation pixel.
     data[2, 2, 2, :] = 0
-    data[2, 2, 2][cond.astype(bool)] = 2
+    data[2, 2, 2, cond] = 2
     data_img = Nifti1Image(data, np.eye(4))
 
     return data_img, cond, mask_img
@@ -50,7 +47,7 @@ def test_searchlight_small_radius():
         cv=cv,
         verbose=1,
     )
-    sl.fit(data_img, cond)
+    sl.fit(data_img, y=cond)
 
     assert np.where(sl.scores_ == 1)[0].size == 1
     assert sl.scores_[2, 2, 2] == 1.0
@@ -72,7 +69,7 @@ def test_searchlight_mask_far_from_signal(affine_eye):
         scoring="accuracy",
         cv=cv,
     )
-    sl.fit(data_img, cond)
+    sl.fit(data_img, y=cond)
 
     assert np.where(sl.scores_ == 1)[0].size == 0
 
@@ -136,7 +133,7 @@ def test_searchlight_group_cross_validation(rng):
         scoring="accuracy",
         cv=LeaveOneGroupOut(),
     )
-    sl.fit(data_img, cond, groups)
+    sl.fit(data_img, y=cond, groups=groups)
 
     assert np.where(sl.scores_ == 1)[0].size == 7
     assert sl.scores_[2, 2, 2] == 1.0
@@ -160,7 +157,7 @@ def test_searchlight_group_cross_validation_with_extra_group_variable(
         scoring="accuracy",
         cv=cv,
     )
-    sl.fit(data_img, cond, groups)
+    sl.fit(data_img, y=cond, groups=groups)
 
     assert np.where(sl.scores_ == 1)[0].size == 7
     assert sl.scores_[2, 2, 2] == 1.0
@@ -188,7 +185,7 @@ def test_searchlight_attributes_exist_after_fit():
 
     # Instantiate and fit the SearchLight with mock data
     sl = searchlight.SearchLight(mask_img, radius=1.0)
-    sl.fit(data_img, cond)  # Reuse condition array (cond) as y
+    sl.fit(data_img, y=cond)
 
     # Check if attributes exist after fitting
     assert hasattr(sl, "process_mask_"), "process_mask_ attribute missing."
@@ -223,7 +220,7 @@ def test_dimension_mismatch_error():
     with pytest.raises(
         ValueError, match="The mask image and the 4D input images must"
     ):
-        sl.fit(data_img, cond)
+        sl.fit(data_img, y=cond)
 
 
 def test_access_scores_img_before_fit():
@@ -252,7 +249,7 @@ def test_transform_applies_mask_correctly():
     data_img, cond, mask_img = _make_searchlight_test_data(frames)
 
     sl = searchlight.SearchLight(mask_img, radius=1.0)
-    sl.fit(data_img, cond)
+    sl.fit(data_img, y=cond)
 
     # Ensure model is fitted correctly
     assert sl.scores_ is not None, "Scores were not set correctly during fit."
@@ -276,7 +273,7 @@ def test_reuse_search_light_in_transform():
     data_img, cond, mask_img = _make_searchlight_test_data(frames)
 
     sl = searchlight.SearchLight(mask_img, radius=1.0)
-    sl.fit(data_img, cond)
+    sl.fit(data_img, y=cond)
 
     # Ensure the model is properly fitted
     assert sl.scores_ is not None
