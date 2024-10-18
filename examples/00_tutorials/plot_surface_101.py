@@ -2,8 +2,8 @@
 Working with Surface images
 ===========================
 
-Here we explain how surface images are represented within Nilearn. We will
-also show how to work with them.
+Here we explain how surface images are represented within Nilearn and how you
+can plot, save and load them.
 """
 
 # %%
@@ -19,39 +19,45 @@ also show how to work with them.
 #
 # Practically, this means that the main difference between the two is the basic
 # unit that holds the data. For volumetric images, that basic unit is a voxel,
-# while for surface images it is a vertex.
+# while for surface images it is a :term:`vertex`.
 #
 # The goal of this tutorial is to show how to work with surface images in
 # Nilearn. For more existential questions like why surface images are useful,
-# how they are created etc., [Andy Jahn's blog](https://andysbrainbook.readthedocs.io/en/latest/FreeSurfer/FreeSurfer_Introduction.html)
+# how they are created etc., `Andy Jahn's blog
+# <https://andysbrainbook.readthedocs.io/en/latest/FreeSurfer/FreeSurfer_Introduction.html>`_
 # is a good starting point.
 
 # %%
 # GIFTI data format
 # -----------------
 #
-# Surface images are typically stored in the GIFTI format (`.gii` files) which
-# can be read via Nilearn.
+# Surface images are typically stored in the GIFTI format (``.gii`` files)
+# which can be read via Nilearn.
 #
 # Nilearn divides surface images into two main components:
-#  1. The mesh, which is the geometry of the surface.
+#  1. The :term:`mesh`, which is the geometry of the surface.
 #  2. The data, which is the information stored at each vertex of the mesh.
 
 # %%
 # Mesh
 # ----
 #
-# The mesh is the geometry of the surface and can be defined by two arrays:
+# The :term:`mesh` can be defined by two arrays:
 #  1. The coordinates of the vertices.
-#  2. Which vertices need to be connected to form faces.
+#  2. Which vertices need to be connected to form :term:`faces`.
+#
+# .. note:: This representation of a mesh is known as `Face-Vertex
+#           <https://en.wikipedia.org/wiki/Polygon_mesh#Face-vertex_meshes>`_
+#           representation.
 #
 # For brain surfaces we typically have two meshes: one for the left hemisphere
-# and one for the right hemisphere. Nilearn represents this as a `PolyMesh`
-# object with two `parts`: `left` and `right`.
+# and one for the right hemisphere. Nilearn represents this as a
+# :class:`~nilearn.experimental.surface.PolyMesh` object with two ``parts``:
+# ``left`` and ``right``.
 #
-# So you can define your own mesh, say, for the left part a tetrahedron and for
-# the right part a pyramid, using numpy arrays and create a `PolyMesh` object
-# as follows:
+# So you can define your own :term:`mesh`, say, for the left part a tetrahedron
+# and for the right part a pyramid, using numpy arrays and create a
+# :class:`~nilearn.experimental.surface.PolyMesh` object as follows:
 import numpy as np
 
 from nilearn.experimental.surface import InMemoryMesh, PolyMesh
@@ -96,11 +102,12 @@ mesh = PolyMesh(
 # %%
 # Data
 # ----
-# The data is the information stored at each vertex of the mesh. This can be
-# anything from the thickness of the cortex to the activation level of a
-# at that vertex.
+# The data is the information stored at each :term:`vertex` of the
+# :term:`mesh`. This can be anything from the thickness of the cortex to the
+# activation level at that :term:`vertex`.
 #
-# For this example, let's create some random data for the vertices of the mesh:
+# For this example, let's create some random data for the vertices of the
+# :term:`mesh`:
 rng = np.random.default_rng(0)
 left_data = rng.random(mesh.parts["left"].n_vertices)
 right_data = rng.random(mesh.parts["right"].n_vertices)
@@ -110,7 +117,8 @@ data = {"left": left_data, "right": right_data}
 # %%
 # Creating a surface image
 # ------------------------
-# Now we can create a surface image by combining the mesh and the data:
+# Now we can create a surface image by combining the :term:`mesh` and the data
+# using the :class:`~nilearn.experimental.surface.SurfaceImage` class:
 from nilearn.experimental.surface import SurfaceImage
 
 surface_image = SurfaceImage(mesh=mesh, data=data)
@@ -118,7 +126,9 @@ surface_image = SurfaceImage(mesh=mesh, data=data)
 # %%
 # Plotting the surface image
 # --------------------------
-# The surface image can be plotted using the `view_surf` function:
+# The surface image can be plotted using the different functions from the
+# :mod:`nilearn.plotting` module. Here we will show how to use the
+# :func:`~nilearn.experimental.plotting.view_surf` function:
 from nilearn.experimental import plotting
 
 # %%
@@ -136,12 +146,38 @@ plotting.view_surf(
 # %%
 # Save the surface image
 # ----------------------
-# You can save the mesh and the data separately as GIFTI files:
+# You can save the :term:`mesh` and the data separately as GIFTI files:
 surface_image.mesh.to_filename("surface_image_mesh.gii")
 
 surface_image.data.to_filename("surface_image_data.gii")
 
 # %%
-# You will see that this creates four files in total -- two for the mesh and
-# two for the data. The files ending with `_hemi-L.gii` are for the left
-# hemisphere and those ending with `_hemi-R.gii` are for the right hemisphere.
+# You will see that this creates four files in total -- two for the
+# :term:`mesh` and two for the data. The files ending with ``_hemi-L.gii`` are
+# correspond to the left part and those ending with ``_hemi-R.gii`` correspond
+# to the right part.
+
+# %%
+# Load the surface image
+# ----------------------
+# You can load the saved files back into Nilearn using the
+# :class:`~nilearn.experimental.surface.SurfaceImage` object:
+
+mesh = {
+    "left": "surface_image_mesh_hemi-L.gii",
+    "right": "surface_image_mesh_hemi-R.gii",
+}
+data = {
+    "left": "surface_image_data_hemi-L.gii",
+    "right": "surface_image_data_hemi-R.gii",
+}
+
+surface_image_loaded = SurfaceImage(mesh=mesh, data=data)
+
+# %%
+# You can now plot the loaded surface image:
+plotting.view_surf(
+    surf_mesh=surface_image_loaded.mesh,
+    surf_map=surface_image_loaded,
+    hemi="left",
+)
