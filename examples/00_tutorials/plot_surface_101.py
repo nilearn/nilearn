@@ -152,8 +152,8 @@ from pathlib import Path
 output_dir = Path.cwd() / "results" / "plot_surface_101"
 output_dir.mkdir(exist_ok=True, parents=True)
 print(f"Output will be saved to: {output_dir}")
-surface_image.mesh.to_filename(output_dir / "surface_image_mesh.gii.gz")
-surface_image.data.to_filename(output_dir / "surface_image_data.gii.gz")
+surface_image.mesh.to_filename(output_dir / "surface_image_mesh.gii")
+surface_image.data.to_filename(output_dir / "surface_image_data.gii")
 
 # %%
 # You will see that this creates four files in total -- two for the
@@ -168,12 +168,12 @@ surface_image.data.to_filename(output_dir / "surface_image_data.gii.gz")
 # :class:`~nilearn.experimental.surface.SurfaceImage` object:
 
 mesh = {
-    "left": "surface_image_mesh_hemi-L.gii.gz",
-    "right": "surface_image_mesh_hemi-R.gii.gz",
+    "left": "surface_image_mesh_hemi-L.gii",
+    "right": "surface_image_mesh_hemi-R.gii",
 }
 data = {
-    "left": "surface_image_data_hemi-L.gii.gz",
-    "right": "surface_image_data_hemi-R.gii.gz",
+    "left": "surface_image_data_hemi-L.gii",
+    "right": "surface_image_data_hemi-R.gii",
 }
 
 surface_image_loaded = SurfaceImage(mesh=mesh, data=data)
