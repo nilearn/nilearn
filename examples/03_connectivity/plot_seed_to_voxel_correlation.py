@@ -131,7 +131,6 @@ if compare_version(mpl_version, ">=", "3.5"):
 else:
     plt.figure(constrained_layout=True)
 
-plt.figure(layout="constrained")
 plt.plot(seed_time_series)
 plt.title("Seed time series (Posterior cingulate cortex)")
 plt.xlabel("Scan number")
