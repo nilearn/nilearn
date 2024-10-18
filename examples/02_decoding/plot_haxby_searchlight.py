@@ -135,7 +135,7 @@ searchlight_img = new_img_like(mean_fmri, searchlight.scores_)
 plot_img(
     scores_img,
     bg_img=mean_fmri,
-    title="Searchlight (scores_img_)",
+    title="Searchlight scores image",
     display_mode="z",
     cut_coords=[-9],
     vmin=0.42,
