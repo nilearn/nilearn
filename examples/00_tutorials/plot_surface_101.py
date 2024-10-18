@@ -147,9 +147,13 @@ plotting.view_surf(
 # Save the surface image
 # ----------------------
 # You can save the :term:`mesh` and the data separately as GIFTI files:
-surface_image.mesh.to_filename("surface_image_mesh.gii")
+from pathlib import Path
 
-surface_image.data.to_filename("surface_image_data.gii")
+output_dir = Path.cwd() / "results" / "plot_surface_101"
+output_dir.mkdir(exist_ok=True, parents=True)
+print(f"Output will be saved to: {output_dir}")
+surface_image.mesh.to_filename(output_dir / "surface_image_mesh.gii")
+surface_image.data.to_filename(output_dir / "surface_image_data.gii")
 
 # %%
 # You will see that this creates four files in total -- two for the
@@ -164,12 +168,12 @@ surface_image.data.to_filename("surface_image_data.gii")
 # :class:`~nilearn.experimental.surface.SurfaceImage` object:
 
 mesh = {
-    "left": "surface_image_mesh_hemi-L.gii",
-    "right": "surface_image_mesh_hemi-R.gii",
+    "left": "surface_image_mesh_hemi-L.gii.gz",
+    "right": "surface_image_mesh_hemi-R.gii.gz",
 }
 data = {
-    "left": "surface_image_data_hemi-L.gii",
-    "right": "surface_image_data_hemi-R.gii",
+    "left": "surface_image_data_hemi-L.gii.gz",
+    "right": "surface_image_data_hemi-R.gii.gz",
 }
 
 surface_image_loaded = SurfaceImage(mesh=mesh, data=data)
