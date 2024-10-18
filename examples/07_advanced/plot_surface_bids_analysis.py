@@ -68,7 +68,7 @@ json_file = (
     / "func"
     / "sub-01_task-languagelocalizer_desc-preproc_bold.json"
 )
-with open(json_file) as f:
+with json_file.open() as f:
     t_r = json.load(f)["RepetitionTime"]
 
 # %%
