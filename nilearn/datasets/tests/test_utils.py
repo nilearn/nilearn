@@ -157,7 +157,7 @@ def test_get_dataset_dir_write_access(tmp_path):
 
     no_write = tmp_path / "no_write"
     no_write.mkdir(parents=True)
-    os.chmod(no_write, 0o400)
+    no_write.chmod(0o400)
 
     expected_base_dir = tmp_path / "nilearn_shared_data"
     os.environ["NILEARN_SHARED_DATA"] = str(expected_base_dir)
@@ -169,7 +169,7 @@ def test_get_dataset_dir_write_access(tmp_path):
     assert data_dir == str(no_write)
     assert os.path.exists(data_dir)
 
-    os.chmod(no_write, 0o600)
+    no_write.chmod(0o600)
     shutil.rmtree(data_dir)
 
 
