@@ -31,18 +31,17 @@ can plot, save and load them.
 # GIFTI data format
 # -----------------
 #
-# Surface images are typically stored in the GIFTI format (``.gii`` files)
-# which can be read via Nilearn.
+# Brain-related surface data are typically stored in the GIFTI format
+# (``.gii`` files) which can be read via Nilearn.
 #
-# Nilearn divides surface images into two main components:
+# Surface images have two main components:
 #  1. The :term:`mesh`, which is the geometry of the surface.
 #  2. The data, which is the information stored at each vertex of the mesh.
 
 # %%
 # Mesh
 # ----
-#
-# The :term:`mesh` can be defined by two arrays:
+# A :term:`mesh` can be defined by two arrays:
 #  1. The coordinates of the vertices.
 #  2. Which vertices need to be connected to form :term:`faces`.
 #
