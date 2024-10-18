@@ -389,8 +389,8 @@ Build and deploy the documentation manually
 
 .. note::
 
-    This step is now automated as described above. If there is a need to run it
-    manually please follow the instructions below.
+    This step is now automated as described above.
+    If there is a need to run it manually please follow the instructions below.
 
 
 Before building the documentation, make sure that the following LaTeX
@@ -426,12 +426,17 @@ See available linux distributions of texlive-latex-base and texlive-latex-extra:
 - https://pkgs.org/search/?q=texlive-latex-extra
 
 We now need to update the documentation.
+We let tox handle creating virtual env and install dependencies.
+
+.. warning::
+
+    The doc build is done with the minimum python version supported by Nilearn.
 
 .. code-block:: bash
 
-    cd doc
     export VERSIONTAG=$(git describe --tags --abbrev=0)
-    make install
+    pip install tox
+    tox run --colored yes --list-dependencies -e doc -- install
 
 
 This will build the documentation (beware, this is time consuming...)

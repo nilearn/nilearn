@@ -27,7 +27,7 @@ Automatically comments on a newly open pull request to provide some guidelines, 
 
 #### Full and partial doc builds
 
-This workflow configuration is based on what is done in [scikit-learn](https://github.com/scikit-learn/scikit-learn).
+This original workflow derived from on what is done in [scikit-learn](https://github.com/scikit-learn/scikit-learn).
 
 On Pull Requests, Actions run "partial builds" by default which render all the rst files,
 but only build examples modified in the Pull Request.
@@ -55,7 +55,7 @@ $ git commit -m "[example] plot_nilearn_101.py"
 
 However for quick checks to do yourself you should always opt for local builds following the instructions here: [building-documentation](https://nilearn.github.io/stable/development.html#building-documentation).
 
-Note: setuptools needs to be installed to run the doc build with python 3.12.
+Note: setuptools needs to be installed to run the doc build with python >=3.12.
 
 Upon a successful build of the doc, it is zipped and uploaded as an artifact.
 A circle-ci workflow is then triggered. See below.
