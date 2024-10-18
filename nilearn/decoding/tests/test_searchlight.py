@@ -214,15 +214,18 @@ def test_dimension_mismatch_error():
     data_img, cond, _ = _make_searchlight_test_data(frames=20)
 
     # Create a mask with mismatched dimensions but valid content
-    invalid_mask_img = Nifti1Image(np.ones((4, 4, 4), dtype="uint8"), np.eye(4))
+    invalid_mask_img = Nifti1Image(
+        np.ones((4, 4, 4), dtype="uint8"), np.eye(4)
+    )
 
     sl = searchlight.SearchLight(invalid_mask_img, radius=1.0)
 
     with pytest.raises(
-        ValueError, match="The mask image and the 4D input images must have matching dimensions."
+        ValueError,
+        match="The mask image and the 4D input images must have "
+        "matching dimensions.",
     ):
         sl.fit(data_img, cond)
-
 
 
 def test_access_scores_img_before_fit():
@@ -242,7 +245,8 @@ def test_transform_without_fit():
     sl = searchlight.SearchLight(mask_img, radius=1.0)
 
     with pytest.raises(
-        ValueError, match=re.escape("You must fit the model before calling `transform()`.")
+        ValueError,
+        match="You must fit the model before calling `transform()`.",
     ):
         sl.transform(data_img)
 
@@ -260,9 +264,14 @@ def test_transform_applies_mask_correctly():
 
     # Validate the result
     assert transformed_scores is not None, "Transform did not return scores."
-    assert transformed_scores.shape == (5, 5, 5), "Unexpected transformed score shape."
-    assert transformed_scores.shape[0] > 0, "Transform returned an empty score array."
-
+    assert transformed_scores.shape == (
+        5,
+        5,
+        5,
+    ), "Unexpected transformed score shape."
+    assert (
+        transformed_scores.shape[0] > 0
+    ), "Transform returned an empty score array."
 
 
 def test_reuse_search_light_in_transform():
@@ -281,4 +290,3 @@ def test_reuse_search_light_in_transform():
 
     assert transformed_scores.shape == (5, 5, 5), "Incorrect output shape."
     assert np.all(transformed_scores >= 0), "Scores should be non-negative."
-
