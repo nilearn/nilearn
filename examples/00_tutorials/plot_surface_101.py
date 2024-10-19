@@ -26,13 +26,6 @@ can plot, save and load them.
 # how they are created etc., `Andy Jahn's blog
 # <https://andysbrainbook.readthedocs.io/en/latest/FreeSurfer/FreeSurfer_Introduction.html>`_
 # is a good starting point.
-
-# %%
-# Data format
-# -----------
-#
-# Brain-related surface data are typically stored in the GIFTI format
-# (``.gii`` files) which can be read via Nilearn.
 #
 # Surface images have two main components:
 #  1. The :term:`mesh`, which is the geometry of the surface.
@@ -145,6 +138,13 @@ plotting.view_surf(
 plotting.view_surf(
     surf_mesh=surface_image.mesh, surf_map=surface_image, hemi="right"
 )
+
+# %%
+# Data format
+# -----------
+#
+# Brain-related surface data are typically stored in the GIFTI format
+# (``.gii`` files) which can be saved to and loaded from via Nilearn.
 
 # %%
 # Save the surface image
