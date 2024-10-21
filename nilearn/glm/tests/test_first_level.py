@@ -1996,7 +1996,7 @@ def test_check_run_tables_errors():
         _check_run_tables([""] * 2, [".csv", ".csv"], "")
     with pytest.raises(
         TypeError,
-        match="only be a pandas DataFrame, a Path object or a string",
+        match="can only be a pandas DataFrame, a Path object or a string",
     ):
         _check_run_tables([""] * 2, [[0], pd.DataFrame()], "")
     with pytest.raises(ValueError, match="table path .* could not be loaded"):

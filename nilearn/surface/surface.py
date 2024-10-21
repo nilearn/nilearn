@@ -883,7 +883,7 @@ def load_surf_data(surf_data):
                 data_part = data_part[:, np.newaxis]
             if i == 0:
                 data = data_part
-            elif i > 0:
+            else:
                 try:
                     data = np.concatenate((data, data_part), axis=1)
                 except ValueError:
