@@ -353,18 +353,18 @@ def uncompress_file(file_, delete_archive=True, verbose=1):
             import gzip
 
             if file_.suffix == ".tgz":
-                filename = f"{filename}.tar"
+                filename = filename.with_suffix(".tar")
             elif file_.suffix == "":
                 # We rely on the assumption that gzip files have an extension
                 shutil.move(file_, f"{file_}.gz")
-                file_ = Path(f"{file_}.gz")
+                file_ = file_.with_suffix(".gz")
             with gzip.open(file_) as gz:
                 with open(filename, "wb") as out:
                     shutil.copyfileobj(gz, out, 8192)
             # If file is .tar.gz, this will be handled in the next case
             if delete_archive:
                 file_.unlink()
-            file_ = Path(filename)
+            file_ = filename
             processed = True
         if file_.is_file() and tarfile.is_tarfile(file_):
             with contextlib.closing(tarfile.open(file_, "r")) as tar:
