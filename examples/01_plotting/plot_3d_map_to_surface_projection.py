@@ -2,12 +2,6 @@
 Making a surface plot of a 3D statistical map
 =============================================
 
-.. warning::
-
-    This is an adaption of
-    :ref:`sphx_glr_auto_examples_01_plotting_plot_3d_map_to_surface_projection.py`
-    to use make it work with the new experimental surface API.
-
 In this example, we will project a 3D statistical map onto a cortical mesh
 using :func:`~nilearn.surface.vol_to_surf`,
 display a surface plot of the projected map
