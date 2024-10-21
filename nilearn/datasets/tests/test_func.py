@@ -1136,5 +1136,5 @@ def test_fiac(tmp_path):
 def test_load_sample_motor_activation_image():
     path_img = func.load_sample_motor_activation_image()
 
-    assert os.path.exists(path_img)
+    assert Path(path_img).exists()
     assert load_img(path_img)

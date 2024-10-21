@@ -2292,7 +2292,7 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
     )
     # The files_spec needed for fetch_files
     files_spec = [(f"{main_folder}.zip", url, {"move": f"{main_folder}.zip"})]
-    if not os.path.exists(os.path.join(data_dir, main_folder)):
+    if not Path(data_dir, main_folder).exists():
         downloaded_files = fetch_files(
             data_dir, files_spec, resume=True, verbose=verbose
         )
@@ -2519,7 +2519,7 @@ def patch_openneuro_dataset(file_list):
         for name in file_list:
             if old_pattern in name:
                 new_name = name.replace(old_pattern, new_pattern)
-                if not os.path.exists(new_name):
+                if not Path(new_name).exists():
                     os.symlink(name, new_name)
 
 
