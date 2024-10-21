@@ -348,7 +348,6 @@ def uncompress_file(file_, delete_archive=True, verbose=1):
             z.close()
             if delete_archive:
                 file_.unlink()
-            file_ = Path(filename)
             processed = True
         elif file_.suffix == ".gz" or header.startswith(b"\x1f\x8b"):
             import gzip

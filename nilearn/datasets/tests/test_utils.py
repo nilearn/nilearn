@@ -197,7 +197,6 @@ def test_md5_sum_file(tmp_path):
 
     assert _utils._md5_sum_file(f) == "18f32295c556b2a1a3a8e68fe1ad40f7"
 
-    f.unlink()
 
 
 def test_read_md5_sum_file(tmp_path):
@@ -214,7 +213,6 @@ def test_read_md5_sum_file(tmp_path):
     assert h["test/some_image.nii"] == "70886dcabe7bf5c5a1c24ca24e4cbd94"
     assert h["/tmp/test"] == "20861c8c3fe177da19a7e9539a5dbac"
 
-    f.unlink()
 
 
 def test_tree(tmp_path):
