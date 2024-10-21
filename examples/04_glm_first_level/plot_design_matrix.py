@@ -106,19 +106,8 @@ X3 = make_first_level_design_matrix(
 # %%
 # Here are the three designs side by side.
 import matplotlib.pyplot as plt
-from matplotlib import __version__ as mpl_version
 
-from nilearn._utils import compare_version
-
-if compare_version(mpl_version, ">=", "3.5"):
-    fig, (ax1, ax2, ax3) = plt.subplots(
-        figsize=(10, 6),
-        nrows=1,
-        ncols=3,
-        layout="constrained",
-    )
-else:
-    fig, (ax1, ax2, ax3) = plt.subplots(
+fig, (ax1, ax2, ax3) = plt.subplots(
         figsize=(10, 6), nrows=1, ncols=3, constrained_layout=True
     )
 
@@ -141,15 +130,7 @@ plt.show()
 #
 from nilearn.plotting import plot_design_matrix_correlation
 
-if compare_version(mpl_version, ">=", "3.5"):
-    fig, (ax1, ax2, ax3) = plt.subplots(
-        figsize=(16, 5),
-        nrows=1,
-        ncols=3,
-        layout="constrained",
-    )
-else:
-    fig, (ax1, ax2, ax3) = plt.subplots(
+fig, (ax1, ax2, ax3) = plt.subplots(
         figsize=(16, 5), nrows=1, ncols=3, constrained_layout=True
     )
 
@@ -202,15 +183,7 @@ X4 = make_first_level_design_matrix(
 )
 
 # Let's compare it to the unmodulated block design
-if compare_version(mpl_version, ">=", "3.5"):
-    fig, (ax1, ax2) = plt.subplots(
-        figsize=(10, 6),
-        nrows=1,
-        ncols=2,
-        layout="constrained",
-    )
-else:
-    fig, (ax1, ax2) = plt.subplots(
+fig, (ax1, ax2) = plt.subplots(
         figsize=(10, 6), nrows=1, ncols=2, constrained_layout=True
     )
 
