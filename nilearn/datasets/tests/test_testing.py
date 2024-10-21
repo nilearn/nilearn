@@ -216,9 +216,11 @@ def test_dict_to_archive(tmp_path):
     with archive_path.open("wb") as f:
         f.write(zip_archive)
 
-    with zipfile.ZipFile(str(archive_path)) as zipf:
-        with zipf.open("archive", "r") as f:
-            assert f.read() == targz
+    with (
+        zipfile.ZipFile(str(archive_path)) as zipf,
+        zipf.open("archive", "r") as f,
+    ):
+        assert f.read() == targz
 
     from_list = _testing.list_to_archive(archive_spec.keys())
     with archive_path.open("wb") as f:
