@@ -13,7 +13,7 @@ from nilearn.reporting.get_clusters_table import (
 )
 
 # Avoid making pyflakes unhappy
-_set_mpl_backend
+_set_mpl_backend  # noqa: B018
 from nilearn._utils.helpers import is_matplotlib_installed
 
 
