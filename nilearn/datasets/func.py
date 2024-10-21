@@ -2150,7 +2150,7 @@ def _reduce_confounds(regressors, keep_confounds):
     reduced_regressors = []
     for in_file in regressors:
         out_file = in_file.replace("desc-confounds", "desc-reducedConfounds")
-        if not os.path.isfile(out_file):
+        if not Path(out_file).is_file():
             confounds = pd.read_csv(in_file, delimiter="\t").to_records()
             selected_confounds = confounds[keep_confounds]
             header = "\t".join(selected_confounds.dtype.names)
@@ -2811,7 +2811,7 @@ def _get_session_trials_spm_multimodal(subject_dir, session, _subject_data):
     sess_trials = os.path.join(
         subject_dir, f"fMRI/trials_ses{int(session)}.mat"
     )
-    if not os.path.isfile(sess_trials):
+    if not Path(sess_trials).is_file():
         logger.log(f"Missing session file: {sess_trials}", stack_level=2)
         return None
 
@@ -2821,7 +2821,7 @@ def _get_session_trials_spm_multimodal(subject_dir, session, _subject_data):
 
 def _get_anatomical_data_spm_multimodal(subject_dir, _subject_data):
     anat = os.path.join(subject_dir, "sMRI/smri.img")
-    if not os.path.isfile(anat):
+    if not Path(anat).is_file():
         logger.log("Missing structural image.", stack_level=2)
         return None
 
@@ -3018,7 +3018,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
         for run in [1, 2]:
             # glob func data for session
             session_func = os.path.join(subject_dir, f"run{int(run)}.nii.gz")
-            if not os.path.isfile(session_func):
+            if not Path(session_func).is_file():
                 logger.log(f"Missing functional scan for session {int(run)}.")
                 return None
 
@@ -3026,7 +3026,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
 
             # glob design matrix .npz file
             sess_dmtx = os.path.join(subject_dir, f"run{int(run)}_design.npz")
-            if not os.path.isfile(sess_dmtx):
+            if not Path(sess_dmtx).is_file():
                 logger.log(f"Missing run file: {sess_dmtx}")
                 return None
 
@@ -3034,7 +3034,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
 
         # glob for mask data
         mask = os.path.join(subject_dir, "mask.nii.gz")
-        if not os.path.isfile(mask):
+        if not Path(mask).is_file():
             logger.log("Missing mask image.")
             return None
 
