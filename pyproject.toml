@@ -199,7 +199,11 @@ max-complexity = 41
 convention = "numpy"
 
 [tool.ruff.lint.pylint]
+# https://docs.astral.sh/ruff/settings/#lint_pylint_max-args
 max-args = 26
+# https://docs.astral.sh/ruff/settings/#lint_pylint_max-branches
 max-branches = 48
+# https://docs.astral.sh/ruff/settings/#lint_pylint_max-returns
 max-returns = 7
+# https://docs.astral.sh/ruff/settings/#lint_pylint_max-statements
 max-statements = 151
