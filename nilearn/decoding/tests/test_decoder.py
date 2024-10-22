@@ -1106,7 +1106,7 @@ def _make_surface_reg_data(rng, surf_img, shape=(50,)):
 @pytest.mark.filterwarnings("ignore:Overriding provided")
 def test_decoder_apply_mask_surface(_make_surface_class_data):
     """Test _apply_mask on surface image."""
-    X, y = _make_surface_class_data
+    X, _ = _make_surface_class_data
     model = Decoder(mask=SurfaceMasker())
     X_masked = model._apply_mask(X)
 
