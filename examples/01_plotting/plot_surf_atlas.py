@@ -10,18 +10,32 @@ to plot the :term:`parcellation` on the pial surface.
 
 See :ref:`plotting` for more details.
 """
+
 # %%
 # Data fetcher
 # ------------
-
 # Retrieve destrieux parcellation in fsaverage5 space from nilearn
+# and create a SurfaceImage instance with it.
+from nilearn.datasets import fetch_atlas_surf_destrieux
 from nilearn.experimental.surface import (
-    fetch_destrieux,
+    SurfaceImage,
     load_fsaverage,
     load_fsaverage_data,
 )
 
-destrieux_atlas, labels = fetch_destrieux(mesh_type="pial")
+fsaverage = load_fsaverage("fsaverage5")
+destrieux = fetch_atlas_surf_destrieux()
+destrieux_atlas = SurfaceImage(
+    mesh=fsaverage["pial"],
+    data={
+        "left": destrieux["map_left"],
+        "right": destrieux["map_right"],
+    },
+)
+
+# The labels are stored as bytes for the Destrieux atlas.
+# For convenience we decode them to string.
+labels = [x.decode("utf-8") for x in destrieux.labels]
 
 # Retrieve fsaverage5 surface dataset for the plotting background.
 # It contains the surface template as pial and inflated version.
