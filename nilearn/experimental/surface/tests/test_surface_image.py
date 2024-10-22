@@ -28,32 +28,28 @@ def test_compare_file_and_inmemory_mesh(surf_mesh, tmp_path):
 
 @pytest.mark.parametrize("shape", [(1,), (3,), (7, 3)])
 def test_surface_image_shape(surf_img, shape):
-    img = surf_img(shape)
-    assert img.shape == (*shape, 9)
+    assert surf_img(shape).shape == (*shape, 9)
 
 
 def test_data_shape_not_matching_mesh(surf_img, flip_surf_img_parts):
-    img = surf_img()
     with pytest.raises(ValueError, match="shape.*vertices"):
-        SurfaceImage(img.mesh, flip_surf_img_parts(img.data))
+        SurfaceImage(surf_img().mesh, flip_surf_img_parts(surf_img().data))
 
 
 def test_data_shape_inconsistent(surf_img):
-    img = surf_img((7,))
     bad_data = {
-        "left": img.data.parts["left"],
-        "right": img.data.parts["right"][:4],
+        "left": surf_img((7,)).data.parts["left"],
+        "right": surf_img((7,)).data.parts["right"][:4],
     }
     with pytest.raises(ValueError, match="incompatible shapes"):
-        SurfaceImage(img.mesh, bad_data)
+        SurfaceImage(surf_img((7,)).mesh, bad_data)
 
 
 def test_data_keys_not_matching_mesh(surf_img):
     with pytest.raises(ValueError, match="same keys"):
-        img = surf_img()
         SurfaceImage(
-            {"left": img.mesh.parts["left"]},
-            img.data,
+            {"left": surf_img().mesh.parts["left"]},
+            surf_img().data,
         )
 
 
@@ -197,9 +193,10 @@ def test_load_save_data(
 )
 def test_save_dtype(surf_img, tmp_path, dtype):
     """Check saving several data type."""
-    img = surf_img()
-    img.data.parts["right"] = img.data.parts["right"].astype(dtype)
-    img.data.to_filename(tmp_path / "data.gii")
+    surf_img().data.parts["right"] = (
+        surf_img().data.parts["right"].astype(dtype)
+    )
+    surf_img().data.to_filename(tmp_path / "data.gii")
 
 
 def test_load_from_volume_3d_nifti(img_3d_mni, surf_mesh, tmp_path):
@@ -217,15 +214,14 @@ def test_load_from_volume_3d_nifti(img_3d_mni, surf_mesh, tmp_path):
 
 def test_load_from_volume_4d_nifti(img_4d_mni, surf_mesh, tmp_path):
     """Instantiate surface image with 4D Niftiimage object or file for data."""
-    mesh = surf_mesh()
-    img = SurfaceImage.from_volume(mesh=mesh, volume_img=img_4d_mni)
+    img = SurfaceImage.from_volume(mesh=surf_mesh(), volume_img=img_4d_mni)
     # check that we have the correct number of time points
     assert img.shape[0] == img_4d_mni.shape[3]
 
     img_4d_mni.to_filename(tmp_path / "tmp.nii.gz")
 
     SurfaceImage.from_volume(
-        mesh=mesh,
+        mesh=surf_mesh(),
         volume_img=tmp_path / "tmp.nii.gz",
     )
 

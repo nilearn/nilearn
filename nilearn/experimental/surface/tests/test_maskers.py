@@ -17,11 +17,10 @@ from nilearn.experimental.surface import (
 def test_mask_img_fit_shape_mismatch(
     flip_surf_img, surf_mask, surf_img, shape, assert_surf_img_equal
 ):
-    img = surf_img(shape)
     masker = SurfaceMasker(surf_mask())
     with pytest.raises(ValueError, match="number of vertices"):
-        masker.fit(flip_surf_img(img))
-    masker.fit(img)
+        masker.fit(flip_surf_img(surf_img(shape)))
+    masker.fit(surf_img(shape))
     assert_surf_img_equal(surf_mask(), masker.mask_img_)
 
 
@@ -48,23 +47,21 @@ def test_unfitted_masker(surf_mask):
 
 
 def test_mask_img_transform_shape_mismatch(flip_surf_img, surf_img, surf_mask):
-    img = surf_img()
     masker = SurfaceMasker(surf_mask()).fit()
     with pytest.raises(ValueError, match="number of vertices"):
-        masker.transform(flip_surf_img(img))
+        masker.transform(flip_surf_img(surf_img()))
     # non-flipped is ok
-    masker.transform(img)
+    masker.transform(surf_img())
 
 
 def test_mask_img_transform_keys_mismatch(
     surf_mask, surf_img, drop_surf_img_part
 ):
-    img = surf_img()
     masker = SurfaceMasker(surf_mask()).fit()
     with pytest.raises(ValueError, match="key"):
-        masker.transform(drop_surf_img_part(img))
+        masker.transform(drop_surf_img_part(surf_img()))
     # full img is ok
-    masker.transform(img)
+    masker.transform(surf_img())
 
 
 @pytest.mark.parametrize("shape", [(), (1,), (3,), (3, 2)])
