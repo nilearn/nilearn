@@ -245,7 +245,7 @@ def test_transform_applies_mask_correctly():
 
     # Ensure model is fitted correctly
     assert sl.scores_ is not None
-    assert sl.process_mask_ is not None, "Process mask was not set correctly."
+    assert sl.process_mask_ is not None
 
     # Perform transform on the same data
     transformed_scores = sl.transform(data_img)
