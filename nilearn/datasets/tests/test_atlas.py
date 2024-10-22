@@ -669,12 +669,12 @@ def test_fetch_atlas_allen_2011(tmp_path, request_mocker):
 
 
 def test_fetch_atlas_surf_destrieux(tmp_path):
-    data_dir = str(tmp_path / "destrieux_surface")
-    os.mkdir(data_dir)
+    data_dir = tmp_path / "destrieux_surface"
+    data_dir.mkdir()
     # Create mock annots
     for hemi in ("left", "right"):
         freesurfer.write_annot(
-            os.path.join(data_dir, f"{hemi}.aparc.a2009s.annot"),
+            data_dir / f"{hemi}.aparc.a2009s.annot",
             np.arange(4),
             np.zeros((4, 5)),
             5 * ["a"],
@@ -763,7 +763,7 @@ def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
         atlas.fetch_atlas_pauli_2017("junk for testing", data_dir)
 
 
-def _schaefer_labels(match, requests):
+def _schaefer_labels(match, requests):  # noqa: ARG001
     # fails if requests is not passed
     info = match.groupdict()
     label_names = [f"{info['network']}Networks"] * int(info["n_rois"])
@@ -771,7 +771,7 @@ def _schaefer_labels(match, requests):
     return labels.to_csv(sep="\t", header=False).encode("utf-8")
 
 
-def _schaefer_img(match, requests):
+def _schaefer_img(match, requests):  # noqa: ARG001
     # fails if requests is not passed
     info = match.groupdict()
     shape = (15, 14, 13)

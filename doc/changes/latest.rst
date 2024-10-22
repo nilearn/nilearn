@@ -42,7 +42,7 @@ Fixes
 
 - :bdg-dark:`Code` Fix PTH errors: PTH110, PTH107, PTH102, PTH113, PTH111, PTH101, PTH201, PTH109, PTH115 (:gh:`4620` by `Prakhar Jain`_).
 
-- :bdg-dark:`Code` Fix PTH errors: PTH106, PTH112, PTH114, PTH117, PTH122, PTH202, PTH203, PTH204 (:gh:`4607`, :gh:`4612`, :gh:`4590`, :gh:`4618` by `Hande Gözükan`_).
+- :bdg-dark:`Code` Fix PTH errors: PTH100, PTH103, PTH106, PTH112, PTH114, PTH117, PTH119, PTH120, PTH122, PTH202, PTH203, PTH204 (:gh:`4607`, :gh:`4612`, :gh:`4590`, :gh:`4618`, :gh:`4860` by `Hande Gözükan`_).
 
 - :bdg-dark:`Code` Make :func:`nilearn.interfaces.fmriprep.load_confounds` return ``None`` for confounds when provided with an empty cleaning strategy (:gh:`4570` by `Micha Burkhardt`_).
 
@@ -67,10 +67,14 @@ Enhancements
 
 - :bdg-dark:`Code` Add footer to masker reports (:gh:`4307` by `Rémi Gau`_).
 
+- :bdg-info:`Plotting` Improve plotting contours for :class:`nilearn.plotting.displays.PlotlySurfaceFigure` objects by adding :meth:`nilearn.plotting.displays.PlotlySurfaceFigure.add_contours` method that accepts arguments to adjust line aesthetics (:gh:`3949` by `Patrick Sadil`_).
+
 - :bdg-primary:`Doc` Add example to provide a clear understanding of the :class:`nilearn.decoding.Decoder` object by demonstrating underlying steps via a Scikit-Learn pipeline. (:gh:`4437` by `Himanshu Aggarwal`_).
 
 Changes
 -------
+
+- :bdg-secondary:`Maint` Replace ``pytest.warns(DeprecationWarning)`` with ``pytest.deprecated_call()`` in tests (:gh:`4637` by `Victoria Shevchenko`_).
 
 - :bdg-dark:`Code` Warn the user when all volumes would be scrubbed when loading fmriprep confounds as this would lead to an empty ``sample_mask`` (:gh:`4558` by `Victoria Shevchenko`_).
 
@@ -107,3 +111,5 @@ Changes
 - :bdg-dark:`Code` Reorder condition in internal call of :func:`nilearn.image.resample_img` to skip checking of array values if interpolation is ``nearest`` (:gh:`4571` by `Jason Kai`_).
 
 - :bdg-dark:`Code` Remove redundant sorting of ``np.unique(data)`` in internal call of :func:`nilearn.image.resample_img` when checking array values (:gh:`4571` by `Jason Kai`_).
+
+- :bdg-primary:`Doc` Add missing default values to docstrings (:gh:`4656`, :gh:`4659`, :gh:`4660` by `Anupriya Kumari`_).

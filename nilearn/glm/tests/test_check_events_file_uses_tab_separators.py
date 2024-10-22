@@ -58,7 +58,7 @@ def test_for_invalid_separator(tmp_path):
         )
 
 
-def test_with_2D_dataframe():
+def test_with_2d_dataframe():
     data_for_pandas_dataframe, _ = make_data_for_test_runs()
     events_pandas_dataframe = pd.DataFrame(data_for_pandas_dataframe)
     result = _check_events_file_uses_tab_separators(
@@ -67,7 +67,7 @@ def test_with_2D_dataframe():
     assert result is None
 
 
-def test_with_1D_dataframe():
+def test_with_1d_dataframe():
     data_for_pandas_dataframe, _ = make_data_for_test_runs()
     for dataframe_ in data_for_pandas_dataframe:
         events_pandas_dataframe = pd.DataFrame(dataframe_)

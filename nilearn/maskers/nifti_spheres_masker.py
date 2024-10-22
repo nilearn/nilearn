@@ -525,7 +525,11 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
 
         return embeded_images
 
-    def fit(self, X=None, y=None):
+    def fit(
+        self,
+        X=None,
+        y=None,  # noqa: ARG002
+    ):
         """Prepare signal extraction from regions.
 
         All parameters are unused; they are for scikit-learn compatibility.

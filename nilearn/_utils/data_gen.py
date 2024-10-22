@@ -337,7 +337,7 @@ def generate_fake_fmri(
     """
     if affine is None:
         affine = np.eye(4)
-    full_shape = shape + (length,)
+    full_shape = (*shape, length)
     fmri = np.zeros(full_shape)
     # Fill central voxels timeseries with random signals
     width = [s // 2 for s in shape]
@@ -345,9 +345,9 @@ def generate_fake_fmri(
 
     rand_gen = np.random.default_rng(random_state)
     if kind == "noise":
-        signals = rand_gen.integers(256, size=(width + [length]))
+        signals = rand_gen.integers(256, size=([*width, length]))
     elif kind == "step":
-        signals = np.ones(width + [length])
+        signals = np.ones([*width, length])
         signals[..., : length // 2] = 0.5
     else:
         raise ValueError("Unhandled value for parameter 'kind'")

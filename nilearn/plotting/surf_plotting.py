@@ -19,6 +19,7 @@ from nilearn import image, surface
 from nilearn._utils import check_niimg_3d, compare_version, fill_doc
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn.plotting.cm import cold_hot, mix_colormaps
+from nilearn.plotting.displays._figures import PlotlySurfaceFigure
 from nilearn.plotting.displays._slicers import _get_cbar_ticks
 from nilearn.plotting.html_surface import get_vertexcolor
 from nilearn.plotting.img_plotting import get_colorbar_and_data_ranges
@@ -759,7 +760,7 @@ def plot_surf(
 
     Parameters
     ----------
-    surf_mesh : str or list of two numpy.ndarray or Mesh
+    surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray` or Mesh
         Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
@@ -769,7 +770,7 @@ def plot_surf(
         of the :term:`mesh` :term:`faces`,
         or a Mesh object with "coordinates" and "faces" attributes.
 
-    surf_map : str or numpy.ndarray, optional
+    surf_map : :obj:`str` or :class:`numpy.ndarray` or None, default=None
         Data to be displayed on the surface :term:`mesh`.
         Can be a file
         (valid formats are .gii, .mgz, .nii, .nii.gz,
@@ -777,7 +778,7 @@ def plot_surf(
         .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array with a value for each :term:`vertex` of the `surf_mesh`.
 
-    bg_map : str or numpy.ndarray, optional
+    bg_map : :obj:`str` or :class:`numpy.ndarray` or None, default=None
         Background image to be plotted on the :term:`mesh` underneath the
         surf_data in greyscale, most likely a sulcal depth map for
         realistic shading.
@@ -834,7 +835,7 @@ def plot_surf(
         If a number is given, it is used to threshold the image, values
         below the threshold (in absolute value) are plotted as transparent.
 
-    alpha : float or 'auto', default='auto'
+    alpha : :obj:`float` or None, default=None
         Alpha level of the :term:`mesh` (not surf_data).
         When using matplotlib as engine,
         `alpha` will default to ``"auto"`` if ``None`` is passed.
@@ -852,10 +853,13 @@ def plot_surf(
 
     %(vmin)s
     %(vmax)s
-    cbar_vmin, cbar_vmax : float, float, optional
-        Lower / upper bounds for the colorbar.
-        If None, the values will be set from the data.
-        Default values are None.
+    cbar_vmin : :obj:`float` or None, default=None
+        Lower bound for the colorbar.
+        If None, the value will be set from the data.
+
+    cbar_vmax : :obj:`float` or None, default=None
+        Upper bound for the colorbar.
+        If None, the value will be set from the data.
 
         .. note::
             This option is currently only implemented for the
@@ -876,7 +880,7 @@ def plot_surf(
         .. versionadded:: 0.9.0
 
     %(output_file)s
-    axes : instance of matplotlib axes, None, optional
+    axes : instance of matplotlib axes or None, default=None
         The axes instance to plot to. The projection must be '3d' (e.g.,
         `figure, axes = plt.subplots(subplot_kw={'projection': '3d'})`,
         where axes should be passed.).
@@ -1013,9 +1017,9 @@ def _get_faces_on_edge(faces, parc_idx):
 
     Parameters
     ----------
-    faces : numpy.ndarray of shape (n, 3), indices of the mesh faces
+    faces : :class:`numpy.ndarray` of shape (n, 3), indices of the mesh faces
 
-    parc_idx : numpy.ndarray, indices of the vertices
+    parc_idx : :class:`numpy.ndarray`, indices of the vertices
         of the region to be plotted
 
     """
@@ -1054,7 +1058,7 @@ def plot_surf_contours(
 
     Parameters
     ----------
-    surf_mesh : str or list of two numpy.ndarray
+    surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`
         Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
@@ -1063,7 +1067,8 @@ def plot_surf_contours(
         the second containing the indices (into coords)
         of the :term:`mesh` :term:`faces`.
 
-    roi_map : str or numpy.ndarray or list of numpy.ndarray
+    roi_map : :obj:`str` or :class:`numpy.ndarray` or \
+        :obj:`list` of :class:`numpy.ndarray`
         ROI map to be displayed on the surface mesh,
         can be a file
         (valid formats are .gii, .mgz, or
@@ -1074,26 +1079,27 @@ def plot_surf_contours(
         and zero inside ROI,
         or an integer giving the label number for atlases.
 
-    axes : instance of matplotlib axes, None, optional
+    axes : instance of matplotlib axes or None, default=None
         The axes instance to plot to. The projection must be '3d' (e.g.,
         `figure, axes = plt.subplots(subplot_kw={'projection': '3d'})`,
         where axes should be passed.).
         If None, uses axes from figure if available, else creates new axes.
     %(figure)s
-    levels : list of integers, or None, optional
+    levels : :obj:`list` of :obj:`int`, or None, default=None
         A list of indices of the regions that are to be outlined.
         Every index needs to correspond to one index in roi_map.
         If None, all regions in roi_map are used.
 
-    labels : list of strings or None, or None, optional
+    labels : :obj:`list` of :obj:`str` or None, or None, default=None
         A list of labels for the individual regions of interest.
         Provide None as list entry to skip showing the label of that region.
         If None no labels are used.
 
-    colors : list of matplotlib color names or RGBA values, or None, optional
+    colors : :obj:`list` of matplotlib color names or RGBA values, or None \
+        default=None
         Colors to be used.
 
-    legend : boolean,  optional, default=False
+    legend : :obj:`bool`,  optional, default=False
         Whether to plot a legend of region's labels.
     %(cmap)s
         Default='tab20'.
@@ -1115,6 +1121,16 @@ def plot_surf_contours(
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
 
     """
+    if isinstance(figure, PlotlySurfaceFigure):
+        raise ValueError(
+            "figure argument is a PlotlySurfaceFigure"
+            "but it should be None or a matplotlib figure"
+        )
+    if isinstance(axes, PlotlySurfaceFigure):
+        raise ValueError(
+            "axes argument is a PlotlySurfaceFigure"
+            "but it should be None or a matplotlib axes"
+        )
     if figure is None and axes is None:
         figure = plot_surf(surf_mesh, **kwargs)
         axes = figure.axes[0]
@@ -1231,7 +1247,7 @@ def plot_surf_stat_map(
 
     Parameters
     ----------
-    surf_mesh : str or list of two numpy.ndarray or Mesh
+    surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray` or Mesh
         Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
@@ -1241,7 +1257,7 @@ def plot_surf_stat_map(
         of the :term:`mesh` :term:`faces`,
         or a Mesh object with "coordinates" and "faces" attributes.
 
-    stat_map : str or numpy.ndarray
+    stat_map : :obj:`str` or :class:`numpy.ndarray`
         Statistical map to be displayed on the surface :term:`mesh`,
         can be a file
         (valid formats are .gii, .mgz, or
@@ -1249,7 +1265,7 @@ def plot_surf_stat_map(
         .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array with a value for each :term:`vertex` of the `surf_mesh`.
 
-    bg_map : str or numpy.ndarray, optional
+    bg_map : :obj:`str` or :class:`numpy.ndarray` or None, default=None
         Background image to be plotted on the :term:`mesh` underneath
         the stat_map in greyscale, most likely a sulcal depth map
         for realistic shading.
@@ -1279,7 +1295,7 @@ def plot_surf_stat_map(
             Please report bugs that you may encounter.
 
 
-    threshold : a number or None, optional
+    threshold : a number or None, default=None
         If None is given, the image is not thresholded.
         If a number is given, it is used to threshold the image,
         values below the threshold (in absolute value) are plotted
@@ -1300,7 +1316,7 @@ def plot_surf_stat_map(
 
         Default=True.
 
-    alpha : float or 'auto' or None, default=None
+    alpha : :obj:`float` or 'auto' or None, default=None
         Alpha level of the :term:`mesh` (not the stat_map).
         Will default to ``"auto"`` if ``None`` is passed.
         If 'auto' is chosen, alpha will default to .5 when no bg_map is
@@ -1329,7 +1345,7 @@ def plot_surf_stat_map(
         .. versionadded:: 0.9.0
 
     %(output_file)s
-    axes : instance of matplotlib axes, None, optional
+    axes : instance of matplotlib axes or None, default=None
         The axes instance to plot to. The projection must be '3d' (e.g.,
         `figure, axes = plt.subplots(subplot_kw={'projection': '3d'})`,
         where axes should be passed.).
@@ -1356,7 +1372,7 @@ def plot_surf_stat_map(
 
         .. versionadded:: 0.10.3dev
 
-    kwargs : dict, optional
+    kwargs : :obj:`dict`, optional
         Keyword arguments passed to :func:`nilearn.plotting.plot_surf`.
 
     See Also
@@ -1424,7 +1440,7 @@ def _check_hemispheres(hemispheres):
     """Check whether the hemispheres passed to in plot_img_on_surf are \
     correct.
 
-    hemispheres : list
+    hemispheres : :obj:`list`
         Any combination of 'left' and 'right'.
 
     """
@@ -1445,7 +1461,7 @@ def _check_view_is_valid(view) -> bool:
 
     Parameters
     ----------
-    view: string in {"anterior", "posterior", "medial", "lateral",
+    view: :obj:`str` in {"anterior", "posterior", "medial", "lateral",
         "dorsal", "ventral" or pair of floats (elev, azim).
 
     Returns
@@ -1466,13 +1482,13 @@ def _check_views(views) -> list:
 
     Parameters
     ----------
-    views : list
+    views : :obj:`list`
         Any combination of strings in {"anterior", "posterior", "medial",
         "lateral", "dorsal", "ventral"} and / or pair of floats (elev, azim).
 
     Returns
     -------
-    views: list
+    views: :obj:`list`
         Views given as inputs.
     """
     invalid_views = [not _check_view_is_valid(view) for view in views]
@@ -1496,24 +1512,24 @@ def _colorbar_from_array(
 
     Internal function used by plot_img_on_surf
 
-    array : np.ndarray
+    array : :class:`np.ndarray`
         Any 3D array.
 
-    vmin : float
+    vmin : :obj:`float`
         lower bound for plotting of stat_map values.
 
-    vmax : float
+    vmax : :obj:`float`
         upper bound for plotting of stat_map values.
 
-    threshold : float
+    threshold : :obj:`float`
         If None is given, the colorbar is not thresholded.
         If a number is given, it is used to threshold the colorbar.
         Absolute values lower than threshold are shown in gray.
 
-    kwargs : dict
+    kwargs : :obj:`dict`
         Extra arguments passed to get_colorbar_and_data_ranges.
 
-    cmap : str, default='cold_hot'
+    cmap : :obj:`str`, default='cold_hot'
         The name of a matplotlib or nilearn colormap.
 
     """
@@ -1579,7 +1595,7 @@ def plot_img_on_surf(
     stat_map : :obj:`str` or :class:`pathlib.Path` or 3D Niimg-like object
         See :ref:`extracting_data`.
 
-    surf_mesh : str, dict, or None, default='fsaverage5'
+    surf_mesh : :obj:`str`, :obj:`dict`, or None, default='fsaverage5'
         If str, either one of the two:
         'fsaverage5': the low-resolution fsaverage5 :term:`mesh` (10242 nodes)
         'fsaverage': the high-resolution fsaverage :term:`mesh` (163842 nodes)
@@ -1588,7 +1604,7 @@ def plot_img_on_surf(
         values are surface :term:`mesh` geometries as accepted
         by plot_surf_stat_map.
 
-    mask_img : Niimg-like object or None, optional
+    mask_img : Niimg-like object or None, default=None
         The mask is passed to vol_to_surf.
         Samples falling out of this mask or out of the image are ignored
         during projection of the volume to the surface.
@@ -1600,11 +1616,11 @@ def plot_img_on_surf(
         Hemispheres to display.
         Will default to ``['left', 'right']`` if ``None`` is passed.
 
-    inflate : bool, default=False
+    inflate : :obj:`bool`, default=False
         If True, display images in inflated brain.
         If False, display images in pial surface.
 
-    views : list of strings, default=None
+    views : :obj:`list` of :obj:`str`, default=None
         A list containing all views to display.
         The montage will contain as many rows as views specified by
         display mode. Order is preserved, and left and right hemispheres
@@ -1625,7 +1641,7 @@ def plot_img_on_surf(
     %(cmap)s
         Default='cold_hot'.
     %(cbar_tick_format)s
-    kwargs : dict, optional
+    kwargs : :obj:`dict`, optional
         keyword arguments passed to plot_surf_stat_map.
 
     See Also
@@ -1794,7 +1810,7 @@ def plot_surf_roi(
 
     Parameters
     ----------
-    surf_mesh : str or list of two numpy.ndarray or Mesh
+    surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray` or Mesh
         Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
@@ -1804,7 +1820,8 @@ def plot_surf_roi(
         (into coords) of the :term:`mesh` :term:`faces`,
         or a Mesh object with "coordinates" and "faces" attributes.
 
-    roi_map : str or numpy.ndarray or list of numpy.ndarray
+    roi_map : :obj:`str` or :class:`numpy.ndarray` or \
+        :obj:`list` of :class:`numpy.ndarray`
         ROI map to be displayed on the surface :term:`mesh`,
         can be a file
         (valid formats are .gii, .mgz, or
@@ -1814,7 +1831,7 @@ def plot_surf_roi(
         The value at each vertex one inside the ROI and zero inside ROI, or an
         integer giving the label number for atlases.
 
-    bg_map : str or numpy.ndarray, optional
+    bg_map :  :obj:`str` or :class:`numpy.ndarray` or None, default=None
         Background image to be plotted on the :term:`mesh` underneath
         the stat_map in greyscale, most likely a sulcal depth map for
         realistic shading.
@@ -1865,7 +1882,7 @@ def plot_surf_roi(
 
         .. versionadded:: 0.7.1
 
-    alpha : float or 'auto' or None, default=None
+    alpha : :obj:`float` or 'auto' or None, default=None
         Alpha level of the :term:`mesh` (not surf_data).
         When using matplotlib as engine,
         `alpha` will default to ``"auto"`` if ``None`` is passed.
@@ -1892,7 +1909,7 @@ def plot_surf_roi(
         .. versionadded:: 0.9.0
 
     %(output_file)s
-    axes : Axes instance or None, optional
+    axes : Axes instance or None, default=None
         The axes instance to plot to. The projection must be '3d' (e.g.,
         `plt.subplots(subplot_kw={'projection': '3d'})`).
         If None, a new axes is created.
@@ -1907,7 +1924,7 @@ def plot_surf_roi(
             This option is currently only implemented for the
             ``matplotlib`` engine.
 
-    kwargs : dict, optional
+    kwargs : :obj:`dict`, optional
         Keyword arguments passed to :func:`nilearn.plotting.plot_surf`.
 
     See Also

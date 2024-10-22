@@ -202,7 +202,8 @@ def iter_check_niimg(
 
             exc.args = (
                 f"Error encountered while loading image #{i}{img_name}",
-            ) + exc.args
+                *exc.args,
+            )
             raise
 
     # Raising an error if input generator is empty.
@@ -329,7 +330,7 @@ def check_niimg(
         niimg = new_img_like(niimg, data[:, :, :, 0], affine)
     if atleast_4d and len(niimg.shape) == 3:
         data = _get_data(niimg).view()
-        data.shape = data.shape + (1,)
+        data.shape = (*data.shape, 1)
         niimg = new_img_like(niimg, data, niimg.affine)
 
     if ensure_ndim is not None and len(niimg.shape) != ensure_ndim:

@@ -48,7 +48,10 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR, LinearSVC
 
 from nilearn._utils import compare_version
-from nilearn._utils.param_validation import check_feature_screening
+from nilearn._utils.param_validation import (
+    _get_mask_extent,
+    check_feature_screening,
+)
 from nilearn.conftest import _rng
 from nilearn.decoding.decoder import (
     Decoder,
@@ -84,7 +87,7 @@ def _make_binary_classification_test_data(n_samples=N_SAMPLES):
 
 
 @pytest.fixture()
-def rand_X_Y(rng):
+def rand_x_y(rng):
     X = rng.random((N_SAMPLES, 10))
     Y = np.hstack([[-1] * 50, [1] * 50])
     return X, Y
@@ -173,12 +176,12 @@ def test_check_param_grid_regression(regressor, param, rng):
         (RidgeClassifierCV(), ["alphas"]),
     ],
 )
-def test_check_param_grid_classification(rand_X_Y, classifier, param):
+def test_check_param_grid_classification(rand_x_y, classifier, param):
     """Test several estimators.
 
     Each one with its specific regularization parameter.
     """
-    X, Y = rand_X_Y
+    X, Y = rand_x_y
 
     param_grid = _check_param_grid(classifier, X, Y, None)
 
@@ -193,8 +196,8 @@ def test_check_param_grid_classification(rand_X_Y, classifier, param):
         [{"C": [1, 10, 100]}, {"fit_intercept": [False]}],
     ],
 )
-def test_check_param_grid_replacement(rand_X_Y, param_grid_input):
-    X, Y = rand_X_Y
+def test_check_param_grid_replacement(rand_x_y, param_grid_input):
+    X, Y = rand_x_y
     param_to_replace = "C"
     param_replaced = "Cs"
     param_grid_output = _check_param_grid(
@@ -210,9 +213,9 @@ def test_check_param_grid_replacement(rand_X_Y, param_grid_input):
 
 
 @pytest.mark.parametrize("estimator", ["log_l1", RandomForestClassifier()])
-def test_non_supported_estimator_error(rand_X_Y, estimator):
+def test_non_supported_estimator_error(rand_x_y, estimator):
     """Raise the error when using a non supported estimator."""
-    X, Y = rand_X_Y
+    X, Y = rand_x_y
 
     with pytest.raises(
         ValueError, match="Invalid estimator. The supported estimators are:"
@@ -220,8 +223,8 @@ def test_non_supported_estimator_error(rand_X_Y, estimator):
         _check_param_grid(estimator, X, Y, None)
 
 
-def test_check_parameter_grid_is_empty(rand_X_Y):
-    X, Y = rand_X_Y
+def test_check_parameter_grid_is_empty(rand_x_y):
+    X, Y = rand_x_y
     dummy_classifier = DummyClassifier(random_state=0)
 
     param_grid = _check_param_grid(dummy_classifier, X, Y, None)
@@ -358,7 +361,7 @@ def test_check_unsupported_estimator(estimator):
         _check_estimator(_BaseDecoder(estimator=custom_estimator).estimator)
 
 
-def test_parallel_fit(rand_X_Y):
+def test_parallel_fit(rand_x_y):
     """Check that results of _parallel_fit is the same \
     for different controlled param_grid.
     """
@@ -371,7 +374,7 @@ def test_parallel_fit(rand_X_Y):
     )
     train = range(80)
 
-    _, y_classification = rand_X_Y
+    _, y_classification = rand_x_y
     test = range(80, len(y_classification))
 
     estimator = SVR(kernel="linear")
@@ -431,7 +434,7 @@ def test_parallel_fit(rand_X_Y):
     ],
 )
 def test_parallel_fit_builtin_cv(
-    rand_X_Y,
+    rand_x_y,
     estimator,
     param_name,
     fitted_param_name,
@@ -464,7 +467,7 @@ def test_parallel_fit_builtin_cv(
     # create appropriate scorer and update y for classification
     if is_classification:
         scorer = check_scoring(estimator, "accuracy")
-        _, y = rand_X_Y
+        _, y = rand_x_y
     else:
         scorer = check_scoring(estimator, "r2")
 
@@ -1097,6 +1100,15 @@ def _make_surface_class_data(rng, make_mini_img):
 
 
 @pytest.fixture()
+def _make_surface_mask(make_mini_mask):
+    def _surface_mask():
+        mask = make_mini_mask()
+        return mask
+
+    return _surface_mask
+
+
+@pytest.fixture()
 def _make_surface_reg_data(rng, make_mini_img):
     """Create a surface image regression for testing."""
 
@@ -1142,6 +1154,56 @@ def test_decoder_screening_percentile_surface(perc, _make_surface_class_data):
         assert model.screening_percentile_ == 100
     else:
         assert model.screening_percentile_ == perc
+
+
+def test_decoder_adjust_screening_lessthan_mask_surface(
+    _make_surface_mask, _make_surface_class_data, screening_percentile=30
+):
+    """When mask size is less than or equal to screening percentile wrt to
+    the mesh size, it is adjusted to the ratio of mesh to mask.
+    """
+    mask = _make_surface_mask()
+    img, y = _make_surface_class_data()
+    mask_n_vertices = _get_mask_extent(mask)
+    mesh_n_vertices = img.mesh.n_vertices
+    mask_to_mesh_ratio = (mask_n_vertices / mesh_n_vertices) * 100
+    assert screening_percentile <= mask_to_mesh_ratio
+    decoder = Decoder(
+        mask=mask,
+        param_grid={"C": [0.01, 0.1]},
+        cv=3,
+        screening_percentile=screening_percentile,
+    )
+    with pytest.warns(UserWarning, match="Consider raising"):
+        decoder.fit(img, y)
+    adjusted = decoder.screening_percentile_
+    assert adjusted == screening_percentile * (
+        mesh_n_vertices / mask_n_vertices
+    )
+
+
+def test_decoder_adjust_screening_greaterthan_mask_surface(
+    _make_surface_mask, _make_surface_class_data, screening_percentile=80
+):
+    """When mask size is greater than screening percentile wrt to the mesh
+    size, it is changed to 100% of mask.
+    """
+    mask = _make_surface_mask()
+    img, y = _make_surface_class_data()
+    mask_n_vertices = _get_mask_extent(mask)
+    mesh_n_vertices = img.mesh.n_vertices
+    mask_to_mesh_ratio = (mask_n_vertices / mesh_n_vertices) * 100
+    assert screening_percentile > mask_to_mesh_ratio
+    decoder = Decoder(
+        mask=mask,
+        param_grid={"C": [0.01, 0.1]},
+        cv=3,
+        screening_percentile=screening_percentile,
+    )
+    with pytest.warns(UserWarning, match="Consider raising"):
+        decoder.fit(img, y)
+    adjusted = decoder.screening_percentile_
+    assert adjusted == 100
 
 
 @pytest.mark.parametrize("mask", [None, SurfaceMasker()])
