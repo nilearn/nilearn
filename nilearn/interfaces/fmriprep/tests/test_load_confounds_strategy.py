@@ -216,3 +216,4 @@ def test_empty_strategy(tmp_path):
         confounds, sample_mask = load_confounds(file_nii, strategy=[])
 
     assert confounds is None
+    
