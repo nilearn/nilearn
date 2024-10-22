@@ -141,8 +141,7 @@ def test_masker_reporting_mpl_warning(surf_mask, surf_label_img):
     assert issubclass(warning_list[0].category, ImportWarning)
 
     with warnings.catch_warnings(record=True) as warning_list:
-        label_img = surf_label_img()
-        SurfaceLabelsMasker(label_img).fit().generate_report()
+        SurfaceLabelsMasker(surf_label_img()).fit().generate_report()
 
     assert len(warning_list) == 1
     assert issubclass(warning_list[0].category, ImportWarning)
