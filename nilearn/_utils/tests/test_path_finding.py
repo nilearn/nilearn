@@ -7,6 +7,7 @@ from nilearn._utils.path_finding import resolve_globbing
 
 def test_resolve_globbing(tmp_path):
     assert resolve_globbing(tmp_path) == [tmp_path]
+    assert resolve_globbing([]) == []
 
 
 def test_resolve_globbing_path_expanded():
