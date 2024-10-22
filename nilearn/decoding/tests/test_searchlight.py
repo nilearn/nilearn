@@ -255,7 +255,7 @@ def test_transform_applies_mask_correctly():
         5,
         5,
         5,
-    ), "Unexpected transformed score shape."
+    )
     assert transformed_scores.size > 0, "Transform returned an empty array."
 
 
