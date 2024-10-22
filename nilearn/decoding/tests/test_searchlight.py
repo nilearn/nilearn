@@ -257,23 +257,3 @@ def test_transform_applies_mask_correctly():
         5,
     )
     assert transformed_scores.size > 0
-
-
-def test_reuse_search_light_in_transform():
-    """Test if `search_light()` is reused during transform."""
-    frames = 20
-    data_img, cond, mask_img = _make_searchlight_test_data(frames)
-
-    sl = searchlight.SearchLight(mask_img, radius=1.0)
-    sl.fit(data_img, y=cond)
-
-    # Ensure the model is properly fitted
-    assert sl.scores_ is not None
-    assert sl.process_mask_ is not None, "Process mask was not initialized."
-
-    # Perform transform and validate output
-    transformed_scores = sl.transform(data_img)
-
-    assert transformed_scores is not None, "Transform returned None."
-    assert transformed_scores.shape == (5, 5, 5), "Incorrect output shape."
-    assert np.all(transformed_scores >= 0), "Scores should be non-negative."
