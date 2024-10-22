@@ -18,30 +18,27 @@ def test_mask_img_fit_shape_mismatch(
     flip_surf_img, surf_mask, surf_img, shape, assert_surf_img_equal
 ):
     img = surf_img(shape)
-    mask = surf_mask()
-    masker = SurfaceMasker(mask)
+    masker = SurfaceMasker(surf_mask())
     with pytest.raises(ValueError, match="number of vertices"):
         masker.fit(flip_surf_img(img))
     masker.fit(img)
-    assert_surf_img_equal(mask, masker.mask_img_)
+    assert_surf_img_equal(surf_mask(), masker.mask_img_)
 
 
 def test_mask_img_fit_keys_mismatch(surf_mask, drop_surf_img_part):
-    mask = surf_mask()
-    masker = SurfaceMasker(mask)
+    masker = SurfaceMasker(surf_mask())
     with pytest.raises(ValueError, match="key"):
-        masker.fit(drop_surf_img_part(mask))
+        masker.fit(drop_surf_img_part(surf_mask()))
 
 
 def test_none_mask_img(surf_mask):
     masker = SurfaceMasker(None)
     with pytest.raises(ValueError, match="provide either"):
         masker.fit(None)
-    mask = surf_mask()
     # no mask_img but fit argument is ok
-    masker.fit(mask)
+    masker.fit(surf_mask())
     # no fit argument but a mask_img is ok
-    SurfaceMasker(mask).fit(None)
+    SurfaceMasker(surf_mask()).fit(None)
 
 
 def test_unfitted_masker(surf_mask):
@@ -52,8 +49,7 @@ def test_unfitted_masker(surf_mask):
 
 def test_mask_img_transform_shape_mismatch(flip_surf_img, surf_img, surf_mask):
     img = surf_img()
-    mask = surf_mask()
-    masker = SurfaceMasker(mask).fit()
+    masker = SurfaceMasker(surf_mask()).fit()
     with pytest.raises(ValueError, match="number of vertices"):
         masker.transform(flip_surf_img(img))
     # non-flipped is ok
@@ -64,8 +60,7 @@ def test_mask_img_transform_keys_mismatch(
     surf_mask, surf_img, drop_surf_img_part
 ):
     img = surf_img()
-    mask = surf_mask()
-    masker = SurfaceMasker(mask).fit()
+    masker = SurfaceMasker(surf_mask()).fit()
     with pytest.raises(ValueError, match="key"):
         masker.transform(drop_surf_img_part(img))
     # full img is ok
@@ -143,8 +138,7 @@ def test_transform_inverse_transform_with_mask(
 def test_masker_reporting_mpl_warning(surf_mask, surf_label_img):
     """Raise warning after exception if matplotlib is not installed."""
     with warnings.catch_warnings(record=True) as warning_list:
-        mask = surf_mask()
-        SurfaceMasker(mask).fit().generate_report()
+        SurfaceMasker(surf_mask()).fit().generate_report()
 
     assert len(warning_list) == 1
     assert issubclass(warning_list[0].category, ImportWarning)

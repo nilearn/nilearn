@@ -8,8 +8,7 @@ from nilearn.reporting.tests.test_html_report import _check_html
 @pytest.mark.parametrize("empty_mask", [True, False])
 def test_surface_masker_minimal_report_no_fit(surf_mask, empty_mask, reports):
     """Test minimal report generation with no fit."""
-    mask = surf_mask(empty=empty_mask)
-    masker = SurfaceMasker(mask, reports=reports)
+    masker = SurfaceMasker(surf_mask(empty=empty_mask), reports=reports)
     report = masker.generate_report()
 
     _check_html(report)
@@ -22,8 +21,7 @@ def test_surface_masker_minimal_report_fit(
     surf_mask, empty_mask, surf_img, reports
 ):
     """Test minimal report generation with fit."""
-    mask = surf_mask(empty=empty_mask)
-    masker = SurfaceMasker(mask, reports=reports)
+    masker = SurfaceMasker(surf_mask(empty=empty_mask), reports=reports)
     img = surf_img()
     masker.fit_transform(img)
     report = masker.generate_report()
