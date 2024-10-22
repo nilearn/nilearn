@@ -2063,11 +2063,11 @@ def test_flm_fit_surface_image(_make_surface_glm_data):
 
 
 def test_flm_fit_surface_image_one_hemisphere(
-    _make_surface_glm_data, drop_img_part
+    _make_surface_glm_data, drop_surf_img_part
 ):
     """Test FirstLevelModel with surface image with one hemisphere."""
     img, des = _make_surface_glm_data(5)
-    mini_img_one_hemi = drop_img_part(img)
+    mini_img_one_hemi = drop_surf_img_part(img)
     model = FirstLevelModel(mask_img=False)
     model.fit(mini_img_one_hemi, design_matrices=des)
 

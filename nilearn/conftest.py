@@ -477,7 +477,7 @@ def surf_label_img():
 
 
 @pytest.fixture
-def flip():
+def flip_surf_img_parts():
     """Flip hemispheres of a surface image data or mesh."""
 
     def f(poly_obj):
@@ -489,17 +489,19 @@ def flip():
 
 
 @pytest.fixture
-def flip_img(flip):
+def flip_surf_img(flip_surf_img_parts):
     """Flip hemispheres of a surface image."""
 
     def f(img):
-        return SurfaceImage(flip(img.mesh), flip(img.data))
+        return SurfaceImage(
+            flip_surf_img_parts(img.mesh), flip_surf_img_parts(img.data)
+        )
 
     return f
 
 
 @pytest.fixture
-def assert_img_equal():
+def assert_surf_img_equal():
     """Check that 2 SurfaceImages are equal."""
 
     def f(img_1, img_2):
@@ -511,7 +513,7 @@ def assert_img_equal():
 
 
 @pytest.fixture
-def drop_img_part():
+def drop_surf_img_part():
     """Remove one hemisphere from a SurfaceImage."""
 
     def f(img, part_name="right"):
