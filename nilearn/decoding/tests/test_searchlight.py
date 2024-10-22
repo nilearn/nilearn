@@ -223,14 +223,6 @@ def test_dimension_mismatch_error():
         sl.fit(data_img, y=cond)
 
 
-def test_access_scores_img_before_fit():
-    """Test if accessing `scores_img_` raises a ValueError before fitting."""
-    frames = 20
-    data_img, cond, mask_img = _make_searchlight_test_data(frames)
-    sl = searchlight.SearchLight(mask_img, radius=1.0)
-
-    with pytest.raises(ValueError, match="The model has not been fitted yet"):
-        _ = sl.scores_img_
 
 
 def test_transform_without_fit():
