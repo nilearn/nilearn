@@ -305,8 +305,9 @@ def _is_within_directory(directory, target):
 
 
 def _safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+    path = Path(path)
     for member in tar.getmembers():
-        member_path = os.path.join(path, member.name)
+        member_path = path / member.name
         if not _is_within_directory(path, member_path):
             raise Exception("Attempted Path Traversal in Tar File")
 
