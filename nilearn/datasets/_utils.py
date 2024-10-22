@@ -22,6 +22,7 @@ from nilearn._utils import fill_doc, logger
 from .utils import get_data_dirs
 
 _REQUESTS_TIMEOUT = (15.1, 61)
+PACKAGE_DIRECTORY = Path(__file__).absolute().parent
 
 
 def md5_hash(string):
@@ -295,12 +296,12 @@ If you delete it, previously downloaded data will be downloaded again."""
 # https://github.com/nilearn/nilearn/pull/3391 to address a directory
 # traversal vulnerability https://github.com/advisories/GHSA-gw9q-c7gh-j9vm
 def _is_within_directory(directory, target):
-    abs_directory = os.path.abspath(directory)
-    abs_target = os.path.abspath(target)
+    abs_directory = Path(directory).resolve().absolute()
+    abs_target = Path(target).resolve().absolute()
 
     prefix = os.path.commonprefix([abs_directory, abs_target])
 
-    return prefix == abs_directory
+    return prefix == str(abs_directory)
 
 
 def _safe_extract(tar, path=".", members=None, *, numeric_owner=False):
@@ -346,31 +347,29 @@ def uncompress_file(file_, delete_archive=True, verbose=1):
             z.extractall(path=data_dir)
             z.close()
             if delete_archive:
-                os.remove(file_)
-            file_ = filename
+                file_.unlink()
             processed = True
         elif file_.suffix == ".gz" or header.startswith(b"\x1f\x8b"):
             import gzip
 
             if file_.suffix == ".tgz":
-                filename = Path(f"{filename}.tar")
+                filename = filename.with_suffix(".tar")
             elif file_.suffix == "":
                 # We rely on the assumption that gzip files have an extension
                 shutil.move(file_, f"{file_}.gz")
-                file_ = f"{file_}.gz"
-            with gzip.open(file_) as gz:
-                with open(filename, "wb") as out:
-                    shutil.copyfileobj(gz, out, 8192)
+                file_ = file_.with_suffix(".gz")
+            with gzip.open(file_) as gz, filename.open("wb") as out:
+                shutil.copyfileobj(gz, out, 8192)
             # If file is .tar.gz, this will be handled in the next case
             if delete_archive:
-                os.remove(file_)
+                file_.unlink()
             file_ = filename
             processed = True
         if file_.is_file() and tarfile.is_tarfile(file_):
             with contextlib.closing(tarfile.open(file_, "r")) as tar:
                 _safe_extract(tar, path=data_dir)
             if delete_archive:
-                os.remove(file_)
+                file_.unlink()
             processed = True
         if not processed:
             raise OSError(f"[Uncompress] unknown archive file format: {file_}")
@@ -550,26 +549,26 @@ def fetch_single_file(
                 verbose=verbose,
                 session=sess,
             )
+    data_dir = Path(data_dir)
     # Determine data path
-    if not os.path.exists(data_dir):
-        os.makedirs(data_dir)
+    data_dir.mkdir(parents=True, exist_ok=True)
 
     # Determine filename using URL
     parse = urllib.parse.urlparse(url)
-    file_name = os.path.basename(parse.path)
+    file_name = Path(parse.path).name
     if file_name == "":
         file_name = md5_hash(parse.path)
 
     temp_file_name = f"{file_name}.part"
-    full_name = os.path.join(data_dir, file_name)
-    temp_full_name = os.path.join(data_dir, temp_file_name)
-    if os.path.exists(full_name):
+    full_name = data_dir / file_name
+    temp_full_name = data_dir / temp_file_name
+    if full_name.exists():
         if overwrite:
-            os.remove(full_name)
+            full_name.unlink()
         else:
             return full_name
-    if os.path.exists(temp_full_name) and overwrite:
-        os.remove(temp_full_name)
+    if temp_full_name.exists() and overwrite:
+        temp_full_name.unlink()
     t0 = time.time()
     local_file = None
     initial_size = 0
@@ -590,9 +589,9 @@ def fetch_single_file(
         displayed_url = url.split("?")[0] if verbose == 1 else url
         logger.log(f"Downloading data from {displayed_url} ...", verbose)
 
-        if resume and os.path.exists(temp_full_name):
+        if resume and temp_full_name.exists():
             # Download has been interrupted, we try to resume it.
-            local_file_size = Path(temp_full_name).stat().st_size
+            local_file_size = temp_full_name.stat().st_size
             # If the file exists, then only download the remainder
             headers["Range"] = f"bytes={local_file_size}-"
             try:
@@ -673,11 +672,9 @@ def fetch_single_file(
 
 def get_dataset_descr(ds_name):
     """Return the description of a dataset."""
-    module_path = Path(__file__).parent
-
     try:
         with open(
-            module_path / "description" / f"{ds_name}.rst", "rb"
+            PACKAGE_DIRECTORY / "description" / f"{ds_name}.rst", "rb"
         ) as rst_file:
             descr = rst_file.read()
     except OSError:
@@ -782,11 +779,11 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
     files = list(files)
     files_pickle = pickle.dumps([(file_, url) for file_, url, _ in files])
     files_md5 = hashlib.md5(files_pickle).hexdigest()
-    temp_dir = os.path.join(data_dir, files_md5)
+    data_dir = Path(data_dir)
+    temp_dir = data_dir / files_md5
 
     # Create destination dir
-    if not os.path.exists(data_dir):
-        os.makedirs(data_dir)
+    data_dir.mkdir(parents=True, exist_ok=True)
 
     # Abortion flag, in case of error
     abort = None
@@ -800,17 +797,14 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
         #   downloaded. There is nothing to do
 
         # Target file in the data_dir
-        target_file = os.path.join(data_dir, file_)
+        target_file = data_dir / file_
         # Target file in temp dir
-        temp_target_file = os.path.join(temp_dir, file_)
+        temp_target_file = temp_dir / file_
         # Whether to keep existing files
         overwrite = opts.get("overwrite", False)
         if abort is None and (
             overwrite
-            or (
-                not os.path.exists(target_file)
-                and not os.path.exists(temp_target_file)
-            )
+            or (not target_file.exists() and not temp_target_file.exists())
         ):
             # We may be in a global read-only repository. If so, we cannot
             # download files.
@@ -821,8 +815,7 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
                     " administrator to solve the problem"
                 )
 
-            if not os.path.exists(temp_dir):
-                os.mkdir(temp_dir)
+            temp_dir.mkdir(parents=True, exist_ok=True)
             md5sum = opts.get("md5sum", None)
 
             dl_file = fetch_single_file(
@@ -838,10 +831,9 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
             )
             if "move" in opts:
                 # XXX: here, move is supposed to be a dir, it can be a name
-                move = os.path.join(temp_dir, opts["move"])
-                move_dir = os.path.dirname(move)
-                if not os.path.exists(move_dir):
-                    os.makedirs(move_dir)
+                move = temp_dir / opts["move"]
+                move_dir = move.parent
+                move_dir.mkdir(parents=True, exist_ok=True)
                 shutil.move(dl_file, move)
                 dl_file = move
             if "uncompress" in opts:
@@ -852,8 +844,8 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
 
         if (
             abort is None
-            and not os.path.exists(target_file)
-            and not os.path.exists(temp_target_file)
+            and not target_file.exists()
+            and not temp_target_file.exists()
         ):
             warnings.warn(f"An error occurred while fetching {file_}")
             abort = (
@@ -862,12 +854,12 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
                 f"Target file: {target_file}\nDownloaded: {dl_file}"
             )
         if abort is not None:
-            if os.path.exists(temp_dir):
+            if temp_dir.exists():
                 shutil.rmtree(temp_dir)
             raise OSError(f"Fetching aborted: {abort}")
-        files_.append(target_file)
+        files_.append(str(target_file))
     # If needed, move files from temps directory to final directory.
-    if os.path.exists(temp_dir):
+    if temp_dir.exists():
         # XXX We could only moved the files requested
         # XXX Movetree can go wrong
         movetree(temp_dir, data_dir)

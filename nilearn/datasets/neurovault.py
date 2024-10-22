@@ -1370,31 +1370,30 @@ def _json_add_collection_dir(file_name, force=True):
     file_name: str or pathlib.Path
     force: bool
     """
+    file_name = Path(file_name)
     loaded = _json_from_file(file_name)
     set_func = loaded.__setitem__ if force else loaded.setdefault
-    dir_path = os.path.dirname(file_name)
-    set_func("absolute_path", dir_path)
-    set_func("relative_path", os.path.basename(dir_path))
+    dir_path = file_name.parent
+    set_func("absolute_path", str(dir_path.absolute()))
+    set_func("relative_path", str(dir_path))
     return loaded
 
 
 def _json_add_im_files_paths(file_name, force=True):
     """Load a json file and add image and words paths."""
+    file_name = Path(file_name)
     loaded = _json_from_file(file_name)
     set_func = loaded.__setitem__ if force else loaded.setdefault
-    dir_path = os.path.dirname(file_name)
-    dir_relative_path = os.path.basename(dir_path)
+    dir_path = file_name.parent
     image_file_name = f"image_{loaded['id']}.nii.gz"
     words_file_name = f"neurosynth_words_for_image_{loaded['id']}.json"
-    set_func("relative_path", os.path.join(dir_relative_path, image_file_name))
-    if os.path.isfile(os.path.join(dir_path, words_file_name)):
+    set_func("relative_path", str(dir_path / image_file_name))
+    if (dir_path / words_file_name).is_file():
         set_func(
             "ns_words_relative_path",
-            os.path.join(dir_relative_path, words_file_name),
+            str(dir_path / words_file_name),
         )
-    loaded = _add_absolute_paths(
-        os.path.dirname(dir_path), loaded, force=force
-    )
+    loaded = _add_absolute_paths(dir_path.parent, loaded, force=force)
     return loaded
 
 
@@ -1530,7 +1529,7 @@ def _download_image_nii_file(image_info, collection, download_params):
 
         tmp_file = f"tmp_{struuid}.nii.gz"
 
-        tmp_path = os.path.join(collection["absolute_path"], tmp_file)
+        tmp_path = Path(collection["absolute_path"], tmp_file)
 
         _simple_download(
             image_url,
@@ -1553,7 +1552,7 @@ def _download_image_nii_file(image_info, collection, download_params):
         im_resampled.to_filename(resampled_image_absolute_path)
 
         # Remove temporary file
-        os.remove(tmp_path)
+        tmp_path.unlink()
     else:
         _simple_download(
             image_url,
@@ -1565,7 +1564,8 @@ def _download_image_nii_file(image_info, collection, download_params):
 
 
 def _check_has_words(file_name):
-    if not os.path.isfile(file_name):
+    file_name = Path(file_name)
+    if not file_name.is_file():
         return False
     info = _remove_none_strings(_json_from_file(file_name))
     try:
@@ -1573,7 +1573,7 @@ def _check_has_words(file_name):
         return True
     except (AttributeError, TypeError, AssertionError):
         pass
-    os.remove(file_name)
+    file_name.unlink()
     return False
 
 
@@ -1614,7 +1614,7 @@ def _download_image_terms(image_info, collection, download_params):
         collection["absolute_path"], ns_words_file_name
     )
 
-    if os.path.isfile(image_info["ns_words_absolute_path"]):
+    if Path(image_info["ns_words_absolute_path"]).is_file():
         return image_info, collection
 
     query = urljoin(
@@ -1713,9 +1713,9 @@ def _update_image(image_info, download_params):
         image_info, collection = _download_image_terms(
             image_info, collection, download_params
         )
-        metadata_file_path = os.path.join(
-            os.path.dirname(image_info["absolute_path"]),
-            f"image_{image_info['id']}_metadata.json",
+        metadata_file_path = (
+            Path(image_info["absolute_path"]).parent
+            / f"image_{image_info['id']}_metadata.json"
         )
         _write_metadata(image_info, metadata_file_path)
     except OSError:
@@ -1783,7 +1783,7 @@ def _scroll_local(download_params):
         for image in good_images:
             image, collection = _update(image, collection, download_params)
             if download_params["resample"]:
-                if not os.path.isfile(image["resampled_absolute_path"]):
+                if not Path(image["resampled_absolute_path"]).is_file():
                     # TODO switch to force_resample=True
                     # when bumping to version > 0.13
                     im_resampled = resample_img(
@@ -1797,7 +1797,7 @@ def _scroll_local(download_params):
                 download_params["visited_images"].add(image["id"])
                 download_params["visited_collections"].add(collection["id"])
                 yield image, collection
-            elif os.path.isfile(image["absolute_path"]):
+            elif Path(image["absolute_path"]).is_file():
                 download_params["visited_images"].add(image["id"])
                 download_params["visited_collections"].add(collection["id"])
                 yield image, collection
@@ -2027,10 +2027,8 @@ def _scroll_image_ids(download_params):
         try:
             image = _download_image(image, download_params)
             collection = _json_add_collection_dir(
-                os.path.join(
-                    os.path.dirname(image["absolute_path"]),
-                    "collection_metadata.json",
-                )
+                Path(image["absolute_path"]).parent
+                / "collection_metadata.json",
             )
         except Exception:
             image, collection = None, None

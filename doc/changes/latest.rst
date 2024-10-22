@@ -42,7 +42,7 @@ Fixes
 
 - :bdg-dark:`Code` Fix PTH errors: PTH110, PTH107, PTH102, PTH113, PTH111, PTH101, PTH201, PTH109, PTH115 (:gh:`4620` by `Prakhar Jain`_).
 
-- :bdg-dark:`Code` Fix PTH errors: PTH106, PTH112, PTH114, PTH117, PTH122, PTH202, PTH203, PTH204 (:gh:`4607`, :gh:`4612`, :gh:`4590`, :gh:`4618` by `Hande Gözükan`_).
+- :bdg-dark:`Code` Fix PTH errors: PTH100, PTH103, PTH106, PTH112, PTH114, PTH117, PTH119, PTH120, PTH122, PTH202, PTH203, PTH204 (:gh:`4607`, :gh:`4612`, :gh:`4590`, :gh:`4618`, :gh:`4860` by `Hande Gözükan`_).
 
 
 Enhancements
@@ -110,3 +110,5 @@ Changes
 - :bdg-dark:`Code` Reorder condition in internal call of :func:`nilearn.image.resample_img` to skip checking of array values if interpolation is ``nearest`` (:gh:`4571` by `Jason Kai`_).
 
 - :bdg-dark:`Code` Remove redundant sorting of ``np.unique(data)`` in internal call of :func:`nilearn.image.resample_img` when checking array values (:gh:`4571` by `Jason Kai`_).
+
+- :bdg-primary:`Doc` Add missing default values to docstrings (:gh:`4656`, :gh:`4659`, :gh:`4660` by `Anupriya Kumari`_).

@@ -147,21 +147,11 @@ ignore = [
     "N803",
     "N806",
     "PERF203",
-    "PLR0911",
-    "PLR0912",
-    "PLR0913",
-    "PLR0915",
     "PLR2004",
-    "PTH100",
-    "PTH103",
-    "PTH112",
     "PTH118",
-    "PTH119",
-    "PTH120",
     "PTH123",
     "PTH207",
-    "RUF012",
-    "SIM117"
+    "RUF012"
 ]
 # List of all the ruff rules (includes why the rule matters)
 # https://docs.astral.sh/ruff/rules/
@@ -198,7 +188,16 @@ max-complexity = 41
 "**/{examples}/*" = ["D103", "D400", "E402"]
 "**/{tests}/*" = ["D100", "D101", "D102", "D103", "E402"]
 "__init__.py" = ["D104", "E402"]
-"nilearn/datasets/**/*" = ["PTH201", "PTH101", "PTH102", "PTH107", "PTH110", "PTH111", "PTH113"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
+
+[tool.ruff.lint.pylint]
+# https://docs.astral.sh/ruff/settings/#lint_pylint_max-args
+max-args = 26
+# https://docs.astral.sh/ruff/settings/#lint_pylint_max-branches
+max-branches = 48
+# https://docs.astral.sh/ruff/settings/#lint_pylint_max-returns
+max-returns = 7
+# https://docs.astral.sh/ruff/settings/#lint_pylint_max-statements
+max-statements = 151

@@ -94,7 +94,8 @@ report
 # -------------------
 import matplotlib.pyplot as plt
 
-plt.figure(layout="constrained")
+plt.figure(constrained_layout=True)
+
 for time_serie, label in zip(time_series.T, labels):
     plt.plot(time_serie, label=label)
 
