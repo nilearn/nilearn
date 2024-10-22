@@ -430,8 +430,6 @@ class SearchLight(BaseEstimator):
         estimator = self.estimator
         if estimator == "svc":
             estimator = ESTIMATOR_CATALOG[estimator](dual=True)
-        elif isinstance(estimator, str):
-            estimator = ESTIMATOR_CATALOG[estimator]()
 
         # Use the modified `_group_iter_search_light` logic to avoid `y` issues
         result = search_light(
