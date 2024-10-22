@@ -188,7 +188,7 @@ def test_searchlight_attributes_exist_after_fit():
     sl.fit(data_img, y=cond)
 
     # Check if attributes exist after fitting
-    assert hasattr(sl, "process_mask_"), "process_mask_ attribute missing."
+    assert hasattr(sl, "process_mask_")
     assert hasattr(sl, "masked_scores_"), "masked_scores_ attribute missing."
 
 
