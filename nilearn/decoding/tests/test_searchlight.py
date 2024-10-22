@@ -189,7 +189,7 @@ def test_searchlight_attributes_exist_after_fit():
 
     # Check if attributes exist after fitting
     assert hasattr(sl, "process_mask_")
-    assert hasattr(sl, "masked_scores_"), "masked_scores_ attribute missing."
+    assert hasattr(sl, "masked_scores_")
 
 
 def test_searchlight_scores_img_error_before_fit():
