@@ -128,7 +128,6 @@ mean_fmri = image.mean_img(fmri_img, copy_header=True)
 
 from nilearn.plotting import plot_img, plot_stat_map, show
 
-
 # Because scores are not a zero-center test statistics, we cannot use
 # plot_stat_map
 plot_img(

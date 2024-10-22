@@ -223,8 +223,6 @@ def test_dimension_mismatch_error():
         sl.fit(data_img, y=cond)
 
 
-
-
 def test_transform_without_fit():
     """Test if calling `transform()` raises ValueError before fitting."""
     frames = 20
