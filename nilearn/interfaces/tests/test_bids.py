@@ -229,6 +229,12 @@ def test_get_bids_files_inheritance_principle_sub_folder(tmp_path, json_file):
 
 
 def test_get_bids_files(tmp_path):
+    """Check proper number of files is returned.
+
+    For each possible option of file selection
+    we check that we recover the appropriate amount of files,
+    as included in the fake bids dataset.
+    """
     n_sub = 2
 
     bids_path = create_fake_bids_dataset(
@@ -238,9 +244,6 @@ def test_get_bids_files(tmp_path):
         tasks=["localizer", "main"],
         n_runs=[1, 2],
     )
-    # For each possible option of file selection we check that we
-    # recover the appropriate amount of files, as included in the
-    # fake bids dataset.
 
     # files in total related to subject images.
     # Top level files like README not included

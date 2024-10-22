@@ -234,6 +234,7 @@ def test_compute_mask_strategy(strategy, shape_3d_default, list_random_imgs):
 
 
 def test_dtype(affine_eye):
+    """Check dtype returned by transform when using auto."""
     data = np.zeros((9, 10, 11), dtype=np.float64)
     data[2:-2, 2:-2, 2:-2] = 10
     img = Nifti1Image(data, affine_eye)

@@ -182,6 +182,7 @@ def test_process_second_level_input_as_firstlevelmodels(shape_4d_default):
 
 
 def test_check_affine_first_level_models(affine_eye, shape_4d_default):
+    """Check all FirstLevelModel have the same affine."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes=[shape_4d_default]
     )
@@ -219,6 +220,7 @@ def test_check_shape_first_level_models(shape_4d_default):
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes=[shape_4d_default]
     )
+    """Check all FirstLevelModel have the same shape."""
     list_of_flm = [
         FirstLevelModel(mask_img=mask, subject_label=f"sub-{i}").fit(
             fmri_data[0], design_matrices=design_matrices[0]
@@ -250,6 +252,7 @@ def test_check_shape_first_level_models(shape_4d_default):
 
 
 def test_check_second_level_input(shape_4d_default):
+    """Raise errors when wrong inputs are passed to SecondLevelModel."""
     with pytest.raises(TypeError, match="second_level_input must be"):
         _check_second_level_input(1, None)
 
@@ -342,6 +345,10 @@ def test_check_second_level_input_confounds(shape_4d_default):
 
 
 def test_check_second_level_input_design_matrix(shape_4d_default):
+    """Raise errors when no design matrix is passed to SecondLevelModel.
+
+    When passing niimg like objects.
+    """
     _, fmri_data, _ = generate_fake_fmri_data_and_design(
         shapes=[shape_4d_default]
     )
@@ -418,6 +425,12 @@ def test_check_effect_maps():
 
 
 def test_infer_effect_maps(tmp_path, shape_4d_default):
+    """Check that the right input is inferred.
+
+    second_level_input could for example
+    be a list of images
+    or a dataframe 'mapping' a string to an image.
+    """
     rk = 3
     shapes = [SHAPE, shape_4d_default]
     mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(
@@ -439,6 +452,10 @@ def test_infer_effect_maps(tmp_path, shape_4d_default):
 
 
 def test_infer_effect_maps_error(tmp_path, shape_4d_default):
+    """Check error raised when inferring 'type' for the images.
+
+    For example if the image mapped in a dataframe does not exist.
+    """
     shapes = [shape_4d_default, shape_4d_default]
     _, fmri_data, _ = write_fake_fmri_data_and_design(
         shapes, file_path=tmp_path
@@ -685,7 +702,10 @@ def test_fmri_inputs_pandas_errors():
         SecondLevelModel().fit(niidf)
 
 
-def test_fmri_inputs_errors(tmp_path, confounds, shape_4d_default):
+def test_secondlevelmodel_fit_inputs_errors(
+    tmp_path, confounds, shape_4d_default
+):
+    """Raise the proper errors when invalid inputs are passed to fit."""
     # prepare fake data
     shapes = (shape_4d_default,)
     _, FUNCFILE, _ = write_fake_fmri_data_and_design(
@@ -705,28 +725,32 @@ def test_fmri_inputs_errors(tmp_path, confounds, shape_4d_default):
 
     # test first level model requirements
     with pytest.raises(TypeError, match="second_level_input must be"):
-        SecondLevelModel().fit(flm)
+        SecondLevelModel().fit(second_level_input=flm)
     with pytest.raises(TypeError, match="at least two"):
-        SecondLevelModel().fit([flm])
+        SecondLevelModel().fit(second_level_input=[flm])
 
     # test first_level_conditions, confounds, and design
     flms = [flm, flm, flm]
     with pytest.raises(
         ValueError, match="confounds must be a pandas DataFrame"
     ):
-        SecondLevelModel().fit(flms, ["", []])
+        SecondLevelModel().fit(second_level_input=flms, confounds=["", []])
     with pytest.raises(
         ValueError, match="confounds must be a pandas DataFrame"
     ):
-        SecondLevelModel().fit(flms, [])
+        SecondLevelModel().fit(second_level_input=flms, confounds=[])
     with pytest.raises(
         ValueError, match="confounds must be a pandas DataFrame"
     ):
-        SecondLevelModel().fit(flms, confounds["conf1"])
+        SecondLevelModel().fit(
+            second_level_input=flms, confounds=confounds["conf1"]
+        )
     with pytest.raises(
         ValueError, match="design matrix must be a pandas DataFrame"
     ):
-        SecondLevelModel().fit(flms, None, [])
+        SecondLevelModel().fit(
+            second_level_input=flms, confounds=None, design_matrix=[]
+        )
 
 
 def test_fmri_img_inputs_errors(tmp_path, confounds):
