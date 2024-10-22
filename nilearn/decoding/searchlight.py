@@ -18,7 +18,6 @@ from sklearn import svm
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import KFold, cross_val_score
-from sklearn.svm import LinearSVC
 
 from nilearn.image import new_img_like
 from nilearn.maskers.nifti_spheres_masker import _apply_mask_and_get_affinity
@@ -307,6 +306,7 @@ class SearchLight(BaseEstimator):
         mask_img,
         process_mask_img=None,
         radius=2.0,
+        estimator="svc",
         n_jobs=1,
         scoring=None,
         cv=None,
@@ -315,7 +315,7 @@ class SearchLight(BaseEstimator):
         self.mask_img = mask_img
         self.process_mask_img = process_mask_img
         self.radius = radius
-        self.estimator = LinearSVC()
+        self.estimator = estimator
         self.n_jobs = n_jobs
         self.scoring = scoring
         self.cv = cv
@@ -379,7 +379,9 @@ class SearchLight(BaseEstimator):
         )
 
         estimator = self.estimator
-        if isinstance(estimator, str):
+        if estimator == "svc":
+            estimator = ESTIMATOR_CATALOG[estimator](dual=True)
+        elif isinstance(estimator, str):
             estimator = ESTIMATOR_CATALOG[estimator]()
 
         scores = search_light(
