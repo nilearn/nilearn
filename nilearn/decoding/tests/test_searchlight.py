@@ -250,7 +250,7 @@ def test_transform_applies_mask_correctly():
     # Perform transform on the same data
     transformed_scores = sl.transform(data_img)
 
-    assert transformed_scores is not None, "Transform did not return scores."
+    assert transformed_scores is not None
     assert transformed_scores.shape == (
         5,
         5,
