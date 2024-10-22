@@ -513,6 +513,17 @@ def assert_surf_img_equal():
 
 
 @pytest.fixture
+def assert_surf_mesh_equal():
+    """Check that 2 meshes are equal."""
+
+    def f(mesh_1, mesh_2):
+        assert np.array_equal(mesh_1.coordinates, mesh_2.coordinates)
+        assert np.array_equal(mesh_1.faces, mesh_2.faces)
+
+    return f
+
+
+@pytest.fixture
 def drop_surf_img_part():
     """Remove one hemisphere from a SurfaceImage."""
 
