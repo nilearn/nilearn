@@ -63,7 +63,7 @@ def _check_strategy(strategy):
         )
 
     if len(strategy) == 0:
-        warnings.warn("strategy is empty, confounds will return None.")
+        warnings.warn("strategy is empty, confounds will return None.", stacklevel=3)
 
     for conf in strategy:
         if conf == "non_steady_state":

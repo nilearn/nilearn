@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import pytest
 
-from nilearn.interfaces.fmriprep import load_confounds_strategy
+from nilearn.interfaces.fmriprep import load_confounds, load_confounds_strategy
 from nilearn.interfaces.fmriprep.load_confounds_strategy import (
     preset_strategies,
 )
@@ -200,3 +200,19 @@ def test_irrelevant_input(tmp_path, fmriprep_version):
     # invalid strategy
     with pytest.raises(KeyError, match="blah"):
         load_confounds_strategy(file_nii, denoise_strategy="blah")
+
+
+def test_empty_strategy(tmp_path):
+    """Ensure to return None for confounds and raise a warning when strategy is empty."""
+    file_nii, _ = create_tmp_filepath(
+        tmp_path,
+        image_type="regular",
+        copy_confounds=True,
+        copy_json=True,
+    )
+
+    warning_message = "strategy is empty, confounds will return None."
+    with pytest.warns(UserWarning, match=warning_message):
+        confounds, sample_mask = load_confounds(file_nii, strategy=[])
+
+    assert confounds is None
