@@ -1131,7 +1131,7 @@ def _check_events_file_uses_tab_separators(events_files):
         if isinstance(events_file_, (pd.DataFrame)):
             continue
         try:
-            with open(events_file_) as events_file_obj:
+            with Path(events_file_).open() as events_file_obj:
                 events_file_sample = events_file_obj.readline()
             """
             The following errors are not being handled here,
