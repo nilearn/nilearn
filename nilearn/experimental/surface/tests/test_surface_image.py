@@ -32,10 +32,10 @@ def test_surface_image_shape(surf_img, shape):
     assert img.shape == (*shape, 9)
 
 
-def test_data_shape_not_matching_mesh(surf_img, flip_surf_img):
+def test_data_shape_not_matching_mesh(surf_img, flip_surf_img_parts):
     img = surf_img()
     with pytest.raises(ValueError, match="shape.*vertices"):
-        SurfaceImage(img.mesh, flip_surf_img(img.data))
+        SurfaceImage(img.mesh, flip_surf_img_parts(img.data))
 
 
 def test_data_shape_inconsistent(surf_img):
