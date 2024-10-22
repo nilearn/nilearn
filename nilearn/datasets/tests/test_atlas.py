@@ -3,7 +3,6 @@
 # Author: Alexandre Abraham
 
 import itertools
-import os
 import re
 import xml.etree.ElementTree as ET
 from pathlib import Path
