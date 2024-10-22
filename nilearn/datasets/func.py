@@ -2749,22 +2749,24 @@ def fetch_spm_auditory(
     .. footbibliography::
 
     """
-    data_dir = get_dataset_dir(data_name, data_dir=data_dir, verbose=verbose)
-    if not (Path(data_dir) / "MoAEpilot" / "sub-01").exists():
+    data_dir = Path(
+        get_dataset_dir(data_name, data_dir=data_dir, verbose=verbose)
+    )
+    if not (data_dir / "MoAEpilot" / "sub-01").exists():
         _download_spm_auditory_data(data_dir)
 
     anat = get_bids_files(
-        main_path=Path(data_dir) / "MoAEpilot",
+        main_path=data_dir / "MoAEpilot",
         modality_folder="anat",
         file_tag="T1w",
     )[0]
     func = get_bids_files(
-        main_path=Path(data_dir) / "MoAEpilot",
+        main_path=data_dir / "MoAEpilot",
         modality_folder="func",
         file_tag="bold",
     )
     events = get_bids_files(
-        main_path=Path(data_dir) / "MoAEpilot",
+        main_path=data_dir / "MoAEpilot",
         modality_folder="func",
         file_tag="events",
     )[0]
