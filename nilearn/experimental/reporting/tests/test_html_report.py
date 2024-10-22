@@ -48,8 +48,9 @@ def test_surface_masker_report_no_report(surf_img):
 def test_surface_label_masker_report_unfitted(
     surf_label_img, label_names, reports
 ):
-    label_img = surf_label_img()
-    masker = SurfaceLabelsMasker(label_img, label_names, reports=reports)
+    masker = SurfaceLabelsMasker(
+        surf_label_img(), label_names, reports=reports
+    )
     report = masker.generate_report()
 
     _check_html(report)
@@ -60,8 +61,7 @@ def test_surface_label_masker_report_unfitted(
 
 def test_surface_label_masker_report_no_report(surf_label_img):
     """Check content of no report."""
-    label_img = surf_label_img()
-    masker = SurfaceLabelsMasker(label_img, reports=False)
+    masker = SurfaceLabelsMasker(surf_label_img(), reports=False)
     report = masker.generate_report()
 
     _check_html(report)
