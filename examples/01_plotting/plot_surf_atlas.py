@@ -2,13 +2,6 @@
 Loading and plotting of a cortical surface atlas
 ================================================
 
-.. warning::
-
-    This is an adaption of
-    :ref:`sphx_glr_auto_examples_01_plotting_plot_surf_atlas.py`
-    to use make it work with the new experimental surface API.
-
-
 The Destrieux :term:`parcellation` (:footcite:t:`Destrieux2010`)
 in fsaverage5 space as distributed with Freesurfer is used as the chosen atlas.
 
