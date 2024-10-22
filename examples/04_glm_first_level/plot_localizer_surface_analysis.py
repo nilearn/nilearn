@@ -2,19 +2,6 @@
 Example of surface-based first-level analysis
 =============================================
 
-.. warning::
-
-    This example is adapted from
-    :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_localizer_surface_analysis.py`.
-    to show how to use the new tentative API for surface images in nilearn.
-
-    This functionality is provided
-    by the :mod:`nilearn.experimental.surface` module.
-
-    It is still incomplete and subject to change without a deprecation cycle.
-
-    Please participate in the discussion on GitHub!
-
 A full step-by-step example of fitting a :term:`GLM`
 to experimental data sampled on the cortical surface
 and visualizing the results.
@@ -45,12 +32,7 @@ The advantage of this second approach is that it makes it easy to run
 second-level analyses on the surface.
 On the other hand, it is obviously less accurate
 than using a subject-tailored mesh.
-
 """
-
-from nilearn._utils.helpers import check_matplotlib
-
-check_matplotlib()
 
 # %%
 # Prepare data and analysis parameters
@@ -84,10 +66,8 @@ events = pd.read_table(events_file)
 # We could use an individual :term:`mesh`,
 # but we first resort to a standard :term:`mesh`,
 # the so-called fsaverage5 template from the FreeSurfer software.
-
-
-# %%
-# We use the new :class:`nilearn.experimental.surface.SurfaceImage`
+#
+# We use the :class:`nilearn.experimental.surface.SurfaceImage`
 # to create an surface object instance
 # that contains both the mesh
 # (here we use the one from the fsaverage5 templates)
@@ -195,12 +175,10 @@ contrasts = {
     ),
 }
 
-
-from nilearn.experimental.plotting import plot_surf_stat_map
-from nilearn.experimental.surface import load_fsaverage_data
-
 # %%
 # Let's estimate the contrasts by iterating over them.
+from nilearn.experimental.plotting import plot_surf_stat_map
+from nilearn.experimental.surface import load_fsaverage_data
 from nilearn.plotting import show
 
 fsaverage_data = load_fsaverage_data(data_type="sulcal")
