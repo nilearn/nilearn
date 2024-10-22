@@ -540,10 +540,10 @@ def compute_fixed_effects(
 
     variances = np.array(
         [masker.transform(vi).squeeze() for vi in variance_imgs]
-        )
+    )
     contrasts = np.array(
         [masker.transform(ci).squeeze() for ci in contrast_imgs]
-        )
+    )
 
     if dofs is not None:
         if len(dofs) != n_runs:
