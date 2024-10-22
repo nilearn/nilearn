@@ -770,9 +770,9 @@ datadir = PACKAGE_DIRECTORY / "data"
 
 
 def test_fetch_bids_langloc_dataset(tmp_path):
-    data_dir = str(tmp_path / "bids_langloc_example")
+    data_dir = tmp_path / "bids_langloc_example"
     os.mkdir(data_dir)
-    main_folder = os.path.join(data_dir, "bids_langloc_dataset")
+    main_folder = data_dir / "bids_langloc_dataset"
     os.mkdir(main_folder)
 
     datadir, dl_files = func.fetch_bids_langloc_dataset(tmp_path)
@@ -847,10 +847,10 @@ def test_fetch_ds000030_urls():
         tmp_list = []
         for subdir in subdir_names:
             tmp_list.append(subdir)
-            subdirpath = os.path.join(tmpdir, *tmp_list)
+            subdirpath = Path(tmpdir, *tmp_list)
             os.mkdir(subdirpath)
 
-        filepath = os.path.join(subdirpath, "urls.json")
+        filepath = str(subdirpath / "urls.json")
         mock_json_content = ["junk1", "junk2"]
         with open(filepath, "w") as f:
             json.dump(mock_json_content, f)
@@ -901,12 +901,14 @@ def test_fetch_openneuro_dataset(tmp_path):
     data_prefix = (
         f"{dataset_version.split('_')[0]}/{dataset_version}/uncompressed"
     )
-    data_dir = get_dataset_dir(
-        data_prefix,
-        data_dir=tmp_path,
-        verbose=1,
+    data_dir = Path(
+        get_dataset_dir(
+            data_prefix,
+            data_dir=tmp_path,
+            verbose=1,
+        )
     )
-    url_file = os.path.join(data_dir, "urls.json")
+    url_file = data_dir / "urls.json"
 
     # Prepare url files for subject and filter tests
     urls = [
