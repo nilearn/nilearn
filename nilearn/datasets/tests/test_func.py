@@ -771,9 +771,8 @@ datadir = PACKAGE_DIRECTORY / "data"
 
 def test_fetch_bids_langloc_dataset(tmp_path):
     data_dir = tmp_path / "bids_langloc_example"
-    os.mkdir(data_dir)
     main_folder = data_dir / "bids_langloc_dataset"
-    os.mkdir(main_folder)
+    main_folder.mkdir(parents=True)
 
     datadir, dl_files = func.fetch_bids_langloc_dataset(tmp_path)
 
@@ -848,9 +847,9 @@ def test_fetch_ds000030_urls():
         for subdir in subdir_names:
             tmp_list.append(subdir)
             subdirpath = Path(tmpdir, *tmp_list)
-            os.mkdir(subdirpath)
+            subdirpath.mkdir()
 
-        filepath = str(subdirpath / "urls.json")
+        filepath = subdirpath / "urls.json"
         mock_json_content = ["junk1", "junk2"]
         with open(filepath, "w") as f:
             json.dump(mock_json_content, f)
@@ -862,7 +861,7 @@ def test_fetch_ds000030_urls():
         )
         urls_path = urls_path.replace("/", os.sep)
 
-        assert urls_path == filepath
+        assert urls_path == str(filepath)
         assert urls == mock_json_content
 
         # fetch_openneuro_dataset_index should do the same, but with a warning
@@ -875,7 +874,7 @@ def test_fetch_ds000030_urls():
 
         urls_path = urls_path.replace("/", os.sep)
 
-        assert urls_path == filepath
+        assert urls_path == str(filepath)
         assert urls == mock_json_content
 
         # fetch_openneuro_dataset_index should even grab ds000030 when you
@@ -892,7 +891,7 @@ def test_fetch_ds000030_urls():
 
         urls_path = urls_path.replace("/", os.sep)
 
-        assert urls_path == filepath
+        assert urls_path == str(filepath)
         assert urls == mock_json_content
 
 
@@ -1139,5 +1138,5 @@ def test_fiac(tmp_path):
 def test_load_sample_motor_activation_image():
     path_img = func.load_sample_motor_activation_image()
 
-    assert os.path.exists(path_img)
+    assert Path(path_img).exists()
     assert load_img(path_img)
