@@ -256,7 +256,7 @@ def test_transform_applies_mask_correctly():
         5,
         5,
     )
-    assert transformed_scores.size > 0, "Transform returned an empty array."
+    assert transformed_scores.size > 0
 
 
 def test_reuse_search_light_in_transform():
