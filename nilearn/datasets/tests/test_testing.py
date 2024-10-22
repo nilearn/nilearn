@@ -61,7 +61,7 @@ def test_loading_from_archive_contents(tmp_path):
 
         with tarfile.open(str(file_path)) as tarf:
             assert sorted(map(Path, tarf.getnames())) == [
-                Path("."),
+                Path(),
                 *expected_contents,
             ]
             tarf.extractall(str(tar_extract_dir))
@@ -216,9 +216,11 @@ def test_dict_to_archive(tmp_path):
     with archive_path.open("wb") as f:
         f.write(zip_archive)
 
-    with zipfile.ZipFile(str(archive_path)) as zipf:
-        with zipf.open("archive", "r") as f:
-            assert f.read() == targz
+    with (
+        zipfile.ZipFile(str(archive_path)) as zipf,
+        zipf.open("archive", "r") as f,
+    ):
+        assert f.read() == targz
 
     from_list = _testing.list_to_archive(archive_spec.keys())
     with archive_path.open("wb") as f:
@@ -228,7 +230,7 @@ def test_dict_to_archive(tmp_path):
         assert sorted(map(Path, tarf.getnames())) == sorted(
             [
                 *list(map(Path, archive_spec.keys())),
-                Path("."),
+                Path(),
                 Path("a"),
                 Path("a", "b"),
                 Path("data"),

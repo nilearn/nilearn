@@ -2064,6 +2064,17 @@ def test_flm_fit_surface_image(_make_surface_glm_data):
     assert isinstance(model.masker_, SurfaceMasker)
 
 
+def test_warn_flm_smooth_surface_image(_make_surface_glm_data):
+    """Test warning raised in FirstLevelModel with surface smoothing."""
+    mini_img, des = _make_surface_glm_data(5)
+    model = FirstLevelModel(mask_img=False, smoothing_fwhm=5)
+    with pytest.warns(
+        UserWarning,
+        match="Parameter smoothing_fwhm is not yet supported for surface data",
+    ):
+        model.fit(mini_img, design_matrices=des)
+
+
 def test_flm_fit_surface_image_one_hemisphere(
     _make_surface_glm_data, drop_img_part
 ):
