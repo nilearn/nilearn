@@ -460,8 +460,7 @@ def touch_example_backreferences(
         app.srcdir, "modules", "generated", f"{name}.examples"
     )
     if not examples_path.exists():
-        # touch file
-        open(examples_path, "w").close()
+        examples_path.touch()
 
 
 def setup(app):

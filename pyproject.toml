@@ -148,7 +148,6 @@ ignore = [
     "N806",
     "PERF203",
     "PLR2004",
-    "PTH123",
     "PTH207",
     "RUF012"
 ]
@@ -187,6 +186,7 @@ max-complexity = 41
 "**/{examples}/*" = ["D103", "D400", "E402"]
 "**/{tests}/*" = ["D100", "D101", "D102", "D103", "E402"]
 "__init__.py" = ["D104", "E402"]
+"nilearn/datasets/**/*" = ["PTH123"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
