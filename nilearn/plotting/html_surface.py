@@ -11,6 +11,7 @@ import numpy as np
 from nilearn import datasets, surface
 from nilearn._utils import fill_doc
 from nilearn._utils.niimg_conversions import check_niimg_3d
+from nilearn.experimental.surface import PolyMesh, SurfaceImage
 from nilearn.plotting import cm
 from nilearn.plotting.html_document import HTMLDocument
 from nilearn.plotting.js_plotting_utils import (
@@ -20,6 +21,7 @@ from nilearn.plotting.js_plotting_utils import (
     mesh_to_plotly,
     to_color_strings,
 )
+from nilearn.plotting.surf_plotting import DEFAULT_HEMI, _check_inputs
 
 
 class SurfaceView(HTMLDocument):  # noqa: D101
@@ -433,9 +435,10 @@ def view_img_on_surf(
 
 @fill_doc
 def view_surf(
-    surf_mesh,
+    surf_mesh=None,
     surf_map=None,
     bg_map=None,
+    hemi=None,
     threshold=None,
     cmap=cm.cold_hot,
     black_bg=False,
@@ -454,20 +457,30 @@ def view_surf(
 
     Parameters
     ----------
-    surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`
+    surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`,
+                or a Mesh, or a PolyMesh, or None
         Surface :term:`mesh` geometry, can be a file
         (valid formats are .gii or Freesurfer specific files
         such as .orig, .pial, .sphere, .white, .inflated) or
         a list of two Numpy arrays, the first containing the x-y-z coordinates
         of the :term:`mesh` vertices, the second containing the indices
         (into coords) of the :term:`mesh` :term:`faces`.
+        or a Mesh object with "coordinates" and "faces" attributes,
+        or a PolyMesh object,
+        or None.
+        If None is passed, then ``surf_map`` must be a SurfaceImage instance
+        and the mesh from that SurfaceImage instance will be used.
 
-    surf_map : :obj:`str` or :class:`numpy.ndarray`, default=None
+    surf_map : :obj:`str` or :class:`numpy.ndarray`, or SurfaceIamge or None, \
+               default=None
         Data to be displayed on the surface :term:`mesh`.
         Can be a file (valid formats are .gii, .mgz, .nii, .nii.gz,
         or Freesurfer specific files such as
         .thickness, .area, .curv, .sulc, .annot, .label) or
-        a Numpy array
+        a Numpy array.
+        If None is passed for ``surf_mesh``
+        then ``surf_map`` must be a SurfaceImage instance
+        and its the mesh will be used for plotting.
 
     bg_map : :obj:`str` or :class:`numpy.ndarray`, default=None
         Background image to be plotted on the :term:`mesh` underneath
@@ -476,6 +489,13 @@ def view_surf(
         If the map contains values outside [0, 1],
         it will be rescaled such that all values are in [0, 1].
         Otherwise, it will not be modified.
+
+    hemi : {"left", "right", None}, default=None
+        Hemisphere to display in case a SurfaceImage is passed as ``surf_map``
+        and / or if PolyMesh is passed as ``surf_mesh``.
+        In these cases, if ``hemi`` is set to None, it will default to "left".
+
+        .. versionadded:: 0.11.0
 
     %(bg_on_data)s
 
@@ -541,8 +561,28 @@ def view_surf(
     See Also
     --------
     nilearn.plotting.view_img_on_surf: Surface plot from a 3D statistical map.
-
     """
+    if hemi is None and (
+        isinstance(surf_map, SurfaceImage) or isinstance(surf_mesh, PolyMesh)
+    ):
+        hemi = DEFAULT_HEMI
+    elif hemi is not None and not (
+        isinstance(surf_map, SurfaceImage) or isinstance(surf_mesh, PolyMesh)
+    ):
+        warn(
+            UserWarning,
+            (
+                f"{hemi=} was passed "
+                f"with {type(surf_map)=} and {type(surf_mesh)=}.\n"
+                "This value will be ignored as it is only used when "
+                "'roi_map' is a SurfaceImage instance "
+                "and  / or 'surf_mesh' is a PolyMesh instance."
+            ),
+        )
+    surf_map, surf_mesh, bg_map = _check_inputs(
+        surf_map, surf_mesh, hemi, bg_map, map_var_name="surf_map"
+    )
+
     surf_mesh = surface.load_surf_mesh(surf_mesh)
     if surf_map is None:
         surf_map = np.ones(len(surf_mesh[0]))

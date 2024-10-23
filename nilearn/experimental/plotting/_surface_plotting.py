@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from nilearn import plotting as old_plotting
 from nilearn._utils.docs import fill_doc
-from nilearn.plotting.surf_plotting import DEFAULT_HEMI, _check_inputs
+from nilearn.plotting.surf_plotting import DEFAULT_HEMI
 
 
 def plot_surf(
@@ -83,13 +83,10 @@ def view_surf(
     **kwargs,
 ):
     """Insert a surface plot of a surface map into an HTML page."""
-    surf_map, surf_mesh, bg_map = _check_inputs(
-        surf_map, surf_mesh, hemi, bg_map
-    )
-
     return old_plotting.view_surf(
         surf_mesh=surf_mesh,
         surf_map=surf_map,
         bg_map=bg_map,
+        hemi=hemi,
         **kwargs,
     )
