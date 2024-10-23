@@ -64,7 +64,7 @@ def get_html_template(template_name):
     """Get an HTML file from package data."""
     template_path = Path(__file__).parent / "data" / "html" / template_name
 
-    with open(template_path, "rb") as f:
+    with template_path.open("rb") as f:
         return Template(f.read().decode("utf-8"))
 
 

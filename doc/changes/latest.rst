@@ -44,6 +44,7 @@ Fixes
 
 - :bdg-dark:`Code` Fix PTH errors: PTH100, PTH103, PTH106, PTH112, PTH114, PTH117, PTH119, PTH120, PTH122, PTH202, PTH203, PTH204 (:gh:`4607`, :gh:`4612`, :gh:`4590`, :gh:`4618`, :gh:`4860` by `Hande Gözükan`_).
 
+- :bdg-dark:`Code` Make :func:`nilearn.interfaces.fmriprep.load_confounds` return ``None`` for confounds when provided with an empty cleaning strategy (:gh:`4570` by `Micha Burkhardt`_).
 
 Enhancements
 ------------
