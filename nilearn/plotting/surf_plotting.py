@@ -18,6 +18,7 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from nilearn import image, surface
 from nilearn._utils import check_niimg_3d, compare_version, fill_doc
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
+from nilearn.experimental.surface import PolyMesh, SurfaceImage
 from nilearn.plotting.cm import cold_hot, mix_colormaps
 from nilearn.plotting.displays._figures import PlotlySurfaceFigure
 from nilearn.plotting.displays._slicers import _get_cbar_ticks
@@ -118,6 +119,66 @@ LAYOUT = {
     "hovermode": False,
     "margin": {"l": 0, "r": 0, "b": 0, "t": 0, "pad": 0},
 }
+
+
+def _check_inputs(
+    surf_map,
+    surf_mesh,
+    hemi,
+    bg_map=None,
+):
+    """Check inputs for surface plotting.
+
+    Where possible this will 'convert' the inputs
+    if SurfaceImage or PolyMesh objects are passed
+    to be able to give them to the surface plotting functions.
+
+    Returns
+    -------
+    surf_map : numpy.ndarray
+        Description of the output.
+
+    surf_mesh : numpy.ndarray
+        Description of the output.
+
+    bg_map : str | pathlib.Path | numpy.ndarray | None
+
+    """
+    if isinstance(surf_mesh, PolyMesh):
+        _check_hemi_present(surf_mesh, hemi)
+        surf_mesh = surf_mesh.parts[hemi]
+
+    if isinstance(surf_map, SurfaceImage):
+        if surf_mesh is None:
+            surf_mesh = surf_map.mesh.parts[hemi]
+        surf_map = surf_map.data.parts[hemi]
+
+    bg_map = _check_bg_map(bg_map, hemi)
+
+    return surf_map, surf_mesh, bg_map
+
+
+def _check_bg_map(bg_map, hemi):
+    """Get the requested hemisphere if bg_map is a SurfaceImage.
+
+    bg_map: Any
+
+    hemi: str
+
+    Returns
+    -------
+    bg_map : str | pathlib.Path | numpy.ndarray | None
+    """
+    if isinstance(bg_map, SurfaceImage):
+        assert bg_map.data.parts[hemi] is not None
+        bg_map = bg_map.data.parts[hemi]
+    return bg_map
+
+
+def _check_hemi_present(mesh, hemi):
+    """Check that a given hemisphere exists in a PolyMesh."""
+    if hemi not in mesh.parts:
+        raise ValueError(f"{hemi} must be present in mesh")
 
 
 def _get_camera_view_from_string_view(hemi, view):
