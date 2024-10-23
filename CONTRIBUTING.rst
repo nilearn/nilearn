@@ -791,7 +791,8 @@ or, if you do not have make install (for instance under Windows):
 
       python3 -m sphinx -b html -d _build/doctrees . _build/html
 
-if you don't need the plots, a quicker option is:
+The full build can take a very long time.
+So if you don't need the plots, a quicker option is:
 
 .. code-block:: bash
 

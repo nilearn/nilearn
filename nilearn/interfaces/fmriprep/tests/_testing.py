@@ -119,7 +119,7 @@ def create_tmp_filepath(
         )
         tmp_meta = base_path / confounds_sidecar
         conf, meta = get_legal_confound(fmriprep_version=fmriprep_version)
-        with open(tmp_meta, "w") as file:
+        with tmp_meta.open("w") as file:
             json.dump(meta, file, indent=2)
 
     # image data
@@ -152,7 +152,7 @@ def get_legal_confound(non_steady_state=True, fmriprep_version="1.4.x"):
         non_steady_state=non_steady_state, fmriprep_version=fmriprep_version
     )
     conf = pd.read_csv(conf, delimiter="\t", encoding="utf-8")
-    with open(meta) as file:
+    with meta.open() as file:
         meta = json.load(file)
     return conf, meta
 

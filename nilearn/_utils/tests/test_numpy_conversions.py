@@ -238,7 +238,7 @@ def test_as_ndarray_more():
 def test_csv_to_array(tmp_path):
     # Create a phony CSV file
     filename = tmp_path / "tmp.csv"
-    with open(filename, mode="w") as fp:
+    with filename.open(mode="w") as fp:
         fp.write("1.,2.,3.,4.,5.\n")
     assert np.allclose(
         csv_to_array(filename), np.asarray([1.0, 2.0, 3.0, 4.0, 5.0])

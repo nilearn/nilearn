@@ -200,6 +200,8 @@
 
 .. _Mia Zwally: https://github.com/MIZwally
 
+.. _Micha Burkhardt: https://github.com/mibur1
+
 .. _Michael Eickenberg: https://github.com/eickenberg
 
 .. _Michael Hanke: https://github.com/mih
