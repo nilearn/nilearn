@@ -31,10 +31,6 @@ def plot_surf_stat_map(
     **kwargs,
 ):
     """Plot a stats map on a surface :term:`mesh` with optional background."""
-    stat_map, surf_mesh, bg_map = _check_inputs(
-        stat_map, surf_mesh, hemi, bg_map
-    )
-
     return old_plotting.plot_surf_stat_map(
         surf_mesh=surf_mesh,
         stat_map=stat_map,

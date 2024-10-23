@@ -1014,7 +1014,6 @@ def plot_surf(
         brain surfaces.
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
-
     """
     parameters_not_implemented_in_plotly = {
         "avg_method": avg_method,
@@ -1317,8 +1316,8 @@ def plot_surf_contours(
 
 @fill_doc
 def plot_surf_stat_map(
-    surf_mesh,
-    stat_map,
+    surf_mesh=None,
+    stat_map=None,
     bg_map=None,
     hemi=DEFAULT_HEMI,
     view="lateral",
@@ -1347,7 +1346,8 @@ def plot_surf_stat_map(
 
     Parameters
     ----------
-    surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray` or Mesh
+    surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`\
+                or a Mesh, or a PolyMesh, or None
         Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
@@ -1355,7 +1355,11 @@ def plot_surf_stat_map(
         coordinates of the :term:`mesh` :term:`vertices<vertex>`,
         the second containing the indices (into coords)
         of the :term:`mesh` :term:`faces`,
-        or a Mesh object with "coordinates" and "faces" attributes.
+        or a Mesh object with "coordinates" and "faces" attributes,
+        or a PolyMesh object,
+        or None.
+        If None is passed, then ``surf_map`` must be a SurfaceImage instance
+        and the mesh from that SurfaceImage instance will be used.
 
     stat_map : :obj:`str` or :class:`numpy.ndarray`
         Statistical map to be displayed on the surface :term:`mesh`,
@@ -1374,7 +1378,9 @@ def plot_surf_stat_map(
         it will not be modified.
 
     %(hemi)s
+
     %(view)s
+
     engine : {'matplotlib', 'plotly'}, default='matplotlib'
 
         .. versionadded:: 0.9.0
@@ -1400,7 +1406,9 @@ def plot_surf_stat_map(
         If a number is given, it is used to threshold the image,
         values below the threshold (in absolute value) are plotted
         as transparent.
+
     %(cmap)s
+
     %(cbar_tick_format)s
         Default="auto" which will select:
 
@@ -1427,8 +1435,11 @@ def plot_surf_stat_map(
             ``matplotlib`` engine.
 
     %(vmin)s
+
     %(vmax)s
+
     %(symmetric_cbar)s
+
     %(bg_on_data)s
 
     %(darkness)s
@@ -1439,12 +1450,14 @@ def plot_surf_stat_map(
             ``matplotlib`` engine.
 
     %(title)s
+
     title_font_size : :obj:`int`, default=18
         Size of the title font (only implemented for the plotly engine).
 
         .. versionadded:: 0.9.0
 
     %(output_file)s
+
     axes : instance of matplotlib axes or None, default=None
         The axes instance to plot to. The projection must be '3d' (e.g.,
         `figure, axes = plt.subplots(subplot_kw={'projection': '3d'})`,
@@ -1483,8 +1496,11 @@ def plot_surf_stat_map(
     nilearn.plotting.plot_surf: For brain surface visualization.
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
-
     """
+    stat_map, surf_mesh, bg_map = _check_inputs(
+        stat_map, surf_mesh, hemi, bg_map, map_var_name="stat_map"
+    )
+
     check_extensions(stat_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
     loaded_stat_map = load_surf_data(stat_map)
 
