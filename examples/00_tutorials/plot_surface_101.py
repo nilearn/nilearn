@@ -203,7 +203,7 @@ plotting.view_surf(
 # * :ref:`sphx_glr_auto_examples_01_plotting_plot_surf_stat_map.py`
 #   to learn how to plot statistical maps on the surface.
 #
-# * :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_localizer_surface_analysis.py` # noqa: E501
+# * :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_localizer_surface_analysis.py`  # noqa: E501
 #   to learn how to perform first-level GLM analysis on surface data.
 #
 # * :ref:`sphx_glr_auto_examples_07_advanced_plot_surface_bids_analysis.py`
