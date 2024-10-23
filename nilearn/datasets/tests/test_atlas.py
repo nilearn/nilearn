@@ -391,7 +391,7 @@ def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker, lateralized):
     )
 
     labels_img = set(np.unique(get_data(bunch.maps)))
-    labels = set(bunch.labels.index.values.tolist())
+    labels = set(bunch.labels.index.to_numpy().tolist())
 
     assert labels_img.issubset(labels)
 
