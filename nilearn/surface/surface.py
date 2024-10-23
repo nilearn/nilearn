@@ -1244,7 +1244,19 @@ def mesh_to_gifti(
     faces,
     gifti_file,
 ):
-    """Write surface mesh to gifti file on disk."""
+    """Write surface mesh to gifti file on disk.
+
+    Parameters
+    ----------
+    coordinates : :class:`numpy.ndarray`
+        a Numpy array containing the x-y-z coordinates of the mesh vertices
+
+    faces : :class:`numpy.ndarray`
+        a Numpy array containing the indices (into coords) of the mesh faces.
+
+    gifti_file: :obj:`str` or :obj:`pathlib.Path`
+        name for the output gifti file.
+    """
     gifti_file = Path(gifti_file)
     gifti_img = gifti.GiftiImage()
     coords_array = gifti.GiftiDataArray(
@@ -1259,13 +1271,22 @@ def mesh_to_gifti(
 
 
 def data_to_gifti(data, gifti_file):
-    """Save data from Polydata to a gifti file."""
-    # see
-    # https://github.com/nipy/nibabel/blob/master/nibabel/gifti/gifti.py
-    # Only the following are 'supported' for now
-    # - NIFTI_TYPE_UINT8
-    # - NIFTI_TYPE_INT32
-    # - NIFTI_TYPE_FLOAT32
+    """Save data from Polydata to a gifti file.
+
+
+    Parameters
+    ----------
+    data : :class:`numpy.ndarray`
+        The data will be cast to np.uint8, np.int32) or np.float32
+        as only the following are 'supported' for now:
+        - NIFTI_TYPE_UINT8
+        - NIFTI_TYPE_INT32
+        - NIFTI_TYPE_FLOAT32
+        See https://github.com/nipy/nibabel/blob/master/nibabel/gifti/gifti.py
+
+    gifti_file: :obj:`str` or :obj:`pathlib.Path`
+        name for the output gifti file.
+    """
     if data.dtype in [np.uint16, np.uint32, np.uint64]:
         data = data.astype(np.uint8)
     elif data.dtype in [np.int8, np.int16, np.int64]:

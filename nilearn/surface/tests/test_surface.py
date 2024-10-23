@@ -7,7 +7,6 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image, freesurfer, gifti, nifti1
 from numpy.testing import assert_array_almost_equal, assert_array_equal
-from scipy.spatial import Delaunay
 from scipy.stats import pearsonr
 
 from nilearn import datasets, image
@@ -437,20 +436,9 @@ def test_load_surf_data_file_glob(tmp_path):
         load_surf_data(tmp_path / "*.gii")
 
 
-def _flat_mesh(x_s, y_s, z=0):
-    # outer normals point upwards ie [0, 0, 1]
-    x, y = np.mgrid[:x_s, :y_s]
-    x, y = x.ravel(), y.ravel()
-    z = np.ones(len(x)) * z
-    vertices = np.asarray([x, y, z]).T
-    triangulation = Delaunay(vertices[:, :2]).simplices
-    mesh = [vertices, triangulation]
-    return mesh
-
-
 @pytest.mark.parametrize("xy", [(10, 7), (5, 5), (3, 2)])
 def test_flat_mesh(xy):
-    points, triangles = _flat_mesh(xy[0], xy[1])
+    points, triangles = flat_mesh(xy[0], xy[1])
     a, b, c = points[triangles[0]]
     n = np.cross(b - a, c - a)
     assert np.allclose(n, [0.0, 0.0, 1.0])
