@@ -94,7 +94,7 @@ def test_for_pandas_dataframe():
 def test_binary_bytearray_of_ints_data_error(tmp_path):
     temp_data_bytearray_from_ints = bytearray([0, 1, 0, 11, 10])
     temp_bin_file = tmp_path / "temp_bin.bin"
-    with open(temp_bin_file, "wb") as temp_bin_obj:
+    with temp_bin_file.open("wb") as temp_bin_obj:
         temp_bin_obj.write(temp_data_bytearray_from_ints)
     with pytest.raises(
         ValueError,

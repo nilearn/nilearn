@@ -6,6 +6,7 @@ import webbrowser
 from html import escape
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler
+from pathlib import Path
 from queue import Empty, Queue
 from socketserver import TCPServer
 from threading import Thread
@@ -196,7 +197,7 @@ class HTMLDocument:
             Path to the HTML file used for saving.
 
         """
-        with open(file_name, "wb") as f:
+        with Path(file_name).open("wb") as f:
             f.write(self.get_standalone().encode("utf-8"))
 
     @remove_parameters(

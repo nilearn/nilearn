@@ -64,7 +64,6 @@ models, run_imgs, events, confounds = first_level_from_bids(
     n_jobs=2,
 )
 
-
 # %%
 # Project :term:`fMRI` data to the surface and compute GLM and contrasts
 #

@@ -41,7 +41,7 @@ def main():
         if any(file.name.startswith(s) for s in files_to_skip):
             continue
 
-        with open(file) as f:
+        with file.open() as f:
             module = ast.parse(f.read())
 
         functions = list_private_functions(module.body)
@@ -62,7 +62,7 @@ def main():
 
     # in its own module
     for i, func in enumerate(private_functions["name"]):
-        with open(private_functions["module"][i]) as file:
+        with private_functions["module"][i].open() as file:
             lines = file.readlines()
         private_functions["count_in"][i] = sum(
             f"{func}" in line for line in lines
@@ -74,7 +74,7 @@ def main():
     for file in modules:
         if any(file.name.startswith(s) for s in files_to_skip):
             continue
-        with open(file) as f:
+        with file.open() as f:
             lines = f.readlines()
         for line in lines:
             for i, func in enumerate(private_functions["name"]):
