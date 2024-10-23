@@ -441,7 +441,9 @@ class Parcellations(_MultiPCA):
             warnings.warn(
                 message=n_parcels_warning, category=UserWarning, stacklevel=3
             )
-        self.labels_img_ = self.masker_.inverse_transform(labels)
+        self.labels_img_ = self.masker_.inverse_transform(
+            labels.astype(np.int32)
+        )
 
         return self
 

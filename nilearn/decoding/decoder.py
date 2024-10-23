@@ -18,10 +18,12 @@ ensembling to achieve state of the art performance
 
 import itertools
 import warnings
-from typing import Iterable
+from collections.abc import Iterable
 
 import numpy as np
 from joblib import Parallel, delayed
+from packaging.version import parse
+from sklearn import __version__ as sklearn_version
 from sklearn import clone
 from sklearn.base import BaseEstimator, MultiOutputMixin
 from sklearn.dummy import DummyClassifier, DummyRegressor
@@ -46,27 +48,30 @@ from sklearn.utils.validation import check_is_fitted, check_X_y
 
 from nilearn._utils import CacheMixin, fill_doc
 from nilearn._utils.cache_mixin import _check_memory
-from nilearn._utils.masker_validation import check_embedded_masker
+from nilearn._utils.masker_validation import (
+    check_compatibility_mask_and_images,
+    check_embedded_masker,
+)
 from nilearn._utils.param_validation import check_feature_screening
-from nilearn.experimental.surface import SurfaceMasker
+from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
 from nilearn.regions.rena_clustering import ReNA
 
-SUPPORTED_ESTIMATORS = dict(
-    svc_l1=LinearSVC(penalty="l1", dual=False, max_iter=10000),
-    svc_l2=LinearSVC(penalty="l2", dual=True, max_iter=10000),
-    svc=LinearSVC(penalty="l2", dual=True, max_iter=10000),
-    logistic_l1=LogisticRegressionCV(penalty="l1", solver="liblinear"),
-    logistic_l2=LogisticRegressionCV(penalty="l2", solver="liblinear"),
-    logistic=LogisticRegressionCV(penalty="l2", solver="liblinear"),
-    ridge_classifier=RidgeClassifierCV(),
-    ridge_regressor=RidgeCV(),
-    ridge=RidgeCV(),
-    lasso=LassoCV(),
-    lasso_regressor=LassoCV(),
-    svr=SVR(kernel="linear", max_iter=10000),
-    dummy_classifier=DummyClassifier(strategy="stratified", random_state=0),
-    dummy_regressor=DummyRegressor(strategy="mean"),
-)
+SUPPORTED_ESTIMATORS = {
+    "svc_l1": LinearSVC(penalty="l1", dual=False, max_iter=10000),
+    "svc_l2": LinearSVC(penalty="l2", dual=True, max_iter=10000),
+    "svc": LinearSVC(penalty="l2", dual=True, max_iter=10000),
+    "logistic_l1": LogisticRegressionCV(penalty="l1", solver="liblinear"),
+    "logistic_l2": LogisticRegressionCV(penalty="l2", solver="liblinear"),
+    "logistic": LogisticRegressionCV(penalty="l2", solver="liblinear"),
+    "ridge_classifier": RidgeClassifierCV(),
+    "ridge_regressor": RidgeCV(),
+    "ridge": RidgeCV(),
+    "lasso": LassoCV(),
+    "lasso_regressor": LassoCV(),
+    "svr": SVR(kernel="linear", max_iter=10000),
+    "dummy_classifier": DummyClassifier(strategy="stratified", random_state=0),
+    "dummy_regressor": DummyRegressor(strategy="mean"),
+}
 
 
 @fill_doc
@@ -112,14 +117,13 @@ def _check_param_grid(estimator, X, y, param_grid=None):
     if param_grid is None:
         param_grid = _default_param_grid(estimator, X, y)
 
-    else:
-        if isinstance(estimator, (RidgeCV, RidgeClassifierCV)):
-            param_grid = _wrap_param_grid(param_grid, "alphas")
-        elif isinstance(estimator, LogisticRegressionCV):
-            param_grid = _replace_param_grid_key(param_grid, "C", "Cs")
-            param_grid = _wrap_param_grid(param_grid, "Cs")
-        elif isinstance(estimator, LassoCV):
-            param_grid = _wrap_param_grid(param_grid, "alphas")
+    elif isinstance(estimator, (RidgeCV, RidgeClassifierCV)):
+        param_grid = _wrap_param_grid(param_grid, "alphas")
+    elif isinstance(estimator, LogisticRegressionCV):
+        param_grid = _replace_param_grid_key(param_grid, "C", "Cs")
+        param_grid = _wrap_param_grid(param_grid, "Cs")
+    elif isinstance(estimator, LassoCV):
+        param_grid = _wrap_param_grid(param_grid, "alphas")
 
     return param_grid
 
@@ -322,7 +326,7 @@ def _check_estimator(estimator):
             "Use a custom estimator at your own risk "
             "of the process not working as intended."
         )
-    elif estimator in SUPPORTED_ESTIMATORS.keys():
+    elif estimator in SUPPORTED_ESTIMATORS:
         estimator = SUPPORTED_ESTIMATORS.get(estimator)
     else:
         raise ValueError(
@@ -505,7 +509,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         MNI template. In particular, if it is lower than 100, a univariate
         feature selection based on the Anova F-value for the input data will be
         performed. A float according to a percentile of the highest
-        scores.
+        scores. If None is passed, the percentile is set to 100.
 
     scoring: str, callable or None,
              default=None
@@ -741,9 +745,20 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         # Check if the size of the mask image and the number of features allow
         # to perform feature screening.
-        selector = check_feature_screening(
-            self.screening_percentile, self.mask_img_, self.is_classification
+        # If the input data is a SurfaceImage, the number of vertices in the
+        # mesh is needed to perform feature screening.
+        mesh_n_vertices = (
+            self.mask_img_.mesh.n_vertices
+            if isinstance(self.mask_img_, SurfaceImage)
+            else None
         )
+        selector = check_feature_screening(
+            self.screening_percentile,
+            self.mask_img_,
+            self.is_classification,
+            mesh_n_vertices=mesh_n_vertices,
+        )
+
         # Return a suitable screening percentile according to the mask image
         if hasattr(selector, "percentile"):
             self.screening_percentile_ = selector.percentile
@@ -934,15 +949,28 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
     def _apply_mask(self, X):
         masker_type = "nii"
-        if isinstance(self.mask, SurfaceMasker):
+        # all elements of X should be of the similar type by now
+        # so we can only check the first one
+        to_check = X[0] if isinstance(X, Iterable) else X
+        if isinstance(self.mask, (SurfaceMasker, SurfaceImage)) or (
+            isinstance(to_check, SurfaceImage)
+        ):
             masker_type = "surface"
+
         self.masker_ = check_embedded_masker(self, masker_type=masker_type)
+        check_compatibility_mask_and_images(self.mask, X)
+
         X = self.masker_.fit_transform(X)
         self.mask_img_ = self.masker_.mask_img_
 
         return X
 
-    def _fetch_parallel_fit_outputs(self, parallel_fit_outputs, y, n_problems):
+    def _fetch_parallel_fit_outputs(
+        self,
+        parallel_fit_outputs,
+        y,  # noqa: ARG002
+        n_problems,
+    ):
         """Fetch the outputs from parallel_fit to be ready for ensembling.
 
         Parameters
@@ -1055,7 +1083,8 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
     def _predict_dummy(self, n_samples):
         """Non-sparse scikit-learn based prediction steps for classification \
-        and regression."""
+        and regression.
+        """
         if len(self.dummy_output_) == 1:
             dummy_output = self.dummy_output_[0]
         else:
@@ -1077,7 +1106,17 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         return scores.ravel() if scores.shape[1] == 1 else scores
 
     def _more_tags(self):
-        return {"require_y": True}
+        # TODO
+        # rename method to '__sklearn_tags__'
+        # and get rid of if block
+        # bumping sklearn_version > 1.5
+        # see https://github.com/scikit-learn/scikit-learn/pull/29677
+        ver = parse(sklearn_version)
+        if ver.release[1] < 6:
+            return {"require_y": True}
+        tags = self.__sklearn_tags__()
+        tags.target_tags.required = True
+        return tags
 
 
 @fill_doc
@@ -1096,7 +1135,8 @@ class Decoder(_BaseDecoder):
         The estimator to choose among:
         %(classifier_options)s
 
-    mask: filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
+    mask: filename, Nifti1Image, NiftiMasker, MultiNiftiMasker, \
+          SurafaceImage or SurfaceMasker, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask and parameters will be used. If no mask is given, mask
         will be computed automatically from provided images by an inbuilt

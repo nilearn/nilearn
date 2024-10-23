@@ -1,6 +1,5 @@
 """Test the second level model."""
 
-import os
 from pathlib import Path
 
 import numpy as np
@@ -20,7 +19,7 @@ from nilearn._utils.data_gen import (
     write_fake_bold_img,
     write_fake_fmri_data_and_design,
 )
-from nilearn.conftest import have_mpl
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.glm.first_level import FirstLevelModel, run_glm
 from nilearn.glm.second_level import SecondLevelModel, non_parametric_inference
 from nilearn.glm.second_level.second_level import (
@@ -39,12 +38,12 @@ from nilearn.glm.second_level.second_level import (
 from nilearn.image import concat_imgs, get_data, new_img_like, smooth_img
 from nilearn.maskers import NiftiMasker
 
-if have_mpl:
+if is_matplotlib_installed():
     from nilearn.reporting import get_clusters_table
 
 # This directory path
-BASEDIR = os.path.dirname(os.path.abspath(__file__))
-FUNCFILE = os.path.join(BASEDIR, "functional.nii.gz")
+BASEDIR = Path(__file__).resolve().parent
+FUNCFILE = BASEDIR / "functional.nii.gz"
 
 N_PERM = 10
 SHAPE = (7, 8, 9, 1)
@@ -115,15 +114,19 @@ def test_sort_input_dataframe(input_df):
     """Unit tests for function _sort_input_dataframe()."""
     output_df = _sort_input_dataframe(input_df)
 
-    assert output_df["subject_label"].values.tolist() == ["bar", "baz", "foo"]
-    assert output_df["effects_map_path"].values.tolist() == [
+    assert output_df["subject_label"].to_list() == [
+        "bar",
+        "baz",
+        "foo",
+    ]
+    assert output_df["effects_map_path"].to_list() == [
         "bar.nii",
         "baz.nii",
         "foo.nii",
     ]
 
 
-def test_second_level_input_as_3D_images(rng, affine_eye, tmp_path):
+def test_second_level_input_as_3d_images(rng, affine_eye, tmp_path):
     """Test second level model with a list 3D image filenames as input.
 
     Should act as a regression test for:
@@ -132,8 +135,8 @@ def test_second_level_input_as_3D_images(rng, affine_eye, tmp_path):
     """
     shape = (7, 8, 9)
     images = []
-    nb_subjects = 10
-    for _ in range(nb_subjects):
+    n_subjects = 10
+    for _ in range(n_subjects):
         data = rng.random(shape)
         images.append(Nifti1Image(data, affine_eye))
 
@@ -155,7 +158,8 @@ def test_second_level_input_as_3D_images(rng, affine_eye, tmp_path):
 
 def test_process_second_level_input_as_firstlevelmodels():
     """Unit tests for function \
-       _process_second_level_input_as_firstlevelmodels()."""
+       _process_second_level_input_as_firstlevelmodels().
+    """
     shapes, rk = [(7, 8, 9, 15)], 3
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk
@@ -173,7 +177,7 @@ def test_process_second_level_input_as_firstlevelmodels():
 
     assert subjects_label == [f"sub-{i}" for i in range(3)]
     assert isinstance(sample_map, Nifti1Image)
-    assert sample_map.shape == (7, 8, 9, 1)
+    assert sample_map.shape == (7, 8, 9)
 
 
 def test_check_affine_first_level_models(affine_eye):
@@ -281,7 +285,7 @@ def test_check_second_level_input():
     with pytest.raises(
         TypeError, match="Got object type <class 'function'> at idx 1"
     ):
-        _check_second_level_input(input_models + [obj], pd.DataFrame())
+        _check_second_level_input([*input_models, obj], pd.DataFrame())
 
 
 def test_check_second_level_input_unfit_model():
@@ -588,7 +592,7 @@ def test_fmri_inputs(
     # smoke tests with correct input
     flms = [flm, flm, flm]
 
-    shape_3d = [shape_3d_default + (1,)]
+    shape_3d = [(*shape_3d_default, 1)]
     _, FUNCFILE, _ = write_fake_fmri_data_and_design(
         shape_3d, file_path=tmp_path
     )
@@ -746,7 +750,7 @@ def test_fmri_img_inputs_errors(tmp_path, confounds):
         TypeError,
         match="Elements of second_level_input must be of the same type.",
     ):
-        SecondLevelModel().fit(niimgs + [[]], confounds)
+        SecondLevelModel().fit([*niimgs, []], confounds)
 
 
 def test_fmri_inputs_for_non_parametric_inference_errors(
@@ -764,7 +768,7 @@ def test_fmri_inputs_for_non_parametric_inference_errors(
     X = rng.standard_normal(size=(p, q))
     sdes = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
 
-    shape_3d = [shape_3d_default + (1,)]
+    shape_3d = [(*shape_3d_default, 1)]
     _, FUNCFILE, _ = write_fake_fmri_data_and_design(
         shape_3d, file_path=tmp_path
     )
@@ -796,7 +800,7 @@ def test_fmri_inputs_for_non_parametric_inference_errors(
     with pytest.raises(ValueError, match="require a design matrix"):
         non_parametric_inference(niimgs)
     with pytest.raises(TypeError):
-        non_parametric_inference(niimgs + [[]], confounds)
+        non_parametric_inference([*niimgs, []], confounds)
 
     # test other objects
     with pytest.raises(ValueError, match="File not found: .*"):
@@ -826,7 +830,8 @@ def test_second_level_voxelwise_attribute_errors(attribute):
     """Tests that an error is raised when trying to access \
        voxelwise attributes before fitting the model, \
        before computing a contrast, \
-       and when not setting ``minimize_memory`` to ``True``."""
+       and when not setting ``minimize_memory`` to ``True``.
+    """
     shapes = (SHAPE,)
     mask, fmri_data, _ = generate_fake_fmri_data_and_design(shapes)
     model = SecondLevelModel(mask_img=mask, minimize_memory=False)
@@ -910,10 +915,10 @@ def test_non_parametric_inference_tfce(tmp_path):
         tfce=True,
     )
     assert isinstance(out, dict)
-    assert "t" in out.keys()
-    assert "tfce" in out.keys()
-    assert "logp_max_t" in out.keys()
-    assert "logp_max_tfce" in out.keys()
+    assert "t" in out
+    assert "tfce" in out
+    assert "logp_max_t" in out
+    assert "logp_max_tfce" in out
 
     assert get_data(out["tfce"]).shape == shapes[0][:3]
     assert get_data(out["logp_max_tfce"]).shape == shapes[0][:3]
@@ -935,25 +940,27 @@ def test_non_parametric_inference_cluster_level(tmp_path):
         threshold=0.001,
     )
     assert isinstance(out, dict)
-    assert "t" in out.keys()
-    assert "logp_max_t" in out.keys()
-    assert "size" in out.keys()
-    assert "logp_max_size" in out.keys()
-    assert "mass" in out.keys()
-    assert "logp_max_mass" in out.keys()
+    assert "t" in out
+    assert "logp_max_t" in out
+    assert "size" in out
+    assert "logp_max_size" in out
+    assert "mass" in out
+    assert "logp_max_mass" in out
 
     assert get_data(out["logp_max_t"]).shape == SHAPE[:3]
 
 
 @pytest.mark.skipif(
-    not have_mpl, reason="Matplotlib not installed; required for this test"
+    not is_matplotlib_installed(),
+    reason="Matplotlib not installed; required for this test",
 )
 def test_non_parametric_inference_cluster_level_with_covariates(
     tmp_path,
     rng,
 ):
     """Test non-parametric inference with cluster-level inference in \
-    the context of covariates."""
+    the context of covariates.
+    """
     shapes = ((7, 8, 9, 1),)
     mask, FUNCFILE, _ = write_fake_fmri_data_and_design(
         shapes, file_path=tmp_path
@@ -984,7 +991,7 @@ def test_non_parametric_inference_cluster_level_with_covariates(
     )
 
     # Calculate uncorrected cluster sizes
-    df = len(Y) - X.shape[1]
+    df = len(Y) - X.shape[1]  # noqa: PD901
     neg_log_pval = -np.log10(stats.t.sf(get_data(out["t"]), df=df))
     logp_unc = new_img_like(out["t"], neg_log_pval)
     logp_unc_cluster_sizes = list(
@@ -1136,7 +1143,7 @@ def test_second_level_t_contrast_length_errors(tmp_path):
         model.compute_contrast(second_level_contrast=[1, 2])
 
 
-def test_second_level_F_contrast_length_errors(tmp_path):
+def test_second_level_f_contrast_length_errors(tmp_path):
     func_img, mask = fake_fmri_data(file_path=tmp_path)
 
     model = SecondLevelModel(mask_img=mask)

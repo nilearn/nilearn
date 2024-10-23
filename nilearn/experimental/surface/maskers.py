@@ -11,8 +11,10 @@ from joblib import Memory
 from sklearn.base import BaseEstimator, TransformerMixin
 
 from nilearn import signal
+from nilearn._utils import _constrained_layout_kwargs
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.class_inspect import get_params
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.experimental.surface._surface_image import PolyMesh, SurfaceImage
 
 
@@ -158,7 +160,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
             start = stop
         self.output_dimension_ = stop
 
-        for part in self.mask_img_.data.parts.keys():
+        for part in self.mask_img_.data.parts:
             self._report_content["n_vertices"][part] = (
                 self.mask_img_.mesh.parts[part].n_vertices
             )
@@ -296,9 +298,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
     def generate_report(self):
         """Generate a report."""
-        try:
-            from nilearn.reporting.html_report import generate_report
-        except ImportError:
+        if not is_matplotlib_installed():
             with warnings.catch_warnings():
                 mpl_unavail_msg = (
                     "Matplotlib is not imported! "
@@ -307,6 +307,8 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 warnings.filterwarnings("always", message=mpl_unavail_msg)
                 warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
                 return [None]
+
+        from nilearn.reporting.html_report import generate_report
 
         return generate_report(self)
 
@@ -364,6 +366,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
             len(hemispheres),
             subplot_kw={"projection": "3d"},
             figsize=(20, 20),
+            **_constrained_layout_kwargs(),
         )
         axes = np.atleast_2d(axes)
 
@@ -381,10 +384,10 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 )
 
                 colors = None
-                nb_regions = len(np.unique(self.mask_img_.data.parts[hemi]))
-                if nb_regions == 1:
+                n_regions = len(np.unique(self.mask_img_.data.parts[hemi]))
+                if n_regions == 1:
                     colors = "b"
-                elif nb_regions == 2:
+                elif n_regions == 2:
                     colors = ["w", "b"]
 
                 plotting.plot_surf_contours(
@@ -395,8 +398,6 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
                     axes=ax,
                     colors=colors,
                 )
-
-        plt.tight_layout()
 
         return fig
 
@@ -469,8 +470,7 @@ class SurfaceLabelsMasker(BaseEstimator):
             "number_of_regions": len(self.label_names_),
             "summary": {},
         }
-        for part in self.labels_img.data.parts.keys():
-
+        for part in self.labels_img.data.parts:
             self._report_content["n_vertices"][part] = (
                 self.labels_img.mesh.parts[part].n_vertices
             )
@@ -488,10 +488,10 @@ class SurfaceLabelsMasker(BaseEstimator):
                 regions_summary["label value"].append(i)
                 regions_summary["region name"].append(label)
 
-                nb_vertices = self.labels_img.data.parts[part] == i
-                size.append(nb_vertices.sum())
+                n_vertices = self.labels_img.data.parts[part] == i
+                size.append(n_vertices.sum())
                 tmp = (
-                    nb_vertices.sum()
+                    n_vertices.sum()
                     / self.labels_img.mesh.parts[part].n_vertices
                     * 100
                 )
@@ -608,9 +608,7 @@ class SurfaceLabelsMasker(BaseEstimator):
 
     def generate_report(self):
         """Generate a report."""
-        try:
-            from nilearn.reporting.html_report import generate_report
-        except ImportError:
+        if not is_matplotlib_installed():
             with warnings.catch_warnings():
                 mpl_unavail_msg = (
                     "Matplotlib is not imported! "
@@ -619,6 +617,8 @@ class SurfaceLabelsMasker(BaseEstimator):
                 warnings.filterwarnings("always", message=mpl_unavail_msg)
                 warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
                 return [None]
+
+        from nilearn.reporting.html_report import generate_report
 
         return generate_report(self)
 
@@ -667,6 +667,7 @@ class SurfaceLabelsMasker(BaseEstimator):
             len(hemispheres),
             subplot_kw={"projection": "3d"},
             figsize=(20, 20),
+            **_constrained_layout_kwargs(),
         )
         axes = np.atleast_2d(axes)
 
@@ -690,7 +691,5 @@ class SurfaceLabelsMasker(BaseEstimator):
                     figure=fig,
                     axes=ax,
                 )
-
-        plt.tight_layout()
 
         return fig

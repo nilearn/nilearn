@@ -24,7 +24,8 @@ def _remove_empty_labels(labels):
 def _adjust_small_clusters(array, n_clusters):
     """Take a ndarray of floats summing to n_clusters \
     and try to round it while enforcing rounded array still sum \
-    to n_clusters and every element is at least 1."""
+    to n_clusters and every element is at least 1.
+    """
     array_round = np.rint(array).astype(int)
     array_round = np.maximum(array_round, 1)
 
@@ -220,7 +221,11 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
         self.random_state = random_state
         self.scaling = scaling
 
-    def fit(self, X, y=None):
+    def fit(
+        self,
+        X,
+        y=None,  # noqa: ARG002
+    ):
         """Compute clustering of the data.
 
         Parameters
@@ -266,7 +271,11 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
         self.n_clusters = len(sizes)
         return self
 
-    def transform(self, X, y=None):
+    def transform(
+        self,
+        X,
+        y=None,  # noqa: ARG002
+    ):
         """Apply clustering, reduce the dimensionality of the data.
 
         Parameters

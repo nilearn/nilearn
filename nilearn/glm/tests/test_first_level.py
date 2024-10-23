@@ -1,5 +1,4 @@
 import itertools
-import os
 import shutil
 import unittest.mock
 import warnings
@@ -42,6 +41,7 @@ from nilearn.glm.first_level.first_level import (
     _check_list_length_match,
     _check_run_tables,
     _check_trial_type,
+    _list_valid_subjects,
     _yule_walker,
 )
 from nilearn.glm.regression import ARModel, OLSModel
@@ -49,8 +49,8 @@ from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files
 from nilearn.maskers import NiftiMasker
 
-BASEDIR = os.path.dirname(os.path.abspath(__file__))
-FUNCFILE = os.path.join(BASEDIR, "functional.nii.gz")
+BASEDIR = Path(__file__).resolve().parent
+FUNCFILE = BASEDIR / "functional.nii.gz"
 
 
 def test_high_level_glm_one_run():
@@ -323,7 +323,7 @@ def test_high_level_glm_different_design_matrices():
     z_joint = multi_run_model.compute_contrast(
         [np.eye(rk)[:1], np.eye(rk + 1)[:1]], output_type="effect_size"
     )
-    assert z_joint.shape == (7, 8, 7, 1)
+    assert z_joint.shape == (7, 8, 7)
 
     # compare the estimated effects to seprarately-fitted models
     model1 = FirstLevelModel(mask_img=mask).fit(
@@ -462,7 +462,7 @@ def test_run_glm_errors(rng):
 @pytest.mark.parametrize(
     "ar_vals", [[-0.2], [-0.2, -0.5], [-0.2, -0.5, -0.7, -0.3]]
 )
-def test_glm_AR_estimates(rng, ar_vals):
+def test_glm_ar_estimates(rng, ar_vals):
     """Test that Yule-Walker AR fits are correct."""
     n, p, q = 1, 500, 2
     X_orig = rng.standard_normal((p, q))
@@ -482,7 +482,7 @@ def test_glm_AR_estimates(rng, ar_vals):
 
     assert len(labels) == n
 
-    for lab in results.keys():
+    for lab in results:
         ar_estimate = lab.split("_")
         for lag in range(ar_order):
             assert_almost_equal(
@@ -494,7 +494,7 @@ def test_glm_AR_estimates(rng, ar_vals):
     assert_almost_equal(yw[0], ar_vals, decimal=1)
 
 
-def test_glm_AR_estimates_errors(rng):
+def test_glm_ar_estimates_errors(rng):
     """Test Yule-Walker errors."""
     (n, p) = (1, 500)
     Y_orig = rng.standard_normal((p, n))
@@ -880,7 +880,7 @@ def test_first_level_from_bids_get_metadata_from_derivatives(tmp_path):
         assert models[0].slice_time_ref == StartTime / RepetitionTime
 
 
-def test_first_level_from_bids_get_RepetitionTime_from_derivatives(tmp_path):
+def test_first_level_from_bids_get_repetition_time_from_derivatives(tmp_path):
     """Only RepetitionTime is provided in derivatives.
 
     Warning about missing StarTime time in derivatives.
@@ -907,7 +907,7 @@ def test_first_level_from_bids_get_RepetitionTime_from_derivatives(tmp_path):
         assert models[0].slice_time_ref == 0.0
 
 
-def test_first_level_from_bids_get_StartTime_from_derivatives(tmp_path):
+def test_first_level_from_bids_get_start_time_from_derivatives(tmp_path):
     """Only StartTime is provided in derivatives.
 
     Warning about missing repetition time in derivatives,
@@ -1337,7 +1337,7 @@ def test_first_level_from_bids(
         task_label=tasks[task_index],
         space_label=space_label,
         img_filters=[("desc", "preproc")],
-        slice_time_ref=None,
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
     )
 
     _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
@@ -1365,7 +1365,7 @@ def test_first_level_from_bids_select_one_run_per_session(bids_dataset):
         task_label="main",
         space_label="MNI",
         img_filters=[("run", "01"), ("desc", "preproc")],
-        slice_time_ref=None,
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
     )
 
     _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
@@ -1382,7 +1382,7 @@ def test_first_level_from_bids_select_all_runs_of_one_session(bids_dataset):
         task_label="main",
         space_label="MNI",
         img_filters=[("ses", "01"), ("desc", "preproc")],
-        slice_time_ref=None,
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
     )
 
     _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
@@ -1401,7 +1401,7 @@ def test_first_level_from_bids_smoke_test_for_verbose_argument(
         space_label="MNI",
         img_filters=[("desc", "preproc")],
         verbose=verbose,
-        slice_time_ref=None,
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
     )
 
 
@@ -1432,7 +1432,7 @@ def test_first_level_from_bids_several_labels_per_entity(tmp_path, entity):
         task_label="main",
         space_label="MNI",
         img_filters=[("desc", "preproc"), (entity, "A")],
-        slice_time_ref=None,
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
     )
 
     _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
@@ -1474,7 +1474,7 @@ def test_first_level_from_bids_with_subject_labels(bids_dataset):
             sub_labels=["foo", "01"],
             space_label="MNI",
             img_filters=[("desc", "preproc")],
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
         assert models[0].subject_label == "01"
@@ -1492,7 +1492,7 @@ def test_first_level_from_bids_no_duplicate_sub_labels(bids_dataset):
         sub_labels=["01", "01"],
         space_label="MNI",
         img_filters=[("desc", "preproc")],
-        slice_time_ref=None,
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
     )
 
     assert len(models) == 1
@@ -1504,14 +1504,14 @@ def test_first_level_from_bids_validation_input_dataset_path():
             dataset_path=2,
             task_label="main",
             space_label="MNI",
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
     with pytest.raises(ValueError, match="'dataset_path' does not exist"):
         first_level_from_bids(
             dataset_path="lolo",
             task_label="main",
             space_label="MNI",
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
     with pytest.raises(TypeError, match="derivatives_.* must be a string"):
         first_level_from_bids(
@@ -1519,7 +1519,7 @@ def test_first_level_from_bids_validation_input_dataset_path():
             task_label="main",
             space_label="MNI",
             derivatives_folder=1,
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
 
@@ -1552,7 +1552,7 @@ def test_first_level_from_bids_validation_sub_labels(
             dataset_path=bids_dataset,
             task_label="main",
             sub_labels=sub_labels,
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
 
@@ -1568,7 +1568,7 @@ def test_first_level_from_bids_validation_space_label(
             dataset_path=bids_dataset,
             task_label="main",
             space_label=space_label,
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
 
@@ -1589,7 +1589,7 @@ def test_first_level_from_bids_validation_img_filter(
             dataset_path=bids_dataset,
             task_label="main",
             img_filters=img_filters,
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
 
@@ -1604,7 +1604,7 @@ def test_first_level_from_bids_too_many_bold_files(bids_dataset):
             dataset_path=bids_dataset,
             task_label="main",
             space_label="T1w",
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
 
@@ -1613,26 +1613,27 @@ def test_first_level_from_bids_with_missing_events(tmp_path_factory):
     bids_dataset = _new_bids_dataset(tmp_path_factory.mktemp("no_events"))
     events_files = get_bids_files(main_path=bids_dataset, file_tag="events")
     for f in events_files:
-        os.remove(f)
+        Path(f).unlink()
 
     with pytest.raises(ValueError, match="No events.tsv files found"):
         first_level_from_bids(
             dataset_path=bids_dataset,
             task_label="main",
             space_label="MNI",
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
 
 def test_first_level_from_bids_no_tr(tmp_path_factory):
     """Throw warning when t_r information cannot be inferred from the data \
-    and t_r=None is passed."""
+    and t_r=None is passed.
+    """
     bids_dataset = _new_bids_dataset(tmp_path_factory.mktemp("no_events"))
     json_files = get_bids_files(
         main_path=bids_dataset, file_tag="bold", file_type="json"
     )
     for f in json_files:
-        os.remove(f)
+        Path(f).unlink()
 
     with pytest.warns(
         UserWarning, match="'t_r' not provided and cannot be inferred"
@@ -1641,7 +1642,7 @@ def test_first_level_from_bids_no_tr(tmp_path_factory):
             dataset_path=bids_dataset,
             task_label="main",
             space_label="MNI",
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
             t_r=None,
         )
 
@@ -1654,14 +1655,14 @@ def test_first_level_from_bids_no_bold_file(tmp_path_factory):
         file_type="*gz",
     )
     for img_ in imgs:
-        os.remove(img_)
+        Path(img_).unlink()
 
     with pytest.raises(ValueError, match="No BOLD files found "):
         first_level_from_bids(
             dataset_path=bids_dataset,
             task_label="main",
             space_label="MNI",
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
 
@@ -1671,14 +1672,14 @@ def test_first_level_from_bids_with_one_events_missing(tmp_path_factory):
         tmp_path_factory.mktemp("one_event_missing")
     )
     events_files = get_bids_files(main_path=bids_dataset, file_tag="events")
-    os.remove(events_files[0])
+    Path(events_files[0]).unlink()
 
     with pytest.raises(ValueError, match="Same number of event files "):
         first_level_from_bids(
             dataset_path=bids_dataset,
             task_label="main",
             space_label="MNI",
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
 
@@ -1694,27 +1695,28 @@ def test_first_level_from_bids_one_confound_missing(tmp_path_factory):
         main_path=bids_dataset / "derivatives",
         file_tag="desc-confounds_timeseries",
     )
-    os.remove(confound_files[-1])
+    Path(confound_files[-1]).unlink()
 
     with pytest.raises(ValueError, match="Same number of confound"):
         first_level_from_bids(
             dataset_path=bids_dataset,
             task_label="main",
             space_label="MNI",
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
 
 def test_first_level_from_bids_all_confounds_missing(tmp_path_factory):
     """If all confound files are missing, \
-    confounds should be an array of None."""
+    confounds should be an array of None.
+    """
     bids_dataset = _new_bids_dataset(tmp_path_factory.mktemp("no_confounds"))
     confound_files = get_bids_files(
         main_path=bids_dataset / "derivatives",
         file_tag="desc-confounds_timeseries",
     )
     for f in confound_files:
-        os.remove(f)
+        Path(f).unlink()
 
     models, imgs, events, confounds = first_level_from_bids(
         dataset_path=bids_dataset,
@@ -1722,7 +1724,7 @@ def test_first_level_from_bids_all_confounds_missing(tmp_path_factory):
         space_label="MNI",
         img_filters=[("desc", "preproc")],
         verbose=0,
-        slice_time_ref=None,
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
     )
 
     assert len(models) == len(imgs)
@@ -1747,7 +1749,7 @@ def test_first_level_from_bids_no_derivatives(tmp_path):
             dataset_path=bids_path,
             task_label="main",
             space_label="MNI",
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
 
@@ -1764,7 +1766,7 @@ def test_first_level_from_bids_no_session(tmp_path):
             dataset_path=bids_path,
             task_label="main",
             space_label="T1w",
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
 
@@ -1788,7 +1790,7 @@ def test_first_level_from_bids_mismatch_run_index(tmp_path_factory):
             task_label="main",
             space_label="MNI",
             img_filters=[("desc", "preproc")],
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
 
@@ -1829,6 +1831,16 @@ def test_check_trial_type_warning(tmp_path):
         _check_trial_type([event_file])
 
 
+def test_list_valid_subjects_with_toplevel_files(tmp_path):
+    """Test that only subject directories are returned, not file names."""
+    (tmp_path / "sub-01").mkdir()
+    (tmp_path / "sub-02").mkdir()
+    (tmp_path / "sub-01.html").touch()
+
+    valid_subjects = _list_valid_subjects(tmp_path, None)
+    assert valid_subjects == ["01", "02"]
+
+
 def test_missing_trial_type_column_warning(tmp_path_factory):
     """Check that warning is thrown when an events file has no trial_type.
 
@@ -1840,7 +1852,7 @@ def test_missing_trial_type_column_warning(tmp_path_factory):
     events_files = get_bids_files(main_path=bids_dataset, file_tag="events")
     # remove trial type column from one events.tsv file
     events = pd.read_csv(events_files[0], sep="\t")
-    events.drop(columns="trial_type", inplace=True)
+    events = events.drop(columns="trial_type")
     events.to_csv(events_files[0], sep="\t", index=False)
 
     with pytest.warns() as record:
@@ -1955,7 +1967,7 @@ def test_first_level_from_bids_no_subject(tmp_path):
             dataset_path=bids_path,
             task_label="main",
             space_label="MNI",
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
 
@@ -1971,7 +1983,7 @@ def test_first_level_from_bids_unused_kwargs(tmp_path):
             dataset_path=bids_path,
             task_label="main",
             space_label="MNI",
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
             confound_strategy="motion",
         )
 
@@ -2010,24 +2022,23 @@ def test_img_table_checks():
 
 
 @pytest.fixture()
-def _make_surface_glm_data(rng, make_mini_img):
+def _make_surface_glm_data(rng, surf_img):
     """Create a surface image and design matrix for testing."""
 
-    def _make_surface_image(shape=5):
+    def _make_surface_img_and_design(shape=5):
         des = pd.DataFrame(
             rng.standard_normal((shape, 3)), columns=["", "", ""]
         )
-        mini_img = make_mini_img((shape,))
-        return mini_img, des
+        return surf_img((shape,)), des
 
-    return _make_surface_image
+    return _make_surface_img_and_design
 
 
 def test_flm_fit_surface_image_default_mask_img(_make_surface_glm_data):
     """Test FirstLevelModel with mask_img default."""
-    mini_img, des = _make_surface_glm_data(5)
+    img, des = _make_surface_glm_data(5)
     model = FirstLevelModel()
-    model.fit(mini_img, design_matrices=des)
+    model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
     assert model.masker_.mask_img_.shape == (9,)
@@ -2041,21 +2052,32 @@ def test_flm_fit_surface_image_default_mask_img(_make_surface_glm_data):
 
 def test_flm_fit_surface_image(_make_surface_glm_data):
     """Test FirstLevelModel with surface image and mask_img set to False."""
-    mini_img, des = _make_surface_glm_data(5)
+    img, des = _make_surface_glm_data(5)
     model = FirstLevelModel(mask_img=False)
-    model.fit(mini_img, design_matrices=des)
+    model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
     assert model.masker_.mask_img_.shape == (9,)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
+def test_warn_flm_smooth_surface_image(_make_surface_glm_data):
+    """Test warning raised in FirstLevelModel with surface smoothing."""
+    mini_img, des = _make_surface_glm_data(5)
+    model = FirstLevelModel(mask_img=False, smoothing_fwhm=5)
+    with pytest.warns(
+        UserWarning,
+        match="Parameter smoothing_fwhm is not yet supported for surface data",
+    ):
+        model.fit(mini_img, design_matrices=des)
+
+
 def test_flm_fit_surface_image_one_hemisphere(
-    _make_surface_glm_data, drop_img_part
+    _make_surface_glm_data, drop_surf_img_part
 ):
     """Test FirstLevelModel with surface image with one hemisphere."""
-    mini_img, des = _make_surface_glm_data(5)
-    mini_img_one_hemi = drop_img_part(mini_img)
+    img, des = _make_surface_glm_data(5)
+    mini_img_one_hemi = drop_surf_img_part(img)
     model = FirstLevelModel(mask_img=False)
     model.fit(mini_img_one_hemi, design_matrices=des)
 
@@ -2064,35 +2086,74 @@ def test_flm_fit_surface_image_one_hemisphere(
     assert isinstance(model.masker_, SurfaceMasker)
 
 
-def test_flm_fit_surface_image_with_mask(_make_surface_glm_data, mini_mask):
+def test_flm_fit_surface_image_with_mask(_make_surface_glm_data, surf_mask):
     """Test FirstLevelModel with surface mask."""
-    mini_img, des = _make_surface_glm_data(5)
-    model = FirstLevelModel(mask_img=mini_mask)
-    model.fit(mini_img, design_matrices=des)
+    img, des = _make_surface_glm_data(5)
+    model = FirstLevelModel(mask_img=surf_mask())
+    model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
     assert model.masker_.mask_img_.shape == (9,)
     assert isinstance(model.masker_, SurfaceMasker)
+
+
+def test_error_flm_surface_mask_volume_image(
+    _make_surface_glm_data, surf_mask, img_4d_rand_eye
+):
+    """Test error is raised when mask is a surface and data is in volume."""
+    img, des = _make_surface_glm_data(5)
+    model = FirstLevelModel(mask_img=surf_mask())
+    with pytest.raises(
+        TypeError, match="Mask and images to fit must be of compatible types."
+    ):
+        model.fit(img_4d_rand_eye, design_matrices=des)
+
+    masker = SurfaceMasker().fit(img)
+    model = FirstLevelModel(mask_img=masker)
+    with pytest.raises(
+        TypeError, match="Mask and images to fit must be of compatible types."
+    ):
+        model.fit(img_4d_rand_eye, design_matrices=des)
+
+
+def test_error_flm_volume_mask_surface_image(_make_surface_glm_data):
+    """Test error is raised when mask is a volume and data is in surface."""
+    shapes, rk = [(7, 8, 9, 15)], 3
+    mask, _, _ = generate_fake_fmri_data_and_design(shapes, rk)
+
+    img, des = _make_surface_glm_data(5)
+    model = FirstLevelModel(mask_img=mask)
+    with pytest.raises(
+        TypeError, match="Mask and images to fit must be of compatible types."
+    ):
+        model.fit(img, design_matrices=des)
+
+    masker = NiftiMasker().fit(mask)
+    model = FirstLevelModel(mask_img=masker)
+    with pytest.raises(
+        TypeError, match="Mask and images to fit must be of compatible types."
+    ):
+        model.fit(img, design_matrices=des)
 
 
 def test_flm_with_surface_image_with_surface_masker(_make_surface_glm_data):
     """Test FirstLevelModel with SurfaceMasker."""
-    mini_img, des = _make_surface_glm_data(5)
-    masker = SurfaceMasker().fit(mini_img)
+    img, des = _make_surface_glm_data(5)
+    masker = SurfaceMasker().fit(img)
     model = FirstLevelModel(mask_img=masker)
-    model.fit(mini_img, design_matrices=des)
+    model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
     assert model.masker_.mask_img_.shape == (9,)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
-def test_flm_with_surface_masker_with_mask(_make_surface_glm_data, mini_mask):
+def test_flm_with_surface_masker_with_mask(_make_surface_glm_data, surf_mask):
     """Test FirstLevelModel with SurfaceMasker and mask image."""
-    mini_img, des = _make_surface_glm_data(5)
-    masker = SurfaceMasker(mask_img=mini_mask).fit(mini_img)
+    img, des = _make_surface_glm_data(5)
+    masker = SurfaceMasker(mask_img=surf_mask()).fit(img)
     model = FirstLevelModel(mask_img=masker)
-    model.fit(mini_img, design_matrices=des)
+    model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
     assert model.masker_.mask_img_.shape == (9,)
@@ -2100,34 +2161,83 @@ def test_flm_with_surface_masker_with_mask(_make_surface_glm_data, mini_mask):
 
 
 def test_flm_with_surface_masker_without_mask_img(
-    _make_surface_glm_data, mini_mask
+    _make_surface_glm_data, surf_mask
 ):
     """Test FirstLevelModel with SurfaceMasker and mask img set to None."""
-    mini_img, des = _make_surface_glm_data(5)
-    masker = SurfaceMasker(mask_img=mini_mask).fit()
+    img, des = _make_surface_glm_data(5)
+    masker = SurfaceMasker(mask_img=surf_mask()).fit()
     masker.mask_img_ = None
 
     with pytest.warns(
         UserWarning, match="Parameter memory of the masker overridden"
     ):
-        FirstLevelModel(mask_img=masker).fit(mini_img, design_matrices=des)
+        FirstLevelModel(mask_img=masker).fit(img, design_matrices=des)
 
 
 def test_flm_with_surface_data_no_design_matrix(_make_surface_glm_data):
     """Smoke test FirstLevelModel with surface data and no design matrix."""
-    mini_img, _ = _make_surface_glm_data(5)
-    masker = SurfaceMasker().fit(mini_img)
+    img, _ = _make_surface_glm_data(5)
+    masker = SurfaceMasker().fit(img)
     model = FirstLevelModel(mask_img=masker, t_r=2.0)
-    model.fit(mini_img, events=basic_paradigm())
+    model.fit(img, events=basic_paradigm())
 
 
 def test_flm_compute_contrast_with_surface_data(_make_surface_glm_data):
     """Smoke test FirstLevelModel compute_contrast with surface data."""
-    mini_img, _ = _make_surface_glm_data(5)
-    masker = SurfaceMasker().fit(mini_img)
+    img, _ = _make_surface_glm_data(5)
+    masker = SurfaceMasker().fit(img)
     model = FirstLevelModel(mask_img=masker, t_r=2.0)
     events = basic_paradigm()
-    model.fit([mini_img, mini_img], events=[events, events])
+    model.fit([img, img], events=[events, events])
     result = model.compute_contrast("c0")
 
     assert isinstance(result, SurfaceImage)
+
+
+def test_first_level_from_bids_subject_order(tmp_path):
+    """Make sure subjects are returned in order.
+
+    See https://github.com/nilearn/nilearn/issues/4581
+    """
+    n_sub = 10
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path, n_sub=n_sub, n_ses=1, tasks=["main"], n_runs=[1]
+    )
+
+    models, *_ = first_level_from_bids(
+        dataset_path=str(tmp_path / bids_path),
+        task_label="main",
+        space_label="MNI",
+        img_filters=[("desc", "preproc")],
+        slice_time_ref=None,
+    )
+
+    # Check if the subjects are returned in order
+    expected_subjects = [f"{label:02}" for label in range(1, n_sub + 1)]
+    returned_subjects = [model.subject_label for model in models]
+    assert returned_subjects == expected_subjects
+
+
+def test_first_level_from_bids_subject_order_with_labels(tmp_path):
+    """Make sure subjects are returned in order.
+
+    See https://github.com/nilearn/nilearn/issues/4581
+    """
+    n_sub = 10
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path, n_sub=n_sub, n_ses=1, tasks=["main"], n_runs=[1]
+    )
+
+    models, *_ = first_level_from_bids(
+        dataset_path=str(tmp_path / bids_path),
+        sub_labels=["01", "10", "04", "05", "02", "03"],
+        task_label="main",
+        space_label="MNI",
+        img_filters=[("desc", "preproc")],
+        slice_time_ref=None,
+    )
+
+    # Check if the subjects are returned in order
+    expected_subjects = ["01", "02", "03", "04", "05", "10"]
+    returned_subjects = [model.subject_label for model in models]
+    assert returned_subjects == expected_subjects

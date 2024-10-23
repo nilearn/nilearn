@@ -11,9 +11,9 @@ import copy
 import itertools
 import warnings
 
-import nibabel
 import numpy as np
 from joblib import Memory, Parallel, delayed
+from nibabel import Nifti1Image, Nifti1Pair, load, spatialimages
 from scipy.ndimage import gaussian_filter1d, generate_binary_structure, label
 from scipy.stats import scoreatpercentile
 
@@ -160,10 +160,10 @@ def _fast_smooth_array(arr):
     """
     neighbor_weight = 0.2
     # 6 neighbors in 3D if not on an edge
-    nb_neighbors = 6
+    n_neighbors = 6
     # This scale ensures that a uniform array stays uniform
     # except on the array edges
-    scale = 1 + nb_neighbors * neighbor_weight
+    scale = 1 + n_neighbors * neighbor_weight
 
     # Need to copy because the smoothing is done in multiple statements
     # and there does not seem to be an easy way to do it in place
@@ -502,7 +502,7 @@ def _compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
     # TODO switch to force_resample=True
     # when bumping to version > 0.13
     mean_data = resampling.resample_img(
-        nibabel.Nifti1Image(mean_data, affine),
+        Nifti1Image(mean_data, affine),
         target_affine=target_affine,
         target_shape=target_shape,
         copy=False,
@@ -719,7 +719,7 @@ def index_img(imgs, index):
     imgs = check_niimg_4d(imgs)
     # duck-type for pandas arrays, and select the 'values' attr
     if hasattr(index, "values") and hasattr(index, "iloc"):
-        index = index.values.flatten()
+        index = index.to_numpy().flatten()
     return _index_img(imgs, index)
 
 
@@ -821,7 +821,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         has_affine = hasattr(ref_niimg, "affine")
     if not ((has_get_data or has_get_fdata) and has_affine):
         if is_str:
-            ref_niimg = nibabel.load(ref_niimg)
+            ref_niimg = load(ref_niimg)
         else:
             raise TypeError(
                 "The reference image should be a niimg."
@@ -837,7 +837,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     if copy_header:
         header = copy.deepcopy(ref_niimg.header)
         try:
-            "something" in header  # noqa B015
+            "something" in header  # noqa: B015
         except TypeError:
             pass
         else:
@@ -854,10 +854,10 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
             if "cal_min" in header:
                 header["cal_min"] = np.min(data) if data.size > 0 else 0.0
     klass = ref_niimg.__class__
-    if klass is nibabel.Nifti1Pair:
+    if klass is Nifti1Pair:
         # Nifti1Pair is an internal class, without a to_filename,
         # we shouldn't return it
-        klass = nibabel.Nifti1Image
+        klass = Nifti1Image
     return klass(data, affine, header=header)
 
 
@@ -901,7 +901,7 @@ def _apply_cluster_size_threshold(arr, cluster_threshold, copy=True):
 
         # Apply cluster threshold
         label_map = label(binarized, bin_struct)[0]
-        clust_ids = sorted(list(np.unique(label_map)[1:]))
+        clust_ids = sorted(np.unique(label_map)[1:])
         for c_val in clust_ids:
             if np.sum(label_map == c_val) < cluster_threshold:
                 arr[label_map == c_val] = 0
@@ -1133,7 +1133,8 @@ def math_img(formula, copy_header_from=None, **imgs):
         exc.args = (
             "Input images cannot be compared, "
             f"you provided '{imgs.values()}',",
-        ) + exc.args
+            *exc.args,
+        )
         raise
 
     # Computing input data as a dictionary of numpy arrays. Keep a reference
@@ -1152,7 +1153,8 @@ def math_img(formula, copy_header_from=None, **imgs):
     except Exception as exc:
         exc.args = (
             f"Input formula couldn't be processed, you provided '{formula}',",
-        ) + exc.args
+            *exc.args,
+        )
         raise
 
     # check whether to copy header from one of the input images
@@ -1578,7 +1580,7 @@ def concat_imgs(
     target_shape = first_niimg.shape[:3]
     if dtype is None:
         dtype = _get_data(first_niimg).dtype
-    data = np.ndarray(target_shape + (sum(lengths),), order="F", dtype=dtype)
+    data = np.ndarray((*target_shape, sum(lengths)), order="F", dtype=dtype)
     cur_4d_index = 0
     for index, (size, niimg) in enumerate(
         zip(
@@ -1664,7 +1666,7 @@ def copy_img(img):
     img_copy: image
         copy of input (data, affine and header)
     """
-    if not isinstance(img, nibabel.spatialimages.SpatialImage):
+    if not isinstance(img, spatialimages.SpatialImage):
         raise ValueError("Input value is not an image")
     return new_img_like(
         img,

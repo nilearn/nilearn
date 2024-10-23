@@ -117,7 +117,7 @@ decoder = Decoder(
 decoder.fit(fmri_niimgs, y)
 
 # Print the best parameters for each fold
-for i, (best_C, best_penalty, best_dual, cv_score) in enumerate(
+for i, (best_c, best_penalty, best_dual, cv_score) in enumerate(
     zip(
         decoder.cv_params_["shoe"]["C"],
         decoder.cv_params_["shoe"]["penalty"],
@@ -126,7 +126,7 @@ for i, (best_C, best_penalty, best_dual, cv_score) in enumerate(
     )
 ):
     print(
-        f"Fold {i + 1} | Best SVM parameters: C={best_C}"
+        f"Fold {i + 1} | Best SVM parameters: C={best_c}"
         f", penalty={best_penalty}, dual={best_dual} with score: {cv_score}"
     )
 

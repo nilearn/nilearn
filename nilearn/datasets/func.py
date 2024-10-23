@@ -1,5 +1,6 @@
 """Downloading NeuroImaging datasets: \
-functional datasets (task + resting-state)."""
+functional datasets (task + resting-state).
+"""
 
 import fnmatch
 import glob
@@ -11,19 +12,20 @@ import warnings
 from io import BytesIO
 from pathlib import Path
 
-import nibabel
-import nibabel as nib
 import numpy as np
 import pandas as pd
+from nibabel import Nifti1Image, four_to_three
 from scipy.io import loadmat
 from scipy.io.matlab import MatReadError
 from sklearn.utils import Bunch
 
+from nilearn._utils import check_niimg, fill_doc, logger, remove_parameters
 from nilearn.image import get_data
+from nilearn.interfaces.bids import get_bids_files
 
-from .._utils import check_niimg, fill_doc, logger
 from .._utils.numpy_conversions import csv_to_array
 from ._utils import (
+    PACKAGE_DIRECTORY,
     fetch_files,
     fetch_single_file,
     filter_columns,
@@ -197,7 +199,7 @@ def fetch_haxby(
             data_dir, stimuli_files, resume=resume, verbose=verbose
         )[0]
         kwargs["stimuli"] = tree(
-            os.path.dirname(readme), pattern="*.jpg", dictionary=True
+            Path(readme).parent, pattern="*.jpg", dictionary=True
         )
 
     fdescr = get_dataset_descr(dataset_name)
@@ -314,7 +316,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     ids = ids[:n_subjects]
     nitrc_ids = nitrc_ids[:n_subjects]
 
-    opts = dict(uncompress=True)
+    opts = {"uncompress": True}
 
     # Dataset description
     fdescr = get_dataset_descr(dataset_name)
@@ -710,10 +712,10 @@ def fetch_localizer_contrasts(
         # Calculation
         "calculation (auditory cue)": "auditory calculation",
         "calculation (visual cue)": "visual calculation",
-        "calculation (auditory and visual cue)": "auditory&visual calculation",  # noqa 501
+        "calculation (auditory and visual cue)": "auditory&visual calculation",
         "calculation (auditory cue) vs sentence listening": "auditory calculation vs auditory sentences",  # noqa 501
         "calculation (visual cue) vs sentence reading": "visual calculation vs sentences",  # noqa 501
-        "calculation vs sentences": "auditory&visual calculation vs sentences",  # noqa 501
+        "calculation vs sentences": "auditory&visual calculation vs sentences",
         # Calculation + Sentences
         "calculation (auditory cue) and sentence listening": "auditory processing",  # noqa 501
         "calculation (visual cue) and sentence reading": "visual processing",
@@ -1253,7 +1255,7 @@ def fetch_abide_pcp(
 
     # Go into specific data folder and url
     data_dir = os.path.join(data_dir, pipeline, strategy)
-    url = "/".join([url, "Outputs", pipeline, strategy])
+    url = f"{url}/Outputs/{pipeline}/{strategy}"
 
     # Get the files
     file_ids = pheno["FILE_ID"].tolist()
@@ -1293,7 +1295,8 @@ def fetch_abide_pcp(
 def _load_mixed_gambles(zmap_imgs):
     """Ravel zmaps (one per subject) along time axis, resulting, \
     in a n_subjects * n_trials 3D niimgs and, and then make \
-    gain vector y of same length."""
+    gain vector y of same length.
+    """
     X = []
     y = []
     mask = []
@@ -1327,10 +1330,10 @@ def _load_mixed_gambles(zmap_imgs):
     mask = np.sum(mask, axis=0) > 0.5 * len(mask)
     mask = np.logical_and(mask, np.all(np.isfinite(X), axis=-1))
     X = X[mask, :].T
-    tmp = np.zeros(list(mask.shape) + [len(X)])
+    tmp = np.zeros([*mask.shape, len(X)])
     tmp[mask, :] = X.T
-    mask_img = nibabel.Nifti1Image(mask.astype("uint8"), affine)
-    X = nibabel.four_to_three(nibabel.Nifti1Image(tmp, affine))
+    mask_img = Nifti1Image(mask.astype("uint8"), affine)
+    X = four_to_three(Nifti1Image(tmp, affine))
     return X, y, mask_img
 
 
@@ -1395,7 +1398,7 @@ def fetch_mixed_gambles(
             "https://www.nitrc.org/frs/download.php/7229/"
             "jimura_poldrack_2012_zmaps.zip"
         )
-    opts = dict(uncompress=True)
+    opts = {"uncompress": True}
     files = [
         (f"zmaps{os.sep}sub{int(j + 1):03}_zmaps.nii.gz", url, opts)
         for j in range(n_subjects)
@@ -1517,12 +1520,14 @@ def fetch_megatrawls_netmats(
     )
     description = get_dataset_descr(dataset_name)
 
-    timeseries_map = dict(
-        multiple_spatial_regression="ts2", eigen_regression="ts3"
-    )
-    matrices_map = dict(
-        full_correlation="Znet1.txt", partial_correlation="Znet2.txt"
-    )
+    timeseries_map = {
+        "multiple_spatial_regression": "ts2",
+        "eigen_regression": "ts3",
+    }
+    matrices_map = {
+        "full_correlation": "Znet1.txt",
+        "partial_correlation": "Znet2.txt",
+    }
     filepath = [
         (
             os.path.join(
@@ -1899,7 +1904,6 @@ def _fetch_development_fmri_functional(
 
     # The gzip contains unique download keys per Nifti file and confound
     # pre-extracted from OSF. Required for downloading files.
-    package_directory = os.path.dirname(os.path.abspath(__file__))
     dtype = [
         ("participant_id", "U12"),
         ("key_regressor", "U24"),
@@ -1908,7 +1912,7 @@ def _fetch_development_fmri_functional(
     names = ["participant_id", "key_r", "key_b"]
     # csv file contains download information related to OpenScience(osf)
     osf_data = csv_to_array(
-        os.path.join(package_directory, "data", "development_fmri.csv"),
+        (PACKAGE_DIRECTORY / "data" / "development_fmri.csv"),
         skip_header=True,
         dtype=dtype,
         names=names,
@@ -2146,7 +2150,7 @@ def _reduce_confounds(regressors, keep_confounds):
     reduced_regressors = []
     for in_file in regressors:
         out_file = in_file.replace("desc-confounds", "desc-reducedConfounds")
-        if not os.path.isfile(out_file):
+        if not Path(out_file).is_file():
             confounds = pd.read_csv(in_file, delimiter="\t").to_records()
             selected_confounds = confounds[keep_confounds]
             header = "\t".join(selected_confounds.dtype.names)
@@ -2280,7 +2284,7 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
         DeprecationWarning,
         stacklevel=2,
     )
-    url = "https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/5888d9a76c613b01fc6acc4e"  # noqa: E501
+    url = "https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/5888d9a76c613b01fc6acc4e"
     dataset_name = "bids_langloc_example"
     main_folder = "bids_langloc_dataset"
     data_dir = get_dataset_dir(
@@ -2288,7 +2292,7 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
     )
     # The files_spec needed for fetch_files
     files_spec = [(f"{main_folder}.zip", url, {"move": f"{main_folder}.zip"})]
-    if not os.path.exists(os.path.join(data_dir, main_folder)):
+    if not Path(data_dir, main_folder).exists():
         downloaded_files = fetch_files(
             data_dir, files_spec, resume=True, verbose=verbose
         )
@@ -2515,7 +2519,7 @@ def patch_openneuro_dataset(file_list):
         for name in file_list:
             if old_pattern in name:
                 new_name = name.replace(old_pattern, new_pattern)
-                if not os.path.exists(new_name):
+                if not Path(new_name).exists():
                     os.symlink(name, new_name)
 
 
@@ -2620,9 +2624,9 @@ def fetch_openneuro_dataset(
 
     for url in urls:
         url_path = url.split(data_prefix + "/")[1]
-        file_dir = os.path.join(data_dir, url_path)
-        files_spec.append((os.path.basename(file_dir), url, {}))
-        files_dir.append(os.path.dirname(file_dir))
+        file_dir = Path(data_dir, url_path)
+        files_spec.append((file_dir.name, url, {}))
+        files_dir.append(file_dir.parent)
 
     # download the files
     downloaded = []
@@ -2694,140 +2698,34 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
     return data
 
 
-def _download_spm_auditory_data(data_dir, subject_dir, subject_id):
+def _download_spm_auditory_data(data_dir):
     logger.log("Data absent, downloading...", stack_level=2)
     url = (
         "https://www.fil.ion.ucl.ac.uk/spm/download/data/MoAEpilot/"
-        "MoAEpilot.zip"
+        "MoAEpilot.bids.zip"
     )
-    archive_path = os.path.join(subject_dir, os.path.basename(url))
-    fetch_single_file(url, subject_dir)
+    archive_path = Path(data_dir) / Path(url).name
+    fetch_single_file(url, data_dir)
     try:
         uncompress_file(archive_path)
     except Exception:
         logger.log(
             "Archive corrupted, trying to download it again.", stack_level=2
         )
-        return fetch_spm_auditory(
-            data_dir=data_dir, data_name="", subject_id=subject_id
-        )
-
-
-def _prepare_downloaded_spm_auditory_data(subject_dir):
-    """Uncompress downloaded spm_auditory dataset \
-    and organize the data into appropriate directories.
-
-    Parameters
-    ----------
-    subject_dir : :obj:`str`
-        Path to subject's data directory.
-
-    Returns
-    -------
-    _subject_data : skl.Bunch object
-        Scikit-Learn Bunch object containing data of a single subject
-        from the SPM Auditory dataset.
-
-    """
-    subject_data = {}
-    spm_auditory_data_files = [
-        f"fM00223/fM00223_{int(index):03}.img" for index in range(4, 100)
-    ]
-    spm_auditory_data_files.append("sM00223/sM00223_002.img")
-
-    for file_name in spm_auditory_data_files:
-        file_path = os.path.join(subject_dir, file_name)
-        if os.path.exists(file_path):
-            subject_data[file_name] = file_path
-        else:
-            logger.log(f"{file_name} missing from filelist!", stack_level=2)
-            return None
-
-    _subject_data = {
-        "func": sorted(
-            [
-                subject_data[x]
-                for x in subject_data
-                if re.match(r"^fM00223_0\d\d\.img$", os.path.basename(x))
-            ]
-        )
-    }
-    # volumes for this dataset of shape (64, 64, 64, 1); let's fix this
-    for x in _subject_data["func"]:
-        vol = nib.load(x)
-        if len(vol.shape) == 4:
-            vol = nib.Nifti1Image(get_data(vol)[:, :, :, 0], vol.affine)
-            nib.save(vol, x)
-
-    _subject_data["anat"] = [
-        subject_data[x]
-        for x in subject_data
-        if re.match(r"^sM00223_002\.img$", os.path.basename(x))
-    ][0]
-
-    # ... same thing for anat
-    vol = nib.load(_subject_data["anat"])
-    if len(vol.shape) == 4:
-        vol = nib.Nifti1Image(get_data(vol)[:, :, :, 0], vol.affine)
-        nib.save(vol, _subject_data["anat"])
-
-    return Bunch(**_subject_data)
-
-
-def _make_path_events_file_spm_auditory_data(spm_auditory_data):
-    """Accept data for spm_auditory dataset as Bunch \
-    and construct the filepath for its events descriptor file.
-
-    Parameters
-    ----------
-    spm_auditory_data : Bunch
-
-    Returns
-    -------
-    events_filepath : :obj:`str`
-        Full path to the events.tsv file for spm_auditory dataset.
-
-    """
-    events_file_location = os.path.dirname(spm_auditory_data["func"][0])
-    events_filename = os.path.basename(events_file_location) + "_events.tsv"
-    events_filepath = os.path.join(events_file_location, events_filename)
-    return events_filepath
-
-
-def _make_events_file_spm_auditory_data(events_filepath):
-    """Accept destination filepath including filename and \
-    create the events.tsv file for the spm_auditory dataset.
-
-    Parameters
-    ----------
-    events_filepath : :obj:`str`
-        The path where the events file will be created.
-
-    Returns
-    -------
-    None
-
-    """
-    t_r = 7.0
-    epoch_duration = 6 * t_r  # duration in seconds
-    conditions = ["rest", "active"] * 8
-    n_blocks = len(conditions)
-    duration = epoch_duration * np.ones(n_blocks)
-    onset = np.linspace(0, (n_blocks - 1) * epoch_duration, n_blocks)
-    events = pd.DataFrame(
-        {"onset": onset, "duration": duration, "trial_type": conditions}
-    )
-    events.to_csv(
-        events_filepath,
-        sep="\t",
-        index=False,
-        columns=["onset", "duration", "trial_type"],
-    )
+        return fetch_spm_auditory(data_dir=data_dir, data_name="")
 
 
 @fill_doc
+@remove_parameters(
+    removed_params=["subject_id"],
+    reason="The spm_auditory dataset contains only one subject.",
+    end_version="0.13.0",
+)
 def fetch_spm_auditory(
-    data_dir=None, data_name="spm_auditory", subject_id="sub001", verbose=1
+    data_dir=None,
+    data_name="spm_auditory",
+    subject_id=None,  # noqa: ARG001
+    verbose=1,
 ):
     """Fetch :term:`SPM` auditory single-subject data.
 
@@ -2836,19 +2734,23 @@ def fetch_spm_auditory(
     Parameters
     ----------
     %(data_dir)s
+
     data_name : :obj:`str`, default='spm_auditory'
         Name of the dataset.
 
-    subject_id : :obj:`str`, default='sub001'
+    subject_id : :obj:`str`, default=None
         Indicates which subject to retrieve.
+        Will be removed in version ``0.13.0``.
+
     %(verbose)s
 
     Returns
     -------
     data : sklearn.datasets.base.Bunch
         Dictionary-like object, the interest attributes are:
-        - 'func': :obj:`list` of :obj:`str`. Paths to functional images
         - 'anat': :obj:`list` of :obj:`str`. Path to anat image
+        - 'func': :obj:`list` of :obj:`str`. Path to functional image
+        - 'events': :obj:`list` of :obj:`str`. Path to events.tsv file
         - 'description': :obj:`str`. Data description
 
     References
@@ -2857,22 +2759,31 @@ def fetch_spm_auditory(
 
     """
     data_dir = get_dataset_dir(data_name, data_dir=data_dir, verbose=verbose)
-    subject_dir = os.path.join(data_dir, subject_id)
-    if not os.path.exists(subject_dir):
-        _download_spm_auditory_data(data_dir, subject_dir, subject_id)
-    spm_auditory_data = _prepare_downloaded_spm_auditory_data(subject_dir)
-    try:
-        spm_auditory_data["events"]
-    except KeyError:
-        events_filepath = _make_path_events_file_spm_auditory_data(
-            spm_auditory_data
-        )
-        if not os.path.isfile(events_filepath):
-            _make_events_file_spm_auditory_data(events_filepath)
-        spm_auditory_data["events"] = events_filepath
-    description = get_dataset_descr("spm_auditory")
-    spm_auditory_data["description"] = description
-    return spm_auditory_data
+    if not (Path(data_dir) / "MoAEpilot" / "sub-01").exists():
+        _download_spm_auditory_data(data_dir)
+
+    anat = get_bids_files(
+        main_path=Path(data_dir) / "MoAEpilot",
+        modality_folder="anat",
+        file_tag="T1w",
+    )[0]
+    func = get_bids_files(
+        main_path=Path(data_dir) / "MoAEpilot",
+        modality_folder="func",
+        file_tag="bold",
+    )
+    events = get_bids_files(
+        main_path=Path(data_dir) / "MoAEpilot",
+        modality_folder="func",
+        file_tag="events",
+    )[0]
+    spm_auditory_data = {
+        "anat": anat,
+        "func": func,
+        "events": events,
+        "description": get_dataset_descr("spm_auditory"),
+    }
+    return Bunch(**spm_auditory_data)
 
 
 def _get_func_data_spm_multimodal(subject_dir, session, _subject_data):
@@ -2900,7 +2811,7 @@ def _get_session_trials_spm_multimodal(subject_dir, session, _subject_data):
     sess_trials = os.path.join(
         subject_dir, f"fMRI/trials_ses{int(session)}.mat"
     )
-    if not os.path.isfile(sess_trials):
+    if not Path(sess_trials).is_file():
         logger.log(f"Missing session file: {sess_trials}", stack_level=2)
         return None
 
@@ -2910,7 +2821,7 @@ def _get_session_trials_spm_multimodal(subject_dir, session, _subject_data):
 
 def _get_anatomical_data_spm_multimodal(subject_dir, _subject_data):
     anat = os.path.join(subject_dir, "sMRI/smri.img")
-    if not os.path.isfile(anat):
+    if not Path(anat).is_file():
         logger.log("Missing structural image.", stack_level=2)
         return None
 
@@ -2941,7 +2852,7 @@ def _glob_spm_multimodal_fmri_data(subject_dir):
             )
         except MatReadError as mat_err:
             warnings.warn(
-                f"{str(mat_err)}. An events.tsv file cannot be generated"
+                f"{mat_err!s}. An events.tsv file cannot be generated"
             )
         else:
             events_filepath = _make_events_filepath_spm_multimodal_fmri(
@@ -2973,7 +2884,7 @@ def _download_data_spm_multimodal(data_dir, subject_dir, subject_id):
     ]
 
     for url in urls:
-        archive_path = os.path.join(subject_dir, os.path.basename(url))
+        archive_path = Path(subject_dir) / Path(url).name
         fetch_single_file(url, subject_dir)
         try:
             uncompress_file(archive_path)
@@ -2991,9 +2902,9 @@ def _download_data_spm_multimodal(data_dir, subject_dir, subject_id):
 
 def _make_events_filepath_spm_multimodal_fmri(_subject_data, session):
     key = f"trials_ses{session}"
-    events_file_location = os.path.dirname(_subject_data[key])
+    events_file_location = Path(_subject_data[key]).parent
     events_filename = f"session{session}_events.tsv"
-    events_filepath = os.path.join(events_file_location, events_filename)
+    events_filepath = str(events_file_location / events_filename)
     return events_filepath
 
 
@@ -3107,7 +3018,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
         for run in [1, 2]:
             # glob func data for session
             session_func = os.path.join(subject_dir, f"run{int(run)}.nii.gz")
-            if not os.path.isfile(session_func):
+            if not Path(session_func).is_file():
                 logger.log(f"Missing functional scan for session {int(run)}.")
                 return None
 
@@ -3115,7 +3026,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
 
             # glob design matrix .npz file
             sess_dmtx = os.path.join(subject_dir, f"run{int(run)}_design.npz")
-            if not os.path.isfile(sess_dmtx):
+            if not Path(sess_dmtx).is_file():
                 logger.log(f"Missing run file: {sess_dmtx}")
                 return None
 
@@ -3123,7 +3034,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
 
         # glob for mask data
         mask = os.path.join(subject_dir, "mask.nii.gz")
-        if not os.path.isfile(mask):
+        if not Path(mask).is_file():
             logger.log("Missing mask image.")
             return None
 
@@ -3142,7 +3053,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     logger.log("Data absent, downloading...")
     url = "https://nipy.org/data-packages/nipy-data-0.2.tar.gz"
 
-    archive_path = os.path.join(data_dir, os.path.basename(url))
+    archive_path = Path(data_dir) / Path(url).name
     fetch_single_file(url, data_dir)
     try:
         uncompress_file(archive_path)

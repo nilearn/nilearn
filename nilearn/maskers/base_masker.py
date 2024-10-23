@@ -3,6 +3,7 @@
 # Author: Gael Varoquaux, Alexandre Abraham
 
 import abc
+import contextlib
 import warnings
 
 import numpy as np
@@ -103,6 +104,7 @@ def _filter_and_extract(
             target_affine=target_affine,
             copy=copy,
             copy_header=True,
+            force_resample=False,  # set to True in 0.13.0
         )
 
     smoothing_fwhm = parameters.get("smoothing_fwhm")
@@ -351,10 +353,8 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         img = self._cache(masking.unmask)(X, self.mask_img_)
         # Be robust again memmapping that will create read-only arrays in
         # internal structures of the header: remove the memmaped array
-        try:
+        with contextlib.suppress(Exception):
             img._header._structarr = np.array(img._header._structarr).copy()
-        except Exception:
-            pass
         return img
 
     def _check_fitted(self):

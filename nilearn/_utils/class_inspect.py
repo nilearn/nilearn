@@ -32,7 +32,7 @@ def get_params(cls, instance, ignore=None):
 
     param_names = cls._get_param_names()
 
-    params = dict()
+    params = {}
     for param_name in param_names:
         if param_name in _ignore:
             continue

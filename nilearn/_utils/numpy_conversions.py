@@ -3,10 +3,9 @@
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 
 import csv
+from pathlib import Path
 
 import numpy as np
-
-from .helpers import stringify_path
 
 
 def _asarray(arr, dtype=None, order=None):
@@ -18,21 +17,18 @@ def _asarray(arr, dtype=None, order=None):
             ret = arr.view(dtype=dtype)
         else:
             ret = np.asarray(arr, dtype=dtype)
+    elif (
+        (arr.itemsize == 1 and dtype in (bool, np.bool_))
+        or (arr.dtype in (bool, np.bool_) and np.dtype(dtype).itemsize == 1)
+    ) and (
+        order == "F"
+        and arr.flags["F_CONTIGUOUS"]
+        or order == "C"
+        and arr.flags["C_CONTIGUOUS"]
+    ):
+        ret = arr.view(dtype=dtype)
     else:
-        if (
-            (arr.itemsize == 1 and dtype in (bool, np.bool_))
-            or (
-                arr.dtype in (bool, np.bool_) and np.dtype(dtype).itemsize == 1
-            )
-        ) and (
-            order == "F"
-            and arr.flags["F_CONTIGUOUS"]
-            or order == "C"
-            and arr.flags["C_CONTIGUOUS"]
-        ):
-            ret = arr.view(dtype=dtype)
-        else:
-            ret = np.asarray(arr, dtype=dtype, order=order)
+        ret = np.asarray(arr, dtype=dtype, order=order)
 
     return ret
 
@@ -101,7 +97,7 @@ def as_ndarray(arr, copy=False, dtype=None, order="K"):
     # .astype() always copies
 
     if order not in ("C", "F", "A", "K", None):
-        raise ValueError(f"Invalid value for 'order': {str(order)}")
+        raise ValueError(f"Invalid value for 'order': {order!s}")
 
     if isinstance(arr, np.memmap):
         if dtype is None:
@@ -109,26 +105,22 @@ def as_ndarray(arr, copy=False, dtype=None, order="K"):
                 ret = np.array(np.asarray(arr), copy=True)
             else:
                 ret = np.array(np.asarray(arr), copy=True, order=order)
+        elif order in ("K", "A", None):
+            # always copy (even when dtype does not change)
+            ret = np.asarray(arr).astype(dtype)
         else:
-            if order in ("K", "A", None):
-                # always copy (even when dtype does not change)
-                ret = np.asarray(arr).astype(dtype)
-            else:
-                # First load data from disk without changing order
-                # Changing order while reading through a memmap is incredibly
-                # inefficient.
-                ret = np.array(arr, copy=True)
-                ret = _asarray(ret, dtype=dtype, order=order)
+            # First load data from disk without changing order
+            # Changing order while reading through a memmap is incredibly
+            # inefficient.
+            ret = np.array(arr, copy=True)
+            ret = _asarray(ret, dtype=dtype, order=order)
 
     elif isinstance(arr, np.ndarray):
         ret = _asarray(arr, dtype=dtype, order=order)
         # In the present cas, np.may_share_memory result is always reliable.
         if np.may_share_memory(ret, arr) and copy:
             # order-preserving copy
-            if ret.flags["F_CONTIGUOUS"]:
-                ret = ret.T.copy().T
-            else:
-                ret = ret.copy()
+            ret = ret.T.copy().T if ret.flags["F_CONTIGUOUS"] else ret.copy()
 
     elif isinstance(arr, (list, tuple)):
         if order in ("A", "K"):
@@ -163,12 +155,6 @@ def csv_to_array(csv_path, delimiters=" \t,;", **kwargs):
     array: numpy.ndarray
         An array containing the data loaded from the CSV file.
     """
-    csv_path = stringify_path(csv_path)
-    if not isinstance(csv_path, str):
-        raise TypeError(
-            f"CSV must be a file path. Got a CSV of type: {type(csv_path)}"
-        )
-
     try:
         # First, we try genfromtxt which works in most cases.
         array = np.genfromtxt(csv_path, loose=False, encoding=None, **kwargs)
@@ -177,7 +163,7 @@ def csv_to_array(csv_path, delimiters=" \t,;", **kwargs):
         # because the delimiter is wrong.
         # In that case, we try to guess the delimiter.
         try:
-            with open(csv_path) as csv_file:
+            with Path(csv_path).open() as csv_file:
                 dialect = csv.Sniffer().sniff(csv_file.readline(), delimiters)
         except csv.Error as e:
             raise TypeError(

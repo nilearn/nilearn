@@ -1,5 +1,6 @@
 """Implementation of algorithm for sparse multi-subjects learning of Gaussian \
-graphical models."""
+graphical models.
+"""
 
 # Authors: Philippe Gervais
 
@@ -458,25 +459,24 @@ def _group_sparse_covariance(
                 if debug:
                     assert is_spd(omega[..., k])
 
-        if probe_function is not None:
-            if probe_function(
-                emp_covs,
-                n_samples,
-                alpha,
-                max_iter,
-                tol,
-                n,
-                omega,
-                omega_old,
-            ):
-                probe_interrupted = True
-                logger.log(
-                    "probe_function interrupted loop",
-                    verbose=verbose,
-                    msg_level=2,
-                    stack_level=2,
-                )
-                break
+        if probe_function is not None and probe_function(
+            emp_covs,
+            n_samples,
+            alpha,
+            max_iter,
+            tol,
+            n,
+            omega,
+            omega_old,
+        ):
+            probe_interrupted = True
+            logger.log(
+                "probe_function interrupted loop",
+                verbose=verbose,
+                msg_level=2,
+                stack_level=2,
+            )
+            break
 
         # Compute max of variation
         omega_old -= omega
@@ -568,7 +568,11 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
         self.memory_level = memory_level
         self.verbose = verbose
 
-    def fit(self, subjects, y=None):
+    def fit(
+        self,
+        subjects,
+        y=None,  # noqa: ARG002
+    ):
         """Fits the group sparse precision model according \
         to the given training data and parameters.
 
@@ -776,7 +780,7 @@ def group_sparse_scores(
                 dual_obj += n_samples[k] * (n_features + fast_logdet(B))
 
         gap = objective - dual_obj
-        ret = ret + (gap,)
+        ret = (*ret, gap)
     return ret
 
 
@@ -896,14 +900,14 @@ class EarlyStopProbe:
 
     def __call__(  # noqa: D102
         self,
-        emp_covs,
+        emp_covs,  # noqa: ARG002
         n_samples,
         alpha,
-        max_iter,
-        tol,
+        max_iter,  # noqa: ARG002
+        tol,  # noqa: ARG002
         iter_n,
         omega,
-        prev_omega,
+        prev_omega,  # noqa: ARG002
     ):
         log_lik, _ = group_sparse_scores(
             omega, n_samples, self.test_emp_covs, alpha
@@ -1034,7 +1038,11 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
         self.debug = debug
         self.early_stopping = early_stopping
 
-    def fit(self, subjects, y=None):
+    def fit(
+        self,
+        subjects,
+        y=None,  # noqa: ARG002
+    ):
         """Compute cross-validated group-sparse precisions.
 
         Parameters
@@ -1058,14 +1066,13 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
 
         # One cv generator per subject must be created, because each subject
         # can have a different number of samples from the others.
-        cv = []
-        for k in range(n_subjects):
-            cv.append(
-                check_cv(
-                    self.cv, np.ones(subjects[k].shape[0]), classifier=False
-                ).split(subjects[k])
-            )
-        path = list()  # List of (alpha, scores, covs)
+        cv = [
+            check_cv(
+                self.cv, np.ones(subjects[k].shape[0]), classifier=False
+            ).split(subjects[k])
+            for k in range(n_subjects)
+        ]
+        path = []  # List of (alpha, scores, covs)
         n_alphas = self.alphas
 
         if isinstance(n_alphas, collections.abc.Sequence):
@@ -1166,10 +1173,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
                 alpha_1 = path[0][0]
                 alpha_0 = path[1][0]
                 covs_init = path[0][2]
-            elif (
-                best_index == last_finite_idx
-                and not best_index == len(path) - 1
-            ):
+            elif best_index == last_finite_idx and best_index != len(path) - 1:
                 # We have non-converged models on the upper bound of the
                 # grid, we need to refine the grid there
                 alpha_1 = path[best_index][0]

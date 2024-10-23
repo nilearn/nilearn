@@ -3,7 +3,7 @@ import warnings
 import numpy as np
 import pytest
 
-from nilearn.conftest import have_mpl
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.experimental.surface import (
     SurfaceImage,
     SurfaceLabelsMasker,
@@ -11,102 +11,137 @@ from nilearn.experimental.surface import (
 )
 
 
+# test with only one surface image and with 2 surface images (surface time
+# series)
+@pytest.mark.parametrize("shape", [(1,), (2,)])
 def test_mask_img_fit_shape_mismatch(
-    flip_img, mini_mask, make_mini_img, assert_img_equal
+    flip_surf_img, surf_mask, surf_img, shape, assert_surf_img_equal
 ):
-    img = make_mini_img()
-    masker = SurfaceMasker(mini_mask)
+    masker = SurfaceMasker(surf_mask())
     with pytest.raises(ValueError, match="number of vertices"):
-        masker.fit(flip_img(img))
-    # fitting with the number of vertices is ok
-    masker.fit(img)
-    # fitting with the same number of vertices and extra dimensions (surface
-    # timeseries) is ok
-    masker.fit(make_mini_img((2,)))
-    assert_img_equal(mini_mask, masker.mask_img_)
+        masker.fit(flip_surf_img(surf_img(shape)))
+    masker.fit(surf_img(shape))
+    assert_surf_img_equal(surf_mask(), masker.mask_img_)
 
 
-def test_mask_img_fit_keys_mismatch(mini_mask, drop_img_part):
-    masker = SurfaceMasker(mini_mask)
+def test_mask_img_fit_keys_mismatch(surf_mask, drop_surf_img_part):
+    masker = SurfaceMasker(surf_mask())
     with pytest.raises(ValueError, match="key"):
-        masker.fit(drop_img_part(mini_mask))
+        masker.fit(drop_surf_img_part(surf_mask()))
 
 
-def test_none_mask_img(mini_mask):
+def test_none_mask_img(surf_mask):
     masker = SurfaceMasker(None)
     with pytest.raises(ValueError, match="provide either"):
         masker.fit(None)
     # no mask_img but fit argument is ok
-    masker.fit(mini_mask)
+    masker.fit(surf_mask())
     # no fit argument but a mask_img is ok
-    SurfaceMasker(mini_mask).fit(None)
+    SurfaceMasker(surf_mask()).fit(None)
 
 
-def test_unfitted_masker(mini_mask):
-    masker = SurfaceMasker(mini_mask)
+def test_unfitted_masker(surf_mask):
+    masker = SurfaceMasker(surf_mask)
     with pytest.raises(ValueError, match="fitted"):
-        masker.transform(mini_mask)
+        masker.transform(surf_mask)
 
 
-def test_mask_img_transform_shape_mismatch(flip_img, mini_img, mini_mask):
-    masker = SurfaceMasker(mini_mask).fit()
+def test_mask_img_transform_shape_mismatch(flip_surf_img, surf_img, surf_mask):
+    masker = SurfaceMasker(surf_mask()).fit()
     with pytest.raises(ValueError, match="number of vertices"):
-        masker.transform(flip_img(mini_img))
+        masker.transform(flip_surf_img(surf_img()))
     # non-flipped is ok
-    masker.transform(mini_img)
+    masker.transform(surf_img())
 
 
-def test_mask_img_transform_keys_mismatch(mini_mask, mini_img, drop_img_part):
-    masker = SurfaceMasker(mini_mask).fit()
+def test_mask_img_transform_keys_mismatch(
+    surf_mask, surf_img, drop_surf_img_part
+):
+    masker = SurfaceMasker(surf_mask()).fit()
     with pytest.raises(ValueError, match="key"):
-        masker.transform(drop_img_part(mini_img))
+        masker.transform(drop_surf_img_part(surf_img()))
     # full img is ok
-    masker.transform(mini_img)
+    masker.transform(surf_img())
 
 
 @pytest.mark.parametrize("shape", [(), (1,), (3,), (3, 2)])
-def test_transform_inverse_transform(shape, make_mini_img, assert_img_equal):
-    img = make_mini_img(shape)
+def test_transform_inverse_transform_no_mask(
+    surf_mesh, shape, assert_surf_img_equal
+):
+    # make a sample image with data on the first timepoint/sample 1-4 on
+    # left part and 10-50 on right part
+    mesh = surf_mesh()
+    img_data = {}
+    for i, (key, val) in enumerate(mesh.parts.items()):
+        data_shape = (*shape, val.n_vertices)
+        data_part = (
+            np.arange(np.prod(data_shape)).reshape(data_shape) + 1.0
+        ) * 10**i
+        img_data[key] = data_part
+    img = SurfaceImage(mesh, img_data)
     masker = SurfaceMasker().fit(img)
     masked_img = masker.transform(img)
+    # make sure none of the data has been removed
     assert np.array_equal(
         masked_img.ravel()[:9], [1, 2, 3, 4, 10, 20, 30, 40, 50]
     )
-    assert masked_img.shape == shape + (img.shape[-1],)
+    assert masked_img.shape == (*shape, img.shape[-1])
     unmasked_img = masker.inverse_transform(masked_img)
-    assert_img_equal(img, unmasked_img)
+    assert_surf_img_equal(img, unmasked_img)
 
 
 @pytest.mark.parametrize("shape", [(), (1,), (3,), (3, 2)])
 def test_transform_inverse_transform_with_mask(
-    shape, make_mini_img, assert_img_equal, mini_mask
+    surf_mesh, assert_surf_img_equal, shape
 ):
-    img = make_mini_img(shape)
-    masker = SurfaceMasker(mini_mask).fit(img)
+    # make a sample image with data on the first timepoint/sample 1-4 on
+    # left part and 10-50 on right part
+    mesh = surf_mesh()
+    img_data = {}
+    for i, (key, val) in enumerate(mesh.parts.items()):
+        data_shape = (*shape, val.n_vertices)
+        data_part = (
+            np.arange(np.prod(data_shape)).reshape(data_shape) + 1.0
+        ) * 10**i
+        img_data[key] = data_part
+    img = SurfaceImage(mesh, img_data)
+    # make a mask that removes first vertex of each part
+    # total 2 removed
+    mask_data = {
+        "left": np.asarray([False, True, True, True]),
+        "right": np.asarray([False, True, True, True, True]),
+    }
+    mask = SurfaceImage(mesh, mask_data)
+    masker = SurfaceMasker(mask).fit(img)
     masked_img = masker.transform(img)
-    assert masked_img.shape == shape + (img.shape[-1] - 2,)
-    assert np.array_equal(masked_img.ravel()[:7], [2, 3, 4, 20, 30, 40, 50.0])
+    # check mask shape is as expected
+    assert masked_img.shape == (*shape, img.shape[-1] - 2)
+    # check the data for first seven vertices is as expected
+    assert np.array_equal(masked_img.ravel()[:7], [2, 3, 4, 20, 30, 40, 50])
+    # check whether inverse transform does not change the img
     unmasked_img = masker.inverse_transform(masked_img)
+    # recreate data that we expect after unmasking
     expected_data = {k: v.copy() for (k, v) in img.data.parts.items()}
     for v in expected_data.values():
         v[..., 0] = 0.0
     expected_img = SurfaceImage(img.mesh, expected_data)
-    assert_img_equal(expected_img, unmasked_img)
+    assert_surf_img_equal(expected_img, unmasked_img)
 
 
 @pytest.mark.skipif(
-    have_mpl, reason="Test requires matplotlib not to be installed."
+    is_matplotlib_installed(),
+    reason="Test requires matplotlib not to be installed.",
 )
-def test_masker_reporting_mpl_warning(mini_mask, mini_label_img):
+def test_masker_reporting_mpl_warning(surf_mask, surf_label_img):
     """Raise warning after exception if matplotlib is not installed."""
     with warnings.catch_warnings(record=True) as warning_list:
-        SurfaceMasker(mini_mask).fit().generate_report()
+        SurfaceMasker(surf_mask()).fit().generate_report()
 
     assert len(warning_list) == 1
     assert issubclass(warning_list[0].category, ImportWarning)
 
     with warnings.catch_warnings(record=True) as warning_list:
-        SurfaceLabelsMasker(mini_label_img).fit().generate_report()
+        SurfaceLabelsMasker(surf_label_img()).fit().generate_report()
 
     assert len(warning_list) == 1
     assert issubclass(warning_list[0].category, ImportWarning)

@@ -12,25 +12,29 @@ from sklearn.utils import Bunch
 
 from .._utils import check_niimg, fill_doc
 from ..image import get_data, new_img_like, resampling
-from ._utils import fetch_files, get_dataset_descr, get_dataset_dir
+from ._utils import (
+    PACKAGE_DIRECTORY,
+    fetch_files,
+    get_dataset_descr,
+    get_dataset_dir,
+)
 
-_package_directory = os.path.dirname(os.path.abspath(__file__))
-MNI152_FILE_PATH = os.path.join(
-    _package_directory,
-    "data",
-    "mni_icbm152_t1_tal_nlin_sym_09a_converted.nii.gz",
+MNI152_FILE_PATH = (
+    PACKAGE_DIRECTORY
+    / "data"
+    / "mni_icbm152_t1_tal_nlin_sym_09a_converted.nii.gz"
 )
-GM_MNI152_FILE_PATH = os.path.join(
-    _package_directory,
-    "data",
-    "mni_icbm152_gm_tal_nlin_sym_09a_converted.nii.gz",
+GM_MNI152_FILE_PATH = (
+    PACKAGE_DIRECTORY
+    / "data"
+    / "mni_icbm152_gm_tal_nlin_sym_09a_converted.nii.gz"
 )
-WM_MNI152_FILE_PATH = os.path.join(
-    _package_directory,
-    "data",
-    "mni_icbm152_wm_tal_nlin_sym_09a_converted.nii.gz",
+WM_MNI152_FILE_PATH = (
+    PACKAGE_DIRECTORY
+    / "data"
+    / "mni_icbm152_wm_tal_nlin_sym_09a_converted.nii.gz"
 )
-FSAVERAGE5_PATH = os.path.join(_package_directory, "data", "fsaverage5")
+FSAVERAGE5_PATH = PACKAGE_DIRECTORY / "data" / "fsaverage5"
 
 _LEGACY_FORMAT_MSG = (
     "`legacy_format` will default to `False` in release 0.11. "
@@ -165,7 +169,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     fdescr = get_dataset_descr(dataset_name)
 
-    params = dict([("description", fdescr)] + list(zip(keys, sub_files)))
+    params = dict([("description", fdescr), *list(zip(keys, sub_files))])
     return Bunch(**params)
 
 
@@ -710,15 +714,13 @@ def fetch_oasis_vbm(
                 % n_subjects
             )
             n_subjects = 403
-    else:  # all subjects except one are available with non-DARTEL version
-        if n_subjects > 415:
-            warnings.warn(
-                "Only 415 subjects are available in the "
-                "non-DARTEL-normalized version of the dataset. "
-                "All of them will be used instead of the wanted %d"
-                % n_subjects
-            )
-            n_subjects = 415
+    elif n_subjects > 415:
+        warnings.warn(
+            "Only 415 subjects are available in the "
+            "non-DARTEL-normalized version of the dataset. "
+            "All of them will be used instead of the wanted %d" % n_subjects
+        )
+        n_subjects = 415
     if n_subjects < 1:
         raise ValueError(f"Incorrect number of subjects ({int(n_subjects)})")
 
@@ -854,8 +856,7 @@ def fetch_oasis_vbm(
     csv_data = pd.read_csv(ext_vars_file)
     # Comparisons to recfromcsv data must be bytes.
     actual_subjects_ids = [
-        ("OAS1" + str.split(os.path.basename(x), "OAS1")[1][:9])
-        for x in gm_maps
+        ("OAS1" + str.split(Path(x).name, "OAS1")[1][:9]) for x in gm_maps
     ]
     subject_mask = np.asarray(
         [subject_id in actual_subjects_ids for subject_id in csv_data["ID"]]

@@ -648,7 +648,10 @@ def compute_brain_mask(
         )
 
     resampled_template = cache(resampling.resample_to_img, memory)(
-        template, target_img, copy_header=True
+        template,
+        target_img,
+        copy_header=True,
+        force_resample=False,  # TODO set to True in 0.13.0
     )
 
     mask = (get_data(resampled_template) >= threshold).astype("int8")
@@ -677,7 +680,7 @@ def compute_multi_brain_mask(
     memory=None,
     verbose=0,
     mask_type="whole-brain",
-    **kwargs,
+    **kwargs,  # noqa: ARG001
 ):
     """Compute the whole-brain, grey-matter or white-matter mask \
     for a list of images.
@@ -836,8 +839,8 @@ def apply_mask_fmri(
 
     if mask_data.shape != imgs_img.shape[:3]:
         raise ValueError(
-            f"Mask shape: {str(mask_data.shape)} is different "
-            f"from img shape:{str(imgs_img.shape[:3])}"
+            f"Mask shape: {mask_data.shape!s} is different "
+            f"from img shape:{imgs_img.shape[:3]!s}"
         )
 
     # All the following has been optimized for C order.
@@ -918,7 +921,7 @@ def _unmask_4d(X, mask, order="C"):
     if X.shape[1] != n_features:
         raise TypeError(f"X must be of shape (samples, {n_features}).")
 
-    data = np.zeros(mask.shape + (X.shape[0],), dtype=X.dtype, order=order)
+    data = np.zeros((*mask.shape, X.shape[0]), dtype=X.dtype, order=order)
     data[mask, :] = X.T
     return data
 
@@ -967,7 +970,7 @@ def unmask(X, mask_img, order="F"):
         unmasked = _unmask_3d(X, mask, order=order)
     else:
         raise TypeError(
-            f"Masked data X must be 2D or 1D array; got shape: {str(X.shape)}"
+            f"Masked data X must be 2D or 1D array; got shape: {X.shape!s}"
         )
 
     return new_img_like(mask_img, unmasked, affine)
@@ -985,7 +988,7 @@ def unmask_from_to_3d_array(w, mask):
     w : :class:`numpy.ndarray`, shape (n_features,)
       The image to be unmasked.
 
-    mask : :class:`numpy.ndarray`, shape (nx, ny, nz)
+    mask : :class:`numpy.ndarray`
       The mask used in the unmasking operation. It is required that
       ``mask.sum() == n_features``.
 

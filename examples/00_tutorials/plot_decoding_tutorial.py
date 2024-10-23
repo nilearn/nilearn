@@ -123,8 +123,7 @@ fmri_niimgs = index_img(fmri_filename, condition_mask)
 # %%
 # We apply the same mask to the targets
 conditions = conditions[condition_mask]
-# Convert to numpy array
-conditions = conditions.values
+conditions = conditions.to_numpy()
 print(conditions.shape)
 
 # %%
@@ -353,6 +352,9 @@ print(dummy_decoder.cv_scores_)
 # --------
 #
 # * The :ref:`section of the documentation on decoding <decoding>`
+#
+# * :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_understand_decoder.py`
+#   For a more in-depth understanding of the :class:`nilearn.decoding.Decoder`
 #
 # * :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_anova_svm.py`
 #   For decoding without a precomputed mask

@@ -69,7 +69,7 @@ oasis_dataset = datasets.fetch_oasis_vbm(
     n_subjects=n_subjects, legacy_format=False
 )
 gray_matter_map_filenames = oasis_dataset.gray_matter_maps
-age = oasis_dataset.ext_vars["age"].values
+age = oasis_dataset.ext_vars["age"].to_numpy()
 
 # Split data into training set and test set
 from sklearn.model_selection import train_test_split
@@ -220,7 +220,7 @@ display = plot_stat_map(
     figure=fig,
 )
 title = (
-    "Negative $\\log_{10}$ p-values" "\n(Non-parametric + max-type correction)"
+    "Negative $\\log_{10}$ p-values\n(Non-parametric + max-type correction)"
 )
 display.title(title)
 

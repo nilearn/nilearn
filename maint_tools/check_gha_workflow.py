@@ -75,7 +75,7 @@ PAGES_TO_COLLECT = range(1, 30)
 UPDATE_TSV = True
 
 # used by set_python_version to filter jobs by their python version
-EXPECTED_PYTHON_VERSIONS = ["3.8", "3.9", "3.10", "3.11", "3.12"]
+EXPECTED_PYTHON_VERSIONS = ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
 
 
 def main(args=sys.argv) -> None:
@@ -93,22 +93,26 @@ def main(args=sys.argv) -> None:
         workflow_id=TEST_WORKFLOW_ID,
     )
 
-    df = pd.read_csv(
+    test_runs_timing = pd.read_csv(
         output_file,
         sep="\t",
         parse_dates=["started_at", "completed_at"],
     )
 
-    df["duration"] = (df["completed_at"] - df["started_at"]) / pd.Timedelta(
-        minutes=1
+    test_runs_timing["duration"] = (
+        test_runs_timing["completed_at"] - test_runs_timing["started_at"]
+    ) / pd.Timedelta(minutes=1)
+    test_runs_timing["python"] = test_runs_timing["name"].apply(
+        _set_python_version
     )
-    df["python"] = df["name"].apply(_set_python_version)
-    df["OS"] = df["name"].apply(_set_os)
-    df["dependencies"] = df["name"].apply(_set_dependencies)
+    test_runs_timing["OS"] = test_runs_timing["name"].apply(_set_os)
+    test_runs_timing["dependencies"] = test_runs_timing["name"].apply(
+        _set_dependencies
+    )
 
-    print(df)
+    print(test_runs_timing)
 
-    _plot_test_job_durations(df, output_file)
+    _plot_test_job_durations(test_runs_timing, output_file)
 
     # %%
     DOC_WORKFLOW_ID = "37349438"
@@ -122,22 +126,22 @@ def main(args=sys.argv) -> None:
         event_type="push",
     )
 
-    df = pd.read_csv(
+    doc_runs_timing = pd.read_csv(
         output_file,
         sep="\t",
         parse_dates=["started_at", "completed_at"],
     )
 
-    df["duration"] = (df["completed_at"] - df["started_at"]) / pd.Timedelta(
-        minutes=1
-    )
+    doc_runs_timing["duration"] = (
+        doc_runs_timing["completed_at"] - doc_runs_timing["started_at"]
+    ) / pd.Timedelta(minutes=1)
 
-    df = df[df["name"] == "build_docs"]
-    df = df[df["duration"] < 360]
+    doc_runs_timing = doc_runs_timing[doc_runs_timing["name"] == "build_docs"]
+    doc_runs_timing = doc_runs_timing[doc_runs_timing["duration"] < 360]
 
-    print(df)
+    print(doc_runs_timing)
 
-    _plot_doc_job_durations(df, output_file)
+    _plot_doc_job_durations(doc_runs_timing, output_file)
 
 
 def _update_tsv(
@@ -175,8 +179,7 @@ def _update_tsv(
         else:
             break
 
-    df = pd.DataFrame(jobs_data)
-    df.to_csv(output_file, sep="\t", index=False)
+    pd.DataFrame(jobs_data).to_csv(output_file, sep="\t", index=False)
 
 
 def _plot_test_job_durations(df: pd.DataFrame, output_file: Path) -> None:
@@ -281,10 +284,10 @@ def _get_auth(username: str, token_file: Path) -> None | tuple[str, str]:
     token = None
 
     if token_file.exists():
-        with open(token_file) as f:
+        with token_file.open() as f:
             token = f.read().strip()
     else:
-        warnings.warn(f"Token file not found.\n{str(token_file)}")
+        warnings.warn(f"Token file not found.\n{token_file!s}")
 
     return None if username is None or token is None else (username, token)
 

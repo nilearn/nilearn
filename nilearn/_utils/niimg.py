@@ -8,8 +8,8 @@ import gc
 from pathlib import Path
 from warnings import warn
 
-import nibabel
 import numpy as np
+from nibabel import is_proxy, load, spatialimages
 
 from .helpers import stringify_path
 
@@ -91,10 +91,7 @@ def _get_target_dtype(dtype, target_dtype):
     if target_dtype is None:
         return None
     if target_dtype == "auto":
-        if dtype.kind == "i":
-            target_dtype = np.int32
-        else:
-            target_dtype = np.float32
+        target_dtype = np.int32 if dtype.kind == "i" else np.float32
     if target_dtype == dtype:
         return None
     return target_dtype
@@ -124,8 +121,8 @@ def load_niimg(niimg, dtype=None):
     niimg = stringify_path(niimg)
     if isinstance(niimg, str):
         # data is a filename, we load it
-        niimg = nibabel.load(niimg)
-    elif not isinstance(niimg, nibabel.spatialimages.SpatialImage):
+        niimg = load(niimg)
+    elif not isinstance(niimg, spatialimages.SpatialImage):
         raise TypeError(
             "Data given cannot be loaded because it is"
             " not compatible with nibabel format:\n"
@@ -172,7 +169,7 @@ def is_binary_niimg(niimg):
     unique_values = np.unique(data)
     if len(unique_values) != 2:
         return False
-    return sorted(list(unique_values)) == [0, 1]
+    return sorted(unique_values) == [0, 1]
 
 
 def _repr_niimgs(niimgs, shorten=True):
@@ -227,8 +224,8 @@ def _repr_niimgs(niimgs, shorten=True):
             # No shortening in this case
             return (
                 f"{niimgs.__class__.__name__}"
-                f"(\nshape={repr(niimgs.shape)},"
-                f"\naffine={repr(niimgs.affine)}\n)"
+                f"(\nshape={niimgs.shape!r},"
+                f"\naffine={niimgs.affine!r}\n)"
             )
     except Exception:
         pass
@@ -268,7 +265,7 @@ def img_data_dtype(niimg):
     dataobj = niimg.dataobj
 
     # Neuroimages that scale data should be interpreted as floating point
-    if nibabel.is_proxy(dataobj) and (dataobj.slope, dataobj.inter) != (
+    if is_proxy(dataobj) and (dataobj.slope, dataobj.inter) != (
         1.0,
         0.0,
     ):
