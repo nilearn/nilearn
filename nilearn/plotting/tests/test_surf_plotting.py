@@ -262,13 +262,17 @@ def test_check_inputs_errors():
         plot_surf(surf_map=None, surf_mesh=None)
     with pytest.raises(TypeError, match="cannot both be None"):
         plot_surf_stat_map(stat_map=None, surf_mesh=None)
+    with pytest.raises(TypeError, match="cannot both be None"):
+        plot_surf_contours(roi_map=None, surf_mesh=None)
 
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
-        _check_inputs(surf_map=1, surf_mesh=None, hemi="left")
+        _check_inputs(surf_map=1, surf_mesh=None)
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
         plot_surf(surf_map=1, surf_mesh=None)
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
         plot_surf_stat_map(stat_map=1, surf_mesh=None)
+    with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
+        plot_surf_contours(roi_map=1, surf_mesh=None)
 
 
 @pytest.mark.parametrize("full_view", EXPECTED_CAMERAS_PLOTLY)

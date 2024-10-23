@@ -48,8 +48,6 @@ def plot_surf_contours(
     **kwargs,
 ):
     """Plot contours of ROIs on a surface, optionally on a statistical map."""
-    roi_map, surf_mesh, _ = _check_inputs(roi_map, surf_mesh, hemi)
-
     return old_plotting.plot_surf_contours(
         surf_mesh=surf_mesh,
         roi_map=roi_map,

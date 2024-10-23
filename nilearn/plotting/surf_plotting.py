@@ -126,7 +126,7 @@ DEFAULT_HEMI = "left"
 def _check_inputs(
     surf_map,
     surf_mesh,
-    hemi,
+    hemi=DEFAULT_HEMI,
     bg_map=None,
     map_var_name="surf_map",
     mesh_var_name="surf_mesh",
@@ -853,8 +853,8 @@ def plot_surf(
         If None is passed, then ``surf_map`` must be a SurfaceImage instance
         and the mesh from that SurfaceImage instance will be used.
 
-    surf_map : :obj:`str` or :class:`numpy.ndarray` or SurfaceIamge or None,
-               \\ default=None
+    surf_map : :obj:`str` or :class:`numpy.ndarray` or SurfaceIamge or None, \
+               default=None
         Data to be displayed on the surface :term:`mesh`.
         Can be a file
         (valid formats are .gii, .mgz, .nii, .nii.gz,
@@ -862,8 +862,9 @@ def plot_surf(
         .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array with a value for each :term:`vertex` of the `surf_mesh`,
         or a SurfaceImage instance.
-        If None is passed for ``surf_mesh``,
-        then the mesh from the SurfaceImage will be used.
+        If None is passed for ``surf_mesh``
+        then ``surf_map`` must be a SurfaceImage instance
+        and its the mesh will be used for plotting.
 
     bg_map : :obj:`str` or :class:`numpy.ndarray` or SurfaceIamge or None,\
              default=None
@@ -1139,8 +1140,9 @@ def _get_faces_on_edge(faces, parc_idx):
 
 @fill_doc
 def plot_surf_contours(
-    surf_mesh,
-    roi_map,
+    surf_mesh=None,
+    roi_map=None,
+    hemi=None,
     axes=None,
     figure=None,
     levels=None,
@@ -1157,17 +1159,23 @@ def plot_surf_contours(
 
     Parameters
     ----------
-    surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`
+    surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`\
+                or a Mesh, or a PolyMesh, or None
         Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
         a list of two Numpy arrays, the first containing the x-y-z coordinates
         of the :term:`mesh` :term:`vertices<vertex>`,
         the second containing the indices (into coords)
-        of the :term:`mesh` :term:`faces`.
+        of the :term:`mesh` :term:`faces`,
+        or a Mesh object with "coordinates" and "faces" attributes,
+        or a PolyMesh object,
+        or None.
+        If None is passed, then ``roi_map`` must be a SurfaceImage instance
+        and the mesh from that SurfaceImage instance will be used.
 
-    roi_map : :obj:`str` or :class:`numpy.ndarray` or \
-        :obj:`list` of :class:`numpy.ndarray`
+    roi_map : :obj:`str` or :class:`numpy.ndarray` or SurfaceImage or None, \
+               default=None
         ROI map to be displayed on the surface mesh,
         can be a file
         (valid formats are .gii, .mgz, or
@@ -1177,13 +1185,25 @@ def plot_surf_contours(
         The value at each :term:`vertex` one inside the ROI
         and zero inside ROI,
         or an integer giving the label number for atlases.
+        If None is passed for ``surf_mesh``
+        then ``roi_map`` must be a SurfaceImage instance
+        and its the mesh will be used for plotting.
+
+    hemi : {"left", "right", None}, default=None
+        Hemisphere to display in case a SurfaceImage is passed as ``roi_map``
+        and / or if PolyMesh is passed as ``surf_mesh``.
+        In these cases, if ``hemi`` is set to None, it will default to "left".
+
+        .. versionadded:: 0.11.0
 
     axes : instance of matplotlib axes or None, default=None
         The axes instance to plot to. The projection must be '3d' (e.g.,
         `figure, axes = plt.subplots(subplot_kw={'projection': '3d'})`,
         where axes should be passed.).
         If None, uses axes from figure if available, else creates new axes.
+
     %(figure)s
+
     levels : :obj:`list` of :obj:`int`, or None, default=None
         A list of indices of the regions that are to be outlined.
         Every index needs to correspond to one index in roi_map.
@@ -1200,9 +1220,12 @@ def plot_surf_contours(
 
     legend : :obj:`bool`,  optional, default=False
         Whether to plot a legend of region's labels.
+
     %(cmap)s
         Default='tab20'.
+
     %(title)s
+
     %(output_file)s
 
     kwargs: extra keyword arguments, optional
@@ -1218,8 +1241,28 @@ def plot_surf_contours(
         brain surfaces.
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
-
     """
+    if hemi is None and (
+        isinstance(roi_map, SurfaceImage) or isinstance(surf_mesh, PolyMesh)
+    ):
+        hemi = DEFAULT_HEMI
+    elif hemi is not None and not (
+        isinstance(roi_map, SurfaceImage) or isinstance(surf_mesh, PolyMesh)
+    ):
+        warn(
+            UserWarning,
+            (
+                f"{hemi=} was passed "
+                f"with {type(roi_map)=} and {type(surf_mesh)=}.\n"
+                "This value will be ignored as it is only used when "
+                "'roi_map' is a SurfaceImage instance "
+                "and  / or 'surf_mesh' is a PolyMesh instance."
+            ),
+        )
+    roi_map, surf_mesh, _ = _check_inputs(
+        roi_map, surf_mesh, hemi, map_var_name="roi_map"
+    )
+
     if isinstance(figure, PlotlySurfaceFigure):
         raise ValueError(
             "figure argument is a PlotlySurfaceFigure"
@@ -1368,6 +1411,9 @@ def plot_surf_stat_map(
         Freesurfer specific files such as
         .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array with a value for each :term:`vertex` of the `surf_mesh`.
+        If None is passed for ``surf_mesh``
+        then ``stat_map`` must be a SurfaceImage instance
+        and its the mesh will be used for plotting.
 
     bg_map : :obj:`str` or :class:`numpy.ndarray` or None, default=None
         Background image to be plotted on the :term:`mesh` underneath
