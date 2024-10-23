@@ -97,43 +97,45 @@ def test_get_connectome():
     assert (connectome["line_cmin"], connectome["line_cmax"]) == (-2.5, 2.5)
 
 
-def test_view_connectome():
+def test_view_connectome(tmp_path):
     adj, coord = _make_connectome()
     html = html_connectome.view_connectome(adj, coord)
-    check_html(html, False, "connectome-plot")
+    check_html(tmp_path, html, False, "connectome-plot")
     html = html_connectome.view_connectome(
         adj, coord, "85.3%", title="SOME_TITLE"
     )
-    check_html(html, False, "connectome-plot", title="SOME_TITLE")
+    check_html(tmp_path, html, False, "connectome-plot", title="SOME_TITLE")
     assert "SOME_TITLE" in html.html
     html = html_connectome.view_connectome(
         adj, coord, "85.3%", linewidth=8.5, node_size=4.2
     )
-    check_html(html, False, "connectome-plot", title="Connectome plot")
+    check_html(
+        tmp_path, html, False, "connectome-plot", title="Connectome plot"
+    )
     html = html_connectome.view_connectome(
         adj, coord, "85.3%", linewidth=8.5, node_size=np.arange(len(coord))
     )
-    check_html(html, False, "connectome-plot")
+    check_html(tmp_path, html, False, "connectome-plot")
 
 
-def test_view_markers():
+def test_view_markers(tmp_path):
     coords = np.arange(12).reshape((4, 3))
     colors = ["r", "g", "black", "white"]
     labels = ["red marker", "green marker", "black marker", "white marker"]
     html = html_connectome.view_markers(coords, colors)
-    check_html(html, False, "connectome-plot")
+    check_html(tmp_path, html, False, "connectome-plot")
     html = html_connectome.view_markers(coords)
-    check_html(html, False, "connectome-plot")
+    check_html(tmp_path, html, False, "connectome-plot")
     html = html_connectome.view_markers(coords, marker_size=15)
-    check_html(html, False, "connectome-plot")
+    check_html(tmp_path, html, False, "connectome-plot")
     html = html_connectome.view_markers(
         coords, marker_size=np.arange(len(coords))
     )
-    check_html(html, False, "connectome-plot")
+    check_html(tmp_path, html, False, "connectome-plot")
     html = html_connectome.view_markers(
         coords, marker_size=list(range(len(coords)))
     )
-    check_html(html, False, "connectome-plot")
+    check_html(tmp_path, html, False, "connectome-plot")
     html = html_connectome.view_markers(
         coords, marker_size=5.0, marker_color=colors, marker_labels=labels
     )
