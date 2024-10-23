@@ -1,4 +1,4 @@
-"""Masker for surface objects."""
+"""Kept as 'redirects' until migration is done."""
 
 from nilearn.maskers import SurfaceLabelsMasker as SurfLabMask
 from nilearn.maskers import SurfaceMasker as SurfMask

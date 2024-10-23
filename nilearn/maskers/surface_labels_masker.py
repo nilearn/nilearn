@@ -1,4 +1,4 @@
-"""Masker for surface labels objects."""
+"""Extract data from a SurfaceImage, averaging over atlas regions."""
 
 from __future__ import annotations
 
@@ -12,9 +12,9 @@ from nilearn._utils import _constrained_layout_kwargs
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.experimental.surface._surface_image import SurfaceImage
 from nilearn.maskers._utils import (
-    _compute_mean_image,
-    _get_min_max,
     check_same_n_vertices,
+    compute_mean_surface_image,
+    get_min_max_surface_image,
 )
 
 
@@ -272,8 +272,8 @@ class SurfaceLabelsMasker(BaseEstimator):
 
         img = self._reporting_data["images"]
         if img:
-            img = _compute_mean_image(img)
-            vmin, vmax = _get_min_max(img)
+            img = compute_mean_surface_image(img)
+            vmin, vmax = get_min_max_surface_image(img)
 
         views = ["lateral", "medial"]
         hemispheres = ["left", "right"]

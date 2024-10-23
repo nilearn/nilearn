@@ -17,9 +17,9 @@ from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.experimental.surface._surface_image import SurfaceImage
 from nilearn.maskers._utils import (
-    _compute_mean_image,
-    _get_min_max,
     check_same_n_vertices,
+    compute_mean_surface_image,
+    get_min_max_surface_image,
 )
 
 
@@ -326,8 +326,8 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         else:
             background_data = self.mask_img_
 
-        background_data = _compute_mean_image(background_data)
-        vmin, vmax = _get_min_max(background_data)
+        background_data = compute_mean_surface_image(background_data)
+        vmin, vmax = get_min_max_surface_image(background_data)
 
         views = ["lateral", "medial"]
         hemispheres = ["left", "right"]

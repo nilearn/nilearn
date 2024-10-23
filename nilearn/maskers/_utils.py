@@ -45,8 +45,8 @@ def check_same_n_vertices(mesh_1: PolyMesh, mesh_2: PolyMesh) -> None:
             )
 
 
-def _compute_mean_image(img: SurfaceImage):
-    """Compute mean of the surface (for 'time series')."""
+def compute_mean_surface_image(img: SurfaceImage):
+    """Compute mean of surface image over time points (for 'time series')."""
     if len(img.shape) <= 1:
         return img
     for part, value in img.data.parts.items():
@@ -54,7 +54,7 @@ def _compute_mean_image(img: SurfaceImage):
     return img
 
 
-def _get_min_max(img: SurfaceImage):
+def get_min_max_surface_image(img: SurfaceImage):
     """Get min and max across hemisphere for a SurfaceImage."""
     vmin = min(min(x) for x in img.data.parts.values())
     vmax = max(max(x) for x in img.data.parts.values())
