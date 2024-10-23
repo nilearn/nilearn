@@ -451,12 +451,12 @@ def test_infer_effect_maps(tmp_path, shape_4d_default):
     assert len(_infer_effect_maps(second_level_input, contrast)) == 2
 
 
-def test_infer_effect_maps_error(tmp_path, shape_4d_default):
+def test_infer_effect_maps_error(tmp_path, shape_3d_default):
     """Check error raised when inferring 'type' for the images.
 
     For example if the image mapped in a dataframe does not exist.
     """
-    shapes = [shape_4d_default, shape_4d_default]
+    shapes = [(*shape_3d_default, 5), (*shape_3d_default, 6)]
     _, fmri_data, _ = write_fake_fmri_data_and_design(
         shapes, file_path=tmp_path
     )

@@ -105,9 +105,9 @@ def test_high_level_glm_one_run(shape_4d_default):
     assert isinstance(z1, Nifti1Image)
 
 
-def test_explicit_fixed_effects(tmp_path, shape_4d_default):
+def test_explicit_fixed_effects(tmp_path, shape_3d_default):
     """Test the fixed effects performed manually/explicitly."""
-    shapes, rk = [shape_4d_default, shape_4d_default], 3
+    shapes, rk = [(*shape_3d_default, 5), (*shape_3d_default, 6)], 3
     mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(
         shapes, rk, file_path=tmp_path
     )
@@ -166,9 +166,9 @@ def test_explicit_fixed_effects(tmp_path, shape_4d_default):
         compute_fixed_effects(contrasts, variance, mask, dofs=[100])
 
 
-def test_explicit_fixed_effects_without_mask(tmp_path, shape_4d_default):
+def test_explicit_fixed_effects_without_mask(tmp_path, shape_3d_default):
     """Test the fixed effects performed manually/explicitly with no mask."""
-    shapes, rk = [shape_4d_default, shape_4d_default], 3
+    shapes, rk = [(*shape_3d_default, 5), (*shape_3d_default, 6)], 3
     _, fmri_data, design_matrices = write_fake_fmri_data_and_design(
         shapes, rk, file_path=tmp_path
     )
@@ -211,8 +211,8 @@ def test_explicit_fixed_effects_without_mask(tmp_path, shape_4d_default):
     )
 
 
-def test_high_level_glm_with_data(tmp_path, shape_4d_default):
-    shapes, rk = [shape_4d_default, shape_4d_default], 3
+def test_high_level_glm_with_data(tmp_path, shape_3d_default):
+    shapes, rk = [(*shape_3d_default, 5), (*shape_3d_default, 6)], 3
     _, fmri_data, design_matrices = write_fake_fmri_data_and_design(
         shapes, rk, file_path=tmp_path
     )
@@ -227,8 +227,8 @@ def test_high_level_glm_with_data(tmp_path, shape_4d_default):
     assert get_data(z_image).std() < 3.0
 
 
-def test_high_level_glm_with_data_with_mask(tmp_path, shape_4d_default):
-    shapes, rk = [shape_4d_default, shape_4d_default], 3
+def test_high_level_glm_with_data_with_mask(tmp_path, shape_3d_default):
+    shapes, rk = [(*shape_3d_default, 5), (*shape_3d_default, 6)], 3
     mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(
         shapes, rk, file_path=tmp_path
     )
@@ -299,8 +299,8 @@ def test_fmri_inputs_type_design_matrices_smoke(tmp_path, shape_4d_default):
     )
 
 
-def test_high_level_glm_with_paths(tmp_path, shape_4d_default):
-    shapes, rk = [shape_4d_default, shape_4d_default], 3
+def test_high_level_glm_with_paths(tmp_path, shape_3d_default):
+    shapes, rk = [(*shape_3d_default, 5), (*shape_3d_default, 6)], 3
     mask_file, fmri_files, design_files = write_fake_fmri_data_and_design(
         shapes, rk, file_path=tmp_path
     )
@@ -313,9 +313,9 @@ def test_high_level_glm_with_paths(tmp_path, shape_4d_default):
     assert get_data(z_image).std() < 3.0
 
 
-def test_high_level_glm_null_contrasts(shape_4d_default):
+def test_high_level_glm_null_contrasts(shape_3d_default):
     # test that contrast computation is resilient to 0 values.
-    shapes, rk = [shape_4d_default, shape_4d_default], 3
+    shapes, rk = [(*shape_3d_default, 5), (*shape_3d_default, 6)], 3
     _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk
     )
