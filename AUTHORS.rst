@@ -146,6 +146,7 @@ Some other past or present contributors are:
 * `Maximilian Cosmo Sitter`_
 * `Mehdi Rahim`_: Air Liquide, France
 * `Mia Zwally`_: DSST, National Institute of Mental Health, USA
+* `Micha Burkhardt`_: University of Oldenburg, Germany
 * `Michael Eickenberg`_: Flatiron Institute, New-York, New-York, USA
 * `Michael Hanke`_: Psychoinformatics, Forschungszentrum Jülich GmbH, Jülich, Germany
 * `Michael Notter`_: ams OSRAM, Martigny, Lausanne, Switzerland
