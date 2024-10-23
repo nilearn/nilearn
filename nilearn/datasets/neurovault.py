@@ -1380,8 +1380,8 @@ def _json_add_collection_dir(file_name, force=True):
     loaded = _json_from_file(file_name)
     set_func = loaded.__setitem__ if force else loaded.setdefault
     dir_path = file_name.parent
-    set_func("absolute_path", str(dir_path.absolute()))
-    set_func("relative_path", str(dir_path))
+    set_func("absolute_path", dir_path.absolute())
+    set_func("relative_path", dir_path)
     return loaded
 
 
@@ -1393,11 +1393,11 @@ def _json_add_im_files_paths(file_name, force=True):
     dir_path = file_name.parent
     image_file_name = f"image_{loaded['id']}.nii.gz"
     words_file_name = f"neurosynth_words_for_image_{loaded['id']}.json"
-    set_func("relative_path", str(dir_path / image_file_name))
+    set_func("relative_path", dir_path / image_file_name)
     if (dir_path / words_file_name).is_file():
         set_func(
             "ns_words_relative_path",
-            str(dir_path / words_file_name),
+            dir_path / words_file_name,
         )
     loaded = _add_absolute_paths(dir_path.parent, loaded, force=force)
     return loaded
@@ -1430,7 +1430,7 @@ def _download_collection(collection, download_params):
     collection_name = f"collection_{collection_id}"
     collection_dir = Path(download_params["nv_data_dir"]) / collection_name
     collection["relative_path"] = collection_name
-    collection["absolute_path"] = str(collection_dir.absolute())
+    collection["absolute_path"] = collection_dir.absolute()
 
     if not collection_dir.is_dir():
         collection_dir.mkdir(parents=True)

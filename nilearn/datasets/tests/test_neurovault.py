@@ -626,8 +626,8 @@ def test_json_add_collection_dir(tmp_path):
         coll_file.write(json.dumps({"id": 1}).encode("utf-8"))
     loaded = neurovault._json_add_collection_dir(coll_file_name)
 
-    assert loaded["absolute_path"] == str(coll_dir.absolute())
-    assert loaded["relative_path"] == str(coll_dir)
+    assert loaded["absolute_path"] == coll_dir.absolute()
+    assert loaded["relative_path"] == coll_dir
 
 
 def test_json_add_im_files_paths(tmp_path):
@@ -638,7 +638,7 @@ def test_json_add_im_files_paths(tmp_path):
         im_file.write(json.dumps({"id": 1}).encode("utf-8"))
     loaded = neurovault._json_add_im_files_paths(im_file_name)
 
-    assert loaded["relative_path"] == str(coll_dir / "image_1.nii.gz")
+    assert loaded["relative_path"] == coll_dir / "image_1.nii.gz"
     assert loaded.get("neurosynth_words_relative_path") is None
 
 
@@ -842,7 +842,7 @@ def test_fetch_neurovault_ids(tmp_path):
         Path(modified_meta["absolute_path"]).parent
         / f"image_{img_ids[0]}_metadata.json"
     )
-    # convert Path to str for json serialization
+    # convert Path to str for JSON serialization
     modified_meta = {
         k: str(v) if isinstance(v, Path) else v
         for k, v in modified_meta.items()
