@@ -52,7 +52,7 @@ def _get_min_max(img: SurfaceImage):
     return vmin, vmax
 
 
-class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
+class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
     """Extract data from a SurfaceImage."""
 
     mask_img: SurfaceImage | None
