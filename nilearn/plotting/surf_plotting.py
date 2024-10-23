@@ -19,6 +19,7 @@ from nilearn import image, surface
 from nilearn._utils import check_niimg_3d, compare_version, fill_doc
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn.experimental.surface import PolyMesh, SurfaceImage
+from nilearn.plotting._utils import check_surface_plotting_inputs
 from nilearn.plotting.cm import cold_hot, mix_colormaps
 from nilearn.plotting.displays._figures import PlotlySurfaceFigure
 from nilearn.plotting.displays._slicers import _get_cbar_ticks
@@ -119,83 +120,6 @@ LAYOUT = {
     "hovermode": False,
     "margin": {"l": 0, "r": 0, "b": 0, "t": 0, "pad": 0},
 }
-
-DEFAULT_HEMI = "left"
-
-
-def check_surface_plotting_inputs(
-    surf_map,
-    surf_mesh,
-    hemi=DEFAULT_HEMI,
-    bg_map=None,
-    map_var_name="surf_map",
-    mesh_var_name="surf_mesh",
-):
-    """Check inputs for surface plotting.
-
-    Where possible this will 'convert' the inputs
-    if SurfaceImage or PolyMesh objects are passed
-    to be able to give them to the surface plotting functions.
-
-    Returns
-    -------
-    surf_map : numpy.ndarray
-        Description of the output.
-
-    surf_mesh : numpy.ndarray
-        Description of the output.
-
-    bg_map : str | pathlib.Path | numpy.ndarray | None
-
-    """
-    if surf_mesh is None and surf_map is None:
-        raise TypeError(
-            f"{mesh_var_name} and {map_var_name} cannot both be None."
-            f"If you want to pass {mesh_var_name}=None, "
-            f"then {mesh_var_name} must be a SurfaceImage instance."
-        )
-
-    if surf_mesh is None and not isinstance(surf_map, SurfaceImage):
-        raise TypeError(
-            f"If you want to pass {mesh_var_name}=None, "
-            f"then {mesh_var_name} must be a SurfaceImage instance."
-        )
-
-    if isinstance(surf_mesh, PolyMesh):
-        _check_hemi_present(surf_mesh, hemi)
-        surf_mesh = surf_mesh.parts[hemi]
-
-    if isinstance(surf_map, SurfaceImage):
-        if surf_mesh is None:
-            surf_mesh = surf_map.mesh.parts[hemi]
-        surf_map = surf_map.data.parts[hemi]
-
-    bg_map = _check_bg_map(bg_map, hemi)
-
-    return surf_map, surf_mesh, bg_map
-
-
-def _check_bg_map(bg_map, hemi):
-    """Get the requested hemisphere if bg_map is a SurfaceImage.
-
-    bg_map: Any
-
-    hemi: str
-
-    Returns
-    -------
-    bg_map : str | pathlib.Path | numpy.ndarray | None
-    """
-    if isinstance(bg_map, SurfaceImage):
-        assert bg_map.data.parts[hemi] is not None
-        bg_map = bg_map.data.parts[hemi]
-    return bg_map
-
-
-def _check_hemi_present(mesh, hemi):
-    """Check that a given hemisphere exists in a PolyMesh."""
-    if hemi not in mesh.parts:
-        raise ValueError(f"{hemi} must be present in mesh")
 
 
 def _get_camera_view_from_string_view(hemi, view):
@@ -333,7 +257,7 @@ def _plot_surf_plotly(
     faces,
     surf_map=None,
     bg_map=None,
-    hemi=DEFAULT_HEMI,
+    hemi="left",
     view="lateral",
     cmap=None,
     symmetric_cmap=True,
@@ -668,7 +592,7 @@ def _plot_surf_matplotlib(
     faces,
     surf_map=None,
     bg_map=None,
-    hemi=DEFAULT_HEMI,
+    hemi="left",
     view="lateral",
     cmap=None,
     colorbar=False,
@@ -810,7 +734,7 @@ def plot_surf(
     surf_mesh=None,
     surf_map=None,
     bg_map=None,
-    hemi=DEFAULT_HEMI,
+    hemi="left",
     view="lateral",
     engine="matplotlib",
     cmap=None,
@@ -1245,7 +1169,7 @@ def plot_surf_contours(
     if hemi is None and (
         isinstance(roi_map, SurfaceImage) or isinstance(surf_mesh, PolyMesh)
     ):
-        hemi = DEFAULT_HEMI
+        hemi = "left"
     elif hemi is not None and not (
         isinstance(roi_map, SurfaceImage) or isinstance(surf_mesh, PolyMesh)
     ):
@@ -1362,7 +1286,7 @@ def plot_surf_stat_map(
     surf_mesh=None,
     stat_map=None,
     bg_map=None,
-    hemi=DEFAULT_HEMI,
+    hemi="left",
     view="lateral",
     engine="matplotlib",
     threshold=None,
@@ -1948,7 +1872,7 @@ def plot_surf_roi(
     surf_mesh=None,
     roi_map=None,
     bg_map=None,
-    hemi=DEFAULT_HEMI,
+    hemi="left",
     view="lateral",
     engine="matplotlib",
     avg_method=None,

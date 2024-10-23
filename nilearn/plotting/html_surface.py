@@ -13,6 +13,7 @@ from nilearn._utils import fill_doc
 from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn.experimental.surface import PolyMesh, SurfaceImage
 from nilearn.plotting import cm
+from nilearn.plotting._utils import check_surface_plotting_inputs
 from nilearn.plotting.html_document import HTMLDocument
 from nilearn.plotting.js_plotting_utils import (
     add_js_lib,
@@ -20,10 +21,6 @@ from nilearn.plotting.js_plotting_utils import (
     get_html_template,
     mesh_to_plotly,
     to_color_strings,
-)
-from nilearn.plotting.surf_plotting import (
-    DEFAULT_HEMI,
-    check_surface_plotting_inputs,
 )
 
 
@@ -568,7 +565,7 @@ def view_surf(
     if hemi is None and (
         isinstance(surf_map, SurfaceImage) or isinstance(surf_mesh, PolyMesh)
     ):
-        hemi = DEFAULT_HEMI
+        hemi = "left"
     elif hemi is not None and not (
         isinstance(surf_map, SurfaceImage) or isinstance(surf_mesh, PolyMesh)
     ):

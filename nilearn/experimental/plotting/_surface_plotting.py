@@ -2,14 +2,13 @@ from __future__ import annotations
 
 from nilearn import plotting as old_plotting
 from nilearn._utils.docs import fill_doc
-from nilearn.plotting.surf_plotting import DEFAULT_HEMI
 
 
 def plot_surf(
     surf_map,
     surf_mesh=None,
     bg_map=None,
-    hemi=DEFAULT_HEMI,
+    hemi="left",
     **kwargs,
 ):
     """Plot surfaces with optional background and data."""
@@ -27,7 +26,7 @@ def plot_surf_stat_map(
     stat_map,
     surf_mesh=None,
     bg_map=None,
-    hemi=DEFAULT_HEMI,
+    hemi="left",
     **kwargs,
 ):
     """Plot a stats map on a surface :term:`mesh` with optional background."""
@@ -43,7 +42,7 @@ def plot_surf_stat_map(
 @fill_doc
 def plot_surf_contours(
     roi_map,
-    hemi=DEFAULT_HEMI,
+    hemi="left",
     surf_mesh=None,
     **kwargs,
 ):
@@ -61,7 +60,7 @@ def plot_surf_roi(
     roi_map,
     surf_mesh=None,
     bg_map=None,
-    hemi=DEFAULT_HEMI,
+    hemi="left",
     **kwargs,
 ):
     """Plot ROI on a surface :term:`mesh` with optional background."""
@@ -79,7 +78,7 @@ def view_surf(
     surf_mesh,
     surf_map=None,
     bg_map=None,
-    hemi=DEFAULT_HEMI,
+    hemi="left",
     **kwargs,
 ):
     """Insert a surface plot of a surface map into an HTML page."""
