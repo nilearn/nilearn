@@ -108,7 +108,7 @@ def test_fetch_atlas_source():
 
 
 def _write_sample_atlas_metadata(ho_dir, filename, is_symm):
-    with open(Path(ho_dir, f"{filename}.xml"), "w") as dm:
+    with Path(ho_dir, f"{filename}.xml").open("w") as dm:
         if not is_symm:
             dm.write(
                 "<?xml version='1.0' encoding='us-ascii'?>\n"
