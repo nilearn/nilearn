@@ -104,7 +104,7 @@ fig = plot_surf_stat_map(
 )
 
 # Display the figure as with matplotlib figures
-# fig.show()
+fig.show()
 
 # %%
 # When using ``matplolib`` as the plotting engine, a standard
@@ -124,9 +124,9 @@ fig = plot_surf_stat_map(
 # Plot 3D image for comparison
 # ----------------------------
 
-from nilearn import plotting
+from nilearn.plotting import plot_glass_brain, plot_stat_map, show
 
-plotting.plot_glass_brain(
+plot_glass_brain(
     stat_map_img=stat_img,
     display_mode="r",
     plot_abs=False,
@@ -134,7 +134,7 @@ plotting.plot_glass_brain(
     threshold=2.0,
 )
 
-plotting.plot_stat_map(
+plot_stat_map(
     stat_map_img=stat_img,
     display_mode="x",
     threshold=1.0,
@@ -179,18 +179,29 @@ figure = plot_surf_stat_map(
     colorbar=True,
     threshold=1.0,
     bg_map=fsaverage_sulcal,
+    engine=engine,
 )
+if engine == "matplotlib":
+    plot_surf_contours(
+        roi_map=destrieux_atlas,
+        hemi="right",
+        labels=labels,
+        levels=regions_indices,
+        figure=figure,
+        legend=True,
+        colors=["g", "k"],
+    )
+    show()
+elif engine == "plotly":
+    figure.add_contours(
+        roi_map=destrieux_atlas.data.parts["right"],
+        levels=regions_indices,
+        labels=labels,
+        lines=[{"width": 5}],
+    )
+    # view the contours in a browser
+    # figure.show()
 
-plot_surf_contours(
-    roi_map=destrieux_atlas,
-    hemi="right",
-    labels=labels,
-    levels=regions_indices,
-    figure=figure,
-    legend=True,
-    colors=["g", "k"],
-)
-plotting.show()
 
 # %%
 # Plot with higher-resolution mesh
@@ -235,8 +246,9 @@ plot_surf_stat_map(
 # If no ``surf_mesh`` is given,
 # :func:`~nilearn.plotting.plot_img_on_surf` projects the images onto
 # `FreeSurfer <https://surfer.nmr.mgh.harvard.edu/>`_\'s fsaverage5.
+from nilearn.plotting import plot_img_on_surf
 
-plotting.plot_img_on_surf(
+plot_img_on_surf(
     stat_img,
     views=["lateral", "medial"],
     hemispheres=["left", "right"],
@@ -245,7 +257,7 @@ plotting.plot_img_on_surf(
     title="multiple views of the 3D volume",
     bg_on_data=True,
 )
-plotting.show()
+show()
 
 # %%
 # 3D visualization in a web browser
@@ -275,8 +287,9 @@ view
 
 # We don't need to do the projection ourselves, we can use
 # :func:`~nilearn.plotting.view_img_on_surf`:
+from nilearn.plotting import view_img_on_surf
 
-view = plotting.view_img_on_surf(stat_img, threshold="90%")
+view = view_img_on_surf(stat_img, threshold="90%")
 
 view
 # view.open_in_browser()
@@ -295,7 +308,7 @@ view
 
 destrieux = datasets.fetch_atlas_destrieux_2009(legacy_format=False)
 
-view = plotting.view_img_on_surf(
+view = view_img_on_surf(
     destrieux.maps,
     surf_mesh="fsaverage",
     cmap="tab20",
