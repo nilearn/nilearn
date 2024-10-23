@@ -9,15 +9,7 @@ import numpy as np
 
 
 def _asarray(arr, dtype=None, order=None):
-    # np.asarray does not take "K" and "A" orders in version 1.3.0
-    if order in ("K", "A", None):
-        if (arr.itemsize == 1 and dtype in (bool, np.bool_)) or (
-            arr.dtype in (bool, np.bool_) and np.dtype(dtype).itemsize == 1
-        ):
-            ret = arr.view(dtype=dtype)
-        else:
-            ret = np.asarray(arr, dtype=dtype)
-    elif (
+    if (
         (arr.itemsize == 1 and dtype in (bool, np.bool_))
         or (arr.dtype in (bool, np.bool_) and np.dtype(dtype).itemsize == 1)
     ) and (
@@ -25,6 +17,7 @@ def _asarray(arr, dtype=None, order=None):
         and arr.flags["F_CONTIGUOUS"]
         or order == "C"
         and arr.flags["C_CONTIGUOUS"]
+        or order in ("K", "A", None)
     ):
         ret = arr.view(dtype=dtype)
     else:
