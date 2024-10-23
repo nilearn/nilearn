@@ -838,7 +838,7 @@ def add_metadata_to_bids_dataset(bids_path, metadata, json_file=None):
     else:
         json_file = Path(bids_path) / json_file
 
-    with open(json_file, "w") as f:
+    with json_file.open("w") as f:
         json.dump(metadata, f)
 
     return json_file
@@ -1422,7 +1422,7 @@ def _write_bids_derivative_func(
         confounds.to_csv(
             confounds_path, sep="\t", index=None, encoding="utf-8"
         )
-        with open(confounds_path.with_suffix(".json"), "w") as f:
+        with confounds_path.with_suffix(".json").open("w") as f:
             json.dump(metadata, f)
 
     fields["suffix"] = "bold"

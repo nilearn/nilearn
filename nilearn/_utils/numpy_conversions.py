@@ -3,10 +3,9 @@
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 
 import csv
+from pathlib import Path
 
 import numpy as np
-
-from .helpers import stringify_path
 
 
 def _asarray(arr, dtype=None, order=None):
@@ -156,12 +155,6 @@ def csv_to_array(csv_path, delimiters=" \t,;", **kwargs):
     array: numpy.ndarray
         An array containing the data loaded from the CSV file.
     """
-    csv_path = stringify_path(csv_path)
-    if not isinstance(csv_path, str):
-        raise TypeError(
-            f"CSV must be a file path. Got a CSV of type: {type(csv_path)}"
-        )
-
     try:
         # First, we try genfromtxt which works in most cases.
         array = np.genfromtxt(csv_path, loose=False, encoding=None, **kwargs)
@@ -170,7 +163,7 @@ def csv_to_array(csv_path, delimiters=" \t,;", **kwargs):
         # because the delimiter is wrong.
         # In that case, we try to guess the delimiter.
         try:
-            with open(csv_path) as csv_file:
+            with Path(csv_path).open() as csv_file:
                 dialect = csv.Sniffer().sniff(csv_file.readline(), delimiters)
         except csv.Error as e:
             raise TypeError(
