@@ -120,6 +120,8 @@ LAYOUT = {
     "margin": {"l": 0, "r": 0, "b": 0, "t": 0, "pad": 0},
 }
 
+DEFAULT_HEMI = "left"
+
 
 def _check_inputs(
     surf_map,
@@ -144,6 +146,19 @@ def _check_inputs(
     bg_map : str | pathlib.Path | numpy.ndarray | None
 
     """
+    if surf_mesh is None and surf_map is None:
+        raise TypeError(
+            "surf_mesh and surf_map cannot both be None."
+            "If you want to pass surf_mesh=None, "
+            "then surf_map must be a SurfaceImage instance."
+        )
+
+    if surf_mesh is None and not isinstance(surf_map, SurfaceImage):
+        raise TypeError(
+            "If you want to pass surf_mesh=None, "
+            "then surf_map must be a SurfaceImage instance."
+        )
+
     if isinstance(surf_mesh, PolyMesh):
         _check_hemi_present(surf_mesh, hemi)
         surf_mesh = surf_mesh.parts[hemi]
@@ -316,7 +331,7 @@ def _plot_surf_plotly(
     faces,
     surf_map=None,
     bg_map=None,
-    hemi="left",
+    hemi=DEFAULT_HEMI,
     view="lateral",
     cmap=None,
     symmetric_cmap=True,
@@ -651,7 +666,7 @@ def _plot_surf_matplotlib(
     faces,
     surf_map=None,
     bg_map=None,
-    hemi="left",
+    hemi=DEFAULT_HEMI,
     view="lateral",
     cmap=None,
     colorbar=False,
@@ -790,10 +805,10 @@ def _plot_surf_matplotlib(
 
 @fill_doc
 def plot_surf(
-    surf_mesh,
+    surf_mesh=None,
     surf_map=None,
     bg_map=None,
-    hemi="left",
+    hemi=DEFAULT_HEMI,
     view="lateral",
     engine="matplotlib",
     cmap=None,
@@ -821,7 +836,8 @@ def plot_surf(
 
     Parameters
     ----------
-    surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray` or Mesh
+    surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`\
+                or a Mesh, or a PolyMesh, or None
         Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
@@ -829,26 +845,37 @@ def plot_surf(
         of the :term:`mesh` :term:`vertices<vertex>`,
         the second containing the indices (into coords)
         of the :term:`mesh` :term:`faces`,
-        or a Mesh object with "coordinates" and "faces" attributes.
+        or a Mesh object with "coordinates" and "faces" attributes,
+        or a PolyMesh object,
+        or None.
+        If None is passed, then ``surf_map`` must be a SurfaceImage instance
+        and the mesh from that SurfaceImage instance will be used.
 
-    surf_map : :obj:`str` or :class:`numpy.ndarray` or None, default=None
+    surf_map : :obj:`str` or :class:`numpy.ndarray` or SurfaceIamge or None,
+               \\ default=None
         Data to be displayed on the surface :term:`mesh`.
         Can be a file
         (valid formats are .gii, .mgz, .nii, .nii.gz,
         or Freesurfer specific files such as
         .thickness, .area, .curv, .sulc, .annot, .label) or
-        a Numpy array with a value for each :term:`vertex` of the `surf_mesh`.
+        a Numpy array with a value for each :term:`vertex` of the `surf_mesh`,
+        or a SurfaceImage instance.
+        If None is passed for ``surf_mesh``,
+        then the mesh from the SurfaceImage will be used.
 
-    bg_map : :obj:`str` or :class:`numpy.ndarray` or None, default=None
-        Background image to be plotted on the :term:`mesh` underneath the
-        surf_data in greyscale, most likely a sulcal depth map for
-        realistic shading.
-        If the map contains values outside [0, 1], it will be
-        rescaled such that all values are in [0, 1]. Otherwise,
-        it will not be modified.
+    bg_map : :obj:`str` or :class:`numpy.ndarray` or SurfaceIamge or None,\
+             default=None
+        Background image to be plotted on the :term:`mesh`
+        underneath the surf_data in greyscale,
+        most likely a sulcal depth map for realistic shading.
+        If the map contains values outside [0, 1],
+        it will be rescaled such that all values are in [0, 1].
+        Otherwise, it will not be modified.
 
     %(hemi)s
+
     %(view)s
+
     engine : {'matplotlib', 'plotly'}, default='matplotlib'
 
         .. versionadded:: 0.9.0
@@ -871,6 +898,7 @@ def plot_surf(
 
     %(cmap)s
         If None, matplotlib default will be chosen.
+
     symmetric_cmap : :obj:`bool`, default=False
         Whether to use a symmetric colormap or not.
 
@@ -882,6 +910,7 @@ def plot_surf(
 
     %(colorbar)s
         Default=False.
+
     %(avg_method)s
 
         .. note::
@@ -913,7 +942,9 @@ def plot_surf(
         Default=1.
 
     %(vmin)s
+
     %(vmax)s
+
     cbar_vmin : :obj:`float` or None, default=None
         Lower bound for the colorbar.
         If None, the value will be set from the data.
@@ -935,12 +966,14 @@ def plot_surf(
         .. versionadded:: 0.7.1
 
     %(title)s
+
     title_font_size : :obj:`int`, default=18
         Size of the title font (only implemented for the plotly engine).
 
         .. versionadded:: 0.9.0
 
     %(output_file)s
+
     axes : instance of matplotlib axes or None, default=None
         The axes instance to plot to. The projection must be '3d' (e.g.,
         `figure, axes = plt.subplots(subplot_kw={'projection': '3d'})`,
@@ -989,6 +1022,10 @@ def plot_surf(
         "cbar_vmax": cbar_vmax,
         "alpha": alpha,
     }
+
+    surf_map, surf_mesh, bg_map = _check_inputs(
+        surf_map, surf_mesh, hemi, bg_map
+    )
 
     check_extensions(surf_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
 
@@ -1281,7 +1318,7 @@ def plot_surf_stat_map(
     surf_mesh,
     stat_map,
     bg_map=None,
-    hemi="left",
+    hemi=DEFAULT_HEMI,
     view="lateral",
     engine="matplotlib",
     threshold=None,
@@ -1846,7 +1883,7 @@ def plot_surf_roi(
     surf_mesh,
     roi_map,
     bg_map=None,
-    hemi="left",
+    hemi=DEFAULT_HEMI,
     view="lateral",
     engine="matplotlib",
     avg_method=None,
