@@ -1170,18 +1170,21 @@ def plot_surf_contours(
         isinstance(roi_map, SurfaceImage) or isinstance(surf_mesh, PolyMesh)
     ):
         hemi = "left"
-    elif hemi is not None and not (
-        isinstance(roi_map, SurfaceImage) or isinstance(surf_mesh, PolyMesh)
+    elif (
+        hemi is not None
+        and not isinstance(roi_map, SurfaceImage)
+        and not isinstance(surf_mesh, PolyMesh)
     ):
         warn(
-            UserWarning,
-            (
+            category=UserWarning,
+            message=(
                 f"{hemi=} was passed "
                 f"with {type(roi_map)=} and {type(surf_mesh)=}.\n"
                 "This value will be ignored as it is only used when "
                 "'roi_map' is a SurfaceImage instance "
                 "and  / or 'surf_mesh' is a PolyMesh instance."
             ),
+            stacklevel=2,
         )
     roi_map, surf_mesh, _ = check_surface_plotting_inputs(
         roi_map, surf_mesh, hemi, map_var_name="roi_map"

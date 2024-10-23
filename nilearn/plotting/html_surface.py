@@ -566,18 +566,21 @@ def view_surf(
         isinstance(surf_map, SurfaceImage) or isinstance(surf_mesh, PolyMesh)
     ):
         hemi = "left"
-    elif hemi is not None and not (
-        isinstance(surf_map, SurfaceImage) or isinstance(surf_mesh, PolyMesh)
+    elif (
+        hemi is not None
+        and not isinstance(surf_map, SurfaceImage)
+        and not isinstance(surf_mesh, PolyMesh)
     ):
         warn(
-            UserWarning,
-            (
+            category=UserWarning,
+            message=(
                 f"{hemi=} was passed "
                 f"with {type(surf_map)=} and {type(surf_mesh)=}.\n"
                 "This value will be ignored as it is only used when "
                 "'roi_map' is a SurfaceImage instance "
                 "and  / or 'surf_mesh' is a PolyMesh instance."
             ),
+            stacklevel=2,
         )
     surf_map, surf_mesh, bg_map = check_surface_plotting_inputs(
         surf_map, surf_mesh, hemi, bg_map, map_var_name="surf_map"
