@@ -17,11 +17,11 @@ from nilearn.plotting.displays import PlotlySurfaceFigure, SurfaceFigure
 from nilearn.plotting.surf_plotting import (
     VALID_HEMISPHERES,
     VALID_VIEWS,
-    _check_inputs,
     _compute_facecolors_matplotlib,
     _get_ticks_matplotlib,
     _get_view_plot_surf_matplotlib,
     _get_view_plot_surf_plotly,
+    check_surface_plotting_inputs,
     plot_img_on_surf,
     plot_surf,
     plot_surf_contours,
@@ -196,10 +196,10 @@ EXPECTED_VIEW_MATPLOTLIB = {
 @pytest.mark.parametrize("bg_map", ["some_path", Path("some_path"), None])
 @pytest.mark.parametrize("surf_map", ["some_path", Path("some_path")])
 @pytest.mark.parametrize("surf_mesh", ["some_path", Path("some_path")])
-def test_check_inputs_no_change(surf_map, surf_mesh, bg_map):
+def testcheck_surface_plotting_inputs_no_change(surf_map, surf_mesh, bg_map):
     """Cover use cases where the inputs are not changed."""
     hemi = "left"
-    out_surf_map, out_surf_mesh, out_bg_map = _check_inputs(
+    out_surf_map, out_surf_mesh, out_bg_map = check_surface_plotting_inputs(
         surf_map, surf_mesh, hemi, bg_map
     )
     assert surf_map == out_surf_map
@@ -209,12 +209,12 @@ def test_check_inputs_no_change(surf_map, surf_mesh, bg_map):
 
 @pytest.mark.parametrize("bg_map", ["some_path", Path("some_path"), None])
 @pytest.mark.parametrize("mesh", [None])
-def test_check_inputs_extract_mesh_and_data(
+def testcheck_surface_plotting_inputs_extract_mesh_and_data(
     surf_img, mesh, bg_map, assert_surf_mesh_equal
 ):
     """Extract mesh and data when a SurfaceImage is passed."""
     hemi = "left"
-    out_surf_map, out_surf_mesh, out_bg_map = _check_inputs(
+    out_surf_map, out_surf_mesh, out_bg_map = check_surface_plotting_inputs(
         surf_map=surf_img((10,)),
         surf_mesh=mesh,
         hemi=hemi,
@@ -226,12 +226,12 @@ def test_check_inputs_extract_mesh_and_data(
 
 
 @pytest.mark.parametrize("bg_map", ["some_path", Path("some_path"), None])
-def test_check_inputs_extract_mesh_from_polymesh(
+def testcheck_surface_plotting_inputs_extract_mesh_from_polymesh(
     surf_img, surf_mesh, bg_map, assert_surf_mesh_equal
 ):
     """Extract mesh from Polymesh and data from SurfaceImage."""
     hemi = "left"
-    out_surf_map, out_surf_mesh, out_bg_map = _check_inputs(
+    out_surf_map, out_surf_mesh, out_bg_map = check_surface_plotting_inputs(
         surf_map=surf_img((10,)),
         surf_mesh=surf_mesh(),
         hemi=hemi,
@@ -242,10 +242,10 @@ def test_check_inputs_extract_mesh_from_polymesh(
     assert bg_map == out_bg_map
 
 
-def test_check_inputs_extract_bg_map_data(surf_img, surf_mesh):
+def testcheck_surface_plotting_inputs_extract_bg_map_data(surf_img, surf_mesh):
     """Extract background map data."""
     hemi = "left"
-    _, _, out_bg_map = _check_inputs(
+    _, _, out_bg_map = check_surface_plotting_inputs(
         surf_map=surf_img((10,)),
         surf_mesh=surf_mesh(),
         hemi=hemi,
@@ -254,10 +254,10 @@ def test_check_inputs_extract_bg_map_data(surf_img, surf_mesh):
     assert_array_equal(out_bg_map, surf_img().data.parts[hemi])
 
 
-def test_check_inputs_errors():
+def testcheck_surface_plotting_inputs_errors():
     """Make sure that plotting functions fail if wrong inputs are passed."""
     with pytest.raises(TypeError, match="cannot both be None"):
-        _check_inputs(surf_map=None, surf_mesh=None)
+        check_surface_plotting_inputs(surf_map=None, surf_mesh=None)
     with pytest.raises(TypeError, match="cannot both be None"):
         plot_surf(surf_map=None, surf_mesh=None)
     with pytest.raises(TypeError, match="cannot both be None"):
@@ -268,7 +268,7 @@ def test_check_inputs_errors():
         plot_surf_roi(roi_map=None, surf_mesh=None)
 
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
-        _check_inputs(surf_map=1, surf_mesh=None)
+        check_surface_plotting_inputs(surf_map=1, surf_mesh=None)
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
         plot_surf(surf_map=1, surf_mesh=None)
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):

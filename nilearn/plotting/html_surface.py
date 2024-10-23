@@ -21,7 +21,10 @@ from nilearn.plotting.js_plotting_utils import (
     mesh_to_plotly,
     to_color_strings,
 )
-from nilearn.plotting.surf_plotting import DEFAULT_HEMI, _check_inputs
+from nilearn.plotting.surf_plotting import (
+    DEFAULT_HEMI,
+    check_surface_plotting_inputs,
+)
 
 
 class SurfaceView(HTMLDocument):  # noqa: D101
@@ -579,7 +582,7 @@ def view_surf(
                 "and  / or 'surf_mesh' is a PolyMesh instance."
             ),
         )
-    surf_map, surf_mesh, bg_map = _check_inputs(
+    surf_map, surf_mesh, bg_map = check_surface_plotting_inputs(
         surf_map, surf_mesh, hemi, bg_map, map_var_name="surf_map"
     )
 

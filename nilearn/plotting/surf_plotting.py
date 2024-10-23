@@ -123,7 +123,7 @@ LAYOUT = {
 DEFAULT_HEMI = "left"
 
 
-def _check_inputs(
+def check_surface_plotting_inputs(
     surf_map,
     surf_mesh,
     hemi=DEFAULT_HEMI,
@@ -1025,7 +1025,7 @@ def plot_surf(
         "alpha": alpha,
     }
 
-    surf_map, surf_mesh, bg_map = _check_inputs(
+    surf_map, surf_mesh, bg_map = check_surface_plotting_inputs(
         surf_map, surf_mesh, hemi, bg_map
     )
 
@@ -1259,7 +1259,7 @@ def plot_surf_contours(
                 "and  / or 'surf_mesh' is a PolyMesh instance."
             ),
         )
-    roi_map, surf_mesh, _ = _check_inputs(
+    roi_map, surf_mesh, _ = check_surface_plotting_inputs(
         roi_map, surf_mesh, hemi, map_var_name="roi_map"
     )
 
@@ -1544,7 +1544,7 @@ def plot_surf_stat_map(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
-    stat_map, surf_mesh, bg_map = _check_inputs(
+    stat_map, surf_mesh, bg_map = check_surface_plotting_inputs(
         stat_map, surf_mesh, hemi, bg_map, map_var_name="stat_map"
     )
 
@@ -2116,7 +2116,7 @@ def plot_surf_roi(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
-    roi_map, surf_mesh, bg_map = _check_inputs(
+    roi_map, surf_mesh, bg_map = check_surface_plotting_inputs(
         roi_map, surf_mesh, hemi, bg_map
     )
 

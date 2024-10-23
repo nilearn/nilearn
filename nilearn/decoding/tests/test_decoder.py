@@ -298,7 +298,7 @@ def test_wrap_param_grid_is_none():
 @pytest.mark.parametrize(
     "model", [DecoderRegressor, Decoder, FREMRegressor, FREMClassifier]
 )
-def test_check_inputs_length(model):
+def testcheck_surface_plotting_inputs_length(model):
     iris = load_iris()
     X, y = iris.data, iris.target
     y = 2 * (y > 0) - 1
