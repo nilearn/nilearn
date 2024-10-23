@@ -39,7 +39,7 @@ def _get_metadata_from_bids(
         assert isinstance(json_files, list) and isinstance(
             json_files[0], (Path, str)
         )
-        with open(json_files[0]) as f:
+        with Path(json_files[0]).open() as f:
             specs = json.load(f)
         value = specs.get(field)
         if value is not None:
