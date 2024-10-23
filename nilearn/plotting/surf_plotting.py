@@ -1415,7 +1415,8 @@ def plot_surf_stat_map(
         then ``stat_map`` must be a SurfaceImage instance
         and its the mesh will be used for plotting.
 
-    bg_map : :obj:`str` or :class:`numpy.ndarray` or None, default=None
+    bg_map : :obj:`str` or :class:`numpy.ndarray` or SurfaceIamge or None,\
+             default=None
         Background image to be plotted on the :term:`mesh` underneath
         the stat_map in greyscale, most likely a sulcal depth map
         for realistic shading.
@@ -1944,8 +1945,8 @@ def plot_img_on_surf(
 
 @fill_doc
 def plot_surf_roi(
-    surf_mesh,
-    roi_map,
+    surf_mesh=None,
+    roi_map=None,
     bg_map=None,
     hemi=DEFAULT_HEMI,
     view="lateral",
@@ -1972,28 +1973,39 @@ def plot_surf_roi(
 
     Parameters
     ----------
-    surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray` or Mesh
+    surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`\
+                or a Mesh, or a PolyMesh, or None
         Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
-        a list of two Numpy arrays, the first containing the x-y-z
-        coordinates of the :term:`mesh` vertices,
-        the second containing the indices
-        (into coords) of the :term:`mesh` :term:`faces`,
-        or a Mesh object with "coordinates" and "faces" attributes.
+        a list of two Numpy arrays, the first containing the x-y-z coordinates
+        of the :term:`mesh` :term:`vertices<vertex>`,
+        the second containing the indices (into coords)
+        of the :term:`mesh` :term:`faces`,
+        or a Mesh object with "coordinates" and "faces" attributes,
+        or a PolyMesh object,
+        or None.
+        If None is passed, then ``surf_map`` must be a SurfaceImage instance
+        and the mesh from that SurfaceImage instance will be used.
 
     roi_map : :obj:`str` or :class:`numpy.ndarray` or \
-        :obj:`list` of :class:`numpy.ndarray`
+              :obj:`list` of :class:`numpy.ndarray` or SurfaceIamge or None, \
+              default=None
         ROI map to be displayed on the surface :term:`mesh`,
         can be a file
         (valid formats are .gii, .mgz, or
         Freesurfer specific files such as
         .thickness, .area, .curv, .sulc, .annot, .label) or
-        a Numpy array with a value for each :term:`vertex` of the `surf_mesh`.
+        a Numpy array with a value for each :term:`vertex` of the `surf_mesh`
+        or a SurfaceImage instance.
         The value at each vertex one inside the ROI and zero inside ROI, or an
         integer giving the label number for atlases.
+        If None is passed for ``surf_mesh``
+        then ``roi_map`` must be a SurfaceImage instance
+        and its the mesh will be used for plotting.
 
-    bg_map :  :obj:`str` or :class:`numpy.ndarray` or None, default=None
+    bg_map : :obj:`str` or :class:`numpy.ndarray` or SurfaceIamge or None,\
+             default=None
         Background image to be plotted on the :term:`mesh` underneath
         the stat_map in greyscale, most likely a sulcal depth map for
         realistic shading.
@@ -2002,7 +2014,9 @@ def plot_surf_roi(
         it will not be modified.
 
     %(hemi)s
+
     %(view)s
+
     engine : {'matplotlib', 'plotly'}, default='matplotlib'
 
         .. versionadded:: 0.9.0
@@ -2034,8 +2048,10 @@ def plot_surf_roi(
     threshold : a number or None, default=1e-14
         Threshold regions that are labelled 0.
         If you want to use 0 as a label, set threshold to None.
+
     %(cmap)s
         Default='gist_ncar'.
+
     %(cbar_tick_format)s
         Default="auto" which defaults to integers format:
 
@@ -2065,12 +2081,14 @@ def plot_surf_roi(
             ``matplotlib`` engine.
 
     %(title)s
+
     title_font_size : :obj:`int`, default=18
         Size of the title font (only implemented for the plotly engine).
 
         .. versionadded:: 0.9.0
 
     %(output_file)s
+
     axes : Axes instance or None, default=None
         The axes instance to plot to. The projection must be '3d' (e.g.,
         `plt.subplots(subplot_kw={'projection': '3d'})`).
@@ -2097,8 +2115,11 @@ def plot_surf_roi(
     nilearn.plotting.plot_surf: For brain surface visualization.
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
-
     """
+    roi_map, surf_mesh, bg_map = _check_inputs(
+        roi_map, surf_mesh, hemi, bg_map
+    )
+
     if engine == "matplotlib" and avg_method is None:
         avg_method = "median"
 

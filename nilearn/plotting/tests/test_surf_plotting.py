@@ -257,13 +257,15 @@ def test_check_inputs_extract_bg_map_data(surf_img, surf_mesh):
 def test_check_inputs_errors():
     """Make sure that plotting functions fail if wrong inputs are passed."""
     with pytest.raises(TypeError, match="cannot both be None"):
-        _check_inputs(surf_map=None, surf_mesh=None, hemi="left")
+        _check_inputs(surf_map=None, surf_mesh=None)
     with pytest.raises(TypeError, match="cannot both be None"):
         plot_surf(surf_map=None, surf_mesh=None)
     with pytest.raises(TypeError, match="cannot both be None"):
         plot_surf_stat_map(stat_map=None, surf_mesh=None)
     with pytest.raises(TypeError, match="cannot both be None"):
         plot_surf_contours(roi_map=None, surf_mesh=None)
+    with pytest.raises(TypeError, match="cannot both be None"):
+        plot_surf_roi(roi_map=None, surf_mesh=None)
 
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
         _check_inputs(surf_map=1, surf_mesh=None)
@@ -273,6 +275,17 @@ def test_check_inputs_errors():
         plot_surf_stat_map(stat_map=1, surf_mesh=None)
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
         plot_surf_contours(roi_map=1, surf_mesh=None)
+    with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
+        plot_surf_roi(roi_map=1, surf_mesh=None)
+
+
+def test_plot_surf_contours_warning_hemi():
+    """Test warning that hemi will be ignored."""
+    mesh = generate_surf()
+    parcellation = np.zeros((mesh[0].shape[0],))
+    parcellation[mesh[1][3]] = 1
+    with pytest.warns(UserWarning, match="This value will be ignored"):
+        plot_surf_contours(mesh, parcellation, hemi="left")
 
 
 @pytest.mark.parametrize("full_view", EXPECTED_CAMERAS_PLOTLY)

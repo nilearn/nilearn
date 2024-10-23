@@ -61,14 +61,10 @@ def plot_surf_roi(
     roi_map,
     surf_mesh=None,
     bg_map=None,
-    hemi: str = DEFAULT_HEMI,
+    hemi=DEFAULT_HEMI,
     **kwargs,
 ):
     """Plot ROI on a surface :term:`mesh` with optional background."""
-    roi_map, surf_mesh, bg_map = _check_inputs(
-        roi_map, surf_mesh, hemi, bg_map
-    )
-
     return old_plotting.plot_surf_roi(
         surf_mesh=surf_mesh,
         roi_map=roi_map,
