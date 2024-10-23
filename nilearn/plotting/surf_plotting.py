@@ -777,7 +777,7 @@ def plot_surf(
         If None is passed, then ``surf_map`` must be a SurfaceImage instance
         and the mesh from that SurfaceImage instance will be used.
 
-    surf_map : :obj:`str` or :class:`numpy.ndarray` or SurfaceIamge or None, \
+    surf_map : :obj:`str` or :class:`numpy.ndarray` or SurfaceImage or None, \
                default=None
         Data to be displayed on the surface :term:`mesh`.
         Can be a file
@@ -790,7 +790,7 @@ def plot_surf(
         then ``surf_map`` must be a SurfaceImage instance
         and its the mesh will be used for plotting.
 
-    bg_map : :obj:`str` or :class:`numpy.ndarray` or SurfaceIamge or None,\
+    bg_map : :obj:`str` or :class:`numpy.ndarray` or SurfaceImage or None,\
              default=None
         Background image to be plotted on the :term:`mesh`
         underneath the surf_data in greyscale,
@@ -1339,7 +1339,7 @@ def plot_surf_stat_map(
         then ``stat_map`` must be a SurfaceImage instance
         and its the mesh will be used for plotting.
 
-    bg_map : :obj:`str` or :class:`numpy.ndarray` or SurfaceIamge or None,\
+    bg_map : :obj:`str` or :class:`numpy.ndarray` or SurfaceImage or None,\
              default=None
         Background image to be plotted on the :term:`mesh` underneath
         the stat_map in greyscale, most likely a sulcal depth map
@@ -1913,7 +1913,7 @@ def plot_surf_roi(
         and the mesh from that SurfaceImage instance will be used.
 
     roi_map : :obj:`str` or :class:`numpy.ndarray` or \
-              :obj:`list` of :class:`numpy.ndarray` or SurfaceIamge or None, \
+              :obj:`list` of :class:`numpy.ndarray` or SurfaceImage or None, \
               default=None
         ROI map to be displayed on the surface :term:`mesh`,
         can be a file
@@ -1928,7 +1928,7 @@ def plot_surf_roi(
         then ``roi_map`` must be a SurfaceImage instance
         and its the mesh will be used for plotting.
 
-    bg_map : :obj:`str` or :class:`numpy.ndarray` or SurfaceIamge or None,\
+    bg_map : :obj:`str` or :class:`numpy.ndarray` or SurfaceImage or None,\
              default=None
         Background image to be plotted on the :term:`mesh` underneath
         the stat_map in greyscale, most likely a sulcal depth map for

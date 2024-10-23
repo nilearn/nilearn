@@ -471,7 +471,7 @@ def view_surf(
         If None is passed, then ``surf_map`` must be a SurfaceImage instance
         and the mesh from that SurfaceImage instance will be used.
 
-    surf_map : :obj:`str` or :class:`numpy.ndarray`, or SurfaceIamge or None, \
+    surf_map : :obj:`str` or :class:`numpy.ndarray`, or SurfaceImage or None, \
                default=None
         Data to be displayed on the surface :term:`mesh`.
         Can be a file (valid formats are .gii, .mgz, .nii, .nii.gz,
