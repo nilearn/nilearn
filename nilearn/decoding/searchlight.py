@@ -155,8 +155,12 @@ def _group_iter_search_light(
     X : array-like of shape at least 2D
         data to fit.
 
-    y : array-like
-        target variable to predict.
+    y : array-like or None
+        Target variable to predict. If `y` is provided, it must be an array-like object
+        with the same length as the number of samples in `X`. When `y` is `None`, a dummy
+        target is generated internally with half the samples labeled as `0` and the other
+        half labeled as `1`. This is useful during transformations where the model is
+        applied without ground truth labels.
 
     groups : array-like, optional
         group label for each sample for cross validation.
