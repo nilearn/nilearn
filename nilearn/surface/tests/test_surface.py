@@ -71,18 +71,6 @@ class SurfaceLikeObject:
         return self._data
 
 
-def test_load_surf_data(tmp_path):
-    gifti_img = gifti.GiftiImage()
-    a = np.arange(5)
-    gifti_array = gifti.GiftiDataArray(a, datatype="float32")
-    gifti_img.add_gifti_data_array(gifti_array)
-    gifti_file = tmp_path / "a.gii"
-    gifti_img.to_filename(gifti_file)
-
-    read_a = surface.load_surf_data(gifti_file)
-    assert np.array_equal(a, read_a)
-
-
 def test_load_surf_data_numpy_gt_1pt23():
     """Test loading fsaverage surface.
 
@@ -93,7 +81,7 @@ def test_load_surf_data_numpy_gt_1pt23():
     https://github.com/nilearn/nilearn/issues/3638
     """
     fsaverage = datasets.fetch_surf_fsaverage()
-    surface.load_surf_data(fsaverage["pial_left"])
+    load_surf_data(fsaverage["pial_left"])
 
 
 def test_load_surf_data_array():
@@ -583,7 +571,7 @@ def test_sample_locations_between_surfaces(depth, n_points, affine_eye):
 
 def test_depth_ball_sampling():
     img, *_ = data_gen.generate_mni_space_img()
-    mesh = surface.load_surf_mesh(datasets.fetch_surf_fsaverage()["pial_left"])
+    mesh = load_surf_mesh(datasets.fetch_surf_fsaverage()["pial_left"])
     with pytest.raises(ValueError, match=".*does not support.*"):
         surface.vol_to_surf(img, mesh, kind="ball", depth=[0.5])
 
@@ -598,8 +586,8 @@ def test_vol_to_surf(kind, n_scans, use_mask):
     if n_scans == 1:
         img = image.new_img_like(img, image.get_data(img).squeeze())
     fsaverage = datasets.fetch_surf_fsaverage()
-    mesh = surface.load_surf_mesh(fsaverage["pial_left"])
-    inner_mesh = surface.load_surf_mesh(fsaverage["white_left"])
+    mesh = load_surf_mesh(fsaverage["pial_left"])
+    inner_mesh = load_surf_mesh(fsaverage["white_left"])
     center_mesh = np.mean([mesh[0], inner_mesh[0]], axis=0), mesh[1]
     proj = surface.vol_to_surf(
         img, mesh, kind="depth", inner_mesh=inner_mesh, mask_img=mask_img
@@ -750,7 +738,7 @@ def test_check_mesh():
     with pytest.raises(ValueError):
         surface.check_mesh(mesh)
     with pytest.raises(TypeError):
-        surface.check_mesh(surface.load_surf_mesh(mesh["pial_right"]))
+        surface.check_mesh(load_surf_mesh(mesh["pial_right"]))
 
 
 def test_check_mesh_and_data(rng):
