@@ -254,6 +254,19 @@ def test_check_inputs_extract_bg_map_data(surf_img, surf_mesh):
     assert_array_equal(out_bg_map, surf_img().data.parts[hemi])
 
 
+def test_check_inputs_errors():
+    """Make sure that plotting functions fail if wrong inputs are passed."""
+    with pytest.raises(TypeError, match="cannot both be None"):
+        _check_inputs(surf_map=None, surf_mesh=None, hemi="left")
+    with pytest.raises(TypeError, match="cannot both be None"):
+        plot_surf(surf_map=None, surf_mesh=None)
+
+    with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
+        _check_inputs(surf_map=1, surf_mesh=None, hemi="left")
+    with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
+        plot_surf(surf_map=1, surf_mesh=None)
+
+
 @pytest.mark.parametrize("full_view", EXPECTED_CAMERAS_PLOTLY)
 def test_get_view_plot_surf_plotly(full_view):
     from nilearn.plotting.surf_plotting import (

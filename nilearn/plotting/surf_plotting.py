@@ -128,6 +128,8 @@ def _check_inputs(
     surf_mesh,
     hemi,
     bg_map=None,
+    map_var_name="surf_map",
+    mesh_var_name="surf_mesh",
 ):
     """Check inputs for surface plotting.
 
@@ -148,15 +150,15 @@ def _check_inputs(
     """
     if surf_mesh is None and surf_map is None:
         raise TypeError(
-            "surf_mesh and surf_map cannot both be None."
-            "If you want to pass surf_mesh=None, "
-            "then surf_map must be a SurfaceImage instance."
+            f"{mesh_var_name} and {map_var_name} cannot both be None."
+            f"If you want to pass {mesh_var_name}=None, "
+            f"then {mesh_var_name} must be a SurfaceImage instance."
         )
 
     if surf_mesh is None and not isinstance(surf_map, SurfaceImage):
         raise TypeError(
-            "If you want to pass surf_mesh=None, "
-            "then surf_map must be a SurfaceImage instance."
+            f"If you want to pass {mesh_var_name}=None, "
+            f"then {mesh_var_name} must be a SurfaceImage instance."
         )
 
     if isinstance(surf_mesh, PolyMesh):
