@@ -81,9 +81,6 @@ def as_ndarray(arr, copy=False, dtype=None, order="K"):
         Numpy array containing the same data as arr, always of class
         numpy.ndarray, and with no link to any underlying file.
     """
-    # numpy.asarray never copies a subclass of numpy.ndarray (even for
-    #     memmaps) when dtype is unchanged.
-    # .astype() always copies
     if order not in ("C", "F", "A", "K", None):
         raise ValueError(f"Invalid value for 'order': {order!s}")
 
