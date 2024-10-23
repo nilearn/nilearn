@@ -27,7 +27,7 @@ def _asarray(arr, dtype=None, order=None):
 
 
 def as_ndarray(arr, copy=False, dtype=None, order="K"):
-    """Convert to numpy.ndarray starting with an arbitrary array, .
+    """Convert to numpy.ndarray starting with an arbitrary array.
 
     In the case of a memmap array, a copy is automatically made to break the
     link with the underlying file (whatever the value of the "copy" keyword).
@@ -81,26 +81,15 @@ def as_ndarray(arr, copy=False, dtype=None, order="K"):
         Numpy array containing the same data as arr, always of class
         numpy.ndarray, and with no link to any underlying file.
     """
-    # This function should work on numpy 1.3
-    # in this version, astype() and copy() have no "order" keyword.
-    # and asarray() does not accept the "K" and "A" values for order.
-
     # numpy.asarray never copies a subclass of numpy.ndarray (even for
     #     memmaps) when dtype is unchanged.
     # .astype() always copies
-
     if order not in ("C", "F", "A", "K", None):
         raise ValueError(f"Invalid value for 'order': {order!s}")
 
     if isinstance(arr, np.memmap):
         if dtype is None:
-            if order in ("K", "A", None):
-                ret = np.array(np.asarray(arr), copy=True)
-            else:
-                ret = np.array(np.asarray(arr), copy=True, order=order)
-        elif order in ("K", "A", None):
-            # always copy (even when dtype does not change)
-            ret = np.asarray(arr).astype(dtype)
+            ret = np.array(np.asarray(arr), copy=True, order=order)
         else:
             # First load data from disk without changing order
             # Changing order while reading through a memmap is incredibly
@@ -116,10 +105,7 @@ def as_ndarray(arr, copy=False, dtype=None, order="K"):
             ret = ret.T.copy().T if ret.flags["F_CONTIGUOUS"] else ret.copy()
 
     elif isinstance(arr, (list, tuple)):
-        if order in ("A", "K"):
-            ret = np.asarray(arr, dtype=dtype)
-        else:
-            ret = np.asarray(arr, dtype=dtype, order=order)
+        ret = np.asarray(arr, dtype=dtype, order=order)
 
     else:
         raise ValueError(f"Type not handled: {arr.__class__}")
