@@ -669,12 +669,12 @@ def test_fetch_atlas_allen_2011(tmp_path, request_mocker):
 
 
 def test_fetch_atlas_surf_destrieux(tmp_path):
-    data_dir = str(tmp_path / "destrieux_surface")
-    os.mkdir(data_dir)
+    data_dir = tmp_path / "destrieux_surface"
+    data_dir.mkdir()
     # Create mock annots
     for hemi in ("left", "right"):
         freesurfer.write_annot(
-            os.path.join(data_dir, f"{hemi}.aparc.a2009s.annot"),
+            data_dir / f"{hemi}.aparc.a2009s.annot",
             np.arange(4),
             np.zeros((4, 5)),
             5 * ["a"],

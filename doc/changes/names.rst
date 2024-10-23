@@ -36,6 +36,8 @@
 
 .. _Anne-Sophie Kieslinger: https://github.com/askieslinger
 
+.. _Anupriya Kumari: https://github.com/anupriyakkumari
+
 .. _Ariel Rokem: http://arokem.org/
 
 .. _Arthur Mensch: https://www.amensch.fr/

@@ -16,7 +16,12 @@ from sklearn.utils import Bunch
 
 from .._utils import check_niimg, fill_doc, logger
 from ..image import get_data, new_img_like, reorder_img
-from ._utils import fetch_files, get_dataset_descr, get_dataset_dir
+from ._utils import (
+    PACKAGE_DIRECTORY,
+    fetch_files,
+    get_dataset_descr,
+    get_dataset_dir,
+)
 
 _TALAIRACH_LEVELS = ["hemisphere", "lobe", "gyrus", "tissue", "ba"]
 
@@ -139,7 +144,7 @@ def fetch_atlas_difumo(
     readme_files = [
         ("README.md", "https://osf.io/4k9bf/download", {"move": "README.md"})
     ]
-    if not os.path.exists(os.path.join(data_dir, "README.md")):
+    if not Path(data_dir, "README.md").exists():
         fetch_files(data_dir, readme_files, verbose=verbose, resume=resume)
 
     fdescr = get_dataset_descr(dataset_name)
@@ -887,17 +892,14 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
         dataset_name, data_dir=data_dir, verbose=verbose
     )
     files = fetch_files(data_dir, files, resume=resume, verbose=verbose)
-    csv_data = pd.read_csv(files[0])
-    labels = [name.strip() for name in csv_data["name"].tolist()]
 
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "ignore", module="numpy", category=FutureWarning
-        )
-        region_coords = csv_data[["x", "y", "z"]].values.tolist()
+    csv_data = pd.read_csv(files[0])
+    labels = [name.strip() for name in csv_data["name"].to_list()]
     net_names = [
-        net_name.strip() for net_name in csv_data["net name"].tolist()
+        net_name.strip() for net_name in csv_data["net name"].to_list()
     ]
+    region_coords = csv_data[["x", "y", "z"]].to_numpy().tolist()
+
     fdescr = get_dataset_descr(dataset_name)
 
     return Bunch(
@@ -938,8 +940,7 @@ def fetch_coords_power_2011(legacy_format=False):
     """
     dataset_name = "power_2011"
     fdescr = get_dataset_descr(dataset_name)
-    package_directory = os.path.dirname(os.path.abspath(__file__))
-    csv = os.path.join(package_directory, "data", "power_2011.csv")
+    csv = PACKAGE_DIRECTORY / "data" / "power_2011.csv"
     params = {"rois": pd.read_csv(csv), "description": fdescr}
     params["rois"] = params["rois"].rename(
         columns={c: c.lower() for c in params["rois"].columns}
@@ -1537,8 +1538,7 @@ def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=False):
     """
     dataset_name = "dosenbach_2010"
     fdescr = get_dataset_descr(dataset_name)
-    package_directory = os.path.dirname(os.path.abspath(__file__))
-    csv = os.path.join(package_directory, "data", "dosenbach_2010.csv")
+    csv = PACKAGE_DIRECTORY / "data" / "dosenbach_2010.csv"
     out_csv = pd.read_csv(csv)
 
     if ordered_regions:
@@ -1609,14 +1609,13 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=False):
     """
     dataset_name = "seitzman_2018"
     fdescr = get_dataset_descr(dataset_name)
-    package_directory = os.path.dirname(os.path.abspath(__file__))
-    roi_file = os.path.join(
-        package_directory,
-        "data",
-        "seitzman_2018_ROIs_300inVol_MNI_allInfo.txt",
+    roi_file = (
+        PACKAGE_DIRECTORY
+        / "data"
+        / "seitzman_2018_ROIs_300inVol_MNI_allInfo.txt"
     )
-    anatomical_file = os.path.join(
-        package_directory, "data", "seitzman_2018_ROIs_anatomicalLabels.txt"
+    anatomical_file = (
+        PACKAGE_DIRECTORY / "data" / "seitzman_2018_ROIs_anatomicalLabels.txt"
     )
 
     rois = pd.read_csv(roi_file, delimiter=" ")
