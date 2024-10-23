@@ -88,13 +88,13 @@ def as_ndarray(arr, copy=False, dtype=None, order="K"):
         raise ValueError(f"Invalid value for 'order': {order!s}")
 
     if isinstance(arr, np.memmap):
+        # First load data from disk without changing order
+        # Changing order while reading through a memmap is incredibly
+        # inefficient.
+        ret = np.array(arr, copy=True)
         if dtype is None:
-            ret = np.array(np.asarray(arr), copy=True, order=order)
+            ret = _asarray(ret, order=order)
         else:
-            # First load data from disk without changing order
-            # Changing order while reading through a memmap is incredibly
-            # inefficient.
-            ret = np.array(arr, copy=True)
             ret = _asarray(ret, dtype=dtype, order=order)
 
     elif isinstance(arr, np.ndarray):
