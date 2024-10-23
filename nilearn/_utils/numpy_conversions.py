@@ -17,7 +17,7 @@ def _asarray(arr, dtype=None, order=None):
         and arr.flags["F_CONTIGUOUS"]
         or order == "C"
         and arr.flags["C_CONTIGUOUS"]
-        or order == "K" or order == "A" or order is None
+        or order in ("K", "A", None)
     ):
         ret = arr.view(dtype=dtype)
     else:
