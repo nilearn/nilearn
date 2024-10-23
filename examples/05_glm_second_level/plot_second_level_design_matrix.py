@@ -53,7 +53,8 @@ design_matrix = make_second_level_design_matrix(
 # Let's plot it.
 from nilearn.plotting import plot_design_matrix
 
-fig, ax1 = plt.subplots(1, 1, figsize=(3, 4), layout="constrained")
+fig, ax1 = plt.subplots(1, 1, figsize=(3, 4), constrained_layout=True)
+
 ax = plot_design_matrix(design_matrix, axes=ax1)
 ax.set_ylabel("maps")
 ax.set_title("Second level design matrix", fontsize=12)

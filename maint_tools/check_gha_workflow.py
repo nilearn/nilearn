@@ -284,7 +284,7 @@ def _get_auth(username: str, token_file: Path) -> None | tuple[str, str]:
     token = None
 
     if token_file.exists():
-        with open(token_file) as f:
+        with token_file.open() as f:
             token = f.read().strip()
     else:
         warnings.warn(f"Token file not found.\n{token_file!s}")

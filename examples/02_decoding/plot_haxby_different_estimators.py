@@ -118,7 +118,7 @@ for classifier_name in sorted(classifiers):
 # Then we make a rudimentary diagram
 import matplotlib.pyplot as plt
 
-plt.subplots(figsize=(8, 6), layout="constrained")
+plt.subplots(figsize=(8, 6), constrained_layout=True)
 
 all_categories = np.sort(np.hstack([categories, "AVERAGE"]))
 tick_position = np.arange(len(all_categories))
