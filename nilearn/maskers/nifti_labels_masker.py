@@ -366,14 +366,10 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             self.mask_img_, ensure_finite=True
         )
         mask_data = mask_data.copy()
-        region_ids_before_masking = [
-            region_id for region_id in np.unique(labels_data)
-        ]
+        region_ids_before_masking = np.unique(labels_data).tolist()
         # apply the mask to the atlas
         labels_data[np.logical_not(mask_data)] = self.background_label
-        region_ids_after_masking = [
-            region_id for region_id in np.unique(labels_data)
-        ]
+        region_ids_after_masking = np.unique(labels_data).tolist()
         masked_atlas = Nifti1Image(
             labels_data.astype(np.int8), self._resampled_labels_img_.affine
         )
