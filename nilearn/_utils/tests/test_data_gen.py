@@ -45,7 +45,7 @@ def test_add_metadata_to_bids_derivatives_default_path(tmp_path):
         json_file.name
         == "sub-01_ses-01_task-main_run-01_space-MNI_desc-preproc_bold.json"
     )
-    with open(json_file) as f:
+    with json_file.open() as f:
         metadata = json.load(f)
         assert metadata == {"foo": "bar"}
 
@@ -60,7 +60,7 @@ def test_add_metadata_to_bids_derivatives_with_json_path(tmp_path):
     )
     assert json_file.exists()
     assert json_file.name == "sub-02_task-main_bold.json"
-    with open(json_file) as f:
+    with json_file.open() as f:
         metadata = json.load(f)
         assert metadata == {"foo": "bar"}
 

@@ -190,11 +190,11 @@ def make_glm_report(
         HTML_TEMPLATE_ROOT_PATH / "report_body_template.html"
     )
 
-    with open(html_head_template_path) as html_head_file_obj:
+    with html_head_template_path.open() as html_head_file_obj:
         html_head_template_text = html_head_file_obj.read()
     report_head_template = string.Template(html_head_template_text)
 
-    with open(html_body_template_path) as html_body_file_obj:
+    with html_body_template_path.open() as html_body_file_obj:
         html_body_template_text = html_body_file_obj.read()
     report_body_template = string.Template(html_body_template_text)
 
@@ -377,7 +377,7 @@ def _plot_contrasts(contrasts, design_matrices):
     all_contrasts_plots = {}
     contrast_template_path = HTML_TEMPLATE_ROOT_PATH / "contrast_template.html"
 
-    with open(contrast_template_path) as html_template_obj:
+    with contrast_template_path.open() as html_template_obj:
         contrast_template_text = html_template_obj.read()
 
     for design_matrix in design_matrices:
@@ -573,7 +573,7 @@ def _dmtx_to_svg_url(design_matrices):
         HTML_TEMPLATE_ROOT_PATH / "design_matrix_template.html"
     )
 
-    with open(dmtx_template_path) as html_template_obj:
+    with dmtx_template_path.open() as html_template_obj:
         dmtx_template_text = html_template_obj.read()
 
     for dmtx_count, design_matrix in enumerate(design_matrices, start=1):
@@ -768,7 +768,7 @@ def _make_stat_maps_contrast_clusters(
         HTML_TEMPLATE_ROOT_PATH / "stat_maps_contrast_clusters_template.html"
     )
 
-    with open(components_template_path) as html_template_obj:
+    with components_template_path.open() as html_template_obj:
         components_template_text = html_template_obj.read()
     for contrast_name, stat_map_img in stat_img.items():
         component_text_ = string.Template(components_template_text)
