@@ -74,8 +74,9 @@ from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
 data = fetch_language_localizer_demo_dataset(legacy_output=False)
 
 models, models_run_imgs, events_dfs, models_confounds = first_level_from_bids(
-    data.data_dir,
-    "languagelocalizer",
+    dataset_path=data.data_dir,
+    task_label="languagelocalizer",
+    sub_labels=["01"],
     img_filters=[("desc", "preproc")],
     n_jobs=2,
 )
@@ -90,7 +91,7 @@ glm_parameters = standard_glm.get_params()
 
 # We need to override one parameter (signal_scaling)
 # with the value of scaling_axis
-glm_parameters["signal_scaling"] = standard_glm.scaling_axis
+glm_parameters["signal_scaling"] = standard_glm.signal_scaling
 
 # %%
 # Define the standard model
@@ -101,6 +102,8 @@ glm_parameters["signal_scaling"] = standard_glm.scaling_axis
 # We will just use the one created by
 # :func:`~nilearn.glm.first_level.first_level_from_bids`.
 import matplotlib.pyplot as plt
+
+print("Fit model")
 
 standard_glm.fit(fmri_file, events_df)
 
@@ -119,6 +122,7 @@ fig.show()
 # It's important to ensure that the original trial types can be inferred from
 # the updated trial-wise trial types, in order to collect the resulting
 # beta maps into condition-wise beta series.
+print("Define and fit LSA")
 
 # Transform the DataFrame for LSA
 lsa_events_df = events_df.copy()
@@ -168,6 +172,7 @@ lsa_beta_maps = {
 # We loop through the trials, create a version of the DataFrame where the
 # targeted trial has a unique trial type, fit the model to that DataFrame,
 # and finally collect the targeted trial's beta map for the beta series.
+print("Define and fit LSS")
 
 
 def lss_transformer(events_df, row_number):
@@ -255,6 +260,7 @@ fig.show()
 # %%
 # Compare the three modeling approaches
 # -------------------------------------
+print("Compare models")
 
 DM_TITLES = ["Standard GLM", "LSA Model", "LSS Model (Trial 1)"]
 DESIGN_MATRICES = [
@@ -300,6 +306,8 @@ fig.show()
 import numpy as np
 
 from nilearn.maskers import NiftiMasker, NiftiSpheresMasker
+
+print("Apply beta series")
 
 # Coordinate taken from Neurosynth's 'language' meta-analysis
 coords = [(-54, -42, 3)]

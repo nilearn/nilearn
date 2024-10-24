@@ -305,8 +305,9 @@ def _is_within_directory(directory, target):
 
 
 def _safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+    path = Path(path)
     for member in tar.getmembers():
-        member_path = os.path.join(path, member.name)
+        member_path = path / member.name
         if not _is_within_directory(path, member_path):
             raise Exception("Attempted Path Traversal in Tar File")
 
@@ -347,30 +348,29 @@ def uncompress_file(file_, delete_archive=True, verbose=1):
             z.extractall(path=data_dir)
             z.close()
             if delete_archive:
-                os.remove(file_)
-            file_ = filename
+                file_.unlink()
             processed = True
         elif file_.suffix == ".gz" or header.startswith(b"\x1f\x8b"):
             import gzip
 
             if file_.suffix == ".tgz":
-                filename = Path(f"{filename}.tar")
+                filename = filename.with_suffix(".tar")
             elif file_.suffix == "":
                 # We rely on the assumption that gzip files have an extension
                 shutil.move(file_, f"{file_}.gz")
-                file_ = f"{file_}.gz"
-            with gzip.open(file_) as gz, open(filename, "wb") as out:
+                file_ = file_.with_suffix(".gz")
+            with gzip.open(file_) as gz, filename.open("wb") as out:
                 shutil.copyfileobj(gz, out, 8192)
             # If file is .tar.gz, this will be handled in the next case
             if delete_archive:
-                os.remove(file_)
+                file_.unlink()
             file_ = filename
             processed = True
         if file_.is_file() and tarfile.is_tarfile(file_):
             with contextlib.closing(tarfile.open(file_, "r")) as tar:
                 _safe_extract(tar, path=data_dir)
             if delete_archive:
-                os.remove(file_)
+                file_.unlink()
             processed = True
         if not processed:
             raise OSError(f"[Uncompress] unknown archive file format: {file_}")

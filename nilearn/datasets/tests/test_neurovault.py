@@ -534,7 +534,7 @@ def test_simple_download(tmp_path):
         tmp_path / "image_35.nii.gz",
         tmp_path,
     )
-    assert os.path.isfile(downloaded_file)
+    assert downloaded_file.is_file()
 
 
 def test_simple_download_error(tmp_path, request_mocker):
@@ -574,7 +574,7 @@ def test_neurosynth_words_vectorized_warning(tmp_path):
 def test_write_read_metadata(tmp_path):
     metadata = {
         "relative_path": "collection_1",
-        "absolute_path": os.path.join("tmp", "collection_1"),
+        "absolute_path": Path("tmp", "collection_1"),
     }
 
     neurovault._write_metadata(metadata, tmp_path / "metadata.json")
@@ -586,37 +586,33 @@ def test_write_read_metadata(tmp_path):
 
     read_metadata = neurovault._add_absolute_paths("tmp", written_metadata)
 
-    assert read_metadata["absolute_path"] == os.path.join(
-        "tmp", "collection_1"
-    )
+    assert read_metadata["absolute_path"] == Path("tmp", "collection_1")
 
 
 def test_add_absolute_paths():
     meta = {
         "col_relative_path": "collection_1",
-        "col_absolute_path": os.path.join(
-            "dir_0", "neurovault", "collection_1"
-        ),
+        "col_absolute_path": Path("dir_0", "neurovault", "collection_1"),
     }
     meta = neurovault._add_absolute_paths(
-        os.path.join("dir_1", "neurovault"), meta, force=False
+        Path("dir_1", "neurovault"), meta, force=False
     )
 
-    assert meta["col_absolute_path"] == os.path.join(
+    assert meta["col_absolute_path"] == Path(
         "dir_0", "neurovault", "collection_1"
     )
 
     meta = neurovault._add_absolute_paths(
-        os.path.join("dir_1", "neurovault"), meta, force=True
+        Path("dir_1", "neurovault"), meta, force=True
     )
 
-    assert meta["col_absolute_path"] == os.path.join(
+    assert meta["col_absolute_path"] == Path(
         "dir_1", "neurovault", "collection_1"
     )
 
     meta = {"id": 0}
     meta_transformed = neurovault._add_absolute_paths(
-        os.path.join("dir_1", "neurovault"), meta, force=True
+        Path("dir_1", "neurovault"), meta, force=True
     )
 
     assert meta == meta_transformed
@@ -630,8 +626,8 @@ def test_json_add_collection_dir(tmp_path):
         coll_file.write(json.dumps({"id": 1}).encode("utf-8"))
     loaded = neurovault._json_add_collection_dir(coll_file_name)
 
-    assert loaded["absolute_path"] == str(coll_dir.absolute())
-    assert loaded["relative_path"] == str(coll_dir)
+    assert loaded["absolute_path"] == coll_dir.absolute()
+    assert loaded["relative_path"] == coll_dir
 
 
 def test_json_add_im_files_paths(tmp_path):
@@ -642,7 +638,7 @@ def test_json_add_im_files_paths(tmp_path):
         im_file.write(json.dumps({"id": 1}).encode("utf-8"))
     loaded = neurovault._json_add_im_files_paths(im_file_name)
 
-    assert loaded["relative_path"] == str(coll_dir / "image_1.nii.gz")
+    assert loaded["relative_path"] == coll_dir / "image_1.nii.gz"
     assert loaded.get("neurosynth_words_relative_path") is None
 
 
@@ -722,13 +718,9 @@ def test_download_image_terms_error(tmp_path, request_mocker):
             download_params,
         )
     # no fail if file already exists
-    with open(
-        os.path.join(
-            collection["absolute_path"],
-            "neurosynth_words_for_image_a.json",
-        ),
-        "w",
-    ):
+    with Path(
+        collection["absolute_path"], "neurosynth_words_for_image_a.json"
+    ).open("w"):
         pass
     neurovault._download_image_terms(image_info, collection, download_params)
 
@@ -772,9 +764,9 @@ def test_fetch_neurovault(tmp_path):
 
     # using a data directory we can't write into should raise a
     # warning unless mode is 'offline'
-    os.chmod(tmp_path, stat.S_IREAD | stat.S_IEXEC)
-    os.chmod(os.path.join(tmp_path, "neurovault"), stat.S_IREAD | stat.S_IEXEC)
-    if os.access(os.path.join(tmp_path, "neurovault"), os.W_OK):
+    tmp_path.chmod(stat.S_IREAD | stat.S_IEXEC)
+    (tmp_path / "neurovault").chmod(stat.S_IREAD | stat.S_IEXEC)
+    if os.access(tmp_path / "neurovault", os.W_OK):
         return
 
     with pytest.warns(UserWarning):
@@ -825,6 +817,13 @@ def test_fetch_neurovault_ids(tmp_path):
         data["collections_meta"][0]["absolute_path"]
     )
 
+    # check that there are no Path objects
+    for image in data.images:
+        assert isinstance(image, str)
+    for meta in data.images_meta + data.collections_meta:
+        for value in meta.values():
+            assert not isinstance(value, Path)
+
     # check image can be loaded again from disk
     data = neurovault.fetch_neurovault_ids(
         image_ids=[img_ids[0]], data_dir=tmp_path, mode="offline"
@@ -843,6 +842,11 @@ def test_fetch_neurovault_ids(tmp_path):
         Path(modified_meta["absolute_path"]).parent
         / f"image_{img_ids[0]}_metadata.json"
     )
+    # convert Path to str for JSON serialization
+    modified_meta = {
+        k: str(v) if isinstance(v, Path) else v
+        for k, v in modified_meta.items()
+    }
     with open(meta_path, "wb") as meta_f:
         meta_f.write(json.dumps(modified_meta).encode("UTF-8"))
 
@@ -994,7 +998,7 @@ def test_download_resamp_images_along_original_images_if_previously_downloaded(
 def _check_resampled_version_is_here(data):
     assert np.all(
         [
-            os.path.isfile(im_meta["resampled_absolute_path"])
+            Path(im_meta["resampled_absolute_path"]).is_file()
             for im_meta in data["images_meta"]
         ]
     )
@@ -1003,7 +1007,7 @@ def _check_resampled_version_is_here(data):
 def _check_resampled_version_is_not_here(data):
     assert not np.any(
         [
-            os.path.isfile(im_meta["resampled_absolute_path"])
+            Path(im_meta["resampled_absolute_path"]).is_file()
             for im_meta in data["images_meta"]
         ]
     )
@@ -1012,7 +1016,7 @@ def _check_resampled_version_is_not_here(data):
 def _check_original_version_is_here(data):
     assert np.all(
         [
-            os.path.isfile(im_meta["absolute_path"])
+            Path(im_meta["absolute_path"]).is_file()
             for im_meta in data["images_meta"]
         ]
     )
@@ -1021,7 +1025,7 @@ def _check_original_version_is_here(data):
 def _check_original_version_is_not_here(data):
     assert not np.any(
         [
-            os.path.isfile(im_meta["absolute_path"])
+            Path(im_meta["absolute_path"]).is_file()
             for im_meta in data["images_meta"]
         ]
     )
