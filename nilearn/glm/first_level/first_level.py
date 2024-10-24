@@ -480,17 +480,6 @@ class FirstLevelModel(BaseGLM):
         self.subject_label = subject_label
         self.random_state = random_state
 
-    @property
-    def scaling_axis(self):
-        """Return scaling of axis."""
-        warn(
-            DeprecationWarning(
-                "Deprecated. `scaling_axis` will be removed in 0.11.0. "
-                "Please use `signal_scaling` instead."
-            )
-        )
-        return self.signal_scaling
-
     def _check_fit_inputs(
         self,
         run_imgs,
