@@ -56,7 +56,6 @@ print(
 fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
 print(f"Fsaverage5 sulcal depth map: {fsaverage_sulcal}")
 
-
 # %%
 # Visualization
 # -------------
@@ -113,7 +112,6 @@ plotting.plot_surf_roi(
 # To do so we get the pial surface of fsaverage subject,
 # get the :term:`vertices<vertex>` contained in each parcel
 # and compute the mean location to obtain the coordinates.
-
 import numpy as np
 
 from nilearn import surface
@@ -150,7 +148,6 @@ show()
 # :func:`nilearn.plotting.view_surf` for more interactive
 # visualizations in a web browser.
 # See :ref:`interactive-surface-plotting` for more details.
-
 view = plotting.view_surf(
     surf_mesh=fsaverage_meshes["inflated"],
     surf_map=destrieux_atlas,
@@ -160,9 +157,7 @@ view = plotting.view_surf(
 )
 # In a Jupyter notebook, if ``view`` is the output of a cell,
 # it will be displayed below the cell
-
 view
-# %%
 
 # uncomment this to open the plot in a web browser:
 # view.open_in_browser()
@@ -170,8 +165,8 @@ view
 # %%
 # you can also use :func:`nilearn.plotting.view_connectome`
 # to open an interactive view of the connectome.
-
 view = view_connectome(corr, coordinates, edge_threshold="90%", colorbar=False)
+
 # uncomment this to open the plot in a web browser:
 # view.open_in_browser()
 view
