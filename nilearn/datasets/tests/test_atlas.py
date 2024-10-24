@@ -3,7 +3,6 @@
 # Author: Alexandre Abraham
 
 import itertools
-import os
 import re
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -109,7 +108,7 @@ def test_fetch_atlas_source():
 
 
 def _write_sample_atlas_metadata(ho_dir, filename, is_symm):
-    with open(os.path.join(ho_dir, f"{filename}.xml"), "w") as dm:
+    with Path(ho_dir, f"{filename}.xml").open("w") as dm:
         if not is_symm:
             dm.write(
                 "<?xml version='1.0' encoding='us-ascii'?>\n"
@@ -671,6 +670,7 @@ def test_fetch_atlas_allen_2011(tmp_path, request_mocker):
 def test_fetch_atlas_surf_destrieux(tmp_path):
     data_dir = tmp_path / "destrieux_surface"
     data_dir.mkdir()
+
     # Create mock annots
     for hemi in ("left", "right"):
         freesurfer.write_annot(

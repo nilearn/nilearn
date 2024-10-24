@@ -900,12 +900,14 @@ def test_fetch_openneuro_dataset(tmp_path):
     data_prefix = (
         f"{dataset_version.split('_')[0]}/{dataset_version}/uncompressed"
     )
-    data_dir = get_dataset_dir(
-        data_prefix,
-        data_dir=tmp_path,
-        verbose=1,
+    data_dir = Path(
+        get_dataset_dir(
+            data_prefix,
+            data_dir=tmp_path,
+            verbose=1,
+        )
     )
-    url_file = os.path.join(data_dir, "urls.json")
+    url_file = data_dir / "urls.json"
 
     # Prepare url files for subject and filter tests
     urls = [

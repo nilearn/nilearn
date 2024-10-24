@@ -1,7 +1,6 @@
 """Downloading NeuroImaging datasets: structural datasets."""
 
 import functools
-import os
 import warnings
 from pathlib import Path
 
@@ -144,7 +143,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
         "mask",
     )
     filenames = [
-        (os.path.join("mni_icbm152_nlin_sym_09a", name), url, opts)
+        (Path("mni_icbm152_nlin_sym_09a", name), url, opts)
         for name in (
             "mni_icbm152_csf_tal_nlin_sym_09a.nii.gz",
             "mni_icbm152_gm_tal_nlin_sym_09a.nii.gz",
@@ -777,11 +776,10 @@ def fetch_oasis_vbm(
         missing_subjects = sorted(missing_subjects + removed_outliers)
         file_names_gm = [
             (
-                os.path.join(
-                    "OAS1_%04d_MR1",
-                    "mwrc1OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz",
-                )
-                % (s, s),
+                Path(
+                    f"OAS1_{s:04d}_MR1",
+                    f"mwrc1OAS1_{s:04d}_MR1_mpr_anon_fslswapdim_bet.nii.gz",
+                ),
                 url_images,
                 opts,
             )
@@ -790,11 +788,10 @@ def fetch_oasis_vbm(
         ][:n_subjects]
         file_names_wm = [
             (
-                os.path.join(
-                    "OAS1_%04d_MR1",
-                    "mwrc2OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz",
-                )
-                % (s, s),
+                Path(
+                    f"OAS1_{s:04d}_MR1",
+                    f"mwrc2OAS1_{s:04d}_MR1_mpr_anon_fslswapdim_bet.nii.gz",
+                ),
                 url_images,
                 opts,
             )
@@ -807,11 +804,10 @@ def fetch_oasis_vbm(
         missing_subjects = sorted(missing_subjects + removed_outliers)
         file_names_gm = [
             (
-                os.path.join(
-                    "OAS1_%04d_MR1",
-                    "mwc1OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz",
-                )
-                % (s, s),
+                Path(
+                    f"OAS1_{s:04d}_MR1",
+                    f"mwc1OAS1_{s:04d}_MR1_mpr_anon_fslswapdim_bet.nii.gz",
+                ),
                 url_images,
                 opts,
             )
@@ -820,11 +816,10 @@ def fetch_oasis_vbm(
         ][:n_subjects]
         file_names_wm = [
             (
-                os.path.join(
-                    "OAS1_%04d_MR1",
-                    "mwc2OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz",
-                )
-                % (s, s),
+                Path(
+                    f"OAS1_{s:04d}_MR1",
+                    f"mwc2OAS1_{s:04d}_MR1_mpr_anon_fslswapdim_bet.nii.gz",
+                ),
                 url_images,
                 opts,
             )
@@ -1038,7 +1033,7 @@ def _fetch_surf_fsaverage(dataset_name, data_dir=None):
     )
 
     result = {
-        attribute: os.path.join(dataset_dir, f"{attribute}.gii.gz")
+        attribute: Path(dataset_dir, f"{attribute}.gii.gz")
         for attribute in dataset_attributes
     }
     result["description"] = str(get_dataset_descr(dataset_name))
