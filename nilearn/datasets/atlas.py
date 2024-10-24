@@ -24,12 +24,6 @@ from ._utils import (
 
 _TALAIRACH_LEVELS = ["hemisphere", "lobe", "gyrus", "tissue", "ba"]
 
-_LEGACY_FORMAT_MSG = (
-    "`legacy_format` will default to `False` in release 0.11. "
-    "Dataset fetchers will then return pandas dataframes by default "
-    "instead of recarrays."
-)
-
 
 @fill_doc
 def fetch_atlas_difumo(
@@ -38,7 +32,7 @@ def fetch_atlas_difumo(
     data_dir=None,
     resume=True,
     verbose=1,
-    legacy_format=True,
+    legacy_format=False,
 ):
     """Fetch DiFuMo brain atlas.
 
@@ -143,7 +137,6 @@ def fetch_atlas_difumo(
     labels = pd.read_csv(files_[0])
     labels = labels.rename(columns={c: c.lower() for c in labels.columns})
     if legacy_format:
-        warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
         labels = labels.to_records(index=False)
 
     # README
@@ -292,7 +285,7 @@ def fetch_atlas_destrieux_2009(
     url=None,
     resume=True,
     verbose=1,
-    legacy_format=True,
+    legacy_format=False,
 ):
     """Download and load the Destrieux cortical \
     :term:`deterministic atlas<Deterministic atlas>` (dated 2009).
@@ -360,7 +353,6 @@ def fetch_atlas_destrieux_2009(
     params = {"maps": files_[1], "labels": pd.read_csv(files_[0], index_col=0)}
 
     if legacy_format:
-        warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
         params["labels"] = params["labels"].to_records()
 
     params["description"] = Path(files_[2]).read_text()
@@ -917,7 +909,7 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
 
 
 @fill_doc
-def fetch_coords_power_2011(legacy_format=True):
+def fetch_coords_power_2011(legacy_format=False):
     """Download and load the Power et al. brain atlas composed of 264 ROIs.
 
     See :footcite:t:`Power2011`.
@@ -951,7 +943,6 @@ def fetch_coords_power_2011(legacy_format=True):
         columns={c: c.lower() for c in params["rois"].columns}
     )
     if legacy_format:
-        warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
         params["rois"] = params["rois"].to_records(index=False)
     return Bunch(**params)
 
@@ -1502,7 +1493,7 @@ def fetch_atlas_basc_multiscale_2015(
 
 
 @fill_doc
-def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=True):
+def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=False):
     """Load the Dosenbach et al 160 ROIs.
 
     These ROIs cover much of the cerebral cortex
@@ -1559,14 +1550,13 @@ def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=True):
     }
 
     if legacy_format:
-        warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
         params["rois"] = params["rois"].to_records(index=False)
 
     return Bunch(**params)
 
 
 @fill_doc
-def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
+def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=False):
     """Load the Seitzman et al. 300 ROIs.
 
     These ROIs cover cortical, subcortical and cerebellar regions and are
@@ -1642,7 +1632,6 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
         rois = rois.sort_values(by=["network", "y"])
 
     if legacy_format:
-        warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
         rois = rois.to_records()
 
     params = {
