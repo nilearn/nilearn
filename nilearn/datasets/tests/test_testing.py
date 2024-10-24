@@ -207,7 +207,7 @@ def test_dict_to_archive(tmp_path):
     assert img.shape == (10, 11, 12, 17)
     with (extract_dir / "a" / "b" / "c").open("rb") as f:
         assert int.from_bytes(f.read(), byteorder="big", signed=False) == 100
-    with open(str(extract_dir / "empty_data" / "labels.csv")) as f:
+    with (extract_dir / "empty_data" / "labels.csv").open() as f:
         assert f.read() == ""
 
     zip_archive = _testing.dict_to_archive(
