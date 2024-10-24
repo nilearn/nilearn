@@ -89,7 +89,13 @@ searchlight = nilearn.decoding.SearchLight(
     cv=cv,
 )
 searchlight.fit(fmri_img, y)
-
+# %%
+# Accessing the searchlight results
+# ---------------------------------
+# After fitting the searchlight, we can access the searchlight scores
+# as a NIfTI image using the `scores_img_` attribute.
+scores_img = searchlight.scores_img_
+print("Searchlight scores image created:", scores_img)
 # %%
 # F-scores computation
 # --------------------
@@ -122,14 +128,12 @@ mean_fmri = image.mean_img(fmri_img, copy_header=True)
 
 from nilearn.plotting import plot_img, plot_stat_map, show
 
-searchlight_img = new_img_like(mean_fmri, searchlight.scores_)
-
 # Because scores are not a zero-center test statistics, we cannot use
 # plot_stat_map
 plot_img(
-    searchlight_img,
+    scores_img,
     bg_img=mean_fmri,
-    title="Searchlight",
+    title="Searchlight scores image",
     display_mode="z",
     cut_coords=[-9],
     vmin=0.42,
