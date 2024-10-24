@@ -3,10 +3,8 @@
 from __future__ import annotations
 
 import warnings
-from typing import Any
 
 import numpy as np
-import pandas as pd
 from joblib import Memory
 from sklearn.base import BaseEstimator, TransformerMixin
 
@@ -24,11 +22,42 @@ from nilearn.maskers._utils import (
 
 
 class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
-    """Extract data from a SurfaceImage."""
+    """Extract data from a SurfaceImage.
 
-    mask_img: SurfaceImage | None
+    Parameters
+    ----------
+    mask_img: SurfaceImage object or None, default=None
 
-    mask_img_: SurfaceImage | None
+    %(standardize_maskers)s
+
+    %(standardize_confounds)s
+
+    %(detrend)s
+
+    high_variance_confounds : :obj:`bool`, default=False
+        If True, high variance confounds are computed on provided image with
+        :func:`nilearn.image.high_variance_confounds` and default parameters
+        and regressed out.
+
+    %(low_pass)s
+
+    %(high_pass)s
+
+    %(t_r)s
+
+    %(memory)s
+
+    %(memory_level1)s
+
+    reports: :obj:`bool`, default=True
+
+    cmap: str, default="inferno"
+
+    clean_kwargs: dict[str, Any] or None, default=None
+        Extra key-words arguments to pass to :func:`nilearn.signal.clean`.
+
+    """
+
     output_dimension_: int | None
 
     def __init__(
@@ -41,13 +70,12 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         low_pass=None,
         high_pass=None,
         t_r=None,
-        memory_level=1,
         memory=None,
+        memory_level=1,
         reports=True,
-        **kwargs,
+        cmap="inferno",
+        clean_kwargs=None,
     ):
-        if memory is None:
-            memory = Memory(location=None)
         self.mask_img = mask_img
         self.standardize = standardize
         self.standardize_confounds = standardize_confounds
@@ -56,16 +84,12 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
-
         self.memory = memory
         self.memory_level = memory_level
-        self._shelving = False
-        self.clean_kwargs = {
-            k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
-        }
-
+        self.clean_kwargs = clean_kwargs
         self.reports = reports
-        self.cmap = kwargs.get("cmap", "inferno")
+        self.cmap = cmap
+        self._shelving = False
         # content to inject in the HTML template
         self._report_content = {
             "description": (
@@ -82,17 +106,26 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         # data necessary to construct figure for the report
         self._reporting_data = None
 
-    def _fit_mask_img(self, img: SurfaceImage | None) -> None:
+    def _fit_mask_img(self, img):
+        """Get mask passed during init or compute one from input image.
+
+        Parameters
+        ----------
+        img : SurfaceImage object or None
+        """
         if self.mask_img is not None:
             if img is not None:
                 check_same_n_vertices(self.mask_img.mesh, img.mesh)
             self.mask_img_ = self.mask_img
             return
+
         if img is None:
             raise ValueError(
-                "Please provide either a mask_img when initializing "
-                "the masker or an img when calling fit()."
+                "Please provide either a mask_img "
+                "when initializing the masker "
+                "or an img when calling fit()."
             )
+
         # TODO: don't store a full array of 1 to mean "no masking"; use some
         # sentinel value
         mask_data = {
@@ -101,14 +134,12 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         }
         self.mask_img_ = SurfaceImage(mesh=img.mesh, data=mask_data)
 
-    def fit(
-        self, img: SurfaceImage | None = None, y: Any = None
-    ) -> SurfaceMasker:
+    def fit(self, img=None, y=None):
         """Prepare signal extraction from regions.
 
         Parameters
         ----------
-        img : SurfaceImage object
+        img : SurfaceImage object or None
             Mesh and data for both hemispheres.
 
         y : None
@@ -122,6 +153,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         del y
         self._fit_mask_img(img)
         assert self.mask_img_ is not None
+
         start, stop = 0, 0
         self.slices = {}
         for part_name, mask in self.mask_img_.data.parts.items():
@@ -143,18 +175,18 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         return self
 
     def _check_fitted(self):
-        if not hasattr(self, "mask_img_"):
+        if not hasattr(self, "mask_img_") or self.mask_img_ is None:
             raise ValueError(
-                "This masker has not been fitted. Call fit "
-                "before calling transform."
+                "This masker has not been fitted.\n"
+                "Call fit before calling transform."
             )
 
     def transform(
         self,
-        img: SurfaceImage,
-        confounds: pd.DataFrame | None = None,
-        sample_mask: np.ndarray | None = None,
-    ) -> np.ndarray:
+        img,
+        confounds=None,
+        sample_mask=None,
+    ):
         """Extract signals from fitted surface object.
 
         Parameters
@@ -162,9 +194,22 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         img : SurfaceImage object
             Mesh and data for both hemispheres.
 
+        confounds : :class:`numpy.ndarray`, :obj:`str`,\
+                    :class:`pathlib.Path`, \
+                    :class:`pandas.DataFrame` \
+                    or :obj:`list` of confounds timeseries, default=None
+            Confounds to pass to :func:`nilearn.signal.clean`.
+
+        sample_mask : None, Any type compatible with numpy-array indexing, \
+                  or :obj:`list` of \
+                  shape: (number of scans - number of volumes removed, ) \
+                  for explicit index, or (number of scans, ) for binary mask, \
+                  default=None
+            sample_mask to pass to :func:`nilearn.signal.clean`.
+
         Returns
         -------
-        output : numpy.ndarray
+        :class:`numpy.ndarray`
             Signal for each element.
             shape: (img data shape, total number of vertices)
         """
@@ -175,17 +220,20 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 "mask_img",
             ],
         )
-        parameters["clean_kwargs"] = self.clean_kwargs
-
         self._check_fitted()
-        assert self.mask_img_ is not None
         assert self.output_dimension_ is not None
         check_same_n_vertices(self.mask_img_.mesh, img.mesh)
+
         output = np.empty((*img.shape[:-1], self.output_dimension_))
         for part_name, (start, stop) in self.slices.items():
             mask = self.mask_img_.data.parts[part_name]
-            assert isinstance(mask, np.ndarray)
             output[..., start:stop] = img.data.parts[part_name][..., mask]
+
+        if self.memory is None:
+            self.memory = Memory(location=None)
+
+        if self.clean_kwargs is None:
+            self.clean_kwargs = {}
 
         # signal cleaning here
         output = cache(
@@ -204,18 +252,18 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
             high_pass=parameters["high_pass"],
             confounds=confounds,
             sample_mask=sample_mask,
-            **parameters["clean_kwargs"],
+            **self.clean_kwargs,
         )
 
         return output
 
     def fit_transform(
         self,
-        img: SurfaceImage,
-        y: Any = None,
-        confounds: pd.DataFrame | None = None,
-        sample_mask: np.ndarray | None = None,
-    ) -> np.ndarray:
+        img,
+        y=None,
+        confounds=None,
+        sample_mask=None,
+    ):
         """Prepare and perform signal extraction from regions.
 
         Parameters
@@ -227,21 +275,34 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
             This parameter is unused. It is solely included for scikit-learn
             compatibility.
 
+        confounds : :class:`numpy.ndarray`, :obj:`str`,\
+                    :class:`pathlib.Path`, \
+                    :class:`pandas.DataFrame` \
+                    or :obj:`list` of confounds timeseries, default=None
+            Confounds to pass to :func:`nilearn.signal.clean`.
+
+        sample_mask : None, Any type compatible with numpy-array indexing, \
+                  or :obj:`list` of \
+                  shape: (number of scans - number of volumes removed, ) \
+                  for explicit index, or (number of scans, ) for binary mask, \
+                  default=None
+            sample_mask to pass to :func:`nilearn.signal.clean`.
+
         Returns
         -------
-        numpy.ndarray
+        :class:`numpy.ndarray`
             Signal for each element.
             shape: (img data shape, total number of vertices)
         """
         del y
         return self.fit(img).transform(img, confounds, sample_mask)
 
-    def inverse_transform(self, masked_img: np.ndarray) -> SurfaceImage:
+    def inverse_transform(self, masked_img):
         """Transform extracted signal back to surface object.
 
         Parameters
         ----------
-        masked_img : numpy.ndarray
+        masked_img : :class:`numpy.ndarray`
             Extracted signal.
 
         Returns
@@ -250,25 +311,31 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
             Mesh and data for both hemispheres.
         """
         self._check_fitted()
-        assert self.mask_img_ is not None
+
         if masked_img.shape[-1] != self.output_dimension_:
             raise ValueError(
                 "Input to inverse_transform has wrong shape; "
                 f"last dimension should be {self.output_dimension_}"
             )
+
         data = {}
         for part_name, mask in self.mask_img_.data.parts.items():
-            assert isinstance(mask, np.ndarray)
             data[part_name] = np.zeros(
                 (*masked_img.shape[:-1], mask.shape[0]),
                 dtype=masked_img.dtype,
             )
             start, stop = self.slices[part_name]
             data[part_name][..., mask] = masked_img[..., start:stop]
+
         return SurfaceImage(mesh=self.mask_img_.mesh, data=data)
 
     def generate_report(self):
-        """Generate a report."""
+        """Generate a report for the SurfaceMasker.
+
+        Returns
+        -------
+        list(None) or HTMLReport
+        """
         if not is_matplotlib_installed():
             with warnings.catch_warnings():
                 mpl_unavail_msg = (
@@ -288,9 +355,11 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         Returns
         -------
-        displays : list
-            A list of all displays to be rendered.
+        displays : :obj:`list` of None or bytes
+            A list of all displays figures encoded as bytes to be rendered.
+            Or a list with a single None element.
         """
+        # avoid circular import
         import matplotlib.pyplot as plt
 
         from nilearn.reporting.utils import figure_to_png_base64
@@ -312,6 +381,15 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         return [init_display]
 
     def _create_figure_for_report(self):
+        """Generate figure to include in the report.
+
+        Returns
+        -------
+        None, :class:`~matplotlib.figure.Figure` or\
+              :class:`~nilearn.plotting.displays.PlotlySurfaceFigure`
+            Returns ``None`` in case the masker was not fitted.
+        """
+        # avoid circular import
         import matplotlib.pyplot as plt
 
         from nilearn.experimental import plotting
