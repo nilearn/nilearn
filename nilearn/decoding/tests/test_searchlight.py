@@ -203,7 +203,7 @@ def test_searchlight_scores_img_error_before_fit():
 
     # Check if accessing `scores_img_` raises a ValueError
     with pytest.raises(ValueError, match="The model has not been fitted yet."):
-        sl.scores_img_
+        sl.scores_img_()
 
 
 def test_dimension_mismatch_error():
