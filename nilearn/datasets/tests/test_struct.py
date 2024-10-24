@@ -8,9 +8,11 @@ import numpy as np
 import pandas as pd
 import pytest
 from nibabel import Nifti1Image
+from sklearn.utils import Bunch
 
 from nilearn.datasets import struct
 from nilearn.datasets.tests._testing import dict_to_archive, list_to_archive
+from nilearn.experimental.surface._surface_image import PolyMesh, SurfaceImage
 
 
 def test_fetch_icbm152_2009(tmp_path, request_mocker):
@@ -174,3 +176,25 @@ def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
 
     assert mesh_attributes.issubset(set(dataset.keys()))
     assert dataset.description != ""
+
+
+def test_fetch_surf_fsaverage_as_polymesh():
+    """Check that Bunch of PolyMesh is returned."""
+    result = struct.fetch_surf_fsaverage(as_polymesh=True)
+    assert isinstance(result, Bunch)
+    assert isinstance(result.pial, PolyMesh)
+    nb_vertices_fsaverage5 = 10242
+    assert result["pial"].parts["left"].n_vertices == nb_vertices_fsaverage5
+    assert result.pial.parts["left"].n_vertices == nb_vertices_fsaverage5
+
+
+def test_load_fsaverage_data_smoke():
+    assert isinstance(struct.load_fsaverage_data(), SurfaceImage)
+
+
+def test_load_fsaverage_data_errors():
+    """Give incorrect value argument."""
+    with pytest.raises(ValueError, match="'mesh_type' must be one of"):
+        struct.load_fsaverage_data(mesh_type="foo")
+    with pytest.raises(ValueError, match="'data_type' must be one of"):
+        struct.load_fsaverage_data(data_type="foo")

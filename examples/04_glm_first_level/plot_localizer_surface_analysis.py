@@ -177,8 +177,8 @@ contrasts = {
 
 # %%
 # Let's estimate the contrasts by iterating over them.
+from nilearn.datasets import load_fsaverage_data
 from nilearn.experimental.plotting import plot_surf_stat_map
-from nilearn.experimental.surface import load_fsaverage_data
 from nilearn.plotting import show
 
 fsaverage_data = load_fsaverage_data(data_type="sulcal")

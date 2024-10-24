@@ -23,6 +23,7 @@ Templates
    fetch_icbm152_2009
    fetch_icbm152_brain_gm_mask
    fetch_surf_fsaverage
+   load_fsaverage_data
    load_mni152_brain_mask
    load_mni152_gm_mask
    load_mni152_gm_template

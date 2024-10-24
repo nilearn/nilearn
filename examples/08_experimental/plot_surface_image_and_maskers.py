@@ -73,10 +73,10 @@ plt.show()
 # Connectivity with a surface atlas and `SurfaceLabelsMasker`
 # -----------------------------------------------------------
 from nilearn import connectome
+from nilearn.datasets import load_fsaverage_data
 from nilearn.experimental.surface import (
     SurfaceLabelsMasker,
     fetch_destrieux,
-    load_fsaverage_data,
 )
 
 # for our plots we will be using the fsaverage sulcal data as background map
