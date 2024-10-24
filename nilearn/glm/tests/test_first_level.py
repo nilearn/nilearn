@@ -2010,6 +2010,7 @@ def test_img_table_checks():
 
 # -----------------------surface tests--------------------------------------- #
 
+
 @pytest.fixture()
 def _make_surface_glm_data(rng, make_mini_img):
     """Create a surface image and design matrix for testing."""
