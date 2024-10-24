@@ -5,7 +5,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from nibabel import Nifti1Image, freesurfer, gifti, nifti1
+from nibabel import Nifti1Image, freesurfer, gifti, load, nifti1
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 from scipy.stats import pearsonr
 
@@ -22,6 +22,8 @@ from nilearn.surface import (
 from nilearn.surface.surface import (
     _gifti_img_to_mesh,
     _load_surf_files_gifti_gzip,
+    data_to_gifti,
+    mesh_to_gifti,
 )
 from nilearn.surface.tests._testing import (
     flat_mesh,
@@ -787,3 +789,47 @@ def test_check_surface(rng):
         ValueError, match="Mismatch between number of nodes in mesh"
     ):
         surface.check_surface(wrong_surface)
+
+
+@pytest.mark.parametrize(
+    "dtype",
+    [
+        np.uint16,
+        np.uint32,
+        np.uint64,
+        np.int8,
+        np.int16,
+        np.int32,
+        np.int64,
+        np.float32,
+        np.float64,
+    ],
+)
+def test_data_to_gifti(rng, tmp_path, dtype):
+    """Check saving several data type to gifti.
+
+    - check that strings and Path work
+    - make sure files can be loaded with nibabel
+    """
+    data = rng.random((5, 6)).astype(dtype)
+    data_to_gifti(data=data, gifti_file=tmp_path / "data.gii")
+    data_to_gifti(data=data, gifti_file=str(tmp_path / "data.gii"))
+    load(tmp_path / "data.gii")
+
+
+def test_mesh_to_gifti(single_mesh, tmp_path):
+    """Check saving mesh to gifti.
+
+    - check that strings and Path work
+    - make sure files can be loaded with nibabel
+    """
+    coordinates, faces = single_mesh
+    mesh_to_gifti(
+        coordinates=coordinates, faces=faces, gifti_file=tmp_path / "mesh.gii"
+    )
+    mesh_to_gifti(
+        coordinates=coordinates,
+        faces=faces,
+        gifti_file=str(tmp_path / "mesh.gii"),
+    )
+    load(tmp_path / "mesh.gii")
