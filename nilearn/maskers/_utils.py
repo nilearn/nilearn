@@ -1,7 +1,6 @@
 import numpy as np
 
 from nilearn import image
-from nilearn.experimental.surface._surface_image import PolyMesh, SurfaceImage
 
 
 def _check_dims(imgs):
@@ -27,8 +26,15 @@ def compute_middle_image(img):
     return img, len(dim)
 
 
-def check_same_n_vertices(mesh_1: PolyMesh, mesh_2: PolyMesh) -> None:
-    """Check that 2 meshes have the same keys and that n vertices match."""
+def check_same_n_vertices(mesh_1, mesh_2) -> None:
+    """Check that 2 PolyMesh have the same keys and that n vertices match.
+
+    Parameters
+    ----------
+    mesh_1: PolyMesh
+
+    mesh_2: PolyMesh
+    """
     keys_1, keys_2 = set(mesh_1.parts.keys()), set(mesh_2.parts.keys())
     if keys_1 != keys_2:
         diff = keys_1.symmetric_difference(keys_2)
@@ -45,8 +51,17 @@ def check_same_n_vertices(mesh_1: PolyMesh, mesh_2: PolyMesh) -> None:
             )
 
 
-def compute_mean_surface_image(img: SurfaceImage):
-    """Compute mean of surface image over time points (for 'time series')."""
+def compute_mean_surface_image(img):
+    """Compute mean of SurfaceImage over time points (for 'time series').
+
+    Parameters
+    ----------
+    img: SurfaceImage
+
+    Returns
+    -------
+    img: SurfaceImage
+    """
     if len(img.shape) <= 1:
         return img
     for part, value in img.data.parts.items():
@@ -54,8 +69,19 @@ def compute_mean_surface_image(img: SurfaceImage):
     return img
 
 
-def get_min_max_surface_image(img: SurfaceImage):
-    """Get min and max across hemisphere for a SurfaceImage."""
+def get_min_max_surface_image(img):
+    """Get min and max across hemisphere for a SurfaceImage.
+
+    Parameters
+    ----------
+    img: SurfaceImage
+
+    Returns
+    -------
+    vmin: float
+
+    vmax: float
+    """
     vmin = min(min(x) for x in img.data.parts.values())
     vmax = max(max(x) for x in img.data.parts.values())
     return vmin, vmax
