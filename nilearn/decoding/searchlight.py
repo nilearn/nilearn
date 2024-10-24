@@ -354,9 +354,7 @@ class SearchLight(BaseEstimator):
         imgs = check_niimg_4d(imgs)
 
         # Get the seeds
-        process_mask_img = self.process_mask_img
-        if self.process_mask_img is None:
-            process_mask_img = self.mask_img
+        process_mask_img = self.process_mask_img or self.mask_img
 
         # Compute world coordinates of the seeds
         process_mask, process_mask_affine = masking.load_mask_img(

@@ -255,3 +255,28 @@ def test_transform_applies_mask_correctly():
         5,
     )
     assert transformed_scores.size > 0
+
+
+def test_process_mask_shape_mismatch():
+    """Test if ValueError is raised when process_mask and image
+    dimensions mismatch.
+    """
+    # Generate the test data
+    frames = 20
+    data_img, cond, mask_img = _make_searchlight_test_data(frames)
+
+    # Create a process mask with mismatched dimensions (4x4x4 instead of 5x5x5)
+    process_mask_img = Nifti1Image(
+        np.ones((4, 4, 4), dtype="uint8"), np.eye(4)
+    )
+
+    # Instantiate SearchLight with the mismatched process mask
+    sl = searchlight.SearchLight(
+        mask_img=mask_img, process_mask_img=process_mask_img, radius=1.0
+    )
+
+    # Expect a ValueError due to mismatched dimensions
+    with pytest.raises(
+        ValueError, match="The mask image and the 4D input images must"
+    ):
+        sl.fit(data_img, y=cond)
