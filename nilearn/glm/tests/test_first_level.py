@@ -1096,14 +1096,12 @@ def test_first_level_with_scaling(affine_eye):
     )
     assert fmri_glm.signal_scaling == 0
     assert not fmri_glm.standardize
-    with pytest.warns(
-        DeprecationWarning, match="Deprecated. `scaling_axis` will be removed"
-    ):
-        assert fmri_glm.scaling_axis == 0
+
     glm_parameters = fmri_glm.get_params()
     test_glm = FirstLevelModel(**glm_parameters)
     fmri_glm = fmri_glm.fit(fmri_data, design_matrices=design_matrices)
     test_glm = test_glm.fit(fmri_data, design_matrices=design_matrices)
+
     assert glm_parameters["signal_scaling"] == 0
 
 
