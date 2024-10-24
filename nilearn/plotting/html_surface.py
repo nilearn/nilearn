@@ -457,7 +457,7 @@ def view_surf(
 
     Parameters
     ----------
-    surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`,
+    surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`, \
                 or a Mesh, or a PolyMesh, or None
         Surface :term:`mesh` geometry, can be a file
         (valid formats are .gii or Freesurfer specific files
