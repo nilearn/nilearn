@@ -264,7 +264,7 @@ def test_deprecation_contrast_type_attribute():
         contrast = Contrast(effect, variance, contrast_type="t")
 
     with pytest.deprecated_call(match="0.13.0"):
-        contrast.contrast_type
+        contrast.contrast_type  # noqa: B018
 
 
 @pytest.mark.parametrize(

@@ -2,19 +2,16 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.image import get_data
 
 # Set backend to avoid DISPLAY problems
-from nilearn.plotting import _set_mpl_backend
+from nilearn.plotting import _set_mpl_backend  # noqa
 from nilearn.reporting import get_clusters_table
 from nilearn.reporting.get_clusters_table import (
     _cluster_nearest_neighbor,
     _local_max,
 )
-
-# Avoid making pyflakes unhappy
-_set_mpl_backend
-from nilearn._utils.helpers import is_matplotlib_installed
 
 
 @pytest.fixture

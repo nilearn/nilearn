@@ -275,7 +275,7 @@ class Contrast:
         warn(
             category=DeprecationWarning,
             message=attrib_deprecation_msg,
-            stacklevel=3,
+            stacklevel=2,
         )
         return self.stat_type
 
