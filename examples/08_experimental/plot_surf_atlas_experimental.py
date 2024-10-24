@@ -27,10 +27,10 @@ check_matplotlib()
 # ------------
 
 # Retrieve destrieux parcellation in fsaverage5 space from nilearn
+from nilearn.datasets import load_fsaverage_data
 from nilearn.experimental.surface import (
     fetch_destrieux,
     load_fsaverage,
-    load_fsaverage_data,
 )
 
 destrieux_atlas, labels = fetch_destrieux(mesh_type="pial")

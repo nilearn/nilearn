@@ -1,82 +1,25 @@
-"""Fetching a few example datasets to use during development.
+# """Fetching a few example datasets to use during development.
 
-eventually nilearn.datasets would be updated
-"""
+# eventually nilearn.datasets would be updated
+# """
 
 from __future__ import annotations
 
 from collections.abc import Sequence
 
 from nilearn import datasets
+
+# from nilearn.datasets.struct import load_fsaverage_data
 from nilearn.experimental.surface import _io
 from nilearn.experimental.surface._surface_image import (
-    FileMesh,
-    PolyMesh,
     SurfaceImage,
 )
 
 
 def load_fsaverage(
     mesh_name: str = "fsaverage5",
-) -> dict[str, PolyMesh]:
-    """Load fsaverage for both hemispheres."""
-    fsaverage = datasets.fetch_surf_fsaverage(mesh_name)
-    renaming = {
-        "pial": "pial",
-        "white": "white_matter",
-        "infl": "inflated",
-        "sphere": "sphere",
-        "flat": "flat",
-    }
-    meshes = {}
-    for key, value in renaming.items():
-        left = FileMesh(fsaverage[f"{key}_left"])
-        right = FileMesh(fsaverage[f"{key}_right"])
-        meshes[value] = PolyMesh(left=left, right=right)
-    return meshes
-
-
-ALLOWED_DATA_TYPES = (
-    "curvature",
-    "sulcal",
-    "thickness",
-)
-
-
-def load_fsaverage_data(
-    mesh_name: str = "fsaverage5",
-    mesh_type: str = "pial",
-    data_type: str = "sulcal",
-) -> SurfaceImage:
-    """Return freesurfer data on an fsaverage mesh."""
-    if mesh_type not in ALLOWED_MESH_TYPES:
-        raise ValueError(
-            f"'mesh_type' must be one of {ALLOWED_MESH_TYPES}.\n"
-            f"Got: {mesh_type}."
-        )
-    if data_type not in ALLOWED_DATA_TYPES:
-        raise ValueError(
-            f"'data_type' must be one of {ALLOWED_DATA_TYPES}.\n"
-            f"Got: {data_type}."
-        )
-
-    fsaverage = load_fsaverage(mesh_name)
-    old_fsaverage = datasets.fetch_surf_fsaverage(mesh_name)
-
-    renaming = {"curvature": "curv", "sulcal": "sulc", "thickness": "thick"}
-    img = SurfaceImage(
-        mesh=fsaverage[mesh_type],
-        data={
-            "left": _io.read_array(
-                old_fsaverage[f"{renaming[data_type]}_left"]
-            ),
-            "right": _io.read_array(
-                old_fsaverage[f"{renaming[data_type]}_right"]
-            ),
-        },
-    )
-
-    return img
+):
+    return datasets.fetch_surf_fsaverage(mesh=mesh_name, as_polymesh=True)
 
 
 ALLOWED_MESH_TYPES = (
@@ -118,27 +61,4 @@ def fetch_nki(mesh_type: str = "pial", **kwargs) -> Sequence[SurfaceImage]:
     return images
 
 
-def fetch_destrieux(
-    mesh_type: str = "pial", **kwargs
-) -> tuple[SurfaceImage, dict[int, str]]:
-    """Load Destrieux surface atlas into a surface object."""
-    if mesh_type not in ALLOWED_MESH_TYPES:
-        raise ValueError(
-            f"'mesh_type' must be one of {ALLOWED_MESH_TYPES}.\n"
-            f"Got: {mesh_type}."
-        )
-
-    fsaverage = load_fsaverage("fsaverage5")
-    destrieux = datasets.fetch_atlas_surf_destrieux(**kwargs)
-    labels = [x.decode("utf-8") for x in destrieux.labels]
-    # TODO fetchers usually return Bunch
-    return (
-        SurfaceImage(
-            mesh=fsaverage[mesh_type],
-            data={
-                "left": destrieux["map_left"],
-                "right": destrieux["map_right"],
-            },
-        ),
-        labels,
-    )
+def fetch_destrieux(): ...
