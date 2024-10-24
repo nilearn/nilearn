@@ -1224,7 +1224,7 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
     voc_empty = True
     for file_name in word_files:
         try:
-            with open(file_name, "rb") as word_file:
+            with Path(file_name).open("rb") as word_file:
                 info = json.loads(word_file.read().decode("utf-8"))
                 words.append(info["data"]["values"])
                 if info["data"]["values"] != {}:
@@ -1310,7 +1310,7 @@ def _write_metadata(metadata, file_name):
         if isinstance(value, Path):
             metadata[key] = str(value)
 
-    with open(file_name, "wb") as metadata_file:
+    with Path(file_name).open("wb") as metadata_file:
         metadata_file.write(json.dumps(metadata).encode("utf-8"))
 
 
@@ -1363,7 +1363,7 @@ def _json_from_file(file_name):
     ----------
     file_name: str or pathlib.Path
     """
-    with open(file_name, "rb") as dumped:
+    with Path(file_name).open("rb") as dumped:
         loaded = json.loads(dumped.read().decode("utf-8"))
     return loaded
 

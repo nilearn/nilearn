@@ -757,10 +757,10 @@ def fetch_localizer_contrasts(
     data_dir = Path(
         get_dataset_dir(dataset_name, data_dir=data_dir, verbose=verbose)
     )
-    index_file = fetch_single_file(
-        index_url, data_dir, verbose=verbose, resume=resume
+    index_file = Path(
+        fetch_single_file(index_url, data_dir, verbose=verbose, resume=resume)
     )
-    with open(index_file) as of:
+    with index_file.open() as of:
         index = json.load(of)
 
     # Build data URLs that will be fetched
@@ -1215,16 +1215,16 @@ def fetch_abide_pcp(
 
     # Fetch the phenotypic file and load it
     csv = "Phenotypic_V1_0b_preprocessed1.csv"
-    path_csv = fetch_files(
-        data_dir, [(csv, f"{url}/{csv}", {})], verbose=verbose
-    )[0]
+    path_csv = Path(
+        fetch_files(data_dir, [(csv, f"{url}/{csv}", {})], verbose=verbose)[0]
+    )
 
     # Note: the phenotypic file contains string that contains comma which mess
     # up numpy array csv loading. This is why I do a pass to remove the last
     # field. This can be
     # done simply with pandas but we don't want such dependency ATM
     # pheno = pandas.read_csv(path_csv).to_records()
-    with open(path_csv) as pheno_f:
+    with path_csv.open() as pheno_f:
         pheno = [f"i{pheno_f.readline()}"]
 
         # This regexp replaces commas between double quotes
@@ -2344,7 +2344,7 @@ def fetch_ds000030_urls(data_dir=None, verbose=1):
         resume=True,
     )
     urls_path = downloaded_file_path[0]
-    with open(urls_path) as json_file:
+    with Path(urls_path).open() as json_file:
         urls = json.load(json_file)
 
     return urls_path, urls

@@ -284,7 +284,7 @@ def test_get_batch(tmp_path):
 
     assert "results" in batch
     assert "count" in batch
-    with open(tmp_path / "test_nv.txt", "w"):
+    with (tmp_path / "test_nv.txt").open("w"):
         pass
 
 
@@ -556,7 +556,7 @@ def test_neurosynth_words_vectorized(tmp_path):
         word_weights = np.zeros(n_im)
         word_weights[i] = 1
         words_dict = {"data": {"values": dict(zip(words, word_weights))}}
-        with open(file_name, "wb") as words_file:
+        with file_name.open("wb") as words_file:
             words_file.write(json.dumps(words_dict).encode("utf-8"))
     freq, _ = neurovault.neurosynth_words_vectorized(words_files)
 
@@ -576,9 +576,10 @@ def test_write_read_metadata(tmp_path):
         "relative_path": "collection_1",
         "absolute_path": Path("tmp", "collection_1"),
     }
+    metadata_path = tmp_path / "metadata.json"
 
-    neurovault._write_metadata(metadata, tmp_path / "metadata.json")
-    with open(tmp_path / "metadata.json", "rb") as meta_file:
+    neurovault._write_metadata(metadata, metadata_path)
+    with metadata_path.open("rb") as meta_file:
         written_metadata = json.loads(meta_file.read().decode("utf-8"))
 
     assert "relative_path" in written_metadata
@@ -622,7 +623,7 @@ def test_json_add_collection_dir(tmp_path):
     coll_dir = tmp_path / "collection_1"
     coll_dir.mkdir()
     coll_file_name = coll_dir / "collection_1.json"
-    with open(coll_file_name, "wb") as coll_file:
+    with coll_file_name.open("wb") as coll_file:
         coll_file.write(json.dumps({"id": 1}).encode("utf-8"))
     loaded = neurovault._json_add_collection_dir(coll_file_name)
 
@@ -634,7 +635,7 @@ def test_json_add_im_files_paths(tmp_path):
     coll_dir = tmp_path / "collection_1"
     coll_dir.mkdir()
     im_file_name = coll_dir / "image_1.json"
-    with open(im_file_name, "wb") as im_file:
+    with im_file_name.open("wb") as im_file:
         im_file.write(json.dumps({"id": 1}).encode("utf-8"))
     loaded = neurovault._json_add_im_files_paths(im_file_name)
 
@@ -847,7 +848,7 @@ def test_fetch_neurovault_ids(tmp_path):
         k: str(v) if isinstance(v, Path) else v
         for k, v in modified_meta.items()
     }
-    with open(meta_path, "wb") as meta_f:
+    with meta_path.open("wb") as meta_f:
         meta_f.write(json.dumps(modified_meta).encode("UTF-8"))
 
     # fresh download

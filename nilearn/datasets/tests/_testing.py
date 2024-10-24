@@ -424,7 +424,7 @@ def dict_to_archive(data, archive_format="gztar"):
         archive_path = shutil.make_archive(
             str(root_tmp_dir / "archive"), archive_format, str(tmp_dir)
         )
-        with open(archive_path, "rb") as f:
+        with Path(archive_path).open("rb") as f:
             return f.read()
 
 
