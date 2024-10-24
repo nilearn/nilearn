@@ -610,7 +610,7 @@ def fetch_single_file(
                     ):
                         raise OSError("Server does not support resuming")
                     initial_size = local_file_size
-                    with open(local_file, "ab") as fh:
+                    with local_file.open("ab") as fh:
                         _chunk_read_(
                             resp,
                             fh,
