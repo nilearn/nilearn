@@ -1,4 +1,5 @@
 import warnings
+from pathlib import Path
 
 import pytest
 
@@ -158,3 +159,8 @@ def test_is_plotly_installed():
 
 def test_is_kaleido_installed():
     helpers.is_kaleido_installed()
+
+
+def test_stringify_path():
+    assert isinstance(helpers.stringify_path(Path("foo") / "bar"), str)
+    assert helpers.stringify_path([]) == []

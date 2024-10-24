@@ -2027,7 +2027,8 @@ def test_check_run_tables_errors():
     with pytest.raises(ValueError, match="table path .* could not be loaded"):
         _check_run_tables([""] * 2, [".csv", ".csv"], "")
     with pytest.raises(
-        TypeError, match="can only be a pandas DataFrames or a string"
+        TypeError,
+        match="can only be a pandas DataFrame, a Path object or a string",
     ):
         _check_run_tables([""] * 2, [[0], pd.DataFrame()], "")
     with pytest.raises(ValueError, match="table path .* could not be loaded"):
@@ -2043,7 +2044,8 @@ def test_img_table_checks():
     with pytest.raises(ValueError, match="table path .* could not be loaded"):
         _check_and_load_tables([".csv", ".csv"], "")
     with pytest.raises(
-        TypeError, match="can only be a pandas DataFrames or a string"
+        TypeError,
+        match="can only be a pandas DataFrame, a Path object or a string",
     ):
         _check_and_load_tables([[], pd.DataFrame()], "")
     with pytest.raises(ValueError, match="table path .* could not be loaded"):
