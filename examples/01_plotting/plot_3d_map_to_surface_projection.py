@@ -10,10 +10,10 @@ with different plotting engines,
 and add contours of regions of interest using
 :func:`~nilearn.plotting.plot_surf_contours`.
 """
+
 # %%
 # Get a statistical map
 # ---------------------
-
 from nilearn import datasets
 
 stat_img = datasets.load_sample_motor_activation_image()
@@ -22,7 +22,6 @@ stat_img = datasets.load_sample_motor_activation_image()
 # %%
 # Get a cortical mesh
 # -------------------
-
 from nilearn.experimental.surface import load_fsaverage, load_fsaverage_data
 
 fsaverage_meshes = load_fsaverage()
@@ -35,7 +34,6 @@ fsaverage_meshes = load_fsaverage()
 # and define a surface map whose value for a given :term:`vertex`
 # is 1 if the curvature is positive,
 # -1 if the curvature is negative.
-
 import numpy as np
 
 fsaverage_curvature = load_fsaverage_data(data_type="curvature")
@@ -58,7 +56,6 @@ img = SurfaceImage.from_volume(
 # You can visualize the texture on the surface using the function
 # :func:`~nilearn.plotting.plot_surf_stat_map` which uses ``matplotlib``
 # as the default plotting engine.
-
 from nilearn.experimental.plotting import plot_surf_stat_map
 
 fig = plot_surf_stat_map(
@@ -71,7 +68,6 @@ fig = plot_surf_stat_map(
     bg_map=curv_right_sign,
 )
 fig.show()
-
 
 # %%
 # Interactive plotting with Plotly
@@ -123,7 +119,6 @@ figure = plot_surf_stat_map(
 # %%
 # Plot 3D image for comparison
 # ----------------------------
-
 from nilearn.plotting import plot_glass_brain, plot_stat_map, show
 
 plot_glass_brain(
@@ -145,10 +140,21 @@ plot_stat_map(
 # %%
 # Use an atlas and choose regions to outline
 # ------------------------------------------
+from nilearn.datasets import fetch_atlas_surf_destrieux
 
-from nilearn.experimental.surface import fetch_destrieux
+fsaverage = load_fsaverage("fsaverage5")
+destrieux = fetch_atlas_surf_destrieux()
+destrieux_atlas = SurfaceImage(
+    mesh=fsaverage["inflated"],
+    data={
+        "left": destrieux["map_left"],
+        "right": destrieux["map_right"],
+    },
+)
 
-destrieux_atlas, label_names = fetch_destrieux(mesh_type="inflated")
+# The labels are stored as bytes for the Destrieux atlas.
+# For convenience we decode them to string.
+label_names = [x.decode("utf-8") for x in destrieux.labels]
 
 # these are the regions we want to outline
 regions_dict = {
@@ -166,7 +172,6 @@ labels = list(regions_dict.values())
 # %%
 # Display outlines of the regions of interest on top of a statistical map
 # -----------------------------------------------------------------------
-
 from nilearn.experimental.plotting import plot_surf_contours
 
 fsaverage_sulcal = load_fsaverage_data(data_type="sulcal", mesh_type="pial")
@@ -201,7 +206,6 @@ elif engine == "plotly":
     )
     # view the contours in a browser
     # figure.show()
-
 
 # %%
 # Plot with higher-resolution mesh
@@ -268,7 +272,6 @@ show()
 # :func:`nilearn.plotting.view_img_on_surf` that give
 # more interactive visualizations in a web browser.
 # See :ref:`interactive-surface-plotting` for more details.
-
 from nilearn.experimental.plotting import view_surf
 
 view = view_surf(
