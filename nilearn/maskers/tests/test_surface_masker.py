@@ -6,9 +6,8 @@ import pytest
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.experimental.surface import (
     SurfaceImage,
-    SurfaceLabelsMasker,
-    SurfaceMasker,
 )
+from nilearn.maskers import SurfaceMasker
 
 
 # test with only one surface image and with 2 surface images (surface time
@@ -132,16 +131,10 @@ def test_transform_inverse_transform_with_mask(
     is_matplotlib_installed(),
     reason="Test requires matplotlib not to be installed.",
 )
-def test_masker_reporting_mpl_warning(surf_mask, surf_label_img):
+def test_masker_reporting_mpl_warning(surf_mask):
     """Raise warning after exception if matplotlib is not installed."""
     with warnings.catch_warnings(record=True) as warning_list:
         SurfaceMasker(surf_mask()).fit().generate_report()
-
-    assert len(warning_list) == 1
-    assert issubclass(warning_list[0].category, ImportWarning)
-
-    with warnings.catch_warnings(record=True) as warning_list:
-        SurfaceLabelsMasker(surf_label_img()).fit().generate_report()
 
     assert len(warning_list) == 1
     assert issubclass(warning_list[0].category, ImportWarning)
