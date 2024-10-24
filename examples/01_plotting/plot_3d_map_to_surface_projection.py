@@ -91,7 +91,7 @@ if not is_plotly_installed():
 
 print(f"Using plotting engine {engine}.")
 
-fig = plot_surf_stat_map(
+figure = plot_surf_stat_map(
     stat_map=img,
     surf_mesh=fsaverage_meshes["inflated"],
     hemi="right",
@@ -103,8 +103,8 @@ fig = plot_surf_stat_map(
     engine=engine,  # Specify the plotting engine here
 )
 
-# Display the figure as with matplotlib figures
-fig.show()
+# Uncomment to display the figure
+# figure.show()
 
 # %%
 # When using ``matplolib`` as the plotting engine, a standard
