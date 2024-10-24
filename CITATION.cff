@@ -113,6 +113,11 @@ authors:
     website: https://github.com/askieslinger
     affiliation: Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig,
       Germnay
+  - given-names: Anupriya
+    family-names: Kumari
+    website: https://github.com/anupriyakkumari
+    affiliation: Indian Institute of Technology, Roorkee, India
+    email: anupriyakkumari@gmail.com
   - given-names: Ariel
     family-names: Rokem
     website: http://arokem.org/
@@ -485,6 +490,11 @@ authors:
     family-names: Zwally
     website: https://github.com/MIZwally
     affiliation: DSST, National Institute of Mental Health, USA
+  - given-names: Micha
+    family-names: Burkhardt
+    website: https://github.com/mibur1
+    affiliation: University of Oldenburg, Germany
+    orcid: https://orcid.org/0000-0002-6268-3527
   - given-names: Michael
     family-names: Eickenberg
     website: https://github.com/eickenberg

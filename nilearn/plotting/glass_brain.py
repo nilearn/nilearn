@@ -174,7 +174,7 @@ def plot_brain_schematics(ax, direction, **kwargs):
     ) == colors.colorConverter.to_rgba("k")
 
     json_filename, transform = _get_json_and_transform(direction)
-    with open(json_filename) as json_file:
+    with json_filename.open() as json_file:
         json_content = json.loads(json_file.read())
 
     mpl_patches = _get_mpl_patches(
