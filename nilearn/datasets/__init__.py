@@ -37,7 +37,6 @@ from .func import (
     fetch_mixed_gambles,
     fetch_miyawaki2008,
     fetch_openneuro_dataset,
-    fetch_openneuro_dataset_index,
     fetch_spm_auditory,
     fetch_spm_multimodal_fmri,
     fetch_surf_nki_enhanced,
