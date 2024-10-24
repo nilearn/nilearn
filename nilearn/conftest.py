@@ -175,7 +175,9 @@ def _shape_3d_default():
 
     Mostly used for set up in other fixtures in other testing modules.
     """
-    return (10, 10, 10)
+    # avoid having identical shapes values,
+    # because this fails to detect if the code does not handle dimensions well.
+    return (7, 8, 9)
 
 
 def _shape_4d_default():
@@ -183,12 +185,16 @@ def _shape_4d_default():
 
     Mostly used for set up in other fixtures in other testing modules.
     """
-    return (10, 10, 10, 10)
+    # avoid having identical shapes values,
+    # because this fails to detect if the code does not handle dimensions well.
+    return (7, 8, 9, 5)
 
 
 def _shape_4d_long():
     """Return default shape for a long 4D image."""
-    return (10, 10, 10, 1500)
+    # avoid having identical shapes values,
+    # because this fails to detect if the code does not handle dimensions well.
+    return (7, 8, 9, 1500)
 
 
 @pytest.fixture()
