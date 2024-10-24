@@ -61,6 +61,8 @@ Enhancements
 
 - :bdg-success:`API` Add option to resize output image width ``width_view`` in :func:`nilearn.plotting.view_img` (:gh:`4416` by `Alexandre Sayal`_).
 
+- :bdg-success:`API` Surface plotting functions :func:`nilearn.plotting.view_surf`, :func:`nilearn.plotting.plot_surf`, :func:`nilearn.plotting.plot_surf_roi`, :func:`nilearn.plotting.plot_surf_contours` and :func:`nilearn.plotting.plot_surf_stat_map` can accept ``SurfaceImage`` as inputs making their ``surf_mesh`` parameter optional (:gh:`4688` by `Rémi Gau`_).
+
 - :bdg-primary:`Doc` Add example to demonstrate the use of the new ``copy_header_from`` parameter in :func:`nilearn.image.math_img` (:gh:`4392` by `Himanshu Aggarwal`_).
 
 - :bdg-primary:`Doc` Adapt examples showing how to plot events and design matrices to show how to use parametric modulation. Also implement modulation of events in :func:`nilearn.plotting.plot_event` (:gh:`4436` by `Rémi Gau`_).
