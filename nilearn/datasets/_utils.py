@@ -571,7 +571,6 @@ def fetch_single_file(
     if temp_full_name.exists() and overwrite:
         temp_full_name.unlink()
     t0 = time.time()
-    local_file = None
     initial_size = 0
 
     try:
@@ -610,7 +609,7 @@ def fetch_single_file(
                     ):
                         raise OSError("Server does not support resuming")
                     initial_size = local_file_size
-                    with local_file.open("ab") as fh:
+                    with temp_full_name.open("ab") as fh:
                         _chunk_read_(
                             resp,
                             fh,
@@ -618,7 +617,7 @@ def fetch_single_file(
                             initial_size=initial_size,
                             verbose=verbose,
                         )
-            except Exception:
+            except OSError:
                 logger.log(
                     "Resuming failed, try to download the whole file.", verbose
                 )
@@ -665,7 +664,7 @@ def fetch_single_file(
         raise
     if md5sum is not None and _md5_sum_file(full_name) != md5sum:
         raise ValueError(
-            f"File {local_file} checksum verification has failed."
+            f"File {full_name} checksum verification has failed."
             " Dataset fetching aborted."
         )
     return full_name

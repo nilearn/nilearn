@@ -446,7 +446,7 @@ def test_fetch_file_part(tmp_path, capsys, request_mocker):
     url = "http://foo/temp.txt"
     file_full = tmp_path / "temp.txt"
     file_part = tmp_path / "temp.txt.part"
-    file_part.touch()
+    file_part.write_text("D")  # should not be overwritten
 
     request_mocker.url_mapping[url] = get_response
 
@@ -455,6 +455,7 @@ def test_fetch_file_part(tmp_path, capsys, request_mocker):
     )
 
     assert file_full.exists()
+    assert file_full.read_text() == "Dummy content"  # not overwritten
     assert "Resuming failed" not in capsys.readouterr().out
 
     file_full.unlink()
@@ -462,13 +463,14 @@ def test_fetch_file_part(tmp_path, capsys, request_mocker):
     assert not file_part.exists()
 
     # test for overwrite
-    file_part.touch()
+    file_part.write_text("D")  # should be overwritten
 
     _utils.fetch_single_file(
-        url=url, data_dir=tmp_path, verbose=0, resume=True, overwrite=True
+        url=url, data_dir=tmp_path, resume=True, overwrite=True
     )
 
     assert file_full.exists()
+    assert file_full.read_text() == "dummy content"  # overwritten
 
 
 @pytest.mark.parametrize("should_cast_path_to_string", [False, True])
