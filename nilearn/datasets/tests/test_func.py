@@ -3,7 +3,6 @@
 # Author: Alexandre Abraham
 
 import json
-import os
 import re
 import shutil
 import tempfile
@@ -529,7 +528,7 @@ def test_fetch_megatrawls_netmats(tmp_path):
     ):
         files_dir = tmp_path / "Megatrawls" / folder
         files_dir.mkdir(parents=True, exist_ok=True)
-        with open(files_dir / file, "w") as net_file:
+        with (files_dir / file).open("w") as net_file:
             net_file.write("1")
 
     megatrawl_netmats_data = func.fetch_megatrawls_netmats(data_dir=tmp_path)
@@ -850,7 +849,7 @@ def test_fetch_ds000030_urls():
 
         filepath = subdirpath / "urls.json"
         mock_json_content = ["junk1", "junk2"]
-        with open(filepath, "w") as f:
+        with filepath.open("w") as f:
             json.dump(mock_json_content, f)
 
         # fetch_ds000030_urls should retrieve the appropriate URLs
@@ -858,7 +857,6 @@ def test_fetch_ds000030_urls():
             data_dir=tmpdir,
             verbose=1,
         )
-        urls_path = urls_path.replace("/", os.sep)
 
         assert urls_path == str(filepath)
         assert urls == mock_json_content
@@ -890,7 +888,7 @@ def test_fetch_openneuro_dataset(tmp_path):
         f"https://example.com/{data_prefix}/sub-yyy/ses-01.txt",
         f"https://example.com/{data_prefix}/sub-yyy/ses-02.txt",
     ]
-    with open(url_file, "w") as f:
+    with url_file.open("w") as f:
         json.dump(urls, f)
 
     # Only 1 subject and not subject specific files get downloaded

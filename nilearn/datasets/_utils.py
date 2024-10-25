@@ -38,7 +38,7 @@ def _format_time(t):
 
 def _md5_sum_file(path):
     """Calculate the MD5 sum of a file."""
-    with open(path, "rb") as f:
+    with Path(path).open("rb") as f:
         m = hashlib.md5()
         while True:
             data = f.read(8192)
@@ -51,7 +51,7 @@ def _md5_sum_file(path):
 
 def read_md5_sum_file(path):
     """Read a MD5 checksum file and returns hashes as a dictionary."""
-    with open(path) as f:
+    with Path(path).open() as f:
         hashes = {}
         while True:
             line = f.readline()
@@ -277,7 +277,7 @@ def _add_readme_to_default_data_locations(data_dir=None, verbose=1):
     for d in get_data_dirs(data_dir=data_dir):
         file = Path(d) / "README.md"
         if file.parent.exists() and not file.exists():
-            with open(file, "w") as f:
+            with file.open("w") as f:
                 f.write(
                     """# Nilearn data folder
 
@@ -340,7 +340,7 @@ def uncompress_file(file_, delete_archive=True, verbose=1):
     # We first try to see if it is a zip file
     try:
         filename = data_dir / file_.stem
-        with open(file_, "rb") as fd:
+        with file_.open("rb") as fd:
             header = fd.read(4)
         processed = False
         if zipfile.is_zipfile(file_):
@@ -610,7 +610,7 @@ def fetch_single_file(
                     ):
                         raise OSError("Server does not support resuming")
                     initial_size = local_file_size
-                    with open(local_file, "ab") as fh:
+                    with local_file.open("ab") as fh:
                         _chunk_read_(
                             resp,
                             fh,
@@ -642,7 +642,7 @@ def fetch_single_file(
                 prepped, stream=True, timeout=_REQUESTS_TIMEOUT
             ) as resp:
                 resp.raise_for_status()
-                with open(temp_full_name, "wb") as fh:
+                with temp_full_name.open("wb") as fh:
                     _chunk_read_(
                         resp,
                         fh,
@@ -674,8 +674,8 @@ def fetch_single_file(
 def get_dataset_descr(ds_name):
     """Return the description of a dataset."""
     try:
-        with open(
-            PACKAGE_DIRECTORY / "description" / f"{ds_name}.rst", "rb"
+        with (PACKAGE_DIRECTORY / "description" / f"{ds_name}.rst").open(
+            "rb"
         ) as rst_file:
             descr = rst_file.read()
     except OSError:
