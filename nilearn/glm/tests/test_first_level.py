@@ -2185,7 +2185,7 @@ def test_first_level_from_bids_subject_order_with_labels(tmp_path):
 
 
 def test_fixed_effect_contrast_surface(_make_surface_glm_data):
-    """ Smoke test of compute_fixed_effects with surface data"""
+    """Smoke test of compute_fixed_effects with surface data."""
     mini_img, _ = _make_surface_glm_data(5)
     masker = SurfaceMasker().fit(mini_img)
     model = FirstLevelModel(mask_img=masker, t_r=2.0)
@@ -2194,7 +2194,13 @@ def test_fixed_effect_contrast_surface(_make_surface_glm_data):
     result = model.compute_contrast("c0", output_type="all")
     effect = result["effect_size"]
     variance = result["effect_variance"]
-    outputs = compute_fixed_effects([effect, effect], [variance, variance])
-    assert len(outputs) == 3
-    for output in outputs:
-       assert isinstance(output, SurfaceImage)
+    for mask in [SurfaceMasker(mask_img=masker.mask_img_), None]:
+        outputs = compute_fixed_effects(
+            [effect, effect],
+            [variance, variance],
+            mask=mask
+        )
+        assert len(outputs) == 3
+        for output in outputs:
+            assert isinstance(output, SurfaceImage)
+

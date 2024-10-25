@@ -478,7 +478,8 @@ def compute_fixed_effects(
     variance_imgs : list of Nifti1Images or strings
         The input variance images.
 
-    mask : Nifti1Image or NiftiMasker instance or None, optional
+    mask : Nifti1Image or NiftiMasker instance or SurfaceMasker instance
+        or None, optional
         Mask image. If ``None``, it is recomputed from ``contrast_imgs``.
 
     precision_weighted : Bool, default=False
