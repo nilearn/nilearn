@@ -1325,7 +1325,7 @@ def fetch_atlas_aal(
             indices.append(label.find("index").text)
             labels.append(label.find("name").text)
     else:
-        with open(labels_file) as fp:
+        with Path(labels_file).open() as fp:
             for line in fp:
                 _, label, index = line.strip().split("\t")
                 indices.append(index)
@@ -1615,7 +1615,7 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=False):
 
     # get integer regional labels and convert to text labels with mapping
     # from header line
-    with open(anatomical_file) as fi:
+    with anatomical_file.open() as fi:
         header = fi.readline()
     region_mapping = {}
     for r in header.strip().split(","):

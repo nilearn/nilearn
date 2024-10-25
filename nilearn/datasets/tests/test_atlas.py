@@ -851,8 +851,8 @@ def test_aal_version_deprecation(
     output_path.parent.mkdir(parents=True)
     img.to_filename(output_path)
 
-    with open(
-        tmp_path / "aal_SPM12" / "aal" / "atlas" / "AAL.xml", "wb"
+    with (tmp_path / "aal_SPM12" / "aal" / "atlas" / "AAL.xml").open(
+        "wb"
     ) as file:
         aal_xml.write(file, encoding="ISO-8859-1", xml_declaration=True)
 
