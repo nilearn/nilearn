@@ -249,7 +249,7 @@ def test_transform_applies_mask_correctly():
     transformed_scores = sl.transform(data_img)
 
     assert transformed_scores is not None
-    assert transformed_scores.shape == (
+    assert transformed_scores.shape == (5, 5, 5)
         5,
         5,
         5,
