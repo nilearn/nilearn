@@ -273,14 +273,5 @@ def test_process_mask_shape_mismatch():
     # Instantiate SearchLight with mismatched process mask
     sl = searchlight.SearchLight(mask_img=mask_img, process_mask_img=process_mask_img, radius=1.0)
 
-    # Try fitting the model. If no exception, verify the failure through scores_.
-    try:
-        sl.fit(data_img, y=cond)
-        # If fit completes, verify if scores_ indicates failure
-        assert sl.scores_ is None or sl.scores_.size == 0, (
-            "SearchLight fit should fail with mismatched process mask, "
-            "but it produced non-empty scores."
-        )
-    except Exception as e:
-        # If any exception is raised, the test passes
-        print(f"Expected failure occurred: {e}")
+    sl.fit(data_img, y=cond)
+    assert sl.scores_ is None or sl.scores_.size == 0
