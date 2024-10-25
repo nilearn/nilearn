@@ -424,7 +424,7 @@ def test_safe_extract(tmp_path):
         _utils.uncompress_file(ztemp, verbose=0)
 
 
-def test_fetch_file_part(tmp_path, capsys, request_mocker):
+def test_fetch_single_file_part(tmp_path, capsys, request_mocker):
     def get_response(match, request):
         """Create mock Response object with correct content range header."""
         req_range = request.headers.get("Range")
@@ -474,7 +474,7 @@ def test_fetch_file_part(tmp_path, capsys, request_mocker):
 
 
 @pytest.mark.parametrize("should_cast_path_to_string", [False, True])
-def test_fetch_file_overwrite(
+def test_fetch_single_file_overwrite(
     should_cast_path_to_string, tmp_path, request_mocker
 ):
     if should_cast_path_to_string:
