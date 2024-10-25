@@ -207,11 +207,14 @@ def test_searchlight_scores_img_error_before_fit():
 
 
 def test_mask_img_dimension_mismatch():
-    """Test if SearchLight handles mismatched mask and image dimensions gracefully."""
+    """Test if SearchLight handles mismatched mask and
+    image dimensions gracefully."""
     data_img, cond, _ = _make_searchlight_test_data(frames=20)
 
     # Create a mask with smaller dimensions (4x4x4 vs 5x5x5 in data_img)
-    invalid_mask_img = Nifti1Image(np.ones((4, 4, 4), dtype="uint8"), np.eye(4))
+    invalid_mask_img = Nifti1Image(
+        np.ones((4, 4, 4), dtype="uint8"), np.eye(4)
+    )
 
     # Instantiate SearchLight with mismatched mask
     sl = searchlight.SearchLight(invalid_mask_img, radius=1.0)
@@ -259,8 +262,11 @@ def test_process_mask_shape_mismatch():
     frames = 20
     data_img, cond, mask_img = _make_searchlight_test_data(frames)
 
-    # Create a process mask with smaller dimensions (4x4x4 vs 5x5x5 in data_img)
-    process_mask_img = Nifti1Image(np.ones((4, 4, 4), dtype="uint8"), np.eye(4))
+    # Create a process mask with smaller dimensions
+    # (4x4x4 vs 5x5x5 in data_img)
+    process_mask_img = Nifti1Image(
+        np.ones((4, 4, 4), dtype="uint8"), np.eye(4)
+    )
 
     # Instantiate SearchLight with mismatched process mask
     sl = searchlight.SearchLight(
