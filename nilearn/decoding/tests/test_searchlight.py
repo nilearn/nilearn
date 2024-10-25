@@ -263,7 +263,7 @@ def test_transform_applies_mask_correctly():
 
 
 def test_process_mask_shape_mismatch():
-    """Test if SearchLight fit fails with mismatched process mask and image dimensions."""
+    """Test SearchLight with mismatched process mask and image dimensions."""
     frames = 20
     data_img, cond, mask_img = _make_searchlight_test_data(frames)
 
