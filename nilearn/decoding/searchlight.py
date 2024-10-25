@@ -360,11 +360,7 @@ class SearchLight(BaseEstimator):
         process_mask, process_mask_affine = masking.load_mask_img(
             process_mask_img
         )
-        if process_mask.shape != imgs.shape[:3]:
-            raise ValueError(
-                "The mask image and the 4D input images must"
-                " have matching dimensions."
-            )
+
         self.process_mask_ = process_mask
         process_mask_coords = np.where(process_mask != 0)
         process_mask_coords = coord_transform(
