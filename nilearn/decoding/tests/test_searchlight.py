@@ -216,17 +216,8 @@ def test_mask_img_dimension_mismatch():
     # Instantiate SearchLight with the invalid mask
     sl = searchlight.SearchLight(invalid_mask_img, radius=1.0)
 
-    # Try fitting the model. If no exception, check scores_ for failure.
-    try:
-        sl.fit(data_img, y=cond)
-        # If fit completes, check if scores_ is empty (indicating failure)
-        assert sl.scores_ is None or sl.scores_.size == 0, (
-            "SearchLight fit should fail with mismatched dimensions, "
-            "but it produced non-empty scores."
-        )
-    except Exception as e:
-        # If any exception is raised, the test should pass
-        print(f"Expected failure occurred: {e}")
+    sl.fit(data_img, y=cond)
+    assert sl.scores_ is None or sl.scores_.size == 0
 
 def test_transform_without_fit():
     """Test if calling `transform()` raises ValueError before fitting."""
