@@ -71,7 +71,7 @@ class OrthoProjector(OrthoSlicer):
     ):
         """Perform the input checks and raise different types of errors.
 
-        ``input_checks`` is called inside the method ``add_graph``.
+        ``_check_inputs_add_graph`` is called inside the method ``add_graph``.
         """
         # safety checks
         if "s" in node_kwargs:
@@ -210,7 +210,7 @@ class OrthoProjector(OrthoSlicer):
         if not np.allclose(adjacency_matrix, adjacency_matrix.T, rtol=1e-3):
             symmetric = False
             warnings.warn(
-                "'adjacency_matrix' is not symmetric. "
+                "'adjacency_matrix' is not symmetric.\n"
                 "A directed graph will be plotted.",
                 stacklevel=3,
             )
@@ -220,7 +220,8 @@ class OrthoProjector(OrthoSlicer):
             if not (adjacency_matrix.mask == adjacency_matrix.mask.T).all():
                 symmetric = False
                 warnings.warn(
-                    "'adjacency_matrix' was masked with a non symmetric mask.\n"
+                    "'adjacency_matrix' was masked \
+                    with a non symmetric mask.\n"
                     "A directed graph will be plotted.",
                     stacklevel=3,
                 )
