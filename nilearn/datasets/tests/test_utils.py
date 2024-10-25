@@ -422,24 +422,26 @@ def test_safe_extract(tmp_path):
         _utils.uncompress_file(ztemp, verbose=0)
 
 
-def test_fetch_file_part(tmp_path):
+def test_fetch_file_part(tmp_path, capsys):
     url = "http://foo/temp.txt"
     file_full = tmp_path / "temp.txt"
     file_part = tmp_path / "temp.txt.part"
     file_part.touch()
 
     _utils.fetch_single_file(
-        url=url, data_dir=tmp_path, verbose=0, resume=True
+        url=url, data_dir=tmp_path, verbose=1, resume=True
     )
 
     assert file_full.exists()
+
+    captured = capsys.readouterr()
+    assert "Resuming failed" not in captured.out
 
     file_full.unlink()
     assert not file_full.exists()
     assert not file_part.exists()
 
     # test for overwrite
-    url = "http://foo/temp.txt"
     file_part.touch()
 
     _utils.fetch_single_file(
