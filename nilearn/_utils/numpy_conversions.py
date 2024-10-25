@@ -92,6 +92,9 @@ def as_ndarray(arr, copy=False, dtype=None, order="K"):
     if order not in ("C", "F", "A", "K", None):
         raise ValueError(f"Invalid value for 'order': {order!s}")
 
+    if not isinstance(arr, (np.memmap, np.ndarray, list, tuple)):
+        raise ValueError(f"Type not handled: {arr.__class__}")
+
     if isinstance(arr, np.memmap):
         if dtype is None:
             if order in ("K", "A", None):
@@ -120,9 +123,6 @@ def as_ndarray(arr, copy=False, dtype=None, order="K"):
             ret = np.asarray(arr, dtype=dtype)
         else:
             ret = np.asarray(arr, dtype=dtype, order=order)
-
-    else:
-        raise ValueError(f"Type not handled: {arr.__class__}")
 
     return ret
 
