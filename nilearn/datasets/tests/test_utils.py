@@ -5,6 +5,7 @@
 import contextlib
 import gzip
 import os
+import re
 import shutil
 import tarfile
 import urllib
@@ -17,6 +18,7 @@ import pytest
 import requests
 
 from nilearn.datasets import _utils
+from nilearn.datasets.tests._testing import Response
 
 datadir = _utils.PACKAGE_DIRECTORY / "data"
 
@@ -422,20 +424,38 @@ def test_safe_extract(tmp_path):
         _utils.uncompress_file(ztemp, verbose=0)
 
 
-def test_fetch_file_part(tmp_path, capsys):
+def test_fetch_file_part(tmp_path, capsys, request_mocker):
+    def get_response(match, request):
+        """Create mock Response object with correct content range header."""
+        req_range = request.headers.get("Range")
+        resp = Response(b"dummy content", match)
+
+        # set up Response object to return partial content
+        # and update header accordingly
+        if req_range is not None:
+            resp.iter_start = int(
+                re.match(r"bytes=(\d+)-", req_range).group(1)
+            )
+            resp.headers["Content-Range"] = (
+                f"bytes {resp.iter_start}-{len(resp.content) - 1}"
+                f"/{len(resp.content)}"
+            )
+
+        return resp
+
     url = "http://foo/temp.txt"
     file_full = tmp_path / "temp.txt"
     file_part = tmp_path / "temp.txt.part"
     file_part.touch()
+
+    request_mocker.url_mapping[url] = get_response
 
     _utils.fetch_single_file(
         url=url, data_dir=tmp_path, verbose=1, resume=True
     )
 
     assert file_full.exists()
-
-    captured = capsys.readouterr()
-    assert "Resuming failed" not in captured.out
+    assert "Resuming failed" not in capsys.readouterr().out
 
     file_full.unlink()
     assert not file_full.exists()
