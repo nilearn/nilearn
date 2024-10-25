@@ -2,7 +2,6 @@
 
 # Author: Alexandre Abraham
 
-import contextlib
 import gzip
 import os
 import re
@@ -120,8 +119,7 @@ def test_get_dataset_dir(tmp_path):
 
     # Verify exception for a path which exists and is a file
     test_file = tmp_path / "some_file"
-    with test_file.open("w") as out:
-        out.write("abcfeg")
+    test_file.write_text("abcfeg")
 
     with pytest.raises(
         OSError,
@@ -366,7 +364,7 @@ def test_uncompress_tar(tmp_path, ext, mode):
     # and check if ftemp exists
     ztemp = tmp_path / f"test.{ext}"
     ftemp = "test"
-    with contextlib.closing(tarfile.open(ztemp, mode)) as testtar:
+    with tarfile.open(ztemp, mode) as testtar:
         temp = tmp_path / ftemp
         temp.write_text(ftemp)
         testtar.add(temp)
@@ -384,7 +382,7 @@ def test_uncompress_zip(tmp_path):
     # and check if ftemp exists
     ztemp = tmp_path / "test.zip"
     ftemp = "test"
-    with contextlib.closing(ZipFile(ztemp, "w")) as testzip:
+    with ZipFile(ztemp, "w") as testzip:
         testzip.writestr(ftemp, " ")
 
     _utils.uncompress_file(ztemp, verbose=0)
@@ -402,8 +400,8 @@ def test_uncompress_gzip(tmp_path, ext):
     ztemp = tmp_path / f"test{ext}"
     ftemp = "test"
 
-    with gzip.open(ztemp, "wb") as testgzip:
-        testgzip.write(ftemp.encode())
+    with gzip.open(ztemp, "wt") as testgzip:
+        testgzip.write(ftemp)
 
     _utils.uncompress_file(ztemp, verbose=0)
     assert (tmp_path / ftemp).exists()
@@ -414,7 +412,7 @@ def test_safe_extract(tmp_path):
     ztemp = tmp_path / "test.tar"
     in_archive_file = tmp_path / "something.txt"
     in_archive_file.write_text("hello")
-    with contextlib.closing(tarfile.open(ztemp, "w")) as tar:
+    with tarfile.open(ztemp, "w") as tar:
         arcname = "../test.tar"
         tar.add(in_archive_file, arcname=arcname)
 
@@ -487,12 +485,10 @@ def test_fetch_single_file_overwrite(
 
     assert request_mocker.url_count == 1
     assert fil.exists()
-    with fil.open() as fp:
-        assert fp.read() == ""
+    assert fil.read_text() == ""
 
     # Modify content
-    with fil.open("w") as fp:
-        fp.write("some content")
+    fil.write_text("some content")
 
     # Don't overwrite existing file.
     fil = _utils.fetch_single_file(
@@ -501,8 +497,7 @@ def test_fetch_single_file_overwrite(
 
     assert request_mocker.url_count == 1
     assert fil.exists()
-    with fil.open() as fp:
-        assert fp.read() == "some content"
+    assert fil.read_text() == "some content"
 
     # Overwrite existing file.
     fil = _utils.fetch_single_file(
@@ -511,8 +506,7 @@ def test_fetch_single_file_overwrite(
 
     assert request_mocker.url_count == 2
     assert fil.exists()
-    with fil.open() as fp:
-        assert fp.read() == ""
+    assert fil.read_text() == ""
 
 
 @pytest.mark.parametrize("should_cast_path_to_string", [False, True])
@@ -557,12 +551,10 @@ def test_fetch_files_overwrite(
 
     assert request_mocker.url_count == 1
     assert fil.exists()
-    with fil.open() as fp:
-        assert fp.read() == ""
+    assert fil.read_text() == ""
 
     # Modify content
-    with fil.open("w") as fp:
-        fp.write("some content")
+    fil.write_text("some content")
 
     # Don't overwrite existing file.
     fil = Path(
@@ -575,8 +567,7 @@ def test_fetch_files_overwrite(
 
     assert request_mocker.url_count == 1
     assert fil.exists()
-    with fil.open() as fp:
-        assert fp.read() == "some content"
+    assert fil.read_text() == "some content"
 
     # Overwrite existing file.
     fil = Path(
@@ -589,8 +580,7 @@ def test_fetch_files_overwrite(
 
     assert request_mocker.url_count == 2
     assert fil.exists()
-    with fil.open() as fp:
-        assert fp.read() == ""
+    assert fil.read_text() == ""
 
 
 def test_naive_ftp_adapter():
