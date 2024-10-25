@@ -206,8 +206,8 @@ def test_searchlight_scores_img_error_before_fit():
         sl.scores_img_()
 
 
-def test_dimension_mismatch_error():
-    """Test if SearchLight fit fails with mismatched mask and image dimensions."""
+def test_mask_img_dimension_mismatch():
+    """Test if SearchLight fit with mismatched mask and image dimensions."""
     data_img, cond, _ = _make_searchlight_test_data(frames=20)
 
     # Create a mask with mismatched dimensions (4x4x4 vs 5x5x5 in data_img)
