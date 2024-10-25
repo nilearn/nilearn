@@ -62,7 +62,7 @@ class OrthoProjector(OrthoSlicer):
         """
         pass
 
-    def input_checks(
+    def _check_inputs_add_graph(
         self,
         adjacency_matrix,
         node_coords,
@@ -77,12 +77,12 @@ class OrthoProjector(OrthoSlicer):
         if "s" in node_kwargs:
             raise ValueError(
                 "Please use 'node_size' and not 'node_kwargs' "
-                "to specify node sizes"
+                "to specify node sizes."
             )
         if "c" in node_kwargs:
             raise ValueError(
                 "Please use 'node_color' and not 'node_kwargs' "
-                "to specify node colors"
+                "to specify node colors."
             )
 
         adjacency_matrix_shape = adjacency_matrix.shape
@@ -92,7 +92,7 @@ class OrthoProjector(OrthoSlicer):
         ):
             raise ValueError(
                 "'adjacency_matrix' is supposed to have shape (n, n)."
-                f" Its shape was {adjacency_matrix_shape}"
+                f" Its shape was {adjacency_matrix_shape}."
             )
 
         node_coords_shape = node_coords.shape
@@ -103,7 +103,7 @@ class OrthoProjector(OrthoSlicer):
                 f"of shape {adjacency_matrix_shape} "
                 "therefore 'node_coords' should be a array "
                 f"with shape ({adjacency_matrix_shape[0]}, 3) "
-                f"while its shape was {node_coords_shape}"
+                f"while its shape was {node_coords_shape}."
             )
 
             raise ValueError(message)
@@ -122,9 +122,9 @@ class OrthoProjector(OrthoSlicer):
         if node_coords_shape[0] != adjacency_matrix_shape[0]:
             raise ValueError(
                 "Shape mismatch between 'adjacency_matrix' "
-                "and 'node_coords'"
+                "and 'node_coords'."
                 f"'adjacency_matrix' shape is {adjacency_matrix_shape}, "
-                f"'node_coords' shape is {node_coords_shape}"
+                f"'node_coords' shape is {node_coords_shape}."
             )
 
     def add_graph(
@@ -201,8 +201,7 @@ class OrthoProjector(OrthoSlicer):
         # make the lines below well-behaved
         adjacency_matrix = np.nan_to_num(adjacency_matrix)
 
-        # Validate inputs
-        self.input_checks(
+        self._check_inputs_add_graph(
             adjacency_matrix, node_coords, node_color, node_kwargs
         )
 
@@ -221,7 +220,7 @@ class OrthoProjector(OrthoSlicer):
             if not (adjacency_matrix.mask == adjacency_matrix.mask.T).all():
                 symmetric = False
                 warnings.warn(
-                    "'adjacency_matrix' was masked with a non symmetric mask."
+                    "'adjacency_matrix' was masked with a non symmetric mask.\n"
                     "A directed graph will be plotted.",
                     stacklevel=3,
                 )
