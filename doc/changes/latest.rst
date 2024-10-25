@@ -116,4 +116,4 @@ Changes
 
 - :bdg-primary:`Doc` Add missing default values to docstrings (:gh:`4656`, :gh:`4659`, :gh:`4660` by `Anupriya Kumari`_).
 
-- :bdg-secondary:`Maint` Refactored `nilearn.plotting.displays._projectors.add_graph` to reduce its maxixmum length (:gh:`4635` by `Anupriya Kumari`_).
+- :bdg-secondary:`Maint` Refactor ``nilearn.plotting.displays._projectors.add_graph`` to reduce its maxixmum length (:gh:`4635` by `Anupriya Kumari`_).
