@@ -279,13 +279,10 @@ def test_append_filters_to_query():
     assert query == "https://neurovault.org/api/collections/40"
 
 
-def test_get_batch(tmp_path):
+def test_get_batch():
     batch = neurovault._get_batch(neurovault._NEUROVAULT_COLLECTIONS_URL)
-
     assert "results" in batch
     assert "count" in batch
-    with (tmp_path / "test_nv.txt").open("w"):
-        pass
 
 
 def test_get_batch_error(tmp_path):
