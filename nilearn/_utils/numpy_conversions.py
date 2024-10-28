@@ -108,8 +108,7 @@ def as_ndarray(arr, copy=False, dtype=None, order="K"):
         ret = _asarray(arr, dtype=dtype, order=order)
         # In the present cas, np.may_share_memory result is always reliable.
         if np.may_share_memory(ret, arr) and copy:
-            # order-preserving copy
-            ret = ret.T.copy().T if ret.flags["F_CONTIGUOUS"] else ret.copy()
+            ret = np.array(ret, copy=True)
 
     elif isinstance(arr, (list, tuple)):
         ret = np.asarray(arr, dtype=dtype, order=order)
