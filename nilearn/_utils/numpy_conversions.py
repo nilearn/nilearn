@@ -74,11 +74,13 @@ def as_ndarray(arr, copy=False, dtype=None, order="K"):
         isinstance(arr, np.ndarray) and copy
     ):
         ret = np.array(arr, copy=True, dtype=dtype, order=order)
-    # if the order does not change and bool to/from 1-byte dtype, no need to
-    # create a copy
+    # if the order does not change and dtype does not change or
+    # bool to/from 1-byte dtype,
+    # no need to create a copy
     elif (
         (arr.itemsize == 1 and dtype in (bool, np.bool_))
         or (arr.dtype in (bool, np.bool_) and np.dtype(dtype).itemsize == 1)
+        or arr.dtype == dtype
     ) and (
         order == "F"
         and arr.flags["F_CONTIGUOUS"]
