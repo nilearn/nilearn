@@ -63,7 +63,6 @@ def as_ndarray(arr, copy=False, dtype=None, order="K"):
         Numpy array containing the same data as arr, always of class
         numpy.ndarray, and with no link to any underlying file.
     """
-
     if order not in ("C", "F", "A", "K", None):
         raise ValueError(f"Invalid value for 'order': {order!s}")
 
@@ -72,7 +71,7 @@ def as_ndarray(arr, copy=False, dtype=None, order="K"):
 
     # the cases where we have to create a copy of the underlying array
     if isinstance(arr, (np.memmap, list, tuple)) or (
-            isinstance(arr, np.ndarray) and copy
+        isinstance(arr, np.ndarray) and copy
     ):
         ret = np.array(arr, copy=True, dtype=dtype, order=order)
     # if the order does not change and bool to/from 1-byte dtype, no need to
