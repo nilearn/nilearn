@@ -27,7 +27,7 @@ def _asarray(arr, dtype=None, order=None):
 
 
 def as_ndarray(arr, copy=False, dtype=None, order="K"):
-    """Convert to numpy.ndarray starting with an arbitrary array, .
+    """Convert to numpy.ndarray starting with an arbitrary array.
 
     In the case of a memmap array, a copy is automatically made to break the
     link with the underlying file (whatever the value of the "copy" keyword).
@@ -81,9 +81,6 @@ def as_ndarray(arr, copy=False, dtype=None, order="K"):
         Numpy array containing the same data as arr, always of class
         numpy.ndarray, and with no link to any underlying file.
     """
-    # numpy.asarray never copies a subclass of numpy.ndarray (even for
-    #     memmaps) when dtype is unchanged.
-    # .astype() always copies
 
     if order not in ("C", "F", "A", "K", None):
         raise ValueError(f"Invalid value for 'order': {order!s}")
@@ -91,29 +88,15 @@ def as_ndarray(arr, copy=False, dtype=None, order="K"):
     if not isinstance(arr, (np.memmap, np.ndarray, list, tuple)):
         raise ValueError(f"Type not handled: {arr.__class__}")
 
-    if isinstance(arr, np.memmap):
-        if dtype is None:
-            ret = np.array(np.asarray(arr), copy=True, order=order)
-        elif order in ("K", "A", None):
-            # always copy (even when dtype does not change)
-            ret = np.asarray(arr).astype(dtype)
-        else:
-            # First load data from disk without changing order
-            # Changing order while reading through a memmap is incredibly
-            # inefficient.
-            ret = np.array(arr, copy=True)
-            ret = _asarray(ret, dtype=dtype, order=order)
-
-    elif isinstance(arr, np.ndarray):
-        ret = _asarray(arr, dtype=dtype, order=order)
-        # In the present cas, np.may_share_memory result is always reliable.
-        if np.may_share_memory(ret, arr) and copy:
-            ret = np.array(ret, copy=True)
-
-    elif isinstance(arr, (list, tuple)):
-        ret = np.asarray(arr, dtype=dtype, order=order)
-
-    return ret
+    # the cases where we have to create a copy of the underlying array
+    if isinstance(arr, (np.memmap, list, tuple)) or (
+            isinstance(arr, np.ndarray) and copy
+    ):
+        return np.array(arr, copy=True, dtype=dtype, order=order)
+    # if we do not have to create a copy of the array,
+    # we check dtype and order
+    else:
+        return _asarray(arr, dtype=dtype, order=order)
 
 
 def csv_to_array(csv_path, delimiters=" \t,;", **kwargs):
