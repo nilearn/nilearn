@@ -19,6 +19,7 @@ from numpy.testing import (
 
 from nilearn import _utils
 from nilearn._utils import testing
+from nilearn._utils.exceptions import DimensionError
 from nilearn.image import get_data
 from nilearn.image.image import _pad_array, crop_img
 from nilearn.image.resampling import (
@@ -26,6 +27,7 @@ from nilearn.image.resampling import (
     coord_transform,
     from_matrix_vector,
     get_bounds,
+    get_mask_bounds,
     reorder_img,
     resample_img,
     resample_to_img,
@@ -1265,3 +1267,20 @@ def test_smoke_resampling_non_nifti(affine_eye, shape, rng, force_resample):
         force_resample=force_resample,
         copy_header=True,
     )
+
+
+@pytest.mark.parametrize("shape", [(1, 4, 4)])
+def test_get_mask_bounds(data, affine_eye):
+    img = Nifti1Image(data, affine_eye)
+    assert_allclose((0.0, 0.0, 0.0, 3.0, 0.0, 3.0), get_mask_bounds(img))
+
+
+def test_get_mask_bounds_error(data, affine_eye):
+    with pytest.raises(TypeError, match="Data given cannot be loaded because"):
+        get_mask_bounds(None)
+
+    with pytest.raises(
+        DimensionError, match="Expected dimension is 3D and you provided a 4D"
+    ):
+        img = Nifti1Image(data, affine_eye)
+        get_mask_bounds(img)
