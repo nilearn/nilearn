@@ -471,6 +471,24 @@ def test_fetch_single_file_part(tmp_path, capsys, request_mocker):
     assert file_full.read_text() == "dummy content"  # overwritten
 
 
+def test_fetch_single_file_part_error(tmp_path, capsys, request_mocker):
+    url = "http://foo/temp.txt"
+    file_part = tmp_path / "temp.txt.part"
+    file_part.touch()  # should not be overwritten
+
+    # the default Response from the mocker does not handle Range requests
+    request_mocker.url_mapping[url] = "dummy content"
+
+    _utils.fetch_single_file(
+        url=url, data_dir=tmp_path, verbose=1, resume=True
+    )
+
+    assert (
+        "Resuming failed, try to download the whole file."
+        in capsys.readouterr().out
+    )
+
+
 @pytest.mark.parametrize("should_cast_path_to_string", [False, True])
 def test_fetch_single_file_overwrite(
     should_cast_path_to_string, tmp_path, request_mocker
