@@ -193,7 +193,7 @@ decoder.fit(img, y)
 
 coef_img = decoder[:-1].inverse_transform(np.atleast_2d(decoder[-1].coef_))
 
-vmax = max([np.absolute(dp).max() for dp in coef_img.data.parts.values()])
+vmax = max(np.absolute(dp).max() for dp in coef_img.data.parts.values())
 plotting.plot_surf(
     coef_img,
     cmap="cold_hot",
