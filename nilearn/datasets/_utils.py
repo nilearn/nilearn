@@ -100,13 +100,9 @@ def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
 
         # Trailing whitespace is to erase extra char when message length varies
         logger.log(
-            "\rDownloaded %d of %d bytes (%.1f%%, %s remaining)"
-            % (
-                bytes_so_far,
-                total_size,
-                total_percent * 100,
-                _format_time(time_remaining),
-            ),
+            f"\rDownloaded {bytes_so_far} of {total_size} bytes "
+            f"({total_percent * 100:.1f}%%, "
+            f"{_format_time(time_remaining)} remaining)",
             stack_level=2,
         )
 
