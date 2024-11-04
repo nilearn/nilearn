@@ -328,5 +328,5 @@ print("Scikit-Learn mean AU-ROC score", np.mean(scores_sklearn))
 # The advantage of using Nilearn's :class:`nilearn.decoding.Decoder` is
 # that it does all these steps under the hood and provides a simple interface
 # to train, cross-validate and predict on new data, while also parallelizing
-# the computations to make the cross-validation faster. It also organises the
-# results in a structured way that can be easily accessed and analysed.
+# the computations to make the cross-validation faster. It also organizes the
+# results in a structured way that can be easily accessed and analyzed.
