@@ -304,7 +304,7 @@ def make_first_level_design_matrix(
             'onset': column to specify the start time of each events in
                      seconds. An error is raised if this key is missing.
             'trial_type': column to specify per-event experimental conditions
-                          identifier. If missing each event are labelled
+                          identifier. If missing each event are labeled
                           'dummy' and considered to form a unique condition.
             'duration': column to specify the duration of each events in
                         seconds. If missing the duration of each events is set

@@ -164,7 +164,7 @@ def test_get_dataset_dir_write_access(tmp_path):
         "test", default_paths=[no_write], verbose=0
     )
 
-    # Non writeable dir is returned because dataset may be in there.
+    # Non writable dir is returned because dataset may be in there.
     assert data_dir == str(no_write)
     assert Path(data_dir).exists()
 

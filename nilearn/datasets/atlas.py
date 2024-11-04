@@ -167,7 +167,7 @@ def fetch_atlas_craddock_2012(
     The provided images are in MNI152 space. All images are 4D with
     shapes equal to ``(47, 56, 46, 43)``.
 
-    See :footcite:t:`CreativeCommons` for the licence.
+    See :footcite:t:`CreativeCommons` for the license.
 
     See :footcite:t:`Craddock2012` and :footcite:t:`nitrcClusterROI`
     for more information on this :term:`parcellation`.
@@ -1145,7 +1145,7 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     Notes
     -----
-    Licence: unknown.
+    License: unknown.
 
     """
     if url is None:
@@ -1271,7 +1271,7 @@ def fetch_atlas_aal(
 
     Notes
     -----
-    Licence: unknown.
+    License: unknown.
 
     """
     versions = ["SPM5", "SPM8", "SPM12", "3v2"]
@@ -1694,7 +1694,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     Notes
     -----
-    Licence: unknown
+    License: unknown
 
     See http://mialab.mrn.org/data/index.html for more information
     on this dataset.
@@ -2122,7 +2122,7 @@ def fetch_atlas_schaefer_2018(
     label names. For more details, see
     https://github.com/ThomasYeoLab/CBIG/blob/master/stable_projects/brain_parcellation/Schaefer2018_LocalGlobal/Parcellations/Updates/Update_20190916_README.md
 
-    Licence: MIT.
+    License: MIT.
 
     """  # noqa: E501
     valid_n_rois = list(range(100, 1100, 100))

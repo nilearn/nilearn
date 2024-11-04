@@ -26,7 +26,7 @@ decomposition           --- Includes a subject level variant of the ICA
                             algorithm called Canonical ICA
 experimental            --- Provides importable modules
                             that enable the use of experimental features
-glm                     --- Analysing fMRI data using GLMs
+glm                     --- Analyzing fMRI data using GLMs
 image                   --- Set of functions defining mathematical operations
                             working on Niimg-like objects
 maskers                 --- Includes scikit-learn transformers.

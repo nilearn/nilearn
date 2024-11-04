@@ -39,7 +39,7 @@ def check_same_fov(*args, **kwargs):
     Parameters
     ----------
     args : images
-        Images to be checked. Images passed without keywords will be labelled
+        Images to be checked. Images passed without keywords will be labeled
         as img_#1 in the error message (replace 1 with the appropriate index).
 
     kwargs : images

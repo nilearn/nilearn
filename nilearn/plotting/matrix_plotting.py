@@ -193,20 +193,20 @@ def _configure_grid(axes, tri, size):
         for i in range(size):
             # Correct for weird mis-sizing
             i = 1.001 * i
-            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i + 0.5], color="grey")
-            axes.plot([i + 0.5, -0.5], [i + 0.5, i + 0.5], color="grey")
+            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i + 0.5], color="gray")
+            axes.plot([i + 0.5, -0.5], [i + 0.5, i + 0.5], color="gray")
     elif tri == "diag":
         for i in range(size):
             # Correct for weird mis-sizing
             i = 1.001 * i
-            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i - 0.5], color="grey")
-            axes.plot([i + 0.5, -0.5], [i - 0.5, i - 0.5], color="grey")
+            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i - 0.5], color="gray")
+            axes.plot([i + 0.5, -0.5], [i - 0.5, i - 0.5], color="gray")
     else:
         for i in range(size):
             # Correct for weird mis-sizing
             i = 1.001 * i
-            axes.plot([i + 0.5, i + 0.5], [size - 0.5, -0.5], color="grey")
-            axes.plot([size - 0.5, -0.5], [i + 0.5, i + 0.5], color="grey")
+            axes.plot([i + 0.5, i + 0.5], [size - 0.5, -0.5], color="gray")
+            axes.plot([size - 0.5, -0.5], [i + 0.5, i + 0.5], color="gray")
 
 
 @fill_doc

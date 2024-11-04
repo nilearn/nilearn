@@ -129,7 +129,7 @@ def test_save_sprite(rng):
         mask=html_stat_map._data_to_sprite(mask),
     )
     correct_img = plt.Normalize(0, 1)(correct_img)
-    cmapped = plt.get_cmap("Greys")(correct_img)
+    cmapped = plt.get_cmap("Grays")(correct_img)
     assert np.allclose(img, cmapped, atol=0.1)
 
 

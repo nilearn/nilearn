@@ -333,7 +333,7 @@ def _plot_surf_plotly(
     else:
         if bg_data is None:
             bg_data = np.zeros(coords.shape[0])
-        colors = colorscale("Greys", bg_data, symmetric_cmap=False)
+        colors = colorscale("Grays", bg_data, symmetric_cmap=False)
         vertexcolor = get_vertexcolor(
             bg_data,
             colors["cmap"],
@@ -493,7 +493,7 @@ def _get_cmap_matplotlib(cmap, vmin, vmax, cbar_tick_format, threshold=None):
                 "You provided a non integer threshold "
                 "but configured the colorbar to use integer formatting."
             )
-        # set colors to grey for absolute values < threshold
+        # set colors to gray for absolute values < threshold
         istart = int(norm(-threshold, clip=True) * (our_cmap.N - 1))
         istop = int(norm(threshold, clip=True) * (our_cmap.N - 1))
         for i in range(istart, istop):
@@ -793,7 +793,7 @@ def plot_surf(
     bg_map : :obj:`str` or :class:`numpy.ndarray` or SurfaceImage or None,\
              default=None
         Background image to be plotted on the :term:`mesh`
-        underneath the surf_data in greyscale,
+        underneath the surf_data in grayscale,
         most likely a sulcal depth map for realistic shading.
         If the map contains values outside [0, 1],
         it will be rescaled such that all values are in [0, 1].
@@ -1345,7 +1345,7 @@ def plot_surf_stat_map(
     bg_map : :obj:`str` or :class:`numpy.ndarray` or SurfaceImage or None,\
              default=None
         Background image to be plotted on the :term:`mesh` underneath
-        the stat_map in greyscale, most likely a sulcal depth map
+        the stat_map in grayscale, most likely a sulcal depth map
         for realistic shading.
         If the map contains values outside [0, 1], it will be
         rescaled such that all values are in [0, 1]. Otherwise,
@@ -1635,7 +1635,7 @@ def _colorbar_from_array(
     if threshold is None:
         threshold = 0.0
 
-    # set colors to grey for absolute values < threshold
+    # set colors to gray for absolute values < threshold
     istart = int(norm(-threshold, clip=True) * (cmap.N - 1))
     istop = int(norm(threshold, clip=True) * (cmap.N - 1))
     for i in range(istart, istop):
@@ -1934,7 +1934,7 @@ def plot_surf_roi(
     bg_map : :obj:`str` or :class:`numpy.ndarray` or SurfaceImage or None,\
              default=None
         Background image to be plotted on the :term:`mesh` underneath
-        the stat_map in greyscale, most likely a sulcal depth map for
+        the stat_map in grayscale, most likely a sulcal depth map for
         realistic shading.
         If the map contains values outside [0, 1], it will be
         rescaled such that all values are in [0, 1]. Otherwise,
@@ -1973,7 +1973,7 @@ def plot_surf_roi(
         `avg_method` will default to ``"median"`` if ``None`` is passed.
 
     threshold : a number or None, default=1e-14
-        Threshold regions that are labelled 0.
+        Threshold regions that are labeled 0.
         If you want to use 0 as a label, set threshold to None.
 
     %(cmap)s

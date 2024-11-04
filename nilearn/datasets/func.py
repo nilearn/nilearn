@@ -858,7 +858,7 @@ def fetch_localizer_contrasts(
         opts = {"move": participants_file}
         filenames.append((participants_file, file_url, opts))
 
-    # Fetch behavioural
+    # Fetch behavioral
     behavioural_file = Path("brainomics_data", "phenotype", "behavioural.tsv")
     path = "/localizer/phenotype/behavioural.tsv"
     if _is_valid_path(path, index, verbose=verbose):
@@ -1420,7 +1420,7 @@ def fetch_megatrawls_netmats(
     from MegaTrawls release in HCP.
 
     This data can be used to predict relationships between imaging data and
-    non-imaging behavioural measures such as age, sex, education, etc.
+    non-imaging behavioral measures such as age, sex, education, etc.
     The network matrices are estimated from functional connectivity
     datasets of 461 subjects. Full technical details in references.
 

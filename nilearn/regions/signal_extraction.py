@@ -340,7 +340,7 @@ def img_to_signals_labels(
         signals[n] = np.asarray(
             reduction_function(img, labels=labels_data, index=labels)
         )
-    # Set to zero signals for missing labels. Workaround for Scipy behaviour
+    # Set to zero signals for missing labels. Workaround for Scipy behavior
     if keep_masked_labels:
         missing_labels = set(labels) - set(np.unique(labels_data))
         labels_index = {l: n for n, l in enumerate(labels)}
