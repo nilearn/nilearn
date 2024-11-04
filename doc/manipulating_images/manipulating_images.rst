@@ -257,7 +257,7 @@ ROI mask:
      on :term:`probabilistic atlas` Nifti-like images whereas
 
    * A function :func:`nilearn.regions.connected_label_regions` can be used on
-     atlases denoted as labels. For instance, atlases labelled using KMeans.
+     atlases denoted as labels. For instance, atlases labeled using KMeans.
 
 .. _nibabel: https://nipy.org/nibabel/
 

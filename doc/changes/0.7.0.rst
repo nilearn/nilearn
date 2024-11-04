@@ -67,7 +67,7 @@ Fixes
 
 - :bdg-dark:`Code` :func:`nilearn.masking.compute_brain_mask` has replaced ``nilearn.masking.compute_gray_matter_mask``. Features remained the same but some corrections regarding its description were made in the docstring.
 
-- :bdg-dark:`Code` first level modelling can deal with regressors having multiple events which share onsets or offsets. Previously, such cases could lead to an erroneous baseline shift.
+- :bdg-dark:`Code` first level modeling can deal with regressors having multiple events which share onsets or offsets. Previously, such cases could lead to an erroneous baseline shift.
 
 - :bdg-dark:`Code` Fix decomposition estimators returning explained variance score as 0. based on all components i.e., when ``per_component=False``.
 

@@ -222,7 +222,7 @@ with ``get_affine()`` and ``get_header()``.
       `FSL <https://fsl.fmrib.ox.ac.uk/fsl/>`_ users tend to
       prefer this format.
     - several 3D matrices representing each time point (single 3D volume) of the
-      run, stored in set of 3D Nifti or analyse files.
+      run, stored in set of 3D Nifti or analyze files.
       `SPM <https://www.fil.ion.ucl.ac.uk/spm/>`_ users tend
       to prefer this format.
 
@@ -236,7 +236,7 @@ objects":
 
 **Niimg:** A Niimg-like object can be one of the following:
 
-  * A string or pathlib.Path object with a file path to a Nifti or Analyse image
+  * A string or pathlib.Path object with a file path to a Nifti or Analyze image
   * An ``SpatialImage`` from nibabel, ie an object exposing ``get_fdata()``
     method and ``affine`` attribute, typically a ``Nifti1Image`` from nibabel_.
 
