@@ -93,8 +93,9 @@ Discussions = "https://neurostars.org/tag/nilearn"
 Homepage = "https://nilearn.github.io"
 
 [tool.codespell]
+builtin = "clear,rare,en-GB_to_en-US"
 ignore-words = ".github/codespell_ignore_words.txt"
-skip = "./.git,plotly-gl3d-latest.min.js,jquery.min.js,localizer_behavioural.tsv,.mypy_cache,env,venv,./doc/auto_examples,*/tmp,./doc/modules/generated/*,./doc/_build,./maint_tools/*.html,./examples/*/results"
+skip = "./.git,*.cff,*.bib,*/tmp,plotly-gl3d-latest.min.js,jquery.min.js,localizer_behavioural.tsv,.mypy_cache,env,venv,./doc/auto_examples,./doc/modules/generated/*,./doc/_build,./maint_tools/*.html,./examples/*/results,AUTHORS.rst"
 
 [tool.hatch.build.hooks.vcs]
 version-file = "nilearn/_version.py"
