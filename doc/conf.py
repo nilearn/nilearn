@@ -28,11 +28,11 @@ from nilearn._version import __version__
 # directory, add these directories to sys.path here. If the directory
 # is relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
-sys.path.insert(0, os.path.abspath("sphinxext"))
+sys.path.insert(0, str(Path("sphinxext").absolute()))
 from github_link import make_linkcode_resolve
 
 # We also add the directory just above to enable local imports of nilearn
-sys.path.insert(0, os.path.abspath(".."))
+sys.path.insert(0, str(Path("..").absolute()))
 
 # -- General configuration ---------------------------------------------------
 
@@ -446,15 +446,21 @@ sphinx_gallery_conf = {
 }
 
 
-def touch_example_backreferences(app, what, name, obj, options, lines):
+def touch_example_backreferences(
+    app,
+    what,  # noqa: ARG001
+    name,
+    obj,  # noqa: ARG001
+    options,  # noqa: ARG001
+    lines,  # noqa: ARG001
+):
     # generate empty examples files, so that we don't get
     # inclusion errors if there are no examples for a class / module
     examples_path = Path(
         app.srcdir, "modules", "generated", f"{name}.examples"
     )
     if not examples_path.exists():
-        # touch file
-        open(examples_path, "w").close()
+        examples_path.touch()
 
 
 def setup(app):

@@ -1,6 +1,7 @@
 # Tests for functions in surf_plotting.py
 import re
 import tempfile
+from pathlib import Path
 from unittest import mock
 
 import matplotlib.pyplot as plt
@@ -12,6 +13,7 @@ from numpy.testing import assert_array_equal
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn.conftest import _rng
 from nilearn.datasets import fetch_surf_fsaverage
+from nilearn.plotting._utils import check_surface_plotting_inputs
 from nilearn.plotting.displays import PlotlySurfaceFigure, SurfaceFigure
 from nilearn.plotting.surf_plotting import (
     VALID_HEMISPHERES,
@@ -189,6 +191,108 @@ EXPECTED_VIEW_MATPLOTLIB = {
         "ventral": (270, 0),
     },
 }
+
+
+@pytest.mark.parametrize("bg_map", ["some_path", Path("some_path"), None])
+@pytest.mark.parametrize("surf_map", ["some_path", Path("some_path")])
+@pytest.mark.parametrize("surf_mesh", ["some_path", Path("some_path")])
+def test_check_surface_plotting_inputs_no_change(surf_map, surf_mesh, bg_map):
+    """Cover use cases where the inputs are not changed."""
+    hemi = "left"
+    out_surf_map, out_surf_mesh, out_bg_map = check_surface_plotting_inputs(
+        surf_map, surf_mesh, hemi, bg_map
+    )
+    assert surf_map == out_surf_map
+    assert surf_mesh == out_surf_mesh
+    assert bg_map == out_bg_map
+
+
+@pytest.mark.parametrize("bg_map", ["some_path", Path("some_path"), None])
+@pytest.mark.parametrize("mesh", [None])
+def test_check_surface_plotting_inputs_extract_mesh_and_data(
+    surf_img, mesh, bg_map, assert_surf_mesh_equal
+):
+    """Extract mesh and data when a SurfaceImage is passed."""
+    hemi = "left"
+    out_surf_map, out_surf_mesh, out_bg_map = check_surface_plotting_inputs(
+        surf_map=surf_img((10,)),
+        surf_mesh=mesh,
+        hemi=hemi,
+        bg_map=bg_map,
+    )
+    assert_array_equal(out_surf_map, surf_img((10,)).data.parts[hemi])
+    assert_surf_mesh_equal(out_surf_mesh, surf_img((10,)).mesh.parts[hemi])
+    assert bg_map == out_bg_map
+
+
+@pytest.mark.parametrize("bg_map", ["some_path", Path("some_path"), None])
+def test_check_surface_plotting_inputs_extract_mesh_from_polymesh(
+    surf_img, surf_mesh, bg_map, assert_surf_mesh_equal
+):
+    """Extract mesh from Polymesh and data from SurfaceImage."""
+    hemi = "left"
+    out_surf_map, out_surf_mesh, out_bg_map = check_surface_plotting_inputs(
+        surf_map=surf_img((10,)),
+        surf_mesh=surf_mesh(),
+        hemi=hemi,
+        bg_map=bg_map,
+    )
+    assert_array_equal(out_surf_map, surf_img((10,)).data.parts[hemi])
+    assert_surf_mesh_equal(out_surf_mesh, surf_mesh().parts[hemi])
+    assert bg_map == out_bg_map
+
+
+def test_check_surface_plotting_inputs_extract_bg_map_data(
+    surf_img, surf_mesh
+):
+    """Extract background map data."""
+    hemi = "left"
+    _, _, out_bg_map = check_surface_plotting_inputs(
+        surf_map=surf_img((10,)),
+        surf_mesh=surf_mesh(),
+        hemi=hemi,
+        bg_map=surf_img(),
+    )
+    assert_array_equal(out_bg_map, surf_img().data.parts[hemi])
+
+
+@pytest.mark.parametrize(
+    "fn",
+    [
+        check_surface_plotting_inputs,
+        plot_surf,
+        plot_surf_stat_map,
+        plot_surf_contours,
+        plot_surf_roi,
+    ],
+)
+def test_check_surface_plotting_inputs_error_mash_and_data_none(fn):
+    """Fail if no mesh or data is passed."""
+    with pytest.raises(TypeError, match="cannot both be None"):
+        fn(None, None)
+
+
+def test_check_surface_plotting_inputs_errors():
+    """Fail is mesh is none and data is not not SurfaceImage."""
+    with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
+        check_surface_plotting_inputs(surf_map=1, surf_mesh=None)
+    with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
+        plot_surf(surf_map=1, surf_mesh=None)
+    with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
+        plot_surf_stat_map(stat_map=1, surf_mesh=None)
+    with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
+        plot_surf_contours(roi_map=1, surf_mesh=None)
+    with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
+        plot_surf_roi(roi_map=1, surf_mesh=None)
+
+
+def test_plot_surf_contours_warning_hemi():
+    """Test warning that hemi will be ignored."""
+    mesh = generate_surf()
+    parcellation = np.zeros((mesh[0].shape[0],))
+    parcellation[mesh[1][3]] = 1
+    with pytest.warns(UserWarning, match="This value will be ignored"):
+        plot_surf_contours(mesh, parcellation, hemi="left")
 
 
 @pytest.mark.parametrize("full_view", EXPECTED_CAMERAS_PLOTLY)
@@ -829,7 +933,7 @@ def test_plot_surf_avg_method_errors(rng):
         ),
     ):
 
-        def custom_avg_function(vertices):
+        def custom_avg_function(vertices):  # noqa: ARG001
             return "string"
 
         plot_surf(

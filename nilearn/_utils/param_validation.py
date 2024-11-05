@@ -85,34 +85,35 @@ def check_threshold(threshold, data, percentile_func, name="threshold"):
     return threshold
 
 
-def get_mask_volume(mask_img):
-    """Compute the volume of a brain mask in mm^3 if mask_img is a 3D volume
+def _get_mask_extent(mask_img):
+    """Compute the extent of the provided brain mask.
+    The extent is the volume of the mask in mm^3 if mask_img is a Nifti1Image
     or the number of vertices if mask_img is a SurfaceImage.
 
     Parameters
     ----------
-    mask_img : nibabel image object or SurfaceImage
-        Input image whose voxel dimensions or input SurfaceImage whose
+    mask_img : Nifti1Image or SurfaceImage
+        The Nifti1Image whose voxel dimensions or the SurfaceImage whose
         number of vertices are to be computed.
 
     Returns
     -------
-    mask_volume : float
-        The computed volume in mm^3 (if mask_img is a 3D volume) or the number
-        of vertices (if mask_img is a SurfaceImage).
+    mask_extent : float
+        The computed volume in mm^3 (if mask_img is a Nifti1Image) or the
+        number of vertices (if mask_img is a SurfaceImage).
 
     """
     if hasattr(mask_img, "affine"):
         affine = mask_img.affine
         prod_vox_dims = 1.0 * np.abs(np.linalg.det(affine[:3, :3]))
-        mask_volume = prod_vox_dims * _get_data(mask_img).astype(bool).sum()
+        mask_extent = prod_vox_dims * _get_data(mask_img).astype(bool).sum()
     else:
         # sum number of True values in both hemispheres
-        mask_volume = (
+        mask_extent = (
             mask_img.data.parts["left"].sum()
             + mask_img.data.parts["right"].sum()
         )
-    return mask_volume
+    return mask_extent
 
 
 def adjust_screening_percentile(
@@ -136,8 +137,9 @@ def adjust_screening_percentile(
         with the ratio of the volume of the mask of the data and volume of the
         standard brain.
 
-    mask_img : nibabel image object
-        Input image whose voxel dimensions are to be computed.
+    mask_img :  Nifti1Image or SurfaceImage
+        The Nifti1Image whose voxel dimensions or the SurfaceImage whose
+        number of vertices are to be computed.
 
     verbose : int, default=0
         Verbosity level.
@@ -156,21 +158,21 @@ def adjust_screening_percentile(
     original_screening_percentile = screening_percentile
     # correct screening_percentile according to the volume of the data mask
     # or the number of vertices of the reference mesh
-    mask_volume = get_mask_volume(mask_img)
+    mask_extent = _get_mask_extent(mask_img)
     # if mask_img is a surface mesh, reference is the number of vertices
     # in the standard mesh otherwise it is the volume of the MNI152 brain
     # template
-    reference_volume = (
+    reference_extent = (
         MNI152_BRAIN_VOLUME if mesh_n_vertices is None else mesh_n_vertices
     )
-    if mask_volume > 1.1 * reference_volume:
+    if mask_extent > 1.1 * reference_extent:
         warnings.warn(
             "Brain mask is bigger than the standard "
             "human brain. This object is probably not tuned to "
             "be used on such data.",
             stacklevel=3,
         )
-    elif mask_volume < 0.005 * reference_volume:
+    elif mask_extent < 0.005 * reference_extent:
         warnings.warn(
             "Brain mask is smaller than .5% of the size of the standard "
             "human brain. This object is probably not tuned to "
@@ -180,16 +182,16 @@ def adjust_screening_percentile(
 
     if screening_percentile < 100.0:
         screening_percentile = screening_percentile * (
-            reference_volume / mask_volume
+            reference_extent / mask_extent
         )
         screening_percentile = min(screening_percentile, 100.0)
     # if screening_percentile is 100, we don't do anything
 
     if hasattr(mask_img, "mesh"):
-        log_mask = f"Mask n_vertices = {mask_volume:g}"
+        log_mask = f"Mask n_vertices = {mask_extent:g}"
     else:
         log_mask = (
-            f"Mask volume = {mask_volume:g}mm^3 = {mask_volume / 1000.0:g}cm^3"
+            f"Mask volume = {mask_extent:g}mm^3 = {mask_extent / 1000.0:g}cm^3"
         )
     logger.log(
         log_mask,
@@ -197,7 +199,7 @@ def adjust_screening_percentile(
         msg_level=1,
     )
     if hasattr(mask_img, "mesh"):
-        log_ref = f"Reference mesh n_vertices = {reference_volume:g}"
+        log_ref = f"Reference mesh n_vertices = {reference_extent:g}"
     else:
         log_ref = f"Standard brain volume = {MNI152_BRAIN_VOLUME:g}mm^3"
     logger.log(

@@ -8,7 +8,7 @@ from nilearn.interfaces.fsl import get_design_from_fslmat
 def test_get_design_from_fslmat(tmp_path):
     fsl_mat_path = tmp_path / "fsl_mat.txt"
     matrix = np.ones((5, 5))
-    with open(fsl_mat_path, "w") as fsl_mat:
+    with fsl_mat_path.open("w") as fsl_mat:
         fsl_mat.write("/Matrix\n")
         for row in matrix:
             for val in row:

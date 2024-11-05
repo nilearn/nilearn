@@ -240,7 +240,7 @@ def test_tv_regression_simple(rng, l1_ratio, debias):
 
 
 @pytest.mark.parametrize("l1_ratio", [0.01, 0.5, 0.99])
-def test_tv_regression_3D_image_doesnt_crash(rng, l1_ratio):
+def test_tv_regression_3d_image_doesnt_crash(rng, l1_ratio):
     dim = (3, 4, 5)
     W_init = np.zeros(dim)
     W_init[2:3, 3:, 1:3] = 1
@@ -520,15 +520,12 @@ def test_targets_in_y_space_net_regressor():
 @pytest.mark.parametrize(
     "model", [BaseSpaceNet, SpaceNetRegressor, SpaceNetClassifier]
 )
-def test_space_net_not_implemented_surface_objects(
-    mini_mask, make_mini_img, model
-):
+def test_space_net_not_implemented_surface_objects(surf_mask, surf_img, model):
     """Raise NotImplementedError when space net is fit on surface objects."""
-    mini_img = make_mini_img((5,))
     y = np.ones((5,))
 
     with pytest.raises(NotImplementedError):
-        model(mask=mini_mask).fit(mini_img, y)
+        model(mask=surf_mask()).fit(surf_img((5,)), y)
 
     with pytest.raises(NotImplementedError):
-        model().fit(mini_img, y)
+        model().fit(surf_img((5,)), y)

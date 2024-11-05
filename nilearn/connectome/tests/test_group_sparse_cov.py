@@ -120,11 +120,11 @@ def test_group_sparse_covariance_with_probe_function(rng):
             emp_covs,
             n_samples,
             alpha,
-            max_iter,
-            tol,
+            max_iter,  # noqa: ARG002
+            tol,  # noqa: ARG002
             n,
             omega,
-            omega_diff,
+            omega_diff,  # noqa: ARG002
         ):
             if n >= 0:
                 _, objective = group_sparse_scores(

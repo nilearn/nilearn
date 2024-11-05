@@ -506,7 +506,11 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
             return BaseEstimator._more_tags(self)
         return self.__sklearn_tags__()
 
-    def fit(self, X, y=None):
+    def fit(
+        self,
+        X,
+        y=None,  # noqa: ARG002
+    ):
         """Compute clustering of the data.
 
         Parameters
@@ -578,7 +582,11 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
 
         return self
 
-    def transform(self, X, y=None):
+    def transform(
+        self,
+        X,
+        y=None,  # noqa: ARG002
+    ):
         """Apply clustering, reduce the dimensionality of the data.
 
         Parameters

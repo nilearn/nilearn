@@ -409,7 +409,11 @@ class NiftiMasker(BaseMasker):
                 "You must call fit() before calling transform()."
             )
 
-    def fit(self, imgs=None, y=None):
+    def fit(
+        self,
+        imgs=None,
+        y=None,  # noqa: ARG002
+    ):
         """Compute the mask corresponding to the data.
 
         Parameters

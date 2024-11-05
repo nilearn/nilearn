@@ -380,7 +380,12 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         self.n_jobs = n_jobs
         self.verbose = verbose
 
-    def fit(self, imgs, y=None, confounds=None):
+    def fit(
+        self,
+        imgs,
+        y=None,  # noqa: ARG002
+        confounds=None,
+    ):
         """Compute the mask and the components across subjects.
 
         Parameters

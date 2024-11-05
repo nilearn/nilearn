@@ -14,7 +14,7 @@ export BROWSER_PYSCRIPT
 BROWSER := python -c "$$BROWSER_PYSCRIPT"
 
 # You can set these variables from the command line.
-SPHINXOPTS    = -v
+SPHINXOPTS    = -v --color
 SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = _build
@@ -103,6 +103,12 @@ html-modified-examples-only: 	sym_links sym_links_datasets glm_reports
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
 html-noplot: sym_links_datasets glm_reports
+	BUILD_DEV_HTML=1 $(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	touch $(BUILDDIR)/html/.nojekyll
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+
+html-noplot-noreport: sym_links_datasets
 	BUILD_DEV_HTML=1 $(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	touch $(BUILDDIR)/html/.nojekyll
 	@echo

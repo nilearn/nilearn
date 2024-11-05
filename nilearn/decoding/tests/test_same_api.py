@@ -156,7 +156,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
 
 
 @pytest.mark.parametrize("standardize", [True, False])
-def test_graph_net_and_tvl1_same_for_pure_l1_BaseSpaceNet(
+def test_graph_net_and_tvl1_same_for_pure_l1_base_space_net(
     affine_eye,
     standardize,
     max_iter=100,

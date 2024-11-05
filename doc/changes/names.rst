@@ -36,6 +36,8 @@
 
 .. _Anne-Sophie Kieslinger: https://github.com/askieslinger
 
+.. _Anupriya Kumari: https://github.com/anupriyakkumari
+
 .. _Ariel Rokem: http://arokem.org/
 
 .. _Arthur Mensch: https://www.amensch.fr/
@@ -197,6 +199,8 @@
 .. _Mehdi Rahim: https://github.com/mrahim
 
 .. _Mia Zwally: https://github.com/MIZwally
+
+.. _Micha Burkhardt: https://github.com/mibur1
 
 .. _Michael Eickenberg: https://github.com/eickenberg
 

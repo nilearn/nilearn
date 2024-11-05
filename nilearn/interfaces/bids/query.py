@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import glob
 import json
-import os
 from pathlib import Path
 from warnings import warn
 
@@ -40,7 +39,7 @@ def _get_metadata_from_bids(
         assert isinstance(json_files, list) and isinstance(
             json_files[0], (Path, str)
         )
-        with open(json_files[0]) as f:
+        with Path(json_files[0]).open() as f:
             specs = json.load(f)
         value = specs.get(field)
         if value is not None:
@@ -287,7 +286,7 @@ def parse_bids_filename(img_path):
     """
     reference = {
         "file_path": img_path,
-        "file_basename": os.path.basename(img_path),
+        "file_basename": Path(img_path).name,
     }
     parts = reference["file_basename"].split("_")
     tag, type_ = parts[-1].split(".", 1)

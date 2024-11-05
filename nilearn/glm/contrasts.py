@@ -24,10 +24,10 @@ def expression_to_contrast_vector(expression, design_columns):
 
     Parameters
     ----------
-    expression : string
+    expression : :obj:`str`
         The expression to convert to a vector.
 
-    design_columns : list or array of strings
+    design_columns : :obj:`list` or array of strings
         The column names of the design matrix.
 
     """
@@ -35,9 +35,14 @@ def expression_to_contrast_vector(expression, design_columns):
         contrast_vector = np.zeros(len(design_columns))
         contrast_vector[list(design_columns).index(expression)] = 1.0
         return contrast_vector
-    df = pd.DataFrame(np.eye(len(design_columns)), columns=design_columns)
+
+    eye_design = pd.DataFrame(
+        np.eye(len(design_columns)), columns=design_columns
+    )
     try:
-        contrast_vector = df.eval(expression, engine="python").values
+        contrast_vector = eye_design.eval(
+            expression, engine="python"
+        ).to_numpy()
     except Exception:
         raise ValueError(
             f"The expression ({expression}) is not valid. "
@@ -45,6 +50,7 @@ def expression_to_contrast_vector(expression, design_columns):
             "defining the contrasts using design matrix columns that are "
             "invalid python identifiers."
         )
+
     return contrast_vector
 
 
@@ -59,7 +65,7 @@ def compute_contrast(labels, regression_result, con_val, stat_type=None):
     labels : array of shape (n_voxels,)
         A map of values on voxels used to identify the corresponding model
 
-    regression_result : dict
+    regression_result : :obj:`dict`
         With keys corresponding to the different labels
         values are RegressionResults instances corresponding to the voxels.
 
@@ -67,7 +73,7 @@ def compute_contrast(labels, regression_result, con_val, stat_type=None):
         Where q = number of :term:`contrast` vectors
         and p = number of regressors.
 
-    stat_type : {None, 't', 'F'}, optional
+    stat_type : {None, 't', 'F'}, default=None
         Type of the :term:`contrast`.
         If None, then defaults to 't' for 1D `con_val`
         and 'F' for 2D `con_val`.
@@ -200,7 +206,7 @@ class Contrast:
         variance : array of shape (n_voxels)
             The associated variance estimate.
 
-        dim : int or None, optional
+        dim : :obj:`int` or None, optional
             The dimension of the :term:`contrast`.
 
         dof : scalar, default=DEF_DOFMAX
@@ -215,7 +221,7 @@ class Contrast:
 
                 Use ``stat_type`` instead (see above).
 
-        tiny : float, default=DEF_TINY
+        tiny : :obj:`float`, default=DEF_TINY
             Small quantity used to avoid numerical underflows.
 
         dofmax : scalar, default=DEF_DOFMAX
@@ -269,7 +275,7 @@ class Contrast:
         warn(
             category=DeprecationWarning,
             message=attrib_deprecation_msg,
-            stacklevel=3,
+            stacklevel=2,
         )
         return self.stat_type
 
@@ -291,7 +297,7 @@ class Contrast:
 
         Parameters
         ----------
-        baseline : float, default=0.0
+        baseline : :obj:`float`, default=0.0
             Baseline value for the test statistic.
 
         Returns
@@ -326,7 +332,7 @@ class Contrast:
 
         Parameters
         ----------
-        baseline : float, default=0.0
+        baseline : :obj:`float`, default=0.0
             Baseline value for the test statistic.
 
 
@@ -358,7 +364,7 @@ class Contrast:
 
         Parameters
         ----------
-        baseline : float, default=0.0
+        baseline : :obj:`float`, default=0.0
             Baseline value for the test statistic.
 
 
@@ -389,7 +395,7 @@ class Contrast:
 
         Parameters
         ----------
-        baseline : float, optional, default=0.0
+        baseline : :obj:`float`, optional, default=0.0
             Baseline value for the test statistic.
 
 
@@ -471,16 +477,16 @@ def compute_fixed_effects(
 
     Parameters
     ----------
-    contrast_imgs : list of Nifti1Images or strings
+    contrast_imgs : :obj:`list` of Nifti1Images or strings
         The input contrast images.
 
-    variance_imgs : list of Nifti1Images or strings
+    variance_imgs : :obj:`list` of Nifti1Images or strings
         The input variance images.
 
-    mask : Nifti1Image or NiftiMasker instance or None, optional
+    mask : Nifti1Image or NiftiMasker instance or None, default=None
         Mask image. If ``None``, it is recomputed from ``contrast_imgs``.
 
-    precision_weighted : Bool, default=False
+    precision_weighted : :obj:`bool`, default=False
         Whether fixed effects estimates should be weighted by inverse
         variance or not.
 
@@ -489,7 +495,7 @@ def compute_fixed_effects(
         when ``None``,
         it is assumed that the degrees of freedom are 100 per input.
 
-    return_z_score: Bool, default=False
+    return_z_score: :obj:`bool`, default=False
         Whether ``fixed_fx_z_score_img`` should be output or not.
 
     Returns
