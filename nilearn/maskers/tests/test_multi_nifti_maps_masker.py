@@ -30,7 +30,7 @@ extra_valid_checks = [
         extra_valid_checks=extra_valid_checks,
     ),
 )
-def test_check_estimator(estimator, check, name):
+def test_check_estimator(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -51,7 +51,7 @@ def test_check_estimator(estimator, check, name):
         valid=False,
     ),
 )
-def test_check_estimator_invalid(estimator, check, name):
+def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
     check(estimator)
 

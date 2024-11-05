@@ -81,7 +81,7 @@ ESTIMATOR_REGRESSION = ("ridge", "svr")
         extra_valid_checks=["check_parameters_default_constructible"],
     ),
 )
-def test_check_estimator_DecoderRegressor(estimator, check, name):
+def test_check_estimator_decoder_regressor(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -95,7 +95,7 @@ def test_check_estimator_DecoderRegressor(estimator, check, name):
         valid=False,
     ),
 )
-def test_check_estimator_invalid_DecoderRegressor(estimator, check, name):
+def test_check_estimator_invalid_decoder_regressor(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -106,7 +106,7 @@ def test_check_estimator_invalid_DecoderRegressor(estimator, check, name):
         estimator=[FREMRegressor()],
     ),
 )
-def test_check_estimator_FREMRegressor(estimator, check, name):
+def test_check_estimator_frem_regressor(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -116,7 +116,7 @@ def test_check_estimator_FREMRegressor(estimator, check, name):
     "estimator, check, name",
     check_estimator(estimator=[FREMRegressor()], valid=False),
 )
-def test_check_estimator_invalid_FREMRegressor(estimator, check, name):
+def test_check_estimator_invalid_frem_regressor(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -131,7 +131,7 @@ def test_check_estimator_invalid_FREMRegressor(estimator, check, name):
         ],
     ),
 )
-def test_check_estimator_Decoder(estimator, check, name):
+def test_check_estimator_decoder(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -148,7 +148,7 @@ def test_check_estimator_Decoder(estimator, check, name):
         valid=False,
     ),
 )
-def test_check_estimator_invalid_Decoder(estimator, check, name):
+def test_check_estimator_invalid_decoder(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -160,7 +160,7 @@ def test_check_estimator_invalid_Decoder(estimator, check, name):
         extra_valid_checks=["check_no_attributes_set_in_init"],
     ),
 )
-def test_check_estimator_FREMClassifier(estimator, check, name):
+def test_check_estimator_frem_classifier(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -174,7 +174,7 @@ def test_check_estimator_FREMClassifier(estimator, check, name):
         valid=False,
     ),
 )
-def test_check_estimator_invalid_FREMClassifier(estimator, check, name):
+def test_check_estimator_invalid_frem_classifier(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
     check(estimator)
 

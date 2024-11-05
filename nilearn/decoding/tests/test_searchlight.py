@@ -19,7 +19,7 @@ from nilearn.decoding import searchlight
         extra_valid_checks=["check_no_attributes_set_in_init"],
     ),
 )
-def test_check_estimator(estimator, check, name):
+def test_check_estimator(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -33,7 +33,7 @@ def test_check_estimator(estimator, check, name):
         extra_valid_checks=["check_no_attributes_set_in_init"],
     ),
 )
-def test_check_estimator_invalid(estimator, check, name):
+def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
     check(estimator)
 

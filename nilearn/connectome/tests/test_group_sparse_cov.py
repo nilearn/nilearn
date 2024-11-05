@@ -24,7 +24,7 @@ extra_valid_checks = [
         )
     ),
 )
-def test_check_estimator_GroupSparseCovarianceCV(estimator, check, name):
+def test_check_estimator_group_sparse_covariance_cv(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -38,7 +38,11 @@ def test_check_estimator_GroupSparseCovarianceCV(estimator, check, name):
         )
     ),
 )
-def test_check_estimator_GroupSparseCovariance(estimator, check, name):
+def test_check_estimator_group_sparse_covariance(
+    estimator,
+    check,
+    name,  # noqa: ARG001
+):
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -52,8 +56,10 @@ def test_check_estimator_GroupSparseCovariance(estimator, check, name):
         extra_valid_checks=extra_valid_checks,
     ),
 )
-def test_check_estimator_invalid_GroupSparseCovarianceCV(
-    estimator, check, name
+def test_check_estimator_invalid_group_sparse_covariance_cv(
+    estimator,
+    check,
+    name,  # noqa: ARG001
 ):
     """Check compliance with sklearn estimators."""
     check(estimator)
@@ -68,7 +74,11 @@ def test_check_estimator_invalid_GroupSparseCovarianceCV(
         extra_valid_checks=["check_no_attributes_set_in_init"],
     ),
 )
-def test_check_estimator_invalid_GroupSparseCovariance(estimator, check, name):
+def test_check_estimator_invalid_group_sparse_covariance(
+    estimator,
+    check,
+    name,  # noqa: ARG001
+):
     """Check compliance with sklearn estimators."""
     check(estimator)
 
