@@ -48,6 +48,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR, LinearSVC
 
 from nilearn._utils import compare_version
+from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.param_validation import (
     _get_mask_extent,
     check_feature_screening,
@@ -71,6 +72,111 @@ from nilearn.maskers import NiftiMasker
 N_SAMPLES = 100
 
 ESTIMATOR_REGRESSION = ("ridge", "svr")
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[DecoderRegressor()],
+        extra_valid_checks=["check_parameters_default_constructible"],
+    ),
+)
+def test_check_estimator_decoder_regressor(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[DecoderRegressor()],
+        extra_valid_checks=["check_parameters_default_constructible"],
+        valid=False,
+    ),
+)
+def test_check_estimator_invalid_decoder_regressor(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[FREMRegressor()],
+    ),
+)
+def test_check_estimator_frem_regressor(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(estimator=[FREMRegressor()], valid=False),
+)
+def test_check_estimator_invalid_frem_regressor(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[_BaseDecoder(), Decoder()],
+        extra_valid_checks=[
+            "check_no_attributes_set_in_init",
+            "check_parameters_default_constructible",
+        ],
+    ),
+)
+def test_check_estimator_decoder(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[_BaseDecoder(), Decoder()],
+        extra_valid_checks=[
+            "check_no_attributes_set_in_init",
+            "check_parameters_default_constructible",
+        ],
+        valid=False,
+    ),
+)
+def test_check_estimator_invalid_decoder(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[FREMClassifier()],
+        extra_valid_checks=["check_no_attributes_set_in_init"],
+    ),
+)
+def test_check_estimator_frem_classifier(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[FREMClassifier()],
+        extra_valid_checks=["check_no_attributes_set_in_init"],
+        valid=False,
+    ),
+)
+def test_check_estimator_invalid_frem_classifier(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 def _make_binary_classification_test_data(n_samples=N_SAMPLES):

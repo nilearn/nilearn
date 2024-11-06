@@ -46,7 +46,7 @@ class _ExtractionFunctor:
 
 
 @_utils.fill_doc
-class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
+class NiftiLabelsMasker(BaseMasker):
     """Class for extracting data from Niimg-like objects \
        using labels of non-overlapping brain regions.
 
