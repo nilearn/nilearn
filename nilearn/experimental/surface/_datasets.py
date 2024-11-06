@@ -8,12 +8,12 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from nilearn import datasets
-from nilearn.experimental.surface import _io
 from nilearn.experimental.surface._surface_image import (
     FileMesh,
     PolyMesh,
     SurfaceImage,
 )
+from nilearn.surface import load_surf_data
 
 
 def load_fsaverage(
@@ -67,10 +67,10 @@ def load_fsaverage_data(
     img = SurfaceImage(
         mesh=fsaverage[mesh_type],
         data={
-            "left": _io.read_array(
+            "left": load_surf_data(
                 old_fsaverage[f"{renaming[data_type]}_left"]
             ),
-            "right": _io.read_array(
+            "right": load_surf_data(
                 old_fsaverage[f"{renaming[data_type]}_right"]
             ),
         },
@@ -104,8 +104,8 @@ def fetch_nki(mesh_type: str = "pial", **kwargs) -> Sequence[SurfaceImage]:
     for left, right in zip(
         nki_dataset["func_left"], nki_dataset["func_right"]
     ):
-        left_data = _io.read_array(left).T
-        right_data = _io.read_array(right).T
+        left_data = load_surf_data(left).T
+        right_data = load_surf_data(right).T
         img = SurfaceImage(
             mesh=fsaverage[mesh_type],
             data={
@@ -116,29 +116,3 @@ def fetch_nki(mesh_type: str = "pial", **kwargs) -> Sequence[SurfaceImage]:
         images.append(img)
 
     return images
-
-
-def fetch_destrieux(
-    mesh_type: str = "pial", **kwargs
-) -> tuple[SurfaceImage, dict[int, str]]:
-    """Load Destrieux surface atlas into a surface object."""
-    if mesh_type not in ALLOWED_MESH_TYPES:
-        raise ValueError(
-            f"'mesh_type' must be one of {ALLOWED_MESH_TYPES}.\n"
-            f"Got: {mesh_type}."
-        )
-
-    fsaverage = load_fsaverage("fsaverage5")
-    destrieux = datasets.fetch_atlas_surf_destrieux(**kwargs)
-    labels = [x.decode("utf-8") for x in destrieux.labels]
-    # TODO fetchers usually return Bunch
-    return (
-        SurfaceImage(
-            mesh=fsaverage[mesh_type],
-            data={
-                "left": destrieux["map_left"],
-                "right": destrieux["map_right"],
-            },
-        ),
-        labels,
-    )

@@ -63,7 +63,6 @@ from nilearn.datasets import fetch_atlas_surf_destrieux
 from nilearn.experimental.surface import (
     SurfaceImage,
     SurfaceLabelsMasker,
-    fetch_destrieux,
     load_fsaverage,
     load_fsaverage_data,
 )
@@ -85,7 +84,20 @@ fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
 img = fetch_nki()[0]
 print(f"NKI image: {img}")
 
-labels_img, label_names = fetch_destrieux()
+fsaverage = load_fsaverage("fsaverage5")
+destrieux = fetch_atlas_surf_destrieux()
+labels_img = SurfaceImage(
+    mesh=fsaverage["pial"],
+    data={
+        "left": destrieux["map_left"],
+        "right": destrieux["map_right"],
+    },
+)
+
+# The labels are stored as bytes for the Destrieux atlas.
+# For convenience we decode them to string.
+label_names = [x.decode("utf-8") for x in destrieux.labels]
+
 print(f"Destrieux image: {labels_img}")
 plot_surf_roi(
     roi_map=labels_img,

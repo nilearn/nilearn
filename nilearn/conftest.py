@@ -380,6 +380,15 @@ def img_atlas(shape_3d_default, affine_mni):
 
 
 # ------------------------ SURFACE ------------------------#
+@pytest.fixture
+def single_mesh(rng):
+    """Create random coordinates and faces for a single mesh.
+
+    This does not generate meaningful surfaces.
+    """
+    coords = rng.random((20, 3))
+    faces = rng.integers(coords.shape[0], size=(30, 3))
+    return [coords, faces]
 
 
 def _make_mesh():
