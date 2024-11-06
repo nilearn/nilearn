@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from nilearn.experimental.surface import SurfaceMasker, fetch_nki
-from nilearn.plotting import plot_matrix, show, plot_surf, plot_surf_roi
+from nilearn.plotting import plot_matrix, plot_surf, plot_surf_roi, show
 
 img = fetch_nki()[0]
 print(f"NKI image: {img}")
