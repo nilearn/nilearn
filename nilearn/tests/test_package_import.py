@@ -7,7 +7,7 @@ from nilearn._utils.helpers import is_matplotlib_installed
     is_matplotlib_installed(),
     reason="This test should run only if matplotlib is not installed.",
 )
-def test_should_raise_warning_if_matplotlib_not_installed():
+def test_import_plotting_should_raise_warning_if_matplotlib_not_installed():
     with (
         pytest.raises(
             ModuleNotFoundError, match="No module named 'matplotlib'"
@@ -18,6 +18,12 @@ def test_should_raise_warning_if_matplotlib_not_installed():
     ):
         from nilearn.plotting import cm  # noqa
 
+
+@pytest.mark.skipif(
+    is_matplotlib_installed(),
+    reason="This test should run only if matplotlib is not installed.",
+)
+def test_import_reporting_should_raise_warning_if_matplotlib_not_installed():
     with (
         pytest.raises(
             ModuleNotFoundError, match="No module named 'matplotlib'"
