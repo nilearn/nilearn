@@ -298,7 +298,7 @@ def load_confounds_json(confounds_json, flag_acompcor):
         fMRIprep >= 1.4.0.
     """
     try:
-        with open(confounds_json, "rb") as f:
+        with Path(confounds_json).open("rb") as f:
             confounds_json = json.load(f)
     except OSError:
         if flag_acompcor:

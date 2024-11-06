@@ -118,7 +118,7 @@ def test_get_dataset_dir(tmp_path):
 
     # Verify exception for a path which exists and is a file
     test_file = tmp_path / "some_file"
-    with open(test_file, "w") as out:
+    with test_file.open("w") as out:
         out.write("abcfeg")
 
     with pytest.raises(
@@ -409,7 +409,7 @@ def test_uncompress_gzip(tmp_path, ext):
 
 def test_safe_extract(tmp_path):
     # Test vulnerability patch by mimicking path traversal
-    ztemp = os.path.join(tmp_path, "test.tar")
+    ztemp = tmp_path / "test.tar"
     in_archive_file = tmp_path / "something.txt"
     in_archive_file.write_text("hello")
     with contextlib.closing(tarfile.open(ztemp, "w")) as tar:
@@ -463,11 +463,11 @@ def test_fetch_file_overwrite(
 
     assert request_mocker.url_count == 1
     assert fil.exists()
-    with open(fil) as fp:
+    with fil.open() as fp:
         assert fp.read() == ""
 
     # Modify content
-    with open(fil, "w") as fp:
+    with fil.open("w") as fp:
         fp.write("some content")
 
     # Don't overwrite existing file.
@@ -477,7 +477,7 @@ def test_fetch_file_overwrite(
 
     assert request_mocker.url_count == 1
     assert fil.exists()
-    with open(fil) as fp:
+    with fil.open() as fp:
         assert fp.read() == "some content"
 
     # Overwrite existing file.
@@ -487,7 +487,7 @@ def test_fetch_file_overwrite(
 
     assert request_mocker.url_count == 2
     assert fil.exists()
-    with open(fil) as fp:
+    with fil.open() as fp:
         assert fp.read() == ""
 
 
@@ -523,43 +523,49 @@ def test_fetch_files_overwrite(
 
     # overwrite non-exiting file.
     files = ("1.txt", "http://foo/1.txt")
-    fil = _utils.fetch_files(
-        data_dir=tmp_path,
-        verbose=0,
-        files=[(*files, {"overwrite": True})],
+    fil = Path(
+        _utils.fetch_files(
+            data_dir=tmp_path,
+            verbose=0,
+            files=[(*files, {"overwrite": True})],
+        )[0]
     )
 
     assert request_mocker.url_count == 1
-    assert Path(fil[0]).exists()
-    with open(fil[0]) as fp:
+    assert fil.exists()
+    with fil.open() as fp:
         assert fp.read() == ""
 
     # Modify content
-    with open(fil[0], "w") as fp:
+    with fil.open("w") as fp:
         fp.write("some content")
 
     # Don't overwrite existing file.
-    fil = _utils.fetch_files(
-        data_dir=tmp_path,
-        verbose=0,
-        files=[(*files, {"overwrite": False})],
+    fil = Path(
+        _utils.fetch_files(
+            data_dir=tmp_path,
+            verbose=0,
+            files=[(*files, {"overwrite": False})],
+        )[0]
     )
 
     assert request_mocker.url_count == 1
-    assert Path(fil[0]).exists()
-    with open(fil[0]) as fp:
+    assert fil.exists()
+    with fil.open() as fp:
         assert fp.read() == "some content"
 
     # Overwrite existing file.
-    fil = _utils.fetch_files(
-        data_dir=tmp_path,
-        verbose=0,
-        files=[(*files, {"overwrite": True})],
+    fil = Path(
+        _utils.fetch_files(
+            data_dir=tmp_path,
+            verbose=0,
+            files=[(*files, {"overwrite": True})],
+        )[0]
     )
 
     assert request_mocker.url_count == 2
-    assert Path(fil[0]).exists()
-    with open(fil[0]) as fp:
+    assert fil.exists()
+    with fil.open() as fp:
         assert fp.read() == ""
 
 
