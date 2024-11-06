@@ -16,8 +16,8 @@ def _set_mpl_backend():
         import matplotlib
     except ImportError:
         warnings.warn(
-            "Some plotting dependencies of Nilearn seem to be missing.\n"
-            "They can be installed with:\n"
+            "Some dependencies of nilearn.plotting package seem to be missing."
+            "\nThey can be installed with:\n"
             " pip install 'nilearn[plotting]'"
         )
         raise

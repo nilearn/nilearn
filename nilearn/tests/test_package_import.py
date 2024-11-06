@@ -12,6 +12,8 @@ def test_should_raise_warning_if_matplotlib_not_installed():
         pytest.raises(
             ModuleNotFoundError, match="No module named 'matplotlib'"
         ),
-        pytest.warns(UserWarning, match="Some plotting dependencies"),
+        pytest.warns(
+            UserWarning, match="Some dependencies of nilearn.plotting"
+        ),
     ):
         from nilearn.plotting import cm  # noqa
