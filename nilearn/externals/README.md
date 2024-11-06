@@ -5,4 +5,4 @@ code and depend on a packaged version, we suggest that you simply do a
 symbolic link in this directory.
 
 
-Last knwon documentation: https://pyrocore.readthedocs.io/en/latest/tempita.html
+Last known documentation: https://pyrocore.readthedocs.io/en/latest/tempita.html

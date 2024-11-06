@@ -2,8 +2,8 @@
 
 import itertools
 import json
-import os
 import re
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -210,7 +210,7 @@ def _get_file_name(nii_file):
     if isinstance(nii_file, list):  # catch gifti
         nii_file = nii_file[0]
 
-    base_dir = os.path.dirname(nii_file)
+    base_dir = Path(nii_file).parent
 
     filenames = _generate_confounds_file_candidates(nii_file)
 
@@ -230,9 +230,9 @@ def _get_file_name(nii_file):
     # https://www.geeksforgeeks.org/python-sort-list-of-lists-by-the-size-of-sublists/
     confound_file_candidates = sorted(confound_file_candidates, key=len)[::-1]
     confound_file_candidates = [
-        os.path.join(base_dir, crc) for crc in confound_file_candidates
+        base_dir / crc for crc in confound_file_candidates
     ]
-    found_files = [cr for cr in confound_file_candidates if os.path.isfile(cr)]
+    found_files = [str(cr) for cr in confound_file_candidates if cr.is_file()]
 
     if not found_files:
         raise ValueError(
@@ -271,7 +271,7 @@ def get_confounds_file(image_file, flag_full_aroma):
 def get_json(confounds_raw_path):
     """Return json data companion file to the confounds tsv file."""
     # Load JSON file
-    return confounds_raw_path.replace("tsv", "json")
+    return str(confounds_raw_path).replace("tsv", "json")
 
 
 def load_confounds_json(confounds_json, flag_acompcor):
@@ -298,7 +298,7 @@ def load_confounds_json(confounds_json, flag_acompcor):
         fMRIprep >= 1.4.0.
     """
     try:
-        with open(confounds_json, "rb") as f:
+        with Path(confounds_json).open("rb") as f:
             confounds_json = json.load(f)
     except OSError:
         if flag_acompcor:
@@ -443,7 +443,7 @@ def prepare_output(confounds, demean):
         # Derivatives have NaN on the first row
         # Replace them by estimates at second time point,
         # otherwise nilearn will crash.
-        mask_nan = np.isnan(confounds.values[0, :])
+        mask_nan = np.isnan(confounds.to_numpy()[0, :])
         confounds.iloc[0, mask_nan] = confounds.iloc[1, mask_nan]
         if demean:
             confounds = _demean_confounds(confounds, sample_mask)
@@ -481,7 +481,7 @@ def _demean_confounds(confounds, sample_mask):
     return pd.DataFrame(confounds, columns=confound_cols)
 
 
-class MissingConfound(Exception):
+class MissingConfoundError(Exception):
     """
     Exception raised when failing to find params in the confounds.
 

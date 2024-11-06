@@ -66,13 +66,13 @@ X_test = masker.transform(X_figure_filenames)
 
 y_train = [
     np.reshape(
-        np.loadtxt(y, dtype=int, delimiter=","), (-1,) + y_shape, order="F"
+        np.loadtxt(y, dtype=int, delimiter=","), (-1, *y_shape), order="F"
     )
     for y in y_random_filenames
 ]
 y_test = [
     np.reshape(
-        np.loadtxt(y, dtype=int, delimiter=","), (-1,) + y_shape, order="F"
+        np.loadtxt(y, dtype=int, delimiter=","), (-1, *y_shape), order="F"
     )
     for y in y_figure_filenames
 ]
@@ -141,11 +141,11 @@ sys.stderr.write("Training classifiers... \r")
 t0 = time.time()
 
 from sklearn.feature_selection import SelectKBest, f_classif
-from sklearn.linear_model import OrthogonalMatchingPursuit as OMP
+from sklearn.linear_model import OrthogonalMatchingPursuit
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-# Create as many OMP as voxels to predict
+# Create as many OrthogonalMatchingPursuit as voxels to predict
 clfs = []
 n_clfs = y_train.shape[1]
 for i in range(y_train.shape[1]):
@@ -157,7 +157,7 @@ for i in range(y_train.shape[1]):
         [
             ("selection", SelectKBest(f_classif, k=500)),
             ("scl", StandardScaler()),
-            ("clf", OMP(n_nonzero_coefs=10)),
+            ("clf", OrthogonalMatchingPursuit(n_nonzero_coefs=10)),
         ]
     )
     clf.fit(X_train, y_train[:, i])

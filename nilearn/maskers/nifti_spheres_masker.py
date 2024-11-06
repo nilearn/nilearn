@@ -3,6 +3,7 @@
 Mask nifti images by spherical volumes for seed-region analyses
 """
 
+import contextlib
 import warnings
 
 import numpy as np
@@ -11,8 +12,9 @@ from scipy import sparse
 from sklearn import neighbors
 
 from nilearn import image, masking
-from nilearn._utils import CacheMixin, fill_doc, logger
+from nilearn._utils import fill_doc, logger
 from nilearn._utils.class_inspect import get_params
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.niimg import img_data_dtype
 from nilearn._utils.niimg_conversions import (
     check_niimg_3d,
@@ -140,11 +142,8 @@ def _apply_mask_and_get_affinity(
     # Include the voxel containing the seed itself if not masked
     mask_coords = mask_coords.astype(int).tolist()
     for i, seed in enumerate(seeds):
-        try:
+        with contextlib.suppress(ValueError):  # if seed is not in the mask
             A[i, mask_coords.index(list(map(int, seed)))] = True
-        except ValueError:
-            # seed is not in the mask
-            pass
 
     sphere_sizes = np.asarray(A.tocsr().sum(axis=1)).ravel()
     empty_spheres = np.nonzero(sphere_sizes == 0)[0]
@@ -224,7 +223,7 @@ class _ExtractionFunctor:
 
 
 @fill_doc
-class NiftiSpheresMasker(BaseMasker, CacheMixin):
+class NiftiSpheresMasker(BaseMasker):
     """Class for masking of Niimg-like objects using seeds.
 
     NiftiSpheresMasker is useful when data from given seeds should be
@@ -397,9 +396,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
-        try:
-            from nilearn.reporting.html_report import generate_report
-        except ImportError:
+        if not is_matplotlib_installed():
             with warnings.catch_warnings():
                 mpl_unavail_msg = (
                     "Matplotlib is not imported! "
@@ -408,6 +405,8 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
                 warnings.filterwarnings("always", message=mpl_unavail_msg)
                 warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
                 return [None]
+
+        from nilearn.reporting.html_report import generate_report
 
         if displayed_spheres != "all" and not isinstance(
             displayed_spheres, (list, np.ndarray, int)
@@ -526,7 +525,11 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
 
         return embeded_images
 
-    def fit(self, X=None, y=None):
+    def fit(
+        self,
+        X=None,
+        y=None,  # noqa: ARG002
+    ):
         """Prepare signal extraction from regions.
 
         All parameters are unused; they are for scikit-learn compatibility.

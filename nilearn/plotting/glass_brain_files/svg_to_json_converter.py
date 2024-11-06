@@ -7,6 +7,7 @@ segments. The output JSON is used for plotting glass brain schematics.
 import json
 import re
 import sys
+from pathlib import Path
 
 
 class SVGToJSONConverter:
@@ -142,7 +143,7 @@ class SVGToJSONConverter:
         """Save to JSON."""
         json_content = self.to_json()
 
-        with open(filename, "w") as f:
+        with Path(filename).open("w") as f:
             f.write(json_content)
 
 

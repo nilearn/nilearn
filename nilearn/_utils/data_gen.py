@@ -337,7 +337,7 @@ def generate_fake_fmri(
     """
     if affine is None:
         affine = np.eye(4)
-    full_shape = shape + (length,)
+    full_shape = (*shape, length)
     fmri = np.zeros(full_shape)
     # Fill central voxels timeseries with random signals
     width = [s // 2 for s in shape]
@@ -345,9 +345,9 @@ def generate_fake_fmri(
 
     rand_gen = np.random.default_rng(random_state)
     if kind == "noise":
-        signals = rand_gen.integers(256, size=(width + [length]))
+        signals = rand_gen.integers(256, size=([*width, length]))
     elif kind == "step":
-        signals = np.ones(width + [length])
+        signals = np.ones([*width, length])
         signals[..., : length // 2] = 0.5
     else:
         raise ValueError("Unhandled value for parameter 'kind'")
@@ -838,7 +838,7 @@ def add_metadata_to_bids_dataset(bids_path, metadata, json_file=None):
     else:
         json_file = Path(bids_path) / json_file
 
-    with open(json_file, "w") as f:
+    with json_file.open("w") as f:
         json.dump(metadata, f)
 
     return json_file
@@ -1075,7 +1075,7 @@ def _mock_bids_dataset(
 
     Parameters
     ----------
-    base_dir : :obj:`Path`
+    base_dir : :obj:`pathlib.Path`
         Path where to create the fake :term:`BIDS` dataset.
 
     n_sub : :obj:`int`
@@ -1168,7 +1168,7 @@ def _mock_bids_derivatives(
 
     Parameters
     ----------
-    base_dir : :obj:`Path`
+    base_dir : :obj:`pathlib.Path`
         Path where to create the fake :term:`BIDS` dataset.
 
     n_sub : :obj:`int`
@@ -1310,7 +1310,7 @@ def _write_bids_raw_anat(subses_dir, subject, session) -> None:
 
     Parameters
     ----------
-    subses_dir : :obj:`Path`
+    subses_dir : :obj:`pathlib.Path`
         Subject session directory
 
     subject : :obj:`str`
@@ -1339,7 +1339,7 @@ def _write_bids_raw_func(
 
     Parameters
     ----------
-    func_path : :obj:`Path`
+    func_path : :obj:`pathlib.Path`
         Path to a subject functional directory.
 
     file_id : :obj:`str`
@@ -1391,7 +1391,7 @@ def _write_bids_derivative_func(
 
     Parameters
     ----------
-    func_path : :obj:`Path`
+    func_path : :obj:`pathlib.Path`
         Path to a subject functional directory.
 
     file_id : :obj:`str`
@@ -1422,7 +1422,7 @@ def _write_bids_derivative_func(
         confounds.to_csv(
             confounds_path, sep="\t", index=None, encoding="utf-8"
         )
-        with open(confounds_path.with_suffix(".json"), "w") as f:
+        with confounds_path.with_suffix(".json").open("w") as f:
             json.dump(metadata, f)
 
     fields["suffix"] = "bold"

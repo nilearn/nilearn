@@ -45,7 +45,7 @@ def test_add_metadata_to_bids_derivatives_default_path(tmp_path):
         json_file.name
         == "sub-01_ses-01_task-main_run-01_space-MNI_desc-preproc_bold.json"
     )
-    with open(json_file) as f:
+    with json_file.open() as f:
         metadata = json.load(f)
         assert metadata == {"foo": "bar"}
 
@@ -60,7 +60,7 @@ def test_add_metadata_to_bids_derivatives_with_json_path(tmp_path):
     )
     assert json_file.exists()
     assert json_file.name == "sub-02_task-main_bold.json"
-    with open(json_file) as f:
+    with json_file.open() as f:
         metadata = json.load(f)
         assert metadata == {"foo": "bar"}
 
@@ -530,7 +530,7 @@ def test_generate_maps():
     n_regions = 9
     maps_img, _ = generate_maps(shape, n_regions, border=1)
     maps = get_data(maps_img)
-    assert maps.shape == shape + (n_regions,)
+    assert maps.shape == (*shape, n_regions)
     # no empty map
     assert np.all(abs(maps).sum(axis=0).sum(axis=0).sum(axis=0) > 0)
     # check border

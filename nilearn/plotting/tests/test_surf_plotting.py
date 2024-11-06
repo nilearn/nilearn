@@ -1,6 +1,7 @@
 # Tests for functions in surf_plotting.py
 import re
 import tempfile
+from pathlib import Path
 from unittest import mock
 
 import matplotlib.pyplot as plt
@@ -12,7 +13,8 @@ from numpy.testing import assert_array_equal
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn.conftest import _rng
 from nilearn.datasets import fetch_surf_fsaverage
-from nilearn.plotting.displays import PlotlySurfaceFigure
+from nilearn.plotting._utils import check_surface_plotting_inputs
+from nilearn.plotting.displays import PlotlySurfaceFigure, SurfaceFigure
 from nilearn.plotting.surf_plotting import (
     VALID_HEMISPHERES,
     VALID_VIEWS,
@@ -191,6 +193,108 @@ EXPECTED_VIEW_MATPLOTLIB = {
 }
 
 
+@pytest.mark.parametrize("bg_map", ["some_path", Path("some_path"), None])
+@pytest.mark.parametrize("surf_map", ["some_path", Path("some_path")])
+@pytest.mark.parametrize("surf_mesh", ["some_path", Path("some_path")])
+def test_check_surface_plotting_inputs_no_change(surf_map, surf_mesh, bg_map):
+    """Cover use cases where the inputs are not changed."""
+    hemi = "left"
+    out_surf_map, out_surf_mesh, out_bg_map = check_surface_plotting_inputs(
+        surf_map, surf_mesh, hemi, bg_map
+    )
+    assert surf_map == out_surf_map
+    assert surf_mesh == out_surf_mesh
+    assert bg_map == out_bg_map
+
+
+@pytest.mark.parametrize("bg_map", ["some_path", Path("some_path"), None])
+@pytest.mark.parametrize("mesh", [None])
+def test_check_surface_plotting_inputs_extract_mesh_and_data(
+    surf_img, mesh, bg_map, assert_surf_mesh_equal
+):
+    """Extract mesh and data when a SurfaceImage is passed."""
+    hemi = "left"
+    out_surf_map, out_surf_mesh, out_bg_map = check_surface_plotting_inputs(
+        surf_map=surf_img((10,)),
+        surf_mesh=mesh,
+        hemi=hemi,
+        bg_map=bg_map,
+    )
+    assert_array_equal(out_surf_map, surf_img((10,)).data.parts[hemi])
+    assert_surf_mesh_equal(out_surf_mesh, surf_img((10,)).mesh.parts[hemi])
+    assert bg_map == out_bg_map
+
+
+@pytest.mark.parametrize("bg_map", ["some_path", Path("some_path"), None])
+def test_check_surface_plotting_inputs_extract_mesh_from_polymesh(
+    surf_img, surf_mesh, bg_map, assert_surf_mesh_equal
+):
+    """Extract mesh from Polymesh and data from SurfaceImage."""
+    hemi = "left"
+    out_surf_map, out_surf_mesh, out_bg_map = check_surface_plotting_inputs(
+        surf_map=surf_img((10,)),
+        surf_mesh=surf_mesh(),
+        hemi=hemi,
+        bg_map=bg_map,
+    )
+    assert_array_equal(out_surf_map, surf_img((10,)).data.parts[hemi])
+    assert_surf_mesh_equal(out_surf_mesh, surf_mesh().parts[hemi])
+    assert bg_map == out_bg_map
+
+
+def test_check_surface_plotting_inputs_extract_bg_map_data(
+    surf_img, surf_mesh
+):
+    """Extract background map data."""
+    hemi = "left"
+    _, _, out_bg_map = check_surface_plotting_inputs(
+        surf_map=surf_img((10,)),
+        surf_mesh=surf_mesh(),
+        hemi=hemi,
+        bg_map=surf_img(),
+    )
+    assert_array_equal(out_bg_map, surf_img().data.parts[hemi])
+
+
+@pytest.mark.parametrize(
+    "fn",
+    [
+        check_surface_plotting_inputs,
+        plot_surf,
+        plot_surf_stat_map,
+        plot_surf_contours,
+        plot_surf_roi,
+    ],
+)
+def test_check_surface_plotting_inputs_error_mash_and_data_none(fn):
+    """Fail if no mesh or data is passed."""
+    with pytest.raises(TypeError, match="cannot both be None"):
+        fn(None, None)
+
+
+def test_check_surface_plotting_inputs_errors():
+    """Fail is mesh is none and data is not not SurfaceImage."""
+    with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
+        check_surface_plotting_inputs(surf_map=1, surf_mesh=None)
+    with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
+        plot_surf(surf_map=1, surf_mesh=None)
+    with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
+        plot_surf_stat_map(stat_map=1, surf_mesh=None)
+    with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
+        plot_surf_contours(roi_map=1, surf_mesh=None)
+    with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
+        plot_surf_roi(roi_map=1, surf_mesh=None)
+
+
+def test_plot_surf_contours_warning_hemi():
+    """Test warning that hemi will be ignored."""
+    mesh = generate_surf()
+    parcellation = np.zeros((mesh[0].shape[0],))
+    parcellation[mesh[1][3]] = 1
+    with pytest.warns(UserWarning, match="This value will be ignored"):
+        plot_surf_contours(mesh, parcellation, hemi="left")
+
+
 @pytest.mark.parametrize("full_view", EXPECTED_CAMERAS_PLOTLY)
 def test_get_view_plot_surf_plotly(full_view):
     from nilearn.plotting.surf_plotting import (
@@ -335,6 +439,191 @@ def test_instantiation_error_plotly_surface_figure(input_obj):
         match=("`PlotlySurfaceFigure` accepts only " "plotly figure objects."),
     ):
         PlotlySurfaceFigure(input_obj)
+
+
+@pytest.mark.skipif(
+    not is_plotly_installed(),
+    reason="Plotly is not installed; required for this test.",
+)
+def test_value_error_get_faces_on_edge():
+    """Test that calling _get_faces_on_edge raises a ValueError when \
+       called with with indices that do not form a region.
+    """
+    mesh = generate_surf()
+    figure = plot_surf(mesh, engine="plotly")
+    with pytest.raises(
+        ValueError, match=("Vertices in parcellation do not " "form region.")
+    ):
+        figure._get_faces_on_edge([91])
+
+
+@pytest.mark.skipif(
+    not is_plotly_installed(),
+    reason="Plotly is not installed; required for this test.",
+)
+def test_surface_figure_add_contours_raises_not_implemented():
+    """Test that calling add_contours method of SurfaceFigure raises a \
+    NotImplementedError.
+    """
+    figure = SurfaceFigure()
+    with pytest.raises(NotImplementedError):
+        figure.add_contours()
+
+
+@pytest.mark.skipif(
+    not is_plotly_installed(),
+    reason="Plotly is not installed; required for this test.",
+)
+def test_plot_surf_contours_errors_with_plotly_figure():
+    """Test that plot_surf_contours rasises error when given plotly obj."""
+    mesh = generate_surf()
+    figure = plot_surf(mesh, engine="plotly")
+    with pytest.raises(ValueError):
+        plot_surf_contours(mesh, np.ones((10,)), figure=figure)
+
+
+@pytest.mark.skipif(
+    not is_plotly_installed(),
+    reason="Plotly is not installed; required for this test.",
+)
+def test_plot_surf_contours_errors_with_plotly_axes():
+    """Test that plot_surf_contours rasises error when given plotly \
+        obj as axis.
+    """
+    mesh = generate_surf()
+    figure = plot_surf(mesh, engine="plotly")
+    with pytest.raises(ValueError):
+        plot_surf_contours(mesh, np.ones((10,)), axes=figure)
+
+
+@pytest.mark.skipif(
+    not is_plotly_installed(),
+    reason="Plotly is not installed; required for this test.",
+)
+def test_plotly_surface_figure_warns_on_isolated_roi():
+    """Test that a warning is generated for ROIs with isolated vertices."""
+    mesh = generate_surf()
+    figure = plot_surf(mesh, engine="plotly")
+    # the method raises an error because the (randomly generated)
+    # vertices don't form regions
+    try:
+        with pytest.raises(UserWarning, match="contains isolated vertices:"):
+            figure.add_contours(levels=[0], roi_map=np.array([0, 1] * 10))
+    except Exception:
+        pass
+
+
+@pytest.mark.skipif(
+    not is_plotly_installed(),
+    reason="Plotly is not installed; required for this test.",
+)
+def test_distant_line_segments_detected_as_not_intersecting():
+    """Test that distant lines are detected as not intersecting."""
+    assert not PlotlySurfaceFigure._do_segs_intersect(0, 0, 1, 1, 5, 5, 6, 6)
+
+
+@pytest.mark.skipif(
+    not is_plotly_installed(),
+    reason="Plotly is not installed; required for this test.",
+)
+@pytest.mark.parametrize("levels,labels", [([0], ["a", "b"]), ([0, 1], ["a"])])
+def test_value_error_add_contours_levels_labels(levels, labels):
+    """Test that add_contours raises a ValueError when called with levels and \
+    labels that have incompatible lengths.
+    """
+    mesh = generate_surf()
+    figure = plot_surf(mesh, engine="plotly")
+    with pytest.raises(
+        ValueError,
+        match=("levels and labels need to be either the same length or None."),
+    ):
+        figure.add_contours(
+            levels=levels, labels=labels, roi_map=np.ones((10,))
+        )
+
+
+@pytest.mark.skipif(
+    not is_plotly_installed(),
+    reason="Plotly is not installed; required for this test.",
+)
+@pytest.mark.parametrize(
+    "levels,lines",
+    [([0], [{}, {}]), ([0, 1], [{}, {}, {}])],
+)
+def test_value_error_add_contours_levels_lines(levels, lines):
+    """Test that add_contours raises a ValueError when called with levels and \
+    lines that have incompatible lengths.
+    """
+    mesh = generate_surf()
+    figure = plot_surf(mesh, engine="plotly")
+    with pytest.raises(
+        ValueError,
+        match=("levels and lines need to be either the same length or None."),
+    ):
+        figure.add_contours(levels=levels, lines=lines, roi_map=np.ones((10,)))
+
+
+@pytest.mark.skipif(
+    not is_plotly_installed(),
+    reason="Plotly is not installed; required for this test.",
+)
+def test_add_contours():
+    """Test that add_contours updates data in PlotlySurfaceFigure."""
+    mesh, roi_map, _ = _generate_data_test_surf_roi()
+    figure = plot_surf(mesh, engine="plotly")
+    figure.add_contours(roi_map)
+    assert len(figure.figure.to_dict().get("data")) == 3
+    figure.add_contours(roi_map, levels=[1])
+    assert len(figure.figure.to_dict().get("data")) == 4
+
+
+@pytest.mark.skipif(
+    not is_plotly_installed(),
+    reason="Plotly is not installed; required for this test.",
+)
+def test_add_contours_has_name():
+    """Test that contours added to a PlotlySurfaceFigure can be named."""
+    mesh, roi_map, _ = _generate_data_test_surf_roi()
+    figure = plot_surf(mesh, engine="plotly")
+    figure.add_contours(roi_map, levels=[1], labels=["x"])
+    assert figure.figure.to_dict().get("data")[1].get("name") == "x"
+
+
+@pytest.mark.skipif(
+    not is_plotly_installed(),
+    reason="Plotly is not installed; required for this test.",
+)
+def test_add_contours_lines_duplicated():
+    """Test that the specifications of length 1 line provided to \
+     add_contours are duplicated to all requested contours.
+    """
+    mesh, roi_map, _ = _generate_data_test_surf_roi()
+    figure = plot_surf(mesh, engine="plotly")
+    figure.add_contours(roi_map, lines=[{"width": 10}])
+    newlines = figure.figure.to_dict().get("data")[1:]
+    assert all(x.get("line").__contains__("width") for x in newlines)
+
+
+@pytest.mark.skipif(
+    not is_plotly_installed(),
+    reason="Plotly is not installed; required for this test.",
+)
+@pytest.mark.parametrize(
+    "key,value",
+    [
+        ("color", "yellow"),
+        ("width", 10),
+    ],
+)
+def test_add_contours_line_properties(key, value):
+    """Test that the specifications of a line provided to add_contours are \
+    stored in the PlotlySurfaceFigure data.
+    """
+    mesh, roi_map, _ = _generate_data_test_surf_roi()
+    figure = plot_surf(mesh, engine="plotly")
+    figure.add_contours(roi_map, levels=[1], lines=[{key: value}])
+    newline = figure.figure.to_dict().get("data")[1].get("line")
+    assert newline.get(key) == value
 
 
 @pytest.mark.parametrize(
@@ -644,7 +933,7 @@ def test_plot_surf_avg_method_errors(rng):
         ),
     ):
 
-        def custom_avg_function(vertices):
+        def custom_avg_function(vertices):  # noqa: ARG001
             return "string"
 
         plot_surf(

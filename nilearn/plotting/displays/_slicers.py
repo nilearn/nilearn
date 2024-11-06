@@ -1,4 +1,5 @@
 import collections
+import contextlib
 import numbers
 
 import matplotlib.pyplot as plt
@@ -552,7 +553,7 @@ class BaseSlicer:
         transparent_start = int(norm(-offset, clip=True) * (our_cmap.N - 1))
         transparent_stop = int(norm(offset, clip=True) * (our_cmap.N - 1))
         for i in range(transparent_start, transparent_stop):
-            cmaplist[i] = self._brain_color + (0.0,)  # transparent
+            cmaplist[i] = (*self._brain_color, 0.0)  # transparent
         if cbar_vmin == cbar_vmax:  # len(np.unique(data)) == 1 ?
             return
         else:
@@ -981,7 +982,11 @@ class OrthoSlicer(BaseSlicer):
             )
             self.frame_axes.set_zorder(-1000)
 
-    def _locator(self, axes, renderer):
+    def _locator(
+        self,
+        axes,
+        renderer,  # noqa: ARG002
+    ):
         """Adjust the size of the axes.
 
         The locator function used by matplotlib to position axes.
@@ -1337,7 +1342,11 @@ class TiledSlicer(BaseSlicer):
 
         return (coord1, coord2, coord3, coord4)
 
-    def _locator(self, axes, renderer):
+    def _locator(
+        self,
+        axes,
+        renderer,  # noqa: ARG002
+    ):
         """Adjust the size of the axes.
 
         The locator function used by matplotlib to position axes.
@@ -1417,10 +1426,8 @@ class TiledSlicer(BaseSlicer):
 
         kwargs = kwargs.copy()
         if "color" not in kwargs:
-            try:
+            with contextlib.suppress(KeyError):
                 kwargs["color"] = ".8" if self._black_bg else "k"
-            except KeyError:
-                pass
 
         if "y" in self.axes:
             ax = self.axes["y"].ax
@@ -1462,7 +1469,12 @@ class BaseStackedSlicer(BaseSlicer):
     """
 
     @classmethod
-    def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
+    def find_cut_coords(
+        cls,
+        img=None,
+        threshold=None,  # noqa: ARG003
+        cut_coords=None,
+    ):
         """Instantiate the slicer and find cut coordinates.
 
         Parameters
@@ -1540,7 +1552,11 @@ class BaseStackedSlicer(BaseSlicer):
             )
             self.frame_axes.set_zorder(-1000)
 
-    def _locator(self, axes, renderer):
+    def _locator(
+        self,
+        axes,
+        renderer,  # noqa: ARG002
+    ):
         """Adjust the size of the axes.
 
         The locator function used by matplotlib to position axes.
@@ -1874,7 +1890,12 @@ class MosaicSlicer(BaseSlicer):
     _default_figsize = [4.0, 5.0]
 
     @classmethod
-    def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
+    def find_cut_coords(
+        cls,
+        img=None,
+        threshold=None,  # noqa: ARG003
+        cut_coords=None,
+    ):
         """Instantiate the slicer and find cut coordinates for mosaic plotting.
 
         Parameters
@@ -2020,7 +2041,11 @@ class MosaicSlicer(BaseSlicer):
         #  see issue https://github.com/nilearn/nilearn/pull/4284
         self._colorbar_width *= len(coords) ** 1.1
 
-    def _locator(self, axes, renderer):
+    def _locator(
+        self,
+        axes,
+        renderer,  # noqa: ARG002
+    ):
         """Adjust the size of the axes.
 
         Locator function used by matplotlib to position axes.

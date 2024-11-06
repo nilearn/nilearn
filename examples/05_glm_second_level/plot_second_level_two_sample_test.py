@@ -82,7 +82,7 @@ unpaired_design_matrix = pd.DataFrame(
 
 paired_design_matrix = pd.DataFrame(
     np.hstack((condition_effect[:, np.newaxis], subject_effect)),
-    columns=["vertical vs horizontal"] + subjects,
+    columns=["vertical vs horizontal", *subjects],
 )
 
 # %%
@@ -93,8 +93,10 @@ _, (ax_unpaired, ax_paired) = plt.subplots(
     1,
     2,
     gridspec_kw={"width_ratios": [1, 17]},
-    layout="constrained",
+    constrained_layout=True,
 )
+
+
 plotting.plot_design_matrix(
     unpaired_design_matrix, rescale=False, axes=ax_unpaired
 )

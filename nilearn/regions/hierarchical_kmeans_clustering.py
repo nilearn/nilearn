@@ -140,7 +140,7 @@ def hierarchical_k_means(
     return _remove_empty_labels(fine_labels)
 
 
-class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
+class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
     """Hierarchical KMeans.
 
     First clusterize the samples into big clusters. Then clusterize the samples
@@ -221,7 +221,11 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
         self.random_state = random_state
         self.scaling = scaling
 
-    def fit(self, X, y=None):
+    def fit(
+        self,
+        X,
+        y=None,  # noqa: ARG002
+    ):
         """Compute clustering of the data.
 
         Parameters
@@ -267,7 +271,11 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
         self.n_clusters = len(sizes)
         return self
 
-    def transform(self, X, y=None):
+    def transform(
+        self,
+        X,
+        y=None,  # noqa: ARG002
+    ):
         """Apply clustering, reduce the dimensionality of the data.
 
         Parameters

@@ -14,7 +14,7 @@ from nibabel import Nifti1Image
 
 from nilearn._utils import data_gen, testing
 from nilearn._utils.exceptions import DimensionError
-from nilearn.conftest import have_mpl
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMapsMasker
 
@@ -183,7 +183,7 @@ def test_nifti_maps_masker_io_shapes(rng):
     masker.fit()
 
     # DeprecationWarning *should* be raised for 3D inputs
-    with pytest.warns(DeprecationWarning, match="Starting in version 0.12"):
+    with pytest.deprecated_call(match="Starting in version 0.12"):
         test_data = masker.transform(img_3d)
         assert test_data.shape == (1, n_regions)
 
@@ -522,7 +522,7 @@ def test_standardization(rng):
     signals = rng.standard_normal(size=(np.prod(data_shape), n_samples))
     means = rng.standard_normal(size=(np.prod(data_shape), 1)) * 50 + 1000
     signals += means
-    img = Nifti1Image(signals.reshape(data_shape + (n_samples,)), np.eye(4))
+    img = Nifti1Image(signals.reshape((*data_shape, n_samples)), np.eye(4))
 
     maps, _ = data_gen.generate_maps((9, 9, 5), 10)
 
@@ -575,7 +575,8 @@ def test_3d_images():
 
 
 @pytest.mark.skipif(
-    have_mpl, reason="Test requires matplotlib not to be installed."
+    is_matplotlib_installed(),
+    reason="Test requires matplotlib not to be installed.",
 )
 def test_nifti_maps_masker_reporting_mpl_warning():
     """Raise warning after exception if matplotlib is not installed."""

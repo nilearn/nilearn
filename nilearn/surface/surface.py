@@ -1,7 +1,6 @@
 """Functions for surface manipulation."""
 
 import gzip
-import os
 import warnings
 from collections import namedtuple
 from collections.abc import Mapping
@@ -39,12 +38,10 @@ def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
 
 
 def _load_uniform_ball_cloud(n_points=20):
-    stored_points = os.path.abspath(
-        os.path.join(
-            __file__, "..", "data", f"ball_cloud_{n_points}_samples.csv"
-        )
-    )
-    if os.path.isfile(stored_points):
+    stored_points = (
+        Path(__file__, "..", "data", f"ball_cloud_{n_points}_samples.csv")
+    ).resolve()
+    if stored_points.is_file():
         points = np.loadtxt(stored_points)
         return points
     warnings.warn(
@@ -1240,3 +1237,71 @@ def check_surface(surface):
     surface = load_surface(surface)
     mesh, data = check_mesh_and_data(surface.mesh, surface.data)
     return Surface(mesh, data)
+
+
+def mesh_to_gifti(
+    coordinates,
+    faces,
+    gifti_file,
+):
+    """Write surface mesh to gifti file on disk.
+
+    Parameters
+    ----------
+    coordinates : :class:`numpy.ndarray`
+        a Numpy array containing the x-y-z coordinates of the mesh vertices
+
+    faces : :class:`numpy.ndarray`
+        a Numpy array containing the indices (into coords) of the mesh faces.
+
+    gifti_file: :obj:`str` or :obj:`pathlib.Path`
+        name for the output gifti file.
+    """
+    gifti_file = Path(gifti_file)
+    gifti_img = gifti.GiftiImage()
+    coords_array = gifti.GiftiDataArray(
+        coordinates, intent="NIFTI_INTENT_POINTSET", datatype="float32"
+    )
+    faces_array = gifti.GiftiDataArray(
+        faces, intent="NIFTI_INTENT_TRIANGLE", datatype="int32"
+    )
+    gifti_img.add_gifti_data_array(coords_array)
+    gifti_img.add_gifti_data_array(faces_array)
+    gifti_img.to_filename(gifti_file)
+
+
+def data_to_gifti(data, gifti_file):
+    """Save data from Polydata to a gifti file.
+
+
+    Parameters
+    ----------
+    data : :class:`numpy.ndarray`
+        The data will be cast to np.uint8, np.int32) or np.float32
+        as only the following are 'supported' for now:
+        - NIFTI_TYPE_UINT8
+        - NIFTI_TYPE_INT32
+        - NIFTI_TYPE_FLOAT32
+        See https://github.com/nipy/nibabel/blob/master/nibabel/gifti/gifti.py
+
+    gifti_file: :obj:`str` or :obj:`pathlib.Path`
+        name for the output gifti file.
+    """
+    if data.dtype in [np.uint16, np.uint32, np.uint64]:
+        data = data.astype(np.uint8)
+    elif data.dtype in [np.int8, np.int16, np.int64]:
+        data = data.astype(np.int32)
+    elif data.dtype in [np.float64]:
+        data = data.astype(np.float32)
+
+    if data.dtype == np.uint8:
+        datatype = "NIFTI_TYPE_UINT8"
+    elif data.dtype == np.int32:
+        datatype = "NIFTI_TYPE_INT32"
+    elif data.dtype == np.float32:
+        datatype = "NIFTI_TYPE_FLOAT32"
+
+    darray = gifti.GiftiDataArray(data=data, datatype=datatype)
+
+    gii = gifti.GiftiImage(darrays=[darray])
+    gii.to_filename(Path(gifti_file))

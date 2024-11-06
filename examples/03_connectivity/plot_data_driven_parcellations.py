@@ -26,6 +26,10 @@ The big picture discussion corresponding to this example can be found
 in the documentation section :ref:`parcellating_brain`.
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
 # Download a brain development fMRI dataset and turn it to a data matrix
 # ----------------------------------------------------------------------

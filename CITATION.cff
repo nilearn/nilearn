@@ -113,6 +113,11 @@ authors:
     website: https://github.com/askieslinger
     affiliation: Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig,
       Germnay
+  - given-names: Anupriya
+    family-names: Kumari
+    website: https://github.com/anupriyakkumari
+    affiliation: Indian Institute of Technology, Roorkee, India
+    email: anupriyakkumari@gmail.com
   - given-names: Ariel
     family-names: Rokem
     website: http://arokem.org/
@@ -287,6 +292,11 @@ authors:
     affiliation: Inria, Saclay, France
     email: g.lemaitre58@gmail.com
     orcid: https://orcid.org/0000-0002-0897-6791
+  - given-names: Hande
+    family-names: Gözükan
+    website: https://github.com/hndgzkn
+    affiliation: Inria, Saclay, France
+    email: hande.gozukan@inria.fr
   - given-names: Hao-Ting
     family-names: Wang
     website: https://wanghaoting.com/
@@ -480,6 +490,11 @@ authors:
     family-names: Zwally
     website: https://github.com/MIZwally
     affiliation: DSST, National Institute of Mental Health, USA
+  - given-names: Micha
+    family-names: Burkhardt
+    website: https://github.com/mibur1
+    affiliation: University of Oldenburg, Germany
+    orcid: https://orcid.org/0000-0002-6268-3527
   - given-names: Michael
     family-names: Eickenberg
     website: https://github.com/eickenberg
@@ -600,6 +615,10 @@ authors:
     affiliation: University of Pittsburgh, Pittsburgh, PA, USA
     email: raamanap@pitt.edu
     orcid: https://orcid.org/0000-0003-4662-0558
+  - given-names: Prakhar
+    family-names: Jain
+    website: https://github.com/PrakharJain1509
+    affiliation: RV College of Engineering, Bangalore, India
   - given-names: Rahul
     family-names: Brito
     website: https://github.com/Rahul-Brito
