@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 from nilearn._utils import all_classes, all_functions, all_modules
+from nilearn._utils.helpers import is_matplotlib_installed
 
 
 @pytest.mark.parametrize("func", [all_modules, all_functions, all_classes])
@@ -17,6 +18,10 @@ def test_all_modules_error(func):
         func(modules_to_ignore=["foo"], modules_to_consider=["bar"])
 
 
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="This test requires matplotlib to be installed.",
+)
 @pytest.mark.parametrize("func", [all_functions, all_classes])
 def test_private_vs_public(func):
     public_only = set(func(return_private=False))
@@ -27,6 +32,10 @@ def test_private_vs_public(func):
     )
 
 
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="This test requires matplotlib to be installed.",
+)
 def test_number_public_functions():
     """Check that number of public functions is stable.
 
@@ -37,6 +46,10 @@ def test_number_public_functions():
     assert len({_[0] for _ in all_functions()}) == 246
 
 
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="This test requires matplotlib to be installed.",
+)
 def test_number_public_classes():
     """Check that number of public classes is stable.
 
