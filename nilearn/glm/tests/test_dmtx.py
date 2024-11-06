@@ -5,7 +5,7 @@ Note that the tests just looks whether the data produces has correct dimension,
 not whether it is exact
 """
 
-from os import path as osp
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -34,8 +34,8 @@ from ._testing import (
 )
 
 # load the spm file to test cosine basis
-my_path = osp.dirname(osp.abspath(__file__))
-full_path_design_matrix_file = osp.join(my_path, "spm_dmtx.npz")
+my_path = Path(__file__).resolve().parent
+full_path_design_matrix_file = my_path / "spm_dmtx.npz"
 DESIGN_MATRIX = np.load(full_path_design_matrix_file)
 
 
@@ -223,7 +223,7 @@ def test_design_matrix_basic_paradigm_and_extra_regressors(rng, frame_times):
 @pytest.mark.parametrize(
     "fir_delays, n_regressors", [(None, 7), (range(1, 5), 16)]
 )
-def test_design_matrix_FIR_basic_paradigm(
+def test_design_matrix_fir_basic_paradigm(
     frame_times, fir_delays, n_regressors
 ):
     # basic test based on basic_paradigm and FIR
@@ -239,7 +239,7 @@ def test_design_matrix_FIR_basic_paradigm(
     assert X.shape == (len(frame_times), n_regressors)
 
 
-def test_design_matrix_FIR_block(frame_times):
+def test_design_matrix_fir_block(frame_times):
     # test FIR models on block designs
     bp = block_paradigm()
     X, _ = design_matrix_light(
@@ -257,7 +257,7 @@ def test_design_matrix_FIR_block(frame_times):
     assert (X[idx + 3, 7] == 1).all()
 
 
-def test_design_matrix_FIR_column_1_3_and_11(frame_times):
+def test_design_matrix_fir_column_1_3_and_11(frame_times):
     # Check that 1rst, 3rd and 11th of FIR design matrix are OK
     events = basic_paradigm()
     hrf_model = "FIR"
@@ -277,7 +277,7 @@ def test_design_matrix_FIR_column_1_3_and_11(frame_times):
     assert_array_almost_equal(X[onset + 4, 11], np.ones(3))
 
 
-def test_design_matrix_FIR_time_shift(frame_times):
+def test_design_matrix_fir_time_shift(frame_times):
     # Check that the first column of FIR design matrix is OK after a 1/2
     # time shift
     t_r = 1.0
@@ -313,7 +313,7 @@ def test_design_matrix_scaling(events, idx_offset, frame_times):
     assert (X[ct, 0] > 0).all()
 
 
-def test_design_matrix_scaling_FIR_model(frame_times):
+def test_design_matrix_scaling_fir_model(frame_times):
     # Test the effect of scaling on a FIR model
     events = modulated_event_paradigm()
     hrf_model = "FIR"
@@ -374,10 +374,11 @@ def test_oversampling(n_frames):
     )
 
     # oversampling = 50 by default so X2 = X1, X3 \neq X1, X3 close to X2
-    assert_almost_equal(X1.values, X2.values)
-    assert_almost_equal(X2.values, X3.values, 0)
+    assert_almost_equal(X1.to_numpy(), X2.to_numpy())
+    assert_almost_equal(X2.to_numpy(), X3.to_numpy(), 0)
     assert (
-        np.linalg.norm(X2.values - X3.values) / np.linalg.norm(X2.values)
+        np.linalg.norm(X2.to_numpy() - X3.to_numpy())
+        / np.linalg.norm(X2.to_numpy())
         > 1.0e-4
     )
 
@@ -398,7 +399,7 @@ def test_oversampling(n_frames):
         fir_delays=range(4),
         oversampling=10,
     )
-    assert_almost_equal(X4.values, X5.values)
+    assert_almost_equal(X4.to_numpy(), X5.to_numpy())
 
 
 def test_high_pass(n_frames):

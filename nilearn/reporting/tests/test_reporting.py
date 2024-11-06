@@ -2,19 +2,16 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.image import get_data
 
 # Set backend to avoid DISPLAY problems
-from nilearn.plotting import _set_mpl_backend
+from nilearn.plotting import _set_mpl_backend  # noqa
 from nilearn.reporting import get_clusters_table
 from nilearn.reporting.get_clusters_table import (
     _cluster_nearest_neighbor,
     _local_max,
 )
-
-# Avoid making pyflakes unhappy
-_set_mpl_backend
-from nilearn.conftest import have_mpl
 
 
 @pytest.fixture
@@ -23,7 +20,8 @@ def shape():
 
 
 @pytest.mark.skipif(
-    not have_mpl, reason="Matplotlib not installed; required for this test"
+    not is_matplotlib_installed(),
+    reason="Matplotlib not installed; required for this test",
 )
 def test_local_max_two_maxima(shape, affine_eye):
     """Basic test of nilearn.reporting._get_clusters_table._local_max()."""
@@ -43,7 +41,8 @@ def test_local_max_two_maxima(shape, affine_eye):
 
 
 @pytest.mark.skipif(
-    not have_mpl, reason="Matplotlib not installed; required for this test"
+    not is_matplotlib_installed(),
+    reason="Matplotlib not installed; required for this test",
 )
 def test_local_max_two_global_maxima(shape, affine_eye):
     """Basic test of nilearn.reporting._get_clusters_table._local_max()."""
@@ -63,7 +62,8 @@ def test_local_max_two_global_maxima(shape, affine_eye):
 
 
 @pytest.mark.skipif(
-    not have_mpl, reason="Matplotlib not installed; required for this test"
+    not is_matplotlib_installed(),
+    reason="Matplotlib not installed; required for this test",
 )
 def test_local_max_donut(shape, affine_eye):
     """Basic test of nilearn.reporting._get_clusters_table._local_max()."""
@@ -186,8 +186,8 @@ def test_get_clusters_table_more(shape, affine_eye, tmp_path):
 
     cluster_table = get_clusters_table(stat_img, 0, 0, min_distance=9)
     assert len(cluster_table) == 2
-    assert 1 in cluster_table["Cluster ID"].values
-    assert "1a" in cluster_table["Cluster ID"].values
+    assert 1 in cluster_table["Cluster ID"].to_numpy()
+    assert "1a" in cluster_table["Cluster ID"].to_numpy()
 
 
 def test_get_clusters_table_relabel_label_maps(shape, affine_eye):

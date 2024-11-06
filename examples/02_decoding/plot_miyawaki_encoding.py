@@ -27,11 +27,16 @@ approach for the same dataset.
 
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
+import matplotlib.pyplot as plt
+
 # %%
 # Loading the data
 # ----------------
 # Now we can load the data set:
-
 from nilearn.datasets import fetch_miyawaki2008
 
 dataset = fetch_miyawaki2008()
@@ -68,7 +73,7 @@ stimulus_shape = (10, 10)
 stimuli = [
     np.reshape(
         np.loadtxt(stimulus_run, dtype=int, delimiter=","),
-        (-1,) + stimulus_shape,
+        (-1, *stimulus_shape),
         order="F",
     )
     for stimulus_run in stimuli_random_runs_filenames
@@ -77,9 +82,6 @@ stimuli = [
 
 # %%
 # Let's take a look at some of these binary images:
-
-import pylab as plt
-
 plt.figure(figsize=(8, 4))
 plt.subplot(1, 2, 1)
 plt.imshow(stimuli[0][124], interpolation="nearest", cmap="gray")

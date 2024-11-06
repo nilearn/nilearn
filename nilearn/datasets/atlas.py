@@ -1,7 +1,6 @@
 """Downloading NeuroImaging datasets: atlas datasets."""
 
 import json
-import os
 import re
 import shutil
 import warnings
@@ -16,15 +15,14 @@ from sklearn.utils import Bunch
 
 from .._utils import check_niimg, fill_doc, logger
 from ..image import get_data, new_img_like, reorder_img
-from ._utils import fetch_files, get_dataset_descr, get_dataset_dir
+from ._utils import (
+    PACKAGE_DIRECTORY,
+    fetch_files,
+    get_dataset_descr,
+    get_dataset_dir,
+)
 
 _TALAIRACH_LEVELS = ["hemisphere", "lobe", "gyrus", "tissue", "ba"]
-
-_LEGACY_FORMAT_MSG = (
-    "`legacy_format` will default to `False` in release 0.11. "
-    "Dataset fetchers will then return pandas dataframes by default "
-    "instead of recarrays."
-)
 
 
 @fill_doc
@@ -34,7 +32,7 @@ def fetch_atlas_difumo(
     data_dir=None,
     resume=True,
     verbose=1,
-    legacy_format=True,
+    legacy_format=False,
 ):
     """Fetch DiFuMo brain atlas.
 
@@ -117,15 +115,15 @@ def fetch_atlas_difumo(
     url = f"https://osf.io/{dic[dimension]}/download"
     opts = {"uncompress": True}
 
-    csv_file = os.path.join("{0}", "labels_{0}_dictionary.csv")
+    csv_file = Path(f"{dimension}", f"labels_{dimension}_dictionary.csv")
     if resolution_mm != 3:
-        nifti_file = os.path.join("{0}", "2mm", "maps.nii.gz")
+        nifti_file = Path(f"{dimension}", "2mm", "maps.nii.gz")
     else:
-        nifti_file = os.path.join("{0}", "3mm", "maps.nii.gz")
+        nifti_file = Path(f"{dimension}", "3mm", "maps.nii.gz")
 
     files = [
-        (csv_file.format(dimension), url, opts),
-        (nifti_file.format(dimension), url, opts),
+        (csv_file, url, opts),
+        (nifti_file, url, opts),
     ]
 
     dataset_name = "difumo_atlases"
@@ -139,14 +137,13 @@ def fetch_atlas_difumo(
     labels = pd.read_csv(files_[0])
     labels = labels.rename(columns={c: c.lower() for c in labels.columns})
     if legacy_format:
-        warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
         labels = labels.to_records(index=False)
 
     # README
     readme_files = [
         ("README.md", "https://osf.io/4k9bf/download", {"move": "README.md"})
     ]
-    if not os.path.exists(os.path.join(data_dir, "README.md")):
+    if not Path(data_dir, "README.md").exists():
         fetch_files(data_dir, readme_files, verbose=verbose, resume=resume)
 
     fdescr = get_dataset_descr(dataset_name)
@@ -270,7 +267,7 @@ def fetch_atlas_craddock_2012(
         data = fetch_files(data_dir, filename, resume=resume, verbose=verbose)
         params = {"maps": data[0], "description": fdescr}
     else:
-        params = dict([("description", fdescr)] + list(zip(keys, sub_files)))
+        params = dict([("description", fdescr), *list(zip(keys, sub_files))])
         warnings.warn(
             category=DeprecationWarning,
             message="In release 0.13, this fetcher will return a dictionary "
@@ -288,7 +285,7 @@ def fetch_atlas_destrieux_2009(
     url=None,
     resume=True,
     verbose=1,
-    legacy_format=True,
+    legacy_format=False,
 ):
     """Download and load the Destrieux cortical \
     :term:`deterministic atlas<Deterministic atlas>` (dated 2009).
@@ -356,7 +353,6 @@ def fetch_atlas_destrieux_2009(
     params = {"maps": files_[1], "labels": pd.read_csv(files_[0], index_col=0)}
 
     if legacy_format:
-        warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
         params["labels"] = params["labels"].to_records()
 
     params["description"] = Path(files_[2]).read_text()
@@ -695,7 +691,7 @@ def _get_atlas_data_and_labels(
     # For practical reasons, we mimic the FSL data directory here.
     data_dir = get_dataset_dir("fsl", data_dir=data_dir, verbose=verbose)
     opts = {"uncompress": True}
-    root = os.path.join("data", "atlases")
+    root = Path("data", "atlases")
 
     if atlas_source == "HarvardOxford":
         if symmetric_split:
@@ -713,10 +709,8 @@ def _get_atlas_data_and_labels(
     else:
         label_file = "Juelich.xml"
         is_lateralized = False
-    label_file = os.path.join(root, label_file)
-    atlas_file = os.path.join(
-        root, atlas_source, f"{atlas_source}-{atlas_name}.nii.gz"
-    )
+    label_file = root / label_file
+    atlas_file = root / atlas_source / f"{atlas_source}-{atlas_name}.nii.gz"
     atlas_file, label_file = fetch_files(
         data_dir,
         [(atlas_file, url, opts), (label_file, url, opts)],
@@ -887,25 +881,22 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
 
     dataset_name = "msdl_atlas"
     files = [
-        (os.path.join("MSDL_rois", "msdl_rois_labels.csv"), url, opts),
-        (os.path.join("MSDL_rois", "msdl_rois.nii"), url, opts),
+        (Path("MSDL_rois", "msdl_rois_labels.csv"), url, opts),
+        (Path("MSDL_rois", "msdl_rois.nii"), url, opts),
     ]
 
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
     files = fetch_files(data_dir, files, resume=resume, verbose=verbose)
-    csv_data = pd.read_csv(files[0])
-    labels = [name.strip() for name in csv_data["name"].tolist()]
 
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "ignore", module="numpy", category=FutureWarning
-        )
-        region_coords = csv_data[["x", "y", "z"]].values.tolist()
+    csv_data = pd.read_csv(files[0])
+    labels = [name.strip() for name in csv_data["name"].to_list()]
     net_names = [
-        net_name.strip() for net_name in csv_data["net name"].tolist()
+        net_name.strip() for net_name in csv_data["net name"].to_list()
     ]
+    region_coords = csv_data[["x", "y", "z"]].to_numpy().tolist()
+
     fdescr = get_dataset_descr(dataset_name)
 
     return Bunch(
@@ -918,7 +909,7 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
 
 
 @fill_doc
-def fetch_coords_power_2011(legacy_format=True):
+def fetch_coords_power_2011(legacy_format=False):
     """Download and load the Power et al. brain atlas composed of 264 ROIs.
 
     See :footcite:t:`Power2011`.
@@ -946,14 +937,12 @@ def fetch_coords_power_2011(legacy_format=True):
     """
     dataset_name = "power_2011"
     fdescr = get_dataset_descr(dataset_name)
-    package_directory = os.path.dirname(os.path.abspath(__file__))
-    csv = os.path.join(package_directory, "data", "power_2011.csv")
+    csv = PACKAGE_DIRECTORY / "data" / "power_2011.csv"
     params = {"rois": pd.read_csv(csv), "description": fdescr}
     params["rois"] = params["rois"].rename(
         columns={c: c.lower() for c in params["rois"].columns}
     )
     if legacy_format:
-        warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
         params["rois"] = params["rois"].to_records(index=False)
     return Bunch(**params)
 
@@ -1187,8 +1176,7 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
     )
 
     filenames = [
-        (os.path.join("Yeo_JNeurophysiol11_MNI152", f), url, opts)
-        for f in basenames
+        (Path("Yeo_JNeurophysiol11_MNI152", f), url, opts) for f in basenames
     ]
 
     data_dir = get_dataset_dir(
@@ -1200,7 +1188,7 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     fdescr = get_dataset_descr(dataset_name)
 
-    params = dict([("description", fdescr)] + list(zip(keys, sub_files)))
+    params = dict([("description", fdescr), *list(zip(keys, sub_files))])
     return Bunch(**params)
 
 
@@ -1226,7 +1214,7 @@ def fetch_atlas_aal(
         should not be interpreted as indices for the list of label names.
         In addition, the region IDs are provided as strings, so it is necessary
         to cast them to integers when indexing.
-        For more information, refer to the fetcher’s description:
+        For more information, refer to the fetcher's description:
 
         .. code-block:: python
 
@@ -1302,7 +1290,7 @@ def fetch_atlas_aal(
             url = f"{base_url}AAL_files/aal_for_SPM12.tar.gz"
             basenames = ("AAL.nii", "AAL.xml")
             filenames = [
-                (os.path.join("aal", "atlas", f), url, opts) for f in basenames
+                (Path("aal", "atlas", f), url, opts) for f in basenames
             ]
             message = (
                 "Starting in version 0.13, the default fetched mask will be"
@@ -1313,15 +1301,12 @@ def fetch_atlas_aal(
         elif version == "3v2":
             url = f"{base_url}wp-content/uploads/AAL3v2_for_SPM12.tar.gz"
             basenames = ("AAL3v1.nii", "AAL3v1.xml")
-            filenames = [
-                (os.path.join("AAL3", f), url, opts) for f in basenames
-            ]
+            filenames = [(Path("AAL3", f), url, opts) for f in basenames]
         else:
             url = f"{base_url}wp-content/uploads/aal_for_{version}.zip"
             basenames = ("ROI_MNI_V4.nii", "ROI_MNI_V4.txt")
             filenames = [
-                (os.path.join(f"aal_for_{version}", f), url, opts)
-                for f in basenames
+                (Path(f"aal_for_{version}", f), url, opts) for f in basenames
             ]
 
     data_dir = get_dataset_dir(
@@ -1340,7 +1325,7 @@ def fetch_atlas_aal(
             indices.append(label.find("index").text)
             labels.append(label.find("name").text)
     else:
-        with open(labels_file) as fp:
+        with Path(labels_file).open() as fp:
             for line in fp:
                 _, label, index = line.strip().split("\t")
                 indices.append(index)
@@ -1465,7 +1450,7 @@ def fetch_atlas_basc_multiscale_2015(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
 
-    folder_name = f"template_cambridge_basc_multiscale_nii_{version}"
+    folder_name = Path(f"template_cambridge_basc_multiscale_nii_{version}")
     fdescr = get_dataset_descr(dataset_name)
 
     if resolution:
@@ -1476,7 +1461,7 @@ def fetch_atlas_basc_multiscale_2015(
             + ".nii.gz"
         )
 
-        filename = [(os.path.join(folder_name, basename), url, opts)]
+        filename = [(folder_name / basename, url, opts)]
 
         data = fetch_files(data_dir, filename, resume=resume, verbose=verbose)
         params = Bunch(maps=data[0], description=fdescr)
@@ -1490,8 +1475,7 @@ def fetch_atlas_basc_multiscale_2015(
             for key in keys
         ]
         filenames = [
-            (os.path.join(folder_name, basename), url, opts)
-            for basename in basenames
+            (folder_name / basename, url, opts) for basename in basenames
         ]
         data = fetch_files(data_dir, filenames, resume=resume, verbose=verbose)
 
@@ -1509,7 +1493,7 @@ def fetch_atlas_basc_multiscale_2015(
 
 
 @fill_doc
-def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=True):
+def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=False):
     """Load the Dosenbach et al 160 ROIs.
 
     These ROIs cover much of the cerebral cortex
@@ -1546,8 +1530,7 @@ def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=True):
     """
     dataset_name = "dosenbach_2010"
     fdescr = get_dataset_descr(dataset_name)
-    package_directory = os.path.dirname(os.path.abspath(__file__))
-    csv = os.path.join(package_directory, "data", "dosenbach_2010.csv")
+    csv = PACKAGE_DIRECTORY / "data" / "dosenbach_2010.csv"
     out_csv = pd.read_csv(csv)
 
     if ordered_regions:
@@ -1567,14 +1550,13 @@ def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=True):
     }
 
     if legacy_format:
-        warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
         params["rois"] = params["rois"].to_records(index=False)
 
     return Bunch(**params)
 
 
 @fill_doc
-def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
+def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=False):
     """Load the Seitzman et al. 300 ROIs.
 
     These ROIs cover cortical, subcortical and cerebellar regions and are
@@ -1619,14 +1601,13 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
     """
     dataset_name = "seitzman_2018"
     fdescr = get_dataset_descr(dataset_name)
-    package_directory = os.path.dirname(os.path.abspath(__file__))
-    roi_file = os.path.join(
-        package_directory,
-        "data",
-        "seitzman_2018_ROIs_300inVol_MNI_allInfo.txt",
+    roi_file = (
+        PACKAGE_DIRECTORY
+        / "data"
+        / "seitzman_2018_ROIs_300inVol_MNI_allInfo.txt"
     )
-    anatomical_file = os.path.join(
-        package_directory, "data", "seitzman_2018_ROIs_anatomicalLabels.txt"
+    anatomical_file = (
+        PACKAGE_DIRECTORY / "data" / "seitzman_2018_ROIs_anatomicalLabels.txt"
     )
 
     rois = pd.read_csv(roi_file, delimiter=" ")
@@ -1634,7 +1615,7 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
 
     # get integer regional labels and convert to text labels with mapping
     # from header line
-    with open(anatomical_file) as fi:
+    with anatomical_file.open() as fi:
         header = fi.readline()
     region_mapping = {}
     for r in header.strip().split(","):
@@ -1645,13 +1626,12 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
     anatomical_names = np.array([region_mapping[a] for a in anatomical])
 
     rois = pd.concat([rois, pd.DataFrame(anatomical_names)], axis=1)
-    rois.columns = list(rois.columns[:-1]) + ["region"]
+    rois.columns = [*rois.columns[:-1], "region"]
 
     if ordered_regions:
         rois = rois.sort_values(by=["network", "y"])
 
     if legacy_format:
-        warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
         rois = rois.to_records()
 
     params = {
@@ -1745,7 +1725,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     networks = [[name] * len(idxs) for name, idxs in labels]
 
-    filenames = [(os.path.join("allen_rsn_2011", f), url, opts) for f in files]
+    filenames = [(Path("allen_rsn_2011", f), url, opts) for f in files]
 
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose

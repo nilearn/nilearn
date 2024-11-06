@@ -16,37 +16,33 @@ from collections import OrderedDict
 from collections.abc import Iterable
 from decimal import Decimal
 from html import escape
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
-from nilearn.plotting import plot_glass_brain, plot_roi, plot_stat_map
-from nilearn.plotting.cm import _cmap_d as nilearn_cmaps
-from nilearn.plotting.img_plotting import MNI152TEMPLATE
-from nilearn.plotting.matrix_plotting import (
-    plot_contrast_matrix,
-    plot_design_matrix,
-)
-from nilearn.reporting.html_report import HTMLReport
-
-from .._utils import fill_doc
-
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore", FutureWarning)
-    from nilearn import glm
-    from nilearn.glm.thresholding import threshold_stats_img
-
-from nilearn._utils import check_niimg
+from nilearn._utils import check_niimg, fill_doc
 from nilearn._utils.niimg import safe_get_data
 from nilearn.experimental.surface import SurfaceMasker
+from nilearn.glm import threshold_stats_img
+from nilearn.glm.first_level import FirstLevelModel
+from nilearn.glm.second_level import SecondLevelModel
 from nilearn.maskers import NiftiMasker
+from nilearn.plotting import (
+    plot_contrast_matrix,
+    plot_design_matrix,
+    plot_glass_brain,
+    plot_roi,
+    plot_stat_map,
+)
+from nilearn.plotting.cm import _cmap_d as nilearn_cmaps
+from nilearn.plotting.img_plotting import MNI152TEMPLATE
 from nilearn.reporting.get_clusters_table import get_clusters_table
+from nilearn.reporting.html_report import HTMLReport
 from nilearn.reporting.utils import figure_to_svg_quoted
 
-HTML_TEMPLATE_ROOT_PATH = os.path.join(
-    os.path.dirname(__file__), "glm_reporter_templates"
-)
+HTML_TEMPLATE_ROOT_PATH = Path(__file__).parent / "glm_reporter_templates"
 
 
 @fill_doc
@@ -187,19 +183,18 @@ def make_glm_report(
     except AttributeError:
         design_matrices = [model.design_matrix_]
 
-    html_head_template_path = os.path.join(
-        HTML_TEMPLATE_ROOT_PATH, "report_head_template.html"
+    html_head_template_path = (
+        HTML_TEMPLATE_ROOT_PATH / "report_head_template.html"
+    )
+    html_body_template_path = (
+        HTML_TEMPLATE_ROOT_PATH / "report_body_template.html"
     )
 
-    html_body_template_path = os.path.join(
-        HTML_TEMPLATE_ROOT_PATH, "report_body_template.html"
-    )
-
-    with open(html_head_template_path) as html_head_file_obj:
+    with html_head_template_path.open() as html_head_file_obj:
         html_head_template_text = html_head_file_obj.read()
     report_head_template = string.Template(html_head_template_text)
 
-    with open(html_body_template_path) as html_body_file_obj:
+    with html_body_template_path.open() as html_body_file_obj:
         html_body_template_text = html_body_file_obj.read()
     report_body_template = string.Template(html_body_template_text)
 
@@ -380,10 +375,9 @@ def _plot_contrasts(contrasts, design_matrices):
 
     """
     all_contrasts_plots = {}
-    contrast_template_path = os.path.join(
-        HTML_TEMPLATE_ROOT_PATH, "contrast_template.html"
-    )
-    with open(contrast_template_path) as html_template_obj:
+    contrast_template_path = HTML_TEMPLATE_ROOT_PATH / "contrast_template.html"
+
+    with contrast_template_path.open() as html_template_obj:
         contrast_template_text = html_template_obj.read()
 
     for design_matrix in design_matrices:
@@ -443,9 +437,9 @@ def _make_headings(contrasts, title, model):
         If title is user-supplied, then subheading is empty string.
 
     """
-    if isinstance(model, glm.first_level.FirstLevelModel):
+    if isinstance(model, FirstLevelModel):
         model_type = "First Level Model"
-    elif isinstance(model, glm.second_level.SecondLevelModel):
+    elif isinstance(model, SecondLevelModel):
         model_type = "Second Level Model"
 
     if title:
@@ -575,10 +569,11 @@ def _dmtx_to_svg_url(design_matrices):
 
     """
     html_design_matrices = []
-    dmtx_template_path = os.path.join(
-        HTML_TEMPLATE_ROOT_PATH, "design_matrix_template.html"
+    dmtx_template_path = (
+        HTML_TEMPLATE_ROOT_PATH / "design_matrix_template.html"
     )
-    with open(dmtx_template_path) as html_template_obj:
+
+    with dmtx_template_path.open() as html_template_obj:
         dmtx_template_text = html_template_obj.read()
 
     for dmtx_count, design_matrix in enumerate(design_matrices, start=1):
@@ -769,10 +764,11 @@ def _make_stat_maps_contrast_clusters(
 
     """
     all_components = []
-    components_template_path = os.path.join(
-        HTML_TEMPLATE_ROOT_PATH, "stat_maps_contrast_clusters_template.html"
+    components_template_path = (
+        HTML_TEMPLATE_ROOT_PATH / "stat_maps_contrast_clusters_template.html"
     )
-    with open(components_template_path) as html_template_obj:
+
+    with components_template_path.open() as html_template_obj:
         components_template_text = html_template_obj.read()
     for contrast_name, stat_map_img in stat_img.items():
         component_text_ = string.Template(components_template_text)

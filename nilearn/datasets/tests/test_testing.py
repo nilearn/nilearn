@@ -60,10 +60,10 @@ def test_loading_from_archive_contents(tmp_path):
         tar_extract_dir.mkdir()
 
         with tarfile.open(str(file_path)) as tarf:
-            assert (
-                sorted(map(Path, tarf.getnames()))
-                == [Path(".")] + expected_contents
-            )
+            assert sorted(map(Path, tarf.getnames())) == [
+                Path(),
+                *expected_contents,
+            ]
             tarf.extractall(str(tar_extract_dir))
 
         labels_file = tar_extract_dir / "data" / "labels.csv"
@@ -89,7 +89,7 @@ def test_sender_regex(request_mocker):
 
     assert resp.text == f"name: nilearn, url: {url}"
 
-    def g(match, request):
+    def g(match, request):  # noqa: ARG001
         return 403
 
     request_mocker.url_mapping[pattern] = g
@@ -143,7 +143,7 @@ class _MyResponse(_testing.Response):
 def test_sender_response(request_mocker):
     request_mocker.url_mapping["*example.org/a"] = _MyResponse("", "")
 
-    def f(match, request):
+    def f(match, request):  # noqa: ARG001
         resp = _testing.Response(b"hello", request.url)
         resp.headers["cookie"] = "abc"
         return resp
@@ -207,7 +207,7 @@ def test_dict_to_archive(tmp_path):
     assert img.shape == (10, 11, 12, 17)
     with (extract_dir / "a" / "b" / "c").open("rb") as f:
         assert int.from_bytes(f.read(), byteorder="big", signed=False) == 100
-    with open(str(extract_dir / "empty_data" / "labels.csv")) as f:
+    with (extract_dir / "empty_data" / "labels.csv").open() as f:
         assert f.read() == ""
 
     zip_archive = _testing.dict_to_archive(
@@ -216,9 +216,11 @@ def test_dict_to_archive(tmp_path):
     with archive_path.open("wb") as f:
         f.write(zip_archive)
 
-    with zipfile.ZipFile(str(archive_path)) as zipf:
-        with zipf.open("archive", "r") as f:
-            assert f.read() == targz
+    with (
+        zipfile.ZipFile(str(archive_path)) as zipf,
+        zipf.open("archive", "r") as f,
+    ):
+        assert f.read() == targz
 
     from_list = _testing.list_to_archive(archive_spec.keys())
     with archive_path.open("wb") as f:
@@ -226,6 +228,11 @@ def test_dict_to_archive(tmp_path):
 
     with tarfile.open(str(archive_path)) as tarf:
         assert sorted(map(Path, tarf.getnames())) == sorted(
-            list(map(Path, archive_spec.keys()))
-            + [Path("."), Path("a"), Path("a", "b"), Path("data")]
+            [
+                *list(map(Path, archive_spec.keys())),
+                Path(),
+                Path("a"),
+                Path("a", "b"),
+                Path("data"),
+            ]
         )

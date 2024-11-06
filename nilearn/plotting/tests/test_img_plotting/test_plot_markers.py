@@ -1,7 +1,5 @@
 """Tests for :func:`nilearn.plotting.plot_markers`."""
 
-import os
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
@@ -114,7 +112,8 @@ def test_plot_markers_saving_to_file(coords, tmp_path):
         [1, 2, 3, 4], coords, output_file=filename, display_mode="x"
     )
     assert display is None
-    assert os.path.isfile(filename) and os.path.getsize(filename) > 0
+    assert filename.is_file() and filename.stat().st_size > 0
+
     plt.close()
 
 

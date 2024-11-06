@@ -1,7 +1,5 @@
 """Tests for :func:`nilearn.plotting.plot_connectome`."""
 
-import os
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
@@ -164,8 +162,9 @@ def test_plot_connectome_to_file(
         adjacency, node_coords, output_file=filename, **base_params
     )
     assert display is None
-    assert os.path.isfile(filename)
-    assert os.path.getsize(filename) > 0
+    assert filename.is_file()
+    assert filename.stat().st_size > 0
+
     plt.close()
 
 

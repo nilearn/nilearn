@@ -40,18 +40,30 @@ Fixes
 
 - :bdg-dark:`Code` ``first_level_from_bids`` will now return subjects in order (:gh:`4582` by `Tharun K`_).
 
+- :bdg-dark:`Code` Fix PTH errors: PTH110, PTH107, PTH102, PTH113, PTH111, PTH101, PTH201, PTH109, PTH115 (:gh:`4620` by `Prakhar Jain`_).
+
+- :bdg-dark:`Code` Fix PTH errors: PTH100, PTH103, PTH106, PTH112, PTH114, PTH117, PTH119, PTH120, PTH122, PTH202, PTH203, PTH204 (:gh:`4607`, :gh:`4612`, :gh:`4590`, :gh:`4618`, :gh:`4860` by `Hande Gözükan`_).
+
+- :bdg-dark:`Code` Make :func:`nilearn.interfaces.fmriprep.load_confounds` return ``None`` for confounds when provided with an empty cleaning strategy (:gh:`4570` by `Micha Burkhardt`_).
+
 Enhancements
 ------------
+
+- :bdg-dark:`Code` Improved SearchLight with NIfTI Support, Mask Handling, and Reusable Transform Method (:gh:`4652` by `Prakhar Jain`_).
 
 - :bdg-primary:`Doc` Add example showing how to compute hemisphere-wise connectivity for Yeo 17 networks (:gh:`4585` by `Victoria Shevchenko`_).
 
 - :bdg-primary:`Doc` Add an option in :func:`nilearn.datasets.fetch_atlas_aal` to fetch the latest AAL version, 3v2 (:gh:`4554` by `Jeremy Lefort-Besnard`_ and `Rémi Gau`_).
 
-- :bdg-dark:`Code` Improve input/output for ``SurfaceImage`` by loading meshes from files on disk, loading data from files or Nifti object, and saving meshes to file (:gh:`4446` by `Rémi Gau`_).
+- :bdg-dark:`Code` Improve input/output for ``SurfaceImage`` by loading meshes from files on disk, loading data from files or Nifti object, and saving meshes to file (:gh:`4446`, :gh:`4593` by `Rémi Gau`_ and `Jerome Dockes`_).
 
 - :bdg-dark:`Code` Add a new function :func:`nilearn.plotting.plot_design_matrix_correlation` to plot the correlation between regressors of a GLM design matrix (:gh:`4467` by `Rémi Gau`_).
 
+- :bdg-dark:`Code` Allow :class:`nilearn.decoding.Decoder` and :class:`nilearn.decoding.DecoderRegressor` to work with surface objects (:gh:`4205` by `Yasmin Mzayek`_ and `Rémi Gau`_).
+
 - :bdg-success:`API` Add option to resize output image width ``width_view`` in :func:`nilearn.plotting.view_img` (:gh:`4416` by `Alexandre Sayal`_).
+
+- :bdg-success:`API` Surface plotting functions :func:`nilearn.plotting.view_surf`, :func:`nilearn.plotting.plot_surf`, :func:`nilearn.plotting.plot_surf_roi`, :func:`nilearn.plotting.plot_surf_contours` and :func:`nilearn.plotting.plot_surf_stat_map` can accept ``SurfaceImage`` as inputs making their ``surf_mesh`` parameter optional (:gh:`4688` by `Rémi Gau`_).
 
 - :bdg-primary:`Doc` Add example to demonstrate the use of the new ``copy_header_from`` parameter in :func:`nilearn.image.math_img` (:gh:`4392` by `Himanshu Aggarwal`_).
 
@@ -59,10 +71,14 @@ Enhancements
 
 - :bdg-dark:`Code` Add footer to masker reports (:gh:`4307` by `Rémi Gau`_).
 
+- :bdg-info:`Plotting` Improve plotting contours for :class:`nilearn.plotting.displays.PlotlySurfaceFigure` objects by adding :meth:`nilearn.plotting.displays.PlotlySurfaceFigure.add_contours` method that accepts arguments to adjust line aesthetics (:gh:`3949` by `Patrick Sadil`_).
+
 - :bdg-primary:`Doc` Add example to provide a clear understanding of the :class:`nilearn.decoding.Decoder` object by demonstrating underlying steps via a Scikit-Learn pipeline. (:gh:`4437` by `Himanshu Aggarwal`_).
 
 Changes
 -------
+
+- :bdg-secondary:`Maint` Replace ``pytest.warns(DeprecationWarning)`` with ``pytest.deprecated_call()`` in tests (:gh:`4637` by `Victoria Shevchenko`_).
 
 - :bdg-dark:`Code` Warn the user when all volumes would be scrubbed when loading fmriprep confounds as this would lead to an empty ``sample_mask`` (:gh:`4558` by `Victoria Shevchenko`_).
 
@@ -99,3 +115,7 @@ Changes
 - :bdg-dark:`Code` Reorder condition in internal call of :func:`nilearn.image.resample_img` to skip checking of array values if interpolation is ``nearest`` (:gh:`4571` by `Jason Kai`_).
 
 - :bdg-dark:`Code` Remove redundant sorting of ``np.unique(data)`` in internal call of :func:`nilearn.image.resample_img` when checking array values (:gh:`4571` by `Jason Kai`_).
+
+- :bdg-primary:`Doc` Add missing default values to docstrings (:gh:`4656`, :gh:`4659`, :gh:`4660` by `Anupriya Kumari`_).
+
+- :bdg-secondary:`Maint` Refactor ``nilearn.plotting.displays._projectors.add_graph`` to reduce its maxixmum length (:gh:`4635` by `Anupriya Kumari`_).

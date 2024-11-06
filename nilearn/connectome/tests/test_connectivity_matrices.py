@@ -939,7 +939,7 @@ def test_connectivity_measure_standardize(signals):
     """Check warning is raised and then suppressed with setting standardize."""
     match = "default strategy for standardize"
 
-    with pytest.warns(DeprecationWarning, match=match):
+    with pytest.deprecated_call(match=match):
         ConnectivityMeasure(kind="correlation").fit_transform(signals)
 
     with warnings.catch_warnings(record=True) as record:

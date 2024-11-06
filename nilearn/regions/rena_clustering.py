@@ -430,7 +430,7 @@ def recursive_neighbor_agglomeration(
 
 
 @fill_doc
-class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
+class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
     """Recursive Neighbor Agglomeration (:term:`ReNA`).
 
     Recursively merges the pair of clusters according to 1-nearest neighbors
@@ -506,7 +506,11 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
             return BaseEstimator._more_tags(self)
         return self.__sklearn_tags__()
 
-    def fit(self, X, y=None):
+    def fit(
+        self,
+        X,
+        y=None,  # noqa: ARG002
+    ):
         """Compute clustering of the data.
 
         Parameters
@@ -528,8 +532,8 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
         if not isinstance(self.mask_img, (str, Nifti1Image)):
             raise ValueError(
-                "The mask image should be a Niimg-like"
-                f"object. Instead a {type(self.mask_img)} object was provided."
+                "The mask image should be a Niimg-like object. "
+                f"Instead a {type(self.mask_img)} object was provided."
             )
 
         if self.memory is None or isinstance(self.memory, str):
@@ -578,7 +582,11 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
         return self
 
-    def transform(self, X, y=None):
+    def transform(
+        self,
+        X,
+        y=None,  # noqa: ARG002
+    ):
         """Apply clustering, reduce the dimensionality of the data.
 
         Parameters
