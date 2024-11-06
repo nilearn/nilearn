@@ -11,12 +11,18 @@ from nilearn._utils.class_inspect import check_estimator
 from nilearn.conftest import _img_3d_ones, _rng
 from nilearn.decoding import searchlight
 
+extra_valid_checks = [
+    "check_no_attributes_set_in_init",
+    "check_transformers_unfitted",
+    "check_transformer_n_iter",
+]
+
 
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
         estimator=[searchlight.SearchLight(mask_img=_img_3d_ones)],
-        extra_valid_checks=["check_no_attributes_set_in_init"],
+        extra_valid_checks=extra_valid_checks,
     ),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
@@ -30,7 +36,7 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
     check_estimator(
         estimator=[searchlight.SearchLight(mask_img=_img_3d_ones)],
         valid=False,
-        extra_valid_checks=["check_no_attributes_set_in_init"],
+        extra_valid_checks=extra_valid_checks,
     ),
 )
 def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
@@ -261,7 +267,7 @@ def test_transform_without_fit():
     data_img, cond, mask_img = _make_searchlight_test_data(frames)
     sl = searchlight.SearchLight(mask_img, radius=1.0)
 
-    with pytest.raises(ValueError, match="fit the model before calling"):
+    with pytest.raises(ValueError, match="The model has not been fitted yet."):
         sl.transform(data_img)
 
 
