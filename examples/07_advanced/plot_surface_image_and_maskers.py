@@ -11,9 +11,8 @@ check_matplotlib()
 import matplotlib.pyplot as plt
 import numpy as np
 
-from nilearn.experimental.plotting import plot_surf, plot_surf_roi
 from nilearn.experimental.surface import SurfaceMasker, fetch_nki
-from nilearn.plotting import plot_matrix, show
+from nilearn.plotting import plot_matrix, show, plot_surf, plot_surf_roi
 
 img = fetch_nki()[0]
 print(f"NKI image: {img}")
