@@ -535,7 +535,7 @@ def compute_fixed_effects(
         else:
             masker = NiftiMasker().fit(contrast_imgs)
     elif isinstance(mask, SurfaceImage):
-        masker = SurfaceMasker(mask_img=mask).fit(contrast_imgs[0])
+        masker = SurfaceMasker().fit(contrast_imgs[0])
     else:
         masker = NiftiMasker(mask_img=mask).fit()
 
