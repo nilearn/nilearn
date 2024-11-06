@@ -58,7 +58,7 @@ from nilearn.experimental.surface import InMemoryMesh, PolyMesh
 # for the tetrahedron
 left_coords = np.asarray(
     [
-        [0.0, 0, 0],  # vertex 0
+        [0, 0, 0],  # vertex 0
         [1, 0, 0],  # vertex 1
         [0, 1, 0],  # vertex 2
         [0, 0, 1],  # vertex 3
@@ -74,7 +74,7 @@ left_faces = np.asarray(
 )
 # for the pyramid
 right_coords = (
-    np.asarray([[0.0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0], [0, 0, 1]]) + 2.0
+    np.asarray([[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0], [0, 0, 1]]) + 2
 )
 right_faces = np.asarray(
     [
@@ -200,12 +200,13 @@ plotting.view_surf(
 # Most things that can be done with volumetric images can also be done with
 # surface images. See following examples for more details:
 #
-# * :ref:`sphx_glr_auto_examples_01_plotting_plot_surf_stat_map.py`
-#   to learn how to plot statistical maps on the surface.
+# * To learn how to plot statistical maps on the surface, see
+#   :ref:`sphx_glr_auto_examples_01_plotting_plot_surf_stat_map.py`
 #
-# * :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_localizer_surface_analysis.py`  # noqa: E501
-#   to learn how to perform first-level GLM analysis on surface data.
+# * To learn how to perform first-level GLM analysis on surface data, see
+#   :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_localizer_surface_analysis.py`  # noqa: E501
 #
-# * :ref:`sphx_glr_auto_examples_07_advanced_plot_surface_bids_analysis.py`
-#   to learn how to perform GLM analysis on surface data organized in BIDS
-#   format.
+# * To learn how to perform GLM analysis on surface data organized in BIDS
+#   format, see
+#   :ref:`sphx_glr_auto_examples_07_advanced_plot_surface_bids_analysis.py`
+#
