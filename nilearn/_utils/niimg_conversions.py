@@ -196,9 +196,7 @@ def iter_check_niimg(
             exc.increment_stack_counter()
             raise
         except TypeError as exc:
-            img_name = ""
-            if isinstance(niimg, str):
-                img_name = f" ({niimg}) "
+            img_name = f" ({niimg}) " if isinstance(niimg, (str, Path)) else ""
 
             exc.args = (
                 f"Error encountered while loading image #{i}{img_name}",
@@ -282,8 +280,6 @@ def check_niimg(
     niimg = stringify_path(niimg)
 
     if isinstance(niimg, str):
-        # TODO refactor by using "resolve_globbing"
-        # in nilearn/_utils/path_finding.py
         if wildcards and ni.EXPAND_PATH_WILDCARDS:
             # Ascending sorting + expand user path
             filenames = sorted(glob.glob(str(Path(niimg).expanduser())))
