@@ -3,6 +3,47 @@ import operator
 import os
 import warnings
 
+OPTIONAL_MATPLOTLIB_MIN_VERSION = "3.3.0"
+
+
+def _set_mpl_backend():
+    # We are doing local imports here to avoid polluting our namespace
+    try:
+        import matplotlib
+    except ImportError:
+        warnings.warn(
+            "Some dependencies of nilearn.plotting package seem to be missing."
+            "\nThey can be installed with:\n"
+            " pip install 'nilearn[plotting]'"
+        )
+        raise
+    else:
+        # When matplotlib was successfully imported we need to check
+        # that the version is greater that the minimum required one
+        mpl_version = getattr(matplotlib, "__version__", "0.0.0")
+        if not compare_version(
+            mpl_version, ">=", OPTIONAL_MATPLOTLIB_MIN_VERSION
+        ):
+            raise ImportError(
+                f"A matplotlib version of at least "
+                f"{OPTIONAL_MATPLOTLIB_MIN_VERSION} "
+                f"is required to use nilearn. {mpl_version} was found. "
+                f"Please upgrade matplotlib."
+            )
+        current_backend = matplotlib.get_backend().lower()
+
+        try:
+            # Making sure the current backend is usable by matplotlib
+            matplotlib.use(current_backend)
+        except Exception:
+            # If not, switching to default agg backend
+            matplotlib.use("Agg")
+        new_backend = matplotlib.get_backend().lower()
+
+        if new_backend != current_backend:
+            # Matplotlib backend has been changed, let's warn the user
+            warnings.warn(f"Backend changed to {new_backend}...")
+
 
 def rename_parameters(
     replacement_params,
