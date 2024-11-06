@@ -1,7 +1,6 @@
 """Plotting code for nilearn."""
 
 # Original Authors: Chris Filo Gorgolewski, Gael Varoquaux
-import importlib
 import warnings
 
 OPTIONAL_MATPLOTLIB_MIN_VERSION = "3.3.0"
@@ -16,11 +15,6 @@ def _set_mpl_backend():
     try:
         import matplotlib
     except ImportError:
-        if importlib.util.find_spec("pytest") is not None:
-            from .._utils.testing import skip_if_running_tests
-
-            # No need to fail when running tests
-            skip_if_running_tests("matplotlib not installed")
         warnings.warn(
             "Some plotting dependencies of Nilearn seem to be missing.\n"
             "They can be installed with:\n"
