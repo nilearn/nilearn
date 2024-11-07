@@ -4,6 +4,16 @@ Cortical surface-based searchlight decoding
 
 This is a demo for surface-based searchlight decoding,
 as described in :footcite:t:`Chen2011`.
+
+.. warning::
+
+    This example projects results from the Haxby dataset
+    on the fsaverage surface.
+    This is inappropriate
+    given that the Haxby data has not been properly coregistered
+    to allow for such projection.
+    It is done in this example for pedagogical reasons
+    to show "how to do it".
 """
 
 # %%
