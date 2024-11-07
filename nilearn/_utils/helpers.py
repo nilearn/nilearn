@@ -7,6 +7,15 @@ OPTIONAL_MATPLOTLIB_MIN_VERSION = "3.3.0"
 
 
 def _set_mpl_backend():
+    """Check if matplotlib is installed.
+
+    If not installed, raise error and display warning to install necessary
+    dependencies.
+
+    If installed, check if the installed version complies with the minimum
+    supported matplotlib version. If it does not, raise error; otherwise set
+    the matplotlib backend.
+    """
     # We are doing local imports here to avoid polluting our namespace
     try:
         import matplotlib
