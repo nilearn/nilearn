@@ -5,9 +5,8 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from nibabel import Nifti1Image, freesurfer, gifti, nifti1
+from nibabel import Nifti1Image, freesurfer, gifti, load, nifti1
 from numpy.testing import assert_array_almost_equal, assert_array_equal
-from scipy.spatial import Delaunay
 from scipy.stats import pearsonr
 
 from nilearn import datasets, image
@@ -23,6 +22,8 @@ from nilearn.surface import (
 from nilearn.surface.surface import (
     _gifti_img_to_mesh,
     _load_surf_files_gifti_gzip,
+    data_to_gifti,
+    mesh_to_gifti,
 )
 from nilearn.surface.tests._testing import (
     flat_mesh,
@@ -81,7 +82,7 @@ def test_load_surf_data_numpy_gt_1pt23():
     https://github.com/nilearn/nilearn/issues/3638
     """
     fsaverage = datasets.fetch_surf_fsaverage()
-    surface.load_surf_data(fsaverage["pial_left"])
+    load_surf_data(fsaverage["pial_left"])
 
 
 def test_load_surf_data_array():
@@ -437,20 +438,9 @@ def test_load_surf_data_file_glob(tmp_path):
         load_surf_data(tmp_path / "*.gii")
 
 
-def _flat_mesh(x_s, y_s, z=0):
-    # outer normals point upwards ie [0, 0, 1]
-    x, y = np.mgrid[:x_s, :y_s]
-    x, y = x.ravel(), y.ravel()
-    z = np.ones(len(x)) * z
-    vertices = np.asarray([x, y, z]).T
-    triangulation = Delaunay(vertices[:, :2]).simplices
-    mesh = [vertices, triangulation]
-    return mesh
-
-
 @pytest.mark.parametrize("xy", [(10, 7), (5, 5), (3, 2)])
 def test_flat_mesh(xy):
-    points, triangles = _flat_mesh(xy[0], xy[1])
+    points, triangles = flat_mesh(xy[0], xy[1])
     a, b, c = points[triangles[0]]
     n = np.cross(b - a, c - a)
     assert np.allclose(n, [0.0, 0.0, 1.0])
@@ -571,7 +561,7 @@ def test_sample_locations_between_surfaces(depth, n_points, affine_eye):
 
 def test_depth_ball_sampling():
     img, *_ = data_gen.generate_mni_space_img()
-    mesh = surface.load_surf_mesh(datasets.fetch_surf_fsaverage()["pial_left"])
+    mesh = load_surf_mesh(datasets.fetch_surf_fsaverage()["pial_left"])
     with pytest.raises(ValueError, match=".*does not support.*"):
         surface.vol_to_surf(img, mesh, kind="ball", depth=[0.5])
 
@@ -586,8 +576,8 @@ def test_vol_to_surf(kind, n_scans, use_mask):
     if n_scans == 1:
         img = image.new_img_like(img, image.get_data(img).squeeze())
     fsaverage = datasets.fetch_surf_fsaverage()
-    mesh = surface.load_surf_mesh(fsaverage["pial_left"])
-    inner_mesh = surface.load_surf_mesh(fsaverage["white_left"])
+    mesh = load_surf_mesh(fsaverage["pial_left"])
+    inner_mesh = load_surf_mesh(fsaverage["white_left"])
     center_mesh = np.mean([mesh[0], inner_mesh[0]], axis=0), mesh[1]
     proj = surface.vol_to_surf(
         img, mesh, kind="depth", inner_mesh=inner_mesh, mask_img=mask_img
@@ -738,7 +728,7 @@ def test_check_mesh():
     with pytest.raises(ValueError):
         surface.check_mesh(mesh)
     with pytest.raises(TypeError):
-        surface.check_mesh(surface.load_surf_mesh(mesh["pial_right"]))
+        surface.check_mesh(load_surf_mesh(mesh["pial_right"]))
 
 
 def test_check_mesh_and_data(rng):
@@ -799,3 +789,47 @@ def test_check_surface(rng):
         ValueError, match="Mismatch between number of nodes in mesh"
     ):
         surface.check_surface(wrong_surface)
+
+
+@pytest.mark.parametrize(
+    "dtype",
+    [
+        np.uint16,
+        np.uint32,
+        np.uint64,
+        np.int8,
+        np.int16,
+        np.int32,
+        np.int64,
+        np.float32,
+        np.float64,
+    ],
+)
+def test_data_to_gifti(rng, tmp_path, dtype):
+    """Check saving several data type to gifti.
+
+    - check that strings and Path work
+    - make sure files can be loaded with nibabel
+    """
+    data = rng.random((5, 6)).astype(dtype)
+    data_to_gifti(data=data, gifti_file=tmp_path / "data.gii")
+    data_to_gifti(data=data, gifti_file=str(tmp_path / "data.gii"))
+    load(tmp_path / "data.gii")
+
+
+def test_mesh_to_gifti(single_mesh, tmp_path):
+    """Check saving mesh to gifti.
+
+    - check that strings and Path work
+    - make sure files can be loaded with nibabel
+    """
+    coordinates, faces = single_mesh
+    mesh_to_gifti(
+        coordinates=coordinates, faces=faces, gifti_file=tmp_path / "mesh.gii"
+    )
+    mesh_to_gifti(
+        coordinates=coordinates,
+        faces=faces,
+        gifti_file=str(tmp_path / "mesh.gii"),
+    )
+    load(tmp_path / "mesh.gii")

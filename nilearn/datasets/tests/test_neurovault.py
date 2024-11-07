@@ -279,13 +279,10 @@ def test_append_filters_to_query():
     assert query == "https://neurovault.org/api/collections/40"
 
 
-def test_get_batch(tmp_path):
+def test_get_batch():
     batch = neurovault._get_batch(neurovault._NEUROVAULT_COLLECTIONS_URL)
-
     assert "results" in batch
     assert "count" in batch
-    with open(tmp_path / "test_nv.txt", "w"):
-        pass
 
 
 def test_get_batch_error(tmp_path):
@@ -556,7 +553,7 @@ def test_neurosynth_words_vectorized(tmp_path):
         word_weights = np.zeros(n_im)
         word_weights[i] = 1
         words_dict = {"data": {"values": dict(zip(words, word_weights))}}
-        with open(file_name, "wb") as words_file:
+        with file_name.open("wb") as words_file:
             words_file.write(json.dumps(words_dict).encode("utf-8"))
     freq, _ = neurovault.neurosynth_words_vectorized(words_files)
 
@@ -574,11 +571,12 @@ def test_neurosynth_words_vectorized_warning(tmp_path):
 def test_write_read_metadata(tmp_path):
     metadata = {
         "relative_path": "collection_1",
-        "absolute_path": os.path.join("tmp", "collection_1"),
+        "absolute_path": Path("tmp", "collection_1"),
     }
+    metadata_path = tmp_path / "metadata.json"
 
-    neurovault._write_metadata(metadata, tmp_path / "metadata.json")
-    with open(tmp_path / "metadata.json", "rb") as meta_file:
+    neurovault._write_metadata(metadata, metadata_path)
+    with metadata_path.open("rb") as meta_file:
         written_metadata = json.loads(meta_file.read().decode("utf-8"))
 
     assert "relative_path" in written_metadata
@@ -586,37 +584,33 @@ def test_write_read_metadata(tmp_path):
 
     read_metadata = neurovault._add_absolute_paths("tmp", written_metadata)
 
-    assert read_metadata["absolute_path"] == os.path.join(
-        "tmp", "collection_1"
-    )
+    assert read_metadata["absolute_path"] == Path("tmp", "collection_1")
 
 
 def test_add_absolute_paths():
     meta = {
         "col_relative_path": "collection_1",
-        "col_absolute_path": os.path.join(
-            "dir_0", "neurovault", "collection_1"
-        ),
+        "col_absolute_path": Path("dir_0", "neurovault", "collection_1"),
     }
     meta = neurovault._add_absolute_paths(
-        os.path.join("dir_1", "neurovault"), meta, force=False
+        Path("dir_1", "neurovault"), meta, force=False
     )
 
-    assert meta["col_absolute_path"] == os.path.join(
+    assert meta["col_absolute_path"] == Path(
         "dir_0", "neurovault", "collection_1"
     )
 
     meta = neurovault._add_absolute_paths(
-        os.path.join("dir_1", "neurovault"), meta, force=True
+        Path("dir_1", "neurovault"), meta, force=True
     )
 
-    assert meta["col_absolute_path"] == os.path.join(
+    assert meta["col_absolute_path"] == Path(
         "dir_1", "neurovault", "collection_1"
     )
 
     meta = {"id": 0}
     meta_transformed = neurovault._add_absolute_paths(
-        os.path.join("dir_1", "neurovault"), meta, force=True
+        Path("dir_1", "neurovault"), meta, force=True
     )
 
     assert meta == meta_transformed
@@ -626,23 +620,23 @@ def test_json_add_collection_dir(tmp_path):
     coll_dir = tmp_path / "collection_1"
     coll_dir.mkdir()
     coll_file_name = coll_dir / "collection_1.json"
-    with open(coll_file_name, "wb") as coll_file:
+    with coll_file_name.open("wb") as coll_file:
         coll_file.write(json.dumps({"id": 1}).encode("utf-8"))
     loaded = neurovault._json_add_collection_dir(coll_file_name)
 
-    assert loaded["absolute_path"] == str(coll_dir.absolute())
-    assert loaded["relative_path"] == str(coll_dir)
+    assert loaded["absolute_path"] == coll_dir.absolute()
+    assert loaded["relative_path"] == coll_dir
 
 
 def test_json_add_im_files_paths(tmp_path):
     coll_dir = tmp_path / "collection_1"
     coll_dir.mkdir()
     im_file_name = coll_dir / "image_1.json"
-    with open(im_file_name, "wb") as im_file:
+    with im_file_name.open("wb") as im_file:
         im_file.write(json.dumps({"id": 1}).encode("utf-8"))
     loaded = neurovault._json_add_im_files_paths(im_file_name)
 
-    assert loaded["relative_path"] == str(coll_dir / "image_1.nii.gz")
+    assert loaded["relative_path"] == coll_dir / "image_1.nii.gz"
     assert loaded.get("neurosynth_words_relative_path") is None
 
 
@@ -722,13 +716,9 @@ def test_download_image_terms_error(tmp_path, request_mocker):
             download_params,
         )
     # no fail if file already exists
-    with open(
-        os.path.join(
-            collection["absolute_path"],
-            "neurosynth_words_for_image_a.json",
-        ),
-        "w",
-    ):
+    with Path(
+        collection["absolute_path"], "neurosynth_words_for_image_a.json"
+    ).open("w"):
         pass
     neurovault._download_image_terms(image_info, collection, download_params)
 
@@ -774,7 +764,7 @@ def test_fetch_neurovault(tmp_path):
     # warning unless mode is 'offline'
     tmp_path.chmod(stat.S_IREAD | stat.S_IEXEC)
     (tmp_path / "neurovault").chmod(stat.S_IREAD | stat.S_IEXEC)
-    if os.access(os.path.join(tmp_path, "neurovault"), os.W_OK):
+    if os.access(tmp_path / "neurovault", os.W_OK):
         return
 
     with pytest.warns(UserWarning):
@@ -825,6 +815,13 @@ def test_fetch_neurovault_ids(tmp_path):
         data["collections_meta"][0]["absolute_path"]
     )
 
+    # check that there are no Path objects
+    for image in data.images:
+        assert isinstance(image, str)
+    for meta in data.images_meta + data.collections_meta:
+        for value in meta.values():
+            assert not isinstance(value, Path)
+
     # check image can be loaded again from disk
     data = neurovault.fetch_neurovault_ids(
         image_ids=[img_ids[0]], data_dir=tmp_path, mode="offline"
@@ -843,7 +840,12 @@ def test_fetch_neurovault_ids(tmp_path):
         Path(modified_meta["absolute_path"]).parent
         / f"image_{img_ids[0]}_metadata.json"
     )
-    with open(meta_path, "wb") as meta_f:
+    # convert Path to str for JSON serialization
+    modified_meta = {
+        k: str(v) if isinstance(v, Path) else v
+        for k, v in modified_meta.items()
+    }
+    with meta_path.open("wb") as meta_f:
         meta_f.write(json.dumps(modified_meta).encode("UTF-8"))
 
     # fresh download

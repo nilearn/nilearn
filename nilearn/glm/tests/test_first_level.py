@@ -53,10 +53,10 @@ BASEDIR = Path(__file__).resolve().parent
 FUNCFILE = BASEDIR / "functional.nii.gz"
 
 
-def test_high_level_glm_one_run():
-    shapes, rk = [(7, 8, 9, 15)], 3
+def test_high_level_glm_one_run(shape_4d_default):
+    rk = 3
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
-        shapes, rk
+        shapes=[shape_4d_default], rk=3
     )
 
     # Give an unfitted NiftiMasker as mask_img and check that we get an error
@@ -105,9 +105,9 @@ def test_high_level_glm_one_run():
     assert isinstance(z1, Nifti1Image)
 
 
-def test_explicit_fixed_effects(tmp_path):
+def test_explicit_fixed_effects(tmp_path, shape_3d_default):
     """Test the fixed effects performed manually/explicitly."""
-    shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 16)), 3
+    shapes, rk = [(*shape_3d_default, 5), (*shape_3d_default, 6)], 3
     mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(
         shapes, rk, file_path=tmp_path
     )
@@ -166,9 +166,9 @@ def test_explicit_fixed_effects(tmp_path):
         compute_fixed_effects(contrasts, variance, mask, dofs=[100])
 
 
-def test_explicit_fixed_effects_without_mask(tmp_path):
+def test_explicit_fixed_effects_without_mask(tmp_path, shape_3d_default):
     """Test the fixed effects performed manually/explicitly with no mask."""
-    shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 16)), 3
+    shapes, rk = [(*shape_3d_default, 5), (*shape_3d_default, 6)], 3
     _, fmri_data, design_matrices = write_fake_fmri_data_and_design(
         shapes, rk, file_path=tmp_path
     )
@@ -211,8 +211,8 @@ def test_explicit_fixed_effects_without_mask(tmp_path):
     )
 
 
-def test_high_level_glm_with_data(tmp_path):
-    shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 16)), 3
+def test_high_level_glm_with_data(tmp_path, shape_3d_default):
+    shapes, rk = [(*shape_3d_default, 5), (*shape_3d_default, 6)], 3
     _, fmri_data, design_matrices = write_fake_fmri_data_and_design(
         shapes, rk, file_path=tmp_path
     )
@@ -227,8 +227,8 @@ def test_high_level_glm_with_data(tmp_path):
     assert get_data(z_image).std() < 3.0
 
 
-def test_high_level_glm_with_data_with_mask(tmp_path):
-    shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 16)), 3
+def test_high_level_glm_with_data_with_mask(tmp_path, shape_3d_default):
+    shapes, rk = [(*shape_3d_default, 5), (*shape_3d_default, 6)], 3
     mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(
         shapes, rk, file_path=tmp_path
     )
@@ -271,8 +271,36 @@ def test_high_level_glm_with_data_with_mask(tmp_path):
     )
 
 
-def test_high_level_glm_with_paths(tmp_path):
-    shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 14)), 3
+def test_fmri_inputs_type_data_smoke(tmp_path, shape_4d_default):
+    """Test processing of FMRI inputs with path, str or nifti for data."""
+    mask, func_img, des = write_fake_fmri_data_and_design(
+        shapes=[shape_4d_default], file_path=tmp_path
+    )
+    FirstLevelModel(mask_img=mask).fit(func_img[0], design_matrices=des[0])
+    FirstLevelModel(mask_img=mask).fit(
+        [Path(func_img[0])], design_matrices=des[0]
+    )
+    FirstLevelModel(mask_img=mask).fit(
+        load(func_img[0]), design_matrices=des[0]
+    )
+
+
+def test_fmri_inputs_type_design_matrices_smoke(tmp_path, shape_4d_default):
+    """Test processing of FMRI inputs with path, str for design matrix."""
+    mask, func_img, des = write_fake_fmri_data_and_design(
+        shapes=[shape_4d_default], file_path=tmp_path
+    )
+    FirstLevelModel(mask_img=mask).fit(func_img[0], design_matrices=des[0])
+    FirstLevelModel(mask_img=mask).fit(
+        func_img[0], design_matrices=[pd.read_csv(des[0])]
+    )
+    FirstLevelModel(mask_img=mask).fit(
+        func_img[0], design_matrices=[Path(des[0])]
+    )
+
+
+def test_high_level_glm_with_paths(tmp_path, shape_3d_default):
+    shapes, rk = [(*shape_3d_default, 5), (*shape_3d_default, 6)], 3
     mask_file, fmri_files, design_files = write_fake_fmri_data_and_design(
         shapes, rk, file_path=tmp_path
     )
@@ -285,9 +313,9 @@ def test_high_level_glm_with_paths(tmp_path):
     assert get_data(z_image).std() < 3.0
 
 
-def test_high_level_glm_null_contrasts():
+def test_high_level_glm_null_contrasts(shape_3d_default):
     # test that contrast computation is resilient to 0 values.
-    shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 19)), 3
+    shapes, rk = [(*shape_3d_default, 5), (*shape_3d_default, 6)], 3
     _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk
     )
@@ -365,8 +393,8 @@ def test_high_level_glm_different_design_matrices_formulas():
         multi_run_model.compute_contrast(formula, output_type="effect_size")
 
 
-def test_compute_contrast_num_contrasts():
-    shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 19), (7, 8, 7, 13)), 3
+def test_compute_contrast_num_contrasts(shape_4d_default):
+    shapes, rk = [shape_4d_default, shape_4d_default, shape_4d_default], 3
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk
     )
@@ -542,147 +570,150 @@ def test_scaling(rng):
     assert Y.std() > 1
 
 
-def test_fmri_inputs(tmp_path):
+def test_fmri_inputs_shape(tmp_path, shape_4d_default):
     # Test processing of FMRI inputs
-    shapes = ((7, 8, 9, 10),)
-    mask, FUNCFILE, _ = write_fake_fmri_data_and_design(
+    mask, func_img, des = write_fake_fmri_data_and_design(
+        shapes=[shape_4d_default], file_path=tmp_path
+    )
+    func_img = func_img[0]
+    des = des[0]
+
+    FirstLevelModel(mask_img=mask).fit([func_img], design_matrices=des)
+
+    FirstLevelModel(mask_img=mask).fit(func_img, design_matrices=[des])
+
+    FirstLevelModel(mask_img=mask).fit([func_img], design_matrices=[des])
+
+    FirstLevelModel(mask_img=mask).fit(
+        [func_img, func_img], design_matrices=[des, des]
+    )
+    FirstLevelModel(mask_img=mask).fit(
+        (func_img, func_img), design_matrices=(des, des)
+    )
+
+
+def test_fmri_inputs_with_confounds(tmp_path):
+    """Test with confounds and, events or design matrix."""
+    n_timepoints = 10
+    shapes = ((3, 4, 5, n_timepoints),)
+    mask, func_img, des = write_fake_fmri_data_and_design(
         shapes, file_path=tmp_path
     )
-    FUNCFILE = FUNCFILE[0]
-    func_img = load(FUNCFILE)
-
-    T = func_img.shape[-1]
-    des = pd.DataFrame(np.ones((T, 1)), columns=[""])
-    des_fname = str(tmp_path / "design.csv")
-    des.to_csv(des_fname)
 
     conf = pd.DataFrame([0, 0])
 
     events = basic_paradigm()
 
-    for fi in func_img, FUNCFILE:
-        for d in des, des_fname:
-            FirstLevelModel().fit(fi, design_matrices=d)
+    func_img = func_img[0]
+    des = des[0]
 
-            FirstLevelModel(mask_img=None).fit([fi], design_matrices=d)
-
-            FirstLevelModel(mask_img=mask).fit(fi, design_matrices=[d])
-
-            FirstLevelModel(mask_img=mask).fit([fi], design_matrices=[d])
-
-            # Provide t_r, confounds, and events but no design matrix
-            FirstLevelModel(mask_img=mask, t_r=2.0).fit(
-                fi,
-                confounds=pd.DataFrame([0] * 10, columns=["conf"]),
-                events=events,
-            )
-
-            # test with confounds as numpy array
-            FirstLevelModel(mask_img=mask).fit(
-                [fi], design_matrices=[d], confounds=conf.values
-            )
-
-            FirstLevelModel(mask_img=mask).fit(
-                [fi, fi], design_matrices=[d, d]
-            )
-            FirstLevelModel(mask_img=None).fit(
-                (fi, fi), design_matrices=(d, d)
-            )
-
-
-def test_fmri_inputs_errors(tmp_path):
-    # Test processing of FMRI with wrong inputs
-    shapes = ((7, 8, 9, 10),)
-    mask, FUNCFILE, _ = write_fake_fmri_data_and_design(
-        shapes, file_path=tmp_path
+    # Provide t_r, confounds, and events but no design matrix
+    FirstLevelModel(mask_img=mask, t_r=2.0).fit(
+        func_img,
+        confounds=pd.DataFrame([0] * n_timepoints, columns=["conf"]),
+        events=events,
     )
-    FUNCFILE = FUNCFILE[0]
-    func_img = load(FUNCFILE)
 
-    T = func_img.shape[-1]
-    des = pd.DataFrame(np.ones((T, 1)), columns=[""])
-    des_fname = str(tmp_path / "design.csv")
-    des.to_csv(des_fname)
+    # test with confounds as numpy array
+    FirstLevelModel(mask_img=mask).fit(
+        [func_img], confounds=conf.values, design_matrices=[des]
+    )
+
+
+def test_fmri_inputs_errors(tmp_path, shape_4d_default):
+    """Check raise errors when incompatible inputs are passed."""
+    _, func_img, des = write_fake_fmri_data_and_design(
+        shapes=[shape_4d_default], file_path=tmp_path
+    )
+
+    func_img = func_img[0]
+    des = des[0]
+
+    # test mismatch number of image and events file
+    match = r"len\(run_imgs\) .* does not match len\(events\) .*"
+    with pytest.raises(ValueError, match=match):
+        FirstLevelModel(mask_img=None, t_r=2.0).fit([func_img, func_img], des)
+    with pytest.raises(ValueError, match=match):
+        FirstLevelModel(mask_img=None, t_r=2.0).fit(func_img, [des, des])
+
+    # At least paradigms or design have to be given
+    with pytest.raises(
+        ValueError,
+        match="events or design matrices must be provided",
+    ):
+        FirstLevelModel(mask_img=None).fit(func_img)
+
+    # If paradigms are given
+    # then both t_r and slice time ref are required
+    match = (
+        "t_r not given to FirstLevelModel object "
+        "to compute design from events"
+    )
+    with pytest.raises(ValueError, match=match):
+        FirstLevelModel(mask_img=None).fit(func_img, des)
+    with pytest.raises(ValueError, match=match):
+        FirstLevelModel(mask_img=None, slice_time_ref=0.0).fit(func_img, des)
+    with pytest.raises(
+        ValueError,
+        match="The provided events data has no onset column.",
+    ):
+        FirstLevelModel(mask_img=None, t_r=1.0).fit(func_img, des)
+
+
+def test_fmri_inputs_errors_confounds(tmp_path, shape_4d_default):
+    """Raise errors when incompatible inputs and confounds are passed."""
+    mask, func_img, des = write_fake_fmri_data_and_design(
+        shapes=[shape_4d_default], file_path=tmp_path
+    )
 
     conf = pd.DataFrame([0, 0])
 
     events = basic_paradigm()
 
-    for fi in func_img, FUNCFILE:
-        for d in des, des_fname:
-            # test with confounds
-            with pytest.warns(
-                UserWarning, match="If design matrices are supplied"
-            ):
-                FirstLevelModel(mask_img=mask).fit(
-                    [fi], design_matrices=[d], confounds=conf
-                )
+    func_img = func_img[0]
+    des = des[0]
 
-            # check that an error is raised if there is a
-            # mismatch in the dimensions of the inputs
-            with pytest.raises(
-                ValueError, match="Rows in confounds does not match"
-            ):
-                FirstLevelModel(mask_img=mask, t_r=2.0).fit(
-                    fi, confounds=conf, events=events
-                )
+    # confounds cannot be passed with design matrix
+    with pytest.warns(UserWarning, match="If design matrices are supplied"):
+        FirstLevelModel(mask_img=mask).fit(
+            [func_img], design_matrices=[des], confounds=conf
+        )
 
-            # test mismatch nupmber of image and events file
-            match = r"len\(run_imgs\) .* does not match len\(events\) .*"
-            with pytest.raises(ValueError, match=match):
-                FirstLevelModel(mask_img=None, t_r=2.0).fit([fi, fi], d)
-            with pytest.raises(ValueError, match=match):
-                FirstLevelModel(mask_img=None, t_r=2.0).fit(fi, [d, d])
+    # check that an error is raised if there is a
+    # mismatch in the dimensions of the inputs
+    with pytest.raises(ValueError, match="Rows in confounds does not match"):
+        FirstLevelModel(mask_img=mask, t_r=2.0).fit(
+            func_img, confounds=conf, events=events
+        )
 
-            # At least paradigms or design have to be given
-            with pytest.raises(
-                ValueError,
-                match="events or design matrices must be provided",
-            ):
-                FirstLevelModel(mask_img=None).fit(fi)
-
-            # If paradigms are given then both t_r and slice time ref were
-            # required
-            match = (
-                "t_r not given to FirstLevelModel object "
-                "to compute design from events"
-            )
-            with pytest.raises(ValueError, match=match):
-                FirstLevelModel(mask_img=None).fit(fi, d)
-            with pytest.raises(ValueError, match=match):
-                FirstLevelModel(mask_img=None, slice_time_ref=0.0).fit(fi, d)
-            with pytest.raises(
-                ValueError,
-                match="The provided events data has no onset column.",
-            ):
-                FirstLevelModel(mask_img=None, t_r=1.0).fit(fi, d)
-
-        # confounds rows do not match n_scans
-        with pytest.raises(
-            ValueError,
-            match=(
-                "Rows in confounds does not match "
-                "n_scans in run_img at index 0."
-            ),
-        ):
-            FirstLevelModel(mask_img=None, t_r=2.0).fit(fi, d, conf)
+    # confounds rows do not match n_scans
+    with pytest.raises(
+        ValueError,
+        match=(
+            "Rows in confounds does not match "
+            "n_scans in run_img at index 0."
+        ),
+    ):
+        FirstLevelModel(mask_img=None, t_r=2.0).fit(func_img, des, conf)
 
 
-def test_first_level_design_creation(tmp_path):
-    # Test processing of FMRI inputs
-    shapes = ((7, 8, 9, 10),)
+def test_first_level_design_creation(tmp_path, shape_4d_default):
+    """Check that design matrices equals one built 'manually'."""
     mask, FUNCFILE, _ = write_fake_fmri_data_and_design(
-        shapes, file_path=tmp_path
+        shapes=[shape_4d_default], file_path=tmp_path
     )
+
     t_r = 10
     slice_time_ref = 0.0
-    # basic test based on basic_paradigm and glover hrf
+    drift_model = "polynomial"
+    drift_order = 3
+
     model = FirstLevelModel(
         t_r=t_r,
         slice_time_ref=slice_time_ref,
         mask_img=mask,
-        drift_model="polynomial",
-        drift_order=3,
+        drift_model=drift_model,
+        drift_order=drift_order,
     )
     func_img = load(FUNCFILE[0])
     events = basic_paradigm()
@@ -696,7 +727,7 @@ def test_first_level_design_creation(tmp_path):
     end_time = (n_scans - 1 + slice_time_ref) * t_r
     frame_times = np.linspace(start_time, end_time, n_scans)
     design = make_first_level_design_matrix(
-        frame_times, events, drift_model="polynomial", drift_order=3
+        frame_times, events, drift_model=drift_model, drift_order=drift_order
     )
 
     frame2, X2, names2 = check_design_matrix(design)
@@ -706,10 +737,10 @@ def test_first_level_design_creation(tmp_path):
     assert_array_equal(names1, names2)
 
 
-def test_first_level_glm_computation(tmp_path):
-    shapes = ((7, 8, 9, 10),)
+def test_first_level_glm_computation(tmp_path, shape_4d_default):
+    """Smoke test of FirstLevelModel.fit() ."""
     mask, FUNCFILE, _ = write_fake_fmri_data_and_design(
-        shapes, file_path=tmp_path
+        shapes=[shape_4d_default], file_path=tmp_path
     )
     # basic test based on basic_paradigm and glover hrf
     model = FirstLevelModel(
@@ -725,10 +756,12 @@ def test_first_level_glm_computation(tmp_path):
     model.fit(func_img, events)
 
 
-def test_first_level_glm_computation_with_memory_caching(tmp_path):
-    shapes = ((7, 8, 9, 10),)
+def test_first_level_glm_computation_with_memory_caching(
+    tmp_path, shape_4d_default
+):
+    """Smoke test of FirstLevelModel.fit() with memory caching."""
     mask, FUNCFILE, _ = write_fake_fmri_data_and_design(
-        shapes, file_path=tmp_path
+        shapes=[shape_4d_default], file_path=tmp_path
     )
     # initialize FirstLevelModel with memory option enabled
     model = FirstLevelModel(
@@ -983,10 +1016,10 @@ def test_first_level_contrast_computation(tmp_path):
     model.compute_contrast([c2, cnull])
 
 
-def test_first_level_contrast_computation_errors(tmp_path):
-    shapes = ((7, 8, 9, 10),)
+def test_first_level_contrast_computation_errors(tmp_path, shape_4d_default):
+    """Test errors of FirstLevelModel.compute_contrast() ."""
     mask, FUNCFILE, _ = write_fake_fmri_data_and_design(
-        shapes, file_path=tmp_path
+        shapes=[shape_4d_default], file_path=tmp_path
     )
 
     # Ordinary Least Squares case
@@ -1063,14 +1096,12 @@ def test_first_level_with_scaling(affine_eye):
     )
     assert fmri_glm.signal_scaling == 0
     assert not fmri_glm.standardize
-    with pytest.warns(
-        DeprecationWarning, match="Deprecated. `scaling_axis` will be removed"
-    ):
-        assert fmri_glm.scaling_axis == 0
+
     glm_parameters = fmri_glm.get_params()
     test_glm = FirstLevelModel(**glm_parameters)
     fmri_glm = fmri_glm.fit(fmri_data, design_matrices=design_matrices)
     test_glm = test_glm.fit(fmri_data, design_matrices=design_matrices)
+
     assert glm_parameters["signal_scaling"] == 0
 
 
@@ -1112,10 +1143,10 @@ def test_first_level_with_no_signal_scaling(affine_eye):
     assert_almost_equal(first_level.results_[0][0].theta[0, 0], 6.0, 2)
 
 
-def test_first_level_residuals():
-    shapes, rk = [(10, 10, 10, 100)], 3
+def test_first_level_residuals(shape_4d_default):
+    """Check of residuals properties."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
-        shapes, rk
+        shapes=[shape_4d_default]
     )
 
     for i in range(len(design_matrices)):
@@ -1133,17 +1164,17 @@ def test_first_level_residuals():
     assert_array_almost_equal(mean_residuals, 0)
 
 
-def test_first_level_residuals_errors():
-    shapes, rk = [(10, 10, 10, 100)], 3
+def test_first_level_residuals_errors(shape_4d_default):
+    """Access residuals needs fit and minimize_memory set to True."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
-        shapes, rk
+        shapes=[shape_4d_default]
     )
 
     for i in range(len(design_matrices)):
         design_matrices[i][design_matrices[i].columns[0]] = 1
 
-    # Check that voxelwise model attributes cannot be
-    # accessed if minimize_memory is set to True
+    # Check that voxelwise model attributes
+    # cannot be accessed if minimize_memory is set to True
     model = FirstLevelModel(
         mask_img=mask, minimize_memory=True, noise_model="ols"
     )
@@ -1152,12 +1183,12 @@ def test_first_level_residuals_errors():
     with pytest.raises(ValueError, match="To access voxelwise attributes"):
         model.residuals[0]
 
+    # Check that trying to access residuals without fitting
+    # raises an error
     model = FirstLevelModel(
         mask_img=mask, minimize_memory=False, noise_model="ols"
     )
 
-    # Check that trying to access residuals without fitting
-    # raises an error
     with pytest.raises(ValueError, match="The model has not been fit yet"):
         model.residuals[0]
 
@@ -1196,10 +1227,10 @@ def test_get_voxelwise_attributes_should_return_as_many_as_design_matrices(
     )
 
 
-def test_first_level_predictions_r_square():
-    shapes, rk = [(10, 10, 10, 25)], 3
+def test_first_level_predictions_r_square(shape_4d_default):
+    """Check r_square gives sensible values."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
-        shapes, rk
+        shapes=[shape_4d_default]
     )
 
     for i in range(len(design_matrices)):
@@ -1236,7 +1267,7 @@ def test_first_level_predictions_r_square():
     ],
 )
 @pytest.mark.parametrize("spaces", [False, True])
-def test_first_level_hrf_model(hrf_model, spaces):
+def test_first_level_hrf_model(hrf_model, spaces, shape_4d_default):
     """Ensure that FirstLevelModel runs without raising errors \
        for different values of hrf_model.
 
@@ -1246,8 +1277,9 @@ def test_first_level_hrf_model(hrf_model, spaces):
     is used errors should be raised when event (ie condition) names are not
     valid identifiers.
     """
-    shapes, rk = [(10, 10, 10, 25)], 3
-    mask, fmri_data, _ = generate_fake_fmri_data_and_design(shapes, rk)
+    mask, fmri_data, _ = generate_fake_fmri_data_and_design(
+        shapes=[shape_4d_default]
+    )
 
     events = basic_paradigm(condition_names_have_spaces=spaces)
 
@@ -1264,20 +1296,20 @@ def test_first_level_hrf_model(hrf_model, spaces):
             model.compute_contrast(exp)
 
 
-def test_glm_sample_mask():
+def test_glm_sample_mask(shape_4d_default):
     """Ensure the sample mask is performing correctly in GLM."""
-    shapes, rk = [(10, 10, 10, 25)], 3
     mask, fmri_data, design_matrix = generate_fake_fmri_data_and_design(
-        shapes, rk
+        [shape_4d_default]
     )
     model = FirstLevelModel(t_r=2.0, mask_img=mask, minimize_memory=False)
-    sample_mask = np.arange(25)[3:]  # censor the first three volumes
+    # censor the first three volumes
+    sample_mask = np.arange(shape_4d_default[3])[3:]
     model.fit(
         fmri_data, design_matrices=design_matrix, sample_masks=sample_mask
     )
 
-    assert model.design_matrices_[0].shape[0] == 22
-    assert model.predicted[0].shape[-1] == 22
+    assert model.design_matrices_[0].shape[0] == shape_4d_default[3] - 3
+    assert model.predicted[0].shape[-1] == shape_4d_default[3] - 3
 
 
 """Test the first level model on BIDS datasets."""
@@ -1317,8 +1349,8 @@ def _new_bids_dataset(base_dir=None):
     )
 
 
-@pytest.mark.parametrize("n_runs", ([1, 0], [1, 1], [1, 2]))
-@pytest.mark.parametrize("n_ses", [0, 1, 2])
+@pytest.mark.parametrize("n_runs", ([1, 0], [1, 2]))
+@pytest.mark.parametrize("n_ses", [0, 2])
 @pytest.mark.parametrize("task_index", [0, 1])
 @pytest.mark.parametrize("space_label", ["MNI", "T1w"])
 def test_first_level_from_bids(
@@ -1995,7 +2027,8 @@ def test_check_run_tables_errors():
     with pytest.raises(ValueError, match="table path .* could not be loaded"):
         _check_run_tables([""] * 2, [".csv", ".csv"], "")
     with pytest.raises(
-        TypeError, match="can only be a pandas DataFrames or a string"
+        TypeError,
+        match="can only be a pandas DataFrame, a Path object or a string",
     ):
         _check_run_tables([""] * 2, [[0], pd.DataFrame()], "")
     with pytest.raises(ValueError, match="table path .* could not be loaded"):
@@ -2011,7 +2044,8 @@ def test_img_table_checks():
     with pytest.raises(ValueError, match="table path .* could not be loaded"):
         _check_and_load_tables([".csv", ".csv"], "")
     with pytest.raises(
-        TypeError, match="can only be a pandas DataFrames or a string"
+        TypeError,
+        match="can only be a pandas DataFrame, a Path object or a string",
     ):
         _check_and_load_tables([[], pd.DataFrame()], "")
     with pytest.raises(ValueError, match="table path .* could not be loaded"):

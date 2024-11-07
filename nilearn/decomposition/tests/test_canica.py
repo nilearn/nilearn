@@ -280,6 +280,19 @@ def test_with_globbing_patterns_with_single_subject(mask_img, tmp_path):
     assert components_img.shape, check_shape
 
 
+def test_with_globbing_patterns_with_single_subject_path(mask_img, tmp_path):
+    # single subject but as a Path object
+    data, *_ = _make_canica_test_data(n_subjects=1)
+    n_components = 3
+
+    canica = CanICA(n_components=n_components, mask=mask_img)
+
+    tmp_file = tmp_path / "tmp.nii.gz"
+    data[0].to_filename(tmp_file)
+
+    canica.fit(tmp_file)
+
+
 def test_with_globbing_patterns_with_multi_subjects(
     canica_data, mask_img, tmp_path
 ):

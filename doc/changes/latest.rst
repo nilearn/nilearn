@@ -49,6 +49,8 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-dark:`Code` Improved SearchLight with NIfTI Support, Mask Handling, and Reusable Transform Method (:gh:`4652` by `Prakhar Jain`_).
+
 - :bdg-primary:`Doc` Add example showing how to compute hemisphere-wise connectivity for Yeo 17 networks (:gh:`4585` by `Victoria Shevchenko`_).
 
 - :bdg-primary:`Doc` Add an option in :func:`nilearn.datasets.fetch_atlas_aal` to fetch the latest AAL version, 3v2 (:gh:`4554` by `Jeremy Lefort-Besnard`_ and `Rémi Gau`_).
@@ -60,6 +62,8 @@ Enhancements
 - :bdg-dark:`Code` Allow :class:`nilearn.decoding.Decoder` and :class:`nilearn.decoding.DecoderRegressor` to work with surface objects (:gh:`4205` by `Yasmin Mzayek`_ and `Rémi Gau`_).
 
 - :bdg-success:`API` Add option to resize output image width ``width_view`` in :func:`nilearn.plotting.view_img` (:gh:`4416` by `Alexandre Sayal`_).
+
+- :bdg-success:`API` Surface plotting functions :func:`nilearn.plotting.view_surf`, :func:`nilearn.plotting.plot_surf`, :func:`nilearn.plotting.plot_surf_roi`, :func:`nilearn.plotting.plot_surf_contours` and :func:`nilearn.plotting.plot_surf_stat_map` can accept ``SurfaceImage`` as inputs making their ``surf_mesh`` parameter optional (:gh:`4688` by `Rémi Gau`_).
 
 - :bdg-primary:`Doc` Add example to demonstrate the use of the new ``copy_header_from`` parameter in :func:`nilearn.image.math_img` (:gh:`4392` by `Himanshu Aggarwal`_).
 
@@ -113,3 +117,5 @@ Changes
 - :bdg-dark:`Code` Remove redundant sorting of ``np.unique(data)`` in internal call of :func:`nilearn.image.resample_img` when checking array values (:gh:`4571` by `Jason Kai`_).
 
 - :bdg-primary:`Doc` Add missing default values to docstrings (:gh:`4656`, :gh:`4659`, :gh:`4660` by `Anupriya Kumari`_).
+
+- :bdg-secondary:`Maint` Refactor ``nilearn.plotting.displays._projectors.add_graph`` to reduce its maxixmum length (:gh:`4635` by `Anupriya Kumari`_).

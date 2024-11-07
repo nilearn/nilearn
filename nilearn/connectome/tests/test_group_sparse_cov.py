@@ -1,12 +1,86 @@
 import numpy as np
 import pytest
 
+from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import generate_group_sparse_gaussian_graphs
 from nilearn.connectome import GroupSparseCovariance, GroupSparseCovarianceCV
 from nilearn.connectome.group_sparse_cov import (
     group_sparse_covariance,
     group_sparse_scores,
 )
+
+extra_valid_checks = [
+    "check_parameters_default_constructible",
+    "check_no_attributes_set_in_init",
+]
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    (
+        check_estimator(
+            estimator=[GroupSparseCovarianceCV()],
+            extra_valid_checks=extra_valid_checks,
+        )
+    ),
+)
+def test_check_estimator_group_sparse_covariance_cv(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    (
+        check_estimator(
+            estimator=[GroupSparseCovariance()],
+            extra_valid_checks=["check_no_attributes_set_in_init"],
+        )
+    ),
+)
+def test_check_estimator_group_sparse_covariance(
+    estimator,
+    check,
+    name,  # noqa: ARG001
+):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[GroupSparseCovarianceCV()],
+        valid=False,
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator_invalid_group_sparse_covariance_cv(
+    estimator,
+    check,
+    name,  # noqa: ARG001
+):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[GroupSparseCovariance()],
+        valid=False,
+        extra_valid_checks=["check_no_attributes_set_in_init"],
+    ),
+)
+def test_check_estimator_invalid_group_sparse_covariance(
+    estimator,
+    check,
+    name,  # noqa: ARG001
+):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 def test_group_sparse_covariance(rng):
