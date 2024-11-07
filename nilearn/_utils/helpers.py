@@ -15,6 +15,8 @@ def _set_mpl_backend():
     If installed, check if the installed version complies with the minimum
     supported matplotlib version. If it does not, raise error; otherwise set
     the matplotlib backend.
+
+    If current backend is not usable, switch to default "Agg" backend.
     """
     # We are doing local imports here to avoid polluting our namespace
     try:
