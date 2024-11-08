@@ -461,19 +461,6 @@ def test_value_error_get_faces_on_edge():
     not is_plotly_installed(),
     reason="Plotly is not installed; required for this test.",
 )
-def test_surface_figure_add_contours_raises_not_implemented():
-    """Test that calling add_contours method of SurfaceFigure raises a \
-    NotImplementedError.
-    """
-    figure = SurfaceFigure()
-    with pytest.raises(NotImplementedError):
-        figure.add_contours()
-
-
-@pytest.mark.skipif(
-    not is_plotly_installed(),
-    reason="Plotly is not installed; required for this test.",
-)
 def test_plot_surf_contours_errors_with_plotly_figure():
     """Test that plot_surf_contours rasises error when given plotly obj."""
     mesh = generate_surf()
@@ -575,6 +562,29 @@ def test_add_contours():
     assert len(figure.figure.to_dict().get("data")) == 3
     figure.add_contours(roi_map, levels=[1])
     assert len(figure.figure.to_dict().get("data")) == 4
+
+
+# @pytest.mark.skipif(
+#     not is_plotly_installed(),
+#     reason="Plotly is not installed; required for this test.",
+# )
+# def test_add_contours_plotly_surface_image(surf_mask, surf_img):
+#     """Test that add_contours works with SurfaceImage."""
+#     figure = plot_surf(surf_map=surf_img(), engine="plotly")
+#     figure.add_contours(surf_mask())
+
+
+@pytest.mark.skipif(
+    not is_plotly_installed(),
+    reason="Plotly is not installed; required for this test.",
+)
+def test_surface_figure_add_contours_raises_not_implemented():
+    """Test that calling add_contours method of SurfaceFigure raises a \
+    NotImplementedError.
+    """
+    figure = SurfaceFigure()
+    with pytest.raises(NotImplementedError):
+        figure.add_contours()
 
 
 @pytest.mark.skipif(
