@@ -4,6 +4,7 @@ import warnings
 
 import nibabel
 import numpy as np
+import pandas as pd
 import pytest
 from nibabel import Nifti1Image
 
@@ -550,3 +551,16 @@ def drop_surf_img_part():
         return SurfaceImage(mesh_parts, data_parts)
 
     return f
+
+
+@pytest.fixture()
+def surface_glm_data(rng, surf_img):
+    """Create a surface image and design matrix for testing."""
+
+    def _make_surface_img_and_design(shape=5):
+        des = pd.DataFrame(
+            rng.standard_normal((shape, 3)), columns=["", "", ""]
+        )
+        return surf_img((shape,)), des
+
+    return _make_surface_img_and_design

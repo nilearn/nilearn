@@ -130,8 +130,9 @@ def _check_input_as_first_level_model(second_level_input, none_confounds):
 
     - must have been fit
     - must all have a subject label in case confounds are passed
-    - must all have the same affine / shape
-      (checking all against those of the first model)
+    - for volumetric analysis
+        - must all have the same affine / shape
+          (checking all against those of the first model)
 
     """
     ref_affine = None
@@ -151,6 +152,10 @@ def _check_input_as_first_level_model(second_level_input, none_confounds):
                 f"Model at idx {model_idx} does not provide it. "
                 "To set it, you can do first_level.subject_label = '01'"
             )
+
+        if isinstance(first_level.mask_img, (SurfaceImage, SurfaceMasker)):
+            # TODO run some checks on meshes ?
+            continue
 
         affine = None
         shape = None
@@ -218,6 +223,7 @@ def _check_input_as_surface_images(none_design_matrix):
             "List of SurfaceImage objects as second_level_input"
             " require a design matrix to be provided."
         )
+    # TODO: run some checks on meshes ?
 
 
 def _check_confounds(confounds):

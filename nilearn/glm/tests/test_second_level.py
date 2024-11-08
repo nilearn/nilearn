@@ -1388,7 +1388,41 @@ def test_second_lvl_dataframe_computation(tmp_path, shape_3d_default):
 
 
 def test_second_level_input_as_surface_image(surf_img):
-    """Test second level model with a list surface images as input."""
+    """Test slm with a list surface images as input."""
+    n_subjects = 10
+    second_level_input = [surf_img() for _ in range(n_subjects)]
+
+    design_matrix = pd.DataFrame(
+        [1] * len(second_level_input),
+        columns=["intercept"],
+    )
+
+    second_level_model = SecondLevelModel()
+    second_level_model = second_level_model.fit(
+        second_level_input,
+        design_matrix=design_matrix,
+    )
+
+
+def test_second_level_input_as_surface_image_with_mask(surf_img, surf_mask):
+    """Test slm with surface mask and a list surface images as input."""
+    n_subjects = 10
+    second_level_input = [surf_img() for _ in range(n_subjects)]
+
+    design_matrix = pd.DataFrame(
+        [1] * len(second_level_input),
+        columns=["intercept"],
+    )
+
+    second_level_model = SecondLevelModel(mask_img=surf_mask())
+    second_level_model = second_level_model.fit(
+        second_level_input,
+        design_matrix=design_matrix,
+    )
+
+
+def test_second_level_input_as_surface_image_warning_smoothing(surf_img):
+    """Test slm with a list surface images as input."""
     n_subjects = 10
     second_level_input = [surf_img() for _ in range(n_subjects)]
 
@@ -1398,25 +1432,30 @@ def test_second_level_input_as_surface_image(surf_img):
     )
 
     second_level_model = SecondLevelModel(smoothing_fwhm=8.0)
+    # TODO
+    # should throw warning that smoothing is not implemented
     second_level_model = second_level_model.fit(
         second_level_input,
         design_matrix=design_matrix,
     )
 
 
-def test_second_level_input_as_surface_image_with_mask(surf_img, surf_mask):
-    """Test second level model with a list surface images as input."""
+def test_second_level_input_as_flm_of_surface_image(surface_glm_data):
+    """Test fitting of list of first level model with surface data."""
     n_subjects = 10
-    second_level_input = [surf_img() for _ in range(n_subjects)]
+    second_level_input = []
+    for _ in range(n_subjects):
+        img, des = surface_glm_data(5)
+        model = FirstLevelModel()
+        model.fit(img, design_matrices=des)
+        second_level_input.append(model)
 
     design_matrix = pd.DataFrame(
         [1] * len(second_level_input),
         columns=["intercept"],
     )
 
-    second_level_model = SecondLevelModel(
-        mask_img=surf_mask(), smoothing_fwhm=8.0
-    )
+    second_level_model = SecondLevelModel()
     second_level_model = second_level_model.fit(
         second_level_input,
         design_matrix=design_matrix,
