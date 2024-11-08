@@ -272,7 +272,7 @@ def test_check_surface_plotting_inputs_error_mash_and_data_none(fn):
         fn(None, None)
 
 
-def test_check_surface_plotting_inputs_errors():
+def test_check_surface_plotting_inputs_errors(surf_img):
     """Fail is mesh is none and data is not not SurfaceImage."""
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
         check_surface_plotting_inputs(surf_map=1, surf_mesh=None)
@@ -284,6 +284,12 @@ def test_check_surface_plotting_inputs_errors():
         plot_surf_contours(roi_map=1, surf_mesh=None)
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
         plot_surf_roi(roi_map=1, surf_mesh=None)
+    with pytest.raises(
+        TypeError, match="'surf_mesh' cannot be a SurfaceImage instance."
+    ):
+        check_surface_plotting_inputs(
+            surf_map=surf_img(), surf_mesh=surf_img()
+        )
 
 
 def test_plot_surf_contours_warning_hemi():
