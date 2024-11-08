@@ -199,10 +199,11 @@ if engine == "matplotlib":
     show()
 elif engine == "plotly":
     figure.add_contours(
-        roi_map=destrieux_atlas.data.parts["right"],
+        roi_map=destrieux_atlas,
         levels=regions_indices,
         labels=labels,
         lines=[{"width": 5}],
+        hemi="right",
     )
     # view the contours in a browser
     # figure.show()
