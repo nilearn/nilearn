@@ -25,6 +25,7 @@
    NiftiMapsMasker
    MultiNiftiMapsMasker
    NiftiSpheresMasker
+   SurfaceLabelsMasker
 
 
 .. toctree::
