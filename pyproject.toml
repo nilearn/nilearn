@@ -81,6 +81,7 @@ test = [
     "coverage",
     "pytest>=6.0.0",
     "pytest-cov",
+    "pytest-random-order",
     "pytest-reporter-html1>=0.9.2",
     "tox"
 ]
@@ -105,7 +106,7 @@ packages = ["nilearn"]
 source = "vcs"
 
 [tool.pytest.ini_options]
-addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --durations=0 --template=maint_tools/templates/index.html"
+addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --durations=0 --random-order --template=maint_tools/templates/index.html"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 junit_family = "xunit2"
 log_cli_level = "INFO"
@@ -134,7 +135,6 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 fixable = ["ALL"]
 ignore = [
     "ARG005",
-    "B018",
     "B028",
     "B904",
     "D105",
@@ -143,26 +143,12 @@ ignore = [
     "D301",
     "E741",
     "ERA001",
-    "N802",
     "N803",
     "N806",
     "PERF203",
-    "PLR0911",
-    "PLR0912",
-    "PLR0913",
-    "PLR0915",
     "PLR2004",
-    "PTH100",
-    "PTH103",
-    "PTH112",
-    "PTH118",
-    "PTH119",
-    "PTH120",
-    "PTH123",
     "PTH207",
-    "PD011",
-    "RUF012",
-    "SIM117"
+    "RUF012"
 ]
 # List of all the ruff rules (includes why the rule matters)
 # https://docs.astral.sh/ruff/rules/
@@ -196,10 +182,19 @@ max-complexity = 41
 
 [tool.ruff.lint.per-file-ignores]
 "**/{doc}/*" = ["D103"]
-"**/{examples}/*" = ["D103", "D400", "E402"]
+"**/{examples}/*" = ["B018", "D103", "D400", "E402"]
 "**/{tests}/*" = ["D100", "D101", "D102", "D103", "E402"]
 "__init__.py" = ["D104", "E402"]
-"nilearn/datasets/**/*" = ["PTH201", "PTH101", "PTH102", "PTH107", "PTH110", "PTH111", "PTH113"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
+
+[tool.ruff.lint.pylint]
+# https://docs.astral.sh/ruff/settings/#lint_pylint_max-args
+max-args = 26
+# https://docs.astral.sh/ruff/settings/#lint_pylint_max-branches
+max-branches = 48
+# https://docs.astral.sh/ruff/settings/#lint_pylint_max-returns
+max-returns = 7
+# https://docs.astral.sh/ruff/settings/#lint_pylint_max-statements
+max-statements = 151

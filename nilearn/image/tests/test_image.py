@@ -532,7 +532,7 @@ def test_swap_img_hemispheres(affine_eye, shape_3d_default, rng):
     )
 
 
-def test_index_img_error_3D(affine_eye):
+def test_index_img_error_3d(affine_eye):
     img_3d = Nifti1Image(np.ones((3, 4, 5)), affine_eye)
     expected_error_msg = (
         "Input data has incompatible dimensionality: "
@@ -562,7 +562,7 @@ def test_index_img():
         assert_array_equal(this_img.affine, img_4d.affine)
 
 
-def test_index_img_error_4D(affine_eye):
+def test_index_img_error_4d(affine_eye):
     img_4d, _ = generate_fake_fmri(affine=affine_eye)
     fourth_dim_size = img_4d.shape[3]
     for i in [
@@ -590,7 +590,7 @@ def test_pd_index_img(rng, img_4d_rand_eye):
     assert_array_equal(get_data(np_index_img), get_data(pd_index_img))
 
 
-def test_iter_img_3D_imag_error(affine_eye):
+def test_iter_img_3d_imag_error(affine_eye):
     img_3d = Nifti1Image(np.ones((3, 4, 5)), affine_eye)
     expected_error_msg = (
         "Input data has incompatible dimensionality: "
@@ -1186,9 +1186,9 @@ def test_new_img_like_boolean_data(affine_eye, image, shape_3d_default, rng):
     assert get_data(out_img).dtype == "uint8"
 
 
-def test_clean_img_sample_mask(img_4d_rand_eye):
+def test_clean_img_sample_mask(img_4d_rand_eye, shape_4d_default):
     """Check sample mask can be passed as a kwarg and used correctly."""
-    length = 10
+    length = shape_4d_default[3]
     confounds = _basic_confounds(length)
     # exclude last time point
     sample_mask = np.arange(length - 1)
@@ -1198,8 +1198,7 @@ def test_clean_img_sample_mask(img_4d_rand_eye):
         confounds=confounds,
         **{"clean__sample_mask": sample_mask},
     )
-    # original shape is (10, 10, 10, 10)
-    assert img.shape == (10, 10, 10, 9)
+    assert img.shape == (*shape_4d_default[0:3], length - 1)
 
 
 def test_clean_img_sample_mask_mask_img(shape_3d_default):
@@ -1220,8 +1219,7 @@ def test_clean_img_sample_mask_mask_img(shape_3d_default):
         mask_img=mask_img,
         **{"clean__sample_mask": sample_mask},
     )
-    # original shape is (10, 10, 10, 10)
-    assert img.shape == (10, 10, 10, 9)
+    assert img.shape == (*shape_3d_default, length - 1)
 
 
 def test_concat_niimgs_errors(affine_eye, shape_3d_default):

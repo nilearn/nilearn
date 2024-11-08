@@ -84,7 +84,7 @@ def calculate_tfce(
         # If we apply the sign first...
         for sign in signs:
             # Init a temp copy of arr3d with the current sign applied,
-            # which can then be re-used by incrementally setting more
+            # which can then be reused by incrementally setting more
             # voxel's to background, by taking advantage that each score_thresh
             # is incrementally larger
             temp_arr3d = arr3d * sign

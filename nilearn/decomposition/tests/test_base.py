@@ -4,9 +4,45 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal
 from scipy import linalg
 
+from nilearn._utils.class_inspect import check_estimator
 from nilearn.conftest import _affine_eye, _img_3d_ones, _rng
-from nilearn.decomposition._base import _fast_svd, _mask_and_reduce
+from nilearn.decomposition._base import (
+    _BaseDecomposition,
+    _fast_svd,
+    _mask_and_reduce,
+)
 from nilearn.maskers import MultiNiftiMasker
+
+extra_valid_checks = [
+    "check_no_attributes_set_in_init",
+    "check_transformers_unfitted",
+    "check_transformer_n_iter",
+]
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[_BaseDecomposition()], extra_valid_checks=extra_valid_checks
+    ),
+)
+def test_check_estimator(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[_BaseDecomposition()],
+        valid=False,
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 @pytest.fixture

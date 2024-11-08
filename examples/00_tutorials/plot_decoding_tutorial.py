@@ -123,8 +123,7 @@ fmri_niimgs = index_img(fmri_filename, condition_mask)
 # %%
 # We apply the same mask to the targets
 conditions = conditions[condition_mask]
-# Convert to numpy array
-conditions = conditions.values
+conditions = conditions.to_numpy()
 print(conditions.shape)
 
 # %%

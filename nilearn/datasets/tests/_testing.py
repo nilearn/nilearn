@@ -107,6 +107,7 @@ class Response:
         self.url = url
         self.status_code = status_code
         self.headers = {"Content-Length": len(self.content)}
+        self.iter_start = 0
 
     def __enter__(self):
         return self
@@ -115,7 +116,7 @@ class Response:
         pass
 
     def iter_content(self, chunk_size=8):
-        for i in range(0, len(self.content), chunk_size):
+        for i in range(self.iter_start, len(self.content), chunk_size):
             yield self.content[i : i + chunk_size]
 
     @property
@@ -424,7 +425,7 @@ def dict_to_archive(data, archive_format="gztar"):
         archive_path = shutil.make_archive(
             str(root_tmp_dir / "archive"), archive_format, str(tmp_dir)
         )
-        with open(archive_path, "rb") as f:
+        with Path(archive_path).open("rb") as f:
             return f.read()
 
 

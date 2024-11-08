@@ -87,7 +87,7 @@ table.set_index("Cluster ID", drop=True)
 table.head()
 
 # get the 6 largest clusters' max x, y, and z coordinates
-coords = table.loc[range(1, 7), ["X", "Y", "Z"]].values
+coords = table.loc[range(1, 7), ["X", "Y", "Z"]].to_numpy()
 
 # extract time series from each coordinate
 masker = NiftiSpheresMasker(coords)
@@ -139,8 +139,8 @@ resid = masker.fit_transform(fmri_glm.residuals[0])
 # Plot distribution of residuals
 # ------------------------------
 # Note that residuals are not really distributed normally.
+fig2, axs2 = plt.subplots(2, 3, constrained_layout=True)
 
-fig2, axs2 = plt.subplots(2, 3, layout="constrained")
 axs2 = axs2.flatten()
 for i in range(6):
     axs2[i].set_title(f"Cluster peak {coords[i]}\n")
