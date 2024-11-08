@@ -2228,6 +2228,28 @@ def test_flm_compute_contrast_with_surface_data(_make_surface_glm_data):
     assert isinstance(result, SurfaceImage)
 
 
+def test_flm_get_voxelwise_model_attribute_with_surface_data(
+    _make_surface_glm_data,
+):
+    """Smoke test 'voxel wise' attribute with surface data.
+
+    TODO: rename the private function _get_voxelwise_model_attribute
+    to work for both voxel and vertex
+    """
+    img, _ = _make_surface_glm_data(5)
+    masker = SurfaceMasker().fit(img)
+    model = FirstLevelModel(mask_img=masker, t_r=2.0, minimize_memory=False)
+    events = basic_paradigm()
+    model.fit([img, img], events=[events, events])
+
+    model.residuals  # noqa: B018
+    model.predicted  # noqa: B018
+    model.r_square  # noqa: B018
+
+
+# -----------------------bids tests----------------------- #
+
+
 def test_first_level_from_bids_subject_order(tmp_path):
     """Make sure subjects are returned in order.
 

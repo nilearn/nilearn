@@ -15,6 +15,8 @@ from sklearn.base import clone
 
 from nilearn._utils import fill_doc, logger, stringify_path
 from nilearn._utils.niimg_conversions import check_niimg
+from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
+from nilearn.experimental.surface.maskers import _compute_mean_image
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     compute_contrast,
@@ -76,13 +78,15 @@ def _check_input_type_when_list(second_level_input):
     if len(second_level_input) < 2:
         raise TypeError(
             "A second level model requires a list with at"
-            " least two first level models or niimgs"
+            " least two first level models or niimgs or surface images."
         )
     _check_all_elements_of_same_type(second_level_input)
     if all(isinstance(x, (str, Nifti1Image)) for x in second_level_input):
         return "nii_object"
     if all(isinstance(x, FirstLevelModel) for x in second_level_input):
         return "flm_object"
+    if all(isinstance(x, SurfaceImage) for x in second_level_input):
+        return "surf_img_object"
     raise TypeError(
         "second_level_input must be "
         "either a pandas DataFrame, "
@@ -112,6 +116,8 @@ def _check_input_as_type(
         _check_input_as_nifti_images(second_level_input, none_design_matrix)
     elif input_type == "nii_object":
         _check_input_as_nifti_images(second_level_input, none_design_matrix)
+    elif input_type == "surf_img_object":
+        _check_input_as_surface_images(none_design_matrix)
     else:
         _check_input_as_dataframe(second_level_input)
 
@@ -183,15 +189,15 @@ def _check_input_as_dataframe(second_level_input):
     for col in ("subject_label", "map_name", "effects_map_path"):
         if col not in second_level_input.columns:
             raise ValueError(
-                "second_level_input DataFrame must have"
-                " columns subject_label, map_name and"
-                " effects_map_path."
+                "'second_level_input' DataFrame must have"
+                " columns 'subject_label', 'map_name' and"
+                " 'effects_map_path'."
             )
     if not all(
         isinstance(_, str)
         for _ in second_level_input["subject_label"].tolist()
     ):
-        raise ValueError("subject_label column must contain only strings")
+        raise ValueError("'subject_label' column must contain only strings.")
 
 
 def _check_input_as_nifti_images(second_level_input, none_design_matrix):
@@ -202,7 +208,15 @@ def _check_input_as_nifti_images(second_level_input, none_design_matrix):
     if none_design_matrix:
         raise ValueError(
             "List of niimgs as second_level_input"
-            " require a design matrix to be provided"
+            " require a design matrix to be provided."
+        )
+
+
+def _check_input_as_surface_images(none_design_matrix):
+    if none_design_matrix:
+        raise ValueError(
+            "List of SurfaceImage objects as second_level_input"
+            " require a design matrix to be provided."
         )
 
 
@@ -329,6 +343,10 @@ def _process_second_level_input(second_level_input):
         return _process_second_level_input_as_firstlevelmodels(
             second_level_input
         )
+    elif hasattr(second_level_input, "__iter__") and isinstance(
+        second_level_input[0], SurfaceImage
+    ):
+        return _process_second_level_input_as_surface_image(second_level_input)
     else:
         return mean_img(second_level_input, copy_header=True), None
 
@@ -367,6 +385,19 @@ def _process_second_level_input_as_firstlevelmodels(second_level_input):
     return sample_map, labels
 
 
+def _process_second_level_input_as_surface_image(second_level_input):
+    """Compute mean image across sample maps.
+
+    All should have the same underlying meshes.
+    """
+    second_level_input = [_compute_mean_image(x) for x in second_level_input]
+    sample_map = second_level_input[0]
+    for part in sample_map.data.parts:
+        tmp = [x.data.parts[part] for x in second_level_input]
+        sample_map.data.parts[part] = np.concatenate(tmp)
+    return sample_map, None
+
+
 @fill_doc
 class SecondLevelModel(BaseGLM):
     """Implement the :term:`General Linear Model<GLM>` for multiple \
@@ -374,37 +405,58 @@ class SecondLevelModel(BaseGLM):
 
     Parameters
     ----------
-    mask_img : Niimg-like, :class:`~nilearn.maskers.NiftiMasker` or\
-             :class:`~nilearn.maskers.MultiNiftiMasker`, optional
-        Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is given,
-        it will be computed automatically by a
-        :class:`~nilearn.maskers.MultiNiftiMasker` with default
-        parameters. Automatic mask computation assumes first level imgs have
-        already been masked.
+    mask_img : Niimg-like, :obj:`~nilearn.maskers.NiftiMasker` or\
+             :obj:`~nilearn.maskers.MultiNiftiMasker` or\
+             SurfaceMasker object or None,\
+             default=None
+        Mask to be used on data.
+        If an instance of masker is passed,
+        then its mask will be used.
+        If no mask is given,
+        it will be computed automatically
+        by a :class:`~nilearn.maskers.NiftiMasker`,
+        or a SurfaceMasker
+        (depending on the type passed at fit time)
+        with default parameters.
+        Automatic mask computation assumes first level imgs
+        have already been masked.
+
     %(target_affine)s
 
         .. note::
             This parameter is passed to :func:`nilearn.image.resample_img`.
+
+        .. note::
+            This parameter is ignored when fitting surface images.
 
     %(target_shape)s
 
         .. note::
             This parameter is passed to :func:`nilearn.image.resample_img`.
 
+        .. note::
+            This parameter is ignored when fitting surface images.
+
     %(smoothing_fwhm)s
+
+        .. note::
+            This parameter is ignored when fitting surface images.
+
     %(memory)s
+
     %(memory_level1)s
+
     %(verbose0)s
         If 0 prints nothing. If 1 prints final computation time.
         If 2 prints masker computation details.
+
     %(n_jobs)s
+
     minimize_memory : :obj:`bool`, default=True
         Gets rid of some variables on the model fit results that are not
         necessary for contrast computation and would only be useful for
         further inspection of model details. This has an important impact
         on memory consumption.
-
     """
 
     def __init__(
@@ -447,6 +499,7 @@ class SecondLevelModel(BaseGLM):
         Parameters
         ----------
         %(second_level_input)s
+
         confounds : :class:`pandas.DataFrame`, optional
             Must contain a ``subject_label`` column. All other columns are
             considered as confounds and included in the model. If
@@ -462,7 +515,6 @@ class SecondLevelModel(BaseGLM):
             from ``second_level_input``.
             Ensure that the order of maps given by a ``second_level_input``
             list of Niimgs matches the order of the rows in the design matrix.
-
         """
         # check second_level_input
         _check_second_level_input(
@@ -498,16 +550,25 @@ class SecondLevelModel(BaseGLM):
         self.design_matrix_ = design_matrix
 
         # Learn the mask. Assume the first level imgs have been masked.
-        if not isinstance(self.mask_img, NiftiMasker):
-            self.masker_ = NiftiMasker(
-                mask_img=self.mask_img,
-                target_affine=self.target_affine,
-                target_shape=self.target_shape,
-                smoothing_fwhm=self.smoothing_fwhm,
-                memory=self.memory,
-                verbose=max(0, self.verbose - 1),
-                memory_level=self.memory_level,
-            )
+        if not isinstance(self.mask_img, (NiftiMasker, SurfaceMasker)):
+            if isinstance(sample_map, SurfaceImage):
+                self.masker_ = SurfaceMasker(
+                    mask_img=self.mask_img,
+                    smoothing_fwhm=self.smoothing_fwhm,
+                    memory=self.memory,
+                    verbose=max(0, self.verbose - 1),
+                    memory_level=self.memory_level,
+                )
+            else:
+                self.masker_ = NiftiMasker(
+                    mask_img=self.mask_img,
+                    target_affine=self.target_affine,
+                    target_shape=self.target_shape,
+                    smoothing_fwhm=self.smoothing_fwhm,
+                    memory=self.memory,
+                    verbose=max(0, self.verbose - 1),
+                    memory_level=self.memory_level,
+                )
         else:
             self.masker_ = clone(self.mask_img)
             for param_name in ["smoothing_fwhm", "memory", "memory_level"]:

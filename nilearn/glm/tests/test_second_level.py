@@ -339,15 +339,15 @@ def test_check_second_level_input_unfit_model():
 def test_check_second_level_input_dataframe():
     with pytest.raises(
         ValueError,
-        match="second_level_input DataFrame must have columns "
-        "subject_label, map_name and effects_map_path",
+        match="'second_level_input' DataFrame must have columns "
+        "'subject_label', 'map_name' and 'effects_map_path'",
     ):
         _check_second_level_input(
             pd.DataFrame(columns=["foo", "bar"]), pd.DataFrame()
         )
 
     with pytest.raises(
-        ValueError, match="subject_label column must contain only strings"
+        ValueError, match="'subject_label' column must contain only strings"
     ):
         _check_second_level_input(
             pd.DataFrame(
@@ -733,8 +733,8 @@ def test_fmri_inputs_pandas_errors():
     with pytest.raises(
         ValueError,
         match=(
-            "second_level_input DataFrame must have "
-            "columns subject_label, map_name and effects_map_path."
+            "'second_level_input' DataFrame must have "
+            "columns 'subject_label', 'map_name' and 'effects_map_path'."
         ),
     ):
         SecondLevelModel().fit(niidf)
@@ -1382,3 +1382,47 @@ def test_second_lvl_dataframe_computation(tmp_path, shape_3d_default):
 
     model = SecondLevelModel().fit(niidf)
     model.compute_contrast(first_level_contrast="a")
+
+
+# -----------------------surface tests----------------------- #
+
+
+def test_second_level_input_as_surface_image(surf_img):
+    """Test second level model with a list surface images as input."""
+    n_subjects = 10
+    second_level_input = [surf_img() for _ in range(n_subjects)]
+
+    design_matrix = pd.DataFrame(
+        [1] * len(second_level_input),
+        columns=["intercept"],
+    )
+
+    second_level_model = SecondLevelModel(smoothing_fwhm=8.0)
+    second_level_model = second_level_model.fit(
+        second_level_input,
+        design_matrix=design_matrix,
+    )
+
+
+def test_second_level_input_as_surface_image_with_mask(surf_img, surf_mask):
+    """Test second level model with a list surface images as input."""
+    n_subjects = 10
+    second_level_input = [surf_img() for _ in range(n_subjects)]
+
+    design_matrix = pd.DataFrame(
+        [1] * len(second_level_input),
+        columns=["intercept"],
+    )
+
+    second_level_model = SecondLevelModel(
+        mask_img=surf_mask(), smoothing_fwhm=8.0
+    )
+    second_level_model = second_level_model.fit(
+        second_level_input,
+        design_matrix=design_matrix,
+    )
+
+
+# TODO
+# contrast with surface image
+# slm with flm of surface image
