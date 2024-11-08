@@ -25,7 +25,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from nilearn.experimental import plotting
-from nilearn.experimental.surface import SurfaceMasker, fetch_nki
+from nilearn.experimental.surface import fetch_nki
+from nilearn.maskers import SurfaceMasker
 from nilearn.plotting import plot_matrix
 
 img = fetch_nki()[0]
