@@ -8,7 +8,7 @@ from .nifti_labels_masker import NiftiLabelsMasker
 from .nifti_maps_masker import NiftiMapsMasker
 from .nifti_masker import NiftiMasker
 from .nifti_spheres_masker import NiftiSpheresMasker
-from .surface_maskers import SurfaceMasker
+from .surface_masker import SurfaceMasker
 
 __all__ = [
     "BaseMasker",
