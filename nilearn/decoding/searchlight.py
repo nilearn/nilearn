@@ -72,7 +72,9 @@ def search_light(
         A cross-validation generator. If None, a 3-fold cross
         validation is used or 3-fold stratified cross-validation
         when y is supplied.
+
     %(n_jobs_all)s
+
     %(verbose0)s
 
     Returns
@@ -223,9 +225,10 @@ def _group_iter_search_light(
                 # We use a max to avoid a division by zero
                 remaining = (100.0 - percent) / max(0.01, percent) * dt
                 logger.log(
-                    f"Job #{thread_id}, processed {i}/{len(list_rows)} voxels "
-                    f"({percent:0.2f}%, {remaining} seconds remaining){crlf}",
-                    stack_level=2,
+                    f"Job #{thread_id}, processed {i}/{len(list_rows)} steps "
+                    f"({percent:0.2f}%, "
+                    f"{remaining:0.1f} seconds remaining){crlf}",
+                    stack_level=6,
                 )
     return par_scores
 

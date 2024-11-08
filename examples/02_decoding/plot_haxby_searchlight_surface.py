@@ -64,6 +64,7 @@ fmri_img_surf = SurfaceImage.from_volume(
 # %%
 # Searchlight computation
 # -----------------------
+import numpy as np
 from sklearn.linear_model import RidgeClassifier
 from sklearn.model_selection import KFold
 from sklearn.pipeline import make_pipeline
@@ -71,17 +72,25 @@ from sklearn.preprocessing import StandardScaler
 
 from nilearn.decoding.searchlight import search_light
 
-scores = {}
+# initialize scores to be able to create a SurfaceImage from it later.
+scores = {
+    "left": np.zeros(fmri_img_surf.mesh.parts["left"].n_vertices),
+    "right": np.zeros(fmri_img_surf.mesh.parts["right"].n_vertices),
+}
 
-for hemi in ["left", "right"]:
-    # To define the :term:`BOLD responses
+hemispheres_to_analyze = ["left", "right"]
+
+for hemi in hemispheres_to_analyze:
+    # To define the BOLD responses
     # to be included within each searchlight "sphere"
     # we define an adjacency matrix
     # based on the inflated surface vertices
-    # such that nearby surfaces are concatenated
+    # such that nearby vertices are concatenated
     # within the same searchlight.
+    print(f"Running searchlight on {hemi} hemisphere.")
+
     coordinates = fsaverage["inflated"].parts[hemi].coordinates
-    nn = neighbors.NearestNeighbors(radius=3)
+    nn = neighbors.NearestNeighbors(radius=5)
     adjacency = nn.fit(coordinates).radius_neighbors_graph(coordinates).tolil()
 
     # Simple linear estimator preceded by a normalization step
@@ -90,38 +99,41 @@ for hemi in ["left", "right"]:
     # Define cross-validation scheme
     cv = KFold(n_splits=3, shuffle=False)
 
-    X = fmri_img_surf.data.parts["hemi"]
+    X = fmri_img_surf.data.parts[hemi]
 
     # Cross-validated search light
-    scores[hemi] = search_light(X, y, estimator, adjacency, cv=cv, n_jobs=2)
+    scores[hemi] = search_light(
+        X, y, estimator, adjacency, cv=cv, n_jobs=-1, verbose=1
+    )
 
 # %%
 # Visualization
 # -------------
-from nilearn import plotting
 from nilearn.experimental.surface import load_fsaverage_data
+from nilearn.plotting import plot_surf_stat_map, show
+
+fsaverage_data = load_fsaverage_data(mesh_type="inflated", data_type="sulcal")
 
 score_img = SurfaceImage(mesh=fsaverage["inflated"], data=scores)
 
 chance = 0.5
-for hemi in ["left", "right"]:
-    score_img.data.parts[hemi] = score_img.data.parts[hemi] - 0.5
+for hemi in hemispheres_to_analyze:
+    score_img.data.parts[hemi] = score_img.data.parts[hemi] - chance
 
-fsaverage_data = load_fsaverage_data(mesh_type="inflated", data_type="sulcal")
+for hemi in hemispheres_to_analyze:
+    plot_surf_stat_map(
+        stat_map=score_img,
+        view="ventral",
+        hemi=hemi,
+        colorbar=True,
+        threshold=0.1,
+        bg_map=fsaverage_data,
+        title=f"Accuracy map, {hemi} hemisphere",
+    )
+show()
 
-plotting.plot_surf_stat_map(
-    stat_map=score_img,
-    view="medial",
-    hemi="left",
-    colorbar=True,
-    threshold=0.6,
-    bg_map=fsaverage_data,
-    title="Accuracy map, left hemisphere",
-)
-plotting.show()
-
-# %%
-# References
-# ----------
-#
-#  .. footbibliography::
+# # %%
+# # References
+# # ----------
+# #
+# #  .. footbibliography::
