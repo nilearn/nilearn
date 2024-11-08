@@ -134,7 +134,6 @@ plot_matrix(connectome, labels=labels_masker.label_names_)
 
 show()
 
-
 # %%
 # Using the `Decoder`
 # -------------------
@@ -146,8 +145,8 @@ from nilearn.decoding import Decoder
 
 img = fetch_nki()[0]
 
+# create some random labels
 rng = np.random.RandomState(0)
-
 y = rng.choice([0, 1], replace=True, size=img.shape[0])
 
 decoder = Decoder(
@@ -160,7 +159,7 @@ decoder.fit(img, y)
 print("CV scores:", decoder.cv_scores_)
 
 plot_surf(
-    decoder.coef_img_[0],
+    surf_map=decoder.coef_img_[0],
     threshold=1e-6,
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
@@ -192,7 +191,7 @@ coef_img = decoder[:-1].inverse_transform(np.atleast_2d(decoder[-1].coef_))
 
 vmax = max([np.absolute(dp).max() for dp in coef_img.data.parts.values()])
 plot_surf(
-    coef_img,
+    surf_map=coef_img,
     cmap="cold_hot",
     vmin=-vmax,
     vmax=vmax,
