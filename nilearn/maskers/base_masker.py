@@ -28,6 +28,7 @@ def _filter_and_extract(
     sample_mask=None,
     copy=True,
     dtype=None,
+    filter = None,
 ):
     """Extract representative time series using given function.
 
@@ -149,6 +150,7 @@ def _filter_and_extract(
         confounds=confounds,
         sample_mask=sample_mask,
         runs=runs,
+        filter = filter,
         **parameters["clean_kwargs"],
     )
 

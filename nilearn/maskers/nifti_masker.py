@@ -71,6 +71,7 @@ def _filter_and_mask(
     sample_mask=None,
     copy=True,
     dtype=None,
+    filter=None,
 ):
     """Extract representative time series using given mask.
 
@@ -136,6 +137,7 @@ def _filter_and_mask(
         sample_mask=sample_mask,
         copy=copy,
         dtype=dtype,
+        filter=filter,
     )
     # For _later_: missing value removal or imputing of missing data
     # (i.e. we want to get rid of NaNs, if smoothing must be done
@@ -209,6 +211,14 @@ class NiftiMasker(BaseMasker):
         Data type toward which the data should be converted. If "auto", the
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
+    
+    filter : str, optional, default= None
+        Type of filter to apply on the time-series during signal cleaning.
+        Options include "butterworth" and "cosine". If None, "butterworth" is
+        used by default. "butterworth" applies a high-pass or low-pass filter
+        with a Butterworth filter, while "cosine" uses cosine basis functions
+        for high-pass filtering.
+
     %(memory)s
     %(memory_level1)s
     %(verbose0)s
@@ -262,6 +272,7 @@ class NiftiMasker(BaseMasker):
         memory=None,
         verbose=0,
         reports=True,
+        filter=None,
         **kwargs,
     ):
         if memory is None:
@@ -301,6 +312,7 @@ class NiftiMasker(BaseMasker):
             "hover over the displayed image."
         )
         self._shelving = False
+        self.filter = filter
         self.clean_kwargs = {
             k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
         }
@@ -600,6 +612,7 @@ class NiftiMasker(BaseMasker):
             sample_mask=sample_mask,
             copy=copy,
             dtype=self.dtype,
+            filter=self.filter,
         )
 
         return data

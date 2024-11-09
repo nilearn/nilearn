@@ -14,7 +14,7 @@ from tempfile import mkdtemp
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
-from numpy.testing import assert_array_equal
+from numpy.testing import assert_array_equal, assert_array_almost_equal
 
 from nilearn._utils import data_gen, exceptions, testing
 from nilearn._utils.class_inspect import get_params
@@ -22,7 +22,51 @@ from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.image import get_data, index_img
 from nilearn.maskers import NiftiMasker
 from nilearn.maskers.nifti_masker import _filter_and_mask
+from nilearn.signal import clean
 
+
+def test_default_filter():
+    """Test that the default filter in NiftiMasker is Butterworth"""
+    # This is a test
+    # this a test
+    data = np.random.rand(9, 9, 9, 10)
+    img = Nifti1Image(data, np.eye(4))
+    mask = data[..., 0].astype("uint8")
+    mask_img = Nifti1Image(mask, np.eye(4))
+
+    masker = NiftiMasker(mask_img=mask_img, high_pass=0.01, low_pass=0.1, t_r=2)
+    cleaned_data = masker.fit_transform(img)
+
+    # Manually clean data with Butterworth filter for comparison
+    manual_cleaned = clean(get_data(img)[mask_img.get_fdata().astype(bool), :], 
+                           high_pass=0.01, low_pass=0.1, t_r=2, filter="butterworth")
+    assert_array_almost_equal(cleaned_data, manual_cleaned)
+
+def test_cosine_filter():
+    """Test that the cosine filter is applied when specified in NiftiMasker."""
+    data = np.random.rand(9, 9, 9, 10)
+    img = Nifti1Image(data, np.eye(4))
+    mask = data[..., 0].astype("uint8")
+    mask_img = Nifti1Image(mask, np.eye(4))
+
+    masker = NiftiMasker(mask_img=mask_img, high_pass=0.01, t_r=2, filter="cosine")
+    cleaned_data = masker.fit_transform(img)
+
+    # Manually clean data with Cosine filter for comparison
+    manual_cleaned = clean(get_data(img)[mask_img.get_fdata().astype(bool), :], 
+                           high_pass=0.01, t_r=2, filter="cosine")
+    assert_array_almost_equal(cleaned_data, manual_cleaned)
+
+def test_invalid_filter():
+    """Test that an invalid filter argument raises an error."""
+    data = np.random.rand(9, 9, 9, 10)
+    img = Nifti1Image(data, np.eye(4))
+    mask = data[..., 0].astype("uint8")
+    mask_img = Nifti1Image(mask, np.eye(4))
+
+    with pytest.raises(ValueError, match="Invalid filter type"):
+        masker = NiftiMasker(mask_img=mask_img, filter="invalid_filter")
+        masker.fit_transform(img)
 
 def test_auto_mask(img_3d_rand_eye):
     """Perform a smoke test on the auto-mask option."""
