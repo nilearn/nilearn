@@ -2285,13 +2285,11 @@ def test_fixed_effect_contrast_surface(_make_surface_glm_data):
     result = model.compute_contrast("c0", output_type="all")
     effect = result["effect_size"]
     variance = result["effect_variance"]
-    for mask in [SurfaceMasker(mask_img=masker.mask_img_), None]:
+    surf_mask_ = masker.mask_img_
+    for mask in [SurfaceMasker(mask_img=masker.mask_img_), surf_mask_, None]:
         outputs = compute_fixed_effects(
-            [effect, effect],
-            [variance, variance],
-            mask=mask
+            [effect, effect], [variance, variance], mask=mask
         )
         assert len(outputs) == 3
         for output in outputs:
             assert isinstance(output, SurfaceImage)
-
