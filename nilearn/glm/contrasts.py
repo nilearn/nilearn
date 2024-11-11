@@ -531,17 +531,11 @@ def compute_fixed_effects(
         masker = mask.fit()
     elif mask is None:
         if isinstance(contrast_imgs[0], SurfaceImage):
-            surf_data = {}
-            for part in contrast_imgs[0].mesh.parts:
-                surf_data[part] = np.ones(
-                    contrast_imgs[0].data.parts[part].shape[0], dtype=bool
-                )
-            mask_img = SurfaceImage(mesh=contrast_imgs[0].mesh, data=surf_data)
-            masker = SurfaceMasker(mask_img=mask_img).fit(contrast_imgs[0])
+            masker = SurfaceMasker().fit(contrast_imgs[0])
         else:
             masker = NiftiMasker().fit(contrast_imgs)
     elif isinstance(mask, SurfaceImage):
-        masker = SurfaceMasker().fit(contrast_imgs[0])
+        masker = SurfaceMasker(mask_img=mask).fit(contrast_imgs[0])
     else:
         masker = NiftiMasker(mask_img=mask).fit()
 
