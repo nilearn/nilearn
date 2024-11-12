@@ -434,13 +434,13 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         ):
             return None
 
+        background_data = self.mask_img_
+        vmin = None
+        vmax = None
         if self._reporting_data["images"]:
             background_data = self._reporting_data["images"]
-        else:
-            background_data = self.mask_img_
-
-        background_data = compute_mean_surface_image(background_data)
-        vmin, vmax = get_min_max_surface_image(background_data)
+            background_data = compute_mean_surface_image(background_data)
+            vmin, vmax = get_min_max_surface_image(background_data)
 
         views = ["lateral", "medial"]
         hemispheres = ["left", "right"]
@@ -475,7 +475,7 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
                     colors = ["w", "b"]
 
                 plot_surf_contours(
-                    self.mask_img_,
+                    roi_map=self.mask_img_,
                     hemi=hemi,
                     view=view,
                     figure=fig,

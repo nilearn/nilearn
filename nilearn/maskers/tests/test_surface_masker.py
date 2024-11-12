@@ -107,6 +107,13 @@ def test_mask_img_transform_clean(surf_img, surf_mask):
     masker.transform(surf_img((50,)))
 
 
+def test_mask_img_generate_report(surf_img, surf_mask):
+    """Smoke test generate report."""
+    masker = SurfaceMasker(surf_mask()).fit()
+    masker.transform(surf_img((5,)))
+    masker.generate_report()
+
+
 def test_warning_smoothing(surf_img, surf_mask):
     """Smooth during transform not implemented."""
     masker = SurfaceMasker(surf_mask(), smoothing_fwhm=1)
