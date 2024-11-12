@@ -61,7 +61,7 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         default=`inferno`
         Only relevant for the report figures.
 
-    clean_kwargs : :obj:`dict` or None, default=None
+    clean_args : :obj:`dict` or None, default=None
         Keyword arguments to be passed
         to :func:`~nilearn.signal.clean`
         called within the masker.
@@ -90,7 +90,7 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         verbose=0,
         reports=True,
         cmap="inferno",
-        clean_kwargs=None,
+        clean_args=None,
     ):
         self.mask_img = mask_img
         self.smoothing_fwhm = smoothing_fwhm
@@ -106,7 +106,7 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         self.verbose = verbose
         self.reports = reports
         self.cmap = cmap
-        self.clean_kwargs = clean_kwargs
+        self.clean_args = clean_args
         self._shelving = False
         # content to inject in the HTML template
         self._report_content = {
@@ -254,9 +254,9 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 "mask_img",
             ],
         )
-        if self.clean_kwargs is None:
-            self.clean_kwargs = {}
-        parameters["clean_kwargs"] = self.clean_kwargs
+        if self.clean_args is None:
+            self.clean_args = {}
+        parameters["clean_args"] = self.clean_args
 
         self._check_fitted()
 
@@ -287,7 +287,7 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             high_pass=parameters["high_pass"],
             confounds=confounds,
             sample_mask=sample_mask,
-            **parameters["clean_kwargs"],
+            **parameters["clean_args"],
         )
 
         return output

@@ -96,6 +96,17 @@ def test_mask_img_transform_shape_mismatch(flip_surf_img, surf_img, surf_mask):
     masker.transform(surf_img())
 
 
+def test_mask_img_transform_clean(surf_img, surf_mask):
+    """Smoke test for clean args."""
+    masker = SurfaceMasker(
+        surf_mask(),
+        t_r=2.0,
+        high_pass=1 / 128,
+        clean_args={"filter": "cosine"},
+    ).fit()
+    masker.transform(surf_img((50,)))
+
+
 def test_warning_smoothing(surf_img, surf_mask):
     """Smooth during transform not implemented."""
     masker = SurfaceMasker(surf_mask(), smoothing_fwhm=1)
