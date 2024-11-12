@@ -1,33 +1,19 @@
 """
 A short demo of the surface images & maskers
 ============================================
-
-copied from the nilearn sandbox discussion, to be transformed into tests &
-examples
-
-.. note::
-
-    this example is meant to support discussion around a tentative API for
-    surface images in nilearn. This functionality is provided by the
-    nilearn.experimental.surface module; it is still incomplete and subject to
-    change without a deprecation cycle. Please participate in the discussion on
-    GitHub!
-
 """
 
 from nilearn._utils.helpers import check_matplotlib
 
 check_matplotlib()
 
-import matplotlib.pyplot as plt
-
 # %%
+import matplotlib.pyplot as plt
 import numpy as np
 
-from nilearn.experimental import plotting
 from nilearn.experimental.surface import fetch_nki
 from nilearn.maskers import SurfaceMasker
-from nilearn.plotting import plot_matrix
+from nilearn.plotting import plot_matrix, plot_surf, plot_surf_roi, show
 
 img = fetch_nki()[0]
 print(f"NKI image: {img}")
@@ -54,7 +40,7 @@ axes = np.atleast_2d(axes)
 
 for view, ax_row in zip(views, axes):
     for ax, hemi in zip(ax_row, hemispheres):
-        plotting.plot_surf(
+        plot_surf(
             surf_map=mean_img,
             hemi=hemi,
             view=view,
@@ -68,12 +54,12 @@ for view, ax_row in zip(views, axes):
         )
 fig.set_size_inches(6, 8)
 
-plt.show()
+show()
 
 # %%
 # Connectivity with a surface atlas and `SurfaceLabelsMasker`
 # -----------------------------------------------------------
-from nilearn import connectome
+from nilearn.connectome import ConnectivityMeasure
 from nilearn.datasets import fetch_atlas_surf_destrieux
 from nilearn.experimental.surface import (
     SurfaceImage,
@@ -81,6 +67,17 @@ from nilearn.experimental.surface import (
     load_fsaverage,
     load_fsaverage_data,
 )
+
+fsaverage = load_fsaverage("fsaverage5")
+destrieux = fetch_atlas_surf_destrieux()
+labels_img = SurfaceImage(
+    mesh=fsaverage["pial"],
+    data={
+        "left": destrieux["map_left"],
+        "right": destrieux["map_right"],
+    },
+)
+label_names = [x.decode("utf-8") for x in destrieux.labels]
 
 # for our plots we will be using the fsaverage sulcal data as background map
 fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
@@ -103,7 +100,7 @@ labels_img = SurfaceImage(
 label_names = [x.decode("utf-8") for x in destrieux.labels]
 
 print(f"Destrieux image: {labels_img}")
-plotting.plot_surf_roi(
+plot_surf_roi(
     roi_map=labels_img,
     avg_method="median",
     view="lateral",
@@ -133,13 +130,10 @@ output_dir.mkdir(exist_ok=True, parents=True)
 report.save_as_html(output_dir / "report.html")
 
 # %%
-connectome = (
-    connectome.ConnectivityMeasure(kind="correlation").fit([masked_data]).mean_
-)
+connectome = ConnectivityMeasure(kind="correlation").fit([masked_data]).mean_
 plot_matrix(connectome, labels=labels_masker.label_names_)
 
-plt.show()
-
+show()
 
 # %%
 # Using the `Decoder`
@@ -148,13 +142,15 @@ plt.show()
 # as we do for volume images.
 import numpy as np
 
-from nilearn import decoding
+from nilearn.decoding import Decoder
 
 img = fetch_nki()[0]
 
-y = np.random.RandomState(0).choice([0, 1], replace=True, size=img.shape[0])
+# create some random labels
+rng = np.random.RandomState(0)
+y = rng.choice([0, 1], replace=True, size=img.shape[0])
 
-decoder = decoding.Decoder(
+decoder = Decoder(
     mask=SurfaceMasker(),
     param_grid={"C": [0.01, 0.1]},
     cv=3,
@@ -163,8 +159,8 @@ decoder = decoding.Decoder(
 decoder.fit(img, y)
 print("CV scores:", decoder.cv_scores_)
 
-plotting.plot_surf(
-    decoder.coef_img_[0],
+plot_surf(
+    surf_map=decoder.coef_img_[0],
     threshold=1e-6,
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
@@ -172,7 +168,7 @@ plotting.plot_surf(
     cmap="black_red",
     vmin=0,
 )
-plt.show()
+show()
 
 # %%
 # Decoding with a scikit-learn `Pipeline`
@@ -180,7 +176,7 @@ plt.show()
 from sklearn import feature_selection, linear_model, pipeline, preprocessing
 
 img = fetch_nki()[0]
-y = np.random.RandomState(0).normal(size=img.shape[0])
+y = rng.normal(size=img.shape[0])
 
 decoder = pipeline.make_pipeline(
     SurfaceMasker(),
@@ -195,8 +191,8 @@ decoder.fit(img, y)
 coef_img = decoder[:-1].inverse_transform(np.atleast_2d(decoder[-1].coef_))
 
 vmax = max([np.absolute(dp).max() for dp in coef_img.data.parts.values()])
-plotting.plot_surf(
-    coef_img,
+plot_surf(
+    surf_map=coef_img,
     cmap="cold_hot",
     vmin=-vmax,
     vmax=vmax,
@@ -205,4 +201,4 @@ plotting.plot_surf(
     bg_on_data=True,
     colorbar=True,
 )
-plt.show()
+show()

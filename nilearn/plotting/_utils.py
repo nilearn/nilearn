@@ -43,6 +43,13 @@ def check_surface_plotting_inputs(
         _check_hemi_present(surf_mesh, hemi)
         surf_mesh = surf_mesh.parts[hemi]
 
+    if isinstance(surf_mesh, SurfaceImage):
+        raise TypeError(
+            "'surf_mesh' cannot be a SurfaceImage instance. ",
+            "Accepted types are: str, list of two numpy.ndarray, Mesh, "
+            "PolyMesh, or None.",
+        )
+
     if isinstance(surf_map, SurfaceImage):
         if surf_mesh is None:
             surf_mesh = surf_map.mesh.parts[hemi]
