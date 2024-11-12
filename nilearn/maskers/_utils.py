@@ -1,6 +1,7 @@
 import numpy as np
 
 from nilearn import image
+from nilearn.experimental.surface import SurfaceImage
 
 
 def _check_dims(imgs):
@@ -85,3 +86,37 @@ def get_min_max_surface_image(img):
     vmin = min(min(x) for x in img.data.parts.values())
     vmax = max(max(x) for x in img.data.parts.values())
     return vmin, vmax
+
+
+def concatenate_surface_images(imgs):
+    """Concatenate the data of a list or tuple of SurfaceImages.
+
+    Assumes all images have same meshes.
+
+    Parameters
+    ----------
+    imgs : :obj:`list` or :obj:`tuple` of SurfaceImage object
+
+    Returns
+    -------
+    SurfaceImage object
+    """
+    if not isinstance(imgs, (tuple, list)) or any(
+        not isinstance(x, SurfaceImage) for x in imgs
+    ):
+        raise TypeError(
+            "'imgs' must be a list or a tuple of SurfaceImage instances."
+        )
+    output = imgs[0]
+
+    if len(imgs) == 1:
+        return output
+
+    for img in imgs:
+        check_same_n_vertices(img.mesh, imgs[0].mesh)
+
+    for part in output.data.parts:
+        tmp = [x.data.parts[part] for x in imgs]
+        output.data.parts[part] = np.concatenate(tmp)
+
+    return output

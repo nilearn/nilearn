@@ -78,14 +78,20 @@ def test_none_mask_img(surf_mask):
     SurfaceMasker(surf_mask()).fit(None)
 
 
+def test_transform_list_surf_images(surf_mask, surf_img):
+    """Smoke test transform on list of surface images."""
+    masker = SurfaceMasker(surf_mask()).fit()
+    masker.transform([surf_img(), surf_img()])
+
+
 def test_unfitted_masker(surf_mask):
-    masker = SurfaceMasker(surf_mask)
+    masker = SurfaceMasker(surf_mask())
     with pytest.raises(ValueError, match="fitted"):
-        masker.transform(surf_mask)
+        masker.transform(surf_mask())
 
 
 def test_check_is_fitted(surf_mask):
-    masker = SurfaceMasker(surf_mask)
+    masker = SurfaceMasker(surf_mask())
     assert not masker.__sklearn_is_fitted__()
 
 

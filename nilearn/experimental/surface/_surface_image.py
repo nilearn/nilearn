@@ -398,26 +398,3 @@ def _sanitize_filename(filename: str | Path) -> Path:
             f"Got: {filename}"
         )
     return filename
-
-
-def concatenate_surface_images(imgs):
-    """Concatenate the data of a list or tuple of SurfaceImages.
-
-    Assumes all images have same meshes.
-    """
-    if not isinstance(imgs, (tuple, list)) or any(
-        not isinstance(x, SurfaceImage) for x in imgs
-    ):
-        raise TypeError(
-            "'imgs' must be a list or a tuple of SurfaceImage instances."
-        )
-    output = imgs[0]
-
-    if len(imgs) == 1:
-        return output
-
-    for part in output.data.parts:
-        tmp = [x.data.parts[part] for x in imgs]
-        output.data.parts[part] = np.concatenate(tmp)
-
-    return output

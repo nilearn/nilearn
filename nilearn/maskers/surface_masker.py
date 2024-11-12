@@ -15,11 +15,11 @@ from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.experimental.surface._surface_image import (
     SurfaceImage,
-    concatenate_surface_images,
 )
 from nilearn.maskers._utils import (
     check_same_n_vertices,
     compute_mean_surface_image,
+    concatenate_surface_images,
     get_min_max_surface_image,
 )
 
@@ -179,12 +179,15 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        img : SurfaceImage object or None
+        img : SurfaceImage object \
+              or :obj:`list` of SurfaceImage object, \
+              or :obj:`tuple` of SurfaceImage object, or None, \
+              default = None
             Mesh and data for both hemispheres.
 
         y : None
-            This parameter is unused. It is solely included for scikit-learn
-            compatibility.
+            This parameter is unused.
+            It is solely included for scikit-learn compatibility.
 
         Returns
         -------
@@ -223,7 +226,10 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        img : SurfaceImage object
+        img : SurfaceImage object \
+              or :obj:`list` of SurfaceImage object, \
+              or :obj:`tuple` of SurfaceImage object, or None, \
+              default = None
             Mesh and data for both hemispheres.
 
         confounds : :class:`numpy.ndarray`, :obj:`str`,\
@@ -266,6 +272,10 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         parameters["clean_args"] = self.clean_args
 
         self._check_fitted()
+
+        if not isinstance(img, list):
+            img = [img]
+        img = concatenate_surface_images(img)
 
         check_same_n_vertices(self.mask_img_.mesh, img.mesh)
 
