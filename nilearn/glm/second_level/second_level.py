@@ -328,13 +328,13 @@ def _infer_effect_maps(second_level_input, contrast_def):
                 contrast_def, output_type="effect_size"
             )
             effect_maps.append(effect_map)
-
     else:
         effect_maps = second_level_input
 
     # check niimgs
-    for niimg in effect_maps:
-        check_niimg(niimg, ensure_ndim=3)
+    if not isinstance(effect_maps[0], SurfaceImage):
+        for niimg in effect_maps:
+            check_niimg(niimg, ensure_ndim=3)
 
     return effect_maps
 
@@ -516,9 +516,10 @@ class SecondLevelModel(BaseGLM):
             least one confound.
 
         design_matrix : :class:`pandas.DataFrame`, optional
-            Design matrix to fit the :term:`GLM`. The number of rows
-            in the design matrix must agree with the number of maps derived
-            from ``second_level_input``.
+            Design matrix to fit the :term:`GLM`.
+            The number of rows in the design matrix
+            must agree with the number of maps
+            derived from ``second_level_input``.
             Ensure that the order of maps given by a ``second_level_input``
             list of Niimgs matches the order of the rows in the design matrix.
         """
