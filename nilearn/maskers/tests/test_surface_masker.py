@@ -43,6 +43,12 @@ def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
+def test_fit_list_surf_images(surf_img):
+    """Smoke test fit on list of surface images."""
+    masker = SurfaceMasker()
+    masker.fit([surf_img(), surf_img()])
+
+
 # test with only one surface image and with 2 surface images (surface time
 # series)
 @pytest.mark.parametrize("shape", [(1,), (2,)])
