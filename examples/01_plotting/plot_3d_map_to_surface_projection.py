@@ -56,7 +56,7 @@ img = SurfaceImage.from_volume(
 # You can visualize the texture on the surface using the function
 # :func:`~nilearn.plotting.plot_surf_stat_map` which uses ``matplotlib``
 # as the default plotting engine.
-from nilearn.experimental.plotting import plot_surf_stat_map
+from nilearn.plotting import plot_surf_stat_map
 
 fig = plot_surf_stat_map(
     stat_map=img,
@@ -172,7 +172,7 @@ labels = list(regions_dict.values())
 # %%
 # Display outlines of the regions of interest on top of a statistical map
 # -----------------------------------------------------------------------
-from nilearn.experimental.plotting import plot_surf_contours
+from nilearn.plotting import plot_surf_contours
 
 fsaverage_sulcal = load_fsaverage_data(data_type="sulcal", mesh_type="pial")
 
@@ -199,10 +199,11 @@ if engine == "matplotlib":
     show()
 elif engine == "plotly":
     figure.add_contours(
-        roi_map=destrieux_atlas.data.parts["right"],
+        roi_map=destrieux_atlas,
         levels=regions_indices,
         labels=labels,
         lines=[{"width": 5}],
+        hemi="right",
     )
     # view the contours in a browser
     # figure.show()
@@ -229,7 +230,7 @@ big_img = SurfaceImage.from_volume(
 )
 
 plot_surf_stat_map(
-    big_img,
+    stat_map=big_img,
     surf_mesh=big_fsaverage_meshes["inflated"],
     hemi="right",
     colorbar=True,
@@ -272,7 +273,7 @@ show()
 # :func:`nilearn.plotting.view_img_on_surf` that give
 # more interactive visualizations in a web browser.
 # See :ref:`interactive-surface-plotting` for more details.
-from nilearn.experimental.plotting import view_surf
+from nilearn.plotting import view_surf
 
 view = view_surf(
     surf_mesh=fsaverage_meshes["inflated"],
