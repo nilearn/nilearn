@@ -60,7 +60,6 @@ fmri_img_surf = SurfaceImage.from_volume(
     mesh=fsaverage["pial"], volume_img=fmri_img, radius=5
 )
 
-
 # %%
 # Searchlight computation
 # -----------------------
@@ -72,25 +71,31 @@ from sklearn.preprocessing import StandardScaler
 
 from nilearn.decoding.searchlight import search_light
 
-# initialize scores to be able to create a SurfaceImage from it later.
+# For the sake of speed,
+# we will only run the decoding on one hemisphere
+# in this example.
+hemispheres_to_analyze = ["left"]
+# Uncomment the following line if you want to run both hemispheres.
+# hemispheres_to_analyze = ["left", "right"]
+
+# Let us initialize a result scores dictionary ,
+# to be able to create a SurfaceImage from it later.
 scores = {
     "left": np.zeros(fmri_img_surf.mesh.parts["left"].n_vertices),
     "right": np.zeros(fmri_img_surf.mesh.parts["right"].n_vertices),
 }
 
-hemispheres_to_analyze = ["left", "right"]
-
 for hemi in hemispheres_to_analyze:
+    print(f"Running searchlight on {hemi} hemisphere.")
+
     # To define the BOLD responses
     # to be included within each searchlight "sphere"
     # we define an adjacency matrix
     # based on the inflated surface vertices
     # such that nearby vertices are concatenated
     # within the same searchlight.
-    print(f"Running searchlight on {hemi} hemisphere.")
-
     coordinates = fsaverage["inflated"].parts[hemi].coordinates
-    nn = neighbors.NearestNeighbors(radius=5)
+    nn = neighbors.NearestNeighbors()
     adjacency = nn.fit(coordinates).radius_neighbors_graph(coordinates).tolil()
 
     # Simple linear estimator preceded by a normalization step
