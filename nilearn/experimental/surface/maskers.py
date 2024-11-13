@@ -343,7 +343,7 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
     def _create_figure_for_report(self):
         import matplotlib.pyplot as plt
 
-        from nilearn.experimental import plotting
+        from nilearn import plotting
 
         if not self._reporting_data["images"] and not getattr(
             self, "mask_img_", None
@@ -650,7 +650,7 @@ class SurfaceLabelsMasker(BaseEstimator):
     def _create_figure_for_report(self):
         import matplotlib.pyplot as plt
 
-        from nilearn.experimental import plotting
+        from nilearn import plotting
 
         labels_img = self._reporting_data["labels_image"]
 

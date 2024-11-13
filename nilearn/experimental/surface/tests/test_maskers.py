@@ -5,10 +5,10 @@ import pytest
 
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.experimental.surface import (
-    SurfaceImage,
     SurfaceLabelsMasker,
     SurfaceMasker,
 )
+from nilearn.surface import SurfaceImage
 
 
 # test with only one surface image and with 2 surface images (surface time
