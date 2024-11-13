@@ -110,13 +110,15 @@ def test_rena_clustering():
     del n_voxels, X_red, X_compress
 
 
-def test_make_edges_and_weights_surface_smoke(mini_mask, rng):
+def test_make_edges_and_weights_surface_smoke(surf_mask, rng):
     n_samples = 5
-    n_features = mini_mask.shape[0]
+    n_features = surf_mask().shape[0]
 
     X = rng.random((n_samples, n_features))
 
-    edges, weights = _make_edges_and_weights_surface(X, mini_mask)
+    print(surf_mask().mesh.parts["left"].faces)
+
+    edges, weights = _make_edges_and_weights_surface(X, surf_mask())
 
     assert len(edges) == 2
     assert len(weights) == 2

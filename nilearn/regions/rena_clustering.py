@@ -663,7 +663,8 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
             self.mask_img, (str, Nifti1Image, SurfaceImage, SurfaceMasker)
         ):
             raise ValueError(
-                "The mask image should be a Niimg-like object. "
+                "The mask image should be a Niimg-like object, "
+                "a SurfaceImage object or a SurfaceMasker."
                 f"Instead a {type(self.mask_img)} object was provided."
             )
 
