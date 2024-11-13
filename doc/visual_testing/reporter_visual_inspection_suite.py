@@ -503,12 +503,12 @@ if __name__ == "__main__":
 
     report_surface_masker()
     report_surface_label_masker()
-    report_nifti_masker()
-    report_nifti_maps_masker()
-    report_nifti_labels_masker()
-    report_multi_nifti_masker()
-    report_multi_nifti_labels_masker()
-    report_multi_nifti_maps_masker()
+    # report_nifti_masker()
+    # report_nifti_maps_masker()
+    # report_nifti_labels_masker()
+    # report_multi_nifti_masker()
+    # report_multi_nifti_labels_masker()
+    # report_multi_nifti_maps_masker()
 
     t1 = time.time()
     print(f"\nTook: {(t1 - t0)} seconds\n")
@@ -516,10 +516,10 @@ if __name__ == "__main__":
     print("\nGenerating GLM reports templates\n")
     t0 = time.time()
 
-    report_flm_adhd_dmn()
-    report_flm_bids_features()
-    report_flm_fiac()
-    report_slm_oasis()
+    # report_flm_adhd_dmn()
+    # report_flm_bids_features()
+    # report_flm_fiac()
+    # report_slm_oasis()
 
     t1 = time.time()
     print(f"\nTook: {(t1 - t0)} seconds\n")
