@@ -1249,24 +1249,24 @@ class PolyData:
 
     Parameters
     ----------
-    left : numpy.ndarray or :obj:`str` of :obj:`pathlib.Path` or None,\
+    left : :obj:`numpy.ndarray` or :obj:`str` of :obj:`pathlib.Path` or None,\
            default = None
 
-    right : numpy.ndarray or :obj:`str` of :obj:`pathlib.Path` or None,\
+    right : :obj:`numpy.ndarray` or :obj:`str` of :obj:`pathlib.Path` or None,\
            default = None
 
     Attributes
     ----------
-    parts : dict[str, numpy.ndarray]
+    parts : :obj:`dict` of :obj:`numpy.ndarray`
 
-    shape : tuple[int, int]
+    shape : :obj:`tuple` of :obj:`int`
     """
 
     def __init__(
         self,
-        left: np.ndarray | str | Path | None = None,
-        right: np.ndarray | str | Path | None = None,
-    ) -> None:
+        left=None,
+        right=None,
+    ):
         if left is None and right is None:
             raise ValueError(
                 "Cannot create an empty PolyData. "
@@ -1300,12 +1300,12 @@ class PolyData:
         concat_dim = sum(p.shape[-1] for p in parts.values())
         self.shape = (*first_shape[:-1], concat_dim)
 
-    def to_filename(self, filename: str | Path) -> None:
+    def to_filename(self, filename):
         """Save data to gifti.
 
         Parameters
         ----------
-        filename : str | Path
+        filename : :obj:`str` of :obj:`pathlib.Path`
                    If the filename contains `hemi-L`
                    then only the left part of the mesh will be saved.
                    If the filename contains `hemi-R`
@@ -1343,8 +1343,7 @@ class SurfaceMesh(abc.ABC):
 
     n_vertices: int
 
-    # TODO those are properties for now for compatibility with plot_surf_img
-    # for the demo.
+    # TODO those are properties are for compatibility with plot_surf_img.
     # But they should probably become functions as they can take some time to
     # return or even fail
     coordinates: np.ndarray
@@ -1356,54 +1355,90 @@ class SurfaceMesh(abc.ABC):
             f"with {getattr(self, 'n_vertices', '??')} vertices>"
         )
 
-    def to_gifti(self, gifti_file: pathlib.Path | str):
+    def to_gifti(self, gifti_file):
         """Write surface mesh to a Gifti file on disk.
 
         Parameters
         ----------
-        gifti_file : path-like or str
+        gifti_file : :obj:`str` of :obj:`pathlib.Path`
             Filename to save the mesh to.
         """
         _mesh_to_gifti(self.coordinates, self.faces, gifti_file)
 
 
 class InMemoryMesh(SurfaceMesh):
-    """A surface mesh stored as in-memory numpy arrays."""
+    """A surface mesh stored as in-memory numpy arrays.
+
+    Parameters
+    ----------
+    coordinates: :obj:`numpy.ndarray`
+
+    faces: :obj:`numpy.ndarray`
+
+    Attributes
+    ----------
+    n_vertices : int
+        number of vertices
+
+    """
 
     n_vertices: int
 
     coordinates: np.ndarray
+
     faces: np.ndarray
 
-    def __init__(self, coordinates: np.ndarray, faces: np.ndarray) -> None:
+    def __init__(self, coordinates, faces):
         self.coordinates = coordinates
         self.faces = faces
         self.n_vertices = coordinates.shape[0]
 
 
 class FileMesh(SurfaceMesh):
-    """A surface mesh stored in a Gifti or Freesurfer file."""
+    """A surface mesh stored in a Gifti or Freesurfer file.
+
+
+    Parameters
+    ----------
+    file_path : :obj:`str` of :obj:`pathlib.Path`
+            Filename to read mesh from.
+    """
 
     n_vertices: int
 
     file_path: pathlib.Path
 
-    def __init__(self, file_path: pathlib.Path | str) -> None:
+    def __init__(self, file_path):
         self.file_path = pathlib.Path(file_path)
         self.n_vertices = load_surf_mesh(self.file_path).coordinates.shape[0]
 
     @property
-    def coordinates(self) -> np.ndarray:
-        """Get x, y, z, values for each mesh vertex."""
+    def coordinates(self):
+        """Get x, y, z, values for each mesh vertex.
+
+        Returns
+        -------
+        :obj:`numpy.ndarray`
+        """
         return load_surf_mesh(self.file_path).coordinates
 
     @property
     def faces(self) -> np.ndarray:
-        """Get array of adjacent vertices."""
+        """Get array of adjacent vertices.
+
+        Returns
+        -------
+        :obj:`numpy.ndarray`
+        """
         return load_surf_mesh(self.file_path).faces
 
     def loaded(self) -> InMemoryMesh:
-        """Load surface mesh into memory."""
+        """Load surface mesh into memory.
+
+        Returns
+        -------
+        :obj:`numpy.ndarray`
+        """
         loaded = load_surf_mesh(self.file_path)
         return InMemoryMesh(loaded.coordinates, loaded.faces)
 
@@ -1440,12 +1475,12 @@ class PolyMesh:
 
         self.n_vertices = sum(p.n_vertices for p in self.parts.values())
 
-    def to_filename(self, filename: str | Path) -> None:
+    def to_filename(self, filename) -> None:
         """Save mesh to gifti.
 
         Parameters
         ----------
-        filename : str | Path
+        filename : :obj:`str` or :obj:`pathlib.Path`
                    If the filename contains `hemi-L`
                    then only the left part of the mesh will be saved.
                    If the filename contains `hemi-R`
@@ -1472,7 +1507,12 @@ class PolyMesh:
 
 
 def _check_data_and_mesh_compat(mesh: PolyMesh, data: PolyData):
-    """Check that mesh and data have the same keys and that shapes match."""
+    """Check that mesh and data have the same keys and that shapes match.
+
+    mesh: :class:`nilearn.surface.PolyMesh`
+
+    data: :class:`nilearn.surface.PolyData`
+    """
     data_keys, mesh_keys = set(data.parts.keys()), set(mesh.parts.keys())
     if data_keys != mesh_keys:
         diff = data_keys.symmetric_difference(mesh_keys)
@@ -1498,10 +1538,10 @@ def _mesh_to_gifti(
 
     Parameters
     ----------
-    coordinates : :class:`numpy.ndarray`
+    coordinates : :obj:`numpy.ndarray`
         a Numpy array containing the x-y-z coordinates of the mesh vertices
 
-    faces : :class:`numpy.ndarray`
+    faces : :obj:`numpy.ndarray`
         a Numpy array containing the indices (into coords) of the mesh faces.
 
     gifti_file: :obj:`str` or :obj:`pathlib.Path`
@@ -1523,10 +1563,9 @@ def _mesh_to_gifti(
 def _data_to_gifti(data, gifti_file):
     """Save data from Polydata to a gifti file.
 
-
     Parameters
     ----------
-    data : :class:`numpy.ndarray`
+    data : :obj:`numpy.ndarray`
         The data will be cast to np.uint8, np.int32) or np.float32
         as only the following are 'supported' for now:
         - NIFTI_TYPE_UINT8
@@ -1557,7 +1596,21 @@ def _data_to_gifti(data, gifti_file):
     gii.to_filename(Path(gifti_file))
 
 
-def _sanitize_filename(filename: str | Path) -> Path:
+def _sanitize_filename(filename):
+    """Check filenames to write gifti.
+
+    - add suffix .gii if missing
+    - make sure that there is only one hemi entity in the filename
+
+    Parameters
+    ----------
+    filename : :obj:`str` or :obj:`pathlib.Path`
+        filename to check
+
+    Returns
+    -------
+    :obj:`pathlib.Path`
+    """
     filename = Path(filename)
 
     if not filename.suffix:
