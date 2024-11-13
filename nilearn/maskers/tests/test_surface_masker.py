@@ -104,8 +104,28 @@ def test_mask_img_transform_clean(surf_img, surf_mask):
 
 def test_mask_img_generate_report(surf_img, surf_mask):
     """Smoke test generate report."""
-    masker = SurfaceMasker(surf_mask()).fit()
-    masker.transform(surf_img((5,)))
+    masker = SurfaceMasker(surf_mask(), reports=True).fit()
+
+    assert masker._reporting_data is not None
+    assert masker._reporting_data["images"] is None
+
+    img = surf_img((5,))
+    masker.transform(img)
+
+    assert isinstance(masker._reporting_data["images"], SurfaceImage)
+
+    masker.generate_report()
+
+
+def test_mask_img_generate_no_report(surf_img, surf_mask):
+    """Smoke test generate report."""
+    masker = SurfaceMasker(surf_mask(), reports=False).fit()
+
+    assert masker._reporting_data is None
+
+    img = surf_img((5,))
+    masker.transform(img)
+
     masker.generate_report()
 
 
@@ -125,6 +145,18 @@ def test_mask_img_transform_keys_mismatch(
         masker.transform(drop_surf_img_part(surf_img()))
     # full img is ok
     masker.transform(surf_img())
+
+
+def test_error_inverse_transform_shape(surf_img, surf_mask, rng):
+    masker = SurfaceMasker(surf_mask()).fit()
+    signals = masker.transform(surf_img())
+    signals_wrong_shape = rng.random(
+        size=(signals.shape[0] + 1, signals.shape[1] + 1)
+    )
+    with pytest.raises(
+        ValueError, match="Input to 'inverse_transform' has wrong shape"
+    ):
+        masker.inverse_transform(signals_wrong_shape)
 
 
 @pytest.mark.parametrize("shape", [(), (1,), (3,), (3, 2)])

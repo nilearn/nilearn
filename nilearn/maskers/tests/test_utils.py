@@ -10,6 +10,7 @@ from nilearn.maskers._utils import (
 def test_compute_mean_surface_image(surf_img, assert_surf_img_equal):
     # one 'time point' image returns same
     input_img = surf_img()
+    print(input_img.shape[0])
     img = compute_mean_surface_image(input_img)
 
     assert_surf_img_equal(img, input_img)
@@ -21,6 +22,7 @@ def test_compute_mean_surface_image(surf_img, assert_surf_img_equal):
     two_time_points_img.data.parts["left"][0] = np.zeros(shape=(1, 4))
     two_time_points_img.data.parts["left"][1] = np.ones(shape=(1, 4))
 
+    print(input_img.shape[0])
     img = compute_mean_surface_image(two_time_points_img)
 
     assert_array_almost_equal(

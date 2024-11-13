@@ -195,14 +195,15 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             start = stop
         self.output_dimension_ = stop
 
-        for part in self.mask_img_.data.parts:
-            self._report_content["n_vertices"][part] = (
-                self.mask_img_.mesh.parts[part].n_vertices
-            )
-        self._reporting_data = {
-            "mask": self.mask_img_,
-            "images": img,
-        }
+        if self.reports:
+            for part in self.mask_img_.data.parts:
+                self._report_content["n_vertices"][part] = (
+                    self.mask_img_.mesh.parts[part].n_vertices
+                )
+            self._reporting_data = {
+                "mask": self.mask_img_,
+                "images": img,
+            }
 
         return self
 
@@ -261,6 +262,9 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         self._check_fitted()
 
         check_same_n_vertices(self.mask_img_.mesh, img.mesh)
+
+        if self.reports:
+            self._reporting_data["images"] = img
 
         output = np.empty((*img.shape[:-1], self.output_dimension_))
         for part_name, (start, stop) in self.slices.items():
@@ -349,8 +353,9 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         if masked_img.shape[-1] != self.output_dimension_:
             raise ValueError(
-                "Input to inverse_transform has wrong shape; "
-                f"last dimension should be {self.output_dimension_}"
+                "Input to 'inverse_transform' has wrong shape.\n"
+                f"Last dimension should be {self.output_dimension_}.\n"
+                f"Got {masked_img.shape[-1]}."
             )
 
         data = {}

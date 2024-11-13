@@ -62,7 +62,7 @@ def compute_mean_surface_image(img):
     -------
     SurfaceImage
     """
-    if len(img.shape) <= 1:
+    if img.shape[0] < 2:
         return img
     for part, value in img.data.parts.items():
         img.data.parts[part] = np.squeeze(value.mean(axis=0)).astype(float)
