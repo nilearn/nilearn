@@ -17,6 +17,13 @@ from nilearn.surface.surface import (
     vol_to_surf,
 )
 
+# PolyData
+# InMemoryMesh
+# SurfaceMesh
+# FileMesh
+# PolyMesh
+# SurfaceImage
+
 
 class PolyData:
     """A collection of data arrays.
@@ -108,7 +115,7 @@ class PolyData:
         data_to_gifti(data, filename)
 
 
-class Mesh(abc.ABC):
+class SurfaceMesh(abc.ABC):
     """A surface :term:`mesh` having vertex, \
     coordinates and faces (triangles).
 
@@ -144,7 +151,7 @@ class Mesh(abc.ABC):
         mesh_to_gifti(self.coordinates, self.faces, gifti_file)
 
 
-class InMemoryMesh(Mesh):
+class InMemoryMesh(SurfaceMesh):
     """A surface mesh stored as in-memory numpy arrays."""
 
     n_vertices: int
@@ -158,7 +165,7 @@ class InMemoryMesh(Mesh):
         self.n_vertices = coordinates.shape[0]
 
 
-class FileMesh(Mesh):
+class FileMesh(SurfaceMesh):
     """A surface mesh stored in a Gifti or Freesurfer file."""
 
     n_vertices: int
@@ -196,8 +203,8 @@ class PolyMesh:
 
     def __init__(
         self,
-        left: Mesh | str | Path | None = None,
-        right: Mesh | str | Path | None = None,
+        left: SurfaceMesh | str | Path | None = None,
+        right: SurfaceMesh | str | Path | None = None,
     ) -> None:
         if left is None and right is None:
             raise ValueError(
@@ -207,11 +214,11 @@ class PolyMesh:
 
         self.parts = {}
         if left is not None:
-            if not isinstance(left, Mesh):
+            if not isinstance(left, SurfaceMesh):
                 left = FileMesh(left).loaded()
             self.parts["left"] = left
         if right is not None:
-            if not isinstance(right, Mesh):
+            if not isinstance(right, SurfaceMesh):
                 right = FileMesh(right).loaded()
             self.parts["right"] = right
 
@@ -272,9 +279,9 @@ class SurfaceImage:
 
     Parameters
     ----------
-    mesh : PolyMesh | dict[str, Mesh  |  str  |  Path]
+    mesh : PolyMesh | dict[str, SurfaceMesh  |  str  |  Path]
 
-    data : PolyData | dict[str, Mesh  |  str  |  Path]
+    data : PolyData | dict[str, SurfaceMesh  |  str  |  Path]
 
     Attributes
     ----------
@@ -284,8 +291,8 @@ class SurfaceImage:
 
     def __init__(
         self,
-        mesh: PolyMesh | dict[str, Mesh | str | Path],
-        data: PolyData | dict[str, Mesh | str | Path],
+        mesh: PolyMesh | dict[str, SurfaceMesh | str | Path],
+        data: PolyData | dict[str, SurfaceMesh | str | Path],
     ) -> None:
         """Create a SurfaceImage instance."""
         self.mesh = mesh if isinstance(mesh, PolyMesh) else PolyMesh(**mesh)
@@ -314,13 +321,13 @@ class SurfaceImage:
 
         Parameters
         ----------
-        mesh : PolyMesh or dict[str, Mesh | str | Path]
+        mesh : PolyMesh or dict[str, SurfaceMesh | str | Path]
             Surface mesh.
 
         volume_img : Niimg-like object
             3D or 4D volume image to project to the surface mesh.
 
-        inner_mesh: PolyMesh or dict[str, Mesh | str | Path], optional
+        inner_mesh: PolyMesh or dict[str, SurfaceMesh | str | Path], optional
             Inner mesh to pass to :func:`nilearn.surface.vol_to_surf`.
 
         vol_to_surf_kwargs: dict[str, Any]

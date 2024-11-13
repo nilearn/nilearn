@@ -49,7 +49,7 @@ Classes
 
    FileMesh
    InMemoryMesh
-   Mesh
+   SurfaceMesh
    PolyMesh
    SurfaceImage
    SurfaceLabelsMasker
