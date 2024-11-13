@@ -1,11 +1,8 @@
 import numpy as np
 import pytest
 from joblib import Memory
-
 from numpy.testing import assert_array_equal
-
 from sklearn import __version__ as sklearn_version
-
 
 from nilearn._utils import compare_version
 from nilearn._utils.class_inspect import check_estimator
