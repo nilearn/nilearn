@@ -23,10 +23,10 @@ from nilearn.surface import (
     surface,
 )
 from nilearn.surface.surface import (
+    _data_to_gifti,
     _gifti_img_to_mesh,
     _load_surf_files_gifti_gzip,
-    data_to_gifti,
-    mesh_to_gifti,
+    _mesh_to_gifti,
 )
 from nilearn.surface.tests._testing import (
     flat_mesh,
@@ -815,8 +815,8 @@ def test_data_to_gifti(rng, tmp_path, dtype):
     - make sure files can be loaded with nibabel
     """
     data = rng.random((5, 6)).astype(dtype)
-    data_to_gifti(data=data, gifti_file=tmp_path / "data.gii")
-    data_to_gifti(data=data, gifti_file=str(tmp_path / "data.gii"))
+    _data_to_gifti(data=data, gifti_file=tmp_path / "data.gii")
+    _data_to_gifti(data=data, gifti_file=str(tmp_path / "data.gii"))
     load(tmp_path / "data.gii")
 
 
@@ -827,10 +827,10 @@ def test_mesh_to_gifti(single_mesh, tmp_path):
     - make sure files can be loaded with nibabel
     """
     coordinates, faces = single_mesh
-    mesh_to_gifti(
+    _mesh_to_gifti(
         coordinates=coordinates, faces=faces, gifti_file=tmp_path / "mesh.gii"
     )
-    mesh_to_gifti(
+    _mesh_to_gifti(
         coordinates=coordinates,
         faces=faces,
         gifti_file=str(tmp_path / "mesh.gii"),

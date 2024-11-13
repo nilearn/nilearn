@@ -1328,7 +1328,7 @@ class PolyData:
         if "hemi-R" in filename.stem:
             data = self.parts["right"]
 
-        data_to_gifti(data, filename)
+        _data_to_gifti(data, filename)
 
 
 class SurfaceMesh(abc.ABC):
@@ -1364,7 +1364,7 @@ class SurfaceMesh(abc.ABC):
         gifti_file : path-like or str
             Filename to save the mesh to.
         """
-        mesh_to_gifti(self.coordinates, self.faces, gifti_file)
+        _mesh_to_gifti(self.coordinates, self.faces, gifti_file)
 
 
 class InMemoryMesh(SurfaceMesh):
@@ -1489,7 +1489,7 @@ def _check_data_and_mesh_compat(mesh: PolyMesh, data: PolyData):
             )
 
 
-def mesh_to_gifti(
+def _mesh_to_gifti(
     coordinates,
     faces,
     gifti_file,
@@ -1520,7 +1520,7 @@ def mesh_to_gifti(
     gifti_img.to_filename(gifti_file)
 
 
-def data_to_gifti(data, gifti_file):
+def _data_to_gifti(data, gifti_file):
     """Save data from Polydata to a gifti file.
 
 
