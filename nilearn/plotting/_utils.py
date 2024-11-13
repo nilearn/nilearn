@@ -1,4 +1,4 @@
-from nilearn.experimental.surface import PolyMesh, SurfaceImage
+from nilearn.surface import PolyMesh, SurfaceImage
 
 
 def check_surface_plotting_inputs(

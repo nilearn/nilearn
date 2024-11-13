@@ -11,9 +11,10 @@ import pandas as pd
 import scipy.stats as sps
 
 from nilearn._utils import logger, rename_parameters
-from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
+from nilearn.experimental.surface import SurfaceMasker
 from nilearn.glm._utils import pad_contrast, z_score
 from nilearn.maskers import NiftiMasker
+from nilearn.surface import SurfaceImage
 
 DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10

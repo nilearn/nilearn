@@ -15,7 +15,7 @@ from nilearn._utils import _constrained_layout_kwargs
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn.experimental.surface._surface_image import PolyMesh, SurfaceImage
+from nilearn.surface import PolyMesh, SurfaceImage
 
 
 def check_same_n_vertices(mesh_1: PolyMesh, mesh_2: PolyMesh) -> None:

@@ -1641,10 +1641,8 @@ class SurfaceImage:
 
         Examples
         --------
-        >>> from nilearn.experimental.surface import (
-        ...     SurfaceImage,
-        ...     load_fsaverage,
-        ... )
+        >>> from nilearn.surface import SurfaceImage
+        >>> from nilearn.experimental.surface import load_fsaverage
         >>> from nilearn.datasets import load_sample_motor_activation_image
 
         >>> fsavg = load_fsaverage()
