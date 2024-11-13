@@ -7,6 +7,21 @@
 
 .. No relevant user manual section yet.
 
+**Classes**:
+
+.. currentmodule:: nilearn.glm
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+
+    FileMesh,
+    InMemoryMesh,
+    PolyData,
+    PolyMesh,
+    SurfaceImage,
+    SurfaceMesh,
+
 **Functions**:
 
 .. currentmodule:: nilearn.surface
