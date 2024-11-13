@@ -11,7 +11,7 @@ from nilearn._utils.data_gen import (
     generate_maps,
     generate_random_img,
 )
-from nilearn.experimental.surface import SurfaceLabelsMasker, SurfaceMasker
+from nilearn.experimental.surface import SurfaceLabelsMasker
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import (
     MultiNiftiLabelsMasker,
@@ -21,6 +21,7 @@ from nilearn.maskers import (
     NiftiMapsMasker,
     NiftiMasker,
     NiftiSpheresMasker,
+    SurfaceMasker,
 )
 
 # Note: html output by nilearn view_* functions
