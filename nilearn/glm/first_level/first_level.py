@@ -480,17 +480,6 @@ class FirstLevelModel(BaseGLM):
         self.subject_label = subject_label
         self.random_state = random_state
 
-    @property
-    def scaling_axis(self):
-        """Return scaling of axis."""
-        warn(
-            DeprecationWarning(
-                "Deprecated. `scaling_axis` will be removed in 0.11.0. "
-                "Please use `signal_scaling` instead."
-            )
-        )
-        return self.signal_scaling
-
     def _check_fit_inputs(
         self,
         run_imgs,
@@ -1131,7 +1120,7 @@ def _check_events_file_uses_tab_separators(events_files):
         if isinstance(events_file_, (pd.DataFrame)):
             continue
         try:
-            with open(events_file_) as events_file_obj:
+            with Path(events_file_).open() as events_file_obj:
                 events_file_sample = events_file_obj.readline()
             """
             The following errors are not being handled here,
@@ -1188,7 +1177,8 @@ def _check_and_load_tables(tables_, var_name):
             pass
         else:
             raise TypeError(
-                f"{var_name} can only be a pandas DataFrames or a string. "
+                f"{var_name} can only be a pandas DataFrame, "
+                "a Path object or a string. "
                 f"A {type(table)} was provided at idx {table_idx}"
             )
     return tables
@@ -1202,7 +1192,7 @@ def _read_events_table(table):
 
     Parameters
     ----------
-    table : :obj:`str`
+    table : :obj:`str`, :obj:`pathlib.Path`
         Accepts the path to an events file.
 
     Returns

@@ -136,7 +136,6 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 fixable = ["ALL"]
 ignore = [
     "ARG005",
-    "B018",
     "B028",
     "B904",
     "D105",
@@ -149,8 +148,6 @@ ignore = [
     "N806",
     "PERF203",
     "PLR2004",
-    "PTH118",
-    "PTH123",
     "PTH207",
     "RUF012"
 ]
@@ -186,10 +183,9 @@ max-complexity = 41
 
 [tool.ruff.lint.per-file-ignores]
 "**/{doc}/*" = ["D103"]
-"**/{examples}/*" = ["D103", "D400", "E402"]
+"**/{examples}/*" = ["B018", "D103", "D400", "E402"]
 "**/{tests}/*" = ["D100", "D101", "D102", "D103", "E402"]
 "__init__.py" = ["D104", "E402"]
-"nilearn/datasets/**/*" = ["PTH201", "PTH101", "PTH102", "PTH107", "PTH110", "PTH111", "PTH113"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"

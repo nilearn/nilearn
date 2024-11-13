@@ -172,7 +172,8 @@ def write_imgs_to_path(*imgs, file_path=None, **kwargs):
 
 def are_tests_running():
     """Return whether we are running the pytest test loader."""
-    return "PYTEST_CURRENT_TEST" in os.environ
+    # https://docs.pytest.org/en/stable/example/simple.html#detect-if-running-from-within-a-pytest-run
+    return os.environ.get("PYTEST_VERSION") is not None
 
 
 def skip_if_running_tests(msg=""):
@@ -185,4 +186,4 @@ def skip_if_running_tests(msg=""):
 
     """
     if are_tests_running():
-        pytest.skip(msg)
+        pytest.skip(msg, allow_module_level=True)

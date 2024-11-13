@@ -2,14 +2,13 @@
 
 # Author: Alexandre Abraham
 
-import contextlib
 import gzip
 import os
+import re
 import shutil
 import tarfile
 import urllib
 from pathlib import Path
-from tempfile import mkstemp
 from unittest.mock import MagicMock
 from zipfile import ZipFile
 
@@ -18,6 +17,7 @@ import pytest
 import requests
 
 from nilearn.datasets import _utils
+from nilearn.datasets.tests._testing import Response
 
 datadir = _utils.PACKAGE_DIRECTORY / "data"
 
@@ -95,7 +95,7 @@ def test_get_dataset_dir(tmp_path):
     data_dir = _utils.get_dataset_dir("test", verbose=0)
 
     assert data_dir == str(expected_base_dir / "test")
-    assert os.path.exists(data_dir)
+    assert Path(data_dir).exists()
 
     shutil.rmtree(data_dir)
 
@@ -104,7 +104,7 @@ def test_get_dataset_dir(tmp_path):
     data_dir = _utils.get_dataset_dir("test", verbose=0)
 
     assert data_dir == str(expected_base_dir / "test")
-    assert os.path.exists(data_dir)
+    assert Path(data_dir).exists()
 
     shutil.rmtree(data_dir)
 
@@ -113,14 +113,13 @@ def test_get_dataset_dir(tmp_path):
     data_dir = _utils.get_dataset_dir("test", verbose=0)
 
     assert data_dir == str(expected_base_dir / "test")
-    assert os.path.exists(data_dir)
+    assert Path(data_dir).exists()
 
     shutil.rmtree(data_dir)
 
     # Verify exception for a path which exists and is a file
     test_file = tmp_path / "some_file"
-    with open(test_file, "w") as out:
-        out.write("abcfeg")
+    test_file.write_text("abcfeg")
 
     with pytest.raises(
         OSError,
@@ -147,7 +146,7 @@ def test_get_dataset_dir_path_as_str(should_cast_path_to_string, tmp_path):
     )
 
     assert data_dir == str(expected_dataset_dir)
-    assert os.path.exists(data_dir)
+    assert Path(data_dir).exists()
 
     shutil.rmtree(data_dir)
 
@@ -157,7 +156,7 @@ def test_get_dataset_dir_write_access(tmp_path):
 
     no_write = tmp_path / "no_write"
     no_write.mkdir(parents=True)
-    os.chmod(no_write, 0o400)
+    no_write.chmod(0o400)
 
     expected_base_dir = tmp_path / "nilearn_shared_data"
     os.environ["NILEARN_SHARED_DATA"] = str(expected_base_dir)
@@ -167,9 +166,9 @@ def test_get_dataset_dir_write_access(tmp_path):
 
     # Non writeable dir is returned because dataset may be in there.
     assert data_dir == str(no_write)
-    assert os.path.exists(data_dir)
+    assert Path(data_dir).exists()
 
-    os.chmod(no_write, 0o600)
+    no_write.chmod(0o600)
     shutil.rmtree(data_dir)
 
 
@@ -188,37 +187,30 @@ def test_get_dataset_dir_symlink(tmp_path):
     )
 
     assert data_dir == str(expected_linked_dir)
-    assert os.path.exists(data_dir)
+    assert Path(data_dir).exists()
 
 
-def test_md5_sum_file():
+def test_md5_sum_file(tmp_path):
     # Create dummy temporary file
-    out, f = mkstemp()
-    os.write(out, b"abcfeg")
-    os.close(out)
+    f = tmp_path / "test"
+    f.write_bytes(b"abcfeg")
 
     assert _utils._md5_sum_file(f) == "18f32295c556b2a1a3a8e68fe1ad40f7"
 
-    os.remove(f)
 
-
-def test_read_md5_sum_file():
+def test_read_md5_sum_file(tmp_path):
     # Create dummy temporary file
-    out, f = mkstemp()
-    os.write(
-        out,
+    f = tmp_path / "test"
+    f.write_bytes(
         b"20861c8c3fe177da19a7e9539a5dbac  /tmp/test\n"
         b"70886dcabe7bf5c5a1c24ca24e4cbd94  test/some_image.nii",
     )
-    os.close(out)
     h = _utils.read_md5_sum_file(f)
 
     assert "/tmp/test" in h
     assert "/etc/test" not in h
     assert h["test/some_image.nii"] == "70886dcabe7bf5c5a1c24ca24e4cbd94"
     assert h["/tmp/test"] == "20861c8c3fe177da19a7e9539a5dbac"
-
-    os.remove(f)
 
 
 def test_tree(tmp_path):
@@ -372,7 +364,7 @@ def test_uncompress_tar(tmp_path, ext, mode):
     # and check if ftemp exists
     ztemp = tmp_path / f"test.{ext}"
     ftemp = "test"
-    with contextlib.closing(tarfile.open(ztemp, mode)) as testtar:
+    with tarfile.open(ztemp, mode) as testtar:
         temp = tmp_path / ftemp
         temp.write_text(ftemp)
         testtar.add(temp)
@@ -390,7 +382,7 @@ def test_uncompress_zip(tmp_path):
     # and check if ftemp exists
     ztemp = tmp_path / "test.zip"
     ftemp = "test"
-    with contextlib.closing(ZipFile(ztemp, "w")) as testzip:
+    with ZipFile(ztemp, "w") as testzip:
         testzip.writestr(ftemp, " ")
 
     _utils.uncompress_file(ztemp, verbose=0)
@@ -408,8 +400,8 @@ def test_uncompress_gzip(tmp_path, ext):
     ztemp = tmp_path / f"test{ext}"
     ftemp = "test"
 
-    with gzip.open(ztemp, "wb") as testgzip:
-        testgzip.write(ftemp.encode())
+    with gzip.open(ztemp, "wt") as testgzip:
+        testgzip.write(ftemp)
 
     _utils.uncompress_file(ztemp, verbose=0)
     assert (tmp_path / ftemp).exists()
@@ -417,10 +409,10 @@ def test_uncompress_gzip(tmp_path, ext):
 
 def test_safe_extract(tmp_path):
     # Test vulnerability patch by mimicking path traversal
-    ztemp = os.path.join(tmp_path, "test.tar")
+    ztemp = tmp_path / "test.tar"
     in_archive_file = tmp_path / "something.txt"
     in_archive_file.write_text("hello")
-    with contextlib.closing(tarfile.open(ztemp, "w")) as tar:
+    with tarfile.open(ztemp, "w") as tar:
         arcname = "../test.tar"
         tar.add(in_archive_file, arcname=arcname)
 
@@ -430,35 +422,75 @@ def test_safe_extract(tmp_path):
         _utils.uncompress_file(ztemp, verbose=0)
 
 
-def test_fetch_file_part(tmp_path):
+def test_fetch_single_file_part(tmp_path, capsys, request_mocker):
+    def get_response(match, request):
+        """Create mock Response object with correct content range header."""
+        req_range = request.headers.get("Range")
+        resp = Response(b"dummy content", match)
+
+        # set up Response object to return partial content
+        # and update header accordingly
+        if req_range is not None:
+            resp.iter_start = int(
+                re.match(r"bytes=(\d+)-", req_range).group(1)
+            )
+            resp.headers["Content-Range"] = (
+                f"bytes {resp.iter_start}-{len(resp.content) - 1}"
+                f"/{len(resp.content)}"
+            )
+
+        return resp
+
     url = "http://foo/temp.txt"
     file_full = tmp_path / "temp.txt"
     file_part = tmp_path / "temp.txt.part"
-    file_part.touch()
+    file_part.write_text("D")  # should not be overwritten
+
+    request_mocker.url_mapping[url] = get_response
 
     _utils.fetch_single_file(
-        url=url, data_dir=tmp_path, verbose=0, resume=True
+        url=url, data_dir=tmp_path, verbose=1, resume=True
     )
 
     assert file_full.exists()
+    assert file_full.read_text() == "Dummy content"  # not overwritten
+    assert "Resuming failed" not in capsys.readouterr().out
 
     file_full.unlink()
     assert not file_full.exists()
     assert not file_part.exists()
 
     # test for overwrite
-    url = "http://foo/temp.txt"
-    file_part.touch()
+    file_part.write_text("D")  # should be overwritten
 
     _utils.fetch_single_file(
-        url=url, data_dir=tmp_path, verbose=0, resume=True, overwrite=True
+        url=url, data_dir=tmp_path, resume=True, overwrite=True
     )
 
     assert file_full.exists()
+    assert file_full.read_text() == "dummy content"  # overwritten
+
+
+def test_fetch_single_file_part_error(tmp_path, capsys, request_mocker):
+    url = "http://foo/temp.txt"
+    file_part = tmp_path / "temp.txt.part"
+    file_part.touch()  # should not be overwritten
+
+    # the default Response from the mocker does not handle Range requests
+    request_mocker.url_mapping[url] = "dummy content"
+
+    _utils.fetch_single_file(
+        url=url, data_dir=tmp_path, verbose=1, resume=True
+    )
+
+    assert (
+        "Resuming failed, try to download the whole file."
+        in capsys.readouterr().out
+    )
 
 
 @pytest.mark.parametrize("should_cast_path_to_string", [False, True])
-def test_fetch_file_overwrite(
+def test_fetch_single_file_overwrite(
     should_cast_path_to_string, tmp_path, request_mocker
 ):
     if should_cast_path_to_string:
@@ -471,12 +503,10 @@ def test_fetch_file_overwrite(
 
     assert request_mocker.url_count == 1
     assert fil.exists()
-    with open(fil) as fp:
-        assert fp.read() == ""
+    assert fil.read_text() == ""
 
     # Modify content
-    with open(fil, "w") as fp:
-        fp.write("some content")
+    fil.write_text("some content")
 
     # Don't overwrite existing file.
     fil = _utils.fetch_single_file(
@@ -485,8 +515,7 @@ def test_fetch_file_overwrite(
 
     assert request_mocker.url_count == 1
     assert fil.exists()
-    with open(fil) as fp:
-        assert fp.read() == "some content"
+    assert fil.read_text() == "some content"
 
     # Overwrite existing file.
     fil = _utils.fetch_single_file(
@@ -495,8 +524,7 @@ def test_fetch_file_overwrite(
 
     assert request_mocker.url_count == 2
     assert fil.exists()
-    with open(fil) as fp:
-        assert fp.read() == ""
+    assert fil.read_text() == ""
 
 
 @pytest.mark.parametrize("should_cast_path_to_string", [False, True])
@@ -531,44 +559,46 @@ def test_fetch_files_overwrite(
 
     # overwrite non-exiting file.
     files = ("1.txt", "http://foo/1.txt")
-    fil = _utils.fetch_files(
-        data_dir=tmp_path,
-        verbose=0,
-        files=[(*files, {"overwrite": True})],
+    fil = Path(
+        _utils.fetch_files(
+            data_dir=tmp_path,
+            verbose=0,
+            files=[(*files, {"overwrite": True})],
+        )[0]
     )
 
     assert request_mocker.url_count == 1
-    assert os.path.exists(fil[0])
-    with open(fil[0]) as fp:
-        assert fp.read() == ""
+    assert fil.exists()
+    assert fil.read_text() == ""
 
     # Modify content
-    with open(fil[0], "w") as fp:
-        fp.write("some content")
+    fil.write_text("some content")
 
     # Don't overwrite existing file.
-    fil = _utils.fetch_files(
-        data_dir=tmp_path,
-        verbose=0,
-        files=[(*files, {"overwrite": False})],
+    fil = Path(
+        _utils.fetch_files(
+            data_dir=tmp_path,
+            verbose=0,
+            files=[(*files, {"overwrite": False})],
+        )[0]
     )
 
     assert request_mocker.url_count == 1
-    assert os.path.exists(fil[0])
-    with open(fil[0]) as fp:
-        assert fp.read() == "some content"
+    assert fil.exists()
+    assert fil.read_text() == "some content"
 
     # Overwrite existing file.
-    fil = _utils.fetch_files(
-        data_dir=tmp_path,
-        verbose=0,
-        files=[(*files, {"overwrite": True})],
+    fil = Path(
+        _utils.fetch_files(
+            data_dir=tmp_path,
+            verbose=0,
+            files=[(*files, {"overwrite": True})],
+        )[0]
     )
 
     assert request_mocker.url_count == 2
-    assert os.path.exists(fil[0])
-    with open(fil[0]) as fp:
-        assert fp.read() == ""
+    assert fil.exists()
+    assert fil.read_text() == ""
 
 
 def test_naive_ftp_adapter():

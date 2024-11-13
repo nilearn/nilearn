@@ -38,7 +38,7 @@ def _format_time(t):
 
 def _md5_sum_file(path):
     """Calculate the MD5 sum of a file."""
-    with open(path, "rb") as f:
+    with Path(path).open("rb") as f:
         m = hashlib.md5()
         while True:
             data = f.read(8192)
@@ -51,7 +51,7 @@ def _md5_sum_file(path):
 
 def read_md5_sum_file(path):
     """Read a MD5 checksum file and returns hashes as a dictionary."""
-    with open(path) as f:
+    with Path(path).open() as f:
         hashes = {}
         while True:
             line = f.readline()
@@ -277,7 +277,7 @@ def _add_readme_to_default_data_locations(data_dir=None, verbose=1):
     for d in get_data_dirs(data_dir=data_dir):
         file = Path(d) / "README.md"
         if file.parent.exists() and not file.exists():
-            with open(file, "w") as f:
+            with file.open("w") as f:
                 f.write(
                     """# Nilearn data folder
 
@@ -305,8 +305,9 @@ def _is_within_directory(directory, target):
 
 
 def _safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+    path = Path(path)
     for member in tar.getmembers():
-        member_path = os.path.join(path, member.name)
+        member_path = path / member.name
         if not _is_within_directory(path, member_path):
             raise Exception("Attempted Path Traversal in Tar File")
 
@@ -339,7 +340,7 @@ def uncompress_file(file_, delete_archive=True, verbose=1):
     # We first try to see if it is a zip file
     try:
         filename = data_dir / file_.stem
-        with open(file_, "rb") as fd:
+        with file_.open("rb") as fd:
             header = fd.read(4)
         processed = False
         if zipfile.is_zipfile(file_):
@@ -347,30 +348,29 @@ def uncompress_file(file_, delete_archive=True, verbose=1):
             z.extractall(path=data_dir)
             z.close()
             if delete_archive:
-                os.remove(file_)
-            file_ = filename
+                file_.unlink()
             processed = True
         elif file_.suffix == ".gz" or header.startswith(b"\x1f\x8b"):
             import gzip
 
             if file_.suffix == ".tgz":
-                filename = Path(f"{filename}.tar")
+                filename = filename.with_suffix(".tar")
             elif file_.suffix == "":
                 # We rely on the assumption that gzip files have an extension
                 shutil.move(file_, f"{file_}.gz")
-                file_ = f"{file_}.gz"
-            with gzip.open(file_) as gz, open(filename, "wb") as out:
+                file_ = file_.with_suffix(".gz")
+            with gzip.open(file_) as gz, filename.open("wb") as out:
                 shutil.copyfileobj(gz, out, 8192)
             # If file is .tar.gz, this will be handled in the next case
             if delete_archive:
-                os.remove(file_)
+                file_.unlink()
             file_ = filename
             processed = True
         if file_.is_file() and tarfile.is_tarfile(file_):
             with contextlib.closing(tarfile.open(file_, "r")) as tar:
                 _safe_extract(tar, path=data_dir)
             if delete_archive:
-                os.remove(file_)
+                file_.unlink()
             processed = True
         if not processed:
             raise OSError(f"[Uncompress] unknown archive file format: {file_}")
@@ -571,7 +571,6 @@ def fetch_single_file(
     if temp_full_name.exists() and overwrite:
         temp_full_name.unlink()
     t0 = time.time()
-    local_file = None
     initial_size = 0
 
     try:
@@ -610,7 +609,7 @@ def fetch_single_file(
                     ):
                         raise OSError("Server does not support resuming")
                     initial_size = local_file_size
-                    with open(local_file, "ab") as fh:
+                    with temp_full_name.open("ab") as fh:
                         _chunk_read_(
                             resp,
                             fh,
@@ -618,7 +617,7 @@ def fetch_single_file(
                             initial_size=initial_size,
                             verbose=verbose,
                         )
-            except Exception:
+            except OSError:
                 logger.log(
                     "Resuming failed, try to download the whole file.", verbose
                 )
@@ -642,7 +641,7 @@ def fetch_single_file(
                 prepped, stream=True, timeout=_REQUESTS_TIMEOUT
             ) as resp:
                 resp.raise_for_status()
-                with open(temp_full_name, "wb") as fh:
+                with temp_full_name.open("wb") as fh:
                     _chunk_read_(
                         resp,
                         fh,
@@ -665,7 +664,7 @@ def fetch_single_file(
         raise
     if md5sum is not None and _md5_sum_file(full_name) != md5sum:
         raise ValueError(
-            f"File {local_file} checksum verification has failed."
+            f"File {full_name} checksum verification has failed."
             " Dataset fetching aborted."
         )
     return full_name
@@ -674,8 +673,8 @@ def fetch_single_file(
 def get_dataset_descr(ds_name):
     """Return the description of a dataset."""
     try:
-        with open(
-            PACKAGE_DIRECTORY / "description" / f"{ds_name}.rst", "rb"
+        with (PACKAGE_DIRECTORY / "description" / f"{ds_name}.rst").open(
+            "rb"
         ) as rst_file:
             descr = rst_file.read()
     except OSError:

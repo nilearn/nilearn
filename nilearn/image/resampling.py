@@ -219,7 +219,9 @@ def get_mask_bounds(img):
 
     """
     img = _utils.check_niimg_3d(img)
-    mask = _utils.numpy_conversions._asarray(_get_data(img), dtype=bool)
+    mask = _utils.numpy_conversions.as_ndarray(
+        _get_data(img), dtype=bool, copy=False
+    )
     affine = img.affine
     (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(mask.shape, affine)
     slices = find_objects(mask.astype(int))

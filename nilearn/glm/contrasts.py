@@ -11,6 +11,7 @@ import pandas as pd
 import scipy.stats as sps
 
 from nilearn._utils import logger, rename_parameters
+from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
 from nilearn.glm._utils import pad_contrast, z_score
 from nilearn.maskers import NiftiMasker
 
@@ -275,7 +276,7 @@ class Contrast:
         warn(
             category=DeprecationWarning,
             message=attrib_deprecation_msg,
-            stacklevel=3,
+            stacklevel=2,
         )
         return self.stat_type
 
@@ -483,7 +484,8 @@ def compute_fixed_effects(
     variance_imgs : :obj:`list` of Nifti1Images or strings
         The input variance images.
 
-    mask : Nifti1Image or NiftiMasker instance or None, default=None
+    mask : Nifti1Image or NiftiMasker instance or SurfaceMasker instance
+        or None, default=None
         Mask image. If ``None``, it is recomputed from ``contrast_imgs``.
 
     precision_weighted : :obj:`bool`, default=False
@@ -525,15 +527,24 @@ def compute_fixed_effects(
             f"from the number of variance images ({len(variance_imgs)})."
         )
 
-    if isinstance(mask, NiftiMasker):
+    if isinstance(mask, (NiftiMasker, SurfaceMasker)):
         masker = mask.fit()
     elif mask is None:
-        masker = NiftiMasker().fit(contrast_imgs)
+        if isinstance(contrast_imgs[0], SurfaceImage):
+            masker = SurfaceMasker().fit(contrast_imgs[0])
+        else:
+            masker = NiftiMasker().fit(contrast_imgs)
+    elif isinstance(mask, SurfaceImage):
+        masker = SurfaceMasker(mask_img=mask).fit(contrast_imgs[0])
     else:
         masker = NiftiMasker(mask_img=mask).fit()
 
-    variances = masker.transform(variance_imgs)
-    contrasts = masker.transform(contrast_imgs)
+    variances = np.array(
+        [masker.transform(vi).squeeze() for vi in variance_imgs]
+    )
+    contrasts = np.array(
+        [masker.transform(ci).squeeze() for ci in contrast_imgs]
+    )
 
     if dofs is not None:
         if len(dofs) != n_runs:
@@ -601,6 +612,7 @@ def _compute_fixed_effects_params(
             stat_type = "F"
     else:
         fixed_fx_contrasts_ = fixed_fx_contrasts
+
     con = Contrast(
         effect=fixed_fx_contrasts_,
         variance=fixed_fx_variance,

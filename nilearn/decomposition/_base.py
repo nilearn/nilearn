@@ -6,6 +6,7 @@ Utilities for masking and dimension reduction of group data
 import glob
 import itertools
 from math import ceil
+from pathlib import Path
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
@@ -22,7 +23,7 @@ from nilearn.maskers import NiftiMapsMasker
 from .._utils import fill_doc, logger
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.niimg import safe_get_data
-from .._utils.niimg_conversions import resolve_globbing
+from .._utils.path_finding import resolve_globbing
 from ..signal import row_sum_of_squares
 
 
@@ -243,7 +244,7 @@ def _mask_and_reduce_single(
 
 
 @fill_doc
-class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
+class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
     """Base class for matrix factorization based decomposition estimators.
 
     Handles mask logic, provides transform and inverse_transform methods
@@ -307,9 +308,10 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
 
     mask_args : dict, optional
         If mask is None, these are additional parameters passed to
-        masking.compute_background_mask or masking.compute_epi_mask
-        to fine-tune mask computation. Please see the related documentation
-        for details.
+        :func:`nilearn.masking.compute_background_mask`,
+        or :func:`nilearn.masking.compute_epi_mask`
+        to fine-tune mask computation.
+        Please see the related documentation for details.
 
     memory : instance of joblib.Memory or str, default=None
         Used to cache the masking process.
@@ -417,7 +419,7 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         ):
             imgs = resolve_globbing(imgs)
 
-        if isinstance(imgs, str) or not hasattr(imgs, "__iter__"):
+        if isinstance(imgs, (str, Path)) or not hasattr(imgs, "__iter__"):
             # these classes are meant for list of 4D images
             # (multi-subject), we want it to work also on a single
             # subject, so we hack it.

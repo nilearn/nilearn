@@ -165,7 +165,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 
-plt.figure(figsize=(4, 4), layout="constrained")
+plt.figure(figsize=(4, 4), constrained_layout=True)
+
 positions = np.arange(len(scores))
 plt.barh(positions, scores)
 plt.ylabel("Component #", size=12)

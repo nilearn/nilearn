@@ -61,7 +61,7 @@ def test_loading_from_archive_contents(tmp_path):
 
         with tarfile.open(str(file_path)) as tarf:
             assert sorted(map(Path, tarf.getnames())) == [
-                Path("."),
+                Path(),
                 *expected_contents,
             ]
             tarf.extractall(str(tar_extract_dir))
@@ -207,7 +207,7 @@ def test_dict_to_archive(tmp_path):
     assert img.shape == (10, 11, 12, 17)
     with (extract_dir / "a" / "b" / "c").open("rb") as f:
         assert int.from_bytes(f.read(), byteorder="big", signed=False) == 100
-    with open(str(extract_dir / "empty_data" / "labels.csv")) as f:
+    with (extract_dir / "empty_data" / "labels.csv").open() as f:
         assert f.read() == ""
 
     zip_archive = _testing.dict_to_archive(
@@ -230,7 +230,7 @@ def test_dict_to_archive(tmp_path):
         assert sorted(map(Path, tarf.getnames())) == sorted(
             [
                 *list(map(Path, archive_spec.keys())),
-                Path("."),
+                Path(),
                 Path("a"),
                 Path("a", "b"),
                 Path("data"),

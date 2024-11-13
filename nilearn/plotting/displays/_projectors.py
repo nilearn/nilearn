@@ -62,6 +62,71 @@ class OrthoProjector(OrthoSlicer):
         """
         pass
 
+    def _check_inputs_add_graph(
+        self,
+        adjacency_matrix,
+        node_coords,
+        node_color,
+        node_kwargs,
+    ):
+        """Perform the input checks and raise different types of errors.
+
+        ``_check_inputs_add_graph`` is called inside the method ``add_graph``.
+        """
+        # safety checks
+        if "s" in node_kwargs:
+            raise ValueError(
+                "Please use 'node_size' and not 'node_kwargs' "
+                "to specify node sizes."
+            )
+        if "c" in node_kwargs:
+            raise ValueError(
+                "Please use 'node_color' and not 'node_kwargs' "
+                "to specify node colors."
+            )
+
+        adjacency_matrix_shape = adjacency_matrix.shape
+        if (
+            len(adjacency_matrix_shape) != 2
+            or adjacency_matrix_shape[0] != adjacency_matrix_shape[1]
+        ):
+            raise ValueError(
+                "'adjacency_matrix' is supposed to have shape (n, n)."
+                f" Its shape was {adjacency_matrix_shape}."
+            )
+
+        node_coords_shape = node_coords.shape
+        if len(node_coords_shape) != 2 or node_coords_shape[1] != 3:
+            message = (
+                "Invalid shape for 'node_coords'. "
+                "You passed an 'adjacency_matrix' "
+                f"of shape {adjacency_matrix_shape} "
+                "therefore 'node_coords' should be a array "
+                f"with shape ({adjacency_matrix_shape[0]}, 3) "
+                f"while its shape was {node_coords_shape}."
+            )
+
+            raise ValueError(message)
+
+        if (
+            isinstance(node_color, (list, np.ndarray))
+            and len(node_color) != 1
+            and len(node_color) != node_coords_shape[0]
+        ):
+            raise ValueError(
+                "Mismatch between the number of nodes "
+                f"({node_coords_shape[0]}) "
+                f"and the number of node colors ({len(node_color)})."
+            )
+
+        if node_coords_shape[0] != adjacency_matrix_shape[0]:
+            raise ValueError(
+                "Shape mismatch between 'adjacency_matrix' "
+                "and 'node_coords'."
+                f"'adjacency_matrix' shape is {adjacency_matrix_shape}, "
+                f"'node_coords' shape is {node_coords_shape}."
+            )
+
     def add_graph(
         self,
         adjacency_matrix,
@@ -123,13 +188,10 @@ class OrthoProjector(OrthoSlicer):
             nodes at one.
         """
         # set defaults
-        if edge_kwargs is None:
-            edge_kwargs = {}
-        if node_kwargs is None:
-            node_kwargs = {}
+        edge_kwargs = edge_kwargs or {}
+        node_kwargs = node_kwargs or {}
         if isinstance(node_color, str) and node_color == "auto":
-            n_nodes = len(node_coords)
-            node_color = mpl_cm.Set2(np.linspace(0, 1, n_nodes))
+            node_color = mpl_cm.Set2(np.linspace(0, 1, len(node_coords)))
         node_coords = np.asarray(node_coords)
 
         # decompress input matrix if sparse
@@ -139,66 +201,16 @@ class OrthoProjector(OrthoSlicer):
         # make the lines below well-behaved
         adjacency_matrix = np.nan_to_num(adjacency_matrix)
 
-        # safety checks
-        if "s" in node_kwargs:
-            raise ValueError(
-                "Please use 'node_size' and not 'node_kwargs' "
-                "to specify node sizes"
-            )
-        if "c" in node_kwargs:
-            raise ValueError(
-                "Please use 'node_color' and not 'node_kwargs' "
-                "to specify node colors"
-            )
-
-        adjacency_matrix_shape = adjacency_matrix.shape
-        if (
-            len(adjacency_matrix_shape) != 2
-            or adjacency_matrix_shape[0] != adjacency_matrix_shape[1]
-        ):
-            raise ValueError(
-                "'adjacency_matrix' is supposed to have shape (n, n)."
-                f" Its shape was {adjacency_matrix_shape}"
-            )
-
-        node_coords_shape = node_coords.shape
-        if len(node_coords_shape) != 2 or node_coords_shape[1] != 3:
-            message = (
-                "Invalid shape for 'node_coords'. "
-                "You passed an 'adjacency_matrix' "
-                f"of shape {adjacency_matrix_shape} "
-                "therefore 'node_coords' should be a array "
-                f"with shape ({adjacency_matrix_shape[0]}, 3) "
-                f"while its shape was {node_coords_shape}"
-            )
-
-            raise ValueError(message)
-
-        if (
-            isinstance(node_color, (list, np.ndarray))
-            and len(node_color) != 1
-            and len(node_color) != node_coords_shape[0]
-        ):
-            raise ValueError(
-                "Mismatch between the number of nodes "
-                f"({node_coords_shape[0]}) "
-                f"and the number of node colors ({len(node_color)})."
-            )
-
-        if node_coords_shape[0] != adjacency_matrix_shape[0]:
-            raise ValueError(
-                "Shape mismatch between 'adjacency_matrix' "
-                "and 'node_coords'"
-                f"'adjacency_matrix' shape is {adjacency_matrix_shape}, "
-                f"'node_coords' shape is {node_coords_shape}"
-            )
+        self._check_inputs_add_graph(
+            adjacency_matrix, node_coords, node_color, node_kwargs
+        )
 
         # If the adjacency matrix is not symmetric, give a warning
         symmetric = True
         if not np.allclose(adjacency_matrix, adjacency_matrix.T, rtol=1e-3):
             symmetric = False
             warnings.warn(
-                "'adjacency_matrix' is not symmetric. "
+                "'adjacency_matrix' is not symmetric.\n"
                 "A directed graph will be plotted.",
                 stacklevel=3,
             )
@@ -208,9 +220,10 @@ class OrthoProjector(OrthoSlicer):
             if not (adjacency_matrix.mask == adjacency_matrix.mask.T).all():
                 symmetric = False
                 warnings.warn(
-                    "'adjacency_matrix' was masked with "
-                    "a non symmetric mask. A directed "
-                    "graph will be plotted."
+                    "'adjacency_matrix' was masked \
+                    with a non symmetric mask.\n"
+                    "A directed graph will be plotted.",
+                    stacklevel=3,
                 )
             adjacency_matrix = adjacency_matrix.filled(0)
 

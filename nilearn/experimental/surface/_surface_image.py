@@ -9,8 +9,13 @@ from pathlib import Path
 import numpy as np
 
 from nilearn._utils.niimg_conversions import check_niimg
-from nilearn.experimental.surface import _io
-from nilearn.surface import vol_to_surf
+from nilearn.surface.surface import (
+    data_to_gifti,
+    load_surf_data,
+    load_surf_mesh,
+    mesh_to_gifti,
+    vol_to_surf,
+)
 
 
 class PolyData:
@@ -48,11 +53,11 @@ class PolyData:
         parts = {}
         if left is not None:
             if not isinstance(left, np.ndarray):
-                left = _io.read_array(left)
+                left = load_surf_data(left)
             parts["left"] = left
         if right is not None:
             if not isinstance(right, np.ndarray):
-                right = _io.read_array(right)
+                right = load_surf_data(right)
             parts["right"] = right
 
         if len(parts) == 1:
@@ -100,7 +105,7 @@ class PolyData:
         if "hemi-R" in filename.stem:
             data = self.parts["right"]
 
-        _io.data_to_gifti(data, filename)
+        data_to_gifti(data, filename)
 
 
 class Mesh(abc.ABC):
@@ -136,7 +141,7 @@ class Mesh(abc.ABC):
         gifti_file : path-like or str
             Filename to save the mesh to.
         """
-        _io.mesh_to_gifti(self.coordinates, self.faces, gifti_file)
+        mesh_to_gifti(self.coordinates, self.faces, gifti_file)
 
 
 class InMemoryMesh(Mesh):
@@ -162,24 +167,22 @@ class FileMesh(Mesh):
 
     def __init__(self, file_path: pathlib.Path | str) -> None:
         self.file_path = pathlib.Path(file_path)
-        self.n_vertices = _io.read_mesh(self.file_path)["coordinates"].shape[0]
+        self.n_vertices = load_surf_mesh(self.file_path).coordinates.shape[0]
 
     @property
     def coordinates(self) -> np.ndarray:
         """Get x, y, z, values for each mesh vertex."""
-        return _io.read_mesh(self.file_path)["coordinates"]
+        return load_surf_mesh(self.file_path).coordinates
 
     @property
     def faces(self) -> np.ndarray:
         """Get array of adjacent vertices."""
-        return _io.read_mesh(self.file_path)["faces"]
+        return load_surf_mesh(self.file_path).faces
 
     def loaded(self) -> InMemoryMesh:
         """Load surface mesh into memory."""
-        loaded_arrays = _io.read_mesh(self.file_path)
-        return InMemoryMesh(
-            loaded_arrays["coordinates"], loaded_arrays["faces"]
-        )
+        loaded = load_surf_mesh(self.file_path)
+        return InMemoryMesh(loaded.coordinates, loaded.faces)
 
 
 class PolyMesh:

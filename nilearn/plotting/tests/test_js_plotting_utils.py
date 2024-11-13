@@ -1,8 +1,5 @@
 import base64
-import os
 import re
-import tempfile
-from pathlib import Path
 
 import numpy as np
 import pytest
@@ -185,22 +182,19 @@ def test_mesh_to_plotly(hemi):
 
 
 def check_html(
-    html, check_selects=True, plot_div_id="surface-plot", title=None
+    tmp_path, html, check_selects=True, plot_div_id="surface-plot", title=None
 ):
     """Perform several checks on raw HTML code."""
-    fd, tmpfile = tempfile.mkstemp()
-    tmpfile = Path(tmpfile)
-    try:
-        os.close(fd)
-        html.save_as_html(tmpfile)
-        with open(tmpfile) as f:
-            saved = f.read()
-        # If present, replace Windows line-end '\r\n' with Unix's '\n'
-        saved = saved.replace("\r\n", "\n")
-        standalone = html.get_standalone().replace("\r\n", "\n")
-        assert saved == standalone
-    finally:
-        tmpfile.unlink()
+    tmpfile = tmp_path / "test.html"
+
+    html.save_as_html(tmpfile)
+    with tmpfile.open() as f:
+        saved = f.read()
+    # If present, replace Windows line-end '\r\n' with Unix's '\n'
+    saved = saved.replace("\r\n", "\n")
+    standalone = html.get_standalone().replace("\r\n", "\n")
+    assert saved == standalone
+
     assert "INSERT" not in html.html
     assert html.get_standalone() == html.html
     assert html._repr_html_() == html.get_iframe()
