@@ -82,6 +82,6 @@ def get_min_max_surface_image(img):
 
     vmax: float
     """
-    vmin = min(min(x) for x in img.data.parts.values())
-    vmax = max(max(x) for x in img.data.parts.values())
+    vmin = min(min(x.ravel()) for x in img.data.parts.values())
+    vmax = max(max(x.ravel()) for x in img.data.parts.values())
     return vmin, vmax
