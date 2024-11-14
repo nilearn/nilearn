@@ -16,6 +16,8 @@ from nilearn.surface import (
     FileMesh,
     InMemoryMesh,
     Mesh,
+    PolyData,
+    PolyMesh,
     Surface,
     SurfaceImage,
     load_surf_data,
@@ -845,6 +847,7 @@ def test_compare_file_and_inmemory_mesh(surf_mesh, tmp_path):
     left.to_gifti(gifti_file)
 
     left_read = FileMesh(gifti_file)
+    left_read.__repr__()  # for coverage
     assert left.n_vertices == left_read.n_vertices
     assert np.array_equal(left.coordinates, left_read.coordinates)
     assert np.array_equal(left.faces, left_read.faces)
@@ -1063,3 +1066,13 @@ def test_surface_image_error():
 
     with pytest.raises(TypeError, match="[PolyData, dict]"):
         SurfaceImage(mesh={"left": mesh_left, "right": mesh_right}, data=3)
+
+
+def test_polydata_error():
+    with pytest.raises(ValueError, match="Either left or right"):
+        PolyData(left=None, right=None)
+
+
+def test_polymesh_error():
+    with pytest.raises(ValueError, match="Either left or right"):
+        PolyMesh(left=None, right=None)
