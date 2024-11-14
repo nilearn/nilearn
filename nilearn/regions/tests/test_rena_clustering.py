@@ -24,6 +24,13 @@ extra_valid_checks = [
     "check_transformers_unfitted",
     "check_transformer_n_iter",
 ]
+
+extra_valid_checks.extend(
+    [
+        "check_do_not_raise_errors_in_init_or_set_params",
+    ]
+)
+
 # TODO remove when dropping support for sklearn_version < 1.5.0
 if compare_version(sklearn_version, "<", "1.5.0"):
     extra_valid_checks.append("check_estimator_sparse_data")

@@ -5,13 +5,14 @@ from sklearn.utils.estimator_checks import (
 )
 
 VALID_CHECKS = [
-    "check_estimator_get_tags_default_keys"
-    "check_estimators_partial_fit_n_features"
-    "check_non_transformer_estimators_n_iter"
-    "check_decision_proba_consistency"
+    "check_estimator_get_tags_default_keys",
+    "check_estimators_partial_fit_n_features",
+    "check_non_transformer_estimators_n_iter",
+    "check_decision_proba_consistency",
     "check_get_params_invariance",
     "check_set_params",
 ]
+
 
 VALID_CHECKS.extend(
     [
@@ -19,11 +20,10 @@ VALID_CHECKS.extend(
         "check_estimator_repr",
         "check_estimator_tags_renamed",
         "check_estimators_unfitted",
-        "check_estimator_get_tags_default_keys",
-        "check_estimators_unfitted",
         "check_mixin_order",
     ]
 )
+
 
 # TODO
 # remove when bumping to sklearn >= 1.3
