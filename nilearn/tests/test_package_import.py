@@ -1,11 +1,18 @@
 import os
 
 import pytest
-from matplotlib import __version__ as mpl_version
 from numpy import __version__ as np_version
 
 from nilearn._utils import compare_version
-from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.helpers import (
+    OPTIONAL_MATPLOTLIB_MIN_VERSION,
+    is_matplotlib_installed,
+)
+
+try:
+    from matplotlib import __version__ as mpl_version
+except ImportError:
+    mpl_version = OPTIONAL_MATPLOTLIB_MIN_VERSION
 
 
 def on_windows_with_old_mpl_and_new_numpy():
@@ -19,10 +26,6 @@ def on_windows_with_old_mpl_and_new_numpy():
 @pytest.mark.skipif(
     on_windows_with_old_mpl_and_new_numpy(),
     reason="Old matplotlib not compatible with numpy 2.0 on windows.",
-)
-@pytest.mark.skipif(
-    is_matplotlib_installed(),
-    reason="This test should run only if matplotlib is not installed.",
 )
 @pytest.mark.skipif(
     is_matplotlib_installed(),
