@@ -1414,7 +1414,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         KFold, None, in which case 3 fold is used, or another object, that
         will then be used as a cv generator.
 
-    debias: bool, optional (default False)
+    debias : bool, optional (default False)
         If set, then the estimated weights maps will be debiased.
 
     Attributes
