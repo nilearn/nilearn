@@ -143,7 +143,7 @@ def fetch_atlas_difumo(
     readme_files = [
         ("README.md", "https://osf.io/4k9bf/download", {"move": "README.md"})
     ]
-    if not Path(data_dir, "README.md").exists():
+    if not (data_dir / "README.md").exists():
         fetch_files(data_dir, readme_files, verbose=verbose, resume=resume)
 
     fdescr = get_dataset_descr(dataset_name)
@@ -1932,14 +1932,15 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     """
     if level_name not in _TALAIRACH_LEVELS:
         raise ValueError(f'"level_name" should be one of {_TALAIRACH_LEVELS}')
-    talairach_dir = Path(
-        get_dataset_dir("talairach_atlas", data_dir=data_dir, verbose=verbose)
+    talairach_dir = get_dataset_dir(
+        "talairach_atlas", data_dir=data_dir, verbose=verbose
     )
-    img_file = talairach_dir.joinpath(f"{level_name}.nii.gz")
-    labels_file = talairach_dir.joinpath(f"{level_name}-labels.json")
+
+    img_file = talairach_dir / f"{level_name}.nii.gz"
+    labels_file = talairach_dir / f"{level_name}-labels.json"
     if not img_file.is_file() or not labels_file.is_file():
         _download_talairach(talairach_dir, verbose=verbose)
-    atlas_img = check_niimg(str(img_file))
+    atlas_img = check_niimg(img_file)
     labels = json.loads(labels_file.read_text("utf-8"))
     description = get_dataset_descr("talairach_atlas").format(level_name)
     return Bunch(maps=atlas_img, labels=labels, description=description)
