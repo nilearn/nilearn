@@ -630,8 +630,10 @@ def test_surface_masker_minimal_report_fit(
     report = masker.generate_report()
 
     _check_html(report)
-    assert "Make sure to run `fit`" not in str(report)
     assert '<div class="image">' in str(report)
+    if not reports:
+        assert "Make sure to run `fit`" in str(report)
+        assert 'src="data:image/svg+xml;base64,"' in str(report)
 
 
 def test_surface_masker_report_no_report(surf_img):

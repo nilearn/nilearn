@@ -5,6 +5,7 @@ from scipy import linalg
 from scipy.spatial import distance_matrix
 
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
+from nilearn.experimental.surface import SurfaceImage
 from nilearn.surface.surface import load_surf_data
 
 if is_plotly_installed():
@@ -138,6 +139,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
         labels=None,
         lines=None,
         elevation=0.1,
+        hemi="left",
     ):
         """Draw boundaries around roi.
 
@@ -184,6 +186,9 @@ class PlotlySurfaceFigure(SurfaceFigure):
             Regions are traced by connecting the centroids of non-isolated
             faces (triangles).
         """
+        if isinstance(roi_map, SurfaceImage):
+            roi_map = roi_map.data.parts[hemi]
+
         if levels is None:
             levels = np.unique(roi_map)
         if labels is None:
