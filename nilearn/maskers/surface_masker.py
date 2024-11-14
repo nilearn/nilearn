@@ -9,13 +9,11 @@ from joblib import Memory
 from sklearn.base import BaseEstimator, TransformerMixin
 
 from nilearn import signal
-from nilearn._utils import _constrained_layout_kwargs
+from nilearn._utils import _constrained_layout_kwargs, fill_doc
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn.experimental.surface._surface_image import (
-    SurfaceImage,
-)
+from nilearn.experimental.surface._surface_image import SurfaceImage
 from nilearn.maskers._utils import (
     check_same_n_vertices,
     compute_mean_surface_image,
@@ -24,6 +22,7 @@ from nilearn.maskers._utils import (
 )
 
 
+@fill_doc
 class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
     """Extract data from a SurfaceImage.
 
@@ -61,20 +60,20 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         If set to True, data is saved in order to produce a report.
 
     %(cmap)s
-        default=`inferno`
+        default="inferno"
         Only relevant for the report figures.
 
     clean_args : :obj:`dict` or None, default=None
         Keyword arguments to be passed
-        to :func:`~nilearn.signal.clean`
+        to :func:`nilearn.signal.clean`
         called within the masker.
 
     Attributes
     ----------
-    output_dimension_: :obj:`int` or None
+    output_dimension_ : :obj:`int` or None
         number of vertices included in mask
 
-    mask_img_: SurfaceImage or None
+    mask_img_ : SurfaceImage or None
     """
 
     def __init__(
@@ -205,14 +204,15 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             start = stop
         self.output_dimension_ = stop
 
-        for part in self.mask_img_.data.parts:
-            self._report_content["n_vertices"][part] = (
-                self.mask_img_.mesh.parts[part].n_vertices
-            )
-        self._reporting_data = {
-            "mask": self.mask_img_,
-            "images": img,
-        }
+        if self.reports:
+            for part in self.mask_img_.data.parts:
+                self._report_content["n_vertices"][part] = (
+                    self.mask_img_.mesh.parts[part].n_vertices
+                )
+            self._reporting_data = {
+                "mask": self.mask_img_,
+                "images": img,
+            }
 
         return self
 
@@ -279,6 +279,9 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         check_same_n_vertices(self.mask_img_.mesh, img.mesh)
 
+        if self.reports:
+            self._reporting_data["images"] = img
+
         output = np.empty((*img.shape[:-1], self.output_dimension_))
         for part_name, (start, stop) in self.slices.items():
             mask = self.mask_img_.data.parts[part_name]
@@ -333,10 +336,9 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
                     or :obj:`list` of confounds timeseries, default=None
             Confounds to pass to :func:`nilearn.signal.clean`.
 
-        sample_mask : None, Any type compatible with numpy-array indexing, \
+        sample_mask : None, or any type compatible with numpy-array indexing, \
                   or :obj:`list` of \
-                  shape: (number of scans - number of volumes removed, ) \
-                  for explicit index, or (number of scans, ) for binary mask, \
+                  shape: (number of scans - number of volumes removed) \
                   default=None
             sample_mask to pass to :func:`nilearn.signal.clean`.
 
@@ -366,8 +368,9 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         if masked_img.shape[-1] != self.output_dimension_:
             raise ValueError(
-                "Input to inverse_transform has wrong shape; "
-                f"last dimension should be {self.output_dimension_}"
+                "Input to 'inverse_transform' has wrong shape.\n"
+                f"Last dimension should be {self.output_dimension_}.\n"
+                f"Got {masked_img.shape[-1]}."
             )
 
         data = {}
