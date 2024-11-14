@@ -15,8 +15,11 @@ from numpy.testing import (
     assert_array_equal,
     assert_array_less,
 )
+from sklearn import __version__ as sklearn_version
 from sklearn.cluster import KMeans
 
+from nilearn._utils import compare_version
+from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import (
     add_metadata_to_bids_dataset,
     basic_paradigm,
@@ -51,6 +54,43 @@ from nilearn.maskers import NiftiMasker, SurfaceMasker
 
 BASEDIR = Path(__file__).resolve().parent
 FUNCFILE = BASEDIR / "functional.nii.gz"
+
+
+extra_valid_checks = [
+    "check_transformers_unfitted",
+    "check_transformer_n_iter",
+    "check_estimator_sparse_array",
+    "check_estimator_sparse_matrix",
+]
+# TODO remove when dropping support for sklearn_version < 1.5.0
+if compare_version(sklearn_version, "<", "1.5.0"):
+    extra_valid_checks.append("check_estimator_sparse_data")
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[FirstLevelModel()],
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[FirstLevelModel()],
+        extra_valid_checks=extra_valid_checks,
+        valid=False,
+    ),
+)
+def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 def test_high_level_glm_one_run(shape_4d_default):

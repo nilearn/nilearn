@@ -45,6 +45,7 @@ if is_matplotlib_installed():
     from nilearn.reporting import get_clusters_table
 
 extra_valid_checks = [
+    "check_do_not_raise_errors_in_init_or_set_params",
     "check_transformers_unfitted",
     "check_transformer_n_iter",
     "check_estimator_sparse_array",
@@ -58,7 +59,7 @@ if compare_version(sklearn_version, "<", "1.5.0"):
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[FirstLevelModel(), SecondLevelModel()],
+        estimator=[SecondLevelModel()],
         extra_valid_checks=extra_valid_checks,
     ),
 )
@@ -71,7 +72,7 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[FirstLevelModel(), SecondLevelModel()],
+        estimator=[SecondLevelModel()],
         extra_valid_checks=extra_valid_checks,
         valid=False,
     ),
