@@ -14,7 +14,6 @@ from nilearn.regions.rena_clustering import (
     ReNA,
     _make_edges_and_weights_surface,
     _make_edges_surface,
-    _weighted_connectivity_graph,
 )
 from nilearn.experimental.surface import SurfaceImage
 
