@@ -1524,8 +1524,7 @@ def fetch_megatrawls_netmats(
     filepath = [
         (
             Path(
-                "3T_Q1-Q6related468_MSMsulc_d%d_%s"
-                % (dimensionality, timeseries_map[timeseries]),
+                f"3T_Q1-Q6related468_MSMsulc_d{dimensionality}_{timeseries_map[timeseries]}",
                 matrices_map[matrices],
             ),
             url,
