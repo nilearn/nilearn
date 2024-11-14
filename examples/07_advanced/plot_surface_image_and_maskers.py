@@ -11,10 +11,11 @@ check_matplotlib()
 import matplotlib.pyplot as plt
 import numpy as np
 
-from nilearn.experimental.surface import SurfaceMasker, fetch_nki
+from nilearn.datasets import load_nki
+from nilearn.experimental.surface import SurfaceMasker
 from nilearn.plotting import plot_matrix, plot_surf, plot_surf_roi, show
 
-img = fetch_nki()[0]
+img = load_nki()[0]
 print(f"NKI image: {img}")
 
 masker = SurfaceMasker()
@@ -59,13 +60,12 @@ show()
 # Connectivity with a surface atlas and `SurfaceLabelsMasker`
 # -----------------------------------------------------------
 from nilearn.connectome import ConnectivityMeasure
-from nilearn.datasets import fetch_atlas_surf_destrieux
-from nilearn.experimental.surface import (
-    SurfaceImage,
-    SurfaceLabelsMasker,
+from nilearn.datasets import (
+    fetch_atlas_surf_destrieux,
     load_fsaverage,
     load_fsaverage_data,
 )
+from nilearn.experimental.surface import SurfaceImage, SurfaceLabelsMasker
 
 fsaverage = load_fsaverage("fsaverage5")
 destrieux = fetch_atlas_surf_destrieux()
@@ -81,7 +81,7 @@ label_names = [x.decode("utf-8") for x in destrieux.labels]
 # for our plots we will be using the fsaverage sulcal data as background map
 fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
 
-img = fetch_nki()[0]
+img = load_nki()[0]
 print(f"NKI image: {img}")
 
 fsaverage = load_fsaverage("fsaverage5")
@@ -143,7 +143,7 @@ import numpy as np
 
 from nilearn.decoding import Decoder
 
-img = fetch_nki()[0]
+img = load_nki()[0]
 
 # create some random labels
 rng = np.random.RandomState(0)
@@ -174,7 +174,7 @@ show()
 # ---------------------------------------
 from sklearn import feature_selection, linear_model, pipeline, preprocessing
 
-img = fetch_nki()[0]
+img = load_nki()[0]
 y = rng.normal(size=img.shape[0])
 
 decoder = pipeline.make_pipeline(

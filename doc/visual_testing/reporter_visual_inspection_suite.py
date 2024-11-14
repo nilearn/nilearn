@@ -14,12 +14,13 @@ import numpy as np
 import pandas as pd
 
 from nilearn import datasets
-from nilearn.datasets import fetch_atlas_surf_destrieux
-from nilearn.experimental import surface
-from nilearn.experimental.surface import (
-    SurfaceImage,
+from nilearn.datasets import (
+    fetch_atlas_surf_destrieux,
     load_fsaverage,
+    load_nki,
 )
+from nilearn.experimental import surface
+from nilearn.experimental.surface import SurfaceImage
 from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
@@ -430,7 +431,7 @@ def report_multi_nifti_maps_masker():
 
 def report_surface_masker():
     masker = surface.SurfaceMasker()
-    img = surface.fetch_nki(mesh_type="inflated", n_subjects=1)[0]
+    img = load_nki(mesh_type="inflated")[0]
     masker.fit_transform(img)
     surface_masker_report = masker.generate_report()
     surface_masker_report.save_as_html(REPORTS_DIR / "surface_masker.html")
@@ -450,7 +451,7 @@ def report_surface_masker():
         mask.data.parts[part] = mask.data.parts[part] == 34
 
     masker = surface.SurfaceMasker(mask)
-    img = surface.fetch_nki(mesh_type="inflated", n_subjects=1)[0]
+    img = load_nki(mesh_type="inflated")[0]
     masker.fit_transform(img)
     surface_masker_with_mask_report = masker.generate_report()
     surface_masker_with_mask_report.save_as_html(
@@ -481,7 +482,7 @@ def report_surface_label_masker():
         REPORTS_DIR / "surface_label_masker_unfitted.html"
     )
 
-    img = surface.fetch_nki(mesh_type="inflated", n_subjects=1)[0]
+    img = load_nki(mesh_type="inflated")[0]
 
     labels_masker.transform(img)
     labels_masker_report = labels_masker.generate_report()

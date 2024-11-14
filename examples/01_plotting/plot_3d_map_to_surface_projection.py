@@ -22,7 +22,7 @@ stat_img = datasets.load_sample_motor_activation_image()
 # %%
 # Get a cortical mesh
 # -------------------
-from nilearn.experimental.surface import load_fsaverage, load_fsaverage_data
+from nilearn.datasets import load_fsaverage, load_fsaverage_data
 
 fsaverage_meshes = load_fsaverage()
 

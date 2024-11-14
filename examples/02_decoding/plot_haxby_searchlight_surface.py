@@ -50,10 +50,8 @@ y, run = y[condition_mask], run[condition_mask]
 from sklearn import neighbors
 
 from nilearn import datasets
-from nilearn.experimental.surface import (
-    SurfaceImage,
-    load_fsaverage,
-)
+from nilearn.datasets import load_fsaverage
+from nilearn.experimental.surface import SurfaceImage
 
 fsaverage = load_fsaverage()
 fmri_img_surf = SurfaceImage.from_volume(
@@ -114,7 +112,7 @@ for hemi in hemispheres_to_analyze:
 # %%
 # Visualization
 # -------------
-from nilearn.experimental.surface import load_fsaverage_data
+from nilearn.datasets import load_fsaverage_data
 from nilearn.plotting import plot_surf_stat_map, show
 
 fsaverage_data = load_fsaverage_data(mesh_type="inflated", data_type="sulcal")

@@ -33,15 +33,15 @@ See :ref:`plotting` for more details on plotting tools.
 # -------------------
 
 # NKI resting state data from nilearn
-from nilearn.datasets import fetch_atlas_surf_destrieux
-from nilearn.experimental.surface import (
-    SurfaceImage,
-    fetch_nki,
+from nilearn.datasets import (
+    fetch_atlas_surf_destrieux,
     load_fsaverage,
     load_fsaverage_data,
+    load_nki,
 )
+from nilearn.experimental.surface import SurfaceImage
 
-nki_dataset = fetch_nki(n_subjects=1)
+nki_dataset = load_nki()
 
 # For this example we will only work on the data
 # from the left hemisphere
