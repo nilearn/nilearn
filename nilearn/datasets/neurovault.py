@@ -886,7 +886,7 @@ class _TemporaryDirectory:
 
     def __enter__(self):
         self.temp_dir_ = mkdtemp()
-        return self.temp_dir_
+        return Path(self.temp_dir_)
 
     def __exit__(self, *args):
         if self.temp_dir_ is None:
@@ -1132,7 +1132,7 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
     target_file : str
         Location of the downloaded file on filesystem.
 
-    temp_dir : str
+    temp_dir : pathlib.Path
         Location of sandbox directory used by ``fetch_single_file``.
 
     verbose : int, default=3

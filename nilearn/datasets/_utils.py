@@ -516,7 +516,7 @@ def fetch_single_file(
 
     Returns
     -------
-    files : string
+    files : pahtlib.Path
         Absolute path of downloaded file.
 
     Notes
@@ -539,7 +539,7 @@ def fetch_single_file(
                 verbose=verbose,
                 session=sess,
             )
-    data_dir = Path(data_dir)
+
     # Determine data path
     data_dir.mkdir(parents=True, exist_ok=True)
 
