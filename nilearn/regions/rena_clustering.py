@@ -19,8 +19,8 @@ from sklearn.utils.validation import check_is_fitted
 
 from nilearn._utils import fill_doc, logger
 from nilearn.experimental.surface import SurfaceImage
-from nilearn.maskers import SurfaceMasker
 from nilearn.image import get_data
+from nilearn.maskers import SurfaceMasker
 from nilearn.masking import unmask_from_to_3d_array
 
 
