@@ -19,6 +19,13 @@ extra_valid_checks = [
     "check_transformer_n_iter",
 ]
 
+extra_valid_checks.extend(
+    [
+        "check_get_params_invariance",
+        "check_do_not_raise_errors_in_init_or_set_params",
+    ]
+)
+
 
 @pytest.mark.parametrize(
     "estimator, check, name",
