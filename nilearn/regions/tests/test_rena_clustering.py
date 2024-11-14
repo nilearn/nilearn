@@ -13,6 +13,8 @@ from nilearn.maskers import NiftiMasker
 from nilearn.regions.rena_clustering import (
     ReNA,
     _make_edges_and_weights_surface,
+    _make_edges_surface,
+    _weighted_connectivity_graph,
 )
 
 extra_valid_checks = [
@@ -108,6 +110,23 @@ def test_rena_clustering():
         assert n_clusters != rena.n_clusters_
 
     del n_voxels, X_red, X_compress
+
+
+@pytest.mark.parametrize("part", ["left", "right"])
+def test_make_edges_surface(surf_mask, part):
+    """Test if the edges and edge mask are correctly computed."""
+    faces = surf_mask().mesh.parts[part].faces
+    # the mask for left part has total 4 vertices out of which 2 are True
+    # and for right part it has total 5 vertices out of which 3 are True
+    mask = surf_mask().data.parts[part]
+    edges_unmasked, edges_mask = _make_edges_surface(faces, mask)
+
+    # only one edge remains after masking the left part (between 2 vertices)
+    if part == "left":
+        assert edges_unmasked[:, edges_mask].shape == (2, 1)
+    # three edges remain after masking the right part (between 3 vertices)
+    elif part == "right":
+        assert edges_unmasked[:, edges_mask].shape == (2, 3)
 
 
 def test_make_edges_and_weights_surface_smoke(surf_mask, rng):
