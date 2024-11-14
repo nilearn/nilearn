@@ -210,10 +210,12 @@ def _make_edges_surface(faces, mask):
     """
     mesh_edges = set()
     for face in faces:
+        print("face:", face)
         for i in range(len(face)):
             edge = tuple(sorted([face[i], face[(i + 1) % len(face)]]))
+            print(f"edge {i}:", edge)
             mesh_edges.add(edge)
-
+    print("mesh_edges", mesh_edges)
     edges = np.array(list(mesh_edges))
     false_indices = np.where(~mask)[0]
     edges_masked = ~np.isin(edges, false_indices).any(axis=1)
@@ -255,20 +257,28 @@ def _make_edges_and_weights_surface(X, mask_img):
         weights_unmasked = _compute_weights_surface(
             X[:, idxs], mask_part.astype("bool"), edges_unmasked
         )
+        import pdb
 
+        pdb.set_trace()
         # Apply mask to edges and weights
         weights[part] = np.copy(weights_unmasked[edges_mask])
         edges_ = np.copy(edges_unmasked[:, edges_mask])
-
-        len_previous_mask += mask_part.sum()
 
         # Reorder the indices of the graph
         max_index = edges_.max()
         order = np.searchsorted(
             np.unique(edges_.ravel()), np.arange(max_index + 1)
         )
-
+        # increasing the order by the number of vertices in the previous mask
+        # to avoid overlapping indices
+        order += len_previous_mask
         edges[part] = order[edges_]
+
+        len_previous_mask += mask_part.sum()
+
+    import pdb
+
+    pdb.set_trace()
 
     return edges, weights
 
@@ -312,6 +322,9 @@ def _weighted_connectivity_graph(X, mask_img):
     # Making it symmetrical
     connectivity = (connectivity + connectivity.T) / 2
 
+    import pdb
+
+    pdb.set_trace()
     return connectivity
 
 
