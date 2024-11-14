@@ -17,16 +17,16 @@ extra_valid_checks = [
     "check_no_attributes_set_in_init",
     "check_transformers_unfitted",
     "check_transformer_n_iter",
-    "check_estimator_cloneable",
-    "check_estimator_repr",
-    "check_estimator_tags_renamed",
-    "check_do_not_raise_errors_in_init_or_set_params",
-    "check_estimators_unfitted",
-    "check_mixin_order",
 ]
 ver = parse(sklearn_version)
 if ver.release[1] > 5:
-    extra_valid_checks.append("check_parameters_default_constructible")
+    extra_valid_checks.extend(
+        [
+            "check_parameters_default_constructible",
+            "check_get_params_invariance",
+            "check_do_not_raise_errors_in_init_or_set_params",
+        ]
+    )
 
 
 @pytest.mark.parametrize(

@@ -1,28 +1,29 @@
 """Small utilities to inspect classes."""
 
 from sklearn.utils.estimator_checks import (
-    check_decision_proba_consistency,
-    check_estimator_get_tags_default_keys,
-    check_estimators_partial_fit_n_features,
-    check_get_params_invariance,
-    check_non_transformer_estimators_n_iter,
-    check_set_params,
-)
-from sklearn.utils.estimator_checks import (
     check_estimator as sklearn_check_estimator,
 )
 
 VALID_CHECKS = [
-    x.__name__
-    for x in [
-        check_estimator_get_tags_default_keys,
-        check_estimators_partial_fit_n_features,
-        check_non_transformer_estimators_n_iter,
-        check_decision_proba_consistency,
-        check_get_params_invariance,
-        check_set_params,
-    ]
+    "check_estimator_get_tags_default_keys"
+    "check_estimators_partial_fit_n_features"
+    "check_non_transformer_estimators_n_iter"
+    "check_decision_proba_consistency"
+    "check_get_params_invariance",
+    "check_set_params",
 ]
+
+VALID_CHECKS.extend(
+    [
+        "check_estimator_cloneable",
+        "check_estimator_repr",
+        "check_estimator_tags_renamed",
+        "check_estimators_unfitted",
+        "check_estimator_get_tags_default_keys",
+        "check_estimators_unfitted",
+        "check_mixin_order",
+    ]
+)
 
 # TODO
 # remove when bumping to sklearn >= 1.3
@@ -62,9 +63,8 @@ def check_estimator(estimator=None, valid=True, extra_valid_checks=None):
     extra_valid_checks : list of strings
         Names of checks to be tested as valid for this estimator.
     """
-    if extra_valid_checks is None:
-        valid_checks = VALID_CHECKS
-    else:
+    valid_checks = VALID_CHECKS
+    if extra_valid_checks is not None:
         valid_checks = VALID_CHECKS + extra_valid_checks
 
     if not isinstance(estimator, list):

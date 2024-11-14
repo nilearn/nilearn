@@ -28,6 +28,13 @@ extra_valid_checks = [
 if compare_version(sklearn_version, "<", "1.5.0"):
     extra_valid_checks.append("check_estimator_sparse_data")
 
+extra_valid_checks.extend(
+    [
+        "check_get_params_invariance",
+        "check_do_not_raise_errors_in_init_or_set_params",
+    ]
+)
+
 
 @pytest.mark.parametrize(
     "estimator, check, name",
