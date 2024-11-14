@@ -1158,8 +1158,8 @@ def _check_list_length_match(list_1, list_2, var_name_1, var_name_2):
     """Check length match of two given lists to raise error if necessary."""
     if len(list_1) != len(list_2):
         raise ValueError(
-            "len(%s) %d does not match len(%s) %d"
-            % (str(var_name_1), len(list_1), str(var_name_2), len(list_2))
+            f"len({var_name_1}) {len(list_1)} does not match "
+            f"len({var_name_2}) {len(list_2)}"
         )
 
 

@@ -69,7 +69,7 @@ from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.experimental.surface import SurfaceMasker
 from nilearn.maskers import NiftiMasker
 
-N_SAMPLES = 100
+N_SAMPLES = 80
 
 ESTIMATOR_REGRESSION = ("ridge", "svr")
 
@@ -179,36 +179,36 @@ def test_check_estimator_invalid_frem_classifier(estimator, check, name):  # noq
     check(estimator)
 
 
-def _make_binary_classification_test_data(n_samples=N_SAMPLES):
+def _make_binary_classification_test_data(n_samples=N_SAMPLES, dim=5):
     X, y = make_classification(
         n_samples=n_samples,
-        n_features=125,
+        n_features=dim**3,
         scale=3.0,
         n_informative=5,
         n_classes=2,
         random_state=42,
     )
-    X, mask = to_niimgs(X, [5, 5, 5])
+    X, mask = to_niimgs(X, [dim, dim, dim])
     return X, y, mask
 
 
 @pytest.fixture()
 def rand_x_y(rng):
-    X = rng.random((N_SAMPLES, 10))
+    X = rng.random((100, 10))
     Y = np.hstack([[-1] * 50, [1] * 50])
     return X, Y
 
 
-def _make_multiclass_classification_test_data(n_samples=200):
+def _make_multiclass_classification_test_data(n_samples=40, dim=5):
     X, y = make_classification(
         n_samples=n_samples,
-        n_features=125,
+        n_features=dim**3,
         scale=3.0,
         n_informative=5,
         n_classes=4,
         random_state=42,
     )
-    X, mask = to_niimgs(X, [5, 5, 5])
+    X, mask = to_niimgs(X, [dim, dim, dim])
     return X, y, mask
 
 
@@ -229,7 +229,7 @@ def binary_classification_data():
     return _make_binary_classification_test_data(n_samples=N_SAMPLES)
 
 
-def _make_regression_test_data(n_samples=N_SAMPLES, dim=30):
+def _make_regression_test_data(n_samples=N_SAMPLES, dim=5):
     X, y = make_regression(
         n_samples=n_samples,
         n_features=dim**3,
@@ -245,7 +245,7 @@ def _make_regression_test_data(n_samples=N_SAMPLES, dim=30):
 
 @pytest.fixture
 def regression_data():
-    return _make_regression_test_data(n_samples=N_SAMPLES, dim=30)
+    return _make_regression_test_data(n_samples=N_SAMPLES, dim=5)
 
 
 @pytest.fixture
@@ -472,7 +472,7 @@ def test_parallel_fit(rand_x_y):
     for different controlled param_grid.
     """
     X, y = make_regression(
-        n_samples=N_SAMPLES,
+        n_samples=100,
         n_features=20,
         n_informative=5,
         noise=0.2,
@@ -821,7 +821,7 @@ def test_decoder_error_unknown_scoring_metrics(
 
 
 def test_decoder_dummy_classifier_default_scoring():
-    X, y, _ = _make_binary_classification_test_data(n_samples=150)
+    X, y, _ = _make_binary_classification_test_data()
 
     model = Decoder(estimator="dummy_classifier", scoring=None)
 
@@ -1025,15 +1025,16 @@ def test_decoder_multiclass_classification_apply_mask_shape():
     """Test whether if _apply mask output has the same shape \
     as original matrix.
     """
+    dim = 5
     X_init, _ = make_classification(
         n_samples=200,
-        n_features=125,
+        n_features=dim**3,
         scale=3.0,
         n_informative=5,
         n_classes=4,
         random_state=42,
     )
-    X, _ = to_niimgs(X_init, [5, 5, 5])
+    X, _ = to_niimgs(X_init, [dim, dim, dim])
 
     model = Decoder(mask=NiftiMasker())
 
@@ -1048,15 +1049,7 @@ def test_decoder_multiclass_classification_apply_mask_attributes(affine_eye):
 
     By default these parameters are set to None;
     """
-    X_init, _ = make_classification(
-        n_samples=200,
-        n_features=125,
-        scale=3.0,
-        n_informative=5,
-        n_classes=4,
-        random_state=42,
-    )
-    X, _ = to_niimgs(X_init, [5, 5, 5])
+    X, _, _ = _make_multiclass_classification_test_data()
 
     target_affine = 2 * affine_eye
     target_shape = (1, 1, 1)
