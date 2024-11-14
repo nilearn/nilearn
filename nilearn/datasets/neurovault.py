@@ -1319,7 +1319,7 @@ def _add_absolute_paths(root_dir, metadata, force=True):
 
     Parameters
     ----------
-    root_dir : str
+    root_dir : pathlib.Path
         The root of the data directory, to prepend to relative paths
         in order to form absolute paths.
 

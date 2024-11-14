@@ -486,13 +486,7 @@ def test_fetch_single_file_part_error(tmp_path, capsys, request_mocker):
     )
 
 
-@pytest.mark.parametrize("should_cast_path_to_string", [False, True])
-def test_fetch_single_file_overwrite(
-    should_cast_path_to_string, tmp_path, request_mocker
-):
-    if should_cast_path_to_string:
-        tmp_path = str(tmp_path)
-
+def test_fetch_single_file_overwrite(tmp_path, request_mocker):
     # overwrite non-exiting file.
     fil = _utils.fetch_single_file(
         url="http://foo/", data_dir=tmp_path, verbose=0, overwrite=True

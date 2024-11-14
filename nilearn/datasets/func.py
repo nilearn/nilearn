@@ -786,18 +786,19 @@ def fetch_localizer_contrasts(
                 name_aux = str.replace(
                     str.join("_", [data_type, contrast]), " ", "_"
                 )
-                file_path = Path(
-                    "brainomics_data", subject_id, f"{name_aux}.nii.gz"
-                )
-                path = Path(
-                    "/localizer",
-                    "derivatives",
-                    "spm_1st_level",
-                    f"sub-{subject_id}",
-                    (
-                        f"sub-{subject_id}_task-localizer"
-                        f"_acq-{contrast}_{data_type}.nii.gz"
-                    ),
+                file_path = f"brainomics_data/{subject_id}/{name_aux}.nii.gz"
+
+                path = "/".join(
+                    [
+                        "/localizer",
+                        "derivatives",
+                        "spm_1st_level",
+                        f"sub-{subject_id}",
+                        (
+                            f"sub-{subject_id}_task-localizer"
+                            f"_acq-{contrast}_{data_type}.nii.gz"
+                        ),
+                    ]
                 )
                 if _is_valid_path(path, index, verbose=verbose):
                     file_url = root_url.format(index[path][1:])
@@ -808,15 +809,18 @@ def fetch_localizer_contrasts(
     # Fetch masks if asked by user
     if get_masks:
         for subject_id in subject_ids:
-            file_path = Path(
-                "brainomics_data", subject_id, "boolean_mask_mask.nii.gz"
+            file_path = (
+                f"brainomics_data/{subject_id}/boolean_mask_mask.nii.gz"
             )
-            path = Path(
-                "/localizer",
-                "derivatives",
-                "spm_1st_level",
-                f"sub-{subject_id}",
-                f"sub-{subject_id}_mask.nii.gz",
+
+            path = "/".join(
+                [
+                    "/localizer",
+                    "derivatives",
+                    "spm_1st_level",
+                    f"sub-{subject_id}",
+                    f"sub-{subject_id}_mask.nii.gz",
+                ]
             )
 
             if _is_valid_path(path, index, verbose=verbose):
@@ -828,18 +832,19 @@ def fetch_localizer_contrasts(
     # Fetch anats if asked by user
     if get_anats:
         for subject_id in subject_ids:
-            file_path = Path(
-                "brainomics_data",
-                subject_id,
-                "normalized_T1_anat_defaced.nii.gz",
+            file_path = (
+                f"brainomics_data/{subject_id}/"
+                "normalized_T1_anat_defaced.nii.gz"
             )
 
-            path = Path(
-                "/localizer",
-                "derivatives",
-                "spm_preprocessing",
-                f"sub-{subject_id}",
-                f"sub-{subject_id}_T1w.nii.gz",
+            path = "/".join(
+                [
+                    "/localizer",
+                    "derivatives",
+                    "spm_preprocessing",
+                    f"sub-{subject_id}",
+                    f"sub-{subject_id}_T1w.nii.gz",
+                ]
             )
 
             if _is_valid_path(path, index, verbose=verbose):
@@ -849,7 +854,7 @@ def fetch_localizer_contrasts(
                 files.setdefault("anats", []).append(file_path)
 
     # Fetch subject characteristics
-    participants_file = Path("brainomics_data", "participants.tsv")
+    participants_file = "brainomics_data/participants.tsv"
     path = "/localizer/participants.tsv"
     if _is_valid_path(path, index, verbose=verbose):
         file_url = root_url.format(index[path][1:])
@@ -857,9 +862,9 @@ def fetch_localizer_contrasts(
         filenames.append((participants_file, file_url, opts))
 
     # Fetch behavioural
-    behavioural_file = Path("brainomics_data", "phenotype", "behavioural.tsv")
+    behavioural_file = "brainomics_data/phenotype/behavioural.tsv"
 
-    path = Path("/localizer", "phenotype", "behavioural.tsv")
+    path = "/localizer/phenotype/behavioural.tsv"
     if _is_valid_path(path, index, verbose=verbose):
         file_url = root_url.format(index[path][1:])
         opts = {"move": behavioural_file}
@@ -1267,7 +1272,9 @@ def fetch_abide_pcp(
             file_ = [
                 (
                     f"{file_id}_{derivative}{ext}",
-                    Path(url, derivative, f"{file_id}_{derivative}{ext}"),
+                    "/".join(
+                        [url, derivative, f"{file_id}_{derivative}{ext}"]
+                    ),
                     {},
                 )
             ]
