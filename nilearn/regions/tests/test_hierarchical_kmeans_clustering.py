@@ -42,11 +42,12 @@ extra_valid_checks.extend(
         "check_do_not_raise_errors_in_init_or_set_params",
         "check_f_contiguous_array_estimator",
         "check_readonly_memmap_input",
-        "check_parameters_default_constructible",
         "check_estimators_unfitted",
     ]
 )
 
+if compare_version(sklearn_version, ">=", "1.6.0"):
+    extra_valid_checks.append("check_parameters_default_constructible")
 
 # TODO remove when dropping support for sklearn_version < 1.5.0
 if compare_version(sklearn_version, "<", "1.5.0"):

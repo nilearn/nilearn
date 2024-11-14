@@ -28,7 +28,6 @@ extra_valid_checks = [
 extra_valid_checks.extend(
     [
         "check_do_not_raise_errors_in_init_or_set_params",
-        "check_parameters_default_constructible",
         "check_estimators_unfitted",
     ]
 )
@@ -38,10 +37,14 @@ if compare_version(sklearn_version, "<", "1.5.0"):
     extra_valid_checks.append("check_estimator_sparse_data")
 
 
+if compare_version(sklearn_version, ">=", "1.6.0"):
+    extra_valid_checks.append("check_parameters_default_constructible")
+
+
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=ReNA(_img_3d_mni(), n_clusters=2),
+        estimator=ReNA(mask_img=_img_3d_mni(), n_clusters=2),
         extra_valid_checks=extra_valid_checks,
     ),
 )
