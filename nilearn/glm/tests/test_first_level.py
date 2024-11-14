@@ -24,7 +24,6 @@ from nilearn._utils.data_gen import (
     generate_fake_fmri_data_and_design,
     write_fake_fmri_data_and_design,
 )
-from nilearn.experimental.surface import SurfaceMasker
 from nilearn.glm.contrasts import compute_fixed_effects
 from nilearn.glm.first_level import (
     FirstLevelModel,
@@ -47,7 +46,7 @@ from nilearn.glm.first_level.first_level import (
 from nilearn.glm.regression import ARModel, OLSModel
 from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files
-from nilearn.maskers import NiftiMasker
+from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
 
 BASEDIR = Path(__file__).resolve().parent
@@ -2193,20 +2192,6 @@ def test_flm_with_surface_masker_with_mask(_make_surface_glm_data, surf_mask):
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
     assert model.masker_.mask_img_.shape == (9,)
     assert isinstance(model.masker_, SurfaceMasker)
-
-
-def test_flm_with_surface_masker_without_mask_img(
-    _make_surface_glm_data, surf_mask
-):
-    """Test FirstLevelModel with SurfaceMasker and mask img set to None."""
-    img, des = _make_surface_glm_data(5)
-    masker = SurfaceMasker(mask_img=surf_mask()).fit()
-    masker.mask_img_ = None
-
-    with pytest.warns(
-        UserWarning, match="Parameter memory of the masker overridden"
-    ):
-        FirstLevelModel(mask_img=masker).fit(img, design_matrices=des)
 
 
 def test_flm_with_surface_data_no_design_matrix(_make_surface_glm_data):

@@ -11,9 +11,8 @@ import pandas as pd
 import scipy.stats as sps
 
 from nilearn._utils import logger, rename_parameters
-from nilearn.experimental.surface import SurfaceMasker
 from nilearn.glm._utils import pad_contrast, z_score
-from nilearn.maskers import NiftiMasker
+from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
 
 DEF_TINY = 1e-50
@@ -479,10 +478,10 @@ def compute_fixed_effects(
 
     Parameters
     ----------
-    contrast_imgs : :obj:`list` of Nifti1Images or strings
+    contrast_imgs : :obj:`list` of Nifti1Images or strings or SurfaceImage
         The input contrast images.
 
-    variance_imgs : :obj:`list` of Nifti1Images or strings
+    variance_imgs : :obj:`list` of Nifti1Images or strings or SurfaceImage
         The input variance images.
 
     mask : Nifti1Image or NiftiMasker instance or SurfaceMasker instance
@@ -503,13 +502,13 @@ def compute_fixed_effects(
 
     Returns
     -------
-    fixed_fx_contrast_img : Nifti1Image
+    fixed_fx_contrast_img : Nifti1Image or SurfaceImage
         The fixed effects contrast computed within the mask.
 
-    fixed_fx_variance_img : Nifti1Image
+    fixed_fx_variance_img : Nifti1Image or SurfaceImage
         The fixed effects variance computed within the mask.
 
-    fixed_fx_stat_img : Nifti1Image
+    fixed_fx_stat_img : Nifti1Image or SurfaceImage
         The fixed effects stat computed within the mask.
 
     fixed_fx_z_score_img : Nifti1Image, optional

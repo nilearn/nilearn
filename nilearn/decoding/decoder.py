@@ -53,7 +53,7 @@ from nilearn._utils.masker_validation import (
     check_embedded_masker,
 )
 from nilearn._utils.param_validation import check_feature_screening
-from nilearn.experimental.surface import SurfaceMasker
+from nilearn.maskers import SurfaceMasker
 from nilearn.regions.rena_clustering import ReNA
 from nilearn.surface import SurfaceImage
 

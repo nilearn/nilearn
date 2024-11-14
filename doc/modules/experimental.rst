@@ -48,7 +48,6 @@ Classes
    :template: class.rst
 
    SurfaceLabelsMasker
-   SurfaceMasker
 
 Functions
 ^^^^^^^^^
