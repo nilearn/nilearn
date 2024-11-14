@@ -165,7 +165,8 @@ def _compute_weights_surface(X, mask, edges):
     mask : boolean
         Object used for masking the data.
 
-    edges : ndarray
+    edges : ndarray, shape = [2, n_edges]
+        Unmasked edges of the mesh.
 
     Returns
     -------
