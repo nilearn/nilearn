@@ -11,8 +11,9 @@ import pandas as pd
 import scipy.stats as sps
 
 from nilearn._utils import logger, rename_parameters
+from nilearn.experimental.surface import SurfaceImage
 from nilearn.glm._utils import pad_contrast, z_score
-from nilearn.maskers import NiftiMasker
+from nilearn.maskers import NiftiMasker, SurfaceMasker
 
 DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10
@@ -477,13 +478,14 @@ def compute_fixed_effects(
 
     Parameters
     ----------
-    contrast_imgs : :obj:`list` of Nifti1Images or strings
+    contrast_imgs : :obj:`list` of Nifti1Images or strings or SurfaceImage
         The input contrast images.
 
-    variance_imgs : :obj:`list` of Nifti1Images or strings
+    variance_imgs : :obj:`list` of Nifti1Images or strings or SurfaceImage
         The input variance images.
 
-    mask : Nifti1Image or NiftiMasker instance or None, default=None
+    mask : Nifti1Image or NiftiMasker instance or SurfaceMasker instance
+        or None, default=None
         Mask image. If ``None``, it is recomputed from ``contrast_imgs``.
 
     precision_weighted : :obj:`bool`, default=False
@@ -500,13 +502,13 @@ def compute_fixed_effects(
 
     Returns
     -------
-    fixed_fx_contrast_img : Nifti1Image
+    fixed_fx_contrast_img : Nifti1Image or SurfaceImage
         The fixed effects contrast computed within the mask.
 
-    fixed_fx_variance_img : Nifti1Image
+    fixed_fx_variance_img : Nifti1Image or SurfaceImage
         The fixed effects variance computed within the mask.
 
-    fixed_fx_stat_img : Nifti1Image
+    fixed_fx_stat_img : Nifti1Image or SurfaceImage
         The fixed effects stat computed within the mask.
 
     fixed_fx_z_score_img : Nifti1Image, optional
@@ -525,15 +527,24 @@ def compute_fixed_effects(
             f"from the number of variance images ({len(variance_imgs)})."
         )
 
-    if isinstance(mask, NiftiMasker):
+    if isinstance(mask, (NiftiMasker, SurfaceMasker)):
         masker = mask.fit()
     elif mask is None:
-        masker = NiftiMasker().fit(contrast_imgs)
+        if isinstance(contrast_imgs[0], SurfaceImage):
+            masker = SurfaceMasker().fit(contrast_imgs[0])
+        else:
+            masker = NiftiMasker().fit(contrast_imgs)
+    elif isinstance(mask, SurfaceImage):
+        masker = SurfaceMasker(mask_img=mask).fit(contrast_imgs[0])
     else:
         masker = NiftiMasker(mask_img=mask).fit()
 
-    variances = masker.transform(variance_imgs)
-    contrasts = masker.transform(contrast_imgs)
+    variances = np.array(
+        [masker.transform(vi).squeeze() for vi in variance_imgs]
+    )
+    contrasts = np.array(
+        [masker.transform(ci).squeeze() for ci in contrast_imgs]
+    )
 
     if dofs is not None:
         if len(dofs) != n_runs:
@@ -601,6 +612,7 @@ def _compute_fixed_effects_params(
             stat_type = "F"
     else:
         fixed_fx_contrasts_ = fixed_fx_contrasts
+
     con = Contrast(
         effect=fixed_fx_contrasts_,
         variance=fixed_fx_variance,

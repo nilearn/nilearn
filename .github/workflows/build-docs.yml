@@ -37,6 +37,7 @@ env:
     DISPLAY: :99.0
     NILEARN_DATA: /home/runner/work/nilearn/nilearn/nilearn_data
     MIN_PYTHON_VERSION: '3.9'
+    HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
 
 jobs:
 
@@ -303,5 +304,5 @@ jobs:
                 rm -Rf dev;
                 cp -a ~/doc/_build/html dev;
                 git add -A;
-                git commit -m "Dev docs https://github.com/nilearn/nilearn/commit/${{ github.event.head_commit.id }} : ${{ github.event.head_commit.message }}";
+                git commit -m "Dev docs https://github.com/nilearn/nilearn/commit/${{ github.event.head_commit.id }} : $HEAD_COMMIT_MESSAGE";
                 git push origin main;

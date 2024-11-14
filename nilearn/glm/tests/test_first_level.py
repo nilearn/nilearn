@@ -24,7 +24,7 @@ from nilearn._utils.data_gen import (
     generate_fake_fmri_data_and_design,
     write_fake_fmri_data_and_design,
 )
-from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
+from nilearn.experimental.surface import SurfaceImage
 from nilearn.glm.contrasts import compute_fixed_effects
 from nilearn.glm.first_level import (
     FirstLevelModel,
@@ -47,7 +47,7 @@ from nilearn.glm.first_level.first_level import (
 from nilearn.glm.regression import ARModel, OLSModel
 from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files
-from nilearn.maskers import NiftiMasker
+from nilearn.maskers import NiftiMasker, SurfaceMasker
 
 BASEDIR = Path(__file__).resolve().parent
 FUNCFILE = BASEDIR / "functional.nii.gz"
@@ -2282,3 +2282,23 @@ def test_first_level_from_bids_subject_order_with_labels(tmp_path):
     expected_subjects = ["01", "02", "03", "04", "05", "10"]
     returned_subjects = [model.subject_label for model in models]
     assert returned_subjects == expected_subjects
+
+
+def test_fixed_effect_contrast_surface(_make_surface_glm_data):
+    """Smoke test of compute_fixed_effects with surface data."""
+    mini_img, _ = _make_surface_glm_data(5)
+    masker = SurfaceMasker().fit(mini_img)
+    model = FirstLevelModel(mask_img=masker, t_r=2.0)
+    events = basic_paradigm()
+    model.fit([mini_img, mini_img], events=[events, events])
+    result = model.compute_contrast("c0", output_type="all")
+    effect = result["effect_size"]
+    variance = result["effect_variance"]
+    surf_mask_ = masker.mask_img_
+    for mask in [SurfaceMasker(mask_img=masker.mask_img_), surf_mask_, None]:
+        outputs = compute_fixed_effects(
+            [effect, effect], [variance, variance], mask=mask
+        )
+        assert len(outputs) == 3
+        for output in outputs:
+            assert isinstance(output, SurfaceImage)

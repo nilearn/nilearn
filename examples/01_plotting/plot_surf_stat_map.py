@@ -124,8 +124,7 @@ stat_map[np.where(np.mean(timeseries, axis=1) == 0)] = 0
 
 # %%
 # Display ROI on surface
-from nilearn.experimental.plotting import plot_surf_roi, plot_surf_stat_map
-from nilearn.plotting import show
+from nilearn.plotting import plot_surf_roi, plot_surf_stat_map, show
 
 # Transform ROI indices in ROI map
 pcc_map = np.zeros(parcellation.shape[0], dtype=int)

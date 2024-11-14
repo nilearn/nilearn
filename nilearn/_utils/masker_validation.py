@@ -6,8 +6,8 @@ from string import Template
 import numpy as np
 from nibabel import Nifti1Image
 
-from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
-from nilearn.maskers import MultiNiftiMasker, NiftiMasker
+from nilearn.experimental.surface import SurfaceImage
+from nilearn.maskers import MultiNiftiMasker, NiftiMasker, SurfaceMasker
 
 from .cache_mixin import _check_memory
 from .class_inspect import get_params
