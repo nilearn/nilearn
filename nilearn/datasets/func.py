@@ -2226,11 +2226,11 @@ def fetch_language_localizer_demo_dataset(
                 "to start switch to this new behavior."
             ),
         )
-        return data_dir, sorted(file_list)
+        return str(data_dir), sorted(file_list)
 
     description = get_dataset_descr("language_localizer_demo")
     return Bunch(
-        data_dir=data_dir, func=sorted(file_list), description=description
+        data_dir=str(data_dir), func=sorted(file_list), description=description
     )
 
 
@@ -2582,7 +2582,7 @@ def fetch_openneuro_dataset(
 
     patch_openneuro_dataset(downloaded)
 
-    return data_dir, sorted(downloaded)
+    return str(data_dir), sorted(downloaded)
 
 
 @fill_doc
