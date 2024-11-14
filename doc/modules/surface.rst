@@ -15,12 +15,12 @@
    :toctree: generated/
    :template: class.rst
 
-    FileMesh,
-    InMemoryMesh,
-    PolyData,
-    PolyMesh,
-    SurfaceImage,
-    SurfaceMesh,
+    FileMesh
+    InMemoryMesh
+    PolyData
+    PolyMesh
+    SurfaceImage
+    SurfaceMesh
 
 **Functions**:
 
