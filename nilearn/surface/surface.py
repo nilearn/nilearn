@@ -1249,10 +1249,10 @@ class PolyData:
 
     Parameters
     ----------
-    left : :obj:`numpy.ndarray` or :obj:`str` of :obj:`pathlib.Path` or None,\
+    left : :obj:`numpy.ndarray` or :obj:`str` or :obj:`pathlib.Path` or None,\
            default = None
 
-    right : :obj:`numpy.ndarray` or :obj:`str` of :obj:`pathlib.Path` or None,\
+    right : :obj:`numpy.ndarray` or :obj:`str` or :obj:`pathlib.Path` or None,\
            default = None
 
     Attributes
@@ -1262,11 +1262,7 @@ class PolyData:
     shape : :obj:`tuple` of :obj:`int`
     """
 
-    def __init__(
-        self,
-        left=None,
-        right=None,
-    ):
+    def __init__(self, left=None, right=None):
         if left is None and right is None:
             raise ValueError(
                 "Cannot create an empty PolyData. "
@@ -1305,7 +1301,7 @@ class PolyData:
 
         Parameters
         ----------
-        filename : :obj:`str` of :obj:`pathlib.Path`
+        filename : :obj:`str` or :obj:`pathlib.Path`
                    If the filename contains `hemi-L`
                    then only the left part of the mesh will be saved.
                    If the filename contains `hemi-R`
@@ -1349,7 +1345,7 @@ class SurfaceMesh(abc.ABC):
     coordinates: np.ndarray
     faces: np.ndarray
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return (
             f"<{self.__class__.__name__} "
             f"with {getattr(self, 'n_vertices', '??')} vertices>"
@@ -1360,7 +1356,7 @@ class SurfaceMesh(abc.ABC):
 
         Parameters
         ----------
-        gifti_file : :obj:`str` of :obj:`pathlib.Path`
+        gifti_file : :obj:`str` or :obj:`pathlib.Path`
             Filename to save the mesh to.
         """
         _mesh_to_gifti(self.coordinates, self.faces, gifti_file)
@@ -1379,7 +1375,6 @@ class InMemoryMesh(SurfaceMesh):
     ----------
     n_vertices : int
         number of vertices
-
     """
 
     n_vertices: int
@@ -1397,10 +1392,9 @@ class InMemoryMesh(SurfaceMesh):
 class FileMesh(SurfaceMesh):
     """A surface mesh stored in a Gifti or Freesurfer file.
 
-
     Parameters
     ----------
-    file_path : :obj:`str` of :obj:`pathlib.Path`
+    file_path : :obj:`str` or :obj:`pathlib.Path`
             Filename to read mesh from.
     """
 
@@ -1423,7 +1417,7 @@ class FileMesh(SurfaceMesh):
         return load_surf_mesh(self.file_path).coordinates
 
     @property
-    def faces(self) -> np.ndarray:
+    def faces(self):
         """Get array of adjacent vertices.
 
         Returns
@@ -1432,12 +1426,12 @@ class FileMesh(SurfaceMesh):
         """
         return load_surf_mesh(self.file_path).faces
 
-    def loaded(self) -> InMemoryMesh:
+    def loaded(self):
         """Load surface mesh into memory.
 
         Returns
         -------
-        :obj:`numpy.ndarray`
+        :obj:`nilearn.surface.InMemoryMesh`
         """
         loaded = load_surf_mesh(self.file_path)
         return InMemoryMesh(loaded.coordinates, loaded.faces)
@@ -1448,15 +1442,26 @@ class PolyMesh:
 
     It is a shallow wrapper around the ``parts`` dictionary, which cannot be
     empty and whose keys must be a subset of {"left", "right"}.
+
+    Parameters
+    ----------
+    left : :obj:`str` or :obj:`pathlib.Path` \
+                or :obj:`nilearn.surface.SurfaceMesh` or None, default=None
+            Mesh for the left hemisphere.
+
+    right : :obj:`str` or :obj:`pathlib.Path` \
+                or :obj:`nilearn.surface.SurfaceMesh` or None, default=None
+            Mesh for the right hemisphere.
+
+    Attributes
+    ----------
+    n_vertices : int
+        number of vertices
     """
 
     n_vertices: int
 
-    def __init__(
-        self,
-        left: SurfaceMesh | str | Path | None = None,
-        right: SurfaceMesh | str | Path | None = None,
-    ) -> None:
+    def __init__(self, left=None, right=None) -> None:
         if left is None and right is None:
             raise ValueError(
                 "Cannot create an empty PolyMesh. "
@@ -1475,7 +1480,7 @@ class PolyMesh:
 
         self.n_vertices = sum(p.n_vertices for p in self.parts.values())
 
-    def to_filename(self, filename) -> None:
+    def to_filename(self, filename):
         """Save mesh to gifti.
 
         Parameters
@@ -1506,12 +1511,12 @@ class PolyMesh:
         mesh.to_gifti(filename)
 
 
-def _check_data_and_mesh_compat(mesh: PolyMesh, data: PolyData):
+def _check_data_and_mesh_compat(mesh, data):
     """Check that mesh and data have the same keys and that shapes match.
 
-    mesh: :class:`nilearn.surface.PolyMesh`
+    mesh: :obj:`nilearn.surface.PolyMesh`
 
-    data: :class:`nilearn.surface.PolyData`
+    data: :obj:`nilearn.surface.PolyData`
     """
     data_keys, mesh_keys = set(data.parts.keys()), set(mesh.parts.keys())
     if data_keys != mesh_keys:
@@ -1529,11 +1534,7 @@ def _check_data_and_mesh_compat(mesh: PolyMesh, data: PolyData):
             )
 
 
-def _mesh_to_gifti(
-    coordinates,
-    faces,
-    gifti_file,
-):
+def _mesh_to_gifti(coordinates, faces, gifti_file):
     """Write surface mesh to gifti file on disk.
 
     Parameters
@@ -1632,14 +1633,23 @@ def _sanitize_filename(filename):
 
 
 class SurfaceImage:
-    """Surface image, usually containing meshes & data for both hemispheres.
-
+    """Surface image containing meshes & data for both hemispheres.
 
     Parameters
     ----------
-    mesh : PolyMesh | dict[str, SurfaceMesh  |  str  |  Path]
+    mesh : :obj:`nilearn.surface.PolyMesh`, \
+           or :obj:`dict` of  \
+           :obj:`nilearn.surface.SurfaceMesh`, \
+           :obj:`str`, \
+           :obj:`pathlib.Path`
+           Meshes for the both hemispheres.
 
-    data : PolyData | dict[str, SurfaceMesh  |  str  |  Path]
+    data : :obj:`nilearn.surface.PolyData`, \
+           or :obj:`dict` of  \
+           :obj:`numpy.ndarray`, \
+           :obj:`str`, \
+           :obj:`pathlib.Path`
+           Data for the both hemispheres.
 
     Attributes
     ----------
@@ -1647,11 +1657,7 @@ class SurfaceImage:
         shape of the surface data array
     """
 
-    def __init__(
-        self,
-        mesh: PolyMesh | dict[str, SurfaceMesh | str | Path],
-        data: PolyData | dict[str, SurfaceMesh | str | Path],
-    ) -> None:
+    def __init__(self, mesh, data):
         """Create a SurfaceImage instance."""
         self.mesh = mesh if isinstance(mesh, PolyMesh) else PolyMesh(**mesh)
 
@@ -1679,13 +1685,21 @@ class SurfaceImage:
 
         Parameters
         ----------
-        mesh : PolyMesh or dict[str, SurfaceMesh | str | Path]
-            Surface mesh.
+        mesh : :obj:`nilearn.surface.PolyMesh` \
+             or :obj:`dict` of  \
+             :obj:`nilearn.surface.SurfaceMesh`, \
+             :obj:`str`, \
+             :obj:`pathlib.Path`
+             Surface mesh.
 
         volume_img : Niimg-like object
             3D or 4D volume image to project to the surface mesh.
 
-        inner_mesh: PolyMesh or dict[str, SurfaceMesh | str | Path], optional
+        inner_mesh::obj:`nilearn.surface.PolyMesh` \
+             or :obj:`dict` of  \
+             :obj:`nilearn.surface.SurfaceMesh`, \
+             :obj:`str`, \
+             :obj:`pathlib.Path`, default=None
             Inner mesh to pass to :func:`nilearn.surface.vol_to_surf`.
 
         vol_to_surf_kwargs: dict[str, Any]
