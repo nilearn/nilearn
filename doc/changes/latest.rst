@@ -51,7 +51,7 @@ Enhancements
 
 - :bdg-dark:`Code` Move SurfaceMasker from experimental to :class:`nilearn.maskers.SurfaceMasker` (:gh:`4692` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` Move SurfaceImage and associated classes to from experimental to :module:`nilearn.surface` (:gh:`4723` by `Rémi Gau`_).
+- :bdg-dark:`Code` Move SurfaceImage and associated classes to from experimental to :mod:`nilearn.surface` (:gh:`4723` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Improved SearchLight with NIfTI Support, Mask Handling, and Reusable Transform Method (:gh:`4652` by `Prakhar Jain`_).
 

@@ -9,7 +9,7 @@
 
 **Classes**:
 
-.. currentmodule:: nilearn.glm
+.. currentmodule:: nilearn.surface
 
 .. autosummary::
    :toctree: generated/
