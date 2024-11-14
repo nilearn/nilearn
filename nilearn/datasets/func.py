@@ -754,9 +754,10 @@ def fetch_localizer_contrasts(
     # Get the dataset OSF index
     dataset_name = "brainomics_localizer"
     index_url = "https://osf.io/hwbm2/download"
-    data_dir = Path(
-        get_dataset_dir(dataset_name, data_dir=data_dir, verbose=verbose)
+    data_dir = get_dataset_dir(
+        dataset_name, data_dir=data_dir, verbose=verbose
     )
+
     index_file = Path(
         fetch_single_file(index_url, data_dir, verbose=verbose, resume=resume)
     )
@@ -1197,9 +1198,10 @@ def fetch_abide_pcp(
 
     # General file: phenotypic information
     dataset_name = "ABIDE_pcp"
-    data_dir = Path(
-        get_dataset_dir(dataset_name, data_dir=data_dir, verbose=verbose)
+    data_dir = get_dataset_dir(
+        dataset_name, data_dir=data_dir, verbose=verbose
     )
+
     if url is None:
         url = (
             "https://s3.amazonaws.com/fcp-indi/data/Projects/"
@@ -2212,9 +2214,7 @@ def fetch_language_localizer_demo_dataset(
         )
         uncompress_file(downloaded_files[0])
 
-    file_list = [
-        str(path) for path in Path(data_dir).rglob("*") if path.is_file()
-    ]
+    file_list = [str(path) for path in data_dir.rglob("*") if path.is_file()]
     if legacy_output:
         warnings.warn(
             category=DeprecationWarning,
@@ -2273,9 +2273,10 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
     url = "https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/5888d9a76c613b01fc6acc4e"
     dataset_name = "bids_langloc_example"
     main_folder = "bids_langloc_dataset"
-    data_dir = Path(
-        get_dataset_dir(dataset_name, data_dir=data_dir, verbose=verbose)
+    data_dir = get_dataset_dir(
+        dataset_name, data_dir=data_dir, verbose=verbose
     )
+
     # The files_spec needed for fetch_files
     files_spec = [(f"{main_folder}.zip", url, {"move": f"{main_folder}.zip"})]
     if not (data_dir / main_folder).exists():
@@ -2322,12 +2323,10 @@ def fetch_ds000030_urls(data_dir=None, verbose=1):
     DATA_PREFIX = "ds000030/ds000030_R1.0.4/uncompressed"
     FILE_URL = "https://osf.io/86xj7/download"
 
-    data_dir = Path(
-        get_dataset_dir(
-            DATA_PREFIX,
-            data_dir=data_dir,
-            verbose=verbose,
-        )
+    data_dir = get_dataset_dir(
+        DATA_PREFIX,
+        data_dir=data_dir,
+        verbose=verbose,
     )
 
     final_download_path = data_dir / "urls.json"
@@ -2554,7 +2553,7 @@ def fetch_openneuro_dataset(
 
     for url in urls:
         url_path = url.split(data_prefix + "/")[1]
-        file_dir = Path(data_dir, url_path)
+        file_dir = data_dir / url_path
         files_spec.append((file_dir.name, url, {}))
         files_dir.append(file_dir.parent)
 
@@ -2686,9 +2685,8 @@ def fetch_spm_auditory(
     .. footbibliography::
 
     """
-    data_dir = Path(
-        get_dataset_dir(data_name, data_dir=data_dir, verbose=verbose)
-    )
+    data_dir = get_dataset_dir(data_name, data_dir=data_dir, verbose=verbose)
+
     if not (data_dir / "MoAEpilot" / "sub-01").exists():
         _download_spm_auditory_data(data_dir)
 
@@ -2894,9 +2892,7 @@ def fetch_spm_multimodal_fmri(
     .. footbibliography::
 
     """
-    data_dir = Path(
-        get_dataset_dir(data_name, data_dir=data_dir, verbose=verbose)
-    )
+    data_dir = get_dataset_dir(data_name, data_dir=data_dir, verbose=verbose)
     subject_dir = data_dir / subject_id
 
     description = get_dataset_descr("spm_multimodal")
@@ -2937,8 +2933,8 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
         - 'description': :obj:`str`. Data description
 
     """
-    data_dir = Path(
-        get_dataset_dir("fiac_nilearn.glm", data_dir=data_dir, verbose=verbose)
+    data_dir = get_dataset_dir(
+        "fiac_nilearn.glm", data_dir=data_dir, verbose=verbose
     )
 
     def _glob_fiac_data():
@@ -2983,7 +2979,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     logger.log("Data absent, downloading...")
     url = "https://nipy.org/data-packages/nipy-data-0.2.tar.gz"
 
-    archive_path = Path(data_dir) / Path(url).name
+    archive_path = data_dir / Path(url).name
     fetch_single_file(url, data_dir)
     try:
         uncompress_file(archive_path)
