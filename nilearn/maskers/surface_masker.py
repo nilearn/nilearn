@@ -59,20 +59,20 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         If set to True, data is saved in order to produce a report.
 
     %(cmap)s
-        default=`inferno`
+        default="inferno"
         Only relevant for the report figures.
 
     clean_args : :obj:`dict` or None, default=None
         Keyword arguments to be passed
-        to :func:`~nilearn.signal.clean`
+        to :func:`nilearn.signal.clean`
         called within the masker.
 
     Attributes
     ----------
-    output_dimension_: :obj:`int` or None
+    output_dimension_ : :obj:`int` or None
         number of vertices included in mask
 
-    mask_img_: SurfaceImage or None
+    mask_img_ : SurfaceImage or None
     """
 
     def __init__(
@@ -321,10 +321,10 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
                     or :obj:`list` of confounds timeseries, default=None
             Confounds to pass to :func:`nilearn.signal.clean`.
 
-        sample_mask : None, Any type compatible with numpy-array indexing, \
+        sample_mask : None, or any type compatible with numpy-array indexing, \
                   or :obj:`list` of \
-                  shape: (number of scans - number of volumes removed, ) \
-                  for explicit index, or (number of scans, ) for binary mask, \
+                  shape: (number of scans - number of volumes removed) \
+                  for explicit index, or (number of scans) for binary mask, \
                   default=None
             sample_mask to pass to :func:`nilearn.signal.clean`.
 
