@@ -2154,7 +2154,7 @@ def _scroll(download_params):
         if n_consecutive_fails >= download_params["max_consecutive_fails"]:
             warnings.warn(
                 "Neurovault download stopped early: "
-                "too many downloads failed in a row ({n_consecutive_fails})"
+                f"too many downloads failed in a row ({n_consecutive_fails})"
             )
             return
         if found == download_params["max_images"]:

@@ -108,8 +108,8 @@ def fetch_atlas_difumo(
         )
     if resolution_mm not in valid_resolution_mm:
         raise ValueError(
-            "Requested resolution_mm={resolution_mm} is not available. "
-            "Valid options: {valid_resolution_mm}"
+            f"Requested resolution_mm={resolution_mm} is not available. "
+            f"Valid options: {valid_resolution_mm}"
         )
 
     url = f"https://osf.io/{dic[dimension]}/download"

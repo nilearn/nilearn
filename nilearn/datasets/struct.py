@@ -703,19 +703,18 @@ def fetch_oasis_vbm(
             warnings.warn(
                 "Only 403 subjects are available in the "
                 "DARTEL-normalized version of the dataset. "
-                "All of them will be used instead of the wanted %d"
-                % n_subjects
+                f"All of them will be used instead of the wanted {n_subjects}"
             )
             n_subjects = 403
     elif n_subjects > 415:
         warnings.warn(
             "Only 415 subjects are available in the "
             "non-DARTEL-normalized version of the dataset. "
-            "All of them will be used instead of the wanted %d" % n_subjects
+            f"All of them will be used instead of the wanted {n_subjects}"
         )
         n_subjects = 415
     if n_subjects < 1:
-        raise ValueError(f"Incorrect number of subjects ({int(n_subjects)})")
+        raise ValueError(f"Incorrect number of subjects ({n_subjects})")
 
     # pick the archive corresponding to preprocessings type
     if url is None:
