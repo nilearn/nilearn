@@ -9,7 +9,7 @@ from joblib import Memory
 from sklearn.base import BaseEstimator, TransformerMixin
 
 from nilearn import signal
-from nilearn._utils import _constrained_layout_kwargs
+from nilearn._utils import _constrained_layout_kwargs, fill_doc
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed
@@ -21,6 +21,7 @@ from nilearn.maskers._utils import (
 )
 
 
+@fill_doc
 class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
     """Extract data from a SurfaceImage.
 
