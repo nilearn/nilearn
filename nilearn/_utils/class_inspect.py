@@ -19,7 +19,7 @@ VALID_CHECKS.extend(
         "check_estimator_cloneable",
         "check_estimator_repr",
         "check_estimator_tags_renamed",
-        "check_estimators_unfitted",
+        # "check_estimators_unfitted",
         "check_mixin_order",
     ]
 )

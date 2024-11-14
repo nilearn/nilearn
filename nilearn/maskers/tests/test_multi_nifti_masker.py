@@ -21,7 +21,9 @@ extra_valid_checks = [
     "check_transformers_unfitted",
 ]
 
-extra_valid_checks.extend(["check_get_params_invariance"])
+extra_valid_checks.extend(
+    ["check_get_params_invariance", "check_estimators_unfitted"]
+)
 
 
 @pytest.mark.parametrize(

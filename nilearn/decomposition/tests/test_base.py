@@ -23,6 +23,7 @@ extra_valid_checks.extend(
     [
         "check_get_params_invariance",
         "check_do_not_raise_errors_in_init_or_set_params",
+        "check_estimators_unfitted",
     ]
 )
 

@@ -43,6 +43,7 @@ extra_valid_checks.extend(
         "check_f_contiguous_array_estimator",
         "check_readonly_memmap_input",
         "check_parameters_default_constructible",
+        "check_estimators_unfitted",
     ]
 )
 

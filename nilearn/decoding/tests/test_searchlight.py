@@ -25,6 +25,7 @@ if ver.release[1] > 5:
             "check_parameters_default_constructible",
             "check_get_params_invariance",
             "check_do_not_raise_errors_in_init_or_set_params",
+            "check_estimators_unfitted",
         ]
     )
 

@@ -29,6 +29,7 @@ extra_valid_checks.extend(
     [
         "check_do_not_raise_errors_in_init_or_set_params",
         "check_parameters_default_constructible",
+        "check_estimators_unfitted",
     ]
 )
 
