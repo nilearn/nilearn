@@ -35,6 +35,7 @@ from nilearn.maskers import (
     NiftiMapsMasker,
     NiftiMasker,
     NiftiSpheresMasker,
+    SurfaceMasker,
 )
 from nilearn.reporting import make_glm_report
 
@@ -429,7 +430,7 @@ def report_multi_nifti_maps_masker():
 
 
 def report_surface_masker():
-    masker = surface.SurfaceMasker()
+    masker = SurfaceMasker()
     img = surface.fetch_nki(mesh_type="inflated", n_subjects=1)[0]
     masker.fit_transform(img)
     surface_masker_report = masker.generate_report()
@@ -449,7 +450,7 @@ def report_surface_masker():
     for part in mask.data.parts:
         mask.data.parts[part] = mask.data.parts[part] == 34
 
-    masker = surface.SurfaceMasker(mask)
+    masker = SurfaceMasker(mask)
     img = surface.fetch_nki(mesh_type="inflated", n_subjects=1)[0]
     masker.fit_transform(img)
     surface_masker_with_mask_report = masker.generate_report()

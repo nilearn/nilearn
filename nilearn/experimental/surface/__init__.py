@@ -13,10 +13,7 @@ from nilearn.experimental.surface._surface_image import (
     PolyMesh,
     SurfaceImage,
 )
-from nilearn.experimental.surface.maskers import (
-    SurfaceLabelsMasker,
-    SurfaceMasker,
-)
+from nilearn.experimental.surface.maskers import SurfaceLabelsMasker
 
 __all__ = [
     "FileMesh",
@@ -26,7 +23,6 @@ __all__ = [
     "PolyData",
     "SurfaceImage",
     "SurfaceLabelsMasker",
-    "SurfaceMasker",
     "fetch_nki",
     "load_fsaverage",
     "load_fsaverage_data",
