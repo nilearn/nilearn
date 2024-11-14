@@ -159,6 +159,9 @@ def test_make_edges_and_weights_surface(surf_mesh, rng):
         assert part in edges
         assert part in weights
 
+    # make sure there are no overlapping indices between left and right parts
+    assert np.intersect1d(edges["left"], edges["right"]).size == 0
+
     # three edges remain after masking the left part (between 3 vertices)
     # these would be the edges between 0th and 1st, 1st and 2nd,
     # and 0th and 2nd vertices of the adjacency matrix
@@ -171,6 +174,3 @@ def test_make_edges_and_weights_surface(surf_mesh, rng):
     # weights are computed for each edge
     assert len(weights["left"]) == 3
     assert len(weights["right"]) == 3
-
-    # check if there are no overlapping indices between left and right parts
-    assert np.intersect1d(edges["left"], edges["right"]).size == 0
