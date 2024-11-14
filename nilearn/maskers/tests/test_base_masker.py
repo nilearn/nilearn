@@ -13,12 +13,15 @@ from nilearn.maskers.base_masker import BaseMasker
 from nilearn.maskers.nifti_masker import _filter_and_mask
 
 extra_valid_checks = [
+    "check_do_not_raise_errors_in_init_or_set_params",
     "check_estimators_overwrite_params",
     "check_estimator_sparse_array",
     "check_estimator_sparse_matrix",
+    "check_estimators_unfitted",
     "check_dont_overwrite_parameters",
     "check_fit2d_1sample",
     "check_fit2d_1feature",
+    "check_get_params_invariance",
     "check_no_attributes_set_in_init",
     "check_parameters_default_constructible",
     "check_transformer_n_iter",
@@ -27,14 +30,6 @@ extra_valid_checks = [
 # TODO remove when dropping support for sklearn_version < 1.5.0
 if compare_version(sklearn_version, "<", "1.5.0"):
     extra_valid_checks.append("check_estimator_sparse_data")
-
-extra_valid_checks.extend(
-    [
-        "check_get_params_invariance",
-        "check_do_not_raise_errors_in_init_or_set_params",
-        "check_estimators_unfitted",
-    ]
-)
 
 
 @pytest.mark.parametrize(

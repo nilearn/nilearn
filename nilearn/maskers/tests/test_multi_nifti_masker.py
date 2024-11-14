@@ -17,13 +17,11 @@ from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiMasker, NiftiMasker
 
 extra_valid_checks = [
+    "check_estimators_unfitted",
+    "check_get_params_invariance",
     "check_transformer_n_iter",
     "check_transformers_unfitted",
 ]
-
-extra_valid_checks.extend(
-    ["check_get_params_invariance", "check_estimators_unfitted"]
-)
 
 
 @pytest.mark.parametrize(

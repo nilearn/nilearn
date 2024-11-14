@@ -72,14 +72,18 @@ N_SAMPLES = 80
 
 ESTIMATOR_REGRESSION = ("ridge", "svr")
 
+extra_valid_checks = [
+    "check_do_not_raise_errors_in_init_or_set_params",
+]
+
 
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
         estimator=[DecoderRegressor()],
         extra_valid_checks=[
+            *extra_valid_checks,
             "check_parameters_default_constructible",
-            "check_do_not_raise_errors_in_init_or_set_params",
         ],
     ),
 )
@@ -94,8 +98,8 @@ def test_check_estimator_decoder_regressor(estimator, check, name):  # noqa: ARG
     check_estimator(
         estimator=[DecoderRegressor()],
         extra_valid_checks=[
+            *extra_valid_checks,
             "check_parameters_default_constructible",
-            "check_do_not_raise_errors_in_init_or_set_params",
         ],
         valid=False,
     ),
@@ -109,7 +113,7 @@ def test_check_estimator_invalid_decoder_regressor(estimator, check, name):  # n
     "estimator, check, name",
     check_estimator(
         estimator=[FREMRegressor()],
-        extra_valid_checks=["check_do_not_raise_errors_in_init_or_set_params"],
+        extra_valid_checks=extra_valid_checks,
     ),
 )
 def test_check_estimator_frem_regressor(estimator, check, name):  # noqa: ARG001
@@ -123,7 +127,7 @@ def test_check_estimator_frem_regressor(estimator, check, name):  # noqa: ARG001
     check_estimator(
         estimator=[FREMRegressor()],
         valid=False,
-        extra_valid_checks=["check_do_not_raise_errors_in_init_or_set_params"],
+        extra_valid_checks=extra_valid_checks,
     ),
 )
 def test_check_estimator_invalid_frem_regressor(estimator, check, name):  # noqa: ARG001
@@ -136,6 +140,7 @@ def test_check_estimator_invalid_frem_regressor(estimator, check, name):  # noqa
     check_estimator(
         estimator=[Decoder()],
         extra_valid_checks=[
+            *extra_valid_checks,
             "check_no_attributes_set_in_init",
             "check_parameters_default_constructible",
         ],
@@ -152,9 +157,9 @@ def test_check_estimator_decoder(estimator, check, name):  # noqa: ARG001
     check_estimator(
         estimator=[Decoder()],
         extra_valid_checks=[
+            *extra_valid_checks,
             "check_no_attributes_set_in_init",
             "check_parameters_default_constructible",
-            "check_do_not_raise_errors_in_init_or_set_params",
         ],
         valid=False,
     ),
@@ -169,9 +174,9 @@ def test_check_estimator_invalid_decoder(estimator, check, name):  # noqa: ARG00
     check_estimator(
         estimator=[_BaseDecoder()],
         extra_valid_checks=[
+            *extra_valid_checks,
             "check_no_attributes_set_in_init",
             "check_parameters_default_constructible",
-            "check_do_not_raise_errors_in_init_or_set_params",
         ],
     ),
 )
@@ -186,9 +191,9 @@ def test_check_estimator_base_decoder(estimator, check, name):  # noqa: ARG001
     check_estimator(
         estimator=[_BaseDecoder()],
         extra_valid_checks=[
+            *extra_valid_checks,
             "check_no_attributes_set_in_init",
             "check_parameters_default_constructible",
-            "check_do_not_raise_errors_in_init_or_set_params",
         ],
         valid=False,
     ),
@@ -203,8 +208,8 @@ def test_check_estimator_invalid_base_decoder(estimator, check, name):  # noqa: 
     check_estimator(
         estimator=[FREMClassifier()],
         extra_valid_checks=[
+            *extra_valid_checks,
             "check_no_attributes_set_in_init",
-            "check_do_not_raise_errors_in_init_or_set_params",
         ],
     ),
 )
@@ -219,8 +224,8 @@ def test_check_estimator_frem_classifier(estimator, check, name):  # noqa: ARG00
     check_estimator(
         estimator=[FREMClassifier()],
         extra_valid_checks=[
+            *extra_valid_checks,
             "check_no_attributes_set_in_init",
-            "check_do_not_raise_errors_in_init_or_set_params",
         ],
         valid=False,
     ),

@@ -14,9 +14,11 @@ from nilearn.regions.rena_clustering import ReNA
 extra_valid_checks = [
     "check_clusterer_compute_labels_predict",
     "check_complex_data",
+    "check_do_not_raise_errors_in_init_or_set_params",
     "check_estimators_empty_data_messages",
     "check_estimator_sparse_array",
     "check_estimator_sparse_matrix",
+    "check_estimators_unfitted",
     "check_fit2d_1sample",
     "check_fit2d_1feature",
     "check_fit1d",
@@ -25,12 +27,6 @@ extra_valid_checks = [
     "check_transformer_n_iter",
 ]
 
-extra_valid_checks.extend(
-    [
-        "check_do_not_raise_errors_in_init_or_set_params",
-        "check_estimators_unfitted",
-    ]
-)
 
 # TODO remove when dropping support for sklearn_version < 1.5.0
 if compare_version(sklearn_version, "<", "1.5.0"):

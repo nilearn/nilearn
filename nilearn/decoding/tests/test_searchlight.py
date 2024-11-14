@@ -5,8 +5,6 @@
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
-from packaging.version import parse
-from sklearn import __version__ as sklearn_version
 from sklearn.model_selection import KFold, LeaveOneGroupOut
 
 from nilearn._utils.class_inspect import check_estimator
@@ -14,20 +12,14 @@ from nilearn.conftest import _img_3d_ones, _rng
 from nilearn.decoding import searchlight
 
 extra_valid_checks = [
+    "check_estimators_unfitted",
+    "check_do_not_raise_errors_in_init_or_set_params",
+    "check_get_params_invariance",
     "check_no_attributes_set_in_init",
-    "check_transformers_unfitted",
+    "check_parameters_default_constructible",
     "check_transformer_n_iter",
+    "check_transformers_unfitted",
 ]
-ver = parse(sklearn_version)
-if ver.release[1] > 5:
-    extra_valid_checks.extend(
-        [
-            "check_parameters_default_constructible",
-            "check_get_params_invariance",
-            "check_do_not_raise_errors_in_init_or_set_params",
-            "check_estimators_unfitted",
-        ]
-    )
 
 
 @pytest.mark.parametrize(

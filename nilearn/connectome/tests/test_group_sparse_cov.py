@@ -31,27 +31,6 @@ def test_check_estimator_group_sparse_covariance_cv(estimator, check, name):  # 
     check(estimator)
 
 
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    (
-        check_estimator(
-            estimator=[GroupSparseCovariance()],
-            extra_valid_checks=[
-                "check_no_attributes_set_in_init",
-                "check_estimators_unfitted",
-            ],
-        )
-    ),
-)
-def test_check_estimator_group_sparse_covariance(
-    estimator,
-    check,
-    name,  # noqa: ARG001
-):
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
-
 @pytest.mark.xfail(reason="invalid checks should fail")
 @pytest.mark.parametrize(
     "estimator, check, name",
@@ -62,6 +41,28 @@ def test_check_estimator_group_sparse_covariance(
     ),
 )
 def test_check_estimator_invalid_group_sparse_covariance_cv(
+    estimator,
+    check,
+    name,  # noqa: ARG001
+):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    (
+        check_estimator(
+            estimator=[GroupSparseCovariance()],
+            extra_valid_checks=[
+                "check_no_attributes_set_in_init",
+                "check_estimators_unfitted",
+                "check_do_not_raise_errors_in_init_or_set_params",
+            ],
+        )
+    ),
+)
+def test_check_estimator_group_sparse_covariance(
     estimator,
     check,
     name,  # noqa: ARG001

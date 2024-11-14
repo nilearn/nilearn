@@ -11,16 +11,11 @@ from nilearn.conftest import _shape_3d_default
 from nilearn.maskers import MultiNiftiMapsMasker, NiftiMapsMasker
 
 extra_valid_checks = [
+    "check_get_params_invariance",
+    "check_estimators_unfitted",
     "check_transformer_n_iter",
     "check_transformers_unfitted",
 ]
-
-extra_valid_checks.extend(
-    [
-        "check_get_params_invariance",
-        "check_estimators_unfitted",
-    ]
-)
 
 
 @pytest.mark.parametrize(
