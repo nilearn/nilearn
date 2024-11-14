@@ -2631,7 +2631,7 @@ def _download_spm_auditory_data(data_dir):
         "https://www.fil.ion.ucl.ac.uk/spm/download/data/MoAEpilot/"
         "MoAEpilot.bids.zip"
     )
-    archive_path = Path(data_dir) / Path(url).name
+    archive_path = data_dir / Path(url).name
     fetch_single_file(url, data_dir)
     try:
         uncompress_file(archive_path)
@@ -2715,7 +2715,6 @@ def fetch_spm_auditory(
 
 
 def _get_func_data_spm_multimodal(subject_dir, session, _subject_data):
-    subject_dir = Path(subject_dir)
     session_func = sorted(
         subject_dir.glob(
             f"fMRI/Session{session}/fMETHODS-000{session + 4}-*-01.img"
@@ -2734,7 +2733,6 @@ def _get_func_data_spm_multimodal(subject_dir, session, _subject_data):
 
 
 def _get_session_trials_spm_multimodal(subject_dir, session, _subject_data):
-    subject_dir = Path(subject_dir)
     sess_trials = subject_dir / f"fMRI/trials_ses{int(session)}.mat"
     if not sess_trials.is_file():
         logger.log(f"Missing session file: {sess_trials}", stack_level=2)
@@ -2745,7 +2743,6 @@ def _get_session_trials_spm_multimodal(subject_dir, session, _subject_data):
 
 
 def _get_anatomical_data_spm_multimodal(subject_dir, _subject_data):
-    subject_dir = Path(subject_dir)
     anat = subject_dir / "sMRI/smri.img"
     if not anat.is_file():
         logger.log("Missing structural image.", stack_level=2)
@@ -2810,7 +2807,7 @@ def _download_data_spm_multimodal(data_dir, subject_dir, subject_id):
     ]
 
     for url in urls:
-        archive_path = Path(subject_dir) / Path(url).name
+        archive_path = subject_dir / Path(url).name
         fetch_single_file(url, subject_dir)
         try:
             uncompress_file(archive_path)

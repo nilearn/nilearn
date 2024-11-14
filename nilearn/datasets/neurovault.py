@@ -1340,7 +1340,6 @@ def _add_absolute_paths(root_dir, metadata, force=True):
         The metadata enriched with absolute paths.
 
     """
-    root_dir = Path(root_dir)
     absolute_paths = {}
     for name, value in metadata.items():
         match = re.match(r"(.*)relative_path(.*)", name)
@@ -1387,7 +1386,6 @@ def _json_add_collection_dir(file_name, force=True):
 
 def _json_add_im_files_paths(file_name, force=True):
     """Load a json file and add image and words paths."""
-    file_name = Path(file_name)
     loaded = _json_from_file(file_name)
     set_func = loaded.__setitem__ if force else loaded.setdefault
     dir_path = file_name.parent
