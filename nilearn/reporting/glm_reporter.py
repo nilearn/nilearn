@@ -24,11 +24,10 @@ from matplotlib import pyplot as plt
 
 from nilearn._utils import check_niimg, fill_doc
 from nilearn._utils.niimg import safe_get_data
-from nilearn.experimental.surface import SurfaceMasker
 from nilearn.glm import threshold_stats_img
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.second_level import SecondLevelModel
-from nilearn.maskers import NiftiMasker
+from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.plotting import (
     plot_contrast_matrix,
     plot_design_matrix,

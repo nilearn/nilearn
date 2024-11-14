@@ -53,7 +53,6 @@ Classes
    PolyMesh
    SurfaceImage
    SurfaceLabelsMasker
-   SurfaceMasker
 
 Functions
 ^^^^^^^^^
