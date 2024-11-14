@@ -25,7 +25,7 @@ from nilearn._utils.masker_validation import (
 )
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_run_sample_masks
-from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
+from nilearn.experimental.surface import SurfaceImage
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     compute_fixed_effect_contrast,
@@ -48,6 +48,7 @@ from nilearn.interfaces.bids.query import (
 )
 from nilearn.interfaces.bids.utils import bids_entities, check_bids_label
 from nilearn.interfaces.fmriprep.load_confounds import load_confounds
+from nilearn.maskers import SurfaceMasker
 
 
 def mean_scaling(Y, axis=0):
@@ -1158,8 +1159,8 @@ def _check_list_length_match(list_1, list_2, var_name_1, var_name_2):
     """Check length match of two given lists to raise error if necessary."""
     if len(list_1) != len(list_2):
         raise ValueError(
-            "len(%s) %d does not match len(%s) %d"
-            % (str(var_name_1), len(list_1), str(var_name_2), len(list_2))
+            f"len({var_name_1}) {len(list_1)} does not match "
+            f"len({var_name_2}) {len(list_2)}"
         )
 
 

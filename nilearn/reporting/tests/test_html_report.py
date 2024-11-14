@@ -11,7 +11,7 @@ from nilearn._utils.data_gen import (
     generate_maps,
     generate_random_img,
 )
-from nilearn.experimental.surface import SurfaceLabelsMasker, SurfaceMasker
+from nilearn.experimental.surface import SurfaceLabelsMasker
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import (
     MultiNiftiLabelsMasker,
@@ -21,6 +21,7 @@ from nilearn.maskers import (
     NiftiMapsMasker,
     NiftiMasker,
     NiftiSpheresMasker,
+    SurfaceMasker,
 )
 
 # Note: html output by nilearn view_* functions
@@ -629,8 +630,10 @@ def test_surface_masker_minimal_report_fit(
     report = masker.generate_report()
 
     _check_html(report)
-    assert "Make sure to run `fit`" not in str(report)
     assert '<div class="image">' in str(report)
+    if not reports:
+        assert "Make sure to run `fit`" in str(report)
+        assert 'src="data:image/svg+xml;base64,"' in str(report)
 
 
 def test_surface_masker_report_no_report(surf_img):

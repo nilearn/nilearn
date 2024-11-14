@@ -178,17 +178,12 @@ def iter_check_niimg(
                     )
                 else:
                     raise ValueError(
-                        "Field of view of image #%d is different from "
+                        f"Field of view of image #{i} is different from "
                         "reference FOV.\n"
-                        "Reference affine:\n%r\nImage affine:\n%r\n"
-                        "Reference shape:\n%r\nImage shape:\n%r\n"
-                        % (
-                            i,
-                            ref_fov[0],
-                            niimg.affine,
-                            ref_fov[1],
-                            niimg.shape,
-                        )
+                        f"Reference affine:\n{ref_fov[0]!r}\n"
+                        f"Image affine:\n{niimg.affine!r}\n"
+                        f"Reference shape:\n{ref_fov[1]!r}\n"
+                        f"Image shape:\n{niimg.shape!r}\n"
                     )
             yield niimg
         except DimensionError as exc:
