@@ -16,6 +16,7 @@ from nilearn.regions.rena_clustering import (
     _make_edges_surface,
     _weighted_connectivity_graph,
 )
+from nilearn.experimental.surface import SurfaceImage
 
 extra_valid_checks = [
     "check_clusterer_compute_labels_predict",
@@ -129,26 +130,47 @@ def test_make_edges_surface(surf_mask, part):
         assert edges_unmasked[:, edges_mask].shape == (2, 3)
 
 
-def test_make_edges_and_weights_surface_smoke(surf_mask, rng):
+def test_make_edges_and_weights_surface(surf_mesh, rng):
+    """Smoke test for _make_edges_and_weights_surface. Here we create a new
+    surface mask (relative to the one used in test_make_edges_surface) to make
+    sure overall edge and weight computation is robust.
+    """
+    # make a new mask for this test
+    # the mask for left part has total 4 vertices out of which 3 are True
+    # and for right part it has total 5 vertices out of which 3 are True
+    data = {
+        "left": np.array([False, True, True, True]),
+        "right": np.array([True, True, False, True, False]),
+    }
+    surf_mask = SurfaceImage(surf_mesh(), data)
+    n_features = (
+        surf_mask.data.parts["left"].sum()
+        + surf_mask.data.parts["right"].sum()
+    )
     n_samples = 5
-    n_features = surf_mask().shape[0]
-
     X = rng.random((n_samples, n_features))
 
-    print(surf_mask().mesh.parts["left"].faces)
+    edges, weights = _make_edges_and_weights_surface(X, surf_mask)
 
-    edges, weights = _make_edges_and_weights_surface(X, surf_mask())
-
+    # edges and weights have two parts, left and right
     assert len(edges) == 2
     assert len(weights) == 2
     for part in ["left", "right"]:
         assert part in edges
         assert part in weights
 
+    # three edges remain after masking the left part (between 3 vertices)
+    # these would be the edges between 0th and 1st, 1st and 2nd,
+    # and 0th and 2nd vertices of the adjacency matrix
     assert_array_equal(edges["left"], np.array([[0, 1, 0], [1, 2, 2]]))
-    assert_array_equal(
-        edges["right"], np.array([[1, 0, 2, 0, 1, 0], [3, 1, 3, 3, 2, 2]])
-    )
+    # three edges remain after masking the right part (between 3 vertices)
+    # these would be the edges between 3rd and 4th, 3rd and 5th,
+    # and 4th and 5th vertices of the adjacency matrix
+    assert_array_equal(edges["right"], np.array([[3, 3, 4], [4, 5, 5]]))
 
+    # weights are computed for each edge
     assert len(weights["left"]) == 3
-    assert len(weights["right"]) == 6
+    assert len(weights["right"]) == 3
+
+    # check if there are no overlapping indices between left and right parts
+    assert np.intersect1d(edges["left"], edges["right"]).size == 0
