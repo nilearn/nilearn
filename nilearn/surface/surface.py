@@ -1367,9 +1367,9 @@ class InMemoryMesh(SurfaceMesh):
 
     Parameters
     ----------
-    coordinates: :obj:`numpy.ndarray`
+    coordinates : :obj:`numpy.ndarray`
 
-    faces: :obj:`numpy.ndarray`
+    faces : :obj:`numpy.ndarray`
 
     Attributes
     ----------
@@ -1695,14 +1695,14 @@ class SurfaceImage:
         volume_img : Niimg-like object
             3D or 4D volume image to project to the surface mesh.
 
-        inner_mesh::obj:`nilearn.surface.PolyMesh` \
+        inner_mesh : :obj:`nilearn.surface.PolyMesh` \
              or :obj:`dict` of  \
              :obj:`nilearn.surface.SurfaceMesh`, \
              :obj:`str`, \
              :obj:`pathlib.Path`, default=None
             Inner mesh to pass to :func:`nilearn.surface.vol_to_surf`.
 
-        vol_to_surf_kwargs: dict[str, Any]
+        vol_to_surf_kwargs : dict[str, Any]
             Dictionary of extra key-words arguments to pass
             to :func:`nilearn.surface.vol_to_surf`.
 
