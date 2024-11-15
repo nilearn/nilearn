@@ -12,6 +12,7 @@ from nilearn._utils.data_gen import (
     create_fake_bids_dataset,
     generate_fake_fmri_data_and_design,
 )
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.interfaces.bids import (
@@ -307,6 +308,10 @@ def test_parse_bids_filename():
     assert file_dict["file_fields"] == fields
 
 
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="This test requires matplotlib to be installed.",
+)
 @pytest.mark.parametrize(
     "prefix", ["sub-01_ses-01_task-nback", "sub-01_task-nback", "task-nback"]
 )
@@ -370,6 +375,10 @@ def test_save_glm_to_bids(tmp_path_factory, prefix):
         assert (tmpdir / sub_prefix / f"{prefix}_{fname}").exists()
 
 
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="This test requires matplotlib to be installed.",
+)
 def test_save_glm_to_bids_serialize_affine(tmp_path):
     """Test that affines are turned into a serializable type.
 
@@ -441,6 +450,10 @@ def two_runs_model(n_cols_design_matrix):
     )
 
 
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="This test requires matplotlib to be installed.",
+)
 def test_save_glm_to_bids_errors(
     tmp_path_factory, two_runs_model, n_cols_design_matrix
 ):
@@ -485,6 +498,10 @@ def test_save_glm_to_bids_errors(
         )
 
 
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="This test requires matplotlib to be installed.",
+)
 @pytest.mark.parametrize(
     "prefix", ["sub-01_ses-01_task-nback", "sub-01_task-nback_", 1]
 )
@@ -548,6 +565,10 @@ def test_save_glm_to_bids_contrast_definitions(
         assert (tmpdir / sub_prefix / f"{prefix}{fname}").exists()
 
 
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="This test requires matplotlib to be installed.",
+)
 @pytest.mark.parametrize("prefix", ["task-nback"])
 def test_save_glm_to_bids_second_level(tmp_path_factory, prefix):
     """Test save_glm_to_bids on a SecondLevelModel.

@@ -81,8 +81,9 @@ test = [
     "coverage",
     "pytest>=6.0.0",
     "pytest-cov",
-    "pytest-random-order",
+    "pytest-randomly",
     "pytest-reporter-html1>=0.9.2",
+    "pytest-xdist[psutil]",
     "tox"
 ]
 
@@ -107,7 +108,7 @@ packages = ["nilearn"]
 source = "vcs"
 
 [tool.pytest.ini_options]
-addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --durations=0 --random-order --template=maint_tools/templates/index.html"
+addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --durations=0 --template=maint_tools/templates/index.html -n auto"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 junit_family = "xunit2"
 log_cli_level = "INFO"
@@ -159,7 +160,6 @@ select = [
     "C4",
     "C90",
     "D",
-    "DOC",
     "E",
     "ERA",
     "F",

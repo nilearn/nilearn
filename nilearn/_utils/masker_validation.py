@@ -6,8 +6,8 @@ from string import Template
 import numpy as np
 from nibabel import Nifti1Image
 
-from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
-from nilearn.maskers import MultiNiftiMasker, NiftiMasker
+from nilearn.maskers import MultiNiftiMasker, NiftiMasker, SurfaceMasker
+from nilearn.surface import SurfaceImage
 
 from .cache_mixin import _check_memory
 from .class_inspect import get_params
@@ -41,7 +41,8 @@ def check_embedded_masker(estimator, masker_type="multi_nii"):
 
     Returns
     -------
-    masker : MultiNiftiMasker, NiftiMasker, or SurfaceMasker
+    masker : MultiNiftiMasker, NiftiMasker, \
+             or :obj:`~nilearn.maskers.SurfaceMasker`
         New masker
 
     """

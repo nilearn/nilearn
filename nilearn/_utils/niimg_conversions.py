@@ -178,17 +178,12 @@ def iter_check_niimg(
                     )
                 else:
                     raise ValueError(
-                        "Field of view of image #%d is different from "
+                        f"Field of view of image #{i} is different from "
                         "reference FOV.\n"
-                        "Reference affine:\n%r\nImage affine:\n%r\n"
-                        "Reference shape:\n%r\nImage shape:\n%r\n"
-                        % (
-                            i,
-                            ref_fov[0],
-                            niimg.affine,
-                            ref_fov[1],
-                            niimg.shape,
-                        )
+                        f"Reference affine:\n{ref_fov[0]!r}\n"
+                        f"Image affine:\n{niimg.affine!r}\n"
+                        f"Reference shape:\n{ref_fov[1]!r}\n"
+                        f"Image shape:\n{niimg.shape!r}\n"
                     )
             yield niimg
         except DimensionError as exc:
@@ -196,9 +191,7 @@ def iter_check_niimg(
             exc.increment_stack_counter()
             raise
         except TypeError as exc:
-            img_name = ""
-            if isinstance(niimg, str):
-                img_name = f" ({niimg}) "
+            img_name = f" ({niimg}) " if isinstance(niimg, (str, Path)) else ""
 
             exc.args = (
                 f"Error encountered while loading image #{i}{img_name}",
@@ -282,8 +275,6 @@ def check_niimg(
     niimg = stringify_path(niimg)
 
     if isinstance(niimg, str):
-        # TODO refactor by using "resolve_globbing"
-        # in nilearn/_utils/path_finding.py
         if wildcards and ni.EXPAND_PATH_WILDCARDS:
             # Ascending sorting + expand user path
             filenames = sorted(glob.glob(str(Path(niimg).expanduser())))

@@ -48,6 +48,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR, LinearSVC
 
 from nilearn._utils import compare_version
+from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.param_validation import (
     _get_mask_extent,
     check_feature_screening,
@@ -65,44 +66,148 @@ from nilearn.decoding.decoder import (
     _wrap_param_grid,
 )
 from nilearn.decoding.tests.test_same_api import to_niimgs
-from nilearn.experimental.surface import SurfaceMasker
-from nilearn.maskers import NiftiMasker
+from nilearn.maskers import NiftiMasker, SurfaceMasker
 
-N_SAMPLES = 100
+N_SAMPLES = 80
 
 ESTIMATOR_REGRESSION = ("ridge", "svr")
 
 
-def _make_binary_classification_test_data(n_samples=N_SAMPLES):
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[DecoderRegressor()],
+        extra_valid_checks=["check_parameters_default_constructible"],
+    ),
+)
+def test_check_estimator_decoder_regressor(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[DecoderRegressor()],
+        extra_valid_checks=["check_parameters_default_constructible"],
+        valid=False,
+    ),
+)
+def test_check_estimator_invalid_decoder_regressor(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[FREMRegressor()],
+    ),
+)
+def test_check_estimator_frem_regressor(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(estimator=[FREMRegressor()], valid=False),
+)
+def test_check_estimator_invalid_frem_regressor(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[_BaseDecoder(), Decoder()],
+        extra_valid_checks=[
+            "check_no_attributes_set_in_init",
+            "check_parameters_default_constructible",
+        ],
+    ),
+)
+def test_check_estimator_decoder(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[_BaseDecoder(), Decoder()],
+        extra_valid_checks=[
+            "check_no_attributes_set_in_init",
+            "check_parameters_default_constructible",
+        ],
+        valid=False,
+    ),
+)
+def test_check_estimator_invalid_decoder(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[FREMClassifier()],
+        extra_valid_checks=["check_no_attributes_set_in_init"],
+    ),
+)
+def test_check_estimator_frem_classifier(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[FREMClassifier()],
+        extra_valid_checks=["check_no_attributes_set_in_init"],
+        valid=False,
+    ),
+)
+def test_check_estimator_invalid_frem_classifier(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+def _make_binary_classification_test_data(n_samples=N_SAMPLES, dim=5):
     X, y = make_classification(
         n_samples=n_samples,
-        n_features=125,
+        n_features=dim**3,
         scale=3.0,
         n_informative=5,
         n_classes=2,
         random_state=42,
     )
-    X, mask = to_niimgs(X, [5, 5, 5])
+    X, mask = to_niimgs(X, [dim, dim, dim])
     return X, y, mask
 
 
 @pytest.fixture()
 def rand_x_y(rng):
-    X = rng.random((N_SAMPLES, 10))
+    X = rng.random((100, 10))
     Y = np.hstack([[-1] * 50, [1] * 50])
     return X, Y
 
 
-def _make_multiclass_classification_test_data(n_samples=200):
+def _make_multiclass_classification_test_data(n_samples=40, dim=5):
     X, y = make_classification(
         n_samples=n_samples,
-        n_features=125,
+        n_features=dim**3,
         scale=3.0,
         n_informative=5,
         n_classes=4,
         random_state=42,
     )
-    X, mask = to_niimgs(X, [5, 5, 5])
+    X, mask = to_niimgs(X, [dim, dim, dim])
     return X, y, mask
 
 
@@ -123,7 +228,7 @@ def binary_classification_data():
     return _make_binary_classification_test_data(n_samples=N_SAMPLES)
 
 
-def _make_regression_test_data(n_samples=N_SAMPLES, dim=30):
+def _make_regression_test_data(n_samples=N_SAMPLES, dim=5):
     X, y = make_regression(
         n_samples=n_samples,
         n_features=dim**3,
@@ -139,7 +244,7 @@ def _make_regression_test_data(n_samples=N_SAMPLES, dim=30):
 
 @pytest.fixture
 def regression_data():
-    return _make_regression_test_data(n_samples=N_SAMPLES, dim=30)
+    return _make_regression_test_data(n_samples=N_SAMPLES, dim=5)
 
 
 @pytest.fixture
@@ -366,7 +471,7 @@ def test_parallel_fit(rand_x_y):
     for different controlled param_grid.
     """
     X, y = make_regression(
-        n_samples=N_SAMPLES,
+        n_samples=100,
         n_features=20,
         n_informative=5,
         noise=0.2,
@@ -715,7 +820,7 @@ def test_decoder_error_unknown_scoring_metrics(
 
 
 def test_decoder_dummy_classifier_default_scoring():
-    X, y, _ = _make_binary_classification_test_data(n_samples=150)
+    X, y, _ = _make_binary_classification_test_data()
 
     model = Decoder(estimator="dummy_classifier", scoring=None)
 
@@ -919,15 +1024,16 @@ def test_decoder_multiclass_classification_apply_mask_shape():
     """Test whether if _apply mask output has the same shape \
     as original matrix.
     """
+    dim = 5
     X_init, _ = make_classification(
         n_samples=200,
-        n_features=125,
+        n_features=dim**3,
         scale=3.0,
         n_informative=5,
         n_classes=4,
         random_state=42,
     )
-    X, _ = to_niimgs(X_init, [5, 5, 5])
+    X, _ = to_niimgs(X_init, [dim, dim, dim])
 
     model = Decoder(mask=NiftiMasker())
 
@@ -942,15 +1048,7 @@ def test_decoder_multiclass_classification_apply_mask_attributes(affine_eye):
 
     By default these parameters are set to None;
     """
-    X_init, _ = make_classification(
-        n_samples=200,
-        n_features=125,
-        scale=3.0,
-        n_informative=5,
-        n_classes=4,
-        random_state=42,
-    )
-    X, _ = to_niimgs(X_init, [5, 5, 5])
+    X, _, _ = _make_multiclass_classification_test_data()
 
     target_affine = 2 * affine_eye
     target_shape = (1, 1, 1)

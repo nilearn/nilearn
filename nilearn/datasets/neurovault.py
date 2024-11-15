@@ -886,7 +886,7 @@ class _TemporaryDirectory:
 
     def __enter__(self):
         self.temp_dir_ = mkdtemp()
-        return self.temp_dir_
+        return Path(self.temp_dir_)
 
     def __exit__(self, *args):
         if self.temp_dir_ is None:
@@ -1132,7 +1132,7 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
     target_file : str
         Location of the downloaded file on filesystem.
 
-    temp_dir : str
+    temp_dir : pathlib.Path
         Location of sandbox directory used by ``fetch_single_file``.
 
     verbose : int, default=3
@@ -1319,7 +1319,7 @@ def _add_absolute_paths(root_dir, metadata, force=True):
 
     Parameters
     ----------
-    root_dir : str
+    root_dir : pathlib.Path
         The root of the data directory, to prepend to relative paths
         in order to form absolute paths.
 
@@ -1340,7 +1340,6 @@ def _add_absolute_paths(root_dir, metadata, force=True):
         The metadata enriched with absolute paths.
 
     """
-    root_dir = Path(root_dir)
     absolute_paths = {}
     for name, value in metadata.items():
         match = re.match(r"(.*)relative_path(.*)", name)
@@ -1387,7 +1386,6 @@ def _json_add_collection_dir(file_name, force=True):
 
 def _json_add_im_files_paths(file_name, force=True):
     """Load a json file and add image and words paths."""
-    file_name = Path(file_name)
     loaded = _json_from_file(file_name)
     set_func = loaded.__setitem__ if force else loaded.setdefault
     dir_path = file_name.parent
@@ -2154,7 +2152,7 @@ def _scroll(download_params):
         if n_consecutive_fails >= download_params["max_consecutive_fails"]:
             warnings.warn(
                 "Neurovault download stopped early: "
-                "too many downloads failed in a row ({n_consecutive_fails})"
+                f"too many downloads failed in a row ({n_consecutive_fails})"
             )
             return
         if found == download_params["max_images"]:

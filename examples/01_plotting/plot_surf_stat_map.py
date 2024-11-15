@@ -35,11 +35,11 @@ See :ref:`plotting` for more details on plotting tools.
 # NKI resting state data from nilearn
 from nilearn.datasets import fetch_atlas_surf_destrieux
 from nilearn.experimental.surface import (
-    SurfaceImage,
     fetch_nki,
     load_fsaverage,
     load_fsaverage_data,
 )
+from nilearn.surface import SurfaceImage
 
 nki_dataset = fetch_nki(n_subjects=1)
 
@@ -124,8 +124,7 @@ stat_map[np.where(np.mean(timeseries, axis=1) == 0)] = 0
 
 # %%
 # Display ROI on surface
-from nilearn.experimental.plotting import plot_surf_roi, plot_surf_stat_map
-from nilearn.plotting import show
+from nilearn.plotting import plot_surf_roi, plot_surf_stat_map, show
 
 # Transform ROI indices in ROI map
 pcc_map = np.zeros(parcellation.shape[0], dtype=int)

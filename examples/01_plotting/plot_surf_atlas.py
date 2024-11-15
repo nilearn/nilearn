@@ -15,13 +15,13 @@ See :ref:`plotting` for more details.
 # Data fetcher
 # ------------
 # Retrieve destrieux parcellation in fsaverage5 space from nilearn
-# and create a SurfaceImage instance with it.
+# and create a :obj:`~nilearn.surface.SurfaceImage` instance with it.
 from nilearn.datasets import fetch_atlas_surf_destrieux
 from nilearn.experimental.surface import (
-    SurfaceImage,
     load_fsaverage,
     load_fsaverage_data,
 )
+from nilearn.surface import SurfaceImage
 
 fsaverage = load_fsaverage("fsaverage5")
 destrieux = fetch_atlas_surf_destrieux()
@@ -60,10 +60,9 @@ print(f"Fsaverage5 sulcal depth map: {fsaverage_sulcal}")
 # Visualization
 # -------------
 # Display Destrieux :term:`parcellation` on fsaverage5 sulcal surface
-from nilearn.experimental import plotting
-from nilearn.plotting import show
+from nilearn.plotting import plot_surf_roi, show
 
-plotting.plot_surf_roi(
+plot_surf_roi(
     roi_map=destrieux_atlas,
     hemi="left",
     view="lateral",
@@ -77,7 +76,7 @@ plotting.plot_surf_roi(
 # Display Destrieux :term:`parcellation` on inflated fsaverage5 surface
 # with different views
 for view in ["lateral", "posterior", "ventral"]:
-    plotting.plot_surf_roi(
+    plot_surf_roi(
         surf_mesh=fsaverage_meshes["inflated"],
         roi_map=destrieux_atlas,
         hemi="left",
@@ -93,7 +92,7 @@ show()
 # %%
 # Display Destrieux :term:`parcellation` with custom view: explicitly set angle
 elev, azim = 210.0, 90.0  # appropriate for visualizing, e.g., the OTS
-plotting.plot_surf_roi(
+plot_surf_roi(
     surf_mesh=fsaverage_meshes["inflated"],
     roi_map=destrieux_atlas,
     hemi="left",
@@ -148,7 +147,9 @@ show()
 # :func:`nilearn.plotting.view_surf` for more interactive
 # visualizations in a web browser.
 # See :ref:`interactive-surface-plotting` for more details.
-view = plotting.view_surf(
+from nilearn.plotting import view_surf
+
+view = view_surf(
     surf_mesh=fsaverage_meshes["inflated"],
     surf_map=destrieux_atlas,
     cmap="gist_ncar",

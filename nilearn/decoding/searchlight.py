@@ -61,9 +61,6 @@ def search_light(
     groups : array-like, optional, (default None)
         group label for each sample for cross validation.
 
-        .. note::
-            This will have no effect for scikit learn < 0.18
-
     scoring : string or callable, optional
         The scoring strategy to use. See the scikit-learn documentation
         for possible values.
@@ -75,7 +72,9 @@ def search_light(
         A cross-validation generator. If None, a 3-fold cross
         validation is used or 3-fold stratified cross-validation
         when y is supplied.
+
     %(n_jobs_all)s
+
     %(verbose0)s
 
     Returns
@@ -226,9 +225,10 @@ def _group_iter_search_light(
                 # We use a max to avoid a division by zero
                 remaining = (100.0 - percent) / max(0.01, percent) * dt
                 logger.log(
-                    f"Job #{thread_id}, processed {i}/{len(list_rows)} voxels "
-                    f"({percent:0.2f}%, {remaining} seconds remaining){crlf}",
-                    stack_level=2,
+                    f"Job #{thread_id}, processed {i}/{len(list_rows)} steps "
+                    f"({percent:0.2f}%, "
+                    f"{remaining:0.1f} seconds remaining){crlf}",
+                    stack_level=6,
                 )
     return par_scores
 
@@ -327,9 +327,6 @@ class SearchLight(BaseEstimator):
         self.scoring = scoring
         self.cv = cv
         self.verbose = verbose
-        self.scores_ = None
-        self.process_mask_ = None
-        self.masked_scores_ = None
 
     def fit(self, imgs, y, groups=None):
         """Fit the searchlight.
@@ -347,8 +344,6 @@ class SearchLight(BaseEstimator):
         groups : array-like, optional
             group label for each sample for cross validation. Must have
             exactly as many elements as 3D images in img. default None
-            NOTE: will have no effect for scikit learn < 0.18
-
         """
         # check if image is 4D
         imgs = check_niimg_4d(imgs)
@@ -401,22 +396,27 @@ class SearchLight(BaseEstimator):
         self.scores_[np.where(process_mask)] = scores
         return self
 
+    def __sklearn_is_fitted__(self):
+        return (
+            hasattr(self, "scores_")
+            and hasattr(self, "process_mask_")
+            and self.scores_ is not None
+            and self.process_mask_ is not None
+        )
+
+    def _check_fitted(self):
+        if not self.__sklearn_is_fitted__():
+            raise ValueError("The model has not been fitted yet.")
+
     @property
     def scores_img_(self):
         """Convert the 3D scores array into a NIfTI image."""
-        if self.scores_ is None:
-            raise ValueError(
-                "The model has not been fitted yet. Call `fit()` "
-                "before accessing `scores_img_`."
-            )
+        self._check_fitted()
         return new_img_like(self.mask_img, self.scores_)
 
     def transform(self, imgs):
         """Apply the fitted searchlight on new images."""
-        if self.process_mask_ is None or self.scores_ is None:
-            raise ValueError(
-                "You must fit the model before calling `transform()`."
-            )
+        self._check_fitted()
 
         imgs = check_niimg_4d(imgs)
 

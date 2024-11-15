@@ -25,7 +25,6 @@ from nilearn._utils.masker_validation import (
 )
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_run_sample_masks
-from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     compute_fixed_effect_contrast,
@@ -48,6 +47,8 @@ from nilearn.interfaces.bids.query import (
 )
 from nilearn.interfaces.bids.utils import bids_entities, check_bids_label
 from nilearn.interfaces.fmriprep.load_confounds import load_confounds
+from nilearn.maskers import SurfaceMasker
+from nilearn.surface import SurfaceImage
 
 
 def mean_scaling(Y, axis=0):
@@ -321,12 +322,14 @@ class FirstLevelModel(BaseGLM):
         (in seconds). Events that start before (slice_time_ref * t_r +
         min_onset) are not considered.
 
-    mask_img : Niimg-like, NiftiMasker, SurfaceImage, SurfaceMasker, False or \
-               None, default=None
+    mask_img : Niimg-like, NiftiMasker, :obj:`~nilearn.surface.SurfaceImage`,\
+             :obj:`~nilearn.maskers.SurfaceMasker`, False or \
+             None, default=None
         Mask to be used on data.
         If an instance of masker is passed, then its mask will be used.
         If None is passed, the mask will be computed automatically
-        by a NiftiMasker or SurfaceMasker with default parameters.
+        by a NiftiMasker
+        or :obj:`~nilearn.maskers.SurfaceMasker` with default parameters.
         If False is given then the data will not be masked.
         In the case of surface analysis, passing None or False will lead to
         no masking.
@@ -702,7 +705,8 @@ class FirstLevelModel(BaseGLM):
         run_imgs : Niimg-like object, \
                    :obj:`list` or :obj:`tuple` of Niimg-like objects, \
                    SurfaceImage object, \
-                   or :obj:`list` or :obj:`tuple` of SurfaceImage
+                   or :obj:`list` or \
+                   :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
             Data on which the :term:`GLM` will be fitted.
             If this is a list, the affine is considered the same for all.
 
@@ -720,7 +724,8 @@ class FirstLevelModel(BaseGLM):
                 a ``SurfaceMasker`` or ``SurfaceImage`` instance,
                 then ``run_imgs`` must be a
                 ``SurfaceImage`` object, \
-                a :obj:`list` or a :obj:`tuple` of ``SurfaceImage`` objects.
+                a :obj:`list` or \
+                a :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage` objects.
 
         events : :class:`pandas.DataFrame` or :obj:`str` or :obj:`list` of \
                  :class:`pandas.DataFrame` or :obj:`str`, default=None
@@ -993,7 +998,7 @@ class FirstLevelModel(BaseGLM):
 
         Parameters
         ----------
-        run_img : Niimg-like object or SurfaceImage object
+        run_img : Niimg-like or :obj:`~nilearn.surface.SurfaceImage` object
             Used for setting up the masker object.
         """
         # Local import to prevent circular imports
@@ -1158,8 +1163,8 @@ def _check_list_length_match(list_1, list_2, var_name_1, var_name_2):
     """Check length match of two given lists to raise error if necessary."""
     if len(list_1) != len(list_2):
         raise ValueError(
-            "len(%s) %d does not match len(%s) %d"
-            % (str(var_name_1), len(list_1), str(var_name_2), len(list_2))
+            f"len({var_name_1}) {len(list_1)} does not match "
+            f"len({var_name_2}) {len(list_2)}"
         )
 
 
@@ -1177,7 +1182,8 @@ def _check_and_load_tables(tables_, var_name):
             pass
         else:
             raise TypeError(
-                f"{var_name} can only be a pandas DataFrames or a string. "
+                f"{var_name} can only be a pandas DataFrame, "
+                "a Path object or a string. "
                 f"A {type(table)} was provided at idx {table_idx}"
             )
     return tables
@@ -1191,7 +1197,7 @@ def _read_events_table(table):
 
     Parameters
     ----------
-    table : :obj:`str`
+    table : :obj:`str`, :obj:`pathlib.Path`
         Accepts the path to an events file.
 
     Returns

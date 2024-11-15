@@ -11,8 +11,19 @@ from functools import partial
 
 from joblib import Memory, Parallel, delayed
 
-from nilearn import _utils, image, masking
-from nilearn._utils import logger
+from nilearn import image, masking
+from nilearn._utils import (
+    CacheMixin,
+    _repr_niimgs,
+    check_niimg_3d,
+    fill_doc,
+    logger,
+    stringify_path,
+)
+from nilearn._utils.class_inspect import (
+    get_params,
+)
+from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.nifti_masker import NiftiMasker, _filter_and_mask
 
@@ -48,8 +59,8 @@ def _get_mask_strategy(strategy):
         )
 
 
-@_utils.fill_doc
-class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
+@fill_doc
+class MultiNiftiMasker(NiftiMasker, CacheMixin):
     """Applying a mask to extract time-series from multiple Niimg-like objects.
 
     MultiNiftiMasker is useful when dealing with image sets from multiple
@@ -97,9 +108,10 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
 
     mask_args : :obj:`dict`, optional
         If mask is None, these are additional parameters passed to
-        masking.compute_background_mask or masking.compute_epi_mask
-        to fine-tune mask computation. Please see the related documentation
-        for details.
+        :func:`nilearn.masking.compute_background_mask`,
+        or :func:`nilearn.masking.compute_epi_mask`
+        to fine-tune mask computation.
+        Please see the related documentation for details.
 
     dtype : {dtype, "auto"}, optional
         Data type toward which the data should be converted. If "auto", the
@@ -205,8 +217,7 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
         """
         # Load data (if filenames are given, load them)
         logger.log(
-            f"Loading data from "
-            f"{_utils._repr_niimgs(imgs, shorten=False)}.",
+            f"Loading data from " f"{_repr_niimgs(imgs, shorten=False)}.",
             self.verbose,
         )
 
@@ -214,7 +225,7 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
         if self.mask_img is None:
             logger.log("Computing mask", self.verbose)
 
-            imgs = _utils.helpers.stringify_path(imgs)
+            imgs = stringify_path(imgs)
             if not isinstance(imgs, collections.abc.Iterable) or isinstance(
                 imgs, str
             ):
@@ -249,7 +260,7 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
                     stacklevel=2,
                 )
 
-            self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
+            self.mask_img_ = check_niimg_3d(self.mask_img)
 
         self._reporting_data = None
         if self.reports:  # save inputs for reporting
@@ -367,7 +378,7 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
             # Force resampling on first image
             target_fov = "first"
 
-        niimg_iter = _utils.niimg_conversions.iter_check_niimg(
+        niimg_iter = iter_check_niimg(
             imgs_list,
             ensure_ndim=None,
             atleast_4d=False,
@@ -385,7 +396,7 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
         # Ignore the mask-computing params: they are not useful and will
         # just invalidate the cache for no good reason
         # target_shape and target_affine are conveyed implicitly in mask_img
-        params = _utils.class_inspect.get_params(
+        params = get_params(
             self.__class__,
             self,
             ignore=[

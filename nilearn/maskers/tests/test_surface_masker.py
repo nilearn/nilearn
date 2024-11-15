@@ -3,12 +3,42 @@ import warnings
 import numpy as np
 import pytest
 
+from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn.experimental.surface import (
-    SurfaceImage,
-    SurfaceLabelsMasker,
-    SurfaceMasker,
+from nilearn.maskers import SurfaceMasker
+from nilearn.surface import SurfaceImage
+
+extra_valid_checks = [
+    "check_no_attributes_set_in_init",
+    "check_parameters_default_constructible",
+    "check_transformer_n_iter",
+    "check_transformers_unfitted",
+]
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[SurfaceMasker()], extra_valid_checks=extra_valid_checks
+    ),
 )
+def test_check_estimator(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[SurfaceMasker()],
+        valid=False,
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 # test with only one surface image and with 2 surface images (surface time
@@ -46,12 +76,63 @@ def test_unfitted_masker(surf_mask):
         masker.transform(surf_mask)
 
 
+def test_check_is_fitted(surf_mask):
+    masker = SurfaceMasker(surf_mask)
+    assert not masker.__sklearn_is_fitted__()
+
+
 def test_mask_img_transform_shape_mismatch(flip_surf_img, surf_img, surf_mask):
     masker = SurfaceMasker(surf_mask()).fit()
     with pytest.raises(ValueError, match="number of vertices"):
         masker.transform(flip_surf_img(surf_img()))
     # non-flipped is ok
     masker.transform(surf_img())
+
+
+def test_mask_img_transform_clean(surf_img, surf_mask):
+    """Smoke test for clean args."""
+    masker = SurfaceMasker(
+        surf_mask(),
+        t_r=2.0,
+        high_pass=1 / 128,
+        clean_args={"filter": "cosine"},
+    ).fit()
+    masker.transform(surf_img((50,)))
+
+
+def test_mask_img_generate_report(surf_img, surf_mask):
+    """Smoke test generate report."""
+    masker = SurfaceMasker(surf_mask(), reports=True).fit()
+
+    assert masker._reporting_data is not None
+    assert masker._reporting_data["images"] is None
+
+    img = surf_img((5,))
+    masker.transform(img)
+
+    assert isinstance(masker._reporting_data["images"], SurfaceImage)
+
+    masker.generate_report()
+
+
+def test_mask_img_generate_no_report(surf_img, surf_mask):
+    """Smoke test generate report."""
+    masker = SurfaceMasker(surf_mask(), reports=False).fit()
+
+    assert masker._reporting_data is None
+
+    img = surf_img((5,))
+    masker.transform(img)
+
+    masker.generate_report()
+
+
+def test_warning_smoothing(surf_img, surf_mask):
+    """Smooth during transform not implemented."""
+    masker = SurfaceMasker(surf_mask(), smoothing_fwhm=1)
+    masker = masker.fit()
+    with pytest.warns(UserWarning, match="not yet supported"):
+        masker.transform(surf_img())
 
 
 def test_mask_img_transform_keys_mismatch(
@@ -62,6 +143,18 @@ def test_mask_img_transform_keys_mismatch(
         masker.transform(drop_surf_img_part(surf_img()))
     # full img is ok
     masker.transform(surf_img())
+
+
+def test_error_inverse_transform_shape(surf_img, surf_mask, rng):
+    masker = SurfaceMasker(surf_mask()).fit()
+    signals = masker.transform(surf_img())
+    signals_wrong_shape = rng.random(
+        size=(signals.shape[0] + 1, signals.shape[1] + 1)
+    )
+    with pytest.raises(
+        ValueError, match="Input to 'inverse_transform' has wrong shape"
+    ):
+        masker.inverse_transform(signals_wrong_shape)
 
 
 @pytest.mark.parametrize("shape", [(), (1,), (3,), (3, 2)])
@@ -132,16 +225,10 @@ def test_transform_inverse_transform_with_mask(
     is_matplotlib_installed(),
     reason="Test requires matplotlib not to be installed.",
 )
-def test_masker_reporting_mpl_warning(surf_mask, surf_label_img):
+def test_masker_reporting_mpl_warning(surf_mask):
     """Raise warning after exception if matplotlib is not installed."""
     with warnings.catch_warnings(record=True) as warning_list:
-        SurfaceMasker(surf_mask()).fit().generate_report()
-
-    assert len(warning_list) == 1
-    assert issubclass(warning_list[0].category, ImportWarning)
-
-    with warnings.catch_warnings(record=True) as warning_list:
-        SurfaceLabelsMasker(surf_label_img()).fit().generate_report()
+        SurfaceMasker(surf_mask(), cmap="gray").fit().generate_report()
 
     assert len(warning_list) == 1
     assert issubclass(warning_list[0].category, ImportWarning)

@@ -94,8 +94,8 @@ def test_get_dataset_dir(tmp_path):
     expected_base_dir = Path("~/nilearn_data").expanduser()
     data_dir = _utils.get_dataset_dir("test", verbose=0)
 
-    assert data_dir == str(expected_base_dir / "test")
-    assert Path(data_dir).exists()
+    assert data_dir == expected_base_dir / "test"
+    assert data_dir.exists()
 
     shutil.rmtree(data_dir)
 
@@ -103,8 +103,8 @@ def test_get_dataset_dir(tmp_path):
     os.environ["NILEARN_DATA"] = str(expected_base_dir)
     data_dir = _utils.get_dataset_dir("test", verbose=0)
 
-    assert data_dir == str(expected_base_dir / "test")
-    assert Path(data_dir).exists()
+    assert data_dir == expected_base_dir / "test"
+    assert data_dir.exists()
 
     shutil.rmtree(data_dir)
 
@@ -112,8 +112,8 @@ def test_get_dataset_dir(tmp_path):
     os.environ["NILEARN_SHARED_DATA"] = str(expected_base_dir)
     data_dir = _utils.get_dataset_dir("test", verbose=0)
 
-    assert data_dir == str(expected_base_dir / "test")
-    assert Path(data_dir).exists()
+    assert data_dir == expected_base_dir / "test"
+    assert data_dir.exists()
 
     shutil.rmtree(data_dir)
 
@@ -135,18 +135,15 @@ def test_add_readme_to_default_data_locations(tmp_path):
     assert (tmp_path / "README.md").exists()
 
 
-@pytest.mark.parametrize("should_cast_path_to_string", [False, True])
-def test_get_dataset_dir_path_as_str(should_cast_path_to_string, tmp_path):
+def test_get_dataset_dir_path_as_str(tmp_path):
     expected_base_dir = tmp_path / "env_data"
     expected_dataset_dir = expected_base_dir / "test"
-    if should_cast_path_to_string:
-        expected_dataset_dir = str(expected_dataset_dir)
     data_dir = _utils.get_dataset_dir(
         "test", default_paths=[expected_dataset_dir], verbose=0
     )
 
-    assert data_dir == str(expected_dataset_dir)
-    assert Path(data_dir).exists()
+    assert data_dir == expected_dataset_dir
+    assert data_dir.exists()
 
     shutil.rmtree(data_dir)
 
@@ -164,9 +161,9 @@ def test_get_dataset_dir_write_access(tmp_path):
         "test", default_paths=[no_write], verbose=0
     )
 
-    # Non writable dir is returned because dataset may be in there.
-    assert data_dir == str(no_write)
-    assert Path(data_dir).exists()
+    # Non writeable dir is returned because dataset may be in there.
+    assert data_dir == no_write
+    assert data_dir.exists()
 
     no_write.chmod(0o600)
     shutil.rmtree(data_dir)
@@ -186,8 +183,8 @@ def test_get_dataset_dir_symlink(tmp_path):
         "test", default_paths=[symlink_dir], verbose=0
     )
 
-    assert data_dir == str(expected_linked_dir)
-    assert Path(data_dir).exists()
+    assert data_dir == expected_linked_dir
+    assert data_dir.exists()
 
 
 def test_md5_sum_file(tmp_path):
@@ -489,13 +486,7 @@ def test_fetch_single_file_part_error(tmp_path, capsys, request_mocker):
     )
 
 
-@pytest.mark.parametrize("should_cast_path_to_string", [False, True])
-def test_fetch_single_file_overwrite(
-    should_cast_path_to_string, tmp_path, request_mocker
-):
-    if should_cast_path_to_string:
-        tmp_path = str(tmp_path)
-
+def test_fetch_single_file_overwrite(tmp_path, request_mocker):
     # overwrite non-exiting file.
     fil = _utils.fetch_single_file(
         url="http://foo/", data_dir=tmp_path, verbose=0, overwrite=True

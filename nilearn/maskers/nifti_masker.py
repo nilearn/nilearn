@@ -146,7 +146,7 @@ def _filter_and_mask(
 
 
 @_utils.fill_doc
-class NiftiMasker(BaseMasker, _utils.CacheMixin):
+class NiftiMasker(BaseMasker):
     """Applying a mask to extract time-series from Niimg-like objects.
 
     NiftiMasker is useful when preprocessing (detrending, standardization,
@@ -201,9 +201,10 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
 
     mask_args : :obj:`dict`, optional
         If mask is None, these are additional parameters passed to
-        masking.compute_background_mask or masking.compute_epi_mask
-        to fine-tune mask computation. Please see the related documentation
-        for details.
+        :func:`nilearn.masking.compute_background_mask`,
+        or :func:`nilearn.masking.compute_epi_mask`
+        to fine-tune mask computation.
+        Please see the related documentation for details.
 
     dtype : {dtype, "auto"}, optional
         Data type toward which the data should be converted. If "auto", the

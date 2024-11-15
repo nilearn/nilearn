@@ -83,9 +83,7 @@ def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
 
     """
     if not total_size:
-        logger.log(
-            f"\rDownloaded {int(bytes_so_far)} of ? bytes.", stack_level=2
-        )
+        logger.log(f"\rDownloaded {int(bytes_so_far)} of ? bytes.")
 
     else:
         # Estimate remaining download time
@@ -100,14 +98,9 @@ def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
 
         # Trailing whitespace is to erase extra char when message length varies
         logger.log(
-            "\rDownloaded %d of %d bytes (%.1f%%, %s remaining)"
-            % (
-                bytes_so_far,
-                total_size,
-                total_percent * 100,
-                _format_time(time_remaining),
-            ),
-            stack_level=2,
+            f"\rDownloaded {bytes_so_far} of {total_size} bytes "
+            f"({total_percent * 100:.1f}%%, "
+            f"{_format_time(time_remaining)} remaining)",
         )
 
 
@@ -159,13 +152,11 @@ def _chunk_read_(
             "Warning: total size could not be determined.",
             verbose=verbose,
             msg_level=2,
-            stack_level=2,
         )
         logger.log(
             f"Full stack trace: {e}",
             verbose=verbose,
             msg_level=3,
-            stack_level=2,
         )
         total_size = None
     bytes_so_far = initial_size
@@ -207,7 +198,7 @@ def get_dataset_dir(
 
     Returns
     -------
-    data_dir : string
+    data_dir : pathlib.Path
         Path of the given dataset directory.
 
     Notes
@@ -245,7 +236,7 @@ def get_dataset_dir(
             logger.log(
                 f"Dataset found in {path}", verbose=verbose, msg_level=1
             )
-            return str(path)
+            return path
 
     # If not, create a folder in the first writable directory
     errors = []
@@ -262,7 +253,7 @@ def get_dataset_dir(
 
                 logger.log(f"Dataset created in {path}", verbose)
 
-                return str(path)
+                return path
             except Exception as exc:
                 short_error_message = getattr(exc, "strerror", str(exc))
                 errors.append(f"\n -{path} ({short_error_message})")
@@ -287,9 +278,7 @@ It can be safely deleted.
 If you delete it, previously downloaded data will be downloaded again."""
                 )
 
-            logger.log(
-                f"Added README.md to {d}", verbose=verbose, stack_level=2
-            )
+            logger.log(f"Added README.md to {d}", verbose=verbose)
 
 
 # The functions _is_within_directory and _safe_extract were implemented in
@@ -527,7 +516,7 @@ def fetch_single_file(
 
     Returns
     -------
-    files : string
+    files : pahtlib.Path
         Absolute path of downloaded file.
 
     Notes
@@ -550,7 +539,7 @@ def fetch_single_file(
                 verbose=verbose,
                 session=sess,
             )
-    data_dir = Path(data_dir)
+
     # Determine data path
     data_dir.mkdir(parents=True, exist_ok=True)
 

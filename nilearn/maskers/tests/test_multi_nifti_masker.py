@@ -10,10 +10,42 @@ from joblib import Memory
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
 
+from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.image import get_data
-from nilearn.maskers import MultiNiftiMasker
+from nilearn.maskers import MultiNiftiMasker, NiftiMasker
+
+extra_valid_checks = [
+    "check_transformer_n_iter",
+    "check_transformers_unfitted",
+]
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[MultiNiftiMasker(), NiftiMasker()],
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[MultiNiftiMasker(), NiftiMasker()],
+        extra_valid_checks=extra_valid_checks,
+        valid=False,
+    ),
+)
+def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 @pytest.fixture
