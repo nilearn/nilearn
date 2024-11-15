@@ -28,7 +28,7 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
     Parameters
     ----------
-    mask_img: SurfaceImage object or None, default=None
+    mask_img: :obj:`~nilearn.surface.SurfaceImage` or None, default=None
 
     %(smoothing_fwhm)s
         This parameter is not implemented yet.
@@ -178,9 +178,9 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        img : SurfaceImage object \
-              or :obj:`list` of SurfaceImage object, \
-              or :obj:`tuple` of SurfaceImage object, or None, \
+        img : :obj:`~nilearn.surface.SurfaceImage` or \
+              :obj:`list` of :obj:`~nilearn.surface.SurfaceImage` or \
+              :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage` or None, \
               default = None
             Mesh and data for both hemispheres.
 
@@ -226,10 +226,9 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        img : SurfaceImage object \
-              or :obj:`list` of SurfaceImage object, \
-              or :obj:`tuple` of SurfaceImage object, or None, \
-              default = None
+        img : :obj:`~nilearn.surface.SurfaceImage` or \
+              :obj:`list` of :obj:`~nilearn.surface.SurfaceImage` or \
+              :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
             Mesh and data for both hemispheres.
 
         confounds : :class:`numpy.ndarray`, :obj:`str`,\
@@ -323,7 +322,9 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        img : SurfaceImage object
+        img : :obj:`~nilearn.surface.SurfaceImage` or \
+              :obj:`list` of :obj:`~nilearn.surface.SurfaceImage` or \
+              :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
             Mesh and data for both hemispheres.
 
         y : None
