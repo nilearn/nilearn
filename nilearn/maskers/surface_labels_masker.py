@@ -5,7 +5,7 @@ from __future__ import annotations
 import warnings
 
 import numpy as np
-from sklearn.base import BaseEstimator
+from sklearn.base import BaseEstimator, TransformerMixin
 
 from nilearn._utils import _constrained_layout_kwargs
 from nilearn._utils.helpers import is_matplotlib_installed
@@ -17,12 +17,12 @@ from nilearn.maskers._utils import (
 from nilearn.surface import SurfaceImage
 
 
-class SurfaceLabelsMasker(BaseEstimator):
+class SurfaceLabelsMasker(TransformerMixin, BaseEstimator):
     """Extract data from a SurfaceImage, averaging over atlas regions.
 
     Parameters
     ----------
-    labels_img : SurfaceImage object
+    labels_img : :obj:`~nilearn.surface.SurfaceImage` object
         Region definitions, as one image of labels.
 
     labels : :obj:`list` of :obj:`str`, default=None
@@ -47,7 +47,7 @@ class SurfaceLabelsMasker(BaseEstimator):
         If set to True, data is saved in order to produce a report.
 
     %(cmap)s
-        default=`inferno`
+        default="inferno"
         Only relevant for the report figures.
 
     Attributes
@@ -84,7 +84,7 @@ class SurfaceLabelsMasker(BaseEstimator):
 
         Parameters
         ----------
-        img : SurfaceImage object or None
+        img : :obj:`~nilearn.surface.SurfaceImage` object or None, default=None
             This parameter is currently unused.
 
         y : None
@@ -186,12 +186,12 @@ class SurfaceLabelsMasker(BaseEstimator):
 
         Parameters
         ----------
-        img : SurfaceImage object
+        img : :obj:`~nilearn.surface.SurfaceImage` object
             Mesh and data for both hemispheres.
 
         Returns
         -------
-        output : numpy.ndarray
+        output : :obj:`numpy.ndarray`
             Signal for each element.
             shape: (img data shape, total number of vertices)
         """
@@ -214,7 +214,7 @@ class SurfaceLabelsMasker(BaseEstimator):
 
         Parameters
         ----------
-        img : SurfaceImage object
+        img : :obj:`~nilearn.surface.SurfaceImage` object
             Mesh and data for both hemispheres.
 
         y : None
@@ -240,7 +240,7 @@ class SurfaceLabelsMasker(BaseEstimator):
 
         Returns
         -------
-        SurfaceImage object
+        :obj:`~nilearn.surface.SurfaceImage` object
             Mesh and data for both hemispheres.
         """
         data = {}
