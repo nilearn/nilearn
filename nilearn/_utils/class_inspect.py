@@ -4,6 +4,8 @@ from sklearn.utils.estimator_checks import (
     check_estimator as sklearn_check_estimator,
 )
 
+# List of sklearn estimators checks that are valid
+# for all nilearn estimators.
 VALID_CHECKS = [
     "check_estimator_cloneable",
     "check_estimator_get_tags_default_keys",
@@ -31,9 +33,11 @@ except ImportError:
 
 
 def check_estimator(estimator=None, valid=True, extra_valid_checks=None):
-    """Check compatibility with scikit-learn estimators.
+    """Return a valid or invalid scikit-learn estimators check.
 
-    As some of Nilearn estimators cannot fit Numpy arrays,
+    As some of Nilearn estimators do not comply
+    with sklearn recommendations
+    (cannot fit Numpy arrays, do input validation in the constructor...)
     we cannot directly use
     sklearn.utils.estimator_checks.check_estimator.
 
@@ -44,6 +48,10 @@ def check_estimator(estimator=None, valid=True, extra_valid_checks=None):
 
     If new 'valid' checks are added to scikit-learn,
     then tests marked as xfail will start passing.
+
+    See this section rolling-your-own-estimator in
+    the scikit-learn doc for more info:
+    https://scikit-learn.org/stable/developers/develop.html
 
     Parameters
     ----------
