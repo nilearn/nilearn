@@ -51,9 +51,9 @@ from sklearn import neighbors
 
 from nilearn import datasets
 from nilearn.experimental.surface import (
-    SurfaceImage,
     load_fsaverage,
 )
+from nilearn.surface import SurfaceImage
 
 fsaverage = load_fsaverage()
 fmri_img_surf = SurfaceImage.from_volume(

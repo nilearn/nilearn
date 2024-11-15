@@ -25,7 +25,6 @@ from nilearn._utils.masker_validation import (
 )
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_run_sample_masks
-from nilearn.experimental.surface import SurfaceImage
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     compute_fixed_effect_contrast,
@@ -49,6 +48,7 @@ from nilearn.interfaces.bids.query import (
 from nilearn.interfaces.bids.utils import bids_entities, check_bids_label
 from nilearn.interfaces.fmriprep.load_confounds import load_confounds
 from nilearn.maskers import SurfaceMasker
+from nilearn.surface import SurfaceImage
 
 
 def mean_scaling(Y, axis=0):

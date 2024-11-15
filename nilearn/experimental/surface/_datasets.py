@@ -8,12 +8,12 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from nilearn import datasets
-from nilearn.experimental.surface._surface_image import (
+from nilearn.surface import (
     FileMesh,
     PolyMesh,
     SurfaceImage,
+    load_surf_data,
 )
-from nilearn.surface import load_surf_data
 
 
 def load_fsaverage(
