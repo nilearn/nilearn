@@ -140,7 +140,9 @@ def test_make_edges_surface(surf_mask, part):
         assert edges_unmasked[:, edges_mask].shape == (2, 3)
 
 
-def test_make_edges_and_weights_surface(surf_mesh, rng):
+def test_make_edges_and_weights_surface(
+    surf_mesh, _make_surface_class_data, rng
+):
     """Smoke test for _make_edges_and_weights_surface. Here we create a new
     surface mask (relative to the one used in test_make_edges_surface) to make
     sure overall edge and weight computation is robust.
@@ -153,16 +155,16 @@ def test_make_edges_and_weights_surface(surf_mesh, rng):
         "right": np.array([True, True, False, True, False]),
     }
     surf_mask = SurfaceImage(surf_mesh(), data)
-    n_features = (
-        surf_mask.data.parts["left"].sum()
-        + surf_mask.data.parts["right"].sum()
-    )
-    n_samples = 5
-    X = rng.random((n_samples, n_features))
-
+    # create a surface masker
+    masker = SurfaceMasker(surf_mask).fit()
+    # create SurfaceImage with several samples
+    surf_img, _ = _make_surface_class_data
+    # mask the surface image
+    X = masker.transform(surf_img)
+    # compute edges and weights
     edges, weights = _make_edges_and_weights_surface(X, surf_mask)
 
-    # edges and weights have two parts, left and right
+    # make sure edges and weights have two parts, left and right
     assert len(edges) == 2
     assert len(weights) == 2
     for part in ["left", "right"]:
