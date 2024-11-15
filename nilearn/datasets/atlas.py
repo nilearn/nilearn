@@ -1843,7 +1843,6 @@ def _separate_talairach_levels(atlas_img, labels, output_dir, verbose):
     This function disentangles the levels, and stores each in a separate image.
 
     The label '*' is replaced by 'Background' for clarity.
-
     """
     logger.log(
         f"Separating talairach atlas levels: {_TALAIRACH_LEVELS}",
@@ -1863,12 +1862,13 @@ def _separate_talairach_levels(atlas_img, labels, output_dir, verbose):
                 region_name
             ]
         new_img_like(atlas_img, level_data).to_filename(
-            str(output_dir.joinpath(f"{level_name}.nii.gz"))
+            output_dir / f"{level_name}.nii.gz"
         )
+
         level_labels = list(level_labels.keys())
         # rename '*' -> 'Background'
         level_labels[0] = "Background"
-        output_dir.joinpath(f"{level_name}-labels.json").write_text(
+        (output_dir / f"{level_name}-labels.json").write_text(
             json.dumps(level_labels), "utf-8"
         )
 
