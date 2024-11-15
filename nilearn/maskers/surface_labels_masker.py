@@ -74,6 +74,18 @@ class SurfaceLabelsMasker(TransformerMixin, BaseEstimator):
         self.reports = reports
         self.cmap = cmap
 
+        self._report_content = {
+            "description": (
+                "This report shows the input surface image overlaid "
+                "with the outlines of the mask. "
+                "We recommend to inspect the report for the overlap "
+                "between the mask and its input image. "
+            ),
+            "n_vertices": {},
+            "number_of_regions": 0,
+            "summary": {},
+        }
+
     @property
     def _labels_data(self):
         """Return data of label image concatenated over hemispheres."""
@@ -107,18 +119,6 @@ class SurfaceLabelsMasker(TransformerMixin, BaseEstimator):
             self._label_names_ = [str(label) for label in self._labels_]
         else:
             self._label_names_ = [self.labels[x] for x in self._labels_]
-
-        self._report_content = {
-            "description": (
-                "This report shows the input surface image overlaid "
-                "with the outlines of the mask. "
-                "We recommend to inspect the report for the overlap "
-                "between the mask and its input image. "
-            ),
-            "n_vertices": {},
-            "number_of_regions": 0,
-            "summary": {},
-        }
 
         if not self.reports:
             self._reporting_data = None
@@ -223,7 +223,7 @@ class SurfaceLabelsMasker(TransformerMixin, BaseEstimator):
 
         Returns
         -------
-        numpy.ndarray
+        :obj:`numpy.ndarray`
             Signal for each element.
             shape: (img data shape, total number of vertices)
         """
@@ -235,7 +235,7 @@ class SurfaceLabelsMasker(TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        masked_img : numpy.ndarray
+        masked_img : :obj:`numpy.ndarray`
             Extracted signal.
 
         Returns
