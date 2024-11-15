@@ -24,7 +24,7 @@ from nilearn.surface import SurfaceImage
 
 @fill_doc
 class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
-    """Extract data from a SurfaceImage.
+    """Extract data from a :obj:`~nilearn.surface.SurfaceImage`.
 
     .. versionadded:: 0.11.0
 
@@ -75,7 +75,7 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
     output_dimension_ : :obj:`int` or None
         number of vertices included in mask
 
-    mask_img_ : SurfaceImage or None
+    mask_img_ : :obj:`~nilearn.surface.SurfaceImage` or None
     """
 
     def __init__(
@@ -364,7 +364,7 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Returns
         -------
-        SurfaceImage object
+        :obj:`~nilearn.surface.SurfaceImage`
             Mesh and data for both hemispheres.
         """
         self._check_fitted()

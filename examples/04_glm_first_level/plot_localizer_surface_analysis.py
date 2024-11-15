@@ -67,7 +67,7 @@ events = pd.read_table(events_file)
 # but we first resort to a standard :term:`mesh`,
 # the so-called fsaverage5 template from the FreeSurfer software.
 #
-# We use the :class:`nilearn.surface.SurfaceImage`
+# We use the :class:`~nilearn.surface.SurfaceImage`
 # to create an surface object instance
 # that contains both the mesh
 # (here we use the one from the fsaverage5 templates)
