@@ -285,7 +285,7 @@ def _weighted_connectivity_graph(X, mask_img):
     X : :class:`numpy.ndarray`
         Training data. shape = [n_samples, n_features]
 
-    mask_img : Niimg-like object
+    mask_img : Niimg-like object or SurfaceImage object
         Object used for masking the data.
 
     Returns
@@ -505,7 +505,7 @@ def recursive_neighbor_agglomeration(
     X : :class:`numpy.ndarray`
         Training data. shape = [n_samples, n_features]
 
-    mask_img : Niimg-like object
+    mask_img : Niimg-like object or SurfaceImage object
         Object used for masking the data.
 
     n_clusters : :obj:`int`
@@ -569,7 +569,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
 
     Parameters
     ----------
-    mask_img : Niimg-like object
+    mask_img : Niimg-like object or SurfaceImage object or SurfaceMasker
         Object used for masking the data.
 
     n_clusters : :obj:`int`, default=2
@@ -668,6 +668,10 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
                 "a SurfaceImage object or a SurfaceMasker."
                 f"Instead a {type(self.mask_img)} object was provided."
             )
+
+        # If mask_img is a SurfaceMasker, we need to extract the mask_img
+        if isinstance(mask_img, SurfaceMasker):
+            mask_img = self.mask_img.mask_img_
 
         if self.memory is None or isinstance(self.memory, str):
             self.memory_ = Memory(
