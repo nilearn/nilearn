@@ -868,7 +868,7 @@ def fetch_localizer_contrasts(
         filenames.append((participants_file, file_url, opts))
 
     # Fetch behavioural
-    behavioural_file = "brainomics_data/phenotype/behavioural.tsv"
+    behavioural_file = Path("brainomics_data", "phenotype", "behavioural.tsv")
 
     path = "/localizer/phenotype/behavioural.tsv"
     if _is_valid_path(path, index, verbose=verbose):
