@@ -8,7 +8,7 @@ from nilearn._utils import compare_version
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.conftest import _img_3d_mni
-from nilearn.experimental.surface import SurfaceImage
+from nilearn.surface import SurfaceImage
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.regions.rena_clustering import (
