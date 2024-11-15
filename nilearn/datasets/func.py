@@ -789,7 +789,7 @@ def fetch_localizer_contrasts(
                 name_aux = f"{data_type}_{contrast}"
                 name_aux.replace(" ", "_")
                 file_path = Path(
-                    "brainomics_data", "subject_id", f"{name_aux}.nii.gz"
+                    "brainomics_data", subject_id, f"{name_aux}.nii.gz"
                 )
 
                 path = "/".join(
@@ -815,7 +815,7 @@ def fetch_localizer_contrasts(
     if get_masks:
         for subject_id in subject_ids:
             file_path = Path(
-                "brainomics_data", "subject_id", "boolean_mask_mask.nii.gz"
+                "brainomics_data", subject_id, "boolean_mask_mask.nii.gz"
             )
 
             path = "/".join(
