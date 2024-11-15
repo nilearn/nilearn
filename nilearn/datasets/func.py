@@ -758,35 +758,39 @@ def fetch_localizer_contrasts(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
 
-    index_file = Path(
-        fetch_single_file(index_url, data_dir, verbose=verbose, resume=resume)
+    index_file = fetch_single_file(
+        index_url, data_dir, verbose=verbose, resume=resume
     )
     with index_file.open() as of:
         index = json.load(of)
 
-    # Build data URLs that will be fetched
-    files = {}
-    # Download from the relevant OSF project, using hashes generated
-    # from the OSF API. Note the trailing slash. For more info, see:
-    # https://gist.github.com/emdupre/3cb4d564511d495ea6bf89c6a577da74
-    root_url = "https://osf.io/download/{0}/"
     if isinstance(n_subjects, numbers.Number):
         subject_mask = np.arange(1, n_subjects + 1)
     else:
         subject_mask = np.array(n_subjects)
     subject_ids = [f"S{int(s):02}" for s in subject_mask]
+
     data_types = ["cmaps"]
     if get_tmaps:
         data_types.append("tmaps")
-    filenames = []
 
+    # Build data URLs that will be fetched
+    # Download from the relevant OSF project,
+    # using hashes generated from the OSF API.
+    # Note the trailing slash.
+    # For more info, see:
+    # https://gist.github.com/emdupre/3cb4d564511d495ea6bf89c6a577da74
+    root_url = "https://osf.io/download/{0}/"
+    files = {}
+    filenames = []
     for subject_id in subject_ids:
         for data_type in data_types:
             for _, contrast in enumerate(contrasts_wrapped):
-                name_aux = str.replace(
-                    str.join("_", [data_type, contrast]), " ", "_"
+                name_aux = f"{data_type}_{contrast}"
+                name_aux.replace(" ", "_")
+                file_path = Path(
+                    "brainomics_data", "subject_id", f"{name_aux}.nii.gz"
                 )
-                file_path = f"brainomics_data/{subject_id}/{name_aux}.nii.gz"
 
                 path = "/".join(
                     [
@@ -800,6 +804,7 @@ def fetch_localizer_contrasts(
                         ),
                     ]
                 )
+
                 if _is_valid_path(path, index, verbose=verbose):
                     file_url = root_url.format(index[path][1:])
                     opts = {"move": file_path}
@@ -809,8 +814,8 @@ def fetch_localizer_contrasts(
     # Fetch masks if asked by user
     if get_masks:
         for subject_id in subject_ids:
-            file_path = (
-                f"brainomics_data/{subject_id}/boolean_mask_mask.nii.gz"
+            file_path = Path(
+                "brainomics_data", "subject_id", "boolean_mask_mask.nii.gz"
             )
 
             path = "/".join(
@@ -832,9 +837,10 @@ def fetch_localizer_contrasts(
     # Fetch anats if asked by user
     if get_anats:
         for subject_id in subject_ids:
-            file_path = (
-                f"brainomics_data/{subject_id}/"
-                "normalized_T1_anat_defaced.nii.gz"
+            file_path = Path(
+                "brainomics_data",
+                subject_id,
+                "normalized_T1_anat_defaced.nii.gz",
             )
 
             path = "/".join(
@@ -854,7 +860,7 @@ def fetch_localizer_contrasts(
                 files.setdefault("anats", []).append(file_path)
 
     # Fetch subject characteristics
-    participants_file = "brainomics_data/participants.tsv"
+    participants_file = Path("brainomics_data", "participants.tsv")
     path = "/localizer/participants.tsv"
     if _is_valid_path(path, index, verbose=verbose):
         file_url = root_url.format(index[path][1:])
@@ -891,6 +897,7 @@ def fetch_localizer_contrasts(
     csv_data = csv_data.iloc[subjects_indices]
     if legacy_format:
         csv_data = csv_data.to_records(index=False)
+
     return Bunch(ext_vars=csv_data, description=fdescr, **files)
 
 
