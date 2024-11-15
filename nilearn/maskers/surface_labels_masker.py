@@ -9,12 +9,12 @@ from sklearn.base import BaseEstimator
 
 from nilearn._utils import _constrained_layout_kwargs
 from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn.experimental.surface._surface_image import SurfaceImage
 from nilearn.maskers._utils import (
     check_same_n_vertices,
     compute_mean_surface_image,
     get_min_max_surface_image,
 )
+from nilearn.surface import SurfaceImage
 
 
 class SurfaceLabelsMasker(BaseEstimator):

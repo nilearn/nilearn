@@ -45,15 +45,15 @@ can plot, save and load them.
 #
 # For brain surfaces we typically have two meshes: one for the left hemisphere
 # and one for the right hemisphere. Nilearn represents this as a
-# :class:`~nilearn.experimental.surface.PolyMesh` object with two ``parts``:
+# :class:`~nilearn.surface.PolyMesh` object with two ``parts``:
 # ``left`` and ``right``.
 #
 # So you can define your own :term:`mesh`, say, for the left part a tetrahedron
 # and for the right part a pyramid, using numpy arrays and create a
-# :class:`~nilearn.experimental.surface.PolyMesh` object as follows:
+# :class:`~nilearn.surface.PolyMesh` object as follows:
 import numpy as np
 
-from nilearn.experimental.surface import InMemoryMesh, PolyMesh
+from nilearn.surface import InMemoryMesh, PolyMesh
 
 # for the tetrahedron
 left_coords = np.asarray(
@@ -113,8 +113,8 @@ data = {"left": left_data, "right": right_data}
 # ------------------------
 #
 # Now we can create a surface image by combining the :term:`mesh` and the data
-# using the :class:`~nilearn.experimental.surface.SurfaceImage` class:
-from nilearn.experimental.surface import SurfaceImage
+# using the :class:`~nilearn.surface.SurfaceImage` class:
+from nilearn.surface import SurfaceImage
 
 surface_image = SurfaceImage(mesh=mesh, data=data)
 
@@ -124,8 +124,8 @@ surface_image = SurfaceImage(mesh=mesh, data=data)
 #
 # The surface image can be plotted using the different functions from the
 # :mod:`nilearn.plotting` module. Here we will show how to use the
-# :func:`~nilearn.experimental.plotting.view_surf` function:
-from nilearn.experimental import plotting
+# :func:`~nilearn.plotting.view_surf` function:
+from nilearn import plotting
 
 # %%
 # Plot the left part
@@ -138,6 +138,8 @@ plotting.view_surf(
 plotting.view_surf(
     surf_mesh=surface_image.mesh, surf_map=surface_image, hemi="right"
 )
+
+plotting.show()
 
 # %%
 # Data format
@@ -170,7 +172,7 @@ surface_image.data.to_filename(output_dir / "surface_image_data.gii")
 # ----------------------
 #
 # You can load the saved files back into Nilearn using the
-# :class:`~nilearn.experimental.surface.SurfaceImage` object:
+# :class:`~nilearn.surface.SurfaceImage` object:
 mesh = {
     "left": output_dir / "surface_image_mesh_hemi-L.gii",
     "right": output_dir / "surface_image_mesh_hemi-R.gii",
@@ -189,6 +191,8 @@ plotting.view_surf(
     surf_map=surface_image_loaded,
     hemi="left",
 )
+
+plotting.show()
 
 # %%
 # And that's it! Now you know how to create, plot, save and load surface images

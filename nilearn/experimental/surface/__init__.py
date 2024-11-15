@@ -8,16 +8,16 @@ from nilearn.experimental.surface._datasets import (
 from nilearn.experimental.surface._surface_image import (
     FileMesh,
     InMemoryMesh,
-    Mesh,
     PolyData,
     PolyMesh,
     SurfaceImage,
+    SurfaceMesh,
 )
 
 __all__ = [
     "FileMesh",
     "InMemoryMesh",
-    "Mesh",
+    "SurfaceMesh",
     "PolyMesh",
     "PolyData",
     "SurfaceImage",
