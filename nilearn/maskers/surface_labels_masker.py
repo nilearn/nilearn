@@ -1,13 +1,15 @@
 """Extract data from a SurfaceImage, averaging over atlas regions."""
 
-from __future__ import annotations
-
 import warnings
 
 import numpy as np
+from joblib import Memory
 from sklearn.base import BaseEstimator, TransformerMixin
 
+from nilearn import signal
 from nilearn._utils import _constrained_layout_kwargs
+from nilearn._utils.cache_mixin import CacheMixin, cache
+from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.maskers._utils import (
     check_same_n_vertices,
@@ -17,7 +19,7 @@ from nilearn.maskers._utils import (
 from nilearn.surface import SurfaceImage
 
 
-class SurfaceLabelsMasker(TransformerMixin, BaseEstimator):
+class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
     """Extract data from a SurfaceImage, averaging over atlas regions.
 
     Parameters
@@ -63,17 +65,40 @@ class SurfaceLabelsMasker(TransformerMixin, BaseEstimator):
         labels_img,
         labels=None,
         background_label=0,
+        smoothing_fwhm=None,
+        standardize=False,
+        standardize_confounds=True,
+        detrend=False,
+        high_variance_confounds=False,
+        low_pass=None,
+        high_pass=None,
+        t_r=None,
+        memory=None,
+        memory_level=1,
         verbose=0,
         reports=True,
         cmap="inferno",
+        clean_args=None,
     ):
         self.labels_img = labels_img
         self.labels = labels
         self.background_label = background_label
+        self.smoothing_fwhm = smoothing_fwhm
+        self.standardize = standardize
+        self.standardize_confounds = standardize_confounds
+        self.high_variance_confounds = high_variance_confounds
+        self.detrend = detrend
+        self.low_pass = low_pass
+        self.high_pass = high_pass
+        self.t_r = t_r
+        self.memory = memory
+        self.memory_level = memory_level
         self.verbose = verbose
         self.reports = reports
         self.cmap = cmap
-
+        self.clean_args = clean_args
+        self._shelving = False
+        # content to inject in the HTML template
         self._report_content = {
             "description": (
                 "This report shows the input surface image overlaid "
@@ -181,13 +206,26 @@ class SurfaceLabelsMasker(TransformerMixin, BaseEstimator):
                 "has not been fitted."
             )
 
-    def transform(self, img):
+    def transform(self, img, confounds=None, sample_mask=None):
         """Extract signals from surface object.
 
         Parameters
         ----------
         img : :obj:`~nilearn.surface.SurfaceImage` object
             Mesh and data for both hemispheres.
+
+        confounds : :class:`numpy.ndarray`, :obj:`str`,\
+                    :class:`pathlib.Path`, \
+                    :class:`pandas.DataFrame` \
+                    or :obj:`list` of confounds timeseries, default=None
+            Confounds to pass to :func:`nilearn.signal.clean`.
+
+        sample_mask : None, Any type compatible with numpy-array indexing, \
+                  or :obj:`list` of \
+                  shape: (number of scans - number of volumes removed) \
+                  for explicit index, or (number of scans) for binary mask, \
+                  default=None
+            sample_mask to pass to :func:`nilearn.signal.clean`.
 
         Returns
         -------
@@ -197,8 +235,31 @@ class SurfaceLabelsMasker(TransformerMixin, BaseEstimator):
         """
         self._check_fitted()
 
+        if self.smoothing_fwhm is not None:
+            warnings.warn(
+                "Parameter smoothing_fwhm "
+                "is not yet supported for surface data",
+                UserWarning,
+                stacklevel=2,
+            )
+            self.smoothing_fwhm = None
+
         if self.reports:
             self._reporting_data["images"] = img
+
+        parameters = get_params(
+            self.__class__,
+            self,
+            ignore=[
+                "mask_img",
+            ],
+        )
+        if self.clean_args is None:
+            self.clean_args = {}
+        parameters["clean_args"] = self.clean_args
+
+        if self.memory is None:
+            self.memory = Memory(location=None)
 
         check_same_n_vertices(self.labels_img.mesh, img.mesh)
         img_data = np.concatenate(list(img.data.parts.values()), axis=-1)
@@ -207,6 +268,27 @@ class SurfaceLabelsMasker(TransformerMixin, BaseEstimator):
             output[..., i] = img_data[..., self._labels_data == label].mean(
                 axis=-1
             )
+
+        # signal cleaning here
+        output = cache(
+            signal.clean,
+            memory=self.memory,
+            func_memory_level=2,
+            memory_level=self.memory_level,
+            shelve=self._shelving,
+        )(
+            output,
+            detrend=parameters["detrend"],
+            standardize=parameters["standardize"],
+            standardize_confounds=parameters["standardize_confounds"],
+            t_r=parameters["t_r"],
+            low_pass=parameters["low_pass"],
+            high_pass=parameters["high_pass"],
+            confounds=confounds,
+            sample_mask=sample_mask,
+            **parameters["clean_args"],
+        )
+
         return output
 
     def fit_transform(self, img, y=None):

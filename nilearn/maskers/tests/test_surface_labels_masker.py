@@ -107,6 +107,17 @@ def test_surface_label_masker_transform(surf_label_img, surf_img):
     assert signal.shape == (n_timepoints, n_labels)
 
 
+def test_surface_label_masker_transform_clean(surf_label_img, surf_img):
+    """Smoke test for clean args."""
+    masker = SurfaceLabelsMasker(
+        labels_img=surf_label_img,
+        t_r=2.0,
+        high_pass=1 / 128,
+        clean_args={"filter": "cosine"},
+    ).fit()
+    masker.transform(surf_img((50,)))
+
+
 def test_surface_label_masker_fit_transform(surf_label_img, surf_img):
     """Smoke test for fit_transform."""
     masker = SurfaceLabelsMasker(labels_img=surf_label_img)
