@@ -13,13 +13,13 @@ from nilearn._utils import _constrained_layout_kwargs, fill_doc
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn.experimental.surface._surface_image import SurfaceImage
 from nilearn.maskers._utils import (
     check_same_n_vertices,
     compute_mean_surface_image,
     concatenate_surface_images,
     get_min_max_surface_image,
 )
+from nilearn.surface import SurfaceImage
 
 
 @fill_doc
@@ -168,8 +168,8 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         # TODO: don't store a full array of 1 to mean "no masking"; use some
         # sentinel value
         mask_data = {
-            k: np.ones(v.n_vertices, dtype=bool)
-            for (k, v) in img.mesh.parts.items()
+            part: np.ones(v.n_vertices, dtype=bool)
+            for (part, v) in img.mesh.parts.items()
         }
         self.mask_img_ = SurfaceImage(mesh=img.mesh, data=mask_data)
 

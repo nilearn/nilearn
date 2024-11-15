@@ -1,7 +1,7 @@
 import numpy as np
 
 from nilearn import image
-from nilearn.experimental.surface import SurfaceImage
+from nilearn.surface import SurfaceImage
 
 
 def _check_dims(imgs):
@@ -107,16 +107,18 @@ def concatenate_surface_images(imgs):
         raise TypeError(
             "'imgs' must be a list or a tuple of SurfaceImage instances."
         )
-    output = imgs[0]
 
     if len(imgs) == 1:
-        return output
+        return imgs[0]
 
     for img in imgs:
         check_same_n_vertices(img.mesh, imgs[0].mesh)
 
-    for part in output.data.parts:
-        tmp = [x.data.parts[part] for x in imgs]
-        output.data.parts[part] = np.concatenate(tmp)
+    output_data = {}
+    for part in imgs[0].data.parts:
+        tmp = [img.data.parts[part] for img in imgs]
+        output_data[part] = np.concatenate(tmp)
+
+    output = SurfaceImage(mesh=imgs[0].mesh, data=output_data)
 
     return output
