@@ -322,12 +322,14 @@ class FirstLevelModel(BaseGLM):
         (in seconds). Events that start before (slice_time_ref * t_r +
         min_onset) are not considered.
 
-    mask_img : Niimg-like, NiftiMasker, SurfaceImage, SurfaceMasker, False or \
-               None, default=None
+    mask_img : Niimg-like, NiftiMasker, :obj:`~nilearn.surface.SurfaceImage`,\
+             :obj:`~nilearn.maskers.SurfaceMasker`, False or \
+             None, default=None
         Mask to be used on data.
         If an instance of masker is passed, then its mask will be used.
         If None is passed, the mask will be computed automatically
-        by a NiftiMasker or SurfaceMasker with default parameters.
+        by a NiftiMasker
+        or :obj:`~nilearn.maskers.SurfaceMasker` with default parameters.
         If False is given then the data will not be masked.
         In the case of surface analysis, passing None or False will lead to
         no masking.
@@ -703,7 +705,8 @@ class FirstLevelModel(BaseGLM):
         run_imgs : Niimg-like object, \
                    :obj:`list` or :obj:`tuple` of Niimg-like objects, \
                    SurfaceImage object, \
-                   or :obj:`list` or :obj:`tuple` of SurfaceImage
+                   or :obj:`list` or \
+                   :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
             Data on which the :term:`GLM` will be fitted.
             If this is a list, the affine is considered the same for all.
 
@@ -721,7 +724,8 @@ class FirstLevelModel(BaseGLM):
                 a ``SurfaceMasker`` or ``SurfaceImage`` instance,
                 then ``run_imgs`` must be a
                 ``SurfaceImage`` object, \
-                a :obj:`list` or a :obj:`tuple` of ``SurfaceImage`` objects.
+                a :obj:`list` or \
+                a :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage` objects.
 
         events : :class:`pandas.DataFrame` or :obj:`str` or :obj:`list` of \
                  :class:`pandas.DataFrame` or :obj:`str`, default=None
@@ -994,7 +998,7 @@ class FirstLevelModel(BaseGLM):
 
         Parameters
         ----------
-        run_img : Niimg-like object or SurfaceImage object
+        run_img : Niimg-like or :obj:`~nilearn.surface.SurfaceImage` object
             Used for setting up the masker object.
         """
         # Local import to prevent circular imports

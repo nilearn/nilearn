@@ -41,7 +41,8 @@ def check_embedded_masker(estimator, masker_type="multi_nii"):
 
     Returns
     -------
-    masker : MultiNiftiMasker, NiftiMasker, or SurfaceMasker
+    masker : MultiNiftiMasker, NiftiMasker, \
+             or :obj:`~nilearn.maskers.SurfaceMasker`
         New masker
 
     """
