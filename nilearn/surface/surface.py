@@ -1263,17 +1263,22 @@ class PolyData:
 
     Examples
     --------
-    The first dimension corresponds to the vertices: the typical shape of the
+    The first dimension corresponds to the vertices:
+    the typical shape of the
     data for a hemisphere is ``(n_vertices, n_time_points)``.
+
     >>> import numpy as np
     >>> from nilearn.surface import PolyData
     >>> n_time_points = 10
-    >>> left = np.ones(((n_left_vertices := 5), n_time_points))
-    >>> right = np.ones(((n_right_vertices := 7), n_time_points))
+    >>> n_left_vertices = 5
+    >>> n_right_vertices = 7
+    >>> left = np.ones((n_left_vertices, n_time_points))
+    >>> right = np.ones((n_right_vertices, n_time_points))
     >>> PolyData(left=left, right=right)
     <PolyData (12, 10)>
     >>> PolyData(right=right)
     <PolyData (7, 10)>
+
     It is not possible to create an empty ``PolyData``:
     >>> PolyData()
     Traceback (most recent call last):

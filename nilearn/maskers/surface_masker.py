@@ -80,7 +80,7 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
     >>> from nilearn.surface import SurfaceImage
     >>> from nilearn.maskers import SurfaceMasker
     >>> from nilearn.experimental.surface._datasets import toy_mesh
-    >>> (mesh := toy_mesh())
+    >>> mesh = toy_mesh()
     <PolyMesh with 6 vertices>
     >>> data = {"left": np.ones((3, 2)), "right": np.ones((3, 2)) * 2}
     >>> img = SurfaceImage(mesh=mesh, data=data)
@@ -89,10 +89,10 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
     >>> masker = SurfaceMasker().fit(img)
     >>> masker._slices
     {'left': (0, np.int64(3)), 'right': (np.int64(3), np.int64(6))}
-    >>> (masked_data := masker.transform(img))
+    >>> masked_data = masker.transform(img)
     array([[1., 1., 1., 2., 2., 2.],
            [1., 1., 1., 2., 2., 2.]])
-    >>> (unmasked := masker.inverse_transform(masked_data))
+    >>> unmasked = masker.inverse_transform(masked_data)
     <SurfaceImage (6, 2)>
     >>> unmasked.data
     <PolyData (6, 2)>
