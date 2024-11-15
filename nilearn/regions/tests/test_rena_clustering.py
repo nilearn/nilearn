@@ -182,7 +182,8 @@ def test_rena_clustering_input_mask_surface(
     surf_img, surf_mask, mask_as, n_clusters
 ):
     """Test if ReNA clustering works in both cases when mask_img is either a
-    SurfaceImage or SurfaceMasker."""
+    SurfaceImage or SurfaceMasker.
+    """
     # create a surface masker
     masker = SurfaceMasker(surf_mask()).fit()
     # mask the surface image with 50 samples
