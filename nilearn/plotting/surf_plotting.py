@@ -763,7 +763,7 @@ def plot_surf(
     Parameters
     ----------
     surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`\
-                or a Mesh, or a PolyMesh, or None
+                or a Mesh, or a :obj:`~nilearn.surface.PolyMesh`, or None
         Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
@@ -772,7 +772,7 @@ def plot_surf(
         the second containing the indices (into coords)
         of the :term:`mesh` :term:`faces`,
         or a Mesh object with "coordinates" and "faces" attributes,
-        or a PolyMesh object,
+        or a :obj:`~nilearn.surface.PolyMesh` object,
         or None.
         If None is passed, then ``surf_map``
         must be a :obj:`~nilearn.surface.SurfaceImage` instance
@@ -1089,7 +1089,7 @@ def plot_surf_contours(
     Parameters
     ----------
     surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`\
-                or a Mesh, or a PolyMesh, or None
+                or a Mesh, or a :obj:`~nilearn.surface.PolyMesh`, or None
         Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
@@ -1098,7 +1098,7 @@ def plot_surf_contours(
         the second containing the indices (into coords)
         of the :term:`mesh` :term:`faces`,
         or a Mesh object with "coordinates" and "faces" attributes,
-        or a PolyMesh object,
+        or a :obj:`~nilearn.surface.PolyMesh` object,
         or None.
         If None is passed, then ``roi_map``
         must be a :obj:`~nilearn.surface.SurfaceImage` instance

@@ -45,12 +45,12 @@ can plot, save and load them.
 #
 # For brain surfaces we typically have two meshes: one for the left hemisphere
 # and one for the right hemisphere. Nilearn represents this as a
-# :class:`~nilearn.experimental.surface.PolyMesh` object with two ``parts``:
+# :class:`~nilearn.surface.PolyMesh` object with two ``parts``:
 # ``left`` and ``right``.
 #
 # So you can define your own :term:`mesh`, say, for the left part a tetrahedron
 # and for the right part a pyramid, using numpy arrays and create a
-# :class:`~nilearn.experimental.surface.PolyMesh` object as follows:
+# :class:`~nilearn.surface.PolyMesh` object as follows:
 import numpy as np
 
 from nilearn.experimental.surface import InMemoryMesh, PolyMesh
