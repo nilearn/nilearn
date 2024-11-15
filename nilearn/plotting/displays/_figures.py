@@ -5,7 +5,7 @@ from scipy import linalg
 from scipy.spatial import distance_matrix
 
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
-from nilearn.experimental.surface import SurfaceImage
+from nilearn.surface import SurfaceImage
 from nilearn.surface.surface import load_surf_data
 
 if is_plotly_installed():
