@@ -670,8 +670,8 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
             )
 
         # If mask_img is a SurfaceMasker, we need to extract the mask_img
-        if isinstance(mask_img, SurfaceMasker):
-            mask_img = self.mask_img.mask_img_
+        if isinstance(self.mask_img, SurfaceMasker):
+            self.mask_img = self.mask_img.mask_img_
 
         if self.memory is None or isinstance(self.memory, str):
             self.memory_ = Memory(
