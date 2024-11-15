@@ -192,10 +192,16 @@ def test_rena_clustering_input_mask_as_surface_masker(
     _make_surface_class_data, surf_mask
 ):
     """Test if ReNA clustering works when mask_img is a SurfaceMasker."""
+    # create a surface masker
     masker = SurfaceMasker(surf_mask()).fit()
+    # create SurfaceImage with several samples
     surf_img, _ = _make_surface_class_data
+    # mask the surface image
     X = masker.transform(surf_img)
+    # instantiate ReNA with mask_img as a SurfaceMasker
     clustering = ReNA(masker, n_clusters=2)
+    # fit and transform the data
     X_transformed = clustering.fit_transform(X)
 
+    # make sure the transformed data was reduced to 2 clusters
     assert X_transformed.shape == (surf_img.shape[0], 2)
