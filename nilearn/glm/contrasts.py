@@ -478,10 +478,12 @@ def compute_fixed_effects(
 
     Parameters
     ----------
-    contrast_imgs : :obj:`list` of Nifti1Images or strings or SurfaceImage
+    contrast_imgs : :obj:`list` of Nifti1Images or :obj:`str`\
+                    or :obj:`~nilearn.surface.SurfaceImage`
         The input contrast images.
 
-    variance_imgs : :obj:`list` of Nifti1Images or strings or SurfaceImage
+    variance_imgs : :obj:`list` of Nifti1Images or :obj:`str` \
+                    or :obj:`~nilearn.surface.SurfaceImage`
         The input variance images.
 
     mask : Nifti1Image or NiftiMasker instance or SurfaceMasker instance
@@ -502,13 +504,13 @@ def compute_fixed_effects(
 
     Returns
     -------
-    fixed_fx_contrast_img : Nifti1Image or SurfaceImage
+    fixed_fx_contrast_img : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
         The fixed effects contrast computed within the mask.
 
-    fixed_fx_variance_img : Nifti1Image or SurfaceImage
+    fixed_fx_variance_img : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
         The fixed effects variance computed within the mask.
 
-    fixed_fx_stat_img : Nifti1Image or SurfaceImage
+    fixed_fx_stat_img : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
         The fixed effects stat computed within the mask.
 
     fixed_fx_z_score_img : Nifti1Image, optional

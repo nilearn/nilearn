@@ -774,10 +774,13 @@ def plot_surf(
         or a Mesh object with "coordinates" and "faces" attributes,
         or a PolyMesh object,
         or None.
-        If None is passed, then ``surf_map`` must be a SurfaceImage instance
-        and the mesh from that SurfaceImage instance will be used.
+        If None is passed, then ``surf_map``
+        must be a :obj:`~nilearn.surface.SurfaceImage` instance
+        and the mesh from that :obj:`~nilearn.surface.SurfaceImage` instance
+        will be used.
 
-    surf_map : :obj:`str` or :class:`numpy.ndarray` or SurfaceImage or None, \
+    surf_map : :obj:`str` or :class:`numpy.ndarray`\
+               or :obj:`~nilearn.surface.SurfaceImage` or None, \
                default=None
         Data to be displayed on the surface :term:`mesh`.
         Can be a file
@@ -785,12 +788,14 @@ def plot_surf(
         or Freesurfer specific files such as
         .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array with a value for each :term:`vertex` of the `surf_mesh`,
-        or a SurfaceImage instance.
+        or a :obj:`~nilearn.surface.SurfaceImage` instance.
         If None is passed for ``surf_mesh``
-        then ``surf_map`` must be a SurfaceImage instance
+        then ``surf_map``
+        must be a :obj:`~nilearn.surface.SurfaceImage` instance
         and its the mesh will be used for plotting.
 
-    bg_map : :obj:`str` or :class:`numpy.ndarray` or SurfaceImage or None,\
+    bg_map : :obj:`str` or :class:`numpy.ndarray` \
+             or :obj:`~nilearn.surface.SurfaceImage` or None,\
              default=None
         Background image to be plotted on the :term:`mesh`
         underneath the surf_data in greyscale,
@@ -1095,11 +1100,14 @@ def plot_surf_contours(
         or a Mesh object with "coordinates" and "faces" attributes,
         or a PolyMesh object,
         or None.
-        If None is passed, then ``roi_map`` must be a SurfaceImage instance
-        and the mesh from that SurfaceImage instance will be used.
+        If None is passed, then ``roi_map``
+        must be a :obj:`~nilearn.surface.SurfaceImage` instance
+        and the mesh from that :obj:`~nilearn.surface.SurfaceImage` instance
+        will be used.
 
-    roi_map : :obj:`str` or :class:`numpy.ndarray` or SurfaceImage or None, \
-               default=None
+    roi_map : :obj:`str` or :class:`numpy.ndarray` or \
+              :obj:`~nilearn.surface.SurfaceImage` or None, \
+              default=None
         ROI map to be displayed on the surface mesh,
         can be a file
         (valid formats are .gii, .mgz, or
@@ -1110,11 +1118,13 @@ def plot_surf_contours(
         and zero inside ROI,
         or an integer giving the label number for atlases.
         If None is passed for ``surf_mesh``
-        then ``roi_map`` must be a SurfaceImage instance
+        then ``roi_map``
+        must be a :obj:`~nilearn.surface.SurfaceImage` instance
         and its the mesh will be used for plotting.
 
     hemi : {"left", "right", None}, default=None
-        Hemisphere to display in case a SurfaceImage is passed as ``roi_map``
+        Hemisphere to display in case a :obj:`~nilearn.surface.SurfaceImage`
+        is passed as ``roi_map``
         and / or if PolyMesh is passed as ``surf_mesh``.
         In these cases, if ``hemi`` is set to None, it will default to "left".
 
@@ -1328,8 +1338,10 @@ def plot_surf_stat_map(
         or a Mesh object with "coordinates" and "faces" attributes,
         or a PolyMesh object,
         or None.
-        If None is passed, then ``surf_map`` must be a SurfaceImage instance
-        and the mesh from that SurfaceImage instance will be used.
+        If None is passed, then ``surf_map``
+        must be a :obj:`~nilearn.surface.SurfaceImage` instance
+        and the mesh from
+        that :obj:`~nilearn.surface.SurfaceImage` instance will be used.
 
     stat_map : :obj:`str` or :class:`numpy.ndarray`
         Statistical map to be displayed on the surface :term:`mesh`,
@@ -1339,10 +1351,12 @@ def plot_surf_stat_map(
         .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array with a value for each :term:`vertex` of the `surf_mesh`.
         If None is passed for ``surf_mesh``
-        then ``stat_map`` must be a SurfaceImage instance
+        then ``stat_map``
+        must be a :obj:`~nilearn.surface.SurfaceImage` instance
         and its the mesh will be used for plotting.
 
-    bg_map : :obj:`str` or :class:`numpy.ndarray` or SurfaceImage or None,\
+    bg_map : :obj:`str` or :class:`numpy.ndarray` or \
+             :obj:`~nilearn.surface.SurfaceImage` or None,\
              default=None
         Background image to be plotted on the :term:`mesh` underneath
         the stat_map in greyscale, most likely a sulcal depth map
@@ -1912,11 +1926,14 @@ def plot_surf_roi(
         or a Mesh object with "coordinates" and "faces" attributes,
         or a PolyMesh object,
         or None.
-        If None is passed, then ``surf_map`` must be a SurfaceImage instance
-        and the mesh from that SurfaceImage instance will be used.
+        If None is passed, then ``surf_map``
+        must be a :obj:`~nilearn.surface.SurfaceImage` instance
+        and the mesh
+        from that :obj:`~nilearn.surface.SurfaceImage` instance will be used.
 
     roi_map : :obj:`str` or :class:`numpy.ndarray` or \
-              :obj:`list` of :class:`numpy.ndarray` or SurfaceImage or None, \
+              :obj:`list` of :class:`numpy.ndarray` or \
+              :obj:`~nilearn.surface.SurfaceImage` or None, \
               default=None
         ROI map to be displayed on the surface :term:`mesh`,
         can be a file
@@ -1924,14 +1941,16 @@ def plot_surf_roi(
         Freesurfer specific files such as
         .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array with a value for each :term:`vertex` of the `surf_mesh`
-        or a SurfaceImage instance.
+        or a :obj:`~nilearn.surface.SurfaceImage` instance.
         The value at each vertex one inside the ROI and zero inside ROI, or an
         integer giving the label number for atlases.
         If None is passed for ``surf_mesh``
-        then ``roi_map`` must be a SurfaceImage instance
+        then ``roi_map``
+        must be a :obj:`~nilearn.surface.SurfaceImage` instance
         and its the mesh will be used for plotting.
 
-    bg_map : :obj:`str` or :class:`numpy.ndarray` or SurfaceImage or None,\
+    bg_map : :obj:`str` or :class:`numpy.ndarray` or \
+             :obj:`~nilearn.surface.SurfaceImage` or None,\
              default=None
         Background image to be plotted on the :term:`mesh` underneath
         the stat_map in greyscale, most likely a sulcal depth map for

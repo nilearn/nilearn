@@ -468,10 +468,13 @@ def view_surf(
         or a Mesh object with "coordinates" and "faces" attributes,
         or a PolyMesh object,
         or None.
-        If None is passed, then ``surf_map`` must be a SurfaceImage instance
-        and the mesh from that SurfaceImage instance will be used.
+        If None is passed, then ``surf_map``
+        must be a :obj:`~nilearn.surface.SurfaceImage` instance
+        and the mesh from that :obj:`~nilearn.surface.SurfaceImage` instance
+        will be used.
 
-    surf_map : :obj:`str` or :class:`numpy.ndarray`, or SurfaceImage or None, \
+    surf_map : :obj:`str` or :class:`numpy.ndarray`, \
+               or :obj:`~nilearn.surface.SurfaceImage` or None, \
                default=None
         Data to be displayed on the surface :term:`mesh`.
         Can be a file (valid formats are .gii, .mgz, .nii, .nii.gz,
@@ -479,7 +482,8 @@ def view_surf(
         .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array.
         If None is passed for ``surf_mesh``
-        then ``surf_map`` must be a SurfaceImage instance
+        then ``surf_map``
+        must be a :obj:`~nilearn.surface.SurfaceImage` instance
         and its the mesh will be used for plotting.
 
     bg_map : :obj:`str` or :class:`numpy.ndarray`, default=None
@@ -491,7 +495,8 @@ def view_surf(
         Otherwise, it will not be modified.
 
     hemi : {"left", "right", None}, default=None
-        Hemisphere to display in case a SurfaceImage is passed as ``surf_map``
+        Hemisphere to display in case a :obj:`~nilearn.surface.SurfaceImage`
+        is passed as ``surf_map``
         and / or if PolyMesh is passed as ``surf_mesh``.
         In these cases, if ``hemi`` is set to None, it will default to "left".
 

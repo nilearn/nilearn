@@ -611,7 +611,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        X : list of Niimg-like or SurfaceImage objects
+        X : list of Niimg-like or :obj:`~nilearn.surface.SurfaceImage` objects
             See :ref:`extracting_data`.
             Data on which model is to be fitted. If this is a list,
             the affine is considered the same for all.
@@ -638,7 +638,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         masker_ : instance of NiftiMasker, MultiNiftiMasker, or SurfaceMasker
             The masker used to mask the data.
 
-        mask_img_ : Nifti1Image or SurfaceImage
+        mask_img_ : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
             Mask computed by the masker object.
 
         classes_ : numpy.ndarray
