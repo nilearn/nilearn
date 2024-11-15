@@ -230,7 +230,7 @@ def _make_edges_and_weights_surface(X, mask_img):
     X : ndarray, shape = [n_samples, n_features]
         Training data.
 
-    mask_img : SurfaceImage object
+    mask_img : :obj:`~nilearn.surface.SurfaceImage` object
         Object used for masking the data.
 
     Returns
@@ -285,7 +285,7 @@ def _weighted_connectivity_graph(X, mask_img):
     X : :class:`numpy.ndarray`
         Training data. shape = [n_samples, n_features]
 
-    mask_img : Niimg-like object or SurfaceImage object
+    mask_img : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage` object
         Object used for masking the data.
 
     Returns
@@ -505,7 +505,7 @@ def recursive_neighbor_agglomeration(
     X : :class:`numpy.ndarray`
         Training data. shape = [n_samples, n_features]
 
-    mask_img : Niimg-like object or SurfaceImage object
+    mask_img : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage` object
         Object used for masking the data.
 
     n_clusters : :obj:`int`
@@ -569,7 +569,8 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
 
     Parameters
     ----------
-    mask_img : Niimg-like object or SurfaceImage object or SurfaceMasker
+    mask_img : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
+    or :obj:`~nilearn.maskers.SurfaceMasker` object
         Object used for masking the data.
 
     n_clusters : :obj:`int`, default=2
