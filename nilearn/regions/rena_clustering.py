@@ -161,10 +161,10 @@ def _compute_weights_surface(X, mask, edges):
     Parameters
     ----------
     X : ndarray, shape = [n_samples, n_features]
-        Training data.
+        Masked training data, where some vertices were removed during masking.
 
-    mask : boolean
-        Object used for masking the data.
+    mask : boolean ndarray, shape = [1, n_features]
+        Initial mask used for getting the X
 
     edges : ndarray, shape = [2, n_edges]
         Unmasked edges of the mesh.
