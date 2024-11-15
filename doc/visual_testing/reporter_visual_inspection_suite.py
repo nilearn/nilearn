@@ -15,12 +15,12 @@ import pandas as pd
 
 from nilearn import datasets
 from nilearn.datasets import (
+    fetch_adhd,
     fetch_atlas_surf_destrieux,
     load_fsaverage,
     load_nki,
 )
-from nilearn.experimental import surface
-from nilearn.experimental.surface import SurfaceImage
+from nilearn.experimental.surface.maskers import SurfaceLabelsMasker
 from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
@@ -39,6 +39,7 @@ from nilearn.maskers import (
     SurfaceMasker,
 )
 from nilearn.reporting import make_glm_report
+from nilearn.surface import SurfaceImage
 
 REPORTS_DIR = Path(__file__).parent.parent / "modules" / "generated_reports"
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -64,7 +65,7 @@ def report_flm_adhd_dmn():
         memory="nilearn_cache",
     )
 
-    adhd_dataset = datasets.fetch_adhd(n_subjects=1)
+    adhd_dataset = fetch_adhd(n_subjects=1)
     seed_time_series = seed_masker.fit_transform(adhd_dataset.func[0])
 
     masker_report = seed_masker.generate_report()
@@ -478,7 +479,7 @@ def report_surface_label_masker():
     )
     label_names = [x.decode("utf-8") for x in destrieux.labels]
 
-    labels_masker = surface.SurfaceLabelsMasker(labels_img, label_names).fit()
+    labels_masker = SurfaceLabelsMasker(labels_img, label_names).fit()
     labels_masker_report_unfitted = labels_masker.generate_report()
     labels_masker_report_unfitted.save_as_html(
         REPORTS_DIR / "surface_label_masker_unfitted.html"

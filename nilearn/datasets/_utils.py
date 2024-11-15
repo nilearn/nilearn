@@ -213,7 +213,7 @@ def get_dataset_dir(
 
     Returns
     -------
-    data_dir : string
+    data_dir : pathlib.Path
         Path of the given dataset directory.
 
     Notes
@@ -251,7 +251,7 @@ def get_dataset_dir(
             logger.log(
                 f"Dataset found in {path}", verbose=verbose, msg_level=1
             )
-            return str(path)
+            return path
 
     # If not, create a folder in the first writeable directory
     errors = []
@@ -268,7 +268,7 @@ def get_dataset_dir(
 
                 logger.log(f"Dataset created in {path}", verbose)
 
-                return str(path)
+                return path
             except Exception as exc:
                 short_error_message = getattr(exc, "strerror", str(exc))
                 errors.append(f"\n -{path} ({short_error_message})")
@@ -531,7 +531,7 @@ def fetch_single_file(
 
     Returns
     -------
-    files : string
+    files : pahtlib.Path
         Absolute path of downloaded file.
 
     Notes
@@ -554,7 +554,7 @@ def fetch_single_file(
                 verbose=verbose,
                 session=sess,
             )
-    data_dir = Path(data_dir)
+
     # Determine data path
     data_dir.mkdir(parents=True, exist_ok=True)
 

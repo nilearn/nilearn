@@ -67,13 +67,14 @@ events = pd.read_table(events_file)
 # but we first resort to a standard :term:`mesh`,
 # the so-called fsaverage5 template from the FreeSurfer software.
 #
-# We use the :class:`nilearn.experimental.surface.SurfaceImage`
+# We use the :class:`nilearn.surface.SurfaceImage`
 # to create an surface object instance
 # that contains both the mesh
 # (here we use the one from the fsaverage5 templates)
 # and the BOLD data that we project on the surface.
+
 from nilearn.datasets import load_fsaverage
-from nilearn.experimental.surface import SurfaceImage
+from nilearn.surface import SurfaceImage
 
 fsaverage5 = load_fsaverage()
 image = SurfaceImage.from_volume(
@@ -86,7 +87,7 @@ image = SurfaceImage.from_volume(
 # ----------------------------
 #
 # We can now simply run a GLM by directly passing
-# our :class:`nilearn.experimental.surface.SurfaceImage` instance
+# our :class:`nilearn.surface.SurfaceImage` instance
 # as input to FirstLevelModel.fit
 #
 # Here we use an :term:`HRF` model
@@ -179,8 +180,7 @@ contrasts = {
 # %%
 # Let's estimate the contrasts by iterating over them.
 from nilearn.datasets import load_fsaverage_data
-from nilearn.experimental.plotting import plot_surf_stat_map
-from nilearn.plotting import show
+from nilearn.plotting import plot_surf_stat_map, show
 
 fsaverage_data = load_fsaverage_data(data_type="sulcal")
 

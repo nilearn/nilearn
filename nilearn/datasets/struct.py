@@ -1040,7 +1040,7 @@ def _fetch_surf_fsaverage(dataset_name, data_dir=None):
     )
 
     result = {
-        attribute: Path(dataset_dir, f"{attribute}.gii.gz")
+        attribute: dataset_dir / f"{attribute}.gii.gz"
         for attribute in dataset_attributes
     }
     result["description"] = str(get_dataset_descr(dataset_name))

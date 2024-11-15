@@ -582,7 +582,9 @@ def test_write_read_metadata(tmp_path):
     assert "relative_path" in written_metadata
     assert "absolute_path" not in written_metadata
 
-    read_metadata = neurovault._add_absolute_paths("tmp", written_metadata)
+    read_metadata = neurovault._add_absolute_paths(
+        Path("tmp"), written_metadata
+    )
 
     assert read_metadata["absolute_path"] == Path("tmp", "collection_1")
 

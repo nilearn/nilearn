@@ -39,7 +39,7 @@ from nilearn.datasets import (
     load_fsaverage_data,
     load_nki,
 )
-from nilearn.experimental.surface import SurfaceImage
+from nilearn.surface import SurfaceImage
 
 nki_dataset = load_nki()
 

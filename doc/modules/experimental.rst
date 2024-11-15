@@ -24,9 +24,4 @@ Classes
    :toctree: generated/
    :template: class.rst
 
-   FileMesh
-   InMemoryMesh
-   Mesh
-   PolyMesh
-   SurfaceImage
    SurfaceLabelsMasker
