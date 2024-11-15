@@ -87,7 +87,7 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
     >>> img
     <SurfaceImage (6, 2)>
     >>> masker = SurfaceMasker().fit(img)
-    >>> masker.slices
+    >>> masker._slices
     {'left': (0, np.int64(3)), 'right': (np.int64(3), np.int64(6))}
     >>> (masked_data := masker.transform(img))
     array([[1., 1., 1., 2., 2., 2.],
@@ -221,10 +221,10 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         assert self.mask_img_ is not None
 
         start, stop = 0, 0
-        self.slices = {}
+        self._slices = {}
         for part_name, mask in self.mask_img_.data.parts.items():
             stop = start + mask.sum()
-            self.slices[part_name] = start, stop
+            self._slices[part_name] = start, stop
             start = stop
         self.output_dimension_ = stop
 
@@ -299,12 +299,10 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         if self.reports:
             self._reporting_data["images"] = img
 
-        output = np.empty((*img.shape[1:], self.output_dimension_))
-        for part_name, (start, stop) in self.slices.items():
+        output = np.empty((img.shape[1], self.output_dimension_))
+        for part_name, (start, stop) in self._slices.items():
             mask = self.mask_img_.data.parts[part_name]
-            output[..., start:stop] = np.moveaxis(
-                img.data.parts[part_name][mask], 0, -1
-            )
+            output[start:stop, ...] = img.data.parts[part_name][mask]
 
         if self.memory is None:
             self.memory = Memory(location=None)
@@ -390,16 +388,16 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             raise ValueError(
                 "Input to 'inverse_transform' has wrong shape.\n"
                 f"Last dimension should be {self.output_dimension_}.\n"
-                f"Got {masked_img.shape[-1]}."
+                f"Got {masked_img.shape[1]}."
             )
 
         data = {}
         for part_name, mask in self.mask_img_.data.parts.items():
             data[part_name] = np.zeros(
-                (mask.shape[0], *masked_img.shape[:-1]),
+                mask.shape,
                 dtype=masked_img.dtype,
             )
-            start, stop = self.slices[part_name]
+            start, stop = self._slices[part_name]
             data[part_name][mask] = np.moveaxis(
                 masked_img[..., start:stop], -1, 0
             )

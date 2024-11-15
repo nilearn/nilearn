@@ -1374,7 +1374,7 @@ class SurfaceMesh(abc.ABC):
     def __repr__(self):
         return (
             f"<{self.__class__.__name__} with "
-            f"{self.n_vertices} vertices and"
+            f"{self.n_vertices} vertices and "
             f"{len(self.faces)} faces.>"
         )
 

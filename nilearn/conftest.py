@@ -466,7 +466,7 @@ def surf_mask():
                 data_shape = (val.n_vertices, 1)
                 data_part = np.ones(data_shape, dtype=int)
                 for i in range(n_zeros // 2):
-                    data_part[..., i] = 0
+                    data_part[i, ...] = 0
                 data_part = data_part.astype(bool)
                 data[key] = data_part
             return SurfaceImage(mesh, data)
