@@ -5,10 +5,8 @@ import pytest
 
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn.experimental.surface import (
-    SurfaceImage,
-)
 from nilearn.maskers import SurfaceMasker
+from nilearn.surface import SurfaceImage
 
 extra_valid_checks = [
     "check_no_attributes_set_in_init",

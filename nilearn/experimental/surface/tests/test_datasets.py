@@ -1,11 +1,11 @@
 import pytest
 
 from nilearn.experimental.surface import (
-    SurfaceImage,
     fetch_nki,
     load_fsaverage,
     load_fsaverage_data,
 )
+from nilearn.surface import SurfaceImage
 
 
 def test_load_fsaverage():

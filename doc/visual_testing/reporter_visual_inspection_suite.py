@@ -17,7 +17,6 @@ from nilearn import datasets
 from nilearn.datasets import fetch_atlas_surf_destrieux
 from nilearn.experimental import surface
 from nilearn.experimental.surface import (
-    SurfaceImage,
     load_fsaverage,
 )
 from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
@@ -38,6 +37,7 @@ from nilearn.maskers import (
     SurfaceMasker,
 )
 from nilearn.reporting import make_glm_report
+from nilearn.surface import SurfaceImage
 
 REPORTS_DIR = Path(__file__).parent.parent / "modules" / "generated_reports"
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
