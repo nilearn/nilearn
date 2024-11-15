@@ -7,12 +7,12 @@ from nilearn._utils import compare_version
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.input_data import NiftiMasker
+from nilearn.maskers import SurfaceMasker
 from nilearn.regions.hierarchical_kmeans_clustering import (
     HierarchicalKMeans,
     _adjust_small_clusters,
     hierarchical_k_means,
 )
-from nilearn.maskers import SurfaceMasker
 
 extra_valid_checks = [
     "check_clusterer_compute_labels_predict",
