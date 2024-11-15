@@ -9,6 +9,7 @@ from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.conftest import _img_3d_mni
 from nilearn.experimental.surface import SurfaceImage
+from nilearn.maskers import SurfaceMasker
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMasker
 from nilearn.regions.rena_clustering import (
@@ -112,6 +113,16 @@ def test_rena_clustering():
     del n_voxels, X_red, X_compress
 
 
+# ------------------------ surface tests ------------------------------------ #
+
+
+@pytest.fixture()
+def _make_surface_class_data(rng, surf_img, shape=(50,)):
+    """Create a surface image classification for testing."""
+    y = rng.choice([0, 1], size=shape)
+    return surf_img(shape), y
+
+
 @pytest.mark.parametrize("part", ["left", "right"])
 def test_make_edges_surface(surf_mask, part):
     """Test if the edges and edge mask are correctly computed."""
@@ -173,3 +184,16 @@ def test_make_edges_and_weights_surface(surf_mesh, rng):
     # weights are computed for each edge
     assert len(weights["left"]) == 3
     assert len(weights["right"]) == 3
+
+
+def test_rena_clustering_input_mask_as_surface_masker(
+    _make_surface_class_data, surf_mask
+):
+    """Test if ReNA clustering works when mask_img is a SurfaceMasker."""
+    masker = SurfaceMasker(surf_mask()).fit()
+    surf_img, _ = _make_surface_class_data
+    X = masker.transform(surf_img)
+    clustering = ReNA(masker, n_clusters=2)
+    X_transformed = clustering.fit_transform(X)
+
+    assert X_transformed.shape == (surf_img.shape[0], 2)
