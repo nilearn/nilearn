@@ -67,7 +67,7 @@ events = pd.read_table(events_file)
 # but we first resort to a standard :term:`mesh`,
 # the so-called fsaverage5 template from the FreeSurfer software.
 #
-# We use the :class:`nilearn.experimental.surface.SurfaceImage`
+# We use the :class:`~nilearn.surface.SurfaceImage`
 # to create an surface object instance
 # that contains both the mesh
 # (here we use the one from the fsaverage5 templates)
@@ -85,7 +85,7 @@ image = SurfaceImage.from_volume(
 # ----------------------------
 #
 # We can now simply run a GLM by directly passing
-# our :class:`nilearn.experimental.surface.SurfaceImage` instance
+# our :class:`nilearn.surface.SurfaceImage` instance
 # as input to FirstLevelModel.fit
 #
 # Here we use an :term:`HRF` model

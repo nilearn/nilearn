@@ -113,7 +113,7 @@ data = {"left": left_data, "right": right_data}
 # ------------------------
 #
 # Now we can create a surface image by combining the :term:`mesh` and the data
-# using the :class:`~nilearn.experimental.surface.SurfaceImage` class:
+# using the :class:`~nilearn.surface.SurfaceImage` class:
 from nilearn.experimental.surface import SurfaceImage
 
 surface_image = SurfaceImage(mesh=mesh, data=data)
@@ -170,7 +170,7 @@ surface_image.data.to_filename(output_dir / "surface_image_data.gii")
 # ----------------------
 #
 # You can load the saved files back into Nilearn using the
-# :class:`~nilearn.experimental.surface.SurfaceImage` object:
+# :class:`~nilearn.surface.SurfaceImage` object:
 mesh = {
     "left": output_dir / "surface_image_mesh_hemi-L.gii",
     "right": output_dir / "surface_image_mesh_hemi-R.gii",
