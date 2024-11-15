@@ -196,6 +196,11 @@ def test_rena_clustering_input_mask_surface(
         clustering = ReNA(mask_img=masker, n_clusters=n_clusters)
     # fit and transform the data
     X_transformed = clustering.fit_transform(X)
+    # inverse transform the transformed data
+    X_inverse = clustering.inverse_transform(X_transformed)
 
     # make sure the n_features in transformed data were reduced to n_clusters
     assert X_transformed.shape[1] == n_clusters
+
+    # make sure the inverse transformed data has the same shape as the original
+    assert X_inverse.shape == X.shape
