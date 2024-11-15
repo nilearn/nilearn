@@ -438,7 +438,7 @@ def surf_img():
         mesh = _make_mesh()
         data = {}
         for i, (key, val) in enumerate(mesh.parts.items()):
-            data_shape = (*tuple(n_samples), val.n_vertices)
+            data_shape = (val.n_vertices, *tuple(n_samples))
             data_part = (
                 np.arange(np.prod(data_shape)).reshape(data_shape) + 1.0
             ) * 10**i
@@ -463,11 +463,12 @@ def surf_mask():
             mesh = _make_mesh()
             data = {}
             for key, val in mesh.parts.items():
-                data_part = np.ones(val.n_vertices, dtype=int)
+                data_shape = (val.n_vertices, 1)
+                data_part = np.ones(data_shape, dtype=int)
                 for i in range(n_zeros // 2):
                     data_part[..., i] = 0
                 data_part = data_part.astype(bool)
-                data[key] = np.rollaxis(data_part, -1)
+                data[key] = data_part
             return SurfaceImage(mesh, data)
 
     return _make_surface_mask
@@ -482,8 +483,8 @@ def surf_label_img():
     def _surface_label_img():
         mesh = _make_mesh()
         data = {
-            "left": np.asarray([0, 0, 1, 1]),
-            "right": np.asarray([1, 1, 0, 0, 0]),
+            "left": np.asarray([[0, 0, 1, 1]]),
+            "right": np.asarray([[1, 1, 0, 0, 0]]),
         }
 
         return SurfaceImage(mesh, data)

@@ -1266,7 +1266,7 @@ class PolyData:
     The first dimension corresponds to the vertices: the typical shape of the
     data for a hemisphere is ``(n_vertices, n_time_points)``.
     >>> import numpy as np
-    >>> from nilearn.experimental.surface import PolyData
+    >>> from nilearn.surface import PolyData
     >>> n_time_points = 10
     >>> left = np.ones(((n_left_vertices := 5), n_time_points))
     >>> right = np.ones(((n_right_vertices := 7), n_time_points))
@@ -1315,9 +1315,9 @@ class PolyData:
     @property
     def shape(self):
         """Shape of the data."""
-        first_shape = next(iter(self.parts.values())).shape
-        concat_dim = sum(p.shape[-1] for p in self.parts.values())
-        return (*first_shape[:-1], concat_dim)
+        second_shape = next(iter(self.parts.values())).shape[1]
+        sum_vertices = sum(p.shape[0] for p in self.parts.values())
+        return (sum_vertices, second_shape)
 
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.shape}>"
@@ -1781,6 +1781,6 @@ class SurfaceImage:
             **right_kwargs,
         )
 
-        data = PolyData(left=texture_left.T, right=texture_right.T)
+        data = PolyData(left=texture_left, right=texture_right)
 
         return cls(mesh=mesh, data=data)
