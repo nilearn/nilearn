@@ -116,13 +116,6 @@ def test_rena_clustering():
 # ------------------------ surface tests ------------------------------------ #
 
 
-@pytest.fixture()
-def _make_surface_class_data(rng, surf_img, shape=(50,)):
-    """Create a surface image classification for testing."""
-    y = rng.choice([0, 1], size=shape)
-    return surf_img(shape), y
-
-
 @pytest.mark.parametrize("part", ["left", "right"])
 def test_make_edges_surface(surf_mask, part):
     """Test if the edges and edge mask are correctly computed."""
@@ -140,9 +133,7 @@ def test_make_edges_surface(surf_mask, part):
         assert edges_unmasked[:, edges_mask].shape == (2, 3)
 
 
-def test_make_edges_and_weights_surface(
-    surf_mesh, _make_surface_class_data, rng
-):
+def test_make_edges_and_weights_surface(surf_mesh, surf_img, rng):
     """Smoke test for _make_edges_and_weights_surface. Here we create a new
     surface mask (relative to the one used in test_make_edges_surface) to make
     sure overall edge and weight computation is robust.
@@ -157,10 +148,8 @@ def test_make_edges_and_weights_surface(
     surf_mask = SurfaceImage(surf_mesh(), data)
     # create a surface masker
     masker = SurfaceMasker(surf_mask).fit()
-    # create SurfaceImage with several samples
-    surf_img, _ = _make_surface_class_data
-    # mask the surface image
-    X = masker.transform(surf_img)
+    # mask the surface image with 50 samples
+    X = masker.transform(surf_img((50,)))
     # compute edges and weights
     edges, weights = _make_edges_and_weights_surface(X, surf_mask)
 
@@ -188,20 +177,37 @@ def test_make_edges_and_weights_surface(
     assert len(weights["right"]) == 3
 
 
+@pytest.mark.parametrize("n_clusters", [2, 4, 5])
 def test_rena_clustering_input_mask_as_surface_masker(
-    _make_surface_class_data, surf_mask
+    surf_img, surf_mask, n_clusters
 ):
     """Test if ReNA clustering works when mask_img is a SurfaceMasker."""
     # create a surface masker
     masker = SurfaceMasker(surf_mask()).fit()
-    # create SurfaceImage with several samples
-    surf_img, _ = _make_surface_class_data
-    # mask the surface image
-    X = masker.transform(surf_img)
+    # mask the surface image with 50 samples
+    X = masker.transform(surf_img((50,)))
     # instantiate ReNA with mask_img as a SurfaceMasker
-    clustering = ReNA(masker, n_clusters=2)
+    clustering = ReNA(mask_img=masker, n_clusters=n_clusters)
     # fit and transform the data
     X_transformed = clustering.fit_transform(X)
 
-    # make sure the transformed data was reduced to 2 clusters
-    assert X_transformed.shape == (surf_img.shape[0], 2)
+    # make sure the n_features in transformed data were reduced to n_clusters
+    assert X_transformed.shape[1] == n_clusters
+
+
+@pytest.mark.parametrize("n_clusters", [2, 4, 5])
+def test_rena_clustering_input_mask_as_surface_image(
+    surf_img, surf_mask, n_clusters
+):
+    """Test if ReNA clustering works when mask_img is a SurfaceImage."""
+    # create a surface masker
+    masker = SurfaceMasker(surf_mask()).fit()
+    # mask the surface image with 50 samples
+    X = masker.transform(surf_img((50,)))
+    # instantiate ReNA with mask_img as a SurfaceImage
+    clustering = ReNA(mask_img=surf_mask(), n_clusters=n_clusters)
+    # fit and transform the data
+    X_transformed = clustering.fit_transform(X)
+
+    # make sure the n_features in transformed data were reduced to n_clusters
+    assert X_transformed.shape[1] == n_clusters
