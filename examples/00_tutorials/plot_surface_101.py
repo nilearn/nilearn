@@ -53,7 +53,7 @@ can plot, save and load them.
 # :class:`~nilearn.surface.PolyMesh` object as follows:
 import numpy as np
 
-from nilearn.experimental.surface import InMemoryMesh, PolyMesh
+from nilearn.surface import InMemoryMesh, PolyMesh
 
 # for the tetrahedron
 left_coords = np.asarray(
@@ -114,7 +114,7 @@ data = {"left": left_data, "right": right_data}
 #
 # Now we can create a surface image by combining the :term:`mesh` and the data
 # using the :class:`~nilearn.surface.SurfaceImage` class:
-from nilearn.experimental.surface import SurfaceImage
+from nilearn.surface import SurfaceImage
 
 surface_image = SurfaceImage(mesh=mesh, data=data)
 
@@ -124,8 +124,8 @@ surface_image = SurfaceImage(mesh=mesh, data=data)
 #
 # The surface image can be plotted using the different functions from the
 # :mod:`nilearn.plotting` module. Here we will show how to use the
-# :func:`~nilearn.experimental.plotting.view_surf` function:
-from nilearn.experimental import plotting
+# :func:`~nilearn.plotting.view_surf` function:
+from nilearn import plotting
 
 # %%
 # Plot the left part
@@ -138,6 +138,8 @@ plotting.view_surf(
 plotting.view_surf(
     surf_mesh=surface_image.mesh, surf_map=surface_image, hemi="right"
 )
+
+plotting.show()
 
 # %%
 # Data format
@@ -189,6 +191,8 @@ plotting.view_surf(
     surf_map=surface_image_loaded,
     hemi="left",
 )
+
+plotting.show()
 
 # %%
 # And that's it! Now you know how to create, plot, save and load surface images

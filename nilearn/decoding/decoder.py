@@ -53,9 +53,9 @@ from nilearn._utils.masker_validation import (
     check_embedded_masker,
 )
 from nilearn._utils.param_validation import check_feature_screening
-from nilearn.experimental.surface import SurfaceImage
 from nilearn.maskers import SurfaceMasker
 from nilearn.regions.rena_clustering import ReNA
+from nilearn.surface import SurfaceImage
 
 SUPPORTED_ESTIMATORS = {
     "svc_l1": LinearSVC(penalty="l1", dual=False, max_iter=10000),

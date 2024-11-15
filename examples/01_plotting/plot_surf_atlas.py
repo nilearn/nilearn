@@ -18,10 +18,10 @@ See :ref:`plotting` for more details.
 # and create a :obj:`~nilearn.surface.SurfaceImage` instance with it.
 from nilearn.datasets import fetch_atlas_surf_destrieux
 from nilearn.experimental.surface import (
-    SurfaceImage,
     load_fsaverage,
     load_fsaverage_data,
 )
+from nilearn.surface import SurfaceImage
 
 fsaverage = load_fsaverage("fsaverage5")
 destrieux = fetch_atlas_surf_destrieux()
