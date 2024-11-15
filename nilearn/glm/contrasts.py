@@ -486,7 +486,8 @@ def compute_fixed_effects(
                     or :obj:`~nilearn.surface.SurfaceImage`
         The input variance images.
 
-    mask : Nifti1Image or NiftiMasker instance or SurfaceMasker instance
+    mask : Nifti1Image or NiftiMasker instance or \
+        :obj:`~nilearn.maskers.SurfaceMasker` instance
         or None, default=None
         Mask image. If ``None``, it is recomputed from ``contrast_imgs``.
 

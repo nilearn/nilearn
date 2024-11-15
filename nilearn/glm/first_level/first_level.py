@@ -323,12 +323,13 @@ class FirstLevelModel(BaseGLM):
         min_onset) are not considered.
 
     mask_img : Niimg-like, NiftiMasker, :obj:`~nilearn.surface.SurfaceImage`,\
-             SurfaceMasker, False or \
+             :obj:`~nilearn.maskers.SurfaceMasker`, False or \
              None, default=None
         Mask to be used on data.
         If an instance of masker is passed, then its mask will be used.
         If None is passed, the mask will be computed automatically
-        by a NiftiMasker or SurfaceMasker with default parameters.
+        by a NiftiMasker
+        or :obj:`~nilearn.maskers.SurfaceMasker` with default parameters.
         If False is given then the data will not be masked.
         In the case of surface analysis, passing None or False will lead to
         no masking.
