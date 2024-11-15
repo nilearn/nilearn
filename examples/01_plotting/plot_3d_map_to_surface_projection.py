@@ -42,7 +42,7 @@ curv_right_sign = np.sign(fsaverage_curvature.data.parts["right"])
 # %%
 # Sample the 3D data around each node of the mesh
 # -----------------------------------------------
-from nilearn.experimental.surface import SurfaceImage
+from nilearn.surface import SurfaceImage
 
 img = SurfaceImage.from_volume(
     mesh=fsaverage_meshes["pial"],

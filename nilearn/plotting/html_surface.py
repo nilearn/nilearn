@@ -11,7 +11,6 @@ import numpy as np
 from nilearn import datasets, surface
 from nilearn._utils import fill_doc
 from nilearn._utils.niimg_conversions import check_niimg_3d
-from nilearn.experimental.surface import PolyMesh, SurfaceImage
 from nilearn.plotting import cm
 from nilearn.plotting._utils import check_surface_plotting_inputs
 from nilearn.plotting.html_document import HTMLDocument
@@ -22,6 +21,7 @@ from nilearn.plotting.js_plotting_utils import (
     mesh_to_plotly,
     to_color_strings,
 )
+from nilearn.surface import PolyMesh, SurfaceImage
 
 
 class SurfaceView(HTMLDocument):  # noqa: D101
