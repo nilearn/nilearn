@@ -162,17 +162,20 @@ def _compute_weights_surface(X, mask, edges):
     ----------
     X : ndarray, shape = [n_samples, n_features]
         Masked training data, where some vertices were removed during masking.
+        So n_features is only the number of vertices that were kept after
+        masking.
 
-    mask : boolean ndarray, shape = [1, n_features]
-        Initial mask used for getting the X
+    mask : boolean ndarray, shape = [1, n_vertices]
+        Initial mask used for getting the X. So n_vertices is the total number
+        of vertices in the mesh.
 
     edges : ndarray, shape = [2, n_edges]
-        Unmasked edges of the mesh.
+        Edges between the all the vertices in the mesh before masking.
 
     Returns
     -------
     weights : ndarray
-        Weights corresponding to all edges in the mask.
+        Weights corresponding to all edges.
         shape: (n_edges,).
 
     """
@@ -180,6 +183,10 @@ def _compute_weights_surface(X, mask, edges):
     shape = mask.shape
 
     data = np.empty((shape[0], n_samples))
+    # Unmasking the X
+    # this will give us the back the transpose of original data
+    # with the masked vertices set to 0
+    # data will be of shape (n_vertices, n_samples)
     for sample in range(n_samples):
         data[:, sample] = unmask_from_to_3d_array(X[sample].copy(), mask)
 
