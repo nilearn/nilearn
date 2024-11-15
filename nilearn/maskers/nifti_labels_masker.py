@@ -4,6 +4,7 @@ import warnings
 
 import numpy as np
 from joblib import Memory
+from nibabel import Nifti1Image
 
 from nilearn import _utils, image, masking
 from nilearn._utils import logger
@@ -45,7 +46,7 @@ class _ExtractionFunctor:
 
 
 @_utils.fill_doc
-class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
+class NiftiLabelsMasker(BaseMasker):
     """Class for extracting data from Niimg-like objects \
        using labels of non-overlapping brain regions.
 
@@ -350,6 +351,46 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             region_ids = np.array(region_ids)
         return np.sum(region_ids != self.background_label)
 
+    def _post_masking_atlas(self, visualize=False):
+        """
+        Find the masked atlas before transform and return it.
+
+        Also return the removed region ids and names.
+        if visualize is True, plot the masked atlas.
+        """
+        labels_data = _utils.niimg.safe_get_data(
+            self._resampled_labels_img_, ensure_finite=True
+        )
+        labels_data = labels_data.copy()
+        mask_data = _utils.niimg.safe_get_data(
+            self.mask_img_, ensure_finite=True
+        )
+        mask_data = mask_data.copy()
+        region_ids_before_masking = np.unique(labels_data).tolist()
+        # apply the mask to the atlas
+        labels_data[np.logical_not(mask_data)] = self.background_label
+        region_ids_after_masking = np.unique(labels_data).tolist()
+        masked_atlas = Nifti1Image(
+            labels_data.astype(np.int8), self._resampled_labels_img_.affine
+        )
+        removed_region_ids = [
+            region_id
+            for region_id in region_ids_before_masking
+            if region_id not in region_ids_after_masking
+        ]
+        removed_region_names = [
+            self._region_id_name[region_id]
+            for region_id in removed_region_ids
+            if region_id != self.background_label
+        ]
+        display = None
+        if visualize:
+            from nilearn.plotting import plot_roi
+
+            display = plot_roi(masked_atlas, title="Masked atlas")
+
+        return masked_atlas, removed_region_ids, removed_region_names, display
+
     def generate_report(self):
         """Generate a report."""
         if not is_matplotlib_installed():
@@ -490,7 +531,11 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
         return [display]
 
-    def fit(self, imgs=None, y=None):
+    def fit(
+        self,
+        imgs=None,
+        y=None,  # noqa: ARG002
+    ):
         """Prepare signal extraction from regions.
 
         Parameters

@@ -29,7 +29,7 @@ from sklearn import __version__ as sklearn_version
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.exceptions import NotFittedError
+from sklearn.exceptions import ConvergenceWarning, NotFittedError
 from sklearn.linear_model import (
     LassoCV,
     LogisticRegressionCV,
@@ -48,7 +48,11 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR, LinearSVC
 
 from nilearn._utils import compare_version
-from nilearn._utils.param_validation import check_feature_screening
+from nilearn._utils.class_inspect import check_estimator
+from nilearn._utils.param_validation import (
+    _get_mask_extent,
+    check_feature_screening,
+)
 from nilearn.conftest import _rng
 from nilearn.decoding.decoder import (
     Decoder,
@@ -62,44 +66,148 @@ from nilearn.decoding.decoder import (
     _wrap_param_grid,
 )
 from nilearn.decoding.tests.test_same_api import to_niimgs
-from nilearn.experimental.surface import SurfaceMasker
-from nilearn.maskers import NiftiMasker
+from nilearn.maskers import NiftiMasker, SurfaceMasker
 
-N_SAMPLES = 100
+N_SAMPLES = 80
 
 ESTIMATOR_REGRESSION = ("ridge", "svr")
 
 
-def _make_binary_classification_test_data(n_samples=N_SAMPLES):
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[DecoderRegressor()],
+        extra_valid_checks=["check_parameters_default_constructible"],
+    ),
+)
+def test_check_estimator_decoder_regressor(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[DecoderRegressor()],
+        extra_valid_checks=["check_parameters_default_constructible"],
+        valid=False,
+    ),
+)
+def test_check_estimator_invalid_decoder_regressor(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[FREMRegressor()],
+    ),
+)
+def test_check_estimator_frem_regressor(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(estimator=[FREMRegressor()], valid=False),
+)
+def test_check_estimator_invalid_frem_regressor(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[_BaseDecoder(), Decoder()],
+        extra_valid_checks=[
+            "check_no_attributes_set_in_init",
+            "check_parameters_default_constructible",
+        ],
+    ),
+)
+def test_check_estimator_decoder(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[_BaseDecoder(), Decoder()],
+        extra_valid_checks=[
+            "check_no_attributes_set_in_init",
+            "check_parameters_default_constructible",
+        ],
+        valid=False,
+    ),
+)
+def test_check_estimator_invalid_decoder(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[FREMClassifier()],
+        extra_valid_checks=["check_no_attributes_set_in_init"],
+    ),
+)
+def test_check_estimator_frem_classifier(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[FREMClassifier()],
+        extra_valid_checks=["check_no_attributes_set_in_init"],
+        valid=False,
+    ),
+)
+def test_check_estimator_invalid_frem_classifier(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+def _make_binary_classification_test_data(n_samples=N_SAMPLES, dim=5):
     X, y = make_classification(
         n_samples=n_samples,
-        n_features=125,
+        n_features=dim**3,
         scale=3.0,
         n_informative=5,
         n_classes=2,
         random_state=42,
     )
-    X, mask = to_niimgs(X, [5, 5, 5])
+    X, mask = to_niimgs(X, [dim, dim, dim])
     return X, y, mask
 
 
 @pytest.fixture()
-def rand_X_Y(rng):
-    X = rng.random((N_SAMPLES, 10))
+def rand_x_y(rng):
+    X = rng.random((100, 10))
     Y = np.hstack([[-1] * 50, [1] * 50])
     return X, Y
 
 
-def _make_multiclass_classification_test_data(n_samples=200):
+def _make_multiclass_classification_test_data(n_samples=40, dim=5):
     X, y = make_classification(
         n_samples=n_samples,
-        n_features=125,
+        n_features=dim**3,
         scale=3.0,
         n_informative=5,
         n_classes=4,
         random_state=42,
     )
-    X, mask = to_niimgs(X, [5, 5, 5])
+    X, mask = to_niimgs(X, [dim, dim, dim])
     return X, y, mask
 
 
@@ -120,7 +228,7 @@ def binary_classification_data():
     return _make_binary_classification_test_data(n_samples=N_SAMPLES)
 
 
-def _make_regression_test_data(n_samples=N_SAMPLES, dim=30):
+def _make_regression_test_data(n_samples=N_SAMPLES, dim=5):
     X, y = make_regression(
         n_samples=n_samples,
         n_features=dim**3,
@@ -136,7 +244,7 @@ def _make_regression_test_data(n_samples=N_SAMPLES, dim=30):
 
 @pytest.fixture
 def regression_data():
-    return _make_regression_test_data(n_samples=N_SAMPLES, dim=30)
+    return _make_regression_test_data(n_samples=N_SAMPLES, dim=5)
 
 
 @pytest.fixture
@@ -173,12 +281,12 @@ def test_check_param_grid_regression(regressor, param, rng):
         (RidgeClassifierCV(), ["alphas"]),
     ],
 )
-def test_check_param_grid_classification(rand_X_Y, classifier, param):
+def test_check_param_grid_classification(rand_x_y, classifier, param):
     """Test several estimators.
 
     Each one with its specific regularization parameter.
     """
-    X, Y = rand_X_Y
+    X, Y = rand_x_y
 
     param_grid = _check_param_grid(classifier, X, Y, None)
 
@@ -193,8 +301,8 @@ def test_check_param_grid_classification(rand_X_Y, classifier, param):
         [{"C": [1, 10, 100]}, {"fit_intercept": [False]}],
     ],
 )
-def test_check_param_grid_replacement(rand_X_Y, param_grid_input):
-    X, Y = rand_X_Y
+def test_check_param_grid_replacement(rand_x_y, param_grid_input):
+    X, Y = rand_x_y
     param_to_replace = "C"
     param_replaced = "Cs"
     param_grid_output = _check_param_grid(
@@ -210,9 +318,9 @@ def test_check_param_grid_replacement(rand_X_Y, param_grid_input):
 
 
 @pytest.mark.parametrize("estimator", ["log_l1", RandomForestClassifier()])
-def test_non_supported_estimator_error(rand_X_Y, estimator):
+def test_non_supported_estimator_error(rand_x_y, estimator):
     """Raise the error when using a non supported estimator."""
-    X, Y = rand_X_Y
+    X, Y = rand_x_y
 
     with pytest.raises(
         ValueError, match="Invalid estimator. The supported estimators are:"
@@ -220,8 +328,8 @@ def test_non_supported_estimator_error(rand_X_Y, estimator):
         _check_param_grid(estimator, X, Y, None)
 
 
-def test_check_parameter_grid_is_empty(rand_X_Y):
-    X, Y = rand_X_Y
+def test_check_parameter_grid_is_empty(rand_x_y):
+    X, Y = rand_x_y
     dummy_classifier = DummyClassifier(random_state=0)
 
     param_grid = _check_param_grid(dummy_classifier, X, Y, None)
@@ -358,12 +466,12 @@ def test_check_unsupported_estimator(estimator):
         _check_estimator(_BaseDecoder(estimator=custom_estimator).estimator)
 
 
-def test_parallel_fit(rand_X_Y):
+def test_parallel_fit(rand_x_y):
     """Check that results of _parallel_fit is the same \
     for different controlled param_grid.
     """
     X, y = make_regression(
-        n_samples=N_SAMPLES,
+        n_samples=100,
         n_features=20,
         n_informative=5,
         noise=0.2,
@@ -371,7 +479,7 @@ def test_parallel_fit(rand_X_Y):
     )
     train = range(80)
 
-    _, y_classification = rand_X_Y
+    _, y_classification = rand_x_y
     test = range(80, len(y_classification))
 
     estimator = SVR(kernel="linear")
@@ -431,7 +539,7 @@ def test_parallel_fit(rand_X_Y):
     ],
 )
 def test_parallel_fit_builtin_cv(
-    rand_X_Y,
+    rand_x_y,
     estimator,
     param_name,
     fitted_param_name,
@@ -464,7 +572,7 @@ def test_parallel_fit_builtin_cv(
     # create appropriate scorer and update y for classification
     if is_classification:
         scorer = check_scoring(estimator, "accuracy")
-        _, y = rand_X_Y
+        _, y = rand_x_y
     else:
         scorer = check_scoring(estimator, "r2")
 
@@ -712,7 +820,7 @@ def test_decoder_error_unknown_scoring_metrics(
 
 
 def test_decoder_dummy_classifier_default_scoring():
-    X, y, _ = _make_binary_classification_test_data(n_samples=150)
+    X, y, _ = _make_binary_classification_test_data()
 
     model = Decoder(estimator="dummy_classifier", scoring=None)
 
@@ -916,15 +1024,16 @@ def test_decoder_multiclass_classification_apply_mask_shape():
     """Test whether if _apply mask output has the same shape \
     as original matrix.
     """
+    dim = 5
     X_init, _ = make_classification(
         n_samples=200,
-        n_features=125,
+        n_features=dim**3,
         scale=3.0,
         n_informative=5,
         n_classes=4,
         random_state=42,
     )
-    X, _ = to_niimgs(X_init, [5, 5, 5])
+    X, _ = to_niimgs(X_init, [dim, dim, dim])
 
     model = Decoder(mask=NiftiMasker())
 
@@ -939,15 +1048,7 @@ def test_decoder_multiclass_classification_apply_mask_attributes(affine_eye):
 
     By default these parameters are set to None;
     """
-    X_init, _ = make_classification(
-        n_samples=200,
-        n_features=125,
-        scale=3.0,
-        n_informative=5,
-        n_classes=4,
-        random_state=42,
-    )
-    X, _ = to_niimgs(X_init, [5, 5, 5])
+    X, _, _ = _make_multiclass_classification_test_data()
 
     target_affine = 2 * affine_eye
     target_shape = (1, 1, 1)
@@ -973,16 +1074,6 @@ def test_decoder_multiclass_classification_apply_mask_attributes(affine_eye):
     assert model.masker_.high_pass == high_pass
     assert model.masker_.low_pass == low_pass
     assert model.masker_.smoothing_fwhm == smoothing_fwhm
-
-
-def test_decoder_apply_mask_surface(mini_img):
-    """Test whether _apply_mask works for surface image."""
-    X = mini_img
-    model = Decoder(mask=SurfaceMasker())
-    X_masked = model._apply_mask(X)
-
-    assert X_masked.shape == X.shape
-    assert type(model.mask_img_).__name__ == "SurfaceImage"
 
 
 def test_decoder_multiclass_error_incorrect_cv(multiclass_data):
@@ -1089,3 +1180,224 @@ def test_decoder_decision_function_raises_value_error(
         ValueError, match=f"X has {X.shape[1]} features per sample"
     ):
         model.decision_function(X)
+
+
+# ------------------------ surface tests ------------------------------------ #
+
+
+@pytest.fixture()
+def _make_surface_class_data(rng, surf_img, shape=(50,)):
+    """Create a surface image classification for testing."""
+    y = rng.choice([0, 1], size=shape)
+    return surf_img(shape), y
+
+
+@pytest.fixture()
+def _make_surface_reg_data(rng, surf_img, shape=(50,)):
+    """Create a surface image regression for testing."""
+    y = rng.random(shape)
+    return surf_img(shape), y
+
+
+@pytest.mark.filterwarnings("ignore:Overriding provided")
+def test_decoder_apply_mask_surface(_make_surface_class_data):
+    """Test _apply_mask on surface image."""
+    X, _ = _make_surface_class_data
+    model = Decoder(mask=SurfaceMasker())
+    X_masked = model._apply_mask(X)
+
+    assert X_masked.shape == X.shape
+    assert type(model.mask_img_).__name__ == "SurfaceImage"
+
+
+@pytest.mark.filterwarnings("ignore:Overriding provided")
+@pytest.mark.filterwarnings("ignore:After clustering")
+def test_decoder_screening_percentile_surface_default(
+    _make_surface_class_data,
+):
+    """Test default screening percentile with surface image."""
+    warnings.simplefilter("ignore", ConvergenceWarning)
+    X, y = _make_surface_class_data
+
+    model = Decoder(mask=SurfaceMasker())
+    model.fit(X, y)
+    assert model.screening_percentile_ == 20
+
+
+@pytest.mark.filterwarnings("ignore:Overriding provided")
+@pytest.mark.filterwarnings("ignore:After clustering")
+@pytest.mark.parametrize("perc", [None, 100, 0])
+def test_decoder_screening_percentile_surface(perc, _make_surface_class_data):
+    """Test passing screening percentile with surface image."""
+    warnings.simplefilter("ignore", ConvergenceWarning)
+    X, y = _make_surface_class_data
+
+    model = Decoder(mask=SurfaceMasker(), screening_percentile=perc)
+    model.fit(X, y)
+    if perc is None:
+        assert model.screening_percentile_ == 100
+    else:
+        assert model.screening_percentile_ == perc
+
+
+@pytest.mark.filterwarnings("ignore:After clustering and screening")
+def test_decoder_adjust_screening_lessthan_mask_surface(
+    surf_mask,
+    _make_surface_class_data,
+    screening_percentile=30,
+):
+    """When mask size is less than or equal to screening percentile wrt to
+    the mesh size, it is adjusted to the ratio of mesh to mask.
+    """
+    img, y = _make_surface_class_data
+    mask_n_vertices = _get_mask_extent(surf_mask())
+    mesh_n_vertices = img.mesh.n_vertices
+    mask_to_mesh_ratio = (mask_n_vertices / mesh_n_vertices) * 100
+    assert screening_percentile <= mask_to_mesh_ratio
+    decoder = Decoder(
+        mask=surf_mask(),
+        param_grid={"C": [0.01, 0.1]},
+        cv=3,
+        screening_percentile=screening_percentile,
+    )
+    decoder.fit(img, y)
+    adjusted = decoder.screening_percentile_
+    assert adjusted == screening_percentile * (
+        mesh_n_vertices / mask_n_vertices
+    )
+
+
+@pytest.mark.filterwarnings("ignore:After clustering and screening")
+def test_decoder_adjust_screening_greaterthan_mask_surface(
+    surf_mask,
+    _make_surface_class_data,
+    screening_percentile=80,
+):
+    """When mask size is greater than screening percentile wrt to the mesh
+    size, it is changed to 100% of mask.
+    """
+    img, y = _make_surface_class_data
+    mask_n_vertices = _get_mask_extent(surf_mask())
+    mesh_n_vertices = img.mesh.n_vertices
+    mask_to_mesh_ratio = (mask_n_vertices / mesh_n_vertices) * 100
+    assert screening_percentile > mask_to_mesh_ratio
+    decoder = Decoder(
+        mask=surf_mask(),
+        param_grid={"C": [0.01, 0.1]},
+        cv=3,
+        screening_percentile=screening_percentile,
+    )
+    decoder.fit(img, y)
+    adjusted = decoder.screening_percentile_
+    assert adjusted == 100
+
+
+@pytest.mark.parametrize("mask", [None, SurfaceMasker()])
+@pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
+def test_decoder_fit_surface(decoder, _make_surface_class_data, mask):
+    """Test fit for surface image."""
+    warnings.simplefilter("ignore", ConvergenceWarning)
+    X, y = _make_surface_class_data
+    model = decoder(mask=mask)
+    model.fit(X, y)
+
+    assert model.coef_ is not None
+
+
+@pytest.mark.filterwarnings("ignore:After clustering and screening")
+@pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
+def test_decoder_fit_surface_with_mask_image(
+    _make_surface_class_data, decoder, surf_mask
+):
+    """Test fit for surface image."""
+    warnings.simplefilter("ignore", ConvergenceWarning)
+    X, y = _make_surface_class_data
+    model = decoder(mask=surf_mask())
+    model.fit(X, y)
+
+    assert model.coef_ is not None
+
+
+@pytest.mark.filterwarnings("ignore:Overriding provided")
+@pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
+def test_decoder_error_incompatible_surface_mask_and_volume_data(
+    decoder, surf_mask, tiny_binary_classification_data
+):
+    """Test error when fitting volume data with a surface mask."""
+    data_volume, y, _ = tiny_binary_classification_data
+    model = decoder(mask=surf_mask())
+
+    with pytest.raises(
+        TypeError, match="Mask and images to fit must be of compatible types."
+    ):
+        model.fit(data_volume, y)
+
+    model = decoder(mask=SurfaceMasker())
+
+    with pytest.raises(
+        TypeError, match="Mask and images to fit must be of compatible types."
+    ):
+        model.fit(data_volume, y)
+
+
+@pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
+def test_decoder_error_incompatible_surface_data_and_volume_mask(
+    _make_surface_class_data, decoder, tiny_binary_classification_data
+):
+    """Test error when fiting for surface data with a volume mask."""
+    data_surface, y = _make_surface_class_data
+    _, _, mask = tiny_binary_classification_data
+    model = decoder(mask=mask)
+
+    with pytest.raises(
+        TypeError, match="Mask and images to fit must be of compatible types."
+    ):
+        model.fit(data_surface, y)
+
+
+def test_decoder_predict_score_surface(_make_surface_class_data):
+    """Test classification predict and scoring for surface image."""
+    warnings.simplefilter("ignore", ConvergenceWarning)
+    X, y = _make_surface_class_data
+    model = Decoder(mask=SurfaceMasker())
+    model.fit(X, y)
+    y_pred = model.predict(X)
+
+    assert model.scoring == "roc_auc"
+
+    model.score(X, y)
+    acc = accuracy_score(y, y_pred)
+    assert 0.3 < acc < 0.7
+
+
+@pytest.mark.filterwarnings("ignore:Overriding provided")
+@pytest.mark.filterwarnings("ignore:After clustering and screening")
+@pytest.mark.filterwarnings("ignore:Solver terminated early")
+def test_decoder_regressor_predict_score_surface(_make_surface_reg_data):
+    """Test regression predict and scoring for surface image."""
+    X, y = _make_surface_reg_data
+    model = DecoderRegressor(mask=SurfaceMasker())
+    model.fit(X, y)
+    y_pred = model.predict(X)
+
+    assert model.scoring == "r2"
+
+    model.score(X, y)
+    r2 = r2_score(y, y_pred)
+    assert r2 <= 0
+
+
+@pytest.mark.filterwarnings("ignore:After clustering and screening")
+@pytest.mark.parametrize("frem", [FREMRegressor, FREMClassifier])
+def test_frem_decoder_fit_surface(
+    frem,
+    _make_surface_class_data,
+    surf_mask,
+):
+    """Test fit for using FREM decoding with surface image."""
+    with pytest.raises(
+        ValueError, match="The mask image should be a Niimg-like object."
+    ):
+        X, y = _make_surface_class_data
+        model = frem(mask=surf_mask(), clustering_percentile=90)
+        model.fit(X, y)

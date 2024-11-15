@@ -217,7 +217,7 @@ def test_nifti_labels_masker_io_shapes(
     masker.fit()
 
     # DeprecationWarning *should* be raised for 3D inputs
-    with pytest.warns(DeprecationWarning, match="Starting in version 0.12"):
+    with pytest.deprecated_call(match="Starting in version 0.12"):
         test_data = masker.transform(img_3d)
         assert test_data.shape == (1, n_regions)
 
@@ -651,7 +651,7 @@ def test_standardization(rng, affine_eye, shape_3d_default, n_regions):
     )
     signals += means
     img = Nifti1Image(
-        signals.reshape(shape_3d_default + (n_samples,)),
+        signals.reshape((*shape_3d_default, n_samples)),
         affine_eye,
     )
 

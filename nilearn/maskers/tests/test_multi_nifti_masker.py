@@ -10,10 +10,42 @@ from joblib import Memory
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
 
+from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.image import get_data
-from nilearn.maskers import MultiNiftiMasker
+from nilearn.maskers import MultiNiftiMasker, NiftiMasker
+
+extra_valid_checks = [
+    "check_transformer_n_iter",
+    "check_transformers_unfitted",
+]
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[MultiNiftiMasker(), NiftiMasker()],
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[MultiNiftiMasker(), NiftiMasker()],
+        extra_valid_checks=extra_valid_checks,
+        valid=False,
+    ),
+)
+def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 @pytest.fixture
@@ -233,8 +265,9 @@ def test_compute_mask_strategy(strategy, shape_3d_default, list_random_imgs):
     np.testing.assert_array_equal(get_data(masker2.mask_img_), mask_ref)
 
 
-def test_dtype(shape_3d_default, affine_eye):
-    data = np.zeros(shape_3d_default, dtype=np.float64)
+def test_dtype(affine_eye):
+    """Check dtype returned by transform when using auto."""
+    data = np.zeros((9, 10, 11), dtype=np.float64)
     data[2:-2, 2:-2, 2:-2] = 10
     img = Nifti1Image(data, affine_eye)
 
@@ -257,10 +290,10 @@ def test_standardization(rng, shape_3d_default, affine_eye):
     signals += means
 
     img1 = Nifti1Image(
-        signals[0].reshape(shape_3d_default + (n_samples,)), affine_eye
+        signals[0].reshape((*shape_3d_default, n_samples)), affine_eye
     )
     img2 = Nifti1Image(
-        signals[1].reshape(shape_3d_default + (n_samples,)), affine_eye
+        signals[1].reshape((*shape_3d_default, n_samples)), affine_eye
     )
 
     mask = Nifti1Image(np.ones(shape_3d_default), affine_eye)

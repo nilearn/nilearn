@@ -95,7 +95,7 @@ class OLSModel:
         self.df_model = matrix_rank(self.design, eps)
         self.df_residuals = self.df_total - self.df_model
 
-    def logL(self, beta, Y, nuisance=None):
+    def logL(self, beta, Y, nuisance=None):  # noqa: N802
         r"""Return the value of the loglikelihood function at beta.
 
         Given the whitened design matrix, the loglikelihood is evaluated
@@ -347,7 +347,7 @@ class RegressionResults(LikelihoodModelResults):
         return np.dot(X, beta)
 
     @auto_attr
-    def SSE(self):
+    def SSE(self):  # noqa: N802
         """Error sum of squares.
 
         If not from an OLS model this is "pseudo"-SSE.
@@ -363,7 +363,7 @@ class RegressionResults(LikelihoodModelResults):
         return np.var(self.predicted, 0) / np.var(self.whitened_Y, 0)
 
     @auto_attr
-    def MSE(self):
+    def MSE(self):  # noqa: N802
         """Return Mean square (error)."""
         return self.SSE / self.df_residuals
 
@@ -392,7 +392,7 @@ class SimpleRegressionResults(LikelihoodModelResults):
         # put this as a parameter of LikelihoodModel
         self.df_residuals = self.df_total - self.df_model
 
-    def logL(self):
+    def logL(self):  # noqa: N802
         """Return the maximized log-likelihood."""
         raise NotImplementedError(
             "logL not implemented for "

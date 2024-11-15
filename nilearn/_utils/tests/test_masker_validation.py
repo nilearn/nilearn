@@ -5,8 +5,7 @@ from nibabel import Nifti1Image
 from sklearn.base import BaseEstimator
 
 from nilearn._utils.masker_validation import check_embedded_masker
-from nilearn.experimental.surface import SurfaceMasker
-from nilearn.maskers import MultiNiftiMasker, NiftiMasker
+from nilearn.maskers import MultiNiftiMasker, NiftiMasker, SurfaceMasker
 
 
 class OwningClass(BaseEstimator):
@@ -55,7 +54,7 @@ class DummyEstimator:
         for k, v in kwargs.items():
             setattr(self, k, v)
 
-    def fit(self, *args, **kwargs):
+    def fit(self, *args, **kwargs):  # noqa: ARG002
         self.masker = check_embedded_masker(self)
 
 

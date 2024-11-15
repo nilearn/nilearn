@@ -129,7 +129,7 @@ for mask_name in mask_names:
 # --------------------------------------------------
 import matplotlib.pyplot as plt
 
-plt.figure(layout="constrained")
+plt.figure(constrained_layout=True)
 
 tick_position = np.arange(len(categories))
 plt.xticks(tick_position, categories, rotation=45)

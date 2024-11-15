@@ -14,7 +14,11 @@ import numpy as np
 import pandas as pd
 
 from nilearn import datasets
+from nilearn.datasets import fetch_atlas_surf_destrieux
 from nilearn.experimental import surface
+from nilearn.experimental.surface import (
+    load_fsaverage,
+)
 from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
@@ -30,8 +34,10 @@ from nilearn.maskers import (
     NiftiMapsMasker,
     NiftiMasker,
     NiftiSpheresMasker,
+    SurfaceMasker,
 )
 from nilearn.reporting import make_glm_report
+from nilearn.surface import SurfaceImage
 
 REPORTS_DIR = Path(__file__).parent.parent / "modules" / "generated_reports"
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -424,19 +430,27 @@ def report_multi_nifti_maps_masker():
 
 
 def report_surface_masker():
-    masker = surface.SurfaceMasker()
+    masker = SurfaceMasker()
     img = surface.fetch_nki(mesh_type="inflated", n_subjects=1)[0]
     masker.fit_transform(img)
     surface_masker_report = masker.generate_report()
     surface_masker_report.save_as_html(REPORTS_DIR / "surface_masker.html")
 
-    labels_img, _ = surface.fetch_destrieux(mesh_type="inflated")
+    fsaverage = load_fsaverage("fsaverage5")
+    destrieux = fetch_atlas_surf_destrieux()
+    destrieux_atlas = SurfaceImage(
+        mesh=fsaverage["inflated"],
+        data={
+            "left": destrieux["map_left"],
+            "right": destrieux["map_right"],
+        },
+    )
 
-    mask = labels_img
+    mask = destrieux_atlas
     for part in mask.data.parts:
         mask.data.parts[part] = mask.data.parts[part] == 34
 
-    masker = surface.SurfaceMasker(mask)
+    masker = SurfaceMasker(mask)
     img = surface.fetch_nki(mesh_type="inflated", n_subjects=1)[0]
     masker.fit_transform(img)
     surface_masker_with_mask_report = masker.generate_report()
@@ -451,7 +465,16 @@ def report_surface_masker():
 
 
 def report_surface_label_masker():
-    labels_img, label_names = surface.fetch_destrieux(mesh_type="inflated")
+    fsaverage = load_fsaverage("fsaverage5")
+    destrieux = fetch_atlas_surf_destrieux()
+    labels_img = SurfaceImage(
+        mesh=fsaverage["inflated"],
+        data={
+            "left": destrieux["map_left"],
+            "right": destrieux["map_right"],
+        },
+    )
+    label_names = [x.decode("utf-8") for x in destrieux.labels]
 
     labels_masker = surface.SurfaceLabelsMasker(labels_img, label_names).fit()
     labels_masker_report_unfitted = labels_masker.generate_report()

@@ -298,7 +298,7 @@ def load_confounds_json(confounds_json, flag_acompcor):
         fMRIprep >= 1.4.0.
     """
     try:
-        with open(confounds_json, "rb") as f:
+        with Path(confounds_json).open("rb") as f:
             confounds_json = json.load(f)
     except OSError:
         if flag_acompcor:
@@ -443,7 +443,7 @@ def prepare_output(confounds, demean):
         # Derivatives have NaN on the first row
         # Replace them by estimates at second time point,
         # otherwise nilearn will crash.
-        mask_nan = np.isnan(confounds.values[0, :])
+        mask_nan = np.isnan(confounds.to_numpy()[0, :])
         confounds.iloc[0, mask_nan] = confounds.iloc[1, mask_nan]
         if demean:
             confounds = _demean_confounds(confounds, sample_mask)

@@ -1,12 +1,9 @@
-import warnings
-
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
 from nilearn._utils.testing import (
     assert_memory_less_than,
-    check_deprecation,
     with_memory_profiler,
     write_imgs_to_path,
 )
@@ -45,18 +42,6 @@ def test_int64_niftis(affine_eye, tmp_path):
     for dtype in "int64", "uint64":
         with pytest.raises(AssertionError):
             Nifti1Image(data.astype(dtype), affine_eye)
-
-
-def dummy_deprecation(start_version, end_version):
-    warnings.warn(
-        f"Deprecated in {start_version}."
-        f"and will be removed in version {end_version}.",
-        DeprecationWarning,
-    )
-
-
-def test_check_deprecation():
-    check_deprecation(dummy_deprecation, "Deprecated")("0.0.1", "0.0.2")
 
 
 @pytest.mark.parametrize("create_files", [True, False])

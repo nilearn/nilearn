@@ -106,7 +106,7 @@ def test_threshold_data():
 
 
 def test_save_sprite(rng):
-    """Test covers _save_sprite as well as _bytesIO_to_base64."""
+    """Test covers _save_sprite as well as _bytes_io_to_base64."""
     # Generate a simulated volume with a square inside
     data = rng.uniform(size=140).reshape(7, 5, 4)
     mask = np.zeros((7, 5, 4), dtype=int)
@@ -118,7 +118,7 @@ def test_save_sprite(rng):
     )
 
     # Load the sprite back in base64
-    sprite_base64 = html_stat_map._bytesIO_to_base64(sprite_io)
+    sprite_base64 = html_stat_map._bytes_io_to_base64(sprite_io)
 
     decoded_io = BytesIO()
     decoded_io.write(base64.b64decode(sprite_base64))
@@ -136,13 +136,13 @@ def test_save_sprite(rng):
 @pytest.mark.parametrize("cmap", ["tab10", "cold_hot"])
 @pytest.mark.parametrize("n_colors", [7, 20])
 def test_save_cmap(cmap, n_colors):
-    """Test covers _save_cmap as well as _bytesIO_to_base64."""
+    """Test covers _save_cmap as well as _bytes_io_to_base64."""
     # Save the cmap using BytesIO
     cmap_io = BytesIO()
     html_stat_map._save_cm(cmap_io, cmap, format="png", n_colors=n_colors)
 
     # Load the colormap back in base64
-    cmap_base64 = html_stat_map._bytesIO_to_base64(cmap_io)
+    cmap_base64 = html_stat_map._bytes_io_to_base64(cmap_io)
 
     decoded_io = BytesIO()
     decoded_io.write(base64.b64decode(cmap_base64))

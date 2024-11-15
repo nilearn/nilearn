@@ -502,7 +502,7 @@ def _group_sparse_covariance(
     return omega
 
 
-class GroupSparseCovariance(BaseEstimator, CacheMixin):
+class GroupSparseCovariance(CacheMixin, BaseEstimator):
     """Covariance and precision matrix estimator.
 
     The model used has been introduced in :footcite:t:`Varoquaux2010a`, and the
@@ -568,7 +568,11 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
         self.memory_level = memory_level
         self.verbose = verbose
 
-    def fit(self, subjects, y=None):
+    def fit(
+        self,
+        subjects,
+        y=None,  # noqa: ARG002
+    ):
         """Fits the group sparse precision model according \
         to the given training data and parameters.
 
@@ -776,7 +780,7 @@ def group_sparse_scores(
                 dual_obj += n_samples[k] * (n_features + fast_logdet(B))
 
         gap = objective - dual_obj
-        ret = ret + (gap,)
+        ret = (*ret, gap)
     return ret
 
 
@@ -896,14 +900,14 @@ class EarlyStopProbe:
 
     def __call__(  # noqa: D102
         self,
-        emp_covs,
+        emp_covs,  # noqa: ARG002
         n_samples,
         alpha,
-        max_iter,
-        tol,
+        max_iter,  # noqa: ARG002
+        tol,  # noqa: ARG002
         iter_n,
         omega,
-        prev_omega,
+        prev_omega,  # noqa: ARG002
     ):
         log_lik, _ = group_sparse_scores(
             omega, n_samples, self.test_emp_covs, alpha
@@ -918,7 +922,7 @@ class EarlyStopProbe:
         self.last_log_lik = log_lik
 
 
-class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
+class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
     """Sparse inverse covariance w/ cross-validated choice of the parameter.
 
     A cross-validated value for the regularization parameter is first
@@ -1034,7 +1038,11 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
         self.debug = debug
         self.early_stopping = early_stopping
 
-    def fit(self, subjects, y=None):
+    def fit(
+        self,
+        subjects,
+        y=None,  # noqa: ARG002
+    ):
         """Compute cross-validated group-sparse precisions.
 
         Parameters

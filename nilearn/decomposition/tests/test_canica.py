@@ -34,7 +34,7 @@ def _make_data_from_components(
         this_data = np.dot(rng.normal(size=(40, 4)), components)
         this_data += 0.01 * rng.normal(size=this_data.shape)
         # Get back into 3D for CanICA
-        this_data = np.reshape(this_data, (40,) + shape)
+        this_data = np.reshape(this_data, (40, *shape))
         this_data = np.rollaxis(this_data, 0, 4)
         # Put the border of the image to zero, to mimic a brain image
         this_data[:5] = background[:5]
@@ -278,6 +278,19 @@ def test_with_globbing_patterns_with_single_subject(mask_img, tmp_path):
     check_shape = data[0].shape[:3] + (3,)
 
     assert components_img.shape, check_shape
+
+
+def test_with_globbing_patterns_with_single_subject_path(mask_img, tmp_path):
+    # single subject but as a Path object
+    data, *_ = _make_canica_test_data(n_subjects=1)
+    n_components = 3
+
+    canica = CanICA(n_components=n_components, mask=mask_img)
+
+    tmp_file = tmp_path / "tmp.nii.gz"
+    data[0].to_filename(tmp_file)
+
+    canica.fit(tmp_file)
 
 
 def test_with_globbing_patterns_with_multi_subjects(

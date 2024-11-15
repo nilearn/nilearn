@@ -183,7 +183,7 @@ def test_nifti_maps_masker_io_shapes(rng):
     masker.fit()
 
     # DeprecationWarning *should* be raised for 3D inputs
-    with pytest.warns(DeprecationWarning, match="Starting in version 0.12"):
+    with pytest.deprecated_call(match="Starting in version 0.12"):
         test_data = masker.transform(img_3d)
         assert test_data.shape == (1, n_regions)
 
@@ -522,7 +522,7 @@ def test_standardization(rng):
     signals = rng.standard_normal(size=(np.prod(data_shape), n_samples))
     means = rng.standard_normal(size=(np.prod(data_shape), 1)) * 50 + 1000
     signals += means
-    img = Nifti1Image(signals.reshape(data_shape + (n_samples,)), np.eye(4))
+    img = Nifti1Image(signals.reshape((*data_shape, n_samples)), np.eye(4))
 
     maps, _ = data_gen.generate_maps((9, 9, 5), 10)
 

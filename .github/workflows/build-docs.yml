@@ -36,6 +36,8 @@ env:
     BROWSER: /usr/bin/firefox
     DISPLAY: :99.0
     NILEARN_DATA: /home/runner/work/nilearn/nilearn/nilearn_data
+    MIN_PYTHON_VERSION: '3.9'
+    HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
 
 jobs:
 
@@ -78,7 +80,7 @@ jobs:
         -   name: Setup python
             uses: actions/setup-python@v5
             with:
-                python-version: '3.12'
+                python-version: ${{ env.MIN_PYTHON_VERSION }}
 
         -   name: Install packages
             run: |
@@ -192,20 +194,6 @@ jobs:
                 sudo -E apt-get -yq update
                 sudo -E apt-get -yq --no-install-suggests --no-install-recommends install \
                     dvipng texlive-latex-base texlive-latex-extra
-        -   name: Setup python
-            uses: actions/setup-python@v5
-            with:
-                python-version: '3.12'
-        # Install the local version of the library, along with both standard and testing-related dependencies
-        # The `doc` dependency group is included because the build_docs job uses this script.
-        # See pyproject.toml for dependency group options
-        -   name: Install packages
-            run: |
-                python -m pip install --user --upgrade pip setuptools
-                python -m pip install .[plotting,doc]
-
-        -   name: List dependencies
-            run: pip freeze
 
         # Check if we are doing a full or partial build
         -   name: Find build type
@@ -228,18 +216,24 @@ jobs:
                 restore-keys: |
                     data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}
 
-        # Update the authors file and the names file
-        # in case a contributor has been added to citation.cff
-        # but did not run the maint_tools/citation_cff_maint.py script.
-        -   name: update AUTHORS.rst and doc/changes/names.rst
-            run: python maint_tools/citation_cff_maint.py
-
         # Set up and launch a virtual browser needed for one example to run
         # without stalling the job. The example launches an html in the browser.
         -   name: Set up display server for virtual browser
             run: Xvfb -ac :99 -screen 0 1280x1024x16 > /dev/null 2>&1 &
 
-        # Run the doc build.
+        -   name: Setup python
+            uses: actions/setup-python@v5
+            with:
+                python-version: ${{ env.MIN_PYTHON_VERSION }}
+
+        -   name: Install tox
+            run: python -m pip install tox
+
+        -   name: Show tox config
+            run: tox c
+
+        # Run the doc build
+        # We let tox handle creating virtual env and install dependencies.
         # If no data is restored in previous steps,
         # the data will be downloaded during the build
         # (this only applies for full builds;
@@ -247,9 +241,12 @@ jobs:
         -   name: Build docs
             id: build-docs
             run: |
-                cd doc;
                 set -o pipefail;
-                PATTERN=$(cat ../pattern.txt) make $(cat ../build.txt) 2>&1 | tee log.txt;
+                PATTERN=$(cat pattern.txt)
+                tox run \
+                    --colored yes \
+                    --list-dependencies \
+                    -e doc -- $(cat build.txt) 2>&1 | tee log.txt;
 
         -   name: Check for unreplaced argument in docstrings
             if: always()
@@ -307,5 +304,5 @@ jobs:
                 rm -Rf dev;
                 cp -a ~/doc/_build/html dev;
                 git add -A;
-                git commit -m "Dev docs https://github.com/nilearn/nilearn/commit/${{ github.event.head_commit.id }} : ${{ github.event.head_commit.message }}";
+                git commit -m "Dev docs https://github.com/nilearn/nilearn/commit/${{ github.event.head_commit.id }} : $HEAD_COMMIT_MESSAGE";
                 git push origin main;

@@ -1,7 +1,6 @@
 """Downloading NeuroImaging datasets: structural datasets."""
 
 import functools
-import os
 import warnings
 from pathlib import Path
 
@@ -12,31 +11,29 @@ from sklearn.utils import Bunch
 
 from .._utils import check_niimg, fill_doc
 from ..image import get_data, new_img_like, resampling
-from ._utils import fetch_files, get_dataset_descr, get_dataset_dir
+from ._utils import (
+    PACKAGE_DIRECTORY,
+    fetch_files,
+    get_dataset_descr,
+    get_dataset_dir,
+)
 
-_package_directory = os.path.dirname(os.path.abspath(__file__))
-MNI152_FILE_PATH = os.path.join(
-    _package_directory,
-    "data",
-    "mni_icbm152_t1_tal_nlin_sym_09a_converted.nii.gz",
+MNI152_FILE_PATH = (
+    PACKAGE_DIRECTORY
+    / "data"
+    / "mni_icbm152_t1_tal_nlin_sym_09a_converted.nii.gz"
 )
-GM_MNI152_FILE_PATH = os.path.join(
-    _package_directory,
-    "data",
-    "mni_icbm152_gm_tal_nlin_sym_09a_converted.nii.gz",
+GM_MNI152_FILE_PATH = (
+    PACKAGE_DIRECTORY
+    / "data"
+    / "mni_icbm152_gm_tal_nlin_sym_09a_converted.nii.gz"
 )
-WM_MNI152_FILE_PATH = os.path.join(
-    _package_directory,
-    "data",
-    "mni_icbm152_wm_tal_nlin_sym_09a_converted.nii.gz",
+WM_MNI152_FILE_PATH = (
+    PACKAGE_DIRECTORY
+    / "data"
+    / "mni_icbm152_wm_tal_nlin_sym_09a_converted.nii.gz"
 )
-FSAVERAGE5_PATH = os.path.join(_package_directory, "data", "fsaverage5")
-
-_LEGACY_FORMAT_MSG = (
-    "`legacy_format` will default to `False` in release 0.11. "
-    "Dataset fetchers will then return pandas dataframes by default "
-    "instead of recarrays."
-)
+FSAVERAGE5_PATH = PACKAGE_DIRECTORY / "data" / "fsaverage5"
 
 
 @fill_doc
@@ -140,7 +137,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
         "mask",
     )
     filenames = [
-        (os.path.join("mni_icbm152_nlin_sym_09a", name), url, opts)
+        (Path("mni_icbm152_nlin_sym_09a", name), url, opts)
         for name in (
             "mni_icbm152_csf_tal_nlin_sym_09a.nii.gz",
             "mni_icbm152_gm_tal_nlin_sym_09a.nii.gz",
@@ -165,7 +162,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     fdescr = get_dataset_descr(dataset_name)
 
-    params = dict([("description", fdescr)] + list(zip(keys, sub_files)))
+    params = dict([("description", fdescr), *list(zip(keys, sub_files))])
     return Bunch(**params)
 
 
@@ -619,7 +616,7 @@ def fetch_oasis_vbm(
     url=None,
     resume=True,
     verbose=1,
-    legacy_format=True,
+    legacy_format=False,
 ):
     """Download and load Oasis "cross-sectional MRI" dataset (416 subjects).
 
@@ -706,19 +703,18 @@ def fetch_oasis_vbm(
             warnings.warn(
                 "Only 403 subjects are available in the "
                 "DARTEL-normalized version of the dataset. "
-                "All of them will be used instead of the wanted %d"
-                % n_subjects
+                f"All of them will be used instead of the wanted {n_subjects}"
             )
             n_subjects = 403
     elif n_subjects > 415:
         warnings.warn(
             "Only 415 subjects are available in the "
             "non-DARTEL-normalized version of the dataset. "
-            "All of them will be used instead of the wanted %d" % n_subjects
+            f"All of them will be used instead of the wanted {n_subjects}"
         )
         n_subjects = 415
     if n_subjects < 1:
-        raise ValueError(f"Incorrect number of subjects ({int(n_subjects)})")
+        raise ValueError(f"Incorrect number of subjects ({n_subjects})")
 
     # pick the archive corresponding to preprocessings type
     if url is None:
@@ -773,11 +769,10 @@ def fetch_oasis_vbm(
         missing_subjects = sorted(missing_subjects + removed_outliers)
         file_names_gm = [
             (
-                os.path.join(
-                    "OAS1_%04d_MR1",
-                    "mwrc1OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz",
-                )
-                % (s, s),
+                Path(
+                    f"OAS1_{s:04d}_MR1",
+                    f"mwrc1OAS1_{s:04d}_MR1_mpr_anon_fslswapdim_bet.nii.gz",
+                ),
                 url_images,
                 opts,
             )
@@ -786,11 +781,10 @@ def fetch_oasis_vbm(
         ][:n_subjects]
         file_names_wm = [
             (
-                os.path.join(
-                    "OAS1_%04d_MR1",
-                    "mwrc2OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz",
-                )
-                % (s, s),
+                Path(
+                    f"OAS1_{s:04d}_MR1",
+                    f"mwrc2OAS1_{s:04d}_MR1_mpr_anon_fslswapdim_bet.nii.gz",
+                ),
                 url_images,
                 opts,
             )
@@ -803,11 +797,10 @@ def fetch_oasis_vbm(
         missing_subjects = sorted(missing_subjects + removed_outliers)
         file_names_gm = [
             (
-                os.path.join(
-                    "OAS1_%04d_MR1",
-                    "mwc1OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz",
-                )
-                % (s, s),
+                Path(
+                    f"OAS1_{s:04d}_MR1",
+                    f"mwc1OAS1_{s:04d}_MR1_mpr_anon_fslswapdim_bet.nii.gz",
+                ),
                 url_images,
                 opts,
             )
@@ -816,11 +809,10 @@ def fetch_oasis_vbm(
         ][:n_subjects]
         file_names_wm = [
             (
-                os.path.join(
-                    "OAS1_%04d_MR1",
-                    "mwc2OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz",
-                )
-                % (s, s),
+                Path(
+                    f"OAS1_{s:04d}_MR1",
+                    f"mwc2OAS1_{s:04d}_MR1_mpr_anon_fslswapdim_bet.nii.gz",
+                ),
                 url_images,
                 opts,
             )
@@ -852,8 +844,7 @@ def fetch_oasis_vbm(
     csv_data = pd.read_csv(ext_vars_file)
     # Comparisons to recfromcsv data must be bytes.
     actual_subjects_ids = [
-        ("OAS1" + str.split(os.path.basename(x), "OAS1")[1][:9])
-        for x in gm_maps
+        ("OAS1" + str.split(Path(x).name, "OAS1")[1][:9]) for x in gm_maps
     ]
     subject_mask = np.asarray(
         [subject_id in actual_subjects_ids for subject_id in csv_data["ID"]]
@@ -865,7 +856,6 @@ def fetch_oasis_vbm(
     fdescr = get_dataset_descr(dataset_name)
 
     if legacy_format:
-        warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
         csv_data = csv_data.to_records(index=False)
 
     return Bunch(
@@ -1035,7 +1025,7 @@ def _fetch_surf_fsaverage(dataset_name, data_dir=None):
     )
 
     result = {
-        attribute: os.path.join(dataset_dir, f"{attribute}.gii.gz")
+        attribute: dataset_dir / f"{attribute}.gii.gz"
         for attribute in dataset_attributes
     }
     result["description"] = str(get_dataset_descr(dataset_name))

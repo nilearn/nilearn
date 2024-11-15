@@ -337,7 +337,7 @@ def generate_fake_fmri(
     """
     if affine is None:
         affine = np.eye(4)
-    full_shape = shape + (length,)
+    full_shape = (*shape, length)
     fmri = np.zeros(full_shape)
     # Fill central voxels timeseries with random signals
     width = [s // 2 for s in shape]
@@ -345,9 +345,9 @@ def generate_fake_fmri(
 
     rand_gen = np.random.default_rng(random_state)
     if kind == "noise":
-        signals = rand_gen.integers(256, size=(width + [length]))
+        signals = rand_gen.integers(256, size=([*width, length]))
     elif kind == "step":
-        signals = np.ones(width + [length])
+        signals = np.ones([*width, length])
         signals[..., : length // 2] = 0.5
     else:
         raise ValueError("Unhandled value for parameter 'kind'")
@@ -710,7 +710,7 @@ def generate_group_sparse_gaussian_graphs(
     topology = topology > 0
     assert np.all(topology == topology.T)
     logger.log(
-        f"Sparsity: {1.0 * topology.sum() / topology.shape[0] ** 2 :f}",
+        f"Sparsity: {1.0 * topology.sum() / topology.shape[0] ** 2:f}",
         verbose=verbose,
     )
 
@@ -838,7 +838,7 @@ def add_metadata_to_bids_dataset(bids_path, metadata, json_file=None):
     else:
         json_file = Path(bids_path) / json_file
 
-    with open(json_file, "w") as f:
+    with json_file.open("w") as f:
         json.dump(metadata, f)
 
     return json_file
@@ -1422,7 +1422,7 @@ def _write_bids_derivative_func(
         confounds.to_csv(
             confounds_path, sep="\t", index=None, encoding="utf-8"
         )
-        with open(confounds_path.with_suffix(".json"), "w") as f:
+        with confounds_path.with_suffix(".json").open("w") as f:
             json.dump(metadata, f)
 
     fields["suffix"] = "bold"

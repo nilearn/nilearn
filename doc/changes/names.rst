@@ -36,6 +36,8 @@
 
 .. _Anne-Sophie Kieslinger: https://github.com/askieslinger
 
+.. _Anupriya Kumari: https://github.com/anupriyakkumari
+
 .. _Ariel Rokem: http://arokem.org/
 
 .. _Arthur Mensch: https://www.amensch.fr/
@@ -198,6 +200,8 @@
 
 .. _Mia Zwally: https://github.com/MIZwally
 
+.. _Micha Burkhardt: https://github.com/mibur1
+
 .. _Michael Eickenberg: https://github.com/eickenberg
 
 .. _Michael Hanke: https://github.com/mih
@@ -247,6 +251,8 @@
 .. _Pierre-Olivier Quirion: https://github.com/poquirion
 
 .. _Pradeep Reddy Raamana: https://github.com/raamana
+
+.. _Prakhar Jain: https://github.com/PrakharJain1509
 
 .. _Rahul Brito: https://github.com/Rahul-Brito
 

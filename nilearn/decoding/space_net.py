@@ -29,9 +29,10 @@ from sklearn.utils import check_array, check_X_y
 from sklearn.utils.extmath import safe_sparse_dot
 
 from nilearn._utils.masker_validation import check_embedded_masker
-from nilearn.experimental.surface import SurfaceMasker
 from nilearn.image import get_data
+from nilearn.maskers import SurfaceMasker
 from nilearn.masking import unmask_from_to_3d_array
+from nilearn.surface import SurfaceImage
 
 from .._utils import fill_doc, logger
 from .._utils.cache_mixin import CacheMixin
@@ -839,6 +840,11 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         self : `SpaceNet` object
             Model selection is via cross-validation with bagging.
         """
+        if isinstance(X, SurfaceImage) or isinstance(self.mask, SurfaceMasker):
+            raise NotImplementedError(
+                "Running space net on surface objects is not supported."
+            )
+
         # misc
         self.check_params()
         if self.memory is None or isinstance(self.memory, str):
@@ -850,10 +856,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
 
         tic = time.time()
 
-        masker_type = "nii"
-        if isinstance(self.mask, SurfaceMasker):
-            masker_type = "surface"
-        self.masker_ = check_embedded_masker(self, masker_type=masker_type)
+        self.masker_ = check_embedded_masker(self, masker_type="nii")
         X = self.masker_.fit_transform(X)
 
         X, y = check_X_y(
@@ -1412,7 +1415,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         KFold, None, in which case 3 fold is used, or another object, that
         will then be used as a cv generator.
 
-    debias: bool, optional (default False)
+    debias : bool, optional (default False)
         If set, then the estimated weights maps will be debiased.
 
     Attributes

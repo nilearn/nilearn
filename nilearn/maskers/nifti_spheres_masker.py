@@ -12,7 +12,7 @@ from scipy import sparse
 from sklearn import neighbors
 
 from nilearn import image, masking
-from nilearn._utils import CacheMixin, fill_doc, logger
+from nilearn._utils import fill_doc, logger
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.niimg import img_data_dtype
@@ -223,7 +223,7 @@ class _ExtractionFunctor:
 
 
 @fill_doc
-class NiftiSpheresMasker(BaseMasker, CacheMixin):
+class NiftiSpheresMasker(BaseMasker):
     """Class for masking of Niimg-like objects using seeds.
 
     NiftiSpheresMasker is useful when data from given seeds should be
@@ -525,7 +525,11 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
 
         return embeded_images
 
-    def fit(self, X=None, y=None):
+    def fit(
+        self,
+        X=None,
+        y=None,  # noqa: ARG002
+    ):
         """Prepare signal extraction from regions.
 
         All parameters are unused; they are for scikit-learn compatibility.
