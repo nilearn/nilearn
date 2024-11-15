@@ -9,9 +9,8 @@ from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.conftest import _img_3d_mni
 from nilearn.experimental.surface import SurfaceImage
-from nilearn.maskers import SurfaceMasker
 from nilearn.image import get_data
-from nilearn.maskers import NiftiMasker
+from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.regions.rena_clustering import (
     ReNA,
     _make_edges_and_weights_surface,
@@ -133,7 +132,7 @@ def test_make_edges_surface(surf_mask, part):
         assert edges_unmasked[:, edges_mask].shape == (2, 3)
 
 
-def test_make_edges_and_weights_surface(surf_mesh, surf_img, rng):
+def test_make_edges_and_weights_surface(surf_mesh, surf_img):
     """Smoke test for _make_edges_and_weights_surface. Here we create a new
     surface mask (relative to the one used in test_make_edges_surface) to make
     sure overall edge and weight computation is robust.
